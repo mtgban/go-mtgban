@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -14,10 +12,12 @@ import (
 
 	http "github.com/hashicorp/go-retryablehttp"
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 type mcJSON struct {
-	Data []struct {
+	Error string `json:"Message"`
+	Data  []struct {
 		Name     string `json:"NomeEn"`
 		Set      string `json:"Category"`
 		Code     string `json:"Icon"`
@@ -53,15 +53,17 @@ type mcEdition struct {
 	Code string `json:"ImageUrl"`
 }
 
-var l = log.New(os.Stderr, "", 0)
+type mcEditionParam struct {
+	UIc string `json:"UIc"`
+}
 
 const (
+	maxConcurrency = 7
+
 	mcReinassanceId       = 73
 	mcRevisedEUFBBId      = 1041
 	mcPromoEditionId      = 1113
 	mcMerfolksVsGoblinsId = 1116
-
-	maxConcurrency = 8
 
 	mcNumberNotAvailable = "n/a"
 	mcBaseURL            = "https://www.magiccorner.it/12/modules/store/mcpub.asmx/"
@@ -71,17 +73,27 @@ const (
 
 type Magiccorner struct {
 	LogCallback mtgban.LogCallbackFunc
-	inventory   []mtgban.Entry
+
+	httpClient *http.Client
+	norm       *mtgban.Normalizer
+
+	db        mtgjson.MTGDB
+	inventory map[string][]mtgban.InventoryEntry
 }
 
-func NewVendor() mtgban.Scraper {
+func NewScraper(db mtgjson.MTGDB) *Magiccorner {
 	mc := Magiccorner{}
+	mc.db = db
+	mc.inventory = map[string][]mtgban.InventoryEntry{}
+	mc.norm = mtgban.NewNormalizer()
+	mc.httpClient = http.NewClient()
+	mc.httpClient.Logger = nil
 	return &mc
 }
 
 type resultChan struct {
 	err   error
-	cards []MCCard
+	cards []mtgban.InventoryEntry
 }
 
 func (mc *Magiccorner) printf(format string, a ...interface{}) {
@@ -96,34 +108,37 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 		return
 	}
 
+	// The last field before || is the language
+	// 0 - any language, 72 - english only
 	langCode := 0
 	if edition.Id == mcPromoEditionId {
 		langCode = 72
 	}
 	param := mcParam{
-		// The last field before || is the language
-		// 0 - any language, 72 - english only
+		// Search string for Id and Language
 		SearchField: fmt.Sprintf("%d|0|0|0|0|%d||true|0|", edition.Id, langCode),
 
 		// The edition/category id
 		IdCategory: fmt.Sprintf("%d", edition.Id),
 
-		// No idea what these fields are for
-		UIc:           "it",
+		// Returns entries with available quantity
 		OnlyAvailable: true,
-		IsBuy:         false,
+
+		// No idea what these fields are for
+		UIc:   "it",
+		IsBuy: false,
 	}
 	reqBody, _ := json.Marshal(&param)
 
-	resp, err := http.Post(mcBaseURL+mcCardsEndpt, "application/json", bytes.NewReader(reqBody))
+	resp, err := mc.httpClient.Post(mcBaseURL+mcCardsEndpt, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
-		res.err = err
+		res.err = fmt.Errorf("%s - %v", edition.Set, err)
 		return
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		res.err = err
+		res.err = fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, err)
 		return
 	}
 	defer resp.Body.Close()
@@ -131,7 +146,11 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 	var db mcJSON
 	err = json.Unmarshal(data, &db)
 	if err != nil {
-		res.err = err
+		res.err = fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, err)
+		return
+	}
+	if db.Error != "" {
+		res.err = fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, db.Error)
 		return
 	}
 
@@ -159,12 +178,12 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 		extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
 
 		if !printed {
-			mc.printf("Processing id %d - %s (%s, code: %s)...\n", edition.Id, edition.Set, extra, card.Code)
+			mc.printf("Processing id %d - %s (%s, code: %s)", edition.Id, edition.Set, extra, card.Code)
 			printed = true
 		}
 
 		// Trust the collector number for a few selected cases
-		// Fixup set code as needed
+		// Fixup set codes as needed.
 		tagToDrop := ""
 		number := mcNumberNotAvailable
 		switch card.Code {
@@ -175,7 +194,7 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 			}
 		case "1338", "1339":
 			tagToDrop = extra[:2]
-		case "UST", "E01", "RNA", "GRN", "ELD":
+		case "UST", "E01", "RNA", "GRN", "ELD", "THB":
 			tagToDrop = card.Code
 		default:
 			switch {
@@ -207,9 +226,16 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 			}
 		}
 
+		// Skip lands, too many and without a simple solution
+		switch card.Name {
+		case "Plains", "Island", "Swamp", "Mountain", "Forest":
+			continue
+		}
+
 		for _, v := range card.Variants {
 			// Skip duplicate cards
 			if duplicate[v.Id] {
+				mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Set, v.Foil)
 				continue
 			}
 
@@ -253,16 +279,30 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 				continue
 			}
 
+			cond := v.Condition
+			switch cond {
+			case "NM/M":
+				cond = "NM"
+			case "SP", "HP":
+			case "D":
+				cond = "PO"
+			default:
+				mc.printf("Unknown '%s' condition", cond)
+				continue
+			}
+
 			isFoil := v.Foil == "Foil"
 
-			cc := MCCard{
-				Name: card.Name,
+			name := card.Name
+			lutName, found := cardTable[card.Name]
+			if found {
+				name = lutName
+			}
+
+			mcCard := MCCard{
+				Name: name,
 				Set:  card.Set,
 				Foil: isFoil,
-
-				Pricing:   v.Price,
-				Qty:       v.Quantity,
-				Condition: v.Condition,
 
 				Id:     v.Id,
 				Number: number,
@@ -272,7 +312,20 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 				orig:    card.OrigName,
 			}
 
-			res.cards = append(res.cards, cc)
+			cc, err := mc.Convert(&mcCard)
+			if err != nil {
+				mc.printf("%v", err)
+				continue
+			}
+
+			out := mtgban.InventoryEntry{
+				Card:       *cc,
+				Conditions: cond,
+				Price:      v.Price,
+				Quantity:   v.Quantity,
+			}
+
+			res.cards = append(res.cards, out)
 
 			duplicate[v.Id] = true
 		}
@@ -282,30 +335,34 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
-func (mc *Magiccorner) Scrape() ([]mtgban.Entry, error) {
+func (mc *Magiccorner) scrape() error {
 	// Retrieve the edition ids
-	resp, err := http.Post(mcBaseURL+mcEditionsEndpt, "application/json", nil)
+	param := mcEditionParam{
+		UIc: "it",
+	}
+	reqBody, _ := json.Marshal(&param)
+	resp, err := mc.httpClient.Post(mcBaseURL+mcEditionsEndpt, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var blob mcBlob
 	err = json.Unmarshal(data, &blob)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// There is json in this json
 	dec := json.NewDecoder(strings.NewReader(blob.Data))
 	_, err = dec.Token()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	pages := make(chan mcEdition)
@@ -323,23 +380,19 @@ func (mc *Magiccorner) Scrape() ([]mtgban.Entry, error) {
 	}
 
 	go func() {
-		// This edition is not present in the normal callback
-		pages <- mcEdition{
-			Id:  mcPromoEditionId,
-			Set: "Promo",
-		}
 		for dec.More() {
 			var edition mcEdition
 			err := dec.Decode(&edition)
 			if err != nil {
-				l.Println(err)
+				mc.printf("%v", err)
 				break
 			}
-			//if false {
-			//if edition.Set == "Trono di Eldraine" {
-			if edition.Set != "Theros: Oltre la Morte" && edition.Set != "Fallen Empires" && edition.Set != "Rinascimento" {
-				pages <- edition
-			}
+			pages <- edition
+		}
+		// This edition is not present in the normal callback
+		pages <- mcEdition{
+			Id:  mcPromoEditionId,
+			Set: "Promo",
 		}
 		close(pages)
 
@@ -349,13 +402,53 @@ func (mc *Magiccorner) Scrape() ([]mtgban.Entry, error) {
 
 	for result := range results {
 		if result.err != nil {
-			l.Println(result.err)
+			mc.printf("%v", result.err)
 			continue
 		}
-		for i := range result.cards {
-			mc.inventory = append(mc.inventory, &result.cards[i])
+		for _, card := range result.cards {
+			err = mc.InventoryAdd(card)
+			if err != nil {
+				mc.printf(err.Error())
+				continue
+			}
 		}
 	}
 
+	return nil
+}
+
+func (mc *Magiccorner) InventoryAdd(card mtgban.InventoryEntry) error {
+	entries, found := mc.inventory[card.Id]
+	if found {
+		for _, entry := range entries {
+			if entry.Conditions == card.Conditions && entry.Price == card.Price {
+				return fmt.Errorf("Attempted to add a duplicate card:\n-new: %v\n-old: %v", card, entry)
+			}
+		}
+	}
+
+	mc.inventory[card.Id] = append(mc.inventory[card.Id], card)
+	return nil
+}
+
+func (mc *Magiccorner) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+	if len(mc.inventory) > 0 {
+		return mc.inventory, nil
+	}
+
+	mc.printf("Empty inventory, scraping started")
+
+	err := mc.scrape()
+	if err != nil {
+		return nil, err
+	}
+
 	return mc.inventory, nil
+
+}
+
+func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
+	info.Name = "Magic Corner"
+	info.Shorthand = "MC"
+	return
 }
