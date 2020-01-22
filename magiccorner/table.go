@@ -9,13 +9,13 @@ var allVariants = map[string]map[string]string{
 		"AgentOfStromgald": "64a",
 		"AZ003":            "64b",
 	},
-	"Astrolabe": map[string]string{
-		"Astrolabe": "118a",
-		"AZ009":     "118b",
-	},
 	"Arcane Denial": map[string]string{
 		"ArcaneDenial": "22a",
 		"AZ005":        "22b",
+	},
+	"Astrolabe": map[string]string{
+		"Astrolabe": "118a",
+		"AZ009":     "118b",
 	},
 	"Awesome Presence": map[string]string{
 		"AwsomePresence": "23a",
@@ -69,13 +69,13 @@ var allVariants = map[string]map[string]string{
 		"FeveredStrength": "50a",
 		"AZ052":           "50b",
 	},
-	"Fyndhorn Druid": map[string]string{
-		"FyndhornDriud": "90a",
-		"AZ058":         "90b",
-	},
 	"Foresight": map[string]string{
 		"Foresight": "29a",
 		"AZ056":     "29b",
+	},
+	"Fyndhorn Druid": map[string]string{
+		"FyndhornDriud": "90a",
+		"AZ058":         "90b",
 	},
 	"Gift of the Woods": map[string]string{
 		"giftOfTheWoods": "92a",
@@ -105,13 +105,13 @@ var allVariants = map[string]map[string]string{
 		"InsidiousBookworms": "51a",
 		"AZ077":              "51b",
 	},
-	"Kjeldoran Pride": map[string]string{
-		"Kjeldoran Pride": "9a",
-		"AZ087":           "9b",
-	},
 	"Kjeldoran Escort": map[string]string{
 		"KjeldoranEscort": "7a",
 		"AZ084":           "7b",
+	},
+	"Kjeldoran Pride": map[string]string{
+		"Kjeldoran Pride": "9a",
+		"AZ087":           "9b",
 	},
 	"Lat-Nam's Legacy": map[string]string{
 		"Scroll": "30a",
@@ -269,74 +269,198 @@ var chrVariants = map[string]map[string]string{
 	},
 }
 
+var cn2Variants = map[string]map[string]string{
+	"Kaya, Ghost Assassin": map[string]string{
+		"CN2075":               "75",
+		"kaya_ghost_assassin2": "222",
+	},
+}
+
 var femVariants = map[string]map[string]string{
+	"Combat Medic": map[string]string{
+		"FE133": "1a",
+		"FE134": "1b",
+		"FE135": "1c",
+		"FE136": "1d",
+	},
+	"Icatian Scout": map[string]string{
+		"FE157": "13a",
+		"FE158": "13b",
+		"FE159": "13c",
+		"FE160": "13d",
+	},
+	"Merseine": map[string]string{
+		"FE047": "23a",
+		"FE048": "23b",
+		"FE049": "23c",
+		"FE050": "23d",
+	},
+	"Vodalian Soldiers": map[string]string{
+		"FE062": "31a",
+		"FE063": "31b",
+		"FE064": "31c",
+		"FE065": "31d",
+	},
+	"Homarid": map[string]string{
+		"FE038": "19a",
+		"FE039": "19b",
+		"FE040": "19c",
+		"FE041": "19d",
+	},
+	"Tidal Flats": map[string]string{
+		"FE054": "27a",
+		"FE055": "27b",
+		"FE056": "27c",
+	},
+	"Homarid Warrior": map[string]string{
+		"FE044": "22a",
+		"FE045": "22b",
+		"FE046": "22c",
+	},
+	"Icatian Moneychanger": map[string]string{
+		"FE152": "10a",
+		"FE153": "10b",
+		"FE154": "10c",
+	},
+	"Elvish Scout": map[string]string{
+		"FE075": "68a",
+		"FE076": "68b",
+		"FE077": "68c",
+	},
+	"Elvish Hunter": map[string]string{
+		"FE072": "67a",
+		"FE073": "67b",
+		"FE074": "67c",
+	},
+	"Orcish Spy": map[string]string{
+		"FE124": "61a",
+		"FE125": "61b",
+		"FE126": "61c",
+	},
+	"Farrel's Zealot": map[string]string{
+		"FE139": "3a",
+		"FE140": "3b",
+		"FE141": "3c",
+	},
+	"Mindstab Thrull": map[string]string{
+		"FE019": "40a",
+		"FE020": "40b",
+		"FE021": "40c",
+	},
+	"Dwarven Soldier": map[string]string{
+		"FE107": "53a",
+		"FE108": "53b",
+		"FE109": "53c",
+	},
+	"Vodalian Mage": map[string]string{
+		"FE059": "30a",
+		"FE060": "30b",
+		"FE061": "30c",
+	},
+	"Armor Thrull": map[string]string{
+		"FE001": "33a",
+		"FE002": "33b",
+		"FE003": "33c",
+		"FE004": "33d",
+	},
+	"Brassclaw Orcs": map[string]string{
+		"FE100": "49a",
+		"FE101": "49b",
+		"FE102": "49c",
+		"FE103": "49d",
+	},
+	"Orcish Veteran": map[string]string{
+		"FE127": "62a",
+		"FE128": "62b",
+		"FE129": "62c",
+		"FE130": "62d",
+	},
+	"Elven Fortress": map[string]string{
+		"FE067": "65a",
+		"FE068": "65b",
+		"FE069": "65c",
+		"FE070": "65d",
+	},
 	"Basal Thrull": map[string]string{
-		"Kaja Foglio":   "34a",
-		"Phil Foglio":   "34b",
-		"Kane-Ferguson": "34c",
-		"Rush":          "34d",
+		"FE005": "34a",
+		"FE006": "34b",
+		"FE007": "34c",
+		"FE008": "34d",
+	},
+	"Thallid": map[string]string{
+		"FE087": "74a",
+		"FE088": "74b",
+		"FE089": "74c",
+		"FE090": "74d",
+	},
+	"Thorn Thallid": map[string]string{
+		"FE096": "80a",
+		"FE097": "80b",
+		"FE098": "80c",
+		"FE099": "80d",
 	},
 	"Goblin Chirurgeon": map[string]string{
-		"Gelon":   "54a",
-		"Foglio":  "54b",
-		"Frazier": "54c",
+		"FE110": "54a",
+		"FE111": "54b",
+		"FE112": "54c",
 	},
 	"Goblin Grenade": map[string]string{
-		"Spencer": "56a",
-		"Frazier": "56b",
-		"Rush":    "56c",
+		"FE114": "56a",
+		"FE115": "56b",
+		"FE116": "56c",
 	},
 	"Goblin War Drums": map[string]string{
-		"Frazier":  "58a",
-		"Ferguson": "58b",
-		"Hudson":   "58c",
-		"Menges":   "58d",
+		"FE119": "58a",
+		"FE120": "58b",
+		"FE121": "58c",
+		"FE122": "58d",
 	},
 	"High Tide": map[string]string{
-		"Tucker":   "18a",
-		"Maddocks": "18b",
-		"Weber":    "18c",
+		"FE035": "18a",
+		"FE036": "18b",
+		"FE037": "18c",
 	},
 	"Hymn to Tourach": map[string]string{
-		"Van Camp":  "38a",
-		"Danforth":  "38b",
-		"Hoover":    "38c",
-		"Kirschner": "38d",
+		"FE012": "38a",
+		"FE013": "38b",
+		"FE014": "38c",
+		"FE015": "38d",
 	},
 	"Icatian Infantry": map[string]string{
-		"Beard Jr.": "7a",
-		"Rush":      "7b",
-		"Shuler":    "7c",
-		"Tucker":    "7d",
+		"FE144": "7a",
+		"FE145": "7b",
+		"FE146": "7c",
+		"FE147": "7d",
 	},
 	"Initiates of the Ebon Hand": map[string]string{
-		"Hudson":   "39a",
-		"Danforth": "39b",
-		"Foglio":   "39c",
+		"FE016": "39a",
+		"FE017": "39b",
+		"FE018": "39c",
 	},
 	"Order of Leitbur": map[string]string{
-		"Wackwitz - Facing Left":  "16a",
-		"Wackwitz - Facing Right": "16b",
+		"FE163": "16a",
+		"FE164": "16b",
+		"FE165": "16c",
 	},
 	"Necrite": map[string]string{
-		"Spencer": "41a",
-		"Rush":    "41b",
-		"Tucker":  "41c",
+		"FE022": "41a",
+		"FE023": "41b",
+		"FE024": "41c",
 	},
 	"Night Soil": map[string]string{
-		"Everingham": "71a",
-		"Hudson":     "71b",
-		"Tucker":     "71c",
+		"FE080": "71a",
+		"FE081": "71b",
+		"FE082": "71c",
 	},
 	"Order of the Ebon Hand": map[string]string{
-		"Benson":  "42a",
-		"Rush":    "42b",
-		"Spencer": "42c",
+		"FE025": "42a",
+		"FE026": "42b",
+		"FE027": "42c",
 	},
 	"Spore Cloud": map[string]string{
-		"Van Camp": "72a",
-		"Myrfors":  "72b",
-		"Weber":    "72c",
+		"FE083": "72a",
+		"FE084": "72b",
+		"FE085": "72c",
 	},
 }
 
@@ -452,6 +576,27 @@ var ogwVariants = map[string]map[string]string{
 	},
 }
 
+var rinVariants = map[string]map[string]string{
+	"Urza's Mine": map[string]string{
+		"RI053":     "175",
+		"miniera53": "176",
+		"miniera56": "177",
+		"miniera54": "178",
+	},
+	"Urza's Power Plant": map[string]string{
+		"centrale57": "179",
+		"centrale60": "180",
+		"centrale58": "181",
+		"RI054":      "182",
+	},
+	"Urza's Tower": map[string]string{
+		"RI055":   "183",
+		"torre63": "184",
+		"torre62": "185",
+		"torre64": "186",
+	},
+}
+
 var ed2Variants = map[string]map[string]string{
 	"Swamp": map[string]string{
 		"5219":   "294",
@@ -482,13 +627,16 @@ var ddaVariants = map[string]map[string]string{
 }
 
 var setVariants = map[string]map[string]map[string]string{
-	"Alliances":             allVariants,
-	"Antiquities":           atqVariants,
-	"Chronicles":            chrVariants,
-	"Homelands":             hmlVariants,
-	"Oath of the Gatewatch": ogwVariants,
-	"Unlimited Edition":     ed2Variants,
-	"Unstable":              ustVariants,
+	"Alliances":                  allVariants,
+	"Antiquities":                atqVariants,
+	"Chronicles":                 chrVariants,
+	"Conspiracy: Take the Crown": cn2Variants,
+	"Fallen Empires":             femVariants,
+	"Homelands":                  hmlVariants,
+	"Oath of the Gatewatch":      ogwVariants,
+	"Rinascimento":               rinVariants,
+	"Unlimited Edition":          ed2Variants,
+	"Unstable":                   ustVariants,
 
 	// Custom set
 	"Duel Decks Anthology": ddaVariants,

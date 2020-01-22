@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
@@ -119,8 +120,6 @@ var promosetTable = map[string]string{
 }
 
 var card2setTable = map[string]string{
-	"Glory (Pre-Release Promo) *Only in Hebrew*": "Prerelease Events",
-
 	"Jace Beleren (Book Promo)": "Miscellaneous Book Promos",
 
 	"Phyrexian Metamorph (Release Event)":    "New Phyrexia Promos",
@@ -136,130 +135,19 @@ var card2setTable = map[string]string{
 	"The Haunt of Hightower (Buy a Box)":     "Ravnica Allegiance",
 }
 
+// These don't have any variant, but this table only applies to Promo edition
 var promo2setTable = map[string]string{
-	// These don't have any variant, but this table only applies to Promo edition
 	"Flusterstorm": "Modern Horizons",
 	"Astral Drift": "Modern Horizons Promos",
 	"Negate":       "Core Set 2020 Promos",
 }
 
-var newPrereleaseDate = time.Date(2014, time.September, 1, 0, 0, 0, 0, time.UTC)
-
-func (c *MCCard) parseNumber(origName, setName, specifier string) (cardName, number string, numberCheck func(mtgjson.Set, string) bool) {
-	defer func() {
-		// If we set number but no special numberCheck, use a default one
-		if number != "" && numberCheck == nil {
-			numberCheck = func(set mtgjson.Set, n string) bool {
-				// Reduce aliasing by making sure that only "<xxx> Promos" (except
-				// Resale) have numbers with 'p' or 's' at the end.
-				if (set.Name == "Resale Promos" || !strings.HasSuffix(set.Name, "Promos")) && (strings.HasSuffix(n, "p") || strings.Contains(n, "s")) {
-					return false
-				}
-				return n == number
-			}
-		}
-	}()
-
-	cardName = origName
-	if c.Number != mcNumberNotAvailable {
-		number = c.Number
-	}
-
-	// Look up card number
-	no, found := setVariants[setName][cardName][specifier]
-	if found {
-		number = no
-		return
-	}
-
-	no, found = setVariants[setName][cardName][c.extra]
-	if found {
-		number = no
-		return
-	}
-
-	switch setName {
-	case "Ultimate Box Topper":
-		number = "U" + number
-	case "Unstable":
-		_, err := strconv.Atoi(number[:len(number)-1])
-		if err != nil {
-			number = ""
-		}
-	case "War of the Spark":
-		number = strings.Replace(number, "b", mtgjson.SuffixSpecial, 1)
-	case "Zendikar":
-		if strings.HasPrefix(cardName, "Forest") ||
-			strings.HasPrefix(cardName, "Island") ||
-			strings.HasPrefix(cardName, "Mountain") ||
-			strings.HasPrefix(cardName, "Plains") ||
-			strings.HasPrefix(cardName, "Swamp") {
-			s := strings.Split(cardName, " ")
-			if len(s) > 1 {
-				cardName = s[0]
-				number = s[1] + "a"
-			}
-		}
-	case "Throne of Eldraine Promos":
-		internalNumber := strings.Replace(c.extra, "p2019ELD", "", 1)
-		internalNumber = strings.TrimLeft(internalNumber, "0")
-		num, err := strconv.Atoi(internalNumber)
-		if err == nil {
-			if num < 69 {
-				numberCheck = func(set mtgjson.Set, n string) bool {
-					return strings.HasSuffix(n, "s")
-				}
-			} else {
-				numberCheck = func(set mtgjson.Set, n string) bool {
-					return strings.HasSuffix(n, "p")
-				}
-			}
-		}
-	case "Core Set 2020 Promos":
-		if specifier == "Version 1" {
-			numberCheck = func(set mtgjson.Set, n string) bool {
-				return strings.HasSuffix(n, "p")
-			}
-		} else if specifier == "Version 2" {
-			numberCheck = func(set mtgjson.Set, n string) bool {
-				return strings.HasSuffix(n, "s")
-			}
-		}
-	default:
-		if specifier == "Pre-Release Promo" {
-			numberCheck = func(set mtgjson.Set, n string) bool {
-				if strings.HasSuffix(set.Name, "Promos") {
-					setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
-					if setDate.After(newPrereleaseDate) {
-						return strings.Contains(n, "s")
-					}
-				}
-				if number != "" {
-					return n == number
-				}
-				return true
-			}
-		} else if strings.Contains("Core 2020: Extras", c.orig) {
-			numberCheck = func(set mtgjson.Set, n string) bool {
-				return strings.HasSuffix(n, "p")
-			}
-		} else if specifier == "Resale Promo" {
-			numberCheck = func(set mtgjson.Set, n string) bool {
-				return !strings.HasSuffix(n, "p") && !strings.HasSuffix(n, "s")
-			}
-		}
-	}
-
-	return
-}
-
-func (c *MCCard) parseSet(db mtgjson.MTGDB, origName, specifier string) (cardName, setName string, setCheck func(set mtgjson.Set) bool) {
+func (mc *Magiccorner) parseSet(c *MCCard) (setName string, setCheck mtgban.SetCheckFunc) {
 	// Function to determine whether we're parsing the correct set
 	setCheck = func(set mtgjson.Set) bool {
 		return set.Name == setName
 	}
 
-	cardName = origName
 	setName = c.Set
 
 	ed, found := setTable[setName]
@@ -268,7 +156,7 @@ func (c *MCCard) parseSet(db mtgjson.MTGDB, origName, specifier string) (cardNam
 		return
 	}
 
-	set, found := db[c.setCode]
+	set, found := mc.db[c.setCode]
 	if found {
 		setName = set.Name
 		return
@@ -303,11 +191,17 @@ func (c *MCCard) parseSet(db mtgjson.MTGDB, origName, specifier string) (cardNam
 	}
 
 	if setName == "Promo" {
-		ed, found = promo2setTable[origName]
+		ed, found = promo2setTable[c.Name]
 		if found {
 			setName = ed
 			return
 		}
+	}
+
+	variants := mtgban.SplitVariants(c.Name)
+	specifier := ""
+	if len(variants) > 1 {
+		specifier = variants[1]
 	}
 
 	ed, found = promosetTable[specifier]
@@ -319,7 +213,7 @@ func (c *MCCard) parseSet(db mtgjson.MTGDB, origName, specifier string) (cardNam
 	if strings.HasPrefix(c.extra, "p2019") {
 		possibleCode := c.extra[5:8]
 		if possibleCode != "M20" && possibleCode != "FNM" {
-			set, found := db["P"+strings.ToUpper(possibleCode)]
+			set, found := mc.db["P"+strings.ToUpper(possibleCode)]
 			if found {
 				setName = set.Name
 				return
@@ -337,16 +231,17 @@ func (c *MCCard) parseSet(db mtgjson.MTGDB, origName, specifier string) (cardNam
 		if strings.Contains(c.extra, "M20") {
 			setName = "Core Set 2020 Promos"
 		}
-	case "Ravnica Weekend":
-		cn := strings.Split(origName, " ")
-		cardName = cn[0]
 	case "Friday Night Magic":
 		setCheck = func(set mtgjson.Set) bool {
 			return strings.HasPrefix(set.Name, "Friday Night Magic")
 		}
 	case "Pre-Release Promo":
 		setCheck = func(set mtgjson.Set) bool {
-			return set.Name == "Prerelease Events" || strings.HasSuffix(set.Name, "Promos")
+			return set.Name == "Prerelease Events" || (strings.HasSuffix(set.Name, "Promos") && set.Name != "Resale Promos")
+		}
+	case "Release Event":
+		setCheck = func(set mtgjson.Set) bool {
+			return set.Name == "Release Events" || strings.HasSuffix(set.Name, "Promos")
 		}
 	case "Gateway Promo":
 		setCheck = func(set mtgjson.Set) bool {
@@ -363,10 +258,6 @@ func (c *MCCard) parseSet(db mtgjson.MTGDB, origName, specifier string) (cardNam
 	case "Clash Pack Promo":
 		setCheck = func(set mtgjson.Set) bool {
 			return strings.HasSuffix(set.Name, "Clash Pack")
-		}
-	case "Release Event":
-		setCheck = func(set mtgjson.Set) bool {
-			return set.Name == "Release Events" || strings.HasSuffix(set.Name, "Promos")
 		}
 	case "Hero's Path":
 		setCheck = func(set mtgjson.Set) bool {
@@ -390,9 +281,148 @@ func (c *MCCard) parseSet(db mtgjson.MTGDB, origName, specifier string) (cardNam
 		}
 	default:
 		if setName == "Promo" {
-			//case "Buy a Box", "Game Day Promo", "Intro Pack", "Open House Promo", "League Promo", "Convention Promo", "Store Championship":
+			// AKA: "Buy a Box", "Game Day Promo", "Intro Pack", "Open House Promo",
+			//      "League Promo", "Convention Promo", "Store Championship"
 			setCheck = func(set mtgjson.Set) bool {
 				return strings.HasSuffix(set.Name, "Promos")
+			}
+		}
+	}
+
+	return
+}
+
+func (mc *Magiccorner) parseNumber(c *MCCard, setName string) (cardName string, numberCheck mtgban.NumberCheckFunc) {
+	cardName = c.Name
+	variants := mtgban.SplitVariants(c.Name)
+	specifier := ""
+	if len(variants) > 1 {
+		specifier = variants[1]
+	}
+	cardName = variants[0]
+
+	number := ""
+	if c.Number != mcNumberNotAvailable {
+		number = c.Number
+	}
+
+	defer func() {
+		// If we set number but no special numberCheck, use a default one
+		if number != "" && numberCheck == nil {
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				// Reduce aliasing by making sure that only "<xxx> Promos"
+				// (except Resale) have numbers with 'p' or 's' at the end.
+				if (set.Name == "Resale Promos" || !strings.HasSuffix(set.Name, "Promos")) && (strings.HasSuffix(card.Number, "p") || strings.Contains(card.Number, "s")) {
+					return false
+				}
+				return card.Number == number
+			}
+		}
+
+		variants = mtgban.SplitVariants(cardName)
+		cardName = variants[0]
+
+		// Only keep one of the split cards
+		switch {
+		// Only keep one of the split/ transform cards
+		case strings.Contains(cardName, " // "):
+			cn := strings.Split(cardName, " // ")
+			cardName = cn[0]
+		// Only keep one of the transform cards
+		case strings.Contains(cardName, " / "):
+			cn := strings.Split(cardName, " / ")
+			cardName = cn[0]
+		}
+	}()
+
+	no, found := setVariants[setName][cardName][specifier]
+	if found {
+		number = no
+		return
+	}
+
+	no, found = setVariants[setName][cardName][c.extra]
+	if found {
+		number = no
+		return
+	}
+
+	switch setName {
+	case "Ravnica Weekend":
+		cn := strings.Fields(c.Name)
+		cardName = cn[0]
+	case "Ultimate Box Topper":
+		number = "U" + number
+	case "Unstable":
+		_, err := strconv.Atoi(number[:len(number)-1])
+		if err != nil {
+			number = ""
+		}
+	case "War of the Spark":
+		number = strings.Replace(number, "b", mtgjson.SuffixSpecial, 1)
+	case "Zendikar":
+		if strings.HasPrefix(cardName, "Forest") ||
+			strings.HasPrefix(cardName, "Island") ||
+			strings.HasPrefix(cardName, "Mountain") ||
+			strings.HasPrefix(cardName, "Plains") ||
+			strings.HasPrefix(cardName, "Swamp") {
+			s := strings.Fields(cardName)
+			if len(s) > 1 {
+				cardName = s[0]
+				number = s[1] + "a"
+			}
+		}
+	case "Throne of Eldraine Promos":
+		internalNumber := strings.Replace(c.extra, "p2019ELD", "", 1)
+		internalNumber = strings.TrimLeft(internalNumber, "0")
+		num, err := strconv.Atoi(internalNumber)
+		if err == nil {
+			if num < 69 {
+				numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+					return strings.HasSuffix(card.Number, "s")
+				}
+			} else {
+				numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+					return strings.HasSuffix(card.Number, "p")
+				}
+			}
+		}
+	case "Core Set 2020 Promos":
+		if specifier == "Version 1" {
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				return strings.HasSuffix(card.Number, "p")
+			}
+		} else if specifier == "Version 2" {
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				return strings.HasSuffix(card.Number, "s")
+			}
+		}
+	default:
+		if specifier == "Pre-Release Promo" {
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				if strings.HasSuffix(set.Name, "Promos") {
+					setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+					if setDate.After(mtgban.NewPrereleaseDate) {
+						return strings.Contains(card.Number, "s")
+					} else {
+						return !strings.Contains(card.Number, "s")
+					}
+				}
+
+				if number != "" {
+					return card.Number == number
+				} else {
+					return !strings.Contains(card.Number, "s")
+				}
+				return true
+			}
+		} else if strings.Contains("Core 2020: Extras", c.orig) {
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				return strings.HasSuffix(card.Number, "p")
+			}
+		} else if specifier == "Resale Promo" {
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				return !strings.HasSuffix(card.Number, "p") && !strings.Contains(card.Number, "s")
 			}
 		}
 	}
