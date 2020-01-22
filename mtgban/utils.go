@@ -1,11 +1,25 @@
 package mtgban
 
-import "strings"
+import (
+	"strings"
+	"time"
 
+	"github.com/kodabb/go-mtgban/mtgjson"
+)
+
+type LogCallbackFunc func(format string, a ...interface{})
+
+type SetCheckFunc func(set mtgjson.Set) bool
+type NumberCheckFunc func(set mtgjson.Set, card mtgjson.Card) bool
+
+var NewPrereleaseDate = time.Date(2014, time.September, 1, 0, 0, 0, 0, time.UTC)
+
+// Type to normalize the various name differences across vendors
 type Normalizer struct {
 	replacer *strings.Replacer
 }
 
+// NewNormalizer initializes a Normalizer with default rules.
 func NewNormalizer() *Normalizer {
 	return &Normalizer{
 		replacer: strings.NewReplacer(
@@ -41,6 +55,8 @@ func NewNormalizer() *Normalizer {
 		)}
 }
 
+// Normalize uses the rules defined in NewNormalized to replace uncommon
+// elements of card names, producing an easy to compare string.
 func (n *Normalizer) Normalize(str string) string {
 	str = n.replacer.Replace(str)
 	str = strings.TrimSpace(str)
@@ -48,6 +64,8 @@ func (n *Normalizer) Normalize(str string) string {
 	return str
 }
 
+// SplitVariants returns an array of strings from the parentheses-defined fields
+// commonly used to distinguish some cards across editions.
 func SplitVariants(str string) []string {
 	fields := strings.Split(str, " (")
 	for i := range fields {
