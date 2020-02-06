@@ -1,227 +1,350 @@
 package cardkingdom
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
-// Adjust the ck set name to the proper mtgjson name
-func parseSet(cardName, setName, cardType string) string {
-	// Split name according to the contents within ()
-	variants := mtgban.SplitVariants(cardName)
-
-	// Adjust the Set information
-	switch {
-	// Rebuild DDA deck type from the card name
-	case setName == "Duel Decks: Anthology" && len(variants) > 1:
-		version := strings.Replace(variants[1], " - Foil", "", 1)
-		setName = "Duel Decks Anthology: " + version
-		setName = strings.Replace(setName, " vs ", " vs. ", 1)
-	case strings.HasPrefix(setName, "Duel Decks: "):
-		setName = strings.Replace(setName, " Vs. ", " vs. ", 1)
-
-	// Rework the WCD set names using the year in the card name
-	case setName == "World Championships" && len(variants) > 1:
-		year := wcdExp.ReplaceAllString(cardName, `$1`)
-		setName = fmt.Sprintf("World Championship Decks %s", year)
-
-	// Separate playtest cards in their own set
-	case setName == "Mystery Booster":
-		if len(variants) > 1 && variants[1] == "Not Tournament Legal" {
-			setName = "Mystery Booster Playtest Cards"
-		}
-
-	// Separate planeswalker cards in their own set
-	case setName == "Secret Lair":
-		setName = "Secret Lair Drop Series"
-		if strings.HasPrefix(cardType, "Legendary Planeswalker") {
-			setName = "Secret Lair Promos"
-		}
-
-	// 'xxxx core set' -> 'magic xxxx' (the post-2019 ones are fine)
-	case strings.HasSuffix(setName, "Core Set"):
-		s := strings.Split(setName, " ")
-		setName = "Magic " + s[0]
-	}
-
-	// Fix some wrong set attributions (mostly from promos)
-	ed, found := card2setTable[cardName]
-	if found {
-		setName = ed
-	}
-
-	// Look up the Set
-	ed, found = setTable[setName]
-	if found {
-		setName = ed
-	}
-
-	return setName
+var promosetTable = map[string]string{
+	"2017 Gift Pack":   "G17",
+	"2018 Gift Pack":   "G18",
+	"Convention Foil":  "PURL",
+	"Dragonfury Promo": "PTKDF",
+	"Resale Foil":      "PRES",
+	"Store Foil":       "PRES",
+	"Ugin's Fate":      "UGIN",
 }
 
-// Adjust the set name for Promotional sets, return a comparison function
-// that will overrider the default one.
-func parsePromotional(variants []string) (string, func(set mtgjson.Set) bool) {
-	setName := promosetTable[variants[1]]
-	setCheck := func(set mtgjson.Set) bool {
-		return set.Name == setName
+var codeFixupTable = map[string]string{
+	// planeshift
+	"PPLS": "PLS",
+	// magic fests
+	"F19": "PF19",
+	"F20": "PF20",
+	"P20": "PF20",
+	// arena league 96
+	"PAL96": "PARL",
+	// shadowmoor prerelease
+	"PSHM": "PPRE",
+	// new phyrexia promos
+	"PNHP": "PNPH",
+	// jss
+	"PJJT": "PSUS",
+	// duels of the pw
+	"D15": "PDP14",
+	// resale
+	"PPRM": "PRES",
+}
+
+func (ck *Cardkingdom) parseSetCode(c *ckCard) (setCode string) {
+	setCode = c.SetCode
+
+	// Update the edition field when the code is found
+	defer func() {
+		c.Edition = ck.db[setCode].Name
+	}()
+
+	if c.Edition == "Ultimate Box Topper" {
+		setCode = "PUMA"
+		return
+	}
+	if c.Edition == "Mystery Booster" {
+		setCode = "MB1"
+		if c.Variation == "Not Tournament Legal" {
+			setCode = "CMB1"
+		}
+		return
+	}
+	if setCode == "SLD" {
+		num, _ := strconv.Atoi(c.Number)
+		if num >= 500 {
+			setCode = "PSLD"
+		}
+		return
+	}
+	if strings.HasPrefix(c.Edition, "Promo Pack") {
+		switch c.Name {
+		// These are their own set
+		case "Plains", "Island", "Swamp", "Mountain", "Forest":
+			setCode = "PPP1"
+			return
+		// These are the cards with a special frame, but no pw stamp
+		case "Negate", "Disfigure", "Flame Sweep", "Thrashing Brontodon", "Corpse Knight":
+			setCode = "PM20"
+			if strings.HasSuffix(c.Number, "p") {
+				c.Number = c.Number[:len(c.Number)-1]
+			}
+		// These are the ELD promo cards counted as being part of the main set
+		case "Inspiring Veteran", "Kenrith's Transformation", "Glass Casket",
+			"Slaying Fire", "Improbable Alliance":
+			if strings.HasSuffix(c.Number, "p") {
+				c.Number = c.Number[:len(c.Number)-1]
+			}
+		// Same for TBD
+		case "Alseid of Life's Bounty", "Thirst for Meaning", "Gray Merchant of Asphodel",
+			"Thrill of Possibility", "Wolfwillow Haven":
+			setCode = "THB"
+
+		// Numbers are simply off for these two
+		case "Giant Killer":
+			c.Number = "14p"
+		case "Fae of Wishes":
+			c.Number = "44p"
+		}
+
+		// Make sure that we are in the 'Promos' version of their own sets when
+		// the collector number ends with a promo suffix
+		if len(setCode) == 3 && strings.HasSuffix(c.Number, "p") {
+			setCode = "P" + setCode
+		}
+
+		return
 	}
 
 	switch {
-	// There way too many variations for Promo Pack promos, some are under
-	// a different set type and some are under the normal expansion set.
-	// For reference these cards can be identified only via:
-	// - they have a 'p' suffix added to their collector number
-	// - they are listed under a "Promos" or "Promo Pack" set
-	// - they have an inverted frame effect
-	// - they appear in normal sets, numbered after the normal size
-	// but we can't use any of those methods reliably here, and they are
-	// mutually exclusive, so instead we pollute setVariants with all the
-	// possible cards and sets that could have a promo, if they appear in
-	// a Promo Pack, and add extra checks to separate them from Prerelease.
-	// Also need to check against Secret Lair Promos to avoid aliasing.
-	case strings.HasPrefix(variants[1], "Promo Pack"):
-		setCheck = func(set mtgjson.Set) bool {
-			return set.Name != "Secret Lair Promos" &&
-				(strings.HasSuffix(set.Name, "Promos") ||
-					strings.HasSuffix(set.Name, "Promo Packs") ||
-					set.Type == "expansion")
+	// Fixup some unhinged marked as unglues
+	case setCode == "UGL" && strings.HasPrefix(c.Edition, "Unhinged"):
+		setCode = "UNH"
+	// Give precedence to Variation field for this case, too many codes otherwise
+	case c.Variation == "Holiday Foil":
+		setCode = "HHO"
+	// Bundles are part of the normal set, just drop the P if present
+	// except for a single one card
+	case c.Variation == "Bundle Foil" && strings.HasPrefix(setCode, "P") && c.Name != "Chandra's Regulator":
+		setCode = setCode[1:]
+	// The GameDay cards need to be part of Promos from their current set,
+	// also the collector number needs to be numeric only
+	case (c.Variation == "Game Day Extended Art" ||
+		c.Variation == "Game Day Extended" ||
+		c.Variation == "Gameday Extended Art" ||
+		c.Variation == "Game Day Promo") && strings.HasSuffix(c.Number, "p"):
+		if len(setCode) == 3 {
+			setCode = "P" + setCode
 		}
-
-	// The "Prerelease Events" are the old style prerelease promos, all
-	// the others reside in the "Promos" section of the expansion.
-	case strings.Contains(variants[1], "Prerelease"):
-		setCheck = func(set mtgjson.Set) bool {
-			return set.Name == "Prerelease Events" || strings.HasSuffix(set.Name, "Promos")
-		}
-
-	case strings.HasPrefix(variants[1], "Clash Pack"):
-		setCheck = func(set mtgjson.Set) bool {
-			return strings.HasSuffix(set.Name, "Clash Pack")
-		}
-	case strings.HasPrefix(variants[1], "IDW"):
-		setCheck = func(set mtgjson.Set) bool {
-			return strings.HasPrefix(set.Name, "IDW Comics")
-		}
-	case strings.HasPrefix(variants[1], "MagicFest"):
-		setCheck = func(set mtgjson.Set) bool {
-			return strings.HasPrefix(set.Name, "MagicFest")
-		}
-	case strings.HasPrefix(variants[1], "Textless") || strings.HasPrefix(variants[1], "Player Reward"):
-		setCheck = func(set mtgjson.Set) bool {
-			return strings.HasPrefix(set.Name, "Magic Player Rewards")
-		}
-	case strings.HasPrefix(variants[1], "Release") || strings.HasPrefix(variants[1], "Launch"):
-		setCheck = func(set mtgjson.Set) bool {
-			return set.Name == "Release Events" || set.Name == "Launch Parties" || strings.HasSuffix(set.Name, "Promos")
-		}
-	case strings.HasPrefix(variants[1], "Gateway") || strings.HasPrefix(variants[1], "WPN"):
-		setCheck = func(set mtgjson.Set) bool {
-			return strings.HasPrefix(set.Name, "Gateway") || strings.HasPrefix(set.Name, "Wizards Play Network")
-		}
-
-	// Duels of the Planeswalkers (found in console games)
-	case strings.HasPrefix(variants[1], "Duels ") || strings.Contains(strings.ToLower(variants[1]), "xbox") || strings.HasPrefix(variants[1], "PS"):
-		setCheck = func(set mtgjson.Set) bool {
-			return strings.HasPrefix(set.Name, "Duels of the Planeswalkers Promos")
-		}
-
-	// Retrieve the year to rebuild the correct set name or do a blind search
-	case strings.HasPrefix(variants[1], "Arena"):
-		s := strings.Split(variants[1], " ")
-
-		// Ignore tags that are not a year
-		if len(s) > 1 && s[1] != "Foil" && s[1] != "Promo" {
-			setName = "Arena League " + s[1]
-		} else {
-			setCheck = func(set mtgjson.Set) bool {
-				return strings.HasPrefix(set.Name, "Arena League")
-			}
-		}
-
-	// Retrieve the year to rebuild the correct set name or do a blind search
-	case strings.Contains(variants[1], "FNM"):
-		s := strings.Split(variants[1], " ")
-
-		// Use the year in the name
-		if len(s) > 2 && s[2][0] == '\'' {
-			setName = "Friday Night Magic 20" + s[2][1:]
-		} else {
-			setCheck = func(set mtgjson.Set) bool {
-				return strings.HasPrefix(set.Name, "Friday Night Magic")
-			}
-		}
-
-	// Retrieve the year to rebuild the correct set name or do a blind search
-	case strings.Contains(variants[1], "Judge"):
-		if len(variants) > 2 {
-			setName = "Judge Gift Cards " + variants[2]
-		} else {
-			setCheck = func(set mtgjson.Set) bool {
-				return strings.HasPrefix(set.Name, "Judge Gift Cards")
-			}
-		}
-
-	// Retrieve the year to rebuild the correct set name
-	case strings.HasPrefix(variants[1], "MPS"):
-		s := strings.Split(variants[1], " ")
-		if len(s) < 2 {
-			setCheck = func(set mtgjson.Set) bool {
-				return false
-			}
-		}
-		setName = "Magic Premiere Shop " + s[1]
-
-	// Retrieve the year to rebuild the correct set name
-	case strings.Contains(variants[1], "SDCC"):
-		s := strings.Split(variants[1], " ")
-		if len(s) < 2 {
-			setCheck = func(set mtgjson.Set) bool {
-				return false
-			}
-		}
-		setName = "San Diego Comic-Con " + s[1]
-
-	// Rename the set, will find the number later on
-	case strings.HasPrefix(variants[1], "Ravnica Weekend - A"):
-		setName = "GRN Ravnica Weekend"
-	case strings.HasPrefix(variants[1], "Ravnica Weekend - B"):
-		setName = "RNA Ravnica Weekend"
-
-	// JSS cards have a code in variants[2] which is useless.
-	// Just drop the optional "Foil" tag and we can use it as is.
-	case strings.Contains(variants[1], "Junior"):
-		setName = strings.Replace(variants[1], " Foil", "", 1)
-
+		c.Number = c.Number[:len(c.Number)-1]
+	// Ravnica weekend 1
+	case strings.HasPrefix(c.Variation, "Ravnica Weekend - A"):
+		setCode = "PRWK"
+	// Ravnica weekend 2
+	case strings.HasPrefix(c.Variation, "Ravnica Weekend - B"):
+		setCode = "PRW2"
+	// Ixalan Treasure Chest
+	case setCode == "PXLN" && c.Variation == "Buy-a-Box Foil":
+		setCode = "PXTC"
+	// AltArt fast lands
+	case setCode == "PBFZ" && c.Variation == "Alternate Art":
+		setCode = "PSS1"
+	// As last resort, we could have a simple replacement
 	default:
-		// All these sets fall under some form of "xxx Promos"
-		switch variants[1] {
-		case "Bundle Foil",
-			"Buy-A-Box Foil",
-			"Buy-a-Box Foil",
-			"Draft Weekend Foil",
-			"Extended Art Foil",
-			"Game Day Extended Art Foil",
-			"Game Day Extended Art",
-			"Game Day Foil",
-			"Game Day Promo",
-			"Gift Box Foil",
-			"Intro Pack Rare Foil",
-			"Launch Foil",
-			"Launch Promo Foil",
-			"Magic League Foil",
-			"Open House Foil",
-			"OpenHouse",
-			"Store Championship Foil",
-			"Planeswalker Weekend Foil":
-			setCheck = func(set mtgjson.Set) bool {
-				return strings.HasSuffix(set.Name, "Promos")
-			}
+		code, found := codeFixupTable[setCode]
+		if found {
+			setCode = code
 		}
 	}
 
-	return setName, setCheck
+	switch c.Name {
+	case "Crucible of Worlds":
+		if setCode == "" {
+			setCode = "PWOR"
+		}
+	// These are the buy-a-box cards that are part of the original set, dropping
+	// the P would enough, but the Variation field is too generic, so we need to
+	// list them all unfortunately
+	case "Firesong and Sunspeaker",
+		"Nexus of Fate",
+		"The Haunt of Hightower",
+		"Impervious Greatwurm",
+		"Tezzeret, Master of the Bridge",
+		"Rienne, Angel of Rebirth":
+		setCode = setCode[1:]
+	// These are convention promos that are part of the Promo set, but since they
+	// were distributed at Convention, the table promosetTable would incorrectly
+	// assign a "Convention Promo" edition
+	case "Deeproot Champion",
+		"Death Baron",
+		"Nightpack Ambusher":
+	// For all other cases, lookup this table for any remaining substitution
+	default:
+		code, found := promosetTable[c.Variation]
+		if found {
+			setCode = code
+		}
+	}
+
+	return
+}
+
+func (ck *Cardkingdom) parseNumber(c *ckCard) (cardName string, numberCheck mtgban.NumberCheckFunc) {
+	cardName = c.Name
+	setName := c.Edition
+	number := ""
+
+	defer func() {
+		// If we set number but no special numberCheck, use a default one
+		if number != "" && numberCheck == nil {
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				return strings.ToLower(card.Number) == number
+			}
+		}
+
+		// Needed for some funny cards
+		variants := mtgban.SplitVariants(cardName)
+		cardName = variants[0]
+
+		// Only keep one of the split cards
+		switch {
+		case strings.Contains(cardName, " // "):
+			cn := strings.Split(cardName, " // ")
+			cardName = cn[0]
+		}
+	}()
+
+	switch setName {
+	case "Unhinged",
+		// These editions feature a different collector number syntax
+		// (star)(number) but only for some special cards
+		"Magic 2010 Promos",
+		"Magic 2011 Promos",
+		"Magic 2012 Promos",
+		"Magic 2013 Promos",
+		"Zendikar Promos",
+		"Rise of the Eldrazi Promos",
+		"Mirrodin Besieged Promos",
+		"Scars of Mirrodin Promos",
+		"New Phyrexia Promos",
+		"Dark Ascension Promos",
+		"Avacyn Restored Promos",
+		"Return to Ravnica Promos",
+		"Dragon's Maze Promos",
+		"Gatecrash Promos",
+		"Theros Promos",
+		"Born of the Gods Promos",
+		"Journey into Nyx Promos",
+
+		// The following editions have random letters or years in the number
+		"Ultimate Box Topper",
+
+		"Mystery Booster",
+		"Mystery Booster Playtest Cards",
+
+		"Junior Super Series",
+		"Junior Series Europe",
+		"Junior APAC Series",
+
+		"MagicFest 2019",
+		"MagicFest 2020",
+		"Judge Gift Cards 2014",
+		"Judge Gift Cards 2019",
+
+		"Pro Tour Promos",
+		"Grand Prix Promos",
+		"World Magic Cup Qualifiers",
+		"Nationals Promos",
+
+		"Resale Promos",
+		"Prerelease Events",
+		"Happy Holidays",
+		"URL/Convention Promos",
+		"Tarkir Dragonfury",
+		"Ugin's Fate",
+		"M20 Promo Packs",
+		"Duels of the Planeswalkers 2014 Promos",
+
+		"Collectors’ Edition", "Battlebond Promos",
+		"Intl. Collectors’ Edition":
+		// Ignore the number entirely
+	case "Classic Sixth Edition", "Eighth Edition", "Ninth Edition", "Deckmasters",
+		"Duel Decks: Elves vs. Goblins", "Coldsnap Theme Decks":
+		// Ignore the number only if it's not a land
+		switch cardName {
+		case "Plains", "Island", "Swamp", "Mountain", "Forest":
+			number = c.Number
+		}
+	// The Meld cards have some additional suffices while CK has not
+	case "Eldritch Moon",
+		"From the Vault: Transform",
+		"Eldritch Moon Promos":
+		number = c.Number
+		// Remove any prefix from the number
+		number = strings.Replace(number, "a", "", 1)
+		number = strings.Replace(number, "b", "", 1)
+		// Prepare a special function to check these cards
+		numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+			check := strings.HasPrefix(card.Number, number)
+			if strings.Contains(c.Variation, "Prerelease") {
+				check = check && strings.HasSuffix(card.Number, "s")
+			}
+			return check
+		}
+		return
+	case "Unsanctioned":
+		// Plains has a wrong SKU
+		switch c.Variation {
+		case "087 A":
+			number = "87"
+		case "088 - B":
+			number = "88"
+		default:
+			number = c.Number
+		}
+	case "War of the Spark", "War of the Spark Promos", "Duel Decks: Jace vs. Chandra":
+		number = c.Number
+		number = strings.Replace(number, "a", "s", 1)
+		number = strings.Replace(number, "jp", mtgjson.SuffixSpecial, 1)
+	case "Modern Horizons", "Modern Horizons Promos":
+		number = c.Number
+		number = strings.Replace(number, "p", "", 1)
+		number = strings.Replace(number, "b", "", 1)
+	case "Magic 2015 Promos":
+		number = c.Number
+		number = strings.Replace(number, "s", "", 1)
+		number = strings.Replace(number, "a", "", 1)
+		number = strings.Replace(number, "b", "", 1)
+	case "Hour of Devastation Promos":
+		number = c.Number
+		number = strings.Replace(number, "a", "s", 1)
+		number = strings.Replace(number, "b", "", 1)
+	default:
+		number = c.Number
+	}
+
+	if strings.Contains(c.Variation, "Prerelease") {
+		number = strings.Replace(number, "a", "s", 1)
+		if c.Variation == "July 4 Prerelease" {
+			number = strings.Replace(c.Number, "a", "", 1)
+		}
+		return
+	}
+	if strings.Contains(c.Variation, "Launch") {
+		number = strings.Replace(number, "b", "", 1)
+		return
+	}
+	if strings.HasPrefix(setName, "World Championship Decks") ||
+		setName == "Pro Tour Collector Set" {
+		// Wrong number is wrong
+		if c.Name == "Volrath's Stronghold" {
+			number = "143"
+		}
+		// Use a very relaxed way to check the number
+		numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+			return strings.Contains(card.Number, number)
+		}
+		return
+	}
+	if setName == "Guilds of Ravnica" && strings.Contains(c.Name, "Guildgate") {
+		fields := strings.Fields(c.Variation)
+		number = fields[0]
+		return
+	}
+
+	no, found := setVariants[setName][c.Name][c.Variation]
+	if found {
+		number = no
+		return
+	}
+
+	return
 }
