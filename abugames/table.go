@@ -1,77 +1,13 @@
 package abugames
 
-var setTable = map[string]string{
-	"10th Edition":              "Tenth Edition",
-	"4th Edition":               "Fourth Edition",
-	"5th Edition":               "Fifth Edition",
-	"6th Edition":               "Classic Sixth Edition",
-	"7th Edition":               "Seventh Edition",
-	"8th Edition":               "Eighth Edition",
-	"9th Edition":               "Ninth Edition",
-	"Alpha":                     "Limited Edition Alpha",
-	"Battle Royale":             "Battle Royale Box Set",
-	"Beatdown":                  "Beatdown Box Set",
-	"Beta":                      "Limited Edition Beta",
-	"Commander":                 "Commander 2011",
-	"Conspiracy Take the Crown": "Conspiracy: Take the Crown",
-	"Introductory 4th Edition":  "Introductory Two-Player Set",
-	"Planechase 2009":           "Planechase",
-	"Revised":                   "Revised Edition",
-	"Time Spiral - Timeshifted": "Time Spiral Timeshifted",
-	"Ultimate Box Toppers":      "Ultimate Box Topper",
-	"Unlimited":                 "Unlimited Edition",
-	"Vanguard":                  "Vanguard Series",
-	"Secret Lair":               "Secret Lair Drop Series",
-
-	"Collectors' Edition - International": "Intl. Collectors’ Edition",
-	"Collectors' Edition":                 "Collectors’ Edition",
-
-	"Guild Kit: Azorius":  "RNA Guild Kit",
-	"Guild Kit: Boros":    "GRN Guild Kit",
-	"Guild Kit: Dimir":    "GRN Guild Kit",
-	"Guild Kit: Golgari":  "GRN Guild Kit",
-	"Guild Kit: Gruul":    "RNA Guild Kit",
-	"Guild Kit: Izzet":    "GRN Guild Kit",
-	"Guild Kit: Orzhov":   "RNA Guild Kit",
-	"Guild Kit: Rakdos":   "RNA Guild Kit",
-	"Guild Kit: Selesnya": "GRN Guild Kit",
-	"Guild Kit: Simic":    "RNA Guild Kit",
-
-	"Ajani vs. Nicol Bolas":      "Duel Decks: Ajani vs. Nicol Bolas",
-	"Blessed vs. Cursed":         "Duel Decks: Blessed vs. Cursed",
-	"Divine vs. Demonic":         "Duel Decks: Divine vs. Demonic",
-	"Elspeth vs. Kiora":          "Duel Decks: Elspeth vs. Kiora",
-	"Elspeth vs. Tezzeret":       "Duel Decks: Elspeth vs. Tezzeret",
-	"Elves vs. Goblins":          "Duel Decks: Elves vs. Goblins",
-	"Elves vs. Inventors":        "Duel Decks: Elves vs. Inventors",
-	"Garruk vs. Liliana":         "Duel Decks: Garruk vs. Liliana",
-	"Heroes vs. Monsters":        "Duel Decks: Heroes vs. Monsters",
-	"Izzet vs. Golgari":          "Duel Decks: Izzet vs. Golgari",
-	"Jace vs. Chandra":           "Duel Decks: Jace vs. Chandra",
-	"Jace vs. Vraska":            "Duel Decks: Jace vs. Vraska",
-	"Knights vs. Dragons":        "Duel Decks: Knights vs. Dragons",
-	"Merfolk vs. Goblins":        "Duel Decks: Merfolk vs. Goblins",
-	"Mind vs. Might":             "Duel Decks: Mind vs. Might",
-	"Nissa vs. Ob Nixilis":       "Duel Decks: Nissa vs. Ob Nixilis",
-	"Phyrexia vs. The Coalition": "Duel Decks: Phyrexia vs. the Coalition",
-	"Sorin vs. Tibalt":           "Duel Decks: Sorin vs. Tibalt",
-	"Speed vs. Cunning":          "Duel Decks: Speed vs. Cunning",
-	"Venser vs. Koth":            "Duel Decks: Venser vs. Koth",
-	"Zendikar vs. Eldrazi":       "Duel Decks: Zendikar vs. Eldrazi",
-
-	"Global Series: Jiang Yanggu and Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
-	"Masterpiece Series: Amonkhet Invocations":   "Amonkhet Invocations",
-	"Masterpiece Series: Kaladesh Inventions":    "Kaladesh Inventions",
-}
-
 var athVariants = map[string]map[string]string{
 	"Forest": map[string]string{
 		"A": "84",
 		"B": "85",
 	},
 	"Mountain": map[string]string{
-		"A": "82",
-		"B": "83",
+		"A": "83",
+		"B": "82",
 	},
 	"Plains": map[string]string{
 		"A": "78",
@@ -81,6 +17,41 @@ var athVariants = map[string]map[string]string{
 		"A": "80",
 		"B": "81",
 	},
+}
+
+var atqVariants = map[string]map[string]string{
+	"Mishra's Factory": map[string]string{
+		"b Spring": "80a",
+		"c Summer": "80b",
+		"a Fall":   "80c",
+		"d Winter": "80d",
+	},
+	/*
+		"Strip Mine": map[string]string{
+			"atq-82a-strip-mine": "82a",
+			"atq-82b-strip-mine": "82b",
+			"atq-82c-strip-mine": "82c",
+			"AQ070":              "82d",
+		},
+		"Urza's Mine": map[string]string{
+			"AQ084": "83a",
+			"AQ085": "83b",
+			"AQ083": "83c",
+			"AQ086": "83d",
+		},
+		"Urza's Power Plant": map[string]string{
+			"AQ089": "84a",
+			"AQ090": "84b",
+			"AQ088": "84c",
+			"AQ091": "84d",
+		},
+		"Urza's Tower": map[string]string{
+			"AQ092": "85a",
+			"AQ093": "85b",
+			"AQ094": "85c",
+			"AQ095": "85d",
+		},
+	*/
 }
 
 var pal01Variants = map[string]map[string]string{
@@ -285,25 +256,25 @@ var ed4Variants = map[string]map[string]string{
 }
 
 var prwkVariants = map[string]map[string]string{
-	"Plains": map[string]string{
-		"Ravnica Weekend Boros":    "A08",
-		"Ravnica Weekend Selesnya": "A10",
+	"Forest": map[string]string{
+		"Ravnica Weekend Golgari":  "A06",
+		"Ravnica Weekend Selesnya": "A09",
 	},
 	"Island": map[string]string{
 		"Ravnica Weekend Dimir": "A01",
 		"Ravnica Weekend Izzet": "A03",
 	},
-	"Swamp": map[string]string{
-		"Ravnica Weekend Dimir":   "A02",
-		"Ravnica Weekend Golgari": "A05",
-	},
 	"Mountain": map[string]string{
 		"Ravnica Weekend Izzet": "A04",
 		"Ravnica Weekend Boros": "A07",
 	},
-	"Forest": map[string]string{
-		"Ravnica Weekend Golgari":  "A06",
-		"Ravnica Weekend Selesnya": "A09",
+	"Plains": map[string]string{
+		"Ravnica Weekend Boros":    "A08",
+		"Ravnica Weekend Selesnya": "A10",
+	},
+	"Swamp": map[string]string{
+		"Ravnica Weekend Dimir":   "A02",
+		"Ravnica Weekend Golgari": "A05",
 	},
 }
 
@@ -387,11 +358,11 @@ var leaVariants = map[string]map[string]string{
 }
 
 var mirVariants = map[string]map[string]string{
-	"Plains": map[string]string{
-		"A": "331",
-		"B": "332",
-		"C": "333",
-		"D": "334",
+	"Forest": map[string]string{
+		"A": "347",
+		"B": "348",
+		"C": "349",
+		"D": "350",
 	},
 	"Island": map[string]string{
 		"A": "335",
@@ -399,23 +370,23 @@ var mirVariants = map[string]map[string]string{
 		"C": "337",
 		"D": "338",
 	},
-	"Swamp": map[string]string{
-		"A": "339",
-		"B": "340",
-		"C": "341",
-		"D": "342",
-	},
 	"Mountain": map[string]string{
 		"A": "343",
 		"B": "344",
 		"C": "345",
 		"D": "346",
 	},
-	"Forest": map[string]string{
-		"A": "347",
-		"B": "348",
-		"C": "349",
-		"D": "350",
+	"Plains": map[string]string{
+		"A": "331",
+		"B": "332",
+		"C": "333",
+		"D": "334",
+	},
+	"Swamp": map[string]string{
+		"A": "339",
+		"B": "340",
+		"C": "341",
+		"D": "342",
 	},
 }
 
@@ -526,8 +497,8 @@ var ptcVariants = map[string]map[string]string{
 	"Island": map[string]string{
 		"4th Edition Purple - Michael Locanto - 1996":            "ml367",
 		"4th Edition Light Purple - Michael Locanto - 1996":      "ml368",
-		"4th Edition Light Purple - Shawn Hammer Regnier - 1996": "sr368",
-		"4th Edition Dark Purple - Shawn Hammer Regnier - 1996":  "sr369",
+		"4th Edition Light Purple - Shawn Hammer Regnier - 1996": "shr368",
+		"4th Edition Dark Purple - Shawn Hammer Regnier - 1996":  "shr369",
 		"4th Edition Dark Purple - Michael Locanto - 1996":       "ml369",
 	},
 	"Mountain": map[string]string{
@@ -542,19 +513,19 @@ var ptcVariants = map[string]map[string]string{
 		"4th Edition Light - Bertrand Lestree - 1996":            "bl364",
 		"4th Edition Light - Michael Locanto - 1996":             "ml364",
 		"4th Edition Light - Preston Poulter - 1996":             "pp364",
-		"4th Edition Light - Shawn Hammer Regnier - 1996":        "sr364",
+		"4th Edition Light - Shawn Hammer Regnier - 1996":        "shr364",
 		"4th Edition Little Trees - Bertrand Lestree - 1996":     "bl365",
 		"4th Edition Little Trees - Eric Tam - 1996":             "et365",
 		"4th Edition Little Trees - Mark Justice - 1996":         "mj365",
 		"4th Edition Little Trees - Michael Locanto - 1996":      "ml365",
 		"4th Edition Little Trees - Preston Poulter - 1996":      "pp365",
-		"4th Edition Little Trees - Shawn Hammer Regnier - 1996": "sr365",
+		"4th Edition Little Trees - Shawn Hammer Regnier - 1996": "shr365",
 		"4th Edition Dark - Bertrand Lestree - 1996":             "bl366",
 		"4th Edition Dark - Eric Tam - 1996":                     "et366",
 		"4th Edition Dark - Mark Justice - 1996":                 "mj366",
 		"4th Edition Dark - Michael Locanto - 1996":              "ml366",
 		"4th Edition Dark - Preston Poulter - 1996":              "pp366",
-		"4th Edition Dark - Shawn Hammer Regnier - 1996":         "sr366",
+		"4th Edition Dark - Shawn Hammer Regnier - 1996":         "shr366",
 	},
 	"Swamp": map[string]string{
 		"4th Edition Light - George Baxter - 1996":        "gb370",
@@ -565,31 +536,31 @@ var ptcVariants = map[string]map[string]string{
 		"4th Edition Dark - George Baxter - 1996":         "gb372",
 	},
 	"Memory Lapse": map[string]string{
-		"Statue A - Sideboard - Shawn Hammer Regnier": "sr32bsb",
-		"Puzzle B - Sideboard - Shawn Hammer Regnier": "sr32asb",
+		"Statue A - Sideboard - Shawn Hammer Regnier": "shr32bsb",
+		"Puzzle B - Sideboard - Shawn Hammer Regnier": "shr32asb",
 	},
 }
 
 var prw2Variants = map[string]map[string]string{
 	"Forest": map[string]string{
-		"Ravnica Weekend Gruul": "B8",
-		"Ravnica Weekend Simic": "B9",
+		"Ravnica Weekend Gruul": "B08",
+		"Ravnica Weekend Simic": "B09",
 	},
 	"Island": map[string]string{
-		"Ravnica Weekend Azorius": "B2",
+		"Ravnica Weekend Azorius": "B02",
 		"Ravnica Weekend Simic":   "B10",
 	},
 	"Mountain": map[string]string{
-		"Ravnica Weekend Rakdos": "B6",
-		"Ravnica Weekend Gruul":  "B7",
+		"Ravnica Weekend Rakdos": "B06",
+		"Ravnica Weekend Gruul":  "B07",
 	},
 	"Plains": map[string]string{
-		"Ravnica Weekend Azorius": "B1",
-		"Ravnica Weekend Orzhov":  "B3",
+		"Ravnica Weekend Azorius": "B01",
+		"Ravnica Weekend Orzhov":  "B03",
 	},
 	"Swamp": map[string]string{
-		"Ravnica Weekend Orzhov": "B4",
-		"Ravnica Weekend Rakdos": "B5",
+		"Ravnica Weekend Orzhov": "B04",
+		"Ravnica Weekend Rakdos": "B05",
 	},
 }
 
@@ -664,92 +635,13 @@ var tmpVariants = map[string]map[string]string{
 }
 
 var ustVariants = map[string]map[string]string{
-	"Amateur Auteur": map[string]string{
-		"a Ravnica":   "3a",
-		"b Innistrad": "3b",
-		"c Theros":    "3c",
-		"d Zendikar":  "3d",
-	},
-	"Beast in Show": map[string]string{
-		"a Tyrranax":  "103a",
-		"b Gnarlid":   "103b",
-		"c Baloth":    "103c",
-		"d Thragtusk": "103d",
-	},
-	"Everythingamajig": map[string]string{
-		"a Move":      "147a",
-		"b Draw":      "147b",
-		"c Flip":      "147c",
-		"d Add":       "147d",
-		"e Sacrifice": "147e",
-		"f Scry":      "147f",
-	},
-	"Extremely Slow Zombie": map[string]string{
-		"a Summer": "54a",
-		"b Autumn": "54b",
-		"c Winter": "54c",
-		"d Spring": "54d",
-	},
 	"Garbage Elemental": map[string]string{
-		"a 2/4": "82a",
-		"b 3/1": "82b",
-		"3/1":   "82b",
-		"c 3/2": "82c",
-		"d 3/3": "82d",
-		"e 4/3": "82e",
-		"f 6/5": "82f",
+		"3/1": "82b",
 	},
-	"Ineffable Blessing": map[string]string{
-		"a Flavorful or Bland": "113a",
-		"b Artist":             "113b",
-		"c Bordered":           "113c",
-		"d Rarity":             "113d",
-		"e Odd or Even":        "113e",
-		"f Number":             "113f",
-	},
-	"Knight of the Kitchen Sink": map[string]string{
-		"a Pro: Black Border": "12a",
-		"b Pro: Even":         "12b",
-		"c Pro: Loose Lips":   "12c",
-		"d Pro: Odd":          "12d",
-		"e Pro: Two-Word":     "12e",
-		"f Pro: Watermarks":   "12f",
-		"f Watermarks":        "12f",
-	},
-	"Novellamental": map[string]string{
-		"a My Grandmother": "41a",
-		"b This Pendant":   "41b",
-		"c The Chain":      "41c",
-		"d My Heart":       "41d",
-	},
-	"Secret Base": map[string]string{
-		"a Order of the Widget":      "165a",
-		"b S.N.E.A.K.":               "165b",
-		"c League of Dastardly Doom": "165c",
-		"d Goblin Explosioneers":     "165d",
-		"e Crossbreed Labs":          "165e",
-	},
-	"Sly Spy": map[string]string{
-		"a Hand": "67a",
-		"b Destroy Creature Facing Left":  "67b",
-		"c Finger":                        "67c",
-		"d Destroy Creature Facing Right": "67d",
-		"e Library":                       "67e",
-		"f Die":                           "67f",
-	},
-	"Target Minotaur": map[string]string{
-		"a Frozen": "98b",
-		"b Rain":   "98c",
-		"c Fire":   "98a",
-		"d Roots":  "98d",
-	},
-	"Very Cryptic Command": map[string]string{
-		"a Switch":  "49a",
-		"b Untap":   "49b",
-		"c Draw":    "49c",
-		"d Return":  "49d",
-		"e Counter": "49e",
-		"f Scry":    "49f",
+
+	// haxx
+	"Hazmat Suit (Used)": map[string]string{
+		"Used": "57",
 	},
 
 	"Curious Killbot": map[string]string{
@@ -771,15 +663,19 @@ var wc99Variants = map[string]map[string]string{
 		"6th Edition 346 - Mark Le Pine - 1999": "mlp346a",
 		"Urza's Saga 346 - Mark Le Pine - 1999": "mlp346b",
 	},
-
 	"Swamp": map[string]string{
 		"Urza's Saga 346 - Jakub Slemr - 1999": "js340",
 		"Tempest B - Jakub Slemr - 1999":       "js340a",
 		"6th Edition 340 - Jakub Slemr - 1999": "js340b",
 	},
-
 	"Forest": map[string]string{
 		"6th Edition 347 - Matt Linde - 1999": "ml347b",
+	},
+}
+
+var wc00Variants = map[string]map[string]string{
+	"Phyrexian Colossus": map[string]string{
+		"Jon Finkel - 2000": "jf306",
 	},
 }
 
@@ -831,12 +727,17 @@ var wc02Variants = map[string]map[string]string{
 		"Invasion 337 - Carlos Romao - 2002":    "cr337",
 		"Invasion 337 - Raphael Levy - 2002":    "rl337a",
 		"Odyssey 336 - Raphael Levy - 2002":     "rl336a",
+		"Odyssey 336 - Sim Han How - 2002":      "shh336a",
 		"Odyssey 337 - Carlos Romao - 2002":     "cr337a",
+	},
+	"Plains": map[string]string{
+		"Odyssey 331 - Brian Kibler - 2002": "bk331a",
 	},
 }
 
 var setVariants = map[string]map[string]map[string]string{
 	"Anthologies":                   athVariants,
+	"Antiquities":                   atqVariants,
 	"Arena League 2001":             pal01Variants,
 	"Asia Pacific Land Program":     palpVariants,
 	"Battle Royale Box Set":         brbVariants,
@@ -858,11 +759,12 @@ var setVariants = map[string]map[string]map[string]string{
 	"Pro Tour Collector Set":        ptcVariants,
 	"RNA Ravnica Weekend":           prw2Variants,
 	"Revised Edition":               ed3Variants,
-	"Secret Lair Drop Series":       sldVariants,
+	"Secret Lair Drop":              sldVariants,
 	"Tempest":                       tmpVariants,
 	"Unlimited Edition":             oldLandVariants,
 	"Unstable":                      ustVariants,
 	"World Championship Decks 1999": wc99Variants,
+	"World Championship Decks 2000": wc00Variants,
 	"World Championship Decks 2001": wc01Variants,
 	"World Championship Decks 2002": wc02Variants,
 }
