@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 
 	http "github.com/hashicorp/go-retryablehttp"
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 type abuJSON struct {
@@ -29,12 +28,10 @@ type abuJSON struct {
 						Condition string `json:"condition"`
 						Layout    string `json:"layout"`
 
-						Rarity    string   `json:"rarity"`
-						Language  []string `json:"language"`
-						Title     string   `json:"title"`
-						CardStyle []string `json:"card_style"`
-						Number    string   `json:"card_number"`
-						Artist    []string `json:"artist"`
+						Rarity   string   `json:"rarity"`
+						Language []string `json:"language"`
+						Title    string   `json:"title"`
+						Number   string   `json:"card_number"`
 
 						SellPrice    float64 `json:"price"`
 						SellQuantity int     `json:"quantity"`
@@ -48,8 +45,6 @@ type abuJSON struct {
 	} `json:"grouped"`
 }
 
-var l = log.New(os.Stderr, "", 0)
-
 const (
 	maxConcurrency     = 8
 	maxEntryPerRequest = 40
@@ -57,19 +52,38 @@ const (
 )
 
 type ABUGames struct {
-	inventory []mtgban.Entry
-	buylist   []mtgban.Entry
+	LogCallback mtgban.LogCallbackFunc
+
+	httpClient *http.Client
+
+	db        mtgjson.MTGDB
+	inventory map[string][]mtgban.InventoryEntry
+	buylist   map[string][]mtgban.BuylistEntry
+
+	norm *mtgban.Normalizer
 }
 
-func NewVendor() mtgban.Scraper {
+func NewScraper(db mtgjson.MTGDB) *ABUGames {
 	abu := ABUGames{}
+	abu.db = db
+	abu.inventory = map[string][]mtgban.InventoryEntry{}
+	abu.buylist = map[string][]mtgban.BuylistEntry{}
+	abu.norm = mtgban.NewNormalizer()
+	abu.httpClient = http.NewClient()
+	abu.httpClient.Logger = nil
 	return &abu
 }
 
 type resultChan struct {
 	err       error
-	inventory []ABUCard
-	buylist   []ABUCard
+	inventory []mtgban.InventoryEntry
+	buylist   []mtgban.BuylistEntry
+}
+
+func (abu *ABUGames) printf(format string, a ...interface{}) {
+	if abu.LogCallback != nil {
+		abu.LogCallback(format, a...)
+	}
 }
 
 func (abu *ABUGames) processEntry(page int) (res resultChan) {
@@ -84,7 +98,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 	q.Set("start", fmt.Sprintf("%d", page))
 	u.RawQuery = q.Encode()
 
-	resp, err := http.Get(u.String())
+	resp, err := abu.httpClient.Get(u.String())
 	if err != nil {
 		res.err = err
 		return
@@ -103,9 +117,29 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 		return
 	}
 
+	duplicate := map[string]bool{}
+
 	for _, group := range db.Grouped.ProductId.Groups {
 		for _, card := range group.Doclist.Cards {
-			if card.Condition != "NM" {
+			// Deprecated value
+			if card.Condition == "SP" {
+				continue
+			}
+
+			cond := card.Condition
+			switch cond {
+			case "MINT", "NM", "HP":
+			case "PLD":
+				cond = "SP"
+			default:
+				abu.printf("Unknown '%s' condition", cond)
+				continue
+			}
+
+			isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil")
+
+			if duplicate[card.Id] {
+				abu.printf("Skipping duplicate card: %s (%s %q)", card.SimpleTitle, card.Edition, isFoil)
 				continue
 			}
 
@@ -150,7 +184,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 				strings.Contains(card.DisplayTitle, "Charlie Brown") {
 				continue
 			}
-			// Duplicate cards
+			// Non-existing cards
 			switch card.DisplayTitle {
 			case "Steward of Valeron (Dengeki Character Festival) - FOIL",
 				"Captain's Claws (Goldnight Castigator Shadow) - FOIL",
@@ -164,27 +198,19 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 			if strings.HasPrefix(card.Title, "ID#") {
 				continue
 			}
-			// Duplicate "Living Twister (Promo Pack) - FOIL"
-			if card.Id == "1604919" {
-				continue
-			}
-
-			isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil")
-
-			// Some cards lack attribution
-			artist := ""
-			if len(card.Artist) > 0 {
-				artist = card.Artist[0]
-			}
 
 			number := strings.TrimLeft(card.Number, "0")
 
 			// Drop any foil reference from the name (careful not to drop the Foil card)
 			fullName := strings.TrimSpace(card.DisplayTitle)
-			fullName = strings.Replace(fullName, " - Foil", "", -1)
-			fullName = strings.Replace(fullName, " - FOIL", "", -1)
+			fullName = strings.Replace(fullName, " - Foil", "", 1)
+			fullName = strings.Replace(fullName, " - FOIL", "", 1)
 			fullName = strings.Replace(fullName, " FOIL", "", 1)
 			fullName = strings.Replace(fullName, " Foil", "", 1)
+
+			// Merge Prerelease and Promo Pack tags in the full name for later parsing
+			fullName = strings.Replace(fullName, "- (Prerelease)", "(Prerelease)", 1)
+			fullName = strings.Replace(fullName, "- (Promo Pack)", "(Promo Pack)", 1)
 
 			// Fix some untagged prerelease cards
 			if strings.HasSuffix(fullName, " - "+card.Edition) {
@@ -228,45 +254,61 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 				}
 			}
 
-			if card.BuyQuantity > 0 && card.BuyPrice > 0 {
-				cc := ABUCard{
-					Name:      card.SimpleTitle,
-					Set:       card.Edition,
-					Foil:      isFoil,
-					Condition: card.Condition,
+			cardName := card.SimpleTitle
+			name, found := cardTable[cardName]
+			if found {
+				cardName = name
+			}
 
-					BuyPrice:     card.BuyPrice,
-					BuyQuantity:  card.BuyQuantity,
-					TradePricing: card.TradePrice,
+			aCard := abuCard{
+				Name: cardName,
+				Set:  card.Edition,
+				Foil: isFoil,
 
-					FullName: fullName,
-					Artist:   artist,
-					Number:   number,
-					Layout:   layout,
-					Id:       card.Id,
-				}
-				res.buylist = append(res.buylist, cc)
+				FullName: fullName,
+				Number:   number,
+				Layout:   layout,
+				Id:       card.Id,
+			}
+
+			cc, err := abu.convert(&aCard)
+			if err != nil {
+				abu.printf("%v", err)
+				continue
 			}
 
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
-				cc := ABUCard{
-					Name:      card.SimpleTitle,
-					Set:       card.Edition,
-					Foil:      isFoil,
-					Condition: card.Condition,
+				out := mtgban.InventoryEntry{
+					Card:       *cc,
+					Conditions: cond,
+					Price:      card.SellPrice,
+					Quantity:   card.SellQuantity,
+				}
+				res.inventory = append(res.inventory, out)
+			}
 
-					SellPrice:    card.SellPrice,
-					SellQuantity: card.SellQuantity,
-
-					FullName: fullName,
-					Artist:   artist,
-					Number:   number,
-					Layout:   layout,
-					Id:       card.Id,
+			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 {
+				var priceRatio, qtyRatio float64
+				if card.SellPrice > 0 {
+					priceRatio = card.BuyPrice / card.SellPrice * 100
+				}
+				if card.SellQuantity > 0 {
+					qtyRatio = float64(card.BuyQuantity) / float64(card.SellQuantity) * 100
 				}
 
-				res.inventory = append(res.inventory, cc)
+				out := mtgban.BuylistEntry{
+					Card:          *cc,
+					Conditions:    cond,
+					BuyPrice:      card.BuyPrice,
+					TradePrice:    card.TradePrice,
+					Quantity:      card.BuyQuantity,
+					PriceRatio:    priceRatio,
+					QuantityRatio: qtyRatio,
+				}
+				res.buylist = append(res.buylist, out)
 			}
+
+			duplicate[card.Id] = true
 		}
 	}
 
@@ -274,24 +316,25 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
-func (abu *ABUGames) Scrape() ([]mtgban.Entry, error) {
-	resp, err := http.Get(abuURL)
+func (abu *ABUGames) scrape() error {
+	resp, err := abu.httpClient.Get(abuURL)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	var header abuJSON
 	err = json.Unmarshal(data, &header)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	count := header.Grouped.ProductId.Count
+	abu.printf("Parsing %d entries", count)
 
 	pages := make(chan int)
 	results := make(chan resultChan)
@@ -319,14 +362,90 @@ func (abu *ABUGames) Scrape() ([]mtgban.Entry, error) {
 
 	for result := range results {
 		if result.err != nil {
-			l.Println(result.err)
+			abu.printf("%v", result.err)
 			continue
 		}
+
+		for i := range result.inventory {
+			err = abu.InventoryAdd(result.inventory[i])
+			if err != nil {
+				abu.printf(err.Error())
+				continue
+			}
+		}
 		for i := range result.buylist {
-			//abu.inventory = append(abu.inventory, &result.inventory[i])
-			abu.buylist = append(abu.buylist, &result.buylist[i])
+			err = abu.BuylistAdd(result.buylist[i])
+			if err != nil {
+				abu.printf(err.Error())
+				continue
+			}
 		}
 	}
 
+	return nil
+}
+
+func (abu *ABUGames) InventoryAdd(card mtgban.InventoryEntry) error {
+	entries, found := abu.inventory[card.Id]
+	if found {
+		for _, entry := range entries {
+			if entry.Conditions == card.Conditions && entry.Price == card.Price {
+				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-new: %v\n-old: %v", card, entry)
+			}
+		}
+	}
+
+	abu.inventory[card.Id] = append(abu.inventory[card.Id], card)
+	return nil
+}
+
+func (abu *ABUGames) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+	if len(abu.inventory) > 0 {
+		return abu.inventory, nil
+	}
+
+	abu.printf("Empty inventory, scraping started")
+
+	err := abu.scrape()
+	if err != nil {
+		return nil, err
+	}
+
+	return abu.inventory, nil
+
+}
+
+func (abu *ABUGames) BuylistAdd(card mtgban.BuylistEntry) error {
+	entries, found := abu.buylist[card.Id]
+	if found {
+		for _, entry := range entries {
+			if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice && entry.TradePrice == card.TradePrice {
+				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
+			}
+		}
+	}
+
+	abu.buylist[card.Id] = append(abu.buylist[card.Id], card)
+	return nil
+}
+
+func (abu *ABUGames) Buylist() (map[string][]mtgban.BuylistEntry, error) {
+	if len(abu.buylist) > 0 {
+		return abu.buylist, nil
+	}
+
+	abu.printf("Empty buylist, scraping started")
+
+	err := abu.scrape()
+	if err != nil {
+		return nil, err
+	}
+
 	return abu.buylist, nil
+}
+
+func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
+	info.Name = "ABU Games"
+	info.Shorthand = "ABU"
+	return
 }
