@@ -16,6 +16,13 @@ var (
 	BuylistHeader = []string{
 		"Key", "Name", "Set", "F/NF", "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "Quantity Ratio",
 	}
+
+	ArbitHeader = []string{
+		"Key", "Name", "Edition", "F/NF", "Conditions", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Price Ratio", "Quantity Ratio",
+	}
+	MismatchHeader = []string{
+		"Key", "Name", "Edition", "F/NF", "Conditions", "Price", "Difference", "Spread",
+	}
 )
 
 type BaseInventory struct {
@@ -312,6 +319,85 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 				return err
 			}
 		}
+		csvWriter.Flush()
+	}
+
+	return nil
+}
+
+func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
+	csvWriter := csv.NewWriter(w)
+	defer csvWriter.Flush()
+
+	err := csvWriter.Write(ArbitHeader)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range arbitrage {
+		bl := entry.BuylistEntry
+		inv := entry.InventoryEntry
+		card := bl.Card
+		foil := ""
+		if card.Foil {
+			foil = "FOIL"
+		}
+
+		err = csvWriter.Write([]string{
+			card.Id,
+			card.Name,
+			card.Set,
+			foil,
+			inv.Conditions,
+			fmt.Sprintf("%0.2f", inv.Price),
+			fmt.Sprintf("%0.2f", bl.BuyPrice),
+			fmt.Sprintf("%0.2f", bl.TradePrice),
+			fmt.Sprintf("%0.2f", entry.Difference),
+			fmt.Sprintf("%0.2f%%", entry.Spread),
+			fmt.Sprintf("%0.2f%%", bl.PriceRatio),
+			fmt.Sprintf("%0.2f%%", bl.QuantityRatio),
+		})
+		if err != nil {
+			return err
+		}
+
+		csvWriter.Flush()
+	}
+
+	return nil
+}
+
+func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
+	csvWriter := csv.NewWriter(w)
+	defer csvWriter.Flush()
+
+	err := csvWriter.Write(MismatchHeader)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range mismatch {
+		inv := entry.InventoryEntry
+		card := inv.Card
+		foil := ""
+		if card.Foil {
+			foil = "FOIL"
+		}
+
+		err = csvWriter.Write([]string{
+			card.Id,
+			card.Name,
+			card.Set,
+			foil,
+			inv.Conditions,
+			fmt.Sprintf("%0.2f", inv.Price),
+			fmt.Sprintf("%0.2f", entry.Difference),
+			fmt.Sprintf("%0.2f%%", entry.Spread),
+		})
+		if err != nil {
+			return err
+		}
+
 		csvWriter.Flush()
 	}
 
