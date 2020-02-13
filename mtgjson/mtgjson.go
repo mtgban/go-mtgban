@@ -23,6 +23,7 @@ type Card struct {
 	Artist                 string   `json:"artist"`
 	BorderColor            string   `json:"borderColor"`
 	FrameEffect            string   `json:"frameEffect"`
+	FrameEffects           []string `json:"frameEffects"`
 	Layout                 string   `json:"layout"`
 	Names                  []string `json:"names"`
 	Number                 string   `json:"number"`
@@ -104,4 +105,13 @@ func LoadAllPrintings(allPrintingsPath string) (MTGDB, error) {
 	}
 
 	return allPrintingsDb, nil
+}
+
+func (c *Card) HasFrameEffect(fe string) bool {
+	for _, effect := range c.FrameEffects {
+		if effect == fe {
+			return true
+		}
+	}
+	return false
 }
