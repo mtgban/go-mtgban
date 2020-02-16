@@ -1,41 +1,5 @@
 package miniaturemarket
 
-var setTable = map[string]string{
-	"10th Edition":                      "Tenth Edition",
-	"4th Edition":                       "Fourth Edition",
-	"5th Edition":                       "Fifth Edition",
-	"6th Edition":                       "Classic Sixth Edition",
-	"7th Edition":                       "Seventh Edition",
-	"8th Edition":                       "Eighth Edition",
-	"9th Edition":                       "Ninth Edition",
-	"Battle Royale":                     "Battle Royale Box Set",
-	"Beatdown":                          "Beatdown Box Set",
-	"Collector's Edition":               "Collectors’ Edition",
-	"Commander Anthology Volume 2":      "Commander Anthology Volume II",
-	"International Collector's Edition": "Intl. Collectors’ Edition",
-	"Journey Into Nyx":                  "Journey into Nyx",
-	"Masterpiece: Mythic Edition":       "Mythic Edition",
-	"Modern Event Deck":                 "Modern Event Deck 2014",
-	"Modern Masters 2013":               "Modern Masters",
-	"Planechase 2009":                   "Planechase",
-	"Revised":                           "Revised Edition",
-	"Shadows Over Innistrad":            "Shadows over Innistrad",
-	"Time Spiral (Timeshifted)":         "Time Spiral Timeshifted",
-	"Unlimited":                         "Unlimited Edition",
-
-	"Premium Deck Series: Fire & Lightning":    "Premium Deck Series: Fire and Lightning",
-	"Global Series: Jiang Yanggu & Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
-	"Throne of Eldraine (Collector Edition)":   "Throne of Eldraine",
-}
-
-var cardTable = map[string]string{
-	"Asylum Visitior":                         "Asylum Visitor",
-	"B.F.M. (Big Furry Monster) (Left Side)":  "B.F.M. (Big Furry Monster)",
-	"B.F.M. (Big Furry Monster) (Right Side)": "B.F.M. (Big Furry Monster) (b)",
-	"Fiesty Stegosaurus":                      "Feisty Stegosaurus",
-	"Who / What / When / Where / Why":         "Who",
-}
-
 var allVariants = map[string]map[string]string{
 	"Arcane Denial": map[string]string{
 		"Axe":   "22a",
@@ -98,6 +62,55 @@ var chrVariants = map[string]map[string]string{
 		"Plains":                "116b",
 		"Mountains":             "116c",
 		"Red Leaves":            "116d",
+	},
+}
+
+var pelpVariants = map[string]map[string]string{
+	"Forest": map[string]string{
+		"EURO Land, Broceliande": "6",
+	},
+}
+
+var ed2Variants = map[string]map[string]string{
+	"Forest": map[string]string{
+		"Rocks":            "300",
+		"Pathway":          "301",
+		"Eyes in treehole": "302",
+	},
+	"Island": map[string]string{
+		"Purple island, gold horizon":   "291",
+		"Green island":                  "292",
+		"Purple island, orange horizon": "293",
+	},
+	"Mountain": map[string]string{
+		"Gray mountains":            "297",
+		"Blue mountains":            "298",
+		"Brown mountain, green sky": "299",
+	},
+	"Plains": map[string]string{
+		"No trees on plain":   "288",
+		"Trees on plain":      "289",
+		"Cliff in background": "290",
+	},
+	"Swamp": map[string]string{
+		"One branch in foreground": "294",
+		"Brown, two branches":      "295",
+		"Black, two branches":      "296",
+	},
+}
+
+var plsVariants = map[string]map[string]string{
+	"Ertai, the Corrupted": map[string]string{
+		"":                   "107",
+		"Alternate Art Foil": "107★",
+	},
+	"Skyship Weatherlight": map[string]string{
+		"":                   "133",
+		"Alternate Art Foil": "133★",
+	},
+	"Tahngarth, Talruum Hero": map[string]string{
+		"":                   "74",
+		"Alternate Art Foil": "74★",
 	},
 }
 
@@ -178,26 +191,11 @@ var ustVariants = map[string]map[string]string{
 }
 
 var setVariants = map[string]map[string]map[string]string{
-	"Alliances":   allVariants,
-	"Antiquities": atqVariants,
-	"Chronicles":  chrVariants,
-	"Unstable":    ustVariants,
-}
-
-var unlVariants = map[string]string{
-	"Forest A [Pathway]":                       "301",
-	"Forest B [Rocks]":                         "300",
-	"Forest C [Eyes in treehole]":              "302",
-	"Island A [Green island]":                  "292",
-	"Island B [Purple island, gold horizon]":   "291",
-	"Island C [Purple island, orange horizon]": "293",
-	"Mountain A [Blue mountains]":              "298",
-	"Mountain B [Gray mountains]":              "297",
-	"Mountain C [Brown mountain, green sky]":   "299",
-	"Plains A [Trees on plain]":                "289",
-	"Plains B [No trees on plain]":             "288",
-	"Plains C [Cliff in background]":           "290",
-	"Swamp A [Brown, two branches]":            "295",
-	"Swamp B [One branch in foreground]":       "294",
-	"Swamp C [Black, two branches]":            "296",
+	"Alliances":             allVariants,
+	"Antiquities":           atqVariants,
+	"Chronicles":            chrVariants,
+	"European Land Program": pelpVariants,
+	"Planeshift":            plsVariants,
+	"Unlimited Edition":     ed2Variants,
+	"Unstable":              ustVariants,
 }
