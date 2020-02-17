@@ -17,7 +17,9 @@ var setTable = map[string]string{
 	"7th Edition":                       "Seventh Edition",
 	"8th Edition":                       "Eighth Edition",
 	"9th Edition":                       "Ninth Edition",
+	"Alpha":                             "Limited Edition Alpha",
 	"Battle Royale":                     "Battle Royale Box Set",
+	"Beta":                              "Limited Edition Beta",
 	"Beatdown":                          "Beatdown Box Set",
 	"Coldsnap Theme Deck":               "Coldsnap Theme Decks",
 	"Collector's Edition":               "Collectors’ Edition",
@@ -70,8 +72,10 @@ var card2setTable = map[string]string{
 	"Serra Angel (DCI)":    "Wizards of the Coast Online Store",
 	"Sol Ring (Commander)": "MagicFest 2019",
 
+	"Ajani Vengeant (Launch Party)":        "Prerelease Events",
 	"Dauntless Dourbark (Champs / States)": "Gateway 2007",
 	"Stocking Tiger (Repack Insert)":       "Happy Holidays",
+	"Atarka, World Render (Repack Insert)": "Resale Promos",
 	"Rukh Egg (MTG 10th Anniversary)":      "Release Events",
 	"Ass Whuppin' (Pre-Release)":           "Release Events",
 	"Faerie Conclave (WPN)":                "Summer of Magic",
@@ -79,11 +83,15 @@ var card2setTable = map[string]string{
 
 	"Celestine Reef (Pre-Release)":             "Promotional Planes",
 	"Horizon Boughs (WPN)":                     "Promotional Planes",
+	"Mirrored Depths (WPN)":                    "Promotional Planes",
+	"Tember City (WPN)":                        "Promotional Planes",
 	"Stairs to Infinity (Launch Party)":        "Promotional Planes",
 	"Tazeem (Launch Party)":                    "Promotional Planes",
-	"Imprison This Insolent Wretch (WPN)":      "Promotional Schemes",
-	"Plots That Span Centuries (Launch Party)": "Promotional Schemes",
 	"Drench the Soil in Their Blood (WPN)":     "Promotional Schemes",
+	"Imprison This Insolent Wretch (WPN)":      "Promotional Schemes",
+	"Perhaps You've Met My Cohort (WPN)":       "Promotional Schemes",
+	"Plots That Span Centuries (Launch Party)": "Promotional Schemes",
+	"Your Inescapable Doom (WPN)":              "Promotional Schemes",
 
 	"Arguel's Blood Fast / Temple of Aclazotz (Buy-a-Box)":              "XLN Treasure Chest",
 	"Conqueror's Galleon / Conqueror's Foothold (Buy-a-Box)":            "XLN Treasure Chest",
@@ -136,6 +144,7 @@ var card2setTable = map[string]string{
 	"Kenrith, the Returned King (Buy-a-Box)":     "Throne of Eldraine",
 	"Athreos, Shroud-Veiled (Buy-a-Box)":         "Theros Beyond Death",
 
+	"Rhox (Alternate Art Foil)":                    "Starter 2000",
 	"Ertai, the Corrupted (Alternate Art Foil)":    "Planeshift",
 	"Skyship Weatherlight (Alternate Art Foil)":    "Planeshift",
 	"Tahngarth, Talruum Hero (Alternate Art Foil)": "Planeshift",
@@ -213,17 +222,25 @@ func (mm *Miniaturemarket) parseSet(c *mmCard) (setName string, setCheck mtgban.
 				return strings.HasSuffix(set.Name, "Promos") || set.Type == "expansion"
 			}
 		}
-	case "Archenemy":
+	case "Archenemy", "Archenemy: Nicol Bolas":
 		setCheck = func(set mtgjson.Set) bool {
-			return set.Name == setName || set.Name == "Archenemy Schemes"
+			return set.Name == setName || set.Name == setName+" Schemes"
 		}
 	case "Planechase 2009":
 		setCheck = func(set mtgjson.Set) bool {
 			return set.Name == "Planechase" || set.Name == "Planechase Planes"
 		}
-	case "Mystery Booster", "Secret Lair", "Planechase 2012", "Planechase Anthology":
+	case "Mystery Booster", "Secret Lair", "Planechase 2012", "Planechase Anthology", "Time Spiral":
 		setCheck = func(set mtgjson.Set) bool {
 			return strings.HasPrefix(set.Name, setName)
+		}
+	case "Portal":
+		if specifier == "No Flavor Text" || specifier == "Reminder Text" {
+			switch cardName {
+			case "Armored Pegasus", "Bull Hippo", "Cloud Pirates",
+				"Feral Shadow", "Snapping Drake", "Storm Crow":
+				setName = "Portal Demo Game"
+			}
 		}
 	default:
 		switch specifier {
@@ -247,6 +264,15 @@ func (mm *Miniaturemarket) parseSet(c *mmCard) (setName string, setCheck mtgban.
 		case "Gift Pack", "Gift Box":
 			setCheck = func(set mtgjson.Set) bool {
 				return strings.HasSuffix(set.Name, "Gift Pack")
+			}
+		case "Standard Showdown":
+			if len(variants) > 2 {
+				switch variants[2] {
+				case "Rebecca Guay":
+					setName = "XLN Standard Showdown"
+				case "Alayna Danner":
+					setName = "M19 Standard Showdown"
+				}
 			}
 		case "Media Insert":
 			setCheck = func(set mtgjson.Set) bool {
@@ -357,14 +383,6 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 	}
 	cardName = variants[0]
 
-	if setName == "Unlimited Edition" {
-		fields := strings.Split(cardName, " ")
-		if len(fields) > 1 && (fields[1] == "A" || fields[1] == "B" || fields[1] == "C") {
-			cardName = fields[0]
-			variants[0] = fields[0]
-		}
-	}
-
 	number := ""
 
 	defer func() {
@@ -405,12 +423,8 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 	}
 
 	// Override card number for basic lands and a few other cards
-	if cardName == "Plains" ||
-		cardName == "Island" ||
-		cardName == "Swamp" ||
-		cardName == "Mountain" ||
-		cardName == "Forest" ||
-		cardName == "Wastes" {
+	switch cardName {
+	case "Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes":
 		num := strings.TrimLeft(specifier, "0")
 		_, err := strconv.Atoi(num)
 		if err == nil {
@@ -419,7 +433,7 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 		}
 	}
 	if strings.HasPrefix(specifier, "#") {
-		number = specifier[1:]
+		number = strings.TrimLeft(specifier[1:], "0")
 		return
 	}
 
@@ -436,6 +450,10 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 				card.BorderColor == mtgjson.BorderColorBorderless ||
 				num > set.BaseSetSize
 		}
+	case "Japanese Alternate Art":
+		numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+			return strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+		}
 	case "Pre-Release":
 		numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
 			if set.Name == "Prerelease Events" {
@@ -445,12 +463,13 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 				return true
 			}
 			// These cards are tagged as Prerelease even though they are Release,
-			// just passthrough them
+			// just passthrough them, or they don't have the 's' suffix
 			switch card.Name {
 			case "Bloodlord of Vaasgoth", //m12
 				"Xathrid Gorgon",    //m13
 				"Mayor of Avabruck", //inn
 				"Moonsilver Spear",  //avr
+				"Astral Drift",      //mh1
 				"Reya Dawnbringer",  //10e
 				"Celestine Reef",    //hop
 				"Rukh Egg":          //8ed
@@ -485,6 +504,26 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 		}
 	default:
 		switch setName {
+		case "War of the Spark":
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+			}
+		case "Conspiracy: Take the Crown":
+			if cardName == "Kaya, Ghost Assassin" {
+				number = "75"
+				if c.Foil {
+					number = "222"
+				}
+			}
+		case "Portal":
+			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+				return !strings.HasSuffix(card.Number, mtgjson.SuffixLightMana)
+			}
+			if specifier == "No Flavor Text" {
+				numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
+					return strings.HasSuffix(card.Number, mtgjson.SuffixLightMana)
+				}
+			}
 		case "Promo Pack":
 			numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
 				if !card.HasFrameEffect(mtgjson.FrameEffectInverted) && strings.HasSuffix(set.Name, "Promos") {
@@ -494,8 +533,10 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 			}
 		case "Fallen Empires", "Commander Anthology Volume II":
 			if specifier != "" {
+				fields := strings.Fields(specifier)
+				artist := fields[0]
 				numberCheck = func(set mtgjson.Set, card mtgjson.Card) bool {
-					return card.Artist == specifier
+					return strings.HasPrefix(card.Artist, artist)
 				}
 			}
 		case "Asia Pacific Land Program":
