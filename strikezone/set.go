@@ -19,6 +19,8 @@ var setTable = map[string]string{
 	"7th Edition":                       "Seventh Edition",
 	"8th Edition":                       "Eighth Edition",
 	"9th Edition":                       "Ninth Edition",
+	"Alpha":                             "Limited Edition Alpha",
+	"Beta":                              "Limited Edition Beta",
 	"Classic 6th Edition":               "Classic Sixth Edition",
 	"Commander Singles":                 "Commander 2011",
 	"Commander 2013 Edition":            "Commander 2013",
