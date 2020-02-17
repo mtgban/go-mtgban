@@ -77,18 +77,25 @@ type Magiccorner struct {
 	httpClient *http.Client
 	norm       *mtgban.Normalizer
 
-	db        mtgjson.MTGDB
+	db           mtgjson.MTGDB
+	exchangeRate float64
+
 	inventory map[string][]mtgban.InventoryEntry
 }
 
-func NewScraper(db mtgjson.MTGDB) *Magiccorner {
+func NewScraper(db mtgjson.MTGDB) (*Magiccorner, error) {
 	mc := Magiccorner{}
 	mc.db = db
 	mc.inventory = map[string][]mtgban.InventoryEntry{}
 	mc.norm = mtgban.NewNormalizer()
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return nil, err
+	}
+	mc.exchangeRate = rate
 	mc.httpClient = http.NewClient()
 	mc.httpClient.Logger = nil
-	return &mc
+	return &mc, nil
 }
 
 type resultChan struct {
@@ -321,7 +328,7 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 			out := mtgban.InventoryEntry{
 				Card:       *cc,
 				Conditions: cond,
-				Price:      v.Price,
+				Price:      v.Price * mc.exchangeRate,
 				Quantity:   v.Quantity,
 			}
 
