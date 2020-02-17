@@ -13,9 +13,15 @@ type mmCard struct {
 }
 
 var cardTable = map[string]string{
-	"Asylum Visitior":                 "Asylum Visitor",
-	"Fiesty Stegosaurus":              "Feisty Stegosaurus",
+	"Asylum Visitior":           "Asylum Visitor",
+	"Bloodmist":                 "Blood Mist",
+	"Fiesty Stegosaurus":        "Feisty Stegosaurus",
+	"Torban, Thane of Red Fell": "Torbran, Thane of Red Fell",
+
+	"Cunning Bandit /Azamuki, Treachery Incarnate": "Cunning Bandit / Azamuki, Treachery Incarnate",
+
 	"Who / What / When / Where / Why": "Who",
+	"'Rumors of My Death. . .''":      "\"Rumors of My Death . . .\"",
 
 	"The Ultimate Nightmare of Wizards of the Coast(R) Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 }
