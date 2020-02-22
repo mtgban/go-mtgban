@@ -2,6 +2,7 @@ package mtgjson
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 )
 
@@ -72,8 +73,12 @@ func LoadAllPrintings(allPrintingsPath string) (MTGDB, error) {
 	}
 	defer allPrintingsReader.Close()
 
-	dec := json.NewDecoder(allPrintingsReader)
-	_, err = dec.Token()
+	return LoadAllPrintingsFromReader(allPrintingsReader)
+}
+
+func LoadAllPrintingsFromReader(r io.Reader) (MTGDB, error) {
+	dec := json.NewDecoder(r)
+	_, err := dec.Token()
 	if err != nil {
 		return nil, err
 	}
