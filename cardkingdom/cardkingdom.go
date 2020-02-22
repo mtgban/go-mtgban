@@ -1,7 +1,7 @@
 package cardkingdom
 
 import (
-	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -11,6 +11,7 @@ import (
 
 type Cardkingdom struct {
 	LogCallback mtgban.LogCallbackFunc
+	Partner     string
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
@@ -102,17 +103,29 @@ func (ck *Cardkingdom) scrape() error {
 		}
 
 		var sellPrice float64
+		u, _ := url.Parse("https://www.cardkingdom.com/")
 		if card.SellQuantity > 0 {
 			sellPrice, err = strconv.ParseFloat(card.SellPrice, 64)
 			if err != nil {
 				ck.printf("%v", err)
 			}
 			if sellPrice > 0 {
+				u.Path = card.URL
+				if ck.Partner != "" {
+					q := u.Query()
+					q.Set("partner", ck.Partner)
+					q.Set("utm_source", ck.Partner)
+					q.Set("utm_medium", "affiliate")
+					q.Set("utm_campaign", ck.Partner)
+					u.RawQuery = q.Encode()
+				}
+
 				out := mtgban.InventoryEntry{
 					Card:       *cc,
 					Conditions: "NM",
 					Price:      sellPrice,
 					Quantity:   card.SellQuantity,
+					Notes:      u.String(),
 				}
 				err = ck.InventoryAdd(out)
 				if err != nil {
@@ -121,6 +134,7 @@ func (ck *Cardkingdom) scrape() error {
 			}
 		}
 
+		u, _ = url.Parse("https://www.cardkingdom.com/purchasing/mtg_singles")
 		if card.BuyQuantity > 0 {
 			price, err := strconv.ParseFloat(card.BuyPrice, 64)
 			if err != nil {
@@ -136,6 +150,22 @@ func (ck *Cardkingdom) scrape() error {
 					qtyRatio = float64(card.BuyQuantity) / float64(card.SellQuantity) * 100
 				}
 
+				q := u.Query()
+				q.Set("filter[search]", "mtg_advanced")
+				q.Set("filter[name]", card.Name)
+				if ck.Partner != "" {
+					q.Set("partner", ck.Partner)
+					q.Set("utm_source", ck.Partner)
+					q.Set("utm_medium", "affiliate")
+					q.Set("utm_campaign", ck.Partner)
+				}
+				if isFoil {
+					q.Set("filter[foil]", "1")
+				} else {
+					q.Set("filter[nonfoil]", "1")
+				}
+				u.RawQuery = q.Encode()
+
 				out := mtgban.BuylistEntry{
 					Card:          *cc,
 					Conditions:    "NM",
@@ -144,6 +174,7 @@ func (ck *Cardkingdom) scrape() error {
 					Quantity:      card.BuyQuantity,
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
+					Notes:         u.String(),
 				}
 				err = ck.BuylistAdd(out)
 				if err != nil {
