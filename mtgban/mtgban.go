@@ -26,6 +26,8 @@ type InventoryEntry struct {
 	Quantity   int
 	Conditions string
 	Price      float64
+
+	Notes string
 }
 
 // BuylistEntry represents an entry for buying a particular Card
@@ -39,6 +41,8 @@ type BuylistEntry struct {
 
 	PriceRatio    float64
 	QuantityRatio float64
+
+	Notes string
 }
 
 // ScraperInfo contains
