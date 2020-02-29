@@ -283,11 +283,19 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 			}
 
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
+				notes := "https://abugames.com/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
+				if isFoil {
+					notes += "&card_style=[\"Foil\"]"
+				} else {
+					notes += "&card_style=[\"Normal\"]"
+				}
+
 				out := mtgban.InventoryEntry{
 					Card:       *cc,
 					Conditions: cond,
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
+					Notes:      notes,
 				}
 				res.inventory = append(res.inventory, out)
 			}
@@ -301,6 +309,13 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					qtyRatio = float64(card.BuyQuantity) / float64(card.SellQuantity) * 100
 				}
 
+				notes := "https://abugames.com/buylist/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
+				if isFoil {
+					notes += "&card_style=[\"Foil\"]"
+				} else {
+					notes += "&card_style=[\"Normal\"]"
+				}
+
 				out := mtgban.BuylistEntry{
 					Card:          *cc,
 					Conditions:    cond,
@@ -309,6 +324,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					Quantity:      card.BuyQuantity,
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
+					Notes:         notes,
 				}
 				res.buylist = append(res.buylist, out)
 			}

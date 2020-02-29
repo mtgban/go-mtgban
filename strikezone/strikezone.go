@@ -118,11 +118,12 @@ func (sz *Strikezone) scrape() error {
 
 	// Callback for when a scraped page contains a form element
 	c.OnHTML("body", func(e *colly.HTMLElement) {
-		var cardName, foil, cond, qty, price string
+		var cardName, pathURL, foil, cond, qty, price string
 		edition := e.ChildText("h1")
 
 		e.ForEach("table.rtti tr", func(_ int, el *colly.HTMLElement) {
 			cardName = el.ChildText("td:nth-child(1)")
+			pathURL = el.ChildAttr("a", "href")
 			foil = el.ChildText("td:nth-child(4)")
 			cond = el.ChildText("td:nth-child(5)")
 			qty = el.ChildText("td:nth-child(6)")
@@ -175,6 +176,7 @@ func (sz *Strikezone) scrape() error {
 				Conditions: cond,
 				Price:      cardPrice,
 				Quantity:   quantity,
+				Notes:      "http://shop.strikezoneonline.com" + pathURL,
 			}
 
 			channel <- card
@@ -201,6 +203,7 @@ func (sz *Strikezone) scrape() error {
 				Conditions: card.Conditions,
 				Price:      card.Price,
 				Quantity:   card.Quantity,
+				Notes:      card.Notes,
 			}
 			err := mtgban.InventoryAdd(sz.inventory, out)
 			if err != nil {
@@ -332,6 +335,7 @@ func (sz *Strikezone) parseBL() error {
 				Quantity:      quantity,
 				PriceRatio:    priceRatio,
 				QuantityRatio: qtyRatio,
+				Notes:         "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + card.Name,
 			}
 			err := mtgban.BuylistAdd(sz.buylist, out)
 			if err != nil {

@@ -14,6 +14,8 @@ type szCard struct {
 	Conditions string
 	Price      float64
 	Quantity   int
+
+	Notes string
 }
 
 // LUT for typos and variants in SZ card names.

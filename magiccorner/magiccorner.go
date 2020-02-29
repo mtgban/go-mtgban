@@ -25,6 +25,7 @@ type mcJSON struct {
 		Rarity   string `json:"Rarita"`
 		Extra    string `json:"Image"`
 		OrigName string `json:"NomeIt"`
+		URL      string `json:"Url"`
 		Variants []struct {
 			Id        int     `json:"IdProduct"`
 			Language  string  `json:"Lingua"`
@@ -332,6 +333,7 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 				Conditions: cond,
 				Price:      v.Price * mc.exchangeRate,
 				Quantity:   v.Quantity,
+				Notes:      "https://www.magiccorner.it" + card.URL,
 			}
 
 			res.cards = append(res.cards, out)
