@@ -70,7 +70,7 @@ type Seller interface {
 type Vendor interface {
 	// Return the buylist for a Vendor. If not already loaded, it will start
 	// scraping the vendor gathering the necessary data.
-	Buylist() (map[string][]BuylistEntry, error)
+	Buylist() (map[string]BuylistEntry, error)
 
 	// Add an Entry to the Vendor's buylist, validating input.
 	BuylistAdd(BuylistEntry) error

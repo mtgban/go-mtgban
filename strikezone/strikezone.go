@@ -54,7 +54,7 @@ type Strikezone struct {
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string][]mtgban.BuylistEntry
+	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
@@ -65,7 +65,7 @@ func NewScraper(db mtgjson.MTGDB) *Strikezone {
 	sz := Strikezone{}
 	sz.db = db
 	sz.inventory = map[string][]mtgban.InventoryEntry{}
-	sz.buylist = map[string][]mtgban.BuylistEntry{}
+	sz.buylist = map[string]mtgban.BuylistEntry{}
 	sz.norm = mtgban.NewNormalizer()
 	return &sz
 }
@@ -369,20 +369,18 @@ func (sz *Strikezone) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 }
 
 func (sz *Strikezone) BuylistAdd(card mtgban.BuylistEntry) error {
-	entries, found := sz.buylist[card.Id]
+	entry, found := sz.buylist[card.Id]
 	if found {
-		for _, entry := range entries {
-			if entry.BuyPrice == card.BuyPrice {
-				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-			}
+		if entry.BuyPrice == card.BuyPrice {
+			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
 		}
 	}
 
-	sz.buylist[card.Id] = append(sz.buylist[card.Id], card)
+	sz.buylist[card.Id] = card
 	return nil
 }
 
-func (sz *Strikezone) Buylist() (map[string][]mtgban.BuylistEntry, error) {
+func (sz *Strikezone) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	if len(sz.buylist) > 0 {
 		return sz.buylist, nil
 	}

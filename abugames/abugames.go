@@ -58,7 +58,7 @@ type ABUGames struct {
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string][]mtgban.BuylistEntry
+	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
@@ -67,7 +67,7 @@ func NewScraper(db mtgjson.MTGDB) *ABUGames {
 	abu := ABUGames{}
 	abu.db = db
 	abu.inventory = map[string][]mtgban.InventoryEntry{}
-	abu.buylist = map[string][]mtgban.BuylistEntry{}
+	abu.buylist = map[string]mtgban.BuylistEntry{}
 	abu.norm = mtgban.NewNormalizer()
 	abu.httpClient = http.NewClient()
 	abu.httpClient.Logger = nil
@@ -128,7 +128,9 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 
 			cond := card.Condition
 			switch cond {
-			case "MINT", "NM", "HP":
+			case "NM", "HP":
+			case "MINT":
+				cond = "NM"
 			case "PLD":
 				cond = "SP"
 			default:
@@ -287,7 +289,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 				res.inventory = append(res.inventory, out)
 			}
 
-			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 {
+			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 && card.Condition == "NM" {
 				var priceRatio, qtyRatio float64
 				if card.SellPrice > 0 {
 					priceRatio = card.BuyPrice / card.SellPrice * 100
@@ -416,20 +418,18 @@ func (abu *ABUGames) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 }
 
 func (abu *ABUGames) BuylistAdd(card mtgban.BuylistEntry) error {
-	entries, found := abu.buylist[card.Id]
+	entry, found := abu.buylist[card.Id]
 	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice && entry.TradePrice == card.TradePrice {
-				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-			}
+		if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice && entry.TradePrice == card.TradePrice {
+			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
 		}
 	}
 
-	abu.buylist[card.Id] = append(abu.buylist[card.Id], card)
+	abu.buylist[card.Id] = card
 	return nil
 }
 
-func (abu *ABUGames) Buylist() (map[string][]mtgban.BuylistEntry, error) {
+func (abu *ABUGames) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	if len(abu.buylist) > 0 {
 		return abu.buylist, nil
 	}
