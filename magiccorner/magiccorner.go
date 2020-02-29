@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	http "github.com/hashicorp/go-retryablehttp"
 	"github.com/kodabb/go-mtgban/mtgban"
@@ -72,7 +73,8 @@ const (
 )
 
 type Magiccorner struct {
-	LogCallback mtgban.LogCallbackFunc
+	LogCallback   mtgban.LogCallbackFunc
+	InventoryDate time.Time
 
 	httpClient *http.Client
 	norm       *mtgban.Normalizer
@@ -420,6 +422,8 @@ func (mc *Magiccorner) scrape() error {
 			}
 		}
 	}
+
+	mc.InventoryDate = time.Now()
 
 	return nil
 }

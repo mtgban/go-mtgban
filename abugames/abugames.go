@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	http "github.com/hashicorp/go-retryablehttp"
 	"github.com/kodabb/go-mtgban/mtgban"
@@ -52,7 +53,9 @@ const (
 )
 
 type ABUGames struct {
-	LogCallback mtgban.LogCallbackFunc
+	LogCallback   mtgban.LogCallbackFunc
+	InventoryDate time.Time
+	BuylistDate   time.Time
 
 	httpClient *http.Client
 
@@ -383,6 +386,9 @@ func (abu *ABUGames) scrape() error {
 			}
 		}
 	}
+
+	abu.InventoryDate = time.Now()
+	abu.BuylistDate = time.Now()
 
 	return nil
 }

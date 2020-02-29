@@ -23,7 +23,9 @@ const (
 )
 
 type Channelfireball struct {
-	LogCallback mtgban.LogCallbackFunc
+	LogCallback   mtgban.LogCallbackFunc
+	InventoryDate time.Time
+	BuylistDate   time.Time
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
@@ -355,6 +357,12 @@ func (cfb *Channelfireball) scrape(mode string) error {
 				}
 			}
 		}
+	}
+
+	if mode == modeInventory {
+		cfb.InventoryDate = time.Now()
+	} else if mode == modeBuylist {
+		cfb.BuylistDate = time.Now()
 	}
 
 	return nil
