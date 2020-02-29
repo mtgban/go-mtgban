@@ -413,7 +413,7 @@ func (mc *Magiccorner) scrape() error {
 			continue
 		}
 		for _, card := range result.cards {
-			err = mc.InventoryAdd(card)
+			err = mtgban.InventoryAdd(mc.inventory, card)
 			if err != nil {
 				mc.printf(err.Error())
 				continue
@@ -421,20 +421,6 @@ func (mc *Magiccorner) scrape() error {
 		}
 	}
 
-	return nil
-}
-
-func (mc *Magiccorner) InventoryAdd(card mtgban.InventoryEntry) error {
-	entries, found := mc.inventory[card.Id]
-	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.Price == card.Price {
-				return fmt.Errorf("Attempted to add a duplicate card:\n-new: %v\n-old: %v", card, entry)
-			}
-		}
-	}
-
-	mc.inventory[card.Id] = append(mc.inventory[card.Id], card)
 	return nil
 }
 

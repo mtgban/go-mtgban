@@ -301,7 +301,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Price:      card.Price,
 					Quantity:   card.Quantity,
 				}
-				err := cfb.InventoryAdd(out)
+				err := mtgban.InventoryAdd(cfb.inventory, out)
 				if err != nil {
 					switch cc.Name {
 					// Ignore errors coming from lands for now
@@ -343,7 +343,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
 				}
-				err := cfb.BuylistAdd(out)
+				err := mtgban.BuylistAdd(cfb.buylist, out)
 				if err != nil {
 					switch cc.Name {
 					// Ignore errors coming from lands for now
@@ -360,20 +360,6 @@ func (cfb *Channelfireball) scrape(mode string) error {
 	return nil
 }
 
-func (cfb *Channelfireball) InventoryAdd(card mtgban.InventoryEntry) error {
-	entries, found := cfb.inventory[card.Id]
-	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.Price == card.Price {
-				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-new: %v\n-old: %v", card, entry)
-			}
-		}
-	}
-
-	cfb.inventory[card.Id] = append(cfb.inventory[card.Id], card)
-	return nil
-}
-
 func (cfb *Channelfireball) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 	if len(cfb.inventory) > 0 {
 		return cfb.inventory, nil
@@ -387,18 +373,6 @@ func (cfb *Channelfireball) Inventory() (map[string][]mtgban.InventoryEntry, err
 	}
 
 	return cfb.inventory, nil
-}
-
-func (cfb *Channelfireball) BuylistAdd(card mtgban.BuylistEntry) error {
-	entry, found := cfb.buylist[card.Id]
-	if found {
-		if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice {
-			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-		}
-	}
-
-	cfb.buylist[card.Id] = card
-	return nil
 }
 
 func (cfb *Channelfireball) Buylist() (map[string]mtgban.BuylistEntry, error) {

@@ -61,9 +61,6 @@ type Seller interface {
 	// Return the inventory for a Seller. If not already loaded, it will start
 	// scraping the seller gathering the necessary data.
 	Inventory() (map[string][]InventoryEntry, error)
-
-	// Add an Entry to the Seller's inventory, validating input.
-	InventoryAdd(InventoryEntry) error
 }
 
 // Vendor is the interface describing actions to be performed on an vendor buylist
@@ -71,9 +68,6 @@ type Vendor interface {
 	// Return the buylist for a Vendor. If not already loaded, it will start
 	// scraping the vendor gathering the necessary data.
 	Buylist() (map[string]BuylistEntry, error)
-
-	// Add an Entry to the Vendor's buylist, validating input.
-	BuylistAdd(BuylistEntry) error
 
 	// Return the grading scale for adjusting prices according to conditions
 	Grading(BuylistEntry) map[string]float64

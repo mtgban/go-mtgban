@@ -260,7 +260,7 @@ func (mm *Miniaturemarket) scrape() error {
 	}()
 
 	for card := range channel {
-		err := mm.InventoryAdd(card)
+		err := mtgban.InventoryAdd(mm.inventory, card)
 		if err != nil {
 			switch card.Name {
 			// Ignore errors coming from lands for now
@@ -389,7 +389,7 @@ func (mm *Miniaturemarket) parseBL() error {
 			continue
 		}
 		for _, card := range result.cards {
-			err := mm.BuylistAdd(card)
+			err := mtgban.BuylistAdd(mm.buylist, card)
 			if err != nil {
 				mm.printf(err.Error())
 				continue
@@ -397,20 +397,6 @@ func (mm *Miniaturemarket) parseBL() error {
 		}
 	}
 
-	return nil
-}
-
-func (mm *Miniaturemarket) InventoryAdd(card mtgban.InventoryEntry) error {
-	entries, found := mm.inventory[card.Id]
-	if found {
-		for _, entry := range entries {
-			if entry.Price == card.Price {
-				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-new: %v\n-old: %v", card, entry)
-			}
-		}
-	}
-
-	mm.inventory[card.Id] = append(mm.inventory[card.Id], card)
 	return nil
 }
 
@@ -427,18 +413,6 @@ func (mm *Miniaturemarket) Inventory() (map[string][]mtgban.InventoryEntry, erro
 	}
 
 	return mm.inventory, nil
-}
-
-func (mm *Miniaturemarket) BuylistAdd(card mtgban.BuylistEntry) error {
-	entry, found := mm.buylist[card.Id]
-	if found {
-		if entry.BuyPrice == card.BuyPrice {
-			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-		}
-	}
-
-	mm.buylist[card.Id] = card
-	return nil
 }
 
 func (mm *Miniaturemarket) Buylist() (map[string]mtgban.BuylistEntry, error) {
