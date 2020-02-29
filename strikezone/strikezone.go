@@ -50,7 +50,9 @@ var untaggedTags = []string{
 
 // StrikezoneBuylist is the Scraper for the Strikezone Online vendor.
 type Strikezone struct {
-	LogCallback mtgban.LogCallbackFunc
+	LogCallback   mtgban.LogCallbackFunc
+	InventoryDate time.Time
+	BuylistDate   time.Time
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
@@ -208,6 +210,8 @@ func (sz *Strikezone) scrape() error {
 		}
 	}
 
+	sz.InventoryDate = time.Now()
+
 	return nil
 }
 
@@ -335,6 +339,8 @@ func (sz *Strikezone) parseBL() error {
 			}
 		}
 	}
+
+	sz.BuylistDate = time.Now()
 
 	return nil
 }

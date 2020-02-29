@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -14,7 +15,9 @@ import (
 )
 
 type Miniaturemarket struct {
-	LogCallback mtgban.LogCallbackFunc
+	LogCallback   mtgban.LogCallbackFunc
+	InventoryDate time.Time
+	BuylistDate   time.Time
 
 	client    *MMClient
 	db        mtgjson.MTGDB
@@ -272,6 +275,8 @@ func (mm *Miniaturemarket) scrape() error {
 		}
 	}
 
+	mm.InventoryDate = time.Now()
+
 	return nil
 }
 
@@ -354,6 +359,8 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 
 		res.cards = append(res.cards, out)
 	}
+
+	mm.BuylistDate = time.Now()
 
 	return
 }

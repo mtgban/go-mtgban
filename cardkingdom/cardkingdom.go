@@ -4,14 +4,17 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 type Cardkingdom struct {
-	LogCallback mtgban.LogCallbackFunc
-	Partner     string
+	LogCallback   mtgban.LogCallbackFunc
+	Partner       string
+	InventoryDate time.Time
+	BuylistDate   time.Time
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
@@ -183,6 +186,9 @@ func (ck *Cardkingdom) scrape() error {
 			}
 		}
 	}
+
+	ck.InventoryDate = time.Now()
+	ck.BuylistDate = time.Now()
 
 	return nil
 }
