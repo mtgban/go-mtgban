@@ -82,7 +82,7 @@ type resultChan struct {
 
 func (abu *ABUGames) printf(format string, a ...interface{}) {
 	if abu.LogCallback != nil {
-		abu.LogCallback(format, a...)
+		abu.LogCallback("[ABU] "+format, a...)
 	}
 }
 

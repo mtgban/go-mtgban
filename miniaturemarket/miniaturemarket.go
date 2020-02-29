@@ -47,7 +47,7 @@ type resultChan struct {
 
 func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
 	if mm.LogCallback != nil {
-		mm.LogCallback(format, a...)
+		mm.LogCallback("[MM] "+format, a...)
 	}
 }
 

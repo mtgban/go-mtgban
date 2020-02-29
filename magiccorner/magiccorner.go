@@ -105,7 +105,7 @@ type resultChan struct {
 
 func (mc *Magiccorner) printf(format string, a ...interface{}) {
 	if mc.LogCallback != nil {
-		mc.LogCallback(format, a...)
+		mc.LogCallback("[MC] "+format, a...)
 	}
 }
 

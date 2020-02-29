@@ -31,7 +31,7 @@ func NewScraper(db mtgjson.MTGDB) *Cardkingdom {
 
 func (ck *Cardkingdom) printf(format string, a ...interface{}) {
 	if ck.LogCallback != nil {
-		ck.LogCallback(format, a...)
+		ck.LogCallback("[CK] "+format, a...)
 	}
 }
 
