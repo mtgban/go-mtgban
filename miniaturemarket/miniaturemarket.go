@@ -19,7 +19,7 @@ type Miniaturemarket struct {
 	client    *MMClient
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string][]mtgban.BuylistEntry
+	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
@@ -29,7 +29,7 @@ func NewScraper(db mtgjson.MTGDB) *Miniaturemarket {
 	mm.client = NewMMClient()
 	mm.db = db
 	mm.inventory = map[string][]mtgban.InventoryEntry{}
-	mm.buylist = map[string][]mtgban.BuylistEntry{}
+	mm.buylist = map[string]mtgban.BuylistEntry{}
 	mm.norm = mtgban.NewNormalizer()
 	return &mm
 }
@@ -430,20 +430,18 @@ func (mm *Miniaturemarket) Inventory() (map[string][]mtgban.InventoryEntry, erro
 }
 
 func (mm *Miniaturemarket) BuylistAdd(card mtgban.BuylistEntry) error {
-	entries, found := mm.buylist[card.Id]
+	entry, found := mm.buylist[card.Id]
 	if found {
-		for _, entry := range entries {
-			if entry.BuyPrice == card.BuyPrice {
-				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-			}
+		if entry.BuyPrice == card.BuyPrice {
+			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
 		}
 	}
 
-	mm.buylist[card.Id] = append(mm.buylist[card.Id], card)
+	mm.buylist[card.Id] = card
 	return nil
 }
 
-func (mm *Miniaturemarket) Buylist() (map[string][]mtgban.BuylistEntry, error) {
+func (mm *Miniaturemarket) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	if len(mm.buylist) > 0 {
 		return mm.buylist, nil
 	}

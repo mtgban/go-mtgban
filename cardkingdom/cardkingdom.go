@@ -15,7 +15,7 @@ type Cardkingdom struct {
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string][]mtgban.BuylistEntry
+	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
@@ -24,7 +24,7 @@ func NewScraper(db mtgjson.MTGDB) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.db = db
 	ck.inventory = map[string][]mtgban.InventoryEntry{}
-	ck.buylist = map[string][]mtgban.BuylistEntry{}
+	ck.buylist = map[string]mtgban.BuylistEntry{}
 	ck.norm = mtgban.NewNormalizer()
 	return &ck
 }
@@ -218,20 +218,18 @@ func (ck *Cardkingdom) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 }
 
 func (ck *Cardkingdom) BuylistAdd(card mtgban.BuylistEntry) error {
-	entries, found := ck.buylist[card.Id]
+	entry, found := ck.buylist[card.Id]
 	if found {
-		for _, entry := range entries {
-			if entry.BuyPrice == card.BuyPrice {
-				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-			}
+		if entry.BuyPrice == card.BuyPrice {
+			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
 		}
 	}
 
-	ck.buylist[card.Id] = append(ck.buylist[card.Id], card)
+	ck.buylist[card.Id] = card
 	return nil
 }
 
-func (ck *Cardkingdom) Buylist() (map[string][]mtgban.BuylistEntry, error) {
+func (ck *Cardkingdom) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	if len(ck.buylist) > 0 {
 		return ck.buylist, nil
 	}

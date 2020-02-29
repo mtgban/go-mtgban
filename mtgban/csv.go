@@ -48,30 +48,28 @@ func (inv *BaseInventory) Inventory() (map[string][]InventoryEntry, error) {
 }
 
 type BaseBuylist struct {
-	buylist map[string][]BuylistEntry
+	buylist map[string]BuylistEntry
 }
 
 func (bl *BaseBuylist) BuylistAdd(card BuylistEntry) error {
-	entries, found := bl.buylist[card.Id]
+	entry, found := bl.buylist[card.Id]
 	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice && entry.TradePrice == card.TradePrice {
-				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-			}
+		if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice && entry.TradePrice == card.TradePrice {
+			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
 		}
 	}
 
-	bl.buylist[card.Id] = append(bl.buylist[card.Id], card)
+	bl.buylist[card.Id] = card
 	return nil
 }
 
-func (bl *BaseBuylist) Buylist() (map[string][]BuylistEntry, error) {
+func (bl *BaseBuylist) Buylist() (map[string]BuylistEntry, error) {
 	return bl.buylist, nil
 }
 
 func NewVendorFromCSV(r io.Reader) (Vendor, error) {
 	vendor := BaseBuylist{}
-	vendor.buylist = map[string][]BuylistEntry{}
+	vendor.buylist = map[string]BuylistEntry{}
 
 	err := LoadBuylistFromCSV(&vendor, r)
 	if err != nil {
@@ -296,28 +294,26 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 		return err
 	}
 
-	for id, cards := range buylist {
-		for _, card := range cards {
-			foil := ""
-			if card.Foil {
-				foil = "FOIL"
-			}
+	for id, card := range buylist {
+		foil := ""
+		if card.Foil {
+			foil = "FOIL"
+		}
 
-			err = csvWriter.Write([]string{
-				id,
-				card.Name,
-				card.Set,
-				foil,
-				card.Conditions,
-				fmt.Sprintf("%0.2f", card.BuyPrice),
-				fmt.Sprintf("%0.2f", card.TradePrice),
-				fmt.Sprint(card.Quantity),
-				fmt.Sprintf("%0.2f%%", card.PriceRatio),
-				fmt.Sprintf("%0.2f%%", card.QuantityRatio),
-			})
-			if err != nil {
-				return err
-			}
+		err = csvWriter.Write([]string{
+			id,
+			card.Name,
+			card.Set,
+			foil,
+			card.Conditions,
+			fmt.Sprintf("%0.2f", card.BuyPrice),
+			fmt.Sprintf("%0.2f", card.TradePrice),
+			fmt.Sprint(card.Quantity),
+			fmt.Sprintf("%0.2f%%", card.PriceRatio),
+			fmt.Sprintf("%0.2f%%", card.QuantityRatio),
+		})
+		if err != nil {
+			return err
 		}
 		csvWriter.Flush()
 	}
