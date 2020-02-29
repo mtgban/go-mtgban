@@ -49,6 +49,7 @@ func (inv *BaseInventory) Inventory() (map[string][]InventoryEntry, error) {
 
 type BaseBuylist struct {
 	buylist map[string]BuylistEntry
+	grade   map[string]float64
 }
 
 func (bl *BaseBuylist) BuylistAdd(card BuylistEntry) error {
@@ -67,9 +68,14 @@ func (bl *BaseBuylist) Buylist() (map[string]BuylistEntry, error) {
 	return bl.buylist, nil
 }
 
-func NewVendorFromCSV(r io.Reader) (Vendor, error) {
+func (bl *BaseBuylist) Grading(entry BuylistEntry) map[string]float64 {
+	return bl.grade
+}
+
+func NewVendorFromCSV(r io.Reader, grade map[string]float64) (Vendor, error) {
 	vendor := BaseBuylist{}
 	vendor.buylist = map[string]BuylistEntry{}
+	vendor.grade = grade
 
 	err := LoadBuylistFromCSV(&vendor, r)
 	if err != nil {

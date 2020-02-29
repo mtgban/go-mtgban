@@ -244,6 +244,42 @@ func (ck *Cardkingdom) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	return ck.buylist, nil
 }
 
+func (ck *Cardkingdom) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+	switch {
+	case entry.Card.Foil:
+		grade = map[string]float64{
+			"SP": 0.75, "MP": 0.5, "HP": 0.3,
+		}
+	case entry.BuyPrice < 15:
+		grade = map[string]float64{
+			"SP": 0.8, "MP": 0.7, "HP": 0.5,
+		}
+	case entry.BuyPrice >= 15 && entry.BuyPrice < 25:
+		grade = map[string]float64{
+			"SP": 0.85, "MP": 0.7, "HP": 0.5,
+		}
+	case entry.BuyPrice >= 25 && entry.BuyPrice < 100:
+		grade = map[string]float64{
+			"SP": 0.85, "MP": 0.75, "HP": 0.65,
+		}
+	case entry.BuyPrice >= 100:
+		grade = map[string]float64{
+			"SP": 0.9, "MP": 0.8, "HP": 0.7,
+		}
+	}
+
+	switch entry.Card.Set {
+	case "Limited Edition Alpha",
+		"Limited Edition Beta",
+		"Unlimited Edition":
+		grade = map[string]float64{
+			"SP": 0.8, "MP": 0.6, "HP": 0.4,
+		}
+	}
+
+	return
+}
+
 func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom"
 	info.Shorthand = "CK"

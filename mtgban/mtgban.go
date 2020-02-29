@@ -74,4 +74,7 @@ type Vendor interface {
 
 	// Add an Entry to the Vendor's buylist, validating input.
 	BuylistAdd(BuylistEntry) error
+
+	// Return the grading scale for adjusting prices according to conditions
+	Grading(BuylistEntry) map[string]float64
 }

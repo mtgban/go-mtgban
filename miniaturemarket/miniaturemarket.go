@@ -456,6 +456,18 @@ func (mm *Miniaturemarket) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	return mm.buylist, nil
 }
 
+func (mm *Miniaturemarket) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+	grade = map[string]float64{
+		"SP": 0.75, "MP": 0.75, "HP": 0.75,
+	}
+	if entry.BuyPrice <= 0.1 {
+		grade = map[string]float64{
+			"SP": 0.5, "MP": 0.5, "HP": 0.5,
+		}
+	}
+	return
+}
+
 func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Miniature Market"
 	info.Shorthand = "MM"
