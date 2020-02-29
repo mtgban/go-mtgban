@@ -416,6 +416,41 @@ func (cfb *Channelfireball) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	return cfb.buylist, nil
 }
 
+var fourHorsemenDate = time.Date(1993, time.August, 1, 0, 0, 0, 0, time.UTC)
+var premodernDate = time.Date(1994, time.August, 1, 0, 0, 0, 0, time.UTC)
+var modernDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
+
+func (cfb *Channelfireball) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+	var setDate time.Time
+	for _, set := range cfb.db {
+		if set.Name == entry.Card.Set {
+			setDate, _ = time.Parse("2006-01-02", set.ReleaseDate)
+			break
+		}
+	}
+
+	switch {
+	case entry.Card.Foil:
+		grade = map[string]float64{
+			"SP": 0.7, "MP": 0.5, "HP": 0.3,
+		}
+	case setDate.After(fourHorsemenDate) && setDate.Before(premodernDate.AddDate(0, 0, -1)):
+		grade = map[string]float64{
+			"SP": 0.5, "MP": 0.25, "HP": 0.1,
+		}
+	case setDate.After(premodernDate) && setDate.Before(modernDate.AddDate(0, 0, -1)):
+		grade = map[string]float64{
+			"SP": 0.7, "MP": 0.5, "HP": 0.3,
+		}
+	case setDate.After(modernDate):
+		grade = map[string]float64{
+			"SP": 0.8, "MP": 0.6, "HP": 0.4,
+		}
+	}
+
+	return
+}
+
 func (cfb *Channelfireball) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Channel Fireball"
 	info.Shorthand = "CFB"
