@@ -14,6 +14,7 @@ type cfbCard struct {
 	Conditions string
 	Price      float64
 	Quantity   int
+	Id         string
 }
 
 var cardTable = map[string]string{

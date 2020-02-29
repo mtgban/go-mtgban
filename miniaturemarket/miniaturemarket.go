@@ -197,11 +197,16 @@ func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, pag
 				mm.printf("%v", err)
 				return
 			}
+
+			fields := strings.Split(group.SKU, "-")
+			urlPage := strings.Join(fields[:len(fields)-1], "-") + ".html"
+
 			out := mtgban.InventoryEntry{
 				Card:       *cc,
 				Conditions: cond,
 				Price:      group.Price,
 				Quantity:   group.Stock,
+				Notes:      "http://www.miniaturemarket.com/" + urlPage,
 			}
 
 			channel <- out

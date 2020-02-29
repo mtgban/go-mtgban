@@ -94,13 +94,14 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			c.Visit(e.Request.AbsoluteURL(link))
 		}
 	})
-
 	c.OnHTML("form[class='add-to-cart-form']", func(e *colly.HTMLElement) {
 		// Skip out of stock items
 		dataVid := e.Attr("data-vid")
 		if dataVid == "" {
 			return
 		}
+
+		id := e.Attr("data-id")
 
 		priceStr := e.Attr("data-price")
 		priceStr = strings.Replace(priceStr, "$", "", 1)
@@ -249,6 +250,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			Conditions: cond,
 			Price:      cardPrice,
 			Quantity:   qty,
+			Id:         id,
 		}
 
 		channel <- card
@@ -302,6 +304,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Conditions: card.Conditions,
 					Price:      card.Price,
 					Quantity:   card.Quantity,
+					Notes:      cfbInventoryURL + "/" + card.Id,
 				}
 				err := mtgban.InventoryAdd(cfb.inventory, out)
 				if err != nil {
@@ -344,6 +347,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Quantity:      card.Quantity,
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
+					Notes:         cfbBuylistURL + "/" + card.Id,
 				}
 				err := mtgban.BuylistAdd(cfb.buylist, out)
 				if err != nil {
