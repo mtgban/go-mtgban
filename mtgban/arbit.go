@@ -1,9 +1,5 @@
 package mtgban
 
-import (
-	"fmt"
-)
-
 const DefaultArbitMinDiff = 0.2
 const DefaultArbitMinSpread = 25.0
 const DefaultMismatchMinDiff = 1.0
@@ -58,26 +54,12 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			blPrice = blEntry.TradePrice
 		}
 
+		grade := vendor.Grading(blEntry)
 		for _, invEntry := range invEntries {
 			price := invEntry.Price
 
-			cond := invEntry.Conditions
-			if cond != blEntry.Conditions {
-				adjust := 1.0
-				switch cond {
-				case "NM":
-				case "SP":
-					adjust = 0.75
-				case "MP":
-					adjust = 0.66
-				case "HP":
-					adjust = 0.50
-				case "PO":
-					adjust = 0.33
-				default:
-					return nil, fmt.Errorf("Unknown %s condition for %q", cond, invEntry)
-				}
-				blPrice *= adjust
+			if invEntry.Conditions != "NM" {
+				blPrice *= grade[invEntry.Conditions]
 			}
 
 			spread := 100 * (blPrice - price) / price

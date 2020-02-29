@@ -393,6 +393,10 @@ func (sz *Strikezone) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	return sz.buylist, nil
 }
 
+func (sz *Strikezone) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+	return nil
+}
+
 func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Strike Zone"
 	info.Shorthand = "SZ"
