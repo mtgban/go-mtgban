@@ -369,14 +369,14 @@ func (abu *ABUGames) scrape() error {
 		}
 
 		for i := range result.inventory {
-			err = abu.InventoryAdd(result.inventory[i])
+			err = mtgban.InventoryAdd(abu.inventory, result.inventory[i])
 			if err != nil {
 				abu.printf(err.Error())
 				continue
 			}
 		}
 		for i := range result.buylist {
-			err = abu.BuylistAdd(result.buylist[i])
+			err = mtgban.BuylistAdd(abu.buylist, result.buylist[i])
 			if err != nil {
 				abu.printf(err.Error())
 				continue
@@ -384,20 +384,6 @@ func (abu *ABUGames) scrape() error {
 		}
 	}
 
-	return nil
-}
-
-func (abu *ABUGames) InventoryAdd(card mtgban.InventoryEntry) error {
-	entries, found := abu.inventory[card.Id]
-	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.Price == card.Price {
-				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-new: %v\n-old: %v", card, entry)
-			}
-		}
-	}
-
-	abu.inventory[card.Id] = append(abu.inventory[card.Id], card)
 	return nil
 }
 
@@ -415,18 +401,6 @@ func (abu *ABUGames) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 
 	return abu.inventory, nil
 
-}
-
-func (abu *ABUGames) BuylistAdd(card mtgban.BuylistEntry) error {
-	entry, found := abu.buylist[card.Id]
-	if found {
-		if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice && entry.TradePrice == card.TradePrice {
-			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-		}
-	}
-
-	abu.buylist[card.Id] = card
-	return nil
 }
 
 func (abu *ABUGames) Buylist() (map[string]mtgban.BuylistEntry, error) {

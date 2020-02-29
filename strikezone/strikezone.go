@@ -200,7 +200,7 @@ func (sz *Strikezone) scrape() error {
 				Price:      card.Price,
 				Quantity:   card.Quantity,
 			}
-			err := sz.InventoryAdd(out)
+			err := mtgban.InventoryAdd(sz.inventory, out)
 			if err != nil {
 				sz.printf("%v", err)
 				continue
@@ -329,27 +329,13 @@ func (sz *Strikezone) parseBL() error {
 				PriceRatio:    priceRatio,
 				QuantityRatio: qtyRatio,
 			}
-			err := sz.BuylistAdd(out)
+			err := mtgban.BuylistAdd(sz.buylist, out)
 			if err != nil {
 				sz.printf("%v", err)
 			}
 		}
 	}
 
-	return nil
-}
-
-func (sz *Strikezone) InventoryAdd(card mtgban.InventoryEntry) error {
-	entries, found := sz.inventory[card.Id]
-	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.Price == card.Price {
-				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-new: %v\n-old: %v", card, entry)
-			}
-		}
-	}
-
-	sz.inventory[card.Id] = append(sz.inventory[card.Id], card)
 	return nil
 }
 
@@ -366,18 +352,6 @@ func (sz *Strikezone) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 	}
 
 	return sz.inventory, nil
-}
-
-func (sz *Strikezone) BuylistAdd(card mtgban.BuylistEntry) error {
-	entry, found := sz.buylist[card.Id]
-	if found {
-		if entry.BuyPrice == card.BuyPrice {
-			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-		}
-	}
-
-	sz.buylist[card.Id] = card
-	return nil
 }
 
 func (sz *Strikezone) Buylist() (map[string]mtgban.BuylistEntry, error) {

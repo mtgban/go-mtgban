@@ -25,12 +25,8 @@ var (
 	}
 )
 
-type BaseInventory struct {
-	inventory map[string][]InventoryEntry
-}
-
-func (inv *BaseInventory) InventoryAdd(card InventoryEntry) error {
-	entries, found := inv.inventory[card.Id]
+func InventoryAdd(inventory map[string][]InventoryEntry, card InventoryEntry) error {
+	entries, found := inventory[card.Id]
 	if found {
 		for _, entry := range entries {
 			if entry.Conditions == card.Conditions && entry.Price == card.Price {
@@ -39,8 +35,22 @@ func (inv *BaseInventory) InventoryAdd(card InventoryEntry) error {
 		}
 	}
 
-	inv.inventory[card.Id] = append(inv.inventory[card.Id], card)
+	inventory[card.Id] = append(inventory[card.Id], card)
 	return nil
+}
+
+func BuylistAdd(buylist map[string]BuylistEntry, card BuylistEntry) error {
+	entry, found := buylist[card.Id]
+	if found {
+		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
+	}
+
+	buylist[card.Id] = card
+	return nil
+}
+
+type BaseInventory struct {
+	inventory map[string][]InventoryEntry
 }
 
 func (inv *BaseInventory) Inventory() (map[string][]InventoryEntry, error) {
@@ -50,18 +60,6 @@ func (inv *BaseInventory) Inventory() (map[string][]InventoryEntry, error) {
 type BaseBuylist struct {
 	buylist map[string]BuylistEntry
 	grade   map[string]float64
-}
-
-func (bl *BaseBuylist) BuylistAdd(card BuylistEntry) error {
-	entry, found := bl.buylist[card.Id]
-	if found {
-		if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice && entry.TradePrice == card.TradePrice {
-			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-		}
-	}
-
-	bl.buylist[card.Id] = card
-	return nil
 }
 
 func (bl *BaseBuylist) Buylist() (map[string]BuylistEntry, error) {
@@ -77,10 +75,17 @@ func NewVendorFromCSV(r io.Reader, grade map[string]float64) (Vendor, error) {
 	vendor.buylist = map[string]BuylistEntry{}
 	vendor.grade = grade
 
-	err := LoadBuylistFromCSV(&vendor, r)
+	buylist, err := LoadBuylistFromCSV(r)
 	if err != nil {
 		return nil, err
 	}
+	for _, entry := range buylist {
+		err = BuylistAdd(vendor.buylist, entry)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &vendor, nil
 }
 
@@ -88,21 +93,29 @@ func NewSellerFromCSV(r io.Reader) (Seller, error) {
 	seller := BaseInventory{}
 	seller.inventory = map[string][]InventoryEntry{}
 
-	err := LoadInventoryFromCSV(&seller, r)
+	inventory, err := LoadInventoryFromCSV(r)
 	if err != nil {
 		return nil, err
 	}
+
+	for _, entry := range inventory {
+		err = InventoryAdd(seller.inventory, entry)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &seller, nil
 }
 
-func LoadInventoryFromCSV(seller Seller, r io.Reader) error {
+func LoadInventoryFromCSV(r io.Reader) ([]InventoryEntry, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return fmt.Errorf("Empty input file")
+		return nil, fmt.Errorf("Empty input file")
 	}
 	if err != nil {
-		return fmt.Errorf("Error reading header: %v", err)
+		return nil, fmt.Errorf("Error reading header: %v", err)
 	}
 
 	okHeader := true
@@ -117,26 +130,27 @@ func LoadInventoryFromCSV(seller Seller, r io.Reader) error {
 		}
 	}
 	if !okHeader {
-		return fmt.Errorf("Malformed inventory file")
+		return nil, fmt.Errorf("Malformed inventory file")
 	}
 
+	inventory := []InventoryEntry{}
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("Error reading record: %v", err)
+			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
 		foil := record[3] == "FOIL"
 		price, err := strconv.ParseFloat(record[5], 64)
 		if err != nil {
-			return fmt.Errorf("Error reading record: %v", err)
+			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 		qty, err := strconv.Atoi(record[6])
 		if err != nil {
-			return fmt.Errorf("Error reading record: %v", err)
+			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
 		card := InventoryEntry{
@@ -151,23 +165,20 @@ func LoadInventoryFromCSV(seller Seller, r io.Reader) error {
 			Quantity:   qty,
 		}
 
-		err = seller.InventoryAdd(card)
-		if err != nil {
-			return err
-		}
+		inventory = append(inventory, card)
 	}
 
-	return nil
+	return inventory, nil
 }
 
-func LoadBuylistFromCSV(vendor Vendor, r io.Reader) error {
+func LoadBuylistFromCSV(r io.Reader) ([]BuylistEntry, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return fmt.Errorf("Empty input file")
+		return nil, fmt.Errorf("Empty input file")
 	}
 	if err != nil {
-		return fmt.Errorf("Error reading header: %v", err)
+		return nil, fmt.Errorf("Error reading header: %v", err)
 	}
 
 	okHeader := true
@@ -182,38 +193,39 @@ func LoadBuylistFromCSV(vendor Vendor, r io.Reader) error {
 		}
 	}
 	if !okHeader {
-		return fmt.Errorf("Malformed buylist file")
+		return nil, fmt.Errorf("Malformed buylist file")
 	}
 
+	buylist := []BuylistEntry{}
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("Error reading record: %v", err)
+			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
 		foil := record[3] == "FOIL"
 		buyPrice, err := strconv.ParseFloat(record[5], 64)
 		if err != nil {
-			return fmt.Errorf("Error reading record %s: %v", record[5], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[5], err)
 		}
 		tradePrice, err := strconv.ParseFloat(record[6], 64)
 		if err != nil {
-			return fmt.Errorf("Error reading record %s: %v", record[6], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[6], err)
 		}
 		qty, err := strconv.Atoi(record[7])
 		if err != nil {
-			return fmt.Errorf("Error reading record %s: %v", record[7], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[7], err)
 		}
 		priceRatio, err := strconv.ParseFloat(record[8], 64)
 		if err != nil {
-			return fmt.Errorf("Error reading record %s: %v", record[8], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[8], err)
 		}
 		qtyRatio, err := strconv.ParseFloat(record[9], 64)
 		if err != nil {
-			return fmt.Errorf("Error reading record %s: %v", record[9], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[9], err)
 		}
 
 		card := BuylistEntry{
@@ -231,13 +243,10 @@ func LoadBuylistFromCSV(vendor Vendor, r io.Reader) error {
 			QuantityRatio: qtyRatio,
 		}
 
-		err = vendor.BuylistAdd(card)
-		if err != nil {
-			return err
-		}
+		buylist = append(buylist, card)
 	}
 
-	return nil
+	return buylist, nil
 }
 
 func WriteInventoryToCSV(seller Seller, w io.Writer) error {
