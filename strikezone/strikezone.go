@@ -72,7 +72,7 @@ func NewScraper(db mtgjson.MTGDB) *Strikezone {
 
 func (sz *Strikezone) printf(format string, a ...interface{}) {
 	if sz.LogCallback != nil {
-		sz.LogCallback(format, a...)
+		sz.LogCallback("[SZ] "+format, a...)
 	}
 }
 

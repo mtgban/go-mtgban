@@ -48,7 +48,7 @@ type resultChan struct {
 
 func (cfb *Channelfireball) printf(format string, a ...interface{}) {
 	if cfb.LogCallback != nil {
-		cfb.LogCallback(format, a...)
+		cfb.LogCallback("[CFB] "+format, a...)
 	}
 }
 
