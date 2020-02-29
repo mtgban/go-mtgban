@@ -27,7 +27,7 @@ type Channelfireball struct {
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string][]mtgban.BuylistEntry
+	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
@@ -36,7 +36,7 @@ func NewScraper(db mtgjson.MTGDB) *Channelfireball {
 	cfb := Channelfireball{}
 	cfb.db = db
 	cfb.inventory = map[string][]mtgban.InventoryEntry{}
-	cfb.buylist = map[string][]mtgban.BuylistEntry{}
+	cfb.buylist = map[string]mtgban.BuylistEntry{}
 	cfb.norm = mtgban.NewNormalizer()
 	return &cfb
 }
@@ -314,7 +314,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			}
 		}
 		if mode == modeBuylist {
-			if card.Quantity > 0 && card.Price > 0 {
+			if card.Quantity > 0 && card.Price > 0 && card.Conditions == "NM" {
 				var sellPrice, priceRatio, qtyRatio float64
 				sellQty := 0
 
@@ -390,20 +390,18 @@ func (cfb *Channelfireball) Inventory() (map[string][]mtgban.InventoryEntry, err
 }
 
 func (cfb *Channelfireball) BuylistAdd(card mtgban.BuylistEntry) error {
-	entries, found := cfb.buylist[card.Id]
+	entry, found := cfb.buylist[card.Id]
 	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice {
-				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
-			}
+		if entry.Conditions == card.Conditions && entry.BuyPrice == card.BuyPrice {
+			return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
 		}
 	}
 
-	cfb.buylist[card.Id] = append(cfb.buylist[card.Id], card)
+	cfb.buylist[card.Id] = card
 	return nil
 }
 
-func (cfb *Channelfireball) Buylist() (map[string][]mtgban.BuylistEntry, error) {
+func (cfb *Channelfireball) Buylist() (map[string]mtgban.BuylistEntry, error) {
 	if len(cfb.buylist) > 0 {
 		return cfb.buylist, nil
 	}

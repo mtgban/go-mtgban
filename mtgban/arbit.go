@@ -47,51 +47,50 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		return nil, err
 	}
 
-	for key, blEntries := range buylist {
+	for key, blEntry := range buylist {
 		invEntries, found := inventory[key]
 		if !found {
 			continue
 		}
-		for _, blEntry := range blEntries {
-			blPrice := blEntry.BuyPrice
-			if useTrades {
-				blPrice = blEntry.TradePrice
+
+		blPrice := blEntry.BuyPrice
+		if useTrades {
+			blPrice = blEntry.TradePrice
+		}
+
+		for _, invEntry := range invEntries {
+			price := invEntry.Price
+
+			cond := invEntry.Conditions
+			if cond != blEntry.Conditions {
+				adjust := 1.0
+				switch cond {
+				case "NM":
+				case "SP":
+					adjust = 0.75
+				case "MP":
+					adjust = 0.66
+				case "HP":
+					adjust = 0.50
+				case "PO":
+					adjust = 0.33
+				default:
+					return nil, fmt.Errorf("Unknown %s condition for %q", cond, invEntry)
+				}
+				blPrice *= adjust
 			}
 
-			for _, invEntry := range invEntries {
-				price := invEntry.Price
+			spread := 100 * (blPrice - price) / price
+			difference := blPrice - price
 
-				cond := invEntry.Conditions
-				if cond != blEntry.Conditions {
-					adjust := 1.0
-					switch cond {
-					case "NM", "MINT":
-					case "SP":
-						adjust = 0.75
-					case "MP":
-						adjust = 0.66
-					case "HP":
-						adjust = 0.50
-					case "PO":
-						adjust = 0.33
-					default:
-						return nil, fmt.Errorf("Unknown %s condition for %q", cond, invEntry)
-					}
-					blPrice *= adjust
+			if difference > minDiff && spread > minSpread {
+				res := ArbitEntry{
+					BuylistEntry:   blEntry,
+					InventoryEntry: invEntry,
+					Difference:     difference,
+					Spread:         spread,
 				}
-
-				spread := 100 * (blPrice - price) / price
-				difference := blPrice - price
-
-				if difference > minDiff && spread > minSpread {
-					res := ArbitEntry{
-						BuylistEntry:   blEntry,
-						InventoryEntry: invEntry,
-						Difference:     difference,
-						Spread:         spread,
-					}
-					result = append(result, res)
-				}
+				result = append(result, res)
 			}
 		}
 	}
