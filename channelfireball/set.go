@@ -10,68 +10,6 @@ import (
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
-var setTable = map[string]string{
-	"10th Edition":        "Tenth Edition",
-	"3rd Edition/Revised": "Revised Edition",
-	"4th Edition":         "Fourth Edition",
-	"5th Edition":         "Fifth Edition",
-	"6th Edition":         "Classic Sixth Edition",
-	"7th Edition":         "Seventh Edition",
-	"8th Edition":         "Eighth Edition",
-	"9th Edition":         "Ninth Edition",
-	"Alpha":               "Limited Edition Alpha",
-	"Beta":                "Limited Edition Beta",
-	"ColdSnap":            "Coldsnap",
-	"Portal 1":            "Portal",
-	"Portal 3 Kingdoms":   "Portal Three Kingdoms",
-	"Ravnica":             "Ravnica: City of Guilds",
-	"TimeShifted":         "Time Spiral Timeshifted",
-	"Unlimited":           "Unlimited Edition",
-
-	"3rd Edition (Foreign Black Border)": "Foreign Black Border",
-
-	"Champions": "Champions of Kamigawa",
-	"Betrayers": "Betrayers of Kamigawa",
-	"Saviors":   "Saviors of Kamigawa",
-
-	"War of the Spark (Japanese Alternate Art)": "War of the Spark",
-	"Throne of Eldraine: Variants":              "Throne of Eldraine",
-	"Theros Beyond Death: Variants":             "Theros Beyond Death",
-
-	"Gift Boxes: Anthologies":                    "Anthologies",
-	"Gift Boxes: Battle Royale":                  "Battle Royale Box Set",
-	"Gift Boxes: Beatdown":                       "Beatdown Box Set",
-	"Gift Boxes: Collector's Edition (Domestic)": "Collectors’ Edition",
-	"Gift Boxes: Deckmaster":                     "Deckmasters",
-	"Gift Boxes: International Edition":          "Intl. Collectors’ Edition",
-
-	"Guild Kits: Guilds of Ravnica":      "GRN Guild Kit",
-	"Guild Kits: Ravnica Allegiance":     "RNA Guild Kit",
-	"Guilds of Ravnica: Mythic Edition":  "Mythic Edition",
-	"Ravnica Allegiance: Mythic Edition": "Mythic Edition",
-	"War of the Spark: Mythic Edition":   "Mythic Edition",
-
-	"Promos: Apac Lands":  "Asia Pacific Land Program",
-	"Promos: Euro Lands":  "European Land Program",
-	"Promos: Grand Prix":  "Grand Prix Promos",
-	"Promos: Guru Lands":  "Guru",
-	"Promos: Ugin's Fate": "Ugin's Fate",
-
-	"Coldsnap Theme Deck Reprints":  "Coldsnap Theme Decks",
-	"Commander 2017 Edition":        "Commander 2017",
-	"Game Night 2018":               "Game Night",
-	"Modern Event Deck":             "Modern Event Deck 2014",
-	"Planechase (2009 Edition)":     "Planechase",
-	"Planechase (2012 Edition)":     "Planechase 2012",
-	"Ultimate Masters: Box Toppers": "Ultimate Box Topper",
-
-	"Duel Decks: Phyrexia vs. The Coalition": "Duel Decks: Phyrexia vs. the Coalition",
-
-	"PDS: Graveborn":        "Premium Deck Series: Graveborn",
-	"PDS: Fire & Lightning": "Premium Deck Series: Fire and Lightning",
-	"PDS: Slivers":          "Premium Deck Series: Slivers",
-}
-
 var promosetTable = map[string]string{
 	"2017 WMCQ Promo":                     "World Magic Cup Qualifiers",
 	"WMCQ Foil":                           "World Magic Cup Qualifiers",
@@ -197,7 +135,7 @@ func (cfb *Channelfireball) parseSet(c *cfbCard) (setName string, setCheck mtgba
 		return
 	}
 
-	ed, found = setTable[setName]
+	ed, found = mtgban.EditionTable[setName]
 	if found {
 		setName = ed
 		return

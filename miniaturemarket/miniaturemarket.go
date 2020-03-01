@@ -85,6 +85,13 @@ func (mm *Miniaturemarket) processTitle(title string) (cardName string, edition 
 	}
 
 	switch edition {
+	case "Planechase 2009":
+		for _, card := range mm.db["OHOP"].Cards {
+			if mm.norm.Normalize(card.Name) == mm.norm.Normalize(cardName) {
+				edition = "Planechase Planes"
+				break
+			}
+		}
 	case "Modern Horizons Art Series":
 		err = fmt.Errorf("untracked edition")
 	case "Legends":

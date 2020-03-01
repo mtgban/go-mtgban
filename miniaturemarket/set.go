@@ -9,38 +9,6 @@ import (
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
-var setTable = map[string]string{
-	"10th Edition":                      "Tenth Edition",
-	"4th Edition":                       "Fourth Edition",
-	"5th Edition":                       "Fifth Edition",
-	"6th Edition":                       "Classic Sixth Edition",
-	"7th Edition":                       "Seventh Edition",
-	"8th Edition":                       "Eighth Edition",
-	"9th Edition":                       "Ninth Edition",
-	"Alpha":                             "Limited Edition Alpha",
-	"Battle Royale":                     "Battle Royale Box Set",
-	"Beta":                              "Limited Edition Beta",
-	"Beatdown":                          "Beatdown Box Set",
-	"Coldsnap Theme Deck":               "Coldsnap Theme Decks",
-	"Collector's Edition":               "Collectors’ Edition",
-	"Commander Anthology Volume 2":      "Commander Anthology Volume II",
-	"International Collector's Edition": "Intl. Collectors’ Edition",
-	"Journey Into Nyx":                  "Journey into Nyx",
-	"Masterpiece: Mythic Edition":       "Mythic Edition",
-	"Modern Event Deck":                 "Modern Event Deck 2014",
-	"Modern Masters 2013":               "Modern Masters",
-	"Revised":                           "Revised Edition",
-	"Shadows Over Innistrad":            "Shadows over Innistrad",
-	"Time Spiral (Timeshifted)":         "Time Spiral Timeshifted",
-	"Unlimited":                         "Unlimited Edition",
-
-	"Throne of Eldraine (Collector Edition)":  "Throne of Eldraine",
-	"Theros Beyond Death (Collector Edition)": "Theros Beyond Death",
-
-	"Premium Deck Series: Fire & Lightning":    "Premium Deck Series: Fire and Lightning",
-	"Global Series: Jiang Yanggu & Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
-}
-
 var promosetTable = map[string]string{
 	"APAC Land":                "Asia Pacific Land Program",
 	"Convention":               "URL/Convention Promos",
@@ -181,7 +149,7 @@ func (mm *Miniaturemarket) parseSet(c *mmCard) (setName string, setCheck mtgban.
 	}
 	cardName := variants[0]
 
-	ed, found := setTable[setName]
+	ed, found := mtgban.EditionTable[setName]
 	if found {
 		setName = ed
 		return
@@ -225,10 +193,6 @@ func (mm *Miniaturemarket) parseSet(c *mmCard) (setName string, setCheck mtgban.
 	case "Archenemy", "Archenemy: Nicol Bolas":
 		setCheck = func(set mtgjson.Set) bool {
 			return set.Name == setName || set.Name == setName+" Schemes"
-		}
-	case "Planechase 2009":
-		setCheck = func(set mtgjson.Set) bool {
-			return set.Name == "Planechase" || set.Name == "Planechase Planes"
 		}
 	case "Mystery Booster", "Secret Lair", "Planechase 2012", "Planechase Anthology", "Time Spiral":
 		setCheck = func(set mtgjson.Set) bool {
