@@ -10,58 +10,6 @@ import (
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
-var setTable = map[string]string{
-	"10th Edition":              "Tenth Edition",
-	"4th Edition":               "Fourth Edition",
-	"5th Edition":               "Fifth Edition",
-	"6th Edition":               "Classic Sixth Edition",
-	"7th Edition":               "Seventh Edition",
-	"8th Edition":               "Eighth Edition",
-	"9th Edition":               "Ninth Edition",
-	"Alpha":                     "Limited Edition Alpha",
-	"Battle Royale":             "Battle Royale Box Set",
-	"Beatdown":                  "Beatdown Box Set",
-	"Beta":                      "Limited Edition Beta",
-	"Commander":                 "Commander 2011",
-	"Conspiracy Take the Crown": "Conspiracy: Take the Crown",
-	"Introductory 4th Edition":  "Introductory Two-Player Set",
-	"Planechase 2009":           "Planechase",
-	"Revised":                   "Revised Edition",
-	"Time Spiral - Timeshifted": "Time Spiral Timeshifted",
-	"Ultimate Box Toppers":      "Ultimate Box Topper",
-	"Unlimited":                 "Unlimited Edition",
-	"Vanguard":                  "Vanguard Series",
-
-	"Collectors' Edition - International": "Intl. Collectors’ Edition",
-	"Collectors' Edition":                 "Collectors’ Edition",
-
-	"Ajani vs. Nicol Bolas":      "Duel Decks: Ajani vs. Nicol Bolas",
-	"Blessed vs. Cursed":         "Duel Decks: Blessed vs. Cursed",
-	"Divine vs. Demonic":         "Duel Decks: Divine vs. Demonic",
-	"Elspeth vs. Kiora":          "Duel Decks: Elspeth vs. Kiora",
-	"Elspeth vs. Tezzeret":       "Duel Decks: Elspeth vs. Tezzeret",
-	"Elves vs. Goblins":          "Duel Decks: Elves vs. Goblins",
-	"Elves vs. Inventors":        "Duel Decks: Elves vs. Inventors",
-	"Garruk vs. Liliana":         "Duel Decks: Garruk vs. Liliana",
-	"Heroes vs. Monsters":        "Duel Decks: Heroes vs. Monsters",
-	"Izzet vs. Golgari":          "Duel Decks: Izzet vs. Golgari",
-	"Jace vs. Chandra":           "Duel Decks: Jace vs. Chandra",
-	"Jace vs. Vraska":            "Duel Decks: Jace vs. Vraska",
-	"Knights vs. Dragons":        "Duel Decks: Knights vs. Dragons",
-	"Merfolk vs. Goblins":        "Duel Decks: Merfolk vs. Goblins",
-	"Mind vs. Might":             "Duel Decks: Mind vs. Might",
-	"Nissa vs. Ob Nixilis":       "Duel Decks: Nissa vs. Ob Nixilis",
-	"Phyrexia vs. The Coalition": "Duel Decks: Phyrexia vs. the Coalition",
-	"Sorin vs. Tibalt":           "Duel Decks: Sorin vs. Tibalt",
-	"Speed vs. Cunning":          "Duel Decks: Speed vs. Cunning",
-	"Venser vs. Koth":            "Duel Decks: Venser vs. Koth",
-	"Zendikar vs. Eldrazi":       "Duel Decks: Zendikar vs. Eldrazi",
-
-	"Global Series: Jiang Yanggu and Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
-	"Masterpiece Series: Amonkhet Invocations":   "Amonkhet Invocations",
-	"Masterpiece Series: Kaladesh Inventions":    "Kaladesh Inventions",
-}
-
 var promosetTable = map[string]string{
 	"15th Anniversary":        "15th Anniversary Cards",
 	"2HG":                     "Two-Headed Giant Tournament",
@@ -113,6 +61,7 @@ var promosetTable = map[string]string{
 	"Fate Reforged Clash Pack": "Fate Reforged Clash Pack",
 	"Magic Origins Clash Pack": "Magic Origins Clash Pack",
 	"World Championship":       "World Championship Promos",
+	"Mystery Booster":          "Mystery Booster",
 }
 
 var guildkitTable = map[string]string{
@@ -221,17 +170,6 @@ func (abu *ABUGames) parseSet(c *abuCard) (setName string, setCheck mtgban.SetCh
 		specifier = variants[1]
 	}
 
-	if specifier == "Mystery Booster" {
-		setName = specifier
-		return
-	}
-
-	ed, found := setTable[setName]
-	if found {
-		setName = ed
-		return
-	}
-
 	// Append the year to WCD sets
 	if setName == "World Championship" {
 		s := strings.Split(specifier, " - ")
@@ -258,19 +196,25 @@ func (abu *ABUGames) parseSet(c *abuCard) (setName string, setCheck mtgban.SetCh
 	// Parse Ravnica Guild Kits, but don't return right away because
 	// there might be Ravnica Weekend cards mixed in
 	if strings.HasPrefix(setName, "Guild Kit") {
-		ed, found = guildkitTable[setName]
+		ed, found := guildkitTable[setName]
 		if found {
 			setName = ed
 		}
 	}
 
-	ed, found = card2setTable[c.FullName]
+	ed, found := card2setTable[c.FullName]
 	if found {
 		setName = ed
 		return
 	}
 
 	ed, found = promosetTable[specifier]
+	if found {
+		setName = ed
+		return
+	}
+
+	ed, found = mtgban.EditionTable[setName]
 	if found {
 		setName = ed
 		return
