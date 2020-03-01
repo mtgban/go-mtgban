@@ -407,7 +407,7 @@ func (cfb *Channelfireball) parseNumber(c *cfbCard, setName string) (cardName st
 	}
 
 	// Look up card number from every detail
-	no, found = setVariants[setName][cardName][specifier]
+	no, found = mtgban.VariantsTable[setName][cardName][specifier]
 	if found {
 		number = no
 		return

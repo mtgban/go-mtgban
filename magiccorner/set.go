@@ -53,6 +53,21 @@ var promo2setTable = map[string]string{
 	"Negate":       "Core Set 2020 Promos",
 }
 
+var ddaVariants = map[string]map[string]string{
+	"Flamewave Invoker": map[string]string{
+		"DDA036": "36",
+		"DDA140": "40",
+	},
+	"Harmonize": map[string]string{
+		"DDA022": "22",
+		"DDA321": "21",
+	},
+	"Corrupt": map[string]string{
+		"DDA255": "55",
+		"DDA357": "57",
+	},
+}
+
 func (mc *Magiccorner) parseSet(c *MCCard) (setName string, setCheck mtgban.SetCheckFunc) {
 	// Function to determine whether we're parsing the correct set
 	setCheck = func(set mtgjson.Set) bool {
@@ -246,19 +261,24 @@ func (mc *Magiccorner) parseNumber(c *MCCard, setName string) (cardName string, 
 		}
 	}()
 
-	no, found := setVariants[setName][cardName][specifier]
+	no, found := mtgban.VariantsTable[setName][cardName][specifier]
 	if found {
 		number = no
 		return
 	}
 
-	no, found = setVariants[setName][cardName][c.extra]
+	no, found = mtgban.VariantsTable[setName][cardName][c.extra]
 	if found {
 		number = no
 		return
 	}
 
 	switch setName {
+	case "Duel Decks Anthology":
+		no, found = ddaVariants[cardName][c.extra]
+		if found {
+			number = no
+		}
 	case "Ravnica Weekend":
 		cn := strings.Fields(c.Name)
 		cardName = cn[0]
