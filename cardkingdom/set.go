@@ -340,7 +340,7 @@ func (ck *Cardkingdom) parseNumber(c *ckCard) (cardName string, numberCheck mtgb
 		return
 	}
 
-	no, found := setVariants[setName][c.Name][c.Variation]
+	no, found := mtgban.VariantsTable[setName][c.Name][c.Variation]
 	if found {
 		number = no
 		return

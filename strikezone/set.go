@@ -408,7 +408,7 @@ func (sz *Strikezone) parseNumber(c *szCard, setName string) (cardName string, n
 		return
 	}
 
-	no, found = setVariants[setName][cardName][specifier]
+	no, found = mtgban.VariantsTable[setName][cardName][specifier]
 	if found {
 		number = no
 		return
@@ -500,7 +500,7 @@ func (sz *Strikezone) parseNumber(c *szCard, setName string) (cardName string, n
 	case "Asia Pacific Land Program", "European Land Program":
 		fields := strings.Fields(cardName)
 		cardName = fields[0]
-		no, found = setVariants[setName][cardName][specifier]
+		no, found = mtgban.VariantsTable[setName][cardName][specifier]
 		if found {
 			number = no
 			return

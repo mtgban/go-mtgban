@@ -231,7 +231,14 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 				layout = "Split"
 			}
 
-			if card.Edition == "World Championship" {
+			switch card.Edition {
+			case "Anthologies":
+				if fullName == "Mountain (A)" {
+					fullName = "Mountain (B)"
+				} else if fullName == "Mountain (B)" {
+					fullName = "Mountain (A)"
+				}
+			case "World Championship":
 				switch {
 				case strings.HasSuffix(fullName, "1996)"):
 					if card.SimpleTitle == "Mishra's Factory" {

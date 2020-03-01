@@ -408,7 +408,7 @@ func (abu *ABUGames) parseNumber(c *abuCard, setName string) (cardName string, n
 	}
 
 	// Look up card number from every detail
-	no, found = setVariants[setName][c.Name][specifier]
+	no, found = mtgban.VariantsTable[setName][c.Name][specifier]
 	if found {
 		number = no
 		return
@@ -438,14 +438,14 @@ func (abu *ABUGames) parseNumber(c *abuCard, setName string) (cardName string, n
 			var found bool
 			switch {
 			case strings.HasPrefix(origEd, "Tempest"):
-				no, found = setVariants["Tempest"][c.Name][tags[1]]
+				no, found = mtgban.VariantsTable["Tempest"][c.Name][tags[1]]
 				// There might be a variant letter in the edition name
 				fields := strings.Fields(origEd)
 				if len(fields) > 1 {
 					no += strings.ToLower(fields[1])
 				}
 			case origEd == "5th":
-				no, found = setVariants["Fifth Edition"][c.Name][tags[2]]
+				no, found = mtgban.VariantsTable["Fifth Edition"][c.Name][tags[2]]
 			}
 			if found {
 				cardNumber = no
