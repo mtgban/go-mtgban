@@ -10,52 +10,6 @@ import (
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
-// LUT for SZ sets to MTGJSON sets.
-var setTable = map[string]string{
-	"10th Edition":                      "Tenth Edition",
-	"4th Edition":                       "Fourth Edition",
-	"5th Edition":                       "Fifth Edition",
-	"6th Edition":                       "Classic Sixth Edition",
-	"7th Edition":                       "Seventh Edition",
-	"8th Edition":                       "Eighth Edition",
-	"9th Edition":                       "Ninth Edition",
-	"Alpha":                             "Limited Edition Alpha",
-	"Beta":                              "Limited Edition Beta",
-	"Classic 6th Edition":               "Classic Sixth Edition",
-	"Commander Singles":                 "Commander 2011",
-	"Commander 2013 Edition":            "Commander 2013",
-	"Commander 2014 Edition":            "Commander 2014",
-	"Commander 2016 Edition":            "Commander 2016",
-	"Commander":                         "Commander 2011",
-	"Futuresight":                       "Future Sight",
-	"Hours of Devestation":              "Hour of Devastation",
-	"Guilds of Ravnica Mythic Edition":  "Mythic Edition",
-	"Mystery Booster Test Print":        "Mystery Booster Playtest Cards",
-	"Mystery Booster Test Prints":       "Mystery Booster Playtest Cards",
-	"M10 Core Set":                      "Magic 2010",
-	"M11 Core Set":                      "Magic 2011",
-	"M12 Core Set":                      "Magic 2012",
-	"M13 Core Set":                      "Magic 2013",
-	"M14 Core Set":                      "Magic 2014",
-	"M15 Core Set":                      "Magic 2015",
-	"Ravnica Allegiance Mythic Edition": "Mythic Edition",
-	"Ravnica":                           "Ravnica: City of Guilds",
-	"Revised":                           "Revised Edition",
-	"Shadows Over Innistrad":            "Shadows over Innistrad",
-	"Time Spiral Time Shifted":          "Time Spiral Timeshifted",
-	"Ultimate Box Toppers":              "Ultimate Box Topper",
-	"Unlimited":                         "Unlimited Edition",
-	"War of the Spark Mythic Edition":   "Mythic Edition",
-
-	"Premium Deck Fire and Lightning": "Premium Deck Series: Fire and Lightning",
-	"Premium Deck Graveborn":          "Premium Deck Series: Graveborn",
-	"Premium Deck Slivers":            "Premium Deck Series: Slivers",
-
-	"Duel Deck Heros VS Monsters":           "Duel Decks: Heroes vs. Monsters",
-	"Duel Decks: Phyrexia vs The Coalition": "Duel Decks: Phyrexia vs. the Coalition",
-	"Duel Decks: Kiora vs Elspeth":          "Duel Decks: Elspeth vs. Kiora",
-}
-
 var promosetTable = map[string]string{
 	"WCQ":                              "World Magic Cup Qualifiers",
 	"WMC Promo":                        "World Magic Cup Qualifiers",
@@ -183,7 +137,7 @@ func (sz *Strikezone) parseSet(c *szCard) (setName string, setCheck mtgban.SetCh
 	setName = c.Edition
 
 	// Look up the Set
-	ed, found := setTable[setName]
+	ed, found := mtgban.EditionTable[setName]
 	if found {
 		setName = ed
 		return
