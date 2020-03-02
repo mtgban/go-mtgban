@@ -385,6 +385,11 @@ func (mm *Miniaturemarket) parseNumber(c *mmCard, setName string) (cardName stri
 		number = no
 		return
 	}
+	no, found = mtgban.VariantsTable[setName][cardName][extra]
+	if found {
+		number = no
+		return
+	}
 
 	// Override card number for basic lands and a few other cards
 	switch cardName {
