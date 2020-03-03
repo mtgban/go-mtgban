@@ -369,3 +369,40 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 
 	return nil
 }
+
+func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
+	csvWriter := csv.NewWriter(w)
+	defer csvWriter.Flush()
+
+	header := []string{
+		"Id", "Card Name", "Edition", "F/NF",
+	}
+	header = append(header, root.Names...)
+	header = append(header, "Best Offer")
+	err := csvWriter.Write(header)
+	if err != nil {
+		return err
+	}
+
+	for card, entries := range root.Entries {
+		foil := ""
+		if card.Foil {
+			foil = "FOIL"
+		}
+
+		out := []string{card.Id, card.Name, card.Set, foil}
+		for _, entry := range entries {
+			out = append(out, fmt.Sprintf("%0.2f", entry.Price))
+		}
+		out = append(out, root.BestOffer[card].ScraperName)
+
+		err = csvWriter.Write(out)
+		if err != nil {
+			return err
+		}
+
+		csvWriter.Flush()
+	}
+
+	return nil
+}
