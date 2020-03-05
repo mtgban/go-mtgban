@@ -61,6 +61,9 @@ type Seller interface {
 	// Return the inventory for a Seller. If not already loaded, it will start
 	// scraping the seller gathering the necessary data.
 	Inventory() (map[string][]InventoryEntry, error)
+
+	// Return some information about the seller
+	Info() ScraperInfo
 }
 
 // Vendor is the interface describing actions to be performed on an vendor buylist
@@ -71,4 +74,7 @@ type Vendor interface {
 
 	// Return the grading scale for adjusting prices according to conditions
 	Grading(BuylistEntry) map[string]float64
+
+	// Return some information about the vendor
+	Info() ScraperInfo
 }
