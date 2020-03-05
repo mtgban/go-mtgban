@@ -34,6 +34,12 @@ func (inv *BaseInventory) Inventory() (map[string][]InventoryEntry, error) {
 	return inv.inventory, nil
 }
 
+func (inv *BaseInventory) Info() (info ScraperInfo) {
+	info.Name = "Base Type"
+	info.Shorthand = "BT"
+	return
+}
+
 type BaseBuylist struct {
 	buylist map[string]BuylistEntry
 	grade   map[string]float64
@@ -45,4 +51,10 @@ func (bl *BaseBuylist) Buylist() (map[string]BuylistEntry, error) {
 
 func (bl *BaseBuylist) Grading(entry BuylistEntry) map[string]float64 {
 	return bl.grade
+}
+
+func (inv *BaseBuylist) Info() (info ScraperInfo) {
+	info.Name = "Base Type"
+	info.Shorthand = "BT"
+	return
 }
