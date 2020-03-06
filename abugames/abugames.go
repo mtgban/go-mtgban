@@ -458,5 +458,7 @@ func (abu *ABUGames) Grading(entry mtgban.BuylistEntry) (grade map[string]float6
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "ABU Games"
 	info.Shorthand = "ABU"
+	info.InventoryTimestamp = abu.InventoryDate
+	info.BuylistTimestamp = abu.BuylistDate
 	return
 }

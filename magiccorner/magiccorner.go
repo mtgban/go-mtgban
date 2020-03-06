@@ -449,5 +449,6 @@ func (mc *Magiccorner) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
+	info.InventoryTimestamp = mc.InventoryDate
 	return
 }

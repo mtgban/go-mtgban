@@ -384,5 +384,7 @@ func (sz *Strikezone) Grading(entry mtgban.BuylistEntry) (grade map[string]float
 func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Strike Zone"
 	info.Shorthand = "SZ"
+	info.InventoryTimestamp = sz.InventoryDate
+	info.BuylistTimestamp = sz.BuylistDate
 	return
 }

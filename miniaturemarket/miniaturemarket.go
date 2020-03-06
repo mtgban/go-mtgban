@@ -460,5 +460,7 @@ func (mm *Miniaturemarket) Grading(entry mtgban.BuylistEntry) (grade map[string]
 func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Miniature Market"
 	info.Shorthand = "MM"
+	info.InventoryTimestamp = mm.InventoryDate
+	info.BuylistTimestamp = mm.BuylistDate
 	return
 }

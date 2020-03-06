@@ -2,6 +2,8 @@
 // to obtain pricing information from various vendors.
 package mtgban
 
+import "time"
+
 // Card is a generic card representation using fields defined by the MTGJSON project.
 type Card struct {
 	// The unique identifier of a card. When the UUID can be used to associate
@@ -47,8 +49,10 @@ type BuylistEntry struct {
 
 // ScraperInfo contains
 type ScraperInfo struct {
-	Name      string
-	Shorthand string
+	Name               string
+	Shorthand          string
+	InventoryTimestamp time.Time
+	BuylistTimestamp   time.Time
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement
