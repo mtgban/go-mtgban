@@ -440,5 +440,7 @@ func (cfb *Channelfireball) Grading(entry mtgban.BuylistEntry) (grade map[string
 func (cfb *Channelfireball) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Channel Fireball"
 	info.Shorthand = "CFB"
+	info.InventoryTimestamp = cfb.InventoryDate
+	info.BuylistTimestamp = cfb.BuylistDate
 	return
 }
