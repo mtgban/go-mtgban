@@ -263,5 +263,7 @@ func (ck *Cardkingdom) Grading(entry mtgban.BuylistEntry) (grade map[string]floa
 func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom"
 	info.Shorthand = "CK"
+	info.InventoryTimestamp = ck.InventoryDate
+	info.BuylistTimestamp = ck.BuylistDate
 	return
 }
