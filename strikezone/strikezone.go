@@ -54,7 +54,7 @@ type Strikezone struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	db        mtgjson.MTGDB
+	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
 
@@ -63,7 +63,7 @@ type Strikezone struct {
 
 // NewBuylist initializes a Scraper for retriving buylist information, using
 // the passed-in client to make http connections.
-func NewScraper(db mtgjson.MTGDB) *Strikezone {
+func NewScraper(db mtgjson.SetDatabase) *Strikezone {
 	sz := Strikezone{}
 	sz.db = db
 	sz.inventory = map[string][]mtgban.InventoryEntry{}

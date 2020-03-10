@@ -16,14 +16,14 @@ type Cardkingdom struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	db        mtgjson.MTGDB
+	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.MTGDB) *Cardkingdom {
+func NewScraper(db mtgjson.SetDatabase) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.db = db
 	ck.inventory = map[string][]mtgban.InventoryEntry{}

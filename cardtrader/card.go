@@ -73,7 +73,7 @@ var card2setTable = map[string]string{
 	"Vance's Blasting Cannons // Spitfire Bastion":           "XLN Treasure Chest",
 }
 
-func (c *CTCard) CanonicalCard(db mtgjson.MTGDB) (*mtgban.Card, error) {
+func (c *CTCard) CanonicalCard(db mtgjson.SetDatabase) (*mtgban.Card, error) {
 	// Search by set code
 	set, found := db[c.setCode]
 	if found {

@@ -63,10 +63,10 @@ const (
 	SuffixSpecial   = "★"
 )
 
-type MTGDB map[string]Set
+type SetDatabase map[string]Set
 
-// Load a MTGJSON AllPrinting.json file and return a MTGDB map.
-func LoadAllPrintings(allPrintingsPath string) (MTGDB, error) {
+// Load a MTGJSON AllPrinting.json file and return a SetDatabase map.
+func LoadAllPrintings(allPrintingsPath string) (SetDatabase, error) {
 	allPrintingsReader, err := os.Open(allPrintingsPath)
 	if err != nil {
 		return nil, err
@@ -76,14 +76,14 @@ func LoadAllPrintings(allPrintingsPath string) (MTGDB, error) {
 	return LoadAllPrintingsFromReader(allPrintingsReader)
 }
 
-func LoadAllPrintingsFromReader(r io.Reader) (MTGDB, error) {
+func LoadAllPrintingsFromReader(r io.Reader) (SetDatabase, error) {
 	dec := json.NewDecoder(r)
 	_, err := dec.Token()
 	if err != nil {
 		return nil, err
 	}
 
-	allPrintingsDb := MTGDB{}
+	allPrintingsDb := SetDatabase{}
 	for dec.More() {
 		val, err := dec.Token()
 		if err != nil {

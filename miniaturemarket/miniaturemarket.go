@@ -20,14 +20,14 @@ type Miniaturemarket struct {
 	BuylistDate   time.Time
 
 	client    *MMClient
-	db        mtgjson.MTGDB
+	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.MTGDB) *Miniaturemarket {
+func NewScraper(db mtgjson.SetDatabase) *Miniaturemarket {
 	mm := Miniaturemarket{}
 	mm.client = NewMMClient()
 	mm.db = db

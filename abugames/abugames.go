@@ -20,14 +20,14 @@ type ABUGames struct {
 
 	client *ABUClient
 
-	db        mtgjson.MTGDB
+	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.MTGDB) *ABUGames {
+func NewScraper(db mtgjson.SetDatabase) *ABUGames {
 	abu := ABUGames{}
 	abu.db = db
 	abu.inventory = map[string][]mtgban.InventoryEntry{}

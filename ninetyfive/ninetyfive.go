@@ -21,13 +21,13 @@ type Ninetyfive struct {
 	LogCallback mtgban.LogCallbackFunc
 	BuylistDate time.Time
 
-	db      mtgjson.MTGDB
+	db      mtgjson.SetDatabase
 	buylist map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.MTGDB) *Ninetyfive {
+func NewScraper(db mtgjson.SetDatabase) *Ninetyfive {
 	nf := Ninetyfive{}
 	nf.db = db
 	nf.buylist = map[string]mtgban.BuylistEntry{}

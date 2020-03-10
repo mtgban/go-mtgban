@@ -23,14 +23,14 @@ type Magiccorner struct {
 
 	norm *mtgban.Normalizer
 
-	db           mtgjson.MTGDB
+	db           mtgjson.SetDatabase
 	exchangeRate float64
 
 	inventory map[string][]mtgban.InventoryEntry
 	client    *MCClient
 }
 
-func NewScraper(db mtgjson.MTGDB) (*Magiccorner, error) {
+func NewScraper(db mtgjson.SetDatabase) (*Magiccorner, error) {
 	mc := Magiccorner{}
 	mc.db = db
 	mc.inventory = map[string][]mtgban.InventoryEntry{}

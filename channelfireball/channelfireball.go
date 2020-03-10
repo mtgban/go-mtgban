@@ -27,14 +27,14 @@ type Channelfireball struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	db        mtgjson.MTGDB
+	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
 
 	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.MTGDB) *Channelfireball {
+func NewScraper(db mtgjson.SetDatabase) *Channelfireball {
 	cfb := Channelfireball{}
 	cfb.db = db
 	cfb.inventory = map[string][]mtgban.InventoryEntry{}
