@@ -47,6 +47,14 @@ type Card struct {
 	} `json:"foreignData"`
 }
 
+type SimpleCard struct {
+	Layout    string   `json:"layout"`
+	Name      string   `json:"name"`
+	Names     []string `json:"names"`
+	Printings []string `json:"printings"`
+	Side      string   `json:"side"`
+}
+
 const (
 	LayoutAftermath = "aftermath"
 	LayoutFlip      = "flip"
@@ -69,6 +77,7 @@ const (
 )
 
 type SetDatabase map[string]*Set
+type CardDatabase map[string]*SimpleCard
 
 // Load a MTGJSON AllPrinting.json file and return a SetDatabase map.
 func LoadAllPrintings(allPrintingsPath string) (SetDatabase, error) {
@@ -115,6 +124,50 @@ func LoadAllPrintingsFromReader(r io.Reader) (SetDatabase, error) {
 	}
 
 	return allPrintingsDb, nil
+}
+
+// Load a MTGJSON AllCards.json file and return a CardDatabase map.
+func LoadAllCards(allCardPath string) (CardDatabase, error) {
+	allCardsReader, err := os.Open(allCardPath)
+	if err != nil {
+		return nil, err
+	}
+	defer allCardsReader.Close()
+
+	return LoadAllCardsFromReader(allCardsReader)
+}
+
+func LoadAllCardsFromReader(r io.Reader) (CardDatabase, error) {
+	dec := json.NewDecoder(r)
+	_, err := dec.Token()
+	if err != nil {
+		return nil, err
+	}
+
+	allCardsDb := CardDatabase{}
+	for dec.More() {
+		val, err := dec.Token()
+		if err != nil {
+			return nil, err
+		}
+
+		name, ok := val.(string)
+		if !ok {
+			continue
+		}
+
+		var card SimpleCard
+		err = dec.Decode(&card)
+		if err != nil {
+			return nil, err
+		}
+
+		// Normalize card name for easier retrieval later
+		name = Normalize(name)
+		allCardsDb[name] = &card
+	}
+
+	return allCardsDb, nil
 }
 
 func (c *Card) HasFrameEffect(fe string) bool {
