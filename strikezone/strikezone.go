@@ -11,7 +11,6 @@ import (
 
 	"github.com/gocolly/colly"
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 const (
@@ -21,54 +20,19 @@ const (
 	szBuylistURL   = "http://shop.strikezoneonline.com/List/MagicBuyList.txt"
 )
 
-var untaggedTags = []string{
-	"2011 Holiday",
-	"2015 Judge Promo",
-	"BIBB",
-	"Convention Foil M19",
-	"Draft Weekend",
-	"FNM",
-	"Full Box Promo",
-	"GP Promo",
-	"Grand Prix 2018",
-	"Holiday Promo",
-	"Judge Promo",
-	"Judge 2020",
-	"League Promo",
-	"MagicFest 2019",
-	"MagicFest 2020",
-	"MCQ Promo",
-	"Media Promo",
-	"Players Tour Qualifier PTQ Promo",
-	"Prerelease",
-	"SDCC 2015",
-	"Shooting Star Promo",
-	"Standard Showdown 2017",
-	"Store Champ",
-	"Store Championship",
-}
-
-// StrikezoneBuylist is the Scraper for the Strikezone Online vendor.
 type Strikezone struct {
 	LogCallback   mtgban.LogCallbackFunc
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
-
-	norm *mtgban.Normalizer
 }
 
-// NewBuylist initializes a Scraper for retriving buylist information, using
-// the passed-in client to make http connections.
-func NewScraper(db mtgjson.SetDatabase) *Strikezone {
+func NewScraper() *Strikezone {
 	sz := Strikezone{}
-	sz.db = db
 	sz.inventory = map[string][]mtgban.InventoryEntry{}
 	sz.buylist = map[string]mtgban.BuylistEntry{}
-	sz.norm = mtgban.NewNormalizer()
 	return &sz
 }
 
@@ -79,7 +43,7 @@ func (sz *Strikezone) printf(format string, a ...interface{}) {
 }
 
 func (sz *Strikezone) scrape() error {
-	channel := make(chan szCard)
+	channel := make(chan mtgban.InventoryEntry)
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("shop.strikezoneonline.com"),
@@ -118,13 +82,13 @@ func (sz *Strikezone) scrape() error {
 
 	// Callback for when a scraped page contains a form element
 	c.OnHTML("body", func(e *colly.HTMLElement) {
-		var cardName, pathURL, foil, cond, qty, price string
+		var cardName, pathURL, notes, cond, qty, price string
 		edition := e.ChildText("h1")
 
 		e.ForEach("table.rtti tr", func(_ int, el *colly.HTMLElement) {
 			cardName = el.ChildText("td:nth-child(1)")
 			pathURL = el.ChildAttr("a", "href")
-			foil = el.ChildText("td:nth-child(4)")
+			notes = el.ChildText("td:nth-child(4)")
 			cond = el.ChildText("td:nth-child(5)")
 			qty = el.ChildText("td:nth-child(6)")
 			price = el.ChildText("td:nth-child(7)")
@@ -133,7 +97,15 @@ func (sz *Strikezone) scrape() error {
 			}
 
 			cardPrice, _ := strconv.ParseFloat(price, 64)
+			if cardPrice <= 0 {
+				return
+			}
+
 			quantity, _ := strconv.Atoi(qty)
+			if quantity <= 0 {
+				return
+			}
+
 			switch cond {
 			case "Near Mint":
 				cond = "NM"
@@ -153,33 +125,25 @@ func (sz *Strikezone) scrape() error {
 				return
 			}
 
-			isFoil := foil == "Foil"
-
-			cn, found := cardTable[cardName]
-			if found {
-				cardName = cn
+			theCard, err := preprocess(cardName, edition, notes)
+			if err != nil {
+				return
 			}
 
-			// Sometimes the buylist specifies tags at the end of the card name,
-			// but without parenthesis, so make sure they are present.
-			for _, tag := range untaggedTags {
-				if strings.HasSuffix(cardName, tag) {
-					cardName = strings.Replace(cardName, tag, "("+tag+")", 1)
-					break
-				}
+			cc, err := theCard.Match()
+			if err != nil {
+				sz.printf("%q", theCard)
+				sz.printf("%v", err)
+				return
 			}
 
-			card := szCard{
-				Name:       cardName,
-				Edition:    edition,
-				IsFoil:     isFoil,
+			channel <- mtgban.InventoryEntry{
+				Card:       mtgban.Card2card(cc),
 				Conditions: cond,
 				Price:      cardPrice,
 				Quantity:   quantity,
 				Notes:      "http://shop.strikezoneonline.com" + pathURL,
 			}
-
-			channel <- card
 		})
 	})
 
@@ -191,25 +155,10 @@ func (sz *Strikezone) scrape() error {
 	}()
 
 	for card := range channel {
-		cc, err := sz.convert(&card)
+		err := mtgban.InventoryAdd(sz.inventory, card)
 		if err != nil {
 			sz.printf("%v", err)
 			continue
-		}
-
-		if card.Quantity > 0 && card.Price > 0 {
-			out := mtgban.InventoryEntry{
-				Card:       *cc,
-				Conditions: card.Conditions,
-				Price:      card.Price,
-				Quantity:   card.Quantity,
-				Notes:      card.Notes,
-			}
-			err := mtgban.InventoryAdd(sz.inventory, out)
-			if err != nil {
-				sz.printf("%v", err)
-				continue
-			}
 		}
 	}
 
@@ -260,7 +209,7 @@ func (sz *Strikezone) parseBL() error {
 		}
 
 		// skip invalid offers
-		if price <= 0 {
+		if price <= 0 || quantity <= 0 {
 			continue
 		}
 
@@ -269,78 +218,50 @@ func (sz *Strikezone) parseBL() error {
 			continue
 		}
 
-		// skip tokens, too many variations
-		if strings.Contains(cardName, "Token") {
+		theCard, err := preprocess(cardName, cardSet, notes)
+		if err != nil {
 			continue
 		}
 
-		isFoil := strings.Contains(notes, "Foil")
-
-		cn, found := cardTable[cardName]
-		if found {
-			cardName = cn
-		}
-
-		// Sometimes the buylist specifies tags at the end of the card name,
-		// but without parenthesis, so make sure they are present.
-		for _, tag := range untaggedTags {
-			if strings.HasSuffix(cardName, tag) {
-				cardName = strings.Replace(cardName, tag, "("+tag+")", 1)
-				break
-			}
-		}
-
-		switch {
-		case strings.HasPrefix(cardName, "Snow-Cover "):
-			cardName = strings.Replace(cardName, "Snow-Cover ", "Snow-Covered ", 1)
-		}
-
-		card := &szCard{
-			Name:    cardName,
-			Edition: cardSet,
-			IsFoil:  isFoil,
-		}
-
-		cc, err := sz.convert(card)
+		cc, err := theCard.Match()
 		if err != nil {
+			sz.printf("%q", theCard)
 			sz.printf("%v", err)
 			continue
 		}
 
-		if quantity > 0 && price > 0 {
-			var sellPrice, priceRatio, qtyRatio float64
-			sellQty := 0
+		var sellPrice, priceRatio, qtyRatio float64
+		sellQty := 0
 
-			invCards := sz.inventory[cc.Id]
-			for _, invCard := range invCards {
-				if invCard.Conditions == "NM" {
-					sellPrice = invCard.Price
-					sellQty = invCard.Quantity
-					break
-				}
+		invCards := sz.inventory[cc.Id]
+		for _, invCard := range invCards {
+			if invCard.Conditions == "NM" {
+				sellPrice = invCard.Price
+				sellQty = invCard.Quantity
+				break
 			}
+		}
 
-			if sellPrice > 0 {
-				priceRatio = price / sellPrice * 100
-			}
-			if sellQty > 0 {
-				qtyRatio = float64(quantity) / float64(sellQty) * 100
-			}
+		if sellPrice > 0 {
+			priceRatio = price / sellPrice * 100
+		}
+		if sellQty > 0 {
+			qtyRatio = float64(quantity) / float64(sellQty) * 100
+		}
 
-			out := mtgban.BuylistEntry{
-				Card:          *cc,
-				Conditions:    "NM",
-				BuyPrice:      price,
-				TradePrice:    price * 1.3,
-				Quantity:      quantity,
-				PriceRatio:    priceRatio,
-				QuantityRatio: qtyRatio,
-				Notes:         "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + card.Name,
-			}
-			err := mtgban.BuylistAdd(sz.buylist, out)
-			if err != nil {
-				sz.printf("%v", err)
-			}
+		out := mtgban.BuylistEntry{
+			Card:          mtgban.Card2card(cc),
+			Conditions:    "NM",
+			BuyPrice:      price,
+			TradePrice:    price * 1.3,
+			Quantity:      quantity,
+			PriceRatio:    priceRatio,
+			QuantityRatio: qtyRatio,
+			Notes:         "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
+		}
+		err = mtgban.BuylistAdd(sz.buylist, out)
+		if err != nil {
+			sz.printf("%v", err)
 		}
 	}
 
