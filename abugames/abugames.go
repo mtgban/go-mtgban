@@ -421,12 +421,14 @@ func (abu *ABUGames) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 		return abu.inventory, nil
 	}
 
-	abu.printf("Empty inventory, scraping started")
+	start := time.Now()
+	abu.printf("Inventory scraping started at %s", start)
 
 	err := abu.scrape()
 	if err != nil {
 		return nil, err
 	}
+	abu.printf("Inventory scraping took %s", time.Since(start))
 
 	return abu.inventory, nil
 
@@ -437,12 +439,14 @@ func (abu *ABUGames) Buylist() (map[string]mtgban.BuylistEntry, error) {
 		return abu.buylist, nil
 	}
 
-	abu.printf("Empty buylist, scraping started")
+	start := time.Now()
+	abu.printf("Buylist scraping started at %s", start)
 
 	err := abu.scrape()
 	if err != nil {
 		return nil, err
 	}
+	abu.printf("Buylist scraping took %s", time.Since(start))
 
 	return abu.buylist, nil
 }

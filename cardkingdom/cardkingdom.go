@@ -198,12 +198,14 @@ func (ck *Cardkingdom) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 		return ck.inventory, nil
 	}
 
-	ck.printf("Empty inventory, scraping started")
+	start := time.Now()
+	ck.printf("Inventory scraping started at %s", start)
 
 	err := ck.scrape()
 	if err != nil {
 		return nil, err
 	}
+	ck.printf("Inventory scraping took %s", time.Since(start))
 
 	return ck.inventory, nil
 
@@ -214,12 +216,14 @@ func (ck *Cardkingdom) Buylist() (map[string]mtgban.BuylistEntry, error) {
 		return ck.buylist, nil
 	}
 
-	ck.printf("Empty buylist, scraping started")
+	start := time.Now()
+	ck.printf("Buylist scraping started at %s", start)
 
 	err := ck.scrape()
 	if err != nil {
 		return nil, err
 	}
+	ck.printf("Buylist scraping took %s", time.Since(start))
 
 	return ck.buylist, nil
 }
