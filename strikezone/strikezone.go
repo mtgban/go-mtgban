@@ -354,12 +354,14 @@ func (sz *Strikezone) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 		return sz.inventory, nil
 	}
 
-	sz.printf("Empty inventory, scraping started")
+	start := time.Now()
+	sz.printf("Inventory scraping started at %s", start)
 
 	err := sz.scrape()
 	if err != nil {
 		return nil, err
 	}
+	sz.printf("Inventory scraping took %s", time.Since(start))
 
 	return sz.inventory, nil
 }
@@ -369,11 +371,15 @@ func (sz *Strikezone) Buylist() (map[string]mtgban.BuylistEntry, error) {
 		return sz.buylist, nil
 	}
 
-	sz.printf("Empty buylist, scraping started")
+	start := time.Now()
+	sz.printf("Buylist scraping started at %s", start)
+
 	err := sz.parseBL()
 	if err != nil {
 		return nil, err
 	}
+	sz.printf("Buylist scraping took %s", time.Since(start))
+
 	return sz.buylist, nil
 }
 
