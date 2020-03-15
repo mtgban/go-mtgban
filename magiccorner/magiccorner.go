@@ -1,76 +1,19 @@
 package magiccorner
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	http "github.com/hashicorp/go-retryablehttp"
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
-type mcJSON struct {
-	Error string `json:"Message"`
-	Data  []struct {
-		Name     string `json:"NomeEn"`
-		Set      string `json:"Category"`
-		Code     string `json:"Icon"`
-		Rarity   string `json:"Rarita"`
-		Extra    string `json:"Image"`
-		OrigName string `json:"NomeIt"`
-		URL      string `json:"Url"`
-		Variants []struct {
-			Id        int     `json:"IdProduct"`
-			Language  string  `json:"Lingua"`
-			Foil      string  `json:"Foil"`
-			Condition string  `json:"CondizioniShort"`
-			Quantity  int     `json:"DispoWeb"`
-			Price     float64 `json:"Price"`
-		} `json:"Varianti"`
-	} `json:"d"`
-}
-
-type mcParam struct {
-	SearchField   string `json:"f"`
-	IdCategory    string `json:"IdCategory"`
-	UIc           string `json:"UIc"`
-	OnlyAvailable bool   `json:"SoloDispo"`
-	IsBuy         bool   `json:"IsVendita"`
-}
-
-type mcBlob struct {
-	Data string `json:"d"`
-}
-
-type mcEdition struct {
-	Id   int    `json:"Id"`
-	Set  string `json:"Espansione"`
-	Code string `json:"ImageUrl"`
-}
-
-type mcEditionParam struct {
-	UIc string `json:"UIc"`
-}
-
 const (
-	maxConcurrency = 7
-
-	mcReinassanceId       = 73
-	mcRevisedEUFBBId      = 1041
-	mcPromoEditionId      = 1113
-	mcMerfolksVsGoblinsId = 1116
-
+	maxConcurrency       = 7
 	mcNumberNotAvailable = "n/a"
-	mcBaseURL            = "https://www.magiccorner.it/12/modules/store/mcpub.asmx/"
-	mcEditionsEndpt      = "espansioni"
-	mcCardsEndpt         = "carte"
 )
 
 type Magiccorner struct {
@@ -78,13 +21,13 @@ type Magiccorner struct {
 	LogCallback   mtgban.LogCallbackFunc
 	InventoryDate time.Time
 
-	httpClient *http.Client
-	norm       *mtgban.Normalizer
+	norm *mtgban.Normalizer
 
 	db           mtgjson.MTGDB
 	exchangeRate float64
 
 	inventory map[string][]mtgban.InventoryEntry
+	client    *MCClient
 }
 
 func NewScraper(db mtgjson.MTGDB) (*Magiccorner, error) {
@@ -97,8 +40,7 @@ func NewScraper(db mtgjson.MTGDB) (*Magiccorner, error) {
 		return nil, err
 	}
 	mc.exchangeRate = rate
-	mc.httpClient = http.NewClient()
-	mc.httpClient.Logger = nil
+	mc.client = NewMCClient()
 	return &mc, nil
 }
 
@@ -113,55 +55,10 @@ func (mc *Magiccorner) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
-	// This breaks on the main website too
-	if edition.Id == mcMerfolksVsGoblinsId {
-		return
-	}
-
-	// The last field before || is the language
-	// 0 - any language, 72 - english only
-	langCode := 0
-	if edition.Id == mcPromoEditionId {
-		langCode = 72
-	}
-	param := mcParam{
-		// Search string for Id and Language
-		SearchField: fmt.Sprintf("%d|0|0|0|0|%d||true|0|", edition.Id, langCode),
-
-		// The edition/category id
-		IdCategory: fmt.Sprintf("%d", edition.Id),
-
-		// Returns entries with available quantity
-		OnlyAvailable: true,
-
-		// No idea what these fields are for
-		UIc:   "it",
-		IsBuy: false,
-	}
-	reqBody, _ := json.Marshal(&param)
-
-	resp, err := mc.httpClient.Post(mcBaseURL+mcCardsEndpt, "application/json", bytes.NewReader(reqBody))
+func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
+	cards, err := mc.client.GetInventoryForEdition(edition)
 	if err != nil {
-		res.err = fmt.Errorf("%s - %v", edition.Set, err)
-		return
-	}
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		res.err = fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	var db mcJSON
-	err = json.Unmarshal(data, &db)
-	if err != nil {
-		res.err = fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, err)
-		return
-	}
-	if db.Error != "" {
-		res.err = fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, db.Error)
+		res.err = err
 		return
 	}
 
@@ -179,7 +76,7 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 		codeOverride = "GK1"
 	}
 
-	for _, card := range db.Data {
+	for _, card := range cards {
 		// Override set code when necessary
 		if codeOverride != "" {
 			card.Code = codeOverride
@@ -312,7 +209,7 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 				name = lutName
 			}
 
-			mcCard := MCCard{
+			theCard := mcCard{
 				Name: name,
 				Set:  card.Set,
 				Foil: isFoil,
@@ -325,7 +222,7 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 				orig:    card.OrigName,
 			}
 
-			cc, err := mc.Convert(&mcCard)
+			cc, err := mc.Convert(&theCard)
 			if err != nil {
 				mc.printf("%v", err)
 				continue
@@ -350,36 +247,12 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 
 // Scrape returns an array of Entry, containing pricing and card information
 func (mc *Magiccorner) scrape() error {
-	// Retrieve the edition ids
-	param := mcEditionParam{
-		UIc: "it",
-	}
-	reqBody, _ := json.Marshal(&param)
-	resp, err := mc.httpClient.Post(mcBaseURL+mcEditionsEndpt, "application/json", bytes.NewReader(reqBody))
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
+	editionList, err := mc.client.GetEditionList(true)
 	if err != nil {
 		return err
 	}
 
-	var blob mcBlob
-	err = json.Unmarshal(data, &blob)
-	if err != nil {
-		return err
-	}
-
-	// There is json in this json
-	dec := json.NewDecoder(strings.NewReader(blob.Data))
-	_, err = dec.Token()
-	if err != nil {
-		return err
-	}
-
-	pages := make(chan mcEdition)
+	pages := make(chan MCEdition)
 	results := make(chan resultChan)
 	var wg sync.WaitGroup
 
@@ -394,19 +267,8 @@ func (mc *Magiccorner) scrape() error {
 	}
 
 	go func() {
-		for dec.More() {
-			var edition mcEdition
-			err := dec.Decode(&edition)
-			if err != nil {
-				mc.printf("%v", err)
-				break
-			}
+		for _, edition := range editionList {
 			pages <- edition
-		}
-		// This edition is not present in the normal callback
-		pages <- mcEdition{
-			Id:  mcPromoEditionId,
-			Set: "Promo",
 		}
 		close(pages)
 

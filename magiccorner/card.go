@@ -6,7 +6,7 @@ import (
 	"github.com/kodabb/go-mtgban/mtgban"
 )
 
-type MCCard struct {
+type mcCard struct {
 	Name string `json:"name"`
 	Set  string `json:"set"`
 	Foil bool   `json:"foil"`
@@ -35,7 +35,7 @@ var cardTable = map[string]string{
 	"Elspeth, Knight Errant (Mythic Edition)": "Elspeth, Knight-Errant",
 }
 
-func (mc *Magiccorner) Convert(c *MCCard) (*mtgban.Card, error) {
+func (mc *Magiccorner) Convert(c *mcCard) (*mtgban.Card, error) {
 	setName, setCheck := mc.parseSet(c)
 	cardName, numberCheck := mc.parseNumber(c, setName)
 

@@ -68,7 +68,7 @@ var ddaVariants = map[string]map[string]string{
 	},
 }
 
-func (mc *Magiccorner) parseSet(c *MCCard) (setName string, setCheck mtgban.SetCheckFunc) {
+func (mc *Magiccorner) parseSet(c *mcCard) (setName string, setCheck mtgban.SetCheckFunc) {
 	// Function to determine whether we're parsing the correct set
 	setCheck = func(set mtgjson.Set) bool {
 		return set.Name == setName
@@ -218,7 +218,7 @@ func (mc *Magiccorner) parseSet(c *MCCard) (setName string, setCheck mtgban.SetC
 	return
 }
 
-func (mc *Magiccorner) parseNumber(c *MCCard, setName string) (cardName string, numberCheck mtgban.NumberCheckFunc) {
+func (mc *Magiccorner) parseNumber(c *mcCard, setName string) (cardName string, numberCheck mtgban.NumberCheckFunc) {
 	cardName = c.Name
 	variants := mtgban.SplitVariants(c.Name)
 	specifier := ""
