@@ -74,6 +74,7 @@ const (
 )
 
 type Magiccorner struct {
+	VerboseLog    bool
 	LogCallback   mtgban.LogCallbackFunc
 	InventoryDate time.Time
 
@@ -187,7 +188,7 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 		// Grab the image url and keep only the image name
 		extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
 
-		if !printed {
+		if !printed && mc.VerboseLog {
 			mc.printf("Processing id %d - %s (%s, code: %s)", edition.Id, edition.Set, extra, card.Code)
 			printed = true
 		}
@@ -245,7 +246,9 @@ func (mc *Magiccorner) processEntry(edition mcEdition) (res resultChan) {
 		for _, v := range card.Variants {
 			// Skip duplicate cards
 			if duplicate[v.Id] {
-				mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Set, v.Foil)
+				if mc.VerboseLog {
+					mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Set, v.Foil)
+				}
 				continue
 			}
 
