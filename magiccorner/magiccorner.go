@@ -1,19 +1,14 @@
 package magiccorner
 
 import (
-	"path"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 const (
-	maxConcurrency       = 7
-	mcNumberNotAvailable = "n/a"
+	maxConcurrency = 8
 )
 
 type Magiccorner struct {
@@ -21,20 +16,15 @@ type Magiccorner struct {
 	LogCallback   mtgban.LogCallbackFunc
 	InventoryDate time.Time
 
-	norm *mtgban.Normalizer
-
-	db           mtgjson.SetDatabase
 	exchangeRate float64
 
 	inventory map[string][]mtgban.InventoryEntry
 	client    *MCClient
 }
 
-func NewScraper(db mtgjson.SetDatabase) (*Magiccorner, error) {
+func NewScraper() (*Magiccorner, error) {
 	mc := Magiccorner{}
-	mc.db = db
 	mc.inventory = map[string][]mtgban.InventoryEntry{}
-	mc.norm = mtgban.NewNormalizer()
 	rate, err := mtgban.GetExchangeRate("EUR")
 	if err != nil {
 		return nil, err
@@ -67,80 +57,20 @@ func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
 	// Keep track of the processed ids, and don't add duplicates
 	duplicate := map[int]bool{}
 
-	// Fixup a couple of completely wrong set codes
-	codeOverride := ""
-	switch edition.Set {
-	case "Ravnica Allegiance: Guild Kits":
-		codeOverride = "GK2"
-	case "Guilds of Ravnica: Guild Kits":
-		codeOverride = "GK1"
-	}
-
 	for _, card := range cards {
-		// Override set code when necessary
-		if codeOverride != "" {
-			card.Code = codeOverride
-		}
-
-		// Grab the image url and keep only the image name
-		extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
-
 		if !printed && mc.VerboseLog {
-			mc.printf("Processing id %d - %s (%s, code: %s)", edition.Id, edition.Set, extra, card.Code)
+			mc.printf("Processing id %d - %s (%s, code: %s)", edition.Id, edition.Set, card.Extra, card.Code)
 			printed = true
 		}
 
-		// Trust the collector number for a few selected cases
-		// Fixup set codes as needed.
-		tagToDrop := ""
-		number := mcNumberNotAvailable
-		switch card.Code {
-		case "UMA":
-			if strings.HasPrefix(extra, "PUMA") {
-				card.Code = "PUMA"
-				tagToDrop = "PUMA"
-			}
-		case "1338", "1339":
-			tagToDrop = extra[:2]
-		case "UST", "E01", "RNA", "GRN", "ELD", "THB":
-			tagToDrop = card.Code
-		default:
-			switch {
-			case strings.HasPrefix(extra, "SLD"):
-				card.Code = "SLD"
-				tagToDrop = "SLD"
-			case strings.HasPrefix(extra, "p2018PRWK"):
-				card.Code = "PRWK"
-				tagToDrop = "p2018PRWK"
-			case strings.HasPrefix(extra, "p2019prwk"):
-				card.Code = "PRW2"
-				tagToDrop = "p2019prwk"
-			}
-		}
-
-		// Drop the anything preceding the number and the leading zeros
-		if tagToDrop != "" {
-			number = strings.Replace(extra, tagToDrop, "", 1)
-			number = strings.TrimLeft(number, "0")
-		}
-
-		// Untangle the schemes from "Archenemy: Nicol Bolas"
-		// Reset number to unknown because they are offset
-		if card.Code == "E01" {
-			n, _ := strconv.Atoi(number)
-			if n > 106 {
-				card.Code = "OE01"
-				number = mcNumberNotAvailable
-			}
-		}
-
 		// Skip lands, too many and without a simple solution
+		isBasicLand := false
 		switch card.Name {
 		case "Plains", "Island", "Swamp", "Mountain", "Forest":
-			continue
+			isBasicLand = true
 		}
 
-		for _, v := range card.Variants {
+		for i, v := range card.Variants {
 			// Skip duplicate cards
 			if duplicate[v.Id] {
 				if mc.VerboseLog {
@@ -168,27 +98,6 @@ func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
 				continue
 			}
 
-			// Skip any token or similar cards
-			if strings.Contains(card.Name, "Token") ||
-				strings.Contains(card.Name, "token") ||
-				strings.Contains(card.Name, "Art Series") ||
-				strings.Contains(card.Name, "Checklist") ||
-				strings.Contains(card.Name, "Check List") ||
-				strings.Contains(card.Name, "Check-List") ||
-				strings.Contains(card.Name, "Emblem") ||
-				card.Name == "Punch Card" ||
-				card.Name == "The Monarch" ||
-				card.Name == "Spirit" ||
-				card.Name == "City's Blessing" {
-				continue
-			}
-			// Circle of Protection: Red in Revised EU FWB???
-			if v.Id == 223958 ||
-				// Excruciator RAV duplicate card
-				v.Id == 108840 {
-				continue
-			}
-
 			cond := v.Condition
 			switch cond {
 			case "NM/M":
@@ -201,35 +110,31 @@ func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
 				continue
 			}
 
-			isFoil := v.Foil == "Foil"
-
-			name := card.Name
-			lutName, found := cardTable[card.Name]
-			if found {
-				name = lutName
+			// The basic lands need custom handling for each edition if they
+			// aren't found with other methods, ignore errors until they are
+			// added to the variants table.
+			printError := true
+			if isBasicLand {
+				printError = false
 			}
 
-			theCard := mcCard{
-				Name: name,
-				Set:  card.Set,
-				Foil: isFoil,
-
-				Id:     v.Id,
-				Number: number,
-
-				setCode: card.Code,
-				extra:   extra,
-				orig:    card.OrigName,
-			}
-
-			cc, err := mc.Convert(&theCard)
+			theCard, err := preprocess(&card, i)
 			if err != nil {
-				mc.printf("%v", err)
+				continue
+			}
+
+			cc, err := theCard.Match()
+			if err != nil {
+				if printError {
+					mc.printf("%q", theCard)
+					mc.printf("%q", card)
+					mc.printf("%v", err)
+				}
 				continue
 			}
 
 			out := mtgban.InventoryEntry{
-				Card:       *cc,
+				Card:       mtgban.Card2card(cc),
 				Conditions: cond,
 				Price:      v.Price * mc.exchangeRate,
 				Quantity:   v.Quantity,
