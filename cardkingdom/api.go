@@ -12,10 +12,10 @@ type CKPriceList struct {
 		CreatedAt string `json:"created_at"`
 		BaseURL   string `json:"base_url"`
 	} `json:"meta"`
-	Data []CKData `json:"data"`
+	Data []CKCard `json:"data"`
 }
 
-type CKData struct {
+type CKCard struct {
 	Id           int    `json:"id"`
 	SKU          string `json:"sku"`
 	URL          string `json:"url"`

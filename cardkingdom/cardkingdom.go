@@ -3,11 +3,9 @@ package cardkingdom
 import (
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 type Cardkingdom struct {
@@ -16,19 +14,14 @@ type Cardkingdom struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
-
-	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.SetDatabase) *Cardkingdom {
+func NewScraper() *Cardkingdom {
 	ck := Cardkingdom{}
-	ck.db = db
 	ck.inventory = map[string][]mtgban.InventoryEntry{}
 	ck.buylist = map[string]mtgban.BuylistEntry{}
-	ck.norm = mtgban.NewNormalizer()
 	return &ck
 }
 
@@ -46,61 +39,15 @@ func (ck *Cardkingdom) scrape() error {
 	}
 
 	for _, card := range pricelist.Data {
-		if strings.Contains(card.Name, "Token") ||
-			strings.Contains(card.Name, "Emblem") ||
-			strings.Contains(card.Name, "Checklist") ||
-			strings.Contains(card.Variation, "Misprint") ||
-			strings.Contains(card.Variation, "Oversized") ||
-			card.Name == "Blank Card" ||
-			card.Edition == "Art Series" ||
-			card.Variation == "MagicFest Non-Foil - 2020" ||
-			card.Variation == "Urza's Saga Arena Foil NO SYMBOL" ||
-			card.SKU == "OVERSIZ" ||
-			card.SKU == "PRES-005A" {
+		theCard, err := preprocess(card)
+		if err != nil {
 			continue
 		}
 
-		setCode := ""
-		number := ""
-		isFoil := card.IsFoil == "true"
-
-		sku := card.SKU
-		fixup, found := skuFixupTable[sku]
-		if found {
-			sku = fixup
-		}
-
-		fields := strings.Split(sku, "-")
-		if len(fields) > 1 {
-			setCode = fields[0]
-			if len(setCode) > 3 && isFoil && strings.HasPrefix(setCode, "F") {
-				setCode = setCode[1:]
-			}
-			if len(setCode) == 4 && strings.HasPrefix(setCode, "T") {
-				continue
-			}
-			number = strings.Join(fields[1:], "")
-			number = strings.TrimLeft(number, "0")
-			number = strings.ToLower(number)
-		}
-
-		cardName := card.Name
-		name, found := cardTable[cardName]
-		if found {
-			cardName = name
-		}
-
-		ckCard := ckCard{
-			Name:      cardName,
-			Edition:   card.Edition,
-			Foil:      isFoil,
-			SetCode:   setCode,
-			Variation: card.Variation,
-			Number:    number,
-		}
-
-		cc, err := ck.convert(&ckCard)
+		cc, err := theCard.Match()
 		if err != nil {
+			ck.printf("%q", theCard)
+			ck.printf("%q", card)
 			ck.printf("%v", err)
 			continue
 		}
@@ -124,7 +71,7 @@ func (ck *Cardkingdom) scrape() error {
 				}
 
 				out := mtgban.InventoryEntry{
-					Card:       *cc,
+					Card:       mtgban.Card2card(cc),
 					Conditions: "NM",
 					Price:      sellPrice,
 					Quantity:   card.SellQuantity,
@@ -162,7 +109,7 @@ func (ck *Cardkingdom) scrape() error {
 					q.Set("utm_medium", "affiliate")
 					q.Set("utm_campaign", ck.Partner)
 				}
-				if isFoil {
+				if cc.Foil {
 					q.Set("filter[foil]", "1")
 				} else {
 					q.Set("filter[nonfoil]", "1")
@@ -170,7 +117,7 @@ func (ck *Cardkingdom) scrape() error {
 				u.RawQuery = q.Encode()
 
 				out := mtgban.BuylistEntry{
-					Card:          *cc,
+					Card:          mtgban.Card2card(cc),
 					Conditions:    "NM",
 					BuyPrice:      price,
 					TradePrice:    price * 1.3,
