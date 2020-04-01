@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 const (
@@ -21,17 +21,12 @@ type Ninetyfive struct {
 	LogCallback mtgban.LogCallbackFunc
 	BuylistDate time.Time
 
-	db      mtgjson.SetDatabase
 	buylist map[string]mtgban.BuylistEntry
-
-	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.SetDatabase) *Ninetyfive {
+func NewScraper() *Ninetyfive {
 	nf := Ninetyfive{}
-	nf.db = db
 	nf.buylist = map[string]mtgban.BuylistEntry{}
-	nf.norm = mtgban.NewNormalizer()
 	return &nf
 }
 
@@ -94,21 +89,23 @@ func (nf *Ninetyfive) parseBL() error {
 		}
 		isFoil, _ := strconv.ParseBool(fields[4])
 
-		card := &nfCard{
-			Name:   cardName,
-			Code:   setCode,
-			IsFoil: isFoil,
+		theCard := &mtgdb.Card{
+			Name:    cardName,
+			Edition: setCode,
+			Foil:    isFoil,
 		}
 
-		cc, err := nf.convert(card)
+		cc, err := theCard.Match()
 		if err != nil {
+			nf.printf("%q", theCard)
+			nf.printf("%q", record)
 			nf.printf("%v", err)
 			continue
 		}
 
 		if quantity > 0 && price > 0 {
 			out := mtgban.BuylistEntry{
-				Card:       *cc,
+				Card:       mtgban.Card2card(cc),
 				Conditions: "NM",
 				BuyPrice:   price,
 				TradePrice: 0,
