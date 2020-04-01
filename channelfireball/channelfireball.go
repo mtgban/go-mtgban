@@ -10,7 +10,7 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 const (
@@ -27,19 +27,14 @@ type Channelfireball struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
-
-	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.SetDatabase) *Channelfireball {
+func NewScraper() *Channelfireball {
 	cfb := Channelfireball{}
-	cfb.db = db
 	cfb.inventory = map[string][]mtgban.InventoryEntry{}
 	cfb.buylist = map[string]mtgban.BuylistEntry{}
-	cfb.norm = mtgban.NewNormalizer()
 	return &cfb
 }
 
@@ -78,7 +73,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 	c.OnRequest(func(r *colly.Request) {
 		q := r.URL.Query()
 		if q.Get("page") == "" {
-			cfb.printf("Visiting %s", r.URL.String())
+			//cfb.printf("Visiting %s", r.URL.String())
 		}
 	})
 
@@ -101,8 +96,6 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			return
 		}
 
-		id := e.Attr("data-id")
-
 		priceStr := e.Attr("data-price")
 		priceStr = strings.Replace(priceStr, "$", "", 1)
 		priceStr = strings.Replace(priceStr, ",", "", 1)
@@ -112,17 +105,9 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			return
 		}
 
+		urlId := e.Attr("data-id")
+		cardName := e.Attr("data-name")
 		edition := e.Attr("data-category")
-		// Strip stars indicating edition in preorder
-		edition = strings.Replace(edition, "*", "", -1)
-
-		// Skip non-playable and oversized card sets
-		switch {
-		case edition == "Promos: Hero's Path" ||
-			(strings.Contains(edition, "{") && strings.Contains(edition, "}")):
-			return
-		}
-
 		cond := e.Attr("data-variant")
 		fields := strings.Split(cond, ", ")
 		cond = fields[0]
@@ -143,41 +128,6 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			return
 		}
 
-		cardName := e.Attr("data-name")
-		if cardName == "" {
-			// Quotes are not escaped
-			return
-		}
-		// Skip duplicated cards, not yet tracked
-		switch cardName {
-		case "Blaze (Alternate Art - Deck)", "Blaze (Alternate Art - Booster)",
-			"Crystalline Sliver - Arena 2003":
-			return
-		}
-
-		cardName = strings.Replace(cardName, "–", "-", -1)
-
-		// Skip tokens and similar cards
-		if strings.Contains(cardName, "Token") || strings.Contains(cardName, "token") ||
-			strings.Contains(cardName, "Checklist") ||
-			strings.Contains(cardName, "Filler") ||
-			strings.Contains(cardName, "APAC Land Set") ||
-			strings.Contains(cardName, "Emblem") {
-			return
-		}
-		switch cardName {
-		case "Experience Counter", "Poison Counter", "Experience Card",
-			"Goblin", "Pegasus", "Sheep", "Soldier", "Squirrel", "Zombie",
-			"Standard Placeholder", "Blank Card", "Splendid Genesis",
-			"Black ": // Black "M" Filler Card
-			return
-		}
-
-		// skip non-english versions of this card
-		if strings.HasPrefix(cardName, "Mana Crypt (Book Promo) (") {
-			return
-		}
-
 		isFoil := false
 		if strings.Contains(cardName, " Foil") ||
 			// Our Market Research Shows that really long names hide card properties
@@ -185,47 +135,9 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			isFoil = true
 		}
 
-		// Drop pointeless tags
-		cardName = strings.Replace(cardName, " - Foil", "", 1)
-		cardName = strings.Replace(cardName, " - Hero's Path", "", 1)
-		cardName = strings.Replace(cardName, " (Masterpiece Foil)", "", 1)
-
-		// Correctly put variants in the correct tag (within parenthesis)
-		tags := []string{
-			"Magic League Promo", "Draft Weekend Promo", "Draft Weekend",
-			"Planeswalker Weekend Promo", "Media Promo", "Open House Promo",
-			"Bundle Promo", "SDCC 2019 Exclusive", "FNM 2017", "FNM 2019",
-			"FNM Promo 2019", "DCI Judge Promo", "Judge Academy Promo",
-			"Buy-a-Box Promo", "Store Championship Promo", "Dark Frame Promo",
-			"Treasure Map",
-		}
-		for _, tag := range tags {
-			cardName = strings.Replace(cardName, " "+tag, " ("+tag+")", 1)
-		}
-
-		// Make sure that variants are separated from the name
-		parIndex := strings.Index(cardName, "(")
-		if parIndex-1 > 0 && parIndex-1 < len(cardName) && cardName[parIndex-1] != ' ' {
-			cardName = strings.Replace(cardName, "(", " (", 1)
-		}
-
-		// Split by () and by -, rebuild the cardname in a standardized way
-		fields = mtgban.SplitVariants(cardName)
-		subfields := strings.Split(fields[0], " - ")
-		cardName = subfields[0]
-		for _, field := range fields[1:] {
-			field = strings.Replace(field, " - ", " ", -1)
-			cardName += " (" + field + ")"
-		}
-		for _, field := range subfields[1:] {
-			cardName += " (" + field + ")"
-		}
-		cardName = strings.Replace(cardName, " - ", " ", 1)
-
-		// Fixup any expected errors
-		lutName, found := cardTable[cardName]
-		if found {
-			cardName = lutName
+		cardName, edition, err = preprocess(cardName, edition)
+		if err != nil {
+			return
 		}
 
 		qty := 0
@@ -243,6 +155,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 		}
 
 		card := cfbCard{
+			URLId:      urlId,
 			Key:        dataVid,
 			Name:       cardName,
 			Edition:    edition,
@@ -250,7 +163,6 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			Conditions: cond,
 			Price:      cardPrice,
 			Quantity:   qty,
-			Id:         id,
 		}
 
 		channel <- card
@@ -270,7 +182,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 	}()
 
 	// The same pattern is repeated exactly 3 times, store the simple key for
-	// the processed cards and skip the duplicatoin
+	// the processed cards and skip the duplication
 	processed := map[string]bool{}
 
 	for card := range channel {
@@ -279,42 +191,42 @@ func (cfb *Channelfireball) scrape(mode string) error {
 		}
 		processed[card.Key] = true
 
-		cc, err := cfb.convert(&card)
-		if err != nil {
-			switch {
-			// Ignore errors coming from lands from these two editions only
-			case strings.HasPrefix(card.Name, "Plains") ||
-				strings.HasPrefix(card.Name, "Island") ||
-				strings.HasPrefix(card.Name, "Swamp") ||
-				strings.HasPrefix(card.Name, "Mountain") ||
-				strings.HasPrefix(card.Name, "Forest"):
-				if card.Edition != "5th Edition" && card.Edition != "Gift Boxes: Battle Royale" {
-					cfb.printf("%v", err)
-				}
-			default:
-				cfb.printf("%v", err)
+		variant := ""
+		cardName := card.Name
+		if card.Name != "Erase (Not the Urza's Legacy One)" {
+			variants := mtgdb.SplitVariants(cardName)
+			cardName = variants[0]
+			if len(variants) > 1 {
+				variant = variants[1]
 			}
+		}
+
+		theCard := &mtgdb.Card{
+			Name:      cardName,
+			Edition:   card.Edition,
+			Variation: variant,
+			Foil:      card.Foil,
+		}
+		cc, err := theCard.Match()
+		if err != nil {
+			cfb.printf("%q", theCard)
+			cfb.printf("%q", card)
+			cfb.printf("%v", err)
 			continue
 		}
 
 		if mode == modeInventory {
 			if card.Quantity > 0 && card.Price > 0 {
 				out := mtgban.InventoryEntry{
-					Card:       *cc,
+					Card:       mtgban.Card2card(cc),
 					Conditions: card.Conditions,
 					Price:      card.Price,
 					Quantity:   card.Quantity,
-					Notes:      cfbInventoryURL + "/" + card.Id,
+					Notes:      cfbInventoryURL + "/" + card.URLId,
 				}
 				err := mtgban.InventoryAdd(cfb.inventory, out)
 				if err != nil {
-					switch cc.Name {
-					// Ignore errors coming from lands for now
-					case "Plains", "Island", "Swamp", "Mountain", "Forest":
-					default:
-						cfb.printf("%v", err)
-					}
-					continue
+					cfb.printf("%v", err)
 				}
 			}
 		}
@@ -340,24 +252,18 @@ func (cfb *Channelfireball) scrape(mode string) error {
 				}
 
 				out := mtgban.BuylistEntry{
-					Card:          *cc,
+					Card:          mtgban.Card2card(cc),
 					Conditions:    card.Conditions,
 					BuyPrice:      card.Price,
 					TradePrice:    card.Price * 1.3,
 					Quantity:      card.Quantity,
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
-					Notes:         cfbBuylistURL + "/" + card.Id,
+					Notes:         cfbBuylistURL + "/" + card.URLId,
 				}
 				err := mtgban.BuylistAdd(cfb.buylist, out)
 				if err != nil {
-					switch cc.Name {
-					// Ignore errors coming from lands for now
-					case "Plains", "Island", "Swamp", "Mountain", "Forest":
-					default:
-						cfb.printf("%v", err)
-					}
-					continue
+					cfb.printf("%v", err)
 				}
 			}
 		}
@@ -411,16 +317,17 @@ var premodernDate = time.Date(1994, time.August, 1, 0, 0, 0, 0, time.UTC)
 var modernDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
 
 func (cfb *Channelfireball) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
-	var setDate time.Time
-	for _, set := range cfb.db {
-		if set.Name == entry.Card.Set {
-			setDate, _ = time.Parse("2006-01-02", set.ReleaseDate)
-			break
-		}
+	set, err := mtgdb.Set(card.Edition)
+	if err != nil {
+		return nil
+	}
+	setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
+	if err != nil {
+		return nil
 	}
 
 	switch {
-	case entry.Card.Foil:
+	case card.Foil:
 		grade = map[string]float64{
 			"SP": 0.7, "MP": 0.5, "HP": 0.3,
 		}
