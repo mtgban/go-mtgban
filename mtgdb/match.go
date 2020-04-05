@@ -1017,6 +1017,7 @@ func (db *Database) tryAdjustEdition(inCard *Card) {
 		strings.HasPrefix(variation, "Junior Series E"),
 		strings.HasPrefix(variation, "Junior Series Promo Foil E"),
 		strings.HasPrefix(variation, "ESS Foil E"),
+		strings.HasPrefix(variation, "European JrS E"),
 		strings.HasPrefix(variation, "European JSS Foil E"):
 		edition = "Junior Series Europe"
 	}

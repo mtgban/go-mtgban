@@ -41,12 +41,14 @@ var EditionTable = map[string]string{
 	"Shooting Star Promo": "2017 Gift Pack",
 
 	// Treasure Chest
-	"Treasure Map Promo": "XLN Treasure Chest",
-	"Treasure Map":       "XLN Treasure Chest",
+	"Treasure Chest Promo": "XLN Treasure Chest",
+	"Treare Map Promo":     "XLN Treasure Chest",
+	"Treasure Map":         "XLN Treasure Chest",
 
 	// Game Night
-	"Game Night 2018":  "Game Night",
-	"Magic Game Night": "Game Night",
+	"Game Night 2018":       "Game Night",
+	"Magic Game Night":      "Game Night",
+	"Magic Game Night 2019": "Game Night 2019",
 
 	// Old school lands
 	"APAC Land":          "Asia Pacific Land Program",
@@ -72,6 +74,8 @@ var EditionTable = map[string]string{
 	"Stained Glass":           "Secret Lair Drop Promos",
 
 	// Welcome decks
+	"Magic 2016":        "Welcome Deck 2016",
+	"Magic 2017":        "Welcome Deck 2017",
 	"Welcome Deck 2016": "Welcome Deck 2016",
 	"Welcome Deck 2017": "Welcome Deck 2017",
 
@@ -86,6 +90,8 @@ var EditionTable = map[string]string{
 	"Standard Series Promo":                "BFZ Standard Series",
 	"2017 Standard Showdown":               "XLN Standard Showdown",
 	"2018 Standard Showdown":               "M19 Standard Showdown",
+	"2017 Standard Showdown Guay":          "XLN Standard Showdown",
+	"2018 Standard Showdown Danner":        "M19 Standard Showdown",
 	"Rebecca Guay Standard Showdown 2017":  "XLN Standard Showdown",
 	"Alayna Danner Standard Showdown 2018": "M19 Standard Showdown",
 	"Standard Showdown 2017":               "XLN Standard Showdown",
@@ -134,17 +140,20 @@ var EditionTable = map[string]string{
 	// Modern Masters
 	"Modern Masters 2013":           "Modern Masters",
 	"Ultimate Box Toppers":          "Ultimate Box Topper",
+	"Ultimate Masters Box Toppers":  "Ultimate Box Topper",
 	"Ultimate Masters: Box Toppers": "Ultimate Box Topper",
 
 	// CE and IE editions
+	"Collector's Edition - International": "Intl. Collectors' Edition",
 	"Collectors Ed Intl":                  "Intl. Collectors' Edition",
-	"Collectors' Edition - International": "Intl. Collectors’ Edition",
-	"International Collector's Edition":   "Intl. Collectors’ Edition",
-	"International Edition":               "Intl. Collectors’ Edition",
-	"Collector's Edition (Domestic)":      "Collectors’ Edition",
-	"Collector's Edition":                 "Collectors’ Edition",
+	"Collectors' Edition - International": "Intl. Collectors' Edition",
+	"International Collector's Edition":   "Intl. Collectors' Edition",
+	"International Edition":               "Intl. Collectors' Edition",
+	"Collector's Edition (Domestic)":      "Collectors' Edition",
+	"Collector's Edition - Domestic":      "Collectors' Edition",
+	"Collector's Edition":                 "Collectors' Edition",
 	"Collectors Ed":                       "Collectors' Edition",
-	"Collectors' Edition":                 "Collectors’ Edition",
+	"Collectors' Edition":                 "Collectors' Edition",
 
 	// Portal
 	"Portal 1":          "Portal",
@@ -158,6 +167,7 @@ var EditionTable = map[string]string{
 	"Duel Decks: Heros vs. Monsters": "Duel Decks: Heroes vs. Monsters",
 	"Duel Decks: Kiora vs. Elspeth":  "Duel Decks: Elspeth vs. Kiora",
 	"Duel Decks: Kiora vs Elspeth":   "Duel Decks: Elspeth vs. Kiora",
+	"DD: Anthology":                  "Duel Decks Anthology",
 
 	// Various series
 	"Global Series: Jiangg Yanggu & Mu Yanling":  "Global Series Jiang Yanggu & Mu Yanling",
@@ -185,19 +195,28 @@ var EditionTable = map[string]string{
 	"Deckmasters":      "Deckmasters",
 
 	// Junior Super/Europe/APAC Series
-	"European Junior Series":    "Junior Series Europe",
-	"Junior Series":             "Junior Series Europe",
-	"Junior APAC Series":        "Junior APAC Series",
-	"Junior APAC Series Promos": "Junior APAC Series",
-	"Junior Super Series":       "Junior Super Series",
-	"Magic Scholarship Series":  "Junior Super Series",
+	"European Junior Series":         "Junior Series Europe",
+	"Junior Series Promos":           "Junior Series Europe",
+	"Euro JSS Promo":                 "Junior Series Europe",
+	"Junior Series":                  "Junior Series Europe",
+	"Japan JSS":                      "Junior APAC Series",
+	"Japan Junior Tournament Promo":  "Junior APAC Series",
+	"Junior APAC Series":             "Junior APAC Series",
+	"Junior APAC Series Promos":      "Junior APAC Series",
+	"Junior Super Series":            "Junior Super Series",
+	"Magic Scholarship Series":       "Junior Super Series",
+	"Magic Scholarship Series Promo": "Junior Super Series",
+	"Scholarship Series Promo":       "Junior Super Series",
 	"MSS":           "Junior Super Series",
+	"MSS Promo":     "Junior Super Series",
 	"JSS":           "Junior Super Series",
 	"JSS DCI PROMO": "Junior Super Series",
 	"JSS Foil":      "Junior Super Series",
+	"JSS Promo":     "Junior Super Series",
 
 	// GP Promos
 	"2010 Grand Prix Promo":              "Grand Prix Promos",
+	"2018 Grand Prix Promo":              "Grand Prix Promos",
 	"GP Promo":                           "Grand Prix Promos",
 	"Gran Prix Promo":                    "Grand Prix Promos",
 	"Grand Prix":                         "Grand Prix Promos",
@@ -234,25 +253,32 @@ var EditionTable = map[string]string{
 	"Regional PTQ":            "Pro Tour Promos",
 
 	// Worlds
-	"2017 WMCQ Promo":         "World Magic Cup Qualifiers",
-	"WCQ":                     "World Magic Cup Qualifiers",
-	"WMC Promo":               "World Magic Cup Qualifiers",
-	"WMC":                     "World Magic Cup Qualifiers",
-	"WMCQ Foil":               "World Magic Cup Qualifiers",
-	"WMCQ":                    "World Magic Cup Qualifiers",
-	"World Magic Cup":         "World Magic Cup Qualifiers",
-	"World Championship Foil": "World Championship Promos",
+	"2015 World Magic Cup Qualifier":  "World Magic Cup Qualifiers",
+	"2016 WMCQ Promo":                 "World Magic Cup Qualifiers",
+	"2017 WMCQ Promo":                 "World Magic Cup Qualifiers",
+	"WCQ":                             "World Magic Cup Qualifiers",
+	"WMC Promo":                       "World Magic Cup Qualifiers",
+	"WMC":                             "World Magic Cup Qualifiers",
+	"WMCQ Foil":                       "World Magic Cup Qualifiers",
+	"WMCQ Promo":                      "World Magic Cup Qualifiers",
+	"WMCQ Promo 2016":                 "World Magic Cup Qualifiers",
+	"WMCQ Promo 2017":                 "World Magic Cup Qualifiers",
+	"WMCQ":                            "World Magic Cup Qualifiers",
+	"World Magic Cup":                 "World Magic Cup Qualifiers",
+	"World Magic Cup Qualifier Promo": "World Magic Cup Qualifiers",
+	"World Championship Foil":         "World Championship Promos",
 
 	// Tarkir extra sets
-	"Dragonfury":              "Tarkir Dragonfury",
-	"Dragonfury Promo":        "Tarkir Dragonfury",
-	"Tarkir Dragonfury":       "Tarkir Dragonfury",
-	"Tarkir Dragonfury Promo": "Tarkir Dragonfury",
-	"Promos: Ugin's Fate":     "Ugin's Fate",
-	"Ugin's Fate":             "Ugin's Fate",
-	"Ugins Fate":              "Ugin's Fate",
-	"Ugins Fate Promo":        "Ugin's Fate",
-	"Ugin’s Fate Promo":       "Ugin's Fate",
+	"Dragonfury":                              "Tarkir Dragonfury",
+	"Dragonfury Promo":                        "Tarkir Dragonfury",
+	"Dragons of Tarkir Dragonfury Game Promo": "Tarkir Dragonfury",
+	"Tarkir Dragonfury":                       "Tarkir Dragonfury",
+	"Tarkir Dragonfury Promo":                 "Tarkir Dragonfury",
+	"Promos: Ugin's Fate":                     "Ugin's Fate",
+	"Ugin's Fate":                             "Ugin's Fate",
+	"Ugins Fate":                              "Ugin's Fate",
+	"Ugins Fate Promo":                        "Ugin's Fate",
+	"Ugin’s Fate Promo":                       "Ugin's Fate",
 
 	// Clash packs
 	"Fate Reforged Clash Pack": "Fate Reforged Clash Pack",
