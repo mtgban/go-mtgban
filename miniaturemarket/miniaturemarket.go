@@ -2,7 +2,6 @@ package miniaturemarket
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 	"sync"
@@ -11,7 +10,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 type Miniaturemarket struct {
@@ -20,20 +18,15 @@ type Miniaturemarket struct {
 	BuylistDate   time.Time
 
 	client    *MMClient
-	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
-
-	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.SetDatabase) *Miniaturemarket {
+func NewScraper() *Miniaturemarket {
 	mm := Miniaturemarket{}
 	mm.client = NewMMClient()
-	mm.db = db
 	mm.inventory = map[string][]mtgban.InventoryEntry{}
 	mm.buylist = map[string]mtgban.BuylistEntry{}
-	mm.norm = mtgban.NewNormalizer()
 	return &mm
 }
 
@@ -54,91 +47,6 @@ func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mm *Miniaturemarket) processTitle(title string) (cardName string, edition string, err error) {
-	fields := strings.Split(title, " - ")
-	cardName = fields[0]
-	edition = fields[1]
-	if strings.Contains(edition, " (") {
-		if edition == "4th Edition (Alternate)" {
-			err = fmt.Errorf("untracked edition")
-		}
-		fields = mtgban.SplitVariants(edition)
-		edition = fields[0]
-	}
-
-	// Skip non-singles cards
-	if strings.Contains(cardName, "Token") ||
-		strings.Contains(cardName, "Emblem") ||
-		strings.Contains(cardName, "Checklist Card") ||
-		strings.Contains(cardName, "Punch Card") ||
-		strings.Contains(cardName, "Oversized") {
-		err = fmt.Errorf("non-single card")
-	}
-	switch cardName {
-	case "Manifest", "Morph", "Energy Reserve", "City's Blessing", "On an Adventure",
-		"Experience Counter", "Poison Counter", "The Monarch":
-		err = fmt.Errorf("non-single card")
-	}
-
-	if strings.HasPrefix(cardName, "Mana Crypt") && strings.Contains(cardName, "(Media Insert)") && !strings.Contains(cardName, "(English)") {
-		err = fmt.Errorf("non-english card")
-	}
-
-	switch edition {
-	case "Planechase 2009":
-		for _, card := range mm.db["OHOP"].Cards {
-			if mm.norm.Normalize(card.Name) == mm.norm.Normalize(cardName) {
-				edition = "Planechase Planes"
-				break
-			}
-		}
-	case "Modern Horizons Art Series":
-		err = fmt.Errorf("untracked edition")
-	case "Legends":
-		if strings.Contains(cardName, "Italian") {
-			err = fmt.Errorf("non-english edition")
-		}
-	case "Portal Three Kingdoms":
-		if strings.Contains(cardName, "Chinese") || strings.Contains(cardName, "Japanese") {
-			err = fmt.Errorf("non-english edition")
-		}
-	case "Duel Decks: Jace vs. Chandra":
-		if strings.Contains(cardName, "Japanese") {
-			err = fmt.Errorf("non-english edition")
-		}
-	}
-
-	if strings.Contains(cardName, " #") {
-		fields := strings.Split(cardName, " #")
-		subfields := strings.Fields(fields[1])
-		cardName = strings.Replace(cardName, "#"+subfields[0], "("+subfields[0]+")", 1)
-	}
-
-	if strings.Contains(cardName, " [") && strings.Contains(cardName, "]") {
-		cardName = strings.Replace(cardName, "[", "(", 1)
-		cardName = strings.Replace(cardName, "]", ")", 1)
-	}
-
-	lutName, found := cardTable[cardName]
-	if found {
-		cardName = lutName
-	}
-
-	if strings.HasPrefix(cardName, "Plains") ||
-		strings.HasPrefix(cardName, "Island") ||
-		strings.HasPrefix(cardName, "Swamp") ||
-		strings.HasPrefix(cardName, "Mountain") ||
-		strings.HasPrefix(cardName, "Forest") {
-		fields := strings.Fields(cardName)
-		if len(fields) > 1 && len(fields[1]) == 1 {
-			cardName = strings.Replace(cardName, fields[0]+" "+fields[1], fields[0], 1)
-			cardName += " (" + fields[1] + ")"
-		}
-	}
-
-	return
-}
-
 func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, page int, secondHalf bool) error {
 	spring, err := mm.client.SearchSpringPage(page, secondHalf)
 	if err != nil {
@@ -152,7 +60,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, pag
 
 	doc.Find("div.grouped-product").Each(func(i int, s *goquery.Selection) {
 		title := strings.TrimSpace(s.Find("h3").Text())
-		cardName, edition, err := mm.processTitle(title)
+		theCard, err := preprocess(title)
 		if err != nil {
 			return
 		}
@@ -176,12 +84,17 @@ func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, pag
 			}
 
 			// Needed to discern duplicates of this particular card
-			// Avoid adding it multiple times
-			if strings.HasPrefix(cardName, "Sorcerous Spyglass") && !strings.Contains(cardName, " (M") {
-				cardName += " (" + group.SKU + ")"
+			if theCard.Name == "Sorcerous Spyglass" {
+				switch group.SKU {
+				case "M-660-012-1NM", "M-660-012-3F", "M-650-124-3F":
+					theCard.Variation += "XLN"
+				case "M-660-016-1NM", "M-660-016-3F", "M-650-176-3F":
+					theCard.Variation += "ELD"
+				}
 			}
 
-			isFoil := strings.HasPrefix(group.Name, "Foil")
+			theCard.Foil = strings.HasPrefix(group.Name, "Foil")
+
 			cond := group.Name
 			switch cond {
 			case "Near Mint", "Foil Near Mint", "Foil Near MInt":
@@ -193,14 +106,10 @@ func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, pag
 				return
 			}
 
-			card := mmCard{
-				Name:    cardName,
-				Edition: edition,
-				Foil:    isFoil,
-			}
-
-			cc, err := mm.convert(&card)
+			cc, err := theCard.Match()
 			if err != nil {
+				mm.printf("%q", theCard)
+				mm.printf("%s", title)
 				mm.printf("%v", err)
 				return
 			}
@@ -209,7 +118,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, pag
 			urlPage := strings.Join(fields[:len(fields)-1], "-") + ".html"
 
 			out := mtgban.InventoryEntry{
-				Card:       *cc,
+				Card:       mtgban.Card2card(cc),
 				Conditions: cond,
 				Price:      group.Price,
 				Quantity:   group.Stock,
@@ -296,7 +205,6 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 	}
 
 	for _, card := range buyback {
-		// This field is always "[Foil] Near Mint" or null for sealed
 		if card.MtgCondition == "" ||
 			card.MtgSet == "Bulk MTG" ||
 			card.MtgRarity == "Sealed Product" {
@@ -312,17 +220,6 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 			continue
 		}
 
-		// This field is always "<name> - <set> (<condition>)"
-		cardName, edition, err := mm.processTitle(card.Name)
-		if err != nil {
-			continue
-		}
-
-		// Needed to discern duplicates of this particular card
-		if strings.HasPrefix(cardName, "Sorcerous Spyglass") {
-			cardName += " (" + card.SKU + ")"
-		}
-
 		price, err := strconv.ParseFloat(card.Price, 64)
 		if err != nil {
 			res.err = err
@@ -333,14 +230,27 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 			continue
 		}
 
-		mCard := mmCard{
-			Name:    cardName,
-			Edition: edition,
-			Foil:    card.IsFoil,
+		theCard, err := preprocess(card.Name)
+		if err != nil {
+			continue
 		}
 
-		cc, err := mm.convert(&mCard)
+		theCard.Foil = card.IsFoil
+
+		// Needed to discern duplicates of this particular card
+		if theCard.Name == "Sorcerous Spyglass" {
+			switch card.SKU {
+			case "M-660-012-1NM", "M-660-012-3F", "M-650-124-3F":
+				theCard.Variation += "XLN"
+			case "M-660-016-1NM", "M-660-016-3F", "M-650-176-3F":
+				theCard.Variation += "ELD"
+			}
+		}
+
+		cc, err := theCard.Match()
 		if err != nil {
+			mm.printf("%q", theCard)
+			mm.printf("%s", card)
 			mm.printf("%v", err)
 			continue
 		}
@@ -357,7 +267,7 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 		}
 
 		out := mtgban.BuylistEntry{
-			Card:       *cc,
+			Card:       mtgban.Card2card(cc),
 			Conditions: cond,
 			BuyPrice:   price,
 			TradePrice: price * 1.3,
