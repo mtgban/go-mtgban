@@ -1,55 +1,16 @@
 package abugames
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
 
-	http "github.com/hashicorp/go-retryablehttp"
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
-type abuJSON struct {
-	Grouped struct {
-		ProductId struct {
-			Count  int `json:"ngroups"`
-			Groups []struct {
-				Doclist struct {
-					Cards []struct {
-						Id           string `json:"id"`
-						DisplayTitle string `json:"display_title"`
-						SimpleTitle  string `json:"simple_title"`
-
-						Edition   string `json:"magic_edition_sort"`
-						Condition string `json:"condition"`
-						Layout    string `json:"layout"`
-
-						Rarity   string   `json:"rarity"`
-						Language []string `json:"language"`
-						Title    string   `json:"title"`
-						Number   string   `json:"card_number"`
-
-						SellPrice    float64 `json:"price"`
-						SellQuantity int     `json:"quantity"`
-						BuyQuantity  int     `json:"buy_list_quantity"`
-						BuyPrice     float64 `json:"buy_price"`
-						TradePrice   float64 `json:"trade_price"`
-					} `json:"docs"`
-				} `json:"doclist"`
-			} `json:"groups"`
-		} `json:"product_id"`
-	} `json:"grouped"`
-}
-
 const (
-	maxConcurrency     = 8
-	maxEntryPerRequest = 40
-	abuURL             = "https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%20-buy_price%3A0%20-buy_list_quantity%3A0%20%2Blanguage%3A(%22English%22)%20%2Bdisplay_title%3A*&group=true&group.field=product_id&group.ngroups=true&group.limit=10&start=0&rows=0&wt=json"
+	maxConcurrency = 8
 )
 
 type ABUGames struct {
@@ -57,7 +18,7 @@ type ABUGames struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	httpClient *http.Client
+	client *ABUClient
 
 	db        mtgjson.MTGDB
 	inventory map[string][]mtgban.InventoryEntry
@@ -72,8 +33,7 @@ func NewScraper(db mtgjson.MTGDB) *ABUGames {
 	abu.inventory = map[string][]mtgban.InventoryEntry{}
 	abu.buylist = map[string]mtgban.BuylistEntry{}
 	abu.norm = mtgban.NewNormalizer()
-	abu.httpClient = http.NewClient()
-	abu.httpClient.Logger = nil
+	abu.client = NewABUClient()
 	return &abu
 }
 
@@ -90,31 +50,7 @@ func (abu *ABUGames) printf(format string, a ...interface{}) {
 }
 
 func (abu *ABUGames) processEntry(page int) (res resultChan) {
-	u, err := url.Parse(abuURL)
-	if err != nil {
-		res.err = err
-		return
-	}
-
-	q := u.Query()
-	q.Set("rows", fmt.Sprintf("%d", maxEntryPerRequest))
-	q.Set("start", fmt.Sprintf("%d", page))
-	u.RawQuery = q.Encode()
-
-	resp, err := abu.httpClient.Get(u.String())
-	if err != nil {
-		res.err = err
-		return
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	var db abuJSON
-	err = json.Unmarshal(data, &db)
+	product, err := abu.client.GetProduct(page)
 	if err != nil {
 		res.err = err
 		return
@@ -122,7 +58,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 
 	duplicate := map[string]bool{}
 
-	for _, group := range db.Grouped.ProductId.Groups {
+	for _, group := range product.Grouped.ProductId.Groups {
 		for _, card := range group.Doclist.Cards {
 			// Deprecated value
 			if card.Condition == "SP" {
@@ -345,23 +281,12 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 
 // Scrape returns an array of Entry, containing pricing and card information
 func (abu *ABUGames) scrape() error {
-	resp, err := abu.httpClient.Get(abuURL)
+	product, err := abu.client.GetInfo()
 	if err != nil {
 		return err
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	var header abuJSON
-	err = json.Unmarshal(data, &header)
-	if err != nil {
-		return err
-	}
-	count := header.Grouped.ProductId.Count
+	count := product.Grouped.ProductId.Count
 	abu.printf("Parsing %d entries", count)
 
 	pages := make(chan int)
