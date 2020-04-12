@@ -1,12 +1,10 @@
 package abugames
 
 import (
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
 const (
@@ -20,19 +18,14 @@ type ABUGames struct {
 
 	client *ABUClient
 
-	db        mtgjson.SetDatabase
 	inventory map[string][]mtgban.InventoryEntry
 	buylist   map[string]mtgban.BuylistEntry
-
-	norm *mtgban.Normalizer
 }
 
-func NewScraper(db mtgjson.SetDatabase) *ABUGames {
+func NewScraper() *ABUGames {
 	abu := ABUGames{}
-	abu.db = db
 	abu.inventory = map[string][]mtgban.InventoryEntry{}
 	abu.buylist = map[string]mtgban.BuylistEntry{}
-	abu.norm = mtgban.NewNormalizer()
 	abu.client = NewABUClient()
 	return &abu
 }
@@ -77,164 +70,34 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 				continue
 			}
 
-			isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil")
-
 			if duplicate[card.Id] {
-				abu.printf("Skipping duplicate card: %s (%s %q)", card.SimpleTitle, card.Edition, isFoil)
+				abu.printf("Skipping duplicate card: %s (%s)", card.DisplayTitle, card.Edition)
 				continue
 			}
 
-			lang := ""
-			if len(card.Language) > 0 {
-				switch card.Language[0] {
-				case "English":
-					lang = "EN"
-				case "French":
-					lang = "FR"
-				case "German":
-					lang = "DE"
-				case "Italian":
-					lang = "IT"
-				case "Spanish":
-					lang = "ES"
-				case "Portuguese":
-					lang = "PT"
-				case "Japanese":
-					lang = "JP"
-				case "Korean":
-					lang = "KR"
-				case "Chinese Simplified":
-					lang = "CH"
-				case "Russian":
-					lang = "RU"
-				default:
-					lang = card.Language[0]
-				}
-			}
-
-			if lang != "EN" || strings.Contains(card.Title, "Non-English") {
-				continue
-			}
-
-			// Non-Singles magic cards
-			switch card.Layout {
-			case "Scheme", "Plane", "Phenomenon":
-				continue
-			}
-			if strings.Contains(card.DisplayTitle, "Oversized") ||
-				strings.Contains(card.DisplayTitle, "Charlie Brown") {
-				continue
-			}
-			// Non-existing cards
-			switch card.DisplayTitle {
-			case "Steward of Valeron (Dengeki Character Festival) - FOIL",
-				"Captain's Claws (Goldnight Castigator Shadow) - FOIL",
-				"Island (Arena 1999 Urza Saga No Symbol) - FOIL",
-				"Beast of Burden (Prerelease - No Expansion Symbol) - FOIL",
-				"Hymn to Tourach (B - Mark Justice - 1996)",
-				"Mountain (6th Edition 343 - Mark Le Pine - 1999)":
-				continue
-			}
-			// Unique cards
-			if strings.HasPrefix(card.Title, "ID#") {
-				continue
-			}
-
-			number := strings.TrimLeft(card.Number, "0")
-
-			// Drop any foil reference from the name (careful not to drop the Foil card)
-			fullName := strings.TrimSpace(card.DisplayTitle)
-			fullName = strings.Replace(fullName, " - Foil", "", 1)
-			fullName = strings.Replace(fullName, " - FOIL", "", 1)
-			fullName = strings.Replace(fullName, " FOIL", "", 1)
-			fullName = strings.Replace(fullName, " Foil", "", 1)
-
-			// Merge Prerelease and Promo Pack tags in the full name for later parsing
-			fullName = strings.Replace(fullName, "- (Prerelease)", "(Prerelease)", 1)
-			fullName = strings.Replace(fullName, "- (Promo Pack)", "(Promo Pack)", 1)
-
-			// Fix some untagged prerelease cards
-			if strings.HasSuffix(fullName, " - "+card.Edition) {
-				fullName = strings.Replace(fullName, "- "+card.Edition, "(Prerelease)", 1)
-			}
-
-			layout := ""
-			if card.Layout != "Normal" {
-				layout = card.Layout
-			}
-			// Fix a card with wrong information
-			if card.SimpleTitle == "Repudiate and Replicate" {
-				layout = "Split"
-			}
-
-			switch card.Edition {
-			case "Anthologies":
-				if fullName == "Mountain (A)" {
-					fullName = "Mountain (B)"
-				} else if fullName == "Mountain (B)" {
-					fullName = "Mountain (A)"
-				}
-			case "World Championship":
-				switch {
-				case strings.HasSuffix(fullName, "1996)"):
-					if card.SimpleTitle == "Mishra's Factory" {
-						number = "361"
-					}
-				case strings.HasSuffix(fullName, "1997)"):
-					if card.SimpleTitle == "Pyroblast" {
-						number = "262"
-					}
-				case strings.HasSuffix(fullName, "2000)"):
-					switch card.SimpleTitle {
-					case "Wrath of God":
-						number = "54"
-					case "Snake Basket":
-						number = "312"
-					case "Meekstone":
-						number = "299"
-					case "Sky Diamond":
-						number = "311"
-					}
-				case strings.HasSuffix(fullName, "2003)"):
-					if card.SimpleTitle == "Phantom Nishoba" {
-						number = "190"
-					}
-				}
-			}
-
-			cardName := card.SimpleTitle
-			name, found := cardTable[cardName]
-			if found {
-				cardName = name
-			}
-
-			aCard := abuCard{
-				Name: cardName,
-				Set:  card.Edition,
-				Foil: isFoil,
-
-				FullName: fullName,
-				Number:   number,
-				Layout:   layout,
-				Id:       card.Id,
-			}
-
-			cc, err := abu.convert(&aCard)
+			theCard, err := preprocess(&card)
 			if err != nil {
+				continue
+			}
+
+			cc, err := theCard.Match()
+			if err != nil {
+				abu.printf("%v", theCard)
+				abu.printf("%v", card)
 				abu.printf("%v", err)
 				continue
 			}
 
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
 				notes := "https://abugames.com/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
-				if isFoil {
+				if theCard.Foil {
 					notes += "&card_style=[\"Foil\"]"
 				} else {
 					notes += "&card_style=[\"Normal\"]"
 				}
 
 				out := mtgban.InventoryEntry{
-					Card:       *cc,
+					Card:       mtgban.Card2card(cc),
 					Conditions: cond,
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
@@ -253,14 +116,14 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 				}
 
 				notes := "https://abugames.com/buylist/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
-				if isFoil {
+				if theCard.Foil {
 					notes += "&card_style=[\"Foil\"]"
 				} else {
 					notes += "&card_style=[\"Normal\"]"
 				}
 
 				out := mtgban.BuylistEntry{
-					Card:          *cc,
+					Card:          mtgban.Card2card(cc),
 					Conditions:    cond,
 					BuyPrice:      card.BuyPrice,
 					TradePrice:    card.TradePrice,
@@ -323,14 +186,12 @@ func (abu *ABUGames) scrape() error {
 			err = mtgban.InventoryAdd(abu.inventory, result.inventory[i])
 			if err != nil {
 				abu.printf(err.Error())
-				continue
 			}
 		}
 		for i := range result.buylist {
 			err = mtgban.BuylistAdd(abu.buylist, result.buylist[i])
 			if err != nil {
 				abu.printf(err.Error())
-				continue
 			}
 		}
 	}
@@ -356,7 +217,6 @@ func (abu *ABUGames) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 	abu.printf("Inventory scraping took %s", time.Since(start))
 
 	return abu.inventory, nil
-
 }
 
 func (abu *ABUGames) Buylist() (map[string]mtgban.BuylistEntry, error) {
