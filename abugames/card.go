@@ -43,7 +43,7 @@ func (abu *ABUGames) convert(c *abuCard) (*mtgban.Card, error) {
 
 	// Loop over the DB
 	for _, set := range abu.db {
-		if setCheck(set) {
+		if setCheck(*set) {
 			for _, card := range set.Cards {
 				dbCardName := abu.norm.Normalize(card.Name)
 
@@ -58,7 +58,7 @@ func (abu *ABUGames) convert(c *abuCard) (*mtgban.Card, error) {
 
 				// Narrow results with the number callback
 				if numberCheck != nil {
-					cardCheck = cardCheck && numberCheck(set, card)
+					cardCheck = cardCheck && numberCheck(*set, card)
 				}
 
 				if cardCheck {

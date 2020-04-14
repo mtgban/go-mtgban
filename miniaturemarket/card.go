@@ -34,7 +34,7 @@ func (mm *Miniaturemarket) convert(c *mmCard) (*mtgban.Card, error) {
 
 	// Loop over the DB
 	for _, set := range mm.db {
-		if setCheck(set) {
+		if setCheck(*set) {
 			for _, card := range set.Cards {
 				dbCardName := mm.norm.Normalize(card.Name)
 
@@ -49,7 +49,7 @@ func (mm *Miniaturemarket) convert(c *mmCard) (*mtgban.Card, error) {
 
 				// Narrow results with the number callback
 				if numberCheck != nil {
-					cardCheck = cardCheck && numberCheck(set, card)
+					cardCheck = cardCheck && numberCheck(*set, card)
 				}
 
 				if cardCheck {

@@ -63,7 +63,7 @@ const (
 	SuffixSpecial   = "★"
 )
 
-type SetDatabase map[string]Set
+type SetDatabase map[string]*Set
 
 // Load a MTGJSON AllPrinting.json file and return a SetDatabase map.
 func LoadAllPrintings(allPrintingsPath string) (SetDatabase, error) {
@@ -106,7 +106,7 @@ func LoadAllPrintingsFromReader(r io.Reader) (SetDatabase, error) {
 			continue
 		}
 
-		allPrintingsDb[code] = set
+		allPrintingsDb[code] = &set
 	}
 
 	return allPrintingsDb, nil

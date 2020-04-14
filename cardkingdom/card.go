@@ -86,7 +86,7 @@ func (ck *Cardkingdom) convert(c *ckCard) (*mtgban.Card, error) {
 
 		// Narrow results with the number callback
 		if numberCheck != nil {
-			cardCheck = cardCheck && numberCheck(set, card)
+			cardCheck = cardCheck && numberCheck(*set, card)
 		}
 
 		if cardCheck {
