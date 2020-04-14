@@ -14,6 +14,7 @@ type Set struct {
 	TotalSetSize int    `json:"totalSetSize"`
 	Cards        []Card `json:"cards"`
 	ReleaseDate  string `json:"releaseDate"`
+	ParentCode   string `json:"parentCode"`
 }
 
 type Card struct {
@@ -21,6 +22,7 @@ type Card struct {
 	HasNonFoil bool   `json:"hasNonFoil"`
 	UUID       string `json:"uuid"`
 
+	HasFoil                bool     `json:"hasFoil"`
 	Artist                 string   `json:"artist"`
 	BorderColor            string   `json:"borderColor"`
 	FrameEffect            string   `json:"frameEffect"`
@@ -39,6 +41,7 @@ type Card struct {
 	ScryfallOracleId       string   `json:"scryfallOracleId"`
 	Variations             []string `json:"variations"`
 	FlavorText             string   `json:"flavorText"`
+	Watermark              string   `json:"watermark"`
 	ForeignData            []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
@@ -47,6 +50,7 @@ type Card struct {
 const (
 	LayoutAftermath = "aftermath"
 	LayoutFlip      = "flip"
+	LayoutMeld      = "meld"
 	LayoutNormal    = "normal"
 	LayoutSplit     = "split"
 	LayoutTransform = "transform"
@@ -61,6 +65,7 @@ const (
 
 	SuffixLightMana = "†"
 	SuffixSpecial   = "★"
+	SuffixVariant   = "†"
 )
 
 type SetDatabase map[string]*Set
@@ -119,4 +124,11 @@ func (c *Card) HasFrameEffect(fe string) bool {
 		}
 	}
 	return false
+}
+
+func (c *Card) HasUniqueLanguage(lang string) bool {
+	if len(c.ForeignData) != 1 {
+		return false
+	}
+	return c.ForeignData[0].Language == lang
 }
