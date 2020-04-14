@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kodabb/go-mtgban/mtgdb"
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
 
@@ -97,4 +98,13 @@ func GetExchangeRate(currency string) (float64, error) {
 	}
 
 	return reply.Rates.USD, nil
+}
+
+func Card2card(in *mtgdb.Card) Card {
+	return Card{
+		Id:   in.Id,
+		Name: in.Name,
+		Set:  in.Edition,
+		Foil: in.Foil,
+	}
 }
