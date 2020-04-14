@@ -8,23 +8,6 @@ import (
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
-// Card is a generic card representation using fields defined by the MTGJSON project.
-type Card struct {
-	// The unique identifier of a card. When the UUID can be used to associate
-	// two versions of the same card (for example because one is foil), `_f`
-	// suffix is appended to it.
-	Id string `json:"id"`
-
-	// The official name of the card
-	Name string `json:"name"`
-
-	// The set the card comes from
-	Set string `json:"set"`
-
-	// Whether the card is foil or not
-	Foil bool `json:"foil"`
-}
-
 // InventoryEntry represents an entry for selling a particular Card
 type InventoryEntry struct {
 	Quantity   int
