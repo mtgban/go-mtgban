@@ -269,7 +269,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 					Quantity:   card.Quantity,
 					Notes:      ftfInventoryURL + "/" + card.URLId,
 				}
-				err := mtgban.InventoryAdd(ftf.inventory, out)
+				err := ftf.inventory.Add(out)
 				if err != nil {
 					ftf.printf("%v", err)
 				}
@@ -306,7 +306,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 					QuantityRatio: qtyRatio,
 					Notes:         ftfBuylistURL + "/" + card.URLId,
 				}
-				err := mtgban.BuylistAdd(ftf.buylist, out)
+				err := ftf.buylist.Add(out)
 				if err != nil {
 					ftf.printf("%v", err)
 				}

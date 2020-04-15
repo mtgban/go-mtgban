@@ -224,7 +224,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Quantity:   card.Quantity,
 					Notes:      cfbInventoryURL + "/" + card.URLId,
 				}
-				err := mtgban.InventoryAdd(cfb.inventory, out)
+				err := cfb.inventory.Add(out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}
@@ -261,7 +261,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					QuantityRatio: qtyRatio,
 					Notes:         cfbBuylistURL + "/" + card.URLId,
 				}
-				err := mtgban.BuylistAdd(cfb.buylist, out)
+				err := cfb.buylist.Add(out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}

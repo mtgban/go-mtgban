@@ -187,7 +187,7 @@ func (mc *Magiccorner) scrape() error {
 			continue
 		}
 		for _, card := range result.cards {
-			err = mtgban.InventoryAdd(mc.inventory, card)
+			err = mc.inventory.Add(card)
 			if err != nil {
 				mc.printf(err.Error())
 				continue

@@ -111,7 +111,7 @@ func (nf *Ninetyfive) parseBL() error {
 				TradePrice: 0,
 				Quantity:   quantity,
 			}
-			err := mtgban.BuylistAdd(nf.buylist, out)
+			err := nf.buylist.Add(out)
 			if err != nil {
 				nf.printf("%v", err)
 			}

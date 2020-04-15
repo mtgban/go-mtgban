@@ -155,7 +155,7 @@ func (sz *Strikezone) scrape() error {
 	}()
 
 	for card := range channel {
-		err := mtgban.InventoryAdd(sz.inventory, card)
+		err := sz.inventory.Add(card)
 		if err != nil {
 			sz.printf("%v", err)
 			continue
@@ -259,7 +259,7 @@ func (sz *Strikezone) parseBL() error {
 			QuantityRatio: qtyRatio,
 			Notes:         "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
 		}
-		err = mtgban.BuylistAdd(sz.buylist, out)
+		err = sz.buylist.Add(out)
 		if err != nil {
 			sz.printf("%v", err)
 		}

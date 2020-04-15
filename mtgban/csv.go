@@ -35,7 +35,7 @@ func NewVendorFromCSV(r io.Reader, grade map[string]float64) (Vendor, error) {
 		return nil, err
 	}
 	for _, entry := range buylist {
-		err = BuylistAdd(vendor.buylist, entry)
+		err = vendor.buylist.Add(entry)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +54,7 @@ func NewSellerFromCSV(r io.Reader) (Seller, error) {
 	}
 
 	for _, entry := range inventory {
-		err = InventoryAdd(seller.inventory, entry)
+		err = seller.inventory.Add(entry)
 		if err != nil {
 			return nil, err
 		}

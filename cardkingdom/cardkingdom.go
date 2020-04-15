@@ -77,7 +77,7 @@ func (ck *Cardkingdom) scrape() error {
 					Quantity:   card.SellQuantity,
 					Notes:      u.String(),
 				}
-				err = mtgban.InventoryAdd(ck.inventory, out)
+				err = ck.inventory.Add(out)
 				if err != nil {
 					ck.printf("%v", err)
 				}
@@ -126,7 +126,7 @@ func (ck *Cardkingdom) scrape() error {
 					QuantityRatio: qtyRatio,
 					Notes:         u.String(),
 				}
-				err = mtgban.BuylistAdd(ck.buylist, out)
+				err = ck.buylist.Add(out)
 				if err != nil {
 					ck.printf("%v", err)
 				}

@@ -183,13 +183,13 @@ func (abu *ABUGames) scrape() error {
 		}
 
 		for i := range result.inventory {
-			err = mtgban.InventoryAdd(abu.inventory, result.inventory[i])
+			err = abu.inventory.Add(result.inventory[i])
 			if err != nil {
 				abu.printf(err.Error())
 			}
 		}
 		for i := range result.buylist {
-			err = mtgban.BuylistAdd(abu.buylist, result.buylist[i])
+			err = abu.buylist.Add(result.buylist[i])
 			if err != nil {
 				abu.printf(err.Error())
 			}
