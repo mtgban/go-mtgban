@@ -1,5 +1,7 @@
 package mtgban
 
+import "github.com/kodabb/go-mtgban/mtgdb"
+
 const DefaultArbitMinDiff = 0.2
 const DefaultArbitMinSpread = 25.0
 const DefaultMismatchMinDiff = 1.0
@@ -13,6 +15,8 @@ type ArbitOpts struct {
 }
 
 type ArbitEntry struct {
+	Card mtgdb.Card
+
 	BuylistEntry
 	InventoryEntry
 
@@ -43,8 +47,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		return nil, err
 	}
 
-	for key, blEntry := range buylist {
-		invEntries, found := inventory[key]
+	for card, blEntry := range buylist {
+		invEntries, found := inventory[card]
 		if !found {
 			continue
 		}
@@ -54,7 +58,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			blPrice = blEntry.TradePrice
 		}
 
-		grade := vendor.Grading(blEntry)
+		grade := vendor.Grading(card, blEntry)
 		for _, invEntry := range invEntries {
 			price := invEntry.Price
 
@@ -67,6 +71,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			if difference > minDiff && spread > minSpread {
 				res := ArbitEntry{
+					Card:           card,
 					BuylistEntry:   blEntry,
 					InventoryEntry: invEntry,
 					Difference:     difference,
@@ -81,6 +86,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 }
 
 type MismatchEntry struct {
+	Card mtgdb.Card
+
 	InventoryEntry
 
 	Difference float64
@@ -108,8 +115,8 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 		return nil, err
 	}
 
-	for key, refEntries := range referenceInv {
-		invEntries, found := probeInv[key]
+	for card, refEntries := range referenceInv {
+		invEntries, found := probeInv[card]
 		if !found {
 			continue
 		}
@@ -122,6 +129,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 
 				if difference > minDiff && spread > minSpread {
 					res := MismatchEntry{
+						Card:           card,
 						InventoryEntry: invEntry,
 						Difference:     difference,
 						Spread:         spread,

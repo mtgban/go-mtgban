@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 type Cardkingdom struct {
@@ -70,14 +71,13 @@ func (ck *Cardkingdom) scrape() error {
 					u.RawQuery = q.Encode()
 				}
 
-				out := mtgban.InventoryEntry{
-					Card:       mtgban.Card2card(cc),
+				out := &mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      sellPrice,
 					Quantity:   card.SellQuantity,
 					Notes:      u.String(),
 				}
-				err = ck.inventory.Add(out)
+				err = ck.inventory.Add(cc, out)
 				if err != nil {
 					ck.printf("%v", err)
 				}
@@ -116,8 +116,7 @@ func (ck *Cardkingdom) scrape() error {
 				}
 				u.RawQuery = q.Encode()
 
-				out := mtgban.BuylistEntry{
-					Card:          mtgban.Card2card(cc),
+				out := &mtgban.BuylistEntry{
 					Conditions:    "NM",
 					BuyPrice:      price,
 					TradePrice:    price * 1.3,
@@ -126,7 +125,7 @@ func (ck *Cardkingdom) scrape() error {
 					QuantityRatio: qtyRatio,
 					Notes:         u.String(),
 				}
-				err = ck.buylist.Add(out)
+				err = ck.buylist.Add(cc, out)
 				if err != nil {
 					ck.printf("%v", err)
 				}
@@ -175,9 +174,9 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 	return ck.buylist, nil
 }
 
-func (ck *Cardkingdom) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+func (ck *Cardkingdom) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	switch {
-	case entry.Card.Foil:
+	case card.Foil:
 		grade = map[string]float64{
 			"SP": 0.75, "MP": 0.5, "HP": 0.3,
 		}
@@ -199,7 +198,7 @@ func (ck *Cardkingdom) Grading(entry mtgban.BuylistEntry) (grade map[string]floa
 		}
 	}
 
-	switch entry.Card.Set {
+	switch card.Edition {
 	case "Limited Edition Alpha",
 		"Limited Edition Beta",
 		"Unlimited Edition":

@@ -11,6 +11,7 @@ import (
 
 	"github.com/gocolly/colly"
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 const (
@@ -42,8 +43,13 @@ func (sz *Strikezone) printf(format string, a ...interface{}) {
 	}
 }
 
+type respChan struct {
+	card  *mtgdb.Card
+	entry mtgban.InventoryEntry
+}
+
 func (sz *Strikezone) scrape() error {
-	channel := make(chan mtgban.InventoryEntry)
+	channel := make(chan respChan)
 
 	c := colly.NewCollector(
 		colly.AllowedDomains("shop.strikezoneonline.com"),
@@ -137,12 +143,14 @@ func (sz *Strikezone) scrape() error {
 				return
 			}
 
-			channel <- mtgban.InventoryEntry{
-				Card:       mtgban.Card2card(cc),
-				Conditions: cond,
-				Price:      cardPrice,
-				Quantity:   quantity,
-				Notes:      "http://shop.strikezoneonline.com" + pathURL,
+			channel <- respChan{
+				card: cc,
+				entry: mtgban.InventoryEntry{
+					Conditions: cond,
+					Price:      cardPrice,
+					Quantity:   quantity,
+					Notes:      "http://shop.strikezoneonline.com" + pathURL,
+				},
 			}
 		})
 	})
@@ -154,8 +162,8 @@ func (sz *Strikezone) scrape() error {
 		close(channel)
 	}()
 
-	for card := range channel {
-		err := sz.inventory.Add(card)
+	for resp := range channel {
+		err := sz.inventory.Add(resp.card, &resp.entry)
 		if err != nil {
 			sz.printf("%v", err)
 			continue
@@ -233,7 +241,7 @@ func (sz *Strikezone) parseBL() error {
 		var sellPrice, priceRatio, qtyRatio float64
 		sellQty := 0
 
-		invCards := sz.inventory[cc.Id]
+		invCards := sz.inventory[*cc]
 		for _, invCard := range invCards {
 			if invCard.Conditions == "NM" {
 				sellPrice = invCard.Price
@@ -249,8 +257,7 @@ func (sz *Strikezone) parseBL() error {
 			qtyRatio = float64(quantity) / float64(sellQty) * 100
 		}
 
-		out := mtgban.BuylistEntry{
-			Card:          mtgban.Card2card(cc),
+		out := &mtgban.BuylistEntry{
 			Conditions:    "NM",
 			BuyPrice:      price,
 			TradePrice:    price * 1.3,
@@ -259,7 +266,7 @@ func (sz *Strikezone) parseBL() error {
 			QuantityRatio: qtyRatio,
 			Notes:         "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
 		}
-		err = sz.buylist.Add(out)
+		err = sz.buylist.Add(cc, out)
 		if err != nil {
 			sz.printf("%v", err)
 		}
@@ -304,7 +311,7 @@ func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
 	return sz.buylist, nil
 }
 
-func (sz *Strikezone) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+func (sz *Strikezone) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	return nil
 }
 

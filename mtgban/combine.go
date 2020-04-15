@@ -34,17 +34,18 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 			return nil, err
 		}
 
-		for _, entries := range inv {
+		for card, entries := range inv {
 			for _, entry := range entries {
 				if entry.Conditions != "NM" {
 					continue
 				}
 
-				_, found := result[entry.Card]
+				entryCard := Card2card(&card)
+				_, found := result[entryCard]
 				if !found {
-					result[entry.Card] = map[string]InventoryEntry{}
+					result[entryCard] = map[string]InventoryEntry{}
 				}
-				result[entry.Card][sellerName] = entry
+				result[entryCard][sellerName] = entry
 			}
 		}
 	}
@@ -86,7 +87,7 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 		BestOffer: map[Card]CombineEntry{},
 	}
 
-	result := map[Card]BuylistRecord{}
+	result := map[Card]map[string]BuylistEntry{}
 
 	for _, vendor := range vendors {
 		vendorName := vendor.(Scraper).Info().Name
@@ -97,12 +98,13 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 			return nil, err
 		}
 
-		for _, entry := range bl {
-			_, found := result[entry.Card]
+		for card, entry := range bl {
+			entryCard := Card2card(&card)
+			_, found := result[entryCard]
 			if !found {
-				result[entry.Card] = BuylistRecord{}
+				result[entryCard] = map[string]BuylistEntry{}
 			}
-			result[entry.Card][vendorName] = entry
+			result[entryCard][vendorName] = entry
 		}
 	}
 

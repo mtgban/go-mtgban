@@ -262,14 +262,13 @@ func (ftf *FaceToFace) scrape(mode string) error {
 
 		if mode == modeInventory {
 			if card.Quantity > 0 && card.Price > 0 {
-				out := mtgban.InventoryEntry{
-					Card:       mtgban.Card2card(cc),
+				out := &mtgban.InventoryEntry{
 					Conditions: card.Conditions,
 					Price:      card.Price * ftf.exchangeRate,
 					Quantity:   card.Quantity,
 					Notes:      ftfInventoryURL + "/" + card.URLId,
 				}
-				err := ftf.inventory.Add(out)
+				err := ftf.inventory.Add(cc, out)
 				if err != nil {
 					ftf.printf("%v", err)
 				}
@@ -280,7 +279,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 				var sellPrice, priceRatio, qtyRatio float64
 				sellQty := 0
 
-				invCards := ftf.inventory[cc.Id]
+				invCards := ftf.inventory[*cc]
 				for _, invCard := range invCards {
 					if invCard.Conditions == card.Conditions {
 						sellPrice = invCard.Price
@@ -296,8 +295,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 					qtyRatio = float64(card.Quantity) / float64(sellQty) * 100
 				}
 
-				out := mtgban.BuylistEntry{
-					Card:          mtgban.Card2card(cc),
+				out := &mtgban.BuylistEntry{
 					Conditions:    card.Conditions,
 					BuyPrice:      card.Price * ftf.exchangeRate,
 					TradePrice:    card.Price * ftf.exchangeRate * 1.3,
@@ -306,7 +304,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 					QuantityRatio: qtyRatio,
 					Notes:         ftfBuylistURL + "/" + card.URLId,
 				}
-				err := ftf.buylist.Add(out)
+				err := ftf.buylist.Add(cc, out)
 				if err != nil {
 					ftf.printf("%v", err)
 				}
@@ -357,7 +355,7 @@ func (ftf *FaceToFace) Buylist() (mtgban.BuylistRecord, error) {
 	return ftf.buylist, nil
 }
 
-func (ftf *FaceToFace) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+func (ftf *FaceToFace) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
 		"SP": 0.8, "MP": 0.6, "HP": 0.4,
 	}

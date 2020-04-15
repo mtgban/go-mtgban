@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 const (
@@ -32,8 +33,8 @@ func NewScraper() *ABUGames {
 
 type resultChan struct {
 	err       error
-	inventory []mtgban.InventoryEntry
-	buylist   []mtgban.BuylistEntry
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 }
 
 func (abu *ABUGames) printf(format string, a ...interface{}) {
@@ -48,6 +49,9 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 		res.err = err
 		return
 	}
+
+	res.inventory = mtgban.InventoryRecord{}
+	res.buylist = mtgban.BuylistRecord{}
 
 	duplicate := map[string]bool{}
 
@@ -96,14 +100,13 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					notes += "&card_style=[\"Normal\"]"
 				}
 
-				out := mtgban.InventoryEntry{
-					Card:       mtgban.Card2card(cc),
+				out := &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
 					Notes:      notes,
 				}
-				res.inventory = append(res.inventory, out)
+				res.inventory.Add(cc, out)
 			}
 
 			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 && card.Condition == "NM" {
@@ -122,8 +125,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					notes += "&card_style=[\"Normal\"]"
 				}
 
-				out := mtgban.BuylistEntry{
-					Card:          mtgban.Card2card(cc),
+				out := &mtgban.BuylistEntry{
 					Conditions:    cond,
 					BuyPrice:      card.BuyPrice,
 					TradePrice:    card.TradePrice,
@@ -132,7 +134,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					QuantityRatio: qtyRatio,
 					Notes:         notes,
 				}
-				res.buylist = append(res.buylist, out)
+				res.buylist.Add(cc, out)
 			}
 
 			duplicate[card.Id] = true
@@ -182,14 +184,16 @@ func (abu *ABUGames) scrape() error {
 			continue
 		}
 
-		for i := range result.inventory {
-			err = abu.inventory.Add(result.inventory[i])
-			if err != nil {
-				abu.printf(err.Error())
+		for card, entries := range result.inventory {
+			for i := range entries {
+				err = abu.inventory.Add(&card, &entries[i])
+				if err != nil {
+					abu.printf(err.Error())
+				}
 			}
 		}
-		for i := range result.buylist {
-			err = abu.buylist.Add(result.buylist[i])
+		for card, entry := range result.buylist {
+			err = abu.buylist.Add(&card, &entry)
 			if err != nil {
 				abu.printf(err.Error())
 			}
@@ -237,7 +241,7 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 }
 
 // Purely estimated
-func (abu *ABUGames) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+func (abu *ABUGames) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
 		"SP": 0.70, "MP": 0.6, "HP": 0.4,
 	}

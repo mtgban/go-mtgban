@@ -10,6 +10,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 type Miniaturemarket struct {
@@ -38,7 +39,7 @@ const (
 
 type resultChan struct {
 	err   error
-	cards []mtgban.BuylistEntry
+	cards mtgban.BuylistRecord
 }
 
 func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
@@ -47,7 +48,7 @@ func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, page int, secondHalf bool) error {
+func (mm *Miniaturemarket) processPage(channel chan<- respChan, page int, secondHalf bool) error {
 	spring, err := mm.client.SearchSpringPage(page, secondHalf)
 	if err != nil {
 		return err
@@ -117,25 +118,30 @@ func (mm *Miniaturemarket) processPage(channel chan<- mtgban.InventoryEntry, pag
 			fields := strings.Split(group.SKU, "-")
 			urlPage := strings.Join(fields[:len(fields)-1], "-") + ".html"
 
-			out := mtgban.InventoryEntry{
-				Card:       mtgban.Card2card(cc),
-				Conditions: cond,
-				Price:      group.Price,
-				Quantity:   group.Stock,
-				Notes:      "http://www.miniaturemarket.com/" + urlPage,
+			channel <- respChan{
+				card: cc,
+				entry: mtgban.InventoryEntry{
+					Conditions: cond,
+					Price:      group.Price,
+					Quantity:   group.Stock,
+					Notes:      "http://www.miniaturemarket.com/" + urlPage,
+				},
 			}
-
-			channel <- out
 		}
 	})
 
 	return nil
 }
 
+type respChan struct {
+	card  *mtgdb.Card
+	entry mtgban.InventoryEntry
+}
+
 // Scrape returns an array of Entry, containing pricing and card information
 func (mm *Miniaturemarket) scrape() error {
 	pages := make(chan int)
-	channel := make(chan mtgban.InventoryEntry)
+	channel := make(chan respChan)
 	var wg sync.WaitGroup
 
 	// The normal API roughly returns half of the elements, so we query it
@@ -183,10 +189,10 @@ func (mm *Miniaturemarket) scrape() error {
 		close(channel)
 	}()
 
-	for card := range channel {
-		err := mm.inventory.Add(card)
+	for record := range channel {
+		err := mm.inventory.Add(record.card, &record.entry)
 		// Do not print an error if we expect a duplicate due to the sorting
-		if err != nil && mm.inventory[card.Card.Id][0].Notes != card.Notes {
+		if err != nil && mm.inventory[*record.card][0].Notes != record.entry.Notes {
 			mm.printf("%v", err)
 			continue
 		}
@@ -204,6 +210,7 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 		return
 	}
 
+	res.cards = mtgban.BuylistRecord{}
 	for _, card := range buyback {
 		if card.MtgCondition == "" ||
 			card.MtgSet == "Bulk MTG" ||
@@ -257,7 +264,7 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 
 		var priceRatio, sellPrice float64
 
-		invCards := mm.inventory[cc.Id]
+		invCards := mm.inventory[*cc]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -266,8 +273,7 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 			priceRatio = price / sellPrice * 100
 		}
 
-		out := mtgban.BuylistEntry{
-			Card:       mtgban.Card2card(cc),
+		out := &mtgban.BuylistEntry{
 			Conditions: cond,
 			BuyPrice:   price,
 			TradePrice: price * 1.3,
@@ -275,7 +281,7 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 			PriceRatio: priceRatio,
 		}
 
-		res.cards = append(res.cards, out)
+		res.cards.Add(cc, out)
 	}
 
 	mm.BuylistDate = time.Now()
@@ -313,8 +319,8 @@ func (mm *Miniaturemarket) parseBL() error {
 			mm.printf("%v", result.err)
 			continue
 		}
-		for _, card := range result.cards {
-			err := mm.buylist.Add(card)
+		for card, entry := range result.cards {
+			err := mm.buylist.Add(&card, &entry)
 			if err != nil {
 				mm.printf(err.Error())
 				continue
@@ -359,7 +365,7 @@ func (mm *Miniaturemarket) Buylist() (mtgban.BuylistRecord, error) {
 	return mm.buylist, nil
 }
 
-func (mm *Miniaturemarket) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+func (mm *Miniaturemarket) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
 		"SP": 0.75, "MP": 0.75, "HP": 0.75,
 	}

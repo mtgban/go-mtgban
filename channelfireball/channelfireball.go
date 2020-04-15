@@ -217,14 +217,13 @@ func (cfb *Channelfireball) scrape(mode string) error {
 
 		if mode == modeInventory {
 			if card.Quantity > 0 && card.Price > 0 {
-				out := mtgban.InventoryEntry{
-					Card:       mtgban.Card2card(cc),
+				out := &mtgban.InventoryEntry{
 					Conditions: card.Conditions,
 					Price:      card.Price,
 					Quantity:   card.Quantity,
 					Notes:      cfbInventoryURL + "/" + card.URLId,
 				}
-				err := cfb.inventory.Add(out)
+				err := cfb.inventory.Add(cc, out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}
@@ -235,7 +234,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 				var sellPrice, priceRatio, qtyRatio float64
 				sellQty := 0
 
-				invCards := cfb.inventory[cc.Id]
+				invCards := cfb.inventory[*cc]
 				for _, invCard := range invCards {
 					if invCard.Conditions == card.Conditions {
 						sellPrice = invCard.Price
@@ -251,8 +250,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					qtyRatio = float64(card.Quantity) / float64(sellQty) * 100
 				}
 
-				out := mtgban.BuylistEntry{
-					Card:          mtgban.Card2card(cc),
+				out := &mtgban.BuylistEntry{
 					Conditions:    card.Conditions,
 					BuyPrice:      card.Price,
 					TradePrice:    card.Price * 1.3,
@@ -261,7 +259,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					QuantityRatio: qtyRatio,
 					Notes:         cfbBuylistURL + "/" + card.URLId,
 				}
-				err := cfb.buylist.Add(out)
+				err := cfb.buylist.Add(cc, out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}
@@ -316,7 +314,7 @@ var fourHorsemenDate = time.Date(1993, time.August, 1, 0, 0, 0, 0, time.UTC)
 var premodernDate = time.Date(1994, time.August, 1, 0, 0, 0, 0, time.UTC)
 var modernDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
 
-func (cfb *Channelfireball) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+func (cfb *Channelfireball) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	set, err := mtgdb.Set(card.Edition)
 	if err != nil {
 		return nil

@@ -104,14 +104,13 @@ func (nf *Ninetyfive) parseBL() error {
 		}
 
 		if quantity > 0 && price > 0 {
-			out := mtgban.BuylistEntry{
-				Card:       mtgban.Card2card(cc),
+			out := &mtgban.BuylistEntry{
 				Conditions: "NM",
 				BuyPrice:   price,
 				TradePrice: 0,
 				Quantity:   quantity,
 			}
-			err := nf.buylist.Add(out)
+			err := nf.buylist.Add(cc, out)
 			if err != nil {
 				nf.printf("%v", err)
 			}
@@ -140,7 +139,7 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 	return nf.buylist, nil
 }
 
-func (nf *Ninetyfive) Grading(entry mtgban.BuylistEntry) (grade map[string]float64) {
+func (nf *Ninetyfive) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
 		"SP": 0.8, "MP": 0.6, "HP": 0.5,
 	}

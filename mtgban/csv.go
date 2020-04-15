@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 var (
@@ -26,44 +28,31 @@ var (
 )
 
 func NewVendorFromCSV(r io.Reader, grade map[string]float64) (Vendor, error) {
-	vendor := BaseBuylist{}
-	vendor.buylist = BuylistRecord{}
-	vendor.grade = grade
-
 	buylist, err := LoadBuylistFromCSV(r)
 	if err != nil {
 		return nil, err
 	}
-	for _, entry := range buylist {
-		err = vendor.buylist.Add(entry)
-		if err != nil {
-			return nil, err
-		}
-	}
+
+	vendor := BaseBuylist{}
+	vendor.grade = grade
+	vendor.buylist = buylist
 
 	return &vendor, nil
 }
 
 func NewSellerFromCSV(r io.Reader) (Seller, error) {
-	seller := BaseInventory{}
-	seller.inventory = InventoryRecord{}
-
 	inventory, err := LoadInventoryFromCSV(r)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, entry := range inventory {
-		err = seller.inventory.Add(entry)
-		if err != nil {
-			return nil, err
-		}
-	}
+	seller := BaseInventory{}
+	seller.inventory = inventory
 
 	return &seller, nil
 }
 
-func LoadInventoryFromCSV(r io.Reader) ([]InventoryEntry, error) {
+func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
@@ -88,7 +77,7 @@ func LoadInventoryFromCSV(r io.Reader) ([]InventoryEntry, error) {
 		return nil, fmt.Errorf("Malformed inventory file")
 	}
 
-	inventory := []InventoryEntry{}
+	inventory := InventoryRecord{}
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -108,25 +97,26 @@ func LoadInventoryFromCSV(r io.Reader) ([]InventoryEntry, error) {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
-		card := InventoryEntry{
-			Card: Card{
-				Id:   record[0],
-				Name: record[1],
-				Set:  record[2],
-				Foil: foil,
-			},
+		card := &mtgdb.Card{
+			Id:      record[0],
+			Name:    record[1],
+			Edition: record[2],
+			Foil:    foil,
+		}
+
+		entry := &InventoryEntry{
 			Conditions: record[4],
 			Price:      price,
 			Quantity:   qty,
 		}
 
-		inventory = append(inventory, card)
+		inventory.Add(card, entry)
 	}
 
 	return inventory, nil
 }
 
-func LoadBuylistFromCSV(r io.Reader) ([]BuylistEntry, error) {
+func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
@@ -151,7 +141,7 @@ func LoadBuylistFromCSV(r io.Reader) ([]BuylistEntry, error) {
 		return nil, fmt.Errorf("Malformed buylist file")
 	}
 
-	buylist := []BuylistEntry{}
+	buylist := BuylistRecord{}
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -183,13 +173,13 @@ func LoadBuylistFromCSV(r io.Reader) ([]BuylistEntry, error) {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[9], err)
 		}
 
-		card := BuylistEntry{
-			Card: Card{
-				Id:   record[0],
-				Name: record[1],
-				Set:  record[2],
-				Foil: foil,
-			},
+		card := &mtgdb.Card{
+			Id:      record[0],
+			Name:    record[1],
+			Edition: record[2],
+			Foil:    foil,
+		}
+		entry := &BuylistEntry{
 			Conditions:    record[4],
 			BuyPrice:      buyPrice,
 			TradePrice:    tradePrice,
@@ -198,7 +188,7 @@ func LoadBuylistFromCSV(r io.Reader) ([]BuylistEntry, error) {
 			QuantityRatio: qtyRatio,
 		}
 
-		buylist = append(buylist, card)
+		buylist.Add(card, entry)
 	}
 
 	return buylist, nil
@@ -221,21 +211,21 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 		return err
 	}
 
-	for id, cards := range inventory {
-		for _, card := range cards {
+	for card, entries := range inventory {
+		for _, entry := range entries {
 			foil := ""
 			if card.Foil {
 				foil = "FOIL"
 			}
 
 			err = csvWriter.Write([]string{
-				id,
+				card.Id,
 				card.Name,
-				card.Set,
+				card.Edition,
 				foil,
-				card.Conditions,
-				fmt.Sprintf("%0.2f", card.Price),
-				fmt.Sprint(card.Quantity),
+				entry.Conditions,
+				fmt.Sprintf("%0.2f", entry.Price),
+				fmt.Sprint(entry.Quantity),
 			})
 			if err != nil {
 				return err
@@ -264,23 +254,23 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 		return err
 	}
 
-	for id, card := range buylist {
+	for card, entry := range buylist {
 		foil := ""
 		if card.Foil {
 			foil = "FOIL"
 		}
 
 		err = csvWriter.Write([]string{
-			id,
+			card.Id,
 			card.Name,
-			card.Set,
+			card.Edition,
 			foil,
-			card.Conditions,
-			fmt.Sprintf("%0.2f", card.BuyPrice),
-			fmt.Sprintf("%0.2f", card.TradePrice),
-			fmt.Sprint(card.Quantity),
-			fmt.Sprintf("%0.2f%%", card.PriceRatio),
-			fmt.Sprintf("%0.2f%%", card.QuantityRatio),
+			entry.Conditions,
+			fmt.Sprintf("%0.2f", entry.BuyPrice),
+			fmt.Sprintf("%0.2f", entry.TradePrice),
+			fmt.Sprint(entry.Quantity),
+			fmt.Sprintf("%0.2f%%", entry.PriceRatio),
+			fmt.Sprintf("%0.2f%%", entry.QuantityRatio),
 		})
 		if err != nil {
 			return err
@@ -301,9 +291,9 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	}
 
 	for _, entry := range arbitrage {
+		card := entry.Card
 		bl := entry.BuylistEntry
 		inv := entry.InventoryEntry
-		card := bl.Card
 		foil := ""
 		if card.Foil {
 			foil = "FOIL"
@@ -312,7 +302,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 		err = csvWriter.Write([]string{
 			card.Id,
 			card.Name,
-			card.Set,
+			card.Edition,
 			foil,
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),
@@ -344,7 +334,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 
 	for _, entry := range mismatch {
 		inv := entry.InventoryEntry
-		card := inv.Card
+		card := entry.Card
 		foil := ""
 		if card.Foil {
 			foil = "FOIL"
@@ -353,7 +343,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 		err = csvWriter.Write([]string{
 			card.Id,
 			card.Name,
-			card.Set,
+			card.Edition,
 			foil,
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),

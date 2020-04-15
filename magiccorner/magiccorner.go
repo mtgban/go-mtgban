@@ -36,7 +36,7 @@ func NewScraper() (*Magiccorner, error) {
 
 type resultChan struct {
 	err   error
-	cards []mtgban.InventoryEntry
+	cards mtgban.InventoryRecord
 }
 
 func (mc *Magiccorner) printf(format string, a ...interface{}) {
@@ -51,6 +51,8 @@ func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
 		res.err = err
 		return
 	}
+
+	res.cards = mtgban.InventoryRecord{}
 
 	printed := false
 
@@ -134,14 +136,13 @@ func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
 			}
 
 			out := mtgban.InventoryEntry{
-				Card:       mtgban.Card2card(cc),
 				Conditions: cond,
 				Price:      v.Price * mc.exchangeRate,
 				Quantity:   v.Quantity,
 				Notes:      "https://www.magiccorner.it" + card.URL,
 			}
 
-			res.cards = append(res.cards, out)
+			res.cards[*cc] = append(res.cards[*cc], out)
 
 			duplicate[v.Id] = true
 		}
@@ -186,11 +187,13 @@ func (mc *Magiccorner) scrape() error {
 			mc.printf("%v", result.err)
 			continue
 		}
-		for _, card := range result.cards {
-			err = mc.inventory.Add(card)
-			if err != nil {
-				mc.printf(err.Error())
-				continue
+		for card, entries := range result.cards {
+			for i := range entries {
+				err = mc.inventory.Add(&card, &entries[i])
+				if err != nil {
+					mc.printf(err.Error())
+					continue
+				}
 			}
 		}
 	}

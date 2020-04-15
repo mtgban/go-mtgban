@@ -2,7 +2,11 @@
 // to obtain pricing information from various vendors.
 package mtgban
 
-import "time"
+import (
+	"time"
+
+	"github.com/kodabb/go-mtgban/mtgdb"
+)
 
 // Card is a generic card representation using fields defined by the MTGJSON project.
 type Card struct {
@@ -23,8 +27,6 @@ type Card struct {
 
 // InventoryEntry represents an entry for selling a particular Card
 type InventoryEntry struct {
-	Card
-
 	Quantity   int
 	Conditions string
 	Price      float64
@@ -34,8 +36,6 @@ type InventoryEntry struct {
 
 // BuylistEntry represents an entry for buying a particular Card
 type BuylistEntry struct {
-	Card
-
 	Quantity   int
 	Conditions string
 	BuyPrice   float64
@@ -60,7 +60,7 @@ type Scraper interface {
 	Info() ScraperInfo
 }
 
-type InventoryRecord map[string][]InventoryEntry
+type InventoryRecord map[mtgdb.Card][]InventoryEntry
 
 // Seller is the interface describing actions to be performed on an seller inventory
 type Seller interface {
@@ -72,7 +72,7 @@ type Seller interface {
 	Info() ScraperInfo
 }
 
-type BuylistRecord map[string]BuylistEntry
+type BuylistRecord map[mtgdb.Card]BuylistEntry
 
 // Vendor is the interface describing actions to be performed on an vendor buylist
 type Vendor interface {
@@ -81,7 +81,7 @@ type Vendor interface {
 	Buylist() (BuylistRecord, error)
 
 	// Return the grading scale for adjusting prices according to conditions
-	Grading(BuylistEntry) map[string]float64
+	Grading(mtgdb.Card, BuylistEntry) map[string]float64
 
 	// Return some information about the vendor
 	Info() ScraperInfo

@@ -1,28 +1,32 @@
 package mtgban
 
-import "fmt"
+import (
+	"fmt"
 
-func (inv InventoryRecord) Add(card InventoryEntry) error {
-	entries, found := inv[card.Id]
+	"github.com/kodabb/go-mtgban/mtgdb"
+)
+
+func (inv InventoryRecord) Add(card *mtgdb.Card, entry *InventoryEntry) error {
+	entries, found := inv[*card]
 	if found {
-		for _, entry := range entries {
-			if entry.Conditions == card.Conditions && entry.Price == card.Price {
-				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-new: %v\n-old: %v", card, entry)
+		for i := range entries {
+			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price {
+				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
 			}
 		}
 	}
 
-	inv[card.Id] = append(inv[card.Id], card)
+	inv[*card] = append(inv[*card], *entry)
 	return nil
 }
 
-func (bl BuylistRecord) Add(card BuylistEntry) error {
-	entry, found := bl[card.Id]
+func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
+	_, found := bl[*card]
 	if found {
-		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
+		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, bl[*card])
 	}
 
-	bl[card.Id] = card
+	bl[*card] = *entry
 	return nil
 }
 
@@ -49,7 +53,7 @@ func (bl *BaseBuylist) Buylist() (BuylistRecord, error) {
 	return bl.buylist, nil
 }
 
-func (bl *BaseBuylist) Grading(entry BuylistEntry) map[string]float64 {
+func (bl *BaseBuylist) Grading(card mtgdb.Card, entry BuylistEntry) map[string]float64 {
 	return bl.grade
 }
 
