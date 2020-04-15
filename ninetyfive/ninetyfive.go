@@ -21,12 +21,12 @@ type Ninetyfive struct {
 	LogCallback mtgban.LogCallbackFunc
 	BuylistDate time.Time
 
-	buylist map[string]mtgban.BuylistEntry
+	buylist mtgban.BuylistRecord
 }
 
 func NewScraper() *Ninetyfive {
 	nf := Ninetyfive{}
-	nf.buylist = map[string]mtgban.BuylistEntry{}
+	nf.buylist = mtgban.BuylistRecord{}
 	return &nf
 }
 
@@ -123,7 +123,7 @@ func (nf *Ninetyfive) parseBL() error {
 	return nil
 }
 
-func (nf *Ninetyfive) Buylist() (map[string]mtgban.BuylistEntry, error) {
+func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 	if len(nf.buylist) > 0 {
 		return nf.buylist, nil
 	}

@@ -18,14 +18,14 @@ type ABUGames struct {
 
 	client *ABUClient
 
-	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string]mtgban.BuylistEntry
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 }
 
 func NewScraper() *ABUGames {
 	abu := ABUGames{}
-	abu.inventory = map[string][]mtgban.InventoryEntry{}
-	abu.buylist = map[string]mtgban.BuylistEntry{}
+	abu.inventory = mtgban.InventoryRecord{}
+	abu.buylist = mtgban.BuylistRecord{}
 	abu.client = NewABUClient()
 	return &abu
 }
@@ -202,7 +202,7 @@ func (abu *ABUGames) scrape() error {
 	return nil
 }
 
-func (abu *ABUGames) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+func (abu *ABUGames) Inventory() (mtgban.InventoryRecord, error) {
 	if len(abu.inventory) > 0 {
 		return abu.inventory, nil
 	}
@@ -219,7 +219,7 @@ func (abu *ABUGames) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 	return abu.inventory, nil
 }
 
-func (abu *ABUGames) Buylist() (map[string]mtgban.BuylistEntry, error) {
+func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 	if len(abu.buylist) > 0 {
 		return abu.buylist, nil
 	}

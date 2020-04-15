@@ -2,7 +2,7 @@ package mtgban
 
 import "fmt"
 
-func InventoryAdd(inventory map[string][]InventoryEntry, card InventoryEntry) error {
+func InventoryAdd(inventory InventoryRecord, card InventoryEntry) error {
 	entries, found := inventory[card.Id]
 	if found {
 		for _, entry := range entries {
@@ -16,7 +16,7 @@ func InventoryAdd(inventory map[string][]InventoryEntry, card InventoryEntry) er
 	return nil
 }
 
-func BuylistAdd(buylist map[string]BuylistEntry, card BuylistEntry) error {
+func BuylistAdd(buylist BuylistRecord, card BuylistEntry) error {
 	entry, found := buylist[card.Id]
 	if found {
 		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-new: %v\n-old: %v", card, entry)
@@ -27,10 +27,10 @@ func BuylistAdd(buylist map[string]BuylistEntry, card BuylistEntry) error {
 }
 
 type BaseInventory struct {
-	inventory map[string][]InventoryEntry
+	inventory InventoryRecord
 }
 
-func (inv *BaseInventory) Inventory() (map[string][]InventoryEntry, error) {
+func (inv *BaseInventory) Inventory() (InventoryRecord, error) {
 	return inv.inventory, nil
 }
 
@@ -41,11 +41,11 @@ func (inv *BaseInventory) Info() (info ScraperInfo) {
 }
 
 type BaseBuylist struct {
-	buylist map[string]BuylistEntry
+	buylist BuylistRecord
 	grade   map[string]float64
 }
 
-func (bl *BaseBuylist) Buylist() (map[string]BuylistEntry, error) {
+func (bl *BaseBuylist) Buylist() (BuylistRecord, error) {
 	return bl.buylist, nil
 }
 

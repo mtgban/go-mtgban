@@ -86,7 +86,7 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 		BestOffer: map[Card]CombineEntry{},
 	}
 
-	result := map[Card]map[string]BuylistEntry{}
+	result := map[Card]BuylistRecord{}
 
 	for _, vendor := range vendors {
 		vendorName := vendor.(Scraper).Info().Name
@@ -100,7 +100,7 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 		for _, entry := range bl {
 			_, found := result[entry.Card]
 			if !found {
-				result[entry.Card] = map[string]BuylistEntry{}
+				result[entry.Card] = BuylistRecord{}
 			}
 			result[entry.Card][vendorName] = entry
 		}

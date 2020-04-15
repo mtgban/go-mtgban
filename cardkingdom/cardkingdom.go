@@ -14,14 +14,14 @@ type Cardkingdom struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string]mtgban.BuylistEntry
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 }
 
 func NewScraper() *Cardkingdom {
 	ck := Cardkingdom{}
-	ck.inventory = map[string][]mtgban.InventoryEntry{}
-	ck.buylist = map[string]mtgban.BuylistEntry{}
+	ck.inventory = mtgban.InventoryRecord{}
+	ck.buylist = mtgban.BuylistRecord{}
 	return &ck
 }
 
@@ -140,7 +140,7 @@ func (ck *Cardkingdom) scrape() error {
 	return nil
 }
 
-func (ck *Cardkingdom) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+func (ck *Cardkingdom) Inventory() (mtgban.InventoryRecord, error) {
 	if len(ck.inventory) > 0 {
 		return ck.inventory, nil
 	}
@@ -158,7 +158,7 @@ func (ck *Cardkingdom) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 
 }
 
-func (ck *Cardkingdom) Buylist() (map[string]mtgban.BuylistEntry, error) {
+func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 	if len(ck.buylist) > 0 {
 		return ck.buylist, nil
 	}

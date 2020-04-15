@@ -18,15 +18,15 @@ type Miniaturemarket struct {
 	BuylistDate   time.Time
 
 	client    *MMClient
-	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string]mtgban.BuylistEntry
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 }
 
 func NewScraper() *Miniaturemarket {
 	mm := Miniaturemarket{}
 	mm.client = NewMMClient()
-	mm.inventory = map[string][]mtgban.InventoryEntry{}
-	mm.buylist = map[string]mtgban.BuylistEntry{}
+	mm.inventory = mtgban.InventoryRecord{}
+	mm.buylist = mtgban.BuylistRecord{}
 	return &mm
 }
 
@@ -325,7 +325,7 @@ func (mm *Miniaturemarket) parseBL() error {
 	return nil
 }
 
-func (mm *Miniaturemarket) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+func (mm *Miniaturemarket) Inventory() (mtgban.InventoryRecord, error) {
 	if len(mm.inventory) > 0 {
 		return mm.inventory, nil
 	}
@@ -342,7 +342,7 @@ func (mm *Miniaturemarket) Inventory() (map[string][]mtgban.InventoryEntry, erro
 	return mm.inventory, nil
 }
 
-func (mm *Miniaturemarket) Buylist() (map[string]mtgban.BuylistEntry, error) {
+func (mm *Miniaturemarket) Buylist() (mtgban.BuylistRecord, error) {
 	if len(mm.buylist) > 0 {
 		return mm.buylist, nil
 	}

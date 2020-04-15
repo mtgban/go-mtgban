@@ -18,13 +18,13 @@ type Magiccorner struct {
 
 	exchangeRate float64
 
-	inventory map[string][]mtgban.InventoryEntry
+	inventory mtgban.InventoryRecord
 	client    *MCClient
 }
 
 func NewScraper() (*Magiccorner, error) {
 	mc := Magiccorner{}
-	mc.inventory = map[string][]mtgban.InventoryEntry{}
+	mc.inventory = mtgban.InventoryRecord{}
 	rate, err := mtgban.GetExchangeRate("EUR")
 	if err != nil {
 		return nil, err
@@ -200,7 +200,7 @@ func (mc *Magiccorner) scrape() error {
 	return nil
 }
 
-func (mc *Magiccorner) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 	if len(mc.inventory) > 0 {
 		return mc.inventory, nil
 	}

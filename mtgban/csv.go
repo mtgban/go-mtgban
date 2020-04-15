@@ -27,7 +27,7 @@ var (
 
 func NewVendorFromCSV(r io.Reader, grade map[string]float64) (Vendor, error) {
 	vendor := BaseBuylist{}
-	vendor.buylist = map[string]BuylistEntry{}
+	vendor.buylist = BuylistRecord{}
 	vendor.grade = grade
 
 	buylist, err := LoadBuylistFromCSV(r)
@@ -46,7 +46,7 @@ func NewVendorFromCSV(r io.Reader, grade map[string]float64) (Vendor, error) {
 
 func NewSellerFromCSV(r io.Reader) (Seller, error) {
 	seller := BaseInventory{}
-	seller.inventory = map[string][]InventoryEntry{}
+	seller.inventory = InventoryRecord{}
 
 	inventory, err := LoadInventoryFromCSV(r)
 	if err != nil {

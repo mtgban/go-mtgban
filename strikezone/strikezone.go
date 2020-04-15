@@ -25,14 +25,14 @@ type Strikezone struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string]mtgban.BuylistEntry
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 }
 
 func NewScraper() *Strikezone {
 	sz := Strikezone{}
-	sz.inventory = map[string][]mtgban.InventoryEntry{}
-	sz.buylist = map[string]mtgban.BuylistEntry{}
+	sz.inventory = mtgban.InventoryRecord{}
+	sz.buylist = mtgban.BuylistRecord{}
 	return &sz
 }
 
@@ -270,7 +270,7 @@ func (sz *Strikezone) parseBL() error {
 	return nil
 }
 
-func (sz *Strikezone) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+func (sz *Strikezone) Inventory() (mtgban.InventoryRecord, error) {
 	if len(sz.inventory) > 0 {
 		return sz.inventory, nil
 	}
@@ -287,7 +287,7 @@ func (sz *Strikezone) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 	return sz.inventory, nil
 }
 
-func (sz *Strikezone) Buylist() (map[string]mtgban.BuylistEntry, error) {
+func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
 	if len(sz.buylist) > 0 {
 		return sz.buylist, nil
 	}

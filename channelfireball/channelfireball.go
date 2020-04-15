@@ -27,14 +27,14 @@ type Channelfireball struct {
 	InventoryDate time.Time
 	BuylistDate   time.Time
 
-	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string]mtgban.BuylistEntry
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 }
 
 func NewScraper() *Channelfireball {
 	cfb := Channelfireball{}
-	cfb.inventory = map[string][]mtgban.InventoryEntry{}
-	cfb.buylist = map[string]mtgban.BuylistEntry{}
+	cfb.inventory = mtgban.InventoryRecord{}
+	cfb.buylist = mtgban.BuylistRecord{}
 	return &cfb
 }
 
@@ -278,7 +278,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 	return nil
 }
 
-func (cfb *Channelfireball) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+func (cfb *Channelfireball) Inventory() (mtgban.InventoryRecord, error) {
 	if len(cfb.inventory) > 0 {
 		return cfb.inventory, nil
 	}
@@ -295,7 +295,7 @@ func (cfb *Channelfireball) Inventory() (map[string][]mtgban.InventoryEntry, err
 	return cfb.inventory, nil
 }
 
-func (cfb *Channelfireball) Buylist() (map[string]mtgban.BuylistEntry, error) {
+func (cfb *Channelfireball) Buylist() (mtgban.BuylistRecord, error) {
 	if len(cfb.buylist) > 0 {
 		return cfb.buylist, nil
 	}

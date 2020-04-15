@@ -29,14 +29,14 @@ type FaceToFace struct {
 
 	exchangeRate float64
 
-	inventory map[string][]mtgban.InventoryEntry
-	buylist   map[string]mtgban.BuylistEntry
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 }
 
 func NewScraper() (*FaceToFace, error) {
 	ftf := FaceToFace{}
-	ftf.inventory = map[string][]mtgban.InventoryEntry{}
-	ftf.buylist = map[string]mtgban.BuylistEntry{}
+	ftf.inventory = mtgban.InventoryRecord{}
+	ftf.buylist = mtgban.BuylistRecord{}
 	rate, err := mtgban.GetExchangeRate("CAD")
 	if err != nil {
 		return nil, err
@@ -323,7 +323,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 	return nil
 }
 
-func (ftf *FaceToFace) Inventory() (map[string][]mtgban.InventoryEntry, error) {
+func (ftf *FaceToFace) Inventory() (mtgban.InventoryRecord, error) {
 	if len(ftf.inventory) > 0 {
 		return ftf.inventory, nil
 	}
@@ -340,7 +340,7 @@ func (ftf *FaceToFace) Inventory() (map[string][]mtgban.InventoryEntry, error) {
 	return ftf.inventory, nil
 }
 
-func (ftf *FaceToFace) Buylist() (map[string]mtgban.BuylistEntry, error) {
+func (ftf *FaceToFace) Buylist() (mtgban.BuylistRecord, error) {
 	if len(ftf.buylist) > 0 {
 		return ftf.buylist, nil
 	}
