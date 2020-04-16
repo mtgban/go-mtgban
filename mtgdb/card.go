@@ -16,6 +16,9 @@ type Card struct {
 	// When used as input it can host mtgjson or scryfall id
 	Id string
 
+	// The scryfall identifier of the card (output only)
+	ImageId string
+
 	// The canonical name of the card
 	Name string
 
@@ -27,6 +30,9 @@ type Card struct {
 
 	// Whether the card is foil or not
 	Foil bool
+
+	// The collector number of the card (output only)
+	Number string
 }
 
 func (c *Card) Match() (outCard *Card, err error) {
@@ -60,6 +66,7 @@ func (c *Card) output(card mtgjson.Card, set *mtgjson.Set) *Card {
 	// Prepare the output card
 	out := &Card{
 		Id:      card.UUID,
+		ImageId: card.ScryfallId,
 		Name:    card.Name,
 		Edition: set.Name,
 		Foil:    foil,
