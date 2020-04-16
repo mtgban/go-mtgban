@@ -11,7 +11,6 @@ type Set struct {
 	IsOnlineOnly bool   `json:"isOnlineOnly"`
 	Type         string `json:"type"`
 	BaseSetSize  int    `json:"baseSetSize"`
-	TotalSetSize int    `json:"totalSetSize"`
 	Cards        []Card `json:"cards"`
 	ReleaseDate  string `json:"releaseDate"`
 	ParentCode   string `json:"parentCode"`
@@ -22,27 +21,21 @@ type Card struct {
 	HasNonFoil bool   `json:"hasNonFoil"`
 	UUID       string `json:"uuid"`
 
-	HasFoil                bool     `json:"hasFoil"`
-	Artist                 string   `json:"artist"`
-	BorderColor            string   `json:"borderColor"`
-	FrameEffect            string   `json:"frameEffect"`
-	FrameEffects           []string `json:"frameEffects"`
-	Layout                 string   `json:"layout"`
-	Names                  []string `json:"names"`
-	Number                 string   `json:"number"`
-	Type                   string   `json:"type"`
-	IsAlternative          bool     `json:"isAlternative"`
-	IsDateStamped          bool     `json:"isDateStamped"`
-	IsPromo                bool     `json:"isPromo"`
-	IsFullArt              bool     `json:"isFullArt"`
-	IsStarter              bool     `json:"isStarter"`
-	ScryfallId             string   `json:"scryfallId"`
-	ScryfallIllustrationId string   `json:"scryfallIllustrationId"`
-	ScryfallOracleId       string   `json:"scryfallOracleId"`
-	Variations             []string `json:"variations"`
-	FlavorText             string   `json:"flavorText"`
-	Watermark              string   `json:"watermark"`
-	ForeignData            []struct {
+	HasFoil       bool     `json:"hasFoil"`
+	Artist        string   `json:"artist"`
+	BorderColor   string   `json:"borderColor"`
+	FrameEffects  []string `json:"frameEffects"`
+	Layout        string   `json:"layout"`
+	Names         []string `json:"names"`
+	Number        string   `json:"number"`
+	IsAlternative bool     `json:"isAlternative"`
+	IsFullArt     bool     `json:"isFullArt"`
+	IsStarter     bool     `json:"isStarter"`
+	ScryfallId    string   `json:"scryfallId"`
+	Variations    []string `json:"variations"`
+	FlavorText    string   `json:"flavorText"`
+	Watermark     string   `json:"watermark"`
+	ForeignData   []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
 }
