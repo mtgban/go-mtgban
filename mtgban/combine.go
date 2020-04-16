@@ -1,11 +1,12 @@
 package mtgban
 
-import "math"
+import (
+	"github.com/kodabb/go-mtgban/mtgdb"
+)
 
 type CombineRoot struct {
-	Names     []string
-	Entries   map[Card][]CombineEntry
-	BestOffer map[Card]CombineEntry
+	Names   []string
+	Entries map[mtgdb.Card]map[string]CombineEntry
 }
 
 type CombineEntry struct {
@@ -18,12 +19,9 @@ type CombineEntry struct {
 
 func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 	root := &CombineRoot{
-		Names:     []string{},
-		Entries:   map[Card][]CombineEntry{},
-		BestOffer: map[Card]CombineEntry{},
+		Names:   []string{},
+		Entries: map[mtgdb.Card]map[string]CombineEntry{},
 	}
-
-	result := map[Card]map[string]InventoryEntry{}
 
 	for _, seller := range sellers {
 		sellerName := seller.(Scraper).Info().Name
@@ -40,41 +38,22 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 					continue
 				}
 
-				entryCard := Card2card(&card)
-				_, found := result[entryCard]
+				_, found := root.Entries[card]
 				if !found {
-					result[entryCard] = map[string]InventoryEntry{}
+					root.Entries[card] = map[string]CombineEntry{}
 				}
-				result[entryCard][sellerName] = entry
+
+				price := entry.Price
+				res := CombineEntry{
+					ScraperName: sellerName,
+					Price:       price,
+					Quantity:    entry.Quantity,
+					Notes:       entry.Notes,
+				}
+
+				root.Entries[card][sellerName] = res
 			}
 		}
-	}
-
-	for card, entries := range result {
-		_, found := root.Entries[card]
-		if !found {
-			root.Entries[card] = []CombineEntry{}
-		}
-		minPrice := math.MaxFloat64
-		var bestEntry CombineEntry
-
-		for _, sellerName := range root.Names {
-			price := entries[sellerName].Price
-
-			entry := CombineEntry{
-				ScraperName: sellerName,
-				Price:       price,
-				Quantity:    entries[sellerName].Quantity,
-				Notes:       entries[sellerName].Notes,
-			}
-			root.Entries[card] = append(root.Entries[card], entry)
-
-			if price != 0 && minPrice > price {
-				minPrice = price
-				bestEntry = entry
-			}
-		}
-		root.BestOffer[card] = bestEntry
 	}
 
 	return root, nil
@@ -82,12 +61,9 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 
 func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 	root := &CombineRoot{
-		Names:     []string{},
-		Entries:   map[Card][]CombineEntry{},
-		BestOffer: map[Card]CombineEntry{},
+		Names:   []string{},
+		Entries: map[mtgdb.Card]map[string]CombineEntry{},
 	}
-
-	result := map[Card]map[string]BuylistEntry{}
 
 	for _, vendor := range vendors {
 		vendorName := vendor.(Scraper).Info().Name
@@ -99,44 +75,26 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 		}
 
 		for card, entry := range bl {
-			entryCard := Card2card(&card)
-			_, found := result[entryCard]
+			_, found := root.Entries[card]
 			if !found {
-				result[entryCard] = map[string]BuylistEntry{}
+				root.Entries[card] = map[string]CombineEntry{}
 			}
-			result[entryCard][vendorName] = entry
-		}
-	}
 
-	for card, entries := range result {
-		_, found := root.Entries[card]
-		if !found {
-			root.Entries[card] = []CombineEntry{}
-		}
-		maxPrice := 0.0
-		var bestEntry CombineEntry
-
-		for _, vendorName := range root.Names {
-			price := entries[vendorName].BuyPrice
+			price := entry.BuyPrice
 			if useCredit {
-				price = entries[vendorName].TradePrice
+				price = entry.TradePrice
 			}
 
-			entry := CombineEntry{
+			res := CombineEntry{
 				ScraperName: vendorName,
 				Price:       price,
-				Ratio:       entries[vendorName].PriceRatio,
-				Quantity:    entries[vendorName].Quantity,
-				Notes:       entries[vendorName].Notes,
+				Ratio:       entry.PriceRatio,
+				Quantity:    entry.Quantity,
+				Notes:       entry.Notes,
 			}
-			root.Entries[card] = append(root.Entries[card], entry)
 
-			if maxPrice < price {
-				maxPrice = price
-				bestEntry = entry
-			}
+			root.Entries[card][vendorName] = res
 		}
-		root.BestOffer[card] = bestEntry
 	}
 
 	return root, nil

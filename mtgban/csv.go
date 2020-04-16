@@ -291,9 +291,9 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	}
 
 	for _, entry := range arbitrage {
-		card := entry.Card
 		bl := entry.BuylistEntry
 		inv := entry.InventoryEntry
+		card := entry.Card
 		foil := ""
 		if card.Foil {
 			foil = "FOIL"
@@ -368,7 +368,6 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 		"Id", "Card Name", "Edition", "F/NF",
 	}
 	header = append(header, root.Names...)
-	header = append(header, "Best Offer")
 	err := csvWriter.Write(header)
 	if err != nil {
 		return err
@@ -380,11 +379,12 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 			foil = "FOIL"
 		}
 
-		out := []string{card.Id, card.Name, card.Set, foil}
-		for _, entry := range entries {
-			out = append(out, fmt.Sprintf("%0.2f", entry.Price))
+		out := []string{
+			card.Id, card.Name, card.Edition, foil,
 		}
-		out = append(out, root.BestOffer[card].ScraperName)
+		for _, vendorName := range root.Names {
+			out = append(out, fmt.Sprintf("%0.2f", entries[vendorName].Price))
+		}
 
 		err = csvWriter.Write(out)
 		if err != nil {
