@@ -7,37 +7,36 @@ import (
 )
 
 type Set struct {
-	Name         string `json:"name"`
-	IsOnlineOnly bool   `json:"isOnlineOnly"`
-	Type         string `json:"type"`
 	BaseSetSize  int    `json:"baseSetSize"`
 	Cards        []Card `json:"cards"`
-	ReleaseDate  string `json:"releaseDate"`
+	IsOnlineOnly bool   `json:"isOnlineOnly"`
+	Name         string `json:"name"`
 	ParentCode   string `json:"parentCode"`
+	ReleaseDate  string `json:"releaseDate"`
+	Type         string `json:"type"`
 }
 
 type Card struct {
-	Name       string `json:"name"`
-	HasNonFoil bool   `json:"hasNonFoil"`
-	UUID       string `json:"uuid"`
-
-	HasFoil       bool     `json:"hasFoil"`
-	Artist        string   `json:"artist"`
-	BorderColor   string   `json:"borderColor"`
+	Artist      string `json:"artist"`
+	BorderColor string `json:"borderColor"`
+	FlavorText  string `json:"flavorText"`
+	ForeignData []struct {
+		Language string `json:"language"`
+	} `json:"foreignData"`
 	FrameEffects  []string `json:"frameEffects"`
-	Layout        string   `json:"layout"`
-	Names         []string `json:"names"`
-	Number        string   `json:"number"`
+	HasFoil       bool     `json:"hasFoil"`
+	HasNonFoil    bool     `json:"hasNonFoil"`
 	IsAlternative bool     `json:"isAlternative"`
 	IsFullArt     bool     `json:"isFullArt"`
 	IsStarter     bool     `json:"isStarter"`
+	Layout        string   `json:"layout"`
+	Name          string   `json:"name"`
+	Names         []string `json:"names"`
+	Number        string   `json:"number"`
 	ScryfallId    string   `json:"scryfallId"`
+	UUID          string   `json:"uuid"`
 	Variations    []string `json:"variations"`
-	FlavorText    string   `json:"flavorText"`
 	Watermark     string   `json:"watermark"`
-	ForeignData   []struct {
-		Language string `json:"language"`
-	} `json:"foreignData"`
 }
 
 type SimpleCard struct {
