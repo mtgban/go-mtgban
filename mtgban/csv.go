@@ -12,11 +12,11 @@ import (
 var (
 	// The canonical header that will be present in all inventory files
 	InventoryHeader = []string{
-		"Key", "Name", "Set", "F/NF", "Conditions", "Price", "Quantity",
+		"Key", "Name", "Edition", "F/NF", "Conditions", "Price", "Quantity",
 	}
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = []string{
-		"Key", "Name", "Set", "F/NF", "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "Quantity Ratio",
+		"Key", "Name", "Edition", "F/NF", "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "Quantity Ratio",
 	}
 
 	ArbitHeader = []string{
