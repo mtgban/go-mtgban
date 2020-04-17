@@ -15,6 +15,9 @@ type InventoryEntry struct {
 	Price      float64
 
 	URL string
+
+	// Only used for a Marketplace inventory
+	SellerName string
 }
 
 // BuylistEntry represents an entry for buying a particular Card
@@ -44,6 +47,21 @@ type Scraper interface {
 }
 
 type InventoryRecord map[mtgdb.Card][]InventoryEntry
+
+// Market is the interface describing actions to be performed on the
+// inventory available on a platform, usually combining different sellers
+type Market interface {
+	// Return the whole inventory for a Market. If not already loaded,
+	// it will start scraping the seller gathering the necessary data.
+	Inventory() (InventoryRecord, error)
+
+	// Return the inventory for any given seller present in the market.
+	// If possible, it will use the Inventory() call to populate data.
+	InventoryForSeller(string) (InventoryRecord, error)
+
+	// Return some information about the market
+	Info() ScraperInfo
+}
 
 // Seller is the interface describing actions to be performed on a seller inventory
 type Seller interface {

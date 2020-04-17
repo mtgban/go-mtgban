@@ -10,6 +10,10 @@ import (
 )
 
 var (
+	// The canonical header that will be present in all market files
+	MarketHeader = []string{
+		"Key", "Name", "Edition", "F/NF", "Conditions", "Price", "Quantity", "Seller",
+	}
 	// The canonical header that will be present in all inventory files
 	InventoryHeader = []string{
 		"Key", "Name", "Edition", "F/NF", "Conditions", "Price", "Quantity",
@@ -24,6 +28,10 @@ var (
 	}
 	MismatchHeader = []string{
 		"Key", "Name", "Edition", "F/NF", "Conditions", "Price", "Difference", "Spread",
+	}
+
+	MultiArbitHeader = []string{
+		"Seller", "Cards", "Listings", "Total Prices", "Total Buylist", "Difference", "Spread",
 	}
 )
 
@@ -70,7 +78,11 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 	if len(first) < len(InventoryHeader) {
 		okHeader = false
 	} else {
-		for i, tag := range InventoryHeader {
+		header := InventoryHeader
+		if first[len(first)-1] == MarketHeader[len(MarketHeader)-1] {
+			header = MarketHeader
+		}
+		for i, tag := range header {
 			if tag != first[i] {
 				okHeader = false
 				break
@@ -101,6 +113,11 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
+		sellerName := ""
+		if len(record) > 7 {
+			sellerName = record[7]
+		}
+
 		card := &mtgdb.Card{
 			Id:      record[0],
 			Name:    record[1],
@@ -112,6 +129,7 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			Conditions: record[4],
 			Price:      price,
 			Quantity:   qty,
+			SellerName: sellerName,
 		}
 
 		inventory.Add(card, entry)
@@ -210,7 +228,13 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
-	err = csvWriter.Write(InventoryHeader)
+	header := InventoryHeader
+	_, isMarket := seller.(Scraper).(Market)
+	if isMarket {
+		header = MarketHeader
+	}
+
+	err = csvWriter.Write(header)
 	if err != nil {
 		return err
 	}
@@ -222,7 +246,7 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 				foil = "FOIL"
 			}
 
-			err = csvWriter.Write([]string{
+			record := []string{
 				card.Id,
 				card.Name,
 				card.Edition,
@@ -230,7 +254,12 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 				entry.Conditions,
 				fmt.Sprintf("%0.2f", entry.Price),
 				fmt.Sprint(entry.Quantity),
-			})
+			}
+			if isMarket {
+				record = append(record, entry.SellerName)
+			}
+
+			err = csvWriter.Write(record)
 			if err != nil {
 				return err
 			}
@@ -391,6 +420,35 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 		}
 
 		err = csvWriter.Write(out)
+		if err != nil {
+			return err
+		}
+
+		csvWriter.Flush()
+	}
+
+	return nil
+}
+
+func WriteMultiArbitrageToCSV(multi []MultiArbitEntry, w io.Writer) error {
+	csvWriter := csv.NewWriter(w)
+	defer csvWriter.Flush()
+
+	err := csvWriter.Write(MultiArbitHeader)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range multi {
+		err = csvWriter.Write([]string{
+			entry.SellerName,
+			fmt.Sprintf("%d", entry.Quantity),
+			fmt.Sprintf("%d", len(entry.Entries)),
+			fmt.Sprintf("%0.2f", entry.Price),
+			fmt.Sprintf("%0.2f", entry.BuylistPrice),
+			fmt.Sprintf("%0.2f", entry.Difference),
+			fmt.Sprintf("%0.2f%%", entry.Spread),
+		})
 		if err != nil {
 			return err
 		}

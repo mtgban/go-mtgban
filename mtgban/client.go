@@ -84,3 +84,15 @@ func (bc *BanClient) Vendors() (vendors []Vendor) {
 	}
 	return
 }
+
+// Return a new slice containing all the markets registered in the client
+func (bc *BanClient) Markets() (markets []Market) {
+	for _, maybeMarket := range bc.scrapers {
+		market, ok := maybeMarket.(Market)
+		if !ok {
+			continue
+		}
+		markets = append(markets, market)
+	}
+	return
+}
