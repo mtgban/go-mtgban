@@ -68,6 +68,13 @@ func RegisterWithPaths(allprintingsPath, allcardsPath string) error {
 	return err
 }
 
+func AllSets() (out []string) {
+	for k, _ := range internal.Sets {
+		out = append(out, k)
+	}
+	return
+}
+
 func Set(codeName string) (*mtgjson.Set, error) {
 	if internal == nil {
 		return nil, fmt.Errorf("internal database is not initialized")

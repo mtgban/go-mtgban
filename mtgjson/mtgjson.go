@@ -24,20 +24,21 @@ type Card struct {
 	ForeignData []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
-	FrameEffects  []string `json:"frameEffects"`
-	HasFoil       bool     `json:"hasFoil"`
-	HasNonFoil    bool     `json:"hasNonFoil"`
-	IsAlternative bool     `json:"isAlternative"`
-	IsFullArt     bool     `json:"isFullArt"`
-	IsStarter     bool     `json:"isStarter"`
-	Layout        string   `json:"layout"`
-	Name          string   `json:"name"`
-	Names         []string `json:"names"`
-	Number        string   `json:"number"`
-	ScryfallId    string   `json:"scryfallId"`
-	UUID          string   `json:"uuid"`
-	Variations    []string `json:"variations"`
-	Watermark     string   `json:"watermark"`
+	FrameEffects       []string `json:"frameEffects"`
+	HasFoil            bool     `json:"hasFoil"`
+	HasNonFoil         bool     `json:"hasNonFoil"`
+	IsAlternative      bool     `json:"isAlternative"`
+	IsFullArt          bool     `json:"isFullArt"`
+	IsStarter          bool     `json:"isStarter"`
+	Layout             string   `json:"layout"`
+	Name               string   `json:"name"`
+	Names              []string `json:"names"`
+	Number             string   `json:"number"`
+	ScryfallId         string   `json:"scryfallId"`
+	TcgplayerProductId int      `json:"tcgplayerProductId"`
+	UUID               string   `json:"uuid"`
+	Variations         []string `json:"variations"`
+	Watermark          string   `json:"watermark"`
 }
 
 type SimpleCard struct {
