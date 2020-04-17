@@ -124,7 +124,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, page int, second
 					Conditions: cond,
 					Price:      group.Price,
 					Quantity:   group.Stock,
-					Notes:      "http://www.miniaturemarket.com/" + urlPage,
+					URL:        "http://www.miniaturemarket.com/" + urlPage,
 				},
 			}
 		}
@@ -192,7 +192,7 @@ func (mm *Miniaturemarket) scrape() error {
 	for record := range channel {
 		err := mm.inventory.Add(record.card, &record.entry)
 		// Do not print an error if we expect a duplicate due to the sorting
-		if err != nil && mm.inventory[*record.card][0].Notes != record.entry.Notes {
+		if err != nil && mm.inventory[*record.card][0].URL != record.entry.URL {
 			mm.printf("%v", err)
 			continue
 		}

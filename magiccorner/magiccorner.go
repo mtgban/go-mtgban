@@ -139,7 +139,7 @@ func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
 				Conditions: cond,
 				Price:      v.Price * mc.exchangeRate,
 				Quantity:   v.Quantity,
-				Notes:      "https://www.magiccorner.it" + card.URL,
+				URL:        "https://www.magiccorner.it" + card.URL,
 			}
 
 			res.cards[*cc] = append(res.cards[*cc], out)

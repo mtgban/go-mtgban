@@ -221,7 +221,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Conditions: card.Conditions,
 					Price:      card.Price,
 					Quantity:   card.Quantity,
-					Notes:      cfbInventoryURL + "/" + card.URLId,
+					URL:        cfbInventoryURL + "/" + card.URLId,
 				}
 				err := cfb.inventory.Add(cc, out)
 				if err != nil {
@@ -257,7 +257,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Quantity:      card.Quantity,
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
-					Notes:         cfbBuylistURL + "/" + card.URLId,
+					URL:           cfbBuylistURL + "/" + card.URLId,
 				}
 				err := cfb.buylist.Add(cc, out)
 				if err != nil {

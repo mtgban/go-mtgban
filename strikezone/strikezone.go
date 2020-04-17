@@ -149,7 +149,7 @@ func (sz *Strikezone) scrape() error {
 					Conditions: cond,
 					Price:      cardPrice,
 					Quantity:   quantity,
-					Notes:      "http://shop.strikezoneonline.com" + pathURL,
+					URL:        "http://shop.strikezoneonline.com" + pathURL,
 				},
 			}
 		})
@@ -264,7 +264,7 @@ func (sz *Strikezone) parseBL() error {
 			Quantity:      quantity,
 			PriceRatio:    priceRatio,
 			QuantityRatio: qtyRatio,
-			Notes:         "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
+			URL:           "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
 		}
 		err = sz.buylist.Add(cc, out)
 		if err != nil {

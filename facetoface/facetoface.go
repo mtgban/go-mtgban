@@ -266,7 +266,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 					Conditions: card.Conditions,
 					Price:      card.Price * ftf.exchangeRate,
 					Quantity:   card.Quantity,
-					Notes:      ftfInventoryURL + "/" + card.URLId,
+					URL:        ftfInventoryURL + "/" + card.URLId,
 				}
 				err := ftf.inventory.Add(cc, out)
 				if err != nil {
@@ -302,7 +302,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 					Quantity:      card.Quantity,
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
-					Notes:         ftfBuylistURL + "/" + card.URLId,
+					URL:           ftfBuylistURL + "/" + card.URLId,
 				}
 				err := ftf.buylist.Add(cc, out)
 				if err != nil {

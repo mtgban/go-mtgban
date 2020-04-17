@@ -104,7 +104,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					Conditions: cond,
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
-					Notes:      notes,
+					URL:        notes,
 				}
 				res.inventory.Add(cc, out)
 			}
@@ -132,7 +132,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					Quantity:      card.BuyQuantity,
 					PriceRatio:    priceRatio,
 					QuantityRatio: qtyRatio,
-					Notes:         notes,
+					URL:           notes,
 				}
 				res.buylist.Add(cc, out)
 			}

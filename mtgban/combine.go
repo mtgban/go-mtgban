@@ -14,7 +14,7 @@ type CombineEntry struct {
 	Price       float64
 	Ratio       float64
 	Quantity    int
-	Notes       string
+	URL         string
 }
 
 func CombineInventories(sellers []Seller) (*CombineRoot, error) {
@@ -48,7 +48,7 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 					ScraperName: sellerName,
 					Price:       price,
 					Quantity:    entry.Quantity,
-					Notes:       entry.Notes,
+					URL:         entry.URL,
 				}
 
 				root.Entries[card][sellerName] = res
@@ -90,7 +90,7 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 				Price:       price,
 				Ratio:       entry.PriceRatio,
 				Quantity:    entry.Quantity,
-				Notes:       entry.Notes,
+				URL:         entry.URL,
 			}
 
 			root.Entries[card][vendorName] = res
