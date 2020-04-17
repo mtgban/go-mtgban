@@ -61,6 +61,13 @@ func (c *Card) output(card mtgjson.Card, set *mtgjson.Set) *Card {
 	// In case the foiling information is incorrect
 	if !foil && !card.HasNonFoil {
 		foil = true
+	} else if foil && !card.HasFoil {
+		foil = false
+	}
+	if card.HasFoil && !card.HasNonFoil {
+		foil = true
+	} else if !card.HasFoil && card.HasNonFoil && !card.IsAlternative {
+		foil = false
 	}
 
 	// Prepare the output card
