@@ -12,7 +12,8 @@ import (
 
 // Card is a generic card representation using fields defined by the MTGJSON project.
 type Card struct {
-	// The mtgjson unique identifier of the card (output only)
+	// The mtgjson unique identifier of the card
+	// When used as input it can host mtgjson or scryfall id
 	Id string
 
 	// The canonical name of the card

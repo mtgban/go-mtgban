@@ -50,6 +50,22 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// ID lookup
+	MatchTest{
+		Id:   "7a0be3c2-accb-511c-bc97-96f9cd6eb1ea",
+		Desc: "id_lookup",
+		In: Card{
+			Id: "7a0be3c2-accb-511c-bc97-96f9cd6eb1ea",
+		},
+	},
+	MatchTest{
+		Id:   "f5737cd9-b418-517b-9a69-705b8c1e402f",
+		Desc: "id_lookup_scryfall",
+		In: Card{
+			Id: "281f6118-adb8-4a7d-9c77-5570f3399e6e",
+		},
+	},
+
 	// Number duplicates
 	MatchTest{
 		Id:   "76a1a052-ea00-5ddf-9486-0da27cdccd6b",

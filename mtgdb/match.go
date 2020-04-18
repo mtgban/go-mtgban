@@ -11,6 +11,21 @@ import (
 )
 
 func (db *Database) Match(inCard *Card, logger *log.Logger) (outCard *Card, err error) {
+	// Look up by uuid
+	if inCard.Id != "" {
+		id := inCard.Id
+		if strings.HasSuffix(id, "_f") {
+			id = id[:len(id)-2]
+		}
+		for _, set := range internal.Sets {
+			for _, card := range set.Cards {
+				if id == card.UUID || id == card.ScryfallId {
+					return inCard.output(card, set), nil
+				}
+			}
+		}
+	}
+
 	entry, found := db.Cards[mtgjson.Normalize(inCard.Name)]
 	if !found {
 		db.tryAdjustName(inCard)
