@@ -11,6 +11,25 @@ import (
 )
 
 func (db *Database) Match(inCard *Card, logger *log.Logger) (outCard *Card, err error) {
+	// Work around some cards that cannot be mapped in mtgjson v4
+	if inCard.Name == "Bind" {
+		inCard.Id = "08eb3d67-5821-5e8f-a1f4-1a44a4fc3428"
+	} else if inCard.Name == "Liberate" {
+		inCard.Id = "5e878a45-8b2c-50e0-82be-6ca11452bf9f"
+	} else if strings.HasPrefix(inCard.Name, "Bind") && strings.HasSuffix(inCard.Name, "Liberate") {
+		inCard.Id = "4814c418-2dd9-5d4d-b613-4ec775e3989a"
+	} else if inCard.Name == "Start" {
+		inCard.Id = "e822363d-438d-50c1-9102-9f62302a27d8"
+	} else if strings.HasPrefix(inCard.Name, "Start") && strings.HasSuffix(inCard.Name, "Finish") {
+		inCard.Id = "f5d836dc-ea44-5edb-ac09-ddd5469dfa07"
+	} else if strings.HasPrefix(inCard.Name, "Trial") && strings.HasSuffix(inCard.Name, "Error") && strings.HasPrefix(inCard.Edition, "Commander 2016") {
+		inCard.Id = "46cd1ee7-7119-5d5f-b6f0-be5569481eb0"
+	} else if strings.HasPrefix(inCard.Name, "Trial") && strings.HasSuffix(inCard.Name, "Error") && inCard.Edition == "Dissension" {
+		inCard.Id = "72c9549f-61c1-5014-92bb-40503775bccb"
+	} else if strings.Contains(inCard.Name, "Smelt") && strings.Contains(inCard.Name, "Herd") && strings.Contains(inCard.Name, "Saw") {
+		inCard.Id = "f8f84c2c-b875-5960-803d-c07b2066fb99"
+	}
+
 	// Look up by uuid
 	if inCard.Id != "" {
 		id := inCard.Id
@@ -891,17 +910,6 @@ func matchSimple(inCard *Card, set *mtgjson.Set) (outCards []mtgjson.Card) {
 }
 
 func (db *Database) tryAdjustName(inCard *Card) {
-	// The "Smelt" card cannot be represented correctly in AllCards db
-	if strings.Contains(inCard.Name, "Smelt") && strings.Contains(inCard.Name, "Herd") && strings.Contains(inCard.Name, "Saw") {
-		inCard.Name = "Herd"
-		return
-	}
-
-	// "Bind" aliases "Bind // Liberate" (and viceversa), same as above
-	if inCard.Name == "Bind" || (strings.Contains(inCard.Name, "Bind") && strings.Contains(inCard.Name, "Liberate")) {
-		return
-	}
-
 	// Move the card number from name to variation
 	num := ExtractNumber(inCard.Name)
 	if num != "" {

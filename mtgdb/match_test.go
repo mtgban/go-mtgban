@@ -245,7 +245,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "2cc9c4fc-a79e-5b5a-ab2f-33f1f8fcca26",
+		Id:   "f8f84c2c-b875-5960-803d-c07b2066fb99",
 		Desc: "triple_card",
 		In: Card{
 			Name:    "Smelt // Herd // Saw",
