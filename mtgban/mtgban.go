@@ -45,7 +45,7 @@ type Scraper interface {
 
 type InventoryRecord map[mtgdb.Card][]InventoryEntry
 
-// Seller is the interface describing actions to be performed on an seller inventory
+// Seller is the interface describing actions to be performed on a seller inventory
 type Seller interface {
 	// Return the inventory for a Seller. If not already loaded, it will start
 	// scraping the seller gathering the necessary data.
@@ -57,7 +57,7 @@ type Seller interface {
 
 type BuylistRecord map[mtgdb.Card]BuylistEntry
 
-// Vendor is the interface describing actions to be performed on an vendor buylist
+// Vendor is the interface describing actions to be performed on a vendor buylist
 type Vendor interface {
 	// Return the buylist for a Vendor. If not already loaded, it will start
 	// scraping the vendor gathering the necessary data.

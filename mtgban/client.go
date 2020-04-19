@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-// BanClient abstracts some common operations that can be performed on both
-// Seller and Vendor types, as well as offering a way to retrieve any given
-// Scaper.
+// BanClient abstracts some common operations that can be performed on any
+// Scraper type types, as well as offering a way to retrieve a single or
+// multiple Scapers.
 type BanClient struct {
 	scrapers map[string]Scraper
 }
@@ -53,7 +53,7 @@ func (bc *BanClient) ScraperByName(shorthand string) (Scraper, error) {
 	return scraper, nil
 }
 
-// Return a new slice containing all the scrapers registers in the client
+// Return a new slice containing all the scrapers registered in the client
 func (bc *BanClient) Scrapers() (scrapers []Scraper) {
 	for _, scraper := range bc.scrapers {
 		scrapers = append(scrapers, scraper)
@@ -61,7 +61,7 @@ func (bc *BanClient) Scrapers() (scrapers []Scraper) {
 	return
 }
 
-// Return a new slice containing all the sellers registers in the client
+// Return a new slice containing all the sellers registered in the client
 func (bc *BanClient) Sellers() (sellers []Seller) {
 	for _, maybeSeller := range bc.scrapers {
 		seller, ok := maybeSeller.(Seller)
@@ -73,7 +73,7 @@ func (bc *BanClient) Sellers() (sellers []Seller) {
 	return
 }
 
-// Return a new slice containing all the vendors registers in the client
+// Return a new slice containing all the vendors registered in the client
 func (bc *BanClient) Vendors() (vendors []Vendor) {
 	for _, maybeVendor := range bc.scrapers {
 		vendor, ok := maybeVendor.(Vendor)
