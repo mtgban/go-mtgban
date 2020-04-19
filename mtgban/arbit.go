@@ -8,6 +8,8 @@ const DefaultMismatchMinDiff = 1.0
 const DefaultMismatchMinSpread = 100.0
 
 type ArbitOpts struct {
+	Rate float64
+
 	MinDiff   float64
 	MinSpread float64
 
@@ -28,12 +30,16 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	minDiff := DefaultArbitMinDiff
 	minSpread := DefaultArbitMinSpread
 	useTrades := false
+	rate := 1.0
 	if opts != nil {
 		if opts.MinDiff != 0 {
 			minDiff = opts.MinDiff
 		}
 		if opts.MinSpread != 0 {
 			minSpread = opts.MinSpread
+		}
+		if opts.Rate != 0 {
+			rate = opts.Rate
 		}
 		useTrades = opts.UseTrades
 	}
@@ -60,7 +66,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 		grade := vendor.Grading(card, blEntry)
 		for _, invEntry := range invEntries {
-			price := invEntry.Price
+			price := invEntry.Price * rate
 
 			if invEntry.Conditions != "NM" {
 				blPrice *= grade[invEntry.Conditions]
