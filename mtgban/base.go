@@ -30,34 +30,34 @@ func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
 	return nil
 }
 
-type BaseInventory struct {
+type BaseSeller struct {
 	inventory InventoryRecord
 }
 
-func (inv *BaseInventory) Inventory() (InventoryRecord, error) {
-	return inv.inventory, nil
+func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
+	return seller.inventory, nil
 }
 
-func (inv *BaseInventory) Info() (info ScraperInfo) {
+func (seller *BaseSeller) Info() (info ScraperInfo) {
 	info.Name = "Base Type"
 	info.Shorthand = "BT"
 	return
 }
 
-type BaseBuylist struct {
+type BaseVendor struct {
 	buylist BuylistRecord
 	grade   map[string]float64
 }
 
-func (bl *BaseBuylist) Buylist() (BuylistRecord, error) {
-	return bl.buylist, nil
+func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
+	return vendor.buylist, nil
 }
 
-func (bl *BaseBuylist) Grading(card mtgdb.Card, entry BuylistEntry) map[string]float64 {
-	return bl.grade
+func (vendor *BaseVendor) Grading(card mtgdb.Card, entry BuylistEntry) map[string]float64 {
+	return vendor.grade
 }
 
-func (inv *BaseBuylist) Info() (info ScraperInfo) {
+func (vendor *BaseVendor) Info() (info ScraperInfo) {
 	info.Name = "Base Type"
 	info.Shorthand = "BT"
 	return
