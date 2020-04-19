@@ -32,6 +32,8 @@ func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
 
 type BaseSeller struct {
 	inventory InventoryRecord
+	name      string
+	shorthand string
 }
 
 func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
@@ -39,14 +41,16 @@ func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
 }
 
 func (seller *BaseSeller) Info() (info ScraperInfo) {
-	info.Name = "Base Type"
-	info.Shorthand = "BT"
+	info.Name = seller.name
+	info.Shorthand = seller.shorthand
 	return
 }
 
 type BaseVendor struct {
-	buylist BuylistRecord
-	grade   map[string]float64
+	buylist   BuylistRecord
+	grade     map[string]float64
+	name      string
+	shorthand string
 }
 
 func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
@@ -58,7 +62,7 @@ func (vendor *BaseVendor) Grading(card mtgdb.Card, entry BuylistEntry) map[strin
 }
 
 func (vendor *BaseVendor) Info() (info ScraperInfo) {
-	info.Name = "Base Type"
-	info.Shorthand = "BT"
+	info.Name = vendor.name
+	info.Shorthand = vendor.shorthand
 	return
 }
