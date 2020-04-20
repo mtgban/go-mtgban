@@ -59,14 +59,15 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 
-		blPrice := blEntry.BuyPrice
+		buylistPrice := blEntry.BuyPrice
 		if useTrades {
-			blPrice = blEntry.TradePrice
+			buylistPrice = blEntry.TradePrice
 		}
 
 		grade := vendor.Grading(card, blEntry)
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
+			blPrice := buylistPrice
 
 			if invEntry.Conditions != "NM" {
 				blPrice *= grade[invEntry.Conditions]
