@@ -72,12 +72,14 @@ var EditionTable = map[string]string{
 	"Secret Lair":             "Secret Lair Drop",
 	"Secret Lair Drop Series": "Secret Lair Drop",
 	"Stained Glass":           "Secret Lair Drop Promos",
+	"Champs / States Promo":   "Champs and States",
 
 	// Welcome decks
-	"Magic 2016":        "Welcome Deck 2016",
-	"Magic 2017":        "Welcome Deck 2017",
-	"Welcome Deck 2016": "Welcome Deck 2016",
-	"Welcome Deck 2017": "Welcome Deck 2017",
+	"Amonkhet Welcome Deck": "Welcome Deck 2017",
+	"Magic 2016":            "Welcome Deck 2016",
+	"Magic 2017":            "Welcome Deck 2017",
+	"Welcome Deck 2016":     "Welcome Deck 2016",
+	"Welcome Deck 2017":     "Welcome Deck 2017",
 
 	// Holiday cards
 	"Happy Holidays":     "Happy Holidays",
@@ -94,6 +96,8 @@ var EditionTable = map[string]string{
 	"2018 Standard Showdown Danner":        "M19 Standard Showdown",
 	"Rebecca Guay Standard Showdown 2017":  "XLN Standard Showdown",
 	"Alayna Danner Standard Showdown 2018": "M19 Standard Showdown",
+	"Rebecca Guay Standard Showdown":       "XLN Standard Showdown",
+	"Alayna Danner Standard Showdown":      "M19 Standard Showdown",
 	"Standard Showdown 2017":               "XLN Standard Showdown",
 	"Standard Showdown 2018":               "M19 Standard Showdown",
 	"Standard Showdown Rebecca Guay":       "XLN Standard Showdown",
@@ -124,12 +128,19 @@ var EditionTable = map[string]string{
 	"Ravnica Weekend Orzhov":         "RNA Ravnica Weekend",
 	"Ravnica Weekend Rakdos":         "RNA Ravnica Weekend",
 	"Ravnica Weekend Simic":          "RNA Ravnica Weekend",
+	"Guilds of Ravnica Guild Kits":   "GRN Ravnica Weekend",
+	"Ravnica Allegiance Guild Kits":  "RNA Ravnica Weekend",
 
 	// Commander
+	"Commander 2011 Edition":       "Commander 2011",
 	"Commander 2013 Edition":       "Commander 2013",
 	"Commander 2014 Edition":       "Commander 2014",
+	"Commander 2015 Edition":       "Commander 2015",
 	"Commander 2016 Edition":       "Commander 2016",
 	"Commander 2017 Edition":       "Commander 2017",
+	"Commander 2018 Edition":       "Commander 2018",
+	"Commander 2019 Edition":       "Commander 2019",
+	"Commander 2020 Edition":       "Commander 2020",
 	"Commander Anthology 2018":     "Commander Anthology Volume II",
 	"Commander Anthology VOL. II":  "Commander Anthology Volume II",
 	"Commander Anthology Vol. II":  "Commander Anthology Volume II",
@@ -139,8 +150,12 @@ var EditionTable = map[string]string{
 
 	// Modern Masters
 	"Modern Masters 2013":           "Modern Masters",
+	"Modern Masters 2013 Edition":   "Modern Masters",
+	"Modern Masters 2015 Edition":   "Modern Masters 2015",
+	"Modern Masters 2017 Edition":   "Modern Masters 2017",
 	"Ultimate Box Toppers":          "Ultimate Box Topper",
 	"Ultimate Masters Box Toppers":  "Ultimate Box Topper",
+	"Ultimate Masters: Box Topper":  "Ultimate Box Topper",
 	"Ultimate Masters: Box Toppers": "Ultimate Box Topper",
 
 	// CE and IE editions
@@ -148,12 +163,14 @@ var EditionTable = map[string]string{
 	"Collectors Ed Intl":                  "Intl. Collectors' Edition",
 	"Collectors' Edition - International": "Intl. Collectors' Edition",
 	"International Collector's Edition":   "Intl. Collectors' Edition",
+	"International Collectors’ Edition":   "Intl. Collectors' Edition",
 	"International Edition":               "Intl. Collectors' Edition",
 	"Collector's Edition (Domestic)":      "Collectors' Edition",
 	"Collector's Edition - Domestic":      "Collectors' Edition",
 	"Collector's Edition":                 "Collectors' Edition",
 	"Collectors Ed":                       "Collectors' Edition",
 	"Collectors' Edition":                 "Collectors' Edition",
+	"Collectors’ Edition":                 "Collectors' Edition",
 
 	// Portal
 	"Portal 1":          "Portal",
@@ -173,13 +190,16 @@ var EditionTable = map[string]string{
 	"Global Series: Jiangg Yanggu & Mu Yanling":  "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiang Yanggu & Mu Yanling":   "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiang Yanggu and Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
+	"Fire & Lightning":                           "Premium Deck Series: Fire and Lightning",
 	"PDS: Fire & Lightning":                      "Premium Deck Series: Fire and Lightning",
 	"Premium Deck Fire and Lightning":            "Premium Deck Series: Fire and Lightning",
 	"Premium Deck: Fire and Lightning":           "Premium Deck Series: Fire and Lightning",
 	"Premium Deck Series: Fire & Lightning":      "Premium Deck Series: Fire and Lightning",
+	"Graveborn":                                  "Premium Deck Series: Graveborn",
 	"PDS: Graveborn":                             "Premium Deck Series: Graveborn",
 	"Premium Deck Graveborn":                     "Premium Deck Series: Graveborn",
 	"Premium Deck: Graveborn":                    "Premium Deck Series: Graveborn",
+	"Slivers":                                    "Premium Deck Series: Slivers",
 	"PDS: Slivers":                               "Premium Deck Series: Slivers",
 	"Premium Deck Slivers":                       "Premium Deck Series: Slivers",
 	"Premium Deck: Slivers":                      "Premium Deck Series: Slivers",
@@ -188,6 +208,8 @@ var EditionTable = map[string]string{
 	"Planechase 2009":           "Planechase",
 	"Planechase (2009 Edition)": "Planechase",
 	"Planechase (2012 Edition)": "Planechase 2012",
+	"Planechase 2009 Edition":   "Planechase",
+	"Planechase 2012 Edition":   "Planechase 2012",
 
 	// Deckmasters
 	"Deckmaster Promo": "Deckmasters",
@@ -220,6 +242,7 @@ var EditionTable = map[string]string{
 	"GP Promo":                           "Grand Prix Promos",
 	"Gran Prix Promo":                    "Grand Prix Promos",
 	"Grand Prix":                         "Grand Prix Promos",
+	"Grand Prix Promo":                   "Grand Prix Promos",
 	"Promos: Grand Prix":                 "Grand Prix Promos",
 	"Grand Prix 2018":                    "MagicFest 2019",
 	"MagicFest 2019":                     "MagicFest 2019",
@@ -253,9 +276,10 @@ var EditionTable = map[string]string{
 	"Regional PTQ":            "Pro Tour Promos",
 
 	// Worlds
-	"2015 World Magic Cup Qualifier":  "World Magic Cup Qualifiers",
-	"2016 WMCQ Promo":                 "World Magic Cup Qualifiers",
-	"2017 WMCQ Promo":                 "World Magic Cup Qualifiers",
+	"2015 World Magic Cup Qualifier":      "World Magic Cup Qualifiers",
+	"2016 WMCQ Promo":                     "World Magic Cup Qualifiers",
+	"2017 WMCQ Promo":                     "World Magic Cup Qualifiers",
+	"DCI Promo World Magic Cup Qualifier": "World Magic Cup Qualifiers",
 	"WCQ":                             "World Magic Cup Qualifiers",
 	"WMC Promo":                       "World Magic Cup Qualifiers",
 	"WMC":                             "World Magic Cup Qualifiers",
@@ -265,6 +289,7 @@ var EditionTable = map[string]string{
 	"WMCQ Promo 2017":                 "World Magic Cup Qualifiers",
 	"WMCQ":                            "World Magic Cup Qualifiers",
 	"World Magic Cup":                 "World Magic Cup Qualifiers",
+	"World Magic Cup Promo":           "World Magic Cup Qualifiers",
 	"World Magic Cup Qualifier Promo": "World Magic Cup Qualifiers",
 	"World Championship Foil":         "World Championship Promos",
 
@@ -275,6 +300,7 @@ var EditionTable = map[string]string{
 	"Tarkir Dragonfury":                       "Tarkir Dragonfury",
 	"Tarkir Dragonfury Promo":                 "Tarkir Dragonfury",
 	"Promos: Ugin's Fate":                     "Ugin's Fate",
+	"Ugin's Fate Promo":                       "Ugin's Fate",
 	"Ugin's Fate":                             "Ugin's Fate",
 	"Ugins Fate":                              "Ugin's Fate",
 	"Ugins Fate Promo":                        "Ugin's Fate",
@@ -298,22 +324,24 @@ var EditionTable = map[string]string{
 	"Walmart Resale":  "Resale Promos",
 
 	// 15th Anniversary
-	"15th Anniversary":       "15th Anniversary Cards",
-	"15th Anniversary Foil":  "15th Anniversary Cards",
-	"15th Anniversary Promo": "15th Anniversary Cards",
-	"MTG 15th Anniversary":   "15th Anniversary Cards",
+	"15th Anniversary":           "15th Anniversary Cards",
+	"15th Anniversary Foil":      "15th Anniversary Cards",
+	"15th Anniversary Promo":     "15th Anniversary Cards",
+	"DCI Promo 15th Anniversary": "15th Anniversary Cards",
+	"MTG 15th Anniversary":       "15th Anniversary Cards",
 
 	// Convention
-	"2HG":                   "Two-Headed Giant Tournament",
-	"2HG Foil":              "Two-Headed Giant Tournament",
-	"Two-Headed Giant":      "Two-Headed Giant Tournament",
-	"Dragon'Con 1994":       "Dragon Con",
-	"HASCON":                "HasCon 2017",
-	"HASCON 2017":           "HasCon 2017",
-	"Hascon 2017 Promo":     "HasCon 2017",
-	"PAX Prime Promo":       "URL/Convention Promos",
-	"2012 Convention Promo": "URL/Convention Promos",
-	"URL Convention Promo":  "URL/Convention Promos",
+	"2HG":                        "Two-Headed Giant Tournament",
+	"2HG Foil":                   "Two-Headed Giant Tournament",
+	"DCI Promo Two-Headed Giant": "Two-Headed Giant Tournament",
+	"Two-Headed Giant":           "Two-Headed Giant Tournament",
+	"Dragon'Con 1994":            "Dragon Con",
+	"HASCON":                     "HasCon 2017",
+	"HASCON 2017":                "HasCon 2017",
+	"Hascon 2017 Promo":          "HasCon 2017",
+	"PAX Prime Promo":            "URL/Convention Promos",
+	"2012 Convention Promo":      "URL/Convention Promos",
+	"URL Convention Promo":       "URL/Convention Promos",
 
 	// Summer
 	"Summer Foil":           "Summer of Magic",
@@ -339,6 +367,7 @@ var EditionTable = map[string]string{
 	"Introductory 4th Edition":     "Introductory Two-Player Set",
 	"Modern Event Deck":            "Modern Event Deck 2014",
 	"PS3 Promo":                    "Duels of the Planeswalkers 2012 Promos",
+	"Starter":                      "Starter 1999",
 	"Vanguard":                     "Vanguard Series",
 
 	// Foreign-only

@@ -228,6 +228,7 @@ func (c *Card) isIDWMagazineBook() bool {
 		c.Variation == "Book" ||
 		strings.Contains(c.Variation, "Book Insert") || // cfb
 		strings.Contains(c.Variation, "Book Promo") || // sz
+		mtgjson.NormContains(c.Variation, "Top Deck") || // csi
 		c.Variation == "Insert Foil" || // ck
 		c.Variation == "Media Insert" // mm
 }
@@ -322,20 +323,31 @@ func (c *Card) isDuelsOfThePW() bool {
 
 func (c *Card) isBasicFullArt() bool {
 	return c.isBasicLand() &&
-		mtgjson.NormContains(c.Variation, "full art") &&
-		!mtgjson.NormContains(c.Variation, "non")
+		(mtgjson.NormContains(c.Variation, "full art") ||
+			c.Variation == "FA") && // csi
+		!mtgjson.NormContains(c.Variation, "non") &&
+		!mtgjson.NormContains(c.Variation, "not") // csi
 }
 
 func (c *Card) isBasicNonFullArt() bool {
 	return c.isBasicLand() &&
 		mtgjson.NormContains(c.Variation, "non-full art") ||
-		mtgjson.NormContains(c.Variation, "Intro") // abu
+		mtgjson.NormContains(c.Variation, "Intro") || // abu
+		mtgjson.NormContains(c.Variation, "NOT the full art") // csi
 }
 
 func (c *Card) isPremiereShop() bool {
 	return c.isBasicLand() &&
 		(strings.Contains(c.Variation, "MPS") ||
+			strings.Contains(c.Variation, "Premier") || // csi
 			strings.Contains(c.Edition, "MPS"))
+}
+
+func (c *Card) isPortalAlt() bool {
+	return (mtgjson.NormContains(c.Variation, "Reminder Text") &&
+		!mtgjson.NormContains(c.Variation, "No")) ||
+		mtgjson.NormContains(c.Variation, "No Flavor Text") || // csi
+		mtgjson.NormContains(c.Variation, "Without Flavor Text") // csi
 }
 
 func (c *Card) isDuelDecks() bool {
@@ -343,6 +355,12 @@ func (c *Card) isDuelDecks() bool {
 		mtgjson.NormContains(c.Edition, " vs ")) &&
 		!mtgjson.NormContains(c.Variation, "Anthology") &&
 		!mtgjson.NormContains(c.Edition, "Anthology")
+}
+
+func (c *Card) isDuelDecksAnthology() bool {
+	return mtgjson.NormContains(c.Edition, "Duel Decks Anthology") &&
+		(mtgjson.NormContains(c.Variation, " vs ") ||
+			mtgjson.NormContains(c.Edition, " vs "))
 }
 
 func (c *Card) duelDecksVariant() string {

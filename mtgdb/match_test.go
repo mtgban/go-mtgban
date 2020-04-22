@@ -789,6 +789,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Asia Pacific Land Program",
 		},
 	},
+	MatchTest{
+		Id:   "0774fb91-081f-577c-b738-dc1ee129dc6c",
+		Desc: "euro_lands",
+		In: Card{
+			Name:      "Plains",
+			Variation: "EURO Land Steppe Tundra Ben Thompson art",
+			Edition:   "ignored",
+		},
+	},
 
 	// FNM promos (often confused with set promos)
 	MatchTest{
@@ -1340,6 +1349,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Fallen Empires",
 		},
 	},
+	MatchTest{
+		Id:   "56f84558-0802-5d35-aa5b-8e3b55cced70",
+		Desc: "variant_is_polluted",
+		In: Card{
+			Name:      "Basal Thrull",
+			Variation: "Artist Phil Foglio",
+			Edition:   "Fallen Empires",
+		},
+	},
 
 	// Duel Decks
 	MatchTest{
@@ -1585,6 +1603,15 @@ var MatchTests = []MatchTest{
 		In: Card{
 			Name:      "Cloud Pirates",
 			Variation: "reminder text",
+			Edition:   "Portal",
+		},
+	},
+	MatchTest{
+		Id:   "937b8e57-d3c8-52ba-aecd-fb3897ab2416",
+		Desc: "portal_starter_deck",
+		In: Card{
+			Name:      "Raging Goblin",
+			Variation: "No flavor text",
 			Edition:   "Portal",
 		},
 	},

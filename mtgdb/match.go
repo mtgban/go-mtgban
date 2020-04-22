@@ -444,8 +444,7 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 			}
 
 		// DDA with deck variant specified in the variation
-		case mtgjson.NormContains(inCard.Edition, "Duel Decks Anthology") &&
-			strings.Contains(inCard.Variation, " vs"):
+		case inCard.isDuelDecksAnthology():
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks Anthology"):
 				fields := strings.Fields(inCard.Variation)
@@ -755,7 +754,7 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 				// Since the check is field by field Foglio may alias Phil or Kaja
 				variation := inCard.Variation
 				if strings.Contains(inCard.Variation, "Foglio") {
-					variation = strings.Replace(inCard.Variation, " ", ":", 1)
+					variation = strings.Replace(inCard.Variation, " Foglio", ":Foglio", 1)
 				}
 
 				fields := strings.Fields(variation)
@@ -771,7 +770,8 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 				// Check field by field, it's usually enough for just two elements
 				for _, field := range fields {
 					// Skip short text like 'jr.' since they are often missed
-					if len(field) < 4 {
+					// Skip Land too for High and Low lands alias
+					if len(field) < 4 || field == "Land" {
 						continue
 					}
 					if mtgjson.NormContains(flavor, field) || mtgjson.NormContains(card.Artist, field) {
@@ -870,7 +870,7 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 						variation = "misprint"
 					} else if card.Name == "Reflecting Pool" && set.Name == "Shadowmoor" && inCard.Foil {
 						variation = "misprint"
-					} else if mtgjson.NormContains(variation, "Reminder Text") && set.Name == "Portal" {
+					} else if inCard.isPortalAlt() && set.Name == "Portal" {
 						variation = "misprint"
 					}
 
