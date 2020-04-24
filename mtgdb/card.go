@@ -120,18 +120,29 @@ func (c *Card) output(card mtgjson.Card, set *mtgjson.Set) *Card {
 	return out
 }
 
-// Returns whether the card is a basic land
-func (c *Card) IsBasicLand() bool {
+// Returns whether the input string may represent a basic land
+func IsBasicLand(name string) bool {
 	switch {
-	case strings.HasPrefix(c.Name, "Plains"),
-		strings.HasPrefix(c.Name, "Island"),
-		strings.HasPrefix(c.Name, "Swamp"),
-		strings.HasPrefix(c.Name, "Mountain"),
-		strings.HasPrefix(c.Name, "Forest"),
-		strings.HasPrefix(c.Name, "Wastes"):
+	case strings.Contains(name, "Bear") && !strings.Contains(name, "Beard"), // G
+		strings.Contains(name, "Mosquito"),                                     // B
+		strings.Contains(name, "Stronghold"), strings.Contains(name, "Bandit"), // R
+		strings.Contains(name, "Yeti"), strings.Contains(name, "Titan"), // R
+		strings.Contains(name, "Valley"), strings.Contains(name, "Goat"), // R
+		strings.Contains(name, "Fish"), strings.Contains(name, "Sanctuary"): // U
+	case strings.HasPrefix(name, "Plains"),
+		strings.HasPrefix(name, "Island"),
+		strings.HasPrefix(name, "Swamp"),
+		strings.HasPrefix(name, "Mountain"),
+		strings.HasPrefix(name, "Forest"),
+		strings.HasPrefix(name, "Wastes"):
 		return true
 	}
 	return false
+}
+
+// Returns whether the card is a basic land
+func (c *Card) IsBasicLand() bool {
+	return IsBasicLand(c.Name)
 }
 
 // More specific version of the above, for internal use only
