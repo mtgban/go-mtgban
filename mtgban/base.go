@@ -6,18 +6,41 @@ import (
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
-func (inv InventoryRecord) Add(card *mtgdb.Card, entry *InventoryEntry) error {
+func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict bool) error {
 	entries, found := inv[*card]
 	if found {
 		for i := range entries {
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price {
-				return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
+				if strict {
+					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
+				}
+
+				check := entry.URL == entries[i].URL
+				if entry.SellerName != "" {
+					check = entry.SellerName == entries[i].SellerName
+				}
+				if check && entry.Quantity == entries[i].Quantity {
+					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
+				}
+
+				inv[*card][i].Quantity += entry.Quantity
+				return nil
 			}
 		}
 	}
 
 	inv[*card] = append(inv[*card], *entry)
 	return nil
+}
+
+// Add a new record to the inventory, similar existing entries are merged
+func (inv InventoryRecord) Add(card *mtgdb.Card, entry *InventoryEntry) error {
+	return inv.add(card, entry, false)
+}
+
+// Add new record to the inventory, similar existing entries are not merged
+func (inv InventoryRecord) AddStrict(card *mtgdb.Card, entry *InventoryEntry) error {
+	return inv.add(card, entry, true)
 }
 
 func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
