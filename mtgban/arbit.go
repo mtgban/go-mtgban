@@ -225,6 +225,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 		}
 		for _, refEntry := range refEntries {
 			for _, invEntry := range invEntries {
+				if refEntry.Conditions != invEntry.Conditions {
+					continue
+				}
 				refPrice := refEntry.Price
 				price := invEntry.Price
 				spread := 100 * (refPrice - price) / price
