@@ -45,7 +45,7 @@ func (sz *Strikezone) printf(format string, a ...interface{}) {
 
 type respChan struct {
 	card  *mtgdb.Card
-	entry mtgban.InventoryEntry
+	entry *mtgban.InventoryEntry
 }
 
 func (sz *Strikezone) scrape() error {
@@ -145,7 +145,7 @@ func (sz *Strikezone) scrape() error {
 
 			channel <- respChan{
 				card: cc,
-				entry: mtgban.InventoryEntry{
+				entry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      cardPrice,
 					Quantity:   quantity,
@@ -163,7 +163,7 @@ func (sz *Strikezone) scrape() error {
 	}()
 
 	for resp := range channel {
-		err := sz.inventory.Add(resp.card, &resp.entry)
+		err := sz.inventory.Add(resp.card, resp.entry)
 		if err != nil {
 			sz.printf("%v", err)
 			continue
