@@ -162,11 +162,7 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 			variation = card.URL
 		// Full-art Zendikar lands
 		case "Zendikar":
-			if strings.HasPrefix(cardName, "Forest") ||
-				strings.HasPrefix(cardName, "Island") ||
-				strings.HasPrefix(cardName, "Mountain") ||
-				strings.HasPrefix(cardName, "Plains") ||
-				strings.HasPrefix(cardName, "Swamp") {
+			if mtgdb.IsBasicLand(cardName) {
 				s := strings.Fields(cardName)
 				if len(s) > 1 {
 					cardName = s[0]
@@ -174,10 +170,9 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 				}
 			}
 		default:
-			switch cardName {
 			// Try using the number, except the set code can randomly be
 			// 2 or 3 characters.
-			case "Plains", "Island", "Swamp", "Mountain", "Forest":
+			if mtgdb.IsBasicLand(cardName) {
 				for _, lengthToDrop := range []int{2, 3} {
 					if len(extra) > lengthToDrop {
 						internalNumber := strings.TrimLeft(extra[lengthToDrop:], "0")
