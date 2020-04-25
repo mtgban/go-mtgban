@@ -32,9 +32,9 @@ func NewScraper() *ABUGames {
 }
 
 type resultChan struct {
-	err       error
-	inventory mtgban.InventoryRecord
-	buylist   mtgban.BuylistRecord
+	card     *mtgdb.Card
+	invEntry *mtgban.InventoryEntry
+	buyEntry *mtgban.BuylistEntry
 }
 
 func (abu *ABUGames) printf(format string, a ...interface{}) {
@@ -43,15 +43,11 @@ func (abu *ABUGames) printf(format string, a ...interface{}) {
 	}
 }
 
-func (abu *ABUGames) processEntry(page int) (res resultChan) {
+func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 	product, err := abu.client.GetProduct(page)
 	if err != nil {
-		res.err = err
-		return
+		return err
 	}
-
-	res.inventory = mtgban.InventoryRecord{}
-	res.buylist = mtgban.BuylistRecord{}
 
 	duplicate := map[string]bool{}
 
@@ -112,6 +108,9 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 				continue
 			}
 
+			var invEntry *mtgban.InventoryEntry
+			var buyEntry *mtgban.BuylistEntry
+
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
 				notes := "https://abugames.com/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
 				if theCard.Foil {
@@ -120,13 +119,12 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					notes += "&card_style=[\"Normal\"]"
 				}
 
-				out := &mtgban.InventoryEntry{
+				invEntry = &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
 					URL:        notes,
 				}
-				res.inventory.Add(cc, out)
 			}
 
 			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 && card.Condition == "NM" {
@@ -145,7 +143,7 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					notes += "&card_style=[\"Normal\"]"
 				}
 
-				out := &mtgban.BuylistEntry{
+				buyEntry = &mtgban.BuylistEntry{
 					Conditions:    cond,
 					BuyPrice:      card.BuyPrice,
 					TradePrice:    card.TradePrice,
@@ -154,14 +152,21 @@ func (abu *ABUGames) processEntry(page int) (res resultChan) {
 					QuantityRatio: qtyRatio,
 					URL:           notes,
 				}
-				res.buylist.Add(cc, out)
+			}
+
+			if invEntry != nil || buyEntry != nil {
+				channel <- resultChan{
+					card:     cc,
+					invEntry: invEntry,
+					buyEntry: buyEntry,
+				}
 			}
 
 			duplicate[card.Id] = true
 		}
 	}
 
-	return
+	return nil
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
@@ -182,7 +187,10 @@ func (abu *ABUGames) scrape() error {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				results <- abu.processEntry(page)
+				err := abu.processEntry(results, page)
+				if err != nil {
+					abu.printf("%v", err)
+				}
 			}
 			wg.Done()
 		}()
@@ -199,21 +207,14 @@ func (abu *ABUGames) scrape() error {
 	}()
 
 	for result := range results {
-		if result.err != nil {
-			abu.printf("%v", result.err)
-			continue
-		}
-
-		for card, entries := range result.inventory {
-			for i := range entries {
-				err = abu.inventory.Add(&card, &entries[i])
-				if err != nil {
-					abu.printf(err.Error())
-				}
+		if result.invEntry != nil {
+			err = abu.inventory.Add(result.card, result.invEntry)
+			if err != nil {
+				abu.printf(err.Error())
 			}
 		}
-		for card, entry := range result.buylist {
-			err = abu.buylist.Add(&card, &entry)
+		if result.buyEntry != nil {
+			err = abu.buylist.Add(result.card, result.buyEntry)
 			if err != nil {
 				abu.printf(err.Error())
 			}
