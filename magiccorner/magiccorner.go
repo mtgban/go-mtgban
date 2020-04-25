@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 const (
@@ -35,8 +36,8 @@ func NewScraper() (*Magiccorner, error) {
 }
 
 type resultChan struct {
-	err   error
-	cards mtgban.InventoryRecord
+	card  *mtgdb.Card
+	entry *mtgban.InventoryEntry
 }
 
 func (mc *Magiccorner) printf(format string, a ...interface{}) {
@@ -45,14 +46,11 @@ func (mc *Magiccorner) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
+func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition) error {
 	cards, err := mc.client.GetInventoryForEdition(edition)
 	if err != nil {
-		res.err = err
-		return
+		return err
 	}
-
-	res.cards = mtgban.InventoryRecord{}
 
 	printed := false
 
@@ -135,20 +133,21 @@ func (mc *Magiccorner) processEntry(edition MCEdition) (res resultChan) {
 				continue
 			}
 
-			out := mtgban.InventoryEntry{
-				Conditions: cond,
-				Price:      v.Price * mc.exchangeRate,
-				Quantity:   v.Quantity,
-				URL:        "https://www.magiccorner.it" + card.URL,
+			channel <- resultChan{
+				card: cc,
+				entry: &mtgban.InventoryEntry{
+					Conditions: cond,
+					Price:      v.Price * mc.exchangeRate,
+					Quantity:   v.Quantity,
+					URL:        "https://www.magiccorner.it" + card.URL,
+				},
 			}
-
-			res.cards[*cc] = append(res.cards[*cc], out)
 
 			duplicate[v.Id] = true
 		}
 	}
 
-	return
+	return nil
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
@@ -166,7 +165,10 @@ func (mc *Magiccorner) scrape() error {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				results <- mc.processEntry(page)
+				err := mc.processEntry(results, page)
+				if err != nil {
+					mc.printf("%v", err)
+				}
 			}
 			wg.Done()
 		}()
@@ -183,18 +185,10 @@ func (mc *Magiccorner) scrape() error {
 	}()
 
 	for result := range results {
-		if result.err != nil {
-			mc.printf("%v", result.err)
+		err = mc.inventory.Add(result.card, result.entry)
+		if err != nil {
+			mc.printf(err.Error())
 			continue
-		}
-		for card, entries := range result.cards {
-			for i := range entries {
-				err = mc.inventory.Add(&card, &entries[i])
-				if err != nil {
-					mc.printf(err.Error())
-					continue
-				}
-			}
 		}
 	}
 
