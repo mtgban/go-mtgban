@@ -37,9 +37,10 @@ const (
 	lastPage       = 9
 )
 
-type resultChan struct {
-	err   error
-	cards mtgban.BuylistRecord
+type respChan struct {
+	card     *mtgdb.Card
+	invEntry *mtgban.InventoryEntry
+	buyEntry *mtgban.BuylistEntry
 }
 
 func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
@@ -120,7 +121,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, page int, second
 
 			channel <- respChan{
 				card: cc,
-				entry: mtgban.InventoryEntry{
+				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      group.Price,
 					Quantity:   group.Stock,
@@ -131,11 +132,6 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, page int, second
 	})
 
 	return nil
-}
-
-type respChan struct {
-	card  *mtgdb.Card
-	entry mtgban.InventoryEntry
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
@@ -190,9 +186,9 @@ func (mm *Miniaturemarket) scrape() error {
 	}()
 
 	for record := range channel {
-		err := mm.inventory.Add(record.card, &record.entry)
+		err := mm.inventory.Add(record.card, record.invEntry)
 		// Do not print an error if we expect a duplicate due to the sorting
-		if err != nil && mm.inventory[*record.card][0].URL != record.entry.URL {
+		if err != nil && mm.inventory[*record.card][0].URL != record.invEntry.URL {
 			mm.printf("%v", err)
 			continue
 		}
@@ -203,14 +199,12 @@ func (mm *Miniaturemarket) scrape() error {
 	return nil
 }
 
-func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
+func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error {
 	buyback, err := mm.client.BuyBackPage(MMCategoryMtgSingles, page)
 	if err != nil {
-		res.err = err
-		return
+		return err
 	}
 
-	res.cards = mtgban.BuylistRecord{}
 	for _, card := range buyback {
 		if card.MtgCondition == "" ||
 			card.MtgSet == "Bulk MTG" ||
@@ -229,8 +223,7 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 
 		price, err := strconv.ParseFloat(card.Price, 64)
 		if err != nil {
-			res.err = err
-			return
+			return err
 		}
 
 		if price <= 0 {
@@ -273,32 +266,36 @@ func (mm *Miniaturemarket) processEntry(page int) (res resultChan) {
 			priceRatio = price / sellPrice * 100
 		}
 
-		out := &mtgban.BuylistEntry{
-			Conditions: cond,
-			BuyPrice:   price,
-			TradePrice: price * 1.3,
-			Quantity:   0,
-			PriceRatio: priceRatio,
+		channel <- respChan{
+			card: cc,
+			buyEntry: &mtgban.BuylistEntry{
+				Conditions: cond,
+				BuyPrice:   price,
+				TradePrice: price * 1.3,
+				Quantity:   0,
+				PriceRatio: priceRatio,
+			},
 		}
-
-		res.cards.Add(cc, out)
 	}
 
 	mm.BuylistDate = time.Now()
 
-	return
+	return nil
 }
 
 func (mm *Miniaturemarket) parseBL() error {
 	pages := make(chan int)
-	results := make(chan resultChan)
+	results := make(chan respChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < maxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				results <- mm.processEntry(page)
+				err := mm.processEntry(results, page)
+				if err != nil {
+					mm.printf("%v", err)
+				}
 			}
 			wg.Done()
 		}()
@@ -315,16 +312,10 @@ func (mm *Miniaturemarket) parseBL() error {
 	}()
 
 	for result := range results {
-		if result.err != nil {
-			mm.printf("%v", result.err)
+		err := mm.buylist.Add(result.card, result.buyEntry)
+		if err != nil {
+			mm.printf(err.Error())
 			continue
-		}
-		for card, entry := range result.cards {
-			err := mm.buylist.Add(&card, &entry)
-			if err != nil {
-				mm.printf(err.Error())
-				continue
-			}
 		}
 	}
 
