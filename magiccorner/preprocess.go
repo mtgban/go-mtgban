@@ -118,6 +118,7 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 		variation = strings.TrimLeft(extra[4:], "0")
 	}
 
+	id := ""
 	if variation == "" {
 		switch edition {
 		// Work around missing tags until (if) they add them
@@ -144,6 +145,9 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 					variation = internalNumber
 				}
 			}
+		// Image is scryfall ID
+		case "Ikoria: Lair of Behemoths":
+			id = extra
 		// Only one of them
 		case "Campioni di Kamigawa":
 			if cardName == "Brothers Yamazaki" {
@@ -189,6 +193,7 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 	}
 
 	return &mtgdb.Card{
+		Id:        id,
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,
