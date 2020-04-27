@@ -194,6 +194,10 @@ func (c *Card) isShowcase() bool {
 	return strings.Contains(c.Variation, "Showcase")
 }
 
+func (c *Card) isReskin() bool {
+	return strings.Contains(c.Variation, "Godzilla")
+}
+
 func (c *Card) isFNM() bool {
 	return strings.Contains(c.Variation, "FNM") ||
 		strings.Contains(c.Variation, "Friday Night Magic")

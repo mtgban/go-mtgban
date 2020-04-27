@@ -20,6 +20,7 @@ type Set struct {
 type Card struct {
 	Artist      string `json:"artist"`
 	BorderColor string `json:"borderColor"`
+	FlavorName  string `json:"FlavorName"`
 	FlavorText  string `json:"flavorText"`
 	ForeignData []struct {
 		Language string `json:"language"`

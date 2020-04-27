@@ -636,6 +636,33 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// Reskinned frame
+	MatchTest{
+		Id:   "f5737cd9-b418-517b-9a69-705b8c1e402f",
+		Desc: "normal_nongodzilla_variant",
+		In: Card{
+			Name:    "Sprite Dragon",
+			Edition: "Ikoria: Lair of Behemoths",
+		},
+	},
+	MatchTest{
+		Id:   "d5fda5e1-1d13-5545-be43-04b9ec56d21d",
+		Desc: "godzilla_variant",
+		In: Card{
+			Name:      "Sprite Dragon",
+			Variation: "Godzilla",
+			Edition:   "Ikoria: Lair of Behemoths",
+		},
+	},
+	MatchTest{
+		Id:   "d5fda5e1-1d13-5545-be43-04b9ec56d21d",
+		Desc: "godzilla_variant_alt_name",
+		In: Card{
+			Name:    "Dorat, the Perfect Pet",
+			Edition: "Ikoria: Lair of Behemoths",
+		},
+	},
+
 	// Arabian Nights different mana symbol
 	MatchTest{
 		Id:   "7cfca2f3-cc9d-5834-8812-31bee017dfbb",

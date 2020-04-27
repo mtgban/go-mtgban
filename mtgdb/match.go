@@ -716,7 +716,8 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 					}
 				} else {
 					// IKO may have showcase cards which happen to be borderless
-					if card.BorderColor == mtgjson.BorderColorBorderless && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+					// or reskinned ones
+					if card.BorderColor == mtgjson.BorderColorBorderless && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) && card.FlavorName == "" {
 						continue
 					}
 				}
@@ -739,6 +740,17 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 					}
 				} else {
 					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+						continue
+					}
+				}
+
+				// IKO-Style cards with different names
+				if inCard.isReskin() {
+					if card.FlavorName == "" {
+						continue
+					}
+				} else {
+					if card.FlavorName != "" {
 						continue
 					}
 				}
@@ -886,6 +898,8 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 						variation = "misprint"
 					} else if inCard.isPortalAlt() && set.Name == "Portal" {
 						variation = "misprint"
+					} else if inCard.Name == "Void Beckoner" && inCard.isReskin() && card.FlavorName == "Spacegodzilla, Death Corona" {
+						variation = "misprint"
 					}
 
 					if mtgjson.NormContains(variation, "misprint") && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
@@ -955,6 +969,20 @@ func (db *Database) tryAdjustName(inCard *Card) {
 				inCard.Variation += " " + oldVariation
 			}
 			return
+		}
+	}
+
+	// Check if the input name is the reskinned one
+	if strings.Contains(inCard.Edition, "Ikoria") {
+		for _, card := range db.Sets["IKO"].Cards {
+			if mtgjson.NormEquals(inCard.Name, card.FlavorName) {
+				inCard.Name = card.Name
+				if inCard.Variation != "" {
+					inCard.Variation += " "
+				}
+				inCard.Variation += "Godzilla"
+				return
+			}
 		}
 	}
 
