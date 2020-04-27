@@ -715,7 +715,8 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 						continue
 					}
 				} else {
-					if card.BorderColor == mtgjson.BorderColorBorderless {
+					// IKO may have showcase cards which happen to be borderless
+					if card.BorderColor == mtgjson.BorderColorBorderless && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 						continue
 					}
 				}

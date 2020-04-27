@@ -626,6 +626,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Throne of Eldraine",
 		},
 	},
+	MatchTest{
+		Id:   "043b2460-0892-5cb2-b81c-99a42e2d2fb7",
+		Desc: "showcase_borderless",
+		In: Card{
+			Name:      "Zagoth Triome",
+			Variation: "Showcase",
+			Edition:   "Ikoria: Lair of Behemoths",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	MatchTest{
