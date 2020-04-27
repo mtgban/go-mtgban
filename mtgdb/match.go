@@ -1076,10 +1076,13 @@ func (db *Database) tryAdjustEdition(inCard *Card) {
 		edition = "Junior APAC Series"
 	case strings.HasPrefix(variation, "Junior Super Series"),
 		strings.HasPrefix(variation, "MSS Foil"),
+		strings.HasPrefix(variation, "MSS #J"),
+		strings.HasPrefix(variation, "JSS #J"),
 		strings.Contains(variation, "JSS Foil") && !mtgjson.NormContains(variation, "euro"):
 		edition = "Junior Super Series"
 	case strings.HasPrefix(variation, "Junior Series Europe"),
 		strings.HasPrefix(variation, "Junior Series E"),
+		strings.HasPrefix(variation, "Junior Series #E"),
 		strings.HasPrefix(variation, "Junior Series Promo Foil E"),
 		strings.HasPrefix(variation, "ESS Foil E"),
 		strings.HasPrefix(variation, "European JrS E"),

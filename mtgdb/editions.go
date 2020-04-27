@@ -36,6 +36,7 @@ var EditionTable = map[string]string{
 	// Gift pack
 	"2017 Gift Pack":      "2017 Gift Pack",
 	"2018 Gift Pack":      "M19 Gift Pack",
+	"Gift Box 2017":       "2017 Gift Pack",
 	"Gift Pack 2017":      "2017 Gift Pack",
 	"Gift Pack 2018":      "M19 Gift Pack",
 	"Shooting Star Promo": "2017 Gift Pack",
@@ -49,10 +50,13 @@ var EditionTable = map[string]string{
 	"Game Night 2018":       "Game Night",
 	"Magic Game Night":      "Game Night",
 	"Magic Game Night 2019": "Game Night 2019",
+	"Game Night: 2018":      "Game Night",
+	"Game Night: 2019":      "Game Night: 2019",
 
 	// Old school lands
 	"APAC Land":          "Asia Pacific Land Program",
 	"Promos: Apac Lands": "Asia Pacific Land Program",
+	"GURU":               "Guru",
 	"Guru Land":          "Guru",
 	"Guru":               "Guru",
 	"Promos: Guru Lands": "Guru",
@@ -62,17 +66,21 @@ var EditionTable = map[string]string{
 	"Mystery Booster":             "Mystery Booster",
 	"Mystery Booster Test Print":  "Mystery Booster Playtest Cards",
 	"Mystery Booster Test Prints": "Mystery Booster Playtest Cards",
+	"Mystery Booster - Test Card": "Mystery Booster Playtest Cards",
 	"Playtest Card":               "Mystery Booster Playtest Cards",
 
-	// Various
-	"DCI Legend Membership":   "DCI Legend Membership",
-	"Legend Promo":            "DCI Legend Membership",
-	"Pones: The Galloping":    "Ponies: The Galloping",
-	"Ponies: The Galloping":   "Ponies: The Galloping",
+	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",
 	"Secret Lair Drop Series": "Secret Lair Drop",
+	"Secret Lair Full Art":    "Secret Lair Drop",
 	"Stained Glass":           "Secret Lair Drop Promos",
-	"Champs / States Promo":   "Champs and States",
+
+	// Various
+	"DCI Legend Membership": "DCI Legend Membership",
+	"Legend Promo":          "DCI Legend Membership",
+	"Pones: The Galloping":  "Ponies: The Galloping",
+	"Ponies: The Galloping": "Ponies: The Galloping",
+	"Champs / States Promo": "Champs and States",
 
 	// Welcome decks
 	"Amonkhet Welcome Deck": "Welcome Deck 2017",
@@ -147,16 +155,29 @@ var EditionTable = map[string]string{
 	"Commander Anthology Volume 2": "Commander Anthology Volume II",
 	"Commander Singles":            "Commander 2011",
 	"Commander":                    "Commander 2011",
+	"Commander: 2011 Edition":      "Commander 2011",
+	"Commander: 2013 Edition":      "Commander 2013",
+	"Commander: 2014 Edition":      "Commander 2014",
+	"Commander: 2015 Edition":      "Commander 2015",
+	"Commander: 2016 Edition":      "Commander 2016",
+	"Commander: 2017 Edition":      "Commander 2017",
+	"Commander: 2018 Edition":      "Commander 2018",
+	"Commander: 2019 Edition":      "Commander 2019",
+	"Commander: 2020 Edition":      "Commander 2020",
 
 	// Modern Masters
-	"Modern Masters 2013":           "Modern Masters",
-	"Modern Masters 2013 Edition":   "Modern Masters",
-	"Modern Masters 2015 Edition":   "Modern Masters 2015",
-	"Modern Masters 2017 Edition":   "Modern Masters 2017",
-	"Ultimate Box Toppers":          "Ultimate Box Topper",
-	"Ultimate Masters Box Toppers":  "Ultimate Box Topper",
-	"Ultimate Masters: Box Topper":  "Ultimate Box Topper",
-	"Ultimate Masters: Box Toppers": "Ultimate Box Topper",
+	"Modern Masters 2013":            "Modern Masters",
+	"Modern Masters 2013 Edition":    "Modern Masters",
+	"Modern Masters 2015 Edition":    "Modern Masters 2015",
+	"Modern Masters 2017 Edition":    "Modern Masters 2017",
+	"Modern Masters: 2013 Edition":   "Modern Masters",
+	"Modern Masters: 2015 Edition":   "Modern Masters 2015",
+	"Modern Masters: 2017 Edition":   "Modern Masters 2017",
+	"Ultimate Box Toppers":           "Ultimate Box Topper",
+	"Ultimate Masters - Box Toppers": "Ultimate Box Topper",
+	"Ultimate Masters Box Toppers":   "Ultimate Box Topper",
+	"Ultimate Masters: Box Topper":   "Ultimate Box Topper",
+	"Ultimate Masters: Box Toppers":  "Ultimate Box Topper",
 
 	// CE and IE editions
 	"Collector's Edition - International": "Intl. Collectors' Edition",
@@ -205,11 +226,15 @@ var EditionTable = map[string]string{
 	"Premium Deck: Slivers":                      "Premium Deck Series: Slivers",
 
 	// Planechase
-	"Planechase 2009":           "Planechase",
-	"Planechase (2009 Edition)": "Planechase",
-	"Planechase (2012 Edition)": "Planechase 2012",
-	"Planechase 2009 Edition":   "Planechase",
-	"Planechase 2012 Edition":   "Planechase 2012",
+	"Planechase 2009":                 "Planechase",
+	"Planechase (2009 Edition)":       "Planechase",
+	"Planechase (2012 Edition)":       "Planechase 2012",
+	"Planechase 2009 Edition":         "Planechase",
+	"Planechase 2012 Edition":         "Planechase 2012",
+	"Planechase: 2009 Edition":        "Planechase",
+	"Planechase: 2012 Edition":        "Planechase 2012",
+	"Planechase Planes: 2009 Edition": "Planechase Planes",
+	"Planechase Planes: 2012 Edition": "Planechase 2012 Planes",
 
 	// Deckmasters
 	"Deckmaster Promo": "Deckmasters",
@@ -282,6 +307,7 @@ var EditionTable = map[string]string{
 	"DCI Promo World Magic Cup Qualifier": "World Magic Cup Qualifiers",
 	"WCQ":                             "World Magic Cup Qualifiers",
 	"WMC Promo":                       "World Magic Cup Qualifiers",
+	"WMC Qualifier":                   "World Magic Cup Qualifiers",
 	"WMC":                             "World Magic Cup Qualifiers",
 	"WMCQ Foil":                       "World Magic Cup Qualifiers",
 	"WMCQ Promo":                      "World Magic Cup Qualifiers",
@@ -358,11 +384,17 @@ var EditionTable = map[string]string{
 	// SDCC
 	"San Diego Comic-Con": "San Diego Comic-Con 2019",
 
+	// Archenemy
+	"Archenemy: 2010 Edition":          "Archenemy",
+	"Archenemy - Nicol Bolas":          "Archenemy: Nicol Bolas",
+	"Archenemy Schemes (2010 Edition)": "Archenemy Schemes",
+
 	// Various
-	"Archenemy - Nicol Bolas":      "Archenemy: Nicol Bolas",
 	"Arena IA":                     "Arena League 2001",
 	"Beatdown":                     "Beatdown Box Set",
 	"Battle Royale":                "Battle Royale Box Set",
+	"Conspiracy: 2014 Edition":     "Conspiracy",
+	"Coldsnap Reprints":            "Coldsnap Theme Decks",
 	"Coldsnap Theme Deck Reprints": "Coldsnap Theme Decks",
 	"Introductory 4th Edition":     "Introductory Two-Player Set",
 	"Modern Event Deck":            "Modern Event Deck 2014",

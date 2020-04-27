@@ -670,6 +670,7 @@ var pal01Variants = map[string]map[string]string{
 		"beta art arena 2001":    "11",
 		"arena 2001":             "1",
 		"arena 2002":             "11",
+		"arena ice age":          "1",
 	},
 }
 
@@ -685,6 +686,8 @@ var palpVariants = map[string]map[string]string{
 		"apac set clear pack person in swamp":                "15",
 		"apac land japan fire in graveyard, ron spears art":  "10",
 		"apac land indonesia zombie in swamp ron spears art": "15",
+		"apac blue taiwan":                                   "10",
+		"apac clear australia":                               "15",
 	},
 }
 
@@ -805,6 +808,10 @@ var oldLandVariants = map[string]map[string]string{
 		"boulders foreground": "300",
 		"brown dirt road":     "301",
 		"dark and gloomy":     "302",
+
+		"b not tournament legal": "300",
+		"a not tournament legal": "301",
+		"c not tournament legal": "302",
 	},
 	"Island": map[string]string{
 		"a": "291",
@@ -826,6 +833,10 @@ var oldLandVariants = map[string]map[string]string{
 		"golden horizon":      "291",
 		"clear blue daylight": "292",
 		"pink & orange dusk":  "293",
+
+		"b not tournament legal": "291",
+		"a not tournament legal": "292",
+		"c not tournament legal": "293",
 	},
 	"Mountain": map[string]string{
 		"a": "297",
@@ -847,6 +858,10 @@ var oldLandVariants = map[string]map[string]string{
 		"grey mountain / red sky":    "297",
 		"light blue sky/snow":        "298",
 		"dark green clouds/blue sky": "299",
+
+		"b not tournament legal": "297",
+		"a not tournament legal": "298",
+		"c not tournament legal": "299",
 	},
 	"Plains": map[string]string{
 		"b": "288",
@@ -868,6 +883,10 @@ var oldLandVariants = map[string]map[string]string{
 		"six trees":               "288",
 		"four peaks clear meadow": "289",
 		"pink horizon":            "290",
+
+		"b not tournament legal": "288",
+		"a not tournament legal": "289",
+		"c not tournament legal": "290",
 	},
 	"Swamp": map[string]string{
 		"a": "294",
@@ -893,6 +912,10 @@ var oldLandVariants = map[string]map[string]string{
 		"blue and foggy":       "294",
 		"brown and foggy":      "295",
 		"dark grey foreground": "296",
+
+		"b not tournament legal": "294",
+		"a not tournament legal": "295",
+		"c not tournament legal": "296",
 	},
 }
 
@@ -2238,6 +2261,7 @@ var ustVariants = map[string]map[string]string{
 		"winter":    "54c",
 		"spring":    "54d",
 		"version 1": "54a",
+		"autumn":    "54b",
 	},
 	"Garbage Elemental": map[string]string{
 		"2/4":       "82a",
@@ -2262,6 +2286,12 @@ var ustVariants = map[string]map[string]string{
 		"choose odd or even": "113e",
 		"choose a number":    "113f",
 		"version 1":          "113a",
+		"flavor text":        "113a",
+		"artist":             "113b",
+		"border":             "113c",
+		"rarity":             "113d",
+		"collector number":   "113e",
+		"name":               "113f",
 	},
 	"Knight of the Kitchen Sink": map[string]string{
 		"black borders":          "12a",
@@ -2278,6 +2308,10 @@ var ustVariants = map[string]map[string]string{
 		"''the chain…''":      "41c",
 		"''my heart…''":       "41d",
 		"version 1":           "41a",
+		"sold":                "41a",
+		"pendant":             "41b",
+		"chain":               "41c",
+		"heart":               "41d",
 	},
 	"Secret Base": map[string]string{
 		"order of the widget":      "165a",
@@ -2286,6 +2320,7 @@ var ustVariants = map[string]map[string]string{
 		"goblin explosioneers":     "165d",
 		"crossbreed labs":          "165e",
 		"version 2":                "165b",
+		"s.n.e.a.k.":               "165b",
 	},
 	"Sly Spy": map[string]string{
 		"reveal hand":                   "67a",
@@ -2295,6 +2330,10 @@ var ustVariants = map[string]map[string]string{
 		"reveal top of library":         "67e",
 		"roll six-sided die":            "67f",
 		"version 1":                     "67a",
+		"reveals hand":                  "67a",
+		"loses a finger":                "67c",
+		"library":                       "67e",
+		"player loses life":             "67f",
 	},
 	"Target Minotaur": map[string]string{
 		"ice":       "98a",
