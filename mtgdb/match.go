@@ -822,7 +822,7 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 
 					if set.Name == "Deckmasters" {
 						if inCard.Foil || inCard.isGenericPromo() {
-							numberSuffix = "s"
+							numberSuffix = mtgjson.SuffixSpecial
 						} else if card.HasNonFoil &&
 							(card.Name == "Incinerate" || card.Name == "Icy Manipulator") {
 							numberSuffix = ""

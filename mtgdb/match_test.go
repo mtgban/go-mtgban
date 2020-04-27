@@ -1425,7 +1425,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "b9b3308d-f0ef-57dd-91ed-ef0597011f44",
+		Id:   "b9b3308d-f0ef-57dd-91ed-ef0597011f44_f",
 		Desc: "variation_deckmasters_foil",
 		In: Card{
 			Name:      "Incinerate",
@@ -1443,7 +1443,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "7b2244af-2539-5b30-8149-7ee9dfd2b956",
+		Id:   "7b2244af-2539-5b30-8149-7ee9dfd2b956_f",
 		Desc: "variation_deckmasters_foil_but_untagged",
 		In: Card{
 			Name:      "Icy Manipulator",
