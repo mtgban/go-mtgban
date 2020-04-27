@@ -554,7 +554,7 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 			// Super lucky case, we were expecting the card
 			// Note, we need to use the input card name because there might be variants
 			// in the names provided by mtgjson
-			num, found := VariantsTable[set.Name][inCard.Name][inCard.Variation]
+			num, found := VariantsTable[set.Name][inCard.Name][strings.ToLower(inCard.Variation)]
 			if found {
 				if num == card.Number {
 					cards = append(cards, card)
