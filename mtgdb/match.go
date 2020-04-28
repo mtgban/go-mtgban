@@ -407,14 +407,11 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 			}
 
 		case inCard.isWorldChamp():
-			switch set.Name {
-			case "Pro Tour Collector Set":
+			switch {
+			case (maybeYear == "1996" || maybeYear == "") && set.Name == "Pro Tour Collector Set":
+			case maybeYear != "" && strings.HasPrefix(set.Name, "World Championship Decks "+maybeYear):
 			default:
-				switch {
-				case maybeYear != "" && strings.HasPrefix(set.Name, "World Championship Decks "+maybeYear):
-				default:
-					continue
-				}
+				continue
 			}
 
 		case inCard.isMagicFest():
@@ -613,6 +610,22 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 					if len(cn) > 0 && unicode.IsLetter(rune(cn[len(cn)-1])) {
 						suffix := inCard.possibleNumberSuffix()
 						if suffix != "" && !strings.HasSuffix(cn, suffix) {
+							continue
+						}
+					}
+				} else {
+					// Try looking at the collector number if it is in the correct form
+					if inCard.Variation != "" &&
+						!strings.Contains(inCard.Variation, "-") &&
+						unicode.IsLetter(rune(inCard.Variation[0])) {
+						ok := false
+						for _, letter := range inCard.Variation {
+							if unicode.IsDigit(rune(letter)) {
+								ok = true
+								break
+							}
+						}
+						if ok && card.Number != inCard.Variation {
 							continue
 						}
 					}

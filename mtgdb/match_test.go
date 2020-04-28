@@ -1566,6 +1566,24 @@ var MatchTests = []MatchTest{
 			Edition:   "World Championship",
 		},
 	},
+	MatchTest{
+		Id:   "f3659f55-3e3e-5ade-8db0-5099b4dac1ac",
+		Desc: "wcd_with_correct_number",
+		In: Card{
+			Name:      "Strip Mine",
+			Variation: "ll363",
+			Edition:   "Pro Tour Collector Set",
+		},
+	},
+	MatchTest{
+		Id:   "ebd2ea21-16d4-5e84-b54d-a74d81560ce2",
+		Desc: "wcd_only_the_year",
+		In: Card{
+			Name:      "Karplusan Forest",
+			Variation: "Brussels, August 2000",
+			Edition:   "World Championships 2000",
+		},
+	},
 
 	// Foil-only special category
 	MatchTest{
