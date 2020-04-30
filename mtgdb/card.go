@@ -322,7 +322,8 @@ func (c *Card) worldChampPrefix() (string, bool) {
 
 func (c *Card) isDuelsOfThePW() bool {
 	return strings.Contains(c.Variation, "Duels") ||
-		strings.Contains(c.Edition, "Duels")
+		strings.Contains(c.Edition, "Duels") ||
+		mtgjson.NormContains(c.Variation, "DotP") // tat
 }
 
 func (c *Card) isBasicFullArt() bool {

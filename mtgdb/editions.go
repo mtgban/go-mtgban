@@ -34,12 +34,13 @@ var EditionTable = map[string]string{
 	"War of the Spark JPN Planeswalkers":                     "War of the Spark",
 
 	// Gift pack
-	"2017 Gift Pack":      "2017 Gift Pack",
-	"2018 Gift Pack":      "M19 Gift Pack",
-	"Gift Box 2017":       "2017 Gift Pack",
-	"Gift Pack 2017":      "2017 Gift Pack",
-	"Gift Pack 2018":      "M19 Gift Pack",
-	"Shooting Star Promo": "2017 Gift Pack",
+	"2017 Gift Pack":       "2017 Gift Pack",
+	"2018 Gift Pack":       "M19 Gift Pack",
+	"Gift Box 2017":        "2017 Gift Pack",
+	"Gift Pack 2017":       "2017 Gift Pack",
+	"Gift Pack 2018":       "M19 Gift Pack",
+	"Shooting Star Promo":  "2017 Gift Pack",
+	"Mark Poole Art Promo": "2017 Gift Pack",
 
 	// Treasure Chest
 	"Treasure Chest Promo": "XLN Treasure Chest",
@@ -47,11 +48,13 @@ var EditionTable = map[string]string{
 	"Treasure Map":         "XLN Treasure Chest",
 
 	// Game Night
-	"Game Night 2018":       "Game Night",
-	"Magic Game Night":      "Game Night",
-	"Magic Game Night 2019": "Game Night 2019",
-	"Game Night: 2018":      "Game Night",
-	"Game Night: 2019":      "Game Night: 2019",
+	"Game Night 2018":               "Game Night",
+	"Magic Game Night":              "Game Night",
+	"Magic Game Night 2019":         "Game Night 2019",
+	"Game Night: 2018":              "Game Night",
+	"Game Night: 2019":              "Game Night: 2019",
+	"Magic Game Night 2018 Box Set": "Game Night",
+	"Magic Game Night 2019 Box Set": "Game Night: 2019",
 
 	// Old school lands
 	"APAC Land":          "Asia Pacific Land Program",
@@ -81,6 +84,7 @@ var EditionTable = map[string]string{
 	"Pones: The Galloping":  "Ponies: The Galloping",
 	"Ponies: The Galloping": "Ponies: The Galloping",
 	"Champs / States Promo": "Champs and States",
+	"Champs":                "Champs and States",
 
 	// Welcome decks
 	"Amonkhet Welcome Deck": "Welcome Deck 2017",
@@ -96,20 +100,22 @@ var EditionTable = map[string]string{
 	"WOTC Employee Card": "Happy Holidays",
 
 	// Standard Series
-	"Standard Series":                      "BFZ Standard Series",
-	"Standard Series Promo":                "BFZ Standard Series",
-	"2017 Standard Showdown":               "XLN Standard Showdown",
-	"2018 Standard Showdown":               "M19 Standard Showdown",
-	"2017 Standard Showdown Guay":          "XLN Standard Showdown",
-	"2018 Standard Showdown Danner":        "M19 Standard Showdown",
-	"Rebecca Guay Standard Showdown 2017":  "XLN Standard Showdown",
-	"Alayna Danner Standard Showdown 2018": "M19 Standard Showdown",
-	"Rebecca Guay Standard Showdown":       "XLN Standard Showdown",
-	"Alayna Danner Standard Showdown":      "M19 Standard Showdown",
-	"Standard Showdown 2017":               "XLN Standard Showdown",
-	"Standard Showdown 2018":               "M19 Standard Showdown",
-	"Standard Showdown Rebecca Guay":       "XLN Standard Showdown",
-	"Standard Showdown Alayna Danner":      "M19 Standard Showdown",
+	"Standard Series":                          "BFZ Standard Series",
+	"Standard Series Promo":                    "BFZ Standard Series",
+	"2017 Standard Showdown":                   "XLN Standard Showdown",
+	"2018 Standard Showdown":                   "M19 Standard Showdown",
+	"2017 Standard Showdown Guay":              "XLN Standard Showdown",
+	"2018 Standard Showdown Danner":            "M19 Standard Showdown",
+	"Rebecca Guay Standard Showdown 2017":      "XLN Standard Showdown",
+	"Alayna Danner Standard Showdown 2018":     "M19 Standard Showdown",
+	"Rebecca Guay Standard Showdown":           "XLN Standard Showdown",
+	"Alayna Danner Standard Showdown":          "M19 Standard Showdown",
+	"Standard Showdown 2017":                   "XLN Standard Showdown",
+	"Standard Showdown 2018":                   "M19 Standard Showdown",
+	"Standard Showdown Rebecca Guay":           "XLN Standard Showdown",
+	"Standard Showdown Alayna Danner":          "M19 Standard Showdown",
+	"Alayna Danner Art":                        "M19 Standard Showdown",
+	"Rebecca Guay Art Standard Showdown Promo": "XLN Standard Showdown",
 
 	// Guild kits
 	"Guild Kits: Guilds of Ravnica":  "GRN Guild Kit",
@@ -126,6 +132,16 @@ var EditionTable = map[string]string{
 	"Guild Kit: Orzhov":              "RNA Guild Kit",
 	"Guild Kit: Rakdos":              "RNA Guild Kit",
 	"Guild Kit: Simic":               "RNA Guild Kit",
+	"Boros Guild Kit":                "GRN Guild Kit",
+	"Dimir Guild Kit":                "GRN Guild Kit",
+	"Golgari Guild Kit":              "GRN Guild Kit",
+	"Izzet Guild Kit":                "GRN Guild Kit",
+	"Selesnya Guild Kit":             "GRN Guild Kit",
+	"Azorius Guild Kit":              "RNA Guild Kit",
+	"Gruul Guild Kit":                "RNA Guild Kit",
+	"Orzhov Guild Kit":               "RNA Guild Kit",
+	"Rakdos Guild Kit":               "RNA Guild Kit",
+	"Simic Guild Kit":                "RNA Guild Kit",
 	"Ravnica Weekend Boros":          "GRN Ravnica Weekend",
 	"Ravnica Weekend Dimir":          "GRN Ravnica Weekend",
 	"Ravnica Weekend Golgari":        "GRN Ravnica Weekend",
@@ -154,6 +170,7 @@ var EditionTable = map[string]string{
 	"Commander Anthology Vol. II":  "Commander Anthology Volume II",
 	"Commander Anthology Volume 2": "Commander Anthology Volume II",
 	"Commander Singles":            "Commander 2011",
+	"Commander Decks":              "Commander 2011",
 	"Commander":                    "Commander 2011",
 	"Commander: 2011 Edition":      "Commander 2011",
 	"Commander: 2013 Edition":      "Commander 2013",
@@ -243,6 +260,7 @@ var EditionTable = map[string]string{
 
 	// Junior Super/Europe/APAC Series
 	"European Junior Series":         "Junior Series Europe",
+	"Junior Series Promo":            "Junior Series Europe",
 	"Junior Series Promos":           "Junior Series Europe",
 	"Euro JSS Promo":                 "Junior Series Europe",
 	"Junior Series":                  "Junior Series Europe",
@@ -253,6 +271,7 @@ var EditionTable = map[string]string{
 	"Junior Super Series":            "Junior Super Series",
 	"Magic Scholarship Series":       "Junior Super Series",
 	"Magic Scholarship Series Promo": "Junior Super Series",
+	"Scholarship Series":             "Junior Super Series",
 	"Scholarship Series Promo":       "Junior Super Series",
 	"MSS":           "Junior Super Series",
 	"MSS Promo":     "Junior Super Series",
@@ -267,6 +286,7 @@ var EditionTable = map[string]string{
 	"GP Promo":                           "Grand Prix Promos",
 	"Gran Prix Promo":                    "Grand Prix Promos",
 	"Grand Prix":                         "Grand Prix Promos",
+	"Grand Prix Foil":                    "Grand Prix Promos",
 	"Grand Prix Promo":                   "Grand Prix Promos",
 	"Promos: Grand Prix":                 "Grand Prix Promos",
 	"Grand Prix 2018":                    "MagicFest 2019",
@@ -318,6 +338,7 @@ var EditionTable = map[string]string{
 	"World Magic Cup Promo":           "World Magic Cup Qualifiers",
 	"World Magic Cup Qualifier Promo": "World Magic Cup Qualifiers",
 	"World Championship Foil":         "World Championship Promos",
+	"World Cup Qualifier Promo":       "World Magic Cup Qualifiers",
 
 	// Tarkir extra sets
 	"Dragonfury":                              "Tarkir Dragonfury",
@@ -330,6 +351,7 @@ var EditionTable = map[string]string{
 	"Ugin's Fate":                             "Ugin's Fate",
 	"Ugins Fate":                              "Ugin's Fate",
 	"Ugins Fate Promo":                        "Ugin's Fate",
+	"Ugin's Fate Alternate Art Promo":         "Ugin's Fate",
 	"Ugin’s Fate Promo":                       "Ugin's Fate",
 
 	// Clash packs
@@ -364,6 +386,7 @@ var EditionTable = map[string]string{
 	"Dragon'Con 1994":            "Dragon Con",
 	"HASCON":                     "HasCon 2017",
 	"HASCON 2017":                "HasCon 2017",
+	"Hascon Promo":               "HasCon 2017",
 	"Hascon 2017 Promo":          "HasCon 2017",
 	"PAX Prime Promo":            "URL/Convention Promos",
 	"2012 Convention Promo":      "URL/Convention Promos",
@@ -397,10 +420,12 @@ var EditionTable = map[string]string{
 	"Coldsnap Reprints":            "Coldsnap Theme Decks",
 	"Coldsnap Theme Deck Reprints": "Coldsnap Theme Decks",
 	"Introductory 4th Edition":     "Introductory Two-Player Set",
-	"Modern Event Deck":            "Modern Event Deck 2014",
 	"PS3 Promo":                    "Duels of the Planeswalkers 2012 Promos",
 	"Starter":                      "Starter 1999",
 	"Vanguard":                     "Vanguard Series",
+
+	"Modern Event Deck":                           "Modern Event Deck 2014",
+	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",
 
 	// Foreign-only
 	"3rd Edition (Foreign Black Border)": "Foreign Black Border",
