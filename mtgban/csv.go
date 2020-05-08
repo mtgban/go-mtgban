@@ -20,11 +20,11 @@ var (
 	}
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "Quantity Ratio",
+		"Key", "Name", "Edition", "F/NF", "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio",
 	}
 
 	ArbitHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Conditions", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Price Ratio", "Quantity Ratio",
+		"Key", "Name", "Edition", "F/NF", "Conditions", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Price Ratio",
 	}
 	MismatchHeader = []string{
 		"Key", "Name", "Edition", "F/NF", "Conditions", "Price", "Difference", "Spread",
@@ -190,10 +190,6 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[8], err)
 		}
-		qtyRatio, err := strconv.ParseFloat(record[9], 64)
-		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[9], err)
-		}
 
 		card := &mtgdb.Card{
 			Id:      record[0],
@@ -202,12 +198,11 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			Foil:    foil,
 		}
 		entry := &BuylistEntry{
-			Conditions:    record[4],
-			BuyPrice:      buyPrice,
-			TradePrice:    tradePrice,
-			Quantity:      qty,
-			PriceRatio:    priceRatio,
-			QuantityRatio: qtyRatio,
+			Conditions: record[4],
+			BuyPrice:   buyPrice,
+			TradePrice: tradePrice,
+			Quantity:   qty,
+			PriceRatio: priceRatio,
 		}
 
 		buylist.Add(card, entry)
@@ -303,7 +298,6 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 			fmt.Sprintf("%0.2f", entry.TradePrice),
 			fmt.Sprint(entry.Quantity),
 			fmt.Sprintf("%0.2f%%", entry.PriceRatio),
-			fmt.Sprintf("%0.2f%%", entry.QuantityRatio),
 		})
 		if err != nil {
 			return err
@@ -344,7 +338,6 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			fmt.Sprintf("%0.2f", entry.Difference),
 			fmt.Sprintf("%0.2f%%", entry.Spread),
 			fmt.Sprintf("%0.2f%%", bl.PriceRatio),
-			fmt.Sprintf("%0.2f%%", bl.QuantityRatio),
 		})
 		if err != nil {
 			return err
