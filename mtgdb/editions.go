@@ -165,6 +165,8 @@ var EditionTable = map[string]string{
 	"Commander 2018 Edition":       "Commander 2018",
 	"Commander 2019 Edition":       "Commander 2019",
 	"Commander 2020 Edition":       "Commander 2020",
+	"Commander 2020 Ikoria":        "Commander 2020",
+	"Commander 2020: Ikoria":       "Commander 2020",
 	"Commander Anthology 2018":     "Commander Anthology Volume II",
 	"Commander Anthology VOL. II":  "Commander Anthology Volume II",
 	"Commander Anthology Vol. II":  "Commander Anthology Volume II",
@@ -181,6 +183,7 @@ var EditionTable = map[string]string{
 	"Commander: 2018 Edition":      "Commander 2018",
 	"Commander: 2019 Edition":      "Commander 2019",
 	"Commander: 2020 Edition":      "Commander 2020",
+	"Commander: Ikoria":            "Commander 2020",
 
 	// Modern Masters
 	"Modern Masters 2013":            "Modern Masters",
