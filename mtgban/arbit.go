@@ -68,6 +68,10 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			buylistPrice = blEntry.TradePrice
 		}
 
+		if buylistPrice == 0 {
+			continue
+		}
+
 		grade := vendor.Grading(card, blEntry)
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
@@ -75,6 +79,10 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			if invEntry.Conditions != "NM" {
 				blPrice *= grade[invEntry.Conditions]
+			}
+
+			if price == 0 {
+				continue
 			}
 
 			spread := 100 * (blPrice - price) / price
@@ -223,13 +231,22 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 		if !found {
 			continue
 		}
+
 		for _, refEntry := range refEntries {
+			if refEntry.Price == 0 {
+				continue
+			}
 			for _, invEntry := range invEntries {
 				if refEntry.Conditions != invEntry.Conditions {
 					continue
 				}
 				refPrice := refEntry.Price
 				price := invEntry.Price
+
+				if invEntry.Price == 0 {
+					continue
+				}
+
 				spread := 100 * (refPrice - price) / price
 				difference := refPrice - price
 
