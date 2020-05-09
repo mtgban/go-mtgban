@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"net/url"
 
 	http "github.com/hashicorp/go-retryablehttp"
 )
@@ -12,6 +13,13 @@ type tatParam struct {
 	Action     string `json:"action"`
 	DeptCode   string `json:"deptCode"`
 	CategoryId string `json:"catid"`
+}
+
+type TATBuyingOption struct {
+	ProductId  int     `json:"productid"`
+	Price      float64 `json:"saleprice"`
+	Quantity   int     `json:"quantityonsite"`
+	Conditions string  `json:"conditioncode"`
 }
 
 type TATEdition struct {
@@ -35,6 +43,7 @@ type TATClient struct {
 }
 
 const (
+	tatInventoryURL = "https://www.trollandtoad.com/ajax/productAjax.php"
 	tatBuylistURL   = "https://www2.trollandtoad.com/buylist/ajax_scripts/buylist.php"
 )
 
@@ -43,6 +52,31 @@ func NewTATClient() *TATClient {
 	tat.client = http.NewClient()
 	tat.client.Logger = nil
 	return &tat
+}
+
+func (tat *TATClient) GetBuyingOptions(productId string) ([]TATBuyingOption, error) {
+	resp, err := tat.client.PostForm(tatInventoryURL, url.Values{
+		"productid": {productId},
+		"action":    {"getBuyingOptions"},
+	})
+	if err != nil {
+		return nil, err
+
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var options []TATBuyingOption
+	err = json.Unmarshal(data, &options)
+	if err != nil {
+		return nil, err
+	}
+
+	return options, nil
 }
 
 func (tat *TATClient) ListEditions() ([]TATEdition, error) {

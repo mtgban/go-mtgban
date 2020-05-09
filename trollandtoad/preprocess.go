@@ -26,6 +26,7 @@ var cardTable = map[string]string{
 
 var tagsTable = []string{
 	"Box Topper",
+	"Brawl Deck",
 	"Buy-A-Box Promo",
 	"DotP",
 	"Game Day Promo",
@@ -47,8 +48,10 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 	}
 
 	switch {
-	case strings.Contains(fullName, "Token"),
+	case strings.Contains(strings.ToLower(fullName), "token"),
 		strings.Contains(fullName, "Oversize"),
+		strings.Contains(fullName, "Miscut"),
+		strings.Contains(fullName, "Morph Overlay"),
 		strings.Contains(fullName, "Checklist"),
 		strings.Contains(fullName, "Splendid Genesis"),
 		strings.Contains(fullName, "Blank Proxy Card"),
@@ -61,6 +64,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
 		strings.Contains(fullName, "Spanish"),
 		strings.Contains(fullName, "Portuguese"),
+		strings.Contains(fullName, "Chinese"),
 		strings.Contains(fullName, "Japanese Emrakul"),
 		strings.Contains(fullName, "Italian"):
 		return nil, errors.New("not english")

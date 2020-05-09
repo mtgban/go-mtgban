@@ -1,10 +1,18 @@
 package trollandtoad
 
 import (
+	"fmt"
+	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	colly "github.com/gocolly/colly/v2"
+	queue "github.com/gocolly/colly/v2/queue"
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgdb"
@@ -12,19 +20,24 @@ import (
 
 const (
 	maxConcurrency = 8
+	tatPagesURL    = "https://www.trollandtoad.com/magic-the-gathering/all-singles/7085"
+	tatOptions     = "?Keywords=&min-price=&max-price=&items-pp=60&item-condition=&selected-cat=7085&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
 type Trollandtoad struct {
-	LogCallback mtgban.LogCallbackFunc
-	BuylistDate time.Time
+	LogCallback   mtgban.LogCallbackFunc
+	InventoryDate time.Time
+	BuylistDate   time.Time
 
-	buylist mtgban.BuylistRecord
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 
 	client *TATClient
 }
 
 func NewScraper() *Trollandtoad {
 	tat := Trollandtoad{}
+	tat.inventory = mtgban.InventoryRecord{}
 	tat.buylist = mtgban.BuylistRecord{}
 	tat.client = NewTATClient()
 	return &tat
@@ -32,6 +45,7 @@ func NewScraper() *Trollandtoad {
 
 type responseChan struct {
 	card     *mtgdb.Card
+	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
 
@@ -39,6 +53,160 @@ func (tat *Trollandtoad) printf(format string, a ...interface{}) {
 	if tat.LogCallback != nil {
 		tat.LogCallback("[TaT] "+format, a...)
 	}
+}
+
+func (tat *Trollandtoad) parsePages(lastPage int) error {
+	channel := make(chan responseChan)
+
+	c := colly.NewCollector(
+		colly.AllowedDomains("www.trollandtoad.com"),
+
+		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
+
+		colly.Async(true),
+	)
+
+	c.SetClient(cleanhttp.DefaultClient())
+
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		RandomDelay: 1 * time.Second,
+		Parallelism: maxConcurrency,
+	})
+
+	c.OnRequest(func(r *colly.Request) {
+		//tat.printf("Visiting %s", r.URL.String())
+	})
+
+	c.OnHTML(`div[class='product-info card-body col pl-0 pl-sm-3']`, func(e *colly.HTMLElement) {
+		link := e.ChildAttr(`a[class='card-text']`, "href")
+		id := path.Base(link)
+		cardName := e.ChildText(`a[class='card-text']`)
+		edition := e.ChildText(`div[class='row mb-2'] div[class='col-12 prod-cat']`)
+
+		theCard, err := preprocess(cardName, edition)
+		if err != nil {
+			return
+		}
+		cc, err := theCard.Match()
+		if err != nil {
+			switch {
+			case strings.Contains(edition, "World Championships"):
+			default:
+				tat.printf("%q", theCard)
+				tat.printf("%s ~ %s", cardName, edition)
+				tat.printf("%v", err)
+			}
+			return
+		}
+
+		options, err := tat.client.GetBuyingOptions(id)
+		if err != nil {
+			tat.printf(err.Error())
+			return
+		}
+
+		for _, option := range options {
+			if option.Price == 0.0 || option.Quantity == 0 {
+				continue
+			}
+
+			conditions := option.Conditions
+			switch conditions {
+			case "NM":
+			case "LP":
+				conditions = "SP"
+			case "PL":
+				conditions = "MP"
+			default:
+				tat.printf("Unsupported %s condition for %s %s", conditions, cardName, edition)
+				continue
+			}
+
+			var out responseChan
+			out = responseChan{
+				card: cc,
+				invEntry: &mtgban.InventoryEntry{
+					Conditions: conditions,
+					Price:      option.Price,
+					Quantity:   option.Quantity,
+					URL:        e.Request.AbsoluteURL(link),
+				},
+			}
+			channel <- out
+		}
+	})
+
+	q, _ := queue.New(
+		maxConcurrency,
+		&queue.InMemoryQueueStorage{MaxSize: 10000},
+	)
+
+	for i := 1; i <= lastPage; i++ {
+		opts := fmt.Sprintf(tatOptions, i)
+		q.AddURL(tatPagesURL + opts)
+	}
+
+	q.Run(c)
+
+	go func() {
+		c.Wait()
+		close(channel)
+	}()
+
+	for res := range channel {
+		err := tat.inventory.Add(res.card, res.invEntry)
+		if err != nil {
+			// Too many false positives
+			//tat.printf("%v", err)
+		}
+	}
+
+	tat.InventoryDate = time.Now()
+
+	return nil
+}
+
+func (tat *Trollandtoad) scrape() error {
+	resp, err := http.Get(tatPagesURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	lastPage := 0
+	doc.Find(`div[class="lastPage pageLink d-flex font-weight-bold"]`).Each(func(_ int, s *goquery.Selection) {
+		page, _ := s.Attr("data-page")
+		lastPage, err = strconv.Atoi(page)
+	})
+	if err != nil {
+		return err
+	}
+
+	tat.printf("Parsing %d pages", lastPage)
+	return tat.parsePages(lastPage)
+}
+
+func (tat *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
+	if len(tat.inventory) > 0 {
+		return tat.inventory, nil
+	}
+
+	start := time.Now()
+	tat.printf("Inventory scraping started at %s", start)
+
+	err := tat.scrape()
+	if err != nil {
+		return nil, err
+	}
+	tat.printf("Inventory scraping took %s", time.Since(start))
+
+	return tat.inventory, nil
 }
 
 func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) error {
@@ -81,12 +249,24 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 			continue
 		}
 
+		var priceRatio, sellPrice float64
+
+		invCards := tat.inventory[*cc]
+		for _, invCard := range invCards {
+			sellPrice = invCard.Price
+			break
+		}
+		if sellPrice > 0 {
+			priceRatio = price / sellPrice * 100
+		}
+
 		channel <- responseChan{
 			card: cc,
 			buyEntry: &mtgban.BuylistEntry{
 				BuyPrice:   price,
 				TradePrice: price * 1.30,
 				Quantity:   qty,
+				PriceRatio: priceRatio,
 			},
 		}
 	}
@@ -174,6 +354,7 @@ func (tat *Trollandtoad) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (gr
 func (tat *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TaT"
+	info.InventoryTimestamp = tat.InventoryDate
 	info.BuylistTimestamp = tat.BuylistDate
 	return
 }
