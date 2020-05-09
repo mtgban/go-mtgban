@@ -834,6 +834,15 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "c6fd0db2-2133-51da-962f-6eb5bacf8477",
+		Desc: "euro_lands_comma",
+		In: Card{
+			Name:      "Island",
+			Variation: "EURO Land, Venezia",
+			Edition:   "ignored",
+		},
+	},
 
 	// FNM promos (often confused with set promos)
 	MatchTest{
