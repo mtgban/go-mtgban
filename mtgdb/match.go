@@ -479,6 +479,8 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 			switch set.Name {
 			case "Gateway 2007":
 			case "Champs and States":
+			case "Grand Prix Promos":
+				continue
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
