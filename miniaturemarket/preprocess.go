@@ -168,7 +168,7 @@ func preprocess(title string) (*mtgdb.Card, error) {
 		}
 	}
 
-	if strings.HasSuffix(title, "(Collector Edition)") && variant == "Alternate Art" {
+	if strings.Contains(title, "(Collector Edition)") && variant == "Alternate Art" {
 		variant = "Borderless"
 	}
 
