@@ -692,6 +692,8 @@ var palpVariants = map[string]map[string]string{
 		"apac clear australia":                               "15",
 		"japan apac two ron spears art":                      "10",
 		"indonesia apac three ron spears art":                "15",
+		"apac land ron spears, fireballs":                    "10",
+		"apac land ron spears, zombie":                       "15",
 	},
 }
 
