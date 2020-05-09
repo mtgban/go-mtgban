@@ -843,6 +843,15 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "ba1b009e-6c3c-54a9-bcdd-d667e69f6425",
+		Desc: "artist_last_name_too_many_s",
+		In: Card{
+			Name:      "Simic Signet",
+			Variation: "Mike Sass",
+			Edition:   "Commander Anthology Volume II",
+		},
+	},
 
 	// FNM promos (often confused with set promos)
 	MatchTest{

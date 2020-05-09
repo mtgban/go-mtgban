@@ -799,7 +799,8 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 				for _, field := range fields {
 					// Skip short text like 'jr.' since they are often missed
 					// Skip Land too for High and Low lands alias
-					if len(field) < 4 || strings.HasPrefix(field, "Land") {
+					// Skip Sass due to the fact that 's' are ignored in NormContains
+					if len(field) < 4 || strings.HasPrefix(field, "Land") || field == "Sass" {
 						continue
 					}
 					if mtgjson.NormContains(flavor, field) || mtgjson.NormContains(card.Artist, field) {
