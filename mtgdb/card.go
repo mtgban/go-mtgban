@@ -278,7 +278,9 @@ func (c *Card) worldChampPrefix() (string, bool) {
 	}
 	for player := range players {
 		if mtgjson.NormContains(c.Variation, player) {
-			return players[player], mtgjson.NormContains(c.Variation, "Sideboard")
+			sb := strings.Contains(c.Variation, "SB") ||
+				mtgjson.NormContains(c.Variation, "Sideboard")
+			return players[player], sb
 		}
 	}
 	return "", false

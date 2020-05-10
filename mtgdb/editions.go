@@ -12,7 +12,9 @@ var EditionTable = map[string]string{
 	"8th Edition":               "Eighth Edition",
 	"9th Edition":               "Ninth Edition",
 	"Alpha":                     "Limited Edition Alpha",
+	"Alpha Edition":             "Limited Edition Alpha",
 	"Beta":                      "Limited Edition Beta",
+	"Beta Edition":              "Limited Edition Beta",
 	"Betrayers":                 "Betrayers of Kamigawa",
 	"Champions":                 "Champions of Kamigawa",
 	"Classic 6th Edition":       "Classic Sixth Edition",
@@ -66,11 +68,13 @@ var EditionTable = map[string]string{
 	"Promos: Euro Lands": "European Land Program",
 
 	// Mystery Booster
-	"Mystery Booster":             "Mystery Booster",
-	"Mystery Booster Test Print":  "Mystery Booster Playtest Cards",
-	"Mystery Booster Test Prints": "Mystery Booster Playtest Cards",
-	"Mystery Booster - Test Card": "Mystery Booster Playtest Cards",
-	"Playtest Card":               "Mystery Booster Playtest Cards",
+	"Mystery Booster":                    "Mystery Booster",
+	"Mystery Booster Cards":              "Mystery Booster",
+	"Mystery Booster Test Print":         "Mystery Booster Playtest Cards",
+	"Mystery Booster Test Prints":        "Mystery Booster Playtest Cards",
+	"Mystery Booster - Test Card":        "Mystery Booster Playtest Cards",
+	"Playtest Card":                      "Mystery Booster Playtest Cards",
+	"Mystery Booster: Retail Exclusives": "Mystery Booster Retail Edition Foils",
 
 	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",
@@ -85,6 +89,7 @@ var EditionTable = map[string]string{
 	"Ponies: The Galloping": "Ponies: The Galloping",
 	"Champs / States Promo": "Champs and States",
 	"Champs":                "Champs and States",
+	"Champs Promos":         "Champs and States",
 
 	// Welcome decks
 	"Amonkhet Welcome Deck": "Welcome Deck 2017",
@@ -356,6 +361,7 @@ var EditionTable = map[string]string{
 	"Ugins Fate Promo":                        "Ugin's Fate",
 	"Ugin's Fate Alternate Art Promo":         "Ugin's Fate",
 	"Ugin’s Fate Promo":                       "Ugin's Fate",
+	"Ugin's Fate Promos":                      "Ugin's Fate",
 
 	// Clash packs
 	"Fate Reforged Clash Pack": "Fate Reforged Clash Pack",
