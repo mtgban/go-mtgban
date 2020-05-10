@@ -75,6 +75,13 @@ func AllSets() (out []string) {
 	return
 }
 
+func AllSetsNames() (out []string) {
+	for _, set := range internal.Sets {
+		out = append(out, set.Name)
+	}
+	return
+}
+
 func Set(codeName string) (*mtgjson.Set, error) {
 	if internal == nil {
 		return nil, fmt.Errorf("internal database is not initialized")

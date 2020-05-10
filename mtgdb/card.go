@@ -143,27 +143,28 @@ func (c *Card) isPrerelease() bool {
 func (c *Card) isPromoPack() bool {
 	return mtgjson.NormContains(c.Edition, "Promo Pack") ||
 		mtgjson.NormContains(c.Variation, "Promo Pack") ||
-		c.Variation == "Dark Frame Promo"
+		c.Variation == "Dark Frame Promo" ||
+		mtgjson.NormContains(c.Variation, "Planeswalker Stamp")
 }
 
 func (c *Card) isBorderless() bool {
-	return strings.Contains(c.Variation, "Borderless")
+	return mtgjson.NormContains(c.Variation, "Borderless")
 }
 
 func (c *Card) isExtendedArt() bool {
-	return strings.Contains(c.Variation, "Extended Art")
+	return mtgjson.NormContains(c.Variation, "Extended Art")
 }
 
 func (c *Card) isShowcase() bool {
-	return strings.Contains(c.Variation, "Showcase")
+	return mtgjson.NormContains(c.Variation, "Showcase")
 }
 
 func (c *Card) isReskin() bool {
-	return strings.Contains(c.Variation, "Godzilla")
+	return mtgjson.NormContains(c.Variation, "Godzilla")
 }
 
 func (c *Card) isFNM() bool {
-	return strings.Contains(c.Variation, "FNM") ||
+	return mtgjson.NormContains(c.Variation, "FNM") ||
 		strings.Contains(c.Variation, "Friday Night Magic")
 }
 
