@@ -509,22 +509,28 @@ var athVariants = map[string]map[string]string{
 		"portal 2": "85",
 	},
 	"Mountain": map[string]string{
-		"a":              "82",
-		"b":              "83",
-		"arabian nights": "82",
-		"mirage":         "83",
+		"a":                     "82",
+		"b":                     "83",
+		"arabian nights":        "82",
+		"mirage":                "83",
+		"#40 by douglas shuler": "82",
+		"#41 by john avon":      "83",
 	},
 	"Plains": map[string]string{
-		"a":      "78",
-		"b":      "79",
-		"mirage": "78",
-		"portal": "79",
+		"a":                     "78",
+		"b":                     "79",
+		"mirage":                "78",
+		"portal":                "79",
+		"#86 by tom w":          "78",
+		"#87 by douglas shuler": "79",
 	},
 	"Swamp": map[string]string{
-		"a":       "80",
-		"b":       "81",
-		"ice age": "80",
-		"tempest": "81",
+		"a":                     "80",
+		"b":                     "81",
+		"ice age":               "80",
+		"tempest":               "81",
+		"#42 by douglas shuler": "80",
+		"#43 by brom":           "81",
 	},
 }
 
@@ -820,6 +826,10 @@ var oldLandVariants = map[string]map[string]string{
 		"b not tournament legal": "300",
 		"a not tournament legal": "301",
 		"c not tournament legal": "302",
+
+		"#280 by christopher rush": "300",
+		"#281 by christopher rush": "301",
+		"#282 by christopher rush": "302",
 	},
 	"Island": map[string]string{
 		"a": "291",
@@ -845,6 +855,10 @@ var oldLandVariants = map[string]map[string]string{
 		"b not tournament legal": "291",
 		"a not tournament legal": "292",
 		"c not tournament legal": "293",
+
+		"#283 by mark poole": "291",
+		"#284 by mark poole": "292",
+		"#285 by mark poole": "293",
 	},
 	"Mountain": map[string]string{
 		"a": "297",
@@ -870,6 +884,10 @@ var oldLandVariants = map[string]map[string]string{
 		"b not tournament legal": "297",
 		"a not tournament legal": "298",
 		"c not tournament legal": "299",
+
+		"#288 by douglas schuler": "297",
+		"#286 by douglas schuler": "298",
+		"#287 by douglas shuler":  "299",
 	},
 	"Plains": map[string]string{
 		"b": "288",
@@ -895,6 +913,10 @@ var oldLandVariants = map[string]map[string]string{
 		"b not tournament legal": "288",
 		"a not tournament legal": "289",
 		"c not tournament legal": "290",
+
+		"#289 by jesper myrfors": "289",
+		"#290 by jesper myrfors": "288",
+		"#291 by jesper myrfors": "290",
 	},
 	"Swamp": map[string]string{
 		"a": "294",
@@ -924,6 +946,10 @@ var oldLandVariants = map[string]map[string]string{
 		"b not tournament legal": "294",
 		"a not tournament legal": "295",
 		"c not tournament legal": "296",
+
+		"#295 by dan frazier": "294",
+		"#296 by dan frazier": "295",
+		"#297 by dan frazier": "296",
 	},
 }
 
@@ -1749,20 +1775,28 @@ var leaVariants = map[string]map[string]string{
 		"a rocks":         "294",
 		"b path":          "295",
 		"brown dirt road": "295",
+		"#279":            "294",
+		"#280":            "295",
 	},
 	"Island": map[string]string{
 		"a purple":            "288",
 		"b light purple":      "289",
 		"clear blue daylight": "289",
+		"#281":                "288",
+		"#282":                "289",
 	},
 	"Mountain": map[string]string{
 		"a small tree":            "292",
 		"b snowy":                 "293",
 		"grey mountain / red sky": "292",
+		"#283": "292",
+		"#284": "293",
 	},
 	"Plains": map[string]string{
 		"a light":        "286",
 		"b little trees": "287",
+		"#285":           "286",
+		"#286":           "287",
 	},
 	"Swamp": map[string]string{
 		"a light":         "290",

@@ -82,6 +82,18 @@ func AllSetsNames() (out []string) {
 	return
 }
 
+func CardSimple(name string) (*mtgjson.SimpleCard, error) {
+	if internal == nil {
+		return nil, fmt.Errorf("internal database is not initialized")
+	}
+
+	card, found := internal.Cards[mtgjson.Normalize(name)]
+	if !found {
+		return nil, fmt.Errorf("card %s not found", name)
+	}
+	return card, nil
+}
+
 func Set(codeName string) (*mtgjson.Set, error) {
 	if internal == nil {
 		return nil, fmt.Errorf("internal database is not initialized")

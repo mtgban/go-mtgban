@@ -1009,6 +1009,7 @@ func (db *Database) tryAdjustName(inCard *Card) {
 
 	// Many provide the full name with a variety of characters
 	if strings.Contains(inCard.Name, " | ") ||
+		strings.Contains(inCard.Name, " || ") ||
 		strings.Contains(inCard.Name, " // ") ||
 		strings.Contains(inCard.Name, " / ") ||
 		strings.Contains(inCard.Name, " and ") ||

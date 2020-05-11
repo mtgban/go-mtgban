@@ -45,9 +45,10 @@ var EditionTable = map[string]string{
 	"Mark Poole Art Promo": "2017 Gift Pack",
 
 	// Treasure Chest
-	"Treasure Chest Promo": "XLN Treasure Chest",
-	"Treare Map Promo":     "XLN Treasure Chest",
-	"Treasure Map":         "XLN Treasure Chest",
+	"Ixalan Treasure Chest": "XLN Treasure Chest",
+	"Treasure Chest Promo":  "XLN Treasure Chest",
+	"Treare Map Promo":      "XLN Treasure Chest",
+	"Treasure Map":          "XLN Treasure Chest",
 
 	// Game Night
 	"Game Night 2018":               "Game Night",
@@ -79,12 +80,14 @@ var EditionTable = map[string]string{
 	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",
 	"Secret Lair Drop Series": "Secret Lair Drop",
+	"Secret Lair Drop Sets":   "Secret Lair Drop",
 	"Secret Lair Full Art":    "Secret Lair Drop",
 	"Stained Glass":           "Secret Lair Drop Promos",
 
 	// Various
 	"DCI Legend Membership": "DCI Legend Membership",
 	"Legend Promo":          "DCI Legend Membership",
+	"Legends Memerbership":  "DCI Legend Membership",
 	"Pones: The Galloping":  "Ponies: The Galloping",
 	"Ponies: The Galloping": "Ponies: The Galloping",
 	"Champs / States Promo": "Champs and States",
@@ -159,6 +162,16 @@ var EditionTable = map[string]string{
 	"Ravnica Weekend Simic":          "RNA Ravnica Weekend",
 	"Guilds of Ravnica Guild Kits":   "GRN Ravnica Weekend",
 	"Ravnica Allegiance Guild Kits":  "RNA Ravnica Weekend",
+	"Guild Kit - Boros":              "GRN Guild Kit",
+	"Guild Kit - Dimir":              "GRN Guild Kit",
+	"Guild Kit - Golgari":            "GRN Guild Kit",
+	"Guild Kit - Izzet":              "GRN Guild Kit",
+	"Guild Kit - Selesnya":           "GRN Guild Kit",
+	"Guild Kit - Azorius":            "RNA Guild Kit",
+	"Guild Kit - Gruul":              "RNA Guild Kit",
+	"Guild Kit - Orzhov":             "RNA Guild Kit",
+	"Guild Kit - Rakdos":             "RNA Guild Kit",
+	"Guild Kit - Simic":              "RNA Guild Kit",
 
 	// Commander
 	"Commander 2011 Edition":       "Commander 2011",
@@ -312,6 +325,7 @@ var EditionTable = map[string]string{
 
 	// Pro Tour Promos
 	"2011 Pro Tour Promo": "Pro Tour Promos",
+	"MC Qualifier":        "Pro Tour Promos",
 	"MCQ Promo":           "Pro Tour Promos",
 	"MCQ":                 "Pro Tour Promos",
 	"Mythic Championship Qualifier Promo": "Pro Tour Promos",
@@ -344,6 +358,7 @@ var EditionTable = map[string]string{
 	"WMCQ":                            "World Magic Cup Qualifiers",
 	"World Magic Cup":                 "World Magic Cup Qualifiers",
 	"World Magic Cup Promo":           "World Magic Cup Qualifiers",
+	"World Magic Cup Qualifier 2016":  "World Magic Cup Qualifiers",
 	"World Magic Cup Qualifier Promo": "World Magic Cup Qualifiers",
 	"World Championship Foil":         "World Championship Promos",
 	"World Cup Qualifier Promo":       "World Magic Cup Qualifiers",
@@ -411,6 +426,7 @@ var EditionTable = map[string]string{
 
 	// Wotc Store
 	"Foil Beta Picture":       "Wizards of the Coast Online Store",
+	"Original Artwork":        "Wizards of the Coast Online Store",
 	"Redemption Original Art": "Wizards of the Coast Online Store",
 
 	// SDCC
@@ -420,6 +436,7 @@ var EditionTable = map[string]string{
 	"Archenemy: 2010 Edition":          "Archenemy",
 	"Archenemy - Nicol Bolas":          "Archenemy: Nicol Bolas",
 	"Archenemy Schemes (2010 Edition)": "Archenemy Schemes",
+	"Archenemy 'Schemes'":              "Archenemy Schemes",
 
 	// Various
 	"Arena IA":                     "Arena League 2001",
