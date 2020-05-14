@@ -273,6 +273,11 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgdb.Card, error) 
 	if cardName != "Erase (Not the Urza's Legacy One)" {
 		variants := mtgdb.SplitVariants(cardName)
 		cardName = variants[0]
+		if len(variants) > 1 {
+			if !strings.Contains(variant, variants[1]) {
+				return nil, errors.New("non-english")
+			}
+		}
 	}
 	if strings.Contains(cardName, " - ") {
 		variants := strings.Split(cardName, " - ")
