@@ -231,7 +231,9 @@ func (ftf *FaceToFace) scrape(mode string) error {
 		if err != nil {
 			switch {
 			// Ignore errors coming from sets with too much duplication
-			case card.Edition == "Alliances" || card.Edition == "Fallen Empires":
+			case card.Edition == "Alliances",
+				card.Edition == "Fallen Empires",
+				strings.HasPrefix(card.Edition, "WCD"):
 			// Ignore errors coming from lands
 			case theCard.IsBasicLand():
 				switch card.Edition {
