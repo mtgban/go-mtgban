@@ -197,10 +197,6 @@ func preprocess(card *ABUCard) (*mtgdb.Card, error) {
 			if variation == "FNM" {
 				variation = "JSS Foil"
 			}
-		case "Mountain":
-			if variation == "APAC a Phillippines" {
-				variation = "APAC a Phillipines"
-			}
 		case "Island":
 			if variation == "Arena 1999 No Symbol Promo" {
 				variation = "Arena 1999 misprint"
