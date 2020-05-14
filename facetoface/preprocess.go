@@ -55,6 +55,11 @@ var cardTable = map[string]string{
 	"Morbid Curiousity":                       "Morbid Curiosity",
 	"Pir, Imaginitive Rascal (Release Promo)": "Pir, Imaginative Rascal (Release Promo)",
 	"Questing Pheldagrif (PreRelease GREEK)":  "Questing Phelddagrif (Prerelease)",
+	"Essence Symbiont":                        "Essence Symbiote",
+	"Quartzwood Crusher":                      "Quartzwood Crasher",
+	"Quartzwood Crusher (Extended Art)":       "Quartzwood Crasher (Extended Art)",
+
+	"Battra, Terror of the City (Dirge Bat JP Alternate Art)": "Dirge Bat (Godzilla)",
 
 	// Funny cards
 	"_________":                    "_____",
@@ -85,7 +90,6 @@ var cardTable = map[string]string{
 	"Jace, the Living Guildpact (SDCC Exclusive Promo M15)": "Jace, the Living Guildpact (SDCC 2014)",
 	"Liliana Vess (SDCC Exclusive Promo M15)":               "Liliana Vess (SDCC 2014)",
 	"Nissa, Worldwaker (SDCC Exclusive Promo M15)":          "Nissa, Worldwaker (SDCC 2014)",
-	"Lu Bu, Master at Arms (Prerelease Promo 4/29/1999)":    "Lu Bu, Master at Arms (Prerelease April)",
 
 	"Lavinia, Azorius Renegade Ravnica Weekend (Store Championship Promo)": "Lavinia, Azorius Renegade (Store Championship Promo)",
 }
@@ -182,7 +186,8 @@ func preprocess(cardName, edition string) (string, string, error) {
 
 	// Skip tokens and similar cards
 	switch cardName {
-	case "Legends Rules Card", "Energy Reserve", "Faerie Rogue",
+	case "Lu Bu, Master at Arms - Foil - Prerelease Promo - 4/29/1999",
+		"Legends Rules Card", "Energy Reserve", "Faerie Rogue",
 		"Experience Counter", "Experience Card", "Poison Counter",
 		"Goblin", "Pegasus", "Sheep", "Soldier", "Squirrel", "Zombie":
 		return "", "", fmt.Errorf("not a real card")

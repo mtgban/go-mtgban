@@ -1589,6 +1589,8 @@ var hmlVariants = map[string]map[string]string{
 		"memorylapse":  "32b",
 		"woman's head": "32a",
 		"man's head":   "32b",
+		"puzzle woman": "32a",
+		"bald man":     "32b",
 	},
 	"Mesa Falcon": map[string]string{
 		"flying":          "10a",
