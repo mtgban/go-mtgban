@@ -226,7 +226,6 @@ func (ftf *FaceToFace) scrape(mode string) error {
 			Variation: variant,
 			Foil:      card.Foil,
 		}
-		//ftf.printf("%s %f", theCard.Name, card.Price)
 		cc, err := theCard.Match()
 		if err != nil {
 			switch {
