@@ -236,7 +236,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 
 				invCards := cfb.inventory[*cc]
 				for _, invCard := range invCards {
-					if invCard.Conditions == card.Conditions {
+					if invCard.Conditions == "NM" {
 						sellPrice = invCard.Price
 						sellQty = invCard.Quantity
 						break
@@ -251,7 +251,6 @@ func (cfb *Channelfireball) scrape(mode string) error {
 				}
 
 				out := &mtgban.BuylistEntry{
-					Conditions:    card.Conditions,
 					BuyPrice:      card.Price,
 					TradePrice:    card.Price * 1.3,
 					Quantity:      card.Quantity,

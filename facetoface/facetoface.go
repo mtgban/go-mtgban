@@ -282,7 +282,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 
 				invCards := ftf.inventory[*cc]
 				for _, invCard := range invCards {
-					if invCard.Conditions == card.Conditions {
+					if invCard.Conditions == "NM" {
 						sellPrice = invCard.Price
 						sellQty = invCard.Quantity
 						break
@@ -297,7 +297,6 @@ func (ftf *FaceToFace) scrape(mode string) error {
 				}
 
 				out := &mtgban.BuylistEntry{
-					Conditions:    card.Conditions,
 					BuyPrice:      card.Price * ftf.exchangeRate,
 					TradePrice:    card.Price * ftf.exchangeRate * 1.3,
 					Quantity:      card.Quantity,

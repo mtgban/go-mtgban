@@ -144,7 +144,6 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 
 				buyEntry = &mtgban.BuylistEntry{
-					Conditions:    cond,
 					BuyPrice:      card.BuyPrice,
 					TradePrice:    card.TradePrice,
 					Quantity:      card.BuyQuantity,

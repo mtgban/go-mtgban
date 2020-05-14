@@ -20,7 +20,7 @@ var (
 	}
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio",
+		"Key", "Name", "Edition", "F/NF", "Number", "Buy Price", "Trade Price", "Quantity", "Price Ratio",
 	}
 
 	ArbitHeader = []string{
@@ -178,20 +178,19 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 
 		foil := record[3] == "FOIL"
 		number := record[4]
-		conditions := record[5]
-		buyPrice, err := strconv.ParseFloat(record[6], 64)
+		buyPrice, err := strconv.ParseFloat(record[5], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[5], err)
 		}
-		tradePrice, err := strconv.ParseFloat(record[7], 64)
+		tradePrice, err := strconv.ParseFloat(record[6], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[6], err)
 		}
-		qty, err := strconv.Atoi(record[8])
+		qty, err := strconv.Atoi(record[7])
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[7], err)
 		}
-		priceRatio, err := strconv.ParseFloat(record[9], 64)
+		priceRatio, err := strconv.ParseFloat(record[8], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[8], err)
 		}
@@ -204,7 +203,6 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			Number:  number,
 		}
 		entry := &BuylistEntry{
-			Conditions: conditions,
 			BuyPrice:   buyPrice,
 			TradePrice: tradePrice,
 			Quantity:   qty,
@@ -301,7 +299,6 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 			card.Edition,
 			foil,
 			card.Number,
-			entry.Conditions,
 			fmt.Sprintf("%0.2f", entry.BuyPrice),
 			fmt.Sprintf("%0.2f", entry.TradePrice),
 			fmt.Sprint(entry.Quantity),

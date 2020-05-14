@@ -117,7 +117,6 @@ func (ck *Cardkingdom) scrape() error {
 				u.RawQuery = q.Encode()
 
 				out := &mtgban.BuylistEntry{
-					Conditions:    "NM",
 					BuyPrice:      price,
 					TradePrice:    price * 1.3,
 					Quantity:      card.BuyQuantity,

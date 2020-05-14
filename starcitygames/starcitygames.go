@@ -364,7 +364,6 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 			channel <- responseChan{
 				card: cc,
 				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "NM",
 					BuyPrice:   price,
 					TradePrice: price * 1.35,
 					Quantity:   0,

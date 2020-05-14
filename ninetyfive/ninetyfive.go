@@ -105,7 +105,6 @@ func (nf *Ninetyfive) parseBL() error {
 
 		if quantity > 0 && price > 0 {
 			out := &mtgban.BuylistEntry{
-				Conditions: "NM",
 				BuyPrice:   price,
 				TradePrice: 0,
 				Quantity:   quantity,

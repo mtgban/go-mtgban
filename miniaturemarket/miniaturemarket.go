@@ -212,12 +212,10 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 			continue
 		}
 
-		cond := card.MtgCondition
-		switch cond {
+		switch card.MtgCondition {
 		case "Near Mint", "Foil Near Mint", "Foil Near MInt":
-			cond = "NM"
 		default:
-			mm.printf("Unsupported %s condition", cond)
+			mm.printf("Unsupported %s condition", card.MtgCondition)
 			continue
 		}
 
@@ -269,7 +267,6 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 		channel <- respChan{
 			card: cc,
 			buyEntry: &mtgban.BuylistEntry{
-				Conditions: cond,
 				BuyPrice:   price,
 				TradePrice: price * 1.3,
 				Quantity:   0,

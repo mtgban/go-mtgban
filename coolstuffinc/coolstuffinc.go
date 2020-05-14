@@ -459,7 +459,6 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 		channel <- responseChan{
 			card: cc,
 			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "NM",
 				BuyPrice:   price,
 				TradePrice: price * 1.35,
 				Quantity:   0,

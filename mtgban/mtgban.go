@@ -23,7 +23,6 @@ type InventoryEntry struct {
 // BuylistEntry represents an entry for buying a particular Card
 type BuylistEntry struct {
 	Quantity   int
-	Conditions string
 	BuyPrice   float64
 	TradePrice float64
 

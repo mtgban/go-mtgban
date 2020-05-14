@@ -84,7 +84,6 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 		channel <- responseChan{
 			card: cc,
 			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "NM",
 				BuyPrice:   price,
 				TradePrice: price * 1.30,
 				Quantity:   qty,

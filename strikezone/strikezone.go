@@ -258,7 +258,6 @@ func (sz *Strikezone) parseBL() error {
 		}
 
 		out := &mtgban.BuylistEntry{
-			Conditions:    "NM",
 			BuyPrice:      price,
 			TradePrice:    price * 1.3,
 			Quantity:      quantity,
