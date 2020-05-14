@@ -334,6 +334,14 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 			} else if variant == "FNM Promo" {
 				variant = "FNM"
 			}
+		case "Canopy Vista",
+			"Cinder Glade",
+			"Prairie Stream",
+			"Smoldering Marsh",
+			"Sunken Hollow":
+			if variant == "Promo" || variant == "Open House Promo" {
+				variant = "Standard Series"
+			}
 
 		case "Curse of Wizardry",
 			"Kor Duelist",
@@ -378,6 +386,10 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 				}
 				cardName = strings.Join(cs, " ")
 				cardName = strings.Replace(cardName, "  ", " ", -1)
+
+				if cardName == "Omnispell Adept" || cardName == "Dream Eater" {
+					return nil, errors.New("doesn't exist")
+				}
 			} else if strings.Contains(variant, "Top 8") {
 				variant = strings.Replace(variant, "Top 8", "", 1)
 			}
