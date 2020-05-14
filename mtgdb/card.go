@@ -16,9 +16,6 @@ type Card struct {
 	// When used as input it can host mtgjson or scryfall id
 	Id string
 
-	// The scryfall identifier of the card (output only)
-	ImageId string
-
 	// The canonical name of the card
 	Name string
 
@@ -73,43 +70,10 @@ func (c *Card) output(card mtgjson.Card, set *mtgjson.Set) *Card {
 	// Prepare the output card
 	out := &Card{
 		Id:      card.UUID,
-		ImageId: card.ScryfallId,
 		Name:    card.Name,
 		Edition: set.Name,
 		Foil:    foil,
 		Number:  card.Number,
-	}
-
-	switch {
-	case c.isShowcase():
-		out.Variation = "Showcase"
-	case c.isBorderless():
-		out.Variation = "Borderless"
-	case c.isExtendedArt():
-		out.Variation = "Extended Art"
-
-	case c.isBundle():
-		out.Variation = "Bundle"
-	case c.isRelease():
-		out.Variation = "Release"
-	case c.isPrerelease():
-		out.Variation = "Prerelease"
-	case c.isBaB():
-		out.Variation = "Buy-a-Box"
-
-	case c.isARNLightMana():
-		out.Variation = "Light Variant"
-	case c.isARNDarkMana():
-		out.Variation = "Dark Variant"
-	case c.isBasicFullArt():
-		out.Variation = "Full Art"
-	}
-
-	if c.isJPN() {
-		if out.Variation != "" {
-			out.Variation += " "
-		}
-		out.Variation += "Japanese"
 	}
 
 	// Append "_f" to the Id to distinguish from non-foil
