@@ -42,6 +42,9 @@ var cardTable = map[string]string{
 	// Typos
 	"Morbid Curiousity":                       "Morbid Curiosity",
 	"Pir, Imaginitive Rascal (Release Promo)": "Pir, Imaginative Rascal (Release Promo)",
+	"Essence Symbiont":                        "Essence Symbiote",
+	"Quartzwood Crusher":                      "Quartzwood Crasher",
+	"Souvernir Snatcher":                      "Souvenir Snatcher",
 
 	// Tags that confuse mtgdb
 	"Stocking Tiger (No Stamp Holiday 2013)": "Stocking Tiger (misprint)",
