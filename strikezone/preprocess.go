@@ -151,6 +151,9 @@ func preprocess(cardName, cardSet, notes string) (*mtgdb.Card, error) {
 		if found {
 			cardSet = ed
 		}
+	} else if cardSet == "Ikoria: Lair of Behemoths" && strings.Contains(cardName, " - ") {
+		s := strings.Split(cardName, " - ")
+		cardName = s[0]
 	}
 
 	return &mtgdb.Card{
