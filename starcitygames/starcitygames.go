@@ -27,6 +27,7 @@ type Starcitygames struct {
 	LogCallback   mtgban.LogCallbackFunc
 	InventoryDate time.Time
 	BuylistDate   time.Time
+	Premium       bool
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -190,6 +191,10 @@ func (scg *Starcitygames) scrape() error {
 
 			for _, entry := range entries {
 				price := entry.Price
+				if scg.Premium {
+					price *= 0.9
+				}
+
 				qty := entry.InventoryLevel
 
 				if price <= 0.0 || qty <= 0 || entry.PurchasingDisabled {
