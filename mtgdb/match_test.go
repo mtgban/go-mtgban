@@ -946,6 +946,15 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "8354caf4-0e58-599d-8b31-2d8ef50a9607",
+		Desc: "the_only_arena_land_with_number",
+		In: Card{
+			Name:      "Forest",
+			Variation: "Arena 2001 1",
+			Edition:   "ignored",
+		},
+	},
 
 	// Various promos
 	MatchTest{

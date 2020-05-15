@@ -633,10 +633,12 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 					}
 				}
 			} else if num != "" {
+				// The empty string will allow to test the number without any
+				// additional prefix first
 				possibleSuffixes := []string{""}
 				variation := strings.Replace(inCard.Variation, "-", "", 1)
 				fields := strings.Fields(strings.ToLower(variation))
-				possibleSuffixes = append(possibleSuffixes, fields[1:]...)
+				possibleSuffixes = append(possibleSuffixes, fields...)
 
 				// Short circuit the possible suffixes if we know what we're dealing with
 				if inCard.isJPN() {
@@ -647,12 +649,17 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 					possibleSuffixes = append(possibleSuffixes, "a")
 				}
 				for _, numSuffix := range possibleSuffixes {
+					// The self test is already expressed by the empty string
+					// This avoids an odd case of testing 1.1 = 11
+					if num == numSuffix {
+						continue
+					}
 					number := num + numSuffix
 					if number == card.Number {
 						cards = append(cards, card)
 						foundCode = append(foundCode, setCode)
 
-						// Card was found, skip anything other suffix
+						// Card was found, skip any other suffix
 						break
 					}
 				}
