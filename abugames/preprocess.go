@@ -249,6 +249,11 @@ func preprocess(card *ABUCard) (*mtgdb.Card, error) {
 				variation = "Sideboard Leon Lindback 1996"
 			}
 		}
+	case "Ikoria: Lair of Behemoths":
+		if strings.Contains(cardName, " / ") {
+			s := strings.Split(cardName, " / ")
+			cardName = s[0]
+		}
 	}
 
 	name, found := cardTable[cardName]
