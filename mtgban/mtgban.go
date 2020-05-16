@@ -3,6 +3,7 @@
 package mtgban
 
 import (
+	"io"
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
@@ -43,6 +44,13 @@ type ScraperInfo struct {
 // Scraper is the interface both Sellers and Vendors need to implement
 type Scraper interface {
 	Info() ScraperInfo
+}
+
+// Initializer is the inteface used to identify scrapers that can have
+// data loaded offline.
+type Initializer interface {
+	// Initialize an inventory.
+	IntializeInventory(io.Reader) error
 }
 
 type InventoryRecord map[mtgdb.Card][]InventoryEntry
