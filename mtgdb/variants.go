@@ -587,6 +587,9 @@ var atqVariants = map[string]map[string]string{
 		"b uneven":     "82d",
 
 		"uneven horizon": "82b",
+
+		"even stripe":           "82b",
+		"small tower in forest": "82c",
 	},
 	"Urza's Mine": map[string]string{
 		"aq084": "83a",

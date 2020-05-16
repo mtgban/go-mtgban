@@ -176,13 +176,13 @@ func (c *Card) isJPN() bool {
 }
 
 func (c *Card) isRelease() bool {
-	return strings.Contains(c.Variation, "Release") ||
+	return mtgjson.NormContains(c.Variation, "Release") ||
 		strings.Contains(c.Variation, "Launch")
 }
 
 func (c *Card) isWPNGateway() bool {
 	return strings.Contains(c.Variation, "WPN") ||
-		strings.Contains(c.Variation, "Gateway") ||
+		mtgjson.NormContains(c.Variation, "Gateway") ||
 		c.Variation == "Euro Promo" // cfb
 }
 
@@ -203,8 +203,8 @@ func (c *Card) isIDWMagazineBook() bool {
 }
 
 func (c *Card) isRewards() bool {
-	return strings.Contains(c.Variation, "Textless") ||
-		strings.Contains(c.Variation, "Reward")
+	return mtgjson.NormContains(c.Variation, "Textless") ||
+		mtgjson.NormContains(c.Variation, "Reward")
 }
 
 func (c *Card) isMagicFest() bool {

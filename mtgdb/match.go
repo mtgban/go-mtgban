@@ -1012,6 +1012,7 @@ func (db *Database) tryAdjustName(inCard *Card) {
 		strings.Contains(inCard.Name, " || ") ||
 		strings.Contains(inCard.Name, " // ") ||
 		strings.Contains(inCard.Name, " / ") ||
+		strings.Contains(inCard.Name, " - ") ||
 		strings.Contains(inCard.Name, " and ") ||
 		strings.Contains(inCard.Name, " to ") {
 		// Loop over the db, find the one with different Layout and matching name
@@ -1069,9 +1070,12 @@ func (db *Database) tryAdjustEdition(inCard *Card) {
 	case strings.HasSuffix(edition, "Variants"):
 		edition = strings.Replace(edition, " Variants", "", 1)
 		edition = strings.Replace(edition, ":", "", 1)
-	case strings.Contains(edition, "Mythic Edition"):
+	case strings.Contains(edition, "Mythic Edition"),
+		strings.Contains(inCard.Variation, "Mythic Edition"):
 		edition = "Mythic Edition"
-	case strings.Contains(edition, "Invocations"):
+	case strings.Contains(edition, "Invocations") ||
+		((edition == "Hour of Devastation" || edition == "Amonkhet") &&
+			strings.Contains(inCard.Variation, "Invocation")):
 		edition = "Amonkhet Invocations"
 	case strings.Contains(edition, "Inventions"):
 		edition = "Kaladesh Inventions"

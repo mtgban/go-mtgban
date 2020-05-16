@@ -43,6 +43,7 @@ var EditionTable = map[string]string{
 	"Gift Pack 2018":       "M19 Gift Pack",
 	"Shooting Star Promo":  "2017 Gift Pack",
 	"Mark Poole Art Promo": "2017 Gift Pack",
+	"Gift Box Promo":       "M19 Gift Pack",
 
 	// Treasure Chest
 	"Ixalan Treasure Chest": "XLN Treasure Chest",
@@ -172,6 +173,8 @@ var EditionTable = map[string]string{
 	"Guild Kit - Orzhov":             "RNA Guild Kit",
 	"Guild Kit - Rakdos":             "RNA Guild Kit",
 	"Guild Kit - Simic":              "RNA Guild Kit",
+	"Guilds of Ravnica: Guild Kit":   "GRN Guild Kit",
+	"Ravnica Allegiance: Guild Kit":  "RNA Guild Kit",
 
 	// Commander
 	"Commander 2011 Edition":       "Commander 2011",
@@ -213,6 +216,7 @@ var EditionTable = map[string]string{
 	"Modern Masters: 2017 Edition":   "Modern Masters 2017",
 	"Ultimate Box Toppers":           "Ultimate Box Topper",
 	"Ultimate Masters - Box Toppers": "Ultimate Box Topper",
+	"Ultimate Masters Box Topper":    "Ultimate Box Topper",
 	"Ultimate Masters Box Toppers":   "Ultimate Box Topper",
 	"Ultimate Masters: Box Topper":   "Ultimate Box Topper",
 	"Ultimate Masters: Box Toppers":  "Ultimate Box Topper",
@@ -234,6 +238,7 @@ var EditionTable = map[string]string{
 	// Portal
 	"Portal 1":          "Portal",
 	"Portal II":         "Portal Second Age",
+	"Portal 2nd Age":    "Portal Second Age",
 	"Portal 3K":         "Portal Three Kingdoms",
 	"Portal 3 Kingdoms": "Portal Three Kingdoms",
 
@@ -439,8 +444,10 @@ var EditionTable = map[string]string{
 	"Archenemy 'Schemes'":              "Archenemy Schemes",
 
 	// Various
+	"8th Starter":                  "Eighth Edition",
 	"Arena IA":                     "Arena League 2001",
 	"Beatdown":                     "Beatdown Box Set",
+	"Beatdown Foil":                "Beatdown Box Set",
 	"Battle Royale":                "Battle Royale Box Set",
 	"Conspiracy: 2014 Edition":     "Conspiracy",
 	"Coldsnap Reprints":            "Coldsnap Theme Decks",
