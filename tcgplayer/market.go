@@ -253,5 +253,6 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Market"
 	info.Shorthand = "TCGMkt"
 	info.InventoryTimestamp = tcg.InventoryDate
+	info.MetadataOnly = true
 	return
 }

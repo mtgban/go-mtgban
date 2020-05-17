@@ -23,6 +23,7 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 		seller.inventory = inventory
 		seller.name = sellerName
 		seller.shorthand = sellerName
+		seller.metaonly = market.Info().MetadataOnly
 		sellers = append(sellers, seller)
 	}
 	return sellers, nil

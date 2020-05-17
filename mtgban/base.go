@@ -57,6 +57,7 @@ type BaseSeller struct {
 	inventory InventoryRecord
 	name      string
 	shorthand string
+	metaonly  bool
 }
 
 func (seller *BaseSeller) Inventory() (InventoryRecord, error) {

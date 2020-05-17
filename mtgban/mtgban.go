@@ -38,6 +38,7 @@ type ScraperInfo struct {
 	Shorthand          string
 	InventoryTimestamp time.Time
 	BuylistTimestamp   time.Time
+	MetadataOnly       bool
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement
