@@ -37,6 +37,9 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 				if entry.Conditions != "NM" {
 					continue
 				}
+				if entry.Price == 0 {
+					continue
+				}
 
 				_, found := root.Entries[card]
 				if !found {
