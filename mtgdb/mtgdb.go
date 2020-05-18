@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgjson"
 )
@@ -84,4 +85,27 @@ func Set(codeName string) (*mtgjson.Set, error) {
 	}
 
 	return nil, fmt.Errorf("set %s not found", codeName)
+}
+
+func EditionCode2Name(code string) (string, error) {
+	if internal == nil {
+		return "", fmt.Errorf("internal database is not initialized")
+	}
+	set, found := internal.Sets[strings.ToUpper(code)]
+	if !found {
+		return "", fmt.Errorf("edition code '%s' not found", code)
+	}
+	return set.Name, nil
+}
+
+func EditionName2Code(name string) (string, error) {
+	if internal == nil {
+		return "", fmt.Errorf("internal database is not initialized")
+	}
+	for key := range internal.Sets {
+		if internal.Sets[key].Name == name {
+			return key, nil
+		}
+	}
+	return "", fmt.Errorf("edition name '%s' not found", name)
 }
