@@ -8,6 +8,7 @@ import (
 
 type Set struct {
 	BaseSetSize  int    `json:"baseSetSize"`
+	Code         string `json:"code"`
 	Cards        []Card `json:"cards"`
 	IsOnlineOnly bool   `json:"isOnlineOnly"`
 	Name         string `json:"name"`
