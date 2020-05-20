@@ -32,6 +32,7 @@ var tagsTable = []string{
 	"Magic League Promo",
 	"Media Promo",
 	"Open House Promo",
+	"Planeswalker Deck Exclusive",
 	"Planeswalker Weekend Promo",
 	"SDCC 2019 Exclusive",
 	"Store Championship Promo",
