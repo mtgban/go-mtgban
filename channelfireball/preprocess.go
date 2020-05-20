@@ -21,21 +21,21 @@ type cfbCard struct {
 var tagsTable = []string{
 	"Bundle Promo",
 	"Buy-a-Box Promo",
-	"FNM Promo 2019",
-	"Magic League Promo",
-	"Planeswalker Weekend Promo",
-	"Treasure Map",
 	"DCI Judge Promo",
 	"Dark Frame Promo",
 	"Draft Weekend Promo",
 	"Draft Weekend",
 	"FNM 2017",
 	"FNM 2019",
+	"FNM Promo 2019",
 	"Judge Academy Promo",
+	"Magic League Promo",
 	"Media Promo",
 	"Open House Promo",
+	"Planeswalker Weekend Promo",
 	"SDCC 2019 Exclusive",
 	"Store Championship Promo",
+	"Treasure Map",
 }
 
 var cardTable = map[string]string{
