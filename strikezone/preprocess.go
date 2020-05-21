@@ -7,7 +7,7 @@ import (
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
-func preprocess(cardName, cardSet, notes string) (*mtgdb.Card, error) {
+func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 	var variation string
 
 	// skip tokens, too many variations
@@ -52,9 +52,9 @@ func preprocess(cardName, cardSet, notes string) (*mtgdb.Card, error) {
 		variation = "Extended Art"
 	// APAC and EURO lands, drop specifier
 	case strings.Contains(cardName, "APAC") || strings.Contains(cardName, "EURO"):
-		cardSet = "European Land Program"
+		edition = "European Land Program"
 		if strings.Contains(cardName, "APAC") {
-			cardSet = "Asia Pacific Land Program"
+			edition = "Asia Pacific Land Program"
 		}
 		variants := mtgdb.SplitVariants(cardName)
 		cardName = variants[0]
@@ -78,7 +78,7 @@ func preprocess(cardName, cardSet, notes string) (*mtgdb.Card, error) {
 
 	ed, found := card2setTable[cardName]
 	if found {
-		cardSet = ed
+		edition = ed
 	}
 
 	variants := mtgdb.SplitVariants(cardName)
@@ -95,13 +95,13 @@ func preprocess(cardName, cardSet, notes string) (*mtgdb.Card, error) {
 			"Serra Avatar",
 			"Thran Quarry",
 			"Two-Headed Dragon":
-			cardSet = "Junior Super Series"
+			edition = "Junior Super Series"
 		case "Forest",
 			"Island",
 			"Mountain",
 			"Swamp",
 			"Plains":
-			cardSet = "Arena League 1999"
+			edition = "Arena League 1999"
 		case "Argothian Enchantress",
 			"Balance",
 			"Ball Lightning",
@@ -141,17 +141,17 @@ func preprocess(cardName, cardSet, notes string) (*mtgdb.Card, error) {
 
 	switch {
 	case strings.HasPrefix(variation, "The "):
-		cardSet = "Magic Premiere Shop 2005"
+		edition = "Magic Premiere Shop 2005"
 	case strings.Contains(variation, "Holiday"):
-		cardSet = "Happy Holidays"
+		edition = "Happy Holidays"
 	}
 
-	if cardSet == "Promotional Cards" && variation == "" {
+	if edition == "Promotional Cards" && variation == "" {
 		ed, found = promo2setTable[cardName]
 		if found {
-			cardSet = ed
+			edition = ed
 		}
-	} else if cardSet == "Ikoria: Lair of Behemoths" && strings.Contains(cardName, " - ") {
+	} else if edition == "Ikoria: Lair of Behemoths" && strings.Contains(cardName, " - ") {
 		s := strings.Split(cardName, " - ")
 		cardName = s[0]
 	}
@@ -159,7 +159,7 @@ func preprocess(cardName, cardSet, notes string) (*mtgdb.Card, error) {
 	return &mtgdb.Card{
 		Name:      cardName,
 		Variation: variation,
-		Edition:   cardSet,
+		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
 }

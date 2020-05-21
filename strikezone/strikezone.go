@@ -200,7 +200,7 @@ func (sz *Strikezone) parseBL() error {
 		}
 
 		cardName := strings.TrimSpace(record[1])
-		cardSet := strings.TrimSpace(record[0])
+		edition := strings.TrimSpace(record[0])
 
 		notes := strings.TrimSpace(record[2])
 
@@ -226,7 +226,7 @@ func (sz *Strikezone) parseBL() error {
 			continue
 		}
 
-		theCard, err := preprocess(cardName, cardSet, notes)
+		theCard, err := preprocess(cardName, edition, notes)
 		if err != nil {
 			continue
 		}
