@@ -231,14 +231,12 @@ func (cfb *Channelfireball) scrape(mode string) error {
 		}
 		if mode == modeBuylist {
 			if card.Quantity > 0 && card.Price > 0 && card.Conditions == "NM" {
-				var sellPrice, priceRatio, qtyRatio float64
-				sellQty := 0
+				var sellPrice, priceRatio float64
 
 				invCards := cfb.inventory[*cc]
 				for _, invCard := range invCards {
 					if invCard.Conditions == "NM" {
 						sellPrice = invCard.Price
-						sellQty = invCard.Quantity
 						break
 					}
 				}
@@ -246,17 +244,13 @@ func (cfb *Channelfireball) scrape(mode string) error {
 				if sellPrice > 0 {
 					priceRatio = card.Price / sellPrice * 100
 				}
-				if sellQty > 0 {
-					qtyRatio = float64(card.Quantity) / float64(sellQty) * 100
-				}
 
 				out := &mtgban.BuylistEntry{
-					BuyPrice:      card.Price,
-					TradePrice:    card.Price * 1.3,
-					Quantity:      card.Quantity,
-					PriceRatio:    priceRatio,
-					QuantityRatio: qtyRatio,
-					URL:           cfbBuylistURL + "/" + card.URLId,
+					BuyPrice:   card.Price,
+					TradePrice: card.Price * 1.3,
+					Quantity:   card.Quantity,
+					PriceRatio: priceRatio,
+					URL:        cfbBuylistURL + "/" + card.URLId,
 				}
 				err := cfb.buylist.Add(cc, out)
 				if err != nil {

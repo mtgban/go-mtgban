@@ -27,8 +27,7 @@ type BuylistEntry struct {
 	BuyPrice   float64
 	TradePrice float64
 
-	PriceRatio    float64
-	QuantityRatio float64
+	PriceRatio float64
 
 	URL string
 }

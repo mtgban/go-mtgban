@@ -128,12 +128,9 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			}
 
 			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 && card.Condition == "NM" {
-				var priceRatio, qtyRatio float64
+				var priceRatio float64
 				if card.SellPrice > 0 {
 					priceRatio = card.BuyPrice / card.SellPrice * 100
-				}
-				if card.SellQuantity > 0 {
-					qtyRatio = float64(card.BuyQuantity) / float64(card.SellQuantity) * 100
 				}
 
 				notes := "https://abugames.com/buylist/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
@@ -144,12 +141,11 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 
 				buyEntry = &mtgban.BuylistEntry{
-					BuyPrice:      card.BuyPrice,
-					TradePrice:    card.TradePrice,
-					Quantity:      card.BuyQuantity,
-					PriceRatio:    priceRatio,
-					QuantityRatio: qtyRatio,
-					URL:           notes,
+					BuyPrice:   card.BuyPrice,
+					TradePrice: card.TradePrice,
+					Quantity:   card.BuyQuantity,
+					PriceRatio: priceRatio,
+					URL:        notes,
 				}
 			}
 

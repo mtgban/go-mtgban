@@ -277,14 +277,12 @@ func (ftf *FaceToFace) scrape(mode string) error {
 		}
 		if mode == modeBuylist {
 			if card.Quantity > 0 && card.Price > 0 && card.Conditions == "NM" {
-				var sellPrice, priceRatio, qtyRatio float64
-				sellQty := 0
+				var sellPrice, priceRatio float64
 
 				invCards := ftf.inventory[*cc]
 				for _, invCard := range invCards {
 					if invCard.Conditions == "NM" {
 						sellPrice = invCard.Price
-						sellQty = invCard.Quantity
 						break
 					}
 				}
@@ -292,17 +290,13 @@ func (ftf *FaceToFace) scrape(mode string) error {
 				if sellPrice > 0 {
 					priceRatio = card.Price / sellPrice * 100
 				}
-				if sellQty > 0 {
-					qtyRatio = float64(card.Quantity) / float64(sellQty) * 100
-				}
 
 				out := &mtgban.BuylistEntry{
-					BuyPrice:      card.Price * ftf.exchangeRate,
-					TradePrice:    card.Price * ftf.exchangeRate * 1.3,
-					Quantity:      card.Quantity,
-					PriceRatio:    priceRatio,
-					QuantityRatio: qtyRatio,
-					URL:           ftfBuylistURL + "/" + card.URLId,
+					BuyPrice:   card.Price * ftf.exchangeRate,
+					TradePrice: card.Price * ftf.exchangeRate * 1.3,
+					Quantity:   card.Quantity,
+					PriceRatio: priceRatio,
+					URL:        ftfBuylistURL + "/" + card.URLId,
 				}
 				err := ftf.buylist.Add(cc, out)
 				if err != nil {

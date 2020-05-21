@@ -238,14 +238,12 @@ func (sz *Strikezone) parseBL() error {
 			continue
 		}
 
-		var sellPrice, priceRatio, qtyRatio float64
-		sellQty := 0
+		var sellPrice, priceRatio float64
 
 		invCards := sz.inventory[*cc]
 		for _, invCard := range invCards {
 			if invCard.Conditions == "NM" {
 				sellPrice = invCard.Price
-				sellQty = invCard.Quantity
 				break
 			}
 		}
@@ -253,17 +251,13 @@ func (sz *Strikezone) parseBL() error {
 		if sellPrice > 0 {
 			priceRatio = price / sellPrice * 100
 		}
-		if sellQty > 0 {
-			qtyRatio = float64(quantity) / float64(sellQty) * 100
-		}
 
 		out := &mtgban.BuylistEntry{
-			BuyPrice:      price,
-			TradePrice:    price * 1.3,
-			Quantity:      quantity,
-			PriceRatio:    priceRatio,
-			QuantityRatio: qtyRatio,
-			URL:           "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
+			BuyPrice:   price,
+			TradePrice: price * 1.3,
+			Quantity:   quantity,
+			PriceRatio: priceRatio,
+			URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
 		}
 		err = sz.buylist.Add(cc, out)
 		if err != nil {

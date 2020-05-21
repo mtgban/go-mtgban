@@ -91,13 +91,10 @@ func (ck *Cardkingdom) scrape() error {
 				ck.printf("%v", err)
 			}
 			if price > 0 {
-				var priceRatio, qtyRatio float64
+				var priceRatio float64
 
 				if sellPrice > 0 {
 					priceRatio = price / sellPrice * 100
-				}
-				if card.SellQuantity > 0 {
-					qtyRatio = float64(card.BuyQuantity) / float64(card.SellQuantity) * 100
 				}
 
 				q := u.Query()
@@ -117,12 +114,11 @@ func (ck *Cardkingdom) scrape() error {
 				u.RawQuery = q.Encode()
 
 				out := &mtgban.BuylistEntry{
-					BuyPrice:      price,
-					TradePrice:    price * 1.3,
-					Quantity:      card.BuyQuantity,
-					PriceRatio:    priceRatio,
-					QuantityRatio: qtyRatio,
-					URL:           u.String(),
+					BuyPrice:   price,
+					TradePrice: price * 1.3,
+					Quantity:   card.BuyQuantity,
+					PriceRatio: priceRatio,
+					URL:        u.String(),
 				}
 				err = ck.buylist.Add(cc, out)
 				if err != nil {
