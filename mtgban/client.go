@@ -25,6 +25,8 @@ func NewClient() *BanClient {
 // Add a Scraper to the client
 func (bc *BanClient) Register(scraper Scraper) {
 	bc.scrapers[scraper.Info().Shorthand] = scraper
+	bc.sellerDisabled[scraper.Info().Shorthand] = false
+	bc.vendorDisabled[scraper.Info().Shorthand] = false
 }
 
 // Add a Scraper to the client, enable the seller side only (if any)
