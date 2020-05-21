@@ -900,21 +900,33 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 						continue
 					}
 				default:
+					// Variants/misprints have different suffixes depending on foil or style
+					expectedSuffix := mtgjson.SuffixVariant
+
 					// Officially known misprints or just variants
 					variation := inCard.Variation
-					if card.Name == "Temple of Abandon" && set.Name == "Theros Beyond Death" && inCard.isExtendedArt() && inCard.Foil {
-						variation = "misprint"
-					} else if card.Name == "Reflecting Pool" && set.Name == "Shadowmoor" && inCard.Foil {
-						variation = "misprint"
+					if card.Name == "Temple of Abandon" && set.Name == "Theros Beyond Death" && inCard.isExtendedArt() {
+						expectedSuffix = mtgjson.SuffixSpecial
+						if inCard.Foil {
+							variation = "misprint"
+						}
+					} else if card.Name == "Reflecting Pool" && set.Name == "Shadowmoor" {
+						expectedSuffix = mtgjson.SuffixSpecial
+						if inCard.Foil {
+							variation = "misprint"
+						}
 					} else if inCard.isPortalAlt() && set.Name == "Portal" {
 						variation = "misprint"
-					} else if inCard.Name == "Void Beckoner" && inCard.isReskin() && card.FlavorName == "Spacegodzilla, Death Corona" {
-						variation = "misprint"
+					} else if inCard.Name == "Void Beckoner" {
+						expectedSuffix = "A"
+						if inCard.isReskin() {
+							variation = "misprint"
+						}
 					}
 
-					if mtgjson.NormContains(variation, "misprint") && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+					if mtgjson.NormContains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {
 						continue
-					} else if !mtgjson.NormContains(variation, "misprint") && strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+					} else if !mtgjson.NormContains(variation, "misprint") && strings.HasSuffix(card.Number, expectedSuffix) {
 						continue
 					}
 				}
