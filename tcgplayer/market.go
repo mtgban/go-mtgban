@@ -99,7 +99,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 			result.LowPrice, result.MarketPrice, result.MidPrice,
 		}
 		names := []string{
-			"Low", "Market", "Mid",
+			"TCG Low", "TCG Market", "TCG Mid",
 		}
 
 		link := fmt.Sprintf("https://shop.tcgplayer.com/product/productsearch?id=%d", req.TCGProductId)
