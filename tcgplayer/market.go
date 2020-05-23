@@ -20,6 +20,7 @@ import (
 type TCGPlayerMarket struct {
 	LogCallback   mtgban.LogCallbackFunc
 	InventoryDate time.Time
+	Affiliate     string
 
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
@@ -101,6 +102,11 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 			"Low", "Market", "Mid",
 		}
 
+		link := fmt.Sprintf("https://shop.tcgplayer.com/product/productsearch?id=%d", req.TCGProductId)
+		if tcg.Affiliate != "" {
+			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
+		}
+
 		for i := range names {
 			out := responseChan{
 				card: *cc,
@@ -108,7 +114,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 					Conditions: "NM",
 					Price:      prices[i],
 					Quantity:   1,
-					URL:        fmt.Sprintf("https://shop.tcgplayer.com/product/productsearch?id=%d", req.TCGProductId),
+					URL:        link,
 					SellerName: names[i],
 				},
 			}
