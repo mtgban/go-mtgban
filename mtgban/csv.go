@@ -317,7 +317,13 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
-	err := csvWriter.Write(ArbitHeader)
+	hasExtraSeller := false
+	header := ArbitHeader
+	if len(arbitrage) > 0 && arbitrage[0].InventoryEntry.SellerName != "" {
+		header = append(header, "Seller")
+		hasExtraSeller = true
+	}
+	err := csvWriter.Write(header)
 	if err != nil {
 		return err
 	}
@@ -331,7 +337,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			foil = "FOIL"
 		}
 
-		err = csvWriter.Write([]string{
+		record := []string{
 			card.Id,
 			card.Name,
 			card.Edition,
@@ -344,7 +350,11 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			fmt.Sprintf("%0.2f", entry.Difference),
 			fmt.Sprintf("%0.2f%%", entry.Spread),
 			fmt.Sprintf("%0.2f%%", bl.PriceRatio),
-		})
+		}
+		if hasExtraSeller {
+			record = append(record, inv.SellerName)
+		}
+		err = csvWriter.Write(record)
 		if err != nil {
 			return err
 		}

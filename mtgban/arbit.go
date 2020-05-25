@@ -28,6 +28,8 @@ type ArbitEntry struct {
 
 	Difference float64
 	Spread     float64
+
+	SellerName string
 }
 
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, err error) {
