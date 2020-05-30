@@ -3,12 +3,10 @@ package mtgban
 import "github.com/kodabb/go-mtgban/mtgdb"
 
 const (
-	DefaultArbitMinDiff        = 0.2
-	DefaultArbitMinSpread      = 25.0
-	DefaultMismatchMinDiff     = 1.0
-	DefaultMismatchMinSpread   = 100.0
-	DefaultMultiArbitMinDiff   = 0.5
-	DefaultMultiArbitMinSpread = 50.0
+	DefaultArbitMinDiff      = 0.2
+	DefaultArbitMinSpread    = 25.0
+	DefaultMismatchMinDiff   = 1.0
+	DefaultMismatchMinSpread = 100.0
 )
 
 type ArbitOpts struct {
@@ -134,8 +132,8 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 		return
 	}
 
-	minDiff := DefaultMultiArbitMinDiff
-	minSpread := DefaultMultiArbitMinSpread
+	minDiff := DefaultMismatchMinDiff
+	minSpread := DefaultMismatchMinSpread
 
 	extra := 0.0
 	var arbitOpts *ArbitOpts
