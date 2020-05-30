@@ -280,12 +280,15 @@ func (tcg *TCGPlayerFull) IntializeInventory(reader io.Reader) error {
 
 	tcg.inventory = mtgban.InventoryRecord{}
 	for card := range inventory {
-		key, err := (&card).Match()
-		if err != nil {
-			tcg.printf("%s", err)
-			continue
+		tcg.inventory[card] = inventory[card]
+
+		for i := range tcg.inventory[card] {
+			sellerName := tcg.inventory[card][i].SellerName
+			if tcg.marketplace[sellerName] == nil {
+				tcg.marketplace[sellerName] = mtgban.InventoryRecord{}
+			}
+			tcg.marketplace[sellerName][card] = append(tcg.marketplace[sellerName][card], tcg.inventory[card][i])
 		}
-		tcg.inventory[*key] = inventory[card]
 	}
 	if len(tcg.inventory) == 0 {
 		return fmt.Errorf("nothing was loaded")
