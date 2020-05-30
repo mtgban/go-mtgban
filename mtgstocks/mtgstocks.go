@@ -255,7 +255,7 @@ func (stks *MTGStocks) InventoryForSeller(sellerName string) (mtgban.InventoryRe
 				if stks.marketplace[sellerName] == nil {
 					stks.marketplace[sellerName] = mtgban.InventoryRecord{}
 				}
-				stks.marketplace[sellerName][card] = append(inventory[card], stks.inventory[card][i])
+				stks.marketplace[sellerName][card] = append(stks.marketplace[sellerName][card], stks.inventory[card][i])
 			}
 		}
 	}

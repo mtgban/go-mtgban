@@ -215,7 +215,7 @@ func (tcg *TCGPlayerMarket) InventoryForSeller(sellerName string) (mtgban.Invent
 				if tcg.marketplace[sellerName] == nil {
 					tcg.marketplace[sellerName] = mtgban.InventoryRecord{}
 				}
-				tcg.marketplace[sellerName][card] = append(inventory[card], tcg.inventory[card][i])
+				tcg.marketplace[sellerName][card] = append(tcg.marketplace[sellerName][card], tcg.inventory[card][i])
 			}
 		}
 	}
