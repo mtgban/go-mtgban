@@ -17,7 +17,7 @@ func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict b
 
 				check := entry.URL == entries[i].URL
 				if entry.SellerName != "" {
-					check = entry.SellerName == entries[i].SellerName
+					check = check && entry.SellerName == entries[i].SellerName
 				}
 				if check && entry.Quantity == entries[i].Quantity {
 					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
