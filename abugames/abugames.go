@@ -112,7 +112,10 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			var buyEntry *mtgban.BuylistEntry
 
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
-				notes := "https://abugames.com/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
+				notes := "https://abugames.com/magic-the-gathering/singles?search=\"" + card.SimpleTitle
+				if card.Edition != "Promo" {
+					notes += "\"&magic_edition=[\"" + card.Edition + "\"]"
+				}
 				if theCard.Foil {
 					notes += "&card_style=[\"Foil\"]"
 				} else {
@@ -133,7 +136,10 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					priceRatio = card.BuyPrice / card.SellPrice * 100
 				}
 
-				notes := "https://abugames.com/buylist/magic-the-gathering/singles?search=\"" + card.SimpleTitle + "\"&magic_edition=[\"" + card.Edition + "\"]"
+				notes := "https://abugames.com/buylist/magic-the-gathering/singles?search=\"" + card.SimpleTitle
+				if card.Edition != "Promo" {
+					notes += "\"&magic_edition=[\"" + card.Edition + "\"]"
+				}
 				if theCard.Foil {
 					notes += "&card_style=[\"Foil\"]"
 				} else {
