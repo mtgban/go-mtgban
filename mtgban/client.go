@@ -1,8 +1,10 @@
 package mtgban
 
 import (
-	"fmt"
+	"errors"
 )
+
+var ErrScraperNotFound = errors.New("scraper not found")
 
 // BanClient abstracts some common operations that can be performed on any
 // Scraper type types, as well as offering a way to retrieve a single or
@@ -66,7 +68,7 @@ func (bc *BanClient) Load() error {
 func (bc *BanClient) ScraperByName(shorthand string) (Scraper, error) {
 	scraper, found := bc.scrapers[shorthand]
 	if !found {
-		return nil, fmt.Errorf("Scraper %s not found", shorthand)
+		return nil, ErrScraperNotFound
 	}
 	return scraper, nil
 }
