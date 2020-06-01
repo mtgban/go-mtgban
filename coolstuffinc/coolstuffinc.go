@@ -28,24 +28,10 @@ const (
 	csiBuylistURL   = "https://www.coolstuffinc.com/ajax_buylist.php"
 )
 
-var rate = map[int]float64{
-	0: 1,
-	1: 1,
-	2: 0.99,
-	3: 0.98,
-	4: 0.96,
-	5: 0.94,
-	6: 0.92,
-	7: 0.90,
-	8: 0.885,
-	9: 0.85,
-}
-
 type Coolstuffinc struct {
 	LogCallback   mtgban.LogCallbackFunc
 	InventoryDate time.Time
 	BuylistDate   time.Time
-	RewardLevel   int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -289,7 +275,7 @@ func (csi *Coolstuffinc) scrape() error {
 				card: cc,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: conditions,
-					Price:      price * rate[csi.RewardLevel],
+					Price:      price,
 					Quantity:   qty,
 					URL:        link,
 				},
