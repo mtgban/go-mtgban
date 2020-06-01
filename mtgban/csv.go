@@ -24,7 +24,7 @@ var (
 	}
 
 	ArbitHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio",
+		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio",
 	}
 	MismatchHeader = []string{
 		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Price", "Difference", "Spread",
@@ -344,6 +344,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			foil,
 			card.Number,
 			inv.Conditions,
+			fmt.Sprintf("%d", inv.Quantity),
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", bl.BuyPrice),
 			fmt.Sprintf("%0.2f", bl.TradePrice),
