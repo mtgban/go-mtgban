@@ -27,6 +27,8 @@ type ArbitEntry struct {
 	Difference float64
 	Spread     float64
 
+	AbsoluteDifference float64
+
 	SellerName string
 }
 
@@ -87,14 +89,16 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			spread := 100 * (blPrice - price) / price
 			difference := blPrice - price
+			absDifference := buylistPrice - price
 
 			if difference > minDiff && spread > minSpread {
 				res := ArbitEntry{
-					Card:           card,
-					BuylistEntry:   blEntry,
-					InventoryEntry: invEntry,
-					Difference:     difference,
-					Spread:         spread,
+					Card:               card,
+					BuylistEntry:       blEntry,
+					InventoryEntry:     invEntry,
+					Difference:         difference,
+					AbsoluteDifference: absDifference,
+					Spread:             spread,
 				}
 				result = append(result, res)
 			}
