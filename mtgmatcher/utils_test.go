@@ -1,0 +1,232 @@
+package mtgmatcher
+
+import "testing"
+
+type ExtractTest struct {
+	In  string
+	Out string
+}
+
+var NumberTests = []ExtractTest{
+	ExtractTest{
+		In:  "123",
+		Out: "123",
+	},
+	ExtractTest{
+		In:  "(321)",
+		Out: "321",
+	},
+	ExtractTest{
+		In:  "#24",
+		Out: "24",
+	},
+	ExtractTest{
+		In:  "100 - A",
+		Out: "100",
+	},
+	ExtractTest{
+		In:  "1a",
+		Out: "1a",
+	},
+	ExtractTest{
+		In:  "*4",
+		Out: "*4",
+	},
+	ExtractTest{
+		In:  "37A Text",
+		Out: "37a",
+	},
+	ExtractTest{
+		In:  "A08",
+		Out: "A08",
+	},
+	ExtractTest{
+		In:  "2000",
+		Out: "",
+	},
+	ExtractTest{
+		In:  "M19",
+		Out: "",
+	},
+	ExtractTest{
+		In:  "26 April",
+		Out: "",
+	},
+	ExtractTest{
+		In:  "181/185",
+		Out: "181",
+	},
+}
+
+func TestExtractNumber(t *testing.T) {
+	for _, probe := range NumberTests {
+		test := probe
+		t.Run(test.In, func(t *testing.T) {
+			t.Parallel()
+			out := ExtractNumber(test.In)
+			if out != test.Out {
+				t.Errorf("FAIL %s: Expected '%s' got '%s'", test.In, test.Out, out)
+				return
+			}
+			t.Log("PASS:", test.In)
+		})
+	}
+}
+
+var YearTests = []ExtractTest{
+	ExtractTest{
+		In:  "Judge 2007",
+		Out: "2007",
+	},
+	ExtractTest{
+		In:  "Judge Foil (2020)",
+		Out: "2020",
+	},
+	ExtractTest{
+		In:  "FNM '06",
+		Out: "2006",
+	},
+	ExtractTest{
+		In:  "20 - multiples 2012",
+		Out: "2012",
+	},
+	ExtractTest{
+		In:  "not a 96 year",
+		Out: "",
+	},
+	ExtractTest{
+		In:  "missing year",
+		Out: "",
+	},
+	ExtractTest{
+		In:  "Urza's Saga Arena 1999",
+		Out: "1999",
+	},
+	ExtractTest{
+		In:  "M14 Core Set",
+		Out: "2014",
+	},
+}
+
+func TestExtractYear(t *testing.T) {
+	for _, probe := range YearTests {
+		test := probe
+		t.Run(test.In, func(t *testing.T) {
+			t.Parallel()
+			out := ExtractYear(test.In)
+			if out != test.Out {
+				t.Errorf("FAIL %s: Expected '%s' got '%s'", test.In, test.Out, out)
+				return
+			}
+			t.Log("PASS:", test.In)
+		})
+	}
+}
+
+type CutTest struct {
+	In  string
+	Tag string
+	Out []string
+}
+
+var CutTests = []CutTest{
+	CutTest{
+		In:  "A B C",
+		Tag: "A",
+		Out: []string{"", "A B C"},
+	},
+	CutTest{
+		In:  "A B C",
+		Tag: "C",
+		Out: []string{"A B", "C"},
+	},
+	CutTest{
+		In:  "A B C",
+		Tag: "D",
+		Out: []string{"A B C"},
+	},
+	CutTest{
+		In:  "A B C D",
+		Tag: "B C",
+		Out: []string{"A", "B C D"},
+	},
+}
+
+func TestCut(t *testing.T) {
+	for _, probe := range CutTests {
+		test := probe
+		t.Run(test.In, func(t *testing.T) {
+			t.Parallel()
+			out := Cut(test.In, test.Tag)
+			for i := range out {
+				if out[i] != test.Out[i] {
+					t.Errorf("FAIL %s: Expected '%s' got '%q'", test.In, test.Out, out)
+					return
+				}
+			}
+			t.Log("PASS:", test.In)
+		})
+	}
+}
+
+func TestAlias(t *testing.T) {
+	inCard := &Card{
+		Name:      "Forest",
+		Variation: "Full-Art",
+		Edition:   "Zendikar",
+	}
+	outCards := []Card{
+		Card{
+			Id:      "33f63bf0-8102-5bcb-a46a-3c1f03eafc11",
+			Name:    "Forest",
+			Edition: "Zendikar",
+			Number:  "246",
+		},
+		Card{
+			Id:      "9e3f5801-616a-5c4d-884b-089e00e6c299",
+			Name:    "Forest",
+			Edition: "Zendikar",
+			Number:  "247",
+		},
+		Card{
+			Id:      "2eafd661-95bb-568a-9938-1a4ba8bce285",
+			Name:    "Forest",
+			Edition: "Zendikar",
+			Number:  "248",
+		},
+		Card{
+			Id:      "8e3b9885-f8fb-5310-8bfe-ff7456dc3484",
+			Name:    "Forest",
+			Edition: "Zendikar",
+			Number:  "249",
+		},
+	}
+
+	_, err := Match(inCard)
+	if err == nil {
+		t.Errorf("FAIL: this call is supposed to return an error")
+		return
+	}
+
+	alias, ok := err.(*AliasingError)
+	if !ok {
+		t.Errorf("FAIL: the returned error is not AliasingError")
+		t.Errorf("%s", err.Error())
+		return
+	}
+
+	dupes := alias.Probe()
+	if len(dupes) != len(outCards) {
+		t.Errorf("FAIL: wrong number of dupes returned")
+		t.Errorf("%v", dupes)
+		return
+	}
+
+	for i, dupe := range dupes {
+		if dupe != outCards[i] {
+			t.Errorf("FAIL: incorrect duplicate returned")
+			t.Errorf("%v vs %v", dupe, outCards[i])
+		}
+	}
+	t.Log("PASS: Aliasing")
+}
