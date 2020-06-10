@@ -781,15 +781,6 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "2e2777f2-833e-5b5b-ae0a-6466e2d25bf3",
-		Desc: "variants_with_star",
-		In: Card{
-			Name:      "Secret Base",
-			Variation: "Version 2",
-			Edition:   "Unstable",
-		},
-	},
-	MatchTest{
 		Id:   "4dded966-5630-5150-8378-5a6377eb9d6e",
 		Desc: "correct_number_but_no_showcase_tag",
 		In: Card{
