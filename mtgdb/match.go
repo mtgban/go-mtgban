@@ -699,10 +699,7 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 			} else {
 				if strings.HasSuffix(card.Number, "s") ||
 					strings.HasSuffix(card.Number, "s"+mtgjson.SuffixSpecial) {
-					// Scryfall bug
-					if set.Name != "Deckmasters" {
-						continue
-					}
+					continue
 				}
 			}
 
