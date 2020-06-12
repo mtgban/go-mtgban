@@ -222,7 +222,8 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 		case inCard.isRelease():
 			switch set.Name {
 			case "Release Events",
-				"Launch Parties":
+				"Launch Parties",
+				"Promotional Planes":
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
@@ -345,6 +346,7 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 		case inCard.isWPNGateway():
 			switch {
 			case set.Name == "Summer of Magic":
+			case set.Name == "Promotional Planes":
 			case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):
 			case strings.HasPrefix(set.Name, "Gateway "+maybeYear):
 			default:
