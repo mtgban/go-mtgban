@@ -252,6 +252,9 @@ func (stks *MTGStocks) InventoryForSeller(sellerName string) (mtgban.InventoryRe
 	for card := range stks.inventory {
 		for i := range stks.inventory[card] {
 			if stks.inventory[card][i].SellerName == sellerName {
+				if stks.inventory[card][i].Price == 0 {
+					continue
+				}
 				if stks.marketplace[sellerName] == nil {
 					stks.marketplace[sellerName] = mtgban.InventoryRecord{}
 				}

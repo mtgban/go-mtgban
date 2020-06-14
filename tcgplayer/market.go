@@ -212,6 +212,9 @@ func (tcg *TCGPlayerMarket) InventoryForSeller(sellerName string) (mtgban.Invent
 	for card := range tcg.inventory {
 		for i := range tcg.inventory[card] {
 			if tcg.inventory[card][i].SellerName == sellerName {
+				if tcg.inventory[card][i].Price == 0 {
+					continue
+				}
 				if tcg.marketplace[sellerName] == nil {
 					tcg.marketplace[sellerName] = mtgban.InventoryRecord{}
 				}
