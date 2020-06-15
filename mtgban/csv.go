@@ -12,22 +12,22 @@ import (
 var (
 	// The canonical header that will be present in all market files
 	MarketHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Price", "Quantity", "Seller",
+		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Price", "Quantity", "Seller",
 	}
 	// The canonical header that will be present in all inventory files
 	InventoryHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Price", "Quantity",
+		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Price", "Quantity",
 	}
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Buy Price", "Trade Price", "Quantity", "Price Ratio",
+		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Buy Price", "Trade Price", "Quantity", "Price Ratio",
 	}
 
 	ArbitHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio",
+		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio",
 	}
 	MismatchHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Conditions", "Price", "Difference", "Spread",
+		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Price", "Difference", "Spread",
 	}
 
 	MultiArbitHeader = []string{
@@ -105,19 +105,20 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 
 		foil := record[3] == "FOIL"
 		number := record[4]
-		conditions := record[5]
-		price, err := strconv.ParseFloat(record[6], 64)
+		rarity := record[5]
+		conditions := record[6]
+		price, err := strconv.ParseFloat(record[7], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
-		qty, err := strconv.Atoi(record[7])
+		qty, err := strconv.Atoi(record[8])
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
 		sellerName := ""
-		if len(record) > 8 {
-			sellerName = record[8]
+		if len(record) > 9 {
+			sellerName = record[9]
 		}
 
 		card := &mtgdb.Card{
@@ -126,6 +127,7 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			Edition: record[2],
 			Foil:    foil,
 			Number:  number,
+			Rarity:  rarity,
 		}
 
 		entry := &InventoryEntry{
@@ -178,21 +180,22 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 
 		foil := record[3] == "FOIL"
 		number := record[4]
-		buyPrice, err := strconv.ParseFloat(record[5], 64)
-		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[5], err)
-		}
-		tradePrice, err := strconv.ParseFloat(record[6], 64)
+		rarity := record[5]
+		buyPrice, err := strconv.ParseFloat(record[6], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[6], err)
 		}
-		qty, err := strconv.Atoi(record[7])
+		tradePrice, err := strconv.ParseFloat(record[7], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[7], err)
 		}
-		priceRatio, err := strconv.ParseFloat(record[8], 64)
+		qty, err := strconv.Atoi(record[8])
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[8], err)
+		}
+		priceRatio, err := strconv.ParseFloat(record[9], 64)
+		if err != nil {
+			return nil, fmt.Errorf("Error reading record %s: %v", record[9], err)
 		}
 
 		card := &mtgdb.Card{
@@ -201,6 +204,7 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			Edition: record[2],
 			Foil:    foil,
 			Number:  number,
+			Rarity:  rarity,
 		}
 		entry := &BuylistEntry{
 			BuyPrice:   buyPrice,
@@ -251,6 +255,7 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 				card.Edition,
 				foil,
 				card.Number,
+				card.Rarity,
 				entry.Conditions,
 				fmt.Sprintf("%0.2f", entry.Price),
 				fmt.Sprint(entry.Quantity),
@@ -299,6 +304,7 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 			card.Edition,
 			foil,
 			card.Number,
+			card.Rarity,
 			fmt.Sprintf("%0.2f", entry.BuyPrice),
 			fmt.Sprintf("%0.2f", entry.TradePrice),
 			fmt.Sprint(entry.Quantity),
@@ -343,6 +349,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			card.Edition,
 			foil,
 			card.Number,
+			card.Rarity,
 			inv.Conditions,
 			fmt.Sprintf("%d", inv.Quantity),
 			fmt.Sprintf("%0.2f", inv.Price),
@@ -390,6 +397,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 			card.Edition,
 			foil,
 			card.Number,
+			card.Rarity,
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", entry.Difference),
@@ -410,7 +418,7 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 	defer csvWriter.Flush()
 
 	header := []string{
-		"Id", "Card Name", "Edition", "F/NF", "Number",
+		"Id", "Card Name", "Edition", "F/NF", "Number", "Rarity",
 	}
 	header = append(header, root.Names...)
 	err := csvWriter.Write(header)
@@ -430,6 +438,7 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 			card.Edition,
 			foil,
 			card.Number,
+			card.Rarity,
 		}
 		for _, vendorName := range root.Names {
 			out = append(out, fmt.Sprintf("%0.2f", entries[vendorName].Price))

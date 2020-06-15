@@ -35,6 +35,7 @@ type Card struct {
 	Name               string   `json:"name"`
 	Names              []string `json:"names"`
 	Number             string   `json:"number"`
+	Rarity             string   `json:"rarity"`
 	ScryfallId         string   `json:"scryfallId"`
 	TcgplayerProductId int      `json:"tcgplayerProductId"`
 	UUID               string   `json:"uuid"`

@@ -30,6 +30,9 @@ type Card struct {
 
 	// The collector number of the card (output only)
 	Number string
+
+	// Rarity of the card (output only)
+	Rarity string
 }
 
 func (c *Card) Match() (outCard *Card, err error) {
@@ -74,6 +77,7 @@ func (c *Card) output(card mtgjson.Card, set *mtgjson.Set) *Card {
 		Edition: set.Name,
 		Foil:    foil,
 		Number:  card.Number,
+		Rarity:  strings.ToUpper(string(card.Rarity[0])),
 	}
 
 	// Append "_f" to the Id to distinguish from non-foil
