@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"go-mtgmatcher/cklite"
-	"go-mtgmatcher/mtgjson"
-	"go-mtgmatcher/mtgmatcher"
+	"github.com/kodabb/go-mtgmatcher/cklite"
+	"github.com/kodabb/go-mtgmatcher/mtgjson"
+	"github.com/kodabb/go-mtgmatcher/mtgmatcher"
 )
 
 type meta struct {

@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"go-mtgmatcher/mtgjson"
+	"github.com/kodabb/go-mtgmatcher/mtgjson"
 )
 
 type cardinfo struct {

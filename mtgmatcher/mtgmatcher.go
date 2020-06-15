@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"go-mtgmatcher/mtgjson"
+	"github.com/kodabb/go-mtgmatcher/mtgjson"
 )
 
 func Match(inCard *Card) (outCard *Card, err error) {

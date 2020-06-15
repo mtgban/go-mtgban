@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"go-mtgmatcher/mtgmatcher"
+	"github.com/kodabb/go-mtgmatcher/mtgmatcher"
 )
 
 var cardTable = map[string]string{

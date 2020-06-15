@@ -1,4 +1,4 @@
-module go-mtgmatcher
+module github.com/kodabb/go-mtgmatcher
 
 go 1.14
 

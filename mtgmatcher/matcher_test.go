@@ -1,10 +1,11 @@
 package mtgmatcher
 
 import (
-	"go-mtgmatcher/mtgjson"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/kodabb/go-mtgmatcher/mtgjson"
 )
 
 type MatchTest struct {
