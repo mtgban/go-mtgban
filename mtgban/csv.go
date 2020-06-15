@@ -483,3 +483,51 @@ func WriteMultiArbitrageToCSV(multi []MultiArbitEntry, w io.Writer) error {
 
 	return nil
 }
+
+func WritePennyToCSV(penny []PennystockEntry, w io.Writer) error {
+	csvWriter := csv.NewWriter(w)
+	defer csvWriter.Flush()
+
+	hasExtraSeller := false
+	header := InventoryHeader
+	if len(penny) > 0 && penny[0].InventoryEntry.SellerName != "" {
+		header = append(header, "Seller")
+		hasExtraSeller = true
+	}
+	err := csvWriter.Write(header)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range penny {
+		card := entry.Card
+		inv := entry.InventoryEntry
+		foil := ""
+		if card.Foil {
+			foil = "FOIL"
+		}
+
+		record := []string{
+			card.Id,
+			card.Name,
+			card.Edition,
+			foil,
+			card.Number,
+			card.Rarity,
+			inv.Conditions,
+			fmt.Sprintf("%0.2f", inv.Price),
+			fmt.Sprintf("%d", inv.Quantity),
+		}
+		if hasExtraSeller {
+			record = append(record, inv.SellerName)
+		}
+		err = csvWriter.Write(record)
+		if err != nil {
+			return err
+		}
+
+		csvWriter.Flush()
+	}
+
+	return nil
+}

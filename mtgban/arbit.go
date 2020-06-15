@@ -269,3 +269,32 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 
 	return
 }
+
+type PennystockEntry struct {
+	Card mtgdb.Card
+	InventoryEntry
+}
+
+func Pennystock(seller Seller) (result []PennystockEntry, err error) {
+	inventory, err := seller.Inventory()
+	if err != nil {
+		return nil, err
+	}
+
+	for card, entries := range inventory {
+		if card.Rarity != "M" && card.Rarity != "R" {
+			continue
+		}
+		for _, entry := range entries {
+			if (!card.Foil && card.Rarity == "M" && entry.Price <= 0.25) ||
+				(!card.Foil && card.Rarity == "R" && entry.Price <= 0.07) ||
+				(card.Foil && entry.Price <= 0.05) {
+				result = append(result, PennystockEntry{
+					Card:           card,
+					InventoryEntry: entry,
+				})
+			}
+		}
+	}
+	return
+}
