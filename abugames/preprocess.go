@@ -25,6 +25,7 @@ var cardTable = map[string]string{
 	// Funny cards
 	"B.F.M. Big Furry Monster Left":   "B.F.M. (Big Furry Monster 28)",
 	"B.F.M. Big Furry Monster Right":  "B.F.M. (Big Furry Monster 29)",
+	"Surgeon Commander":               "Surgeon ~General~ Commander",
 	"No Name":                         "_____",
 	"Who What When Where Why":         "Who",
 	"Absolute Longest Card Name Ever": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
