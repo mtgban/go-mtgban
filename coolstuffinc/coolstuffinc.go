@@ -23,15 +23,17 @@ import (
 )
 
 const (
-	maxConcurrency  = 8
+	defaultConcurrency = 8
+
 	csiInventoryURL = "https://www.coolstuffinc.com/magic+the+gathering/"
 	csiBuylistURL   = "https://www.coolstuffinc.com/ajax_buylist.php"
 )
 
 type Coolstuffinc struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -45,6 +47,7 @@ func NewScraper() *Coolstuffinc {
 	csi.buylist = mtgban.BuylistRecord{}
 	csi.httpclient = http.NewClient()
 	csi.httpclient.Logger = nil
+	csi.MaxConcurrency = defaultConcurrency
 	return &csi
 }
 
@@ -78,7 +81,7 @@ func (csi *Coolstuffinc) scrape() error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: csi.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -297,7 +300,7 @@ func (csi *Coolstuffinc) scrape() error {
 	}
 
 	q, _ := queue.New(
-		maxConcurrency,
+		csi.MaxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 
@@ -501,7 +504,7 @@ func (csi *Coolstuffinc) parseBL() error {
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < csi.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for edition := range editions {

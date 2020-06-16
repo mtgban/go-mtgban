@@ -19,15 +19,17 @@ import (
 )
 
 const (
-	maxConcurrency = 8
-	tatPagesURL    = "https://www.trollandtoad.com/magic-the-gathering/all-singles/7085"
-	tatOptions     = "?Keywords=&min-price=&max-price=&items-pp=60&item-condition=&selected-cat=7085&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
+	defaultConcurrency = 8
+
+	tatPagesURL = "https://www.trollandtoad.com/magic-the-gathering/all-singles/7085"
+	tatOptions  = "?Keywords=&min-price=&max-price=&items-pp=60&item-condition=&selected-cat=7085&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
 type Trollandtoad struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -71,7 +73,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: tat.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -138,7 +140,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 	})
 
 	q, _ := queue.New(
-		maxConcurrency,
+		tat.MaxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 
@@ -285,7 +287,7 @@ func (tat *Trollandtoad) parseBL() error {
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < tat.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for edition := range editions {

@@ -19,7 +19,8 @@ import (
 )
 
 const (
-	maxConcurrency   = 8
+	defaultConcurrency = 8
+
 	pagesPerRequest  = 50
 	tcgBaseURL       = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
 	tcgApiProductURL = "https://api.tcgplayer.com/v1.37.0/pricing/product/"

@@ -15,16 +15,17 @@ import (
 )
 
 const (
-	maxConcurrency = 8
+	defaultConcurrency = 8
 
 	szInventoryURL = "http://shop.strikezoneonline.com/Category/Magic_the_Gathering_Singles.html"
 	szBuylistURL   = "http://shop.strikezoneonline.com/List/MagicBuyList.txt"
 )
 
 type Strikezone struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -34,6 +35,7 @@ func NewScraper() *Strikezone {
 	sz := Strikezone{}
 	sz.inventory = mtgban.InventoryRecord{}
 	sz.buylist = mtgban.BuylistRecord{}
+	sz.MaxConcurrency = defaultConcurrency
 	return &sz
 }
 
@@ -64,7 +66,7 @@ func (sz *Strikezone) scrape() error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: sz.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {

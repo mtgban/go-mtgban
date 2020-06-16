@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	maxConcurrency = 8
+	defaultConcurrency = 8
 )
 
 type ABUGames struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	client *ABUClient
 
@@ -28,6 +29,7 @@ func NewScraper() *ABUGames {
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
 	abu.client = NewABUClient()
+	abu.MaxConcurrency = defaultConcurrency
 	return &abu
 }
 
@@ -184,7 +186,7 @@ func (abu *ABUGames) scrape() error {
 	results := make(chan resultChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < abu.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {

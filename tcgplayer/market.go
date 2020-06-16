@@ -18,9 +18,10 @@ import (
 )
 
 type TCGPlayerMarket struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	Affiliate     string
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	Affiliate      string
+	MaxConcurrency int
 
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
@@ -45,6 +46,7 @@ func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 		PublicId:  publicId,
 		PrivateId: privateId,
 	}
+	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
 }
 
@@ -131,7 +133,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < tcg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {

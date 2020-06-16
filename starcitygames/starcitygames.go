@@ -20,13 +20,14 @@ import (
 )
 
 const (
-	maxConcurrency = 8
+	defaultConcurrency = 8
 )
 
 type Starcitygames struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -47,6 +48,7 @@ func NewScraper(buylistCategories io.Reader) (*Starcitygames, error) {
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient()
+	scg.MaxConcurrency = defaultConcurrency
 
 	if buylistCategories != nil {
 		d := json.NewDecoder(buylistCategories)
@@ -90,7 +92,7 @@ func (scg *Starcitygames) scrape() error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: scg.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -231,7 +233,7 @@ func (scg *Starcitygames) scrape() error {
 	})
 
 	q, _ := queue.New(
-		maxConcurrency,
+		scg.MaxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 
@@ -380,7 +382,7 @@ func (scg *Starcitygames) parseBL() error {
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < scg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for product := range products {

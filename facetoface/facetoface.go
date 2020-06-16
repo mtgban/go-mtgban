@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	maxConcurrency  = 8
+	defaultConcurrency = 8
+
 	ftfInventoryURL = "https://www.facetofacegames.com/catalog/test-magic_singles/8"
 	ftfBuylistURL   = "https://www.facetofacegames.com/buylist/test-magic_singles/8"
 
@@ -23,9 +24,10 @@ const (
 )
 
 type FaceToFace struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	exchangeRate float64
 
@@ -42,6 +44,7 @@ func NewScraper() (*FaceToFace, error) {
 		return nil, err
 	}
 	ftf.exchangeRate = rate
+	ftf.MaxConcurrency = defaultConcurrency
 	return &ftf, nil
 }
 
@@ -74,7 +77,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: ftf.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {

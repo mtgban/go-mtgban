@@ -14,9 +14,10 @@ import (
 )
 
 type Miniaturemarket struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	client    *MMClient
 	inventory mtgban.InventoryRecord
@@ -28,13 +29,15 @@ func NewScraper() *Miniaturemarket {
 	mm.client = NewMMClient()
 	mm.inventory = mtgban.InventoryRecord{}
 	mm.buylist = mtgban.BuylistRecord{}
+	mm.MaxConcurrency = defaultConcurrency
 	return &mm
 }
 
 const (
-	maxConcurrency = 6
-	firstPage      = 1
-	lastPage       = 9
+	defaultConcurrency = 6
+
+	firstPage = 1
+	lastPage  = 9
 )
 
 type respChan struct {
@@ -159,7 +162,7 @@ func (mm *Miniaturemarket) scrape() error {
 
 	mm.printf("Parsing %d pages with %d extra (%d total)", pagination.TotalPages, extraPages, totalPages)
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < mm.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
@@ -285,7 +288,7 @@ func (mm *Miniaturemarket) parseBL() error {
 	results := make(chan respChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < mm.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {

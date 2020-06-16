@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	maxConcurrency  = 8
+	defaultConcurrency = 8
+
 	cfbInventoryURL = "https://store.channelfireball.com/catalog/magic_singles/8"
 	cfbBuylistURL   = "https://store.channelfireball.com/buylist/magic_singles/8"
 
@@ -23,9 +24,10 @@ const (
 )
 
 type Channelfireball struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -35,6 +37,7 @@ func NewScraper() *Channelfireball {
 	cfb := Channelfireball{}
 	cfb.inventory = mtgban.InventoryRecord{}
 	cfb.buylist = mtgban.BuylistRecord{}
+	cfb.MaxConcurrency = defaultConcurrency
 	return &cfb
 }
 
@@ -67,7 +70,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: cfb.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {

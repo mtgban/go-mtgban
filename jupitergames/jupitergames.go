@@ -20,15 +20,17 @@ import (
 )
 
 const (
-	maxConcurrency  = 8
+	defaultConcurrency = 8
+
 	jupInventoryURL = "https://jupitergames.info/store/start"
 	jupBuylistURL   = "https://jupitergames.info/store/find/buypriceall"
 )
 
 type Jupitergames struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -38,6 +40,7 @@ func NewScraper() *Jupitergames {
 	jup := Jupitergames{}
 	jup.inventory = mtgban.InventoryRecord{}
 	jup.buylist = mtgban.BuylistRecord{}
+	jup.MaxConcurrency = defaultConcurrency
 	return &jup
 }
 
@@ -68,7 +71,7 @@ func (jup *Jupitergames) scrape() error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: jup.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -148,7 +151,7 @@ func (jup *Jupitergames) scrape() error {
 	})
 
 	q, _ := queue.New(
-		maxConcurrency,
+		jup.MaxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 

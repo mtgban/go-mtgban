@@ -18,16 +18,17 @@ import (
 )
 
 const (
-	maxConcurrency = 8
+	defaultConcurrency = 8
 
 	modeInventory = "inventory"
 	modeBuylist   = "buylist"
 )
 
 type Eudogames struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	BuylistDate    time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -37,6 +38,7 @@ func NewScraper() *Eudogames {
 	eudo := Eudogames{}
 	eudo.inventory = mtgban.InventoryRecord{}
 	eudo.buylist = mtgban.BuylistRecord{}
+	eudo.MaxConcurrency = defaultConcurrency
 	return &eudo
 }
 
@@ -68,7 +70,7 @@ func (eudo *Eudogames) scrape(mode string) error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: eudo.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
@@ -244,7 +246,7 @@ func (eudo *Eudogames) scrape(mode string) error {
 	})
 
 	q, _ := queue.New(
-		maxConcurrency,
+		eudo.MaxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 

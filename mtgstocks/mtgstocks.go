@@ -11,12 +11,13 @@ import (
 )
 
 const (
-	maxConcurrency = 8
+	defaultConcurrency = 8
 )
 
 type MTGStocks struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	MaxConcurrency int
 
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
@@ -42,6 +43,7 @@ func NewScraper() *MTGStocks {
 	stks := MTGStocks{}
 	stks.inventory = mtgban.InventoryRecord{}
 	stks.marketplace = map[string]mtgban.InventoryRecord{}
+	stks.MaxConcurrency = defaultConcurrency
 	return &stks
 }
 
@@ -162,7 +164,7 @@ func (stks *MTGStocks) scrape() error {
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < stks.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {

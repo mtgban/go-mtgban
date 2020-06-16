@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	maxConcurrency = 8
+	defaultConcurrency = 8
 )
 
 type Magiccorner struct {
-	VerboseLog    bool
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
+	VerboseLog     bool
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	MaxConcurrency int
 
 	exchangeRate float64
 
@@ -32,6 +33,7 @@ func NewScraper() (*Magiccorner, error) {
 	}
 	mc.exchangeRate = rate
 	mc.client = NewMCClient()
+	mc.MaxConcurrency = defaultConcurrency
 	return &mc, nil
 }
 
@@ -161,7 +163,7 @@ func (mc *Magiccorner) scrape() error {
 	results := make(chan resultChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < maxConcurrency; i++ {
+	for i := 0; i < mc.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {

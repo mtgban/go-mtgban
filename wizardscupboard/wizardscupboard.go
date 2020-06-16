@@ -14,14 +14,15 @@ import (
 )
 
 const (
-	maxConcurrency = 8
+	defaultConcurrency = 8
 
 	wcInventoryURL = "https://www.wizardscupboard.com/singles-c-100.html"
 )
 
 type Wizardscupboard struct {
-	LogCallback   mtgban.LogCallbackFunc
-	InventoryDate time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	InventoryDate  time.Time
+	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
 }
@@ -29,6 +30,7 @@ type Wizardscupboard struct {
 func NewScraper() *Wizardscupboard {
 	wc := Wizardscupboard{}
 	wc.inventory = mtgban.InventoryRecord{}
+	wc.MaxConcurrency = defaultConcurrency
 	return &wc
 }
 
@@ -100,7 +102,7 @@ func (wc *Wizardscupboard) scrape() error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 1 * time.Second,
-		Parallelism: maxConcurrency,
+		Parallelism: wc.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
