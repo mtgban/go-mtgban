@@ -66,10 +66,11 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 		Success bool     `json:"success"`
 		Errors  []string `json:"errors"`
 		Results []struct {
-			LowPrice    float64 `json:"lowPrice"`
-			MarketPrice float64 `json:"marketPrice"`
-			MidPrice    float64 `json:"midPrice"`
-			SubTypeName string  `json:"subTypeName"`
+			LowPrice       float64 `json:"lowPrice"`
+			MarketPrice    float64 `json:"marketPrice"`
+			MidPrice       float64 `json:"midPrice"`
+			DirectLowPrice float64 `json:"directLowPrice"`
+			SubTypeName    string  `json:"subTypeName"`
 		} `json:"results"`
 	}
 	err = json.Unmarshal(data, &response)
@@ -98,10 +99,10 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 		}
 
 		prices := []float64{
-			result.LowPrice, result.MarketPrice, result.MidPrice,
+			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
 		}
 		names := []string{
-			"TCG Low", "TCG Market", "TCG Mid",
+			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
 		}
 
 		link := fmt.Sprintf("https://shop.tcgplayer.com/product/productsearch?id=%d", req.TCGProductId)
