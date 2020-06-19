@@ -25,21 +25,20 @@ type Card struct {
 	ForeignData []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
-	FrameEffects       []string `json:"frameEffects"`
-	HasFoil            bool     `json:"hasFoil"`
-	HasNonFoil         bool     `json:"hasNonFoil"`
-	IsAlternative      bool     `json:"isAlternative"`
-	IsFullArt          bool     `json:"isFullArt"`
-	Layout             string   `json:"layout"`
-	Name               string   `json:"name"`
-	Number             string   `json:"number"`
-	Printings          []string `json:"printings"`
-	ScryfallId         string   `json:"scryfallId"`
-	Side               string   `json:"side"`
-	TcgplayerProductId int      `json:"tcgplayerProductId"`
-	UUID               string   `json:"uuid"`
-	Variations         []string `json:"variations"`
-	Watermark          string   `json:"watermark"`
+	FrameEffects  []string          `json:"frameEffects"`
+	HasFoil       bool              `json:"hasFoil"`
+	HasNonFoil    bool              `json:"hasNonFoil"`
+	Identifiers   map[string]string `json:"identifiers"`
+	IsAlternative bool              `json:"isAlternative"`
+	IsFullArt     bool              `json:"isFullArt"`
+	Layout        string            `json:"layout"`
+	Name          string            `json:"name"`
+	Number        string            `json:"number"`
+	Printings     []string          `json:"printings"`
+	Side          string            `json:"side"`
+	UUID          string            `json:"uuid"`
+	Variations    []string          `json:"variations"`
+	Watermark     string            `json:"watermark"`
 }
 
 type AllPrintings struct {

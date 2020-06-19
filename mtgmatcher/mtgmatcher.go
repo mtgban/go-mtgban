@@ -20,7 +20,7 @@ func Match(inCard *Card) (outCard *Card, err error) {
 		}
 		for _, set := range sets {
 			for _, card := range set.Cards {
-				if id == card.UUID || id == card.ScryfallId {
+				if id == card.UUID || id == card.Identifiers["scryfallId"] {
 					return inCard.output(card, set), nil
 				}
 			}
