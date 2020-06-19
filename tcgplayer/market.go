@@ -20,10 +20,12 @@ import (
 type TCGPlayerMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
 	InventoryDate  time.Time
+	BuylistDate    time.Time
 	Affiliate      string
 	MaxConcurrency int
 
 	inventory   mtgban.InventoryRecord
+	buylist     mtgban.BuylistRecord
 	marketplace map[string]mtgban.InventoryRecord
 
 	client *http.Client
@@ -38,6 +40,7 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
 func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 	tcg := TCGPlayerMarket{}
 	tcg.inventory = mtgban.InventoryRecord{}
+	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.marketplace = map[string]mtgban.InventoryRecord{}
 	tcg.client = http.NewClient()
 	tcg.client.Logger = nil
@@ -259,6 +262,7 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Market"
 	info.Shorthand = "TCGMkt"
 	info.InventoryTimestamp = tcg.InventoryDate
+	info.BuylistTimestamp = tcg.BuylistDate
 	info.MetadataOnly = true
 	return
 }

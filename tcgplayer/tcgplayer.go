@@ -24,6 +24,8 @@ const (
 	pagesPerRequest  = 50
 	tcgBaseURL       = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
 	tcgApiProductURL = "https://api.tcgplayer.com/v1.37.0/pricing/product/"
+	tcgApiBuylistURL = "https://api.tcgplayer.com/v1.37.0/pricing/buy/product/"
+	tcgApiSKUURL     = "https://api.tcgplayer.com/v1.37.0/catalog/products/%d/skus"
 )
 
 type requestChan struct {
@@ -34,6 +36,7 @@ type requestChan struct {
 type responseChan struct {
 	card  mtgdb.Card
 	entry mtgban.InventoryEntry
+	bl    mtgban.BuylistEntry
 }
 
 func getListingsNumber(client *http.Client, productId int) (int, error) {
