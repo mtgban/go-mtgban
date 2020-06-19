@@ -245,7 +245,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "d816f77a-a10f-5cfa-8a01-cb5b9ca2b0b5",
+		Id:   "cc4375be-7de6-5d0b-8800-a1321a168264",
 		Desc: "meld_card_b",
 		In: Card{
 			Name:      "Gisela, the Broken Blade | Brisela, Voice of Nightmares",
