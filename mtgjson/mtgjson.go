@@ -30,10 +30,8 @@ type Card struct {
 	HasNonFoil         bool     `json:"hasNonFoil"`
 	IsAlternative      bool     `json:"isAlternative"`
 	IsFullArt          bool     `json:"isFullArt"`
-	IsStarter          bool     `json:"isStarter"`
 	Layout             string   `json:"layout"`
 	Name               string   `json:"name"`
-	Names              []string `json:"names"`
 	Number             string   `json:"number"`
 	Printings          []string `json:"printings"`
 	ScryfallId         string   `json:"scryfallId"`
