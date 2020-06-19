@@ -56,6 +56,7 @@ var skuFixupTable = map[string]string{
 	"MPS-001A":  "PRES-001A",
 	"PRED-001":  "PDRC-001",
 	"PTHB-352":  "THB-352",
+	"FPLS-666":  "PPRE-13",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
