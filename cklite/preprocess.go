@@ -52,11 +52,9 @@ var skuFixupTable = map[string]string{
 	"PUMA-117A": "PFRF-087A",
 
 	"FDOM-269P": "PDOM-001P",
-	"FODY-666":  "PPRE-15",
 	"MPS-001A":  "PRES-001A",
 	"PRED-001":  "PDRC-001",
 	"PTHB-352":  "THB-352",
-	"FPLS-666":  "PPRE-13",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
@@ -87,19 +85,25 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	fields := strings.Split(sku, "-")
 	if len(fields) > 1 {
 		setCode = fields[0]
-		if len(setCode) > 3 && isFoil && strings.HasPrefix(setCode, "F") {
+		number = strings.Join(fields[1:], "")
+		number = strings.TrimLeft(number, "0")
+		number = strings.ToLower(number)
+
+		if len(setCode) > 3 && strings.HasPrefix(setCode, "F") {
 			// Some Arena foil are using this custom code that confuses the matcher
 			// Just not set for them, and rely on the Variation field as is
 			if setCode != "FUSG" && setCode != "F6ED" {
 				setCode = setCode[1:]
 			}
+
+			// Prerelease cards in foreign language get mixed up in the normal set
+			if number == "666" {
+				setCode = "PPRE"
+			}
 		}
 		if len(setCode) == 4 && strings.HasPrefix(setCode, "T") {
 			return nil, fmt.Errorf("unknown sku code %s", setCode)
 		}
-		number = strings.Join(fields[1:], "")
-		number = strings.TrimLeft(number, "0")
-		number = strings.ToLower(number)
 
 		if (card.Variation == "Game Day Extended Art" ||
 			card.Variation == "Game Day Extended" ||
@@ -149,7 +153,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		} else if cardName == "BFM Right" {
 			cardName = "B.F.M."
 		}
-	case "Core Set 2021":
+	case "Core Set 2021", "Jumpstart":
 		return nil, errors.New("not yet")
 	}
 
