@@ -101,22 +101,30 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
-		foil := record[3] == "FOIL"
-		number := record[4]
-		rarity := record[5]
-		conditions := record[6]
-		price, err := strconv.ParseFloat(record[7], 64)
+		index := 3
+		foil := record[index] == "FOIL"
+		index++
+		number := record[index]
+		index++
+		rarity := record[index]
+		index++
+		conditions := record[index]
+		index++
+		price, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
-		qty, err := strconv.Atoi(record[8])
+		index++
+		qty, err := strconv.Atoi(record[index])
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
+		index++
 
 		sellerName := ""
-		if len(record) > 9 {
-			sellerName = record[9]
+		if len(record) > index {
+			sellerName = record[index]
+			index++
 		}
 
 		card := &mtgdb.Card{
@@ -176,25 +184,33 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
-		foil := record[3] == "FOIL"
-		number := record[4]
-		rarity := record[5]
-		buyPrice, err := strconv.ParseFloat(record[6], 64)
+		index := 3
+		foil := record[index] == "FOIL"
+		index++
+		number := record[index]
+		index++
+		rarity := record[index]
+		index++
+		buyPrice, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[6], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
 		}
-		tradePrice, err := strconv.ParseFloat(record[7], 64)
+		index++
+		tradePrice, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[7], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
 		}
-		qty, err := strconv.Atoi(record[8])
+		index++
+		qty, err := strconv.Atoi(record[index])
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[8], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
 		}
-		priceRatio, err := strconv.ParseFloat(record[9], 64)
+		index++
+		priceRatio, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[9], err)
+			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
 		}
+		index++
 
 		card := &mtgdb.Card{
 			Id:      record[0],
