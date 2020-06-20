@@ -16,13 +16,13 @@ var (
 	}
 
 	// The canonical header that will be present in all inventory files
-	InventoryHeader = append(CardHeader, "Conditions", "Price", "Quantity")
+	InventoryHeader = append(CardHeader, "Conditions", "Price", "Quantity", "URL")
 
 	// The canonical header that will be present in all market files
 	MarketHeader = append(InventoryHeader, "Seller")
 
 	// The canonical header that will be present in all buylist files
-	BuylistHeader = append(CardHeader, "Buy Price", "Trade Price", "Quantity", "Price Ratio")
+	BuylistHeader = append(CardHeader, "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL")
 
 	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio")
 
@@ -121,6 +121,9 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 		}
 		index++
 
+		URL := record[index]
+		index++
+
 		sellerName := ""
 		if len(record) > index {
 			sellerName = record[index]
@@ -140,6 +143,7 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			Conditions: conditions,
 			Price:      price,
 			Quantity:   qty,
+			URL:        URL,
 			SellerName: sellerName,
 		}
 
@@ -212,6 +216,9 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 		}
 		index++
 
+		URL := record[index]
+		index++
+
 		card := &mtgdb.Card{
 			Id:      record[0],
 			Name:    record[1],
@@ -225,6 +232,7 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			TradePrice: tradePrice,
 			Quantity:   qty,
 			PriceRatio: priceRatio,
+			URL:        URL,
 		}
 
 		buylist.Add(card, entry)
@@ -273,6 +281,7 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 				entry.Conditions,
 				fmt.Sprintf("%0.2f", entry.Price),
 				fmt.Sprint(entry.Quantity),
+				entry.URL,
 			}
 			if isMarket {
 				record = append(record, entry.SellerName)
@@ -323,6 +332,7 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 			fmt.Sprintf("%0.2f", entry.TradePrice),
 			fmt.Sprint(entry.Quantity),
 			fmt.Sprintf("%0.2f%%", entry.PriceRatio),
+			entry.URL,
 		})
 		if err != nil {
 			return err
