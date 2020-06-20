@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -55,11 +56,12 @@ func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
 }
 
 type BaseSeller struct {
-	inventory InventoryRecord
-	name      string
-	shorthand string
-	timestamp time.Time
-	metaonly  bool
+	inventory   InventoryRecord
+	marketplace map[string]InventoryRecord
+	name        string
+	shorthand   string
+	timestamp   time.Time
+	metaonly    bool
 }
 
 func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
@@ -72,6 +74,38 @@ func (seller *BaseSeller) Info() (info ScraperInfo) {
 	info.InventoryTimestamp = seller.timestamp
 	info.MetadataOnly = seller.metaonly
 	return
+}
+
+func (seller *BaseSeller) InventoryForSeller(sellerName string) (InventoryRecord, error) {
+	if len(seller.inventory) == 0 {
+		_, err := seller.Inventory()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if seller.marketplace == nil {
+		seller.marketplace = map[string]InventoryRecord{}
+	}
+
+	for card := range seller.inventory {
+		for i := range seller.inventory[card] {
+			if seller.inventory[card][i].SellerName == sellerName {
+				if seller.inventory[card][i].Price == 0 {
+					continue
+				}
+				if seller.marketplace[sellerName] == nil {
+					seller.marketplace[sellerName] = InventoryRecord{}
+				}
+				seller.marketplace[sellerName][card] = append(seller.marketplace[sellerName][card], seller.inventory[card][i])
+			}
+		}
+	}
+
+	if len(seller.marketplace[sellerName]) == 0 {
+		return nil, errors.New("seller not found")
+	}
+	return seller.marketplace[sellerName], nil
 }
 
 func NewSellerFromInventory(inventory InventoryRecord, info ScraperInfo) Seller {
