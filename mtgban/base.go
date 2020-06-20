@@ -2,6 +2,7 @@ package mtgban
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
@@ -57,6 +58,7 @@ type BaseSeller struct {
 	inventory InventoryRecord
 	name      string
 	shorthand string
+	timestamp time.Time
 	metaonly  bool
 }
 
@@ -67,13 +69,27 @@ func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
 func (seller *BaseSeller) Info() (info ScraperInfo) {
 	info.Name = seller.name
 	info.Shorthand = seller.shorthand
+	info.InventoryTimestamp = seller.timestamp
+	info.MetadataOnly = seller.metaonly
 	return
+}
+
+func NewSellerFromInventory(inventory InventoryRecord, info ScraperInfo) Seller {
+	seller := BaseSeller{}
+	seller.inventory = inventory
+	seller.name = info.Name
+	seller.shorthand = info.Shorthand
+	seller.timestamp = info.InventoryTimestamp
+	seller.metaonly = info.MetadataOnly
+	return &seller
 }
 
 type BaseVendor struct {
 	buylist   BuylistRecord
 	name      string
 	shorthand string
+	timestamp time.Time
+	metaonly  bool
 	grading   func(mtgdb.Card, BuylistEntry) map[string]float64
 }
 
@@ -84,6 +100,24 @@ func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
 func (vendor *BaseVendor) Info() (info ScraperInfo) {
 	info.Name = vendor.name
 	info.Shorthand = vendor.shorthand
-	info.Grading = DefaultGrading
+	info.BuylistTimestamp = vendor.timestamp
+	info.Grading = vendor.grading
+	if info.Grading == nil {
+		info.Grading = DefaultGrading
+	}
 	return
+}
+
+func NewVendorFromBuylist(buylist BuylistRecord, info ScraperInfo) Vendor {
+	vendor := BaseVendor{}
+	vendor.buylist = buylist
+	vendor.name = info.Name
+	vendor.shorthand = info.Shorthand
+	vendor.timestamp = info.BuylistTimestamp
+	vendor.metaonly = info.MetadataOnly
+	vendor.grading = info.Grading
+	if vendor.grading == nil {
+		vendor.grading = DefaultGrading
+	}
+	return &vendor
 }
