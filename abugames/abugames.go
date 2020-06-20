@@ -264,18 +264,11 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 	return abu.buylist, nil
 }
 
-// Purely estimated
-func (abu *ABUGames) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	grade = map[string]float64{
-		"SP": 0.70, "MP": 0.6, "HP": 0.4,
-	}
-	return
-}
-
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "ABU Games"
 	info.Shorthand = "ABU"
 	info.InventoryTimestamp = abu.InventoryDate
 	info.BuylistTimestamp = abu.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }

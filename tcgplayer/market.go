@@ -264,5 +264,6 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = tcg.InventoryDate
 	info.BuylistTimestamp = tcg.BuylistDate
 	info.MetadataOnly = true
+	info.Grading = mtgban.DefaultGrading
 	return
 }

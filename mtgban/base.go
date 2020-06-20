@@ -72,21 +72,18 @@ func (seller *BaseSeller) Info() (info ScraperInfo) {
 
 type BaseVendor struct {
 	buylist   BuylistRecord
-	grade     map[string]float64
 	name      string
 	shorthand string
+	grading   func(mtgdb.Card, BuylistEntry) map[string]float64
 }
 
 func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
 	return vendor.buylist, nil
 }
 
-func (vendor *BaseVendor) Grading(card mtgdb.Card, entry BuylistEntry) map[string]float64 {
-	return vendor.grade
-}
-
 func (vendor *BaseVendor) Info() (info ScraperInfo) {
 	info.Name = vendor.name
 	info.Shorthand = vendor.shorthand
+	info.Grading = DefaultGrading
 	return
 }

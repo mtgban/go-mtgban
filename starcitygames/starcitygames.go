@@ -433,21 +433,11 @@ func (scg *Starcitygames) Buylist() (mtgban.BuylistRecord, error) {
 	return scg.buylist, nil
 }
 
-func (scg *Starcitygames) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	switch {
-	case card.Foil:
-		grade = map[string]float64{
-			"SP": 0.7, "MP": 0.5, "HP": 0.3,
-		}
-	}
-
-	return
-}
-
 func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Star City Games"
 	info.Shorthand = "SCG"
 	info.InventoryTimestamp = scg.InventoryDate
 	info.BuylistTimestamp = scg.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }

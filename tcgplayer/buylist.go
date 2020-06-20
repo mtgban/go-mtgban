@@ -230,10 +230,3 @@ func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
 
 	return tcg.buylist, nil
 }
-
-func (tcg *TCGPlayerMarket) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	grade = map[string]float64{
-		"SP": 0.75, "MP": 0.5, "HP": 0.3,
-	}
-	return
-}

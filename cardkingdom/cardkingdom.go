@@ -169,7 +169,7 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 	return ck.buylist, nil
 }
 
-func (ck *Cardkingdom) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	switch {
 	case card.Foil:
 		grade = map[string]float64{
@@ -210,5 +210,6 @@ func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CK"
 	info.InventoryTimestamp = ck.InventoryDate
 	info.BuylistTimestamp = ck.BuylistDate
+	info.Grading = grading
 	return
 }

@@ -138,16 +138,10 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 	return nf.buylist, nil
 }
 
-func (nf *Ninetyfive) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	grade = map[string]float64{
-		"SP": 0.8, "MP": 0.6, "HP": 0.5,
-	}
-	return
-}
-
 func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Name = "95mtg"
 	info.Shorthand = "95"
 	info.BuylistTimestamp = nf.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }

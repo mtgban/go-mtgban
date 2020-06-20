@@ -49,17 +49,17 @@ func NewSellerFromCSV(r io.Reader) (Seller, error) {
 	return &seller, nil
 }
 
-func NewVendorFromCSV(r io.Reader, grade map[string]float64) (Vendor, error) {
+func NewVendorFromCSV(r io.Reader) (Vendor, error) {
 	buylist, err := LoadBuylistFromCSV(r)
 	if err != nil {
 		return nil, err
 	}
 
 	vendor := BaseVendor{}
-	vendor.grade = grade
 	vendor.buylist = buylist
 	vendor.name = "Base Vendor"
 	vendor.shorthand = "BV"
+	vendor.grading = DefaultGrading
 
 	return &vendor, nil
 }

@@ -342,21 +342,11 @@ func (tat *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
 	return tat.buylist, nil
 }
 
-func (tat *Trollandtoad) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	switch {
-	case card.Foil:
-		grade = map[string]float64{
-			"SP": 0.7, "MP": 0.5, "HP": 0.3,
-		}
-	}
-
-	return
-}
-
 func (tat *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TaT"
 	info.InventoryTimestamp = tat.InventoryDate
 	info.BuylistTimestamp = tat.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }

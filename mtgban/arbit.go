@@ -74,7 +74,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 
-		grade := vendor.Grading(card, blEntry)
+		grade := vendor.Info().Grading(card, blEntry)
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
 			blPrice := buylistPrice
@@ -166,7 +166,7 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 		totalPrice := extra
 		totalBuylistPrice := 0.0
 		for _, entry := range arbit {
-			grade := vendor.Grading(entry.Card, entry.BuylistEntry)
+			grade := vendor.Info().Grading(entry.Card, entry.BuylistEntry)
 
 			blPrice := entry.BuylistEntry.BuyPrice
 			cond := entry.InventoryEntry.Conditions

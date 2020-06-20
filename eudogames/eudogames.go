@@ -324,17 +324,11 @@ func (eudo *Eudogames) Buylist() (mtgban.BuylistRecord, error) {
 	return eudo.buylist, nil
 }
 
-func (eudo *Eudogames) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	grade = map[string]float64{
-		"SP": 0.7, "MP": 0.5, "HP": 0.3,
-	}
-	return
-}
-
 func (eudo *Eudogames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Eudo Games"
 	info.Shorthand = "EUDO"
 	info.InventoryTimestamp = eudo.InventoryDate
 	info.BuylistTimestamp = eudo.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }

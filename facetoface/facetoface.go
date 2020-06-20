@@ -352,18 +352,11 @@ func (ftf *FaceToFace) Buylist() (mtgban.BuylistRecord, error) {
 	return ftf.buylist, nil
 }
 
-func (ftf *FaceToFace) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	grade = map[string]float64{
-		"SP": 0.8, "MP": 0.6, "HP": 0.4,
-	}
-
-	return
-}
-
 func (ftf *FaceToFace) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Face to Face"
 	info.Shorthand = "FTF"
 	info.InventoryTimestamp = ftf.InventoryDate
 	info.BuylistTimestamp = ftf.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }

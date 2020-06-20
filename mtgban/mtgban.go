@@ -39,6 +39,17 @@ type ScraperInfo struct {
 	InventoryTimestamp time.Time
 	BuylistTimestamp   time.Time
 	MetadataOnly       bool
+
+	// Return the grading scale for adjusting prices according to conditions
+	Grading func(mtgdb.Card, BuylistEntry) map[string]float64
+}
+
+// A generic grading function that estimates deductions when not available
+func DefaultGrading(card mtgdb.Card, entry BuylistEntry) (grade map[string]float64) {
+	grade = map[string]float64{
+		"SP": 0.8, "MP": 0.6, "HP": 0.4,
+	}
+	return
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement
@@ -87,9 +98,6 @@ type Vendor interface {
 	// Return the buylist for a Vendor. If not already loaded, it will start
 	// scraping the vendor gathering the necessary data.
 	Buylist() (BuylistRecord, error)
-
-	// Return the grading scale for adjusting prices according to conditions
-	Grading(mtgdb.Card, BuylistEntry) map[string]float64
 
 	// Return some information about the vendor
 	Info() ScraperInfo

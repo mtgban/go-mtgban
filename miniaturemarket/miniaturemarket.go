@@ -356,7 +356,7 @@ func (mm *Miniaturemarket) Buylist() (mtgban.BuylistRecord, error) {
 	return mm.buylist, nil
 }
 
-func (mm *Miniaturemarket) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
 		"SP": 0.75, "MP": 0.75, "HP": 0,
 	}
@@ -381,5 +381,6 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "MM"
 	info.InventoryTimestamp = mm.InventoryDate
 	info.BuylistTimestamp = mm.BuylistDate
+	info.Grading = grading
 	return
 }

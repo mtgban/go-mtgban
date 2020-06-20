@@ -310,7 +310,7 @@ var fourHorsemenDate = time.Date(1993, time.August, 1, 0, 0, 0, 0, time.UTC)
 var premodernDate = time.Date(1994, time.August, 1, 0, 0, 0, 0, time.UTC)
 var modernDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
 
-func (cfb *Channelfireball) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	set, err := mtgdb.Set(card.Edition)
 	if err != nil {
 		return nil
@@ -347,5 +347,6 @@ func (cfb *Channelfireball) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CFB"
 	info.InventoryTimestamp = cfb.InventoryDate
 	info.BuylistTimestamp = cfb.BuylistDate
+	info.Grading = grading
 	return
 }

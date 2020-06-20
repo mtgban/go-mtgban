@@ -559,21 +559,11 @@ func (csi *Coolstuffinc) Buylist() (mtgban.BuylistRecord, error) {
 	return csi.buylist, nil
 }
 
-func (csi *Coolstuffinc) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	switch {
-	case card.Foil:
-		grade = map[string]float64{
-			"SP": 0.7, "MP": 0.5, "HP": 0.3,
-		}
-	}
-
-	return
-}
-
 func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSI"
 	info.InventoryTimestamp = csi.InventoryDate
 	info.BuylistTimestamp = csi.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }

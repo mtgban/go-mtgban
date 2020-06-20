@@ -379,17 +379,11 @@ func (jup *Jupitergames) Buylist() (mtgban.BuylistRecord, error) {
 	return jup.buylist, nil
 }
 
-func (jup *Jupitergames) Grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	grade = map[string]float64{
-		"SP": 0.7, "MP": 0.5, "HP": 0.3,
-	}
-	return
-}
-
 func (jup *Jupitergames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Jupiter Games"
 	info.Shorthand = "JUP"
 	info.InventoryTimestamp = jup.InventoryDate
 	info.BuylistTimestamp = jup.BuylistDate
+	info.Grading = mtgban.DefaultGrading
 	return
 }
