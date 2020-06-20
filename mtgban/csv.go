@@ -10,25 +10,23 @@ import (
 )
 
 var (
-	// The canonical header that will be present in all market files
-	MarketHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Price", "Quantity", "Seller",
-	}
-	// The canonical header that will be present in all inventory files
-	InventoryHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Price", "Quantity",
-	}
-	// The canonical header that will be present in all buylist files
-	BuylistHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Buy Price", "Trade Price", "Quantity", "Price Ratio",
+	// The base Card fields for the canonical headers
+	CardHeader = []string{
+		"Key", "Name", "Edition", "F/NF", "Number", "Rarity",
 	}
 
-	ArbitHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio",
-	}
-	MismatchHeader = []string{
-		"Key", "Name", "Edition", "F/NF", "Number", "Rarity", "Conditions", "Price", "Difference", "Spread",
-	}
+	// The canonical header that will be present in all inventory files
+	InventoryHeader = append(CardHeader, "Conditions", "Price", "Quantity")
+
+	// The canonical header that will be present in all market files
+	MarketHeader = append(InventoryHeader, "Seller")
+
+	// The canonical header that will be present in all buylist files
+	BuylistHeader = append(CardHeader, "Buy Price", "Trade Price", "Quantity", "Price Ratio")
+
+	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio")
+
+	MismatchHeader = append(CardHeader, "Conditions", "Price", "Difference", "Spread")
 
 	MultiArbitHeader = []string{
 		"Seller", "Cards", "Listings", "Total Prices", "Total Buylist", "Difference", "Spread",
@@ -417,10 +415,7 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
-	header := []string{
-		"Id", "Card Name", "Edition", "F/NF", "Number", "Rarity",
-	}
-	header = append(header, root.Names...)
+	header := append(CardHeader, root.Names...)
 	err := csvWriter.Write(header)
 	if err != nil {
 		return err
