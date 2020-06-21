@@ -84,6 +84,7 @@ var EditionTable = map[string]string{
 	"Secret Lair Drop Sets":   "Secret Lair Drop",
 	"Secret Lair Full Art":    "Secret Lair Drop",
 	"Stained Glass":           "Secret Lair Drop Promos",
+	"Stained Glass Art":       "Secret Lair Drop Promos",
 
 	// Various
 	"DCI Legend Membership": "DCI Legend Membership",
