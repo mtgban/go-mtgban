@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
@@ -210,7 +211,7 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
 		}
 		index++
-		priceRatio, err := strconv.ParseFloat(record[index], 64)
+		priceRatio, err := strconv.ParseFloat(strings.TrimSuffix(record[index], "%"), 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
 		}
