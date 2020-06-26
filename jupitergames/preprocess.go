@@ -76,6 +76,7 @@ var cardTable = map[string]string{
 	"Erase [Not the Urza's Legacy One]":     "Erase (Not the Urza's Legacy One)",
 	"Kill Destroy":                          "Kill! Destroy!",
 	"Dr. Juilus Jumblemorph":                "Dr. Julius Jumblemorph",
+	"Villanous Wealth":                      "Villainous Wealth",
 
 	"The Ultimate Nightmare of Wizards of the Coast? Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 
