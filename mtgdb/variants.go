@@ -1571,7 +1571,7 @@ var hmlVariants = map[string]map[string]string{
 		"head on a platter":  "47b",
 		"goblin with horn":   "47a",
 		"head on platter":    "47b",
-		"quote baron sengir": "47b",
+		"quote baron sengir": "47a",
 	},
 	"Folk of An-Havva": map[string]string{
 		"dancing":         "87a",

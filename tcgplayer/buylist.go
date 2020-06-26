@@ -219,14 +219,10 @@ func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
 		return tcg.buylist, nil
 	}
 
-	start := time.Now()
-	tcg.printf("Buylist scraping started at %s", start)
-
 	err := tcg.scrpeBL()
 	if err != nil {
 		return nil, err
 	}
-	tcg.printf("Buylist scraping took %s", time.Since(start))
 
 	return tcg.buylist, nil
 }

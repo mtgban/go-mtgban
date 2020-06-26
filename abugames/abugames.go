@@ -235,14 +235,10 @@ func (abu *ABUGames) Inventory() (mtgban.InventoryRecord, error) {
 		return abu.inventory, nil
 	}
 
-	start := time.Now()
-	abu.printf("Inventory scraping started at %s", start)
-
 	err := abu.scrape()
 	if err != nil {
 		return nil, err
 	}
-	abu.printf("Inventory scraping took %s", time.Since(start))
 
 	return abu.inventory, nil
 }
@@ -252,14 +248,10 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 		return abu.buylist, nil
 	}
 
-	start := time.Now()
-	abu.printf("Buylist scraping started at %s", start)
-
 	err := abu.scrape()
 	if err != nil {
 		return nil, err
 	}
-	abu.printf("Buylist scraping took %s", time.Since(start))
 
 	return abu.buylist, nil
 }

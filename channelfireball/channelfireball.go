@@ -277,14 +277,10 @@ func (cfb *Channelfireball) Inventory() (mtgban.InventoryRecord, error) {
 		return cfb.inventory, nil
 	}
 
-	start := time.Now()
-	cfb.printf("Inventory scraping started at %s", start)
-
 	err := cfb.scrape(modeInventory)
 	if err != nil {
 		return nil, err
 	}
-	cfb.printf("Inventory scraping took %s", time.Since(start))
 
 	return cfb.inventory, nil
 }
@@ -294,14 +290,10 @@ func (cfb *Channelfireball) Buylist() (mtgban.BuylistRecord, error) {
 		return cfb.buylist, nil
 	}
 
-	start := time.Now()
-	cfb.printf("Buylist scraping started at %s", start)
-
 	err := cfb.scrape(modeBuylist)
 	if err != nil {
 		return nil, err
 	}
-	cfb.printf("Buylist scraping took %s", time.Since(start))
 
 	return cfb.buylist, nil
 }

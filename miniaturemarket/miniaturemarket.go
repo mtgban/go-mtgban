@@ -327,14 +327,10 @@ func (mm *Miniaturemarket) Inventory() (mtgban.InventoryRecord, error) {
 		return mm.inventory, nil
 	}
 
-	start := time.Now()
-	mm.printf("Inventory scraping started at %s", start)
-
 	err := mm.scrape()
 	if err != nil {
 		return nil, err
 	}
-	mm.printf("Inventory scraping took %s", time.Since(start))
 
 	return mm.inventory, nil
 }
@@ -344,14 +340,10 @@ func (mm *Miniaturemarket) Buylist() (mtgban.BuylistRecord, error) {
 		return mm.buylist, nil
 	}
 
-	start := time.Now()
-	mm.printf("Buylist scraping started at %s", start)
-
 	err := mm.parseBL()
 	if err != nil {
 		return nil, err
 	}
-	mm.printf("Buylist scraping took %s", time.Since(start))
 
 	return mm.buylist, nil
 }

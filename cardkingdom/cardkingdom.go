@@ -139,14 +139,10 @@ func (ck *Cardkingdom) Inventory() (mtgban.InventoryRecord, error) {
 		return ck.inventory, nil
 	}
 
-	start := time.Now()
-	ck.printf("Inventory scraping started at %s", start)
-
 	err := ck.scrape()
 	if err != nil {
 		return nil, err
 	}
-	ck.printf("Inventory scraping took %s", time.Since(start))
 
 	return ck.inventory, nil
 
@@ -157,14 +153,10 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 		return ck.buylist, nil
 	}
 
-	start := time.Now()
-	ck.printf("Buylist scraping started at %s", start)
-
 	err := ck.scrape()
 	if err != nil {
 		return nil, err
 	}
-	ck.printf("Buylist scraping took %s", time.Since(start))
 
 	return ck.buylist, nil
 }

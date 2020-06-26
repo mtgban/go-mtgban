@@ -204,14 +204,10 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 		return mc.inventory, nil
 	}
 
-	start := time.Now()
-	mc.printf("Inventory scraping started at %s", start)
-
 	err := mc.scrape()
 	if err != nil {
 		return nil, err
 	}
-	mc.printf("Inventory scraping took %s", time.Since(start))
 
 	return mc.inventory, nil
 

@@ -354,14 +354,10 @@ func (csi *Coolstuffinc) Inventory() (mtgban.InventoryRecord, error) {
 		return csi.inventory, nil
 	}
 
-	start := time.Now()
-	csi.printf("Inventory scraping started at %s", start)
-
 	err := csi.scrape()
 	if err != nil {
 		return nil, err
 	}
-	csi.printf("Inventory scraping took %s", time.Since(start))
 
 	return csi.inventory, nil
 
@@ -547,14 +543,10 @@ func (csi *Coolstuffinc) Buylist() (mtgban.BuylistRecord, error) {
 		return csi.buylist, nil
 	}
 
-	start := time.Now()
-	csi.printf("Buylist scraping started at %s", start)
-
 	err := csi.parseBL()
 	if err != nil {
 		return nil, err
 	}
-	csi.printf("Buylist scraping took %s", time.Since(start))
 
 	return csi.buylist, nil
 }

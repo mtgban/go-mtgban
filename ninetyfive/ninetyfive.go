@@ -126,14 +126,10 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 		return nf.buylist, nil
 	}
 
-	start := time.Now()
-	nf.printf("Buylist scraping started at %s", start)
-
 	err := nf.parseBL()
 	if err != nil {
 		return nil, err
 	}
-	nf.printf("Buylist scraping took %s", time.Since(start))
 
 	return nf.buylist, nil
 }

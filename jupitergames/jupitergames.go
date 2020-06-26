@@ -223,14 +223,10 @@ func (jup *Jupitergames) Inventory() (mtgban.InventoryRecord, error) {
 		return jup.inventory, nil
 	}
 
-	start := time.Now()
-	jup.printf("Inventory scraping started at %s", start)
-
 	err := jup.scrape()
 	if err != nil {
 		return nil, err
 	}
-	jup.printf("Inventory scraping took %s", time.Since(start))
 
 	return jup.inventory, nil
 }
@@ -367,14 +363,10 @@ func (jup *Jupitergames) Buylist() (mtgban.BuylistRecord, error) {
 		return jup.buylist, nil
 	}
 
-	start := time.Now()
-	jup.printf("Buylist scraping started at %s", start)
-
 	err := jup.parseBL()
 	if err != nil {
 		return nil, err
 	}
-	jup.printf("Buylist scraping took %s", time.Since(start))
 
 	return jup.buylist, nil
 }

@@ -293,14 +293,10 @@ func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
 		return scg.inventory, nil
 	}
 
-	start := time.Now()
-	scg.printf("Inventory scraping started at %s", start)
-
 	err := scg.scrape()
 	if err != nil {
 		return nil, err
 	}
-	scg.printf("Inventory scraping took %s", time.Since(start))
 
 	return scg.inventory, nil
 
@@ -421,14 +417,10 @@ func (scg *Starcitygames) Buylist() (mtgban.BuylistRecord, error) {
 		return scg.buylist, nil
 	}
 
-	start := time.Now()
-	scg.printf("Buylist scraping started at %s", start)
-
 	err := scg.parseBL()
 	if err != nil {
 		return nil, err
 	}
-	scg.printf("Buylist scraping took %s", time.Since(start))
 
 	return scg.buylist, nil
 }

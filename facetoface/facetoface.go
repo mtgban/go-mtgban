@@ -323,14 +323,10 @@ func (ftf *FaceToFace) Inventory() (mtgban.InventoryRecord, error) {
 		return ftf.inventory, nil
 	}
 
-	start := time.Now()
-	ftf.printf("Inventory scraping started at %s", start)
-
 	err := ftf.scrape(modeInventory)
 	if err != nil {
 		return nil, err
 	}
-	ftf.printf("Inventory scraping took %s", time.Since(start))
 
 	return ftf.inventory, nil
 }
@@ -340,14 +336,10 @@ func (ftf *FaceToFace) Buylist() (mtgban.BuylistRecord, error) {
 		return ftf.buylist, nil
 	}
 
-	start := time.Now()
-	ftf.printf("Buylist scraping started at %s", start)
-
 	err := ftf.scrape(modeBuylist)
 	if err != nil {
 		return nil, err
 	}
-	ftf.printf("Buylist scraping took %s", time.Since(start))
 
 	return ftf.buylist, nil
 }

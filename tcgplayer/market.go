@@ -190,14 +190,10 @@ func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	start := time.Now()
-	tcg.printf("Inventory scraping started at %s", start)
-
 	err := tcg.scrape()
 	if err != nil {
 		return nil, err
 	}
-	tcg.printf("Inventory scraping took %s", time.Since(start))
 
 	return tcg.inventory, nil
 }

@@ -226,14 +226,10 @@ func (stks *MTGStocks) Inventory() (mtgban.InventoryRecord, error) {
 		return stks.inventory, nil
 	}
 
-	start := time.Now()
-	stks.printf("Inventory scraping started at %s", start)
-
 	err := stks.scrape()
 	if err != nil {
 		return nil, err
 	}
-	stks.printf("Inventory scraping took %s", time.Since(start))
 
 	return stks.inventory, nil
 }

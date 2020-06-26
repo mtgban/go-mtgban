@@ -213,14 +213,10 @@ func (wc *Wizardscupboard) Inventory() (mtgban.InventoryRecord, error) {
 		return wc.inventory, nil
 	}
 
-	start := time.Now()
-	wc.printf("Inventory scraping started at %s", start)
-
 	err := wc.scrape()
 	if err != nil {
 		return nil, err
 	}
-	wc.printf("Inventory scraping took %s", time.Since(start))
 
 	return wc.inventory, nil
 }

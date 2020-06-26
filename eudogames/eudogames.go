@@ -295,14 +295,10 @@ func (eudo *Eudogames) Inventory() (mtgban.InventoryRecord, error) {
 		return eudo.inventory, nil
 	}
 
-	start := time.Now()
-	eudo.printf("Inventory scraping started at %s", start)
-
 	err := eudo.scrape(modeInventory)
 	if err != nil {
 		return nil, err
 	}
-	eudo.printf("Inventory scraping took %s", time.Since(start))
 
 	return eudo.inventory, nil
 }
@@ -312,14 +308,10 @@ func (eudo *Eudogames) Buylist() (mtgban.BuylistRecord, error) {
 		return eudo.buylist, nil
 	}
 
-	start := time.Now()
-	eudo.printf("Buylist scraping started at %s", start)
-
 	err := eudo.scrape(modeBuylist)
 	if err != nil {
 		return nil, err
 	}
-	eudo.printf("Buylist scraping took %s", time.Since(start))
 
 	return eudo.buylist, nil
 }

@@ -199,14 +199,10 @@ func (tat *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
 		return tat.inventory, nil
 	}
 
-	start := time.Now()
-	tat.printf("Inventory scraping started at %s", start)
-
 	err := tat.scrape()
 	if err != nil {
 		return nil, err
 	}
-	tat.printf("Inventory scraping took %s", time.Since(start))
 
 	return tat.inventory, nil
 }
@@ -330,14 +326,10 @@ func (tat *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
 		return tat.buylist, nil
 	}
 
-	start := time.Now()
-	tat.printf("Buylist scraping started at %s", start)
-
 	err := tat.parseBL()
 	if err != nil {
 		return nil, err
 	}
-	tat.printf("Buylist scraping took %s", time.Since(start))
 
 	return tat.buylist, nil
 }
