@@ -84,6 +84,8 @@ func preprocess(title string) (*mtgdb.Card, error) {
 	if strings.Contains(edition, " (") {
 		if edition == "4th Edition (Alternate)" {
 			return nil, fmt.Errorf("untracked edition")
+		} else if strings.Contains(edition, "(Preorder)") {
+			return nil, fmt.Errorf("too soon")
 		}
 		fields = mtgdb.SplitVariants(edition)
 		edition = fields[0]
