@@ -12,6 +12,8 @@ var cardTable = map[string]string{
 	"BFM Left":  "B.F.M. (Big Furry Monster)",
 	"BFM Right": "B.F.M. (Big Furry monster) (b)",
 
+	"Wake of Waves": "Waker of Waves",
+
 	"Surgeon Commander": "Surgeon ~General~ Commander",
 
 	"The Ultimate Nightmare of WotC Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
