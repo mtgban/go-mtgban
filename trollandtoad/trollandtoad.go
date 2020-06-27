@@ -102,7 +102,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 			return
 		}
 
-		options, err := tat.client.GetBuyingOptions(id)
+		options, err := tat.client.GetProductOptions(id)
 		if err != nil {
 			tat.printf(err.Error())
 			return

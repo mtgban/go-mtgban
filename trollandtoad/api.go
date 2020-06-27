@@ -54,7 +54,7 @@ func NewTATClient() *TATClient {
 	return &tat
 }
 
-func (tat *TATClient) GetBuyingOptions(productId string) ([]TATBuyingOption, error) {
+func (tat *TATClient) GetProductOptions(productId string) ([]TATBuyingOption, error) {
 	resp, err := tat.client.PostForm(tatInventoryURL, url.Values{
 		"productid": {productId},
 		"action":    {"getBuyingOptions"},
