@@ -42,6 +42,7 @@ func NewScraper() *Trollandtoad {
 	tat.inventory = mtgban.InventoryRecord{}
 	tat.buylist = mtgban.BuylistRecord{}
 	tat.client = NewTATClient()
+	tat.MaxConcurrency = defaultConcurrency
 	return &tat
 }
 
