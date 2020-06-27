@@ -105,9 +105,8 @@ func (nf *Ninetyfive) parseBL() error {
 
 		if quantity > 0 && price > 0 {
 			out := &mtgban.BuylistEntry{
-				BuyPrice:   price,
-				TradePrice: 0,
-				Quantity:   quantity,
+				BuyPrice: price,
+				Quantity: quantity,
 			}
 			err := nf.buylist.Add(cc, out)
 			if err != nil {
@@ -139,5 +138,6 @@ func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "95"
 	info.BuylistTimestamp = nf.BuylistDate
 	info.Grading = mtgban.DefaultGrading
+	info.NoCredit = true
 	return
 }

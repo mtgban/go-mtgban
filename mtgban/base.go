@@ -124,6 +124,7 @@ type BaseVendor struct {
 	shorthand string
 	timestamp time.Time
 	metaonly  bool
+	nocredit  bool
 	grading   func(mtgdb.Card, BuylistEntry) map[string]float64
 }
 
@@ -136,6 +137,7 @@ func (vendor *BaseVendor) Info() (info ScraperInfo) {
 	info.Shorthand = vendor.shorthand
 	info.BuylistTimestamp = vendor.timestamp
 	info.Grading = vendor.grading
+	info.NoCredit = vendor.nocredit
 	if info.Grading == nil {
 		info.Grading = DefaultGrading
 	}
@@ -150,6 +152,7 @@ func NewVendorFromBuylist(buylist BuylistRecord, info ScraperInfo) Vendor {
 	vendor.timestamp = info.BuylistTimestamp
 	vendor.metaonly = info.MetadataOnly
 	vendor.grading = info.Grading
+	vendor.nocredit = info.NoCredit
 	if vendor.grading == nil {
 		vendor.grading = DefaultGrading
 	}

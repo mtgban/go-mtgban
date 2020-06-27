@@ -39,6 +39,7 @@ type ScraperInfo struct {
 	InventoryTimestamp time.Time
 	BuylistTimestamp   time.Time
 	MetadataOnly       bool
+	NoCredit           bool
 
 	// Return the grading scale for adjusting prices according to conditions
 	Grading func(mtgdb.Card, BuylistEntry) map[string]float64

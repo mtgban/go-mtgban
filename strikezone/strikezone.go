@@ -256,7 +256,6 @@ func (sz *Strikezone) parseBL() error {
 
 		out := &mtgban.BuylistEntry{
 			BuyPrice:   price,
-			TradePrice: price * 1.3,
 			Quantity:   quantity,
 			PriceRatio: priceRatio,
 			URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
@@ -308,5 +307,6 @@ func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = sz.InventoryDate
 	info.BuylistTimestamp = sz.BuylistDate
 	info.Grading = grading
+	info.NoCredit = true
 	return
 }
