@@ -303,6 +303,8 @@ func (tat *Trollandtoad) parseBL() error {
 			if product.CategoryId == "" {
 				continue
 			}
+			tat.printf("Processing %s", product.CategoryName)
+
 			editions <- product.CategoryId
 		}
 		close(editions)
