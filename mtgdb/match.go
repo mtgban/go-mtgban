@@ -28,6 +28,8 @@ func (db *Database) Match(inCard *Card, logger *log.Logger) (outCard *Card, err 
 		inCard.Id = "72c9549f-61c1-5014-92bb-40503775bccb"
 	} else if strings.Contains(inCard.Name, "Smelt") && strings.Contains(inCard.Name, "Herd") && strings.Contains(inCard.Name, "Saw") {
 		inCard.Id = "f8f84c2c-b875-5960-803d-c07b2066fb99"
+	} else if strings.Contains(inCard.Name, "Start") && strings.Contains(inCard.Name, "Fire") {
+		inCard.Id = "d3be2b68-4c69-51e3-be13-df82679989a1"
 	}
 
 	// Look up by uuid
