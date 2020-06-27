@@ -900,6 +900,12 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 					} else if !inCard.isBundle() && !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isExtendedArt() && card.Number != "148" {
 						continue
 					}
+				case "Pack Leader":
+					if inCard.isBundle() && card.Number != "392" {
+						continue
+					} else if !inCard.isBundle() && !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isExtendedArt() && card.Number != "29" {
+						continue
+					}
 				default:
 					// Variants/misprints have different suffixes depending on foil or style
 					expectedSuffix := mtgjson.SuffixVariant
