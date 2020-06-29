@@ -3,6 +3,7 @@ package mtgdb
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -346,7 +347,8 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 				}
 			}
 
-		case strings.Contains(inCard.Variation, "Clash"):
+		case strings.Contains(inCard.Variation, "Clash") ||
+			strings.Contains(inCard.Edition, "Clash"):
 			switch set.Name {
 			case "Magic 2015 Clash Pack",
 				"Magic Origins Clash Pack",
@@ -753,6 +755,12 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 				"European Land Program",
 				"Fallen Empires",
 				"Homelands":
+				// Skip the check if this tag is empty, so that users can notice
+				// there is an aliasing problem
+				if inCard.Variation == "" {
+					continue
+				}
+
 				// Since the check is field by field Foglio may alias Phil or Kaja
 				variation := inCard.Variation
 				if strings.Contains(inCard.Variation, "Foglio") {
@@ -794,6 +802,11 @@ func (db *Database) filterCards(inCard *Card, cardSet map[string][]mtgjson.Card)
 			case "Magic Premiere Shop 2005",
 				"GRN Guild Kit",
 				"RNA Guild Kit":
+				// Skip the check if this tag is empty, so that users can notice
+				// there is an aliasing problem
+				if inCard.Variation == "" {
+					continue
+				}
 				if !mtgjson.NormContains(inCard.Variation, card.Watermark) {
 					continue
 				}
@@ -954,16 +967,22 @@ func (db *Database) tryAdjustName(inCard *Card) {
 	// Move any single letter variation from name to beginning variation
 	if inCard.IsBasicLand() {
 		fields := strings.Fields(inCard.Name)
-		if len(fields) > 1 && len(fields[1]) == 1 {
-			oldVariation := inCard.Variation
-			cuts := Cut(inCard.Name, " "+fields[1])
+		if len(fields) > 1 {
+			_, err := strconv.Atoi(fields[1])
+			isNum := err == nil
+			isLetter := len(fields[1]) == 1
 
-			inCard.Name = cuts[0]
-			inCard.Variation = cuts[1]
-			if oldVariation != "" {
-				inCard.Variation += " " + oldVariation
+			if isNum || isLetter {
+				oldVariation := inCard.Variation
+				cuts := Cut(inCard.Name, " "+fields[1])
+
+				inCard.Name = cuts[0]
+				inCard.Variation = cuts[1]
+				if oldVariation != "" {
+					inCard.Variation += " " + oldVariation
+				}
+				return
 			}
-			return
 		}
 	}
 
@@ -1038,6 +1057,8 @@ func (db *Database) tryAdjustEdition(inCard *Card) {
 	switch {
 	case strings.HasSuffix(edition, "(Collector Edition)"):
 		edition = strings.Replace(edition, " (Collector Edition)", "", 1)
+	case strings.HasSuffix(edition, "Collectors"):
+		edition = strings.TrimSuffix(edition, " Collectors")
 	case strings.HasSuffix(edition, "Extras"):
 		edition = strings.Replace(edition, " Extras", "", 1)
 		edition = strings.Replace(edition, ":", "", 1)

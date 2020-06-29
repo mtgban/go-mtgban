@@ -53,6 +53,7 @@ var EditionTable = map[string]string{
 
 	// Game Night
 	"Game Night 2018":               "Game Night",
+	"Game Night 2019":               "Game Night: 2019",
 	"Magic Game Night":              "Game Night",
 	"Magic Game Night 2019":         "Game Night 2019",
 	"Game Night: 2018":              "Game Night",
@@ -127,6 +128,7 @@ var EditionTable = map[string]string{
 	"Standard Showdown Alayna Danner":          "M19 Standard Showdown",
 	"Alayna Danner Art":                        "M19 Standard Showdown",
 	"Rebecca Guay Art Standard Showdown Promo": "XLN Standard Showdown",
+	"Ixalan Standard Showdown":                 "XLN Standard Showdown",
 
 	// Guild kits
 	"Guild Kits: Guilds of Ravnica":  "GRN Guild Kit",
@@ -207,6 +209,7 @@ var EditionTable = map[string]string{
 	"Commander: 2019 Edition":      "Commander 2019",
 	"Commander: 2020 Edition":      "Commander 2020",
 	"Commander: Ikoria":            "Commander 2020",
+	"Commander:Ikoria":             "Commander 2020",
 
 	// Modern Masters
 	"Modern Masters 2013":            "Modern Masters",

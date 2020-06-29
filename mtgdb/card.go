@@ -180,13 +180,19 @@ func (c *Card) isJPN() bool {
 }
 
 func (c *Card) isRelease() bool {
-	return mtgjson.NormContains(c.Variation, "Release") ||
-		strings.Contains(c.Variation, "Launch")
+	return (!mtgjson.NormContains(c.Variation, "Prerelease") &&
+		mtgjson.NormContains(c.Variation, "Release")) ||
+		strings.Contains(c.Variation, "Launch") ||
+		(!mtgjson.NormContains(c.Edition, "Prerelease") &&
+			mtgjson.NormContains(c.Edition, "Release")) ||
+		strings.Contains(c.Edition, "Launch")
 }
 
 func (c *Card) isWPNGateway() bool {
 	return strings.Contains(c.Variation, "WPN") ||
 		mtgjson.NormContains(c.Variation, "Gateway") ||
+		mtgjson.NormContains(c.Variation, "Wizards Play Network") ||
+		mtgjson.NormContains(c.Edition, "Gateway") ||
 		c.Variation == "Euro Promo" // cfb
 }
 
@@ -208,7 +214,8 @@ func (c *Card) isIDWMagazineBook() bool {
 
 func (c *Card) isRewards() bool {
 	return mtgjson.NormContains(c.Variation, "Textless") ||
-		mtgjson.NormContains(c.Variation, "Reward")
+		mtgjson.NormContains(c.Variation, "Reward") ||
+		mtgjson.NormContains(c.Edition, "Reward")
 }
 
 func (c *Card) isMagicFest() bool {
@@ -235,7 +242,8 @@ func (c *Card) isARNDarkMana() bool {
 }
 
 func (c *Card) isArena() bool {
-	return strings.Contains(c.Variation, "Arena")
+	return strings.Contains(c.Variation, "Arena") ||
+		strings.Contains(c.Edition, "Arena")
 }
 
 func (c *Card) arenaYear(maybeYear string) string {
@@ -281,6 +289,7 @@ func (c *Card) arenaYear(maybeYear string) string {
 
 func (c *Card) isWorldChamp() bool {
 	return mtgjson.NormContains(c.Edition, "Pro Tour Collect") ||
+		mtgjson.NormContains(c.Edition, "Pro Tour 1996") ||
 		mtgjson.NormContains(c.Edition, "World Championship") ||
 		mtgjson.NormContains(c.Edition, "WCD")
 }
@@ -327,8 +336,9 @@ func (c *Card) worldChampPrefix() (string, bool) {
 		"Wolfgang Eder":        "we",
 	}
 	for player := range players {
-		if mtgjson.NormContains(c.Variation, player) {
-			sb := strings.Contains(c.Variation, "SB") ||
+		if mtgjson.NormContains(c.Variation, player) ||
+			mtgjson.NormContains(c.Edition, player) {
+			sb := strings.Contains(strings.ToLower(c.Variation), "sb") ||
 				mtgjson.NormContains(c.Variation, "Sideboard")
 			return players[player], sb
 		}

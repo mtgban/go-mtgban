@@ -174,6 +174,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "8d99cf70-f756-59b4-a06c-a330457d43ac",
+		Desc: "land_with_cnumber",
+		In: Card{
+			Name:    "Forest 277",
+			Edition: "Ixalan",
+		},
+	},
+	MatchTest{
 		Id:   "334e1060-01bb-5480-b011-358e728e90dd",
 		Desc: "forest_F",
 		In: Card{
@@ -1094,6 +1102,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "faf2b777-63a3-5b6e-a9a4-d38d290085bc",
+		Desc: "clash_pack_alt",
+		In: Card{
+			Name:    "Temple of Mystery",
+			Edition: "Clash Pack Promos",
+		},
+	},
+	MatchTest{
 		Id:   "efc5a359-1290-532b-8b20-14af00eaa19b",
 		Desc: "japanese_magazine_insert",
 		In: Card{
@@ -1627,6 +1643,15 @@ var MatchTests = []MatchTest{
 			Name:      "Strip Mine",
 			Variation: "ll363",
 			Edition:   "Pro Tour Collector Set",
+		},
+	},
+	MatchTest{
+		Id:   "d9eea40c-0004-5252-b3e5-b99a00078c5a",
+		Desc: "wcd_with_correct_sideboard_number",
+		In: Card{
+			Name:      "Krosan Reclamation",
+			Variation: "dz122sb",
+			Edition:   "WCD 2003: Daniel Zink",
 		},
 	},
 	MatchTest{

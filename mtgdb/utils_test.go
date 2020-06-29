@@ -106,6 +106,10 @@ var YearTests = []ExtractTest{
 		In:  "M14 Core Set",
 		Out: "2014",
 	},
+	ExtractTest{
+		In:  "WCD 2002:",
+		Out: "2002",
+	},
 }
 
 func TestExtractYear(t *testing.T) {

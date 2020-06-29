@@ -106,6 +106,7 @@ func ExtractYear(str string) string {
 	for _, field := range fields {
 		field = strings.Replace(field, "(", "", -1)
 		field = strings.Replace(field, ")", "", -1)
+		field = strings.Replace(field, ":", "", -1)
 
 		// Handle abbreviations, checking if year is before or after 2000
 		if strings.Contains(field, "'") || strings.HasPrefix(field, "M") {
