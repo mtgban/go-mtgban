@@ -278,8 +278,6 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 		}
 	}
 
-	mm.BuylistDate = time.Now()
-
 	return nil
 }
 
@@ -318,6 +316,8 @@ func (mm *Miniaturemarket) parseBL() error {
 			continue
 		}
 	}
+
+	mm.BuylistDate = time.Now()
 
 	return nil
 }
