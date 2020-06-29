@@ -7,12 +7,12 @@ import (
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
-func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict bool) error {
+func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict int) error {
 	entries, found := inv[*card]
 	if found {
 		for i := range entries {
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price {
-				if strict {
+				if strict > 1 {
 					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
 				}
 
@@ -20,7 +20,7 @@ func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict b
 				if entry.SellerName != "" {
 					check = check && entry.SellerName == entries[i].SellerName
 				}
-				if check && entry.Quantity == entries[i].Quantity {
+				if strict > 0 && check && entry.Quantity == entries[i].Quantity {
 					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
 				}
 
@@ -34,14 +34,19 @@ func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict b
 	return nil
 }
 
+// Add a new record to the inventory, existing entries are always merged
+func (inv InventoryRecord) AddRelaxed(card *mtgdb.Card, entry *InventoryEntry) error {
+	return inv.add(card, entry, 0)
+}
+
 // Add a new record to the inventory, similar existing entries are merged
 func (inv InventoryRecord) Add(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card, entry, false)
+	return inv.add(card, entry, 1)
 }
 
 // Add new record to the inventory, similar existing entries are not merged
 func (inv InventoryRecord) AddStrict(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card, entry, true)
+	return inv.add(card, entry, 2)
 }
 
 func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
