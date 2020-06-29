@@ -321,6 +321,8 @@ func (tat *Trollandtoad) parseBL() error {
 		}
 	}
 
+	tat.buylistDate = time.Now()
+
 	return nil
 }
 

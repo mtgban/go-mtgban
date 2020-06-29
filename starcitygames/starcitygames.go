@@ -409,6 +409,8 @@ func (scg *Starcitygames) parseBL() error {
 		}
 	}
 
+	scg.buylistDate = time.Now()
+
 	return nil
 }
 

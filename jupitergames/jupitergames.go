@@ -355,6 +355,8 @@ func (jup *Jupitergames) parseBL() error {
 		}
 	}
 
+	jup.buylistDate = time.Now()
+
 	return nil
 }
 
