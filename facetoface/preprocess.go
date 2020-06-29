@@ -74,7 +74,6 @@ var cardTable = map[string]string{
 	// Adjust promos
 	"Corpse Knight (2/3 Misprint)": "Corpse Knight (Misprint)",
 	"Doubling Season (JR)":         "Doubling Season (Judge)",
-	"Sol Ring (Commander Promo)":   "Sol Ring (MagicFest 2019)",
 	"Underworld Dreams Promo":      "Underworld Dreams (2HG)",
 
 	"Sylvan Ranger (WPN)":          "Sylvan Ranger (WPN 2010)",
