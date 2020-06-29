@@ -106,11 +106,6 @@ func (ck *Cardkingdom) scrape() error {
 					q.Set("utm_medium", "affiliate")
 					q.Set("utm_campaign", ck.Partner)
 				}
-				if card.IsFoil == "true" {
-					q.Set("filter[foil]", "1")
-				} else {
-					q.Set("filter[nonfoil]", "1")
-				}
 				u.RawQuery = q.Encode()
 
 				out := &mtgban.BuylistEntry{
