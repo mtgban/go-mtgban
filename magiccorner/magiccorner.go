@@ -15,7 +15,7 @@ const (
 type Magiccorner struct {
 	VerboseLog     bool
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
+	inventoryDate  time.Time
 	MaxConcurrency int
 
 	exchangeRate float64
@@ -194,7 +194,7 @@ func (mc *Magiccorner) scrape() error {
 		}
 	}
 
-	mc.InventoryDate = time.Now()
+	mc.inventoryDate = time.Now()
 
 	return nil
 }
@@ -216,6 +216,6 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
-	info.InventoryTimestamp = mc.InventoryDate
+	info.InventoryTimestamp = mc.inventoryDate
 	return
 }

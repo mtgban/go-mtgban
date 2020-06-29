@@ -19,8 +19,8 @@ import (
 
 type TCGPlayerMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	Affiliate      string
 	MaxConcurrency int
 
@@ -180,7 +180,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 		}
 	}
 
-	tcg.InventoryDate = time.Now()
+	tcg.inventoryDate = time.Now()
 
 	return nil
 }
@@ -257,8 +257,8 @@ func (tcg *TCGPlayerMarket) IntializeInventory(reader io.Reader) error {
 func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player"
 	info.Shorthand = "TCGMkt"
-	info.InventoryTimestamp = tcg.InventoryDate
-	info.BuylistTimestamp = tcg.BuylistDate
+	info.InventoryTimestamp = tcg.inventoryDate
+	info.BuylistTimestamp = tcg.buylistDate
 	info.MetadataOnly = true
 	info.Grading = mtgban.DefaultGrading
 	return

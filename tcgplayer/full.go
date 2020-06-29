@@ -17,7 +17,7 @@ import (
 
 type TCGPlayerFull struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
+	inventoryDate  time.Time
 	MaxConcurrency int
 
 	inventory   mtgban.InventoryRecord
@@ -222,7 +222,7 @@ func (tcg *TCGPlayerFull) scrape() error {
 		}
 	}
 
-	tcg.InventoryDate = time.Now()
+	tcg.inventoryDate = time.Now()
 
 	return nil
 }
@@ -302,6 +302,6 @@ func (tcg *TCGPlayerFull) IntializeInventory(reader io.Reader) error {
 func (tcg *TCGPlayerFull) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Full"
 	info.Shorthand = "TCGF"
-	info.InventoryTimestamp = tcg.InventoryDate
+	info.InventoryTimestamp = tcg.inventoryDate
 	return
 }

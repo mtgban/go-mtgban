@@ -209,7 +209,7 @@ func (tcg *TCGPlayerMarket) scrpeBL() error {
 		}
 	}
 
-	tcg.BuylistDate = time.Now()
+	tcg.buylistDate = time.Now()
 
 	return nil
 }

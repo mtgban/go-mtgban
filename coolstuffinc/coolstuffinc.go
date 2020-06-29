@@ -31,8 +31,8 @@ const (
 
 type Coolstuffinc struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -344,7 +344,7 @@ func (csi *Coolstuffinc) scrape() error {
 		}
 	}
 
-	csi.InventoryDate = time.Now()
+	csi.inventoryDate = time.Now()
 
 	return nil
 }
@@ -554,8 +554,8 @@ func (csi *Coolstuffinc) Buylist() (mtgban.BuylistRecord, error) {
 func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSI"
-	info.InventoryTimestamp = csi.InventoryDate
-	info.BuylistTimestamp = csi.BuylistDate
+	info.InventoryTimestamp = csi.inventoryDate
+	info.BuylistTimestamp = csi.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

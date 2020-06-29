@@ -16,7 +16,7 @@ const (
 
 type MTGStocks struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
+	inventoryDate  time.Time
 	MaxConcurrency int
 
 	inventory   mtgban.InventoryRecord
@@ -216,7 +216,7 @@ func (stks *MTGStocks) scrape() error {
 		}
 	}
 
-	stks.InventoryDate = time.Now()
+	stks.inventoryDate = time.Now()
 
 	return nil
 }
@@ -270,7 +270,7 @@ func (stks *MTGStocks) InventoryForSeller(sellerName string) (mtgban.InventoryRe
 func (stks *MTGStocks) Info() (info mtgban.ScraperInfo) {
 	info.Name = "MTGStocks"
 	info.Shorthand = "STKS"
-	info.InventoryTimestamp = stks.InventoryDate
+	info.InventoryTimestamp = stks.inventoryDate
 	info.MetadataOnly = true
 	return
 }

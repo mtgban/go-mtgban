@@ -28,8 +28,8 @@ const (
 
 type Jupitergames struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -213,7 +213,7 @@ func (jup *Jupitergames) scrape() error {
 		}
 	}
 
-	jup.InventoryDate = time.Now()
+	jup.inventoryDate = time.Now()
 
 	return nil
 }
@@ -374,8 +374,8 @@ func (jup *Jupitergames) Buylist() (mtgban.BuylistRecord, error) {
 func (jup *Jupitergames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Jupiter Games"
 	info.Shorthand = "JUP"
-	info.InventoryTimestamp = jup.InventoryDate
-	info.BuylistTimestamp = jup.BuylistDate
+	info.InventoryTimestamp = jup.inventoryDate
+	info.BuylistTimestamp = jup.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

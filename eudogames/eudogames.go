@@ -26,8 +26,8 @@ const (
 
 type Eudogames struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -282,9 +282,9 @@ func (eudo *Eudogames) scrape(mode string) error {
 	}
 
 	if mode == modeInventory {
-		eudo.InventoryDate = time.Now()
+		eudo.inventoryDate = time.Now()
 	} else {
-		eudo.BuylistDate = time.Now()
+		eudo.buylistDate = time.Now()
 	}
 
 	return nil
@@ -319,8 +319,8 @@ func (eudo *Eudogames) Buylist() (mtgban.BuylistRecord, error) {
 func (eudo *Eudogames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Eudo Games"
 	info.Shorthand = "EUDO"
-	info.InventoryTimestamp = eudo.InventoryDate
-	info.BuylistTimestamp = eudo.BuylistDate
+	info.InventoryTimestamp = eudo.inventoryDate
+	info.BuylistTimestamp = eudo.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

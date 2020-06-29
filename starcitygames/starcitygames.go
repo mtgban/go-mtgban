@@ -25,8 +25,8 @@ const (
 
 type Starcitygames struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -283,7 +283,7 @@ func (scg *Starcitygames) scrape() error {
 			}
 		}
 	}
-	scg.InventoryDate = time.Now()
+	scg.inventoryDate = time.Now()
 
 	return nil
 }
@@ -428,8 +428,8 @@ func (scg *Starcitygames) Buylist() (mtgban.BuylistRecord, error) {
 func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Star City Games"
 	info.Shorthand = "SCG"
-	info.InventoryTimestamp = scg.InventoryDate
-	info.BuylistTimestamp = scg.BuylistDate
+	info.InventoryTimestamp = scg.inventoryDate
+	info.BuylistTimestamp = scg.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

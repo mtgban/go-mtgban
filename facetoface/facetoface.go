@@ -25,8 +25,8 @@ const (
 
 type FaceToFace struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	exchangeRate float64
@@ -310,9 +310,9 @@ func (ftf *FaceToFace) scrape(mode string) error {
 	}
 
 	if mode == modeInventory {
-		ftf.InventoryDate = time.Now()
+		ftf.inventoryDate = time.Now()
 	} else if mode == modeBuylist {
-		ftf.BuylistDate = time.Now()
+		ftf.buylistDate = time.Now()
 	}
 
 	return nil
@@ -347,8 +347,8 @@ func (ftf *FaceToFace) Buylist() (mtgban.BuylistRecord, error) {
 func (ftf *FaceToFace) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Face to Face"
 	info.Shorthand = "FTF"
-	info.InventoryTimestamp = ftf.InventoryDate
-	info.BuylistTimestamp = ftf.BuylistDate
+	info.InventoryTimestamp = ftf.inventoryDate
+	info.BuylistTimestamp = ftf.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

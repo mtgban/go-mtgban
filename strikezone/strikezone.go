@@ -23,8 +23,8 @@ const (
 
 type Strikezone struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -172,7 +172,7 @@ func (sz *Strikezone) scrape() error {
 		}
 	}
 
-	sz.InventoryDate = time.Now()
+	sz.inventoryDate = time.Now()
 
 	return nil
 }
@@ -266,7 +266,7 @@ func (sz *Strikezone) parseBL() error {
 		}
 	}
 
-	sz.BuylistDate = time.Now()
+	sz.buylistDate = time.Now()
 
 	return nil
 }
@@ -304,8 +304,8 @@ func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float
 func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Strike Zone"
 	info.Shorthand = "SZ"
-	info.InventoryTimestamp = sz.InventoryDate
-	info.BuylistTimestamp = sz.BuylistDate
+	info.InventoryTimestamp = sz.inventoryDate
+	info.BuylistTimestamp = sz.buylistDate
 	info.Grading = grading
 	info.NoCredit = true
 	return

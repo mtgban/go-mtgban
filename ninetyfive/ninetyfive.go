@@ -19,7 +19,7 @@ const (
 
 type Ninetyfive struct {
 	LogCallback mtgban.LogCallbackFunc
-	BuylistDate time.Time
+	buylistDate time.Time
 
 	buylist mtgban.BuylistRecord
 }
@@ -115,7 +115,7 @@ func (nf *Ninetyfive) parseBL() error {
 		}
 	}
 
-	nf.BuylistDate = time.Now()
+	nf.buylistDate = time.Now()
 
 	return nil
 }
@@ -136,7 +136,7 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Name = "95mtg"
 	info.Shorthand = "95"
-	info.BuylistTimestamp = nf.BuylistDate
+	info.BuylistTimestamp = nf.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	info.NoCredit = true
 	return

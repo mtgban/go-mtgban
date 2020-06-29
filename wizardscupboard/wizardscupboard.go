@@ -21,7 +21,7 @@ const (
 
 type Wizardscupboard struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
+	inventoryDate  time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -203,7 +203,7 @@ func (wc *Wizardscupboard) scrape() error {
 		}
 	}
 
-	wc.InventoryDate = time.Now()
+	wc.inventoryDate = time.Now()
 
 	return nil
 }
@@ -224,6 +224,6 @@ func (wc *Wizardscupboard) Inventory() (mtgban.InventoryRecord, error) {
 func (wc *Wizardscupboard) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Wizard's Cupboard"
 	info.Shorthand = "WC"
-	info.InventoryTimestamp = wc.InventoryDate
+	info.InventoryTimestamp = wc.inventoryDate
 	return
 }

@@ -25,8 +25,8 @@ const (
 
 type Channelfireball struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -264,9 +264,9 @@ func (cfb *Channelfireball) scrape(mode string) error {
 	}
 
 	if mode == modeInventory {
-		cfb.InventoryDate = time.Now()
+		cfb.inventoryDate = time.Now()
 	} else if mode == modeBuylist {
-		cfb.BuylistDate = time.Now()
+		cfb.buylistDate = time.Now()
 	}
 
 	return nil
@@ -337,8 +337,8 @@ func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float
 func (cfb *Channelfireball) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Channel Fireball"
 	info.Shorthand = "CFB"
-	info.InventoryTimestamp = cfb.InventoryDate
-	info.BuylistTimestamp = cfb.BuylistDate
+	info.InventoryTimestamp = cfb.inventoryDate
+	info.BuylistTimestamp = cfb.buylistDate
 	info.Grading = grading
 	return
 }

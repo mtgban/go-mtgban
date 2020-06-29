@@ -12,8 +12,8 @@ import (
 type Cardkingdom struct {
 	LogCallback   mtgban.LogCallbackFunc
 	Partner       string
-	InventoryDate time.Time
-	BuylistDate   time.Time
+	inventoryDate time.Time
+	buylistDate   time.Time
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -123,8 +123,8 @@ func (ck *Cardkingdom) scrape() error {
 		}
 	}
 
-	ck.InventoryDate = time.Now()
-	ck.BuylistDate = time.Now()
+	ck.inventoryDate = time.Now()
+	ck.buylistDate = time.Now()
 
 	return nil
 }
@@ -195,8 +195,8 @@ func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float
 func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom"
 	info.Shorthand = "CK"
-	info.InventoryTimestamp = ck.InventoryDate
-	info.BuylistTimestamp = ck.BuylistDate
+	info.InventoryTimestamp = ck.inventoryDate
+	info.BuylistTimestamp = ck.buylistDate
 	info.Grading = grading
 	return
 }

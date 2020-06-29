@@ -27,8 +27,8 @@ const (
 
 type Trollandtoad struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
@@ -165,7 +165,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 		}
 	}
 
-	tat.InventoryDate = time.Now()
+	tat.inventoryDate = time.Now()
 
 	return nil
 }
@@ -340,8 +340,8 @@ func (tat *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
 func (tat *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TaT"
-	info.InventoryTimestamp = tat.InventoryDate
-	info.BuylistTimestamp = tat.BuylistDate
+	info.InventoryTimestamp = tat.inventoryDate
+	info.BuylistTimestamp = tat.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

@@ -15,8 +15,8 @@ import (
 
 type Miniaturemarket struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	client    *MMClient
@@ -197,7 +197,7 @@ func (mm *Miniaturemarket) scrape() error {
 		}
 	}
 
-	mm.InventoryDate = time.Now()
+	mm.inventoryDate = time.Now()
 
 	return nil
 }
@@ -317,7 +317,7 @@ func (mm *Miniaturemarket) parseBL() error {
 		}
 	}
 
-	mm.BuylistDate = time.Now()
+	mm.buylistDate = time.Now()
 
 	return nil
 }
@@ -371,8 +371,8 @@ func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float
 func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Miniature Market"
 	info.Shorthand = "MM"
-	info.InventoryTimestamp = mm.InventoryDate
-	info.BuylistTimestamp = mm.BuylistDate
+	info.InventoryTimestamp = mm.inventoryDate
+	info.BuylistTimestamp = mm.buylistDate
 	info.Grading = grading
 	return
 }

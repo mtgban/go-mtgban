@@ -14,8 +14,8 @@ const (
 
 type ABUGames struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
-	BuylistDate    time.Time
+	inventoryDate  time.Time
+	buylistDate    time.Time
 	MaxConcurrency int
 
 	client *ABUClient
@@ -224,8 +224,8 @@ func (abu *ABUGames) scrape() error {
 		}
 	}
 
-	abu.InventoryDate = time.Now()
-	abu.BuylistDate = time.Now()
+	abu.inventoryDate = time.Now()
+	abu.buylistDate = time.Now()
 
 	return nil
 }
@@ -259,8 +259,8 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "ABU Games"
 	info.Shorthand = "ABU"
-	info.InventoryTimestamp = abu.InventoryDate
-	info.BuylistTimestamp = abu.BuylistDate
+	info.InventoryTimestamp = abu.inventoryDate
+	info.BuylistTimestamp = abu.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }
