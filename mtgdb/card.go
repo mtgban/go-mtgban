@@ -234,6 +234,51 @@ func (c *Card) isARNDarkMana() bool {
 	return mtgjson.NormContains(c.Variation, "dark")
 }
 
+func (c *Card) isArena() bool {
+	return strings.Contains(c.Variation, "Arena")
+}
+
+func (c *Card) arenaYear(maybeYear string) string {
+	if maybeYear == "" {
+		switch {
+		case strings.Contains(c.Variation, "Tony Roberts"):
+			maybeYear = "1996"
+		case strings.Contains(c.Variation, "Urza"),
+			strings.Contains(c.Variation, "Saga"),
+			strings.Contains(c.Variation, "Anthony S. Waters"),
+			strings.Contains(c.Variation, "Donato Giancola"):
+			maybeYear = "1999"
+		case strings.Contains(c.Variation, "Mercadian"),
+			strings.Contains(c.Variation, "Masques"):
+			maybeYear = "2000"
+		case strings.Contains(c.Variation, "Ice Age"),
+			strings.Contains(c.Variation, "IA"),
+			strings.Contains(c.Variation, "Pat Morrissey"),
+			strings.Contains(c.Variation, "Anson Maddocks"),
+			strings.Contains(c.Variation, "Tom Wanerstrand"),
+			strings.Contains(c.Variation, "Christopher Rush"),
+			strings.Contains(c.Variation, "Douglas Shuler"):
+			maybeYear = "2001"
+		case strings.Contains(c.Variation, "Mark Poole"):
+			maybeYear = "2002"
+		case strings.Contains(c.Variation, "Rob Alexander"):
+			maybeYear = "2003"
+		case strings.Contains(c.Variation, "Don Thompson"):
+			maybeYear = "2005"
+		case strings.Contains(c.Variation, "Beta"):
+			switch c.Name {
+			case "Forest":
+				maybeYear = "2001"
+			case "Island":
+				maybeYear = "2002"
+			}
+		}
+	} else if c.Name == "Forest" && strings.Contains(maybeYear, "2002") {
+		maybeYear = "2001"
+	}
+	return maybeYear
+}
+
 func (c *Card) isWorldChamp() bool {
 	return mtgjson.NormContains(c.Edition, "Pro Tour Collect") ||
 		mtgjson.NormContains(c.Edition, "World Championship") ||
