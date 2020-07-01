@@ -113,6 +113,37 @@ func Set(codeName string) (*mtgjson.Set, error) {
 	return nil, fmt.Errorf("set %s not found", codeName)
 }
 
+func HasPromoPackPrinting(name string) bool {
+	if internal == nil {
+		return false
+	}
+
+	if strings.Contains(name, " // ") {
+		name = strings.Split(name, " // ")[0]
+	}
+	card, found := internal.Cards[mtgjson.Normalize(name)]
+	if !found {
+		return false
+	}
+
+	for _, code := range card.Printings {
+		set, found := internal.Sets[code]
+		if !found || set.IsOnlineOnly {
+			continue
+		}
+		for _, in := range set.Cards {
+			if (card.Name == in.Name || (card.Side == "a" && strings.HasPrefix(in.Name, card.Name))) &&
+				(strings.HasSuffix(in.Number, "p") ||
+					in.HasFrameEffect(mtgjson.FrameEffectInverted) ||
+					IsBasicLand(name)) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func EditionCode2Name(code string) (string, error) {
 	if internal == nil {
 		return "", fmt.Errorf("internal database is not initialized")
