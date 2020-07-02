@@ -3,7 +3,6 @@ package mtgban
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
@@ -58,22 +57,15 @@ func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
 type BaseSeller struct {
 	inventory   InventoryRecord
 	marketplace map[string]InventoryRecord
-	name        string
-	shorthand   string
-	timestamp   time.Time
-	metaonly    bool
+	info        ScraperInfo
 }
 
 func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
 	return seller.inventory, nil
 }
 
-func (seller *BaseSeller) Info() (info ScraperInfo) {
-	info.Name = seller.name
-	info.Shorthand = seller.shorthand
-	info.InventoryTimestamp = seller.timestamp
-	info.MetadataOnly = seller.metaonly
-	return
+func (seller *BaseSeller) Info() ScraperInfo {
+	return seller.info
 }
 
 func (seller *BaseSeller) InventoryForSeller(sellerName string) (InventoryRecord, error) {
@@ -111,20 +103,13 @@ func (seller *BaseSeller) InventoryForSeller(sellerName string) (InventoryRecord
 func NewSellerFromInventory(inventory InventoryRecord, info ScraperInfo) Seller {
 	seller := BaseSeller{}
 	seller.inventory = inventory
-	seller.name = info.Name
-	seller.shorthand = info.Shorthand
-	seller.timestamp = info.InventoryTimestamp
-	seller.metaonly = info.MetadataOnly
+	seller.info = info
 	return &seller
 }
 
 type BaseVendor struct {
-	buylist   BuylistRecord
-	name      string
-	shorthand string
-	timestamp time.Time
-	nocredit  bool
-	grading   func(mtgdb.Card, BuylistEntry) map[string]float64
+	buylist BuylistRecord
+	info    ScraperInfo
 }
 
 func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
@@ -132,27 +117,12 @@ func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
 }
 
 func (vendor *BaseVendor) Info() (info ScraperInfo) {
-	info.Name = vendor.name
-	info.Shorthand = vendor.shorthand
-	info.BuylistTimestamp = vendor.timestamp
-	info.Grading = vendor.grading
-	info.NoCredit = vendor.nocredit
-	if info.Grading == nil {
-		info.Grading = DefaultGrading
-	}
-	return
+	return vendor.info
 }
 
 func NewVendorFromBuylist(buylist BuylistRecord, info ScraperInfo) Vendor {
 	vendor := BaseVendor{}
 	vendor.buylist = buylist
-	vendor.name = info.Name
-	vendor.shorthand = info.Shorthand
-	vendor.timestamp = info.BuylistTimestamp
-	vendor.grading = info.Grading
-	vendor.nocredit = info.NoCredit
-	if vendor.grading == nil {
-		vendor.grading = DefaultGrading
-	}
+	vendor.info = info
 	return &vendor
 }

@@ -42,8 +42,8 @@ func NewSellerFromCSV(r io.Reader) (Seller, error) {
 
 	seller := BaseSeller{}
 	seller.inventory = inventory
-	seller.name = "Base Seller"
-	seller.shorthand = "BS"
+	seller.info.Name = "Base Seller"
+	seller.info.Shorthand = "BS"
 
 	return &seller, nil
 }
@@ -56,9 +56,9 @@ func NewVendorFromCSV(r io.Reader) (Vendor, error) {
 
 	vendor := BaseVendor{}
 	vendor.buylist = buylist
-	vendor.name = "Base Vendor"
-	vendor.shorthand = "BV"
-	vendor.grading = DefaultGrading
+	vendor.info.Name = "Base Vendor"
+	vendor.info.Shorthand = "BV"
+	vendor.info.Grading = DefaultGrading
 
 	return &vendor, nil
 }
