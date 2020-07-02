@@ -280,7 +280,7 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 				continue
 			}
 
-		case strings.Contains(inCard.Variation, "Judge"):
+		case strings.Contains(strings.ToLower(inCard.Variation), "judge"):
 			if maybeYear == "" {
 				if inCard.isGenericExtendedArt() {
 					maybeYear = "2014"
@@ -391,8 +391,10 @@ func (db *Database) filterPrintings(inCard *Card, entry *mtgjson.SimpleCard) (pr
 				continue
 			}
 
-		case strings.Contains(inCard.Variation, "Hero's Path") ||
-			strings.Contains(inCard.Edition, "Hero's Path"):
+		case (strings.Contains(inCard.Variation, "Hero") &&
+			strings.Contains(inCard.Variation, "Path")) ||
+			(strings.Contains(inCard.Edition, "Hero") &&
+				strings.Contains(inCard.Edition, "Path")):
 			switch set.Name {
 			case "Journey into Nyx Hero's Path",
 				"Born of the Gods Hero's Path",

@@ -19,6 +19,7 @@ var cardTable = map[string]string{
 	"Nalathni Dragon 1994":    "Nalathni Dragon",
 	"Merfolk Mesmerist Promo": "Merfolk Mesmerist",
 	"Japanese Shivan Dragon":  "Shivan Dragon",
+	"Incinerate 1996":         "Incinerate",
 
 	"Who/ What/ When/ Where/ Why":  "Who",
 	"Our Market Research Shows...": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
@@ -29,6 +30,7 @@ var tagsTable = []string{
 	"Brawl Deck",
 	"Buy-A-Box Promo",
 	"DotP",
+	"Full Art Promo",
 	"Game Day Promo",
 	"IDW Promo",
 	"Judge Promo",
@@ -233,7 +235,8 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 		}
 	case "Alliances",
 		"Champions of Kamigawa",
-		"Fallen Empires":
+		"Fallen Empires",
+		"Homelands":
 		for _, num := range mtgdb.VariantsTable[edition][cardName] {
 			if (variant == "Ver. 1" && strings.HasSuffix(num, "a")) ||
 				(variant == "Ver. 2" && strings.HasSuffix(num, "b")) ||
@@ -346,6 +349,10 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 			if variant == "Promo" || variant == "Open House Promo" {
 				variant = "Standard Series"
 			}
+		case "Incinerate":
+			if variant == "Arena" {
+				variant = "DCI Legend Membership"
+			}
 
 		case "Curse of Wizardry",
 			"Kor Duelist",
@@ -396,6 +403,12 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 				}
 			} else if strings.Contains(variant, "Top 8") {
 				variant = strings.Replace(variant, "Top 8", "", 1)
+			}
+
+			if variant == "123/259 Walmart Promo" {
+				variant = "Walmart Promo"
+			} else if variant == "165/259 RNA Prerelease Promo" {
+				variant = "Prerelease"
 			}
 		}
 	}

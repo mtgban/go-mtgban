@@ -83,6 +83,7 @@ var EditionTable = map[string]string{
 	"Secret Lair Drop Series": "Secret Lair Drop",
 	"Secret Lair Drop Sets":   "Secret Lair Drop",
 	"Secret Lair Full Art":    "Secret Lair Drop",
+	"SLD Stained Glass Promo": "Secret Lair Drop Promos",
 	"Stained Glass":           "Secret Lair Drop Promos",
 	"Stained Glass Art":       "Secret Lair Drop Promos",
 
