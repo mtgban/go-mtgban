@@ -216,6 +216,7 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
+	info.CountryFlag = "🇮🇹"
 	info.InventoryTimestamp = mc.inventoryDate
 	return
 }

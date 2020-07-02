@@ -345,8 +345,9 @@ func (ftf *FaceToFace) Buylist() (mtgban.BuylistRecord, error) {
 }
 
 func (ftf *FaceToFace) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Face to Face 🇨🇦"
+	info.Name = "Face to Face"
 	info.Shorthand = "FTF"
+	info.CountryFlag = "🇨🇦"
 	info.InventoryTimestamp = ftf.inventoryDate
 	info.BuylistTimestamp = ftf.buylistDate
 	info.Grading = mtgban.DefaultGrading

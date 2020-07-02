@@ -36,6 +36,7 @@ type BuylistEntry struct {
 type ScraperInfo struct {
 	Name               string
 	Shorthand          string
+	CountryFlag        string
 	InventoryTimestamp time.Time
 	BuylistTimestamp   time.Time
 	MetadataOnly       bool
