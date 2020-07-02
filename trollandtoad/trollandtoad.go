@@ -266,6 +266,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 				TradePrice: price * 1.30,
 				Quantity:   qty,
 				PriceRatio: priceRatio,
+				URL:        "https://www2.trollandtoad.com/buylist/#!/search/M/" + card.Name,
 			},
 		}
 	}
