@@ -1,7 +1,7 @@
 package abugames
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
@@ -84,17 +84,17 @@ func preprocess(card *ABUCard) (*mtgdb.Card, error) {
 	}
 
 	if lang != "EN" || strings.Contains(card.Title, "Non-English") {
-		return nil, fmt.Errorf("non-english card")
+		return nil, errors.New("non-english card")
 	}
 
 	// Non-Singles magic cards
 	switch card.Layout {
 	case "Scheme", "Plane", "Phenomenon":
-		return nil, fmt.Errorf("non-single card")
+		return nil, errors.New("non-single card")
 	}
 	if strings.Contains(card.DisplayTitle, "Oversized") ||
 		strings.Contains(card.DisplayTitle, "Charlie Brown") {
-		return nil, fmt.Errorf("non-single card")
+		return nil, errors.New("non-single card")
 	}
 	// Non-existing cards
 	switch card.DisplayTitle {
@@ -103,16 +103,16 @@ func preprocess(card *ABUCard) (*mtgdb.Card, error) {
 		"Beast of Burden (Prerelease - No Expansion Symbol) - FOIL",
 		"Hymn to Tourach (B - Mark Justice - 1996)",
 		"Mountain (6th Edition 343 - Mark Le Pine - 1999)":
-		return nil, fmt.Errorf("untracked card")
+		return nil, errors.New("untracked card")
 	}
 	// Unique cards
 	if strings.HasPrefix(card.Title, "ID#") {
-		return nil, fmt.Errorf("unique card")
+		return nil, errors.New("unique card")
 	}
 	switch card.Id {
 	case "1604919", "1604921", "1604922", // Living Twister
 		"1604802", "1604801", "1604799": // Commence the Endgame
-		return nil, fmt.Errorf("duplicated card")
+		return nil, errors.New("duplicated card")
 	}
 
 	isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil")

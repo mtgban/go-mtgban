@@ -1,7 +1,7 @@
 package strikezone
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
@@ -12,7 +12,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 
 	// skip tokens, too many variations
 	if strings.Contains(cardName, "Token") {
-		return nil, fmt.Errorf("Skipping %s", cardName)
+		return nil, errors.New("non-mtg")
 	}
 
 	isFoil := strings.Contains(notes, "Foil")

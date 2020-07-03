@@ -1,7 +1,7 @@
 package cardkingdom
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
 
@@ -73,7 +73,7 @@ func preprocess(card CKCard) (*mtgdb.Card, error) {
 		card.Variation == "Urza's Saga Arena Foil NO SYMBOL" ||
 		card.SKU == "OVERSIZ" ||
 		card.SKU == "PRES-005A" {
-		return nil, fmt.Errorf("skipping %s", card.Name)
+		return nil, errors.New("non-mtg")
 	}
 
 	setCode := ""
@@ -106,7 +106,7 @@ func preprocess(card CKCard) (*mtgdb.Card, error) {
 			}
 		}
 		if len(setCode) == 4 && strings.HasPrefix(setCode, "T") {
-			return nil, fmt.Errorf("unknown sku code %s", setCode)
+			return nil, errors.New("unknown sku format")
 		}
 
 		if (card.Variation == "Game Day Extended Art" ||

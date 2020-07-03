@@ -1,7 +1,7 @@
 package facetoface
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 	"unicode"
 
@@ -162,7 +162,7 @@ func preprocess(cardName, edition string) (string, string, error) {
 	// Skip oversized card sets and unsupported ones
 	switch {
 	case strings.Contains(edition, "Oversized"):
-		return "", "", fmt.Errorf("skipping oversized card set")
+		return "", "", errors.New("oversized set")
 	default:
 		switch edition {
 		case "4th Black Border",
@@ -174,13 +174,13 @@ func preprocess(cardName, edition string) (string, string, error) {
 			"MTG Arena Unused Codes",
 			"Starter 2000", // scryfall missing too many cards
 			"WCD: Blank Cards":
-			return "", "", fmt.Errorf("skipping untracked set")
+			return "", "", errors.New("untracked set")
 		}
 	}
 
 	// Quotes are not escaped
 	if cardName == "" || strings.HasSuffix(cardName, ", ") {
-		return "", "", fmt.Errorf("empty card name")
+		return "", "", errors.New("empty card name")
 	}
 
 	// Skip tokens and similar cards
@@ -189,9 +189,9 @@ func preprocess(cardName, edition string) (string, string, error) {
 		"Legends Rules Card", "Energy Reserve", "Faerie Rogue",
 		"Experience Counter", "Experience Card", "Poison Counter",
 		"Goblin", "Pegasus", "Sheep", "Soldier", "Squirrel", "Zombie":
-		return "", "", fmt.Errorf("not a real card")
+		return "", "", errors.New("not a real card")
 	case "Mana Crypt - Book Promo (White Border Version)":
-		return "", "", fmt.Errorf("non-english card")
+		return "", "", errors.New("non-english card")
 	default:
 		if strings.Contains(strings.ToLower(cardName), "token") ||
 			strings.Contains(cardName, "Checklist") ||
@@ -206,20 +206,19 @@ func preprocess(cardName, edition string) (string, string, error) {
 			strings.Contains(cardName, "Pre-release Guild Card") ||
 			strings.Contains(cardName, "DEPRECATED") ||
 			strings.Contains(cardName, "Emblem") {
-			return "", "", fmt.Errorf("not a real card")
+			return "", "", errors.New("not-mtg")
 		}
 		// Skip non-english versions of this card
 		if strings.Contains(cardName, "Ajani Goldmane") &&
 			strings.Contains(cardName, "Japanese") {
-			return "", "", fmt.Errorf("non-english card")
+			return "", "", errors.New("non-english card")
 		}
 	}
 
 	if cardName != "Sealed Fate" {
-		if strings.Contains(cardName, " Sealed") {
-			return "", "", fmt.Errorf("sealed card")
-		} else if strings.Contains(cardName, "Sealed ") {
-			return "", "", fmt.Errorf("sealed card")
+		if strings.Contains(cardName, " Sealed") ||
+			strings.Contains(cardName, "Sealed ") {
+			return "", "", errors.New("sealed card")
 		}
 	}
 
@@ -361,7 +360,7 @@ func preprocess(cardName, edition string) (string, string, error) {
 		(cardName == "Bind" && edition == "Invasion") ||
 		(cardName == "Shivan Dragon (Japanese Magazine Promo)" && edition == "Non-Foil Promos") ||
 		(cardName == "Start // Finish" && edition == "Amonkhet") {
-		return "", "", fmt.Errorf("card cannot be represented in mtgjson")
+		return "", "", errors.New("card cannot be represented in mtgjson")
 	}
 
 	return cardName, edition, nil

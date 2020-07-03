@@ -1,7 +1,7 @@
 package magiccorner
 
 import (
-	"fmt"
+	"errors"
 	"path"
 	"strconv"
 	"strings"
@@ -42,14 +42,14 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 		cardName == "The Monarch" ||
 		cardName == "Spirit" ||
 		cardName == "City's Blessing" {
-		return nil, fmt.Errorf("Skipping %s", cardName)
+		return nil, errors.New("non-mtg")
 	}
 
 	// Circle of Protection: Red in Revised EU FWB???
 	if card.Variants[index].Id == 223958 ||
 		// Excruciator RAV duplicate card
 		card.Variants[index].Id == 108840 {
-		return nil, fmt.Errorf("Skipping unsupported config %s/%s", cardName, edition)
+		return nil, errors.New("duplicate")
 	}
 
 	isFoil := card.Variants[index].Foil == "Foil"

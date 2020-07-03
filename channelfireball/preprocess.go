@@ -1,7 +1,7 @@
 package channelfireball
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
@@ -76,12 +76,12 @@ func preprocess(cardName, edition string) (string, string, error) {
 	// Skip oversized card sets
 	switch {
 	case (strings.Contains(edition, "{") && strings.Contains(edition, "}")):
-		return "", "", fmt.Errorf("skipping oversized card set")
+		return "", "", errors.New("skipping oversized card set")
 	}
 
 	// Quotes are not escaped
 	if cardName == "" || strings.HasSuffix(cardName, ", ") {
-		return "", "", fmt.Errorf("empty card name")
+		return "", "", errors.New("empty card name")
 	}
 
 	// Skip untracked cards
@@ -89,7 +89,7 @@ func preprocess(cardName, edition string) (string, string, error) {
 	case "Blaze (Alternate Art - Deck)",
 		"Blaze (Alternate Art - Booster)",
 		"Crystalline Sliver - Arena 2003":
-		return "", "", fmt.Errorf("not tracked in mtgjson")
+		return "", "", errors.New("not tracked in mtgjson")
 	}
 
 	// Skip tokens and similar cards
@@ -98,20 +98,20 @@ func preprocess(cardName, edition string) (string, string, error) {
 		"Goblin", "Pegasus", "Sheep", "Soldier", "Squirrel", "Zombie",
 		"Standard Placeholder", "Blank Card", "Splendid Genesis",
 		"Black ": // Black "M" Filler Card
-		return "", "", fmt.Errorf("not a real card")
+		return "", "", errors.New("not a real card")
 	default:
 		if strings.Contains(strings.ToLower(cardName), "token") ||
 			strings.Contains(cardName, "Checklist") ||
 			strings.Contains(cardName, "Filler") ||
 			strings.Contains(cardName, "APAC Land Set") ||
 			strings.Contains(cardName, "Emblem") {
-			return "", "", fmt.Errorf("not a real card")
+			return "", "", errors.New("not a real card")
 		}
 	}
 
 	// Skip non-english versions of this card
 	if strings.HasPrefix(cardName, "Mana Crypt (Book Promo) (") {
-		return "", "", fmt.Errorf("non-english card")
+		return "", "", errors.New("non-english card")
 	}
 
 	// Convert UTF-8 dash in ASHII dash

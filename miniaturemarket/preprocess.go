@@ -1,7 +1,7 @@
 package miniaturemarket
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
@@ -84,9 +84,9 @@ func preprocess(title string) (*mtgdb.Card, error) {
 	edition := fields[1]
 	if strings.Contains(edition, " (") {
 		if edition == "4th Edition (Alternate)" {
-			return nil, fmt.Errorf("untracked edition")
+			return nil, errors.New("untracked edition")
 		} else if strings.Contains(edition, "(Preorder)") {
-			return nil, fmt.Errorf("too soon")
+			return nil, errors.New("too soon")
 		}
 		fields = mtgdb.SplitVariants(edition)
 		edition = fields[0]
@@ -94,7 +94,7 @@ func preprocess(title string) (*mtgdb.Card, error) {
 
 	if edition == "Ikoria" || edition == "Ikoria: Lair of Behemoths" ||
 		edition == "Commander 2020" || edition == "Commander 2020: Ikoria" {
-		return nil, fmt.Errorf("too soon")
+		return nil, errors.New("too soon")
 	}
 
 	// Skip non-singles cards
@@ -103,18 +103,18 @@ func preprocess(title string) (*mtgdb.Card, error) {
 		strings.Contains(cardName, "Checklist Card") ||
 		strings.Contains(cardName, "Punch Card") ||
 		strings.Contains(cardName, "Oversized") {
-		return nil, fmt.Errorf("non-single card")
+		return nil, errors.New("non-single card")
 	}
 	switch cardName {
 	case "Manifest", "Morph", "Energy Reserve", "City's Blessing", "On an Adventure",
 		"Experience Counter", "Poison Counter", "The Monarch":
-		return nil, fmt.Errorf("non-single card")
+		return nil, errors.New("non-single card")
 	}
 
 	if strings.HasPrefix(cardName, "Mana Crypt") &&
 		strings.Contains(cardName, "(Media Insert)") &&
 		!strings.Contains(cardName, "(English)") {
-		return nil, fmt.Errorf("non-english card")
+		return nil, errors.New("non-english card")
 	}
 
 	switch edition {
@@ -130,18 +130,18 @@ func preprocess(title string) (*mtgdb.Card, error) {
 			}
 		}
 	case "Modern Horizons Art Series":
-		return nil, fmt.Errorf("untracked edition")
+		return nil, errors.New("untracked edition")
 	case "Legends":
 		if strings.Contains(cardName, "Italian") {
-			return nil, fmt.Errorf("non-english edition")
+			return nil, errors.New("non-english edition")
 		}
 	case "Portal Three Kingdoms":
 		if strings.Contains(cardName, "Chinese") || strings.Contains(cardName, "Japanese") {
-			return nil, fmt.Errorf("non-english edition")
+			return nil, errors.New("non-english edition")
 		}
 	case "Duel Decks: Jace vs. Chandra":
 		if strings.Contains(cardName, "Japanese") {
-			return nil, fmt.Errorf("non-english edition")
+			return nil, errors.New("non-english edition")
 		}
 	}
 
