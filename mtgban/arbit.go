@@ -1,6 +1,10 @@
 package mtgban
 
-import "github.com/kodabb/go-mtgban/mtgdb"
+import (
+	"strings"
+
+	"github.com/kodabb/go-mtgban/mtgdb"
+)
 
 const (
 	DefaultArbitMinDiff      = 0.2
@@ -285,10 +289,31 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 		if card.Rarity != "M" && card.Rarity != "R" {
 			continue
 		}
+		switch card.Edition {
+		case "Unglued", "Unhinged", "Unstable", "Unsanctioned":
+			continue
+		}
 		for _, entry := range entries {
-			if (!card.Foil && card.Rarity == "M" && entry.Price <= 0.25) ||
-				(!card.Foil && card.Rarity == "R" && entry.Price <= 0.07) ||
-				(card.Foil && entry.Price <= 0.05) {
+			pennyMythic := !card.Foil && card.Rarity == "M" && entry.Price <= 0.25
+			pennyRare := !card.Foil && card.Rarity == "R" && entry.Price <= 0.07
+			pennyFoil := card.Foil && entry.Price <= 0.05
+			pennyInteresting := false
+			switch {
+			case strings.Contains(card.Name, "Signet") && entry.Price <= 0.20:
+				pennyInteresting = true
+			case strings.Contains(card.Name, "Talisman") && entry.Price <= 0.20:
+				pennyInteresting = true
+			case strings.Contains(card.Name, "Diamond") && entry.Price <= 0.20:
+				pennyInteresting = true
+			case strings.Contains(card.Name, "Curse of") && entry.Price <= 0.25:
+				pennyInteresting = true
+			case card.Name == "Sakura-Tribe Elder" && entry.Price <= 0.20:
+				pennyInteresting = true
+			case card.Name == "Sol Ring" && entry.Price <= 1.50:
+				pennyInteresting = true
+			}
+
+			if pennyMythic || pennyRare || pennyFoil || pennyInteresting {
 				result = append(result, PennystockEntry{
 					Card:           card,
 					InventoryEntry: entry,
