@@ -403,7 +403,14 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
-	err := csvWriter.Write(MismatchHeader)
+	hasExtraSeller := false
+	header := MismatchHeader
+	if len(mismatch) > 0 && mismatch[0].InventoryEntry.SellerName != "" {
+		header = append(header, "Seller")
+		hasExtraSeller = true
+	}
+
+	err := csvWriter.Write(header)
 	if err != nil {
 		return err
 	}
@@ -416,7 +423,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 			foil = "FOIL"
 		}
 
-		err = csvWriter.Write([]string{
+		record := []string{
 			card.Id,
 			card.Name,
 			card.Edition,
@@ -427,7 +434,11 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", entry.Difference),
 			fmt.Sprintf("%0.2f%%", entry.Spread),
-		})
+		}
+		if hasExtraSeller {
+			record = append(record, inv.SellerName)
+		}
+		err = csvWriter.Write(record)
 		if err != nil {
 			return err
 		}
