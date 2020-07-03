@@ -46,6 +46,7 @@ var cardTable = map[string]string{
 	"Spawnrithe":                 "Spawnwrithe",
 	"Hinterland Drakr":           "Hinterland Drake",
 	"Warmonger ":                 "Warmonger",
+	"Fierce Impact":              "Fierce Empath",
 
 	"Nighthowler GAME DAY FULL ART": "Nighthowler",
 
@@ -318,7 +319,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 			"Azorius Charm",
 			"Azorius Guildmage",
 			"Azorius Herald",
-
+			"Dovescape",
 			"Stoic Ephemera",
 			"Windreaver",
 			"Court Hussar",
