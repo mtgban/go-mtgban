@@ -349,6 +349,8 @@ var allVariants = map[string]map[string]string{
 		"female":              "60a",
 		"male":                "60b",
 		"two eyes":            "60a",
+		"soldeviadanate":      "60a",
+		"az142":               "60b",
 		"one eye":             "60b",
 		"woman w/ face-paint": "60a",
 		"man with cloak":      "60b",
