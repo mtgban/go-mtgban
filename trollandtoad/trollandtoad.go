@@ -54,7 +54,7 @@ type responseChan struct {
 
 func (tat *Trollandtoad) printf(format string, a ...interface{}) {
 	if tat.LogCallback != nil {
-		tat.LogCallback("[TaT] "+format, a...)
+		tat.LogCallback("[TAT] "+format, a...)
 	}
 }
 
@@ -342,7 +342,7 @@ func (tat *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
 
 func (tat *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
-	info.Shorthand = "TaT"
+	info.Shorthand = "TAT"
 	info.InventoryTimestamp = tat.inventoryDate
 	info.BuylistTimestamp = tat.buylistDate
 	info.Grading = mtgban.DefaultGrading
