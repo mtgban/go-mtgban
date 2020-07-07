@@ -24,39 +24,28 @@ type MMBuyBack struct {
 	MtgCondition string `json:"mtg_condition"`
 }
 
-type MMPagination struct {
-	TotalResults   int `json:"totalResults"`
-	Begin          int `json:"begin"`
-	End            int `json:"end"`
-	CurrentPage    int `json:"currentPage"`
-	TotalPages     int `json:"totalPages"`
-	PreviousPage   int `json:"previousPage"`
-	NextPage       int `json:"nextPage"`
-	PerPage        int `json:"perPage"`
-	DefaultPerPage int `json:"defaultPerPage"`
+type MMProduct struct {
+	UUID     string `json:"uniqueId"`
+	CardName string `json:"mtg_cardname"`
+	Edition  string `json:"mtg_set"`
+	Title    string `json:"title"`
+	URL      string `json:"productUrl"`
+	Variants []struct {
+		Title    string  `json:"vTitle"`
+		Price    float64 `json:"vPrice"`
+		Quantity int     `json:"vQty"`
+	} `json:"variants"`
 }
 
-type MMSearchSpring struct {
-	Pagination MMPagination `json:"pagination"`
-	Results    string       `json:"results"`
-}
-
-type MMPrivateInfoGroup struct {
-	PID          string  `json:"pid"`
-	SKU          string  `json:"sku"`
-	Price        float64 `json:"price"`
-	RegularPrice string  `json:"regular_price"`
-	Cost         string  `json:"cost"`
-	Name         string  `json:"name"`
-	Image        string  `json:"image"`
-	Stock        int     `json:"stock"`
-	InStock      string  `json:"instock"`
-	Default      string  `json:"default"`
+type MMSearchResponse struct {
+	Response struct {
+		NumberOfProducts int         `json:"numberOfProducts"`
+		Products         []MMProduct `json:"products"`
+	}
 }
 
 type MMClient struct {
-	client         *http.Client
-	resultsPerPage int
+	client *http.Client
 }
 
 const (
@@ -64,66 +53,39 @@ const (
 	mmBuyBackSearchURL = "https://www.miniaturemarket.com/buyback/data/productsearch/"
 
 	MMCategoryMtgSingles    = "1466"
-	MMDefaultResultsPerPage = 30
+	MMDefaultResultsPerPage = 32
 
-	mmSearchSpringURL = `https://api.searchspring.net/api/search/search.json?format=json&websiteKey=6f9c319d45519a85863e68be9c3f5d81&filter.stock_status=In+Stock&bgfilter.category_hierarchy=Magic+The+Gathering%2FMTG+Singles`
+	mmSearchURL = `https://search.unbxd.io/fb500edbf5c28edfa74cc90561fe33c3/prod-miniaturemarket-com811741582229555/category?format=json&version=V2&start=0&rows=0&variants=true&variants.count=10&fields=*&facet.multiselect=true&selectedfacet=true&pagetype=boolean&p=categoryPath%3A%22Magic+The+Gathering%3EMTG+Singles%22&filter=categoryPath1_fq:%22Magic%20The%20Gathering%22&filter=categoryPath2_fq:%22Magic%20The%20Gathering%3EMTG%20Singles%22&filter=stock_status_uFilter:%22In%20Stock%22&filter=categoryPath3_fq:%22Magic%20The%20Gathering%3EMTG%20Singles%3EAll%20Sets%22`
 )
 
 func NewMMClient() *MMClient {
 	mm := MMClient{}
 	mm.client = http.NewClient()
 	mm.client.Logger = nil
-	mm.resultsPerPage = MMDefaultResultsPerPage
 	return &mm
 }
 
-func (mm *MMClient) GetPagination(resultsPerPage int) (*MMPagination, error) {
-	mm.resultsPerPage = resultsPerPage
-
-	u, err := url.Parse(mmSearchSpringURL)
+func (mm *MMClient) NumberOfProducts() (int, error) {
+	resp, err := mm.query(0, 0)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-
-	q := u.Query()
-	q.Set("resultLayout", "none")
-	q.Set("resultsPerPage", fmt.Sprint(resultsPerPage))
-	u.RawQuery = q.Encode()
-
-	resp, err := mm.client.Get(u.String())
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var searchspring MMSearchSpring
-	err = json.Unmarshal(data, &searchspring)
-	if err != nil {
-		return nil, err
-	}
-
-	return &searchspring.Pagination, nil
+	return resp.Response.NumberOfProducts, nil
 }
 
-func (mm *MMClient) SearchSpringPage(page int, orderDesc bool) (*MMSearchSpring, error) {
-	resultsPerPage := mm.resultsPerPage
+func (mm *MMClient) GetInventory(start int) (*MMSearchResponse, error) {
+	return mm.query(start, MMDefaultResultsPerPage)
+}
 
-	u, err := url.Parse(mmSearchSpringURL)
+func (mm *MMClient) query(start, maxResults int) (*MMSearchResponse, error) {
+	u, err := url.Parse(mmSearchURL)
 	if err != nil {
 		return nil, err
 	}
 
 	q := u.Query()
-	q.Set("page", fmt.Sprint(page))
-	q.Set("resultsPerPage", fmt.Sprint(resultsPerPage))
-	if orderDesc {
-		q.Set("sort.name", "desc")
-	}
+	q.Set("start", fmt.Sprint(start))
+	q.Set("rows", fmt.Sprint(maxResults))
 	u.RawQuery = q.Encode()
 
 	resp, err := mm.client.Get(u.String())
@@ -137,13 +99,13 @@ func (mm *MMClient) SearchSpringPage(page int, orderDesc bool) (*MMSearchSpring,
 		return nil, err
 	}
 
-	var searchspring MMSearchSpring
-	err = json.Unmarshal(data, &searchspring)
+	var search MMSearchResponse
+	err = json.Unmarshal(data, &search)
 	if err != nil {
 		return nil, err
 	}
 
-	return &searchspring, nil
+	return &search, nil
 }
 
 func (mm *MMClient) BuyBackPage(category string, page int) ([]MMBuyBack, error) {

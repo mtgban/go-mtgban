@@ -1,13 +1,10 @@
 package miniaturemarket
 
 import (
-	"encoding/json"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/PuerkitoBio/goquery"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgdb"
@@ -53,55 +50,51 @@ func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mm *Miniaturemarket) processPage(channel chan<- respChan, page int, secondHalf bool) error {
-	spring, err := mm.client.SearchSpringPage(page, secondHalf)
+func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error {
+	resp, err := mm.client.GetInventory(start)
 	if err != nil {
-		return err
+		return nil
 	}
 
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(spring.Results))
-	if err != nil {
-		return err
-	}
+	for _, product := range resp.Response.Products {
+		product.UUID = strings.TrimSuffix(product.UUID, "-ROOT")
 
-	doc.Find("div.grouped-product").Each(func(i int, s *goquery.Selection) {
-		title := strings.TrimSpace(s.Find("h3").Text())
-		theCard, err := preprocess(title)
+		theCard, err := preprocess(product.Title, product.UUID)
 		if err != nil {
-			return
+			continue
 		}
 
-		var infoGroups []MMPrivateInfoGroup
-		data := strings.Replace(s.Find("div.grouped-product-info").Text(), "|", ",", -1)
-		// Adjust raw data to be compatible with MMPrivateInfoGroup
-		data = strings.Replace(data, "\"image\":false", "\"image\":\"\"", -1)
-		data = strings.Replace(data, "\"instock\":0", "\"instock\":\"0\"", -1)
-		data = strings.Replace(data, "\"price\":\"", "\"price\":", -1)
-		data = strings.Replace(data, "\",\"regular_price", ",\"regular_price", -1)
-		err = json.Unmarshal([]byte(data), &infoGroups)
+		var ccfoil *mtgdb.Card
+		cc, err := theCard.Match()
 		if err != nil {
-			mm.printf("%s - %s", data, err.Error())
-			return
+			mm.printf("%q", theCard)
+			mm.printf("%q", product)
+			mm.printf("%v", err)
+			continue
 		}
 
-		for _, group := range infoGroups {
-			if group.Price <= 0 || group.Stock <= 0 {
+		for _, variant := range product.Variants {
+			if variant.Quantity == 0 || variant.Price <= 0 {
 				continue
 			}
 
-			// Needed to discern duplicates of this particular card
-			if theCard.Name == "Sorcerous Spyglass" {
-				switch group.SKU {
-				case "M-660-012-1NM", "M-660-012-3F", "M-650-124-3F":
-					theCard.Variation += "XLN"
-				case "M-660-016-1NM", "M-660-016-3F", "M-650-176-3F":
-					theCard.Variation += "ELD"
+			isFoil := strings.HasPrefix(variant.Title, "Foil")
+			if isFoil {
+				if cc.Foil {
+					ccfoil = cc
+				} else if ccfoil == nil {
+					theCard.Foil = true
+					ccfoil, err = theCard.Match()
+					if err != nil {
+						mm.printf("%q", theCard)
+						mm.printf("%q", product)
+						mm.printf("%v", err)
+						continue
+					}
 				}
 			}
 
-			theCard.Foil = strings.HasPrefix(group.Name, "Foil")
-
-			cond := group.Name
+			cond := variant.Title
 			switch cond {
 			case "Near Mint", "Foil Near Mint", "Foil Near MInt":
 				cond = "NM"
@@ -109,82 +102,59 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, page int, second
 				cond = "MP"
 			default:
 				mm.printf("Unsupported %s condition", cond)
-				return
+				continue
 			}
 
-			cc, err := theCard.Match()
-			if err != nil {
-				mm.printf("%q", theCard)
-				mm.printf("%s", title)
-				mm.printf("%v", err)
-				return
-			}
-
-			fields := strings.Split(group.SKU, "-")
-			urlPage := strings.Join(fields[:len(fields)-1], "-") + ".html"
-
-			link := "http://www.miniaturemarket.com/" + urlPage
+			link := product.URL
 			if mm.Affiliate != "" {
 				link += "?utm_source=" + mm.Affiliate
 			}
+
+			outCard := cc
+			if isFoil {
+				outCard = ccfoil
+			}
 			channel <- respChan{
-				card: cc,
+				card: outCard,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
-					Price:      group.Price,
-					Quantity:   group.Stock,
+					Price:      variant.Price,
+					Quantity:   variant.Quantity,
 					URL:        link,
 				},
 			}
 		}
-	})
+	}
 
 	return nil
 }
 
-// Scrape returns an array of Entry, containing pricing and card information
 func (mm *Miniaturemarket) scrape() error {
 	pages := make(chan int)
 	channel := make(chan respChan)
 	var wg sync.WaitGroup
 
-	// The normal API roughly returns half of the elements, so we query it
-	// twice, sorting by name in two different ways.
-	// In order to reduce the number of false duplicates, check how many
-	// elements are left over, and add an appopriate number of fake pages
-	// that will be queried in reverse order.
-	pagination, err := mm.client.GetPagination(MMDefaultResultsPerPage)
+	totalProducts, err := mm.client.NumberOfProducts()
 	if err != nil {
 		return err
 	}
-	lastPage, err := mm.client.SearchSpringPage(pagination.TotalPages, false)
-	if err != nil {
-		return err
-	}
-	leftover := lastPage.Pagination.TotalResults - lastPage.Pagination.End
-	extraPages := leftover/MMDefaultResultsPerPage + 2
-	totalPages := pagination.TotalPages + extraPages
-
-	mm.printf("Parsing %d pages with %d extra (%d total)", pagination.TotalPages, extraPages, totalPages)
+	mm.printf("Parsing %d items", totalProducts)
 
 	for i := 0; i < mm.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for page := range pages {
-				// Restore normal numbering if we need to sort Z-A
-				secondHalf := false
-				if page > pagination.TotalPages {
-					secondHalf = true
-					page = page - pagination.TotalPages
+			for start := range pages {
+				err = mm.processPage(channel, start)
+				if err != nil {
+					mm.printf(err.Error())
 				}
-				mm.processPage(channel, page, secondHalf)
 			}
 			wg.Done()
 		}()
 	}
 
 	go func() {
-		for i := 1; i <= totalPages; i++ {
+		for i := 0; i < totalProducts; i += MMDefaultResultsPerPage {
 			pages <- i
 		}
 		close(pages)
@@ -196,7 +166,7 @@ func (mm *Miniaturemarket) scrape() error {
 	for record := range channel {
 		err := mm.inventory.Add(record.card, record.invEntry)
 		// Do not print an error if we expect a duplicate due to the sorting
-		if err != nil && mm.inventory[*record.card][0].URL != record.invEntry.URL {
+		if err != nil {
 			mm.printf("%v", err)
 			continue
 		}
@@ -236,22 +206,12 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 			continue
 		}
 
-		theCard, err := preprocess(card.Name)
+		theCard, err := preprocess(card.Name, card.SKU)
 		if err != nil {
 			continue
 		}
 
 		theCard.Foil = card.IsFoil
-
-		// Needed to discern duplicates of this particular card
-		if theCard.Name == "Sorcerous Spyglass" {
-			switch card.SKU {
-			case "M-660-012-1NM", "M-660-012-3F", "M-650-124-3F":
-				theCard.Variation += "XLN"
-			case "M-660-016-1NM", "M-660-016-3F", "M-650-176-3F":
-				theCard.Variation += "ELD"
-			}
-		}
 
 		cc, err := theCard.Match()
 		if err != nil {

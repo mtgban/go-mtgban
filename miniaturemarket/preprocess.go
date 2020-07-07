@@ -78,7 +78,7 @@ var card2setTable = map[string]string{
 	"Wasteland (Judge Rewards Steve Belledin)":      "Judge Gift Cards 2015",
 }
 
-func preprocess(title string) (*mtgdb.Card, error) {
+func preprocess(title, sku string) (*mtgdb.Card, error) {
 	fields := strings.Split(title, " - ")
 	cardName := fields[0]
 	edition := fields[1]
@@ -92,29 +92,31 @@ func preprocess(title string) (*mtgdb.Card, error) {
 		edition = fields[0]
 	}
 
-	if edition == "Ikoria" || edition == "Ikoria: Lair of Behemoths" ||
-		edition == "Commander 2020" || edition == "Commander 2020: Ikoria" {
-		return nil, errors.New("too soon")
-	}
-
 	// Skip non-singles cards
-	if strings.Contains(cardName, "Token") ||
-		strings.Contains(cardName, "Emblem") ||
-		strings.Contains(cardName, "Checklist Card") ||
-		strings.Contains(cardName, "Punch Card") ||
-		strings.Contains(cardName, "Oversized") {
-		return nil, errors.New("non-single card")
-	}
 	switch cardName {
-	case "Manifest", "Morph", "Energy Reserve", "City's Blessing", "On an Adventure",
-		"Experience Counter", "Poison Counter", "The Monarch":
+	case "City's Blessing",
+		"Companion",
+		"Energy Reserve",
+		"Experience Counter",
+		"Manifest",
+		"Morph",
+		"On an Adventure",
+		"Poison Counter",
+		"The Monarch":
 		return nil, errors.New("non-single card")
-	}
-
-	if strings.HasPrefix(cardName, "Mana Crypt") &&
-		strings.Contains(cardName, "(Media Insert)") &&
-		!strings.Contains(cardName, "(English)") {
-		return nil, errors.New("non-english card")
+	default:
+		switch {
+		case strings.Contains(cardName, "Token"),
+			strings.Contains(cardName, "Emblem"),
+			strings.Contains(cardName, "Checklist Card"),
+			strings.Contains(cardName, "Punch Card"),
+			strings.Contains(cardName, "Oversized"):
+			return nil, errors.New("non-single card")
+		case strings.HasPrefix(cardName, "Mana Crypt") &&
+			strings.Contains(cardName, "(Media Insert)") &&
+			!strings.Contains(cardName, "(English)"):
+			return nil, errors.New("non-english card")
+		}
 	}
 
 	switch edition {
@@ -173,6 +175,16 @@ func preprocess(title string) (*mtgdb.Card, error) {
 
 	if strings.Contains(title, "(Collector Edition)") && variant == "Alternate Art" {
 		variant = "Borderless"
+	}
+
+	// Need to discern duplicates of this particular card
+	if cardName == "Sorcerous Spyglass" {
+		switch sku {
+		case "M-660-012", "M-650-124", "M-660-012-1NM", "M-660-012-3F", "M-650-124-3F":
+			variant += " XLN"
+		case "M-660-016", "M-650-176", "M-660-016-1NM", "M-660-016-3F", "M-650-176-3F":
+			variant += " ELD"
+		}
 	}
 
 	return &mtgdb.Card{
