@@ -19,6 +19,7 @@ type Miniaturemarket struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
+	Affiliate string
 	client    *MMClient
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -122,13 +123,17 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, page int, second
 			fields := strings.Split(group.SKU, "-")
 			urlPage := strings.Join(fields[:len(fields)-1], "-") + ".html"
 
+			link := "http://www.miniaturemarket.com/" + urlPage
+			if mm.Affiliate != "" {
+				link += "?utm_source=" + mm.Affiliate
+			}
 			channel <- respChan{
 				card: cc,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      group.Price,
 					Quantity:   group.Stock,
-					URL:        "http://www.miniaturemarket.com/" + urlPage,
+					URL:        link,
 				},
 			}
 		}
