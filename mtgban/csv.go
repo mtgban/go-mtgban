@@ -550,7 +550,7 @@ func WritePennyToCSV(penny []PennystockEntry, w io.Writer) error {
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%d", inv.Quantity),
-			fmt.Sprintf("%d", inv.URL),
+			"",
 		}
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
