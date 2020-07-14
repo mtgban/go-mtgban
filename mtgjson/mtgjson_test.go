@@ -6,9 +6,9 @@ import (
 )
 
 func TestLoadAllPrintings(t *testing.T) {
-	allprintingsPath := os.Getenv("ALLPRINTINGS_PATH")
+	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
 	if allprintingsPath == "" {
-		t.Errorf("Need ALLPRINTINGS_PATH variable set to run tests")
+		t.Errorf("Need ALLPRINTINGS5_PATH variable set to run tests")
 		return
 	}
 
