@@ -107,6 +107,7 @@ func (nf *Ninetyfive) parseBL() error {
 			out := &mtgban.BuylistEntry{
 				BuyPrice: price,
 				Quantity: quantity,
+				URL:      "http://www.95mtg.com/buylist/",
 			}
 			err := nf.buylist.Add(cc, out)
 			if err != nil {

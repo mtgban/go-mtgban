@@ -462,6 +462,7 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 				TradePrice: price * 1.35,
 				Quantity:   0,
 				PriceRatio: priceRatio,
+				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",
 			},
 		}
 	})

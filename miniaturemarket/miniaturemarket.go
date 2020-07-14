@@ -239,6 +239,7 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 				TradePrice: price * 1.3,
 				Quantity:   0,
 				PriceRatio: priceRatio,
+				URL:        "https://www.miniaturemarket.com/buyback/",
 			},
 		}
 	}

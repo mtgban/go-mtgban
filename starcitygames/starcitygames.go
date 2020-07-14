@@ -366,6 +366,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 					TradePrice: price * 1.35,
 					Quantity:   0,
 					PriceRatio: priceRatio,
+					URL:        "https://old.starcitygames.com/buylist",
 				},
 			}
 		}
