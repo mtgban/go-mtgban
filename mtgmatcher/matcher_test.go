@@ -1074,6 +1074,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "58625b64-eba5-5e6b-aa79-c5f06039214d",
+		Desc: "clash_pack_alt",
+		In: Card{
+			Name:    "Temple of Mystery",
+			Edition: "Clash Pack Promos",
+		},
+	},
+	MatchTest{
 		Id:   "218dee6b-c9ca-5d09-bec2-5517467db69b",
 		Desc: "variation_has_no_useful_info",
 		In: Card{

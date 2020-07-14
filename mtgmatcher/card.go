@@ -173,13 +173,19 @@ func (c *Card) isJPN() bool {
 }
 
 func (c *Card) isRelease() bool {
-	return Contains(c.Variation, "Release") ||
-		strings.Contains(c.Variation, "Launch")
+	return (!Contains(c.Variation, "Prerelease") &&
+		Contains(c.Variation, "Release")) ||
+		strings.Contains(c.Variation, "Launch") ||
+		(!Contains(c.Edition, "Prerelease") &&
+			Contains(c.Edition, "Release")) ||
+		strings.Contains(c.Edition, "Launch")
 }
 
 func (c *Card) isWPNGateway() bool {
 	return strings.Contains(c.Variation, "WPN") ||
 		Contains(c.Variation, "Gateway") ||
+		Contains(c.Variation, "Wizards Play Network") ||
+		Contains(c.Edition, "Gateway") ||
 		c.Variation == "Euro Promo" // cfb
 }
 
@@ -201,7 +207,8 @@ func (c *Card) isIDWMagazineBook() bool {
 
 func (c *Card) isRewards() bool {
 	return Contains(c.Variation, "Textless") ||
-		Contains(c.Variation, "Reward")
+		Contains(c.Variation, "Reward") ||
+		Contains(c.Edition, "Reward")
 }
 
 func (c *Card) isMagicFest() bool {
@@ -228,7 +235,8 @@ func (c *Card) isARNDarkMana() bool {
 }
 
 func (c *Card) isArena() bool {
-	return strings.Contains(c.Variation, "Arena")
+	return strings.Contains(c.Variation, "Arena") ||
+		strings.Contains(c.Edition, "Arena")
 }
 
 func (c *Card) arenaYear(maybeYear string) string {
@@ -274,6 +282,7 @@ func (c *Card) arenaYear(maybeYear string) string {
 
 func (c *Card) isWorldChamp() bool {
 	return Contains(c.Edition, "Pro Tour Collect") ||
+		Contains(c.Edition, "Pro Tour 1996") ||
 		Contains(c.Edition, "World Championship") ||
 		Contains(c.Edition, "WCD")
 }

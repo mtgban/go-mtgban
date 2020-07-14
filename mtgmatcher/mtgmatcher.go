@@ -295,6 +295,8 @@ func adjustEdition(inCard *Card) {
 	switch {
 	case strings.HasSuffix(edition, "(Collector Edition)"):
 		edition = strings.Replace(edition, " (Collector Edition)", "", 1)
+	case strings.HasSuffix(edition, "Collectors"):
+		edition = strings.TrimSuffix(edition, " Collectors")
 	case strings.HasSuffix(edition, "Extras"):
 		edition = strings.Replace(edition, " Extras", "", 1)
 		edition = strings.Replace(edition, ":", "", 1)

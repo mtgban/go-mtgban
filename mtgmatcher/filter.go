@@ -128,7 +128,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case strings.Contains(inCard.Variation, "Judge"):
+		case strings.Contains(strings.ToLower(inCard.Variation), "judge"):
 			if maybeYear == "" {
 				if inCard.isGenericExtendedArt() {
 					maybeYear = "2014"
@@ -197,7 +197,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
-		case strings.Contains(inCard.Variation, "Clash"):
+		case strings.Contains(inCard.Variation, "Clash") ||
+			strings.Contains(inCard.Edition, "Clash"):
 			switch set.Name {
 			case "Fate Reforged Clash Pack",
 				"Magic 2015 Clash Pack",
@@ -206,8 +207,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case strings.Contains(inCard.Variation, "Hero's Path") ||
-			strings.Contains(inCard.Edition, "Hero's Path"):
+		case (strings.Contains(inCard.Variation, "Hero") && strings.Contains(inCard.Variation, "Path")) ||
+			(strings.Contains(inCard.Edition, "Hero") && strings.Contains(inCard.Edition, "Path")):
 			switch set.Name {
 			case "Born of the Gods Hero's Path",
 				"Journey into Nyx Hero's Path",
