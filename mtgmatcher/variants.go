@@ -349,6 +349,8 @@ var allVariants = map[string]map[string]string{
 		"female":              "60a",
 		"male":                "60b",
 		"two eyes":            "60a",
+		"soldeviadanate":      "60a",
+		"az142":               "60b",
 		"one eye":             "60b",
 		"woman w/ face-paint": "60a",
 		"man with cloak":      "60b",
@@ -556,6 +558,11 @@ var atqVariants = map[string]map[string]string{
 		"winter snow":   "80d",
 
 		"fall": "80c",
+
+		"spring picture": "80a",
+		"summer picture": "80b",
+		"fall picture":   "80c",
+		"winter picture": "80d",
 	},
 	"Strip Mine": map[string]string{
 		"atq-82a-strip-mine": "82a",
@@ -590,6 +597,11 @@ var atqVariants = map[string]map[string]string{
 
 		"even stripe":           "82b",
 		"small tower in forest": "82c",
+
+		"large steppes no tower no sky":  "82a",
+		"cave no tower sky":              "82b",
+		"tower no cave":                  "82c",
+		"small steppes no cave no tower": "82d",
 	},
 	"Urza's Mine": map[string]string{
 		"aq084": "83a",
@@ -694,6 +706,7 @@ var palpVariants = map[string]map[string]string{
 		"apac b taiwan":                                      "10",
 		"apac c australia":                                   "15",
 		"indonesia":                                          "15",
+		"ron spears, graveyard":                              "10",
 		"ron spears, small person":                           "15",
 		"apac set red pack graveyard":                        "10",
 		"apac set clear pack person in swamp":                "15",
@@ -1182,6 +1195,9 @@ var femVariants = map[string]map[string]string{
 		"fe035": "18a",
 		"fe036": "18b",
 		"fe037": "18c",
+		"2":     "18a",
+		"1":     "18b",
+		"3":     "18c",
 	},
 	"Homarid": map[string]string{
 		"fe038": "19a",
