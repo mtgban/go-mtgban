@@ -603,6 +603,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				"European Land Program",
 				"Fallen Empires",
 				"Homelands":
+				// Skip the check if this tag is empty, so that users can notice
+				// there is an aliasing problem
+				if inCard.Variation == "" {
+					continue
+				}
+
 				// Since the check is field by field Foglio may alias Phil or Kaja
 				variation := inCard.Variation
 				if strings.Contains(inCard.Variation, "Foglio") {
@@ -644,6 +650,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			case "Magic Premiere Shop 2005",
 				"GRN Guild Kit",
 				"RNA Guild Kit":
+				// Skip the check if this tag is empty, so that users can notice
+				// there is an aliasing problem
+				if inCard.Variation == "" {
+					continue
+				}
+
 				if !Contains(inCard.Variation, card.Watermark) {
 					continue
 				}
