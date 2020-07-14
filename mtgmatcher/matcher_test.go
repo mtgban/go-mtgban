@@ -1326,7 +1326,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "1a6801e3-e4a9-5dce-8925-59acb624cffd",
+		Id:   "5a8aacf9-dfb4-5d3a-a36e-87b2ef6cca43",
 		Desc: "homelands_flavor_alt",
 		In: Card{
 			Name:      "Folk of An-Havva",

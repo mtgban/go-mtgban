@@ -649,7 +649,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 				// Keep flavor text author only
 				flavor := card.FlavorText
-				if strings.Contains(flavor, "\" —") {
+				if strings.Contains(flavor, "—") {
 					fields := strings.Split(flavor, "—")
 					flavor = fields[len(fields)-1]
 				}
