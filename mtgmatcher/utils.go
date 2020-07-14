@@ -130,8 +130,10 @@ func ExtractNumber(str string) string {
 func ExtractYear(str string) string {
 	fields := strings.Fields(str)
 	for _, field := range fields {
+		// Drop characters that could interfere with the numeric part
 		field = strings.Replace(field, "(", "", -1)
 		field = strings.Replace(field, ")", "", -1)
+		field = strings.Replace(field, ":", "", -1)
 
 		// Handle abbreviations, checking if year is before or after 2000
 		if strings.Contains(field, "'") || strings.HasPrefix(field, "M") {

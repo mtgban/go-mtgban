@@ -1640,6 +1640,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "df552574-7dbd-5bc3-bcd9-ba8d9c745b41",
+		Desc: "wcd_with_correct_sideboard_number",
+		In: Card{
+			Name:      "Krosan Reclamation",
+			Variation: "dz122sb",
+			Edition:   "WCD 2003: Daniel Zink",
+		},
+	},
+	MatchTest{
 		Id:   "0e1e5130-d97a-56f5-9188-5df2f9e965e1",
 		Desc: "wcd_only_the_year",
 		In: Card{

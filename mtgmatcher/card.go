@@ -329,8 +329,8 @@ func (c *Card) worldChampPrefix() (string, bool) {
 		"Wolfgang Eder":        "we",
 	}
 	for player := range players {
-		if Contains(c.Variation, player) {
-			sb := strings.Contains(c.Variation, "SB") ||
+		if Contains(c.Variation, player) || Contains(c.Edition, player) {
+			sb := strings.Contains(strings.ToLower(c.Variation), "sb") ||
 				Contains(c.Variation, "Sideboard")
 			return players[player], sb
 		}
