@@ -140,44 +140,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case strings.Contains(inCard.Variation, "Arena"):
-			if maybeYear == "" {
-				switch {
-				case strings.Contains(inCard.Variation, "Tony Roberts"):
-					maybeYear = "1996"
-				case strings.Contains(inCard.Variation, "Urza"),
-					strings.Contains(inCard.Variation, "Saga"),
-					strings.Contains(inCard.Variation, "Anthony S. Waters"),
-					strings.Contains(inCard.Variation, "Donato Giancola"):
-					maybeYear = "1999"
-				case strings.Contains(inCard.Variation, "Mercadian"),
-					strings.Contains(inCard.Variation, "Masques"):
-					maybeYear = "2000"
-				case strings.Contains(inCard.Variation, "Ice Age"),
-					strings.Contains(inCard.Variation, "IA"),
-					strings.Contains(inCard.Variation, "Pat Morrissey"),
-					strings.Contains(inCard.Variation, "Anson Maddocks"),
-					strings.Contains(inCard.Variation, "Tom Wanerstrand"),
-					strings.Contains(inCard.Variation, "Christopher Rush"),
-					strings.Contains(inCard.Variation, "Douglas Shuler"):
-					maybeYear = "2001"
-				case strings.Contains(inCard.Variation, "Mark Poole"):
-					maybeYear = "2002"
-				case strings.Contains(inCard.Variation, "Rob Alexander"):
-					maybeYear = "2003"
-				case strings.Contains(inCard.Variation, "Don Thompson"):
-					maybeYear = "2005"
-				case strings.Contains(inCard.Variation, "Beta"):
-					switch inCard.Name {
-					case "Forest":
-						maybeYear = "2001"
-					case "Island":
-						maybeYear = "2002"
-					}
-				}
-			} else if maybeYear == "2002" && inCard.Name == "Forest" {
-				maybeYear = "2001"
-			}
+		case inCard.isArena():
+			maybeYear = inCard.arenaYear(maybeYear)
 			switch {
 			case set.Name == "DCI Legend Membership":
 			case strings.HasPrefix(set.Name, "Arena League "+maybeYear):
