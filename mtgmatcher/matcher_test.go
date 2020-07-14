@@ -62,14 +62,14 @@ var MatchTests = []MatchTest{
 
 	// ID lookup
 	MatchTest{
-		Id:   "7a0be3c2-accb-511c-bc97-96f9cd6eb1ea",
-		Desc: "id_lookup",
+		Id:   "f3a94132-ce71-5556-bfd3-1461601a810d",
+		Desc: "id_lookup_mtgjson",
 		In: Card{
-			Id: "7a0be3c2-accb-511c-bc97-96f9cd6eb1ea",
+			Id: "f3a94132-ce71-5556-bfd3-1461601a810d",
 		},
 	},
 	MatchTest{
-		Id:   "f5737cd9-b418-517b-9a69-705b8c1e402f",
+		Id:   "f3a94132-ce71-5556-bfd3-1461601a810d",
 		Desc: "id_lookup_scryfall",
 		In: Card{
 			Id: "281f6118-adb8-4a7d-9c77-5570f3399e6e",
@@ -78,8 +78,8 @@ var MatchTests = []MatchTest{
 
 	// Number duplicates
 	MatchTest{
-		Id:   "76a1a052-ea00-5ddf-9486-0da27cdccd6b",
-		Desc: "full-art_land",
+		Id:   "fb083deb-30ea-5ff4-8aa8-cee8531cd7ec",
+		Desc: "fullart_land",
 		In: Card{
 			Name:      "Swamp",
 			Variation: "241",
@@ -87,8 +87,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "647f96d3-7d55-5052-aec2-a1f3b39008e0",
-		Desc: "full-art_land_could_be_confused_with_suffix",
+		Id:   "aed5fe79-ddec-5bf7-93b3-63a042faf863",
+		Desc: "fullart_land_could_be_confused_with_suffix",
 		In: Card{
 			Name:      "Island",
 			Variation: "234 A - Full Art",
@@ -96,8 +96,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "e6c6a31a-7497-530f-a71f-3a8e3cd83a18",
-		Desc: "non-full-art_land_could_be_confused_with_suffix",
+		Id:   "4fb5d3f7-cc7b-5502-8906-555ba919bd02",
+		Desc: "nonfullart_land_could_be_confused_with_suffix",
 		In: Card{
 			Name:      "Forest",
 			Variation: "274 A - Non-Full Art",
@@ -105,7 +105,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "f793ed4a-0df6-5dcc-a217-5fa2f019a54e",
+		Id:   "df3a4387-62c5-5fcc-a675-1c5e04d6103b",
 		Desc: "complex_number_variant",
 		In: Card{
 			Name:      "Plains",
@@ -114,7 +114,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "df26e509-bf27-515a-975c-702647651870",
+		Id:   "a7d7f03a-d876-52aa-97f6-44d371226533",
 		Desc: "alternative_complex_number_variant",
 		In: Card{
 			Name:      "Brothers Yamazaki",
@@ -123,7 +123,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "b84dceeb-d344-577e-9844-1b887b427e7d",
+		Id:   "aacfd47d-9b20-52ad-a62c-cba3414357ad",
 		Desc: "second_alternative_complex_number_variant",
 		In: Card{
 			Name:      "Brothers Yamazaki",
@@ -132,7 +132,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "db24e606-6288-548e-8df1-aa2438b1765e",
+		Id:   "c7f233d4-0770-5b10-9836-b4034047a9f8",
 		Desc: "borderless_lands",
 		In: Card{
 			Name:    "Plains",
@@ -140,7 +140,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "3e653dee-78ac-5112-8f72-a841b1cf3d76",
+		Id:   "af8f1ee0-f235-5e76-9994-60c8d809da47",
 		Desc: "weekend_lands",
 		In: Card{
 			Name:      "Island",
@@ -149,8 +149,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "8aeeabc4-6499-5560-a7ed-b49a92500645",
-		Desc: "japanese_lands",
+		Id:   "7b64a5cf-a4c9-5391-bbba-0dd945281569",
+		Desc: "mps_lands_2006",
 		In: Card{
 			Name:    "Swamp",
 			Edition: "Magic Premiere Shop 2006",
@@ -158,7 +158,16 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "c82d68bc-ed29-5c56-b3a5-dfe804e05a5d",
+		Id:   "77321166-66e1-5e9a-b630-35dcddb4b818",
+		Desc: "mps_lands_2009",
+		In: Card{
+			Name:      "Island",
+			Variation: "Rob Alexander MPS 2009",
+			Edition:   "Promos: MPS Lands",
+		},
+	},
+	MatchTest{
+		Id:   "053c8559-8ab8-5a1a-9444-6140b41470c4",
 		Desc: "plains_from_set_with_special_cards_and_C_to_be_ignored",
 		In: Card{
 			Name:      "Plains",
@@ -167,8 +176,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "afeab69f-720e-507b-ba53-e4b7940d4e2c",
-		Desc: "non_full_art_land_with_incomplete_number",
+		Id:   "5675b6f8-ca15-5455-aaf7-56dfb038ec52",
+		Desc: "nonfullart_land_with_incomplete_number",
 		In: Card{
 			Name:      "Forest",
 			Variation: "Non-Full Art 271",
@@ -176,7 +185,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "704c923b-9da5-54a5-84a9-3498db36b1ed",
+		Id:   "b2f53204-4357-56e7-a8f4-7f29ed9e674c",
 		Desc: "land_with_letter",
 		In: Card{
 			Name:    "Forest B",
@@ -184,7 +193,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "334e1060-01bb-5480-b011-358e728e90dd",
+		Id:   "d0fbb33b-cd41-5fb7-8518-382dd07860d1",
 		Desc: "forest_F",
 		In: Card{
 			Name:    "Forest F",
@@ -192,7 +201,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "e6c6a31a-7497-530f-a71f-3a8e3cd83a18",
+		Id:   "4fb5d3f7-cc7b-5502-8906-555ba919bd02",
 		Desc: "intro_land",
 		In: Card{
 			Name:      "Forest",
@@ -203,7 +212,7 @@ var MatchTests = []MatchTest{
 
 	// Naming conventions
 	MatchTest{
-		Id:   "1b447372-ce8b-50c2-b34e-214728992185",
+		Id:   "bf0aa055-3635-5efd-930d-4f0a7caaa411",
 		Desc: "transform_card",
 		In: Card{
 			Name:    "Daybreak Ranger / Nightfall Predator",
@@ -211,7 +220,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "bbd7ca65-7abf-5730-9889-32d020849911",
+		Id:   "7e6e9448-42ab-58e1-828a-ebef7b5ada77",
 		Desc: "aftermath_card",
 		In: Card{
 			Name:      "Commit to Memory",
@@ -220,7 +229,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "19580913-e1b5-5f7d-9f4b-74fb6ba5ab96",
+		Id:   "0ad9df53-068e-5bbd-9a83-d0dc4168ce6e",
 		Desc: "split_card",
 		In: Card{
 			Name:    "Fire // Ice",
@@ -228,7 +237,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "46a2f6d2-9db4-5825-ad1e-c3b9d3cf8b9a",
+		Id:   "88400e25-72b6-54b9-8e0d-40851b42bcdd",
+		Desc: "flip_card_not_really",
+		In: Card{
+			Name:    "Journey to Eternity",
+			Edition: "Rivals of Ixalan",
+		},
+	},
+	MatchTest{
+		Id:   "7170634e-89fc-5e19-b7e6-ae4393b143d5",
 		Desc: "flip_card",
 		In: Card{
 			Name:      "Startled Awake - Persistent Nightmare",
@@ -237,7 +254,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "07d37ce6-96f9-554a-8913-5b7d87dec57a",
+		Id:   "6081d8fd-26e1-5e6a-9c98-417d03214856",
 		Desc: "meld_card",
 		In: Card{
 			Name:    "Bruna, the Fading Light",
@@ -245,7 +262,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "cc4375be-7de6-5d0b-8800-a1321a168264",
+		Id:   "46b6d569-0deb-58e3-af91-f4652dd709bc",
 		Desc: "meld_card_b",
 		In: Card{
 			Name:      "Gisela, the Broken Blade | Brisela, Voice of Nightmares",
@@ -254,7 +271,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "f2a1f3d6-9b74-54ed-b9e4-f1ac2ac15670",
+		Id:   "98a0d909-5db8-53b2-9e5a-080a9b7e94e8",
 		Desc: "triple_card",
 		In: Card{
 			Name:    "Smelt // Herd // Saw",
@@ -262,7 +279,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "ef8342d2-86b8-5f14-aee4-38b5a8ad61fa",
+		Id:   "25463956-7fc1-5781-88cb-abba28a59ddd",
 		Desc: "incorrect_name_but_salvageable",
 		In: Card{
 			Name:    "B.O.B.",
@@ -270,7 +287,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "8b65f1ba-afb9-5872-9cab-13a85de26287",
+		Id:   "c98bf90b-e3b8-5a16-a797-73391ca6e4d6",
 		Desc: "parenthesis_in_the_name",
 		In: Card{
 			Name:    "Erase (Not the Urza's Legacy One)",
@@ -278,7 +295,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "76b2add8-69df-590d-b99d-1176992b42bf",
+		Id:   "451ac233-9ba8-59db-8fff-6962e0b173f6",
 		Desc: "parenthesis_in_the_name_and_variation",
 		In: Card{
 			Name:      "B.F.M. (Big Furry Monster)",
@@ -287,17 +304,25 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "57f22b61-f310-5fcc-bf5c-fdddb5b30467",
+		Id:   "fb3bdc21-d1c3-5fa2-8ea6-3ff48b11a5bc",
 		Desc: "number_in_the_name",
 		In: Card{
 			Name:    "Serum Visions (30)",
 			Edition: "Secret Lair Drop",
 		},
 	},
+	MatchTest{
+		Id:   "f193238a-07a8-53b6-8383-e30e95353891",
+		Desc: "ignore_b_side_face_foil_consequences",
+		In: Card{
+			Name:    "Curse of the Fire Penguin",
+			Edition: "Unhinged",
+		},
+	},
 
 	// Incorrect editions
 	MatchTest{
-		Id:   "24d51f85-3ccc-5632-bf22-c7180de0cfd5",
+		Id:   "0ebdbff9-e756-511f-a17d-43951169d0ea",
 		Desc: "incorrect_edition_but_card_has_a_single_printing",
 		In: Card{
 			Name:    "Mirrodin Besieged",
@@ -305,7 +330,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "97d106d2-5270-5a8d-afc0-6e2fcd175edf",
+		Id:   "c0439fdf-36e9-5578-94c0-36a056ede97d",
 		Desc: "incorrect_edition_set_name_does_not_interfere_with_number",
 		In: Card{
 			Name:      "Death Baron",
@@ -315,7 +340,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "25ee77c2-61c8-55ae-852c-72d7db1577da",
+		Id:   "ff963a6c-5c2c-5d51-a75b-abce3e819db1",
 		Desc: "incorrect_edition_but_salvageable",
 		In: Card{
 			Name:    "Polluted Mire",
@@ -323,7 +348,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "034b1941-b3a1-56ad-a0ef-09a11d57643e",
+		Id:   "b6698d85-bcd9-5262-a91d-2b3eb746e24c",
 		Desc: "incorrect_edition_but_salvageable_and_could_alias_other_cards",
 		In: Card{
 			Name:    "Garruk Wildspeaker",
@@ -331,7 +356,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "2ced4ecd-dfe9-51f7-8c4a-7f314fedfddf",
+		Id:   "70d57c64-c2a1-52e8-a807-bc965fb2ddb7",
 		Desc: "incorrect_edition_but_salvageable_missing_only_a_chunk",
 		In: Card{
 			Name:    "No One Will Hear Your Cries",
@@ -339,8 +364,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "bdf4ee85-3af6-55b0-aecd-65456c733401",
-		Desc: "incorrect_edition_belongs_to_a_foil-only_subset",
+		Id:   "f0f9e5f9-17e9-5827-b97e-c56e693a5beb",
+		Desc: "incorrect_edition_belongs_to_a_foilonly_subset",
 		In: Card{
 			Name:      "Zur's Weirding",
 			Variation: "Foil",
@@ -348,7 +373,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "d1b7e6ed-5ce2-5a9a-89de-2b70188a4236",
+		Id:   "8067d275-fb65-5277-b812-8cf33604a788",
 		Desc: "incorrect_edition_year_should_not_interfere",
 		In: Card{
 			Name:      "Yule Ooze",
@@ -357,7 +382,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "007e7f41-7075-59be-a1d1-465425bfa877",
+		Id:   "fbdf9d58-2746-5ed5-ad97-0a9780d066ca",
 		Desc: "incorrect_edition_champs_and_states",
 		In: Card{
 			Name:      "Mutavault",
@@ -366,7 +391,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "202ee58e-c413-5edb-904b-2229491138c7",
+		Id:   "15bd27f2-c842-5f2c-9862-d3a8d36143b7",
 		Desc: "champ_in_variant_but_not_champs_and_states",
 		In: Card{
 			Name:      "Champion of Lambholt",
@@ -375,7 +400,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "9ee7e1b3-8661-51fc-a2cc-0d41afb5b6d0",
+		Id:   "2126fb89-1eab-5d06-a7d9-953db1242849",
 		Desc: "mismatching_year",
 		In: Card{
 			Name:      "Mountain",
@@ -384,10 +409,37 @@ var MatchTests = []MatchTest{
 			Foil:      true,
 		},
 	},
+	MatchTest{
+		Id:   "a6e7bc06-ea7d-5186-8dd4-d95086e4e8d2",
+		Desc: "apac_lands",
+		In: Card{
+			Name:      "Forest",
+			Variation: "Pete Venters",
+			Edition:   "Asia Pacific Land Program",
+		},
+	},
+	MatchTest{
+		Id:   "7760d40f-2afd-5552-b59f-7d395ed4b7be",
+		Desc: "euro_lands",
+		In: Card{
+			Name:      "Plains",
+			Variation: "EURO Land Steppe Tundra Ben Thompson art",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
+		Id:   "44c98b84-1a4b-5101-912a-c26a87463cc5",
+		Desc: "euro_lands_comma",
+		In: Card{
+			Name:      "Island",
+			Variation: "EURO Land, Venezia",
+			Edition:   "ignored",
+		},
+	},
 
 	// Promo pack
 	MatchTest{
-		Id:   "9cb505f0-4b5c-55a4-ba0d-958d43c4f537",
+		Id:   "9d3e0596-a001-51ac-922a-e4b11cd09126",
 		Desc: "m20_promo_packs_lands",
 		In: Card{
 			Name:    "Plains",
@@ -395,8 +447,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "77a62de3-9ca2-5d9c-aeca-1409a8173de5",
-		Desc: "m20_promo_packs_lands_different",
+		Id:   "f37a6201-033a-58b3-a816-94bf813891b7",
+		Desc: "m20_promo_packs_lands_variant",
 		In: Card{
 			Name:      "Swamp",
 			Variation: "M20 Promo Pack",
@@ -404,7 +456,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "8e0090cc-ac0e-5ae0-8e23-c48bf8d9e0c6",
+		Id:   "338a6aea-1d26-5a37-87f8-42de7ce9dc2b",
 		Desc: "promo_pack_in_promos_with_pw_stamp",
 		In: Card{
 			Name:    "Zendikar Resurgent",
@@ -412,7 +464,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "b464317f-89c9-54af-86eb-a345684cafd4",
+		Id:   "61ca0be6-5672-5d82-a9df-b10d15fc6be1",
 		Desc: "promo_pack_in_expansion_with_inverted_frame",
 		In: Card{
 			Name:    "Alseid of Life's Bounty",
@@ -420,7 +472,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "36180c43-5613-515d-82f2-b2153323586d",
+		Id:   "d6a7fe98-1a0b-569f-9a49-f012698fe2ba",
 		Desc: "promo_pack_in_promos_with_inverted_frame",
 		In: Card{
 			Name:    "Negate",
@@ -428,15 +480,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "8b7a0e18-ca26-56f9-a44b-6694cd74cad7",
-		Desc: "non-promo_pack_card_that_may_have_a_promo_pack_version",
+		Id:   "beb3990e-ee5c-51e0-9651-e1e5a5f336c0",
+		Desc: "nonpromo_pack_card_that_may_have_a_promo_pack_version",
 		In: Card{
 			Name:    "Slaying Fire",
 			Edition: "Throne of Eldraine",
 		},
 	},
 	MatchTest{
-		Id:   "bf1c24e7-853e-57e5-8297-a41dceecf61b",
+		Id:   "d3ca5ef5-78d2-5bf1-b10b-10119df615a7",
 		Desc: "promo_pack_with_duplication",
 		In: Card{
 			Name:      "Sorcerous Spyglass",
@@ -445,8 +497,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "c7bbbdab-1741-599c-a87c-562ce5f877c9",
-		Desc: "non-promo_pack_is_fine_too",
+		Id:   "3438d2d9-4e87-573a-bc3f-28e703fe47ee",
+		Desc: "nonpromo_pack_is_fine_too",
 		In: Card{
 			Name:    "Sorcerous Spyglass",
 			Edition: "XLN",
@@ -455,7 +507,7 @@ var MatchTests = []MatchTest{
 
 	// Prerelease
 	MatchTest{
-		Id:   "d86ac63d-c2d3-56bd-bee3-e40fc3f20a4b",
+		Id:   "bd844ca3-6a0f-5942-a36c-572c5032dee9",
 		Desc: "old_prerelease",
 		In: Card{
 			Name:      "Glory",
@@ -464,7 +516,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a7044e23-957a-5e51-86a9-317e6af07bea",
+		Id:   "45f8e8cc-db7e-5448-b5b5-c49b9e43efbd",
 		Desc: "prerelease_in_promos_before_the_date_but_without_s_suffix",
 		In: Card{
 			Name:      "Scourge of Fleets",
@@ -473,7 +525,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "443646fc-908f-5628-8b52-e4b15b07ecda",
+		Id:   "51be1904-c38c-5303-b2b7-d889aeb66819",
 		Desc: "prerelease_with_s_suffix",
 		In: Card{
 			Name:      "Pristine Skywise",
@@ -482,7 +534,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a4c63151-aa5f-55a7-af5b-c2c8d85f308e",
+		Id:   "09f6ce54-cfba-5e7f-b2c1-c36f95e26ab1_f",
 		Desc: "JPN_prerelease_with_s_suffix",
 		In: Card{
 			Name:      "Ugin, the Ineffable",
@@ -491,7 +543,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "b4718517-8fca-5940-8fb4-2eb77f4190f1",
+		Id:   "a8a8aac9-b986-5fbe-be9d-511fb272f6d8_f",
 		Desc: "JPN_prerelease_with_s_suffix_but_number_could_interfere",
 		In: Card{
 			Name:      "Teyo, the Shieldmage",
@@ -500,7 +552,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "543216f8-53b7-521f-acb0-3876a2690bde",
+		Id:   "5849e009-a208-59e0-b2dc-230b053bf015",
 		Desc: "prerelease_in_promos_after_the_date_but_without_s_suffix",
 		In: Card{
 			Name:      "Astral Drift",
@@ -509,7 +561,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "2f2a182a-921a-5334-be74-105baca499be",
+		Id:   "7efa76e4-a6a8-5f6c-a337-9d88acc1d593",
 		Desc: "prerelease_with_duplication",
 		In: Card{
 			Name:      "Sorcerous Spyglass",
@@ -518,7 +570,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "485c633b-2d07-5a81-8260-dac5641e7a06",
+		Id:   "1489d4a3-163d-55e7-8ac3-7ac9478d8f3a",
 		Desc: "lubu_dedup_july",
 		In: Card{
 			Name:      "Lu Bu, Master-at-Arms",
@@ -529,15 +581,15 @@ var MatchTests = []MatchTest{
 
 	// JPN alternate art
 	MatchTest{
-		Id:   "5e3be15e-e89e-5dc4-8fc8-d2c79f7bdc1d",
-		Desc: "normal_non-JPN_version",
+		Id:   "a0c99852-b08e-5f09-9f48-317f2253df15",
+		Desc: "normal_nonJPN_version",
 		In: Card{
 			Name:    "Vraska, Swarm's Eminence",
 			Edition: "War of the Spark",
 		},
 	},
 	MatchTest{
-		Id:   "6a66d62d-8993-578f-a752-9e56043dd6ef",
+		Id:   "bfbf2df1-007f-500a-bfe5-1310ad1bad5d",
 		Desc: "JPN_variant",
 		In: Card{
 			Name:      "Vraska, Swarm's Eminence",
@@ -546,7 +598,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a9ed85a2-ac31-5059-89d6-ed896d5888b5",
+		Id:   "2f4942dd-d6d7-5b79-8dd9-91c9cd0daf1c",
 		Desc: "JPN_variant_but_number_could_interfere",
 		In: Card{
 			Name:      "Teyo, the Shieldmage",
@@ -557,15 +609,15 @@ var MatchTests = []MatchTest{
 
 	// Borderless cards
 	MatchTest{
-		Id:   "7998ef11-85d3-5280-b880-bd8b3a896e66",
-		Desc: "normal_non-borderless_variant",
+		Id:   "46153afe-5e05-5082-852a-648c03924bcf",
+		Desc: "normal_nonborderless_variant",
 		In: Card{
 			Name:    "Oko, Thief of Crowns",
 			Edition: "Throne of Eldraine",
 		},
 	},
 	MatchTest{
-		Id:   "202c6f3d-2094-516d-bd3e-1c3e7d16be3e",
+		Id:   "f203bad8-9c07-507c-9699-fc8fec69e2d2",
 		Desc: "borderless_variant",
 		In: Card{
 			Name:      "Oko, Thief of Crowns",
@@ -574,7 +626,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "4030ee0a-aa7c-5e9f-bea7-f1158cfc13ec",
+		Id:   "09618c19-c87e-51e2-959c-8b176156c9ca",
 		Desc: "borderless_but_from_a_funny_set",
 		In: Card{
 			Name:    "Sap Sucker",
@@ -582,7 +634,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "4fd6ab70-ebfd-52db-a274-ed736a4446c7",
+		Id:   "1b30ae75-338a-574f-9232-e0b119f8a6a5",
 		Desc: "borderless_boxtopper",
 		In: Card{
 			Name:    "Ancient Tomb",
@@ -592,15 +644,15 @@ var MatchTests = []MatchTest{
 
 	// Box topper-style extended art
 	MatchTest{
-		Id:   "0fa4cc6f-a4f6-5b65-bad8-6b31a7b8ab93",
-		Desc: "normal_non-extendedart_variant",
+		Id:   "c67e23df-18de-5668-83f8-4fc9c23299bf",
+		Desc: "normal_nonextendedart_variant",
 		In: Card{
 			Name:    "Heliod's Intervention",
 			Edition: "Theros Beyond Death",
 		},
 	},
 	MatchTest{
-		Id:   "0546b07f-ea01-524f-8dbb-d661a360528e",
+		Id:   "39b197ca-526c-5aa4-be3c-97b5db042efc",
 		Desc: "extendedart_variant",
 		In: Card{
 			Name:      "Heliod's Intervention",
@@ -611,15 +663,15 @@ var MatchTests = []MatchTest{
 
 	// Showcase frame
 	MatchTest{
-		Id:   "66b04208-62b6-5d33-9cf5-e99850864e58",
-		Desc: "normal_non-showcase_variant",
+		Id:   "51c8a322-0601-51ed-b5f9-bebb5d97b5d9",
+		Desc: "normal_nonshowcase_variant",
 		In: Card{
 			Name:    "Brazen Borrower",
 			Edition: "Throne of Eldraine",
 		},
 	},
 	MatchTest{
-		Id:   "caf8b803-3a7f-5df8-8384-0585af35852b",
+		Id:   "66819bb9-e044-512b-921e-7a5a82be79f5",
 		Desc: "showcase_variant",
 		In: Card{
 			Name:      "Brazen Borrower",
@@ -628,7 +680,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "043b2460-0892-5cb2-b81c-99a42e2d2fb7",
+		Id:   "f082ca30-a227-5c88-b95a-37ca03cefcd9",
 		Desc: "showcase_borderless",
 		In: Card{
 			Name:      "Zagoth Triome",
@@ -636,18 +688,27 @@ var MatchTests = []MatchTest{
 			Edition:   "Ikoria: Lair of Behemoths",
 		},
 	},
+	MatchTest{
+		Id:   "cb0847b3-ef9b-560c-9cbd-37e91acfd86d",
+		Desc: "correct_number_but_no_showcase_tag",
+		In: Card{
+			Name:      "Renata, Called to the Hunt",
+			Variation: "267",
+			Edition:   "Theros Beyond Death",
+		},
+	},
 
 	// Reskinned frame
 	MatchTest{
-		Id:   "f5737cd9-b418-517b-9a69-705b8c1e402f",
-		Desc: "normal_nongodzilla_variant",
+		Id:   "f3a94132-ce71-5556-bfd3-1461601a810d",
+		Desc: "nongodzilla_variant",
 		In: Card{
 			Name:    "Sprite Dragon",
 			Edition: "Ikoria: Lair of Behemoths",
 		},
 	},
 	MatchTest{
-		Id:   "d5fda5e1-1d13-5545-be43-04b9ec56d21d",
+		Id:   "7a8fdc89-bdd8-5f81-8fe1-af8c5663907f",
 		Desc: "godzilla_variant",
 		In: Card{
 			Name:      "Sprite Dragon",
@@ -656,7 +717,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "d5fda5e1-1d13-5545-be43-04b9ec56d21d",
+		Id:   "7a8fdc89-bdd8-5f81-8fe1-af8c5663907f",
 		Desc: "godzilla_variant_alt_name",
 		In: Card{
 			Name:    "Dorat, the Perfect Pet",
@@ -666,7 +727,7 @@ var MatchTests = []MatchTest{
 
 	// Arabian Nights different mana symbol
 	MatchTest{
-		Id:   "7cfca2f3-cc9d-5834-8812-31bee017dfbb",
+		Id:   "d429117f-4b10-5e66-ad2f-e233252a034a",
 		Desc: "ARN_light_variant",
 		In: Card{
 			Name:      "Wyluli Wolf",
@@ -675,7 +736,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "f3a2f42f-02eb-5e1f-bd90-af69997608f5",
+		Id:   "184eabef-2042-5e2d-a2b3-96921e251de0",
 		Desc: "ARN_dark_variant",
 		In: Card{
 			Name:      "Oubliette",
@@ -684,7 +745,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "f3a2f42f-02eb-5e1f-bd90-af69997608f5",
+		Id:   "184eabef-2042-5e2d-a2b3-96921e251de0",
 		Desc: "ARN_dark_variant_implied",
 		In: Card{
 			Name:      "Oubliette",
@@ -693,7 +754,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "8f2426c7-7523-56b8-a5a3-19b2c6b437c7",
+		Id:   "3dd0bd56-5340-5542-8457-646b9acd58ff",
 		Desc: "ARN_no_variant",
 		In: Card{
 			Name:    "Abu Ja'far",
@@ -701,9 +762,9 @@ var MatchTests = []MatchTest{
 		},
 	},
 
-	// Variants
+	// Same-set variants
 	MatchTest{
-		Id:   "4f92d091-cc91-5780-92ba-a31041859361_f",
+		Id:   "e8cad79a-2808-52a0-9504-469eab1d2486_f",
 		Desc: "single_variant_with_no_special_tag",
 		In: Card{
 			Name:    "Will Kenrith",
@@ -712,7 +773,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "5e6b6d41-7a08-5eec-8003-8606e85d8b23",
+		Id:   "a5d41107-bb39-5a10-ad0a-66513a31aa4d",
 		Desc: "kaya_is_special",
 		In: Card{
 			Name:    "Kaya, Ghost Assassin",
@@ -720,7 +781,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "58799c83-290c-58ff-82e3-1f4239f0b1f1_f",
+		Id:   "e0a1d531-00b4-587e-bfde-49de60e78f8e_f",
 		Desc: "kaya_is_very_special",
 		In: Card{
 			Name:    "Kaya, Ghost Assassin",
@@ -729,7 +790,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "4e3106c7-93fa-5f94-8f9e-f5204f1b9d3e",
+		Id:   "b33e380c-0615-5559-93da-2ba3610d2b68",
 		Desc: "too_many_variations",
 		In: Card{
 			Name:    "Tamiyo's Journal",
@@ -737,7 +798,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "1d640d35-90f4-53f6-8328-b80033f40d8f",
+		Id:   "eb08862e-454a-510e-90f4-04e5adc335d5",
 		Desc: "too_many_variations_foil",
 		In: Card{
 			Name:    "Tamiyo's Journal",
@@ -746,7 +807,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "69f21ce4-c82d-5e45-adfa-274306fbcdee",
+		Id:   "9b53ce45-735c-5247-b744-9fcac2dbdc4b",
 		Desc: "too_many_variations_what_did_i_say",
 		In: Card{
 			Name:      "Tamiyo's Journal",
@@ -755,7 +816,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "fa763da2-eb6d-5f1e-9311-d76c955d5c57",
+		Id:   "7a9a79d8-c997-55b7-8a52-f8b54d5b60ee",
 		Desc: "custom_variant",
 		In: Card{
 			Name:      "Urza's Tower",
@@ -764,7 +825,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "7d6ed48a-4634-5f58-a7c0-37bbefcae2f0",
+		Id:   "825770fb-6760-5b0d-993f-0dfe58b55aa6",
 		Desc: "number_with_suffix_in_variant",
 		In: Card{
 			Name:      "Arcane Denial",
@@ -773,7 +834,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "0118b9cc-8000-506e-9231-a98f18997221",
+		Id:   "0aad334d-ac52-54b1-a044-1dd3641a6569",
 		Desc: "one_funny_variation",
 		In: Card{
 			Name:      "Secret Base",
@@ -782,25 +843,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "4dded966-5630-5150-8378-5a6377eb9d6e",
-		Desc: "correct_number_but_no_showcase_tag",
-		In: Card{
-			Name:      "Renata, Called to the Hunt",
-			Variation: "267",
-			Edition:   "Theros Beyond Death",
-		},
-	},
-	MatchTest{
-		Id:   "4d67367e-a5e9-53b6-ba83-9908067a98f9",
-		Desc: "mps_lands",
-		In: Card{
-			Name:      "Island",
-			Variation: "Rob Alexander MPS 2009",
-			Edition:   "Promos: MPS Lands",
-		},
-	},
-	MatchTest{
-		Id:   "3a0cd31b-a6d6-5c9a-a184-91271814bc68",
+		Id:   "4e62e057-32c2-55e6-bbe7-ddf0d0391d6b",
 		Desc: "single_printintg_multiple_variants",
 		In: Card{
 			Name:      "Taste of Paradise",
@@ -809,34 +852,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "7a0be3c2-accb-511c-bc97-96f9cd6eb1ea",
-		Desc: "apac_lands",
-		In: Card{
-			Name:      "Forest",
-			Variation: "Pete Venters",
-			Edition:   "Asia Pacific Land Program",
-		},
-	},
-	MatchTest{
-		Id:   "0774fb91-081f-577c-b738-dc1ee129dc6c",
-		Desc: "euro_lands",
-		In: Card{
-			Name:      "Plains",
-			Variation: "EURO Land Steppe Tundra Ben Thompson art",
-			Edition:   "ignored",
-		},
-	},
-	MatchTest{
-		Id:   "c6fd0db2-2133-51da-962f-6eb5bacf8477",
-		Desc: "euro_lands_comma",
-		In: Card{
-			Name:      "Island",
-			Variation: "EURO Land, Venezia",
-			Edition:   "ignored",
-		},
-	},
-	MatchTest{
-		Id:   "ba1b009e-6c3c-54a9-bcdd-d667e69f6425",
+		Id:   "a7aacf96-8097-51a0-a50b-09d258edbc51",
 		Desc: "artist_last_name_too_many_s",
 		In: Card{
 			Name:      "Simic Signet",
@@ -847,8 +863,8 @@ var MatchTests = []MatchTest{
 
 	// FNM promos (often confused with set promos)
 	MatchTest{
-		Id:   "cee1d7d4-3c95-5020-a4f6-20a5efbbb56d",
-		Desc: "normal_fnm",
+		Id:   "0b5151a5-ada5-5045-a7a9-ecbe69593f69",
+		Desc: "fnm_normal",
 		In: Card{
 			Name:      "Aether Hub",
 			Variation: "FNM",
@@ -856,7 +872,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "774fb036-b8c4-5af5-86ad-183fe318000a",
+		Id:   "c72fd89d-60f2-59a5-9f77-8d138aebd38c",
 		Desc: "fnm_plus_year",
 		In: Card{
 			Name:      "Goblin Warchief",
@@ -865,16 +881,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "913edc80-0d6f-5987-8f58-53271ec5f9e6",
-		Desc: "non_fnm_with_inverted_frame",
-		In: Card{
-			Name:      "Dovin's Veto",
-			Variation: "FNM",
-			Edition:   "Promo",
-		},
-	},
-	MatchTest{
-		Id:   "d779fed9-ae9e-5279-8c1c-d9a5ca60521e",
+		Id:   "43805f80-743b-57ef-8f99-3ad19631120e",
 		Desc: "fnm_with_promo_alias",
 		In: Card{
 			Name:      "Reliquary Tower",
@@ -883,8 +890,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "7260ac60-e673-5da3-85c0-c6346cec2aac",
-		Desc: "non_fnm_with_fnm_alias",
+		Id:   "ad497aaa-2367-55c3-a599-ad038a3b1b7e",
+		Desc: "nonfnm_with_fnm_alias",
 		In: Card{
 			Name:      "Reliquary Tower",
 			Variation: "Promo",
@@ -892,19 +899,28 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "def399de-012a-5608-88f9-81c0bdccea79",
-		Desc: "non_fnm_wrong_info",
+		Id:   "588fba1e-9027-500d-ba10-83b79404a8a3",
+		Desc: "nonfnm_wrong_info",
 		In: Card{
 			Name:      "Shanna, Sisay's Legacy",
 			Variation: "FNM Foil",
 			Edition:   "Promos: FNM",
 		},
 	},
+	MatchTest{
+		Id:   "8c9f9179-3a9f-51a0-8443-dfb19508b74c",
+		Desc: "nonfnm_with_inverted_frame",
+		In: Card{
+			Name:      "Dovin's Veto",
+			Variation: "FNM",
+			Edition:   "Promo",
+		},
+	},
 
 	// Arena
 	MatchTest{
-		Id:   "9b1cd4a2-2792-5c77-a1a7-0618ae6f8dc5",
-		Desc: "normal_arena",
+		Id:   "c136db2b-2e01-5e83-9eea-c40c05a24efe",
+		Desc: "arena_normal",
 		In: Card{
 			Name:      "Enlightened Tutor",
 			Variation: "Arena",
@@ -912,7 +928,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "fac9ad88-7d23-5cad-a6e7-6b48d6fbfea0",
+		Id:   "6667e7b7-f067-573f-ba33-69f836a02b47",
 		Desc: "arena_with_year",
 		In: Card{
 			Name:      "Mountain",
@@ -921,8 +937,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "b5f48d93-9f68-52a1-a3c3-abf98604e8af",
-		Desc: "arena_land_missing_year",
+		Id:   "abcb6c78-34f0-5654-a3bd-1116bb870f76",
+		Desc: "arena_no_year",
 		In: Card{
 			Name:      "Forest",
 			Variation: "Arena Foil - Mercadian Masques",
@@ -930,8 +946,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "cde0850c-df01-57d6-998b-f92eb21b8eb1",
-		Desc: "misprint_within_arena",
+		Id:   "c8914a27-d1d2-5a60-95f7-c5517ad91caa",
+		Desc: "arena_misprint",
 		In: Card{
 			Name:      "Island",
 			Variation: "Arena 1999 misprint",
@@ -939,8 +955,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "8354caf4-0e58-599d-8b31-2d8ef50a9607",
-		Desc: "the_only_arena_land_with_number",
+		Id:   "d879ae07-3ac7-5f03-a873-ce66d38fd61b",
+		Desc: "arena_land_with_number",
 		In: Card{
 			Name:      "Forest",
 			Variation: "Arena 2001 1",
@@ -950,8 +966,8 @@ var MatchTests = []MatchTest{
 
 	// Various promos
 	MatchTest{
-		Id:   "4074ec88-ff9e-54dc-838a-be68edb85a3c",
-		Desc: "normal_judge",
+		Id:   "8ba3c9bf-e5b0-5008-9755-267c97c4b81f",
+		Desc: "judge_normal",
 		In: Card{
 			Name:      "Tradewind Rider",
 			Variation: "Judge",
@@ -959,7 +975,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "ac886c46-34b5-54d1-94c3-3b100de28c22",
+		Id:   "a5af462e-afe3-53b5-9d9f-ab836e00b5ce",
 		Desc: "judge_with_year",
 		In: Card{
 			Name:      "Vindicate",
@@ -968,8 +984,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "3e4f9814-9b8e-56eb-bb9c-96cdb1a0f54c",
-		Desc: "normal_sdcc",
+		Id:   "4b8eb39c-6b31-5da8-9b13-9a53b4772d90",
+		Desc: "sdcc",
 		In: Card{
 			Name:      "Liliana Vess",
 			Variation: "2014 SDCC",
@@ -977,8 +993,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "3e4f9814-9b8e-56eb-bb9c-96cdb1a0f54c",
-		Desc: "normal_sdcc_extended_name",
+		Id:   "4b8eb39c-6b31-5da8-9b13-9a53b4772d90",
+		Desc: "sdcc_extended_name",
 		In: Card{
 			Name:      "Liliana Vess",
 			Variation: "San Diego Comic Con",
@@ -986,8 +1002,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "ce697f23-a87f-5579-9611-069e0d9cdc97",
-		Desc: "normal_textless",
+		Id:   "64614b74-7b1a-5b4d-b1b1-72af112cc287",
+		Desc: "textless_normal",
 		In: Card{
 			Name:      "Fireball",
 			Variation: "Textless",
@@ -995,17 +1011,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "92815b2a-ace8-5200-9f82-97b3edff359b",
-		Desc: "normal_idw",
-		In: Card{
-			Name:      "Wash Out",
-			Variation: "IDW",
-			Edition:   "ignored",
-		},
-	},
-	MatchTest{
-		Id:   "ca98ee1e-42fe-5244-8502-e561e341e47e",
-		Desc: "normal_gateway",
+		Id:   "d44d615b-2902-549a-8821-14845925556d",
+		Desc: "gateway_normal",
 		In: Card{
 			Name:      "Lava Axe",
 			Variation: "Gateway",
@@ -1013,8 +1020,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "efdbe923-5227-5c96-b2bc-371440ed33a3",
-		Desc: "normal_wpn",
+		Id:   "a94df3c2-5f76-58c5-b34a-28662290ebf7",
+		Desc: "wpn_normal",
 		In: Card{
 			Name:      "Curse of Thirst",
 			Variation: "WPN",
@@ -1022,7 +1029,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "efdbe923-5227-5c96-b2bc-371440ed33a3",
+		Id:   "a94df3c2-5f76-58c5-b34a-28662290ebf7",
 		Desc: "maybe_gateway_or_wpn",
 		In: Card{
 			Name:      "Curse of Thirst",
@@ -1031,35 +1038,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "0e69c149-c8a0-507e-968b-c35f9b360e8f_f",
-		Desc: "foil_only_booster",
-		In: Card{
-			Name:      "Skyship Weatherlight",
-			Variation: "Alternate Art",
-			Edition:   "Planeshift",
-			Foil:      true,
-		},
-	},
-	MatchTest{
-		Id:   "1ccd68e3-9293-5c59-ac45-28a8b330da16_f",
-		Desc: "foil_only_booster_normal_counterpart",
-		In: Card{
-			Name:    "Skyship Weatherlight",
-			Edition: "Planeshift",
-			Foil:    true,
-		},
-	},
-	MatchTest{
-		Id:   "3b17073e-d0e0-5458-abb3-a102b1faf2f7",
-		Desc: "book_promo",
-		In: Card{
-			Name:      "Jace Beleren",
-			Variation: "Book",
-			Edition:   "ignored",
-		},
-	},
-	MatchTest{
-		Id:   "4429b96c-8d56-55d7-a679-9f7afa7d3080",
+		Id:   "4c17977b-5aca-5b0a-a456-4d4a0d5e42a1",
 		Desc: "heros_path_promo",
 		In: Card{
 			Name:      "The Explorer",
@@ -1068,7 +1047,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "17253c33-5268-5c02-b49e-86e3de212732",
+		Id:   "0dd114e6-2a55-5338-9b6d-a4da134e4660",
 		Desc: "duels_of_the_pw",
 		In: Card{
 			Name:      "Vigor",
@@ -1077,8 +1056,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "84d1d310-2c91-5d87-a966-0187f53daf31",
-		Desc: "duels_with_year",
+		Id:   "715a3a09-595f-58ca-ba0b-bdba95861cde",
+		Desc: "duels_of_the_pw_with_year",
 		In: Card{
 			Name:      "Ogre Battledriver",
 			Variation: "Duels of the Planeswalkers 2014",
@@ -1086,7 +1065,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "faf2b777-63a3-5b6e-a9a4-d38d290085bc",
+		Id:   "58625b64-eba5-5e6b-aa79-c5f06039214d",
 		Desc: "clash_pack",
 		In: Card{
 			Name:      "Temple of Mystery",
@@ -1095,87 +1074,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "efc5a359-1290-532b-8b20-14af00eaa19b",
-		Desc: "japanese_magazine_insert",
-		In: Card{
-			Name:      "Shivan Dragon",
-			Variation: "Japanese Gotta Comic Promo",
-			Edition:   "ignored",
-		},
-	},
-
-	// Release cards
-	MatchTest{
-		Id:   "68d6d809-9707-5064-acdf-1b0219f620ed",
-		Desc: "release_but_it_is_a_promo",
-		In: Card{
-			Name:      "Valakut, the Molten Pinnacle",
-			Variation: "Release Event",
-			Edition:   "ignored",
-			Foil:      true,
-		},
-	},
-	MatchTest{
-		Id:   "a206787f-e354-5141-a9d5-a504269a666a",
-		Desc: "release_but_it's_from_launch_parties",
-		In: Card{
-			Name:      "Vexing Shusher",
-			Variation: "Release Event",
-			Edition:   "ignored",
-			Foil:      true,
-		},
-	},
-	MatchTest{
-		Id:   "006358ad-4e4e-5fcd-8ad5-3e79ea72c5cf",
-		Desc: "release_events",
-		In: Card{
-			Name:      "Shriekmaw",
-			Variation: "Release Event",
-			Edition:   "ignored",
-			Foil:      true,
-		},
-	},
-	MatchTest{
-		Id:   "69b5853b-9343-588b-b17f-35b0215faaf4",
-		Desc: "release_but_there_is_a_prerelease_too",
-		In: Card{
-			Name:      "Identity Thief",
-			Variation: "Release Event",
-			Edition:   "ignored",
-			Foil:      true,
-		},
-	},
-	MatchTest{
-		Id:   "7836a3dd-46a8-5b84-be27-69358ad12639",
-		Desc: "prerelease_but_there_is_a_release_too",
-		In: Card{
-			Name:      "Identity Thief",
-			Variation: "Prerelease Event",
-			Edition:   "ignored",
-			Foil:      true,
-		},
-	},
-	MatchTest{
-		Id:   "559059c9-08f2-5b79-9f3d-11ba48fd615d",
-		Desc: "non_release_non_prerelease_version",
-		In: Card{
-			Name:    "Identity Thief",
-			Edition: "Eldritch Moon",
-		},
-	},
-	MatchTest{
-		Id:   "69b5853b-9343-588b-b17f-35b0215faaf4",
-		Desc: "release_too_much_info",
-		In: Card{
-			Name:      "Identity Thief",
-			Variation: "Eldritch Moon Launch Foil 22 July 2016",
-			Edition:   "Promos: Miscellaneous",
-		},
-	},
-
-	// Generic promo
-	MatchTest{
-		Id:   "822104a3-6ea9-5a82-8b1a-c6ae6908a245",
+		Id:   "218dee6b-c9ca-5d09-bec2-5517467db69b",
 		Desc: "variation_has_no_useful_info",
 		In: Card{
 			Name:      "Zombie Apocalypse",
@@ -1185,7 +1084,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "7454b0ab-b3ae-5789-ba15-c1e057e83ea0",
+		Id:   "73ba75f6-9f27-5c75-9646-634e2f26bea7",
 		Desc: "variation_has_no_useful_info_may_trigger_dupes_if_incorrectly_handled",
 		In: Card{
 			Name:      "Unclaimed Territory",
@@ -1195,7 +1094,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "b969d9fc-ef87-52a5-8e1c-7929f943a451",
+		Id:   "40a038b4-87c9-552e-966b-d4dacac5ec38",
 		Desc: "unknown_promo",
 		In: Card{
 			Name:      "Trueheart Duelist",
@@ -1204,10 +1103,79 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// Release cards
+	MatchTest{
+		Id:   "ec6031e8-8d33-547c-b446-3bd0112a931d",
+		Desc: "release_but_it_is_a_promo",
+		In: Card{
+			Name:      "Valakut, the Molten Pinnacle",
+			Variation: "Release Event",
+			Edition:   "ignored",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "bf077861-b06a-57f7-bd79-7c4032b49528",
+		Desc: "release_but_it_is_from_launch_parties",
+		In: Card{
+			Name:      "Vexing Shusher",
+			Variation: "Release Event",
+			Edition:   "ignored",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "77edb00a-7880-5804-a89d-36e1e812f490",
+		Desc: "release_events",
+		In: Card{
+			Name:      "Shriekmaw",
+			Variation: "Release Event",
+			Edition:   "ignored",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "7f43c4bb-2b38-5a05-9ce2-e2042009af0e",
+		Desc: "release_but_there_is_a_prerelease_too",
+		In: Card{
+			Name:      "Identity Thief",
+			Variation: "Release Event",
+			Edition:   "ignored",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "734e9eb3-d86b-564d-9553-4ffb48b5e13a",
+		Desc: "prerelease_but_there_is_a_release_too",
+		In: Card{
+			Name:      "Identity Thief",
+			Variation: "Prerelease Event",
+			Edition:   "ignored",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "1498e66b-3ddf-54e1-a4c4-a76a664a4bf1",
+		Desc: "non_release_non_prerelease_version",
+		In: Card{
+			Name:    "Identity Thief",
+			Edition: "Eldritch Moon",
+		},
+	},
+	MatchTest{
+		Id:   "7f43c4bb-2b38-5a05-9ce2-e2042009af0e",
+		Desc: "release_too_much_info",
+		In: Card{
+			Name:      "Identity Thief",
+			Variation: "Eldritch Moon Launch Foil 22 July 2016",
+			Edition:   "Promos: Miscellaneous",
+		},
+	},
+
 	// Buy-a-Box promo
 	MatchTest{
-		Id:   "2dd0da3d-0df8-5ba1-9fb3-378525d5804d",
-		Desc: "bab_marked_as_promo_but_it's_really_in_the_set",
+		Id:   "ad5c0740-144d-58fd-8fde-e2f3aee52fc8",
+		Desc: "bab_marked_as_promo_but_it_is_really_in_the_set",
 		In: Card{
 			Name:      "Impervious Greatwurm",
 			Variation: "BIBB",
@@ -1216,8 +1184,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "efa5a09d-c829-5b77-84b1-4c0137524b45",
-		Desc: "bab_marked_as_promo_but_it's_really_in_the_set_set_is_not_an_expansion",
+		Id:   "eaae1532-4362-54f9-8855-477ce59eab99",
+		Desc: "bab_marked_as_promo_but_it_is_really_in_the_set_set_is_not_expansion",
 		In: Card{
 			Name:      "Flusterstorm",
 			Variation: "buy a box",
@@ -1225,7 +1193,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "f110dc89-178b-5eb6-9f96-542a5ad15a67",
+		Id:   "c36c2a16-d6b7-51c9-8c94-e505ab618d66",
 		Desc: "bab_marked_as_promo_but_it's_really_in_the_set_set_is_core",
 		In: Card{
 			Name:      "Rienne Angel of Rebirth",
@@ -1234,7 +1202,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "e1a8180f-c67a-5727-97dc-5cba992e6eec",
+		Id:   "cf72208c-ac68-55d4-bb68-66487d682749",
 		Desc: "bab_old_style_it_is_in_Promos",
 		In: Card{
 			Name:      "Sylvan Caryatid",
@@ -1244,7 +1212,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "bc9aeef4-0901-5030-a7ed-cc1763de436f",
+		Id:   "e548ac74-e9a5-5a0e-9401-32cc5a74dc6b",
 		Desc: "bab_but_also_pro_tour",
 		In: Card{
 			Name:      "Surgical Extraction",
@@ -1254,7 +1222,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "6f06d428-d70a-55fd-9e74-f3cfec362194",
+		Id:   "9aa8535c-407e-5c43-a8bd-1adf83dbafcb",
 		Desc: "bab_but_also_in_normal_set",
 		In: Card{
 			Name:      "Mirran Crusader",
@@ -1264,7 +1232,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "f1107f46-e8e4-5507-af17-376636afdd73",
+		Id:   "daa40fb0-cd50-5c75-bee6-1b6adafbb590",
 		Desc: "bab_in_separate_set_with_wrong_info",
 		In: Card{
 			Name:      "Growing Rites of Itlimoc",
@@ -1275,15 +1243,15 @@ var MatchTests = []MatchTest{
 
 	// Bundle promo
 	MatchTest{
-		Id:   "64c13dd8-a5dc-51a1-b69e-94cbffa7da33",
-		Desc: "non_bundle_in_the_same_set",
+		Id:   "372145ed-c7a8-5494-b1e6-6f5aec74d7c0",
+		Desc: "nonbundle_in_the_same_set",
 		In: Card{
 			Name:    "Piper of the Swarm",
 			Edition: "Throne of Eldraine",
 		},
 	},
 	MatchTest{
-		Id:   "e44ecf94-bcbb-526c-9e28-7ae245b99fd9",
+		Id:   "37fdc0d7-976d-5e5e-af6c-ee6b50795454",
 		Desc: "bundle_in_the_same_set",
 		In: Card{
 			Name:      "Piper of the Swarm",
@@ -1292,7 +1260,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "e44ecf94-bcbb-526c-9e28-7ae245b99fd9",
+		Id:   "37fdc0d7-976d-5e5e-af6c-ee6b50795454",
 		Desc: "bundle_in_the_same_set_but_unknown_set",
 		In: Card{
 			Name:      "Piper of the Swarm",
@@ -1301,19 +1269,17 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "54b7b9f8-d821-5e14-bbfb-a16100b75967",
-		Desc: "non_bundle_in_the_same_set_but_special_version",
+		Id:   "cb8c4745-f3d2-51d6-87ab-71612430ae5f",
+		Desc: "nonbundle_in_the_same_set_but_special_version",
 		In: Card{
 			Name:      "Piper of the Swarm",
 			Variation: "Extended Art",
 			Edition:   "Throne of Eldraine",
 		},
 	},
-
-	// MagicFest
 	MatchTest{
-		Id:   "f78bf80a-a9c0-5b18-89b9-eb99fcf4c8d7_f",
-		Desc: "mf_pte",
+		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff_f",
+		Desc: "magicfest_normal",
 		In: Card{
 			Name:      "Path to Exile",
 			Variation: "Magic Fest",
@@ -1322,7 +1288,16 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "9f799aed-dc03-5e83-b322-092e27a42f03",
+		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff",
+		Desc: "magicfest_textless",
+		In: Card{
+			Name:      "Path to Exile",
+			Variation: "MagicFest Textless",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
+		Id:   "a95b64f0-9976-592f-b7ad-aa09158aa63c",
 		Desc: "bfz_std_with_wrong_info",
 		In: Card{
 			Name:      "Sunken Hollow",
@@ -1331,7 +1306,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "086fde0c-d3f9-5e7b-965b-3fbaacd71364",
+		Id:   "b8551573-9c09-5dc2-a440-d260fcbe6fad",
 		Desc: "unstable_letter_variant",
 		In: Card{
 			Name:      "Very Cryptic Command",
@@ -1339,19 +1314,10 @@ var MatchTests = []MatchTest{
 			Edition:   "Unstable",
 		},
 	},
-	MatchTest{
-		Id:   "f78bf80a-a9c0-5b18-89b9-eb99fcf4c8d7",
-		Desc: "magicfest_textless",
-		In: Card{
-			Name:      "Path to Exile",
-			Variation: "MagicFest Textless",
-			Edition:   "ignored",
-		},
-	},
 
 	// Homelands and Fallen Empires
 	MatchTest{
-		Id:   "74746784-4158-5498-aef2-39ac4e29e965",
+		Id:   "64a0d121-4a0b-5015-bcf2-985a996f196f",
 		Desc: "homelands_flavor",
 		In: Card{
 			Name:      "Abbey Matron",
@@ -1369,7 +1335,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "64d73c3e-35f3-5378-b8f7-f61c7ae9f3ac",
+		Id:   "2f01f5b8-6fe8-510e-8c35-3b209dbd41ce",
 		Desc: "homelands_flavor_with_extra",
 		In: Card{
 			Name:      "Memory Lapse",
@@ -1378,7 +1344,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "1271a401-45ea-5309-b0e6-de4b3bc08246",
+		Id:   "a860ebd5-1f8a-54b8-bf83-473fd7594a15",
 		Desc: "fem_artist",
 		In: Card{
 			Name:      "Armor Thrull",
@@ -1387,7 +1353,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "75691ff3-7b01-546c-9285-a24a54eb035c",
+		Id:   "d4324874-0c9d-5d2e-936c-d24b8f5de060",
 		Desc: "fem_artist_incomplete",
 		In: Card{
 			Name:      "Icatian Javelineers",
@@ -1396,8 +1362,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a8d08f7e-1da6-5270-a8c5-93a83a37a739",
-		Desc: "variant_is_number_suffix",
+		Id:   "46015c37-2fbb-5d1c-b4f5-8378e777fb6f",
+		Desc: "fem_variant_is_number_suffix",
 		In: Card{
 			Name:      "Homarid Warrior",
 			Variation: "B",
@@ -1405,8 +1371,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "56f84558-0802-5d35-aa5b-8e3b55cced70",
-		Desc: "variant_is_polluted",
+		Id:   "1e5e8355-c4c0-552c-a000-ad80e603844e",
+		Desc: "fem_variant_is_polluted",
 		In: Card{
 			Name:      "Basal Thrull",
 			Variation: "Artist Phil Foglio",
@@ -1416,7 +1382,7 @@ var MatchTests = []MatchTest{
 
 	// Duel Decks
 	MatchTest{
-		Id:   "88b2a7d9-0b56-5db7-9eb3-de96a5c22033",
+		Id:   "0ecf4a89-44f9-5c9a-9ecd-422702e44ef2",
 		Desc: "duel_decks_variant",
 		In: Card{
 			Name:    "Goblin Rabblemaster",
@@ -1424,25 +1390,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "4bd321f5-d0c9-570e-9227-969ee141f897",
-		Desc: "dda_deck_in_variation",
-		In: Card{
-			Name:      "Flamewave Invoker",
-			Variation: "Jace vs Chandra",
-			Edition:   "Duel Decks Anthology",
-		},
-	},
-	MatchTest{
-		Id:   "6354ec62-b96d-5408-85d2-af3423b45b2e",
-		Desc: "dda_deck_in_variation_inverted",
-		In: Card{
-			Name:      "Flamewave Invoker",
-			Variation: "Goblins vs Elves",
-			Edition:   "Duel Decks Anthology",
-		},
-	},
-	MatchTest{
-		Id:   "25fd12bc-c4ae-5f0a-bd6c-5c676238d542",
+		Id:   "f4ca3eba-d073-5a83-8732-c5d465b06a11",
 		Desc: "duel_decks_variant_with_number",
 		In: Card{
 			Name:      "Forest",
@@ -1451,19 +1399,37 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "e63ea080-3ea6-5a80-bfce-db6dffa4025c",
-		Desc: "confusing_dd_with_mb1_tag",
+		Id:   "15ce106a-8fde-5848-99b3-21eceb764be0",
+		Desc: "duel_decks_variant_with_mb1_tag",
 		In: Card{
 			Name:      "Elvish Warrior",
 			Variation: "Mystery Booster",
 			Edition:   "Elves vs. Goblins",
 		},
 	},
+	MatchTest{
+		Id:   "12420bff-ce07-5ce1-8f72-03af7df3f1ef",
+		Desc: "dda_in_variation",
+		In: Card{
+			Name:      "Flamewave Invoker",
+			Variation: "Jace vs Chandra",
+			Edition:   "Duel Decks Anthology",
+		},
+	},
+	MatchTest{
+		Id:   "3626181e-e565-5dfa-8c59-2d02e47beff3",
+		Desc: "dda_in_variation_inverted",
+		In: Card{
+			Name:      "Flamewave Invoker",
+			Variation: "Goblins vs Elves",
+			Edition:   "Duel Decks Anthology",
+		},
+	},
 
 	// Deckmasters variants
 	MatchTest{
-		Id:   "c4e91c2a-3747-5b5a-8b1d-f4083dbcb717",
-		Desc: "number_in_variation_with_other_text",
+		Id:   "3bc39616-8759-51eb-ab74-cf8271c339f6",
+		Desc: "deckmasters_number_in_variation_with_other_text",
 		In: Card{
 			Name:      "Phyrexian War Beast",
 			Variation: "37A Propeller Right",
@@ -1471,8 +1437,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "c4e91c2a-3747-5b5a-8b1d-f4083dbcb717",
-		Desc: "variation_use_first_if_empty",
+		Id:   "3bc39616-8759-51eb-ab74-cf8271c339f6",
+		Desc: "deckmasters_use_first_if_empty",
 		In: Card{
 			Name:      "Phyrexian War Beast",
 			Variation: "",
@@ -1480,8 +1446,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "b9b3308d-f0ef-57dd-91ed-ef0597011f44_f",
-		Desc: "variation_deckmasters_foil",
+		Id:   "7a6610cf-7d53-5e4b-bb76-9be1708d3892_f",
+		Desc: "deckmasters_variant_foil",
 		In: Card{
 			Name:      "Incinerate",
 			Variation: "Foil",
@@ -1490,15 +1456,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "4846fe2e-90a5-564c-a2ce-b1636fd97b0a",
-		Desc: "variation_deckmasters_non_foil",
+		Id:   "0b77872e-c4eb-54f4-8f63-57fcf68e682a",
+		Desc: "deckmasters_variant_non_foil",
 		In: Card{
 			Name:    "Incinerate",
 			Edition: "Deckmasters",
 		},
 	},
 	MatchTest{
-		Id:   "7b2244af-2539-5b30-8149-7ee9dfd2b956_f",
+		Id:   "982dabaa-9e5c-5a15-9fc2-cb4de4f13f11_f",
 		Desc: "variation_deckmasters_foil_but_untagged",
 		In: Card{
 			Name:      "Icy Manipulator",
@@ -1509,7 +1475,7 @@ var MatchTests = []MatchTest{
 
 	// Champs
 	MatchTest{
-		Id:   "0d10eae1-3203-5e77-acf7-04662e819a9c",
+		Id:   "59efdba1-25d8-56b0-8b82-d17839e19ff3",
 		Desc: "states_but_is_gateway",
 		In: Card{
 			Name:      "Dauntless Dourbark",
@@ -1518,7 +1484,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "71a80ef0-6cd3-5001-9d2c-7487eb9a1d8a",
+		Id:   "79cbb056-116f-53b6-83ff-6af010bf6e49",
 		Desc: "champs_and_states",
 		In: Card{
 			Name:      "Voidslime",
@@ -1527,7 +1493,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "d798e324-c143-5fcb-b8b4-ab03e767a12f",
+		Id:   "0c99ba44-73d6-535d-b68e-3dcc690aadd6",
 		Desc: "not_champs",
 		In: Card{
 			Name:      "Ghalta, Primal Hunger",
@@ -1538,7 +1504,25 @@ var MatchTests = []MatchTest{
 
 	// IDW and Comic promos
 	MatchTest{
-		Id:   "a129c134-546f-5038-9498-9a547fa4bf37",
+		Id:   "0d4669ac-631a-5059-8935-9838659c6bbc",
+		Desc: "book_promo",
+		In: Card{
+			Name:      "Jace Beleren",
+			Variation: "Book",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
+		Id:   "55a4b8cf-4e8e-5c2c-abf6-3b1ed592d323",
+		Desc: "idw_normal",
+		In: Card{
+			Name:      "Wash Out",
+			Variation: "IDW",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
+		Id:   "d1f8693c-4cdc-5558-b678-5fcefc0d220d",
 		Desc: "idw_also_magazine",
 		In: Card{
 			Name:      "Duress",
@@ -1547,27 +1531,36 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "010057a9-b30e-590a-908e-2c41983e7ef1",
-		Desc: "magazine_also_idw",
+		Id:   "c964334d-1153-55da-87d2-b986282af243",
+		Desc: "idw_but_also_magazine",
 		In: Card{
 			Name:      "Duress",
 			Variation: "Japanese Magazine Promo",
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "2a0a421a-418d-519c-b316-04e8071c36d7",
+		Desc: "japanese_magazine_insert",
+		In: Card{
+			Name:      "Shivan Dragon",
+			Variation: "Japanese Gotta Comic Promo",
+			Edition:   "ignored",
+		},
+	},
 
 	// Core sets
 	MatchTest{
-		Id:   "da99586d-41ca-5de6-83bb-18373c28ec69",
-		Desc: "coreset",
+		Id:   "9a72fcfd-5d43-55fb-8ade-8476d38f506b",
+		Desc: "coreset_normal",
 		In: Card{
 			Name:    "Guttersnipe",
 			Edition: "Core Set 2019 / M19",
 		},
 	},
 	MatchTest{
-		Id:   "2fa8e0c4-e41a-5c6c-a8bf-8c83e3b929b8",
-		Desc: "confusing_promo_and_coreset",
+		Id:   "5561b2e3-b0fd-5f2c-be7e-0ccd448bb8e2",
+		Desc: "coreset_confusing_promo",
 		In: Card{
 			Name:      "Naya Sojourners",
 			Variation: "Magic 2010 Game Day",
@@ -1577,7 +1570,7 @@ var MatchTests = []MatchTest{
 
 	// WCD
 	MatchTest{
-		Id:   "fe2b7fed-4cd7-5072-ae7f-2016a5714cd9",
+		Id:   "d36e37ff-9b07-50a4-9cb1-451caa554159",
 		Desc: "wcd_pick_the_first_one_if_not_enough_info",
 		In: Card{
 			Name:      "Ancient Tomb",
@@ -1586,7 +1579,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "d7b0b59a-5bb8-5770-b263-1fe6da80f2db",
+		Id:   "d50a6f25-d392-55e6-a34e-f83ad2b89c33",
 		Desc: "wcd_with_number",
 		In: Card{
 			Name:      "Plains",
@@ -1595,7 +1588,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "2007d75a-b8e0-5a78-943f-9b4332cdc2d4",
+		Id:   "ae03bc21-485c-5175-9a41-7fc5421d62ef",
 		Desc: "wcd_with_variant",
 		In: Card{
 			Name:      "Memory Lapse",
@@ -1604,7 +1597,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "d89a3dc2-4b46-5940-b766-47a52d098c2c",
+		Id:   "09ec16b3-b9b3-5be4-ba2c-7b52dc330b05",
 		Desc: "wcd_with_variant_embedded_in_number",
 		In: Card{
 			Name:      "Plains",
@@ -1613,7 +1606,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "54435363-233c-50b8-a13e-50155e6071f5",
+		Id:   "70dc718c-b23b-51a8-b9d8-36433a438d79",
 		Desc: "wcd_with_player_name_aliasing",
 		In: Card{
 			Name:      "Cursed Scroll",
@@ -1622,7 +1615,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "f3659f55-3e3e-5ade-8db0-5099b4dac1ac",
+		Id:   "19a00cd2-3fdd-5b82-9eab-b561d94e362a",
 		Desc: "wcd_with_correct_number",
 		In: Card{
 			Name:      "Strip Mine",
@@ -1631,7 +1624,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "ebd2ea21-16d4-5e84-b54d-a74d81560ce2",
+		Id:   "0e1e5130-d97a-56f5-9188-5df2f9e965e1",
 		Desc: "wcd_only_the_year",
 		In: Card{
 			Name:      "Karplusan Forest",
@@ -1642,8 +1635,27 @@ var MatchTests = []MatchTest{
 
 	// Foil-only special category
 	MatchTest{
-		Id:   "467d0a0a-ba76-5b99-853e-91fd8deb8989_f",
-		Desc: "foil_only_booster",
+		Id:   "a05c82be-c929-5720-a509-7b9f51156db9_f",
+		Desc: "PLS_foil_only_booster_normal",
+		In: Card{
+			Name:    "Skyship Weatherlight",
+			Edition: "Planeshift",
+			Foil:    true,
+		},
+	},
+	MatchTest{
+		Id:   "dcc4ee11-6a61-55f0-966a-d19732010ffa_f",
+		Desc: "PLS_foil_only_booster_alternate",
+		In: Card{
+			Name:      "Skyship Weatherlight",
+			Variation: "Alternate Art",
+			Edition:   "Planeshift",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "4b375581-c43d-5bd1-b990-a0fa496b8262_f",
+		Desc: "10E_foil_only_booster_clean",
 		In: Card{
 			Name:    "Time Stop",
 			Edition: "Tenth Edition",
@@ -1651,8 +1663,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "bef2dc94-74fe-5ea1-936e-acf3c8e5e169_f",
-		Desc: "foil_only_booster_normal",
+		Id:   "3b77bb52-4181-57f5-b3cd-f3a15b95aa29_f",
+		Desc: "10E_foil_only_booster_normal",
 		In: Card{
 			Name:    "Angelic Chorus",
 			Edition: "Tenth Edition",
@@ -1662,7 +1674,7 @@ var MatchTests = []MatchTest{
 
 	// Portal variants
 	MatchTest{
-		Id:   "0ac5854b-4952-56ea-ab6f-051e8c2f1d98",
+		Id:   "73b7e8ec-6b0c-5c35-92ca-dc0cd1156456",
 		Desc: "portal_starter_deck",
 		In: Card{
 			Name:      "Blaze",
@@ -1671,39 +1683,21 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a85c8128-ec69-54f0-8aa6-32067587a139",
-		Desc: "portal_demo_game",
-		In: Card{
-			Name:      "Cloud Pirates",
-			Variation: "reminder text",
-			Edition:   "Portal",
-		},
-	},
-	MatchTest{
-		Id:   "937b8e57-d3c8-52ba-aecd-fb3897ab2416",
-		Desc: "portal_starter_deck",
+		Id:   "e410cea1-ca02-5fce-b4e9-ad8b6dfb6a30",
+		Desc: "portal_starter_deck_alt",
 		In: Card{
 			Name:      "Raging Goblin",
 			Variation: "No flavor text",
 			Edition:   "Portal",
 		},
 	},
-
 	MatchTest{
-		Id:   "bbfbe550-97c0-57fd-9bca-c96bd957bbfa",
-		Desc: "split_cards_are_hard",
+		Id:   "593d4dcc-f98f-5f35-84a0-a71014a9b3b4",
+		Desc: "portal_demo_game",
 		In: Card{
-			Name:    "Journey to Eternity",
-			Edition: "Rivals of Ixalan",
-		},
-	},
-
-	MatchTest{
-		Id:   "891be6fa-3406-532d-83fc-3e6312ef85a3",
-		Desc: "ignore_b_side_face_foil_consequences",
-		In: Card{
-			Name:    "Curse of the Fire Penguin",
-			Edition: "Unhinged",
+			Name:      "Cloud Pirates",
+			Variation: "reminder text",
+			Edition:   "Portal",
 		},
 	},
 }

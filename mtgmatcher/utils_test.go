@@ -177,25 +177,25 @@ func TestAlias(t *testing.T) {
 	}
 	outCards := []Card{
 		Card{
-			Id:      "33f63bf0-8102-5bcb-a46a-3c1f03eafc11",
+			Id:      "8b2b4813-187c-53d1-8ee6-d9109ce4c427",
 			Name:    "Forest",
 			Edition: "Zendikar",
 			Number:  "246",
 		},
 		Card{
-			Id:      "9e3f5801-616a-5c4d-884b-089e00e6c299",
+			Id:      "7c0ffc88-34ff-5436-bfe7-ac9f1dd62888",
 			Name:    "Forest",
 			Edition: "Zendikar",
 			Number:  "247",
 		},
 		Card{
-			Id:      "2eafd661-95bb-568a-9938-1a4ba8bce285",
+			Id:      "59cea094-ebc9-5afa-bdf3-f0cc832a2136",
 			Name:    "Forest",
 			Edition: "Zendikar",
 			Number:  "248",
 		},
 		Card{
-			Id:      "8e3b9885-f8fb-5310-8bfe-ff7456dc3484",
+			Id:      "41d883ae-9018-5218-887e-502b03a2b89f",
 			Name:    "Forest",
 			Edition: "Zendikar",
 			Number:  "249",
