@@ -2,6 +2,7 @@ package mtgmatcher
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/kodabb/go-mtgmatcher/mtgjson"
@@ -203,16 +204,22 @@ func adjustName(inCard *Card) {
 	// Move any single letter variation from name to beginning variation
 	if inCard.IsBasicLand() {
 		fields := strings.Fields(inCard.Name)
-		if len(fields) > 1 && len(fields[1]) == 1 {
-			oldVariation := inCard.Variation
-			cuts := Cut(inCard.Name, " "+fields[1])
+		if len(fields) > 1 {
+			_, err := strconv.Atoi(strings.TrimPrefix(fields[1], "0"))
+			isNum := err == nil
+			isLetter := len(fields[1]) == 1
 
-			inCard.Name = cuts[0]
-			inCard.Variation = cuts[1]
-			if oldVariation != "" {
-				inCard.Variation += " " + oldVariation
+			if isNum || isLetter {
+				oldVariation := inCard.Variation
+				cuts := Cut(inCard.Name, " "+fields[1])
+
+				inCard.Name = cuts[0]
+				inCard.Variation = cuts[1]
+				if oldVariation != "" {
+					inCard.Variation += " " + oldVariation
+				}
+				return
 			}
-			return
 		}
 	}
 

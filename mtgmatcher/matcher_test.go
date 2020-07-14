@@ -209,6 +209,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Battle for Zendikar",
 		},
 	},
+	MatchTest{
+		Id:   "057df7fb-238d-55b1-93dd-ec76548a0fca",
+		Desc: "land_with_collectors_number",
+		In: Card{
+			Name:    "Forest 277",
+			Edition: "Ixalan",
+		},
+	},
 
 	// Naming conventions
 	MatchTest{
