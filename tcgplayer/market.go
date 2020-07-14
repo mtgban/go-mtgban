@@ -78,6 +78,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
+		tcg.printf("%s", string(data))
 		return err
 	}
 	if !response.Success {
