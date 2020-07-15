@@ -23,6 +23,91 @@ var cardTable = map[string]string{
 	"Who/What/When/Where/Why": "Who",
 }
 
+var editionTable = map[string]string{
+	"Alleanze":                   "Alliances",
+	"Apocalisse":                 "Apocalypse",
+	"Ascesa Oscura":              "Dark Ascension",
+	"Ascesa degli Eldrazi":       "Rise of the Eldrazi",
+	"Assalto":                    "Onslaught",
+	"Aurora":                     "Morningtide",
+	"Battaglia per Zendikar":     "Battle for Zendikar",
+	"Campioni di Kamigawa":       "Champions of Kamigawa",
+	"Caos Dimensionale":          "Planar Chaos",
+	"Cavalcavento":               "Weatherlight",
+	"Cicatrici di Mirrodin":      "Scars of Mirrodin",
+	"Commander Arsenal":          "Commander's Arsenal",
+	"Congiunzione":               "Planeshift",
+	"Decima Edizione":            "Tenth Edition",
+	"Destino di Urza":            "Urza's Destiny",
+	"Discordia":                  "Dissension",
+	"Draghi di Tarkir":           "Dragons of Tarkir",
+	"Era Glaciale":               "Ice Age",
+	"Eredità di Urza":            "Urza's Legacy",
+	"Esodo":                      "Exodus",
+	"Fedeltà di Ravnica":         "Ravnica Allegiance",
+	"Figli degli Dei":            "Born of the Gods",
+	"Flagello":                   "Scourge",
+	"Fortezza":                   "Stronghold",
+	"Frammenti di Alara":         "Shards of Alara",
+	"Gilde di Ravnica":           "Guilds of Ravnica",
+	"Giuramento dei Guardiani":   "Oath of the Gatewatch",
+	"I Khan di Tarkir":           "Khans of Tarkir",
+	"Il Patto delle Gilde":       "Guildpact",
+	"Invasione":                  "Invasion",
+	"Irruzione":                  "Gatecrash",
+	"L'Era della Rovina":         "Hour of Devastation",
+	"La Guerra della Scintilla":  "War of the Spark",
+	"Labirinto del Drago":        "Dragon's Maze",
+	"Landa Tenebrosa":            "Shadowmoor",
+	"Leggende":                   "Legends",
+	"Legioni":                    "Legions",
+	"Liberatori di Kamigawa":     "Saviors of Kamigawa",
+	"Luna Spettrale":             "Eldritch Moon",
+	"Maschere di Mercadia":       "Mercadian Masques",
+	"Mirrodin Assediato":         "Mirrodin Besieged",
+	"Nona Edizione":              "Ninth Edition",
+	"Nuova Phyrexia":             "New Phyrexia",
+	"Odissea":                    "Odyssey",
+	"Ombre su Innistrad":         "Shadows over Innistrad",
+	"Ondata Glaciale":            "Coldsnap",
+	"Origini":                    "Homelands",
+	"Orizzonti di Modern":        "Modern Horizons",
+	"Ottava Edizione":            "Eighth Edition",
+	"Profezia":                   "Prophecy",
+	"Quarta Edizione":            "Fourth Edition",
+	"Quinta Alba":                "Fifth Dawn",
+	"Quinta Edizione":            "Fifth Edition",
+	"Ravnica: Città delle Gilde": "Ravnica: City of Guilds",
+	"Revised EU FBB":             "Foreign Black Border",
+	"Revised EU FWB":             "Foreign White Border",
+	"Riforgiare il Destino":      "Fate Reforged",
+	"Rinascita di Alara":         "Alara Reborn",
+	"Ritorno a Ravnica":          "Return to Ravnica",
+	"Ritorno di Avacyn":          "Avacyn Restored",
+	"Rivali di Ixalan":           "Rivals of Ixalan",
+	"Rivolta dell'Etere":         "Aether Revolt",
+	"Saga di Urza":               "Urza's Saga",
+	"Sentenza":                   "Judgment",
+	"Sesta Edizione":             "Classic Sixth Edition",
+	"Settima Edizione":           "Seventh Edition",
+	"Spirale Temporale":          "Time Spiral",
+	"Tempesta":                   "Tempest",
+	"Theros: Oltre la Morte":     "Theros Beyond Death",
+	"Tormento":                   "Torment",
+	"Traditori di Kamigawa":      "Betrayers of Kamigawa",
+	"Trono di Eldraine":          "Throne of Eldraine",
+	"Vespro":                     "Eventide",
+	"Viaggio Verso Nyx":          "Journey into Nyx",
+	"Visione Futura":             "Future Sight",
+	"Visioni":                    "Visions",
+
+	"Duel Deck: Ajani Vs Bolas":        "Duel Decks: Ajani vs. Nicol Bolas",
+	"Duel Deck: Cavalieri vs Draghi":   "Duel Decks: Knights vs. Dragons",
+	"Duel Deck: Elfi vs Goblin":        "Duel Decks: Elves vs. Goblins",
+	"Duel Deck: Elspeth vs Tezzereth":  "Duel Decks: Elspeth vs. Tezzeret",
+	"Duel Decks: Cavalieri vs. Draghi": "Duel Decks: Knights vs. Dragons",
+}
+
 func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 	cardName := card.Name
 	edition := card.Set
@@ -185,6 +270,11 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 				}
 			}
 		}
+	}
+
+	lutName, found := editionTable[edition]
+	if found {
+		edition = lutName
 	}
 
 	return &mtgdb.Card{
