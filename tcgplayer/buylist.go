@@ -147,6 +147,7 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 				TradePrice: price,
 				Quantity:   0,
 				PriceRatio: priceRatio,
+				URL:        "https://store.tcgplayer.com/buylist",
 			},
 		}
 
