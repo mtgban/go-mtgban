@@ -168,7 +168,6 @@ func preprocess(cardName, edition string) (string, string, error) {
 		case "4th Black Border",
 			"Alternate 4th Edition",
 			"DD: Japanese Jace vs Chandra",
-			"Foreign Limited - FBB",
 			"Italian Legends",
 			"Commander 2020",
 			"MTG Arena Unused Codes",
@@ -198,6 +197,7 @@ func preprocess(cardName, edition string) (string, string, error) {
 			strings.Contains(cardName, "Oversized") ||
 			strings.Contains(cardName, "Sealed Pack") ||
 			strings.Contains(cardName, "Unopened") ||
+			strings.Contains(cardName, "Punch-Out Counters") ||
 			strings.Contains(cardName, "Salvat Promo") ||
 			strings.Contains(cardName, "Chinese") ||
 			strings.Contains(cardName, "Ultra Pro Puzzle Cards") ||
