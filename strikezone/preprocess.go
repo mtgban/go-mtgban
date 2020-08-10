@@ -50,6 +50,22 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 	case strings.HasPrefix(cardName, "Extended Art"):
 		cardName = strings.TrimPrefix(cardName, "Extended Art ")
 		variation = "Extended Art"
+	// Found at end, move it to variation
+	case strings.HasSuffix(cardName, "JPN ALT ART PRERELEASE"):
+		cardName = strings.TrimSuffix(cardName, " JPN ALT ART PRERELEASE")
+		variation = "Prerelease Japanese"
+	// Found at end, move it to edition
+	case strings.HasSuffix(cardName, "Ultimate Edition"):
+		cardName = strings.TrimSuffix(cardName, " Ultimate Edition")
+		edition = ""
+	// Found at end, move it to edition
+	case strings.HasSuffix(cardName, "Godzilla") && mtgdb.IsBasicLand(cardName):
+		cardName = strings.TrimSuffix(cardName, " Godzilla")
+		edition = "SLD"
+	// Found at beginning, just drop it
+	case strings.HasPrefix(cardName, "Alt Art"):
+		cardName = strings.TrimPrefix(cardName, "Alt Art ")
+		edition = "SLD"
 	// APAC and EURO lands, drop specifier
 	case strings.Contains(cardName, "APAC") || strings.Contains(cardName, "EURO"):
 		edition = "European Land Program"

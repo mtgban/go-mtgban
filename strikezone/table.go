@@ -65,9 +65,10 @@ var cardTable = map[string]string{
 	"Nissa Vital Force 2018 SDCC":                        "Nissa Vital Force (2018 SDCC)",
 
 	// Real typos
-	"Goldari Thug":           "Golgari Thug",
-	"Ink-Eyes Servan of Oni": "Ink-Eyes Servant of Oni",
-	"Laughing Hyenas":        "Laughing Hyena",
+	"Goldari Thug":               "Golgari Thug",
+	"Ink-Eyes Servan of Oni":     "Ink-Eyes Servant of Oni",
+	"Laughing Hyenas":            "Laughing Hyena",
+	"Teshar Acnestor s Aspostle": "Teshar, Ancestor's Apostle",
 
 	// Typos AND edition
 	"Faithless Lootoing (IDW Promo)":                "Faithless Looting (IDW)",
@@ -92,9 +93,11 @@ var cardTable = map[string]string{
 	"Fire/Ice (Fire)":     "Fire",
 	"Revival Revenge":     "Revival",
 	"Thrash Threat":       "Thrash",
+	"Connive Concoct":     "Connive",
 
 	// Funny cards
 	"Who What When Where Why": "Who",
+	"(Untitled Card":          "_____",
 }
 
 // Map a card/edition set to a correct edition
@@ -107,6 +110,9 @@ var card2setTable = map[string]string{
 	"Lingering Souls (WPN)":           "Friday Night Magic 2012",
 	"Lightning Bolt (Beta Art Promo)": "Judge Gift Cards 1998",
 	"Wood Elves (Promo)":              "Gateway 2006",
+	"Zoetic Cavern (FNM)":             "Gateway 2007",
+
+	"Tempered Steel (Full Art Textless)": "Scars of Mirrodin Promos",
 }
 
 // These cards don't have any variant, we know they are Promotional Cards,
