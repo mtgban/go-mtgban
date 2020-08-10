@@ -152,9 +152,10 @@ func (tcg *TCGPlayerMarket) scrape() error {
 	}
 
 	go func() {
-		for _, code := range mtgdb.AllSets() {
+		sets := mtgdb.AllSets()
+		for i, code := range sets {
 			set, _ := mtgdb.Set(code)
-			tcg.printf("Scraping %s", set.Name)
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i+1, len(sets))
 
 			for _, card := range set.Cards {
 				if card.TcgplayerProductId == 0 {
