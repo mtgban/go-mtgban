@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/kodabb/go-mtgmatcher/cklite"
-	"github.com/kodabb/go-mtgmatcher/mtgjson"
 	"github.com/kodabb/go-mtgmatcher/mtgmatcher"
+	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
 type meta struct {

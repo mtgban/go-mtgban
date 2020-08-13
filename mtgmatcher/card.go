@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/kodabb/go-mtgmatcher/mtgjson"
+	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
 // Card is a generic card representation using fields defined by the MTGJSON project.

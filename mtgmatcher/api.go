@@ -3,7 +3,7 @@ package mtgmatcher
 import (
 	"strings"
 
-	"github.com/kodabb/go-mtgmatcher/mtgjson"
+	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
 func HasPromoPackPrinting(name string) bool {

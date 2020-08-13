@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kodabb/go-mtgmatcher/mtgjson"
+	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
 type MatchTest struct {
