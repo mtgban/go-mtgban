@@ -20,7 +20,7 @@ type ck2id struct {
 	Foil   *meta `json:"foil,omitempty"`
 }
 
-var UseOnline bool = true
+var UseOnline bool = false
 
 func run() int {
 	logger := log.New(os.Stderr, "", 0)
@@ -53,7 +53,7 @@ func run() int {
 		}
 		defer pricelistReader.Close()
 
-		err = json.NewDecoder(pricelistReader).Decode(list)
+		err = json.NewDecoder(pricelistReader).Decode(&list)
 		if err != nil {
 			logger.Println(err)
 			return 1
@@ -75,7 +75,10 @@ func run() int {
 			logger.Println(card)
 			alias, ok := err.(*mtgmatcher.AliasingError)
 			if ok {
-				logger.Println(alias.Probe())
+				probes := alias.Probe()
+				for _, probe := range probes {
+					logger.Println("-", probe)
+				}
 			}
 			continue
 		}
