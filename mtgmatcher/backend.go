@@ -1,6 +1,7 @@
 package mtgmatcher
 
 import (
+	"io"
 	"io/ioutil"
 	"log"
 
@@ -35,6 +36,16 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			}
 		}
 	}
+}
+
+func LoadDatastore(reader io.Reader) error {
+	allprints, err := mtgjson.LoadAllPrintings(reader)
+	if err != nil {
+		return err
+	}
+
+	NewDatastore(allprints)
+	return nil
 }
 
 func SetGlobalLogger(userLogger *log.Logger) {

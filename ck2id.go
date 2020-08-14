@@ -8,7 +8,6 @@ import (
 
 	"github.com/kodabb/go-mtgmatcher/cklite"
 	"github.com/kodabb/go-mtgmatcher/mtgmatcher"
-	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
 type meta struct {
@@ -33,13 +32,11 @@ func run() int {
 	}
 	defer allPrintingsReader.Close()
 
-	allprints, err := mtgjson.LoadAllPrintings(allPrintingsReader)
+	err = mtgmatcher.LoadDatastore(allPrintingsReader)
 	if err != nil {
 		logger.Println(err)
 		return 1
 	}
-
-	mtgmatcher.NewDatastore(allprints)
 
 	var list *cklite.CKPriceList
 	if UseOnline {
