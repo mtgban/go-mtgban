@@ -68,13 +68,6 @@ var MatchTests = []MatchTest{
 			Id: "f3a94132-ce71-5556-bfd3-1461601a810d",
 		},
 	},
-	MatchTest{
-		Id:   "f3a94132-ce71-5556-bfd3-1461601a810d",
-		Desc: "id_lookup_scryfall",
-		In: Card{
-			Id: "281f6118-adb8-4a7d-9c77-5570f3399e6e",
-		},
-	},
 
 	// Number duplicates
 	MatchTest{

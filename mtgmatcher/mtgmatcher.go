@@ -15,16 +15,9 @@ func Match(inCard *Card) (outCard *Card, err error) {
 
 	// Look up by uuid
 	if inCard.Id != "" {
-		id := inCard.Id
-		if strings.HasSuffix(id, "_f") {
-			id = strings.TrimSuffix(id, "_f")
-		}
-		for _, set := range sets {
-			for _, card := range set.Cards {
-				if id == card.UUID || id == card.Identifiers["scryfallId"] {
-					return inCard.output(card, set), nil
-				}
-			}
+		co, found := uuids[strings.TrimSuffix(inCard.Id, "_f")]
+		if found {
+			return inCard.output(co.Card, sets[co.SetCode]), nil
 		}
 	}
 
