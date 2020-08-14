@@ -35,6 +35,7 @@ type Card struct {
 	Name          string            `json:"name"`
 	Number        string            `json:"number"`
 	Printings     []string          `json:"printings"`
+	PromoTypes    []string          `json:"promoTypes"`
 	Side          string            `json:"side"`
 	UUID          string            `json:"uuid"`
 	Variations    []string          `json:"variations"`
@@ -61,6 +62,8 @@ const (
 	FrameEffectInverted    = "inverted"
 	FrameEffectShowcase    = "showcase"
 
+	PromoTypeBundle = "bundle"
+
 	BorderColorBorderless = "borderless"
 
 	LanguageJapanese = "Japanese"
@@ -81,6 +84,15 @@ func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
 func (c *Card) HasFrameEffect(fe string) bool {
 	for _, effect := range c.FrameEffects {
 		if effect == fe {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Card) HasPromoType(pt string) bool {
+	for _, promoType := range c.PromoTypes {
+		if promoType == pt {
 			return true
 		}
 	}

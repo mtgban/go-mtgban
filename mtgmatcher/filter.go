@@ -580,6 +580,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
+
+				// ELD-Style bundle
+				if inCard.isBundle() && !card.HasPromoType(mtgjson.PromoTypeBundle) {
+					continue
+				} else if !inCard.isBundle() && card.HasPromoType(mtgjson.PromoTypeBundle) {
+					continue
+				}
 			}
 
 			// Special sets
@@ -708,64 +715,34 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 			default:
-				// Special singles
-				switch card.Name {
-				// Duplicated in several promo sets
-				case "Piper of the Swarm":
-					if inCard.isBundle() && card.Number != "392" {
-						continue
-					} else if !inCard.isBundle() && !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isExtendedArt() && card.Number != "100" {
-						continue
-					}
-				case "Arasta of the Endless Web":
-					if inCard.isBundle() && card.Number != "352" {
-						continue
-					} else if !inCard.isBundle() && !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isExtendedArt() && card.Number != "165" {
-						continue
-					}
-				case "Colossification":
-					if inCard.isBundle() && card.Number != "364" {
-						continue
-					} else if !inCard.isBundle() && !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isExtendedArt() && card.Number != "148" {
-						continue
-					}
-				case "Pack Leader":
-					if inCard.isBundle() && card.Number != "392" {
-						continue
-					} else if !inCard.isBundle() && !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isExtendedArt() && card.Number != "29" {
-						continue
-					}
+				// Variants/misprints have different suffixes depending on foil or style
+				expectedSuffix := mtgjson.SuffixVariant
 
-				default:
-					// Variants/misprints have different suffixes depending on foil or style
-					expectedSuffix := mtgjson.SuffixVariant
-
-					// Officially known misprints or just variants
-					variation := inCard.Variation
-					if card.Name == "Temple of Abandon" && set.Name == "Theros Beyond Death" && inCard.isExtendedArt() {
-						expectedSuffix = mtgjson.SuffixSpecial
-						if inCard.Foil {
-							variation = "misprint"
-						}
-					} else if card.Name == "Reflecting Pool" && set.Name == "Shadowmoor" {
-						expectedSuffix = mtgjson.SuffixSpecial
-						if inCard.Foil {
-							variation = "misprint"
-						}
-					} else if inCard.isPortalAlt() && set.Name == "Portal" {
+				// Officially known misprints or just variants
+				variation := inCard.Variation
+				if card.Name == "Temple of Abandon" && set.Name == "Theros Beyond Death" && inCard.isExtendedArt() {
+					expectedSuffix = mtgjson.SuffixSpecial
+					if inCard.Foil {
 						variation = "misprint"
-					} else if inCard.Name == "Void Beckoner" {
-						expectedSuffix = "A"
-						if inCard.isReskin() {
-							variation = "misprint"
-						}
 					}
+				} else if card.Name == "Reflecting Pool" && set.Name == "Shadowmoor" {
+					expectedSuffix = mtgjson.SuffixSpecial
+					if inCard.Foil {
+						variation = "misprint"
+					}
+				} else if inCard.isPortalAlt() && set.Name == "Portal" {
+					variation = "misprint"
+				} else if inCard.Name == "Void Beckoner" {
+					expectedSuffix = "A"
+					if inCard.isReskin() {
+						variation = "misprint"
+					}
+				}
 
-					if Contains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {
-						continue
-					} else if !Contains(variation, "misprint") && strings.HasSuffix(card.Number, expectedSuffix) {
-						continue
-					}
+				if Contains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {
+					continue
+				} else if !Contains(variation, "misprint") && strings.HasSuffix(card.Number, expectedSuffix) {
+					continue
 				}
 			}
 
