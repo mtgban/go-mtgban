@@ -711,13 +711,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				// Special singles
 				switch card.Name {
 				// Duplicated in several promo sets
-				case "Sorcerous Spyglass":
-					if set.ParentCode != "" &&
-						!(strings.Contains(inCard.Variation, set.ParentCode) ||
-							strings.Contains(inCard.Variation, sets[set.ParentCode].Name) ||
-							strings.Contains(inCard.Edition, sets[set.ParentCode].Name)) {
-						continue
-					}
 				case "Piper of the Swarm":
 					if inCard.isBundle() && card.Number != "392" {
 						continue
@@ -778,6 +771,34 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 			outCards = append(outCards, card)
 			foundCode = append(foundCode, setCode)
+		}
+	}
+
+	// Check if there are multiple printings for Prerelease and Promo Pack cards
+	// Sometimes these contain the ParentCode or the parent edition name in the field
+	if len(outCards) > 1 && (inCard.isPrerelease() || inCard.isPromoPack()) {
+		allSameEdition := true
+		for i, code := range foundCode {
+			if outCards[i].Name != outCards[0].Name || !strings.HasPrefix(code, "P") {
+				allSameEdition = false
+				break
+			}
+		}
+		if allSameEdition {
+			size := len(foundCode)
+			for i := 0; i < size; i++ {
+				set := sets[foundCode[i]]
+				// Drop any printing that don't have the ParentCode
+				// or the edition name itself in the Variation field
+				if !(strings.Contains(inCard.Variation, set.ParentCode) ||
+					strings.Contains(inCard.Variation, sets[set.ParentCode].Name) ||
+					strings.Contains(inCard.Edition, sets[set.ParentCode].Name)) {
+					foundCode = append(foundCode[:i], foundCode[i+1:]...)
+					outCards = append(outCards[:i], outCards[i+1:]...)
+					size--
+					i = 0
+				}
+			}
 		}
 	}
 
