@@ -298,6 +298,8 @@ func adjustEdition(inCard *Card) {
 		edition = ed
 	}
 
+	variation := inCard.Variation
+
 	// Adjust box set
 	switch {
 	case strings.HasSuffix(edition, "(Collector Edition)"):
@@ -321,9 +323,11 @@ func adjustEdition(inCard *Card) {
 		edition = "Kaladesh Inventions"
 	case strings.Contains(edition, "Expeditions"):
 		edition = "Zendikar Expeditions"
+	case edition == "Double Masters Box Toppers":
+		edition = "Double Masters"
+		variation = "Borderless"
 	}
 
-	variation := inCard.Variation
 	switch {
 	case strings.Contains(variation, "Ravnica Weekend"):
 		num := ExtractNumber(variation)
