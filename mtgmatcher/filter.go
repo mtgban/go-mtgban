@@ -699,6 +699,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
+			// Launch promos within the set itself
+			case "Double Masters",
+				"Jumpstart":
+				if inCard.isRelease() && !card.IsAlternative {
+					continue
+				} else if !inCard.isRelease() && card.IsAlternative {
+					continue
+				}
 			default:
 				// Special singles
 				switch card.Name {

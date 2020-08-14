@@ -1180,6 +1180,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Promos: Miscellaneous",
 		},
 	},
+	MatchTest{
+		Id:   "412013dc-8a6a-54f8-beb7-77b56baa5057_f",
+		Desc: "launch_in_the_set_itself",
+		In: Card{
+			Name:      "Scholar of the Lost Trove",
+			Variation: "Launch Promo Foil",
+			Edition:   "Jumpstart",
+		},
+	},
 
 	// Buy-a-Box promo
 	MatchTest{
