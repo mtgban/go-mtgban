@@ -158,8 +158,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		} else if cardName == "BFM Right" {
 			cardName = "B.F.M."
 		}
-	case "Core Set 2021", "Jumpstart":
-		return nil, errors.New("not yet")
 	}
 
 	return &mtgmatcher.Card{
