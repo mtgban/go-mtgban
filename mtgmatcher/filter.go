@@ -729,7 +729,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				case "Pack Leader":
-					if inCard.isBundle() && card.Number != "391" {
+					if inCard.isBundle() && card.Number != "392" {
 						continue
 					} else if !inCard.isBundle() && !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isExtendedArt() && card.Number != "29" {
 						continue
