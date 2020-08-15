@@ -784,6 +784,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				break
 			}
 		}
+
+		// All of my hate
+		if outCards[0].Name == "Teferi, Master of Time" {
+			allSameEdition = false
+		}
+
 		if allSameEdition {
 			size := len(foundCode)
 			for i := 0; i < size; i++ {

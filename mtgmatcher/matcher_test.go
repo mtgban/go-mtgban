@@ -505,6 +505,15 @@ var MatchTests = []MatchTest{
 			Edition: "XLN",
 		},
 	},
+	MatchTest{
+		Id:   "97224c96-101c-50bb-9060-4c4431db940e",
+		Desc: "so_many_varaiants_and_untagged",
+		In: Card{
+			Name:      "Teferi, Master of Time",
+			Variation: "Promo Pack",
+			Edition:   "ignored",
+		},
+	},
 
 	// Prerelease
 	MatchTest{

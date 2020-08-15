@@ -129,10 +129,14 @@ func Match(inCard *Card) (outCard *Card, err error) {
 	}
 
 	// Just keep the first card found for gold-bordered sets
-	if inCard.isWorldChamp() && len(outCards) > 1 {
-		logger.Println("Dropping a few WCD entries...")
-		logger.Println(outCards[1:])
-		outCards = []mtgjson.Card{outCards[0]}
+	// and the Teferi, Master of Variants
+	if len(outCards) > 1 {
+		if inCard.isWorldChamp() ||
+			(outCards[0].Name == "Teferi, Master of Time" && foundCode[0] == "PM21") {
+			logger.Println("Dropping a few extra entries...")
+			logger.Println(outCards[1:])
+			outCards = []mtgjson.Card{outCards[0]}
+		}
 	}
 
 	// Finish line
