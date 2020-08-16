@@ -4,6 +4,14 @@ import (
 	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
+func GetUUIDs() map[string]cardobject {
+	return uuids
+}
+
+func GetSets() map[string]mtgjson.Set {
+	return sets
+}
+
 func HasPromoPackPrinting(name string) bool {
 	if sets == nil {
 		return false
