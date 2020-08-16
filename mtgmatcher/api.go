@@ -1,8 +1,6 @@
 package mtgmatcher
 
 import (
-	"strings"
-
 	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
@@ -28,10 +26,7 @@ func HasPromoPackPrinting(name string) bool {
 			continue
 		}
 		for _, in := range set.Cards {
-			if (card.Name == in.Name) &&
-				(strings.HasSuffix(in.Number, "p") ||
-					in.HasFrameEffect(mtgjson.FrameEffectInverted) ||
-					IsBasicLand(name)) {
+			if (card.Name == in.Name) && in.HasPromoType(mtgjson.PromoTypePromoPack) {
 				return true
 			}
 		}

@@ -56,7 +56,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					skip := true
 					foundCards := matchInSet(inCard, set)
 					for _, card := range foundCards {
-						if card.HasFrameEffect(mtgjson.FrameEffectInverted) {
+						if card.HasPromoType(mtgjson.PromoTypePromoPack) {
 							skip = false
 							break
 						}
@@ -502,11 +502,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 			// Prerelease
 			if inCard.isPrerelease() {
-				prereleaseSuffix := "s"
-				if inCard.isJPN() {
-					prereleaseSuffix += mtgjson.SuffixSpecial
-				}
-				if setDate.After(NewPrereleaseDate) && !strings.HasSuffix(card.Number, prereleaseSuffix) {
+				if !card.HasPromoType(mtgjson.PromoTypePrerelease) {
 					continue
 				}
 				if card.Name == "Lu Bu, Master-at-Arms" {
@@ -517,21 +513,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 			} else {
-				if strings.HasSuffix(card.Number, "s") ||
-					strings.HasSuffix(card.Number, "s"+mtgjson.SuffixSpecial) {
+				if card.HasPromoType(mtgjson.PromoTypePrerelease) {
 					continue
 				}
 			}
 
 			// Promo pack
-			if inCard.isPromoPack() && !inCard.isBasicLand() {
-				if !strings.HasSuffix(card.Number, "p") && !card.HasFrameEffect(mtgjson.FrameEffectInverted) {
-					continue
-				}
-			} else if !inCard.isBasicLand() {
-				if strings.HasSuffix(card.Number, "p") || (card.HasFrameEffect(mtgjson.FrameEffectInverted) && !inCard.isFNM()) {
-					continue
-				}
+			if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
+				continue
+			} else if !inCard.isPromoPack() && card.HasPromoType(mtgjson.PromoTypePromoPack) {
+				continue
 			}
 
 			if setDate.After(PromosForEverybodyYay) {

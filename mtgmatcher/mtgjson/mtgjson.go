@@ -62,7 +62,9 @@ const (
 	FrameEffectInverted    = "inverted"
 	FrameEffectShowcase    = "showcase"
 
-	PromoTypeBundle = "bundle"
+	PromoTypeBundle     = "bundle"
+	PromoTypePrerelease = "prerelease"
+	PromoTypePromoPack  = "promopack"
 
 	BorderColorBorderless = "borderless"
 
