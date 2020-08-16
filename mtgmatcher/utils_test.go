@@ -234,3 +234,48 @@ func TestAlias(t *testing.T) {
 	}
 	t.Log("PASS: Aliasing")
 }
+
+type SplitTest struct {
+	In  string
+	Out []string
+}
+
+var SplitTests = []SplitTest{
+	SplitTest{
+		In:  "A B",
+		Out: []string{"A B"},
+	},
+	SplitTest{
+		In:  "A (B)",
+		Out: []string{"A", "B"},
+	},
+	SplitTest{
+		In:  "A (B) (C)",
+		Out: []string{"A", "B", "C"},
+	},
+	SplitTest{
+		In:  "A B (C)",
+		Out: []string{"A B", "C"},
+	},
+	SplitTest{
+		In:  "A (B) C",
+		Out: []string{"A", "B"},
+	},
+}
+
+func TestSplit(t *testing.T) {
+	for _, probe := range SplitTests {
+		test := probe
+		t.Run(test.In, func(t *testing.T) {
+			t.Parallel()
+			out := SplitVariants(test.In)
+			for i := range out {
+				if out[i] != test.Out[i] {
+					t.Errorf("FAIL %s: Expected '%s' got '%q'", test.In, test.Out, out)
+					return
+				}
+			}
+			t.Log("PASS:", test.In)
+		})
+	}
+}
