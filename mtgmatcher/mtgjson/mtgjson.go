@@ -11,6 +11,7 @@ type Set struct {
 	Code         string `json:"code"`
 	Cards        []Card `json:"cards"`
 	IsOnlineOnly bool   `json:"isOnlineOnly"`
+	KeyruneCode  string `json:"keyruneCode"`
 	Name         string `json:"name"`
 	ParentCode   string `json:"parentCode"`
 	ReleaseDate  string `json:"releaseDate"`
@@ -36,6 +37,7 @@ type Card struct {
 	Number        string            `json:"number"`
 	Printings     []string          `json:"printings"`
 	PromoTypes    []string          `json:"promoTypes"`
+	Rarity        string            `json:"rarity"`
 	Side          string            `json:"side"`
 	UUID          string            `json:"uuid"`
 	Variations    []string          `json:"variations"`
