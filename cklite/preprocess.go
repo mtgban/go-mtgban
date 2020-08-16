@@ -12,6 +12,10 @@ import (
 var cardTable = map[string]string{
 	"Surgeon Commander": "Surgeon ~General~ Commander",
 
+	// Numbers for these are derived elsewhere
+	"BFM Left":  "B.F.M.",
+	"BFM Right": "B.F.M.",
+
 	"The Ultimate Nightmare of WotC Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 	"Our Market Research":                             "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
 }
@@ -153,11 +157,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
 		"Unstable", "Unglued":
 		variation = number
-		if cardName == "BFM Left" {
-			cardName = "B.F.M."
-		} else if cardName == "BFM Right" {
-			cardName = "B.F.M."
-		}
 	}
 
 	return &mtgmatcher.Card{
