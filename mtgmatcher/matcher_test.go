@@ -965,6 +965,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "c8914a27-d1d2-5a60-95f7-c5517ad91caa",
+		Desc: "arena_misprint_alt",
+		In: Card{
+			Name:      "Island",
+			Variation: "Urza's Saga Arena Foil NO SYMBOL",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
 		Id:   "d879ae07-3ac7-5f03-a873-ce66d38fd61b",
 		Desc: "arena_land_with_number",
 		In: Card{

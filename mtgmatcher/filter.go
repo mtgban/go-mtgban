@@ -737,6 +737,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if inCard.isReskin() {
 						variation = "misprint"
 					}
+				} else if inCard.Name == "Island" && set.Name == "Arena League 1999" && Contains(inCard.Variation, "NO SYMBOL") {
+					variation = "misprint"
 				}
 
 				if Contains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {

@@ -75,7 +75,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		card.Name == "Blank Card" ||
 		card.Edition == "Art Series" ||
 		card.Variation == "MagicFest Non-Foil - 2020" ||
-		card.Variation == "Urza's Saga Arena Foil NO SYMBOL" ||
 		card.SKU == "OVERSIZ" ||
 		card.SKU == "PRES-005A" {
 		return nil, errors.New("skipping")
