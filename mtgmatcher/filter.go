@@ -198,7 +198,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 
 		case strings.Contains(inCard.Variation, "Clash") ||
-			strings.Contains(inCard.Edition, "Clash"):
+			(strings.Contains(inCard.Edition, "Clash") &&
+				!strings.Contains(inCard.Edition, "Intro")): //cfb
 			switch set.Name {
 			case "Fate Reforged Clash Pack",
 				"Magic 2015 Clash Pack",
