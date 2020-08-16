@@ -2,6 +2,7 @@ package mtgmatcher
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +53,14 @@ func SplitVariants(str string) []string {
 			fields[i] = fields[i][:pos]
 		}
 	}
+	if len(fields) > 1 {
+		if strings.HasPrefix(str, "Erase (Not the Urza's Legacy One)") ||
+			(Contains(str, "B.F.M.") && strings.Contains(str, "Big Furry Monster")) {
+			fields[0] = fmt.Sprintf("%s (%s)", fields[0], fields[1])
+			fields = append(fields[:1], fields[2:]...)
+		}
+	}
+
 	return fields
 }
 

@@ -261,6 +261,14 @@ var SplitTests = []SplitTest{
 		In:  "A (B) C",
 		Out: []string{"A", "B"},
 	},
+	SplitTest{
+		In:  "Erase (Not the Urza's Legacy One)",
+		Out: []string{"Erase (Not the Urza's Legacy One)"},
+	},
+	SplitTest{
+		In:  "B.F.M. (Big Furry Monster) (Left)",
+		Out: []string{"B.F.M. (Big Furry Monster)", "Left"},
+	},
 }
 
 func TestSplit(t *testing.T) {
