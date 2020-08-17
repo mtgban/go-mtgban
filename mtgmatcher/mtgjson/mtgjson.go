@@ -32,6 +32,7 @@ type Card struct {
 	Identifiers   map[string]string `json:"identifiers"`
 	IsAlternative bool              `json:"isAlternative"`
 	IsFullArt     bool              `json:"isFullArt"`
+	IsReserved    bool              `json:"isReserved"`
 	Layout        string            `json:"layout"`
 	Name          string            `json:"name"`
 	Number        string            `json:"number"`
