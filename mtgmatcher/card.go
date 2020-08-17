@@ -149,7 +149,8 @@ func (c *Card) isBorderless() bool {
 }
 
 func (c *Card) isExtendedArt() bool {
-	return Contains(c.Variation, "Extended Art")
+	return Contains(c.Variation, "Extended Art") ||
+		Contains(c.Variation, "Extended Frame") //csi
 }
 
 func (c *Card) isShowcase() bool {
