@@ -156,7 +156,8 @@ func (c *Card) isBorderless() bool {
 }
 
 func (c *Card) isExtendedArt() bool {
-	return mtgjson.NormContains(c.Variation, "Extended Art")
+	return mtgjson.NormContains(c.Variation, "Extended Art") ||
+		mtgjson.NormContains(c.Variation, "Extended Frame") //csi
 }
 
 func (c *Card) isShowcase() bool {
