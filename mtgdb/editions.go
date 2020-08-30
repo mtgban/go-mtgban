@@ -221,6 +221,7 @@ var EditionTable = map[string]string{
 	"Modern Masters: 2017 Edition":   "Modern Masters 2017",
 	"Ultimate Box Toppers":           "Ultimate Box Topper",
 	"Ultimate Masters - Box Toppers": "Ultimate Box Topper",
+	"Ultimate Masters - Variants":    "Ultimate Box Topper",
 	"Ultimate Masters Box Topper":    "Ultimate Box Topper",
 	"Ultimate Masters Box Toppers":   "Ultimate Box Topper",
 	"Ultimate Masters: Box Topper":   "Ultimate Box Topper",
