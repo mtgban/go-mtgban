@@ -43,7 +43,7 @@ func (c *Card) String() string {
 	return fmt.Sprintf("%s [%s%s] {%s}", out, c.Edition, foil, c.Number)
 }
 
-func output(card mtgjson.Card, set mtgjson.Set, foil bool) *Card {
+func output(card mtgjson.Card, foil bool) string {
 	// In case the foiling information is incorrect
 	if !foil && !card.HasNonFoil {
 		foil = true
@@ -57,20 +57,13 @@ func output(card mtgjson.Card, set mtgjson.Set, foil bool) *Card {
 	}
 
 	// Prepare the output card
-	out := &Card{
-		Id:      card.UUID,
-		Name:    card.Name,
-		Edition: set.Name,
-		Foil:    foil,
-		Number:  card.Number,
-	}
-
+	id := card.UUID
 	// Append "_f" to the Id to distinguish from non-foil
 	if (card.HasNonFoil || card.IsAlternative) && foil {
-		out.Id += "_f"
+		id += "_f"
 	}
 
-	return out
+	return id
 }
 
 func (c *Card) addToVariant(tag string) {

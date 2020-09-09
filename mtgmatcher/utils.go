@@ -10,6 +10,7 @@ import (
 )
 
 var ErrDatastoreEmpty = errors.New("datastore is empty")
+var ErrCardUnknownId = errors.New("unknown id")
 var ErrCardDoesNotExist = errors.New("unknown card name")
 var ErrCardNotInEdition = errors.New("unknown edition")
 var ErrCardWrongVariant = errors.New("unknown variant")
@@ -17,7 +18,7 @@ var ErrAliasing = newAliasingError()
 
 type AliasingError struct {
 	message string
-	dupes   []Card
+	dupes   []string
 }
 
 func newAliasingError() *AliasingError {
@@ -30,7 +31,7 @@ func (err *AliasingError) Error() string {
 	return err.message
 }
 
-func (err *AliasingError) Probe() []Card {
+func (err *AliasingError) Probe() []string {
 	return err.dupes
 }
 

@@ -1776,7 +1776,7 @@ func TestMatch(t *testing.T) {
 		t.Run(test.Desc, func(t *testing.T) {
 			//t.Parallel()
 
-			card, err := Match(&test.In)
+			cardId, err := Match(&test.In)
 			if err == nil && test.Err != nil {
 				t.Errorf("FAIL: Expected error: %s", test.Err.Error())
 				return
@@ -1790,8 +1790,8 @@ func TestMatch(t *testing.T) {
 					t.Errorf("FAIL: Mismatched error: expected '%s', got '%s'", test.Err.Error(), err.Error())
 					return
 				}
-			} else if card.Id != test.Id {
-				t.Errorf("FAIL: Id mismatch: expected '%s', got '%s'", test.Id, card.Id)
+			} else if cardId != test.Id {
+				t.Errorf("FAIL: Id mismatch: expected '%s', got '%s'", test.Id, cardId)
 				return
 			}
 

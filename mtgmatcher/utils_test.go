@@ -226,10 +226,11 @@ func TestAlias(t *testing.T) {
 		return
 	}
 
-	for i, dupe := range dupes {
-		if dupe != outCards[i] {
+	for i, dupeId := range dupes {
+		card, _ := Unmatch(dupeId)
+		if *card != outCards[i] {
 			t.Errorf("FAIL: incorrect duplicate returned")
-			t.Errorf("%v vs %v", dupe, outCards[i])
+			t.Errorf("%v vs %v", card, outCards[i])
 		}
 	}
 	t.Log("PASS: Aliasing")

@@ -1,6 +1,8 @@
 package mtgmatcher
 
 import (
+	"strings"
+
 	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
@@ -10,6 +12,27 @@ func GetUUIDs() map[string]cardobject {
 
 func GetSets() map[string]mtgjson.Set {
 	return sets
+}
+
+func Unmatch(cardId string) (*Card, error) {
+	if uuids == nil {
+		return nil, ErrDatastoreEmpty
+	}
+
+	id := strings.TrimSuffix(cardId, "_f")
+	co, found := uuids[id]
+	if !found {
+		return nil, ErrCardUnknownId
+	}
+
+	out := &Card{
+		Id:      cardId,
+		Name:    co.Card.Name,
+		Edition: co.Edition,
+		Foil:    strings.HasSuffix(cardId, "_f"),
+		Number:  co.Card.Number,
+	}
+	return out, nil
 }
 
 func HasPromoPackPrinting(name string) bool {

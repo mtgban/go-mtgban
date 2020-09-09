@@ -8,16 +8,16 @@ import (
 	"github.com/kodabb/go-mtgmatcher/mtgmatcher/mtgjson"
 )
 
-func Match(inCard *Card) (outCard *Card, err error) {
+func Match(inCard *Card) (cardId string, err error) {
 	if sets == nil {
-		return nil, ErrDatastoreEmpty
+		return "", ErrDatastoreEmpty
 	}
 
 	// Look up by uuid
 	if inCard.Id != "" {
 		co, found := uuids[strings.TrimSuffix(inCard.Id, "_f")]
 		if found {
-			return output(co.Card, sets[co.SetCode], inCard.Foil), nil
+			return output(co.Card, inCard.Foil), nil
 		}
 	}
 
@@ -29,7 +29,7 @@ func Match(inCard *Card) (outCard *Card, err error) {
 
 		entry, found = cards[Normalize(inCard.Name)]
 		if !found {
-			return nil, ErrCardDoesNotExist
+			return "", ErrCardDoesNotExist
 		}
 	}
 
@@ -51,7 +51,7 @@ func Match(inCard *Card) (outCard *Card, err error) {
 		// Filtering was too aggressive or wrong data fed,
 		// in either case, nothing else to be done here.
 		if len(printings) == 0 {
-			return nil, ErrCardNotInEdition
+			return "", ErrCardNotInEdition
 		}
 	}
 
@@ -148,13 +148,13 @@ func Match(inCard *Card) (outCard *Card, err error) {
 	// Victory
 	case 1:
 		logger.Println("Found it!")
-		outCard = output(outCards[0], sets[foundCode[0]], inCard.Foil)
+		cardId = output(outCards[0], inCard.Foil)
 	// FOR SHAME
 	default:
 		logger.Println("Aliasing...")
 		alias := newAliasingError()
 		for i := range outCards {
-			alias.dupes = append(alias.dupes, *output(outCards[i], sets[foundCode[i]], inCard.Foil))
+			alias.dupes = append(alias.dupes, output(outCards[i], inCard.Foil))
 		}
 		err = alias
 	}

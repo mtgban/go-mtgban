@@ -77,18 +77,19 @@ func run() int {
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					logger.Println("-", probe)
+					card, _ := mtgmatcher.Unmatch(probe)
+					logger.Println("-", card)
 				}
 			}
 			continue
 		}
 
-		id := strings.TrimSuffix(cc.Id, "_f")
+		id := strings.TrimSuffix(cc, "_f")
 		_, found := output[id]
 		if !found {
 			output[id] = &ck2id{}
 		}
-		if !cc.Foil {
+		if !strings.HasSuffix(cc, "_f") {
 			output[id].Normal = &meta{}
 			output[id].Normal.Id = card.Id
 			output[id].Normal.URL = "https://www.cardkingdom.com/" + card.URL
