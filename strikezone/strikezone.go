@@ -242,7 +242,7 @@ func (sz *Strikezone) parseBL() error {
 
 		var sellPrice, priceRatio float64
 
-		invCards := sz.inventory[*cc]
+		invCards := sz.inventory[cc.Id]
 		for _, invCard := range invCards {
 			if invCard.Conditions == "NM" {
 				sellPrice = invCard.Price
@@ -297,7 +297,7 @@ func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
 	return sz.buylist, nil
 }
 
-func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(_ string, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	return nil
 }
 

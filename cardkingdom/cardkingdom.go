@@ -156,7 +156,8 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 	return ck.buylist, nil
 }
 
-func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64) {
+	card, _ := mtgdb.ID2Card(cardId)
 	switch {
 	case card.Foil:
 		grade = map[string]float64{

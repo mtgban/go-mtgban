@@ -282,7 +282,7 @@ func (ftf *FaceToFace) scrape(mode string) error {
 			if card.Quantity > 0 && card.Price > 0 && card.Conditions == "NM" {
 				var sellPrice, priceRatio float64
 
-				invCards := ftf.inventory[*cc]
+				invCards := ftf.inventory[cc.Id]
 				for _, invCard := range invCards {
 					if invCard.Conditions == "NM" {
 						sellPrice = invCard.Price

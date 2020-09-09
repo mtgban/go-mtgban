@@ -236,7 +236,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			if card.Quantity > 0 && card.Price > 0 && card.Conditions == "NM" {
 				var sellPrice, priceRatio float64
 
-				invCards := cfb.inventory[*cc]
+				invCards := cfb.inventory[cc.Id]
 				for _, invCard := range invCards {
 					if invCard.Conditions == "NM" {
 						sellPrice = invCard.Price
@@ -302,7 +302,9 @@ var fourHorsemenDate = time.Date(1993, time.August, 1, 0, 0, 0, 0, time.UTC)
 var premodernDate = time.Date(1994, time.August, 1, 0, 0, 0, 0, time.UTC)
 var modernDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
 
-func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64) {
+	card, _ := mtgdb.ID2Card(cardId)
+
 	set, err := mtgdb.Set(card.Edition)
 	if err != nil {
 		return nil

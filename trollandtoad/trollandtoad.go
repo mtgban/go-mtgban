@@ -250,7 +250,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 
 		var priceRatio, sellPrice float64
 
-		invCards := tat.inventory[*cc]
+		invCards := tat.inventory[cc.Id]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break

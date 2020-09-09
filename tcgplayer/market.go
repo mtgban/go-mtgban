@@ -238,19 +238,12 @@ func (tcg *TCGPlayerMarket) IntializeInventory(reader io.Reader) error {
 	if err != nil {
 		return err
 	}
-
-	tcg.inventory = mtgban.InventoryRecord{}
-	for card := range inventory {
-		key, err := (&card).Match()
-		if err != nil {
-			tcg.printf("%s", err)
-			continue
-		}
-		tcg.inventory[*key] = inventory[card]
-	}
-	if len(tcg.inventory) == 0 {
+	if len(inventory) == 0 {
 		return fmt.Errorf("nothing was loaded")
 	}
+
+	tcg.inventory = inventory
+
 	tcg.printf("Loaded inventory from file")
 
 	return nil

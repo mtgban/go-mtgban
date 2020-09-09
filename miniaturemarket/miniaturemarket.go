@@ -223,7 +223,7 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 
 		var priceRatio, sellPrice float64
 
-		invCards := mm.inventory[*cc]
+		invCards := mm.inventory[cc.Id]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -314,7 +314,7 @@ func (mm *Miniaturemarket) Buylist() (mtgban.BuylistRecord, error) {
 	return mm.buylist, nil
 }
 
-func grading(card mtgdb.Card, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(_ string, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
 		"SP": 0.75, "MP": 0.75, "HP": 0,
 	}

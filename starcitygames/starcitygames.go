@@ -350,7 +350,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 
 			var priceRatio, sellPrice float64
 
-			invCards := scg.inventory[*cc]
+			invCards := scg.inventory[cc.Id]
 			for _, invCard := range invCards {
 				sellPrice = invCard.Price
 				break

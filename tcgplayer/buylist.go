@@ -129,7 +129,7 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 
 		var sellPrice, priceRatio float64
 
-		invCards := tcg.inventory[*cc]
+		invCards := tcg.inventory[cc.Id]
 		for _, invCard := range invCards {
 			if invCard.SellerName != "TCG Market" {
 				continue

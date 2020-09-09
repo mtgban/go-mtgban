@@ -331,7 +331,7 @@ func (jup *Jupitergames) parseBL() error {
 
 		var priceRatio, sellPrice float64
 
-		invCards := jup.inventory[*cc]
+		invCards := jup.inventory[cc.Id]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break

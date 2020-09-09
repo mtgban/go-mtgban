@@ -446,7 +446,7 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 
 		var priceRatio, sellPrice float64
 
-		invCards := csi.inventory[*cc]
+		invCards := csi.inventory[cc.Id]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
