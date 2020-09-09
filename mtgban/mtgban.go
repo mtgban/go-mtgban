@@ -5,8 +5,6 @@ package mtgban
 import (
 	"io"
 	"time"
-
-	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 // InventoryEntry represents an entry for selling a particular Card
@@ -43,11 +41,11 @@ type ScraperInfo struct {
 	NoCredit           bool
 
 	// Return the grading scale for adjusting prices according to conditions
-	Grading func(mtgdb.Card, BuylistEntry) map[string]float64
+	Grading func(string, BuylistEntry) map[string]float64
 }
 
 // A generic grading function that estimates deductions when not available
-func DefaultGrading(card mtgdb.Card, entry BuylistEntry) (grade map[string]float64) {
+func DefaultGrading(_ string, entry BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
 		"SP": 0.8, "MP": 0.6, "HP": 0.4,
 	}
@@ -66,7 +64,7 @@ type Initializer interface {
 	IntializeInventory(io.Reader) error
 }
 
-type InventoryRecord map[mtgdb.Card][]InventoryEntry
+type InventoryRecord map[string][]InventoryEntry
 
 // Market is the interface describing actions to be performed on the
 // inventory available on a platform, usually combining different sellers
@@ -93,7 +91,7 @@ type Seller interface {
 	Info() ScraperInfo
 }
 
-type BuylistRecord map[mtgdb.Card]BuylistEntry
+type BuylistRecord map[string]BuylistEntry
 
 // Vendor is the interface describing actions to be performed on a vendor buylist
 type Vendor interface {

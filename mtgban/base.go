@@ -7,8 +7,8 @@ import (
 	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
-func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict int) error {
-	entries, found := inv[*card]
+func (inv InventoryRecord) add(card string, entry *InventoryEntry, strict int) error {
+	entries, found := inv[card]
 	if found {
 		for i := range entries {
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price {
@@ -24,38 +24,38 @@ func (inv InventoryRecord) add(card *mtgdb.Card, entry *InventoryEntry, strict i
 					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
 				}
 
-				inv[*card][i].Quantity += entry.Quantity
+				inv[card][i].Quantity += entry.Quantity
 				return nil
 			}
 		}
 	}
 
-	inv[*card] = append(inv[*card], *entry)
+	inv[card] = append(inv[card], *entry)
 	return nil
 }
 
 // Add a new record to the inventory, existing entries are always merged
 func (inv InventoryRecord) AddRelaxed(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card, entry, 0)
+	return inv.add(card.Id, entry, 0)
 }
 
 // Add a new record to the inventory, similar existing entries are merged
 func (inv InventoryRecord) Add(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card, entry, 1)
+	return inv.add(card.Id, entry, 1)
 }
 
 // Add new record to the inventory, similar existing entries are not merged
 func (inv InventoryRecord) AddStrict(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card, entry, 2)
+	return inv.add(card.Id, entry, 2)
 }
 
 func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
-	_, found := bl[*card]
+	_, found := bl[card.Id]
 	if found {
-		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, bl[*card])
+		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, bl[card.Id])
 	}
 
-	bl[*card] = *entry
+	bl[card.Id] = *entry
 	return nil
 }
 

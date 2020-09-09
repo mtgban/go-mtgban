@@ -265,7 +265,8 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 		return err
 	}
 
-	for card, entries := range inventory {
+	for cardId, entries := range inventory {
+		card, _ := mtgdb.ID2Card(cardId)
 		for _, entry := range entries {
 			foil := ""
 			if card.Foil {
@@ -316,7 +317,9 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 		return err
 	}
 
-	for card, entry := range buylist {
+	for cardId, entry := range buylist {
+		card, _ := mtgdb.ID2Card(cardId)
+
 		foil := ""
 		if card.Foil {
 			foil = "FOIL"
@@ -459,7 +462,9 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 		return err
 	}
 
-	for card, entries := range root.Entries {
+	for cardId, entries := range root.Entries {
+		card, _ := mtgdb.ID2Card(cardId)
+
 		foil := ""
 		if card.Foil {
 			foil = "FOIL"

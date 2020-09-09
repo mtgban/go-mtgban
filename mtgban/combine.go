@@ -1,12 +1,8 @@
 package mtgban
 
-import (
-	"github.com/kodabb/go-mtgban/mtgdb"
-)
-
 type CombineRoot struct {
 	Names   []string
-	Entries map[mtgdb.Card]map[string]CombineEntry
+	Entries map[string]map[string]CombineEntry
 }
 
 type CombineEntry struct {
@@ -20,7 +16,7 @@ type CombineEntry struct {
 func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 	root := &CombineRoot{
 		Names:   []string{},
-		Entries: map[mtgdb.Card]map[string]CombineEntry{},
+		Entries: map[string]map[string]CombineEntry{},
 	}
 
 	for _, seller := range sellers {
@@ -65,7 +61,7 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 	root := &CombineRoot{
 		Names:   []string{},
-		Entries: map[mtgdb.Card]map[string]CombineEntry{},
+		Entries: map[string]map[string]CombineEntry{},
 	}
 
 	for _, vendor := range vendors {

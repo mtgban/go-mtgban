@@ -63,8 +63,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		return nil, err
 	}
 
-	for card, blEntry := range buylist {
-		invEntries, found := inventory[card]
+	for cardId, blEntry := range buylist {
+		invEntries, found := inventory[cardId]
 		if !found {
 			continue
 		}
@@ -78,7 +78,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 
-		grade := vendor.Info().Grading(card, blEntry)
+		card, _ := mtgdb.ID2Card(cardId)
+		grade := vendor.Info().Grading(cardId, blEntry)
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
 			blPrice := buylistPrice
@@ -97,7 +98,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			if difference > minDiff && spread > minSpread {
 				res := ArbitEntry{
-					Card:               card,
+					Card:               *card,
 					BuylistEntry:       blEntry,
 					InventoryEntry:     invEntry,
 					Difference:         difference,
@@ -170,7 +171,7 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 		totalPrice := extra
 		totalBuylistPrice := 0.0
 		for _, entry := range arbit {
-			grade := vendor.Info().Grading(entry.Card, entry.BuylistEntry)
+			grade := vendor.Info().Grading(entry.Card.Id, entry.BuylistEntry)
 
 			blPrice := entry.BuylistEntry.BuyPrice
 			cond := entry.InventoryEntry.Conditions
@@ -234,12 +235,13 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 		return nil, err
 	}
 
-	for card, refEntries := range referenceInv {
-		invEntries, found := probeInv[card]
+	for cardId, refEntries := range referenceInv {
+		invEntries, found := probeInv[cardId]
 		if !found {
 			continue
 		}
 
+		card, _ := mtgdb.ID2Card(cardId)
 		for _, refEntry := range refEntries {
 			if refEntry.Price == 0 {
 				continue
@@ -260,7 +262,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 
 				if difference > minDiff && spread > minSpread {
 					res := MismatchEntry{
-						Card:           card,
+						Card:           *card,
 						InventoryEntry: invEntry,
 						Difference:     difference,
 						Spread:         spread,
@@ -285,7 +287,8 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 		return nil, err
 	}
 
-	for card, entries := range inventory {
+	for cardId, entries := range inventory {
+		card, _ := mtgdb.ID2Card(cardId)
 		if card.Rarity != "M" && card.Rarity != "R" {
 			continue
 		}
@@ -315,7 +318,7 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 
 			if pennyMythic || pennyRare || pennyFoil || pennyInteresting {
 				result = append(result, PennystockEntry{
-					Card:           card,
+					Card:           *card,
 					InventoryEntry: entry,
 				})
 			}
