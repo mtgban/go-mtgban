@@ -1745,6 +1745,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Portal",
 		},
 	},
+	MatchTest{
+		Id:   "9c6f7fe2-544c-5d92-b5c7-777a5c944561",
+		Desc: "portal_simplified_chinese_no_alias",
+		In: Card{
+			Name:    "Assassin's Blade",
+			Edition: "Portal",
+		},
+	},
 }
 
 func TestMatch(t *testing.T) {

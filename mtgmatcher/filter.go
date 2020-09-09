@@ -515,6 +515,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if card.HasPromoType(mtgjson.PromoTypePrerelease) {
 					continue
 				}
+				// Skip some Simplified Chinese cards that have different art
+				// This should probably check for ZHS language, but the ForeignData
+				// array is empty - as are cards from Prerelease, so check it here
+				if len(card.ForeignData) == 0 && strings.HasSuffix(card.Number, "s") {
+					continue
+				}
 			}
 
 			// Promo pack
