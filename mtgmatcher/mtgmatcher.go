@@ -17,7 +17,7 @@ func Match(inCard *Card) (outCard *Card, err error) {
 	if inCard.Id != "" {
 		co, found := uuids[strings.TrimSuffix(inCard.Id, "_f")]
 		if found {
-			return inCard.output(co.Card, sets[co.SetCode]), nil
+			return output(co.Card, sets[co.SetCode], inCard.Foil), nil
 		}
 	}
 
@@ -148,13 +148,13 @@ func Match(inCard *Card) (outCard *Card, err error) {
 	// Victory
 	case 1:
 		logger.Println("Found it!")
-		outCard = inCard.output(outCards[0], sets[foundCode[0]])
+		outCard = output(outCards[0], sets[foundCode[0]], inCard.Foil)
 	// FOR SHAME
 	default:
 		logger.Println("Aliasing...")
 		alias := newAliasingError()
 		for i := range outCards {
-			alias.dupes = append(alias.dupes, *inCard.output(outCards[i], sets[foundCode[i]]))
+			alias.dupes = append(alias.dupes, *output(outCards[i], sets[foundCode[i]], inCard.Foil))
 		}
 		err = alias
 	}

@@ -43,8 +43,7 @@ func (c *Card) String() string {
 	return fmt.Sprintf("%s [%s%s] {%s}", out, c.Edition, foil, c.Number)
 }
 
-func (c *Card) output(card mtgjson.Card, set mtgjson.Set) *Card {
-	foil := c.Foil
+func output(card mtgjson.Card, set mtgjson.Set, foil bool) *Card {
 	// In case the foiling information is incorrect
 	if !foil && !card.HasNonFoil {
 		foil = true
