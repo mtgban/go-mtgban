@@ -42,7 +42,7 @@ func (db *Database) Match(inCard *Card, logger *log.Logger) (outCard *Card, err 
 		for _, set := range internal.Sets {
 			for _, card := range set.Cards {
 				if id == card.UUID || id == card.ScryfallId {
-					return inCard.output(card, set), nil
+					return output(card, set, inCard.Foil), nil
 				}
 			}
 		}
@@ -149,7 +149,7 @@ func (db *Database) Match(inCard *Card, logger *log.Logger) (outCard *Card, err 
 
 		err = fmt.Errorf("edition '%s' does not apply to '%s'", inCard.Edition, inCard.Name)
 	case 1:
-		outCard = inCard.output(outCards[0], db.Sets[foundCode[0]])
+		outCard = output(outCards[0], db.Sets[foundCode[0]], inCard.Foil)
 	default:
 		out := ""
 		for i, card := range outCards {

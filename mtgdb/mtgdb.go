@@ -166,3 +166,23 @@ func EditionName2Code(name string) (string, error) {
 	}
 	return "", fmt.Errorf("edition name '%s' not found", name)
 }
+
+func ID2Card(id string) (*Card, error) {
+	if internal == nil {
+		return nil, fmt.Errorf("internal database is not initialized")
+	}
+	uuid := id
+	foil := false
+	if strings.HasSuffix(id, "_f") {
+		uuid = id[:len(id)-2]
+		foil = true
+	}
+	for _, set := range internal.Sets {
+		for _, card := range set.Cards {
+			if uuid == card.UUID {
+				return output(card, set, foil), nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("id not found")
+}
