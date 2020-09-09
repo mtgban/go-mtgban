@@ -61,7 +61,7 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
-		cardSet[printings[0]] = matchInSet(inCard, sets[printings[0]])
+		cardSet[printings[0]] = matchInSet(inCard, printings[0])
 	} else {
 		// If multiple printing, try filtering to the closest name
 		// described by the inCard.Edition.
@@ -72,7 +72,7 @@ func Match(inCard *Card) (cardId string, err error) {
 			// Perfect match, the card *has* to be present in the set
 			if Equals(sets[setCode].Name, inCard.Edition) {
 				logger.Println("Found a perfect match with", inCard.Edition, setCode)
-				cardSet[setCode] = matchInSet(inCard, sets[setCode])
+				cardSet[setCode] = matchInSet(inCard, setCode)
 			}
 		}
 
@@ -85,7 +85,7 @@ func Match(inCard *Card) (cardId string, err error) {
 				if Contains(set.Name, inCard.Edition) ||
 					(inCard.isGenericPromo() && strings.HasSuffix(set.Name, "Promos")) {
 					logger.Println("Found a possible match with", inCard.Edition, setCode)
-					cardSet[setCode] = matchInSet(inCard, set)
+					cardSet[setCode] = matchInSet(inCard, setCode)
 				}
 			}
 		}
@@ -96,7 +96,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		if len(cardSet) == 0 {
 			logger.Println("No loose match found, trying all")
 			for _, setCode := range printings {
-				cardSet[setCode] = matchInSet(inCard, sets[setCode])
+				cardSet[setCode] = matchInSet(inCard, setCode)
 			}
 		}
 	}
@@ -164,7 +164,8 @@ func Match(inCard *Card) (cardId string, err error) {
 
 // Return an array of mtgjson.Card containing all the cards with the exact
 // same name as the input inCard in the given mtgjson.Set.
-func matchInSet(inCard *Card, set mtgjson.Set) (outCards []mtgjson.Card) {
+func matchInSet(inCard *Card, setCode string) (outCards []mtgjson.Card) {
+	set := sets[setCode]
 	for _, card := range set.Cards {
 		if inCard.Name == card.Name {
 			// MTGJSON v5 contains duplicated card info for each face, and we do
@@ -364,27 +365,27 @@ func adjustEdition(inCard *Card) {
 	// Special handling since so many providers get this wrong
 	switch {
 	// XLN Treasure Chest
-	case inCard.isBaB() && len(matchInSet(inCard, sets["PXTC"])) != 0:
+	case inCard.isBaB() && len(matchInSet(inCard, "PXTC")) != 0:
 		inCard.Edition = sets["PXTC"].Name
 	// BFZ Standard Series
-	case inCard.isGenericAltArt() && len(matchInSet(inCard, sets["PSS1"])) != 0:
+	case inCard.isGenericAltArt() && len(matchInSet(inCard, "PSS1")) != 0:
 		inCard.Edition = sets["PSS1"].Name
 	// Champs and States
-	case inCard.isGenericExtendedArt() && len(matchInSet(inCard, sets["PCMP"])) != 0:
+	case inCard.isGenericExtendedArt() && len(matchInSet(inCard, "PCMP")) != 0:
 		inCard.Edition = sets["PCMP"].Name
 	// Portal Demo Game
 	case ((Contains(inCard.Variation, "Reminder Text") &&
 		!strings.Contains(inCard.Variation, "No")) ||
 		Contains(inCard.Variation, "No Flavor Text")) &&
-		len(matchInSet(inCard, sets["PPOD"])) != 0:
+		len(matchInSet(inCard, "PPOD")) != 0:
 		inCard.Edition = sets["PPOD"].Name
 	// Secret Lair Ultimate
 	case strings.Contains(inCard.Edition, "Secret Lair") &&
-		len(matchInSet(inCard, sets["SLU"])) != 0:
+		len(matchInSet(inCard, "SLU")) != 0:
 		inCard.Edition = sets["SLU"].Name
 	// Summer of Magic
 	case (inCard.isWPNGateway() || strings.Contains(inCard.Variation, "Summer")) &&
-		len(matchInSet(inCard, sets["PSUM"])) != 0:
+		len(matchInSet(inCard, "PSUM")) != 0:
 		inCard.Edition = sets["PSUM"].Name
 
 	// Single card mismatches

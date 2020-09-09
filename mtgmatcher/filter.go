@@ -54,7 +54,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				case strings.HasSuffix(set.Name, "Promos"):
 				case setDate.After(PromosForEverybodyYay) && set.Type == "expansion":
 					skip := true
-					foundCards := matchInSet(inCard, set)
+					foundCards := matchInSet(inCard, setCode)
 					for _, card := range foundCards {
 						if card.HasPromoType(mtgjson.PromoTypePromoPack) {
 							skip = false
@@ -113,7 +113,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case strings.HasPrefix(set.Name, "Friday Night Magic "+maybeYear):
 			case strings.HasSuffix(set.Name, "Promos"):
 				skip := true
-				foundCards := matchInSet(inCard, set)
+				foundCards := matchInSet(inCard, setCode)
 				for _, card := range foundCards {
 					if card.HasFrameEffect(mtgjson.FrameEffectInverted) {
 						inCard.Variation = "FNM Promo"
@@ -181,7 +181,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					"Miscellaneous Book Promos":
 				case "Magazine Inserts":
 					skip := false
-					foundCards := matchInSet(inCard, set)
+					foundCards := matchInSet(inCard, setCode)
 					for _, card := range foundCards {
 						if !inCard.isJPN() && card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
 							skip = true
