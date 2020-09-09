@@ -335,7 +335,7 @@ func (csi *Coolstuffinc) scrape() error {
 		}
 		dupes[key] = true
 
-		err := csi.inventory.Add(res.card, res.invEntry)
+		err := csi.inventory.Add(res.card.Id, res.invEntry)
 		if err != nil {
 			if !strings.HasSuffix(res.card.Name, "Guildgate") &&
 				!strings.HasSuffix(res.card.Name, "Signet") {
@@ -529,7 +529,7 @@ func (csi *Coolstuffinc) parseBL() error {
 	}()
 
 	for record := range results {
-		err := csi.buylist.Add(record.card, record.buyEntry)
+		err := csi.buylist.Add(record.card.Id, record.buyEntry)
 		if err != nil {
 			csi.printf(err.Error())
 			continue

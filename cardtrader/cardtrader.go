@@ -210,7 +210,7 @@ func (ct *Cardtrader) scrape() error {
 
 	lastTime := time.Now()
 	for result := range results {
-		err := ct.inventory.AddRelaxed(result.card, result.invEntry)
+		err := ct.inventory.AddRelaxed(result.card.Id, result.invEntry)
 		if err != nil {
 			ct.printf(err.Error())
 			continue

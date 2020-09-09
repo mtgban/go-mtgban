@@ -165,7 +165,7 @@ func (sz *Strikezone) scrape() error {
 	}()
 
 	for resp := range channel {
-		err := sz.inventory.Add(resp.card, resp.entry)
+		err := sz.inventory.Add(resp.card.Id, resp.entry)
 		if err != nil {
 			sz.printf("%v", err)
 			continue
@@ -260,7 +260,7 @@ func (sz *Strikezone) parseBL() error {
 			PriceRatio: priceRatio,
 			URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
 		}
-		err = sz.buylist.Add(cc, out)
+		err = sz.buylist.Add(cc.Id, out)
 		if err != nil {
 			sz.printf("%v", err)
 		}

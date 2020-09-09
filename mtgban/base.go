@@ -35,27 +35,28 @@ func (inv InventoryRecord) add(card string, entry *InventoryEntry, strict int) e
 }
 
 // Add a new record to the inventory, existing entries are always merged
-func (inv InventoryRecord) AddRelaxed(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card.Id, entry, 0)
+func (inv InventoryRecord) AddRelaxed(cardId string, entry *InventoryEntry) error {
+	return inv.add(cardId, entry, 0)
 }
 
 // Add a new record to the inventory, similar existing entries are merged
-func (inv InventoryRecord) Add(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card.Id, entry, 1)
+func (inv InventoryRecord) Add(cardId string, entry *InventoryEntry) error {
+	return inv.add(cardId, entry, 1)
 }
 
 // Add new record to the inventory, similar existing entries are not merged
-func (inv InventoryRecord) AddStrict(card *mtgdb.Card, entry *InventoryEntry) error {
-	return inv.add(card.Id, entry, 2)
+func (inv InventoryRecord) AddStrict(cardId string, entry *InventoryEntry) error {
+	return inv.add(cardId, entry, 2)
 }
 
-func (bl BuylistRecord) Add(card *mtgdb.Card, entry *BuylistEntry) error {
-	_, found := bl[card.Id]
+func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
+	_, found := bl[cardId]
 	if found {
-		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, bl[card.Id])
+		card, _ := mtgdb.ID2Card(cardId)
+		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, bl[cardId])
 	}
 
-	bl[card.Id] = *entry
+	bl[cardId] = *entry
 	return nil
 }
 

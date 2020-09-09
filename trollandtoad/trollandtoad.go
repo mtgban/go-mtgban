@@ -158,7 +158,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 	}()
 
 	for res := range channel {
-		err := tat.inventory.Add(res.card, res.invEntry)
+		err := tat.inventory.Add(res.card.Id, res.invEntry)
 		if err != nil {
 			// Too many false positives
 			//tat.printf("%v", err)
@@ -315,7 +315,7 @@ func (tat *Trollandtoad) parseBL() error {
 	}()
 
 	for record := range results {
-		err := tat.buylist.Add(record.card, record.buyEntry)
+		err := tat.buylist.Add(record.card.Id, record.buyEntry)
 		if err != nil {
 			tat.printf(err.Error())
 			continue

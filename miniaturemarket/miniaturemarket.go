@@ -164,7 +164,7 @@ func (mm *Miniaturemarket) scrape() error {
 	}()
 
 	for record := range channel {
-		err := mm.inventory.Add(record.card, record.invEntry)
+		err := mm.inventory.Add(record.card.Id, record.invEntry)
 		// Do not print an error if we expect a duplicate due to the sorting
 		if err != nil {
 			mm.printf("%v", err)
@@ -276,7 +276,7 @@ func (mm *Miniaturemarket) parseBL() error {
 	}()
 
 	for result := range results {
-		err := mm.buylist.Add(result.card, result.buyEntry)
+		err := mm.buylist.Add(result.card.Id, result.buyEntry)
 		if err != nil {
 			mm.printf(err.Error())
 			continue

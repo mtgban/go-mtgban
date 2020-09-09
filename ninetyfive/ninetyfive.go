@@ -109,7 +109,7 @@ func (nf *Ninetyfive) parseBL() error {
 				Quantity: quantity,
 				URL:      "http://www.95mtg.com/buylist/",
 			}
-			err := nf.buylist.Add(cc, out)
+			err := nf.buylist.Add(cc.Id, out)
 			if err != nil {
 				nf.printf("%v", err)
 			}

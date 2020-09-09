@@ -77,7 +77,7 @@ func (ck *Cardkingdom) scrape() error {
 					Quantity:   card.SellQuantity,
 					URL:        u.String(),
 				}
-				err = ck.inventory.Add(cc, out)
+				err = ck.inventory.Add(cc.Id, out)
 				if err != nil {
 					ck.printf("%v", err)
 				}
@@ -115,7 +115,7 @@ func (ck *Cardkingdom) scrape() error {
 					PriceRatio: priceRatio,
 					URL:        u.String(),
 				}
-				err = ck.buylist.Add(cc, out)
+				err = ck.buylist.Add(cc.Id, out)
 				if err != nil {
 					ck.printf("%v", err)
 				}

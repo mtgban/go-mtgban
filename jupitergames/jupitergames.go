@@ -207,7 +207,7 @@ func (jup *Jupitergames) scrape() error {
 	}()
 
 	for res := range channel {
-		err := jup.inventory.Add(res.card, res.invEntry)
+		err := jup.inventory.Add(res.card.Id, res.invEntry)
 		if err != nil {
 			jup.printf("%v", err)
 		}
@@ -348,7 +348,7 @@ func (jup *Jupitergames) parseBL() error {
 			URL:        "https://jupitergames.info/store/find/buypricebyname/" + url.QueryEscape(cardName),
 		}
 
-		err = jup.buylist.Add(cc, buyEntry)
+		err = jup.buylist.Add(cc.Id, buyEntry)
 		if err != nil {
 			jup.printf(err.Error())
 			continue

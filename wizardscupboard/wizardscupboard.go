@@ -196,7 +196,7 @@ func (wc *Wizardscupboard) scrape() error {
 		}
 		dupes[key] = true
 
-		err := wc.inventory.Add(resp.card, resp.entry)
+		err := wc.inventory.Add(resp.card.Id, resp.entry)
 		if err != nil {
 			wc.printf("%v", err)
 			continue

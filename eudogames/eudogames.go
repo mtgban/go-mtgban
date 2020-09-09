@@ -272,9 +272,9 @@ func (eudo *Eudogames) scrape(mode string) error {
 	for res := range channel {
 		var err error
 		if mode == modeInventory {
-			err = eudo.inventory.Add(res.card, res.invEntry)
+			err = eudo.inventory.Add(res.card.Id, res.invEntry)
 		} else {
-			err = eudo.buylist.Add(res.card, res.buyEntry)
+			err = eudo.buylist.Add(res.card.Id, res.buyEntry)
 		}
 		if err != nil {
 			eudo.printf("%v", err)

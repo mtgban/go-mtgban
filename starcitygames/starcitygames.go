@@ -275,7 +275,7 @@ func (scg *Starcitygames) scrape() error {
 		}
 		dupes[key] = true
 
-		err := scg.inventory.Add(res.card, res.invEntry)
+		err := scg.inventory.Add(res.card.Id, res.invEntry)
 		if err != nil {
 			if !strings.HasSuffix(res.card.Name, "Guildgate") &&
 				!strings.HasSuffix(res.card.Name, "Signet") {
@@ -403,7 +403,7 @@ func (scg *Starcitygames) parseBL() error {
 	}()
 
 	for record := range results {
-		err := scg.buylist.Add(record.card, record.buyEntry)
+		err := scg.buylist.Add(record.card.Id, record.buyEntry)
 		if err != nil {
 			scg.printf(err.Error())
 			continue

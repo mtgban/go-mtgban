@@ -148,7 +148,7 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			SellerName: sellerName,
 		}
 
-		inventory.Add(card, entry)
+		inventory.Add(card.Id, entry)
 	}
 
 	return inventory, nil
@@ -236,7 +236,7 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			URL:        URL,
 		}
 
-		buylist.Add(card, entry)
+		buylist.Add(card.Id, entry)
 	}
 
 	return buylist, nil

@@ -216,7 +216,7 @@ func (tcg *TCGPlayerFull) scrape() error {
 	}()
 
 	for result := range channel {
-		err := tcg.inventory.Add(&result.card, &result.entry)
+		err := tcg.inventory.Add(result.card.Id, &result.entry)
 		if err != nil {
 			tcg.printf(err.Error())
 			continue

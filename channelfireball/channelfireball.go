@@ -226,7 +226,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Quantity:   card.Quantity,
 					URL:        cfbInventoryURL + "/" + card.URLId,
 				}
-				err := cfb.inventory.Add(cc, out)
+				err := cfb.inventory.Add(cc.Id, out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}
@@ -255,7 +255,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					PriceRatio: priceRatio,
 					URL:        cfbBuylistURL + "/" + card.URLId,
 				}
-				err := cfb.buylist.Add(cc, out)
+				err := cfb.buylist.Add(cc.Id, out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}
