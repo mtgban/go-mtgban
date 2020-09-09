@@ -7,20 +7,20 @@ import (
 )
 
 func GetUUIDs() map[string]cardobject {
-	return uuids
+	return backend.UUIDs
 }
 
 func GetSets() map[string]mtgjson.Set {
-	return sets
+	return backend.Sets
 }
 
 func Unmatch(cardId string) (*Card, error) {
-	if uuids == nil {
+	if backend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
 	id := strings.TrimSuffix(cardId, "_f")
-	co, found := uuids[id]
+	co, found := backend.UUIDs[id]
 	if !found {
 		return nil, ErrCardUnknownId
 	}
@@ -36,23 +36,23 @@ func Unmatch(cardId string) (*Card, error) {
 }
 
 func HasPromoPackPrinting(name string) bool {
-	if sets == nil {
+	if backend.Sets == nil {
 		return false
 	}
 
-	card, found := cards[Normalize(name)]
+	card, found := backend.Cards[Normalize(name)]
 	if !found {
 		cc := &Card{
 			Name: name,
 		}
 		adjustName(cc)
-		card, found = cards[Normalize(cc.Name)]
+		card, found = backend.Cards[Normalize(cc.Name)]
 		if !found {
 			return false
 		}
 	}
 	for _, code := range card.Printings {
-		set, found := sets[code]
+		set, found := backend.Sets[code]
 		if !found || set.IsOnlineOnly {
 			continue
 		}

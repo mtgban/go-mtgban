@@ -9,25 +9,25 @@ import (
 )
 
 func Match(inCard *Card) (cardId string, err error) {
-	if sets == nil {
+	if backend.Sets == nil {
 		return "", ErrDatastoreEmpty
 	}
 
 	// Look up by uuid
 	if inCard.Id != "" {
-		co, found := uuids[strings.TrimSuffix(inCard.Id, "_f")]
+		co, found := backend.UUIDs[strings.TrimSuffix(inCard.Id, "_f")]
 		if found {
 			return output(co.Card, inCard.Foil), nil
 		}
 	}
 
 	// Get the card basic info to retrieve the Printings array
-	entry, found := cards[Normalize(inCard.Name)]
+	entry, found := backend.Cards[Normalize(inCard.Name)]
 	if !found {
 		// Fixup up the name and try again
 		adjustName(inCard)
 
-		entry, found = cards[Normalize(inCard.Name)]
+		entry, found = backend.Cards[Normalize(inCard.Name)]
 		if !found {
 			return "", ErrCardDoesNotExist
 		}
@@ -70,7 +70,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		// First loop, search for a perfect match
 		for _, setCode := range printings {
 			// Perfect match, the card *has* to be present in the set
-			if Equals(sets[setCode].Name, inCard.Edition) {
+			if Equals(backend.Sets[setCode].Name, inCard.Edition) {
 				logger.Println("Found a perfect match with", inCard.Edition, setCode)
 				cardSet[setCode] = matchInSet(inCard, setCode)
 			}
@@ -81,7 +81,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		if len(cardSet) == 0 {
 			logger.Println("No perfect match found, trying with heuristics")
 			for _, setCode := range printings {
-				set := sets[setCode]
+				set := backend.Sets[setCode]
 				if Contains(set.Name, inCard.Edition) ||
 					(inCard.isGenericPromo() && strings.HasSuffix(set.Name, "Promos")) {
 					logger.Println("Found a possible match with", inCard.Edition, setCode)
@@ -165,7 +165,7 @@ func Match(inCard *Card) (cardId string, err error) {
 // Return an array of mtgjson.Card containing all the cards with the exact
 // same name as the input inCard in the given mtgjson.Set.
 func matchInSet(inCard *Card, setCode string) (outCards []mtgjson.Card) {
-	set := sets[setCode]
+	set := backend.Sets[setCode]
 	for _, card := range set.Cards {
 		if inCard.Name == card.Name {
 			// MTGJSON v5 contains duplicated card info for each face, and we do
@@ -223,7 +223,7 @@ func adjustName(inCard *Card) {
 
 	// Check if the input name is the reskinned one
 	if strings.Contains(inCard.Edition, "Ikoria") {
-		for _, card := range sets["IKO"].Cards {
+		for _, card := range backend.Sets["IKO"].Cards {
 			if Equals(inCard.Name, card.FlavorName) {
 				inCard.Name = card.Name
 				inCard.addToVariant("Godzilla")
@@ -238,7 +238,7 @@ func adjustName(inCard *Card) {
 			name := strings.Replace(inCard.Name, sep, " // ", 1)
 
 			// Check if the fixed name exists
-			_, found := cards[Normalize(name)]
+			_, found := backend.Cards[Normalize(name)]
 			if found {
 				inCard.Name = name
 				return
@@ -246,7 +246,7 @@ func adjustName(inCard *Card) {
 
 			// If not, try and keep one side only
 			name = strings.Split(inCard.Name, " // ")[0]
-			_, found = cards[Normalize(name)]
+			_, found = backend.Cards[Normalize(name)]
 			if found {
 				inCard.Name = name
 				return
@@ -260,7 +260,7 @@ func adjustName(inCard *Card) {
 		strings.Contains(inCard.Edition, "Unhinged") ||
 		strings.Contains(inCard.Edition, "Unstable") ||
 		strings.Contains(inCard.Edition, "Unsanctioned") {
-		for cardName, props := range cards {
+		for cardName, props := range backend.Cards {
 			if HasPrefix(cardName, inCard.Name) {
 				inCard.Name = props.Name
 				return
@@ -270,7 +270,7 @@ func adjustName(inCard *Card) {
 
 	// Altenatively try checking across any prefix, as long as it's a double
 	// sided card, for some particular cases, like meld cards, or Treasure Chest
-	for cardName, props := range cards {
+	for cardName, props := range backend.Cards {
 		if props.Layout != "normal" && HasPrefix(cardName, inCard.Name) {
 			inCard.Name = props.Name
 			return
@@ -283,7 +283,7 @@ func adjustName(inCard *Card) {
 // or look up known cards in small sets.
 func adjustEdition(inCard *Card) {
 	edition := inCard.Edition
-	set, found := sets[edition]
+	set, found := backend.Sets[edition]
 	if found {
 		edition = set.Name
 	}
@@ -366,27 +366,27 @@ func adjustEdition(inCard *Card) {
 	switch {
 	// XLN Treasure Chest
 	case inCard.isBaB() && len(matchInSet(inCard, "PXTC")) != 0:
-		inCard.Edition = sets["PXTC"].Name
+		inCard.Edition = backend.Sets["PXTC"].Name
 	// BFZ Standard Series
 	case inCard.isGenericAltArt() && len(matchInSet(inCard, "PSS1")) != 0:
-		inCard.Edition = sets["PSS1"].Name
+		inCard.Edition = backend.Sets["PSS1"].Name
 	// Champs and States
 	case inCard.isGenericExtendedArt() && len(matchInSet(inCard, "PCMP")) != 0:
-		inCard.Edition = sets["PCMP"].Name
+		inCard.Edition = backend.Sets["PCMP"].Name
 	// Portal Demo Game
 	case ((Contains(inCard.Variation, "Reminder Text") &&
 		!strings.Contains(inCard.Variation, "No")) ||
 		Contains(inCard.Variation, "No Flavor Text")) &&
 		len(matchInSet(inCard, "PPOD")) != 0:
-		inCard.Edition = sets["PPOD"].Name
+		inCard.Edition = backend.Sets["PPOD"].Name
 	// Secret Lair Ultimate
 	case strings.Contains(inCard.Edition, "Secret Lair") &&
 		len(matchInSet(inCard, "SLU")) != 0:
-		inCard.Edition = sets["SLU"].Name
+		inCard.Edition = backend.Sets["SLU"].Name
 	// Summer of Magic
 	case (inCard.isWPNGateway() || strings.Contains(inCard.Variation, "Summer")) &&
 		len(matchInSet(inCard, "PSUM")) != 0:
-		inCard.Edition = sets["PSUM"].Name
+		inCard.Edition = backend.Sets["PSUM"].Name
 
 	// Single card mismatches
 	case Equals(inCard.Name, "Rhox") && inCard.isGenericAltArt():

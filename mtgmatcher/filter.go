@@ -16,7 +16,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 	}
 
 	for _, setCode := range editions {
-		set, found := sets[setCode]
+		set, found := backend.Sets[setCode]
 		if !found || set.IsOnlineOnly || setCode == "PRED" {
 			continue
 		}
@@ -367,7 +367,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 // Deduplicate cards with the same name.
 func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mtgjson.Card, foundCode []string) {
 	for setCode, inCards := range cardSet {
-		set := sets[setCode]
+		set := backend.Sets[setCode]
 		setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
 
 		for _, card := range inCards {
@@ -768,12 +768,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 		if allSameEdition {
 			size := len(foundCode)
 			for i := 0; i < size; i++ {
-				set := sets[foundCode[i]]
+				set := backend.Sets[foundCode[i]]
 				// Drop any printing that don't have the ParentCode
 				// or the edition name itself in the Variation field
 				if !(strings.Contains(inCard.Variation, set.ParentCode) ||
-					strings.Contains(inCard.Variation, sets[set.ParentCode].Name) ||
-					strings.Contains(inCard.Edition, sets[set.ParentCode].Name)) {
+					strings.Contains(inCard.Variation, backend.Sets[set.ParentCode].Name) ||
+					strings.Contains(inCard.Edition, backend.Sets[set.ParentCode].Name)) {
 					foundCode = append(foundCode[:i], foundCode[i+1:]...)
 					outCards = append(outCards[:i], outCards[i+1:]...)
 					size--

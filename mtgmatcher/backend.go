@@ -20,16 +20,17 @@ type cardobject struct {
 	Edition string
 }
 
-var sets map[string]mtgjson.Set
-var cards map[string]cardinfo
-var uuids map[string]cardobject
+var backend struct {
+	Sets  map[string]mtgjson.Set
+	Cards map[string]cardinfo
+	UUIDs map[string]cardobject
+}
 
 var logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
 func NewDatastore(ap mtgjson.AllPrintings) {
-	uuids = map[string]cardobject{}
-	cards = map[string]cardinfo{}
-	sets = ap.Data
+	uuids := map[string]cardobject{}
+	cards := map[string]cardinfo{}
 
 	for code, set := range ap.Data {
 		for _, card := range set.Cards {
@@ -49,6 +50,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			}
 		}
 	}
+
+	backend.Sets = ap.Data
+	backend.Cards = cards
+	backend.UUIDs = uuids
 }
 
 func LoadDatastore(reader io.Reader) error {
