@@ -4,8 +4,17 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
-func GetUUIDs() map[string]cardobject {
-	return backend.UUIDs
+func GetUUID(uuid string) (*cardobject, error) {
+	if backend.UUIDs == nil {
+		return nil, ErrDatastoreEmpty
+	}
+
+	co, found := backend.UUIDs[uuid]
+	if !found {
+		return nil, ErrCardUnknownId
+	}
+
+	return &co, nil
 }
 
 func GetSets() map[string]mtgjson.Set {
