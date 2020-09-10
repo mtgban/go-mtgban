@@ -1,7 +1,6 @@
 package mtgmatcher
 
 import (
-	"log"
 	"strconv"
 	"strings"
 
@@ -193,7 +192,6 @@ func adjustName(inCard *Card) {
 				break
 			}
 		}
-		log.Println(inCard)
 		inCard.Name = strings.Join(fields, " ")
 		inCard.addToVariant(num)
 		return
