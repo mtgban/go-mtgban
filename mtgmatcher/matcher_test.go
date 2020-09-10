@@ -651,6 +651,14 @@ var MatchTests = []MatchTest{
 			Edition: "PUMA",
 		},
 	},
+	MatchTest{
+		Id:   "f2bfda59-3560-55a7-80a1-9d19f1a1d163",
+		Desc: "borderless_but_also_alternative",
+		In: Card{
+			Name:    "Doubling Season",
+			Edition: "Double Masters Box Toppers",
+		},
+	},
 
 	// Box topper-style extended art
 	MatchTest{

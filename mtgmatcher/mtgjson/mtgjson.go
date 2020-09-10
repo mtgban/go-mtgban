@@ -68,6 +68,7 @@ const (
 	PromoTypeBundle     = "bundle"
 	PromoTypePrerelease = "prerelease"
 	PromoTypePromoPack  = "promopack"
+	PromoTypeBoosterfun = "boosterfun"
 
 	BorderColorBorderless = "borderless"
 

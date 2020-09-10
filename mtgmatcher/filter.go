@@ -707,7 +707,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				"Jumpstart":
 				if inCard.isRelease() && !card.IsAlternative {
 					continue
-				} else if !inCard.isRelease() && card.IsAlternative {
+				} else if !inCard.isRelease() && card.IsAlternative && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
 					continue
 				}
 			default:
