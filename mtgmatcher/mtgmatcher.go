@@ -326,12 +326,7 @@ func adjustEdition(inCard *Card) {
 
 	switch {
 	case strings.Contains(variation, "Ravnica Weekend"):
-		num := ExtractNumber(variation)
-		if strings.HasPrefix(num, "A") {
-			edition = "GRN Ravnica Weekend"
-		} else if strings.HasPrefix(num, "B") {
-			edition = "RNA Ravnica Weekend"
-		}
+		edition, variation = inCard.ravnicaWeekend()
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
 		num := ExtractNumber(variation)
 		if num != "" {

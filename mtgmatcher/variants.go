@@ -1457,24 +1457,24 @@ var ed4Variants = map[string]map[string]string{
 
 var prwkVariants = map[string]map[string]string{
 	"Forest": map[string]string{
-		"ravnica weekend golgari":  "A06",
-		"ravnica weekend selesnya": "A09",
+		"golgari":  "A06",
+		"selesnya": "A09",
 	},
 	"Island": map[string]string{
-		"ravnica weekend dimir": "A01",
-		"ravnica weekend izzet": "A03",
+		"dimir": "A01",
+		"izzet": "A03",
 	},
 	"Mountain": map[string]string{
-		"ravnica weekend izzet": "A04",
-		"ravnica weekend boros": "A07",
+		"izzet": "A04",
+		"boros": "A07",
 	},
 	"Plains": map[string]string{
-		"ravnica weekend boros":    "A08",
-		"ravnica weekend selesnya": "A10",
+		"boros":    "A08",
+		"selesnya": "A10",
 	},
 	"Swamp": map[string]string{
-		"ravnica weekend dimir":   "A02",
-		"ravnica weekend golgari": "A05",
+		"dimir":   "A02",
+		"golgari": "A05",
 	},
 }
 
@@ -2108,24 +2108,24 @@ var rinVariants = map[string]map[string]string{
 
 var prw2Variants = map[string]map[string]string{
 	"Forest": map[string]string{
-		"ravnica weekend gruul": "B08",
-		"ravnica weekend simic": "B09",
+		"gruul": "B08",
+		"simic": "B09",
 	},
 	"Island": map[string]string{
-		"ravnica weekend azorius": "B02",
-		"ravnica weekend simic":   "B10",
+		"azorius": "B02",
+		"simic":   "B10",
 	},
 	"Mountain": map[string]string{
-		"ravnica weekend rakdos": "B06",
-		"ravnica weekend gruul":  "B07",
+		"rakdos": "B06",
+		"gruul":  "B07",
 	},
 	"Plains": map[string]string{
-		"ravnica weekend azorius": "B01",
-		"ravnica weekend orzhov":  "B03",
+		"azorius": "B01",
+		"orzhov":  "B03",
 	},
 	"Swamp": map[string]string{
-		"ravnica weekend orzhov": "B04",
-		"ravnica weekend rakdos": "B05",
+		"orzhov": "B04",
+		"rakdos": "B05",
 	},
 }
 
