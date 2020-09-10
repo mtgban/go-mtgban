@@ -55,32 +55,31 @@ func (ck *Cardkingdom) scrape() error {
 
 		var sellPrice float64
 		u, _ := url.Parse("https://www.cardkingdom.com/")
-		if card.SellQuantity > 0 {
-			sellPrice, err = strconv.ParseFloat(card.SellPrice, 64)
+
+		sellPrice, err = strconv.ParseFloat(card.SellPrice, 64)
+		if err != nil {
+			ck.printf("%v", err)
+		}
+		if card.SellQuantity > 0 && sellPrice > 0 {
+			u.Path = card.URL
+			if ck.Partner != "" {
+				q := u.Query()
+				q.Set("partner", ck.Partner)
+				q.Set("utm_source", ck.Partner)
+				q.Set("utm_medium", "affiliate")
+				q.Set("utm_campaign", ck.Partner)
+				u.RawQuery = q.Encode()
+			}
+
+			out := &mtgban.InventoryEntry{
+				Conditions: "NM",
+				Price:      sellPrice,
+				Quantity:   card.SellQuantity,
+				URL:        u.String(),
+			}
+			err = ck.inventory.Add(cc.Id, out)
 			if err != nil {
 				ck.printf("%v", err)
-			}
-			if sellPrice > 0 {
-				u.Path = card.URL
-				if ck.Partner != "" {
-					q := u.Query()
-					q.Set("partner", ck.Partner)
-					q.Set("utm_source", ck.Partner)
-					q.Set("utm_medium", "affiliate")
-					q.Set("utm_campaign", ck.Partner)
-					u.RawQuery = q.Encode()
-				}
-
-				out := &mtgban.InventoryEntry{
-					Conditions: "NM",
-					Price:      sellPrice,
-					Quantity:   card.SellQuantity,
-					URL:        u.String(),
-				}
-				err = ck.inventory.Add(cc.Id, out)
-				if err != nil {
-					ck.printf("%v", err)
-				}
 			}
 		}
 
