@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var (
@@ -266,7 +267,21 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 	}
 
 	for cardId, entries := range inventory {
-		card, _ := mtgdb.ID2Card(cardId)
+		card, err := mtgdb.ID2Card(cardId)
+		if err != nil {
+			co, err := mtgmatcher.GetUUID(cardId)
+			if err != nil {
+				continue
+			}
+			card = &mtgdb.Card{
+				Id:      co.Card.Identifiers["mtgjsonV4Id"],
+				Name:    co.Card.Name,
+				Edition: co.Edition,
+				Foil:    co.Foil,
+				Number:  co.Card.Number,
+				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
+			}
+		}
 		for _, entry := range entries {
 			foil := ""
 			if card.Foil {
@@ -318,7 +333,21 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 	}
 
 	for cardId, entry := range buylist {
-		card, _ := mtgdb.ID2Card(cardId)
+		card, err := mtgdb.ID2Card(cardId)
+		if err != nil {
+			co, err := mtgmatcher.GetUUID(cardId)
+			if err != nil {
+				continue
+			}
+			card = &mtgdb.Card{
+				Id:      co.Card.Identifiers["mtgjsonV4Id"],
+				Name:    co.Card.Name,
+				Edition: co.Edition,
+				Foil:    co.Foil,
+				Number:  co.Card.Number,
+				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
+			}
+		}
 
 		foil := ""
 		if card.Foil {
@@ -463,7 +492,21 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 	}
 
 	for cardId, entries := range root.Entries {
-		card, _ := mtgdb.ID2Card(cardId)
+		card, err := mtgdb.ID2Card(cardId)
+		if err != nil {
+			co, err := mtgmatcher.GetUUID(cardId)
+			if err != nil {
+				continue
+			}
+			card = &mtgdb.Card{
+				Id:      co.Card.Identifiers["mtgjsonV4Id"],
+				Name:    co.Card.Name,
+				Edition: co.Edition,
+				Foil:    co.Foil,
+				Number:  co.Card.Number,
+				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
+			}
+		}
 
 		foil := ""
 		if card.Foil {
