@@ -74,6 +74,15 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "Launch Parties",
 				"Promotional Planes",
 				"Release Events":
+			case "Double Masters",
+				"Jumpstart":
+				switch inCard.Name {
+				case "Wrath of God",
+					"Chord of Calling",
+					"Scholar of the Lost Trove":
+				default:
+					continue
+				}
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue

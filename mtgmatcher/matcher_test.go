@@ -1215,6 +1215,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Jumpstart",
 		},
 	},
+	MatchTest{
+		Id:   "bcd861de-1206-5df9-a2c5-e6a3464b37b8",
+		Desc: "launch_in_the_set_wrong_edition",
+		In: Card{
+			Name:      "Chord of Calling",
+			Variation: "Launch",
+			Edition:   "ignored",
+		},
+	},
 
 	// Buy-a-Box promo
 	MatchTest{
