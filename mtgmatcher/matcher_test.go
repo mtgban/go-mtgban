@@ -544,7 +544,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "09f6ce54-cfba-5e7f-b2c1-c36f95e26ab1_f",
+		Id:   "09f6ce54-cfba-5e7f-b2c1-c36f95e26ab1",
 		Desc: "JPN_prerelease_with_s_suffix",
 		In: Card{
 			Name:      "Ugin, the Ineffable",
@@ -553,7 +553,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a8a8aac9-b986-5fbe-be9d-511fb272f6d8_f",
+		Id:   "a8a8aac9-b986-5fbe-be9d-511fb272f6d8",
 		Desc: "JPN_prerelease_with_s_suffix_but_number_could_interfere",
 		In: Card{
 			Name:      "Teyo, the Shieldmage",
@@ -782,7 +782,7 @@ var MatchTests = []MatchTest{
 
 	// Same-set variants
 	MatchTest{
-		Id:   "e8cad79a-2808-52a0-9504-469eab1d2486_f",
+		Id:   "e8cad79a-2808-52a0-9504-469eab1d2486",
 		Desc: "single_variant_with_no_special_tag",
 		In: Card{
 			Name:    "Will Kenrith",
@@ -799,7 +799,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "e0a1d531-00b4-587e-bfde-49de60e78f8e_f",
+		Id:   "e0a1d531-00b4-587e-bfde-49de60e78f8e",
 		Desc: "kaya_is_very_special",
 		In: Card{
 			Name:    "Kaya, Ghost Assassin",
@@ -1207,7 +1207,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "412013dc-8a6a-54f8-beb7-77b56baa5057_f",
+		Id:   "412013dc-8a6a-54f8-beb7-77b56baa5057",
 		Desc: "launch_in_the_set_itself",
 		In: Card{
 			Name:      "Scholar of the Lost Trove",
@@ -1490,7 +1490,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "7a6610cf-7d53-5e4b-bb76-9be1708d3892_f",
+		Id:   "7a6610cf-7d53-5e4b-bb76-9be1708d3892",
 		Desc: "deckmasters_variant_foil",
 		In: Card{
 			Name:      "Incinerate",
@@ -1508,7 +1508,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "982dabaa-9e5c-5a15-9fc2-cb4de4f13f11_f",
+		Id:   "982dabaa-9e5c-5a15-9fc2-cb4de4f13f11",
 		Desc: "variation_deckmasters_foil_but_untagged",
 		In: Card{
 			Name:      "Icy Manipulator",
@@ -1697,7 +1697,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "dcc4ee11-6a61-55f0-966a-d19732010ffa_f",
+		Id:   "dcc4ee11-6a61-55f0-966a-d19732010ffa",
 		Desc: "PLS_foil_only_booster_alternate",
 		In: Card{
 			Name:      "Skyship Weatherlight",
@@ -1707,7 +1707,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "4b375581-c43d-5bd1-b990-a0fa496b8262_f",
+		Id:   "4b375581-c43d-5bd1-b990-a0fa496b8262",
 		Desc: "10E_foil_only_booster_clean",
 		In: Card{
 			Name:    "Time Stop",

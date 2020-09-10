@@ -18,6 +18,7 @@ type cardobject struct {
 	mtgjson.Card
 	SetCode string
 	Edition string
+	Foil    bool
 }
 
 var backend struct {
@@ -43,10 +44,26 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					Layout:    card.Layout,
 				}
 			}
-			uuids[card.UUID] = cardobject{
+			// Shared card object
+			co := cardobject{
 				Card:    card,
 				Edition: set.Name,
 				SetCode: code,
+			}
+			// If card is foil, check whether it has a non-foil counterpart
+			if card.HasFoil {
+				uuid := card.UUID
+				// If it has, save the nonfoil cardobject, and change hash
+				if card.HasNonFoil {
+					uuids[uuid] = co
+					uuid += "_f"
+				}
+				// Regardless of above, set the the foil status
+				co.Foil = true
+				uuids[uuid] = co
+			} else {
+				// If it's non-foil, use as-is
+				uuids[card.UUID] = co
 			}
 		}
 	}

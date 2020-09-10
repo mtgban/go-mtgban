@@ -15,7 +15,7 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// Look up by uuid
 	if inCard.Id != "" {
-		co, found := backend.UUIDs[strings.TrimSuffix(inCard.Id, "_f")]
+		co, found := backend.UUIDs[inCard.Id]
 		if found {
 			return output(co.Card, inCard.Foil), nil
 		}

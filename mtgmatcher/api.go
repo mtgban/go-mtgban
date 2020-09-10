@@ -1,8 +1,6 @@
 package mtgmatcher
 
 import (
-	"strings"
-
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
@@ -19,8 +17,7 @@ func Unmatch(cardId string) (*Card, error) {
 		return nil, ErrDatastoreEmpty
 	}
 
-	id := strings.TrimSuffix(cardId, "_f")
-	co, found := backend.UUIDs[id]
+	co, found := backend.UUIDs[cardId]
 	if !found {
 		return nil, ErrCardUnknownId
 	}
@@ -29,7 +26,7 @@ func Unmatch(cardId string) (*Card, error) {
 		Id:      cardId,
 		Name:    co.Card.Name,
 		Edition: co.Edition,
-		Foil:    strings.HasSuffix(cardId, "_f"),
+		Foil:    co.Foil,
 		Number:  co.Card.Number,
 	}
 	return out, nil

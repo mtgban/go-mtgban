@@ -52,14 +52,14 @@ func output(card mtgjson.Card, foil bool) string {
 	}
 	if card.HasFoil && !card.HasNonFoil {
 		foil = true
-	} else if !card.HasFoil && card.HasNonFoil && !card.IsAlternative {
+	} else if !card.HasFoil && card.HasNonFoil {
 		foil = false
 	}
 
 	// Prepare the output card
 	id := card.UUID
 	// Append "_f" to the Id to distinguish from non-foil
-	if (card.HasNonFoil || card.IsAlternative) && foil {
+	if card.HasNonFoil && foil {
 		id += "_f"
 	}
 
