@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
 	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
@@ -54,7 +54,7 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
-func preprocess(card *ABUCard) (*mtgdb.Card, error) {
+func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	lang := ""
 	if len(card.Language) > 0 {
 		switch card.Language[0] {
@@ -136,15 +136,13 @@ func preprocess(card *ABUCard) (*mtgdb.Card, error) {
 	}
 
 	// Split by ()
-	if !strings.HasPrefix(cardName, "Erase (Not the Urza's Legacy One)") {
-		vars = mtgdb.SplitVariants(cardName)
-		cardName = vars[0]
-		if len(vars) > 1 {
-			oldVariation := variation
-			variation = strings.Join(vars[1:], " ")
-			if oldVariation != "" {
-				variation += " " + oldVariation
-			}
+	vars = mtgmatcher.SplitVariants(cardName)
+	cardName = vars[0]
+	if len(vars) > 1 {
+		oldVariation := variation
+		variation = strings.Join(vars[1:], " ")
+		if oldVariation != "" {
+			variation += " " + oldVariation
 		}
 	}
 
@@ -176,7 +174,14 @@ func preprocess(card *ABUCard) (*mtgdb.Card, error) {
 			}
 		}
 		if isPromo {
-			if cardName == "Sorcerous Spyglass" {
+			// Handle promo cards appearing in multiple editions
+			// like Sorcerous Spyglass
+			switch card.Edition {
+			case "Aether Revolt",
+				"Ixalan",
+				"Core Set 2020 / M20",
+				"Core Set 2021 / M21",
+				"Throne of Eldraine":
 				variation += " " + card.Edition
 			}
 			card.Edition = "Promo"
@@ -258,7 +263,7 @@ func preprocess(card *ABUCard) (*mtgdb.Card, error) {
 		cardName = name
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variation,
 		Edition:   card.Edition,

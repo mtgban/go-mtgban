@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -34,7 +34,7 @@ func NewScraper() *ABUGames {
 }
 
 type resultChan struct {
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -102,11 +102,19 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				continue
 			}
 
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
 				abu.printf("%v", theCard)
 				abu.printf("%v", card)
 				abu.printf("%v", err)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						abu.printf("- %s", card)
+					}
+				}
 				continue
 			}
 
@@ -159,7 +167,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 			if invEntry != nil || buyEntry != nil {
 				channel <- resultChan{
-					card:     cc,
+					cardId:   cardId,
 					invEntry: invEntry,
 					buyEntry: buyEntry,
 				}
@@ -211,13 +219,13 @@ func (abu *ABUGames) scrape() error {
 
 	for result := range results {
 		if result.invEntry != nil {
-			err = abu.inventory.Add(result.card.Id, result.invEntry)
+			err = abu.inventory.Add(result.cardId, result.invEntry)
 			if err != nil {
 				abu.printf(err.Error())
 			}
 		}
 		if result.buyEntry != nil {
-			err = abu.buylist.Add(result.card.Id, result.buyEntry)
+			err = abu.buylist.Add(result.cardId, result.buyEntry)
 			if err != nil {
 				abu.printf(err.Error())
 			}
