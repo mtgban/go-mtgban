@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type Cardkingdom struct {
@@ -45,11 +45,19 @@ func (ck *Cardkingdom) scrape() error {
 			continue
 		}
 
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
+			ck.printf("%v", err)
 			ck.printf("%q", theCard)
 			ck.printf("%q", card)
-			ck.printf("%v", err)
+			alias, ok := err.(*mtgmatcher.AliasingError)
+			if ok {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.Unmatch(probe)
+					ck.printf("- %s", card)
+				}
+			}
 			continue
 		}
 
@@ -77,7 +85,7 @@ func (ck *Cardkingdom) scrape() error {
 				Quantity:   card.SellQuantity,
 				URL:        u.String(),
 			}
-			err = ck.inventory.Add(cc.Id, out)
+			err = ck.inventory.Add(cardId, out)
 			if err != nil {
 				ck.printf("%v", err)
 			}
@@ -114,7 +122,7 @@ func (ck *Cardkingdom) scrape() error {
 					PriceRatio: priceRatio,
 					URL:        u.String(),
 				}
-				err = ck.buylist.Add(cc.Id, out)
+				err = ck.buylist.Add(cardId, out)
 				if err != nil {
 					ck.printf("%v", err)
 				}
@@ -156,9 +164,13 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 }
 
 func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	card, _ := mtgdb.ID2Card(cardId)
+	co, err := mtgmatcher.GetUUID(cardId)
+	if err != nil {
+		return
+	}
+
 	switch {
-	case card.Foil:
+	case co.Foil:
 		grade = map[string]float64{
 			"SP": 0.75, "MP": 0.5, "HP": 0.3,
 		}
@@ -180,7 +192,7 @@ func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64
 		}
 	}
 
-	switch card.Edition {
+	switch co.Edition {
 	case "Limited Edition Alpha",
 		"Limited Edition Beta",
 		"Unlimited Edition":

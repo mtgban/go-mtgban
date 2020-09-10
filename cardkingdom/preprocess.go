@@ -2,19 +2,19 @@ package cardkingdom
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
-	"BFM Left":  "B.F.M. (Big Furry Monster)",
-	"BFM Right": "B.F.M. (Big Furry monster) (b)",
-
-	"Wake of Waves": "Waker of Waves",
-
 	"Surgeon Commander": "Surgeon ~General~ Commander",
+
+	// Numbers for these are derived elsewhere
+	"BFM Left":  "B.F.M.",
+	"BFM Right": "B.F.M.",
 
 	"The Ultimate Nightmare of WotC Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 	"Our Market Research":                             "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
@@ -59,9 +59,14 @@ var skuFixupTable = map[string]string{
 	"MPS-001A":  "PRES-001A",
 	"PRED-001":  "PDRC-001",
 	"PTHB-352":  "THB-352",
+
+	"PM21-392":  "M21-392",
+	"PJMP-496B": "JMP-496",
+	"P2XM-383":  "2XM-383",
+	"P2XM-384":  "2XM-384",
 }
 
-func preprocess(card CKCard) (*mtgdb.Card, error) {
+func preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	if strings.Contains(card.Name, "Token") ||
 		strings.Contains(card.Name, "Emblem") ||
 		strings.Contains(card.Name, "Checklist") ||
@@ -70,10 +75,8 @@ func preprocess(card CKCard) (*mtgdb.Card, error) {
 		card.Name == "Blank Card" ||
 		card.Edition == "Art Series" ||
 		card.Variation == "MagicFest Non-Foil - 2020" ||
-		card.Variation == "Urza's Saga Arena Foil NO SYMBOL" ||
-		card.SKU == "OVERSIZ" ||
-		card.SKU == "PRES-005A" {
-		return nil, errors.New("non-mtg")
+		card.SKU == "OVERSIZ" {
+		return nil, errors.New("skipping")
 	}
 
 	setCode := ""
@@ -106,7 +109,7 @@ func preprocess(card CKCard) (*mtgdb.Card, error) {
 			}
 		}
 		if len(setCode) == 4 && strings.HasPrefix(setCode, "T") {
-			return nil, errors.New("unknown sku format")
+			return nil, fmt.Errorf("unknown sku code %s", setCode)
 		}
 
 		if (card.Variation == "Game Day Extended Art" ||
@@ -154,7 +157,7 @@ func preprocess(card CKCard) (*mtgdb.Card, error) {
 		variation = number
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variation,
