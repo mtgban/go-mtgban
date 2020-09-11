@@ -273,12 +273,10 @@ var allVariants = map[string]map[string]string{
 	"Lim-Dûl's High Guard": map[string]string{
 		"limdulhighguard": "55a",
 		"az095":           "55b",
-	},
-	"Lim-Dul's High Guard": map[string]string{
-		"red armor":    "55a",
-		"two swords":   "55b",
-		"yellow armor": "55b",
-		"gold armor":   "55b",
+		"red armor":       "55a",
+		"two swords":      "55b",
+		"yellow armor":    "55b",
+		"gold armor":      "55b",
 	},
 	"Martyrdom": map[string]string{
 		"alive":     "10a",

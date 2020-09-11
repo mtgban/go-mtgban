@@ -319,7 +319,7 @@ func adjustEdition(inCard *Card) {
 		edition = "Kaladesh Inventions"
 	case strings.Contains(edition, "Expeditions"):
 		edition = "Zendikar Expeditions"
-	case edition == "Double Masters Box Toppers":
+	case Equals(edition, "Double Masters Box Toppers"):
 		edition = "Double Masters"
 		variation = "Borderless"
 	}

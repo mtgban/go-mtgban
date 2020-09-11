@@ -457,6 +457,7 @@ var EditionTable = map[string]string{
 	"Starter":                      "Starter 1999",
 	"Vanguard":                     "Vanguard Series",
 	"Bring-A-Friend":               "Love Your LGS",
+	"Welcome Back":                 "Love Your LGS",
 
 	"Modern Event Deck":                           "Modern Event Deck 2014",
 	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",
