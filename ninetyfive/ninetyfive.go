@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -89,17 +89,25 @@ func (nf *Ninetyfive) parseBL() error {
 		}
 		isFoil, _ := strconv.ParseBool(fields[4])
 
-		theCard := &mtgdb.Card{
+		theCard := &mtgmatcher.Card{
 			Name:    cardName,
 			Edition: setCode,
 			Foil:    isFoil,
 		}
 
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
+			nf.printf("%v", err)
 			nf.printf("%q", theCard)
 			nf.printf("%q", record)
-			nf.printf("%v", err)
+			alias, ok := err.(*mtgmatcher.AliasingError)
+			if ok {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.Unmatch(probe)
+					nf.printf("- %s", card)
+				}
+			}
 			continue
 		}
 
@@ -109,7 +117,7 @@ func (nf *Ninetyfive) parseBL() error {
 				Quantity: quantity,
 				URL:      "http://www.95mtg.com/buylist/",
 			}
-			err := nf.buylist.Add(cc.Id, out)
+			err := nf.buylist.Add(cardId, out)
 			if err != nil {
 				nf.printf("%v", err)
 			}
