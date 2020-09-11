@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -29,8 +29,8 @@ type requestChan struct {
 }
 
 type responseChan struct {
-	card  mtgdb.Card
-	entry mtgban.InventoryEntry
+	cardId string
+	entry  mtgban.InventoryEntry
 }
 
 func (stks *MTGStocks) printf(format string, a ...interface{}) {
@@ -74,7 +74,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		return nil
 	}
 
-	s := mtgdb.SplitVariants(fullName)
+	s := mtgmatcher.SplitVariants(fullName)
 
 	variant := ""
 	cardName := s[0]
@@ -126,21 +126,29 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		}
 	}
 
-	theCard := &mtgdb.Card{
+	theCard := &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
 		Foil:      req.interest.Foil,
 	}
-	cc, err := theCard.Match()
+	cardId, err := mtgmatcher.Match(theCard)
 	if err != nil {
 		stks.printf("%q", theCard)
 		stks.printf("%q", req.interest.Print)
+		alias, ok := err.(*mtgmatcher.AliasingError)
+		if ok {
+			probes := alias.Probe()
+			for _, probe := range probes {
+				card, _ := mtgmatcher.Unmatch(probe)
+				stks.printf("- %s", card)
+			}
+		}
 		return err
 	}
 
 	out := responseChan{
-		card: *cc,
+		cardId: cardId,
 		entry: mtgban.InventoryEntry{
 			Price:      req.interest.PresentPrice,
 			Quantity:   1,
@@ -209,7 +217,7 @@ func (stks *MTGStocks) scrape() error {
 	}()
 
 	for result := range channel {
-		err := stks.inventory.Add(result.card.Id, &result.entry)
+		err := stks.inventory.Add(result.cardId, &result.entry)
 		if err != nil {
 			stks.printf(err.Error())
 			continue
