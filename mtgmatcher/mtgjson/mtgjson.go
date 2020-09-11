@@ -69,6 +69,7 @@ const (
 	PromoTypePrerelease = "prerelease"
 	PromoTypePromoPack  = "promopack"
 	PromoTypeBoosterfun = "boosterfun"
+	PromoTypeGodzilla   = "godzillaseries"
 
 	BorderColorBorderless = "borderless"
 

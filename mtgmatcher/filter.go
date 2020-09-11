@@ -575,23 +575,21 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 
-				// IKO-Style cards with different names
-				if inCard.isReskin() {
-					if card.FlavorName == "" {
-						continue
-					}
-				} else {
-					if card.FlavorName != "" {
-						continue
-					}
-				}
-
 				// ELD-Style bundle
 				if inCard.isBundle() && !card.HasPromoType(mtgjson.PromoTypeBundle) {
 					continue
 				} else if !inCard.isBundle() && card.HasPromoType(mtgjson.PromoTypeBundle) {
 					continue
 				}
+			}
+
+			// IKO-Style cards with different names
+			// Needs to be outside of the above block due to promos originally
+			// printed in an older edition
+			if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+				continue
+			} else if !inCard.isReskin() && card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+				continue
 			}
 
 			// Special sets

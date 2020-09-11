@@ -742,6 +742,15 @@ var MatchTests = []MatchTest{
 			Edition: "Ikoria: Lair of Behemoths",
 		},
 	},
+	MatchTest{
+		Id:   "6350a63d-2f7a-5f50-8def-adaf7dc00d0d",
+		Desc: "godzilla_variant_promo",
+		In: Card{
+			Name:      "Hangarback Walker",
+			Variation: "Godzilla",
+			Edition:   "ignored",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	MatchTest{
