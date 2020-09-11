@@ -11,7 +11,7 @@ import (
 
 	"github.com/gocolly/colly"
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -46,8 +46,8 @@ func (sz *Strikezone) printf(format string, a ...interface{}) {
 }
 
 type respChan struct {
-	card  *mtgdb.Card
-	entry *mtgban.InventoryEntry
+	cardId string
+	entry  *mtgban.InventoryEntry
 }
 
 func (sz *Strikezone) scrape() error {
@@ -138,15 +138,23 @@ func (sz *Strikezone) scrape() error {
 				return
 			}
 
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
-				sz.printf("%q", theCard)
 				sz.printf("%v", err)
+				sz.printf("%q", theCard)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						sz.printf("- %s", card)
+					}
+				}
 				return
 			}
 
 			channel <- respChan{
-				card: cc,
+				cardId: cardId,
 				entry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      cardPrice,
@@ -165,7 +173,7 @@ func (sz *Strikezone) scrape() error {
 	}()
 
 	for resp := range channel {
-		err := sz.inventory.Add(resp.card.Id, resp.entry)
+		err := sz.inventory.Add(resp.cardId, resp.entry)
 		if err != nil {
 			sz.printf("%v", err)
 			continue
@@ -233,16 +241,24 @@ func (sz *Strikezone) parseBL() error {
 			continue
 		}
 
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
-			sz.printf("%q", theCard)
 			sz.printf("%v", err)
+			sz.printf("%q", theCard)
+			alias, ok := err.(*mtgmatcher.AliasingError)
+			if ok {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.Unmatch(probe)
+					sz.printf("- %s", card)
+				}
+			}
 			continue
 		}
 
 		var sellPrice, priceRatio float64
 
-		invCards := sz.inventory[cc.Id]
+		invCards := sz.inventory[cardId]
 		for _, invCard := range invCards {
 			if invCard.Conditions == "NM" {
 				sellPrice = invCard.Price
@@ -260,7 +276,7 @@ func (sz *Strikezone) parseBL() error {
 			PriceRatio: priceRatio,
 			URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
 		}
-		err = sz.buylist.Add(cc.Id, out)
+		err = sz.buylist.Add(cardId, out)
 		if err != nil {
 			sz.printf("%v", err)
 		}

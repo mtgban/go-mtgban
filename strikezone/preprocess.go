@@ -4,10 +4,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
-func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
+func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	var variation string
 
 	// skip tokens, too many variations
@@ -59,7 +59,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 		cardName = strings.TrimSuffix(cardName, " Ultimate Edition")
 		edition = ""
 	// Found at end, move it to edition
-	case strings.HasSuffix(cardName, "Godzilla") && mtgdb.IsBasicLand(cardName):
+	case strings.HasSuffix(cardName, "Godzilla") && mtgmatcher.IsBasicLand(cardName):
 		cardName = strings.TrimSuffix(cardName, " Godzilla")
 		edition = "SLD"
 	// Found at beginning, just drop it
@@ -72,7 +72,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 		if strings.Contains(cardName, "APAC") {
 			edition = "Asia Pacific Land Program"
 		}
-		variants := mtgdb.SplitVariants(cardName)
+		variants := mtgmatcher.SplitVariants(cardName)
 		cardName = variants[0]
 		fields := strings.Fields(cardName)
 		cardName = fields[0]
@@ -97,7 +97,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 		edition = ed
 	}
 
-	variants := mtgdb.SplitVariants(cardName)
+	variants := mtgmatcher.SplitVariants(cardName)
 	cardName = variants[0]
 	if len(variants) > 1 {
 		variation = variants[1]
@@ -172,7 +172,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 		cardName = s[0]
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,
