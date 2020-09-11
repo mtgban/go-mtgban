@@ -751,6 +751,15 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "fd9ff43c-fee9-5bdb-ab0a-d4c55f2178fd",
+		Desc: "godzilla_variant_japanese",
+		In: Card{
+			Name:      "Dirge Bat",
+			Variation: "Godzilla Series Japanese",
+			Edition:   "Ikoria",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	MatchTest{

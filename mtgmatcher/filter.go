@@ -499,7 +499,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 			// JPN
 			if inCard.isJPN() && set.Name != "Magazine Inserts" {
-				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && !inCard.isReskin() {
 					continue
 				}
 			} else {
