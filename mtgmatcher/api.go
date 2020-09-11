@@ -59,7 +59,7 @@ func HasPromoPackPrinting(name string) bool {
 	}
 	for _, code := range card.Printings {
 		set, found := backend.Sets[code]
-		if !found || set.IsOnlineOnly {
+		if !found {
 			continue
 		}
 		for _, in := range set.Cards {

@@ -17,7 +17,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 	for _, setCode := range editions {
 		set, found := backend.Sets[setCode]
-		if !found || set.IsOnlineOnly || setCode == "PRED" {
+		if !found {
 			continue
 		}
 

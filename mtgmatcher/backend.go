@@ -34,6 +34,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	cards := map[string]cardinfo{}
 
 	for code, set := range ap.Data {
+		if set.IsOnlineOnly || code == "PRED" {
+			delete(ap.Data, code)
+			continue
+		}
 		for _, card := range set.Cards {
 			norm := Normalize(card.Name)
 			_, found := cards[norm]
