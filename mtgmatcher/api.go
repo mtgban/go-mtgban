@@ -21,6 +21,19 @@ func GetSets() map[string]mtgjson.Set {
 	return backend.Sets
 }
 
+func GetSet(code string) (*mtgjson.Set, error) {
+	if backend.Sets == nil {
+		return nil, ErrDatastoreEmpty
+	}
+
+	set, found := backend.Sets[code]
+	if !found {
+		return nil, ErrCardUnknownId
+	}
+
+	return &set, nil
+}
+
 func Unmatch(cardId string) (*Card, error) {
 	if backend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
