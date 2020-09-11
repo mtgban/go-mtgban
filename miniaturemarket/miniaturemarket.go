@@ -35,7 +35,7 @@ const (
 	defaultConcurrency = 6
 
 	firstPage = 1
-	lastPage  = 9
+	lastPage  = 10
 )
 
 type respChan struct {
