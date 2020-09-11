@@ -3,8 +3,10 @@ package mtgban
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 func (inv InventoryRecord) add(card string, entry *InventoryEntry, strict int) error {
@@ -52,7 +54,21 @@ func (inv InventoryRecord) AddStrict(cardId string, entry *InventoryEntry) error
 func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 	_, found := bl[cardId]
 	if found {
-		card, _ := mtgdb.ID2Card(cardId)
+		card, err := mtgdb.ID2Card(cardId)
+		if err != nil {
+			co, err := mtgmatcher.GetUUID(cardId)
+			if err != nil {
+				return err
+			}
+			card = &mtgdb.Card{
+				Id:      cardId,
+				Name:    co.Card.Name,
+				Edition: co.Edition,
+				Foil:    co.Foil,
+				Number:  co.Card.Number,
+				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
+			}
+		}
 		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, bl[cardId])
 	}
 
