@@ -41,6 +41,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	// Found at beginning, move it to variation
 	case strings.HasPrefix(cardName, "Borderless"):
 		cardName = strings.TrimPrefix(cardName, "Borderless ")
+		cardName = strings.TrimPrefix(cardName, "Alt Art ")
 		variation = "Borderless"
 	// Found at beginning, move it to variation
 	case strings.HasPrefix(cardName, "Showcase"):
@@ -57,7 +58,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	// Found at end, move it to edition
 	case strings.HasSuffix(cardName, "Ultimate Edition"):
 		cardName = strings.TrimSuffix(cardName, " Ultimate Edition")
-		edition = ""
+		edition = "Secret Lair: Ultimate Edition"
 	// Found at end, move it to edition
 	case strings.HasSuffix(cardName, "Godzilla") && mtgmatcher.IsBasicLand(cardName):
 		cardName = strings.TrimSuffix(cardName, " Godzilla")
@@ -90,6 +91,9 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 				break
 			}
 		}
+	case cardName == "Mechagodzilla Battle Fortress (Hangarback Walker) BIBB Promo":
+		cardName = "Hangarback Walker"
+		edition = "Love your LGS"
 	}
 
 	ed, found := card2setTable[cardName]
@@ -145,6 +149,8 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 			"Voidmage Prodigy",
 			"Wasteland":
 			variation = "Magic Player Rewards"
+		case "Zoetic Cavern":
+			variation = "Gateway"
 		default:
 			variation = "FNM"
 		}
@@ -160,6 +166,12 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		edition = "Magic Premiere Shop 2005"
 	case strings.Contains(variation, "Holiday"):
 		edition = "Happy Holidays"
+	case cardName == "Teferi Master of Time":
+		if edition == "Promotional Cards" {
+			variation += "s"
+		} else if edition == "Promo Pack" {
+			variation += "p"
+		}
 	}
 
 	if edition == "Promotional Cards" && variation == "" {
@@ -169,7 +181,19 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		}
 	} else if edition == "Ikoria: Lair of Behemoths" && strings.Contains(cardName, " - ") {
 		s := strings.Split(cardName, " - ")
-		cardName = s[0]
+		cardName = s[1]
+		variation = "Godzilla"
+		if strings.Contains(notes, "Japanese") {
+			variation += " Japanese"
+		}
+	} else if edition == "Eternal Masters" && strings.Contains(notes, "Japanese") {
+		return nil, errors.New("non-english card")
+	}
+
+	// Second pass in case some tags interfered with the lookup
+	cn, found = cardTable[cardName]
+	if found {
+		cardName = cn
 	}
 
 	return &mtgmatcher.Card{

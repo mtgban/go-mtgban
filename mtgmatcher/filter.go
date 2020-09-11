@@ -712,9 +712,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// Launch promos within the set itself
 			case "Double Masters",
 				"Jumpstart":
-				if inCard.isRelease() && !card.IsAlternative {
+				if (inCard.isRelease() || inCard.isBaB()) && !card.IsAlternative {
 					continue
-				} else if !inCard.isRelease() && card.IsAlternative && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+				} else if !(inCard.isRelease() || inCard.isBaB()) && card.IsAlternative && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
 					continue
 				}
 			default:

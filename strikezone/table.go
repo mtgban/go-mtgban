@@ -5,6 +5,8 @@ var tagsTable = []string{
 	"2011 Holiday",
 	"2015 Judge Promo",
 	"BIBB",
+	"BIBB Promo",
+	"Bundle Promo",
 	"Buy a Box",
 	"Convention Foil M19",
 	"Draft Weekend",
@@ -17,6 +19,7 @@ var tagsTable = []string{
 	"Judge 2020",
 	"Judge Promo",
 	"League Promo",
+	"LGS Promo",
 	"M19 Prerelease",
 	"MCQ Promo",
 	"MagicFest 2019",
@@ -69,6 +72,7 @@ var cardTable = map[string]string{
 	"Ink-Eyes Servan of Oni":     "Ink-Eyes Servant of Oni",
 	"Laughing Hyenas":            "Laughing Hyena",
 	"Teshar Acnestor s Aspostle": "Teshar, Ancestor's Apostle",
+	"Rin and Seri Inseperable":   "Rin and Seri, Inseparable",
 
 	// Typos AND edition
 	"Faithless Lootoing (IDW Promo)":                "Faithless Looting (IDW)",
@@ -80,6 +84,7 @@ var cardTable = map[string]string{
 	"Polukranos Unchanied (Prerelease)":             "Polukranos Unchained (Prerelease)",
 	"Selfless Spirt (Eldritch Moon Prerelease)":     "Selfless Spirit (Prerelease)",
 	"Showcase Aanax, Hardened in the Forge":         "Anax, Hardened in the Forge (Showcase)",
+	"ShowcaseTeferi's Protege":                      "Teferi's Protege (Showcase)",
 	"Some Disassembly Require (2017 Holiday Promo)": "Some Disassembly Required (Happy Holidays)",
 	"SwampMagic Fest 2019":                          "Swamp (MagicFest 2019)",
 
@@ -110,7 +115,6 @@ var card2setTable = map[string]string{
 	"Lingering Souls (WPN)":           "Friday Night Magic 2012",
 	"Lightning Bolt (Beta Art Promo)": "Judge Gift Cards 1998",
 	"Wood Elves (Promo)":              "Gateway 2006",
-	"Zoetic Cavern (FNM)":             "Gateway 2007",
 
 	"Tempered Steel (Full Art Textless)": "Scars of Mirrodin Promos",
 }
@@ -125,6 +129,7 @@ var promo2setTable = map[string]string{
 	"Riku of Two Reflections":   "Judge Gift Cards 2014",
 	"Feldon of the Third Path":  "Judge Gift Cards 2015",
 	"Yuriko the Tiger s Shadow": "Judge Gift Cards 2019",
+	"Teetering Peaks":           "Friday Night Magic 2011",
 	"Dismember":                 "Friday Night Magic 2012",
 	"Ancient Grudge":            "Friday Night Magic 2012",
 }
