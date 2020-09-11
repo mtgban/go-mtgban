@@ -41,6 +41,8 @@ var EditionTable = map[string]string{
 	"Gift Box 2017":        "2017 Gift Pack",
 	"Gift Pack 2017":       "2017 Gift Pack",
 	"Gift Pack 2018":       "M19 Gift Pack",
+	"Gift Pack 2017 Promo": "2017 Gift Pack",
+	"Gift Pack 2018 Promo": "M19 Gift Pack",
 	"Shooting Star Promo":  "2017 Gift Pack",
 	"Mark Poole Art Promo": "2017 Gift Pack",
 	"Gift Box Promo":       "M19 Gift Pack",
@@ -454,6 +456,7 @@ var EditionTable = map[string]string{
 	"PS3 Promo":                    "Duels of the Planeswalkers 2012 Promos",
 	"Starter":                      "Starter 1999",
 	"Vanguard":                     "Vanguard Series",
+	"Bring-A-Friend":               "Love Your LGS",
 
 	"Modern Event Deck":                           "Modern Event Deck 2014",
 	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",

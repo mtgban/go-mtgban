@@ -12,14 +12,17 @@ var cardTable = map[string]string{
 	// Typos
 	"Bogart Brute":                        "Boggart Brute",
 	"Deathgazer Cockatrice":               "Deathgaze Cockatrice",
+	"Discontinunty":                       "Discontinuity",
 	"Fireblade Artist Ravnica Allegiance": "Fireblade Artist",
 	"Jace, the Mind Sculpor":              "Jace, the Mind Sculptor",
 	"Mindblade Rendor":                    "Mindblade Render",
 	"Neglected Hierloom / Ashmouth Blade": "Neglected Heirloom // Ashmouth Blade",
 	"Rathi Berserker":                     "Aerathi Berserker",
 	"Skin Invasion / Skin Shredder":       "Skin Invasion // Skin Shedder",
+	"Smelt and Herd and Saw":              "Smelt // Herd // Saw",
 	"Soulmemder":                          "Soulmender",
 	"Svagthos, the Restless Tomb":         "Svogthos, the Restless Tomb",
+	"Trial and Error":                     "Trial // Error",
 	"Visitor from Planet":                 "Visitor from Planet Q",
 
 	// Funny cards
@@ -98,9 +101,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	}
 	// Non-existing cards
 	switch card.DisplayTitle {
-	case "Steward of Valeron (Dengeki Character Festival) - FOIL",
-		"Captain's Claws (Goldnight Castigator Shadow) - FOIL",
-		"Beast of Burden (Prerelease - No Expansion Symbol) - FOIL",
+	case "Silent Submersible (Promo Pack)",
+		"Silent Submersible (Promo Pack) - FOIL",
 		"Hymn to Tourach (B - Mark Justice - 1996)",
 		"Mountain (6th Edition 343 - Mark Le Pine - 1999)":
 		return nil, errors.New("untracked card")
@@ -231,6 +233,26 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			if variation == "Arena" && isFoil {
 				variation = "FNM 2003"
 			}
+		case "Mountain":
+			if variation == "APAC a Phillippines" {
+				variation = "APAC a Philippines"
+			}
+		case "Beast of Burden":
+			if variation == "Prerelease No Expansion Symbol FOIL" {
+				variation = "Prerelease misprint"
+			}
+		case "Teferi, Master of Time":
+			if strings.Contains(variation, "Promo Pack") {
+				variation = strings.Replace(variation, "075", "75p", 1)
+			} else if strings.Contains(variation, "Prerelease") {
+				variation = strings.Replace(variation, "075", "75s", 1)
+			}
+		case "Godzilla, King of the Monsters / Zilortha, Strength Incarnate":
+			cardName = "Zilortha, Strength Incarnate"
+			variation = "Godzilla"
+		case "Mechagodzilla, Battle Fortress / Hangarback Walker":
+			cardName = "Hangarback Walker"
+			variation = "Godzilla"
 		}
 		if strings.Contains(variation, "United Kingdom") {
 			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
@@ -255,6 +277,19 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		if strings.Contains(cardName, " / ") {
 			s := strings.Split(cardName, " / ")
 			cardName = s[0]
+		}
+	case "Oath of the Gatewatch":
+		if cardName == "Captain's Claws" && variation == "Goldnight Castigator Shadow FOIL" {
+			variation = "misprint"
+		}
+	case "Core Set 2020 / M20":
+		if cardName == "Corpse Knight" && variation == "2/3" {
+			variation = "misprint"
+		}
+	case "Mystery Booster":
+		if cardName == "Trial and Error" {
+			// Hack to prevent aliasing wiith the real "Trial // Error"
+			cardName = "Trial and Error "
 		}
 	}
 
