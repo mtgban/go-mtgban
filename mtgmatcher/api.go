@@ -42,6 +42,14 @@ func Unmatch(cardId string) (*Card, error) {
 }
 
 func HasPromoPackPrinting(name string) bool {
+	return hasPrinting(name, mtgjson.PromoTypePrerelease)
+}
+
+func HasPrereleasePrinting(name string) bool {
+	return hasPrinting(name, mtgjson.PromoTypePromoPack)
+}
+
+func hasPrinting(name, promo string) bool {
 	if backend.Sets == nil {
 		return false
 	}
@@ -63,7 +71,7 @@ func HasPromoPackPrinting(name string) bool {
 			continue
 		}
 		for _, in := range set.Cards {
-			if (card.Name == in.Name) && in.HasPromoType(mtgjson.PromoTypePromoPack) {
+			if (card.Name == in.Name) && in.HasPromoType(promo) {
 				return true
 			}
 		}
