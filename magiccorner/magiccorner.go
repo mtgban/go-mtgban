@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -38,8 +38,8 @@ func NewScraper() (*Magiccorner, error) {
 }
 
 type resultChan struct {
-	card  *mtgdb.Card
-	entry *mtgban.InventoryEntry
+	cardId string
+	entry  *mtgban.InventoryEntry
 }
 
 func (mc *Magiccorner) printf(format string, a ...interface{}) {
@@ -125,18 +125,26 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 				continue
 			}
 
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
 				if printError {
+					mc.printf("%v", err)
 					mc.printf("%q", theCard)
 					mc.printf("%q", card)
-					mc.printf("%v", err)
+					alias, ok := err.(*mtgmatcher.AliasingError)
+					if ok {
+						probes := alias.Probe()
+						for _, probe := range probes {
+							card, _ := mtgmatcher.Unmatch(probe)
+							mc.printf("- %s", card)
+						}
+					}
 				}
 				continue
 			}
 
 			channel <- resultChan{
-				card: cc,
+				cardId: cardId,
 				entry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      v.Price * mc.exchangeRate,
@@ -187,7 +195,7 @@ func (mc *Magiccorner) scrape() error {
 	}()
 
 	for result := range results {
-		err = mc.inventory.Add(result.card.Id, result.entry)
+		err = mc.inventory.Add(result.cardId, result.entry)
 		if err != nil {
 			mc.printf(err.Error())
 			continue

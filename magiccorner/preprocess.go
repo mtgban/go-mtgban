@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
@@ -108,7 +108,7 @@ var editionTable = map[string]string{
 	"Duel Decks: Cavalieri vs. Draghi": "Duel Decks: Knights vs. Dragons",
 }
 
-func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
+func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	cardName := card.Name
 	edition := card.Set
 
@@ -145,18 +145,15 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 	}
 
 	variation := ""
-	// Do not set variation for sets that have cards with parenthesis in their names
-	if edition != "Unglued" && edition != "Unhinged" {
-		variants := mtgdb.SplitVariants(cardName)
+	variants := mtgmatcher.SplitVariants(cardName)
+	if len(variants) > 1 {
+		variation = variants[1]
+	}
+	cardName = variants[0]
+	if variation == "" {
+		variants = mtgmatcher.SplitVariants(card.OrigName)
 		if len(variants) > 1 {
 			variation = variants[1]
-		}
-		cardName = variants[0]
-		if variation == "" {
-			variants = mtgdb.SplitVariants(card.OrigName)
-			if len(variants) > 1 {
-				variation = variants[1]
-			}
 		}
 	}
 
@@ -247,7 +244,7 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 			variation = card.URL
 		// Full-art Zendikar lands
 		case "Zendikar":
-			if mtgdb.IsBasicLand(cardName) {
+			if mtgmatcher.IsBasicLand(cardName) {
 				s := strings.Fields(cardName)
 				if len(s) > 1 {
 					cardName = s[0]
@@ -257,7 +254,7 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 		default:
 			// Try using the number, except the set code can randomly be
 			// 2 or 3 characters.
-			if mtgdb.IsBasicLand(cardName) {
+			if mtgmatcher.IsBasicLand(cardName) {
 				for _, lengthToDrop := range []int{2, 3} {
 					if len(extra) > lengthToDrop {
 						internalNumber := strings.TrimLeft(extra[lengthToDrop:], "0")
@@ -277,7 +274,7 @@ func preprocess(card *MCCard, index int) (*mtgdb.Card, error) {
 		edition = lutName
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Id:        id,
 		Name:      cardName,
 		Variation: variation,
