@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type Miniaturemarket struct {
@@ -39,7 +39,7 @@ const (
 )
 
 type respChan struct {
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -64,34 +64,27 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 			continue
 		}
 
-		var ccfoil *mtgdb.Card
-		cc, err := theCard.Match()
-		if err != nil {
-			mm.printf("%q", theCard)
-			mm.printf("%q", product)
-			mm.printf("%v", err)
-			continue
-		}
-
 		for _, variant := range product.Variants {
 			if variant.Quantity == 0 || variant.Price <= 0 {
 				continue
 			}
 
-			isFoil := strings.HasPrefix(variant.Title, "Foil")
-			if isFoil {
-				if cc.Foil {
-					ccfoil = cc
-				} else if ccfoil == nil {
-					theCard.Foil = true
-					ccfoil, err = theCard.Match()
-					if err != nil {
-						mm.printf("%q", theCard)
-						mm.printf("%q", product)
-						mm.printf("%v", err)
-						continue
+			theCard.Foil = strings.HasPrefix(variant.Title, "Foil")
+
+			cardId, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				mm.printf("%v", err)
+				mm.printf("%q", theCard)
+				mm.printf("%q", product)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						mm.printf("- %s", card)
 					}
 				}
+				continue
 			}
 
 			cond := variant.Title
@@ -110,12 +103,8 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 				link += "?utm_source=" + mm.Affiliate
 			}
 
-			outCard := cc
-			if isFoil {
-				outCard = ccfoil
-			}
 			channel <- respChan{
-				card: outCard,
+				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      variant.Price,
@@ -164,7 +153,7 @@ func (mm *Miniaturemarket) scrape() error {
 	}()
 
 	for record := range channel {
-		err := mm.inventory.Add(record.card.Id, record.invEntry)
+		err := mm.inventory.Add(record.cardId, record.invEntry)
 		// Do not print an error if we expect a duplicate due to the sorting
 		if err != nil {
 			mm.printf("%v", err)
@@ -213,17 +202,25 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 
 		theCard.Foil = card.IsFoil
 
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
-			mm.printf("%q", theCard)
-			mm.printf("%s", card)
 			mm.printf("%v", err)
+			mm.printf("%q", theCard)
+			mm.printf("%q", card)
+			alias, ok := err.(*mtgmatcher.AliasingError)
+			if ok {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.Unmatch(probe)
+					mm.printf("- %s", card)
+				}
+			}
 			continue
 		}
 
 		var priceRatio, sellPrice float64
 
-		invCards := mm.inventory[cc.Id]
+		invCards := mm.inventory[cardId]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -233,7 +230,7 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 		}
 
 		channel <- respChan{
-			card: cc,
+			cardId: cardId,
 			buyEntry: &mtgban.BuylistEntry{
 				BuyPrice:   price,
 				TradePrice: price * 1.3,
@@ -276,7 +273,7 @@ func (mm *Miniaturemarket) parseBL() error {
 	}()
 
 	for result := range results {
-		err := mm.buylist.Add(result.card.Id, result.buyEntry)
+		err := mm.buylist.Add(result.cardId, result.buyEntry)
 		if err != nil {
 			mm.printf(err.Error())
 			continue

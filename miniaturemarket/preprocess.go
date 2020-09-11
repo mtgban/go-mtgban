@@ -4,8 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
-	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
@@ -78,7 +77,7 @@ var card2setTable = map[string]string{
 	"Wasteland (Judge Rewards Steve Belledin)":      "Judge Gift Cards 2015",
 }
 
-func preprocess(title, sku string) (*mtgdb.Card, error) {
+func preprocess(title, sku string) (*mtgmatcher.Card, error) {
 	fields := strings.Split(title, " - ")
 	cardName := fields[0]
 	edition := fields[1]
@@ -88,7 +87,7 @@ func preprocess(title, sku string) (*mtgdb.Card, error) {
 		} else if strings.Contains(edition, "(Preorder)") {
 			return nil, errors.New("too soon")
 		}
-		fields = mtgdb.SplitVariants(edition)
+		fields = mtgmatcher.SplitVariants(edition)
 		edition = fields[0]
 	}
 
@@ -121,12 +120,12 @@ func preprocess(title, sku string) (*mtgdb.Card, error) {
 
 	switch edition {
 	case "Planechase 2009":
-		set, err := mtgdb.Set("OHOP")
+		set, err := mtgmatcher.GetSet("OHOP")
 		if err != nil {
 			return nil, err
 		}
 		for _, card := range set.Cards {
-			if mtgjson.NormEquals(card.Name, cardName) {
+			if mtgmatcher.Equals(card.Name, cardName) {
 				edition = "Planechase Planes"
 				break
 			}
@@ -165,29 +164,47 @@ func preprocess(title, sku string) (*mtgdb.Card, error) {
 	}
 
 	variant := ""
-	if cardName != "Erase (Not the Urza's Legacy One)" {
-		variants := mtgdb.SplitVariants(cardName)
-		cardName = variants[0]
-		if len(variants) > 1 {
-			variant = variants[1]
-		}
+	variants := mtgmatcher.SplitVariants(cardName)
+	cardName = variants[0]
+	if len(variants) > 1 {
+		variant = variants[1]
 	}
 
 	if strings.Contains(title, "(Collector Edition)") && variant == "Alternate Art" {
 		variant = "Borderless"
 	}
 
-	// Need to discern duplicates of this particular card
-	if cardName == "Sorcerous Spyglass" {
+	// Need to discern duplicates of these cards
+	if edition == "Promo" || edition == "Promo Pack" {
+		sku = strings.TrimSuffix(sku, "-1NM")
+		sku = strings.TrimSuffix(sku, "-3F")
 		switch sku {
-		case "M-660-012", "M-650-124", "M-660-012-1NM", "M-660-012-3F", "M-650-124-3F":
+		case "M-650-124", "M-660-012": // Sorcerous Spyglass
 			variant += " XLN"
-		case "M-660-016", "M-650-176", "M-660-016-1NM", "M-660-016-3F", "M-650-176-3F":
+		case "M-650-176", "M-660-016", // Sorcerous Spyglass
+			"M-665-026", "M-655-153": // Fabled Passage
 			variant += " ELD"
+		case "M-664-053", "M-654-231": // Heroic Intervention
+			variant += " AER"
+		case "M-665-015", "M-665-016", "M-665-017", "M-665-018", "M-665-019", // Temples
+			"M-655-142", "M-655-143", "M-655-144", "M-655-145", "M-655-146":
+			variant += " M20"
+		case "M-665-053", "M-655-169", // Fabled Passage
+			"M-665-054", "M-665-055", "M-665-056", "M-665-057", "M-665-058", // Temples
+			"M-655-170", "M-655-171", "M-655-172", "M-655-173", "M-655-174",
+			"M-664-083", "M-654-377": // Heroic Intervention
+			variant += " M21"
+		}
+		if cardName == "Teferi, Master of Time" {
+			if edition == "Promo Pack" {
+				variant += "p"
+			} else {
+				variant = strings.Replace(variant, " Pre-Release", "s", 1)
+			}
 		}
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
