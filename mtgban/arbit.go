@@ -3,7 +3,7 @@ package mtgban
 import (
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -23,7 +23,7 @@ type ArbitOpts struct {
 }
 
 type ArbitEntry struct {
-	Card mtgdb.Card
+	CardId string
 
 	BuylistEntry
 	InventoryEntry
@@ -78,7 +78,6 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 
-		card, _ := mtgdb.ID2Card(cardId)
 		grade := vendor.Info().Grading(cardId, blEntry)
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
@@ -98,7 +97,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			if difference > minDiff && spread > minSpread {
 				res := ArbitEntry{
-					Card:               *card,
+					CardId:             cardId,
 					BuylistEntry:       blEntry,
 					InventoryEntry:     invEntry,
 					Difference:         difference,
@@ -171,7 +170,7 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 		totalPrice := extra
 		totalBuylistPrice := 0.0
 		for _, entry := range arbit {
-			grade := vendor.Info().Grading(entry.Card.Id, entry.BuylistEntry)
+			grade := vendor.Info().Grading(entry.CardId, entry.BuylistEntry)
 
 			blPrice := entry.BuylistEntry.BuyPrice
 			cond := entry.InventoryEntry.Conditions
@@ -206,7 +205,7 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 }
 
 type MismatchEntry struct {
-	Card mtgdb.Card
+	CardId string
 
 	InventoryEntry
 
@@ -241,7 +240,6 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 			continue
 		}
 
-		card, _ := mtgdb.ID2Card(cardId)
 		for _, refEntry := range refEntries {
 			if refEntry.Price == 0 {
 				continue
@@ -262,7 +260,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 
 				if difference > minDiff && spread > minSpread {
 					res := MismatchEntry{
-						Card:           *card,
+						CardId:         cardId,
 						InventoryEntry: invEntry,
 						Difference:     difference,
 						Spread:         spread,
@@ -277,7 +275,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 }
 
 type PennystockEntry struct {
-	Card mtgdb.Card
+	CardId string
 	InventoryEntry
 }
 
@@ -288,37 +286,41 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 	}
 
 	for cardId, entries := range inventory {
-		card, _ := mtgdb.ID2Card(cardId)
-		if card.Rarity != "M" && card.Rarity != "R" {
+		co, err := mtgmatcher.GetUUID(cardId)
+		if err != nil {
+			return nil, err
+		}
+		isRare := co.Card.Rarity == "rare"
+		isMythic := co.Card.Rarity == "mythic"
+		if !(isRare || isMythic) {
 			continue
 		}
-		switch card.Edition {
-		case "Unglued", "Unhinged", "Unstable", "Unsanctioned":
+		if co.Card.BorderColor == "silver" {
 			continue
 		}
 		for _, entry := range entries {
-			pennyMythic := !card.Foil && card.Rarity == "M" && entry.Price <= 0.25
-			pennyRare := !card.Foil && card.Rarity == "R" && entry.Price <= 0.07
-			pennyFoil := card.Foil && entry.Price <= 0.05
+			pennyMythic := !co.Foil && isMythic && entry.Price <= 0.25
+			pennyRare := !co.Foil && isRare && entry.Price <= 0.07
+			pennyFoil := co.Foil && entry.Price <= 0.05
 			pennyInteresting := false
 			switch {
-			case strings.Contains(card.Name, "Signet") && entry.Price <= 0.20:
+			case strings.Contains(co.Card.Name, "Signet") && entry.Price <= 0.20:
 				pennyInteresting = true
-			case strings.Contains(card.Name, "Talisman") && entry.Price <= 0.20:
+			case strings.Contains(co.Card.Name, "Talisman") && entry.Price <= 0.20:
 				pennyInteresting = true
-			case strings.Contains(card.Name, "Diamond") && entry.Price <= 0.20:
+			case strings.Contains(co.Card.Name, "Diamond") && entry.Price <= 0.20:
 				pennyInteresting = true
-			case strings.Contains(card.Name, "Curse of") && entry.Price <= 0.25:
+			case strings.Contains(co.Card.Name, "Curse of") && entry.Price <= 0.25:
 				pennyInteresting = true
-			case card.Name == "Sakura-Tribe Elder" && entry.Price <= 0.20:
+			case co.Card.Name == "Sakura-Tribe Elder" && entry.Price <= 0.20:
 				pennyInteresting = true
-			case card.Name == "Sol Ring" && entry.Price <= 1.50:
+			case co.Card.Name == "Sol Ring" && entry.Price <= 1.50:
 				pennyInteresting = true
 			}
 
 			if pennyMythic || pennyRare || pennyFoil || pennyInteresting {
 				result = append(result, PennystockEntry{
-					Card:           *card,
+					CardId:         cardId,
 					InventoryEntry: entry,
 				})
 			}

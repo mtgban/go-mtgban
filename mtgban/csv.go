@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
@@ -103,13 +102,13 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
-		index := 3
-		foil := record[index] == "FOIL"
-		index++
-		number := record[index]
-		index++
-		rarity := record[index]
-		index++
+		index := len(CardHeader)
+		cardId := record[0]
+		_, err = mtgmatcher.GetUUID(cardId)
+		if err != nil {
+			return nil, err
+		}
+
 		conditions := record[index]
 		index++
 		price, err := strconv.ParseFloat(record[index], 64)
@@ -132,15 +131,6 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			index++
 		}
 
-		card := &mtgdb.Card{
-			Id:      record[0],
-			Name:    record[1],
-			Edition: record[2],
-			Foil:    foil,
-			Number:  number,
-			Rarity:  rarity,
-		}
-
 		entry := &InventoryEntry{
 			Conditions: conditions,
 			Price:      price,
@@ -149,7 +139,7 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			SellerName: sellerName,
 		}
 
-		inventory.Add(card.Id, entry)
+		inventory.Add(cardId, entry)
 	}
 
 	return inventory, nil
@@ -190,13 +180,13 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			return nil, fmt.Errorf("Error reading record: %v", err)
 		}
 
-		index := 3
-		foil := record[index] == "FOIL"
-		index++
-		number := record[index]
-		index++
-		rarity := record[index]
-		index++
+		index := len(CardHeader)
+		cardId := record[0]
+		_, err = mtgmatcher.GetUUID(cardId)
+		if err != nil {
+			return nil, err
+		}
+
 		buyPrice, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
@@ -221,14 +211,6 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 		URL := record[index]
 		index++
 
-		card := &mtgdb.Card{
-			Id:      record[0],
-			Name:    record[1],
-			Edition: record[2],
-			Foil:    foil,
-			Number:  number,
-			Rarity:  rarity,
-		}
 		entry := &BuylistEntry{
 			BuyPrice:   buyPrice,
 			TradePrice: tradePrice,
@@ -237,10 +219,32 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			URL:        URL,
 		}
 
-		buylist.Add(card.Id, entry)
+		buylist.Add(cardId, entry)
 	}
 
 	return buylist, nil
+}
+
+func cardId2record(cardId string) ([]string, error) {
+	co, err := mtgmatcher.GetUUID(cardId)
+	if err != nil {
+		return nil, err
+	}
+
+	foil := ""
+	if co.Foil {
+		foil = "FOIL"
+	}
+
+	record := []string{
+		cardId,
+		co.Card.Name,
+		co.Edition,
+		foil,
+		co.Card.Number,
+		strings.ToUpper(string(co.Card.Rarity[0])),
+	}
+	return record, nil
 }
 
 func WriteInventoryToCSV(seller Seller, w io.Writer) error {
@@ -267,39 +271,17 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 	}
 
 	for cardId, entries := range inventory {
-		card, err := mtgdb.ID2Card(cardId)
+		cardHeader, err := cardId2record(cardId)
 		if err != nil {
-			co, err := mtgmatcher.GetUUID(cardId)
-			if err != nil {
-				continue
-			}
-			card = &mtgdb.Card{
-				Id:      co.Card.Identifiers["mtgjsonV4Id"],
-				Name:    co.Card.Name,
-				Edition: co.Edition,
-				Foil:    co.Foil,
-				Number:  co.Card.Number,
-				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
-			}
+			continue
 		}
 		for _, entry := range entries {
-			foil := ""
-			if card.Foil {
-				foil = "FOIL"
-			}
-
-			record := []string{
-				card.Id,
-				card.Name,
-				card.Edition,
-				foil,
-				card.Number,
-				card.Rarity,
+			record := append(cardHeader,
 				entry.Conditions,
 				fmt.Sprintf("%0.2f", entry.Price),
 				fmt.Sprint(entry.Quantity),
 				entry.URL,
-			}
+			)
 			if isMarket {
 				record = append(record, entry.SellerName)
 			}
@@ -333,40 +315,20 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 	}
 
 	for cardId, entry := range buylist {
-		card, err := mtgdb.ID2Card(cardId)
+		record, err := cardId2record(cardId)
 		if err != nil {
-			co, err := mtgmatcher.GetUUID(cardId)
-			if err != nil {
-				continue
-			}
-			card = &mtgdb.Card{
-				Id:      co.Card.Identifiers["mtgjsonV4Id"],
-				Name:    co.Card.Name,
-				Edition: co.Edition,
-				Foil:    co.Foil,
-				Number:  co.Card.Number,
-				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
-			}
+			continue
 		}
 
-		foil := ""
-		if card.Foil {
-			foil = "FOIL"
-		}
-
-		err = csvWriter.Write([]string{
-			card.Id,
-			card.Name,
-			card.Edition,
-			foil,
-			card.Number,
-			card.Rarity,
+		record = append(record,
 			fmt.Sprintf("%0.2f", entry.BuyPrice),
 			fmt.Sprintf("%0.2f", entry.TradePrice),
 			fmt.Sprint(entry.Quantity),
 			fmt.Sprintf("%0.2f%%", entry.PriceRatio),
 			entry.URL,
-		})
+		)
+
+		err = csvWriter.Write(record)
 		if err != nil {
 			return err
 		}
@@ -394,19 +356,13 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	for _, entry := range arbitrage {
 		bl := entry.BuylistEntry
 		inv := entry.InventoryEntry
-		card := entry.Card
-		foil := ""
-		if card.Foil {
-			foil = "FOIL"
+
+		record, err := cardId2record(entry.CardId)
+		if err != nil {
+			continue
 		}
 
-		record := []string{
-			card.Id,
-			card.Name,
-			card.Edition,
-			foil,
-			card.Number,
-			card.Rarity,
+		record = append(record,
 			inv.Conditions,
 			fmt.Sprintf("%d", inv.Quantity),
 			fmt.Sprintf("%0.2f", inv.Price),
@@ -416,7 +372,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			fmt.Sprintf("%0.2f%%", entry.Spread),
 			fmt.Sprintf("%0.2f", entry.AbsoluteDifference),
 			fmt.Sprintf("%0.2f%%", bl.PriceRatio),
-		}
+		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
 		}
@@ -449,24 +405,18 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 
 	for _, entry := range mismatch {
 		inv := entry.InventoryEntry
-		card := entry.Card
-		foil := ""
-		if card.Foil {
-			foil = "FOIL"
+
+		record, err := cardId2record(entry.CardId)
+		if err != nil {
+			continue
 		}
 
-		record := []string{
-			card.Id,
-			card.Name,
-			card.Edition,
-			foil,
-			card.Number,
-			card.Rarity,
+		record = append(record,
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", entry.Difference),
 			fmt.Sprintf("%0.2f%%", entry.Spread),
-		}
+		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
 		}
@@ -492,34 +442,9 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 	}
 
 	for cardId, entries := range root.Entries {
-		card, err := mtgdb.ID2Card(cardId)
+		out, err := cardId2record(cardId)
 		if err != nil {
-			co, err := mtgmatcher.GetUUID(cardId)
-			if err != nil {
-				continue
-			}
-			card = &mtgdb.Card{
-				Id:      co.Card.Identifiers["mtgjsonV4Id"],
-				Name:    co.Card.Name,
-				Edition: co.Edition,
-				Foil:    co.Foil,
-				Number:  co.Card.Number,
-				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
-			}
-		}
-
-		foil := ""
-		if card.Foil {
-			foil = "FOIL"
-		}
-
-		out := []string{
-			card.Id,
-			card.Name,
-			card.Edition,
-			foil,
-			card.Number,
-			card.Rarity,
+			continue
 		}
 		for _, vendorName := range root.Names {
 			out = append(out, fmt.Sprintf("%0.2f", entries[vendorName].Price))
@@ -581,25 +506,19 @@ func WritePennyToCSV(penny []PennystockEntry, w io.Writer) error {
 	}
 
 	for _, entry := range penny {
-		card := entry.Card
 		inv := entry.InventoryEntry
-		foil := ""
-		if card.Foil {
-			foil = "FOIL"
+
+		record, err := cardId2record(entry.CardId)
+		if err != nil {
+			continue
 		}
 
-		record := []string{
-			card.Id,
-			card.Name,
-			card.Edition,
-			foil,
-			card.Number,
-			card.Rarity,
+		record = append(record,
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%d", inv.Quantity),
 			"",
-		}
+		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
 		}

@@ -3,29 +3,16 @@ package mtgban
 import (
 	"errors"
 	"fmt"
-	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
 	entries, found := inv[cardId]
 	if found {
-		card, err := mtgdb.ID2Card(cardId)
+		card, err := mtgmatcher.Unmatch(cardId)
 		if err != nil {
-			co, err := mtgmatcher.GetUUID(cardId)
-			if err != nil {
-				return err
-			}
-			card = &mtgdb.Card{
-				Id:      cardId,
-				Name:    co.Card.Name,
-				Edition: co.Edition,
-				Foil:    co.Foil,
-				Number:  co.Card.Number,
-				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
-			}
+			return err
 		}
 		for i := range entries {
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price {
@@ -69,20 +56,9 @@ func (inv InventoryRecord) AddStrict(cardId string, entry *InventoryEntry) error
 func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 	_, found := bl[cardId]
 	if found {
-		card, err := mtgdb.ID2Card(cardId)
+		card, err := mtgmatcher.Unmatch(cardId)
 		if err != nil {
-			co, err := mtgmatcher.GetUUID(cardId)
-			if err != nil {
-				return err
-			}
-			card = &mtgdb.Card{
-				Id:      cardId,
-				Name:    co.Card.Name,
-				Edition: co.Edition,
-				Foil:    co.Foil,
-				Number:  co.Card.Number,
-				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
-			}
+			return err
 		}
 		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
 	}
