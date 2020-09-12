@@ -15,7 +15,6 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
 )
 
 const (
@@ -25,24 +24,24 @@ const (
 	tcgBaseURL       = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
 	tcgApiProductURL = "https://api.tcgplayer.com/v1.37.0/pricing/product/"
 	tcgApiBuylistURL = "https://api.tcgplayer.com/v1.37.0/pricing/buy/product/"
-	tcgApiSKUURL     = "https://api.tcgplayer.com/v1.37.0/catalog/products/%d/skus"
+	tcgApiSKUURL     = "https://api.tcgplayer.com/v1.37.0/catalog/products/%s/skus"
 )
 
 type requestChan struct {
-	TCGProductId int
+	TCGProductId string
 	UUID         string
 }
 
 type responseChan struct {
-	card  mtgdb.Card
-	entry mtgban.InventoryEntry
-	bl    mtgban.BuylistEntry
+	cardId string
+	entry  mtgban.InventoryEntry
+	bl     mtgban.BuylistEntry
 }
 
-func getListingsNumber(client *http.Client, productId int) (int, error) {
+func getListingsNumber(client *http.Client, productId string) (int, error) {
 	u, _ := url.Parse(tcgBaseURL)
 	q := u.Query()
-	q.Set("productId", fmt.Sprintf("%d", productId))
+	q.Set("productId", productId)
 	q.Set("pageSize", fmt.Sprintf("%d", 1))
 	q.Set("page", fmt.Sprintf("%d", 1))
 	u.RawQuery = q.Encode()

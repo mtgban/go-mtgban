@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type TCGPlayerMarket struct {
@@ -54,7 +54,7 @@ func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 }
 
 func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req requestChan) error {
-	resp, err := tcg.client.Get(tcgApiProductURL + fmt.Sprint(req.TCGProductId))
+	resp, err := tcg.client.Get(tcgApiProductURL + req.TCGProductId)
 	if err != nil {
 		return err
 	}
@@ -86,19 +86,21 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 	}
 
 	for _, result := range response.Results {
-		theCard := &mtgdb.Card{
+		theCard := &mtgmatcher.Card{
 			Id:   req.UUID,
 			Foil: result.SubTypeName == "Foil",
 		}
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			return err
 		}
 
+		co, _ := mtgmatcher.GetUUID(cardId)
+
 		// This avoids duplicates for foil-only or nonfoil-only cards
 		// in particular Tenth Edition and Unhinged
-		if (cc.Foil && result.SubTypeName != "Foil") ||
-			(!cc.Foil && result.SubTypeName != "Normal") {
+		if (co.Foil && result.SubTypeName != "Foil") ||
+			(!co.Foil && result.SubTypeName != "Normal") {
 			continue
 		}
 
@@ -109,14 +111,14 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
 		}
 
-		link := fmt.Sprintf("https://shop.tcgplayer.com/product/productsearch?id=%d", req.TCGProductId)
+		link := "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId
 		if tcg.Affiliate != "" {
 			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
 		}
 
 		for i := range names {
 			out := responseChan{
-				card: *cc,
+				cardId: cardId,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      prices[i],
@@ -152,18 +154,20 @@ func (tcg *TCGPlayerMarket) scrape() error {
 	}
 
 	go func() {
-		sets := mtgdb.AllSets()
-		for i, code := range sets {
-			set, _ := mtgdb.Set(code)
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i+1, len(sets))
+		sets := mtgmatcher.GetSets()
+		i := 1
+		for _, set := range sets {
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
+			i++
 
 			for _, card := range set.Cards {
-				if card.TcgplayerProductId == 0 {
+				tcgId, found := card.Identifiers["tcgplayerProductId"]
+				if !found {
 					continue
 				}
 
 				pages <- requestChan{
-					TCGProductId: card.TcgplayerProductId,
+					TCGProductId: tcgId,
 					UUID:         card.UUID,
 				}
 			}
@@ -175,7 +179,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 	}()
 
 	for result := range channel {
-		err := tcg.inventory.Add(result.card.Id, &result.entry)
+		err := tcg.inventory.Add(result.cardId, &result.entry)
 		if err != nil {
 			tcg.printf(err.Error())
 			continue

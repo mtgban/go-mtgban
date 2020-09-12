@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type skuType struct {
@@ -61,7 +61,7 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 		allSkus = append(allSkus, s)
 	}
 
-	respBL, err := tcg.client.Get(tcgApiBuylistURL + fmt.Sprint(req.TCGProductId))
+	respBL, err := tcg.client.Get(tcgApiBuylistURL + req.TCGProductId)
 	if err != nil {
 		return err
 	}
@@ -118,18 +118,18 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 			continue
 		}
 
-		theCard := &mtgdb.Card{
+		theCard := &mtgmatcher.Card{
 			Id:   req.UUID,
 			Foil: theSku.Foil,
 		}
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			return err
 		}
 
 		var sellPrice, priceRatio float64
 
-		invCards := tcg.inventory[cc.Id]
+		invCards := tcg.inventory[cardId]
 		for _, invCard := range invCards {
 			if invCard.SellerName != "TCG Market" {
 				continue
@@ -141,7 +141,7 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 			priceRatio = price / sellPrice * 100
 		}
 		out := responseChan{
-			card: *cc,
+			cardId: cardId,
 			bl: mtgban.BuylistEntry{
 				BuyPrice:   price,
 				TradePrice: price,
@@ -176,10 +176,11 @@ func (tcg *TCGPlayerMarket) scrpeBL() error {
 	}
 
 	go func() {
-		sets := mtgdb.AllSets()
-		for i, code := range sets {
-			set, _ := mtgdb.Set(code)
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i+1, len(sets))
+		sets := mtgmatcher.GetSets()
+		i := 1
+		for _, set := range sets {
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
+			i++
 
 			setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
 			if setDate.After(time.Now()) {
@@ -187,12 +188,13 @@ func (tcg *TCGPlayerMarket) scrpeBL() error {
 			}
 
 			for _, card := range set.Cards {
-				if card.TcgplayerProductId == 0 {
+				tcgId, found := card.Identifiers["tcgplayerProductId"]
+				if !found {
 					continue
 				}
 
 				pages <- requestChan{
-					TCGProductId: card.TcgplayerProductId,
+					TCGProductId: tcgId,
 					UUID:         card.UUID,
 				}
 			}
@@ -204,7 +206,7 @@ func (tcg *TCGPlayerMarket) scrpeBL() error {
 	}()
 
 	for result := range channel {
-		err := tcg.buylist.Add(result.card.Id, &result.bl)
+		err := tcg.buylist.Add(result.cardId, &result.bl)
 		if err != nil {
 			tcg.printf(err.Error())
 			continue

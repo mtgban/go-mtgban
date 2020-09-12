@@ -11,8 +11,9 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	http "github.com/hashicorp/go-retryablehttp"
+
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type TCGPlayerFull struct {
@@ -42,7 +43,7 @@ func (tcg *TCGPlayerFull) printf(format string, a ...interface{}) {
 	}
 }
 
-func (tcg *TCGPlayerFull) getPagesForProduct(productId int) (int, error) {
+func (tcg *TCGPlayerFull) getPagesForProduct(productId string) (int, error) {
 	num, err := getListingsNumber(tcg.client.StandardClient(), productId)
 	if err != nil {
 		return 0, err
@@ -51,14 +52,14 @@ func (tcg *TCGPlayerFull) getPagesForProduct(productId int) (int, error) {
 }
 
 func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestChan) error {
-	theCard := &mtgdb.Card{
+	theCard := &mtgmatcher.Card{
 		Id: req.UUID,
 	}
-	cc, err := theCard.Match()
+	cardId, err := mtgmatcher.Match(theCard)
 	if err != nil {
 		return err
 	}
-	var ccfoil *mtgdb.Card
+	var cardIdFoil string
 
 	totalPages, err := tcg.getPagesForProduct(req.TCGProductId)
 	if err != nil {
@@ -68,7 +69,7 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 	for i := 1; i <= totalPages; i++ {
 		u, _ := url.Parse(tcgBaseURL)
 		q := u.Query()
-		q.Set("productId", fmt.Sprintf("%d", req.TCGProductId))
+		q.Set("productId", req.TCGProductId)
 		q.Set("pageSize", fmt.Sprintf("%d", pagesPerRequest))
 		q.Set("page", fmt.Sprintf("%d", i))
 		u.RawQuery = q.Encode()
@@ -90,17 +91,19 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 			if strings.Contains(cond, " Foil") {
 				isFoil = true
 				cond = strings.Replace(cond, " Foil", "", 1)
-				if ccfoil == nil {
+				if cardIdFoil == "" {
 					theCard.Foil = true
-					ccfoil, _ = theCard.Match()
+					cardIdFoil, _ = mtgmatcher.Match(theCard)
 				}
 			}
+
+			co, _ := mtgmatcher.GetUUID(cardId)
 
 			// Since we use the ID match, we can be sure that the foiling info
 			// is appropriate, so we can skip anything that is not foil if our
 			// card is foil. This is especially important for Tenth Edition and
 			// Unhinged foils which mtgjson treats differently.
-			if cc.Foil && !isFoil {
+			if co.Foil && !isFoil {
 				return
 			}
 
@@ -113,7 +116,7 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 			switch lang {
 			case "":
 			case "Japanese":
-				if !strings.Contains(cc.Variation, "Japanese") {
+				if co.Card.HasUniqueLanguage("Japanese") {
 					return
 				}
 			default:
@@ -141,31 +144,31 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 			priceStr = strings.Replace(priceStr, ",", "", 1)
 			price, err := strconv.ParseFloat(priceStr, 64)
 			if err != nil {
-				tcg.printf("%s - %v", cc, err)
+				tcg.printf("%s - %v", co, err)
 				return
 			}
 
 			qtyStr, _ := s.Find("input[name='quantityAvailable']").Attr("value")
 			qty, err := strconv.Atoi(qtyStr)
 			if err != nil {
-				tcg.printf("%s - %v", cc, err)
+				tcg.printf("%s - %v", co, err)
 				return
 			}
 
 			sellerName := strings.TrimSpace(s.Find("a[class='seller__name']").Text())
 
 			out := responseChan{
-				card: *cc,
+				cardId: cardId,
 				entry: mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      price,
 					Quantity:   qty,
 					SellerName: sellerName,
-					URL:        fmt.Sprintf("https://shop.tcgplayer.com/product/productsearch?id=%d", req.TCGProductId),
+					URL:        "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId,
 				},
 			}
 			if isFoil {
-				out.card = *ccfoil
+				out.cardId = cardIdFoil
 			}
 
 			channel <- out
@@ -194,17 +197,20 @@ func (tcg *TCGPlayerFull) scrape() error {
 	}
 
 	go func() {
-		sets := mtgdb.AllSets()
-		for i, code := range sets {
-			set, _ := mtgdb.Set(code)
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i+1, len(sets))
+		sets := mtgmatcher.GetSets()
+		i := 1
+		for _, set := range sets {
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
+			i++
 
 			for _, card := range set.Cards {
-				if card.TcgplayerProductId == 0 {
+				tcgId, found := card.Identifiers["tcgplayerProductId"]
+				if !found {
 					continue
 				}
+
 				pages <- requestChan{
-					TCGProductId: card.TcgplayerProductId,
+					TCGProductId: tcgId,
 					UUID:         card.UUID,
 				}
 			}
@@ -216,7 +222,7 @@ func (tcg *TCGPlayerFull) scrape() error {
 	}()
 
 	for result := range channel {
-		err := tcg.inventory.Add(result.card.Id, &result.entry)
+		err := tcg.inventory.Add(result.cardId, &result.entry)
 		if err != nil {
 			tcg.printf(err.Error())
 			continue
