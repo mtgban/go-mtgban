@@ -4,12 +4,13 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
 	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
-	"Transcatation": "Transcantation",
+	"Transcatation":                   "Transcantation",
+	"Who / What / When / Where / Why": "Who // What // When // Where // Why",
 }
 
 func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
@@ -22,7 +23,7 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 	cardName := fields[0]
 	tag := strings.TrimSuffix(fields[1], "]")
 	tags := strings.Replace(tag, "-", " ", -1)
-	maybeNum := mtgdb.ExtractNumber(tags)
+	maybeNum := mtgmatcher.ExtractNumber(tags)
 
 	switch edition {
 	case "Planechase Planes: 2012 Edition":
@@ -32,7 +33,7 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 		}
 	case "Starter 1999":
 		// Incorrect number in SCG
-		if mtgdb.IsBasicLand(cardName) {
+		if mtgmatcher.IsBasicLand(cardName) {
 			cardName = "Token"
 		}
 	case "Core Set 2019":
@@ -229,7 +230,7 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 			case strings.Contains(tag, "SECRET_SLD"):
 				tags := strings.Replace(tag, "-", " ", -1)
 				tags = strings.Replace(tags, "_", " ", -1)
-				subtitle = mtgdb.ExtractNumber(tags)
+				subtitle = mtgmatcher.ExtractNumber(tags)
 				edition = "Secret Lair"
 			case strings.Contains(tag, "FNM_"), strings.Contains(tag, "ARENA"):
 				subtitle = "FNM"
@@ -237,7 +238,7 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 					subtitle = "Arena"
 				}
 				tags := strings.Replace(tag, "_", " ", -1)
-				year := mtgdb.ExtractYear(tags)
+				year := mtgmatcher.ExtractYear(tags)
 				switch {
 				case strings.Contains(tags, "USG"):
 					year = "1999"
@@ -252,7 +253,7 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 		}
 	}
 
-	if mtgdb.IsBasicLand(cardName) {
+	if mtgmatcher.IsBasicLand(cardName) {
 		switch edition {
 		case "Asia Pacific Land Program":
 			var landMap = map[string]string{
@@ -300,7 +301,7 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 				if subtitle != "" {
 					subtitle += " "
 				}
-				subtitle += mtgdb.ExtractNumber(fields[3])
+				subtitle += mtgmatcher.ExtractNumber(fields[3])
 			}
 		}
 	}
@@ -313,7 +314,7 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 	return
 }
 
-func preprocess(card SCGCard) (*mtgdb.Card, error) {
+func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 	edition := strings.Replace(card.edition, "&amp;", "&", -1)
 
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
@@ -365,7 +366,7 @@ func preprocess(card SCGCard) (*mtgdb.Card, error) {
 			return nil, errors.New("invalid")
 		}
 	default:
-		if mtgdb.IsBasicLand(cardName) {
+		if mtgmatcher.IsBasicLand(cardName) {
 			if strings.Contains(variant, "APAC") {
 				edition = "Asia Pacific Land Program"
 			} else if strings.Contains(variant, "Euro") {
@@ -374,12 +375,13 @@ func preprocess(card SCGCard) (*mtgdb.Card, error) {
 		}
 	}
 
-	if cardName != "Erase (Not the Urza's Legacy One)" {
-		vars := mtgdb.SplitVariants(cardName)
-		cardName = vars[0]
-		if len(vars) > 1 {
-			variant = vars[1]
+	vars := mtgmatcher.SplitVariants(cardName)
+	cardName = vars[0]
+	if len(vars) > 1 {
+		if variant != "" {
+			variant += " "
 		}
+		variant += vars[1]
 	}
 
 	if card.Language == "Japanese" {
@@ -409,7 +411,7 @@ func preprocess(card SCGCard) (*mtgdb.Card, error) {
 
 			// Decouple showcase and boderless from this tag
 			if strings.Contains(variant, "Alternate Art") {
-				set, err := mtgdb.Set(edition)
+				set, err := mtgmatcher.GetSet(edition)
 				if err != nil {
 					return nil, err
 				}
@@ -429,7 +431,7 @@ func preprocess(card SCGCard) (*mtgdb.Card, error) {
 		}
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

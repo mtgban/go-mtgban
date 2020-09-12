@@ -16,7 +16,7 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -62,7 +62,7 @@ func NewScraper(buylistCategories io.Reader) (*Starcitygames, error) {
 }
 
 type responseChan struct {
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -176,11 +176,19 @@ func (scg *Starcitygames) scrape() error {
 				return
 			}
 
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
+				scg.printf("%v", err)
 				scg.printf("%q", theCard)
 				scg.printf("'%q' (%s) [%s]", fullName, subtitle, edition)
-				scg.printf("%v", err)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						scg.printf("- %s", card)
+					}
+				}
 				return
 			}
 
@@ -221,7 +229,7 @@ func (scg *Starcitygames) scrape() error {
 				}
 
 				channel <- responseChan{
-					card: cc,
+					cardId: cardId,
 					invEntry: &mtgban.InventoryEntry{
 						Conditions: conditions,
 						Price:      price,
@@ -269,18 +277,15 @@ func (scg *Starcitygames) scrape() error {
 
 	dupes := map[string]bool{}
 	for res := range channel {
-		key := res.card.String() + res.invEntry.Conditions
+		key := res.cardId + res.invEntry.Conditions
 		if dupes[key] {
 			continue
 		}
 		dupes[key] = true
 
-		err := scg.inventory.Add(res.card.Id, res.invEntry)
+		err := scg.inventory.Add(res.cardId, res.invEntry)
 		if err != nil {
-			if !strings.HasSuffix(res.card.Name, "Guildgate") &&
-				!strings.HasSuffix(res.card.Name, "Signet") {
-				scg.printf("%v", err)
-			}
+			scg.printf("%v", err)
 		}
 	}
 	scg.inventoryDate = time.Now()
@@ -334,11 +339,19 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				continue
 			}
 
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
+				scg.printf("%v", err)
 				scg.printf("%q", theCard)
 				scg.printf("'%q' (%s)", result, search.Edition)
-				scg.printf("%v", err)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						scg.printf("- %s", card)
+					}
+				}
 				continue
 			}
 
@@ -350,7 +363,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 
 			var priceRatio, sellPrice float64
 
-			invCards := scg.inventory[cc.Id]
+			invCards := scg.inventory[cardId]
 			for _, invCard := range invCards {
 				sellPrice = invCard.Price
 				break
@@ -360,7 +373,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 			}
 
 			channel <- responseChan{
-				card: cc,
+				cardId: cardId,
 				buyEntry: &mtgban.BuylistEntry{
 					BuyPrice:   price,
 					TradePrice: price * 1.35,
@@ -403,7 +416,7 @@ func (scg *Starcitygames) parseBL() error {
 	}()
 
 	for record := range results {
-		err := scg.buylist.Add(record.card.Id, record.buyEntry)
+		err := scg.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
 			scg.printf(err.Error())
 			continue
