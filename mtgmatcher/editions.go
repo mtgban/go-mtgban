@@ -83,6 +83,7 @@ var EditionTable = map[string]string{
 
 	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",
+	"Secret Lair Borderless":  "Secret Lair Drop",
 	"Secret Lair Drop Series": "Secret Lair Drop",
 	"Secret Lair Drop Sets":   "Secret Lair Drop",
 	"Secret Lair Full Art":    "Secret Lair Drop",
@@ -457,6 +458,7 @@ var EditionTable = map[string]string{
 	"PS3 Promo":                    "Duels of the Planeswalkers 2012 Promos",
 	"Starter":                      "Starter 1999",
 	"Vanguard":                     "Vanguard Series",
+	"Bring-a-Friend":               "Love Your LGS",
 	"Bring-A-Friend":               "Love Your LGS",
 	"LGS Promo":                    "Love Your LGS",
 	"Welcome Back":                 "Love Your LGS",

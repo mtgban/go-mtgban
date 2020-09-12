@@ -107,7 +107,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isBundle():
 			switch set.Name {
-			case "Core Set 2020 Promos":
+			case "Core Set 2020 Promos",
+				"Core Set 2021":
 			default:
 				switch {
 				case setDate.After(BuyABoxInExpansionSetsDate) &&
