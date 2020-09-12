@@ -47,12 +47,16 @@ var cardTable = map[string]string{
 	"Hinterland Drakr":           "Hinterland Drake",
 	"Warmonger ":                 "Warmonger",
 	"Fierce Impact":              "Fierce Empath",
+	"Jhoira's Familar":           "Jhoira's Familiar",
+	"Lullamage's Familiar":       "Lullmage's Familiar",
+	"Yasharn, Relentless Land":   "Yasharn, Implacable Earth",
 
 	"Nighthowler GAME DAY FULL ART": "Nighthowler",
 
 	"The Ultimate Nightmare of WOTC Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 
-	"Fire/Ice":                                 "Fire",
+	"Fire/Ice":                                 "Fire // Ice",
+	"Start /// Finish":                         "Start // Finish",
 	"Who/What/When/Where/Why":                  "Who // What // When // Where // Why",
 	"Cryptolith Fragment // Aura of Emrakul":   "Cryptolith Fragment // Aurora of Emrakul",
 	"Docent of Perfection // Final Iteratioin": "Docent of Perfection // Final Iteration",
@@ -291,6 +295,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 			variant = "No Reminder Text"
 		}
 	case "Alliances":
+		cardName = strings.Replace(cardName, "Lim-Dûl", "Lim-Dul", 1)
 		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
 			if (variant == "" && strings.HasSuffix(num, "a")) ||
 				(variant == "v. 2" && strings.HasSuffix(num, "b")) {
@@ -315,11 +320,12 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 			"Azorius Charm",
 			"Azorius Guildmage",
 			"Azorius Herald",
-			"Dovescape",
-			"Stoic Ephemera",
-			"Windreaver",
 			"Court Hussar",
-			"Isperia, Supreme Judge":
+			"Dovescape",
+			"Isperia, Supreme Judge",
+			"Stoic Ephemera",
+			"Trygon Predator",
+			"Windreaver":
 			edition = "RNA Guild Kit"
 		}
 	case "Guilds of Ravnica", "Ravnica Allegiance":
@@ -331,10 +337,29 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		case "Urza's Power Plant", "Urza's Tower", "Urza's Mine":
 			return nil, errors.New("dupe")
 		}
+	case "Planechase":
+		if cardName == "Etherium-Horn Sorcerer" {
+			edition = "Planechase 2012"
+		}
+	case "Core Set 2021 Showcase and Full":
+		edition = "Core Set 2021"
+		if variant == "" {
+			variant = "Showcase"
+		}
+		switch cardName {
+		case "Containment Priest",
+			"Cultivate",
+			"Grim Tutor",
+			"Massacre Wurm",
+			"Scavenging Ooze",
+			"Solemn Simulacrum":
+			variant = "Borderless"
+		}
+	case "Double Masters Showcase":
+		edition = "Double Masters"
+		variant = "Borderless"
 	case "Oversize":
 		return nil, errors.New("not single")
-	case "Foreign BB":
-		return nil, errors.New("not english")
 	case "Promo Cards (Prerelease)":
 		variant = "Prerelease"
 	case "Promo Cards":
@@ -369,6 +394,8 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	case "2 versions", "3 versions", "4 versions",
 		"3 Versions", "4 Versions":
 		return nil, errors.New("not unique")
+	case "Double Sided foil":
+		return nil, errors.New("not single")
 	case "6th Prerelease":
 		variant = "World Championship Foil"
 	case "DCI", "FMN":

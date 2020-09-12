@@ -468,5 +468,6 @@ var EditionTable = map[string]string{
 
 	// Foreign-only
 	"3rd Edition (Foreign Black Border)": "Foreign Black Border",
+	"Foreign BB":                         "Foreign Black Border",
 	"Foreign Limited - FBB":              "Foreign Black Border",
 }
