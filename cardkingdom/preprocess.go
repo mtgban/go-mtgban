@@ -66,7 +66,7 @@ var skuFixupTable = map[string]string{
 	"P2XM-384":  "2XM-384",
 }
 
-func preprocess(card CKCard) (*mtgmatcher.Card, error) {
+func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	if strings.Contains(card.Name, "Token") ||
 		strings.Contains(card.Name, "Emblem") ||
 		strings.Contains(card.Name, "Checklist") ||

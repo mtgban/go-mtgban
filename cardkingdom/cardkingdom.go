@@ -40,7 +40,7 @@ func (ck *Cardkingdom) scrape() error {
 	}
 
 	for _, card := range pricelist.Data {
-		theCard, err := preprocess(card)
+		theCard, err := Preprocess(card)
 		if err != nil {
 			continue
 		}
