@@ -9,13 +9,28 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
-func (inv InventoryRecord) add(card string, entry *InventoryEntry, strict int) error {
-	entries, found := inv[card]
+func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
+	entries, found := inv[cardId]
 	if found {
+		card, err := mtgdb.ID2Card(cardId)
+		if err != nil {
+			co, err := mtgmatcher.GetUUID(cardId)
+			if err != nil {
+				return err
+			}
+			card = &mtgdb.Card{
+				Id:      cardId,
+				Name:    co.Card.Name,
+				Edition: co.Edition,
+				Foil:    co.Foil,
+				Number:  co.Card.Number,
+				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
+			}
+		}
 		for i := range entries {
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price {
 				if strict > 1 {
-					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
+					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
 
 				check := entry.URL == entries[i].URL
@@ -23,16 +38,16 @@ func (inv InventoryRecord) add(card string, entry *InventoryEntry, strict int) e
 					check = check && entry.SellerName == entries[i].SellerName
 				}
 				if strict > 0 && check && entry.Quantity == entries[i].Quantity {
-					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, entries[i])
+					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
 
-				inv[card][i].Quantity += entry.Quantity
+				inv[cardId][i].Quantity += entry.Quantity
 				return nil
 			}
 		}
 	}
 
-	inv[card] = append(inv[card], *entry)
+	inv[cardId] = append(inv[cardId], *entry)
 	return nil
 }
 
@@ -69,7 +84,7 @@ func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 				Rarity:  strings.ToUpper(string(co.Card.Rarity[0])),
 			}
 		}
-		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %v\n-new: %v\n-old: %v", card, *entry, bl[cardId])
+		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
 	}
 
 	bl[cardId] = *entry
