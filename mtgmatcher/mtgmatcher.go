@@ -319,7 +319,7 @@ func adjustEdition(inCard *Card) {
 		edition = "Amonkhet Invocations"
 	case strings.Contains(edition, "Inventions"):
 		edition = "Kaladesh Inventions"
-	case strings.Contains(edition, "Expeditions"):
+	case strings.Contains(edition, "Expeditions") && !strings.Contains(edition, "Rising"):
 		edition = "Zendikar Expeditions"
 	}
 
