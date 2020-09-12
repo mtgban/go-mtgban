@@ -10,7 +10,7 @@ import (
 
 	"github.com/gocolly/colly"
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -41,8 +41,8 @@ func (wc *Wizardscupboard) printf(format string, a ...interface{}) {
 }
 
 type respChan struct {
-	card  *mtgdb.Card
-	entry *mtgban.InventoryEntry
+	cardId string
+	entry  *mtgban.InventoryEntry
 }
 
 func (wc *Wizardscupboard) scrape() error {
@@ -158,18 +158,26 @@ func (wc *Wizardscupboard) scrape() error {
 				return
 			}
 
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
-				if !mtgdb.IsBasicLand(cardName) {
+				if !mtgmatcher.IsBasicLand(cardName) {
+					wc.printf("%v", err)
 					wc.printf("%s", theCard)
 					wc.printf("'%s' '%s' '%s'", cardName, edition, notes)
-					wc.printf("%s", err.Error())
+					alias, ok := err.(*mtgmatcher.AliasingError)
+					if ok {
+						probes := alias.Probe()
+						for _, probe := range probes {
+							card, _ := mtgmatcher.Unmatch(probe)
+							wc.printf("- %s", card)
+						}
+					}
 				}
 				return
 			}
 
 			channel <- respChan{
-				card: cc,
+				cardId: cardId,
 				entry: &mtgban.InventoryEntry{
 					Price:      price,
 					Conditions: conditions,
@@ -190,13 +198,13 @@ func (wc *Wizardscupboard) scrape() error {
 	dupes := map[string]bool{}
 
 	for resp := range channel {
-		key := resp.card.String() + resp.entry.Conditions
+		key := resp.cardId + resp.entry.Conditions
 		if dupes[key] {
 			continue
 		}
 		dupes[key] = true
 
-		err := wc.inventory.Add(resp.card.Id, resp.entry)
+		err := wc.inventory.Add(resp.cardId, resp.entry)
 		if err != nil {
 			wc.printf("%v", err)
 			continue

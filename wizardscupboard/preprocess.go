@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
@@ -53,7 +53,7 @@ var cardTable = map[string]string{
 	"The Ultimate Nightmare of WOTC Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 
 	"Fire/Ice":                                 "Fire",
-	"Who/What/When/Where/Why":                  "Who",
+	"Who/What/When/Where/Why":                  "Who // What // When // Where // Why",
 	"Cryptolith Fragment // Aura of Emrakul":   "Cryptolith Fragment // Aurora of Emrakul",
 	"Docent of Perfection // Final Iteratioin": "Docent of Perfection // Final Iteration",
 }
@@ -204,7 +204,7 @@ func parseConditions(notes string) (string, error) {
 	return conditions, nil
 }
 
-func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
+func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	ogName := cardName
 
 	switch {
@@ -245,7 +245,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 	}
 
 	variant := ""
-	vars := mtgdb.SplitVariants(cardName)
+	vars := mtgmatcher.SplitVariants(cardName)
 	cardName = vars[0]
 	if len(vars) > 1 {
 		variant = vars[1]
@@ -291,7 +291,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 			variant = "No Reminder Text"
 		}
 	case "Alliances":
-		for _, num := range mtgdb.VariantsTable[edition][cardName] {
+		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
 			if (variant == "" && strings.HasSuffix(num, "a")) ||
 				(variant == "v. 2" && strings.HasSuffix(num, "b")) {
 				variant = num
@@ -305,10 +305,6 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 		} else if ogName == "B.F.M. (Big Furry Monster) Right" {
 			cardName = "B.F.M."
 			variant = "29"
-		}
-	case "Unhinged":
-		if cardName == "Erase" {
-			cardName = "Erase (Not the Urza's Legacy One)"
 		}
 	case "Unstable":
 		cardName = strings.Replace(cardName, "|", " ", -1)
@@ -394,7 +390,7 @@ func preprocess(cardName, edition, notes string) (*mtgdb.Card, error) {
 		cardName = lutName
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
