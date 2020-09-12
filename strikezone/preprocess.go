@@ -94,6 +94,12 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	case cardName == "Mechagodzilla Battle Fortress (Hangarback Walker) BIBB Promo":
 		cardName = "Hangarback Walker"
 		edition = "Love your LGS"
+	case cardName == "Teferi Master of Time":
+		if edition == "Promotional Cards" {
+			variation += "s"
+		} else if edition == "Promo Pack" {
+			variation += "p"
+		}
 	}
 
 	ed, found := card2setTable[cardName]
