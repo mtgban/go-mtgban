@@ -15,8 +15,7 @@ import (
 	http "github.com/hashicorp/go-retryablehttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
-	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -45,7 +44,7 @@ func NewScraper() *Jupitergames {
 }
 
 type responseChan struct {
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 }
 
@@ -126,19 +125,27 @@ func (jup *Jupitergames) scrape() error {
 		if err != nil {
 			return
 		}
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			switch theCard.Edition {
 			default:
-				jup.printf("%q", theCard)
 				jup.printf("%v", err)
+				jup.printf("%q", theCard)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						jup.printf("- %s", card)
+					}
+				}
 			}
 			return
 		}
 
 		var out responseChan
 		out = responseChan{
-			card: cc,
+			cardId: cardId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,
 				Price:      price,
@@ -207,7 +214,7 @@ func (jup *Jupitergames) scrape() error {
 	}()
 
 	for res := range channel {
-		err := jup.inventory.Add(res.card.Id, res.invEntry)
+		err := jup.inventory.Add(res.cardId, res.invEntry)
 		if err != nil {
 			jup.printf("%v", err)
 		}
@@ -262,20 +269,10 @@ func (jup *Jupitergames) parseBL() error {
 		if len(record) <= 1 {
 			continue
 		}
-		// Skip the second line, which is the hader
+		// Skip the second line, which is the header
 		cardName := strings.TrimSpace(record[0])
 		if cardName == "NAME" {
 			continue
-		}
-
-		// Make sure that the split card don't mess up our record splitting
-		simple, err := mtgdb.CardSimple(cardName)
-		if err == nil && cardName != "Bind" {
-			if len(simple.Names) > 1 && mtgjson.NormContains(record[1], simple.Names[1]) {
-				line = strings.Replace(line, " | ", " // ", 1)
-				record = strings.Split(line, "|")
-				cardName = strings.TrimSpace(record[0])
-			}
 		}
 
 		edition := strings.TrimSpace(record[1])
@@ -322,16 +319,24 @@ func (jup *Jupitergames) parseBL() error {
 		if err != nil {
 			continue
 		}
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
-			jup.printf("%q", theCard)
 			jup.printf("%v", err)
+			jup.printf("%q", theCard)
+			alias, ok := err.(*mtgmatcher.AliasingError)
+			if ok {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.Unmatch(probe)
+					jup.printf("- %s", card)
+				}
+			}
 			continue
 		}
 
 		var priceRatio, sellPrice float64
 
-		invCards := jup.inventory[cc.Id]
+		invCards := jup.inventory[cardId]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -348,7 +353,7 @@ func (jup *Jupitergames) parseBL() error {
 			URL:        "https://jupitergames.info/store/find/buypricebyname/" + url.QueryEscape(cardName),
 		}
 
-		err = jup.buylist.Add(cc.Id, buyEntry)
+		err = jup.buylist.Add(cardId, buyEntry)
 		if err != nil {
 			jup.printf(err.Error())
 			continue

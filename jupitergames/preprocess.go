@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
-	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 var cardTable = map[string]string{
@@ -119,7 +119,7 @@ var commonTags = []string{
 	"April", "July",
 }
 
-func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) {
+func preprocess(cardName, variant, edition, format string) (*mtgmatcher.Card, error) {
 	switch {
 	case strings.Contains(cardName, "Checklist"),
 		strings.Contains(cardName, "Punch Out Card"),
@@ -148,7 +148,7 @@ func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) 
 		variants := strings.Split(variant, " [")
 		variant = variants[0]
 		if len(variants) > 1 {
-			if mtgdb.IsBasicLand(cardName) ||
+			if mtgmatcher.IsBasicLand(cardName) ||
 				edition == "Secret Lair Drop Sets" ||
 				edition == "Commander Anthology 2018" ||
 				edition == "Unglued" {
@@ -179,7 +179,7 @@ func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) 
 
 	// Try decoupling lands as much as possible, in particular retrieve the
 	// year of Arena League by looking at the single digit number
-	if mtgdb.IsBasicLand(cardName) || strings.Contains(cardName, "Guildgate") {
+	if mtgmatcher.IsBasicLand(cardName) || strings.Contains(cardName, "Guildgate") {
 		switch edition {
 		case "Portal Second Age",
 			"Portal",
@@ -251,7 +251,7 @@ func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) 
 		}
 	}
 
-	variants := mtgdb.SplitVariants(cardName)
+	variants := mtgmatcher.SplitVariants(cardName)
 	cardName = variants[0]
 	if len(variants) > 1 {
 		if variant != "" {
@@ -319,7 +319,7 @@ func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) 
 	case "ALT - Ikoria: Lair of Behemoths":
 		// Decouple showcase and boderless from this tag
 		if strings.Contains(variant, "BORDERLESS") {
-			set, err := mtgdb.Set("IKO")
+			set, err := mtgmatcher.GetSet("IKO")
 			if err != nil {
 				return nil, err
 			}
@@ -348,7 +348,7 @@ func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) 
 		"Fallen Empires",
 		"Homelands",
 		"Unstable":
-		for _, num := range mtgdb.VariantsTable[edition][cardName] {
+		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
 			if (variant == "1" && strings.HasSuffix(num, "a")) ||
 				(variant == "2" && strings.HasSuffix(num, "b")) ||
 				(variant == "3" && strings.HasSuffix(num, "c")) ||
@@ -362,9 +362,9 @@ func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) 
 	case "Fourth Edition",
 		"Fifth Edition",
 		"Limited Edition Beta":
-		number := mtgdb.ExtractNumber(variant)
+		number := mtgmatcher.ExtractNumber(variant)
 		if number != "" {
-			for key, num := range mtgdb.VariantsTable[edition][cardName] {
+			for key, num := range mtgmatcher.VariantsTable[edition][cardName] {
 				if strings.Contains(key, number) {
 					variant = num
 					break
@@ -407,13 +407,13 @@ func preprocess(cardName, variant, edition, format string) (*mtgdb.Card, error) 
 		}
 	}
 
-	if mtgjson.NormContains(variant, "extended") {
+	if mtgmatcher.Contains(variant, "extended") {
 		variant += " extended art"
-	} else if mtgjson.NormContains(variant, "full") {
+	} else if mtgmatcher.Contains(variant, "full") {
 		variant += " full art"
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
