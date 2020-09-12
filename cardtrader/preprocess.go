@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
@@ -55,7 +55,7 @@ var id2edition = map[int]string{
 	23847: "PAL06",
 }
 
-func preprocess(bp Blueprint) (*mtgdb.Card, error) {
+func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 	cardName := bp.Name
 	edition := bp.Expansion.Name
 	number := strings.TrimLeft(bp.Properties.Number, "0")
@@ -299,9 +299,9 @@ func preprocess(bp Blueprint) (*mtgdb.Card, error) {
 				} else if strings.Contains(bp.DisplayName, "Vers. 2") {
 					variant = "Prerelease"
 				} else {
-					if mtgdb.HasPromoPackPrinting(cardName) {
+					if mtgmatcher.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
-					} else if !mtgdb.IsBasicLand(cardName) {
+					} else if !mtgmatcher.IsBasicLand(cardName) {
 						// Lands are adjusted below
 						edition = "Core Set 2020"
 					} else {
@@ -311,7 +311,7 @@ func preprocess(bp Blueprint) (*mtgdb.Card, error) {
 			case "Throne of Eldraine Promos",
 				"Theros: Beyond Death Promos",
 				"Ikoria: Lair of Behemoths Promos":
-				if mtgdb.HasPromoPackPrinting(cardName) {
+				if mtgmatcher.HasPromoPackPrinting(cardName) {
 					variant = "Promo Pack"
 				} else {
 					edition = strings.TrimSuffix(edition, " Promos")
@@ -320,7 +320,7 @@ func preprocess(bp Blueprint) (*mtgdb.Card, error) {
 		}
 	}
 
-	if mtgdb.IsBasicLand(cardName) {
+	if mtgmatcher.IsBasicLand(cardName) {
 		switch edition {
 		case "International Edition",
 			"Collectors’ Edition":
@@ -352,7 +352,7 @@ func preprocess(bp Blueprint) (*mtgdb.Card, error) {
 			}
 		// Some lands have years set
 		case "Arena League Promos":
-			if mtgdb.ExtractYear(bp.DisplayName) != "" {
+			if mtgmatcher.ExtractYear(bp.DisplayName) != "" {
 				variant = bp.DisplayName
 			}
 			switch variant {
@@ -406,7 +406,7 @@ func preprocess(bp Blueprint) (*mtgdb.Card, error) {
 		edition = strings.TrimSuffix(edition, " Theme Deck")
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

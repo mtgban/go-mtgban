@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -58,7 +58,7 @@ func (ct *Cardtrader) printf(format string, a ...interface{}) {
 
 type resultChan struct {
 	category int
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 }
 
@@ -95,8 +95,8 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 		}
 	}
 
-	var outCard *mtgdb.Card
-	var outFoil *mtgdb.Card
+	var cardId string
+	var cardIdFoil string
 
 	for _, product := range filter.Products {
 		if product.Properties.Language != "en" || product.Properties.Altered {
@@ -119,16 +119,25 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 			continue
 		}
 
-		if outCard == nil {
-			outCard, err = theCard.Match()
+		if cardId == "" {
+			cardId, err = mtgmatcher.Match(theCard)
 		}
-		if outFoil == nil && product.Properties.Foil {
+		if cardIdFoil == "" && product.Properties.Foil {
 			theCard.Foil = true
-			outFoil, err = theCard.Match()
+			cardIdFoil, err = mtgmatcher.Match(theCard)
 		}
 		if err != nil {
+			ct.printf("%v", theCard)
 			ct.printf("%q", theCard)
 			ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
+			alias, ok := err.(*mtgmatcher.AliasingError)
+			if ok {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.Unmatch(probe)
+					ct.printf("- %s", card)
+				}
+			}
 			return err
 		}
 
@@ -152,9 +161,9 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 			continue
 		}
 
-		finalCard := outCard
+		finalCardId := cardId
 		if product.Properties.Foil {
-			finalCard = outFoil
+			finalCardId = cardIdFoil
 		}
 
 		qty := product.Quantity
@@ -166,7 +175,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 
 		channel <- resultChan{
 			category: categoryId,
-			card:     finalCard,
+			cardId:   finalCardId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,
 				Price:      float64(product.Price.Cents) / 100,
@@ -210,7 +219,7 @@ func (ct *Cardtrader) scrape() error {
 
 	lastTime := time.Now()
 	for result := range results {
-		err := ct.inventory.AddRelaxed(result.card.Id, result.invEntry)
+		err := ct.inventory.AddRelaxed(result.cardId, result.invEntry)
 		if err != nil {
 			ct.printf(err.Error())
 			continue
@@ -218,7 +227,8 @@ func (ct *Cardtrader) scrape() error {
 		// This would be better with a select, but for now just print a message
 		// that we're still alive every minute
 		if time.Now().After(lastTime.Add(60 * time.Second)) {
-			ct.printf("Still going %d/%d, last processed card: %s", result.category, ct.ids[len(ct.ids)-1], result.card)
+			card, _ := mtgmatcher.Unmatch(result.cardId)
+			ct.printf("Still going %d/%d, last processed card: %s", result.category, ct.ids[len(ct.ids)-1], card)
 			lastTime = time.Now()
 		}
 	}
