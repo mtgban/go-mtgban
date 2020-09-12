@@ -446,23 +446,30 @@ var EditionTable = map[string]string{
 	"Archenemy 'Schemes'":              "Archenemy Schemes",
 
 	// Various
-	"8th Starter":                  "Eighth Edition",
-	"Arena IA":                     "Arena League 2001",
-	"Beatdown":                     "Beatdown Box Set",
-	"Beatdown Foil":                "Beatdown Box Set",
-	"Battle Royale":                "Battle Royale Box Set",
-	"Conspiracy: 2014 Edition":     "Conspiracy",
+	"8th Starter":              "Eighth Edition",
+	"Arena IA":                 "Arena League 2001",
+	"Battle Royale":            "Battle Royale Box Set",
+	"Conspiracy: 2014 Edition": "Conspiracy",
+	"Introductory 4th Edition": "Introductory Two-Player Set",
+	"PS3 Promo":                "Duels of the Planeswalkers 2012 Promos",
+	"Starter":                  "Starter 1999",
+	"Vanguard":                 "Vanguard Series",
+
+	// Beatdown
+	"Beatdown":      "Beatdown Box Set",
+	"Beatdown Foil": "Beatdown Box Set",
+
+	// Coldsnap Theme Decks
 	"Coldsnap Reprints":            "Coldsnap Theme Decks",
 	"Coldsnap Theme Deck Reprints": "Coldsnap Theme Decks",
-	"Introductory 4th Edition":     "Introductory Two-Player Set",
-	"PS3 Promo":                    "Duels of the Planeswalkers 2012 Promos",
-	"Starter":                      "Starter 1999",
-	"Vanguard":                     "Vanguard Series",
-	"Bring-a-Friend":               "Love Your LGS",
-	"Bring-A-Friend":               "Love Your LGS",
-	"LGS Promo":                    "Love Your LGS",
-	"Welcome Back":                 "Love Your LGS",
 
+	// <3 LGS
+	"Bring-a-Friend": "Love Your LGS",
+	"Bring-A-Friend": "Love Your LGS",
+	"LGS Promo":      "Love Your LGS",
+	"Welcome Back":   "Love Your LGS",
+
+	// Modern Event Deck
 	"Modern Event Deck":                           "Modern Event Deck 2014",
 	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",
 
