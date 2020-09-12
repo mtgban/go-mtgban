@@ -19,7 +19,7 @@ import (
 	http "github.com/hashicorp/go-retryablehttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -52,7 +52,7 @@ func NewScraper() *Coolstuffinc {
 }
 
 type responseChan struct {
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -258,16 +258,24 @@ func (csi *Coolstuffinc) scrape() error {
 			}
 
 			theCard.Foil = theCard.Foil || isFoil
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
 				switch {
 				case theCard.IsBasicLand(),
 					strings.HasSuffix(theCard.Name, "Guildgate"),
 					strings.HasSuffix(theCard.Name, "Signet"):
 				default:
+					csi.printf("%v", err)
 					csi.printf("%v", theCard)
 					csi.printf("'%s' '%s' '%s' '%s'", cardName, fullEdition, notes, maybeNum)
-					csi.printf("%v", err)
+					alias, ok := err.(*mtgmatcher.AliasingError)
+					if ok {
+						probes := alias.Probe()
+						for _, probe := range probes {
+							card, _ := mtgmatcher.Unmatch(probe)
+							csi.printf("- %s", card)
+						}
+					}
 				}
 				return
 			}
@@ -275,7 +283,7 @@ func (csi *Coolstuffinc) scrape() error {
 			link := elem.ChildAttr(`div[class="large-3 medium-3 small-2 columns text-right"] link[itemprop="url"]`, "content")
 
 			out := responseChan{
-				card: cc,
+				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: conditions,
 					Price:      price,
@@ -329,18 +337,15 @@ func (csi *Coolstuffinc) scrape() error {
 
 	dupes := map[string]bool{}
 	for res := range channel {
-		key := res.card.String() + res.invEntry.Conditions
+		key := res.cardId + res.invEntry.Conditions
 		if dupes[key] {
 			continue
 		}
 		dupes[key] = true
 
-		err := csi.inventory.Add(res.card.Id, res.invEntry)
+		err := csi.inventory.Add(res.cardId, res.invEntry)
 		if err != nil {
-			if !strings.HasSuffix(res.card.Name, "Guildgate") &&
-				!strings.HasSuffix(res.card.Name, "Signet") {
-				csi.printf("%v", err)
-			}
+			csi.printf("%v", err)
 		}
 	}
 
@@ -432,21 +437,29 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 			}
 		}
 
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			switch {
 			case theCard.IsBasicLand():
 			default:
+				csi.printf("%v", err)
 				csi.printf("%q", theCard)
 				csi.printf("'%s' '%s' '%s'", cardName, edition, extra)
-				csi.printf("%v", err)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						csi.printf("- %s", card)
+					}
+				}
 			}
 			return
 		}
 
 		var priceRatio, sellPrice float64
 
-		invCards := csi.inventory[cc.Id]
+		invCards := csi.inventory[cardId]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -456,7 +469,7 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 		}
 
 		channel <- responseChan{
-			card: cc,
+			cardId: cardId,
 			buyEntry: &mtgban.BuylistEntry{
 				BuyPrice:   price,
 				TradePrice: price * 1.35,
@@ -529,7 +542,7 @@ func (csi *Coolstuffinc) parseBL() error {
 	}()
 
 	for record := range results {
-		err := csi.buylist.Add(record.card.Id, record.buyEntry)
+		err := csi.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
 			csi.printf(err.Error())
 			continue

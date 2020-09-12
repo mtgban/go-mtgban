@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
@@ -31,11 +31,11 @@ var cardTable = map[string]string{
 	"Our Market Research Shows That Players Like Really Long Card Names So We Made This Card to Have the Absolute Longest Card Nam": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
 }
 
-func preprocess(cardName, edition, notes, maybeNum string) (*mtgdb.Card, error) {
+func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
 	// Clean up notes, removing extra prefixes, and ueless characters
 	variant := strings.TrimPrefix(notes, "Notes:")
 	if strings.Contains(variant, "Deckmaster") {
-		cuts := mtgdb.Cut(variant, "Deckmaster")
+		cuts := mtgmatcher.Cut(variant, "Deckmaster")
 		variant = cuts[0]
 	}
 	if strings.Contains(variant, "Picture") {
@@ -205,7 +205,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgdb.Card, error) 
 			isFoilFromName = true
 		}
 		if strings.Contains(cardName, "Signed") && strings.Contains(cardName, "by") {
-			cuts := mtgdb.Cut(cardName, "Signed")
+			cuts := mtgmatcher.Cut(cardName, "Signed")
 			cardName = cuts[0]
 		}
 	}
@@ -258,25 +258,22 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgdb.Card, error) 
 
 	// Cut a few tags a the end of the card
 	if strings.HasSuffix(cardName, "Promo") {
-		cuts := mtgdb.Cut(cardName, "Promo")
+		cuts := mtgmatcher.Cut(cardName, "Promo")
 		cardName = cuts[0]
 	} else if strings.HasSuffix(cardName, "PROMO") {
-		cuts := mtgdb.Cut(cardName, "PROMO")
+		cuts := mtgmatcher.Cut(cardName, "PROMO")
 		cardName = cuts[0]
 		if strings.HasSuffix(cardName, "Textless") {
-			cuts = mtgdb.Cut(cardName, "Textless")
+			cuts = mtgmatcher.Cut(cardName, "Textless")
 			cardName = cuts[0]
 		}
 	}
 
-	// A few names also have parenthesis
-	if cardName != "Erase (Not the Urza's Legacy One)" {
-		variants := mtgdb.SplitVariants(cardName)
-		cardName = variants[0]
-		if len(variants) > 1 {
-			if !strings.Contains(variant, variants[1]) {
-				return nil, errors.New("non-english")
-			}
+	variants := mtgmatcher.SplitVariants(cardName)
+	cardName = variants[0]
+	if len(variants) > 1 {
+		if !strings.Contains(variant, variants[1]) {
+			return nil, errors.New("non-english")
 		}
 	}
 	if strings.Contains(cardName, " - ") {
@@ -299,7 +296,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgdb.Card, error) 
 		cardName = cardName[:len(cardName)-2]
 	}
 
-	if mtgdb.IsBasicLand(cardName) {
+	if mtgmatcher.IsBasicLand(cardName) {
 		cardName = strings.TrimSuffix(cardName, "Gift Pack")
 
 		if variant == "" || len(variant) == 1 || variant == "This is NOT the full art version" {
@@ -317,7 +314,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgdb.Card, error) 
 		}
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
