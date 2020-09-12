@@ -32,6 +32,52 @@ func (ck *Cardkingdom) printf(format string, a ...interface{}) {
 	}
 }
 
+type retailDetail struct {
+	condition string
+	quantity  int
+	price     float64
+}
+
+func parseConditions(values conditionValues) (out []retailDetail) {
+	nmPrice, _ := strconv.ParseFloat(values.NMPrice, 64)
+	if nmPrice > 0 && values.NMQty > 0 {
+		out = append(out, retailDetail{
+			condition: "NM",
+			quantity:  values.NMQty,
+			price:     nmPrice,
+		})
+	}
+
+	exPrice, _ := strconv.ParseFloat(values.EXPrice, 64)
+	if exPrice > 0 && values.EXQty > 0 {
+		out = append(out, retailDetail{
+			condition: "SP",
+			quantity:  values.EXQty,
+			price:     exPrice,
+		})
+	}
+
+	vgPrice, _ := strconv.ParseFloat(values.VGPrice, 64)
+	if vgPrice > 0 && values.VGQty > 0 {
+		out = append(out, retailDetail{
+			condition: "MP",
+			quantity:  values.VGQty,
+			price:     vgPrice,
+		})
+	}
+
+	goPrice, _ := strconv.ParseFloat(values.GOPrice, 64)
+	if goPrice > 0 && values.GOQty > 0 {
+		out = append(out, retailDetail{
+			condition: "HP",
+			quantity:  values.GOQty,
+			price:     goPrice,
+		})
+	}
+
+	return
+}
+
 func (ck *Cardkingdom) scrape() error {
 	ckClient := NewCKClient()
 	pricelist, err := ckClient.GetPriceList()
@@ -79,15 +125,18 @@ func (ck *Cardkingdom) scrape() error {
 				u.RawQuery = q.Encode()
 			}
 
-			out := &mtgban.InventoryEntry{
-				Conditions: "NM",
-				Price:      sellPrice,
-				Quantity:   card.SellQuantity,
-				URL:        u.String(),
-			}
-			err = ck.inventory.Add(cardId, out)
-			if err != nil {
-				ck.printf("%v", err)
+			details := parseConditions(card.ConditionValues)
+			for _, detail := range details {
+				out := &mtgban.InventoryEntry{
+					Conditions: detail.condition,
+					Price:      detail.price,
+					Quantity:   detail.quantity,
+					URL:        u.String(),
+				}
+				err = ck.inventory.Add(cardId, out)
+				if err != nil {
+					ck.printf("%v", err)
+				}
 			}
 		}
 

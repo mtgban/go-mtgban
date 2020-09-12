@@ -15,22 +15,34 @@ type CKPriceList struct {
 	Data []CKCard `json:"data"`
 }
 
+type conditionValues struct {
+	NMPrice string `json:"nm_price"`
+	NMQty   int    `json:"nm_qty"`
+	EXPrice string `json:"ex_price"`
+	EXQty   int    `json:"ex_qty"`
+	VGPrice string `json:"vg_price"`
+	VGQty   int    `json:"vg_qty"`
+	GOPrice string `json:"g_price"`
+	GOQty   int    `json:"g_qty"`
+}
+
 type CKCard struct {
-	Id           int    `json:"id"`
-	SKU          string `json:"sku"`
-	URL          string `json:"url"`
-	Name         string `json:"name"`
-	Variation    string `json:"variation"`
-	Edition      string `json:"edition"`
-	IsFoil       string `json:"is_foil"`
-	SellPrice    string `json:"price_retail"`
-	SellQuantity int    `json:"qty_retail"`
-	BuyPrice     string `json:"price_buy"`
-	BuyQuantity  int    `json:"qty_buying"`
+	Id              int             `json:"id"`
+	SKU             string          `json:"sku"`
+	URL             string          `json:"url"`
+	Name            string          `json:"name"`
+	Variation       string          `json:"variation"`
+	Edition         string          `json:"edition"`
+	IsFoil          string          `json:"is_foil"`
+	SellPrice       string          `json:"price_retail"`
+	SellQuantity    int             `json:"qty_retail"`
+	BuyPrice        string          `json:"price_buy"`
+	BuyQuantity     int             `json:"qty_buying"`
+	ConditionValues conditionValues `json:"condition_values"`
 }
 
 const (
-	ckPricelistURL = "https://api.cardkingdom.com/api/pricelist"
+	ckPricelistURL = "https://api.cardkingdom.com/api/v2/pricelist"
 )
 
 type CKClient struct {
