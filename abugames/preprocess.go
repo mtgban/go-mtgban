@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgjson"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
@@ -161,9 +160,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 
 		// These are the definition of generic promos
 		if strings.Contains(variation, "Magic League") ||
-			mtgjson.NormContains(variation, "Game Day") ||
-			mtgjson.NormContains(variation, "Gift Box") ||
-			mtgjson.NormContains(variation, "Convention") ||
+			mtgmatcher.Contains(variation, "Game Day") ||
+			mtgmatcher.Contains(variation, "Gift Box") ||
+			mtgmatcher.Contains(variation, "Convention") ||
 			strings.Contains(variation, "Intro Pack") {
 			variation = "Promo"
 		}

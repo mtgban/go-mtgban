@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgjson"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 var cardTable = map[string]string{
