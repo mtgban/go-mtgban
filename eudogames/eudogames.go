@@ -13,8 +13,8 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
-	"github.com/kodabb/go-mtgban/mtgjson"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 const (
@@ -43,7 +43,7 @@ func NewScraper() *Eudogames {
 }
 
 type responseChan struct {
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -117,12 +117,12 @@ func (eudo *Eudogames) scrape(mode string) error {
 			variant = strings.Replace(variant, ")", "", 1)
 
 			if variant == "promo" {
-				set, err := mtgdb.Set(edition)
+				set, err := mtgmatcher.GetSet(edition)
 				if err != nil {
 					return
 				}
 				setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
-				if setDate.After(mtgdb.PromosForEverybodyYay) {
+				if setDate.After(mtgmatcher.PromosForEverybodyYay) {
 					for _, card := range set.Cards {
 						if card.Name == cardName {
 							if card.HasFrameEffect(mtgjson.FrameEffectInverted) {
@@ -194,14 +194,14 @@ func (eudo *Eudogames) scrape(mode string) error {
 				return
 			}
 
-			theCard := &mtgdb.Card{
+			theCard := &mtgmatcher.Card{
 				Name:      cardName,
 				Variation: variant,
 				Edition:   edition,
 				Foil:      isFoil,
 			}
 
-			cc, err := theCard.Match()
+			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
 				switch edition {
 				// No easy way to separate old variants, so lots of duplicate warnings
@@ -210,9 +210,11 @@ func (eudo *Eudogames) scrape(mode string) error {
 					"Fallen Empires",
 					"Homelands":
 				default:
-					if !strings.HasPrefix(err.Error(), "aliasing") {
-						eudo.printf("%q", theCard)
+					// Ignore aliasing errors
+					_, ok := err.(*mtgmatcher.AliasingError)
+					if !ok {
 						eudo.printf("%v", err)
+						eudo.printf("%q", theCard)
 					}
 				}
 				return
@@ -221,7 +223,7 @@ func (eudo *Eudogames) scrape(mode string) error {
 			var out responseChan
 			if mode == modeInventory {
 				out = responseChan{
-					card: cc,
+					cardId: cardId,
 					invEntry: &mtgban.InventoryEntry{
 						Conditions: conditions,
 						Price:      price,
@@ -231,7 +233,7 @@ func (eudo *Eudogames) scrape(mode string) error {
 				}
 			} else {
 				out = responseChan{
-					card: cc,
+					cardId: cardId,
 					buyEntry: &mtgban.BuylistEntry{
 						BuyPrice:   price,
 						TradePrice: price * 1.3,
@@ -250,7 +252,13 @@ func (eudo *Eudogames) scrape(mode string) error {
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 
-	for _, edition := range mtgdb.AllSetsNames() {
+	sets := mtgmatcher.GetSets()
+	setNames := []string{}
+	for _, set := range sets {
+		setNames = append(setNames, set.Name)
+	}
+
+	for _, edition := range setNames {
 		edition = strings.ToLower(edition)
 		edition = strings.Replace(edition, " ", "-", -1)
 		edition = strings.Replace(edition, ":", "", -1)
@@ -272,9 +280,9 @@ func (eudo *Eudogames) scrape(mode string) error {
 	for res := range channel {
 		var err error
 		if mode == modeInventory {
-			err = eudo.inventory.Add(res.card.Id, res.invEntry)
+			err = eudo.inventory.Add(res.cardId, res.invEntry)
 		} else {
-			err = eudo.buylist.Add(res.card.Id, res.buyEntry)
+			err = eudo.buylist.Add(res.cardId, res.buyEntry)
 		}
 		if err != nil {
 			eudo.printf("%v", err)
