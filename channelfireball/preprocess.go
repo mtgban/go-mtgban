@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type cfbCard struct {
@@ -47,7 +47,7 @@ var cardTable = map[string]string{
 	"Quartzwood Crusher":                      "Quartzwood Crasher",
 	"Souvernir Snatcher":                      "Souvenir Snatcher",
 
-	// Tags that confuse mtgdb
+	// Tags that confuse mtgmatcher
 	"Stocking Tiger (No Stamp Holiday 2013)": "Stocking Tiger (misprint)",
 	"Beast in Show (A 2 Pink Bows)":          "Beast in Show (A Two Pink Bows)",
 	"Beast in Show (D 7 Red Bows)":           "Beast in Show (D Seven Pink Bows)",
@@ -138,7 +138,7 @@ func preprocess(cardName, edition string) (string, string, error) {
 	orig := cardName
 
 	// Split by () and by -, rebuild the cardname in a standardized way
-	fields := mtgdb.SplitVariants(cardName)
+	fields := mtgmatcher.SplitVariants(cardName)
 	subfields := strings.Split(fields[0], " - ")
 	cardName = subfields[0]
 	for _, field := range fields[1:] {
@@ -172,10 +172,10 @@ func preprocess(cardName, edition string) (string, string, error) {
 		}
 	} else if strings.Contains(cardName, "APAC") {
 		// Cut the "Set 1", "Set 2" tags that confuse the matcher
-		cardName = mtgdb.Cut(cardName, "APAC")[0] + ")"
+		cardName = mtgmatcher.Cut(cardName, "APAC")[0] + ")"
 	} else if strings.Contains(cardName, "Euro Set") {
 		// Cut the "Set 1", "Set 2" tags that confuse the matcher
-		cardName = mtgdb.Cut(cardName, "Euro")[0] + ")"
+		cardName = mtgmatcher.Cut(cardName, "Euro")[0] + ")"
 	} else if strings.HasPrefix(edition, "Gift Boxes: ") {
 		edition = strings.Replace(edition, "Gift Boxes: ", "", 1)
 	}

@@ -10,7 +10,7 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -195,26 +195,31 @@ func (cfb *Channelfireball) scrape(mode string) error {
 		processed[card.Key] = true
 
 		variant := ""
-		cardName := card.Name
-		if card.Name != "Erase (Not the Urza's Legacy One)" {
-			variants := mtgdb.SplitVariants(cardName)
-			cardName = variants[0]
-			if len(variants) > 1 {
-				variant = variants[1]
-			}
+		variants := mtgmatcher.SplitVariants(card.Name)
+		cardName := variants[0]
+		if len(variants) > 1 {
+			variant = variants[1]
 		}
 
-		theCard := &mtgdb.Card{
+		theCard := &mtgmatcher.Card{
 			Name:      cardName,
 			Edition:   card.Edition,
 			Variation: variant,
 			Foil:      card.Foil,
 		}
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
+			cfb.printf("%v", err)
 			cfb.printf("%q", theCard)
 			cfb.printf("%q", card)
-			cfb.printf("%v", err)
+			alias, ok := err.(*mtgmatcher.AliasingError)
+			if ok {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.Unmatch(probe)
+					cfb.printf("- %s", card)
+				}
+			}
 			continue
 		}
 
@@ -226,7 +231,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					Quantity:   card.Quantity,
 					URL:        cfbInventoryURL + "/" + card.URLId,
 				}
-				err := cfb.inventory.Add(cc.Id, out)
+				err := cfb.inventory.Add(cardId, out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}
@@ -236,7 +241,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			if card.Quantity > 0 && card.Price > 0 && card.Conditions == "NM" {
 				var sellPrice, priceRatio float64
 
-				invCards := cfb.inventory[cc.Id]
+				invCards := cfb.inventory[cardId]
 				for _, invCard := range invCards {
 					if invCard.Conditions == "NM" {
 						sellPrice = invCard.Price
@@ -255,7 +260,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 					PriceRatio: priceRatio,
 					URL:        cfbBuylistURL + "/" + card.URLId,
 				}
-				err := cfb.buylist.Add(cc.Id, out)
+				err := cfb.buylist.Add(cardId, out)
 				if err != nil {
 					cfb.printf("%v", err)
 				}
@@ -303,9 +308,12 @@ var premodernDate = time.Date(1994, time.August, 1, 0, 0, 0, 0, time.UTC)
 var modernDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
 
 func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	card, _ := mtgdb.ID2Card(cardId)
+	co, err := mtgmatcher.GetUUID(cardId)
+	if err != nil {
+		return nil
+	}
 
-	set, err := mtgdb.Set(card.Edition)
+	set, err := mtgmatcher.GetSet(co.SetCode)
 	if err != nil {
 		return nil
 	}
@@ -315,7 +323,7 @@ func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64
 	}
 
 	switch {
-	case card.Foil:
+	case co.Foil:
 		grade = map[string]float64{
 			"SP": 0.7, "MP": 0.5, "HP": 0.3,
 		}
