@@ -19,6 +19,7 @@ var cardTable = map[string]string{
 	"Nearhearth Chaplain":        "Nearheath Chaplain",
 	"Shatter Assumpions":         "Shatter Assumptions",
 	"Stratozeppilid":             "Stratozeppelid",
+	"Elder Garganoth":            "Elder Gargaroth",
 
 	"Circle of Protection Red FNM Foil": "Circle of Protection: Red",
 
@@ -75,6 +76,8 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		variant = "EURO  White Cliffs of Dover"
 	case "EURO Land Danish Island Ben Thompson art":
 		variant = "EURO Land Danish Island"
+	case "Core 21 Prerelease Promo":
+		variant = "Prerelease"
 	}
 
 	isFoilFromName := false
@@ -86,6 +89,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		"Poison Counter",
 		"The Monarch":
 		return nil, errors.New("not single")
+	case "Teferi, Master of Time",
+		"Lukka, Coppercoat Outcast",
+		"Brokkos, Apex of Forever":
+		return nil, errors.New("impossible to track")
 	case "Corpse Knight":
 		if variant == "2/2 Power and Toughness" {
 			variant = "misprint"
@@ -250,6 +257,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 	case "Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling":
 		edition = "Global Series Jiang Yanggu & Mu Yanling"
+	case "Legends":
+		if strings.Contains(cardName, "Italian") || strings.Contains(variant, "Italian") {
+			return nil, errors.New("non-english")
+		}
 	default:
 		if strings.Contains(variant, "Oversized") {
 			return nil, errors.New("not single")

@@ -296,6 +296,10 @@ func adjustEdition(inCard *Card) {
 
 	// Adjust box set
 	switch {
+	case Equals(edition, "Double Masters Box Toppers"),
+		Equals(edition, "Double Masters: Variants"):
+		edition = "Double Masters"
+		variation = "Borderless"
 	case strings.HasSuffix(edition, "(Collector Edition)"):
 		edition = strings.Replace(edition, " (Collector Edition)", "", 1)
 	case strings.HasSuffix(edition, "Collectors"):
@@ -317,9 +321,6 @@ func adjustEdition(inCard *Card) {
 		edition = "Kaladesh Inventions"
 	case strings.Contains(edition, "Expeditions"):
 		edition = "Zendikar Expeditions"
-	case Equals(edition, "Double Masters Box Toppers"):
-		edition = "Double Masters"
-		variation = "Borderless"
 	}
 
 	switch {

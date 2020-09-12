@@ -1092,7 +1092,7 @@ var dkmVariants = map[string]map[string]string{
 		"man kneeling near tree": "13a",
 		"man falling off clif":   "13b",
 	},
-	"Lim-Dul's High Guard": map[string]string{
+	"Lim-Dûl's High Guard": map[string]string{
 		"red armor": "6a",
 		"2 swords":  "6b",
 	},
