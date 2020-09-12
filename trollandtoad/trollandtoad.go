@@ -15,7 +15,7 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const (
@@ -47,7 +47,7 @@ func NewScraper() *Trollandtoad {
 }
 
 type responseChan struct {
-	card     *mtgdb.Card
+	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -91,14 +91,22 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 		if err != nil {
 			return
 		}
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			switch {
 			case strings.Contains(edition, "World Championships"):
 			default:
+				tat.printf("%v", err)
 				tat.printf("%q", theCard)
 				tat.printf("%s ~ %s", cardName, edition)
-				tat.printf("%v", err)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						tat.printf("- %s", card)
+					}
+				}
 			}
 			return
 		}
@@ -128,7 +136,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 
 			var out responseChan
 			out = responseChan{
-				card: cc,
+				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: conditions,
 					Price:      option.Price,
@@ -158,7 +166,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 	}()
 
 	for res := range channel {
-		err := tat.inventory.Add(res.card.Id, res.invEntry)
+		err := tat.inventory.Add(res.cardId, res.invEntry)
 		if err != nil {
 			// Too many false positives
 			//tat.printf("%v", err)
@@ -224,14 +232,22 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 			continue
 		}
 
-		cc, err := theCard.Match()
+		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			switch {
 			case strings.Contains(card.Edition, "World Championships"):
 			default:
+				tat.printf("%v", err)
 				tat.printf("%q", theCard)
 				tat.printf("%s ~ %s", card.Name, card.Edition)
-				tat.printf("%v", err)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.Unmatch(probe)
+						tat.printf("- %s", card)
+					}
+				}
 			}
 			continue
 		}
@@ -250,7 +266,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 
 		var priceRatio, sellPrice float64
 
-		invCards := tat.inventory[cc.Id]
+		invCards := tat.inventory[cardId]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -260,7 +276,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 		}
 
 		channel <- responseChan{
-			card: cc,
+			cardId: cardId,
 			buyEntry: &mtgban.BuylistEntry{
 				BuyPrice:   price,
 				TradePrice: price * 1.30,
@@ -315,7 +331,7 @@ func (tat *Trollandtoad) parseBL() error {
 	}()
 
 	for record := range results {
-		err := tat.buylist.Add(record.card.Id, record.buyEntry)
+		err := tat.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
 			tat.printf(err.Error())
 			continue

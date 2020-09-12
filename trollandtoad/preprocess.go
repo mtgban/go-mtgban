@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/kodabb/go-mtgban/mtgdb"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var cardTable = map[string]string{
@@ -44,7 +44,7 @@ var tagsTable = []string{
 	"Welcome Deck 2019 Exclusive",
 }
 
-func preprocess(fullName, edition string) (*mtgdb.Card, error) {
+func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	if edition == "Bulk" || fullName == "" {
 		return nil, errors.New("bulk")
 	}
@@ -122,7 +122,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 		fullName = strings.Replace(fullName, "1", "one", 1)
 		fullName = strings.Replace(fullName, "2", "two", 1)
 		fullName = strings.Replace(fullName, "3", "three", 1)
-		if strings.Contains(fullName, "Apac") && mtgdb.IsBasicLand(fullName) {
+		if strings.Contains(fullName, "Apac") && mtgmatcher.IsBasicLand(fullName) {
 			edition = "Asia Pacific Land Program"
 		}
 	}
@@ -163,21 +163,19 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 			// utf8 is love
 			if cardName == "Novellamental" {
 				variant = strings.Replace(variant, "â€œ", "''", 1)
-				variant = strings.Replace(variant, "...â€", "…''", 1)
+				variant = strings.Replace(variant, "...â€-", "…''", 1)
 			}
 		}
 	}
 
 	// This need to be at the end, for FTV and Core Sets
-	se := mtgdb.SplitVariants(edition)
+	se := mtgmatcher.SplitVariants(edition)
 	edition = se[0]
 
-	if !strings.HasPrefix(cardName, "Erase (Not the Urza's Legacy One)") {
-		vars := mtgdb.SplitVariants(cardName)
-		cardName = vars[0]
-		if len(vars) > 1 {
-			variant = vars[1]
-		}
+	vars := mtgmatcher.SplitVariants(cardName)
+	cardName = vars[0]
+	if len(vars) > 1 {
+		variant = vars[1]
 	}
 
 	variant = strings.Replace(variant, "(", "", -1)
@@ -195,7 +193,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 		last = fields[len(fields)-1]
 	}
 	if strings.Contains(last, "/") {
-		if !mtgdb.IsBasicLand(cardName) || (mtgdb.IsBasicLand(cardName) && edition == "Promo Cards") {
+		if !mtgmatcher.IsBasicLand(cardName) || (mtgmatcher.IsBasicLand(cardName) && edition == "Promo Cards") {
 			// Some cards have their number appended at the very end, strip it out
 			cardName = strings.Join(fields[:len(fields)-1], " ")
 		}
@@ -209,7 +207,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 	cardName = strings.TrimSuffix(cardName, "-")
 	cardName = strings.Replace(cardName, "|", "//", 1)
 
-	if mtgdb.IsBasicLand(cardName) {
+	if mtgmatcher.IsBasicLand(cardName) {
 		fields := strings.Fields(cardName)
 		if len(fields) > 1 {
 			cardName = fields[0]
@@ -237,7 +235,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 		"Champions of Kamigawa",
 		"Fallen Empires",
 		"Homelands":
-		for _, num := range mtgdb.VariantsTable[edition][cardName] {
+		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
 			if (variant == "Ver. 1" && strings.HasSuffix(num, "a")) ||
 				(variant == "Ver. 2" && strings.HasSuffix(num, "b")) ||
 				(variant == "Ver. 3" && strings.HasSuffix(num, "c")) {
@@ -254,7 +252,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 		"4th Edition",
 		"5th Edition",
 		"Revised":
-		if mtgdb.IsBasicLand(cardName) {
+		if mtgmatcher.IsBasicLand(cardName) {
 			if edition == "Revised" {
 				edition = "Revised Edition"
 			} else if edition == "4th Edition" {
@@ -262,7 +260,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 			} else if edition == "5th Edition" {
 				edition = "Fifth Edition"
 			}
-			for key, num := range mtgdb.VariantsTable[edition][cardName] {
+			for key, num := range mtgmatcher.VariantsTable[edition][cardName] {
 				if (variant == "1" && key == "a") ||
 					(variant == "2" && key == "b") ||
 					(variant == "3" && key == "c") ||
@@ -273,14 +271,14 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 			}
 		}
 	case "Battle Royale":
-		if mtgdb.IsBasicLand(cardName) {
+		if mtgmatcher.IsBasicLand(cardName) {
 			fields := strings.Fields(variant)
 			if len(fields) > 1 {
 				variant = fields[1]
 			}
 		}
 	case "Secret Lair Drop Series":
-		num := mtgdb.ExtractNumber(fullName)
+		num := mtgmatcher.ExtractNumber(fullName)
 		if num != "" {
 			variant = num
 			cardName = strings.Replace(cardName, " "+num, "", 1)
@@ -391,7 +389,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 			if strings.Contains(variant, "Prerelease") {
 				cs := strings.Fields(cardName)
 				for i := range cs {
-					if mtgdb.ExtractNumber(cs[i]) != "" {
+					if mtgmatcher.ExtractNumber(cs[i]) != "" {
 						cs[i] = ""
 					}
 				}
@@ -422,7 +420,7 @@ func preprocess(fullName, edition string) (*mtgdb.Card, error) {
 		return nil, errors.New("sealed")
 	}
 
-	return &mtgdb.Card{
+	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
