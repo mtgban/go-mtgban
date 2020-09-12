@@ -366,12 +366,6 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 		if edition == "Mystery Booster" {
 			return nil, errors.New("invalid")
 		}
-	case "Teferi, Master of Time":
-		if variant == "#075 Promo Pack Core Set 2021" {
-			variant = "75p"
-		} else if variant == "#075 Prerelease Core Set 2021" {
-			variant = "75s"
-		}
 	default:
 		if mtgmatcher.IsBasicLand(cardName) {
 			if strings.Contains(variant, "APAC") {

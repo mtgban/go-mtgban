@@ -506,11 +506,20 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "97224c96-101c-50bb-9060-4c4431db940e",
+		Id:   "0b473d58-3a60-5ed6-8de6-02866f43d125",
 		Desc: "so_many_varaiants_and_untagged",
 		In: Card{
 			Name:      "Teferi, Master of Time",
-			Variation: "Promo Pack",
+			Variation: "Prerelease",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
+		Id:   "4f1f9adc-1aee-5d28-97c3-e44e51e38879",
+		Desc: "so_many_varaiants_and_tagged",
+		In: Card{
+			Name:      "Teferi, Master of Time",
+			Variation: "#075 Promo Pack Core Set 2021",
 			Edition:   "ignored",
 		},
 	},

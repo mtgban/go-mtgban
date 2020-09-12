@@ -128,10 +128,8 @@ func Match(inCard *Card) (cardId string, err error) {
 	}
 
 	// Just keep the first card found for gold-bordered sets
-	// and the Teferi, Master of Variants
 	if len(outCards) > 1 {
-		if inCard.isWorldChamp() ||
-			(outCards[0].Name == "Teferi, Master of Time" && foundCode[0] == "PM21") {
+		if inCard.isWorldChamp() {
 			logger.Println("Dropping a few extra entries...")
 			logger.Println(outCards[1:])
 			outCards = []mtgjson.Card{outCards[0]}
@@ -351,6 +349,29 @@ func adjustEdition(inCard *Card) {
 		strings.HasPrefix(variation, "European JrS E"),
 		strings.HasPrefix(variation, "European JSS Foil E"):
 		edition = "Junior Series Europe"
+	case Equals(inCard.Name, "Teferi, Master of Time"):
+		num := ExtractNumber(variation)
+		_, err := strconv.Atoi(num)
+		if err == nil {
+			if inCard.isPrerelease() {
+				variation = num + "s"
+			} else if inCard.isPromoPack() {
+				variation = num + "p"
+			}
+		}
+		if num == "" {
+			if inCard.isPrerelease() {
+				variation = "75s"
+			} else if inCard.isPromoPack() {
+				variation = "75p"
+			} else if inCard.isBorderless() {
+				variation = "281"
+			} else if inCard.isShowcase() {
+				variation = "290"
+			} else {
+				variation = "75"
+			}
+		}
 	}
 	inCard.Edition = edition
 	inCard.Variation = variation

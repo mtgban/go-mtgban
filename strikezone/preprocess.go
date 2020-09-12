@@ -166,12 +166,6 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		edition = "Magic Premiere Shop 2005"
 	case strings.Contains(variation, "Holiday"):
 		edition = "Happy Holidays"
-	case cardName == "Teferi Master of Time":
-		if edition == "Promotional Cards" {
-			variation += "s"
-		} else if edition == "Promo Pack" {
-			variation += "p"
-		}
 	}
 
 	if edition == "Promotional Cards" && variation == "" {

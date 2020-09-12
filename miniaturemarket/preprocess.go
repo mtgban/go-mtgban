@@ -196,13 +196,6 @@ func preprocess(title, sku string) (*mtgmatcher.Card, error) {
 			"M-664-083", "M-654-377": // Heroic Intervention
 			variant += " M21"
 		}
-		if cardName == "Teferi, Master of Time" {
-			if edition == "Promo Pack" {
-				variant += "p"
-			} else {
-				variant = strings.Replace(variant, " Pre-Release", "s", 1)
-			}
-		}
 	}
 
 	return &mtgmatcher.Card{

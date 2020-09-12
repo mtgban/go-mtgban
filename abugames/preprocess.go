@@ -241,12 +241,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			if variation == "Prerelease No Expansion Symbol FOIL" {
 				variation = "Prerelease misprint"
 			}
-		case "Teferi, Master of Time":
-			if strings.Contains(variation, "Promo Pack") {
-				variation = strings.Replace(variation, "075", "75p", 1)
-			} else if strings.Contains(variation, "Prerelease") {
-				variation = strings.Replace(variation, "075", "75s", 1)
-			}
 		case "Godzilla, King of the Monsters / Zilortha, Strength Incarnate":
 			cardName = "Zilortha, Strength Incarnate"
 			variation = "Godzilla"
