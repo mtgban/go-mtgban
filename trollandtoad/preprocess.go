@@ -12,8 +12,10 @@ var cardTable = map[string]string{
 	"Brineborn Cutthorat":   "Brineborn Cutthroat",
 	"Herald of Anafenze":    "Herald of Anafenza",
 	"Shimmer of Possiblity": "Shimmer of Possibility",
+	"Skingwing":             "Skinwing",
 
 	"Chandra, Fire of Kaladesh // Chandra The Roaring Flame": "Chandra, Fire of Kaladesh // Chandra, Roaring Flame",
+	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Abomination",
 
 	"Sarpadian Empires, Vol.": "Sarpadian Empires, Vol. VII",
 	"Nalathni Dragon 1994":    "Nalathni Dragon",
@@ -30,6 +32,8 @@ var tagsTable = []string{
 	"Brawl Deck",
 	"Buy-A-Box Promo",
 	"DotP",
+	"DotP 2015 Promo (D15)",
+	"FNM Promo",
 	"Full Art Promo",
 	"Game Day Promo",
 	"IDW Promo",
@@ -61,7 +65,10 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(fullName, "Hasbro Card Set"),
 		strings.Contains(fullName, "Battle the Horde Challenge Deck"),
 		strings.Contains(fullName, "Face the Hydra Challenge Deck"),
-		strings.Contains(fullName, "Emblem"):
+		strings.Contains(fullName, "Emblem"),
+		strings.Contains(fullName, "Pokemon"),
+		strings.Contains(fullName, "JMP Art Card"),
+		strings.Contains(fullName, " | ") && strings.Contains(fullName, "2XM"):
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
 		strings.Contains(fullName, "Spanish"),
@@ -163,8 +170,18 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			// utf8 is love
 			if cardName == "Novellamental" {
 				variant = strings.Replace(variant, "â€œ", "''", 1)
-				variant = strings.Replace(variant, "...â€-", "…''", 1)
+				variant = strings.Replace(variant, "...â€", "…''", 1)
 			}
+		}
+	case edition == "Ikoria: Lair of Behemoths Godzilla Series":
+		vars := mtgmatcher.SplitVariants(cardName)
+		if len(vars) > 1 {
+			cardName = vars[1]
+		}
+		edition = "IKO"
+		variant = "Godzilla"
+		if strings.Contains(fullName, "Japanese") {
+			variant += " Japanese"
 		}
 	}
 
@@ -350,6 +367,10 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		case "Incinerate":
 			if variant == "Arena" {
 				variant = "DCI Legend Membership"
+			}
+		case "Calciderm":
+			if variant == "Arena" {
+				variant = "Gateway"
 			}
 
 		case "Curse of Wizardry",
