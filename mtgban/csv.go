@@ -106,7 +106,7 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 		cardId := record[0]
 		_, err = mtgmatcher.GetUUID(cardId)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
 		}
 
 		conditions := record[index]
@@ -184,7 +184,7 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 		cardId := record[0]
 		_, err = mtgmatcher.GetUUID(cardId)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
 		}
 
 		buyPrice, err := strconv.ParseFloat(record[index], 64)
