@@ -313,19 +313,19 @@ func (mm *Miniaturemarket) Buylist() (mtgban.BuylistRecord, error) {
 
 func grading(_ string, entry mtgban.BuylistEntry) (grade map[string]float64) {
 	grade = map[string]float64{
-		"SP": 0.75, "MP": 0.75, "HP": 0,
+		"SP": 0.75, "MP": 0, "HP": 0,
 	}
 	if entry.BuyPrice <= 0.08 {
 		grade = map[string]float64{
-			"SP": 0.4, "MP": 0.4, "HP": 0,
+			"SP": 0.4, "MP": 0, "HP": 0,
 		}
 	} else if entry.BuyPrice <= 0.1 {
 		grade = map[string]float64{
-			"SP": 0.5, "MP": 0.5, "HP": 0,
+			"SP": 0.5, "MP": 0, "HP": 0,
 		}
 	} else if entry.BuyPrice <= 0.15 {
 		grade = map[string]float64{
-			"SP": 0.66, "MP": 0.66, "HP": 0,
+			"SP": 0.66, "MP": 0, "HP": 0,
 		}
 	}
 	return
