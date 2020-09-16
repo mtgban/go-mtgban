@@ -67,7 +67,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(fullName, "Face the Hydra Challenge Deck"),
 		strings.Contains(fullName, "Emblem"),
 		strings.Contains(fullName, "Pokemon"),
-		strings.Contains(fullName, "JMP Art Card"),
+		strings.Contains(fullName, "Art Card"),
 		strings.Contains(fullName, " | ") && strings.Contains(fullName, "2XM"):
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
