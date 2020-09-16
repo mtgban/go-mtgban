@@ -34,6 +34,24 @@ func GetSet(code string) (*mtgjson.Set, error) {
 	return &set, nil
 }
 
+func GetSetUUID(uuid string) (*mtgjson.Set, error) {
+	if backend.UUIDs == nil || backend.Sets == nil {
+		return nil, ErrDatastoreEmpty
+	}
+
+	co, found := backend.UUIDs[uuid]
+	if !found {
+		return nil, ErrCardUnknownId
+	}
+
+	set, found := backend.Sets[co.SetCode]
+	if !found {
+		return nil, ErrCardUnknownId
+	}
+
+	return &set, nil
+}
+
 func Unmatch(cardId string) (*Card, error) {
 	if backend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
