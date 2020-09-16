@@ -313,6 +313,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		}
 	case "Promo Cards":
 		switch cardName {
+		case "Arclight Phoenix":
+			return nil, errors.New("invalid")
 		case "Feral Throwback":
 			edition = "PPRE"
 		case "Island":
