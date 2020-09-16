@@ -63,7 +63,11 @@ func NewVendorFromCSV(r io.Reader) (Vendor, error) {
 	return &vendor, nil
 }
 
-func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
+func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
+	strict := true
+	if len(flags) > 0 {
+		strict = flags[0]
+	}
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
@@ -99,26 +103,38 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record: %v", err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record: %v", err)
+			}
+			continue
 		}
 
 		index := len(CardHeader)
 		cardId := record[0]
 		_, err = mtgmatcher.GetUUID(cardId)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+			if strict {
+				return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+			}
+			continue
 		}
 
 		conditions := record[index]
 		index++
 		price, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record: %v", err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record: %v", err)
+			}
+			continue
 		}
 		index++
 		qty, err := strconv.Atoi(record[index])
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record: %v", err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record: %v", err)
+			}
+			continue
 		}
 		index++
 
@@ -145,7 +161,11 @@ func LoadInventoryFromCSV(r io.Reader) (InventoryRecord, error) {
 	return inventory, nil
 }
 
-func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
+func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
+	strict := true
+	if len(flags) > 0 {
+		strict = flags[0]
+	}
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
@@ -177,34 +197,52 @@ func LoadBuylistFromCSV(r io.Reader) (BuylistRecord, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record: %v", err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record: %v", err)
+			}
+			continue
 		}
 
 		index := len(CardHeader)
 		cardId := record[0]
 		_, err = mtgmatcher.GetUUID(cardId)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+			if strict {
+				return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+			}
+			continue
 		}
 
 		buyPrice, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			}
+			continue
 		}
 		index++
 		tradePrice, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			}
+			continue
 		}
 		index++
 		qty, err := strconv.Atoi(record[index])
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			}
+			continue
 		}
 		index++
 		priceRatio, err := strconv.ParseFloat(strings.TrimSuffix(record[index], "%"), 64)
 		if err != nil {
-			return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			if strict {
+				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+			}
+			continue
 		}
 		index++
 
