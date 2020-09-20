@@ -43,6 +43,7 @@ type mcParam struct {
 	IdCategory    string `json:"IdCategory"`
 	UIc           string `json:"UIc"`
 	OnlyAvailable bool   `json:"SoloDispo"`
+	ProductType   int    `json:"TipoProdotto"`
 	IsBuy         bool   `json:"IsVendita"`
 }
 
@@ -142,6 +143,9 @@ func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) 
 
 		// Returns entries with available quantity
 		OnlyAvailable: true,
+
+		// Only mtg
+		ProductType: 1,
 
 		// No idea what these fields are for
 		UIc:   "it",
