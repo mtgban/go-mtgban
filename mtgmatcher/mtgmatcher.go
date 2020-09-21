@@ -297,6 +297,7 @@ func adjustEdition(inCard *Card) {
 	// Adjust box set
 	switch {
 	case Equals(edition, "Double Masters Box Toppers"),
+		Equals(edition, "Double Masters: Extras"),
 		Equals(edition, "Double Masters: Variants"):
 		edition = "Double Masters"
 		variation = "Borderless"
