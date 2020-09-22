@@ -159,6 +159,8 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 
 	switch edition {
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
+		variation = "Japanese"
+		edition = "War of the Spark"
 		if variation == "Version 2" {
 			variation = "Japanese Prerelease"
 			edition = "War of the Spark Promos"
