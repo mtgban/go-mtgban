@@ -138,7 +138,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case strings.Contains(strings.ToLower(inCard.Variation), "judge"):
+		case inCard.isJudge():
 			if maybeYear == "" {
 				if inCard.isGenericExtendedArt() {
 					maybeYear = "2014"
@@ -256,8 +256,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case strings.Contains(inCard.Variation, "SDCC") ||
-			Contains(inCard.Variation, "San Diego Comic-Con"):
+		case inCard.isSDCC():
 			switch {
 			case strings.HasPrefix(set.Name, "San Diego Comic-Con "+maybeYear):
 			default:

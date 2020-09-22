@@ -198,6 +198,10 @@ func (c *Card) isIDWMagazineBook() bool {
 		c.Variation == "Media Insert" // mm
 }
 
+func (c *Card) isJudge() bool {
+	return Contains(c.Variation, "Judge")
+}
+
 func (c *Card) isRewards() bool {
 	return Contains(c.Variation, "Textless") ||
 		Contains(c.Variation, "Reward") ||
@@ -230,6 +234,11 @@ func (c *Card) isARNDarkMana() bool {
 func (c *Card) isArena() bool {
 	return strings.Contains(c.Variation, "Arena") ||
 		strings.Contains(c.Edition, "Arena")
+}
+
+func (c *Card) isSDCC() bool {
+	return strings.Contains(c.Variation, "SDCC") ||
+		Contains(c.Variation, "San Diego Comic-Con")
 }
 
 func (c *Card) arenaYear(maybeYear string) string {
