@@ -284,3 +284,62 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		Foil:      isFoil,
 	}, nil
 }
+
+func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
+	if strings.HasSuffix(cardName, " HP") {
+		return nil, errors.New("duplicate")
+	}
+	if strings.HasSuffix(cardName, " NM") {
+		cardName = strings.TrimSuffix(cardName, " NM")
+	}
+
+	variant := ""
+	if strings.Contains(edition, "(") {
+		vars := mtgmatcher.SplitVariants(edition)
+		edition = vars[0]
+		if len(vars) > 1 {
+			variant = vars[1]
+		}
+	}
+
+	switch edition {
+	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
+		edition = "War of the Spark"
+		variant = "Japanese"
+	case "DCI Promos":
+		switch cardName {
+		case "Abrupt Decay", "Inkmoth Nexus", "Vengevine", "Thalia, Guardian of Thraben":
+			edition = "World Magic Cup Qualifiers"
+		}
+	case "Judge Rewards":
+		if cardName == "Vampiric Tutor" {
+			if variant == "V1" {
+				variant = "Judge 2000"
+			} else if variant == "V2" {
+				variant = "Judge 2018"
+			}
+		}
+	case "Judge Rewards Promos":
+		if cardName == "Demonic Tutor" {
+			if variant == "V1" {
+				variant = "Judge 2008"
+			} else if variant == "V2" {
+				variant = "Judge 2020"
+			}
+		}
+	case "Buy a Box Promos":
+		if cardName == "Surgical Extraction" {
+			edition = "New Phyrexia Promos"
+		}
+	case "Promos":
+		if cardName == "Hangarback Walker" {
+			edition = "Love your LGS"
+		}
+	}
+
+	return &mtgmatcher.Card{
+		Name:      cardName,
+		Edition:   edition,
+		Variation: variant,
+	}, nil
+}

@@ -155,7 +155,8 @@ func (c *Card) isReskin() bool {
 
 func (c *Card) isFNM() bool {
 	return Contains(c.Variation, "FNM") ||
-		strings.Contains(c.Variation, "Friday Night Magic")
+		strings.Contains(c.Variation, "Friday Night Magic") ||
+		strings.Contains(c.Edition, "Friday Night Magic")
 }
 
 func (c *Card) isJPN() bool {
@@ -199,13 +200,14 @@ func (c *Card) isIDWMagazineBook() bool {
 }
 
 func (c *Card) isJudge() bool {
-	return Contains(c.Variation, "Judge")
+	return Contains(c.Variation, "Judge") ||
+		Contains(c.Edition, "Judge")
 }
 
 func (c *Card) isRewards() bool {
 	return Contains(c.Variation, "Textless") ||
 		Contains(c.Variation, "Reward") ||
-		Contains(c.Edition, "Reward")
+		(Contains(c.Edition, "Reward") && !Contains(c.Edition, "Judge"))
 }
 
 func (c *Card) isMagicFest() bool {
@@ -238,7 +240,9 @@ func (c *Card) isArena() bool {
 
 func (c *Card) isSDCC() bool {
 	return strings.Contains(c.Variation, "SDCC") ||
-		Contains(c.Variation, "San Diego Comic-Con")
+		Contains(c.Edition, "SDCC") ||
+		Contains(c.Variation, "San Diego Comic-Con") ||
+		Contains(c.Edition, "San Diego Comic-Con")
 }
 
 func (c *Card) arenaYear(maybeYear string) string {

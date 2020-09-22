@@ -186,6 +186,7 @@ var EditionTable = map[string]string{
 	"Commander 2020 Ikoria":        "Commander 2020",
 	"Commander 2020: Ikoria":       "Commander 2020",
 	"Commander Anthology 2018":     "Commander Anthology Volume II",
+	"Commander Anthology II":       "Commander Anthology Volume II",
 	"Commander Anthology VOL. II":  "Commander Anthology Volume II",
 	"Commander Anthology Vol. II":  "Commander Anthology Volume II",
 	"Commander Anthology Volume 2": "Commander Anthology Volume II",
