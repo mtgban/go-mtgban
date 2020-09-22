@@ -78,7 +78,11 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		tcg.printf("%s", string(data))
+		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
+			err = fmt.Errorf("403 Forbidden")
+		} else {
+			tcg.printf("%s", string(data))
+		}
 		return err
 	}
 	if !response.Success {
@@ -146,7 +150,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 			for page := range pages {
 				err := tcg.processEntry(channel, page)
 				if err != nil {
-					tcg.printf("%s", err)
+					tcg.printf("%s/%s - %s", page.TCGProductId, page.UUID, err)
 				}
 			}
 			wg.Done()
