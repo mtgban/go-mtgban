@@ -80,11 +80,13 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 		Results []struct {
 			//ProductId   int `json:"productId"`
 			Prices struct {
+				High   float64 `json:"high"`
 				Market float64 `json:"market"`
 			} `json:"prices"`
 			SKUs []struct {
 				SkuId  int `json:"skuId"`
 				Prices struct {
+					High   float64 `json:"high"`
 					Market float64 `json:"market"`
 				} `json:"prices"`
 			} `json:"skus"`
@@ -115,9 +117,12 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 			continue
 		}
 
-		price := sku.Prices.Market
+		price := sku.Prices.High
 		if price == 0 {
-			continue
+			price = sku.Prices.Market
+			if price == 0 {
+				continue
+			}
 		}
 
 		theCard := &mtgmatcher.Card{
