@@ -16,6 +16,7 @@ import (
 type skuType struct {
 	SkuId int
 	Foil  bool
+	Cond  int
 }
 
 func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestChan) error {
@@ -51,12 +52,13 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 
 	allSkus := []skuType{}
 	for _, result := range skuResponse.Results {
-		if result.ConditionId != 1 || result.LanguageId != 1 {
+		if result.LanguageId != 1 {
 			continue
 		}
 		s := skuType{
 			SkuId: result.SkuId,
 			Foil:  result.PrintingId == 2,
+			Cond:  result.ConditionId,
 		}
 		allSkus = append(allSkus, s)
 	}
@@ -127,6 +129,22 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 			return err
 		}
 
+		cond := ""
+		switch theSku.Cond {
+		case 1:
+			cond = "NM"
+		case 2:
+			cond = "SP"
+		case 3:
+			cond = "MP"
+		case 4:
+			cond = "HP"
+		case 5:
+			cond = "PO"
+		default:
+			tcg.printf("unknown condition %d for %d", theSku.Cond, sku.SkuId)
+		}
+
 		var sellPrice, priceRatio float64
 
 		invCards := tcg.inventory[cardId]
@@ -143,6 +161,7 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 		out := responseChan{
 			cardId: cardId,
 			bl: mtgban.BuylistEntry{
+				Conditions: cond,
 				BuyPrice:   price,
 				TradePrice: price,
 				Quantity:   0,
