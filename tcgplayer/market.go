@@ -80,6 +80,12 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 	if err != nil {
 		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
 			err = fmt.Errorf("403 Forbidden")
+			if req.retry <= defaultAPIRetry {
+				req.retry++
+				tcg.printf("API returned 403 in a response with status code 200")
+				tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
+				err = tcg.processEntry(channel, req)
+			}
 		} else {
 			tcg.printf("%s", string(data))
 		}

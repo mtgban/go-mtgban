@@ -19,6 +19,7 @@ import (
 
 const (
 	defaultConcurrency = 8
+	defaultAPIRetry    = 5
 
 	pagesPerRequest  = 50
 	tcgBaseURL       = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
@@ -30,6 +31,7 @@ const (
 type requestChan struct {
 	TCGProductId string
 	UUID         string
+	retry        int
 }
 
 type responseChan struct {
