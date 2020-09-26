@@ -34,35 +34,6 @@ var (
 	}
 )
 
-func NewSellerFromCSV(r io.Reader) (Seller, error) {
-	inventory, err := LoadInventoryFromCSV(r)
-	if err != nil {
-		return nil, err
-	}
-
-	seller := BaseSeller{}
-	seller.inventory = inventory
-	seller.info.Name = "Base Seller"
-	seller.info.Shorthand = "BS"
-
-	return &seller, nil
-}
-
-func NewVendorFromCSV(r io.Reader) (Vendor, error) {
-	buylist, err := LoadBuylistFromCSV(r)
-	if err != nil {
-		return nil, err
-	}
-
-	vendor := BaseVendor{}
-	vendor.buylist = buylist
-	vendor.info.Name = "Base Vendor"
-	vendor.info.Shorthand = "BV"
-	vendor.info.Grading = DefaultGrading
-
-	return &vendor, nil
-}
-
 func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 	strict := true
 	if len(flags) > 0 {
