@@ -140,7 +140,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 			}
 
-			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 && card.Condition == "NM" {
+			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 {
 				var priceRatio float64
 				if card.SellPrice > 0 {
 					priceRatio = card.BuyPrice / card.SellPrice * 100
@@ -157,6 +157,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 
 				buyEntry = &mtgban.BuylistEntry{
+					Conditions: cond,
 					BuyPrice:   card.BuyPrice,
 					TradePrice: card.TradePrice,
 					Quantity:   card.BuyQuantity,
