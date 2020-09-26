@@ -156,7 +156,8 @@ func (tcg *TCGPlayerMarket) scrape() error {
 			for page := range pages {
 				err := tcg.processEntry(channel, page)
 				if err != nil {
-					tcg.printf("%s/%s - %s", page.TCGProductId, page.UUID, err)
+					card, _ := mtgmatcher.Unmatch(page.UUID)
+					tcg.printf("%s (%s / %s) - %s", card, page.TCGProductId, page.UUID, err)
 				}
 			}
 			wg.Done()
