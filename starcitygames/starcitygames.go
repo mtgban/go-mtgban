@@ -386,7 +386,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				buyEntry: &mtgban.BuylistEntry{
 					Conditions: conditions,
 					BuyPrice:   price,
-					TradePrice: price * 1.35,
+					TradePrice: price * 1.30,
 					Quantity:   0,
 					PriceRatio: priceRatio,
 					URL:        "https://old.starcitygames.com/buylist",
