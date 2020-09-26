@@ -324,7 +324,16 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 		}
 
 		for _, result := range results {
-			if result.Condition != "NM/M" {
+			conditions := result.Condition
+			switch conditions {
+			case "NM/M":
+				conditions = "NM"
+			case "PL":
+				conditions = "SP"
+			case "HP":
+				conditions = "MP"
+			default:
+				scg.printf("unknown condition %s for %v", conditions, result)
 				continue
 			}
 			if result.Language != "English" {
@@ -375,6 +384,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 			channel <- responseChan{
 				cardId: cardId,
 				buyEntry: &mtgban.BuylistEntry{
+					Conditions: conditions,
 					BuyPrice:   price,
 					TradePrice: price * 1.35,
 					Quantity:   0,
