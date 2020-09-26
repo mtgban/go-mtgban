@@ -71,7 +71,8 @@ func WriteBuylistToDB(vendor Vendor, db *sql.DB) error {
 	vendorId := vendor.Info().Shorthand
 
 	blDate := vendor.Info().BuylistTimestamp.UTC()
-	for uuid, entry := range buylist {
+	for uuid, entries := range buylist {
+		entry := entries[0]
 		err = writeCardToDB(uuid, db)
 		if err != nil {
 			log.Println(err)

@@ -63,31 +63,61 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		return nil, err
 	}
 
-	for cardId, blEntry := range buylist {
+	for cardId, blEntries := range buylist {
 		invEntries, found := inventory[cardId]
 		if !found {
 			continue
 		}
+
+		// Look up the first NM printing to use as base
+		nmIndex := 0
+		if len(blEntries) > 1 {
+			for nmIndex = range blEntries {
+				if blEntries[nmIndex].Conditions == "NM" {
+					break
+				}
+			}
+		}
+		blEntry := blEntries[nmIndex]
 
 		buylistPrice := blEntry.BuyPrice
 		if useTrades {
 			buylistPrice = blEntry.TradePrice
 		}
 
-		if buylistPrice == 0 {
-			continue
-		}
-
-		grade := vendor.Info().Grading(cardId, blEntry)
+		grade := vendor.Info().Grading(cardId, blEntries[nmIndex])
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
-			blPrice := buylistPrice
 
+			// When invEntry is not NM, we need to account for conditions, which
+			// means either take a percentage off, or use a differen blEntry entirely
 			if invEntry.Conditions != "NM" {
-				blPrice *= grade[invEntry.Conditions]
+				if len(blEntries) != 1 {
+					i := 0
+					for i = range blEntries {
+						if blEntries[i].Conditions == invEntry.Conditions {
+							break
+						}
+					}
+					blEntry = blEntries[i]
+					// If, after looping, a matching condition was not found,
+					// just skip the current invEntry
+					if blEntry.Conditions != invEntry.Conditions {
+						continue
+					}
+				} else {
+					blEntry.Conditions = invEntry.Conditions
+					blEntry.BuyPrice = blEntries[nmIndex].BuyPrice * grade[invEntry.Conditions]
+					blEntry.TradePrice = blEntries[nmIndex].TradePrice * grade[invEntry.Conditions]
+				}
 			}
 
-			if price == 0 {
+			blPrice := blEntry.BuyPrice
+			if useTrades {
+				blPrice = blEntry.TradePrice
+			}
+
+			if price == 0 || blPrice == 0 {
 				continue
 			}
 

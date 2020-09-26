@@ -54,16 +54,26 @@ func (inv InventoryRecord) AddStrict(cardId string, entry *InventoryEntry) error
 }
 
 func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
-	_, found := bl[cardId]
-	if found {
-		card, err := mtgmatcher.Unmatch(cardId)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
+	if entry.Conditions == "" {
+		entry.Conditions = "NM"
 	}
 
-	bl[cardId] = *entry
+	entries, found := bl[cardId]
+	if found {
+		for i := range entries {
+			if entry.Conditions == entries[i].Conditions {
+				card, err := mtgmatcher.Unmatch(cardId)
+				if err != nil {
+					return err
+				}
+
+				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
+			}
+		}
+	}
+
+	bl[cardId] = append(bl[cardId], *entry)
+
 	return nil
 }
 

@@ -73,11 +73,14 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 			return nil, err
 		}
 
-		for card, entry := range bl {
+		for card, entries := range bl {
 			_, found := root.Entries[card]
 			if !found {
 				root.Entries[card] = map[string]CombineEntry{}
 			}
+
+			// aka NM
+			entry := entries[0]
 
 			price := entry.BuyPrice
 			if useCredit {

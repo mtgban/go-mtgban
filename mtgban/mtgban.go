@@ -22,6 +22,7 @@ type InventoryEntry struct {
 // BuylistEntry represents an entry for buying a particular Card
 type BuylistEntry struct {
 	Quantity   int
+	Conditions string
 	BuyPrice   float64
 	TradePrice float64
 
@@ -91,7 +92,7 @@ type Seller interface {
 	Info() ScraperInfo
 }
 
-type BuylistRecord map[string]BuylistEntry
+type BuylistRecord map[string][]BuylistEntry
 
 // Vendor is the interface describing actions to be performed on a vendor buylist
 type Vendor interface {
