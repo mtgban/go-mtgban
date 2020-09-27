@@ -3,6 +3,7 @@ package tcgplayer
 import (
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -41,6 +42,112 @@ func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 }
 
 func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req requestChan) error {
+	// Retrieve all the SKUs for a productId, in order to parse later properties
+	skus, err := tcg.client.SKUsForId(req.TCGProductId)
+	if err != nil {
+		return err
+	}
+
+	co, err := mtgmatcher.GetUUID(req.UUID)
+	if err != nil {
+		return err
+	}
+
+	skuIds := []string{}
+	allSkus := []skuType{}
+	for _, result := range skus {
+		if result.LanguageId != 1 {
+			continue
+		}
+
+		// Untangle foiling status from single id (ie Unhinged, 10E etc)
+		if result.PrintingId == 1 && !co.Card.HasNonFoil {
+			continue
+		} else if result.PrintingId == 2 && !co.Card.HasFoil {
+			continue
+		}
+
+		s := skuType{
+			SkuId: result.SkuId,
+			Foil:  result.PrintingId == 2,
+			Cond:  result.ConditionId,
+		}
+		allSkus = append(allSkus, s)
+		skuIds = append(skuIds, fmt.Sprint(result.SkuId))
+	}
+
+	// Retrieve a list of skus with their prices
+	results, err := tcg.client.PricesForSKU(strings.Join(skuIds, ","))
+	if err != nil {
+		return err
+	}
+
+	for _, result := range results {
+		var theSku skuType
+		for _, target := range allSkus {
+			if target.SkuId == result.SkuId {
+				theSku = target
+				break
+			}
+		}
+		if theSku.SkuId == 0 {
+			continue
+		}
+
+		theCard := &mtgmatcher.Card{
+			Id:   req.UUID,
+			Foil: theSku.Foil,
+		}
+		cardId, err := mtgmatcher.Match(theCard)
+		if err != nil {
+			return err
+		}
+
+		cond := ""
+		switch theSku.Cond {
+		case 1:
+			cond = "NM"
+		case 2:
+			cond = "SP"
+		case 3:
+			cond = "MP"
+		case 4:
+			cond = "HP"
+		case 5:
+			cond = "PO"
+		default:
+			tcg.printf("unknown condition %d for %d", theSku.Cond, theSku.SkuId)
+			continue
+		}
+
+		prices := []float64{
+			result.LowestListingPrice, result.DirectLowPrice,
+		}
+		names := []string{
+			"TCG Player", "TCG Direct",
+		}
+
+		link := "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId
+		if tcg.Affiliate != "" {
+			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
+		}
+
+		for i := range names {
+			out := responseChan{
+				cardId: cardId,
+				entry: mtgban.InventoryEntry{
+					Conditions: cond,
+					Price:      prices[i],
+					Quantity:   1,
+					URL:        link,
+					SellerName: names[i],
+				},
+			}
+
+			channel <- out
+		}
+	}
+
 	return nil
 }
 

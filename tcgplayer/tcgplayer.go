@@ -26,6 +26,7 @@ const (
 
 	tcgApiVersion    = "v1.37.0"
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
+	tcgApiPricingURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/sku/"
 	tcgApiBuylistURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/buy/product/"
 	tcgApiSKUURL     = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
 	tcgApiSearchURL  = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/categories/1/search"

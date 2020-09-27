@@ -100,6 +100,43 @@ func (tcg *TCGClient) SKUsForId(productId string) ([]TCGSKU, error) {
 	return response.Results, nil
 }
 
+type TCGSKUPrice struct {
+	SkuId              int     `json:"skuId"`
+	LowPrice           float64 `json:"lowPrice"`
+	LowestShipping     float64 `json:"lowestShipping"`
+	LowestListingPrice float64 `json:"lowestListingPrice"`
+	MarketPrice        float64 `json:"marketPrice"`
+	DirectLowPrice     float64 `json:"directLowPrice"`
+}
+
+func (tcg *TCGClient) PricesForSKU(sku string) ([]TCGSKUPrice, error) {
+	resp, err := tcg.client.Get(tcgApiPricingURL + sku)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response struct {
+		Success bool          `json:"success"`
+		Errors  []string      `json:"errors"`
+		Results []TCGSKUPrice `json:"results"`
+	}
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, err
+	}
+	if !response.Success {
+		return nil, fmt.Errorf(strings.Join(response.Errors, "|"))
+	}
+
+	return response.Results, nil
+}
+
 type TCGBuylistPrice struct {
 	ProductId int `json:"productId"`
 	Prices    struct {
