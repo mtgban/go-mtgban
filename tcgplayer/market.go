@@ -45,6 +45,13 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 	// Retrieve all the SKUs for a productId, in order to parse later properties
 	skus, err := tcg.client.SKUsForId(req.TCGProductId)
 	if err != nil {
+		if err.Error() == "403 Forbidden" && req.retry < defaultAPIRetry {
+			req.retry++
+			tcg.printf("API returned 403 in a response with status code 200")
+			tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
+			time.Sleep(time.Duration(req.retry) * 2 * time.Second)
+			err = tcg.processEntry(channel, req)
+		}
 		return err
 	}
 
@@ -79,6 +86,13 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req reques
 	// Retrieve a list of skus with their prices
 	results, err := tcg.client.PricesForSKU(strings.Join(skuIds, ","))
 	if err != nil {
+		if err.Error() == "403 Forbidden" && req.retry < defaultAPIRetry {
+			req.retry++
+			tcg.printf("API returned 403 in a response with status code 200")
+			tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
+			time.Sleep(time.Duration(req.retry) * 2 * time.Second)
+			err = tcg.processEntry(channel, req)
+		}
 		return err
 	}
 

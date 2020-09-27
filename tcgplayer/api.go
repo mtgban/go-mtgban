@@ -91,6 +91,9 @@ func (tcg *TCGClient) SKUsForId(productId string) ([]TCGSKU, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
+		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
+			err = fmt.Errorf("403 Forbidden")
+		}
 		return nil, err
 	}
 	if !response.Success {
@@ -128,6 +131,9 @@ func (tcg *TCGClient) PricesForSKU(sku string) ([]TCGSKUPrice, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
+		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
+			err = fmt.Errorf("403 Forbidden")
+		}
 		return nil, err
 	}
 	if !response.Success {
