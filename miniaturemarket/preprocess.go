@@ -12,10 +12,12 @@ var cardTable = map[string]string{
 	"Asylum Visitior":           "Asylum Visitor",
 	"Fiesty Stegosaurus":        "Feisty Stegosaurus",
 	"Torban, Thane of Red Fell": "Torbran, Thane of Red Fell",
+	"Cleric of Life's Blood":    "Cleric of Life's Bond",
 
 	"Conspicious Snoop (Extended Art)": "Conspicuous Snoop (Extended Art)",
 
 	"Cunning Bandit /Azamuki, Treachery Incarnate": "Cunning Bandit / Azamuki, Treachery Incarnate",
+	"Beyeen Veil / Bayeen Coast":                   "Bayeen Veil / Bayeen Coast",
 
 	// Funny cards
 	"Who / What / When / Where / Why":       "Who",
