@@ -1,6 +1,8 @@
 package tcgplayer
 
 import (
+	"errors"
+	"io"
 	"sync"
 	"time"
 
@@ -201,4 +203,20 @@ func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
 	}
 
 	return tcg.buylist, nil
+}
+
+func (tcg *TCGPlayerMarket) IntializeBuylist(reader io.Reader) error {
+	buylist, err := mtgban.LoadBuylistFromCSV(reader)
+	if err != nil {
+		return err
+	}
+	if len(buylist) == 0 {
+		return errors.New("empty buylist")
+	}
+
+	tcg.buylist = buylist
+
+	tcg.printf("Loaded buylist from file")
+
+	return nil
 }
