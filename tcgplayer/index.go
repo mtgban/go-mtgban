@@ -4,47 +4,104 @@ import (
 	"fmt"
 	"io"
 	"sync"
+
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
-type TCGPlayerMarket struct {
+type TCGPlayerIndex struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	buylistDate    time.Time
 	Affiliate      string
 	MaxConcurrency int
 
 	inventory   mtgban.InventoryRecord
-	buylist     mtgban.BuylistRecord
 	marketplace map[string]mtgban.InventoryRecord
 
 	client *TCGClient
 }
 
-func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
+func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
-		tcg.LogCallback("[TCGMkt] "+format, a...)
+		tcg.LogCallback("[TCGIndex] "+format, a...)
 	}
 }
 
-func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
-	tcg := TCGPlayerMarket{}
+func NewScraperIndex(publicId, privateId string) *TCGPlayerIndex {
+	tcg := TCGPlayerIndex{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.marketplace = map[string]mtgban.InventoryRecord{}
 	tcg.client = NewTCGClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
 }
 
-func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req requestChan) error {
+func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, req requestChan) error {
+	results, err := tcg.client.PricesForId(req.TCGProductId)
+	if err != nil {
+		if err.Error() == "403 Forbidden" && req.retry < defaultAPIRetry {
+			req.retry++
+			tcg.printf("API returned 403 in a response with status code 200")
+			tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
+			time.Sleep(time.Duration(req.retry) * 2 * time.Second)
+			err = tcg.processEntry(channel, req)
+		}
+		return err
+	}
+
+	for _, result := range results {
+		theCard := &mtgmatcher.Card{
+			Id:   req.UUID,
+			Foil: result.SubTypeName == "Foil",
+		}
+		cardId, err := mtgmatcher.Match(theCard)
+		if err != nil {
+			return err
+		}
+
+		co, _ := mtgmatcher.GetUUID(cardId)
+
+		// This avoids duplicates for foil-only or nonfoil-only cards
+		// in particular Tenth Edition and Unhinged
+		if (co.Foil && result.SubTypeName != "Foil") ||
+			(!co.Foil && result.SubTypeName != "Normal") {
+			continue
+		}
+
+		prices := []float64{
+			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
+		}
+		names := []string{
+			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
+		}
+
+		link := "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId
+		if tcg.Affiliate != "" {
+			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
+		}
+
+		for i := range names {
+			out := responseChan{
+				cardId: cardId,
+				entry: mtgban.InventoryEntry{
+					Conditions: "NM",
+					Price:      prices[i],
+					Quantity:   1,
+					URL:        link,
+					SellerName: names[i],
+				},
+			}
+
+			channel <- out
+		}
+	}
+
 	return nil
 }
 
-func (tcg *TCGPlayerMarket) scrape() error {
+func (tcg *TCGPlayerIndex) scrape() error {
 	pages := make(chan requestChan)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -101,7 +158,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 	return nil
 }
 
-func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
+func (tcg *TCGPlayerIndex) Inventory() (mtgban.InventoryRecord, error) {
 	if len(tcg.inventory) > 0 {
 		return tcg.inventory, nil
 	}
@@ -114,7 +171,7 @@ func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
 	return tcg.inventory, nil
 }
 
-func (tcg *TCGPlayerMarket) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
+func (tcg *TCGPlayerIndex) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
 	if len(tcg.inventory) == 0 {
 		_, err := tcg.Inventory()
 		if err != nil {
@@ -147,7 +204,7 @@ func (tcg *TCGPlayerMarket) InventoryForSeller(sellerName string) (mtgban.Invent
 	return tcg.marketplace[sellerName], nil
 }
 
-func (tcg *TCGPlayerMarket) IntializeInventory(reader io.Reader) error {
+func (tcg *TCGPlayerIndex) IntializeInventory(reader io.Reader) error {
 	inventory, err := mtgban.LoadInventoryFromCSV(reader)
 	if err != nil {
 		return err
@@ -163,11 +220,10 @@ func (tcg *TCGPlayerMarket) IntializeInventory(reader io.Reader) error {
 	return nil
 }
 
-func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
-	info.Name = "TCG Player"
-	info.Shorthand = "TCGMkt"
+func (tcg *TCGPlayerIndex) Info() (info mtgban.ScraperInfo) {
+	info.Name = "TCG Player Index"
+	info.Shorthand = "TCGIndex"
 	info.InventoryTimestamp = tcg.inventoryDate
-	info.BuylistTimestamp = tcg.buylistDate
-	info.MultiCondBuylist = true
+	info.MetadataOnly = true
 	return
 }
