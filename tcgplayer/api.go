@@ -145,3 +145,69 @@ func (tcg *TCGClient) BuylistPricesForId(productId string) (*TCGBuylistPrice, er
 
 	return &response.Results[0], nil
 }
+
+func (tcg *TCGClient) IdSearch(name, edition string) ([]int, error) {
+	type tcgFilter struct {
+		Name   string   `json:"name"`
+		Values []string `json:"values"`
+	}
+
+	var searchReq struct {
+		Sort    string      `json:"sort"`
+		Limit   int         `json:"limit"`
+		Offset  int         `json:"offset"`
+		Filters []tcgFilter `json:"filters"`
+	}
+
+	// Default values
+	searchReq.Sort = "name"
+	searchReq.Limit = 100
+
+	if name != "" {
+		searchReq.Filters = append(searchReq.Filters, tcgFilter{
+			Name:   "ProductName",
+			Values: []string{name},
+		})
+	}
+	if edition != "" {
+		searchReq.Filters = append(searchReq.Filters, tcgFilter{
+			Name:   "SetName",
+			Values: []string{edition},
+		})
+	}
+
+	reqBody, err := json.Marshal(&searchReq)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := tcg.client.Post(tcgApiSearchURL, "application/json", reqBody)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response struct {
+		TotalItems int      `json:"totalItems"`
+		Success    bool     `json:"success"`
+		Errors     []string `json:"errors"`
+		Results    []int    `json:"results"`
+	}
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, err
+	}
+	if !response.Success {
+		return nil, fmt.Errorf(strings.Join(response.Errors, "|"))
+	}
+	if len(response.Results) < 1 {
+		return nil, fmt.Errorf("empty search response")
+	}
+
+	return response.Results, nil
+}

@@ -26,6 +26,7 @@ const (
 	tcgApiProductURL = "https://api.tcgplayer.com/v1.37.0/pricing/product/"
 	tcgApiBuylistURL = "https://api.tcgplayer.com/v1.37.0/pricing/buy/product/"
 	tcgApiSKUURL     = "https://api.tcgplayer.com/v1.37.0/catalog/products/%s/skus"
+	tcgApiSearchURL  = "https://api.tcgplayer.com/v1.37.0/catalog/categories/1/search"
 )
 
 type requestChan struct {
