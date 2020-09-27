@@ -41,6 +41,9 @@ type ScraperInfo struct {
 	MetadataOnly       bool
 	NoCredit           bool
 
+	// Inventory quantities are not available
+	NoQuantityInventory bool
+
 	// Buylist contains multiple prices for different conditions
 	MultiCondBuylist bool
 

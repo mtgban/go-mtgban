@@ -225,5 +225,6 @@ func (tcg *TCGPlayerIndex) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TCGIndex"
 	info.InventoryTimestamp = tcg.inventoryDate
 	info.MetadataOnly = true
+	info.NoQuantityInventory = true
 	return
 }
