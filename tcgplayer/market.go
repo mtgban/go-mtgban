@@ -44,10 +44,11 @@ func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req requestChan) error {
 	results, err := tcg.client.PricesForId(req.TCGProductId)
 	if err != nil {
-		if err.Error() == "403 Forbidden" && req.retry <= defaultAPIRetry {
+		if err.Error() == "403 Forbidden" && req.retry < defaultAPIRetry {
 			req.retry++
 			tcg.printf("API returned 403 in a response with status code 200")
 			tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
+			time.Sleep(time.Duration(req.retry) * 2 * time.Second)
 			err = tcg.processEntry(channel, req)
 		}
 		return err
