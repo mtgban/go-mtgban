@@ -95,16 +95,27 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 			cond = "PO"
 		default:
 			tcg.printf("unknown condition %d for %d", theSku.Cond, sku.SkuId)
+			continue
 		}
 
 		var sellPrice, priceRatio float64
+		var backupPrice float64
 
 		invCards := tcg.inventory[cardId]
 		for _, invCard := range invCards {
-			if invCard.SellerName != "TCG Market" {
+			if invCard.Conditions != "NM" {
 				continue
 			}
-			sellPrice = invCard.Price
+			if invCard.SellerName == "TCG Player" {
+				backupPrice = invCard.Price
+			}
+			if invCard.SellerName == "TCG Direct" {
+				sellPrice = invCard.Price
+				break
+			}
+		}
+		if sellPrice == 0 {
+			sellPrice = backupPrice
 		}
 
 		if sellPrice > 0 {
