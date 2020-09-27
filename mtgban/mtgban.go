@@ -58,11 +58,18 @@ type Scraper interface {
 	Info() ScraperInfo
 }
 
-// Initializer is the inteface used to identify scrapers that can have
-// data loaded offline.
-type Initializer interface {
+// InventoryInitializer is the inteface used to identify scrapers that can
+// have inventory data loaded offline.
+type InventoryInitializer interface {
 	// Initialize an inventory.
 	IntializeInventory(io.Reader) error
+}
+
+// BuylistInitializer is the inteface used to identify scrapers that can
+// have buylist data loaded offline.
+type BuylistInitializer interface {
+	// Initialize an inventory.
+	IntializeBuylist(io.Reader) error
 }
 
 type InventoryRecord map[string][]InventoryEntry
