@@ -71,7 +71,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 		// Look up the first NM printing to use as base
 		nmIndex := 0
-		if len(blEntries) > 1 {
+		if vendor.Info().MultiCondBuylist {
 			for nmIndex = range blEntries {
 				if blEntries[nmIndex].Conditions == "NM" {
 					break
@@ -85,14 +85,13 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			buylistPrice = blEntry.TradePrice
 		}
 
-		grade := vendor.Info().Grading(cardId, blEntries[nmIndex])
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
 
 			// When invEntry is not NM, we need to account for conditions, which
 			// means either take a percentage off, or use a differen blEntry entirely
 			if invEntry.Conditions != "NM" {
-				if len(blEntries) != 1 {
+				if vendor.Info().MultiCondBuylist {
 					i := 0
 					for i = range blEntries {
 						if blEntries[i].Conditions == invEntry.Conditions {
@@ -106,9 +105,11 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 						continue
 					}
 				} else {
+					grade := vendor.Info().Grading(cardId, blEntries[nmIndex])
 					blEntry.Conditions = invEntry.Conditions
 					blEntry.BuyPrice = blEntries[nmIndex].BuyPrice * grade[invEntry.Conditions]
 					blEntry.TradePrice = blEntries[nmIndex].TradePrice * grade[invEntry.Conditions]
+
 				}
 			}
 

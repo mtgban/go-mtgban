@@ -41,7 +41,11 @@ type ScraperInfo struct {
 	MetadataOnly       bool
 	NoCredit           bool
 
+	// Buylist contains multiple prices for different conditions
+	MultiCondBuylist bool
+
 	// Return the grading scale for adjusting prices according to conditions
+	// Should be set only if MultiCondBuylist is false
 	Grading func(string, BuylistEntry) map[string]float64
 }
 
