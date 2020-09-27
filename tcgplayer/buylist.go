@@ -50,11 +50,24 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 		return errors.New(strings.Join(skuResponse.Errors, "|"))
 	}
 
+	co, err := mtgmatcher.GetUUID(req.UUID)
+	if err != nil {
+		return err
+	}
+
 	allSkus := []skuType{}
 	for _, result := range skuResponse.Results {
 		if result.LanguageId != 1 {
 			continue
 		}
+
+		// Untangle foiling status from single id (ie Unhinged, 10E etc)
+		if result.PrintingId == 1 && !co.Card.HasNonFoil {
+			continue
+		} else if result.PrintingId == 2 && !co.Card.HasFoil {
+			continue
+		}
+
 		s := skuType{
 			SkuId: result.SkuId,
 			Foil:  result.PrintingId == 2,
