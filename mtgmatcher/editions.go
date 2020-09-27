@@ -78,6 +78,8 @@ var EditionTable = map[string]string{
 	"Mystery Booster - Test Card":        "Mystery Booster Playtest Cards",
 	"Playtest Card":                      "Mystery Booster Playtest Cards",
 	"Mystery Booster: Retail Exclusives": "Mystery Booster Retail Edition Foils",
+	"Mystery Booster/The List":           "Mystery Booster",
+	"Mystery Booster - The List":         "Mystery Booster",
 
 	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",
