@@ -21,12 +21,14 @@ const (
 	defaultConcurrency = 8
 	defaultAPIRetry    = 5
 
-	pagesPerRequest  = 50
-	tcgBaseURL       = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
-	tcgApiProductURL = "https://api.tcgplayer.com/v1.37.0/pricing/product/"
-	tcgApiBuylistURL = "https://api.tcgplayer.com/v1.37.0/pricing/buy/product/"
-	tcgApiSKUURL     = "https://api.tcgplayer.com/v1.37.0/catalog/products/%s/skus"
-	tcgApiSearchURL  = "https://api.tcgplayer.com/v1.37.0/catalog/categories/1/search"
+	pagesPerRequest = 50
+	tcgBaseURL      = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
+
+	tcgApiVersion    = "v1.37.0"
+	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
+	tcgApiBuylistURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/buy/product/"
+	tcgApiSKUURL     = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
+	tcgApiSearchURL  = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/categories/1/search"
 )
 
 type requestChan struct {
