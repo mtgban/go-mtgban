@@ -33,13 +33,26 @@ type BuylistEntry struct {
 
 // ScraperInfo contains
 type ScraperInfo struct {
-	Name               string
-	Shorthand          string
-	CountryFlag        string
+	// Full name of the store
+	Name string
+
+	// Shorthand or ID of the store
+	Shorthand string
+
+	// Symbol for worldwide stores
+	CountryFlag string
+
+	// Timestamp of the last Inventory() execution
 	InventoryTimestamp time.Time
-	BuylistTimestamp   time.Time
-	MetadataOnly       bool
-	NoCredit           bool
+
+	// Timestamp of the last Buylist() execution
+	BuylistTimestamp time.Time
+
+	// Only index-style data is available, no quantities or conditions
+	MetadataOnly bool
+
+	// Vendor has no store credit bonus
+	NoCredit bool
 
 	// Inventory quantities are not available
 	NoQuantityInventory bool
