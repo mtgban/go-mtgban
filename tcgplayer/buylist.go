@@ -69,10 +69,7 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 
 		price := sku.Prices.High
 		if price == 0 {
-			price = sku.Prices.Market
-			if price == 0 {
-				continue
-			}
+			continue
 		}
 
 		theCard := &mtgmatcher.Card{
