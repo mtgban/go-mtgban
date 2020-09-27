@@ -1,11 +1,6 @@
 package tcgplayer
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
-	"strings"
 	"sync"
 	"time"
 
@@ -20,34 +15,10 @@ type skuType struct {
 }
 
 func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestChan) error {
-	resp, err := tcg.client.Get(fmt.Sprintf(tcgApiSKUURL, req.TCGProductId))
+	// Retrieve all the SKUs for a productId, in order to parse later properties
+	skus, err := tcg.client.SKUsForId(req.TCGProductId)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	var skuResponse struct {
-		Success bool     `json:"success"`
-		Errors  []string `json:"errors"`
-		Results []struct {
-			SkuId int `json:"skuId"`
-			//ProductId   int `json:"productId"`
-			LanguageId  int `json:"languageId"`
-			PrintingId  int `json:"printingId"`
-			ConditionId int `json:"conditionId"`
-		} `json:"results"`
-	}
-	err = json.Unmarshal(data, &skuResponse)
-	if err != nil {
-		return err
-	}
-	if !skuResponse.Success {
-		return errors.New(strings.Join(skuResponse.Errors, "|"))
 	}
 
 	co, err := mtgmatcher.GetUUID(req.UUID)
@@ -56,7 +27,7 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 	}
 
 	allSkus := []skuType{}
-	for _, result := range skuResponse.Results {
+	for _, result := range skus {
 		if result.LanguageId != 1 {
 			continue
 		}
@@ -76,47 +47,11 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 		allSkus = append(allSkus, s)
 	}
 
-	respBL, err := tcg.client.Get(tcgApiBuylistURL + req.TCGProductId)
+	// Retrieve a list of skus with their prices
+	result, err := tcg.client.BuylistPricesForId(req.TCGProductId)
 	if err != nil {
 		return err
 	}
-	defer respBL.Body.Close()
-
-	data, err = ioutil.ReadAll(respBL.Body)
-	if err != nil {
-		return err
-	}
-
-	var responseBL struct {
-		Success bool     `json:"success"`
-		Errors  []string `json:"errors"`
-		Results []struct {
-			//ProductId   int `json:"productId"`
-			Prices struct {
-				High   float64 `json:"high"`
-				Market float64 `json:"market"`
-			} `json:"prices"`
-			SKUs []struct {
-				SkuId  int `json:"skuId"`
-				Prices struct {
-					High   float64 `json:"high"`
-					Market float64 `json:"market"`
-				} `json:"prices"`
-			} `json:"skus"`
-		} `json:"results"`
-	}
-	err = json.Unmarshal(data, &responseBL)
-	if err != nil {
-		return err
-	}
-	if !responseBL.Success {
-		return errors.New(strings.Join(responseBL.Errors, "|"))
-	}
-	if len(responseBL.Results) < 1 {
-		return errors.New("empty buylist response")
-	}
-
-	result := responseBL.Results[0]
 
 	for _, sku := range result.SKUs {
 		var theSku skuType

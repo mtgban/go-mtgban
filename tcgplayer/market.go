@@ -1,15 +1,9 @@
 package tcgplayer
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"strings"
 	"sync"
-
-	http "github.com/hashicorp/go-retryablehttp"
 
 	"time"
 
@@ -28,7 +22,7 @@ type TCGPlayerMarket struct {
 	buylist     mtgban.BuylistRecord
 	marketplace map[string]mtgban.InventoryRecord
 
-	client *http.Client
+	client *TCGClient
 }
 
 func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
@@ -42,60 +36,24 @@ func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.marketplace = map[string]mtgban.InventoryRecord{}
-	tcg.client = http.NewClient()
-	tcg.client.Logger = nil
-	tcg.client.HTTPClient.Transport = &authTransport{
-		Parent:    tcg.client.HTTPClient.Transport,
-		PublicId:  publicId,
-		PrivateId: privateId,
-	}
+	tcg.client = NewTCGClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
 }
 
 func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, req requestChan) error {
-	resp, err := tcg.client.Get(tcgApiProductURL + req.TCGProductId)
+	results, err := tcg.client.PricesForId(req.TCGProductId)
 	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	var response struct {
-		Success bool     `json:"success"`
-		Errors  []string `json:"errors"`
-		Results []struct {
-			LowPrice       float64 `json:"lowPrice"`
-			MarketPrice    float64 `json:"marketPrice"`
-			MidPrice       float64 `json:"midPrice"`
-			DirectLowPrice float64 `json:"directLowPrice"`
-			SubTypeName    string  `json:"subTypeName"`
-		} `json:"results"`
-	}
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
-			err = fmt.Errorf("403 Forbidden")
-			if req.retry <= defaultAPIRetry {
-				req.retry++
-				tcg.printf("API returned 403 in a response with status code 200")
-				tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
-				err = tcg.processEntry(channel, req)
-			}
-		} else {
-			tcg.printf("%s", string(data))
+		if err.Error() == "403 Forbidden" && req.retry <= defaultAPIRetry {
+			req.retry++
+			tcg.printf("API returned 403 in a response with status code 200")
+			tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
+			err = tcg.processEntry(channel, req)
 		}
 		return err
 	}
-	if !response.Success {
-		return errors.New(strings.Join(response.Errors, "|"))
-	}
 
-	for _, result := range response.Results {
+	for _, result := range results {
 		theCard := &mtgmatcher.Card{
 			Id:   req.UUID,
 			Foil: result.SubTypeName == "Foil",
