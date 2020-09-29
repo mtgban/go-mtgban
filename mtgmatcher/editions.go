@@ -70,17 +70,6 @@ var EditionTable = map[string]string{
 	"Promos: Guru Lands": "Guru",
 	"Promos: Euro Lands": "European Land Program",
 
-	// Mystery Booster
-	"Mystery Booster":                    "Mystery Booster",
-	"Mystery Booster Cards":              "Mystery Booster",
-	"Mystery Booster Test Print":         "Mystery Booster Playtest Cards",
-	"Mystery Booster Test Prints":        "Mystery Booster Playtest Cards",
-	"Mystery Booster - Test Card":        "Mystery Booster Playtest Cards",
-	"Playtest Card":                      "Mystery Booster Playtest Cards",
-	"Mystery Booster: Retail Exclusives": "Mystery Booster Retail Edition Foils",
-	"Mystery Booster/The List":           "Mystery Booster",
-	"Mystery Booster - The List":         "Mystery Booster",
-
 	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",
 	"Secret Lair Borderless":  "Secret Lair Drop",

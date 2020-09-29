@@ -2692,3 +2692,25 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"World Championship Decks 2001": wc01Variants,
 	"World Championship Decks 2002": wc02Variants,
 }
+
+// This table contains variants to tell PLIST cards apart from MB1.
+var AliasedPLISTTable = map[string]map[string]bool{
+	"Bojuka Bog": map[string]bool{
+		"Commander 2018": true,
+	},
+	"Eternal Witness": map[string]bool{
+		"Fifth Dawn": true,
+	},
+	"Man-o'-War": map[string]bool{
+		"Visions": true,
+	},
+	"Skullclamp": map[string]bool{
+		"Commander 2011": true,
+	},
+	"Thought Vessel": map[string]bool{
+		"Commander 2015": true,
+	},
+	"Vampire Nighthawk": map[string]bool{
+		"Zendikar": true,
+	},
+}

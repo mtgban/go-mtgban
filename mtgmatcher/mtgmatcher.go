@@ -279,6 +279,56 @@ func adjustName(inCard *Card) {
 // or look up known cards in small sets.
 func adjustEdition(inCard *Card) {
 	edition := inCard.Edition
+	variation := inCard.Variation
+
+	// Need to decouple The List and Mystery booster first or it will confuse
+	// later matching. For an uptodate list of aliased cards visit this link:
+	// https://scryfall.com/search?q=in%3Aplist+%28in%3Amb1+or+in%3Afmb1%29+%28e%3Amb1+or+e%3Aplist+or+e%3Afmb1%29&unique=prints&as=grid&order=name
+	if Contains(edition, "Mystery Booster") || Contains(edition, "The List") ||
+		Contains(variation, "Mystery Booster") || Contains(variation, "The List") {
+		if inCard.Foil || (Contains(edition, "Foil") && !Contains(edition, "Non")) || (Contains(variation, "Foil") && !Contains(variation, "Non")) {
+			edition = "FMB1"
+		} else if Contains(edition, "Test") || Contains(variation, "Test") {
+			edition = "CMB1"
+		} else {
+			// Check if card is is only one of these two sets
+			mb1s := matchInSet(inCard, "MB1")
+			plists := matchInSet(inCard, "PLIST")
+			if len(mb1s) == 1 && len(plists) == 0 {
+				edition = "MB1"
+			} else if len(mb1s) == 0 && len(plists) == 1 {
+				edition = "PLIST"
+			} else if len(mb1s) == 1 && len(plists) == 1 {
+				switch variation {
+				// If it has one of these special treatments it's PLIST definitely
+				case "Player Rewards",
+					"MagicFest",
+					"Extended Art",
+					"Signature Spellbook: Jace":
+					edition = "PLIST"
+				default:
+					// Otherwise it's probably MB1, including the indistinguishable
+					// ones, unless variation has additional information
+					edition = "MB1"
+
+					// Adjust variation to get a correct edition name
+					ed, found := EditionTable[variation]
+					if found {
+						variation = ed
+					}
+
+					// Check if the card name has the appropriate variation that
+					// lets us determine it's from PLIST
+					if AliasedPLISTTable[inCard.Name][variation] {
+						edition = "PLIST"
+					}
+				}
+			}
+		}
+		// Ignore this, we have all we need now
+		variation = ""
+	}
+
 	set, found := backend.Sets[edition]
 	if found {
 		edition = set.Name
@@ -287,12 +337,10 @@ func adjustEdition(inCard *Card) {
 	if found {
 		edition = ed
 	}
-	ed, found = EditionTable[inCard.Variation]
+	ed, found = EditionTable[variation]
 	if found {
 		edition = ed
 	}
-
-	variation := inCard.Variation
 
 	// Adjust box set
 	switch {

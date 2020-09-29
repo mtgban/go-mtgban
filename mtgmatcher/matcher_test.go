@@ -1797,6 +1797,77 @@ var MatchTests = []MatchTest{
 			Edition: "Portal",
 		},
 	},
+
+	// Mystery Booster - The List debacle
+	MatchTest{
+		Id:   "b66e5217-c523-5d72-b94b-252787083ec6",
+		Desc: "mb1list_only_in_list",
+		In: Card{
+			Name:    "Scroll Rack",
+			Edition: "Mystery Booster The List",
+		},
+	},
+	MatchTest{
+		Id:   "0c466efd-2923-5e49-b0d7-ae69c279296a",
+		Desc: "mb1list_only_in_mb1",
+		In: Card{
+			Name:    "Mana Crypt",
+			Edition: "Mystery Booster The List",
+		},
+	},
+	MatchTest{
+		Id:   "cafa10aa-9fa7-5b41-99d7-cbfd51eae016",
+		Desc: "mb1list_in_both_undistinguishable",
+		In: Card{
+			Name:    "Living Death",
+			Edition: "Mystery Booster The List",
+		},
+	},
+	MatchTest{
+		Id:   "65166320-c130-50e5-a78a-8f60bc8c453c",
+		Desc: "mb1list_in_both_list_tagged",
+		In: Card{
+			Name:      "Imperious Perfect",
+			Variation: "Extended Art",
+			Edition:   "Mystery Booster The List",
+		},
+	},
+	MatchTest{
+		Id:   "ab89a3c7-9262-5060-bb1f-cbc8630613b2",
+		Desc: "mb1list_in_both_mb1_untagged",
+		In: Card{
+			Name:    "Imperious Perfect",
+			Edition: "Mystery Booster The List",
+		},
+	},
+	MatchTest{
+		Id:   "2ea9464a-c6f9-5e0c-a0bf-55f89fa42252",
+		Desc: "mb1list_in_both_tagged",
+		In: Card{
+			Name:      "Bojuka Bog",
+			Variation: "Commander 2018",
+			Edition:   "Mystery Booster The List",
+		},
+	},
+	MatchTest{
+		Id:   "a057d0d7-11fb-5d77-9217-96d8cd26dd67",
+		Desc: "mb1list_in_both_mb1_foil",
+		In: Card{
+			Name:      "Helix Pinnacle",
+			Variation: "Foil",
+			Edition:   "Mystery Booster The List",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "9ef93f93-52a8-5807-8c47-aa32048c25ce",
+		Desc: "mb1list_in_both_list_nonfoil",
+		In: Card{
+			Name:      "Helix Pinnacle",
+			Variation: "Non-Foil",
+			Edition:   "Mystery Booster The List",
+		},
+	},
 }
 
 func TestMatch(t *testing.T) {
