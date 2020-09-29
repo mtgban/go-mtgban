@@ -102,13 +102,11 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// Determine if any deduplication needs to be performed
 	logger.Println("Found these possible matches")
-	var foundCode []string
 	single := len(cardSet) == 1
-	for setCode, dupCards := range cardSet {
-		foundCode = []string{setCode}
+	for _, dupCards := range cardSet {
 		single = single && len(dupCards) == 1
 		for _, card := range dupCards {
-			logger.Println(setCode, card.Name, card.Number)
+			logger.Println(card.SetCode, card.Name, card.Number)
 		}
 	}
 
@@ -116,14 +114,15 @@ func Match(inCard *Card) (cardId string, err error) {
 	var outCards []mtgjson.Card
 	if single {
 		logger.Println("Single printing, using it right away")
-		outCards = []mtgjson.Card{cardSet[foundCode[0]][0]}
+		for _, outCards = range cardSet {
+		}
 	} else {
 		// Otherwise do a second pass filter, using all inCard details
 		logger.Println("Now filtering...")
-		outCards, foundCode = filterCards(inCard, cardSet)
+		outCards = filterCards(inCard, cardSet)
 
-		for i, card := range outCards {
-			logger.Println(foundCode[i], card.Name, card.Number)
+		for _, card := range outCards {
+			logger.Println(card.SetCode, card.Name, card.Number)
 		}
 	}
 

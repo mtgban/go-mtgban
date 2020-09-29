@@ -40,6 +40,7 @@ type Card struct {
 	Printings           []string          `json:"printings"`
 	PromoTypes          []string          `json:"promoTypes"`
 	Rarity              string            `json:"rarity"`
+	SetCode             string            `json:"setCode"`
 	Side                string            `json:"side"`
 	UUID                string            `json:"uuid"`
 	Variations          []string          `json:"variations"`

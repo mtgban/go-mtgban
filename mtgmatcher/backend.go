@@ -16,7 +16,6 @@ type cardinfo struct {
 
 type cardobject struct {
 	mtgjson.Card
-	SetCode string
 	Edition string
 	Foil    bool
 }
@@ -52,7 +51,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			co := cardobject{
 				Card:    card,
 				Edition: set.Name,
-				SetCode: code,
 			}
 			// If card is foil, check whether it has a non-foil counterpart
 			if card.HasFoil {

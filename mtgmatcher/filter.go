@@ -374,7 +374,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 }
 
 // Deduplicate cards with the same name.
-func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mtgjson.Card, foundCode []string) {
+func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mtgjson.Card) {
 	for setCode, inCards := range cardSet {
 		set := backend.Sets[setCode]
 		setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
@@ -385,7 +385,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			if found {
 				if num == card.Number {
 					outCards = append(outCards, card)
-					foundCode = append(foundCode, setCode)
 				}
 
 				// If a variant is expected we assume that all cases are covered
@@ -485,7 +484,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					number := num + numSuffix
 					if number == card.Number {
 						outCards = append(outCards, card)
-						foundCode = append(foundCode, setCode)
 
 						// Card was found, skip any other suffix
 						break
@@ -752,7 +750,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			}
 
 			outCards = append(outCards, card)
-			foundCode = append(foundCode, setCode)
 		}
 	}
 
@@ -760,23 +757,22 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 	// Sometimes these contain the ParentCode or the parent edition name in the field
 	if len(outCards) > 1 && (inCard.isPrerelease() || inCard.isPromoPack()) {
 		allSameEdition := true
-		for i, code := range foundCode {
-			if outCards[i].Name != outCards[0].Name || !strings.HasPrefix(code, "P") {
+		for _, card := range outCards {
+			if card.Name != outCards[0].Name || !strings.HasPrefix(card.SetCode, "P") {
 				allSameEdition = false
 				break
 			}
 		}
 
 		if allSameEdition {
-			size := len(foundCode)
+			size := len(outCards)
 			for i := 0; i < size; i++ {
-				set := backend.Sets[foundCode[i]]
+				set := backend.Sets[outCards[i].SetCode]
 				// Drop any printing that don't have the ParentCode
 				// or the edition name itself in the Variation field
 				if !(strings.Contains(inCard.Variation, set.ParentCode) ||
 					strings.Contains(inCard.Variation, backend.Sets[set.ParentCode].Name) ||
 					strings.Contains(inCard.Edition, backend.Sets[set.ParentCode].Name)) {
-					foundCode = append(foundCode[:i], foundCode[i+1:]...)
 					outCards = append(outCards[:i], outCards[i+1:]...)
 					size--
 					i = 0
