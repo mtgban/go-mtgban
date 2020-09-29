@@ -83,7 +83,7 @@ func WriteBuylistToDB(vendor Vendor, db *sql.DB) error {
 		query := fmt.Sprintf(`
 			SELECT date
 			FROM prices
-			WHERE ban_id = %d`, uuid)
+			WHERE ban_id = %s`, uuid)
 		var date time.Time
 		_ = db.QueryRow(query).Scan(&date)
 
@@ -93,8 +93,8 @@ func WriteBuylistToDB(vendor Vendor, db *sql.DB) error {
 			query = fmt.Sprintf(`
 					UPDATE prices
 					SET amount = %f, date = '%s', qty = %d
-					WHERE ban_id = %d AND vendor_id = %d AND date = '%s'`,
-				entry.BuyPrice, entry.Quantity, blDate.Format("2006-01-02 03:04:05"),
+					WHERE ban_id = %s AND vendor_id = %s AND date = '%s'`,
+				entry.BuyPrice, blDate.Format("2006-01-02 03:04:05"), entry.Quantity,
 				uuid, vendorId, date.Format("2006-01-02 03:04:05"))
 		} else {
 			query = fmt.Sprintf(`

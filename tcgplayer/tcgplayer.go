@@ -66,7 +66,7 @@ func getListingsNumber(client *http.Client, productId string) (int, error) {
 	viewingResults := doc.Find("span[class='sort-toolbar__total-item-count']").Text()
 	results := strings.Fields(viewingResults)
 	if len(results) < 3 {
-		return 0, fmt.Errorf("unknown pagination for %d: %q", productId, viewingResults)
+		return 0, fmt.Errorf("unknown pagination for %s: %q", productId, viewingResults)
 	}
 	entriesNum, err := strconv.Atoi(results[3])
 	if err != nil {
