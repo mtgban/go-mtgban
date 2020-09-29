@@ -30,7 +30,13 @@ func (tcg *TCGPlayerMarket) processBL(channel chan<- responseChan, req requestCh
 
 	allSkus := []skuType{}
 	for _, result := range skus {
-		if result.LanguageId != 1 {
+		switch result.LanguageId {
+		case 1: // English
+		case 7: // Japanese
+			if !co.Card.HasUniqueLanguage("Japanese") {
+				continue
+			}
+		default:
 			continue
 		}
 
