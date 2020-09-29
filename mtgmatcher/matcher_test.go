@@ -1110,7 +1110,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "715a3a09-595f-58ca-ba0b-bdba95861cde",
+		Id:   "47ccb61a-3662-5dde-968d-24ae77e072c5",
 		Desc: "duels_of_the_pw_with_year",
 		In: Card{
 			Name:      "Ogre Battledriver",
