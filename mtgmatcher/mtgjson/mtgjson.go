@@ -74,6 +74,7 @@ const (
 	FrameEffectShowcase    = "showcase"
 
 	PromoTypeBundle     = "bundle"
+	PromoTypeBuyABox    = "buyabox"
 	PromoTypePrerelease = "prerelease"
 	PromoTypePromoPack  = "promopack"
 	PromoTypeBoosterfun = "boosterfun"

@@ -556,7 +556,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
 						continue
 					}
-				} else {
+					// BaB are allowed to have extendedart
+				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
 					if card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
 						continue
 					}
@@ -577,6 +578,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isBundle() && !card.HasPromoType(mtgjson.PromoTypeBundle) {
 					continue
 				} else if !inCard.isBundle() && card.HasPromoType(mtgjson.PromoTypeBundle) {
+					continue
+				}
+
+				// ZNR-Style buy-a-box but card is also present in main set
+				if inCard.isBaB() && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+					continue
+				} else if !inCard.isBaB() && card.HasPromoType(mtgjson.PromoTypeBuyABox) {
 					continue
 				}
 			}

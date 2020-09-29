@@ -687,6 +687,25 @@ var MatchTests = []MatchTest{
 			Edition:   "Theros Beyond Death",
 		},
 	},
+	MatchTest{
+		Id:   "7bab8861-40c1-5895-91d7-504b0eaaeae1",
+		Desc: "antialias_extendedart_vs_bab",
+		In: Card{
+			Name:      "Orah, Skyclave Hierophant",
+			Variation: "Extended Art",
+			Edition:   "Zendikar Rising",
+		},
+	},
+	MatchTest{
+		Id:   "fce0a486-fb7e-5e33-bea2-573c4e6529be",
+		Desc: "antialias_bab_vs_extendedart",
+		In: Card{
+			Name:      "Orah, Skyclave Hierophant",
+			Variation: "Buy-A-Box Foil",
+			Edition:   "Zendikar Rising",
+			Foil:      true,
+		},
+	},
 
 	// Showcase frame
 	MatchTest{
