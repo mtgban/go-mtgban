@@ -207,6 +207,11 @@ var EditionTable = map[string]string{
 	"Commander: Ikoria":            "Commander 2020",
 	"Commander:Ikoria":             "Commander 2020",
 
+	"Commander 2020 Zendikar Rising":  "Zendikar Rising Commander",
+	"Commander 2020: Zendikar Rising": "Zendikar Rising Commander",
+	"Commander: Zendikar Rising":      "Zendikar Rising Commander",
+	"Zendikar Rising Commander Decks": "Zendikar Rising Commander",
+
 	// Modern Masters
 	"Modern Masters 2013":            "Modern Masters",
 	"Modern Masters 2013 Edition":    "Modern Masters",
