@@ -70,6 +70,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	if strings.Contains(card.Name, "Token") ||
 		strings.Contains(card.Name, "Emblem") ||
 		strings.Contains(card.Name, "Checklist") ||
+		strings.Contains(card.Name, "DFC Helper") ||
 		strings.Contains(card.Variation, "Misprint") ||
 		strings.Contains(card.Variation, "Oversized") ||
 		card.Name == "Blank Card" ||
