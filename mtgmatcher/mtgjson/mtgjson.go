@@ -26,23 +26,24 @@ type Card struct {
 	ForeignData []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
-	FrameEffects  []string          `json:"frameEffects"`
-	HasFoil       bool              `json:"hasFoil"`
-	HasNonFoil    bool              `json:"hasNonFoil"`
-	Identifiers   map[string]string `json:"identifiers"`
-	IsAlternative bool              `json:"isAlternative"`
-	IsFullArt     bool              `json:"isFullArt"`
-	IsReserved    bool              `json:"isReserved"`
-	Layout        string            `json:"layout"`
-	Name          string            `json:"name"`
-	Number        string            `json:"number"`
-	Printings     []string          `json:"printings"`
-	PromoTypes    []string          `json:"promoTypes"`
-	Rarity        string            `json:"rarity"`
-	Side          string            `json:"side"`
-	UUID          string            `json:"uuid"`
-	Variations    []string          `json:"variations"`
-	Watermark     string            `json:"watermark"`
+	FrameEffects        []string          `json:"frameEffects"`
+	HasFoil             bool              `json:"hasFoil"`
+	HasNonFoil          bool              `json:"hasNonFoil"`
+	Identifiers         map[string]string `json:"identifiers"`
+	IsAlternative       bool              `json:"isAlternative"`
+	IsFullArt           bool              `json:"isFullArt"`
+	IsReserved          bool              `json:"isReserved"`
+	Layout              string            `json:"layout"`
+	Name                string            `json:"name"`
+	Number              string            `json:"number"`
+	OriginalReleaseDate string            `json:"originalReleaseDate"`
+	Printings           []string          `json:"printings"`
+	PromoTypes          []string          `json:"promoTypes"`
+	Rarity              string            `json:"rarity"`
+	Side                string            `json:"side"`
+	UUID                string            `json:"uuid"`
+	Variations          []string          `json:"variations"`
+	Watermark           string            `json:"watermark"`
 }
 
 type AllPrintings struct {
