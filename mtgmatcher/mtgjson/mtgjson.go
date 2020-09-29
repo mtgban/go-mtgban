@@ -3,6 +3,7 @@ package mtgjson
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -45,6 +46,11 @@ type Card struct {
 	UUID                string            `json:"uuid"`
 	Variations          []string          `json:"variations"`
 	Watermark           string            `json:"watermark"`
+}
+
+// Card implements the Stringer interface
+func (c *Card) String() string {
+	return fmt.Sprintf("%s|%s|%s", c.Name, c.SetCode, c.Number)
 }
 
 type AllPrintings struct {
