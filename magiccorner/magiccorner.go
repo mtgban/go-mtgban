@@ -388,5 +388,6 @@ func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = mc.inventoryDate
 	info.BuylistTimestamp = mc.buylistDate
 	info.Grading = grading
+	info.NoCredit = true
 	return
 }
