@@ -17,7 +17,7 @@ var cardTable = map[string]string{
 	"Conspicious Snoop (Extended Art)": "Conspicuous Snoop (Extended Art)",
 
 	"Cunning Bandit /Azamuki, Treachery Incarnate": "Cunning Bandit / Azamuki, Treachery Incarnate",
-	"Beyeen Veil / Bayeen Coast":                   "Bayeen Veil / Bayeen Coast",
+	"Bayeen Veil / Bayeen Coast":                   "Beyeen Veil / Bayeen Coast",
 
 	// Funny cards
 	"Who / What / When / Where / Why":       "Who",
