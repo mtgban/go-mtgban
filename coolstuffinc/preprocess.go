@@ -32,6 +32,19 @@ var cardTable = map[string]string{
 	"Our Market Research Shows That Players Like Really Long Card Names So We Made This Card to Have the Absolute Longest Card Nam": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
 }
 
+var variantTable = map[string]string{
+	"Tarkir Dragonfury Prerelease Promo":               "Tarkir Dragonfury Promo",
+	"Jeff A Menges":                                    "Jeff A. Menges",
+	"Jeff a Menges":                                    "Jeff A. Menges",
+	"Not available in Draft Boosters":                  "",
+	"San Diego Comic-Con Promo M15":                    "SDCC 2014",
+	"San Diego Comic-Con Promo M14":                    "SDCC 2013",
+	"Arena Foil no Urza's Saga symbol Donato Giancola": "Arena 1999 misprint",
+	"EURO Land White Cliffs of Dover Ben Thompson art": "EURO  White Cliffs of Dover",
+	"EURO Land Danish Island Ben Thompson art":         "EURO Land Danish Island",
+	"Core 21 Prerelease Promo":                         "Prerelease",
+}
+
 func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
 	// Clean up notes, removing extra prefixes, and ueless characters
 	variant := strings.TrimPrefix(notes, "Notes:")
@@ -59,25 +72,9 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	variant = strings.TrimSuffix(variant, ".")
 	variant = strings.TrimSpace(variant)
 
-	switch variant {
-	case "Tarkir Dragonfury Prerelease Promo":
-		variant = "Tarkir Dragonfury Promo"
-	case "Jeff A Menges", "Jeff a Menges":
-		variant = "Jeff A. Menges"
-	case "Not available in Draft Boosters":
-		variant = ""
-	case "San Diego Comic-Con Promo M15":
-		variant = "SDCC 2014"
-	case "San Diego Comic-Con Promo M14":
-		variant = "SDCC 2013"
-	case "Arena Foil no Urza's Saga symbol Donato Giancola":
-		variant = "Arena 1999 misprint"
-	case "EURO Land White Cliffs of Dover Ben Thompson art":
-		variant = "EURO  White Cliffs of Dover"
-	case "EURO Land Danish Island Ben Thompson art":
-		variant = "EURO Land Danish Island"
-	case "Core 21 Prerelease Promo":
-		variant = "Prerelease"
+	vars, found := variantTable[variant]
+	if found {
+		variant = vars
 	}
 
 	isFoilFromName := false
