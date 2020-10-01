@@ -582,10 +582,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				// ZNR-Style buy-a-box but card is also present in main set
-				if inCard.isBaB() && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
-					continue
-				} else if !inCard.isBaB() && card.HasPromoType(mtgjson.PromoTypeBuyABox) {
-					continue
+
+				if setDate.After(BuyABoxNotUniqueDate) {
+					if inCard.isBaB() && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+						continue
+					} else if !inCard.isBaB() && card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+						continue
+					}
 				}
 			}
 

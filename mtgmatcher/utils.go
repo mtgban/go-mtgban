@@ -44,6 +44,9 @@ var BuyABoxInExpansionSetsDate = time.Date(2018, time.April, 1, 0, 0, 0, 0, time
 // Date in which random promos can be in the expansion set
 var PromosForEverybodyYay = time.Date(2019, time.October, 1, 0, 0, 0, 0, time.UTC)
 
+// Date since BuyABox cards are not unique any more
+var BuyABoxNotUniqueDate = time.Date(2020, time.September, 1, 0, 0, 0, 0, time.UTC)
+
 // SplitVariants returns an array of strings from the parentheses-defined fields
 // commonly used to distinguish some cards across editions.
 func SplitVariants(str string) []string {
