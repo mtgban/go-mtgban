@@ -45,6 +45,12 @@ var variantTable = map[string]string{
 	"Aether Revolt Prerelease Promo":                   "AER Prerelease",
 	"Core 21 Prerelease Promo":                         "M21 Prerelease",
 	"Throne of Eldraine Prerelease promo":              "ELD Prerelease",
+	"Eighth Edition Prerelease Promo":                  "Release Promo",
+	"Release 27 Promo":                                 "Release",
+	"2/2 Power and Toughness":                          "misprint",
+	"Big Furry Monster Left Side":                      "28",
+	"Big Furry Monster Right Side":                     "29",
+	"Arena League Promo 2001 Mark Poole art":           "Arena 2002",
 }
 
 func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
@@ -102,10 +108,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		"Lukka, Coppercoat Outcast",
 		"Brokkos, Apex of Forever":
 		return nil, errors.New("impossible to track")
-	case "Corpse Knight":
-		if variant == "2/2 Power and Toughness" {
-			variant = "misprint"
-		}
 	case "Demonic Tutor":
 		if variant == "Judge Rewards Promo" {
 			variant = "Judge 2008"
@@ -145,20 +147,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if variant == "Arena League Promo" {
 			variant = "FNM 2000"
 		}
-	case "Deathbringer Regent":
-		if variant == "Release 27 Promo" {
-			variant = "Release"
-		}
-	case "Rukh Egg":
-		if variant == "Eighth Edition Prerelease Promo" {
-			variant = "Release Promo"
-		}
-	case "B.F.M. (Big Furry Monster)":
-		if variant == "Big Furry Monster Left Side" {
-			variant = "28"
-		} else {
-			variant = "29"
-		}
 	case "Cabal Therapy":
 		if strings.HasPrefix(variant, "Gold-bordered") {
 			variant = "2003"
@@ -166,10 +154,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	case "Rishadan Port":
 		if strings.HasPrefix(variant, "Gold-bordered") {
 			variant = "2000"
-		}
-	case "Island":
-		if variant == "Arena League Promo 2001 Mark Poole art" {
-			variant = "Arena 2002"
 		}
 	case "Disenchant":
 		if strings.Contains(variant, "Arena") {
