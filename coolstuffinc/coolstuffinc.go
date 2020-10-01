@@ -188,12 +188,12 @@ func (csi *Coolstuffinc) scrape() error {
 		}
 		maybeNum := strings.TrimPrefix(imgName, strings.Replace(cardName, " ", "", -1))
 
-		theCard, err := preprocess(cardName, edition, notes, maybeNum)
-		if err != nil {
-			return
-		}
-
 		e.ForEach(`div[itemprop="offers"]`, func(_ int, elem *colly.HTMLElement) {
+			theCard, err := preprocess(cardName, edition, notes, maybeNum)
+			if err != nil {
+				return
+			}
+
 			soon := elem.ChildText(`div[class="large-12 medium-12 small-12"]`)
 			if strings.Contains(soon, "Estimated") {
 				return
@@ -219,8 +219,8 @@ func (csi *Coolstuffinc) scrape() error {
 
 			conditions := strings.Join(fields[idx:], " ")
 			switch conditions {
-			case "Mint":
-			case "Near Mint":
+			case "Mint",
+				"Near Mint":
 				conditions = "NM"
 			case "Played":
 				conditions = "MP"
@@ -257,6 +257,8 @@ func (csi *Coolstuffinc) scrape() error {
 				return
 			}
 
+			// preprocess() might return something that derived foil status
+			// from one of the fields (cardName in particular)
 			theCard.Foil = theCard.Foil || isFoil
 			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
