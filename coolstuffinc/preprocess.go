@@ -42,7 +42,9 @@ var variantTable = map[string]string{
 	"Arena Foil no Urza's Saga symbol Donato Giancola": "Arena 1999 misprint",
 	"EURO Land White Cliffs of Dover Ben Thompson art": "EURO  White Cliffs of Dover",
 	"EURO Land Danish Island Ben Thompson art":         "EURO Land Danish Island",
-	"Core 21 Prerelease Promo":                         "Prerelease",
+	"Aether Revolt Prerelease Promo":                   "AER Prerelease",
+	"Core 21 Prerelease Promo":                         "M21 Prerelease",
+	"Throne of Eldraine Prerelease promo":              "ELD Prerelease",
 }
 
 func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
@@ -223,7 +225,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		"Challenger Decks 2020", "Challenger Decks 2019", "Challenger Decks 2018":
 		return nil, errors.New("set not mtg")
 	case "Prerelease Promos":
-		variant = "Prerelease Foil"
+		if variant != "" {
+			variant = " "
+		}
+		variant += "Prerelease"
 	case "Portal 3 Kingdoms", "Jace vs. Chandra":
 		if strings.Contains(cardName, "Japanese") {
 			return nil, errors.New("not english")
