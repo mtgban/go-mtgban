@@ -91,15 +91,9 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 				break
 			}
 		}
-	case cardName == "Mechagodzilla Battle Fortress (Hangarback Walker) BIBB Promo":
+	case mtgmatcher.Equals(cardName, "Mechagodzilla Battle Fortress (Hangarback Walker) BIBB Promo"):
 		cardName = "Hangarback Walker"
 		edition = "Love your LGS"
-	case cardName == "Teferi Master of Time":
-		if edition == "Promotional Cards" {
-			variation += "s"
-		} else if edition == "Promo Pack" {
-			variation += "p"
-		}
 	}
 
 	ed, found := card2setTable[cardName]
@@ -110,6 +104,9 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	variants := mtgmatcher.SplitVariants(cardName)
 	cardName = variants[0]
 	if len(variants) > 1 {
+		if variation != "" {
+			variation += " "
+		}
 		variation = variants[1]
 	}
 
@@ -172,6 +169,12 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		edition = "Magic Premiere Shop 2005"
 	case strings.Contains(variation, "Holiday"):
 		edition = "Happy Holidays"
+	case mtgmatcher.HasPrefix(cardName, "Teferi Master of Time"):
+		if edition == "Promotional Cards" {
+			variation += "s"
+		} else if edition == "Promo Pack" {
+			variation += "p"
+		}
 	}
 
 	if edition == "Promotional Cards" && variation == "" {

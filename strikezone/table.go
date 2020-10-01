@@ -99,6 +99,7 @@ var cardTable = map[string]string{
 	"Revival Revenge":     "Revival",
 	"Thrash Threat":       "Thrash",
 	"Connive Concoct":     "Connive",
+	"Smelt / Herd / Saw":  "Smelt // Herd // Saw",
 
 	// Funny cards
 	"Who What When Where Why": "Who",
