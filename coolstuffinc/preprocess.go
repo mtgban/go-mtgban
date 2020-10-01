@@ -171,14 +171,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if variant == "Arena League Promo 2001 Mark Poole art" {
 			variant = "Arena 2002"
 		}
-	case "Solemn Simulacrum":
-		if edition == "Commander Anthology Volume II" && maybeNum == "" {
-			return nil, errors.New("unsupported")
-		}
-	case "Temple of the False God":
-		if edition == "Commander Anthology Volume II" && maybeNum == "" {
-			return nil, errors.New("unsupported")
-		}
 	case "Disenchant":
 		if strings.Contains(variant, "Arena") {
 			variant = "Arena 1996"
@@ -243,7 +235,17 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if len(maybeNum) == 3 {
 			edition = maybeNum
 		}
-	case "Commander Anthology Volume II", "Unstable", "Unsanctioned":
+	case "Commander Anthology Volume II":
+		if maybeNum == "" {
+			switch cardName {
+			case "Solemn Simulacrum",
+				"Golgari Signet",
+				"Temple of the False God":
+				return nil, errors.New("unsupported")
+			}
+		}
+		variant = maybeNum
+	case "Unstable", "Unsanctioned":
 		if cardName != "Amateur Auteur" && cardName != "Everythingamajig" {
 			variant = maybeNum
 		}
