@@ -79,6 +79,16 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		variant = vars
 	}
 
+	switch variant {
+	case "Silver Planeswalker Symbol":
+		switch cardName {
+		case "Sorcerous Spyglass",
+			"Fabled Passage",
+			"Heroic Intervention":
+			return nil, errors.New("unsupported")
+		}
+	}
+
 	isFoilFromName := false
 	switch cardName {
 	case "City's Blessing",
@@ -167,10 +177,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 	case "Temple of the False God":
 		if edition == "Commander Anthology Volume II" && maybeNum == "" {
-			return nil, errors.New("unsupported")
-		}
-	case "Sorcerous Spyglass":
-		if variant == "Silver Planeswalker Symbol" {
 			return nil, errors.New("unsupported")
 		}
 	case "Disenchant":
