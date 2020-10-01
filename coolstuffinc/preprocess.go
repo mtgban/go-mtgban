@@ -230,7 +230,11 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 		variant = maybeNum
 	case "Unstable", "Unsanctioned":
-		if cardName != "Amateur Auteur" && cardName != "Everythingamajig" {
+		switch cardName {
+		case "Amateur Auteur",
+			"Everythingamajig",
+			"Very Cryptic Command":
+		default:
 			variant = maybeNum
 		}
 		if maybeNum == "" || maybeNum == "." {

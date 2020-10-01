@@ -2494,6 +2494,12 @@ var ustVariants = map[string]map[string]string{
 		"turn over":                 "49d",
 		"roll two":                  "49e",
 		"return all artifacts":      "49f",
+		"wayne england art":         "49a",
+		"untap two..":               "49b",
+		"draw a card..":             "49c",
+		"return target..":           "49d",
+		"counter target..":          "49e",
+		"scry 3..":                  "49f",
 	},
 }
 
