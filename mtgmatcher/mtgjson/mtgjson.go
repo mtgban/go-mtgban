@@ -49,7 +49,7 @@ type Card struct {
 }
 
 // Card implements the Stringer interface
-func (c *Card) String() string {
+func (c Card) String() string {
 	return fmt.Sprintf("%s|%s|%s", c.Name, c.SetCode, c.Number)
 }
 
