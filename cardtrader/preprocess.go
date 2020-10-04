@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
@@ -308,13 +309,22 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 						variant = number
 					}
 				}
-			case "Throne of Eldraine Promos",
-				"Theros: Beyond Death Promos",
-				"Ikoria: Lair of Behemoths Promos":
-				if mtgmatcher.HasPromoPackPrinting(cardName) {
-					variant = "Promo Pack"
-				} else {
-					edition = strings.TrimSuffix(edition, " Promos")
+			default:
+				set, err := mtgmatcher.GetSet(bp.Expansion.Code)
+				if err != nil {
+					return nil, err
+				}
+				setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
+				if err != nil {
+					return nil, err
+				}
+
+				if setDate.After(mtgmatcher.PromosForEverybodyYay) {
+					if mtgmatcher.HasPromoPackPrinting(cardName) {
+						variant = "Promo Pack"
+					} else {
+						edition = strings.TrimSuffix(edition, " Promos")
+					}
 				}
 			}
 		}
