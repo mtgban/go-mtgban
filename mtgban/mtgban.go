@@ -17,6 +17,9 @@ type InventoryEntry struct {
 
 	// Only used for a Marketplace inventory
 	SellerName string
+
+	// Part of a hub of sellers that can ship directly
+	Bundle bool
 }
 
 // BuylistEntry represents an entry for buying a particular Card

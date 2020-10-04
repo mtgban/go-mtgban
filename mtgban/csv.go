@@ -20,7 +20,7 @@ var (
 	InventoryHeader = append(CardHeader, "Conditions", "Price", "Quantity", "URL")
 
 	// The canonical header that will be present in all market files
-	MarketHeader = append(InventoryHeader, "Seller")
+	MarketHeader = append(InventoryHeader, "Seller", "Bundle")
 
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = append(CardHeader, "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Conditions")
@@ -117,6 +117,11 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 			sellerName = record[index]
 			index++
 		}
+		bundle := false
+		if len(record) > index {
+			bundle = record[index] == "Y"
+			index++
+		}
 
 		entry := &InventoryEntry{
 			Conditions: conditions,
@@ -124,6 +129,7 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 			Quantity:   qty,
 			URL:        URL,
 			SellerName: sellerName,
+			Bundle:     bundle,
 		}
 
 		inventory.Add(cardId, entry)
@@ -297,6 +303,11 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 			)
 			if isMarket {
 				record = append(record, entry.SellerName)
+				bundle := ""
+				if entry.Bundle {
+					bundle = "Y"
+				}
+				record = append(record, bundle)
 			}
 
 			err = csvWriter.Write(record)
@@ -362,6 +373,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	header := ArbitHeader
 	if len(arbitrage) > 0 && arbitrage[0].InventoryEntry.SellerName != "" {
 		header = append(header, "Seller")
+		header = append(header, "Bundle")
 		hasExtraSeller = true
 	}
 	err := csvWriter.Write(header)
@@ -391,6 +403,11 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
+			bundle := ""
+			if inv.Bundle {
+				bundle = "Y"
+			}
+			record = append(record, bundle)
 		}
 		err = csvWriter.Write(record)
 		if err != nil {
@@ -411,6 +428,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 	header := MismatchHeader
 	if len(mismatch) > 0 && mismatch[0].InventoryEntry.SellerName != "" {
 		header = append(header, "Seller")
+		header = append(header, "Bundle")
 		hasExtraSeller = true
 	}
 
@@ -435,6 +453,11 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
+			bundle := ""
+			if inv.Bundle {
+				bundle = "Y"
+			}
+			record = append(record, bundle)
 		}
 		err = csvWriter.Write(record)
 		if err != nil {
@@ -514,6 +537,7 @@ func WritePennyToCSV(penny []PennystockEntry, w io.Writer) error {
 	header := InventoryHeader
 	if len(penny) > 0 && penny[0].InventoryEntry.SellerName != "" {
 		header = append(header, "Seller")
+		header = append(header, "Bundle")
 		hasExtraSeller = true
 	}
 	err := csvWriter.Write(header)
@@ -537,6 +561,11 @@ func WritePennyToCSV(penny []PennystockEntry, w io.Writer) error {
 		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
+			bundle := ""
+			if inv.Bundle {
+				bundle = "Y"
+			}
+			record = append(record, bundle)
 		}
 		err = csvWriter.Write(record)
 		if err != nil {
