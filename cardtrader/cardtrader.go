@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	maxCategoryId = 134924
+	maxCategoryId = 135095
 
 	defaultConcurrency = 8
 )

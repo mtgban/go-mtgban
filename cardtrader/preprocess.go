@@ -67,7 +67,7 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		"Morph",
 		"Rules Tip: Kicker",
 		"Rules Tip: Allies & Intimidate",
-		"The Monarch":
+		"The Monarch Counter":
 		return nil, errors.New("not singles")
 	}
 
@@ -207,6 +207,10 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 			variant = number
 			if strings.HasPrefix(variant, "sr") {
 				variant = strings.Replace(variant, "sr", "shr", 1)
+			}
+			// Scrabbling Claws
+			if bp.Id == 25481 {
+				variant = "jn237sb"
 			}
 		} else if strings.Contains(edition, "Japanese") {
 			variant = "Japanese"
@@ -407,6 +411,7 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		variant = "Prerelease"
 
 		if cardName == "Curious Pair // Treats to Share" {
+			edition = "Throne of Eldraine"
 			variant = "Showcase"
 		} else if cardName == "Lu Bu, Master-at-Arms" {
 			edition = "Prerelease Events"
