@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
@@ -83,6 +84,14 @@ func LoadDatastore(reader io.Reader) error {
 
 	NewDatastore(allprints)
 	return nil
+}
+
+func LoadDatastoreFile(filename string) error {
+	reader, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	return LoadDatastore(reader)
 }
 
 func SetGlobalLogger(userLogger *log.Logger) {
