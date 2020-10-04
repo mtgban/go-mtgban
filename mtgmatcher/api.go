@@ -1,6 +1,8 @@
 package mtgmatcher
 
 import (
+	"strings"
+
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
@@ -26,7 +28,7 @@ func GetSet(code string) (*mtgjson.Set, error) {
 		return nil, ErrDatastoreEmpty
 	}
 
-	set, found := backend.Sets[code]
+	set, found := backend.Sets[strings.ToUpper(code)]
 	if !found {
 		return nil, ErrCardUnknownId
 	}
