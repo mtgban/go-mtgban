@@ -106,6 +106,8 @@ var editionTable = map[string]string{
 	"Duel Deck: Elfi vs Goblin":        "Duel Decks: Elves vs. Goblins",
 	"Duel Deck: Elspeth vs Tezzereth":  "Duel Decks: Elspeth vs. Tezzeret",
 	"Duel Decks: Cavalieri vs. Draghi": "Duel Decks: Knights vs. Dragons",
+
+	"Fifth Ediiton": "Fifth Edition",
 }
 
 func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
