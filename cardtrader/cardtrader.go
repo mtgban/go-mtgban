@@ -182,6 +182,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 				Quantity:   qty,
 				URL:        link,
 				SellerName: product.User.Name,
+				Bundle:     product.User.Zero,
 			},
 		}
 	}

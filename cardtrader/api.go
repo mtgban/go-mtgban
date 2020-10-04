@@ -44,6 +44,7 @@ type BlueprintFilter struct {
 		} `json:"properties_hash"`
 		User struct {
 			Name string `json:"username"`
+			Zero bool   `json:"can_sell_via_hub"`
 		} `json:"user"`
 		Price struct {
 			Cents int `json:"cents"`
