@@ -75,11 +75,11 @@ func Unmatch(cardId string) (*Card, error) {
 }
 
 func HasPromoPackPrinting(name string) bool {
-	return hasPrinting(name, mtgjson.PromoTypePrerelease)
+	return hasPrinting(name, mtgjson.PromoTypePromoPack)
 }
 
 func HasPrereleasePrinting(name string) bool {
-	return hasPrinting(name, mtgjson.PromoTypePromoPack)
+	return hasPrinting(name, mtgjson.PromoTypePrerelease)
 }
 
 func hasPrinting(name, promo string) bool {
