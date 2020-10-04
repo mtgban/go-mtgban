@@ -148,6 +148,9 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 				return
 			}
 
+			shipping := s.Find("span[class='product-listing__shipping']").Text()
+			isDirect := strings.Contains(shipping, "Free Shipping")
+
 			qtyStr, _ := s.Find("input[name='quantityAvailable']").Attr("value")
 			qty, err := strconv.Atoi(qtyStr)
 			if err != nil {
@@ -164,6 +167,7 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 					Price:      price,
 					Quantity:   qty,
 					SellerName: sellerName,
+					Bundle:     isDirect,
 					URL:        "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId,
 				},
 			}
