@@ -22,7 +22,7 @@ type cardobject struct {
 }
 
 var backend struct {
-	Sets  map[string]mtgjson.Set
+	Sets  map[string]*mtgjson.Set
 	Cards map[string]cardinfo
 	UUIDs map[string]cardobject
 }

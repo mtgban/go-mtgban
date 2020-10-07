@@ -54,7 +54,7 @@ func (c Card) String() string {
 }
 
 type AllPrintings struct {
-	Data map[string]Set `json:"data"`
+	Data map[string]*Set `json:"data"`
 	Meta struct {
 		Date    string `json:"date"`
 		Version string `json:"version"`

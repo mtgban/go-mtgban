@@ -19,7 +19,7 @@ func GetUUID(uuid string) (*cardobject, error) {
 	return &co, nil
 }
 
-func GetSets() map[string]mtgjson.Set {
+func GetSets() map[string]*mtgjson.Set {
 	return backend.Sets
 }
 
@@ -33,7 +33,7 @@ func GetSet(code string) (*mtgjson.Set, error) {
 		return nil, ErrCardUnknownId
 	}
 
-	return &set, nil
+	return set, nil
 }
 
 func GetSetUUID(uuid string) (*mtgjson.Set, error) {
@@ -51,7 +51,7 @@ func GetSetUUID(uuid string) (*mtgjson.Set, error) {
 		return nil, ErrCardUnknownId
 	}
 
-	return &set, nil
+	return set, nil
 }
 
 func Unmatch(cardId string) (*Card, error) {
