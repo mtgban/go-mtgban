@@ -38,7 +38,16 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			delete(ap.Data, code)
 			continue
 		}
+
+		var filteredCards []mtgjson.Card
 		for _, card := range set.Cards {
+			// MTGJSON v5 contains duplicated card info for each face, and we do
+			// not need that level of detail, so just skip any extra side.
+			if card.Side != "" && card.Side != "a" {
+				continue
+			}
+			filteredCards = append(filteredCards, card)
+
 			norm := Normalize(card.Name)
 			_, found := cards[norm]
 			if !found {
@@ -69,6 +78,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				uuids[card.UUID] = co
 			}
 		}
+
+		// Replace the original array with the filtered one
+		set.Cards = filteredCards
 	}
 
 	backend.Sets = ap.Data

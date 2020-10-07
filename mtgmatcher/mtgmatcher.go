@@ -164,11 +164,6 @@ func matchInSet(inCard *Card, setCode string) (outCards []mtgjson.Card) {
 	set := backend.Sets[setCode]
 	for _, card := range set.Cards {
 		if inCard.Name == card.Name {
-			// MTGJSON v5 contains duplicated card info for each face, and we do
-			// not need that level of detail, so just skip any extra side.
-			if card.Side != "" && card.Side != "a" {
-				continue
-			}
 			outCards = append(outCards, card)
 		}
 	}
