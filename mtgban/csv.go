@@ -349,7 +349,7 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 				fmt.Sprintf("%0.2f", entry.BuyPrice),
 				fmt.Sprintf("%0.2f", entry.TradePrice),
 				fmt.Sprint(entry.Quantity),
-				fmt.Sprintf("%0.2f%%", entry.PriceRatio),
+				fmt.Sprintf("%0.2f", entry.PriceRatio),
 				entry.URL,
 				entry.Conditions,
 			)
@@ -397,9 +397,9 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			fmt.Sprintf("%0.2f", bl.BuyPrice),
 			fmt.Sprintf("%0.2f", bl.TradePrice),
 			fmt.Sprintf("%0.2f", entry.Difference),
-			fmt.Sprintf("%0.2f%%", entry.Spread),
+			fmt.Sprintf("%0.2f", entry.Spread),
 			fmt.Sprintf("%0.2f", entry.AbsoluteDifference),
-			fmt.Sprintf("%0.2f%%", bl.PriceRatio),
+			fmt.Sprintf("%0.2f", bl.PriceRatio),
 		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
@@ -449,7 +449,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", entry.Difference),
-			fmt.Sprintf("%0.2f%%", entry.Spread),
+			fmt.Sprintf("%0.2f", entry.Spread),
 		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
@@ -517,7 +517,7 @@ func WriteMultiArbitrageToCSV(multi []MultiArbitEntry, w io.Writer) error {
 			fmt.Sprintf("%0.2f", entry.Price),
 			fmt.Sprintf("%0.2f", entry.BuylistPrice),
 			fmt.Sprintf("%0.2f", entry.Difference),
-			fmt.Sprintf("%0.2f%%", entry.Spread),
+			fmt.Sprintf("%0.2f", entry.Spread),
 		})
 		if err != nil {
 			return err
