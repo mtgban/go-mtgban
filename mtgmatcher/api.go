@@ -6,7 +6,7 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
-func GetUUID(uuid string) (*cardobject, error) {
+func GetUUID(uuid string) (*CardObject, error) {
 	if backend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
 	}

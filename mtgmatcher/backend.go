@@ -15,7 +15,9 @@ type cardinfo struct {
 	Layout    string
 }
 
-type cardobject struct {
+// CardObject is an extension of mtgjson.Card, containing fields that cannot
+// be easily represented in the original object.
+type CardObject struct {
 	mtgjson.Card
 	Edition string
 	Foil    bool
@@ -24,13 +26,13 @@ type cardobject struct {
 var backend struct {
 	Sets  map[string]*mtgjson.Set
 	Cards map[string]cardinfo
-	UUIDs map[string]cardobject
+	UUIDs map[string]CardObject
 }
 
 var logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
 func NewDatastore(ap mtgjson.AllPrintings) {
-	uuids := map[string]cardobject{}
+	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
 
 	for code, set := range ap.Data {
@@ -58,7 +60,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				}
 			}
 			// Shared card object
-			co := cardobject{
+			co := CardObject{
 				Card:    card,
 				Edition: set.Name,
 			}
