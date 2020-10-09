@@ -1,6 +1,7 @@
 package mtgmatcher
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,6 +22,11 @@ type CardObject struct {
 	mtgjson.Card
 	Edition string
 	Foil    bool
+}
+
+// Card implements the Stringer interface
+func (c CardObject) String() string {
+	return fmt.Sprintf("%s|%s-%s|%s|%v", c.Name, c.SetCode, c.Edition, c.Number, c.Foil)
 }
 
 var backend struct {
