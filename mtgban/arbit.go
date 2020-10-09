@@ -201,17 +201,9 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 		totalPrice := extra
 		totalBuylistPrice := 0.0
 		for _, entry := range arbit {
-			grade := vendor.Info().Grading(entry.CardId, entry.BuylistEntry)
-
-			blPrice := entry.BuylistEntry.BuyPrice
-			cond := entry.InventoryEntry.Conditions
-			if cond != "NM" {
-				blPrice *= grade[cond]
-			}
-
 			quantity += entry.InventoryEntry.Quantity
 			totalPrice += entry.InventoryEntry.Price * float64(entry.InventoryEntry.Quantity)
-			totalBuylistPrice += blPrice * float64(entry.InventoryEntry.Quantity)
+			totalBuylistPrice += entry.BuylistEntry.BuyPrice * float64(entry.InventoryEntry.Quantity)
 		}
 
 		spread := 100 * (totalBuylistPrice - totalPrice) / totalPrice
