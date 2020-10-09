@@ -10,7 +10,7 @@ import (
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
 	entries, found := inv[cardId]
 	if found {
-		card, err := mtgmatcher.Unmatch(cardId)
+		card, err := mtgmatcher.GetUUID(cardId)
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 	if found {
 		for i := range entries {
 			if entry.Conditions == entries[i].Conditions {
-				card, err := mtgmatcher.Unmatch(cardId)
+				card, err := mtgmatcher.GetUUID(cardId)
 				if err != nil {
 					return err
 				}

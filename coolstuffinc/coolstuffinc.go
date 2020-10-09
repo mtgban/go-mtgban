@@ -274,7 +274,7 @@ func (csi *Coolstuffinc) scrape() error {
 					if ok {
 						probes := alias.Probe()
 						for _, probe := range probes {
-							card, _ := mtgmatcher.Unmatch(probe)
+							card, _ := mtgmatcher.GetUUID(probe)
 							csi.printf("- %s", card)
 						}
 					}
@@ -451,7 +451,7 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						csi.printf("- %s", card)
 					}
 				}

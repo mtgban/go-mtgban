@@ -100,7 +100,7 @@ func (ck *Cardkingdom) scrape() error {
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.Unmatch(probe)
+					card, _ := mtgmatcher.GetUUID(probe)
 					ck.printf("- %s", card)
 				}
 			}

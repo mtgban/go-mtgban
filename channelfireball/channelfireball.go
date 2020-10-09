@@ -216,7 +216,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.Unmatch(probe)
+					card, _ := mtgmatcher.GetUUID(probe)
 					cfb.printf("- %s", card)
 				}
 			}

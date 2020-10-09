@@ -146,7 +146,7 @@ func (sz *Strikezone) scrape() error {
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						sz.printf("- %s", card)
 					}
 				}
@@ -249,7 +249,7 @@ func (sz *Strikezone) parseBL() error {
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.Unmatch(probe)
+					card, _ := mtgmatcher.GetUUID(probe)
 					sz.printf("- %s", card)
 				}
 			}

@@ -135,7 +135,7 @@ func (jup *Jupitergames) scrape() error {
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						jup.printf("- %s", card)
 					}
 				}
@@ -327,7 +327,7 @@ func (jup *Jupitergames) parseBL() error {
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.Unmatch(probe)
+					card, _ := mtgmatcher.GetUUID(probe)
 					jup.printf("- %s", card)
 				}
 			}

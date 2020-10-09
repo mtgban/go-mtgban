@@ -185,7 +185,7 @@ func (scg *Starcitygames) scrape() error {
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						scg.printf("- %s", card)
 					}
 				}
@@ -357,7 +357,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						scg.printf("- %s", card)
 					}
 				}

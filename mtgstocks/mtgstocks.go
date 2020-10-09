@@ -140,7 +140,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		if ok {
 			probes := alias.Probe()
 			for _, probe := range probes {
-				card, _ := mtgmatcher.Unmatch(probe)
+				card, _ := mtgmatcher.GetUUID(probe)
 				stks.printf("- %s", card)
 			}
 		}

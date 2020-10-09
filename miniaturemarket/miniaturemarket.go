@@ -80,7 +80,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						mm.printf("- %s", card)
 					}
 				}
@@ -211,7 +211,7 @@ func (mm *Miniaturemarket) processEntry(channel chan<- respChan, page int) error
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.Unmatch(probe)
+					card, _ := mtgmatcher.GetUUID(probe)
 					mm.printf("- %s", card)
 				}
 			}

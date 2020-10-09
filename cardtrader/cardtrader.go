@@ -134,7 +134,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
-					card, _ := mtgmatcher.Unmatch(probe)
+					card, _ := mtgmatcher.GetUUID(probe)
 					ct.printf("- %s", card)
 				}
 			}
@@ -228,7 +228,7 @@ func (ct *Cardtrader) scrape() error {
 		// This would be better with a select, but for now just print a message
 		// that we're still alive every minute
 		if time.Now().After(lastTime.Add(60 * time.Second)) {
-			card, _ := mtgmatcher.Unmatch(result.cardId)
+			card, _ := mtgmatcher.GetUUID(result.cardId)
 			ct.printf("Still going %d/%d, last processed card: %s", result.category, ct.ids[len(ct.ids)-1], card)
 			lastTime = time.Now()
 		}

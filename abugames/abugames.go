@@ -111,7 +111,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						abu.printf("- %s", card)
 					}
 				}

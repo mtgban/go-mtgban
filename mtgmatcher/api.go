@@ -54,26 +54,6 @@ func GetSetUUID(uuid string) (*mtgjson.Set, error) {
 	return set, nil
 }
 
-func Unmatch(cardId string) (*Card, error) {
-	if backend.UUIDs == nil {
-		return nil, ErrDatastoreEmpty
-	}
-
-	co, found := backend.UUIDs[cardId]
-	if !found {
-		return nil, ErrCardUnknownId
-	}
-
-	out := &Card{
-		Id:      cardId,
-		Name:    co.Card.Name,
-		Edition: co.Edition,
-		Foil:    co.Foil,
-		Number:  co.Card.Number,
-	}
-	return out, nil
-}
-
 func HasPromoPackPrinting(name string) bool {
 	return hasPrinting(name, mtgjson.PromoTypePromoPack)
 }

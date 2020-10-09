@@ -103,7 +103,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						tat.printf("- %s", card)
 					}
 				}
@@ -244,7 +244,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 				if ok {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.Unmatch(probe)
+						card, _ := mtgmatcher.GetUUID(probe)
 						tat.printf("- %s", card)
 					}
 				}
