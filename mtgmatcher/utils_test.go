@@ -179,31 +179,12 @@ func TestAlias(t *testing.T) {
 		Variation: "Full-Art",
 		Edition:   "Zendikar",
 	}
-	outCards := []Card{
-		Card{
-			Id:      "8b2b4813-187c-53d1-8ee6-d9109ce4c427",
-			Name:    "Forest",
-			Edition: "Zendikar",
-			Number:  "246",
-		},
-		Card{
-			Id:      "7c0ffc88-34ff-5436-bfe7-ac9f1dd62888",
-			Name:    "Forest",
-			Edition: "Zendikar",
-			Number:  "247",
-		},
-		Card{
-			Id:      "59cea094-ebc9-5afa-bdf3-f0cc832a2136",
-			Name:    "Forest",
-			Edition: "Zendikar",
-			Number:  "248",
-		},
-		Card{
-			Id:      "41d883ae-9018-5218-887e-502b03a2b89f",
-			Name:    "Forest",
-			Edition: "Zendikar",
-			Number:  "249",
-		},
+	// These are ZEN Forest 246, 247, 248, 249
+	outCards := []string{
+		"8b2b4813-187c-53d1-8ee6-d9109ce4c427",
+		"7c0ffc88-34ff-5436-bfe7-ac9f1dd62888",
+		"59cea094-ebc9-5afa-bdf3-f0cc832a2136",
+		"41d883ae-9018-5218-887e-502b03a2b89f",
 	}
 
 	_, err := Match(inCard)
@@ -226,11 +207,10 @@ func TestAlias(t *testing.T) {
 		return
 	}
 
-	for i, dupeId := range dupes {
-		card, _ := Unmatch(dupeId)
-		if *card != outCards[i] {
+	for i := range dupes {
+		if dupes[i] != outCards[i] {
 			t.Errorf("FAIL: incorrect duplicate returned")
-			t.Errorf("%v vs %v", card, outCards[i])
+			t.Errorf("%v vs %v", dupes[i], outCards[i])
 		}
 	}
 	t.Log("PASS: Aliasing")
