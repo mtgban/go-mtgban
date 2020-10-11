@@ -164,6 +164,7 @@ func (c *Card) isFNM() bool {
 func (c *Card) isJPN() bool {
 	return strings.Contains(c.Variation, "JPN") ||
 		Contains(c.Variation, "Japanese") ||
+		Contains(c.Edition, "Japanese") ||
 		Contains(c.Variation, "Gotta") ||
 		Contains(c.Variation, "Dengeki")
 }
@@ -186,17 +187,22 @@ func (c *Card) isWPNGateway() bool {
 }
 
 func (c *Card) isIDWMagazineBook() bool {
-	return strings.HasPrefix(c.Variation, "IDW") ||
+	return strings.HasPrefix(c.Variation, "IDW") || strings.HasPrefix(c.Edition, "IDW") ||
+
 		strings.Contains(c.Variation, "Magazine") ||
-		strings.Contains(c.Variation, "Duelist") ||
+		strings.Contains(c.Variation, "Duelist") || strings.Contains(c.Edition, "Duelist") ||
 		// Catches Comic and Comics, but skips San Diego Comic-Con
 		(strings.Contains(c.Variation, "Comic") && !strings.Contains(c.Variation, "Diego")) ||
+		(strings.Contains(c.Edition, "Comic") && !strings.Contains(c.Edition, "Diego")) ||
 		// Cannot use Contains because it may trigger a false positive
 		// for cards with "book" in their variation (insidious bookworms)
 		c.Variation == "Book" ||
 		strings.Contains(c.Variation, "Book Insert") || // cfb
 		strings.Contains(c.Variation, "Book Promo") || // sz
 		Contains(c.Variation, "Top Deck") || // csi
+		Contains(c.Edition, "Top Deck") || // mkm
+		Contains(c.Edition, "CardZ") || // mkm
+		Contains(c.Edition, "Dengeki") || // mkm
 		c.Variation == "Insert Foil" || // ck
 		c.Variation == "Media Insert" // mm
 }
@@ -331,6 +337,7 @@ func (c *Card) worldChampPrefix() (string, bool) {
 		"Preston Poulter":      "pp",
 		"Randy Buehler":        "rb",
 		"Raphael Levy":         "rl",
+		"Shawn Regnier":        "shr",
 		"Shawn Hammer Regnier": "shr",
 		"Sim Han How":          "shh",
 		"Svend Geertsen":       "sg",
@@ -372,7 +379,8 @@ func (c *Card) isPremiereShop() bool {
 	return c.isBasicLand() &&
 		(strings.Contains(c.Variation, "MPS") ||
 			strings.Contains(c.Variation, "Premier") || // csi
-			strings.Contains(c.Edition, "MPS"))
+			strings.Contains(c.Edition, "MPS") ||
+			strings.Contains(c.Edition, "Premiere Shop")) // mkm
 }
 
 func (c *Card) isPortalAlt() bool {

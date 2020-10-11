@@ -31,6 +31,7 @@ var replacer = strings.NewReplacer(
 	"ö", "o",
 	"ú", "u",
 	"û", "u",
+	"ü", "u",
 
 	// Almost everbody spells aether differently
 	"æther", "aether",
@@ -41,11 +42,13 @@ var replacer = strings.NewReplacer(
 	// Also plurals, just preserve 'blossom' that aliases 'lotus bloom'
 	// and 'asp' for 'tangle asp'/'tanglesap', and ogress...
 	// 'vs' is a key for determining duel decks
+	// Any accented s need to be removed as well to behave like a normal s
 	"asp", "asp",
 	"lossom", "lossom",
 	"ogress", "ogress",
 	"slash", "slash",
 	"vs", "vs",
+	"š", "",
 	"s", "",
 
 	// Spaces are overrated, except when not

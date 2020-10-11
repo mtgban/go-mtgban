@@ -36,6 +36,20 @@ func GetSet(code string) (*mtgjson.Set, error) {
 	return set, nil
 }
 
+func GetSetByName(name string) (*mtgjson.Set, error) {
+	if backend.Sets == nil {
+		return nil, ErrDatastoreEmpty
+	}
+
+	for _, set := range backend.Sets {
+		if Equals(set.Name, name) {
+			return set, nil
+		}
+	}
+
+	return nil, ErrCardUnknownId
+}
+
 func GetSetUUID(uuid string) (*mtgjson.Set, error) {
 	if backend.UUIDs == nil || backend.Sets == nil {
 		return nil, ErrDatastoreEmpty

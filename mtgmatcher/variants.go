@@ -561,6 +561,11 @@ var atqVariants = map[string]map[string]string{
 		"summer picture": "80b",
 		"fall picture":   "80c",
 		"winter picture": "80d",
+
+		"v.2": "80a",
+		"v.3": "80b",
+		"v.1": "80c",
+		"v.4": "80d",
 	},
 	"Strip Mine": map[string]string{
 		"atq-82a-strip-mine": "82a",
@@ -600,6 +605,11 @@ var atqVariants = map[string]map[string]string{
 		"cave no tower sky":              "82b",
 		"tower no cave":                  "82c",
 		"small steppes no cave no tower": "82d",
+
+		"v.3": "82a",
+		"v.2": "82b",
+		"v.4": "82c",
+		"v.1": "82d",
 	},
 	"Urza's Mine": map[string]string{
 		"aq084": "83a",
@@ -627,6 +637,11 @@ var atqVariants = map[string]map[string]string{
 		"mine's face":                  "83b",
 		"ball lowered in lava":         "83c",
 		"pillar with ladder and ropes": "83d",
+
+		"v.3": "83a",
+		"v.2": "83b",
+		"v.1": "83c",
+		"v.4": "83d",
 	},
 	"Urza's Power Plant": map[string]string{
 		"aq089": "84a",
@@ -653,6 +668,11 @@ var atqVariants = map[string]map[string]string{
 		"ball in pit with tubes": "84a",
 		"red pillars":            "84b",
 		"electric fly":           "84c",
+
+		"v.4": "84a",
+		"v.2": "84b",
+		"v.1": "84c",
+		"v.3": "84d",
 	},
 	"Urza's Tower": map[string]string{
 		"aq092": "85a",
@@ -676,6 +696,11 @@ var atqVariants = map[string]map[string]string{
 		"fall leaves":                 "85a",
 		"sun and water in background": "85b",
 		"plains with wheat":           "85c",
+
+		"v.1": "85a",
+		"v.4": "85b",
+		"v.3": "85c",
+		"v.2": "85d",
 	},
 }
 
@@ -1025,6 +1050,11 @@ var chrVariants = map[string]map[string]string{
 		"ball lowered in lava": "114b",
 		"rope and pulley":      "114c",
 		"tower with ladder":    "114d",
+
+		"v.1": "114a",
+		"v.2": "114b",
+		"v.3": "114c",
+		"v.4": "114d",
 	},
 	"Urza's Power Plant": map[string]string{
 		"ch098": "115a",
@@ -1053,6 +1083,11 @@ var chrVariants = map[string]map[string]string{
 		"electric fly": "115d",
 
 		"rock pot": "115a",
+
+		"v.1": "115a",
+		"v.2": "115b",
+		"v.3": "115c",
+		"v.4": "115d",
 	},
 	"Urza's Tower": map[string]string{
 		"ch105": "116a",
@@ -1077,6 +1112,11 @@ var chrVariants = map[string]map[string]string{
 		"cloudy skies wheat field":    "116b",
 		"mountain in background":      "116c",
 		"sun and water in background": "116d",
+
+		"v.1": "116a",
+		"v.2": "116b",
+		"v.3": "116c",
+		"v.4": "116d",
 	},
 }
 
@@ -1091,28 +1131,48 @@ var dkmVariants = map[string]map[string]string{
 	"Guerrilla Tactics": map[string]string{
 		"man kneeling near tree": "13a",
 		"man falling off clif":   "13b",
+		"v.1": "13a",
+		"v.2": "13b",
 	},
 	"Lim-Dûl's High Guard": map[string]string{
 		"red armor": "6a",
 		"2 swords":  "6b",
+		"v.2":       "6a",
+		"v.1":       "6b",
 	},
 	"Phantasmal Fiend": map[string]string{
 		"black background": "8a",
 		"brick background": "8b",
+		"v.2":              "8a",
+		"v.1":              "8b",
 	},
 	"Phyrexian War Beast": map[string]string{
 		"facing left":  "37a",
 		"facing right": "37b",
+		"v.1":          "37a",
+		"v.2":          "37b",
 	},
 	"Storm Shaman": map[string]string{
 		"red cloak":   "21a",
 		"green cloak": "21b",
+		"v.1":         "21a",
+		"v.2":         "21b",
 	},
 	"Yavimaya Ancients": map[string]string{
 		"rearing horse":  "31a",
 		"trees":          "31b",
 		"man on horse":   "31a",
 		"person in tree": "31b",
+		"v.2":            "31a",
+		"v.1":            "31b",
+	},
+	"Icy Manipulator": map[string]string{
+		"v.1": "36★",
+		"v.2": "36",
+	},
+	"Incinerate": map[string]string{
+		"v.1": "14★",
+		"v.2": "14",
 	},
 }
 
@@ -1853,30 +1913,50 @@ var pmpsVariants = map[string]map[string]string{
 		"the gruul clans":       "305",
 		"the selesnya conclave": "304",
 		"the simic combine":     "306",
+		"v.1":                   "303",
+		"v.2":                   "305",
+		"v.3":                   "304",
+		"v.4":                   "306",
 	},
 	"Island": map[string]string{
 		"the azorius senate": "291",
 		"the house dimir":    "294",
 		"the izzet league":   "292",
 		"the simic combine":  "293",
+		"v.1":                "291",
+		"v.2":                "294",
+		"v.3":                "292",
+		"v.4":                "293",
 	},
 	"Mountain": map[string]string{
 		"the boros legion":   "302",
 		"the gruul clans":    "300",
 		"the izzet league":   "301",
 		"the cult of rakdos": "299",
+		"v.1":                "302",
+		"v.2":                "300",
+		"v.3":                "301",
+		"v.4":                "299",
 	},
 	"Plains": map[string]string{
 		"the azorius senate":    "289",
 		"the boros legion":      "290",
 		"the orzhov syndicate":  "287",
 		"the selesnya conclave": "288",
+		"v.1": "289",
+		"v.2": "290",
+		"v.3": "287",
+		"v.4": "288",
 	},
 	"Swamp": map[string]string{
 		"the house dimir":      "296",
 		"the golgari swarm":    "295",
 		"the orzhov syndicate": "297",
 		"the cult of rakdos":   "298",
+		"v.3":                  "296",
+		"v.2":                  "295",
+		"v.4":                  "297",
+		"v.1":                  "298",
 	},
 }
 
@@ -1939,6 +2019,10 @@ var ogwVariants = map[string]map[string]string{
 		"ogw185": "183a",
 		"ogw184": "184",
 		"ogw186": "184a",
+		"v.1":    "183",
+		"v.2":    "183a",
+		"v.3":    "184",
+		"v.4":    "184a",
 	},
 }
 
@@ -2044,12 +2128,19 @@ var ptcVariants = map[string]map[string]string{
 		"ice age sideboard michael locanto":      "ml14sb",
 		"4th edition sideboard bertrand lestree": "bl16sb",
 		"4th edition sideboard michael locanto":  "ml16sb",
+		"v.2 pro tour 1996: bertrand lestree":    "bl14sb",
+		"v.1 pro tour 1996: bertrand lestree":    "bl16sb",
 	},
 	"Circle of Protection: Red": map[string]string{
 		"ice age sideboard bertrand lestree":     "bl15sb",
 		"ice age sideboard michael locanto":      "ml15sb",
 		"4th edition sideboard bertrand lestree": "bl17sb",
 		"4th edition sideboard michael locanto":  "ml17sb",
+
+		"v.2 pro tour 1996: bertrand lestree": "bl15sb",
+		"v.1 pro tour 1996: bertrand lestree": "bl17sb",
+		"v.2 pro tour 1996: michael locanto":  "ml15sb",
+		"v.1 pro tour 1996: michael locanto":  "ml17sb",
 	},
 	"Forest": map[string]string{
 		"4th edition path bertrand lestree 1996":      "bl377",
@@ -2334,6 +2425,11 @@ var ustVariants = map[string]map[string]string{
 		"innistrad blue": "3b",
 		"theros red":     "3c",
 		"zendikar green": "3d",
+
+		"v.1": "3a",
+		"v.3": "3b",
+		"v.4": "3c",
+		"v.2": "3d",
 	},
 	"Beast in Show": map[string]string{
 		"tyrranax":  "103a",
@@ -2341,6 +2437,11 @@ var ustVariants = map[string]map[string]string{
 		"baloth":    "103c",
 		"thragtusk": "103d",
 		"version 1": "103a",
+
+		"v.1": "103a",
+		"v.3": "103b",
+		"v.2": "103c",
+		"v.4": "103d",
 	},
 	"Everythingamajig": map[string]string{
 		"move":               "147a",
@@ -2362,6 +2463,13 @@ var ustVariants = map[string]map[string]string{
 		"add one mana":       "147d",
 		"sacrifice a land":   "147e",
 		"scry 2":             "147f",
+
+		"v.1": "147a",
+		"v.2": "147b",
+		"v.3": "147c",
+		"v.4": "147d",
+		"v.5": "147e",
+		"v.6": "147f",
 	},
 	"Extremely Slow Zombie": map[string]string{
 		"summer":    "54a",
@@ -2370,6 +2478,11 @@ var ustVariants = map[string]map[string]string{
 		"spring":    "54d",
 		"version 1": "54a",
 		"autumn":    "54b",
+
+		"v.1": "54a",
+		"v.2": "54b",
+		"v.3": "54c",
+		"v.4": "54d",
 	},
 	"Garbage Elemental": map[string]string{
 		"2/4":                     "82a",
@@ -2391,6 +2504,13 @@ var ustVariants = map[string]map[string]string{
 		"cascade":                 "82d",
 		"unleash":                 "82e",
 		"last strike":             "82f",
+
+		"v.1": "82a",
+		"v.4": "82b",
+		"v.5": "82c",
+		"v.2": "82d",
+		"v.6": "82e",
+		"v.3": "82f",
 	},
 	"Ineffable Blessing": map[string]string{
 		"choose flavor":                  "113a",
@@ -2411,6 +2531,13 @@ var ustVariants = map[string]map[string]string{
 		"white-bordered/silver-bordered": "113c",
 		"choose a rarity":                "113d",
 		"odd/even":                       "113e",
+
+		"v.1": "113a",
+		"v.5": "113b",
+		"v.3": "113c",
+		"v.4": "113d",
+		"v.2": "113e",
+		"v.6": "113f",
 	},
 	"Knight of the Kitchen Sink": map[string]string{
 		"black borders":                            "12a",
@@ -2426,6 +2553,13 @@ var ustVariants = map[string]map[string]string{
 		"protection from odd collector's numbers":  "12d",
 		"protection from two-word names":           "12e",
 		"protection from watermarks":               "12f",
+
+		"v.1": "12a",
+		"v.2": "12b",
+		"v.3": "12c",
+		"v.4": "12d",
+		"v.6": "12e",
+		"v.5": "12f",
 	},
 	"Novellamental": map[string]string{
 		"''my grandmother…''": "41a",
@@ -2437,6 +2571,11 @@ var ustVariants = map[string]map[string]string{
 		"pendant":             "41b",
 		"chain":               "41c",
 		"heart":               "41d",
+
+		"v.1": "41a",
+		"v.2": "41b",
+		"v.3": "41c",
+		"v.4": "41d",
 	},
 	"Secret Base": map[string]string{
 		"order of the widget":      "165a",
@@ -2451,6 +2590,12 @@ var ustVariants = map[string]map[string]string{
 		"seb mckinnon art":         "165c",
 		"dave allsop art":          "165d",
 		"simon dominic art":        "165e",
+
+		"v.4": "165a",
+		"v.1": "165b",
+		"v.5": "165c",
+		"v.3": "165d",
+		"v.2": "165e",
 	},
 	"Sly Spy": map[string]string{
 		"reveal hand":                          "67a",
@@ -2469,6 +2614,13 @@ var ustVariants = map[string]map[string]string{
 		"reveals his or her hand":                    "67a",
 		"reveals the top card of his or her library": "67e",
 		"roll a six-sided die":                       "67f",
+
+		"v.1": "67a",
+		"v.2": "67b",
+		"v.5": "67c",
+		"v.6": "67d",
+		"v.4": "67e",
+		"v.3": "67f",
 	},
 	"Target Minotaur": map[string]string{
 		"ice":       "98a",
@@ -2480,6 +2632,11 @@ var ustVariants = map[string]map[string]string{
 		"fall":      "98b",
 		"summer":    "98c",
 		"spring":    "98d",
+
+		"v.1": "98a",
+		"v.3": "98b",
+		"v.2": "98c",
+		"v.4": "98d",
 	},
 	"Very Cryptic Command": map[string]string{
 		"switch":                    "49a",
@@ -2502,6 +2659,13 @@ var ustVariants = map[string]map[string]string{
 		"return target..":           "49d",
 		"counter target..":          "49e",
 		"scry 3..":                  "49f",
+
+		"v.5": "49a",
+		"v.1": "49b",
+		"v.2": "49c",
+		"v.3": "49d",
+		"v.6": "49e",
+		"v.4": "49f",
 	},
 }
 

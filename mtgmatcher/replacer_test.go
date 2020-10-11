@@ -64,6 +64,10 @@ var NormalizeTests = []NormalizeTest{
 		In:  "them the removed",
 		Out: "themremoved",
 	},
+	NormalizeTest{
+		In:  "Jakub Šlem",
+		Out: "jakublem",
+	},
 }
 
 func TestNormalize(t *testing.T) {

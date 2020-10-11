@@ -367,7 +367,7 @@ func adjustEdition(inCard *Card) {
 	}
 
 	switch {
-	case strings.Contains(variation, "Ravnica Weekend"):
+	case strings.Contains(variation, "Ravnica Weekend") || strings.Contains(edition, "Weekend"):
 		edition, variation = inCard.ravnicaWeekend()
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
 		num := ExtractNumber(variation)
@@ -446,7 +446,7 @@ func adjustEdition(inCard *Card) {
 	// Single card mismatches
 	case Equals(inCard.Name, "Rhox") && inCard.isGenericAltArt():
 		inCard.Edition = "Starter 2000"
-	case Equals(inCard.Name, "Balduvian Horde") && (strings.Contains(inCard.Variation, "Judge") || strings.Contains(inCard.Edition, "Promo")):
+	case Equals(inCard.Name, "Balduvian Horde") && (strings.Contains(inCard.Variation, "Judge") || strings.Contains(inCard.Edition, "Promo") || strings.Contains(inCard.Edition, "DCI")):
 		inCard.Edition = "World Championship Promos"
 	case Equals(inCard.Name, "Nalathni Dragon") && inCard.isIDWMagazineBook():
 		inCard.Edition = "Dragon Con"
@@ -458,5 +458,30 @@ func adjustEdition(inCard *Card) {
 		inCard.Variation = "Prerelease"
 	case Equals(inCard.Name, "Tamiyo's Journal") && inCard.Variation == "" && inCard.Foil:
 		inCard.Variation = "Foil"
+	case Equals(inCard.Name, "Underworld Dreams") && strings.Contains(inCard.Edition, "DCI"):
+		inCard.Edition = "Two-Headed Giant Tournament"
+	case Equals(inCard.Name, "Jace Beleren") && strings.Contains(inCard.Edition, "DCI"):
+		inCard.Edition = "Miscellaneous Book Promos"
+
+	case Equals(inCard.Name, "Incinerate") && strings.Contains(inCard.Edition, "DCI"):
+		inCard.Edition = "DCI Legend Membership"
+	case Equals(inCard.Name, "Counterspell") && strings.Contains(inCard.Edition, "DCI"):
+		inCard.Edition = "DCI Legend Membership"
+
+	case Equals(inCard.Name, "Kamahl, Pit Fighter") && strings.Contains(inCard.Edition, "DCI"):
+		inCard.Edition = "15th Anniversary Cards"
+	case Equals(inCard.Name, "Char") && strings.Contains(inCard.Edition, "DCI"):
+		inCard.Edition = "15th Anniversary Cards"
+
+	case Equals(inCard.Name, "Sigarda, Host of Herons") && inCard.isPrerelease():
+		inCard.Edition = "Open the Helvault"
+	case Equals(inCard.Name, "Griselbrand") && inCard.isPrerelease():
+		inCard.Edition = "Open the Helvault"
+	case Equals(inCard.Name, "Gisela, Blade of Goldnight") && inCard.isPrerelease():
+		inCard.Edition = "Open the Helvault"
+	case Equals(inCard.Name, "Bruna, Light of Alabaster") && inCard.isPrerelease():
+		inCard.Edition = "Open the Helvault"
+	case Equals(inCard.Name, "Avacyn, Angel of Hope") && inCard.isPrerelease():
+		inCard.Edition = "Open the Helvault"
 	}
 }

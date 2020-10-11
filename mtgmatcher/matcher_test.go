@@ -1740,6 +1740,14 @@ var MatchTests = []MatchTest{
 			Edition:   "World Championships 2000",
 		},
 	},
+	MatchTest{
+		Id:   "15d4bf85-0746-59c5-83e7-1f40646672b8",
+		Desc: "wcd_minimal_info",
+		In: Card{
+			Name:    "City of Brass",
+			Edition: "WCD 1997: Paul McCabe",
+		},
+	},
 
 	// Foil-only special category
 	MatchTest{
