@@ -15,17 +15,13 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 			return err
 		}
 		for i := range entries {
-			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price {
+			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price && entry.SellerName == entries[i].SellerName {
 				if strict > 1 {
-					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
+					return fmt.Errorf("duplicate inventory key, same conditions and price:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
 
-				check := entry.URL == entries[i].URL
-				if entry.SellerName != "" {
-					check = check && entry.SellerName == entries[i].SellerName
-				}
-				if strict > 0 && check && entry.Quantity == entries[i].Quantity {
-					return fmt.Errorf("Attempted to add a duplicate inventory card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
+				if strict > 0 && entry.URL == entries[i].URL && entry.Quantity == entries[i].Quantity {
+					return fmt.Errorf("duplicate inventory key, same url, and qty:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
 
 				inv[cardId][i].Quantity += entry.Quantity
