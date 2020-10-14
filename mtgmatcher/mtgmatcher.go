@@ -432,10 +432,7 @@ func adjustEdition(inCard *Card) {
 	case inCard.isGenericExtendedArt() && len(matchInSet(inCard, "PCMP")) != 0:
 		inCard.Edition = backend.Sets["PCMP"].Name
 	// Portal Demo Game
-	case ((Contains(inCard.Variation, "Reminder Text") &&
-		!strings.Contains(inCard.Variation, "No")) ||
-		Contains(inCard.Variation, "No Flavor Text")) &&
-		len(matchInSet(inCard, "PPOD")) != 0:
+	case inCard.isPortalAlt() && len(matchInSet(inCard, "PPOD")) != 0:
 		inCard.Edition = backend.Sets["PPOD"].Name
 	// Secret Lair Ultimate
 	case strings.Contains(inCard.Edition, "Secret Lair") &&
