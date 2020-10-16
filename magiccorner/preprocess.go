@@ -107,7 +107,8 @@ var editionTable = map[string]string{
 	"Duel Deck: Elspeth vs Tezzereth":  "Duel Decks: Elspeth vs. Tezzeret",
 	"Duel Decks: Cavalieri vs. Draghi": "Duel Decks: Knights vs. Dragons",
 
-	"Fifth Ediiton": "Fifth Edition",
+	"Fifth Ediiton":  "Fifth Edition",
+	"Journey to Nyx": "Journey into Nyx",
 }
 
 func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
