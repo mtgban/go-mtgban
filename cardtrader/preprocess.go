@@ -17,6 +17,8 @@ var cardTable = map[string]string{
 	"iko Cartographer's Hawk":        "Cartographer's Hawk",
 	"iko Martial Impetus":            "Martial Impetus",
 	"Barrin, Tolarian Archmag":       "Barrin, Tolarian Archmage",
+
+	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
 
 var card2edition = map[string]string{
@@ -123,6 +125,8 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		switch cardName {
 		case "Sapphire Medallion", "Thunderheads":
 			return nil, errors.New("unknown")
+		case "Laquatus's Champion":
+			variant = "prerelease misprint"
 		case "Island":
 			edition = "PAL99"
 		}
