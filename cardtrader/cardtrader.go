@@ -85,6 +85,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 			}
 		case "jp":
 			switch {
+			case filter.Blueprint.Expansion.Name == "Fourth Edition Black Bordered":
 			case strings.Contains(filter.Blueprint.Expansion.Name, "Japanese"):
 			case filter.Blueprint.Expansion.Name == "Fourth Edition Black Bordered":
 			default:
