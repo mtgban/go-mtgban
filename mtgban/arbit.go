@@ -80,11 +80,6 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 		blEntry := blEntries[nmIndex]
 
-		buylistPrice := blEntry.BuyPrice
-		if useTrades {
-			buylistPrice = blEntry.TradePrice
-		}
-
 		for _, invEntry := range invEntries {
 			price := invEntry.Price * rate
 
@@ -124,7 +119,17 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			spread := 100 * (blPrice - price) / price
 			difference := blPrice - price
-			absDifference := buylistPrice - price
+
+			// Find the minimum amount tradable
+			qty := invEntry.Quantity
+			if blEntry.Quantity != 0 {
+				qty = blEntry.Quantity
+				if invEntry.Quantity < blEntry.Quantity {
+					qty = invEntry.Quantity
+				}
+			}
+
+			absDifference := difference * float64(qty)
 
 			if difference > minDiff && spread > minSpread {
 				res := ArbitEntry{
