@@ -108,9 +108,9 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 		}
 
 		switch {
-		case strings.Contains(strings.ToLower(product.Description), "italian"),
-			strings.ToLower(product.Description) == "ita",
-			strings.Contains(strings.ToLower(product.Description), "oversize"):
+		case mtgmatcher.Contains(product.Description, "ita"),
+			mtgmatcher.Contains(product.Description, "oversize"),
+			mtgmatcher.Contains(product.Description, "mix"):
 			continue
 		}
 
