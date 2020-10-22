@@ -58,7 +58,6 @@ var card2setTable = map[string]string{
 	"Plains (Gift Box)":   "2017 Gift Pack",
 	"Swamp (Gift Box)":    "2017 Gift Pack",
 
-	"Celestine Reef (Pre-Release)":             "Promotional Planes",
 	"Horizon Boughs (WPN)":                     "Promotional Planes",
 	"Mirrored Depths (WPN)":                    "Promotional Planes",
 	"Tember City (WPN)":                        "Promotional Planes",
