@@ -49,6 +49,7 @@ var cardTable = map[string]string{
 var card2setTable = map[string]string{
 	"Angelic Guardian (Gift Box)":     "M19 Gift Pack",
 	"Immortal Phoenix (Gift Box)":     "M19 Gift Pack",
+	"Rampaging Brontodon (Gift Box)":  "M19 Gift Pack",
 	"Rukh Egg (MTG 10th Anniversary)": "Release Events",
 	"Serra Angel (DCI)":               "Wizards of the Coast Online Store",
 
