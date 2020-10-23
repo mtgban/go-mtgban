@@ -33,7 +33,6 @@ var replacer = strings.NewReplacer(
 	"û", "u",
 
 	// Almost everbody spells aether differently
-	"Æther", "aether",
 	"æther", "aether",
 
 	// Providers randomly add this one
