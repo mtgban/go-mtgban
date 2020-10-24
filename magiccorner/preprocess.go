@@ -24,7 +24,6 @@ var cardTable = map[string]string{
 }
 
 var editionTable = map[string]string{
-	"Alleanze":                   "Alliances",
 	"Apocalisse":                 "Apocalypse",
 	"Ascesa Oscura":              "Dark Ascension",
 	"Ascesa degli Eldrazi":       "Rise of the Eldrazi",
@@ -44,12 +43,10 @@ var editionTable = map[string]string{
 	"Era Glaciale":               "Ice Age",
 	"Eredità di Urza":            "Urza's Legacy",
 	"Esodo":                      "Exodus",
-	"Fedeltà di Ravnica":         "Ravnica Allegiance",
 	"Figli degli Dei":            "Born of the Gods",
 	"Flagello":                   "Scourge",
 	"Fortezza":                   "Stronghold",
 	"Frammenti di Alara":         "Shards of Alara",
-	"Gilde di Ravnica":           "Guilds of Ravnica",
 	"Giuramento dei Guardiani":   "Oath of the Gatewatch",
 	"I Khan di Tarkir":           "Khans of Tarkir",
 	"Il Patto delle Gilde":       "Guildpact",
@@ -70,7 +67,6 @@ var editionTable = map[string]string{
 	"Odissea":                    "Odyssey",
 	"Ombre su Innistrad":         "Shadows over Innistrad",
 	"Ondata Glaciale":            "Coldsnap",
-	"Origini":                    "Homelands",
 	"Orizzonti di Modern":        "Modern Horizons",
 	"Ottava Edizione":            "Eighth Edition",
 	"Profezia":                   "Prophecy",
@@ -78,6 +74,7 @@ var editionTable = map[string]string{
 	"Quinta Alba":                "Fifth Dawn",
 	"Quinta Edizione":            "Fifth Edition",
 	"Ravnica: Città delle Gilde": "Ravnica: City of Guilds",
+	"Reinassance":                "Rinascimento",
 	"Revised EU FBB":             "Foreign Black Border",
 	"Revised EU FWB":             "Foreign White Border",
 	"Riforgiare il Destino":      "Fate Reforged",
@@ -103,10 +100,11 @@ var editionTable = map[string]string{
 
 	"Duel Deck: Ajani Vs Bolas":        "Duel Decks: Ajani vs. Nicol Bolas",
 	"Duel Deck: Cavalieri vs Draghi":   "Duel Decks: Knights vs. Dragons",
-	"Duel Deck: Elfi vs Goblin":        "Duel Decks: Elves vs. Goblins",
-	"Duel Deck: Elspeth vs Tezzereth":  "Duel Decks: Elspeth vs. Tezzeret",
+	"Duel Deck: Elfi Vs Goblin":        "Duel Decks: Elves vs. Goblins",
+	"Duel Deck: Elspeth Vs Tezzereth":  "Duel Decks: Elspeth vs. Tezzeret",
 	"Duel Decks: Cavalieri vs. Draghi": "Duel Decks: Knights vs. Dragons",
 
+	"Eight Edition":  "Eighth Edition",
 	"Fifth Ediiton":  "Fifth Edition",
 	"Journey to Nyx": "Journey into Nyx",
 }
@@ -223,7 +221,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			}
 		// These editions contain numbers that can be used safely
 		case "Throne of Eldraine: Extras", "Theros Beyond Death: Extras",
-			"Gilde di Ravnica", "Fedeltà di Ravnica", "Unglued":
+			"Guilds of Ravnica", "Ravnica Allegiance", "Unglued":
 			variation = extra
 			if len(extra) > 3 {
 				internalNumber := strings.TrimLeft(extra[3:], "0")
@@ -242,7 +240,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			}
 		// These are the editions that need table lookup
 		case "Antiquities", "Fallen Empires", "Chronicles",
-			"Alleanze", "Rinascimento", "Origini":
+			"Alliances", "Reinassance", "Homelands":
 			variation = extra
 		// Same for this one, except the specifier is elsewhere
 		case "Commander Anthology 2018":
