@@ -2251,13 +2251,13 @@ var sldVariants = map[string]map[string]string{
 var soiVariants = map[string]map[string]string{
 	"Tamiyo's Journal": map[string]string{
 		"":          "265",
-		"foil":      "265†a",
+		"foil":      "265†b",
 		"entry 434": "265",
-		"entry 546": "265†",
-		"entry 653": "265†a",
-		"entry 711": "265†b",
-		"entry 855": "265†c",
-		"entry 922": "265†d",
+		"entry 546": "265†a",
+		"entry 653": "265†b",
+		"entry 711": "265†c",
+		"entry 855": "265†d",
+		"entry 922": "265†e",
 	},
 }
 
