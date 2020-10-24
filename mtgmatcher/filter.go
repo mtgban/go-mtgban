@@ -751,6 +751,23 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else if inCard.Name == "Island" && set.Name == "Arena League 1999" && Contains(inCard.Variation, "NO SYMBOL") {
 					variation = "misprint"
+				} else if inCard.Name == "Laquatus's Champion" && set.Name == "Prerelease Events" {
+					if Contains(variation, "dark") {
+						if card.Number != "16†a" {
+							continue
+						}
+					} else if Contains(variation, "misprint") {
+						if card.Number != "16†" {
+							continue
+						}
+					} else {
+						if card.Number != "16" {
+							continue
+						}
+					}
+					// Make below check pass, we already filtered above
+					variation = "misprint"
+					expectedSuffix = card.Number
 				}
 
 				if Contains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {

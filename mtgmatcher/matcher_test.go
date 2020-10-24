@@ -1887,6 +1887,35 @@ var MatchTests = []MatchTest{
 			Edition:   "Mystery Booster The List",
 		},
 	},
+
+	// Triple card because of double misprint
+	MatchTest{
+		Id:   "6258b3fd-f4d2-5f6b-8009-cc832aeb04c4",
+		Desc: "prerelease_with_multiple_misprints_dark",
+		In: Card{
+			Name:      "Laquatus's Champion",
+			Variation: "dark misprint",
+			Edition:   "Prerelease Events",
+		},
+	},
+	MatchTest{
+		Id:   "fa9bb389-28fd-5318-be8a-3def65e6962e",
+		Desc: "prerelease_with_multiple_misprints_nondark",
+		In: Card{
+			Name:      "Laquatus's Champion",
+			Variation: "misprint",
+			Edition:   "Prerelease Events",
+		},
+	},
+	MatchTest{
+		Id:   "06d4c782-885a-56b3-a0dc-5c0e1888c7a9",
+		Desc: "prerelease_with_multiple_misprints_normal",
+		In: Card{
+			Name:      "Laquatus's Champion",
+			Variation: "Prerelease",
+			Edition:   "ignored",
+		},
+	},
 }
 
 func TestMatch(t *testing.T) {
