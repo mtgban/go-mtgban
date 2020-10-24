@@ -20,6 +20,9 @@ type InventoryEntry struct {
 
 	// Part of a hub of sellers that can ship directly
 	Bundle bool
+
+	// Original identifier as available from the scraper
+	OriginalId string
 }
 
 // BuylistEntry represents an entry for buying a particular Card
@@ -32,6 +35,9 @@ type BuylistEntry struct {
 	PriceRatio float64
 
 	URL string
+
+	// Original identifier as available from the scraper
+	OriginalId string
 }
 
 // ScraperInfo contains
