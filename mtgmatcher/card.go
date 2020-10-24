@@ -327,7 +327,7 @@ func (c *Card) worldChampPrefix() (string, bool) {
 		"Michael Locanto":      "ml",
 		"Nicolas Labarre":      "nl",
 		"Paul McCabe":          "pm",
-		"Peer Kröger":          "pk",
+		"Peer Kroger":          "pk",
 		"Preston Poulter":      "pp",
 		"Randy Buehler":        "rb",
 		"Raphael Levy":         "rl",
