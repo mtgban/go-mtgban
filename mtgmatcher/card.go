@@ -111,7 +111,8 @@ func (c *Card) isGenericPromo() bool {
 	return !c.isBaB() && !c.isPromoPack() &&
 		(Contains(c.Variation, "Promo") ||
 			Contains(c.Variation, "Game Day") ||
-			Contains(c.Edition, "Promo"))
+			Contains(c.Edition, "Promo") ||
+			Contains(c.Edition, "Game Day"))
 }
 
 func (c *Card) isGenericAltArt() bool {
@@ -126,7 +127,8 @@ func (c *Card) isGenericExtendedArt() bool {
 }
 
 func (c *Card) isPrerelease() bool {
-	return Contains(c.Variation, "Prerelease")
+	return Contains(c.Variation, "Prerelease") ||
+		Contains(c.Edition, "Prerelease")
 }
 
 func (c *Card) isPromoPack() bool {
@@ -217,6 +219,7 @@ func (c *Card) isMagicFest() bool {
 
 func (c *Card) isBaB() bool {
 	return Contains(c.Variation, "Buy-a-Box") ||
+		Contains(c.Edition, "Buy a Box") ||
 		strings.Contains(c.Variation, "BIBB") || // sz
 		c.Variation == "Full Box Promo" // sz
 }
