@@ -59,9 +59,19 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			norm := Normalize(card.Name)
 			_, found := cards[norm]
 			if !found {
+				// Filter out unneeded printings
+				var printings []string
+				for i := range card.Printings {
+					subset, found := ap.Data[card.Printings[i]]
+					if !found || subset.IsOnlineOnly {
+						continue
+					}
+					printings = append(printings, card.Printings[i])
+				}
+
 				cards[norm] = cardinfo{
 					Name:      card.Name,
-					Printings: card.Printings,
+					Printings: printings,
 					Layout:    card.Layout,
 				}
 			}
