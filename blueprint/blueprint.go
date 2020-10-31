@@ -40,7 +40,7 @@ func (bp *Blueprint) printf(format string, a ...interface{}) {
 func (bp *Blueprint) parseBL() error {
 	var reader io.ReadCloser
 	for i := 0; i < 12; i++ {
-		t := time.Now().AddDate(0, -i, 0)
+		t := time.Now().AddDate(0, -i, 1)
 		blURL := fmt.Sprintf(BlueprintURL, t.Format("January_2006"))
 		bp.printf("Trying %s", blURL)
 		resp, err := http.Get(blURL)
