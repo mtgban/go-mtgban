@@ -116,7 +116,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		return nil, errors.New("duplicated card")
 	}
 
-	isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil")
+	isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil") ||
+		strings.Contains(strings.ToLower(card.DisplayTitle), " - fol") // SS3 Pyroblast
 
 	// Split by -, rebuild the cardname in a standardized way
 	variation := ""
