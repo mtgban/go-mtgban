@@ -233,13 +233,13 @@ func (abu *ABUGames) scrape() error {
 		if result.invEntry != nil {
 			err = abu.inventory.Add(result.cardId, result.invEntry)
 			if err != nil {
-				abu.printf(err.Error())
+				abu.printf("%s", err.Error())
 			}
 		}
 		if result.buyEntry != nil {
 			err = abu.buylist.Add(result.cardId, result.buyEntry)
 			if err != nil {
-				abu.printf(err.Error())
+				abu.printf("%s", err.Error())
 			}
 		}
 	}

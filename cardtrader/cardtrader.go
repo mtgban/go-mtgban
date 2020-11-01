@@ -223,7 +223,7 @@ func (ct *Cardtrader) scrape() error {
 	for result := range results {
 		err := ct.inventory.AddRelaxed(result.cardId, result.invEntry)
 		if err != nil {
-			ct.printf(err.Error())
+			ct.printf("%s", err.Error())
 			continue
 		}
 		// This would be better with a select, but for now just print a message

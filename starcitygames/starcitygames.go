@@ -428,7 +428,7 @@ func (scg *Starcitygames) parseBL() error {
 	for record := range results {
 		err := scg.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
-			scg.printf(err.Error())
+			scg.printf("%s", err.Error())
 			continue
 		}
 	}

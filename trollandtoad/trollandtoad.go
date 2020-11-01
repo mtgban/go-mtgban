@@ -114,7 +114,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 
 		options, err := tat.client.GetProductOptions(id)
 		if err != nil {
-			tat.printf(err.Error())
+			tat.printf("%s", err.Error())
 			return
 		}
 
@@ -334,7 +334,7 @@ func (tat *Trollandtoad) parseBL() error {
 	for record := range results {
 		err := tat.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
-			tat.printf(err.Error())
+			tat.printf("%s", err.Error())
 			continue
 		}
 	}

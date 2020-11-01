@@ -546,7 +546,7 @@ func (csi *Coolstuffinc) parseBL() error {
 	for record := range results {
 		err := csi.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
-			csi.printf(err.Error())
+			csi.printf("%s", err.Error())
 			continue
 		}
 	}

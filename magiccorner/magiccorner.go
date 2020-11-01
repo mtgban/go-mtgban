@@ -208,7 +208,7 @@ func (mc *Magiccorner) scrape() error {
 	for result := range results {
 		err = mc.inventory.AddRelaxed(result.cardId, result.entry)
 		if err != nil {
-			mc.printf(err.Error())
+			mc.printf("%s", err.Error())
 			continue
 		}
 	}

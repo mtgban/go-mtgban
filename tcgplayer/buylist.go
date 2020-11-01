@@ -196,7 +196,7 @@ func (tcg *TCGPlayerMarket) scrpeBL() error {
 	for result := range channel {
 		err := tcg.buylist.Add(result.cardId, &result.bl)
 		if err != nil {
-			tcg.printf(err.Error())
+			tcg.printf("%s", err.Error())
 			continue
 		}
 	}

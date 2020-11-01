@@ -219,7 +219,7 @@ func (stks *MTGStocks) scrape() error {
 	for result := range channel {
 		err := stks.inventory.Add(result.cardId, &result.entry)
 		if err != nil {
-			stks.printf(err.Error())
+			stks.printf("%s", err.Error())
 			continue
 		}
 	}

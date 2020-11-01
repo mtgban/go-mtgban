@@ -299,7 +299,7 @@ func (jup *Jupitergames) parseBL() error {
 		priceStr = strings.Replace(priceStr, ",", "", 1)
 		price, err := strconv.ParseFloat(priceStr, 64)
 		if err != nil {
-			jup.printf(err.Error())
+			jup.printf("%s", err.Error())
 			continue
 		}
 
@@ -355,7 +355,7 @@ func (jup *Jupitergames) parseBL() error {
 
 		err = jup.buylist.Add(cardId, buyEntry)
 		if err != nil {
-			jup.printf(err.Error())
+			jup.printf("%s", err.Error())
 			continue
 		}
 	}

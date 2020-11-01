@@ -218,7 +218,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 	for result := range channel {
 		err := tcg.inventory.Add(result.cardId, &result.entry)
 		if err != nil {
-			tcg.printf(err.Error())
+			tcg.printf("%s", err.Error())
 			continue
 		}
 	}

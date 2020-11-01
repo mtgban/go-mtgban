@@ -135,7 +135,7 @@ func (mm *Miniaturemarket) scrape() error {
 			for start := range pages {
 				err = mm.processPage(channel, start)
 				if err != nil {
-					mm.printf(err.Error())
+					mm.printf("%s", err.Error())
 				}
 			}
 			wg.Done()
@@ -275,7 +275,7 @@ func (mm *Miniaturemarket) parseBL() error {
 	for result := range results {
 		err := mm.buylist.Add(result.cardId, result.buyEntry)
 		if err != nil {
-			mm.printf(err.Error())
+			mm.printf("%s", err.Error())
 			continue
 		}
 	}
