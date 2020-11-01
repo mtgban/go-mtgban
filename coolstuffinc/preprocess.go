@@ -44,6 +44,7 @@ var variantTable = map[string]string{
 	"EURO Land Danish Island Ben Thompson art":         "EURO Land Danish Island",
 	"Aether Revolt Prerelease Promo":                   "AER Prerelease",
 	"Core 21 Prerelease Promo":                         "M21 Prerelease",
+	"Silver Planeswalker Symbol Core 21":               "M21 Promo Pack",
 	"Throne of Eldraine Prerelease promo":              "ELD Prerelease",
 	"Eighth Edition Prerelease Promo":                  "Release Promo",
 	"Release 27 Promo":                                 "Release",
@@ -164,6 +165,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			if !strings.Contains(variant, "English") {
 				return nil, errors.New("non-english")
 			}
+		}
+	case "Hangarback Walker":
+		if edition == "Promo" {
+			edition = "Love your LGS"
 		}
 
 	default:
