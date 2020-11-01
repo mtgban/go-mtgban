@@ -497,7 +497,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 			// JPN
 			if inCard.isJPN() && set.Name != "Magazine Inserts" {
-				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && !inCard.isReskin() {
+				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && !card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
 					continue
 				}
 			} else {
@@ -595,9 +595,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// IKO-Style cards with different names
 			// Needs to be outside of the above block due to promos originally
 			// printed in an older edition
+			// Also some providers do not tag Japanese-only Godzilla cards as such
 			if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeGodzilla) {
 				continue
-			} else if !inCard.isReskin() && card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+			} else if !inCard.isReskin() && card.HasPromoType(mtgjson.PromoTypeGodzilla) && !card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
 				continue
 			}
 

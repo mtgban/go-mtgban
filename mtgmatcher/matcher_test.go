@@ -788,6 +788,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Ikoria",
 		},
 	},
+	MatchTest{
+		Id:   "f192bfef-50ef-535f-818e-b8a57f93a498",
+		Desc: "godzilla_variant_only",
+		In: Card{
+			Name:      "Crystalline Giant",
+			Variation: "Japanese",
+			Edition:   "Ikoria: Lair of Behemoths: Variants",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	MatchTest{
