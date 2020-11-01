@@ -414,11 +414,15 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		edition = strings.Replace(edition, "Prerelease", "Promos", 1)
 		variant = "Prerelease"
 
-		if cardName == "Curious Pair // Treats to Share" {
+		switch cardName {
+		case "Curious Pair // Treats to Share":
 			edition = "Throne of Eldraine"
 			variant = "Showcase"
-		} else if cardName == "Lu Bu, Master-at-Arms" {
+		case "Lu Bu, Master-at-Arms":
 			edition = "Prerelease Events"
+			variant = number
+		case "Chord of Calling", "Wrath of God":
+			edition = "Double Masters"
 			variant = number
 		}
 	} else if strings.HasSuffix(edition, "Theme Deck") {

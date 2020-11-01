@@ -342,7 +342,9 @@ func adjustEdition(inCard *Card) {
 		Equals(edition, "Double Masters: Extras"),
 		Equals(edition, "Double Masters: Variants"):
 		edition = "Double Masters"
-		variation = "Borderless"
+		if !inCard.isBasicLand() {
+			variation = "Borderless"
+		}
 	case strings.HasSuffix(edition, "(Collector Edition)"):
 		edition = strings.Replace(edition, " (Collector Edition)", "", 1)
 	case strings.HasSuffix(edition, "Collectors"):
