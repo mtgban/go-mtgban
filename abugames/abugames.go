@@ -122,24 +122,29 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			var invEntry *mtgban.InventoryEntry
 			var buyEntry *mtgban.BuylistEntry
 
+			u, err := url.Parse("https://abugames.com")
+			if err != nil {
+				return err
+			}
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
-				base := "https://abugames.com/magic-the-gathering/singles?search="
-				notes := url.QueryEscape("\"" + card.SimpleTitle + "\"")
+				u.Path = "/magic-the-gathering/singles"
 
+				v := url.Values{}
+				v.Set("search", "\""+card.SimpleTitle+"\"")
 				if card.Edition != "Promo" {
-					notes += "&magic_edition=" + url.QueryEscape("[\""+card.Edition+"\"]")
+					v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				}
+				v.Set("card_style", "[\"Normal\"]")
 				if theCard.Foil {
-					notes += "&card_style=" + url.QueryEscape("[\"Foil\"]")
-				} else {
-					notes += "&card_style=" + url.QueryEscape("[\"Normal\"]")
+					v.Set("card_style", "[\"Foil\"]")
 				}
+				u.RawQuery = v.Encode()
 
 				invEntry = &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
-					URL:        base + notes,
+					URL:        u.String(),
 				}
 			}
 
@@ -149,17 +154,18 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					priceRatio = card.BuyPrice / card.SellPrice * 100
 				}
 
-				base := "https://abugames.com/buylist/magic-the-gathering/singles?search="
-				notes := url.QueryEscape("\"" + card.SimpleTitle + "\"")
+				u.Path = "/buylist/magic-the-gathering/singles"
 
+				v := url.Values{}
+				v.Set("search", "\""+card.SimpleTitle+"\"")
 				if card.Edition != "Promo" {
-					notes += "&magic_edition=" + url.QueryEscape("[\""+card.Edition+"\"]")
+					v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				}
+				v.Set("card_style", "[\"Normal\"]")
 				if theCard.Foil {
-					notes += "&card_style=" + url.QueryEscape("[\"Foil\"]")
-				} else {
-					notes += "&card_style=" + url.QueryEscape("[\"Normal\"]")
+					v.Set("card_style", "[\"Foil\"]")
 				}
+				u.RawQuery = v.Encode()
 
 				buyEntry = &mtgban.BuylistEntry{
 					Conditions: cond,
@@ -167,7 +173,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					TradePrice: card.TradePrice,
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
-					URL:        base + notes,
+					URL:        u.String(),
 				}
 			}
 
