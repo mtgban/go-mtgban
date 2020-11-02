@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -274,7 +275,7 @@ func (sz *Strikezone) parseBL() error {
 			BuyPrice:   price,
 			Quantity:   quantity,
 			PriceRatio: priceRatio,
-			URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + theCard.Name,
+			URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + url.QueryEscape(theCard.Name),
 		}
 		err = sz.buylist.Add(cardId, out)
 		if err != nil {
