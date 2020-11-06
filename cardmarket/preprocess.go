@@ -76,7 +76,7 @@ var promo2editionTable = map[string]string{
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
-	ogVariant := variant
+	number := variant
 	vars := mtgmatcher.SplitVariants(cardName)
 	if len(vars) > 1 {
 		cardName = vars[0]
@@ -206,7 +206,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		"Battlebond",
 		"Secret Lair Drop Series":
 		// Could have been lost in SplitVariant, and it's more reliable
-		variant = ogVariant
+		variant = number
 		if cardName == "Squire" {
 			return nil, errors.New("untracked")
 		}
@@ -276,7 +276,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Vampiric Tutor",
 			"Vindicate",
 			"Wasteland":
-			vars = strings.Split(ogVariant, "-")
+			vars = strings.Split(number, "-")
 			variant = vars[0]
 		}
 	case "Prerelease Promos":
@@ -297,7 +297,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Launch"
 		}
 		// This set has incorrect numbering
-		if variant == ogVariant {
+		if variant == number {
 			variant = ""
 		}
 	case "Gateway Promos":
@@ -393,7 +393,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 	case "Magic Origins: Promos":
 		if variant == "V.2" {
-			variant = ogVariant
+			variant = number
 		} else {
 			variant = "Prerelease"
 		}
@@ -434,7 +434,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 
 			// These sets usually have incorrect numbering
-			if variant == ogVariant {
+			if variant == number {
 				variant = ""
 			}
 
@@ -464,7 +464,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 					setDate.Before(mtgmatcher.PromosForEverybodyYay) {
 					if strings.HasPrefix(variant, "V.") {
 						if variant == "V.1" {
-							variant = ogVariant
+							variant = number
 						} else if variant == "V.2" {
 							variant = "Prerelease"
 						}
@@ -500,16 +500,16 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if edition == "Zendikar" {
 			switch variant {
 			case "V.1", "V.3", "V.5", "V.7":
-				variant = ogVariant + "a"
+				variant = number + "a"
 			default:
-				variant = ogVariant
+				variant = number
 			}
 		} else if edition == "Battle for Zendikar" {
 			switch variant {
 			case "V.2", "V.4", "V.6", "V.8", "V.10":
-				variant = ogVariant + "a"
+				variant = number + "a"
 			default:
-				variant = ogVariant
+				variant = number
 			}
 		} else if edition == "Magic Premiere Shop Promos" {
 			switch variant {
@@ -530,7 +530,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition = "PMPS11"
 			}
 		} else {
-			variant = ogVariant
+			variant = number
 		}
 	}
 
