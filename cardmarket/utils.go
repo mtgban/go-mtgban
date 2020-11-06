@@ -137,6 +137,16 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 			"Savage Vigor Head",
 			"Shrieking Titan Head",
 			"Snapping Fang Head",
+			"Disorienting Glower",
+			"Distract the Hydra",
+			"Grown from the Stump",
+			"Hydra's Impenetrable Hide",
+			"Noxious Hydra Breath",
+			"Neck Tangle",
+			"Strike the Weak Spot",
+			"Torn Between Heads",
+			"Swallow the Hero Whole",
+			"Unified Lunge",
 
 			// TBTH tokens
 			"Minotaur Goreseeker",
@@ -144,6 +154,16 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 			"Mogis's Chosen",
 			"Phoberos Reaver",
 			"Reckless Minotaur",
+			"Altar of Mogis",
+			"Consuming Rage",
+			"Intervention of Keranos",
+			"Descend on the Prey",
+			"Plundered Statue",
+			"Refreshing Elixir",
+			"Touch of the Horned God",
+			"Massacre Totem",
+			"Unquenchable Fury",
+			"Vitality Salve",
 
 			// TDAG tokens
 			"Xenagos Ascended",
@@ -153,6 +173,14 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 			"Pheres-Band Revelers",
 			"Serpent Dancers",
 			"Wild Maenads",
+			"Dance of Flame",
+			"Dance of Panic",
+			"Impulsive Destruction",
+			"Impulsive Charge",
+			"Impulsive Return",
+			"Rip to Pieces",
+			"Xenagos's Strike",
+			"Xenagos's Scorn",
 
 			// UND tokens
 			"Beeble",

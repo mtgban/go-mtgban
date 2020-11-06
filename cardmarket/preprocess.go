@@ -210,57 +210,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if cardName == "Squire" {
 			return nil, errors.New("untracked")
 		}
-	case "Theros":
-		switch cardName {
-		case "Disorienting Glower",
-			"Distract the Hydra",
-			"Grown from the Stump",
-			"Hydra's Impenetrable Hide",
-			"Noxious Hydra Breath",
-			"Neck Tangle",
-			"Strike the Weak Spot",
-			"Torn Between Heads",
-			"Swallow the Hero Whole",
-			"Unified Lunge":
-			edition = "Face the Hydra"
-		default:
-			if strings.HasPrefix(variant, "C") {
-				return nil, errors.New("untracked")
-			}
-		}
-	case "Born of the Gods":
-		switch cardName {
-		case "Altar of Mogis",
-			"Consuming Rage",
-			"Intervention of Keranos",
-			"Descend on the Prey",
-			"Plundered Statue",
-			"Refreshing Elixir",
-			"Touch of the Horned God",
-			"Massacre Totem",
-			"Unquenchable Fury",
-			"Vitality Salve":
-			edition = "Battle the Horde"
-		default:
-			if strings.HasPrefix(variant, "C") {
-				return nil, errors.New("untracked")
-			}
-		}
-	case "Journey into Nyx":
-		switch cardName {
-		case "Dance of Flame",
-			"Dance of Panic",
-			"Impulsive Destruction",
-			"Impulsive Charge",
-			"Impulsive Return",
-			"Rip to Pieces",
-			"Xenagos's Strike",
-			"Xenagos's Scorn":
-			edition = "Defeat a God"
-		default:
-			if strings.HasPrefix(variant, "C") {
-				return nil, errors.New("untracked")
-			}
+	case "Theros",
+		"Born of the Gods",
+		"Journey into Nyx":
+		// Skip the token-based cards, TFTH, TBTH, and TDAG
+		if strings.HasPrefix(variant, "C") {
+			return nil, errors.New("untracked")
 		}
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
 		if variant == "V.1" {
