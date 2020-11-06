@@ -56,25 +56,29 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			}
 			filteredCards = append(filteredCards, card)
 
+			// Filter out unneeded printings
+			var printings []string
+			for i := range card.Printings {
+				subset, found := ap.Data[card.Printings[i]]
+				// If not found it means the set was already deleted above
+				if !found || subset.IsOnlineOnly {
+					continue
+				}
+				printings = append(printings, card.Printings[i])
+			}
+			card.Printings = printings
+
+			// Quick dictionary of valid card names and their printings
 			norm := Normalize(card.Name)
 			_, found := cards[norm]
 			if !found {
-				// Filter out unneeded printings
-				var printings []string
-				for i := range card.Printings {
-					subset, found := ap.Data[card.Printings[i]]
-					if !found || subset.IsOnlineOnly {
-						continue
-					}
-					printings = append(printings, card.Printings[i])
-				}
-
 				cards[norm] = cardinfo{
 					Name:      card.Name,
-					Printings: printings,
+					Printings: card.Printings,
 					Layout:    card.Layout,
 				}
 			}
+
 			// Shared card object
 			co := CardObject{
 				Card:    card,
