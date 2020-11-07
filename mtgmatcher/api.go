@@ -36,13 +36,21 @@ func GetSet(code string) (*mtgjson.Set, error) {
 	return set, nil
 }
 
-func GetSetByName(name string) (*mtgjson.Set, error) {
+func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
 	if backend.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
+	card := &Card{
+		Edition: edition,
+	}
+	if len(flags) > 0 {
+		card.Foil = flags[0]
+	}
+	adjustEdition(card)
+
 	for _, set := range backend.Sets {
-		if Equals(set.Name, name) {
+		if set.Name == card.Edition {
 			return set, nil
 		}
 	}
