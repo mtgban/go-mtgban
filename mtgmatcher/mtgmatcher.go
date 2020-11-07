@@ -345,16 +345,6 @@ func adjustEdition(inCard *Card) {
 		if !inCard.isBasicLand() {
 			variation = "Borderless"
 		}
-	case strings.HasSuffix(edition, "(Collector Edition)"):
-		edition = strings.Replace(edition, " (Collector Edition)", "", 1)
-	case strings.HasSuffix(edition, "Collectors"):
-		edition = strings.TrimSuffix(edition, " Collectors")
-	case strings.HasSuffix(edition, "Extras"):
-		edition = strings.Replace(edition, " Extras", "", 1)
-		edition = strings.Replace(edition, ":", "", 1)
-	case strings.HasSuffix(edition, "Variants"):
-		edition = strings.Replace(edition, " Variants", "", 1)
-		edition = strings.Replace(edition, ":", "", 1)
 	case strings.Contains(edition, "Mythic Edition"),
 		strings.Contains(inCard.Variation, "Mythic Edition"):
 		edition = "Mythic Edition"
@@ -368,6 +358,16 @@ func adjustEdition(inCard *Card) {
 		edition = "Zendikar Expeditions"
 	case strings.Contains(edition, "Expeditions") && strings.Contains(edition, "Rising"):
 		edition = "Zendikar Rising Expeditions"
+	default:
+		for _, tag := range []string{
+			"(Collector Edition)", "Collectors", "Extras", "Variants",
+		} {
+			if strings.HasSuffix(edition, tag) {
+				edition = strings.TrimSuffix(edition, tag)
+				edition = strings.TrimSpace(edition)
+				edition = strings.TrimSuffix(edition, ":")
+			}
+		}
 	}
 
 	switch {
