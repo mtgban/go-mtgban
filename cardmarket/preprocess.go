@@ -413,6 +413,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 					} else if variant == "V.2" {
 						variant = "godzilla"
 					}
+				} else if edition == "Commander Legends: Extras" {
+					variant = number
 				}
 			} else if strings.Contains(edition, ": Promos") {
 				if setDate.After(mtgmatcher.NewPrereleaseDate) &&
