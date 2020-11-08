@@ -13,9 +13,36 @@ var cardTable = map[string]string{
 	"Herald of Anafenze":    "Herald of Anafenza",
 	"Shimmer of Possiblity": "Shimmer of Possibility",
 	"Skingwing":             "Skinwing",
+	"Havok Jester":          "Havoc Jester",
+	"Switfwater Cliffs":     "Swiftwater Cliffs",
+	"Warden Battlements":    "Warded Battlements",
+
+	// ZNC commander for some reason
+	"Far Wonderings 066":             "Far Wanderings",
+	"Isand 381":                      "Island 381",
+	"Multani, Yavimaya's Avatar 075": "Multani, Yavimaya's Avatar",
+	"Yavimaya Elder 087":             "Yavimaya Elder",
+	"Beanstalk Giant 061":            "Beanstalk Giant",
+	"Military Intelligance 031":      "Military Intelligance",
+
+	"Gadrak, the Crown-Scrouge": "Gadrak, the Crown-Scourge",
+	"Kasmina's Transformation":  "Kasmina's Transmutation",
+	"Caven of Souls":            "Cavern of Souls",
+
+	"Imperious Perfect Extended Art Promo":             "Imperious Perfect",
+	"Disenchant Textless Player Rewards Promo":         "Disenchant",
+	"Lightning Bolt Magicfest Textless Full Art Promo": "Lightning Bolt",
+	"Burst Lightning Textless Player Rewards Promo":    "Burst Lightning",
+	"Doom Blade Textless Player Rewards Promo":         "Doom Blade",
+	"Negate Textless Player Rewards":                   "Negate",
+	"Abrade Game Day Promo":                            "Abrade",
+	"Harmonize Textless Player Rewards":                "Harmonize",
 
 	"Chandra, Fire of Kaladesh // Chandra The Roaring Flame": "Chandra, Fire of Kaladesh // Chandra, Roaring Flame",
 	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Abomination",
+
+	"Skyclave Cleric // Skyclave Basillica": "Skyclave Cleric // Skyclave Basilica",
+	"Jwari Disruption // Jwar Isle Ruins":   "Jwari Disruption // Jwari Ruins",
 
 	"Sarpadian Empires, Vol.": "Sarpadian Empires, Vol. VII",
 	"Nalathni Dragon 1994":    "Nalathni Dragon",
@@ -46,6 +73,7 @@ var tagsTable = []string{
 	"Prerelease Promo",
 	"Walmart Promo",
 	"Welcome Deck 2019 Exclusive",
+	"Zendikar Rising Expeditions",
 }
 
 func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
@@ -68,7 +96,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(fullName, "Emblem"),
 		strings.Contains(fullName, "Pokemon"),
 		strings.Contains(fullName, "Art Card"),
-		strings.Contains(fullName, " | ") && strings.Contains(fullName, "2XM"):
+		strings.Contains(fullName, " | ") &&
+			(strings.Contains(fullName, "2XM") || strings.Contains(fullName, "ZNC")):
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
 		strings.Contains(fullName, "Spanish"),
@@ -404,6 +433,12 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			variant = "FNM"
 		case "Kamahl, Pit Fighter":
 			variant = "15th Anniversary"
+		case "Phantasmal Dragon":
+			edition = "Magazine Inserts"
+			variant = ""
+		case "Gaze of Granite- IDW Comic Promo":
+			cardName = "Gaze of Granite"
+			edition = "IDW Comics 2013"
 		default:
 			if strings.Contains(fullName, "005") && strings.Contains(fullName, "GP") {
 				edition = "G18"
