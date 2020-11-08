@@ -89,10 +89,39 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	switch variant {
 	case "Silver Planeswalker Symbol":
 		switch cardName {
+		// Impossible to decouple
 		case "Sorcerous Spyglass",
 			"Fabled Passage",
-			"Heroic Intervention":
+			"Temple of Epiphany",
+			"Temple of Malady",
+			"Temple of Mystery",
+			"Temple of Silence",
+			"Temple of Triumph":
 			return nil, errors.New("unsupported")
+		// Does not exist
+		case "Elspeth's Devotee":
+			return nil, errors.New("invalid")
+		}
+	case "Secret Lair":
+		switch cardName {
+		// Impossible to decouple (except for some fortunate cases from retail)
+		case "Serum Visions":
+			return nil, errors.New("unsupported")
+		case "Thalia, Guardian of Thraben":
+			if strings.HasPrefix(maybeNum, "ThaliaGuardianofThraben0") {
+				variant = strings.TrimPrefix(maybeNum, "ThaliaGuardianofThraben0")
+			} else {
+				return nil, errors.New("unsupported")
+			}
+		}
+	case "Secret Lair: Mountain Go":
+		switch cardName {
+		case "Lightning Bolt":
+			if strings.HasPrefix(maybeNum, "SLD0") {
+				variant = strings.TrimPrefix(maybeNum, "SLD0")
+			} else {
+				return nil, errors.New("unsupported")
+			}
 		}
 	}
 
@@ -169,6 +198,15 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	case "Hangarback Walker":
 		if edition == "Promo" {
 			edition = "Love your LGS"
+		}
+	case "Chord of Calling", "Wrath of God":
+		if edition == "Promo" {
+			edition = "Double Masters"
+			variant = "Release"
+		}
+	case "Bloodchief's Thirst", "Into the Roil":
+		if edition == "Promo" {
+			variant = "Promo Pack"
 		}
 
 	default:
@@ -280,6 +318,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 				variant = "godzilla"
 			}
 		}
+	case "Zendikar Rising":
+		if strings.HasPrefix(cardName, "Blank Card") {
+			return nil, errors.New("untracked")
+		}
 	default:
 		if strings.Contains(variant, "Oversized") {
 			return nil, errors.New("not single")
@@ -302,8 +344,20 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	variants := mtgmatcher.SplitVariants(cardName)
 	cardName = variants[0]
 	if len(variants) > 1 {
-		if !strings.Contains(variant, variants[1]) {
-			return nil, errors.New("non-english")
+		switch edition {
+		// Skip the check for the following sets, known to contain JPN-only cards
+		case "War of the Spark":
+		case "Promo":
+			// Black Lotus - Ultra Pro Puzzle - Eight of 9
+			if cardName == "Black Lotus" {
+				return nil, errors.New("untracked")
+			}
+		default:
+			// If notes contain the same language there are good chances
+			// it's a foreign card
+			if !strings.Contains(variant, variants[1]) {
+				return nil, errors.New("non-english")
+			}
 		}
 	}
 	if strings.Contains(cardName, " - ") {
