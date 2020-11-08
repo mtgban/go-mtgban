@@ -30,6 +30,7 @@ var tagsTable = []string{
 	"Prerelease Promo",
 	"Prerelease",
 	"SDCC 2015",
+	"SDCC 2017",
 	"Shooting Star Promo",
 	"Stained Glass",
 	"Standard Showdown 2017",
@@ -100,6 +101,11 @@ var cardTable = map[string]string{
 	"Thrash Threat":       "Thrash",
 	"Connive Concoct":     "Connive",
 	"Smelt / Herd / Saw":  "Smelt // Herd // Saw",
+
+	"Needleverge Pathway / Pillarverge Pathway(Borderless": "Needleverge Pathway // Pillarverge Pathway",
+	"Sejiri Shelter Sejiri Glacier":                        "Sejiri Shelter // Sejiri Glacier",
+	"Silundi Vision Silundi Isle":                          "Silundi Vision // Silundi Isle",
+	"Turntimber Symbyosis / Turntimber, Serpentine Wood":   "Turntimber Symbiosis // Turntimber, Serpentine Wood",
 
 	// Funny cards
 	"Who What When Where Why": "Who",
