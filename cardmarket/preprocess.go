@@ -76,6 +76,7 @@ var promo2editionTable = map[string]string{
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
+	ogEdition := edition
 	number := variant
 	vars := mtgmatcher.SplitVariants(cardName)
 	if len(vars) > 1 {
@@ -115,7 +116,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Demigod of Revenge":
 			variant = "prerelease misprint"
 		case "Island":
-			variant = "arena 1999 misprint"
+			variant = "Arena 1999 misprint"
 		default:
 			return nil, errors.New("untracked")
 		}
@@ -188,7 +189,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "Reminder Text"
 			}
 		default:
-			if variant == "V.1" {
+			if variant == "V.1" && !mtgmatcher.IsBasicLand(cardName) {
 				variant = "Reminder Text"
 			}
 		}
@@ -298,7 +299,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		case "V.5":
 			if cardName == "Island" {
-				variant = "PAL02"
+				edition = "PAL02"
 			} else if cardName == "Forest" {
 				edition = "PAL01"
 				variant = "11"
@@ -328,6 +329,44 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition = "Japan Junior Tournament"
 			}
 		}
+	case "APAC Lands":
+		var landMap = map[string]string{
+			"R1": "4",
+			"R2": "2",
+			"R3": "5",
+			"R4": "3",
+			"R5": "1",
+			"B1": "9",
+			"B2": "7",
+			"B3": "10",
+			"B4": "8",
+			"B5": "6",
+			"C1": "14",
+			"C2": "12",
+			"C3": "15",
+			"C4": "13",
+			"C5": "11",
+		}
+		variant = landMap[number]
+	case "Euro Lands":
+		var landMap = map[string]string{
+			"1":  "1",
+			"2":  "6",
+			"3":  "11",
+			"4":  "2",
+			"5":  "7",
+			"6":  "12",
+			"7":  "3",
+			"8":  "8",
+			"9":  "13",
+			"10": "4",
+			"11": "9",
+			"12": "14",
+			"13": "5",
+			"14": "10",
+			"15": "15",
+		}
+		variant = landMap[number]
 	case "Standard Showdown Promos":
 		if variant == "V.1" {
 			edition = "XLN Standard Showdown"
@@ -454,21 +493,35 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	// Lands are named as "Island (V.1)" and similar, keep the collector number
 	// which is surprisingly accurate (errors are ignored for lands anyway)
 	if mtgmatcher.IsBasicLand(cardName) {
-		if edition == "Zendikar" {
+		switch ogEdition {
+		// Too much
+		case "Foreign Black Bordered",
+			"Deckmasters",
+			"Coldsnap Theme Decks",
+			"Summer Magic",
+			"Introductory Two-Player Set",
+			"Duels of the Planeswalkers Decks",
+			"Duel Decks: Anthology",
+			"Archenemy":
+			return nil, errors.New("unsupported")
+		case "Core 2020: Extras":
+			variant = "Promo Pack"
+		case "Zendikar":
 			switch variant {
 			case "V.1", "V.3", "V.5", "V.7":
 				variant = number + "a"
 			default:
 				variant = number
 			}
-		} else if edition == "Battle for Zendikar" {
+		case "Battle for Zendikar",
+			"Oath of the Gatewatch":
 			switch variant {
 			case "V.2", "V.4", "V.6", "V.8", "V.10":
 				variant = number + "a"
 			default:
 				variant = number
 			}
-		} else if edition == "Magic Premiere Shop Promos" {
+		case "Magic Premiere Shop Promos":
 			switch variant {
 			default:
 				edition = "PMPS"
@@ -486,8 +539,21 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			case "V.10":
 				edition = "PMPS11"
 			}
-		} else {
-			variant = number
+		// Use as is, drop variant
+		case "Guru Lands":
+			variant = ""
+		// Sets preprocessed earlier, or with invalid numbers, don't do anything
+		case "Arena League Promos",
+			"APAC Lands",
+			"Euro Lands",
+			"Anthologies",
+			"Misprints":
+		default:
+			// Old editions do not have any number assigned, if so, then keep
+			// the V.1 V.2 etc style and process in variants.go
+			if number != "" {
+				variant = number
+			}
 		}
 	}
 

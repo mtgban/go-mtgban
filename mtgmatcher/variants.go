@@ -507,6 +507,8 @@ var athVariants = map[string]map[string]string{
 		"b":        "85",
 		"arena":    "84",
 		"portal 2": "85",
+		"v.1":      "84",
+		"v.2":      "85",
 	},
 	"Mountain": map[string]string{
 		"a":                     "82",
@@ -515,6 +517,8 @@ var athVariants = map[string]map[string]string{
 		"mirage":                "83",
 		"#40 by douglas shuler": "82",
 		"#41 by john avon":      "83",
+		"v.1":                   "82",
+		"v.2":                   "83",
 	},
 	"Plains": map[string]string{
 		"a":                     "78",
@@ -523,6 +527,8 @@ var athVariants = map[string]map[string]string{
 		"portal":                "79",
 		"#86 by tom w":          "78",
 		"#87 by douglas shuler": "79",
+		"v.1": "78",
+		"v.2": "79",
 	},
 	"Swamp": map[string]string{
 		"a":                     "80",
@@ -531,6 +537,8 @@ var athVariants = map[string]map[string]string{
 		"tempest":               "81",
 		"#42 by douglas shuler": "80",
 		"#43 by brom":           "81",
+		"v.1":                   "80",
+		"v.2":                   "81",
 	},
 }
 
@@ -871,6 +879,10 @@ var oldLandVariants = map[string]map[string]string{
 		"#280 by christopher rush": "300",
 		"#281 by christopher rush": "301",
 		"#282 by christopher rush": "302",
+
+		"v.1": "300",
+		"v.2": "302",
+		"v.3": "301",
 	},
 	"Island": map[string]string{
 		"a": "291",
@@ -900,6 +912,10 @@ var oldLandVariants = map[string]map[string]string{
 		"#283 by mark poole": "291",
 		"#284 by mark poole": "292",
 		"#285 by mark poole": "293",
+
+		"v.1": "291",
+		"v.2": "293",
+		"v.3": "292",
 	},
 	"Mountain": map[string]string{
 		"a": "297",
@@ -929,6 +945,10 @@ var oldLandVariants = map[string]map[string]string{
 		"#288 by douglas schuler": "297",
 		"#286 by douglas schuler": "298",
 		"#287 by douglas shuler":  "299",
+
+		"v.1": "297",
+		"v.2": "299",
+		"v.3": "298",
 	},
 	"Plains": map[string]string{
 		"b": "288",
@@ -958,6 +978,10 @@ var oldLandVariants = map[string]map[string]string{
 		"#289 by jesper myrfors": "289",
 		"#290 by jesper myrfors": "288",
 		"#291 by jesper myrfors": "290",
+
+		"v.1": "288",
+		"v.2": "289",
+		"v.3": "290",
 	},
 	"Swamp": map[string]string{
 		"a": "294",
@@ -991,6 +1015,10 @@ var oldLandVariants = map[string]map[string]string{
 		"#295 by dan frazier": "294",
 		"#296 by dan frazier": "295",
 		"#297 by dan frazier": "296",
+
+		"v.1": "294",
+		"v.2": "295",
+		"v.3": "296",
 	},
 }
 
@@ -1416,6 +1444,10 @@ var ed5Variants = map[string]map[string]string{
 		"b night":                       "447",
 		"c fall":                        "448",
 		"d winter":                      "449",
+		"v.1":                           "446",
+		"v.2":                           "447",
+		"v.3":                           "448",
+		"v.4":                           "449",
 	},
 	"Island": map[string]string{
 		"a":               "434",
@@ -1430,6 +1462,10 @@ var ed5Variants = map[string]map[string]string{
 		"d winter":        "435",
 		"c two islands":   "436",
 		"b three islands": "437",
+		"v.1":             "434",
+		"v.2":             "435",
+		"v.3":             "436",
+		"v.4":             "437",
 	},
 	"Mountain": map[string]string{
 		"a":               "442",
@@ -1444,6 +1480,10 @@ var ed5Variants = map[string]map[string]string{
 		"d clouds":        "443",
 		"c fall":          "444",
 		"b snowy":         "445",
+		"v.1":             "442",
+		"v.2":             "443",
+		"v.3":             "444",
+		"v.4":             "445",
 	},
 	"Plains": map[string]string{
 		"a":                         "430",
@@ -1458,6 +1498,10 @@ var ed5Variants = map[string]map[string]string{
 		"d mountains":               "431",
 		"c wheat":                   "432",
 		"b flowers":                 "433",
+		"v.1":                       "430",
+		"v.2":                       "431",
+		"v.3":                       "432",
+		"v.4":                       "433",
 	},
 	"Swamp": map[string]string{
 		"d":                     "438",
@@ -1472,6 +1516,10 @@ var ed5Variants = map[string]map[string]string{
 		"b hollow tree":         "439",
 		"a fallen tree":         "440",
 		"c three trees":         "441",
+		"v.1":                   "438",
+		"v.2":                   "439",
+		"v.3":                   "440",
+		"v.4":                   "441",
 	},
 }
 
@@ -1486,6 +1534,10 @@ var ed4Variants = map[string]map[string]string{
 		"177 boulders foreground": "376",
 		"175 brown dirt road":     "377",
 		"176 dark and gloomy":     "378",
+
+		"v.1": "376",
+		"v.2": "377",
+		"v.3": "378",
 	},
 	"Island": map[string]string{
 		"a":                       "367",
@@ -1497,6 +1549,10 @@ var ed4Variants = map[string]map[string]string{
 		"179 golden horizon":      "367",
 		"178 clear blue daylight": "368",
 		"180 pink & orange dusk":  "369",
+
+		"v.1": "367",
+		"v.2": "368",
+		"v.3": "369",
 	},
 	"Mountain": map[string]string{
 		"a":                              "373",
@@ -1508,6 +1564,10 @@ var ed4Variants = map[string]map[string]string{
 		"183 grey mountain / red sky":    "373",
 		"184 light blue sky/snow":        "374",
 		"182 dark green clouds/blue sky": "375",
+
+		"v.1": "373",
+		"v.2": "374",
+		"v.3": "375",
 	},
 	"Plains": map[string]string{
 		"a":                           "364",
@@ -1519,6 +1579,10 @@ var ed4Variants = map[string]map[string]string{
 		"188 four peaks clear meadow": "364",
 		"187 six trees":               "365",
 		"186 pink horizon":            "366",
+
+		"v.1": "364",
+		"v.2": "365",
+		"v.3": "366",
 	},
 	"Swamp": map[string]string{
 		"a":                        "370",
@@ -1530,6 +1594,10 @@ var ed4Variants = map[string]map[string]string{
 		"192 blue and foggy":       "370",
 		"190 brown and foggy":      "371",
 		"191 dark grey foreground": "372",
+
+		"v.1": "370",
+		"v.2": "371",
+		"v.3": "372",
 	},
 }
 
@@ -1808,6 +1876,10 @@ var iceVariants = map[string]map[string]string{
 		"white trees, yellow sun": "380",
 		"pink sky, pink river":    "381",
 		"knobby trees":            "382",
+
+		"v.1": "380",
+		"v.2": "381",
+		"v.3": "382",
 	},
 	"Island": map[string]string{
 		"a":                      "368",
@@ -1816,6 +1888,10 @@ var iceVariants = map[string]map[string]string{
 		"iceberg":                "368",
 		"icy island, green land": "369",
 		"trees on snowy island":  "370",
+
+		"v.1": "368",
+		"v.2": "369",
+		"v.3": "370",
 	},
 	"Mountain": map[string]string{
 		"a":                "376",
@@ -1824,6 +1900,10 @@ var iceVariants = map[string]map[string]string{
 		"trees along base": "376",
 		"barren tree":      "377",
 		"heavy snow":       "378",
+
+		"v.1": "376",
+		"v.2": "377",
+		"v.3": "378",
 	},
 	"Plains": map[string]string{
 		"a": "364",
@@ -1832,6 +1912,10 @@ var iceVariants = map[string]map[string]string{
 		"creepy eyes bottom left": "364",
 		"branch bottom right":     "365",
 		"butterfly":               "366",
+
+		"v.1": "364",
+		"v.2": "365",
+		"v.3": "366",
 	},
 	"Swamp": map[string]string{
 		"a": "373",
@@ -1840,6 +1924,10 @@ var iceVariants = map[string]map[string]string{
 		"straight through creepy trees": "373",
 		"tall grass":                    "374",
 		"stump in swamp":                "375",
+
+		"v.1": "373",
+		"v.2": "374",
+		"v.3": "375",
 	},
 }
 
@@ -1878,6 +1966,8 @@ var leaVariants = map[string]map[string]string{
 		"brown dirt road": "295",
 		"#279":            "294",
 		"#280":            "295",
+		"v.1":             "294",
+		"v.2":             "295",
 	},
 	"Island": map[string]string{
 		"a purple":            "288",
@@ -1885,6 +1975,8 @@ var leaVariants = map[string]map[string]string{
 		"clear blue daylight": "289",
 		"#281":                "288",
 		"#282":                "289",
+		"v.1":                 "288",
+		"v.2":                 "289",
 	},
 	"Mountain": map[string]string{
 		"a small tree":            "292",
@@ -1892,18 +1984,24 @@ var leaVariants = map[string]map[string]string{
 		"grey mountain / red sky": "292",
 		"#283": "292",
 		"#284": "293",
+		"v.1":  "292",
+		"v.2":  "293",
 	},
 	"Plains": map[string]string{
 		"a light":        "286",
 		"b little trees": "287",
 		"#285":           "286",
 		"#286":           "287",
+		"v.1":            "286",
+		"v.2":            "287",
 	},
 	"Swamp": map[string]string{
 		"a light":         "290",
 		"b two branches":  "291",
 		"blue and foggy":  "290",
 		"brown and foggy": "291",
+		"v.1":             "290",
+		"v.2":             "291",
 	},
 }
 
@@ -1970,6 +2068,10 @@ var mirVariants = map[string]map[string]string{
 		"waterfall centered":        "348",
 		"waterfall left side":       "349",
 		"red foliage pink flowers":  "350",
+		"v.1": "347",
+		"v.2": "348",
+		"v.3": "349",
+		"v.4": "350",
 	},
 	"Island": map[string]string{
 		"a":                  "335",
@@ -1980,6 +2082,10 @@ var mirVariants = map[string]map[string]string{
 		"shallow foreground": "336",
 		"light fog":          "337",
 		"pink sky":           "338",
+		"v.1":                "335",
+		"v.2":                "336",
+		"v.3":                "337",
+		"v.4":                "338",
 	},
 	"Mountain": map[string]string{
 		"a":                  "343",
@@ -1990,6 +2096,10 @@ var mirVariants = map[string]map[string]string{
 		"blue sky/red dunes": "344",
 		"purple hue":         "345",
 		"black foreground":   "346",
+		"v.1":                "343",
+		"v.2":                "344",
+		"v.3":                "345",
+		"v.4":                "346",
 	},
 	"Plains": map[string]string{
 		"a":             "331",
@@ -2000,6 +2110,10 @@ var mirVariants = map[string]map[string]string{
 		"oxen":          "332",
 		"zebra":         "333",
 		"bird":          "334",
+		"v.1":           "331",
+		"v.2":           "332",
+		"v.3":           "333",
+		"v.4":           "334",
 	},
 	"Swamp": map[string]string{
 		"a":             "339",
@@ -2010,6 +2124,10 @@ var mirVariants = map[string]map[string]string{
 		"moonlight":     "340",
 		"green light":   "341",
 		"purple clouds": "342",
+		"v.1":           "339",
+		"v.2":           "340",
+		"v.3":           "341",
+		"v.4":           "342",
 	},
 }
 
@@ -2034,6 +2152,10 @@ var po2Variants = map[string]map[string]string{
 		"waterfall background": "163",
 		"creek":                "164",
 		"blue sky":             "165",
+
+		"v.1": "163",
+		"v.2": "164",
+		"v.3": "165",
 	},
 	"Island": map[string]string{
 		"a":                     "154",
@@ -2042,6 +2164,10 @@ var po2Variants = map[string]map[string]string{
 		"dragon":                "154",
 		"hot air balloon":       "155",
 		"single ship left side": "156",
+
+		"v.1": "154",
+		"v.2": "155",
+		"v.3": "156",
 	},
 	"Mountain": map[string]string{
 		"a":                    "160",
@@ -2050,6 +2176,10 @@ var po2Variants = map[string]map[string]string{
 		"red mist":             "160",
 		"fog - foreground":     "161",
 		"archway - right side": "162",
+
+		"v.1": "160",
+		"v.2": "161",
+		"v.3": "162",
 	},
 	"Plains": map[string]string{
 		"a":                "151",
@@ -2058,6 +2188,10 @@ var po2Variants = map[string]map[string]string{
 		"farmhouses":       "151",
 		"palace at sunset": "152",
 		"flock of birds":   "153",
+
+		"v.1": "151",
+		"v.2": "152",
+		"v.3": "153",
 	},
 	"Swamp": map[string]string{
 		"a": "157",
@@ -2066,6 +2200,10 @@ var po2Variants = map[string]map[string]string{
 		"ash white trees background": "157",
 		"animal skeleton":            "158",
 		"decrepit observatory":       "159",
+
+		"v.1": "157",
+		"v.2": "158",
+		"v.3": "159",
 	},
 }
 
@@ -2079,6 +2217,11 @@ var porVariants = map[string]map[string]string{
 		"leaning tree center midground": "213",
 		"three dark trees foreground":   "214",
 		"violet sky":                    "215",
+
+		"v.1": "212",
+		"v.2": "213",
+		"v.3": "214",
+		"v.4": "215",
 	},
 	"Island": map[string]string{
 		"a":               "200",
@@ -2089,6 +2232,11 @@ var porVariants = map[string]map[string]string{
 		"pointed peaks":   "201",
 		"unbroken beach":  "202",
 		"sun upper-right": "203",
+
+		"v.1": "200",
+		"v.2": "201",
+		"v.3": "202",
+		"v.4": "203",
 	},
 	"Mountain": map[string]string{
 		"a": "208",
@@ -2099,6 +2247,11 @@ var porVariants = map[string]map[string]string{
 		"no peaks upper-left":        "209",
 		"big trees foreground":       "210",
 		"three peaks / left tallest": "211",
+
+		"v.1": "208",
+		"v.2": "209",
+		"v.3": "210",
+		"v.4": "211",
 	},
 	"Plains": map[string]string{
 		"a":                    "196",
@@ -2109,6 +2262,11 @@ var porVariants = map[string]map[string]string{
 		"left tree cut-off":    "197",
 		"full tree foreground": "198",
 		"branches upper-right": "199",
+
+		"v.1": "196",
+		"v.2": "197",
+		"v.3": "198",
+		"v.4": "199",
 	},
 	"Swamp": map[string]string{
 		"a":                      "204",
@@ -2119,6 +2277,11 @@ var porVariants = map[string]map[string]string{
 		"gray sky":               "205",
 		"white tree / green sky": "206",
 		"gold sun upper-right":   "207",
+
+		"v.1": "204",
+		"v.2": "205",
+		"v.3": "206",
+		"v.4": "207",
 	},
 }
 
@@ -2257,6 +2420,10 @@ var ed3Variants = map[string]map[string]string{
 		"boulders foreground": "304",
 		"brown dirt road":     "305",
 		"dark and gloomy":     "306",
+
+		"v.1": "304",
+		"v.3": "305",
+		"v.2": "306",
 	},
 	"Island": map[string]string{
 		"a": "295",
@@ -2274,6 +2441,10 @@ var ed3Variants = map[string]map[string]string{
 		"golden horizon":      "295",
 		"clear blue daylight": "296",
 		"pink & orange dusk":  "297",
+
+		"v.1": "295",
+		"v.2": "296",
+		"v.3": "297",
 	},
 	"Mountain": map[string]string{
 		"a": "301",
@@ -2291,6 +2462,10 @@ var ed3Variants = map[string]map[string]string{
 		"grey mountain / red sky":    "301",
 		"light blue sky/snow":        "302",
 		"dark green clouds/blue sky": "303",
+
+		"v.1": "301",
+		"v.2": "302",
+		"v.3": "303",
 	},
 	"Plains": map[string]string{
 		"a": "292",
@@ -2308,6 +2483,10 @@ var ed3Variants = map[string]map[string]string{
 		"four peaks clear meadow": "292",
 		"pink horizon":            "293",
 		"six trees":               "294",
+
+		"v.1": "292",
+		"v.2": "293",
+		"v.3": "294",
 	},
 	"Swamp": map[string]string{
 		"a": "298",
@@ -2325,6 +2504,10 @@ var ed3Variants = map[string]map[string]string{
 		"blue and foggy":       "298",
 		"brown and foggy":      "299",
 		"dark grey foreground": "300",
+
+		"v.1": "298",
+		"v.2": "299",
+		"v.3": "300",
 	},
 }
 
@@ -2371,6 +2554,10 @@ var tmpVariants = map[string]map[string]string{
 		"thick roots":             "348",
 		"wavy clouds":             "349",
 		"branch going horizontal": "350",
+		"v.1": "347",
+		"v.2": "348",
+		"v.3": "349",
+		"v.4": "350",
 	},
 	"Island": map[string]string{
 		"a": "335",
@@ -2381,6 +2568,11 @@ var tmpVariants = map[string]map[string]string{
 		"cave, crashing waves":                       "336",
 		"lots of islands, bright ocean":              "338",
 		"large island, purple foggy sky":             "337",
+
+		"v.1": "335",
+		"v.2": "336",
+		"v.3": "337",
+		"v.4": "338",
 	},
 	"Mountain": map[string]string{
 		"a":                                  "343",
@@ -2391,6 +2583,11 @@ var tmpVariants = map[string]map[string]string{
 		"two spiky mountains pointing right": "344",
 		"arch-like mountain":                 "345",
 		"spiky mountains pointing left":      "346",
+
+		"v.1": "343",
+		"v.2": "344",
+		"v.3": "345",
+		"v.4": "346",
 	},
 	"Plains": map[string]string{
 		"a": "331",
@@ -2401,6 +2598,11 @@ var tmpVariants = map[string]map[string]string{
 		"swirly grey sky, barren tree":  "332",
 		"bush on the left, grey sky":    "333",
 		"three tall rocks":              "334",
+
+		"v.1": "331",
+		"v.2": "332",
+		"v.3": "333",
+		"v.4": "334",
 	},
 	"Swamp": map[string]string{
 		"a": "339",
@@ -2411,6 +2613,11 @@ var tmpVariants = map[string]map[string]string{
 		"fallen tree, stump in background":   "340",
 		"rock, yellow fog":                   "341",
 		"tree in far background, yellow fog": "342",
+
+		"v.1": "339",
+		"v.2": "340",
+		"v.3": "341",
+		"v.4": "342",
 	},
 }
 

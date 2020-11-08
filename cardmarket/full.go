@@ -120,10 +120,6 @@ func (mkm *CardMarketFull) processEntry(channel chan<- responseChan, req request
 			cardIdFoil, err = mtgmatcher.Match(theCard)
 		}
 		if err != nil {
-			// Skip errors from basic lands
-			if mtgmatcher.IsBasicLand(product.Name) {
-				return nil
-			}
 			if theCard.Edition == "Pro Tour Collector Set" || strings.HasPrefix(theCard.Edition, "World Championship Decks") {
 				return nil
 			}

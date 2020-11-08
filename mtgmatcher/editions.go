@@ -63,12 +63,15 @@ var EditionTable = map[string]string{
 
 	// Old school lands
 	"APAC Land":          "Asia Pacific Land Program",
+	"APAC Lands":         "Asia Pacific Land Program",
 	"Promos: Apac Lands": "Asia Pacific Land Program",
 	"GURU":               "Guru",
 	"Guru Land":          "Guru",
+	"Guru Lands":         "Guru",
 	"Guru":               "Guru",
 	"Promos: Guru Lands": "Guru",
 	"Promos: Euro Lands": "European Land Program",
+	"Euro Lands":         "European Land Program",
 
 	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",

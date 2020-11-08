@@ -247,8 +247,8 @@ func (c *Card) isARNDarkMana() bool {
 }
 
 func (c *Card) isArena() bool {
-	return strings.Contains(c.Variation, "Arena") ||
-		strings.Contains(c.Edition, "Arena")
+	return Contains(c.Variation, "Arena") ||
+		Contains(c.Edition, "Arena")
 }
 
 func (c *Card) isSDCC() bool {
