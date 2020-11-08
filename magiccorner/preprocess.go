@@ -21,6 +21,7 @@ var cardTable = map[string]string{
 	"Wax/Wane":                "Wax",
 	"Who,What,When,Where,Why": "Who",
 	"Who/What/When/Where/Why": "Who",
+	"Skull of Arm":            "Skull of Orm",
 }
 
 var editionTable = map[string]string{
