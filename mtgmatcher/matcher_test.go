@@ -1933,6 +1933,71 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+
+	// CMR duplicates
+	MatchTest{
+		Id:   "0dfd6f8d-f7e6-5aba-ab2b-88fb15e8aeb3",
+		Desc: "cmr_duplicates_main",
+		In: Card{
+			Name:    "Return to Dust",
+			Edition: "Commander Legends",
+		},
+	},
+	MatchTest{
+		Id:   "5d1ddb47-9191-5527-a695-458bf67ec2f9",
+		Desc: "cmr_duplicates_decks_actually",
+		In: Card{
+			Name:      "Return to Dust",
+			Variation: "not in draft",
+			Edition:   "Commander Legends",
+		},
+	},
+	MatchTest{
+		Id:   "57ec163e-2368-5a73-abef-f1851339ae58",
+		Desc: "cmr_duplicates_ea",
+		In: Card{
+			Name:      "Return to Dust",
+			Variation: "Extended Art",
+			Edition:   "Commander Legends",
+		},
+	},
+	MatchTest{
+		Id:   "cc3d585e-6835-5442-a227-7cdc23b6a839",
+		Desc: "cmr_duplicates_decks_notreally",
+		In: Card{
+			Name:      "Acidic Slimes",
+			Variation: "anything",
+			Edition:   "Commander Legends",
+		},
+	},
+	MatchTest{
+		Id:   "0fba90e8-f8a6-534b-8d0c-096f5ff4d116_f",
+		Desc: "cmr_normal_foil",
+		In: Card{
+			Name:    "Yurlok of Scorch Thrash",
+			Edition: "Commander Legends",
+			Foil:    true,
+		},
+	},
+	MatchTest{
+		Id:   "acaf7712-434a-5a18-a1c9-1f92081a7ca1",
+		Desc: "cmr_etched_foil_one",
+		In: Card{
+			Name:      "Yurlok of Scorch Thrash",
+			Variation: "Etched Foil",
+			Edition:   "Commander Legends",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "3777b628-6807-51dc-855a-12224af0f4a8",
+		Desc: "cmr_etched_foil_two",
+		In: Card{
+			Name:      "Nevinyrral, Urborg Tyrant",
+			Variation: "Foil-Etched",
+			Edition:   "Commander Legends",
+		},
+	},
 }
 
 func TestMatch(t *testing.T) {

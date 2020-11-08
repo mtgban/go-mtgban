@@ -70,6 +70,7 @@ const (
 	LayoutTransform = "transform"
 
 	FrameEffectExtendedArt = "extendedart"
+	FrameEffectFoilEtched  = "etched"
 	FrameEffectInverted    = "inverted"
 	FrameEffectShowcase    = "showcase"
 

@@ -234,6 +234,10 @@ func (c *Card) isBundle() bool {
 	return Contains(c.Variation, "Bundle")
 }
 
+func (c *Card) isFoilEtched() bool {
+	return Contains(c.Variation, "Etched") && Contains(c.Variation, "Foil")
+}
+
 func (c *Card) isARNLightMana() bool {
 	return Contains(c.Variation, "light")
 }
