@@ -268,6 +268,18 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.Contains(cardName, "Italian") || strings.Contains(variant, "Italian") {
 			return nil, errors.New("non-english")
 		}
+	case "Ikoria: Lair of Behemoths: Variants":
+		vars := mtgmatcher.SplitVariants(cardName)
+		if len(vars) > 1 {
+			cardName = vars[0]
+			variant = vars[1]
+		}
+		switch cardName {
+		case "Dirge Bat", "Mysterious Egg", "Crystalline Giant":
+			if variant == "Japanese" {
+				variant = "godzilla"
+			}
+		}
 	default:
 		if strings.Contains(variant, "Oversized") {
 			return nil, errors.New("not single")

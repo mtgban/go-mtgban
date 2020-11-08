@@ -754,6 +754,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "793cba6b-4f65-5834-b055-b83822576a86_f",
+		Desc: "nongodzilla_notjapanese_variant",
+		In: Card{
+			Name:    "Dirge Bat",
+			Edition: "Ikoria: Lair of Behemoths",
+			Foil:    true,
+		},
+	},
+	MatchTest{
 		Id:   "7a8fdc89-bdd8-5f81-8fe1-af8c5663907f",
 		Desc: "godzilla_variant",
 		In: Card{
@@ -786,15 +795,6 @@ var MatchTests = []MatchTest{
 			Name:      "Dirge Bat",
 			Variation: "Godzilla Series Japanese",
 			Edition:   "Ikoria",
-		},
-	},
-	MatchTest{
-		Id:   "f192bfef-50ef-535f-818e-b8a57f93a498",
-		Desc: "godzilla_variant_only",
-		In: Card{
-			Name:      "Crystalline Giant",
-			Variation: "Japanese",
-			Edition:   "Ikoria: Lair of Behemoths: Variants",
 		},
 	},
 

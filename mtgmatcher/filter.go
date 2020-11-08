@@ -598,7 +598,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// Also some providers do not tag Japanese-only Godzilla cards as such
 			if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeGodzilla) {
 				continue
-			} else if !inCard.isReskin() && card.HasPromoType(mtgjson.PromoTypeGodzilla) && !card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
+			} else if !inCard.isReskin() && card.HasPromoType(mtgjson.PromoTypeGodzilla) {
 				continue
 			}
 
