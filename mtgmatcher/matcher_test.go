@@ -1533,6 +1533,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Duel Decks Anthology",
 		},
 	},
+	MatchTest{
+		Id:   "8882a58b-a123-5c16-bd10-a86c6faf4155",
+		Desc: "duel_decks_variant_jpn",
+		In: Card{
+			Name:      "Jace Beleren",
+			Variation: "Japanese",
+			Edition:   "Duel Decks: Jace vs. Chandra",
+		},
+	},
 
 	// Deckmasters variants
 	MatchTest{
