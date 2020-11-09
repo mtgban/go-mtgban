@@ -17,6 +17,9 @@ var cardTable = map[string]string{
 	"iko Cartographer's Hawk":        "Cartographer's Hawk",
 	"iko Martial Impetus":            "Martial Impetus",
 	"Barrin, Tolarian Archmag":       "Barrin, Tolarian Archmage",
+	"Soul's Mighty":                  "Soul's Might",
+	"Captain Vargus Ira":             "Captain Vargus Wrath",
+	"Yurlok, the Mana Burner":        "Yurlok of Scorch Thrash",
 
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
@@ -87,8 +90,20 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		return nil, errors.New("not mtg")
 	case "Salvat 2005":
 		return nil, errors.New("foreign")
-	case "Foreign Black Bordered":
-		edition = "Foreign Black Border"
+	case "Commander's Arsenal":
+		switch cardName {
+		case "Azusa, Lost but Seeking",
+			"Brion Stoutarm",
+			"Glissa, the Traitor",
+			"Godo, Bandit Warlord",
+			"Grimgrin, Corpse-Born",
+			"Karn, Silver Golem",
+			"Karrthus, Tyrant of Jund",
+			"Mayael the Anima",
+			"Sliver Queen",
+			"Zur the Enchanter":
+			return nil, errors.New("oversize")
+		}
 	case "Fourth Edition Black Bordered":
 		edition = "Fourth Edition Foreign Black Border"
 	case "Chronicles Japanese":
@@ -103,6 +118,9 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		"Unglued",
 		"Chronicles",
 		"Antiquities":
+		variant = number
+	case "Commander Legends: Commander Decks":
+		edition = "Commander Legends"
 		variant = number
 	case "Arabian Nights":
 		if strings.Contains(bp.DisplayName, "(light)") {
@@ -145,6 +163,11 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		}
 	case "Secret Lair Drop Series":
 		variant = number
+		switch cardName {
+		case "Treasure",
+			"Walker":
+			return nil, errors.New("not single")
+		}
 	case "Champs and States":
 		if cardName == "Crucible of Worlds" {
 			edition = "World Championship Promos"
@@ -161,20 +184,8 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		}
 	case "DCI Promos":
 		switch cardName {
-		case "Counterspell",
-			"Incinerate":
-			edition = "PLGM"
-		case "Underworld Dreams":
-			edition = "P2HG"
-		case "Balduvian Horde":
-			edition = "PWOR"
-		case "Jace Beleren":
-			edition = "PBOK"
 		case "Cryptic Command":
 			edition = "PPRO"
-		case "Char",
-			"Kamahl, Pit Fighter":
-			edition = "P15A"
 		case "Flooded Strand":
 			edition = "PNAT"
 		}
@@ -213,6 +224,8 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 			// Scrabbling Claws
 			if bp.Id == 25481 {
 				variant = "jn237sb"
+			} else if bp.Id == 35075 { // Shatter
+				variant = "gb219sb"
 			}
 		} else if strings.Contains(edition, "Japanese") {
 			variant = "Japanese"
