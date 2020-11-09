@@ -20,12 +20,11 @@ var promo2editionTable = map[string]string{
 	"Vish Kal, Blood Arbiter":       "Commander 2011 Launch Party",
 
 	// Promos
-	"Evolving Wilds":                     "Tarkir Dragonfury",
-	"Ruthless Cullblade":                 "Worldwake Promos",
-	"Pestilence Demon":                   "Rise of the Eldrazi Promos",
-	"Dreg Mangler":                       "Return to Ravnica Promos",
-	"Karametra's Acolyte":                "Theros Promos",
-	"Mayor of Avabruck / Howlpack Alpha": "Innistrad Promos",
+	"Evolving Wilds":      "Tarkir Dragonfury",
+	"Ruthless Cullblade":  "Worldwake Promos",
+	"Pestilence Demon":    "Rise of the Eldrazi Promos",
+	"Dreg Mangler":        "Return to Ravnica Promos",
+	"Karametra's Acolyte": "Theros Promos",
 
 	"Goblin Chieftain":        "Resale Promos",
 	"Oran-Rief, the Vastwood": "Resale Promos",
@@ -105,16 +104,18 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "Misprints":
 		switch cardName {
 		case "Laquatus's Champion":
-			variant = "prerelease misprint"
 			if variant == "V.1" {
-				variant += " dark"
+				variant = "prerelease misprint dark"
+			} else if variant == "V.2" {
+				variant = "prerelease misprint"
 			}
 		case "Corpse Knight",
 			"Stocking Tiger":
 			variant = "misprint"
-		case "Beast of Burden",
-			"Demigod of Revenge":
+		case "Beast of Burden":
 			variant = "prerelease misprint"
+		case "Demigod of Revenge":
+			return nil, errors.New("unsupported misprint")
 		case "Island":
 			variant = "Arena 1999 misprint"
 		default:
@@ -127,8 +128,15 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		} else if variant == "V.2" {
 			variant = "light"
 		}
+	case "Champions of Kamigawa":
+		if cardName == "Brothers Yamazaki" {
+			if variant == "V.1" {
+				variant = "160a"
+			} else if variant == "V.2" {
+				variant = "160b"
+			}
+		}
 	case "Alliances",
-		"Champions of Kamigawa",
 		"Fallen Empires",
 		"Homelands":
 		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
@@ -197,9 +205,27 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if variant == "V.2" {
 			variant = "Alt Art"
 		}
+	case "Visions":
+		if variant == "V.2" {
+			return nil, errors.New("unsupported")
+		}
 	case "Foreign Black Bordered",
 		"Tenth Edition":
 		variant = ""
+	case "Commander's Arsenal":
+		switch cardName {
+		case "Azusa, Lost but Seeking",
+			"Brion Stoutarm",
+			"Glissa, the Traitor",
+			"Godo, Bandit Warlord",
+			"Grimgrin, Corpse-Born",
+			"Karn, Silver Golem",
+			"Karrthus, Tyrant of Jund",
+			"Mayael the Anima",
+			"Sliver Queen",
+			"Zur the Enchanter":
+			return nil, errors.New("oversize")
+		}
 	case "Commander Anthology II",
 		"Ravnica Allegiance",
 		"Guilds of Ravnica",
@@ -220,10 +246,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
 		if variant == "V.1" {
-			variant = ""
+			variant = "Japanese"
 			edition = "War of the Spark"
 		} else if variant == "V.2" {
-			variant = "Prerelease"
+			variant = "Prerelease Japanese"
 			edition = "War of the Spark Promos"
 		}
 	case "Judge Rewards Promos":
@@ -235,11 +261,17 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			vars = strings.Split(number, "-")
 			variant = vars[0]
 		}
+	case "MagicFest Promos":
+		vars = strings.Split(number, "-")
+		edition += " " + vars[0]
+		if len(vars) > 1 {
+			variant = vars[1]
+		}
 	case "Prerelease Promos":
 		switch cardName {
-		case "Dirtcoil Wurm":
+		case "Dirtcowl Wurm":
 			if variant == "V.2" {
-				variant = "misprint"
+				return nil, errors.New("unsupported misprint")
 			}
 		case "Lu Bu, Master-at-Arms":
 			if variant == "V.1" {
@@ -255,6 +287,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		// This set has incorrect numbering
 		if variant == number {
 			variant = ""
+		}
+	case "Harper Prism Promos":
+		if variant == "V.2" {
+			return nil, errors.New("non-english")
+		}
+	case "Duel Decks: Jace vs. Chandra":
+		if variant == "V.2" {
+			variant = "Japanese"
 		}
 	case "Gateway Promos":
 		switch cardName {
@@ -379,6 +419,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		"Promos",
 		"DCI Promos",
 		"Game Day Promos":
+		switch cardName {
+		case "Mayor of Avabruck / Howlpack Alpha":
+			return nil, errors.New("oversize")
+		case "Shivan Dragon":
+			if edition == "Release Promos" {
+				return nil, errors.New("non english")
+			}
+		}
 		// Variant is always unreliable
 		variant = ""
 		ed, found := promo2editionTable[cardName]
@@ -392,14 +440,25 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Prerelease"
 		}
 	case "Core 2020: Extras":
-		if variant == "V.1" || mtgmatcher.IsBasicLand(cardName) {
-			variant = "Promo Pack"
-		} else if variant == "V.2" {
-			variant = "Prerelease"
-		} else if mtgmatcher.HasPromoPackPrinting(cardName) { // Needs to be after V.2 check
-			variant = "Promo Pack"
+		if cardName == "Chandra's Regulator" {
+			if variant == "V.1" {
+				variant = "131"
+				edition = "PM20"
+			} else if variant == "V.2" {
+				variant = "Promo Pack"
+			} else if variant == "V.3" {
+				variant = "Prerelease"
+			}
 		} else {
-			variant = ""
+			if variant == "V.1" || mtgmatcher.IsBasicLand(cardName) {
+				variant = "Promo Pack"
+			} else if variant == "V.2" {
+				variant = "Prerelease"
+			} else if mtgmatcher.HasPromoPackPrinting(cardName) { // Needs to be after V.2 check
+				variant = "Promo Pack"
+			} else {
+				variant = ""
+			}
 		}
 
 	default:
@@ -445,14 +504,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				if setDate.Before(mtgmatcher.PromosForEverybodyYay) {
 					if mtgmatcher.HasPrereleasePrinting(cardName) {
 						variant = "Prerelease"
+						edition = strings.Replace(edition, ": Extras", " Promos", 1)
 					}
-				} else if edition == "Ikoria: Lair of Behemoths: Extras" {
-					if variant == "V.1" {
-						variant = "showcase"
-					} else if variant == "V.2" {
-						variant = "godzilla"
+					if mtgmatcher.IsBasicLand(cardName) {
+						edition = strings.Replace(edition, " Promos", "", 1)
 					}
-				} else if edition == "Commander Legends: Extras" {
+				} else {
 					variant = number
 				}
 			} else if strings.Contains(edition, ": Promos") {
