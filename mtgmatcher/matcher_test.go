@@ -1913,6 +1913,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Mystery Booster The List",
 		},
 	},
+	MatchTest{
+		Id:   "7cac5a8b-f4cc-5169-acf1-f4e0b2b553b6",
+		Desc: "mb1list_explicit_list",
+		In: Card{
+			Name:    "Scourge of the Throne",
+			Edition: "The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
