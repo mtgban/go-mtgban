@@ -98,7 +98,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			default:
 				switch {
 				case setDate.After(BuyABoxInExpansionSetsDate) &&
-					(set.Type == "expansion" || set.Type == "core"):
+					(set.Type == "expansion" || set.Type == "core" || set.Type == "draft_innovation"):
 				case strings.HasSuffix(set.Name, "Promos"):
 				default:
 					continue

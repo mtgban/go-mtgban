@@ -1998,6 +1998,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Commander Legends",
 		},
 	},
+	MatchTest{
+		Id:   "0f8e79b8-c429-5e9d-bb51-849c114bf5de",
+		Desc: "cmr_bab",
+		In: Card{
+			Name:      "Mana Confluence",
+			Variation: "721",
+			Edition:   "Buy A Box",
+		},
+	},
 }
 
 func TestMatch(t *testing.T) {
