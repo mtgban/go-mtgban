@@ -468,6 +468,8 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Two-Headed Giant Tournament"
 	case Equals(inCard.Name, "Jace Beleren") && strings.Contains(inCard.Edition, "DCI"):
 		inCard.Edition = "Miscellaneous Book Promos"
+	case Equals(inCard.Name, "Serra Angel") && strings.Contains(inCard.Edition, "DCI"):
+		inCard.Edition = "Wizards of the Coast Online Store"
 
 	case Equals(inCard.Name, "Incinerate") && strings.Contains(inCard.Edition, "DCI"):
 		inCard.Edition = "DCI Legend Membership"

@@ -166,8 +166,6 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 			edition = "PLGM"
 		case "Underworld Dreams":
 			edition = "P2HG"
-		case "Serra Angel":
-			edition = "PWOS"
 		case "Balduvian Horde":
 			edition = "PWOR"
 		case "Jace Beleren":

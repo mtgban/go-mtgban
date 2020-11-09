@@ -51,7 +51,6 @@ var card2setTable = map[string]string{
 	"Immortal Phoenix (Gift Box)":     "M19 Gift Pack",
 	"Rampaging Brontodon (Gift Box)":  "M19 Gift Pack",
 	"Rukh Egg (MTG 10th Anniversary)": "Release Events",
-	"Serra Angel (DCI)":               "Wizards of the Coast Online Store",
 
 	"Forest (Gift Box)":   "2017 Gift Pack",
 	"Island (Gift Box)":   "2017 Gift Pack",
