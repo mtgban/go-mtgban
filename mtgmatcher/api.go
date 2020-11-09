@@ -76,16 +76,46 @@ func GetSetUUID(uuid string) (*mtgjson.Set, error) {
 	return set, nil
 }
 
+func HasBorderlessPrinting(name string) bool {
+	return hasPrinting(name, "border_color", mtgjson.BorderColorBorderless)
+}
+
+func HasShowcasePrinting(name string) bool {
+	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectShowcase)
+}
+
+func HasReskinPrinting(name string) bool {
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypeGodzilla)
+}
+
 func HasPromoPackPrinting(name string) bool {
-	return hasPrinting(name, mtgjson.PromoTypePromoPack)
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypePromoPack)
 }
 
 func HasPrereleasePrinting(name string) bool {
-	return hasPrinting(name, mtgjson.PromoTypePrerelease)
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypePrerelease)
 }
 
-func hasPrinting(name, promo string) bool {
+func hasPrinting(name, field, value string) bool {
 	if backend.Sets == nil {
+		return false
+	}
+
+	var checkFunc func(mtgjson.Card, string) bool
+	switch field {
+	case "promo_type":
+		checkFunc = func(card mtgjson.Card, value string) bool {
+			return card.HasPromoType(value)
+		}
+	case "frame_effect":
+		checkFunc = func(card mtgjson.Card, value string) bool {
+			return card.HasFrameEffect(value)
+		}
+	case "border_color":
+		checkFunc = func(card mtgjson.Card, value string) bool {
+			return card.BorderColor == value
+		}
+	default:
 		return false
 	}
 
@@ -106,7 +136,7 @@ func hasPrinting(name, promo string) bool {
 			continue
 		}
 		for _, in := range set.Cards {
-			if (card.Name == in.Name) && in.HasPromoType(promo) {
+			if (card.Name == in.Name) && checkFunc(in, value) {
 				return true
 			}
 		}
