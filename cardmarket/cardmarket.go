@@ -90,6 +90,9 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 	}
 
 	link := "https://www.cardmarket.com" + product.Website
+	if mkm.Affiliate != "" {
+		link += "?utm_source=" + mkm.Affiliate + "&utm_medium=text&utm_campaign=card_prices"
+	}
 
 	names := []string{
 		"MKM Low", "MKM Trend",

@@ -14,7 +14,6 @@ import (
 type CardMarketFull struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	Affiliate      string
 	MaxConcurrency int
 	exchangeRate   float64
 
