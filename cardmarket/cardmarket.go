@@ -3,6 +3,7 @@ package cardmarket
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -89,10 +90,19 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 		return err
 	}
 
-	link := "https://www.cardmarket.com" + product.Website
-	if mkm.Affiliate != "" {
-		link += "?utm_source=" + mkm.Affiliate + "&utm_medium=text&utm_campaign=card_prices"
+	link, err := url.Parse("https://www.cardmarket.com" + product.Website)
+	if err != nil {
+		return err
 	}
+	v := url.Values{}
+	if mkm.Affiliate != "" {
+		v.Set("utm_source", mkm.Affiliate)
+		v.Set("utm_medium", "text")
+		v.Set("utm_campaign", "card_prices")
+	}
+	// Set English as preferred language, switches to the default one
+	// in case the card has a foreign-only printing available
+	v.Set("language", "1")
 
 	names := []string{
 		"MKM Low", "MKM Trend",
@@ -113,6 +123,8 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 	// if there is a foil printing, and add prices from the foilprices array.
 	// If a card is foil-only then we just use foilprices data.
 	if !card.Foil {
+		link.RawQuery = v.Encode()
+
 		for i := range names {
 			if prices[i] == 0 {
 				continue
@@ -124,7 +136,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 					Conditions: "NM",
 					Price:      prices[i] * mkm.exchangeRate,
 					Quantity:   product.CountArticles - product.CountFoils,
-					URL:        link,
+					URL:        link.String(),
 					SellerName: names[i],
 				},
 			}
@@ -133,6 +145,9 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 		}
 
 		if foilprices[0] != 0 || foilprices[1] != 0 {
+			v.Set("isFoil", "Y")
+			link.RawQuery = v.Encode()
+
 			theCard.Foil = true
 			cardIdFoil, err := mtgmatcher.Match(theCard)
 			if err != nil {
@@ -151,7 +166,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 							Conditions: "NM",
 							Price:      foilprices[i] * mkm.exchangeRate,
 							Quantity:   product.CountArticles - product.CountFoils,
-							URL:        link,
+							URL:        link.String(),
 							SellerName: names[i],
 						},
 					}
@@ -161,6 +176,9 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 			}
 		}
 	} else {
+		v.Set("isFoil", "Y")
+		link.RawQuery = v.Encode()
+
 		for i := range names {
 			if foilprices[i] == 0 {
 				continue
@@ -172,7 +190,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 					Conditions: "NM",
 					Price:      foilprices[i] * mkm.exchangeRate,
 					Quantity:   product.CountFoils,
-					URL:        link,
+					URL:        link.String(),
 					SellerName: names[i],
 				},
 			}
