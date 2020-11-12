@@ -1921,6 +1921,15 @@ var MatchTests = []MatchTest{
 			Edition: "The List",
 		},
 	},
+	MatchTest{
+		Id:   "d26069ff-4e63-547f-a64b-cbf2d83cdbdf",
+		Desc: "mb1list_explicit_variant_list",
+		In: Card{
+			Name:      "Thought Vessel",
+			Variation: "The List",
+			Edition:   "Ignored",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{

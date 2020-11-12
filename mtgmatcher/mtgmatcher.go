@@ -278,8 +278,8 @@ func adjustEdition(inCard *Card) {
 	// Need to decouple The List and Mystery booster first or it will confuse
 	// later matching. For an uptodate list of aliased cards visit this link:
 	// https://scryfall.com/search?q=in%3Aplist+%28in%3Amb1+or+in%3Afmb1%29+%28e%3Amb1+or+e%3Aplist+or+e%3Afmb1%29&unique=prints&as=grid&order=name
-	// Skip only if the edition is explictly set as The List
-	if edition != "The List" && edition != "PLIST" &&
+	// Skip only if the edition or variation are explictly set as The List
+	if edition != "The List" && variation != "The List" &&
 		(Contains(edition, "Mystery Booster") || Contains(edition, "The List") ||
 			Contains(variation, "Mystery Booster") || Contains(variation, "The List")) {
 		if inCard.Foil || (Contains(edition, "Foil") && !Contains(edition, "Non")) || (Contains(variation, "Foil") && !Contains(variation, "Non")) {
@@ -300,7 +300,11 @@ func adjustEdition(inCard *Card) {
 				case "Player Rewards",
 					"MagicFest",
 					"Extended Art",
-					"Signature Spellbook: Jace":
+					"Signature Spellbook: Jace",
+					"The List Textless",
+					"Player Rewards Promo",
+					"RNA MagicFest Promo",
+					"State Champs Promo":
 					edition = "PLIST"
 				default:
 					// Otherwise it's probably MB1, including the indistinguishable

@@ -457,6 +457,7 @@ var EditionTable = map[string]string{
 	"PS3 Promo":                "Duels of the Planeswalkers 2012 Promos",
 	"Starter":                  "Starter 1999",
 	"Vanguard":                 "Vanguard Series",
+	"The List":                 "The List",
 
 	// Beatdown
 	"Beatdown":      "Beatdown Box Set",
