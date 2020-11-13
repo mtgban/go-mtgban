@@ -212,7 +212,9 @@ func adjustName(inCard *Card) {
 	}
 
 	// Check if the input name is the reskinned one
-	if strings.Contains(inCard.Edition, "Ikoria") {
+	// Currently appearing in IKO and some promo sets (PLGS and IKO BaB)
+	if strings.Contains(inCard.Edition, "Ikoria") ||
+		strings.Contains(inCard.Edition, "Promos") {
 		for _, card := range backend.Sets["IKO"].Cards {
 			if Equals(inCard.Name, card.FlavorName) {
 				inCard.Name = card.Name

@@ -52,6 +52,7 @@ var cardTable = map[string]string{
 	"Frontland Felidar":        "Frondland Felidar",
 	"Ragurin Crystal":          "Raugrin Crystal",
 	"Bastion of Rememberance":  "Bastion of Remembrance",
+	"Rograkh, Son of Gohgahh":  "Rograkh, Son of Gohgah",
 }
 
 func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan) error {
@@ -70,6 +71,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		strings.Contains(fullName, "Biography Card") ||
 		strings.Contains(fullName, "Blank Card") ||
 		strings.Contains(fullName, "Decklist") ||
+		strings.Contains(fullName, "Art Card") ||
 		strings.Contains(edition, "Oversize") {
 		return nil
 	}
@@ -110,6 +112,14 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	case "Media Promos":
 		if variant == "" {
 			variant = "Book"
+		}
+	case "Arena Promos":
+		if cardName == "Underworld Dreams" {
+			edition = "DCI"
+		}
+	case "WPN & Gateway Promos":
+		if cardName == "Deathless Angel" {
+			edition = "Rise of the Eldrazi Promos"
 		}
 	default:
 		if strings.HasSuffix(edition, "Promos") {

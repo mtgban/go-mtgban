@@ -205,6 +205,7 @@ var EditionTable = map[string]string{
 	"Commander: Zendikar Rising":        "Zendikar Rising Commander",
 	"Zendikar Rising Commander Decks":   "Zendikar Rising Commander",
 	"Zendikar Rising - Commander Decks": "Zendikar Rising Commander",
+	"Zendikar Rising: Commander Decks":  "Zendikar Rising Commander",
 
 	// Modern Masters
 	"Modern Masters 2013":            "Modern Masters",
@@ -281,9 +282,10 @@ var EditionTable = map[string]string{
 	"Planechase Planes: 2012 Edition": "Planechase 2012 Planes",
 
 	// Deckmasters
-	"Deckmaster Promo": "Deckmasters",
-	"Deckmaster":       "Deckmasters",
-	"Deckmasters":      "Deckmasters",
+	"Deckmaster Promo":               "Deckmasters",
+	"Deckmaster":                     "Deckmasters",
+	"Deckmasters":                    "Deckmasters",
+	"Deckmasters Garfield vs Finkel": "Deckmasters",
 
 	// Junior Super/Europe/APAC Series
 	"European Junior Series":          "Junior Series Europe",
