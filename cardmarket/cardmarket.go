@@ -126,7 +126,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 		link.RawQuery = v.Encode()
 
 		for i := range names {
-			if prices[i] == 0 {
+			if prices[i] == 0 || product.CountArticles-product.CountFoils == 0 {
 				continue
 			}
 			out := responseChan{
@@ -154,7 +154,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 				return nil
 			}
 			// If the id is the same it means that the card was really nonfoil-only
-			if cardId != cardIdFoil {
+			if cardId != cardIdFoil && product.CountFoils != 0 {
 				for i := range names {
 					if foilprices[i] == 0 {
 						continue
@@ -165,7 +165,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 						entry: mtgban.InventoryEntry{
 							Conditions: "NM",
 							Price:      foilprices[i] * mkm.exchangeRate,
-							Quantity:   product.CountArticles - product.CountFoils,
+							Quantity:   product.CountFoils,
 							URL:        link.String(),
 							SellerName: names[i],
 						},
@@ -180,7 +180,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 		link.RawQuery = v.Encode()
 
 		for i := range names {
-			if foilprices[i] == 0 {
+			if foilprices[i] == 0 || product.CountFoils == 0 {
 				continue
 			}
 			out := responseChan{
