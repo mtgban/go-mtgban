@@ -22,6 +22,8 @@ var cardTable = map[string]string{
 	"Who,What,When,Where,Why": "Who",
 	"Who/What/When/Where/Why": "Who",
 	"Skull of Arm":            "Skull of Orm",
+	"Ramirez Di Pietro":       "Ramirez DePietro",
+	"Sir Shandlar di Eberyn":  "Sir Shandlar of Eberyn",
 }
 
 var editionTable = map[string]string{
@@ -135,7 +137,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	// Circle of Protection: Red in Revised EU FWB???
 	if card.Variants[index].Id == 223958 ||
 		// Excruciator RAV duplicate card
-		card.Variants[index].Id == 108840 {
+		card.Variants[index].Id == 108840 ||
+		// Wrong English name for Chain Lightning
+		card.OrigName == "Crepaccio" {
 		return nil, errors.New("duplicate")
 	}
 
@@ -170,9 +174,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	// Use the tag information if available
 	case "Promo":
 		switch variation {
-		case "War of the Spark: Extras", "Version1", "Version 2":
+		case "War of the Spark: Extras", "Version1", "Version 2", "V.2":
 			variation = "Prerelease"
-		case "Core 2020: Extras", "Version 1":
+		case "Core 2020: Extras", "Version 1", "V.1":
 			variation = "Promo Pack"
 		}
 	// Use the number from extra if present, or keep the current version
@@ -202,6 +206,17 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			edition = "Duel Decks Anthology: Garruk vs. Liliana"
 		}
 		variation = strings.TrimLeft(extra[4:], "0")
+	case "Theros Beyond Death: Promos":
+		switch variation {
+		case "V.1":
+			variation = "Promo Pack"
+		case "V.2":
+			variation = "Prerelease"
+		default:
+			if mtgmatcher.HasPromoPackPrinting(cardName) {
+				variation = "Promo Pack"
+			}
+		}
 	}
 
 	id := ""
