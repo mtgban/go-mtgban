@@ -260,6 +260,7 @@ var EditionTable = map[string]string{
 	"PDS: Fire & Lightning":                      "Premium Deck Series: Fire and Lightning",
 	"Premium Deck Fire and Lightning":            "Premium Deck Series: Fire and Lightning",
 	"Premium Deck: Fire and Lightning":           "Premium Deck Series: Fire and Lightning",
+	"Premium Deck Series Fire & Lightning":       "Premium Deck Series: Fire and Lightning",
 	"Premium Deck Series: Fire & Lightning":      "Premium Deck Series: Fire and Lightning",
 	"Graveborn":                                  "Premium Deck Series: Graveborn",
 	"PDS: Graveborn":                             "Premium Deck Series: Graveborn",
