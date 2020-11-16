@@ -68,6 +68,22 @@ var NormalizeTests = []NormalizeTest{
 		In:  "Jakub Šlem",
 		Out: "jakublem",
 	},
+	NormalizeTest{
+		In:  "Fire // Ice",
+		Out: "fireice",
+	},
+	NormalizeTest{
+		In:  "Commit to Memory",
+		Out: "commitmemory",
+	},
+	NormalizeTest{
+		In:  "Trial // Error",
+		Out: "trialerror",
+	},
+	NormalizeTest{
+		In:  "Trial and Error",
+		Out: "trial and error",
+	},
 }
 
 func TestNormalize(t *testing.T) {

@@ -21,6 +21,13 @@ var replacer = strings.NewReplacer(
 	")", "",
 	".", "",
 
+	// Separators
+	"/", "",
+	"|", "",
+	"trial and error", "trial and error",
+	" and ", "",
+	" to ", "",
+
 	// Accented characters
 	"â", "a",
 	"á", "a",

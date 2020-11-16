@@ -224,29 +224,6 @@ func adjustName(inCard *Card) {
 		}
 	}
 
-	// Many provide the full name with a variety of characters
-	for _, sep := range []string{" | ", " || ", " / ", " - ", " and ", " to "} {
-		if strings.Contains(inCard.Name, sep) {
-			name := strings.Replace(inCard.Name, sep, " // ", 1)
-
-			// Check if the fixed name exists
-			_, found := backend.Cards[Normalize(name)]
-			if found {
-				inCard.Name = name
-				return
-			}
-
-			// If not, try and keep one side only
-			name = strings.Split(inCard.Name, " // ")[0]
-			_, found = backend.Cards[Normalize(name)]
-			if found {
-				inCard.Name = name
-				return
-			}
-			// Else keep going, maybe it will be found later
-		}
-	}
-
 	// Special case for Un-sets that sometimes drop the parenthesis
 	if strings.Contains(inCard.Edition, "Unglued") ||
 		strings.Contains(inCard.Edition, "Unhinged") ||

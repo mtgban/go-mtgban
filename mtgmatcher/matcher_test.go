@@ -255,6 +255,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "7170634e-89fc-5e19-b7e6-ae4393b143d5",
+		Desc: "flip_card_half",
+		In: Card{
+			Name:      "Startled Awake",
+			Variation: "Prerelease",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
 		Id:   "6081d8fd-26e1-5e6a-9c98-417d03214856",
 		Desc: "meld_card",
 		In: Card{
