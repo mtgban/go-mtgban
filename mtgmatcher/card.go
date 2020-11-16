@@ -462,3 +462,33 @@ func (c *Card) ravnicaWeekend() (string, string) {
 	}
 	return "", ""
 }
+
+func (c *Card) ravnicaGuidKit() string {
+	if !Contains(c.Edition, "Guild Kit") && !Contains(c.Variation, "Guild Kit") {
+		return ""
+	}
+
+	if Contains(c.Edition, "Guilds of Ravnica") || Contains(c.Variation, "Guilds of Ravnica") {
+		return "GRN Guild Kit"
+	}
+	if Contains(c.Edition, "Ravnica Allegiance") || Contains(c.Variation, "Ravnica Allegiance") {
+		return "RNA Guild Kit"
+	}
+
+	for _, guild := range []string{
+		"boros", "dimir", "golgari", "izzet", "selesnya",
+	} {
+		if Contains(c.Variation, guild) || Contains(c.Edition, guild) {
+			return "GRN Guild Kit"
+		}
+	}
+	for _, guild := range []string{
+		"azorius", "gruul", "orzhov", "rakdos", "simic",
+	} {
+		if Contains(c.Variation, guild) || Contains(c.Edition, guild) {
+			return "RNA Guild Kit"
+		}
+	}
+
+	return ""
+}

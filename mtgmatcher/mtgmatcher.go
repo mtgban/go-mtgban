@@ -358,6 +358,8 @@ func adjustEdition(inCard *Card) {
 	switch {
 	case strings.Contains(variation, "Ravnica Weekend") || strings.Contains(edition, "Weekend"):
 		edition, variation = inCard.ravnicaWeekend()
+	case strings.Contains(c.Edition, "Guild Kit") || strings.Contains(c.Variation, "Guild Kit"):
+		edition = inCard.ravnicaGuidKit()
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
 		num := ExtractNumber(variation)
 		if num != "" {
