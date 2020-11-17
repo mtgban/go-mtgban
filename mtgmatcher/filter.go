@@ -207,9 +207,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
-		case strings.Contains(inCard.Variation, "Clash") ||
-			(strings.Contains(inCard.Edition, "Clash") &&
-				!strings.Contains(inCard.Edition, "Intro")): //cfb
+		case inCard.Contains("Clash"):
 			switch set.Name {
 			case "Fate Reforged Clash Pack",
 				"Magic 2015 Clash Pack",
@@ -218,8 +216,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case (strings.Contains(inCard.Variation, "Hero") && strings.Contains(inCard.Variation, "Path")) ||
-			(strings.Contains(inCard.Edition, "Hero") && strings.Contains(inCard.Edition, "Path")):
+		case inCard.Contains("Hero") && inCard.Contains("Path"):
 			switch set.Name {
 			case "Born of the Gods Hero's Path",
 				"Journey into Nyx Hero's Path",
@@ -832,8 +829,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				// Drop any printing that don't have the ParentCode
 				// or the edition name itself in the Variation field
 				if !(strings.Contains(inCard.Variation, set.ParentCode) ||
-					strings.Contains(inCard.Variation, backend.Sets[set.ParentCode].Name) ||
-					strings.Contains(inCard.Edition, backend.Sets[set.ParentCode].Name)) {
+					inCard.Contains(backend.Sets[set.ParentCode].Name)) {
 					outCards = append(outCards[:i], outCards[i+1:]...)
 					size--
 					i = 0

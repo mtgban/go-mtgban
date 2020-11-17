@@ -109,9 +109,8 @@ func (c *Card) isBasicLand() bool {
 
 func (c *Card) isGenericPromo() bool {
 	return !c.isBaB() && !c.isPromoPack() &&
-		(Contains(c.Variation, "Promo") ||
+		(c.Contains("Promo") ||
 			Contains(c.Variation, "Game Day") ||
-			Contains(c.Edition, "Promo") ||
 			Contains(c.Edition, "Game Day"))
 }
 
@@ -127,13 +126,11 @@ func (c *Card) isGenericExtendedArt() bool {
 }
 
 func (c *Card) isPrerelease() bool {
-	return Contains(c.Variation, "Prerelease") ||
-		Contains(c.Edition, "Prerelease")
+	return c.Contains("Prerelease")
 }
 
 func (c *Card) isPromoPack() bool {
-	return Contains(c.Edition, "Promo Pack") ||
-		Contains(c.Variation, "Promo Pack") ||
+	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
 		Contains(c.Variation, "Planeswalker Stamp")
 }
@@ -157,14 +154,12 @@ func (c *Card) isReskin() bool {
 
 func (c *Card) isFNM() bool {
 	return Contains(c.Variation, "FNM") ||
-		strings.Contains(c.Variation, "Friday Night Magic") ||
-		strings.Contains(c.Edition, "Friday Night Magic")
+		c.Contains("Friday Night Magic")
 }
 
 func (c *Card) isJPN() bool {
 	return strings.Contains(c.Variation, "JPN") ||
-		Contains(c.Variation, "Japanese") ||
-		Contains(c.Edition, "Japanese") ||
+		c.Contains("Japanese") ||
 		Contains(c.Variation, "Gotta") ||
 		Contains(c.Variation, "Dengeki")
 }
@@ -179,10 +174,9 @@ func (c *Card) isRelease() bool {
 }
 
 func (c *Card) isWPNGateway() bool {
-	return strings.Contains(c.Variation, "WPN") ||
-		Contains(c.Variation, "Gateway") ||
+	return c.Contains("WPN") ||
+		c.Contains("Gateway") ||
 		Contains(c.Variation, "Wizards Play Network") ||
-		Contains(c.Edition, "Gateway") ||
 		c.Variation == "Euro Promo" // cfb
 }
 
@@ -190,17 +184,15 @@ func (c *Card) isIDWMagazineBook() bool {
 	return strings.HasPrefix(c.Variation, "IDW") || strings.HasPrefix(c.Edition, "IDW") ||
 
 		strings.Contains(c.Variation, "Magazine") ||
-		strings.Contains(c.Variation, "Duelist") || strings.Contains(c.Edition, "Duelist") ||
+		c.Contains("Duelist") ||
 		// Catches Comic and Comics, but skips San Diego Comic-Con
-		(strings.Contains(c.Variation, "Comic") && !strings.Contains(c.Variation, "Diego")) ||
-		(strings.Contains(c.Edition, "Comic") && !strings.Contains(c.Edition, "Diego")) ||
+		(c.Contains("Comic") && !c.Contains("Diego")) ||
 		// Cannot use Contains because it may trigger a false positive
 		// for cards with "book" in their variation (insidious bookworms)
 		c.Variation == "Book" ||
 		strings.Contains(c.Variation, "Book Insert") || // cfb
 		strings.Contains(c.Variation, "Book Promo") || // sz
-		Contains(c.Variation, "Top Deck") || // csi
-		Contains(c.Edition, "Top Deck") || // mkm
+		c.Contains("Top Deck") || // csi
 		Contains(c.Edition, "CardZ") || // mkm
 		Contains(c.Edition, "Dengeki") || // mkm
 		c.Variation == "Insert Foil" || // ck
@@ -208,24 +200,20 @@ func (c *Card) isIDWMagazineBook() bool {
 }
 
 func (c *Card) isJudge() bool {
-	return Contains(c.Variation, "Judge") ||
-		Contains(c.Edition, "Judge")
+	return c.Contains("Judge")
 }
 
 func (c *Card) isRewards() bool {
 	return Contains(c.Variation, "Textless") ||
-		Contains(c.Variation, "Reward") ||
-		(Contains(c.Edition, "Reward") && !Contains(c.Edition, "Judge"))
+		(c.Contains("Reward") && !c.isJudge())
 }
 
 func (c *Card) isMagicFest() bool {
-	return Contains(c.Variation, "Magic Fest") ||
-		Contains(c.Edition, "Magic Fest")
+	return c.Contains("Magic Fest")
 }
 
 func (c *Card) isBaB() bool {
-	return Contains(c.Variation, "Buy-a-Box") ||
-		Contains(c.Edition, "Buy a Box") ||
+	return c.Contains("Buy a Box") ||
 		strings.Contains(c.Variation, "BIBB") || // sz
 		c.Variation == "Full Box Promo" // sz
 }
@@ -247,15 +235,12 @@ func (c *Card) isARNDarkMana() bool {
 }
 
 func (c *Card) isArena() bool {
-	return Contains(c.Variation, "Arena") ||
-		Contains(c.Edition, "Arena")
+	return c.Contains("Arena")
 }
 
 func (c *Card) isSDCC() bool {
-	return strings.Contains(c.Variation, "SDCC") ||
-		Contains(c.Edition, "SDCC") ||
-		Contains(c.Variation, "San Diego Comic-Con") ||
-		Contains(c.Edition, "San Diego Comic-Con")
+	return c.Contains("SDCC") ||
+		c.Contains("San Diego Comic-Con")
 }
 
 func (c *Card) arenaYear(maybeYear string) string {
@@ -349,7 +334,7 @@ func (c *Card) worldChampPrefix() (string, bool) {
 		"Wolfgang Eder":        "we",
 	}
 	for player := range players {
-		if Contains(c.Variation, player) || Contains(c.Edition, player) {
+		if c.Contains(player) {
 			sb := strings.Contains(strings.ToLower(c.Variation), "sb") ||
 				Contains(c.Variation, "Sideboard")
 			return players[player], sb
@@ -359,6 +344,7 @@ func (c *Card) worldChampPrefix() (string, bool) {
 }
 
 func (c *Card) isDuelsOfThePW() bool {
+	// XXX: do not use c.Contains here
 	return strings.Contains(c.Variation, "Duels") ||
 		strings.Contains(c.Edition, "Duels") ||
 		Contains(c.Variation, "DotP") // tat
@@ -381,6 +367,7 @@ func (c *Card) isBasicNonFullArt() bool {
 
 func (c *Card) isPremiereShop() bool {
 	return c.isBasicLand() &&
+		// XXX: do not use c.Contains here
 		(strings.Contains(c.Variation, "MPS") ||
 			strings.Contains(c.Variation, "Premier") || // csi
 			strings.Contains(c.Edition, "MPS") ||
@@ -395,16 +382,13 @@ func (c *Card) isPortalAlt() bool {
 }
 
 func (c *Card) isDuelDecks() bool {
-	return (Contains(c.Variation, " vs ") ||
-		Contains(c.Edition, " vs ")) &&
-		!Contains(c.Variation, "Anthology") &&
-		!Contains(c.Edition, "Anthology")
+	return (c.Contains(" vs ")) &&
+		!c.Contains("Anthology")
 }
 
 func (c *Card) isDuelDecksAnthology() bool {
 	return Contains(c.Edition, "Duel Decks Anthology") &&
-		(Contains(c.Variation, " vs ") ||
-			Contains(c.Edition, " vs "))
+		(c.Contains(" vs "))
 }
 
 func (c *Card) duelDecksVariant() string {
@@ -449,14 +433,14 @@ func (c *Card) ravnicaWeekend() (string, string) {
 	for _, guild := range []string{
 		"boros", "dimir", "golgari", "izzet", "selesnya",
 	} {
-		if Contains(c.Variation, guild) || Contains(c.Edition, guild) {
+		if c.Contains(guild) {
 			return "GRN Ravnica Weekend", prwkVariants[c.Name][guild]
 		}
 	}
 	for _, guild := range []string{
 		"azorius", "gruul", "orzhov", "rakdos", "simic",
 	} {
-		if Contains(c.Variation, guild) || Contains(c.Edition, guild) {
+		if c.Contains(guild) {
 			return "RNA Ravnica Weekend", prw2Variants[c.Name][guild]
 		}
 	}
@@ -464,31 +448,35 @@ func (c *Card) ravnicaWeekend() (string, string) {
 }
 
 func (c *Card) ravnicaGuidKit() string {
-	if !Contains(c.Edition, "Guild Kit") && !Contains(c.Variation, "Guild Kit") {
+	if !c.Contains("Guild Kit") {
 		return ""
 	}
 
-	if Contains(c.Edition, "Guilds of Ravnica") || Contains(c.Variation, "Guilds of Ravnica") {
+	if c.Contains("Guilds of Ravnica") {
 		return "GRN Guild Kit"
 	}
-	if Contains(c.Edition, "Ravnica Allegiance") || Contains(c.Variation, "Ravnica Allegiance") {
+	if c.Contains("Ravnica Allegiance") {
 		return "RNA Guild Kit"
 	}
 
 	for _, guild := range []string{
 		"boros", "dimir", "golgari", "izzet", "selesnya",
 	} {
-		if Contains(c.Variation, guild) || Contains(c.Edition, guild) {
+		if c.Contains(guild) {
 			return "GRN Guild Kit"
 		}
 	}
 	for _, guild := range []string{
 		"azorius", "gruul", "orzhov", "rakdos", "simic",
 	} {
-		if Contains(c.Variation, guild) || Contains(c.Edition, guild) {
+		if c.Contains(guild) {
 			return "RNA Guild Kit"
 		}
 	}
 
 	return ""
+}
+
+func (c *Card) Contains(prop string) bool {
+	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
 }
