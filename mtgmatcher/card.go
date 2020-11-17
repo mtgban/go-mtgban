@@ -480,3 +480,46 @@ func (c *Card) ravnicaGuidKit() string {
 func (c *Card) Contains(prop string) bool {
 	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
 }
+
+func (c *Card) commanderEdition() string {
+	if !strings.Contains(c.Edition, "Commander") {
+		return ""
+	}
+
+	// Well-known extra tags
+	perSetCommander := map[string]string{
+		"Arsenal":         "Commander's Arsenal",
+		"Ikoria":          "Commander 2020",
+		"Zendikar Rising": "Zendikar Rising Commander",
+		"Legends":         "Commander Legends",
+		"Green":           "Commander Collection: Green",
+	}
+	for key, ed := range perSetCommander {
+		if strings.Contains(c.Edition, key) {
+			return ed
+		}
+	}
+
+	// Check Anthology, but decouple from volume 2
+	if strings.Contains(c.Edition, "Anthology") {
+		for _, tag := range []string{"2018", "II", "Vol"} {
+			if strings.Contains(c.Edition, tag) {
+				return "Commander Anthology Volume II"
+			}
+		}
+		return "Commander Anthology"
+	}
+
+	// Is there a year available?
+	year := ExtractYear(c.Edition)
+	if year != "" {
+		return "Commander " + year
+	}
+
+	// Special condition for CK
+	if c.Edition == "Commander" {
+		return "Commander 2011"
+	}
+
+	return ""
+}

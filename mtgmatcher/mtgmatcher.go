@@ -278,6 +278,7 @@ func adjustEdition(inCard *Card) {
 				// If it has one of these special treatments it's PLIST definitely
 				case "Player Rewards",
 					"MagicFest",
+					"Commander",
 					"Extended Art",
 					"Signature Spellbook: Jace",
 					"The List Textless",
@@ -356,6 +357,8 @@ func adjustEdition(inCard *Card) {
 	}
 
 	switch {
+	case strings.Contains(edition, "Commander"):
+		edition = inCard.commanderEdition()
 	case strings.Contains(variation, "Ravnica Weekend") || strings.Contains(edition, "Weekend"):
 		edition, variation = inCard.ravnicaWeekend()
 	case inCard.Contains("Guild Kit"):
