@@ -46,8 +46,8 @@ var replacer = strings.NewReplacer(
 	"û", "u",
 	"ü", "u",
 
-	// Almost everbody spells aether differently
-	"æther", "aether",
+	// Ancient ligature
+	"æ", "ae",
 
 	// Also plurals, just preserve 'blossom' that aliases 'lotus bloom'
 	// and 'asp' for 'tangle asp'/'tanglesap', and ogress...

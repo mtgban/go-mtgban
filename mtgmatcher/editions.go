@@ -72,6 +72,7 @@ var EditionTable = map[string]string{
 	"Promos: Guru Lands": "Guru",
 	"Promos: Euro Lands": "European Land Program",
 	"Euro Lands":         "European Land Program",
+	"European Lands":     "European Land Program",
 
 	// Secre Lair
 	"Secret Lair":             "Secret Lair Drop",
@@ -169,6 +170,7 @@ var EditionTable = map[string]string{
 	"Japanese Jace vs. Chandra Foil": "Duel Decks: Jace vs. Chandra",
 	"Duel Deck Heros VS Monsters":    "Duel Decks: Heroes vs. Monsters",
 	"Duel Decks: Heros vs. Monsters": "Duel Decks: Heroes vs. Monsters",
+	"Duel Decks Kiora vs. Elspeth":   "Duel Decks: Elspeth vs. Kiora",
 	"Duel Decks: Kiora vs. Elspeth":  "Duel Decks: Elspeth vs. Kiora",
 	"Duel Decks: Kiora vs Elspeth":   "Duel Decks: Elspeth vs. Kiora",
 	"DD: Anthology":                  "Duel Decks Anthology",

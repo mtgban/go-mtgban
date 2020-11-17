@@ -618,6 +618,11 @@ var atqVariants = map[string]map[string]string{
 		"v.2": "82b",
 		"v.4": "82c",
 		"v.1": "82d",
+
+		"version 3": "82a",
+		"version 2": "82b",
+		"version 4": "82c",
+		"version 1": "82d",
 	},
 	"Urza's Mine": map[string]string{
 		"aq084": "83a",
@@ -635,6 +640,7 @@ var atqVariants = map[string]map[string]string{
 		"ladder":    "83d",
 
 		"clawed sphere": "83c",
+		"claw sphere":   "83c",
 
 		"a bathyscape": "83c",
 		"b mouth":      "83b",
@@ -693,8 +699,9 @@ var atqVariants = map[string]map[string]string{
 		"plains":                "85c",
 		"mountains":             "85d",
 
-		"forest": "85a",
-		"shore":  "85b",
+		"forest":   "85a",
+		"shore":    "85b",
+		"mountain": "85d",
 
 		"a forest":   "85a",
 		"d seashore": "85b",
@@ -1083,6 +1090,11 @@ var chrVariants = map[string]map[string]string{
 		"v.2": "114b",
 		"v.3": "114c",
 		"v.4": "114d",
+
+		"version 2": "114a",
+		"version 1": "114b",
+		"version 3": "114c",
+		"version 4": "114d",
 	},
 	"Urza's Power Plant": map[string]string{
 		"ch098": "115a",
@@ -1116,6 +1128,11 @@ var chrVariants = map[string]map[string]string{
 		"v.2": "115b",
 		"v.3": "115c",
 		"v.4": "115d",
+
+		"version 4": "115a",
+		"version 2": "115b",
+		"version 3": "115c",
+		"version 1": "115d",
 	},
 	"Urza's Tower": map[string]string{
 		"ch105": "116a",
@@ -1145,6 +1162,11 @@ var chrVariants = map[string]map[string]string{
 		"v.2": "116b",
 		"v.3": "116c",
 		"v.4": "116d",
+
+		"version 4": "116a",
+		"version 3": "116b",
+		"version 2": "116c",
+		"version 1": "116d",
 	},
 }
 
