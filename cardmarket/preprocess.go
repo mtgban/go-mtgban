@@ -154,10 +154,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		} else if variant == "V.2" {
 			variant = "29"
 		}
-	case "Unsanctioned":
-		if cardName == "Surgeon Commander" {
-			cardName = "Surgeon ~General~ Commander"
-		}
 	case "Duel Decks: Anthology":
 		switch cardName {
 		case "Giant Growth":

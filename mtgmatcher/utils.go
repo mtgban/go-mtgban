@@ -35,6 +35,9 @@ func (err *AliasingError) Probe() []string {
 	return err.dupes
 }
 
+const LongestCardEver = "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
+const NightmareCard = "The Ultimate Nightmare of Wizards of the Coast® Customer Service"
+
 // Date since any card could be Prerelease Promo
 var NewPrereleaseDate = time.Date(2014, time.September, 1, 0, 0, 0, 0, time.UTC)
 

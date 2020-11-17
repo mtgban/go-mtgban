@@ -62,7 +62,6 @@ var cardTable = map[string]string{
 	"B.F.M. (Big Furry Monster Left side)":  "B.F.M. (28)",
 	"B.F.M. (Big Furry Monster Right side)": "B.F.M. (29)",
 	"Who/What/When/Where/Why":               "Who",
-	"Our Market Research Shows That Players Like Really Long Card Names So We Make This Card to Have the Absolute Longest Card Name E": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
 }
 
 var card2setTable = map[string]string{

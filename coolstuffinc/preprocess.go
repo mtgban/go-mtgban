@@ -26,10 +26,6 @@ var cardTable = map[string]string{
 	"Who/What/When/Where/Why": "Who",
 
 	"Startled Awake // Persistant Nightmare": "Startled Awake //  Persistent Nightmare",
-
-	"The Ultimate Nightmare of Wizards of the Coast(R": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
-
-	"Our Market Research Shows That Players Like Really Long Card Names So We Made This Card to Have the Absolute Longest Card Nam": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
 }
 
 var variantTable = map[string]string{

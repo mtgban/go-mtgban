@@ -229,6 +229,19 @@ func adjustName(inCard *Card) {
 		strings.Contains(inCard.Edition, "Unhinged") ||
 		strings.Contains(inCard.Edition, "Unstable") ||
 		strings.Contains(inCard.Edition, "Unsanctioned") {
+		if HasPrefix(inCard.Name, "Our Market Research") {
+			inCard.Name = LongestCardEver
+			return
+		}
+		if HasPrefix(inCard.Name, "The Ultimate Nightmare") {
+			inCard.Name = NightmareCard
+			return
+		}
+		if Contains(inCard.Name, "Surgeon") && Contains(inCard.Name, "Commander") {
+			inCard.Name = "Surgeon ~General~ Commander"
+			return
+		}
+
 		for cardName, props := range backend.Cards {
 			if HasPrefix(cardName, inCard.Name) {
 				inCard.Name = props.Name

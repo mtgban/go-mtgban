@@ -50,8 +50,7 @@ var cardTable = map[string]string{
 	"Japanese Shivan Dragon":  "Shivan Dragon",
 	"Incinerate 1996":         "Incinerate",
 
-	"Who/ What/ When/ Where/ Why":  "Who",
-	"Our Market Research Shows...": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
+	"Who/ What/ When/ Where/ Why": "Who",
 }
 
 var tagsTable = []string{
