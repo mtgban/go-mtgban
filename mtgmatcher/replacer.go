@@ -5,6 +5,12 @@ import (
 )
 
 var replacer = strings.NewReplacer(
+	// Remove a very common field, sometimes added with no reason
+	// Needs the dashes to work with will-o'-the-wisp, whish is why
+	// it needs to be before removing the dash step
+	" the ", "",
+	"-the-", "",
+
 	// Quotes and commas and whatnot
 	"''", "",
 	"“", "",
@@ -42,9 +48,6 @@ var replacer = strings.NewReplacer(
 
 	// Almost everbody spells aether differently
 	"æther", "aether",
-
-	// Providers randomly add this one
-	" the ", "",
 
 	// Also plurals, just preserve 'blossom' that aliases 'lotus bloom'
 	// and 'asp' for 'tangle asp'/'tanglesap', and ogress...
