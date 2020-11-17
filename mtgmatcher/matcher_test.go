@@ -2035,30 +2035,31 @@ var MatchTests = []MatchTest{
 	},
 }
 
-func TestMatch(t *testing.T) {
+func TestMain(m *testing.M) {
 	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
 	if allprintingsPath == "" {
-		t.Errorf("Need ALLPRINTINGS5_PATH variable set to run tests")
-		return
+		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
 	}
 
 	allPrintingsReader, err := os.Open(allprintingsPath)
 	if err != nil {
-		t.Errorf(err.Error())
-		return
+		log.Fatalln(err)
 	}
 	defer allPrintingsReader.Close()
 
 	allprints, err := mtgjson.LoadAllPrintings(allPrintingsReader)
 	if err != nil {
-		t.Errorf(err.Error())
-		return
+		log.Fatalln(err)
 	}
 
 	NewDatastore(allprints)
 
 	SetGlobalLogger(log.New(os.Stderr, "", 0))
 
+	os.Exit(m.Run())
+}
+
+func TestMatch(t *testing.T) {
 	for _, probe := range MatchTests {
 		test := probe
 		t.Run(test.Desc, func(t *testing.T) {
