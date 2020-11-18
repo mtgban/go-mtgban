@@ -197,7 +197,6 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 			"Shichifukujin Dragon",
 			"Proposal",
 			"Magic Guru",
-			"Nalathni Dragon",
 			"Fraternal Exaltation",
 			"Robot Chicken",
 			"Phoenix Heart",

@@ -418,6 +418,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		switch cardName {
 		case "Mayor of Avabruck / Howlpack Alpha":
 			return nil, errors.New("oversize")
+		case "Nalathni Dragon":
+			return nil, errors.New("non english")
 		case "Shivan Dragon":
 			if edition == "Release Promos" {
 				return nil, errors.New("non english")
