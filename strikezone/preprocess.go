@@ -11,7 +11,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	var variation string
 
 	// skip tokens, too many variations
-	if strings.Contains(cardName, "Token") {
+	if mtgmatcher.IsToken(cardName) {
 		return nil, errors.New("non-mtg")
 	}
 

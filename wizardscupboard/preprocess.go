@@ -225,15 +225,11 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		strings.Contains(notes, "token"),
 		strings.Contains(notes, "oversized"):
 		return nil, errors.New("non mtg")
-	case strings.Contains(cardName, " Punch Out"),
-		strings.Contains(cardName, "Check List"),
-		strings.Contains(cardName, "Checklist"),
-		strings.Contains(cardName, "Construct // Clue"),
-		strings.Contains(cardName, "Emblem"),
+	case mtgmatcher.IsToken(cardName):
+		return nil, errors.New("not single")
+	case strings.Contains(cardName, "Construct // Clue"),
 		strings.Contains(cardName, "Ixalan Jace Lands"),
-		strings.Contains(cardName, "Zombie // Gold"),
-		strings.Contains(strings.ToLower(cardName), "token"),
-		strings.HasPrefix(cardName, "Art Series"):
+		strings.Contains(cardName, "Zombie // Gold"):
 		return nil, errors.New("non mtg")
 	case strings.Contains(cardName, "Brothers Yamazaki"):
 		return nil, errors.New("dupe")

@@ -94,30 +94,13 @@ func preprocess(title, sku string) (*mtgmatcher.Card, error) {
 	}
 
 	// Skip non-singles cards
-	switch cardName {
-	case "City's Blessing",
-		"Companion",
-		"Energy Reserve",
-		"Experience Counter",
-		"Manifest",
-		"Morph",
-		"On an Adventure",
-		"Poison Counter",
-		"The Monarch":
+	switch {
+	case mtgmatcher.IsToken(cardName):
 		return nil, errors.New("non-single card")
-	default:
-		switch {
-		case strings.Contains(cardName, "Token"),
-			strings.Contains(cardName, "Emblem"),
-			strings.Contains(cardName, "Checklist Card"),
-			strings.Contains(cardName, "Punch Card"),
-			strings.Contains(cardName, "Oversized"):
-			return nil, errors.New("non-single card")
-		case strings.HasPrefix(cardName, "Mana Crypt") &&
-			strings.Contains(cardName, "(Media Insert)") &&
-			!strings.Contains(cardName, "(English)"):
-			return nil, errors.New("non-english card")
-		}
+	case strings.HasPrefix(cardName, "Mana Crypt") &&
+		strings.Contains(cardName, "(Media Insert)") &&
+		!strings.Contains(cardName, "(English)"):
+		return nil, errors.New("non-english card")
 	}
 
 	switch edition {

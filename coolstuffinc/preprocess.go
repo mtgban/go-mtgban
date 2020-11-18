@@ -51,6 +51,10 @@ var variantTable = map[string]string{
 }
 
 func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
+	if mtgmatcher.IsToken(cardName) {
+		return nil, errors.New("not singles")
+	}
+
 	// Clean up notes, removing extra prefixes, and ueless characters
 	variant := strings.TrimPrefix(notes, "Notes:")
 	if strings.Contains(variant, "Deckmaster") {
@@ -123,13 +127,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 
 	isFoilFromName := false
 	switch cardName {
-	case "City's Blessing",
-		"Experience Counter",
-		"Manifest",
-		"Morph",
-		"Poison Counter",
-		"The Monarch":
-		return nil, errors.New("not single")
 	case "Teferi, Master of Time",
 		"Lukka, Coppercoat Outcast",
 		"Brokkos, Apex of Forever":
@@ -206,21 +203,15 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 
 	default:
-		if strings.Contains(strings.ToLower(cardName), "token") ||
-			strings.Contains(strings.ToLower(cardName), "emblem") ||
-			strings.Contains(cardName, "Checklist") ||
-			strings.Contains(cardName, "Oversized") ||
-			strings.Contains(cardName, "Booster Box") ||
+		if strings.Contains(cardName, "Booster Box") ||
 			strings.Contains(cardName, "Booster Pack") ||
 			strings.Contains(cardName, "Fat Pack") ||
 			strings.Contains(cardName, "Bundle") ||
-			strings.Contains(cardName, "Series") ||
 			strings.Contains(cardName, "Spindown") ||
 			strings.Contains(cardName, "Box Set") ||
 			strings.Contains(cardName, "Bulk") ||
 			strings.Contains(cardName, "Signed by") ||
 			strings.Contains(cardName, "Proxy Card") ||
-			strings.Contains(cardName, "MTG Arena Code Card") ||
 			strings.Contains(cardName, "Chinese") {
 			return nil, errors.New("not single")
 		}

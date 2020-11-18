@@ -73,6 +73,77 @@ func (c *Card) addToVariant(tag string) {
 	c.Variation += tag
 }
 
+// Returns whether the input string may represent a token
+func IsToken(name string) bool {
+	switch name {
+	// Known token names
+	case "A Threat to Alara: Nicol Bolas",
+		"Acorn Stash",
+		"Ashaya, the Awoken World",
+		"City's Blessing",
+		"Companion",
+		"Energy Reserve",
+		"Fun Format: Pack Wars",
+		"Manifest",
+		"Morph",
+		"On Your Turn",
+		"On an Adventure",
+		"Poison Counter",
+		"Theme: WUBRG Cards":
+		return true
+	// Un-tokens
+	case "Beast",
+		"Beeble",
+		"Dragon",
+		"Goblin",
+		"Pegasus",
+		"Spirit",
+		"Sheep",
+		"Soldier",
+		"Squirrel",
+		"Zombie":
+		return true
+	}
+	switch {
+	// Avoid confusion with Monarch and Emblem below
+	case HasPrefix(name, "Emblem of the Warmind"),
+		HasPrefix(name, "Kavu Monarch"),
+		HasPrefix(name, "Leering Emblem"):
+		return false
+	// Anything token
+	case Contains(name, "Arena Code"),
+		Contains(name, "Art Card"),
+		Contains(name, "Art Series"),
+		Contains(name, "Blank Card"),
+		Contains(name, "Card List"),
+		Contains(name, "Checklist"),
+		Contains(name, "DFC Helper"),
+		Contains(name, "Emblem"),
+		Contains(name, "Experience C"),
+		Contains(name, "Guild Symbol"),
+		Contains(name, "Helper Card"),
+		Contains(name, "Magic Minigame"),
+		Contains(name, "Monarch"),
+		Contains(name, "Online Code"),
+		Contains(name, "Oversize"),
+		Contains(name, "Punch Card"),
+		Contains(name, "Punch Out"),
+		Contains(name, "Rules Card"),
+		Contains(name, "Strategy Card"),
+		Contains(name, "Token"),
+		Contains(name, "Rules Tip"):
+		return true
+	// Alternative rules tip card names found on mkm
+	case strings.HasPrefix(name, "Tip: "):
+		return true
+	// One more generic un-token
+	case Contains(name, "Teddy Bear"):
+		return true
+	}
+
+	return false
+}
+
 // Returns whether the input string may represent a basic land
 func IsBasicLand(name string) bool {
 	switch {
@@ -190,7 +261,7 @@ func (c *Card) isIDWMagazineBook() bool {
 		// Cannot use Contains because it may trigger a false positive
 		// for cards with "book" in their variation (insidious bookworms)
 		c.Variation == "Book" ||
-		strings.Contains(c.Variation, "Book Insert") || // cfb
+		c.Contains("Book Insert") ||
 		strings.Contains(c.Variation, "Book Promo") || // sz
 		c.Contains("Top Deck") || // csi
 		Contains(c.Edition, "CardZ") || // mkm
@@ -219,7 +290,7 @@ func (c *Card) isBaB() bool {
 }
 
 func (c *Card) isBundle() bool {
-	return Contains(c.Variation, "Bundle")
+	return c.Contains("Bundle")
 }
 
 func (c *Card) isFoilEtched() bool {

@@ -91,20 +91,8 @@ func preprocess(cardName, edition string) (string, string, error) {
 	}
 
 	// Skip tokens and similar cards
-	switch cardName {
-	case "Experience Counter", "Poison Counter", "Experience Card",
-		"Goblin", "Pegasus", "Sheep", "Soldier", "Squirrel", "Zombie",
-		"Standard Placeholder", "Blank Card", "Splendid Genesis",
-		"Black ": // Black "M" Filler Card
+	if mtgmatcher.IsToken(cardName) {
 		return "", "", errors.New("not a real card")
-	default:
-		if strings.Contains(strings.ToLower(cardName), "token") ||
-			strings.Contains(cardName, "Checklist") ||
-			strings.Contains(cardName, "Filler") ||
-			strings.Contains(cardName, "APAC Land Set") ||
-			strings.Contains(cardName, "Emblem") {
-			return "", "", errors.New("not a real card")
-		}
 	}
 
 	// Skip non-english versions of this card

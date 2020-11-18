@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type MKMProductIdPair struct {
@@ -102,35 +104,11 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 		}
 
 		// Skip unsupported cards
-		if strings.Contains(cardName, "Token") ||
-			(strings.HasSuffix(cardName, "Emblem") && cardName != "Leering Emblem") ||
-			strings.Contains(cardName, " Guild Symbol") ||
-			strings.Contains(cardName, "Checklist") ||
-			strings.Contains(cardName, "On Your Turn") ||
-			strings.Contains(cardName, "Arena Code") ||
-			strings.Contains(cardName, "Online Code") ||
-			strings.Contains(cardName, "Punch Card") ||
-			strings.Contains(cardName, "Art Card") ||
-			strings.Contains(cardName, "Art Series: ") ||
-			strings.Contains(cardName, "Magic Minigame: ") ||
-			strings.Contains(cardName, "Tip: ") ||
-			strings.Contains(cardName, "Theme: ") ||
-			strings.Contains(cardName, "Fun Format: ") ||
-			strings.Contains(cardName, "Strategy Card:") {
+		if mtgmatcher.IsToken(cardName) {
 			continue
 		}
 		switch cardName {
-		case "Poison Counter",
-			"Experience Counter",
-			"The Monarch",
-			"Modal Double-Faced Helper Card",
-			"Energy Reserve",
-			"Complete Portal Card List 1",
-			"Complete Portal Card List 2",
-			"A Threat to Alara: Nicol Bolas",
-			"Ashaya, the Awoken World",
-			"Build a Deck: The Basics // Popular Magic Formats",
-
+		case
 			// TFTH tokens
 			"Hydra Head",
 			"Ravenous Brute Head",
@@ -181,16 +159,6 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 			"Rip to Pieces",
 			"Xenagos's Strike",
 			"Xenagos's Scorn",
-
-			// UND tokens
-			"Beeble",
-			"Goblin",
-			"Squirrel",
-			"Dragon",
-			"Giant Teddy Bear (Pink 5/5)",
-			"Giant Teddy Bear (Pink 5/5) // Acorn Stash",
-			"Goblin Token (R 1/1) // Giant Teddy Bear (Pink 5/5)",
-			"Acorn Stash",
 
 			// Unique
 			"World Champion",

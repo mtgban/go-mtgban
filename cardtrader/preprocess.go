@@ -67,12 +67,7 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 	number := strings.TrimLeft(bp.Properties.Number, "0")
 	variant := ""
 
-	switch cardName {
-	case "Experience Counter",
-		"Morph",
-		"Rules Tip: Kicker",
-		"Rules Tip: Allies & Intimidate",
-		"The Monarch Counter":
+	if mtgmatcher.IsToken(cardName) {
 		return nil, errors.New("not singles")
 	}
 

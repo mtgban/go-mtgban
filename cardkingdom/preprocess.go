@@ -68,13 +68,9 @@ var skuFixupTable = map[string]string{
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
-	if strings.Contains(card.Name, "Token") ||
-		strings.Contains(card.Name, "Emblem") ||
-		strings.Contains(card.Name, "Checklist") ||
-		strings.Contains(card.Name, "DFC Helper") ||
+	if mtgmatcher.IsToken(card.Name) ||
 		strings.Contains(card.Variation, "Misprint") ||
 		strings.Contains(card.Variation, "Oversized") ||
-		card.Name == "Blank Card" ||
 		card.Edition == "Art Series" ||
 		card.Variation == "MagicFest Non-Foil - 2020" ||
 		card.SKU == "OVERSIZ" {

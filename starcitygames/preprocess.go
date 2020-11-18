@@ -325,21 +325,8 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 	switch {
 	case strings.HasPrefix(cardName, "APAC Land"),
 		strings.HasPrefix(cardName, "Euro Land"),
-		strings.Contains(cardName, "Acorn Stash"),
-		strings.Contains(cardName, "Blank Card"),
-		strings.Contains(cardName, "Checklist Card"),
-		strings.Contains(cardName, "Token"),
-		strings.Contains(cardName, "City's Blessing"),
-		strings.Contains(cardName, "Emblem"),
-		strings.Contains(cardName, "Energy Reserve"),
-		strings.Contains(cardName, "Experience Counter"),
-		strings.Contains(cardName, "On an Adventure"),
-		strings.Contains(cardName, "Poison Counter"),
-		strings.Contains(cardName, "Punch Card"),
-		strings.Contains(cardName, "Rules Card"),
-		strings.Contains(cardName, "Strategy Card"),
-		strings.Contains(cardName, "The Monarch"),
-		strings.Contains(variant, "Oversized"):
+		strings.Contains(variant, "Oversized"),
+		mtgmatcher.IsToken(cardName):
 		return nil, errors.New("non-single")
 	}
 

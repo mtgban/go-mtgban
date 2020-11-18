@@ -120,18 +120,8 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
 
 	// Skip any token or similar cards
-	if strings.Contains(cardName, "Token") ||
-		strings.Contains(cardName, "token") ||
-		strings.Contains(cardName, "Art Series") ||
-		strings.Contains(cardName, "Checklist") ||
-		strings.Contains(cardName, "Check List") ||
-		strings.Contains(cardName, "Check-List") ||
-		strings.Contains(cardName, "Emblem") ||
-		cardName == "Punch Card" ||
-		cardName == "The Monarch" ||
-		cardName == "Spirit" ||
-		cardName == "City's Blessing" {
-		return nil, errors.New("non-mtg")
+	if mtgmatcher.IsToken(cardName) {
+		return nil, errors.New("not single")
 	}
 
 	// Circle of Protection: Red in Revised EU FWB???

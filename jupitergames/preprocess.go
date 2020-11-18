@@ -120,11 +120,7 @@ var commonTags = []string{
 }
 
 func preprocess(cardName, variant, edition, format string) (*mtgmatcher.Card, error) {
-	switch {
-	case strings.Contains(cardName, "Checklist"),
-		strings.Contains(cardName, "Punch Out Card"),
-		strings.Contains(cardName, "Experience Counter Card"),
-		strings.Contains(cardName, "Token"):
+	if mtgmatcher.IsToken(cardName) {
 		return nil, errors.New("not single")
 	}
 

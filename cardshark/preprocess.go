@@ -111,8 +111,7 @@ var notesTable = map[string]string{
 func preprocess(cardName, edition, number, notes string) (*mtgmatcher.Card, error) {
 	variant := number
 
-	if mtgmatcher.Contains(cardName, "token") ||
-		strings.Contains(cardName, " Emblem") {
+	if mtgmatcher.IsToken(cardName) {
 		return nil, errors.New("not single")
 	}
 
@@ -176,10 +175,6 @@ func preprocess(cardName, edition, number, notes string) (*mtgmatcher.Card, erro
 		"Shield's Might",
 		"Murkwater Pathway (Alternate Art)":
 		return nil, errors.New("split")
-	// Tokens
-	case "Checklist",
-		"Beast":
-		return nil, errors.New("not single")
 	}
 
 	fields := mtgmatcher.SplitVariants(cardName)
