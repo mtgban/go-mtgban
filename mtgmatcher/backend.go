@@ -42,8 +42,14 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	cards := map[string]cardinfo{}
 
 	for code, set := range ap.Data {
-		// Skip online set, a set with a single foreign card, and any token-based sets
-		if set.IsOnlineOnly || code == "PRED" || set.Type == "token" {
+		// Skip a set with a single foreign card, and the celebratory printings
+		switch code {
+		case "PRED", "PCEL":
+			delete(ap.Data, code)
+			continue
+		}
+		// Skip online sets, and any token-based sets
+		if set.IsOnlineOnly || set.Type == "token" {
 			delete(ap.Data, code)
 			continue
 		}
