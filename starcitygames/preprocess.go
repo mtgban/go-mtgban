@@ -391,12 +391,6 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "Anthologies":
-		if strings.HasPrefix(variant, "Portal 1") {
-			variant = strings.Replace(variant, " 1", "", 1)
-		} else if strings.HasPrefix(variant, "Portal 2") {
-			variant = strings.Replace(variant, " 2", "", 1)
-		}
 	case "Core Set 2019":
 		if variant == "Gift Pack" {
 			edition = "M19 Gift pack"

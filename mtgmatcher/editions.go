@@ -160,7 +160,6 @@ var EditionTable = map[string]string{
 	"Collectors’ Edition":                 "Collectors' Edition",
 
 	// Portal
-	"Portal 1":          "Portal",
 	"Portal II":         "Portal Second Age",
 	"Portal 2nd Age":    "Portal Second Age",
 	"Portal 3K":         "Portal Three Kingdoms",

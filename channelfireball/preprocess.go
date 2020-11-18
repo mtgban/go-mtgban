@@ -52,7 +52,6 @@ var cardTable = map[string]string{
 	"Beast in Show (A 2 Pink Bows)":          "Beast in Show (A Two Pink Bows)",
 	"Beast in Show (D 7 Red Bows)":           "Beast in Show (D Seven Pink Bows)",
 	"Lu Bu, Master-at-Arms (July 4, 1999)":   "Lu Bu, Master-at-Arms (July Prerelease)",
-	"Plains (Portal 1)":                      "Plains (B)",
 
 	// Name got cut during scraping
 	"Path of Mettle // Metzali, To... (RIX Prerelease Foil)": "Path of Mettle (Prerelease)",
