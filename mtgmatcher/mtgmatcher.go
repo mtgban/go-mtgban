@@ -455,7 +455,8 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Starter 2000"
 	case Equals(inCard.Name, "Balduvian Horde") && (strings.Contains(inCard.Variation, "Judge") || strings.Contains(inCard.Edition, "Promo") || inCard.Contains("DCI")):
 		inCard.Edition = "World Championship Promos"
-	case Equals(inCard.Name, "Nalathni Dragon") && inCard.isIDWMagazineBook():
+	case Equals(inCard.Name, "Nalathni Dragon"):
+		inCard.Variation = ""
 		inCard.Edition = "Dragon Con"
 	case Equals(inCard.Name, "Ass Whuppin'") && inCard.isPrerelease():
 		inCard.Edition = "Release Events"

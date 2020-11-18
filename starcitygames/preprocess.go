@@ -360,8 +360,6 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 		if variant == "Buy-a-Box" {
 			edition = "Wizards of the Coast Online Store"
 		}
-	case "Nalathni Dragon":
-		variant = "Book"
 	case "Captain Sisay":
 		if edition == "Mystery Booster" {
 			return nil, errors.New("invalid")
