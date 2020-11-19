@@ -532,6 +532,30 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "f877637f-fde4-52c8-a7be-ca5c494c38f3",
+		Desc: "core_promo_pack_2020",
+		In: Card{
+			Name:    "Temple of Triumph",
+			Edition: "Core 2020 - Promo Pack",
+		},
+	},
+	MatchTest{
+		Id:   "351ae10e-91ac-5baa-90b2-cbf1555d9de6",
+		Desc: "core_promo_pack_2021",
+		In: Card{
+			Name:    "Temple of Triumph",
+			Edition: "Core 2021 - Promo Pack",
+		},
+	},
+	MatchTest{
+		Id:   "24a266a1-c13e-5790-a649-b03139d47ccc",
+		Desc: "core_promo_pack_old",
+		In: Card{
+			Name:    "Heroic Intervention",
+			Edition: "Core 2021 - Promo Pack",
+		},
+	},
 
 	// Prerelease
 	MatchTest{
