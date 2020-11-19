@@ -522,10 +522,10 @@ func (c *Card) ravnicaGuidKit() string {
 		return ""
 	}
 
-	if c.Contains("Guilds of Ravnica") {
+	if c.Contains("Guilds of Ravnica") || c.Contains("GRN") {
 		return "GRN Guild Kit"
 	}
-	if c.Contains("Ravnica Allegiance") {
+	if c.Contains("Ravnica Allegiance") || c.Contains("RNA") {
 		return "RNA Guild Kit"
 	}
 
