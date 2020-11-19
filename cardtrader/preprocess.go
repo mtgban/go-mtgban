@@ -210,6 +210,10 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 				if cardName == "Mountain" && number == "310" {
 					variant = "312"
 				}
+			case "Commander Legends Collectors":
+				if cardName == "Three Visits" && number == "685" {
+					variant = "686"
+				}
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
 			strings.HasPrefix(edition, "Pro Tour 1996") {
@@ -233,6 +237,10 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 			variant = number
 
 			switch edition {
+			case "Zendikar Promos":
+				if cardName == "Jace, Mirror Mage" {
+					edition = "Zendikar Rising Promos"
+				}
 			case "Core Set 2019 Promos":
 				// g18 cards are folded in pm19 edition
 				if strings.HasPrefix(number, "GP") {
