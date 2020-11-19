@@ -78,6 +78,7 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 
 	switch edition {
 	case "Ultra-Pro Puzzle Cards",
+		"Celebration Cards",
 		"Foreign White Bordered",
 		"Fourth Edition: Alternate",
 		"Fallen Empires: Wyvern Misprints",
