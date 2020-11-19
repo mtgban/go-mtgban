@@ -225,7 +225,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case strings.Contains(inCard.Variation, "Convention"):
+		case inCard.Contains("Convention"):
 			switch set.Name {
 			case "URL/Convention Promos":
 			default:

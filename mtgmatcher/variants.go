@@ -19,6 +19,8 @@ var allVariants = map[string]map[string]string{
 		"woman holding staff":      "64b",
 		"person with arms crossed": "64a",
 		"person with staff":        "64b",
+		"doorway":                  "64a",
+		"staff":                    "64b",
 	},
 	"Arcane Denial": map[string]string{
 		"1":            "22a",
@@ -37,6 +39,7 @@ var allVariants = map[string]map[string]string{
 		"close-up view":                "118b",
 		"astrolabe in front of window": "118a",
 		"astrolabe on map":             "118b",
+		"close-up":                     "118b",
 	},
 	"Awesome Presence": map[string]string{
 		"arms spread":                        "23a",
@@ -67,6 +70,7 @@ var allVariants = map[string]map[string]string{
 		"facing right":            "24b",
 		"explorer facing forward": "24a",
 		"explorer facing right":   "24b",
+		"facing front":            "24a",
 	},
 	"Bestial Fury": map[string]string{
 		"facing front":       "67a",
@@ -85,6 +89,8 @@ var allVariants = map[string]map[string]string{
 		"three pigeons":   "1b",
 		"guy with pigeon": "1a",
 		"pigeons flying":  "1b",
+		"man & bird":      "1a",
+		"three birds":     "1b",
 	},
 	"Casting of Bones": map[string]string{
 		"finger ornament":       "44a",
@@ -129,6 +135,7 @@ var allVariants = map[string]map[string]string{
 		"bright red suit":           "2a",
 		"horse":                     "2b",
 		"person in front of window": "2a",
+		"coat": "2a",
 	},
 	"False Demise": map[string]string{
 		"rocks":                         "27a",
@@ -145,6 +152,7 @@ var allVariants = map[string]map[string]string{
 		"feastorfamine":    "49a",
 		"az049":            "49b",
 		"person with dagger at throat": "49b",
+		"falling":                      "49a",
 	},
 	"Fevered Strength": map[string]string{
 		"lifting rock":         "50a",
@@ -240,6 +248,8 @@ var allVariants = map[string]map[string]string{
 		"az077":              "51b",
 		"multiple bookworms": "51a",
 		"single bookworm":    "51b",
+		"many worms":         "51a",
+		"one worm":           "51b",
 	},
 	"Kjeldoran Escort": map[string]string{
 		"green blanketed dog": "7a",
@@ -250,6 +260,8 @@ var allVariants = map[string]map[string]string{
 		"facing left":         "7b",
 		"guy with bow":        "7a",
 		"guy with spear":      "7b",
+		"green blanket":       "7a",
+		"red blanket":         "7b",
 	},
 	"Kjeldoran Pride": map[string]string{
 		"facing left":     "9a",
@@ -295,6 +307,7 @@ var allVariants = map[string]map[string]string{
 		"close-up view":       "11b",
 		"steeds in forest":    "11a",
 		"close up of steeds":  "11b",
+		"close-up":            "11b",
 	},
 	"Phantasmal Fiend": map[string]string{
 		"close-up":            "57a",
@@ -304,6 +317,7 @@ var allVariants = map[string]map[string]string{
 		"close-up view":       "57a",
 		"close up of face":    "57a",
 		"in front of doorway": "57b",
+		"no doorway":          "57a",
 	},
 	"Phyrexian Boon": map[string]string{
 		"female":           "58a",
@@ -326,6 +340,8 @@ var allVariants = map[string]map[string]string{
 		"az127":            "12b",
 		"ladies":           "12a",
 		"goblin":           "12b",
+		"no orc":           "12a",
+		"orc":              "12b",
 	},
 	"Reprisal": map[string]string{
 		"red dragon":    "13a",
@@ -334,6 +350,7 @@ var allVariants = map[string]map[string]string{
 		"reprisal":      "13b",
 		"red monster":   "13a",
 		"green monster": "13b",
+		"green dragon":  "13b",
 	},
 	"Royal Herbalist": map[string]string{
 		"female":           "15a",
@@ -369,6 +386,8 @@ var allVariants = map[string]map[string]string{
 		"male":                   "34a",
 		"female":                 "34b",
 		"wizard writing in book": "34b",
+		"reading":                "34a",
+		"writing":                "34b",
 	},
 	"Soldevi Sentry": map[string]string{
 		"close up":               "132a",
@@ -379,6 +398,7 @@ var allVariants = map[string]map[string]string{
 		"attacking":              "132b",
 		"sentry portrait":        "132a",
 		"sentry in combat":       "132b",
+		"alone":                  "132a",
 	},
 	"Soldevi Steam Beast": map[string]string{
 		"beast in mountains": "133a",
@@ -387,6 +407,8 @@ var allVariants = map[string]map[string]string{
 		"az152":              "133b",
 		"mountain":           "133a",
 		"pink sun":           "133b",
+		"facing left":        "133a",
+		"facing right":       "133b",
 	},
 	"Stench of Decay": map[string]string{
 		"hand covering nose": "61a",
@@ -449,6 +471,8 @@ var allVariants = map[string]map[string]string{
 		"castle":                     "82b",
 		"in forest":                  "82a",
 		"overlooking castle":         "82b",
+		"black horse":                "82a",
+		"brown horse":                "82b",
 	},
 	"Veteran's Voice": map[string]string{
 		"over the shoulder":          "84a",
@@ -459,6 +483,8 @@ var allVariants = map[string]map[string]string{
 		"men standing apart":         "84b",
 		"men next to each other":     "84a",
 		"men across from each other": "84b",
+		"door":   "84a",
+		"window": "84b",
 	},
 	"Viscerid Armor": map[string]string{
 		"crashing wave":         "41a",
@@ -469,6 +495,7 @@ var allVariants = map[string]map[string]string{
 		"attacking two men":     "41b",
 		"armor in water":        "41a",
 		"armor fighting people": "41b",
+		"two men":               "41b",
 	},
 	"Whip Vine": map[string]string{
 		"3 vines":        "103a",
@@ -488,6 +515,8 @@ var allVariants = map[string]map[string]string{
 		"wings thrown back": "21b",
 		"lightning":         "21a",
 		"rain":              "21b",
+		"wings spread":      "21a",
+		"wings behind back": "21b",
 	},
 	"Yavimaya Ancients": map[string]string{
 		"rearing horse":    "104a",
@@ -527,8 +556,9 @@ var athVariants = map[string]map[string]string{
 		"portal":                "79",
 		"#86 by tom w":          "78",
 		"#87 by douglas shuler": "79",
-		"v.1": "78",
-		"v.2": "79",
+		"v.1":      "78",
+		"v.2":      "79",
+		"portal 1": "79",
 	},
 	"Swamp": map[string]string{
 		"a":                     "80",
@@ -736,6 +766,8 @@ var pal01Variants = map[string]map[string]string{
 		"arena beta art 2001":       "11",
 		"arena 2001 foil - ice age": "1",
 		"arena 2001 foil - beta":    "11",
+		"ice age 2001":              "1",
+		"beta 2002":                 "11",
 	},
 }
 
@@ -1249,6 +1281,7 @@ var femVariants = map[string]map[string]string{
 		"rob alexander, gloved fist":  "49c",
 		"rob alexander spear":         "49a",
 		"rob alexander winged helmet": "49c",
+		"rob alexander claw":          "49c",
 	},
 	"Combat Medic": map[string]string{
 		"fe133": "1a",
@@ -1408,6 +1441,8 @@ var femVariants = map[string]map[string]string{
 		"bryon wackwitz, male knight":   "16b",
 		"girl with standard on horse":   "16a",
 		"guy with shield on horse":      "16b",
+		"bryon wackwitz female knight":  "16a",
+		"bryon wackwitz male knight":    "16b",
 	},
 	"Spore Cloud": map[string]string{
 		"fe083": "72a",
@@ -1437,6 +1472,8 @@ var femVariants = map[string]map[string]string{
 		"rob alexander, sun":               "27b",
 		"rob alexander no sun":             "27a",
 		"rob alexander sun visible":        "27b",
+		"rob alexander lake":               "27a",
+		"rob alexander sunset":             "27b",
 	},
 	"Vodalian Mage": map[string]string{
 		"poole": "30b",
@@ -1664,6 +1701,7 @@ var hmlVariants = map[string]map[string]string{
 		"alibanstower":      "61b",
 		"black":             "61a",
 		"horses":            "61b",
+		"glowing":           "61a",
 		"rider on horse":    "61b",
 	},
 	"Ambush Party": map[string]string{
@@ -1699,6 +1737,8 @@ var hmlVariants = map[string]map[string]string{
 		"aysenbureaucrats": "3b",
 		"a person":         "3a",
 		"two people":       "3b",
+		"one man":          "3a",
+		"two men":          "3b",
 	},
 	"Carapace": map[string]string{
 		"purple carapace":  "84a",
@@ -1709,6 +1749,7 @@ var hmlVariants = map[string]map[string]string{
 		"sword":            "84b",
 		"person on tree":   "84a",
 		"woman with sword": "84b",
+		"arrow":            "84a",
 	},
 	"Cemetery Gate": map[string]string{
 		"no zombie":      "44a",
@@ -1719,6 +1760,8 @@ var hmlVariants = map[string]map[string]string{
 		"vamp in red":    "44b",
 		"gate with mist": "44a",
 		"zombie at gate": "44b",
+		"no man":         "44a",
+		"man":            "44b",
 	},
 	"Dark Maze": map[string]string{
 		"man kneeling":     "25a",
@@ -1729,6 +1772,8 @@ var hmlVariants = map[string]map[string]string{
 		"laying on ground": "25b",
 		"warrior kneeling": "25a",
 		"warrior fallen":   "25b",
+		"kneeling":         "25a",
+		"prone":            "25b",
 	},
 	"Dry Spell": map[string]string{
 		"fish bones":       "46a",
@@ -1747,6 +1792,7 @@ var hmlVariants = map[string]map[string]string{
 		"two people":       "72a",
 		"horse":            "72b",
 		"woman with horse": "72b",
+		"beard":            "72a",
 	},
 	"Feast of the Unicorn": map[string]string{
 		"goblins":           "47a",
@@ -1757,6 +1803,7 @@ var hmlVariants = map[string]map[string]string{
 		"head on a platter": "47b",
 		"goblin with horn":  "47a",
 		"head on platter":   "47b",
+		"head":              "47b",
 	},
 	"Folk of An-Havva": map[string]string{
 		"dancing":         "87a",
@@ -1766,6 +1813,7 @@ var hmlVariants = map[string]map[string]string{
 		"hoedown":         "87a",
 		"pensive":         "87b",
 		"people dancing":  "87a",
+		"sitting":         "87b",
 	},
 	"Giant Albatross": map[string]string{
 		"ship's mast":      "27a",
@@ -1778,6 +1826,7 @@ var hmlVariants = map[string]map[string]string{
 		"saddle":           "27b",
 		"flying near ship": "27a",
 		"flying right":     "27b",
+		"ocean":            "27b",
 	},
 	"Hungry Mist": map[string]string{
 		"lantern":          "88a",
@@ -1788,6 +1837,8 @@ var hmlVariants = map[string]map[string]string{
 		"attacking neck":   "88b",
 		"above house":      "88a",
 		"attacking person": "88b",
+		"lamp":             "88a",
+		"faces":            "88b",
 	},
 	"Labyrinth Minotaur": map[string]string{
 		"maze background":   "30a",
@@ -1798,6 +1849,8 @@ var hmlVariants = map[string]map[string]string{
 		"tattooed face":     "30b",
 		"with pickaxe":      "30a",
 		"minotaur's face":   "30b",
+		"pick-axe":          "30a",
+		"runes":             "30b",
 	},
 	"Memory Lapse": map[string]string{
 		"female":         "32a",
@@ -1810,6 +1863,8 @@ var hmlVariants = map[string]map[string]string{
 		"bald man":       "32b",
 		"jigsaw version": "32a",
 		"runes version":  "32b",
+		"jigsaw":         "32a",
+		"runes":          "32b",
 	},
 	"Mesa Falcon": map[string]string{
 		"flying":          "10a",
@@ -1818,6 +1873,7 @@ var hmlVariants = map[string]map[string]string{
 		"mesafalcon":      "10b",
 		"blue sky":        "10a",
 		"perched in tree": "10b",
+		"perching":        "10b",
 	},
 	"Reef Pirates": map[string]string{
 		"zombies":     "36a",
@@ -1827,6 +1883,7 @@ var hmlVariants = map[string]map[string]string{
 		"two pirates": "36a",
 		"two ships":   "36b",
 		"pirate ship": "36b",
+		"men":         "36a",
 	},
 	"Samite Alchemist": map[string]string{
 		"window":           "13a",
@@ -1856,6 +1913,8 @@ var hmlVariants = map[string]map[string]string{
 		"in shadow looking up": "97a",
 		"female with sword":    "97b",
 		"person in shadow":     "97a",
+		"shadow":               "97a",
+		"cloud":                "97b",
 	},
 	"Torture": map[string]string{
 		"hooded figure":         "59a",
@@ -1866,6 +1925,8 @@ var hmlVariants = map[string]map[string]string{
 		"back":                  "59b",
 		"hooded torturer":       "59a",
 		"drawing on man's back": "59b",
+		"tools":                 "59a",
+		"runes":                 "59b",
 	},
 	"Trade Caravan": map[string]string{
 		"giraffe on right":   "19a",
@@ -1887,6 +1948,7 @@ var hmlVariants = map[string]map[string]string{
 		"holding acorn": "99b",
 		"male faerie":   "99a",
 		"female faerie": "99b",
+		"no deer":       "99b",
 	},
 }
 
@@ -1990,6 +2052,8 @@ var leaVariants = map[string]map[string]string{
 		"#280":            "295",
 		"v.1":             "294",
 		"v.2":             "295",
+		"a":               "294",
+		"b":               "295",
 	},
 	"Island": map[string]string{
 		"a purple":            "288",
@@ -1999,6 +2063,8 @@ var leaVariants = map[string]map[string]string{
 		"#282":                "289",
 		"v.1":                 "288",
 		"v.2":                 "289",
+		"a":                   "288",
+		"b":                   "289",
 	},
 	"Mountain": map[string]string{
 		"a small tree":            "292",
@@ -2008,6 +2074,8 @@ var leaVariants = map[string]map[string]string{
 		"#284": "293",
 		"v.1":  "292",
 		"v.2":  "293",
+		"a":    "292",
+		"b":    "293",
 	},
 	"Plains": map[string]string{
 		"a light":        "286",
@@ -2016,6 +2084,8 @@ var leaVariants = map[string]map[string]string{
 		"#286":           "287",
 		"v.1":            "286",
 		"v.2":            "287",
+		"a":              "286",
+		"b":              "287",
 	},
 	"Swamp": map[string]string{
 		"a light":         "290",
@@ -2024,6 +2094,8 @@ var leaVariants = map[string]map[string]string{
 		"brown and foggy": "291",
 		"v.1":             "290",
 		"v.2":             "291",
+		"a":               "290",
+		"b":               "291",
 	},
 }
 
@@ -2760,6 +2832,10 @@ var ustVariants = map[string]map[string]string{
 		"white-bordered/silver-bordered": "113c",
 		"choose a rarity":                "113d",
 		"odd/even":                       "113e",
+		"number":                         "113f",
+		"bordered":                       "113c",
+		"flavorful":                      "113a",
+		"odd or even":                    "113e",
 
 		"v.1": "113a",
 		"v.5": "113b",
@@ -2782,6 +2858,8 @@ var ustVariants = map[string]map[string]string{
 		"protection from odd collector's numbers":  "12d",
 		"protection from two-word names":           "12e",
 		"protection from watermarks":               "12f",
+		"odd":  "12d",
+		"even": "12b",
 
 		"v.1": "12a",
 		"v.2": "12b",
@@ -2843,6 +2921,9 @@ var ustVariants = map[string]map[string]string{
 		"reveals his or her hand":                    "67a",
 		"reveals the top card of his or her library": "67e",
 		"roll a six-sided die":                       "67f",
+		"die":    "67f",
+		"hand":   "67a",
+		"finger": "67c",
 
 		"v.1": "67a",
 		"v.2": "67b",

@@ -224,7 +224,7 @@ func (c *Card) isReskin() bool {
 }
 
 func (c *Card) isFNM() bool {
-	return Contains(c.Variation, "FNM") ||
+	return c.Contains("FNM") ||
 		c.Contains("Friday Night Magic")
 }
 
@@ -253,8 +253,7 @@ func (c *Card) isWPNGateway() bool {
 
 func (c *Card) isIDWMagazineBook() bool {
 	return strings.HasPrefix(c.Variation, "IDW") || strings.HasPrefix(c.Edition, "IDW") ||
-
-		strings.Contains(c.Variation, "Magazine") ||
+		c.Contains("Magazine") ||
 		c.Contains("Duelist") ||
 		// Catches Comic and Comics, but skips San Diego Comic-Con
 		(c.Contains("Comic") && !c.Contains("Diego")) ||

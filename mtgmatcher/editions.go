@@ -233,6 +233,7 @@ var EditionTable = map[string]string{
 	"JSS DCI PROMO":                  "Junior Super Series",
 	"JSS Foil":                       "Junior Super Series",
 	"JSS Promo":                      "Junior Super Series",
+	"JSS/MSS Promos":                 "Junior Super Series",
 	"Japan Junior Tournament Promos": "Japan Junior Tournament",
 
 	// GP Promos
@@ -288,6 +289,7 @@ var EditionTable = map[string]string{
 	"WMC":                             "World Magic Cup Qualifiers",
 	"WMCQ Foil":                       "World Magic Cup Qualifiers",
 	"WMCQ Promo":                      "World Magic Cup Qualifiers",
+	"WMCQ Promos":                     "World Magic Cup Qualifiers",
 	"WMCQ Promo 2016":                 "World Magic Cup Qualifiers",
 	"WMCQ Promo 2017":                 "World Magic Cup Qualifiers",
 	"WMCQ":                            "World Magic Cup Qualifiers",
@@ -301,6 +303,7 @@ var EditionTable = map[string]string{
 	// Tarkir extra sets
 	"Dragonfury":                              "Tarkir Dragonfury",
 	"Dragonfury Promo":                        "Tarkir Dragonfury",
+	"Dragons of Tarkir Dragonfury Game":       "Tarkir Dragonfury",
 	"Dragons of Tarkir Dragonfury Game Promo": "Tarkir Dragonfury",
 	"Tarkir Dragonfury":                       "Tarkir Dragonfury",
 	"Tarkir Dragonfury Promo":                 "Tarkir Dragonfury",
@@ -361,6 +364,7 @@ var EditionTable = map[string]string{
 
 	// Wotc Store
 	"Foil Beta Picture":       "Wizards of the Coast Online Store",
+	"Online Store Card":       "Wizards of the Coast Online Store",
 	"Original Artwork":        "Wizards of the Coast Online Store",
 	"Redemption Original Art": "Wizards of the Coast Online Store",
 
