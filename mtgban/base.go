@@ -49,7 +49,15 @@ func (inv InventoryRecord) AddStrict(cardId string, entry *InventoryEntry) error
 	return inv.add(cardId, entry, 2)
 }
 
+func (bl BuylistRecord) AddRelaxed(cardId string, entry *BuylistEntry) error {
+	return bl.add(cardId, entry, 0)
+}
+
 func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
+	return bl.add(cardId, entry, 1)
+}
+
+func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict int) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
 	}
@@ -58,12 +66,15 @@ func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 	if found {
 		for i := range entries {
 			if *entry == entries[i] {
-				card, err := mtgmatcher.GetUUID(cardId)
-				if err != nil {
-					return err
-				}
+				if strict == 1 {
+					card, err := mtgmatcher.GetUUID(cardId)
+					if err != nil {
+						return err
+					}
 
-				return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
+					return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
+				}
+				bl[cardId][i].Quantity += entry.Quantity
 			}
 		}
 	}
