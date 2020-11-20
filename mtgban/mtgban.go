@@ -36,6 +36,9 @@ type BuylistEntry struct {
 
 	URL string
 
+	// Name of the vendor providing the entry
+	VendorName string
+
 	// Original identifier as available from the scraper
 	OriginalId string
 }

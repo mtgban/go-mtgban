@@ -23,7 +23,7 @@ var (
 	MarketHeader = append(InventoryHeader, "Seller", "Bundle")
 
 	// The canonical header that will be present in all buylist files
-	BuylistHeader = append(CardHeader, "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Conditions")
+	BuylistHeader = append(CardHeader, "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Conditions", "Vendor")
 
 	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio")
 
@@ -229,6 +229,12 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		cond := record[index]
 		index++
 
+		vendorName := ""
+		if len(record) > index {
+			vendorName = record[index]
+			index++
+		}
+
 		entry := &BuylistEntry{
 			Conditions: cond,
 			BuyPrice:   buyPrice,
@@ -236,6 +242,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 			Quantity:   qty,
 			PriceRatio: priceRatio,
 			URL:        URL,
+			VendorName: vendorName,
 		}
 
 		buylist.Add(cardId, entry)
@@ -352,6 +359,7 @@ func WriteBuylistToCSV(vendor Vendor, w io.Writer) error {
 				fmt.Sprintf("%0.2f", entry.PriceRatio),
 				entry.URL,
 				entry.Conditions,
+				entry.VendorName,
 			)
 
 			err = csvWriter.Write(record)

@@ -57,7 +57,7 @@ func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 	entries, found := bl[cardId]
 	if found {
 		for i := range entries {
-			if entry.Conditions == entries[i].Conditions {
+			if *entry == entries[i] {
 				card, err := mtgmatcher.GetUUID(cardId)
 				if err != nil {
 					return err
