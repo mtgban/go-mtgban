@@ -272,11 +272,10 @@ func adjustEdition(inCard *Card) {
 	// https://scryfall.com/search?q=in%3Aplist+%28in%3Amb1+or+in%3Afmb1%29+%28e%3Amb1+or+e%3Aplist+or+e%3Afmb1%29&unique=prints&as=grid&order=name
 	// Skip only if the edition or variation are explictly set as The List
 	if edition != "The List" && variation != "The List" &&
-		(Contains(edition, "Mystery Booster") || Contains(edition, "The List") ||
-			Contains(variation, "Mystery Booster") || Contains(variation, "The List")) {
-		if inCard.Foil || (Contains(edition, "Foil") && !Contains(edition, "Non")) || (Contains(variation, "Foil") && !Contains(variation, "Non")) {
+		(inCard.Contains("Mystery Booster") || inCard.Contains("The List")) {
+		if inCard.Foil || inCard.Contains("Foil") && !inCard.Contains("Non") {
 			edition = "FMB1"
-		} else if Contains(edition, "Test") || Contains(variation, "Test") {
+		} else if inCard.Contains("Test") {
 			edition = "CMB1"
 		} else {
 			// Check if card is is only one of these two sets
