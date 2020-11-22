@@ -273,11 +273,14 @@ func adjustEdition(inCard *Card) {
 	// Skip only if the edition or variation are explictly set as The List
 	if edition != "The List" && variation != "The List" &&
 		(inCard.Contains("Mystery Booster") || inCard.Contains("The List")) {
-		if inCard.Foil || inCard.Contains("Foil") && !inCard.Contains("Non") {
+		if (inCard.Foil || inCard.Contains("Foil") && !inCard.Contains("Non")) && len(MatchInSet(inCard.Name, "FMB1")) != 0 {
 			edition = "FMB1"
-		} else if inCard.Contains("Test") {
+		} else if inCard.Contains("Test") && len(MatchInSet(inCard.Name, "CMB1")) != 0 {
 			edition = "CMB1"
 		} else {
+			// Adjust property, can only be non-foil from here
+			inCard.Foil = false
+
 			// Check if card is is only one of these two sets
 			mb1s := MatchInSet(inCard.Name, "MB1")
 			plists := MatchInSet(inCard.Name, "PLIST")
