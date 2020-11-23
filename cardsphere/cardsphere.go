@@ -193,7 +193,7 @@ func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
 }
 
 func (cs *CardsphereIndex) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Card Sphere Index"
+	info.Name = "Cardsphere Index"
 	info.Shorthand = "CSphereIndex"
 	info.BuylistTimestamp = cs.buylistDate
 	info.Grading = grading
