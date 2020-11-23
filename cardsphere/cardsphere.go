@@ -17,7 +17,7 @@ const (
 	buylistURL         = "https://www.cardsphere.com/sets"
 )
 
-type Cardsphere struct {
+type CardsphereIndex struct {
 	LogCallback    mtgban.LogCallbackFunc
 	buylistDate    time.Time
 	MaxConcurrency int
@@ -25,8 +25,8 @@ type Cardsphere struct {
 	buylist mtgban.BuylistRecord
 }
 
-func NewScraper() *Cardsphere {
-	cs := Cardsphere{}
+func NewScraperIndex() *CardsphereIndex {
+	cs := CardsphereIndex{}
 	cs.buylist = mtgban.BuylistRecord{}
 	cs.MaxConcurrency = defaultConcurrency
 	return &cs
@@ -37,13 +37,13 @@ type responseChan struct {
 	blEntry *mtgban.BuylistEntry
 }
 
-func (cs *Cardsphere) printf(format string, a ...interface{}) {
+func (cs *CardsphereIndex) printf(format string, a ...interface{}) {
 	if cs.LogCallback != nil {
-		cs.LogCallback("[CSphere] "+format, a...)
+		cs.LogCallback("[CSphereIndex] "+format, a...)
 	}
 }
 
-func (cs *Cardsphere) parseBL() error {
+func (cs *CardsphereIndex) parseBL() error {
 	results := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -168,7 +168,7 @@ func (cs *Cardsphere) parseBL() error {
 	return nil
 }
 
-func (cs *Cardsphere) Buylist() (mtgban.BuylistRecord, error) {
+func (cs *CardsphereIndex) Buylist() (mtgban.BuylistRecord, error) {
 	if len(cs.buylist) > 0 {
 		return cs.buylist, nil
 	}
@@ -181,11 +181,12 @@ func (cs *Cardsphere) Buylist() (mtgban.BuylistRecord, error) {
 	return cs.buylist, nil
 }
 
-func (cs *Cardsphere) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Card Sphere"
-	info.Shorthand = "CSphere"
+func (cs *CardsphereIndex) Info() (info mtgban.ScraperInfo) {
+	info.Name = "Card Sphere Index"
+	info.Shorthand = "CSphereIndex"
 	info.BuylistTimestamp = cs.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	info.NoCredit = true
+	info.MetadataOnly = true
 	return
 }
