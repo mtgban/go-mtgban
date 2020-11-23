@@ -17,6 +17,13 @@ const (
 	buylistURL         = "https://www.cardsphere.com/sets"
 )
 
+var gradingMap = map[string]float64{
+	"NM": 1,
+	"SP": 0.9,
+	"MP": 0.75,
+	"HP": 0.6,
+}
+
 type CardsphereIndex struct {
 	LogCallback    mtgban.LogCallbackFunc
 	buylistDate    time.Time
@@ -181,11 +188,15 @@ func (cs *CardsphereIndex) Buylist() (mtgban.BuylistRecord, error) {
 	return cs.buylist, nil
 }
 
+func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
+	return gradingMap
+}
+
 func (cs *CardsphereIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Sphere Index"
 	info.Shorthand = "CSphereIndex"
 	info.BuylistTimestamp = cs.buylistDate
-	info.Grading = mtgban.DefaultGrading
+	info.Grading = grading
 	info.NoCredit = true
 	info.MetadataOnly = true
 	return
