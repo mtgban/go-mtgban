@@ -50,6 +50,7 @@ var cardTable = map[string]string{
 	"Pyre Changer":          "Pyre Charger",
 	"Pyromancer's Swalth":   "Pyromancer's Swath",
 	"Seth's Tiger":          "Seht's Tiger",
+	"Shielhide Dragon":      "Shieldhide Dragon",
 	"Tainteed Wood":         "Tainted Wood",
 	"Terramorphing Expanse": "Terramorphic Expanse",
 	"Undyng Rage":           "Undying Rage",
