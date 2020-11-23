@@ -336,6 +336,8 @@ func adjustEdition(inCard *Card) {
 	if found {
 		edition = ed
 	}
+	inCard.Edition = edition
+	inCard.Variation = variation
 
 	// Adjust box set
 	switch {
