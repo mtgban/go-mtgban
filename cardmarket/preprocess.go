@@ -145,8 +145,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "160b"
 			}
 		}
-	case "Alliances",
-		"Fallen Empires",
+	case "Fallen Empires",
 		"Homelands":
 		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
 			if (variant == "V.1" && strings.HasSuffix(num, "a")) ||
