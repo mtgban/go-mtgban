@@ -73,6 +73,10 @@ func (mkm *CardMarketFull) processEntry(channel chan<- responseChan, req request
 
 	theCard, err := Preprocess(product.Name, product.Number, product.Expansion)
 	if err != nil {
+		_, ok := err.(*PreprocessError)
+		if ok {
+			return err
+		}
 		return nil
 	}
 

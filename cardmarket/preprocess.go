@@ -8,6 +8,15 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
+type PreprocessError struct {
+	Extra string
+	Err   error
+}
+
+func (pe *PreprocessError) Error() string {
+	return pe.Extra + " - " + pe.Err.Error()
+}
+
 var promo2editionTable = map[string]string{
 	// Dengeki Maoh Promos
 	"Shepherd of the Lost": "URL/Convention Promos",
@@ -491,11 +500,17 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 			set, err := mtgmatcher.GetSetByName(edition)
 			if err != nil {
-				return nil, err
+				return nil, &PreprocessError{
+					Extra: "GetSetByName",
+					Err:   err,
+				}
 			}
 			setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
 			if err != nil {
-				return nil, err
+				return nil, &PreprocessError{
+					Extra: "time.Parse",
+					Err:   err,
+				}
 			}
 
 			if strings.Contains(edition, ": Extras") {

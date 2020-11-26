@@ -68,6 +68,10 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 
 	theCard, err := Preprocess(product.Name, product.Number, product.Expansion.Name)
 	if err != nil {
+		_, ok := err.(*PreprocessError)
+		if ok {
+			return err
+		}
 		return nil
 	}
 	cardId, err := mtgmatcher.Match(theCard)
