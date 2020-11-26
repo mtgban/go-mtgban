@@ -551,8 +551,8 @@ func (c *Card) Contains(prop string) bool {
 	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
 }
 
-func (c *Card) commanderEdition() string {
-	if !strings.Contains(c.Edition, "Commander") {
+func ParseCommanderEdition(edition string) string {
+	if !strings.Contains(edition, "Commander") {
 		return ""
 	}
 
@@ -565,15 +565,15 @@ func (c *Card) commanderEdition() string {
 		"Green":           "Commander Collection: Green",
 	}
 	for key, ed := range perSetCommander {
-		if strings.Contains(c.Edition, key) {
+		if strings.Contains(edition, key) {
 			return ed
 		}
 	}
 
 	// Check Anthology, but decouple from volume 2
-	if strings.Contains(c.Edition, "Anthology") {
+	if strings.Contains(edition, "Anthology") {
 		for _, tag := range []string{"2018", "II", "Vol"} {
-			if strings.Contains(c.Edition, tag) {
+			if strings.Contains(edition, tag) {
 				return "Commander Anthology Volume II"
 			}
 		}
@@ -581,13 +581,13 @@ func (c *Card) commanderEdition() string {
 	}
 
 	// Is there a year available?
-	year := ExtractYear(c.Edition)
+	year := ExtractYear(edition)
 	if year != "" {
 		return "Commander " + year
 	}
 
 	// Special condition for CK
-	if c.Edition == "Commander" {
+	if edition == "Commander" {
 		return "Commander 2011"
 	}
 

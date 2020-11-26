@@ -375,7 +375,7 @@ func adjustEdition(inCard *Card) {
 
 	switch {
 	case strings.Contains(edition, "Commander"):
-		edition = inCard.commanderEdition()
+		edition = ParseCommanderEdition(edition)
 	case strings.Contains(variation, "Ravnica Weekend") ||
 		(strings.Contains(edition, "Weekend") && !Contains(edition, "Planeswalker")):
 		edition, variation = inCard.ravnicaWeekend()
