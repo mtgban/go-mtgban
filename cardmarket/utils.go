@@ -104,11 +104,13 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 		}
 
 		// Skip unsupported cards
-		if mtgmatcher.IsToken(cardName) {
+		if mtgmatcher.IsToken(cardName) ||
+			strings.Contains(cardName, "On Your Turn") {
 			continue
 		}
 		switch cardName {
-		case
+		case "Build a Deck: The Basics // Popular Magic Formats",
+
 			// TFTH tokens
 			"Hydra Head",
 			"Ravenous Brute Head",
@@ -161,7 +163,7 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 			"Xenagos's Scorn",
 
 			// Unique
-			"World Champion",
+			"1996 World Champion",
 			"Shichifukujin Dragon",
 			"Proposal",
 			"Magic Guru",

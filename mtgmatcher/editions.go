@@ -113,6 +113,7 @@ var EditionTable = map[string]string{
 	// Standard Series
 	"Standard Series":                          "BFZ Standard Series",
 	"Standard Series Promo":                    "BFZ Standard Series",
+	"Standard Series Promos":                   "BFZ Standard Series",
 	"2017 Standard Showdown":                   "XLN Standard Showdown",
 	"2018 Standard Showdown":                   "M19 Standard Showdown",
 	"2017 Standard Showdown Guay":              "XLN Standard Showdown",

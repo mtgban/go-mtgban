@@ -446,6 +446,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		} else {
 			variant = "Prerelease"
 		}
+	case "Core 2019: Promos":
+		variant = "Prerelease"
+		edition = "PM19"
+		if strings.HasPrefix(number, "GP") {
+			variant = ""
+			edition = "M19 Gift Pack"
+		}
 	case "Core 2020: Extras":
 		if cardName == "Chandra's Regulator" {
 			if variant == "V.1" {
@@ -456,6 +463,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			} else if variant == "V.3" {
 				variant = "Prerelease"
 			}
+		} else if cardName == "Nicol Bolas, Dragon-God" {
+			return nil, errors.New("dupe")
 		} else {
 			if variant == "V.1" || mtgmatcher.IsBasicLand(cardName) {
 				variant = "Promo Pack"
@@ -466,6 +475,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			} else {
 				variant = ""
 			}
+		}
+	case "Commander: Zendikar Rising":
+		if variant == "V.2" {
+			variant = "Extended Art"
 		}
 
 	default:
@@ -541,11 +554,21 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 					promopTag := "V.1"
 					prerelTag := "V.2"
 					bundleTag := "V.3"
-					if edition == "Throne of Eldraine: Promos" {
+
+					switch edition {
+					case "Throne of Eldraine: Promos":
 						promopTag = "V.2"
 						prerelTag = "V.1"
+					case "Zendikar Rising: Promos":
+						if variant == "V.1" && strings.Contains(cardName, " // ") {
+							return nil, errors.New("not exist")
+						}
 					}
+
 					if variant == bundleTag {
+						variant = "bundle"
+						edition = strings.TrimSuffix(edition, ": Promos")
+					} else if cardName == "Colossification" && variant == "" {
 						variant = "bundle"
 						edition = strings.TrimSuffix(edition, ": Promos")
 					} else if variant == promopTag {
