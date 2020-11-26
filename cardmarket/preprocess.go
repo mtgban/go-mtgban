@@ -21,13 +21,6 @@ var promo2editionTable = map[string]string{
 	// Dengeki Maoh Promos
 	"Shepherd of the Lost": "URL/Convention Promos",
 
-	// Release Promos
-	"Basandra, Battle Seraph":       "Commander 2011 Launch Party",
-	"Edric, Spymaster of Trest":     "Commander 2011 Launch Party",
-	"Nin, the Pain Artist":          "Commander 2011 Launch Party",
-	"Skullbriar, the Walking Grave": "Commander 2011 Launch Party",
-	"Vish Kal, Blood Arbiter":       "Commander 2011 Launch Party",
-
 	// Promos
 	"Evolving Wilds":      "Tarkir Dragonfury",
 	"Ruthless Cullblade":  "Worldwake Promos",
@@ -417,9 +410,17 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		} else if variant == "V.2" {
 			edition = "M19 Standard Showdown"
 		}
+	case "Release Promos":
+		switch cardName {
+		case "Basandra, Battle Seraph",
+			"Edric, Spymaster of Trest",
+			"Nin, the Pain Artist",
+			"Skullbriar, the Walking Grave",
+			"Vish Kal, Blood Arbiter":
+			return nil, errors.New("oversize")
+		}
 	// Catch-all sets for anything promo
 	case "Dengeki Maoh Promos",
-		"Release Promos",
 		"Promos",
 		"DCI Promos",
 		"Game Day Promos":
