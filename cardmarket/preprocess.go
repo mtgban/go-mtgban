@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -517,17 +518,22 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = ""
 			}
 
-			set, err := mtgmatcher.GetSetByName(edition)
+			editionNoSuffix := strings.TrimSuffix(edition, ": Extras")
+			editionNoSuffix = strings.TrimSuffix(editionNoSuffix, ": Promos")
+			editionNoSuffix = strings.Replace(editionNoSuffix, "Of", "of", 1)
+			editionNoSuffix = strings.Replace(editionNoSuffix, "Core", "Core Set", 1)
+
+			set, err := mtgmatcher.GetSetByName(editionNoSuffix)
 			if err != nil {
 				return nil, &PreprocessError{
-					Extra: "GetSetByName",
+					Extra: fmt.Sprintf("%s | %s | %s", cardName, edition, variant),
 					Err:   err,
 				}
 			}
 			setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
 			if err != nil {
 				return nil, &PreprocessError{
-					Extra: "time.Parse",
+					Extra: fmt.Sprintf("%s | %s | %s", cardName, edition, variant),
 					Err:   err,
 				}
 			}
