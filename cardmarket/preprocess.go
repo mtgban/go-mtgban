@@ -482,11 +482,17 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	default:
+		// Double parse commander so that it is possible to drop the oversize
+		// cards as well as catch the Extras in the block below
 		if strings.Contains(edition, "Commander") {
+			edition = mtgmatcher.ParseCommanderEdition(edition)
+
 			if variant == "V.2" {
 				return nil, errors.New("oversized")
 			}
-		} else if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
+		}
+
+		if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
 			if variant != "" {
 				variant += " "
 			}
