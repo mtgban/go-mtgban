@@ -382,6 +382,15 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 		if variant == "Gift Pack" {
 			edition = "M19 Gift pack"
 		}
+	case "Guild Kit":
+		// Lands already have the correct guild in the variant
+		if !mtgmatcher.IsBasicLand(cardName) {
+			if len(mtgmatcher.MatchInSet(cardName, "GK1")) > 0 {
+				edition = "GK1"
+			} else if len(mtgmatcher.MatchInSet(cardName, "GK2")) > 0 {
+				edition = "GK2"
+			}
+		}
 	default:
 		if strings.HasSuffix(edition, "(Foil)") {
 			edition = strings.TrimSuffix(edition, " (Foil)")

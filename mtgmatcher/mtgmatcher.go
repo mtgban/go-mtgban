@@ -299,6 +299,7 @@ func adjustEdition(inCard *Card) {
 					"The List Textless",
 					"Player Rewards Promo",
 					"RNA MagicFest Promo",
+					"Commander: 2015 Edition",
 					"State Champs Promo":
 					edition = "PLIST"
 				default:
