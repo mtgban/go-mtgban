@@ -32,15 +32,15 @@ type MKMClient struct {
 }
 
 func NewMKMClient(appToken, appSecret string) *MKMClient {
-	tcg := MKMClient{}
-	tcg.client = retryablehttp.NewClient()
-	tcg.client.Logger = nil
-	tcg.client.HTTPClient.Transport = &authTransport{
-		Parent:    tcg.client.HTTPClient.Transport,
+	mkm := MKMClient{}
+	mkm.client = retryablehttp.NewClient()
+	mkm.client.Logger = nil
+	mkm.client.HTTPClient.Transport = &authTransport{
+		Parent:    mkm.client.HTTPClient.Transport,
 		AppToken:  appToken,
 		AppSecret: appSecret,
 	}
-	return &tcg
+	return &mkm
 }
 
 func (mkm *MKMClient) MKMRawPriceGuide() (string, error) {
