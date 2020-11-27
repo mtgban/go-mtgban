@@ -4,11 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 )
 
-const ctInventoryURL = "https://www.cardtrader.com/cards/%d/filter.json"
+const (
+	ctInventoryURL = "https://www.cardtrader.com/cards/%d/filter.json"
+	ctCategoryURL  = "https://api.cardtrader.com/api/full/v1/blueprints/export?category_id=1"
+)
 
 type Blueprint struct {
 	Id          int    `json:"id"`
@@ -53,12 +57,58 @@ type BlueprintFilter struct {
 }
 
 type CTClient struct {
-	client *http.Client
+	client *retryablehttp.Client
+}
+
+type CTAuthClient struct {
+	client *retryablehttp.Client
+}
+
+type authTransport struct {
+	Parent http.RoundTripper
+	Token  string
+}
+
+func NewCTAuthClient(token string) *CTAuthClient {
+	ct := CTAuthClient{}
+	ct.client = retryablehttp.NewClient()
+	ct.client.Logger = nil
+	ct.client.HTTPClient.Transport = &authTransport{
+		Parent: ct.client.HTTPClient.Transport,
+		Token:  token,
+	}
+	return &ct
+}
+
+func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", "Bearer "+t.Token)
+	return t.Parent.RoundTrip(req)
+}
+
+func (ct *CTAuthClient) GetBlueprints() ([]Blueprint, error) {
+	resp, err := ct.client.Get(ctCategoryURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var blueprints []Blueprint
+	err = json.Unmarshal(data, &blueprints)
+	if err != nil {
+		return nil, err
+	}
+
+	return blueprints, nil
 }
 
 func NewCTClient() *CTClient {
 	ct := CTClient{}
-	ct.client = http.NewClient()
+	ct.client = retryablehttp.NewClient()
 	ct.client.Logger = nil
 	return &ct
 }

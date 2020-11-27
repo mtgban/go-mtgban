@@ -1,7 +1,6 @@
 package cardtrader
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -13,8 +12,6 @@ import (
 )
 
 const (
-	maxCategoryId = 135095
-
 	defaultConcurrency = 8
 )
 
@@ -23,31 +20,18 @@ type Cardtrader struct {
 	InventoryDate  time.Time
 	MaxConcurrency int
 
-	ids         []int
+	authClient  *CTAuthClient
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
 }
 
-func NewScraper(reader io.Reader) (*Cardtrader, error) {
+func NewScraper(token string) *Cardtrader {
 	ct := Cardtrader{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.marketplace = map[string]mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
-
-	if reader != nil {
-		d := json.NewDecoder(reader)
-		err := d.Decode(&ct.ids)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		ct.ids = make([]int, maxCategoryId)
-		for i := range ct.ids {
-			ct.ids[i] = i + 1
-		}
-	}
-
-	return &ct, nil
+	ct.authClient = NewCTAuthClient(token)
+	return &ct
 }
 
 func (ct *Cardtrader) printf(format string, a ...interface{}) {
@@ -192,6 +176,12 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 }
 
 func (ct *Cardtrader) scrape() error {
+	blueprints, err := ct.authClient.GetBlueprints()
+	if err != nil {
+		return err
+	}
+	ct.printf("Parsing %d blueprints", len(blueprints))
+
 	categories := make(chan int)
 	results := make(chan resultChan)
 	var wg sync.WaitGroup
@@ -210,8 +200,8 @@ func (ct *Cardtrader) scrape() error {
 	}
 
 	go func() {
-		for _, id := range ct.ids {
-			categories <- id
+		for _, bp := range blueprints {
+			categories <- bp.Id
 		}
 		close(categories)
 
@@ -230,7 +220,7 @@ func (ct *Cardtrader) scrape() error {
 		// that we're still alive every minute
 		if time.Now().After(lastTime.Add(60 * time.Second)) {
 			card, _ := mtgmatcher.GetUUID(result.cardId)
-			ct.printf("Still going %d/%d, last processed card: %s", result.category, ct.ids[len(ct.ids)-1], card)
+			ct.printf("Still going %d/%d, last processed card: %s", result.category, blueprints[len(blueprints)-1].Id, card)
 			lastTime = time.Now()
 		}
 	}
