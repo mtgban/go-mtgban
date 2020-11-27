@@ -1,9 +1,7 @@
 package starcitygames
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/url"
 	"strconv"
 	"strings"
@@ -34,30 +32,21 @@ type Starcitygames struct {
 
 	products []productList
 
-	client *SCGClient
+	client   *SCGClient
+	blClient *SCGBuylistClient
 }
 
-type productList struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Code string `json:"abbr"`
-}
-
-func NewScraper(buylistCategories io.Reader) (*Starcitygames, error) {
+func NewScraper(username, password string) (*Starcitygames, error) {
 	scg := Starcitygames{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient()
 	scg.MaxConcurrency = defaultConcurrency
-
-	if buylistCategories != nil {
-		d := json.NewDecoder(buylistCategories)
-		err := d.Decode(&scg.products)
-		if err != nil {
-			return nil, err
-		}
+	blClient, err := NewSCGBuylistClient(username, password)
+	if err != nil {
+		return nil, err
 	}
-
+	scg.blClient = blClient
 	return &scg, nil
 }
 
@@ -398,6 +387,12 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 }
 
 func (scg *Starcitygames) parseBL() error {
+	categories, err := scg.blClient.ParseCategories()
+	if err != nil {
+		return err
+	}
+	scg.printf("Parsing %d categories", len(categories))
+
 	products := make(chan string)
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -416,8 +411,8 @@ func (scg *Starcitygames) parseBL() error {
 	}
 
 	go func() {
-		for _, product := range scg.products {
-			products <- product.Id
+		for _, category := range categories {
+			products <- category.Id
 		}
 		close(products)
 
