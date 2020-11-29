@@ -323,10 +323,20 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 		if !(isRare || isMythic) {
 			continue
 		}
-		if co.Card.BorderColor == "silver" {
+
+		set, err := mtgmatcher.GetSet(co.SetCode)
+		if err != nil {
+			return nil, err
+		}
+		if set.Type == "funny" {
 			continue
 		}
+
 		for _, entry := range entries {
+			if entry.Conditions == "PO" {
+				continue
+			}
+
 			pennyMythic := !co.Foil && isMythic && entry.Price <= 0.25
 			pennyRare := !co.Foil && isRare && entry.Price <= 0.07
 			pennyFoil := co.Foil && entry.Price <= 0.05
@@ -343,6 +353,8 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 			case co.Card.Name == "Sakura-Tribe Elder" && entry.Price <= 0.20:
 				pennyInteresting = true
 			case co.Card.Name == "Sol Ring" && entry.Price <= 1.50:
+				pennyInteresting = true
+			case co.Card.Name == "Thran Dynamo" && entry.Price <= 2:
 				pennyInteresting = true
 			}
 
