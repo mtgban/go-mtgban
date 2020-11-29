@@ -254,6 +254,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			switch cardName {
 			case "Solemn Simulacrum",
 				"Golgari Signet",
+				"Simic Signet",
 				"Temple of the False God":
 				return nil, errors.New("unsupported")
 			}
@@ -308,6 +309,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	case "Zendikar Rising":
 		if strings.HasPrefix(cardName, "Blank Card") {
 			return nil, errors.New("untracked")
+		}
+	case "Commander Legends: Variants":
+		if variant == "Showcase Frame" {
+			variant = "Foil Etched"
 		}
 	default:
 		if strings.Contains(variant, "Oversized") {
