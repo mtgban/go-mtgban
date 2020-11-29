@@ -298,6 +298,7 @@ func adjustEdition(inCard *Card) {
 					"Signature Spellbook: Jace",
 					"The List Textless",
 					"Player Rewards Promo",
+					"Player Rewards Textless",
 					"RNA MagicFest Promo",
 					"Commander: 2015 Edition",
 					"State Champs Promo":
