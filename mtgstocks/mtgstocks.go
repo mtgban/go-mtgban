@@ -48,11 +48,13 @@ func NewScraper() *MTGStocks {
 }
 
 var cardTable = map[string]string{
-	"Cevill, Bane of Monsters": "Chevill, Bane of Monsters",
-	"Frontland Felidar":        "Frondland Felidar",
-	"Ragurin Crystal":          "Raugrin Crystal",
-	"Bastion of Rememberance":  "Bastion of Remembrance",
-	"Rograkh, Son of Gohgahh":  "Rograkh, Son of Gohgah",
+	"Cevill, Bane of Monsters":    "Chevill, Bane of Monsters",
+	"Frontland Felidar":           "Frondland Felidar",
+	"Ragurin Crystal":             "Raugrin Crystal",
+	"Bastion of Rememberance":     "Bastion of Remembrance",
+	"Rograkh, Son of Gohgahh":     "Rograkh, Son of Rohgahh",
+	"Swords of Plowshares":        "Swords to Plowshares",
+	"Kedniss, Emberclaw Familiar": "Kediss, Emberclaw Familiar",
 }
 
 func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan) error {
@@ -93,6 +95,13 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		variant += s[1]
 	}
 
+	if strings.HasSuffix(variant, "Ultra Pro Puzzle Quest") {
+		return nil
+	} else if variant == "Welcome Back Promo Hangarback Walker Miscellaneous Promos" {
+		cardName = "Hangarback Walker"
+		edition = "PLGS"
+	}
+
 	lutName, found := cardTable[cardName]
 	if found {
 		cardName = lutName
@@ -120,6 +129,12 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	case "WPN & Gateway Promos":
 		if cardName == "Deathless Angel" {
 			edition = "Rise of the Eldrazi Promos"
+		}
+	case "Unglued":
+		if strings.HasSuffix(variant, "Right") {
+			variant = "29"
+		} else if strings.HasSuffix(variant, "Left") {
+			variant = "28"
 		}
 	default:
 		if strings.HasSuffix(edition, "Promos") {
