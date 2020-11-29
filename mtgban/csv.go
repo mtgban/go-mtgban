@@ -27,7 +27,7 @@ var (
 
 	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Price Ratio")
 
-	MismatchHeader = append(CardHeader, "Conditions", "Price", "Difference", "Spread")
+	MismatchHeader = append(CardHeader, "Conditions", "Price", "Reference", "Difference", "Spread")
 
 	MultiArbitHeader = []string{
 		"Seller", "Cards", "Listings", "Total Prices", "Total Buylist", "Difference", "Spread",
@@ -436,7 +436,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 
 	hasExtraSeller := false
 	header := MismatchHeader
-	if len(mismatch) > 0 && mismatch[0].InventoryEntry.SellerName != "" {
+	if len(mismatch) > 0 && mismatch[0].Inventory.SellerName != "" {
 		header = append(header, "Seller")
 		header = append(header, "Bundle")
 		hasExtraSeller = true
@@ -448,7 +448,8 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 	}
 
 	for _, entry := range mismatch {
-		inv := entry.InventoryEntry
+		inv := entry.Inventory
+		ref := entry.Reference
 
 		record, err := cardId2record(entry.CardId)
 		if err != nil {
@@ -458,6 +459,7 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 		record = append(record,
 			inv.Conditions,
 			fmt.Sprintf("%0.2f", inv.Price),
+			fmt.Sprintf("%0.2f", ref.Price),
 			fmt.Sprintf("%0.2f", entry.Difference),
 			fmt.Sprintf("%0.2f", entry.Spread),
 		)

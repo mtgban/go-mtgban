@@ -235,7 +235,8 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 type MismatchEntry struct {
 	CardId string
 
-	InventoryEntry
+	Inventory InventoryEntry
+	Reference InventoryEntry
 
 	Difference float64
 	Spread     float64
@@ -273,13 +274,17 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 				continue
 			}
 			for _, invEntry := range invEntries {
-				if refEntry.Conditions != invEntry.Conditions {
-					continue
-				}
 				refPrice := refEntry.Price
 				price := invEntry.Price
 
-				if invEntry.Price == 0 {
+				// When invEntry is not NM, we need to account for conditions,
+				// using the default ladder
+				if invEntry.Conditions != "NM" {
+					grade := DefaultGrading("", BuylistEntry{})
+					refPrice *= grade[invEntry.Conditions]
+				}
+
+				if price == 0 {
 					continue
 				}
 
@@ -288,10 +293,11 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 
 				if difference > minDiff && spread > minSpread {
 					res := MismatchEntry{
-						CardId:         cardId,
-						InventoryEntry: invEntry,
-						Difference:     difference,
-						Spread:         spread,
+						CardId:     cardId,
+						Inventory:  invEntry,
+						Reference:  refEntry,
+						Difference: difference,
+						Spread:     spread,
 					}
 					result = append(result, res)
 				}
