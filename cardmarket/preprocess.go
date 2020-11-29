@@ -488,7 +488,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if strings.Contains(edition, "Commander") {
 			edition = mtgmatcher.ParseCommanderEdition(edition)
 
-			if variant == "V.2" {
+			if strings.HasPrefix(edition, "Commander 20") && variant == "V.2" {
 				return nil, errors.New("oversized")
 			}
 		}
