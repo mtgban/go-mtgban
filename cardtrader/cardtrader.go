@@ -277,26 +277,17 @@ func (ct *Cardtrader) InventoryForSeller(sellerName string) (mtgban.InventoryRec
 }
 
 func (ct *Cardtrader) IntializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
+	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
 	}
-
-	ct.inventory = mtgban.InventoryRecord{}
-	for card := range inventory {
-		ct.inventory[card] = inventory[card]
-
-		for i := range ct.inventory[card] {
-			sellerName := ct.inventory[card][i].SellerName
-			if ct.marketplace[sellerName] == nil {
-				ct.marketplace[sellerName] = mtgban.InventoryRecord{}
-			}
-			ct.marketplace[sellerName][card] = append(ct.marketplace[sellerName][card], ct.inventory[card][i])
-		}
-	}
-	if len(ct.inventory) == 0 {
+	if len(inventory) == 0 {
 		return fmt.Errorf("nothing was loaded")
 	}
+
+	ct.marketplace = market
+	ct.inventory = inventory
+
 	ct.printf("Loaded inventory from file")
 
 	return nil

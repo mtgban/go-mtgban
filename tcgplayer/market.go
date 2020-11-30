@@ -275,7 +275,7 @@ func (tcg *TCGPlayerMarket) InventoryForSeller(sellerName string) (mtgban.Invent
 }
 
 func (tcg *TCGPlayerMarket) IntializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
+	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -283,6 +283,7 @@ func (tcg *TCGPlayerMarket) IntializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
+	tcg.marketplace = market
 	tcg.inventory = inventory
 
 	tcg.printf("Loaded inventory from file")

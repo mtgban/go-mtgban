@@ -285,26 +285,17 @@ func (tcg *TCGPlayerFull) InventoryForSeller(sellerName string) (mtgban.Inventor
 }
 
 func (tcg *TCGPlayerFull) IntializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
+	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
 	}
-
-	tcg.inventory = mtgban.InventoryRecord{}
-	for card := range inventory {
-		tcg.inventory[card] = inventory[card]
-
-		for i := range tcg.inventory[card] {
-			sellerName := tcg.inventory[card][i].SellerName
-			if tcg.marketplace[sellerName] == nil {
-				tcg.marketplace[sellerName] = mtgban.InventoryRecord{}
-			}
-			tcg.marketplace[sellerName][card] = append(tcg.marketplace[sellerName][card], tcg.inventory[card][i])
-		}
-	}
-	if len(tcg.inventory) == 0 {
+	if len(inventory) == 0 {
 		return fmt.Errorf("nothing was loaded")
 	}
+
+	tcg.marketplace = market
+	tcg.inventory = inventory
+
 	tcg.printf("Loaded inventory from file")
 
 	return nil

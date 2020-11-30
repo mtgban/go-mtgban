@@ -320,7 +320,7 @@ func (cs *Cardshark) InventoryForSeller(sellerName string) (mtgban.InventoryReco
 }
 
 func (cs *Cardshark) IntializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
+	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -328,7 +328,10 @@ func (cs *Cardshark) IntializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
+	cs.marketplace = market
 	cs.inventory = inventory
+
+	cs.printf("Loaded inventory from file")
 
 	cs.printf("Loaded inventory from file")
 

@@ -320,7 +320,7 @@ func (mkm *CardMarketIndex) InventoryForSeller(sellerName string) (mtgban.Invent
 }
 
 func (mkm *CardMarketIndex) IntializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
+	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -328,6 +328,7 @@ func (mkm *CardMarketIndex) IntializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
+	mkm.marketplace = market
 	mkm.inventory = inventory
 
 	mkm.printf("Loaded inventory from file")
