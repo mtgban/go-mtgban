@@ -4,12 +4,14 @@ import (
 	"sort"
 )
 
+// Separate a Market into multiple Seller objects
 func Seller2Sellers(market Market) ([]Seller, error) {
 	inventory, err := market.Inventory()
 	if err != nil {
 		return nil, err
 	}
 
+	// This is an unorthodox way to retrieve a list of unique sellers
 	listSellers := map[string]bool{}
 	for _, entries := range inventory {
 		for _, entry := range entries {
@@ -25,9 +27,9 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 		}
 		seller := &BaseSeller{}
 		seller.inventory = inventory
+		seller.info = market.Info()
 		seller.info.Name = sellerName
 		seller.info.Shorthand = sellerName
-		seller.info.MetadataOnly = market.Info().MetadataOnly
 		sellers = append(sellers, seller)
 	}
 	return sellers, nil
