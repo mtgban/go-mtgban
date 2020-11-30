@@ -9,6 +9,8 @@ import (
 const (
 	DefaultArbitMinDiff      = 0.2
 	DefaultArbitMinSpread    = 25.0
+	DefaultMultiMinDiff      = 5.0
+	DefaultMultiMinSpread    = 100.0
 	DefaultMismatchMinDiff   = 1.0
 	DefaultMismatchMinSpread = 100.0
 )
@@ -176,8 +178,8 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 		return
 	}
 
-	minDiff := DefaultMismatchMinDiff
-	minSpread := DefaultMismatchMinSpread
+	minDiff := DefaultMultiMinDiff
+	minSpread := DefaultMultiMinSpread
 
 	extra := 0.0
 	var arbitOpts *ArbitOpts
