@@ -36,6 +36,51 @@ var (
 	MarketTotalsHeader = append(CardHeader, "Listings", "Total Quantity", "Lowest Price", "Average", "Spread")
 )
 
+func record2entry(record []string) (*InventoryEntry, error) {
+	index := len(CardHeader)
+	cardId := record[0]
+	_, err := mtgmatcher.GetUUID(cardId)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+	}
+
+	conditions := record[index]
+	index++
+	price, err := strconv.ParseFloat(record[index], 64)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading record: %v", err)
+	}
+	index++
+	qty, err := strconv.Atoi(record[index])
+	if err != nil {
+		return nil, fmt.Errorf("Error reading record: %v", err)
+	}
+	index++
+
+	URL := record[index]
+	index++
+
+	sellerName := ""
+	if len(record) > index {
+		sellerName = record[index]
+		index++
+	}
+	bundle := false
+	if len(record) > index {
+		bundle = record[index] == "Y"
+		index++
+	}
+
+	return &InventoryEntry{
+		Conditions: conditions,
+		Price:      price,
+		Quantity:   qty,
+		URL:        URL,
+		SellerName: sellerName,
+		Bundle:     bundle,
+	}, nil
+}
+
 func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 	strict := true
 	if len(flags) > 0 {
@@ -82,62 +127,85 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 			continue
 		}
 
-		index := len(CardHeader)
-		cardId := record[0]
-		_, err = mtgmatcher.GetUUID(cardId)
+		entry, err := record2entry(record)
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+				return nil, err
 			}
 			continue
 		}
 
-		conditions := record[index]
-		index++
-		price, err := strconv.ParseFloat(record[index], 64)
-		if err != nil {
-			if strict {
-				return nil, fmt.Errorf("Error reading record: %v", err)
-			}
-			continue
-		}
-		index++
-		qty, err := strconv.Atoi(record[index])
-		if err != nil {
-			if strict {
-				return nil, fmt.Errorf("Error reading record: %v", err)
-			}
-			continue
-		}
-		index++
-
-		URL := record[index]
-		index++
-
-		sellerName := ""
-		if len(record) > index {
-			sellerName = record[index]
-			index++
-		}
-		bundle := false
-		if len(record) > index {
-			bundle = record[index] == "Y"
-			index++
-		}
-
-		entry := &InventoryEntry{
-			Conditions: conditions,
-			Price:      price,
-			Quantity:   qty,
-			URL:        URL,
-			SellerName: sellerName,
-			Bundle:     bundle,
-		}
-
-		inventory.Add(cardId, entry)
+		inventory.Add(record[0], entry)
 	}
 
 	return inventory, nil
+}
+
+func LoadMarketFromCSV(r io.Reader, flags ...bool) (map[string]InventoryRecord, InventoryRecord, error) {
+	strict := true
+	if len(flags) > 0 {
+		strict = flags[0]
+	}
+	csvReader := csv.NewReader(r)
+	first, err := csvReader.Read()
+	if err == io.EOF {
+		return nil, nil, fmt.Errorf("Empty input file")
+	}
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error reading header: %v", err)
+	}
+
+	okHeader := true
+	if len(first) < len(InventoryHeader) {
+		okHeader = false
+	} else {
+		header := InventoryHeader
+		if first[len(first)-1] == MarketHeader[len(MarketHeader)-1] {
+			header = MarketHeader
+		}
+		for i, tag := range header {
+			if tag != first[i] {
+				okHeader = false
+				break
+			}
+		}
+	}
+	if !okHeader {
+		return nil, nil, fmt.Errorf("Malformed inventory file")
+	}
+
+	market := map[string]InventoryRecord{}
+	inventory := InventoryRecord{}
+	for {
+		record, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			if strict {
+				return nil, nil, fmt.Errorf("Error reading record: %v", err)
+			}
+			continue
+		}
+
+		entry, err := record2entry(record)
+		if err != nil {
+			if strict {
+				return nil, nil, err
+			}
+			continue
+		}
+
+		inventory.Add(record[0], entry)
+
+		_, found := market[entry.SellerName]
+		if !found {
+			market[entry.SellerName] = InventoryRecord{}
+		}
+		market[entry.SellerName].Add(record[0], entry)
+	}
+
+	return market, inventory, nil
 }
 
 func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
