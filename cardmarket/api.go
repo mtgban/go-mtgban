@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/uuid"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"golang.org/x/time/rate"
 )
 
 const (
@@ -35,10 +36,14 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 	mkm := MKMClient{}
 	mkm.client = retryablehttp.NewClient()
 	mkm.client.Logger = nil
+	mkm.client.Backoff = retryablehttp.LinearJitterBackoff
 	mkm.client.HTTPClient.Transport = &authTransport{
 		Parent:    mkm.client.HTTPClient.Transport,
 		AppToken:  appToken,
 		AppSecret: appSecret,
+		// Set a more conservative limit than defined below to avoid losing requests
+		// https://www.cardmarket.com/en/Magic/News/Additional-Request-Limits-For-Our-API
+		Limiter: rate.NewLimiter(9, 16),
 	}
 	return &mkm
 }
@@ -264,9 +269,16 @@ type authTransport struct {
 	// May be empty
 	AccessToken       string
 	AccessTokenSecret string
+
+	Limiter *rate.Limiter
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	err := t.Limiter.Wait(req.Context())
+	if err != nil {
+		return nil, err
+	}
+
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 
 	// Items we need
