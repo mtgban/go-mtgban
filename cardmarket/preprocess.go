@@ -520,7 +520,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 			editionNoSuffix := strings.TrimSuffix(edition, ": Extras")
 			editionNoSuffix = strings.TrimSuffix(editionNoSuffix, ": Promos")
-			editionNoSuffix = strings.Replace(editionNoSuffix, "Of", "of", 1)
 			editionNoSuffix = strings.Replace(editionNoSuffix, "Core", "Core Set", 1)
 
 			set, err := mtgmatcher.GetSetByName(editionNoSuffix)
