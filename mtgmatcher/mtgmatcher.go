@@ -326,7 +326,7 @@ func adjustEdition(inCard *Card) {
 		variation = ""
 	}
 
-	set, found := backend.Sets[edition]
+	set, found := backend.Sets[strings.ToUpper(edition)]
 	if found {
 		edition = set.Name
 	}
