@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
@@ -274,7 +275,7 @@ type authTransport struct {
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	err := t.Limiter.Wait(req.Context())
+	err := t.Limiter.Wait(context.Background())
 	if err != nil {
 		return nil, err
 	}
