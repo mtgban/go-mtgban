@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"golang.org/x/time/rate"
 )
 
 const (
@@ -39,6 +41,9 @@ func NewTCGClient(publicId, privateId string) *TCGClient {
 		Parent:    tcg.client.HTTPClient.Transport,
 		PublicId:  publicId,
 		PrivateId: privateId,
+
+		// Set a relatively high rate to prevent unexpected limits later
+		Limiter: rate.NewLimiter(20, 20),
 	}
 	return &tcg
 }
@@ -49,9 +54,15 @@ type authTransport struct {
 	PrivateId string
 	token     string
 	expires   time.Time
+	Limiter   *rate.Limiter
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	err := t.Limiter.Wait(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
 	if t.token == "" || t.expires.After(time.Now()) {
 		if t.PublicId == "" || t.PrivateId == "" {
 			return nil, fmt.Errorf("missing public or private id")
