@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -200,8 +201,10 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 	return output, nil
 }
 
-type MKMPriceGuide struct {
-	IdProduct      string
+type MKMPriceGuide map[int]MKMProductPriceGuide
+
+type MKMProductPriceGuide struct {
+	IdProduct      int
 	AvgSellPrice   float64
 	LowPrice       float64
 	TrendPrice     float64
@@ -219,7 +222,7 @@ type MKMPriceGuide struct {
 	FoilAvgDay30   float64
 }
 
-func (mkm *MKMClient) MKMPriceGuide() (map[string]MKMPriceGuide, error) {
+func (mkm *MKMClient) MKMPriceGuide() (MKMPriceGuide, error) {
 	raw, err := mkm.MKMRawPriceGuide()
 	if err != nil {
 		return nil, err
@@ -245,6 +248,7 @@ func (mkm *MKMClient) MKMPriceGuide() (map[string]MKMPriceGuide, error) {
 	// The CSV has a trailing comma at the end of the header
 	csvReader.FieldsPerRecord = len(first) - 1
 
+	out := MKMPriceGuide{}
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -254,9 +258,42 @@ func (mkm *MKMClient) MKMPriceGuide() (map[string]MKMPriceGuide, error) {
 			continue
 		}
 
-		// todo: load map up
-		fmt.Println(record)
+		idProduct, _ := strconv.Atoi(record[0])
+		avgSellPrice, _ := strconv.ParseFloat(record[1], 64)
+		lowPrice, _ := strconv.ParseFloat(record[2], 64)
+		trendPrice, _ := strconv.ParseFloat(record[3], 64)
+		germanProLow, _ := strconv.ParseFloat(record[4], 64)
+		suggestedPrice, _ := strconv.ParseFloat(record[5], 64)
+		foilSell, _ := strconv.ParseFloat(record[6], 64)
+		foilLow, _ := strconv.ParseFloat(record[7], 64)
+		foilTrend, _ := strconv.ParseFloat(record[8], 64)
+		lowPriceEx, _ := strconv.ParseFloat(record[9], 64)
+		avgDay1, _ := strconv.ParseFloat(record[10], 64)
+		avgDay7, _ := strconv.ParseFloat(record[11], 64)
+		avgDay30, _ := strconv.ParseFloat(record[12], 64)
+		foilAvgDay1, _ := strconv.ParseFloat(record[13], 64)
+		foilAvgDay7, _ := strconv.ParseFloat(record[14], 64)
+		foilAvgDay30, _ := strconv.ParseFloat(record[15], 64)
+
+		out[idProduct] = MKMProductPriceGuide{
+			IdProduct:      idProduct,
+			AvgSellPrice:   avgSellPrice,
+			LowPrice:       lowPrice,
+			TrendPrice:     trendPrice,
+			GermanProLow:   germanProLow,
+			SuggestedPrice: suggestedPrice,
+			FoilSell:       foilSell,
+			FoilLow:        foilLow,
+			FoilTrend:      foilTrend,
+			LowPriceEx:     lowPriceEx,
+			AvgDay1:        avgDay1,
+			AvgDay7:        avgDay7,
+			AvgDay30:       avgDay30,
+			FoilAvgDay1:    foilAvgDay1,
+			FoilAvgDay7:    foilAvgDay7,
+			FoilAvgDay30:   foilAvgDay30,
+		}
 	}
 
-	return nil, nil
+	return out, nil
 }
