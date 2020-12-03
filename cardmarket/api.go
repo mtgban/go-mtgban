@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	mkmProductBaseURL  = "https://api.cardmarket.com/ws/v2.0/output.json/products/"
+	mkmProductsBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/products/"
 	mkmArticlesBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/articles/"
 
 	mkmPriceGuideURL  = "https://api.cardmarket.com/ws/v2.0/output.json/priceguide"
@@ -150,7 +150,7 @@ type MKMProduct struct {
 }
 
 func (mkm *MKMClient) MKMProduct(id string) (*MKMProduct, error) {
-	resp, err := mkm.client.Get(mkmProductBaseURL + id)
+	resp, err := mkm.client.Get(mkmProductsBaseURL + id)
 	if err != nil {
 		return nil, err
 	}
