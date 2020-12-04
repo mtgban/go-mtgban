@@ -16,11 +16,6 @@ const (
 	defaultConcurrency = 8
 )
 
-type requestChan struct {
-	ProductId string
-	Expansion string
-}
-
 type responseChan struct {
 	ogId   int
 	cardId string

@@ -227,8 +227,8 @@ type MKMArticle struct {
 	IsAltered bool `json:"isAltered"`
 }
 
-func (mkm *MKMClient) MKMArticles(id string, anyLanguage bool) ([]MKMArticle, error) {
-	u, err := url.Parse(mkmArticlesBaseURL + id)
+func (mkm *MKMClient) MKMArticles(id int, anyLanguage bool) ([]MKMArticle, error) {
+	u, err := url.Parse(mkmArticlesBaseURL + fmt.Sprint(id))
 	if err != nil {
 		return nil, err
 	}

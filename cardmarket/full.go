@@ -46,9 +46,38 @@ func NewScraperFull(appToken, appSecret string) (*CardMarketFull, error) {
 // TODO
 // handle the list/mb1 foils
 // check articles loop works more than once
-func (mkm *CardMarketFull) processEntry(channel chan<- responseChan, req requestChan) error {
+func (mkm *CardMarketFull) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair) error {
+	products, err := mkm.client.MKMProductsInExpansion(pair.IdExpansion)
+	if err != nil {
+		return err
+	}
+
+	for _, product := range products {
+		cardName := product.Name
+		skipCard := false
+		for _, name := range filteredCards {
+			if cardName == name {
+				skipCard = true
+				break
+			}
+		}
+		if skipCard ||
+			mtgmatcher.IsToken(cardName) ||
+			strings.Contains(cardName, "On Your Turn") {
+			continue
+		}
+
+		err := mkm.processProduct(channel, &product)
+		if err != nil {
+			mkm.printf("product id %s returned %s", product.IdProduct, err)
+		}
+	}
+	return nil
+}
+
+func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct *MKMProduct) error {
 	anyLang := false
-	switch req.Expansion {
+	switch ogProduct.ExpansionName {
 	case "Dengeki Maoh Promos",
 		"Promos", // for Magazine Inserts
 		"War of the Spark: Japanese Alternate-Art Planeswalkers",
@@ -60,7 +89,7 @@ func (mkm *CardMarketFull) processEntry(channel chan<- responseChan, req request
 		anyLang = true
 	}
 
-	articles, err := mkm.client.MKMArticles(req.ProductId, anyLang)
+	articles, err := mkm.client.MKMArticles(ogProduct.IdProduct, anyLang)
 	if err != nil {
 		return err
 	}
@@ -202,28 +231,24 @@ func (mkm *CardMarketFull) processEntry(channel chan<- responseChan, req request
 }
 
 func (mkm *CardMarketFull) scrape() error {
-	list, err := mkm.client.ListProductIds()
-	if err != nil {
-		return err
-	}
-	expansions, err := mkm.client.MKMExpansions()
+	list, err := mkm.client.ListExpansionIds()
 	if err != nil {
 		return err
 	}
 
-	mkm.printf("Parsing %d product ids over %d editions", len(list), len(expansions))
+	mkm.printf("Parsing %d editions", len(list))
 
-	products := make(chan requestChan)
+	expansions := make(chan MKMExpansionIdPair)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < mkm.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for product := range products {
-				err := mkm.processEntry(channel, product)
+			for expansion := range expansions {
+				err := mkm.processEdition(channel, &expansion)
 				if err != nil {
-					mkm.printf("id %s returned %s", product.ProductId, err)
+					mkm.printf("expansion id %s returned %s", expansion.IdExpansion, err)
 				}
 			}
 			wg.Done()
@@ -232,27 +257,15 @@ func (mkm *CardMarketFull) scrape() error {
 
 	go func() {
 		for _, pair := range list {
-			exp, found := expansions[pair.ExpansionId]
-			if !found {
-				mkm.printf("edition id %s not found", pair.ExpansionId)
-				continue
-			}
-			if !exp.IsReleased {
-				continue
-			}
-			//num, _ := strconv.Atoi(id)
-			products <- requestChan{
-				ProductId: pair.ProductId,
-				Expansion: expansions[pair.ExpansionId].Name,
-			}
+			mkm.printf("Processing %s (%s)", pair.Name, pair.IdExpansion)
+			expansions <- pair
 		}
-		close(products)
+		close(expansions)
 
 		wg.Wait()
 		close(channel)
 	}()
 
-	lastTime := time.Now()
 	for result := range channel {
 		err := mkm.inventory.AddRelaxed(result.cardId, &result.entry)
 		if err != nil {
@@ -267,13 +280,6 @@ func (mkm *CardMarketFull) scrape() error {
 			}
 			mkm.printf("%s - %s", result.ogId, err.Error())
 			continue
-		}
-		// This would be better with a select, but for now just print a message
-		// that we're still alive every minute
-		if time.Now().After(lastTime.Add(60 * time.Second)) {
-			card, _ := mtgmatcher.GetUUID(result.cardId)
-			mkm.printf("Still going %s/%s, last processed card: %s", result.ogId, list[len(list)-1].ProductId, card)
-			lastTime = time.Now()
 		}
 	}
 
