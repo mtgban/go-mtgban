@@ -60,12 +60,36 @@ func NewScraperIndex(appToken, appSecret string) (*CardMarketIndex, error) {
 	return &mkm, nil
 }
 
-func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req requestChan) error {
-	product, err := mkm.client.MKMProduct(req.ProductId)
+func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair, priceGuide MKMPriceGuide) error {
+	products, err := mkm.client.MKMProductsInExpansion(pair.IdExpansion)
 	if err != nil {
 		return err
 	}
 
+	for _, product := range products {
+		cardName := product.Name
+		skipCard := false
+		for _, name := range filteredCards {
+			if cardName == name {
+				skipCard = true
+				break
+			}
+		}
+		if skipCard ||
+			mtgmatcher.IsToken(cardName) ||
+			strings.Contains(cardName, "On Your Turn") {
+			continue
+		}
+
+		err := mkm.processProduct(channel, &product, priceGuide)
+		if err != nil {
+			mkm.printf("product id %s returned %s", product.IdProduct, err)
+		}
+	}
+	return nil
+}
+
+func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide MKMPriceGuide) error {
 	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
 	if err != nil {
 		_, ok := err.(*PreprocessError)
@@ -112,10 +136,10 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 		"MKM Low", "MKM Trend",
 	}
 	prices := []float64{
-		product.PriceGuide["LOWEX"], product.PriceGuide["TREND"],
+		priceGuide[product.IdProduct].LowPriceEx, priceGuide[product.IdProduct].TrendPrice,
 	}
 	foilprices := []float64{
-		product.PriceGuide["LOWFOIL"], product.PriceGuide["TRENDFOIL"],
+		priceGuide[product.IdProduct].FoilLow, priceGuide[product.IdProduct].FoilTrend,
 	}
 
 	card, err := mtgmatcher.GetUUID(cardId)
@@ -207,24 +231,31 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 }
 
 func (mkm *CardMarketIndex) scrape() error {
-	list, err := mkm.client.ListProductIds()
+	priceGuide, err := mkm.client.MKMPriceGuide()
 	if err != nil {
 		return err
 	}
 
-	mkm.printf("Parsing %d product ids", len(list))
+	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	products := make(chan requestChan)
+	list, err := mkm.client.ListExpansionIds()
+	if err != nil {
+		return err
+	}
+
+	mkm.printf("Parsing %d expansion ids", len(list))
+
+	expansions := make(chan MKMExpansionIdPair)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < mkm.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for product := range products {
-				err := mkm.processEntry(channel, product)
+			for expansion := range expansions {
+				err := mkm.processEdition(channel, &expansion, priceGuide)
 				if err != nil {
-					mkm.printf("id %s returned %s", product.ProductId, err)
+					mkm.printf("expansion id %s returned %s", expansion.IdExpansion, err)
 				}
 			}
 			wg.Done()
@@ -233,18 +264,15 @@ func (mkm *CardMarketIndex) scrape() error {
 
 	go func() {
 		for _, pair := range list {
-			//num, _ := strconv.Atoi(pair.ProductId)
-			products <- requestChan{
-				ProductId: pair.ProductId,
-			}
+			mkm.printf("Processing %s (%s)", pair.Name, pair.IdExpansion)
+			expansions <- pair
 		}
-		close(products)
+		close(expansions)
 
 		wg.Wait()
 		close(channel)
 	}()
 
-	lastTime := time.Now()
 	for result := range channel {
 		err := mkm.inventory.AddStrict(result.cardId, &result.entry)
 		if err != nil {
@@ -259,13 +287,6 @@ func (mkm *CardMarketIndex) scrape() error {
 			}
 			mkm.printf("%d - %s", result.ogId, err.Error())
 			continue
-		}
-		// This would be better with a select, but for now just print a message
-		// that we're still alive every minute
-		if time.Now().After(lastTime.Add(60 * time.Second)) {
-			card, _ := mtgmatcher.GetUUID(result.cardId)
-			mkm.printf("Still going %s/%s, last processed card: %s", result.ogId, list[len(list)-1].ProductId, card)
-			lastTime = time.Now()
 		}
 	}
 
