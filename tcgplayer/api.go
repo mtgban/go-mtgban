@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
@@ -47,6 +48,8 @@ func NewTCGClient(publicId, privateId string) *TCGClient {
 
 		// Set a relatively high rate to prevent unexpected limits later
 		Limiter: rate.NewLimiter(40, 20),
+
+		mtx: sync.RWMutex{},
 	}
 	return &tcg
 }
@@ -58,6 +61,38 @@ type authTransport struct {
 	token     string
 	expires   time.Time
 	Limiter   *rate.Limiter
+	mtx       sync.RWMutex
+}
+
+func (t *authTransport) authToken() (string, time.Time, error) {
+	params := url.Values{}
+	params.Set("grant_type", "client_credentials")
+	params.Set("client_id", t.PublicId)
+	params.Set("client_secret", t.PrivateId)
+	body := strings.NewReader(params.Encode())
+
+	resp, err := cleanhttp.DefaultClient().Post(tcgApiTokenURL, "application/json", body)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	var response struct {
+		AccessToken string        `json:"access_token"`
+		ExpiresIn   time.Duration `json:"expires_in"`
+	}
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	expires := time.Now().Add(response.ExpiresIn * time.Second)
+	return response.AccessToken, expires, nil
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -65,42 +100,41 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if t.token == "" || time.Now().After(t.expires.Add(-1*time.Hour)) {
-		if t.PublicId == "" || t.PrivateId == "" {
-			return nil, fmt.Errorf("missing public or private id")
-		}
-		params := url.Values{}
-		params.Set("grant_type", "client_credentials")
-		params.Set("client_id", t.PublicId)
-		params.Set("client_secret", t.PrivateId)
-		body := strings.NewReader(params.Encode())
-
-		resp, err := cleanhttp.DefaultClient().Post(tcgApiTokenURL, "application/json", body)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var response struct {
-			AccessToken string        `json:"access_token"`
-			ExpiresIn   time.Duration `json:"expires_in"`
-		}
-		err = json.Unmarshal(data, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		t.token = response.AccessToken
-		t.expires = time.Now().Add(response.ExpiresIn * time.Second)
+	if t.PublicId == "" || t.PrivateId == "" {
+		return nil, fmt.Errorf("missing public or private id")
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.token))
+	// Retrieve the static values
+	t.mtx.RLock()
+	token := t.token
+	expires := t.expires
+	t.mtx.RUnlock()
+
+	// If there is a token, make sure it's still valid
+	if token != "" || time.Now().After(expires.Add(-1*time.Hour)) {
+		// If not valid, ask for generating a new one
+		t.mtx.Lock()
+		token = ""
+		t.mtx.Unlock()
+	}
+
+	// Generate a new token
+	if token == "" {
+		t.mtx.Lock()
+		// Only perform this action once, for the routine that got the mutex first
+		// The others will just use the updated token immediately after
+		if token == t.token {
+			t.token, t.expires, err = t.authToken()
+		}
+		token = t.token
+		t.mtx.Unlock()
+		// If anything fails
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	return t.Parent.RoundTrip(req)
 }
 
