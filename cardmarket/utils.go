@@ -201,6 +201,38 @@ func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
 	return output, nil
 }
 
+type MKMExpansionIdPair struct {
+	IdExpansion string
+	Name        string
+}
+
+func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
+	expansions, err := mkm.MKMExpansions()
+	if err != nil {
+		return nil, err
+	}
+
+	var out []MKMExpansionIdPair
+	for id, exp := range expansions {
+		skipExpansion := false
+		for _, expId := range filteredExpansions {
+			if id == expId {
+				skipExpansion = true
+				break
+			}
+		}
+		if skipExpansion || strings.Contains(exp.Name, "Token") {
+			continue
+		}
+		out = append(out, MKMExpansionIdPair{
+			IdExpansion: id,
+			Name:        exp.Name,
+		})
+	}
+
+	return out, nil
+}
+
 type MKMPriceGuide map[int]MKMProductPriceGuide
 
 type MKMProductPriceGuide struct {

@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	mkmProductsBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/products/"
-	mkmArticlesBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/articles/"
+	mkmProductsBaseURL   = "https://api.cardmarket.com/ws/v2.0/output.json/products/"
+	mkmArticlesBaseURL   = "https://api.cardmarket.com/ws/v2.0/output.json/articles/"
+	mkmExpansionsBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/expansions/"
 
 	mkmPriceGuideURL  = "https://api.cardmarket.com/ws/v2.0/output.json/priceguide"
 	mkmProductListURL = "https://api.cardmarket.com/ws/v2.0/output.json/productlist"
@@ -171,6 +172,30 @@ func (mkm *MKMClient) MKMProduct(id string) (*MKMProduct, error) {
 	}
 
 	return &response.Product, nil
+}
+
+func (mkm *MKMClient) MKMProductsInExpansion(id string) ([]MKMProduct, error) {
+	resp, err := mkm.client.Get(mkmExpansionsBaseURL + id + "/singles")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response struct {
+		Expansion MKMExpansion `json:"expansion"`
+		Single    []MKMProduct `json:"single"`
+	}
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Single, nil
 }
 
 type MKMArticle struct {
