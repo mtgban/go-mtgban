@@ -47,7 +47,7 @@ func NewTCGClient(publicId, privateId string) *TCGClient {
 		PrivateId: privateId,
 
 		// Set a relatively high rate to prevent unexpected limits later
-		Limiter: rate.NewLimiter(40, 20),
+		Limiter: rate.NewLimiter(80, 20),
 
 		mtx: sync.RWMutex{},
 	}
