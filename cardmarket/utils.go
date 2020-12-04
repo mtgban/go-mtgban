@@ -12,38 +12,23 @@ import (
 )
 
 var filteredExpansions = []string{
-	"73",   // Foreign White Bordered
-	"96",   // Rinascimento
-	"105",  // Salvat-Hachette
-	"110",  // Oversized 6x9 Promos
-	"111",  // Oversized Box Toppers
-	"1259", // Salvat-Hachette 2011
-	"1269", // 2006 Player Cards
-	"1281", // Your Move Games Tokens
-	"1332", // Fourth Edition: Black Bordered
-	"1391", // 2005 Player Cards
-	"1392", // 2007 Player Card
-	"1401", // Simplified Chinese Alternate Art Cards
-	"1408", // Filler Cards
-	"1451", // Ultra-Pro Puzzle Cards
-	"1500", // Starcity Games: Commemorative Tokens
-	"1502", // Tokens for MTG
-	"1599", // Chronicles: Japanese
-	"1600", // Fourth Edition: Alternate
-	"1638", // Fallen Empires: Wyvern Misprints
-	"1639", // Oversized 9x12 Promos
-	"1659", // Yummy Tokens
-	"1691", // GnD Cards
-	"1705", // Javi Alterations Tokens
-	"1833", // Rk post Products
-	"1834", // Mezzocielo & Friends Classic Tokens
-	"1837", // The Dark Italian
-	"1838", // Legends Italian
-	"2114", // Johannes Voss Tokens
-	"2484", // Modern Horizons: Art Series
-	"2572", // Classic Art Tokens
-	"2529", // Cats & Cantrips Tokens
-	"2567", // Tokens of Spirit
+	"Chronicles: Japanese",
+	"Fallen Empires: Wyvern Misprints",
+	"Filler Cards",
+	"Foreign White Bordered",
+	"Fourth Edition: Alternate",
+	"Fourth Edition: Black Bordered",
+	"GnD Cards",
+	"Legends Italian",
+	"Modern Horizons: Art Series",
+	"Rinascimento",
+	"Rk post Products",
+	"Salvat-Hachette 2011",
+	"Salvat-Hachette",
+	"Simplified Chinese Alternate Art Cards",
+	"Starcity Games: Creature Collection",
+	"The Dark Italian",
+	"Ultra-Pro Puzzle Cards",
 }
 
 var filteredCards = []string{
@@ -125,13 +110,18 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 	var out []MKMExpansionIdPair
 	for id, exp := range expansions {
 		skipExpansion := false
-		for _, expId := range filteredExpansions {
-			if id == expId {
+		for _, expName := range filteredExpansions {
+			if exp.Name == expName {
 				skipExpansion = true
 				break
 			}
 		}
-		if skipExpansion || strings.Contains(exp.Name, "Token") {
+		if strings.Contains(exp.Name, "Token") ||
+			strings.Contains(exp.Name, "Oversized") ||
+			strings.Contains(exp.Name, "Player Cards") {
+			skipExpansion = true
+		}
+		if skipExpansion {
 			continue
 		}
 		out = append(out, MKMExpansionIdPair{
