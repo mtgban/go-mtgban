@@ -66,7 +66,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	if t.token == "" || t.expires.After(time.Now()) {
+	if t.token == "" || time.Now().After(t.expires) {
 		if t.PublicId == "" || t.PrivateId == "" {
 			return nil, fmt.Errorf("missing public or private id")
 		}
@@ -89,7 +89,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		var response struct {
 			AccessToken string        `json:"access_token"`
-			Expires     time.Duration `json:"expires"`
+			ExpiresIn   time.Duration `json:"expires_in"`
 		}
 		err = json.Unmarshal(data, &response)
 		if err != nil {
@@ -97,7 +97,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 
 		t.token = response.AccessToken
-		t.expires = time.Now().Add(response.Expires)
+		t.expires = time.Now().Add(response.ExpiresIn * time.Second)
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.token))
