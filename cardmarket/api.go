@@ -140,6 +140,7 @@ type MKMProduct struct {
 	Name          string `json:"enName"`
 	Website       string `json:"website"`
 	Number        string `json:"number"`
+	ExpansionName string `json:"expansionName"`
 	Expansion     struct {
 		IdExpansion int    `json:"idExpansion"`
 		Name        string `json:"enName"`

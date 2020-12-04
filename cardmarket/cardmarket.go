@@ -66,7 +66,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 		return err
 	}
 
-	theCard, err := Preprocess(product.Name, product.Number, product.Expansion.Name)
+	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
 	if err != nil {
 		_, ok := err.(*PreprocessError)
 		if ok {
