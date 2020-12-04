@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"golang.org/x/time/rate"
 )
@@ -20,6 +21,8 @@ const (
 
 	pagesPerRequest = 50
 	tcgBaseURL      = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
+
+	tcgApiTokenURL = "https://api.tcgplayer.com/token"
 
 	tcgApiVersion    = "v1.39.0"
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
@@ -73,7 +76,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		params.Set("client_secret", t.PrivateId)
 		body := strings.NewReader(params.Encode())
 
-		resp, err := retryablehttp.Post("https://api.tcgplayer.com/token", "application/json", body)
+		resp, err := cleanhttp.DefaultClient().Post(tcgApiTokenURL, "application/json", body)
 		if err != nil {
 			return nil, err
 		}
