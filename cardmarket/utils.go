@@ -9,8 +9,6 @@ import (
 	"io"
 	"strconv"
 	"strings"
-
-	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 var filteredExpansions = []string{
@@ -111,94 +109,6 @@ var filteredCards = []string{
 	"Robot Chicken",
 	"Phoenix Heart",
 	"Splendid Genesis",
-}
-
-type MKMProductIdPair struct {
-	ProductId   string
-	ExpansionId string
-}
-
-func (mkm *MKMClient) ListProductIds() ([]MKMProductIdPair, error) {
-	var output []MKMProductIdPair
-
-	raw, err := mkm.MKMRawProductList()
-	if err != nil {
-		return nil, err
-	}
-
-	d := base64.NewDecoder(base64.StdEncoding, strings.NewReader(raw))
-	gzipReader, err := gzip.NewReader(d)
-	if err != nil {
-		return nil, err
-	}
-	defer gzipReader.Close()
-
-	csvReader := csv.NewReader(gzipReader)
-
-	// idProduct,Name,"Category ID","Category","Expansion ID","Metacard ID","Date Added"
-	_, err = csvReader.Read()
-	if err == io.EOF {
-		return nil, errors.New("empty csv")
-	}
-	if err != nil {
-		return nil, fmt.Errorf("error reading csv header: %v", err)
-	}
-
-	for {
-		record, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			continue
-		}
-		if len(record) < 5 {
-			continue
-		}
-
-		id := record[0]
-		cardName := record[1]
-		categoryId := record[2]
-		expansionId := record[4]
-
-		// Only "Magic Single" products
-		if categoryId != "1" {
-			continue
-		}
-
-		// Skip unsupported sets
-		skipExpansion := false
-		for _, expId := range filteredExpansions {
-			if expansionId == expId {
-				skipExpansion = true
-				break
-			}
-		}
-		if skipExpansion {
-			continue
-		}
-
-		// Skip unsupported cards
-		skipCard := false
-		for _, name := range filteredCards {
-			if cardName == name {
-				skipCard = true
-				break
-			}
-		}
-		if skipCard ||
-			mtgmatcher.IsToken(cardName) ||
-			strings.Contains(cardName, "On Your Turn") {
-			continue
-		}
-
-		output = append(output, MKMProductIdPair{
-			ProductId:   id,
-			ExpansionId: expansionId,
-		})
-	}
-
-	return output, nil
 }
 
 type MKMExpansionIdPair struct {
