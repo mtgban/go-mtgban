@@ -182,7 +182,7 @@ func (mkm *CardMarketFull) processEntry(channel chan<- responseChan, req request
 			mtgmatcher.Contains(article.Comments, "square")
 
 		out := responseChan{
-			ogId:   req.ProductId,
+			ogId:   article.IdProduct,
 			cardId: finalCardId,
 			entry: mtgban.InventoryEntry{
 				Conditions: cond,

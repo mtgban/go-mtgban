@@ -22,7 +22,7 @@ type requestChan struct {
 }
 
 type responseChan struct {
-	ogId   string
+	ogId   int
 	cardId string
 	entry  mtgban.InventoryEntry
 }
@@ -134,7 +134,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 				continue
 			}
 			out := responseChan{
-				ogId:   req.ProductId,
+				ogId:   product.IdProduct,
 				cardId: cardId,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
@@ -164,7 +164,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 						continue
 					}
 					out := responseChan{
-						ogId:   req.ProductId,
+						ogId:   product.IdProduct,
 						cardId: cardIdFoil,
 						entry: mtgban.InventoryEntry{
 							Conditions: "NM",
@@ -188,7 +188,7 @@ func (mkm *CardMarketIndex) processEntry(channel chan<- responseChan, req reques
 				continue
 			}
 			out := responseChan{
-				ogId:   req.ProductId,
+				ogId:   product.IdProduct,
 				cardId: cardId,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
@@ -250,14 +250,14 @@ func (mkm *CardMarketIndex) scrape() error {
 		if err != nil {
 			card, cerr := mtgmatcher.GetUUID(result.cardId)
 			if cerr != nil {
-				mkm.printf("%s - %s: %s", result.ogId, cerr.Error(), result.cardId)
+				mkm.printf("%d - %s: %s", result.ogId, cerr.Error(), result.cardId)
 				continue
 			}
 			// Skip WCD, too many errors
 			if card.Edition == "Pro Tour Collector Set" || strings.HasPrefix(card.Edition, "World Championship Decks") {
 				continue
 			}
-			mkm.printf("%s - %s", result.ogId, err.Error())
+			mkm.printf("%d - %s", result.ogId, err.Error())
 			continue
 		}
 		// This would be better with a select, but for now just print a message
