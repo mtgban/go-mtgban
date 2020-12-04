@@ -66,7 +66,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	if t.token == "" || time.Now().After(t.expires) {
+	if t.token == "" || time.Now().After(t.expires.Add(-1*time.Hour)) {
 		if t.PublicId == "" || t.PrivateId == "" {
 			return nil, fmt.Errorf("missing public or private id")
 		}
