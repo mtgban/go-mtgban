@@ -97,7 +97,7 @@ var filteredCards = []string{
 }
 
 type MKMExpansionIdPair struct {
-	IdExpansion string
+	IdExpansion int
 	Name        string
 }
 
@@ -108,7 +108,7 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 	}
 
 	var out []MKMExpansionIdPair
-	for id, exp := range expansions {
+	for _, exp := range expansions {
 		skipExpansion := false
 		for _, expName := range filteredExpansions {
 			if exp.Name == expName {
@@ -125,7 +125,7 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 			continue
 		}
 		out = append(out, MKMExpansionIdPair{
-			IdExpansion: id,
+			IdExpansion: exp.IdExpansion,
 			Name:        exp.Name,
 		})
 	}

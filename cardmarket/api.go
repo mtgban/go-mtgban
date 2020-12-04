@@ -107,7 +107,7 @@ type MKMExpansion struct {
 	IsReleased  bool   `json:"isReleased"`
 }
 
-func (mkm *MKMClient) MKMExpansions() (map[string]MKMExpansion, error) {
+func (mkm *MKMClient) MKMExpansions() (map[int]MKMExpansion, error) {
 	resp, err := mkm.client.Get(mkmExpansionsURL)
 	if err != nil {
 		return nil, err
@@ -127,9 +127,9 @@ func (mkm *MKMClient) MKMExpansions() (map[string]MKMExpansion, error) {
 		return nil, err
 	}
 
-	editionMap := map[string]MKMExpansion{}
+	editionMap := map[int]MKMExpansion{}
 	for _, exp := range response.Expansions {
-		editionMap[fmt.Sprint(exp.IdExpansion)] = exp
+		editionMap[exp.IdExpansion] = exp
 	}
 
 	return editionMap, nil
@@ -151,8 +151,8 @@ type MKMProduct struct {
 	CountFoils    int                `json:"countFoils"`
 }
 
-func (mkm *MKMClient) MKMProduct(id string) (*MKMProduct, error) {
-	resp, err := mkm.client.Get(mkmProductsBaseURL + id)
+func (mkm *MKMClient) MKMProduct(id int) (*MKMProduct, error) {
+	resp, err := mkm.client.Get(mkmProductsBaseURL + fmt.Sprint(id))
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +174,8 @@ func (mkm *MKMClient) MKMProduct(id string) (*MKMProduct, error) {
 	return &response.Product, nil
 }
 
-func (mkm *MKMClient) MKMProductsInExpansion(id string) ([]MKMProduct, error) {
-	resp, err := mkm.client.Get(mkmExpansionsBaseURL + id + "/singles")
+func (mkm *MKMClient) MKMProductsInExpansion(id int) ([]MKMProduct, error) {
+	resp, err := mkm.client.Get(mkmExpansionsBaseURL + fmt.Sprint(id) + "/singles")
 	if err != nil {
 		return nil, err
 	}
