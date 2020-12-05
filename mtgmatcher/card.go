@@ -596,8 +596,10 @@ func ParseCommanderEdition(edition string) string {
 		return "Commander " + year
 	}
 
-	// Special condition for CK
-	if edition == "Commander" {
+	// Special fallbacks
+	switch edition {
+	case "Commander",
+		"Commander Singles":
 		return "Commander 2011"
 	}
 
