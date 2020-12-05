@@ -310,10 +310,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.HasPrefix(cardName, "Blank Card") {
 			return nil, errors.New("untracked")
 		}
-	case "Commander Legends: Variants":
-		if variant == "Showcase Frame" {
-			variant = "Foil Etched"
-		}
 	default:
 		if strings.Contains(variant, "Oversized") {
 			return nil, errors.New("not single")

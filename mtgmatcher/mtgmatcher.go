@@ -500,5 +500,8 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Open the Helvault"
 	case Equals(inCard.Name, "Avacyn, Angel of Hope") && inCard.isPrerelease():
 		inCard.Edition = "Open the Helvault"
+
+	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
+		inCard.Variation = "Foil Etched"
 	}
 }
