@@ -103,7 +103,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 
 			// Prerelease cards in foreign language get mixed up in the normal set
 			if number == "666" {
-				setCode = "PPRE"
+				setCode = "Prerelease"
 			}
 		}
 		if len(setCode) == 4 && strings.HasPrefix(setCode, "T") {

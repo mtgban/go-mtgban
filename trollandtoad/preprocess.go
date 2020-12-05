@@ -339,7 +339,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		case "Arclight Phoenix":
 			return nil, errors.New("invalid")
 		case "Feral Throwback":
-			edition = "PPRE"
+			edition = "Prerelease"
 		case "Island":
 			if variant == "Arena Ice Age Art 2001" {
 				variant = "Arena 2001"
