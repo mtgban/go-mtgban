@@ -236,12 +236,9 @@ func (c *Card) isJPN() bool {
 }
 
 func (c *Card) isRelease() bool {
-	return (!Contains(c.Variation, "Prerelease") &&
-		Contains(c.Variation, "Release")) ||
-		strings.Contains(c.Variation, "Launch") ||
-		(!Contains(c.Edition, "Prerelease") &&
-			Contains(c.Edition, "Release")) ||
-		strings.Contains(c.Edition, "Launch")
+	return !c.Contains("Prerelease") &&
+		(c.Contains("Release") ||
+			c.Contains("Launch"))
 }
 
 func (c *Card) isWPNGateway() bool {

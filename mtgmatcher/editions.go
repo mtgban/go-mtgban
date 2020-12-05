@@ -360,9 +360,6 @@ var EditionTable = map[string]string{
 	"Summer of Magic Promo": "Summer of Magic",
 	"Summer of Magic":       "Summer of Magic",
 
-	// Release/Prerelease
-	"Release Event": "Release Events",
-
 	// Wotc Store
 	"Foil Beta Picture":       "Wizards of the Coast Online Store",
 	"Online Store Card":       "Wizards of the Coast Online Store",

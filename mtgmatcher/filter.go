@@ -36,7 +36,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				"Resale Promos",
 				"World Championship Promos":
 				continue
-			case "Prerelease Events":
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
@@ -71,9 +70,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isRelease():
 			switch set.Name {
-			case "Launch Parties",
-				"Promotional Planes",
-				"Release Events":
+			case "Promotional Planes":
 			case "Double Masters",
 				"Jumpstart":
 				switch inCard.Name {
@@ -91,8 +88,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isBaB():
 			switch set.Name {
-			case "Launch Parties",
-				"Modern Horizons":
+			case "Modern Horizons":
 			case "Pro Tour Promos":
 				continue
 			default:
@@ -509,9 +505,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 				if card.Name == "Lu Bu, Master-at-Arms" {
-					if strings.Contains(inCard.Variation, "April") && card.Number != "6" {
+					if strings.Contains(inCard.Variation, "April") && card.OriginalReleaseDate != "1999-04-29" {
 						continue
-					} else if strings.Contains(inCard.Variation, "July") && card.Number != "8" {
+					} else if strings.Contains(inCard.Variation, "July") && card.OriginalReleaseDate != "1999-07-04" {
 						continue
 					}
 				}
@@ -781,17 +777,17 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else if inCard.Name == "Island" && set.Name == "Arena League 1999" && Contains(inCard.Variation, "NO SYMBOL") {
 					variation = "misprint"
-				} else if inCard.Name == "Laquatus's Champion" && set.Name == "Prerelease Events" {
+				} else if inCard.Name == "Laquatus's Champion" && set.Name == "Torment Promos" {
 					if Contains(variation, "dark") {
-						if card.Number != "16†a" {
+						if card.Number != "67†a" {
 							continue
 						}
 					} else if Contains(variation, "misprint") {
-						if card.Number != "16†" {
+						if card.Number != "67†" {
 							continue
 						}
 					} else {
-						if card.Number != "16" {
+						if card.Number != "67" {
 							continue
 						}
 					}
