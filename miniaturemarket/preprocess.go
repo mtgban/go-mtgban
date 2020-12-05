@@ -13,6 +13,7 @@ var cardTable = map[string]string{
 	"Fiesty Stegosaurus":        "Feisty Stegosaurus",
 	"Torban, Thane of Red Fell": "Torbran, Thane of Red Fell",
 	"Cleric of Life's Blood":    "Cleric of Life's Bond",
+	"Ormos, Achive Keeper":      "Ormos, Archive Keeper",
 
 	"Conspicious Snoop (Extended Art)": "Conspicuous Snoop (Extended Art)",
 
@@ -131,9 +132,11 @@ func preprocess(title, sku string) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	if strings.Contains(cardName, " [") && strings.Contains(cardName, "]") {
+	if strings.Contains(cardName, " [") {
 		cardName = strings.Replace(cardName, "[", "(", 1)
 		cardName = strings.Replace(cardName, "]", ")", 1)
+		// https://www.miniaturemarket.com/m-530-458.html
+		cardName = strings.Replace(cardName, "}", ")", 1)
 	}
 
 	cardName = strings.Replace(cardName, ") (", " ", -1)
