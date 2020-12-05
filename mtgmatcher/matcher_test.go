@@ -559,7 +559,7 @@ var MatchTests = []MatchTest{
 
 	// Prerelease
 	MatchTest{
-		Id:   "bd844ca3-6a0f-5942-a36c-572c5032dee9",
+		Id:   "8d9f230c-ad3f-5b5f-9132-96368bb04ace",
 		Desc: "old_prerelease",
 		In: Card{
 			Name:      "Glory",
@@ -622,7 +622,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "1489d4a3-163d-55e7-8ac3-7ac9478d8f3a",
+		Id:   "6b0ad772-5c2b-59b2-9a51-5296d3383077",
 		Desc: "lubu_dedup_july",
 		In: Card{
 			Name:      "Lu Bu, Master-at-Arms",
@@ -1238,7 +1238,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "bf077861-b06a-57f7-bd79-7c4032b49528",
+		Id:   "674e74e5-e5ad-56b4-acc7-ffd550d9b36d",
 		Desc: "release_but_it_is_from_launch_parties",
 		In: Card{
 			Name:      "Vexing Shusher",
@@ -1248,7 +1248,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "77edb00a-7880-5804-a89d-36e1e812f490",
+		Id:   "dbfdf3b7-4eb9-5a78-b1fb-6db73491d59f",
 		Desc: "release_events",
 		In: Card{
 			Name:      "Shriekmaw",
@@ -1654,7 +1654,7 @@ var MatchTests = []MatchTest{
 
 	// IDW and Comic promos
 	MatchTest{
-		Id:   "0d4669ac-631a-5059-8935-9838659c6bbc",
+		Id:   "095baf23-4c83-5be7-b12f-67fbb7deddb4",
 		Desc: "book_promo",
 		In: Card{
 			Name:      "Jace Beleren",
@@ -1966,7 +1966,7 @@ var MatchTests = []MatchTest{
 
 	// Triple card because of double misprint
 	MatchTest{
-		Id:   "6258b3fd-f4d2-5f6b-8009-cc832aeb04c4",
+		Id:   "89d7f595-d549-526a-ba83-6f976f6c542c",
 		Desc: "prerelease_with_multiple_misprints_dark",
 		In: Card{
 			Name:      "Laquatus's Champion",
@@ -1975,7 +1975,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "fa9bb389-28fd-5318-be8a-3def65e6962e",
+		Id:   "7c3cac05-a2a1-5e74-8a5f-dc73a3f3b013",
 		Desc: "prerelease_with_multiple_misprints_nondark",
 		In: Card{
 			Name:      "Laquatus's Champion",
@@ -1984,7 +1984,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "06d4c782-885a-56b3-a0dc-5c0e1888c7a9",
+		Id:   "5351f6ca-4c00-57c4-ba43-272f6eb622df",
 		Desc: "prerelease_with_multiple_misprints_normal",
 		In: Card{
 			Name:      "Laquatus's Champion",
