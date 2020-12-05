@@ -23,6 +23,7 @@ var cardTable = map[string]string{
 	"Svagthos, the Restless Tomb":         "Svogthos, the Restless Tomb",
 	"Trial and Error":                     "Trial // Error",
 	"Visitor from Planet":                 "Visitor from Planet Q",
+	"Rivals of Ixalan":                    "Snubhorn Sentry",
 
 	// Funny cards
 	"B.F.M. Big Furry Monster Left":   "B.F.M. (Big Furry Monster 28)",
@@ -102,6 +103,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	case "Silent Submersible (Promo Pack)",
 		"Silent Submersible (Promo Pack) - FOIL",
 		"Hymn to Tourach (B - Mark Justice - 1996)",
+		"Skyclave Shade (Extended Art)",
 		"Mountain (6th Edition 343 - Mark Le Pine - 1999)":
 		return nil, errors.New("untracked card")
 	}
