@@ -543,6 +543,17 @@ func (c *Card) ravnicaGuidKit() string {
 		}
 	}
 
+	if !c.isBasicLand() {
+		if len(MatchInSet(c.Name, "GK1")) > 0 {
+			return "GRN Guild Kit"
+		}
+		if len(MatchInSet(c.Name, "GK2")) > 0 {
+			return "RNA Guild Kit"
+		}
+	} else {
+		return "Guild Kit"
+	}
+
 	return ""
 }
 
