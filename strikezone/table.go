@@ -88,6 +88,7 @@ var cardTable = map[string]string{
 	"ShowcaseTeferi's Protege":                      "Teferi's Protege (Showcase)",
 	"Some Disassembly Require (2017 Holiday Promo)": "Some Disassembly Required (Happy Holidays)",
 	"SwampMagic Fest 2019":                          "Swamp (MagicFest 2019)",
+	"Sengir, the Dark Baron (BIBB Alt Art Promo)":   "Sengir, the Dark Baron (Prerelease)",
 
 	"Growing Rites of Ittlimoc (Itlimoc Cradle of the Sun BIBB Alt Art)": "Growing Rites of Itlimoc (BIBB Alt Art)",
 	"Legion s Landing Adanto the First Fort (Prerelease)":                "Legion's Landing (Prerelease)",
