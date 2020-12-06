@@ -248,6 +248,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		case "Mechagodzilla, Battle Fortress / Hangarback Walker":
 			cardName = "Hangarback Walker"
 			variation = "Godzilla"
+		case "Orah, Skyclave Hierophant":
+			if variation == "Extended Art Buy-A-Box Promo" {
+				variation = "Buy-A-Box Promo"
+				card.Edition = "ZNR"
+			}
 		}
 		if strings.Contains(variation, "United Kingdom") {
 			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
