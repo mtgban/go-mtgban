@@ -20,6 +20,7 @@ var cardTable = map[string]string{
 	"Soul's Mighty":                  "Soul's Might",
 	"Captain Vargus Ira":             "Captain Vargus Wrath",
 	"Yurlok, the Mana Burner":        "Yurlok of Scorch Thrash",
+	"Explor":                         "Explore",
 
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
