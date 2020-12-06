@@ -437,7 +437,11 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 			variant = "Showcase"
 		case "Lu Bu, Master-at-Arms":
 			edition = "Prerelease Events"
-			variant = number
+			if number == "6" {
+				variant = "April"
+			} else if number == "8" {
+				variant = "July"
+			}
 		case "Chord of Calling", "Wrath of God":
 			edition = "Double Masters"
 			variant = number
