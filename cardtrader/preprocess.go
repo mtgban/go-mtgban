@@ -358,6 +358,7 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 	if mtgmatcher.IsBasicLand(cardName) {
 		switch edition {
 		case "International Edition",
+			"Introductory Two-Player Set",
 			"Collectors’ Edition":
 			return nil, errors.New("pass")
 		// Skip assignment for these editions
