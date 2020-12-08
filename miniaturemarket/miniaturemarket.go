@@ -100,7 +100,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 
 			link := product.URL
 			if mm.Affiliate != "" {
-				link += "?utm_source=" + mm.Affiliate
+				link += "?utm_source=" + mm.Affiliate + "&utm_medium=feed&utm_campaign=mtg_singles"
 			}
 
 			channel <- respChan{
