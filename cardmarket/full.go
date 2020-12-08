@@ -148,6 +148,7 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 			cardId, err = mtgmatcher.Match(theCard)
 		}
 		if cardIdFoil == "" && article.IsFoil {
+			theCard, _ = Preprocess(product.Name, product.Number, product.Expansion)
 			theCard.Foil = true
 			cardIdFoil, err = mtgmatcher.Match(theCard)
 		}

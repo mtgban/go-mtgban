@@ -93,6 +93,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 		return nil
 	}
+	var cardIdFoil string
 	cardId, err := mtgmatcher.Match(theCard)
 	if err != nil {
 		if theCard.Edition == "Pro Tour Collector Set" || strings.HasPrefix(theCard.Edition, "World Championship Decks") {
@@ -171,10 +172,13 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			v.Set("isFoil", "Y")
 			link.RawQuery = v.Encode()
 
-			theCard.Foil = true
-			cardIdFoil, err := mtgmatcher.Match(theCard)
-			if err != nil {
-				return nil
+			if cardIdFoil == "" {
+				theCard, _ = Preprocess(product.Name, product.Number, product.ExpansionName)
+				theCard.Foil = true
+				cardIdFoil, err = mtgmatcher.Match(theCard)
+				if err != nil {
+					return nil
+				}
 			}
 			// If the id is the same it means that the card was really nonfoil-only
 			if cardId != cardIdFoil && product.CountFoils != 0 {
