@@ -419,6 +419,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Skullbriar, the Walking Grave",
 			"Vish Kal, Blood Arbiter":
 			return nil, errors.New("oversize")
+		case "Shivan Dragon":
+			return nil, errors.New("non english")
 		}
 	// Catch-all sets for anything promo
 	case "Dengeki Maoh Promos",
@@ -430,10 +432,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, errors.New("oversize")
 		case "Nalathni Dragon":
 			return nil, errors.New("non english")
-		case "Shivan Dragon":
-			if edition == "Release Promos" {
-				return nil, errors.New("non english")
-			}
 		}
 		// Variant is always unreliable
 		variant = ""
