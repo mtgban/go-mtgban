@@ -50,6 +50,9 @@ var cardTable = map[string]string{
 	"Japanese Shivan Dragon":  "Shivan Dragon",
 	"Incinerate 1996":         "Incinerate",
 
+	"Miara, Thorn of the Galde": "Miara, Thorn of the Glade",
+	"Commet Storm":              "Comet Storm",
+
 	"Who/ What/ When/ Where/ Why": "Who",
 }
 
@@ -79,6 +82,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	if edition == "Bulk" || fullName == "" {
 		return nil, errors.New("bulk")
 	}
+
+	fullName = strings.TrimSpace(fullName)
 
 	switch {
 	case mtgmatcher.IsToken(fullName),
@@ -338,6 +343,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		switch cardName {
 		case "Arclight Phoenix":
 			return nil, errors.New("invalid")
+		case "Splendid Genesis":
+			return nil, errors.New("u wot n8")
 		case "Feral Throwback":
 			edition = "Prerelease"
 		case "Island":
