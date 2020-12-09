@@ -75,6 +75,7 @@ func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict int) erro
 					return fmt.Errorf("Attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
 				}
 				bl[cardId][i].Quantity += entry.Quantity
+				return nil
 			}
 		}
 	}
