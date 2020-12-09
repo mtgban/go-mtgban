@@ -599,6 +599,7 @@ func ParseCommanderEdition(edition string) string {
 	// Special fallbacks
 	switch edition {
 	case "Commander",
+		"Commander Decks",
 		"Commander Singles":
 		return "Commander 2011"
 	}
