@@ -76,8 +76,10 @@ const (
 
 	PromoTypeBundle     = "bundle"
 	PromoTypeBuyABox    = "buyabox"
+	PromoTypeGameDay    = "gameday"
 	PromoTypePrerelease = "prerelease"
 	PromoTypePromoPack  = "promopack"
+	PromoTypeRelease    = "release"
 	PromoTypeBoosterfun = "boosterfun"
 	PromoTypeGodzilla   = "godzillaseries"
 
