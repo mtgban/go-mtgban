@@ -68,6 +68,44 @@ var MatchTests = []MatchTest{
 			Id: "f3a94132-ce71-5556-bfd3-1461601a810d",
 		},
 	},
+	MatchTest{
+		Id:   "f3a94132-ce71-5556-bfd3-1461601a810d_f",
+		Desc: "id_lookup_foil",
+		In: Card{
+			Id:   "f3a94132-ce71-5556-bfd3-1461601a810d",
+			Foil: true,
+		},
+	},
+	MatchTest{
+		Id:   "b2f56602-e85a-588f-a4be-40b6e56f44f7",
+		Desc: "id_lookup_alt_foil",
+		In: Card{
+			Id:   "be665b02-1cf2-50c6-8861-85da921bc853",
+			Foil: true,
+		},
+	},
+	MatchTest{
+		Id:   "095ecbbf-7e08-5bc7-85f9-7d830b9141a2_f",
+		Desc: "id_lookup_variant_ea_foil",
+		In: Card{
+			Id:   "095ecbbf-7e08-5bc7-85f9-7d830b9141a2",
+			Foil: true,
+		},
+	},
+	MatchTest{
+		Id:   "0b77872e-c4eb-54f4-8f63-57fcf68e682a",
+		Desc: "id_lookup_non_foil",
+		In: Card{
+			Id: "7a6610cf-7d53-5e4b-bb76-9be1708d3892",
+		},
+	},
+	MatchTest{
+		Id:   "38fc8e52-821b-5701-a5bd-7402ee13a51c",
+		Desc: "id_lookup_multi_variations",
+		In: Card{
+			Id: "a67c3cd2-d09d-5c2e-807b-5f4772c367e7",
+		},
+	},
 
 	// Number duplicates
 	MatchTest{

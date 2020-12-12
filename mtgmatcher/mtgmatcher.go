@@ -16,7 +16,31 @@ func Match(inCard *Card) (cardId string, err error) {
 	if inCard.Id != "" {
 		co, found := backend.UUIDs[inCard.Id]
 		if found {
-			return output(co.Card, inCard.Foil), nil
+			outId := output(co.Card, inCard.Foil)
+
+			// Validate that what we found is correct
+			co = backend.UUIDs[outId]
+			// If the input card was requested as foil, we should double check
+			// if the original card has a foil under a separate id
+			if co.Foil != inCard.Foil {
+				// So we iterate over the Variations array and try outputing ids
+				// until we find a perfect match in foiling status
+				for _, variation := range co.Variations {
+					altCo := backend.UUIDs[variation]
+					// We assume that the collector number between the two version
+					// stays the same, with a different suffix
+					if strings.HasPrefix(co.Number, altCo.Number) ||
+						strings.HasPrefix(altCo.Number, co.Number) {
+						maybeId := output(altCo.Card, inCard.Foil)
+						altCo = backend.UUIDs[maybeId]
+						if altCo.Foil == inCard.Foil {
+							outId = maybeId
+							break
+						}
+					}
+				}
+			}
+			return outId, nil
 		}
 	}
 
