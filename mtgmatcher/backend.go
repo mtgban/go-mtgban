@@ -61,7 +61,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			if card.Side != "" && card.Side != "a" {
 				continue
 			}
-			filteredCards = append(filteredCards, card)
 
 			// Filter out unneeded printings
 			var printings []string
@@ -74,6 +73,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				printings = append(printings, card.Printings[i])
 			}
 			card.Printings = printings
+
+			// Now assign the card to the list of cards to be saved
+			filteredCards = append(filteredCards, card)
 
 			// Quick dictionary of valid card names and their printings
 			norm := Normalize(card.Name)
