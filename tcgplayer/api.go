@@ -19,6 +19,7 @@ import (
 const (
 	defaultConcurrency = 8
 	defaultAPIRetry    = 5
+	maxIdsInRequest    = 250
 
 	pagesPerRequest = 50
 	tcgBaseURL      = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
@@ -140,6 +141,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 type TCGPrice struct {
+	ProductId      int     `json:"productId"`
 	LowPrice       float64 `json:"lowPrice"`
 	MarketPrice    float64 `json:"marketPrice"`
 	MidPrice       float64 `json:"midPrice"`
@@ -147,8 +149,8 @@ type TCGPrice struct {
 	SubTypeName    string  `json:"subTypeName"`
 }
 
-func (tcg *TCGClient) PricesForId(productId string) ([]TCGPrice, error) {
-	resp, err := tcg.client.Get(tcgApiProductURL + productId)
+func (tcg *TCGClient) TCGPricesForIds(productIds []string) ([]TCGPrice, error) {
+	resp, err := tcg.client.Get(tcgApiProductURL + strings.Join(productIds, ","))
 	if err != nil {
 		return nil, err
 	}
@@ -166,13 +168,7 @@ func (tcg *TCGClient) PricesForId(productId string) ([]TCGPrice, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
-			err = fmt.Errorf("403 Forbidden")
-		}
 		return nil, err
-	}
-	if !response.Success {
-		return nil, fmt.Errorf(strings.Join(response.Errors, "|"))
 	}
 
 	return response.Results, nil

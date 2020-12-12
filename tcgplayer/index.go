@@ -23,6 +23,11 @@ type TCGPlayerIndex struct {
 	client *TCGClient
 }
 
+type indexChan struct {
+	TCGProductId string
+	UUID         string
+}
+
 func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGIndex] "+format, a...)
@@ -38,33 +43,47 @@ func NewScraperIndex(publicId, privateId string) *TCGPlayerIndex {
 	return &tcg
 }
 
-func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, req requestChan) error {
-	results, err := tcg.client.PricesForId(req.TCGProductId)
+func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []indexChan) error {
+	ids := make([]string, len(reqs))
+	for i := range reqs {
+		ids[i] = reqs[i].TCGProductId
+	}
+
+	results, err := tcg.client.TCGPricesForIds(ids)
 	if err != nil {
-		if err.Error() == "403 Forbidden" && req.retry < defaultAPIRetry {
-			req.retry++
-			tcg.printf("API returned 403 in a response with status code 200")
-			tcg.printf("Retrying %d/%d", req.retry, defaultAPIRetry)
-			time.Sleep(time.Duration(req.retry) * 2 * time.Second)
-			err = tcg.processEntry(channel, req)
-		}
 		return err
 	}
 
 	for _, result := range results {
-		theCard := &mtgmatcher.Card{
-			Id:   req.UUID,
+		// Skip empty entries
+		if result.LowPrice == 0 && result.MarketPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0 {
+			continue
+		}
+
+		productId := fmt.Sprint(result.ProductId)
+
+		uuid := ""
+		for _, req := range reqs {
+			if req.TCGProductId == productId {
+				uuid = req.UUID
+				break
+			}
+		}
+
+		// Get the cardId, with the correct foiling status
+		theCard := mtgmatcher.Card{
+			Id:   uuid,
 			Foil: result.SubTypeName == "Foil",
 		}
-		cardId, err := mtgmatcher.Match(theCard)
+		cardId, err := mtgmatcher.Match(&theCard)
 		if err != nil {
-			return err
+			tcg.printf("(%d / %s) - %s", result.ProductId, uuid, err)
+			continue
 		}
 
+		// Skip impossible entries, such as listing mistakes that list a foil
+		// price for a foil-only card
 		co, _ := mtgmatcher.GetUUID(cardId)
-
-		// This avoids duplicates for foil-only or nonfoil-only cards
-		// in particular Tenth Edition and Unhinged
 		if (co.Foil && result.SubTypeName != "Foil") ||
 			(!co.Foil && result.SubTypeName != "Normal") {
 			continue
@@ -77,12 +96,15 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, req request
 			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
 		}
 
-		link := "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId
+		link := "https://shop.tcgplayer.com/product/productsearch?id=" + productId
 		if tcg.Affiliate != "" {
 			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
 		}
 
 		for i := range names {
+			if prices[i] == 0 {
+				continue
+			}
 			out := responseChan{
 				cardId: cardId,
 				entry: mtgban.InventoryEntry{
@@ -102,18 +124,41 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, req request
 }
 
 func (tcg *TCGPlayerIndex) scrape() error {
-	pages := make(chan requestChan)
+	pages := make(chan indexChan)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < tcg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
+			idFound := map[string]string{}
+			buffer := make([]indexChan, 0, maxIdsInRequest)
+
 			for page := range pages {
-				err := tcg.processEntry(channel, page)
+				// Skip dupes
+				_, found := idFound[page.TCGProductId]
+				if found {
+					continue
+				}
+				idFound[page.TCGProductId] = ""
+
+				// Add our pair to the buffer
+				buffer = append(buffer, page)
+
+				// When buffer is full, process its contents and empty it
+				if len(buffer) == maxIdsInRequest {
+					err := tcg.processEntry(channel, buffer)
+					if err != nil {
+						tcg.printf("%s", err.Error())
+					}
+					buffer = buffer[:0]
+				}
+			}
+			// Process any spillover
+			if len(buffer) != 0 {
+				err := tcg.processEntry(channel, buffer)
 				if err != nil {
-					card, _ := mtgmatcher.GetUUID(page.UUID)
-					tcg.printf("%s (%s / %s) - %s", card, page.TCGProductId, page.UUID, err)
+					tcg.printf("%s", err.Error())
 				}
 			}
 			wg.Done()
@@ -133,7 +178,7 @@ func (tcg *TCGPlayerIndex) scrape() error {
 					continue
 				}
 
-				pages <- requestChan{
+				pages <- indexChan{
 					TCGProductId: tcgId,
 					UUID:         card.UUID,
 				}
@@ -146,7 +191,9 @@ func (tcg *TCGPlayerIndex) scrape() error {
 	}()
 
 	for result := range channel {
-		err := tcg.inventory.Add(result.cardId, &result.entry)
+		// Relaxed because sometimes we get duplicates due to how the ids
+		// get buffered, but there is really no harm
+		err := tcg.inventory.AddRelaxed(result.cardId, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 			continue
