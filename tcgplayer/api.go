@@ -29,7 +29,7 @@ const (
 	tcgApiVersion    = "v1.39.0"
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
 	tcgApiPricingURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/sku/"
-	tcgApiBuylistURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/buy/product/"
+	tcgApiBuylistURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/buy/sku/"
 
 	tcgApiSKUsURL   = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
 	tcgApiSearchURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/categories/1/search"
@@ -214,16 +214,25 @@ func (tcg *TCGClient) SKUsForId(productId string) ([]TCGSKU, error) {
 }
 
 type TCGSKUPrice struct {
-	SkuId              int     `json:"skuId"`
+	SkuId int `json:"skuId"`
+
+	// Only availabe from TCGPricesForSKUs()
+	ProductId          int     `json:"productId"`
 	LowPrice           float64 `json:"lowPrice"`
 	LowestShipping     float64 `json:"lowestShipping"`
 	LowestListingPrice float64 `json:"lowestListingPrice"`
 	MarketPrice        float64 `json:"marketPrice"`
 	DirectLowPrice     float64 `json:"directLowPrice"`
+
+	// Only available from TCGBuylistPricesForSKUs()
+	BuylistPrices struct {
+		High   float64 `json:"high"`
+		Market float64 `json:"market"`
+	} `json:"prices"`
 }
 
-func (tcg *TCGClient) PricesForSKU(sku string) ([]TCGSKUPrice, error) {
-	resp, err := tcg.client.Get(tcgApiPricingURL + sku)
+func (tcg *TCGClient) TCGPricesForSKUs(ids []string) ([]TCGSKUPrice, error) {
+	resp, err := tcg.client.Get(tcgApiPricingURL + strings.Join(ids, ","))
 	if err != nil {
 		return nil, err
 	}
@@ -241,35 +250,14 @@ func (tcg *TCGClient) PricesForSKU(sku string) ([]TCGSKUPrice, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
-			err = fmt.Errorf("403 Forbidden")
-		}
 		return nil, err
-	}
-	if !response.Success {
-		return nil, fmt.Errorf(strings.Join(response.Errors, "|"))
 	}
 
 	return response.Results, nil
 }
 
-type TCGBuylistPrice struct {
-	ProductId int `json:"productId"`
-	Prices    struct {
-		High   float64 `json:"high"`
-		Market float64 `json:"market"`
-	} `json:"prices"`
-	SKUs []struct {
-		SkuId  int `json:"skuId"`
-		Prices struct {
-			High   float64 `json:"high"`
-			Market float64 `json:"market"`
-		} `json:"prices"`
-	} `json:"skus"`
-}
-
-func (tcg *TCGClient) BuylistPricesForId(productId string) (*TCGBuylistPrice, error) {
-	resp, err := tcg.client.Get(tcgApiBuylistURL + productId)
+func (tcg *TCGClient) TCGBuylistPricesForSKUs(ids []string) ([]TCGSKUPrice, error) {
+	resp, err := tcg.client.Get(tcgApiBuylistURL + strings.Join(ids, ","))
 	if err != nil {
 		return nil, err
 	}
@@ -281,22 +269,16 @@ func (tcg *TCGClient) BuylistPricesForId(productId string) (*TCGBuylistPrice, er
 	}
 
 	var response struct {
-		Success bool              `json:"success"`
-		Errors  []string          `json:"errors"`
-		Results []TCGBuylistPrice `json:"results"`
+		Success bool          `json:"success"`
+		Errors  []string      `json:"errors"`
+		Results []TCGSKUPrice `json:"results"`
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, err
 	}
-	if !response.Success {
-		return nil, fmt.Errorf(strings.Join(response.Errors, "|"))
-	}
-	if len(response.Results) < 1 {
-		return nil, fmt.Errorf("empty buylist response")
-	}
 
-	return &response.Results[0], nil
+	return response.Results, nil
 }
 
 func (tcg *TCGClient) IdSearch(name, edition string) ([]int, error) {
