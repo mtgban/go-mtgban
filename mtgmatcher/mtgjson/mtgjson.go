@@ -124,3 +124,27 @@ func (c *Card) HasUniqueLanguage(lang string) bool {
 	}
 	return c.ForeignData[0].Language == lang
 }
+
+type TCGSku struct {
+	Condition string `json:"condition"`
+	Language  string `json:"language"`
+	Printing  string `json:"printing"`
+	ProductId int    `json:"productId"`
+	SkuId     int    `json:"skuId"`
+}
+
+type AllTCGSkus struct {
+	Data map[string][]TCGSku `json:"data"`
+	Meta struct {
+		Date    string `json:"date"`
+		Version string `json:"version"`
+	} `json:"meta"`
+}
+
+func LoadAllTCGSkus(r io.Reader) (payload AllTCGSkus, err error) {
+	err = json.NewDecoder(r).Decode(&payload)
+	if err == nil && len(payload.Data) == 0 {
+		err = errors.New("empty AllTCGSkus file")
+	}
+	return
+}
