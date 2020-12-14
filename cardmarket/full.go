@@ -201,7 +201,8 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 		}
 
 		if mtgmatcher.Contains(article.Comments, "alter") ||
-			mtgmatcher.Contains(article.Comments, "signed") {
+			mtgmatcher.Contains(article.Comments, "signed") ||
+			mtgmatcher.Contains(article.Comments, "artist proof") {
 			continue
 		}
 
