@@ -113,6 +113,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 					Quantity:   1,
 					URL:        link,
 					SellerName: names[i],
+					Bundle:     i == 3,
 				},
 			}
 

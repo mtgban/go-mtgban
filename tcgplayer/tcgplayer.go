@@ -146,6 +146,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 						Quantity:   1,
 						URL:        link,
 						SellerName: names[i],
+						Bundle:     i == 1,
 					},
 				}
 
