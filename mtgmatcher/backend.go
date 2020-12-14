@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
@@ -60,6 +61,18 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			// not need that level of detail, so just skip any extra side.
 			if card.Side != "" && card.Side != "a" {
 				continue
+			}
+
+			// Skip duplicate cards that cause trouble down the road
+			switch set.Code {
+			case "INV", "USG", "POR":
+				if strings.HasSuffix(card.Number, "s") {
+					continue
+				}
+			case "KLD", "AER":
+				if strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+					continue
+				}
 			}
 
 			// Filter out unneeded printings
