@@ -29,8 +29,9 @@ const (
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
 	tcgApiPricingURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/sku/"
 	tcgApiBuylistURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/buy/product/"
-	tcgApiSKUURL     = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
-	tcgApiSearchURL  = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/categories/1/search"
+
+	tcgApiSKUsURL   = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
+	tcgApiSearchURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/categories/1/search"
 )
 
 type TCGClient struct {
@@ -186,7 +187,7 @@ type TCGSKU struct {
 }
 
 func (tcg *TCGClient) SKUsForId(productId string) ([]TCGSKU, error) {
-	resp, err := tcg.client.Get(fmt.Sprintf(tcgApiSKUURL, productId))
+	resp, err := tcg.client.Get(fmt.Sprintf(tcgApiSKUsURL, productId))
 	if err != nil {
 		return nil, err
 	}
