@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	http "github.com/hashicorp/go-retryablehttp"
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -24,14 +24,20 @@ type TCGPlayerFull struct {
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
 
-	client *http.Client
+	client *retryablehttp.Client
+}
+
+type requestChan struct {
+	TCGProductId string
+	UUID         string
+	retry        int
 }
 
 func NewScraperFull() *TCGPlayerFull {
 	tcg := TCGPlayerFull{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.marketplace = map[string]mtgban.InventoryRecord{}
-	tcg.client = http.NewClient()
+	tcg.client = retryablehttp.NewClient()
 	tcg.client.Logger = nil
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
@@ -44,11 +50,43 @@ func (tcg *TCGPlayerFull) printf(format string, a ...interface{}) {
 }
 
 func (tcg *TCGPlayerFull) getPagesForProduct(productId string) (int, error) {
-	num, err := getListingsNumber(tcg.client.StandardClient(), productId)
+	num, err := tcg.getListingsNumber(productId)
 	if err != nil {
 		return 0, err
 	}
 	return num/pagesPerRequest + 1, nil
+}
+
+func (tcg *TCGPlayerFull) getListingsNumber(productId string) (int, error) {
+	u, _ := url.Parse(tcgBaseURL)
+	q := u.Query()
+	q.Set("productId", productId)
+	q.Set("pageSize", fmt.Sprintf("%d", 1))
+	q.Set("page", fmt.Sprintf("%d", 1))
+	u.RawQuery = q.Encode()
+
+	resp, err := tcg.client.Get(u.String())
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	viewingResults := doc.Find("span[class='sort-toolbar__total-item-count']").Text()
+	results := strings.Fields(viewingResults)
+	if len(results) < 3 {
+		return 0, fmt.Errorf("unknown pagination for %s: %q", productId, viewingResults)
+	}
+	entriesNum, err := strconv.Atoi(results[3])
+	if err != nil {
+		return 0, err
+	}
+
+	return entriesNum, nil
 }
 
 func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestChan) error {
