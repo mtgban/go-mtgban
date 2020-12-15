@@ -234,13 +234,11 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 
 				// When buffer is full, process its contents and empty it
 				if len(buffer) == maxIdsInRequest {
-					if len(buffer) == maxIdsInRequest {
-						err := tcg.processEntry(channel, buffer, mode)
-						if err != nil {
-							tcg.printf("%s", err.Error())
-						}
-						buffer = buffer[:0]
+					err := tcg.processEntry(channel, buffer, mode)
+					if err != nil {
+						tcg.printf("%s", err.Error())
 					}
+					buffer = buffer[:0]
 				}
 			}
 			// Process any spillover
@@ -274,8 +272,6 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						if !(card.HasUniqueLanguage("Japanese") && strings.Contains(card.Number, "★")) {
 							continue
 						}
-					case "SIMPLIFIED CHINESE":
-
 					default:
 						continue
 					}
