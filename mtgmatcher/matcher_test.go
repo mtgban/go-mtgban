@@ -1958,7 +1958,16 @@ var MatchTests = []MatchTest{
 	},
 	MatchTest{
 		Id:   "2ea9464a-c6f9-5e0c-a0bf-55f89fa42252",
-		Desc: "mb1list_in_both_tagged",
+		Desc: "mb1list_in_both_tagged_mb1",
+		In: Card{
+			Name:      "Bojuka Bog",
+			Variation: "Worldwake",
+			Edition:   "Mystery Booster The List",
+		},
+	},
+	MatchTest{
+		Id:   "706ca274-e840-56e6-b252-4d7da8f13063",
+		Desc: "mb1list_in_both_tagged_plist",
 		In: Card{
 			Name:      "Bojuka Bog",
 			Variation: "Commander 2018",
