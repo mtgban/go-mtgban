@@ -64,7 +64,18 @@ func (nf *Ninetyfive) parseBL() error {
 			return fmt.Errorf("Unsupported buylist data format (%d)", len(fields))
 		}
 
+		variant := ""
 		cardName := strings.TrimSpace(record[0])
+		vars := mtgmatcher.SplitVariants(cardName)
+		cardName = vars[0]
+		if len(vars) > 1 {
+			variant = vars[1]
+		}
+
+		switch variant {
+		case "GODZ":
+			variant = "godzilla"
+		}
 
 		priceStr := strings.TrimSpace(record[1])
 		priceStr = strings.Replace(priceStr, "$", "", 1)
@@ -75,6 +86,11 @@ func (nf *Ninetyfive) parseBL() error {
 		}
 
 		setCode := fields[0]
+		switch setCode {
+		case "pIKO":
+			setCode = "IKO"
+		}
+
 		quantity, err := strconv.Atoi(fields[1])
 		if err != nil {
 			return err
@@ -90,9 +106,10 @@ func (nf *Ninetyfive) parseBL() error {
 		isFoil, _ := strconv.ParseBool(fields[4])
 
 		theCard := &mtgmatcher.Card{
-			Name:    cardName,
-			Edition: setCode,
-			Foil:    isFoil,
+			Name:      cardName,
+			Edition:   setCode,
+			Variation: variant,
+			Foil:      isFoil,
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
