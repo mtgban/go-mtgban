@@ -23,6 +23,9 @@ type InventoryEntry struct {
 
 	// Original identifier as available from the scraper
 	OriginalId string
+
+	// Original instance identifier as available from the scraper
+	InstanceId string
 }
 
 // BuylistEntry represents an entry for buying a particular Card
@@ -102,6 +105,16 @@ type InventoryInitializer interface {
 type BuylistInitializer interface {
 	// Initialize an inventory.
 	IntializeBuylist(io.Reader) error
+}
+
+// Carter is the inteface used to identify Seller scrapers that can
+// add entries to the online cart of the provider.
+type Carter interface {
+	// Enable the cart interface (loading the existing cart for example).
+	Activate(user, pass string) error
+
+	// Add an InventoryEntry to the online cart.
+	Add(entry InventoryEntry) error
 }
 
 type InventoryRecord map[string][]InventoryEntry

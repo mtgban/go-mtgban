@@ -22,6 +22,9 @@ var (
 	// The canonical header that will be present in all market files
 	MarketHeader = append(InventoryHeader, "Seller", "Bundle")
 
+	// Additional fields for Markets neecessary for Carters
+	CartHeader = append(MarketHeader, "Original Id", "Instance Id")
+
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = append(CardHeader, "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Conditions", "Vendor")
 
@@ -70,6 +73,16 @@ func record2entry(record []string) (*InventoryEntry, error) {
 		bundle = record[index] == "Y"
 		index++
 	}
+	ogId := ""
+	if len(record) > index {
+		ogId = record[index]
+		index++
+	}
+	instanceId := ""
+	if len(record) > index {
+		instanceId = record[index]
+		index++
+	}
 
 	return &InventoryEntry{
 		Conditions: conditions,
@@ -78,6 +91,8 @@ func record2entry(record []string) (*InventoryEntry, error) {
 		URL:        URL,
 		SellerName: sellerName,
 		Bundle:     bundle,
+		OriginalId: ogId,
+		InstanceId: instanceId,
 	}, nil
 }
 
@@ -99,9 +114,13 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 	if len(first) < len(InventoryHeader) {
 		okHeader = false
 	} else {
+		// Assume a normal header, then check what's the last element,
+		// and adjust accordingly to what is detected
 		header := InventoryHeader
 		if first[len(first)-1] == MarketHeader[len(MarketHeader)-1] {
 			header = MarketHeader
+		} else if first[len(first)-1] == CartHeader[len(CartHeader)-1] {
+			header = CartHeader
 		}
 		for i, tag := range header {
 			if tag != first[i] {
@@ -159,10 +178,15 @@ func LoadMarketFromCSV(r io.Reader, flags ...bool) (map[string]InventoryRecord, 
 	if len(first) < len(InventoryHeader) {
 		okHeader = false
 	} else {
+		// Assume a normal header, then check what's the last element,
+		// and adjust accordingly to what is detected
 		header := InventoryHeader
 		if first[len(first)-1] == MarketHeader[len(MarketHeader)-1] {
 			header = MarketHeader
+		} else if first[len(first)-1] == CartHeader[len(CartHeader)-1] {
+			header = CartHeader
 		}
+
 		for i, tag := range header {
 			if tag != first[i] {
 				okHeader = false
@@ -360,6 +384,10 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 	if isMarket {
 		header = MarketHeader
 	}
+	_, isCarter := seller.(Carter)
+	if isCarter {
+		header = CartHeader
+	}
 
 	err = csvWriter.Write(header)
 	if err != nil {
@@ -385,6 +413,11 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 					bundle = "Y"
 				}
 				record = append(record, bundle)
+
+				if isCarter {
+					record = append(record, entry.OriginalId)
+					record = append(record, entry.InstanceId)
+				}
 			}
 
 			err = csvWriter.Write(record)
