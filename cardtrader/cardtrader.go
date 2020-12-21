@@ -23,6 +23,8 @@ type Cardtrader struct {
 	authClient  *CTAuthClient
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
+
+	loggedClient *CTLoggedClient
 }
 
 func NewScraper(token string) *Cardtrader {
@@ -168,6 +170,8 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 				URL:        link,
 				SellerName: product.User.Name,
 				Bundle:     product.User.Zero,
+				OriginalId: fmt.Sprint(filter.Blueprint.Id),
+				InstanceId: fmt.Sprint(product.Id),
 			},
 		}
 	}

@@ -33,7 +33,7 @@ type Blueprint struct {
 type BlueprintFilter struct {
 	Blueprint Blueprint `json:"blueprint"`
 	Products  []struct {
-		//Image      string `json:"image"`
+		Id          int    `json:"id"`
 		Quantity    int    `json:"quantity"`
 		Description string `json:"description"`
 		OnVacation  bool   `json:"on_vacation"`
