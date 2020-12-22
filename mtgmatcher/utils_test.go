@@ -56,6 +56,14 @@ var NumberTests = []ExtractTest{
 		In:  "181/185",
 		Out: "181",
 	},
+	ExtractTest{
+		In:  "May 25",
+		Out: "",
+	},
+	ExtractTest{
+		In:  "yaviMAYa 25",
+		Out: "25",
+	},
 }
 
 func TestExtractNumber(t *testing.T) {

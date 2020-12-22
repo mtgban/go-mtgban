@@ -94,18 +94,21 @@ var months = []string{
 // Any leading # characters or parenthesis are stripped away.
 // Numbers starting with M are ignored because they could be confused
 // with core set names.
-// If a month name is detected anywhere in the input string, an empty string is
-// returned, to prevent confusing a number with a date or day.
+// If a month name is detected anywhere as a single word in the input string,
+// an empty string is returned, to prevent confusing a number with a date or day.
 // If a rational number is provided, only the numerator part is considered.
 func ExtractNumber(str string) string {
 	low := strings.ToLower(str)
-	for _, month := range months {
-		if strings.Contains(low, month) {
-			return ""
+	fields := strings.Fields(low)
+	for _, field := range fields {
+		for _, month := range months {
+			if field == month {
+				return ""
+			}
 		}
 	}
 
-	fields := strings.Fields(str)
+	fields = strings.Fields(str)
 	for _, field := range fields {
 		field = strings.Replace(field, "(", "", -1)
 		field = strings.Replace(field, ")", "", -1)
