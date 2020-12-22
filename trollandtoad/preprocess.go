@@ -16,14 +16,10 @@ var cardTable = map[string]string{
 	"Havok Jester":          "Havoc Jester",
 	"Switfwater Cliffs":     "Swiftwater Cliffs",
 	"Warden Battlements":    "Warded Battlements",
-
-	// ZNC commander for some reason
-	"Far Wonderings 066":             "Far Wanderings",
-	"Isand 381":                      "Island 381",
-	"Multani, Yavimaya's Avatar 075": "Multani, Yavimaya's Avatar",
-	"Yavimaya Elder 087":             "Yavimaya Elder",
-	"Beanstalk Giant 061":            "Beanstalk Giant",
-	"Military Intelligance 031":      "Military Intelligance",
+	"Alpha Tyrrannax":       "Alpha Tyrranax",
+	"Far Wonderings":        "Far Wanderings",
+	"Isand":                 "Island",
+	"Military Intelligance": "Military Intelligence",
 
 	"Gadrak, the Crown-Scrouge": "Gadrak, the Crown-Scourge",
 	"Kasmina's Transformation":  "Kasmina's Transmutation",
@@ -39,7 +35,8 @@ var cardTable = map[string]string{
 	"Harmonize Textless Player Rewards":                "Harmonize",
 
 	"Chandra, Fire of Kaladesh // Chandra The Roaring Flame": "Chandra, Fire of Kaladesh // Chandra, Roaring Flame",
-	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Abomination",
+	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Aberration",
+	"Jwari Disruption // Jwar Ruins":                         "Jwari Disruption // Jwari Ruins",
 
 	"Skyclave Cleric // Skyclave Basillica": "Skyclave Cleric // Skyclave Basilica",
 	"Jwari Disruption // Jwar Isle Ruins":   "Jwari Disruption // Jwari Ruins",
@@ -59,13 +56,17 @@ var cardTable = map[string]string{
 var tagsTable = []string{
 	"Box Topper",
 	"Brawl Deck",
+	"Bundle Promo",
 	"Buy-A-Box Promo",
-	"DotP",
+	"Buy-a-Box Promo",
+	"Buy-a-Box",
 	"DotP 2015 Promo (D15)",
+	"DotP",
 	"FNM Promo",
 	"Full Art Promo",
 	"Game Day Promo",
 	"IDW Promo",
+	"Japanese Alternate Art Exclusive",
 	"Judge Promo",
 	"MagicFest Textless Promo",
 	"Media Promo",
@@ -95,23 +96,38 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(fullName, "Battle the Horde Challenge Deck"),
 		strings.Contains(fullName, "Face the Hydra Challenge Deck"),
 		strings.Contains(fullName, "Pokemon"),
+		strings.Contains(fullName, "Zamazenta"),
+		strings.Contains(fullName, "Playmat"),
 		strings.Contains(fullName, " | ") &&
 			(strings.Contains(fullName, "2XM") || strings.Contains(fullName, "ZNC")):
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
+		strings.Contains(edition, "Spanish"),
+		strings.Contains(edition, "Russian"),
+		strings.Contains(edition, "Italian"),
+		strings.Contains(fullName, "Korean"),
 		strings.Contains(fullName, "Spanish"),
 		strings.Contains(fullName, "Portuguese"),
 		strings.Contains(fullName, "Chinese"),
-		strings.Contains(fullName, "Japanese Emrakul"),
 		strings.Contains(fullName, "Italian"):
 		return nil, errors.New("not english")
+	case strings.Contains(fullName, "Japanese Hellspark Elemental"),
+		strings.Contains(fullName, "Japanese Emrakul"),
+		strings.Contains(fullName, "Scavenging Ooze (Japanese) 3/3 DOTP"):
+		return nil, errors.New("not english")
+	case strings.Contains(fullName, "FNM Promo Pack of"):
+		return nil, errors.New("sealed")
 	case strings.Contains(fullName, "Bounty Agent") && strings.Contains(fullName, "Prerelease"):
 		return nil, errors.New("doesn't exist")
 	case strings.Contains(fullName, "Beast of Burden") && strings.Contains(fullName, "Misprint"),
 		strings.Contains(fullName, "Etali, Primal Storm") && strings.Contains(fullName, "Media Promo"):
 		return nil, errors.New("unsupported")
-	case fullName == "Marit Lage - Foil 16/16":
+	}
+	switch fullName {
+	case "Marit Lage - Foil 16/16":
 		return nil, errors.New("token")
+	case "Guilds of Ravnica: Mythic Edition":
+		return nil, errors.New("sealed")
 	}
 
 	isFoil := (strings.Contains(strings.ToLower(fullName), " foil") && !strings.Contains(fullName, "Non ")) ||
@@ -124,7 +140,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		fullName = strings.Replace(fullName, " Foil", "", -1)
 	}
 
-	// Sometimes the buylist specifies tags at the end of the card name,
+	// Sometimes there are tags at the end of the card name,
 	// but without parenthesis, so make sure they are present.
 	for _, tag := range tagsTable {
 		if strings.HasSuffix(fullName, tag) {
@@ -153,6 +169,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		}
 	case strings.HasPrefix(fullName, "Plains (Ozhov) 050/133"):
 		fullName = "Plains 050/133 (Ozhov)"
+	case strings.HasPrefix(fullName, "Boros Charm 684"):
+		fullName = strings.Replace(fullName, "684", "687", 1)
 	case strings.Contains(fullName, "Euro Land"), strings.Contains(fullName, "Apac"):
 		fullName = strings.Replace(fullName, "1", "one", 1)
 		fullName = strings.Replace(fullName, "2", "two", 1)
@@ -339,6 +357,26 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 				break
 			}
 		}
+	case "Other Languages Promos":
+		if variant != "Cyrillic" && variant != "Classic Greek Pre-Release" {
+			cardName = variant
+		}
+		variant = "Prerelease"
+	case "Prerelease and Standard Release Cards":
+		edition = "Promos"
+		if cardName == "Deputy of Detention" {
+			variant = "Prerelease"
+		}
+	case "War of the Spark Japanese Promos":
+		edition = "WAR"
+	case "Japanese Promos":
+		if cardName == "Plains" && variant == "Orzhov Syndicate Japanese" {
+			edition = "PMPS"
+		}
+	case "Commander Legends Etched":
+		// This was removed earlier, just restore it
+		variant = strings.Replace(variant, "Etched", "Etched Foil", 1)
+
 	case "Promo Cards":
 		switch cardName {
 		case "Arclight Phoenix":
@@ -404,6 +442,10 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			if variant == "Arena" {
 				variant = "Gateway"
 			}
+		case "Godzilla, King of the Monsters":
+			cardName = "Zilortha, Strength Incarnate"
+			variant = "Buy-a-Box"
+			edition = "IKO"
 
 		case "Curse of Wizardry",
 			"Kor Duelist",
@@ -468,6 +510,18 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 				variant = "Prerelease"
 			}
 		}
+	}
+
+	// Some cards have an extra number at the end, use it as variant
+	// and strip it from the card name
+	extraNum := mtgmatcher.ExtractNumber(cardName)
+	if extraNum != "" {
+		cardName = strings.TrimSuffix(cardName, " "+extraNum)
+		cardName = strings.TrimSuffix(cardName, " 0"+extraNum)
+		if variant != "" {
+			variant += " "
+		}
+		variant += extraNum
 	}
 
 	lutName, found := cardTable[cardName]

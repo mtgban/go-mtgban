@@ -22,6 +22,7 @@ const (
 	defaultConcurrency = 8
 
 	tatPagesURL = "https://www.trollandtoad.com/magic-the-gathering/all-singles/7085"
+	tatFoilsURL = "https://www.trollandtoad.com/magic-the-gathering/all-foil-singles/7880"
 	tatOptions  = "?Keywords=&hide-oos=on&min-price=&max-price=&items-pp=60&item-condition=&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
@@ -58,7 +59,7 @@ func (tat *Trollandtoad) printf(format string, a ...interface{}) {
 	}
 }
 
-func (tat *Trollandtoad) parsePages(lastPage int) error {
+func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 	channel := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -124,6 +125,8 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 				conditions = "SP"
 			case strings.Contains(conditions, "Played"): // includes Moderately
 				conditions = "MP"
+			case strings.Contains(conditions, "See Image for Condition"):
+				return
 			default:
 				tat.printf("Unsupported %s condition for %s %s", conditions, cardName, edition)
 				return
@@ -172,7 +175,7 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 
 	for i := 1; i <= lastPage; i++ {
 		opts := fmt.Sprintf(tatOptions, i)
-		q.AddURL(tatPagesURL + opts)
+		q.AddURL(link + opts)
 	}
 
 	q.Run(c)
@@ -195,8 +198,8 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 	return nil
 }
 
-func (tat *Trollandtoad) scrape() error {
-	resp, err := http.Get(tatPagesURL)
+func (tat *Trollandtoad) scrapePages(link string) error {
+	resp, err := http.Get(link)
 	if err != nil {
 		return err
 	}
@@ -216,8 +219,18 @@ func (tat *Trollandtoad) scrape() error {
 		return err
 	}
 
-	tat.printf("Parsing %d pages", lastPage)
-	return tat.parsePages(lastPage)
+	tat.printf("Parsing %d pages from %s", lastPage, link)
+	return tat.parsePages(link, lastPage)
+}
+
+func (tat *Trollandtoad) scrape() error {
+	for _, link := range []string{tatPagesURL, tatFoilsURL} {
+		err := tat.scrapePages(link)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (tat *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
