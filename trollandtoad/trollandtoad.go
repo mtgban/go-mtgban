@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,7 +22,7 @@ const (
 	defaultConcurrency = 8
 
 	tatPagesURL = "https://www.trollandtoad.com/magic-the-gathering/all-singles/7085"
-	tatOptions  = "?Keywords=&min-price=&max-price=&items-pp=60&item-condition=&selected-cat=7085&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
+	tatOptions  = "?Keywords=&hide-oos=on&min-price=&max-price=&items-pp=60&item-condition=&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
 type Trollandtoad struct {
@@ -74,19 +73,23 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
-		RandomDelay: 1 * time.Second,
+		RandomDelay: 2 * time.Second,
 		Parallelism: tat.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
-		//tat.printf("Visiting %s", r.URL.String())
+		tat.printf("Visiting page %s", r.URL.Query().Get("page-no"))
 	})
 
-	c.OnHTML(`div[class='product-info card-body col pl-0 pl-sm-3']`, func(e *colly.HTMLElement) {
+	c.OnHTML(`div[class="product-col col-12 p-0 my-1 mx-sm-1 mw-100"]`, func(e *colly.HTMLElement) {
 		link := e.ChildAttr(`a[class='card-text']`, "href")
-		id := path.Base(link)
 		cardName := e.ChildText(`a[class='card-text']`)
 		edition := e.ChildText(`div[class='row mb-2'] div[class='col-12 prod-cat']`)
+
+		oos := e.ChildText(`div[class='row mb-2 '] div[class='col-12'] div[class='font-weight-bold font-smaller text-muted']`)
+		if oos == "Out of Stock" {
+			return
+		}
 
 		theCard, err := preprocess(cardName, edition)
 		if err != nil {
@@ -112,27 +115,40 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 			return
 		}
 
-		options, err := tat.client.GetProductOptions(id)
-		if err != nil {
-			tat.printf("%s", err.Error())
-			return
-		}
-
-		for _, option := range options {
-			if option.Price == 0.0 || option.Quantity == 0 {
-				continue
-			}
-
-			conditions := option.Conditions
-			switch conditions {
-			case "NM":
-			case "LP":
+		e.ForEach(`div[class="row position-relative align-center py-2 m-auto"]`, func(_ int, el *colly.HTMLElement) {
+			conditions := el.ChildText(`div[class='col-3 text-center p-1']`)
+			switch {
+			case strings.Contains(conditions, "Near Mint"):
+				conditions = "NM"
+			case strings.Contains(conditions, "Lightly Played"):
 				conditions = "SP"
-			case "PL":
+			case strings.Contains(conditions, "Played"): // includes Moderately
 				conditions = "MP"
 			default:
 				tat.printf("Unsupported %s condition for %s %s", conditions, cardName, edition)
-				continue
+				return
+			}
+
+			qtys := el.ChildTexts(`option`)
+			if len(qtys) == 0 {
+				return
+			}
+			qtyStr := qtys[len(qtys)-1]
+			qty, _ := strconv.Atoi(qtyStr)
+			if qty == 0 {
+				return
+			}
+
+			priceStr := el.ChildText(`div[class='col-2 text-center p-1']`)
+			priceStr = strings.TrimPrefix(priceStr, "$")
+			priceStr = strings.Replace(priceStr, ",", "", 1)
+			price, err := strconv.ParseFloat(priceStr, 64)
+			if err != nil {
+				tat.printf("%s: %s", theCard, err.Error())
+				return
+			}
+			if price == 0 {
+				return
 			}
 
 			var out responseChan
@@ -140,13 +156,13 @@ func (tat *Trollandtoad) parsePages(lastPage int) error {
 				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: conditions,
-					Price:      option.Price,
-					Quantity:   option.Quantity,
+					Price:      price,
+					Quantity:   qty,
 					URL:        e.Request.AbsoluteURL(link),
 				},
 			}
 			channel <- out
-		}
+		})
 	})
 
 	q, _ := queue.New(
