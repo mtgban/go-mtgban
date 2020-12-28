@@ -16,26 +16,37 @@ const (
 )
 
 type ArbitOpts struct {
+	// Extra factor to modify Inventory prices
 	Rate float64
 
-	MinDiff   float64
+	// Minimum difference between prices
+	MinDiff float64
+
+	// Minimum spread % between prices
 	MinSpread float64
 
+	// Use credit for Buylist prices
 	UseTrades bool
 }
 
 type ArbitEntry struct {
+	// ID of the card
 	CardId string
 
-	BuylistEntry
-	InventoryEntry
+	// The buylist used to determine Arbit
+	BuylistEntry BuylistEntry
 
+	// The actual entry that matches the above
+	InventoryEntry InventoryEntry
+
+	// Difference of the prices
 	Difference float64
-	Spread     float64
 
+	// Spread between the the prices
+	Spread float64
+
+	// Difference of the prices accounting for quantities available
 	AbsoluteDifference float64
-
-	SellerName string
 }
 
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, err error) {
