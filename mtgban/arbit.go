@@ -48,6 +48,9 @@ type ArbitOpts struct {
 
 	// List of rarities to ignore
 	Rarities []string
+
+	// List of editions to ignore
+	Editions []string
 }
 
 type ArbitEntry struct {
@@ -83,6 +86,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	filterFoil := false
 	var filterConditions []string
 	var filterRarities []string
+	var filterEditions []string
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -107,6 +111,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 		if len(opts.Rarities) != 0 {
 			filterRarities = opts.Rarities
+		}
+		if len(opts.Editions) != 0 {
+			filterEditions = opts.Editions
 		}
 	}
 
@@ -148,6 +155,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 		if filterFoil && co.Foil {
+			continue
+		}
+		if sliceStringHas(filterEditions, co.Edition) {
 			continue
 		}
 
@@ -338,6 +348,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 	filterFoil := false
 	var filterConditions []string
 	var filterRarities []string
+	var filterEditions []string
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -357,6 +368,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 		}
 		if len(opts.Rarities) != 0 {
 			filterRarities = opts.Rarities
+		}
+		if len(opts.Editions) != 0 {
+			filterEditions = opts.Editions
 		}
 	}
 
@@ -383,6 +397,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 			continue
 		}
 		if filterFoil && co.Foil {
+			continue
+		}
+		if sliceStringHas(filterEditions, co.Edition) {
 			continue
 		}
 
