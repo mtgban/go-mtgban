@@ -332,12 +332,31 @@ type MismatchEntry struct {
 func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []MismatchEntry, err error) {
 	minDiff := DefaultMismatchMinDiff
 	minSpread := DefaultMismatchMinSpread
+	maxSpread := 0.0
+	minPrice := 0.0
+	minQty := 0
+	filterFoil := false
+	var filterConditions []string
+	var filterRarities []string
+
 	if opts != nil {
 		if opts.MinDiff != 0 {
 			minDiff = opts.MinDiff
 		}
 		if opts.MinSpread != 0 {
 			minSpread = opts.MinSpread
+		}
+
+		minPrice = opts.MinPrice
+		maxSpread = opts.MaxSpread
+		minQty = opts.MinQuantity
+		filterFoil = opts.NoFoil
+
+		if len(opts.Conditions) != 0 {
+			filterConditions = opts.Conditions
+		}
+		if len(opts.Rarities) != 0 {
+			filterRarities = opts.Rarities
 		}
 	}
 
@@ -356,11 +375,32 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 			continue
 		}
 
+		co, err := mtgmatcher.GetUUID(cardId)
+		if err != nil {
+			continue
+		}
+		if sliceStringHas(filterRarities, co.Rarity) {
+			continue
+		}
+		if filterFoil && co.Foil {
+			continue
+		}
+
 		for _, refEntry := range refEntries {
 			if refEntry.Price == 0 {
 				continue
 			}
 			for _, invEntry := range invEntries {
+				if sliceStringHas(filterConditions, invEntry.Conditions) {
+					continue
+				}
+				if !probe.Info().NoQuantityInventory && invEntry.Quantity < minQty {
+					continue
+				}
+				if invEntry.Price < minPrice {
+					continue
+				}
+
 				refPrice := refEntry.Price
 				price := invEntry.Price
 
@@ -378,16 +418,24 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 				spread := 100 * (refPrice - price) / price
 				difference := refPrice - price
 
-				if difference > minDiff && spread > minSpread {
-					res := MismatchEntry{
-						CardId:     cardId,
-						Inventory:  invEntry,
-						Reference:  refEntry,
-						Difference: difference,
-						Spread:     spread,
-					}
-					result = append(result, res)
+				if maxSpread != 0 && spread > maxSpread {
+					continue
 				}
+				if difference < minDiff {
+					continue
+				}
+				if spread < minSpread {
+					continue
+				}
+
+				res := MismatchEntry{
+					CardId:     cardId,
+					Inventory:  invEntry,
+					Reference:  refEntry,
+					Difference: difference,
+					Spread:     spread,
+				}
+				result = append(result, res)
 			}
 		}
 	}
