@@ -33,3 +33,12 @@ func DateEqual(date1, date2 time.Time) bool {
 	y2, m2, d2 := date2.Date()
 	return y1 == y2 && m1 == m2 && d1 == d2
 }
+
+func sliceStringHas(slice []string, probe string) bool {
+	for i := range slice {
+		if slice[i] == probe {
+			return true
+		}
+	}
+	return false
+}

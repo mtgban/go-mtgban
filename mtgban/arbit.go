@@ -19,14 +19,35 @@ type ArbitOpts struct {
 	// Extra factor to modify Inventory prices
 	Rate float64
 
+	// Minimum Inventory price
+	MinPrice float64
+
 	// Minimum difference between prices
 	MinDiff float64
+
+	// Minimum Inventory quantities
+	MinQuantity int
 
 	// Minimum spread % between prices
 	MinSpread float64
 
+	// Maximum Spread % between prices
+	MaxSpread float64
+
+	// Maximum price ratio of Inventory
+	MaxPriceRatio float64
+
 	// Use credit for Buylist prices
 	UseTrades bool
+
+	// Whether to consider foils
+	NoFoil bool
+
+	// List of conditions to ignore
+	Conditions []string
+
+	// List of rarities to ignore
+	Rarities []string
 }
 
 type ArbitEntry struct {
@@ -54,6 +75,15 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	minSpread := DefaultArbitMinSpread
 	useTrades := false
 	rate := 1.0
+
+	minPrice := 0.0
+	minQty := 0
+	maxSpread := 0.0
+	maxPriceRatio := 0.0
+	filterFoil := false
+	var filterConditions []string
+	var filterRarities []string
+
 	if opts != nil {
 		if opts.MinDiff != 0 {
 			minDiff = opts.MinDiff
@@ -65,6 +95,19 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			rate = opts.Rate
 		}
 		useTrades = opts.UseTrades
+
+		minPrice = opts.MinPrice
+		minQty = opts.MinQuantity
+		maxPriceRatio = opts.MaxPriceRatio
+		maxSpread = opts.MaxSpread
+		filterFoil = opts.NoFoil
+
+		if len(opts.Conditions) != 0 {
+			filterConditions = opts.Conditions
+		}
+		if len(opts.Rarities) != 0 {
+			filterRarities = opts.Rarities
+		}
 	}
 
 	buylist, err := vendor.Buylist()
@@ -93,7 +136,32 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 		blEntry := blEntries[nmIndex]
 
+		if maxPriceRatio != 0 && blEntry.PriceRatio > maxPriceRatio {
+			continue
+		}
+
+		co, err := mtgmatcher.GetUUID(cardId)
+		if err != nil {
+			continue
+		}
+		if sliceStringHas(filterRarities, co.Rarity) {
+			continue
+		}
+		if filterFoil && co.Foil {
+			continue
+		}
+
 		for _, invEntry := range invEntries {
+			if sliceStringHas(filterConditions, invEntry.Conditions) {
+				continue
+			}
+			if !seller.Info().NoQuantityInventory && invEntry.Quantity < minQty {
+				continue
+			}
+			if invEntry.Price < minPrice {
+				continue
+			}
+
 			price := invEntry.Price * rate
 
 			// When invEntry is not NM, we need to account for conditions, which
@@ -133,6 +201,16 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			spread := 100 * (blPrice - price) / price
 			difference := blPrice - price
 
+			if maxSpread != 0 && spread > maxSpread {
+				continue
+			}
+			if difference < minDiff {
+				continue
+			}
+			if spread < minSpread {
+				continue
+			}
+
 			// Find the minimum amount tradable
 			qty := invEntry.Quantity
 			if blEntry.Quantity != 0 {
@@ -142,19 +220,15 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 				}
 			}
 
-			absDifference := difference * float64(qty)
-
-			if difference > minDiff && spread > minSpread {
-				res := ArbitEntry{
-					CardId:             cardId,
-					BuylistEntry:       blEntry,
-					InventoryEntry:     invEntry,
-					Difference:         difference,
-					AbsoluteDifference: absDifference,
-					Spread:             spread,
-				}
-				result = append(result, res)
+			res := ArbitEntry{
+				CardId:             cardId,
+				BuylistEntry:       blEntry,
+				InventoryEntry:     invEntry,
+				Difference:         difference,
+				AbsoluteDifference: difference * float64(qty),
+				Spread:             spread,
 			}
+			result = append(result, res)
 		}
 	}
 
