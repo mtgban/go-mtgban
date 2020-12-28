@@ -324,6 +324,7 @@ func adjustEdition(inCard *Card) {
 					"Player Rewards Promo",
 					"Player Rewards Textless",
 					"RNA MagicFest Promo",
+					"Commander: 2011 Edition",
 					"Commander: 2015 Edition",
 					"State Champs Promo":
 					edition = "PLIST"
