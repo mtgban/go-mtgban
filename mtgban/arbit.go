@@ -60,8 +60,11 @@ type ArbitEntry struct {
 	// The buylist used to determine Arbit
 	BuylistEntry BuylistEntry
 
-	// The actual entry that matches the above
+	// The actual entry that matches either of the above
 	InventoryEntry InventoryEntry
+
+	// The inventory used to determine Mismatch
+	ReferenceEntry InventoryEntry
 
 	// Difference of the prices
 	Difference float64
@@ -329,17 +332,7 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 	return
 }
 
-type MismatchEntry struct {
-	CardId string
-
-	Inventory InventoryEntry
-	Reference InventoryEntry
-
-	Difference float64
-	Spread     float64
-}
-
-func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []MismatchEntry, err error) {
+func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEntry, err error) {
 	minDiff := DefaultMismatchMinDiff
 	minSpread := DefaultMismatchMinSpread
 	maxSpread := 0.0
@@ -445,12 +438,12 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []Mismatc
 					continue
 				}
 
-				res := MismatchEntry{
-					CardId:     cardId,
-					Inventory:  invEntry,
-					Reference:  refEntry,
-					Difference: difference,
-					Spread:     spread,
+				res := ArbitEntry{
+					CardId:         cardId,
+					InventoryEntry: invEntry,
+					ReferenceEntry: refEntry,
+					Difference:     difference,
+					Spread:         spread,
 				}
 				result = append(result, res)
 			}

@@ -531,13 +531,13 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	return nil
 }
 
-func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
+func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
 	hasExtraSeller := false
 	header := MismatchHeader
-	if len(mismatch) > 0 && mismatch[0].Inventory.SellerName != "" {
+	if len(mismatch) > 0 && mismatch[0].InventoryEntry.SellerName != "" {
 		header = append(header, "Seller")
 		header = append(header, "Bundle")
 		hasExtraSeller = true
@@ -549,8 +549,8 @@ func WriteMismatchToCSV(mismatch []MismatchEntry, w io.Writer) error {
 	}
 
 	for _, entry := range mismatch {
-		inv := entry.Inventory
-		ref := entry.Reference
+		inv := entry.InventoryEntry
+		ref := entry.ReferenceEntry
 
 		record, err := cardId2record(entry.CardId)
 		if err != nil {
