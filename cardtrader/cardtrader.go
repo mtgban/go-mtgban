@@ -24,6 +24,10 @@ type Cardtrader struct {
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
 
+	// Custom map of name:id to avoid requesting cards matching those names
+	// Name should be normalized with mtgmatcher.Normalize()
+	FilterNames map[string]string
+
 	loggedClient *CTLoggedClient
 }
 
@@ -205,7 +209,13 @@ func (ct *Cardtrader) scrape() error {
 
 	go func() {
 		for _, bp := range blueprints {
-			categories <- bp.Id
+			found := true
+			if ct.FilterNames != nil {
+				_, found = ct.FilterNames[mtgmatcher.Normalize(bp.Name)]
+			}
+			if found {
+				categories <- bp.Id
+			}
 		}
 		close(categories)
 
