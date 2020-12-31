@@ -7,14 +7,6 @@ import (
 	http "github.com/hashicorp/go-retryablehttp"
 )
 
-type CKPriceList struct {
-	Meta struct {
-		CreatedAt string `json:"created_at"`
-		BaseURL   string `json:"base_url"`
-	} `json:"meta"`
-	Data []CKCard `json:"data"`
-}
-
 type conditionValues struct {
 	NMPrice string `json:"nm_price"`
 	NMQty   int    `json:"nm_qty"`
@@ -56,7 +48,7 @@ func NewCKClient() *CKClient {
 	return &ck
 }
 
-func (ck *CKClient) GetPriceList() (*CKPriceList, error) {
+func (ck *CKClient) GetPriceList() ([]CKCard, error) {
 	resp, err := ck.client.Get(ckPricelistURL)
 	if err != nil {
 		return nil, err
@@ -68,11 +60,17 @@ func (ck *CKClient) GetPriceList() (*CKPriceList, error) {
 		return nil, err
 	}
 
-	var pricelist CKPriceList
+	var pricelist struct {
+		Meta struct {
+			CreatedAt string `json:"created_at"`
+			BaseURL   string `json:"base_url"`
+		} `json:"meta"`
+		Data []CKCard `json:"data"`
+	}
 	err = json.Unmarshal(data, &pricelist)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pricelist, nil
+	return pricelist.Data, nil
 }
