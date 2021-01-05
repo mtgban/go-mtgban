@@ -484,10 +484,15 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		// Double parse commander so that it is possible to drop the oversize
 		// cards as well as catch the Extras in the block below
 		if strings.Contains(edition, "Commander") {
+			hasExtra := strings.HasSuffix(edition, ": Extras")
 			edition = mtgmatcher.ParseCommanderEdition(edition)
 
 			if strings.HasPrefix(edition, "Commander 20") && variant == "V.2" {
 				return nil, errors.New("oversized")
+			}
+			// Restore the tag for correct parsing of CMR Collectors cards
+			if hasExtra {
+				edition += ": Extras"
 			}
 		}
 
