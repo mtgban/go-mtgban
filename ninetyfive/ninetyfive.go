@@ -56,12 +56,12 @@ func (nf *Ninetyfive) parseBL() error {
 		}
 
 		if len(record) < 3 {
-			return fmt.Errorf("Unsupported buylist format (%d)", len(record))
+			return fmt.Errorf("unsupported buylist format (%d)", len(record))
 		}
 
 		fields := strings.Split(record[2], "_")
 		if len(fields) < 5 {
-			return fmt.Errorf("Unsupported buylist data format (%d)", len(fields))
+			return fmt.Errorf("unsupported buylist data format (%d)", len(fields))
 		}
 
 		variant := ""

@@ -176,7 +176,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 	} else if mode == modeBuylist {
 		c.Visit(cfbBuylistURL)
 	} else {
-		return fmt.Errorf("Unsupported mode %s", mode)
+		return fmt.Errorf("unsupported mode %s", mode)
 	}
 
 	go func() {

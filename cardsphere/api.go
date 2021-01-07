@@ -38,7 +38,7 @@ func NewCardSphereClient(email, password string) (*CardSphereClient, error) {
 	}
 
 	if strings.Contains(string(data), "Invalid credentials") {
-		return nil, errors.New("Invalid credentials")
+		return nil, errors.New("invalid credentials")
 	}
 
 	return &cs, nil

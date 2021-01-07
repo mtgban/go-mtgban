@@ -207,7 +207,7 @@ func (sz *Strikezone) parseBL() error {
 		}
 
 		if len(record) < 5 {
-			return fmt.Errorf("Unsupported buylist format (%d)", len(record))
+			return fmt.Errorf("unsupported buylist format (%d)", len(record))
 		}
 
 		cardName := strings.TrimSpace(record[1])

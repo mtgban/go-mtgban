@@ -44,19 +44,19 @@ func record2entry(record []string) (*InventoryEntry, error) {
 	cardId := record[0]
 	_, err := mtgmatcher.GetUUID(cardId)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+		return nil, fmt.Errorf("error reading record: %v (%v)", err, record)
 	}
 
 	conditions := record[index]
 	index++
 	price, err := strconv.ParseFloat(record[index], 64)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading record: %v", err)
+		return nil, fmt.Errorf("error reading record: %v", err)
 	}
 	index++
 	qty, err := strconv.Atoi(record[index])
 	if err != nil {
-		return nil, fmt.Errorf("Error reading record: %v", err)
+		return nil, fmt.Errorf("error reading record: %v", err)
 	}
 	index++
 
@@ -104,10 +104,10 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return nil, fmt.Errorf("Empty input file")
+		return nil, fmt.Errorf("empty input file")
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Error reading header: %v", err)
+		return nil, fmt.Errorf("error reading header: %v", err)
 	}
 
 	okHeader := true
@@ -130,7 +130,7 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 		}
 	}
 	if !okHeader {
-		return nil, fmt.Errorf("Malformed inventory file")
+		return nil, fmt.Errorf("malformed inventory file")
 	}
 
 	inventory := InventoryRecord{}
@@ -141,7 +141,7 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 		}
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record: %v", err)
+				return nil, fmt.Errorf("error reading record: %v", err)
 			}
 			continue
 		}
@@ -168,10 +168,10 @@ func LoadMarketFromCSV(r io.Reader, flags ...bool) (map[string]InventoryRecord, 
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return nil, nil, fmt.Errorf("Empty input file")
+		return nil, nil, fmt.Errorf("empty input file")
 	}
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error reading header: %v", err)
+		return nil, nil, fmt.Errorf("error reading header: %v", err)
 	}
 
 	okHeader := true
@@ -195,7 +195,7 @@ func LoadMarketFromCSV(r io.Reader, flags ...bool) (map[string]InventoryRecord, 
 		}
 	}
 	if !okHeader {
-		return nil, nil, fmt.Errorf("Malformed inventory file")
+		return nil, nil, fmt.Errorf("malformed inventory file")
 	}
 
 	market := map[string]InventoryRecord{}
@@ -207,7 +207,7 @@ func LoadMarketFromCSV(r io.Reader, flags ...bool) (map[string]InventoryRecord, 
 		}
 		if err != nil {
 			if strict {
-				return nil, nil, fmt.Errorf("Error reading record: %v", err)
+				return nil, nil, fmt.Errorf("error reading record: %v", err)
 			}
 			continue
 		}
@@ -240,10 +240,10 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return nil, fmt.Errorf("Empty input file")
+		return nil, fmt.Errorf("empty input file")
 	}
 	if err != nil {
-		return nil, fmt.Errorf("Error reading header: %v", err)
+		return nil, fmt.Errorf("error reading header: %v", err)
 	}
 
 	okHeader := true
@@ -258,7 +258,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		}
 	}
 	if !okHeader {
-		return nil, fmt.Errorf("Malformed buylist file")
+		return nil, fmt.Errorf("malformed buylist file")
 	}
 
 	buylist := BuylistRecord{}
@@ -269,7 +269,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		}
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record: %v", err)
+				return nil, fmt.Errorf("error reading record: %v", err)
 			}
 			continue
 		}
@@ -279,7 +279,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		_, err = mtgmatcher.GetUUID(cardId)
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record: %v (%v)", err, record)
+				return nil, fmt.Errorf("error reading record: %v (%v)", err, record)
 			}
 			continue
 		}
@@ -287,7 +287,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		buyPrice, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+				return nil, fmt.Errorf("error reading record %s: %v", record[index], err)
 			}
 			continue
 		}
@@ -295,7 +295,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		tradePrice, err := strconv.ParseFloat(record[index], 64)
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+				return nil, fmt.Errorf("error reading record %s: %v", record[index], err)
 			}
 			continue
 		}
@@ -303,7 +303,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		qty, err := strconv.Atoi(record[index])
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+				return nil, fmt.Errorf("error reading record %s: %v", record[index], err)
 			}
 			continue
 		}
@@ -311,7 +311,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		priceRatio, err := strconv.ParseFloat(strings.TrimSuffix(record[index], "%"), 64)
 		if err != nil {
 			if strict {
-				return nil, fmt.Errorf("Error reading record %s: %v", record[index], err)
+				return nil, fmt.Errorf("error reading record %s: %v", record[index], err)
 			}
 			continue
 		}
