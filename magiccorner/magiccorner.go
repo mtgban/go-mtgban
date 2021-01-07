@@ -263,6 +263,9 @@ func (mc *Magiccorner) parseBL() error {
 
 	// Get all the rows in the Sheet1.
 	rows, err := f.GetRows(f.GetSheetList()[0])
+	if err != nil {
+		return err
+	}
 	for i, row := range rows {
 		if i < 5 || len(row) < 8 {
 			continue

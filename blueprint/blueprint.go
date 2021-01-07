@@ -72,6 +72,9 @@ func (bp *Blueprint) parseBL() error {
 
 	// Get all the rows in the Sheet1.
 	rows, err := f.GetRows(sheets[i])
+	if err != nil {
+		return err
+	}
 	for _, row := range rows {
 		if len(row) < 5 {
 			continue
