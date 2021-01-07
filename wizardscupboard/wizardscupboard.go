@@ -56,8 +56,8 @@ func (wc *Wizardscupboard) scrape() error {
 		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
 
 		colly.URLFilters(
-			regexp.MustCompile("https://www\\.wizardscupboard\\.com/singles-.+"),
-			regexp.MustCompile("https://www\\.wizardscupboard\\.com/foils-.+"),
+			regexp.MustCompile(`https://www.wizardscupboard.com/singles-.+`),
+			regexp.MustCompile(`https://www.wizardscupboard.com/foils-.+`),
 		),
 
 		colly.Async(true),
