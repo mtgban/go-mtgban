@@ -154,8 +154,7 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 				return
 			}
 
-			var out responseChan
-			out = responseChan{
+			out := responseChan{
 				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: conditions,

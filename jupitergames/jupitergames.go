@@ -143,8 +143,7 @@ func (jup *Jupitergames) scrape() error {
 			return
 		}
 
-		var out responseChan
-		out = responseChan{
+		out := responseChan{
 			cardId: cardId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,

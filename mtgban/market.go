@@ -20,7 +20,7 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 	}
 
 	sellers := make([]Seller, 0, len(listSellers))
-	for sellerName, _ := range listSellers {
+	for sellerName := range listSellers {
 		inventory, err := market.InventoryForSeller(sellerName)
 		if err != nil {
 			return nil, err

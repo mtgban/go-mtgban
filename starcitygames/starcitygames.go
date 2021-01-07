@@ -30,8 +30,6 @@ type Starcitygames struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	products []productList
-
 	client   *SCGClient
 	blClient *SCGBuylistClient
 }

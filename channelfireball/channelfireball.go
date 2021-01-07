@@ -41,11 +41,6 @@ func NewScraper() *Channelfireball {
 	return &cfb
 }
 
-type resultChan struct {
-	err  error
-	card cfbCard
-}
-
 func (cfb *Channelfireball) printf(format string, a ...interface{}) {
 	if cfb.LogCallback != nil {
 		cfb.LogCallback("[CFB] "+format, a...)

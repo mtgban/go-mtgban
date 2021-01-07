@@ -30,7 +30,6 @@ type TCGPlayerFull struct {
 type requestChan struct {
 	TCGProductId string
 	UUID         string
-	retry        int
 }
 
 func NewScraperFull() *TCGPlayerFull {
