@@ -94,10 +94,7 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			return
 		}
 
-		priceStr := e.Attr("data-price")
-		priceStr = strings.Replace(priceStr, "$", "", 1)
-		priceStr = strings.Replace(priceStr, ",", "", 1)
-		cardPrice, err := strconv.ParseFloat(priceStr, 64)
+		cardPrice, err := mtgmatcher.ParsePrice(e.Attr("data-price"))
 		if err != nil {
 			cfb.printf("%v", err)
 			return

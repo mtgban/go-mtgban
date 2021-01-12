@@ -143,9 +143,7 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 			}
 
 			priceStr := el.ChildText(`div[class='col-2 text-center p-1']`)
-			priceStr = strings.TrimPrefix(priceStr, "$")
-			priceStr = strings.Replace(priceStr, ",", "", 1)
-			price, err := strconv.ParseFloat(priceStr, 64)
+			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
 				tat.printf("%s: %s", theCard, err.Error())
 				return

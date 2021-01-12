@@ -122,13 +122,11 @@ func (wc *Wizardscupboard) scrape() error {
 			notes := strings.TrimSpace(elem.ChildText("td:nth-child(5)"))
 			qtyStr := elem.ChildText("td:nth-child(6)")
 			priceStr := strings.TrimSpace(elem.ChildText("td:nth-child(7)"))
-			priceStr = strings.Replace(priceStr, "$", "", 1)
-			priceStr = strings.Replace(priceStr, ",", "", 1)
 
 			if priceStr == "" || qtyStr == "" {
 				return
 			}
-			price, err := strconv.ParseFloat(priceStr, 64)
+			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
 				wc.printf("%s %s", cardName, err.Error())
 				return

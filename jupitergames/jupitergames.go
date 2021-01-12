@@ -294,9 +294,7 @@ func (jup *Jupitergames) parseBL() error {
 			}
 		}
 
-		priceStr = strings.Replace(priceStr, "$", "", 1)
-		priceStr = strings.Replace(priceStr, ",", "", 1)
-		price, err := strconv.ParseFloat(priceStr, 64)
+		price, err := mtgmatcher.ParsePrice(priceStr)
 		if err != nil {
 			jup.printf("%s", err.Error())
 			continue

@@ -221,8 +221,7 @@ func (sz *Strikezone) parseBL() error {
 		}
 
 		priceStr := strings.TrimSpace(record[4])
-		priceStr = strings.Replace(priceStr, ",", "", 1)
-		price, err := strconv.ParseFloat(priceStr, 64)
+		price, err := mtgmatcher.ParsePrice(priceStr)
 		if err != nil {
 			return err
 		}

@@ -177,9 +177,7 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 			}
 
 			priceStr := s.Find("span[class='product-listing__price']").Text()
-			priceStr = strings.Replace(priceStr, "$", "", 1)
-			priceStr = strings.Replace(priceStr, ",", "", 1)
-			price, err := strconv.ParseFloat(priceStr, 64)
+			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
 				tcg.printf("%s - %v", co, err)
 				return

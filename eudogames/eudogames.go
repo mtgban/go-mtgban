@@ -182,9 +182,7 @@ func (eudo *Eudogames) scrape(mode string) error {
 			}
 
 			priceStr := elem.ChildText(`td[class="number price"]`)
-			priceStr = strings.Replace(priceStr, "$", "", 1)
-			priceStr = strings.Replace(priceStr, ",", "", 1)
-			price, err := strconv.ParseFloat(priceStr, 64)
+			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
 				eudo.printf("%s %s %v", cardName, edition, err)
 				return

@@ -165,9 +165,6 @@ func (cs *Cardshark) scrape() error {
 				return
 			}
 
-			priceStr = strings.TrimPrefix(priceStr, "$")
-			priceStr = strings.Replace(priceStr, ",", "", 1)
-
 			qtyStr := el.ChildText("td:nth-child(2)")
 			seller := el.ChildText("td:nth-child(5) a:first-child")
 			conditions := el.ChildText("td:nth-child(6)")
@@ -202,7 +199,7 @@ func (cs *Cardshark) scrape() error {
 				cs.printf("%s", err.Error())
 				return
 			}
-			price, err := strconv.ParseFloat(priceStr, 64)
+			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
 				cs.printf("%s", err.Error())
 				return

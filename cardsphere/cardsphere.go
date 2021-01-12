@@ -2,7 +2,6 @@ package cardsphere
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -101,9 +100,7 @@ func (cs *CardsphereIndex) parseBL() error {
 			}
 
 			for i, priceStr := range []string{priceNonFoilStr, priceFoilStr} {
-				priceStr = strings.TrimPrefix(priceStr, "$")
-				priceStr = strings.Replace(priceStr, ",", "", 1)
-				price, err := strconv.ParseFloat(priceStr, 64)
+				price, err := mtgmatcher.ParsePrice(priceStr)
 				if err != nil {
 					continue
 				}
