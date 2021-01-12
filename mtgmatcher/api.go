@@ -76,6 +76,10 @@ func GetSetUUID(uuid string) (*mtgjson.Set, error) {
 	return set, nil
 }
 
+func HasExtendedArtPrinting(name string) bool {
+	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectExtendedArt)
+}
+
 func HasBorderlessPrinting(name string) bool {
 	return hasPrinting(name, "border_color", mtgjson.BorderColorBorderless)
 }

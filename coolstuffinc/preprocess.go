@@ -316,6 +316,17 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 	}
 
+	if strings.HasSuffix(edition, ": Variants") && variant == "" {
+		switch {
+		case mtgmatcher.HasExtendedArtPrinting(cardName):
+			variant = "Extended Art"
+		case mtgmatcher.HasBorderlessPrinting(cardName):
+			variant = "Borderless"
+		case mtgmatcher.HasShowcasePrinting(cardName):
+			variant = "Showcase"
+		}
+	}
+
 	// Cut a few tags a the end of the card
 	if strings.HasSuffix(cardName, "Promo") {
 		cuts := mtgmatcher.Cut(cardName, "Promo")
