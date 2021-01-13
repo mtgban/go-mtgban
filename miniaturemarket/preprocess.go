@@ -182,6 +182,8 @@ func preprocess(title, sku string) (*mtgmatcher.Card, error) {
 			"M-655-170", "M-655-171", "M-655-172", "M-655-173", "M-655-174",
 			"M-664-083", "M-654-377": // Heroic Intervention
 			variant += " M21"
+		case "M-656-525": // Orah, Skyclave Hierophant BaB
+			edition = "Zendikar Rising"
 		}
 	}
 
