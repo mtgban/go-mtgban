@@ -98,11 +98,10 @@ var months = []string{
 // an empty string is returned, to prevent confusing a number with a date or day.
 // If a rational number is provided, only the numerator part is considered.
 func ExtractNumber(str string) string {
-	low := strings.ToLower(str)
-	fields := strings.Fields(low)
+	fields := strings.Fields(str)
 	for _, field := range fields {
 		for _, month := range months {
-			if field == month {
+			if Equals(field, month) {
 				return ""
 			}
 		}
