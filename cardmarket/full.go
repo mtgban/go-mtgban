@@ -286,6 +286,7 @@ func (mkm *CardMarketFull) scrape() error {
 		}
 	}
 
+	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.inventoryDate = time.Now()
 	return nil
 }

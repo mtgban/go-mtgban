@@ -50,6 +50,10 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 	return &mkm
 }
 
+func (mkm *MKMClient) RequestNo() int {
+	return mkm.client.HTTPClient.Transport.(*authTransport).RequestNo
+}
+
 func (mkm *MKMClient) MKMRawPriceGuide() (string, error) {
 	resp, err := mkm.client.Get(mkmPriceGuideURL)
 	if err != nil {
@@ -298,6 +302,8 @@ type authTransport struct {
 	AccessTokenSecret string
 
 	Limiter *rate.Limiter
+
+	RequestNo int
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -347,5 +353,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	auth += "oauth_signature=\"" + signature + "\""
 
 	req.Header.Set("Authorization", auth)
+
+	t.RequestNo++
 	return t.Parent.RoundTrip(req)
 }
