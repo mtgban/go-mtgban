@@ -66,6 +66,13 @@ var promo2editionTable = map[string]string{
 	"Sprite Dragon":             "Magazine Inserts",
 	"Thorn Elemental":           "Magazine Inserts",
 	"Voltaic Key":               "Magazine Inserts",
+	"Crop Rotation":             "Magazine Inserts",
+	"Heliod's Pilgrim":          "Magazine Inserts",
+	"Dark Ritual":               "Magazine Inserts",
+	"Staggering Insight":        "Magazine Inserts",
+
+	"Hypnotic Sprite // Mesmeric Glare":   "Magazine Inserts",
+	"Tangled Florahedron // Tangled Vale": "Magazine Inserts",
 
 	// Game Day Promos
 	"Hall of Triumph": "Journey into Nyx Hero's Path",
@@ -229,6 +236,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		"Guilds of Ravnica",
 		"Conspiracy: Take the Crown",
 		"Battlebond",
+		"Kaldheim",
 		"Secret Lair Drop Series":
 		// Could have been lost in SplitVariant, and it's more reliable
 		variant = number

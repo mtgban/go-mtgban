@@ -160,6 +160,8 @@ func IsBasicLand(name string) bool {
 		strings.HasPrefix(name, "Forest"),
 		strings.HasPrefix(name, "Wastes"):
 		return true
+	case HasPrefix(name, "Snow-Covered"):
+		return true
 	}
 	return false
 }
