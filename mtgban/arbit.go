@@ -74,6 +74,9 @@ type ArbitEntry struct {
 
 	// Difference of the prices accounting for quantities available
 	AbsoluteDifference float64
+
+	// Amount of cards that can be applied
+	Quantity int
 }
 
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, err error) {
@@ -240,6 +243,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 				Difference:         difference,
 				AbsoluteDifference: difference * float64(qty),
 				Spread:             spread,
+				Quantity:           qty,
 			}
 			result = append(result, res)
 		}
