@@ -22,6 +22,9 @@ type ArbitOpts struct {
 	// Minimum Inventory price
 	MinPrice float64
 
+	// Minimum Buylist price
+	MinBuyPrice float64
+
 	// Minimum difference between prices
 	MinDiff float64
 
@@ -86,6 +89,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	rate := 1.0
 
 	minPrice := 0.0
+	minBuyPrice := 0.0
 	minQty := 0
 	maxSpread := 0.0
 	maxPriceRatio := 0.0
@@ -107,6 +111,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		useTrades = opts.UseTrades
 
 		minPrice = opts.MinPrice
+		minBuyPrice = opts.MinBuyPrice
 		minQty = opts.MinQuantity
 		maxPriceRatio = opts.MaxPriceRatio
 		maxSpread = opts.MaxSpread
@@ -150,6 +155,10 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		blEntry := blEntries[nmIndex]
 
 		if maxPriceRatio != 0 && blEntry.PriceRatio > maxPriceRatio {
+			continue
+		}
+
+		if blEntry.BuyPrice < minBuyPrice {
 			continue
 		}
 
@@ -211,6 +220,11 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			}
 
 			if price == 0 || blPrice == 0 {
+				continue
+			}
+
+			// Check again to account for conditions
+			if blPrice < minBuyPrice {
 				continue
 			}
 
