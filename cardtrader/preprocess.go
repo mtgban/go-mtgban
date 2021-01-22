@@ -120,6 +120,7 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 	case "Alliances", "Fallen Empires", "Homelands",
 		"Guilds of Ravnica",
 		"Ravnica Allegiance",
+		"Kaldheim",
 		"Asia Pacific Land Program",
 		"European Land Program",
 		"Commander Anthology Volume II",
