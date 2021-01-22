@@ -78,6 +78,15 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
+	case "":
+		if bp.Properties.Language == "jp" {
+			edition = "PMEI"
+			if cardName == "Load Lion" {
+				edition = "PRES"
+			}
+		} else {
+			return nil, errors.New("missing edition")
+		}
 	case "Ultra-Pro Puzzle Cards",
 		"Celebration Cards",
 		"Foreign White Bordered",
@@ -105,6 +114,8 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 		edition = "Fourth Edition Foreign Black Border"
 	case "Chronicles Japanese":
 		edition = "Chronicles"
+		variant = number
+	case "Rinascimento":
 		variant = number
 	case "Alliances", "Fallen Empires", "Homelands",
 		"Guilds of Ravnica",
@@ -230,10 +241,11 @@ func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
 			}
 		} else if strings.Contains(edition, "Japanese") {
 			variant = "Japanese"
-			if strings.Contains(edition, "Promo") {
-				variant = "Prerelease"
-			}
 			edition = "War of the Spark"
+			if strings.Contains(edition, "Promo") {
+				variant += " Prerelease"
+				edition = "War of the Spark Promos"
+			}
 		} else if strings.HasSuffix(edition, "Promos") {
 			variant = number
 

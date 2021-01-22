@@ -2571,18 +2571,33 @@ var rinVariants = map[string]map[string]string{
 		"miniera53": "176",
 		"miniera56": "177",
 		"miniera54": "178",
+
+		"58": "175",
+		"59": "176",
+		"60": "177",
+		"61": "178",
 	},
 	"Urza's Power Plant": map[string]string{
 		"centrale57": "179",
 		"centrale60": "180",
 		"centrale58": "181",
 		"ri054":      "182",
+
+		"62": "179",
+		"63": "180",
+		"64": "181",
+		"65": "182",
 	},
 	"Urza's Tower": map[string]string{
 		"ri055":   "183",
 		"torre63": "184",
 		"torre62": "185",
 		"torre64": "186",
+
+		"66": "183",
+		"67": "184",
+		"68": "185",
+		"69": "186",
 	},
 }
 
