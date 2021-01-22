@@ -97,6 +97,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 		switch {
 		case mtgmatcher.Contains(product.Description, "ita"),
 			mtgmatcher.Contains(product.Description, "oversize"),
+			mtgmatcher.Contains(product.Description, "inked"),
 			mtgmatcher.Contains(product.Description, "mix"):
 			continue
 		}
