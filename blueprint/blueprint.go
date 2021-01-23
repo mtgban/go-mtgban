@@ -44,13 +44,16 @@ func (bp *Blueprint) parseBL() error {
 		blURL := fmt.Sprintf(BlueprintURL, t.Format("January_2006"))
 		bp.printf("Trying %s", blURL)
 		resp, err := http.Get(blURL)
-		if err == nil && resp.StatusCode == 200 {
+		if err != nil {
+			bp.printf("not found, continuing")
+			continue
+		}
+		if resp.StatusCode == 200 {
 			reader = resp.Body
-			defer resp.Body.Close()
 			break
 		}
-		resp.Body.Close()
-		bp.printf("not found, continuing")
+		defer resp.Body.Close()
+		bp.printf("url found, but with status %d, continuing", resp.StatusCode)
 	}
 	if reader == nil {
 		bp.printf("no updates over a year")

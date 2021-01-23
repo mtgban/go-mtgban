@@ -239,12 +239,16 @@ func (mc *Magiccorner) parseBL() error {
 			blURL := fmt.Sprintf(buylistURL, t.Format("02-01-2006"))
 			mc.printf("Trying %s", blURL)
 			resp, err := http.Get(blURL)
-			if err == nil && resp.StatusCode == 200 {
+			if err != nil {
+				mc.printf("not found, continuing")
+				continue
+			}
+			if resp.StatusCode == 200 {
 				reader = resp.Body
-				defer resp.Body.Close()
 				break
 			}
-			resp.Body.Close()
+			defer resp.Body.Close()
+			mc.printf("url found, but with status %d, continuing", resp.StatusCode)
 		}
 		if reader != nil {
 			break
