@@ -17,7 +17,7 @@ import (
 const (
 	defaultConcurrency = 8
 
-	buylistURL = "https://www.magiccorner.it/12/public/blog/buylist/BUYLIST_MC_%s.xlsx"
+	buylistURL = "https://www.magiccorner.it/12/public/blog/buylist/BUYLIST_magiccorner_%s.xlsx"
 )
 
 type Magiccorner struct {
