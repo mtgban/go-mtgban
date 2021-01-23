@@ -996,6 +996,8 @@ var chkVariants = map[string]map[string]string{
 		"b":                   "160b",
 		"art a 2 swords":      "160a",
 		"art b with pole arm": "160b",
+		"v.1": "160a",
+		"v.2": "160b",
 	},
 }
 

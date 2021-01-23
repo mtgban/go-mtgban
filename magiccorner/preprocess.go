@@ -24,6 +24,8 @@ var cardTable = map[string]string{
 	"Skull of Arm":            "Skull of Orm",
 	"Ramirez Di Pietro":       "Ramirez DePietro",
 	"Sir Shandlar di Eberyn":  "Sir Shandlar of Eberyn",
+	"Rohgahh di Kher":         "Rohgahh of Kher Keep",
+	"El-Ajjaj":                "El-Hajjâj",
 }
 
 var editionTable = map[string]string{
@@ -56,6 +58,7 @@ var editionTable = map[string]string{
 	"Invasione":                  "Invasion",
 	"Irruzione":                  "Gatecrash",
 	"L'Era della Rovina":         "Hour of Devastation",
+	"L'Oscurità":                 "The Dark",
 	"La Guerra della Scintilla":  "War of the Spark",
 	"Labirinto del Drago":        "Dragon's Maze",
 	"Landa Tenebrosa":            "Shadowmoor",
@@ -109,6 +112,7 @@ var editionTable = map[string]string{
 
 	"Eight Edition":  "Eighth Edition",
 	"Fifth Ediiton":  "Fifth Edition",
+	"Fifth Editon":   "Fifth Edition",
 	"Journey to Nyx": "Journey into Nyx",
 }
 
@@ -154,6 +158,18 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
+	case "Unlimited":
+		cardName = mtgmatcher.Cut(cardName, "Unlimited")[0]
+	case "Arabian Nights":
+		if variation == "V.1" {
+			variation = "dark"
+		} else if variation == "V.2" {
+			variation = "light"
+		}
+	case "Antiquities":
+		if variation != "" {
+			variation = extra
+		}
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
 		variation = "Japanese"
 		edition = "War of the Spark"
@@ -179,9 +195,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = strings.TrimLeft(extra[3:], "0")
 		}
 	// Handle wastes
-	case "Giuramento dei Guardiani":
-		if cardName == "Wastes" && len(extra) > 3 {
-			variation = extra[3:]
+	case "Oath of the Gatewatch":
+		if cardName == "Wastes" {
+			variation = extra
 		}
 	// DDA correct edition is hidden in the extra
 	case "Duel Decks Anthology":
@@ -196,25 +212,27 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			edition = "Duel Decks Anthology: Garruk vs. Liliana"
 		}
 		variation = strings.TrimLeft(extra[4:], "0")
-	case "Theros Beyond Death: Promos":
-		switch variation {
-		case "V.1":
-			variation = "Promo Pack"
-		case "V.2":
-			variation = "Prerelease"
-		default:
-			if mtgmatcher.HasPromoPackPrinting(cardName) {
+	default:
+		// All the boosterfun prelease/promopack after THB (ELD is under "Promo")
+		if strings.HasSuffix(edition, ": Promos") {
+			switch variation {
+			case "V.1":
 				variation = "Promo Pack"
+			case "V.2":
+				variation = "Prerelease"
+			default:
+				if mtgmatcher.HasPromoPackPrinting(cardName) {
+					variation = "Promo Pack"
+				}
 			}
 		}
 	}
 
-	id := ""
 	if variation == "" {
 		switch edition {
 		// Work around missing tags until (if) they add them
 		case "Promo":
-			if strings.HasPrefix(extra, "p2019ELD") || strings.HasPrefix(extra, "p2020THB") {
+			if strings.HasPrefix(extra, "p2019ELD") {
 				internalNumber := strings.TrimLeft(extra[8:], "0")
 				num, err := strconv.Atoi(internalNumber)
 				if err == nil {
@@ -224,6 +242,8 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 						variation = "Promo Pack"
 					}
 				}
+			} else if cardName == "Flusterstorm" {
+				edition = "Modern Horizons"
 			}
 		// These editions contain numbers that can be used safely
 		case "Throne of Eldraine: Extras", "Theros Beyond Death: Extras",
@@ -236,21 +256,30 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 					variation = internalNumber
 				}
 			}
-		// Image is scryfall ID
-		case "Ikoria: Lair of Behemoths":
-			id = extra
-		// Only one of them
-		case "Campioni di Kamigawa":
-			if cardName == "Brothers Yamazaki" {
-				variation = "Facing Left"
-			}
 		// These are the editions that need table lookup
 		case "Antiquities", "Fallen Empires", "Chronicles",
-			"Alliances", "Reinassance", "Homelands":
+			"Alliances", "Reinassance", "Rinascimento", "Homelands":
 			variation = extra
 		// Same for this one, except the specifier is elsewhere
 		case "Commander Anthology 2018":
 			variation = card.URL
+		case "Commander Legends: Extras":
+			set, err := mtgmatcher.GetSet("CMR")
+			if err != nil {
+				return nil, err
+			}
+			for _, card := range set.Cards {
+				if card.Name == cardName {
+					if card.HasFrameEffect("showcase") {
+						variation = "Showcase"
+						break
+					}
+					if card.BorderColor == "borderless" {
+						variation = "Borderless"
+						break
+					}
+				}
+			}
 		// Full-art Zendikar lands
 		case "Zendikar":
 			if mtgmatcher.IsBasicLand(cardName) {
@@ -284,7 +313,6 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	}
 
 	return &mtgmatcher.Card{
-		Id:        id,
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,
