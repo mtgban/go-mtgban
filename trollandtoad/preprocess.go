@@ -24,6 +24,7 @@ var cardTable = map[string]string{
 	"Gadrak, the Crown-Scrouge": "Gadrak, the Crown-Scourge",
 	"Kasmina's Transformation":  "Kasmina's Transmutation",
 	"Caven of Souls":            "Cavern of Souls",
+	"Makinidi Ox":               "Makindi Ox",
 
 	"Imperious Perfect Extended Art Promo":             "Imperious Perfect",
 	"Disenchant Textless Player Rewards Promo":         "Disenchant",
@@ -33,6 +34,8 @@ var cardTable = map[string]string{
 	"Negate Textless Player Rewards":                   "Negate",
 	"Abrade Game Day Promo":                            "Abrade",
 	"Harmonize Textless Player Rewards":                "Harmonize",
+	"Yurlok of the Scorch Thras":                       "Yurlok of Scorch Thrash",
+	"Sorin, Imperious Bloodblord":                      "Sorin, Imperious Bloodlord",
 
 	"Chandra, Fire of Kaladesh // Chandra The Roaring Flame": "Chandra, Fire of Kaladesh // Chandra, Roaring Flame",
 	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Aberration",
@@ -270,7 +273,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	cardName = strings.TrimSuffix(cardName, "-")
 	cardName = strings.Replace(cardName, "|", "//", 1)
 
-	if mtgmatcher.IsBasicLand(cardName) {
+	if mtgmatcher.IsBasicLand(cardName) && !strings.HasPrefix(cardName, "Snow-Covered") {
 		fields := strings.Fields(cardName)
 		if len(fields) > 1 {
 			cardName = fields[0]
@@ -331,6 +334,13 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 					variant = num
 					break
 				}
+			}
+		}
+		if edition == "Portal" {
+			if variant == "Ver. 1" {
+				variant = "Reminder Text"
+			} else if variant == "Ver. 2" {
+				variant = "No Flavor Text"
 			}
 		}
 	case "Battle Royale":
@@ -529,7 +539,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		cardName = lutName
 	}
 
-	if strings.Contains(variant, "Sealed") {
+	if strings.Contains(variant, "Sealed") ||
+		(strings.Contains(cardName, "Unsealed") && strings.Contains(cardName, "Deck")) {
 		return nil, errors.New("sealed")
 	}
 
