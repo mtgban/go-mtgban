@@ -38,6 +38,7 @@ var tagsTable = []string{
 	"Store Champ",
 	"Store Championship",
 	"X Box Promo 2013",
+	"Walmart Promo",
 }
 
 // Table for typos and errors in variants and card names
