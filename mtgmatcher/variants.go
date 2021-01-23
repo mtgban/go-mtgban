@@ -2155,6 +2155,29 @@ var itpVariants = map[string]map[string]string{
 	},
 }
 
+var khmVariants = map[string]map[string]string{
+	"Snow-Covered Forest": map[string]string{
+		"v.1": "284",
+		"v.2": "285",
+	},
+	"Snow-Covered Island": map[string]string{
+		"v.1": "278",
+		"v.2": "279",
+	},
+	"Snow-Covered Mountain": map[string]string{
+		"v.1": "282",
+		"v.2": "283",
+	},
+	"Snow-Covered Plains": map[string]string{
+		"v.1": "276",
+		"v.2": "277",
+	},
+	"Snow-Covered Swamp": map[string]string{
+		"v.1": "280",
+		"v.2": "281",
+	},
+}
+
 var leaVariants = map[string]map[string]string{
 	"Forest": map[string]string{
 		"a rocks":         "294",
@@ -3278,6 +3301,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Ice Age":                       iceVariants,
 	"Intl. Collectors’ Edition":     oldLandVariants,
 	"Introductory Two-Player Set":   itpVariants,
+	"Kaldheim":                      khmVariants,
 	"Limited Edition Alpha":         leaVariants,
 	"Limited Edition Beta":          oldLandVariants,
 	"Magic Premiere Shop 2005":      pmpsVariants,

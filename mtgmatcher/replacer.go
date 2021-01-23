@@ -57,6 +57,7 @@ var replacer = strings.NewReplacer(
 	"lossom", "lossom",
 	"ogress", "ogress",
 	"slash", "slash",
+	"squash", "squash",
 	"vs", "vs",
 	"š", "",
 	"s", "",
