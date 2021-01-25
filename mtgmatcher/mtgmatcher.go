@@ -326,6 +326,7 @@ func adjustEdition(inCard *Card) {
 					"RNA MagicFest Promo",
 					"Commander: 2011 Edition",
 					"Commander: 2015 Edition",
+					"Champs Full Art",
 					"State Champs Promo":
 					edition = "PLIST"
 				default:
