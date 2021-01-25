@@ -30,6 +30,10 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 	if mtgmatcher.IsToken(cardName) {
 		return nil, errors.New("not singles")
 	}
+
+	cardName = strings.TrimSpace(cardName)
+	edition = strings.TrimSpace(edition)
+
 	switch cardName {
 	case "Adaptive Enchantment",
 		"Faceless Menace",
