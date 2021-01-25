@@ -55,7 +55,7 @@ const (
 	MMCategoryMtgSingles    = "1466"
 	MMDefaultResultsPerPage = 32
 
-	mmSearchURL = `https://search.unbxd.io/fb500edbf5c28edfa74cc90561fe33c3/prod-miniaturemarket-com811741582229555/category?format=json&version=V2&start=0&rows=0&variants=true&variants.count=10&fields=*&facet.multiselect=true&selectedfacet=true&pagetype=boolean&p=categoryPath%3A%22Magic+The+Gathering%3EMTG+Singles%22&filter=categoryPath1_fq:%22Magic%20The%20Gathering%22&filter=categoryPath2_fq:%22Magic%20The%20Gathering%3EMTG%20Singles%22&filter=stock_status_uFilter:%22In%20Stock%22&filter=categoryPath3_fq:%22Magic%20The%20Gathering%3EMTG%20Singles%3EAll%20Sets%22`
+	mmSearchURL = "https://search.unbxd.io/fb500edbf5c28edfa74cc90561fe33c3/prod-miniaturemarket-com811741582229555/category"
 )
 
 func NewMMClient() *MMClient {
@@ -84,8 +84,21 @@ func (mm *MMClient) query(start, maxResults int) (*MMSearchResponse, error) {
 	}
 
 	q := u.Query()
+	q.Set("format", "json")
+	q.Set("version", "V2")
 	q.Set("start", fmt.Sprint(start))
 	q.Set("rows", fmt.Sprint(maxResults))
+	q.Set("variants", "true")
+	q.Set("variants.count", "10")
+	q.Set("fields", "*")
+	q.Set("facet.multiselect", "true")
+	q.Set("selectedfacet", "true")
+	q.Set("pagetype", "boolean")
+	q.Set("p", `categoryPath:"Card Games>Magic the Gathering>MTG Singles"`)
+	q.Set("filter", `categoryPath1_fq:"Card Games"`)
+	q.Set("filter", `categoryPath2_fq:"Card Games>Magic the Gathering"`)
+	q.Set("filter", `categoryPath3_fq:"Card Games>Magic the Gathering>MTG Singles"`)
+	q.Set("filter", `categoryPath4_fq:"Card Games>Magic the Gathering>MTG Singles>All Sets"`)
 	u.RawQuery = q.Encode()
 
 	resp, err := mm.client.Get(u.String())
