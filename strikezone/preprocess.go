@@ -201,6 +201,10 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		cardName = cn
 	}
 
+	if variation == "Extemded Art" {
+		variation = "Extended Art"
+	}
+
 	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variation,
