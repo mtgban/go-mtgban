@@ -276,6 +276,17 @@ func adjustName(inCard *Card) {
 
 	// Altenatively try checking across any prefix, as long as it's a double
 	// sided card, for some particular cases, like meld cards, or Treasure Chest
+	// Attempt first to check cards in the same edition if possible
+	for _, set := range backend.Sets {
+		if Equals(set.Name, inCard.Edition) {
+			for _, card := range set.Cards {
+				if card.Layout != "normal" && HasPrefix(card.Name, inCard.Name) {
+					inCard.Name = card.Name
+					return
+				}
+			}
+		}
+	}
 	for cardName, props := range backend.Cards {
 		if props.Layout != "normal" && HasPrefix(cardName, inCard.Name) {
 			inCard.Name = props.Name

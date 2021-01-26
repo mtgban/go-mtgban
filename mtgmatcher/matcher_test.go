@@ -327,6 +327,22 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "17100b0d-3b74-5329-a832-dfad07d5c35b",
+		Desc: "double_card_with_lots_of_matches_first",
+		In: Card{
+			Name:    "Start",
+			Edition: "Amonkhet",
+		},
+	},
+	MatchTest{
+		Id:   "2b29b236-1f37-5d41-b15e-a4fafe265885",
+		Desc: "double_card_with_lots_of_matches_second",
+		In: Card{
+			Name:    "Start",
+			Edition: "Mystery Booster Playtest Cards",
+		},
+	},
+	MatchTest{
 		Id:   "25463956-7fc1-5781-88cb-abba28a59ddd",
 		Desc: "incorrect_name_but_salvageable",
 		In: Card{
