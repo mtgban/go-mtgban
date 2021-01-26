@@ -1,6 +1,8 @@
 package ninetyfive
 
 import (
+	"errors"
+	"log"
 	"net/url"
 	"sync"
 	"time"
@@ -19,12 +21,15 @@ type Ninetyfive struct {
 
 	client *NFClient
 
-	buylistDate time.Time
-	buylist     mtgban.BuylistRecord
+	inventoryDate time.Time
+	inventory     mtgban.InventoryRecord
+	buylistDate   time.Time
+	buylist       mtgban.BuylistRecord
 }
 
 func NewScraper() *Ninetyfive {
 	nf := Ninetyfive{}
+	nf.inventory = mtgban.InventoryRecord{}
 	nf.buylist = mtgban.BuylistRecord{}
 	nf.client = NewNFClient()
 	nf.MaxConcurrency = defaultConcurrency
@@ -33,6 +38,7 @@ func NewScraper() *Ninetyfive {
 
 type respChan struct {
 	cardId   string
+	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
 
@@ -42,8 +48,14 @@ func (nf *Ninetyfive) printf(format string, a ...interface{}) {
 	}
 }
 
-func (nf *Ninetyfive) processPage(channel chan<- respChan, start int) error {
-	products, err := nf.client.GetBuylist(start)
+func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode string) error {
+	var products []NFProduct
+	var err error
+	if mode == "retail" {
+		products, err = nf.client.GetRetail(start)
+	} else if mode == "buylist" {
+		products, err = nf.client.GetBuylist(start)
+	}
 	if err != nil {
 		return nil
 	}
@@ -53,7 +65,21 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int) error {
 			continue
 		}
 
-		theCard, err := preprocess(product.Card, product.Foil == 1)
+		if product.Card.Name == "Mirror Universe" {
+			log.Println("MU", start, product.Language)
+		}
+		if product.Language.Code != "en" && product.Language.Code != "jp" {
+			continue
+		}
+
+		edition := product.Set.Name
+		slug := product.Set.Slug
+		if edition == "" {
+			edition = product.Card.Set.Name
+			slug = product.Card.Set.Slug
+		}
+
+		theCard, err := preprocess(product.Card, edition, product.Foil == 1)
 		if err != nil {
 			continue
 		}
@@ -84,30 +110,60 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int) error {
 			continue
 		}
 
-		link := "https://95mtg.com/buylist/search/?name=" + url.QueryEscape(product.Card.Name)
-		for _, cond := range product.Conditions {
+		if mode == "retail" {
+			cond := product.Condition
 			if cond == "DMG" {
 				cond = "PO"
 			}
-
-			price := float64(product.Price) / 100
-			if cond != "NM" {
-				price *= map[string]float64{
-					"SP": 0.8,
-					"MP": 0.65,
-					"HP": 0.6,
-					"PO": 0.55,
-				}[cond]
-			}
-
+			link := "https://95mtg.com/singles/" + slug + "/" + product.Card.Slug
 			channel <- respChan{
 				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
+				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
-					BuyPrice:   price,
+					Price:      float64(product.Price) / 100,
 					Quantity:   product.Quantity,
 					URL:        link,
 				},
+			}
+		} else if mode == "buylist" {
+			link := "https://95mtg.com/buylist/search/?name=" + url.QueryEscape(product.Card.Name)
+			var priceRatio, sellPrice float64
+
+			invCards := nf.inventory[cardId]
+			for _, invCard := range invCards {
+				sellPrice = invCard.Price
+				break
+			}
+
+			for _, cond := range product.Conditions {
+				if cond == "DMG" {
+					cond = "PO"
+				}
+
+				price := float64(product.Price) / 100
+				if cond != "NM" {
+					price *= map[string]float64{
+						"SP": 0.8,
+						"MP": 0.65,
+						"HP": 0.6,
+						"PO": 0.55,
+					}[cond]
+				}
+
+				if sellPrice > 0 {
+					priceRatio = price / sellPrice * 100
+				}
+
+				channel <- respChan{
+					cardId: cardId,
+					buyEntry: &mtgban.BuylistEntry{
+						Conditions: cond,
+						BuyPrice:   price,
+						PriceRatio: priceRatio,
+						Quantity:   product.Quantity,
+						URL:        link,
+					},
+				}
 			}
 		}
 	}
@@ -115,8 +171,16 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int) error {
 	return nil
 }
 
-func (nf *Ninetyfive) parseBL() error {
-	totalProducts, err := nf.client.BuylistTotals()
+func (nf *Ninetyfive) scrape(mode string) error {
+	var totalProducts int
+	var err error
+	if mode == "retail" {
+		totalProducts, err = nf.client.RetailTotals()
+	} else if mode == "buylist" {
+		totalProducts, err = nf.client.BuylistTotals()
+	} else {
+		err = errors.New("unknown mode")
+	}
 	if err != nil {
 		return err
 	}
@@ -130,7 +194,7 @@ func (nf *Ninetyfive) parseBL() error {
 		wg.Add(1)
 		go func() {
 			for start := range pages {
-				err := nf.processPage(channel, start)
+				err := nf.processPage(channel, start, mode)
 				if err != nil {
 					nf.printf("%s", err.Error())
 				}
@@ -150,31 +214,56 @@ func (nf *Ninetyfive) parseBL() error {
 	}()
 
 	for record := range channel {
-		err := nf.buylist.AddRelaxed(record.cardId, record.buyEntry)
-		if err != nil {
-			co, _ := mtgmatcher.GetUUID(record.cardId)
-			// Try adjusting for the lack of variants
-			if co.Edition == "Arabian Nights" {
-				secondId, err := mtgmatcher.Match(&mtgmatcher.Card{
-					Name:      co.Name,
-					Edition:   co.Edition,
-					Variation: "light",
-				})
-				if err == nil {
-					err = nf.buylist.AddRelaxed(secondId, record.buyEntry)
+		if record.invEntry != nil {
+			err := nf.inventory.Add(record.cardId, record.invEntry)
+			if err != nil {
+				nf.printf("%v", err)
+				continue
+			}
+		} else if record.buyEntry != nil {
+			err := nf.buylist.AddRelaxed(record.cardId, record.buyEntry)
+			if err != nil {
+				co, _ := mtgmatcher.GetUUID(record.cardId)
+				// Try adjusting for the lack of variants
+				if co.Edition == "Arabian Nights" {
+					secondId, err := mtgmatcher.Match(&mtgmatcher.Card{
+						Name:      co.Name,
+						Edition:   co.Edition,
+						Variation: "light",
+					})
 					if err == nil {
-						continue
+						err = nf.buylist.AddRelaxed(secondId, record.buyEntry)
+						if err == nil {
+							continue
+						}
 					}
 				}
+				nf.printf("%v", err)
+				continue
 			}
-			nf.printf("%v", err)
-			continue
 		}
 	}
 
-	nf.buylistDate = time.Now()
+	if mode == "retail" {
+		nf.inventoryDate = time.Now()
+	} else if mode == "buylist" {
+		nf.buylistDate = time.Now()
+	}
 
 	return nil
+}
+
+func (nf *Ninetyfive) Inventory() (mtgban.InventoryRecord, error) {
+	if len(nf.inventory) > 0 {
+		return nf.inventory, nil
+	}
+
+	err := nf.scrape("retail")
+	if err != nil {
+		return nil, err
+	}
+
+	return nf.inventory, nil
 }
 
 func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
@@ -182,7 +271,7 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 		return nf.buylist, nil
 	}
 
-	err := nf.parseBL()
+	err := nf.scrape("buylist")
 	if err != nil {
 		return nil, err
 	}
@@ -193,6 +282,7 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Name = "95mtg"
 	info.Shorthand = "95"
+	info.InventoryTimestamp = nf.inventoryDate
 	info.BuylistTimestamp = nf.buylistDate
 	info.MultiCondBuylist = true
 	info.NoCredit = true

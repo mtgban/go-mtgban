@@ -13,6 +13,7 @@ import (
 const (
 	NFDefaultResultsPerPage = 400
 
+	nfRetailURL  = "https://95mtg.com/api/products/?search=qnt:1;language_id:6;prices.price:0-649995;cmc:0-1000000;card.power:0-99;card.toughness:0-99;category_id:1;name:;foil:0|1;signed:0&searchJoin=and&perPage=30&page=1&orderBy=name&sortedBy=asc"
 	nfBuylistURL = "https://95mtg.com/api/buylists/?search=foil:0|1&searchJoin=and&perPage=1&page=1&orderBy=card.name&sortedBy=asc"
 )
 
@@ -45,6 +46,7 @@ type NFProduct struct {
 		Name string `json:"name"`
 	} `json:"language"`
 	Foil       int      `json:"foil"`
+	Condition  string   `json:"condition"`
 	Conditions []string `json:"conditions"`
 	Price      int      `json:"price"`
 	Currency   struct {
@@ -53,16 +55,23 @@ type NFProduct struct {
 	} `json:"currency"`
 	Quantity int    `json:"qnt"`
 	Card     NFCard `json:"card"`
+	// Present in retail but not buylist
+	Set NFSet `json:"set"`
 }
 
 type NFCard struct {
 	Name string `json:"name"`
-	Set  struct {
-		Code string `json:"code"`
-		Name string `json:"name"`
-	} `json:"set"`
+	Slug string `json:"slug"`
+	// Present in buylist but not retail
+	Set    NFSet  `json:"set"`
 	Number int    `json:"number"`
 	Layout string `json:"layout"`
+}
+
+type NFSet struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
 }
 
 type NFClient struct {
@@ -75,6 +84,22 @@ func NewNFClient() *NFClient {
 	nf.client.Logger = nil
 	nf.client.HTTPClient.Transport.(*http.Transport).ForceAttemptHTTP2 = true
 	return &nf
+}
+
+func (nf *NFClient) RetailTotals() (int, error) {
+	resp, err := nf.query(nfRetailURL, 0, 1)
+	if err != nil {
+		return 0, err
+	}
+	return resp.Results.Meta.Pagination.Total, nil
+}
+
+func (nf *NFClient) GetRetail(start int) ([]NFProduct, error) {
+	resp, err := nf.query(nfRetailURL, start, NFDefaultResultsPerPage)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Results.Data, nil
 }
 
 func (nf *NFClient) BuylistTotals() (int, error) {

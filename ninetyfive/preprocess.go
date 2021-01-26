@@ -14,6 +14,8 @@ var cardTable = map[string]string{
 }
 
 var mediaTable = map[string]string{
+	"Rakdos Firewheeler": "PRNA",
+
 	"Hall of Triumph": "THP3",
 
 	"Canopy Vista":     "PSS1",
@@ -23,9 +25,8 @@ var mediaTable = map[string]string{
 	"Sunken Hollow":    "PSS1",
 }
 
-func preprocess(card NFCard, foil bool) (*mtgmatcher.Card, error) {
+func preprocess(card NFCard, edition string, foil bool) (*mtgmatcher.Card, error) {
 	cardName := card.Name
-	edition := card.Set.Name
 	variant := ""
 	if card.Number != 0 {
 		variant = fmt.Sprint(card.Number)
@@ -36,7 +37,8 @@ func preprocess(card NFCard, foil bool) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "Grand Prix",
+	case "Friday Night Magic",
+		"Grand Prix",
 		"Happy Holidays",
 		"Judge Gift Program",
 		"Magic Game Day",
@@ -67,11 +69,14 @@ func preprocess(card NFCard, foil bool) (*mtgmatcher.Card, error) {
 		case "Evolving Wilds",
 			"Reliquary Tower":
 			return nil, errors.New("does not exist")
+		case "Unclaimed Territory":
+			edition = "PXLN"
 		}
 	case "WAR Alt-art Promos":
 		edition = "WAR"
 		variant = "Japanese"
-		if cardName == "God-Eternal Rhonas" {
+		// The site is buggy and lists cards that should not be in this set
+		if len(mtgmatcher.MatchInSet(cardName, "WAR")) != 2 {
 			return nil, errors.New("does not exist")
 		}
 	case "PW Stamped Cards ":
@@ -81,6 +86,17 @@ func preprocess(card NFCard, foil bool) (*mtgmatcher.Card, error) {
 		edition = "Signature Spellbook: Jace"
 	case "Signature Spellbook 2: Gideon":
 		edition = "Signature Spellbook: Gideon"
+	case "Champions of Kamigawa":
+		if !mtgmatcher.IsBasicLand(cardName) {
+			variant = ""
+		}
+		if cardName == "Brothers Yamazaki" {
+			return nil, errors.New("dupe")
+		}
+	case "Deckmasters":
+		if !mtgmatcher.IsBasicLand(cardName) {
+			variant = ""
+		}
 	}
 
 	// Boosterfun stuff is relagated to a Promos tag
@@ -91,7 +107,7 @@ func preprocess(card NFCard, foil bool) (*mtgmatcher.Card, error) {
 			vars := mtgmatcher.SplitVariants(cardName)
 			cardName = vars[0]
 		}
-		// This is an assumption, restore as before
+		// Only set that outlines the promos like this
 		if edition == "Core Set 2020" {
 			edition = "Core Set 2020 Promos"
 			variant = "Promo Pack"
@@ -107,7 +123,11 @@ func preprocess(card NFCard, foil bool) (*mtgmatcher.Card, error) {
 		vars := mtgmatcher.SplitVariants(cardName)
 		cardName = vars[0]
 		if len(vars) > 1 {
-			if edition != "Commander Anthology 2018" {
+			switch edition {
+			case "Commander Anthology 2018",
+				"Guilds of Ravnica",
+				"Ravnica Allegiance":
+			default:
 				variant = vars[1]
 			}
 		}
