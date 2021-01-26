@@ -474,6 +474,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "5e7c2039-a072-5907-8053-74f518384e8a",
+		Desc: "not_grand_prix_but_magic_fest",
+		In: Card{
+			Name:      "Lightning Bolt",
+			Variation: "Grand Prix",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
 		Id:   "a6e7bc06-ea7d-5186-8dd4-d95086e4e8d2",
 		Desc: "apac_lands",
 		In: Card{
@@ -1766,6 +1775,22 @@ var MatchTests = []MatchTest{
 		Desc: "magazine_insert_not_tagged_jpn",
 		In: Card{
 			Name:    "Lava Coil",
+			Edition: "Magazine Inserts",
+		},
+	},
+	MatchTest{
+		Id:   "cf72208c-ac68-55d4-bb68-66487d682749",
+		Desc: "magazine_insert_in_generic_promo",
+		In: Card{
+			Name:    "Sylvan Caryatid",
+			Edition: "Magazine Inserts",
+		},
+	},
+	MatchTest{
+		Id:   "857618a8-7f5f-5a1f-8435-b210a8e8250c",
+		Desc: "magazine_insert_as_pres",
+		In: Card{
+			Name:    "Beast Whisperer",
 			Edition: "Magazine Inserts",
 		},
 	},

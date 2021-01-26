@@ -179,11 +179,21 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.isIDWMagazineBook():
 			switch {
 			case !inCard.isJPN() && strings.HasPrefix(set.Name, "IDW Comics "+maybeYear):
+			case !inCard.isJPN() && strings.HasPrefix(set.Name, "Duels of the Planeswalkers "+maybeYear):
+			case !inCard.isJPN() && strings.HasSuffix(set.Name, "Promos"):
+				switch set.Name {
+				case "Grand Prix Promos",
+					"Pro Tour Promos",
+					"World Championship Promos":
+					continue
+				case "HarperPrism Book Promos",
+					"Miscellaneous Book Promos",
+					"Resale Promos":
+					// Relevant sets falling into the HasSuffix above
+				}
 			default:
 				switch set.Name {
-				case "HarperPrism Book Promos",
-					"DCI Legend Membership",
-					"Miscellaneous Book Promos":
+				case "DCI Legend Membership":
 				case "Magazine Inserts":
 					// This is the only card present in IDW and Magazine Inserts
 					// so make sure it is properly tagged
@@ -349,6 +359,15 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case strings.HasPrefix(set.Name, "Magic "+maybeYear):
 			default:
 				continue
+			}
+
+		case inCard.Contains("Grand Prix"):
+			switch set.Name {
+			case "Grand Prix Promos":
+			default:
+				if !strings.HasPrefix(set.Name, "MagicFest") {
+					continue
+				}
 			}
 		}
 

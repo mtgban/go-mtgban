@@ -316,6 +316,7 @@ var EditionTable = map[string]string{
 	"Ugin's Fate Alternate Art Promo":         "Ugin's Fate",
 	"Ugin’s Fate Promo":                       "Ugin's Fate",
 	"Ugin's Fate Promos":                      "Ugin's Fate",
+	"Ugin's Fate promos":                      "Ugin's Fate",
 
 	// Clash packs
 	"Fate Reforged Clash Pack": "Fate Reforged Clash Pack",

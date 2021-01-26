@@ -267,7 +267,7 @@ func (c *Card) isIDWMagazineBook() bool {
 		Contains(c.Edition, "CardZ") || // mkm
 		Contains(c.Edition, "Dengeki") || // mkm
 		c.Variation == "Insert Foil" || // ck
-		c.Variation == "Media Insert" // mm
+		c.Contains("Media Insert") // mm+nf
 }
 
 func (c *Card) isJudge() bool {
