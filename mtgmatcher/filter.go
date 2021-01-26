@@ -176,7 +176,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
-		// The JPN handling is due to Duress being present in IDW and Magazine Inserts
 		case inCard.isIDWMagazineBook():
 			switch {
 			case !inCard.isJPN() && strings.HasPrefix(set.Name, "IDW Comics "+maybeYear):
@@ -186,18 +185,11 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					"DCI Legend Membership",
 					"Miscellaneous Book Promos":
 				case "Magazine Inserts":
-					skip := false
-					foundCards := MatchInSet(inCard.Name, setCode)
-					for _, card := range foundCards {
-						if !inCard.isJPN() && card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
-							skip = true
-							break
-						}
-					}
-					if skip {
+					// This is the only card present in IDW and Magazine Inserts
+					// so make sure it is properly tagged
+					if inCard.Name == "Duress" && !inCard.isJPN() {
 						continue
 					}
-
 				default:
 					continue
 				}

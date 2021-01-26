@@ -1736,6 +1736,23 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "d1f8693c-4cdc-5558-b678-5fcefc0d220d",
+		Desc: "duress_dupe_idw",
+		In: Card{
+			Name:      "Duress",
+			Variation: "Comic promo",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
+		Id:   "7d5ea62e-47af-5802-a24f-8090ba028f18",
+		Desc: "magazine_insert_not_tagged_jpn",
+		In: Card{
+			Name:    "Lava Coil",
+			Edition: "Magazine Inserts",
+		},
+	},
 
 	// Core sets
 	MatchTest{
