@@ -68,26 +68,24 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 	var cardIdFoil string
 
 	for _, product := range filter.Products {
-		if product.Properties.Language != "en" {
-			switch product.Properties.Language {
-			case "it":
-				switch filter.Blueprint.Expansion.Name {
-				case "Foreign Black Bordered":
-				case "Rinascimento":
-				default:
-					continue
-				}
-			case "jp":
-				switch {
-				case filter.Blueprint.Expansion.Name == "Fourth Edition Black Bordered":
-				case strings.Contains(filter.Blueprint.Expansion.Name, "Japanese"):
-				case filter.Blueprint.Expansion.Name == "Fourth Edition Black Bordered":
-				default:
-					continue
-				}
+		switch product.Properties.Language {
+		case "en":
+		case "it":
+			switch filter.Blueprint.Expansion.Name {
+			case "Foreign Black Bordered":
+			case "Rinascimento":
 			default:
 				continue
 			}
+		case "jp":
+			switch {
+			case filter.Blueprint.Expansion.Name == "Fourth Edition Black Bordered":
+			case strings.Contains(filter.Blueprint.Expansion.Name, "Japanese"):
+			default:
+				continue
+			}
+		default:
+			continue
 		}
 
 		if product.Quantity < 1 || product.OnVacation || product.Properties.Altered {
