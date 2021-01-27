@@ -2,7 +2,6 @@ package ninetyfive
 
 import (
 	"errors"
-	"log"
 	"net/url"
 	"sync"
 	"time"
@@ -65,13 +64,9 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 			continue
 		}
 
-		if product.Card.Name == "Mirror Universe" {
-			log.Println("MU", start, product.Language)
-		}
 		if product.Language.Code != "en" && product.Language.Code != "jp" {
 			continue
 		}
-
 		edition := product.Set.Name
 		slug := product.Set.Slug
 		if edition == "" {
