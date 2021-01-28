@@ -42,7 +42,7 @@ func NewScraper(token string) *Cardtrader {
 
 func (ct *Cardtrader) printf(format string, a ...interface{}) {
 	if ct.LogCallback != nil {
-		ct.LogCallback("[CT] "+format, a...)
+		ct.LogCallback("[CTF] "+format, a...)
 	}
 }
 
@@ -303,8 +303,8 @@ func (ct *Cardtrader) IntializeInventory(reader io.Reader) error {
 }
 
 func (ct *Cardtrader) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Card Trader"
-	info.Shorthand = "CT"
+	info.Name = "Card Trader Full"
+	info.Shorthand = "CTF"
 	info.InventoryTimestamp = ct.InventoryDate
 	return
 }
