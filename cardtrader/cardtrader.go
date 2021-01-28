@@ -113,7 +113,6 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 			cardIdFoil, err = mtgmatcher.Match(theCard)
 		}
 		if err != nil {
-			ct.printf("%v", theCard)
 			ct.printf("%q", theCard)
 			ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
 			alias, ok := err.(*mtgmatcher.AliasingError)
