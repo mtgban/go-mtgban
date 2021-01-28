@@ -12,6 +12,9 @@ import (
 const (
 	ctFilterURL     = "https://www.cardtrader.com/cards/%d/filter.json"
 	ctBlueprintsURL = "https://api.cardtrader.com/api/full/v1/blueprints/export?category_id=1"
+
+	ctExpansionsURL  = "https://api.cardtrader.com/api/full/v1/expansions"
+	ctMarketplaceURL = "https://api.cardtrader.com/api/full/v1/marketplace/products?expansion_id="
 )
 
 type Blueprint struct {
@@ -24,10 +27,17 @@ type Blueprint struct {
 		Name string `json:"name"`
 		Code string `json:"code"`
 	} `json:"expansion"`
+	// Returned by product
 	Properties struct {
 		Number   string `json:"collector_number"`
 		Language string `json:"mtg_language"`
 	} `json:"properties_hash"`
+	// Returned by market
+	FixedProperties struct {
+		Number   string `json:"collector_number"`
+		Language string `json:"mtg_language"`
+	} `json:"fixed_properties"`
+	ExpansionId int `json:"expansion_id"`
 }
 
 type Product struct {
@@ -62,6 +72,13 @@ type BlueprintFilter struct {
 	Products  []Product `json:"products"`
 }
 
+type Expansion struct {
+	Id     int    `json:"id"`
+	GameId int    `json:"game_id"`
+	Code   string `json:"code"`
+	Name   string `json:"name"`
+}
+
 type CTClient struct {
 	client *retryablehttp.Client
 }
@@ -89,6 +106,49 @@ func NewCTAuthClient(token string) *CTAuthClient {
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", "Bearer "+t.Token)
 	return t.Parent.RoundTrip(req)
+}
+
+func (ct *CTAuthClient) Expansions() ([]Expansion, error) {
+	resp, err := ct.client.Get(ctExpansionsURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []Expansion
+	err = json.Unmarshal(data, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+// Returns all products from an Expansion, with the 15 cheapest listings per product
+func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) {
+	resp, err := ct.client.Get(ctMarketplaceURL + fmt.Sprint(id))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var out map[int][]Product
+	err = json.Unmarshal(data, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func (ct *CTAuthClient) Blueprints() ([]Blueprint, error) {
