@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	ctInventoryURL = "https://www.cardtrader.com/cards/%d/filter.json"
-	ctCategoryURL  = "https://api.cardtrader.com/api/full/v1/blueprints/export?category_id=1"
+	ctFilterURL     = "https://www.cardtrader.com/cards/%d/filter.json"
+	ctBlueprintsURL = "https://api.cardtrader.com/api/full/v1/blueprints/export?category_id=1"
 )
 
 type Blueprint struct {
@@ -85,8 +85,8 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.Parent.RoundTrip(req)
 }
 
-func (ct *CTAuthClient) GetBlueprints() ([]Blueprint, error) {
-	resp, err := ct.client.Get(ctCategoryURL)
+func (ct *CTAuthClient) Blueprints() ([]Blueprint, error) {
+	resp, err := ct.client.Get(ctBlueprintsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +113,8 @@ func NewCTClient() *CTClient {
 	return &ct
 }
 
-func (ct *CTClient) GetBlueprints(categoryId int) (*BlueprintFilter, error) {
-	resp, err := ct.client.Post(fmt.Sprintf(ctInventoryURL, categoryId), "application/json", nil)
+func (ct *CTClient) ProductsForBlueprint(id int) (*BlueprintFilter, error) {
+	resp, err := ct.client.Post(fmt.Sprintf(ctFilterURL, id), "application/json", nil)
 	if err != nil {
 		return nil, err
 	}

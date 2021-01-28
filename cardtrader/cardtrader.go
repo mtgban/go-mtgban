@@ -52,8 +52,8 @@ type resultChan struct {
 	invEntry *mtgban.InventoryEntry
 }
 
-func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) error {
-	filter, err := NewCTClient().GetBlueprints(categoryId)
+func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) error {
+	filter, err := NewCTClient().ProductsForBlueprint(blueprintId)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(filter.Blueprint.Id)
 
 		channel <- resultChan{
-			category: categoryId,
+			category: blueprintId,
 			cardId:   finalCardId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,
@@ -179,21 +179,21 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, categoryId int) er
 }
 
 func (ct *Cardtrader) scrape() error {
-	blueprints, err := ct.authClient.GetBlueprints()
+	blueprints, err := ct.authClient.Blueprints()
 	if err != nil {
 		return err
 	}
 	ct.printf("Parsing %d blueprints", len(blueprints))
 
-	categories := make(chan int)
+	blueprintIds := make(chan int)
 	results := make(chan resultChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < ct.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for categoryId := range categories {
-				err := ct.processEntry(results, categoryId)
+			for blueprintId := range blueprintIds {
+				err := ct.processEntry(results, blueprintId)
 				if err != nil {
 					ct.printf("%v", err)
 				}
@@ -209,10 +209,10 @@ func (ct *Cardtrader) scrape() error {
 				_, found = ct.FilterNames[mtgmatcher.Normalize(bp.Name)]
 			}
 			if found {
-				categories <- bp.Id
+				blueprintIds <- bp.Id
 			}
 		}
-		close(categories)
+		close(blueprintIds)
 
 		wg.Wait()
 		close(results)
