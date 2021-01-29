@@ -62,7 +62,7 @@ var id2edition = map[int]string{
 	23847: "PAL06",
 }
 
-func preprocess(bp Blueprint) (*mtgmatcher.Card, error) {
+func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	cardName := bp.Name
 	edition := bp.Expansion.Name
 	number := strings.TrimLeft(bp.Properties.Number, "0")

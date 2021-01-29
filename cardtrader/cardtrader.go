@@ -47,31 +47,19 @@ func (ct *Cardtrader) printf(format string, a ...interface{}) {
 }
 
 type resultChan struct {
-	category int
 	cardId   string
 	invEntry *mtgban.InventoryEntry
 }
 
-func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) error {
-	filter, err := NewCTClient().ProductsForBlueprint(blueprintId)
-	if err != nil {
-		return err
-	}
-
-	// Skip anything that is not mtg singles
-	if filter.Blueprint.CategoryId != 1 ||
-		filter.Blueprint.GameId != 1 {
-		return nil
-	}
-
+func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product) error {
 	var cardId string
 	var cardIdFoil string
 
-	for _, product := range filter.Products {
+	for _, product := range products {
 		switch product.Properties.Language {
 		case "en":
 		case "it":
-			switch filter.Blueprint.Expansion.Name {
+			switch product.Expansion.Name {
 			case "Foreign Black Bordered":
 			case "Rinascimento":
 			default:
@@ -79,8 +67,8 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 			}
 		case "jp":
 			switch {
-			case filter.Blueprint.Expansion.Name == "Fourth Edition Black Bordered":
-			case strings.Contains(filter.Blueprint.Expansion.Name, "Japanese"):
+			case product.Expansion.Name == "Fourth Edition Black Bordered":
+			case strings.Contains(product.Expansion.Name, "Japanese"):
 			default:
 				continue
 			}
@@ -100,11 +88,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 			continue
 		}
 
-		theCard, err := preprocess(filter.Blueprint)
-		if err != nil {
-			continue
-		}
-
+		var err error
 		if cardId == "" {
 			cardId, err = mtgmatcher.Match(theCard)
 		}
@@ -113,16 +97,6 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 			cardIdFoil, err = mtgmatcher.Match(theCard)
 		}
 		if err != nil {
-			ct.printf("%q", theCard)
-			ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					ct.printf("- %s", card)
-				}
-			}
 			return err
 		}
 
@@ -142,8 +116,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 		case "Poor":
 			conditions = "PO"
 		default:
-			ct.printf("Unsupported %s condition", conditions)
-			continue
+			return fmt.Errorf("Unsupported %s condition", conditions)
 		}
 
 		finalCardId := cardId
@@ -156,11 +129,10 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 			qty *= 4
 		}
 
-		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(filter.Blueprint.Id)
+		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintId)
 
 		channel <- resultChan{
-			category: blueprintId,
-			cardId:   finalCardId,
+			cardId: finalCardId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,
 				Price:      float64(product.Price.Cents) / 100,
@@ -168,13 +140,40 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 				URL:        link,
 				SellerName: product.User.Name,
 				Bundle:     product.User.Zero,
-				OriginalId: fmt.Sprint(filter.Blueprint.Id),
+				OriginalId: fmt.Sprint(product.BlueprintId),
 				InstanceId: fmt.Sprint(product.Id),
 			},
 		}
 	}
 
 	return nil
+}
+
+func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) error {
+	filter, err := NewCTClient().ProductsForBlueprint(blueprintId)
+	if err != nil {
+		return err
+	}
+
+	theCard, err := preprocess(&filter.Blueprint)
+	if err != nil {
+		return nil
+	}
+
+	err = processProducts(channel, theCard, filter.Products)
+	if err != nil {
+		ct.printf("%q", theCard)
+		ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
+		alias, ok := err.(*mtgmatcher.AliasingError)
+		if ok {
+			probes := alias.Probe()
+			for _, probe := range probes {
+				card, _ := mtgmatcher.GetUUID(probe)
+				ct.printf("- %s", card)
+			}
+		}
+	}
+	return err
 }
 
 func (ct *Cardtrader) scrape() error {
@@ -207,9 +206,16 @@ func (ct *Cardtrader) scrape() error {
 			if ct.FilterNames != nil {
 				_, found = ct.FilterNames[mtgmatcher.Normalize(bp.Name)]
 			}
-			if found {
-				blueprintIds <- bp.Id
+			if !found {
+				continue
 			}
+
+			// Skip anything that is not mtg singles
+			if bp.CategoryId != 1 || bp.GameId != 1 {
+				continue
+			}
+
+			blueprintIds <- bp.Id
 		}
 		close(blueprintIds)
 
@@ -228,7 +234,7 @@ func (ct *Cardtrader) scrape() error {
 		// that we're still alive every minute
 		if time.Now().After(lastTime.Add(60 * time.Second)) {
 			card, _ := mtgmatcher.GetUUID(result.cardId)
-			ct.printf("Still going %d/%d, last processed card: %s", result.category, blueprints[len(blueprints)-1].Id, card)
+			ct.printf("Still going %s/%d, last processed card: %s", result.invEntry.OriginalId, blueprints[len(blueprints)-1].Id, card)
 			lastTime = time.Now()
 		}
 	}

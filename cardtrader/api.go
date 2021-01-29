@@ -32,6 +32,7 @@ type Blueprint struct {
 
 type Product struct {
 	Id          int    `json:"id"`
+	BlueprintId int    `json:"blueprint_id"`
 	Quantity    int    `json:"quantity"`
 	Description string `json:"description"`
 	OnVacation  bool   `json:"on_vacation"`
@@ -51,6 +52,9 @@ type Product struct {
 	Price struct {
 		Cents int `json:"cents"`
 	} `json:"price"`
+	Expansion struct {
+		Name string `json:"name"`
+	} `json:"expansion"`
 }
 
 type BlueprintFilter struct {
