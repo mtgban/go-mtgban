@@ -30,30 +30,32 @@ type Blueprint struct {
 	} `json:"properties_hash"`
 }
 
+type Product struct {
+	Id          int    `json:"id"`
+	Quantity    int    `json:"quantity"`
+	Description string `json:"description"`
+	OnVacation  bool   `json:"on_vacation"`
+	Bundle      bool   `json:"bundle"`
+	Properties  struct {
+		Condition string `json:"condition"`
+		Language  string `json:"mtg_language"`
+		Number    string `json:"collector_number"`
+		Foil      bool   `json:"mtg_foil"`
+		Altered   bool   `json:"altered"`
+		Signed    bool   `json:"signed"`
+	} `json:"properties_hash"`
+	User struct {
+		Name string `json:"username"`
+		Zero bool   `json:"can_sell_via_hub"`
+	} `json:"user"`
+	Price struct {
+		Cents int `json:"cents"`
+	} `json:"price"`
+}
+
 type BlueprintFilter struct {
 	Blueprint Blueprint `json:"blueprint"`
-	Products  []struct {
-		Id          int    `json:"id"`
-		Quantity    int    `json:"quantity"`
-		Description string `json:"description"`
-		OnVacation  bool   `json:"on_vacation"`
-		Bundle      bool   `json:"bundle"`
-		Properties  struct {
-			Condition string `json:"condition"`
-			Language  string `json:"mtg_language"`
-			Number    string `json:"collector_number"`
-			Foil      bool   `json:"mtg_foil"`
-			Altered   bool   `json:"altered"`
-			Signed    bool   `json:"signed"`
-		} `json:"properties_hash"`
-		User struct {
-			Name string `json:"username"`
-			Zero bool   `json:"can_sell_via_hub"`
-		} `json:"user"`
-		Price struct {
-			Cents int `json:"cents"`
-		} `json:"price"`
-	} `json:"products"`
+	Products  []Product `json:"products"`
 }
 
 type CTClient struct {
