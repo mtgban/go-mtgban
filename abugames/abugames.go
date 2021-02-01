@@ -231,13 +231,13 @@ func (abu *ABUGames) scrape() error {
 
 	for result := range results {
 		if result.invEntry != nil {
-			err = abu.inventory.Add(result.cardId, result.invEntry)
+			err = abu.inventory.AddRelaxed(result.cardId, result.invEntry)
 			if err != nil {
 				abu.printf("%s", err.Error())
 			}
 		}
 		if result.buyEntry != nil {
-			err = abu.buylist.Add(result.cardId, result.buyEntry)
+			err = abu.buylist.AddRelaxed(result.cardId, result.buyEntry)
 			if err != nil {
 				abu.printf("%s", err.Error())
 			}
