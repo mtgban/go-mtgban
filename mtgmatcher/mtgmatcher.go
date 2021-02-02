@@ -485,10 +485,13 @@ func adjustEdition(inCard *Card) {
 	// Portal Demo Game
 	case inCard.isPortalAlt() && len(MatchInSet(inCard.Name, "PPOD")) != 0:
 		inCard.Edition = backend.Sets["PPOD"].Name
-	// Secret Lair Ultimate
-	case strings.Contains(inCard.Edition, "Secret Lair") &&
-		len(MatchInSet(inCard.Name, "SLU")) != 0:
-		inCard.Edition = backend.Sets["SLU"].Name
+	// Secret Lair {Ultimate,Drop}
+	case inCard.Contains("Secret") || Contains(inCard.Variation, "Lair"):
+		if len(MatchInSet(inCard.Name, "SLU")) != 0 {
+			inCard.Edition = backend.Sets["SLU"].Name
+		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
+			inCard.Edition = backend.Sets["SLD"].Name
+		}
 	// Summer of Magic
 	case (inCard.isWPNGateway() || strings.Contains(inCard.Variation, "Summer")) &&
 		len(MatchInSet(inCard.Name, "PSUM")) != 0:

@@ -74,14 +74,7 @@ var EditionTable = map[string]string{
 	"Euro Lands":         "European Land Program",
 	"European Lands":     "European Land Program",
 
-	// Secre Lair
-	"Secret Lair":             "Secret Lair Drop",
-	"Secret Lair Borderless":  "Secret Lair Drop",
-	"Secret Lair Drop Series": "Secret Lair Drop",
-	"Secret Lair Drop Sets":   "Secret Lair Drop",
-	"Secret Lair Full Art":    "Secret Lair Drop",
-	"Secret Lair Series":      "Secret Lair Drop",
-	"Secret Liar":             "Secret Lair Drop",
+	// Secret Lair extra cards
 	"SLD Stained Glass Promo": "Secret Lair Drop",
 	"Stained Glass":           "Secret Lair Drop",
 	"Stained Glass Art":       "Secret Lair Drop",
