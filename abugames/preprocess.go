@@ -196,8 +196,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		switch cardName {
 		case "Skirk Marauder":
 			card.Edition = "Arena League 2003"
-		case "Captain Sisay":
-			card.Edition = "Secret Lair Drop"
+		case "Damnation(Secret Lair":
+			cardName = "Damnation"
+			card.Edition = "SLD"
 		case "Elvish Aberration":
 			if variation == "FNM" {
 				variation = "Arena"
@@ -258,6 +259,14 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
 		} else if strings.Contains(variation, "Scandanavia") {
 			variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
+		} else if strings.Contains(variation, "Secret") || strings.Contains(variation, "Lair") {
+			num := mtgmatcher.ExtractNumber(variation)
+			if num != "" {
+				variation = num
+			} else if strings.Contains(variation, "Seb McKinnon") {
+				variation = "119"
+			}
+			card.Edition = "Secret Lair Drop"
 		}
 	case "Anthologies":
 		if cardName == "Mountain" {
