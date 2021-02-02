@@ -192,6 +192,12 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	}
 
 	switch card.Edition {
+	case "":
+		if mtgmatcher.IsBasicLand(cardName) {
+			card.Edition = "GK2"
+		} else {
+			return nil, errors.New("missing edition")
+		}
 	case "Promo":
 		switch cardName {
 		case "Skirk Marauder":
