@@ -69,6 +69,14 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			switch {
 			case product.Expansion.Name == "Fourth Edition Black Bordered":
 			case strings.Contains(product.Expansion.Name, "Japanese"):
+			case product.Expansion.Name == "Ikoria: Lair of Behemoths Collectors":
+				switch theCard.Name {
+				case "Crystalline Giant",
+					"Battra, Dark Destroyer",
+					"Mothra's Great Cocoon":
+				default:
+					continue
+				}
 			default:
 				continue
 			}
