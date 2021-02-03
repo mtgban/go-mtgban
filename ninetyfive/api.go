@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
@@ -78,7 +77,6 @@ func NewNFClient() *NFClient {
 	nf := NFClient{}
 	nf.client = retryablehttp.NewClient()
 	nf.client.Logger = nil
-	nf.client.HTTPClient.Transport.(*http.Transport).ForceAttemptHTTP2 = true
 	return &nf
 }
 
