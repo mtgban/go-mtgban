@@ -1,7 +1,6 @@
 package amazon
 
 import (
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -77,18 +76,14 @@ func (amz *Amazon) processUUIDs(channel chan<- respChan, ids []string) error {
 				}
 			}
 
+			link := "http://greatermossdogapi.us-east-1.elasticbeanstalk.com/api/v1/purchase/" + uuid
 			outId := cardId
 			if strings.HasSuffix(tag, "Foil") {
 				outId = cardIdFoil
+				link += "/foil"
+			} else {
+				link += "/nonfoil"
 			}
-
-			co, err := mtgmatcher.GetUUID(outId)
-			if err != nil {
-				amz.printf("%s - %s", outId, err)
-				continue
-			}
-
-			link := "https://amazon.com/s?k=" + url.QueryEscape(co.Name+" "+co.Edition+" mtg")
 
 			out := respChan{
 				cardId: outId,
