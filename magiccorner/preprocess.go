@@ -26,6 +26,13 @@ var cardTable = map[string]string{
 	"Sir Shandlar di Eberyn":  "Sir Shandlar of Eberyn",
 	"Rohgahh di Kher":         "Rohgahh of Kher Keep",
 	"El-Ajjaj":                "El-Hajjâj",
+	"Frankenstein's Monst":    "Frankenstein's Monster",
+	"The Tabernacle at Pe":    "The Tabernacle at Pendrell Vale",
+	"Call of the Death-Dw":    "Call of the Death-Dweller",
+	"Hallowed Spiritkeepe":    "Hallowed Spiritkeeper",
+	"Iroas, God of Victor":    "Iroas, God of Victory",
+
+	"Sedris, the King Traitor": "Sedris, the Traitor King",
 }
 
 var editionTable = map[string]string{
@@ -184,6 +191,17 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = "Prerelease"
 		case "Core 2020: Extras", "Version 1", "V.1":
 			variation = "Promo Pack"
+		case "Judge Gift Program", "Judge Promo":
+			switch cardName {
+			case "Demonic Tutor",
+				"Vampiric Tutor",
+				"Vindicate",
+				"Wasteland":
+				if len(extra) > 5 {
+					variation = extra[1:5]
+					edition = "Judge"
+				}
+			}
 		}
 	// Use the number from extra if present, or keep the current version
 	case "Unstable":
@@ -263,6 +281,8 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		// Same for this one, except the specifier is elsewhere
 		case "Commander Anthology 2018":
 			variation = card.URL
+		case "Core 2020: Extras":
+			variation = "Promo Pack"
 		case "Commander Legends: Extras":
 			set, err := mtgmatcher.GetSet("CMR")
 			if err != nil {
@@ -370,6 +390,16 @@ func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
 		if cardName == "Hangarback Walker" {
 			edition = "Love your LGS"
 		}
+	}
+
+	cn, found := cardTable[cardName]
+	if found {
+		cardName = cn
+	}
+
+	lutName, found := editionTable[edition]
+	if found {
+		edition = lutName
 	}
 
 	return &mtgmatcher.Card{
