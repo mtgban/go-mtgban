@@ -24,7 +24,6 @@ func NewScraperMarket(token string) *CardtraderMarket {
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = 1
 	ct.client = NewCTAuthClient(token)
-	ct.blueprints = map[int]*Blueprint{}
 	return &ct
 }
 
@@ -71,20 +70,9 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 	return nil
 }
 
-func (ct *CardtraderMarket) scrape() error {
-	expansionsRaw, err := ct.client.Expansions()
-	if err != nil {
-		return err
-	}
-	ct.printf("Retrieved %d expansions", len(expansionsRaw))
-
-	blueprints, err := ct.client.Blueprints()
-	if err != nil {
-		return err
-	}
-	ct.printf("Found %d blueprints", len(blueprints))
-
+func formatBlueprints(blueprints []Blueprint, inExpansions []Expansion) (map[int]*Blueprint, map[int]string) {
 	// Create a map to be able to retrieve edition name in the blueprint
+	formatted := map[int]*Blueprint{}
 	expansions := map[int]string{}
 	for i := range blueprints {
 		if blueprints[i].CategoryId != 1 || blueprints[i].GameId != 1 {
@@ -93,27 +81,46 @@ func (ct *CardtraderMarket) scrape() error {
 
 		// Keep track of blueprints as they are more accurate that the
 		// information found in product
-		ct.blueprints[blueprints[i].Id] = &blueprints[i]
+		formatted[blueprints[i].Id] = &blueprints[i]
 
 		// Load expansions array
 		_, found := expansions[blueprints[i].ExpansionId]
 		if !found {
-			for j := range expansionsRaw {
-				if expansionsRaw[j].Id == blueprints[i].ExpansionId {
-					expansions[blueprints[i].ExpansionId] = expansionsRaw[j].Name
+			for j := range inExpansions {
+				if inExpansions[j].Id == blueprints[i].ExpansionId {
+					expansions[blueprints[i].ExpansionId] = inExpansions[j].Name
 				}
 			}
 		}
 
 		// The name is missing from the blueprints endpoint, fill it with data
 		// retrieved from the expansions endpoint
-		ct.blueprints[blueprints[i].Id].Expansion.Name = expansions[blueprints[i].ExpansionId]
+		formatted[blueprints[i].Id].Expansion.Name = expansions[blueprints[i].ExpansionId]
 
 		// Move the blueprint properties from the custom structure from blueprints
 		// to the place as expected by preprocess()
-		ct.blueprints[blueprints[i].Id].Properties = ct.blueprints[blueprints[i].Id].FixedProperties
+		formatted[blueprints[i].Id].Properties = formatted[blueprints[i].Id].FixedProperties
 	}
-	ct.printf("Parsing %d elements", len(expansions))
+
+	return formatted, expansions
+}
+
+func (ct *CardtraderMarket) scrape() error {
+	expansionsRaw, err := ct.client.Expansions()
+	if err != nil {
+		return err
+	}
+	ct.printf("Retrieved %d expansions", len(expansionsRaw))
+
+	blueprintsRaw, err := ct.client.Blueprints()
+	if err != nil {
+		return err
+	}
+	ct.printf("Found %d blueprints", len(blueprintsRaw))
+
+	blueprints, expansions := formatBlueprints(blueprintsRaw, expansionsRaw)
+	ct.blueprints = blueprints
+	ct.printf("Parsing %d mtg elements", len(expansions))
 
 	expansionIds := make(chan int)
 	results := make(chan resultChan)
