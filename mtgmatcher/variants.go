@@ -2882,6 +2882,13 @@ var tmpVariants = map[string]map[string]string{
 	},
 }
 
+var ulgVariants = map[string]map[string]string{
+	"B.F.M. (Big Furry Monster)": map[string]string{
+		"left":  "28",
+		"right": "29",
+	},
+}
+
 var ustVariants = map[string]map[string]string{
 	"Amateur Auteur": map[string]string{
 		"ravnica":        "3a",
@@ -3334,6 +3341,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Shadows over Innistrad Promos": psoiVariants,
 	"Shadows over Innistrad":        soiVariants,
 	"Tempest":                       tmpVariants,
+	"Unglued":                       ulgVariants,
 	"Unlimited Edition":             oldLandVariants,
 	"Unstable":                      ustVariants,
 	"World Championship Decks 1997": wc97Variants,
