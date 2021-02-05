@@ -57,10 +57,8 @@ var cardTable = map[string]string{
 	"Path of Mettle // Metzali, To... (RIX Prerelease Foil)": "Path of Mettle (Prerelease)",
 
 	// Funny cards
-	"_________":                             "_____",
-	"B.F.M. (Big Furry Monster Left side)":  "B.F.M. (28)",
-	"B.F.M. (Big Furry Monster Right side)": "B.F.M. (29)",
-	"Who/What/When/Where/Why":               "Who",
+	"_________":               "_____",
+	"Who/What/When/Where/Why": "Who",
 }
 
 var card2setTable = map[string]string{

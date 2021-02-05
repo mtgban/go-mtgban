@@ -368,6 +368,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "33b10155-90dc-5846-9c82-af414ba6c1e5",
+		Desc: "custom_name_for_variation",
+		In: Card{
+			Name:    "B.F.M. Left",
+			Edition: "Unglued",
+		},
+	},
+	MatchTest{
 		Id:   "fb3bdc21-d1c3-5fa2-8ea6-3ff48b11a5bc",
 		Desc: "number_in_the_name",
 		In: Card{

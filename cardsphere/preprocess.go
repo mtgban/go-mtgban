@@ -149,14 +149,6 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 				variant = "2017"
 			}
 		}
-	case "Unglued":
-		if cardName == "B.F.M. (Big Furry Monster)" {
-			if variant == "left" {
-				variant = "28"
-			} else if variant == "right" {
-				variant = "29"
-			}
-		}
 	case "War of the Spark":
 		if variant == "Alternate Art" {
 			variant = "Japanese"

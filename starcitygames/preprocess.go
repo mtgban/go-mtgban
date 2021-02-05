@@ -336,13 +336,6 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 	}
 
 	switch cardName {
-	case "B.F.M. (Big Furry Monster)":
-		cardName = "B.F.M."
-		if variant == "Left" {
-			variant = "28"
-		} else if variant == "Right" {
-			variant = "29"
-		}
 	case "Serra Angel":
 		if variant == "Buy-a-Box" {
 			edition = "Wizards of the Coast Online Store"

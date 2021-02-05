@@ -26,8 +26,6 @@ var cardTable = map[string]string{
 	"Rivals of Ixalan":                    "Snubhorn Sentry",
 
 	// Funny cards
-	"B.F.M. Big Furry Monster Left":   "B.F.M. (Big Furry Monster 28)",
-	"B.F.M. Big Furry Monster Right":  "B.F.M. (Big Furry Monster 29)",
 	"No Name":                         "_____",
 	"Who What When Where Why":         "Who",
 	"Absolute Longest Card Name Ever": mtgmatcher.LongestCardEver,

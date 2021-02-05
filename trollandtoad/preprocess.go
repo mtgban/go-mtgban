@@ -164,12 +164,6 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	switch {
 	case strings.Contains(fullName, "God - Pharaoh"):
 		fullName = strings.Replace(fullName, "God - Pharaoh", "God-Pharaoh", 1)
-	case strings.Contains(fullName, "B.F.M."):
-		if strings.Contains(fullName, "Left") {
-			fullName = "B.F.M. (28)"
-		} else {
-			fullName = "B.F.M. (29)"
-		}
 	case strings.HasPrefix(fullName, "Plains (Ozhov) 050/133"):
 		fullName = "Plains 050/133 (Ozhov)"
 	case strings.HasPrefix(fullName, "Boros Charm 684"):

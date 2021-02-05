@@ -9,12 +9,6 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
-var cardTable = map[string]string{
-	// Numbers for these are derived elsewhere
-	"BFM Left":  "B.F.M.",
-	"BFM Right": "B.F.M.",
-}
-
 // This table contains all SKUs that contain incorrect codes or codes that could
 // be mistaken for edition codes (thus misdirecting the matcher) or that contain
 // incorrect numbers. Sometimes both.
@@ -124,12 +118,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	cardName := card.Name
-	name, found := cardTable[cardName]
-	if found {
-		cardName = name
-	}
-
 	variation := card.Variation
 	edition := card.Edition
 	switch edition {
@@ -156,7 +144,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	}
 
 	return &mtgmatcher.Card{
-		Name:      cardName,
+		Name:      card.Name,
 		Edition:   edition,
 		Variation: variation,
 		Foil:      isFoil,

@@ -253,6 +253,16 @@ func adjustName(inCard *Card) {
 		strings.Contains(inCard.Edition, "Unhinged") ||
 		strings.Contains(inCard.Edition, "Unstable") ||
 		strings.Contains(inCard.Edition, "Unsanctioned") {
+		if HasPrefix(inCard.Name, "B.F.M.") {
+			cardName := inCard.Name
+			inCard.Name = "B.F.M. (Big Furry Monster)"
+			if Contains(cardName, "Left") || Contains(inCard.Variation, "Left") {
+				inCard.Variation = "28"
+			} else if Contains(cardName, "Right") || Contains(inCard.Variation, "Right") {
+				inCard.Variation = "29"
+			}
+			return
+		}
 		if HasPrefix(inCard.Name, "Our Market Research") {
 			inCard.Name = LongestCardEver
 			return

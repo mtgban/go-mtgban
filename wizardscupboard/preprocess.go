@@ -209,8 +209,6 @@ func parseConditions(notes string) (string, error) {
 }
 
 func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
-	ogName := cardName
-
 	switch {
 	case (strings.Contains(notes, "asian") ||
 		strings.Contains(notes, "russian") ||
@@ -298,14 +296,6 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 				variant = num
 				break
 			}
-		}
-	case "Unglued":
-		if ogName == "B.F.M. (Big Furry Monster) Left" {
-			cardName = "B.F.M."
-			variant = "28"
-		} else if ogName == "B.F.M. (Big Furry Monster) Right" {
-			cardName = "B.F.M."
-			variant = "29"
 		}
 	case "Unstable":
 		cardName = strings.Replace(cardName, "|", " ", -1)

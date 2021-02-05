@@ -21,10 +21,8 @@ var cardTable = map[string]string{
 	"Beyeen Veil / Bayeen Coast":                   "Beyeen Veil / Beyeen Coast",
 
 	// Funny cards
-	"Who / What / When / Where / Why":       "Who",
-	"'Rumors of My Death. . .''":            "\"Rumors of My Death . . .\"",
-	"B.F.M. (Big Furry Monster Left Side)":  "B.F.M. (28)",
-	"B.F.M. (Big Furry Monster Right Side)": "B.F.M. (29)",
+	"Who / What / When / Where / Why": "Who",
+	"'Rumors of My Death. . .''":      "\"Rumors of My Death . . .\"",
 
 	"The Ultimate Nightmare of Wizards of the Coast(R) Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 

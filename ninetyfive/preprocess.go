@@ -8,11 +8,6 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
-var cardTable = map[string]string{
-	"B.F.M. (Big Furry Monster Left)":  "B.F.M. (Big Furry Monster)",
-	"B.F.M. (Big Furry Monster Right)": "B.F.M. (Big Furry Monster)",
-}
-
 var mediaTable = map[string]string{
 	"Rakdos Firewheeler": "PRNA",
 
@@ -131,11 +126,6 @@ func preprocess(card NFCard, edition string, foil bool) (*mtgmatcher.Card, error
 				variant = vars[1]
 			}
 		}
-	}
-
-	lutName, found := cardTable[cardName]
-	if found {
-		cardName = lutName
 	}
 
 	return &mtgmatcher.Card{
