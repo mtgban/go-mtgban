@@ -28,6 +28,7 @@ type Cardtrader struct {
 	FilterId map[string]string
 
 	loggedClient *CTLoggedClient
+	client       *CTClient
 }
 
 func NewScraper(token string) *Cardtrader {
@@ -35,6 +36,7 @@ func NewScraper(token string) *Cardtrader {
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.marketplace = map[string]mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
+	ct.client = NewCTClient()
 	ct.authClient = NewCTAuthClient(token)
 	return &ct
 }
@@ -157,7 +159,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 }
 
 func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) error {
-	filter, err := NewCTClient().ProductsForBlueprint(blueprintId)
+	filter, err := ct.client.ProductsForBlueprint(blueprintId)
 	if err != nil {
 		return err
 	}
