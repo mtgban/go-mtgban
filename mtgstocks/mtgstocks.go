@@ -188,7 +188,11 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 }
 
 func (stks *MTGStocks) scrape() error {
-	interests, err := GetInterests()
+	averages, err := AverageInterests()
+	if err != nil {
+		return err
+	}
+	markets, err := MarketInterests()
 	if err != nil {
 		return err
 	}
@@ -211,25 +215,25 @@ func (stks *MTGStocks) scrape() error {
 	}
 
 	go func() {
-		for _, interest := range interests.Average.Foil {
+		for _, interest := range averages.Foil {
 			pages <- requestChan{
 				name:     "Average",
 				interest: interest,
 			}
 		}
-		for _, interest := range interests.Average.Normal {
+		for _, interest := range averages.Normal {
 			pages <- requestChan{
 				name:     "Average",
 				interest: interest,
 			}
 		}
-		for _, interest := range interests.Market.Foil {
+		for _, interest := range markets.Foil {
 			pages <- requestChan{
 				name:     "Market",
 				interest: interest,
 			}
 		}
-		for _, interest := range interests.Market.Normal {
+		for _, interest := range markets.Normal {
 			pages <- requestChan{
 				name:     "Market",
 				interest: interest,

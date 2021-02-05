@@ -38,22 +38,40 @@ type Interest struct {
 	} `json:"print"`
 }
 
-type MTGStocksInterests struct {
-	Date    int64 `json:"date"`
-	Average struct {
-		Foil   []Interest `json:"foil"`
-		Normal []Interest `json:"normal"`
-	} `json:"average"`
-	Market struct {
-		Foil   []Interest `json:"foil"`
-		Normal []Interest `json:"normal"`
-	} `json:"market"`
+type StocksInterest struct {
+	Foil   []Interest `json:"foil"`
+	Normal []Interest `json:"normal"`
 }
 
-const stksBaseURL = "https://api.mtgstocks.com/interests"
+type MTGStocksInterests struct {
+	Date    int64           `json:"date"`
+	Average *StocksInterest `json:"average"`
+	Market  *StocksInterest `json:"market"`
+}
 
-func GetInterests() (*MTGStocksInterests, error) {
-	resp, err := http.Get(stksBaseURL)
+const (
+	stksAverageURL = "https://api.mtgstocks.com/interests/average"
+	stksMarketURL  = "https://api.mtgstocks.com/interests/market"
+)
+
+func AverageInterests() (*StocksInterest, error) {
+	out, err := query(stksAverageURL)
+	if err != nil {
+		return nil, err
+	}
+	return out.Average, nil
+}
+
+func MarketInterests() (*StocksInterest, error) {
+	out, err := query(stksMarketURL)
+	if err != nil {
+		return nil, err
+	}
+	return out.Market, nil
+}
+
+func query(link string) (*MTGStocksInterests, error) {
+	resp, err := http.Get(link)
 	if err != nil {
 		return nil, err
 	}
