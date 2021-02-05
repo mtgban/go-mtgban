@@ -117,6 +117,7 @@ func IsToken(name string) bool {
 		Contains(name, "Blank Card"),
 		Contains(name, "Card List"),
 		Contains(name, "Checklist"),
+		Contains(name, "Decklist"),
 		Contains(name, "DFC Helper"),
 		Contains(name, "Emblem"),
 		Contains(name, "Experience C"),

@@ -68,12 +68,9 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	fullName = strings.Replace(fullName, "[", "(", 1)
 	fullName = strings.Replace(fullName, "]", ")", 1)
 
-	if strings.Contains(fullName, "Token") ||
-		strings.Contains(fullName, "Oversize") ||
+	if mtgmatcher.IsToken(fullName) ||
 		strings.Contains(fullName, "Biography Card") ||
-		strings.Contains(fullName, "Blank Card") ||
-		strings.Contains(fullName, "Decklist") ||
-		strings.Contains(fullName, "Art Card") ||
+		strings.Contains(fullName, "Ultra Pro Puzzle Quest") ||
 		strings.Contains(edition, "Oversize") {
 		return nil
 	}
@@ -95,9 +92,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		variant += s[1]
 	}
 
-	if strings.HasSuffix(variant, "Ultra Pro Puzzle Quest") {
-		return nil
-	} else if variant == "Welcome Back Promo Hangarback Walker Miscellaneous Promos" {
+	if variant == "Welcome Back Promo Hangarback Walker Miscellaneous Promos" {
 		cardName = "Hangarback Walker"
 		edition = "PLGS"
 	}
