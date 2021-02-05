@@ -24,9 +24,8 @@ type Cardtrader struct {
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
 
-	// Custom map of name:id to avoid requesting cards matching those names
-	// Name should be normalized with mtgmatcher.Normalize()
-	FilterNames map[string]string
+	// Custom map of ids to consider
+	FilterId map[string]string
 
 	loggedClient *CTLoggedClient
 }
@@ -185,11 +184,25 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 }
 
 func (ct *Cardtrader) scrape() error {
-	blueprints, err := ct.authClient.Blueprints()
+	expansionsRaw, err := ct.authClient.Expansions()
 	if err != nil {
 		return err
 	}
-	ct.printf("Parsing %d blueprints", len(blueprints))
+	ct.printf("Retrieved %d expansions", len(expansionsRaw))
+
+	blueprintsRaw, err := ct.authClient.Blueprints()
+	if err != nil {
+		return err
+	}
+	total := len(blueprintsRaw)
+	ct.printf("Found %d blueprints", total)
+
+	blueprints, _ := formatBlueprints(blueprintsRaw, expansionsRaw)
+
+	if ct.FilterId != nil {
+		total = len(ct.FilterId)
+		ct.printf("Filtering to %d entries", total)
+	}
 
 	blueprintIds := make(chan int)
 	results := make(chan resultChan)
@@ -210,17 +223,21 @@ func (ct *Cardtrader) scrape() error {
 
 	go func() {
 		for _, bp := range blueprints {
-			found := true
-			if ct.FilterNames != nil {
-				_, found = ct.FilterNames[mtgmatcher.Normalize(bp.Name)]
-			}
-			if !found {
-				continue
-			}
+			if ct.FilterId != nil {
+				theCard, err := preprocess(bp)
+				if err != nil {
+					continue
+				}
+				cardId, err := mtgmatcher.Match(theCard)
+				if err != nil {
+					continue
+				}
 
-			// Skip anything that is not mtg singles
-			if bp.CategoryId != 1 || bp.GameId != 1 {
-				continue
+				_, found := ct.FilterId[cardId]
+				_, foundFoil := ct.FilterId[cardId+"_f"]
+				if !found && !foundFoil {
+					continue
+				}
 			}
 
 			blueprintIds <- bp.Id
@@ -246,7 +263,7 @@ func (ct *Cardtrader) scrape() error {
 		// that we're still alive every minute
 		if time.Now().After(lastTime.Add(60 * time.Second)) {
 			card, _ := mtgmatcher.GetUUID(result.cardId)
-			ct.printf("Still going %d/%d, last processed card: %s", current, len(blueprints), card)
+			ct.printf("Still going %d/%d, last processed card: %s", current, total, card)
 			lastTime = time.Now()
 		}
 	}
