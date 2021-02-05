@@ -2768,6 +2768,21 @@ var sldVariants = map[string]map[string]string{
 		"versione 3":               "31",
 		"versione 4":               "32",
 	},
+	"Forest": map[string]string{
+		"godzilla": "63",
+	},
+	"Island": map[string]string{
+		"godzilla": "64",
+	},
+	"Mountain": map[string]string{
+		"godzilla": "66",
+	},
+	"Plains": map[string]string{
+		"godzilla": "67",
+	},
+	"Swamp": map[string]string{
+		"godzilla": "65",
+	},
 }
 
 var soiVariants = map[string]map[string]string{
