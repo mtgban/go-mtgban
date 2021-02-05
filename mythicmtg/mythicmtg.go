@@ -81,6 +81,19 @@ func (mmtg *Mythicmtg) parseBL() error {
 				variant = variants[1]
 			}
 
+			if variant == "Extended" && editionName == "Kaldheim" {
+				switch cardName {
+				case "Alrund's Epiphany",
+					"Battle Mammoth",
+					"Haunting Voyage",
+					"Quakebringer",
+					"Starnheim Unleashed":
+					variant = "Borderless"
+				default:
+					variant = "Extended Art"
+				}
+			}
+
 			isFoil := false
 			variants = mtgmatcher.SplitVariants(cardName)
 			cardName = variants[0]
