@@ -55,6 +55,8 @@ var cardTable = map[string]string{
 	"Rograkh, Son of Gohgahh":     "Rograkh, Son of Rohgahh",
 	"Swords of Plowshares":        "Swords to Plowshares",
 	"Kedniss, Emberclaw Familiar": "Kediss, Emberclaw Familiar",
+
+	"Battra, Terror of the City (JP Alternate Art)": "Dirge Bat (Godzilla)",
 }
 
 func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan) error {
@@ -73,6 +75,11 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		strings.Contains(fullName, "Ultra Pro Puzzle Quest") ||
 		strings.Contains(edition, "Oversize") {
 		return nil
+	}
+
+	lutName, found := cardTable[fullName]
+	if found {
+		fullName = lutName
 	}
 
 	s := mtgmatcher.SplitVariants(fullName)
@@ -97,12 +104,18 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		edition = "PLGS"
 	}
 
-	lutName, found := cardTable[cardName]
+	lutName, found = cardTable[cardName]
 	if found {
 		cardName = lutName
 	}
 
 	switch edition {
+	case "Revised Edition (Foreign White Border)":
+		return nil
+	case "Secret Lair Series":
+		if cardName == "Thalia, Guardian of Thraben" && variant == "" {
+			variant = "37"
+		}
 	case "Arabian Nights":
 		if variant == "Version 2" {
 			variant = "dark"
@@ -125,25 +138,28 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		if cardName == "Deathless Angel" {
 			edition = "Rise of the Eldrazi Promos"
 		}
+	case "Judge Promos":
+		switch cardName {
+		case "Vampiric Tutor":
+			if variant == "" {
+				variant = "2000"
+			}
+		}
+	case "Miscellaneous Promos":
+		if variant == "Magic Scholarship" {
+			edition = "Junior Super Series"
+		}
 	case "Unglued":
 		if strings.HasSuffix(variant, "Right") {
 			variant = "29"
 		} else if strings.HasSuffix(variant, "Left") {
 			variant = "28"
 		}
-	default:
-		if strings.HasSuffix(edition, "Promos") {
-			if variant != "" {
-				variant += " "
-			}
-			variant += edition
-			if strings.Contains(variant, "J20") {
-				variant += " 2020"
-			} else if strings.Contains(variant, "J18") {
-				variant += " 2018"
-			}
-
+	case "Ikoria: Lair of Behemoths: Extras":
+		if variant == "JP Alternate Art" {
+			variant = "Godzilla"
 		}
+		edition = "Ikoria: Lair of Behemoths"
 	}
 
 	theCard := &mtgmatcher.Card{
