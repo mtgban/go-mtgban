@@ -232,7 +232,11 @@ func (ct *Cardtrader) scrape() error {
 	}()
 
 	lastTime := time.Now()
+	current := 0
 	for result := range results {
+		if ct.inventory[result.cardId] == nil {
+			current++
+		}
 		err := ct.inventory.AddRelaxed(result.cardId, result.invEntry)
 		if err != nil {
 			ct.printf("%s", err.Error())
@@ -242,7 +246,7 @@ func (ct *Cardtrader) scrape() error {
 		// that we're still alive every minute
 		if time.Now().After(lastTime.Add(60 * time.Second)) {
 			card, _ := mtgmatcher.GetUUID(result.cardId)
-			ct.printf("Still going %s/%d, last processed card: %s", result.invEntry.OriginalId, blueprints[len(blueprints)-1].Id, card)
+			ct.printf("Still going %d/%d, last processed card: %s", current, len(blueprints), card)
 			lastTime = time.Now()
 		}
 	}
