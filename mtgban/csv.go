@@ -104,7 +104,7 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return nil, fmt.Errorf("empty input file")
+		return InventoryRecord{}, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error reading header: %v", err)
@@ -168,7 +168,7 @@ func LoadMarketFromCSV(r io.Reader, flags ...bool) (map[string]InventoryRecord, 
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return nil, nil, fmt.Errorf("empty input file")
+		return map[string]InventoryRecord{}, InventoryRecord{}, nil
 	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("error reading header: %v", err)
@@ -240,7 +240,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 	csvReader := csv.NewReader(r)
 	first, err := csvReader.Read()
 	if err == io.EOF {
-		return nil, fmt.Errorf("empty input file")
+		return BuylistRecord{}, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error reading header: %v", err)
