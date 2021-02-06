@@ -150,7 +150,9 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Factory Misprints":
 		variant = edition
 		switch cardName {
-		case "Sapphire Medallion", "Thunderheads":
+		case "Sapphire Medallion",
+			"Thunderheads",
+			"Winged Sliver":
 			return nil, errors.New("unknown")
 		case "Laquatus's Champion":
 			variant = "prerelease misprint"
