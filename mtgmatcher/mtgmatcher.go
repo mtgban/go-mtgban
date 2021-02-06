@@ -510,7 +510,7 @@ func adjustEdition(inCard *Card) {
 	// Single card mismatches
 	case Equals(inCard.Name, "Rhox") && inCard.isGenericAltArt():
 		inCard.Edition = "Starter 2000"
-	case Equals(inCard.Name, "Balduvian Horde") && (strings.Contains(inCard.Variation, "Judge") || strings.Contains(inCard.Edition, "Promo") || inCard.Contains("DCI")):
+	case Equals(inCard.Name, "Balduvian Horde") && (strings.Contains(inCard.Variation, "Judge") || strings.Contains(inCard.Edition, "Promo") || inCard.isDCIPromo()):
 		inCard.Edition = "World Championship Promos"
 	case Equals(inCard.Name, "Nalathni Dragon"):
 		inCard.Variation = ""
@@ -523,21 +523,21 @@ func adjustEdition(inCard *Card) {
 		inCard.Variation = "Prerelease"
 	case Equals(inCard.Name, "Tamiyo's Journal") && inCard.Variation == "" && inCard.Foil:
 		inCard.Variation = "Foil"
-	case Equals(inCard.Name, "Underworld Dreams") && inCard.Contains("DCI"):
+	case Equals(inCard.Name, "Underworld Dreams") && inCard.isDCIPromo():
 		inCard.Edition = "Two-Headed Giant Tournament"
-	case Equals(inCard.Name, "Jace Beleren") && inCard.Contains("DCI"):
+	case Equals(inCard.Name, "Jace Beleren") && inCard.isDCIPromo():
 		inCard.Edition = "Miscellaneous Book Promos"
-	case Equals(inCard.Name, "Serra Angel") && inCard.Contains("DCI"):
+	case Equals(inCard.Name, "Serra Angel") && inCard.isDCIPromo():
 		inCard.Edition = "Wizards of the Coast Online Store"
 
-	case Equals(inCard.Name, "Incinerate") && inCard.Contains("DCI"):
+	case Equals(inCard.Name, "Incinerate") && inCard.isDCIPromo():
 		inCard.Edition = "DCI Legend Membership"
-	case Equals(inCard.Name, "Counterspell") && inCard.Contains("DCI"):
+	case Equals(inCard.Name, "Counterspell") && inCard.isDCIPromo():
 		inCard.Edition = "DCI Legend Membership"
 
-	case Equals(inCard.Name, "Kamahl, Pit Fighter") && inCard.Contains("DCI"):
+	case Equals(inCard.Name, "Kamahl, Pit Fighter") && inCard.isDCIPromo():
 		inCard.Edition = "15th Anniversary Cards"
-	case Equals(inCard.Name, "Char") && inCard.Contains("DCI"):
+	case Equals(inCard.Name, "Char") && inCard.isDCIPromo():
 		inCard.Edition = "15th Anniversary Cards"
 
 	case Equals(inCard.Name, "Sigarda, Host of Herons") && inCard.isPrerelease():

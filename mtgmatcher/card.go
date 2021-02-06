@@ -188,6 +188,10 @@ func (c *Card) isGenericPromo() bool {
 			Contains(c.Edition, "Game Day"))
 }
 
+func (c *Card) isDCIPromo() bool {
+	return c.Contains("DCI")
+}
+
 func (c *Card) isGenericAltArt() bool {
 	return Contains(c.Variation, "Alt") && // includes Alternative
 		Contains(c.Variation, "Art")
