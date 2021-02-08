@@ -304,11 +304,6 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 		if len(results) == 0 {
 			continue
 		}
-		switch search.Edition {
-		case "3rd Edition BB",
-			"Promotional Cards: Oversized":
-			continue
-		}
 
 		for _, result := range results {
 			conditions := result.Condition
@@ -323,10 +318,37 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				scg.printf("unknown condition %s for %v", conditions, result)
 				continue
 			}
-			if result.Language != "English" {
-				if !(result.Language == "Japanese" && search.Edition == "War of the Spark" && result.Subtitle != "") {
+
+			switch result.Language {
+			case "English":
+			case "Japanese":
+				switch search.Edition {
+				case "War of the Spark":
+					if result.Subtitle != "(Alternate Art)" {
+						continue
+					}
+				case "Ikoria: Lair of Behemoths - Variants":
+					switch result.Name {
+					case "Crystalline Giant",
+						"Battra, Dark Destroyer",
+						"Mothra's Great Cocoon":
+					default:
+						continue
+					}
+				default:
 					continue
 				}
+			case "Italian":
+				switch search.Edition {
+				case "3rd Edition BB":
+					if mtgmatcher.IsBasicLand(result.Name) {
+						continue
+					}
+				default:
+					continue
+				}
+			default:
+				continue
 			}
 
 			result.edition = search.Edition

@@ -326,6 +326,7 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 	case strings.HasPrefix(cardName, "APAC Land"),
 		strings.HasPrefix(cardName, "Euro Land"),
 		strings.Contains(variant, "Oversized"),
+		strings.Contains(edition, "Oversized"),
 		mtgmatcher.IsToken(cardName):
 		return nil, errors.New("non-single")
 	}
@@ -375,6 +376,8 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 		if variant == "Gift Pack" {
 			edition = "M19 Gift pack"
 		}
+	case "3rd Edition BB":
+		variant = strings.TrimSuffix(variant, " BB")
 	default:
 		if strings.HasSuffix(edition, "(Foil)") {
 			edition = strings.TrimSuffix(edition, " (Foil)")
