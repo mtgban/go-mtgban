@@ -996,8 +996,10 @@ var chkVariants = map[string]map[string]string{
 		"b":                   "160b",
 		"art a 2 swords":      "160a",
 		"art b with pole arm": "160b",
-		"v.1": "160a",
-		"v.2": "160b",
+		"v.1":   "160a",
+		"v.2":   "160b",
+		"sword": "160a",
+		"pike":  "160b",
 	},
 }
 
@@ -1369,6 +1371,24 @@ var dkmVariants = map[string]map[string]string{
 	"Incinerate": map[string]string{
 		"v.1": "14★",
 		"v.2": "14",
+	},
+}
+
+var xm2Variants = map[string]map[string]string{
+	"Forest": map[string]string{
+		"unglued": "381",
+	},
+	"Island": map[string]string{
+		"unglued": "375",
+	},
+	"Mountain": map[string]string{
+		"unglued": "379",
+	},
+	"Plains": map[string]string{
+		"unglued": "373",
+	},
+	"Swamp": map[string]string{
+		"unglued": "377",
 	},
 }
 
@@ -3317,6 +3337,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Commander Anthology Volume II": cm2Variants,
 	"Conspiracy: Take the Crown":    cn2Variants,
 	"Deckmasters":                   dkmVariants,
+	"Double Masters":                xm2Variants,
 	"Fallen Empires":                femVariants,
 	"Fifth Edition":                 ed5Variants,
 	"Fourth Edition":                ed4Variants,

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -14,29 +15,192 @@ import (
 
 const (
 	mmtgBuylistURL = "https://mythicmtg.com/public-buylist"
+
+	defaultConcurrency = 8
 )
 
-var cardTable = map[string]string{
-	"Archangel Avacyn | Avacyn, the Purifer": "Archangel Avacyn // Avacyn, the Purifier",
-}
-
 type Mythicmtg struct {
-	LogCallback mtgban.LogCallbackFunc
-	buylistDate time.Time
+	LogCallback    mtgban.LogCallbackFunc
+	MaxConcurrency int
 
-	buylist mtgban.BuylistRecord
+	inventory     mtgban.InventoryRecord
+	inventoryDate time.Time
+
+	buylistDate time.Time
+	buylist     mtgban.BuylistRecord
+
+	client *MythicClient
 }
 
 func NewScraper() *Mythicmtg {
 	mmtg := Mythicmtg{}
+	mmtg.inventory = mtgban.InventoryRecord{}
 	mmtg.buylist = mtgban.BuylistRecord{}
+	mmtg.MaxConcurrency = defaultConcurrency
+	mmtg.client = NewMythicClient()
 	return &mmtg
+}
+
+type respChan struct {
+	cardId   string
+	invEntry *mtgban.InventoryEntry
 }
 
 func (mmtg *Mythicmtg) printf(format string, a ...interface{}) {
 	if mmtg.LogCallback != nil {
 		mmtg.LogCallback("[MMTG] "+format, a...)
 	}
+}
+
+func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
+	reader, err := mmtg.client.Products(start)
+	if err != nil {
+		return nil
+	}
+
+	doc, err := goquery.NewDocumentFromReader(reader)
+	if err != nil {
+		return err
+	}
+
+	doc.Find(`div[class="product-forms-tabs-wrapper"]`).Each(func(i int, s *goquery.Selection) {
+		dataId, _ := s.Find(`ul li:nth-child(1)`).Attr("data-id")
+		dataIdFoil, _ := s.Find(`ul li:nth-child(2)`).Attr("data-id")
+
+		for _, id := range []string{dataId, dataIdFoil} {
+			if id == "" {
+				continue
+			}
+			sub := s.Find(`div[id="` + id + `"]`)
+
+			cardName := sub.Find(`div[class="ty-grid-list__item-name"] bdi`).Text()
+			link, _ := sub.Find(`div[class="ty-grid-list__item-name"] bdi a`).Attr("href")
+			cardName = strings.TrimSuffix(cardName, "(foil)")
+			cardName = strings.TrimSpace(cardName)
+
+			fields := strings.Split(link, "/")
+			edition := ""
+			if len(fields) > 4 {
+				edition = fields[4]
+				edition = strings.Title(strings.Replace(edition, "-", " ", -1))
+			}
+
+			priceStr := sub.Find(`span[class="ty-price-num"]`).Text()
+			price, _ := mtgmatcher.ParsePrice(priceStr)
+			if price == 0 {
+				continue
+			}
+
+			items := sub.Find(`span[class="ty-qty-in-stock ty-control-group__item"]`).Text()
+			items = strings.TrimSpace(items)
+			items = strings.TrimSuffix(items, "\u00a0item(s)")
+			qty, _ := strconv.Atoi(items)
+			if qty == 0 {
+				continue
+			}
+
+			theCard, err := preprocess(cardName, edition)
+			if err != nil {
+				continue
+			}
+			if dataIdFoil == id {
+				theCard.Foil = true
+			}
+
+			cardId, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				switch edition {
+				case "Homelands", "Alliances", "Fallen Empires":
+				default:
+					mmtg.printf("%v", err)
+					mmtg.printf("%q", theCard)
+					mmtg.printf("%q ~ %q", cardName, edition)
+					alias, ok := err.(*mtgmatcher.AliasingError)
+					if ok {
+						probes := alias.Probe()
+						for _, probe := range probes {
+							card, _ := mtgmatcher.GetUUID(probe)
+							mmtg.printf("- %s", card)
+						}
+					}
+				}
+				continue
+			}
+
+			channel <- respChan{
+				cardId: cardId,
+				invEntry: &mtgban.InventoryEntry{
+					Conditions: "NM",
+					Price:      price,
+					Quantity:   qty,
+					URL:        link,
+				},
+			}
+		}
+	})
+
+	return nil
+}
+
+func (mmtg *Mythicmtg) scrape() error {
+	pages := make(chan int)
+	channel := make(chan respChan)
+	var wg sync.WaitGroup
+
+	totalProducts, err := mmtg.client.TotalItems()
+	if err != nil {
+		return err
+	}
+	allPages := totalProducts/DefaultResultsPerPage + 1
+	mmtg.printf("Parsing %d items, for a total of %d requests", totalProducts, allPages)
+
+	for i := 0; i < mmtg.MaxConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for start := range pages {
+				err = mmtg.processPage(channel, start)
+				if err != nil {
+					mmtg.printf("%s", err.Error())
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	go func() {
+		for i := 1; i <= allPages; i++ {
+			pages <- i
+		}
+		close(pages)
+
+		wg.Wait()
+		close(channel)
+	}()
+
+	for record := range channel {
+		err := mmtg.inventory.Add(record.cardId, record.invEntry)
+		if err != nil {
+			mmtg.printf("%v", err)
+			continue
+		}
+	}
+
+	mmtg.inventoryDate = time.Now()
+
+	return nil
+}
+
+func (mmtg *Mythicmtg) Inventory() (mtgban.InventoryRecord, error) {
+	if len(mmtg.inventory) > 0 {
+		return mmtg.inventory, nil
+	}
+
+	err := mmtg.scrape()
+	if err != nil {
+		return nil, err
+	}
+
+	return mmtg.inventory, nil
 }
 
 func (mmtg *Mythicmtg) parseBL() error {
@@ -74,44 +238,11 @@ func (mmtg *Mythicmtg) parseBL() error {
 				return
 			}
 
-			variant := ""
-			variants := strings.Split(cardName, " - ")
-			cardName = variants[0]
-			if len(variants) > 1 {
-				variant = variants[1]
+			theCard, err := preprocess(cardName, editionName)
+			if err != nil {
+				return
 			}
 
-			if variant == "Extended" && editionName == "Kaldheim" {
-				switch cardName {
-				case "Alrund's Epiphany",
-					"Battle Mammoth",
-					"Haunting Voyage",
-					"Quakebringer",
-					"Starnheim Unleashed":
-					variant = "Borderless"
-				default:
-					variant = "Extended Art"
-				}
-			}
-
-			isFoil := false
-			variants = mtgmatcher.SplitVariants(cardName)
-			cardName = variants[0]
-			if len(variants) > 1 && variants[1] == "Foil" {
-				isFoil = true
-			}
-
-			lutName, found := cardTable[cardName]
-			if found {
-				cardName = lutName
-			}
-
-			theCard := &mtgmatcher.Card{
-				Name:      cardName,
-				Edition:   editionName,
-				Variation: variant,
-				Foil:      isFoil,
-			}
 			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
 				mmtg.printf("%v", err)
@@ -127,8 +258,20 @@ func (mmtg *Mythicmtg) parseBL() error {
 				return
 			}
 
+			var priceRatio, sellPrice float64
+
+			invCards := mmtg.inventory[cardId]
+			for _, invCard := range invCards {
+				sellPrice = invCard.Price
+				break
+			}
+			if sellPrice > 0 {
+				priceRatio = price / sellPrice * 100
+			}
+
 			out := &mtgban.BuylistEntry{
 				BuyPrice:   price,
+				PriceRatio: priceRatio,
 				TradePrice: credit,
 				Quantity:   qty,
 				URL:        mmtgBuylistURL,
@@ -171,6 +314,7 @@ func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64
 func (mmtg *Mythicmtg) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Mythic MTG"
 	info.Shorthand = "MMTG"
+	info.InventoryTimestamp = mmtg.buylistDate
 	info.BuylistTimestamp = mmtg.buylistDate
 	info.Grading = grading
 	return
