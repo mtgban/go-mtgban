@@ -2179,6 +2179,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Buy A Box",
 		},
 	},
+
+	MatchTest{
+		Id:   "9fce4a02-01ec-5dc3-a3e9-92646a69e6fd",
+		Desc: "planechase_planes",
+		In: Card{
+			Name:    "The Hippodrome",
+			Edition: "Planechase",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

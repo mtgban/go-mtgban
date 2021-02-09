@@ -83,6 +83,7 @@ func IsToken(name string) bool {
 		"City's Blessing",
 		"Companion",
 		"Energy Reserve",
+		"Faerie Rogue",
 		"Fun Format: Pack Wars",
 		"Manifest",
 		"Morph",
@@ -189,7 +190,7 @@ func (c *Card) isGenericPromo() bool {
 }
 
 func (c *Card) isDCIPromo() bool {
-	return c.Contains("DCI")
+	return c.Contains("DCI") && !c.Contains("Judge")
 }
 
 func (c *Card) isGenericAltArt() bool {
@@ -239,6 +240,7 @@ func (c *Card) isFNM() bool {
 
 func (c *Card) isJPN() bool {
 	return strings.Contains(c.Variation, "JPN") ||
+		strings.Contains(c.Variation, "JP") ||
 		c.Contains("Japanese") ||
 		Contains(c.Variation, "Gotta") ||
 		Contains(c.Variation, "Dengeki")
@@ -299,7 +301,7 @@ func (c *Card) isBundle() bool {
 }
 
 func (c *Card) isFoilEtched() bool {
-	return Contains(c.Variation, "Etched") && Contains(c.Variation, "Foil")
+	return Contains(c.Variation, "Etched")
 }
 
 func (c *Card) isARNLightMana() bool {

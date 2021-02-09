@@ -878,11 +878,37 @@ var pal01Variants = map[string]map[string]string{
 		"arena 2001 foil - beta":    "11",
 		"ice age 2001":              "1",
 		"beta 2002":                 "11",
+		"2001 ice age":              "1",
+		"2001 beta":                 "11",
 	},
 }
 
 var palpVariants = map[string]map[string]string{
+	"Forest": map[string]string{
+		"apac set (red pack)":   "1",
+		"apac set (blue pack)":  "6",
+		"apac set (clear pack)": "11",
+	},
+	"Island": map[string]string{
+		"apac set (red pack)":   "2",
+		"apac set (blue pack)":  "7",
+		"apac set (clear pack)": "12",
+	},
+	"Mountain": map[string]string{
+		"apac set (red pack)":   "3",
+		"apac set (blue pack)":  "8",
+		"apac set (clear pack)": "13",
+	},
+	"Plains": map[string]string{
+		"apac set (red pack)":   "4",
+		"apac set (blue pack)":  "9",
+		"apac set (clear pack)": "14",
+	},
 	"Swamp": map[string]string{
+		"apac set (red pack)":   "5",
+		"apac set (blue pack)":  "10",
+		"apac set (clear pack)": "15",
+
 		"ron spears, fireballs":                              "10",
 		"ron spears, zombie":                                 "15",
 		"apac b taiwan":                                      "10",
@@ -1036,6 +1062,10 @@ var oldLandVariants = map[string]map[string]string{
 		"v.1": "300",
 		"v.2": "302",
 		"v.3": "301",
+
+		"rocks": "300",
+		"path":  "301",
+		"eyes":  "302",
 	},
 	"Island": map[string]string{
 		"a": "291",
@@ -1069,6 +1099,10 @@ var oldLandVariants = map[string]map[string]string{
 		"v.1": "291",
 		"v.2": "293",
 		"v.3": "292",
+
+		"purple": "291",
+		"green":  "292",
+		"blue":   "293",
 	},
 	"Mountain": map[string]string{
 		"a": "297",
@@ -1102,6 +1136,10 @@ var oldLandVariants = map[string]map[string]string{
 		"v.1": "297",
 		"v.2": "299",
 		"v.3": "298",
+
+		"slate": "297",
+		"fog":   "298",
+		"dirt":  "299",
 	},
 	"Plains": map[string]string{
 		"b": "288",
@@ -1135,6 +1173,10 @@ var oldLandVariants = map[string]map[string]string{
 		"v.1": "288",
 		"v.2": "289",
 		"v.3": "290",
+
+		"no trees":     "288",
+		"trees":        "289",
+		"no mountains": "290",
 	},
 	"Swamp": map[string]string{
 		"a": "294",
@@ -1172,6 +1214,10 @@ var oldLandVariants = map[string]map[string]string{
 		"v.1": "294",
 		"v.2": "295",
 		"v.3": "296",
+
+		"low branch":   "294",
+		"high branch":  "295",
+		"two branches": "296",
 	},
 }
 
@@ -1392,6 +1438,34 @@ var xm2Variants = map[string]map[string]string{
 	},
 }
 
+var pelpVariants = map[string]map[string]string{
+	"Forest": map[string]string{
+		"euro set 1": "1",
+		"euro set 2": "6",
+		"euro set 3": "11",
+	},
+	"Island": map[string]string{
+		"euro set 1": "2",
+		"euro set 2": "7",
+		"euro set 3": "12",
+	},
+	"Mountain": map[string]string{
+		"euro set 1": "3",
+		"euro set 2": "8",
+		"euro set 3": "13",
+	},
+	"Plains": map[string]string{
+		"euro set 1": "4",
+		"euro set 2": "9",
+		"euro set 3": "14",
+	},
+	"Swamp": map[string]string{
+		"euro set 1": "5",
+		"euro set 2": "10",
+		"euro set 3": "15",
+	},
+}
+
 var femVariants = map[string]map[string]string{
 	"Armor Thrull": map[string]string{
 		"fe001": "33a",
@@ -1469,12 +1543,15 @@ var femVariants = map[string]map[string]string{
 		"fe122": "58d",
 	},
 	"High Tide": map[string]string{
-		"fe035": "18a",
-		"fe036": "18b",
-		"fe037": "18c",
-		"2":     "18a",
-		"1":     "18b",
-		"3":     "18c",
+		"fe035":   "18a",
+		"fe036":   "18b",
+		"fe037":   "18c",
+		"2":       "18a",
+		"1":       "18b",
+		"3":       "18c",
+		"tucker":  "18a",
+		"merfolk": "18b",
+		"coral":   "18c",
 	},
 	"Homarid": map[string]string{
 		"fe038": "19a",
@@ -1489,14 +1566,18 @@ var femVariants = map[string]map[string]string{
 		"fe046": "22c",
 	},
 	"Hymn to Tourach": map[string]string{
-		"4":     "38a",
-		"1":     "38b",
-		"2":     "38c",
-		"3":     "38d",
-		"fe012": "38a",
-		"fe013": "38b",
-		"fe014": "38c",
-		"fe015": "38d",
+		"4":      "38a",
+		"1":      "38b",
+		"2":      "38c",
+		"3":      "38d",
+		"fe012":  "38a",
+		"fe013":  "38b",
+		"fe014":  "38c",
+		"fe015":  "38d",
+		"wolf":   "38a",
+		"circle": "38b",
+		"cloak":  "38c",
+		"table":  "38d",
 	},
 	"Icatian Infantry": map[string]string{
 		"fe144": "7a",
@@ -2211,6 +2292,8 @@ var leaVariants = map[string]map[string]string{
 		"v.2":             "295",
 		"a":               "294",
 		"b":               "295",
+		"rocks":           "294",
+		"path":            "295",
 	},
 	"Island": map[string]string{
 		"a purple":            "288",
@@ -2222,17 +2305,21 @@ var leaVariants = map[string]map[string]string{
 		"v.2":                 "289",
 		"a":                   "288",
 		"b":                   "289",
+		"purple":              "288",
+		"green":               "289",
 	},
 	"Mountain": map[string]string{
 		"a small tree":            "292",
 		"b snowy":                 "293",
 		"grey mountain / red sky": "292",
-		"#283": "292",
-		"#284": "293",
-		"v.1":  "292",
-		"v.2":  "293",
-		"a":    "292",
-		"b":    "293",
+		"#283":  "292",
+		"#284":  "293",
+		"v.1":   "292",
+		"v.2":   "293",
+		"a":     "292",
+		"b":     "293",
+		"slate": "292",
+		"fog":   "293",
 	},
 	"Plains": map[string]string{
 		"a light":        "286",
@@ -2243,6 +2330,8 @@ var leaVariants = map[string]map[string]string{
 		"v.2":            "287",
 		"a":              "286",
 		"b":              "287",
+		"no trees":       "286",
+		"trees":          "287",
 	},
 	"Swamp": map[string]string{
 		"a light":         "290",
@@ -2253,6 +2342,8 @@ var leaVariants = map[string]map[string]string{
 		"v.2":             "291",
 		"a":               "290",
 		"b":               "291",
+		"low branch":      "290",
+		"high branch":     "291",
 	},
 }
 
@@ -2621,6 +2712,11 @@ var rinVariants = map[string]map[string]string{
 		"59": "176",
 		"60": "177",
 		"61": "178",
+
+		"mouth":         "175",
+		"clawed sphere": "176",
+		"pulley":        "177",
+		"tower":         "178",
 	},
 	"Urza's Power Plant": map[string]string{
 		"centrale57": "179",
@@ -2632,6 +2728,11 @@ var rinVariants = map[string]map[string]string{
 		"63": "180",
 		"64": "181",
 		"65": "182",
+
+		"rock in pot": "179",
+		"columns":     "180",
+		"sphere":      "181",
+		"bug":         "182",
 	},
 	"Urza's Tower": map[string]string{
 		"ri055":   "183",
@@ -2643,6 +2744,11 @@ var rinVariants = map[string]map[string]string{
 		"67": "184",
 		"68": "185",
 		"69": "186",
+
+		"forest":    "183",
+		"plains":    "184",
+		"mountains": "185",
+		"shore":     "186",
 	},
 }
 
@@ -2821,6 +2927,7 @@ var soiVariants = map[string]map[string]string{
 var psoiVariants = map[string]map[string]string{
 	"Tamiyo's Journal": map[string]string{
 		"prerelease promo entry 855":              "265s",
+		"prerelease promo entry 653":              "265s†",
 		"shadows over innistrad prerelease promo": "265s†",
 	},
 }
@@ -3338,6 +3445,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Conspiracy: Take the Crown":    cn2Variants,
 	"Deckmasters":                   dkmVariants,
 	"Double Masters":                xm2Variants,
+	"European Land Program":         pelpVariants,
 	"Fallen Empires":                femVariants,
 	"Fifth Edition":                 ed5Variants,
 	"Fourth Edition":                ed4Variants,

@@ -20,6 +20,7 @@ var EditionTable = map[string]string{
 	"Classic 6th Edition":       "Classic Sixth Edition",
 	"Futuresight":               "Future Sight",
 	"Hours of Devestation":      "Hour of Devastation",
+	"Origins":                   "Magic Origins",
 	"Ravnica":                   "Ravnica: City of Guilds",
 	"Revised":                   "Revised Edition",
 	"Saviors":                   "Saviors of Kamigawa",
@@ -31,7 +32,8 @@ var EditionTable = map[string]string{
 	"Unlimited":                 "Unlimited Edition",
 
 	// JPN planeswalkers and similar
-	"War of the Spark JPN Planeswalkers": "War of the Spark",
+	"War of the Spark JPN Planeswalkers":      "War of the Spark",
+	"War of the Spark Japanese Alternate Art": "War of the Spark",
 
 	// Gift pack
 	"2017 Gift Pack":       "2017 Gift Pack",
@@ -62,6 +64,7 @@ var EditionTable = map[string]string{
 	"Magic Game Night 2019 Box Set": "Game Night: 2019",
 
 	// Old school lands
+	"Apac Land Promos":   "Asia Pacific Land Program",
 	"APAC Land":          "Asia Pacific Land Program",
 	"APAC Lands":         "Asia Pacific Land Program",
 	"Promos: Apac Lands": "Asia Pacific Land Program",
@@ -71,6 +74,7 @@ var EditionTable = map[string]string{
 	"Guru":               "Guru",
 	"Promos: Guru Lands": "Guru",
 	"Promos: Euro Lands": "European Land Program",
+	"Euro Land Promos":   "European Land Program",
 	"Euro Lands":         "European Land Program",
 	"European Lands":     "European Land Program",
 
@@ -144,6 +148,7 @@ var EditionTable = map[string]string{
 	"Collectors Ed Intl":                  "Intl. Collectors' Edition",
 	"Collectors' Edition - International": "Intl. Collectors' Edition",
 	"International Collector's Edition":   "Intl. Collectors' Edition",
+	"International Collectors Edition":    "Intl. Collectors' Edition",
 	"International Collectors’ Edition":   "Intl. Collectors' Edition",
 	"International Edition":               "Intl. Collectors' Edition",
 	"Collector's Edition (Domestic)":      "Collectors' Edition",
@@ -152,8 +157,10 @@ var EditionTable = map[string]string{
 	"Collectors Ed":                       "Collectors' Edition",
 	"Collectors' Edition":                 "Collectors' Edition",
 	"Collectors’ Edition":                 "Collectors' Edition",
+	"Collectors Edition":                  "Collectors' Edition",
 
 	// Portal
+	"Portal 1":          "Portal",
 	"Portal II":         "Portal Second Age",
 	"Portal 2nd Age":    "Portal Second Age",
 	"Portal 3K":         "Portal Three Kingdoms",
@@ -229,6 +236,7 @@ var EditionTable = map[string]string{
 	"JSS Promo":                      "Junior Super Series",
 	"JSS/MSS Promos":                 "Junior Super Series",
 	"Japan Junior Tournament Promos": "Japan Junior Tournament",
+	"Japanese JSS Promo":             "Japan Junior Tournament",
 
 	// GP Promos
 	"2010 Grand Prix Promo":              "Grand Prix Promos",
@@ -353,6 +361,7 @@ var EditionTable = map[string]string{
 	"Summer Foil":           "Summer of Magic",
 	"Summer of Magic Promo": "Summer of Magic",
 	"Summer of Magic":       "Summer of Magic",
+	"Summer Magic (Edgar)":  "Summer Magic",
 
 	// Wotc Store
 	"Foil Beta Picture":       "Wizards of the Coast Online Store",
@@ -404,5 +413,8 @@ var EditionTable = map[string]string{
 	"Foreign BB":                             "Foreign Black Border",
 	"Foreign Black Bordered":                 "Foreign Black Border",
 	"Foreign Limited - FBB":                  "Foreign Black Border",
+	"Italian Revised FBB":                    "Foreign Black Border",
 	"Revised Edition (Foreign Black Border)": "Foreign Black Border",
+
+	"Italian Renaissance": "Rinascimento",
 }

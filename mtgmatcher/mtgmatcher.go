@@ -382,7 +382,9 @@ func adjustEdition(inCard *Card) {
 		edition = ed
 	}
 	ed, found = EditionTable[variation]
-	if found {
+	// This set has one land with a variant named as an expansion,
+	// so what is found should not overwrite the edition in this case
+	if found && edition != "Anthologies" {
 		edition = ed
 	}
 	inCard.Edition = edition
@@ -553,5 +555,9 @@ func adjustEdition(inCard *Card) {
 
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
 		inCard.Variation = "Foil Etched"
+	case inCard.Edition == "Planechase" && len(MatchInSet(inCard.Name, "OHOP")) != 0:
+		inCard.Edition = backend.Sets["OHOP"].Name
+	case inCard.Edition == "Planechase Anthology" && len(MatchInSet(inCard.Name, "OPCA")) != 0:
+		inCard.Edition = backend.Sets["OPCA"].Name
 	}
 }
