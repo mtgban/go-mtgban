@@ -551,6 +551,8 @@ func (csi *Coolstuffinc) parseBL() error {
 		}
 	}
 
+	csi.buylistDate = time.Now()
+
 	return nil
 }
 

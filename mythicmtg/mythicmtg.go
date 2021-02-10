@@ -283,6 +283,8 @@ func (mmtg *Mythicmtg) parseBL() error {
 		})
 	})
 
+	mmtg.buylistDate = time.Now()
+
 	return nil
 }
 
@@ -314,7 +316,7 @@ func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64
 func (mmtg *Mythicmtg) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Mythic MTG"
 	info.Shorthand = "MMTG"
-	info.InventoryTimestamp = mmtg.buylistDate
+	info.InventoryTimestamp = mmtg.inventoryDate
 	info.BuylistTimestamp = mmtg.buylistDate
 	info.Grading = grading
 	return
