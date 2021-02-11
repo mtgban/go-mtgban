@@ -164,7 +164,6 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 						Conditions: cond,
 						BuyPrice:   price,
 						PriceRatio: priceRatio,
-						Quantity:   product.Quantity,
 						URL:        link,
 					},
 				}
