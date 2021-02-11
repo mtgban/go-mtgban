@@ -561,12 +561,12 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = backend.Sets["OPCA"].Name
 
 	// Missing the proper FrameEffect property
-	case Equals(inCard.Name, "Vorinclex, Monstrous Raider") && inCard.isShowcase():
+	case Equals(inCard.Name, "Vorinclex, Monstrous Raider") && (inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian")):
 		num := ExtractNumber(inCard.Variation)
 		if num == "" {
 			if Contains(inCard.Variation, "Phyrexian") {
 				inCard.Variation = "333"
-			} else {
+			} else if inCard.isShowcase() {
 				inCard.Variation = "320"
 			}
 		}
