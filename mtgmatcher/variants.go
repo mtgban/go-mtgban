@@ -1423,18 +1423,28 @@ var dkmVariants = map[string]map[string]string{
 var xm2Variants = map[string]map[string]string{
 	"Forest": map[string]string{
 		"unglued": "381",
+		"v.1":     "381",
+		"v.2":     "382",
 	},
 	"Island": map[string]string{
 		"unglued": "375",
+		"v.1":     "375",
+		"v.2":     "376",
 	},
 	"Mountain": map[string]string{
 		"unglued": "379",
+		"v.1":     "379",
+		"v.2":     "380",
 	},
 	"Plains": map[string]string{
 		"unglued": "373",
+		"v.1":     "373",
+		"v.2":     "374",
 	},
 	"Swamp": map[string]string{
 		"unglued": "377",
+		"v.1":     "377",
+		"v.2":     "378",
 	},
 }
 
