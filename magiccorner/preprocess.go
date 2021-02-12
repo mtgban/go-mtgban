@@ -184,6 +184,20 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = "Japanese Prerelease"
 			edition = "War of the Spark Promos"
 		}
+	case "Kaldheim: Extras":
+		if cardName == "Vorinclex, Monstrous Raider" {
+			if variation == "V.1" {
+				variation = "Showcase"
+			} else if variation == "V.2" {
+				variation = "Phyrexian"
+			}
+		} else {
+			if variation == "V.1" {
+				variation = "Borderless"
+			} else if variation == "V.2" {
+				variation = "Showcase"
+			}
+		}
 	// Use the tag information if available
 	case "Promo":
 		switch variation {
@@ -238,6 +252,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 				variation = "Promo Pack"
 			case "V.2":
 				variation = "Prerelease"
+			case "V.3":
+				variation = "Bundle"
+				edition = strings.TrimSuffix(edition, ": Promos")
 			default:
 				if mtgmatcher.HasPromoPackPrinting(cardName) {
 					variation = "Promo Pack"
@@ -283,6 +300,46 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = card.URL
 		case "Core 2020: Extras":
 			variation = "Promo Pack"
+		case "Core 2021: Extras":
+			variation = map[string]string{
+				// ugin
+				"1bacda35-bb91-4537-a14d-846650fa85f6": "279",
+				"a11e75a0-17f0-429a-a77a-268fe6257010": "285",
+				// basri
+				"ed3906ea-df06-4299-a305-32e6ef476507": "280",
+				"ca854101-5a9b-455d-bf47-ad8f3d57afa7": "286",
+				// teferi
+				"2d1ff397-2445-459a-ae4e-7bf1cd48f490": "275",
+				"a8bf5708-4222-46d2-b108-0ed4cf3c83c3": "276",
+				"d4949a0b-e320-470a-ba54-07ac75b0053b": "277",
+				"ba95c4fc-f0fc-4bfe-bef7-694c3d82a6c7": "281",
+				"f802369f-bd9f-4c2f-835b-b0b9c1ea61a7": "290",
+				"c0ba42c9-480c-4236-b217-01910e51b290": "291",
+				"20a271b3-c3a9-47c6-bc8b-b580ede1968b": "292",
+				"a8fda4c0-d576-40e5-8e26-fc212c09691f": "293",
+				// lili
+				"a2edac86-02d4-4201-9b72-2ec64f163a72": "282",
+				"e8dd3fda-d778-4be6-abd4-6cf704e352ea": "297",
+				// garruk
+				"bd16e1a6-0ece-44d5-8221-25892178e927": "284",
+				"c5e92f14-776d-4fa6-b872-1acadca1e372": "305",
+			}[extra]
+		case "Ikoria: Lair of Behemoths: Extras":
+			if cardName == "Void Beckoner" {
+				if extra == "1ca7065e-88c1-44bb-ac68-e6e1df9e0726" {
+					variation = "373"
+				} else if extra == "29ae88c2-1f9b-4515-9f2e-78e1dc5468b1" {
+					variation = "373A"
+				}
+			}
+		case "Zendikar Rising: Extras":
+			if cardName == "Charix, the Raging Isle" {
+				if extra == "6e23886b-8200-427d-99af-068a0133795d" {
+					variation = "Bundle"
+				} else {
+					variation = "Extended Art"
+				}
+			}
 		case "Commander Legends: Extras":
 			set, err := mtgmatcher.GetSet("CMR")
 			if err != nil {
