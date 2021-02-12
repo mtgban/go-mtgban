@@ -489,45 +489,37 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 		}
 		isRare := co.Card.Rarity == "rare"
 		isMythic := co.Card.Rarity == "mythic"
-		if !(isRare || isMythic) {
+		isLand := mtgmatcher.IsBasicLand(co.Name) && co.Card.IsFullArt
+		if !isRare && !isMythic && !isLand {
 			continue
 		}
 
-		set, err := mtgmatcher.GetSet(co.SetCode)
-		if err != nil {
-			return nil, err
-		}
-		if set.Type == "funny" {
+		if co.BorderColor == "silver" || co.BorderColor == "gold" {
 			continue
 		}
 
 		for _, entry := range entries {
-			if entry.Conditions == "PO" {
+			if entry.Conditions == "PO" || entry.Conditions == "HP" {
 				continue
 			}
 
 			pennyMythic := !co.Foil && isMythic && entry.Price <= 0.25
 			pennyRare := !co.Foil && isRare && entry.Price <= 0.07
+			pennyLand := !co.Foil && isLand && entry.Price <= 0.05
 			pennyFoil := co.Foil && entry.Price <= 0.05
 			pennyInteresting := false
 			switch {
-			case strings.Contains(co.Card.Name, "Signet") && entry.Price <= 0.20:
-				pennyInteresting = true
-			case strings.Contains(co.Card.Name, "Talisman") && entry.Price <= 0.20:
-				pennyInteresting = true
-			case strings.Contains(co.Card.Name, "Diamond") && entry.Price <= 0.20:
-				pennyInteresting = true
-			case strings.Contains(co.Card.Name, "Curse of") && entry.Price <= 0.25:
-				pennyInteresting = true
-			case co.Card.Name == "Sakura-Tribe Elder" && entry.Price <= 0.20:
-				pennyInteresting = true
-			case co.Card.Name == "Sol Ring" && entry.Price <= 1.50:
-				pennyInteresting = true
-			case co.Card.Name == "Thran Dynamo" && entry.Price <= 2:
+			case strings.Contains(co.Card.Name, "Signet") && entry.Price <= 0.20,
+				strings.Contains(co.Card.Name, "Talisman") && entry.Price <= 0.20,
+				strings.Contains(co.Card.Name, "Diamond") && entry.Price <= 0.20,
+				strings.Contains(co.Card.Name, "Curse of") && entry.Price <= 0.25,
+				co.Card.Name == "Sakura-Tribe Elder" && entry.Price <= 0.20,
+				co.Card.Name == "Sol Ring" && entry.Price <= 1.50,
+				co.Card.Name == "Thran Dynamo" && entry.Price <= 2:
 				pennyInteresting = true
 			}
 
-			if pennyMythic || pennyRare || pennyFoil || pennyInteresting {
+			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyInteresting {
 				result = append(result, PennystockEntry{
 					CardId:         cardId,
 					InventoryEntry: entry,
