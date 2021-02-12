@@ -1,6 +1,7 @@
 package mtgmatcher
 
 import (
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -541,7 +542,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				continue
 			}
 
-			if setDate.After(PromosForEverybodyYay) {
+			if inCard.beyondBaseSet {
+				// Filter out any card that is located in the base set only
+				num, err := strconv.Atoi(card.Number)
+				if err == nil && num <= set.BaseSetSize {
+					continue
+				}
+			} else if setDate.After(PromosForEverybodyYay) {
 				// ELD-Style borderless
 				if inCard.isBorderless() {
 					if card.BorderColor != mtgjson.BorderColorBorderless {

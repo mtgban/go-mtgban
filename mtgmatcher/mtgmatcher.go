@@ -416,10 +416,16 @@ func adjustEdition(inCard *Card) {
 		for _, tag := range []string{
 			"(Collector Edition)", "Collectors", "Extras", "Variants",
 		} {
+			// Strip away any extra tags
 			if strings.HasSuffix(edition, tag) {
 				edition = strings.TrimSuffix(edition, tag)
 				edition = strings.TrimSpace(edition)
 				edition = strings.TrimSuffix(edition, ":")
+				// If no other variation, set this flag to do a best effort search
+				if variation == "" {
+					inCard.beyondBaseSet = true
+				}
+				break
 			}
 		}
 	}

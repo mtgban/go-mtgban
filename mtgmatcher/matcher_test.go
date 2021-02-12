@@ -2188,6 +2188,14 @@ var MatchTests = []MatchTest{
 			Edition: "Planechase",
 		},
 	},
+	MatchTest{
+		Id:   "a82e3d86-2ffb-593d-88b5-16db79ce2025",
+		Desc: "boosterfun_variant",
+		In: Card{
+			Name:    "Shadowspear",
+			Edition: "Theros Beyond Death: Extras",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

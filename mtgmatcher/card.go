@@ -28,6 +28,11 @@ type Card struct {
 
 	// The collector number of the card (output only)
 	Number string
+
+	// The card belongs to the extended side of the set, usually containing
+	// variants with the same name of existing cards in the same set, but with
+	// different frames or border effects
+	beyondBaseSet bool
 }
 
 // Card implements the Stringer interface
