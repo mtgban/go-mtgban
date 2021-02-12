@@ -118,9 +118,9 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			conditions = "NM"
 		case "Slightly Played":
 			conditions = "SP"
-		case "Moderately Played", "Played":
+		case "Moderately Played":
 			conditions = "MP"
-		case "Heavily Played", "HP":
+		case "Played", "Heavily Played", "HP":
 			conditions = "HP"
 		case "Poor":
 			conditions = "PO"
