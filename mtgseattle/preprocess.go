@@ -128,9 +128,6 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			"Fraternal Exaltation",
 			"Splendid Genesis":
 			return nil, errors.New("not tracked")
-		case "Mechagodzilla, Battle Fortress":
-			cardName = "Hangarback Walker"
-			edition = "PLGS"
 		case "Reliquary Tower":
 			edition = "PLGS"
 		case "Hydra Broodmaster",

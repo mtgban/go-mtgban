@@ -250,9 +250,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		case "Godzilla, King of the Monsters / Zilortha, Strength Incarnate":
 			cardName = "Zilortha, Strength Incarnate"
 			variation = "Godzilla"
-		case "Mechagodzilla, Battle Fortress / Hangarback Walker":
-			cardName = "Hangarback Walker"
-			variation = "Godzilla"
 		case "Orah, Skyclave Hierophant":
 			if variation == "Extended Art Buy-A-Box Promo" {
 				variation = "Buy-A-Box Promo"

@@ -91,9 +91,6 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 				break
 			}
 		}
-	case mtgmatcher.Equals(cardName, "Mechagodzilla Battle Fortress (Hangarback Walker) BIBB Promo"):
-		cardName = "Hangarback Walker"
-		edition = "Love your LGS"
 	case strings.Contains(cardName, "Art Card"):
 		return nil, errors.New("not single")
 	}

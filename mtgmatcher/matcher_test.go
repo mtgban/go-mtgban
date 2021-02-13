@@ -893,6 +893,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "6350a63d-2f7a-5f50-8def-adaf7dc00d0d",
+		Desc: "godzilla_variant_reskin_name",
+		In: Card{
+			Name:    "Mechagodzilla Battle Fortress",
+			Edition: "Promo Cards",
+		},
+	},
+	MatchTest{
 		Id:   "fd9ff43c-fee9-5bdb-ab0a-d4c55f2178fd",
 		Desc: "godzilla_variant_japanese",
 		In: Card{
