@@ -432,10 +432,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					// Coming straight from ExtractNumber above
 					if num != "" {
 						cnn := cn
+						// Strip last character if it's a letter
 						if unicode.IsLetter(rune(cn[len(cn)-1])) {
 							cnn = cn[:len(cn)-1]
 						}
-						if num != cnn {
+						// Try both simple number and original collector number
+						if num != cnn && num != cn {
 							continue
 						}
 						cn = strings.Replace(cn, num, "", 1)

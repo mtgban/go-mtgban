@@ -1894,6 +1894,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "fbd3ea3e-80cb-5f55-b41e-5730aff46c6a",
+		Desc: "wcd_with_correct_original_number",
+		In: Card{
+			Name:      "Order of Leitbur",
+			Variation: "1996 Bertrand Lestree FEM Male 16b",
+			Edition:   "World Championship Decks",
+		},
+	},
+	MatchTest{
 		Id:   "df552574-7dbd-5bc3-bcd9-ba8d9c745b41",
 		Desc: "wcd_with_correct_sideboard_number",
 		In: Card{
