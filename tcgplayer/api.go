@@ -26,6 +26,8 @@ const (
 
 	tcgApiTokenURL = "https://api.tcgplayer.com/token"
 
+	tcgApiListProductsURL = "https://api.tcgplayer.com/catalog/products"
+
 	tcgApiVersion    = "v1.39.0"
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
 	tcgApiPricingURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/sku/"
@@ -138,6 +140,95 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	return t.Parent.RoundTrip(req)
+}
+
+const (
+	CategoryMagic = 1
+)
+
+type TCGResponse struct {
+	TotalItems int          `json:"totalItems"`
+	Success    bool         `json:"success"`
+	Errors     []string     `json:"errors"`
+	Results    []TCGProduct `json:"results"`
+}
+
+// Perform an authenticated GET request on any URL
+func (tcg *TCGClient) Get(url string) (*TCGResponse, error) {
+	resp, err := tcg.client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response TCGResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+type TCGProduct struct {
+	ProductId  int      `json:"productId"`
+	Name       string   `json:"name"`
+	CleanName  string   `json:"cleanName"`
+	ImageUrl   string   `json:"imageUrl"`
+	GroupId    int      `json:"groupId"`
+	URL        string   `json:"url"`
+	ModifiedOn string   `json:"modifiedOn"`
+	Skus       []TCGSKU `json:"skus,omitempty"`
+}
+
+func (tcg *TCGClient) TotalProducts(category int, productTypes []string) (int, error) {
+	u, err := url.Parse(tcgApiListProductsURL)
+	if err != nil {
+		return 0, err
+	}
+	v := url.Values{}
+	v.Set("categoryId", fmt.Sprint(category))
+	if productTypes != nil {
+		v.Set("productTypes", strings.Join(productTypes, ","))
+	}
+	v.Set("limit", fmt.Sprint(1))
+	u.RawQuery = v.Encode()
+
+	response, err := tcg.Get(u.String())
+	if err != nil {
+		return 0, err
+	}
+	return response.TotalItems, nil
+}
+
+func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, includeSkus bool, offset int, limit int) ([]TCGProduct, error) {
+	u, err := url.Parse(tcgApiListProductsURL)
+	if err != nil {
+		return nil, err
+	}
+	v := url.Values{}
+	v.Set("categoryId", fmt.Sprint(category))
+	if productTypes != nil {
+		v.Set("productTypes", strings.Join(productTypes, ","))
+	}
+	if includeSkus {
+		v.Set("productTypes", "true")
+	}
+	v.Set("offset", fmt.Sprint(offset))
+
+	v.Set("limit", fmt.Sprint(limit))
+	u.RawQuery = v.Encode()
+
+	resp, err := tcg.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+	return resp.Results, nil
 }
 
 type TCGPrice struct {
