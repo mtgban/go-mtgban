@@ -249,6 +249,29 @@ func adjustName(inCard *Card) {
 				}
 			}
 		}
+		// In case both names are used for the promo
+		switch {
+		case Contains(inCard.Name, "Mechagodzilla, Battle Fortress"):
+			inCard.Name = "Hangarback Walker"
+			inCard.Edition = "PLGS"
+			inCard.addToVariant("Godzilla")
+		case Contains(inCard.Name, "Mothra's Giant Cocoon"):
+			inCard.Name = "Mysterious Egg"
+			inCard.Edition = "IKO"
+			inCard.addToVariant("Godzilla")
+		case Contains(inCard.Name, "Terror of the City"):
+			inCard.Name = "Dirge Bat"
+			inCard.Edition = "IKO"
+			inCard.addToVariant("Godzilla")
+		case Contains(inCard.Name, "Mechagodzilla"):
+			inCard.Name = "Crystalline Giant"
+			inCard.Edition = "IKO"
+			inCard.addToVariant("Godzilla")
+		}
+		// Found!
+		if inCard.isReskin() {
+			return
+		}
 	}
 
 	// Special case for Un-sets that sometimes drop the parenthesis

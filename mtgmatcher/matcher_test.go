@@ -909,6 +909,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Ikoria",
 		},
 	},
+	MatchTest{
+		Id:   "5df3565b-ab85-5cc7-83c4-9cd3bb5674da",
+		Desc: "godzilla_variant_jpn_name",
+		In: Card{
+			Name:    "Mothra's Giant Cocoon",
+			Edition: "Ikoria: Lair",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	MatchTest{
