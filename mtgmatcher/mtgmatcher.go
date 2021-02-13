@@ -528,6 +528,8 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Dragon Con"
 	case Equals(inCard.Name, "Ass Whuppin'") && inCard.isPrerelease():
 		inCard.Edition = "Release Events"
+	case Equals(inCard.Name, "Rukh Egg") && inCard.isPrerelease():
+		inCard.Edition = "Release Events"
 	case Equals(inCard.Name, "Celestine Reef") && inCard.isPrerelease():
 		inCard.Edition = "Promotional Planes"
 	case Equals(inCard.Name, "Ajani Vengeant") && inCard.isRelease():

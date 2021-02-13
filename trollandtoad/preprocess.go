@@ -470,7 +470,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			variant += " Prerelease"
 		case "Goblin Mime", "Circle of Protection: Art", "Booster Tutor":
 			variant = "Arena"
-		case "Rukh Egg", "Budoka Pupil":
+		case "Budoka Pupil":
 			variant = "Release"
 		case "Underworld Dreams":
 			variant = "2HG"

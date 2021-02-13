@@ -223,10 +223,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			if variation == "FNM" {
 				variation = "Textless"
 			}
-		case "Rukh Egg":
-			if variation == "Prerelease" {
-				variation = "Release"
-			}
 		case "Sol Ring":
 			if variation == "Commander" {
 				variation = "MagicFest 2019"
