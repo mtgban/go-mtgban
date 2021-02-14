@@ -105,7 +105,6 @@ var notesTable = map[string]string{
 	"Curse of Wizardry":       "Wizards Play Network 2010",
 	"Golem's Heart":           "Wizards Play Network 2010",
 	"Tormented Soul":          "Wizards Play Network 2011",
-	"Fling":                   "Wizards Play Network 2011",
 }
 
 func preprocess(cardName, edition, number, notes string) (*mtgmatcher.Card, error) {

@@ -553,6 +553,10 @@ func adjustEdition(inCard *Card) {
 	case Equals(inCard.Name, "Char") && inCard.isDCIPromo():
 		inCard.Edition = "15th Anniversary Cards"
 
+	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isDCIPromo():
+		inCard.Edition = "Wizards Play Network 2010"
+	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isWPNGateway():
+		inCard.Edition = "Wizards Play Network 2011"
 	case Equals(inCard.Name, "Sigarda, Host of Herons") && inCard.isPrerelease():
 		inCard.Edition = "Open the Helvault"
 	case Equals(inCard.Name, "Griselbrand") && inCard.isPrerelease():

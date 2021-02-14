@@ -366,10 +366,6 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 				if variant == "Arena" {
 					variant = "Book Promo"
 				}
-			case "Fling":
-				if variant == "DCI Promo" {
-					variant = "WPN 2010"
-				}
 			case "Sorcerous Spyglass":
 				return nil, errors.New("dupe")
 			}

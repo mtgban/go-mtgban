@@ -155,9 +155,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			variant = "WPN 2010"
 		}
 	case "Sylvan Ranger":
-		if variant == "Gateway Promo Wizards Play Network DCI Logo" {
-			variant = "WPN 2010"
-		} else if variant == "Judge Rewards Promo Mark Zug art" {
+		if variant == "Judge Rewards Promo Mark Zug art" {
 			variant = "WPN 2011"
 		}
 	case "Goblin Warchief":
