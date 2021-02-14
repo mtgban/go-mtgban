@@ -147,10 +147,10 @@ const (
 )
 
 type TCGResponse struct {
-	TotalItems int          `json:"totalItems"`
-	Success    bool         `json:"success"`
-	Errors     []string     `json:"errors"`
-	Results    []TCGProduct `json:"results"`
+	TotalItems int             `json:"totalItems"`
+	Success    bool            `json:"success"`
+	Errors     []string        `json:"errors"`
+	Results    json.RawMessage `json:"results"`
 }
 
 // Perform an authenticated GET request on any URL
@@ -228,7 +228,14 @@ func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, inclu
 	if err != nil {
 		return nil, err
 	}
-	return resp.Results, nil
+
+	var out []TCGProduct
+	err = json.Unmarshal(resp.Results, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 type TCGPrice struct {
@@ -241,28 +248,18 @@ type TCGPrice struct {
 }
 
 func (tcg *TCGClient) TCGPricesForIds(productIds []string) ([]TCGPrice, error) {
-	resp, err := tcg.client.Get(tcgApiProductURL + strings.Join(productIds, ","))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
+	resp, err := tcg.Get(tcgApiProductURL + strings.Join(productIds, ","))
 	if err != nil {
 		return nil, err
 	}
 
-	var response struct {
-		Success bool       `json:"success"`
-		Errors  []string   `json:"errors"`
-		Results []TCGPrice `json:"results"`
-	}
-	err = json.Unmarshal(data, &response)
+	var out []TCGPrice
+	err = json.Unmarshal(resp.Results, &out)
 	if err != nil {
 		return nil, err
 	}
 
-	return response.Results, nil
+	return out, nil
 }
 
 type TCGSKU struct {
@@ -274,34 +271,18 @@ type TCGSKU struct {
 }
 
 func (tcg *TCGClient) SKUsForId(productId string) ([]TCGSKU, error) {
-	resp, err := tcg.client.Get(fmt.Sprintf(tcgApiSKUsURL, productId))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
+	resp, err := tcg.Get(fmt.Sprintf(tcgApiSKUsURL, productId))
 	if err != nil {
 		return nil, err
 	}
 
-	var response struct {
-		Success bool     `json:"success"`
-		Errors  []string `json:"errors"`
-		Results []TCGSKU `json:"results"`
-	}
-	err = json.Unmarshal(data, &response)
+	var out []TCGSKU
+	err = json.Unmarshal(resp.Results, &out)
 	if err != nil {
-		if strings.Contains(string(data), "<head><title>403 Forbidden</title></head>") {
-			err = fmt.Errorf("403 Forbidden")
-		}
 		return nil, err
 	}
-	if !response.Success {
-		return nil, fmt.Errorf(strings.Join(response.Errors, "|"))
-	}
 
-	return response.Results, nil
+	return out, nil
 }
 
 type TCGSKUPrice struct {
@@ -323,53 +304,33 @@ type TCGSKUPrice struct {
 }
 
 func (tcg *TCGClient) TCGPricesForSKUs(ids []string) ([]TCGSKUPrice, error) {
-	resp, err := tcg.client.Get(tcgApiPricingURL + strings.Join(ids, ","))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
+	resp, err := tcg.Get(tcgApiPricingURL + strings.Join(ids, ","))
 	if err != nil {
 		return nil, err
 	}
 
-	var response struct {
-		Success bool          `json:"success"`
-		Errors  []string      `json:"errors"`
-		Results []TCGSKUPrice `json:"results"`
-	}
-	err = json.Unmarshal(data, &response)
+	var out []TCGSKUPrice
+	err = json.Unmarshal(resp.Results, &out)
 	if err != nil {
 		return nil, err
 	}
 
-	return response.Results, nil
+	return out, nil
 }
 
 func (tcg *TCGClient) TCGBuylistPricesForSKUs(ids []string) ([]TCGSKUPrice, error) {
-	resp, err := tcg.client.Get(tcgApiBuylistURL + strings.Join(ids, ","))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
+	resp, err := tcg.Get(tcgApiBuylistURL + strings.Join(ids, ","))
 	if err != nil {
 		return nil, err
 	}
 
-	var response struct {
-		Success bool          `json:"success"`
-		Errors  []string      `json:"errors"`
-		Results []TCGSKUPrice `json:"results"`
-	}
-	err = json.Unmarshal(data, &response)
+	var out []TCGSKUPrice
+	err = json.Unmarshal(resp.Results, &out)
 	if err != nil {
 		return nil, err
 	}
 
-	return response.Results, nil
+	return out, nil
 }
 
 func (tcg *TCGClient) IdSearch(name, edition string) ([]int, error) {
