@@ -27,6 +27,7 @@ const (
 	tcgApiTokenURL = "https://api.tcgplayer.com/token"
 
 	tcgApiListProductsURL = "https://api.tcgplayer.com/catalog/products"
+	tcgApiListGroupsURL   = "https://api.tcgplayer.com/catalog/groups"
 
 	tcgApiVersion    = "v1.39.0"
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
@@ -187,7 +188,11 @@ type TCGProduct struct {
 }
 
 func (tcg *TCGClient) TotalProducts(category int, productTypes []string) (int, error) {
-	u, err := url.Parse(tcgApiListProductsURL)
+	return tcg.queryTotal(tcgApiListProductsURL, category, productTypes)
+}
+
+func (tcg *TCGClient) queryTotal(link string, category int, productTypes []string) (int, error) {
+	u, err := url.Parse(link)
 	if err != nil {
 		return 0, err
 	}
@@ -236,6 +241,66 @@ func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, inclu
 	}
 
 	return out, nil
+}
+
+type TCGGroup struct {
+	GroupID      int    `json:"groupId"`
+	Name         string `json:"name"`
+	Abbreviation string `json:"abbreviation"`
+	Supplemental bool   `json:"supplemental"`
+	PublishedOn  string `json:"publishedOn"`
+	ModifiedOn   string `json:"modifiedOn"`
+	CategoryID   int    `json:"categoryId"`
+}
+
+func (tcg *TCGClient) TotalGroups(category int) (int, error) {
+	return tcg.queryTotal(tcgApiListGroupsURL, category, nil)
+}
+
+func (tcg *TCGClient) ListAllGroups(category int, offset int, limit int) ([]TCGGroup, error) {
+	u, err := url.Parse(tcgApiListGroupsURL)
+	if err != nil {
+		return nil, err
+	}
+	v := url.Values{}
+	v.Set("categoryId", fmt.Sprint(category))
+	v.Set("offset", fmt.Sprint(offset))
+	v.Set("limit", fmt.Sprint(limit))
+	u.RawQuery = v.Encode()
+
+	resp, err := tcg.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+
+	var out []TCGGroup
+	err = json.Unmarshal(resp.Results, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func (tcg *TCGClient) EditionMap(category int) (map[int]string, error) {
+	totals, err := tcg.TotalGroups(category)
+	if err != nil {
+		return nil, err
+	}
+
+	results := map[int]string{}
+	for i := 0; i < totals; i += 100 {
+		groups, err := tcg.ListAllGroups(category, i, 100)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, group := range groups {
+			results[group.GroupID] = group.Name
+		}
+	}
+
+	return results, nil
 }
 
 type TCGPrice struct {
