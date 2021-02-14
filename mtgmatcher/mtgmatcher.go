@@ -570,9 +570,11 @@ func adjustEdition(inCard *Card) {
 
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
 		inCard.Variation = "Foil Etched"
-	case inCard.Edition == "Planechase" && len(MatchInSet(inCard.Name, "OHOP")) != 0:
+
+	// Planechase deduplication
+	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
 		inCard.Edition = backend.Sets["OHOP"].Name
-	case inCard.Edition == "Planechase Anthology" && len(MatchInSet(inCard.Name, "OPCA")) != 0:
+	case inCard.Equals("Planechase Anthology") && len(MatchInSet(inCard.Name, "OPCA")) != 0:
 		inCard.Edition = backend.Sets["OPCA"].Name
 
 	// Missing the proper FrameEffect property

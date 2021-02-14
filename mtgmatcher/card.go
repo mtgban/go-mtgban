@@ -576,6 +576,10 @@ func (c *Card) Contains(prop string) bool {
 	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
 }
 
+func (c *Card) Equals(prop string) bool {
+	return Equals(c.Edition, prop) || Equals(c.Variation, prop)
+}
+
 func ParseCommanderEdition(edition string) string {
 	if !strings.Contains(edition, "Commander") {
 		return ""
