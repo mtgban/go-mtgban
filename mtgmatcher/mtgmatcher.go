@@ -559,7 +559,7 @@ func adjustEdition(inCard *Card) {
 		inCard.Variation = "Prerelease"
 	case Equals(inCard.Name, "Tamiyo's Journal") && inCard.Variation == "" && inCard.Foil:
 		inCard.Variation = "Foil"
-	case Equals(inCard.Name, "Underworld Dreams") && inCard.isDCIPromo():
+	case Equals(inCard.Name, "Underworld Dreams") && (inCard.isDCIPromo() || inCard.isArena()):
 		inCard.Edition = "Two-Headed Giant Tournament"
 	case Equals(inCard.Name, "Jace Beleren") && inCard.isDCIPromo():
 		inCard.Edition = "Miscellaneous Book Promos"

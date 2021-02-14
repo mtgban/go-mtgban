@@ -333,6 +333,16 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 						break
 					}
 				}
+				if maybeYear == "" && strings.HasSuffix(inCard.Variation, "Cycle") {
+					maybeYear = map[string]string{
+						"Time Spiral Cycle":       "2006",
+						"Lorwyn Cycle":            "2007",
+						"Shards of Alara Cycle":   "2008",
+						"Zendikar Cycle":          "2009",
+						"Scars of Mirrodin Cycle": "2010",
+						"Innistrad Cycle":         "2011",
+					}[inCard.Variation]
+				}
 			}
 			switch {
 			case strings.HasPrefix(set.Name, "Magic Premiere Shop "+maybeYear):

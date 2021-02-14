@@ -463,13 +463,15 @@ func (c *Card) isPortalAlt() bool {
 }
 
 func (c *Card) isDuelDecks() bool {
-	return (c.Contains(" vs ")) &&
+	return ((c.Contains(" vs ")) ||
+		(strings.Contains(c.Variation, " v. "))) && // tcg
 		!c.Contains("Anthology")
 }
 
 func (c *Card) isDuelDecksAnthology() bool {
 	return Contains(c.Edition, "Duel Decks Anthology") &&
-		(c.Contains(" vs "))
+		(c.Contains(" vs ") ||
+			strings.Contains(c.Variation, " v. ")) // tcg
 }
 
 func (c *Card) duelDecksVariant() string {

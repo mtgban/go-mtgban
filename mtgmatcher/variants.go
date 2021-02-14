@@ -648,6 +648,8 @@ var athVariants = map[string]map[string]string{
 		"portal 2": "85",
 		"v.1":      "84",
 		"v.2":      "85",
+
+		"portal second age": "85",
 	},
 	"Mountain": map[string]string{
 		"a":                     "82",
@@ -926,6 +928,8 @@ var palpVariants = map[string]map[string]string{
 		"indonesia apac three ron spears art":                "15",
 		"apac land ron spears, fireballs":                    "10",
 		"apac land ron spears, zombie":                       "15",
+		"blue pack spears":                                   "10",
+		"clear pack spears":                                  "15",
 	},
 }
 
@@ -1389,6 +1393,8 @@ var dkmVariants = map[string]map[string]string{
 		"black background": "8b",
 		"v.1":              "8a",
 		"v.2":              "8b",
+		"full body":        "8a",
+		"head":             "8b",
 	},
 	"Phyrexian War Beast": map[string]string{
 		"facing right": "37a",
@@ -1655,6 +1661,9 @@ var femVariants = map[string]map[string]string{
 		"centaur with sword and shield":       "42a",
 		"girl with sword imbedded in ground":  "42b",
 		"guy with jagged shield and hand axe": "42c",
+		"benson":  "42a",
+		"rush":    "42b",
+		"spencer": "42c",
 	},
 	"Order of Leitbur": map[string]string{
 		"fe163": "16a",
@@ -1668,6 +1677,10 @@ var femVariants = map[string]map[string]string{
 		"guy with shield on horse":      "16b",
 		"bryon wackwitz female knight":  "16a",
 		"bryon wackwitz male knight":    "16b",
+
+		"female": "16a",
+		"male":   "16b",
+		"group":  "16c",
 	},
 	"Spore Cloud": map[string]string{
 		"fe083": "72a",
@@ -2645,6 +2658,8 @@ var ptcVariants = map[string]map[string]string{
 		"4th edition sideboard michael locanto":  "ml16sb",
 		"v.2 pro tour 1996: bertrand lestree":    "bl14sb",
 		"v.1 pro tour 1996: bertrand lestree":    "bl16sb",
+		"1996 bertrand lestree ice sb":           "bl14sb",
+		"1996 bertrand lestree 4ed sb":           "bl16sb",
 	},
 	"Circle of Protection: Red": map[string]string{
 		"ice age sideboard bertrand lestree":     "bl15sb",
@@ -2656,6 +2671,15 @@ var ptcVariants = map[string]map[string]string{
 		"v.1 pro tour 1996: bertrand lestree": "bl17sb",
 		"v.2 pro tour 1996: michael locanto":  "ml15sb",
 		"v.1 pro tour 1996: michael locanto":  "ml17sb",
+
+		"1996 bertrand lestree ice sb": "bl15sb",
+		"1996 bertrand lestree 4ed sb": "bl17sb",
+		"1996 michael loconto ice sb":  "ml15sb",
+		"1996 michael loconto 4ed sb":  "ml17sb",
+	},
+	"Memory Lapse": map[string]string{
+		"1996 shawn \"hammer\" regnier hml sb version 2": "shr32asb",
+		"1996 shawn \"hammer\" regnier hml sb":           "shr32bsb",
 	},
 	"Forest": map[string]string{
 		"4th edition path bertrand lestree 1996":      "bl377",
@@ -2664,6 +2688,10 @@ var ptcVariants = map[string]map[string]string{
 		"4th edition rock preston poulter 1996":       "pp376",
 		"4th edition dark tree bertrand lestree 1996": "bl378",
 		"4th edition dark tree preston poulter 1996":  "pp378",
+
+		"1996 bertrand lestree 4ed a": "bl377",
+		"1996 bertrand lestree 4ed b": "bl376",
+		"1996 bertrand lestree 4ed c": "bl378",
 	},
 	"Island": map[string]string{
 		"4th edition purple shawn hammer regnier 1996":       "shr367",
@@ -2905,19 +2933,29 @@ var sldVariants = map[string]map[string]string{
 		"versione 4":               "32",
 	},
 	"Forest": map[string]string{
-		"godzilla": "67",
+		"godzilla":           "67",
+		"godzilla lands":     "67",
+		"crushing brutality": "243",
 	},
 	"Island": map[string]string{
-		"godzilla": "64",
+		"godzilla":           "64",
+		"godzilla lands":     "64",
+		"crushing brutality": "240",
 	},
 	"Mountain": map[string]string{
-		"godzilla": "66",
+		"godzilla":           "66",
+		"godzilla lands":     "66",
+		"crushing brutality": "242",
 	},
 	"Plains": map[string]string{
-		"godzilla": "63",
+		"godzilla":           "63",
+		"godzilla lands":     "63",
+		"crushing brutality": "239",
 	},
 	"Swamp": map[string]string{
-		"godzilla": "65",
+		"godzilla":           "65",
+		"godzilla lands":     "65",
+		"crushing brutality": "241",
 	},
 }
 
@@ -2939,6 +2977,9 @@ var psoiVariants = map[string]map[string]string{
 		"prerelease promo entry 855":              "265s",
 		"prerelease promo entry 653":              "265s†",
 		"shadows over innistrad prerelease promo": "265s†",
+
+		"entry 855": "265s",
+		"entry 653": "265s†",
 	},
 }
 
@@ -2952,10 +2993,14 @@ var tmpVariants = map[string]map[string]string{
 		"thick roots":             "348",
 		"wavy clouds":             "349",
 		"branch going horizontal": "350",
-		"v.1": "347",
-		"v.2": "348",
-		"v.3": "349",
-		"v.4": "350",
+		"v.1":     "347",
+		"v.2":     "348",
+		"v.3":     "349",
+		"v.4":     "350",
+		"skyward": "347",
+		"pond":    "348",
+		"cloudy":  "349",
+		"ledge":   "350",
 	},
 	"Island": map[string]string{
 		"a": "335",
@@ -2971,6 +3016,11 @@ var tmpVariants = map[string]map[string]string{
 		"v.2": "336",
 		"v.3": "337",
 		"v.4": "338",
+
+		"rocky path":     "335",
+		"crashing waves": "336",
+		"inlet":          "338",
+		"spire":          "337",
 	},
 	"Mountain": map[string]string{
 		"a":                                  "343",
@@ -2986,6 +3036,11 @@ var tmpVariants = map[string]map[string]string{
 		"v.2": "344",
 		"v.3": "345",
 		"v.4": "346",
+
+		"vertical": "343",
+		"right":    "344",
+		"joined":   "345",
+		"left":     "346",
 	},
 	"Plains": map[string]string{
 		"a": "331",
@@ -3001,6 +3056,11 @@ var tmpVariants = map[string]map[string]string{
 		"v.2": "332",
 		"v.3": "333",
 		"v.4": "334",
+
+		"rocks":     "331",
+		"dead tree": "332",
+		"shrub":     "333",
+		"ant hill":  "334",
 	},
 	"Swamp": map[string]string{
 		"a": "339",
@@ -3016,6 +3076,11 @@ var tmpVariants = map[string]map[string]string{
 		"v.2": "340",
 		"v.3": "341",
 		"v.4": "342",
+
+		"vertical log":   "339",
+		"horizontal log": "340",
+		"boulder":        "341",
+		"river":          "342",
 	},
 }
 
@@ -3296,6 +3361,10 @@ var wc97Variants = map[string]map[string]string{
 		"5th edition b svend geertsen 1997": "sg447",
 		"5th edition c svend geertsen 1997": "sg448",
 		"5th edition d svend geertsen 1997": "sg449",
+		"1997 svend geertsen 5ed 417":       "sg446",
+		"1997 svend geertsen 5ed 418":       "sg447",
+		"1997 svend geertsen 5ed 419":       "sg448",
+		"1997 svend geertsen 5ed 420":       "sg449",
 	},
 	"Island": map[string]string{
 		"5th edition a janosch kuehn 1997": "jk434",
@@ -3306,6 +3375,14 @@ var wc97Variants = map[string]map[string]string{
 		"5th edition b paul mccabe 1997":   "pm435",
 		"5th edition c paul mccabe 1997":   "pm436",
 		"5th edition d paul mccabe 1997":   "pm437",
+		"1997 janosch kuhn 5ed 425":        "jk434",
+		"1997 janosch kuhn 5ed 426":        "jk435",
+		"1997 janosch kuhn 5ed 427":        "jk436",
+		"1997 janosch kuhn 5ed 428":        "jk437",
+		"1997 paul mccabe 5ed 425":         "pm434",
+		"1997 paul mccabe 5ed 426":         "pm435",
+		"1997 paul mccabe 5ed 427":         "pm436",
+		"1997 paul mccabe 5ed 428":         "pm437",
 	},
 	"Mountain": map[string]string{
 		"5th edition a paul mccabe 1997":   "pm442",
@@ -3316,18 +3393,34 @@ var wc97Variants = map[string]map[string]string{
 		"5th edition b janosch kuehn 1997": "jk443",
 		"5th edition c janosch kuehn 1997": "jk444",
 		"5th edition d janosch kuehn 1997": "jk445",
+		"1997 paul mccabe 5ed 430":         "pm442",
+		"1997 paul mccabe 5ed 431":         "pm443",
+		"1997 paul mccabe 5ed 432":         "pm444",
+		"1997 paul mccabe 5ed 433":         "pm445",
+		"1997 janosch kuhn 5ed 430":        "jk442",
+		"1997 janosch kuhn 5ed 431":        "jk443",
+		"1997 janosch kuhn 5ed 432":        "jk444",
+		"1997 janosch kuhn 5ed 433":        "jk445",
 	},
 	"Plains": map[string]string{
 		"5th edition a janosch kuehn 1997": "jk430",
 		"5th edition b janosch kuehn 1997": "jk431",
 		"5th edition c janosch kuehn 1997": "jk432",
 		"5th edition d janosch kuehn 1997": "jk433",
+		"1997 janosch kuhn 5ed 434":        "jk430",
+		"1997 janosch kuhn 5ed 435":        "jk431",
+		"1997 janosch kuhn 5ed 436":        "jk432",
+		"1997 janosch kuhn 5ed 437":        "jk433",
 	},
 	"Swamp": map[string]string{
 		"5th edition a jakub slemr 1997": "js438",
 		"5th edition b jakub slemr 1997": "js439",
 		"5th edition c jakub slemr 1997": "js440",
 		"5th edition d jakub slemr 1997": "js441",
+		"1997 jakub slemr 5ed 442":       "js438",
+		"1997 jakub slemr 5ed 443":       "js439",
+		"1997 jakub slemr 5ed 444":       "js440",
+		"1997 jakub slemr 5ed 445":       "js441",
 	},
 }
 
@@ -3362,6 +3455,9 @@ var wc99Variants = map[string]map[string]string{
 	"Forest": map[string]string{
 		"tempest a matt linde 1999":       "ml347a",
 		"6th edition 347 matt linde 1999": "ml347b",
+
+		"1999 matt linde tmp 347": "ml347a",
+		"1999 matt linde 6ed 347": "ml347b",
 	},
 	"Mountain": map[string]string{
 		"6th edition 346 mark le pine 1999": "mlp346a",
@@ -3371,11 +3467,19 @@ var wc99Variants = map[string]map[string]string{
 		"tempest a kai budde 1999":          "kb343",
 		"tempest b kai budde 1999":          "kb344",
 		"tempest c kai budde 1999":          "kb345",
+
+		"1999 mark le pine 6ed 343": "mlp346a",
+		"1999 mark le pine usg 346": "mlp346b",
+		"1999 kai budde 6ed 343":    "kb343",
+		"1999 kai budde usg 346":    "kb346",
 	},
 	"Swamp": map[string]string{
 		"urza's saga 346 jakub slemr 1999": "js339",
 		"tempest b jakub slemr 1999":       "js340a",
 		"6th edition 340 jakub slemr 1999": "js340b",
+
+		"1999 jakub slemr usg 339": "js339",
+		"1999 jakub slemr 6ed 340": "js340b",
 	},
 }
 
@@ -3387,6 +3491,13 @@ var wc01Variants = map[string]map[string]string{
 		"invasion 348 jan tomcani 2001":          "jt348a",
 		"mercadian masques 349 jan tomcani 2001": "jt349",
 		"invasion 349 jan tomcani 2001":          "jt349a",
+
+		"2001 jan tomcani mmq 347": "jt347",
+		"2001 jan tomcani inv 347": "jt347a",
+		"2001 jan tomcani mmq 348": "jt348",
+		"2001 jan tomcani inv 348": "jt348a",
+		"2001 jan tomcani mmq 349": "jt349",
+		"2001 jan tomcani inv 349": "jt349a",
 	},
 	"Island": map[string]string{
 		"7th edition 335 alex borteh 2001":        "ab335",
@@ -3401,24 +3512,51 @@ var wc01Variants = map[string]map[string]string{
 		"invasion 336 alex borteh 2001":           "ab336a",
 		"invasion 337 alex borteh 2001":           "ab337",
 		"mercadian masques 337 alex borteh 2001":  "ab337a",
-		"mercadian masques 338 alex borteh 2001":  "ab338",
-		"invasion 338 alex borteh 2001":           "ab338a",
+		"invasion 338 alex borteh 2001":           "ab338",
+		"mercadian masques 338 alex borteh 2001":  "ab338a",
+
+		"2001 alex borteh 7ed 335":  "ab335",
+		"2001 alex borteh inv 335":  "ab335a",
+		"2001 alex borteh mmq 335":  "ab335b",
+		"2001 alex borteh mmq 336":  "ab336",
+		"2001 alex borteh inv 336":  "ab336a",
+		"2001 alex borteh inv 337":  "ab337",
+		"2001 alex borteh mmq 337":  "ab337a",
+		"2001 alex borteh inv 338":  "ab338",
+		"2001 alex borteh mmq 338":  "ab338a",
+		"2001 antoine ruel 7ed 335": "ar335",
+		"2001 antoine ruel inv 335": "ar335a",
+		"2001 antoine ruel mmq 335": "ar335b",
+		"2001 antoine ruel inv 336": "ar336",
+		"2001 antoine ruel mmq 336": "ar336a",
 	},
 	"Mountain": map[string]string{
 		"invasion 343 jan tomcani 2001":              "jt343",
 		"mercadian masques 343 jan tomcani 2001":     "jt343a",
 		"invasion 343 tom van de logt 2001":          "tvdl343",
 		"mercadian masques 343 tom van de logt 2001": "tvdl343b",
+
+		"2001 jan tomcani inv 343":     "jt343",
+		"2001 jan tomcani mmq 343":     "jt343a",
+		"2001 tom van de logt inv 343": "tvdl343",
+		"2001 tom van de logt mmq 343": "tvdl343b",
 	},
 	"Swamp": map[string]string{
 		"invasion 339 tom van de logt 2001":          "tvdl339",
 		"mercadian masques 339 tom van de logt 2001": "tvdl339a",
+		"2001 tom van de logt inv 339":               "tvdl339",
+		"2001 tom van de logt mmq 339":               "tvdl339a",
 	},
 	"Counterspell": map[string]string{
 		"7th edition alex borteh 2001":        "ab67",
 		"mercadian masques alex borteh 2001":  "ab69",
 		"7th edition antoine ruel 2001":       "ar67",
 		"mercadian masques antoine ruel 2001": "ar69",
+
+		"2001 antoine ruel 7ed": "ar67",
+		"2001 antoine ruel mmq": "ar69",
+		"2001 alex borteh 7ed":  "ab67",
+		"2001 alex borteh mmq":  "ab69",
 	},
 }
 
@@ -3434,6 +3572,15 @@ var wc02Variants = map[string]map[string]string{
 		"odyssey 337 carlos romao 2002":     "cr337a",
 		"odyssey 337 raphael levy 2002":     "rl337",
 		"invasion 337 raphael levy 2002":    "rl337a",
+
+		"2002 carlos romao 7ed 335": "cr335b",
+		"2002 carlos romao inv 335": "cr335a",
+		"2002 carlos romao ody 337": "cr337a",
+		"2002 raphael levy 7ed 333": "rl333",
+		"2002 raphael levy inv 336": "rl336",
+		"2002 raphael levy ody 336": "rl336a",
+		"2002 raphael levy ody 337": "rl337",
+		"2002 raphael levy inv 337": "rl337a",
 	},
 }
 

@@ -46,6 +46,7 @@ var EditionTable = map[string]string{
 	"Shooting Star Promo":  "2017 Gift Pack",
 	"Mark Poole Art Promo": "2017 Gift Pack",
 	"Gift Box Promo":       "M19 Gift Pack",
+	"Poole 2017 Gift Pack": "2017 Gift Pack",
 
 	// Treasure Chest
 	"Ixalan Treasure Chest": "XLN Treasure Chest",
@@ -64,6 +65,7 @@ var EditionTable = map[string]string{
 	"Magic Game Night 2019 Box Set": "Game Night: 2019",
 
 	// Old school lands
+	"Apac Lands":         "Asia Pacific Land Program",
 	"Apac Land Promos":   "Asia Pacific Land Program",
 	"APAC Land":          "Asia Pacific Land Program",
 	"APAC Lands":         "Asia Pacific Land Program",
@@ -176,6 +178,7 @@ var EditionTable = map[string]string{
 	"DD: Anthology":                  "Duel Decks Anthology",
 
 	// Various series
+	"Global Series Jiang Yanggu And Mu Yanling":  "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiangg Yanggu & Mu Yanling":  "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiang Yanggu & Mu Yanling":   "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiang Yanggu and Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
@@ -210,6 +213,7 @@ var EditionTable = map[string]string{
 	"Deckmaster":                     "Deckmasters",
 	"Deckmasters":                    "Deckmasters",
 	"Deckmasters Garfield vs Finkel": "Deckmasters",
+	"Deckmasters Garfield Vs Finkel": "Deckmasters",
 
 	// Junior Super/Europe/APAC Series
 	"European Junior Series":          "Junior Series Europe",
@@ -217,11 +221,13 @@ var EditionTable = map[string]string{
 	"Junior Series Promos":            "Junior Series Europe",
 	"Euro JSS Promo":                  "Junior Series Europe",
 	"Junior Series":                   "Junior Series Europe",
+	"APAC Series":                     "Junior APAC Series",
 	"Japan JSS":                       "Junior APAC Series",
 	"Junior APAC Series":              "Junior APAC Series",
 	"Junior APAC Series Promos":       "Junior APAC Series",
 	"Junior Super Series":             "Junior Super Series",
 	"Junior Super Series Promos":      "Junior Super Series",
+	"Magic Scholarship":               "Junior Super Series",
 	"Magic Scholarship Series":        "Junior Super Series",
 	"Magic Scholarship Series Promo":  "Junior Super Series",
 	"Magic Scholarship Series Promos": "Junior Super Series",
@@ -234,6 +240,7 @@ var EditionTable = map[string]string{
 	"JSS Foil":                       "Junior Super Series",
 	"JSS Promo":                      "Junior Super Series",
 	"JSS/MSS Promos":                 "Junior Super Series",
+	"Japan Junior Tournament":        "Japan Junior Tournament",
 	"Japan Junior Tournament Promo":  "Japan Junior Tournament",
 	"Japan Junior Tournament Promos": "Japan Junior Tournament",
 	"Japanese JSS Promo":             "Japan Junior Tournament",
@@ -268,6 +275,7 @@ var EditionTable = map[string]string{
 	"MCQ":                 "Pro Tour Promos",
 	"Mythic Championship Qualifier Promo": "Pro Tour Promos",
 	"Mythic Championship":                 "Pro Tour Promos",
+	"Planeswalker Event Promos":           "Pro Tour Promos",
 	"Players Tour Qualifier PTQ Promo":    "Pro Tour Promos",
 	"Players Tour Qualifier":              "Pro Tour Promos",
 	"Pro Tour Foil":                       "Pro Tour Promos",
@@ -295,6 +303,7 @@ var EditionTable = map[string]string{
 	"WMCQ Promo 2016":                 "World Magic Cup Qualifiers",
 	"WMCQ Promo 2017":                 "World Magic Cup Qualifiers",
 	"WMCQ":                            "World Magic Cup Qualifiers",
+	"Wmcq Promo Cards":                "World Magic Cup Qualifiers",
 	"World Magic Cup":                 "World Magic Cup Qualifiers",
 	"World Magic Cup Promo":           "World Magic Cup Qualifiers",
 	"World Magic Cup Qualifier 2016":  "World Magic Cup Qualifiers",
@@ -309,11 +318,13 @@ var EditionTable = map[string]string{
 	"Dragons of Tarkir Dragonfury Game Promo": "Tarkir Dragonfury",
 	"Tarkir Dragonfury":                       "Tarkir Dragonfury",
 	"Tarkir Dragonfury Promo":                 "Tarkir Dragonfury",
+	"Tarkir Dragonfury Promos":                "Tarkir Dragonfury",
 	"Promos: Ugin's Fate":                     "Ugin's Fate",
 	"Ugin's Fate Promo":                       "Ugin's Fate",
 	"Ugin's Fate":                             "Ugin's Fate",
 	"Ugins Fate":                              "Ugin's Fate",
 	"Ugins Fate Promo":                        "Ugin's Fate",
+	"Ugins Fate Promos":                       "Ugin's Fate",
 	"Ugin's Fate Alternate Art Promo":         "Ugin's Fate",
 	"Ugin’s Fate Promo":                       "Ugin's Fate",
 	"Ugin's Fate Promos":                      "Ugin's Fate",
@@ -404,6 +415,7 @@ var EditionTable = map[string]string{
 	"Welcome Back":   "Love Your LGS",
 
 	// Modern Event Deck
+	"Magic Modern Event Deck":                     "Modern Event Deck 2014",
 	"Modern Event Deck":                           "Modern Event Deck 2014",
 	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",
 
@@ -415,6 +427,7 @@ var EditionTable = map[string]string{
 	"Foreign Limited - FBB":                  "Foreign Black Border",
 	"Italian Revised FBB":                    "Foreign Black Border",
 	"Revised Edition (Foreign Black Border)": "Foreign Black Border",
+	"Revised Edition Foreign Black Border":   "Foreign Black Border",
 
 	"Italian Renaissance": "Rinascimento",
 }
