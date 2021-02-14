@@ -2221,6 +2221,23 @@ var MatchTests = []MatchTest{
 			Edition: "Theros Beyond Death: Extras",
 		},
 	},
+	MatchTest{
+		Id:   "e1b8fc9f-e974-51cd-972f-624b3e9d0c1b",
+		Desc: "intropack_dedup_normal",
+		In: Card{
+			Name:    "Wind Drake",
+			Edition: "Kaladesh",
+		},
+	},
+	MatchTest{
+		Id:   "992c07f2-f9b9-5c7a-a66c-efd497c3c9b2",
+		Desc: "intropack_dedup_intro",
+		In: Card{
+			Name:      "Wind Drake",
+			Variation: "Intro Pack",
+			Edition:   "Kaladesh",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

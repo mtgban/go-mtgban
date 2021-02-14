@@ -69,10 +69,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if strings.HasSuffix(card.Number, "s") {
 					continue
 				}
-			case "KLD", "AER":
-				if strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
-					continue
-				}
 			}
 
 			// Filter out unneeded printings
