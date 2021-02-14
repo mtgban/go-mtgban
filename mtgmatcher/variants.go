@@ -508,12 +508,12 @@ var allVariants = map[string]map[string]string{
 		"v.1":                "61b",
 	},
 	"Storm Crow": map[string]string{
-		"flying left":       "36a",
-		"flying right":      "36b",
+		"flying right":      "36a",
+		"flying left":       "36b",
 		"stormcrow":         "36a",
 		"az161":             "36b",
-		"crow flying left":  "36a",
-		"crow flying right": "36b",
+		"crow flying right": "36a",
+		"crow flying left":  "36b",
 		"v.1":               "36a",
 		"v.2":               "36b",
 	},
@@ -731,10 +731,10 @@ var atqVariants = map[string]map[string]string{
 		"tower":                 "82c",
 		"sky, no cave or tower": "82d",
 
-		"no horizon":    "82a",
-		"even horizon":  "82b",
-		"small tower":   "82c",
-		"uneven stripe": "82d",
+		"no horizon":     "82a",
+		"uneven horizon": "82b",
+		"small tower":    "82c",
+		"uneven stripe":  "82d",
 
 		"no sky, tower":        "82c",
 		"sky, uneven terraces": "82d",
@@ -744,7 +744,7 @@ var atqVariants = map[string]map[string]string{
 		"d tower":      "82c",
 		"b uneven":     "82d",
 
-		"uneven horizon": "82b",
+		"even horizon": "82d",
 
 		"even stripe":           "82b",
 		"small tower in forest": "82c",
@@ -1142,8 +1142,8 @@ var oldLandVariants = map[string]map[string]string{
 		"dirt":  "299",
 	},
 	"Plains": map[string]string{
-		"b": "288",
-		"a": "289",
+		"a": "288",
+		"b": "289",
 		"c": "290",
 
 		"a light":        "288",
@@ -1296,23 +1296,23 @@ var chrVariants = map[string]map[string]string{
 
 		"pot":     "115a",
 		"columns": "115b",
-		"sphere":  "115c",
-		"bug":     "115d",
+		"bug":     "115c",
+		"sphere":  "115d",
 
 		"rock in pan":       "115a",
 		"red columns":       "115b",
-		"sphere with tubes": "115c",
+		"sphere with tubes": "115d",
 
 		"rock in pot": "115a",
 
 		"d vat":    "115a",
 		"b pillar": "115b",
-		"c sphere": "115c",
-		"a bug":    "115d",
+		"a bug":    "115c",
+		"c sphere": "115d",
 
 		"red pillars":  "115b",
-		"ball in pit":  "115c",
-		"electric fly": "115d",
+		"electric fly": "115c",
+		"ball in pit":  "115d",
 
 		"rock pot": "115a",
 
@@ -2905,7 +2905,7 @@ var sldVariants = map[string]map[string]string{
 		"versione 4":               "32",
 	},
 	"Forest": map[string]string{
-		"godzilla": "63",
+		"godzilla": "67",
 	},
 	"Island": map[string]string{
 		"godzilla": "64",
@@ -2914,7 +2914,7 @@ var sldVariants = map[string]map[string]string{
 		"godzilla": "66",
 	},
 	"Plains": map[string]string{
-		"godzilla": "67",
+		"godzilla": "63",
 	},
 	"Swamp": map[string]string{
 		"godzilla": "65",
@@ -3356,10 +3356,6 @@ var wc98Variants = map[string]map[string]string{
 		"tempest c brian hacker 1998": "bh333",
 		"tempest d brian hacker 1998": "bh334",
 	},
-	"Firestorm": map[string]string{
-		"brian seldon 1998":        "bs101",
-		"sideboard ben rubin 1998": "br101sb",
-	},
 }
 
 var wc99Variants = map[string]map[string]string{
@@ -3377,7 +3373,7 @@ var wc99Variants = map[string]map[string]string{
 		"tempest c kai budde 1999":          "kb345",
 	},
 	"Swamp": map[string]string{
-		"urza's saga 346 jakub slemr 1999": "js340",
+		"urza's saga 346 jakub slemr 1999": "js339",
 		"tempest b jakub slemr 1999":       "js340a",
 		"6th edition 340 jakub slemr 1999": "js340b",
 	},

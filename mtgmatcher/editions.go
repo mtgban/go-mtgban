@@ -218,7 +218,6 @@ var EditionTable = map[string]string{
 	"Euro JSS Promo":                  "Junior Series Europe",
 	"Junior Series":                   "Junior Series Europe",
 	"Japan JSS":                       "Junior APAC Series",
-	"Japan Junior Tournament Promo":   "Junior APAC Series",
 	"Junior APAC Series":              "Junior APAC Series",
 	"Junior APAC Series Promos":       "Junior APAC Series",
 	"Junior Super Series":             "Junior Super Series",
@@ -235,6 +234,7 @@ var EditionTable = map[string]string{
 	"JSS Foil":                       "Junior Super Series",
 	"JSS Promo":                      "Junior Super Series",
 	"JSS/MSS Promos":                 "Junior Super Series",
+	"Japan Junior Tournament Promo":  "Japan Junior Tournament",
 	"Japan Junior Tournament Promos": "Japan Junior Tournament",
 	"Japanese JSS Promo":             "Japan Junior Tournament",
 
