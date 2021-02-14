@@ -114,29 +114,26 @@ func IsToken(name string) bool {
 	// Avoid confusion with Monarch and Emblem below
 	case HasPrefix(name, "Emblem of the Warmind"),
 		HasPrefix(name, "Kavu Monarch"),
-		HasPrefix(name, "Leering Emblem"):
+		HasPrefix(name, "Leering Emblem"),
+		// and with the `card` wildcard
+		HasPrefix(name, "Our Market Research"):
 		return false
 	// Anything token
-	case Contains(name, "Arena Code"),
-		Contains(name, "Art Card"),
+	case strings.Contains(name, " Card"),
+		strings.Contains(name, "Card "),
+		Contains(name, "Arena Code"),
 		Contains(name, "Art Series"),
-		Contains(name, "Blank Card"),
-		Contains(name, "Card List"),
 		Contains(name, "Checklist"),
 		Contains(name, "Decklist"),
 		Contains(name, "DFC Helper"),
 		Contains(name, "Emblem"),
 		Contains(name, "Experience C"),
 		Contains(name, "Guild Symbol"),
-		Contains(name, "Helper Card"),
 		Contains(name, "Magic Minigame"),
 		Contains(name, "Monarch"),
 		Contains(name, "Online Code"),
 		Contains(name, "Oversize"),
-		Contains(name, "Punch Card"),
 		Contains(name, "Punch Out"),
-		Contains(name, "Rules Card"),
-		Contains(name, "Strategy Card"),
 		Contains(name, "Token"),
 		Contains(name, "Rules Tip"):
 		return true
