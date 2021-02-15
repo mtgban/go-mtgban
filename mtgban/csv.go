@@ -43,7 +43,7 @@ func record2entry(record []string) (*InventoryEntry, error) {
 	index := len(CardHeader)
 	cardId := record[0]
 	_, err := mtgmatcher.GetUUID(cardId)
-	if err != nil {
+	if err != nil && !strings.Contains(cardId, "|") {
 		return nil, fmt.Errorf("error reading record: %v (%v)", err, record)
 	}
 
@@ -346,6 +346,22 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 }
 
 func cardId2record(cardId string) ([]string, error) {
+	if strings.Contains(cardId, "|") {
+		fields := strings.Split(cardId, "|")
+		if len(fields) != 4 {
+			return nil, fmt.Errorf("unsupported id format %s", cardId)
+		}
+		record := []string{
+			cardId,
+			fields[1],
+			fields[2],
+			fields[3],
+			"",
+			"",
+		}
+		return record, nil
+	}
+
 	co, err := mtgmatcher.GetUUID(cardId)
 	if err != nil {
 		return nil, err
