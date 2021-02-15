@@ -10,17 +10,15 @@ import (
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
 	entries, found := inv[cardId]
 	if found {
-		card, err := mtgmatcher.GetUUID(cardId)
-		if err != nil {
-			return err
-		}
 		for i := range entries {
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price && entry.SellerName == entries[i].SellerName {
 				if strict > 1 {
+					card, _ := mtgmatcher.GetUUID(cardId)
 					return fmt.Errorf("duplicate inventory key, same conditions and price:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
 
 				if strict > 0 && entry.URL == entries[i].URL && entry.Quantity == entries[i].Quantity {
+					card, _ := mtgmatcher.GetUUID(cardId)
 					return fmt.Errorf("duplicate inventory key, same url, and qty:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
 
@@ -67,11 +65,7 @@ func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict int) erro
 		for i := range entries {
 			if *entry == entries[i] {
 				if strict == 1 {
-					card, err := mtgmatcher.GetUUID(cardId)
-					if err != nil {
-						return err
-					}
-
+					card, _ := mtgmatcher.GetUUID(cardId)
 					return fmt.Errorf("attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
 				}
 				bl[cardId][i].Quantity += entry.Quantity
