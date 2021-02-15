@@ -29,6 +29,8 @@ const (
 	tcgApiListProductsURL = "https://api.tcgplayer.com/catalog/products"
 	tcgApiListGroupsURL   = "https://api.tcgplayer.com/catalog/groups"
 
+	tcgApiCategoriesURL = "https://api.tcgplayer.com/catalog/categories/"
+
 	tcgApiVersion    = "v1.39.0"
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
 	tcgApiPricingURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/sku/"
@@ -144,7 +146,9 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 const (
-	CategoryMagic = 1
+	CategoryMagic   = 1
+	CategoryYuGiOh  = 2
+	CategoryPokemon = 3
 )
 
 type TCGResponse struct {
@@ -390,6 +394,42 @@ func (tcg *TCGClient) TCGBuylistPricesForSKUs(ids []string) ([]TCGSKUPrice, erro
 	}
 
 	var out []TCGSKUPrice
+	err = json.Unmarshal(resp.Results, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+type TCGCategory struct {
+	CategoryID        int    `json:"categoryId"`
+	Name              string `json:"name"`
+	ModifiedOn        string `json:"modifiedOn"`
+	DisplayName       string `json:"displayName"`
+	SeoCategoryName   string `json:"seoCategoryName"`
+	SealedLabel       string `json:"sealedLabel"`
+	NonSealedLabel    string `json:"nonSealedLabel"`
+	ConditionGuideURL string `json:"conditionGuideUrl"`
+	IsScannable       bool   `json:"isScannable"`
+	Popularity        int    `json:"popularity"`
+}
+
+func (tcg *TCGClient) TCGCategoriesDetails(ids []int) ([]TCGCategory, error) {
+	link := tcgApiCategoriesURL
+	for i, id := range ids {
+		if i != 0 {
+			link += ","
+		}
+		link += fmt.Sprint(id)
+	}
+
+	resp, err := tcg.Get(link)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []TCGCategory
 	err = json.Unmarshal(resp.Results, &out)
 	if err != nil {
 		return nil, err
