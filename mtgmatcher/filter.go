@@ -785,7 +785,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// Intro pack
 			case "Aether Revolt",
 				"Kaladesh":
-				if inCard.Variation == "" && card.HasPromoType(mtgjson.PromoTypeIntroPack) {
+				if !Contains(inCard.Variation, "Intro") && card.HasPromoType(mtgjson.PromoTypeIntroPack) {
 					continue
 				} else if Contains(inCard.Variation, "Intro") && !card.HasPromoType(mtgjson.PromoTypeIntroPack) {
 					continue
