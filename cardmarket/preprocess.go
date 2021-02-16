@@ -298,6 +298,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if variant == "V.2" {
 			return nil, errors.New("non-english")
 		}
+	case "Simplified Chinese Alternate Art Cards":
+		return nil, errors.New("non-english")
 	case "Duel Decks: Jace vs. Chandra":
 		if variant == "V.2" {
 			variant = "Japanese"
