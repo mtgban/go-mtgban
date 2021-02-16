@@ -65,7 +65,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 			// Skip duplicate cards that cause trouble down the road
 			switch set.Code {
-			case "INV", "USG", "POR":
+			case "INV", "USG", "POR", "7ED":
 				if strings.HasSuffix(card.Number, "s") {
 					continue
 				}
