@@ -558,7 +558,16 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 						edition = strings.Replace(edition, " Promos", "", 1)
 					}
 				} else {
-					variant = number
+					// KHM: Extras has spurious promo pack cards in it
+					if len(mtgmatcher.MatchInSet(cardName, set.Code)) != 0 {
+						variant = number
+					} else {
+						if mtgmatcher.HasPromoPackPrinting(cardName) {
+							variant = "Promo Pack"
+						} else if mtgmatcher.HasPrereleasePrinting(cardName) {
+							variant = "Prerelease"
+						}
+					}
 				}
 			} else if strings.Contains(edition, ": Promos") {
 				if setDate.After(mtgmatcher.NewPrereleaseDate) &&
