@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
@@ -21,44 +22,18 @@ var skuFixupTable = map[string]string{
 	"ATQ-080C": "ATQ-080B",
 	"ATQ-080D": "ATQ-080D",
 
-	"F18-006": "PGRN-006",
-	"F18-029": "PM19-029",
-	"F18-054": "PGRN-054",
-	"F18-060": "PDOM-060",
-	"F18-081": "PDOM-081",
-	"F18-110": "PM19-110",
-	"F18-180": "PM19-180",
-	"F18-204": "PDOM-204",
-	"F18-206": "PGRN-206",
-	"F19-107": "PRNA-107",
-	"F19-171": "PWAR-171",
-	"F19-178": "PRNA-178",
-	"F19-192": "PRNA-192",
-	"F19-193": "PWAR-193",
-
 	"PAL96-001": "PARL-001",
 	"PAL96-003": "PARL-003",
 	"PAL96-004": "PARL-004",
 
-	"PUMA-050A": "PKTK-036A",
 	"PUMA-062A": "PDTK-061A",
-	"PUMA-117A": "PFRF-087A",
 
 	"FDOM-269P": "PDOM-001P",
 	"MPS-001A":  "PRES-001A",
-	"PRED-001":  "PDRC-001",
-
-	"PELD-392": "ELD-392",
-	"PTHB-352": "THB-352",
-	"PIKO-364": "IKO-364",
-	"PM21-392": "M21-392",
 
 	"PJMP-496B": "JMP-496",
 	"P2XM-383":  "2XM-383",
 	"P2XM-384":  "2XM-384",
-
-	"FPZNR-385": "ZNR-385",
-	"PZNR-386":  "ZNR-386",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
@@ -103,6 +78,18 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		if len(setCode) == 4 && strings.HasPrefix(setCode, "T") {
 			return nil, fmt.Errorf("unknown sku code %s", setCode)
 		}
+		if len(setCode) == 4 && (mtgmatcher.Contains(card.Variation, "buyabox") || mtgmatcher.Contains(card.Variation, "bundle")) {
+			set, err := mtgmatcher.GetSet(setCode[1:])
+			if err != nil {
+				return nil, fmt.Errorf("unknown sku code %s", setCode)
+			}
+			setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+			if mtgmatcher.Contains(card.Variation, "buyabox") && setDate.After(mtgmatcher.BuyABoxNotUniqueDate) {
+				setCode = setCode[1:]
+			} else if mtgmatcher.Contains(card.Variation, "bundle") && setDate.After(mtgmatcher.BuyABoxInExpansionSetsDate) {
+				setCode = setCode[1:]
+			}
+		}
 
 		if (card.Variation == "Game Day Extended Art" ||
 			card.Variation == "Game Day Extended" ||
@@ -121,12 +108,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	variation := card.Variation
 	edition := card.Edition
 	switch edition {
-	case "Duel Decks: Anthology":
-		variation = strings.Replace(variation, " - Foil", "", 1)
-		variation = strings.Replace(variation, " vs ", " vs. ", 1)
-		fields := strings.Fields(variation)
-		variation = number
-		edition = "Duel Decks Anthology: " + strings.Join(fields[:3], " ")
 	case "Promotional",
 		"World Championships":
 		edition = setCode
