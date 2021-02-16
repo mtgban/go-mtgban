@@ -93,6 +93,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		case mtgmatcher.Contains(product.Description, "ita"),
 			mtgmatcher.Contains(product.Description, "oversize"),
 			mtgmatcher.Contains(product.Description, "inked"),
+			mtgmatcher.Contains(product.Description, "stamp"),
 			mtgmatcher.Contains(product.Description, "mix"):
 			continue
 		}
