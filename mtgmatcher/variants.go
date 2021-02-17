@@ -3449,6 +3449,10 @@ var wc98Variants = map[string]map[string]string{
 		"tempest c brian hacker 1998": "bh333",
 		"tempest d brian hacker 1998": "bh334",
 	},
+	"Firestorm": map[string]string{
+		"brian seldon 1998":        "bs101",
+		"sideboard ben rubin 1998": "br101sb",
+	},
 }
 
 var wc99Variants = map[string]map[string]string{
