@@ -31,6 +31,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isPrerelease():
 			switch set.Name {
+			case "Open the Helvault",
+				"Promotional Planes":
 			case "Duels of the Planeswalkers 2012 Promos",
 				"Grand Prix Promos",
 				"Pro Tour Promos",

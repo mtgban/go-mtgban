@@ -553,8 +553,6 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Release Events"
 	case Equals(inCard.Name, "Rukh Egg") && inCard.isPrerelease():
 		inCard.Edition = "Release Events"
-	case Equals(inCard.Name, "Celestine Reef") && inCard.isPrerelease():
-		inCard.Edition = "Promotional Planes"
 	case Equals(inCard.Name, "Ajani Vengeant") && inCard.isRelease():
 		inCard.Variation = "Prerelease"
 	case Equals(inCard.Name, "Tamiyo's Journal") && inCard.Variation == "" && inCard.Foil:
@@ -580,16 +578,6 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Wizards Play Network 2010"
 	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isWPNGateway():
 		inCard.Edition = "Wizards Play Network 2011"
-	case Equals(inCard.Name, "Sigarda, Host of Herons") && inCard.isPrerelease():
-		inCard.Edition = "Open the Helvault"
-	case Equals(inCard.Name, "Griselbrand") && inCard.isPrerelease():
-		inCard.Edition = "Open the Helvault"
-	case Equals(inCard.Name, "Gisela, Blade of Goldnight") && inCard.isPrerelease():
-		inCard.Edition = "Open the Helvault"
-	case Equals(inCard.Name, "Bruna, Light of Alabaster") && inCard.isPrerelease():
-		inCard.Edition = "Open the Helvault"
-	case Equals(inCard.Name, "Avacyn, Angel of Hope") && inCard.isPrerelease():
-		inCard.Edition = "Open the Helvault"
 
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
 		inCard.Variation = "Foil Etched"
