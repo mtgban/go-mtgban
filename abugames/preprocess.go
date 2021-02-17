@@ -196,6 +196,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		} else {
 			return nil, errors.New("missing edition")
 		}
+	case "Alternate 4th Edition":
+		return nil, errors.New("unsupported")
 	case "Promo":
 		switch cardName {
 		case "Skirk Marauder":
