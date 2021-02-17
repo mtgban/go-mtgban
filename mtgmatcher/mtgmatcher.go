@@ -574,9 +574,9 @@ func adjustEdition(inCard *Card) {
 	case Equals(inCard.Name, "Char") && inCard.isDCIPromo():
 		inCard.Edition = "15th Anniversary Cards"
 
-	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isDCIPromo():
+	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isDCIPromo() && ExtractNumber(inCard.Variation) == "":
 		inCard.Edition = "Wizards Play Network 2010"
-	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isWPNGateway():
+	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isWPNGateway() && ExtractNumber(inCard.Variation) == "":
 		inCard.Edition = "Wizards Play Network 2011"
 
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
