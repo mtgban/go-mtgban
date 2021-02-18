@@ -20,6 +20,7 @@ var cardTable = map[string]string{
 	"Shatter Assumpions":         "Shatter Assumptions",
 	"Stratozeppilid":             "Stratozeppelid",
 	"Elder Garganoth":            "Elder Gargaroth",
+	"Immerstrurm Predator":       "Immersturm Predator",
 
 	"Circle of Protection Red FNM Foil": "Circle of Protection: Red",
 
