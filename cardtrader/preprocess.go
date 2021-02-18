@@ -21,6 +21,7 @@ var cardTable = map[string]string{
 	"Captain Vargus Ira":             "Captain Vargus Wrath",
 	"Yurlok, the Mana Burner":        "Yurlok of Scorch Thrash",
 	"Explor":                         "Explore",
+	"Elspeth Conquers Death (copy)":  "Elspeth Conquers Death",
 
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
@@ -94,6 +95,10 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		"Fallen Empires: Wyvern Misprints",
 		"Filler Cards":
 		return nil, errors.New("not mtg")
+	case "Battle the Horde",
+		"Defeat a God",
+		"Face the Hydra":
+		return nil, errors.New("unsupported")
 	case "Salvat 2005":
 		return nil, errors.New("foreign")
 	case "Commander's Arsenal":
