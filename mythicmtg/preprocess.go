@@ -1,6 +1,7 @@
 package mythicmtg
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -18,7 +19,7 @@ var cardTable = map[string]string{
 	"Finality":      "Find // Finality",
 }
 
-func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
+func preprocess(cardName, edition string, foil bool) (*mtgmatcher.Card, error) {
 	variant := ""
 	variants := strings.Split(cardName, " - ")
 	cardName = variants[0]
@@ -50,7 +51,7 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	isFoil := false
+	isFoil := foil
 	variants = mtgmatcher.SplitVariants(cardName)
 	cardName = variants[0]
 	if len(variants) > 1 {
@@ -61,6 +62,10 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 		if strings.ToLower(variant) == "foil" {
 			isFoil = true
 		}
+	}
+
+	if isFoil && cardName == "Anje Falkenrath" {
+		return nil, errors.New("does not exist")
 	}
 
 	lutName, found := cardTable[cardName]

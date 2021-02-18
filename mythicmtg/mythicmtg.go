@@ -63,20 +63,35 @@ func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
 		return err
 	}
 
-	doc.Find(`div[class="product-forms-tabs-wrapper"]`).Each(func(i int, s *goquery.Selection) {
-		dataId, _ := s.Find(`ul li:nth-child(1)`).Attr("data-id")
-		dataIdFoil, _ := s.Find(`ul li:nth-child(2)`).Attr("data-id")
-
-		for _, id := range []string{dataId, dataIdFoil} {
-			if id == "" {
-				continue
+	doc.Find(`div[class="product-forms-tabs-wrapper"] div[class="product-forms-tabs-container"]`).Each(func(i int, s *goquery.Selection) {
+		s.Find(`div`).Each(func(j int, sub *goquery.Selection) {
+			dataId, _ := sub.Attr("id")
+			if dataId == "" || strings.Count(dataId, "_") > 1 {
+				return
 			}
-			sub := s.Find(`div[id="` + id + `"]`)
+			tags := strings.Split(dataId, "-")
+			conditions := ""
+			if len(tags) > 0 {
+				conditions = tags[len(tags)-1]
+			}
 
 			cardName := sub.Find(`div[class="ty-grid-list__item-name"] bdi`).Text()
 			link, _ := sub.Find(`div[class="ty-grid-list__item-name"] bdi a`).Attr("href")
-			cardName = strings.TrimSuffix(cardName, "(foil)")
+			cardName = strings.TrimSuffix(cardName, "("+conditions+")")
 			cardName = strings.TrimSpace(cardName)
+
+			conds := ""
+			switch conditions {
+			case "regular", "foil":
+				conds = "NM"
+			case "moderate_play":
+				conds = "MP"
+			case "heavy_play":
+				conds = "HP"
+			default:
+				mmtg.printf("Unsupported condition %s for %s", conditions, cardName)
+				return
+			}
 
 			fields := strings.Split(link, "/")
 			edition := ""
@@ -88,7 +103,7 @@ func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
 			priceStr := sub.Find(`span[class="ty-price-num"]`).Text()
 			price, _ := mtgmatcher.ParsePrice(priceStr)
 			if price == 0 {
-				continue
+				return
 			}
 
 			items := sub.Find(`span[class="ty-qty-in-stock ty-control-group__item"]`).Text()
@@ -96,15 +111,12 @@ func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
 			items = strings.TrimSuffix(items, "\u00a0item(s)")
 			qty, _ := strconv.Atoi(items)
 			if qty == 0 {
-				continue
+				return
 			}
 
-			theCard, err := preprocess(cardName, edition)
+			theCard, err := preprocess(cardName, edition, conditions == "foil")
 			if err != nil {
-				continue
-			}
-			if dataIdFoil == id {
-				theCard.Foil = true
+				return
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
@@ -124,19 +136,19 @@ func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
 						}
 					}
 				}
-				continue
+				return
 			}
 
 			channel <- respChan{
 				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
-					Conditions: "NM",
+					Conditions: conds,
 					Price:      price,
 					Quantity:   qty,
 					URL:        link,
 				},
 			}
-		}
+		})
 	})
 
 	return nil
@@ -238,7 +250,7 @@ func (mmtg *Mythicmtg) parseBL() error {
 				return
 			}
 
-			theCard, err := preprocess(cardName, editionName)
+			theCard, err := preprocess(cardName, editionName, false)
 			if err != nil {
 				return
 			}
