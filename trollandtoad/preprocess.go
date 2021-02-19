@@ -37,6 +37,16 @@ var cardTable = map[string]string{
 	"Yurlok of the Scorch Thras":                       "Yurlok of Scorch Thrash",
 	"Sorin, Imperious Bloodblord":                      "Sorin, Imperious Bloodlord",
 
+	"Fall of the Imposter":     "Fall of the Impostor",
+	"Cosmos Elixer":            "Cosmos Elixir",
+	"Dragonkin Berseker":       "Dragonkin Berserker",
+	"Maja, Bretgard Protector": "Maja, Bretagard Protector",
+	"Arni Brokenbow":           "Arni Brokenbrow",
+
+	"Darkbore Pathway // Slitherbore Pahtway":        "Darkbore Pathway // Slitherbore Pathway",
+	"Kolvori, God of Kinship // The Ringhart Creast": "Kolvori, God of Kinship // The Ringhart Crest",
+	"Valki, God of Lies // Tibalt, Cosmic Imposter":  "Valki, God of Lies // Tibalt, Cosmic Impostor",
+
 	"Chandra, Fire of Kaladesh // Chandra The Roaring Flame": "Chandra, Fire of Kaladesh // Chandra, Roaring Flame",
 	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Aberration",
 	"Jwari Disruption // Jwar Ruins":                         "Jwari Disruption // Jwari Ruins",
