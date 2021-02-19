@@ -84,8 +84,11 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			variant = "reminder text"
 		}
 	case "Pre-Release Promos":
-		if cardName == "Pir, Imaginitive Rascal" {
+		switch cardName {
+		case "Pir, Imaginitive Rascal":
 			variant = ""
+		case "In Garruk's Wake":
+			edition = "PM15"
 		}
 		if strings.HasSuffix(cardName, "Foil") {
 			cardName = strings.TrimSuffix(cardName, " Foil")
