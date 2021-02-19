@@ -2029,8 +2029,8 @@ var hmlVariants = map[string]map[string]string{
 		"dwarventrader":    "72b",
 		"horse":            "72a",
 		"two people":       "72b",
-		"beard":            "72a",
-		"woman with horse": "72b",
+		"woman with horse": "72a",
+		"beard":            "72b",
 	},
 	"Feast of the Unicorn": map[string]string{
 		"goblins":           "47a",
