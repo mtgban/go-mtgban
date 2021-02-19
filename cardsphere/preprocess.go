@@ -139,6 +139,10 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 		ed, found := promoTable[cardName]
 		if found {
 			edition = ed
+		} else {
+			if len(mtgmatcher.MatchInSet(cardName, "PSS1")) == 1 {
+				edition = "PSS1"
+			}
 		}
 	case "SDCC":
 		if variant == "" {
