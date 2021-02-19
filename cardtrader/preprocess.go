@@ -142,6 +142,12 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		} else if strings.Contains(bp.DisplayName, "(dark)") {
 			variant = "dark"
 		}
+	case "Champions of Kamigawa":
+		if bp.DisplayName == "Brothers Yamazaki (vers. 1)" {
+			variant = "160a"
+		} else if bp.DisplayName == "Brothers Yamazaki (vers. 2)" {
+			variant = "160b"
+		}
 	case "Buy a Box ",
 		"Armada Comics",
 		"Prerelease Promos":
