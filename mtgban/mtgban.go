@@ -9,10 +9,17 @@ import (
 
 // InventoryEntry represents an entry for selling a particular Card
 type InventoryEntry struct {
-	Quantity   int
-	Conditions string
-	Price      float64
+	// Quantity of this entry
+	Quantity int
 
+	// The grade of the current entry
+	// Only supported values are "NM", "SP", "MP", "HP", and "PO"
+	Conditions string
+
+	// The price of this entry, in USD
+	Price float64
+
+	// The link for this entry on the scraper website (if available)
 	URL string
 
 	// Only used for a Marketplace inventory
@@ -22,21 +29,36 @@ type InventoryEntry struct {
 	Bundle bool
 
 	// Original identifier as available from the scraper
+	// This is usually the "product id".
 	OriginalId string
 
 	// Original instance identifier as available from the scraper
+	// This is usually the "SKU", or the id of the entry taking into
+	// account different properties, such as conditions, language etc
 	InstanceId string
 }
 
 // BuylistEntry represents an entry for buying a particular Card
 type BuylistEntry struct {
-	Quantity   int
+	// Quantity of this entry
+	Quantity int
+
+	// The grade of the current entry
+	// Only supported values are "NM", "SP", "MP", "HP", and "PO"
+	// If empty it is considered "NM".
 	Conditions string
-	BuyPrice   float64
+
+	// The price at which this entry is bought, in USD
+	BuyPrice float64
+
+	// The price at which this entry is bought, in store credit
 	TradePrice float64
 
+	// The ratio between the sale and buy prices, indicating desiderability
+	// of the entry by the provider
 	PriceRatio float64
 
+	// The link for this entry on the scraper website (if available)
 	URL string
 
 	// Name of the vendor providing the entry
@@ -103,7 +125,7 @@ type InventoryInitializer interface {
 // BuylistInitializer is the inteface used to identify scrapers that can
 // have buylist data loaded offline.
 type BuylistInitializer interface {
-	// Initialize an inventory.
+	// Initialize a buylist.
 	IntializeBuylist(io.Reader) error
 }
 
@@ -117,6 +139,7 @@ type Carter interface {
 	Add(entry InventoryEntry) error
 }
 
+// The base map for Seller containing a uuid pointing to an array of InventoryEntry
 type InventoryRecord map[string][]InventoryEntry
 
 // Market is the interface describing actions to be performed on the
@@ -144,6 +167,7 @@ type Seller interface {
 	Info() ScraperInfo
 }
 
+// The base map for Vendor containing a uuid pointing to an array of BuylistEntry
 type BuylistRecord map[string][]BuylistEntry
 
 // Vendor is the interface describing actions to be performed on a vendor buylist
