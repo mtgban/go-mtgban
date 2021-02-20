@@ -150,6 +150,8 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 					Price:      v.Price * mc.exchangeRate,
 					Quantity:   v.Quantity,
 					URL:        "https://www.magiccorner.it" + card.URL,
+					OriginalId: fmt.Sprint(card.Id),
+					InstanceId: fmt.Sprint(v.Id),
 				},
 			}
 

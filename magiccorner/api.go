@@ -16,6 +16,7 @@ type MCEdition struct {
 }
 
 type MCCard struct {
+	Id       int    `json:"IdProduct"`
 	Name     string `json:"NomeEn"`
 	Set      string `json:"Category"`
 	Code     string `json:"Icon"`
