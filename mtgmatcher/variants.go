@@ -716,6 +716,11 @@ var atqVariants = map[string]map[string]string{
 		"v.3": "80b",
 		"v.1": "80c",
 		"v.4": "80d",
+
+		"春": "80a",
+		"夏": "80b",
+		"秋": "80c",
+		"冬": "80d",
 	},
 	"Strip Mine": map[string]string{
 		"atq-82a-strip-mine": "82a",
@@ -765,6 +770,10 @@ var atqVariants = map[string]map[string]string{
 		"version 2": "82b",
 		"version 4": "82c",
 		"version 1": "82d",
+
+		"c nohorizon": "82a",
+		"d even":      "82b",
+		"a tower":     "82c",
 	},
 	"Urza's Mine": map[string]string{
 		"aq084": "83a",
@@ -798,6 +807,8 @@ var atqVariants = map[string]map[string]string{
 		"v.2": "83b",
 		"v.1": "83c",
 		"v.4": "83d",
+
+		"a pulley": "83a",
 	},
 	"Urza's Power Plant": map[string]string{
 		"aq089": "84a",
@@ -829,6 +840,9 @@ var atqVariants = map[string]map[string]string{
 		"v.2": "84b",
 		"v.1": "84c",
 		"v.3": "84d",
+
+		"pillar": "84b",
+		"vat":    "84d",
 	},
 	"Urza's Tower": map[string]string{
 		"aq092": "85a",
@@ -882,6 +896,8 @@ var pal01Variants = map[string]map[string]string{
 		"beta 2002":                 "11",
 		"2001 ice age":              "1",
 		"2001 beta":                 "11",
+		"ice":                       "1",
+		"β":                         "11",
 	},
 }
 
@@ -930,6 +946,8 @@ var palpVariants = map[string]map[string]string{
 		"apac land ron spears, zombie":                       "15",
 		"blue pack spears":                                   "10",
 		"clear pack spears":                                  "15",
+		"apac2  illus.ron spears a":                          "10",
+		"apac3  illus.ron spears b":                          "15",
 	},
 }
 
@@ -1291,6 +1309,8 @@ var chrVariants = map[string]map[string]string{
 		"version 1": "114b",
 		"version 3": "114c",
 		"version 4": "114d",
+
+		"c bathyscape": "114b",
 	},
 	"Urza's Power Plant": map[string]string{
 		"ch098": "115a",
@@ -1459,26 +1479,41 @@ var pelpVariants = map[string]map[string]string{
 		"euro set 1": "1",
 		"euro set 2": "6",
 		"euro set 3": "11",
+		"euro1":      "1",
+		"euro2":      "6",
+		"euro3":      "11",
 	},
 	"Island": map[string]string{
 		"euro set 1": "2",
 		"euro set 2": "7",
 		"euro set 3": "12",
+		"euro1":      "2",
+		"euro2":      "7",
+		"euro3":      "12",
 	},
 	"Mountain": map[string]string{
 		"euro set 1": "3",
 		"euro set 2": "8",
 		"euro set 3": "13",
+		"euro1":      "3",
+		"euro2":      "8",
+		"euro3":      "13",
 	},
 	"Plains": map[string]string{
 		"euro set 1": "4",
 		"euro set 2": "9",
 		"euro set 3": "14",
+		"euro1":      "4",
+		"euro2":      "9",
+		"euro3":      "14",
 	},
 	"Swamp": map[string]string{
 		"euro set 1": "5",
 		"euro set 2": "10",
 		"euro set 3": "15",
+		"euro1":      "5",
+		"euro2":      "10",
+		"euro3":      "15",
 	},
 }
 
@@ -1506,6 +1541,9 @@ var femVariants = map[string]map[string]string{
 		"rob alexander spear":         "49a",
 		"rob alexander winged helmet": "49c",
 		"rob alexander claw":          "49c",
+		"rob alexander a":             "49a",
+		"rob alexander b":             "49c",
+		"rob alexander c":             "49c",
 	},
 	"Combat Medic": map[string]string{
 		"fe133": "1a",
@@ -1681,6 +1719,8 @@ var femVariants = map[string]map[string]string{
 		"female": "16a",
 		"male":   "16b",
 		"group":  "16c",
+
+		"man": "16b",
 	},
 	"Spore Cloud": map[string]string{
 		"fe083": "72a",

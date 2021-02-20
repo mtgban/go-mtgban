@@ -128,6 +128,8 @@ var EditionTable = map[string]string{
 	"Alayna Danner Art":                        "M19 Standard Showdown",
 	"Rebecca Guay Art Standard Showdown Promo": "XLN Standard Showdown",
 	"Ixalan Standard Showdown":                 "XLN Standard Showdown",
+	"Illus.Alayna Danner":                      "M19 Standard Showdown",
+	"Illus.Rebecca Guay":                       "XLN Standard Showdown",
 
 	// Modern Masters
 	"Modern Masters 2013":            "Modern Masters",

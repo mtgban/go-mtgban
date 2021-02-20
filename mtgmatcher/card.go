@@ -295,7 +295,7 @@ func (c *Card) isMagicFest() bool {
 func (c *Card) isBaB() bool {
 	return c.Contains("Buy a Box") ||
 		strings.Contains(c.Variation, "BIBB") || // sz
-		c.Variation == "Full Box Promo" // sz
+		c.Contains("Box Promos") // ha+sz
 }
 
 func (c *Card) isBundle() bool {
