@@ -76,13 +76,6 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 			printed = true
 		}
 
-		// Skip lands, too many and without a simple solution
-		isBasicLand := false
-		switch card.Name {
-		case "Plains", "Island", "Swamp", "Mountain", "Forest":
-			isBasicLand = true
-		}
-
 		for i, v := range card.Variants {
 			// Skip duplicate cards
 			if duplicate[v.Id] {
@@ -123,14 +116,6 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 				continue
 			}
 
-			// The basic lands need custom handling for each edition if they
-			// aren't found with other methods, ignore errors until they are
-			// added to the variants table.
-			printError := true
-			if isBasicLand {
-				printError = false
-			}
-
 			theCard, err := preprocess(&card, i)
 			if err != nil {
 				continue
@@ -138,17 +123,21 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 
 			cardId, err := mtgmatcher.Match(theCard)
 			if err != nil {
-				if printError {
-					mc.printf("%v", err)
-					mc.printf("%q", theCard)
-					mc.printf("%q", card)
-					alias, ok := err.(*mtgmatcher.AliasingError)
-					if ok {
-						probes := alias.Probe()
-						for _, probe := range probes {
-							card, _ := mtgmatcher.GetUUID(probe)
-							mc.printf("- %s", card)
-						}
+				// The basic lands need custom handling for each edition if they
+				// aren't found with other methods, ignore errors until they are
+				// added to the variants table.
+				if mtgmatcher.IsBasicLand(card.Name) {
+					continue
+				}
+				mc.printf("%v", err)
+				mc.printf("%q", theCard)
+				mc.printf("%q", card)
+				alias, ok := err.(*mtgmatcher.AliasingError)
+				if ok {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						mc.printf("- %s", card)
 					}
 				}
 				continue
