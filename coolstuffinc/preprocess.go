@@ -399,3 +399,102 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		Foil:      isFoilFromName,
 	}, nil
 }
+
+var promoTable = map[string]string{
+	"Abrupt Decay":               "PWCQ",
+	"Abzan Beastmaster":          "F15",
+	"Accumulated Knowledge":      "F04",
+	"Acidic Slime":               "F12",
+	"Acquire":                    "PI14",
+	"Aether Hub":                 "F17",
+	"Ainok Tracker":              "UGIN",
+	"Ajani Steadfast":            "PS14",
+	"Ajani, Caller of the Pride": "PSDC",
+	"Albino Troll":               "F02",
+	"Altar of the Brood":         "UGIN",
+	"Anathemancer":               "F10",
+	"Ancient Grudge":             "F12",
+}
+
+func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
+	cardName := card.Name
+	variant := card.Variation
+	edition := card.Edition
+	wildcardPromo := false
+
+	if mtgmatcher.IsToken(cardName) ||
+		mtgmatcher.Contains(cardName, "Signed by") {
+		return nil, errors.New("not singles")
+	}
+
+	fields := mtgmatcher.SplitVariants(cardName)
+	cardName = fields[0]
+	if len(fields) > 1 {
+		if variant != "" {
+			variant += " "
+		}
+		variant += fields[1]
+	}
+
+	switch edition {
+	case "Fourth (Alternate Edition)",
+		"Eighth Edition (Oversized Cards)",
+		"Ninth Edition (Oversized Cards)",
+		"Misprints & Oddities",
+		"Oversized Cards",
+		"Vanguard":
+		return nil, errors.New("not singles")
+	case "Black Bordered (foreign)":
+		switch variant {
+		case "German", "French":
+			return nil, errors.New("not supported")
+		case "Spanish", "Chinese", "Japanese":
+			edition = "4BB"
+			return nil, errors.New("not supported")
+		}
+	case "Ikoria: Lair of Behemoths: Variants":
+		if variant == "Japanese" {
+			switch cardName {
+			case "Dirge Bat", "Mysterious Egg", "Crystalline Giant":
+				variant += " Godzilla"
+			default:
+				return nil, errors.New("not supported")
+			}
+		}
+	case "Prerelease Promo":
+		switch cardName {
+		case "On Serra's Wings":
+			return nil, errors.New("does not exist")
+		}
+	case "Promo":
+		switch cardName {
+		case "1996 World Champion",
+			"Proposal",
+			"Splendid Genesis",
+			"Fraternal Exaltation":
+			return nil, errors.New("not supported")
+		default:
+			if strings.HasPrefix(cardName, "Black Lotus - Ultra Pro Puzzle") {
+				return nil, errors.New("not supported")
+			}
+		}
+
+		wildcardPromo = true
+		/*ed, found := promoTable[cardName]
+		if found {
+			edition = ed
+		}*/
+	default:
+		if strings.Contains(edition, "Art Series") {
+			return nil, errors.New("not supported")
+		}
+	}
+
+	return &mtgmatcher.Card{
+		Name:      cardName,
+		Variation: variant,
+		Edition:   edition,
+		Foil:      card.IsFoil,
+		Promo:     wildcardPromo,
+	}, nil
+}

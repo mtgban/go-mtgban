@@ -97,11 +97,12 @@ var EditionTable = map[string]string{
 	"Champs & States Promos": "Champs and States",
 
 	// Welcome decks
-	"Amonkhet Welcome Deck": "Welcome Deck 2017",
-	"Magic 2016":            "Welcome Deck 2016",
-	"Magic 2017":            "Welcome Deck 2017",
-	"Welcome Deck 2016":     "Welcome Deck 2016",
-	"Welcome Deck 2017":     "Welcome Deck 2017",
+	"Shadows over Innistrad Welcome Deck": "Welcome Deck 2016",
+	"Amonkhet Welcome Deck":               "Welcome Deck 2017",
+	"Magic 2016":                          "Welcome Deck 2016",
+	"Magic 2017":                          "Welcome Deck 2017",
+	"Welcome Deck 2016":                   "Welcome Deck 2016",
+	"Welcome Deck 2017":                   "Welcome Deck 2017",
 
 	// Holiday cards
 	"Happy Holidays":     "Happy Holidays",
@@ -179,25 +180,29 @@ var EditionTable = map[string]string{
 	"Duel Decks: Kiora vs Elspeth":   "Duel Decks: Elspeth vs. Kiora",
 	"DD: Anthology":                  "Duel Decks Anthology",
 
-	// Various series
+	// Global Series
+	"Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
+
 	"Global Series Jiang Yanggu And Mu Yanling":  "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiangg Yanggu & Mu Yanling":  "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiang Yanggu & Mu Yanling":   "Global Series Jiang Yanggu & Mu Yanling",
 	"Global Series: Jiang Yanggu and Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
-	"Fire & Lightning":                           "Premium Deck Series: Fire and Lightning",
-	"PDS: Fire & Lightning":                      "Premium Deck Series: Fire and Lightning",
-	"Premium Deck Fire and Lightning":            "Premium Deck Series: Fire and Lightning",
-	"Premium Deck: Fire and Lightning":           "Premium Deck Series: Fire and Lightning",
-	"Premium Deck Series Fire & Lightning":       "Premium Deck Series: Fire and Lightning",
-	"Premium Deck Series: Fire & Lightning":      "Premium Deck Series: Fire and Lightning",
-	"Graveborn":                                  "Premium Deck Series: Graveborn",
-	"PDS: Graveborn":                             "Premium Deck Series: Graveborn",
-	"Premium Deck Graveborn":                     "Premium Deck Series: Graveborn",
-	"Premium Deck: Graveborn":                    "Premium Deck Series: Graveborn",
-	"Slivers":                                    "Premium Deck Series: Slivers",
-	"PDS: Slivers":                               "Premium Deck Series: Slivers",
-	"Premium Deck Slivers":                       "Premium Deck Series: Slivers",
-	"Premium Deck: Slivers":                      "Premium Deck Series: Slivers",
+
+	// Premium Deck Series
+	"Fire & Lightning":                      "Premium Deck Series: Fire and Lightning",
+	"PDS: Fire & Lightning":                 "Premium Deck Series: Fire and Lightning",
+	"Premium Deck Fire and Lightning":       "Premium Deck Series: Fire and Lightning",
+	"Premium Deck: Fire and Lightning":      "Premium Deck Series: Fire and Lightning",
+	"Premium Deck Series Fire & Lightning":  "Premium Deck Series: Fire and Lightning",
+	"Premium Deck Series: Fire & Lightning": "Premium Deck Series: Fire and Lightning",
+	"Graveborn":                             "Premium Deck Series: Graveborn",
+	"PDS: Graveborn":                        "Premium Deck Series: Graveborn",
+	"Premium Deck Graveborn":                "Premium Deck Series: Graveborn",
+	"Premium Deck: Graveborn":               "Premium Deck Series: Graveborn",
+	"Slivers":                               "Premium Deck Series: Slivers",
+	"PDS: Slivers":                          "Premium Deck Series: Slivers",
+	"Premium Deck Slivers":                  "Premium Deck Series: Slivers",
+	"Premium Deck: Slivers":                 "Premium Deck Series: Slivers",
 
 	// Planechase
 	"Planechase 2009":                 "Planechase",
@@ -424,6 +429,7 @@ var EditionTable = map[string]string{
 	// Foreign-only
 	"3rd Edition (Foreign Black Border)":     "Foreign Black Border",
 	"3rd Edition BB":                         "Foreign Black Border",
+	"Black Bordered (foreign)":               "Foreign Black Border",
 	"Foreign BB":                             "Foreign Black Border",
 	"Foreign Black Bordered":                 "Foreign Black Border",
 	"Foreign Limited - FBB":                  "Foreign Black Border",
