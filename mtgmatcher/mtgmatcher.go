@@ -165,6 +165,9 @@ func Match(inCard *Card) (cardId string, err error) {
 	case 0:
 		logger.Println("No matches...")
 		err = ErrCardWrongVariant
+		if inCard.Variation == "" {
+			err = ErrCardMissingVariant
+		}
 	// Victory
 	case 1:
 		logger.Println("Found it!")

@@ -59,6 +59,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Zendikar",
 		},
 	},
+	MatchTest{
+		Desc: "missing_variant",
+		Err:  ErrCardMissingVariant,
+		In: Card{
+			Name:      "Arcane Denial",
+			Variation: "",
+			Edition:   "Alliances",
+		},
+	},
 
 	// ID lookup
 	MatchTest{
