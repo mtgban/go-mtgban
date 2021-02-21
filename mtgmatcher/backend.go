@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
@@ -121,6 +122,22 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 		// Replace the original array with the filtered one
 		set.Cards = filteredCards
+
+		// Adjust the setBaseSize to take into account the cards with
+		// the same name in the same set (also make sure that it is
+		// correctly initialized)
+		setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
+		if err != nil {
+			continue
+		}
+		if setDate.After(PromosForEverybodyYay) {
+			for i, card := range set.Cards {
+				if card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+					set.BaseSetSize = i + 1
+					break
+				}
+			}
+		}
 	}
 
 	backend.Sets = ap.Data

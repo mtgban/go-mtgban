@@ -559,7 +559,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			if inCard.beyondBaseSet {
 				// Filter out any card that is located in the base set only
 				num, err := strconv.Atoi(card.Number)
-				if err == nil && num <= set.BaseSetSize {
+				if err == nil && num < set.BaseSetSize {
 					continue
 				}
 			} else if setDate.After(PromosForEverybodyYay) {

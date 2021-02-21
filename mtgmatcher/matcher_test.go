@@ -2231,6 +2231,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "4986aa22-de4e-5f16-88bd-f378f8071905",
+		Desc: "boosterfun_variant_but_custom_setsize",
+		In: Card{
+			Name:    "Abrade",
+			Edition: "Commander Legends: Variants",
+		},
+	},
+	MatchTest{
 		Id:   "e1b8fc9f-e974-51cd-972f-624b3e9d0c1b",
 		Desc: "intropack_dedup_normal",
 		In: Card{
