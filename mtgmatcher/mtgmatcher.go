@@ -561,7 +561,7 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Two-Headed Giant Tournament"
 	case Equals(inCard.Name, "Jace Beleren") && inCard.isDCIPromo():
 		inCard.Edition = "Miscellaneous Book Promos"
-	case Equals(inCard.Name, "Serra Angel") && inCard.isDCIPromo():
+	case Equals(inCard.Name, "Serra Angel") && (inCard.isDCIPromo() || inCard.isBaB()):
 		inCard.Edition = "Wizards of the Coast Online Store"
 
 	case Equals(inCard.Name, "Incinerate") && inCard.isDCIPromo():

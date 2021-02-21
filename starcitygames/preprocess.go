@@ -337,10 +337,6 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 	}
 
 	switch cardName {
-	case "Serra Angel":
-		if variant == "Buy-a-Box" {
-			edition = "Wizards of the Coast Online Store"
-		}
 	case "Captain Sisay":
 		if edition == "Mystery Booster" {
 			return nil, errors.New("invalid")
