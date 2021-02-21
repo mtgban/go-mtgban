@@ -542,7 +542,7 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = backend.Sets["PSUM"].Name
 
 	// Single card mismatches
-	case Equals(inCard.Name, "Rhox") && inCard.isGenericAltArt():
+	case Equals(inCard.Name, "Rhox") && (inCard.isGenericAltArt() || inCard.isGenericPromo()):
 		inCard.Edition = "Starter 2000"
 	case Equals(inCard.Name, "Balduvian Horde") && (strings.Contains(inCard.Variation, "Judge") || strings.Contains(inCard.Edition, "Promo") || inCard.isDCIPromo()):
 		inCard.Edition = "World Championship Promos"
