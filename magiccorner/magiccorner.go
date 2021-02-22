@@ -89,11 +89,18 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 			switch v.Language {
 			case "EN":
 			case "JP":
-				if edition.Name != "War of the Spark: Japanese Alternate-Art Planeswalkers" {
+				switch edition.Name {
+				case "War of the Spark: Japanese Alternate-Art Planeswalkers":
+				default:
 					continue
 				}
 			case "IT":
-				if edition.Id != mcRevisedEUFBBId && edition.Id != mcReinassanceId {
+				switch edition.Name {
+				case "Revised EU FBB":
+				case "Rinascimento":
+				case "L'Oscurità":
+				case "Leggende":
+				default:
 					continue
 				}
 			default:

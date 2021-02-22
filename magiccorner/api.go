@@ -61,8 +61,6 @@ const (
 	mcEditionsEndpt = "espansioni"
 	mcCardsEndpt    = "carte"
 
-	mcReinassanceId       = 73
-	mcRevisedEUFBBId      = 1041
 	mcPromoEditionId      = 1113
 	mcMerfolksVsGoblinsId = 1116
 )
