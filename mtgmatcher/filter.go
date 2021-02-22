@@ -628,14 +628,18 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
-			// IKO-Style cards with different names
-			// Needs to be outside of the above block due to promos originally
-			// printed in an older edition
-			// Also some providers do not tag Japanese-only Godzilla cards as such
-			if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeGodzilla) {
-				continue
-			} else if !inCard.isReskin() && card.HasPromoType(mtgjson.PromoTypeGodzilla) {
-				continue
+			// Only do this check if we are in a safe parsing status
+			if !inCard.beyondBaseSet {
+				// IKO-Style cards with different names
+				// Needs to be outside of the above block due to promos
+				// originally printed in an older edition
+				// Also some providers do not tag Japanese-only Godzilla
+				// cards as such
+				if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+					continue
+				} else if !inCard.isReskin() && card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+					continue
+				}
 			}
 
 			// Special sets

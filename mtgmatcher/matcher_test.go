@@ -2239,6 +2239,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "3aa21396-8dcd-5f9a-9243-677182293d4a",
+		Desc: "boosterfun_variant_but_needs_tags",
+		In: Card{
+			Name:    "Pollywog Symbiote",
+			Edition: "Ikoria: Lair of Behemoths: Variants",
+		},
+	},
+	MatchTest{
 		Id:   "e1b8fc9f-e974-51cd-972f-624b3e9d0c1b",
 		Desc: "intropack_dedup_normal",
 		In: Card{
