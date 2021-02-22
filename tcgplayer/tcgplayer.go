@@ -260,7 +260,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 			i++
 
 			for _, card := range set.Cards {
-				skus, found := skusMap[card.UUID]
+				uuid := card.UUID
+				skus, found := skusMap[uuid]
 				if !found {
 					continue
 				}
@@ -268,8 +269,27 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					// Skip languages that we do not track
 					switch sku.Language {
 					case "ENGLISH":
+					case "ITALIAN":
+						switch set.Name {
+						case "Legends", "The Dark":
+							uuid = card.UUID + "_ita"
+						case "Rinascimento":
+						default:
+							continue
+						}
 					case "JAPANESE":
-						if !(card.HasUniqueLanguage("Japanese") && strings.Contains(card.Number, "★")) {
+						switch set.Name {
+						case "War of the Spark", "War of the Spark Promos":
+							if !strings.Contains(card.Number, "★") {
+								continue
+							}
+						case "Ikoria: Lair of Behemoths":
+							switch card.Name {
+							case "Mysterious Egg", "Dirge Bat", "Crystalline Giant":
+							default:
+								continue
+							}
+						default:
 							continue
 						}
 					default:
@@ -277,7 +297,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					}
 
 					pages <- marketChan{
-						UUID:      card.UUID,
+						UUID:      uuid,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
 						ProductId: sku.ProductId,
