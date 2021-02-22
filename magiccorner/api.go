@@ -11,14 +11,14 @@ import (
 
 type MCEdition struct {
 	Id   int    `json:"Id"`
-	Set  string `json:"Espansione"`
+	Name string `json:"Espansione"`
 	Code string `json:"ImageUrl"`
 }
 
 type MCCard struct {
 	Id       int    `json:"IdProduct"`
 	Name     string `json:"NomeEn"`
-	Set      string `json:"Category"`
+	Edition  string `json:"Category"`
 	Code     string `json:"Icon"`
 	Rarity   string `json:"Rarita"`
 	Extra    string `json:"Image"`
@@ -115,8 +115,8 @@ func (mc *MCClient) GetEditionList(addPromoEd bool) ([]MCEdition, error) {
 	if addPromoEd {
 		// This edition is not present in the normal callback
 		editionList = append(editionList, MCEdition{
-			Id:  mcPromoEditionId,
-			Set: "Promo",
+			Id:   mcPromoEditionId,
+			Name: "Promo",
 		})
 	}
 
@@ -159,22 +159,22 @@ func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) 
 
 	resp, err := mc.client.Post(mcBaseURL+mcCardsEndpt, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
-		return nil, fmt.Errorf("%s - %v", edition.Set, err)
+		return nil, fmt.Errorf("%s - %v", edition.Name, err)
 	}
 	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, err)
+		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, err)
 	}
 
 	var response mcResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return nil, fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, err)
+		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, err)
 	}
 	if response.Error != "" {
-		return nil, fmt.Errorf("%s - %d: %v", edition.Set, resp.StatusCode, response.Error)
+		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, response.Error)
 	}
 
 	return response.Data, nil

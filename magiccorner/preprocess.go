@@ -125,7 +125,7 @@ var editionTable = map[string]string{
 
 func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	cardName := card.Name
-	edition := card.Set
+	edition := card.Edition
 
 	// Grab the image url and keep only the image name
 	extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))

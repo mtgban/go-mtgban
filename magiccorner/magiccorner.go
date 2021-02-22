@@ -72,7 +72,7 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 
 	for _, card := range cards {
 		if !printed && mc.VerboseLog {
-			mc.printf("Processing id %d - %s (%s, code: %s)", edition.Id, edition.Set, card.Extra, card.Code)
+			mc.printf("Processing id %d - %s (%s, code: %s)", edition.Id, edition.Name, card.Extra, card.Code)
 			printed = true
 		}
 
@@ -80,7 +80,7 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 			// Skip duplicate cards
 			if duplicate[v.Id] {
 				if mc.VerboseLog {
-					mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Set, v.Foil)
+					mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Edition, v.Foil)
 				}
 				continue
 			}
@@ -89,7 +89,7 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 			switch v.Language {
 			case "EN":
 			case "JP":
-				if edition.Set != "War of the Spark: Japanese Alternate-Art Planeswalkers" {
+				if edition.Name != "War of the Spark: Japanese Alternate-Art Planeswalkers" {
 					continue
 				}
 			case "IT":
