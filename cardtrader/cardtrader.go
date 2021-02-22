@@ -63,6 +63,8 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			switch product.Expansion.Name {
 			case "Foreign Black Bordered":
 			case "Rinascimento":
+			case "Legends Italian":
+			case "The Dark Italian":
 			default:
 				continue
 			}
