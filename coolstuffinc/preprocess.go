@@ -289,10 +289,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 	case "Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling":
 		edition = "Global Series Jiang Yanggu & Mu Yanling"
-	case "Legends":
-		if strings.Contains(cardName, "Italian") || strings.Contains(variant, "Italian") {
-			return nil, errors.New("non-english")
-		}
 	case "Ikoria: Lair of Behemoths: Variants":
 		vars := mtgmatcher.SplitVariants(cardName)
 		if len(vars) > 1 {
