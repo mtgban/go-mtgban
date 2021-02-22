@@ -255,7 +255,9 @@ func (ct *Cardtrader) scrape() error {
 	current := 0
 	for result := range results {
 		if ct.inventory[result.cardId] == nil {
-			current++
+			if !strings.HasSuffix(result.cardId, "_f") {
+				current++
+			}
 		}
 		err := ct.inventory.AddRelaxed(result.cardId, result.invEntry)
 		if err != nil {
