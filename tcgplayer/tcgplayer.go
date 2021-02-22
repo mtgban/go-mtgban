@@ -103,7 +103,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 		}
 		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
-			tcg.printf("(%d / %s) - %s", result.ProductId, cardId, err)
+			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), result.ProductId, req.UUID)
 			continue
 		}
 
