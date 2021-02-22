@@ -115,6 +115,13 @@ var MatchTests = []MatchTest{
 			Id: "a67c3cd2-d09d-5c2e-807b-5f4772c367e7",
 		},
 	},
+	MatchTest{
+		Id:   "91cff9f4-41ec-5359-8723-dd2e6ba6efc4",
+		Desc: "id_lookup_scryfall",
+		In: Card{
+			Id: "0535c823-f6e9-4a2f-8adf-f69b6f0fea1f",
+		},
+	},
 
 	// Number duplicates
 	MatchTest{

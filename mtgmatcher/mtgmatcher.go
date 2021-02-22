@@ -14,10 +14,26 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// Look up by uuid
 	if inCard.Id != "" {
+		outId := ""
 		co, found := backend.UUIDs[inCard.Id]
 		if found {
-			outId := output(co.Card, inCard.Foil)
+			outId = output(co.Card, inCard.Foil)
+		} else {
+			// Second chance, lookup by scryfall id
+			for _, set := range backend.Sets {
+				for _, card := range set.Cards {
+					if inCard.Id == card.Identifiers["scryfallId"] {
+						outId = card.UUID
+						break
+					}
+				}
+				if outId != "" {
+					break
+				}
+			}
+		}
 
+		if outId != "" {
 			// Validate that what we found is correct
 			co = backend.UUIDs[outId]
 			// If the input card was requested as foil, we should double check
