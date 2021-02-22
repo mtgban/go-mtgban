@@ -571,6 +571,12 @@ func adjustEdition(inCard *Card) {
 	// Adjust edition for non-English sets
 	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && Contains(inCard.Variation, "Italian"):
 		inCard.Edition += " Italian"
+	case inCard.Edition == "Renaissance" && Contains(inCard.Variation, "Italian"):
+		inCard.Edition = "Rinascimento"
+		// This set has lots of variants, strip away any excess data
+		inCard.Variation = strings.ToLower(inCard.Variation)
+		inCard.Variation = strings.Replace(inCard.Variation, "italian", "", 1)
+		inCard.Variation = strings.TrimSpace(inCard.Variation)
 
 	// Single card mismatches
 	default:
