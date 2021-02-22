@@ -19,15 +19,12 @@ var filteredExpansions = []string{
 	"Fourth Edition: Alternate",
 	"Fourth Edition: Black Bordered",
 	"GnD Cards",
-	"Legends Italian",
 	"Modern Horizons: Art Series",
-	"Rinascimento",
 	"Rk post Products",
 	"Salvat-Hachette 2011",
 	"Salvat-Hachette",
 	"Simplified Chinese Alternate Art Cards",
 	"Starcity Games: Creature Collection",
-	"The Dark Italian",
 	"Ultra-Pro Puzzle Cards",
 }
 

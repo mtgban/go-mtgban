@@ -2797,6 +2797,11 @@ var rinVariants = map[string]map[string]string{
 		"tower":         "178",
 
 		"sphere": "176",
+
+		"v.2": "175",
+		"v.1": "176",
+		"v.3": "177",
+		"v.4": "178",
 	},
 	"Urza's Power Plant": map[string]string{
 		"centrale57": "179",
@@ -2815,6 +2820,11 @@ var rinVariants = map[string]map[string]string{
 		"bug":         "182",
 
 		"pot": "179",
+
+		"v.3": "179",
+		"v.2": "180",
+		"v.4": "181",
+		"v.1": "182",
 	},
 	"Urza's Tower": map[string]string{
 		"ri055":   "183",
@@ -2833,6 +2843,11 @@ var rinVariants = map[string]map[string]string{
 		"shore":     "186",
 
 		"mountain": "185",
+
+		"v.1": "183",
+		"v.3": "184",
+		"v.2": "185",
+		"v.4": "186",
 	},
 }
 
