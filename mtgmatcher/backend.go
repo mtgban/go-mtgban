@@ -143,6 +143,46 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.UUIDs = uuids
+
+	duplicate("Legends Italian", "LEG", "ITA", "1995-04-01")
+	duplicate("The Dark Italian", "DRK", "ITA", "1995-07-01")
+}
+
+func duplicate(name, code, tag, date string) {
+	// Copy base set information
+	dup := mtgjson.Set{}
+	dup = *backend.Sets[code]
+
+	// Update with new info
+	dup.Name = name
+	dup.Code = code + tag
+	dup.ReleaseDate = date
+
+	// Copy card information
+	dup.Cards = make([]mtgjson.Card, len(backend.Sets[code].Cards))
+	for i := range backend.Sets[code].Cards {
+		// Update printings for the original set
+		printings := append(backend.Sets[code].Cards[i].Printings, dup.Code)
+		backend.Sets[code].Cards[i].Printings = printings
+
+		// Update with new info
+		dup.Cards[i] = backend.Sets[code].Cards[i]
+		dup.Cards[i].UUID += "_" + strings.ToLower(tag)
+		dup.Cards[i].SetCode = dup.Code
+
+		// Update printings for the CardInfo map
+		ci := backend.Cards[Normalize(dup.Cards[i].Name)]
+		ci.Printings = printings
+		backend.Cards[Normalize(dup.Cards[i].Name)] = ci
+
+		// Add the new uuid to the UUID map
+		backend.UUIDs[dup.Cards[i].UUID] = CardObject{
+			Card:    dup.Cards[i],
+			Edition: name,
+		}
+	}
+
+	backend.Sets[dup.Code] = &dup
 }
 
 func LoadDatastore(reader io.Reader) error {

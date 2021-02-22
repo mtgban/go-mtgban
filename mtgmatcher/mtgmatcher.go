@@ -568,6 +568,10 @@ func adjustEdition(inCard *Card) {
 	case inCard.Equals("Planechase Anthology") && len(MatchInSet(inCard.Name, "OPCA")) != 0:
 		inCard.Edition = backend.Sets["OPCA"].Name
 
+	// Adjust edition for non-English sets
+	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && Contains(inCard.Variation, "Italian"):
+		inCard.Edition += " Italian"
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {

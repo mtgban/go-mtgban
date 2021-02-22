@@ -2374,6 +2374,22 @@ var MatchTests = []MatchTest{
 			Promo:   true,
 		},
 	},
+
+	MatchTest{
+		Id:   "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
+		Desc: "custom_language_tag",
+		In: Card{
+			Name:    "Sylvan Library",
+			Edition: "Legends Italian",
+		},
+	},
+	MatchTest{
+		Id:   "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
+		Desc: "custom_language_id_lookup",
+		In: Card{
+			Id: "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
