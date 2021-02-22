@@ -525,15 +525,19 @@ func adjustEdition(inCard *Card) {
 	// XLN Treasure Chest
 	case inCard.isBaB() && len(MatchInSet(inCard.Name, "PXTC")) != 0:
 		inCard.Edition = backend.Sets["PXTC"].Name
+
 	// BFZ Standard Series
 	case inCard.isGenericAltArt() && len(MatchInSet(inCard.Name, "PSS1")) != 0:
 		inCard.Edition = backend.Sets["PSS1"].Name
+
 	// Champs and States
 	case inCard.isGenericExtendedArt() && len(MatchInSet(inCard.Name, "PCMP")) != 0:
 		inCard.Edition = backend.Sets["PCMP"].Name
+
 	// Portal Demo Game
 	case inCard.isPortalAlt() && len(MatchInSet(inCard.Name, "PPOD")) != 0:
 		inCard.Edition = backend.Sets["PPOD"].Name
+
 	// Secret Lair {Ultimate,Drop}
 	case inCard.Contains("Secret") || Contains(inCard.Variation, "Lair"):
 		if len(MatchInSet(inCard.Name, "SLU")) != 0 {
@@ -541,10 +545,12 @@ func adjustEdition(inCard *Card) {
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
 			inCard.Edition = backend.Sets["SLD"].Name
 		}
+
 	// Summer of Magic
 	case (inCard.isWPNGateway() || strings.Contains(inCard.Variation, "Summer")) &&
 		len(MatchInSet(inCard.Name, "PSUM")) != 0:
 		inCard.Edition = backend.Sets["PSUM"].Name
+
 	// Untagged Planeshift Alternate Art - these could be solved with the
 	// Promo handling, but they are not set as such in mtgjson/scryfall
 	case inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PLS")) == 2:
@@ -552,44 +558,7 @@ func adjustEdition(inCard *Card) {
 		inCard.Variation = "Alternate Art"
 		inCard.Promo = false
 
-	// Single card mismatches
-	case Equals(inCard.Name, "Rhox") && (inCard.isGenericAltArt() || inCard.isGenericPromo()):
-		inCard.Edition = "Starter 2000"
-	case Equals(inCard.Name, "Balduvian Horde") && (strings.Contains(inCard.Variation, "Judge") || strings.Contains(inCard.Edition, "Promo") || inCard.isDCIPromo()):
-		inCard.Edition = "World Championship Promos"
-	case Equals(inCard.Name, "Nalathni Dragon"):
-		inCard.Variation = ""
-		inCard.Edition = "Dragon Con"
-	case Equals(inCard.Name, "Ass Whuppin'") && inCard.isPrerelease():
-		inCard.Edition = "Release Events"
-	case Equals(inCard.Name, "Rukh Egg") && inCard.isPrerelease():
-		inCard.Edition = "Release Events"
-	case Equals(inCard.Name, "Ajani Vengeant") && inCard.isRelease():
-		inCard.Variation = "Prerelease"
-	case Equals(inCard.Name, "Tamiyo's Journal") && inCard.Variation == "" && inCard.Foil:
-		inCard.Variation = "Foil"
-	case Equals(inCard.Name, "Underworld Dreams") && (inCard.isDCIPromo() || inCard.isArena()):
-		inCard.Edition = "Two-Headed Giant Tournament"
-	case Equals(inCard.Name, "Jace Beleren") && inCard.isDCIPromo():
-		inCard.Edition = "Miscellaneous Book Promos"
-	case Equals(inCard.Name, "Serra Angel") && (inCard.isDCIPromo() || inCard.isBaB()):
-		inCard.Edition = "Wizards of the Coast Online Store"
-
-	case Equals(inCard.Name, "Incinerate") && inCard.isDCIPromo():
-		inCard.Edition = "DCI Legend Membership"
-	case Equals(inCard.Name, "Counterspell") && inCard.isDCIPromo():
-		inCard.Edition = "DCI Legend Membership"
-
-	case Equals(inCard.Name, "Kamahl, Pit Fighter") && inCard.isDCIPromo():
-		inCard.Edition = "15th Anniversary Cards"
-	case Equals(inCard.Name, "Char") && inCard.isDCIPromo():
-		inCard.Edition = "15th Anniversary Cards"
-
-	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isDCIPromo() && ExtractNumber(inCard.Variation) == "":
-		inCard.Edition = "Wizards Play Network 2010"
-	case (Equals(inCard.Name, "Fling") || Equals(inCard.Name, "Sylvan Ranger")) && inCard.isWPNGateway() && ExtractNumber(inCard.Variation) == "":
-		inCard.Edition = "Wizards Play Network 2011"
-
+	// Rename the official name to the the more commonly used name
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
 		inCard.Variation = "Foil Etched"
 
@@ -599,14 +568,71 @@ func adjustEdition(inCard *Card) {
 	case inCard.Equals("Planechase Anthology") && len(MatchInSet(inCard.Name, "OPCA")) != 0:
 		inCard.Edition = backend.Sets["OPCA"].Name
 
-	// Missing the proper FrameEffect property
-	case Equals(inCard.Name, "Vorinclex, Monstrous Raider") && (inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian")):
-		num := ExtractNumber(inCard.Variation)
-		if num == "" {
-			if Contains(inCard.Variation, "Phyrexian") {
-				inCard.Variation = "333"
-			} else if inCard.isShowcase() {
-				inCard.Variation = "320"
+	// Single card mismatches
+	default:
+		switch inCard.Name {
+		case "Rhox":
+			if inCard.isGenericAltArt() || inCard.isGenericPromo() {
+				inCard.Edition = "Starter 2000"
+			}
+		case "Balduvian Horde":
+			if inCard.isJudge() || inCard.isGenericPromo() || inCard.isDCIPromo() {
+				inCard.Edition = "World Championship Promos"
+			}
+		case "Nalathni Dragon":
+			inCard.Edition = "Dragon Con"
+			inCard.Variation = ""
+		case "Ass Whuppin'", "Rukh Egg":
+			if inCard.isPrerelease() {
+				inCard.Edition = "Release Events"
+			}
+		case "Ajani Vengeant":
+			if inCard.isRelease() {
+				inCard.Variation = "Prerelease"
+			}
+		case "Tamiyo's Journal":
+			if inCard.Variation == "" && inCard.Foil {
+				inCard.Variation = "Foil"
+			}
+		case "Underworld Dreams":
+			if inCard.isDCIPromo() || inCard.isArena() {
+				inCard.Edition = "Two-Headed Giant Tournament"
+			}
+		case "Jace Beleren":
+			if inCard.isDCIPromo() {
+				inCard.Edition = "Miscellaneous Book Promos"
+			}
+		case "Serra Angel":
+			if inCard.isDCIPromo() || inCard.isBaB() {
+				inCard.Edition = "Wizards of the Coast Online Store"
+			}
+		case "Incinerate", "Counterspell":
+			if inCard.isDCIPromo() {
+				inCard.Edition = "DCI Legend Membership"
+			}
+		case "Kamahl, Pit Fighter", "Char":
+			if inCard.isDCIPromo() {
+				inCard.Edition = "15th Anniversary Cards"
+			}
+		case "Fling", "Sylvan Ranger":
+			if ExtractNumber(inCard.Variation) == "" {
+				if inCard.isDCIPromo() {
+					inCard.Edition = "Wizards Play Network 2010"
+				} else if inCard.isWPNGateway() {
+					inCard.Edition = "Wizards Play Network 2011"
+				}
+			}
+		case "Vorinclex, Monstrous Raider":
+			// Missing the proper FrameEffect property
+			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
+				num := ExtractNumber(inCard.Variation)
+				if num == "" {
+					if Contains(inCard.Variation, "Phyrexian") {
+						inCard.Variation = "333"
+					} else if inCard.isShowcase() {
+						inCard.Variation = "320"
+					}
+				}
 			}
 		}
 	}
