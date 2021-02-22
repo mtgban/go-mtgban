@@ -26,6 +26,7 @@ var cardTable = map[string]string{
 	"Sir Shandlar di Eberyn":  "Sir Shandlar of Eberyn",
 	"Rohgahh di Kher":         "Rohgahh of Kher Keep",
 	"El-Ajjaj":                "El-Hajjâj",
+	"Immagina Fantasma":       "Phantasmal Image",
 
 	"Sedris, the King Traitor": "Sedris, the Traitor King",
 }
