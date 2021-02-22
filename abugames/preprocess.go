@@ -55,36 +55,32 @@ var promoTags = []string{
 }
 
 func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
-	lang := ""
 	if len(card.Language) > 0 {
 		switch card.Language[0] {
 		case "English":
-			lang = "EN"
-		case "French":
-			lang = "FR"
-		case "German":
-			lang = "DE"
 		case "Italian":
-			lang = "IT"
-		case "Spanish":
-			lang = "ES"
-		case "Portuguese":
-			lang = "PT"
+			switch card.Edition {
+			case "Legends":
+			case "The Dark":
+			case "Renaissance":
+			default:
+				return nil, errors.New("non-English card")
+			}
 		case "Japanese":
-			lang = "JP"
-		case "Korean":
-			lang = "KR"
-		case "Chinese Simplified":
-			lang = "CH"
-		case "Russian":
-			lang = "RU"
+			switch card.Edition {
+			case "War of the Spark":
+			case "Ikoria: Lair of Behemoths":
+				switch card.SimpleTitle {
+				case "Mysterious Egg", "Dirge Bat", "Crystalline Giant":
+				default:
+					return nil, errors.New("non-English card")
+				}
+			default:
+				return nil, errors.New("non-English card")
+			}
 		default:
-			lang = card.Language[0]
+			return nil, errors.New("non-English card")
 		}
-	}
-
-	if lang != "EN" || strings.Contains(card.Title, "Non-English") {
-		return nil, errors.New("non-english card")
 	}
 
 	// Non-Singles magic cards
@@ -304,6 +300,14 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	name, found := cardTable[cardName]
 	if found {
 		cardName = name
+	}
+
+	// Stash the language information (filtered earlier)
+	if len(card.Language) > 0 && card.Language[0] != "English" {
+		if variation != "" {
+			variation += " "
+		}
+		variation += card.Language[0]
 	}
 
 	return &mtgmatcher.Card{
