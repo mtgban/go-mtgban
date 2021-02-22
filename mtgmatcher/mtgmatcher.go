@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
+
+	"github.com/google/uuid"
 )
 
 func Match(inCard *Card) (cardId string, err error) {
@@ -12,7 +14,14 @@ func Match(inCard *Card) (cardId string, err error) {
 		return "", ErrDatastoreEmpty
 	}
 
-	// Look up by uuid
+	// Look up by uuid (validate it first, remove any extras after the underscore)
+	if inCard.Id != "" {
+		id := strings.Split(inCard.Id, "_")[0]
+		_, err := uuid.Parse(id)
+		if err != nil {
+			inCard.Id = ""
+		}
+	}
 	if inCard.Id != "" {
 		outId := ""
 		co, found := backend.UUIDs[inCard.Id]
@@ -58,6 +67,11 @@ func Match(inCard *Card) (cardId string, err error) {
 			}
 			return outId, nil
 		}
+	}
+
+	// In case id lookup failed, an no more data is present
+	if inCard.Name == "" {
+		return "", ErrCardDoesNotExist
 	}
 
 	// Get the card basic info to retrieve the Printings array

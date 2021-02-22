@@ -68,6 +68,13 @@ var MatchTests = []MatchTest{
 			Edition:   "Alliances",
 		},
 	},
+	MatchTest{
+		Desc: "invalid_id",
+		Err:  ErrCardDoesNotExist,
+		In: Card{
+			Id: "not-an-id",
+		},
+	},
 
 	// ID lookup
 	MatchTest{
