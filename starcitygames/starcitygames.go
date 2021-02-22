@@ -344,6 +344,9 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 					if mtgmatcher.IsBasicLand(result.Name) {
 						continue
 					}
+				case "Legends":
+				case "Renaissance":
+				case "The Dark":
 				default:
 					continue
 				}

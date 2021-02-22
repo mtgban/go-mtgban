@@ -360,11 +360,12 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 		variant += vars[1]
 	}
 
-	if card.Language == "Japanese" {
+	switch card.Language {
+	case "Japanese", "Italian":
 		if variant != "" {
 			variant += " "
 		}
-		variant += "Japanese"
+		variant += card.Language
 	}
 
 	switch edition {
