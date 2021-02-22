@@ -11,14 +11,14 @@ import (
 
 var cardTable = map[string]string{
 	"Ashiok's Forerummer":     "Ashiok's Forerunner",
-	"Fire (Fire/Ice) ":        "Fire",
-	"Fire (Fire/Ice)":         "Fire",
-	"Fire/Ice":                "Fire",
+	"Fire (Fire/Ice) ":        "Fire // Ice",
+	"Fire (Fire/Ice)":         "Fire // Ice",
+	"Fire/Ice":                "Fire // Ice",
 	"Kingsbaile Skirmisher":   "Kinsbaile Skirmisher",
 	"Rough (Rough/Tumble)":    "Rough",
 	"Time Shrike":             "Tine Shrike",
 	"Treasure Find":           "Treasured Find",
-	"Wax/Wane":                "Wax",
+	"Wax/Wane":                "Wax // Wane",
 	"Who,What,When,Where,Why": "Who",
 	"Who/What/When/Where/Why": "Who",
 	"Skull of Arm":            "Skull of Orm",
@@ -26,11 +26,6 @@ var cardTable = map[string]string{
 	"Sir Shandlar di Eberyn":  "Sir Shandlar of Eberyn",
 	"Rohgahh di Kher":         "Rohgahh of Kher Keep",
 	"El-Ajjaj":                "El-Hajjâj",
-	"Frankenstein's Monst":    "Frankenstein's Monster",
-	"The Tabernacle at Pe":    "The Tabernacle at Pendrell Vale",
-	"Call of the Death-Dw":    "Call of the Death-Dweller",
-	"Hallowed Spiritkeepe":    "Hallowed Spiritkeeper",
-	"Iroas, God of Victor":    "Iroas, God of Victory",
 
 	"Sedris, the King Traitor": "Sedris, the Traitor King",
 }
@@ -389,10 +384,11 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	}
 
 	return &mtgmatcher.Card{
-		Name:      cardName,
-		Variation: variation,
-		Edition:   edition,
-		Foil:      isFoil,
+		Name:        cardName,
+		Variation:   variation,
+		Edition:     edition,
+		Foil:        isFoil,
+		MaybePrefix: true,
 	}, nil
 }
 
