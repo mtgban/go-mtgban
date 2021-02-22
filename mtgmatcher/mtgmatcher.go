@@ -85,9 +85,11 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
 		cardSet[printings[0]] = MatchInSet(inCard.Name, printings[0])
-	} else {
+	} else if !inCard.Promo {
 		// If multiple printing, try filtering to the closest name
 		// described by the inCard.Edition.
+		// This is skipped if we're in the wildcard Promo mode, as we
+		// need as many editions as possible.
 		logger.Println("Several printings found, iterating over edition name")
 
 		// First loop, search for a perfect match
@@ -112,15 +114,15 @@ func Match(inCard *Card) (cardId string, err error) {
 				}
 			}
 		}
+	}
 
-		// Third loop, YOLO
-		// Let's consider every edition and hope the second pass will filter
-		// duplicates out. This may result in false positives of course.
-		if len(cardSet) == 0 {
-			logger.Println("No loose match found, trying all")
-			for _, setCode := range printings {
-				cardSet[setCode] = MatchInSet(inCard.Name, setCode)
-			}
+	// Third loop, YOLO
+	// Let's consider every edition and hope the second pass will filter
+	// duplicates out. This may result in false positives of course.
+	if len(cardSet) == 0 {
+		logger.Println("No loose match found, trying all")
+		for _, setCode := range printings {
+			cardSet[setCode] = MatchInSet(inCard.Name, setCode)
 		}
 	}
 
@@ -543,6 +545,12 @@ func adjustEdition(inCard *Card) {
 	case (inCard.isWPNGateway() || strings.Contains(inCard.Variation, "Summer")) &&
 		len(MatchInSet(inCard.Name, "PSUM")) != 0:
 		inCard.Edition = backend.Sets["PSUM"].Name
+	// Untagged Planeshift Alternate Art - these could be solved with the
+	// Promo handling, but they are not set as such in mtgjson/scryfall
+	case inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PLS")) == 2:
+		inCard.Edition = "PLS"
+		inCard.Variation = "Alternate Art"
+		inCard.Promo = false
 
 	// Single card mismatches
 	case Equals(inCard.Name, "Rhox") && (inCard.isGenericAltArt() || inCard.isGenericPromo()):

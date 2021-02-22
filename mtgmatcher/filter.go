@@ -382,6 +382,47 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					continue
 				}
 			}
+
+		// Last resort, if this is set on the input card, and there were
+		// no better descriptors earlier, try looking at the set type
+		case inCard.Promo:
+			switch set.Type {
+			case "promo":
+				skip := false
+				foundCards := MatchInSet(inCard.Name, setCode)
+				// It is required to set a proper tag to parse non-English
+				// cards or well-known promos
+				for _, card := range foundCards {
+					if card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
+						skip = true
+						break
+					}
+				}
+
+				if skip {
+					continue
+				}
+			case "starter":
+				if !strings.HasSuffix(set.Name, "Clash Pack") {
+					continue
+				}
+			case "expansion", "core", "masters", "draft_innovation":
+				skip := true
+				foundCards := MatchInSet(inCard.Name, setCode)
+				for _, card := range foundCards {
+					// Skip boosterfun because they are inherently non-promo
+					if card.IsPromo && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+						skip = false
+						break
+					}
+				}
+				if skip {
+					continue
+				}
+			default:
+				continue
+			}
+
 		}
 
 		printings = append(printings, setCode)
@@ -522,6 +563,22 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			} else {
 				if strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
 					continue
+				}
+			}
+
+			// The last-ditch effort from above - when this is set, only check
+			// the non-promo sets as some promos can be mixed next to the
+			// normal cards - in this way, promo sets can process as normal and
+			// deduplicate all the various prerelease and promo packs
+			if inCard.Promo {
+				switch set.Type {
+				case "expansion", "core", "masters", "draft_innovation":
+					if !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+						if card.IsPromo {
+							outCards = append(outCards, card)
+						}
+						continue
+					}
 				}
 			}
 

@@ -2263,6 +2263,117 @@ var MatchTests = []MatchTest{
 			Edition:   "Kaladesh",
 		},
 	},
+
+	// Best effort mode, when the user gives up and sets the Promo
+	// flag, this small subsets of promos should still be supported
+	MatchTest{
+		Id:   "f87da7e0-10e5-5cae-917e-6e5a92f7880c",
+		Desc: "untagged_promo_anypromoset",
+		In: Card{
+			Name:    "Acidic Slime",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "21beeb79-a0e0-5809-94df-25e44b45220f",
+		Desc: "untagged_promo_clashpack",
+		In: Card{
+			Name:    "Courser of Kruphix",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "3f9a0369-5fe7-5aee-85fe-3cfaacd275af",
+		Desc: "untagged_promo_promopack_in_set",
+		In: Card{
+			Name:    "Bloodchief's Thirst",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "c6c2a57b-1422-54f5-be68-1d64328e3679",
+		Desc: "untagged_promo_expansion",
+		In: Card{
+			Name:    "Adorned Pouncer",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "faf229ab-b135-5c37-abb7-dbf68a1dad9b",
+		Desc: "untagged_promo_coreset",
+		In: Card{
+			Name:    "Alhammarret, High Arbiter",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "bcd861de-1206-5df9-a2c5-e6a3464b37b8",
+		Desc: "untagged_promo_masters",
+		In: Card{
+			Name:    "Chord of Calling",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "2a113727-7f6e-5ab7-9dce-5e6f19ac62c8",
+		Desc: "untagged_promo_skip_jpn",
+		In: Card{
+			Name:    "Dark Ritual",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "0f8e79b8-c429-5e9d-bb51-849c114bf5de",
+		Desc: "untagged_promo_draft",
+		In: Card{
+			Name:    "Mana Confluence",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "dcc4ee11-6a61-55f0-966a-d19732010ffa",
+		Desc: "untagged_promo_nonpromo",
+		In: Card{
+			Name:    "Skyship Weatherlight",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "37fdc0d7-976d-5e5e-af6c-ee6b50795454",
+		Desc: "untagged_promo_bundle",
+		In: Card{
+			Name:    "Piper of the Swarm",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "63ef8762-36b8-5891-97ae-744d0e5d3f78",
+		Desc: "untagged_promo_bab",
+		In: Card{
+			Name:    "Realmwalker",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
+	MatchTest{
+		Id:   "1cb28add-17dd-5e08-9d02-7d6c2275a1fa",
+		Desc: "untagged_promo_not_boxtopper",
+		In: Card{
+			Name:    "Batterskull",
+			Edition: "Promo",
+			Promo:   true,
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

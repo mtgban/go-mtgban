@@ -33,6 +33,11 @@ type Card struct {
 	// variants with the same name of existing cards in the same set, but with
 	// different frames or border effects
 	beyondBaseSet bool
+
+	// In case edition information is not accurate, use this flag to
+	// perform a best-effor search, which will try to isolate promo
+	// printings from the others
+	Promo bool
 }
 
 // Card implements the Stringer interface
