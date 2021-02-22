@@ -78,7 +78,7 @@ func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MK
 
 		err := mkm.processProduct(channel, &product, priceGuide)
 		if err != nil {
-			mkm.printf("product id %s returned %s", product.IdProduct, err)
+			mkm.printf("product id %d returned %s", product.IdProduct, err)
 		}
 	}
 	return nil
