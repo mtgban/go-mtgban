@@ -38,6 +38,10 @@ type Card struct {
 	// perform a best-effor search, which will try to isolate promo
 	// printings from the others
 	Promo bool
+
+	// Indicate that Name field is inaccurate and it's ok to perform
+	// prefix matching (instead of equal matching) if necessary
+	MaybePrefix bool
 }
 
 // Card implements the Stringer interface

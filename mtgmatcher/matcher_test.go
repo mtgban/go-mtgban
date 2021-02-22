@@ -400,6 +400,15 @@ var MatchTests = []MatchTest{
 			Edition: "Unhinged",
 		},
 	},
+	MatchTest{
+		Id:   "dd154c88-8235-5ca0-9925-11391b89669a",
+		Desc: "relaxed_naming",
+		In: Card{
+			Name:        "Two-Headed Giant of",
+			Edition:     "Beta",
+			MaybePrefix: true,
+		},
+	},
 
 	// Incorrect editions
 	MatchTest{
