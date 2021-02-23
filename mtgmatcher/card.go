@@ -165,7 +165,8 @@ func IsBasicLand(name string) bool {
 		strings.Contains(name, "Stronghold"), strings.Contains(name, "Bandit"), // R
 		strings.Contains(name, "Yeti"), strings.Contains(name, "Titan"), // R
 		strings.Contains(name, "Valley"), strings.Contains(name, "Goat"), // R
-		strings.Contains(name, "Fish"), strings.Contains(name, "Sanctuary"): // U
+		strings.Contains(name, "Fish"), strings.Contains(name, "Sanctuary"), // U
+		strings.Contains(name, "Wak-Wak"): // U
 	case strings.HasPrefix(name, "Plains"),
 		strings.HasPrefix(name, "Island"),
 		strings.HasPrefix(name, "Swamp"),
