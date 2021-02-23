@@ -2,6 +2,7 @@ package trollandtoad
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"unicode"
 
@@ -60,6 +61,7 @@ var cardTable = map[string]string{
 	"Japanese Shivan Dragon":  "Shivan Dragon",
 	"Incinerate 1996":         "Incinerate",
 	"rathi Berserker":         "Aerathi Berserker",
+	"Biblioteca Silvestre":    "Sylvan Library",
 
 	"Miara, Thorn of the Galde": "Miara, Thorn of the Glade",
 	"Commet Storm":              "Comet Storm",
@@ -120,13 +122,31 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(edition, "French"),
 		strings.Contains(edition, "German"),
 		strings.Contains(edition, "Russian"),
-		strings.Contains(edition, "Italian"),
 		strings.Contains(fullName, "Korean"),
 		strings.Contains(fullName, "Spanish"),
 		strings.Contains(fullName, "Portuguese"),
-		strings.Contains(fullName, "Chinese"),
-		strings.Contains(fullName, "Italian"):
+		strings.Contains(fullName, "Chinese"):
 		return nil, errors.New("not english")
+	case strings.Contains(edition, "Italian"):
+		switch edition {
+		case "Legends (Italian) Singles",
+			"The Dark (Italian) Singles",
+			"Revised Black Border Italian Singles":
+			// Most cards are named "Italian name (English name)", invert them
+			fields := mtgmatcher.SplitVariants(fullName)
+			if len(fields) > 1 {
+				fullName = fields[1]
+			}
+		case "Renaissance (Italian) Singles":
+			// Cards are named in English but variants are after a dash
+			fields := strings.Split(fullName, " - ")
+			if len(fields) > 1 {
+				subfields := mtgmatcher.SplitVariants(fields[0])
+				fullName = fmt.Sprintf("%s (%s)", subfields[0], fields[1])
+			}
+		default:
+			return nil, errors.New("not english")
+		}
 	case strings.Contains(fullName, "Japanese Hellspark Elemental"),
 		strings.Contains(fullName, "Japanese Emrakul"),
 		strings.Contains(fullName, "Scavenging Ooze (Japanese) 3/3 DOTP"):
