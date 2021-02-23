@@ -150,9 +150,10 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		link.RawQuery = v.Encode()
 
 		for i := range names {
-			if prices[i] == 0 || product.CountArticles-product.CountFoils == 0 {
+			if prices[i] == 0 {
 				continue
 			}
+
 			out := responseChan{
 				ogId:   product.IdProduct,
 				cardId: cardId,
@@ -181,7 +182,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 				}
 			}
 			// If the id is the same it means that the card was really nonfoil-only
-			if cardId != cardIdFoil && product.CountFoils != 0 {
+			if cardId != cardIdFoil {
 				for i := range names {
 					if foilprices[i] == 0 {
 						continue
