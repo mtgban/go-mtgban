@@ -37,6 +37,7 @@ var cardTable = map[string]string{
 	"Harmonize Textless Player Rewards":                "Harmonize",
 	"Yurlok of the Scorch Thras":                       "Yurlok of Scorch Thrash",
 	"Sorin, Imperious Bloodblord":                      "Sorin, Imperious Bloodlord",
+	"Ob Nixilis, the Hate-Twister":                     "Ob Nixilis, the Hate-Twisted",
 
 	"Fall of the Imposter":     "Fall of the Impostor",
 	"Cosmos Elixer":            "Cosmos Elixir",
@@ -83,6 +84,7 @@ var tagsTable = []string{
 	"Game Day Promo",
 	"IDW Promo",
 	"Japanese Alternate Art Exclusive",
+	"Japanese Alternative Art Exclusive",
 	"Judge Promo",
 	"MagicFest Textless Promo",
 	"Media Promo",
@@ -144,6 +146,12 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 				subfields := mtgmatcher.SplitVariants(fields[0])
 				fullName = fmt.Sprintf("%s (%s)", subfields[0], fields[1])
 			}
+		default:
+			return nil, errors.New("not english")
+		}
+	case strings.Contains(edition, "Japanese"):
+		switch edition {
+		case "War of the Spark Japanese Promos":
 		default:
 			return nil, errors.New("not english")
 		}

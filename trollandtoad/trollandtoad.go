@@ -23,6 +23,7 @@ const (
 
 	tatPagesURL = "https://www.trollandtoad.com/magic-the-gathering/all-singles/7085"
 	tatFoilsURL = "https://www.trollandtoad.com/magic-the-gathering/all-foil-singles/7880"
+	tatNonEnURL = "https://www.trollandtoad.com/magic-the-gathering/-non-english-sets-singles/6713"
 	tatOptions  = "?Keywords=&hide-oos=on&min-price=&max-price=&items-pp=60&item-condition=&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
@@ -221,7 +222,7 @@ func (tat *Trollandtoad) scrapePages(link string) error {
 }
 
 func (tat *Trollandtoad) scrape() error {
-	for _, link := range []string{tatPagesURL, tatFoilsURL} {
+	for _, link := range []string{tatPagesURL, tatFoilsURL, tatNonEnURL} {
 		err := tat.scrapePages(link)
 		if err != nil {
 			return err
