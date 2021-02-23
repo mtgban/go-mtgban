@@ -35,7 +35,7 @@ func NewScraper(credentials string) (*Purplemana, error) {
 	if err != nil {
 		return nil, err
 	}
-	pm.client = conf.Client(context.TODO())
+	pm.client = conf.Client(context.Background())
 
 	return &pm, nil
 }
