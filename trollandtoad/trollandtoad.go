@@ -243,8 +243,8 @@ func (tat *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
 	return tat.inventory, nil
 }
 
-func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) error {
-	products, err := tat.client.ProductsForId(id)
+func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code string) error {
+	products, err := tat.client.ProductsForId(id, code)
 	if err != nil {
 		return err
 	}
@@ -263,6 +263,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 		if err != nil {
 			switch {
 			case strings.Contains(card.Edition, "World Championships"):
+			case theCard.IsBasicLand():
 			default:
 				tat.printf("%v", err)
 				tat.printf("%q", theCard)
@@ -279,7 +280,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 			continue
 		}
 
-		price, err := strconv.ParseFloat(card.BuyPrice, 64)
+		price, err := mtgmatcher.ParsePrice(card.BuyPrice)
 		if err != nil {
 			tat.printf("%s %v", card.Name, err)
 			continue
@@ -317,14 +318,20 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id string) err
 }
 
 func (tat *Trollandtoad) parseBL() error {
-	list, err := tat.client.ListEditions()
+	modern, err := tat.client.ListModernEditions()
+	if err != nil {
+		return err
+	}
+	vintage, err := tat.client.ListVintageEditions()
 	if err != nil {
 		return err
 	}
 
+	list := append(modern, vintage...)
+
 	tat.printf("Processing %d editions", len(list))
 
-	editions := make(chan string)
+	editions := make(chan TATEdition)
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
@@ -332,7 +339,7 @@ func (tat *Trollandtoad) parseBL() error {
 		wg.Add(1)
 		go func() {
 			for edition := range editions {
-				err := tat.processPage(results, edition)
+				err := tat.processPage(results, edition.CategoryId, edition.DeptId)
 				if err != nil {
 					tat.printf("%v", err)
 				}
@@ -349,7 +356,7 @@ func (tat *Trollandtoad) parseBL() error {
 			}
 			tat.printf("Processing %s", product.CategoryName)
 
-			editions <- product.CategoryId
+			editions <- product
 		}
 		close(editions)
 

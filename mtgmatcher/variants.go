@@ -774,6 +774,8 @@ var atqVariants = map[string]map[string]string{
 		"c nohorizon": "82a",
 		"d even":      "82b",
 		"a tower":     "82c",
+
+		"horizon uneven stripes": "82d",
 	},
 	"Urza's Mine": map[string]string{
 		"aq084": "83a",
@@ -843,6 +845,8 @@ var atqVariants = map[string]map[string]string{
 
 		"pillar": "84b",
 		"vat":    "84d",
+
+		"rock pot": "84d",
 	},
 	"Urza's Tower": map[string]string{
 		"aq092": "85a",
@@ -2825,6 +2829,8 @@ var rinVariants = map[string]map[string]string{
 		"v.2": "180",
 		"v.4": "181",
 		"v.1": "182",
+
+		"rock pot": "179",
 	},
 	"Urza's Tower": map[string]string{
 		"ri055":   "183",

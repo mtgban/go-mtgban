@@ -79,10 +79,18 @@ func (tat *TATClient) GetProductOptions(productId string) ([]TATBuyingOption, er
 	return options, nil
 }
 
-func (tat *TATClient) ListEditions() ([]TATEdition, error) {
+func (tat *TATClient) ListVintageEditions() ([]TATEdition, error) {
+	return tat.listEditions("V")
+}
+
+func (tat *TATClient) ListModernEditions() ([]TATEdition, error) {
+	return tat.listEditions("M")
+}
+
+func (tat *TATClient) listEditions(code string) ([]TATEdition, error) {
 	param := tatParam{
 		Action:   "getdeptcategorylist",
-		DeptCode: "M",
+		DeptCode: code,
 	}
 	reqBody, err := json.Marshal(&param)
 	if err != nil {
@@ -110,10 +118,10 @@ func (tat *TATClient) ListEditions() ([]TATEdition, error) {
 	return editions, nil
 }
 
-func (tat *TATClient) ProductsForId(id string) (*TATProduct, error) {
+func (tat *TATClient) ProductsForId(id string, code string) (*TATProduct, error) {
 	param := tatParam{
 		Action:     "getbuylist",
-		DeptCode:   "M",
+		DeptCode:   code,
 		CategoryId: id,
 	}
 	reqBody, _ := json.Marshal(&param)

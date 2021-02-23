@@ -59,6 +59,7 @@ var cardTable = map[string]string{
 	"Merfolk Mesmerist Promo": "Merfolk Mesmerist",
 	"Japanese Shivan Dragon":  "Shivan Dragon",
 	"Incinerate 1996":         "Incinerate",
+	"rathi Berserker":         "Aerathi Berserker",
 
 	"Miara, Thorn of the Galde": "Miara, Thorn of the Glade",
 	"Commet Storm":              "Comet Storm",
@@ -116,6 +117,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
 		strings.Contains(edition, "Spanish"),
+		strings.Contains(edition, "French"),
+		strings.Contains(edition, "German"),
 		strings.Contains(edition, "Russian"),
 		strings.Contains(edition, "Italian"),
 		strings.Contains(fullName, "Korean"),
@@ -134,6 +137,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		return nil, errors.New("doesn't exist")
 	case strings.Contains(fullName, "Beast of Burden") && strings.Contains(fullName, "Misprint"),
 		strings.Contains(fullName, "Etali, Primal Storm") && strings.Contains(fullName, "Media Promo"):
+		return nil, errors.New("unsupported")
+	case strings.Contains(edition, "Power Nine"):
 		return nil, errors.New("unsupported")
 	}
 	switch fullName {
@@ -241,6 +246,10 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	// This need to be at the end, for FTV and Core Sets
 	se := mtgmatcher.SplitVariants(edition)
 	edition = se[0]
+	// Rebuild the name proper for anything that needs it
+	if len(se) > 1 && mtgmatcher.ExtractYear(se[1]) == "" && se[1] != "Magic Cards" {
+		edition += " " + se[1]
+	}
 
 	vars := mtgmatcher.SplitVariants(cardName)
 	cardName = vars[0]
