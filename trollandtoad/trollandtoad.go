@@ -30,6 +30,12 @@ var tatAllPagesURL = []string{
 	"https://www.trollandtoad.com/magic-the-gathering/-non-english-sets-singles/6713",
 	"https://www.trollandtoad.com/revised-black-border-italian-singles/12388",
 	"https://www.trollandtoad.com/magic-the-gathering/the-dark-italian-/939",
+	"https://www.trollandtoad.com/magic-the-gathering/-comic-idw-/7993",
+	"https://www.trollandtoad.com/magic-the-gathering/-silver-stamped-singles/15513",
+	"https://www.trollandtoad.com/magic-the-gathering/-from-the-vault/10963",
+	"https://www.trollandtoad.com/magic-the-gathering/-guild-kits/14079",
+	"https://www.trollandtoad.com/magic-the-gathering/-duel-decks/10962",
+	"https://www.trollandtoad.com/magic-the-gathering/-planeswalker-deck-exclusives/11872",
 }
 
 type Trollandtoad struct {
