@@ -432,4 +432,5 @@ var EditionTable = map[string]string{
 	"Revised Edition Foreign Black Border":   "Foreign Black Border",
 
 	"Italian Renaissance": "Rinascimento",
+	"Italian Legends":     "Legends Italian",
 }

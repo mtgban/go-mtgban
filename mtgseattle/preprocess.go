@@ -56,8 +56,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "Italian Legends",
-		"French Revised FBB",
+	case "French Revised FBB",
 		"German Revised FBB",
 		"German Revised FWB",
 		"German Renaissance":
