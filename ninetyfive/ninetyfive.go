@@ -64,26 +64,7 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 			continue
 		}
 
-		edition := product.Set.Name
-		slug := product.Set.Slug
-		if edition == "" {
-			edition = product.Card.Set.Name
-			slug = product.Card.Set.Slug
-		}
-
-		switch product.Language.Code {
-		case "en":
-		case "jp":
-			switch edition {
-			case "WAR Alt-art Promos":
-			default:
-				continue
-			}
-		default:
-			continue
-		}
-
-		theCard, err := preprocess(product.Card, edition, product.Foil == 1)
+		theCard, err := preprocess(&product)
 		if err != nil {
 			continue
 		}
@@ -119,6 +100,11 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 			if cond == "DMG" {
 				cond = "PO"
 			}
+			slug := product.Set.Slug
+			if slug == "" {
+				slug = product.Card.Set.Slug
+			}
+
 			link := "https://95mtg.com/singles/" + slug + "/" + product.Card.Slug
 			channel <- respChan{
 				cardId: cardId,

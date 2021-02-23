@@ -20,9 +20,36 @@ var mediaTable = map[string]string{
 	"Sunken Hollow":    "PSS1",
 }
 
-func preprocess(card NFCard, edition string, foil bool) (*mtgmatcher.Card, error) {
-	cardName := card.Name
+func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
+	card := product.Card
+	edition := product.Set.Name
 	variant := ""
+	if edition == "" {
+		edition = product.Card.Set.Name
+	}
+	cardName := card.Name
+
+	switch product.Language.Code {
+	case "en":
+	case "it":
+		switch edition {
+		case "Legends", "The Dark":
+			variant = "Italian"
+		case "Rinascimento":
+		default:
+			return nil, errors.New("non-english")
+		}
+	case "jp":
+		switch edition {
+		case "WAR Alt-art Promos":
+			// IKO cards are listed English
+		default:
+			return nil, errors.New("non-english")
+		}
+	default:
+		return nil, errors.New("non-english")
+	}
+
 	if card.Number != 0 {
 		variant = fmt.Sprint(card.Number)
 	}
@@ -132,5 +159,6 @@ func preprocess(card NFCard, edition string, foil bool) (*mtgmatcher.Card, error
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
+		Foil:      product.Foil == 1,
 	}, nil
 }
