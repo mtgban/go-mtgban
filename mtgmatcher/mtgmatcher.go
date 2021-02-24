@@ -599,6 +599,11 @@ func adjustEdition(inCard *Card) {
 	case inCard.Equals("Planechase Anthology") && len(MatchInSet(inCard.Name, "OPCA")) != 0:
 		inCard.Edition = backend.Sets["OPCA"].Name
 
+	// The first Gift Pack often get folded in the main Core Set 2019 or in the
+	// related Promos set, so use a lax way to dected the original expansion
+	case Contains(inCard.Edition, "Core") && Contains(inCard.Edition, "2019") && len(MatchInSet(inCard.Name, "G18")) == 1:
+		inCard.Edition = backend.Sets["G18"].Name
+
 	// Adjust edition for non-English sets
 	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && Contains(inCard.Variation, "Italian"):
 		inCard.Edition += " Italian"

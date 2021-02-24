@@ -369,10 +369,6 @@ func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "Core Set 2019":
-		if variant == "Gift Pack" {
-			edition = "M19 Gift pack"
-		}
 	case "3rd Edition BB":
 		variant = strings.TrimSuffix(variant, " BB")
 	default:

@@ -96,10 +96,6 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "Core 2019":
-		if len(mtgmatcher.MatchInSet(cardName, "G18")) > 0 {
-			edition = "G18"
-		}
 	case "Duels of the Planeswalkers Game Promos":
 		switch cardName {
 		case "Ascendant Evincar",

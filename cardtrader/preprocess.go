@@ -263,11 +263,6 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					variant = "Promo Pack"
 					edition = "Zendikar Rising Promos"
 				}
-			case "Core Set 2019 Promos":
-				// g18 cards are folded in pm19 edition
-				if strings.HasPrefix(number, "GP") {
-					edition = "G18"
-				}
 			case "Guilds of Ravnica Promos":
 				switch cardName {
 				case "Attendant of Vraska",
