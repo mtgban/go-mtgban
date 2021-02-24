@@ -441,6 +441,10 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 			if err == nil {
 				edition = set.Name + ": Extras"
 			}
+
+			variant = strings.Replace(variant, "拡張アート", "Extended Art", 1)
+			variant = strings.Replace(variant, "ショーケース", "Showcase", 1)
+
 			switch fields[0] {
 			case "CMR":
 				if variant == "Alternate Frame" {
