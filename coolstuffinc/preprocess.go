@@ -466,6 +466,10 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		case "On Serra's Wings":
 			return nil, errors.New("does not exist")
 		}
+	case "Portal 3 Kingdoms":
+		if variant == "Japanese" || variant == "Chinese" {
+			return nil, errors.New("not english")
+		}
 	case "Promo":
 		switch cardName {
 		case "1996 World Champion",
