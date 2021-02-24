@@ -140,18 +140,18 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 	}
 
+	duplicate(ap.Data, cards, uuids, "Legends Italian", "LEG", "ITA", "1995-04-01")
+	duplicate(ap.Data, cards, uuids, "The Dark Italian", "DRK", "ITA", "1995-07-01")
+
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.UUIDs = uuids
-
-	duplicate("Legends Italian", "LEG", "ITA", "1995-04-01")
-	duplicate("The Dark Italian", "DRK", "ITA", "1995-07-01")
 }
 
-func duplicate(name, code, tag, date string) {
+func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
 	// Copy base set information
 	dup := mtgjson.Set{}
-	dup = *backend.Sets[code]
+	dup = *sets[code]
 
 	// Update with new info
 	dup.Name = name
@@ -159,30 +159,30 @@ func duplicate(name, code, tag, date string) {
 	dup.ReleaseDate = date
 
 	// Copy card information
-	dup.Cards = make([]mtgjson.Card, len(backend.Sets[code].Cards))
-	for i := range backend.Sets[code].Cards {
+	dup.Cards = make([]mtgjson.Card, len(sets[code].Cards))
+	for i := range sets[code].Cards {
 		// Update printings for the original set
-		printings := append(backend.Sets[code].Cards[i].Printings, dup.Code)
-		backend.Sets[code].Cards[i].Printings = printings
+		printings := append(sets[code].Cards[i].Printings, dup.Code)
+		sets[code].Cards[i].Printings = printings
 
 		// Update with new info
-		dup.Cards[i] = backend.Sets[code].Cards[i]
+		dup.Cards[i] = sets[code].Cards[i]
 		dup.Cards[i].UUID += "_" + strings.ToLower(tag)
 		dup.Cards[i].SetCode = dup.Code
 
 		// Update printings for the CardInfo map
-		ci := backend.Cards[Normalize(dup.Cards[i].Name)]
+		ci := cards[Normalize(dup.Cards[i].Name)]
 		ci.Printings = printings
-		backend.Cards[Normalize(dup.Cards[i].Name)] = ci
+		cards[Normalize(dup.Cards[i].Name)] = ci
 
 		// Add the new uuid to the UUID map
-		backend.UUIDs[dup.Cards[i].UUID] = CardObject{
+		uuids[dup.Cards[i].UUID] = CardObject{
 			Card:    dup.Cards[i],
 			Edition: name,
 		}
 	}
 
-	backend.Sets[dup.Code] = &dup
+	sets[dup.Code] = &dup
 }
 
 func LoadDatastore(reader io.Reader) error {
