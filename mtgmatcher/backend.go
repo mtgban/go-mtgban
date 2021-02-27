@@ -35,6 +35,8 @@ var backend struct {
 	Sets  map[string]*mtgjson.Set
 	Cards map[string]cardinfo
 	UUIDs map[string]CardObject
+
+	Scryfall map[string]string
 }
 
 var logger = log.New(ioutil.Discard, "", log.LstdFlags)
@@ -42,6 +44,7 @@ var logger = log.New(ioutil.Discard, "", log.LstdFlags)
 func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
+	scryfall := map[string]string{}
 
 	for code, set := range ap.Data {
 		// Skip a set with a single foreign card, and the celebratory printings
@@ -98,6 +101,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				}
 			}
 
+			scryfallId, found := card.Identifiers["scryfallId"]
+			if found {
+				scryfall[scryfallId] = card.UUID
+			}
+
 			// Shared card object
 			co := CardObject{
 				Card:    card,
@@ -146,6 +154,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.UUIDs = uuids
+	backend.Scryfall = scryfall
 }
 
 func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {

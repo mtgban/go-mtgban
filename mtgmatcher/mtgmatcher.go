@@ -29,16 +29,9 @@ func Match(inCard *Card) (cardId string, err error) {
 			outId = output(co.Card, inCard.Foil)
 		} else {
 			// Second chance, lookup by scryfall id
-			for _, set := range backend.Sets {
-				for _, card := range set.Cards {
-					if inCard.Id == card.Identifiers["scryfallId"] {
-						outId = card.UUID
-						break
-					}
-				}
-				if outId != "" {
-					break
-				}
+			co, found := backend.UUIDs[backend.Scryfall[inCard.Id]]
+			if found {
+				outId = output(co.Card, inCard.Foil)
 			}
 		}
 
