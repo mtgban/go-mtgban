@@ -25,6 +25,8 @@ var cardTable = map[string]string{
 	"Visitor from Planet":                 "Visitor from Planet Q",
 	"Rivals of Ixalan":                    "Snubhorn Sentry",
 
+	"Battra, the Dark Destruction Beast / Dirge Bat": "Dirge Bat",
+
 	// Funny cards
 	"No Name":                         "_____",
 	"Who What When Where Why":         "Who",
