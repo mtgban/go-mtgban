@@ -279,6 +279,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						}
 					case "JAPANESE":
 						switch set.Name {
+						case "Fourth Edition Foreign Black Border":
 						case "War of the Spark", "War of the Spark Promos":
 							if !strings.Contains(card.Number, "★") {
 								continue

@@ -323,6 +323,10 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 			case "English":
 			case "Japanese":
 				switch search.Edition {
+				case "4th Edition BB":
+					if mtgmatcher.IsBasicLand(result.Name) {
+						continue
+					}
 				case "War of the Spark":
 					if result.Subtitle != "(Alternate Art)" {
 						continue

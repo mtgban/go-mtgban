@@ -115,8 +115,6 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			"Zur the Enchanter":
 			return nil, errors.New("oversize")
 		}
-	case "Fourth Edition Black Bordered":
-		edition = "Fourth Edition Foreign Black Border"
 	case "Chronicles Japanese":
 		edition = "Chronicles"
 		variant = number

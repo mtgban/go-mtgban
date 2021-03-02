@@ -217,6 +217,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "Foreign Black Bordered",
 		"Tenth Edition":
 		variant = ""
+	case "Fourth Edition: Black Bordered":
+		if mtgmatcher.IsBasicLand(cardName) {
+			return nil, errors.New("unsupported")
+		}
 	case "Commander's Arsenal":
 		switch cardName {
 		case "Azusa, Lost but Seeking",

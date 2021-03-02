@@ -17,7 +17,6 @@ var filteredExpansions = []string{
 	"Filler Cards",
 	"Foreign White Bordered",
 	"Fourth Edition: Alternate",
-	"Fourth Edition: Black Bordered",
 	"GnD Cards",
 	"Modern Horizons: Art Series",
 	"Rk post Products",

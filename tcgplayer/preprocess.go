@@ -67,8 +67,7 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		"Oversize Cards",
 		"Special Occasion",
 		"Revised Edition Foreign White Border",
-		"Fourth Edition Foreign White Border",
-		"Fourth Edition Foreign Black Border":
+		"Fourth Edition Foreign White Border":
 		return nil, errors.New("unsupported")
 	case "Portal":
 		if variant == "Flavor Text" {

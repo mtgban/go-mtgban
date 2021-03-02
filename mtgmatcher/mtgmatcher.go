@@ -608,6 +608,8 @@ func adjustEdition(inCard *Card) {
 		inCard.Variation = strings.ToLower(inCard.Variation)
 		inCard.Variation = strings.Replace(inCard.Variation, "italian", "", 1)
 		inCard.Variation = strings.TrimSpace(inCard.Variation)
+	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
+		inCard.Edition = "Fourth Edition Foreign Black Border"
 
 	// Single card mismatches
 	default:
