@@ -419,6 +419,22 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if skip {
 					continue
 				}
+			case "box":
+				// Only keep the planeswalkers from SLD for this category
+				if setCode != "SLD" {
+					continue
+				}
+				skip := true
+				foundCards := MatchInSet(inCard.Name, setCode)
+				for _, card := range foundCards {
+					if card.IsPlaneswalker() {
+						skip = false
+						break
+					}
+				}
+				if skip {
+					continue
+				}
 			default:
 				continue
 			}

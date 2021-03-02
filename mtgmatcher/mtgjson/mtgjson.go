@@ -44,6 +44,7 @@ type Card struct {
 	Rarity              string            `json:"rarity"`
 	SetCode             string            `json:"setCode"`
 	Side                string            `json:"side"`
+	Types               []string          `json:"types"`
 	UUID                string            `json:"uuid"`
 	Variations          []string          `json:"variations"`
 	Watermark           string            `json:"watermark"`
@@ -125,6 +126,15 @@ func (c *Card) HasUniqueLanguage(lang string) bool {
 		return false
 	}
 	return c.ForeignData[0].Language == lang
+}
+
+func (c *Card) IsPlaneswalker() bool {
+	for _, typeLine := range c.Types {
+		if typeLine == "Planeswalker" {
+			return true
+		}
+	}
+	return false
 }
 
 type TCGSku struct {
