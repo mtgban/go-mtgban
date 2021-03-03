@@ -74,9 +74,6 @@ var promo2editionTable = map[string]string{
 	"Hypnotic Sprite // Mesmeric Glare":   "Magazine Inserts",
 	"Tangled Florahedron // Tangled Vale": "Magazine Inserts",
 
-	// Game Day Promos
-	"Hall of Triumph": "Journey into Nyx Hero's Path",
-
 	// DCI Promos
 	"Abrupt Decay":                "World Magic Cup Qualifiers",
 	"Inkmoth Nexus":               "World Magic Cup Qualifiers",
@@ -439,8 +436,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	// Catch-all sets for anything promo
 	case "Dengeki Maoh Promos",
 		"Promos",
-		"DCI Promos",
-		"Game Day Promos":
+		"DCI Promos":
 		switch cardName {
 		case "Mayor of Avabruck / Howlpack Alpha":
 			return nil, errors.New("oversize")

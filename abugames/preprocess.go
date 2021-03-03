@@ -228,10 +228,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			if variation == "Commander" {
 				variation = "MagicFest 2019"
 			}
-		case "Hall of Triumph":
-			if variation == "Promo" {
-				variation = "Hero's Path"
-			}
 		case "Disenchant":
 			if variation == "Arena" && isFoil {
 				variation = "FNM 2003"

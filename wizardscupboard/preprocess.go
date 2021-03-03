@@ -114,7 +114,6 @@ var promo2variant = map[string]string{
 
 	"Angelic Skirmisher": "Resale Promos",
 	"Ghost-Lit Raider":   "Release Promos",
-	"Hall of Triumph":    "Hero's Path",
 	"Lhurgoyf":           "Deckmasters",
 	"Nighthowler":        "Game day Promo",
 	"Rhox":               "Alt art",

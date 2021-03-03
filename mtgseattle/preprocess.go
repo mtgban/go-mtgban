@@ -138,8 +138,6 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			edition = "CP1"
 		case "Tember City":
 			edition = "PHOP"
-		case "Hall of Triumph":
-			edition = "THP3"
 		case "Lavinia, Azorius Renegade":
 			edition = "PRNA"
 			variant = ""

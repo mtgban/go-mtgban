@@ -665,6 +665,10 @@ func adjustEdition(inCard *Card) {
 					inCard.Edition = "Wizards Play Network 2011"
 				}
 			}
+		case "Hall of Triumph":
+			if inCard.isGenericPromo() {
+				inCard.Edition = "Journey into Nyx Hero's Path"
+			}
 		case "Vorinclex, Monstrous Raider":
 			// Missing the proper FrameEffect property
 			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {

@@ -116,7 +116,6 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			"Deathless Angel":             "PROE",
 			"Jaya Ballard, Task Mage":     "PMPS08",
 			"Kamahl, Pit Fighter":         "P15A",
-			"Hall of Triumph":             "THP3",
 			"Sword of Dungeons & Dragons": "H17",
 			"Arcbound Ravager":            "PPRO",
 			"Goblin Chieftain":            "PRES",

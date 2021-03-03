@@ -11,8 +11,6 @@ import (
 var mediaTable = map[string]string{
 	"Rakdos Firewheeler": "PRNA",
 
-	"Hall of Triumph": "THP3",
-
 	"Canopy Vista":     "PSS1",
 	"Cinder Glade":     "PSS1",
 	"Prairie Stream":   "PSS1",
