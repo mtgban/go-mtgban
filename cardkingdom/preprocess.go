@@ -40,7 +40,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	if mtgmatcher.IsToken(card.Name) ||
 		strings.Contains(card.Variation, "Misprint") ||
 		strings.Contains(card.Variation, "Oversized") ||
-		card.Edition == "Art Series" ||
+		strings.Contains(card.Edition, "Art Series") ||
 		card.Variation == "MagicFest Non-Foil - 2020" ||
 		card.SKU == "OVERSIZ" {
 		return nil, errors.New("skipping")
