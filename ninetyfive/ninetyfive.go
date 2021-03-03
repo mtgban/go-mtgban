@@ -20,19 +20,29 @@ type Ninetyfive struct {
 
 	client *NFClient
 
+	exchangeRate float64
+
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 	buylistDate   time.Time
 	buylist       mtgban.BuylistRecord
 }
 
-func NewScraper() *Ninetyfive {
+func NewScraper(altHost bool) (*Ninetyfive, error) {
 	nf := Ninetyfive{}
 	nf.inventory = mtgban.InventoryRecord{}
 	nf.buylist = mtgban.BuylistRecord{}
-	nf.client = NewNFClient()
+	nf.client = NewNFClient(altHost)
 	nf.MaxConcurrency = defaultConcurrency
-	return &nf
+	nf.exchangeRate = 1.0
+	if altHost {
+		rate, err := mtgban.GetExchangeRate("EUR")
+		if err != nil {
+			return nil, err
+		}
+		nf.exchangeRate = rate
+	}
+	return &nf, nil
 }
 
 type respChan struct {
@@ -105,12 +115,13 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 				slug = product.Card.Set.Slug
 			}
 
+			price := float64(product.Price) / 100 * nf.exchangeRate
 			link := "https://95mtg.com/singles/" + slug + "/" + product.Card.Slug
 			channel <- respChan{
 				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
-					Price:      float64(product.Price) / 100,
+					Price:      price,
 					Quantity:   product.Quantity,
 					URL:        link,
 				},
@@ -130,7 +141,7 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 					cond = "PO"
 				}
 
-				price := float64(product.Price) / 100
+				price := float64(product.Price) / 100 * nf.exchangeRate
 				if cond != "NM" {
 					price *= map[string]float64{
 						"SP": 0.8,

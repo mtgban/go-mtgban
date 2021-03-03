@@ -14,6 +14,8 @@ const (
 
 	nfRetailURL  = "https://95mtg.com/api/products/?search=qnt:1;language_id:6;prices.price:0-649995;cmc:0-1000000;card.power:0-99;card.toughness:0-99;category_id:1;name:;foil:0|1;signed:0&searchJoin=and&perPage=30&page=1&orderBy=name&sortedBy=asc"
 	nfBuylistURL = "https://95mtg.com/api/buylists/?search=foil:0|1&searchJoin=and&perPage=1&page=1&orderBy=card.name&sortedBy=asc"
+
+	altHost = "eu.95mtg.com"
 )
 
 type NFSearchResponse struct {
@@ -70,13 +72,15 @@ type NFSet struct {
 }
 
 type NFClient struct {
-	client *retryablehttp.Client
+	client  *retryablehttp.Client
+	altHost bool
 }
 
-func NewNFClient() *NFClient {
+func NewNFClient(altHost bool) *NFClient {
 	nf := NFClient{}
 	nf.client = retryablehttp.NewClient()
 	nf.client.Logger = nil
+	nf.altHost = altHost
 	return &nf
 }
 
@@ -116,6 +120,10 @@ func (nf *NFClient) query(searchURL string, start, maxResults int) (*NFSearchRes
 	u, err := url.Parse(searchURL)
 	if err != nil {
 		return nil, err
+	}
+
+	if nf.altHost {
+		u.Host = altHost
 	}
 
 	q := u.Query()
