@@ -203,6 +203,10 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		case "Flooded Strand":
 			edition = "PNAT"
 		}
+	case "Grand Prix Promos":
+		if cardName == "Wilt-Leaf Cavaliers" {
+			edition = "PG08"
+		}
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
 			variant = number
