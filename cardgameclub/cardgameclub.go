@@ -198,7 +198,7 @@ func (cgc *Cardgameclub) scrape() error {
 
 		foil := strings.Contains(title, "foil")
 		isNM := strings.Contains(title, "MINT")
-		isMP := strings.Contains(title, "PLAYED")
+		isMP := strings.Contains(title, "PLAYED") || strings.Contains(title, "GOOD")
 
 		cardName := title
 		for _, rarity := range []string{" rara", " non comune", " comune", " mitica"} {
