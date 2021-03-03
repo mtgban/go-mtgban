@@ -36,8 +36,6 @@ type SCGCard struct {
 	Price     string `json:"price"`
 	Rarity    string `json:"rarity"`
 	Image     string `json:"image"`
-
-	edition string
 }
 
 type SCGSearch struct {

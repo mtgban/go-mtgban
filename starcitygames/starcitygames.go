@@ -151,14 +151,14 @@ func (scg *Starcitygames) scrape() error {
 			fullName := elem.Attr("data-name")
 			subtitle := elem.ChildText(`div[class="listItem-details"] p[class="category-Subtitle"]`)
 
-			card, err := convert(fullName, subtitle, edition)
+			card, edition, err := convert(fullName, subtitle, edition)
 			if err != nil {
 				return
 			}
 			card.Id = dataId
 			card.Foil = isFoil
 
-			theCard, err := preprocess(card)
+			theCard, err := preprocess(card, edition)
 			if err != nil {
 				return
 			}
@@ -319,47 +319,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				continue
 			}
 
-			switch result.Language {
-			case "English":
-			case "Japanese":
-				switch search.Edition {
-				case "4th Edition BB":
-					if mtgmatcher.IsBasicLand(result.Name) {
-						continue
-					}
-				case "War of the Spark":
-					if result.Subtitle != "(Alternate Art)" {
-						continue
-					}
-				case "Ikoria: Lair of Behemoths - Variants":
-					switch result.Name {
-					case "Crystalline Giant",
-						"Battra, Dark Destroyer",
-						"Mothra's Great Cocoon":
-					default:
-						continue
-					}
-				default:
-					continue
-				}
-			case "Italian":
-				switch search.Edition {
-				case "3rd Edition BB":
-					if mtgmatcher.IsBasicLand(result.Name) {
-						continue
-					}
-				case "Legends":
-				case "Renaissance":
-				case "The Dark":
-				default:
-					continue
-				}
-			default:
-				continue
-			}
-
-			result.edition = search.Edition
-			theCard, err := preprocess(result)
+			theCard, err := preprocess(&result, search.Edition)
 			if err != nil {
 				continue
 			}

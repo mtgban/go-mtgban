@@ -13,7 +13,7 @@ var cardTable = map[string]string{
 	"Who / What / When / Where / Why": "Who // What // When // Where // Why",
 }
 
-func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
+func convert(fullName, subtitle, edition string) (card *SCGCard, ed string, err error) {
 	fields := strings.Split(fullName, " [")
 	if len(fields) < 2 || strings.HasPrefix(fullName, "[") {
 		err = errors.New("probably a token")
@@ -306,22 +306,65 @@ func convert(fullName, subtitle, edition string) (card SCGCard, err error) {
 		}
 	}
 
-	card = SCGCard{
+	return &SCGCard{
 		Name:     cardName,
 		Subtitle: subtitle,
-		edition:  edition,
-	}
-	return
+		Language: "English",
+	}, edition, nil
 }
 
-func preprocess(card SCGCard) (*mtgmatcher.Card, error) {
-	edition := strings.Replace(card.edition, "&amp;", "&", -1)
+func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
+	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
+
+	var skipLang bool
+	switch card.Language {
+	case "English":
+	case "Japanese":
+		switch edition {
+		case "4th Edition BB":
+			if mtgmatcher.IsBasicLand(cardName) {
+				skipLang = true
+			}
+		case "War of the Spark":
+			if card.Subtitle != "(Alternate Art)" {
+				skipLang = true
+			}
+		case "Ikoria: Lair of Behemoths - Variants":
+			switch cardName {
+			case "Crystalline Giant",
+				"Battra, Dark Destroyer",
+				"Mothra's Great Cocoon":
+			default:
+				skipLang = true
+			}
+		default:
+			skipLang = true
+		}
+	case "Italian":
+		switch edition {
+		case "3rd Edition BB":
+			if mtgmatcher.IsBasicLand(cardName) {
+				skipLang = true
+			}
+		case "Legends":
+		case "Renaissance":
+		case "The Dark":
+		default:
+			skipLang = true
+		}
+	default:
+		skipLang = true
+	}
+	if skipLang {
+		return nil, errors.New("non-english")
+	}
+
+	edition = strings.Replace(edition, "&amp;", "&", -1)
 
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
 	variant = strings.Replace(variant, "(", "", -1)
 	variant = strings.Replace(variant, ")", "", -1)
 
-	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
 	switch {
 	case strings.HasPrefix(cardName, "APAC Land"),
 		strings.HasPrefix(cardName, "Euro Land"),
