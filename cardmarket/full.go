@@ -82,8 +82,10 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 		"Promos", // for Magazine Inserts
 		"War of the Spark: Japanese Alternate-Art Planeswalkers",
 		"Ikoria: Lair of Behemoths: Extras",
-		// "Rinascimento",
-		// "Fourth Edition Black Bordered",
+		"Legends Italian",
+		"The Dark Italian",
+		"Rinascimento",
+		"Fourth Edition Black Bordered",
 		// "Chronlicles Japanese",
 		"Foreign Black Bordered":
 		anyLang = true
@@ -118,7 +120,7 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 		case "Japanese":
 			switch product.Expansion {
 			//case "Chronlicles Japanese":
-			//case "Fourth Edition Black Bordered":
+			case "Fourth Edition Black Bordered":
 			case "Dengeki Maoh Promos":
 			case "Promos": // for Magazine Inserts
 			case "War of the Spark: Japanese Alternate-Art Planeswalkers":
@@ -135,7 +137,9 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 			}
 		case "Italian":
 			switch product.Expansion {
-			//case "Rinascimento":
+			case "Rinascimento":
+			case "Legends Italian":
+			case "The Dark Italian":
 			case "Foreign Black Bordered":
 			default:
 				continue
