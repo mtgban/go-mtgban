@@ -262,9 +262,8 @@ func (mkm *CardMarketFull) scrape() error {
 	}
 
 	go func() {
-		i := 1
-		for _, pair := range list {
-			mkm.printf("Processing id %d - %s (%d/%d)", pair.IdExpansion, pair.Name, i, len(list))
+		for i, pair := range list {
+			mkm.printf("Processing id %d - %s (%d/%d)", pair.IdExpansion, pair.Name, i+1, len(list))
 			expansions <- pair
 		}
 		close(expansions)
