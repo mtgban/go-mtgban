@@ -43,9 +43,6 @@ func NewScraperFull(appToken, appSecret string) (*CardMarketFull, error) {
 	return &mkm, nil
 }
 
-// TODO
-// handle the list/mb1 foils
-// check articles loop works more than once
 func (mkm *CardMarketFull) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair) error {
 	products, err := mkm.client.MKMProductsInExpansion(pair.IdExpansion)
 	if err != nil {
