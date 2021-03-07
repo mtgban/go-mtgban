@@ -3664,6 +3664,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Battle Royale Box Set":         brbVariants,
 	"Champions of Kamigawa":         chkVariants,
 	"Chronicles":                    chrVariants,
+	"Chronicles Japanese":           chrVariants,
 	"Collectors’ Edition":           oldLandVariants,
 	"Commander Anthology Volume II": cm2Variants,
 	"Conspiracy: Take the Crown":    cn2Variants,

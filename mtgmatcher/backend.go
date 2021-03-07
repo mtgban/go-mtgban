@@ -150,6 +150,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 	duplicate(ap.Data, cards, uuids, "Legends Italian", "LEG", "ITA", "1995-04-01")
 	duplicate(ap.Data, cards, uuids, "The Dark Italian", "DRK", "ITA", "1995-07-01")
+	duplicate(ap.Data, cards, uuids, "Chronicles Japanese", "CHR", "JPN", "1995-07-01")
 
 	backend.Sets = ap.Data
 	backend.Cards = cards
