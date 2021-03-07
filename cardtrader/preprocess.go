@@ -115,10 +115,9 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			"Zur the Enchanter":
 			return nil, errors.New("oversize")
 		}
-	case "Chronicles Japanese":
-		edition = "Chronicles"
 		variant = number
-	case "Rinascimento":
+	case "Chronicles Japanese",
+		"Rinascimento":
 		variant = number
 	case "Alliances", "Fallen Empires", "Homelands",
 		"Guilds of Ravnica",

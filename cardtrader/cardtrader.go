@@ -69,10 +69,11 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 				continue
 			}
 		case "jp":
-			switch {
-			case product.Expansion.Name == "Fourth Edition Black Bordered":
-			case strings.Contains(product.Expansion.Name, "Japanese"):
-			case product.Expansion.Name == "Ikoria: Lair of Behemoths Collectors":
+			switch product.Expansion.Name {
+			case "Chronicles Japanese":
+			case "Fourth Edition Black Bordered":
+			case "War of the Spark: Japanese alternate-art Planeswalker":
+			case "Ikoria: Lair of Behemoths Collectors":
 				switch theCard.Name {
 				case "Crystalline Giant",
 					"Battra, Dark Destroyer",

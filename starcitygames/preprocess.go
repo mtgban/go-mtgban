@@ -321,6 +321,7 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 	case "English":
 	case "Japanese":
 		switch edition {
+		case "Chronicles":
 		case "4th Edition BB":
 			if mtgmatcher.IsBasicLand(cardName) {
 				skipLang = true

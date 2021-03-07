@@ -70,6 +70,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			}
 		case "Japanese":
 			switch card.Edition {
+			case "Chronicles":
 			case "4th Edition":
 			case "War of the Spark":
 			case "Ikoria: Lair of Behemoths":

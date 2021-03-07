@@ -12,7 +12,6 @@ import (
 )
 
 var filteredExpansions = []string{
-	"Chronicles: Japanese",
 	"Fallen Empires: Wyvern Misprints",
 	"Filler Cards",
 	"Foreign White Bordered",

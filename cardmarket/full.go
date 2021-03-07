@@ -83,7 +83,7 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 		"The Dark Italian",
 		"Rinascimento",
 		"Fourth Edition Black Bordered",
-		// "Chronlicles Japanese",
+		"Chronlicles Japanese",
 		"Foreign Black Bordered":
 		anyLang = true
 	}
@@ -116,7 +116,7 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 		case "English":
 		case "Japanese":
 			switch product.Expansion {
-			//case "Chronlicles Japanese":
+			case "Chronlicles Japanese":
 			case "Fourth Edition Black Bordered":
 			case "Dengeki Maoh Promos":
 			case "Promos": // for Magazine Inserts
