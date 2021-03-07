@@ -174,6 +174,22 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 		printings := append(sets[code].Cards[i].Printings, dup.Code)
 		sets[code].Cards[i].Printings = printings
 
+		// Loop through all other sets mentioned
+		for _, setCode := range printings {
+			// Skip the set being added, there might be cards containing
+			// the set code being processed due to variants
+			if setCode == dup.Code {
+				continue
+			}
+			for j := range sets[setCode].Cards {
+				// Name match, can't break after the first because there could
+				// be other variants
+				if sets[setCode].Cards[j].Name == sets[code].Cards[i].Name {
+					sets[setCode].Cards[j].Printings = printings
+				}
+			}
+		}
+
 		// Update with new info
 		dup.Cards[i] = sets[code].Cards[i]
 		dup.Cards[i].UUID += "_" + strings.ToLower(tag)
