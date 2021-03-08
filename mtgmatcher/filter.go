@@ -544,7 +544,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				possibleSuffixes = append(possibleSuffixes, fields...)
 
 				// Short circuit the possible suffixes if we know what we're dealing with
-				if inCard.isJPN() {
+				if inCard.isJPN() && set.Name != "Chronicles Japanese" {
 					possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
 				}
 				// BFZ and ZEN intro lands non-fullart always have this

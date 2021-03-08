@@ -2398,6 +2398,16 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// Non-English custom sets
+	MatchTest{
+		Id:   "dcb15a6c-4629-59a8-bdbf-a17eb57d6fe3_jpn",
+		Desc: "custom_language_number",
+		In: Card{
+			Name:      "Urza's Power Plant",
+			Variation: "115d",
+			Edition:   "Chronicles Japanese",
+		},
+	},
 	MatchTest{
 		Id:   "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
 		Desc: "custom_language_tag",
