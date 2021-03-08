@@ -38,7 +38,7 @@ func NewScraperFull(email, password string) (*CardsphereFull, error) {
 
 func (cs *CardsphereFull) printf(format string, a ...interface{}) {
 	if cs.LogCallback != nil {
-		cs.LogCallback("[CSphereFull] "+format, a...)
+		cs.LogCallback("[CSF] "+format, a...)
 	}
 }
 
@@ -205,7 +205,7 @@ func (cs *CardsphereFull) Buylist() (mtgban.BuylistRecord, error) {
 
 func (cs *CardsphereFull) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardsphere"
-	info.Shorthand = "CSphereFull"
+	info.Shorthand = "CS"
 	info.BuylistTimestamp = cs.buylistDate
 	info.NoCredit = true
 	info.MultiCondBuylist = true
