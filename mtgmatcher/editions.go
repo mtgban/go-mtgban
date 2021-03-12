@@ -27,6 +27,7 @@ var EditionTable = map[string]string{
 	"Unlimited":            "Unlimited Edition",
 
 	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
+	"Strixhaven Mystical Archives":   "Strixhaven Mystical Archive",
 
 	// JPN planeswalkers and similar
 	"War of the Spark JPN Planeswalkers":      "War of the Spark",
