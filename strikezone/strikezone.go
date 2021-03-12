@@ -4,13 +4,13 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gocolly/colly"
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
@@ -187,7 +187,7 @@ func (sz *Strikezone) scrape() error {
 }
 
 func (sz *Strikezone) parseBL() error {
-	resp, err := http.Get(szBuylistURL)
+	resp, err := cleanhttp.DefaultClient().Get(szBuylistURL)
 	if err != nil {
 		return err
 	}

@@ -1,13 +1,13 @@
 package mythicmtg
 
 import (
-	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -216,7 +216,7 @@ func (mmtg *Mythicmtg) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (mmtg *Mythicmtg) parseBL() error {
-	resp, err := http.Get(mmtgBuylistURL)
+	resp, err := cleanhttp.DefaultClient().Get(mmtgBuylistURL)
 	if err != nil {
 		return err
 	}

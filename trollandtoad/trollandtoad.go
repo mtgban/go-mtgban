@@ -2,7 +2,6 @@ package trollandtoad
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -12,7 +11,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	colly "github.com/gocolly/colly/v2"
 	queue "github.com/gocolly/colly/v2/queue"
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -209,7 +208,7 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 }
 
 func (tat *Trollandtoad) scrapePages(link string) error {
-	resp, err := http.Get(link)
+	resp, err := cleanhttp.DefaultClient().Get(link)
 	if err != nil {
 		return err
 	}

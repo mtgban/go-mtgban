@@ -3,12 +3,12 @@ package blueprint
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -43,7 +43,7 @@ func (bp *Blueprint) parseBL() error {
 		t := time.Now().AddDate(0, -i, 1)
 		blURL := fmt.Sprintf(BlueprintURL, t.Format("January_2006"))
 		bp.printf("Trying %s", blURL)
-		resp, err := http.Get(blURL)
+		resp, err := cleanhttp.DefaultClient().Get(blURL)
 		if err != nil {
 			bp.printf("not found, continuing")
 			continue

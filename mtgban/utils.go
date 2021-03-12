@@ -2,14 +2,15 @@ package mtgban
 
 import (
 	"encoding/json"
-	"net/http"
 	"time"
+
+	"github.com/hashicorp/go-cleanhttp"
 )
 
 type LogCallbackFunc func(format string, a ...interface{})
 
 func GetExchangeRate(currency string) (float64, error) {
-	resp, err := http.Get("https://api.exchangeratesapi.io/latest?base=" + currency)
+	resp, err := cleanhttp.DefaultClient().Get("https://api.exchangeratesapi.io/latest?base=" + currency)
 	if err != nil {
 		return 0, err
 	}

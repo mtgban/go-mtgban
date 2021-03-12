@@ -3,12 +3,12 @@ package magiccorner
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -236,7 +236,7 @@ func (mc *Magiccorner) parseBL() error {
 			t := time.Now().AddDate(0, -i, -j)
 			blURL := fmt.Sprintf(buylistURL, t.Format("02-01-2006"))
 			mc.printf("Trying %s", blURL)
-			resp, err := http.Get(blURL)
+			resp, err := cleanhttp.DefaultClient().Get(blURL)
 			if err != nil {
 				mc.printf("not found, continuing")
 				continue
