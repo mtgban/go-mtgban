@@ -52,7 +52,8 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		variant = fmt.Sprint(card.Number)
 	}
 
-	if mtgmatcher.IsToken(cardName) {
+	if mtgmatcher.IsToken(cardName) ||
+		strings.Contains(edition, "Art Series") {
 		return nil, errors.New("token")
 	}
 
