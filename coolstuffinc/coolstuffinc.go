@@ -379,12 +379,12 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	var blob struct {
 		HTML string `json:"html"`
