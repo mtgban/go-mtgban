@@ -1,43 +1,31 @@
 package purplemana
 
 import (
-	"context"
-	"io/ioutil"
-	"net/http"
-	"strings"
+	"encoding/csv"
+	"fmt"
+	"io"
 	"time"
 
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
-
-	"golang.org/x/oauth2/google"
-	spreadsheet "gopkg.in/Iwark/spreadsheet.v2"
 )
 
 type Purplemana struct {
 	LogCallback mtgban.LogCallbackFunc
 	buylistDate time.Time
 
-	client  *http.Client
 	buylist mtgban.BuylistRecord
 }
 
-func NewScraper(credentials string) (*Purplemana, error) {
+const (
+	buylistURL = "https://www.purplemana.com/buylist_csv"
+)
+
+func NewScraper() *Purplemana {
 	pm := Purplemana{}
 	pm.buylist = mtgban.BuylistRecord{}
-
-	data, err := ioutil.ReadFile(credentials)
-	if err != nil {
-		return nil, err
-	}
-
-	conf, err := google.JWTConfigFromJSON(data, spreadsheet.Scope)
-	if err != nil {
-		return nil, err
-	}
-	pm.client = conf.Client(context.Background())
-
-	return &pm, nil
+	return &pm
 }
 
 func (pm *Purplemana) printf(format string, a ...interface{}) {
@@ -47,66 +35,47 @@ func (pm *Purplemana) printf(format string, a ...interface{}) {
 }
 
 func (pm *Purplemana) parseBL() error {
-	service := spreadsheet.NewServiceWithClient(pm.client)
-	spreadsheet, err := service.FetchSpreadsheet("1Z-wDWITH5s7tSigWnZqf8GmKJtNXj4aBpHT8OsY2lCg")
+	resp, err := cleanhttp.DefaultClient().Get(buylistURL)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
-	sheet, err := spreadsheet.SheetByIndex(0)
+	r := csv.NewReader(resp.Body)
+
+	// Remove the title
+	_, err = r.Read()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to open csv: " + err.Error())
 	}
 
-	for _, row := range sheet.Rows {
-		if len(row) < 7 {
-			continue
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
 		}
-
-		cardName := row[2].Value
-
-		if cardName == "Ring of Ma'rÃ»f" {
-			cardName = "Ring of Ma'rûf"
-		}
-
-		edition := row[3].Value
-
-		if strings.Contains(edition, "Artist Proof") {
-			continue
-		}
-
-		price, _ := mtgmatcher.ParsePrice(row[7].Value)
-		credit, _ := mtgmatcher.ParsePrice(row[6].Value)
-
-		if cardName == "" || edition == "" || price == 0 {
-			continue
-		}
-
-		variant := ""
-		if strings.Contains(cardName, "(") {
-			vars := mtgmatcher.SplitVariants(cardName)
-			cardName = vars[0]
-			if len(vars) > 1 {
-				variant = vars[1]
-			}
-		}
-
-		theCard := &mtgmatcher.Card{
-			Name:      cardName,
-			Edition:   edition,
-			Variation: variant,
-		}
-
-		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok && edition == "Antiquities" {
-				continue
-			}
+			return err
+		}
 
+		// CARD NAME - SERIES,CARD_INDEX,CARD_NAME,SET,RETAIL,TRADELIST,SCRYFALLID,IMAGE_URL,LP_CASH,NM_CASH,TCGURL,MKMURL,SCRYIMAGE,
+		if len(record) < 9 {
+			continue
+		}
+
+		id := record[6]
+		if id == "" {
+			continue
+		}
+
+		cardId, err := mtgmatcher.Match(&mtgmatcher.Card{
+			Id: id,
+		})
+		if err != nil {
 			pm.printf("%v", err)
-			pm.printf("%q", theCard)
-			pm.printf("%q", row)
+			pm.printf("%q", id)
+			pm.printf("%q", record)
+			alias, ok := err.(*mtgmatcher.AliasingError)
 			if ok {
 				probes := alias.Probe()
 				for _, probe := range probes {
@@ -114,6 +83,12 @@ func (pm *Purplemana) parseBL() error {
 					pm.printf("- %s", card)
 				}
 			}
+			continue
+		}
+
+		credit, _ := mtgmatcher.ParsePrice(record[5])
+		price, err := mtgmatcher.ParsePrice(record[9])
+		if err != nil {
 			continue
 		}
 
