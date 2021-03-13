@@ -241,11 +241,11 @@ func (mc *Magiccorner) parseBL() error {
 				mc.printf("not found, continuing")
 				continue
 			}
+			defer resp.Body.Close()
 			if resp.StatusCode == 200 {
 				reader = resp.Body
 				break
 			}
-			defer resp.Body.Close()
 			mc.printf("url found, but with status %d, continuing", resp.StatusCode)
 		}
 		if reader != nil {

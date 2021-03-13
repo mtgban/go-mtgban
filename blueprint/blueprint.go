@@ -48,11 +48,11 @@ func (bp *Blueprint) parseBL() error {
 			bp.printf("not found, continuing")
 			continue
 		}
+		defer resp.Body.Close()
 		if resp.StatusCode == 200 {
 			reader = resp.Body
 			break
 		}
-		defer resp.Body.Close()
 		bp.printf("url found, but with status %d, continuing", resp.StatusCode)
 	}
 	if reader == nil {
