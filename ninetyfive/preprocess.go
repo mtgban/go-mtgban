@@ -83,6 +83,13 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 			ed, found := mediaTable[cardName]
 			if found {
 				edition = ed
+			} else {
+				for _, ed = range []string{"CP1", "CP2", "CP3"} {
+					if len(mtgmatcher.MatchInSet(cardName, ed)) != 0 {
+						edition = ed
+						break
+					}
+				}
 			}
 		}
 	case "Arena League":
