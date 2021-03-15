@@ -1,13 +1,14 @@
 package magiccorner
 
 import (
+	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"sync"
 	"time"
 
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
@@ -17,7 +18,7 @@ import (
 const (
 	defaultConcurrency = 8
 
-	buylistURL = "https://www.magiccorner.it/12/public/blog/buylist/BUYLIST_magiccorner_%s.xlsx"
+	buylistURL = "https://www.magiccorner.it/it/vendi-letue-carte"
 )
 
 type Magiccorner struct {
@@ -229,36 +230,40 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 	return mc.inventory, nil
 }
 
-func (mc *Magiccorner) parseBL() error {
-	var reader io.ReadCloser
-	for i := 0; i < 12; i++ {
-		for j := 0; j < 31; j++ {
-			t := time.Now().AddDate(0, -i, -j)
-			blURL := fmt.Sprintf(buylistURL, t.Format("02-01-2006"))
-			mc.printf("Trying %s", blURL)
-			resp, err := cleanhttp.DefaultClient().Get(blURL)
-			if err != nil {
-				mc.printf("not found, continuing")
-				continue
-			}
-			defer resp.Body.Close()
-			if resp.StatusCode == 200 {
-				reader = resp.Body
-				break
-			}
-			mc.printf("url found, but with status %d, continuing", resp.StatusCode)
-		}
-		if reader != nil {
-			break
-		}
-		mc.printf("not found, continuing")
+func getSpreadsheetURL() (string, error) {
+	resp, err := cleanhttp.DefaultClient().Get(buylistURL)
+	if err != nil {
+		return "", err
 	}
-	if reader == nil {
-		mc.printf("no updates over a year")
-		return nil
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
 	}
 
-	f, err := excelize.OpenReader(reader)
+	link, found := doc.Find(`form[id="mainForm"]`).Find(`div[id="contentPane"] div[id="m646"] a`).First().Attr("href")
+	if !found {
+		return "", errors.New("spreadsheet anchor tag not found")
+	}
+
+	return "https://www.magiccorner.it/" + link, nil
+}
+
+func (mc *Magiccorner) parseBL() error {
+	blURL, err := getSpreadsheetURL()
+	if err != nil {
+		return err
+	}
+	mc.printf("Using %s as input spreadsheet", blURL)
+
+	resp, err := cleanhttp.DefaultClient().Get(blURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	f, err := excelize.OpenReader(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -336,7 +341,7 @@ func (mc *Magiccorner) parseBL() error {
 
 		out = &mtgban.BuylistEntry{
 			BuyPrice: price * mc.exchangeRate,
-			URL:      "https://www.magiccorner.it/it/vendi-letue-carte",
+			URL:      buylistURL,
 		}
 		err = mc.buylist.Add(cardId, out)
 		if err != nil {
