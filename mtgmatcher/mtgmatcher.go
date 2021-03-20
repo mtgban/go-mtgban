@@ -447,11 +447,12 @@ func adjustEdition(inCard *Card) {
 
 	// Adjust box set
 	switch {
-	case Equals(edition, "Double Masters Box Toppers"),
-		Equals(edition, "Double Masters: Extras"),
-		Equals(edition, "Double Masters: Variants"):
-		edition = "Double Masters"
-		if !inCard.isBasicLand() {
+	case Contains(edition, "Double Masters"):
+		if (Contains(edition, "Box Toppers") ||
+			Contains(edition, "Extras") ||
+			Contains(edition, "Variants")) &&
+			!inCard.isBasicLand() {
+			edition = "Double Masters"
 			variation = "Borderless"
 		}
 	case strings.Contains(edition, "Mythic Edition"),
