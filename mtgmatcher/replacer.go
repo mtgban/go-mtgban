@@ -33,6 +33,7 @@ var replacer = strings.NewReplacer(
 	"trial and error", "trial and error",
 	" and ", "",
 	" to ", "",
+	" & ", "",
 
 	// Accented characters
 	"â", "a",

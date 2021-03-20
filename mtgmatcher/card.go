@@ -106,6 +106,11 @@ func IsToken(name string) bool {
 		"Poison Counter",
 		"Theme: WUBRG Cards":
 		return true
+	// WCD extra cards
+	case "Biography",
+		"Blank",
+		"Overview":
+		return true
 	// Un-tokens
 	case "Beast",
 		"Beeble",
@@ -389,6 +394,7 @@ func (c *Card) worldChampPrefix() (string, bool) {
 		"Brian Hacker":         "bh",
 		"Brian Kibler":         "bk",
 		"Brian Selden":         "bs",
+		"Brian Seldon":         "bs",
 		"Carlos Romao":         "cr",
 		"Daniel Zink":          "dz",
 		"Dave Humpherys":       "dh",

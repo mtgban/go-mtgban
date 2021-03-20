@@ -32,6 +32,7 @@ var EditionTable = map[string]string{
 	// JPN planeswalkers and similar
 	"War of the Spark JPN Planeswalkers":      "War of the Spark",
 	"War of the Spark Japanese Alternate Art": "War of the Spark",
+	"War of the Spark Japanese Alt Art":       "War of the Spark",
 
 	// Gift pack
 	"2017 Gift Pack":       "2017 Gift Pack",
@@ -391,6 +392,7 @@ var EditionTable = map[string]string{
 	// Archenemy
 	"Archenemy: 2010 Edition":          "Archenemy",
 	"Archenemy - Nicol Bolas":          "Archenemy: Nicol Bolas",
+	"Archenemy Nicol Bolas":            "Archenemy: Nicol Bolas",
 	"Archenemy Schemes (2010 Edition)": "Archenemy Schemes",
 	"Archenemy 'Schemes'":              "Archenemy Schemes",
 
@@ -412,6 +414,7 @@ var EditionTable = map[string]string{
 	// Coldsnap Theme Decks
 	"Coldsnap Reprints":            "Coldsnap Theme Decks",
 	"Coldsnap Theme Deck Reprints": "Coldsnap Theme Decks",
+	"Coldsnap Theme-Deck Reprints": "Coldsnap Theme Decks",
 
 	// <3 LGS
 	"Bring-a-Friend": "Love Your LGS",

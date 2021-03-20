@@ -48,6 +48,8 @@ var allVariants = map[string]map[string]string{
 		"close-up":                     "118b",
 		"v.2":                          "118a",
 		"v.1":                          "118b",
+		"globe":                        "118a",
+		"up close":                     "118b",
 	},
 	"Awesome Presence": map[string]string{
 		"arms spread":                        "23a",
@@ -85,6 +87,8 @@ var allVariants = map[string]map[string]string{
 		"facing front":            "24a",
 		"v.1":                     "24a",
 		"v.2":                     "24b",
+		"on the rocks":            "24a",
+		"profile":                 "24b",
 	},
 	"Bestial Fury": map[string]string{
 		"facing left":        "67a",
@@ -109,6 +113,7 @@ var allVariants = map[string]map[string]string{
 		"man & bird":      "1b",
 		"v.2":             "1a",
 		"v.1":             "1b",
+		"sky":             "1b",
 	},
 	"Casting of Bones": map[string]string{
 		"finger ornament":       "44a",
@@ -120,6 +125,7 @@ var allVariants = map[string]map[string]string{
 		"person throwing bones": "44b",
 		"v.2":                   "44a",
 		"v.1":                   "44b",
+		"close-up":              "44a",
 	},
 	"Deadly Insect": map[string]string{
 		"bird":              "86a",
@@ -144,14 +150,15 @@ var allVariants = map[string]map[string]string{
 		"v.1":          "88b",
 	},
 	"Enslaved Scout": map[string]string{
-		"horses":        "71a",
-		"crouching":     "71b",
-		"enslavedscout": "71a",
-		"az041":         "71b",
-		"with horse":    "71a",
-		"solo giant":    "71b",
-		"v.1":           "71a",
-		"v.2":           "71b",
+		"horses":          "71a",
+		"crouching":       "71b",
+		"enslavedscout":   "71a",
+		"az041":           "71b",
+		"with horse":      "71a",
+		"solo giant":      "71b",
+		"v.1":             "71a",
+		"v.2":             "71b",
+		"solitary goblin": "71b",
 	},
 	"Errand of Duty": map[string]string{
 		"page holding sword":        "2a",
@@ -164,6 +171,7 @@ var allVariants = map[string]map[string]string{
 		"coat":                      "2a",
 		"v.2":                       "2a",
 		"v.1":                       "2b",
+		"holding sword":             "2a",
 	},
 	"False Demise": map[string]string{
 		"rocks":                         "27a",
@@ -209,6 +217,7 @@ var allVariants = map[string]map[string]string{
 		"mermaid facing right with object": "29b",
 		"v.1":                              "29a",
 		"v.2":                              "29b",
+		"mermaid":                          "29b",
 	},
 	"Fyndhorn Druid": map[string]string{
 		"facing left":           "90a",
@@ -230,6 +239,7 @@ var allVariants = map[string]map[string]string{
 		"man/wolf":       "92b",
 		"v.1":            "92a",
 		"v.2":            "92b",
+		"girl/lynx":      "92a",
 	},
 	"Gorilla Berserkers": map[string]string{
 		"attacking":         "93a",
@@ -302,6 +312,8 @@ var allVariants = map[string]map[string]string{
 		"one worm":           "51b",
 		"v.2":                "51a",
 		"v.1":                "51b",
+		"multiple":           "51a",
+		"single":             "51b",
 	},
 	"Kjeldoran Escort": map[string]string{
 		"green blanketed dog": "7a",
@@ -329,6 +341,7 @@ var allVariants = map[string]map[string]string{
 		"blue bear":       "9b",
 		"v.1":             "9a",
 		"v.2":             "9b",
+		"bird":            "9a",
 	},
 	"Lat-Nam's Legacy": map[string]string{
 		"scroll":                 "30a",
@@ -402,6 +415,8 @@ var allVariants = map[string]map[string]string{
 		"az121":             "127b",
 		"v.1":               "127a",
 		"v.2":               "127b",
+		"facing left":       "127a",
+		"facing right":      "127b",
 	},
 	"Reinforcements": map[string]string{
 		"fighting orc":     "12a",
@@ -414,6 +429,8 @@ var allVariants = map[string]map[string]string{
 		"no orc":           "12b",
 		"v.1":              "12a",
 		"v.2":              "12b",
+		"line-up":          "12a",
+		"on the rocks":     "12b",
 	},
 	"Reprisal": map[string]string{
 		"red dragon":    "13a",
@@ -470,6 +487,8 @@ var allVariants = map[string]map[string]string{
 		"reading":                "34b",
 		"v.2":                    "34a",
 		"v.1":                    "34b",
+		"red cloak":              "34a",
+		"blue robe":              "34b",
 	},
 	"Soldevi Sentry": map[string]string{
 		"close up":               "132a",
@@ -483,6 +502,7 @@ var allVariants = map[string]map[string]string{
 		"alone":                  "132a",
 		"v.2":                    "132a",
 		"v.1":                    "132b",
+		"close-up":               "132a",
 	},
 	"Soldevi Steam Beast": map[string]string{
 		"beast in mountains": "133a",
@@ -548,6 +568,8 @@ var allVariants = map[string]map[string]string{
 		"one person":               "100a",
 		"v.2":                      "100a",
 		"v.1":                      "100b",
+		"holding fruit":            "100a",
+		"lying down":               "100b",
 	},
 	"Undergrowth": map[string]string{
 		"holding axe":    "102a",
@@ -573,6 +595,7 @@ var allVariants = map[string]map[string]string{
 		"black horse":                "82b",
 		"v.2":                        "82a",
 		"v.1":                        "82b",
+		"woods":                      "82b",
 	},
 	"Veteran's Voice": map[string]string{
 		"over the shoulder":          "84b",
@@ -587,6 +610,7 @@ var allVariants = map[string]map[string]string{
 		"door":                       "84b",
 		"v.2":                        "84a",
 		"v.1":                        "84b",
+		"facing off":                 "84a",
 	},
 	"Viscerid Armor": map[string]string{
 		"crashing wave":         "41a",
@@ -612,6 +636,7 @@ var allVariants = map[string]map[string]string{
 		"bird and vines": "103b",
 		"v.1":            "103a",
 		"v.2":            "103b",
+		"only plants":    "103a",
 	},
 	"Wild Aesthir": map[string]string{
 		"green background":  "21a",
@@ -625,6 +650,7 @@ var allVariants = map[string]map[string]string{
 		"wings spread":      "21b",
 		"v.2":               "21a",
 		"v.1":               "21b",
+		"lightning strike":  "21a",
 	},
 	"Yavimaya Ancients": map[string]string{
 		"trees":            "104a",
@@ -952,6 +978,8 @@ var palpVariants = map[string]map[string]string{
 		"clear pack spears":                                  "15",
 		"apac2  illus.ron spears a":                          "10",
 		"apac3  illus.ron spears b":                          "15",
+		"(blue pack) spears":                                 "10",
+		"(clear pack) spears":                                "15",
 	},
 }
 
@@ -3531,6 +3559,8 @@ var wc99Variants = map[string]map[string]string{
 		"1999 matt linde 6ed 347": "ml347b",
 	},
 	"Mountain": map[string]string{
+		"6th edition 343 mark le pine 1999": "mlp346a",
+
 		"6th edition 346 mark le pine 1999": "mlp346a",
 		"urza's saga 346 mark le pine 1999": "mlp346b",
 		"tempest a mark le pine 1999":       "mlp344a",
