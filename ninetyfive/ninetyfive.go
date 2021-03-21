@@ -92,6 +92,11 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 				continue
 			}
 
+			// Ignore errors from known incorrect cards (wrong cn)
+			if theCard.Edition == "Collectors' Edition" {
+				continue
+			}
+
 			nf.printf("%v", err)
 			nf.printf("%q", theCard)
 			nf.printf("%q", product)
