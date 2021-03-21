@@ -23,6 +23,7 @@ var EditionTable = map[string]string{
 	"Origins":              "Magic Origins",
 	"Ravnica":              "Ravnica: City of Guilds",
 	"Revised":              "Revised Edition",
+	"Revised 3rd Edition":  "Revised Edition",
 	"Saviors":              "Saviors of Kamigawa",
 	"Unlimited":            "Unlimited Edition",
 
