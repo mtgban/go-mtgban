@@ -295,6 +295,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			// Hack to prevent aliasing wiith the real "Trial // Error"
 			cardName = "Trial and Error "
 		}
+	case "Summer Magic / Edgar":
+		if mtgmatcher.IsBasicLand(cardName) {
+			return nil, errors.New("unsupported")
+		}
 	}
 
 	name, found := cardTable[cardName]
