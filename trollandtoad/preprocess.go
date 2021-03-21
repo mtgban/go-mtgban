@@ -56,6 +56,9 @@ var cardTable = map[string]string{
 	"Skyclave Cleric // Skyclave Basillica": "Skyclave Cleric // Skyclave Basilica",
 	"Jwari Disruption // Jwar Isle Ruins":   "Jwari Disruption // Jwari Ruins",
 
+	"Erebos\\303\\242\\302\\200\\302\\231s Intervention": "Erebos's Intervention",
+	"Storm\\303\\242\\302\\200\\302\\231s Wrath":         "Storm's Wrath",
+
 	"Sarpadian Empires, Vol.": "Sarpadian Empires, Vol. VII",
 	"Nalathni Dragon 1994":    "Nalathni Dragon",
 	"Merfolk Mesmerist Promo": "Merfolk Mesmerist",
@@ -117,6 +120,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(fullName, "Empty Collector's Box"),
 		strings.Contains(fullName, "Pokemon"),
 		strings.Contains(fullName, "Zamazenta"),
+		strings.Contains(fullName, "Pyromantic Pixels"),
 		strings.Contains(fullName, "Playmat"),
 		strings.Contains(fullName, " | ") &&
 			(strings.Contains(fullName, "2XM") || strings.Contains(fullName, "ZNC")):
@@ -130,6 +134,10 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(edition, "French"),
 		strings.Contains(edition, "German"),
 		strings.Contains(edition, "Russian"),
+		strings.Contains(fullName, "Spanish"),
+		strings.Contains(fullName, "French"),
+		strings.Contains(fullName, "German"),
+		strings.Contains(fullName, "Russian"),
 		strings.Contains(fullName, "Korean"),
 		strings.Contains(fullName, "Spanish"),
 		strings.Contains(fullName, "Portuguese"),

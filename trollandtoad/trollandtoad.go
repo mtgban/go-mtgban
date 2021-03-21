@@ -228,6 +228,9 @@ func (tat *Trollandtoad) scrapePages(link string) error {
 		return err
 	}
 
+	if lastPage == 0 {
+		lastPage = 1
+	}
 	tat.printf("Parsing %d pages from %s", lastPage, link)
 	return tat.parsePages(link, lastPage)
 }
