@@ -29,7 +29,7 @@ func NewScraperMarket(token string) *CardtraderMarket {
 
 func (ct *CardtraderMarket) printf(format string, a ...interface{}) {
 	if ct.LogCallback != nil {
-		ct.LogCallback("[CTM] "+format, a...)
+		ct.LogCallback("[CT] "+format, a...)
 	}
 }
 
@@ -190,7 +190,7 @@ func (ct *CardtraderMarket) Inventory() (mtgban.InventoryRecord, error) {
 
 func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader"
-	info.Shorthand = "CTM"
+	info.Shorthand = "CT"
 	info.InventoryTimestamp = ct.InventoryDate
 	info.CountryFlag = "🇪🇺"
 	return
