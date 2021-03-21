@@ -378,7 +378,7 @@ var EditionTable = map[string]string{
 	"Summer Foil":           "Summer of Magic",
 	"Summer of Magic Promo": "Summer of Magic",
 	"Summer of Magic":       "Summer of Magic",
-	"Summer Magic (Edgar)":  "Summer Magic",
+	"Summer Magic (Edgar)":  "Summer Magic / Edgar",
 
 	// Wotc Store
 	"Foil Beta Picture":       "Wizards of the Coast Online Store",
