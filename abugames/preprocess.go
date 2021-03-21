@@ -25,8 +25,6 @@ var cardTable = map[string]string{
 	"Visitor from Planet":                 "Visitor from Planet Q",
 	"Rivals of Ixalan":                    "Snubhorn Sentry",
 
-	"Battra, the Dark Destruction Beast / Dirge Bat": "Dirge Bat",
-
 	// Funny cards
 	"No Name":                         "_____",
 	"Who What When Where Why":         "Who",
@@ -279,8 +277,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		}
 	case "Ikoria: Lair of Behemoths":
 		if strings.Contains(cardName, " / ") {
-			s := strings.Split(cardName, " / ")
-			cardName = s[0]
+			cardName = card.SimpleTitle
+			variation = "Godzilla"
 		}
 	case "Oath of the Gatewatch":
 		if cardName == "Captain's Claws" && variation == "Goldnight Castigator Shadow FOIL" {
