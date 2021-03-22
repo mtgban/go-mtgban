@@ -31,10 +31,15 @@ type CKCard struct {
 	BuyPrice        string          `json:"price_buy"`
 	BuyQuantity     int             `json:"qty_buying"`
 	ConditionValues conditionValues `json:"condition_values"`
+
+	// Only from GetHotBuylist()
+	HotPrice  string `json:"price"`
+	ShortName string `json:"short_name,omitempty"`
 }
 
 const (
-	ckPricelistURL = "https://api.cardkingdom.com/api/v2/pricelist"
+	ckPricelistURL  = "https://api.cardkingdom.com/api/v2/pricelist"
+	ckHotBuylistURL = "https://api.cardkingdom.com/api/product/list/hotbuy"
 )
 
 type CKClient struct {
@@ -66,6 +71,29 @@ func (ck *CKClient) GetPriceList() ([]CKCard, error) {
 			BaseURL   string `json:"base_url"`
 		} `json:"meta"`
 		Data []CKCard `json:"data"`
+	}
+	err = json.Unmarshal(data, &pricelist)
+	if err != nil {
+		return nil, err
+	}
+
+	return pricelist.Data, nil
+}
+
+func (ck *CKClient) GetHotBuylist() ([]CKCard, error) {
+	resp, err := ck.client.Get(ckHotBuylistURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var pricelist struct {
+		Data []CKCard `json:"list"`
 	}
 	err = json.Unmarshal(data, &pricelist)
 	if err != nil {
