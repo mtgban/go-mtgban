@@ -589,6 +589,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 					bundleTag := "V.3"
 
 					switch edition {
+					case "Theros Beyond Death: Promos":
+						if cardName == "Arasta of the Endless Web" {
+							promopTag = "V.2"
+							prerelTag = "V.3"
+							bundleTag = "V.1"
+						}
 					case "Throne of Eldraine: Promos":
 						promopTag = "V.2"
 						prerelTag = "V.1"
