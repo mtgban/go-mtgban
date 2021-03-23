@@ -20,6 +20,8 @@ type CardMarketFull struct {
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
 
+	id2uuid map[string]string
+
 	client *MKMClient
 }
 
@@ -40,6 +42,7 @@ func NewScraperFull(appToken, appSecret string) (*CardMarketFull, error) {
 		return nil, err
 	}
 	mkm.exchangeRate = rate
+	mkm.id2uuid = map[string]string{}
 	return &mkm, nil
 }
 
@@ -93,66 +96,69 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 		return err
 	}
 
-	if len(articles) == 0 {
-		return nil
-	}
-
-	product := articles[0].Product
-
-	theCard, err := Preprocess(product.Name, product.Number, product.Expansion)
-	if err != nil {
-		_, ok := err.(*PreprocessError)
-		if ok {
-			return err
-		}
-		return nil
-	}
-
-	var cardId string
-	var cardIdFoil string
-
 	for _, article := range articles {
-		switch article.Language.LanguageName {
-		case "English":
-		case "Japanese":
-			switch product.Expansion {
-			case "Chronlicles Japanese":
-			case "Fourth Edition Black Bordered":
-			case "Dengeki Maoh Promos":
-			case "Promos": // for Magazine Inserts
-			case "War of the Spark: Japanese Alternate-Art Planeswalkers":
-			case "Ikoria: Lair of Behemoths: Extras":
-				switch product.Name {
-				case "Crystalline Giant (V.2)",
-					"Battra, Dark Destroyer (V.2)",
-					"Mothra's Great Cocoon (V.2)":
-				default:
-					continue
-				}
+		err := mkm.processArticles(channel, &article)
+		if err != nil {
+			mkm.printf("article %d (product id %d) returned %s", article.IdArticle, article.IdProduct, err.Error())
+		}
+	}
+
+	return nil
+}
+
+func (mkm *CardMarketFull) processArticles(channel chan<- responseChan, article *MKMArticle) error {
+	_, found := mkm.priceGuide[article.IdProduct]
+	if !found {
+		return nil
+	}
+
+	switch article.Language.LanguageName {
+	case "English":
+	case "Japanese":
+		switch article.Product.Expansion {
+		case "Chronlicles Japanese":
+		case "Fourth Edition Black Bordered":
+		case "Dengeki Maoh Promos":
+		case "Promos": // for Magazine Inserts
+		case "War of the Spark: Japanese Alternate-Art Planeswalkers":
+		case "Ikoria: Lair of Behemoths: Extras":
+			switch article.Product.Name {
+			case "Crystalline Giant (V.2)",
+				"Battra, Dark Destroyer (V.2)",
+				"Mothra's Great Cocoon (V.2)":
 			default:
-				continue
-			}
-		case "Italian":
-			switch product.Expansion {
-			case "Rinascimento":
-			case "Legends Italian":
-			case "The Dark Italian":
-			case "Foreign Black Bordered":
-			default:
-				continue
+				return nil
 			}
 		default:
-			continue
+			return nil
+		}
+	case "Italian":
+		switch article.Product.Expansion {
+		case "Rinascimento":
+		case "Legends Italian":
+		case "The Dark Italian":
+		case "Foreign Black Bordered":
+		default:
+			return nil
+		}
+	default:
+		return nil
+	}
+
+	// Use a map to avoid repeating the same card match
+	key := fmt.Sprintf("%d+%v", article.IdProduct, article.IsFoil)
+
+	cardId, found := mkm.id2uuid[key]
+	if !found {
+		theCard, err := Preprocess(article.Product.Name, article.Product.Number, article.Product.Expansion)
+		if err != nil {
+			return nil
+		}
+		if article.IsFoil {
+			theCard.Foil = true
 		}
 
-		if cardId == "" {
-			cardId, err = mtgmatcher.Match(theCard)
-		}
-		if cardIdFoil == "" && article.IsFoil {
-			theCard, _ = Preprocess(product.Name, product.Number, product.Expansion)
-			theCard.Foil = true
-			cardIdFoil, err = mtgmatcher.Match(theCard)
-		}
+		cardId, err = mtgmatcher.Match(theCard)
 		if err != nil {
 			if theCard.Edition == "Pro Tour Collector Set" || strings.HasPrefix(theCard.Edition, "World Championship Decks") {
 				return nil
@@ -160,7 +166,7 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 
 			mkm.printf("%v", err)
 			mkm.printf("%q", theCard)
-			mkm.printf("%v", product)
+			mkm.printf("%v", article.Product)
 			alias, ok := err.(*mtgmatcher.AliasingError)
 			if ok {
 				probes := alias.Probe()
@@ -172,63 +178,60 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 			return err
 		}
 
-		finalCardId := cardId
-		if article.IsFoil {
-			finalCardId = cardIdFoil
-		}
-
-		price := article.Price
-		qty := article.Count
-		if article.IsPlayset {
-			price /= 4
-			qty *= 4
-		}
-
-		cond := article.Condition
-		switch cond {
-		case "MT", "NM":
-			cond = "NM"
-		case "EX":
-			cond = "SP"
-		case "GD", "LP":
-			cond = "MP"
-		case "PL":
-			cond = "HP"
-		case "PO":
-			cond = "PO"
-		default:
-			mkm.printf("Unknown '%s' condition", cond)
-			continue
-		}
-
-		if mtgmatcher.Contains(article.Comments, "alter") ||
-			mtgmatcher.Contains(article.Comments, "signed") ||
-			mtgmatcher.Contains(article.Comments, "artist proof") {
-			continue
-		}
-
-		// Find common ways to describe misprints
-		misprintHack := mtgmatcher.Contains(article.Comments, "misprint") ||
-			mtgmatcher.Contains(article.Comments, "miscut") ||
-			mtgmatcher.Contains(article.Comments, "crimped") ||
-			mtgmatcher.Contains(article.Comments, "square")
-
-		out := responseChan{
-			ogId:   article.IdProduct,
-			cardId: finalCardId,
-			entry: mtgban.InventoryEntry{
-				Conditions: cond,
-				Price:      price * mkm.exchangeRate,
-				Quantity:   qty,
-				SellerName: article.Seller.Username,
-
-				// Hijack Bundle to propagate this property
-				Bundle: misprintHack,
-			},
-		}
-
-		channel <- out
+		mkm.id2uuid[key] = cardId
 	}
+
+	price := article.Price
+	qty := article.Count
+	if article.IsPlayset {
+		price /= 4
+		qty *= 4
+	}
+
+	cond := article.Condition
+	switch cond {
+	case "MT", "NM":
+		cond = "NM"
+	case "EX":
+		cond = "SP"
+	case "GD", "LP":
+		cond = "MP"
+	case "PL":
+		cond = "HP"
+	case "PO":
+		cond = "PO"
+	default:
+		mkm.printf("Unknown '%s' condition", cond)
+		return nil
+	}
+
+	if mtgmatcher.Contains(article.Comments, "alter") ||
+		mtgmatcher.Contains(article.Comments, "signed") ||
+		mtgmatcher.Contains(article.Comments, "artist proof") {
+		return nil
+	}
+
+	// Find common ways to describe misprints
+	misprintHack := mtgmatcher.Contains(article.Comments, "misprint") ||
+		mtgmatcher.Contains(article.Comments, "miscut") ||
+		mtgmatcher.Contains(article.Comments, "crimped") ||
+		mtgmatcher.Contains(article.Comments, "square")
+
+	out := responseChan{
+		ogId:   article.IdProduct,
+		cardId: cardId,
+		entry: mtgban.InventoryEntry{
+			Conditions: cond,
+			Price:      price * mkm.exchangeRate,
+			Quantity:   qty,
+			SellerName: article.Seller.Username,
+
+			// Hijack Bundle to propagate this property
+			Bundle: misprintHack,
+		},
+	}
+
+	channel <- out
 
 	return nil
 }
