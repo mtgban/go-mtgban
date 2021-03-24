@@ -16,6 +16,10 @@ type CardMarketFull struct {
 	inventoryDate  time.Time
 	MaxConcurrency int
 	exchangeRate   float64
+	FilterUsers    []string
+
+	// Used to skip unrelated products in single user mode
+	priceGuide MKMPriceGuide
 
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
@@ -103,6 +107,24 @@ func (mkm *CardMarketFull) processProduct(channel chan<- responseChan, ogProduct
 		}
 	}
 
+	return nil
+}
+
+func (mkm *CardMarketFull) processUser(channel chan<- responseChan, user string) error {
+	articles, err := mkm.client.MKMUserArticles(user)
+	if err != nil {
+		return err
+	}
+
+	for _, article := range articles {
+		// Keep the username in the same field as expected by the generic func
+		article.Seller.Username = user
+
+		err := mkm.processArticles(channel, &article)
+		if err != nil {
+			mkm.printf("article %d (product id %d) returned %s", article.IdArticle, article.IdProduct, err.Error())
+		}
+	}
 	return nil
 }
 
@@ -249,7 +271,7 @@ func (mkm *CardMarketFull) processArticles(channel chan<- responseChan, article 
 	return nil
 }
 
-func (mkm *CardMarketFull) scrape() error {
+func (mkm *CardMarketFull) scrapeAll() error {
 	list, err := mkm.client.ListExpansionIds()
 	if err != nil {
 		return err
@@ -305,6 +327,73 @@ func (mkm *CardMarketFull) scrape() error {
 	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.inventoryDate = time.Now()
 	return nil
+}
+
+func (mkm *CardMarketFull) scrapeUsers(users []string) error {
+	priceGuide, err := mkm.client.MKMPriceGuide()
+	if err != nil {
+		mkm.printf("Unable to retrieve priceguide: %s", err.Error())
+	}
+	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
+	mkm.priceGuide = priceGuide
+
+	process := make(chan string)
+	channel := make(chan responseChan)
+	var wg sync.WaitGroup
+
+	for i := 0; i < mkm.MaxConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for user := range process {
+				err := mkm.processUser(channel, user)
+				if err != nil {
+					mkm.printf("User %s returned %s", user, err.Error())
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	go func() {
+		for i, user := range users {
+			mkm.printf("Processing user %s (%d/%d)", user, i+1, len(users))
+			process <- user
+		}
+		close(process)
+
+		wg.Wait()
+		close(channel)
+	}()
+
+	for result := range channel {
+		err := mkm.inventory.AddRelaxed(result.cardId, &result.entry)
+		if err != nil {
+			card, cerr := mtgmatcher.GetUUID(result.cardId)
+			if cerr != nil {
+				mkm.printf("%s - %s: %s", result.ogId, cerr.Error(), result.cardId)
+				continue
+			}
+			// Skip WCD, too many errors
+			if card.Edition == "Pro Tour Collector Set" || strings.HasPrefix(card.Edition, "World Championship Decks") {
+				continue
+			}
+			mkm.printf("%s - %s", result.ogId, err.Error())
+			continue
+		}
+	}
+
+	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
+	mkm.inventoryDate = time.Now()
+	return nil
+}
+
+func (mkm *CardMarketFull) scrape() error {
+	if len(mkm.FilterUsers) == 0 {
+		mkm.printf("Retrieving every single item")
+		return mkm.scrapeAll()
+	}
+
+	return mkm.scrapeUsers(mkm.FilterUsers)
 }
 
 func (mkm *CardMarketFull) Inventory() (mtgban.InventoryRecord, error) {

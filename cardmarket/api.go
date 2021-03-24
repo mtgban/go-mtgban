@@ -23,6 +23,8 @@ const (
 	mkmArticlesBaseURL   = "https://api.cardmarket.com/ws/v2.0/output.json/articles/"
 	mkmExpansionsBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/expansions/"
 
+	mkmUserArticlesFormatURL = "https://api.cardmarket.com/ws/v2.0/output.json/users/%s/articles"
+
 	mkmPriceGuideURL  = "https://api.cardmarket.com/ws/v2.0/output.json/priceguide"
 	mkmProductListURL = "https://api.cardmarket.com/ws/v2.0/output.json/productlist"
 	mkmExpansionsURL  = "https://api.cardmarket.com/ws/v2.0/output.json/games/1/expansions"
@@ -244,6 +246,20 @@ func (mkm *MKMClient) MKMArticles(id int, anyLanguage bool) ([]MKMArticle, error
 	params.Set("minUserScore", "3")
 	params.Set("isSigned", "false")
 	params.Set("isAltered", "false")
+
+	return mkm.articles(u.String())
+}
+
+func (mkm *MKMClient) MKMUserArticles(user string) ([]MKMArticle, error) {
+	return mkm.articles(fmt.Sprintf(mkmUserArticlesFormatURL, user))
+}
+
+func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
+	u, err := url.Parse(link)
+	if err != nil {
+		return nil, err
+	}
+	params := u.Query()
 
 	var i int
 	var articles []MKMArticle
