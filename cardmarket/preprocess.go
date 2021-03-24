@@ -116,6 +116,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
+	case "The Dark Italian":
+		number = ""
 	case "Player Rewards Promos":
 		switch cardName {
 		case "Lightning Bolt":
