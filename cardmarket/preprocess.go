@@ -82,6 +82,31 @@ var promo2editionTable = map[string]string{
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
+	skipCard := false
+	for _, name := range filteredCards {
+		if cardName == name {
+			skipCard = true
+			break
+		}
+	}
+	for _, name := range filteredExpansions {
+		if edition == name {
+			skipCard = true
+			break
+		}
+	}
+	if strings.Contains(edition, "Token") ||
+		strings.Contains(edition, "Oversized") ||
+		strings.Contains(edition, "Player Cards") {
+		skipCard = true
+	}
+
+	if skipCard ||
+		mtgmatcher.IsToken(cardName) ||
+		strings.Contains(cardName, "On Your Turn") {
+		return nil, errors.New("not single")
+	}
+
 	ogEdition := edition
 	number := variant
 	vars := mtgmatcher.SplitVariants(cardName)
