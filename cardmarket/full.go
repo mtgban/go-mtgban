@@ -160,8 +160,21 @@ func (mkm *CardMarketFull) processArticles(channel chan<- responseChan, article 
 
 		cardId, err = mtgmatcher.Match(theCard)
 		if err != nil {
-			if theCard.Edition == "Pro Tour Collector Set" || strings.HasPrefix(theCard.Edition, "World Championship Decks") {
+			switch {
+			case theCard.Edition == "Pro Tour Collector Set",
+				strings.HasPrefix(theCard.Edition, "WCD"),
+				strings.HasPrefix(theCard.Edition, "World Championship Decks"):
 				return nil
+			case theCard.IsBasicLand():
+				switch theCard.Edition {
+				case "Ice Age",
+					"Mirage",
+					"Portal",
+					"Fourth Edition",
+					"Fifth Edition",
+					"Tempest":
+					return nil
+				}
 			}
 
 			mkm.printf("%v", err)
