@@ -595,7 +595,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 							prerelTag = "V.3"
 							bundleTag = "V.1"
 						}
-					case "Throne of Eldraine: Promos":
+					case "Throne of Eldraine: Promos",
+						"Kaldheim: Promos":
 						promopTag = "V.2"
 						prerelTag = "V.1"
 					case "Zendikar Rising: Promos":
