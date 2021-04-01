@@ -344,6 +344,8 @@ var allVariants = map[string]map[string]string{
 		"bird":            "9a",
 	},
 	"Lat-Nam's Legacy": map[string]string{
+		"latnamslegacy":          "30a",
+		"az093":                  "30b",
 		"scroll":                 "30a",
 		"bookshelf":              "30b",
 		"open book":              "30b",
@@ -1623,10 +1625,10 @@ var femVariants = map[string]map[string]string{
 		"fe116": "56c",
 	},
 	"Goblin War Drums": map[string]string{
-		"fe119": "58a",
-		"fe120": "58b",
-		"fe121": "58c",
-		"fe122": "58d",
+		"fe118": "58a",
+		"fe119": "58b",
+		"fe120": "58c",
+		"fe121": "58d",
 	},
 	"High Tide": map[string]string{
 		"fe035":   "18a",
