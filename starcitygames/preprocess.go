@@ -415,6 +415,13 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 	switch edition {
 	case "3rd Edition BB":
 		variant = strings.TrimSuffix(variant, " BB")
+	case "Promo: General":
+		switch cardName {
+		case "Eliminate":
+			if variant == "Promo Pack Core Set 2021" {
+				edition = "Core Set 2021"
+			}
+		}
 	default:
 		if strings.HasSuffix(edition, "(Foil)") {
 			edition = strings.TrimSuffix(edition, " (Foil)")
