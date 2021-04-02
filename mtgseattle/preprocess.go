@@ -143,6 +143,8 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			variant = ""
 		case "Warmonger":
 			edition = "PMEI"
+		case "Stonecoil Serpent":
+			edition = "PRES"
 		}
 		for _, tag := range promoTags {
 			if strings.HasSuffix(cardName, tag) {
