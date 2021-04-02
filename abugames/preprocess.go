@@ -247,6 +247,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				variation = "Buy-A-Box Promo"
 				card.Edition = "ZNR"
 			}
+		case "Realmwalker":
+			if variation == "Buy-A-Box Promo" {
+				card.Edition = "KHM"
+			}
 		}
 		if strings.Contains(variation, "United Kingdom") {
 			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
