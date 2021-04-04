@@ -8,6 +8,7 @@ var EditionTable = map[string]string{
 	"4th Edition":          "Fourth Edition",
 	"5th Edition":          "Fifth Edition",
 	"6th Edition":          "Classic Sixth Edition",
+	"6th Edition Classic":  "Classic Sixth Edition",
 	"7th Edition":          "Seventh Edition",
 	"8th Edition":          "Eighth Edition",
 	"9th Edition":          "Ninth Edition",
