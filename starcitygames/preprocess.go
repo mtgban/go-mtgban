@@ -313,22 +313,19 @@ func convert(fullName, subtitle, edition string) (card *SCGCard, ed string, err 
 	}, edition, nil
 }
 
-func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
-	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
-
-	var skipLang bool
-	switch card.Language {
+func shouldSkipLang(cardName, edition, variant, language string) bool {
+	switch language {
 	case "English":
 	case "Japanese":
 		switch edition {
 		case "Chronicles":
 		case "4th Edition BB":
 			if mtgmatcher.IsBasicLand(cardName) {
-				skipLang = true
+				return true
 			}
 		case "War of the Spark":
-			if card.Subtitle != "(Alternate Art)" {
-				skipLang = true
+			if variant != "Alternate Art" {
+				return true
 			}
 		case "Ikoria: Lair of Behemoths - Variants":
 			switch cardName {
@@ -336,35 +333,51 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 				"Battra, Dark Destroyer",
 				"Mothra's Great Cocoon":
 			default:
-				skipLang = true
+				return true
 			}
 		default:
-			skipLang = true
+			return true
 		}
 	case "Italian":
 		switch edition {
 		case "3rd Edition BB":
 			if mtgmatcher.IsBasicLand(cardName) {
-				skipLang = true
+				return true
 			}
 		case "Legends":
 		case "Renaissance":
 		case "The Dark":
 		default:
-			skipLang = true
+			return true
 		}
 	default:
-		skipLang = true
+		return true
 	}
-	if skipLang {
-		return nil, errors.New("non-english")
-	}
+
+	return false
+}
+
+func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
+	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
 
 	edition = strings.Replace(edition, "&amp;", "&", -1)
 
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
 	variant = strings.Replace(variant, "(", "", -1)
 	variant = strings.Replace(variant, ")", "", -1)
+
+	vars := mtgmatcher.SplitVariants(cardName)
+	cardName = vars[0]
+	if len(vars) > 1 {
+		if variant != "" {
+			variant += " "
+		}
+		variant += strings.Join(vars[1:], " ")
+	}
+
+	if shouldSkipLang(cardName, edition, variant, card.Language) {
+		return nil, errors.New("non-english")
+	}
 
 	switch {
 	case strings.HasPrefix(cardName, "APAC Land"),
@@ -393,15 +406,6 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 				edition = "European Land Program"
 			}
 		}
-	}
-
-	vars := mtgmatcher.SplitVariants(cardName)
-	cardName = vars[0]
-	if len(vars) > 1 {
-		if variant != "" {
-			variant += " "
-		}
-		variant += vars[1]
 	}
 
 	switch card.Language {
