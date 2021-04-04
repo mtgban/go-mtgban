@@ -205,15 +205,17 @@ var EditionTable = map[string]string{
 	"Premium Deck: Slivers":                 "Premium Deck Series: Slivers",
 
 	// Planechase
-	"Planechase 2009":                 "Planechase",
-	"Planechase (2009 Edition)":       "Planechase",
-	"Planechase (2012 Edition)":       "Planechase 2012",
-	"Planechase 2009 Edition":         "Planechase",
-	"Planechase 2012 Edition":         "Planechase 2012",
-	"Planechase: 2009 Edition":        "Planechase",
-	"Planechase: 2012 Edition":        "Planechase 2012",
-	"Planechase Planes: 2009 Edition": "Planechase Planes",
-	"Planechase Planes: 2012 Edition": "Planechase 2012 Planes",
+	"Planechase 2009":                   "Planechase",
+	"Planechase (2009 Edition)":         "Planechase",
+	"Planechase (2012 Edition)":         "Planechase 2012",
+	"Planechase 2009 Edition":           "Planechase",
+	"Planechase 2012 Edition":           "Planechase 2012",
+	"Planechase Planes: 2009 Edition":   "Planechase Planes",
+	"Planechase Planes: 2012 Edition":   "Planechase 2012 Planes",
+	"Planechase: 2009 Edition":          "Planechase",
+	"Planechase: 2012 Edition":          "Planechase 2012",
+	"Planechase: 2009 Edition - Planes": "Planechase Planes",
+	"Planechase: 2012 Edition - Planes": "Planechase 2012 Planes",
 
 	// Deckmasters
 	"Deckmaster Promo":               "Deckmasters",

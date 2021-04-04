@@ -5,26 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
+	"net/url"
+	"strconv"
+	"strings"
 
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-retryablehttp"
 )
-
-type SCGEntry struct {
-	Price              float64 `json:"price"`
-	InventoryLevel     int     `json:"inventory_level"`
-	PurchasingDisabled bool    `json:"purchasing_disabled"`
-	OptionValues       []struct {
-		Label             string `json:"label"`
-		OptionDisplayName string `json:"option_display_name"`
-	} `json:"option_values"`
-}
-
-type SCGResponse struct {
-	Response struct {
-		Data []SCGEntry `json:"data"`
-	} `json:"response"`
-}
 
 type SCGCard struct {
 	Id        string `json:"id"`
@@ -46,8 +33,10 @@ type SCGSearch struct {
 }
 
 const (
-	scgInventoryURL = "https://newstarcityconnector.herokuapp.com/eyApi/products/%s/variants"
+	scgInventoryURL = "https://starcitygames.hawksearch.com/sites/starcitygames/?instockonly=Yes&mpp=1&product_type=Singles"
 	scgBuylistURL   = "https://old.starcitygames.com/buylist/search?search-type=category&id="
+
+	scgDefaultPages = 200
 )
 
 type SCGClient struct {
@@ -58,49 +47,41 @@ func NewSCGClient() *SCGClient {
 	scg := SCGClient{}
 	scg.client = retryablehttp.NewClient()
 	scg.client.Logger = nil
-	// The inventory side is sensitive to multiple concurrent requests,
-	// This backoff strategy lets the system chill out a bit before retrying
-	scg.client.Backoff = retryablehttp.LinearJitterBackoff
-	scg.client.RetryWaitMin = 5 * time.Second
-	scg.client.RetryWaitMax = 60 * time.Second
-	scg.client.RetryMax = 10
 	return &scg
 }
 
-func (scg *SCGClient) List(endpoint string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", endpoint, nil)
+func (scg *SCGClient) NumberOfItems() (int, error) {
+	resp, err := scg.client.Get(scgInventoryURL)
 	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
-	retryableRequest, err := retryablehttp.FromRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return scg.client.Do(retryableRequest)
-}
-
-func (scg *SCGClient) SearchData(dataId string) ([]SCGEntry, error) {
-	apiURL := fmt.Sprintf(scgInventoryURL, dataId)
-	resp, err := scg.client.Get(apiURL)
-	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	pagination := doc.Find(`div[id="hawktoppager"]`).Find(`div[class="hawk-searchrange"] span`).Text()
+	items := strings.Split(pagination, " of ")
+	if len(items) > 1 {
+		return strconv.Atoi(items[1])
+	}
+
+	return 0, fmt.Errorf("invalid pagination value: %s", pagination)
+}
+
+func (scg *SCGClient) GetPage(page int) (*http.Response, error) {
+	u, err := url.Parse(scgInventoryURL)
 	if err != nil {
 		return nil, err
 	}
+	v := u.Query()
+	v.Set("mpp", fmt.Sprint(scgDefaultPages))
+	v.Set("pg", fmt.Sprint(page))
+	u.RawQuery = v.Encode()
 
-	var variants SCGResponse
-	err = json.Unmarshal(data, &variants)
-	if err != nil {
-		return nil, err
-	}
-
-	return variants.Response.Data, nil
+	return scg.client.Get(u.String())
 }
 
 func (scg *SCGClient) SearchProduct(product string) (*SCGSearch, error) {

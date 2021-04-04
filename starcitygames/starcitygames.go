@@ -1,17 +1,12 @@
 package starcitygames
 
 import (
-	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	colly "github.com/gocolly/colly/v2"
-	queue "github.com/gocolly/colly/v2/queue"
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -52,6 +47,8 @@ type responseChan struct {
 	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
+
+	ignoreErr bool
 }
 
 func (scg *Starcitygames) printf(format string, a ...interface{}) {
@@ -60,105 +57,41 @@ func (scg *Starcitygames) printf(format string, a ...interface{}) {
 	}
 }
 
-var scgEndpoints = []string{
-	"https://starcitygames.com/shop/singles/english/",
-	"https://starcitygames.com/shop/singles/foil-english/",
-}
+func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) error {
+	resp, err := scg.client.GetPage(page)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
-func (scg *Starcitygames) scrape() error {
-	channel := make(chan responseChan)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return err
+	}
 
-	c := colly.NewCollector(
-		colly.AllowedDomains("starcitygames.com"),
-		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
-		colly.Async(true),
-	)
+	// Iterate on each result
+	doc.Find(`div[class="hawk-results-item"]`).Each(func(_ int, s *goquery.Selection) {
+		cardName := s.Find(`h2[class="hawk-results-item__title"]`).Text()
+		edition := s.Find(`p[class="hawk-results-item__category"]`).Text()
+		link, _ := s.Find(`h2[class="hawk-results-item__title"] a`).Attr("href")
+		link = "http://starcitygames.com" + link
 
-	c.SetClient(cleanhttp.DefaultClient())
-
-	c.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		RandomDelay: 1 * time.Second,
-		Parallelism: scg.MaxConcurrency,
-	})
-
-	c.OnRequest(func(r *colly.Request) {
-		//scg.printf("Visiting %s", r.URL.String())
-	})
-
-	// Callback for links on scraped pages (edition names)
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		u, err := url.Parse(link)
-		if err != nil {
-			return
-		}
-
-		q := u.Query()
-		if q.Get("Color") != "" {
-			return
-		}
-		if q.Get("_bc_fsnf") != "" {
-			return
-		}
-		if q.Get("Rarity") != "" {
-			return
-		}
-
-		if q.Get("page") == "" {
-			q.Set("page", "1")
-		}
-		q.Set("Language", "English")
-		q.Set("sort", "alphaasc")
-		u.RawQuery = q.Encode()
-		link = u.String()
-
-		if (strings.Contains(link, "/shop/singles/english/") ||
-			strings.Contains(link, "/shop/singles/foil-english/")) &&
-			strings.Count(link, "/") == 5 {
-			err := c.Visit(e.Request.AbsoluteURL(link))
-			if err != nil {
-				if err != colly.ErrAlreadyVisited {
-					scg.printf("error while linking: %s", err.Error())
-				}
-			}
-		}
-	})
-
-	c.OnHTML(`section[class="category-products"]`, func(e *colly.HTMLElement) {
-		fullEdition := e.Attr("data-category")
-		fields := strings.Split(fullEdition, " (")
-		edition := fields[0]
-		isFoil := len(fields) > 1 && strings.HasPrefix(fields[1], "Foil")
-
-		switch edition {
-		case "Alpha-cut 4th Edition",
-			"Alternate 4th Edition",
-			"Misprints",
-			"Pro Player Cards",
-			"Rarities and Misprints",
-			"Summer Magic",
-			"Wyvern-backed Fallen Empires":
-			return
-		default:
-			if strings.Contains(edition, "Oversized") {
+		// Iterate on each condition
+		s.Find(`div[class="hawk-results-item__options-table-row"]`).Each(func(_ int, se *goquery.Selection) {
+			condLang := se.Find(`div[class="hawk-results-item__options-table-cell hawk-results-item__options-table-cell--name childCondition"]`).Text()
+			fields := strings.Split(condLang, " - ")
+			if len(fields) < 2 {
+				scg.printf("invalid condLang format: %s", condLang)
 				return
 			}
-		}
+			conditions := strings.TrimSpace(fields[0])
+			language := strings.TrimSpace(fields[1])
 
-		e.ForEach(`table tr.product`, func(_ int, elem *colly.HTMLElement) {
-			dataId := elem.Attr("data-id")
-			fullName := elem.Attr("data-name")
-			subtitle := elem.ChildText(`div[class="listItem-details"] p[class="category-Subtitle"]`)
-
-			card, edition, err := convert(fullName, subtitle, edition)
-			if err != nil {
-				return
+			cc := SCGCard{
+				Name:     cardName,
+				Language: language,
 			}
-			card.Id = dataId
-			card.Foil = isFoil
-
-			theCard, err := preprocess(card, edition)
+			theCard, err := preprocess(&cc, edition)
 			if err != nil {
 				return
 			}
@@ -167,7 +100,7 @@ func (scg *Starcitygames) scrape() error {
 			if err != nil {
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
-				scg.printf("'%q' (%s) [%s]", fullName, subtitle, edition)
+				scg.printf("%v ~ %s", cc, edition)
 				alias, ok := err.(*mtgmatcher.AliasingError)
 				if ok {
 					probes := alias.Probe()
@@ -179,102 +112,98 @@ func (scg *Starcitygames) scrape() error {
 				return
 			}
 
-			entries, err := scg.client.SearchData(dataId)
-			if err != nil {
-				scg.printf("%s: %s", fullName, err)
+			switch conditions {
+			case "Near Mint":
+				conditions = "NM"
+			case "Played":
+				conditions = "SP"
+			case "Heavily Played":
+				conditions = "MP"
+			default:
+				scg.printf("unknown condition %s for %s", conditions, cardName)
 				return
 			}
 
-			for _, entry := range entries {
-				price := entry.Price
-				qty := entry.InventoryLevel
-
-				if price <= 0.0 || qty <= 0 || entry.PurchasingDisabled {
-					continue
-				}
-
-				conditions := "N/A"
-				for _, option := range entry.OptionValues {
-					if option.OptionDisplayName == "Condition" {
-						conditions = option.Label
-						break
-					}
-				}
-
-				switch conditions {
-				case "Near Mint":
-					conditions = "NM"
-				case "Played":
-					conditions = "SP"
-				case "Heavily Played":
-					conditions = "MP"
-				case "N/A":
-					continue
-				default:
-					scg.printf("unknown condition %s for ", conditions, card.Name)
-					continue
-				}
-
-				channel <- responseChan{
-					cardId: cardId,
-					invEntry: &mtgban.InventoryEntry{
-						Conditions: conditions,
-						Price:      price,
-						Quantity:   qty,
-					},
+			priceStr := se.Find(`span[class="hawkSalePrice"]`).Text()
+			if priceStr == "" {
+				priceStr = se.Find(`span[class="hawk-old-price"]`).Text()
+				if priceStr == "" {
+					priceStr = se.Find(`div[class="hawk-results-item__options-table-cell hawk-results-item__options-table-cell--price childAttributes"]`).Text()
 				}
 			}
+			price, err := mtgmatcher.ParsePrice(priceStr)
+			if err != nil {
+				scg.printf("invalid price for %s: %s", cardName, err.Error())
+				return
+			}
+
+			qtyStr := se.Find(`div[class="hawk-results-item__options-table-cell hawk-results-item__options-table-cell--qty childAttributes"]`).Text()
+			qtyStr = strings.TrimPrefix(qtyStr, "QTY: ")
+			qty, err := strconv.Atoi(qtyStr)
+			if err != nil {
+				scg.printf("invalid price for %s: %s", cardName, err.Error())
+				return
+			}
+
+			out := responseChan{
+				cardId: cardId,
+				invEntry: &mtgban.InventoryEntry{
+					Price:      price,
+					Conditions: conditions,
+					Quantity:   qty,
+					URL:        link,
+				},
+				ignoreErr: strings.Contains(edition, "World Championship") && theCard.IsBasicLand(),
+			}
+			channel <- out
 		})
 	})
 
-	q, _ := queue.New(
-		scg.MaxConcurrency,
-		&queue.InMemoryQueueStorage{MaxSize: 10000},
-	)
+	return nil
+}
 
-	for _, endpoint := range scgEndpoints {
-		resp, err := scg.client.List(endpoint)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-
-		doc, err := goquery.NewDocumentFromReader(resp.Body)
-		if err != nil {
-			scg.printf("%s", err)
-			continue
-		}
-
-		doc.Find(`div[id="ajax-conetnt"]`).Find("li").Each(func(i int, s *goquery.Selection) {
-			editionUrl, ok := s.Find("a").Attr("href")
-			if !ok {
-				return
-			}
-
-			q.AddURL(editionUrl + "?Language=English&page=1&sort=alphaasc")
-		})
+func (scg *Starcitygames) scrape() error {
+	items, err := scg.client.NumberOfItems()
+	if err != nil {
+		return err
 	}
+	totalPages := items/scgDefaultPages + 1
+	scg.printf("Found %d items for %d pages", items, totalPages)
 
-	q.Run(c)
+	pages := make(chan int)
+	results := make(chan responseChan)
+	var wg sync.WaitGroup
+
+	for i := 0; i < scg.MaxConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for page := range pages {
+				err := scg.processPage(results, page)
+				if err != nil {
+					scg.printf("%v", err)
+				}
+			}
+			wg.Done()
+		}()
+	}
 
 	go func() {
-		c.Wait()
-		close(channel)
+		for i := 1; i <= totalPages; i++ {
+			pages <- i
+		}
+		close(pages)
+
+		wg.Wait()
+		close(results)
 	}()
 
-	dupes := map[string]bool{}
-	for res := range channel {
-		key := res.cardId + res.invEntry.Conditions
-		if dupes[key] {
-			continue
-		}
-		dupes[key] = true
-
-		err := scg.inventory.Add(res.cardId, res.invEntry)
-		if err != nil {
-			scg.printf("%v", err)
+	for record := range results {
+		err := scg.inventory.Add(record.cardId, record.invEntry)
+		if err != nil && !record.ignoreErr {
+			scg.printf("%s", err.Error())
 		}
 	}
+
 	scg.inventoryDate = time.Now()
 
 	return nil
