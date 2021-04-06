@@ -179,6 +179,13 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = "Japanese Prerelease"
 			edition = "War of the Spark Promos"
 		}
+	case "Throne of Eldraine: Promos":
+		switch variation {
+		case "V.1":
+			variation = "Prerelease"
+		case "V.2":
+			variation = "Promo Pack"
+		}
 	case "Kaldheim: Extras":
 		if cardName == "Vorinclex, Monstrous Raider" {
 			if variation == "V.1" {
@@ -240,7 +247,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		}
 		variation = strings.TrimLeft(extra[4:], "0")
 	default:
-		// All the boosterfun prelease/promopack after THB (ELD is under "Promo")
+		// All the prelease/promopack versions >= THB
 		if strings.HasSuffix(edition, ": Promos") {
 			switch variation {
 			case "V.1":
