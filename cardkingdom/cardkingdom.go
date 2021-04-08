@@ -38,9 +38,14 @@ type retailDetail struct {
 	price     float64
 }
 
-func parseConditions(values conditionValues) (out []retailDetail) {
+/* For newly added cards the embedded nmPrice may not be initialized, so we
+ * use the fallbackPrice that is known to be always valid. */
+func parseConditions(values conditionValues, fallbackPrice float64) (out []retailDetail) {
 	nmPrice, _ := strconv.ParseFloat(values.NMPrice, 64)
-	if nmPrice > 0 && values.NMQty > 0 {
+	if values.NMQty > 0 {
+		if nmPrice == 0 {
+			nmPrice = fallbackPrice
+		}
 		out = append(out, retailDetail{
 			condition: "NM",
 			quantity:  values.NMQty,
@@ -125,7 +130,7 @@ func (ck *Cardkingdom) scrape() error {
 				u.RawQuery = q.Encode()
 			}
 
-			details := parseConditions(card.ConditionValues)
+			details := parseConditions(card.ConditionValues, sellPrice)
 			for _, detail := range details {
 				out := &mtgban.InventoryEntry{
 					Conditions: detail.condition,
