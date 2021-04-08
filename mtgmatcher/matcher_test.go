@@ -2423,6 +2423,33 @@ var MatchTests = []MatchTest{
 			Id: "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
 		},
 	},
+
+	MatchTest{
+		Id:   "f2aa69f2-db69-5564-8661-d51855c6796a",
+		Desc: "sta_double_variant_normal",
+		In: Card{
+			Name:    "Demonic Tutor",
+			Edition: "Mystical Archive",
+		},
+	},
+	MatchTest{
+		Id:   "b076bded-cee7-5f26-b9d8-3540918f68fa",
+		Desc: "sta_double_variant_jpn",
+		In: Card{
+			Name:      "Demonic Tutor",
+			Variation: "JPN",
+			Edition:   "Strixhaven Mystical Archive",
+		},
+	},
+	MatchTest{
+		Id:   "b076bded-cee7-5f26-b9d8-3540918f68fa",
+		Desc: "sta_double_variant_jpn_number",
+		In: Card{
+			Name:      "Demonic Tutor",
+			Variation: "JPN 90",
+			Edition:   "Strixhaven Mystical Archives",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

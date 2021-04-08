@@ -544,8 +544,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				possibleSuffixes = append(possibleSuffixes, fields...)
 
 				// Short circuit the possible suffixes if we know what we're dealing with
-				if inCard.isJPN() && set.Name != "Chronicles Japanese" {
-					possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
+				if inCard.isJPN() {
+					switch set.Name {
+					case "Chronicles Japanese",
+						"Strixhaven Mystical Archive":
+						// Leave the collector number as is for these sets
+					default:
+						possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
+					}
 				}
 				// BFZ and ZEN intro lands non-fullart always have this
 				if inCard.isBasicNonFullArt() {
@@ -643,8 +649,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else {
 					// IKO may have showcase cards which happen to be borderless
-					// or reskinned ones
-					if card.BorderColor == mtgjson.BorderColorBorderless && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) && card.FlavorName == "" {
+					// or reskinned ones. Also all cards from STA are borderless,
+					// so they are never tagged as such.
+					if card.BorderColor == mtgjson.BorderColorBorderless &&
+						!card.HasFrameEffect(mtgjson.FrameEffectShowcase) && card.FlavorName == "" &&
+						set.Name != "Strixhaven Mystical Archive" {
 						continue
 					}
 				}
@@ -867,6 +876,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if !Contains(inCard.Variation, "Intro") && card.HasPromoType(mtgjson.PromoTypeIntroPack) {
 					continue
 				} else if Contains(inCard.Variation, "Intro") && !card.HasPromoType(mtgjson.PromoTypeIntroPack) {
+					continue
+				}
+			case "Strixhaven Mystical Archive":
+				cn, _ := strconv.Atoi(card.Number)
+				if inCard.isJPN() && cn <= 63 {
+					continue
+				} else if !inCard.isJPN() && cn > 63 {
 					continue
 				}
 			default:
