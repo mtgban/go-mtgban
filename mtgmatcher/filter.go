@@ -54,7 +54,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			default:
 				switch {
 				case strings.HasSuffix(set.Name, "Promos"):
-				case setDate.After(PromosForEverybodyYay) && set.Type == "expansion":
+				case setDate.After(PromosForEverybodyYay) && (set.Type == "expansion" || set.Type == "core"):
 					skip := true
 					foundCards := MatchInSet(inCard.Name, setCode)
 					for _, card := range foundCards {

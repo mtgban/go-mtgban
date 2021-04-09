@@ -2397,6 +2397,15 @@ var MatchTests = []MatchTest{
 			Promo:   true,
 		},
 	},
+	MatchTest{
+		Id:   "7165c42c-7210-5564-b5a9-e666de59034a",
+		Desc: "tagged_promopack_in_core",
+		In: Card{
+			Name:      "Eliminate",
+			Variation: "Promo Pack",
+			Edition:   "Promo Pack",
+		},
+	},
 
 	// Non-English custom sets
 	MatchTest{
