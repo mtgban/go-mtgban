@@ -126,6 +126,7 @@ var card2setTable = map[string]string{
 	"Lingering Souls (WPN)":           "Friday Night Magic 2012",
 	"Lightning Bolt (Beta Art Promo)": "Judge Gift Cards 1998",
 	"Wood Elves (Promo)":              "Gateway 2006",
+	"Elvish Lyrist (FNM)":             "Junior Super Series",
 
 	"Tempered Steel (Full Art Textless)": "Scars of Mirrodin Promos",
 }
