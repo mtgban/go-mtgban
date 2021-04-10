@@ -255,7 +255,7 @@ func (mkm *CardMarketIndex) scrape() error {
 			for expansion := range expansions {
 				err := mkm.processEdition(channel, &expansion, priceGuide)
 				if err != nil {
-					mkm.printf("expansion id %s returned %s", expansion.IdExpansion, err)
+					mkm.printf("expansion id %d returned %s", expansion.IdExpansion, err)
 				}
 			}
 			wg.Done()
@@ -263,8 +263,8 @@ func (mkm *CardMarketIndex) scrape() error {
 	}
 
 	go func() {
-		for _, pair := range list {
-			mkm.printf("Processing %s (%d)", pair.Name, pair.IdExpansion)
+		for i, pair := range list {
+			mkm.printf("Processing %s (%d) %d/%d", pair.Name, pair.IdExpansion, i+1, len(list))
 			expansions <- pair
 		}
 		close(expansions)
