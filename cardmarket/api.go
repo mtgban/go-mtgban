@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -74,7 +75,7 @@ func (mkm *MKMClient) MKMRawPriceGuide() (string, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return "", err
+		return "", errors.New(string(data))
 	}
 
 	return response.PriceGuideFile, nil
@@ -98,7 +99,7 @@ func (mkm *MKMClient) MKMRawProductList() (string, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return "", err
+		return "", errors.New(string(data))
 	}
 
 	return response.ProductsFile, nil
@@ -130,7 +131,7 @@ func (mkm *MKMClient) MKMExpansions() (map[int]MKMExpansion, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(string(data))
 	}
 
 	editionMap := map[int]MKMExpansion{}
@@ -174,7 +175,7 @@ func (mkm *MKMClient) MKMProduct(id int) (*MKMProduct, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(string(data))
 	}
 
 	return &response.Product, nil
@@ -198,7 +199,7 @@ func (mkm *MKMClient) MKMProductsInExpansion(id int) ([]MKMProduct, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(string(data))
 	}
 
 	return response.Single, nil
@@ -290,7 +291,7 @@ func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
 
 		err = json.Unmarshal(data, &response)
 		if err != nil {
-			return nil, err
+			return nil, errors.New(string(data))
 		}
 
 		// Stash the result
