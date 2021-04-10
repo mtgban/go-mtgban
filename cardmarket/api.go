@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
@@ -41,7 +42,13 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 	mkm := MKMClient{}
 	mkm.client = retryablehttp.NewClient()
 	mkm.client.Logger = nil
+	// The api is very sensitive to multiple concurrent requests,
+	// This backoff strategy lets the system chill out a bit before retrying
 	mkm.client.Backoff = retryablehttp.LinearJitterBackoff
+	mkm.client.RetryWaitMin = 1 * time.Second
+	mkm.client.RetryWaitMax = 5 * time.Second
+	mkm.client.RetryMax = 15
+	mkm.client.CheckRetry = customCheckRetry
 	mkm.client.HTTPClient.Transport = &authTransport{
 		Parent:    mkm.client.HTTPClient.Transport,
 		AppToken:  appToken,
@@ -51,6 +58,19 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 		Limiter: rate.NewLimiter(9, 16),
 	}
 	return &mkm
+}
+
+// Implement our own retry policy to leverage the internal retry mechanism.
+// The api seems to return a 200 status code with a plain-text error message
+// "Too Many Requests" even when there just one in progress.
+func customCheckRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	data, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+	if string(data) == "Too Many Requests" {
+		return true, errors.New(string(data))
+	}
+	return false, err
 }
 
 func (mkm *MKMClient) RequestNo() int {
