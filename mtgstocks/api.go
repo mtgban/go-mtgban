@@ -15,14 +15,15 @@ type Interest struct {
 	PresentPrice float64 `json:"present_price"`
 	Date         int64   `json:"date"`
 	Print        struct {
-		Id        int    `json:"id"`
-		Name      string `json:"name"`
-		Rarity    string `json:"rarity"`
-		SetId     int    `json:"set_id"`
-		SetName   string `json:"set_name"`
-		IconClass string `json:"icon_class"`
-		Reserved  bool   `json:"reserved"`
-		SetType   string `json:"set_type"`
+		Id        int         `json:"id"`
+		Slug      interface{} `json:"slug"` // string & int
+		Name      string      `json:"name"`
+		Rarity    string      `json:"rarity"`
+		SetId     int         `json:"set_id"`
+		SetName   string      `json:"set_name"`
+		IconClass string      `json:"icon_class"`
+		Reserved  bool        `json:"reserved"`
+		SetType   string      `json:"set_type"`
 		Legal     struct {
 			Frontier  string `json:"frontier"`
 			Pauper    string `json:"pauper"`
