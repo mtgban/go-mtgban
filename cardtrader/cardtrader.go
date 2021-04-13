@@ -72,6 +72,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			switch product.Expansion.Name {
 			case "Chronicles Japanese",
 				"Fourth Edition Black Bordered",
+				"Magic Premiere Shop",
 				"Mystical Archive: Japanese alternate-art",
 				"War of the Spark: Japanese alternate-art Planeswalker",
 				"War of the Spark: Japanese alternate-art Planeswalker Promo":

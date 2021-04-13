@@ -2,6 +2,7 @@ package cardtrader
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -435,6 +436,11 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			if cardName == "Swamp (V.2)" {
 				cardName = "Swamp"
 			}
+		case "Magic Premiere Shop":
+			if number == "" {
+				number = fmt.Sprint(bp.Id)
+			}
+			variant = pmpsTable[number]
 		default:
 			switch {
 			// Use number as is
