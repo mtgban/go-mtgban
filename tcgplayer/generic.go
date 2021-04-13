@@ -149,15 +149,13 @@ func (tcg *TCGPlayerGeneric) processEntry(channel chan<- responseChan, reqs []in
 	return nil
 }
 
-const pageSize = 150
-
 type genericChan struct {
 	key   string
 	entry mtgban.InventoryEntry
 }
 
 func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.groups, false, page, pageSize)
+	products, err := tcg.client.ListAllProducts(tcg.category, tcg.groups, false, page, MaxLimit)
 	if err != nil {
 		return err
 	}
@@ -255,7 +253,7 @@ func (tcg *TCGPlayerGeneric) scrape() error {
 	}
 
 	go func() {
-		for i := 0; i < totals; i += pageSize {
+		for i := 0; i < totals; i += MaxLimit {
 			pages <- i
 		}
 		close(pages)

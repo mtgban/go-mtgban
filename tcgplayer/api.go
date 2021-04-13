@@ -3,6 +3,7 @@ package tcgplayer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -149,6 +150,8 @@ const (
 	CategoryMagic   = 1
 	CategoryYuGiOh  = 2
 	CategoryPokemon = 3
+
+	MaxLimit = 100
 )
 
 type TCGResponse struct {
@@ -220,6 +223,11 @@ func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, inclu
 	if err != nil {
 		return nil, err
 	}
+
+	if limit > MaxLimit {
+		return nil, errors.New("invalid limit parameter")
+	}
+
 	v := url.Values{}
 	v.Set("categoryId", fmt.Sprint(category))
 	if productTypes != nil {
