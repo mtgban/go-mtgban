@@ -427,6 +427,10 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			} else {
 				cardName = bp.DisplayName
 			}
+		case "Secret Lair Drop Series":
+			if cardName == "Swamp (V.2)" {
+				cardName = "Swamp"
+			}
 		default:
 			switch {
 			// Use number as is
