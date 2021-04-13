@@ -226,7 +226,7 @@ func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, inclu
 		v.Set("productTypes", strings.Join(productTypes, ","))
 	}
 	if includeSkus {
-		v.Set("productTypes", "true")
+		v.Set("includeSkus", "true")
 	}
 	v.Set("offset", fmt.Sprint(offset))
 
