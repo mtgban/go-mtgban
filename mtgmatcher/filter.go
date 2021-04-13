@@ -578,7 +578,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			}
 
 			// JPN
-			if inCard.isJPN() && set.Name != "Magazine Inserts" && !strings.HasPrefix(set.Name, "Magic Premiere Shop") {
+			if inCard.isJPN() && set.Name != "Magazine Inserts" && !strings.HasPrefix(set.Name, "Magic Premiere Shop") && set.Name != "Strixhaven Mystical Archive" {
 				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && !card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
 					continue
 				}

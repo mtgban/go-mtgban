@@ -2459,6 +2459,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Strixhaven Mystical Archives",
 		},
 	},
+	MatchTest{
+		Id:   "ba1c1aa6-b685-5e4f-9a53-67cdc6cbcc02",
+		Desc: "sta_double_variant_japanese_noforeigndata",
+		In: Card{
+			Name:      "Negate",
+			Variation: "Japanese",
+			Edition:   "Strixhaven Mystical Archive",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
