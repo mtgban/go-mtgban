@@ -316,7 +316,7 @@ func (cs *Cardshark) InventoryForSeller(sellerName string) (mtgban.InventoryReco
 	return cs.marketplace[sellerName], nil
 }
 
-func (cs *Cardshark) IntializeInventory(reader io.Reader) error {
+func (cs *Cardshark) InitializeInventory(reader io.Reader) error {
 	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err

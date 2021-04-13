@@ -319,7 +319,7 @@ func (tcg *TCGPlayerFull) InventoryForSeller(sellerName string) (mtgban.Inventor
 	return tcg.marketplace[sellerName], nil
 }
 
-func (tcg *TCGPlayerFull) IntializeInventory(reader io.Reader) error {
+func (tcg *TCGPlayerFull) InitializeInventory(reader io.Reader) error {
 	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err

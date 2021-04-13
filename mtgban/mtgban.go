@@ -119,14 +119,14 @@ type Scraper interface {
 // have inventory data loaded offline.
 type InventoryInitializer interface {
 	// Initialize an inventory.
-	IntializeInventory(io.Reader) error
+	InitializeInventory(io.Reader) error
 }
 
 // BuylistInitializer is the inteface used to identify scrapers that can
 // have buylist data loaded offline.
 type BuylistInitializer interface {
 	// Initialize a buylist.
-	IntializeBuylist(io.Reader) error
+	InitializeBuylist(io.Reader) error
 }
 
 // Carter is the inteface used to identify Seller scrapers that can

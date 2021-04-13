@@ -384,7 +384,7 @@ func (tcg *TCGPlayerMarket) InventoryForSeller(sellerName string) (mtgban.Invent
 	return tcg.marketplace[sellerName], nil
 }
 
-func (tcg *TCGPlayerMarket) IntializeInventory(reader io.Reader) error {
+func (tcg *TCGPlayerMarket) InitializeInventory(reader io.Reader) error {
 	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
@@ -414,7 +414,7 @@ func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
 	return tcg.buylist, nil
 }
 
-func (tcg *TCGPlayerMarket) IntializeBuylist(reader io.Reader) error {
+func (tcg *TCGPlayerMarket) InitializeBuylist(reader io.Reader) error {
 	buylist, err := mtgban.LoadBuylistFromCSV(reader)
 	if err != nil {
 		return err

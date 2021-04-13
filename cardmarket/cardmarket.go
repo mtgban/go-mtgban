@@ -341,7 +341,7 @@ func (mkm *CardMarketIndex) InventoryForSeller(sellerName string) (mtgban.Invent
 	return mkm.marketplace[sellerName], nil
 }
 
-func (mkm *CardMarketIndex) IntializeInventory(reader io.Reader) error {
+func (mkm *CardMarketIndex) InitializeInventory(reader io.Reader) error {
 	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err

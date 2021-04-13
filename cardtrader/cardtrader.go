@@ -330,7 +330,7 @@ func (ct *Cardtrader) InventoryForSeller(sellerName string) (mtgban.InventoryRec
 	return ct.marketplace[sellerName], nil
 }
 
-func (ct *Cardtrader) IntializeInventory(reader io.Reader) error {
+func (ct *Cardtrader) InitializeInventory(reader io.Reader) error {
 	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
