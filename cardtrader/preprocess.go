@@ -235,6 +235,10 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				if cardName == "Three Visits" && number == "685" {
 					variant = "686"
 				}
+			case "Strixhaven: School of Mages Collectors":
+				if cardName == "Magma Opus" && number == "336" {
+					variant = "346"
+				}
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
 			strings.HasPrefix(edition, "Pro Tour 1996") {
