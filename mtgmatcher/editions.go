@@ -33,9 +33,11 @@ var EditionTable = map[string]string{
 	"Strixhaven Mystical Archives":             "Strixhaven Mystical Archive",
 
 	// JPN planeswalkers and similar
-	"War of the Spark JPN Planeswalkers":      "War of the Spark",
-	"War of the Spark Japanese Alternate Art": "War of the Spark",
-	"War of the Spark Japanese Alt Art":       "War of the Spark",
+	"War of the Spark JPN Planeswalkers":                          "War of the Spark",
+	"War of the Spark Japanese Alt Art":                           "War of the Spark",
+	"War of the Spark Japanese Alternate Art":                     "War of the Spark",
+	"War of the Spark: Japanese alternate-art Planeswalker Promo": "War of the Spark Promos",
+	"War of the Spark: Japanese alternate-art Planeswalker":       "War of the Spark",
 
 	// Gift pack
 	"2017 Gift Pack":       "2017 Gift Pack",

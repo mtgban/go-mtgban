@@ -250,10 +250,8 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			}
 		} else if strings.Contains(edition, "Japanese") {
 			variant = "Japanese"
-			edition = "War of the Spark"
 			if strings.Contains(edition, "Promo") {
 				variant += " Prerelease"
-				edition = "War of the Spark Promos"
 			}
 		} else if strings.HasSuffix(edition, "Promos") {
 			variant = number
