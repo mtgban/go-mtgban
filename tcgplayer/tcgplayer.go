@@ -44,7 +44,10 @@ type responseChan struct {
 	bl     mtgban.BuylistEntry
 }
 
-const allSkusURL = "https://mtgjson.com/api/v5/TcgplayerSkus.json.bz2"
+const (
+	allSkusURL       = "https://mtgjson.com/api/v5/TcgplayerSkus.json.bz2"
+	allSkusBackupURL = "https://mtgjson.com/api/v5_backup/TcgplayerSkus.json.bz2"
+)
 
 var skuConditions = map[string]string{
 	"NEAR MINT":         "NM",
@@ -444,7 +447,10 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 func getAllSKUs() (map[string][]mtgjson.TCGSku, error) {
 	resp, err := cleanhttp.DefaultClient().Get(allSkusURL)
 	if err != nil {
-		return nil, err
+		resp, err = cleanhttp.DefaultClient().Get(allSkusBackupURL)
+		if err != nil {
+			return nil, err
+		}
 	}
 	defer resp.Body.Close()
 
