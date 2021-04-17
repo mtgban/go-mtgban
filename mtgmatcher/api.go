@@ -80,6 +80,14 @@ func Scryfall2UUID(id string) string {
 	return backend.Scryfall[id]
 }
 
+func Printings4Card(name string) ([]string, error) {
+	entry, found := backend.Cards[Normalize(name)]
+	if !found {
+		return nil, ErrCardDoesNotExist
+	}
+	return entry.Printings, nil
+}
+
 func HasExtendedArtPrinting(name string) bool {
 	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectExtendedArt)
 }
