@@ -2,6 +2,7 @@ package mtgstocks
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -121,4 +122,19 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 		Edition:   edition,
 		Foil:      foil,
 	}, nil
+}
+
+// Some slug strings are missing quotes and are plain numbers
+// use this function to parse it
+func getLink(raw interface{}) (string, error) {
+	var slug string
+	switch v := raw.(type) {
+	case string:
+		slug = v
+	case float64:
+		slug = fmt.Sprintf("%.0f", v)
+	default:
+		return "", errors.New("invalid type")
+	}
+	return "https://www.mtgstocks.com/prints/" + slug, nil
 }

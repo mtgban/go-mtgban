@@ -72,14 +72,8 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		return err
 	}
 
-	// Some slug strings are missing quotes and are plain numbers
-	var slug string
-	switch v := req.interest.Print.Slug.(type) {
-	case string:
-		slug = v
-	case float64:
-		slug = fmt.Sprintf("%.0f", v)
-	default:
+	link, err := getLink(req.interest.Print.Slug)
+	if err != nil {
 		stks.printf("invalid data type used for %s", req.interest.Print.Name)
 	}
 	out := responseChan{
@@ -87,7 +81,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		entry: mtgban.InventoryEntry{
 			Price:      req.interest.PresentPrice,
 			Quantity:   1,
-			URL:        "https://www.mtgstocks.com/prints/" + slug,
+			URL:        link,
 			SellerName: req.name + " " + strings.Title(req.interest.InterestType),
 		},
 	}
