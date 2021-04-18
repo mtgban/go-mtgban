@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-cleanhttp"
 )
 
 type Interest struct {
@@ -72,7 +72,7 @@ func MarketInterests() (*StocksInterest, error) {
 }
 
 func query(link string) (*MTGStocksInterests, error) {
-	resp, err := http.Get(link)
+	resp, err := cleanhttp.DefaultClient().Get(link)
 	if err != nil {
 		return nil, err
 	}
