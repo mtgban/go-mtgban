@@ -47,131 +47,20 @@ func NewScraper() *MTGStocks {
 	return &stks
 }
 
-var cardTable = map[string]string{
-	"Cevill, Bane of Monsters":    "Chevill, Bane of Monsters",
-	"Frontland Felidar":           "Frondland Felidar",
-	"Ragurin Crystal":             "Raugrin Crystal",
-	"Bastion of Rememberance":     "Bastion of Remembrance",
-	"Rograkh, Son of Gohgahh":     "Rograkh, Son of Rohgahh",
-	"Swords of Plowshares":        "Swords to Plowshares",
-	"Kedniss, Emberclaw Familiar": "Kediss, Emberclaw Familiar",
-
-	"Battra, Terror of the City (JP Alternate Art)": "Dirge Bat (Godzilla)",
-}
-
 func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan) error {
 	if req.interest.Percentage < 0 {
 		return nil
 	}
 
-	edition := req.interest.Print.SetName
-
-	fullName := req.interest.Print.Name
-	fullName = strings.Replace(fullName, "[", "(", 1)
-	fullName = strings.Replace(fullName, "]", ")", 1)
-
-	if mtgmatcher.IsToken(fullName) ||
-		strings.Contains(fullName, "Biography Card") ||
-		strings.Contains(fullName, "Ultra Pro Puzzle Quest") ||
-		strings.Contains(edition, "Oversize") {
+	theCard, err := preprocess(req.interest.Print.Name, req.interest.Print.SetName, req.interest.Foil)
+	if err != nil {
 		return nil
 	}
 
-	lutName, found := cardTable[fullName]
-	if found {
-		fullName = lutName
-	}
-
-	s := mtgmatcher.SplitVariants(fullName)
-
-	variant := ""
-	cardName := s[0]
-	if len(s) > 1 {
-		variant = strings.Join(s[1:], " ")
-	}
-
-	s = strings.Split(cardName, " - ")
-	cardName = s[0]
-	if len(s) > 1 {
-		if variant != "" {
-			variant += " "
-		}
-		variant += s[1]
-	}
-
-	if variant == "Welcome Back Promo Hangarback Walker Miscellaneous Promos" {
-		cardName = "Hangarback Walker"
-		edition = "PLGS"
-	}
-
-	lutName, found = cardTable[cardName]
-	if found {
-		cardName = lutName
-	}
-
-	switch edition {
-	case "Revised Edition (Foreign White Border)":
-		return nil
-	case "Secret Lair Series":
-		if cardName == "Thalia, Guardian of Thraben" && variant == "" {
-			variant = "37"
-		}
-	case "Arabian Nights":
-		if variant == "Version 2" {
-			variant = "dark"
-		} else if variant == "Version 1" {
-			variant = "light"
-		}
-	case "Prerelease Cards":
-		variant = edition
-	case "JSS/MSS Promos":
-		edition = "Junior Super Series"
-	case "Media Promos":
-		if variant == "" {
-			variant = "Book"
-		}
-	case "Arena Promos":
-		if cardName == "Underworld Dreams" {
-			edition = "DCI"
-		}
-	case "WPN & Gateway Promos":
-		if cardName == "Deathless Angel" {
-			edition = "Rise of the Eldrazi Promos"
-		}
-	case "Judge Promos":
-		switch cardName {
-		case "Vampiric Tutor":
-			if variant == "" {
-				variant = "2000"
-			}
-		}
-	case "Miscellaneous Promos":
-		if variant == "Magic Scholarship" {
-			edition = "Junior Super Series"
-		}
-	case "Unglued":
-		if strings.HasSuffix(variant, "Right") {
-			variant = "29"
-		} else if strings.HasSuffix(variant, "Left") {
-			variant = "28"
-		}
-	case "Ikoria: Lair of Behemoths: Extras":
-		if variant == "JP Alternate Art" {
-			variant = "Godzilla"
-		}
-		edition = "Ikoria: Lair of Behemoths"
-	}
-
-	theCard := &mtgmatcher.Card{
-		Name:      cardName,
-		Variation: variant,
-		Edition:   edition,
-		Foil:      req.interest.Foil,
-	}
 	cardId, err := mtgmatcher.Match(theCard)
 	if err != nil {
 		stks.printf("%q", theCard)
-		stks.printf("%q", req.interest.Print)
+		stks.printf("%s | %s | %v", req.interest.Print.Name, req.interest.Print.SetName, req.interest.Foil)
 		alias, ok := err.(*mtgmatcher.AliasingError)
 		if ok {
 			probes := alias.Probe()
@@ -191,7 +80,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	case float64:
 		slug = fmt.Sprintf("%.0f", v)
 	default:
-		stks.printf("invalid data type used for %s", cardName)
+		stks.printf("invalid data type used for %s", req.interest.Print.Name)
 	}
 	out := responseChan{
 		cardId: cardId,
