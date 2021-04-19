@@ -1581,7 +1581,6 @@ var femVariants = map[string]map[string]string{
 		"rob alexander claw":          "49c",
 		"rob alexander a":             "49a",
 		"rob alexander b":             "49c",
-		"rob alexander c":             "49c",
 		"pike":                        "49a",
 		"map":                         "49a",
 		"horned helm":                 "49c",
