@@ -606,6 +606,8 @@ func adjustEdition(inCard *Card) {
 	// Planechase deduplication
 	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
 		inCard.Edition = backend.Sets["OHOP"].Name
+	case inCard.Equals("Planechase 2012") && len(MatchInSet(inCard.Name, "OPC2")) != 0:
+		inCard.Edition = backend.Sets["OPC2"].Name
 	case inCard.Equals("Planechase Anthology") && len(MatchInSet(inCard.Name, "OPCA")) != 0:
 		inCard.Edition = backend.Sets["OPCA"].Name
 

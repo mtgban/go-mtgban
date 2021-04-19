@@ -435,6 +435,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if skip {
 					continue
 				}
+			case "funny":
+				if set.Name != "HasCon 2017" {
+					continue
+				}
 			default:
 				continue
 			}

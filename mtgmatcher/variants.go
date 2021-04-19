@@ -374,6 +374,7 @@ var allVariants = map[string]map[string]string{
 		"knight wounded on ground":       "10b",
 		"v.1":                            "10a",
 		"v.2":                            "10b",
+		"wounded on ground":              "10b",
 	},
 	"Noble Steeds": map[string]string{
 		"trees in forefront":  "11a",
@@ -409,6 +410,7 @@ var allVariants = map[string]map[string]string{
 		"monster on right": "58b",
 		"v.2":              "58a",
 		"v.1":              "58b",
+		"man held aloft":   "58b",
 	},
 	"Phyrexian War Beast": map[string]string{
 		"propeller left":    "127a",
@@ -454,6 +456,7 @@ var allVariants = map[string]map[string]string{
 		"female herbalist": "15b",
 		"v.2":              "15a",
 		"v.1":              "15b",
+		"man":              "15a",
 	},
 	"Soldevi Adnate": map[string]string{
 		"female":              "60a",
@@ -466,6 +469,7 @@ var allVariants = map[string]map[string]string{
 		"man with cloak":      "60b",
 		"v.1":                 "60a",
 		"v.2":                 "60b",
+		"woman":               "60a",
 	},
 	"Soldevi Heretic": map[string]string{
 		"blue robe":                     "33a",
@@ -1578,6 +1582,10 @@ var femVariants = map[string]map[string]string{
 		"rob alexander a":             "49a",
 		"rob alexander b":             "49c",
 		"rob alexander c":             "49c",
+		"pike":                        "49a",
+		"map":                         "49a",
+		"horned helm":                 "49c",
+		"claws":                       "49d",
 	},
 	"Combat Medic": map[string]string{
 		"fe133": "1a",
@@ -1786,6 +1794,8 @@ var femVariants = map[string]map[string]string{
 		"rob alexander sun visible":        "27b",
 		"rob alexander lake":               "27a",
 		"rob alexander sunset":             "27b",
+		"sky":                              "27a",
+		"earth":                            "27b",
 	},
 	"Vodalian Mage": map[string]string{
 		"poole": "30b",

@@ -340,6 +340,8 @@ func (c *Card) isIDWMagazineBook() bool {
 		// for cards with "book" in their variation (insidious bookworms)
 		c.Variation == "Book" ||
 		c.Contains("Book Insert") ||
+		c.Contains("Coro Coro") || // stks
+		c.Contains("JP Graphic Novel") || // stks
 		strings.Contains(c.Variation, "Book Promo") || // sz
 		c.Contains("Top Deck") || // csi
 		Contains(c.Edition, "CardZ") || // mkm
