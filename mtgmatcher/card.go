@@ -93,17 +93,68 @@ func IsToken(name string) bool {
 	// Known token names
 	case "A Threat to Alara: Nicol Bolas",
 		"Acorn Stash",
+		"Angel",
 		"Ashaya, the Awoken World",
+		"Bear",
+		"Bird",
+		"Cat Dragon",
+		"Cat Warrior",
+		"Cat",
 		"City's Blessing",
+		"Cleric",
+		"Clue",
 		"Companion",
+		"Construct",
+		"Demon",
+		"Dinosaur",
+		"Drake",
+		"Eldrazi Spawn",
+		"Elemental",
+		"Elephant",
+		"Elf Warrior",
 		"Energy Reserve",
 		"Faerie Rogue",
+		"Faerie",
+		"Food",
+		"Foretell",
 		"Fun Format: Pack Wars",
+		"Germ",
+		"Giant",
+		"Gold",
+		"Golem",
+		"Human Cleric",
+		"Human Rogue",
+		"Human Soldier",
+		"Human Warrior",
+		"Insect",
+		"Karox Bladewing",
+		"Knight",
 		"Manifest",
+		"Marit Lage",
+		"Merfolk",
+		"Minion",
 		"Morph",
+		"Mouse",
+		"Myr",
+		"Nightmare Horror",
 		"On Your Turn",
 		"On an Adventure",
+		"Ooze",
+		"Pirate",
+		"Plant",
 		"Poison Counter",
+		"Rat",
+		"Saproling",
+		"Shapeshifter",
+		"Snake",
+		"Thopter",
+		"Thrull",
+		"Treasure",
+		"Vampire",
+		"Walker",
+		"Wolf",
+		"Wurm",
+		"Zombie Knight",
 		"Theme: WUBRG Cards":
 		return true
 	// WCD extra cards
@@ -154,9 +205,14 @@ func IsToken(name string) bool {
 	// Alternative rules tip card names found on mkm
 	case strings.HasPrefix(name, "Tip: "):
 		return true
-	// One more generic un-token
-	case Contains(name, "Teddy Bear"):
-		return true
+	// Split the double faced tokens
+	case strings.Contains(name, "//"):
+		fields := strings.Split(name, " // ")
+		for _, field := range fields {
+			if IsToken(SplitVariants(field)[0]) {
+				return true
+			}
+		}
 	}
 
 	return false
