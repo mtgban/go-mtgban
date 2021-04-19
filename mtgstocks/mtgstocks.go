@@ -188,8 +188,8 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	switch v := req.interest.Print.Slug.(type) {
 	case string:
 		slug = v
-	case int:
-		slug = fmt.Sprint(v)
+	case float64:
+		slug = fmt.Sprintf("%.0f", v)
 	default:
 		stks.printf("invalid data type used for %s", cardName)
 	}
