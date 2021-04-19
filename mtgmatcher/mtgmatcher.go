@@ -439,6 +439,10 @@ func adjustEdition(inCard *Card) {
 	if found {
 		edition = ed
 	}
+	set, found = backend.Sets[strings.ToUpper(variation)]
+	if found && inCard.isJudge() {
+		edition = set.Name
+	}
 	ed, found = EditionTable[variation]
 	// This set has one land with a variant named as an expansion,
 	// so what is found should not overwrite the edition in this case

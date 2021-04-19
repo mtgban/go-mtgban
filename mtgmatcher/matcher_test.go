@@ -1218,6 +1218,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "818ab3df-bb0b-58b0-a15e-3daa53dafb15",
+		Desc: "judge_with_set",
+		In: Card{
+			Name:      "Vampiric Tutor",
+			Variation: "J18",
+			Edition:   "Judge Promos",
+		},
+	},
+	MatchTest{
 		Id:   "4b8eb39c-6b31-5da8-9b13-9a53b4772d90",
 		Desc: "sdcc",
 		In: Card{
