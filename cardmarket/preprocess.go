@@ -517,6 +517,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if variant == "V.2" {
 			variant = "Extended Art"
 		}
+	case "Mystical Archive":
+		if variant == "V.2" {
+			variant = "JPN"
+		}
 
 	default:
 		// Double parse commander so that it is possible to drop the oversize
