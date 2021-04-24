@@ -16,15 +16,13 @@ var cardTable = map[string]string{
 	"Wall of Stolen Identities":      "Wall of Stolen Identity",
 	"Vivien Reid (vers. 1)":          "Vivien Reid",
 	"Thalia, Protettrice di Thraben": "Thalia, Guardian of Thraben",
-	"iko Crystalline Resonance":      "Crystalline Resonance",
+	"iko Yidaro, Wandering Monster":  "Yidaro, Wandering Monster",
 	"iko Cartographer's Hawk":        "Cartographer's Hawk",
 	"iko Martial Impetus":            "Martial Impetus",
 	"Barrin, Tolarian Archmag":       "Barrin, Tolarian Archmage",
 	"Soul's Mighty":                  "Soul's Might",
-	"Captain Vargus Ira":             "Captain Vargus Wrath",
-	"Yurlok, the Mana Burner":        "Yurlok of Scorch Thrash",
 	"Explor":                         "Explore",
-	"Elspeth Conquers Death (copy)":  "Elspeth Conquers Death",
+	"Swamp (V.2)":                    "Swamp",
 
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
@@ -446,10 +444,6 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				variant = "282"
 			} else {
 				cardName = bp.DisplayName
-			}
-		case "Secret Lair Drop Series":
-			if cardName == "Swamp (V.2)" {
-				cardName = "Swamp"
 			}
 		case "Magic Premiere Shop":
 			if number == "" {
