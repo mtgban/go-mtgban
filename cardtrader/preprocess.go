@@ -152,9 +152,9 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		edition = "Commander Legends"
 		variant = number
 	case "Arabian Nights":
-		if strings.Contains(bp.DisplayName, "(light)") {
+		if strings.HasSuffix(number, "b") {
 			variant = "light"
-		} else if strings.Contains(bp.DisplayName, "(dark)") {
+		} else if strings.Contains(number, "a") {
 			variant = "dark"
 		}
 	case "Champions of Kamigawa":
