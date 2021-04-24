@@ -390,33 +390,22 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	}
 
 	if mtgmatcher.IsBasicLand(cardName) {
+		variant = number
 		switch edition {
 		case "International Edition",
 			"Introductory Two-Player Set",
 			"Collectors’ Edition":
 			return nil, errors.New("pass")
-		// Skip assignment for these editions
-		case "Judge Gift Cards",
-			"Grand Prix Promos",
-			"European Land Program",
-			"Asia Pacific Land Program":
 		// Some basic land foil are mapped to the Promos
 		case "Guilds of Ravnica Promos":
 			edition = "Guilds of Ravnica"
-			variant = number
 			if strings.HasPrefix(variant, "A") {
 				edition = "GRN Ravnica Weekend"
 			}
 		case "Ravnica Allegiance Promos":
 			edition = "Ravnica Allegiance"
-			variant = number
 			if strings.HasPrefix(variant, "B") {
 				edition = "RNA Ravnica Weekend"
-			}
-		case "Oath of the Gatewatch":
-			// Handle the "a" suffix
-			if cardName == "Wastes" {
-				variant = number
 			}
 		// Some lands have years set
 		case "Arena League Promos":
@@ -436,14 +425,10 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		case "Game Night 2019":
 			if cardName == "Swamp" && number == "61" {
 				variant = "60"
-			} else {
-				cardName = bp.DisplayName
 			}
 		case "Theros: Beyond Death Theme Deck":
 			if cardName == "Swamp" && number == "281" {
 				variant = "282"
-			} else {
-				cardName = bp.DisplayName
 			}
 		case "Core Set 2021 Collectors":
 			if cardName == "Mountain" && number == "310" {
@@ -454,18 +439,6 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				number = fmt.Sprint(bp.Id)
 			}
 			variant = pmpsTable[number]
-		default:
-			switch {
-			// Use number as is
-			case strings.HasPrefix(edition, "Duel Decks:"),
-				strings.HasPrefix(edition, "WCD"),
-				strings.HasPrefix(edition, "Pro Tour 1996"),
-				strings.HasPrefix(edition, "Commander"):
-				variant = number
-			// Maybe there is a number in the full name
-			case strings.Contains(bp.DisplayName, " "):
-				cardName = bp.DisplayName
-			}
 		}
 	}
 
