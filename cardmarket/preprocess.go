@@ -518,8 +518,15 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Extended Art"
 		}
 	case "Mystical Archive":
-		if variant == "V.2" {
+		switch variant {
+		case "V.1":
+			variant = ""
+		case "V.2":
 			variant = "JPN"
+		case "V.3":
+			variant = "Foil-Etched"
+		case "V.4":
+			variant = "JPN Foil-Etched"
 		}
 
 	default:
