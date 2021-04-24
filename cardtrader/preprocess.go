@@ -241,10 +241,6 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					strings.Contains(bp.DisplayName, "Vers. 2") {
 					variant = "Godzilla"
 				}
-			case "Core Set 2021 Collectors":
-				if cardName == "Mountain" && number == "310" {
-					variant = "312"
-				}
 			case "Commander Legends Collectors":
 				if cardName == "Three Visits" && number == "685" {
 					variant = "686"
@@ -365,11 +361,11 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				} else {
 					if mtgmatcher.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
-					} else if !mtgmatcher.IsBasicLand(cardName) {
-						// Lands are adjusted below
-						edition = "Core Set 2020"
 					} else {
-						variant = number
+						edition = "Core Set 2020"
+						if mtgmatcher.IsBasicLand(cardName) {
+							edition = "M20 Promo Packs"
+						}
 					}
 				}
 			default:
@@ -417,8 +413,6 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			if strings.HasPrefix(variant, "B") {
 				edition = "RNA Ravnica Weekend"
 			}
-		case "Core Set 2020 Promos":
-			edition = "M20 Promo Packs"
 		case "Oath of the Gatewatch":
 			// Handle the "a" suffix
 			if cardName == "Wastes" {
@@ -450,6 +444,10 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				variant = "282"
 			} else {
 				cardName = bp.DisplayName
+			}
+		case "Core Set 2021 Collectors":
+			if cardName == "Mountain" && number == "310" {
+				variant = "312"
 			}
 		case "Magic Premiere Shop":
 			if number == "" {
