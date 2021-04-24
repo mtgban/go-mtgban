@@ -18,13 +18,14 @@ const (
 )
 
 type Blueprint struct {
-	Id          int    `json:"id"`
-	Name        string `json:"name"`
-	DisplayName string `json:"display_name"`
-	CategoryId  int    `json:"category_id"`
-	GameId      int    `json:"game_id"`
-	ScryfallId  string `json:"scryfall_id"`
-	Expansion   struct {
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	Version    string `json:"version"`
+	CategoryId int    `json:"category_id"`
+	GameId     int    `json:"game_id"`
+	Slug       string `json:"slug"`
+	ScryfallId string `json:"scryfall_id"`
+	Expansion  struct {
 		Name string `json:"name"`
 		Code string `json:"code"`
 	} `json:"expansion"`

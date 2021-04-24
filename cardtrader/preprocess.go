@@ -158,10 +158,12 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			variant = "dark"
 		}
 	case "Champions of Kamigawa":
-		if bp.DisplayName == "Brothers Yamazaki (vers. 1)" {
-			variant = "160a"
-		} else if bp.DisplayName == "Brothers Yamazaki (vers. 2)" {
-			variant = "160b"
+		if cardName == "Brothers Yamazaki" {
+			if bp.Version == "1" {
+				variant = "160a"
+			} else if bp.Version == "2" {
+				variant = "160b"
+			}
 		}
 	case "Buy a Box ",
 		"Armada Comics",
@@ -232,14 +234,6 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			case "Theros: Beyond Death Collectors":
 				if cardName == "Purphoros's Intervention" && number == "313" {
 					return nil, errors.New("duplicate")
-				}
-			case "Ikoria: Lair of Behemoths Collectors":
-				if strings.Contains(bp.DisplayName, "Vers. 1") {
-					cardName = strings.TrimPrefix(cardName, "iko ")
-					variant = number
-				} else if strings.Contains(bp.DisplayName, "Vers, 2") ||
-					strings.Contains(bp.DisplayName, "Vers. 2") {
-					variant = "Godzilla"
 				}
 			case "Commander Legends Collectors":
 				if cardName == "Three Visits" && number == "685" {
@@ -346,17 +340,18 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				}
 			// This set acts mostly as a catch-all for anything prior :(
 			case "Core Set 2020 Promos":
+				version := mtgmatcher.ExtractNumber(strings.Replace(bp.Slug, "-", " ", -1))
 				if cardName == "Chandra's Regulator" {
-					if strings.Contains(bp.DisplayName, "Vers. 1") {
+					if version == "1" {
 						variant = number
-					} else if strings.Contains(bp.DisplayName, "Vers. 2") {
+					} else if version == "2" {
 						variant = "Promo Pack"
-					} else if strings.Contains(bp.DisplayName, "Vers. 2") {
+					} else if version == "3" {
 						variant = "Prerelease"
 					}
-				} else if strings.Contains(bp.DisplayName, "Vers. 1") {
+				} else if version == "1" {
 					variant = "Promo Pack"
-				} else if strings.Contains(bp.DisplayName, "Vers. 2") {
+				} else if version == "2" {
 					variant = "Prerelease"
 				} else {
 					if mtgmatcher.HasPromoPackPrinting(cardName) {
@@ -409,18 +404,23 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			}
 		// Some lands have years set
 		case "Arena League Promos":
-			if mtgmatcher.ExtractYear(bp.DisplayName) != "" {
-				variant = bp.DisplayName
-			}
+			variant = mtgmatcher.ExtractYear(strings.Replace(bp.Slug, "-", " ", -1))
+
 			switch variant {
-			case "Forest (2001)":
-				variant = "2001 1"
-			case "Forest (2002)":
-				variant = "2001 11"
-			case "Mountain (2001)", "Swamp (2001)":
-				variant = "2000"
-			case "Mountain (2002)", "Swamp (2002)":
-				variant = "2001"
+			case "2001":
+				switch cardName {
+				case "Forest":
+					variant = "2001 1"
+				case "Mountain", "Swamp":
+					variant = "2000"
+				}
+			case "2002":
+				switch cardName {
+				case "Forest":
+					variant = "2001 11"
+				case "Mountain", "Swamp":
+					variant = "2001"
+				}
 			}
 		case "Game Night 2019":
 			if cardName == "Swamp" && number == "61" {
