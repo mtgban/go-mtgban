@@ -253,6 +253,12 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				if cardName == "Magma Opus" && number == "336" {
 					variant = "346"
 				}
+			case "Commander: Strixhaven Collectors":
+				if cardName == "Inkshield" && number == "395" {
+					variant = "398"
+				} else if cardName == "Willowdusk, Essence Seer" && number == "331" {
+					variant = "333"
+				}
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
 			strings.HasPrefix(edition, "Pro Tour 1996") {
