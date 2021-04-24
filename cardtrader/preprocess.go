@@ -3,6 +3,8 @@ package cardtrader
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -77,6 +79,19 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	altName, found := cardTable[cardName]
 	if found {
 		cardName = altName
+	}
+
+	// Some, but not all, have a proper id we can reuse right away
+	u, err := url.Parse(bp.ScryfallId)
+	if err == nil {
+		base := path.Base(u.Path)
+		if base != "" && base != "." {
+			return &mtgmatcher.Card{
+				Id:      base,
+				Name:    cardName,
+				Edition: edition,
+			}, nil
+		}
 	}
 
 	switch edition {

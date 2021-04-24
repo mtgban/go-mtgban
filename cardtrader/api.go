@@ -23,6 +23,7 @@ type Blueprint struct {
 	DisplayName string `json:"display_name"`
 	CategoryId  int    `json:"category_id"`
 	GameId      int    `json:"game_id"`
+	ScryfallId  string `json:"scryfall_id"`
 	Expansion   struct {
 		Name string `json:"name"`
 		Code string `json:"code"`
