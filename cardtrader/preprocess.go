@@ -226,7 +226,7 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 
 			switch edition {
 			case "Throne of Eldraine Collectors":
-				if cardName == "Castle Vantress" {
+				if cardName == "Castle Vantress" && number == "360" {
 					variant = "390"
 				}
 			case "Theros: Beyond Death Collectors":
