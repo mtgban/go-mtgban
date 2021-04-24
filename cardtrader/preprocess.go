@@ -27,23 +27,16 @@ var cardTable = map[string]string{
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
 
-var card2edition = map[string]string{
-	"Vampiric Tutor (vers. 1)":  "G00",
-	"Vampiric Tutor (vers. 2)":  "J18",
-	"Goblin Warchief (vers. 1)": "F06",
-	"Goblin Warchief (vers. 2)": "F16",
-	"Sylvan Ranger (vers. 1)":   "PWP10",
-	"Sylvan Ranger (vers. 2)":   "PWP11",
-	"Fling (vers. 1)":           "PWP10",
-	"Fling (vers. 2)":           "PWP11",
-	"Demonic Tutor (Vers. 1)":   "G08",
-	"Demonic Tutor (Vers. 2)":   "J20",
-}
-
 var id2edition = map[int]string{
 	// Wasteland
 	19144: "G10",
 	10702: "J15",
+	// Demonic Tutor
+	21492: "G08",
+	62651: "J20",
+	// Vampiric Tutor
+	30009: "G00",
+	2515:  "J18",
 	// Vindicate
 	14713: "J13",
 	22805: "G07",
@@ -51,6 +44,17 @@ var id2edition = map[int]string{
 	32746: "JGP",
 	// Sol Ring
 	58550: "PF19",
+
+	// Goblin Warchief
+	23929: "F06",
+	8503:  "F16",
+
+	// Sylvan Ranger
+	19128: "PWP10",
+	17634: "PWP11",
+	// Fling
+	19129: "PWP10",
+	17635: "PWP11",
 
 	// Arena Plains
 	// the only land from the PARL series to miss the year in their full name
@@ -180,11 +184,7 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		"Arena League Promos",
 		"Friday Night Magic",
 		"Player Rewards Promos":
-		ed, found := card2edition[bp.DisplayName]
-		if found {
-			edition = ed
-		}
-		ed, found = id2edition[bp.Id]
+		ed, found := id2edition[bp.Id]
 		if found {
 			edition = ed
 		}
