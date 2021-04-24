@@ -317,6 +317,11 @@ func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
 		// Stash the result
 		articles = append(articles, response.Articles...)
 
+		// Avoid an infinite loop
+		if i > 0 && articles[(i-1)*mkmMaxEntities] == response.Articles[0] {
+			return nil, errors.New("broken api")
+		}
+
 		// No more entities left, we can break now
 		if len(response.Articles) < mkmMaxEntities {
 			break
