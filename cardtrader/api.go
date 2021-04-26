@@ -1,6 +1,7 @@
 package cardtrader
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,6 +16,10 @@ const (
 
 	ctExpansionsURL  = "https://api.cardtrader.com/api/full/v1/expansions"
 	ctMarketplaceURL = "https://api.cardtrader.com/api/full/v1/marketplace/products?expansion_id="
+
+	ctBulkCreateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_create"
+
+	MaxBulkUploadItems = 450
 )
 
 type Blueprint struct {
@@ -172,6 +177,73 @@ func (ct *CTAuthClient) Blueprints() ([]Blueprint, error) {
 	}
 
 	return blueprints, nil
+}
+
+// This is slightly different from the main Product type
+type BulkProduct struct {
+	// The id of the Blueprint to put on sale
+	BlueprintId int `json:"blueprint_id"`
+
+	// The price of the product, indicated in your current currency
+	Price float64 `json:"price"`
+
+	// The quantity to be put up for sale
+	Quantity int `json:"quantity"`
+
+	// A list of optional properties
+	Properties struct {
+		Condition string `json:"condition,omitempty"`
+		Language  string `json:"mtg_language,omitempty"`
+		Foil      bool   `json:"mtg_foil,omitempty"`
+		Signed    bool   `json:"signed,omitempty"`
+		Altered   bool   `json:"altered,omitempty"`
+	} `json:"properties,omitempty"`
+}
+
+// Create new listings using the products slice, separating into multiple
+// requests if there are more than MaxBulkUploadItems elements. A list of
+// job ids is returned to monitor the execution status.
+func (ct *CTAuthClient) BulkCreate(products []BulkProduct) ([]string, error) {
+	var jobs []string
+	var bulkUpload struct {
+		Products []BulkProduct `json:"products"`
+	}
+
+	for i := 0; i < len(products); i += MaxBulkUploadItems {
+		end := i + MaxBulkUploadItems
+		if end > len(products) {
+			end = len(products)
+		}
+
+		bulkUpload.Products = products[i:end]
+		bodyBytes, err := json.Marshal(&bulkUpload)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := ct.client.Post(ctBulkCreateURL, "application/json", bytes.NewReader(bodyBytes))
+		if err != nil {
+			return nil, err
+		}
+
+		data, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		var jobResp struct {
+			Job string `json:"job"`
+		}
+		err = json.Unmarshal(data, &jobResp)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshal error for chunk %d, got: %s", i, string(data))
+		}
+
+		jobs = append(jobs, jobResp.Job)
+	}
+
+	return jobs, nil
 }
 
 func NewCTClient() *CTClient {
