@@ -2,6 +2,7 @@ package cardtrader
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -121,6 +122,47 @@ func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
 	}
 
 	return nil
+}
+
+type OrderItem struct {
+	Id          int    `json:"id"`
+	BlueprintId int    `json:"blueprint_id"`
+	Quantity    int    `json:"quantity"`
+	Description string `json:"description"`
+	Properties  struct {
+		Condition string `json:"condition"`
+		Language  string `json:"mtg_language"`
+		Foil      bool   `json:"mtg_foil"`
+	} `json:"properties_hash"`
+
+	Blueprint Blueprint `json:"blueprint"`
+}
+
+func (ct *CTLoggedClient) GetItemsForOrder(orderId string) ([]OrderItem, error) {
+	if orderId == "" {
+		return nil, errors.New("missing order id")
+	}
+
+	resp, err := ct.client.Get(fmt.Sprintf("https://www.cardtrader.com/orders/%s.json", orderId))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var purchase struct {
+		OrderItems []OrderItem `json:"order_items"`
+	}
+	err = json.Unmarshal(data, &purchase)
+	if err != nil {
+		return nil, err
+	}
+
+	return purchase.OrderItems, nil
 }
 
 func (ct *Cardtrader) Activate(user, pass string) error {
