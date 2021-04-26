@@ -46,7 +46,7 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 			continue
 		}
 
-		theCard, err := preprocess(blueprint)
+		theCard, err := Preprocess(blueprint)
 		if err != nil {
 			continue
 		}
@@ -98,7 +98,7 @@ func formatBlueprints(blueprints []Blueprint, inExpansions []Expansion) (map[int
 		formatted[blueprints[i].Id].Expansion.Name = expansions[blueprints[i].ExpansionId]
 
 		// Move the blueprint properties from the custom structure from blueprints
-		// to the place as expected by preprocess()
+		// to the place as expected by Preprocess()
 		formatted[blueprints[i].Id].Properties = formatted[blueprints[i].Id].FixedProperties
 	}
 

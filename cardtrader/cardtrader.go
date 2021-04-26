@@ -171,7 +171,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 		return err
 	}
 
-	theCard, err := preprocess(&filter.Blueprint)
+	theCard, err := Preprocess(&filter.Blueprint)
 	if err != nil {
 		return nil
 	}
@@ -233,7 +233,7 @@ func (ct *Cardtrader) scrape() error {
 	go func() {
 		for _, bp := range blueprints {
 			if ct.FilterId != nil {
-				theCard, err := preprocess(bp)
+				theCard, err := Preprocess(bp)
 				if err != nil {
 					continue
 				}
