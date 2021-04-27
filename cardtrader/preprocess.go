@@ -323,6 +323,11 @@ func preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					if bp.Id == 56810 || bp.Id == 56746 {
 						variant = "Prerelease"
 					}
+				case "Feather, the Redeemed":
+					variant = "Promo Pack"
+					if bp.Id == 56782 {
+						variant = "Prerelease"
+					}
 				case "Desperate Lunge",
 					"Gideon's Battle Cry",
 					"Gideon's Company",
