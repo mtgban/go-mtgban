@@ -52,6 +52,16 @@ type resultChan struct {
 	invEntry *mtgban.InventoryEntry
 }
 
+var condMap = map[string]string{
+	"Mint":              "NM",
+	"Near Mint":         "NM",
+	"Slightly Played":   "SP",
+	"Moderately Played": "MP",
+	"Played":            "HP",
+	"Heavily Played":    "HP",
+	"Poor":              "PO",
+}
+
 func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product) error {
 	var cardId string
 	var cardIdFoil string
@@ -116,23 +126,13 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			return err
 		}
 
-		conditions := product.Properties.Condition
+		cond := product.Properties.Condition
 		if product.Properties.Signed {
-			conditions = "HP"
+			cond = "Heavily Played"
 		}
-		switch conditions {
-		case "Near Mint", "Mint":
-			conditions = "NM"
-		case "Slightly Played":
-			conditions = "SP"
-		case "Moderately Played":
-			conditions = "MP"
-		case "Played", "Heavily Played", "HP":
-			conditions = "HP"
-		case "Poor":
-			conditions = "PO"
-		default:
-			return fmt.Errorf("Unsupported %s condition", conditions)
+		conditions, found := condMap[cond]
+		if !found {
+			return fmt.Errorf("Unsupported %s condition", cond)
 		}
 
 		finalCardId := cardId
