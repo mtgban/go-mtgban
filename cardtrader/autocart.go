@@ -124,10 +124,11 @@ func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
 }
 
 type OrderItem struct {
-	Id          int    `json:"id"`
-	BlueprintId int    `json:"blueprint_id"`
-	Quantity    int    `json:"quantity"`
-	Description string `json:"description"`
+	Id          int     `json:"id"`
+	BlueprintId int     `json:"blueprint_id"`
+	Quantity    int     `json:"quantity"`
+	Description string  `json:"description"`
+	PriceCents  float64 `json:"price_cents"`
 	Properties  struct {
 		Condition string `json:"condition"`
 		Language  string `json:"mtg_language"`
