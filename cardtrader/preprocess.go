@@ -322,6 +322,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					variant = number
 					if bp.Id == 56810 || bp.Id == 56746 {
 						variant = "Prerelease"
+					} else if bp.Id == 60193 || bp.Id == 105989 {
+						variant = "Promo Pack"
 					}
 				case "Feather, the Redeemed":
 					variant = "Promo Pack"
