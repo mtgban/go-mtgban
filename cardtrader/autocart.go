@@ -2,7 +2,6 @@ package cardtrader
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -138,12 +137,8 @@ type OrderItem struct {
 	Blueprint Blueprint `json:"blueprint"`
 }
 
-func (ct *CTLoggedClient) GetItemsForOrder(orderId string) ([]OrderItem, error) {
-	if orderId == "" {
-		return nil, errors.New("missing order id")
-	}
-
-	resp, err := ct.client.Get(fmt.Sprintf("https://www.cardtrader.com/orders/%s.json", orderId))
+func (ct *CTLoggedClient) GetItemsForOrder(orderId int) ([]OrderItem, error) {
+	resp, err := ct.client.Get(fmt.Sprintf("https://www.cardtrader.com/orders/%d.json", orderId))
 	if err != nil {
 		return nil, err
 	}
