@@ -70,7 +70,7 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 	return nil
 }
 
-func formatBlueprints(blueprints []Blueprint, inExpansions []Expansion) (map[int]*Blueprint, map[int]string) {
+func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion) (map[int]*Blueprint, map[int]string) {
 	// Create a map to be able to retrieve edition name in the blueprint
 	formatted := map[int]*Blueprint{}
 	expansions := map[int]string{}
@@ -118,7 +118,7 @@ func (ct *CardtraderMarket) scrape() error {
 	}
 	ct.printf("Found %d blueprints", len(blueprintsRaw))
 
-	blueprints, expansions := formatBlueprints(blueprintsRaw, expansionsRaw)
+	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw)
 	ct.blueprints = blueprints
 	ct.printf("Parsing %d mtg elements", len(expansions))
 

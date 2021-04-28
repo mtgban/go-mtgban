@@ -206,7 +206,7 @@ func (ct *Cardtrader) scrape() error {
 	total := len(blueprintsRaw)
 	ct.printf("Found %d blueprints", total)
 
-	blueprints, _ := formatBlueprints(blueprintsRaw, expansionsRaw)
+	blueprints, _ := FormatBlueprints(blueprintsRaw, expansionsRaw)
 
 	if ct.FilterId != nil {
 		total = len(ct.FilterId)
