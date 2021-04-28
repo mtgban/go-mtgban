@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type TCGPlayerGeneric struct {
@@ -68,87 +67,6 @@ func NewScraperGeneric(publicId, privateId string, category int, groups ...strin
 	return &tcg, nil
 }
 
-func (tcg *TCGPlayerGeneric) processEntry(channel chan<- responseChan, reqs []indexChan) error {
-	ids := make([]string, len(reqs))
-	for i := range reqs {
-		ids[i] = reqs[i].TCGProductId
-	}
-
-	results, err := tcg.client.TCGPricesForIds(ids)
-	if err != nil {
-		return err
-	}
-
-	for _, result := range results {
-		// Skip empty entries
-		if result.LowPrice == 0 && result.MarketPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0 {
-			continue
-		}
-
-		productId := fmt.Sprint(result.ProductId)
-
-		uuid := ""
-		for _, req := range reqs {
-			if req.TCGProductId == productId {
-				uuid = req.UUID
-				break
-			}
-		}
-
-		// Get the cardId, with the correct foiling status
-		theCard := mtgmatcher.Card{
-			Id:   uuid,
-			Foil: result.SubTypeName == "Foil",
-		}
-		cardId, err := mtgmatcher.Match(&theCard)
-		if err != nil {
-			tcg.printf("(%d / %s) - %s", result.ProductId, uuid, err)
-			continue
-		}
-
-		// Skip impossible entries, such as listing mistakes that list a foil
-		// price for a foil-only card
-		co, _ := mtgmatcher.GetUUID(cardId)
-		if (co.Foil && result.SubTypeName != "Foil") ||
-			(!co.Foil && result.SubTypeName != "Normal") {
-			continue
-		}
-
-		prices := []float64{
-			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
-		}
-		names := []string{
-			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
-		}
-
-		link := "https://shop.tcgplayer.com/product/productsearch?id=" + productId
-		if tcg.Affiliate != "" {
-			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
-		}
-
-		for i := range names {
-			if prices[i] == 0 {
-				continue
-			}
-			out := responseChan{
-				cardId: cardId,
-				entry: mtgban.InventoryEntry{
-					Conditions: "NM",
-					Price:      prices[i],
-					Quantity:   1,
-					URL:        link,
-					SellerName: names[i],
-					Bundle:     i == 3,
-				},
-			}
-
-			channel <- out
-		}
-	}
-
-	return nil
-}
-
 type genericChan struct {
 	key   string
 	entry mtgban.InventoryEntry
@@ -173,7 +91,6 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 	}
 
 	for _, result := range results {
-
 		if result.LowPrice == 0 && result.MarketPrice == 0 && result.MidPrice == 0 && result.DirectLowPrice == 0 {
 			continue
 		}
