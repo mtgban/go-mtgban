@@ -433,7 +433,7 @@ var allVariants = map[string]map[string]string{
 		"no orc":           "12b",
 		"v.1":              "12a",
 		"v.2":              "12b",
-		"line-up":          "12a",
+		"line-up":          "12b",
 		"on the rocks":     "12b",
 	},
 	"Reprisal": map[string]string{
@@ -1582,7 +1582,7 @@ var femVariants = map[string]map[string]string{
 		"rob alexander a":             "49a",
 		"rob alexander b":             "49c",
 		"pike":                        "49a",
-		"map":                         "49a",
+		"map":                         "49b",
 		"horned helm":                 "49c",
 		"claws":                       "49d",
 	},
@@ -1793,8 +1793,8 @@ var femVariants = map[string]map[string]string{
 		"rob alexander sun visible":        "27b",
 		"rob alexander lake":               "27a",
 		"rob alexander sunset":             "27b",
-		"sky":                              "27a",
-		"earth":                            "27b",
+		"sky":                              "27b",
+		"earth":                            "27c",
 	},
 	"Vodalian Mage": map[string]string{
 		"poole": "30b",
