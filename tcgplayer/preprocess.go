@@ -53,6 +53,11 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		edition = strings.Title(edition)
 	}
 
+	// Early to skip the Oversize early return
+	if variant == "Commander Launch Promo" {
+		edition = "PCMD"
+	}
+
 	switch edition {
 	case "Renaissance":
 		// Only keep the German for this edition

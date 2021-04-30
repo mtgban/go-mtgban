@@ -658,6 +658,7 @@ func ParseCommanderEdition(edition string) string {
 
 	// Well-known extra tags
 	perSetCommander := map[string]string{
+		"Launch":          "Commander 2011 Launch Party",
 		"Arsenal":         "Commander's Arsenal",
 		"Ikoria":          "Commander 2020",
 		"Zendikar Rising": "Zendikar Rising Commander",
