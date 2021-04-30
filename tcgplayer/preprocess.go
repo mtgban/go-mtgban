@@ -116,10 +116,6 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		if strings.Contains(variant, "Misprint") {
 			variant = "misprint"
 		}
-	case "Throne Of Eldraine":
-		if cardName == "Kenrith, the Returned King" {
-			return nil, errors.New("unsupported")
-		}
 	case "Kaladesh", "Aether Revolt":
 		if variant == "17/264" {
 			variant = "Intro Pack"
