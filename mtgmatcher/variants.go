@@ -25,6 +25,7 @@ var allVariants = map[string]map[string]string{
 		"doorway":                  "64b",
 		"v.1":                      "64a",
 		"v.2":                      "64b",
+		"95":                       "64b",
 	},
 	"Arcane Denial": map[string]string{
 		"1":            "22a",
@@ -50,6 +51,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                          "118b",
 		"globe":                        "118a",
 		"up close":                     "118b",
+		"160":                          "118b",
 	},
 	"Awesome Presence": map[string]string{
 		"arms spread":                        "23a",
@@ -74,6 +76,8 @@ var allVariants = map[string]map[string]string{
 		"1 beard":                 "66b",
 		"v.1":                     "66a",
 		"v.2":                     "66b",
+		"gen. varchild flavor":    "66a",
+		"98":                      "66b",
 	},
 	"Benthic Explorers": map[string]string{
 		"sitting on rocks":        "24a",
@@ -89,6 +93,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                     "24b",
 		"on the rocks":            "24a",
 		"profile":                 "24b",
+		"37":                      "24b",
 	},
 	"Bestial Fury": map[string]string{
 		"facing left":        "67a",
@@ -99,6 +104,7 @@ var allVariants = map[string]map[string]string{
 		"ape facing forward": "67b",
 		"v.2":                "67a",
 		"v.1":                "67b",
+		"100":                "67b",
 	},
 	"Carrier Pigeons": map[string]string{
 		"trees":           "1a",
@@ -114,6 +120,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":             "1a",
 		"v.1":             "1b",
 		"sky":             "1b",
+		"126":             "1a",
 	},
 	"Casting of Bones": map[string]string{
 		"finger ornament":       "44a",
@@ -126,6 +133,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                   "44a",
 		"v.1":                   "44b",
 		"close-up":              "44a",
+		"3":                     "44a",
 	},
 	"Deadly Insect": map[string]string{
 		"bird":              "86a",
@@ -159,6 +167,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":             "71a",
 		"v.2":             "71b",
 		"solitary goblin": "71b",
+		"105":             "71b",
 	},
 	"Errand of Duty": map[string]string{
 		"page holding sword":        "2a",
@@ -172,6 +181,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                       "2a",
 		"v.1":                       "2b",
 		"holding sword":             "2a",
+		"128":                       "2b",
 	},
 	"False Demise": map[string]string{
 		"rocks":                         "27a",
@@ -205,6 +215,7 @@ var allVariants = map[string]map[string]string{
 		"foaming at the mouth": "50b",
 		"v.1":                  "50a",
 		"v.2":                  "50b",
+		"11":                   "50a",
 	},
 	"Foresight": map[string]string{
 		"white dress":                      "29a",
@@ -218,6 +229,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                              "29a",
 		"v.2":                              "29b",
 		"mermaid":                          "29b",
+		"44":                               "29b",
 	},
 	"Fyndhorn Druid": map[string]string{
 		"facing left":           "90a",
@@ -229,6 +241,7 @@ var allVariants = map[string]map[string]string{
 		"blue magic aura druid": "90b",
 		"v.1":                   "90a",
 		"v.2":                   "90b",
+		"71":                    "90a",
 	},
 	"Gift of the Woods": map[string]string{
 		"female":         "92a",
@@ -240,6 +253,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":            "92a",
 		"v.2":            "92b",
 		"girl/lynx":      "92a",
+		"74":             "92b",
 	},
 	"Gorilla Berserkers": map[string]string{
 		"attacking":         "93a",
@@ -252,6 +266,7 @@ var allVariants = map[string]map[string]string{
 		"open mouth":        "93a",
 		"v.1":               "93a",
 		"v.2":               "93b",
+		"76":                "93a",
 	},
 	"Gorilla Chieftain": map[string]string{
 		"2 gorillas":       "94a",
@@ -276,6 +291,7 @@ var allVariants = map[string]map[string]string{
 		"cave drawings":  "72b",
 		"v.1":            "72a",
 		"v.2":            "72b",
+		"107":            "72a",
 	},
 	"Gorilla War Cry": map[string]string{
 		"red club":                  "73a",
@@ -288,6 +304,7 @@ var allVariants = map[string]map[string]string{
 		"gorilla with rainbow neck": "73b",
 		"v.1":                       "73a",
 		"v.2":                       "73b",
+		"109":                       "73b",
 	},
 	"Guerrilla Tactics": map[string]string{
 		"tripwire":         "74a",
@@ -314,6 +331,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                "51b",
 		"multiple":           "51a",
 		"single":             "51b",
+		"13":                 "51a",
 	},
 	"Kjeldoran Escort": map[string]string{
 		"green blanketed dog": "7a",
@@ -328,6 +346,7 @@ var allVariants = map[string]map[string]string{
 		"red blanket":         "7b",
 		"v.2":                 "7a",
 		"v.1":                 "7b",
+		"134":                 "7b",
 	},
 	"Kjeldoran Pride": map[string]string{
 		"facing left":     "9a",
@@ -364,6 +383,7 @@ var allVariants = map[string]map[string]string{
 		"gold armor":      "55b",
 		"v.2":             "55a",
 		"v.1":             "55b",
+		"18":              "55b",
 	},
 	"Martyrdom": map[string]string{
 		"alive":                          "10a",
@@ -375,6 +395,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                            "10a",
 		"v.2":                            "10b",
 		"wounded on ground":              "10b",
+		"139":                            "10a",
 	},
 	"Noble Steeds": map[string]string{
 		"trees in forefront":  "11a",
@@ -388,6 +409,7 @@ var allVariants = map[string]map[string]string{
 		"close-up":            "11b",
 		"v.2":                 "11a",
 		"v.1":                 "11b",
+		"141":                 "11b",
 	},
 	"Phantasmal Fiend": map[string]string{
 		"close-up":            "57a",
@@ -411,6 +433,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":              "58a",
 		"v.1":              "58b",
 		"man held aloft":   "58b",
+		"23":               "58a",
 	},
 	"Phyrexian War Beast": map[string]string{
 		"propeller left":    "127a",
@@ -421,6 +444,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":               "127b",
 		"facing left":       "127a",
 		"facing right":      "127b",
+		"170":               "127a",
 	},
 	"Reinforcements": map[string]string{
 		"fighting orc":     "12a",
@@ -457,6 +481,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":              "15a",
 		"v.1":              "15b",
 		"man":              "15a",
+		"148":              "15b",
 	},
 	"Soldevi Adnate": map[string]string{
 		"female":              "60a",
@@ -470,6 +495,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                 "60a",
 		"v.2":                 "60b",
 		"woman":               "60a",
+		"26":                  "60b",
 	},
 	"Soldevi Heretic": map[string]string{
 		"blue robe":                     "33a",
@@ -480,6 +506,7 @@ var allVariants = map[string]map[string]string{
 		"heretic with both arms raised": "33b",
 		"v.2":                           "33a",
 		"v.1":                           "33b",
+		"50":                            "33b",
 	},
 	"Soldevi Sage": map[string]string{
 		"2 candles":              "34a",
@@ -495,6 +522,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                    "34b",
 		"red cloak":              "34a",
 		"blue robe":              "34b",
+		"old woman":              "34b",
 	},
 	"Soldevi Sentry": map[string]string{
 		"close up":               "132a",
@@ -509,6 +537,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                    "132a",
 		"v.1":                    "132b",
 		"close-up":               "132a",
+		"176":                    "132b",
 	},
 	"Soldevi Steam Beast": map[string]string{
 		"beast in mountains": "133a",
@@ -521,6 +550,7 @@ var allVariants = map[string]map[string]string{
 		"facing right":       "133b",
 		"v.1":                "133a",
 		"v.2":                "133b",
+		"178":                "133a",
 	},
 	"Stench of Decay": map[string]string{
 		"red flower":         "61a",
@@ -532,6 +562,7 @@ var allVariants = map[string]map[string]string{
 		"holding flower":     "61a",
 		"v.2":                "61a",
 		"v.1":                "61b",
+		"28":                 "61b",
 	},
 	"Storm Crow": map[string]string{
 		"flying right":      "36a",
@@ -576,6 +607,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                      "100b",
 		"holding fruit":            "100a",
 		"lying down":               "100b",
+		"85":                       "100b",
 	},
 	"Undergrowth": map[string]string{
 		"holding axe":    "102a",
@@ -587,6 +619,7 @@ var allVariants = map[string]map[string]string{
 		"man with axe":   "102a",
 		"v.1":            "102a",
 		"v.2":            "102b",
+		"88":             "102b",
 	},
 	"Varchild's Crusader": map[string]string{
 		"brown horse and castle":     "82a",
@@ -602,6 +635,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                        "82a",
 		"v.1":                        "82b",
 		"woods":                      "82b",
+		"121":                        "82b",
 	},
 	"Veteran's Voice": map[string]string{
 		"over the shoulder":          "84b",
@@ -617,6 +651,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                        "84a",
 		"v.1":                        "84b",
 		"facing off":                 "84a",
+		"124":                        "84b",
 	},
 	"Viscerid Armor": map[string]string{
 		"crashing wave":         "41a",
@@ -630,6 +665,7 @@ var allVariants = map[string]map[string]string{
 		"two men":               "41b",
 		"v.2":                   "41a",
 		"v.1":                   "41b",
+		"61":                    "41b",
 	},
 	"Whip Vine": map[string]string{
 		"3 vines":        "103a",
@@ -643,6 +679,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":            "103a",
 		"v.2":            "103b",
 		"only plants":    "103a",
+		"90":             "103a",
 	},
 	"Wild Aesthir": map[string]string{
 		"green background":  "21a",
@@ -657,6 +694,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":               "21a",
 		"v.1":               "21b",
 		"lightning strike":  "21a",
+		"155":               "21a",
 	},
 	"Yavimaya Ancients": map[string]string{
 		"trees":            "104a",
@@ -669,6 +707,7 @@ var allVariants = map[string]map[string]string{
 		"man on horse":     "104b",
 		"v.1":              "104a",
 		"v.2":              "104b",
+		"92":               "104a",
 	},
 }
 
@@ -1567,6 +1606,8 @@ var femVariants = map[string]map[string]string{
 		"fe006": "34b",
 		"fe007": "34c",
 		"fe008": "34d",
+
+		"p. foglio": "34b",
 	},
 	"Brassclaw Orcs": map[string]string{
 		"fe100":                       "49a",
@@ -1732,6 +1773,8 @@ var femVariants = map[string]map[string]string{
 		"fe128": "62b",
 		"fe129": "62c",
 		"fe130": "62d",
+
+		"frazier": "62b",
 	},
 	"Order of the Ebon Hand": map[string]string{
 		"fe025":                               "42a",
@@ -2205,6 +2248,8 @@ var hmlVariants = map[string]map[string]string{
 		"two pirates": "36b",
 		"pirate ship": "36a",
 		"men":         "36b",
+		"b":           "36a",
+		"a":           "36b",
 	},
 	"Samite Alchemist": map[string]string{
 		"green beaker":     "13a",
@@ -2285,6 +2330,9 @@ var iceVariants = map[string]map[string]string{
 		"v.1": "380",
 		"v.2": "381",
 		"v.3": "382",
+		"328": "380",
+		"329": "381",
+		"330": "382",
 	},
 	"Island": map[string]string{
 		"a":                      "368",
@@ -2297,6 +2345,9 @@ var iceVariants = map[string]map[string]string{
 		"v.1": "368",
 		"v.2": "369",
 		"v.3": "370",
+		"334": "368",
+		"335": "369",
+		"336": "370",
 	},
 	"Mountain": map[string]string{
 		"a":                "376",
@@ -2309,6 +2360,9 @@ var iceVariants = map[string]map[string]string{
 		"v.1": "376",
 		"v.2": "377",
 		"v.3": "378",
+		"340": "376",
+		"341": "377",
+		"342": "378",
 	},
 	"Plains": map[string]string{
 		"a":                       "364",
@@ -2321,6 +2375,9 @@ var iceVariants = map[string]map[string]string{
 		"v.1": "364",
 		"v.2": "365",
 		"v.3": "366",
+		"343": "364",
+		"344": "365",
+		"345": "366",
 	},
 	"Swamp": map[string]string{
 		"a":                             "373",
@@ -2333,6 +2390,9 @@ var iceVariants = map[string]map[string]string{
 		"v.1": "373",
 		"v.2": "374",
 		"v.3": "375",
+		"353": "373",
+		"354": "374",
+		"355": "375",
 	},
 }
 
@@ -2520,6 +2580,10 @@ var mirVariants = map[string]map[string]string{
 		"v.2":                       "348",
 		"v.3":                       "349",
 		"v.4":                       "350",
+		"pink flowers right":        "347",
+		"waterfall":                 "348",
+		"white flowers right":       "349",
+		"red tree leaves":           "350",
 	},
 	"Island": map[string]string{
 		"a":                  "335",
@@ -2534,6 +2598,9 @@ var mirVariants = map[string]map[string]string{
 		"v.2":                "336",
 		"v.3":                "337",
 		"v.4":                "338",
+		"off-center spire":   "336",
+		"rocky water":        "337",
+		"sunset":             "338",
 	},
 	"Mountain": map[string]string{
 		"a":                  "343",
@@ -2548,6 +2615,10 @@ var mirVariants = map[string]map[string]string{
 		"v.2":                "344",
 		"v.3":                "345",
 		"v.4":                "346",
+		"green":              "343",
+		"orange":             "344",
+		"purple":             "345",
+		"red":                "346",
 	},
 	"Plains": map[string]string{
 		"a":             "331",
@@ -2562,6 +2633,7 @@ var mirVariants = map[string]map[string]string{
 		"v.2":           "332",
 		"v.3":           "333",
 		"v.4":           "334",
+		"buffalo":       "332",
 	},
 	"Swamp": map[string]string{
 		"a":             "339",
@@ -2576,6 +2648,10 @@ var mirVariants = map[string]map[string]string{
 		"v.2":           "340",
 		"v.3":           "341",
 		"v.4":           "342",
+		"mossy roots":   "339",
+		"foggy night":   "340",
+		"eyes in log":   "341",
+		"tall grass":    "342",
 	},
 }
 
@@ -2601,6 +2677,9 @@ var po2Variants = map[string]map[string]string{
 		"creek":                "164",
 		"blue sky":             "165",
 
+		"151": "163",
+		"152": "164",
+		"153": "165",
 		"v.1": "163",
 		"v.2": "164",
 		"v.3": "165",
@@ -2625,6 +2704,9 @@ var po2Variants = map[string]map[string]string{
 		"fog - foreground":     "161",
 		"archway - right side": "162",
 
+		"157": "160",
+		"158": "161",
+		"159": "162",
 		"v.1": "160",
 		"v.2": "161",
 		"v.3": "162",
@@ -2637,6 +2719,9 @@ var po2Variants = map[string]map[string]string{
 		"palace at sunset": "152",
 		"flock of birds":   "153",
 
+		"160": "151",
+		"161": "152",
+		"162": "153",
 		"v.1": "151",
 		"v.2": "152",
 		"v.3": "153",
@@ -2649,6 +2734,9 @@ var po2Variants = map[string]map[string]string{
 		"animal skeleton":            "158",
 		"decrepit observatory":       "159",
 
+		"163": "157",
+		"164": "158",
+		"165": "159",
 		"v.1": "157",
 		"v.2": "158",
 		"v.3": "159",
@@ -2665,6 +2753,10 @@ var porVariants = map[string]map[string]string{
 		"leaning tree center midground": "213",
 		"three dark trees foreground":   "214",
 		"violet sky":                    "215",
+		"large middle":                  "212",
+		"slanted tree":                  "213",
+		"ferns on ground":               "214",
+		"pale trees":                    "215",
 
 		"v.1": "212",
 		"v.2": "213",
@@ -2680,6 +2772,9 @@ var porVariants = map[string]map[string]string{
 		"pointed peaks":   "201",
 		"unbroken beach":  "202",
 		"sun upper-right": "203",
+		"castle cove":     "201",
+		"beach right":     "202",
+		"sea arch":        "203",
 
 		"v.1": "200",
 		"v.2": "201",
@@ -2695,6 +2790,10 @@ var porVariants = map[string]map[string]string{
 		"no peaks upper-left":        "209",
 		"big trees foreground":       "210",
 		"three peaks / left tallest": "211",
+		"middle chasm":               "208",
+		"peaks right":                "209",
+		"trees center":               "210",
+		"three peaks":                "211",
 
 		"v.1": "208",
 		"v.2": "209",
@@ -2710,6 +2809,10 @@ var porVariants = map[string]map[string]string{
 		"left tree cut-off":    "197",
 		"full tree foreground": "198",
 		"branches upper-right": "199",
+		"clouds right":         "196",
+		"white sky":            "197",
+		"no flowers":           "198",
+		"clouds left":          "199",
 
 		"v.1": "196",
 		"v.2": "197",
@@ -2725,6 +2828,10 @@ var porVariants = map[string]map[string]string{
 		"gray sky":               "205",
 		"white tree / green sky": "206",
 		"gold sun upper-right":   "207",
+		"hanging moss":           "204",
+		"crossed trees":          "205",
+		"white tree":             "206",
+		"yellow sun":             "207",
 
 		"v.1": "204",
 		"v.2": "205",
@@ -3714,6 +3821,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"European Land Program":         pelpVariants,
 	"Fallen Empires":                femVariants,
 	"Fifth Edition":                 ed5Variants,
+	"Foreign Black Border":          ed3Variants,
 	"Fourth Edition":                ed4Variants,
 	"GRN Ravnica Weekend":           prwkVariants,
 	"Homelands":                     hmlVariants,
@@ -3735,6 +3843,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Secret Lair Drop":              sldVariants,
 	"Shadows over Innistrad Promos": psoiVariants,
 	"Shadows over Innistrad":        soiVariants,
+	"Summer Magic / Edgar":          ed3Variants,
 	"Tempest":                       tmpVariants,
 	"Unglued":                       ulgVariants,
 	"Unlimited Edition":             oldLandVariants,
@@ -3744,6 +3853,8 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"World Championship Decks 1999": wc99Variants,
 	"World Championship Decks 2001": wc01Variants,
 	"World Championship Decks 2002": wc02Variants,
+
+	"Fourth Edition Foreign Black Border": ed4Variants,
 }
 
 // This table contains variants to tell PLIST cards apart from MB1.

@@ -184,14 +184,19 @@ func (tcg *TCGClient) Get(url string) (*TCGResponse, error) {
 }
 
 type TCGProduct struct {
-	ProductId  int      `json:"productId"`
-	Name       string   `json:"name"`
-	CleanName  string   `json:"cleanName"`
-	ImageUrl   string   `json:"imageUrl"`
-	GroupId    int      `json:"groupId"`
-	URL        string   `json:"url"`
-	ModifiedOn string   `json:"modifiedOn"`
-	Skus       []TCGSKU `json:"skus,omitempty"`
+	ProductId    int      `json:"productId"`
+	Name         string   `json:"name"`
+	CleanName    string   `json:"cleanName"`
+	ImageUrl     string   `json:"imageUrl"`
+	GroupId      int      `json:"groupId"`
+	URL          string   `json:"url"`
+	ModifiedOn   string   `json:"modifiedOn"`
+	Skus         []TCGSKU `json:"skus,omitempty"`
+	ExtendedData []struct {
+		Name        string `json:"name"`
+		DisplayName string `json:"displayName"`
+		Value       string `json:"value"`
+	}
 }
 
 func (tcg *TCGClient) TotalProducts(category int, productTypes []string) (int, error) {
@@ -229,6 +234,7 @@ func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, inclu
 	}
 
 	v := url.Values{}
+	v.Set("getExtendedFields", "true")
 	v.Set("categoryId", fmt.Sprint(category))
 	if productTypes != nil {
 		v.Set("productTypes", strings.Join(productTypes, ","))

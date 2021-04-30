@@ -18,6 +18,10 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			variant = strings.Join(fields[1:], " ")
 		}
 	}
+	if strings.Contains(cardName, " [") {
+		cardName = strings.Replace(cardName, "[", "(", -1)
+		cardName = strings.Replace(cardName, "]", ")", -1)
+	}
 	if strings.Contains(cardName, " (") {
 		fields := mtgmatcher.SplitVariants(cardName)
 		cardName = fields[0]
@@ -70,11 +74,28 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		"Fourth Edition Foreign White Border":
 		return nil, errors.New("unsupported")
 	case "Portal":
-		if variant == "Flavor Text" {
-			variant = ""
-		} else if variant == "" {
-			if len(mtgmatcher.MatchInSet(cardName, "PPOD")) == 0 {
+		switch cardName {
+		case "Warrior's Charge",
+			"Blaze",
+			"Raging Goblin",
+			"Anaconda",
+			"Elite Cat Warrior",
+			"Monstrous Growth":
+			if variant == "Flavor Text" {
+				variant = ""
+			} else if variant == "" {
 				variant = "Reminder Text"
+			}
+		case "Hand of Death":
+			// Variants are fine as is
+		case "Armored Pegasus",
+			"Bull Hippo",
+			"Cloud Pirates",
+			"Feral Shadow",
+			"Snapping Drake",
+			"Storm Crow":
+			if variant == "Reminder Text" {
+				edition = "Portal Demo Game"
 			}
 		}
 	case "Battle For Zendikar",
@@ -176,7 +197,7 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		}[cardName]
 		if found {
 			edition = ed
-		} else if variant != "" && len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
+		} else if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
 			edition = "PSUS"
 		}
 	case "Judge Promos":
@@ -261,6 +282,77 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 				break
 			}
 		}
+	case "Alliances",
+		"Portal Second Age":
+		if variant == "" {
+			variant = product.getNum()
+			// Missing everything
+			if cardName == "Awesome Presence" {
+				variant = "arms spread"
+			}
+		}
+	case "Homelands":
+		num := product.getNum()
+		fixup, found := map[string]string{
+			"Abbey Matron":    "2",
+			"Aliban's Tower":  "61",
+			"Ambush Party":    "63",
+			"Anaba Bodyguard": "66",
+			"Anaba Shaman":    "67",
+			"Carapace":        "84",
+			"Cemetery Gate":   "44",
+			"Reef Pirates":    "",
+		}[cardName]
+		if found {
+			num = fixup
+		}
+		if variant == "" {
+			variant = num + "a"
+		} else if variant == "Version 2" {
+			variant = num + "b"
+		}
+	case "Fallen Empires":
+		if variant == "" {
+			fixup, found := map[string]string{
+				"Armor Thrull":           "33a",
+				"Basal Thrull":           "34a",
+				"Elven Fortress":         "65a",
+				"Elvish Hunter":          "67a",
+				"Elvish Scout":           "68a",
+				"Farrel's Zealot":        "3a",
+				"Goblin Chirurgeon":      "54a",
+				"High Tide":              "18a",
+				"Homarid":                "19a",
+				"Icatian Infantry":       "7a",
+				"Icatian Moneychanger":   "10a",
+				"Merseine":               "23a",
+				"Orcish Veteran":         "62a",
+				"Order of Leitbur":       "16c",
+				"Order of the Ebon Hand": "42a",
+				"Spore Cloud":            "72a",
+				"Thorn Thallid":          "80a",
+				"Tidal Flats":            "27a",
+				"Vodalian Mage":          "30a",
+			}[cardName]
+			if found {
+				variant = fixup
+			}
+		}
+	case "Starter 2000":
+		switch cardName {
+		case "Spined Wurm",
+			"Wind Drake":
+			return nil, errors.New("does not exist")
+		}
+	case "Battle Royale Box Set":
+		if mtgmatcher.IsBasicLand(cardName) {
+			variant = product.getNum()
+		}
+	}
+
+	// Outside the main loop to catch everything
+	if mtgmatcher.IsBasicLand(cardName) && variant == "" {
+		variant = product.getNum()
 	}
 
 	isFoil := strings.Contains(variant, "Foil") || edition == "Mystery Booster Retail Exclusives"
@@ -271,4 +363,13 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		Variation: variant,
 		Foil:      isFoil,
 	}, nil
+}
+
+func (tcgp *TCGProduct) getNum() string {
+	for _, extData := range tcgp.ExtendedData {
+		if extData.Name == "Number" {
+			return extData.Value
+		}
+	}
+	return ""
 }
