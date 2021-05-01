@@ -374,7 +374,8 @@ func (c *Card) isBundle() bool {
 }
 
 func (c *Card) isFoilEtched() bool {
-	return Contains(c.Variation, "Etched")
+	return Contains(c.Variation, "Etched") ||
+		Contains(c.Variation, "Etching") // ha
 }
 
 func (c *Card) isARNLightMana() bool {
