@@ -2469,7 +2469,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "ba1c1aa6-b685-5e4f-9a53-67cdc6cbcc02",
+		Id:   "6c82bc6b-0e97-5283-ae43-e5d16f53e19a",
 		Desc: "sta_double_variant_japanese_noforeigndata",
 		In: Card{
 			Name:      "Negate",
