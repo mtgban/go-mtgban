@@ -40,6 +40,7 @@ type CKCard struct {
 const (
 	ckPricelistURL  = "https://api.cardkingdom.com/api/v2/pricelist"
 	ckHotBuylistURL = "https://api.cardkingdom.com/api/product/list/hotbuy"
+	ckSealedListURL = "https://api.cardkingdom.com/api/sealed_pricelist"
 )
 
 type CKClient struct {
@@ -54,7 +55,15 @@ func NewCKClient() *CKClient {
 }
 
 func (ck *CKClient) GetPriceList() ([]CKCard, error) {
-	resp, err := ck.client.Get(ckPricelistURL)
+	return ck.getList(ckPricelistURL)
+}
+
+func (ck *CKClient) GetSealedList() ([]CKCard, error) {
+	return ck.getList(ckSealedListURL)
+}
+
+func (ck *CKClient) getList(link string) ([]CKCard, error) {
+	resp, err := ck.client.Get(link)
 	if err != nil {
 		return nil, err
 	}
