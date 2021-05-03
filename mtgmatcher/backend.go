@@ -146,6 +146,19 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				}
 			}
 		}
+
+		for _, product := range set.SealedProduct {
+			uuids[product.UUID] = CardObject{
+				Card: mtgjson.Card{
+					UUID:        product.UUID,
+					Name:        product.Name,
+					SetCode:     code,
+					Identifiers: product.Identifiers,
+					Rarity:      "Product",
+				},
+				Edition: set.Name,
+			}
+		}
 	}
 
 	duplicate(ap.Data, cards, uuids, "Legends Italian", "LEG", "ITA", "1995-04-01")

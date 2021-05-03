@@ -17,6 +17,12 @@ type Set struct {
 	ParentCode   string `json:"parentCode"`
 	ReleaseDate  string `json:"releaseDate"`
 	Type         string `json:"type"`
+
+	SealedProduct []struct {
+		Identifiers map[string]string `json:"identifiers"`
+		Name        string            `json:"name"`
+		UUID        string            `json:"uuid"`
+	} `json:"sealedProduct"`
 }
 
 type Card struct {
