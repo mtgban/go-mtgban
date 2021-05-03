@@ -118,7 +118,7 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 			case "Played":
 				conditions = "SP"
 			case "Heavily Played":
-				conditions = "MP"
+				conditions = "HP"
 			default:
 				scg.printf("unknown condition %s for %s", conditions, cardName)
 				return
