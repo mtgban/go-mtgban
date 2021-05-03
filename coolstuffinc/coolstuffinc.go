@@ -30,7 +30,9 @@ const (
 )
 
 type Coolstuffinc struct {
-	LogCallback    mtgban.LogCallbackFunc
+	LogCallback mtgban.LogCallbackFunc
+	Partner     string
+
 	inventoryDate  time.Time
 	buylistDate    time.Time
 	MaxConcurrency int
@@ -283,6 +285,9 @@ func (csi *Coolstuffinc) scrape() error {
 			}
 
 			link := elem.ChildAttr(`div[class="large-3 medium-3 small-2 columns text-right"] link[itemprop="url"]`, "content")
+			if csi.Partner != "" {
+				link += "?utm_referrer=mtgban"
+			}
 
 			out := responseChan{
 				cardId: cardId,

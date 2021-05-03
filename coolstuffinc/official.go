@@ -9,6 +9,7 @@ import (
 
 type CoolstuffincOfficial struct {
 	LogCallback mtgban.LogCallbackFunc
+	Partner     string
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -75,12 +76,16 @@ func (csi *CoolstuffincOfficial) scrape() error {
 			continue
 		}
 
+		link := card.URL
+		if csi.Partner != "" {
+			link += "?utm_referrer=mtgban"
+		}
 		if card.QuantityRetail > 0 && card.PriceRetail > 0 {
 			out := &mtgban.InventoryEntry{
 				Conditions: "NM",
 				Price:      card.PriceRetail,
 				Quantity:   card.QuantityRetail,
-				URL:        card.URL,
+				URL:        link,
 			}
 			err = csi.inventory.Add(cardId, out)
 			if err != nil {
