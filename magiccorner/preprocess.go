@@ -200,6 +200,14 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 				variation = "Showcase"
 			}
 		}
+	case "Core 2020: Extras":
+		switch variation {
+		case "V.1":
+			variation = "Promo Pack"
+		case "V.2":
+			variation = "Prerelease"
+		}
+		edition = "PM20"
 	// Use the tag information if available
 	case "Promo":
 		switch variation {
