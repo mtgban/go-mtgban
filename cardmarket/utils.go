@@ -224,3 +224,70 @@ func (mkm *MKMClient) MKMPriceGuide() (MKMPriceGuide, error) {
 
 	return out, nil
 }
+
+type MKMProductList map[int]MKMProductListElement
+
+type MKMProductListElement struct {
+	IdProduct   int
+	Name        string
+	CategoryId  int
+	Category    string
+	ExpansionId int
+	MetacardId  int
+	DateAdded   string
+}
+
+func (mkm *MKMClient) MKMProductList() (MKMProductList, error) {
+	raw, err := mkm.MKMRawProductList()
+	if err != nil {
+		return nil, err
+	}
+
+	d := base64.NewDecoder(base64.StdEncoding, strings.NewReader(raw))
+	gzipReader, err := gzip.NewReader(d)
+	if err != nil {
+		return nil, err
+	}
+	defer gzipReader.Close()
+
+	csvReader := csv.NewReader(gzipReader)
+	// idProduct,Name,"Category ID","Category","Expansion ID","Metacard ID","Date Added"
+	_, err = csvReader.Read()
+	if err == io.EOF {
+		return nil, errors.New("empty csv")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("error reading csv header: %v", err)
+	}
+
+	out := MKMProductList{}
+	for {
+		record, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			continue
+		}
+
+		idProduct, _ := strconv.Atoi(record[0])
+		name := record[1]
+		categoryId, _ := strconv.Atoi(record[2])
+		category := record[3]
+		expansionId, _ := strconv.Atoi(record[4])
+		metacardId, _ := strconv.Atoi(record[5])
+		dateAdded := record[6]
+
+		out[idProduct] = MKMProductListElement{
+			IdProduct:   idProduct,
+			Name:        name,
+			CategoryId:  categoryId,
+			Category:    category,
+			ExpansionId: expansionId,
+			MetacardId:  metacardId,
+			DateAdded:   dateAdded,
+		}
+	}
+
+	return out, nil
+}
