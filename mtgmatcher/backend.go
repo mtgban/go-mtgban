@@ -24,6 +24,7 @@ type CardObject struct {
 	mtgjson.Card
 	Edition string
 	Foil    bool
+	Sealed  bool
 }
 
 // Card implements the Stringer interface
@@ -156,6 +157,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					Identifiers: product.Identifiers,
 					Rarity:      "Product",
 				},
+				Sealed:  true,
 				Edition: set.Name,
 			}
 		}
