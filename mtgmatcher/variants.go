@@ -881,7 +881,8 @@ var atqVariants = map[string]map[string]string{
 		"v.1": "83c",
 		"v.4": "83d",
 
-		"a pulley": "83a",
+		"a pulley":     "83a",
+		"c bathyscape": "83c",
 	},
 	"Urza's Power Plant": map[string]string{
 		"aq089": "84a",
