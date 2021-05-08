@@ -97,6 +97,9 @@ type ScraperInfo struct {
 	// Buylist contains multiple prices for different conditions
 	MultiCondBuylist bool
 
+	// Scraper contains sealed information instead of singles
+	SealedMode bool
+
 	// Return the grading scale for adjusting prices according to conditions
 	// Should be set only if MultiCondBuylist is false
 	Grading func(string, BuylistEntry) map[string]float64

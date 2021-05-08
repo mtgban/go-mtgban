@@ -434,5 +434,6 @@ func (ck *CardkingdomSealed) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CKSealed"
 	info.InventoryTimestamp = ck.inventoryDate
 	info.BuylistTimestamp = ck.buylistDate
+	info.SealedMode = true
 	return
 }

@@ -181,5 +181,6 @@ func (tcg *TCGPlayerSealed) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TCGSealed"
 	info.InventoryTimestamp = tcg.inventoryDate
 	info.NoQuantityInventory = true
+	info.SealedMode = true
 	return
 }
