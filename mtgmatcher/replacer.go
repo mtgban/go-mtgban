@@ -10,7 +10,6 @@ var replacer = strings.NewReplacer(
 	// it needs to be before removing the dash step
 	" the ", "",
 	"-the-", "",
-	"the ", "",
 
 	// Quotes and commas and whatnot
 	"''", "",
@@ -150,6 +149,7 @@ var sealedReplacer = strings.NewReplacer(
 	"deck", "",
 	"draft", "",
 	"guild", "",
+	"the ", "",
 )
 
 func SealedNormalize(str string) string {
