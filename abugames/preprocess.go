@@ -12,6 +12,7 @@ var cardTable = map[string]string{
 	"Bogart Brute":                        "Boggart Brute",
 	"Deathgazer Cockatrice":               "Deathgaze Cockatrice",
 	"Discontinunty":                       "Discontinuity",
+	"Elminate":                            "Eliminate",
 	"Fireblade Artist Ravnica Allegiance": "Fireblade Artist",
 	"Jace, the Mind Sculpor":              "Jace, the Mind Sculptor",
 	"Mindblade Rendor":                    "Mindblade Render",
@@ -249,6 +250,30 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			}
 		case "Realmwalker":
 			if variation == "Buy-A-Box Promo" {
+				card.Edition = "KHM"
+			}
+		case "Into the Roil":
+			if variation == "FNM Promo" {
+				variation = "Promo Pack"
+				card.Edition = "ZNR"
+			}
+		case "Thrill of Possibility":
+			if variation == "FNM Promo Throne of Eldraine" {
+				variation = "Promo Pack"
+				card.Edition = "ELD"
+			}
+		case "Scent of Cinder":
+			if variation == "Alternate Art Duelist Promo" {
+				card.Edition = "PMEI"
+			}
+		case "Eliminate":
+			if strings.Contains(variation, "FNM Promo") {
+				variation = "Promo Pack"
+				card.Edition = "M21"
+			}
+		case "Strategic Planning":
+			if variation == "FNM Promo" {
+				variation = "Promo Pack"
 				card.Edition = "KHM"
 			}
 		}
