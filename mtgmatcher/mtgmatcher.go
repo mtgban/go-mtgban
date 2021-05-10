@@ -426,9 +426,11 @@ func adjustEdition(inCard *Card) {
 		}
 		// Ignore this, we have all we need now
 		variation = ""
-	} else if edition == "The List" {
+	} else if edition == "The List" || variation == "The List" {
 		// Also here, as the variation might overwrite the edition later
 		variation = ""
+		// Make sure edition is set
+		edition = "The List"
 	}
 
 	set, found := backend.Sets[strings.ToUpper(edition)]
