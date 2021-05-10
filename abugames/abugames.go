@@ -35,6 +35,7 @@ func NewScraper() *ABUGames {
 }
 
 type resultChan struct {
+	theCard  mtgmatcher.Card
 	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
@@ -179,6 +180,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 			if invEntry != nil || buyEntry != nil {
 				channel <- resultChan{
+					theCard:  *theCard,
 					cardId:   cardId,
 					invEntry: invEntry,
 					buyEntry: buyEntry,
@@ -233,12 +235,14 @@ func (abu *ABUGames) scrape() error {
 		if result.invEntry != nil {
 			err = abu.inventory.AddRelaxed(result.cardId, result.invEntry)
 			if err != nil {
+				abu.printf("%s", &result.theCard)
 				abu.printf("%s", err.Error())
 			}
 		}
 		if result.buyEntry != nil {
 			err = abu.buylist.AddRelaxed(result.cardId, result.buyEntry)
 			if err != nil {
+				abu.printf("%s", &result.theCard)
 				abu.printf("%s", err.Error())
 			}
 		}
