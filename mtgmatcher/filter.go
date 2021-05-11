@@ -882,8 +882,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if Contains(inCard.Variation, "Intro") && !card.HasPromoType(mtgjson.PromoTypeIntroPack) {
 					continue
 				}
+			// Separate JPN and non-JPN cards (foil-etched are parsed above)
 			case "Strixhaven Mystical Archive":
-				cn, _ := strconv.Atoi(card.Number)
+				// Foil-etched cards are tagged with "e", drop it for this separation
+				cn, _ := strconv.Atoi(strings.TrimSuffix(card.Number, "e"))
 				if inCard.isJPN() && cn <= 63 {
 					continue
 				} else if !inCard.isJPN() && cn > 63 {
