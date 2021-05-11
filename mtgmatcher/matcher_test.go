@@ -652,6 +652,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "e2033df0-b1b5-5b9b-90cb-bf738cda501b",
+		Desc: "core_promo_pack_2021_alt",
+		In: Card{
+			Name:      "Temple of Mystery",
+			Variation: "Promo Pack - M21",
+			Edition:   "Promo Pack",
+		},
+	},
+	MatchTest{
 		Id:   "24a266a1-c13e-5790-a649-b03139d47ccc",
 		Desc: "core_promo_pack_old",
 		In: Card{

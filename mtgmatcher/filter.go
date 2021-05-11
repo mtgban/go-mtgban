@@ -956,9 +956,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 		}
 
 		if allSameEdition {
-			size := len(outCards)
-			for i := 0; i < size; i++ {
-				set := backend.Sets[outCards[i].SetCode]
+			var filteredOutCards []mtgjson.Card
+			for _, card := range outCards {
+				set := backend.Sets[card.SetCode]
 				// The year is necessary to decouple PM20 and PM21 cards
 				// when the edition name is different than the canonical one
 				// ie "Core 2021" instead of "Core Set 2021"
@@ -966,14 +966,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				// Drop any printing that don't have the ParentCode
 				// or the edition name itself in the Variation field
 				// or the year matches across
-				if !(strings.Contains(inCard.Variation, set.ParentCode) ||
+				if strings.Contains(inCard.Variation, set.ParentCode) ||
 					inCard.Contains(backend.Sets[set.ParentCode].Name) ||
-					(year != "" && inCard.Contains(year))) {
-					outCards = append(outCards[:i], outCards[i+1:]...)
-					size--
-					i = 0
+					(year != "" && inCard.Contains(year)) {
+					filteredOutCards = append(filteredOutCards, card)
 				}
 			}
+			outCards = filteredOutCards
 		}
 	}
 
