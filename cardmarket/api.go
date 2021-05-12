@@ -119,7 +119,7 @@ func (mkm *MKMClient) MKMRawProductList() (string, error) {
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return "", errors.New(string(data))
+		return "", err
 	}
 
 	return response.ProductsFile, nil
