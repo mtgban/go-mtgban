@@ -307,7 +307,7 @@ func (ck *CardkingdomSealed) scrape() error {
 
 					if probe != "" {
 						for _, product := range set.SealedProduct {
-							if mtgmatcher.Contains(product.Name, probe) {
+							if mtgmatcher.SealedContains(product.Name, probe) {
 								uuid = product.UUID
 								break
 							}

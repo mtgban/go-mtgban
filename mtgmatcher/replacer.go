@@ -150,6 +150,7 @@ var sealedReplacer = strings.NewReplacer(
 	"draft", "",
 	"guild", "",
 	"the ", "",
+	" the ", "",
 )
 
 func SealedNormalize(str string) string {
@@ -169,4 +170,8 @@ func SealedNormalize(str string) string {
 
 func SealedEquals(str1, str2 string) bool {
 	return SealedNormalize(str1) == SealedNormalize(str2)
+}
+
+func SealedContains(str1, str2 string) bool {
+	return strings.Contains(SealedNormalize(str1), SealedNormalize(str2))
 }
