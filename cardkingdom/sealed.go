@@ -356,7 +356,7 @@ func (ck *CardkingdomSealed) scrape() error {
 			}
 		}
 
-		u, _ = url.Parse("https://www.cardkingdom.com/purchasing/mtg_singles")
+		u, _ = url.Parse("https://www.cardkingdom.com/purchasing/mtg_sealed")
 		buyPrice, err := strconv.ParseFloat(sealed.BuyPrice, 64)
 		if err != nil {
 			ck.printf("%v", err)
@@ -369,8 +369,6 @@ func (ck *CardkingdomSealed) scrape() error {
 			}
 
 			q := u.Query()
-			q.Set("filter[search]", "mtg_advanced")
-			q.Set("filter[name]", sealed.Name)
 			if ck.Partner != "" {
 				q.Set("partner", ck.Partner)
 				q.Set("utm_source", ck.Partner)
