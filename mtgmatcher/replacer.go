@@ -26,6 +26,8 @@ var replacer = strings.NewReplacer(
 	"(", "",
 	")", "",
 	".", "",
+	"!", "",
+	"?", "",
 
 	// Separators
 	"/", "",
@@ -124,6 +126,10 @@ var sealedReplacer = strings.NewReplacer(
 	"4th edition", "fourth edition",
 	"5th edition", "fifth edition",
 	"6th edition", "sixth edition",
+	"seventh edition", "7th edition",
+	"eighth edition", "8th edition",
+	"ninth edition", "9th edition",
+	"tenth edition", "10th edition",
 
 	"set of six", "complete",
 	"set of five", "complete",
@@ -141,6 +147,9 @@ var sealedReplacer = strings.NewReplacer(
 	"starter set", "starter",
 	"start deck", "starter",
 	"starter deck box", "starter",
+
+	"summer superdrop", "",
+	"city of guilds", "",
 
 	" 12", "",
 	" 10", "",
