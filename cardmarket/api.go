@@ -55,7 +55,7 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 		AppSecret: appSecret,
 		// Set a more conservative limit than defined below to avoid losing requests
 		// https://www.cardmarket.com/en/Magic/News/Additional-Request-Limits-For-Our-API
-		Limiter: rate.NewLimiter(9, 16),
+		Limiter: rate.NewLimiter(8, 1),
 	}
 	return &mkm
 }
