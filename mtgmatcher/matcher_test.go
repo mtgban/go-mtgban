@@ -2478,6 +2478,26 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "3dc11b06-acdc-536d-8acf-af02c5672ab3",
+		Desc: "sta_normal_etched",
+		In: Card{
+			Name:      "Demonic Tutor",
+			Variation: "Foil Etched",
+			Edition:   "Strixhaven Mystical Archives",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "a974d871-39bc-5bcb-947b-853836d3a6f1",
+		Desc: "sta_jpn_etched",
+		In: Card{
+			Name:      "Demonic Tutor",
+			Variation: "JP Alternate Art Foil Etched",
+			Edition:   "Strixhaven Mystical Archives",
+			Foil:      true,
+		},
+	},
+	MatchTest{
 		Id:   "6c82bc6b-0e97-5283-ae43-e5d16f53e19a",
 		Desc: "sta_double_variant_japanese_noforeigndata",
 		In: Card{
