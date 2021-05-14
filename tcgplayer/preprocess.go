@@ -156,19 +156,29 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			edition = "CP2"
 		} else if len(mtgmatcher.MatchInSet(cardName, "CP3")) == 1 {
 			edition = "CP3"
-		} else if cardName == "Fling" && variant != "DCI" {
-			edition = "PWP11"
 		} else if edition == "Launch Party And Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
-		} else {
-			switch cardName {
-			case "Arasta of the Endless Web":
-				edition = "THB"
-				variant = "352"
-			}
 		}
 
 		switch cardName {
+		case "Arasta of the Endless Web":
+			edition = "THB"
+			variant = "352"
+		case "Lotus Bloom":
+			edition = "TSR"
+			variant = "411"
+		case "Archmage Emeritus":
+			edition = "STX"
+			variant = "377"
+		case "Duress":
+			if variant == "IDW Comics 2014" {
+				edition = variant
+			}
+		case "Fling":
+			edition = "PWP11"
+			if variant == "DCI" {
+				edition = "PWP10"
+			}
 		case "Serra Angel":
 			if variant == "" {
 				edition = "PWOS"
