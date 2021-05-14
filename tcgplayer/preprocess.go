@@ -349,6 +349,10 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		if mtgmatcher.IsBasicLand(cardName) {
 			variant = product.getNum()
 		}
+	case "Commander 2021":
+		if variant == "Thick Stock Display Commander" {
+			edition += " " + variant
+		}
 	}
 
 	// Outside the main loop to catch everything

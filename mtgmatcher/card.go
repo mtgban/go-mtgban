@@ -687,7 +687,11 @@ func ParseCommanderEdition(edition string) string {
 	// Is there a year available?
 	year := ExtractYear(edition)
 	if year != "" {
-		return "Commander " + year
+		parsed := "Commander " + year
+		if strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") {
+			parsed += " Display Commanders"
+		}
+		return parsed
 	}
 
 	// Special fallbacks
