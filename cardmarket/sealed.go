@@ -947,7 +947,7 @@ func (mkm *CardMarketSealed) Inventory() (mtgban.InventoryRecord, error) {
 func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardmarket"
 	info.Shorthand = "MKMSealed"
-	info.CountryFlag = "EU"
+	info.CountryFlag = "🇪🇺"
 	info.InventoryTimestamp = mkm.inventoryDate
 	info.SealedMode = true
 	return
