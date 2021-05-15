@@ -74,6 +74,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if strings.HasSuffix(card.Number, "s") {
 					continue
 				}
+			case "STA":
+				if strings.HasSuffix(card.Number, "e") {
+					card.FrameEffects = []string{mtgjson.FrameEffectFoilEtched}
+				}
 			}
 
 			// Filter out unneeded printings
