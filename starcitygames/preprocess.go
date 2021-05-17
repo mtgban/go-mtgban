@@ -36,6 +36,8 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 			default:
 				return true
 			}
+		case "Strixhaven Mystical Archive":
+		case "Strixhaven Mystical Archive - Foil Etched":
 		default:
 			return true
 		}

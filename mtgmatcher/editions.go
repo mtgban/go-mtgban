@@ -27,11 +27,12 @@ var EditionTable = map[string]string{
 	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
 
 	// Strixhaven Mystical Archive alts
-	"Mystical Archive":                         "Strixhaven Mystical Archive",
-	"Mystical Archive: Japanese alternate-art": "Strixhaven Mystical Archive",
-	"Strixhaven Mystical Archive JPN":          "Strixhaven Mystical Archive",
-	"Strixhaven Mystical Archives":             "Strixhaven Mystical Archive",
-	"Strixhaven: Mystical Archives":            "Strixhaven Mystical Archive",
+	"Mystical Archive":                          "Strixhaven Mystical Archive",
+	"Mystical Archive: Japanese alternate-art":  "Strixhaven Mystical Archive",
+	"Strixhaven Mystical Archive - Foil Etched": "Strixhaven Mystical Archive",
+	"Strixhaven Mystical Archive JPN":           "Strixhaven Mystical Archive",
+	"Strixhaven Mystical Archives":              "Strixhaven Mystical Archive",
+	"Strixhaven: Mystical Archives":             "Strixhaven Mystical Archive",
 
 	// JPN planeswalkers and similar
 	"War of the Spark JPN Planeswalkers":                          "War of the Spark",
