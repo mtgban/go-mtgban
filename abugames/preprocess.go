@@ -78,6 +78,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				default:
 					return nil, errors.New("non-English card")
 				}
+			case "Strixhaven Mystical Archive":
 			default:
 				return nil, errors.New("non-English card")
 			}
