@@ -73,6 +73,10 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		if cardName == "Bonehoard" {
 			return nil, errors.New("does not exist")
 		}
+	case "9th Edition":
+		if cardName == "Goblin Raider" && isFoil {
+			return nil, errors.New("does not exist")
+		}
 	case "Starter 2000":
 		switch cardName {
 		case "Spined Wurm", "Counterspell", "Shock", "Llanowar Elves":
