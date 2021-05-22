@@ -396,13 +396,14 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 	defer csvWriter.Flush()
 
 	header := InventoryHeader
-	_, isMarket := seller.(Scraper).(Market)
-	if isMarket {
-		header = MarketHeader
-	}
-	_, isCarter := seller.(Carter)
-	if isCarter {
-		header = CartHeader
+	for _, entries := range inventory {
+		if entries[0].SellerName != "" {
+			header = MarketHeader
+		}
+		if entries[0].OriginalId != "" || entries[0].InstanceId != "" {
+			header = CartHeader
+		}
+		break
 	}
 
 	err = csvWriter.Write(header)
@@ -422,7 +423,7 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 				fmt.Sprint(entry.Quantity),
 				entry.URL,
 			)
-			if isMarket {
+			if entry.SellerName != "" {
 				record = append(record, entry.SellerName)
 				bundle := ""
 				if entry.Bundle {
@@ -430,7 +431,7 @@ func WriteInventoryToCSV(seller Seller, w io.Writer) error {
 				}
 				record = append(record, bundle)
 
-				if isCarter {
+				if entry.OriginalId != "" || entry.InstanceId != "" {
 					record = append(record, entry.OriginalId)
 					record = append(record, entry.InstanceId)
 				}
