@@ -795,6 +795,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 		// Skip all the silly non-really-sealed listings
 		if mtgmatcher.Contains(article.Comments, "empty") ||
 			mtgmatcher.Contains(article.Comments, "only the deck") ||
+			mtgmatcher.Contains(article.Comments, "only 60 cards") ||
 			mtgmatcher.Contains(article.Comments, "deck only") ||
 			mtgmatcher.Contains(article.Comments, "cards only") ||
 			mtgmatcher.Contains(article.Comments, "only cards") ||
@@ -808,6 +809,8 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 			mtgmatcher.Contains(article.Comments, "abierto") ||
 			mtgmatcher.Contains(article.Comments, "without") ||
 			mtgmatcher.Contains(article.Comments, "missing") ||
+			mtgmatcher.Contains(article.Comments, "just") ||
+			mtgmatcher.Contains(article.Comments, "damaged") ||
 			mtgmatcher.Contains(article.Comments, "no box") {
 			continue
 		}
