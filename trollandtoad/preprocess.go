@@ -134,6 +134,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		strings.Contains(edition, "French"),
 		strings.Contains(edition, "German"),
 		strings.Contains(edition, "Russian"),
+		strings.Contains(edition, "Portuguese"),
 		strings.Contains(fullName, "Spanish"),
 		strings.Contains(fullName, "French"),
 		strings.Contains(fullName, "German"),
