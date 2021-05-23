@@ -45,6 +45,9 @@ var cardTable = map[string]string{
 	"Maja, Bretgard Protector": "Maja, Bretagard Protector",
 	"Arni Brokenbow":           "Arni Brokenbrow",
 
+	"Agonizing Remose":  "Agonizing Remorse",
+	"Devouring Tendrls": "Devouring Tendrils",
+
 	"Darkbore Pathway // Slitherbore Pahtway":        "Darkbore Pathway // Slitherbore Pathway",
 	"Kolvori, God of Kinship // The Ringhart Creast": "Kolvori, God of Kinship // The Ringhart Crest",
 	"Valki, God of Lies // Tibalt, Cosmic Imposter":  "Valki, God of Lies // Tibalt, Cosmic Impostor",
@@ -167,6 +170,9 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	case strings.Contains(edition, "Japanese"):
 		switch edition {
 		case "War of the Spark Japanese Promos":
+		case "Strixhaven: School of Mages Japanese Singles",
+			"Strixhaven: School of Mages Japanese Foil Singles":
+			edition = "STA"
 		default:
 			return nil, errors.New("not english")
 		}
