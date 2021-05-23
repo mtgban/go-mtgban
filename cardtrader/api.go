@@ -18,6 +18,7 @@ const (
 	ctMarketplaceURL = "https://api.cardtrader.com/api/full/v1/marketplace/products?expansion_id="
 
 	ctBulkCreateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_create"
+	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
 
 	MaxBulkUploadItems = 450
 )
@@ -181,14 +182,17 @@ func (ct *CTAuthClient) Blueprints() ([]Blueprint, error) {
 
 // This is slightly different from the main Product type
 type BulkProduct struct {
+	// The id of the Product to edit
+	Id int `json:"id,omitempty"`
+
 	// The id of the Blueprint to put on sale
-	BlueprintId int `json:"blueprint_id"`
+	BlueprintId int `json:"blueprint_id,omitempty"`
 
 	// The price of the product, indicated in your current currency
-	Price float64 `json:"price"`
+	Price float64 `json:"price,omitempty"`
 
 	// The quantity to be put up for sale
-	Quantity int `json:"quantity"`
+	Quantity int `json:"quantity,omitempty"`
 
 	// A list of optional properties
 	Properties struct {
@@ -204,6 +208,17 @@ type BulkProduct struct {
 // requests if there are more than MaxBulkUploadItems elements. A list of
 // job ids is returned to monitor the execution status.
 func (ct *CTAuthClient) BulkCreate(products []BulkProduct) ([]string, error) {
+	return ct.bulkOperation(ctBulkCreateURL, products)
+}
+
+// Update existing listings using the products slice, separating into multiple
+// requests if there are more than MaxBulkUploadItems elements. A list of
+// job ids is returned to monitor the execution status.
+func (ct *CTAuthClient) BulkUpdate(products []BulkProduct) ([]string, error) {
+	return ct.bulkOperation(ctBulkUpdateURL, products)
+}
+
+func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]string, error) {
 	var jobs []string
 	var bulkUpload struct {
 		Products []BulkProduct `json:"products"`
@@ -221,7 +236,7 @@ func (ct *CTAuthClient) BulkCreate(products []BulkProduct) ([]string, error) {
 			return nil, err
 		}
 
-		resp, err := ct.client.Post(ctBulkCreateURL, "application/json", bytes.NewReader(bodyBytes))
+		resp, err := ct.client.Post(link, "application/json", bytes.NewReader(bodyBytes))
 		if err != nil {
 			return nil, err
 		}
