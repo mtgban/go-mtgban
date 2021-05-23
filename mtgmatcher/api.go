@@ -6,6 +6,10 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
+func GetUUIDs() map[string]CardObject {
+	return backend.UUIDs
+}
+
 func GetUUID(uuid string) (*CardObject, error) {
 	if backend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
