@@ -8,15 +8,17 @@ import (
 )
 
 type Set struct {
-	BaseSetSize  int    `json:"baseSetSize"`
-	Code         string `json:"code"`
-	Cards        []Card `json:"cards"`
-	IsOnlineOnly bool   `json:"isOnlineOnly"`
-	KeyruneCode  string `json:"keyruneCode"`
-	Name         string `json:"name"`
-	ParentCode   string `json:"parentCode"`
-	ReleaseDate  string `json:"releaseDate"`
-	Type         string `json:"type"`
+	BaseSetSize   int    `json:"baseSetSize"`
+	Code          string `json:"code"`
+	Cards         []Card `json:"cards"`
+	IsFoilOnly    bool   `json:"isFoilOnly"`
+	IsNonFoilOnly bool   `json:"isNonFoilOnly"`
+	IsOnlineOnly  bool   `json:"isOnlineOnly"`
+	KeyruneCode   string `json:"keyruneCode"`
+	Name          string `json:"name"`
+	ParentCode    string `json:"parentCode"`
+	ReleaseDate   string `json:"releaseDate"`
+	Type          string `json:"type"`
 
 	SealedProduct []struct {
 		Identifiers map[string]string `json:"identifiers"`
