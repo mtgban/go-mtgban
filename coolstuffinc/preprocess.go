@@ -436,6 +436,10 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		variant += fields[1]
 	}
 
+	if variant == "Foil-etched Showcase Frame" {
+		variant = "Foil-etched"
+	}
+
 	switch edition {
 	case "Fourth (Alternate Edition)",
 		"Eighth Edition (Oversized Cards)",
