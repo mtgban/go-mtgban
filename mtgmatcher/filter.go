@@ -898,6 +898,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !inCard.isJPN() && cn > 63 {
 					continue
 				}
+			case "Modern Horizons 2":
+				cn, _ := strconv.Atoi(strings.TrimSuffix(card.Number, "e"))
+				if Contains(inCard.Variation, "Retro Frame") && (cn <= 380 || cn > 441) {
+					continue
+				} else if !Contains(inCard.Variation, "Retro Frame") && !(cn <= 380 || cn > 441) {
+					continue
+				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant

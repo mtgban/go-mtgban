@@ -25,6 +25,7 @@ var EditionTable = map[string]string{
 	"Unlimited":            "Unlimited Edition",
 
 	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
+	"Modern Horizons - Retro Frames": "Modern Horizons 1 Timeshifts",
 
 	// Strixhaven Mystical Archive alts
 	"Mystical Archive":                          "Strixhaven Mystical Archive",

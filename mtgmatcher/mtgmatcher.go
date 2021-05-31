@@ -636,6 +636,10 @@ func adjustEdition(inCard *Card) {
 	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
 		inCard.Edition = "Fourth Edition Foreign Black Border"
 
+	// Separate timeshifted cards
+	case inCard.Edition == "Moder Horizons 2" && len(MatchInSet(inCard.Name, "RMH1")) != 0:
+		inCard.Edition = backend.Sets["RMH1"].Name
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {
