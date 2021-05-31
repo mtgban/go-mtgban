@@ -2506,6 +2506,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Strixhaven Mystical Archive",
 		},
 	},
+	MatchTest{
+		Id:   "06d4b87d-3030-5331-b7b7-bf7024512ff5",
+		Desc: "sta_number_and_etched",
+		In: Card{
+			Name:      "Time Warp",
+			Variation: "Etched 22",
+			Edition:   "Strixhaven: School of Mages Etched",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

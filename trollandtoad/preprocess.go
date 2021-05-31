@@ -72,6 +72,10 @@ var cardTable = map[string]string{
 
 	"Miara, Thorn of the Galde": "Miara, Thorn of the Glade",
 	"Commet Storm":              "Comet Storm",
+	"Increasing Vengeancce":     "Increasing Vengeance",
+	"Furycallm Snarl":           "Furycalm Snarl",
+	"Pyromancer's Gogggles":     "Pyromancer's Goggles",
+	"Prerelease Promo":          "Stone-Tongue Basilisk",
 
 	"Who/ What/ When/ Where/ Why": "Who",
 }
@@ -169,10 +173,9 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		}
 	case strings.Contains(edition, "Japanese"):
 		switch edition {
-		case "War of the Spark Japanese Promos":
-		case "Strixhaven: School of Mages Japanese Singles",
+		case "War of the Spark Japanese Promos",
+			"Strixhaven: School of Mages Japanese Singles",
 			"Strixhaven: School of Mages Japanese Foil Singles":
-			edition = "STA"
 		default:
 			return nil, errors.New("not english")
 		}
@@ -254,6 +257,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		variant = "Promo Pack"
 		// Due to the everloved Sorcerous Spyglass
 		if !strings.Contains(edition, "Ixalan") &&
+			!strings.Contains(edition, "Magic 2020") &&
 			!strings.Contains(edition, "Eldraine") {
 			edition = "Promo Pack"
 		}
@@ -303,7 +307,10 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	vars := mtgmatcher.SplitVariants(cardName)
 	cardName = vars[0]
 	if len(vars) > 1 {
-		variant = vars[1]
+		if variant != "" {
+			variant += " "
+		}
+		variant += vars[1]
 	}
 
 	variant = strings.Replace(variant, "(", "", -1)
@@ -445,9 +452,6 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		if cardName == "Plains" && variant == "Orzhov Syndicate Japanese" {
 			edition = "PMPS"
 		}
-	case "Commander Legends Etched":
-		// This was removed earlier, just restore it
-		variant = strings.Replace(variant, "Etched", "Etched Foil", 1)
 
 	case "Promo Cards":
 		switch cardName {

@@ -33,6 +33,8 @@ var EditionTable = map[string]string{
 	"Strixhaven Mystical Archive JPN":           "Strixhaven Mystical Archive",
 	"Strixhaven Mystical Archives":              "Strixhaven Mystical Archive",
 	"Strixhaven: Mystical Archives":             "Strixhaven Mystical Archive",
+	"Strixhaven: School of Mages Etched":        "Strixhaven Mystical Archive",
+	"Strixhaven: School of Mages Japanese":      "Strixhaven Mystical Archive",
 
 	// JPN planeswalkers and similar
 	"War of the Spark JPN Planeswalkers":                          "War of the Spark",

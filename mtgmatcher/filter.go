@@ -561,6 +561,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isBasicNonFullArt() {
 					possibleSuffixes = append(possibleSuffixes, "a")
 				}
+				// STA adds a custom suffix we need to track
+				if inCard.isFoilEtched() {
+					switch set.Name {
+					case "Strixhaven Mystical Archive":
+						possibleSuffixes = []string{"e"}
+					}
+				}
 				for _, numSuffix := range possibleSuffixes {
 					// The self test is already expressed by the empty string
 					// This avoids an odd case of testing 1.1 = 11
