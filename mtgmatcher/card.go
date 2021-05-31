@@ -205,14 +205,6 @@ func IsToken(name string) bool {
 	// Alternative rules tip card names found on mkm
 	case strings.HasPrefix(name, "Tip: "):
 		return true
-	// Split the double faced tokens
-	case strings.Contains(name, "//"):
-		fields := strings.Split(name, " // ")
-		for _, field := range fields {
-			if IsToken(SplitVariants(field)[0]) {
-				return true
-			}
-		}
 	}
 
 	return false
