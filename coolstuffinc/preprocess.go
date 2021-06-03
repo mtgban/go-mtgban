@@ -27,6 +27,8 @@ var cardTable = map[string]string{
 	"Who/What/When/Where/Why": "Who",
 
 	"Startled Awake // Persistant Nightmare": "Startled Awake //  Persistent Nightmare",
+
+	"Needleverge Patheway // Pillarverge Pathway": "Needleverge Pathway // Pillarverge Pathway",
 }
 
 var variantTable = map[string]string{
@@ -436,10 +438,6 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		variant += fields[1]
 	}
 
-	if variant == "Foil-etched Showcase Frame" {
-		variant = "Foil-etched"
-	}
-
 	switch edition {
 	case "Fourth (Alternate Edition)",
 		"Eighth Edition (Oversized Cards)",
@@ -492,6 +490,10 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		if found {
 			edition = ed
 		}*/
+	case "Strixhaven Mystical Archive":
+		if strings.Contains(variant, "Showcase Frame") {
+			variant = strings.Replace(variant, "Showcase Frame", "", 1)
+		}
 	default:
 		if strings.Contains(edition, "Art Series") {
 			return nil, errors.New("not supported")
