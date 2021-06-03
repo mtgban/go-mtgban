@@ -110,6 +110,10 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 		if len(fields) > 1 {
 			variant = strings.Join(fields[1:], " ")
 		}
+		if strings.HasSuffix(cardName, "- Foil") {
+			cardName = strings.TrimSuffix(cardName, "- Foil")
+			variant = "Foil"
+		}
 
 		container := `div[class="list-variants grid small-12 medium-8"] div[class="variant-row in-stock"] span[class="variant-main-info small-12 medium-4 large-5 column eat-both"]`
 		if mode == modeBuylist {

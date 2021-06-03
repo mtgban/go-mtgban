@@ -28,6 +28,7 @@ var promoTags = []string{
 
 func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 	if mtgmatcher.IsToken(cardName) ||
+		strings.HasPrefix(cardName, "[Deprecated]") ||
 		strings.Contains(variant, "Token") {
 		return nil, errors.New("not single")
 	}

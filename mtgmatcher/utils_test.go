@@ -68,6 +68,10 @@ var NumberTests = []ExtractTest{
 		In:  "22 January, 2016",
 		Out: "",
 	},
+	ExtractTest{
+		In:  "7/4/1999",
+		Out: "",
+	},
 }
 
 func TestExtractNumber(t *testing.T) {
@@ -121,6 +125,10 @@ var YearTests = []ExtractTest{
 	ExtractTest{
 		In:  "WCD 2002:",
 		Out: "2002",
+	},
+	ExtractTest{
+		In:  "7/4/1999",
+		Out: "",
 	},
 }
 
