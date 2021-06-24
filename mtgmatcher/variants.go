@@ -3881,7 +3881,9 @@ var AliasedPLISTTable = map[string]map[string]bool{
 
 var MultiplePLISTTable = map[string]map[string]string{
 	"Lightning Bolt": map[string]string{
-		"MagicFest":              "142",
-		"Archenemy: Nicol Bolas": "429",
+		"MagicFest":  "142",
+		"Masters 25": "429",
+		"PRM":        "142",
+		"A25":        "429",
 	},
 }

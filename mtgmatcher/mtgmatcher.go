@@ -388,10 +388,10 @@ func adjustEdition(inCard *Card) {
 				edition = "MB1"
 				// Ignore all other data, we have all we need now
 				variation = ""
-			} else if len(mb1s) == 0 && len(plists) > 0 {
+			} else if len(mb1s) == 0 && len(plists) == 1 {
 				edition = "PLIST"
-				// This will either clear the variation tag or load the appropriate number
-				variation = MultiplePLISTTable[inCard.Name][variation]
+				// Ignore all other data, we have all we need now
+				variation = ""
 			} else if len(mb1s) == 1 && len(plists) == 1 {
 				switch variation {
 				// If it has one of these special treatments it's PLIST definitely
@@ -429,11 +429,24 @@ func adjustEdition(inCard *Card) {
 
 				// Ignore all other data, we have all we need now
 				variation = ""
+			} else if len(mb1s) == 1 && len(plists) > 1 {
+				// PLIST has numerically higher chances of being correct
+				edition = "PLIST"
+
+				// Double check that there is something loaded - if there is,
+				// we have the number ready, otherwise it's a MB1 card
+				cn, found := MultiplePLISTTable[inCard.Name][variation]
+				if found {
+					variation = cn
+				} else {
+					edition = "MB1"
+					variation = ""
+				}
 			}
 		}
 	} else if edition == "The List" || variation == "The List" {
 		// Also here, as the variation might overwrite the edition later
-		variation = ""
+		variation = MultiplePLISTTable[inCard.Name][variation]
 		// Make sure edition is set
 		edition = "The List"
 	}
