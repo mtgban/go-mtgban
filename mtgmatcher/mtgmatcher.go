@@ -655,8 +655,8 @@ func adjustEdition(inCard *Card) {
 		inCard.Edition = "Fourth Edition Foreign Black Border"
 
 	// Separate timeshifted cards
-	case inCard.Edition == "Moder Horizons 2" && len(MatchInSet(inCard.Name, "RMH1")) != 0:
-		inCard.Edition = backend.Sets["RMH1"].Name
+	case inCard.Contains("Modern Horizons") && inCard.Contains("Retro Frame") && len(MatchInSet(inCard.Name, "H1R")) != 0:
+		inCard.Edition = backend.Sets["H1R"].Name
 
 	// Single card mismatches
 	default:
