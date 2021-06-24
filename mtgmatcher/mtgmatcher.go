@@ -264,10 +264,10 @@ func adjustName(inCard *Card) {
 	}
 
 	// Check if the input name is the reskinned one
-	// Currently appearing in IKO and some promo sets (PLGS and IKO BaB)
+	// Currently appearing in IKO and some promo sets (PLG20 and IKO BaB)
 	if strings.Contains(inCard.Edition, "Ikoria") ||
 		Contains(inCard.Edition, "Promos") {
-		for _, code := range []string{"IKO", "PLGS"} {
+		for _, code := range []string{"IKO", "PLG20"} {
 			for _, card := range backend.Sets[code].Cards {
 				if Equals(inCard.Name, card.FlavorName) {
 					inCard.Name = card.Name
@@ -281,7 +281,7 @@ func adjustName(inCard *Card) {
 		switch {
 		case Contains(inCard.Name, "Mechagodzilla, Battle Fortress"):
 			inCard.Name = "Hangarback Walker"
-			inCard.Edition = "PLGS"
+			inCard.Edition = "PLG20"
 			inCard.addToVariant("Godzilla")
 		case Contains(inCard.Name, "Mothra's Giant Cocoon"):
 			inCard.Name = "Mysterious Egg"

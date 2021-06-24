@@ -136,7 +136,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			"Splendid Genesis":
 			return nil, errors.New("not tracked")
 		case "Reliquary Tower":
-			edition = "PLGS"
+			edition = "PLG20"
 		case "Hydra Broodmaster",
 			"Prophet of Kruphix",
 			"Temple of Mystery":

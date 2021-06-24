@@ -34,6 +34,8 @@ var skuFixupTable = map[string]string{
 	"PJMP-496B": "JMP-496",
 	"P2XM-383":  "2XM-383",
 	"P2XM-384":  "2XM-384",
+
+	"FPLGS-001": "PLG20-001",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {

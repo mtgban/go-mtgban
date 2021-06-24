@@ -56,7 +56,7 @@ var promoTable = map[string]string{
 	"Flooded Strand":              "PNAT",
 	"Hall of Triump":              "THP3",
 	"Char":                        "P15A",
-	"Reliquary Tower":             "PLGS",
+	"Reliquary Tower":             "PLG20",
 	"Sword of Dungeons & Dragons": "H17",
 	"Steward of Valeron":          "PURL",
 	"Knight Exemplar":             "PRES",

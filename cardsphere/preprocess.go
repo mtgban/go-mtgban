@@ -8,8 +8,8 @@ import (
 )
 
 var promoTable = map[string]string{
-	"Reliquary Tower":   "PLGS",
-	"Hangarback Walker": "PLGS",
+	"Reliquary Tower":   "PLG20",
+	"Hangarback Walker": "PLG20",
 	"Lightning Bolt":    "MagicFest 2019",
 	"Sol Ring":          "MagicFest 2019",
 

@@ -925,7 +925,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "6350a63d-2f7a-5f50-8def-adaf7dc00d0d",
+		Id:   "eaf748e5-ed61-504f-8799-bd52eb3ea9cd",
 		Desc: "godzilla_variant_promo",
 		In: Card{
 			Name:      "Hangarback Walker",
@@ -934,7 +934,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "6350a63d-2f7a-5f50-8def-adaf7dc00d0d",
+		Id:   "eaf748e5-ed61-504f-8799-bd52eb3ea9cd",
 		Desc: "godzilla_variant_reskin_name",
 		In: Card{
 			Name:    "Mechagodzilla Battle Fortress",

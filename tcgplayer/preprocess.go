@@ -191,7 +191,7 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			}
 		case "Reliquary Tower":
 			if variant == "Bring a Friend Promo" {
-				edition = "PLGS"
+				edition = "PLG20"
 			} else {
 				edition = "PM19"
 			}

@@ -50,7 +50,7 @@ var promoTable = map[string]string{
 	"Loam Lion":               "PRES",
 	"Oran-Rief, the Vastwood": "PRES",
 	"Treasure Hunt":           "PIDW",
-	"Reliquary Tower":         "PLGS",
+	"Reliquary Tower":         "PLG20",
 	"Flooded Strand":          "PNAT",
 	"Serra Avatar":            "PDP13",
 	"Corrupt":                 "PI13",
