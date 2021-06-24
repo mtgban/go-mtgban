@@ -386,8 +386,12 @@ func adjustEdition(inCard *Card) {
 			plists := MatchInSet(inCard.Name, "PLIST")
 			if len(mb1s) == 1 && len(plists) == 0 {
 				edition = "MB1"
-			} else if len(mb1s) == 0 && len(plists) == 1 {
+				// Ignore all other data, we have all we need now
+				variation = ""
+			} else if len(mb1s) == 0 && len(plists) > 0 {
 				edition = "PLIST"
+				// This will either clear the variation tag or load the appropriate number
+				variation = MultiplePLISTTable[inCard.Name][variation]
 			} else if len(mb1s) == 1 && len(plists) == 1 {
 				switch variation {
 				// If it has one of these special treatments it's PLIST definitely
@@ -422,10 +426,11 @@ func adjustEdition(inCard *Card) {
 						edition = "PLIST"
 					}
 				}
+
+				// Ignore all other data, we have all we need now
+				variation = ""
 			}
 		}
-		// Ignore this, we have all we need now
-		variation = ""
 	} else if edition == "The List" || variation == "The List" {
 		// Also here, as the variation might overwrite the edition later
 		variation = ""
