@@ -551,6 +551,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isJPN() {
 					switch set.Name {
 					case "Chronicles Japanese",
+						"Ikoria: Lair of Behemoths",
 						"Strixhaven Mystical Archive":
 						// Leave the collector number as is for these sets
 					default:

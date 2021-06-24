@@ -958,6 +958,15 @@ var MatchTests = []MatchTest{
 			Edition: "Ikoria: Lair",
 		},
 	},
+	MatchTest{
+		Id:   "5df3565b-ab85-5cc7-83c4-9cd3bb5674da",
+		Desc: "godzilla_long_variant_jpn",
+		In: Card{
+			Name:      "Mysterious Egg",
+			Variation: "JPN - \"Mothra's Giant Cocoon\" - Godzilla Series - 385",
+			Edition:   "Ikoria: Lair of Behemoths Variants",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	MatchTest{
