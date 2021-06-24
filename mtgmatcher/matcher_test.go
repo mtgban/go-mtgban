@@ -2524,6 +2524,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Strixhaven: School of Mages Etched",
 		},
 	},
+
+	MatchTest{
+		Id:   "de7f21d1-dadd-512c-94a6-eb2e7d237306",
+		Desc: "mh2_beyond_retro",
+		In: Card{
+			Name:    "Blacksmith's Skill",
+			Edition: "Modern Horizons 2: Extras",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
