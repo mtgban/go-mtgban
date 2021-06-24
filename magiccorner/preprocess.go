@@ -179,12 +179,40 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = "Japanese Prerelease"
 			edition = "War of the Spark Promos"
 		}
+	case "Core 2020: Extras":
+		edition = "PM20"
+		if cardName == "Chandra's Regulator" {
+			if variation == "1" {
+				variation = "131"
+			} else if variation == "V.2" {
+				variation = "Promo Pack"
+			} else if variation == "V.3" {
+				variation = "Prerelease"
+			}
+		} else {
+			switch variation {
+			case "V.1":
+				variation = "Promo Pack"
+			case "V.2":
+				variation = "Prerelease"
+			default:
+				if mtgmatcher.HasPromoPackPrinting(cardName) {
+					variation = "Promo Pack 2020"
+					edition = "Promos"
+				}
+			}
+		}
 	case "Throne of Eldraine: Promos":
 		switch variation {
 		case "V.1":
 			variation = "Prerelease"
 		case "V.2":
 			variation = "Promo Pack"
+		default:
+			if mtgmatcher.HasPromoPackPrinting(cardName) {
+				variation = "Promo Pack ELD"
+				edition = "Promos"
+			}
 		}
 	case "Kaldheim: Extras":
 		if cardName == "Vorinclex, Monstrous Raider" {
@@ -200,14 +228,6 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 				variation = "Showcase"
 			}
 		}
-	case "Core 2020: Extras":
-		switch variation {
-		case "V.1":
-			variation = "Promo Pack"
-		case "V.2":
-			variation = "Prerelease"
-		}
-		edition = "PM20"
 	// Use the tag information if available
 	case "Promo":
 		switch variation {
