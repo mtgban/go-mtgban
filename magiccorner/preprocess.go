@@ -29,6 +29,8 @@ var cardTable = map[string]string{
 	"Immagina Fantasma":       "Phantasmal Image",
 
 	"Sedris, the King Traitor": "Sedris, the Traitor King",
+
+	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
 }
 
 var editionTable = map[string]string{
