@@ -36,6 +36,7 @@ type Card struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
 	FrameEffects        []string          `json:"frameEffects"`
+	FrameVersion        string            `json:"frameVersion"`
 	HasFoil             bool              `json:"hasFoil"`
 	HasNonFoil          bool              `json:"hasNonFoil"`
 	Identifiers         map[string]string `json:"identifiers"`

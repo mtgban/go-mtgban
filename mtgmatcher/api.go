@@ -116,6 +116,10 @@ func HasPrereleasePrinting(name string) bool {
 	return hasPrinting(name, "promo_type", mtgjson.PromoTypePrerelease)
 }
 
+func HasRetroFramePrinting(name string) bool {
+	return hasPrinting(name, "frame_version", "1997")
+}
+
 func hasPrinting(name, field, value string) bool {
 	if backend.Sets == nil {
 		return false
@@ -134,6 +138,10 @@ func hasPrinting(name, field, value string) bool {
 	case "border_color":
 		checkFunc = func(card mtgjson.Card, value string) bool {
 			return card.BorderColor == value
+		}
+	case "frame_version":
+		checkFunc = func(card mtgjson.Card, value string) bool {
+			return card.FrameVersion == value
 		}
 	default:
 		return false
