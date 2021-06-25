@@ -230,6 +230,46 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 				variation = "Showcase"
 			}
 		}
+	case "Modern Horizons 2: Extras":
+		// Note: order of these printing checks matters
+		if mtgmatcher.HasExtendedArtPrinting(cardName) {
+			switch variation {
+			case "V.1":
+				variation = "Retro Frame"
+			case "V.2":
+				variation = "Retro Frame Foil Etched"
+			case "V.3":
+				variation = "Extended Art"
+			}
+		} else if mtgmatcher.HasBorderlessPrinting(cardName) {
+			switch variation {
+			case "V.1":
+				variation = "Borderless"
+			case "V.2":
+				variation = "Retro Frame"
+				if mtgmatcher.HasShowcasePrinting(cardName) {
+					variation = "Showcase"
+				}
+			case "V.3":
+				variation = "Retro Frame Foil Etched"
+			}
+		} else if mtgmatcher.HasShowcasePrinting(cardName) {
+			switch variation {
+			case "V.1":
+				variation = "Showcase"
+			case "V.2":
+				variation = "Retro Frame"
+			case "V.3":
+				variation = "Retro Frame Foil Etched"
+			}
+		} else if mtgmatcher.HasRetroFramePrinting(cardName) {
+			switch variation {
+			case "V.1":
+				variation = "Retro Frame"
+			case "V.2":
+				variation = "Retro Frame Foil Etched"
+			}
+		}
 	// Use the tag information if available
 	case "Promo":
 		switch variation {
