@@ -3859,6 +3859,9 @@ var VariantsTable = map[string]map[string]map[string]string{
 
 // This table contains variants to tell PLIST cards apart from MB1.
 var AliasedPLISTTable = map[string]map[string]bool{
+	"Aura Shards": map[string]bool{
+		"Invasion": true,
+	},
 	"Bojuka Bog": map[string]bool{
 		"Worldwake": true,
 	},
