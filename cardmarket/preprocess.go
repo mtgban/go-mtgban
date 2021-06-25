@@ -528,6 +528,46 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.4":
 			variant = "JPN Foil-Etched"
 		}
+	case "Modern Horizons 2: Extras":
+		// Note: order of these printing checks matters
+		if mtgmatcher.HasExtendedArtPrinting(cardName) {
+			switch variant {
+			case "V.1":
+				variant = "Retro Frame"
+			case "V.2":
+				variant = "Retro Frame Foil Etched"
+			case "V.3":
+				variant = "Extended Art"
+			}
+		} else if mtgmatcher.HasBorderlessPrinting(cardName) {
+			switch variant {
+			case "V.1":
+				variant = "Borderless"
+			case "V.2":
+				variant = "Retro Frame"
+				if mtgmatcher.HasShowcasePrinting(cardName) {
+					variant = "Showcase"
+				}
+			case "V.3":
+				variant = "Retro Frame Foil Etched"
+			}
+		} else if mtgmatcher.HasShowcasePrinting(cardName) {
+			switch variant {
+			case "V.1":
+				variant = "Showcase"
+			case "V.2":
+				variant = "Retro Frame"
+			case "V.3":
+				variant = "Retro Frame Foil Etched"
+			}
+		} else if mtgmatcher.HasRetroFramePrinting(cardName) {
+			switch variant {
+			case "V.1":
+				variant = "Retro Frame"
+			case "V.2":
+				variant = "Retro Frame Foil Etched"
+			}
+		}
 
 	default:
 		// Double parse commander so that it is possible to drop the oversize
