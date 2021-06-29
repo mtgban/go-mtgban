@@ -32,6 +32,12 @@ func Match(inCard *Card) (cardId string, err error) {
 			co, found := backend.UUIDs[backend.Scryfall[inCard.Id]]
 			if found {
 				outId = output(co.Card, inCard.Foil)
+			} else {
+				// Last chance, lookup by tcg id
+				co, found := backend.UUIDs[backend.Tcgplayer[inCard.Id]]
+				if found {
+					outId = output(co.Card, inCard.Foil)
+				}
 			}
 		}
 
