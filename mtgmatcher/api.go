@@ -84,6 +84,10 @@ func Scryfall2UUID(id string) string {
 	return backend.Scryfall[id]
 }
 
+func Tcg2UUID(id string) string {
+	return backend.Tcgplayer[id]
+}
+
 func Printings4Card(name string) ([]string, error) {
 	entry, found := backend.Cards[Normalize(name)]
 	if !found {
