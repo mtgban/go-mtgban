@@ -130,6 +130,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if card.HasNonFoil {
 					uuids[uuid] = co
 					uuid += "_f"
+					// Update the main uuid of the card if different
+					co.UUID = uuid
 				}
 				// Regardless of above, set the the foil status
 				co.Foil = true
