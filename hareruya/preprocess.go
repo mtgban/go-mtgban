@@ -54,7 +54,7 @@ var promoTable = map[string]string{
 
 	"Balduvian Horde":             "PWOR",
 	"Flooded Strand":              "PNAT",
-	"Hall of Triump":              "THP3",
+	"Hall of Triump":              "PJOU",
 	"Char":                        "P15A",
 	"Reliquary Tower":             "PLG20",
 	"Sword of Dungeons & Dragons": "H17",

@@ -194,7 +194,7 @@ func preprocess(cardName, edition, number, notes string) (*mtgmatcher.Card, erro
 	case "Jr Super Series":
 		variant = "JSS"
 	case "Nyx Game Day Promo":
-		variant = "Hero's Path"
+		edition = "PJOU"
 	}
 
 	lutName, found := cardTable[cardName]

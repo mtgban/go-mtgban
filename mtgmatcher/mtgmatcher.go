@@ -720,7 +720,7 @@ func adjustEdition(inCard *Card) {
 			}
 		case "Hall of Triumph":
 			if inCard.isGenericPromo() {
-				inCard.Edition = "Journey into Nyx Hero's Path"
+				inCard.Edition = "Journey into Nyx Promos"
 			}
 		case "Vorinclex, Monstrous Raider":
 			// Missing the proper FrameEffect property
