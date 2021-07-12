@@ -242,6 +242,7 @@ var EditionTable = map[string]string{
 	"Junior Series":                   "Junior Series Europe",
 	"APAC Series":                     "Junior APAC Series",
 	"Japan JSS":                       "Junior APAC Series",
+	"Japan Junior Series":             "Junior APAC Series",
 	"Junior APAC Series":              "Junior APAC Series",
 	"Junior APAC Series Promos":       "Junior APAC Series",
 	"Junior Super Series":             "Junior Super Series",
