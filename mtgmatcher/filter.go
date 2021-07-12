@@ -221,6 +221,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch set.Name {
 			case "Born of the Gods Hero's Path",
 				"Journey into Nyx Hero's Path",
+				"Journey into Nyx Promos",
 				"Theros Hero's Path":
 			default:
 				continue
