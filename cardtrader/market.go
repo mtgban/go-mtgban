@@ -12,6 +12,7 @@ type CardtraderMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
 	InventoryDate  time.Time
 	MaxConcurrency int
+	ShareCode      string
 
 	client    *CTAuthClient
 	inventory mtgban.InventoryRecord
@@ -51,7 +52,7 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 			continue
 		}
 
-		err = processProducts(channel, theCard, products)
+		err = processProducts(channel, theCard, products, ct.ShareCode)
 		if err != nil {
 			ct.printf("%v", err)
 			ct.printf("%q", theCard)

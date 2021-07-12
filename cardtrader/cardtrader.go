@@ -19,6 +19,7 @@ type Cardtrader struct {
 	LogCallback    mtgban.LogCallbackFunc
 	InventoryDate  time.Time
 	MaxConcurrency int
+	ShareCode      string
 
 	authClient  *CTAuthClient
 	inventory   mtgban.InventoryRecord
@@ -62,7 +63,7 @@ var condMap = map[string]string{
 	"Poor":              "PO",
 }
 
-func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product) error {
+func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product, shareCode string) error {
 	var cardId string
 	var cardIdFoil string
 
@@ -146,6 +147,9 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 
 		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintId)
+		if shareCode != "" {
+			link += "?share_code=" + shareCode
+		}
 
 		channel <- resultChan{
 			cardId: finalCardId,
@@ -176,7 +180,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 		return nil
 	}
 
-	err = processProducts(channel, theCard, filter.Products)
+	err = processProducts(channel, theCard, filter.Products, ct.ShareCode)
 	if err != nil {
 		ct.printf("%q", theCard)
 		ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
