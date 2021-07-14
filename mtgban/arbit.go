@@ -1,8 +1,6 @@
 package mtgban
 
 import (
-	"strings"
-
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
@@ -487,6 +485,11 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 		if err != nil {
 			return nil, err
 		}
+		set, err := mtgmatcher.GetSet(co.SetCode)
+		if err != nil {
+			return nil, err
+		}
+
 		isRare := co.Card.Rarity == "rare"
 		isMythic := co.Card.Rarity == "mythic"
 		isLand := mtgmatcher.IsBasicLand(co.Name) && co.Card.IsFullArt
@@ -494,7 +497,11 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 			continue
 		}
 
-		if co.BorderColor == "silver" || co.BorderColor == "gold" {
+		if co.BorderColor == "gold" {
+			continue
+		}
+
+		if set.Type == "funny" {
 			continue
 		}
 
@@ -507,19 +514,8 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 			pennyRare := !co.Foil && isRare && entry.Price <= 0.07
 			pennyLand := !co.Foil && isLand && entry.Price <= 0.05
 			pennyFoil := co.Foil && entry.Price <= 0.05
-			pennyInteresting := false
-			switch {
-			case strings.Contains(co.Card.Name, "Signet") && entry.Price <= 0.20,
-				strings.Contains(co.Card.Name, "Talisman") && entry.Price <= 0.20,
-				strings.Contains(co.Card.Name, "Diamond") && entry.Price <= 0.20,
-				strings.Contains(co.Card.Name, "Curse of") && entry.Price <= 0.25,
-				co.Card.Name == "Sakura-Tribe Elder" && entry.Price <= 0.20,
-				co.Card.Name == "Sol Ring" && entry.Price <= 1.50,
-				co.Card.Name == "Thran Dynamo" && entry.Price <= 2:
-				pennyInteresting = true
-			}
 
-			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyInteresting {
+			if pennyMythic || pennyRare || pennyLand || pennyFoil {
 				result = append(result, PennystockEntry{
 					CardId:         cardId,
 					InventoryEntry: entry,
