@@ -568,6 +568,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "Retro Frame Foil Etched"
 			}
 		}
+	case "Modern Horizons: Retro Frame Cards":
+		switch variant {
+		case "V.1":
+			variant = "Retro Frame"
+		case "V.2":
+			variant = "Foil Etched"
+		}
 
 	default:
 		// Double parse commander so that it is possible to drop the oversize
