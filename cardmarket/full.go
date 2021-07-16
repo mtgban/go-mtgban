@@ -332,7 +332,7 @@ func (mkm *CardMarketFull) scrapeAll() error {
 func (mkm *CardMarketFull) scrapeUsers(users []string) error {
 	priceGuide, err := mkm.client.MKMPriceGuide()
 	if err != nil {
-		mkm.printf("Unable to retrieve priceguide: %s", err.Error())
+		return err
 	}
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 	mkm.priceGuide = priceGuide
