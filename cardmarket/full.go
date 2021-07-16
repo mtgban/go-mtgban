@@ -115,6 +115,7 @@ func (mkm *CardMarketFull) processUser(channel chan<- responseChan, user string)
 	if err != nil {
 		return err
 	}
+	mkm.printf("User has %d articles", len(articles))
 
 	for _, article := range articles {
 		// Keep the username in the same field as expected by the generic func
