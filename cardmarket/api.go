@@ -285,7 +285,8 @@ func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
 	var i int
 	var articles []MKMArticle
 	var response struct {
-		Articles []MKMArticle `json:"article"`
+		ErrorDescription string       `json:"mkm_error_description"`
+		Articles         []MKMArticle `json:"article"`
 	}
 	// Keep polling 1000 entities at a time
 	for {
@@ -312,6 +313,10 @@ func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
 		err = json.Unmarshal(data, &response)
 		if err != nil {
 			return nil, errors.New(string(data))
+		}
+
+		if response.ErrorDescription != "" {
+			return nil, errors.New(response.ErrorDescription)
 		}
 
 		// Stash the result
