@@ -220,8 +220,7 @@ func (sz *Strikezone) parseBL() error {
 			return err
 		}
 
-		priceStr := strings.TrimSpace(record[4])
-		price, err := mtgmatcher.ParsePrice(priceStr)
+		price, err := mtgmatcher.ParsePrice(record[4])
 		if err != nil {
 			return err
 		}
