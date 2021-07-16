@@ -196,7 +196,8 @@ func Cut(in, tag string) []string {
 
 // Strip input string of dollar sign and commas, convert it to a normal float
 func ParsePrice(priceStr string) (float64, error) {
-	priceStr = strings.TrimPrefix(priceStr, "$")
+	priceStr = strings.Replace(priceStr, "$", "", 1)
 	priceStr = strings.Replace(priceStr, ",", "", -1)
+	priceStr = strings.TrimSpace(priceStr)
 	return strconv.ParseFloat(priceStr, 64)
 }
