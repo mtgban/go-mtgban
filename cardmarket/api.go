@@ -395,6 +395,10 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Build the header
 	auth := "OAuth realm=\"" + authUrl.String() + "\", "
 	for key, val := range q {
+		// Only keep oauth parameters here
+		if !strings.HasPrefix(key, "oauth") {
+			continue
+		}
 		auth += key + "=\"" + val[0] + "\", "
 	}
 	auth += "oauth_signature=\"" + signature + "\""
