@@ -28,6 +28,8 @@ var EditionTable = map[string]string{
 	"Modern Horizons - Retro Frames": "Modern Horizons 1 Timeshifts",
 	"Modern Horizons II":             "Modern Horizons 2",
 
+	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
+
 	// Strixhaven Mystical Archive alts
 	"Mystical Archive":                          "Strixhaven Mystical Archive",
 	"Mystical Archive: Japanese alternate-art":  "Strixhaven Mystical Archive",
