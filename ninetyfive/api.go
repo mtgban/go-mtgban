@@ -42,8 +42,10 @@ type NFProduct struct {
 		Code string `json:"code"`
 		Name string `json:"name"`
 	} `json:"language"`
-	Foil       int      `json:"foil"`
-	Condition  string   `json:"condition"`
+	Foil int `json:"foil"`
+	// Used in retail
+	Condition string `json:"condition"`
+	// Used in buylist
 	Conditions []string `json:"conditions"`
 	Price      int      `json:"price"`
 	Currency   struct {
