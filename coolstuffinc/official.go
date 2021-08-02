@@ -78,7 +78,7 @@ func (csi *CoolstuffincOfficial) scrape() error {
 
 		link := card.URL
 		if csi.Partner != "" {
-			link += "?utm_referrer=mtgban"
+			link += "?utm_referrer=" + csi.Partner + "&utm_source=" + csi.Partner
 		}
 		if card.QuantityRetail > 0 && card.PriceRetail > 0 {
 			out := &mtgban.InventoryEntry{
