@@ -49,7 +49,10 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 	}
 
 	if card.Number != 0 {
-		variant = fmt.Sprint(card.Number)
+		if variant != "" {
+			variant += " "
+		}
+		variant += fmt.Sprint(card.Number)
 	}
 
 	if mtgmatcher.IsToken(cardName) ||
