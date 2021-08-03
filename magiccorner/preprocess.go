@@ -28,7 +28,8 @@ var cardTable = map[string]string{
 	"El-Ajjaj":                "El-Hajjâj",
 	"Immagina Fantasma":       "Phantasmal Image",
 
-	"Sedris, the King Traitor": "Sedris, the Traitor King",
+	"Sedris, the King Traitor":   "Sedris, the Traitor King",
+	"Inferno of the Star Mouths": "Inferno of the Star Mounts",
 
 	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
 }
@@ -446,11 +447,18 @@ func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
 			edition = "World Magic Cup Qualifiers"
 		}
 	case "Judge Rewards":
-		if cardName == "Vampiric Tutor" {
+		switch cardName {
+		case "Vampiric Tutor":
 			if variant == "V1" {
 				variant = "Judge 2000"
 			} else if variant == "V2" {
 				variant = "Judge 2018"
+			}
+		case "Vindicate":
+			if variant == "V1" {
+				variant = "Judge 2007"
+			} else if variant == "V2" {
+				variant = "Judge 2013"
 			}
 		}
 	case "Judge Rewards Promos":
@@ -462,8 +470,11 @@ func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 	case "Buy a Box Promos":
-		if cardName == "Surgical Extraction" {
+		switch cardName {
+		case "Surgical Extraction":
 			edition = "New Phyrexia Promos"
+		case "Chord of Calling":
+			edition = "2XM"
 		}
 	case "Promos":
 		if cardName == "Hangarback Walker" {
