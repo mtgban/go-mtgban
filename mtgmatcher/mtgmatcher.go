@@ -563,29 +563,6 @@ func adjustEdition(inCard *Card) {
 		strings.HasPrefix(variation, "European JrS E"),
 		strings.HasPrefix(variation, "European JSS Foil E"):
 		edition = "Junior Series Europe"
-	case Equals(inCard.Name, "Teferi, Master of Time"):
-		num := ExtractNumber(variation)
-		_, err := strconv.Atoi(num)
-		if err == nil {
-			if inCard.isPrerelease() {
-				variation = num + "s"
-			} else if inCard.isPromoPack() {
-				variation = num + "p"
-			}
-		}
-		if num == "" {
-			if inCard.isPrerelease() {
-				variation = "75s"
-			} else if inCard.isPromoPack() {
-				variation = "75p"
-			} else if inCard.isBorderless() {
-				variation = "281"
-			} else if inCard.isShowcase() {
-				variation = "290"
-			} else {
-				variation = "75"
-			}
-		}
 	}
 	inCard.Edition = edition
 	inCard.Variation = variation
@@ -726,6 +703,29 @@ func adjustEdition(inCard *Card) {
 		case "Hall of Triumph":
 			if inCard.isGenericPromo() {
 				edition = "Journey into Nyx Promos"
+			}
+		case "Teferi, Master of Time":
+			num := ExtractNumber(variation)
+			_, err := strconv.Atoi(num)
+			if err == nil {
+				if inCard.isPrerelease() {
+					variation = num + "s"
+				} else if inCard.isPromoPack() {
+					variation = num + "p"
+				}
+			}
+			if num == "" {
+				if inCard.isPrerelease() {
+					variation = "75s"
+				} else if inCard.isPromoPack() {
+					variation = "75p"
+				} else if inCard.isBorderless() {
+					variation = "281"
+				} else if inCard.isShowcase() {
+					variation = "290"
+				} else {
+					variation = "75"
+				}
 			}
 		case "Vorinclex, Monstrous Raider":
 			// Missing the proper FrameEffect property
