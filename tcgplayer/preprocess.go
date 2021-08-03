@@ -53,6 +53,10 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		edition = strings.Title(edition)
 	}
 
+	if strings.Contains(edition, "Art Series") {
+		return nil, errors.New("non-single card")
+	}
+
 	// Early to skip the Oversize early return
 	if variant == "Commander Launch Promo" {
 		edition = "PCMD"
@@ -145,6 +149,7 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			"Loam Lion":                   "PRES",
 			"Shepherd of the Lost":        "PURL",
 			"Sethron, Hurloon General":    "PL21",
+			"Fabled Passage":              "PWP21",
 		}[cardName]
 		if found {
 			edition = ed
@@ -158,6 +163,8 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			edition = "CP3"
 		} else if edition == "Launch Party And Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
+		} else if edition == "Wpn And Gateway Promos" && variant == "Retro Frame" {
+			edition = "PLG21"
 		}
 
 		switch cardName {
@@ -170,6 +177,9 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		case "Archmage Emeritus":
 			edition = "STX"
 			variant = "377"
+		case "Yusri, Fortune's Flame":
+			edition = "MH2"
+			variant = "492"
 		case "Duress":
 			if variant == "IDW Comics 2014" {
 				edition = variant
@@ -208,6 +218,8 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		}[cardName]
 		if found {
 			edition = ed
+		} else if variant == "Japan Junior Series" {
+			edition = "PJJT"
 		} else if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
 			edition = "PSUS"
 		}
@@ -255,6 +267,8 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			}
 		} else if cardName == "Swamp" && variant == "Full Art" {
 			variant = "119"
+		} else {
+			variant = product.getNum()
 		}
 	case "Planeswalker Event Promos":
 		variant = ""
@@ -362,6 +376,10 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 	case "Commander 2021":
 		if variant == "Thick Stock Display Commander" {
 			edition += " " + variant
+		}
+	case "Adventures In The Forgotten Realms":
+		if variant == "Dungeon Module" {
+			variant = "Showcase"
 		}
 	}
 
