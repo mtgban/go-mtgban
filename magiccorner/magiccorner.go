@@ -242,7 +242,7 @@ func getSpreadsheetURL() (string, error) {
 		return "", err
 	}
 
-	link, found := doc.Find(`form[id="mainForm"]`).Find(`div[id="contentPane"] div[id="m646"] a`).First().Attr("href")
+	link, found := doc.Find(`div[class="panel-body"] ul li a`).First().Attr("href")
 	if !found {
 		return "", errors.New("spreadsheet anchor tag not found")
 	}
