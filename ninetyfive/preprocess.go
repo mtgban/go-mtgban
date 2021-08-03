@@ -159,7 +159,10 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 				"Guilds of Ravnica",
 				"Ravnica Allegiance":
 			default:
-				variant = vars[1]
+				if variant != "" {
+					variant += " "
+				}
+				variant += vars[1]
 			}
 		}
 	}
