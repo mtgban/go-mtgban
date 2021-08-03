@@ -594,138 +594,138 @@ func adjustEdition(inCard *Card) {
 	switch {
 	// XLN Treasure Chest
 	case inCard.isBaB() && len(MatchInSet(inCard.Name, "PXTC")) != 0:
-		inCard.Edition = backend.Sets["PXTC"].Name
+		edition = backend.Sets["PXTC"].Name
 
 	// BFZ Standard Series
 	case inCard.isGenericAltArt() && len(MatchInSet(inCard.Name, "PSS1")) != 0:
-		inCard.Edition = backend.Sets["PSS1"].Name
+		edition = backend.Sets["PSS1"].Name
 
 	// Champs and States
 	case inCard.isGenericExtendedArt() && len(MatchInSet(inCard.Name, "PCMP")) != 0:
-		inCard.Edition = backend.Sets["PCMP"].Name
+		edition = backend.Sets["PCMP"].Name
 
 	// Portal Demo Game
 	case inCard.isPortalAlt() && len(MatchInSet(inCard.Name, "PPOD")) != 0:
-		inCard.Edition = backend.Sets["PPOD"].Name
+		edition = backend.Sets["PPOD"].Name
 
 	// Secret Lair {Ultimate,Drop}
 	case inCard.Contains("Secret") || Contains(inCard.Variation, "Lair"):
 		if len(MatchInSet(inCard.Name, "SLU")) != 0 {
-			inCard.Edition = backend.Sets["SLU"].Name
+			edition = backend.Sets["SLU"].Name
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
-			inCard.Edition = backend.Sets["SLD"].Name
+			edition = backend.Sets["SLD"].Name
 		}
 
 	// Summer of Magic
 	case (inCard.isWPNGateway() || strings.Contains(inCard.Variation, "Summer")) &&
 		len(MatchInSet(inCard.Name, "PSUM")) != 0:
-		inCard.Edition = backend.Sets["PSUM"].Name
+		edition = backend.Sets["PSUM"].Name
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
 	// Promo handling, but they are not set as such in mtgjson/scryfall
 	case inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PLS")) == 2:
-		inCard.Edition = "PLS"
-		inCard.Variation = "Alternate Art"
+		edition = "PLS"
+		variation = "Alternate Art"
 		inCard.Promo = false
 
 	// Rename the official name to the the more commonly used name
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
-		inCard.Variation = "Foil Etched"
+		variation = "Foil Etched"
 
 	// Planechase deduplication
 	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
-		inCard.Edition = backend.Sets["OHOP"].Name
+		edition = backend.Sets["OHOP"].Name
 	case inCard.Equals("Planechase 2012") && len(MatchInSet(inCard.Name, "OPC2")) != 0:
-		inCard.Edition = backend.Sets["OPC2"].Name
+		edition = backend.Sets["OPC2"].Name
 	case inCard.Equals("Planechase Anthology") && len(MatchInSet(inCard.Name, "OPCA")) != 0:
-		inCard.Edition = backend.Sets["OPCA"].Name
+		edition = backend.Sets["OPCA"].Name
 
 	// The first Gift Pack often get folded in the main Core Set 2019 or in the
 	// related Promos set, so use a lax way to dected the original expansion
 	case Contains(inCard.Edition, "Core") && Contains(inCard.Edition, "2019") && len(MatchInSet(inCard.Name, "G18")) == 1:
-		inCard.Edition = backend.Sets["G18"].Name
+		edition = backend.Sets["G18"].Name
 
 	// Adjust edition for non-English sets
 	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && Contains(inCard.Variation, "Italian"):
-		inCard.Edition += " Italian"
+		edition += " Italian"
 	case inCard.Edition == "Renaissance" && Contains(inCard.Variation, "Italian"):
-		inCard.Edition = "Rinascimento"
+		edition = "Rinascimento"
 		// This set has lots of variants, strip away any excess data
-		inCard.Variation = strings.ToLower(inCard.Variation)
-		inCard.Variation = strings.Replace(inCard.Variation, "italian", "", 1)
-		inCard.Variation = strings.TrimSpace(inCard.Variation)
+		variation = strings.ToLower(inCard.Variation)
+		variation = strings.Replace(inCard.Variation, "italian", "", 1)
+		variation = strings.TrimSpace(inCard.Variation)
 	case inCard.Edition == "Chronicles" && Contains(inCard.Variation, "Japanese"):
-		inCard.Edition += " Japanese"
+		edition += " Japanese"
 		// This set has lots of variants, strip away any excess data
-		inCard.Variation = strings.ToLower(inCard.Variation)
-		inCard.Variation = strings.Replace(inCard.Variation, "japanese", "", 1)
-		inCard.Variation = strings.TrimSpace(inCard.Variation)
+		variation = strings.ToLower(inCard.Variation)
+		variation = strings.Replace(inCard.Variation, "japanese", "", 1)
+		variation = strings.TrimSpace(inCard.Variation)
 	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
-		inCard.Edition = "Fourth Edition Foreign Black Border"
+		edition = "Fourth Edition Foreign Black Border"
 
 	// Separate timeshifted cards
 	case inCard.Contains("Modern Horizons") &&
 		(inCard.Contains("Retro Frame") || inCard.Contains("Timeshift")) &&
 		len(MatchInSet(inCard.Name, "H1R")) != 0:
-		inCard.Edition = backend.Sets["H1R"].Name
+		edition = backend.Sets["H1R"].Name
 
 	// Single card mismatches
 	default:
 		switch inCard.Name {
 		case "Rhox":
 			if inCard.isGenericAltArt() || inCard.isGenericPromo() {
-				inCard.Edition = "Starter 2000"
+				edition = "Starter 2000"
 			}
 		case "Balduvian Horde":
 			if inCard.isJudge() || inCard.isGenericPromo() || inCard.isDCIPromo() {
-				inCard.Edition = "World Championship Promos"
+				edition = "World Championship Promos"
 			}
 		case "Nalathni Dragon":
-			inCard.Edition = "Dragon Con"
-			inCard.Variation = ""
+			edition = "Dragon Con"
+			variation = ""
 		case "Ass Whuppin'", "Rukh Egg":
 			if inCard.isPrerelease() {
-				inCard.Edition = "Release Events"
+				edition = "Release Events"
 			}
 		case "Ajani Vengeant":
 			if inCard.isRelease() {
-				inCard.Variation = "Prerelease"
+				variation = "Prerelease"
 			}
 		case "Tamiyo's Journal":
 			if inCard.Variation == "" && inCard.Foil {
-				inCard.Variation = "Foil"
+				variation = "Foil"
 			}
 		case "Underworld Dreams":
 			if inCard.isDCIPromo() || inCard.isArena() {
-				inCard.Edition = "Two-Headed Giant Tournament"
+				edition = "Two-Headed Giant Tournament"
 			}
 		case "Jace Beleren":
 			if inCard.isDCIPromo() {
-				inCard.Edition = "Miscellaneous Book Promos"
+				edition = "Miscellaneous Book Promos"
 			}
 		case "Serra Angel":
 			if inCard.isDCIPromo() || inCard.isBaB() {
-				inCard.Edition = "Wizards of the Coast Online Store"
+				edition = "Wizards of the Coast Online Store"
 			}
 		case "Incinerate", "Counterspell":
 			if inCard.isDCIPromo() {
-				inCard.Edition = "DCI Legend Membership"
+				edition = "DCI Legend Membership"
 			}
 		case "Kamahl, Pit Fighter", "Char":
 			if inCard.isDCIPromo() {
-				inCard.Edition = "15th Anniversary Cards"
+				edition = "15th Anniversary Cards"
 			}
 		case "Fling", "Sylvan Ranger":
 			if ExtractNumber(inCard.Variation) == "" {
 				if inCard.isDCIPromo() {
-					inCard.Edition = "Wizards Play Network 2010"
+					edition = "Wizards Play Network 2010"
 				} else if inCard.isWPNGateway() {
-					inCard.Edition = "Wizards Play Network 2011"
+					edition = "Wizards Play Network 2011"
 				}
 			}
 		case "Hall of Triumph":
 			if inCard.isGenericPromo() {
-				inCard.Edition = "Journey into Nyx Promos"
+				edition = "Journey into Nyx Promos"
 			}
 		case "Vorinclex, Monstrous Raider":
 			// Missing the proper FrameEffect property
@@ -733,12 +733,14 @@ func adjustEdition(inCard *Card) {
 				num := ExtractNumber(inCard.Variation)
 				if num == "" {
 					if Contains(inCard.Variation, "Phyrexian") {
-						inCard.Variation = "333"
+						variation = "333"
 					} else if inCard.isShowcase() {
-						inCard.Variation = "320"
+						variation = "320"
 					}
 				}
 			}
 		}
 	}
+	inCard.Edition = edition
+	inCard.Variation = variation
 }
