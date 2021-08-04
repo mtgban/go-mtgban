@@ -490,7 +490,7 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		if found {
 			edition = ed
 		}*/
-	case "Strixhaven Mystical Archive":
+	case "Mystical Archive":
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
 		}
