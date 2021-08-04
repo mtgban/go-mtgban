@@ -56,8 +56,39 @@ var id2edition = map[int]string{
 	19129: "PWP10",
 	17635: "PWP11",
 
+	// Arena Forest
+	34697: "PARL",
+	31629: "PAL99",
+	29998: "PAL00",
+	29063: "PAL01 1",
+	29053: "PAL01 11",
+	27023: "PAL03",
+	25893: "PAL04",
+	24945: "PAL05",
+	23843: "PAL06",
+
+	// Arena Island
+	34700: "PARL",
+	31627: "PAL99",
+	30001: "PAL00",
+	29061: "PAL01",
+	27844: "PAL02",
+	27026: "PAL03",
+	25896: "PAL04",
+	24948: "PAL05",
+	23846: "PAL06",
+
+	// Arena Mountain
+	34698: "PARL",
+	31625: "PAL99",
+	29999: "PAL00",
+	29059: "PAL01",
+	27024: "PAL03",
+	25894: "PAL04",
+	24946: "PAL05",
+	23844: "PAL06",
+
 	// Arena Plains
-	// the only land from the PARL series to miss the year in their full name
 	34701: "PARL",
 	31623: "PAL99",
 	30002: "PAL00",
@@ -66,6 +97,16 @@ var id2edition = map[int]string{
 	25897: "PAL04",
 	24949: "PAL05",
 	23847: "PAL06",
+
+	// Arena Swamp
+	34699: "PARL",
+	31621: "PAL99",
+	30000: "PAL00",
+	29055: "PAL01",
+	27025: "PAL03",
+	25895: "PAL04",
+	24947: "PAL05",
+	23845: "PAL06",
 }
 
 func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
