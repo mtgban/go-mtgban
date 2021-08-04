@@ -83,6 +83,23 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		cardName = altName
 	}
 
+	// First check for unsupported editions, to avoid returning early from the id lookup
+	switch edition {
+	case "Ultra-Pro Puzzle Cards",
+		"Celebration Cards",
+		"Foreign White Bordered",
+		"Fourth Edition: Alternate",
+		"Fallen Empires: Wyvern Misprints",
+		"Filler Cards":
+		return nil, errors.New("not mtg")
+	case "Battle the Horde",
+		"Defeat a God",
+		"Face the Hydra":
+		return nil, errors.New("unsupported")
+	case "Salvat 2005":
+		return nil, errors.New("foreign")
+	}
+
 	// Some, but not all, have a proper id we can reuse right away
 	u, err := url.Parse(bp.ScryfallId)
 	if err == nil {
@@ -106,19 +123,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		} else {
 			return nil, errors.New("missing edition")
 		}
-	case "Ultra-Pro Puzzle Cards",
-		"Celebration Cards",
-		"Foreign White Bordered",
-		"Fourth Edition: Alternate",
-		"Fallen Empires: Wyvern Misprints",
-		"Filler Cards":
-		return nil, errors.New("not mtg")
-	case "Battle the Horde",
-		"Defeat a God",
-		"Face the Hydra":
-		return nil, errors.New("unsupported")
-	case "Salvat 2005":
-		return nil, errors.New("foreign")
 	case "Commander's Arsenal":
 		switch cardName {
 		case "Azusa, Lost but Seeking",
