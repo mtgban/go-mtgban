@@ -23,6 +23,7 @@ var cardTable = map[string]string{
 	"Soul's Mighty":                  "Soul's Might",
 	"Explor":                         "Explore",
 	"Swamp (V.2)":                    "Swamp",
+	"Divine Smit":                    "Divine Smite",
 
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
@@ -238,6 +239,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Secret Lair Drop Series":
 		variant = number
 		switch cardName {
+		case "Birds of Paradise":
+			if variant == "94" {
+				variant = "92"
+			}
 		case "Treasure",
 			"Walker":
 			return nil, errors.New("not single")
@@ -266,6 +271,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Grand Prix Promos":
 		if cardName == "Wilt-Leaf Cavaliers" {
 			edition = "PG08"
+		}
+	case "The List":
+		if cardName == "Lightning Bolt" {
+			variant = number
 		}
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
@@ -410,6 +419,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				} else {
 					if mtgmatcher.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
+						if cardName == "Sorcerous Spyglass" {
+							edition = "PIXL"
+						}
 					} else {
 						edition = "Core Set 2020"
 					}
