@@ -352,7 +352,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			// This set acts mostly as a catch-all for anything prior :(
 			case "Core Set 2020 Promos":
 				version := mtgmatcher.ExtractNumber(strings.Replace(bp.Slug, "-", " ", -1))
-				if cardName == "Chandra's Regulator" {
+				if mtgmatcher.IsBasicLand(cardName) {
+					edition = "M20 Promo Packs"
+				} else if cardName == "Chandra's Regulator" {
 					if version == "1" {
 						variant = number
 					} else if version == "2" {
@@ -369,9 +371,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 						variant = "Promo Pack"
 					} else {
 						edition = "Core Set 2020"
-						if mtgmatcher.IsBasicLand(cardName) {
-							edition = "M20 Promo Packs"
-						}
 					}
 				}
 			default:
