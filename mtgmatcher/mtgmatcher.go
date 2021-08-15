@@ -73,6 +73,18 @@ func Match(inCard *Card) (cardId string, err error) {
 		return "", ErrCardDoesNotExist
 	}
 
+	// Simple case in which there is a variant embedded in the name
+	if strings.Contains(inCard.Name, "(") {
+		vars := SplitVariants(inCard.Name)
+		if len(vars) > 1 {
+			inCard.Name = vars[0]
+			inCard.addToVariant(strings.Join(vars, " "))
+			if Contains(inCard.Variation, "foil") {
+				inCard.Foil = true
+			}
+		}
+	}
+
 	// Get the card basic info to retrieve the Printings array
 	entry, found := backend.Cards[Normalize(inCard.Name)]
 	if !found {
