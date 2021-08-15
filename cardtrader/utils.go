@@ -30,7 +30,7 @@ func ExportStock(blueprints map[int]*Blueprint, token string, rates ...float64) 
 	defer gzipReader.Close()
 
 	csvReader := csv.NewReader(gzipReader)
-	// id,blueprint_id,bundle,category_id,description,name_en,expansion_id,game_id,graded,price_cents,price_currency,quantity,mtg_rarity,condition,mtg_language,mtg_foil,signed,altered
+	// id,blueprint_id,bundle,category_id,description,name_en,expansion_id,expansion_name,expansion_code,game_id,graded,price_cents,price_currency,quantity,mtg_rarity,condition,mtg_language,mtg_foil,signed,altered
 	_, err = csvReader.Read()
 	if err != nil {
 		return nil, err
@@ -45,27 +45,43 @@ func ExportStock(blueprints map[int]*Blueprint, token string, rates ...float64) 
 		if err != nil {
 			continue
 		}
-		blueprintId, _ := strconv.Atoi(record[1])
+		blueprintId, err := strconv.Atoi(record[1])
+		if err != nil {
+			return nil, err
+		}
 
 		theCard, err := Preprocess(blueprints[blueprintId])
 		if err != nil {
 			continue
 		}
-		theCard.Foil, _ = strconv.ParseBool(record[15])
+
+		theCard.Foil, err = strconv.ParseBool(record[17])
+		if err != nil {
+			return nil, err
+		}
+
 		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			continue
 		}
 
-		currency := record[10]
-		priceCents, _ := strconv.Atoi(record[9])
+		priceCents, err := strconv.Atoi(record[11])
+		if err != nil {
+			return nil, err
+		}
 		price := float64(priceCents) / 100.0
+
+		currency := record[12]
 		if currency == "EUR" && len(rates) > 0 && rates[0] != 0 {
 			price *= rates[0]
 		}
 
-		quantity, _ := strconv.Atoi(record[11])
-		conditions := record[13]
+		quantity, err := strconv.Atoi(record[13])
+		if err != nil {
+			return nil, err
+		}
+
+		conditions := record[15]
 		conds, found := condMap[conditions]
 		if !found {
 			continue
