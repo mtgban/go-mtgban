@@ -78,7 +78,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		vars := SplitVariants(inCard.Name)
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
-			inCard.addToVariant(strings.Join(vars, " "))
+			inCard.addToVariant(strings.Join(vars[1:], " "))
 			if Contains(inCard.Variation, "foil") {
 				inCard.Foil = true
 			}
