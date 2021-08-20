@@ -1004,6 +1004,22 @@ var MatchTests = []MatchTest{
 			Edition: "Arabian Nights",
 		},
 	},
+	MatchTest{
+		Id:   "ab071a55-aec9-5b7c-8f8e-133f1f902152",
+		Desc: "ARN_dark_variant_in_name",
+		In: Card{
+			Name:    "Army of Allah (2)",
+			Edition: "Arabian Nights",
+		},
+	},
+	MatchTest{
+		Id:   "7a5ab36e-15b0-51d1-87c0-b4b3a5cd93a2",
+		Desc: "ARN_light_variant_in_name",
+		In: Card{
+			Name:    "Army of Allah (2†)",
+			Edition: "Arabian Nights",
+		},
+	},
 
 	// Same-set variants
 	MatchTest{

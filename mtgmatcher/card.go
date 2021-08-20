@@ -371,7 +371,7 @@ func (c *Card) isFoilEtched() bool {
 }
 
 func (c *Card) isARNLightMana() bool {
-	return Contains(c.Variation, "light")
+	return Contains(c.Variation, "light") || strings.Contains(c.Variation, "†")
 }
 
 func (c *Card) isARNDarkMana() bool {
