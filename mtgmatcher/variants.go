@@ -3893,6 +3893,7 @@ var MultiplePLISTTable = map[string]map[string]string{
 		"Masters 25": "429",
 		"PRM":        "142",
 		"A25":        "429",
+		"142":        "142",
 		"141":        "429",
 	},
 }

@@ -2160,6 +2160,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Ignored",
 		},
 	},
+	MatchTest{
+		Id:   "3aa53e39-08e2-5095-b1d7-05290568248b",
+		Desc: "mb1list_triple_combo",
+		In: Card{
+			Name:    "Lightning Bolt (142)",
+			Edition: "The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
