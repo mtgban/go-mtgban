@@ -384,6 +384,13 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
+		case inCard.Contains("Lunar New Year"):
+			switch {
+			case strings.Contains(set.Name, "Lunar New Year"):
+			default:
+				continue
+			}
+
 		// Last resort, if this is set on the input card, and there were
 		// no better descriptors earlier, try looking at the set type
 		case inCard.Promo:

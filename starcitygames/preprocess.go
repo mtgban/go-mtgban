@@ -64,6 +64,7 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
 
 	edition = strings.Replace(edition, "&amp;", "&", -1)
+	edition = strings.TrimSuffix(edition, " (Foil)")
 
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
 	variant = strings.Replace(variant, "(", "", -1)
@@ -97,27 +98,30 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 		cardName = lutName
 	}
 
-	switch cardName {
-	case "Captain Sisay":
-		if edition == "Mystery Booster" {
-			return nil, errors.New("invalid")
-		}
-	default:
-		if mtgmatcher.IsBasicLand(cardName) {
-			if strings.Contains(variant, "APAC") {
-				edition = "Asia Pacific Land Program"
-			} else if strings.Contains(variant, "Euro") {
-				edition = "European Land Program"
-			}
+	if mtgmatcher.IsBasicLand(cardName) {
+		if strings.Contains(variant, "APAC") {
+			edition = "Asia Pacific Land Program"
+		} else if strings.Contains(variant, "Euro") {
+			edition = "European Land Program"
 		}
 	}
 
+	// Make sure not to pollute variants with the language otherwise multiple
+	// variants may be aliased (ie urzalands)
 	switch card.Language {
-	case "Japanese", "Italian":
-		if variant != "" {
-			variant += " "
+	case "Japanese":
+		if edition == "Chronicles" {
+			edition = "Chronicles Japanese"
+		} else {
+			if variant != "" {
+				variant += " "
+			}
+			variant += card.Language
 		}
-		variant += card.Language
+	case "Italian":
+		if edition == "Renaissance" {
+			edition = "Rinascimento"
+		}
 	}
 
 	switch edition {
@@ -131,6 +135,21 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 		case "Eliminate":
 			if variant == "Promo Pack Core Set 2021" {
 				edition = "Core Set 2021"
+			}
+		case "Mind Stone":
+			if variant == "WPN/Gateway" {
+				edition = "PG07"
+			}
+		case "Moraug, Fury of Akoum", "Ox of Agonas":
+			if variant == "Store Challenger Series" {
+				edition = "PL21"
+			}
+		}
+		if variant == "Love Your LGS Retro Frame" {
+			if cardName == "Fabled Passage" {
+				edition = "Wizards Play Network 2021"
+			} else {
+				edition = "Love Your LGS 2021"
 			}
 		}
 	default:
