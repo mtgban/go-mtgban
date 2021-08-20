@@ -770,6 +770,15 @@ var MatchTests = []MatchTest{
 			Edition:   "War of the Spark",
 		},
 	},
+	MatchTest{
+		Id:   "fc82e07b-fa39-56ec-8b31-3e5837753347",
+		Desc: "JPN_variant_no_jpn_but_number_is",
+		In: Card{
+			Name:      "The Wanderer",
+			Variation: "37★",
+			Edition:   "War of the Spark",
+		},
+	},
 
 	// Borderless cards
 	MatchTest{

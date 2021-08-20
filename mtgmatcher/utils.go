@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 var ErrDatastoreEmpty = errors.New("datastore is empty")
@@ -125,8 +127,19 @@ func ExtractNumber(str string) string {
 			return num
 		}
 		if len(num) > 1 {
-			if unicode.IsLetter(rune(num[len(num)-1])) {
-				val, err = strconv.Atoi(num[:len(num)-1])
+			if unicode.IsLetter(rune(num[len(num)-1])) ||
+				strings.HasSuffix(num, mtgjson.SuffixSpecial) ||
+				strings.HasSuffix(num, mtgjson.SuffixVariant) {
+				// Strip any extra characters at the end
+				trimmed := num
+				if unicode.IsLetter(rune(num[len(num)-1])) {
+					trimmed = num[:len(num)-1]
+				} else {
+					trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixSpecial)
+					trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixVariant)
+				}
+				// Try converting to an integer number
+				val, err = strconv.Atoi(trimmed)
 				if err == nil && val < 1993 {
 					return strings.ToLower(num)
 				}
