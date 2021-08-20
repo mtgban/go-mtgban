@@ -226,23 +226,8 @@ func (nf *Ninetyfive) scrape(mode string) error {
 				continue
 			}
 		} else if record.buyEntry != nil {
-			err := nf.buylist.AddRelaxed(record.cardId, record.buyEntry)
+			err := nf.buylist.Add(record.cardId, record.buyEntry)
 			if err != nil {
-				co, _ := mtgmatcher.GetUUID(record.cardId)
-				// Try adjusting for the lack of variants
-				if co.Edition == "Arabian Nights" {
-					secondId, err := mtgmatcher.Match(&mtgmatcher.Card{
-						Name:      co.Name,
-						Edition:   co.Edition,
-						Variation: "light",
-					})
-					if err == nil {
-						err = nf.buylist.AddRelaxed(secondId, record.buyEntry)
-						if err == nil {
-							continue
-						}
-					}
-				}
 				nf.printf("%v", err)
 				continue
 			}
