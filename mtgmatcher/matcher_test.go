@@ -2566,6 +2566,25 @@ var MatchTests = []MatchTest{
 			Edition: "Modern Horizons 2: Extras",
 		},
 	},
+
+	// MB1 Playtest cards deduplication
+	MatchTest{
+		Id:   "2d7d2e89-b5f2-5326-ba37-a1b5832937fd",
+		Desc: "cmb1_first_printing",
+		In: Card{
+			Name:    "Soulmates",
+			Edition: "CMB1",
+		},
+	},
+	MatchTest{
+		Id:   "7b411812-f716-526f-9abf-0f496e64919b",
+		Desc: "cmb1_second_printing",
+		In: Card{
+			Name:      "Soulmates",
+			Variation: "No PW Symbol",
+			Edition:   "CMB1",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
