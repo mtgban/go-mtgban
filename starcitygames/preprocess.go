@@ -121,6 +121,11 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 	case "Italian":
 		if edition == "Renaissance" {
 			edition = "Rinascimento"
+		} else {
+			if variant != "" {
+				variant += " "
+			}
+			variant += card.Language
 		}
 	}
 
