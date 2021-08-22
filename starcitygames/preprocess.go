@@ -64,7 +64,10 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
 
 	edition = strings.Replace(edition, "&amp;", "&", -1)
-	edition = strings.TrimSuffix(edition, " (Foil)")
+	if strings.HasSuffix(edition, "(Foil)") {
+		edition = strings.TrimSuffix(edition, " (Foil)")
+		card.Foil = true
+	}
 
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
 	variant = strings.Replace(variant, "(", "", -1)
@@ -158,10 +161,6 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 	default:
-		if strings.HasSuffix(edition, "(Foil)") {
-			edition = strings.TrimSuffix(edition, " (Foil)")
-			card.Foil = true
-		}
 		if strings.HasSuffix(edition, "Alternate Frame") {
 			edition = strings.TrimSuffix(edition, " - Alternate Frame")
 
