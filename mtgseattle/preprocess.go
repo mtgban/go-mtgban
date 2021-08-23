@@ -46,7 +46,8 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		variant += strings.Join(s[1:], " ")
 	}
 
-	if strings.Contains(variant, "Oversized") {
+	if strings.Contains(variant, "Oversized") ||
+		strings.Contains(variant, "BGS") {
 		return nil, errors.New("unsupported")
 	}
 
@@ -152,6 +153,8 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			edition = "PRES"
 		case "Sethron, Hurloon General":
 			edition = "PL21"
+		case "Sanctum Prelate":
+			edition = "MH2"
 		}
 		for _, tag := range promoTags {
 			if strings.HasSuffix(cardName, tag) {

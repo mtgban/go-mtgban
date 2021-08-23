@@ -3895,5 +3895,6 @@ var MultiplePLISTTable = map[string]map[string]string{
 		"A25":        "429",
 		"142":        "142",
 		"141":        "429",
+		"001":        "142",
 	},
 }
