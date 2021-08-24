@@ -326,11 +326,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			variant = number
 
 			switch edition {
-			case "Zendikar Promos":
-				if cardName == "Jace, Mirror Mage" {
-					variant = "Promo Pack"
-					edition = "Zendikar Rising Promos"
-				}
 			case "Guilds of Ravnica Promos":
 				switch cardName {
 				case "Attendant of Vraska",
