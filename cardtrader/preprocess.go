@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -437,7 +438,14 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				}
 
 				if setDate.After(mtgmatcher.PromosForEverybodyYay) {
-					if mtgmatcher.HasPromoPackPrinting(cardName) {
+					notPromoPack := false
+					num, convErr := strconv.Atoi(number)
+					parentSet, setErr := mtgmatcher.GetSet(set.ParentCode)
+					if convErr == nil && setErr == nil {
+						notPromoPack = num > parentSet.BaseSetSize
+					}
+
+					if mtgmatcher.HasPromoPackPrinting(cardName) && !notPromoPack {
 						variant = "Promo Pack"
 					} else {
 						edition = strings.TrimSuffix(edition, " Promos")
