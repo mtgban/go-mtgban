@@ -656,7 +656,6 @@ func ParseCommanderEdition(edition string) string {
 		"Ikoria":          "Commander 2020",
 		"Zendikar Rising": "Zendikar Rising Commander",
 		"Legends":         "Commander Legends",
-		"Green":           "Commander Collection: Green",
 		"Kaldheim":        "Kaldheim Commander",
 		"Strixhaven":      "Commander 2021",
 		"Forgotten":       "Forgotten Realms Commander",
@@ -664,6 +663,15 @@ func ParseCommanderEdition(edition string) string {
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {
 			return ed
+		}
+	}
+
+	// Collection series
+	if strings.Contains(edition, "Collection") {
+		for _, color := range []string{"Green", "Black"} {
+			if strings.Contains(edition, color) {
+				return "Commander Collection: " + color
+			}
 		}
 	}
 
