@@ -73,6 +73,19 @@ func Match(inCard *Card) (cardId string, err error) {
 		return "", ErrCardDoesNotExist
 	}
 
+	// Binderpos weird syntax, with the edition embedded in the name
+	if strings.Contains(inCard.Name, "[") {
+		vars := strings.Split(inCard.Name, "[")
+		if len(vars) > 1 {
+			maybeEdition := strings.TrimSuffix(strings.TrimSpace(vars[1]), "]")
+			set, err := GetSetByName(maybeEdition)
+			if err == nil {
+				inCard.Name = vars[0]
+				inCard.Edition = set.Name
+			}
+		}
+	}
+
 	// Simple case in which there is a variant embedded in the name
 	if strings.Contains(inCard.Name, "(") {
 		vars := SplitVariants(inCard.Name)

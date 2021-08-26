@@ -282,12 +282,12 @@ func (c *Card) isBorderless() bool {
 }
 
 func (c *Card) isExtendedArt() bool {
-	return Contains(c.Variation, "Extended Art") ||
-		Contains(c.Variation, "Extended Frame") //csi
+	return Contains(c.Variation, "Extended")
 }
 
 func (c *Card) isShowcase() bool {
-	return Contains(c.Variation, "Showcase")
+	return Contains(c.Variation, "Showcase") ||
+		Contains(c.Variation, "Sketch") // binderpos
 }
 
 func (c *Card) isReskin() bool {

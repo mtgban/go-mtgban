@@ -2585,6 +2585,14 @@ var MatchTests = []MatchTest{
 			Edition:   "CMB1",
 		},
 	},
+
+	MatchTest{
+		Id:   "591c29a1-c671-5a53-b754-88a9aaa6e726",
+		Desc: "binderpos_syntax",
+		In: Card{
+			Name: "Callous Bloodmage (Extended) [Strixhaven: School of Mages]",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

@@ -909,9 +909,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			case "Modern Horizons 2":
 				cn, _ := strconv.Atoi(strings.TrimSuffix(card.Number, "e"))
-				if Contains(inCard.Variation, "Retro Frame") && (cn <= 380 || cn > 441) {
+				if Contains(inCard.Variation, "Retro") && (cn <= 380 || cn > 441) {
 					continue
-				} else if !(Contains(inCard.Variation, "Retro Frame") || inCard.beyondBaseSet) && !(cn <= 380 || cn > 441) {
+				} else if !(Contains(inCard.Variation, "Retro") || inCard.beyondBaseSet) && !(cn <= 380 || cn > 441) {
 					continue
 				}
 			default:
