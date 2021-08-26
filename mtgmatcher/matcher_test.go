@@ -362,7 +362,7 @@ var MatchTests = []MatchTest{
 		Desc: "double_card_with_lots_of_matches_second",
 		In: Card{
 			Name:    "Start",
-			Edition: "Mystery Booster Playtest Cards",
+			Edition: "Mystery Booster Playtest Cards 2019",
 		},
 	},
 	MatchTest{
@@ -2570,19 +2570,19 @@ var MatchTests = []MatchTest{
 	// MB1 Playtest cards deduplication
 	MatchTest{
 		Id:   "2d7d2e89-b5f2-5326-ba37-a1b5832937fd",
-		Desc: "cmb1_first_printing",
+		Desc: "mb1playtest_first_printing",
 		In: Card{
 			Name:    "Soulmates",
-			Edition: "CMB1",
+			Edition: "Mystery Booster Playtest Cards",
 		},
 	},
 	MatchTest{
-		Id:   "7b411812-f716-526f-9abf-0f496e64919b",
-		Desc: "cmb1_second_printing",
+		Id:   "3d8882da-a9e9-50f9-8bca-f79f0f9f2383",
+		Desc: "mb1playtest_second_printing",
 		In: Card{
 			Name:      "Soulmates",
 			Variation: "No PW Symbol",
-			Edition:   "CMB1",
+			Edition:   "Mystery Booster Playtest Cards",
 		},
 	},
 

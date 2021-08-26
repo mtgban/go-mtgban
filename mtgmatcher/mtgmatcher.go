@@ -406,8 +406,12 @@ func adjustEdition(inCard *Card) {
 		(inCard.Contains("Mystery Booster") || inCard.Contains("The List")) {
 		if (inCard.Foil || inCard.Contains("Foil") && !inCard.Contains("Non")) && len(MatchInSet(inCard.Name, "FMB1")) != 0 {
 			edition = "FMB1"
-		} else if inCard.Contains("Test") && len(MatchInSet(inCard.Name, "CMB1")) != 0 {
-			edition = "CMB1"
+		} else if len(MatchInSet(inCard.Name, "CMB1")) != 0 {
+			if Contains(inCard.Variation, "No PW Symbol") {
+				edition = "CMB2"
+			} else {
+				edition = "CMB1"
+			}
 		} else {
 			// Adjust property, can only be non-foil from here
 			inCard.Foil = false

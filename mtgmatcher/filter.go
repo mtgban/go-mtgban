@@ -956,9 +956,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					// Make below check pass, we already filtered above
 					variation = "misprint"
 					expectedSuffix = card.Number
-				} else if inCard.Edition == "Mystery Booster Playtest Cards" && Contains(inCard.Variation, "No PW Symbol") {
-
-					variation = "misprint"
 				}
 
 				if Contains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {
