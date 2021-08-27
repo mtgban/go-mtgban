@@ -2193,6 +2193,14 @@ var MatchTests = []MatchTest{
 			Edition: "The List",
 		},
 	},
+	MatchTest{
+		Id:   "37d7eb2a-2512-5e56-829f-2c10571bb4a7",
+		Desc: "mb1_has_two_variants",
+		In: Card{
+			Name:    "Phantom Centaur",
+			Edition: "Mystery Booster/The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{

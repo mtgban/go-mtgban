@@ -419,7 +419,7 @@ func adjustEdition(inCard *Card) {
 			// Check if card is is only one of these two sets
 			mb1s := MatchInSet(inCard.Name, "MB1")
 			plists := MatchInSet(inCard.Name, "PLIST")
-			if len(mb1s) == 1 && len(plists) == 0 {
+			if len(mb1s) > 0 && len(plists) == 0 {
 				edition = "MB1"
 				// Ignore all other data, we have all we need now
 				variation = ""
