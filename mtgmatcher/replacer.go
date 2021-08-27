@@ -28,6 +28,7 @@ var replacer = strings.NewReplacer(
 	".", "",
 	"!", "",
 	"?", "",
+	"+", "",
 
 	// Separators
 	"/", "",
