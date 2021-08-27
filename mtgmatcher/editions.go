@@ -28,6 +28,8 @@ var EditionTable = map[string]string{
 	"Modern Horizons - Retro Frames": "Modern Horizons 1 Timeshifts",
 	"Modern Horizons II":             "Modern Horizons 2",
 
+	"AFR Ampersand Promos":                    "Adventures in the Forgotten Realms Promos",
+	"Ampersand Foil":                          "Adventures in the Forgotten Realms Promos",
 	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
 
 	// Strixhaven Mystical Archive alts
