@@ -435,10 +435,11 @@ var EditionTable = map[string]string{
 	"Coldsnap Theme-Deck Reprints": "Coldsnap Theme Decks",
 
 	// <3 LGS
-	"Bring-a-Friend": "Love Your LGS 2020",
-	"Bring-A-Friend": "Love Your LGS 2020",
-	"LGS Promo":      "Love Your LGS 2020",
-	"Welcome Back":   "Love Your LGS 2020",
+	"Bring-a-Friend":     "Love Your LGS 2020",
+	"Bring-A-Friend":     "Love Your LGS 2020",
+	"LGS Promo":          "Love Your LGS 2020",
+	"Welcome Back":       "Love Your LGS 2020",
+	"Love Your LGS 2021": "Love Your LGS 2021",
 
 	// Modern Event Deck
 	"Magic Modern Event Deck":                     "Modern Event Deck 2014",

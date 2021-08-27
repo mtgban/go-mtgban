@@ -122,7 +122,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	case "Alpha", "Beta", "Unlimited", "3rd Edition", "4th Edition",
 		"Antiquities", "Fallen Empires", "Alliances", "Homelands",
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
-		"Unstable", "Unglued", "Portal II":
+		"Unstable", "Unglued", "Portal II", "Secret Lair":
 		variation = number
 	}
 
