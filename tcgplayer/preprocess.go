@@ -149,7 +149,10 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			"Loam Lion":                   "PRES",
 			"Shepherd of the Lost":        "PURL",
 			"Sethron, Hurloon General":    "PL21",
+			"Moraug, Fury of Akoum":       "PL21",
+			"Ox of Agonas":                "PL21",
 			"Fabled Passage":              "PWP21",
+			"Mind Stone":                  "PWP21",
 		}[cardName]
 		if found {
 			edition = ed
