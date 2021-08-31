@@ -3176,6 +3176,12 @@ var sldVariants = map[string]map[string]string{
 		"crushing brutality":             "241",
 		"secret lair crushing brutality": "241",
 	},
+	"Karn, the Great Creator": map[string]string{
+		"stained glass": "501",
+	},
+	"Teferi, Time Raveler": map[string]string{
+		"stained glass": "526",
+	},
 }
 
 var soiVariants = map[string]map[string]string{
