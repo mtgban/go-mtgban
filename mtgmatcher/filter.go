@@ -197,8 +197,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			default:
 				switch set.Name {
 				case "DCI Legend Membership":
-				case "Magazine Inserts":
-					// This is the only card present in IDW and Magazine Inserts
+				case "Media Inserts":
+					// This is the only card present in IDW and Media Inserts
 					// so make sure it is properly tagged
 					if inCard.Name == "Duress" && !inCard.isJPN() {
 						continue
@@ -598,7 +598,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			}
 
 			// JPN
-			if inCard.isJPN() && set.Name != "Magazine Inserts" && !strings.HasPrefix(set.Name, "Magic Premiere Shop") && set.Name != "Strixhaven Mystical Archive" {
+			if inCard.isJPN() && set.Code != "PMEI" && !strings.HasPrefix(set.Name, "Magic Premiere Shop") && set.Code != "STA" {
 				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && !card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
 					continue
 				}
