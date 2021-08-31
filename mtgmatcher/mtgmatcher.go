@@ -422,7 +422,9 @@ func adjustEdition(inCard *Card) {
 			if len(mb1s) > 0 && len(plists) == 0 {
 				edition = "MB1"
 				// Ignore all other data, we have all we need now
-				variation = ""
+				if !Equals(inCard.Name, "Phantom Centaur") {
+					variation = ""
+				}
 			} else if len(mb1s) == 0 && len(plists) == 1 {
 				edition = "PLIST"
 				// Ignore all other data, we have all we need now
