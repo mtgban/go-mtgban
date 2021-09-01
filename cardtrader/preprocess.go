@@ -424,6 +424,11 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 						edition = "Core Set 2020"
 					}
 				}
+			case "Ikoria: Lair of Behemoths Promos":
+				if cardName == "Ketria Triome" {
+					number = "250"
+				}
+				fallthrough
 			default:
 				set, err := mtgmatcher.GetSet(bp.Expansion.Code)
 				if err != nil {
