@@ -407,7 +407,7 @@ func adjustEdition(inCard *Card) {
 		if (inCard.Foil || inCard.Contains("Foil") && !inCard.Contains("Non")) && len(MatchInSet(inCard.Name, "FMB1")) != 0 {
 			edition = "FMB1"
 		} else if len(MatchInSet(inCard.Name, "CMB1")) != 0 {
-			if Contains(inCard.Variation, "No PW Symbol") {
+			if Contains(inCard.Variation, "No PW Symbol") || Contains(inCard.Variation, "V.2") {
 				edition = "CMB2"
 			} else {
 				edition = "CMB1"

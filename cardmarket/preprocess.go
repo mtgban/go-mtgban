@@ -575,15 +575,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.2":
 			variant = "Foil Etched"
 		}
-	case "Mystery Booster: Playtest Cards":
-		switch variant {
-		case "V.1":
-			edition = "CMB1"
-		case "V.2":
-			variant = "CMB2"
-		default:
-			return nil, errors.New("aliasing")
-		}
 
 	default:
 		// Double parse commander so that it is possible to drop the oversize

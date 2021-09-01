@@ -277,6 +277,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		if cardName == "Lightning Bolt" {
 			variant = number
 		}
+	case "Mystery Booster: Convention Edition Playtest Cards":
+		variant = bp.Version
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
 			variant = number
