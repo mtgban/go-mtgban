@@ -52,31 +52,51 @@ func (c *Card) String() string {
 	}
 	foil := ""
 	if c.Foil {
-		foil = " " + mtgjson.SuffixSpecial
+		foil = " (foil)"
+	} else if c.isEtched() {
+		foil = " (etched)"
 	}
 	return fmt.Sprintf("%s [%s%s] {%s}", out, c.Edition, foil, c.Number)
 }
 
-func output(card mtgjson.Card, foil bool) string {
+func output(card mtgjson.Card, flags ...bool) string {
 	hasNonfoil := card.HasFinish(mtgjson.FinishNonfoil)
 	hasFoil := card.HasFinish(mtgjson.FinishFoil)
+	hasEtched := card.HasFinish(mtgjson.FinishEtched)
+
+	etched := len(flags) > 1 && flags[1]
+	foil := len(flags) > 0 && flags[0] && !etched
 
 	// In case the foiling information is incorrect
-	if !foil && !hasNonfoil {
+	if !foil && !hasNonfoil && !hasEtched {
 		foil = true
 	} else if foil && !hasFoil {
 		foil = false
 	}
-	if hasFoil && !hasNonfoil {
+	if hasFoil && !hasNonfoil && !hasEtched {
 		foil = true
-	} else if !hasFoil && hasNonfoil {
+	} else if !hasFoil && (hasNonfoil || hasEtched) {
 		foil = false
+	}
+
+	// In case the etching information is incorrect
+	if !etched && !hasNonfoil && !hasFoil {
+		etched = true
+	} else if etched && !hasEtched {
+		etched = false
+	}
+	if hasEtched && !hasNonfoil && !hasFoil {
+		etched = true
+	} else if !hasEtched && (hasNonfoil || hasFoil) {
+		etched = false
 	}
 
 	// Prepare the output card
 	id := card.UUID
-	// Append "_f" to the Id to distinguish from non-foil
-	if foil && hasNonfoil {
+	// Append suffixes to the Id to distinguish cards among finishes
+	if etched && (hasNonfoil || hasFoil) {
+		id += suffixEtched
+	} else if foil && hasNonfoil {
 		id += suffixFoil
 	}
 
@@ -369,6 +389,7 @@ func (c *Card) isBundle() bool {
 }
 
 func (c *Card) isEtched() bool {
+	// Note this can't be just "etch" because it would catch the "sketch" cards
 	return Contains(c.Variation, "Etched") ||
 		Contains(c.Variation, "Etching") // ha
 }

@@ -570,13 +570,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isBasicNonFullArt() {
 					possibleSuffixes = append(possibleSuffixes, "a")
 				}
-				// STA adds a custom suffix we need to track
-				if inCard.isEtched() {
-					switch set.Name {
-					case "Strixhaven Mystical Archive":
-						possibleSuffixes = []string{"e"}
-					}
-				}
 				for _, numSuffix := range possibleSuffixes {
 					// The self test is already expressed by the empty string
 					// This avoids an odd case of testing 1.1 = 11
@@ -714,17 +707,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if inCard.isBaB() && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
 						continue
 					} else if !inCard.isBaB() && card.HasPromoType(mtgjson.PromoTypeBuyABox) {
-						continue
-					}
-				}
-
-				// CMR-Style special foils
-				if inCard.isEtched() {
-					if !card.HasFrameEffect(mtgjson.FrameEffectFoilEtched) {
-						continue
-					}
-				} else if !inCard.isEtched() {
-					if card.HasFrameEffect(mtgjson.FrameEffectFoilEtched) {
 						continue
 					}
 				}
@@ -871,6 +853,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Identical cards
 			case "Commander Legends":
+				// This set uses a different card frame for etched cards
+				if inCard.isEtched() && !card.HasFrameEffect(mtgjson.FrameEffectEtched) {
+					continue
+				} else if !inCard.isEtched() && card.HasFrameEffect(mtgjson.FrameEffectEtched) {
+					continue
+				}
+
 				// Filter only cards that may have the flag set
 				hasAlternate := card.IsAlternative
 				for _, id := range card.Variations {
@@ -900,15 +889,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Separate JPN and non-JPN cards (foil-etched are parsed above)
 			case "Strixhaven Mystical Archive":
-				// Foil-etched cards are tagged with "e", drop it for this separation
-				cn, _ := strconv.Atoi(strings.TrimSuffix(card.Number, "e"))
+				cn, _ := strconv.Atoi(card.Number)
 				if inCard.isJPN() && cn <= 63 {
 					continue
 				} else if !inCard.isJPN() && cn > 63 {
 					continue
 				}
 			case "Modern Horizons 2":
-				cn, _ := strconv.Atoi(strings.TrimSuffix(card.Number, "e"))
+				cn, _ := strconv.Atoi(card.Number)
 				if Contains(inCard.Variation, "Retro") && (cn <= 380 || cn > 441) {
 					continue
 				} else if !(Contains(inCard.Variation, "Retro") || inCard.beyondBaseSet) && !(cn <= 380 || cn > 441) {

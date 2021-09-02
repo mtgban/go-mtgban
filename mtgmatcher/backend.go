@@ -24,6 +24,7 @@ type CardObject struct {
 	mtgjson.Card
 	Edition string
 	Foil    bool
+	Etched  bool
 	Sealed  bool
 }
 
@@ -44,7 +45,8 @@ var backend struct {
 var logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
 const (
-	suffixFoil = "_f"
+	suffixFoil   = "_f"
+	suffixEtched = "_e"
 )
 
 func NewDatastore(ap mtgjson.AllPrintings) {
@@ -80,10 +82,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if strings.HasSuffix(card.Number, "s") {
 					continue
 				}
-			case "STA":
-				if strings.HasSuffix(card.Number, "e") {
-					card.FrameEffects = []string{mtgjson.FrameEffectFoilEtched}
-				}
 			}
 
 			// Filter out unneeded printings
@@ -117,9 +115,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			if found {
 				scryfall[scryfallId] = card.UUID
 			}
-			tcgplayerId, found := card.Identifiers["tcgplayerProductId"]
-			if found {
-				tcgplayer[tcgplayerId] = card.UUID
+			for _, tag := range []string{"tcgplayerProductId", "tcgplayerEtchedProductId"} {
+				tcgplayerId, found := card.Identifiers[tag]
+				if found {
+					tcgplayer[tcgplayerId] = card.UUID
+				}
 			}
 
 			// Shared card object
@@ -127,8 +127,44 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				Card:    card,
 				Edition: set.Name,
 			}
-			// If card is foil, check whether it has a non-foil counterpart
-			if card.HasFinish(mtgjson.FinishFoil) {
+
+			// Append "_f" and "_e" to uuids, unless etched is the only printing.
+			// If it's not etched, append "_f", unless foil is the only printing.
+			// Leave uuids unchanged, if there is a single printing of any kind.
+			if card.HasFinish(mtgjson.FinishEtched) {
+				uuid := card.UUID
+
+				// Etched + Nonfoil [+ Foil]
+				if card.HasFinish(mtgjson.FinishNonfoil) {
+					// Save the card object
+					uuids[uuid] = co
+				}
+
+				// Etched + Foil
+				if card.HasFinish(mtgjson.FinishFoil) {
+					// Set the main property
+					co.Foil = true
+					// Make sure "_f" is appended if a different version exists
+					if card.HasFinish(mtgjson.FinishNonfoil) {
+						uuid = card.UUID + suffixFoil
+						co.UUID = uuid
+					}
+					// Save the card object
+					uuids[uuid] = co
+				}
+
+				// Etched
+				// Set the main properties
+				co.Foil = false
+				co.Etched = true
+				// If there are alternative finishes, always append the suffix
+				if card.HasFinish(mtgjson.FinishNonfoil) || card.HasFinish(mtgjson.FinishFoil) {
+					uuid = card.UUID + suffixEtched
+					co.UUID = uuid
+				}
+				// Save the card object
+				uuids[uuid] = co
+			} else if card.HasFinish(mtgjson.FinishFoil) {
 				uuid := card.UUID
 
 				// Foil [+ Nonfoil]

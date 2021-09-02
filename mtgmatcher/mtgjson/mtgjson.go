@@ -85,7 +85,7 @@ const (
 	FinishGlossy  = "glossy"
 
 	FrameEffectExtendedArt = "extendedart"
-	FrameEffectFoilEtched  = "etched"
+	FrameEffectEtched      = "etched"
 	FrameEffectInverted    = "inverted"
 	FrameEffectShowcase    = "showcase"
 

@@ -129,6 +129,14 @@ var MatchTests = []MatchTest{
 			Id: "0535c823-f6e9-4a2f-8adf-f69b6f0fea1f",
 		},
 	},
+	MatchTest{
+		Id:   "9f35aba6-72d9-565b-bb8b-2ba628282b2e_e",
+		Desc: "id_lookup_etched",
+		In: Card{
+			Id:        "9f35aba6-72d9-565b-bb8b-2ba628282b2e",
+			Variation: "Etched",
+		},
+	},
 
 	// Number duplicates
 	MatchTest{
@@ -2510,6 +2518,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// Mystical Archive
 	MatchTest{
 		Id:   "f2aa69f2-db69-5564-8661-d51855c6796a",
 		Desc: "sta_double_variant_normal",
@@ -2537,7 +2546,16 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "3dc11b06-acdc-536d-8acf-af02c5672ab3",
+		Id:   "f2aa69f2-db69-5564-8661-d51855c6796a_f",
+		Desc: "sta_normal_foil",
+		In: Card{
+			Name:    "Demonic Tutor",
+			Edition: "Strixhaven Mystical Archives",
+			Foil:    true,
+		},
+	},
+	MatchTest{
+		Id:   "f2aa69f2-db69-5564-8661-d51855c6796a_e",
 		Desc: "sta_normal_etched",
 		In: Card{
 			Name:      "Demonic Tutor",
@@ -2547,13 +2565,12 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a974d871-39bc-5bcb-947b-853836d3a6f1",
+		Id:   "b076bded-cee7-5f26-b9d8-3540918f68fa_e",
 		Desc: "sta_jpn_etched",
 		In: Card{
 			Name:      "Demonic Tutor",
 			Variation: "JP Alternate Art Foil Etched",
 			Edition:   "Strixhaven Mystical Archives",
-			Foil:      true,
 		},
 	},
 	MatchTest{
@@ -2566,7 +2583,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "06d4b87d-3030-5331-b7b7-bf7024512ff5",
+		Id:   "aab28e8e-a9c6-5cdc-86b4-204292662a65_e",
 		Desc: "sta_number_and_etched",
 		In: Card{
 			Name:      "Time Warp",
@@ -2575,12 +2592,31 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// MH2 and H1R
 	MatchTest{
 		Id:   "de7f21d1-dadd-512c-94a6-eb2e7d237306",
 		Desc: "mh2_beyond_retro",
 		In: Card{
 			Name:    "Blacksmith's Skill",
 			Edition: "Modern Horizons 2: Extras",
+		},
+	},
+	MatchTest{
+		Id:   "31492d9b-e4cd-55f1-b9ce-71dfc66dda4f",
+		Desc: "h1r_foil",
+		In: Card{
+			Name:    "Archmage's Charm",
+			Edition: "Modern Horizons 1 Timeshifts",
+			Foil:    true,
+		},
+	},
+	MatchTest{
+		Id:   "31492d9b-e4cd-55f1-b9ce-71dfc66dda4f_e",
+		Desc: "h1r_etched",
+		In: Card{
+			Name:      "Archmage's Charm",
+			Variation: "Etched",
+			Edition:   "Modern Horizons 1 Timeshifts",
 		},
 	},
 

@@ -26,17 +26,17 @@ func Match(inCard *Card) (cardId string, err error) {
 		outId := ""
 		co, found := backend.UUIDs[inCard.Id]
 		if found {
-			outId = output(co.Card, inCard.Foil)
+			outId = output(co.Card, inCard.Foil, inCard.isEtched())
 		} else {
 			// Second chance, lookup by scryfall id
 			co, found := backend.UUIDs[backend.Scryfall[inCard.Id]]
 			if found {
-				outId = output(co.Card, inCard.Foil)
+				outId = output(co.Card, inCard.Foil, inCard.isEtched())
 			} else {
 				// Last chance, lookup by tcg id
 				co, found := backend.UUIDs[backend.Tcgplayer[inCard.Id]]
 				if found {
-					outId = output(co.Card, inCard.Foil)
+					outId = output(co.Card, inCard.Foil, inCard.isEtched())
 				}
 			}
 		}
@@ -55,7 +55,7 @@ func Match(inCard *Card) (cardId string, err error) {
 					// stays the same, with a different suffix
 					if strings.HasPrefix(co.Number, altCo.Number) ||
 						strings.HasPrefix(altCo.Number, co.Number) {
-						maybeId := output(altCo.Card, inCard.Foil)
+						maybeId := output(altCo.Card, inCard.Foil, inCard.isEtched())
 						altCo = backend.UUIDs[maybeId]
 						if altCo.Foil == inCard.Foil {
 							outId = maybeId
@@ -227,13 +227,13 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Victory
 	case 1:
 		logger.Println("Found it!")
-		cardId = output(outCards[0], inCard.Foil)
+		cardId = output(outCards[0], inCard.Foil, inCard.isEtched())
 	// FOR SHAME
 	default:
 		logger.Println("Aliasing...")
 		alias := newAliasingError()
 		for i := range outCards {
-			alias.dupes = append(alias.dupes, output(outCards[i], inCard.Foil))
+			alias.dupes = append(alias.dupes, output(outCards[i], inCard.Foil, inCard.isEtched()))
 		}
 		err = alias
 	}
@@ -638,7 +638,7 @@ func adjustEdition(inCard *Card) {
 
 	// Rename the official name to the the more commonly used name
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
-		variation = "Foil Etched"
+		variation = "Etched"
 
 	// Planechase deduplication
 	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
