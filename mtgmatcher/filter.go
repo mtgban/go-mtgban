@@ -571,7 +571,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					possibleSuffixes = append(possibleSuffixes, "a")
 				}
 				// STA adds a custom suffix we need to track
-				if inCard.isFoilEtched() {
+				if inCard.isEtched() {
 					switch set.Name {
 					case "Strixhaven Mystical Archive":
 						possibleSuffixes = []string{"e"}
@@ -719,11 +719,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				// CMR-Style special foils
-				if inCard.isFoilEtched() {
+				if inCard.isEtched() {
 					if !card.HasFrameEffect(mtgjson.FrameEffectFoilEtched) {
 						continue
 					}
-				} else if !inCard.isFoilEtched() {
+				} else if !inCard.isEtched() {
 					if card.HasFrameEffect(mtgjson.FrameEffectFoilEtched) {
 						continue
 					}

@@ -365,7 +365,7 @@ func (c *Card) isBundle() bool {
 	return c.Contains("Bundle")
 }
 
-func (c *Card) isFoilEtched() bool {
+func (c *Card) isEtched() bool {
 	return Contains(c.Variation, "Etched") ||
 		Contains(c.Variation, "Etching") // ha
 }
