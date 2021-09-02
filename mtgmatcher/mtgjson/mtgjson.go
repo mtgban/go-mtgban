@@ -113,8 +113,8 @@ func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
 }
 
 func (c *Card) HasFrameEffect(fe string) bool {
-	for _, effect := range c.FrameEffects {
-		if effect == fe {
+	for i := range c.FrameEffects {
+		if c.FrameEffects[i] == fe {
 			return true
 		}
 	}
@@ -122,8 +122,8 @@ func (c *Card) HasFrameEffect(fe string) bool {
 }
 
 func (c *Card) HasPromoType(pt string) bool {
-	for _, promoType := range c.PromoTypes {
-		if promoType == pt {
+	for i := range c.PromoTypes {
+		if c.PromoTypes[i] == pt {
 			return true
 		}
 	}
