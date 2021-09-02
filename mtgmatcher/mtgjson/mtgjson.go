@@ -28,17 +28,16 @@ type Set struct {
 }
 
 type Card struct {
-	Artist      string `json:"artist"`
-	BorderColor string `json:"borderColor"`
-	FlavorName  string `json:"flavorName"`
-	FlavorText  string `json:"flavorText"`
+	Artist      string   `json:"artist"`
+	BorderColor string   `json:"borderColor"`
+	Finishes    []string `json:"finishes"`
+	FlavorName  string   `json:"flavorName"`
+	FlavorText  string   `json:"flavorText"`
 	ForeignData []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
 	FrameEffects        []string          `json:"frameEffects"`
 	FrameVersion        string            `json:"frameVersion"`
-	HasFoil             bool              `json:"hasFoil"`
-	HasNonFoil          bool              `json:"hasNonFoil"`
 	Identifiers         map[string]string `json:"identifiers"`
 	IsAlternative       bool              `json:"isAlternative"`
 	IsFullArt           bool              `json:"isFullArt"`
@@ -80,6 +79,11 @@ const (
 	LayoutSplit     = "split"
 	LayoutTransform = "transform"
 
+	FinishNonfoil = "nonfoil"
+	FinishFoil    = "foil"
+	FinishEtched  = "etched"
+	FinishGlossy  = "glossy"
+
 	FrameEffectExtendedArt = "extendedart"
 	FrameEffectFoilEtched  = "etched"
 	FrameEffectInverted    = "inverted"
@@ -110,6 +114,15 @@ func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
 		err = errors.New("empty AllPrintings file")
 	}
 	return
+}
+
+func (c *Card) HasFinish(fi string) bool {
+	for i := range c.Finishes {
+		if c.Finishes[i] == fi {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Card) HasFrameEffect(fe string) bool {

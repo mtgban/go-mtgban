@@ -43,6 +43,10 @@ var backend struct {
 
 var logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
+const (
+	suffixFoil = "_f"
+)
+
 func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
@@ -124,20 +128,25 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				Edition: set.Name,
 			}
 			// If card is foil, check whether it has a non-foil counterpart
-			if card.HasFoil {
+			if card.HasFinish(mtgjson.FinishFoil) {
 				uuid := card.UUID
-				// If it has, save the nonfoil cardobject, and change hash
-				if card.HasNonFoil {
+
+				// Foil [+ Nonfoil]
+				if card.HasFinish(mtgjson.FinishNonfoil) {
+					// Save the card object
 					uuids[uuid] = co
-					uuid += "_f"
-					// Update the main uuid of the card if different
+
+					// Update the uuid for the *next* finish type
+					uuid = card.UUID + suffixFoil
 					co.UUID = uuid
 				}
-				// Regardless of above, set the the foil status
+
+				// Foil
 				co.Foil = true
+				// Save the card object
 				uuids[uuid] = co
 			} else {
-				// If it's non-foil, use as-is
+				// Single printing, use as-is
 				uuids[card.UUID] = co
 			}
 		}

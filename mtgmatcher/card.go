@@ -58,23 +58,26 @@ func (c *Card) String() string {
 }
 
 func output(card mtgjson.Card, foil bool) string {
+	hasNonfoil := card.HasFinish(mtgjson.FinishNonfoil)
+	hasFoil := card.HasFinish(mtgjson.FinishFoil)
+
 	// In case the foiling information is incorrect
-	if !foil && !card.HasNonFoil {
+	if !foil && !hasNonfoil {
 		foil = true
-	} else if foil && !card.HasFoil {
+	} else if foil && !hasFoil {
 		foil = false
 	}
-	if card.HasFoil && !card.HasNonFoil {
+	if hasFoil && !hasNonfoil {
 		foil = true
-	} else if !card.HasFoil && card.HasNonFoil {
+	} else if !hasFoil && hasNonfoil {
 		foil = false
 	}
 
 	// Prepare the output card
 	id := card.UUID
 	// Append "_f" to the Id to distinguish from non-foil
-	if card.HasNonFoil && foil {
-		id += "_f"
+	if foil && hasNonfoil {
+		id += suffixFoil
 	}
 
 	return id

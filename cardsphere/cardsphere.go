@@ -9,6 +9,7 @@ import (
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 const (
@@ -124,8 +125,8 @@ func (cs *CardsphereIndex) parseBL() error {
 				}
 
 				card, _ := mtgmatcher.GetUUID(cardId)
-				if (!theCard.Foil && !card.HasNonFoil) ||
-					(theCard.Foil && !card.HasFoil) {
+				if (!theCard.Foil && !card.HasFinish(mtgjson.FinishNonfoil)) ||
+					(theCard.Foil && !card.HasFinish(mtgjson.FinishFoil)) {
 					continue
 				}
 

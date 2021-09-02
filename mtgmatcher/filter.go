@@ -834,9 +834,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				"Conspiracy: Take the Crown",
 				"Tenth Edition",
 				"Unhinged":
-				if inCard.Foil && card.HasNonFoil {
+				if inCard.Foil && card.HasFinish(mtgjson.FinishNonfoil) {
 					continue
-				} else if !inCard.Foil && card.HasFoil {
+				} else if !inCard.Foil && card.HasFinish(mtgjson.FinishFoil) {
 					continue
 				}
 			// Single letter variants
@@ -850,7 +850,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if set.Name == "Deckmasters" {
 						if inCard.Foil || inCard.isGenericPromo() {
 							numberSuffix = mtgjson.SuffixSpecial
-						} else if card.HasNonFoil &&
+						} else if card.HasFinish(mtgjson.FinishNonfoil) &&
 							(card.Name == "Incinerate" || card.Name == "Icy Manipulator") {
 							numberSuffix = ""
 						}
