@@ -26,6 +26,7 @@ type TCGPlayerIndex struct {
 type indexChan struct {
 	TCGProductId string
 	UUID         string
+	Etched       bool
 }
 
 func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
@@ -63,9 +64,11 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		productId := fmt.Sprint(result.ProductId)
 
 		uuid := ""
+		isEtched := false
 		for _, req := range reqs {
 			if req.TCGProductId == productId {
 				uuid = req.UUID
+				isEtched = req.Etched
 				break
 			}
 		}
@@ -74,6 +77,9 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		theCard := mtgmatcher.Card{
 			Id:   uuid,
 			Foil: result.SubTypeName == "Foil",
+		}
+		if isEtched {
+			theCard.Variation = "Etched"
 		}
 		cardId, err := mtgmatcher.Match(&theCard)
 		if err != nil {
@@ -84,8 +90,9 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		// Skip impossible entries, such as listing mistakes that list a foil
 		// price for a foil-only card
 		co, _ := mtgmatcher.GetUUID(cardId)
-		if (co.Foil && result.SubTypeName != "Foil") ||
-			(!co.Foil && result.SubTypeName != "Normal") {
+		if !co.Etched &&
+			((co.Foil && result.SubTypeName != "Foil") ||
+				(!co.Foil && result.SubTypeName != "Normal")) {
 			continue
 		}
 
@@ -175,13 +182,20 @@ func (tcg *TCGPlayerIndex) scrape() error {
 
 			for _, card := range set.Cards {
 				tcgId, found := card.Identifiers["tcgplayerProductId"]
-				if !found {
-					continue
+				if found {
+					pages <- indexChan{
+						TCGProductId: tcgId,
+						UUID:         card.UUID,
+					}
 				}
 
-				pages <- indexChan{
-					TCGProductId: tcgId,
-					UUID:         card.UUID,
+				tcgId, found = card.Identifiers["tcgplayerEtchedProductId"]
+				if found {
+					pages <- indexChan{
+						TCGProductId: tcgId,
+						UUID:         card.UUID,
+						Etched:       true,
+					}
 				}
 			}
 		}
