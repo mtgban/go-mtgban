@@ -130,6 +130,13 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "efdbf638-dbe6-5813-ba0b-dafbac1e1468",
+		Desc: "id_lookup_tcg",
+		In: Card{
+			Id: "239436",
+		},
+	},
+	MatchTest{
 		Id:   "9f35aba6-72d9-565b-bb8b-2ba628282b2e_e",
 		Desc: "id_lookup_etched",
 		In: Card{

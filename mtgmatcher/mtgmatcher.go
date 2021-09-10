@@ -19,7 +19,11 @@ func Match(inCard *Card) (cardId string, err error) {
 		id := strings.Split(inCard.Id, "_")[0]
 		_, err := uuid.Parse(id)
 		if err != nil {
-			inCard.Id = ""
+			// Another try to see if it's a plain number for tcg
+			_, err := strconv.Atoi(id)
+			if err != nil {
+				inCard.Id = ""
+			}
 		}
 	}
 	if inCard.Id != "" {
