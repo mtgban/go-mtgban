@@ -128,6 +128,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				Edition: set.Name,
 			}
 
+			// Save the original uuid
+			co.Identifiers["mtgjsonId"] = card.UUID
+
 			// Append "_f" and "_e" to uuids, unless etched is the only printing.
 			// If it's not etched, append "_f", unless foil is the only printing.
 			// Leave uuids unchanged, if there is a single printing of any kind.
