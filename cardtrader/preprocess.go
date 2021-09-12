@@ -306,6 +306,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				} else if cardName == "Willowdusk, Essence Seer" && number == "331" {
 					variant = "333"
 				}
+			case "Modern Horizons 2 Collectors":
+				variant = strings.TrimSuffix(number, "e")
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
 			strings.HasPrefix(edition, "Pro Tour 1996") {
@@ -536,6 +538,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		}
 	} else if strings.HasSuffix(edition, "Theme Deck") {
 		edition = strings.TrimSuffix(edition, " Theme Deck")
+	}
+
+	if strings.Contains(bp.Version, "Etched") {
+		if variant != "" {
+			variant += " "
+		}
+		variant += "Etched"
 	}
 
 	return &mtgmatcher.Card{
