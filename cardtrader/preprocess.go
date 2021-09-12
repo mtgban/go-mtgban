@@ -147,9 +147,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	u, err := url.Parse(bp.ScryfallId)
 	if err == nil {
 		base := path.Base(u.Path)
-		if base != "" && base != "." {
+		base = strings.TrimSuffix(base, ".")
+
+		id := mtgmatcher.Scryfall2UUID(base)
+		if id != "" {
 			return &mtgmatcher.Card{
-				Id:      base,
+				Id: id,
+				// Not needed but help debugging
 				Name:    cardName,
 				Edition: edition,
 			}, nil
