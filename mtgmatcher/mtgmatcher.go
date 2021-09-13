@@ -774,6 +774,14 @@ func adjustEdition(inCard *Card) {
 					}
 				}
 			}
+		case "Mind Stone":
+			if inCard.isWPNGateway() {
+				if Contains(inCard.Variation, "Gateway") {
+					edition = "PG07"
+				} else {
+					edition = "PWP21"
+				}
+			}
 		}
 	}
 	inCard.Edition = edition

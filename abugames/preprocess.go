@@ -277,6 +277,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				variation = "Promo Pack"
 				card.Edition = "KHM"
 			}
+		case "Yusri, Fortune's Flame", "Dragonsguard Elite":
+			card.Edition = "STX"
 		}
 		if strings.Contains(variation, "United Kingdom") {
 			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
@@ -290,6 +292,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				variation = "119"
 			}
 			card.Edition = "Secret Lair Drop"
+		} else if mtgmatcher.IsBasicLand(cardName) && strings.Contains(variation, "Full-Text") {
+			card.Edition = "SLD"
+			variation = strings.TrimPrefix(variation, "Full-Text ")
 		}
 	case "Anthologies":
 		if cardName == "Mountain" {
@@ -327,6 +332,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		if mtgmatcher.IsBasicLand(cardName) {
 			return nil, errors.New("unsupported")
 		}
+	}
+
+	if strings.Contains(variation, "The List") {
+		variation = card.Edition
+		card.Edition = "The List"
 	}
 
 	name, found := cardTable[cardName]

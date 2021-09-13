@@ -3902,5 +3902,6 @@ var MultiplePLISTTable = map[string]map[string]string{
 		"142":        "142",
 		"141":        "429",
 		"001":        "142",
+		"Promo":      "142",
 	},
 }
