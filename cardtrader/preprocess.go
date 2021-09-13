@@ -25,6 +25,7 @@ var cardTable = map[string]string{
 	"Explor":                         "Explore",
 	"Swamp (V.2)":                    "Swamp",
 	"Divine Smit":                    "Divine Smite",
+	"Archbound Javelineer":           "Arcbound Javelineer",
 
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
@@ -62,8 +63,8 @@ var id2edition = map[int]string{
 	34697: "PARL",
 	31629: "PAL99",
 	29998: "PAL00",
-	29063: "PAL01 1",
-	29053: "PAL01 11",
+	29063: "PAL01",
+	29053: "PAL01",
 	27023: "PAL03",
 	25893: "PAL04",
 	24945: "PAL05",
@@ -241,6 +242,11 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		if found {
 			edition = ed
 		}
+		if bp.Id == 29063 {
+			variant = "1"
+		} else if bp.Id == 29053 {
+			variant = "11"
+		}
 	case "Secret Lair Drop Series":
 		variant = number
 		switch cardName {
@@ -312,6 +318,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				}
 			case "Modern Horizons 2 Collectors":
 				variant = strings.TrimSuffix(number, "e")
+
+				if cardName == "Gaea's Will" && number == "413" {
+					variant = "412"
+				}
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
 			strings.HasPrefix(edition, "Pro Tour 1996") {
@@ -424,7 +434,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					if mtgmatcher.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
 						if cardName == "Sorcerous Spyglass" {
-							edition = "PIXL"
+							edition = "PXLN"
 						}
 					} else {
 						edition = "Core Set 2020"
@@ -457,6 +467,12 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 						variant = "Promo Pack"
 					} else {
 						edition = strings.TrimSuffix(edition, " Promos")
+						switch cardName {
+						case "Frantic Inventory":
+							variant = "394"
+						case "You Find the Villains' Lair":
+							variant = "399"
+						}
 					}
 				}
 			}
@@ -539,6 +555,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		case "Chord of Calling", "Wrath of God":
 			edition = "Double Masters"
 			variant = number
+		case "Magic Missile":
+			edition = "ARF"
+			variant = "401"
 		}
 	} else if strings.HasSuffix(edition, "Theme Deck") {
 		edition = strings.TrimSuffix(edition, " Theme Deck")
