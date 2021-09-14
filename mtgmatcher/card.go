@@ -683,9 +683,13 @@ func ParseCommanderEdition(edition string) string {
 		"Kaldheim":        "Kaldheim Commander",
 		"Strixhaven":      "Commander 2021",
 		"Forgotten":       "Forgotten Realms Commander",
+		"Midnight":        "Midnight Hunt Commander",
 	}
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {
+			if strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") {
+				ed += " Display Commanders"
+			}
 			return ed
 		}
 	}
