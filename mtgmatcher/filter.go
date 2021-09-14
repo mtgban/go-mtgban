@@ -158,6 +158,37 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
+		// This needs to be above any possible printing type below
+		case inCard.isMysteryList():
+			if inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
+				switch set.Code {
+				case "FMB1":
+				default:
+					continue
+				}
+			} else {
+				switch set.Code {
+				case "MB1":
+					if inCard.Variation == "The List" || inCard.Edition == "The List" {
+						continue
+					}
+				case "PLIST":
+					if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" {
+						continue
+					}
+				case "CMB1":
+					if Contains(inCard.Variation, "No PW Symbol") || Contains(inCard.Variation, "No Symbol") || Contains(inCard.Variation, "V.2") {
+						continue
+					}
+				case "CMB2":
+					if !(Contains(inCard.Variation, "No PW Symbol") || Contains(inCard.Variation, "No Symbol") || Contains(inCard.Variation, "V.2")) {
+						continue
+					}
+				default:
+					continue
+				}
+			}
+
 		// Some providers use "Textless" for MF cards
 		case inCard.isRewards() && !inCard.isMagicFest():
 			switch {
@@ -654,7 +685,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if err == nil && num < set.BaseSetSize {
 					continue
 				}
-			} else if setDate.After(PromosForEverybodyYay) {
+			} else if setDate.After(PromosForEverybodyYay) && !inCard.isMysteryList() {
 				// ELD-Style borderless
 				if inCard.isBorderless() {
 					if card.BorderColor != mtgjson.BorderColorBorderless {
@@ -987,6 +1018,18 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			}
 			outCards = filteredOutCards
 		}
+	}
+	// If card is indistinguishable across MB1 or PLIST, select PLIST
+	// Duplicate MB1 cards should have an entry in variants.go
+	if len(outCards) > 1 && inCard.isMysteryList() {
+		var filteredOutCards []mtgjson.Card
+		for _, card := range outCards {
+			if card.SetCode != "PLIST" {
+				continue
+			}
+			filteredOutCards = append(filteredOutCards, card)
+		}
+		outCards = filteredOutCards
 	}
 
 	return

@@ -2122,7 +2122,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "cafa10aa-9fa7-5b41-99d7-cbfd51eae016",
+		Id:   "12e7087f-56ce-5e19-92d9-028fcaa5cda4",
 		Desc: "mb1list_in_both_undistinguishable",
 		In: Card{
 			Name:    "Living Death",
@@ -2139,8 +2139,8 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "ab89a3c7-9262-5060-bb1f-cbc8630613b2",
-		Desc: "mb1list_in_both_mb1_untagged",
+		Id:   "65166320-c130-50e5-a78a-8f60bc8c453c",
+		Desc: "mb1list_in_both_plist_priority",
 		In: Card{
 			Name:    "Imperious Perfect",
 			Edition: "Mystery Booster The List",

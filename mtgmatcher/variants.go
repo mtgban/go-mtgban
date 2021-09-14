@@ -2656,6 +2656,117 @@ var mirVariants = map[string]map[string]string{
 	},
 }
 
+// Cards present in MB1 that got reprinted in PLIST using a different tag. Also
+// works for cards in PLIST that got printed multiple times. This is because in
+// case of multiple matches, PLIST is selected.
+// https://scryfall.com/search?q=in%3Aplist+in%3Amb1+%28e%3Amb1+or+e%3Aplist%29&unique=prints
+var mb1plistVariants = map[string]map[string]string{
+	// MB1 cards reprinted in PLIST
+	"Aura Shards": map[string]string{
+		"cmd":            "1392",
+		"commander":      "1392",
+		"commander 2011": "1392",
+	},
+	"Bojuka Bog": map[string]string{
+		"c18":                     "1660",
+		"commander 2018":          "1660",
+		"commander: 2018 edition": "1660",
+	},
+	"Brainstorm": map[string]string{
+		"a25":        "301",
+		"masters 25": "301",
+	},
+	"Burst Lightning": map[string]string{
+		"mm2":                 "879",
+		"modern masters 2015": "879",
+	},
+	"Demonic Tutor": map[string]string{
+		"duel deck: divine vs. demonic": "620",
+		"duel decks: demonic vs divine": "620",
+		"dvd":                           "620",
+	},
+	"Disenchant": map[string]string{
+		"core set 2020": "77",
+		"m20":           "77",
+	},
+	"Eternal Witness": map[string]string{
+		"ultimate masters": "1200",
+		"uma":              "1200",
+	},
+	"Fact or Fiction": map[string]string{
+		"cm2":                         "371",
+		"commander anthology vol. ii": "371",
+	},
+	"Fireball": map[string]string{
+		"iconic masters": "926",
+		"ima":            "926",
+	},
+	"Guttersnipe": map[string]string{
+		"iconic masters": "970",
+		"ima":            "970",
+	},
+	"Harmonize": map[string]string{
+		"c17":            "1234",
+		"commander 2017": "1234",
+	},
+	"Imperious Perfect": map[string]string{
+		"cma":                 "1242",
+		"commander anthology": "1242",
+	},
+	"Lightning Bolt": map[string]string{
+		"archenemy: nicol bolas": "1001",
+		"e01":                    "1001",
+
+		// PLIST variants
+		"magicfest":    "142",
+		"masters 25":   "429",
+		"prm":          "142",
+		"a25":          "429",
+		"142":          "142",
+		"141":          "429",
+		"the list 001": "142",
+		"promo":        "142",
+	},
+	"Man-o'-War": map[string]string{
+		"a25":        "421",
+		"masters 25": "421",
+	},
+	"Negate": map[string]string{
+		"rivals of ixalan": "443",
+		"rix":              "443",
+	},
+	"Painful Lesson": map[string]string{
+		"akh":      "727",
+		"amonkhet": "727",
+	},
+	"Skullclamp": map[string]string{
+		"c17":                     "1630",
+		"commander 2017":          "1630",
+		"commander: 2017 edition": "1630",
+	},
+	"Sleep": map[string]string{
+		"core set 2019": "495",
+		"m19":           "495",
+	},
+	"Terminate": map[string]string{
+		"cma":                 "1495",
+		"commander anthology": "1495",
+	},
+	"Thought Vessel": map[string]string{
+		"cm2":                           "1639",
+		"commander anthology vol. ii":   "1639",
+		"commander anthology volume ii": "1639",
+	},
+	"Vampire Nighthawk": map[string]string{
+		"e02":                 "813",
+		"explorers of ixalan": "813",
+	},
+	"Young Pyromancer": map[string]string{
+		"dds":                       "1105",
+		"duel deck: mind vs. might": "1105",
+	},
+}
+
 var ogwVariants = map[string]map[string]string{
 	"Wastes": map[string]string{
 		"ogw183": "183",
@@ -3846,6 +3957,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Limited Edition Beta":                oldLandVariants,
 	"Magic Premiere Shop 2005":            pmpsVariants,
 	"Mirage":                              mirVariants,
+	"Mystery Booster":                     mb1plistVariants,
 	"Oath of the Gatewatch":               ogwVariants,
 	"Portal Second Age":                   po2Variants,
 	"Portal":                              porVariants,
@@ -3858,6 +3970,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Shadows over Innistrad":              soiVariants,
 	"Summer Magic / Edgar":                ed3Variants,
 	"Tempest":                             tmpVariants,
+	"The List":                            mb1plistVariants,
 	"Unglued":                             ulgVariants,
 	"Unlimited Edition":                   oldLandVariants,
 	"Unstable":                            ustVariants,
@@ -3866,42 +3979,4 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"World Championship Decks 1999":       wc99Variants,
 	"World Championship Decks 2001":       wc01Variants,
 	"World Championship Decks 2002":       wc02Variants,
-}
-
-// This table contains variants to tell PLIST cards apart from MB1.
-var AliasedPLISTTable = map[string]map[string]bool{
-	"Aura Shards": map[string]bool{
-		"Invasion": true,
-	},
-	"Bojuka Bog": map[string]bool{
-		"Worldwake": true,
-	},
-	"Eternal Witness": map[string]bool{
-		"Fifth Dawn": true,
-	},
-	"Man-o'-War": map[string]bool{
-		"Visions": true,
-	},
-	"Skullclamp": map[string]bool{
-		"Commander 2011": true,
-	},
-	"Thought Vessel": map[string]bool{
-		"Commander 2015": true,
-	},
-	"Vampire Nighthawk": map[string]bool{
-		"Zendikar": true,
-	},
-}
-
-var MultiplePLISTTable = map[string]map[string]string{
-	"Lightning Bolt": map[string]string{
-		"MagicFest":  "142",
-		"Masters 25": "429",
-		"PRM":        "142",
-		"A25":        "429",
-		"142":        "142",
-		"141":        "429",
-		"001":        "142",
-		"Promo":      "142",
-	},
 }

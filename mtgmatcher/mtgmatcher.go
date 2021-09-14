@@ -402,96 +402,6 @@ func adjustEdition(inCard *Card) {
 	edition := inCard.Edition
 	variation := inCard.Variation
 
-	// Need to decouple The List and Mystery booster first or it will confuse
-	// later matching. For an uptodate list of aliased cards visit this link:
-	// https://scryfall.com/search?q=in%3Aplist+%28in%3Amb1+or+in%3Afmb1%29+%28e%3Amb1+or+e%3Aplist+or+e%3Afmb1%29&unique=prints&as=grid&order=name
-	// Skip only if the edition or variation are explictly set as The List
-	if edition != "The List" && variation != "The List" &&
-		(inCard.Contains("Mystery Booster") || inCard.Contains("The List")) {
-		if (inCard.Foil || inCard.Contains("Foil") && !inCard.Contains("Non")) && len(MatchInSet(inCard.Name, "FMB1")) != 0 {
-			edition = "FMB1"
-		} else if len(MatchInSet(inCard.Name, "CMB1")) != 0 {
-			if Contains(inCard.Variation, "No PW Symbol") || Contains(inCard.Variation, "No Symbol") || Contains(inCard.Variation, "V.2") {
-				edition = "CMB2"
-			} else {
-				edition = "CMB1"
-			}
-		} else {
-			// Adjust property, can only be non-foil from here
-			inCard.Foil = false
-
-			// Check if card is is only one of these two sets
-			mb1s := MatchInSet(inCard.Name, "MB1")
-			plists := MatchInSet(inCard.Name, "PLIST")
-			if len(mb1s) > 0 && len(plists) == 0 {
-				edition = "MB1"
-				// Ignore all other data, we have all we need now
-				if !Equals(inCard.Name, "Phantom Centaur") {
-					variation = ""
-				}
-			} else if len(mb1s) == 0 && len(plists) == 1 {
-				edition = "PLIST"
-				// Ignore all other data, we have all we need now
-				variation = ""
-			} else if len(mb1s) == 1 && len(plists) == 1 {
-				switch variation {
-				// If it has one of these special treatments it's PLIST definitely
-				case "Player Rewards",
-					"MagicFest",
-					"Commander",
-					"Extended Art",
-					"Signature Spellbook: Jace",
-					"The List Textless",
-					"Player Rewards Promo",
-					"Player Rewards Textless",
-					"RNA MagicFest Promo",
-					"Commander: 2011 Edition",
-					"Commander: 2015 Edition",
-					"Champs Full Art",
-					"State Champs Promo":
-					edition = "PLIST"
-				default:
-					// Otherwise it's probably MB1, including the indistinguishable
-					// ones, unless variation has additional information
-					edition = "MB1"
-
-					// Adjust variation to get a correct edition name
-					ed, found := EditionTable[variation]
-					if found {
-						variation = ed
-					}
-
-					// Check if the card name has the appropriate variation that
-					// lets us determine it's from PLIST
-					if AliasedPLISTTable[inCard.Name][variation] {
-						edition = "PLIST"
-					}
-				}
-
-				// Ignore all other data, we have all we need now
-				variation = ""
-			} else if len(mb1s) == 1 && len(plists) > 1 {
-				// PLIST has numerically higher chances of being correct
-				edition = "PLIST"
-
-				// Double check that there is something loaded - if there is,
-				// we have the number ready, otherwise it's a MB1 card
-				cn, found := MultiplePLISTTable[inCard.Name][variation]
-				if found {
-					variation = cn
-				} else {
-					edition = "MB1"
-					variation = ""
-				}
-			}
-		}
-	} else if edition == "The List" || variation == "The List" {
-		// Also here, as the variation might overwrite the edition later
-		variation = MultiplePLISTTable[inCard.Name][variation]
-		// Make sure edition is set
-		edition = "The List"
-	}
-
 	set, found := backend.Sets[strings.ToUpper(edition)]
 	if found {
 		edition = set.Name
@@ -604,6 +514,9 @@ func adjustEdition(inCard *Card) {
 
 	// Special handling since so many providers get this wrong
 	switch {
+	// Do nothing here, prevent tags from being mixed up
+	case inCard.isMysteryList():
+
 	// XLN Treasure Chest
 	case inCard.isBaB() && len(MatchInSet(inCard.Name, "PXTC")) != 0:
 		edition = backend.Sets["PXTC"].Name
