@@ -177,11 +177,11 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 						continue
 					}
 				case "CMB1":
-					if Contains(inCard.Variation, "No PW Symbol") || Contains(inCard.Variation, "No Symbol") || Contains(inCard.Variation, "V.2") {
+					if inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || inCard.Variation == "V.2" {
 						continue
 					}
 				case "CMB2":
-					if !(Contains(inCard.Variation, "No PW Symbol") || Contains(inCard.Variation, "No Symbol") || Contains(inCard.Variation, "V.2")) {
+					if !(inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || inCard.Variation == "V.2") {
 						continue
 					}
 				default:

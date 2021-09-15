@@ -2645,6 +2645,22 @@ var MatchTests = []MatchTest{
 			Edition:   "Mystery Booster Playtest Cards",
 		},
 	},
+	MatchTest{
+		Id:   "a3f3de35-f107-57a5-aa87-74195a77795f",
+		Desc: "mb1playtest_alt_first_printing",
+		In: Card{
+			Name:    "Baneslayer Aspirant",
+			Edition: "Mystery Booster - Test Cards (Symbol)",
+		},
+	},
+	MatchTest{
+		Id:   "60ff6d75-8c6f-56af-8106-39b777824bad",
+		Desc: "mb1playtest_alt_second_printing",
+		In: Card{
+			Name:    "Baneslayer Aspirant",
+			Edition: "Mystery Booster - Test Cards (No Symbol)",
+		},
+	},
 
 	MatchTest{
 		Id:   "591c29a1-c671-5a53-b754-88a9aaa6e726",
