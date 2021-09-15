@@ -777,9 +777,9 @@ func adjustEdition(inCard *Card) {
 		case "Mind Stone":
 			if inCard.isWPNGateway() {
 				if Contains(inCard.Variation, "Gateway") {
-					edition = "PG07"
+					edition = "Gateway 2007"
 				} else {
-					edition = "PWP21"
+					edition = "Wizards Play Network 2021"
 				}
 			}
 		}
