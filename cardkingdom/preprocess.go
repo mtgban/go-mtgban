@@ -36,6 +36,14 @@ var skuFixupTable = map[string]string{
 	"P2XM-384":  "2XM-384",
 
 	"FPLGS-001": "PLG20-001",
+
+	"WC97-JS097":    "WC97-JS242",
+	"WC97-PM037":    "WC97-PM037B",
+	"WC98-RB330":    "WC98-RB330SB",
+	"WC01-AB078":    "WC01-AB078SB",
+	"WC02-SHH266":   "WC02-SHH266SB",
+	"WC02-CR057SBA": "WC02-CR057SB",
+	"WC03-WE062":    "WC03-WE062SB",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
@@ -110,14 +118,21 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	variation := card.Variation
 	edition := card.Edition
 	switch edition {
-	case "Promotional",
-		"World Championships":
+	case "Promotional":
 		edition = setCode
 		switch {
 		case strings.Contains(variation, "APAC"),
 			strings.Contains(variation, "Euro"),
 			strings.Contains(variation, "MPS"):
 			variation = number
+		}
+	case "World Championships":
+		edition = setCode
+		variation = number
+
+		// Duplicate sku
+		if sku == "PTC-ET015SB" && card.Name == "Circle of Protection: Red" {
+			variation = "et17sb"
 		}
 	case "Alpha", "Beta", "Unlimited", "3rd Edition", "4th Edition",
 		"Antiquities", "Fallen Empires", "Alliances", "Homelands",
