@@ -14,7 +14,6 @@ import (
 // be mistaken for edition codes (thus misdirecting the matcher) or that contain
 // incorrect numbers. Sometimes both.
 var skuFixupTable = map[string]string{
-	"013A":     "FEM-013A",
 	"FEM-070B": "FEM-030B",
 
 	"ATQ-080A": "ATQ-080C",
@@ -52,6 +51,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		strings.Contains(card.Variation, "Oversized") ||
 		strings.Contains(card.Edition, "Art Series") ||
 		card.Variation == "MagicFest Non-Foil - 2020" ||
+		card.SKU == "FSLD-059" ||
 		card.SKU == "OVERSIZ" {
 		return nil, errors.New("skipping")
 	}
@@ -91,9 +91,12 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		if len(setCode) == 4 && (mtgmatcher.Contains(card.Variation, "buyabox") || mtgmatcher.Contains(card.Variation, "bundle")) {
 			set, err := mtgmatcher.GetSet(setCode[1:])
 			if err != nil {
-				return nil, fmt.Errorf("unknown sku code %s", setCode)
+				return nil, fmt.Errorf("unknown edition code %s", setCode)
 			}
-			setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+			setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
+			if err != nil {
+				return nil, fmt.Errorf("unknown set date %s", err.Error())
+			}
 			if mtgmatcher.Contains(card.Variation, "buyabox") && setDate.After(mtgmatcher.BuyABoxNotUniqueDate) {
 				setCode = setCode[1:]
 			} else if mtgmatcher.Contains(card.Variation, "bundle") && setDate.After(mtgmatcher.BuyABoxInExpansionSetsDate) {
