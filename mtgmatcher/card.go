@@ -459,7 +459,7 @@ func (c *Card) isWorldChamp() bool {
 		Contains(c.Edition, "WCD")
 }
 
-func (c *Card) worldChampPrefix() (string, bool) {
+func parseWorldChampPrefix(variation string) (string, bool) {
 	players := map[string]string{
 		"Aeo Paquette":         "ap",
 		"Alex Borteh":          "ab",
@@ -503,14 +503,28 @@ func (c *Card) worldChampPrefix() (string, bool) {
 		"Tom van de Logt":      "tvdl",
 		"Wolfgang Eder":        "we",
 	}
-	for player := range players {
-		if c.Contains(player) {
-			sb := strings.Contains(strings.ToLower(c.Variation), "sb") ||
-				Contains(c.Variation, "Sideboard")
-			return players[player], sb
+
+	// We cannot use HasPrefix for the second check due to mlp/ml aliasing
+	variation = strings.ToLower(variation)
+	idx := strings.IndexFunc(variation, func(c rune) bool {
+		return unicode.IsDigit(c)
+	})
+	// Iterate over the player list and check if their name or their initials are present
+	for player, tag := range players {
+		if Contains(variation, player) || (idx > -1 && variation[:idx] == tag) {
+			sb := strings.Contains(variation, "sb") || strings.Contains(variation, "sideboard")
+			return tag, sb
 		}
 	}
 	return "", false
+}
+
+func (c *Card) worldChampPrefix() (string, bool) {
+	prefix, sideboard := parseWorldChampPrefix(c.Variation)
+	if prefix == "" {
+		return parseWorldChampPrefix(c.Edition)
+	}
+	return prefix, sideboard
 }
 
 func (c *Card) isDuelsOfThePW() bool {

@@ -1993,6 +1993,24 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "f87e1c26-4767-5738-95d2-3fc36b77db04",
+		Desc: "wcd_with_correct_number_and_zero",
+		In: Card{
+			Name:      "Cabal Therapy",
+			Variation: "pk062",
+			Edition:   "WC03",
+		},
+	},
+	MatchTest{
+		Id:   "c1db27a8-7128-5b2c-bf2e-9db972aa54e2",
+		Desc: "wcd_with_correct_number_and_three_letters",
+		In: Card{
+			Name:      "Ancient Tomb",
+			Variation: "mlp315",
+			Edition:   "WC99",
+		},
+	},
+	MatchTest{
 		Id:   "fbd3ea3e-80cb-5f55-b41e-5730aff46c6a",
 		Desc: "wcd_with_correct_original_number",
 		In: Card{
@@ -2025,6 +2043,24 @@ var MatchTests = []MatchTest{
 		In: Card{
 			Name:    "City of Brass",
 			Edition: "WCD 1997: Paul McCabe",
+		},
+	},
+	MatchTest{
+		Id:   "c831b7f4-6c7e-58f2-90b3-344d78a7297f",
+		Desc: "wcd_ptc_dupe",
+		In: Card{
+			Name:      "Circle of Protection: Green",
+			Variation: "bl014sb",
+			Edition:   "PTC",
+		},
+	},
+	MatchTest{
+		Id:   "a237310c-464d-58d5-9387-f53e283378c4",
+		Desc: "wcd_ptc_dupe_alt",
+		In: Card{
+			Name:      "Circle of Protection: Green",
+			Variation: "bl016sb",
+			Edition:   "PTC",
 		},
 	},
 

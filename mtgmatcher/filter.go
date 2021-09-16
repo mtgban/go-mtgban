@@ -520,7 +520,17 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// But first, special handling for WCD (skip if player details are missing)
 			if inCard.isWorldChamp() {
 				prefix, sideboard := inCard.worldChampPrefix()
-				if prefix != "" {
+				wcdNum := extractWCDNumber(inCard.Variation, prefix, sideboard)
+
+				// If a wcdNum is found, check that it's matching the card number
+				// Else rebuild the number manually using prefix, sideboard, and num as hints
+				if wcdNum != "" {
+					if wcdNum == card.Number {
+						outCards = append(outCards, card)
+					}
+					// Skip anything else, the number needs to be correct
+					continue
+				} else if prefix != "" {
 					// Copy this field so we can discard portions that have
 					// already been used for deduplication
 					cn := card.Number
@@ -558,22 +568,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if len(cn) > 0 && unicode.IsLetter(rune(cn[len(cn)-1])) {
 						suffix := inCard.possibleNumberSuffix()
 						if suffix != "" && !strings.HasSuffix(cn, suffix) {
-							continue
-						}
-					}
-				} else {
-					// Try looking at the collector number if it is in the correct form
-					if inCard.Variation != "" &&
-						!strings.Contains(inCard.Variation, "-") &&
-						unicode.IsLetter(rune(inCard.Variation[0])) {
-						ok := false
-						for _, letter := range inCard.Variation {
-							if unicode.IsDigit(rune(letter)) {
-								ok = true
-								break
-							}
-						}
-						if ok && card.Number != inCard.Variation {
 							continue
 						}
 					}
