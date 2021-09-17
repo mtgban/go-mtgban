@@ -3288,10 +3288,26 @@ var sldVariants = map[string]map[string]string{
 		"secret lair crushing brutality": "241",
 	},
 	"Karn, the Great Creator": map[string]string{
-		"stained glass": "501",
+		"":                  "501",
+		"secret lair":       "501",
+		"stained glass":     "501",
+		"stained glass art": "501",
 	},
 	"Teferi, Time Raveler": map[string]string{
-		"stained glass": "526",
+		"":                  "526",
+		"secret lair":       "526",
+		"stained glass":     "526",
+		"stained glass art": "526",
+	},
+	"Arcane Signet": map[string]string{
+		"":                            "201",
+		"secret lair":                 "201",
+		"secret lair: a box of rocks": "201",
+	},
+	"Birds of Paradise": map[string]string{
+		"":                                    "92",
+		"secret lair":                         "92",
+		"secret lair: ornithological studies": "92",
 	},
 }
 
