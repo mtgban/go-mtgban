@@ -2365,6 +2365,16 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// Known fixups
+	MatchTest{
+		Id:   "85e31db0-769e-51d8-a677-8d810653e70a_e",
+		Desc: "boosterfun_foil_etched",
+		In: Card{
+			Name:      "Marsh Flats",
+			Variation: "Retro Frame Foil Etched",
+			Edition:   "Modern Horizons 2 - Foil Etched",
+		},
+	},
 	MatchTest{
 		Id:   "9fce4a02-01ec-5dc3-a3e9-92646a69e6fd",
 		Desc: "planechase_planes",

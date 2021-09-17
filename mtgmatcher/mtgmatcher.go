@@ -455,7 +455,7 @@ func adjustEdition(inCard *Card) {
 		}
 	default:
 		for _, tag := range []string{
-			"(Collector Edition)", "Collectors", "Extras", "Variants",
+			"(Collector Edition)", "Collectors", "Extras", "Variants", "Foil Etched",
 		} {
 			// Strip away any extra tags
 			if strings.HasSuffix(edition, tag) {
