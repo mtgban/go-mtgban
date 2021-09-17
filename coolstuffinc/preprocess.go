@@ -307,6 +307,22 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.HasPrefix(cardName, "Blank Card") {
 			return nil, errors.New("untracked")
 		}
+	case "Commander Legends: Variants":
+		if cardName == "Blim, Comedic Genius" {
+			variant = "Etched"
+		}
+	case "Mystical Archive":
+		if strings.Contains(variant, "Showcase Frame") {
+			variant = strings.Replace(variant, "Showcase Frame", "", 1)
+		}
+	case "D&D: Adventures in the Forgotten Realms: Variants":
+		if cardName == "Zariel, Archduke of Avernus" && variant == "Showcase Frame" {
+			variant = "Borderless"
+		}
+	case "Promo":
+		if cardName == "Eye of Ugin" && variant == "" {
+			edition = "J20"
+		}
 	default:
 		if strings.Contains(variant, "Oversized") {
 			return nil, errors.New("not single")
