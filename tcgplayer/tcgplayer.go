@@ -34,6 +34,7 @@ type marketChan struct {
 	UUID      string
 	Condition string
 	Printing  string
+	Finish    string
 	ProductId int
 	SkuId     int
 }
@@ -104,6 +105,9 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			Id:   req.UUID,
 			Foil: req.Printing == "FOIL",
 		}
+		if req.Finish == "FOIL ETCHED" {
+			theCard.Variation = "Etched"
+		}
 		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), result.ProductId, req.UUID)
@@ -113,8 +117,9 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 		// Skip impossible entries, such as listing mistakes that list a foil
 		// price for a foil-only card
 		co, _ := mtgmatcher.GetUUID(cardId)
-		if (co.Foil && req.Printing != "FOIL") ||
-			(!co.Foil && req.Printing != "NON FOIL") {
+		if !co.Etched &&
+			((co.Foil && req.Printing != "FOIL") ||
+				(!co.Foil && req.Printing != "NON FOIL")) {
 			continue
 		}
 
@@ -306,6 +311,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						UUID:      uuid,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
+						Finish:    sku.Finish,
 						ProductId: sku.ProductId,
 						SkuId:     sku.SkuId,
 					}

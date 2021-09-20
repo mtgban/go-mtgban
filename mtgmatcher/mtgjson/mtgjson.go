@@ -163,6 +163,7 @@ type TCGSku struct {
 	Condition string `json:"condition"`
 	Language  string `json:"language"`
 	Printing  string `json:"printing"`
+	Finish    string `json:"finish"`
 	ProductId int    `json:"productId"`
 	SkuId     int    `json:"skuId"`
 }
