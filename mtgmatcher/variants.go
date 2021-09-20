@@ -2680,6 +2680,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"mm2":                 "879",
 		"modern masters 2015": "879",
 	},
+	"Call of the Nightwing": map[string]string{
+		"gk1":                          "1405",
+		"guilds of ravnica guild kits": "1405",
+	},
 	"Demonic Tutor": map[string]string{
 		"duel deck: divine vs. demonic": "620",
 		"duel decks: demonic vs divine": "620",
@@ -2696,6 +2700,10 @@ var mb1plistVariants = map[string]map[string]string{
 	"Fact or Fiction": map[string]string{
 		"cm2":                         "371",
 		"commander anthology vol. ii": "371",
+	},
+	"Faithless Looting": map[string]string{
+		"cm2":                         "919",
+		"commander anthology vol. ii": "919",
 	},
 	"Fireball": map[string]string{
 		"iconic masters": "926",
@@ -2730,6 +2738,11 @@ var mb1plistVariants = map[string]map[string]string{
 	"Man-o'-War": map[string]string{
 		"a25":        "421",
 		"masters 25": "421",
+	},
+	"Mortify": map[string]string{
+		"c18":                     "1457",
+		"commander 2018":          "1457",
+		"commander: 2018 edition": "1457",
 	},
 	"Negate": map[string]string{
 		"rivals of ixalan": "443",
