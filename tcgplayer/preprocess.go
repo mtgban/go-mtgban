@@ -62,6 +62,7 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		edition = "PCMD"
 	}
 
+	ogVariant := variant
 	switch edition {
 	case "Renaissance":
 		// Only keep the German for this edition
@@ -376,10 +377,6 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		if mtgmatcher.IsBasicLand(cardName) {
 			variant = product.getNum()
 		}
-	case "Commander 2021":
-		if variant == "Thick Stock Display Commander" {
-			edition += " " + variant
-		}
 	case "Adventures In The Forgotten Realms":
 		if variant == "Dungeon Module" {
 			variant = "Showcase"
@@ -391,7 +388,16 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		variant = product.getNum()
 	}
 
+	// Handle any particular finish
 	isFoil := strings.Contains(variant, "Foil") || edition == "Mystery Booster Retail Exclusives"
+	if strings.Contains(ogVariant, "Etched") {
+		if variant != "" {
+			variant += " "
+		}
+		variant += "Etched"
+	} else if variant == "Thick Stock Display Commander" {
+		edition += " " + variant
+	}
 
 	return &mtgmatcher.Card{
 		Name:      cardName,
