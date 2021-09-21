@@ -2715,6 +2715,14 @@ var MatchTests = []MatchTest{
 			Name: "Callous Bloodmage (Extended) [Strixhaven: School of Mages]",
 		},
 	},
+	MatchTest{
+		Id:   "11727081-4070-56db-8162-b970dd7f94bc_f",
+		Desc: "tcgcollection_syntax",
+		In: Card{
+			Name:    "Adarkar Wastes - [Foil]",
+			Edition: "Tenth Edition",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

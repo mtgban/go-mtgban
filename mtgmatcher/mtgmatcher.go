@@ -89,6 +89,13 @@ func Match(inCard *Card) (cardId string, err error) {
 			}
 		}
 	}
+	// TCG collection weird syntax, with foil in the name itself
+	if strings.HasSuffix(inCard.Name, "[Foil]") {
+		inCard.Foil = true
+		inCard.Name = strings.TrimSuffix(inCard.Name, " [Foil]")
+		inCard.Name = strings.TrimSuffix(inCard.Name, "-")
+		inCard.Name = strings.TrimSuffix(inCard.Name, " ")
+	}
 
 	// Simple case in which there is a variant embedded in the name
 	if strings.Contains(inCard.Name, "(") {
