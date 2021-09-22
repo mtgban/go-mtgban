@@ -626,15 +626,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = number
 			}
 		} else if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
-			variant += edition
-
 			// Pre-search the card, if not found it's likely a sideboard variant
 			_, err := mtgmatcher.Match(&mtgmatcher.Card{
 				Name:    cardName,
 				Edition: edition,
 			})
 			if err != nil {
-				variant = "sideboard"
+				edition += " Sideboard"
 			}
 		} else if strings.Contains(edition, ": Extras") || strings.Contains(edition, ": Promos") {
 			// Some cards escape the previous checks
