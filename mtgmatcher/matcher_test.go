@@ -1411,6 +1411,15 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "decc16dd-0325-50ae-bd43-07ad43d75753",
+		Desc: "lunar_promo",
+		In: Card{
+			Name:      "Sethron, Hurloon General",
+			Variation: "(Lunar New Year)",
+			Edition:   "Promo: General",
+		},
+	},
 
 	// Release cards
 	MatchTest{
