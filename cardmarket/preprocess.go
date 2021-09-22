@@ -118,6 +118,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	if skipCard ||
 		mtgmatcher.IsToken(cardName) ||
+		strings.Contains(cardName, "Art Series") ||
 		strings.Contains(cardName, "On Your Turn") {
 		return nil, errors.New("not single")
 	}
@@ -635,11 +636,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition += " Sideboard"
 			}
 		} else if strings.Contains(edition, ": Extras") || strings.Contains(edition, ": Promos") {
-			// Some cards escape the previous checks
-			if strings.Contains(cardName, "Art Series: ") {
-				return nil, errors.New("untracked")
-			}
-
 			// These sets usually have incorrect numbering
 			if variant == number {
 				variant = ""
