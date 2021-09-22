@@ -34,7 +34,8 @@ var skuFixupTable = map[string]string{
 	"P2XM-383":  "2XM-383",
 	"P2XM-384":  "2XM-384",
 
-	"FPLGS-001": "PLG20-001",
+	"FPLGS-001":  "PLG20-001",
+	"FPLG21-001": "PWP21-005",
 
 	"WC97-JS097":    "WC97-JS242",
 	"WC97-PM037":    "WC97-PM037B",
