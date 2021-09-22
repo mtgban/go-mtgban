@@ -163,6 +163,17 @@ func Match(inCard *Card) (cardId string, err error) {
 			if Equals(backend.Sets[setCode].Name, inCard.Edition) {
 				logger.Println("Found a perfect match with", inCard.Edition, setCode)
 				cardSet[setCode] = MatchInSet(inCard.Name, setCode)
+				if inCard.isPrerelease() || inCard.isPromoPack() {
+					setName := backend.Sets[setCode].Name
+					if !strings.HasSuffix(setName, "Promos") {
+						setCode = "P" + setCode
+						set, found := backend.Sets[setCode]
+						if found {
+							logger.Println("Detected possible promo, adding edition", set.Name, setCode)
+							cardSet[setCode] = MatchInSet(inCard.Name, setCode)
+						}
+					}
+				}
 			}
 		}
 

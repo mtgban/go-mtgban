@@ -683,6 +683,15 @@ var MatchTests = []MatchTest{
 			Edition: "Core 2021 - Promo Pack",
 		},
 	},
+	MatchTest{
+		Id:   "1b5e2821-8feb-5a16-bdd1-11a301ce9087",
+		Desc: "promopack_wrong_edition",
+		In: Card{
+			Name:      "Dragonsguard Elite",
+			Variation: "Promo Pack",
+			Edition:   "Strixhaven: School of Mages",
+		},
+	},
 
 	// Prerelease
 	MatchTest{
