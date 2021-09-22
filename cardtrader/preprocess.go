@@ -534,6 +534,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				number = fmt.Sprint(bp.Id)
 			}
 			variant = pmpsTable[number]
+		case "Modern Horizons 2 Collectors":
+			variant = strings.TrimSuffix(number, "e")
 		}
 	}
 
