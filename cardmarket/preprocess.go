@@ -545,7 +545,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
-		if mtgmatcher.HasExtendedArtPrinting(cardName) {
+		if mtgmatcher.IsBasicLand(cardName) {
+			switch variant {
+			case "V.1", "V.3":
+				variant = number
+			case "V.2", "V.4":
+				variant = number + " Etched"
+			}
+		} else if mtgmatcher.HasExtendedArtPrinting(cardName) {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -581,6 +588,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "Retro Frame"
 			case "V.2":
 				variant = "Retro Frame Foil Etched"
+			}
+		} else {
+			switch variant {
+			case "V.1":
+				variant = ""
+			case "V.2":
+				variant = "Etched"
 			}
 		}
 	case "Modern Horizons: Retro Frame Cards":
@@ -798,7 +812,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"APAC Lands",
 			"Euro Lands",
 			"Anthologies",
-			"Misprints":
+			"Misprints",
+			"Modern Horizons 2: Extras":
 		default:
 			// Old editions do not have any number assigned, if so, then keep
 			// the V.1 V.2 etc style and process in variants.go
