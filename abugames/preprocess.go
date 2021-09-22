@@ -11,10 +11,8 @@ var cardTable = map[string]string{
 	// Typos
 	"Bogart Brute":                        "Boggart Brute",
 	"Deathgazer Cockatrice":               "Deathgaze Cockatrice",
-	"Discontinunty":                       "Discontinuity",
 	"Elminate":                            "Eliminate",
 	"Fireblade Artist Ravnica Allegiance": "Fireblade Artist",
-	"Jace, the Mind Sculpor":              "Jace, the Mind Sculptor",
 	"Mindblade Rendor":                    "Mindblade Render",
 	"Neglected Hierloom / Ashmouth Blade": "Neglected Heirloom // Ashmouth Blade",
 	"Rathi Berserker":                     "Aerathi Berserker",
@@ -23,8 +21,8 @@ var cardTable = map[string]string{
 	"Soulmemder":                          "Soulmender",
 	"Svagthos, the Restless Tomb":         "Svogthos, the Restless Tomb",
 	"Trial and Error":                     "Trial // Error",
-	"Visitor from Planet":                 "Visitor from Planet Q",
-	"Rivals of Ixalan":                    "Snubhorn Sentry",
+
+	"Godzilla, King of the Monsters / Zilortha, Strength Incarnate": "Zilortha, Strength Incarnate",
 
 	// Funny cards
 	"No Name":                         "_____",
@@ -241,44 +239,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			if variation == "Prerelease No Expansion Symbol FOIL" {
 				variation = "Prerelease misprint"
 			}
-		case "Godzilla, King of the Monsters / Zilortha, Strength Incarnate":
-			cardName = "Zilortha, Strength Incarnate"
-			variation = "Godzilla"
-		case "Orah, Skyclave Hierophant":
-			if variation == "Extended Art Buy-A-Box Promo" {
-				variation = "Buy-A-Box Promo"
-				card.Edition = "ZNR"
-			}
-		case "Realmwalker":
-			if variation == "Buy-A-Box Promo" {
-				card.Edition = "KHM"
-			}
-		case "Into the Roil":
-			if variation == "FNM Promo" {
-				variation = "Promo Pack"
-				card.Edition = "ZNR"
-			}
-		case "Thrill of Possibility":
-			if variation == "FNM Promo Throne of Eldraine" {
-				variation = "Promo Pack"
-				card.Edition = "ELD"
-			}
-		case "Scent of Cinder":
-			if variation == "Alternate Art Duelist Promo" {
-				card.Edition = "PMEI"
-			}
-		case "Eliminate":
-			if strings.Contains(variation, "FNM Promo") {
-				variation = "Promo Pack"
-				card.Edition = "M21"
-			}
-		case "Strategic Planning":
-			if variation == "FNM Promo" {
-				variation = "Promo Pack"
-				card.Edition = "KHM"
-			}
-		case "Yusri, Fortune's Flame", "Dragonsguard Elite":
-			card.Edition = "STX"
 		}
 		if strings.Contains(variation, "United Kingdom") {
 			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
