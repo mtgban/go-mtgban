@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 
@@ -183,8 +184,16 @@ func Match(inCard *Card) (cardId string, err error) {
 			logger.Println("No perfect match found, trying with heuristics")
 			for _, setCode := range printings {
 				set := backend.Sets[setCode]
+				setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
+				if err != nil {
+					continue
+				}
 				if Contains(set.Name, inCard.Edition) ||
-					(inCard.isGenericPromo() && strings.HasSuffix(set.Name, "Promos")) {
+					// If a card is promotional, only consider promotional sets
+					(inCard.isGenericPromo() && strings.HasSuffix(set.Name, "Promos")) ||
+					// If it is Bundle or BaB, also consider base sets if recent enough
+					(inCard.isBundle() && !strings.HasSuffix(set.Name, "Promos") && setDate.After(PromosForEverybodyYay)) ||
+					(inCard.isBaB() && !strings.HasSuffix(set.Name, "Promos") && setDate.After(BuyABoxInExpansionSetsDate)) {
 					logger.Println("Found a possible match with", inCard.Edition, setCode)
 					cardSet[setCode] = MatchInSet(inCard.Name, setCode)
 				}

@@ -1585,6 +1585,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Ixalan Promos",
 		},
 	},
+	MatchTest{
+		Id:   "66468e25-da7d-56e7-8ae8-542eeadfbb5f",
+		Desc: "bab_generic_promo_edition",
+		In: Card{
+			Name:      "Dragonsguard Elite",
+			Variation: "buy-a-box",
+			Edition:   "Promo",
+		},
+	},
 
 	// Bundle promo
 	MatchTest{
@@ -1622,6 +1631,16 @@ var MatchTests = []MatchTest{
 			Edition:   "Throne of Eldraine",
 		},
 	},
+	MatchTest{
+		Id:   "40ccb40a-60f4-5df4-8eff-f8c1efcea7f5",
+		Desc: "bundle_generic_promo_edition",
+		In: Card{
+			Name:      "Yusri, Fortune's Flame",
+			Variation: "Bundle",
+			Edition:   "Promo",
+		},
+	},
+
 	MatchTest{
 		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff_f",
 		Desc: "magicfest_normal",
