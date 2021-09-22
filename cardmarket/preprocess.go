@@ -592,25 +592,26 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	default:
-		// Double parse commander so that it is possible to drop the oversize
-		// cards as well as catch the Extras in the block below
 		if strings.Contains(edition, "Commander") {
 			hasExtra := strings.HasSuffix(edition, ": Extras")
 			edition = mtgmatcher.ParseCommanderEdition(edition)
 
-			if strings.HasPrefix(edition, "Commander 20") && variant == "V.2" {
-				return nil, errors.New("oversized")
+			// This tag is used randomly
+			if variant == "V.2" {
+				// Catch any older oversized commander
+				if strings.HasPrefix(edition, "Commander 20") {
+					return nil, errors.New("oversized")
+					// CMR has multiple prints in different sets (ie Return to Dust)
+				} else if strings.HasPrefix(edition, "Commander Legends") {
+					variant = "Extended Art"
+					// Otherwise it's the new thick stock print
+				} else if hasExtra {
+					variant = "Thick Stock"
+				}
+			} else if hasExtra {
+				variant = number
 			}
-			// Restore the tag for correct parsing of CMR Collectors cards
-			if hasExtra {
-				edition += ": Extras"
-			}
-		}
-
-		if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
-			if variant != "" {
-				variant += " "
-			}
+		} else if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
 			variant += edition
 
 			// Pre-search the card, if not found it's likely a sideboard variant
