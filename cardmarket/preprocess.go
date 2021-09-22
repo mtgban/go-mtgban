@@ -685,39 +685,55 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 						variant = "Prerelease"
 					}
 				} else if setDate.After(mtgmatcher.PromosForEverybodyYay) {
-					promopTag := "V.1"
-					prerelTag := "V.2"
+					// Default tags
+					speciaTag := "V.0" // custom, ignored for most cases
+					prerelTag := "V.1"
+					promopTag := "V.2"
 					bundleTag := "V.3"
 
+					// Special cases
 					switch edition {
 					case "Theros Beyond Death: Promos":
+						promopTag = "V.1"
+						prerelTag = "V.2"
 						if cardName == "Arasta of the Endless Web" {
+							bundleTag = "V.1"
 							promopTag = "V.2"
 							prerelTag = "V.3"
-							bundleTag = "V.1"
 						}
-					case "Throne of Eldraine: Promos",
-						"Kaldheim: Promos":
-						promopTag = "V.2"
-						prerelTag = "V.1"
+					case "Ikoria: Lair of Behemoths: Promos":
+						promopTag = "V.1"
+						prerelTag = "V.2"
+						if cardName == "Colossification" && variant == "" {
+							variant = bundleTag
+						}
 					case "Zendikar Rising: Promos":
+						promopTag = "V.1"
+						prerelTag = "V.2"
 						if variant == "V.1" && strings.Contains(cardName, " // ") {
 							return nil, errors.New("not exist")
 						}
+					case "Adventures in the Forgotten Realms: Promos":
+						speciaTag = "V.3"
+						bundleTag = "V.4"
 					}
 
-					if variant == bundleTag {
-						variant = "bundle"
-						edition = strings.TrimSuffix(edition, ": Promos")
-					} else if cardName == "Colossification" && variant == "" {
-						variant = "bundle"
-						edition = strings.TrimSuffix(edition, ": Promos")
-					} else if variant == promopTag {
+					switch variant {
+					case speciaTag:
+						switch edition {
+						case "Adventures in the Forgotten Realms: Promos":
+							variant = "Ampersand"
+						}
+					case bundleTag:
+						variant = "Bundle"
+					case promopTag:
 						variant = "Promo Pack"
-					} else if variant == prerelTag {
+					case prerelTag:
 						variant = "Prerelease"
-					} else if mtgmatcher.HasPromoPackPrinting(cardName) {
-						variant = "Promo Pack"
+					default:
+						if mtgmatcher.HasPromoPackPrinting(cardName) {
+							variant = "Promo Pack"
+						}
 					}
 				}
 			}
