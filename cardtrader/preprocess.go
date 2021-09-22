@@ -329,10 +329,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			if strings.HasPrefix(variant, "sr") {
 				variant = strings.Replace(variant, "sr", "shr", 1)
 			}
-			// Scrabbling Claws
-			if bp.Id == 25481 {
+
+			switch bp.Id {
+			case 25481: // Scrabbling Claws
 				variant = "jn237sb"
-			} else if bp.Id == 35075 { // Shatter
+			case 32184: // Aura of Silence
+				variant = "bh7bsb"
+			case 35075: // Shatter
 				variant = "gb219sb"
 			}
 		} else if strings.Contains(edition, "Japanese") {
