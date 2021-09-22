@@ -438,6 +438,21 @@ var MatchTests = []MatchTest{
 			MaybePrefix: true,
 		},
 	},
+	MatchTest{
+		Id:   "591c29a1-c671-5a53-b754-88a9aaa6e726",
+		Desc: "binderpos_syntax",
+		In: Card{
+			Name: "Callous Bloodmage (Extended) [Strixhaven: School of Mages]",
+		},
+	},
+	MatchTest{
+		Id:   "11727081-4070-56db-8162-b970dd7f94bc_f",
+		Desc: "tcgcollection_syntax",
+		In: Card{
+			Name:    "Adarkar Wastes - [Foil]",
+			Edition: "Tenth Edition",
+		},
+	},
 
 	// Incorrect editions
 	MatchTest{
@@ -681,6 +696,15 @@ var MatchTests = []MatchTest{
 		In: Card{
 			Name:    "Heroic Intervention",
 			Edition: "Core 2021 - Promo Pack",
+		},
+	},
+	MatchTest{
+		Id:   "7165c42c-7210-5564-b5a9-e666de59034a",
+		Desc: "tagged_promopack_in_core",
+		In: Card{
+			Name:      "Eliminate",
+			Variation: "Promo Pack",
+			Edition:   "Promo Pack",
 		},
 	},
 	MatchTest{
@@ -1152,6 +1176,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Commander Anthology Volume II",
 		},
 	},
+	MatchTest{
+		Id:   "b8551573-9c09-5dc2-a440-d260fcbe6fad",
+		Desc: "unstable_letter_variant",
+		In: Card{
+			Name:      "Very Cryptic Command",
+			Variation: "E Counter/Return/Untap/Roll",
+			Edition:   "Unstable",
+		},
+	},
 
 	// FNM promos (often confused with set promos)
 	MatchTest{
@@ -1421,6 +1454,34 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff_f",
+		Desc: "magicfest_normal",
+		In: Card{
+			Name:      "Path to Exile",
+			Variation: "Magic Fest",
+			Edition:   "ignored",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff",
+		Desc: "magicfest_textless",
+		In: Card{
+			Name:      "Path to Exile",
+			Variation: "MagicFest Textless",
+			Edition:   "ignored",
+		},
+	},
+	MatchTest{
+		Id:   "a95b64f0-9976-592f-b7ad-aa09158aa63c",
+		Desc: "bfz_std_with_wrong_info",
+		In: Card{
+			Name:      "Sunken Hollow",
+			Variation: "alt art",
+			Edition:   "Dominaria",
+		},
+	},
+	MatchTest{
 		Id:   "decc16dd-0325-50ae-bd43-07ad43d75753",
 		Desc: "lunar_promo",
 		In: Card{
@@ -1647,44 +1708,6 @@ var MatchTests = []MatchTest{
 			Name:      "Charix, the Raging Isle",
 			Variation: "Bundle",
 			Edition:   "Zendikar Rising: Promos",
-		},
-	},
-
-	MatchTest{
-		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff_f",
-		Desc: "magicfest_normal",
-		In: Card{
-			Name:      "Path to Exile",
-			Variation: "Magic Fest",
-			Edition:   "ignored",
-			Foil:      true,
-		},
-	},
-	MatchTest{
-		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff",
-		Desc: "magicfest_textless",
-		In: Card{
-			Name:      "Path to Exile",
-			Variation: "MagicFest Textless",
-			Edition:   "ignored",
-		},
-	},
-	MatchTest{
-		Id:   "a95b64f0-9976-592f-b7ad-aa09158aa63c",
-		Desc: "bfz_std_with_wrong_info",
-		In: Card{
-			Name:      "Sunken Hollow",
-			Variation: "alt art",
-			Edition:   "Dominaria",
-		},
-	},
-	MatchTest{
-		Id:   "b8551573-9c09-5dc2-a440-d260fcbe6fad",
-		Desc: "unstable_letter_variant",
-		In: Card{
-			Name:      "Very Cryptic Command",
-			Variation: "E Counter/Return/Untap/Roll",
-			Edition:   "Unstable",
 		},
 	},
 
@@ -2581,15 +2604,6 @@ var MatchTests = []MatchTest{
 			Promo:   true,
 		},
 	},
-	MatchTest{
-		Id:   "7165c42c-7210-5564-b5a9-e666de59034a",
-		Desc: "tagged_promopack_in_core",
-		In: Card{
-			Name:      "Eliminate",
-			Variation: "Promo Pack",
-			Edition:   "Promo Pack",
-		},
-	},
 
 	// Non-English custom sets
 	MatchTest{
@@ -2751,22 +2765,6 @@ var MatchTests = []MatchTest{
 		In: Card{
 			Name:    "Baneslayer Aspirant",
 			Edition: "Mystery Booster - Test Cards (No Symbol)",
-		},
-	},
-
-	MatchTest{
-		Id:   "591c29a1-c671-5a53-b754-88a9aaa6e726",
-		Desc: "binderpos_syntax",
-		In: Card{
-			Name: "Callous Bloodmage (Extended) [Strixhaven: School of Mages]",
-		},
-	},
-	MatchTest{
-		Id:   "11727081-4070-56db-8162-b970dd7f94bc_f",
-		Desc: "tcgcollection_syntax",
-		In: Card{
-			Name:    "Adarkar Wastes - [Foil]",
-			Edition: "Tenth Edition",
 		},
 	},
 }
