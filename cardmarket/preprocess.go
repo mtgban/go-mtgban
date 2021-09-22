@@ -53,7 +53,9 @@ var promo2editionTable = map[string]string{
 	// Media Inserts
 	"Archangel":                           "PMEI",
 	"Ascendant Evincar":                   "PMEI",
+	"Bone Shredder":                       "PMEI",
 	"Cast Down":                           "PMEI",
+	"Counterspell":                        "PMEI",
 	"Crop Rotation":                       "PMEI",
 	"Dark Ritual":                         "PMEI",
 	"Darksteel Juggernaut":                "PMEI",
@@ -79,6 +81,19 @@ var promo2editionTable = map[string]string{
 	"Inkmoth Nexus":               "World Magic Cup Qualifiers",
 	"Thalia, Guardian of Thraben": "World Magic Cup Qualifiers",
 	"Vengevine":                   "World Magic Cup Qualifiers",
+
+	// Lunar Year
+	"Moraug, Fury of Akoum":    "PL21",
+	"Ox of Agonas":             "PL21",
+	"Sethron, Hurloon General": "PL21",
+
+	// Retro Frame
+	"Aven Mindcensor":  "PLG21",
+	"Dig Through Time": "PLG21",
+	"Bolas's Citadel":  "PLG21",
+	"Goblin Guide":     "PLG21",
+	"Scavenging Ooze":  "PLG21",
+	"Fabled Passage":   "PWP21",
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
