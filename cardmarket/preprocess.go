@@ -529,6 +529,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = ""
 			}
 		}
+	case "Mystery Booster":
+		// Decouple the foils from this set, they need to marked as foil
+		if len(mtgmatcher.MatchInSet(cardName, "FMB1")) > 0 {
+			edition = "Mystery Booster Retail Edition Foils"
+		}
+		variant = ""
+	// This is the only CMD set that needs it
 	case "Commander: Zendikar Rising":
 		if variant == "V.2" {
 			variant = "Extended Art"

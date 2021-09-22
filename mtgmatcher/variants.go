@@ -2734,6 +2734,8 @@ var mb1plistVariants = map[string]map[string]string{
 		"141":          "429",
 		"the list 001": "142",
 		"promo":        "142",
+		"v.1":          "142",
+		"v.2":          "429",
 	},
 	"Man-o'-War": map[string]string{
 		"a25":        "421",
