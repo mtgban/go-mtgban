@@ -1640,6 +1640,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Promo",
 		},
 	},
+	MatchTest{
+		Id:   "b335008d-c678-52cd-8f87-7fc71832365b",
+		Desc: "bundle_perfect_promo_edition_but_wrong",
+		In: Card{
+			Name:      "Charix, the Raging Isle",
+			Variation: "Bundle",
+			Edition:   "Zendikar Rising: Promos",
+		},
+	},
 
 	MatchTest{
 		Id:   "35c17fee-50a9-5273-ba96-492b156cbfff_f",

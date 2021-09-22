@@ -164,13 +164,31 @@ func Match(inCard *Card) (cardId string, err error) {
 			if Equals(backend.Sets[setCode].Name, inCard.Edition) {
 				logger.Println("Found a perfect match with", inCard.Edition, setCode)
 				cardSet[setCode] = MatchInSet(inCard.Name, setCode)
-				if inCard.isPrerelease() || inCard.isPromoPack() {
+
+				set := backend.Sets[setCode]
+				setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
+				if err != nil {
+					continue
+				}
+
+				// In case it's a well known promo, consider the promo sets (or vice
+				// versa for promo sets) in order to let filtering take care of them
+				if inCard.isPrerelease() || inCard.isPromoPack() ||
+					(inCard.isBundle() && setDate.After(PromosForEverybodyYay)) ||
+					(inCard.isBaB() && setDate.After(BuyABoxInExpansionSetsDate)) {
 					setName := backend.Sets[setCode].Name
 					if !strings.HasSuffix(setName, "Promos") {
 						setCode = "P" + setCode
 						set, found := backend.Sets[setCode]
 						if found {
 							logger.Println("Detected possible promo, adding edition", set.Name, setCode)
+							cardSet[setCode] = MatchInSet(inCard.Name, setCode)
+						}
+					} else {
+						setCode = strings.TrimPrefix(setCode, "P")
+						set, found := backend.Sets[setCode]
+						if found {
+							logger.Println("Detected possible non-promo, adding edition", set.Name, setCode)
 							cardSet[setCode] = MatchInSet(inCard.Name, setCode)
 						}
 					}
