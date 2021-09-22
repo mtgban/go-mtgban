@@ -138,15 +138,15 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		priceGuide[product.IdProduct].FoilLow, priceGuide[product.IdProduct].FoilTrend,
 	}
 
-	card, err := mtgmatcher.GetUUID(cardId)
+	co, err := mtgmatcher.GetUUID(cardId)
 	if err != nil {
 		return err
 	}
 
 	// If card is not foil, add prices from the prices array, then check
 	// if there is a foil printing, and add prices from the foilprices array.
-	// If a card is foil-only then we just use foilprices data.
-	if !card.Foil {
+	// If a card is foil-only or is etched, then we just use foilprices data.
+	if !co.Foil && !co.Etched {
 		link.RawQuery = v.Encode()
 
 		for i := range names {
