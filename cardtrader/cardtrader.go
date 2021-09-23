@@ -118,13 +118,17 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		var err error
 		if cardId == "" {
 			cardId, err = mtgmatcher.Match(theCard)
+			if err != nil {
+				return err
+			}
 		}
-		if cardIdFoil == "" && product.Properties.Foil {
+
+		if cardIdFoil == "" && product.Properties.Foil && mtgmatcher.HasFoilPrinting(theCard.Name) {
 			theCard.Foil = true
 			cardIdFoil, err = mtgmatcher.Match(theCard)
-		}
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
 		}
 
 		cond := product.Properties.Condition
