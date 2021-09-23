@@ -124,6 +124,18 @@ func HasRetroFramePrinting(name string) bool {
 	return hasPrinting(name, "frame_version", "1997")
 }
 
+func HasNonfoilPrinting(name string) bool {
+	return hasPrinting(name, "finish", mtgjson.FinishNonfoil)
+}
+
+func HasFoilPrinting(name string) bool {
+	return hasPrinting(name, "finish", mtgjson.FinishFoil)
+}
+
+func HasEtchedPrinting(name string) bool {
+	return hasPrinting(name, "finish", mtgjson.FinishEtched)
+}
+
 func hasPrinting(name, field, value string) bool {
 	if backend.Sets == nil {
 		return false
@@ -146,6 +158,10 @@ func hasPrinting(name, field, value string) bool {
 	case "frame_version":
 		checkFunc = func(card mtgjson.Card, value string) bool {
 			return card.FrameVersion == value
+		}
+	case "finish":
+		checkFunc = func(card mtgjson.Card, value string) bool {
+			return card.HasFinish(value)
 		}
 	default:
 		return false
