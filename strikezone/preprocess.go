@@ -109,6 +109,30 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		variation = variants[1]
 	}
 
+	// Repeat to catch numbers
+	if mtgmatcher.IsBasicLand(cardName) {
+		num := mtgmatcher.ExtractNumber(cardName)
+		if num != "" {
+			cardName = strings.Replace(cardName, num, "", 1)
+			cardName = strings.TrimSpace(cardName)
+			if variation != "" {
+				variation += " "
+			}
+			variation += num
+		}
+
+		for _, tag := range tagsTable {
+			if strings.HasSuffix(cardName, tag) {
+				cardName = strings.TrimSuffix(cardName, " "+tag)
+				if variation != "" {
+					variation += " "
+				}
+				variation += tag
+				break
+			}
+		}
+	}
+
 	switch variation {
 	case "6E", "VI DCI", "DCI", "US":
 		switch cardName {

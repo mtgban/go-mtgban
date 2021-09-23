@@ -116,7 +116,7 @@ func (sz *Strikezone) scrape() error {
 			}
 
 			switch cond {
-			case "Near Mint":
+			case "Near Mint", "Mint":
 				cond = "NM"
 			case "Light Play":
 				cond = "SP"
@@ -143,6 +143,7 @@ func (sz *Strikezone) scrape() error {
 			if err != nil {
 				sz.printf("%v", err)
 				sz.printf("%q", theCard)
+				sz.printf("%s|%s|%s", cardName, edition, notes)
 				alias, ok := err.(*mtgmatcher.AliasingError)
 				if ok {
 					probes := alias.Probe()
