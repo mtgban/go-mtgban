@@ -13,19 +13,12 @@ import (
 )
 
 var cardTable = map[string]string{
-	"Turn to Pumpkin":                "Turn into a Pumpkin",
-	"Wall of Stolen Identities":      "Wall of Stolen Identity",
 	"Vivien Reid (vers. 1)":          "Vivien Reid",
 	"Thalia, Protettrice di Thraben": "Thalia, Guardian of Thraben",
 	"iko Yidaro, Wandering Monster":  "Yidaro, Wandering Monster",
 	"iko Cartographer's Hawk":        "Cartographer's Hawk",
 	"iko Martial Impetus":            "Martial Impetus",
-	"Barrin, Tolarian Archmag":       "Barrin, Tolarian Archmage",
-	"Soul's Mighty":                  "Soul's Might",
-	"Explor":                         "Explore",
 	"Swamp (V.2)":                    "Swamp",
-	"Divine Smit":                    "Divine Smite",
-	"Archbound Javelineer":           "Arcbound Javelineer",
 
 	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
 }
@@ -333,6 +326,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			switch bp.Id {
 			case 25481: // Scrabbling Claws
 				variant = "jn237sb"
+			case 25491: // Chrome Mox
+				variant = "mb152"
+			case 25501: // Seething Song
+				variant = "ap104sb"
 			case 32184: // Aura of Silence
 				variant = "bh7bsb"
 			case 35075: // Shatter
@@ -475,6 +472,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 							variant = "394"
 						case "You Find the Villains' Lair":
 							variant = "399"
+						}
+					}
+				} else {
+					switch edition {
+					case "Hour of Devastation Promos":
+						if cardName == "Nicol Bolas, God-Pharaoh" && number == "140" {
+							variant = "Prerelase"
 						}
 					}
 				}
