@@ -310,10 +310,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					variant = "333"
 				}
 			case "Modern Horizons 2 Collectors":
-				variant = strings.TrimSuffix(number, "e")
-
 				if cardName == "Gaea's Will" && number == "413" {
-					variant = "412"
+					number = "412"
+				}
+
+				variant = number
+				if strings.HasSuffix(number, "e") {
+					variant = strings.TrimSuffix(number, "e") + " Etched"
 				}
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
