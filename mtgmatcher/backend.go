@@ -29,8 +29,14 @@ type CardObject struct {
 }
 
 // Card implements the Stringer interface
-func (c CardObject) String() string {
-	return fmt.Sprintf("%s|%s-%s|%s|%v", c.Name, c.SetCode, c.Edition, c.Number, c.Foil)
+func (co CardObject) String() string {
+	finish := "nonfoil"
+	if co.Etched {
+		finish = "etched"
+	} else if co.Foil {
+		finish = "foil"
+	}
+	return fmt.Sprintf("%s|%s", co.Card, finish)
 }
 
 var backend struct {
