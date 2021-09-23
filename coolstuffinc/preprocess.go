@@ -307,10 +307,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.HasPrefix(cardName, "Blank Card") {
 			return nil, errors.New("untracked")
 		}
-	case "Commander Legends: Variants":
-		if cardName == "Blim, Comedic Genius" {
-			variant = "Etched"
-		}
 	case "Mystical Archive":
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
@@ -331,6 +327,8 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 
 	if strings.HasSuffix(edition, ": Variants") && variant == "" {
 		switch {
+		case mtgmatcher.HasEtchedPrinting(cardName):
+			variant = "Etched"
 		case mtgmatcher.HasExtendedArtPrinting(cardName):
 			variant = "Extended Art"
 		case mtgmatcher.HasBorderlessPrinting(cardName):
