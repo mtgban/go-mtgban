@@ -422,6 +422,18 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
+		case inCard.Contains("Bring-A-Friend") ||
+			inCard.Contains("Love Your LGS") ||
+			inCard.Contains("Welcome Back") ||
+			inCard.Contains("LGS Promo"):
+			switch {
+			case strings.HasPrefix(set.Name, "Love Your LGS "+maybeYear):
+			// There is a lot overlap in this set
+			case set.Name == "Wizards Play Network 2021":
+			default:
+				continue
+			}
+
 		// Last resort, if this is set on the input card, and there were
 		// no better descriptors earlier, try looking at the set type
 		case inCard.Promo:
