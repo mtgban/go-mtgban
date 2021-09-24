@@ -144,20 +144,17 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 			if variant == "Promo Pack Core Set 2021" {
 				edition = "Core Set 2021"
 			}
-		case "Mind Stone":
-			if variant == "WPN/Gateway" {
-				edition = "PG07"
-			}
 		case "Moraug, Fury of Akoum", "Ox of Agonas":
 			if variant == "Store Challenger Series" {
 				edition = "PL21"
 			}
-		}
-		if variant == "Love Your LGS Retro Frame" {
-			if cardName == "Fabled Passage" {
-				edition = "Wizards Play Network 2021"
-			} else {
-				edition = "Love Your LGS 2021"
+		case "Arbor Elf", "Collected Company":
+			if variant == "Store Championship" {
+				edition = "PWP21"
+			}
+		case "Conjurer's Closet":
+			if variant == "Commander Party" {
+				edition = "PWP21"
 			}
 		}
 	default:
