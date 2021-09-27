@@ -3316,9 +3316,10 @@ var sldVariants = map[string]map[string]string{
 		"stained glass art": "526",
 	},
 	"Arcane Signet": map[string]string{
-		"":                            "201",
-		"secret lair":                 "201",
-		"secret lair: a box of rocks": "201",
+		"":                                    "201",
+		"secret lair":                         "201",
+		"secret lair: a box of rocks":         "201",
+		"secret lair retro frame foil etched": "589",
 	},
 	"Birds of Paradise": map[string]string{
 		"":                                    "92",
