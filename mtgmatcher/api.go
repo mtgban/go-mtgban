@@ -96,47 +96,47 @@ func Printings4Card(name string) ([]string, error) {
 	return entry.Printings, nil
 }
 
-func HasExtendedArtPrinting(name string) bool {
-	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectExtendedArt)
+func HasExtendedArtPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectExtendedArt, editions...)
 }
 
-func HasBorderlessPrinting(name string) bool {
-	return hasPrinting(name, "border_color", mtgjson.BorderColorBorderless)
+func HasBorderlessPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "border_color", mtgjson.BorderColorBorderless, editions...)
 }
 
-func HasShowcasePrinting(name string) bool {
-	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectShowcase)
+func HasShowcasePrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectShowcase, editions...)
 }
 
-func HasReskinPrinting(name string) bool {
-	return hasPrinting(name, "promo_type", mtgjson.PromoTypeGodzilla)
+func HasReskinPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypeGodzilla, editions...)
 }
 
-func HasPromoPackPrinting(name string) bool {
-	return hasPrinting(name, "promo_type", mtgjson.PromoTypePromoPack)
+func HasPromoPackPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypePromoPack, editions...)
 }
 
-func HasPrereleasePrinting(name string) bool {
-	return hasPrinting(name, "promo_type", mtgjson.PromoTypePrerelease)
+func HasPrereleasePrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypePrerelease, editions...)
 }
 
-func HasRetroFramePrinting(name string) bool {
-	return hasPrinting(name, "frame_version", "1997")
+func HasRetroFramePrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "frame_version", "1997", editions...)
 }
 
-func HasNonfoilPrinting(name string) bool {
-	return hasPrinting(name, "finish", mtgjson.FinishNonfoil)
+func HasNonfoilPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "finish", mtgjson.FinishNonfoil, editions...)
 }
 
-func HasFoilPrinting(name string) bool {
-	return hasPrinting(name, "finish", mtgjson.FinishFoil)
+func HasFoilPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "finish", mtgjson.FinishFoil, editions...)
 }
 
-func HasEtchedPrinting(name string) bool {
-	return hasPrinting(name, "finish", mtgjson.FinishEtched)
+func HasEtchedPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "finish", mtgjson.FinishEtched, editions...)
 }
 
-func hasPrinting(name, field, value string) bool {
+func hasPrinting(name, field, value string, editions ...string) bool {
 	if backend.Sets == nil {
 		return false
 	}
@@ -179,9 +179,18 @@ func hasPrinting(name, field, value string) bool {
 		}
 	}
 	for _, code := range card.Printings {
-		set, found := backend.Sets[code]
-		if !found {
-			continue
+		var set *mtgjson.Set
+		if len(editions) > 0 {
+			set, found = backend.Sets[editions[0]]
+			if !found {
+				set, _ = GetSetByName(editions[0])
+			}
+		}
+		if set == nil {
+			set, found = backend.Sets[code]
+			if !found {
+				continue
+			}
 		}
 		for _, in := range set.Cards {
 			if (card.Name == in.Name) && checkFunc(in, value) {
