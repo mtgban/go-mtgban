@@ -32,6 +32,15 @@ var cardTable = map[string]string{
 	"Inferno of the Star Mouths": "Inferno of the Star Mounts",
 
 	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
+
+	"Insegnamenti Mistici": "Mystical Teachings",
+	"Massa Chimerica ":     "Chimeric Mass",
+	"Condannare":           "Condemn",
+	"Novelle":              "Tidings",
+	"Torpore":              "Torpor",
+	"Tattica del Cenn":     "Cenn's Tactician",
+
+	"Jace, Cunning Castaway (San Diego Comic-Con)": "Jace, Cunning Castaway (San Diego Comic-Con 2018)",
 }
 
 var editionTable = map[string]string{
@@ -129,7 +138,8 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
 
 	// Skip any token or similar cards
-	if mtgmatcher.IsToken(cardName) {
+	if mtgmatcher.IsToken(cardName) ||
+		strings.Contains(cardName, "Mewtwo") {
 		return nil, errors.New("not single")
 	}
 
@@ -143,6 +153,11 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	}
 
 	isFoil := card.Variants[index].Foil == "Foil"
+
+	// Some cards do not have an English name field
+	if cardName == "" {
+		cardName = card.OrigName
+	}
 
 	cn, found := cardTable[cardName]
 	if found {
@@ -160,6 +175,12 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		if len(variants) > 1 {
 			variation = variants[1]
 		}
+	}
+
+	// Run the lookup to catch any variant
+	cn, found = cardTable[cardName]
+	if found {
+		cardName = cn
 	}
 
 	switch edition {
@@ -202,6 +223,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 				if mtgmatcher.HasPromoPackPrinting(cardName) {
 					variation = "Promo Pack 2020"
 					edition = "Promos"
+					if cardName == "Sorcerous Spyglass" {
+						edition = "PXLN"
+					}
 				}
 			}
 		}
@@ -280,9 +304,11 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = "Promo Pack"
 		case "Judge Gift Program", "Judge Promo":
 			switch cardName {
-			case "Demonic Tutor",
-				"Vampiric Tutor",
-				"Vindicate",
+			case "Demonic Tutor":
+				variation = "Judge 2020"
+			case "Vampiric Tutor":
+				variation = "Judge 2018"
+			case "Vindicate",
 				"Wasteland":
 				if len(extra) > 5 {
 					variation = extra[1:5]
@@ -317,6 +343,12 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			edition = "Duel Decks Anthology: Garruk vs. Liliana"
 		}
 		variation = strings.TrimLeft(extra[4:], "0")
+	case "Commander Legends: Extras":
+		if mtgmatcher.HasEtchedPrinting(cardName, "CMR") {
+			variation = "etched"
+		} else if mtgmatcher.HasExtendedArtPrinting(cardName, "CMR") {
+			variation = "extended art"
+		}
 	default:
 		// All the prelease/promopack versions >= THB
 		if strings.HasSuffix(edition, ": Promos") {
@@ -351,8 +383,15 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 						variation = "Promo Pack"
 					}
 				}
-			} else if cardName == "Flusterstorm" {
-				edition = "Modern Horizons"
+			} else {
+				switch cardName {
+				case "Flusterstorm":
+					edition = "Modern Horizons"
+				case "Gideon Blackblade":
+					edition = "SLD"
+				case "Angelic Guardian":
+					edition = "G18"
+				}
 			}
 		// These editions contain numbers that can be used safely
 		case "Throne of Eldraine: Extras", "Theros Beyond Death: Extras",
