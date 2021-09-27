@@ -483,7 +483,7 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 	for cardId, entries := range inventory {
 		co, err := mtgmatcher.GetUUID(cardId)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		set, err := mtgmatcher.GetSet(co.SetCode)
 		if err != nil {
