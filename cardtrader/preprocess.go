@@ -282,12 +282,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		}
 	case "Mystery Booster: Convention Edition Playtest Cards":
 		variant = bp.Version
-	case "Modern Horizons 2 Collectors",
+	case "Modern Horizons 2",
 		"Modern Horizons 1: Timeshifted":
-		if cardName == "Gaea's Will" && number == "413" {
-			number = "412"
-		}
-
 		variant = number
 		if strings.HasSuffix(number, "e") {
 			variant = strings.TrimSuffix(number, "e") + " Etched"
@@ -318,6 +314,15 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					variant = "398"
 				} else if cardName == "Willowdusk, Essence Seer" && number == "331" {
 					variant = "333"
+				}
+			case "Modern Horizons 2 Collectors":
+				if cardName == "Gaea's Will" && number == "413" {
+					number = "412"
+				}
+				// Same as the non-Collectors version above
+				variant = number
+				if strings.HasSuffix(number, "e") {
+					variant = strings.TrimSuffix(number, "e") + " Etched"
 				}
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
