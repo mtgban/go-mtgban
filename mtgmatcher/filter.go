@@ -160,33 +160,32 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		// This needs to be above any possible printing type below
 		case inCard.isMysteryList():
-			if inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
-				switch set.Code {
-				case "FMB1":
-				default:
+			switch set.Code {
+			case "MB1":
+				if inCard.Variation == "The List" || inCard.Edition == "The List" ||
+					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
 					continue
 				}
-			} else {
-				switch set.Code {
-				case "MB1":
-					if inCard.Variation == "The List" || inCard.Edition == "The List" {
-						continue
-					}
-				case "PLIST":
-					if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" {
-						continue
-					}
-				case "CMB1":
-					if inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || inCard.Variation == "V.2" {
-						continue
-					}
-				case "CMB2":
-					if !(inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || inCard.Variation == "V.2") {
-						continue
-					}
-				default:
+			case "FMB1":
+				if inCard.Variation == "The List" || inCard.Edition == "The List" ||
+					inCard.Contains("Non-Foil") {
 					continue
 				}
+			case "PLIST":
+				if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" ||
+					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
+					continue
+				}
+			case "CMB1":
+				if inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || inCard.Variation == "V.2" {
+					continue
+				}
+			case "CMB2":
+				if !(inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || inCard.Variation == "V.2") {
+					continue
+				}
+			default:
+				continue
 			}
 
 		// Some providers use "Textless" for MF cards
