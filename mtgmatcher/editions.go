@@ -421,6 +421,7 @@ var EditionTable = map[string]string{
 	"Starter":                  "Starter 1999",
 	"Vanguard":                 "Vanguard Series",
 	"The List":                 "The List",
+	"Mystery Booster":          "Mystery Booster",
 
 	// Beatdown
 	"Beatdown":      "Beatdown Box Set",

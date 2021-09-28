@@ -2330,6 +2330,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Mystery Booster Cards",
 		},
 	},
+	MatchTest{
+		Id:   "eaf5912c-be71-52d7-addc-2cb2823080ba",
+		Desc: "mb1_wrong_edition_and_foil",
+		In: Card{
+			Name:      "Sheltering Ancient",
+			Variation: "Mystery Booster",
+			Edition:   "Coldsnap",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
