@@ -39,8 +39,6 @@ var cardTable = map[string]string{
 	"Novelle":              "Tidings",
 	"Torpore":              "Torpor",
 	"Tattica del Cenn":     "Cenn's Tactician",
-
-	"Jace, Cunning Castaway (San Diego Comic-Con)": "Jace, Cunning Castaway (San Diego Comic-Con 2018)",
 }
 
 var editionTable = map[string]string{

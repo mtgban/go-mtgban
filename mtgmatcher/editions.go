@@ -404,9 +404,6 @@ var EditionTable = map[string]string{
 	"Original Artwork":        "Wizards of the Coast Online Store",
 	"Redemption Original Art": "Wizards of the Coast Online Store",
 
-	// SDCC
-	"San Diego Comic-Con": "San Diego Comic-Con 2019",
-
 	// Archenemy
 	"Archenemy: 2010 Edition":          "Archenemy",
 	"Archenemy - Nicol Bolas":          "Archenemy: Nicol Bolas",
