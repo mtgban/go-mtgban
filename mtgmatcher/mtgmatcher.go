@@ -612,7 +612,7 @@ func adjustEdition(inCard *Card) {
 
 	// The first Gift Pack often get folded in the main Core Set 2019 or in the
 	// related Promos set, so use a lax way to dected the original expansion
-	case Contains(inCard.Edition, "Core") && Contains(inCard.Edition, "2019") && len(MatchInSet(inCard.Name, "G18")) == 1:
+	case ((Contains(inCard.Edition, "Core") && Contains(inCard.Edition, "2019")) || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "G18")) == 1:
 		edition = backend.Sets["G18"].Name
 
 	// Adjust edition for non-English sets
