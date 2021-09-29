@@ -179,10 +179,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.HasPrefix(variant, "Gold-bordered") {
 			variant = "2000"
 		}
-	case "Disenchant":
-		if strings.Contains(variant, "Arena") {
-			variant = "Arena 1996"
-		}
 	case "Mana Crypt":
 		if strings.HasPrefix(variant, "Harper Prism Promo") {
 			if !strings.Contains(variant, "English") {

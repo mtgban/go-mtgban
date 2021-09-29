@@ -650,6 +650,10 @@ func adjustEdition(inCard *Card) {
 			if inCard.isJudge() || inCard.isGenericPromo() || inCard.isDCIPromo() {
 				edition = "World Championship Promos"
 			}
+		case "Disenchant":
+			if inCard.isArena() && inCard.Foil {
+				edition = "Friday Night Magic 2003"
+			}
 		case "Nalathni Dragon":
 			edition = "Dragon Con"
 			variation = ""

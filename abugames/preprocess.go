@@ -227,10 +227,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			if variation == "Commander" {
 				variation = "MagicFest 2019"
 			}
-		case "Disenchant":
-			if variation == "Arena" && isFoil {
-				variation = "FNM 2003"
-			}
 		case "Mountain":
 			if variation == "APAC a Phillippines" {
 				variation = "APAC a Philippines"

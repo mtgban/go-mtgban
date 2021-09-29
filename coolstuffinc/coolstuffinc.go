@@ -438,10 +438,6 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 			if theCard.Foil && theCard.Edition == "Ninth Edition" {
 				return
 			}
-		case "Disenchant":
-			if theCard.Variation == "Arena 1996" && theCard.Foil {
-				theCard.Variation = "FNM 2003"
-			}
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
