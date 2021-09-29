@@ -3304,27 +3304,35 @@ var sldVariants = map[string]map[string]string{
 		"secret lair crushing brutality": "241",
 	},
 	"Karn, the Great Creator": map[string]string{
-		"":                  "501",
-		"secret lair":       "501",
-		"stained glass":     "501",
-		"stained glass art": "501",
+		"secret lair: teferi's time trouble": "253",
+		"":                                   "501",
+		"secret lair":                        "501",
+		"stained glass":                      "501",
+		"stained glass art":                  "501",
 	},
 	"Teferi, Time Raveler": map[string]string{
-		"":                  "526",
-		"secret lair":       "526",
-		"stained glass":     "526",
-		"stained glass art": "526",
+		"secret lair: teferi's time trouble": "252",
+		"":                                   "526",
+		"secret lair":                        "526",
+		"stained glass":                      "526",
+		"stained glass art":                  "526",
 	},
 	"Arcane Signet": map[string]string{
 		"":                                    "201",
 		"secret lair":                         "201",
 		"secret lair: a box of rocks":         "201",
 		"secret lair retro frame foil etched": "589",
+		"secret lair: dan frazier is back":    "589",
 	},
 	"Birds of Paradise": map[string]string{
 		"":                                    "92",
 		"secret lair":                         "92",
 		"secret lair: ornithological studies": "92",
+		"secret lair: series: mark poole":     "176",
+	},
+	"Brainstorm": map[string]string{
+		"":                                "174",
+		"secret lair: series: mark poole": "174",
 	},
 }
 
