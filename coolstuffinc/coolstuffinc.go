@@ -433,13 +433,6 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 		}
 		theCard.Foil = foil == "yes" || strings.Contains(info, "Foil")
 
-		switch theCard.Name {
-		case "Index":
-			if theCard.Foil && theCard.Edition == "Ninth Edition" {
-				return
-			}
-		}
-
 		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			switch {
