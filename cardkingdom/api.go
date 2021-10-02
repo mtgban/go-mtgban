@@ -2,6 +2,7 @@ package cardkingdom
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 
 	http "github.com/hashicorp/go-retryablehttp"
@@ -83,7 +84,7 @@ func (ck *CKClient) getList(link string) ([]CKCard, error) {
 	}
 	err = json.Unmarshal(data, &pricelist)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal error for list, got: %s", string(data))
 	}
 
 	return pricelist.Data, nil
