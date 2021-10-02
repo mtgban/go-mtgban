@@ -131,7 +131,7 @@ func (ct *CTAuthClient) Expansions() ([]Expansion, error) {
 	var out []Expansion
 	err = json.Unmarshal(data, &out)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal error for expansions, got: %s", string(data))
 	}
 
 	return out, nil
@@ -153,7 +153,7 @@ func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) 
 	var out map[int][]Product
 	err = json.Unmarshal(data, &out)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal error for expansion %d, got: %s", id, string(data))
 	}
 
 	return out, nil
@@ -174,7 +174,7 @@ func (ct *CTAuthClient) Blueprints() ([]Blueprint, error) {
 	var blueprints []Blueprint
 	err = json.Unmarshal(data, &blueprints)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal error for blueprints, got: %s", string(data))
 	}
 
 	return blueprints, nil
@@ -283,7 +283,7 @@ func (ct *CTClient) ProductsForBlueprint(id int) (*BlueprintFilter, error) {
 	var bf BlueprintFilter
 	err = json.Unmarshal(data, &bf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %s", id, string(data))
 	}
 
 	return &bf, nil
