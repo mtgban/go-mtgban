@@ -601,11 +601,17 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					default:
 						possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
 					}
+				} else if inCard.isPrerelease() {
+					possibleSuffixes = append(possibleSuffixes, "s")
+				} else if inCard.isPromoPack() {
+					possibleSuffixes = append(possibleSuffixes, "p")
 				}
+
 				// BFZ and ZEN intro lands non-fullart always have this
 				if inCard.isBasicNonFullArt() {
 					possibleSuffixes = append(possibleSuffixes, "a")
 				}
+
 				for _, numSuffix := range possibleSuffixes {
 					// The self test is already expressed by the empty string
 					// This avoids an odd case of testing 1.1 = 11

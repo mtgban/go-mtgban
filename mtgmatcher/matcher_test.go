@@ -790,6 +790,15 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "c3371edb-da62-5153-a202-e391364b88c7",
+		Desc: "prerelease_number_missing_suffix",
+		In: Card{
+			Name:      "Bonders' Enclave",
+			Variation: "245/274 IOK Prerelease Promo",
+			Edition:   "Promo Cards",
+		},
+	},
 
 	// JPN alternate art
 	MatchTest{
