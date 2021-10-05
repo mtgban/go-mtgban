@@ -27,17 +27,10 @@ var cardTable = map[string]string{
 	"Caven of Souls":            "Cavern of Souls",
 	"Makinidi Ox":               "Makindi Ox",
 
-	"Imperious Perfect Extended Art Promo":             "Imperious Perfect",
-	"Disenchant Textless Player Rewards Promo":         "Disenchant",
-	"Lightning Bolt Magicfest Textless Full Art Promo": "Lightning Bolt",
-	"Burst Lightning Textless Player Rewards Promo":    "Burst Lightning",
-	"Doom Blade Textless Player Rewards Promo":         "Doom Blade",
-	"Negate Textless Player Rewards":                   "Negate",
-	"Abrade Game Day Promo":                            "Abrade",
-	"Harmonize Textless Player Rewards":                "Harmonize",
-	"Yurlok of the Scorch Thras":                       "Yurlok of Scorch Thrash",
-	"Sorin, Imperious Bloodblord":                      "Sorin, Imperious Bloodlord",
-	"Ob Nixilis, the Hate-Twister":                     "Ob Nixilis, the Hate-Twisted",
+	"Yurlok of the Scorch Thras":   "Yurlok of Scorch Thrash",
+	"Sorin, Imperious Bloodblord":  "Sorin, Imperious Bloodlord",
+	"Ob Nixilis, the Hate-Twister": "Ob Nixilis, the Hate-Twisted",
+	"Knight of the White Orchard":  "Knight of the White Orchid",
 
 	"Fall of the Imposter":     "Fall of the Impostor",
 	"Cosmos Elixer":            "Cosmos Elixir",
@@ -45,12 +38,16 @@ var cardTable = map[string]string{
 	"Maja, Bretgard Protector": "Maja, Bretagard Protector",
 	"Arni Brokenbow":           "Arni Brokenbrow",
 
+	"Mizzik's Mastery":  "Mizzix's Mastery",
 	"Agonizing Remose":  "Agonizing Remorse",
 	"Devouring Tendrls": "Devouring Tendrils",
 
 	"Darkbore Pathway // Slitherbore Pahtway":        "Darkbore Pathway // Slitherbore Pathway",
 	"Kolvori, God of Kinship // The Ringhart Creast": "Kolvori, God of Kinship // The Ringhart Crest",
 	"Valki, God of Lies // Tibalt, Cosmic Imposter":  "Valki, God of Lies // Tibalt, Cosmic Impostor",
+	"Fangblade Brigand // Bladefang Eviscerator":     "Fangblade Brigand // Fangblade Eviscerator",
+	"Heirloom Mirror // Inherited Demon":             "Heirloom Mirror // Inherited Fiend",
+	"Mysterious Tome // Creepy Chronicle":            "Mysterious Tome // Chilling Chronicle",
 
 	"Chandra, Fire of Kaladesh // Chandra The Roaring Flame": "Chandra, Fire of Kaladesh // Chandra, Roaring Flame",
 	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Aberration",
@@ -75,20 +72,30 @@ var cardTable = map[string]string{
 	"Increasing Vengeancce":     "Increasing Vengeance",
 	"Furycallm Snarl":           "Furycalm Snarl",
 	"Pyromancer's Gogggles":     "Pyromancer's Goggles",
-	"Prerelease Promo":          "Stone-Tongue Basilisk",
 
 	"Who/ What/ When/ Where/ Why": "Who",
 }
 
+var fullLineTable = map[string]string{
+	"Arabic Stone-Tongue Basilisk - Prerelease Promo ~ Other Languages Promos":      "Stone-Tongue Basilisk",
+	"Kavu Furens (Raging Kavu) - Pre-Release Foil (Latin) ~ Other Languages Promos": "Raging Kavu (Prerelease) ~ Other Languages Promos",
+	"Sanskrit Fungal Shambler - APC Prerelease Foil Promo ~ Other Languages Promos": "Fungal Shambler (Prerelease) ~ Other Languages Promos",
+}
+
 var tagsTable = []string{
+	"Magicfest Textless Full Art Promo", // Needs to be before the shorter version
+
+	"Alternate Art Showcase",
 	"Box Topper",
 	"Brawl Deck",
 	"Bundle Promo",
 	"Buy-A-Box Promo",
+	"Buy-A-Box",
 	"Buy-a-Box Promo",
 	"Buy-a-Box",
 	"DotP 2015 Promo (D15)",
 	"DotP",
+	"Extended Art Promo",
 	"FNM Promo",
 	"Full Art Promo",
 	"Game Day Promo",
@@ -101,10 +108,18 @@ var tagsTable = []string{
 	"Mystery Booster",
 	"Planeswalker Deck Exclusive",
 	"Planeswalker Deck",
+	"Pre-Release",
 	"Prerelease Promo",
+	"Silver Stamped",
+	"SLD Promo Sealed",
+	"SLD Promo",
+	"Textless Player Rewards Promo",
+	"Textless Player Rewards",
 	"Walmart Promo",
 	"Welcome Deck 2019 Exclusive",
 	"Zendikar Rising Expeditions",
+
+	"Sealed", // Needs to be the very last
 }
 
 func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
@@ -113,6 +128,11 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	}
 
 	fullName = strings.TrimSpace(fullName)
+
+	lut, found := fullLineTable[fullName]
+	if found {
+		fullName = lut
+	}
 
 	switch {
 	case mtgmatcher.IsToken(fullName),
@@ -134,6 +154,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Sealed Product"),
 		strings.Contains(edition, "Memorabilia"),
+		strings.Contains(fullName, "Kobolds of Kher Keep 010 - A2"),
+		strings.Contains(fullName, "Ravnica Allegiance Guild Kit Set of"),
 		strings.Contains(edition, "Tokens"):
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
@@ -181,16 +203,19 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		}
 	case strings.Contains(fullName, "Japanese Hellspark Elemental"),
 		strings.Contains(fullName, "Japanese Emrakul"),
+		strings.Contains(fullName, "Calciderm - Arena Foil (Japanese)"),
 		strings.Contains(fullName, "Scavenging Ooze (Japanese) 3/3 DOTP"):
 		return nil, errors.New("not english")
 	case strings.Contains(fullName, "FNM Promo Pack of"):
 		return nil, errors.New("sealed")
-	case strings.Contains(fullName, "Bounty Agent") && strings.Contains(fullName, "Prerelease"):
+	case strings.Contains(fullName, "Bounty Agent") && strings.Contains(fullName, "Prerelease"),
+		strings.Contains(fullName, "Samut, Tyrant Smasher 235 // Narset's Reversal 062"):
 		return nil, errors.New("doesn't exist")
-	case strings.Contains(fullName, "Beast of Burden") && strings.Contains(fullName, "Misprint"),
-		strings.Contains(fullName, "Etali, Primal Storm") && strings.Contains(fullName, "Media Promo"):
-		return nil, errors.New("unsupported")
 	case strings.Contains(edition, "Power Nine"):
+		return nil, errors.New("unsupported")
+	case strings.Contains(fullName, "Artist Signed"),
+		strings.Contains(fullName, "Somber Hoverguard Misprint"),
+		strings.Contains(fullName, "Test Misprint Filler"):
 		return nil, errors.New("unsupported")
 	}
 	switch fullName {
@@ -250,6 +275,14 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	variant := ""
 	if len(s) > 1 {
 		variant = strings.Join(s[1:], " ")
+	}
+
+	// Repeat after splitting by " - ", make sure to exclude numbers at the end
+	for _, tag := range tagsTable {
+		if strings.HasSuffix(removeNumber(cardName), tag) {
+			cardName = strings.Replace(cardName, tag, "("+tag+")", 1)
+			break
+		}
 	}
 
 	switch {
@@ -425,6 +458,12 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			variant = num
 			cardName = strings.Replace(cardName, " "+num, "", 1)
 		}
+
+		cardName = strings.Replace(cardName, "\\302\\222", "'", 1)
+
+		if strings.HasPrefix(cardName, "Full-Text") {
+			cardName = strings.TrimPrefix(cardName, "Full-Text ")
+		}
 	case "Commander Anthology Volume II",
 		"Ravnica Allegiance",
 		"Guilds of Ravnica":
@@ -452,8 +491,25 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		if cardName == "Plains" && variant == "Orzhov Syndicate Japanese" {
 			edition = "PMPS"
 		}
+	case "Strixhaven: School of Mages Japanese":
+		variant = strings.Replace(variant, "Alternate Art", "Mystical Archive", 1)
+		variant = strings.Replace(variant, "Extended Art", "Mystical Archive", 1)
+	case "The List":
+		switch cardName {
+		case "Asceticism",
+			"Centaur Glade",
+			"Violent Ultimatum",
+			"Wren's Run Vanquisher":
+			return nil, errors.New("wrong edition")
+		case "Lightning Bolt":
+			variant = mtgmatcher.ExtractNumber(fullName)
+		}
+	case "Innistrad Midnight Hunt Collector Booster":
+		if strings.Contains(cardName, "Tovolar, Dire Overlord") {
+			cardName = "Tovolar, Dire Overlord // Tovolar, the Midnight Scourge"
+		}
 
-	case "Promo Cards":
+	case "Promo Cards", "Promos":
 		switch cardName {
 		case "Arclight Phoenix":
 			return nil, errors.New("invalid")
@@ -561,29 +617,25 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		default:
 			if strings.Contains(fullName, "005") && strings.Contains(fullName, "GP") {
 				edition = "G18"
-			}
-
-			if strings.Contains(variant, "Prerelease") {
-				cs := strings.Fields(cardName)
-				for i := range cs {
-					if mtgmatcher.ExtractNumber(cs[i]) != "" {
-						cs[i] = ""
-					}
-				}
-				cardName = strings.Join(cs, " ")
-				cardName = strings.Replace(cardName, "  ", " ", -1)
+			} else if strings.Contains(variant, "Prerelease") {
+				cardName = removeNumber(cardName)
 
 				if cardName == "Omnispell Adept" || cardName == "Dream Eater" {
 					return nil, errors.New("doesn't exist")
 				}
 			} else if strings.Contains(variant, "Top 8") {
 				variant = strings.Replace(variant, "Top 8", "", 1)
+			} else if strings.Contains(variant, "SLD Promo") {
+				edition = "SLD"
 			}
 
-			if variant == "123/259 Walmart Promo" {
+			switch variant {
+			case "123/259 Walmart Promo":
 				variant = "Walmart Promo"
-			} else if variant == "165/259 RNA Prerelease Promo" {
+			case "165/259 RNA Prerelease Promo":
 				variant = "Prerelease"
+			case "JMP Prerelease Promo":
+				variant = "Launch"
 			}
 		}
 	}
@@ -616,4 +668,16 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
+}
+
+func removeNumber(input string) string {
+	cs := strings.Fields(input)
+	for i := range cs {
+		if mtgmatcher.ExtractNumber(cs[i]) != "" {
+			cs[i] = ""
+		}
+	}
+	output := strings.Join(cs, " ")
+	output = strings.Replace(output, "  ", " ", -1)
+	return strings.TrimSpace(output)
 }

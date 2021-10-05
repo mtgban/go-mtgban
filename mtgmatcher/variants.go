@@ -608,6 +608,8 @@ var allVariants = map[string]map[string]string{
 		"holding fruit":            "100a",
 		"lying down":               "100b",
 		"85":                       "100b",
+		"ver. 1":                   "100a",
+		"ver. 2":                   "100b",
 	},
 	"Undergrowth": map[string]string{
 		"holding axe":    "102a",
@@ -1485,6 +1487,8 @@ var dkmVariants = map[string]map[string]string{
 		"red armor": "6b",
 		"v.1":       "6a",
 		"v.2":       "6b",
+		"ver. 1":    "6a",
+		"ver. 2":    "6b",
 	},
 	"Phantasmal Fiend": map[string]string{
 		"brick background": "8a",
@@ -2737,6 +2741,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"v.1":            "142",
 		"v.2":            "429",
 		"masters 25 art": "429",
+		"1":              "142",
 	},
 	"Man-o'-War": map[string]string{
 		"a25":        "421",
@@ -3316,6 +3321,7 @@ var sldVariants = map[string]map[string]string{
 		"secret lair":                        "526",
 		"stained glass":                      "526",
 		"stained glass art":                  "526",
+		"sld stained glass promo":            "526",
 	},
 	"Arcane Signet": map[string]string{
 		"":                                    "201",

@@ -57,6 +57,10 @@ var NumberTests = []ExtractTest{
 		Out: "181",
 	},
 	ExtractTest{
+		In:  "001/006",
+		Out: "1",
+	},
+	ExtractTest{
 		In:  "May 25",
 		Out: "",
 	},
