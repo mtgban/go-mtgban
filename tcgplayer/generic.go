@@ -103,6 +103,8 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 		}
 
 		link := "https://shop.tcgplayer.com/product/productsearch?id=" + fmt.Sprint(result.ProductId)
+		link += "&Printing=" + result.SubTypeName
+
 		if tcg.Affiliate != "" {
 			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
 		}

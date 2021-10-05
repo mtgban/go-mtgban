@@ -107,6 +107,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		if tcg.Affiliate != "" {
 			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
 		}
+		link += "&Printing=" + result.SubTypeName
 
 		for i := range names {
 			if prices[i] == 0 {

@@ -195,6 +195,13 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 
 			sellerName := strings.TrimSpace(s.Find("a[class='seller__name']").Text())
 
+			link := "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId
+			if strings.Contains(cond, " Foil") {
+				link += "&Printing=Foil"
+			} else {
+				link += "&Printing=Normal"
+			}
+
 			out := responseChan{
 				cardId: cardId,
 				entry: mtgban.InventoryEntry{
@@ -203,7 +210,7 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 					Quantity:   qty,
 					SellerName: sellerName,
 					Bundle:     isDirect,
-					URL:        "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId,
+					URL:        link,
 				},
 			}
 			if isFoil {

@@ -141,6 +141,11 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			if tcg.Affiliate != "" {
 				link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
 			}
+			if req.Printing == "FOIL" {
+				link += "&Printing=Foil"
+			} else {
+				link += "&Printing=Normal"
+			}
 
 			for i := range names {
 				if prices[i] == 0 {
