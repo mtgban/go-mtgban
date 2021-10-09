@@ -90,31 +90,29 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 
 		case inCard.isBaB():
-			switch set.Name {
-			case "Modern Horizons":
-			case "Pro Tour Promos":
-				continue
-			default:
-				switch {
-				case setDate.After(BuyABoxInExpansionSetsDate) &&
-					(set.Type == "expansion" || set.Type == "core" || set.Type == "draft_innovation"):
-				case strings.HasSuffix(set.Name, "Promos"):
-				default:
-					continue
+			skip := true
+			foundCards := MatchInSet(inCard.Name, setCode)
+			for _, card := range foundCards {
+				if card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+					skip = false
+					break
 				}
+			}
+			if skip {
+				continue
 			}
 
 		case inCard.isBundle():
-			switch set.Name {
-			case "Core Set 2020 Promos",
-				"Core Set 2021":
-			default:
-				switch {
-				case setDate.After(BuyABoxInExpansionSetsDate) &&
-					(set.Type == "expansion" || set.Type == "draft_innovation"):
-				default:
-					continue
+			skip := true
+			foundCards := MatchInSet(inCard.Name, setCode)
+			for _, card := range foundCards {
+				if card.HasPromoType(mtgjson.PromoTypeBundle) {
+					skip = false
+					break
 				}
+			}
+			if skip {
+				continue
 			}
 
 		case inCard.isFNM():

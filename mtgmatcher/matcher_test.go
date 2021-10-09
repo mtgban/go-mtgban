@@ -1664,6 +1664,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Promo",
 		},
 	},
+	MatchTest{
+		Id:   "3c188337-5046-5441-a875-6adbb970ccd6",
+		Desc: "bab_reprinted",
+		In: Card{
+			Name:    "Relic Seeker",
+			Edition: "buy-a-box",
+		},
+	},
 
 	// Bundle promo
 	MatchTest{
