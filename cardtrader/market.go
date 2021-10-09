@@ -14,18 +14,26 @@ type CardtraderMarket struct {
 	MaxConcurrency int
 	ShareCode      string
 
+	exchangeRate float64
+
 	client    *CTAuthClient
 	inventory mtgban.InventoryRecord
 
 	blueprints map[int]*Blueprint
 }
 
-func NewScraperMarket(token string) *CardtraderMarket {
+func NewScraperMarket(token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = 1
 	ct.client = NewCTAuthClient(token)
-	return &ct
+
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return nil, err
+	}
+	ct.exchangeRate = rate
+	return &ct, nil
 }
 
 func (ct *CardtraderMarket) printf(format string, a ...interface{}) {
@@ -52,7 +60,7 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 			continue
 		}
 
-		err = processProducts(channel, theCard, products, ct.ShareCode)
+		err = processProducts(channel, theCard, products, ct.ShareCode, ct.exchangeRate)
 		if err != nil {
 			ct.printf("%v", err)
 			ct.printf("%q", theCard)

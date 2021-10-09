@@ -68,7 +68,8 @@ type Product struct {
 		Zero bool   `json:"can_sell_via_hub"`
 	} `json:"user"`
 	Price struct {
-		Cents int `json:"cents"`
+		Cents    int    `json:"cents"`
+		Currency string `json:"currency"`
 	} `json:"price"`
 	Expansion struct {
 		Name string `json:"name"`

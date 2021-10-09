@@ -21,6 +21,8 @@ type Cardtrader struct {
 	MaxConcurrency int
 	ShareCode      string
 
+	exchangeRate float64
+
 	authClient  *CTAuthClient
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
@@ -32,14 +34,21 @@ type Cardtrader struct {
 	client       *CTClient
 }
 
-func NewScraper(token string) *Cardtrader {
+func NewScraper(token string) (*Cardtrader, error) {
 	ct := Cardtrader{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.marketplace = map[string]mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTClient()
 	ct.authClient = NewCTAuthClient(token)
-	return &ct
+
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return nil, err
+	}
+	ct.exchangeRate = rate
+
+	return &ct, nil
 }
 
 func (ct *Cardtrader) printf(format string, a ...interface{}) {
@@ -63,7 +72,7 @@ var condMap = map[string]string{
 	"Poor":              "PO",
 }
 
-func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product, shareCode string) error {
+func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product, shareCode string, rate float64) error {
 	var cardId string
 	var cardIdFoil string
 
@@ -155,11 +164,15 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			link += "?share_code=" + shareCode
 		}
 
+		price := float64(product.Price.Cents) / 100
+		if product.Price.Currency != "USD" {
+			price *= rate
+		}
 		channel <- resultChan{
 			cardId: finalCardId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,
-				Price:      float64(product.Price.Cents) / 100,
+				Price:      price,
 				Quantity:   qty,
 				URL:        link,
 				SellerName: product.User.Name,
@@ -184,7 +197,7 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 		return nil
 	}
 
-	err = processProducts(channel, theCard, filter.Products, ct.ShareCode)
+	err = processProducts(channel, theCard, filter.Products, ct.ShareCode, ct.exchangeRate)
 	if err != nil {
 		ct.printf("%q", theCard)
 		ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
