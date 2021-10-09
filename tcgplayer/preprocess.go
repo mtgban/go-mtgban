@@ -153,7 +153,6 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			"Moraug, Fury of Akoum":       "PL21",
 			"Ox of Agonas":                "PL21",
 			"Fabled Passage":              "PWP21",
-			"Mind Stone":                  "PWP21",
 		}[cardName]
 		if found {
 			edition = ed
@@ -209,6 +208,15 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			} else {
 				edition = "PM19"
 			}
+		case "Mind Stone":
+			if variant == "2021" {
+				edition = "PWP21"
+			} else {
+				variant = "Gateway"
+			}
+		case "Orb of Dragonkind":
+			num := mtgmatcher.ExtractNumber(variant)
+			variant = "J" + num
 		}
 	case "Junior Series Promos":
 		// TCG has a single version but there are multiple ones available
@@ -247,11 +255,16 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			}
 		}
 	case "Prerelease Cards":
-		if cardName == "Lu Bu, Master-at-Arms" {
+		switch cardName {
+		case "Lu Bu, Master-at-Arms":
 			if variant == "Japan 4/29/99" {
 				variant = "April"
 			} else if variant == "Singapore 7/4/99" {
 				variant = "July"
+			}
+		case "Beast of Burden":
+			if variant == "No Date" {
+				variant = "misprint"
 			}
 		}
 	case "Standard Showdown Promos":
@@ -381,6 +394,8 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		if variant == "Dungeon Module" {
 			variant = "Showcase"
 		}
+	case "Mystery Booster Cards":
+		edition = "MB1"
 	}
 
 	// Outside the main loop to catch everything
