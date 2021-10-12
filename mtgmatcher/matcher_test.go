@@ -1499,6 +1499,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Promo: General",
 		},
 	},
+	MatchTest{
+		Id:   "7f0cf9b2-d30e-5fe1-ab97-3a204624ee14",
+		Desc: "duels_xbox_promo",
+		In: Card{
+			Name:      "Soul of Ravnica",
+			Variation: "Duels of the Planeswalkers 2015 Xbox Promo",
+			Edition:   "Promo",
+		},
+	},
 
 	// Release cards
 	MatchTest{
