@@ -287,5 +287,9 @@ func (ct *CTClient) ProductsForBlueprint(id int) (*BlueprintFilter, error) {
 		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %s", id, string(data))
 	}
 
+	if bf.Blueprint.Id == 0 {
+		return nil, fmt.Errorf("empty blueprint for id %d", id)
+	}
+
 	return &bf, nil
 }
