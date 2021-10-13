@@ -252,6 +252,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			card.Edition = "SLD"
 			variation = strings.TrimPrefix(variation, "Full-Text ")
 		}
+	case "Conspiracy":
+		if cardName == "Magister of Worth" && variation == "Buy-a-Box Promo" {
+			variation = "Release"
+		}
 	case "Anthologies":
 		if cardName == "Mountain" {
 			if variation == "A" {
