@@ -2802,6 +2802,23 @@ var MatchTests = []MatchTest{
 			Edition: "Mystery Booster - Test Cards (No Symbol)",
 		},
 	},
+	MatchTest{
+		Id:   "dd9ca932-57da-5922-9fb0-20618924f31d",
+		Desc: "mb1playtest_not_plist",
+		In: Card{
+			Name:      "Puresteel Angel",
+			Variation: "V.2",
+			Edition:   "Mystery Booster - Test Cards",
+		},
+	},
+	MatchTest{
+		Id:   "1327e84b-cfcd-5bfb-83ea-499fb5565101",
+		Desc: "mb1playtest_plist",
+		In: Card{
+			Name:    "Puresteel Angel",
+			Edition: "The List",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

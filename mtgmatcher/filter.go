@@ -171,7 +171,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			case "PLIST":
 				if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" ||
-					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
+					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non") ||
+					// Explicitly skip playtest cards unless using the correct edition is used
+					// They are visually the same as CMB1 and nobody tracks them separately
+					(len(MatchInSet(inCard.Name, "CMB1")) > 0 && inCard.Edition != "The List")) {
 					continue
 				}
 			case "CMB1":
