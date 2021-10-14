@@ -9,7 +9,8 @@ import (
 )
 
 var mediaTable = map[string]string{
-	"Arcbound Ravager (2019)": "PPRO",
+	"Arcbound Ravager": "PPRO",
+	"Disenchant":       "PARL",
 }
 
 func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
@@ -20,6 +21,12 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		edition = product.Card.Set.Name
 	}
 	cardName := card.Name
+
+	if mtgmatcher.IsToken(cardName) ||
+		strings.Contains(edition, "Oversize") ||
+		strings.Contains(edition, "Art Series") {
+		return nil, errors.New("token")
+	}
 
 	switch product.Language.Code {
 	case "en":
@@ -51,20 +58,18 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		variant += fmt.Sprint(card.Number)
 	}
 
-	if mtgmatcher.IsToken(cardName) ||
-		strings.Contains(edition, "Art Series") {
-		return nil, errors.New("token")
+	vars := mtgmatcher.SplitVariants(cardName)
+	cardName = vars[0]
+	if len(vars) > 1 {
+		if variant != "" {
+			variant += " "
+		}
+		variant += vars[1]
 	}
 
 	switch edition {
 	case "Fourth Edition (Alt)":
 		return nil, errors.New("unsupported")
-	case "Promotional Schemes":
-		if cardName == "Disenchant (6)" {
-			cardName = "Disenchant"
-			edition = "PARL"
-			variant = ""
-		}
 	case "Friday Night Magic",
 		"Grand Prix",
 		"Happy Holidays",
@@ -72,6 +77,7 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		"Magic Game Day",
 		"Media Inserts",
 		"Prerelease Events",
+		"Promotional Schemes",
 		"World Magic Cup Qualifiers":
 		// Drop any number information
 		variant = ""
@@ -98,14 +104,11 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		if !mtgmatcher.IsBasicLand(cardName) {
 			variant = ""
 		}
-	case "Battle for Zendikar":
-		edition = map[string]string{
-			"Canopy Vista (234)":     "PSS1",
-			"Cinder Glade (235)":     "PSS1",
-			"Prairie Stream (241)":   "PSS1",
-			"Smoldering Marsh (247)": "PSS1",
-			"Sunken Hollow (249)":    "PSS1",
-		}[cardName]
+	case "Strixhaven Mystical Archive":
+		if strings.HasSuffix(variant, "e") {
+			variant = strings.TrimSuffix(variant, "e")
+			variant += " Etched"
+		}
 	}
 
 	return &mtgmatcher.Card{
