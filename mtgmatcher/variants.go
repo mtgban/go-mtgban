@@ -1391,6 +1391,8 @@ var chrVariants = map[string]map[string]string{
 		"version 4": "114d",
 
 		"c bathyscape": "114b",
+
+		"bathyscape": "114b",
 	},
 	"Urza's Power Plant": map[string]string{
 		"ch098": "115a",
@@ -1420,6 +1422,9 @@ var chrVariants = map[string]map[string]string{
 
 		"rock pot": "115a",
 
+		"vat":    "115a",
+		"pillar": "115b",
+
 		"v.1": "115a",
 		"v.2": "115b",
 		"v.3": "115c",
@@ -1442,6 +1447,7 @@ var chrVariants = map[string]map[string]string{
 		"red leaves": "116d",
 
 		"sunset with shoreline": "116a",
+		"mountain":              "116c",
 		"shore":                 "116d",
 
 		"a forest":   "116a",
@@ -1809,7 +1815,8 @@ var femVariants = map[string]map[string]string{
 		"male":   "16b",
 		"group":  "16c",
 
-		"man": "16b",
+		"woman": "16a",
+		"man":   "16b",
 	},
 	"Spore Cloud": map[string]string{
 		"fe083": "72a",

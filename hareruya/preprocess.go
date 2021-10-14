@@ -9,15 +9,11 @@ import (
 )
 
 var titleTable = map[string]string{
-	"【EN】【Foil】《アクロスの英雄、キテオン/Kytheon, Hero of Akros》/【Foil】《歴戦の戦士、ギデオン/Gideon, Battle-Forged》[SDCC](2015) 白": "【EN】【Foil】《アクロスの英雄、キテオン/Kytheon, Hero of Akros》[SDCC](2015)",
-
-	"【EN】【Foil】《ヴリンの神童、ジェイス/Jace, Vryn's Prodigy》/【Foil】《束縛なきテレパス、ジェイス/Jace, Telepath Unbound》[SDCC](2015) 青": "【EN】【Foil】《ヴリンの神童、ジェイス/Jace, Vryn's Prodigy》[SDCC](2015)",
-
-	"【EN】【Foil】《異端の癒し手、リリアナ/Liliana, Heretical Healer》/【Foil】《反抗する屍術師、リリアナ/Liliana, Defiant Necromancer》[SDCC](2015) 黒": "【EN】【Foil】《異端の癒し手、リリアナ/Liliana, Heretical Healer》[SDCC](2015) 黒",
-
-	"【EN】【Foil】《カラデシュの火、チャンドラ/Chandra, Fire of Kaladesh》/【Foil】《燃え盛る炎、チャンドラ/Chandra, Roaring Flame》[SDCC](2015) 赤": "【EN】【Foil】《カラデシュの火、チャンドラ/Chandra, Fire of Kaladesh》[SDCC](2015) 赤",
-
-	"【EN】【Foil】《巨森の予見者、ニッサ/Nissa, Vastwood Seer》/【Foil】《精霊信者の賢人、ニッサ/Nissa, Sage Animist》[SDCC](2015) 緑": "【EN】【Foil】《巨森の予見者、ニッサ/Nissa, Vastwood Seer》[SDCC](2015) 緑",
+	"【EN】【Foil】《Kytheon, Hero of Akros》/【Foil】《Gideon, Battle-Forged》[SDCC](2015)":           "【EN】【Foil】《アクロスの英雄、キテオン/Kytheon, Hero of Akros》[SDCC](2015)",
+	"【EN】【Foil】《Jace, Vryn's Prodigy》/【Foil】《Jace, Telepath Unbound》[SDCC](2015)":            "【EN】【Foil】《ヴリンの神童、ジェイス/Jace, Vryn's Prodigy》[SDCC](2015)",
+	"【EN】【Foil】《Liliana, Heretical Healer》/【Foil】《Liliana, Defiant Necromancer》[SDCC](2015)": "【EN】【Foil】《異端の癒し手、リリアナ/Liliana, Heretical Healer》[SDCC](2015) 黒",
+	"【EN】【Foil】《Chandra, Fire of Kaladesh》/【Foil】《Chandra, Roaring Flame》[SDCC](2015)":       "【EN】【Foil】《カラデシュの火、チャンドラ/Chandra, Fire of Kaladesh》[SDCC](2015) 赤",
+	"【EN】【Foil】《Nissa, Vastwood Seer》/【Foil】《Nissa, Sage Animist》[SDCC](2015)":               "【EN】【Foil】《巨森の予見者、ニッサ/Nissa, Vastwood Seer》[SDCC](2015) 緑",
 }
 
 var cardTable = map[string]string{
@@ -34,19 +30,14 @@ var missingTable = map[string]string{
 	"Booster Tutor":             "UNH",
 	"Blast from the Past":       "UNH",
 	"Old Fogey":                 "UNH",
+	"Ink-Eyes, Servant of Oni":  "PBOK",
 }
 
 var promoTable = map[string]string{
-	"Faithless Looting": "PIDW",
-	"Standstill":        "PIDW",
-	"Turnabout":         "PIDW",
-	"Corrupt":           "PI13",
-	"Acquire":           "PI14",
-	"Duress":            "PI14", // because we keep EN only
-	"Jace Beleren":      "PBOOK",
-	"Liliana Vess":      "PDP10",
-	"Phyrexian Rager":   "PMEI",
-	"Mana Crypt":        "PHPR",
+	"Jace Beleren":    "PBOOK",
+	"Liliana Vess":    "PDP10",
+	"Phyrexian Rager": "PMEI",
+	"Mana Crypt":      "PHPR",
 
 	"Garruk Wildspeaker": "PDTP",
 	"Grave Titan":        "PDP12",
@@ -62,6 +53,7 @@ var promoTable = map[string]string{
 	"Knight Exemplar":             "PRES",
 	"Incinerate":                  "PLGM",
 	"Crystalline Sliver":          "F03",
+	"Reya Dawnbringer":            "P10E",
 
 	"Naya Sojourners":              "PM10",
 	"Emeria Angel":                 "PZEN",
@@ -69,6 +61,7 @@ var promoTable = map[string]string{
 	"Kalastria Highborn":           "PWWK",
 	"Black Sun's Zenith":           "PMBS",
 	"Deathless Angel":              "PROE",
+	"Pia and Kiran Nalaar":         "PORI",
 	"Deeproot Champion":            "PXLN",
 	"Unclaimed Territory":          "PXLN",
 	"Walk the Plank":               "PXLN",
@@ -76,11 +69,17 @@ var promoTable = map[string]string{
 	"Ghalta, Primal Hunger":        "PRIX",
 	"Steel Leaf Champion":          "PDOM",
 	"Llanowar Elves":               "PDOM",
-	"Zahid, Djinn of the Lamp ":    "PDOM",
+	"Zahid, Djinn of the Lamp":     "PDOM",
 	"Demon of Catastrophes":        "PM19",
 	"Death Baron":                  "PM19",
 	"Rakdos Firewheeler":           "PRNA",
 	"Firemind's Research":          "PGRN",
+	"Anguished Unmaking":           "PSOI",
+	"Negate":                       "PM20",
+	"Disfigure":                    "PM20",
+	"Thrashing Brontodon":          "PM20",
+	"Flame Sweep":                  "PM20",
+	"Corpse Knight":                "PM20",
 }
 
 var editionTable = map[string]string{
@@ -136,6 +135,7 @@ var editionTable = map[string]string{
 	"CHK Arena": "PAL05",
 	"RAV Arena": "PAL06",
 
+	"CSP構築済":             "CST",
 	"CSP Theme Deck":     "CST",
 	"World Championship": "PWOR",
 
@@ -146,6 +146,10 @@ var editionTable = map[string]string{
 	"褒賞プログラム": "Reward Program",
 	"ゲートウェイ":  "Gateway",
 	"ウギンの運命":  "Ugin's Fate",
+
+	"アンパサンド・カード": "PAFR",
+	"旧正月プロモ":     "Lunar New Year",
+	"旧枠プロモ":      "Retro Frame",
 }
 
 func preprocess(title string) (*mtgmatcher.Card, error) {
@@ -326,6 +330,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 	}
 
 	if mtgmatcher.IsToken(cardName) ||
+		edition == "エラーカード" || // misprint
 		strings.Contains(cardName, "トークン") ||
 		cardName == "Demon" ||
 		cardName == "Human Warrior" ||
@@ -384,23 +389,24 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 		"ゲームデー", "Game Day Promos",
 		"メディア系プロモ", "Media Promo",
 		"その他プロモ", "Other Promos",
+		"PRM",
+		"Intro Pack",
 		"基本セット系プロモ",
 		"発売記念プロモ":
 		ed, found := promoTable[cardName]
 		if found {
 			edition = ed
-		} else if len(mtgmatcher.MatchInSet(cardName, "PPRO")) == 1 {
-			edition = "PPRO"
-		} else if len(mtgmatcher.MatchInSet(cardName, "PWCQ")) == 1 {
-			edition = "PWCQ"
-		} else if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
-			edition = "PSUS"
-		} else if len(mtgmatcher.MatchInSet(cardName, "PCMP")) == 1 {
-			edition = "PCMP"
-		} else if len(mtgmatcher.MatchInSet(cardName, "PSS1")) == 1 {
-			edition = "PSS1"
 		} else if cardName == "Fraternal Exaltation" || cardName == "Splendid Genesis" {
 			return nil, errors.New("unsupported")
+		} else {
+			for _, tag := range []string{
+				"PIDW", "PI13", "PI14", "PPRO", "PWCQ", "PSUS", "PCMP", "PSS1",
+			} {
+				if len(mtgmatcher.MatchInSet(cardName, tag)) == 1 {
+					edition = tag
+					break
+				}
+			}
 		}
 	case "MPS":
 		if len(mtgmatcher.MatchInSet(cardName, "MPS")) == 1 {
@@ -425,6 +431,10 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 		if mtgmatcher.IsBasicLand(cardName) {
 			variant = "unglued"
 		}
+	case "The List":
+		if variant == "magic fest版" {
+			variant = "magicfest"
+		}
 	default:
 		ed, found := editionTable[edition]
 		if found {
@@ -444,6 +454,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 
 			variant = strings.Replace(variant, "拡張アート", "Extended Art", 1)
 			variant = strings.Replace(variant, "ショーケース", "Showcase", 1)
+			variant = strings.Replace(variant, "ボーダーレス", "Borderless", 1)
+			variant = strings.TrimSpace(variant)
 
 			switch fields[0] {
 			case "CMR":
@@ -469,7 +481,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 					}
 				}
 			case "M21":
-				if variant == "Alternate Frame" {
+				if variant == "Alternate Frame" || variant == "Extended Art" {
 					switch cardName {
 					case "Basri Ket",
 						"Chandra, Heart of Fire",
@@ -479,6 +491,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 						"Grim Tutor",
 						"Liliana, Waker of the Dead",
 						"Massacre Wurm",
+						"Scavenging Ooze",
 						"Solemn Simulacrum",
 						"Teferi, Master of Time",
 						"Ugin, the Spirit Dragon":
