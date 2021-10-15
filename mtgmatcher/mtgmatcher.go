@@ -30,23 +30,18 @@ func Match(inCard *Card) (cardId string, err error) {
 	if inCard.Id != "" {
 		outId := ""
 		co, found := backend.UUIDs[inCard.Id]
-		if found {
-			outId = output(co.Card, inCard.Foil, inCard.isEtched())
-		} else {
+		if !found {
 			// Second chance, lookup by scryfall id
-			co, found := backend.UUIDs[backend.Scryfall[inCard.Id]]
-			if found {
-				outId = output(co.Card, inCard.Foil, inCard.isEtched())
-			} else {
+			co, found = backend.UUIDs[backend.Scryfall[inCard.Id]]
+			if !found {
 				// Last chance, lookup by tcg id
-				co, found := backend.UUIDs[backend.Tcgplayer[inCard.Id]]
-				if found {
-					outId = output(co.Card, inCard.Foil, inCard.isEtched())
-				}
+				co, found = backend.UUIDs[backend.Tcgplayer[inCard.Id]]
 			}
 		}
 
-		if outId != "" {
+		if found {
+			outId = output(co.Card, inCard.Foil, inCard.isEtched())
+
 			// Validate that what we found is correct
 			co = backend.UUIDs[outId]
 			// If the input card was requested as foil, we should double check
