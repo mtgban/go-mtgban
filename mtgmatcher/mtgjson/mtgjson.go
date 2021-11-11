@@ -30,6 +30,7 @@ type Set struct {
 type Card struct {
 	Artist      string   `json:"artist"`
 	BorderColor string   `json:"borderColor"`
+	FaceName    string   `json:"faceName"`
 	Finishes    []string `json:"finishes"`
 	FlavorName  string   `json:"flavorName"`
 	FlavorText  string   `json:"flavorText"`

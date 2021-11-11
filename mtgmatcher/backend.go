@@ -16,6 +16,7 @@ type cardinfo struct {
 	Name      string
 	Printings []string
 	Layout    string
+	Flavor    string
 }
 
 // CardObject is an extension of mtgjson.Card, containing fields that cannot
@@ -106,13 +107,28 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			filteredCards = append(filteredCards, card)
 
 			// Quick dictionary of valid card names and their printings
-			norm := Normalize(card.Name)
-			_, found := cards[norm]
-			if !found {
-				cards[norm] = cardinfo{
-					Name:      card.Name,
-					Printings: card.Printings,
-					Layout:    card.Layout,
+			for i, name := range []string{card.Name, card.FaceName, card.FlavorName} {
+				// Skip empty entries
+				if name == "" {
+					continue
+				}
+				if i == 1 {
+					// Skip FaceName entries that could be aliased
+					// ie 'Start' could be Start//Finish and Start//Fire
+					switch name {
+					case "", "Start", "Bind":
+						continue
+					}
+				}
+				norm := Normalize(name)
+				_, found := cards[norm]
+				if !found {
+					cards[norm] = cardinfo{
+						Name:      card.Name,
+						Printings: card.Printings,
+						Layout:    card.Layout,
+						Flavor:    card.FlavorName,
+					}
 				}
 			}
 

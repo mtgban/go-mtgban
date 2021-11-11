@@ -123,6 +123,9 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// Restore the card to the canonical MTGJSON name
 	inCard.Name = entry.Name
+	if entry.Flavor != "" {
+		inCard.addToVariant("Reskin")
+	}
 
 	// Fix up edition
 	ogEdition := inCard.Edition
@@ -346,41 +349,10 @@ func adjustName(inCard *Card) {
 		}
 	}
 
-	// Check if the input name is the reskinned one
-	// Currently appearing in IKO and some promo sets (PLG20 and IKO BaB)
-	if strings.Contains(inCard.Edition, "Ikoria") ||
-		Contains(inCard.Edition, "Promos") {
-		for _, code := range []string{"IKO", "PLG20"} {
-			for _, card := range backend.Sets[code].Cards {
-				if Equals(inCard.Name, card.FlavorName) {
-					inCard.Name = card.Name
-					inCard.Edition = code
-					inCard.addToVariant("Godzilla")
-					return
-				}
-			}
-		}
-		// In case both names are used for the promo
-		switch {
-		case Contains(inCard.Name, "Mechagodzilla, Battle Fortress"):
-			inCard.Name = "Hangarback Walker"
-			inCard.Edition = "PLG20"
-			inCard.addToVariant("Godzilla")
-		case Contains(inCard.Name, "Mothra's Giant Cocoon"):
-			inCard.Name = "Mysterious Egg"
-			inCard.Edition = "IKO"
-			inCard.addToVariant("Godzilla")
-		case Contains(inCard.Name, "Terror of the City"):
-			inCard.Name = "Dirge Bat"
-			inCard.Edition = "IKO"
-			inCard.addToVariant("Godzilla")
-		case Contains(inCard.Name, "Mechagodzilla"):
-			inCard.Name = "Crystalline Giant"
-			inCard.Edition = "IKO"
-			inCard.addToVariant("Godzilla")
-		}
-		// Found!
-		if inCard.isReskin() {
+	// Rename a card that was translated differently (giant/great)
+	if strings.Contains(inCard.Edition, "Ikoria") {
+		if strings.Contains(inCard.Name, "Mothra's") && strings.Contains(inCard.Name, "Cocoon") {
+			inCard.Name = "Mothra's Great Cocoon"
 			return
 		}
 	}
