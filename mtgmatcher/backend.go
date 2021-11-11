@@ -107,7 +107,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			filteredCards = append(filteredCards, card)
 
 			// Quick dictionary of valid card names and their printings
-			for i, name := range []string{card.Name, card.FaceName, card.FlavorName} {
+			for i, name := range []string{card.Name, card.FaceName, card.FlavorName, card.FaceFlavorName} {
 				// Skip empty entries
 				if name == "" {
 					continue

@@ -28,13 +28,14 @@ type Set struct {
 }
 
 type Card struct {
-	Artist      string   `json:"artist"`
-	BorderColor string   `json:"borderColor"`
-	FaceName    string   `json:"faceName"`
-	Finishes    []string `json:"finishes"`
-	FlavorName  string   `json:"flavorName"`
-	FlavorText  string   `json:"flavorText"`
-	ForeignData []struct {
+	Artist         string   `json:"artist"`
+	BorderColor    string   `json:"borderColor"`
+	FaceName       string   `json:"faceName"`
+	FaceFlavorName string   `json:"faceFlavorName"`
+	Finishes       []string `json:"finishes"`
+	FlavorName     string   `json:"flavorName"`
+	FlavorText     string   `json:"flavorText"`
+	ForeignData    []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
 	FrameEffects        []string          `json:"frameEffects"`

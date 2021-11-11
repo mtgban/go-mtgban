@@ -954,6 +954,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Theros Beyond Death",
 		},
 	},
+	MatchTest{
+		Id:   "79f546ad-9452-5880-b095-9496480a9561",
+		Desc: "dfc_with_possible_dracula",
+		In: Card{
+			Name:      "Voldaren Bloodcaster",
+			Variation: "Showcase",
+			Edition:   "Innistrad: Crimson Vow Variants",
+		},
+	},
 
 	// Reskinned frame
 	MatchTest{
@@ -1039,6 +1048,15 @@ var MatchTests = []MatchTest{
 		In: Card{
 			Name:      "Savior of Ollenbock",
 			Variation: "Abraham Van Helsing - Dracula Series",
+			Edition:   "Innistrad: Crimson Vow Variants",
+		},
+	},
+	MatchTest{
+		Id:   "ee52dc1d-3c5b-5fba-ae84-e2017c039deb",
+		Desc: "dracula_series_dfc",
+		In: Card{
+			Name:      "Voldaren Bloodcaster",
+			Variation: "Dracula, Lord of Blood - Dracula Series",
 			Edition:   "Innistrad: Crimson Vow Variants",
 		},
 	},
