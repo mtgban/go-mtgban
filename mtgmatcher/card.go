@@ -318,6 +318,7 @@ func (c *Card) isShowcase() bool {
 
 func (c *Card) isReskin() bool {
 	return (Contains(c.Variation, "Reskin") ||
+		Contains(c.Variation, "Dracula") ||
 		Contains(c.Variation, "Godzilla")) &&
 		// Needed to distinguish the SLD godizlla lands
 		!c.isBasicLand()

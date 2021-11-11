@@ -99,6 +99,7 @@ const (
 	PromoTypeRelease    = "release"
 	PromoTypeBoosterfun = "boosterfun"
 	PromoTypeGodzilla   = "godzillaseries"
+	PromoTypeDracula    = "draculaseries"
 
 	BorderColorBorderless = "borderless"
 

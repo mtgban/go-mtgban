@@ -1033,6 +1033,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Ikoria: Lair of Behemoths Variants",
 		},
 	},
+	MatchTest{
+		Id:   "ccd21ae8-ca0b-529c-8dd4-006e4834b09c",
+		Desc: "dracula_series",
+		In: Card{
+			Name:      "Savior of Ollenbock",
+			Variation: "Abraham Van Helsing - Dracula Series",
+			Edition:   "Innistrad: Crimson Vow Variants",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	MatchTest{
