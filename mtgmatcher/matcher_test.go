@@ -2874,3 +2874,32 @@ func TestMatch(t *testing.T) {
 		})
 	}
 }
+
+// This benchmark function just runs the Match tests b.N times
+func BenchmarkMatch(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		for _, test := range MatchTests {
+			cardId, err := Match(&test.In)
+			if err == nil && test.Err != nil {
+				b.Errorf("FAIL: Expected error: %s", test.Err.Error())
+				return
+			}
+			if err != nil {
+				if test.Err == nil {
+					b.Errorf("FAIL: Unexpected error: %s", err.Error())
+					return
+				}
+				if test.Err.Error() != err.Error() {
+					b.Errorf("FAIL: Mismatched error: expected '%s', got '%s'", test.Err.Error(), err.Error())
+					return
+				}
+			} else if cardId != test.Id {
+				b.Errorf("FAIL: Id mismatch: expected '%s', got '%s'", test.Id, cardId)
+				return
+			}
+
+			b.Log("PASS:", test.Desc)
+		}
+
+	}
+}
