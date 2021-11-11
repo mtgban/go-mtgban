@@ -887,6 +887,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
+			// Variants related to flavor text presence
+			case "Portal":
+				if inCard.isPortalAlt() && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+					continue
+				} else if !inCard.isPortalAlt() && strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+					continue
+				}
 			// Launch promos within the set itself
 			case "Double Masters",
 				"Jumpstart":
@@ -952,42 +959,51 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 				// Officially known misprints or just variants
 				variation := inCard.Variation
-				if card.Name == "Temple of Abandon" && set.Name == "Theros Beyond Death" && inCard.isExtendedArt() {
-					expectedSuffix = mtgjson.SuffixSpecial
-					if inCard.Foil {
-						variation = "misprint"
-					}
-				} else if card.Name == "Reflecting Pool" && set.Name == "Shadowmoor" {
-					expectedSuffix = mtgjson.SuffixSpecial
-					if inCard.Foil {
-						variation = "misprint"
-					}
-				} else if inCard.isPortalAlt() && set.Name == "Portal" {
-					variation = "misprint"
-				} else if inCard.Name == "Void Beckoner" {
-					expectedSuffix = "A"
-					if inCard.isReskin() {
-						variation = "misprint"
-					}
-				} else if inCard.Name == "Island" && set.Name == "Arena League 1999" && Contains(inCard.Variation, "NO SYMBOL") {
-					variation = "misprint"
-				} else if inCard.Name == "Laquatus's Champion" && set.Name == "Torment Promos" {
-					if Contains(variation, "dark") {
-						if card.Number != "67†a" {
-							continue
-						}
-					} else if Contains(variation, "misprint") {
-						if card.Number != "67†" {
-							continue
-						}
-					} else {
-						if card.Number != "67" {
-							continue
+				switch card.Name {
+				case "Temple of Abandon":
+					if set.Name == "Theros Beyond Death" && inCard.isExtendedArt() {
+						expectedSuffix = mtgjson.SuffixSpecial
+						if inCard.Foil {
+							variation = "misprint"
 						}
 					}
-					// Make below check pass, we already filtered above
-					variation = "misprint"
-					expectedSuffix = card.Number
+				case "Reflecting Pool":
+					if set.Name == "Shadowmoor" {
+						expectedSuffix = mtgjson.SuffixSpecial
+						if inCard.Foil {
+							variation = "misprint"
+						}
+					}
+				case "Void Beckoner":
+					if set.Name == "Ikoria: Lair of Behemoths" {
+						expectedSuffix = "A"
+						if inCard.isReskin() {
+							variation = "misprint"
+						}
+					}
+				case "Island":
+					if set.Name == "Arena League 1999" && Contains(inCard.Variation, "NO SYMBOL") {
+						variation = "misprint"
+					}
+				case "Laquatus's Champion":
+					if set.Name == "Torment Promos" {
+						if Contains(variation, "dark") {
+							if card.Number != "67†a" {
+								continue
+							}
+						} else if Contains(variation, "misprint") {
+							if card.Number != "67†" {
+								continue
+							}
+						} else {
+							if card.Number != "67" {
+								continue
+							}
+						}
+						// Make below check pass, we already filtered above
+						variation = "misprint"
+						expectedSuffix = card.Number
+					}
 				}
 
 				if Contains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {
