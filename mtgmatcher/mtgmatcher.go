@@ -108,8 +108,12 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Get the card basic info to retrieve the Printings array
 	entry, found := backend.Cards[Normalize(inCard.Name)]
 	if !found {
+		ogName := inCard.Name
 		// Fixup up the name and try again
 		adjustName(inCard)
+		if ogName != inCard.Name {
+			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
+		}
 
 		entry, found = backend.Cards[Normalize(inCard.Name)]
 		if !found {
@@ -121,7 +125,11 @@ func Match(inCard *Card) (cardId string, err error) {
 	inCard.Name = entry.Name
 
 	// Fix up edition
+	ogEdition := inCard.Edition
 	adjustEdition(inCard)
+	if ogEdition != inCard.Edition {
+		logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
+	}
 
 	logger.Println("Processing", inCard, entry.Printings)
 
