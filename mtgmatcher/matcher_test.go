@@ -2849,7 +2849,7 @@ func TestMatch(t *testing.T) {
 	for _, probe := range MatchTests {
 		test := probe
 		t.Run(test.Desc, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 
 			cardId, err := Match(&test.In)
 			if err == nil && test.Err != nil {
