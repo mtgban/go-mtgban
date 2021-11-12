@@ -602,7 +602,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			case "V.1":
 				variant = ""
 			case "V.2":
-				variant = "Etched"
+				variant = "Foil Etched"
 			}
 		}
 	case "Modern Horizons: Retro Frame Cards":
