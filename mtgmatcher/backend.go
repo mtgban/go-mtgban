@@ -116,7 +116,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					// Skip FaceName entries that could be aliased
 					// ie 'Start' could be Start//Finish and Start//Fire
 					switch name {
-					case "", "Start", "Bind":
+					case "Bind",
+						"Smelt",
+						"Start":
 						continue
 					}
 				}
