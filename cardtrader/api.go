@@ -12,7 +12,7 @@ import (
 
 const (
 	ctFilterURL     = "https://www.cardtrader.com/cards/%d/filter.json"
-	ctBlueprintsURL = "https://api.cardtrader.com/api/full/v1/blueprints/export?category_id=1"
+	ctBlueprintsURL = "https://api.cardtrader.com/api/full/v1/blueprints/export?expansion_id="
 
 	ctExpansionsURL  = "https://api.cardtrader.com/api/full/v1/expansions"
 	ctMarketplaceURL = "https://api.cardtrader.com/api/full/v1/marketplace/products?expansion_id="
@@ -21,6 +21,8 @@ const (
 	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
 
 	MaxBulkUploadItems = 450
+
+	GameIdMagic = 1
 )
 
 type Blueprint struct {
@@ -160,8 +162,8 @@ func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) 
 	return out, nil
 }
 
-func (ct *CTAuthClient) Blueprints() ([]Blueprint, error) {
-	resp, err := ct.client.Get(ctBlueprintsURL)
+func (ct *CTAuthClient) Blueprints(expansionId int) ([]Blueprint, error) {
+	resp, err := ct.client.Get(ctBlueprintsURL + fmt.Sprint(expansionId))
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +177,7 @@ func (ct *CTAuthClient) Blueprints() ([]Blueprint, error) {
 	var blueprints []Blueprint
 	err = json.Unmarshal(data, &blueprints)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for blueprints, got: %s", string(data))
+		return nil, fmt.Errorf("unmarshal error for blueprints (from edition id %d), got: %s", expansionId, string(data))
 	}
 
 	return blueprints, nil

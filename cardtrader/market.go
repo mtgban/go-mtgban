@@ -121,9 +121,16 @@ func (ct *CardtraderMarket) scrape() error {
 	}
 	ct.printf("Retrieved %d expansions", len(expansionsRaw))
 
-	blueprintsRaw, err := ct.client.Blueprints()
-	if err != nil {
-		return err
+	var blueprintsRaw []Blueprint
+	for _, exp := range expansionsRaw {
+		if exp.GameId != GameIdMagic {
+			continue
+		}
+		bp, err := ct.client.Blueprints(exp.Id)
+		if err != nil {
+			return err
+		}
+		blueprintsRaw = append(blueprintsRaw, bp...)
 	}
 	ct.printf("Found %d blueprints", len(blueprintsRaw))
 
