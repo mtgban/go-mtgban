@@ -725,6 +725,17 @@ func adjustEdition(inCard *Card) {
 					edition = "Wizards Play Network 2021"
 				}
 			}
+		case "Runo Stromkirk", "Runo Stromkirk // Krothuss, Lord of the Deep":
+			if inCard.isShowcase() || Contains(inCard.Variation, "Eternal") {
+				num := ExtractNumber(inCard.Variation)
+				if num == "" {
+					if Contains(inCard.Variation, "Eternal") {
+						variation = "327"
+					} else if inCard.isShowcase() {
+						variation = "316"
+					}
+				}
+			}
 		}
 	}
 	inCard.Edition = edition
