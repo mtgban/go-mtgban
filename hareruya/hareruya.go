@@ -331,7 +331,7 @@ func (ha *Hareruya) Buylist() (mtgban.BuylistRecord, error) {
 func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Hareruya"
 	info.Shorthand = "HA"
-	info.CountryFlag = "🇯🇵"
+	info.CountryFlag = "JP"
 	info.InventoryTimestamp = ha.inventoryDate
 	info.BuylistTimestamp = ha.buylistDate
 	info.Grading = mtgban.DefaultGrading

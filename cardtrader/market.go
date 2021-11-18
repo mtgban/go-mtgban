@@ -208,6 +208,6 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader"
 	info.Shorthand = "CT"
 	info.InventoryTimestamp = ct.InventoryDate
-	info.CountryFlag = "🇪🇺"
+	info.CountryFlag = "EU"
 	return
 }

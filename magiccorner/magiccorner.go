@@ -394,7 +394,7 @@ func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
 func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
-	info.CountryFlag = "🇮🇹"
+	info.CountryFlag = "EU"
 	info.InventoryTimestamp = mc.inventoryDate
 	info.BuylistTimestamp = mc.buylistDate
 	info.Grading = grading
