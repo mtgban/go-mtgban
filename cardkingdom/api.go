@@ -42,6 +42,8 @@ const (
 	ckPricelistURL  = "https://api.cardkingdom.com/api/v2/pricelist"
 	ckHotBuylistURL = "https://api.cardkingdom.com/api/product/list/hotbuy"
 	ckSealedListURL = "https://api.cardkingdom.com/api/sealed_pricelist"
+
+	ckBackupURL = "https://mtgban.com/api/cardkingdom/pricelist.json"
 )
 
 type CKClient struct {
@@ -69,6 +71,10 @@ func (ck *CKClient) getList(link string) ([]CKCard, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode == 429 {
+		return ck.getList(ckBackupURL)
+	}
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
