@@ -55,6 +55,8 @@ type Card struct {
 	SetCode             string            `json:"setCode"`
 	Side                string            `json:"side"`
 	Types               []string          `json:"types"`
+	Subtypes            []string          `json:"subtypes"`
+	Supertypes          []string          `json:"supertypes"`
 	UUID                string            `json:"uuid"`
 	Variations          []string          `json:"variations"`
 	Watermark           string            `json:"watermark"`
