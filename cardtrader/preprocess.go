@@ -288,6 +288,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		if strings.HasSuffix(number, "e") {
 			variant = strings.TrimSuffix(number, "e") + " Etched"
 		}
+	case "Challenger Decks":
+		if bp.Version == "2021 Promo" {
+			edition = "Q06"
+		}
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
 			variant = number
