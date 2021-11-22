@@ -620,6 +620,10 @@ func adjustEdition(inCard *Card) {
 		len(MatchInSet(inCard.Name, "H1R")) != 0:
 		edition = backend.Sets["H1R"].Name
 
+	// Challenger decks promos
+	case inCard.Contains("Challenger Decks") && len(MatchInSet(inCard.Name, "Q06")) != 0:
+		edition = backend.Sets["Q06"].Name
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {
