@@ -63,14 +63,20 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	tcgplayer := map[string]string{}
 
 	for code, set := range ap.Data {
-		// Skip a set with a single foreign card, and the celebratory printings
+		// Skip unsupported sets
 		switch code {
-		case "PRED", "PCEL":
+		case "PRED", // a single foreign card
+			"PCEL", // celebratory printings
+			"FJMP": // jumpstart front cards
 			delete(ap.Data, code)
 			continue
 		}
 		// Skip online sets, and any token-based sets
-		if set.IsOnlineOnly || set.Type == "token" {
+		if set.IsOnlineOnly ||
+			set.Type == "token" ||
+			strings.HasSuffix(set.Name, "Art Series") ||
+			strings.HasSuffix(set.Name, "Minigames") ||
+			strings.Contains(set.Name, "Heroes of the Realm") {
 			delete(ap.Data, code)
 			continue
 		}
