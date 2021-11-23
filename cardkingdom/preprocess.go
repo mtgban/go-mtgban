@@ -145,6 +145,11 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		variation = number
 	}
 
+	// Preserve Etched property in case variation became overwritten with the number
+	if strings.Contains(card.Variation, "Etched") {
+		variation += " Etched"
+	}
+
 	return &mtgmatcher.Card{
 		Name:      card.Name,
 		Edition:   edition,
