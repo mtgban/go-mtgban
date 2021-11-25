@@ -118,7 +118,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if name == "" {
 					continue
 				}
-				if i == 1 {
+				// Skip faces of DFCs with same names, so that faces don't pollute
+				// the main dictionary with a wrong rename
+				if i != 0 && set.Code == "SLD" && strings.Contains(card.Name, "//") {
+					continue
+				} else if i == 1 {
 					// Skip FaceName entries that could be aliased
 					// ie 'Start' could be Start//Finish and Start//Fire
 					switch name {

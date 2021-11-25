@@ -128,8 +128,12 @@ func Match(inCard *Card) (cardId string, err error) {
 	}
 
 	// Fix up edition
+	ogName := inCard.Name
 	ogEdition := inCard.Edition
 	adjustEdition(inCard)
+	if ogName != inCard.Name {
+		logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
+	}
 	if ogEdition != inCard.Edition {
 		logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
 	}
@@ -744,4 +748,17 @@ func adjustEdition(inCard *Card) {
 	}
 	inCard.Edition = edition
 	inCard.Variation = variation
+
+	// Restore the original name for specific editions
+	switch inCard.Edition {
+	case "Secret Lair Drop":
+		switch inCard.Name {
+		case "Krark's Thumb",
+			"Okaun, Eye of Chaos",
+			"Propaganda",
+			"Stitch in Time",
+			"Zndrsplt, Eye of Wisdom":
+			inCard.Name = inCard.Name + " // " + inCard.Name
+		}
+	}
 }

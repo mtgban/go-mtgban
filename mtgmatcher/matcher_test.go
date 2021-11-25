@@ -453,6 +453,22 @@ var MatchTests = []MatchTest{
 			Edition: "Tenth Edition",
 		},
 	},
+	MatchTest{
+		Id:   "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
+		Desc: "dual_face_card_same_name",
+		In: Card{
+			Name:    "Propaganda // Propaganda",
+			Edition: "Secret Lair Drop",
+		},
+	},
+	MatchTest{
+		Id:   "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
+		Desc: "dual_face_card_same_name_only_one",
+		In: Card{
+			Name:    "Propaganda",
+			Edition: "Secret Lair Drop",
+		},
+	},
 
 	// Incorrect editions
 	MatchTest{
