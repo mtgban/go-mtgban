@@ -685,10 +685,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
-			// Promo pack
-			if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
+			// Promo pack and Play promo
+			if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) && !card.HasPromoType(mtgjson.PromoTypePlayPromo) {
 				continue
-			} else if !inCard.isPromoPack() && card.HasPromoType(mtgjson.PromoTypePromoPack) {
+			} else if !inCard.isPromoPack() && (card.HasPromoType(mtgjson.PromoTypePromoPack) || card.HasPromoType(mtgjson.PromoTypePlayPromo)) {
 				continue
 			}
 
