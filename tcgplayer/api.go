@@ -307,8 +307,8 @@ func (tcg *TCGClient) EditionMap(category int) (map[int]string, error) {
 	}
 
 	results := map[int]string{}
-	for i := 0; i < totals; i += 100 {
-		groups, err := tcg.ListAllGroups(category, i, 100)
+	for i := 0; i < totals; i += MaxLimit {
+		groups, err := tcg.ListAllGroups(category, i, MaxLimit)
 		if err != nil {
 			return nil, err
 		}
