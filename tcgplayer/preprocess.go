@@ -7,7 +7,7 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
-func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
+func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card, error) {
 	cardName := product.Name
 	variant := ""
 
@@ -45,13 +45,7 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		return nil, errors.New("non-single card")
 	}
 
-	edition := ""
-	fields := strings.Split(product.URL, "/")
-	if len(fields) > 4 {
-		edition = fields[4]
-		edition = strings.Replace(edition, "-", " ", -1)
-		edition = strings.Title(edition)
-	}
+	edition := editions[product.GroupId]
 
 	if strings.Contains(edition, "Art Series") {
 		return nil, errors.New("non-single card")
@@ -77,11 +71,11 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 				variant = variants[1]
 			}
 		}
-	case "Heros Path Promos",
+	case "Hero's Path Promos",
 		"Oversize Cards",
 		"Special Occasion",
-		"Revised Edition Foreign White Border",
-		"Fourth Edition Foreign White Border":
+		"Revised Edition (Foreign White Border)",
+		"Fourth Edition (Foreign White Border)":
 		return nil, errors.New("unsupported")
 	case "Portal":
 		switch cardName {
@@ -108,8 +102,8 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 				edition = "Portal Demo Game"
 			}
 		}
-	case "Battle For Zendikar",
-		"Oath Of The Gatewatch":
+	case "Battle for Zendikar",
+		"Oath of the Gatewatch":
 		if mtgmatcher.IsBasicLand(cardName) {
 			if cardName == "Wastes" && variant == "" {
 				variant = "183a"
@@ -127,12 +121,12 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		}
 	case "Media Promos",
 		"Pro Tour Promos",
-		"Unique And Miscellaneous Promos",
-		"Launch Party And Release Event Promos",
+		"Unique and Miscellaneous Promos",
+		"Launch Party & Release Event Promos",
 		"League Promos",
-		"Game Day And Store Championship Promos",
-		"Wmcq Promo Cards",
-		"Wpn And Gateway Promos":
+		"Game Day & Store Championship Promos",
+		"WMCQ Promo Cards",
+		"WPN & Gateway Promos":
 		if strings.HasSuffix(variant, "Ultra Pro Puzzle Quest") ||
 			variant == "Redemption Program" { // JPN Nalathni Dragon
 			return nil, errors.New("unsupported")
@@ -164,9 +158,9 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 			edition = "CP2"
 		} else if len(mtgmatcher.MatchInSet(cardName, "CP3")) == 1 {
 			edition = "CP3"
-		} else if edition == "Launch Party And Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
+		} else if edition == "Launch Party & Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
-		} else if edition == "Wpn And Gateway Promos" && variant == "Retro Frame" {
+		} else if edition == "WPN & Gateway Promos" && variant == "Retro Frame" {
 			edition = "PLG21"
 		}
 
@@ -390,7 +384,7 @@ func Preprocess(product *TCGProduct) (*mtgmatcher.Card, error) {
 		if mtgmatcher.IsBasicLand(cardName) {
 			variant = product.getNum()
 		}
-	case "Adventures In The Forgotten Realms":
+	case "Adventures in the Forgotten Realms":
 		if variant == "Dungeon Module" {
 			variant = "Showcase"
 		}
