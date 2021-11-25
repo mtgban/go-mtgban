@@ -1042,6 +1042,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "fd9ff43c-fee9-5bdb-ab0a-d4c55f2178fd",
+		Desc: "godzilla_variant_japanese_alt",
+		In: Card{
+			Name:      "Battra, Terror of the City",
+			Variation: "Dirge Bat JP Alternate Art",
+			Edition:   "Ikoria: Lair of Behemoths",
+		},
+	},
+	MatchTest{
 		Id:   "5df3565b-ab85-5cc7-83c4-9cd3bb5674da",
 		Desc: "godzilla_variant_jpn_name",
 		In: Card{

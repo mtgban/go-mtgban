@@ -353,10 +353,16 @@ func adjustName(inCard *Card) {
 		}
 	}
 
-	// Rename a card that was translated differently (giant/great)
+	// Rename cards that were translated differently
 	if strings.Contains(inCard.Edition, "Ikoria") {
 		if strings.Contains(inCard.Name, "Mothra's") && strings.Contains(inCard.Name, "Cocoon") {
 			inCard.Name = "Mothra's Great Cocoon"
+			return
+		} else if strings.Contains(inCard.Name, "Battra") {
+			inCard.Name = "Battra, Dark Destroyer"
+			return
+		} else if strings.Contains(inCard.Name, "Mechagodzilla") {
+			inCard.Name = "Mechagodzilla, the Weapon"
 			return
 		}
 	}
