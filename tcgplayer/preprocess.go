@@ -131,6 +131,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			variant == "Redemption Program" { // JPN Nalathni Dragon
 			return nil, errors.New("unsupported")
 		}
+		for _, ext := range product.ExtendedData {
+			if ext.Name == "OracleText" && strings.Contains(ext.Value, "Heroes of the Realm") {
+				return nil, errors.New("unsupported")
+			}
+		}
+
 		ed, found := map[string]string{
 			"Balduvian Horde":             "PWOR",
 			"Char":                        "P15A",
@@ -146,18 +152,27 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			"Sethron, Hurloon General":    "PL21",
 			"Moraug, Fury of Akoum":       "PL21",
 			"Ox of Agonas":                "PL21",
+			"Angrath, the Flame-Chained":  "PL21",
+			"Tahngarth, First Mate":       "PL21",
 			"Fabled Passage":              "PWP21",
 		}[cardName]
 		if found {
 			edition = ed
-		} else if edition == "Media Promos" && !strings.Contains(variant, "SDCC") {
-			edition = "Magazine Inserts"
+		} else if edition == "Media Promos" {
+			// Keep SDCC Chandra separate from the Q06 version
+			if !strings.Contains(variant, "SDCC") {
+				edition = "Magazine Inserts"
+			} else {
+				edition = "SDCC"
+			}
 		} else if len(mtgmatcher.MatchInSet(cardName, "CP1")) == 1 {
 			edition = "CP1"
 		} else if len(mtgmatcher.MatchInSet(cardName, "CP2")) == 1 {
 			edition = "CP2"
 		} else if len(mtgmatcher.MatchInSet(cardName, "CP3")) == 1 {
 			edition = "CP3"
+		} else if len(mtgmatcher.MatchInSet(cardName, "Q06")) == 1 {
+			edition = "Q06"
 		} else if edition == "Launch Party & Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
 		} else if edition == "WPN & Gateway Promos" && variant == "Retro Frame" {
@@ -177,6 +192,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Yusri, Fortune's Flame":
 			edition = "MH2"
 			variant = "492"
+		case "Sigarda's Summons":
+			edition = "VOW"
+			variant = "404"
 		case "Duress":
 			if variant == "IDW Comics 2014" {
 				edition = variant
@@ -390,6 +408,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		}
 	case "Mystery Booster Cards":
 		edition = "MB1"
+	case "Innistrad: Double Feature":
+		variant = product.getNum()
 	}
 
 	// Outside the main loop to catch everything
