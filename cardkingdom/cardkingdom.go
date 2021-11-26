@@ -1,8 +1,10 @@
 package cardkingdom
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
@@ -160,7 +162,24 @@ func (ck *Cardkingdom) scrape() error {
 
 				q := u.Query()
 				q.Set("filter[search]", "mtg_advanced")
-				q.Set("filter[name]", card.Name)
+
+				// Include as much detail as possible in the name
+				cardName := card.Name
+				if card.Variation != "" {
+					cardName = fmt.Sprintf("%s (%s)", card.Name, card.Variation)
+				}
+				q.Set("filter[name]", cardName)
+
+				// Always show both non-foil and foil cards, the filtering
+				// on the website accurate enough (ie for Prerelease)
+				q.Set("filter[singles]", "1")
+				q.Set("filter[foils]", "1")
+
+				// Edition is derived from the url itself, not the edition field
+				urlPaths := strings.Split(card.URL, "/")
+				if len(urlPaths) > 2 {
+					q.Set("filter[edition]", urlPaths[1])
+				}
 				if ck.Partner != "" {
 					q.Set("partner", ck.Partner)
 					q.Set("utm_source", ck.Partner)
