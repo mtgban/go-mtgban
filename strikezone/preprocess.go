@@ -15,8 +15,6 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		return nil, errors.New("non-mtg")
 	}
 
-	isFoil := strings.Contains(notes, "Foil")
-
 	cn, found := cardTable[cardName]
 	if found {
 		cardName = cn
@@ -224,6 +222,15 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 
 	if variation == "Extemded Art" {
 		variation = "Extended Art"
+	}
+
+	// Set finish
+	isFoil := strings.Contains(notes, "Foil")
+	if strings.Contains(notes, "Etched") {
+		if variation != "" {
+			variation += " "
+		}
+		variation += "Etched"
 	}
 
 	return &mtgmatcher.Card{
