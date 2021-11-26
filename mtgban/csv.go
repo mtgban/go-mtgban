@@ -367,16 +367,18 @@ func cardId2record(cardId string) ([]string, error) {
 		return nil, err
 	}
 
-	foil := ""
+	finish := ""
 	if co.Foil {
-		foil = "FOIL"
+		finish = "FOIL"
+	} else if co.Etched {
+		finish = "ETCHED"
 	}
 
 	record := []string{
 		cardId,
 		co.Card.Name,
 		co.Edition,
-		foil,
+		finish,
 		co.Card.Number,
 		strings.ToUpper(string(co.Card.Rarity[0])),
 	}
