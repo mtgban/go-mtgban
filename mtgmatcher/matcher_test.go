@@ -2580,6 +2580,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Kaladesh",
 		},
 	},
+	MatchTest{
+		Id:   "db6edd23-8783-5009-89bc-021aca680a49",
+		Desc: "display_commander",
+		In: Card{
+			Name:      "Prosper, Tome-Bound",
+			Variation: "Display Commander - Not Tournament Legal",
+			Edition:   "Adventures in the Forgotten Realms Commander Decks",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported

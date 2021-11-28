@@ -424,8 +424,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			variant += " "
 		}
 		variant += "Etched"
-	} else if variant == "Thick Stock Display Commander" {
-		edition += " " + variant
 	}
 
 	return &mtgmatcher.Card{

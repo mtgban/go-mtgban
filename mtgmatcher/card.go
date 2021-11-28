@@ -694,10 +694,13 @@ func (c *Card) Equals(prop string) bool {
 	return Equals(c.Edition, prop) || Equals(c.Variation, prop)
 }
 
-func ParseCommanderEdition(edition string) string {
+func ParseCommanderEdition(edition, variant string) string {
 	if !strings.Contains(edition, "Commander") {
 		return ""
 	}
+
+	isThick := strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") ||
+		strings.Contains(variant, "Display") || strings.Contains(variant, "Thick")
 
 	// Well-known extra tags
 	perSetCommander := map[string]string{
@@ -714,7 +717,7 @@ func ParseCommanderEdition(edition string) string {
 	}
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {
-			if strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") {
+			if isThick {
 				ed += " Display Commanders"
 			}
 			return ed
@@ -744,7 +747,7 @@ func ParseCommanderEdition(edition string) string {
 	year := ExtractYear(edition)
 	if year != "" {
 		parsed := "Commander " + year
-		if strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") {
+		if isThick {
 			parsed += " Display Commanders"
 		}
 		return parsed

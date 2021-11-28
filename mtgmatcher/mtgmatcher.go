@@ -511,7 +511,7 @@ func adjustEdition(inCard *Card) {
 
 	switch {
 	case strings.Contains(edition, "Commander"):
-		ed := ParseCommanderEdition(edition)
+		ed := ParseCommanderEdition(edition, variation)
 		if ed != "" {
 			edition = ed
 		}

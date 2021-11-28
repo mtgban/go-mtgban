@@ -616,7 +616,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	default:
 		if strings.Contains(edition, "Commander") {
 			hasExtra := strings.HasSuffix(edition, ": Extras")
-			edition = mtgmatcher.ParseCommanderEdition(edition)
+			edition = mtgmatcher.ParseCommanderEdition(edition, "")
 
 			// This tag is used randomly
 			if variant == "V.2" {
