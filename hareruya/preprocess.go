@@ -167,7 +167,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 	title = strings.TrimSpace(title)
 
 	// Like for 4th ed
-	if strings.HasPrefix(title, "【Alternate】") {
+	if strings.HasPrefix(title, "【Alternate】") ||
+		strings.HasPrefix(title, "【アルターネイト版】") {
 		return nil, errors.New("unsupported")
 	}
 
