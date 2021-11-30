@@ -58,7 +58,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					skip := true
 					foundCards := MatchInSet(inCard.Name, setCode)
 					for _, card := range foundCards {
-						if card.HasPromoType(mtgjson.PromoTypePromoPack) {
+						if card.HasPromoType(mtgjson.PromoTypePromoPack) || card.HasPromoType(mtgjson.PromoTypePlayPromo) {
 							skip = false
 							break
 						}

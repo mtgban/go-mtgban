@@ -732,6 +732,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Strixhaven: School of Mages",
 		},
 	},
+	MatchTest{
+		Id:   "6650c7e1-fdce-59d5-b8ee-d16b674397f3",
+		Desc: "promopack_playpromo",
+		In: Card{
+			Name:    "Fell Stinger",
+			Edition: "Play Promo",
+		},
+	},
 
 	// Prerelease
 	MatchTest{
