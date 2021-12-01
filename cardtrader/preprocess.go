@@ -143,8 +143,11 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		base := path.Base(u.Path)
 		base = strings.TrimSuffix(base, ".")
 
+		// Some of the hashes are not correctly set
+		skipEdition := strings.Contains(edition, "Mystery Booster") || edition == "The List"
+
 		id := mtgmatcher.Scryfall2UUID(base)
-		if id != "" {
+		if id != "" && !skipEdition {
 			return &mtgmatcher.Card{
 				Id: id,
 				// Not needed but help debugging
