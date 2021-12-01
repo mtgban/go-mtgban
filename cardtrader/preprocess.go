@@ -150,6 +150,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				// Not needed but help debugging
 				Name:    cardName,
 				Edition: edition,
+				// Needed to tell apart etched finish
+				Variation: bp.Version,
 			}, nil
 		}
 	}
