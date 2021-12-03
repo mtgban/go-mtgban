@@ -55,6 +55,9 @@ type ArbitOpts struct {
 
 	// List of editions to ignore
 	Editions []string
+
+	// List of editions to select
+	OnlyEditions []string
 }
 
 type ArbitEntry struct {
@@ -99,6 +102,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	var filterConditions []string
 	var filterRarities []string
 	var filterEditions []string
+	var filterSelectedEditions []string
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -128,6 +132,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 		if len(opts.Editions) != 0 {
 			filterEditions = opts.Editions
+		}
+		if len(opts.OnlyEditions) != 0 {
+			filterSelectedEditions = opts.OnlyEditions
 		}
 	}
 
@@ -179,6 +186,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 		if sliceStringHas(filterEditions, co.Edition) {
+			continue
+		}
+		if filterSelectedEditions != nil && !sliceStringHas(filterSelectedEditions, co.Edition) {
 			continue
 		}
 
