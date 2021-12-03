@@ -44,6 +44,9 @@ type ArbitOpts struct {
 	// Whether to consider foils
 	NoFoil bool
 
+	// Whether to skip non-rl cards
+	OnlyReserveList bool
+
 	// List of conditions to ignore
 	Conditions []string
 
@@ -92,6 +95,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	maxSpread := 0.0
 	maxPriceRatio := 0.0
 	filterFoil := false
+	filterRLOnly := false
 	var filterConditions []string
 	var filterRarities []string
 	var filterEditions []string
@@ -114,6 +118,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		maxPriceRatio = opts.MaxPriceRatio
 		maxSpread = opts.MaxSpread
 		filterFoil = opts.NoFoil
+		filterRLOnly = opts.OnlyReserveList
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -168,6 +173,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 		if filterFoil && co.Foil {
+			continue
+		}
+		if filterRLOnly && !co.IsReserved {
 			continue
 		}
 		if sliceStringHas(filterEditions, co.Edition) {
