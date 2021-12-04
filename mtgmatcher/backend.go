@@ -45,6 +45,11 @@ var backend struct {
 	Cards map[string]cardinfo
 	UUIDs map[string]CardObject
 
+	// Slice with every uniquely normalized name
+	AllNames []string
+	// Map of normalized names to slice of uuids
+	Hashes map[string][]string
+
 	Scryfall  map[string]string
 	Tcgplayer map[string]string
 }
@@ -262,6 +267,23 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicate(ap.Data, cards, uuids, "The Dark Italian", "DRK", "ITA", "1995-07-01")
 	duplicate(ap.Data, cards, uuids, "Chronicles Japanese", "CHR", "JPN", "1995-07-01")
 
+	// XXX: maybe FaceName cause trouble when searching prefix?
+	hashes := map[string][]string{}
+	names := make([]string, 0, len(cards))
+	for uuid, card := range uuids {
+		if card.Sealed {
+			continue
+		}
+		norm := Normalize(card.Name)
+		_, found := hashes[norm]
+		if !found {
+			names = append(names, norm)
+		}
+		hashes[norm] = append(hashes[norm], uuid)
+	}
+
+	backend.Hashes = hashes
+	backend.AllNames = names
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.UUIDs = uuids

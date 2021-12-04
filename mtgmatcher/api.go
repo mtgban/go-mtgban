@@ -88,6 +88,38 @@ func Tcg2UUID(id string) string {
 	return backend.Tcgplayer[id]
 }
 
+func SearchEquals(name string) ([]string, error) {
+	name = Normalize(name)
+	for i := range backend.AllNames {
+		if backend.AllNames[i] == name {
+			return backend.Hashes[backend.AllNames[i]], nil
+		}
+	}
+	return nil, ErrCardDoesNotExist
+}
+
+func searchFunc(name string, f func(string, string) bool) ([]string, error) {
+	var hashes []string
+	name = Normalize(name)
+	for i := range backend.AllNames {
+		if f(backend.AllNames[i], name) {
+			hashes = append(hashes, backend.Hashes[backend.AllNames[i]]...)
+		}
+	}
+	if hashes == nil {
+		return nil, ErrCardDoesNotExist
+	}
+	return hashes, nil
+}
+
+func SearchHasPrefix(name string) ([]string, error) {
+	return searchFunc(name, strings.HasPrefix)
+}
+
+func SearchContains(name string) ([]string, error) {
+	return searchFunc(name, strings.Contains)
+}
+
 func Printings4Card(name string) ([]string, error) {
 	entry, found := backend.Cards[Normalize(name)]
 	if !found {
