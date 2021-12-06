@@ -75,6 +75,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		switch code {
 		case "PRED", // a single foreign card
 			"PCEL", // celebratory printings
+			"OLGC", // oversize
 			"FJMP": // jumpstart front cards
 			delete(ap.Data, code)
 			continue
