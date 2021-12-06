@@ -64,6 +64,26 @@ const (
 	suffixEtched = "_e"
 )
 
+func skipSet(set *mtgjson.Set) bool {
+	// Skip unsupported sets
+	switch set.Code {
+	case "PRED", // a single foreign card
+		"PCEL", // celebratory printings
+		"OLGC", // oversize
+		"FJMP": // jumpstart front cards
+		return true
+	}
+	// Skip online sets, and any token-based sets
+	if set.IsOnlineOnly ||
+		set.Type == "token" ||
+		strings.HasSuffix(set.Name, "Art Series") ||
+		strings.HasSuffix(set.Name, "Minigames") ||
+		strings.Contains(set.Name, "Heroes of the Realm") {
+		return true
+	}
+	return false
+}
+
 func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
@@ -71,21 +91,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	tcgplayer := map[string]string{}
 
 	for code, set := range ap.Data {
-		// Skip unsupported sets
-		switch code {
-		case "PRED", // a single foreign card
-			"PCEL", // celebratory printings
-			"OLGC", // oversize
-			"FJMP": // jumpstart front cards
-			delete(ap.Data, code)
-			continue
-		}
-		// Skip online sets, and any token-based sets
-		if set.IsOnlineOnly ||
-			set.Type == "token" ||
-			strings.HasSuffix(set.Name, "Art Series") ||
-			strings.HasSuffix(set.Name, "Minigames") ||
-			strings.Contains(set.Name, "Heroes of the Realm") {
+		if skipSet(set) {
 			delete(ap.Data, code)
 			continue
 		}
@@ -111,7 +117,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			for i := range card.Printings {
 				subset, found := ap.Data[card.Printings[i]]
 				// If not found it means the set was already deleted above
-				if !found || subset.IsOnlineOnly {
+				if !found || skipSet(subset) {
 					continue
 				}
 				printings = append(printings, card.Printings[i])
