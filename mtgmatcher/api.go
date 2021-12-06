@@ -89,21 +89,29 @@ func Tcg2UUID(id string) string {
 }
 
 func SearchEquals(name string) ([]string, error) {
+	return searchEquals(name, backend.AllNames)
+}
+
+func SearchSealedEquals(name string) ([]string, error) {
+	return searchEquals(name, backend.AllSealed)
+}
+
+func searchEquals(name string, slice []string) ([]string, error) {
 	name = Normalize(name)
-	for i := range backend.AllNames {
-		if backend.AllNames[i] == name {
-			return backend.Hashes[backend.AllNames[i]], nil
+	for i := range slice {
+		if slice[i] == name {
+			return backend.Hashes[slice[i]], nil
 		}
 	}
 	return nil, ErrCardDoesNotExist
 }
 
-func searchFunc(name string, f func(string, string) bool) ([]string, error) {
+func searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
 	var hashes []string
 	name = Normalize(name)
-	for i := range backend.AllNames {
-		if f(backend.AllNames[i], name) {
-			hashes = append(hashes, backend.Hashes[backend.AllNames[i]]...)
+	for i := range slice {
+		if f(slice[i], name) {
+			hashes = append(hashes, backend.Hashes[slice[i]]...)
 		}
 	}
 	if hashes == nil {
@@ -113,11 +121,15 @@ func searchFunc(name string, f func(string, string) bool) ([]string, error) {
 }
 
 func SearchHasPrefix(name string) ([]string, error) {
-	return searchFunc(name, strings.HasPrefix)
+	return searchFunc(name, backend.AllNames, strings.HasPrefix)
 }
 
 func SearchContains(name string) ([]string, error) {
-	return searchFunc(name, strings.Contains)
+	return searchFunc(name, backend.AllNames, strings.Contains)
+}
+
+func SearchSealedContains(name string) ([]string, error) {
+	return searchFunc(name, backend.AllSealed, strings.Contains)
 }
 
 func Printings4Card(name string) ([]string, error) {

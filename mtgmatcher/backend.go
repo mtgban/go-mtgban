@@ -48,6 +48,8 @@ var backend struct {
 
 	// Slice with every uniquely normalized name
 	AllNames []string
+	// Slice with every uniquely normalized product name
+	AllSealed []string
 	// Map of normalized names to slice of uuids
 	Hashes map[string][]string
 
@@ -282,20 +284,23 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	// XXX: maybe FaceName cause trouble when searching prefix?
 	hashes := map[string][]string{}
 	names := make([]string, 0, len(cards))
+	var sealed []string
 	for uuid, card := range uuids {
-		if card.Sealed {
-			continue
-		}
 		norm := Normalize(card.Name)
 		_, found := hashes[norm]
 		if !found {
-			names = append(names, norm)
+			if card.Sealed {
+				sealed = append(sealed, norm)
+			} else {
+				names = append(names, norm)
+			}
 		}
 		hashes[norm] = append(hashes[norm], uuid)
 	}
 
 	backend.Hashes = hashes
 	backend.AllNames = names
+	backend.AllSealed = sealed
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.UUIDs = uuids
