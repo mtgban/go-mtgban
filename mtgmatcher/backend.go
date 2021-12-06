@@ -339,6 +339,14 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 			if setCode == dup.Code {
 				continue
 			}
+			_, found := sets[setCode]
+			if !found {
+				continue
+			}
+			if skipSet(sets[setCode]) {
+				continue
+			}
+
 			for j := range sets[setCode].Cards {
 				// Name match, can't break after the first because there could
 				// be other variants
