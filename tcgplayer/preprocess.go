@@ -154,7 +154,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			"Ox of Agonas":                "PL21",
 			"Angrath, the Flame-Chained":  "PL21",
 			"Tahngarth, First Mate":       "PL21",
+			"Arbor Elf":                   "PWP21",
+			"Collected Company":           "PWP21",
 			"Fabled Passage":              "PWP21",
+			"Wurmcoil Engine":             "PWP21",
 		}[cardName]
 		if found {
 			edition = ed
