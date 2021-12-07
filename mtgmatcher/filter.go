@@ -1000,6 +1000,15 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						checkNumberSuffix = true
 						expectedSuffix = card.Number
 					}
+				case "Demonlord Belzenlok",
+					"Griselbrand",
+					"Liliana's Contract",
+					"Kothophed, Soul Hoarder",
+					"Razaketh, the Foulblooded":
+					if set.Name == "Secret Lair Drop" {
+						expectedSuffix = mtgjson.SuffixSpecial
+						checkNumberSuffix = inCard.isEtched()
+					}
 				}
 
 				if checkNumberSuffix && !strings.HasSuffix(card.Number, expectedSuffix) {

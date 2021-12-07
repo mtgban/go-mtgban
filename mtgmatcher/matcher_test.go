@@ -286,6 +286,15 @@ var MatchTests = []MatchTest{
 			Edition: "Ixalan",
 		},
 	},
+	MatchTest{
+		Id:   "e771d473-2b2e-54c9-824e-1e309cdf42ec",
+		Desc: "etched_different_number",
+		In: Card{
+			Name:      "Demonlord Belzenlok",
+			Variation: "Foil Etched",
+			Edition:   "Secret Lair Drop Series",
+		},
+	},
 
 	// Naming conventions
 	MatchTest{
