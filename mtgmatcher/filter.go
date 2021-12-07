@@ -957,41 +957,37 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant
 
+				// Always check suffix for misprints
+				checkNumberSuffix := Contains(inCard.Variation, "misprint")
+
 				// Officially known misprints or just variants
-				variation := inCard.Variation
 				switch card.Name {
 				case "Temple of Abandon":
 					if set.Name == "Theros Beyond Death" && inCard.isExtendedArt() {
 						expectedSuffix = mtgjson.SuffixSpecial
-						if inCard.Foil {
-							variation = "misprint"
-						}
+						checkNumberSuffix = inCard.Foil
 					}
 				case "Reflecting Pool":
 					if set.Name == "Shadowmoor" {
 						expectedSuffix = mtgjson.SuffixSpecial
-						if inCard.Foil {
-							variation = "misprint"
-						}
+						checkNumberSuffix = inCard.Foil
 					}
 				case "Void Beckoner":
 					if set.Name == "Ikoria: Lair of Behemoths" {
 						expectedSuffix = "A"
-						if inCard.isReskin() {
-							variation = "misprint"
-						}
+						checkNumberSuffix = inCard.isReskin()
 					}
 				case "Island":
 					if set.Name == "Arena League 1999" && Contains(inCard.Variation, "NO SYMBOL") {
-						variation = "misprint"
+						checkNumberSuffix = true
 					}
 				case "Laquatus's Champion":
 					if set.Name == "Torment Promos" {
-						if Contains(variation, "dark") {
+						if Contains(inCard.Variation, "dark") {
 							if card.Number != "67†a" {
 								continue
 							}
-						} else if Contains(variation, "misprint") {
+						} else if Contains(inCard.Variation, "misprint") {
 							if card.Number != "67†" {
 								continue
 							}
@@ -1001,14 +997,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 							}
 						}
 						// Make below check pass, we already filtered above
-						variation = "misprint"
+						checkNumberSuffix = true
 						expectedSuffix = card.Number
 					}
 				}
 
-				if Contains(variation, "misprint") && !strings.HasSuffix(card.Number, expectedSuffix) {
+				if checkNumberSuffix && !strings.HasSuffix(card.Number, expectedSuffix) {
 					continue
-				} else if !Contains(variation, "misprint") && strings.HasSuffix(card.Number, expectedSuffix) {
+				} else if !checkNumberSuffix && strings.HasSuffix(card.Number, expectedSuffix) {
 					continue
 				}
 			}
