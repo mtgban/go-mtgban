@@ -44,7 +44,8 @@ type ArbitOpts struct {
 	UseTrades bool
 
 	// Whether to consider foils
-	NoFoil bool
+	NoFoil   bool
+	OnlyFoil bool
 
 	// Whether to skip non-rl cards
 	OnlyReserveList bool
@@ -103,6 +104,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	maxSpread := 0.0
 	maxPriceRatio := 0.0
 	filterFoil := false
+	filterOnlyFoil := false
 	filterRLOnly := false
 	var filterConditions []string
 	var filterRarities []string
@@ -128,6 +130,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		maxPriceRatio = opts.MaxPriceRatio
 		maxSpread = opts.MaxSpread
 		filterFoil = opts.NoFoil
+		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
 
 		if len(opts.Conditions) != 0 {
@@ -189,6 +192,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 		if filterFoil && (co.Foil || co.Etched) {
+			continue
+		}
+		if filterOnlyFoil && !co.Foil && !co.Etched {
 			continue
 		}
 		if filterRLOnly && !co.IsReserved {
@@ -389,6 +395,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	minPrice := 0.0
 	minQty := 0
 	filterFoil := false
+	filterOnlyFoil := false
 	filterRLOnly := false
 	var filterConditions []string
 	var filterRarities []string
@@ -408,6 +415,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		maxSpread = opts.MaxSpread
 		minQty = opts.MinQuantity
 		filterFoil = opts.NoFoil
+		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
 
 		if len(opts.Conditions) != 0 {
@@ -450,6 +458,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			continue
 		}
 		if filterFoil && (co.Foil || co.Etched) {
+			continue
+		}
+		if filterOnlyFoil && !co.Foil && !co.Etched {
 			continue
 		}
 		if filterRLOnly && !co.IsReserved {
