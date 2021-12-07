@@ -373,6 +373,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	minPrice := 0.0
 	minQty := 0
 	filterFoil := false
+	filterRLOnly := false
 	var filterConditions []string
 	var filterRarities []string
 	var filterEditions []string
@@ -389,6 +390,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		maxSpread = opts.MaxSpread
 		minQty = opts.MinQuantity
 		filterFoil = opts.NoFoil
+		filterRLOnly = opts.OnlyReserveList
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -424,6 +426,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			continue
 		}
 		if filterFoil && co.Foil {
+			continue
+		}
+		if filterRLOnly && !co.IsReserved {
 			continue
 		}
 		if sliceStringHas(filterEditions, co.Edition) {
