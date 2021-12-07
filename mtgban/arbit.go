@@ -188,7 +188,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		if sliceStringHas(filterRarities, co.Rarity) {
 			continue
 		}
-		if filterFoil && co.Foil {
+		if filterFoil && (co.Foil || co.Etched) {
 			continue
 		}
 		if filterRLOnly && !co.IsReserved {
@@ -449,7 +449,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		if sliceStringHas(filterRarities, co.Rarity) {
 			continue
 		}
-		if filterFoil && co.Foil {
+		if filterFoil && (co.Foil || co.Etched) {
 			continue
 		}
 		if filterRLOnly && !co.IsReserved {
