@@ -1,6 +1,8 @@
 package mtgban
 
 import (
+	"strconv"
+
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
@@ -58,6 +60,9 @@ type ArbitOpts struct {
 
 	// List of editions to select
 	OnlyEditions []string
+
+	// List of per-edition collector numbers to select
+	OnlyCollectorNumberRanges map[string][2]int
 }
 
 type ArbitEntry struct {
@@ -103,6 +108,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	var filterRarities []string
 	var filterEditions []string
 	var filterSelectedEditions []string
+	var filterSelectedCNRange map[string][2]int
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -135,6 +141,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 		if len(opts.OnlyEditions) != 0 {
 			filterSelectedEditions = opts.OnlyEditions
+		}
+		if len(opts.OnlyCollectorNumberRanges) != 0 {
+			filterSelectedCNRange = opts.OnlyCollectorNumberRanges
 		}
 	}
 
@@ -190,6 +199,13 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 		if filterSelectedEditions != nil && !sliceStringHas(filterSelectedEditions, co.Edition) {
 			continue
+		}
+		cnRange, found := filterSelectedCNRange[co.Edition]
+		if found {
+			cn, err := strconv.Atoi(co.Number)
+			if err != nil && (cn < cnRange[0] || cn > cnRange[1]) {
+				continue
+			}
 		}
 
 		for _, invEntry := range invEntries {
@@ -378,6 +394,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	var filterRarities []string
 	var filterEditions []string
 	var filterSelectedEditions []string
+	var filterSelectedCNRange map[string][2]int
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -404,6 +421,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		}
 		if len(opts.OnlyEditions) != 0 {
 			filterSelectedEditions = opts.OnlyEditions
+		}
+		if len(opts.OnlyCollectorNumberRanges) != 0 {
+			filterSelectedCNRange = opts.OnlyCollectorNumberRanges
 		}
 	}
 
@@ -440,6 +460,13 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		}
 		if filterSelectedEditions != nil && !sliceStringHas(filterSelectedEditions, co.Edition) {
 			continue
+		}
+		cnRange, found := filterSelectedCNRange[co.Edition]
+		if found {
+			cn, _ := strconv.Atoi(co.Number)
+			if err != nil && (cn < cnRange[0] || cn > cnRange[1]) {
+				continue
+			}
 		}
 
 		for _, refEntry := range refEntries {
