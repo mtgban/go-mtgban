@@ -377,6 +377,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	var filterConditions []string
 	var filterRarities []string
 	var filterEditions []string
+	var filterSelectedEditions []string
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -400,6 +401,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		}
 		if len(opts.Editions) != 0 {
 			filterEditions = opts.Editions
+		}
+		if len(opts.OnlyEditions) != 0 {
+			filterSelectedEditions = opts.OnlyEditions
 		}
 	}
 
@@ -432,6 +436,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			continue
 		}
 		if sliceStringHas(filterEditions, co.Edition) {
+			continue
+		}
+		if filterSelectedEditions != nil && !sliceStringHas(filterSelectedEditions, co.Edition) {
 			continue
 		}
 
