@@ -149,7 +149,8 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			variant = ""
 		case "Warmonger":
 			edition = "PMEI"
-		case "Stonecoil Serpent":
+		case "Stonecoil Serpent",
+			"Vito, Thorn of the Dusk Rose":
 			edition = "PRES"
 		case "Sethron, Hurloon General":
 			edition = "PL21"
