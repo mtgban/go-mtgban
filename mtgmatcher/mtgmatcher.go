@@ -652,8 +652,11 @@ func adjustEdition(inCard *Card) {
 		case "Nalathni Dragon":
 			edition = "Dragon Con"
 			variation = ""
-		case "Ass Whuppin'", "Rukh Egg":
+		case "Ass Whuppin'",
+			"Rukh Egg",
+			"Scholar of the Lost Trove":
 			if inCard.isPrerelease() {
+				variation = "Release"
 				edition = "Release Events"
 			}
 		case "Ajani Vengeant":

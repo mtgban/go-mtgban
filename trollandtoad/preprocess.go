@@ -21,6 +21,7 @@ var cardTable = map[string]string{
 	"Far Wonderings":        "Far Wanderings",
 	"Isand":                 "Island",
 	"Military Intelligance": "Military Intelligence",
+	"Combustible Gearhulkk": "Combustible Gearhulk",
 
 	"Gadrak, the Crown-Scrouge": "Gadrak, the Crown-Scourge",
 	"Kasmina's Transformation":  "Kasmina's Transmutation",
@@ -103,6 +104,7 @@ var tagsTable = []string{
 	"Japanese Alternate Art Exclusive",
 	"Japanese Alternative Art Exclusive",
 	"Judge Promo",
+	"Launch Party Promo",
 	"MagicFest Textless Promo",
 	"Media Promo",
 	"Mystery Booster",
@@ -614,6 +616,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		case "Gaze of Granite- IDW Comic Promo":
 			cardName = "Gaze of Granite"
 			edition = "IDW Comics 2013"
+		case "Genesis Hydra":
+			edition = "PRES"
 		default:
 			if strings.Contains(fullName, "005") && strings.Contains(fullName, "GP") {
 				edition = "G18"
