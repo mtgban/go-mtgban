@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+// Interface describing common operations on entries
+type GenericEntry interface {
+	Pricing() float64
+	Condition() string
+}
+
 // InventoryEntry represents an entry for selling a particular Card
 type InventoryEntry struct {
 	// Quantity of this entry
@@ -38,6 +44,14 @@ type InventoryEntry struct {
 	InstanceId string
 }
 
+func (ie InventoryEntry) Pricing() float64 {
+	return ie.Price
+}
+
+func (ie InventoryEntry) Condition() string {
+	return ie.Conditions
+}
+
 // BuylistEntry represents an entry for buying a particular Card
 type BuylistEntry struct {
 	// Quantity of this entry
@@ -66,6 +80,14 @@ type BuylistEntry struct {
 
 	// Original identifier as available from the scraper
 	OriginalId string
+}
+
+func (be BuylistEntry) Pricing() float64 {
+	return be.BuyPrice
+}
+
+func (be BuylistEntry) Condition() string {
+	return be.Conditions
 }
 
 // ScraperInfo contains
