@@ -209,7 +209,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		cnRange, found := filterSelectedCNRange[co.Edition]
 		if found {
 			cn, err := strconv.Atoi(co.Number)
-			if err != nil && (cn < cnRange[0] || cn > cnRange[1]) {
+			if err == nil && (cn < cnRange[0] || cn > cnRange[1]) {
 				continue
 			}
 		}
