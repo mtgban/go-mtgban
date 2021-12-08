@@ -2747,6 +2747,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"promo":          "142",
 		"v.1":            "142",
 		"v.2":            "429",
+		"magicfest art":  "142",
 		"masters 25 art": "429",
 		"1":              "142",
 	},
