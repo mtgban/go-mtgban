@@ -3336,6 +3336,7 @@ var sldVariants = map[string]map[string]string{
 		"":                                    "201",
 		"secret lair":                         "201",
 		"secret lair: a box of rocks":         "201",
+		"secret lair retro frame":             "589",
 		"secret lair retro frame foil etched": "589",
 		"secret lair: dan frazier is back":    "589",
 	},
@@ -3348,6 +3349,10 @@ var sldVariants = map[string]map[string]string{
 	"Brainstorm": map[string]string{
 		"":                                "174",
 		"secret lair: series: mark poole": "174",
+	},
+	"Swords to Plowshares": map[string]string{
+		"":            "110",
+		"secret lair": "110",
 	},
 }
 
