@@ -144,7 +144,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		base = strings.TrimSuffix(base, ".")
 
 		// Some of the hashes are not correctly set
-		skipEdition := strings.Contains(edition, "Mystery Booster") || edition == "The List"
+		skipEdition := strings.Contains(edition, "Mystery Booster")
+		switch edition {
+		case "Strixhaven: School of Mages Prerelease",
+			"Strixhaven: School of Mages Promos",
+			"The List":
+			skipEdition = true
+		}
 
 		id := mtgmatcher.Scryfall2UUID(base)
 		if id != "" && !skipEdition {
