@@ -144,6 +144,9 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		if product.Properties.Signed {
 			cond = "Heavily Played"
 		}
+		if product.Properties.Altered {
+			continue
+		}
 		conditions, found := condMap[cond]
 		if !found {
 			return fmt.Errorf("Unsupported %s condition", cond)
