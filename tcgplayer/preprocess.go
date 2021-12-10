@@ -302,7 +302,19 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		} else if cardName == "Thalia, Guardian of Thraben" && variant == "" {
 			variant = "37"
 		} else {
+			ogVariant := variant
 			variant = product.getNum()
+			// These cards have a different number than reported
+			if strings.Contains(ogVariant, "Etched") {
+				switch cardName {
+				case "Demonlord Belzenlok",
+					"Griselbrand",
+					"Liliana's Contract",
+					"Kothophed, Soul Hoarder",
+					"Razaketh, the Foulblooded":
+					variant = "etched"
+				}
+			}
 		}
 	case "Planeswalker Event Promos":
 		variant = ""
