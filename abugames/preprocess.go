@@ -21,6 +21,7 @@ var cardTable = map[string]string{
 	"Soulmemder":                          "Soulmender",
 	"Svagthos, the Restless Tomb":         "Svogthos, the Restless Tomb",
 	"Trial and Error":                     "Trial // Error",
+	"Simic Signat":                        "Simic Signet",
 
 	"Godzilla, King of the Monsters / Zilortha, Strength Incarnate": "Zilortha, Strength Incarnate",
 
@@ -234,6 +235,16 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		case "Beast of Burden":
 			if variation == "Prerelease No Expansion Symbol FOIL" {
 				variation = "Prerelease misprint"
+			}
+		case "Magister of Worth":
+			if variation == "Buy-a-Box Promo" {
+				card.Edition = "Conspiracy"
+				variation = "Release"
+			}
+		case "Mechagodzilla, Battle Fortress / Hangarback Walker":
+			if variation == "Welcome Back" {
+				cardName = "Hangarback Walker"
+				card.Edition = "PLG20"
 			}
 		}
 		if strings.Contains(variation, "United Kingdom") {
