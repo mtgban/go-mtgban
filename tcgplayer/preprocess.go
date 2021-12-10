@@ -182,6 +182,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = "PLG21"
 		}
 
+		if edition == "PWP21" {
+			if variant == "Winner" || variant == "Top 8" {
+				return nil, errors.New("untracked")
+			}
+		}
+
 		switch cardName {
 		case "Arasta of the Endless Web":
 			edition = "THB"
