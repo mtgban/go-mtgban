@@ -3355,6 +3355,26 @@ var sldVariants = map[string]map[string]string{
 		"":            "110",
 		"secret lair": "110",
 	},
+	"Snow-Covered Forest": map[string]string{
+		"":            "5",
+		"secret lair": "5",
+	},
+	"Snow-Covered Island": map[string]string{
+		"":            "2",
+		"secret lair": "2",
+	},
+	"Snow-Covered Mountain": map[string]string{
+		"":            "4",
+		"secret lair": "4",
+	},
+	"Snow-Covered Plains": map[string]string{
+		"":            "1",
+		"secret lair": "1",
+	},
+	"Snow-Covered Swamp": map[string]string{
+		"":            "3",
+		"secret lair": "3",
+	},
 }
 
 var soiVariants = map[string]map[string]string{
