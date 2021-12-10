@@ -305,6 +305,12 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 							default:
 								continue
 							}
+						case "Secrat Lair Drop":
+							// No specific card because it's an "always open" set
+						case "Kaldheim Promos":
+							if card.Name != "Fiendish Duo" {
+								continue
+							}
 						default:
 							continue
 						}
