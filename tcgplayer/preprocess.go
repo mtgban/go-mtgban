@@ -299,12 +299,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "Secret Lair Drop Series":
 		if cardName == "Squire" {
 			return nil, errors.New("unsupported")
-		} else if cardName == "Thalia, Guardian of Thraben" {
-			if variant == "" {
-				variant = "37"
-			}
-		} else if cardName == "Swamp" && variant == "Full Art" {
-			variant = "119"
+		} else if cardName == "Thalia, Guardian of Thraben" && variant == "" {
+			variant = "37"
 		} else {
 			variant = product.getNum()
 		}
