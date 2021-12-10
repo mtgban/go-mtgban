@@ -996,6 +996,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Innistrad: Crimson Vow Variants",
 		},
 	},
+	MatchTest{
+		Id:   "43b3b820-fdf9-539a-a864-3a7cc3e0e994",
+		Desc: "eternal_night",
+		In: Card{
+			Name:      "Toxrill, the Corrosive",
+			Variation: "Eternal Night",
+			Edition:   "Innistrad: Crimson Vow Variants",
+		},
+	},
 
 	// Reskinned frame
 	MatchTest{
