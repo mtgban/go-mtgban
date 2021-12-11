@@ -146,6 +146,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		}
 	}
 
+	// Separate flavor names
+	if strings.Contains(cardName, " | ") {
+		cardName = strings.Split(cardName, " | ")[0]
+	}
+
 	// Cleanup variation as necessary
 	if variation != "" {
 		variation = strings.Replace(variation, "FOIL", "", -1)
