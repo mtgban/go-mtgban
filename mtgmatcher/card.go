@@ -118,6 +118,7 @@ func IsToken(name string) bool {
 		"Acorn Stash",
 		"Angel",
 		"Ashaya, the Awoken World",
+		"Bat",
 		"Bear",
 		"Bird",
 		"Cat Dragon",
@@ -133,6 +134,7 @@ func IsToken(name string) bool {
 		"Dinosaur",
 		"Drake",
 		"Eldrazi Spawn",
+		"Elemental Shaman",
 		"Elemental",
 		"Elephant",
 		"Elf Warrior",
@@ -146,6 +148,7 @@ func IsToken(name string) bool {
 		"Giant",
 		"Gold",
 		"Golem",
+		"Human",
 		"Human Cleric",
 		"Human Rogue",
 		"Human Soldier",
@@ -153,6 +156,7 @@ func IsToken(name string) bool {
 		"Insect",
 		"Karox Bladewing",
 		"Knight",
+		"Kraken",
 		"Manifest",
 		"Marit Lage",
 		"Merfolk",
@@ -167,9 +171,11 @@ func IsToken(name string) bool {
 		"Pirate",
 		"Plant",
 		"Poison Counter",
+		"Pyromantic Pixels",
 		"Rat",
 		"Saproling",
 		"Shapeshifter",
+		"Sliver",
 		"Snake",
 		"Thopter",
 		"Thrull",
@@ -212,6 +218,7 @@ func IsToken(name string) bool {
 		strings.Contains(name, "Card "),
 		Contains(name, "Arena Code"),
 		Contains(name, "Art Series"),
+		Contains(name, "Charlie Brown"),
 		Contains(name, "Checklist"),
 		Contains(name, "Decklist"),
 		Contains(name, "DFC Helper"),
@@ -222,6 +229,8 @@ func IsToken(name string) bool {
 		Contains(name, "Guild Symbol"),
 		Contains(name, "Magic Minigame"),
 		Contains(name, "Monarch"),
+		Contains(name, "Morph Overlay"),
+		Contains(name, "On Your Turn"),
 		Contains(name, "Online Code"),
 		Contains(name, "Oversize"),
 		Contains(name, "Punch Out"),
@@ -229,7 +238,8 @@ func IsToken(name string) bool {
 		Contains(name, "Rules Tip"):
 		return true
 	// Alternative rules tip card names found on mkm
-	case strings.HasPrefix(name, "Tip: "):
+	case strings.HasPrefix(name, "Build a Deck: "),
+		strings.HasPrefix(name, "Tip: "):
 		return true
 	}
 
