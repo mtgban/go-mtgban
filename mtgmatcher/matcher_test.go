@@ -3007,6 +3007,15 @@ var MatchTests = []MatchTest{
 			Edition: "Adventures in the Forgotten Realms",
 		},
 	},
+	MatchTest{
+		Id:   "4b4026c0-114f-55c2-a520-9eab77881ee6",
+		Desc: "tok_commander",
+		In: Card{
+			Name:      "Azusa, Lost but Seeking",
+			Variation: "Commander's Arsenal",
+			Edition:   "Commander's Arsenal Oversized",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

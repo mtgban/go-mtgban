@@ -155,7 +155,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		strings.Contains(strings.ToLower(inCard.Variation), "token"):
 		return "", ErrUnsupported
 	// For any unsupported set that wasn't processed previously
-	case inCard.Contains("Oversize"):
+	case inCard.Contains("Oversize") && !inCard.Contains("Commander"):
 		return "", ErrUnsupported
 	// For any specific missing card
 	case inCard.Name == "Squire" && strings.Contains(inCard.Edition, "Secret Lair"):
@@ -551,7 +551,7 @@ func adjustEdition(inCard *Card) {
 	}
 
 	switch {
-	case strings.Contains(edition, "Commander"):
+	case strings.Contains(edition, "Commander") && !inCard.Contains("Oversize"):
 		ed := ParseCommanderEdition(edition, variation)
 		if ed != "" {
 			edition = ed
@@ -679,6 +679,30 @@ func adjustEdition(inCard *Card) {
 	case len(MatchInSet(inCard.Name, "PHEL")) == 1 && inCard.Contains("Oversize"):
 		edition = backend.Sets["PHEL"].Name
 		variation = ""
+
+	// All the oversized commander cards
+	case inCard.Contains("Arsenal") && len(MatchInSet(inCard.Name, "OCM1")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OCM1"].Name
+	case len(MatchInSet(inCard.Name, "PCMD")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["PCMD"].Name
+	case len(MatchInSet(inCard.Name, "OCMD")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OCMD"].Name
+	case len(MatchInSet(inCard.Name, "OC13")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC13"].Name
+	case len(MatchInSet(inCard.Name, "OC14")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC14"].Name
+	case len(MatchInSet(inCard.Name, "OC15")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC15"].Name
+	case len(MatchInSet(inCard.Name, "OC16")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC16"].Name
+	case len(MatchInSet(inCard.Name, "OC17")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC17"].Name
+	case len(MatchInSet(inCard.Name, "OC18")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC18"].Name
+	case len(MatchInSet(inCard.Name, "OC19")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC19"].Name
+	case len(MatchInSet(inCard.Name, "OC20")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["OC20"].Name
 
 	// Single card mismatches
 	default:
