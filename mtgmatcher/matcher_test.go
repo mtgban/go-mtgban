@@ -3025,6 +3025,23 @@ var MatchTests = []MatchTest{
 			Edition:   "League Tokens 2013",
 		},
 	},
+	MatchTest{
+		Id:   "4ec88554-f174-556b-98eb-9c315caafb77",
+		Desc: "tok_mps",
+		In: Card{
+			Name:    "Angel Token",
+			Edition: "Magic Player Rewards",
+		},
+	},
+	MatchTest{
+		Id:   "18e320e5-9766-5783-b74a-a7208e05068a",
+		Desc: "tok_bear",
+		In: Card{
+			Name:      "Bear",
+			Variation: "Odyssey",
+			Edition:   "Magic Player Rewards",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

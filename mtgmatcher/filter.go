@@ -191,6 +191,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		// Some providers use "Textless" for MF cards
 		case inCard.isRewards() && !inCard.isMagicFest():
+			maybeYear = inCard.playerRewardsYear(maybeYear)
 			switch {
 			case strings.HasPrefix(set.Name, "Magic Player Rewards "+maybeYear):
 			default:

@@ -456,6 +456,38 @@ func (c *Card) isSDCC() bool {
 		c.Contains("San Diego Comic-Con")
 }
 
+func (c *Card) playerRewardsYear(maybeYear string) string {
+	if maybeYear == "" {
+		switch c.Name {
+		case "Bear":
+			if c.Variation == "Odyssey" {
+				maybeYear = "2001"
+			} else if c.Variation == "Onslaught" {
+				maybeYear = "2003"
+			}
+		case "Beast":
+			if c.Variation == "Odyssey" {
+				maybeYear = "2001"
+			} else if c.Variation == "Darksteel" {
+				maybeYear = "2004"
+			}
+		case "Elephant":
+			if c.Variation == "Invasion" {
+				maybeYear = "2001"
+			} else if c.Variation == "Odyssey" {
+				maybeYear = "2002"
+			}
+		case "Spirit":
+			if c.Variation == "Planeshift" {
+				maybeYear = "2001"
+			} else if c.Variation == "Champions" {
+				maybeYear = "2004"
+			}
+		}
+	}
+	return maybeYear
+}
+
 func (c *Card) arenaYear(maybeYear string) string {
 	if maybeYear == "" {
 		switch {

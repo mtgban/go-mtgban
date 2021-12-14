@@ -73,6 +73,12 @@ var setAllowedForTokens = map[string]bool{
 	"L16": true,
 	"L17": true,
 
+	// Magic Player Rewards
+	"MPR": true,
+	"PR2": true,
+	"P03": true,
+	"P04": true,
+
 	"AFR":  true,
 	"PHEL": true,
 	"PLNY": true,
