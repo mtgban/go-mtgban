@@ -86,6 +86,7 @@ var setAllowedForTokens = map[string]bool{
 	"TBTH": true,
 	"TDAG": true,
 	"TFTH": true,
+	"UGL":  true,
 }
 
 func skipSet(set *mtgjson.Set) bool {
