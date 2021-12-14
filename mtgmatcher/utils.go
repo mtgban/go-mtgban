@@ -17,6 +17,7 @@ var ErrCardDoesNotExist = errors.New("unknown card name")
 var ErrCardNotInEdition = errors.New("unknown edition")
 var ErrCardWrongVariant = errors.New("unknown variant")
 var ErrCardMissingVariant = errors.New("missing necessary variant")
+var ErrUnsupported = errors.New("unsupported")
 var ErrAliasing = newAliasingError()
 
 type AliasingError struct {

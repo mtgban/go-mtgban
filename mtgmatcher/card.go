@@ -246,6 +246,36 @@ func IsToken(name string) bool {
 	return false
 }
 
+func (c *Card) isUnsupported() bool {
+	return c.Contains("Art Series") ||
+		c.IsSurrounded("Complete", "Set") || // a complete collection
+		c.Contains("Fallen Empires: Wyvern Misprints") ||
+		c.Contains("Simplified Chinese Alternate Art Cards") ||
+		c.Contains("Ultra-Pro Puzzle") ||
+		c.Contains("Player Cards") || // scg pro players
+		c.Contains("Celebration Cards") || // PCEL
+		c.Contains("Special Occasion") || // PCEL
+		c.Contains("Foreign White Border") || // for REV and 4ED
+		c.Contains("4th Edition - Alternate") ||
+		c.Contains("Alternate 4th Edition") ||
+		c.Contains("Fourth Edition: Alternate") ||
+		c.Contains("Fourth (Alternate Edition)") ||
+		c.Contains("Fourth Edition (Alt)") ||
+		c.Contains("Filler Cards") || // Misprints from mkm and ct
+		c.Contains("Hero's Path Promos") || // Theros specials
+		c.Contains("Face the Hydra") || // Theros
+		c.Contains("Battle the Horde") || // Born
+		c.Contains("Defeat a God") || // Journey
+		c.Contains("Salvat") || // Salvat-Hachette 2005/2011
+		c.Contains("Redemption Program") || // PRES
+		c.Contains("Heroes of the Realm") || // HTR*
+		c.Contains("Memorabilia") ||
+		c.Contains("Sealed") ||
+		// Oversized are usually ok, but 8th and 9th ed box topper variants
+		// conflict with the actual edition name, so skip them
+		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
+}
+
 // Returns whether the input string may represent a basic land
 func IsBasicLand(name string) bool {
 	switch {

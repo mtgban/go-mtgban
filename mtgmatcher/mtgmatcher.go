@@ -105,6 +105,11 @@ func Match(inCard *Card) (cardId string, err error) {
 		}
 	}
 
+	// Skip unsupported sets
+	if inCard.isUnsupported() {
+		return "", ErrUnsupported
+	}
+
 	// Get the card basic info to retrieve the Printings array
 	entry, found := backend.Cards[Normalize(inCard.Name)]
 	if !found {
@@ -117,6 +122,10 @@ func Match(inCard *Card) (cardId string, err error) {
 
 		entry, found = backend.Cards[Normalize(inCard.Name)]
 		if !found {
+			// Return a safe error if it's a token
+			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
+				return "", ErrUnsupported
+			}
 			return "", ErrCardDoesNotExist
 		}
 	}
@@ -138,6 +147,18 @@ func Match(inCard *Card) (cardId string, err error) {
 		logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
 	}
 
+	// Extra check, after any possible edition adjustment has been done
+	switch {
+	// For any custom token set that may have leaked here
+	// Note we cannot use Contains because "token" is filtered away
+	case strings.Contains(strings.ToLower(inCard.Edition), "token") ||
+		strings.Contains(strings.ToLower(inCard.Variation), "token"):
+		return "", ErrUnsupported
+	// For any unsupported set that wasn't processed previously
+	case inCard.Contains("Oversize"):
+		return "", ErrUnsupported
+	}
+
 	logger.Println("Processing", inCard, entry.Printings)
 
 	// If there are multiple printings of the card, filter out to the
@@ -150,6 +171,10 @@ func Match(inCard *Card) (cardId string, err error) {
 		// Filtering was too aggressive or wrong data fed,
 		// in either case, nothing else to be done here.
 		if len(printings) == 0 {
+			// Return a safe error if it's a token
+			if isToken(ogName) || Contains(inCard.Variation, "Oversize") {
+				return "", ErrUnsupported
+			}
 			return "", ErrCardNotInEdition
 		}
 	}
