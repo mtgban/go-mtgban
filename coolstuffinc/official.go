@@ -48,7 +48,9 @@ func (csi *CoolstuffincOfficial) scrape() error {
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			switch theCard.Edition {
 			case "World Championship Decks":
 				continue

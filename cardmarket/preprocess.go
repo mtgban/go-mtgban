@@ -97,30 +97,10 @@ var promo2editionTable = map[string]string{
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
-	skipCard := false
-	for _, name := range filteredCards {
-		if cardName == name {
-			skipCard = true
-			break
-		}
-	}
 	for _, name := range filteredExpansions {
 		if edition == name {
-			skipCard = true
-			break
+			return nil, errors.New("not single")
 		}
-	}
-	if strings.Contains(edition, "Token") ||
-		strings.Contains(edition, "Oversized") ||
-		strings.Contains(edition, "Player Cards") {
-		skipCard = true
-	}
-
-	if skipCard ||
-		mtgmatcher.IsToken(cardName) ||
-		strings.Contains(cardName, "Art Series") ||
-		strings.Contains(cardName, "On Your Turn") {
-		return nil, errors.New("not single")
 	}
 
 	ogEdition := edition
@@ -139,7 +119,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		switch cardName {
 		case "Lightning Bolt":
 			if variant == "V.1" {
-				return nil, errors.New("oversized")
+				variant = "oversized"
 			}
 		case "Comet Storm",
 			"Emrakul, the Aeons Torn",
@@ -150,7 +130,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Spellbreaker Behemoth",
 			"Sun Titan",
 			"Wurmcoil Engine":
-			return nil, errors.New("oversized")
+			variant = "oversized"
 		}
 	case "Misprints":
 		switch cardName {
@@ -263,18 +243,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, errors.New("unsupported")
 		}
 	case "Commander's Arsenal":
-		switch cardName {
-		case "Azusa, Lost but Seeking",
-			"Brion Stoutarm",
-			"Glissa, the Traitor",
-			"Godo, Bandit Warlord",
-			"Grimgrin, Corpse-Born",
-			"Karn, Silver Golem",
-			"Karrthus, Tyrant of Jund",
-			"Mayael the Anima",
-			"Sliver Queen",
-			"Zur the Enchanter":
-			return nil, errors.New("oversize")
+		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
+			edition = "OCM1"
 		}
 	case "Commander Anthology II",
 		"Ravnica Allegiance",
@@ -291,9 +261,15 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "Theros",
 		"Born of the Gods",
 		"Journey into Nyx":
-		// Skip the token-based cards, TFTH, TBTH, and TDAG
 		if strings.HasPrefix(variant, "C") {
-			return nil, errors.New("untracked")
+			switch edition {
+			case "Theros":
+				edition = "Face the Hydra"
+			case "Born of the Gods":
+				edition = "Battle the Horde"
+			case "Journey into Nyx":
+				edition = "Defeat a God"
+			}
 		}
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
 		if variant == "V.1" {
@@ -343,8 +319,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if variant == "V.2" {
 			return nil, errors.New("non-english")
 		}
-	case "Simplified Chinese Alternate Art Cards":
-		return nil, errors.New("non-english")
 	case "Duel Decks: Jace vs. Chandra":
 		if variant == "V.2" {
 			variant = "Japanese"
@@ -467,14 +441,9 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			edition = "M19 Standard Showdown"
 		}
 	case "Release Promos":
-		switch cardName {
-		case "Basandra, Battle Seraph",
-			"Edric, Spymaster of Trest",
-			"Nin, the Pain Artist",
-			"Skullbriar, the Walking Grave",
-			"Vish Kal, Blood Arbiter":
-			return nil, errors.New("oversize")
-		case "Shivan Dragon":
+		if len(mtgmatcher.MatchInSet(cardName, "PCMD")) == 1 {
+			edition = "PCMD"
+		} else if cardName == "Shivan Dragon" {
 			return nil, errors.New("non english")
 		}
 	// Catch-all sets for anything promo
@@ -483,9 +452,9 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		"DCI Promos":
 		switch cardName {
 		case "Mayor of Avabruck / Howlpack Alpha":
-			return nil, errors.New("oversize")
+			variant = "oversized"
 		case "Nalathni Dragon":
-			return nil, errors.New("non english")
+			edition = "Redemption Program"
 		}
 		// Variant is always unreliable
 		variant = ""
@@ -622,7 +591,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			if variant == "V.2" {
 				// Catch any older oversized commander
 				if strings.HasPrefix(edition, "Commander 20") {
-					return nil, errors.New("oversized")
+					variant = "oversized"
 					// CMR has multiple prints in different sets (ie Return to Dust)
 				} else if strings.HasPrefix(edition, "Commander Legends") {
 					variant = "Extended Art"

@@ -111,7 +111,7 @@ func (c *Card) addToVariant(tag string) {
 }
 
 // Returns whether the input string may represent a token
-func IsToken(name string) bool {
+func isToken(name string) bool {
 	switch name {
 	// Known token names
 	case "A Threat to Alara: Nicol Bolas",

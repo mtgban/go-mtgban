@@ -177,7 +177,9 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			// Skip reporting an error for known failures (invalid variant number)
 			if mtgmatcher.IsBasicLand(cardName) {
 				switch edition {

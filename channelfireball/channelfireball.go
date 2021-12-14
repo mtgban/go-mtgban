@@ -201,7 +201,9 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			Foil:      card.Foil,
 		}
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			cfb.printf("%v", err)
 			cfb.printf("%q", theCard)
 			cfb.printf("%q", card)

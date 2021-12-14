@@ -111,30 +111,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	number := strings.TrimLeft(bp.Properties.Number, "0")
 	variant := ""
 
-	if mtgmatcher.IsToken(cardName) {
-		return nil, errors.New("not singles")
-	}
-
 	altName, found := cardTable[cardName]
 	if found {
 		cardName = altName
-	}
-
-	// First check for unsupported editions, to avoid returning early from the id lookup
-	switch edition {
-	case "Ultra-Pro Puzzle Cards",
-		"Celebration Cards",
-		"Foreign White Bordered",
-		"Fourth Edition: Alternate",
-		"Fallen Empires: Wyvern Misprints",
-		"Filler Cards":
-		return nil, errors.New("not mtg")
-	case "Battle the Horde",
-		"Defeat a God",
-		"Face the Hydra":
-		return nil, errors.New("unsupported")
-	case "Salvat 2005":
-		return nil, errors.New("foreign")
 	}
 
 	// Some, but not all, have a proper id we can reuse right away

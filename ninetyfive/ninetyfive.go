@@ -80,7 +80,9 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			// Both sides are present, ignore errors from doubles
 			if product.Card.Layout != "normal" {
 				continue

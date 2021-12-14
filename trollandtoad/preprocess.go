@@ -137,28 +137,18 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	}
 
 	switch {
-	case mtgmatcher.IsToken(fullName),
-		strings.Contains(fullName, "Miscut"),
-		strings.Contains(fullName, "Elemental Shaman"),
-		strings.Contains(fullName, "Morph Overlay"),
-		strings.Contains(fullName, "Blank Proxy Card"),
+	case strings.Contains(fullName, "Miscut"),
 		strings.Contains(fullName, "Basic Land Set"),
 		strings.Contains(fullName, "Hasbro Card Set"),
-		strings.Contains(fullName, "Battle the Horde Challenge Deck"),
-		strings.Contains(fullName, "Face the Hydra Challenge Deck"),
 		strings.Contains(fullName, "Empty Collector's Box"),
 		strings.Contains(fullName, "Pokemon"),
 		strings.Contains(fullName, "Zamazenta"),
 		strings.Contains(fullName, "Pyromantic Pixels"),
 		strings.Contains(fullName, "Playmat"),
-		strings.Contains(fullName, " | ") &&
-			(strings.Contains(fullName, "2XM") || strings.Contains(fullName, "ZNC")):
-		return nil, errors.New("not single")
-	case strings.Contains(edition, "Sealed Product"),
-		strings.Contains(edition, "Memorabilia"),
 		strings.Contains(fullName, "Kobolds of Kher Keep 010 - A2"),
 		strings.Contains(fullName, "Ravnica Allegiance Guild Kit Set of"),
-		strings.Contains(edition, "Tokens"):
+		strings.Contains(fullName, " | ") &&
+			(strings.Contains(fullName, "2XM") || strings.Contains(fullName, "ZNC")):
 		return nil, errors.New("not single")
 	case strings.Contains(edition, "Duel Decks") && strings.Contains(edition, "Japanese"),
 		strings.Contains(edition, "Spanish"),

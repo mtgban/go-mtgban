@@ -264,7 +264,9 @@ func (csi *Coolstuffinc) scrape() error {
 			// from one of the fields (cardName in particular)
 			theCard.Foil = theCard.Foil || isFoil
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				return
+			} else if err != nil {
 				switch {
 				case theCard.IsBasicLand(),
 					strings.HasSuffix(theCard.Name, "Guildgate"),
@@ -436,7 +438,9 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 		theCard.Foil = foil == "yes" || strings.Contains(info, "Foil")
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			switch {
 			case theCard.IsBasicLand():
 			default:

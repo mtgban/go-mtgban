@@ -107,10 +107,6 @@ func (meeple *Mightymeeple) scrape(mode string) error {
 		cardName := e.ChildText(`h5`)
 		cardName = mtgmatcher.SplitVariants(cardName)[0]
 
-		if mtgmatcher.IsToken(cardName) {
-			return
-		}
-
 		edition := e.ChildText(`strong`)
 
 		variant := e.ChildText(`i`)
@@ -210,7 +206,9 @@ func (meeple *Mightymeeple) scrape(mode string) error {
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				return
+			} else if err != nil {
 				switch edition {
 				// No easy way to separate old variants, so lots of duplicate warnings
 				case "Alliances",

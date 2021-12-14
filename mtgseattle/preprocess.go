@@ -27,16 +27,6 @@ var promoTags = []string{
 }
 
 func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
-	if mtgmatcher.IsToken(cardName) ||
-		strings.HasPrefix(cardName, "[Deprecated]") ||
-		strings.Contains(variant, "Token") {
-		return nil, errors.New("not single")
-	}
-
-	if strings.HasPrefix(cardName, "Complete") && strings.HasSuffix(cardName, "Set") {
-		return nil, errors.New("incomplete")
-	}
-
 	s := mtgmatcher.SplitVariants(cardName)
 	cardName = s[0]
 	if len(s) > 1 {
@@ -46,8 +36,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		variant += strings.Join(s[1:], " ")
 	}
 
-	if strings.Contains(variant, "Oversized") ||
-		strings.Contains(variant, "BGS") {
+	if strings.Contains(variant, "BGS") {
 		return nil, errors.New("unsupported")
 	}
 
@@ -135,7 +124,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		case "1996 World Champion",
 			"Fraternal Exaltation",
 			"Splendid Genesis":
-			return nil, errors.New("not tracked")
+			edition = "Special Occasion"
 		case "Reliquary Tower":
 			edition = "PLG20"
 		case "Hydra Broodmaster",

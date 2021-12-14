@@ -109,7 +109,9 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 			return
 		}
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			switch {
 			case strings.Contains(edition, "World Championships"):
 			case theCard.IsBasicLand():
@@ -277,7 +279,9 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			switch {
 			case strings.Contains(card.Edition, "World Championships"):
 			case theCard.IsBasicLand():

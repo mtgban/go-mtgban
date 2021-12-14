@@ -130,7 +130,9 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
 				// The basic lands need custom handling for each edition if they
 				// aren't found with other methods, ignore errors until they are
 				// added to the variants table.
@@ -293,7 +295,9 @@ func (mc *Magiccorner) parseBL() error {
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			mc.printf("%v", err)
 			mc.printf("%q", theCard)
 			mc.printf("%q", row)

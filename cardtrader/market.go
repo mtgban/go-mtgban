@@ -66,7 +66,9 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 		}
 
 		err = processProducts(channel, theCard, products, ct.ShareCode, ct.exchangeRate)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			ct.printf("%v", err)
 			ct.printf("%q", theCard)
 			ct.printf("%d %q", blueprint.Id, blueprint)

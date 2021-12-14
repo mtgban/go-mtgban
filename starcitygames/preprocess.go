@@ -89,10 +89,7 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 	switch {
 	case strings.HasPrefix(cardName, "APAC Land"),
 		strings.HasPrefix(cardName, "Euro Land"),
-		strings.Contains(variant, "Oversized"),
-		strings.Contains(edition, "Oversized"),
-		strings.Contains(cardName, "{") && strings.Contains(cardName, "}"),
-		mtgmatcher.IsToken(cardName):
+		strings.Contains(cardName, "{") && strings.Contains(cardName, "}"):
 		return nil, errors.New("non-single")
 	}
 
@@ -133,9 +130,6 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "4th Edition - Alternate",
-		"Pro Player Cards":
-		return nil, errors.New("invalid")
 	case "3rd Edition BB":
 		variant = strings.TrimSuffix(variant, " BB")
 	case "Promo: General":

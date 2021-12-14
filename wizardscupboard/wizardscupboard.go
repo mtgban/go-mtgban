@@ -158,7 +158,10 @@ func (wc *Wizardscupboard) scrape() error {
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				return
+			} else if err != nil {
+				// Skip logging errors for basic lands
 				if !mtgmatcher.IsBasicLand(cardName) {
 					wc.printf("%v", err)
 					wc.printf("%s", theCard)

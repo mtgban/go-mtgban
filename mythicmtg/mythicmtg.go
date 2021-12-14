@@ -121,7 +121,9 @@ func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				return
+			} else if err != nil {
 				switch edition {
 				case "Homelands", "Alliances", "Fallen Empires":
 				default:
@@ -258,7 +260,9 @@ func (mmtg *Mythicmtg) parseBL() error {
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				return
+			} else if err != nil {
 				mmtg.printf("%v", err)
 				mmtg.printf("%q", theCard)
 

@@ -139,7 +139,9 @@ func (cs *Cardshark) scrape() error {
 
 		var altCardId string
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			// Ignore errors from basic lands
 			if mtgmatcher.IsBasicLand(cardName) {
 				return
@@ -183,7 +185,9 @@ func (cs *Cardshark) scrape() error {
 					return
 				}
 				altCardId, err = mtgmatcher.Match(altCard)
-				if err != nil {
+				if errors.Is(err, mtgmatcher.ErrUnsupported) {
+					return
+				} else if err != nil {
 					return
 				} else if err != nil {
 					// Ignore aliasing errors for this match

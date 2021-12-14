@@ -107,7 +107,9 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
 				abu.printf("%v", theCard)
 				abu.printf("%v", card)
 				abu.printf("%v", err)

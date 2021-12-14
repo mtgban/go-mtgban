@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -93,7 +94,9 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 		Id: req.UUID,
 	}
 	cardId, err := mtgmatcher.Match(theCard)
-	if err != nil {
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return nil
+	} else if err != nil {
 		return err
 	}
 	var cardIdFoil string

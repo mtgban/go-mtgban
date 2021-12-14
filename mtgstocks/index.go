@@ -46,7 +46,9 @@ func (stks *MTGStocksIndex) processEntry(channel chan<- responseChan, id int, ed
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			switch edition {
 			// Skip set full of errors or with missing variants
 			case "Alliances",

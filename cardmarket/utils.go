@@ -12,83 +12,9 @@ import (
 )
 
 var filteredExpansions = []string{
-	"Fallen Empires: Wyvern Misprints",
-	"Filler Cards",
-	"Foreign White Bordered",
-	"Fourth Edition: Alternate",
 	"GnD Cards",
-	"Modern Horizons: Art Series",
 	"Rk post Products",
-	"Salvat-Hachette 2011",
-	"Salvat-Hachette",
-	"Simplified Chinese Alternate Art Cards",
 	"Starcity Games: Creature Collection",
-	"Ultra-Pro Puzzle Cards",
-}
-
-var filteredCards = []string{
-	"Build a Deck: The Basics // Popular Magic Formats",
-
-	// TFTH tokens
-	"Hydra Head",
-	"Ravenous Brute Head",
-	"Savage Vigor Head",
-	"Shrieking Titan Head",
-	"Snapping Fang Head",
-	"Disorienting Glower",
-	"Distract the Hydra",
-	"Grown from the Stump",
-	"Hydra's Impenetrable Hide",
-	"Noxious Hydra Breath",
-	"Neck Tangle",
-	"Strike the Weak Spot",
-	"Torn Between Heads",
-	"Swallow the Hero Whole",
-	"Unified Lunge",
-
-	// TBTH tokens
-	"Minotaur Goreseeker",
-	"Minotaur Younghorn",
-	"Mogis's Chosen",
-	"Phoberos Reaver",
-	"Reckless Minotaur",
-	"Altar of Mogis",
-	"Consuming Rage",
-	"Intervention of Keranos",
-	"Descend on the Prey",
-	"Plundered Statue",
-	"Refreshing Elixir",
-	"Touch of the Horned God",
-	"Massacre Totem",
-	"Unquenchable Fury",
-	"Vitality Salve",
-
-	// TDAG tokens
-	"Xenagos Ascended",
-	"Rollicking Throng",
-	"Ecstatic Piper",
-	"Maddened Oread",
-	"Pheres-Band Revelers",
-	"Serpent Dancers",
-	"Wild Maenads",
-	"Dance of Flame",
-	"Dance of Panic",
-	"Impulsive Destruction",
-	"Impulsive Charge",
-	"Impulsive Return",
-	"Rip to Pieces",
-	"Xenagos's Strike",
-	"Xenagos's Scorn",
-
-	// Unique
-	"1996 World Champion",
-	"Shichifukujin Dragon",
-	"Proposal",
-	"Magic Guru",
-	"Fraternal Exaltation",
-	"Robot Chicken",
-	"Phoenix Heart",
-	"Splendid Genesis",
 }
 
 type MKMExpansionIdPair struct {

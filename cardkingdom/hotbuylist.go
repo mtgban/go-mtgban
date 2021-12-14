@@ -56,10 +56,6 @@ func (ck *CardkingdomHotBuylist) processPage(channel chan<- respChan) error {
 		}
 		edition := strings.TrimSuffix(card.Name, ": "+card.ShortName)
 
-		if mtgmatcher.IsToken(cardName) {
-			continue
-		}
-
 		theCard := &mtgmatcher.Card{
 			Name:      cardName,
 			Edition:   edition,
@@ -68,7 +64,9 @@ func (ck *CardkingdomHotBuylist) processPage(channel chan<- respChan) error {
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			ck.printf("%v", err)
 			ck.printf("%q", theCard)
 			ck.printf("%q", card)

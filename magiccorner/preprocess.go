@@ -135,12 +135,6 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	// Grab the image url and keep only the image name
 	extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
 
-	// Skip any token or similar cards
-	if mtgmatcher.IsToken(cardName) ||
-		strings.Contains(cardName, "Mewtwo") {
-		return nil, errors.New("not single")
-	}
-
 	// Circle of Protection: Red in Revised EU FWB???
 	if card.Variants[index].Id == 223958 ||
 		// Excruciator RAV duplicate card

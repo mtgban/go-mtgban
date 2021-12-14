@@ -123,7 +123,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		entry, found = backend.Cards[Normalize(inCard.Name)]
 		if !found {
 			// Return a safe error if it's a token
-			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
+			if isToken(ogName) || Contains(inCard.Variation, "Oversize") {
 				return "", ErrUnsupported
 			}
 			return "", ErrCardDoesNotExist

@@ -120,10 +120,6 @@ var commonTags = []string{
 }
 
 func preprocess(cardName, variant, edition, format string) (*mtgmatcher.Card, error) {
-	if mtgmatcher.IsToken(cardName) {
-		return nil, errors.New("not single")
-	}
-
 	if edition == "Promo - Ikoria: Lair of Behemoths Prerelease" {
 		return nil, errors.New("not yet supported")
 	}

@@ -177,7 +177,9 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			// Skip reporting an error for known failures (invalid variant number)
 			switch edition {
 			case "Homelands",

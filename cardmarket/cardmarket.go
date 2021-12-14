@@ -63,20 +63,6 @@ func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MK
 	}
 
 	for _, product := range products {
-		cardName := product.Name
-		skipCard := false
-		for _, name := range filteredCards {
-			if cardName == name {
-				skipCard = true
-				break
-			}
-		}
-		if skipCard ||
-			mtgmatcher.IsToken(cardName) ||
-			strings.Contains(cardName, "On Your Turn") {
-			continue
-		}
-
 		err := mkm.processProduct(channel, &product, priceGuide)
 		if err != nil {
 			mkm.printf("product id %d returned %s", product.IdProduct, err)
@@ -96,7 +82,9 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	}
 	var cardIdFoil string
 	cardId, err := mtgmatcher.Match(theCard)
-	if err != nil {
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return nil
+	} else if err != nil {
 		if theCard.Edition == "Pro Tour Collector Set" || strings.HasPrefix(theCard.Edition, "World Championship Decks") {
 			return nil
 		}

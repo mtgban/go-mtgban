@@ -107,7 +107,9 @@ func (bp *Blueprint) parseBL() error {
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			bp.printf("%v", err)
 			bp.printf("%q", theCard)
 			bp.printf("%q", row)

@@ -218,12 +218,8 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		(strings.Contains(notes, "only") ||
 			!strings.Contains(notes, "also")):
 		return nil, errors.New("non english")
-	case strings.Contains(notes, "these cards are not normal size") ||
-		strings.Contains(notes, "token"),
-		strings.Contains(notes, "oversized"):
+	case strings.Contains(notes, "these cards are not normal size"):
 		return nil, errors.New("non mtg")
-	case mtgmatcher.IsToken(cardName):
-		return nil, errors.New("not single")
 	case strings.Contains(cardName, "Construct // Clue"),
 		strings.Contains(cardName, "Ixalan Jace Lands"),
 		strings.Contains(cardName, "Zombie // Gold"):

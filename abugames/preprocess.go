@@ -91,10 +91,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	case "Scheme", "Plane", "Phenomenon":
 		return nil, errors.New("non-single card")
 	}
-	if strings.Contains(card.DisplayTitle, "Oversized") ||
-		strings.Contains(card.DisplayTitle, "Charlie Brown") {
-		return nil, errors.New("non-single card")
-	}
+
 	// Non-existing cards
 	switch card.DisplayTitle {
 	case "Silent Submersible (Promo Pack)",
@@ -200,8 +197,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		} else {
 			return nil, errors.New("missing edition")
 		}
-	case "Alternate 4th Edition":
-		return nil, errors.New("unsupported")
 	case "Promo":
 		switch cardName {
 		case "Skirk Marauder":

@@ -100,7 +100,9 @@ func (ck *Cardkingdom) scrape() error {
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			ck.printf("%v", err)
 			ck.printf("%q", theCard)
 			ck.printf("%q", card)

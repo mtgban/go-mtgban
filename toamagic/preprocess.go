@@ -18,15 +18,6 @@ var promoTags = []string{
 }
 
 func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
-	if mtgmatcher.IsToken(cardName) ||
-		strings.Contains(variant, "Token") {
-		return nil, errors.New("not single")
-	}
-
-	if strings.HasPrefix(cardName, "Complete") && strings.HasSuffix(cardName, "Set") {
-		return nil, errors.New("incomplete")
-	}
-
 	s := mtgmatcher.SplitVariants(cardName)
 	cardName = s[0]
 	if len(s) > 1 {
@@ -34,10 +25,6 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			variant += " "
 		}
 		variant += strings.Join(s[1:], " ")
-	}
-
-	if strings.Contains(variant, "Oversized") {
-		return nil, errors.New("unsupported")
 	}
 
 	for _, tag := range promoTags {

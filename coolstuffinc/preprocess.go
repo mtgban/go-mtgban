@@ -54,10 +54,6 @@ var variantTable = map[string]string{
 }
 
 func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
-	if mtgmatcher.IsToken(cardName) {
-		return nil, errors.New("not singles")
-	}
-
 	// Clean up notes, removing extra prefixes, and ueless characters
 	variant := strings.TrimPrefix(notes, "Notes:")
 	if strings.Contains(variant, "Deckmaster") {
@@ -225,13 +221,12 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 	}
 
+	if strings.Contains(edition, "Challenger Decks") {
+		return nil, errors.New("set not mtg")
+	}
 	switch edition {
 	case "", "Overwhelming Swarm", "Special Offers", "Unique Boutique", "Magic Mics Merch",
-		"Misprints & Oddities", "Authenticated Collectibles", "New Player Series",
-		"Heavy Metal Magic Supplies", "Oversized Cards", "Modern Horizons: Art Series",
-		"Art Series: Modern Horizons", "Art Series: Modern Horizon", "Vanguard",
-		"Fourth (Alternate Edition)",
-		"Challenger Decks 2020", "Challenger Decks 2019", "Challenger Decks 2018":
+		"Authenticated Collectibles", "New Player Series", "Heavy Metal Magic Supplies":
 		return nil, errors.New("set not mtg")
 	case "Prerelease Promos":
 		if variant != "" {
@@ -314,10 +309,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	case "Promo":
 		if cardName == "Eye of Ugin" && variant == "" {
 			edition = "J20"
-		}
-	default:
-		if strings.Contains(variant, "Oversized") {
-			return nil, errors.New("not single")
 		}
 	}
 
@@ -434,8 +425,7 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	edition := card.Edition
 	wildcardPromo := false
 
-	if mtgmatcher.IsToken(cardName) ||
-		mtgmatcher.Contains(cardName, "Signed by") {
+	if mtgmatcher.Contains(cardName, "Signed by") {
 		return nil, errors.New("not singles")
 	}
 
@@ -449,13 +439,6 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "Fourth (Alternate Edition)",
-		"Eighth Edition (Oversized Cards)",
-		"Ninth Edition (Oversized Cards)",
-		"Misprints & Oddities",
-		"Oversized Cards",
-		"Vanguard":
-		return nil, errors.New("not singles")
 	case "Black Bordered (foreign)":
 		switch variant {
 		case "German", "French":

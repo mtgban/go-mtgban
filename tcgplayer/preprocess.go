@@ -39,22 +39,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	variant = strings.Replace(variant, "(", "", -1)
 	variant = strings.Replace(variant, ")", "", -1)
 
-	// Skip non-singles cards
-	switch {
-	case mtgmatcher.IsToken(cardName) || mtgmatcher.IsToken(product.CleanName):
-		return nil, errors.New("non-single card")
-	}
-
 	edition := editions[product.GroupId]
-
-	if strings.Contains(edition, "Art Series") {
-		return nil, errors.New("non-single card")
-	}
-
-	// Early to skip the Oversize early return
-	if variant == "Commander Launch Promo" {
-		edition = "PCMD"
-	}
 
 	ogVariant := variant
 	switch edition {
@@ -71,12 +56,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				variant = variants[1]
 			}
 		}
-	case "Hero's Path Promos",
-		"Oversize Cards",
-		"Special Occasion",
-		"Revised Edition (Foreign White Border)",
-		"Fourth Edition (Foreign White Border)":
-		return nil, errors.New("unsupported")
 	case "Portal":
 		switch cardName {
 		case "Warrior's Charge",
@@ -127,13 +106,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"Game Day & Store Championship Promos",
 		"WMCQ Promo Cards",
 		"WPN & Gateway Promos":
-		if strings.HasSuffix(variant, "Ultra Pro Puzzle Quest") ||
-			variant == "Redemption Program" { // JPN Nalathni Dragon
-			return nil, errors.New("unsupported")
-		}
 		for _, ext := range product.ExtendedData {
 			if ext.Name == "OracleText" && strings.Contains(ext.Value, "Heroes of the Realm") {
-				return nil, errors.New("unsupported")
+				edition = "Heroes of the Realm"
+				break
 			}
 		}
 
@@ -189,6 +165,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		}
 
 		switch cardName {
+		case "Nalathni Dragon":
+			if variant == "Redemption Program" {
+				edition = variant
+			}
 		case "Arasta of the Endless Web":
 			edition = "THB"
 			variant = "352"

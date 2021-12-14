@@ -141,7 +141,9 @@ func (sz *Strikezone) scrape() error {
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				return
+			} else if err != nil {
 				sz.printf("%v", err)
 				sz.printf("%q", theCard)
 				sz.printf("%s|%s|%s", cardName, edition, notes)
@@ -244,7 +246,9 @@ func (sz *Strikezone) parseBL() error {
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			sz.printf("%v", err)
 			sz.printf("%q", theCard)
 

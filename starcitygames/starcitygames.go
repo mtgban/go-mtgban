@@ -98,7 +98,9 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				return
+			} else if err != nil {
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
 				scg.printf("%v ~ %s", cc, edition)
@@ -256,7 +258,9 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
-			if err != nil {
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
 				scg.printf("'%q' (%s)", result, search.Edition)

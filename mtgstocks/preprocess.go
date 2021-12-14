@@ -67,13 +67,6 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 	fullName = strings.Replace(fullName, "[", "(", 1)
 	fullName = strings.Replace(fullName, "]", ")", 1)
 
-	if strings.Contains(fullName, "Biography Card") ||
-		strings.Contains(fullName, "Ultra Pro Puzzle Quest") ||
-		strings.Contains(fullName, "Art Series") ||
-		strings.Contains(edition, "Art Series") {
-		return nil, errors.New("non single")
-	}
-
 	lutName, found := cardTable[fullName]
 	if found {
 		fullName = lutName
@@ -96,10 +89,6 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 		variant += s[1]
 	}
 
-	if mtgmatcher.IsToken(cardName) {
-		return nil, errors.New("non single")
-	}
-
 	lutName, found = cardTable[cardName]
 	if found {
 		cardName = lutName
@@ -108,9 +97,6 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 	var wildcardPromo bool
 
 	switch edition {
-	case "Revised Edition (Foreign White Border)",
-		"Special Occasion":
-		return nil, errors.New("unsupported")
 	case "Oversize Cards":
 		if !strings.Contains(variant, "Planechase") {
 			return nil, errors.New("unsupported")

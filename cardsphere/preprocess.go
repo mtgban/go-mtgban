@@ -27,10 +27,6 @@ var tagsTable = map[string]string{
 }
 
 func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
-	if mtgmatcher.IsToken(cardName) {
-		return nil, errors.New("not singles")
-	}
-
 	cardName = strings.TrimSpace(cardName)
 	edition = strings.TrimSpace(edition)
 
@@ -44,7 +40,6 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 		"Subjective Reality",
 		"Primal Genesis",
 		"Angel | Demon (Double-Sided)",
-		"Complete Set",
 		"Guild Kit":
 		return nil, errors.New("not singles")
 	}
@@ -54,11 +49,6 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 	cardName = fields[0]
 	if len(fields) > 1 {
 		variant = strings.Join(fields[1:], " ")
-	}
-
-	switch variant {
-	case "sealed":
-		return nil, errors.New("non single")
 	}
 
 	if mtgmatcher.IsBasicLand(cardName) {

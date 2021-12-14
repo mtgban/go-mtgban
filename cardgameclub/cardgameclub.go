@@ -246,20 +246,10 @@ func (cgc *Cardgameclub) scrape() error {
 			Foil:      foil,
 		}
 
-		switch cardName {
-		case "Kraken",
-			"Sliver",
-			"Soldier":
-			return
-		}
-
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
-			cn, _ := strconv.Atoi(num)
-			// Likely a token
-			if cn < 20 {
-				return
-			}
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			cgc.printf("%v", err)
 			cgc.printf("%v", theCard)
 			cgc.printf("%v", title)

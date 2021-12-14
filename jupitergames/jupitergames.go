@@ -127,7 +127,9 @@ func (jup *Jupitergames) scrape() error {
 			return
 		}
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			switch theCard.Edition {
 			default:
 				jup.printf("%v", err)
@@ -319,7 +321,9 @@ func (jup *Jupitergames) parseBL() error {
 			continue
 		}
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			jup.printf("%v", err)
 			jup.printf("%q", theCard)
 

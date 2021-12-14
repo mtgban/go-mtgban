@@ -22,12 +22,6 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 	}
 	cardName := card.Name
 
-	if mtgmatcher.IsToken(cardName) ||
-		strings.Contains(edition, "Oversize") ||
-		strings.Contains(edition, "Art Series") {
-		return nil, errors.New("token")
-	}
-
 	switch product.Language.Code {
 	case "en":
 	case "it":
@@ -68,8 +62,6 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "Fourth Edition (Alt)":
-		return nil, errors.New("unsupported")
 	case "Friday Night Magic",
 		"Grand Prix",
 		"Happy Holidays",

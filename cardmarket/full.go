@@ -58,20 +58,6 @@ func (mkm *CardMarketFull) processEdition(channel chan<- responseChan, pair *MKM
 	}
 
 	for _, product := range products {
-		cardName := product.Name
-		skipCard := false
-		for _, name := range filteredCards {
-			if cardName == name {
-				skipCard = true
-				break
-			}
-		}
-		if skipCard ||
-			mtgmatcher.IsToken(cardName) ||
-			strings.Contains(cardName, "On Your Turn") {
-			continue
-		}
-
 		err := mkm.processProduct(channel, &product)
 		if err != nil {
 			mkm.printf("product id %s returned %s", product.IdProduct, err)
@@ -183,7 +169,9 @@ func (mkm *CardMarketFull) processArticles(channel chan<- responseChan, article 
 		}
 
 		cardId, err = mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return nil
+		} else if err != nil {
 			switch {
 			case theCard.Edition == "Pro Tour Collector Set",
 				strings.HasPrefix(theCard.Edition, "WCD"),

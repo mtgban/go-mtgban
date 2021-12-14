@@ -138,7 +138,9 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
 			if theCard.IsBasicLand() {
 				return
 			}

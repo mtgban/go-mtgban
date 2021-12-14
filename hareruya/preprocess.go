@@ -330,13 +330,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 		cardName = strings.Replace(cardName, "+", " // ", 1)
 	}
 
-	if mtgmatcher.IsToken(cardName) ||
-		edition == "エラーカード" || // misprint
-		strings.Contains(cardName, "トークン") ||
-		cardName == "Demon" ||
-		cardName == "Human Warrior" ||
-		cardName == "Treasure" ||
-		cardName == "Pyromantic Pixels" {
+	if edition == "エラーカード" || // misprint
+		strings.Contains(cardName, "トークン") { // token
 		return nil, errors.New("non single")
 	}
 
@@ -398,7 +393,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 		if found {
 			edition = ed
 		} else if cardName == "Fraternal Exaltation" || cardName == "Splendid Genesis" {
-			return nil, errors.New("unsupported")
+			edition = "Special Occasion"
 		} else {
 			for _, tag := range []string{
 				"PIDW", "PI13", "PI14", "PPRO", "PWCQ", "PSUS", "PCMP", "PSS1",

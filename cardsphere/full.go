@@ -79,7 +79,9 @@ func (cs *CardsphereFull) processPage(results chan<- responseChan, offset int) e
 		theCard.Foil = foil
 
 		cardId, err := mtgmatcher.Match(theCard)
-		if err != nil {
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
 			cs.printf("%v", err)
 			cs.printf("%v", theCard)
 			cs.printf("%v", offer)

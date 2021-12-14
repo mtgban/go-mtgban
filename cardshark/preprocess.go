@@ -110,10 +110,6 @@ var notesTable = map[string]string{
 func preprocess(cardName, edition, number, notes string) (*mtgmatcher.Card, error) {
 	variant := number
 
-	if mtgmatcher.IsToken(cardName) {
-		return nil, errors.New("not single")
-	}
-
 	switch cardName {
 	// No way to tell these apart
 	case "Brothers Yamazaki",
@@ -189,8 +185,6 @@ func preprocess(cardName, edition, number, notes string) (*mtgmatcher.Card, erro
 	}
 
 	switch extra {
-	case "Complete Set":
-		return nil, errors.New("non mtg")
 	case "Jr Super Series":
 		variant = "JSS"
 	case "Nyx Game Day Promo":

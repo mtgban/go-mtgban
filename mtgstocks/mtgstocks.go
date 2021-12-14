@@ -59,7 +59,9 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	}
 
 	cardId, err := mtgmatcher.Match(theCard)
-	if err != nil {
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return nil
+	} else if err != nil {
 		stks.printf("%q", theCard)
 		stks.printf("%s | %s | %v", req.interest.Print.Name, req.interest.Print.SetName, req.interest.Foil)
 

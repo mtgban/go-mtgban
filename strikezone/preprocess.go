@@ -10,11 +10,6 @@ import (
 func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 	var variation string
 
-	// skip tokens, too many variations
-	if mtgmatcher.IsToken(cardName) {
-		return nil, errors.New("non-mtg")
-	}
-
 	cn, found := cardTable[cardName]
 	if found {
 		cardName = cn
@@ -89,8 +84,6 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 				break
 			}
 		}
-	case strings.Contains(cardName, "Art Card"):
-		return nil, errors.New("not single")
 	}
 
 	ed, found := card2setTable[cardName]

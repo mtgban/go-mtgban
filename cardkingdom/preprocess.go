@@ -1,7 +1,6 @@
 package cardkingdom
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -47,16 +46,6 @@ var skuFixupTable = map[string]string{
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
-	if mtgmatcher.IsToken(card.Name) ||
-		strings.Contains(card.Variation, "Misprint") ||
-		strings.Contains(card.Variation, "Oversized") ||
-		strings.Contains(card.Edition, "Art Series") ||
-		card.Variation == "MagicFest Non-Foil - 2020" ||
-		card.SKU == "FSLD-059" ||
-		card.SKU == "OVERSIZ" {
-		return nil, errors.New("skipping")
-	}
-
 	setCode := ""
 	number := ""
 	isFoil, _ := strconv.ParseBool(card.IsFoil)

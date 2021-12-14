@@ -88,11 +88,6 @@ func preprocess(cardName, edition string) (string, string, error) {
 		return "", "", errors.New("not tracked in mtgjson")
 	}
 
-	// Skip tokens and similar cards
-	if mtgmatcher.IsToken(cardName) {
-		return "", "", errors.New("not a real card")
-	}
-
 	// Skip non-english versions of this card
 	if strings.HasPrefix(cardName, "Mana Crypt (Book Promo) (") {
 		return "", "", errors.New("non-english card")

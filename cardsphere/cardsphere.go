@@ -110,7 +110,9 @@ func (cs *CardsphereIndex) parseBL() error {
 				theCard.Foil = i == 1
 
 				cardId, err := mtgmatcher.Match(theCard)
-				if err != nil {
+				if errors.Is(err, mtgmatcher.ErrUnsupported) {
+					continue
+				} else if err != nil {
 					cs.printf("%v", err)
 					cs.printf("%v", theCard)
 					cs.printf("%s | %s", cardName, edition)
