@@ -2966,6 +2966,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "237a0941-3118-512d-a40d-a42c0c518c5a",
+		Desc: "tok_treasure",
+		In: Card{
+			Name:      "Treasure Token",
+			Variation: "2018 Lunar New Year",
+			Edition:   "Promotional",
+		},
+	},
+	MatchTest{
 		Id:   "9dfd9bba-809e-55e9-809e-69285b7a9b35",
 		Desc: "tok_herospath_card",
 		In: Card{

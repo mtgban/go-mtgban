@@ -65,6 +65,7 @@ const (
 )
 
 var setAllowedForTokens = map[string]bool{
+	"PLNY": true,
 	"SLD":  true,
 	"TBTH": true,
 	"TDAG": true,
