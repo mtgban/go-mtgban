@@ -687,6 +687,11 @@ func (c *Card) ravnicaGuidKit() string {
 	return ""
 }
 
+func (c *Card) IsSurrounded(prefix, suffix string) bool {
+	return (HasPrefix(c.Edition, prefix) && HasSuffix(c.Edition, prefix)) ||
+		(HasPrefix(c.Variation, prefix) && HasSuffix(c.Variation, prefix))
+}
+
 func (c *Card) Contains(prop string) bool {
 	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
 }

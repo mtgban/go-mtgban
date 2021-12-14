@@ -96,6 +96,11 @@ func HasPrefix(str1, str2 string) bool {
 	return strings.HasPrefix(Normalize(str1), Normalize(str2))
 }
 
+// Check if str2 is the suffix of str1 after both are Normalize-d.
+func HasSuffix(str1, str2 string) bool {
+	return strings.HasSuffix(Normalize(str1), Normalize(str2))
+}
+
 var sealedReplacer = strings.NewReplacer(
 	"booster pack display", "booster box",
 	"booster display box", "booster box",
