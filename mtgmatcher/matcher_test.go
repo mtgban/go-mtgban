@@ -2990,6 +2990,15 @@ var MatchTests = []MatchTest{
 			Edition: "Hero's Path Promos",
 		},
 	},
+	MatchTest{
+		Id:   "8904fd5b-295f-557d-9d48-d70471c59df0",
+		Desc: "tok_oversize",
+		In: Card{
+			Name:      "Avacyn, Angel of Hope",
+			Variation: "Avacyn Restored",
+			Edition:   "Oversize Cards",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

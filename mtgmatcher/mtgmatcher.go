@@ -675,6 +675,11 @@ func adjustEdition(inCard *Card) {
 	case inCard.Contains("Challenger Decks") && len(MatchInSet(inCard.Name, "Q06")) != 0:
 		edition = backend.Sets["Q06"].Name
 
+	// Open the Helvault oversized cards
+	case len(MatchInSet(inCard.Name, "PHEL")) == 1 && inCard.Contains("Oversize"):
+		edition = backend.Sets["PHEL"].Name
+		variation = ""
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {
