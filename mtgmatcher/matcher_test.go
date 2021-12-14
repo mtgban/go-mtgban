@@ -2949,6 +2949,23 @@ var MatchTests = []MatchTest{
 
 	// Tokens
 	MatchTest{
+		Id:   "3f69e09e-11e0-5299-9384-811c264a97ae",
+		Desc: "tok_sld",
+		In: Card{
+			Name:      "Faerie Rogue Token",
+			Variation: "014 - B",
+			Edition:   "Secret Lair",
+		},
+	},
+	MatchTest{
+		Id:   "01a9f60d-207a-56e2-9d39-9734ce7ba567",
+		Desc: "tok_dupe",
+		In: Card{
+			Name:    "Cat",
+			Edition: "Secret Lair",
+		},
+	},
+	MatchTest{
 		Id:   "9dfd9bba-809e-55e9-809e-69285b7a9b35",
 		Desc: "tok_herospath_card",
 		In: Card{

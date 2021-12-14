@@ -65,6 +65,7 @@ const (
 )
 
 var setAllowedForTokens = map[string]bool{
+	"SLD":  true,
 	"TBTH": true,
 	"TDAG": true,
 	"TFTH": true,
@@ -136,6 +137,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			switch set.Code {
 			case "INV", "USG", "POR", "7ED":
 				if strings.HasSuffix(card.Number, "s") {
+					continue
+				}
+			case "SLD":
+				// One of the tokens is a DFC but burns a card number, skip it
+				if card.Number == "28" {
 					continue
 				}
 			}
