@@ -156,7 +156,9 @@ func Match(inCard *Card) (cardId string, err error) {
 		!inCard.Contains("League"):
 		return "", ErrUnsupported
 	// For any unsupported set that wasn't processed previously
-	case inCard.Contains("Oversize") && !inCard.Contains("Commander"):
+	case inCard.Contains("Oversize") &&
+		!(inCard.Contains("Commander") || inCard.Contains("Vanguard") ||
+			inCard.Contains("Planechase") || inCard.Contains("Archenemy")):
 		return "", ErrUnsupported
 	// For any specific missing card
 	case inCard.Name == "Squire" && strings.Contains(inCard.Edition, "Secret Lair"):
@@ -636,6 +638,8 @@ func adjustEdition(inCard *Card) {
 		variation = "Etched"
 
 	// Planechase deduplication
+	case inCard.Contains("Planechase") && len(MatchInSet(inCard.Name, "PHOP")) != 0 && (inCard.isRelease() || inCard.isDCIPromo() || inCard.isWPNGateway()):
+		edition = backend.Sets["PHOP"].Name
 	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
 		edition = backend.Sets["OHOP"].Name
 	case inCard.Equals("Planechase 2012") && len(MatchInSet(inCard.Name, "OPC2")) != 0:

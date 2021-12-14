@@ -2606,6 +2606,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "b4067278-0d0e-53ee-9e4a-d880c56f6e56",
+		Desc: "planechase_planes_oversize",
+		In: Card{
+			Name:      "Feeding Grounds",
+			Variation: "Plane Oversized",
+			Edition:   "Planechase",
+		},
+	},
+	MatchTest{
 		Id:   "a82e3d86-2ffb-593d-88b5-16db79ce2025",
 		Desc: "boosterfun_variant",
 		In: Card{

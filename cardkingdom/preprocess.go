@@ -103,9 +103,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			}
 			number = number[:len(number)-1]
 		}
-		if setCode == "OPHOP" {
-			setCode = "PHOP"
-		}
 	}
 
 	variation := card.Variation
