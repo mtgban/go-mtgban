@@ -255,9 +255,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		"Secret Lair Drop Series":
 		// Could have been lost in SplitVariant, and it's more reliable
 		variant = number
-		if cardName == "Squire" {
-			return nil, errors.New("untracked")
-		}
 	case "Theros",
 		"Born of the Gods",
 		"Journey into Nyx":

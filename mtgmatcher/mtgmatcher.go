@@ -157,6 +157,9 @@ func Match(inCard *Card) (cardId string, err error) {
 	// For any unsupported set that wasn't processed previously
 	case inCard.Contains("Oversize"):
 		return "", ErrUnsupported
+	// For any specific missing card
+	case inCard.Name == "Squire" && strings.Contains(inCard.Edition, "Secret Lair"):
+		return "", ErrUnsupported
 	}
 
 	logger.Println("Processing", inCard, entry.Printings)

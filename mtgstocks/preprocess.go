@@ -110,8 +110,6 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 			if variant == "" {
 				variant = "37"
 			}
-		case "Squire":
-			return nil, errors.New("does not exist")
 		}
 	case "Arabian Nights":
 		if variant == "Version 2" {
