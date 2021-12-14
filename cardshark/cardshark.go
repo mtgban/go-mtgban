@@ -1,6 +1,7 @@
 package cardshark
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"path"
@@ -146,8 +147,9 @@ func (cs *Cardshark) scrape() error {
 			cs.printf("%v", err)
 			cs.printf("%v", theCard)
 			cs.printf("%s | %s | %s", cardName, edition, number)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)
@@ -182,15 +184,17 @@ func (cs *Cardshark) scrape() error {
 				}
 				altCardId, err = mtgmatcher.Match(altCard)
 				if err != nil {
+					return
+				} else if err != nil {
+					// Ignore aliasing errors for this match
+					var alias *mtgmatcher.AliasingError
+					if errors.As(err, &alias) {
+						return
+					}
+
 					cs.printf("%v", err)
 					cs.printf("%v", theCard)
 					cs.printf("%s | %s | %s | %s", cardName, edition, number, notes)
-					// Ignore aliasing errors for this match
-					_, ok := err.(*mtgmatcher.AliasingError)
-					if !ok {
-						cs.printf("%v", err)
-						return
-					}
 				}
 			}
 

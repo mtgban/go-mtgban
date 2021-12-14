@@ -87,8 +87,8 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 			}
 
 			// No easy way to tell duplicates apart
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if product.Card.Number == 0 && (ok || theCard.Variation == "") {
+			var alias *mtgmatcher.AliasingError
+			if product.Card.Number == 0 && (errors.As(err, &alias) || theCard.Variation == "") {
 				continue
 			}
 
@@ -100,7 +100,7 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 			nf.printf("%v", err)
 			nf.printf("%q", theCard)
 			nf.printf("%q", product)
-			if ok {
+			if alias != nil {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

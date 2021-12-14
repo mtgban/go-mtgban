@@ -1,6 +1,7 @@
 package cardtrader
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"sync"
@@ -69,8 +70,9 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 			ct.printf("%v", err)
 			ct.printf("%q", theCard)
 			ct.printf("%d %q", blueprint.Id, blueprint)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

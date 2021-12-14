@@ -1,6 +1,7 @@
 package abugames
 
 import (
+	"errors"
 	"net/url"
 	"sort"
 	"sync"
@@ -110,8 +111,9 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				abu.printf("%v", theCard)
 				abu.printf("%v", card)
 				abu.printf("%v", err)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)

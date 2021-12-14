@@ -1,6 +1,7 @@
 package blueprint
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -110,8 +111,9 @@ func (bp *Blueprint) parseBL() error {
 			bp.printf("%v", err)
 			bp.printf("%q", theCard)
 			bp.printf("%q", row)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

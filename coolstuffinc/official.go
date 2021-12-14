@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"errors"
 	"time"
 
 	"github.com/kodabb/go-mtgban/mtgban"
@@ -65,8 +66,9 @@ func (csi *CoolstuffincOfficial) scrape() error {
 			csi.printf("%v", err)
 			csi.printf("%q", theCard)
 			csi.printf("%q", card)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

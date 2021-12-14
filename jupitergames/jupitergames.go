@@ -2,6 +2,7 @@ package jupitergames
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -131,8 +132,9 @@ func (jup *Jupitergames) scrape() error {
 			default:
 				jup.printf("%v", err)
 				jup.printf("%q", theCard)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)
@@ -320,8 +322,9 @@ func (jup *Jupitergames) parseBL() error {
 		if err != nil {
 			jup.printf("%v", err)
 			jup.printf("%q", theCard)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

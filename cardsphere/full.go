@@ -1,6 +1,7 @@
 package cardsphere
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -82,8 +83,9 @@ func (cs *CardsphereFull) processPage(results chan<- responseChan, offset int) e
 			cs.printf("%v", err)
 			cs.printf("%v", theCard)
 			cs.printf("%v", offer)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

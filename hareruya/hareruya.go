@@ -1,6 +1,7 @@
 package hareruya
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -144,8 +145,9 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 			ha.printf("%v at page %d", err, page)
 			ha.printf("%q", theCard)
 			ha.printf("%s", title)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

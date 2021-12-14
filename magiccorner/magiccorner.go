@@ -140,8 +140,9 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 				mc.printf("%v", err)
 				mc.printf("%q", theCard)
 				mc.printf("%q", card)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)
@@ -296,8 +297,9 @@ func (mc *Magiccorner) parseBL() error {
 			mc.printf("%v", err)
 			mc.printf("%q", theCard)
 			mc.printf("%q", row)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

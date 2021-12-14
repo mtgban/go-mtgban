@@ -1,6 +1,7 @@
 package trollandtoad
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -116,8 +117,9 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 				tat.printf("%v", err)
 				tat.printf("%q", theCard)
 				tat.printf("%s ~ %s", cardName, edition)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)
@@ -283,8 +285,9 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 				tat.printf("%v", err)
 				tat.printf("%q", theCard)
 				tat.printf("%s ~ %s", card.Name, card.Edition)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)

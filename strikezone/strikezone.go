@@ -2,6 +2,7 @@ package strikezone
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -144,8 +145,9 @@ func (sz *Strikezone) scrape() error {
 				sz.printf("%v", err)
 				sz.printf("%q", theCard)
 				sz.printf("%s|%s|%s", cardName, edition, notes)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)
@@ -245,8 +247,9 @@ func (sz *Strikezone) parseBL() error {
 		if err != nil {
 			sz.printf("%v", err)
 			sz.printf("%q", theCard)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

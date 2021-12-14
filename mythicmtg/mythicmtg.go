@@ -1,6 +1,7 @@
 package mythicmtg
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"sync"
@@ -127,8 +128,9 @@ func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
 					mmtg.printf("%v", err)
 					mmtg.printf("%q", theCard)
 					mmtg.printf("%q ~ %q", cardName, edition)
-					alias, ok := err.(*mtgmatcher.AliasingError)
-					if ok {
+
+					var alias *mtgmatcher.AliasingError
+					if errors.As(err, &alias) {
 						probes := alias.Probe()
 						for _, probe := range probes {
 							card, _ := mtgmatcher.GetUUID(probe)
@@ -259,8 +261,9 @@ func (mmtg *Mythicmtg) parseBL() error {
 			if err != nil {
 				mmtg.printf("%v", err)
 				mmtg.printf("%q", theCard)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)

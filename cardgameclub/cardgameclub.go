@@ -1,6 +1,7 @@
 package cardgameclub
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -262,8 +263,9 @@ func (cgc *Cardgameclub) scrape() error {
 			cgc.printf("%v", err)
 			cgc.printf("%v", theCard)
 			cgc.printf("%v", title)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

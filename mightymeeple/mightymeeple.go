@@ -1,6 +1,7 @@
 package mightymeeple
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -218,11 +219,13 @@ func (meeple *Mightymeeple) scrape(mode string) error {
 					"Homelands":
 				default:
 					// Ignore aliasing errors
-					_, ok := err.(*mtgmatcher.AliasingError)
-					if !ok {
-						meeple.printf("%v", err)
-						meeple.printf("%q", theCard)
+					var alias *mtgmatcher.AliasingError
+					if errors.As(err, &alias) {
+						return
 					}
+
+					meeple.printf("%v", err)
+					meeple.printf("%q", theCard)
 				}
 				return
 			}

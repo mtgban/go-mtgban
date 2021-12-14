@@ -1,6 +1,7 @@
 package wizardscupboard
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -162,8 +163,9 @@ func (wc *Wizardscupboard) scrape() error {
 					wc.printf("%v", err)
 					wc.printf("%s", theCard)
 					wc.printf("'%s' '%s' '%s'", cardName, edition, notes)
-					alias, ok := err.(*mtgmatcher.AliasingError)
-					if ok {
+
+					var alias *mtgmatcher.AliasingError
+					if errors.As(err, &alias) {
 						probes := alias.Probe()
 						for _, probe := range probes {
 							card, _ := mtgmatcher.GetUUID(probe)

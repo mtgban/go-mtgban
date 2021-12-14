@@ -1,6 +1,7 @@
 package channelfireball
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -204,8 +205,9 @@ func (cfb *Channelfireball) scrape(mode string) error {
 			cfb.printf("%v", err)
 			cfb.printf("%q", theCard)
 			cfb.printf("%q", card)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

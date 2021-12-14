@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -103,8 +104,9 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		mkm.printf("%v", err)
 		mkm.printf("%q", theCard)
 		mkm.printf("%v", product)
-		alias, ok := err.(*mtgmatcher.AliasingError)
-		if ok {
+
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
 			probes := alias.Probe()
 			for _, probe := range probes {
 				card, _ := mtgmatcher.GetUUID(probe)

@@ -1,6 +1,7 @@
 package starcitygames
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"sync"
@@ -101,8 +102,9 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
 				scg.printf("%v ~ %s", cc, edition)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)
@@ -258,8 +260,9 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
 				scg.printf("'%q' (%s)", result, search.Edition)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)

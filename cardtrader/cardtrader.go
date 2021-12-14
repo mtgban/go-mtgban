@@ -1,6 +1,7 @@
 package cardtrader
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -204,8 +205,9 @@ func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) e
 	if err != nil {
 		ct.printf("%q", theCard)
 		ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
-		alias, ok := err.(*mtgmatcher.AliasingError)
-		if ok {
+
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
 			probes := alias.Probe()
 			for _, probe := range probes {
 				card, _ := mtgmatcher.GetUUID(probe)

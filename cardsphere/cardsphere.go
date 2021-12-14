@@ -1,6 +1,7 @@
 package cardsphere
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -113,8 +114,9 @@ func (cs *CardsphereIndex) parseBL() error {
 					cs.printf("%v", err)
 					cs.printf("%v", theCard)
 					cs.printf("%s | %s", cardName, edition)
-					alias, ok := err.(*mtgmatcher.AliasingError)
-					if ok {
+
+					var alias *mtgmatcher.AliasingError
+					if errors.As(err, &alias) {
 						probes := alias.Probe()
 						for _, probe := range probes {
 							card, _ := mtgmatcher.GetUUID(probe)

@@ -2,6 +2,7 @@ package coolstuffinc
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -272,8 +273,9 @@ func (csi *Coolstuffinc) scrape() error {
 					csi.printf("%v", err)
 					csi.printf("%v", theCard)
 					csi.printf("'%s' '%s' '%s' '%s'", cardName, fullEdition, notes, maybeNum)
-					alias, ok := err.(*mtgmatcher.AliasingError)
-					if ok {
+
+					var alias *mtgmatcher.AliasingError
+					if errors.As(err, &alias) {
 						probes := alias.Probe()
 						for _, probe := range probes {
 							card, _ := mtgmatcher.GetUUID(probe)
@@ -441,8 +443,9 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 				csi.printf("%v", err)
 				csi.printf("%q", theCard)
 				csi.printf("'%s' '%s' '%s'", cardName, edition, extra)
-				alias, ok := err.(*mtgmatcher.AliasingError)
-				if ok {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)

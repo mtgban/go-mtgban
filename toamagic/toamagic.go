@@ -1,6 +1,7 @@
 package toamagic
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"sync"
@@ -195,8 +196,9 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 			toa.printf("%v", err)
 			toa.printf("%q", theCard)
 			toa.printf("%s ~ %s ~ %s", cardName, edition, variant)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

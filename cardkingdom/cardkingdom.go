@@ -1,6 +1,7 @@
 package cardkingdom
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -103,8 +104,9 @@ func (ck *Cardkingdom) scrape() error {
 			ck.printf("%v", err)
 			ck.printf("%q", theCard)
 			ck.printf("%q", card)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

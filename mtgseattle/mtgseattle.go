@@ -1,6 +1,7 @@
 package mtgseattle
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"sync"
@@ -200,8 +201,9 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 			ms.printf("%v", err)
 			ms.printf("%q", theCard)
 			ms.printf("%s ~ %s ~ %s", cardName, edition, variant)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)

@@ -1,6 +1,7 @@
 package mtgstocks
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -65,8 +66,9 @@ func (stks *MTGStocksIndex) processEntry(channel chan<- responseChan, id int, ed
 			stks.printf("%s", err.Error())
 			stks.printf("%q", theCard)
 			stks.printf("%q %s", printing, edition)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
 				probes := alias.Probe()
 				for _, probe := range probes {
 					card, _ := mtgmatcher.GetUUID(probe)
