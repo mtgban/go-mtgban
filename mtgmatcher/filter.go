@@ -958,7 +958,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				expectedSuffix := mtgjson.SuffixVariant
 
 				// Always check suffix for misprints
-				checkNumberSuffix := Contains(inCard.Variation, "misprint")
+				checkNumberSuffix := inCard.Contains("Misprint")
 
 				// Officially known misprints or just variants
 				switch card.Name {
