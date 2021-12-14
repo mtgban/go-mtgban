@@ -65,6 +65,7 @@ const (
 )
 
 var setAllowedForTokens = map[string]bool{
+	"AFR":  true,
 	"PHEL": true,
 	"PLNY": true,
 	"SLD":  true,
@@ -145,6 +146,16 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				// One of the tokens is a DFC but burns a card number, skip it
 				if card.Number == "28" {
 					continue
+				}
+			case "AFR":
+				// Only keep dungeons, and fix their layout to make sure they are tokens
+				if card.SetCode == "TAFR" {
+					switch card.Number {
+					case "20", "21", "22":
+						card.Layout = "token"
+					default:
+						continue
+					}
 				}
 			}
 

@@ -2999,6 +2999,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Oversize Cards",
 		},
 	},
+	MatchTest{
+		Id:   "deb0e4bd-0431-526c-8ad7-d10716d4d58f",
+		Desc: "tok_dungeon",
+		In: Card{
+			Name:    "Lost Mine of Phandelver",
+			Edition: "Adventures in the Forgotten Realms",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
