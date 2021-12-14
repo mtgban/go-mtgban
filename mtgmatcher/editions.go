@@ -219,7 +219,9 @@ var EditionTable = map[string]string{
 	"Premium Deck: Slivers":                 "Premium Deck Series: Slivers",
 
 	// Planechase
+	"Planechase":                        "Planechase",
 	"Planechase 2009":                   "Planechase",
+	"Planechase 2012":                   "Planechase 2012",
 	"Planechase (2009 Edition)":         "Planechase",
 	"Planechase (2012 Edition)":         "Planechase 2012",
 	"Planechase 2009 Edition":           "Planechase",
@@ -405,9 +407,11 @@ var EditionTable = map[string]string{
 	"Redemption Original Art": "Wizards of the Coast Online Store",
 
 	// Archenemy
+	"Archenemy":                        "Archenemy",
 	"Archenemy: 2010 Edition":          "Archenemy",
 	"Archenemy - Nicol Bolas":          "Archenemy: Nicol Bolas",
 	"Archenemy Nicol Bolas":            "Archenemy: Nicol Bolas",
+	"Archenemy: Nicol Bolas":           "Archenemy: Nicol Bolas",
 	"Archenemy Schemes (2010 Edition)": "Archenemy Schemes",
 	"Archenemy 'Schemes'":              "Archenemy Schemes",
 
