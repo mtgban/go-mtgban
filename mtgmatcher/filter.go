@@ -585,7 +585,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						}
 					}
 				}
-			} else if num != "" {
+			} else if num != "" && !inCard.Contains("Misprint") {
 				// The empty string will allow to test the number without any
 				// additional prefix first
 				possibleSuffixes := []string{""}
