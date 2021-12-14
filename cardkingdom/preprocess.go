@@ -116,6 +116,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		switch {
 		case strings.Contains(variation, "APAC"),
 			strings.Contains(variation, "Euro"),
+			strings.Contains(variation, "League"),
 			strings.Contains(variation, "MPS"):
 			variation = number
 		}

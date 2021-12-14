@@ -151,8 +151,9 @@ func Match(inCard *Card) (cardId string, err error) {
 	switch {
 	// For any custom token set that may have leaked here
 	// Note we cannot use Contains because "token" is filtered away
-	case strings.Contains(strings.ToLower(inCard.Edition), "token") ||
-		strings.Contains(strings.ToLower(inCard.Variation), "token"):
+	case (strings.Contains(strings.ToLower(inCard.Edition), "token") ||
+		strings.Contains(strings.ToLower(inCard.Variation), "token")) &&
+		!inCard.Contains("League"):
 		return "", ErrUnsupported
 	// For any unsupported set that wasn't processed previously
 	case inCard.Contains("Oversize") && !inCard.Contains("Commander"):

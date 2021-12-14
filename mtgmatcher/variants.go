@@ -2459,6 +2459,13 @@ var khmVariants = map[string]map[string]string{
 	},
 }
 
+var l13Variants = map[string]map[string]string{
+	"Soldier": map[string]string{
+		"gatecrash": "1",
+		"theros":    "4",
+	},
+}
+
 var leaVariants = map[string]map[string]string{
 	"Forest": map[string]string{
 		"a rocks":         "294",
@@ -4035,6 +4042,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Intl. Collectors’ Edition":           oldLandVariants,
 	"Introductory Two-Player Set":         itpVariants,
 	"Kaldheim":                            khmVariants,
+	"League Tokens 2013":                  l13Variants,
 	"Limited Edition Alpha":               leaVariants,
 	"Limited Edition Beta":                oldLandVariants,
 	"Magic Premiere Shop 2005":            pmpsVariants,

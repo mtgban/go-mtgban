@@ -169,6 +169,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if variant == "Redemption Program" {
 				edition = variant
 			}
+		case "Soldier":
+			if variant == "Born of the Gods" {
+				edition = "L14"
+			}
 		case "Arasta of the Endless Web":
 			edition = "THB"
 			variant = "352"

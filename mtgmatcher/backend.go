@@ -65,6 +65,14 @@ const (
 )
 
 var setAllowedForTokens = map[string]bool{
+	// League Tokens
+	"L12": true,
+	"L13": true,
+	"L14": true,
+	"L15": true,
+	"L16": true,
+	"L17": true,
+
 	"AFR":  true,
 	"PHEL": true,
 	"PLNY": true,

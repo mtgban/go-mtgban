@@ -3016,6 +3016,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Commander's Arsenal Oversized",
 		},
 	},
+	MatchTest{
+		Id:   "3efed27e-93fc-564b-a358-9ead4a13bac3",
+		Desc: "tok_league",
+		In: Card{
+			Name:      "Soldier",
+			Variation: "Gatecrash",
+			Edition:   "League Tokens 2013",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
