@@ -96,6 +96,7 @@ func (ck *Cardkingdom) scrape() error {
 	for _, card := range pricelist {
 		theCard, err := Preprocess(card)
 		if err != nil {
+			ck.printf("%v", err)
 			continue
 		}
 
