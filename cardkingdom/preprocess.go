@@ -75,9 +75,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 				setCode = "Prerelease"
 			}
 		}
-		if len(setCode) == 4 && strings.HasPrefix(setCode, "T") {
-			return nil, fmt.Errorf("unknown sku code %s", setCode)
-		}
 		if len(setCode) == 4 && (mtgmatcher.Contains(card.Variation, "buyabox") || mtgmatcher.Contains(card.Variation, "bundle")) {
 			set, err := mtgmatcher.GetSet(setCode[1:])
 			if err != nil {
@@ -135,6 +132,12 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	// Preserve Etched property in case variation became overwritten with the number
 	if strings.Contains(card.Variation, "Etched") {
 		variation += " Etched"
+	}
+
+	// Drop one side of dfc tokens
+	if strings.Contains(card.Name, " // ") &&
+		(strings.Contains(card.Name, "Token") || (len(setCode) > 3 && setCode[0] == 'T')) {
+		card.Name = strings.Split(card.Name, " // ")[0] + " Token"
 	}
 
 	return &mtgmatcher.Card{
