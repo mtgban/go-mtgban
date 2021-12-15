@@ -25,6 +25,32 @@ const (
 	GameIdMagic = 1
 )
 
+const (
+	CategoryMagicSingles = iota + 1
+	CategoryMagicTokens
+	CategoryMagicOversized
+	CategoryMagicBoosterBoxes
+	CategoryMagicCompleteSets
+	CategoryMagicStarterDecks
+	CategoryMagicEmptyPackaging
+	CategoryMagicBooks
+	CategoryMagicExtras
+	CategoryMagicSleeves
+	CategoryMagicBoxedSet
+	CategoryMagicAlbums
+	CategoryMagicDeckBoxes
+	CategoryMagicPreconstructedDecks
+	CategoryMagicPlaymats
+	CategoryMagicLifeCounter
+	CategoryMagicCardStorage
+	CategoryMagicDice
+	CategoryMagicBundles
+	CategoryMagicTournamentPrereleasePacks
+	CategoryMagicDividers
+	CategoryMagicBinderPages
+	CategoryMagicGamingStones
+)
+
 type Blueprint struct {
 	Id         int    `json:"id"`
 	Name       string `json:"name"`
