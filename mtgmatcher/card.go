@@ -274,6 +274,10 @@ func (c *Card) isSpecificUnsupported() bool {
 	switch c.Name {
 	case "Squire":
 		return strings.Contains(c.Edition, "Secret Lair")
+	case "Hero of Bladehold",
+		"Rampaging Baloths",
+		"Feral Hydra":
+		return c.isRewards()
 	}
 	return false
 }
