@@ -270,6 +270,14 @@ func (c *Card) isUnsupported() bool {
 		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
 }
 
+func (c *Card) isSpecificUnsupported() bool {
+	switch c.Name {
+	case "Squire":
+		return strings.Contains(c.Edition, "Secret Lair")
+	}
+	return false
+}
+
 // Returns whether the input string may represent a basic land
 func IsBasicLand(name string) bool {
 	switch {

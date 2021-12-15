@@ -161,7 +161,7 @@ func Match(inCard *Card) (cardId string, err error) {
 			inCard.Contains("Planechase") || inCard.Contains("Archenemy")):
 		return "", ErrUnsupported
 	// For any specific missing card
-	case inCard.Name == "Squire" && strings.Contains(inCard.Edition, "Secret Lair"):
+	case inCard.isSpecificUnsupported():
 		return "", ErrUnsupported
 	}
 
