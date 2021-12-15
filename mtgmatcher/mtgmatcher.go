@@ -122,13 +122,13 @@ func Match(inCard *Card) (cardId string, err error) {
 	}
 
 	// Restore the card to the canonical MTGJSON name
+	ogName := inCard.Name
 	inCard.Name = entry.Name
 	if entry.Flavor != "" {
 		inCard.addToVariant("Reskin")
 	}
 
 	// Fix up edition
-	ogName := inCard.Name
 	ogEdition := inCard.Edition
 	adjustEdition(inCard)
 	if ogName != inCard.Name {
