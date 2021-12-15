@@ -254,7 +254,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "Born of the Gods Hero's Path",
 				"Journey into Nyx Hero's Path",
 				"Journey into Nyx Promos",
-				"Theros Hero's Path":
+				"Theros Hero's Path",
+				"Defat a God",
+				"Face the Hydra",
+				"Battle the Horde":
 			default:
 				continue
 			}

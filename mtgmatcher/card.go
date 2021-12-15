@@ -262,10 +262,6 @@ func (c *Card) isUnsupported() bool {
 		c.Contains("Fourth (Alternate Edition)") ||
 		c.Contains("Fourth Edition (Alt)") ||
 		c.Contains("Filler Cards") || // Misprints from mkm and ct
-		c.Contains("Hero's Path Promos") || // Theros specials
-		c.Contains("Face the Hydra") || // Theros
-		c.Contains("Battle the Horde") || // Born
-		c.Contains("Defeat a God") || // Journey
 		c.Contains("Salvat") || // Salvat-Hachette 2005/2011
 		c.Contains("Redemption Program") || // PRES
 		c.Contains("Heroes of the Realm") || // HTR*

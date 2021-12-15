@@ -2946,6 +2946,24 @@ var MatchTests = []MatchTest{
 			Edition: "The List",
 		},
 	},
+
+	// Tokens
+	MatchTest{
+		Id:   "9dfd9bba-809e-55e9-809e-69285b7a9b35",
+		Desc: "tok_herospath_card",
+		In: Card{
+			Name:    "Altar of Mogis",
+			Edition: "Hero's Path Promos",
+		},
+	},
+	MatchTest{
+		Id:   "0b8abfd2-3d3e-5d5a-844c-2317150c197b",
+		Desc: "tok_herospath_token",
+		In: Card{
+			Name:    "Snapping Fang Head",
+			Edition: "Hero's Path Promos",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
