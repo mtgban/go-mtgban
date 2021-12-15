@@ -223,6 +223,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			num := mtgmatcher.ExtractNumber(variant)
 			variant = "J" + num
 		}
+	case "Special Occasion":
+		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
+			edition = "PCEL"
+		} else {
+			variant = "Happy Holidays"
+		}
 	case "Junior Series Promos":
 		// TCG has a single version but there are multiple ones available
 		// So just preserve whichever is filed in Scryfall

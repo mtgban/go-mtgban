@@ -253,8 +253,6 @@ func (c *Card) isUnsupported() bool {
 		c.Contains("Simplified Chinese Alternate Art Cards") ||
 		c.Contains("Ultra-Pro Puzzle") ||
 		c.Contains("Player Cards") || // scg pro players
-		c.Contains("Celebration Cards") || // PCEL
-		c.Contains("Special Occasion") || // PCEL
 		c.Contains("Foreign White Border") || // for REV and 4ED
 		c.Contains("4th Edition - Alternate") ||
 		c.Contains("Alternate 4th Edition") ||
