@@ -200,10 +200,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				variant = "160b"
 			}
 		}
-	case "Buy a Box ",
+	case "Buy a Box ", "Buy a Box",
 		"Armada Comics",
 		"Prerelease Promos":
 		variant = edition
+		if cardName == "Voldaren Estate" {
+			variant = "Dracula"
+		}
 	case "Factory Misprints":
 		variant = edition
 		switch cardName {
