@@ -115,6 +115,14 @@ var MatchTests = []MatchTest{
 			Edition: "Commander 2017",
 		},
 	},
+	MatchTest{
+		Desc: "tok_unsupported_morph",
+		Err:  ErrUnsupported,
+		In: Card{
+			Name:    "Morph",
+			Edition: "Dragons of Tarkir",
+		},
+	},
 
 	// ID lookup
 	MatchTest{

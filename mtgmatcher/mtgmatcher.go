@@ -358,6 +358,9 @@ func adjustName(inCard *Card) {
 		inCard.Name += " Token"
 		return
 	}
+	if isToken(inCard.Name) {
+		return
+	}
 
 	// Move the card number from name to variation
 	num := ExtractNumber(inCard.Name)
