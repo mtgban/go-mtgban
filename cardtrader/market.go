@@ -56,7 +56,6 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 	for id, products := range allProducts {
 		blueprint, found := ct.blueprints[id]
 		if !found {
-			ct.printf("blueprint %d not found", id)
 			continue
 		}
 
@@ -92,7 +91,14 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion) (map[int
 	formatted := map[int]*Blueprint{}
 	expansions := map[int]string{}
 	for i := range blueprints {
-		if blueprints[i].CategoryId != 1 || blueprints[i].GameId != 1 {
+		switch blueprints[i].GameId {
+		case GameIdMagic:
+		default:
+			continue
+		}
+		switch blueprints[i].CategoryId {
+		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized:
+		default:
 			continue
 		}
 

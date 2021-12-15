@@ -578,6 +578,15 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		variant += "Etched"
 	}
 
+	// Make sure the token tag is always present
+	if bp.CategoryId == CategoryMagicTokens && !strings.Contains(cardName, "Token") {
+		cardName += " Token"
+	}
+	// Make sure the oversize tag is always present
+	if bp.CategoryId == CategoryMagicOversized && !strings.Contains(edition, "Oversize") {
+		edition += " Oversize"
+	}
+
 	return &mtgmatcher.Card{
 		Name:      cardName,
 		Edition:   edition,
