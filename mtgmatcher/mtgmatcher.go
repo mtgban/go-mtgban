@@ -166,8 +166,10 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// If there are multiple printings of the card, filter out to the
 	// minimum common elements, using the rules defined.
+	// Given that many tokens are not supported, make sure to filter
+	// out unrelated editions.
 	printings := entry.Printings
-	if len(printings) > 1 {
+	if len(printings) > 1 || backend.Cards[Normalize(ogName)].Layout == "token" {
 		printings = filterPrintings(inCard, printings)
 		logger.Println("Filtered printings:", printings)
 
@@ -344,6 +346,16 @@ func MatchInSet(cardName string, setCode string) (outCards []mtgjson.Card) {
 // variant attribute. This should only be used in case the card name
 // was not found.
 func adjustName(inCard *Card) {
+	// Skip for tokens, we need them to be exact or the prefix search interferes
+	if strings.Contains(strings.ToLower(inCard.Name), "token") {
+		return
+	}
+	_, found := backend.Cards[Normalize(inCard.Name+" Token")]
+	if found {
+		inCard.Name += " Token"
+		return
+	}
+
 	// Move the card number from name to variation
 	num := ExtractNumber(inCard.Name)
 	if num != "" {
@@ -435,10 +447,11 @@ func adjustName(inCard *Card) {
 	// sided card, for some particular cases, like meld cards, or Treasure Chest
 	// Also valid when MaybePrefix preference is set.
 	// Attempt first to check cards in the same edition if possible
+	// Skip for tokens
 	for _, set := range backend.Sets {
 		if Equals(set.Name, inCard.Edition) {
 			for _, card := range set.Cards {
-				if (card.Layout != "normal" || inCard.MaybePrefix) && HasPrefix(card.Name, inCard.Name) {
+				if ((card.Layout != "normal" && card.Layout != "token") || inCard.MaybePrefix) && HasPrefix(card.Name, inCard.Name) {
 					inCard.Name = card.Name
 					return
 				}
@@ -446,7 +459,7 @@ func adjustName(inCard *Card) {
 		}
 	}
 	for cardName, props := range backend.Cards {
-		if (props.Layout != "normal" || inCard.MaybePrefix) && HasPrefix(cardName, inCard.Name) {
+		if ((props.Layout != "normal" && props.Layout != "token") || inCard.MaybePrefix) && HasPrefix(cardName, inCard.Name) {
 			inCard.Name = props.Name
 			return
 		}

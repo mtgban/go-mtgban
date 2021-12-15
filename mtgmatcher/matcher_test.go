@@ -75,6 +75,46 @@ var MatchTests = []MatchTest{
 			Id: "not-an-id",
 		},
 	},
+	MatchTest{
+		Desc: "tok_unsupported",
+		Err:  ErrUnsupported,
+		In: Card{
+			Name:    "Cat Token",
+			Edition: "Scars of Mirrodin",
+		},
+	},
+	MatchTest{
+		Desc: "tok_unsupported_gold",
+		Err:  ErrUnsupported,
+		In: Card{
+			Name:    "Gold Token",
+			Edition: "Born of the Gods",
+		},
+	},
+	MatchTest{
+		Desc: "tok_unsupported_alias",
+		Err:  ErrUnsupported,
+		In: Card{
+			Name:    "Earthshaker Khenra Token",
+			Edition: "Hour of Devastation",
+		},
+	},
+	MatchTest{
+		Desc: "tok_unsupported_bat",
+		Err:  ErrUnsupported,
+		In: Card{
+			Name:    "Bat Token",
+			Edition: "Modern Masters",
+		},
+	},
+	MatchTest{
+		Desc: "tok_unsupported_commander",
+		Err:  ErrUnsupported,
+		In: Card{
+			Name:    "Bat (002) // Vampire (004) Double-sided Token",
+			Edition: "Commander 2017",
+		},
+	},
 
 	// ID lookup
 	MatchTest{

@@ -495,6 +495,14 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
+		// Tokens need correct set names or special handling earlier
+		case (strings.HasSuffix(inCard.Name, "Token") &&
+			backend.Cards[Normalize(inCard.Name)].Layout == "token") ||
+			(!strings.HasSuffix(inCard.Name, "Token") &&
+				backend.Cards[Normalize(inCard.Name+" Token")].Layout == "token"):
+			if !Equals(inCard.Edition, set.Name) {
+				continue
+			}
 		}
 
 		printings = append(printings, setCode)

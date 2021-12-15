@@ -64,6 +64,9 @@ const (
 	suffixEtched = "_e"
 )
 
+var setAllowedForTokens = map[string]bool{
+}
+
 func skipSet(set *mtgjson.Set) bool {
 	// Skip unsupported sets
 	switch set.Code {
@@ -75,7 +78,7 @@ func skipSet(set *mtgjson.Set) bool {
 	}
 	// Skip online sets, and any token-based sets
 	if set.IsOnlineOnly ||
-		set.Type == "token" ||
+		(set.Type == "token" && !setAllowedForTokens[set.Code]) ||
 		strings.HasSuffix(set.Name, "Art Series") ||
 		strings.HasSuffix(set.Name, "Minigames") ||
 		strings.Contains(set.Name, "Heroes of the Realm") {
@@ -109,7 +112,17 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 
 		var filteredCards []mtgjson.Card
-		for _, card := range set.Cards {
+
+		allCards := set.Cards
+		if setAllowedForTokens[set.Code] {
+			// Append tokens to the list of considered cards
+			allCards = append(allCards, set.Tokens...)
+		} else {
+			// Clean a bit of memory
+			set.Tokens = nil
+		}
+
+		for _, card := range allCards {
 			// MTGJSON v5 contains duplicated card info for each face, and we do
 			// not need that level of detail, so just skip any extra side.
 			if card.Side != "" && card.Side != "a" {
@@ -139,6 +152,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 			card.Printings = printings
 
+			// Tokens do not come with a printing array, add it
+			// It'll be updated later with the sets discovered so far
+			if card.Layout == "token" {
+				card.Printings = []string{set.Code}
+			}
+
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
 
@@ -148,6 +167,18 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if name == "" {
 					continue
 				}
+
+				// Due to several cards having the same name of a token we hardcode
+				// this value to tell them apart in the future -- checks and names
+				// are still using the official Scryfall name (without the extra Token)
+				if card.Layout == "token" {
+					name += " Token"
+					// Only keep the main face
+					if i != 0 {
+						continue
+					}
+				}
+
 				// Skip faces of DFCs with same names, so that faces don't pollute
 				// the main dictionary with a wrong rename
 				if i != 0 && set.Code == "SLD" && strings.Contains(card.Name, "//") {
@@ -171,7 +202,35 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 						Layout:    card.Layout,
 						Flavor:    card.FlavorName,
 					}
+				} else if card.Layout == "token" {
+					// If already present, check if this set is already contained
+					// in the current array, otherwise add it
+					shouldAddPrinting := true
+					for _, printing := range cards[norm].Printings {
+						if printing == code {
+							shouldAddPrinting = false
+							break
+						}
+					}
+					// Note the setCode will be from the parent
+					if shouldAddPrinting {
+						printings := append(cards[norm].Printings, set.Code)
+						sortPrintings(ap, printings)
+
+						ci := cardinfo{
+							Name:      card.Name,
+							Printings: printings,
+							Layout:    card.Layout,
+						}
+						cards[norm] = ci
+					}
 				}
+			}
+
+			// Custom properties for tokens
+			if card.Layout == "token" {
+				card.Printings = cards[Normalize(card.Name+" Token")].Printings
+				card.Rarity = "token"
 			}
 
 			// Initialize custom lookup tables
