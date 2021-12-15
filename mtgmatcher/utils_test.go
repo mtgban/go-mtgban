@@ -271,6 +271,10 @@ var SplitTests = []SplitTest{
 		Out: []string{"A", "B"},
 	},
 	SplitTest{
+		In:  "A (B) Token",
+		Out: []string{"A Token", "B"},
+	},
+	SplitTest{
 		In:  "Erase (Not the Urza's Legacy One)",
 		Out: []string{"Erase (Not the Urza's Legacy One)"},
 	},

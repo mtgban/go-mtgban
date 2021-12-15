@@ -72,6 +72,12 @@ func SplitVariants(str string) []string {
 		}
 	}
 
+	// This might have been lost in the split if it was after the ()
+	if strings.Contains(strings.ToLower(str), "token") &&
+		!strings.Contains(strings.ToLower(fields[0]), "token") {
+		fields[0] += " Token"
+	}
+
 	return fields
 }
 
