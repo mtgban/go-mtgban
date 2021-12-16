@@ -84,6 +84,18 @@ func skipSet(set *mtgjson.Set) bool {
 	return false
 }
 
+func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
+	sort.Slice(printings, func(i, j int) bool {
+		setDateI, errI := time.Parse("2006-01-02", ap.Data[printings[i]].ReleaseDate)
+		setDateJ, errJ := time.Parse("2006-01-02", ap.Data[printings[j]].ReleaseDate)
+		if errI != nil || errJ != nil {
+			return false
+		}
+
+		return setDateI.After(setDateJ)
+	})
+}
+
 func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
@@ -123,16 +135,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				printings = append(printings, card.Printings[i])
 			}
 			// Sort printings by most recent sets first
-			sort.Slice(printings, func(i, j int) bool {
-				setDateI, errI := time.Parse("2006-01-02", ap.Data[printings[i]].ReleaseDate)
-				setDateJ, errJ := time.Parse("2006-01-02", ap.Data[printings[j]].ReleaseDate)
-				if errI != nil || errJ != nil {
-					return false
-				}
+			sortPrintings(ap, printings)
 
-				return setDateI.After(setDateJ)
-
-			})
 			card.Printings = printings
 
 			// Now assign the card to the list of cards to be saved
