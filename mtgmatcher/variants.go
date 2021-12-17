@@ -2780,6 +2780,9 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander 2017":          "1630",
 		"commander: 2017 edition": "1630",
 	},
+	"Sorin Markov": map[string]string{
+		"zendikar": "778",
+	},
 	"Sleep": map[string]string{
 		"core set 2019": "495",
 		"m19":           "495",
