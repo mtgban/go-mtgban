@@ -336,7 +336,10 @@ func Match(inCard *Card) (cardId string, err error) {
 // Return an array of mtgjson.Card containing all the cards with the exact
 // same name as the input name in the Set identified by setCode.
 func MatchInSet(cardName string, setCode string) (outCards []mtgjson.Card) {
-	set := backend.Sets[setCode]
+	set, found := backend.Sets[setCode]
+	if !found {
+		return
+	}
 	for _, card := range set.Cards {
 		if cardName == card.Name {
 			outCards = append(outCards, card)
