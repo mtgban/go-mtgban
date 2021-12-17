@@ -142,13 +142,10 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 			if variant == "Store Challenger Series" {
 				edition = "PL21"
 			}
-		case "Arbor Elf", "Collected Company":
-			if variant == "Store Championship" {
-				edition = "PWP21"
-			}
-		case "Conjurer's Closet":
-			if variant == "Commander Party" {
-				edition = "PWP21"
+		default:
+			switch {
+			case len(mtgmatcher.MatchInSet(cardName, "PW21")) == 1:
+				edition = "PW21"
 			}
 		}
 	default:

@@ -1498,7 +1498,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a94df3c2-5f76-58c5-b34a-28662290ebf7",
+		Id:   "db9b31f8-e602-5930-9b52-dee275646f80",
 		Desc: "wpn_normal",
 		In: Card{
 			Name:      "Curse of Thirst",
@@ -1507,7 +1507,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "a94df3c2-5f76-58c5-b34a-28662290ebf7",
+		Id:   "db9b31f8-e602-5930-9b52-dee275646f80",
 		Desc: "maybe_gateway_or_wpn",
 		In: Card{
 			Name:      "Curse of Thirst",

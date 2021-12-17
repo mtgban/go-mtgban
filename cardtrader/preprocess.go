@@ -46,11 +46,11 @@ var id2edition = map[int]string{
 	8503:  "F16",
 
 	// Sylvan Ranger
-	19128: "PWP10",
-	17634: "PWP11",
+	19128: "PW10",
+	17634: "PW11",
 	// Fling
-	19129: "PWP10",
-	17635: "PWP11",
+	19129: "PW10",
+	17635: "PW11",
 
 	// Arena Forest
 	34697: "PARL",

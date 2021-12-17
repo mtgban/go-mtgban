@@ -131,10 +131,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			"Ox of Agonas":                "PL21",
 			"Angrath, the Flame-Chained":  "PL21",
 			"Tahngarth, First Mate":       "PL21",
-			"Arbor Elf":                   "PWP21",
-			"Collected Company":           "PWP21",
-			"Fabled Passage":              "PWP21",
-			"Wurmcoil Engine":             "PWP21",
 		}[cardName]
 		if found {
 			edition = ed
@@ -153,13 +149,15 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = "CP3"
 		} else if len(mtgmatcher.MatchInSet(cardName, "Q06")) == 1 {
 			edition = "Q06"
+		} else if len(mtgmatcher.MatchInSet(cardName, "PW21")) == 1 {
+			edition = "PW21"
 		} else if edition == "Launch Party & Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
 		} else if edition == "WPN & Gateway Promos" && variant == "Retro Frame" {
 			edition = "PLG21"
 		}
 
-		if edition == "PWP21" {
+		if edition == "PW21" {
 			if variant == "Winner" || variant == "Top 8" {
 				return nil, errors.New("untracked")
 			}
@@ -194,9 +192,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				edition = variant
 			}
 		case "Fling":
-			edition = "PWP11"
 			if variant == "DCI" {
-				edition = "PWP10"
+				variant = "WPN 2010"
+			} else {
+				variant = "WPN 2011"
 			}
 		case "Serra Angel":
 			if variant == "" {
@@ -216,7 +215,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Mind Stone":
 			if variant == "2021" {
-				edition = "PWP21"
+				variant = "WPN 2021"
 			} else {
 				variant = "Gateway"
 			}

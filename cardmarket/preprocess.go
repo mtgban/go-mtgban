@@ -93,7 +93,7 @@ var promo2editionTable = map[string]string{
 	"Bolas's Citadel":  "PLG21",
 	"Goblin Guide":     "PLG21",
 	"Scavenging Ooze":  "PLG21",
-	"Fabled Passage":   "PWP21",
+	"Fabled Passage":   "PW21",
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
@@ -327,9 +327,9 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "Fling",
 			"Sylvan Ranger":
 			if variant == "V.1" {
-				edition = "PWP10"
+				variant = "WPN 2010"
 			} else if variant == "V.2" {
-				edition = "PWP11"
+				variant = "WPN 2011"
 			}
 		}
 	case "Friday Night Magic Promos":

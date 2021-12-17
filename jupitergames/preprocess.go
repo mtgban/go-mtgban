@@ -278,11 +278,11 @@ func preprocess(cardName, variant, edition, format string) (*mtgmatcher.Card, er
 		}
 	case "Fling":
 		if variant == "WPN Promo" {
-			edition = "PWP10"
+			edition = "WPN 2010"
 		}
 	case "Sylvan Ranger":
 		if variant == "WPN Promo" {
-			edition = "PWP10"
+			edition = "WPN 2010"
 		}
 	case "Bolas's Citadel",
 		"Ghalta, Primal Hunger",
