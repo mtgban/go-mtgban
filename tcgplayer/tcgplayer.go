@@ -137,7 +137,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 				"TCG Player", "TCG Direct",
 			}
 
-			link := "https://shop.tcgplayer.com/product/productsearch?id=" + fmt.Sprint(req.ProductId)
+			link := "https://www.tcgplayer.com/product/" + fmt.Sprint(req.ProductId)
 			if tcg.Affiliate != "" {
 				link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
 			}

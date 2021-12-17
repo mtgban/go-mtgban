@@ -198,7 +198,7 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 
 			sellerName := strings.TrimSpace(s.Find("a[class='seller__name']").Text())
 
-			link := "https://shop.tcgplayer.com/product/productsearch?id=" + req.TCGProductId
+			link := "https://www.tcgplayer.com/product/" + req.TCGProductId
 			if strings.Contains(cond, " Foil") {
 				link += "&Printing=Foil"
 			} else {

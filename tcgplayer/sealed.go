@@ -60,7 +60,7 @@ func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []i
 			}
 		}
 
-		link := "https://shop.tcgplayer.com/product/productsearch?id=" + productId
+		link := "https://www.tcgplayer.com/product/" + productId
 		if tcg.Affiliate != "" {
 			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
 		}
