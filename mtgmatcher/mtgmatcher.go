@@ -824,7 +824,8 @@ func adjustEdition(inCard *Card) {
 				}
 			}
 		case "Mind Stone":
-			if inCard.isWPNGateway() {
+			// Skip the check if this card already has the right edition
+			if inCard.isWPNGateway() && edition != "Gateway 2007" && edition != "Wizards Play Network 2021" {
 				if Contains(inCard.Variation, "Gateway") {
 					edition = "Gateway 2007"
 				} else {
