@@ -79,14 +79,22 @@ var setAllowedForTokens = map[string]bool{
 	"P03": true,
 	"P04": true,
 
+	// FNM
+	"F12": true,
+	"F17": true,
+	"F18": true,
+
 	"AFR":  true,
+	"H17":  true,
 	"PHEL": true,
+	"PL21": true,
 	"PLNY": true,
 	"SLD":  true,
 	"TBTH": true,
 	"TDAG": true,
 	"TFTH": true,
 	"UGL":  true,
+	"UST":  true,
 }
 
 func skipSet(set *mtgjson.Set) bool {
