@@ -712,6 +712,14 @@ func adjustEdition(inCard *Card) {
 	case len(MatchInSet(inCard.Name, "OC20")) == 1 && inCard.Contains("Oversize"):
 		edition = backend.Sets["OC20"].Name
 
+	// Lunar Year Promos
+	case (inCard.isGenericPromo() || inCard.Contains("Lunar")) && len(MatchInSet(inCard.Name, "PL21")) == 1:
+		edition = backend.Sets["PL21"].Name
+
+	// WPN 2021
+	case inCard.Name != "Mind Stone" && inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PW21")) == 1:
+		edition = backend.Sets["PW21"].Name
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {

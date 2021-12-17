@@ -82,11 +82,6 @@ var promo2editionTable = map[string]string{
 	"Thalia, Guardian of Thraben": "World Magic Cup Qualifiers",
 	"Vengevine":                   "World Magic Cup Qualifiers",
 
-	// Lunar Year
-	"Moraug, Fury of Akoum":    "PL21",
-	"Ox of Agonas":             "PL21",
-	"Sethron, Hurloon General": "PL21",
-
 	// Retro Frame
 	"Aven Mindcensor":  "PLG21",
 	"Dig Through Time": "PLG21",

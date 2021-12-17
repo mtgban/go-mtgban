@@ -138,15 +138,6 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 			if variant == "Promo Pack Core Set 2021" {
 				edition = "Core Set 2021"
 			}
-		case "Moraug, Fury of Akoum", "Ox of Agonas":
-			if variant == "Store Challenger Series" {
-				edition = "PL21"
-			}
-		default:
-			switch {
-			case len(mtgmatcher.MatchInSet(cardName, "PW21")) == 1:
-				edition = "PW21"
-			}
 		}
 	default:
 		if strings.HasSuffix(edition, "Alternate Frame") {
