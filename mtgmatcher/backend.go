@@ -268,6 +268,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				card.Printings = cards[Normalize(card.Name+" Token")].Printings
 				card.Rarity = "token"
 			}
+			if card.IsOversized {
+				card.Rarity = "oversize"
+			}
 
 			// Initialize custom lookup tables
 			scryfallId, found := card.Identifiers["scryfallId"]
