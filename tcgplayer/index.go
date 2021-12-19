@@ -103,11 +103,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
 		}
 
-		link := "https://www.tcgplayer.com/product/" + productId
-		if tcg.Affiliate != "" {
-			link += fmt.Sprintf("&utm_campaign=affiliate&utm_medium=%s&utm_source=%s&partner=%s", tcg.Affiliate, tcg.Affiliate, tcg.Affiliate)
-		}
-		link += "&Printing=" + result.SubTypeName
+		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate)
 
 		for i := range names {
 			if prices[i] == 0 {

@@ -200,9 +200,9 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 
 			link := "https://www.tcgplayer.com/product/" + req.TCGProductId
 			if strings.Contains(cond, " Foil") {
-				link += "&Printing=Foil"
+				link += "?Printing=Foil"
 			} else {
-				link += "&Printing=Normal"
+				link += "?Printing=Normal"
 			}
 
 			out := responseChan{
