@@ -157,6 +157,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			if card.Side != "" && card.Side != "a" {
 				continue
 			}
+			// Skip anything non-paper
+			if card.IsRebalanced {
+				continue
+			}
 
 			// Skip duplicate cards that cause trouble down the road
 			switch set.Code {
