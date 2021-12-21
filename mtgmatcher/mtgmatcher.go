@@ -627,11 +627,6 @@ func adjustEdition(inCard *Card) {
 			edition = backend.Sets["SLD"].Name
 		}
 
-	// Summer of Magic
-	case (inCard.isWPNGateway() || strings.Contains(inCard.Variation, "Summer")) &&
-		len(MatchInSet(inCard.Name, "PSUM")) != 0:
-		edition = backend.Sets["PSUM"].Name
-
 	// Untagged Planeshift Alternate Art - these could be solved with the
 	// Promo handling, but they are not set as such in mtgjson/scryfall
 	case inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PLS")) == 2:
@@ -771,6 +766,10 @@ func adjustEdition(inCard *Card) {
 		case "Incinerate", "Counterspell":
 			if inCard.isDCIPromo() || (inCard.Contains("Legend") && (inCard.Contains("Promo") || inCard.Contains("Member"))) {
 				edition = "DCI Legend Membership"
+			}
+		case "Faerie Conclave", "Treetop Village":
+			if inCard.isWPNGateway() || inCard.Contains("Summer") {
+				edition = "Summer of Magic"
 			}
 		case "Kamahl, Pit Fighter", "Char":
 			if inCard.isDCIPromo() {

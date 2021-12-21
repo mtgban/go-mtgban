@@ -24,6 +24,7 @@ var EditionTable = map[string]string{
 	"Revised":              "Revised Edition",
 	"Revised 3rd Edition":  "Revised Edition",
 	"Unlimited":            "Unlimited Edition",
+	"Summer Magic (Edgar)": "Summer Magic / Edgar",
 
 	// Adventures in the Forgotten Realms Ampersand
 	"AFR Ampersand Promos":                    "Adventures in the Forgotten Realms Promos",
@@ -392,12 +393,6 @@ var EditionTable = map[string]string{
 	"PAX Prime Promo":            "URL/Convention Promos",
 	"2012 Convention Promo":      "URL/Convention Promos",
 	"URL Convention Promo":       "URL/Convention Promos",
-
-	// Summer
-	"Summer Foil":           "Summer of Magic",
-	"Summer of Magic Promo": "Summer of Magic",
-	"Summer of Magic":       "Summer of Magic",
-	"Summer Magic (Edgar)":  "Summer Magic / Edgar",
 
 	// Wotc Store
 	"Foil Beta Picture":       "Wizards of the Coast Online Store",
