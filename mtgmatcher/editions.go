@@ -365,13 +365,6 @@ var EditionTable = map[string]string{
 	"Store Foil":      "Resale Promos",
 	"Walmart Resale":  "Resale Promos",
 
-	// 15th Anniversary
-	"15th Anniversary":           "15th Anniversary Cards",
-	"15th Anniversary Foil":      "15th Anniversary Cards",
-	"15th Anniversary Promo":     "15th Anniversary Cards",
-	"DCI Promo 15th Anniversary": "15th Anniversary Cards",
-	"MTG 15th Anniversary":       "15th Anniversary Cards",
-
 	// Convention
 	"2HG":                        "Two-Headed Giant Tournament",
 	"2HG Foil":                   "Two-Headed Giant Tournament",

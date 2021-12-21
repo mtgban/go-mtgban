@@ -772,7 +772,7 @@ func adjustEdition(inCard *Card) {
 				edition = "Summer of Magic"
 			}
 		case "Kamahl, Pit Fighter", "Char":
-			if inCard.isDCIPromo() {
+			if inCard.isDCIPromo() || inCard.Contains("15th Anniversary") {
 				edition = "15th Anniversary Cards"
 			}
 		case "Fling", "Sylvan Ranger":
