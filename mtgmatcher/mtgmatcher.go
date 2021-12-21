@@ -769,7 +769,7 @@ func adjustEdition(inCard *Card) {
 				edition = "Wizards of the Coast Online Store"
 			}
 		case "Incinerate", "Counterspell":
-			if inCard.isDCIPromo() {
+			if inCard.isDCIPromo() || (inCard.Contains("Legend") && (inCard.Contains("Promo") || inCard.Contains("Member"))) {
 				edition = "DCI Legend Membership"
 			}
 		case "Kamahl, Pit Fighter", "Char":

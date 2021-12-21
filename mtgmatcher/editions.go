@@ -97,11 +97,6 @@ var EditionTable = map[string]string{
 	"Stained Glass":           "Secret Lair Drop",
 	"Stained Glass Art":       "Secret Lair Drop",
 
-	// DCI promos
-	"DCI Legend Membership": "DCI Legend Membership",
-	"Legend Promo":          "DCI Legend Membership",
-	"Legends Memerbership":  "DCI Legend Membership",
-
 	// Ponies
 	"Pones: The Galloping":  "Ponies: The Galloping",
 	"Ponies: The Galloping": "Ponies: The Galloping",
