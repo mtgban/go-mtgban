@@ -366,18 +366,14 @@ var EditionTable = map[string]string{
 	"Walmart Resale":  "Resale Promos",
 
 	// Convention
-	"2HG":                        "Two-Headed Giant Tournament",
-	"2HG Foil":                   "Two-Headed Giant Tournament",
-	"DCI Promo Two-Headed Giant": "Two-Headed Giant Tournament",
-	"Two-Headed Giant":           "Two-Headed Giant Tournament",
-	"Dragon'Con 1994":            "Dragon Con",
-	"HASCON":                     "HasCon 2017",
-	"HASCON 2017":                "HasCon 2017",
-	"Hascon Promo":               "HasCon 2017",
-	"Hascon 2017 Promo":          "HasCon 2017",
-	"PAX Prime Promo":            "URL/Convention Promos",
-	"2012 Convention Promo":      "URL/Convention Promos",
-	"URL Convention Promo":       "URL/Convention Promos",
+	"Dragon'Con 1994":       "Dragon Con",
+	"HASCON":                "HasCon 2017",
+	"HASCON 2017":           "HasCon 2017",
+	"Hascon Promo":          "HasCon 2017",
+	"Hascon 2017 Promo":     "HasCon 2017",
+	"PAX Prime Promo":       "URL/Convention Promos",
+	"2012 Convention Promo": "URL/Convention Promos",
+	"URL Convention Promo":  "URL/Convention Promos",
 
 	// Wotc Store
 	"Foil Beta Picture":       "Wizards of the Coast Online Store",

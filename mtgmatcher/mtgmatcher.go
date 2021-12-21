@@ -752,7 +752,7 @@ func adjustEdition(inCard *Card) {
 				variation = "Foil"
 			}
 		case "Underworld Dreams":
-			if inCard.isDCIPromo() || inCard.isArena() {
+			if inCard.isDCIPromo() || inCard.isArena() || inCard.Contains("2HG") || inCard.Contains("Two-Headed Giant") {
 				edition = "Two-Headed Giant Tournament"
 			}
 		case "Jace Beleren":
