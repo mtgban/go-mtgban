@@ -11,6 +11,7 @@ var EditionTable = map[string]string{
 	"6th Edition Classic":  "Classic Sixth Edition",
 	"7th Edition":          "Seventh Edition",
 	"8th Edition":          "Eighth Edition",
+	"8th Starter":          "Eighth Edition",
 	"9th Edition":          "Ninth Edition",
 	"Alpha":                "Limited Edition Alpha",
 	"Alpha Edition":        "Limited Edition Alpha",
@@ -24,10 +25,7 @@ var EditionTable = map[string]string{
 	"Revised 3rd Edition":  "Revised Edition",
 	"Unlimited":            "Unlimited Edition",
 
-	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
-	"Modern Horizons - Retro Frames": "Modern Horizons 1 Timeshifts",
-	"Modern Horizons II":             "Modern Horizons 2",
-
+	// Adventures in the Forgotten Realms Ampersand
 	"AFR Ampersand Promos":                    "Adventures in the Forgotten Realms Promos",
 	"Ampersand Foil":                          "Adventures in the Forgotten Realms Promos",
 	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
@@ -99,12 +97,16 @@ var EditionTable = map[string]string{
 	"Stained Glass":           "Secret Lair Drop",
 	"Stained Glass Art":       "Secret Lair Drop",
 
-	// Various
-	"DCI Legend Membership":  "DCI Legend Membership",
-	"Legend Promo":           "DCI Legend Membership",
-	"Legends Memerbership":   "DCI Legend Membership",
-	"Pones: The Galloping":   "Ponies: The Galloping",
-	"Ponies: The Galloping":  "Ponies: The Galloping",
+	// DCI promos
+	"DCI Legend Membership": "DCI Legend Membership",
+	"Legend Promo":          "DCI Legend Membership",
+	"Legends Memerbership":  "DCI Legend Membership",
+
+	// Ponies
+	"Pones: The Galloping":  "Ponies: The Galloping",
+	"Ponies: The Galloping": "Ponies: The Galloping",
+
+	// Champs
 	"Champs / States Promo":  "Champs and States",
 	"Champs":                 "Champs and States",
 	"Champs Promos":          "Champs and States",
@@ -161,6 +163,8 @@ var EditionTable = map[string]string{
 	"Ultimate Masters Box Toppers":   "Ultimate Box Topper",
 	"Ultimate Masters: Box Topper":   "Ultimate Box Topper",
 	"Ultimate Masters: Box Toppers":  "Ultimate Box Topper",
+	"Modern Horizons - Retro Frames": "Modern Horizons 1 Timeshifts",
+	"Modern Horizons II":             "Modern Horizons 2",
 
 	// CE and IE editions
 	"Collector's Edition - International": "Intl. Collectors' Edition",
@@ -416,7 +420,6 @@ var EditionTable = map[string]string{
 	"Archenemy 'Schemes'":              "Archenemy Schemes",
 
 	// Various
-	"8th Starter":              "Eighth Edition",
 	"Arena IA":                 "Arena League 2001",
 	"Battle Royale":            "Battle Royale Box Set",
 	"Conspiracy: 2014 Edition": "Conspiracy",
@@ -424,8 +427,13 @@ var EditionTable = map[string]string{
 	"PS3 Promo":                "Duels of the Planeswalkers 2012 Promos",
 	"Starter":                  "Starter 1999",
 	"Vanguard":                 "Vanguard Series",
-	"The List":                 "The List",
-	"Mystery Booster":          "Mystery Booster",
+
+	// MB1/PLIST need to be explicitly set to override the edition
+	"The List":        "The List",
+	"Mystery Booster": "Mystery Booster",
+
+	// Time Spiral Remastered retro frame
+	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
 
 	// Beatdown
 	"Beatdown":      "Beatdown Box Set",
