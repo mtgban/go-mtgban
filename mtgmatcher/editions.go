@@ -348,12 +348,6 @@ var EditionTable = map[string]string{
 	"Ugin's Fate Promos":                      "Ugin's Fate",
 	"Ugin's Fate promos":                      "Ugin's Fate",
 
-	// Clash packs
-	"Fate Reforged Clash Pack": "Fate Reforged Clash Pack",
-	"Magic 2015 Clash Deck":    "Magic 2015 Clash Pack",
-	"Magic 2015 Clash Pack":    "Magic 2015 Clash Pack",
-	"Magic Origins Clash Pack": "Magic Origins Clash Pack",
-
 	// Resale
 	"Media Promo":     "Resale Promos",
 	"Repack Insert":   "Resale Promos",
@@ -391,7 +385,6 @@ var EditionTable = map[string]string{
 	"Archenemy 'Schemes'":              "Archenemy Schemes",
 
 	// Various
-	"Arena IA":                 "Arena League 2001",
 	"Battle Royale":            "Battle Royale Box Set",
 	"Conspiracy: 2014 Edition": "Conspiracy",
 	"Introductory 4th Edition": "Introductory Two-Player Set",
