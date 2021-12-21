@@ -652,6 +652,15 @@ var MatchTests = []MatchTest{
 			Edition:   "ignored",
 		},
 	},
+	MatchTest{
+		Id:   "afa31d2e-b5a2-5557-9a94-0a1d46ab9026",
+		Desc: "incorrect_shortcode",
+		In: Card{
+			Name:      "Collected Company",
+			Variation: "Store Championship Foil",
+			Edition:   "PWP21",
+		},
+	},
 
 	// Promo pack
 	MatchTest{
