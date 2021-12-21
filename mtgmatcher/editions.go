@@ -18,7 +18,6 @@ var EditionTable = map[string]string{
 	"Beta":                 "Limited Edition Beta",
 	"Beta Edition":         "Limited Edition Beta",
 	"Classic 6th Edition":  "Classic Sixth Edition",
-	"Hours of Devestation": "Hour of Devastation",
 	"Origins":              "Magic Origins",
 	"Ravnica":              "Ravnica: City of Guilds",
 	"Revised":              "Revised Edition",
@@ -64,7 +63,6 @@ var EditionTable = map[string]string{
 	// Treasure Chest
 	"Ixalan Treasure Chest": "XLN Treasure Chest",
 	"Treasure Chest Promo":  "XLN Treasure Chest",
-	"Treare Map Promo":      "XLN Treasure Chest",
 	"Treasure Map":          "XLN Treasure Chest",
 
 	// Game Night
@@ -99,7 +97,6 @@ var EditionTable = map[string]string{
 	"Stained Glass Art":       "Secret Lair Drop",
 
 	// Ponies
-	"Pones: The Galloping":  "Ponies: The Galloping",
 	"Ponies: The Galloping": "Ponies: The Galloping",
 
 	// Champs
