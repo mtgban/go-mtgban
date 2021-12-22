@@ -183,6 +183,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 						continue
 					}
 				}
+			default:
+				// Override any "double_faced_token" entries
+				if strings.Contains(card.Layout, "token") {
+					card.Layout = "token"
+				}
 			}
 
 			// Filter out unneeded printings
