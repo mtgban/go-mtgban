@@ -380,7 +380,7 @@ func cardId2record(cardId string) ([]string, error) {
 		co.Edition,
 		finish,
 		co.Card.Number,
-		strings.ToUpper(string(co.Card.Rarity[0])),
+		co.Card.Rarity,
 	}
 	return record, nil
 }
