@@ -413,10 +413,6 @@ var EditionTable = map[string]string{
 	"Modern Event Deck":                           "Modern Event Deck 2014",
 	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",
 
-	// Token sets
-	"Foil Helvault Promo": "Open the Helvault",
-	"Helvault Promo":      "Open the Helvault",
-
 	// Foreign-only
 	"3rd Edition (Foreign Black Border)":     "Foreign Black Border",
 	"3rd Edition BB":                         "Foreign Black Border",

@@ -3026,6 +3026,16 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "8904fd5b-295f-557d-9d48-d70471c59df0_f",
+		Desc: "tok_oversize_foil",
+		In: Card{
+			Name:      "Avacyn, Angel of Hope",
+			Variation: "Foil Helvault Promo",
+			Edition:   "Promotional",
+			Foil:      true,
+		},
+	},
+	MatchTest{
 		Id:   "deb0e4bd-0431-526c-8ad7-d10716d4d58f",
 		Desc: "tok_dungeon",
 		In: Card{
