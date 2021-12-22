@@ -30,6 +30,7 @@ var cardTable = map[string]string{
 
 	"Sedris, the King Traitor":   "Sedris, the Traitor King",
 	"Inferno of the Star Mouths": "Inferno of the Star Mounts",
+	"Emrakul, the Aeon’s Thorn":  "Emrakul, the Aeons Torn",
 
 	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
 
@@ -39,6 +40,7 @@ var cardTable = map[string]string{
 	"Novelle":              "Tidings",
 	"Torpore":              "Torpor",
 	"Tattica del Cenn":     "Cenn's Tactician",
+	"Aeronaut":             "Helionaut",
 }
 
 var editionTable = map[string]string{
@@ -131,6 +133,10 @@ var editionTable = map[string]string{
 func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	cardName := card.Name
 	edition := card.Edition
+
+	if strings.Contains(card.Extra, "pokemon") {
+		return nil, errors.New("pokemon")
+	}
 
 	// Grab the image url and keep only the image name
 	extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
@@ -341,6 +347,13 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		} else if mtgmatcher.HasExtendedArtPrinting(cardName, "CMR") {
 			variation = "extended art"
 		}
+	case "Secret Lair Drop Series":
+		switch cardName {
+		case "Serum Visions", "Faerie Rogue":
+			if strings.HasPrefix(extra, "SLD") {
+				variation = strings.TrimLeft(extra[3:], "0")
+			}
+		}
 	default:
 		// All the prelease/promopack versions >= THB
 		if strings.HasSuffix(edition, ": Promos") {
@@ -383,6 +396,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 					edition = "SLD"
 				case "Angelic Guardian":
 					edition = "G18"
+				case "Wrath of God":
+					edition = "2XM"
+					variation = "383"
 				}
 			}
 		// These editions contain numbers that can be used safely

@@ -3291,10 +3291,6 @@ var sldVariants = map[string]map[string]string{
 		"secret lair 30 dxtr":      "30",
 		"secret lair 31 ys":        "31",
 		"secret lair 32 zuverza":   "32",
-		"versione 1":               "29",
-		"versione 2":               "30",
-		"versione 3":               "31",
-		"versione 4":               "32",
 	},
 	"Forest": map[string]string{
 		"godzilla":                       "67",
@@ -3347,9 +3343,11 @@ var sldVariants = map[string]map[string]string{
 		"":                                    "201",
 		"secret lair":                         "201",
 		"secret lair: a box of rocks":         "201",
+		"v.1":                                 "201",
 		"secret lair retro frame":             "589",
 		"secret lair retro frame foil etched": "589",
 		"secret lair: dan frazier is back":    "589",
+		"v.2":                                 "589",
 	},
 	"Birds of Paradise": map[string]string{
 		"":                                    "92",
@@ -3384,6 +3382,25 @@ var sldVariants = map[string]map[string]string{
 	"Snow-Covered Swamp": map[string]string{
 		"":            "3",
 		"secret lair": "3",
+	},
+	"Lightning Bolt": map[string]string{
+		"v.1": "83",
+		"v.2": "84",
+		"v.3": "85",
+		"v.4": "86",
+	},
+	"Thalia, Guardian of Thraben": map[string]string{
+		"v.1": "37",
+		"v.2": "38",
+		"v.3": "39",
+		"v.4": "40",
+	},
+	"Walker": map[string]string{
+		"v.1": "148",
+		"v.2": "149",
+		"v.3": "150",
+		"v.4": "151",
+		"v.5": "152",
 	},
 }
 

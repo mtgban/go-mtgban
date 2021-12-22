@@ -9,6 +9,7 @@ var EditionTable = map[string]string{
 	"5th Edition":          "Fifth Edition",
 	"6th Edition":          "Classic Sixth Edition",
 	"6th Edition Classic":  "Classic Sixth Edition",
+	"Sixth Edition":        "Classic Sixth Edition",
 	"7th Edition":          "Seventh Edition",
 	"8th Edition":          "Eighth Edition",
 	"8th Starter":          "Eighth Edition",
@@ -154,6 +155,7 @@ var EditionTable = map[string]string{
 	"Ultimate Masters: Box Topper":   "Ultimate Box Topper",
 	"Ultimate Masters: Box Toppers":  "Ultimate Box Topper",
 	"Modern Horizons - Retro Frames": "Modern Horizons 1 Timeshifts",
+	"Modern Horizons II: Old Frame":  "Modern Horizons 1 Timeshifts",
 	"Modern Horizons II":             "Modern Horizons 2",
 
 	// CE and IE editions
