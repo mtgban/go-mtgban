@@ -104,6 +104,15 @@ type Product struct {
 	} `json:"expansion"`
 }
 
+type BlueprintError struct {
+	ErrorCode string   `json:"error_code"`
+	Errors    []string `json:"errors"`
+	Extra     struct {
+		Message string `json:"message"`
+	} `json:"extra"`
+	RequestId string `json:"request_id"`
+}
+
 type BlueprintFilter struct {
 	Blueprint Blueprint `json:"blueprint"`
 	Products  []Product `json:"products"`
@@ -203,6 +212,11 @@ func (ct *CTAuthClient) Blueprints(expansionId int) ([]Blueprint, error) {
 	var blueprints []Blueprint
 	err = json.Unmarshal(data, &blueprints)
 	if err != nil {
+		var blueprintError BlueprintError
+		bpErr := json.Unmarshal(data, &blueprintError)
+		if bpErr == nil {
+			return nil, fmt.Errorf(blueprintError.Extra.Message)
+		}
 		return nil, fmt.Errorf("unmarshal error for blueprints (from edition id %d), got: %s", expansionId, string(data))
 	}
 

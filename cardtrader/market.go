@@ -142,7 +142,8 @@ func (ct *CardtraderMarket) scrape() error {
 		}
 		bp, err := ct.client.Blueprints(exp.Id)
 		if err != nil {
-			return err
+			ct.printf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
+			continue
 		}
 		blueprintsRaw = append(blueprintsRaw, bp...)
 	}
