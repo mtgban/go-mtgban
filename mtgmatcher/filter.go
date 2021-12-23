@@ -953,7 +953,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// Separate JPN and non-JPN cards (foil-etched are parsed above)
 			case "Strixhaven Mystical Archive":
 				cn, _ := strconv.Atoi(card.Number)
-				if inCard.isJPN() && cn <= 63 {
+				if (inCard.isJPN() || inCard.isGenericAltArt()) && cn <= 63 {
 					continue
 				} else if !inCard.isJPN() && cn > 63 {
 					continue
