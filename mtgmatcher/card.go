@@ -278,6 +278,8 @@ func (c *Card) isSpecificUnsupported() bool {
 		"Rampaging Baloths",
 		"Feral Hydra":
 		return c.isRewards()
+	case "Spined Wurm":
+		return Contains(c.Edition, "Starter 2000")
 	}
 	return false
 }
