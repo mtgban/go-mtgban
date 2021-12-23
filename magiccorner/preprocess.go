@@ -41,6 +41,7 @@ var cardTable = map[string]string{
 	"Torpore":              "Torpor",
 	"Tattica del Cenn":     "Cenn's Tactician",
 	"Aeronaut":             "Helionaut",
+	"Torpor":               "Stupor",
 }
 
 var editionTable = map[string]string{
@@ -349,7 +350,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		}
 	case "Secret Lair Drop Series":
 		switch cardName {
-		case "Serum Visions", "Faerie Rogue":
+		case "Serum Visions", "Faerie Rogue Token":
 			if strings.HasPrefix(extra, "SLD") {
 				variation = strings.TrimLeft(extra[3:], "0")
 			}
