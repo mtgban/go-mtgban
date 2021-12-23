@@ -553,10 +553,6 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 		if err != nil {
 			continue
 		}
-		set, err := mtgmatcher.GetSet(co.SetCode)
-		if err != nil {
-			return nil, err
-		}
 
 		isRare := co.Card.Rarity == "rare"
 		isMythic := co.Card.Rarity == "mythic"
@@ -565,11 +561,7 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 			continue
 		}
 
-		if co.BorderColor == "gold" {
-			continue
-		}
-
-		if set.Type == "funny" {
+		if co.BorderColor == "gold" || co.BorderColor == "silver" {
 			continue
 		}
 
