@@ -324,7 +324,7 @@ func (c *Card) isBasicLand() bool {
 }
 
 func (c *Card) isGenericPromo() bool {
-	return !c.isBaB() && !c.isPromoPack() &&
+	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() &&
 		(c.Contains("Promo") || c.Contains("Game Day") ||
 			c.Contains("Store Challenge") || // scg
 			c.Contains("Store Championship")) // ck
