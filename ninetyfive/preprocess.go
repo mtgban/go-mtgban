@@ -96,11 +96,6 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		if !mtgmatcher.IsBasicLand(cardName) {
 			variant = ""
 		}
-	case "Strixhaven Mystical Archive":
-		if strings.HasSuffix(variant, "e") {
-			variant = strings.TrimSuffix(variant, "e")
-			variant += " Etched"
-		}
 	}
 
 	return &mtgmatcher.Card{

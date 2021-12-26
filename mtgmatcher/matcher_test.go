@@ -2892,6 +2892,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Strixhaven: School of Mages Etched",
 		},
 	},
+	MatchTest{
+		Id:   "aab28e8e-a9c6-5cdc-86b4-204292662a65_e",
+		Desc: "sta_number_with_suffix",
+		In: Card{
+			Name:      "Time Warp",
+			Variation: "022e",
+			Edition:   "Strixhaven: School of Mages",
+		},
+	},
 
 	// MH2 and H1R
 	MatchTest{

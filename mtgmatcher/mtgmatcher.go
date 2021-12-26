@@ -847,6 +847,15 @@ func adjustEdition(inCard *Card) {
 	inCard.Edition = edition
 	inCard.Variation = variation
 
+	// Adjust incorrect numbers sometimes used for Etched
+	num := ExtractNumber(inCard.Variation)
+	if num != "" && strings.HasSuffix(num, "e") && HasEtchedPrinting(inCard.Name) {
+		fixedNum := strings.TrimSuffix(num, "e")
+		variation = strings.Replace(variation, num, fixedNum, -1)
+		variation += " Etched"
+	}
+	inCard.Variation = variation
+
 	// Restore the original name for specific editions
 	switch inCard.Edition {
 	case "Secret Lair Drop":

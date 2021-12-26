@@ -278,9 +278,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Modern Horizons 2",
 		"Modern Horizons 1: Timeshifted":
 		variant = number
-		if strings.HasSuffix(number, "e") {
-			variant = strings.TrimSuffix(number, "e") + " Etched"
-		}
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
 			variant = number
@@ -310,12 +307,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				}
 			case "Modern Horizons 2 Collectors":
 				if cardName == "Gaea's Will" && number == "413" {
-					number = "412"
-				}
-				// Same as the non-Collectors version above
-				variant = number
-				if strings.HasSuffix(number, "e") {
-					variant = strings.TrimSuffix(number, "e") + " Etched"
+					variant = "412"
 				}
 			}
 		} else if strings.HasPrefix(edition, "WCD") ||
@@ -543,8 +535,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				number = fmt.Sprint(bp.Id)
 			}
 			variant = pmpsTable[number]
-		case "Modern Horizons 2 Collectors":
-			variant = strings.TrimSuffix(number, "e")
 		}
 	}
 
