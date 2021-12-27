@@ -17,7 +17,6 @@ type cardinfo struct {
 	Name      string
 	Printings []string
 	Layout    string
-	Flavor    string
 }
 
 // CardObject is an extension of mtgjson.Card, containing fields that cannot
@@ -41,6 +40,11 @@ func (co CardObject) String() string {
 	return fmt.Sprintf("%s|%s", co.Card, finish)
 }
 
+type alternateProps struct {
+	OriginalName string
+	IsFlavor     bool
+}
+
 var backend struct {
 	Sets  map[string]*mtgjson.Set
 	Cards map[string]cardinfo
@@ -52,6 +56,10 @@ var backend struct {
 	AllSealed []string
 	// Map of normalized names to slice of uuids
 	Hashes map[string][]string
+
+	// Map of normalized face/flavor names to canonical (non-normalized) names
+	// with an extra property to determine FlavorNames
+	AlternateNames map[string]alternateProps
 
 	Scryfall  map[string]string
 	Tcgplayer map[string]string
@@ -133,6 +141,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	cards := map[string]cardinfo{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
+	alternates := map[string]alternateProps{}
 
 	for code, set := range ap.Data {
 		if skipSet(set) {
@@ -185,6 +194,34 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				}
 			}
 
+			for i, name := range []string{card.FaceName, card.FlavorName, card.FaceFlavorName} {
+				// Skip empty entries
+				if name == "" {
+					continue
+				}
+				// Only keep the main face
+				if card.Layout == "token" {
+					continue
+				}
+				// Skip FaceName entries that could be aliased
+				// ie 'Start' could be Start//Finish and Start//Fire
+				switch name {
+				case "Bind",
+					"Smelt",
+					"Start":
+					continue
+				}
+				// Skip faces of DFCs with same names, so that faces don't pollute
+				// the main dictionary with a wrong rename
+				if set.Code == "SLD" && strings.Contains(card.Name, "//") {
+					continue
+				}
+				alternates[Normalize(name)] = alternateProps{
+					OriginalName: card.Name,
+					IsFlavor:     i > 0,
+				}
+			}
+
 			// MTGJSON v5 contains duplicated card info for each face, and we do
 			// not need that level of detail, so just skip any extra side.
 			if card.Side != "" && card.Side != "a" {
@@ -216,68 +253,44 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			filteredCards = append(filteredCards, card)
 
 			// Quick dictionary of valid card names and their printings
-			for i, name := range []string{card.Name, card.FaceName, card.FlavorName, card.FaceFlavorName} {
-				// Skip empty entries
-				if name == "" {
-					continue
-				}
+			name := card.Name
 
-				// Due to several cards having the same name of a token we hardcode
-				// this value to tell them apart in the future -- checks and names
-				// are still using the official Scryfall name (without the extra Token)
-				if card.Layout == "token" {
-					name += " Token"
-					// Only keep the main face
-					if i != 0 {
-						continue
+			// Due to several cards having the same name of a token we hardcode
+			// this value to tell them apart in the future -- checks and names
+			// are still using the official Scryfall name (without the extra Token)
+			if card.Layout == "token" {
+				name += " Token"
+			}
+
+			norm := Normalize(name)
+			_, found := cards[norm]
+			if !found {
+				cards[norm] = cardinfo{
+					Name:      card.Name,
+					Printings: card.Printings,
+					Layout:    card.Layout,
+				}
+			} else if card.Layout == "token" {
+				// If already present, check if this set is already contained
+				// in the current array, otherwise add it
+				shouldAddPrinting := true
+				for _, printing := range cards[norm].Printings {
+					if printing == code {
+						shouldAddPrinting = false
+						break
 					}
 				}
+				// Note the setCode will be from the parent
+				if shouldAddPrinting {
+					printings := append(cards[norm].Printings, set.Code)
+					sortPrintings(ap, printings)
 
-				// Skip faces of DFCs with same names, so that faces don't pollute
-				// the main dictionary with a wrong rename
-				if i != 0 && set.Code == "SLD" && strings.Contains(card.Name, "//") {
-					continue
-				} else if i == 1 {
-					// Skip FaceName entries that could be aliased
-					// ie 'Start' could be Start//Finish and Start//Fire
-					switch name {
-					case "Bind",
-						"Smelt",
-						"Start":
-						continue
-					}
-				}
-				norm := Normalize(name)
-				_, found := cards[norm]
-				if !found {
-					cards[norm] = cardinfo{
+					ci := cardinfo{
 						Name:      card.Name,
-						Printings: card.Printings,
+						Printings: printings,
 						Layout:    card.Layout,
-						Flavor:    card.FlavorName,
 					}
-				} else if card.Layout == "token" {
-					// If already present, check if this set is already contained
-					// in the current array, otherwise add it
-					shouldAddPrinting := true
-					for _, printing := range cards[norm].Printings {
-						if printing == code {
-							shouldAddPrinting = false
-							break
-						}
-					}
-					// Note the setCode will be from the parent
-					if shouldAddPrinting {
-						printings := append(cards[norm].Printings, set.Code)
-						sortPrintings(ap, printings)
-
-						ci := cardinfo{
-							Name:      card.Name,
-							Printings: printings,
-							Layout:    card.Layout,
-						}
-						cards[norm] = ci
-					}
+					cards[norm] = ci
 				}
 			}
 
@@ -408,9 +421,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicate(ap.Data, cards, uuids, "The Dark Italian", "DRK", "ITA", "1995-07-01")
 	duplicate(ap.Data, cards, uuids, "Chronicles Japanese", "CHR", "JPN", "1995-07-01")
 
-	// XXX: maybe FaceName cause trouble when searching prefix?
+	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}
-	names := make([]string, 0, len(cards))
+	var names []string
 	var sealed []string
 	for uuid, card := range uuids {
 		norm := Normalize(card.Name)
@@ -424,6 +437,22 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 		hashes[norm] = append(hashes[norm], uuid)
 	}
+	// Add all alternative names too
+	for altNorm, altProps := range alternates {
+		names = append(names, altNorm)
+		if altProps.IsFlavor {
+			// Retrieve all the uuids with a FlavorName attached
+			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
+			for _, uuid := range allAltUUIDs {
+				if uuids[uuid].FlavorName != "" {
+					hashes[altNorm] = append(hashes[altNorm], uuid)
+				}
+			}
+		} else {
+			// Copy the original uuids
+			hashes[altNorm] = append(hashes[altNorm], hashes[Normalize(altProps.OriginalName)]...)
+		}
+	}
 
 	backend.Hashes = hashes
 	backend.AllNames = names
@@ -433,6 +462,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.UUIDs = uuids
 	backend.Scryfall = scryfall
 	backend.Tcgplayer = tcgplayer
+	backend.AlternateNames = alternates
 }
 
 func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {

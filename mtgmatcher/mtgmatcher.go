@@ -133,15 +133,12 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Restore the card to the canonical MTGJSON name
 	ogName := inCard.Name
 	inCard.Name = entry.Name
-	if entry.Flavor != "" {
-		inCard.addToVariant("Reskin")
-	}
 
 	// Fix up edition
 	ogEdition := inCard.Edition
 	adjustEdition(inCard)
 	if ogName != inCard.Name {
-		logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
+		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 	}
 	if ogEdition != inCard.Edition {
 		logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
@@ -406,14 +403,20 @@ func adjustName(inCard *Card) {
 	if strings.Contains(inCard.Edition, "Ikoria") {
 		if strings.Contains(inCard.Name, "Mothra's") && strings.Contains(inCard.Name, "Cocoon") {
 			inCard.Name = "Mothra's Great Cocoon"
-			return
 		} else if strings.Contains(inCard.Name, "Battra") {
 			inCard.Name = "Battra, Dark Destroyer"
-			return
 		} else if strings.Contains(inCard.Name, "Mechagodzilla") {
 			inCard.Name = "Mechagodzilla, the Weapon"
-			return
 		}
+	}
+	// Check if this card may be known as something else
+	altProps, found := backend.AlternateNames[Normalize(inCard.Name)]
+	if found {
+		inCard.Name = altProps.OriginalName
+		if altProps.IsFlavor {
+			inCard.addToVariant("Reskin")
+		}
+		return
 	}
 
 	// Special case for Un-sets that sometimes drop the parenthesis
