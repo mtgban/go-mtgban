@@ -152,11 +152,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 
 		for _, card := range allCards {
-			// MTGJSON v5 contains duplicated card info for each face, and we do
-			// not need that level of detail, so just skip any extra side.
-			if card.Side != "" && card.Side != "a" {
-				continue
-			}
 			// Skip anything non-paper
 			if card.IsRebalanced {
 				continue
@@ -188,6 +183,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if strings.Contains(card.Layout, "token") {
 					card.Layout = "token"
 				}
+			}
+
+			// MTGJSON v5 contains duplicated card info for each face, and we do
+			// not need that level of detail, so just skip any extra side.
+			if card.Side != "" && card.Side != "a" {
+				continue
 			}
 
 			// Filter out unneeded printings
