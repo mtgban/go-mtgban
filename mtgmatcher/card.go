@@ -280,7 +280,10 @@ func (c *Card) isSpecificUnsupported() bool {
 		return c.isRewards()
 	case "Spined Wurm":
 		return Contains(c.Edition, "Starter 2000")
-	case "Drudge Skeletons":
+	case "Drudge Skeletons",
+		"Sapphire Medallion",
+		"Thunderheads",
+		"Winged Sliver":
 		return c.Contains("Misprint")
 	}
 	return false
