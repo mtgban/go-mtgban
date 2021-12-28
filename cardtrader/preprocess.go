@@ -155,19 +155,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			return nil, errors.New("missing edition")
 		}
 	case "Commander's Arsenal":
-		switch cardName {
-		case "Azusa, Lost but Seeking",
-			"Brion Stoutarm",
-			"Glissa, the Traitor",
-			"Godo, Bandit Warlord",
-			"Grimgrin, Corpse-Born",
-			"Karn, Silver Golem",
-			"Karrthus, Tyrant of Jund",
-			"Mayael the Anima",
-			"Sliver Queen",
-			"Zur the Enchanter":
-			return nil, errors.New("oversize")
-		}
 		variant = number
 	case "Chronicles Japanese",
 		"Rinascimento":
@@ -240,9 +227,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			if variant == "94" {
 				variant = "92"
 			}
-		case "Treasure",
-			"Walker":
-			return nil, errors.New("not single")
 		}
 	case "Champs and States":
 		if cardName == "Crucible of Worlds" {
