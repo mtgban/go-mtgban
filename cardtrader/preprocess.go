@@ -163,6 +163,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		"Commander's Arsenal",
 		"Commander Anthology Volume II",
 		"Unglued",
+		"Mystical Archive: Japanese alternate-art",
 		"Chronicles",
 		"Chronicles Japanese",
 		"Rinascimento",
