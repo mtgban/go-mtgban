@@ -154,20 +154,18 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		} else {
 			return nil, errors.New("missing edition")
 		}
-	case "Commander's Arsenal":
-		variant = number
-	case "Chronicles Japanese",
-		"Rinascimento":
-		variant = number
 	case "Alliances", "Fallen Empires", "Homelands",
 		"Guilds of Ravnica",
 		"Ravnica Allegiance",
 		"Kaldheim",
 		"Asia Pacific Land Program",
 		"European Land Program",
+		"Commander's Arsenal",
 		"Commander Anthology Volume II",
 		"Unglued",
 		"Chronicles",
+		"Chronicles Japanese",
+		"Rinascimento",
 		"Antiquities":
 		variant = number
 	case "Commander Legends: Commander Decks":
