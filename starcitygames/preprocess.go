@@ -24,7 +24,9 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 			if mtgmatcher.IsBasicLand(cardName) {
 				return true
 			}
-		case "War of the Spark":
+		case "War of the Spark",
+			"Strixhaven Mystical Archive",
+			"Strixhaven Mystical Archive - Foil Etched":
 			if variant != "Alternate Art" {
 				return true
 			}
@@ -36,8 +38,6 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 			default:
 				return true
 			}
-		case "Strixhaven Mystical Archive":
-		case "Strixhaven Mystical Archive - Foil Etched":
 		default:
 			return true
 		}
