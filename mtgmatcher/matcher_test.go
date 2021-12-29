@@ -503,6 +503,13 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "5e255230-447d-5262-9006-d600e9c661a3",
+		Desc: "binderpos_syntax_setcode",
+		In: Card{
+			Name: "Lotus Cobra (Showcase) [ZNR]",
+		},
+	},
+	MatchTest{
 		Id:   "11727081-4070-56db-8162-b970dd7f94bc_f",
 		Desc: "tcgcollection_syntax",
 		In: Card{

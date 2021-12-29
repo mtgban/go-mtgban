@@ -54,7 +54,7 @@ func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
 	adjustEdition(card)
 
 	for _, set := range backend.Sets {
-		if Equals(set.Name, card.Edition) {
+		if Equals(set.Name, card.Edition) || set.Code == card.Edition {
 			return set, nil
 		}
 	}
