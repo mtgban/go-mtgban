@@ -415,6 +415,11 @@ var EditionTable = map[string]string{
 	"Modern Event Deck":                           "Modern Event Deck 2014",
 	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",
 
+	// Custom set codes
+	"MED2": "Mythic Edition",
+	"MED3": "Mythic Edition",
+	"RMB1": "Mystery Booster Retail Edition Foils",
+
 	// Foreign-only
 	"3rd Edition (Foreign Black Border)":     "Foreign Black Border",
 	"3rd Edition BB":                         "Foreign Black Border",
