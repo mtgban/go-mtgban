@@ -10,60 +10,75 @@ import (
 	"github.com/google/uuid"
 )
 
+func MatchId(inputId string, finishes ...bool) (string, error) {
+	// Remove any extras after the underscore
+	id := strings.Split(inputId, "_")[0]
+
+	// Validate it's an actual uuid or a plain number for tcg id
+	_, err := uuid.Parse(id)
+	if err != nil {
+		_, err := strconv.Atoi(id)
+		if err != nil {
+			return "", ErrCardUnknownId
+		}
+	}
+
+	// Look up in one of the possible maps
+	co, found := backend.UUIDs[inputId]
+	if !found {
+		// Second chance, lookup by scryfall id
+		co, found = backend.UUIDs[backend.Scryfall[inputId]]
+		if !found {
+			// Last chance, lookup by tcg id
+			co, found = backend.UUIDs[backend.Tcgplayer[inputId]]
+		}
+	}
+	if !found {
+		return "", ErrCardUnknownId
+	}
+
+	isEtched := len(finishes) > 1 && finishes[1]
+	isFoil := len(finishes) > 0 && finishes[0] && !isEtched
+	outId := output(co.Card, finishes...)
+
+	// Validate that what we found is correct
+	co, found = backend.UUIDs[outId]
+	if !found {
+		return "", ErrCardUnknownId
+	}
+
+	// If the input card was requested as foil, we should double check
+	// if the original card has a foil under a separate id
+	if co.Foil != isFoil {
+		// So we iterate over the Variations array and try outputing ids
+		// until we find a perfect match in foiling status
+		for _, variation := range co.Variations {
+			altCo := backend.UUIDs[variation]
+			// We assume that the collector number between the two version
+			// stays the same, with a different suffix
+			if strings.HasPrefix(co.Number, altCo.Number) ||
+				strings.HasPrefix(altCo.Number, co.Number) {
+				maybeId := output(altCo.Card, isFoil, isEtched)
+				altCo = backend.UUIDs[maybeId]
+				if altCo.Foil == isFoil {
+					outId = maybeId
+					break
+				}
+			}
+		}
+	}
+	return outId, nil
+}
+
 func Match(inCard *Card) (cardId string, err error) {
 	if backend.Sets == nil {
 		return "", ErrDatastoreEmpty
 	}
 
-	// Look up by uuid (validate it first, remove any extras after the underscore)
+	// Look up by uuid
 	if inCard.Id != "" {
-		id := strings.Split(inCard.Id, "_")[0]
-		_, err := uuid.Parse(id)
-		if err != nil {
-			// Another try to see if it's a plain number for tcg
-			_, err := strconv.Atoi(id)
-			if err != nil {
-				inCard.Id = ""
-			}
-		}
-	}
-	if inCard.Id != "" {
-		outId := ""
-		co, found := backend.UUIDs[inCard.Id]
-		if !found {
-			// Second chance, lookup by scryfall id
-			co, found = backend.UUIDs[backend.Scryfall[inCard.Id]]
-			if !found {
-				// Last chance, lookup by tcg id
-				co, found = backend.UUIDs[backend.Tcgplayer[inCard.Id]]
-			}
-		}
-
-		if found {
-			outId = output(co.Card, inCard.Foil, inCard.isEtched())
-
-			// Validate that what we found is correct
-			co = backend.UUIDs[outId]
-			// If the input card was requested as foil, we should double check
-			// if the original card has a foil under a separate id
-			if co.Foil != inCard.Foil {
-				// So we iterate over the Variations array and try outputing ids
-				// until we find a perfect match in foiling status
-				for _, variation := range co.Variations {
-					altCo := backend.UUIDs[variation]
-					// We assume that the collector number between the two version
-					// stays the same, with a different suffix
-					if strings.HasPrefix(co.Number, altCo.Number) ||
-						strings.HasPrefix(altCo.Number, co.Number) {
-						maybeId := output(altCo.Card, inCard.Foil, inCard.isEtched())
-						altCo = backend.UUIDs[maybeId]
-						if altCo.Foil == inCard.Foil {
-							outId = maybeId
-							break
-						}
-					}
-				}
-			}
+		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
+		if err == nil {
 			return outId, nil
 		}
 	}
