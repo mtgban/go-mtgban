@@ -2,13 +2,12 @@ package blueprint
 
 import (
 	"errors"
-	"fmt"
-	"io"
 	"strconv"
 	"strings"
 	"time"
 
 	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/kodabb/go-mtgban/mtgban"
@@ -16,7 +15,7 @@ import (
 )
 
 const (
-	BlueprintURL = "http://www.mtgblueprint.com/s/Blueprint_%s.xlsx"
+	buylistURL = "http://www.mtgblueprint.com"
 )
 
 type Blueprint struct {
@@ -38,30 +37,40 @@ func (bp *Blueprint) printf(format string, a ...interface{}) {
 	}
 }
 
-func (bp *Blueprint) parseBL() error {
-	var reader io.ReadCloser
-	for i := 0; i < 12; i++ {
-		t := time.Now().AddDate(0, -i, 1)
-		blURL := fmt.Sprintf(BlueprintURL, t.Format("January_2006"))
-		bp.printf("Trying %s", blURL)
-		resp, err := cleanhttp.DefaultClient().Get(blURL)
-		if err != nil {
-			bp.printf("not found, continuing")
-			continue
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode == 200 {
-			reader = resp.Body
-			break
-		}
-		bp.printf("url found, but with status %d, continuing", resp.StatusCode)
+func getSpreadsheetURL() (string, error) {
+	resp, err := cleanhttp.DefaultClient().Get(buylistURL)
+	if err != nil {
+		return "", err
 	}
-	if reader == nil {
-		bp.printf("no updates over a year")
-		return nil
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
 	}
 
-	f, err := excelize.OpenReader(reader)
+	link, found := doc.Find(`a`).First().Attr("href")
+	if !found {
+		return "", errors.New("spreadsheet anchor tag not found")
+	}
+
+	return buylistURL + link, nil
+}
+
+func (bp *Blueprint) parseBL() error {
+	blURL, err := getSpreadsheetURL()
+	if err != nil {
+		return err
+	}
+	bp.printf("Using %s as input spreadsheet", blURL)
+
+	resp, err := cleanhttp.DefaultClient().Get(blURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	f, err := excelize.OpenReader(resp.Body)
 	if err != nil {
 		return err
 	}
