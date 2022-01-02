@@ -50,13 +50,13 @@ func (c *Card) String() string {
 	if c.Variation != "" {
 		out = fmt.Sprintf("%s (%s)", out, c.Variation)
 	}
-	foil := ""
-	if c.Foil {
-		foil = " (foil)"
-	} else if c.isEtched() {
-		foil = " (etched)"
+	finish := ""
+	if c.isEtched() {
+		finish = " (etched)"
+	} else if c.Foil {
+		finish = " (foil)"
 	}
-	return fmt.Sprintf("%s [%s%s] {%s}", out, c.Edition, foil, c.Number)
+	return fmt.Sprintf("%s [%s%s] {%s}", out, c.Edition, finish, c.Number)
 }
 
 func output(card mtgjson.Card, flags ...bool) string {
