@@ -49,44 +49,27 @@ func (amz *Amazon) processUUIDs(channel chan<- respChan, ids []string) error {
 	}
 
 	for uuid, result := range results {
-		var cardId string
-		var cardIdFoil string
-
 		for tag, price := range result {
 			if price == 0 {
 				continue
 			}
 
-			if cardId == "" && strings.HasSuffix(tag, "Normal") {
-				cardId, err = mtgmatcher.Match(&mtgmatcher.Card{
-					Id: uuid,
-				})
-				if err != nil {
-					amz.printf("%s - %s", uuid, err)
-					continue
-				}
-			} else if cardIdFoil == "" && strings.HasSuffix(tag, "Foil") {
-				cardIdFoil, err = mtgmatcher.Match(&mtgmatcher.Card{
-					Id:   uuid,
-					Foil: true,
-				})
-				if err != nil {
-					amz.printf("%s - %s", uuid, err)
-					continue
-				}
+			isFoil := strings.HasSuffix(tag, "Foil")
+			cardId, err := mtgmatcher.MatchId(uuid, isFoil)
+			if err != nil {
+				amz.printf("%s - %s", uuid, err)
+				continue
 			}
 
 			link := "http://greatermossdogapi.us-east-1.elasticbeanstalk.com/api/v1/purchase/" + uuid
-			outId := cardId
 			if strings.HasSuffix(tag, "Foil") {
-				outId = cardIdFoil
 				link += "/foil"
 			} else {
 				link += "/nonfoil"
 			}
 
 			out := respChan{
-				cardId: outId,
+				cardId: cardId,
 				entry: &mtgban.InventoryEntry{
 					Conditions: strings.ToUpper(tag[:2]),
 					Price:      price,

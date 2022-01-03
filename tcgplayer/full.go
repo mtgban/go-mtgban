@@ -90,10 +90,7 @@ func (tcg *TCGPlayerFull) getListingsNumber(productId string) (int, error) {
 }
 
 func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestChan) error {
-	theCard := &mtgmatcher.Card{
-		Id: req.UUID,
-	}
-	cardId, err := mtgmatcher.Match(theCard)
+	cardId, err := mtgmatcher.MatchId(req.UUID)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -129,12 +126,8 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 			cond := s.Find("a[class='condition']").Text()
 			isFoil := false
 			if strings.Contains(cond, " Foil") {
-				isFoil = true
 				cond = strings.Replace(cond, " Foil", "", 1)
-				if cardIdFoil == "" {
-					theCard.Foil = true
-					cardIdFoil, _ = mtgmatcher.Match(theCard)
-				}
+				cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
 			}
 
 			co, _ := mtgmatcher.GetUUID(cardId)

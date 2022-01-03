@@ -101,14 +101,9 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			}
 		}
 
-		theCard := &mtgmatcher.Card{
-			Id:   req.UUID,
-			Foil: req.Printing == "FOIL",
-		}
-		if req.Finish == "FOIL ETCHED" {
-			theCard.Variation = "Etched"
-		}
-		cardId, err := mtgmatcher.Match(theCard)
+		isFoil := req.Printing == "FOIL"
+		isEtched := req.Finish == "FOIL ETCHED"
+		cardId, err := mtgmatcher.MatchId(req.UUID, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), result.ProductId, req.UUID)
 			continue

@@ -64,6 +64,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		productId := fmt.Sprint(result.ProductId)
 
 		uuid := ""
+		isFoil := result.SubTypeName == "Foil"
 		isEtched := false
 		for _, req := range reqs {
 			if req.TCGProductId == productId {
@@ -73,15 +74,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 			}
 		}
 
-		// Get the cardId, with the correct foiling status
-		theCard := mtgmatcher.Card{
-			Id:   uuid,
-			Foil: result.SubTypeName == "Foil",
-		}
-		if isEtched {
-			theCard.Variation = "Etched"
-		}
-		cardId, err := mtgmatcher.Match(&theCard)
+		cardId, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("(%d / %s) - %s", result.ProductId, uuid, err)
 			continue

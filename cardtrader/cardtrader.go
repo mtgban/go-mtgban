@@ -134,8 +134,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 
 		if cardIdFoil == "" && product.Properties.Foil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			theCard.Foil = true
-			cardIdFoil, err = mtgmatcher.Match(theCard)
+			cardIdFoil, err = mtgmatcher.MatchId(cardId, true)
 			if err != nil {
 				return err
 			}

@@ -83,9 +83,7 @@ func (stks *MTGStocksIndex) processEntry(channel chan<- responseChan, id int, ed
 		// Prices are smushed together, so we check whether there is a foil
 		// version with a second match, and use it only if it's different than
 		// the main printing (the other prices are empty when the card is foil-only)
-		theCard.Id = cardId
-		theCard.Foil = !printing.Foil
-		cardIdFoil, err := mtgmatcher.Match(theCard)
+		cardIdFoil, err := mtgmatcher.MatchId(cardId, !printing.Foil)
 		if err != nil {
 			cardIdFoil = cardId
 		}

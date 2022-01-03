@@ -68,9 +68,7 @@ func (pm *Purplemana) parseBL() error {
 			continue
 		}
 
-		cardId, err := mtgmatcher.Match(&mtgmatcher.Card{
-			Id: id,
-		})
+		cardId, err := mtgmatcher.MatchId(id)
 		if err != nil {
 			pm.printf("%v", err)
 			pm.printf("%q", id)
