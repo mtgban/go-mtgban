@@ -44,6 +44,7 @@ type Card struct {
 	Identifiers         map[string]string `json:"identifiers"`
 	IsAlternative       bool              `json:"isAlternative"`
 	IsFullArt           bool              `json:"isFullArt"`
+	IsFunny             bool              `json:"isFunny"`
 	IsOversized         bool              `json:"isOversized"`
 	IsPromo             bool              `json:"isPromo"`
 	IsReserved          bool              `json:"isReserved"`
@@ -107,6 +108,10 @@ const (
 	PromoTypeGodzilla   = "godzillaseries"
 	PromoTypeDracula    = "draculaseries"
 	PromoTypePlayPromo  = "playpromo"
+
+	PromoTypeJudgeGift     = "judgegift"
+	PromoTypeArenaLeague   = "arenaleague"
+	PromoTypePlayerRewards = "playerrewards"
 
 	BorderColorBorderless = "borderless"
 
