@@ -487,15 +487,6 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "dd154c88-8235-5ca0-9925-11391b89669a",
-		Desc: "relaxed_naming",
-		In: Card{
-			Name:        "Two-Headed Giant of",
-			Edition:     "Beta",
-			MaybePrefix: true,
-		},
-	},
-	MatchTest{
 		Id:   "591c29a1-c671-5a53-b754-88a9aaa6e726",
 		Desc: "binderpos_syntax",
 		In: Card{

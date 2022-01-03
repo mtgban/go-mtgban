@@ -459,12 +459,11 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 	}
 
 	return &mtgmatcher.Card{
-		Id:          id,
-		Name:        cardName,
-		Variation:   variation,
-		Edition:     edition,
-		Foil:        isFoil,
-		MaybePrefix: true,
+		Id:        id,
+		Name:      cardName,
+		Variation: variation,
+		Edition:   edition,
+		Foil:      isFoil,
 	}, nil
 }
 
