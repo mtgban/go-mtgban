@@ -64,6 +64,9 @@ var backend struct {
 	// Slice with every uniquely normalized alternative name
 	AlternateNames []string
 
+	// Slice with every possible uuid
+	AllUUIDs []string
+
 	Scryfall  map[string]string
 	Tcgplayer map[string]string
 }
@@ -458,7 +461,14 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 	}
 
+	// Finally save all the uuids generated
+	allUUIDs := make([]string, 0, len(uuids))
+	for uuid := range uuids {
+		allUUIDs = append(allUUIDs, uuid)
+	}
+
 	backend.Hashes = hashes
+	backend.AllUUIDs = allUUIDs
 	backend.AllNames = names
 	backend.AllSealed = sealed
 	backend.Sets = ap.Data
