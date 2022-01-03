@@ -62,6 +62,18 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
+		switch theCard.Edition {
+		case "Alliances",
+			"Fallen Empires",
+			"Homelands",
+			"World Championship Decks":
+			return nil
+		default:
+			if mtgmatcher.IsBasicLand(theCard.Name) {
+				return nil
+			}
+		}
+
 		stks.printf("%q", theCard)
 		stks.printf("%s | %s | %v", req.interest.Print.Name, req.interest.Print.SetName, req.interest.Foil)
 
