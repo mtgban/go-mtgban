@@ -61,6 +61,9 @@ var backend struct {
 	// with an extra property to determine FlavorNames
 	AlternateProps map[string]alternateProps
 
+	// Slice with every uniquely normalized alternative name
+	AlternateNames []string
+
 	Scryfall  map[string]string
 	Tcgplayer map[string]string
 }
@@ -438,8 +441,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		hashes[norm] = append(hashes[norm], uuid)
 	}
 	// Add all alternative names too
+	var altNames []string
 	for altNorm, altProps := range alternates {
-		names = append(names, altNorm)
+		altNames = append(altNames, altNorm)
 		if altProps.IsFlavor {
 			// Retrieve all the uuids with a FlavorName attached
 			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
@@ -463,6 +467,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Scryfall = scryfall
 	backend.Tcgplayer = tcgplayer
 	backend.AlternateProps = alternates
+	backend.AlternateNames = altNames
 }
 
 func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {

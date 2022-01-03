@@ -89,7 +89,11 @@ func Tcg2UUID(id string) string {
 }
 
 func SearchEquals(name string) ([]string, error) {
-	return searchEquals(name, backend.AllNames)
+	results, err := searchEquals(name, backend.AllNames)
+	if err != nil {
+		return searchEquals(name, backend.AlternateNames)
+	}
+	return results, nil
 }
 
 func SearchSealedEquals(name string) ([]string, error) {
@@ -121,11 +125,19 @@ func searchFunc(name string, slice []string, f func(string, string) bool) ([]str
 }
 
 func SearchHasPrefix(name string) ([]string, error) {
-	return searchFunc(name, backend.AllNames, strings.HasPrefix)
+	results, err := searchFunc(name, backend.AllNames, strings.HasPrefix)
+	if err != nil {
+		return searchFunc(name, backend.AlternateNames, strings.HasPrefix)
+	}
+	return results, nil
 }
 
 func SearchContains(name string) ([]string, error) {
-	return searchFunc(name, backend.AllNames, strings.Contains)
+	results, err := searchFunc(name, backend.AllNames, strings.Contains)
+	if err != nil {
+		return searchFunc(name, backend.AlternateNames, strings.Contains)
+	}
+	return results, nil
 }
 
 func SearchSealedContains(name string) ([]string, error) {
