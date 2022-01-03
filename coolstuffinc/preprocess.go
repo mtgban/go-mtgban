@@ -466,18 +466,6 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 			return nil, errors.New("not english")
 		}
 	case "Promo":
-		switch cardName {
-		case "1996 World Champion",
-			"Proposal",
-			"Splendid Genesis",
-			"Fraternal Exaltation":
-			return nil, errors.New("not supported")
-		default:
-			if strings.HasPrefix(cardName, "Black Lotus - Ultra Pro Puzzle") {
-				return nil, errors.New("not supported")
-			}
-		}
-
 		wildcardPromo = true
 		/*ed, found := promoTable[cardName]
 		if found {
@@ -486,10 +474,6 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	case "Mystical Archive":
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
-		}
-	default:
-		if strings.Contains(edition, "Art Series") {
-			return nil, errors.New("not supported")
 		}
 	}
 
