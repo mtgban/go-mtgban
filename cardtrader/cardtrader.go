@@ -134,10 +134,8 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 
 		if cardIdFoil == "" && product.Properties.Foil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			cardIdFoil, err = mtgmatcher.MatchId(cardId, true)
-			if err != nil {
-				return err
-			}
+			// The function retuns empty string on error
+			cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
 		}
 
 		cond := product.Properties.Condition
@@ -153,7 +151,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 
 		finalCardId := cardId
-		if product.Properties.Foil {
+		if product.Properties.Foil && cardIdFoil != "" {
 			finalCardId = cardIdFoil
 		}
 
