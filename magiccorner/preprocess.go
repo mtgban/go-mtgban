@@ -526,6 +526,9 @@ func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
 		if cardName == "Hangarback Walker" {
 			edition = "Love your LGS"
 		}
+	case "Modern Horizons II: Old Frame":
+		edition = "Modern Horizons 2"
+		variant += " Retro Frame"
 	}
 
 	cn, found := cardTable[cardName]
