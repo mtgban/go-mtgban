@@ -206,7 +206,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
 		cardSet[printings[0]] = MatchInSet(inCard.Name, printings[0])
-	} else if !inCard.Promo {
+	} else if !inCard.promoWildcard {
 		// If multiple printing, try filtering to the closest name
 		// described by the inCard.Edition.
 		// This is skipped if we're in the wildcard Promo mode, as we
@@ -649,7 +649,7 @@ func adjustEdition(inCard *Card) {
 	case inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PLS")) == 2:
 		edition = "PLS"
 		variation = "Alternate Art"
-		inCard.Promo = false
+		inCard.promoWildcard = false
 
 	// Rename the official name to the the more commonly used name
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
@@ -878,8 +878,8 @@ func adjustEdition(inCard *Card) {
 	}
 	inCard.Variation = variation
 
-	// Restore the original name for specific editions
 	switch inCard.Edition {
+	// Restore the original name for specific editions
 	case "Secret Lair Drop":
 		switch inCard.Name {
 		case "Krark's Thumb",
@@ -889,5 +889,20 @@ func adjustEdition(inCard *Card) {
 			"Zndrsplt, Eye of Wisdom":
 			inCard.Name = inCard.Name + " // " + inCard.Name
 		}
+	// Attempt a best effor match for known promotional tags
+	case "Game Day & Store Championship Promos",
+		"Game Day Promos",
+		"Launch Party & Release Event Promos",
+		"League Promos",
+		"Media Promos",
+		"Miscellaneous Promos",
+		"Open House Promos",
+		"Other Promos",
+		"Promo",
+		"Promos",
+		"Promotional Cards",
+		"Promotional Other",
+		"Unique and Miscellaneous Promos":
+		inCard.promoWildcard = true
 	}
 }

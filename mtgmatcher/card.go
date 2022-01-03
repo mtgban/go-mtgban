@@ -37,7 +37,7 @@ type Card struct {
 	// In case edition information is not accurate, use this flag to
 	// perform a best-effor search, which will try to isolate promo
 	// printings from the others
-	Promo bool
+	promoWildcard bool
 }
 
 // Card implements the Stringer interface

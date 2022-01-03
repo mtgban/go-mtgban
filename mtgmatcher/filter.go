@@ -441,7 +441,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		// Last resort, if this is set on the input card, and there were
 		// no better descriptors earlier, try looking at the set type
-		case inCard.Promo:
+		case inCard.promoWildcard:
 			switch set.Type {
 			case "promo":
 				skip := false
@@ -661,7 +661,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// the non-promo sets as some promos can be mixed next to the
 			// normal cards - in this way, promo sets can process as normal and
 			// deduplicate all the various prerelease and promo packs
-			if inCard.Promo {
+			if inCard.promoWildcard {
 				switch set.Type {
 				case "expansion", "core", "masters", "draft_innovation":
 					if !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {

@@ -423,7 +423,6 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	cardName := card.Name
 	variant := card.Variation
 	edition := card.Edition
-	wildcardPromo := false
 
 	if mtgmatcher.Contains(cardName, "Signed by") {
 		return nil, errors.New("not singles")
@@ -465,12 +464,6 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		if variant == "Japanese" || variant == "Chinese" {
 			return nil, errors.New("not english")
 		}
-	case "Promo":
-		wildcardPromo = true
-		/*ed, found := promoTable[cardName]
-		if found {
-			edition = ed
-		}*/
 	case "Mystical Archive":
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
@@ -482,6 +475,5 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		Variation: variant,
 		Edition:   edition,
 		Foil:      card.IsFoil,
-		Promo:     wildcardPromo,
 	}, nil
 }

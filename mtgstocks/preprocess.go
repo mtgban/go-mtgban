@@ -94,8 +94,6 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 		cardName = lutName
 	}
 
-	var wildcardPromo bool
-
 	switch edition {
 	case "Oversize Cards":
 		if !strings.Contains(variant, "Planechase") {
@@ -158,8 +156,6 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 			ed, found := promoTable[cardName]
 			if found {
 				edition = ed
-			} else {
-				wildcardPromo = true
 			}
 		}
 	case "Unglued":
@@ -180,7 +176,6 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 		Variation: variant,
 		Edition:   edition,
 		Foil:      foil,
-		Promo:     wildcardPromo,
 	}, nil
 }
 
