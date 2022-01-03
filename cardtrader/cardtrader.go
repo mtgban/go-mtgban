@@ -64,6 +64,7 @@ type resultChan struct {
 }
 
 var condMap = map[string]string{
+	"":                  "NM",
 	"Mint":              "NM",
 	"Near Mint":         "NM",
 	"Slightly Played":   "SP",
