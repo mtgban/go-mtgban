@@ -872,7 +872,9 @@ func adjustEdition(inCard *Card) {
 	if num != "" && strings.HasSuffix(num, "e") && HasEtchedPrinting(inCard.Name) {
 		fixedNum := strings.TrimSuffix(num, "e")
 		variation = strings.Replace(variation, num, fixedNum, -1)
-		variation += " Etched"
+		if !Contains(variation, "Etched") {
+			variation += " Etched"
+		}
 	}
 	inCard.Variation = variation
 
