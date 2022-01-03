@@ -59,7 +59,7 @@ var backend struct {
 
 	// Map of normalized face/flavor names to canonical (non-normalized) names
 	// with an extra property to determine FlavorNames
-	AlternateNames map[string]alternateProps
+	AlternateProps map[string]alternateProps
 
 	Scryfall  map[string]string
 	Tcgplayer map[string]string
@@ -462,7 +462,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.UUIDs = uuids
 	backend.Scryfall = scryfall
 	backend.Tcgplayer = tcgplayer
-	backend.AlternateNames = alternates
+	backend.AlternateProps = alternates
 }
 
 func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {

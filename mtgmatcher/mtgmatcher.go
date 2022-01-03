@@ -425,7 +425,7 @@ func adjustName(inCard *Card) {
 		}
 	}
 	// Check if this card may be known as something else
-	altProps, found := backend.AlternateNames[Normalize(inCard.Name)]
+	altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
 	if found {
 		inCard.Name = altProps.OriginalName
 		if altProps.IsFlavor {
