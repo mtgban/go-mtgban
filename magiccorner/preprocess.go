@@ -10,7 +10,6 @@ import (
 )
 
 var cardTable = map[string]string{
-	"Ashiok's Forerummer":     "Ashiok's Forerunner",
 	"Fire (Fire/Ice) ":        "Fire // Ice",
 	"Fire (Fire/Ice)":         "Fire // Ice",
 	"Fire/Ice":                "Fire // Ice",
@@ -21,27 +20,22 @@ var cardTable = map[string]string{
 	"Wax/Wane":                "Wax // Wane",
 	"Who,What,When,Where,Why": "Who",
 	"Who/What/When/Where/Why": "Who",
-	"Skull of Arm":            "Skull of Orm",
 	"Ramirez Di Pietro":       "Ramirez DePietro",
 	"Sir Shandlar di Eberyn":  "Sir Shandlar of Eberyn",
 	"Rohgahh di Kher":         "Rohgahh of Kher Keep",
 	"El-Ajjaj":                "El-Hajjâj",
 	"Immagina Fantasma":       "Phantasmal Image",
 
-	"Sedris, the King Traitor":   "Sedris, the Traitor King",
-	"Inferno of the Star Mouths": "Inferno of the Star Mounts",
-	"Emrakul, the Aeon’s Thorn":  "Emrakul, the Aeons Torn",
-
 	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
+	"Mourning Patrol // Mourning Apparition":             "Mourning Patrol",
 
 	"Insegnamenti Mistici": "Mystical Teachings",
 	"Massa Chimerica ":     "Chimeric Mass",
 	"Condannare":           "Condemn",
 	"Novelle":              "Tidings",
-	"Torpore":              "Torpor",
+	"Torpore":              "Stupor",
 	"Tattica del Cenn":     "Cenn's Tactician",
 	"Aeronaut":             "Helionaut",
-	"Torpor":               "Stupor",
 }
 
 var editionTable = map[string]string{
@@ -313,6 +307,11 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 					variation = extra[1:5]
 					edition = "Judge"
 				}
+			}
+		default:
+			switch cardName {
+			case "Sword of Dungeons & Dragons":
+				edition = "H17"
 			}
 		}
 	// Use the number from extra if present, or keep the current version
