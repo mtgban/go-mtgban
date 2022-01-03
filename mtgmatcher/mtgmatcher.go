@@ -704,28 +704,31 @@ func adjustEdition(inCard *Card) {
 		variation = ""
 
 	// All the oversized commander cards
-	case inCard.Contains("Arsenal") && len(MatchInSet(inCard.Name, "OCM1")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OCM1"].Name
-	case len(MatchInSet(inCard.Name, "PCMD")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["PCMD"].Name
-	case len(MatchInSet(inCard.Name, "OCMD")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OCMD"].Name
-	case len(MatchInSet(inCard.Name, "OC13")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC13"].Name
-	case len(MatchInSet(inCard.Name, "OC14")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC14"].Name
-	case len(MatchInSet(inCard.Name, "OC15")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC15"].Name
-	case len(MatchInSet(inCard.Name, "OC16")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC16"].Name
-	case len(MatchInSet(inCard.Name, "OC17")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC17"].Name
-	case len(MatchInSet(inCard.Name, "OC18")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC18"].Name
-	case len(MatchInSet(inCard.Name, "OC19")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC19"].Name
-	case len(MatchInSet(inCard.Name, "OC20")) == 1 && inCard.Contains("Oversize"):
-		edition = backend.Sets["OC20"].Name
+	case inCard.Contains("Oversize"):
+		switch {
+		case inCard.Contains("Arsenal") && len(MatchInSet(inCard.Name, "OCM1")) == 1:
+			edition = backend.Sets["OCM1"].Name
+		case len(MatchInSet(inCard.Name, "PCMD")) == 1:
+			edition = backend.Sets["PCMD"].Name
+		case len(MatchInSet(inCard.Name, "OCMD")) == 1:
+			edition = backend.Sets["OCMD"].Name
+		case len(MatchInSet(inCard.Name, "OC13")) == 1:
+			edition = backend.Sets["OC13"].Name
+		case len(MatchInSet(inCard.Name, "OC14")) == 1:
+			edition = backend.Sets["OC14"].Name
+		case len(MatchInSet(inCard.Name, "OC15")) == 1:
+			edition = backend.Sets["OC15"].Name
+		case len(MatchInSet(inCard.Name, "OC16")) == 1:
+			edition = backend.Sets["OC16"].Name
+		case len(MatchInSet(inCard.Name, "OC17")) == 1:
+			edition = backend.Sets["OC17"].Name
+		case len(MatchInSet(inCard.Name, "OC18")) == 1:
+			edition = backend.Sets["OC18"].Name
+		case len(MatchInSet(inCard.Name, "OC19")) == 1:
+			edition = backend.Sets["OC19"].Name
+		case len(MatchInSet(inCard.Name, "OC20")) == 1:
+			edition = backend.Sets["OC20"].Name
+		}
 
 	// Lunar Year Promos
 	case (inCard.isGenericPromo() || inCard.Contains("Lunar")) && len(MatchInSet(inCard.Name, "PL21")) == 1:
