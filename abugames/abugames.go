@@ -110,6 +110,10 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
+				// There is a bunch of non-existing prerelease cards from mh2
+				if theCard.Variation == "Prerelease" {
+					continue
+				}
 				abu.printf("%v", theCard)
 				abu.printf("%v", card)
 				abu.printf("%v", err)
