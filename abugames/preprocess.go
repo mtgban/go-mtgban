@@ -183,7 +183,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				"Ixalan",
 				"Core Set 2020 / M20",
 				"Core Set 2021 / M21",
-				"Throne of Eldraine":
+				"Throne of Eldraine",
+				"Eldritch Moon",
+				"Innistrad: Crimson Vow":
 				variation += " " + card.Edition
 			}
 			card.Edition = "Promo"
