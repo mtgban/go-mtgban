@@ -20,8 +20,10 @@ var promoTable = map[string]string{
 var tagsTable = map[string]string{
 	"Extended Art":    "Extended Art",
 	"Etched Foil":     "Etched Foil",
+	"Borderless":      "Borderless",
 	"Alternate Art":   "Borderless",
 	"Godzilla Series": "Godzilla",
+	"Dracula Series":  "Dracula",
 	"Alternate Frame": "Showcase",
 	"Showcase":        "Showcase",
 }
@@ -81,6 +83,9 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 			}
 			variant += repl
 			edition = strings.TrimSuffix(edition, " - "+tag)
+			// Some editions don't have the dash, strip them too
+			edition = strings.TrimSuffix(edition, tag)
+			edition = strings.TrimSpace(edition)
 			break
 		}
 	}
