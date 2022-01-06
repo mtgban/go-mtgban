@@ -611,6 +611,8 @@ func adjustEdition(inCard *Card) {
 		strings.HasPrefix(variation, "European JrS E"),
 		strings.HasPrefix(variation, "European JSS Foil E"):
 		edition = "Junior Series Europe"
+	case Contains(variation, "Boosterfun"):
+		inCard.beyondBaseSet = true
 	}
 	inCard.Edition = edition
 	inCard.Variation = variation

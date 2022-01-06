@@ -2637,6 +2637,16 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "a82e3d86-2ffb-593d-88b5-16db79ce2025_f",
+		Desc: "boosterfun_variant_generic",
+		In: Card{
+			Name:      "Shadowspear",
+			Variation: "Boosterfun",
+			Edition:   "Theros Beyond Death",
+			Foil:      true,
+		},
+	},
+	MatchTest{
 		Id:   "4986aa22-de4e-5f16-88bd-f378f8071905",
 		Desc: "boosterfun_variant_but_custom_setsize",
 		In: Card{
