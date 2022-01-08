@@ -461,9 +461,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 	}
 
-	// Finally save all the uuids generated
-	allUUIDs := make([]string, 0, len(uuids))
-	for uuid := range uuids {
+	// Finally save all the non-sealed uuids generated
+	var allUUIDs []string
+	for uuid, card := range uuids {
+		if card.Sealed {
+			continue
+		}
 		allUUIDs = append(allUUIDs, uuid)
 	}
 

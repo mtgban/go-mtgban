@@ -89,6 +89,9 @@ func Tcg2UUID(id string) string {
 }
 
 func SearchEquals(name string) ([]string, error) {
+	if name == "" {
+		return backend.AllUUIDs, nil
+	}
 	results, err := searchEquals(name, backend.AllNames)
 	if err != nil {
 		return searchEquals(name, backend.AlternateNames)
@@ -101,9 +104,6 @@ func SearchSealedEquals(name string) ([]string, error) {
 }
 
 func searchEquals(name string, slice []string) ([]string, error) {
-	if name == "" {
-		return backend.AllUUIDs, nil
-	}
 	name = Normalize(name)
 	for i := range slice {
 		if slice[i] == name {
@@ -114,9 +114,6 @@ func searchEquals(name string, slice []string) ([]string, error) {
 }
 
 func searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
-	if name == "" {
-		return backend.AllUUIDs, nil
-	}
 	var hashes []string
 	name = Normalize(name)
 	for i := range slice {
@@ -131,6 +128,9 @@ func searchFunc(name string, slice []string, f func(string, string) bool) ([]str
 }
 
 func SearchHasPrefix(name string) ([]string, error) {
+	if name == "" {
+		return backend.AllUUIDs, nil
+	}
 	results, err := searchFunc(name, backend.AllNames, strings.HasPrefix)
 	if err != nil {
 		return searchFunc(name, backend.AlternateNames, strings.HasPrefix)
