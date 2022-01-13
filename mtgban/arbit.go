@@ -484,6 +484,10 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			if refEntry.Price == 0 {
 				continue
 			}
+			if sliceStringHas(filterConditions, refEntry.Conditions) {
+				continue
+			}
+
 			for _, invEntry := range invEntries {
 				if sliceStringHas(filterConditions, invEntry.Conditions) {
 					continue
