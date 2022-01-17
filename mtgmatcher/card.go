@@ -346,7 +346,9 @@ func (c *Card) isGenericExtendedArt() bool {
 }
 
 func (c *Card) isPrerelease() bool {
-	return c.Contains("Prerelease")
+	return c.Contains("Prerelease") ||
+		c.Contains("Preview") // scg
+
 }
 
 func (c *Card) isPromoPack() bool {
@@ -401,6 +403,7 @@ func (c *Card) isWPNGateway() bool {
 	return c.Contains("WPN") ||
 		c.Contains("Gateway") ||
 		Contains(c.Variation, "Wizards Play Network") ||
+		c.Variation == "Commander Party" || // scg
 		c.Variation == "Euro Promo" // cfb
 }
 
