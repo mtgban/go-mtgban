@@ -825,7 +825,7 @@ func adjustEdition(inCard *Card) {
 				edition = "Summer of Magic"
 			}
 		case "Kamahl, Pit Fighter", "Char":
-			if inCard.isDCIPromo() || inCard.Contains("15th Anniversary") {
+			if inCard.isDCIPromo() || inCard.Contains("15th Anniversary") || inCard.isGenericPromo() {
 				edition = "15th Anniversary Cards"
 			}
 		case "Fling", "Sylvan Ranger":
@@ -839,6 +839,24 @@ func adjustEdition(inCard *Card) {
 		case "Hall of Triumph":
 			if inCard.isGenericPromo() {
 				edition = "Journey into Nyx Promos"
+			}
+		case "Reliquary Tower":
+			if inCard.Contains("League") {
+				edition = backend.Sets["PM19"].Name
+			} else if inCard.Contains("Bring a Friend") {
+				edition = backend.Sets["PLG20"].Name
+			}
+		case "Bolas's Citadel":
+			if inCard.isGenericPromo() {
+				edition = backend.Sets["PWAR"].Name
+			}
+		case "Llanowar Elves":
+			if inCard.isGenericPromo() {
+				edition = backend.Sets["PDOM"].Name
+			}
+		case "Evolving Wilds":
+			if inCard.isGenericPromo() {
+				edition = backend.Sets["PRIX"].Name
 			}
 		case "Teferi, Master of Time":
 			num := ExtractNumber(variation)
