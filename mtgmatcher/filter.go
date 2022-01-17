@@ -202,6 +202,18 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch set.Name {
 			case "Summer of Magic",
 				"Promotional Planes":
+			case "Innistrad: Crimson Vow":
+				skip := true
+				foundCards := MatchInSet(inCard.Name, "VOW")
+				for _, card := range foundCards {
+					switch card.Number {
+					case "408", "409", "410", "411", "412":
+						skip = false
+					}
+				}
+				if skip {
+					continue
+				}
 			default:
 				switch {
 				case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):

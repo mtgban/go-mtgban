@@ -1540,6 +1540,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "9f91350e-c7e4-566f-b353-da466d46573d",
+		Desc: "moonlit_land_wpn",
+		In: Card{
+			Name:      "Island",
+			Variation: "Moonlit Land Foil Etched",
+			Edition:   "WPN & Gateway Promos",
+		},
+	},
+	MatchTest{
 		Id:   "4c17977b-5aca-5b0a-a456-4d4a0d5e42a1",
 		Desc: "heros_path_promo",
 		In: Card{
