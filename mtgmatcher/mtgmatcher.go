@@ -757,6 +757,10 @@ func adjustEdition(inCard *Card) {
 	case (inCard.isGenericPromo() || inCard.Contains("Lunar")) && len(MatchInSet(inCard.Name, "PL21")) == 1:
 		edition = backend.Sets["PL21"].Name
 
+	// Love Your LGS 2021, often confused with WPN
+	case (inCard.isWPNGateway() || inCard.isGenericPromo()) && inCard.Contains("Retro Frame") && len(MatchInSet(inCard.Name, "PLG21")) == 1:
+		edition = backend.Sets["PLG21"].Name
+
 	// WPN 2021
 	case inCard.Name != "Mind Stone" && inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PW21")) == 1:
 		edition = backend.Sets["PW21"].Name

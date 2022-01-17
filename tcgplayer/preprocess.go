@@ -138,8 +138,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		} else if edition == "Launch Party & Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
-		} else if edition == "WPN & Gateway Promos" && variant == "Retro Frame" {
-			edition = "PLG21"
 		}
 
 		if edition == "Game Day & Store Championship Promos" {

@@ -83,12 +83,7 @@ var promo2editionTable = map[string]string{
 	"Vengevine":                   "World Magic Cup Qualifiers",
 
 	// Retro Frame
-	"Aven Mindcensor":  "PLG21",
-	"Dig Through Time": "PLG21",
-	"Bolas's Citadel":  "PLG21",
-	"Goblin Guide":     "PLG21",
-	"Scavenging Ooze":  "PLG21",
-	"Fabled Passage":   "PW21",
+	"Fabled Passage": "PW21",
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
