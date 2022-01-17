@@ -524,6 +524,15 @@ var MatchTests = []MatchTest{
 			Edition: "Secret Lair Drop",
 		},
 	},
+	MatchTest{
+		Id:   "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
+		Desc: "dual_face_card_wrong_ed",
+		In: Card{
+			Name:      "Propaganda",
+			Variation: "381",
+			Edition:   "Secret Lair Drop Series",
+		},
+	},
 
 	// Incorrect editions
 	MatchTest{

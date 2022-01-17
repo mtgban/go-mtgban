@@ -640,6 +640,15 @@ func adjustEdition(inCard *Card) {
 
 	// Secret Lair {Ultimate,Drop}
 	case inCard.Contains("Secret") || Contains(inCard.Variation, "Lair"):
+		// Restore the canonical name for these specific cards
+		switch inCard.Name {
+		case "Krark's Thumb",
+			"Okaun, Eye of Chaos",
+			"Propaganda",
+			"Stitch in Time",
+			"Zndrsplt, Eye of Wisdom":
+			inCard.Name = inCard.Name + " // " + inCard.Name
+		}
 		if len(MatchInSet(inCard.Name, "SLU")) != 0 {
 			edition = backend.Sets["SLU"].Name
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
@@ -881,16 +890,6 @@ func adjustEdition(inCard *Card) {
 	inCard.Variation = variation
 
 	switch inCard.Edition {
-	// Restore the original name for specific editions
-	case "Secret Lair Drop":
-		switch inCard.Name {
-		case "Krark's Thumb",
-			"Okaun, Eye of Chaos",
-			"Propaganda",
-			"Stitch in Time",
-			"Zndrsplt, Eye of Wisdom":
-			inCard.Name = inCard.Name + " // " + inCard.Name
-		}
 	// Attempt a best effor match for known promotional tags
 	case "Game Day & Store Championship Promos",
 		"Game Day Promos",
