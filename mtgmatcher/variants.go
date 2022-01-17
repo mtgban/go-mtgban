@@ -3324,6 +3324,7 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Karn, the Great Creator": map[string]string{
 		"retro frame":                        "253",
+		"secret lair retro frame":            "253",
 		"secret lair: teferi's time trouble": "253",
 		"":                                   "501",
 		"secret lair":                        "501",
@@ -3332,6 +3333,7 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Teferi, Time Raveler": map[string]string{
 		"retro frame":                        "252",
+		"secret lair retro frame":            "252",
 		"secret lair: teferi's time trouble": "252",
 		"":                                   "526",
 		"secret lair":                        "526",
