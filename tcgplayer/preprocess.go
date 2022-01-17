@@ -98,98 +98,54 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if variant == "17/264" {
 			variant = "Intro Pack"
 		}
-	case "Media Promos",
-		"Pro Tour Promos",
-		"Unique and Miscellaneous Promos",
-		"Launch Party & Release Event Promos",
-		"League Promos",
-		"Game Day & Store Championship Promos",
-		"WMCQ Promo Cards",
-		"WPN & Gateway Promos":
-		for _, ext := range product.ExtendedData {
-			if ext.Name == "OracleText" && strings.Contains(ext.Value, "Heroes of the Realm") {
-				edition = "Heroes of the Realm"
-				break
-			}
+	case "Game Day & Store Championship Promos":
+		if variant == "Winner" || variant == "Top 8" {
+			return nil, errors.New("untracked")
 		}
-
-		ed, found := map[string]string{
-			"Balduvian Horde":             "PWOR",
-			"Char":                        "P15A",
-			"Deathless Angel":             "PROE",
-			"Jaya Ballard, Task Mage":     "PMPS08",
-			"Kamahl, Pit Fighter":         "P15A",
-			"Sword of Dungeons & Dragons": "H17",
-			"Arcbound Ravager":            "PPRO",
-			"Goblin Chieftain":            "PRES",
-			"Oran-Rief, the Vastwood":     "PRES",
-			"Loam Lion":                   "PRES",
-			"Shepherd of the Lost":        "PURL",
-			"Minotaur Token":              "L14",
-		}[cardName]
-		if found {
-			edition = ed
-		} else if edition == "Media Promos" {
-			// Keep SDCC Chandra separate from the Q06 version
-			if !strings.Contains(variant, "SDCC") {
-				edition = "Magazine Inserts"
-			} else {
-				edition = "SDCC"
-			}
-		} else if edition == "Launch Party & Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
+	case "Launch Party & Release Event Promos":
+		if mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
 		}
-
-		if edition == "Game Day & Store Championship Promos" {
-			if variant == "Winner" || variant == "Top 8" {
-				return nil, errors.New("untracked")
-			}
+		switch cardName {
+		case "Lotus Bloom":
+			edition = "TSR"
+			variant = "411"
 		}
-
+	case "Media Promos":
 		switch cardName {
 		case "Nalathni Dragon":
 			if variant == "Redemption Program" {
 				edition = variant
 			}
-		case "Soldier":
-			if variant == "Born of the Gods" {
-				edition = "L14"
-			}
-		case "Arasta of the Endless Web":
-			edition = "THB"
-			variant = "352"
-		case "Lotus Bloom":
-			edition = "TSR"
-			variant = "411"
-		case "Archmage Emeritus":
-			edition = "STX"
-			variant = "377"
-		case "Yusri, Fortune's Flame":
-			edition = "MH2"
-			variant = "492"
-		case "Sigarda's Summons":
-			edition = "VOW"
-			variant = "404"
 		case "Duress":
 			if variant == "IDW Comics 2014" {
-				edition = variant
-			}
-		case "Serra Angel":
-			if variant == "" {
-				edition = "PWOS"
-			} else if variant == "25th Anniversary Exposition" {
-				edition = "PDOM"
+				edition = "IDW Comics 2014"
 			}
 		case "Stocking Tiger":
-			if variant == "No Date" {
-				variant = "misprint"
-			}
-		case "Reliquary Tower":
-			if variant == "Bring a Friend Promo" {
-				edition = "PLG20"
+			variant = "misprint"
+		case "Sword of Dungeons & Dragons":
+			edition = "H17"
+		case "Shepherd of the Lost":
+			edition = "PURL"
+		default:
+			if !strings.Contains(variant, "SDCC") {
+				edition = "Magazine Inserts"
 			} else {
-				edition = "PM19"
+				edition = "SDCC"
 			}
+		}
+	case "Pro Tour Promos":
+		switch cardName {
+		case "Char":
+			edition = "P15A"
+		}
+	case "WMCQ Promo Cards":
+		switch cardName {
+		case "Arcbound Ravager":
+			edition = "PPRO"
+		}
+	case "WPN & Gateway Promos":
+		switch cardName {
 		case "Mind Stone":
 			if variant == "2021" {
 				variant = "WPN 2021"
@@ -199,6 +155,36 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Orb of Dragonkind":
 			num := mtgmatcher.ExtractNumber(variant)
 			variant = "J" + num
+		}
+	case "Unique and Miscellaneous Promos":
+		for _, ext := range product.ExtendedData {
+			if ext.Name == "OracleText" && strings.Contains(ext.Value, "Heroes of the Realm") {
+				edition = "Heroes of the Realm"
+				break
+			}
+		}
+
+		switch cardName {
+		case "Fiendish Duo":
+			edition = "PKHM"
+		case "Arasta of the Endless Web":
+			edition = "THB"
+			variant = "352"
+		case "Archmage Emeritus":
+			edition = "STX"
+			variant = "377"
+		case "Yusri, Fortune's Flame":
+			edition = "MH2"
+			variant = "492"
+		case "Sigarda's Summons":
+			edition = "VOW"
+			variant = "404"
+		case "Serra Angel":
+			if variant == "" {
+				edition = "PWOS"
+			} else if variant == "25th Anniversary Exposition" {
+				edition = "PDOM"
+			}
 		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
@@ -283,6 +269,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		}
 	case "Planeswalker Event Promos":
 		variant = ""
+		if len(mtgmatcher.MatchInSet(cardName, "PPRO")) != 0 || cardName == "Fae of Wishes" {
+			edition = "PPRO"
+		}
 	case "Core Set 2021":
 		if variant == "Alternate Art" {
 			variant = "Borderless"
