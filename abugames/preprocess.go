@@ -159,15 +159,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 
 		variation = strings.TrimSpace(variation)
 
-		// These are the definition of generic promos
-		if strings.Contains(variation, "Magic League") ||
-			mtgmatcher.Contains(variation, "Game Day") ||
-			mtgmatcher.Contains(variation, "Gift Box") ||
-			mtgmatcher.Contains(variation, "Convention") ||
-			strings.Contains(variation, "Intro Pack") {
-			variation = "Promo"
-		}
-
 		isPromo := false
 		for _, tag := range promoTags {
 			if strings.Contains(variation, tag) {
