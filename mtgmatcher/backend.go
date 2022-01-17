@@ -213,6 +213,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				// ie 'Start' could be Start//Finish and Start//Fire
 				switch name {
 				case "Bind",
+					"Fire",
 					"Smelt",
 					"Start":
 					continue
