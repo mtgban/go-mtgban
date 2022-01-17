@@ -516,6 +516,13 @@ func adjustEdition(inCard *Card) {
 	// so what is found should not overwrite the edition in this case
 	if found && edition != "Anthologies" {
 		edition = ed
+
+		// If edition was found through the variation tag, drop it
+		variation = ""
+		// Only keep this information if needed
+		if inCard.isEtched() {
+			variation = "Etched"
+		}
 	}
 	inCard.Edition = edition
 	inCard.Variation = variation

@@ -27,8 +27,9 @@ var EditionTable = map[string]string{
 	"Summer Magic (Edgar)": "Summer Magic / Edgar",
 
 	// Adventures in the Forgotten Realms Ampersand
-	"AFR Ampersand Promos":                    "Adventures in the Forgotten Realms Promos",
-	"Ampersand Foil":                          "Adventures in the Forgotten Realms Promos",
+	"AFR Ampersand Promos": "Adventures in the Forgotten Realms Promos",
+	"Ampersand Foil":       "Adventures in the Forgotten Realms Promos",
+	"Ampersand":            "Adventures in the Forgotten Realms Promos",
 	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
 
 	// Strixhaven Mystical Archive alts
@@ -58,7 +59,6 @@ var EditionTable = map[string]string{
 	"Gift Pack 2018 Promo": "M19 Gift Pack",
 	"Shooting Star Promo":  "2017 Gift Pack",
 	"Mark Poole Art Promo": "2017 Gift Pack",
-	"Gift Box Promo":       "M19 Gift Pack",
 	"Poole 2017 Gift Pack": "2017 Gift Pack",
 
 	// Treasure Chest
@@ -294,7 +294,6 @@ var EditionTable = map[string]string{
 	"MCQ":                                 "Pro Tour Promos",
 	"Mythic Championship Qualifier Promo": "Pro Tour Promos",
 	"Mythic Championship":                 "Pro Tour Promos",
-	"Planeswalker Event Promos":           "Pro Tour Promos",
 	"Players Tour Promo":                  "Pro Tour Promos",
 	"Players Tour Qualifier PTQ Promo":    "Pro Tour Promos",
 	"Players Tour Qualifier":              "Pro Tour Promos",
@@ -302,13 +301,19 @@ var EditionTable = map[string]string{
 	"Pro Tour Promo":                      "Pro Tour Promos",
 	"Pro Tour Promos":                     "Pro Tour Promos",
 	"Pro Tour":                            "Pro Tour Promos",
+	"RPTQ Promo Foil":                     "Pro Tour Promos",
 	"RPTQ Promo":                          "Pro Tour Promos",
 	"RPTQ":                                "Pro Tour Promos",
+	"Qualifier":                           "Pro Tour Promos",
 	"Regional PTQ Promo Foil":             "Pro Tour Promos",
 	"Regional PTQ Promo":                  "Pro Tour Promos",
 	"Regional PTQ":                        "Pro Tour Promos",
 
 	// Worlds
+	"Worlds":                  "World Championship Promos",
+	"World Championship Foil": "World Championship Promos",
+
+	// WMCQ
 	"2015 World Magic Cup Qualifier":      "World Magic Cup Qualifiers",
 	"2016 WMCQ Promo":                     "World Magic Cup Qualifiers",
 	"2017 WMCQ Promo":                     "World Magic Cup Qualifiers",
@@ -328,7 +333,6 @@ var EditionTable = map[string]string{
 	"World Magic Cup Promo":               "World Magic Cup Qualifiers",
 	"World Magic Cup Qualifier 2016":      "World Magic Cup Qualifiers",
 	"World Magic Cup Qualifier Promo":     "World Magic Cup Qualifiers",
-	"World Championship Foil":             "World Championship Promos",
 	"World Cup Qualifier Promo":           "World Magic Cup Qualifiers",
 
 	// Tarkir extra sets
@@ -364,6 +368,7 @@ var EditionTable = map[string]string{
 	"Dragon'Con 1994":       "Dragon Con",
 	"HASCON":                "HasCon 2017",
 	"HASCON 2017":           "HasCon 2017",
+	"Hascon Promo Foil":     "HasCon 2017",
 	"Hascon Promo":          "HasCon 2017",
 	"Hascon 2017 Promo":     "HasCon 2017",
 	"PAX Prime Promo":       "URL/Convention Promos",
@@ -391,6 +396,7 @@ var EditionTable = map[string]string{
 	"Introductory 4th Edition": "Introductory Two-Player Set",
 	"PS3 Promo":                "Duels of the Planeswalkers 2012 Promos",
 	"Starter":                  "Starter 1999",
+	"Starter 2000":             "Starter 2000",
 	"Vanguard":                 "Vanguard Series",
 
 	// MB1/PLIST need to be explicitly set to override the edition
