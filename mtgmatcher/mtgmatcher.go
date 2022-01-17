@@ -888,6 +888,13 @@ func adjustEdition(inCard *Card) {
 					}
 				}
 			}
+		default:
+			// Attempt a best effor match for known promotional tags if card or edition
+			// wasn't found in previous steps
+			if inCard.isGenericPromo() {
+				logger.Printf("Precise matching for promo failed, attempting best effort")
+				inCard.promoWildcard = true
+			}
 		}
 	}
 	inCard.Edition = edition
@@ -903,22 +910,4 @@ func adjustEdition(inCard *Card) {
 		}
 	}
 	inCard.Variation = variation
-
-	switch inCard.Edition {
-	// Attempt a best effor match for known promotional tags
-	case "Game Day & Store Championship Promos",
-		"Game Day Promos",
-		"Launch Party & Release Event Promos",
-		"League Promos",
-		"Media Promos",
-		"Miscellaneous Promos",
-		"Open House Promos",
-		"Other Promos",
-		"Promo",
-		"Promos",
-		"Promotional Cards",
-		"Promotional Other",
-		"Unique and Miscellaneous Promos":
-		inCard.promoWildcard = true
-	}
 }

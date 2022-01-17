@@ -323,11 +323,26 @@ func (c *Card) isBasicLand() bool {
 	return false
 }
 
+// Returns whether the cards is a "generic" promo, that probably needs
+// further analysis to be fully categorized. Tokens are excluded.
 func (c *Card) isGenericPromo() bool {
 	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() &&
-		(c.Contains("Promo") || c.Contains("Game Day") ||
+		!c.Contains("Deckmasters") && // no real promos here, just foils
+		!c.Contains("Token") && !isToken(c.Name) &&
+		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
+			c.Contains("Draft Weekend") || // scg
+			c.Contains("Game Day") ||
+			c.Contains("Gift Box") || // ck+scg
+			c.Contains("Intro Pack") || // scg
+			c.Contains("League") ||
+			c.Contains("Miscellaneous") ||
+			c.Contains("Open House") || // tcg
+			c.Contains("Other") ||
+			c.Contains("Planeswalker Event") || // tcg
+			c.Contains("Planeswalker Weekend") || // scg
 			c.Contains("Store Challenge") || // scg
-			c.Contains("Store Championship")) // ck
+			c.Contains("Store Championship") || // ck
+			c.Contains("Unique")) // mtgs
 }
 
 func (c *Card) isDCIPromo() bool {
