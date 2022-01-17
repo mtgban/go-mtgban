@@ -335,6 +335,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "19a31a18-1d66-585b-b145-e638345ffad9",
+		Desc: "jp_land_full",
+		In: Card{
+			Name:      "Island",
+			Variation: "JP Full Art 296",
+			Edition:   "Kamigawa: Neon Dynasty",
+		},
+	},
+	MatchTest{
 		Id:   "e771d473-2b2e-54c9-824e-1e309cdf42ec",
 		Desc: "etched_different_number",
 		In: Card{

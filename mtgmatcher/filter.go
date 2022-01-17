@@ -610,12 +610,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 				// Short circuit the possible suffixes if we know what we're dealing with
 				if inCard.isJPN() {
-					switch set.Name {
-					case "Chronicles Japanese",
-						"Ikoria: Lair of Behemoths",
-						"Strixhaven Mystical Archive":
-						// Leave the collector number as is for these sets
-					default:
+					switch set.Code {
+					case "WAR", "PWAR":
 						possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
 					}
 				} else if inCard.isPrerelease() {
