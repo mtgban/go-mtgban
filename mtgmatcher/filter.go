@@ -456,6 +456,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.promoWildcard:
 			switch set.Type {
 			case "promo":
+				// Skip Judge promos, they are usually correctly listed
+				if strings.HasPrefix(set.Name, "Judge Gift") {
+					continue
+				}
 				skip := false
 				foundCards := MatchInSet(inCard.Name, setCode)
 				// It is required to set a proper tag to parse non-English

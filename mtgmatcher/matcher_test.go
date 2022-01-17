@@ -2773,15 +2773,6 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "2a113727-7f6e-5ab7-9dce-5e6f19ac62c8",
-		Desc: "untagged_promo_skip_jpn",
-		In: Card{
-			Name:          "Dark Ritual",
-			Edition:       "Promo",
-			promoWildcard: true,
-		},
-	},
-	MatchTest{
 		Id:   "0f8e79b8-c429-5e9d-bb51-849c114bf5de",
 		Desc: "untagged_promo_draft",
 		In: Card{
