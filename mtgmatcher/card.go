@@ -157,6 +157,7 @@ func isToken(name string) bool {
 		"Marit Lage",
 		"Merfolk",
 		"Minion",
+		"Minotaur",
 		"Morph",
 		"Mouse",
 		"Myr",
