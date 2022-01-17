@@ -710,7 +710,7 @@ func adjustEdition(inCard *Card) {
 		edition = backend.Sets["Q06"].Name
 
 	// Open the Helvault oversized cards
-	case (inCard.Contains("Oversize") || inCard.Contains("Helvault Promo")) && len(MatchInSet(inCard.Name, "PHEL")) == 1:
+	case (inCard.Contains("Oversize") || inCard.Contains("Helvault Promo") || inCard.isPrerelease()) && len(MatchInSet(inCard.Name, "PHEL")) == 1:
 		edition = backend.Sets["PHEL"].Name
 		variation = ""
 
