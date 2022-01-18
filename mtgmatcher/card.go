@@ -326,7 +326,7 @@ func (c *Card) isBasicLand() bool {
 // Returns whether the cards is a "generic" promo, that probably needs
 // further analysis to be fully categorized. Tokens are excluded.
 func (c *Card) isGenericPromo() bool {
-	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() &&
+	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() && !c.isSDCC() &&
 		!c.Contains("Deckmasters") && // no real promos here, just foils
 		!c.Contains("Token") && !isToken(c.Name) &&
 		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
