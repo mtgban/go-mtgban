@@ -705,6 +705,14 @@ func adjustEdition(inCard *Card) {
 		len(MatchInSet(inCard.Name, "H1R")) != 0:
 		edition = backend.Sets["H1R"].Name
 
+	// Clash pack promos
+	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "CP1")) == 1:
+		edition = backend.Sets["CP1"].Name
+	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "CP2")) == 1:
+		edition = backend.Sets["CP2"].Name
+	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "CP3")) == 1:
+		edition = backend.Sets["CP3"].Name
+
 	// Challenger decks promos
 	case inCard.Contains("Challenger Decks") && len(MatchInSet(inCard.Name, "Q06")) != 0:
 		edition = backend.Sets["Q06"].Name

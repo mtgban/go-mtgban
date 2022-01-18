@@ -136,12 +136,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			} else {
 				edition = "SDCC"
 			}
-		} else if len(mtgmatcher.MatchInSet(cardName, "CP1")) == 1 {
-			edition = "CP1"
-		} else if len(mtgmatcher.MatchInSet(cardName, "CP2")) == 1 {
-			edition = "CP2"
-		} else if len(mtgmatcher.MatchInSet(cardName, "CP3")) == 1 {
-			edition = "CP3"
 		} else if len(mtgmatcher.MatchInSet(cardName, "Q06")) == 1 {
 			edition = "Q06"
 		} else if edition == "Launch Party & Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {

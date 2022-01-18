@@ -127,10 +127,6 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 			edition = "Special Occasion"
 		case "Reliquary Tower":
 			edition = "PLG20"
-		case "Hydra Broodmaster",
-			"Prophet of Kruphix",
-			"Temple of Mystery":
-			edition = "CP1"
 		case "Tember City":
 			edition = "PHOP"
 		case "Lavinia, Azorius Renegade":

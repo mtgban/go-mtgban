@@ -253,15 +253,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
-		case inCard.Contains("Clash"):
-			switch set.Name {
-			case "Fate Reforged Clash Pack",
-				"Magic 2015 Clash Pack",
-				"Magic Origins Clash Pack":
-			default:
-				continue
-			}
-
 		case inCard.Contains("Hero") && inCard.Contains("Path"):
 			switch set.Name {
 			case "Born of the Gods Hero's Path",
