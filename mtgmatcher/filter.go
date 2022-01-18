@@ -494,9 +494,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 							break
 						}
 					}
-				// Keep all cards from this set
-				case "Q06":
-					skip = false
 				}
 				if skip {
 					continue

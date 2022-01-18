@@ -136,8 +136,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			} else {
 				edition = "SDCC"
 			}
-		} else if len(mtgmatcher.MatchInSet(cardName, "Q06")) == 1 {
-			edition = "Q06"
 		} else if edition == "Launch Party & Release Event Promos" && mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
 		} else if edition == "WPN & Gateway Promos" && variant == "Retro Frame" {

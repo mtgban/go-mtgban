@@ -714,7 +714,7 @@ func adjustEdition(inCard *Card) {
 		edition = backend.Sets["CP3"].Name
 
 	// Challenger decks promos
-	case inCard.Contains("Challenger Decks") && len(MatchInSet(inCard.Name, "Q06")) != 0:
+	case (inCard.Contains("Challenger Decks") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "Q06")) != 0:
 		edition = backend.Sets["Q06"].Name
 
 	// Open the Helvault oversized cards
