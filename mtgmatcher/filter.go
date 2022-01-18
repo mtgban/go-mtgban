@@ -890,7 +890,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					numberSuffix = "a"
 
 					if set.Name == "Deckmasters" {
-						if inCard.Foil || inCard.isGenericPromo() {
+						if inCard.Foil || inCard.Contains("Promo") {
 							numberSuffix = mtgjson.SuffixSpecial
 						} else if card.HasFinish(mtgjson.FinishNonfoil) &&
 							(card.Name == "Incinerate" || card.Name == "Icy Manipulator") {
