@@ -668,8 +668,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				switch set.Type {
 				case "expansion", "core", "masters", "draft_innovation":
 					if !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
-						// Consider Promos and non-promo Intro Pack cards
-						if card.IsPromo || card.HasPromoType(mtgjson.PromoTypeIntroPack) {
+						// Consider Promos, non-promo Intro Pack cards, and non-promo special cards
+						if card.IsPromo || card.HasPromoType(mtgjson.PromoTypeIntroPack) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 							outCards = append(outCards, card)
 						}
 						continue

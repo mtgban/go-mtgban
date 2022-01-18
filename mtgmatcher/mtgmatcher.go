@@ -660,7 +660,6 @@ func adjustEdition(inCard *Card) {
 	case inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PLS")) == 2:
 		edition = "PLS"
 		variation = "Alternate Art"
-		inCard.promoWildcard = false
 
 	// Rename the official name to the the more commonly used name
 	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
