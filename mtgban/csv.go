@@ -428,7 +428,7 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 				fmt.Sprint(entry.Quantity),
 				entry.URL,
 			)
-			if entry.SellerName != "" {
+			if len(header) >= len(MarketHeader) {
 				record = append(record, entry.SellerName)
 				bundle := ""
 				if entry.Bundle {
@@ -436,7 +436,7 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 				}
 				record = append(record, bundle)
 
-				if entry.OriginalId != "" || entry.InstanceId != "" {
+				if len(header) >= len(CartHeader) {
 					record = append(record, entry.OriginalId)
 					record = append(record, entry.InstanceId)
 				}
