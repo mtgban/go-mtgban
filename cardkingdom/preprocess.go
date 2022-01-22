@@ -1,6 +1,7 @@
 package cardkingdom
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -46,6 +47,11 @@ var skuFixupTable = map[string]string{
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
+	// Non-foil cards of this set do not exist
+	if card.Variation == "MagicFest Non-Foil - 2020" {
+		return nil, errors.New("doesn't exist")
+	}
+
 	setCode := ""
 	number := ""
 	isFoil, _ := strconv.ParseBool(card.IsFoil)
