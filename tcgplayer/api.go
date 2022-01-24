@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -39,6 +40,8 @@ const (
 
 	tcgApiSKUsURL   = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
 	tcgApiSearchURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/categories/1/search"
+
+	tcgLatestSalesURL = "https://mpapi.tcgplayer.com/v2/product/%s/latestsales"
 )
 
 type TCGClient struct {
@@ -450,4 +453,67 @@ func (tcg *TCGClient) TCGCategoriesDetails(ids []int) ([]TCGCategory, error) {
 	}
 
 	return out, nil
+}
+
+type latestSalesRequest struct {
+	Variants    []string `json:"variants"`
+	Conditions  []string `json:"conditions"`
+	Languages   []string `json:"languages"`
+	ListingType string   `json:"listingType"`
+	Limit       int      `json:"limit"`
+}
+
+type latestSalesResponse struct {
+	PreviousPage string `json:"previousPage"`
+	NextPage     string `json:"nextPage"`
+	ResultCount  int    `json:"resultCount"`
+	TotalResults int    `json:"totalResults"`
+	Data         []struct {
+		Condition       string    `json:"condition"`
+		Variant         string    `json:"variant"`
+		Language        string    `json:"language"`
+		Quantity        int       `json:"quantity"`
+		Title           string    `json:"title"`
+		ListingType     string    `json:"listingType"`
+		CustomListingID string    `json:"customListingId"`
+		PurchasePrice   float64   `json:"purchasePrice"`
+		ShippingPrice   float64   `json:"shippingPrice"`
+		OrderDate       time.Time `json:"orderDate"`
+	} `json:"data"`
+}
+
+const (
+	defaultListingTypeLatestSales = "All"
+	defaultLimitLastestSales      = 25
+)
+
+func TCGLatestSales(tcgProductId string) (*latestSalesResponse, error) {
+	link := fmt.Sprintf(tcgLatestSalesURL, tcgProductId)
+
+	var params latestSalesRequest
+	params.ListingType = defaultListingTypeLatestSales
+	params.Limit = defaultLimitLastestSales
+	payload, err := json.Marshal(&params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Post(link, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response latestSalesResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }
