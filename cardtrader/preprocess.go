@@ -116,23 +116,26 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		cardName = altName
 	}
 
+	var skipHashLookup bool
+	switch edition {
+	// Some of the hashes are not correctly set for these editions
+	case "Mystery Booster",
+		"Mystery Booster Retail Edition Foils",
+		"Mystery Booster: Convention Edition Playtest Cards",
+		"Strixhaven: School of Mages Promos",
+		"Strixhaven: School of Mages Prerelease",
+		"The List":
+		skipHashLookup = true
+	}
+
 	// Some, but not all, have a proper id we can reuse right away
 	u, err := url.Parse(bp.ScryfallId)
-	if err == nil {
+	if err == nil && !skipHashLookup {
 		base := path.Base(u.Path)
 		base = strings.TrimSuffix(base, ".")
 
-		// Some of the hashes are not correctly set
-		skipEdition := strings.Contains(edition, "Mystery Booster")
-		switch edition {
-		case "Strixhaven: School of Mages Prerelease",
-			"Strixhaven: School of Mages Promos",
-			"The List":
-			skipEdition = true
-		}
-
 		id := mtgmatcher.Scryfall2UUID(base)
-		if id != "" && !skipEdition {
+		if id != "" {
 			return &mtgmatcher.Card{
 				Id: id,
 				// Not needed but help debugging
