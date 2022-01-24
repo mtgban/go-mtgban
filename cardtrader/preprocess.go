@@ -126,6 +126,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		"Strixhaven: School of Mages Prerelease",
 		"The List":
 		skipHashLookup = true
+	case "Arena League Promos":
+		// Due to the misprint hash being used
+		skipHashLookup = cardName == "Island"
+	case "Battlebond":
+		if cardName == "Will Kenrith" || cardName == "Rowan Kenrith" {
+			return nil, errors.New("dupe")
+		}
 	}
 
 	// Some, but not all, have a proper id we can reuse right away
