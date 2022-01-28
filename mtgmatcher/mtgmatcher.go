@@ -104,6 +104,10 @@ func Match(inCard *Card) (cardId string, err error) {
 				if strings.Contains(inCard.Variation, "Foil") {
 					inCard.Foil = true
 				}
+				// TCG Promo Pack prepends a second P to the edition
+				if strings.HasPrefix(maybeEdition, "PP") {
+					inCard.Variation = "Promo Pack"
+				}
 			} else {
 				inCard.Edition = set.Name
 			}

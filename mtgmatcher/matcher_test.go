@@ -518,6 +518,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "4d3e619d-0b1d-5aab-89f9-fbdbed01bdda",
+		Desc: "tcgcollection_syntax_promopack",
+		In: Card{
+			Name:    "Shark Typhoon [PPIKO]",
+			Edition: "ignored",
+		},
+	},
+	MatchTest{
 		Id:   "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
 		Desc: "dual_face_card_same_name",
 		In: Card{
