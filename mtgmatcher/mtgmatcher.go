@@ -91,23 +91,24 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Binderpos weird syntax, with the edition embedded in the name
 	if strings.Contains(inCard.Name, "[") {
 		vars := strings.Split(inCard.Name, "[")
+		inCard.Name = vars[0]
 		if len(vars) > 1 {
-			maybeEdition := strings.TrimSuffix(strings.TrimSpace(vars[1]), "]")
+			maybeEdition := strings.Join(vars[1:], " ")
+			maybeEdition = strings.Replace(maybeEdition, "]", "", -1)
+			maybeEdition = strings.TrimSpace(maybeEdition)
+
 			set, err := GetSetByName(maybeEdition)
-			if err == nil {
-				inCard.Name = vars[0]
+			if err != nil {
+				inCard.Variation = maybeEdition
+				// For the TCG collection weird syntax
+				if strings.Contains(inCard.Variation, "Foil") {
+					inCard.Foil = true
+				}
+			} else {
 				inCard.Edition = set.Name
 			}
 		}
 	}
-	// TCG collection weird syntax, with foil in the name itself
-	if strings.HasSuffix(inCard.Name, "[Foil]") {
-		inCard.Foil = true
-		inCard.Name = strings.TrimSuffix(inCard.Name, " [Foil]")
-		inCard.Name = strings.TrimSuffix(inCard.Name, "-")
-		inCard.Name = strings.TrimSuffix(inCard.Name, " ")
-	}
-
 	// Simple case in which there is a variant embedded in the name
 	if strings.Contains(inCard.Name, "(") {
 		vars := SplitVariants(inCard.Name)
