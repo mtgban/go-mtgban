@@ -171,8 +171,8 @@ func (ct *CardtraderMarket) scrape() error {
 	}
 
 	go func() {
-		for id, exp := range expansions {
-			ct.printf("Processing %s (%d)", exp, id)
+		for id, expName := range expansions {
+			ct.printf("Processing %s (%d)", expName, id)
 			expansionIds <- id
 		}
 		close(expansionIds)
