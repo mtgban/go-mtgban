@@ -12,6 +12,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	"github.com/kodabb/go-mtgban/mtgban"
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 type CTLoggedClient struct {
@@ -123,19 +124,19 @@ func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
 	return nil
 }
 
+// A variant of Product
 type OrderItem struct {
-	Id          int     `json:"id"`
-	BlueprintId int     `json:"blueprint_id"`
-	Quantity    int     `json:"quantity"`
-	Description string  `json:"description"`
-	PriceCents  float64 `json:"price_cents"`
-	Properties  struct {
+	Id            int    `json:"id"`
+	BlueprintId   int    `json:"blueprint_id"`
+	Quantity      int    `json:"quantity"`
+	Description   string `json:"description"`
+	PriceCents    int    `json:"price_cents"`
+	PriceCurrency string `json:"price_currency"`
+	Properties    struct {
 		Condition string `json:"condition"`
 		Language  string `json:"mtg_language"`
 		Foil      bool   `json:"mtg_foil"`
 	} `json:"properties_hash"`
-
-	Blueprint Blueprint `json:"blueprint"`
 }
 
 func (ct *CTLoggedClient) GetItemsForOrder(orderId int) ([]OrderItem, error) {
@@ -179,4 +180,48 @@ func (ct *Cardtrader) Add(entry mtgban.InventoryEntry) error {
 	}
 
 	return ct.loggedClient.Add2Cart(id, entry.Quantity, entry.Bundle)
+}
+
+func ConvertItems(blueprints map[int]*Blueprint, products []OrderItem, rates ...float64) mtgban.InventoryRecord {
+	inventory := mtgban.InventoryRecord{}
+	for _, product := range products {
+		bp, found := blueprints[product.BlueprintId]
+		if !found {
+			continue
+		}
+		theCard, err := Preprocess(bp)
+		if err != nil {
+			continue
+		}
+		theCard.Foil = product.Properties.Foil
+
+		cardId, err := mtgmatcher.Match(theCard)
+		if err != nil {
+			continue
+		}
+
+		price := float64(product.PriceCents) / 100.0
+
+		currency := product.PriceCurrency
+		if currency == "EUR" && len(rates) > 0 && rates[0] != 0 {
+			price *= rates[0]
+		}
+
+		quantity := product.Quantity
+
+		conds, found := condMap[product.Properties.Condition]
+		if !found {
+			continue
+		}
+
+		err = inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
+			Price:      price,
+			Quantity:   quantity,
+			Conditions: conds,
+			OriginalId: fmt.Sprint(product.BlueprintId),
+			InstanceId: fmt.Sprint(product.Id),
+		})
+	}
+
+	return inventory
 }

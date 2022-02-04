@@ -243,6 +243,12 @@ type BulkProduct struct {
 	// The quantity to be put up for sale
 	Quantity int `json:"quantity,omitempty"`
 
+	// A public-facing description field
+	Description string `json:"description,omitempty"`
+
+	// A secondary internal-only field
+	UserDataField string `json:"user_data_field,omitempty"`
+
 	// A list of optional properties
 	Properties struct {
 		Condition string `json:"condition,omitempty"`
