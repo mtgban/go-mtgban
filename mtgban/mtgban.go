@@ -42,6 +42,9 @@ type InventoryEntry struct {
 	// This is usually the "SKU", or the id of the entry taking into
 	// account different properties, such as conditions, language etc
 	InstanceId string
+
+	// Any additional custom fields set by the scraper
+	CustomFields map[string]string
 }
 
 func (ie InventoryEntry) Pricing() float64 {
