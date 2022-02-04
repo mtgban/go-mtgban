@@ -20,6 +20,8 @@ const (
 	ctBulkCreateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_create"
 	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
 
+	ctProductsExport = "https://api.cardtrader.com/api/v2/products/export"
+
 	MaxBulkUploadItems = 450
 
 	GameIdMagic = 1
@@ -102,6 +104,10 @@ type Product struct {
 	Expansion struct {
 		Name string `json:"name"`
 	} `json:"expansion"`
+
+	UserDataField string `json:"user_data_field"`
+	PriceCents    int    `json:"price_cents"`
+	PriceCurrency string `json:"price_currency"`
 }
 
 type BlueprintError struct {
@@ -245,6 +251,27 @@ type BulkProduct struct {
 		Signed    bool   `json:"signed,omitempty"`
 		Altered   bool   `json:"altered,omitempty"`
 	} `json:"properties,omitempty"`
+}
+
+func (ct *CTAuthClient) ProductsExport() ([]Product, error) {
+	resp, err := ct.client.Get(ctProductsExport)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var products []Product
+	err = json.Unmarshal(data, &products)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal error %s, got: %s", err.Error(), string(data))
+	}
+
+	return products, nil
 }
 
 // Create new listings using the products slice, separating into multiple

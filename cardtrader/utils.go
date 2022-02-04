@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"compress/gzip"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -98,4 +99,57 @@ func ExportStock(blueprints map[int]*Blueprint, token string, rates ...float64) 
 	}
 
 	return inventory, nil
+}
+
+func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ...float64) mtgban.InventoryRecord {
+	inventory := mtgban.InventoryRecord{}
+	for _, product := range products {
+		theCard, err := Preprocess(blueprints[product.BlueprintId])
+		if err != nil {
+			continue
+		}
+		theCard.Foil = product.Properties.Foil
+
+		cardId, err := mtgmatcher.Match(theCard)
+		if err != nil {
+			continue
+		}
+
+		price := float64(product.PriceCents) / 100.0
+
+		currency := product.PriceCurrency
+		if currency == "EUR" && len(rates) > 0 && rates[0] != 0 {
+			price *= rates[0]
+		}
+
+		quantity := product.Quantity
+
+		conds, found := condMap[product.Properties.Condition]
+		if !found {
+			continue
+		}
+
+		var customFields map[string]string
+		if product.Description != "" || product.UserDataField != "" {
+			customFields = map[string]string{}
+			if product.Description != "" {
+				customFields["description"] = product.Description
+			}
+			if product.UserDataField != "" {
+				customFields["user_data_field"] = product.UserDataField
+			}
+		}
+
+		err = inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
+			Price:        price,
+			Quantity:     quantity,
+			Conditions:   conds,
+			SellerName:   "mtgban",
+			OriginalId:   fmt.Sprint(product.BlueprintId),
+			InstanceId:   fmt.Sprint(product.Id),
+			CustomFields: customFields,
+		})
+	}
+
+	return inventory
 }
