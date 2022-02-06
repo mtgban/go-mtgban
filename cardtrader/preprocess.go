@@ -463,6 +463,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 						if cardName == "Nicol Bolas, God-Pharaoh" && number == "140" {
 							variant = "Prerelase"
 						}
+					case "Dominaria Promos":
+						if cardName == "Steel Leaf Champion" && number == "182" {
+							variant = number
+						}
 					}
 				}
 			}
