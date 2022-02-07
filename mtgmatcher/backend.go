@@ -115,6 +115,7 @@ func skipSet(set *mtgjson.Set) bool {
 	// Skip unsupported sets
 	switch set.Code {
 	case "PRED", // a single foreign card
+		"PSAL", "PS11", "PHUK", "PHJ", // foreign-only
 		"OLGC", // oversize
 		"FJMP": // jumpstart front cards
 		return true
