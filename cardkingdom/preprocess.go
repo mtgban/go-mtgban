@@ -44,6 +44,18 @@ var skuFixupTable = map[string]string{
 	"WC02-SHH266":   "WC02-SHH266SB",
 	"WC02-CR057SBA": "WC02-CR057SB",
 	"WC03-WE062":    "WC03-WE062SB",
+
+	// Secret base
+	"UST-165E":  "UST-165B",
+	"UST-165D":  "UST-165A",
+	"UST-165B":  "UST-165C",
+	"UST-165C":  "UST-165D",
+	"UST-165A":  "UST-165E",
+	"FUST-165E": "FUST-165B",
+	"FUST-165D": "FUST-165A",
+	"FUST-165B": "FUST-165C",
+	"FUST-165C": "FUST-165D",
+	"FUST-165A": "FUST-165E",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
