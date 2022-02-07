@@ -492,6 +492,7 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 	// Update with new info
 	dup.Name = name
 	dup.Code = code + tag
+	dup.ParentCode = code
 	dup.ReleaseDate = date
 
 	// Copy card information
