@@ -127,6 +127,10 @@ func skipSet(set *mtgjson.Set) bool {
 		strings.Contains(set.Name, "Heroes of the Realm") {
 		return true
 	}
+	// In case of incorrect data present in the file
+	if len(set.Cards)+len(set.Tokens) == 0 {
+		return true
+	}
 	return false
 }
 
