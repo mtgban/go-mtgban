@@ -31,8 +31,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isPrerelease():
 			switch set.Name {
+			// Sets that have prerelease cards mixed in
 			case "Open the Helvault",
-				"Promotional Planes":
+				"Promotional Planes",
+				"Innistrad: Double Feature":
 			case "Duels of the Planeswalkers 2012 Promos",
 				"Grand Prix Promos",
 				"Pro Tour Promos",
