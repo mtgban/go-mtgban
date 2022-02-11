@@ -26,6 +26,10 @@ var EditionTable = map[string]string{
 	"Unlimited":            "Unlimited Edition",
 	"Summer Magic (Edgar)": "Summer Magic / Edgar",
 
+	// Double Feature
+	"Innistrad: Double Feature - Crimson Vow":   "Innistrad: Double Feature",
+	"Innistrad: Double Feature - Midnight Hunt": "Innistrad: Double Feature",
+
 	// Adventures in the Forgotten Realms Ampersand
 	"AFR Ampersand Promos": "Adventures in the Forgotten Realms Promos",
 	"Ampersand Foil":       "Adventures in the Forgotten Realms Promos",
