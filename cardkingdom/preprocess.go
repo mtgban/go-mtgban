@@ -88,6 +88,11 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 				setCode = setCode[1:]
 			}
 
+			// Foil-Etched sets
+			if len(setCode) > 3 && setCode[0] == 'E' {
+				setCode = setCode[1:]
+			}
+
 			// Prerelease cards in foreign language get mixed up in the normal set
 			if number == "666" {
 				setCode = "Prerelease"
@@ -117,6 +122,11 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 				setCode = "P" + setCode
 			}
 			number = number[:len(number)-1]
+		}
+
+		// Full rename due to differen set codes
+		if strings.HasPrefix(setCode, "PWP2") {
+			setCode = strings.Replace(setCode, "PWP2", "PW2", 1)
 		}
 	}
 
@@ -148,7 +158,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	}
 
 	// Preserve Etched property in case variation became overwritten with the number
-	if strings.Contains(card.Variation, "Etched") {
+	if strings.Contains(card.Variation, "Etched") && !strings.Contains(variation, "Etched") {
 		variation += " Etched"
 	}
 
