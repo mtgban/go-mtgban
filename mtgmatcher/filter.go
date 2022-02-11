@@ -285,7 +285,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isMagicFest():
 			// Some providers use GP2018 instead of MF2019
-			if (maybeYear == "" || maybeYear == "2018") && inCard.isBasicLand() {
+			if maybeYear == "2018" && inCard.isBasicLand() {
 				maybeYear = "2019"
 			}
 			switch {

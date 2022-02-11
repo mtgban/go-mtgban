@@ -274,7 +274,6 @@ var EditionTable = map[string]string{
 	"Grand Prix Foil":                    "Grand Prix Promos",
 	"Grand Prix Promo":                   "Grand Prix Promos",
 	"Grand Prix 2018":                    "MagicFest 2019",
-	"Commander Promo":                    "MagicFest 2019",
 	"MagicFest 2019":                     "MagicFest 2019",
 	"MagicFest 2020":                     "MagicFest 2020",
 	"MagicFest Foil - 2020":              "MagicFest 2020",

@@ -453,7 +453,8 @@ func (c *Card) isRewards() bool {
 }
 
 func (c *Card) isMagicFest() bool {
-	return c.Contains("Magic Fest")
+	return c.Contains("Magic Fest") ||
+		c.Variation == "Commander Promo" // ck
 }
 
 func (c *Card) isBaB() bool {
