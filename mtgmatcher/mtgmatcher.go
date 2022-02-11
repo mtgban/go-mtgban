@@ -918,6 +918,32 @@ func adjustEdition(inCard *Card) {
 					}
 				}
 			}
+		case "Jin-Gitaxias, Progress Tyrant":
+			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
+				num := ExtractNumber(inCard.Variation)
+				if num == "" {
+					if Contains(inCard.Variation, "Phyrexian") {
+						variation = "371"
+					} else if inCard.isShowcase() {
+						variation = "307"
+					}
+				}
+			}
+		case "Tamiyo, Compleated Sage":
+			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
+				num := ExtractNumber(inCard.Variation)
+				if num == "" {
+					if Contains(inCard.Variation, "Phyrexian") {
+						if inCard.isEtched() {
+							variation = "428"
+						} else {
+							variation = "308"
+						}
+					} else if inCard.isShowcase() {
+						variation = "306"
+					}
+				}
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps

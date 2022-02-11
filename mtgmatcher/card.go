@@ -824,6 +824,7 @@ func ParseCommanderEdition(edition, variant string) string {
 		"Forgotten":       "Forgotten Realms Commander",
 		"Midnight":        "Midnight Hunt Commander",
 		"Crimson Vow":     "Crimson Vow Commander",
+		"Neon Dynasty":    "Neon Dynasty Commander",
 	}
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {

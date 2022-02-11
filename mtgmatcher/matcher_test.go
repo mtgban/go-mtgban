@@ -3120,6 +3120,35 @@ var MatchTests = []MatchTest{
 			Edition:   "Magic Player Rewards",
 		},
 	},
+
+	// NEO etched
+	MatchTest{
+		Id:   "841679dc-4fad-59e6-a1f6-f736a3be4b2f",
+		Desc: "separate_etched_variant_normal",
+		In: Card{
+			Name:    "Blade of the Oni",
+			Edition: "Kamigawa: Neon Dynasty",
+		},
+	},
+	MatchTest{
+		Id:   "a319e2b9-8155-5eb2-9f29-c4c6356a9581_f",
+		Desc: "separate_etched_variant_showcase",
+		In: Card{
+			Name:      "Blade of the Oni",
+			Variation: "Showcase",
+			Edition:   "Kamigawa: Neon Dynasty Variants",
+			Foil:      true,
+		},
+	},
+	MatchTest{
+		Id:   "e885d0d4-7a5c-5f81-8621-64115ec6b475",
+		Desc: "separate_etched_variant_etched",
+		In: Card{
+			Name:      "Blade of the Oni",
+			Variation: "Foil-Etched",
+			Edition:   "Kamigawa: Neon Dynasty Variants",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

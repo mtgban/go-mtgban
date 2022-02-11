@@ -751,7 +751,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				} else {
-					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+					// NEO has showcase cards that aren't marked as such when they are Etched
+					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) && !inCard.isEtched() {
 						continue
 					}
 				}
@@ -976,6 +977,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isWPNGateway() && !card.HasPromoType(mtgjson.PromoTypeWPN) {
 					continue
 				} else if !inCard.isWPNGateway() && card.HasFinish(mtgjson.PromoTypeWPN) {
+					continue
+				}
+			// Similar to the 10E case
+			case "Kamigawa: Neon Dynasty":
+				if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
+					continue
+				} else if !inCard.isEtched() && card.HasFinish(mtgjson.FinishEtched) {
 					continue
 				}
 			default:
