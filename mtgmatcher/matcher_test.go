@@ -3149,6 +3149,22 @@ var MatchTests = []MatchTest{
 			Edition:   "Kamigawa: Neon Dynasty Variants",
 		},
 	},
+	MatchTest{
+		Id:   "e97bac27-b2ee-5d13-acc3-187ead365879",
+		Desc: "duplicate_name_nec",
+		In: Card{
+			Name:    "Unquenchable Fury",
+			Edition: "NEC",
+		},
+	},
+	MatchTest{
+		Id:   "b515bbb3-e4b8-5d29-a661-0851e58e64d2",
+		Desc: "duplicate_name_tok",
+		In: Card{
+			Name:    "Unquenchable Fury",
+			Edition: "TBTH",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

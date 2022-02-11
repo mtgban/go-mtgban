@@ -159,6 +159,11 @@ func Match(inCard *Card) (cardId string, err error) {
 	adjustEdition(inCard)
 	if ogName != inCard.Name {
 		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
+		// If renamed, reload metadata in case of duplicate names
+		if inCard.Name == "Unquenchable Fury Token" {
+			entry = backend.Cards[Normalize(inCard.Name)]
+			inCard.Name = entry.Name
+		}
 	}
 	if ogEdition != inCard.Edition {
 		logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
@@ -862,6 +867,10 @@ func adjustEdition(inCard *Card) {
 		case "Evolving Wilds":
 			if inCard.isGenericPromo() {
 				edition = backend.Sets["PRIX"].Name
+			}
+		case "Unquenchable Fury":
+			if inCard.Edition == "Battle the Horde" {
+				inCard.Name += " Token"
 			}
 		case "Teferi, Master of Time":
 			num := ExtractNumber(variation)

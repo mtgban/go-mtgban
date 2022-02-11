@@ -198,6 +198,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 						continue
 					}
 				}
+			case "TFTH", "TBTH", "TDAG":
+				// Override all to tokens so that duplicates get named differently
+				card.Layout = "token"
 			default:
 				// Override any "double_faced_token" entries
 				if strings.Contains(card.Layout, "token") {
