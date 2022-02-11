@@ -93,6 +93,7 @@ var EditionTable = map[string]string{
 	"SLD Stained Glass Promo": "Secret Lair Drop",
 	"Stained Glass":           "Secret Lair Drop",
 	"Stained Glass Art":       "Secret Lair Drop",
+	"Stained Glass Promo":     "Secret Lair Drop",
 
 	// Ponies
 	"Ponies: The Galloping": "Ponies: The Galloping",

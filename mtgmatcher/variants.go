@@ -2757,6 +2757,8 @@ var mb1plistVariants = map[string]map[string]string{
 		"magicfest art":  "142",
 		"masters 25 art": "429",
 		"1":              "142",
+
+		"rna magicfest promo": "142",
 	},
 	"Man-o'-War": map[string]string{
 		"a25":        "421",
@@ -3403,6 +3405,34 @@ var sldVariants = map[string]map[string]string{
 		"v.3": "150",
 		"v.4": "151",
 		"v.5": "152",
+	},
+	"Persistent Petitioners": {
+		"secret lair":    "597",
+		"blueprint card": "597",
+		"birds art":      "598",
+	},
+	"Mulldrifter": {
+		"secret lair: extra life 2021 magali villeneuve age 41": "373",
+		"secret lair: extra life 2021 aliya age 5 1/2":          "374",
+	},
+	"Craterhoof Behemoth": {
+		"secret lair: extra life 2021 lars grant-west age 52": "375",
+		"secret lair: extra life 2021 kira age 5 1/2":         "376",
+	},
+	"Metalwork Colossus": {
+		"secret lair: extra life 2021 chris rahn age 36": "377",
+		"secret lair: extra life 2021 hyan tran age 6":   "378",
+	},
+	"Mother of Runes": {
+		"secret lair: mother's day 2021": "298",
+	},
+	"Spellskite": {
+		"secret lair: series thomas m. baxa":                "277",
+		"sketch variant secret lair: series thomas m. baxa": "587",
+	},
+	"Sphere of Safety": {
+		"secret lair: series johannes voss":                "280",
+		"sketch variant secret lair: series johannes voss": "588",
 	},
 }
 
