@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"sync"
 	"time"
 
@@ -205,6 +206,14 @@ func (ct *CardtraderMarket) scrape() error {
 			ct.printf("%s", err.Error())
 			continue
 		}
+	}
+
+	// Sort to keep NM-SP-MP-HP-PO order
+	conds := map[string]int{"NM": 0, "SP": 1, "MP": 2, "HP": 3, "PO": 4}
+	for cardId := range ct.inventory {
+		sort.Slice(ct.inventory[cardId], func(i, j int) bool {
+			return conds[ct.inventory[cardId][i].Conditions] < conds[ct.inventory[cardId][j].Conditions]
+		})
 	}
 
 	ct.InventoryDate = time.Now()
