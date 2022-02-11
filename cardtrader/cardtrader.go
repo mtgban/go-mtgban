@@ -31,8 +31,7 @@ type Cardtrader struct {
 	// Custom map of ids to consider
 	FilterId map[string]string
 
-	loggedClient *CTLoggedClient
-	client       *CTClient
+	client *CTClient
 }
 
 func NewScraper(token string) (*Cardtrader, error) {

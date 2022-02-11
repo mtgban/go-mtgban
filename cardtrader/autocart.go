@@ -162,7 +162,7 @@ func (ct *CTLoggedClient) GetItemsForOrder(orderId int) ([]OrderItem, error) {
 	return purchase.OrderItems, nil
 }
 
-func (ct *Cardtrader) Activate(user, pass string) error {
+func (ct *CardtraderMarket) Activate(user, pass string) error {
 	client, err := NewCTLoggedClient(user, pass)
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func (ct *Cardtrader) Activate(user, pass string) error {
 	return nil
 }
 
-func (ct *Cardtrader) Add(entry mtgban.InventoryEntry) error {
+func (ct *CardtraderMarket) Add(entry mtgban.InventoryEntry) error {
 	id, err := strconv.Atoi(entry.InstanceId)
 	if err != nil {
 		return err
