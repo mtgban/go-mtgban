@@ -419,7 +419,8 @@ func (c *Card) isWPNGateway() bool {
 		c.Contains("Gateway") ||
 		Contains(c.Variation, "Wizards Play Network") ||
 		c.Variation == "Commander Party" || // scg
-		c.Variation == "Euro Promo" // cfb
+		c.Variation == "Euro Promo" || // cfb
+		Contains(c.Variation, "Moonlit Lands") // ck
 }
 
 func (c *Card) isIDWMagazineBook() bool {

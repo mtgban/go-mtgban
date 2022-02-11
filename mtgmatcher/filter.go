@@ -969,6 +969,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !(Contains(inCard.Variation, "Retro") || inCard.beyondBaseSet) && !(cn <= 380 || cn > 441) {
 					continue
 				}
+			// Due to the WPN lands
+			case "Innistrad: Crimson Vow":
+				if inCard.isWPNGateway() && !card.HasPromoType(mtgjson.PromoTypeWPN) {
+					continue
+				} else if !inCard.isWPNGateway() && card.HasFinish(mtgjson.PromoTypeWPN) {
+					continue
+				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant

@@ -108,6 +108,8 @@ const (
 	PromoTypeGodzilla   = "godzillaseries"
 	PromoTypeDracula    = "draculaseries"
 	PromoTypePlayPromo  = "playpromo"
+	PromoTypeWPN        = "wizardsplaynetwork"
+	PromoTypeGateway    = "gateway"
 
 	PromoTypeJudgeGift     = "judgegift"
 	PromoTypeArenaLeague   = "arenaleague"
