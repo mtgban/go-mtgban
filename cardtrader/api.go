@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -21,6 +22,7 @@ const (
 	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
 
 	ctProductsExport = "https://api.cardtrader.com/api/v2/products/export"
+	ctAddProductCart = "https://api.cardtrader.com/api/v2/cart/add"
 
 	MaxBulkUploadItems = 450
 
@@ -335,6 +337,89 @@ func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]st
 	}
 
 	return jobs, nil
+}
+
+type ctProductCart struct {
+	ProductId int  `json:"product_id"`
+	Quantity  int  `json:"quantity"`
+	ViaZero   bool `json:"via_cardtrader_zero"`
+}
+
+type CTPrice struct {
+	Cents       int    `json:"cents"`
+	CurrencyIso string `json:"currency_iso"`
+}
+
+type CTCartResponse struct {
+	ID       int `json:"id"`
+	Subcarts []struct {
+		ID     int `json:"id"`
+		Seller struct {
+			ID       int    `json:"id"`
+			Username string `json:"username"`
+		} `json:"seller"`
+		CartItems []struct {
+			Quantity      int    `json:"quantity"`
+			PriceCents    int    `json:"price_cents"`
+			PriceCurrency string `json:"price_currency"`
+			Product       struct {
+				ID     int    `json:"id"`
+				NameEn string `json:"name_en"`
+			} `json:"product"`
+		} `json:"cart_items"`
+	} `json:"subcarts"`
+
+	Subtotal                         CTPrice `json:"subtotal"`
+	SafeguardFeeAmount               CTPrice `json:"safeguard_fee_amount"`
+	CtZeroFeeAmount                  CTPrice `json:"ct_zero_fee_amount"`
+	PaymentMethodFeePercentageAmount CTPrice `json:"payment_method_fee_percentage_amount"`
+	PaymentMethodFeeFixedAmount      CTPrice `json:"payment_method_fee_fixed_amount"`
+	ShippingCost                     CTPrice `json:"shipping_cost"`
+
+	ErrorCode string `json:"error_code"`
+	Errors    struct {
+		ProductID []string `json:"product_id"`
+	} `json:"errors"`
+	Extra struct {
+		Message string `json:"message"`
+	} `json:"extra"`
+	RequestID string `json:"request_id"`
+}
+
+func (ct *CTAuthClient) AddProductToCart(productId, quantity int, zero bool) (*CTCartResponse, error) {
+	product := ctProductCart{
+		ProductId: productId,
+		Quantity:  quantity,
+		ViaZero:   zero,
+	}
+
+	bodyBytes, err := json.Marshal(&product)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ct.client.Post(ctAddProductCart, "application/json", bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var products CTCartResponse
+	err = json.Unmarshal(data, &products)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal error %s, got: %s", err.Error(), string(data))
+	}
+
+	if products.ErrorCode != "" {
+		return nil, errors.New(products.Extra.Message)
+	}
+
+	return &products, nil
 }
 
 func NewCTClient() *CTClient {
