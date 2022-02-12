@@ -2459,6 +2459,15 @@ var khmVariants = map[string]map[string]string{
 	},
 }
 
+var neoVariants = map[string]map[string]string{
+	"Hidetsugu, Devouring Chaos": {
+		"Neon Ink Red":                "429",
+		"Neon Ink Green":              "430",
+		"Neon Ink Blue":               "431",
+		"Neon Ink Yellow WPN Premium": "432",
+	},
+}
+
 var l13Variants = map[string]map[string]string{
 	"Soldier": map[string]string{
 		"gatecrash": "1",
@@ -4094,6 +4103,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Intl. Collectors’ Edition":           oldLandVariants,
 	"Introductory Two-Player Set":         itpVariants,
 	"Kaldheim":                            khmVariants,
+	"Kamigawa: Neon Dynasty":              neoVariants,
 	"League Tokens 2013":                  l13Variants,
 	"Limited Edition Alpha":               leaVariants,
 	"Limited Edition Beta":                oldLandVariants,
