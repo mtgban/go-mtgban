@@ -464,8 +464,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 							variant = "Prerelase"
 						}
 					case "Dominaria Promos":
-						if cardName == "Steel Leaf Champion" && number == "182" {
-							variant = number
+						if cardName == "Steel Leaf Champion" && bp.Id == 1833 {
+							variant = "182"
 						}
 					}
 				}
