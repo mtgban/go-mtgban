@@ -423,6 +423,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 						edition = "Core Set 2020"
 					}
 				}
+			case "D&D: Adventures in the Forgotten Realms Promos":
+				// Missing ampersand
+				variant = "Promo Pack"
+				edition = "PAFR"
 			case "Ikoria: Lair of Behemoths Promos":
 				if cardName == "Ketria Triome" {
 					number = "250"
