@@ -18,6 +18,9 @@ type CardtraderMarket struct {
 	MaxConcurrency int
 	ShareCode      string
 
+	// Keep same-conditions entries
+	KeepDuplicates bool
+
 	exchangeRate float64
 	client       *CTAuthClient
 	loggedClient *CTLoggedClient
@@ -193,7 +196,7 @@ func (ct *CardtraderMarket) scrape() error {
 				break
 			}
 		}
-		if skip {
+		if skip && !ct.KeepDuplicates {
 			continue
 		}
 
