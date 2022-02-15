@@ -510,6 +510,13 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "d8a65e0b-37e8-50b3-99b5-b9460552e822",
+		Desc: "binderpos_syntax_bab",
+		In: Card{
+			Name: "Champion of the Perished [BABP]",
+		},
+	},
+	MatchTest{
 		Id:   "11727081-4070-56db-8162-b970dd7f94bc_f",
 		Desc: "tcgcollection_syntax",
 		In: Card{
