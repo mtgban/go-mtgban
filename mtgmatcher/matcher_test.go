@@ -525,6 +525,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "5e255230-447d-5262-9006-d600e9c661a3_f",
+		Desc: "crystalcommerce_syntax_dashes",
+		In: Card{
+			Name:    "Lotus Cobra - Showcase - Foil",
+			Edition: "ZNR",
+		},
+	},
+	MatchTest{
 		Id:   "4d3e619d-0b1d-5aab-89f9-fbdbed01bdda",
 		Desc: "tcgcollection_syntax_promopack",
 		In: Card{

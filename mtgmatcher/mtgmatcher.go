@@ -124,6 +124,16 @@ func Match(inCard *Card) (cardId string, err error) {
 			}
 		}
 	}
+	if strings.Contains(inCard.Name, " - ") {
+		vars := strings.Split(inCard.Name, " - ")
+		if len(vars) > 1 {
+			inCard.Name = vars[0]
+			inCard.addToVariant(strings.Join(vars[1:], " "))
+			if Contains(inCard.Variation, "foil") {
+				inCard.Foil = true
+			}
+		}
+	}
 
 	// Skip unsupported sets
 	if inCard.isUnsupported() {
