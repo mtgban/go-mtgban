@@ -192,7 +192,6 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 				bl: mtgban.BuylistEntry{
 					Conditions: cond,
 					BuyPrice:   price,
-					TradePrice: price,
 					Quantity:   0,
 					PriceRatio: priceRatio,
 					URL:        "https://store.tcgplayer.com/buylist",
