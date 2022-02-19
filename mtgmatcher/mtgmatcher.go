@@ -942,9 +942,13 @@ func adjustEdition(inCard *Card) {
 				num := ExtractNumber(inCard.Variation)
 				if num == "" {
 					if Contains(inCard.Variation, "Phyrexian") {
-						variation = "371"
+						if inCard.isEtched() {
+							variation = "427"
+						} else {
+							variation = "307"
+						}
 					} else if inCard.isShowcase() {
-						variation = "307"
+						variation = "371"
 					}
 				}
 			}
