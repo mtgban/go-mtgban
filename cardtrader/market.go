@@ -205,7 +205,12 @@ func (ct *CardtraderMarket) scrape() error {
 		if result.invEntry.Bundle {
 			result.invEntry.SellerName = "Card Trader Zero"
 		}
-		err := ct.inventory.Add(result.cardId, result.invEntry)
+		var err error
+		if ct.KeepDuplicates {
+			err = ct.inventory.AddRelaxed(result.cardId, result.invEntry)
+		} else {
+			err = ct.inventory.Add(result.cardId, result.invEntry)
+		}
 		if err != nil {
 			ct.printf("%s", err.Error())
 			continue
