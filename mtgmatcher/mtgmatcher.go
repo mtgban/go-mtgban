@@ -608,6 +608,16 @@ func adjustEdition(inCard *Card) {
 		ed := ParseCommanderEdition(edition, variation)
 		if ed != "" {
 			edition = ed
+			// These sets have display commanders in the same set
+			if edition == "Neon Dynasty Commander Display Commanders" {
+				edition = strings.TrimRight(edition, " Display Commanders")
+				switch inCard.Name {
+				case "Chishiro, the Shattered Blade":
+					variation = "77"
+				case "Kotori, Pilot Prodigy":
+					variation = "78"
+				}
+			}
 		}
 	case strings.Contains(variation, "Ravnica Weekend") ||
 		(strings.Contains(edition, "Weekend") && !Contains(edition, "Planeswalker")):
