@@ -256,6 +256,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "Secret Lair Drop Series":
 		if cardName == "Thalia, Guardian of Thraben" && variant == "" {
 			variant = "37"
+		} else if cardName == "Plains // Battlefield Forge" {
+			cardName = "Battlefield Forge"
+			variant = "669"
 		} else {
 			ogVariant := variant
 			variant = product.getNum()
