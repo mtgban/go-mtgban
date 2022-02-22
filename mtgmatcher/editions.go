@@ -396,6 +396,7 @@ var EditionTable = map[string]string{
 
 	// Various
 	"Battle Royale":            "Battle Royale Box Set",
+	"Battle the Horde":         "Battle the Horde",
 	"Conspiracy: 2014 Edition": "Conspiracy",
 	"Introductory 4th Edition": "Introductory Two-Player Set",
 	"PS3 Promo":                "Duels of the Planeswalkers 2012 Promos",
