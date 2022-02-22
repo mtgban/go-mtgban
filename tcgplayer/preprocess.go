@@ -41,6 +41,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 
 	edition := editions[product.GroupId]
 
+	if cardName == "Bruna, Light of Alabaster" && variant == "Commander 2018" {
+		return nil, errors.New("does not exist")
+	}
+
 	ogVariant := variant
 	switch edition {
 	case "Renaissance":
