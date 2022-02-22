@@ -1863,6 +1863,14 @@ var MatchTests = []MatchTest{
 			Edition: "buy-a-box",
 		},
 	},
+	MatchTest{
+		Id:   "8d93fe3c-e3d1-52e0-8cc5-1dd3c8b01c01",
+		Desc: "bab_neo",
+		In: Card{
+			Name:    "Satoru Umezawa",
+			Edition: "Buy-A-Box Promos",
+		},
+	},
 
 	// Bundle promo
 	MatchTest{

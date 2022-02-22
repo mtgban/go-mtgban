@@ -722,7 +722,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if card.BorderColor != mtgjson.BorderColorBorderless {
 						continue
 					}
-				} else {
+					// BaB are allowed to have borderless
+				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
 					// IKO may have showcase cards which happen to be borderless
 					// or reskinned ones. Also all cards from STA are borderless,
 					// so they are never tagged as such.
