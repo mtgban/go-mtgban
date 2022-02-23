@@ -1,7 +1,7 @@
 package mtgmatcher
 
 var allVariants = map[string]map[string]string{
-	"Aesthir Glider": map[string]string{
+	"Aesthir Glider": {
 		"clouds":                "116a",
 		"moon":                  "116b",
 		"aesthirglider":         "116a",
@@ -13,7 +13,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                   "116a",
 		"v.2":                   "116b",
 	},
-	"Agent of Stromgald": map[string]string{
+	"Agent of Stromgald": {
 		"holding staff":            "64a",
 		"arms crossed":             "64b",
 		"agentofstromgald":         "64a",
@@ -27,7 +27,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                      "64b",
 		"95":                       "64b",
 	},
-	"Arcane Denial": map[string]string{
+	"Arcane Denial": {
 		"1":            "22a",
 		"2":            "22b",
 		"axe":          "22a",
@@ -37,7 +37,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":          "22a",
 		"v.2":          "22b",
 	},
-	"Astrolabe": map[string]string{
+	"Astrolabe": {
 		"globe/windows":                "118a",
 		"map background":               "118b",
 		"astrolabe":                    "118a",
@@ -53,7 +53,7 @@ var allVariants = map[string]map[string]string{
 		"up close":                     "118b",
 		"160":                          "118b",
 	},
-	"Awesome Presence": map[string]string{
+	"Awesome Presence": {
 		"arms spread":                        "23a",
 		"man being chased":                   "23b",
 		"awsomepresence":                     "23a",
@@ -65,7 +65,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                                "23a",
 		"v.2":                                "23b",
 	},
-	"Balduvian War-Makers": map[string]string{
+	"Balduvian War-Makers": {
 		"landscape in background": "66a",
 		"green background":        "66b",
 		"balduvianwar":            "66a",
@@ -79,7 +79,7 @@ var allVariants = map[string]map[string]string{
 		"gen. varchild flavor":    "66a",
 		"98":                      "66b",
 	},
-	"Benthic Explorers": map[string]string{
+	"Benthic Explorers": {
 		"sitting on rocks":        "24a",
 		"swimming":                "24b",
 		"benthicexplorers":        "24a",
@@ -95,7 +95,7 @@ var allVariants = map[string]map[string]string{
 		"profile":                 "24b",
 		"37":                      "24b",
 	},
-	"Bestial Fury": map[string]string{
+	"Bestial Fury": {
 		"facing left":        "67a",
 		"facing front":       "67b",
 		"bestialfury":        "67a",
@@ -106,7 +106,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                "67b",
 		"100":                "67b",
 	},
-	"Carrier Pigeons": map[string]string{
+	"Carrier Pigeons": {
 		"trees":           "1a",
 		"hand":            "1b",
 		"carrierpigeons":  "1a",
@@ -122,7 +122,7 @@ var allVariants = map[string]map[string]string{
 		"sky":             "1b",
 		"126":             "1a",
 	},
-	"Casting of Bones": map[string]string{
+	"Casting of Bones": {
 		"finger ornament":       "44a",
 		"hooded figure":         "44b",
 		"castingofbones":        "44a",
@@ -135,7 +135,7 @@ var allVariants = map[string]map[string]string{
 		"close-up":              "44a",
 		"3":                     "44a",
 	},
-	"Deadly Insect": map[string]string{
+	"Deadly Insect": {
 		"bird":              "86a",
 		"elf":               "86b",
 		"hummingbird":       "86a",
@@ -147,7 +147,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":               "86a",
 		"v.2":               "86b",
 	},
-	"Elvish Ranger": map[string]string{
+	"Elvish Ranger": {
 		"female":       "88a",
 		"male":         "88b",
 		"elvishranger": "88a",
@@ -157,7 +157,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":          "88a",
 		"v.1":          "88b",
 	},
-	"Enslaved Scout": map[string]string{
+	"Enslaved Scout": {
 		"horses":          "71a",
 		"crouching":       "71b",
 		"enslavedscout":   "71a",
@@ -169,7 +169,7 @@ var allVariants = map[string]map[string]string{
 		"solitary goblin": "71b",
 		"105":             "71b",
 	},
-	"Errand of Duty": map[string]string{
+	"Errand of Duty": {
 		"page holding sword":        "2a",
 		"with horse":                "2b",
 		"errandofduty":              "2a",
@@ -183,7 +183,7 @@ var allVariants = map[string]map[string]string{
 		"holding sword":             "2a",
 		"128":                       "2b",
 	},
-	"False Demise": map[string]string{
+	"False Demise": {
 		"rocks":                         "27a",
 		"underwater":                    "27b",
 		"falsedemise":                   "27a",
@@ -194,7 +194,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                           "27a",
 		"v.1":                           "27b",
 	},
-	"Feast or Famine": map[string]string{
+	"Feast or Famine": {
 		"falling into pit":             "49a",
 		"knife":                        "49b",
 		"feastorfamine":                "49a",
@@ -204,7 +204,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                          "49a",
 		"v.1":                          "49b",
 	},
-	"Fevered Strength": map[string]string{
+	"Fevered Strength": {
 		"lifting rock":         "50a",
 		"foaming mouth":        "50b",
 		"feveredstrength":      "50a",
@@ -217,7 +217,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                  "50b",
 		"11":                   "50a",
 	},
-	"Foresight": map[string]string{
+	"Foresight": {
 		"white dress":                      "29a",
 		"mermaid with shiny shell":         "29b",
 		"foresight":                        "29a",
@@ -231,7 +231,7 @@ var allVariants = map[string]map[string]string{
 		"mermaid":                          "29b",
 		"44":                               "29b",
 	},
-	"Fyndhorn Druid": map[string]string{
+	"Fyndhorn Druid": {
 		"facing left":           "90a",
 		"facing right":          "90b",
 		"fyndhorndriud":         "90a",
@@ -243,7 +243,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                   "90b",
 		"71":                    "90a",
 	},
-	"Gift of the Woods": map[string]string{
+	"Gift of the Woods": {
 		"female":         "92a",
 		"male":           "92b",
 		"giftofthewoods": "92a",
@@ -255,7 +255,7 @@ var allVariants = map[string]map[string]string{
 		"girl/lynx":      "92a",
 		"74":             "92b",
 	},
-	"Gorilla Berserkers": map[string]string{
+	"Gorilla Berserkers": {
 		"attacking":         "93a",
 		"closed mouth":      "93b",
 		"roaring":           "93a",
@@ -268,7 +268,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":               "93b",
 		"76":                "93a",
 	},
-	"Gorilla Chieftain": map[string]string{
+	"Gorilla Chieftain": {
 		"2 gorillas":       "94a",
 		"4 gorillas":       "94b",
 		"gorillachieftain": "94a",
@@ -278,7 +278,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":              "94a",
 		"v.2":              "94b",
 	},
-	"Gorilla Shaman": map[string]string{
+	"Gorilla Shaman": {
 		"1":              "72a",
 		"2":              "72b",
 		"facing left":    "72a",
@@ -293,7 +293,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":            "72b",
 		"107":            "72a",
 	},
-	"Gorilla War Cry": map[string]string{
+	"Gorilla War Cry": {
 		"red club":                  "73a",
 		"colorful headdress":        "73b",
 		"gorillawarcry":             "73a",
@@ -306,7 +306,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                       "73b",
 		"109":                       "73b",
 	},
-	"Guerrilla Tactics": map[string]string{
+	"Guerrilla Tactics": {
 		"tripwire":         "74a",
 		"cliff":            "74b",
 		"az070":            "74a",
@@ -318,7 +318,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":              "74a",
 		"v.1":              "74b",
 	},
-	"Insidious Bookworms": map[string]string{
+	"Insidious Bookworms": {
 		"bookshelf":          "51a",
 		"single book":        "51b",
 		"insidiousbookworms": "51a",
@@ -333,7 +333,7 @@ var allVariants = map[string]map[string]string{
 		"single":             "51b",
 		"13":                 "51a",
 	},
-	"Kjeldoran Escort": map[string]string{
+	"Kjeldoran Escort": {
 		"green blanketed dog": "7a",
 		"red blanketed dog":   "7b",
 		"kjeldoranescort":     "7a",
@@ -348,7 +348,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                 "7b",
 		"134":                 "7b",
 	},
-	"Kjeldoran Pride": map[string]string{
+	"Kjeldoran Pride": {
 		"facing left":     "9a",
 		"facing right":    "9b",
 		"kjeldoranpride":  "9a",
@@ -362,7 +362,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":             "9b",
 		"bird":            "9a",
 	},
-	"Lat-Nam's Legacy": map[string]string{
+	"Lat-Nam's Legacy": {
 		"latnamslegacy":          "30a",
 		"az093":                  "30b",
 		"scroll":                 "30a",
@@ -374,7 +374,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                    "30a",
 		"v.2":                    "30b",
 	},
-	"Lim-Dûl's High Guard": map[string]string{
+	"Lim-Dûl's High Guard": {
 		"limdulhighguard": "55a",
 		"az095":           "55b",
 		"red armor":       "55a",
@@ -385,7 +385,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":             "55b",
 		"18":              "55b",
 	},
-	"Martyrdom": map[string]string{
+	"Martyrdom": {
 		"alive":                          "10a",
 		"dead":                           "10b",
 		"martyrdom":                      "10a",
@@ -397,7 +397,7 @@ var allVariants = map[string]map[string]string{
 		"wounded on ground":              "10b",
 		"139":                            "10a",
 	},
-	"Noble Steeds": map[string]string{
+	"Noble Steeds": {
 		"trees in forefront":  "11a",
 		"two steeds close up": "11b",
 		"noblesteeds":         "11a",
@@ -411,7 +411,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                 "11b",
 		"141":                 "11b",
 	},
-	"Phantasmal Fiend": map[string]string{
+	"Phantasmal Fiend": {
 		"close-up":            "57a",
 		"doorway":             "57b",
 		"phantasmalfiend":     "57a",
@@ -423,7 +423,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                 "57a",
 		"v.1":                 "57b",
 	},
-	"Phyrexian Boon": map[string]string{
+	"Phyrexian Boon": {
 		"female":           "58a",
 		"male":             "58b",
 		"phyrexianboon":    "58a",
@@ -435,7 +435,7 @@ var allVariants = map[string]map[string]string{
 		"man held aloft":   "58b",
 		"23":               "58a",
 	},
-	"Phyrexian War Beast": map[string]string{
+	"Phyrexian War Beast": {
 		"propeller left":    "127a",
 		"propeller right":   "127b",
 		"phyrexianwarbeast": "127a",
@@ -446,7 +446,7 @@ var allVariants = map[string]map[string]string{
 		"facing right":      "127b",
 		"170":               "127a",
 	},
-	"Reinforcements": map[string]string{
+	"Reinforcements": {
 		"fighting orc":     "12a",
 		"not fighting orc": "12b",
 		"reinforcements":   "12a",
@@ -460,7 +460,7 @@ var allVariants = map[string]map[string]string{
 		"line-up":          "12b",
 		"on the rocks":     "12b",
 	},
-	"Reprisal": map[string]string{
+	"Reprisal": {
 		"red dragon":    "13a",
 		"green shark":   "13b",
 		"az129":         "13a",
@@ -471,7 +471,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":           "13a",
 		"v.2":           "13b",
 	},
-	"Royal Herbalist": map[string]string{
+	"Royal Herbalist": {
 		"male":             "15a",
 		"female":           "15b",
 		"royalherbalist":   "15a",
@@ -483,7 +483,7 @@ var allVariants = map[string]map[string]string{
 		"man":              "15a",
 		"148":              "15b",
 	},
-	"Soldevi Adnate": map[string]string{
+	"Soldevi Adnate": {
 		"female":              "60a",
 		"male":                "60b",
 		"two eyes":            "60a",
@@ -497,7 +497,7 @@ var allVariants = map[string]map[string]string{
 		"woman":               "60a",
 		"26":                  "60b",
 	},
-	"Soldevi Heretic": map[string]string{
+	"Soldevi Heretic": {
 		"blue robe":                     "33a",
 		"red robe":                      "33b",
 		"soldeviheretic":                "33a",
@@ -508,7 +508,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                           "33b",
 		"50":                            "33b",
 	},
-	"Soldevi Sage": map[string]string{
+	"Soldevi Sage": {
 		"2 candles":              "34a",
 		"old woman sitting":      "34b",
 		"soldevisage":            "34a",
@@ -524,7 +524,7 @@ var allVariants = map[string]map[string]string{
 		"blue robe":              "34b",
 		"old woman":              "34b",
 	},
-	"Soldevi Sentry": map[string]string{
+	"Soldevi Sentry": {
 		"close up":               "132a",
 		"silver sentry fighting": "132b",
 		"soldevisentry":          "132a",
@@ -539,7 +539,7 @@ var allVariants = map[string]map[string]string{
 		"close-up":               "132a",
 		"176":                    "132b",
 	},
-	"Soldevi Steam Beast": map[string]string{
+	"Soldevi Steam Beast": {
 		"beast in mountains": "133a",
 		"purple sun":         "133b",
 		"soldevisteambeast":  "133a",
@@ -552,7 +552,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                "133b",
 		"178":                "133a",
 	},
-	"Stench of Decay": map[string]string{
+	"Stench of Decay": {
 		"red flower":         "61a",
 		"hand covering nose": "61b",
 		"stenchofdecay":      "61a",
@@ -564,7 +564,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                "61b",
 		"28":                 "61b",
 	},
-	"Storm Crow": map[string]string{
+	"Storm Crow": {
 		"flying right":      "36a",
 		"flying left":       "36b",
 		"stormcrow":         "36a",
@@ -574,7 +574,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":               "36a",
 		"v.2":               "36b",
 	},
-	"Storm Shaman": map[string]string{
+	"Storm Shaman": {
 		"male":                 "81a",
 		"female":               "81b",
 		"stormshaman":          "81a",
@@ -584,7 +584,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                  "81a",
 		"v.1":                  "81b",
 	},
-	"Swamp Mosquito": map[string]string{
+	"Swamp Mosquito": {
 		"black trees":             "63a",
 		"brown trees":             "63b",
 		"swampmosquito":           "63a",
@@ -595,7 +595,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":                     "63a",
 		"v.1":                     "63b",
 	},
-	"Taste of Paradise": map[string]string{
+	"Taste of Paradise": {
 		"woman alone":              "100a",
 		"two people":               "100b",
 		"tasteofparadise":          "100a",
@@ -611,7 +611,7 @@ var allVariants = map[string]map[string]string{
 		"ver. 1":                   "100a",
 		"ver. 2":                   "100b",
 	},
-	"Undergrowth": map[string]string{
+	"Undergrowth": {
 		"holding axe":    "102a",
 		"fox and badger": "102b",
 		"undergrowth":    "102a",
@@ -623,7 +623,7 @@ var allVariants = map[string]map[string]string{
 		"v.2":            "102b",
 		"88":             "102b",
 	},
-	"Varchild's Crusader": map[string]string{
+	"Varchild's Crusader": {
 		"brown horse and castle":     "82a",
 		"black horse and hollow log": "82b",
 		"varchildcrusader":           "82a",
@@ -639,7 +639,7 @@ var allVariants = map[string]map[string]string{
 		"woods":                      "82b",
 		"121":                        "82b",
 	},
-	"Veteran's Voice": map[string]string{
+	"Veteran's Voice": {
 		"over the shoulder":          "84b",
 		"side-by-side":               "84a",
 		"veteranvoice":               "84a",
@@ -655,7 +655,7 @@ var allVariants = map[string]map[string]string{
 		"facing off":                 "84a",
 		"124":                        "84b",
 	},
-	"Viscerid Armor": map[string]string{
+	"Viscerid Armor": {
 		"crashing wave":         "41a",
 		"humans in foreground":  "41b",
 		"visceridarmor":         "41a",
@@ -669,7 +669,7 @@ var allVariants = map[string]map[string]string{
 		"v.1":                   "41b",
 		"61":                    "41b",
 	},
-	"Whip Vine": map[string]string{
+	"Whip Vine": {
 		"3 vines":        "103a",
 		"ensnared bird":  "103b",
 		"whipvine":       "103a",
@@ -683,7 +683,7 @@ var allVariants = map[string]map[string]string{
 		"only plants":    "103a",
 		"90":             "103a",
 	},
-	"Wild Aesthir": map[string]string{
+	"Wild Aesthir": {
 		"green background":  "21a",
 		"blue mountains":    "21b",
 		"wildaethir":        "21a",
@@ -698,7 +698,7 @@ var allVariants = map[string]map[string]string{
 		"lightning strike":  "21a",
 		"155":               "21a",
 	},
-	"Yavimaya Ancients": map[string]string{
+	"Yavimaya Ancients": {
 		"trees":            "104a",
 		"rearing horse":    "104b",
 		"yavimayaancients": "104a",
@@ -714,7 +714,7 @@ var allVariants = map[string]map[string]string{
 }
 
 var athVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":        "84",
 		"b":        "85",
 		"arena":    "84",
@@ -724,7 +724,7 @@ var athVariants = map[string]map[string]string{
 
 		"portal second age": "85",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":                     "82",
 		"b":                     "83",
 		"arabian nights":        "82",
@@ -734,7 +734,7 @@ var athVariants = map[string]map[string]string{
 		"v.1":                   "82",
 		"v.2":                   "83",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":                     "78",
 		"b":                     "79",
 		"mirage":                "78",
@@ -745,7 +745,7 @@ var athVariants = map[string]map[string]string{
 		"v.2":                   "79",
 		"portal 1":              "79",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a":                     "80",
 		"b":                     "81",
 		"ice age":               "80",
@@ -758,7 +758,7 @@ var athVariants = map[string]map[string]string{
 }
 
 var atqVariants = map[string]map[string]string{
-	"Mishra's Factory": map[string]string{
+	"Mishra's Factory": {
 		"aq044":                    "80a",
 		"aq045":                    "80b",
 		"atq-80c-mishra-s-factory": "80c",
@@ -795,7 +795,7 @@ var atqVariants = map[string]map[string]string{
 		"秋": "80c",
 		"冬": "80d",
 	},
-	"Strip Mine": map[string]string{
+	"Strip Mine": {
 		"atq-82a-strip-mine": "82a",
 		"atq-82b-strip-mine": "82b",
 		"atq-82c-strip-mine": "82c",
@@ -850,7 +850,7 @@ var atqVariants = map[string]map[string]string{
 
 		"horizon uneven stripes": "82d",
 	},
-	"Urza's Mine": map[string]string{
+	"Urza's Mine": {
 		"aq084": "83a",
 		"aq085": "83b",
 		"aq083": "83c",
@@ -886,7 +886,7 @@ var atqVariants = map[string]map[string]string{
 		"a pulley":     "83a",
 		"c bathyscape": "83c",
 	},
-	"Urza's Power Plant": map[string]string{
+	"Urza's Power Plant": {
 		"aq089": "84a",
 		"aq090": "84b",
 		"aq088": "84c",
@@ -922,7 +922,7 @@ var atqVariants = map[string]map[string]string{
 
 		"rock pot": "84d",
 	},
-	"Urza's Tower": map[string]string{
+	"Urza's Tower": {
 		"aq092": "85a",
 		"aq093": "85b",
 		"aq094": "85c",
@@ -954,7 +954,7 @@ var atqVariants = map[string]map[string]string{
 }
 
 var pal01Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"arena 2001 foil":           "1",
 		"arena 2002 foil":           "11",
 		"arena ia":                  "1",
@@ -980,27 +980,27 @@ var pal01Variants = map[string]map[string]string{
 }
 
 var palpVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"apac set (red pack)":   "1",
 		"apac set (blue pack)":  "6",
 		"apac set (clear pack)": "11",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"apac set (red pack)":   "2",
 		"apac set (blue pack)":  "7",
 		"apac set (clear pack)": "12",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"apac set (red pack)":   "3",
 		"apac set (blue pack)":  "8",
 		"apac set (clear pack)": "13",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"apac set (red pack)":   "4",
 		"apac set (blue pack)":  "9",
 		"apac set (clear pack)": "14",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"apac set (red pack)":   "5",
 		"apac set (blue pack)":  "10",
 		"apac set (clear pack)": "15",
@@ -1032,7 +1032,7 @@ var palpVariants = map[string]map[string]string{
 }
 
 var brbVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a": "103",
 		"b": "104",
 		"c": "109",
@@ -1052,7 +1052,7 @@ var brbVariants = map[string]map[string]string{
 		"8": "108",
 		"9": "109",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a": "112",
 		"b": "114",
 		"c": "113",
@@ -1064,7 +1064,7 @@ var brbVariants = map[string]map[string]string{
 		"4": "114",
 		"5": "113",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a": "118",
 		"b": "119",
 		"c": "115",
@@ -1084,7 +1084,7 @@ var brbVariants = map[string]map[string]string{
 		"8": "122",
 		"9": "123",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a": "127",
 		"b": "128",
 		"c": "130",
@@ -1104,7 +1104,7 @@ var brbVariants = map[string]map[string]string{
 		"8": "131",
 		"9": "132",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a": "133",
 		"b": "134",
 		"c": "136",
@@ -1117,7 +1117,7 @@ var brbVariants = map[string]map[string]string{
 }
 
 var chkVariants = map[string]map[string]string{
-	"Brothers Yamazaki": map[string]string{
+	"Brothers Yamazaki": {
 		"facing left":         "160a",
 		"facing right":        "160b",
 		"a":                   "160a",
@@ -1132,7 +1132,7 @@ var chkVariants = map[string]map[string]string{
 }
 
 var oldLandVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a": "300",
 		"b": "301",
 		"c": "302",
@@ -1169,7 +1169,7 @@ var oldLandVariants = map[string]map[string]string{
 		"path":  "301",
 		"eyes":  "302",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a": "291",
 		"b": "292",
 		"c": "293",
@@ -1206,7 +1206,7 @@ var oldLandVariants = map[string]map[string]string{
 		"green":  "292",
 		"blue":   "293",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a": "297",
 		"b": "298",
 		"c": "299",
@@ -1243,7 +1243,7 @@ var oldLandVariants = map[string]map[string]string{
 		"fog":   "298",
 		"dirt":  "299",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a": "288",
 		"b": "289",
 		"c": "290",
@@ -1280,7 +1280,7 @@ var oldLandVariants = map[string]map[string]string{
 		"trees":        "289",
 		"no mountains": "290",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a": "294",
 		"b": "295",
 		"c": "296",
@@ -1324,25 +1324,25 @@ var oldLandVariants = map[string]map[string]string{
 }
 
 var cm2Variants = map[string]map[string]string{
-	"Golgari Signet": map[string]string{
+	"Golgari Signet": {
 		"/it/info-prodotto/284/1214/259602/commander-anthology-2018-golgari-signet": "191",
 		"/it/info-prodotto/284/1214/259603/commander-anthology-2018-golgari-signet": "192",
 		"cm2v2": "191",
 		"cm2":   "192",
 	},
-	"Simic Signet": map[string]string{
+	"Simic Signet": {
 		"/it/info-prodotto/284/1214/259716/commander-anthology-2018-simic-signet": "215",
 		"/it/info-prodotto/284/1214/259717/commander-anthology-2018-simic-signet": "216",
 		"":   "215",
 		"v3": "216",
 	},
-	"Solemn Simulacrum": map[string]string{
+	"Solemn Simulacrum": {
 		"/it/info-prodotto/284/1214/259722/commander-anthology-2018-solemn-simulacrum": "218",
 		"/it/info-prodotto/284/1214/259723/commander-anthology-2018-solemn-simulacrum": "219",
 		".":       "218",
 		"__219v2": "219",
 	},
-	"Temple of the False God": map[string]string{
+	"Temple of the False God": {
 		"/it/info-prodotto/284/1214/259753/commander-anthology-2018-temple-of-the-false-god": "271",
 		"/it/info-prodotto/284/1214/259754/commander-anthology-2018-temple-of-the-false-god": "272",
 
@@ -1352,7 +1352,7 @@ var cm2Variants = map[string]map[string]string{
 }
 
 var chrVariants = map[string]map[string]string{
-	"Urza's Mine": map[string]string{
+	"Urza's Mine": {
 		"ch094": "114a",
 		"ch095": "114b",
 		"ch096": "114c",
@@ -1394,7 +1394,7 @@ var chrVariants = map[string]map[string]string{
 
 		"bathyscape": "114b",
 	},
-	"Urza's Power Plant": map[string]string{
+	"Urza's Power Plant": {
 		"ch098": "115a",
 		"ch099": "115b",
 		"ch101": "115c",
@@ -1435,7 +1435,7 @@ var chrVariants = map[string]map[string]string{
 		"version 3": "115c",
 		"version 1": "115d",
 	},
-	"Urza's Tower": map[string]string{
+	"Urza's Tower": {
 		"ch105": "116a",
 		"ch103": "116b",
 		"ch104": "116c",
@@ -1473,7 +1473,7 @@ var chrVariants = map[string]map[string]string{
 }
 
 var cn2Variants = map[string]map[string]string{
-	"Kaya, Ghost Assassin": map[string]string{
+	"Kaya, Ghost Assassin": {
 		"cn2075":               "75",
 		"kaya_ghost_assassin2": "222",
 	},
@@ -1482,13 +1482,13 @@ var cn2Variants = map[string]map[string]string{
 // Note that these may be different from the ALL printing,
 // since the suffices are printed on the card itself
 var dkmVariants = map[string]map[string]string{
-	"Guerrilla Tactics": map[string]string{
+	"Guerrilla Tactics": {
 		"man kneeling near tree": "13a",
 		"man falling off clif":   "13b",
 		"v.1":                    "13a",
 		"v.2":                    "13b",
 	},
-	"Lim-Dûl's High Guard": map[string]string{
+	"Lim-Dûl's High Guard": {
 		"2 swords":  "6a",
 		"red armor": "6b",
 		"v.1":       "6a",
@@ -1496,7 +1496,7 @@ var dkmVariants = map[string]map[string]string{
 		"ver. 1":    "6a",
 		"ver. 2":    "6b",
 	},
-	"Phantasmal Fiend": map[string]string{
+	"Phantasmal Fiend": {
 		"brick background": "8a",
 		"black background": "8b",
 		"v.1":              "8a",
@@ -1504,19 +1504,19 @@ var dkmVariants = map[string]map[string]string{
 		"full body":        "8a",
 		"head":             "8b",
 	},
-	"Phyrexian War Beast": map[string]string{
+	"Phyrexian War Beast": {
 		"facing right": "37a",
 		"facing left":  "37b",
 		"v.1":          "37a",
 		"v.2":          "37b",
 	},
-	"Storm Shaman": map[string]string{
+	"Storm Shaman": {
 		"red cloak":   "21a",
 		"green cloak": "21b",
 		"v.1":         "21a",
 		"v.2":         "21b",
 	},
-	"Yavimaya Ancients": map[string]string{
+	"Yavimaya Ancients": {
 		"trees":          "31a",
 		"rearing horse":  "31b",
 		"person in tree": "31a",
@@ -1524,38 +1524,38 @@ var dkmVariants = map[string]map[string]string{
 		"v.1":            "31a",
 		"v.2":            "31b",
 	},
-	"Icy Manipulator": map[string]string{
+	"Icy Manipulator": {
 		"v.1": "36★",
 		"v.2": "36",
 	},
-	"Incinerate": map[string]string{
+	"Incinerate": {
 		"v.1": "14★",
 		"v.2": "14",
 	},
 }
 
 var xm2Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"unglued": "381",
 		"v.1":     "381",
 		"v.2":     "382",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"unglued": "375",
 		"v.1":     "375",
 		"v.2":     "376",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"unglued": "379",
 		"v.1":     "379",
 		"v.2":     "380",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"unglued": "373",
 		"v.1":     "373",
 		"v.2":     "374",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"unglued": "377",
 		"v.1":     "377",
 		"v.2":     "378",
@@ -1563,7 +1563,7 @@ var xm2Variants = map[string]map[string]string{
 }
 
 var pelpVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"euro set 1": "1",
 		"euro set 2": "6",
 		"euro set 3": "11",
@@ -1571,7 +1571,7 @@ var pelpVariants = map[string]map[string]string{
 		"euro2":      "6",
 		"euro3":      "11",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"euro set 1": "2",
 		"euro set 2": "7",
 		"euro set 3": "12",
@@ -1579,7 +1579,7 @@ var pelpVariants = map[string]map[string]string{
 		"euro2":      "7",
 		"euro3":      "12",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"euro set 1": "3",
 		"euro set 2": "8",
 		"euro set 3": "13",
@@ -1587,7 +1587,7 @@ var pelpVariants = map[string]map[string]string{
 		"euro2":      "8",
 		"euro3":      "13",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"euro set 1": "4",
 		"euro set 2": "9",
 		"euro set 3": "14",
@@ -1595,7 +1595,7 @@ var pelpVariants = map[string]map[string]string{
 		"euro2":      "9",
 		"euro3":      "14",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"euro set 1": "5",
 		"euro set 2": "10",
 		"euro set 3": "15",
@@ -1606,13 +1606,13 @@ var pelpVariants = map[string]map[string]string{
 }
 
 var femVariants = map[string]map[string]string{
-	"Armor Thrull": map[string]string{
+	"Armor Thrull": {
 		"fe001": "33a",
 		"fe002": "33b",
 		"fe003": "33c",
 		"fe004": "33d",
 	},
-	"Basal Thrull": map[string]string{
+	"Basal Thrull": {
 		"fe005": "34a",
 		"fe006": "34b",
 		"fe007": "34c",
@@ -1620,7 +1620,7 @@ var femVariants = map[string]map[string]string{
 
 		"p. foglio": "34b",
 	},
-	"Brassclaw Orcs": map[string]string{
+	"Brassclaw Orcs": {
 		"fe100":                       "49a",
 		"fe101":                       "49b",
 		"fe102":                       "49c",
@@ -1638,58 +1638,58 @@ var femVariants = map[string]map[string]string{
 		"horned helm":                 "49c",
 		"claws":                       "49d",
 	},
-	"Combat Medic": map[string]string{
+	"Combat Medic": {
 		"fe133": "1a",
 		"fe134": "1b",
 		"fe135": "1c",
 		"fe136": "1d",
 	},
-	"Dwarven Soldier": map[string]string{
+	"Dwarven Soldier": {
 		"fe107":           "53a",
 		"fe108":           "53b",
 		"fe109":           "53c",
 		"douglas schuler": "53c",
 	},
-	"Elven Fortress": map[string]string{
+	"Elven Fortress": {
 		"fe067": "65a",
 		"fe068": "65b",
 		"fe069": "65c",
 		"fe070": "65d",
 	},
-	"Elvish Hunter": map[string]string{
+	"Elvish Hunter": {
 		"fe072": "67a",
 		"fe073": "67b",
 		"fe074": "67c",
 	},
-	"Elvish Scout": map[string]string{
+	"Elvish Scout": {
 		"fe075": "68a",
 		"fe076": "68b",
 		"fe077": "68c",
 	},
-	"Farrel's Zealot": map[string]string{
+	"Farrel's Zealot": {
 		"fe139": "3a",
 		"fe140": "3b",
 		"fe141": "3c",
 	},
-	"Goblin Chirurgeon": map[string]string{
+	"Goblin Chirurgeon": {
 		"fe110": "54a",
 		"fe111": "54b",
 		"fe112": "54c",
 	},
-	"Goblin Grenade": map[string]string{
+	"Goblin Grenade": {
 		"1":     "56b",
 		"2":     "56c",
 		"fe114": "56a",
 		"fe115": "56b",
 		"fe116": "56c",
 	},
-	"Goblin War Drums": map[string]string{
+	"Goblin War Drums": {
 		"fe118": "58a",
 		"fe119": "58b",
 		"fe120": "58c",
 		"fe121": "58d",
 	},
-	"High Tide": map[string]string{
+	"High Tide": {
 		"fe035":   "18a",
 		"fe036":   "18b",
 		"fe037":   "18c",
@@ -1700,19 +1700,19 @@ var femVariants = map[string]map[string]string{
 		"merfolk": "18b",
 		"coral":   "18c",
 	},
-	"Homarid": map[string]string{
+	"Homarid": {
 		"fe038": "19a",
 		"fe039": "19b",
 		"fe040": "19c",
 		"fe041": "19d",
 		"18c":   "19c",
 	},
-	"Homarid Warrior": map[string]string{
+	"Homarid Warrior": {
 		"fe044": "22a",
 		"fe045": "22b",
 		"fe046": "22c",
 	},
-	"Hymn to Tourach": map[string]string{
+	"Hymn to Tourach": {
 		"4":      "38a",
 		"1":      "38b",
 		"2":      "38c",
@@ -1726,60 +1726,60 @@ var femVariants = map[string]map[string]string{
 		"cloak":  "38c",
 		"table":  "38d",
 	},
-	"Icatian Infantry": map[string]string{
+	"Icatian Infantry": {
 		"fe144": "7a",
 		"fe145": "7b",
 		"fe146": "7c",
 		"fe147": "7d",
 	},
-	"Icatian Javelineers": map[string]string{
+	"Icatian Javelineers": {
 		"fe148": "8a",
 		"fe149": "8b",
 		"fe150": "8c",
 	},
-	"Icatian Moneychanger": map[string]string{
+	"Icatian Moneychanger": {
 		"fe152": "10a",
 		"fe153": "10b",
 		"fe154": "10c",
 	},
-	"Icatian Scout": map[string]string{
+	"Icatian Scout": {
 		"fe157": "13a",
 		"fe158": "13b",
 		"fe159": "13c",
 		"fe160": "13d",
 	},
-	"Initiates of the Ebon Hand": map[string]string{
+	"Initiates of the Ebon Hand": {
 		"fe016": "39a",
 		"fe017": "39b",
 		"fe018": "39c",
 	},
-	"Merseine": map[string]string{
+	"Merseine": {
 		"fe047": "23a",
 		"fe048": "23b",
 		"fe049": "23c",
 		"fe050": "23d",
 	},
-	"Mindstab Thrull": map[string]string{
+	"Mindstab Thrull": {
 		"fe019": "40a",
 		"fe020": "40b",
 		"fe021": "40c",
 	},
-	"Necrite": map[string]string{
+	"Necrite": {
 		"fe022": "41a",
 		"fe023": "41b",
 		"fe024": "41c",
 	},
-	"Night Soil": map[string]string{
+	"Night Soil": {
 		"fe080": "71a",
 		"fe081": "71b",
 		"fe082": "71c",
 	},
-	"Orcish Spy": map[string]string{
+	"Orcish Spy": {
 		"fe124": "61a",
 		"fe125": "61b",
 		"fe126": "61c",
 	},
-	"Orcish Veteran": map[string]string{
+	"Orcish Veteran": {
 		"fe127": "62a",
 		"fe128": "62b",
 		"fe129": "62c",
@@ -1787,7 +1787,7 @@ var femVariants = map[string]map[string]string{
 
 		"frazier": "62b",
 	},
-	"Order of the Ebon Hand": map[string]string{
+	"Order of the Ebon Hand": {
 		"fe025":                               "42a",
 		"fe026":                               "42b",
 		"fe027":                               "42c",
@@ -1798,7 +1798,7 @@ var femVariants = map[string]map[string]string{
 		"rush":                                "42b",
 		"spencer":                             "42c",
 	},
-	"Order of Leitbur": map[string]string{
+	"Order of Leitbur": {
 		"fe163":                         "16a",
 		"fe164":                         "16b",
 		"fe165":                         "16c",
@@ -1818,25 +1818,25 @@ var femVariants = map[string]map[string]string{
 		"woman": "16a",
 		"man":   "16b",
 	},
-	"Spore Cloud": map[string]string{
+	"Spore Cloud": {
 		"fe083": "72a",
 		"62b":   "72b",
 		"fe084": "72b",
 		"fe085": "72c",
 	},
-	"Thallid": map[string]string{
+	"Thallid": {
 		"fe087": "74a",
 		"fe088": "74b",
 		"fe089": "74c",
 		"fe090": "74d",
 	},
-	"Thorn Thallid": map[string]string{
+	"Thorn Thallid": {
 		"fe096": "80a",
 		"fe097": "80b",
 		"fe098": "80c",
 		"fe099": "80d",
 	},
-	"Tidal Flats": map[string]string{
+	"Tidal Flats": {
 		"fe054":                            "27a",
 		"fe055":                            "27b",
 		"fe056":                            "27c",
@@ -1851,13 +1851,13 @@ var femVariants = map[string]map[string]string{
 		"sky":                              "27b",
 		"earth":                            "27c",
 	},
-	"Vodalian Mage": map[string]string{
+	"Vodalian Mage": {
 		"poole": "30b",
 		"fe059": "30a",
 		"fe060": "30b",
 		"fe061": "30c",
 	},
-	"Vodalian Soldiers": map[string]string{
+	"Vodalian Soldiers": {
 		"fe062": "31a",
 		"fe063": "31b",
 		"fe064": "31c",
@@ -1866,7 +1866,7 @@ var femVariants = map[string]map[string]string{
 }
 
 var ed5Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":                             "446",
 		"c":                             "447",
 		"b":                             "448",
@@ -1884,7 +1884,7 @@ var ed5Variants = map[string]map[string]string{
 		"v.3":                           "448",
 		"v.4":                           "449",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a":               "434",
 		"d":               "435",
 		"c":               "436",
@@ -1902,7 +1902,7 @@ var ed5Variants = map[string]map[string]string{
 		"v.3":             "436",
 		"v.4":             "437",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":               "442",
 		"d":               "443",
 		"c":               "444",
@@ -1920,7 +1920,7 @@ var ed5Variants = map[string]map[string]string{
 		"v.3":             "444",
 		"v.4":             "445",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":                         "430",
 		"d":                         "431",
 		"b":                         "432",
@@ -1938,7 +1938,7 @@ var ed5Variants = map[string]map[string]string{
 		"v.3":                       "432",
 		"v.4":                       "433",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"d":                     "438",
 		"b":                     "439",
 		"a":                     "440",
@@ -1959,7 +1959,7 @@ var ed5Variants = map[string]map[string]string{
 }
 
 var ed4Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":                       "376",
 		"b":                       "377",
 		"c":                       "378",
@@ -1974,7 +1974,7 @@ var ed4Variants = map[string]map[string]string{
 		"v.2": "377",
 		"v.3": "378",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a":                       "367",
 		"b":                       "368",
 		"c":                       "369",
@@ -1989,7 +1989,7 @@ var ed4Variants = map[string]map[string]string{
 		"v.2": "368",
 		"v.3": "369",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":                              "373",
 		"b":                              "374",
 		"c":                              "375",
@@ -2004,7 +2004,7 @@ var ed4Variants = map[string]map[string]string{
 		"v.2": "374",
 		"v.3": "375",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":                           "364",
 		"b":                           "365",
 		"c":                           "366",
@@ -2019,7 +2019,7 @@ var ed4Variants = map[string]map[string]string{
 		"v.2": "365",
 		"v.3": "366",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a":                        "370",
 		"b":                        "371",
 		"c":                        "372",
@@ -2037,30 +2037,30 @@ var ed4Variants = map[string]map[string]string{
 }
 
 var prwkVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"golgari":  "A06",
 		"selesnya": "A09",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"dimir": "A01",
 		"izzet": "A03",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"izzet": "A04",
 		"boros": "A07",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"boros":    "A08",
 		"selesnya": "A10",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"dimir":   "A02",
 		"golgari": "A05",
 	},
 }
 
 var hmlVariants = map[string]map[string]string{
-	"Abbey Matron": map[string]string{
+	"Abbey Matron": {
 		"hood":                    "2a",
 		"no hood":                 "2b",
 		"or003":                   "2a",
@@ -2070,7 +2070,7 @@ var hmlVariants = map[string]map[string]string{
 		"pointing straight ahead": "2a",
 		"pointing down":           "2b",
 	},
-	"Aliban's Tower": map[string]string{
+	"Aliban's Tower": {
 		"knights on horses": "61a",
 		"glowing tower":     "61b",
 		"or006":             "61a",
@@ -2080,7 +2080,7 @@ var hmlVariants = map[string]map[string]string{
 		"rider on horse":    "61a",
 		"glowing":           "61b",
 	},
-	"Ambush Party": map[string]string{
+	"Ambush Party": {
 		"doorway":        "63a",
 		"mountain":       "63b",
 		"or007":          "63a",
@@ -2090,7 +2090,7 @@ var hmlVariants = map[string]map[string]string{
 		"doorway ambush": "63a",
 		"mountain path":  "63b",
 	},
-	"Anaba Bodyguard": map[string]string{
+	"Anaba Bodyguard": {
 		"with human":         "66a",
 		"alone":              "66b",
 		"or012":              "66a",
@@ -2100,13 +2100,13 @@ var hmlVariants = map[string]map[string]string{
 		"with hooded figure": "66a",
 		"bodyguard alone":    "66b",
 	},
-	"Anaba Shaman": map[string]string{
+	"Anaba Shaman": {
 		"facing left":  "67a",
 		"facing right": "67b",
 		"anabashaman":  "67a",
 		"or014":        "67b",
 	},
-	"Aysen Bureaucrats": map[string]string{
+	"Aysen Bureaucrats": {
 		"two bureaucrats":  "3a",
 		"one bureaucrat":   "3b",
 		"or023":            "3a",
@@ -2116,7 +2116,7 @@ var hmlVariants = map[string]map[string]string{
 		"two men":          "3a",
 		"one man":          "3b",
 	},
-	"Carapace": map[string]string{
+	"Carapace": {
 		"red carapace":     "84a",
 		"purple carapace":  "84b",
 		"or033":            "84a",
@@ -2127,7 +2127,7 @@ var hmlVariants = map[string]map[string]string{
 		"woman with sword": "84b",
 		"arrow":            "84a",
 	},
-	"Cemetery Gate": map[string]string{
+	"Cemetery Gate": {
 		"zombie":         "44a",
 		"no zombie":      "44b",
 		"or035":          "44a",
@@ -2139,7 +2139,7 @@ var hmlVariants = map[string]map[string]string{
 		"man":            "44a",
 		"no man":         "44b",
 	},
-	"Dark Maze": map[string]string{
+	"Dark Maze": {
 		"man laying down":  "25a",
 		"man kneeling":     "25b",
 		"darkmaze":         "25a",
@@ -2151,7 +2151,7 @@ var hmlVariants = map[string]map[string]string{
 		"prone":            "25a",
 		"kneeling":         "25b",
 	},
-	"Dry Spell": map[string]string{
+	"Dry Spell": {
 		"fish bones":       "46a",
 		"skull with helm":  "46b",
 		"dryspell":         "46a",
@@ -2160,7 +2160,7 @@ var hmlVariants = map[string]map[string]string{
 		"skull":            "46b",
 		"helmet and skull": "46b",
 	},
-	"Dwarven Trader": map[string]string{
+	"Dwarven Trader": {
 		"woman and horse":  "72a",
 		"man and woman":    "72b",
 		"or054":            "72a",
@@ -2170,7 +2170,7 @@ var hmlVariants = map[string]map[string]string{
 		"woman with horse": "72a",
 		"beard":            "72b",
 	},
-	"Feast of the Unicorn": map[string]string{
+	"Feast of the Unicorn": {
 		"goblins":           "47a",
 		"horse head":        "47b",
 		"or059":             "47a",
@@ -2181,7 +2181,7 @@ var hmlVariants = map[string]map[string]string{
 		"head on platter":   "47b",
 		"head":              "47b",
 	},
-	"Folk of An-Havva": map[string]string{
+	"Folk of An-Havva": {
 		"dancing":         "87a",
 		"sitting on wall": "87b",
 		"or062":           "87a",
@@ -2191,7 +2191,7 @@ var hmlVariants = map[string]map[string]string{
 		"people dancing":  "87a",
 		"sitting":         "87b",
 	},
-	"Giant Albatross": map[string]string{
+	"Giant Albatross": {
 		"ship's mast":      "27a",
 		"clouds":           "27b",
 		"or068":            "27a",
@@ -2204,7 +2204,7 @@ var hmlVariants = map[string]map[string]string{
 		"flying right":     "27b",
 		"ocean":            "27b",
 	},
-	"Hungry Mist": map[string]string{
+	"Hungry Mist": {
 		"no lantern":       "88a",
 		"lantern":          "88b",
 		"hungrymist":       "88a",
@@ -2216,7 +2216,7 @@ var hmlVariants = map[string]map[string]string{
 		"faces":            "88a",
 		"lamp":             "88b",
 	},
-	"Labyrinth Minotaur": map[string]string{
+	"Labyrinth Minotaur": {
 		"black background":  "30a",
 		"maze background":   "30b",
 		"or086":             "30a",
@@ -2228,7 +2228,7 @@ var hmlVariants = map[string]map[string]string{
 		"pick-axe":          "30a",
 		"runes":             "30b",
 	},
-	"Memory Lapse": map[string]string{
+	"Memory Lapse": {
 		"male":           "32a",
 		"female":         "32b",
 		"or093":          "32a",
@@ -2242,7 +2242,7 @@ var hmlVariants = map[string]map[string]string{
 		"runes":          "32a",
 		"jigsaw":         "32b",
 	},
-	"Mesa Falcon": map[string]string{
+	"Mesa Falcon": {
 		"flying":          "10a",
 		"perched":         "10b",
 		"or096":           "10a",
@@ -2251,7 +2251,7 @@ var hmlVariants = map[string]map[string]string{
 		"perched in tree": "10b",
 		"perching":        "10b",
 	},
-	"Reef Pirates": map[string]string{
+	"Reef Pirates": {
 		"ships":       "36a",
 		"zombies":     "36b",
 		"or104":       "36a",
@@ -2263,7 +2263,7 @@ var hmlVariants = map[string]map[string]string{
 		"b":           "36a",
 		"a":           "36b",
 	},
-	"Samite Alchemist": map[string]string{
+	"Samite Alchemist": {
 		"green beaker":     "13a",
 		"window":           "13b",
 		"or112":            "13a",
@@ -2273,7 +2273,7 @@ var hmlVariants = map[string]map[string]string{
 		"alchemist's face": "13a",
 		"purple vest":      "13b",
 	},
-	"Sengir Bats": map[string]string{
+	"Sengir Bats": {
 		"flying":     "57a",
 		"perching":   "57b",
 		"or118":      "57a",
@@ -2283,7 +2283,7 @@ var hmlVariants = map[string]map[string]string{
 		"orange bat": "57a",
 		"green bats": "57b",
 	},
-	"Shrink": map[string]string{
+	"Shrink": {
 		"man in shadow":        "97a",
 		"giant woman":          "97b",
 		"or125":                "97a",
@@ -2294,7 +2294,7 @@ var hmlVariants = map[string]map[string]string{
 		"shadow":               "97a",
 		"cloud":                "97b",
 	},
-	"Torture": map[string]string{
+	"Torture": {
 		"hooded figure":         "59a",
 		"man with markings":     "59b",
 		"or130":                 "59a",
@@ -2306,7 +2306,7 @@ var hmlVariants = map[string]map[string]string{
 		"tools":                 "59a",
 		"runes":                 "59b",
 	},
-	"Trade Caravan": map[string]string{
+	"Trade Caravan": {
 		"giraffe on right":   "19a",
 		"moon top left":      "19b",
 		"tradecaravan":       "19a",
@@ -2317,7 +2317,7 @@ var hmlVariants = map[string]map[string]string{
 		"full moon":          "19b",
 		"large white spider": "19b",
 	},
-	"Willow Faerie": map[string]string{
+	"Willow Faerie": {
 		"female":        "99a",
 		"male":          "99b",
 		"or137":         "99a",
@@ -2331,7 +2331,7 @@ var hmlVariants = map[string]map[string]string{
 }
 
 var iceVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":                       "380",
 		"b":                       "381",
 		"c":                       "382",
@@ -2346,7 +2346,7 @@ var iceVariants = map[string]map[string]string{
 		"329": "381",
 		"330": "382",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a":                      "368",
 		"b":                      "369",
 		"c":                      "370",
@@ -2361,7 +2361,7 @@ var iceVariants = map[string]map[string]string{
 		"335": "369",
 		"336": "370",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":                "376",
 		"b":                "377",
 		"c":                "378",
@@ -2376,7 +2376,7 @@ var iceVariants = map[string]map[string]string{
 		"341": "377",
 		"342": "378",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":                       "364",
 		"b":                       "365",
 		"c":                       "366",
@@ -2391,7 +2391,7 @@ var iceVariants = map[string]map[string]string{
 		"344": "365",
 		"345": "366",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a":                             "373",
 		"b":                             "374",
 		"c":                             "375",
@@ -2409,27 +2409,27 @@ var iceVariants = map[string]map[string]string{
 }
 
 var itpVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a rocks":     "65",
 		"b path":      "66",
 		"c dark tree": "67",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a purple":       "56",
 		"b light purple": "57",
 		"c dark purple":  "58",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a small tree": "62",
 		"b snowy":      "63",
 		"c dark red":   "64",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a light":        "53",
 		"b little trees": "54",
 		"c dark":         "55",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a light":        "59",
 		"b two branches": "60",
 		"c dark":         "61",
@@ -2437,23 +2437,23 @@ var itpVariants = map[string]map[string]string{
 }
 
 var khmVariants = map[string]map[string]string{
-	"Snow-Covered Forest": map[string]string{
+	"Snow-Covered Forest": {
 		"v.1": "284",
 		"v.2": "285",
 	},
-	"Snow-Covered Island": map[string]string{
+	"Snow-Covered Island": {
 		"v.1": "278",
 		"v.2": "279",
 	},
-	"Snow-Covered Mountain": map[string]string{
+	"Snow-Covered Mountain": {
 		"v.1": "282",
 		"v.2": "283",
 	},
-	"Snow-Covered Plains": map[string]string{
+	"Snow-Covered Plains": {
 		"v.1": "276",
 		"v.2": "277",
 	},
-	"Snow-Covered Swamp": map[string]string{
+	"Snow-Covered Swamp": {
 		"v.1": "280",
 		"v.2": "281",
 	},
@@ -2469,14 +2469,14 @@ var neoVariants = map[string]map[string]string{
 }
 
 var l13Variants = map[string]map[string]string{
-	"Soldier": map[string]string{
+	"Soldier": {
 		"gatecrash": "1",
 		"theros":    "4",
 	},
 }
 
 var leaVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a rocks":         "294",
 		"b path":          "295",
 		"brown dirt road": "295",
@@ -2489,7 +2489,7 @@ var leaVariants = map[string]map[string]string{
 		"rocks":           "294",
 		"path":            "295",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a purple":            "288",
 		"b light purple":      "289",
 		"clear blue daylight": "289",
@@ -2502,7 +2502,7 @@ var leaVariants = map[string]map[string]string{
 		"purple":              "288",
 		"green":               "289",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a small tree":            "292",
 		"b snowy":                 "293",
 		"grey mountain / red sky": "292",
@@ -2515,7 +2515,7 @@ var leaVariants = map[string]map[string]string{
 		"slate":                   "292",
 		"fog":                     "293",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a light":        "286",
 		"b little trees": "287",
 		"#285":           "286",
@@ -2527,7 +2527,7 @@ var leaVariants = map[string]map[string]string{
 		"no trees":       "286",
 		"trees":          "287",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a light":         "290",
 		"b two branches":  "291",
 		"blue and foggy":  "290",
@@ -2542,7 +2542,7 @@ var leaVariants = map[string]map[string]string{
 }
 
 var pmpsVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"the golgari swarm":     "303",
 		"the gruul clans":       "305",
 		"the selesnya conclave": "304",
@@ -2552,7 +2552,7 @@ var pmpsVariants = map[string]map[string]string{
 		"v.3":                   "304",
 		"v.4":                   "306",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"the azorius senate": "291",
 		"the house dimir":    "294",
 		"the izzet league":   "292",
@@ -2562,7 +2562,7 @@ var pmpsVariants = map[string]map[string]string{
 		"v.3":                "292",
 		"v.4":                "293",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"the boros legion":   "302",
 		"the gruul clans":    "300",
 		"the izzet league":   "301",
@@ -2572,7 +2572,7 @@ var pmpsVariants = map[string]map[string]string{
 		"v.3":                "301",
 		"v.4":                "299",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"the azorius senate":    "289",
 		"the boros legion":      "290",
 		"the orzhov syndicate":  "287",
@@ -2582,7 +2582,7 @@ var pmpsVariants = map[string]map[string]string{
 		"v.3":                   "287",
 		"v.4":                   "288",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"the house dimir":      "296",
 		"the golgari swarm":    "295",
 		"the orzhov syndicate": "297",
@@ -2595,7 +2595,7 @@ var pmpsVariants = map[string]map[string]string{
 }
 
 var mirVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":                         "349",
 		"b":                         "350",
 		"c":                         "348",
@@ -2613,7 +2613,7 @@ var mirVariants = map[string]map[string]string{
 		"white flowers right":       "349",
 		"red tree leaves":           "350",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a":                  "335",
 		"b":                  "336",
 		"c":                  "337",
@@ -2630,7 +2630,7 @@ var mirVariants = map[string]map[string]string{
 		"rocky water":        "337",
 		"sunset":             "338",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":                  "345",
 		"b":                  "346",
 		"c":                  "343",
@@ -2648,7 +2648,7 @@ var mirVariants = map[string]map[string]string{
 		"purple":             "345",
 		"red":                "346",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":             "334",
 		"b":             "332",
 		"c":             "333",
@@ -2663,7 +2663,7 @@ var mirVariants = map[string]map[string]string{
 		"v.4":           "334",
 		"buffalo":       "332",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a":             "341",
 		"b":             "340",
 		"c":             "339",
@@ -2689,66 +2689,66 @@ var mirVariants = map[string]map[string]string{
 // https://scryfall.com/search?q=in%3Aplist+in%3Amb1+%28e%3Amb1+or+e%3Aplist%29&unique=prints
 var mb1plistVariants = map[string]map[string]string{
 	// MB1 cards reprinted in PLIST
-	"Aura Shards": map[string]string{
+	"Aura Shards": {
 		"cmd":            "1392",
 		"commander":      "1392",
 		"commander 2011": "1392",
 	},
-	"Bojuka Bog": map[string]string{
+	"Bojuka Bog": {
 		"c18":                     "1660",
 		"commander 2018":          "1660",
 		"commander: 2018 edition": "1660",
 	},
-	"Brainstorm": map[string]string{
+	"Brainstorm": {
 		"a25":        "301",
 		"masters 25": "301",
 	},
-	"Burst Lightning": map[string]string{
+	"Burst Lightning": {
 		"mm2":                 "879",
 		"modern masters 2015": "879",
 	},
-	"Call of the Nightwing": map[string]string{
+	"Call of the Nightwing": {
 		"gk1":                          "1405",
 		"guilds of ravnica guild kits": "1405",
 	},
-	"Demonic Tutor": map[string]string{
+	"Demonic Tutor": {
 		"duel deck: divine vs. demonic": "620",
 		"duel decks: demonic vs divine": "620",
 		"dvd":                           "620",
 	},
-	"Disenchant": map[string]string{
+	"Disenchant": {
 		"core set 2020": "77",
 		"m20":           "77",
 	},
-	"Eternal Witness": map[string]string{
+	"Eternal Witness": {
 		"ultimate masters": "1200",
 		"uma":              "1200",
 	},
-	"Fact or Fiction": map[string]string{
+	"Fact or Fiction": {
 		"cm2":                         "371",
 		"commander anthology vol. ii": "371",
 	},
-	"Faithless Looting": map[string]string{
+	"Faithless Looting": {
 		"cm2":                         "919",
 		"commander anthology vol. ii": "919",
 	},
-	"Fireball": map[string]string{
+	"Fireball": {
 		"iconic masters": "926",
 		"ima":            "926",
 	},
-	"Guttersnipe": map[string]string{
+	"Guttersnipe": {
 		"iconic masters": "970",
 		"ima":            "970",
 	},
-	"Harmonize": map[string]string{
+	"Harmonize": {
 		"c17":            "1234",
 		"commander 2017": "1234",
 	},
-	"Imperious Perfect": map[string]string{
+	"Imperious Perfect": {
 		"cma":                 "1242",
 		"commander anthology": "1242",
 	},
-	"Lightning Bolt": map[string]string{
+	"Lightning Bolt": {
 		"archenemy: nicol bolas": "1001",
 		"e01":                    "1001",
 
@@ -2769,56 +2769,56 @@ var mb1plistVariants = map[string]map[string]string{
 
 		"rna magicfest promo": "142",
 	},
-	"Man-o'-War": map[string]string{
+	"Man-o'-War": {
 		"a25":        "421",
 		"masters 25": "421",
 	},
-	"Mortify": map[string]string{
+	"Mortify": {
 		"c18":                     "1457",
 		"commander 2018":          "1457",
 		"commander: 2018 edition": "1457",
 	},
-	"Negate": map[string]string{
+	"Negate": {
 		"rivals of ixalan": "443",
 		"rix":              "443",
 	},
-	"Painful Lesson": map[string]string{
+	"Painful Lesson": {
 		"akh":      "727",
 		"amonkhet": "727",
 	},
-	"Skullclamp": map[string]string{
+	"Skullclamp": {
 		"c17":                     "1630",
 		"commander 2017":          "1630",
 		"commander: 2017 edition": "1630",
 	},
-	"Sorin Markov": map[string]string{
+	"Sorin Markov": {
 		"zendikar": "778",
 	},
-	"Sleep": map[string]string{
+	"Sleep": {
 		"core set 2019": "495",
 		"m19":           "495",
 	},
-	"Terminate": map[string]string{
+	"Terminate": {
 		"cma":                 "1495",
 		"commander anthology": "1495",
 	},
-	"Thought Vessel": map[string]string{
+	"Thought Vessel": {
 		"cm2":                           "1639",
 		"commander anthology vol. ii":   "1639",
 		"commander anthology volume ii": "1639",
 	},
-	"Vampire Nighthawk": map[string]string{
+	"Vampire Nighthawk": {
 		"e02":                 "813",
 		"explorers of ixalan": "813",
 	},
-	"Young Pyromancer": map[string]string{
+	"Young Pyromancer": {
 		"dds":                       "1105",
 		"duel deck: mind vs. might": "1105",
 	},
 }
 
 var ogwVariants = map[string]map[string]string{
-	"Wastes": map[string]string{
+	"Wastes": {
 		"ogw183": "183",
 		"ogw185": "183a",
 		"ogw184": "184",
@@ -2831,7 +2831,7 @@ var ogwVariants = map[string]map[string]string{
 }
 
 var po2Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":                    "163",
 		"b":                    "164",
 		"c":                    "165",
@@ -2846,7 +2846,7 @@ var po2Variants = map[string]map[string]string{
 		"v.2": "164",
 		"v.3": "165",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a":                     "154",
 		"b":                     "155",
 		"c":                     "156",
@@ -2858,7 +2858,7 @@ var po2Variants = map[string]map[string]string{
 		"v.2": "155",
 		"v.3": "156",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":                    "160",
 		"b":                    "161",
 		"c":                    "162",
@@ -2873,7 +2873,7 @@ var po2Variants = map[string]map[string]string{
 		"v.2": "161",
 		"v.3": "162",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":                "151",
 		"b":                "152",
 		"c":                "153",
@@ -2888,7 +2888,7 @@ var po2Variants = map[string]map[string]string{
 		"v.2": "152",
 		"v.3": "153",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a":                          "157",
 		"b":                          "158",
 		"c":                          "159",
@@ -2906,7 +2906,7 @@ var po2Variants = map[string]map[string]string{
 }
 
 var porVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":                             "212",
 		"b":                             "213",
 		"c":                             "214",
@@ -2925,7 +2925,7 @@ var porVariants = map[string]map[string]string{
 		"v.3": "214",
 		"v.4": "215",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a":               "200",
 		"b":               "201",
 		"c":               "202",
@@ -2943,7 +2943,7 @@ var porVariants = map[string]map[string]string{
 		"v.3": "202",
 		"v.4": "203",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":                          "208",
 		"b":                          "209",
 		"c":                          "210",
@@ -2962,7 +2962,7 @@ var porVariants = map[string]map[string]string{
 		"v.3": "210",
 		"v.4": "211",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":                    "196",
 		"b":                    "197",
 		"c":                    "198",
@@ -2981,7 +2981,7 @@ var porVariants = map[string]map[string]string{
 		"v.3": "198",
 		"v.4": "199",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a":                      "204",
 		"b":                      "205",
 		"c":                      "206",
@@ -3003,7 +3003,7 @@ var porVariants = map[string]map[string]string{
 }
 
 var ptcVariants = map[string]map[string]string{
-	"Circle of Protection: Green": map[string]string{
+	"Circle of Protection: Green": {
 		"ice age sideboard bertrand lestree":     "bl14sb",
 		"ice age sideboard michael locanto":      "ml14sb",
 		"4th edition sideboard bertrand lestree": "bl16sb",
@@ -3013,7 +3013,7 @@ var ptcVariants = map[string]map[string]string{
 		"1996 bertrand lestree ice sb":           "bl14sb",
 		"1996 bertrand lestree 4ed sb":           "bl16sb",
 	},
-	"Circle of Protection: Red": map[string]string{
+	"Circle of Protection: Red": {
 		"ice age sideboard bertrand lestree":     "bl15sb",
 		"ice age sideboard michael locanto":      "ml15sb",
 		"4th edition sideboard bertrand lestree": "bl17sb",
@@ -3029,11 +3029,11 @@ var ptcVariants = map[string]map[string]string{
 		"1996 michael loconto ice sb":  "ml15sb",
 		"1996 michael loconto 4ed sb":  "ml17sb",
 	},
-	"Memory Lapse": map[string]string{
+	"Memory Lapse": {
 		"1996 shawn \"hammer\" regnier hml sb version 2": "shr32asb",
 		"1996 shawn \"hammer\" regnier hml sb":           "shr32bsb",
 	},
-	"Forest": map[string]string{
+	"Forest": {
 		"4th edition path bertrand lestree 1996":      "bl377",
 		"4th edition path preston poulter 1996":       "pp377",
 		"4th edition rock bertrand lestree 1996":      "bl376",
@@ -3045,7 +3045,7 @@ var ptcVariants = map[string]map[string]string{
 		"1996 bertrand lestree 4ed b": "bl376",
 		"1996 bertrand lestree 4ed c": "bl378",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"4th edition purple shawn hammer regnier 1996":       "shr367",
 		"4th edition purple michael locanto 1996":            "ml367",
 		"4th edition light purple michael locanto 1996":      "ml368",
@@ -3053,7 +3053,7 @@ var ptcVariants = map[string]map[string]string{
 		"4th edition dark purple shawn hammer regnier 1996":  "shr369",
 		"4th edition dark purple michael locanto 1996":       "ml369",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"4th edition little trees eric tam":     "et373",
 		"4th edition little trees mark justice": "mj373",
 		"4th edition snowy eric tam":            "et374",
@@ -3061,7 +3061,7 @@ var ptcVariants = map[string]map[string]string{
 		"4th edition dark red eric tam":         "et375",
 		"4th edition dark red mark justice":     "mj375",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"4th edition light bertrand lestree 1996":            "bl364",
 		"4th edition light eric tam 1996":                    "et364",
 		"4th edition light mark justice 1996":                "mj364",
@@ -3081,7 +3081,7 @@ var ptcVariants = map[string]map[string]string{
 		"4th edition dark preston poulter 1996":              "pp366",
 		"4th edition dark shawn hammer regnier 1996":         "shr366",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"4th edition light george baxter 1996":        "gb370",
 		"4th edition light leon lindback 1996":        "ll370",
 		"4th edition two branches leon lindback 1996": "ll371",
@@ -3092,7 +3092,7 @@ var ptcVariants = map[string]map[string]string{
 }
 
 var rinVariants = map[string]map[string]string{
-	"Urza's Mine": map[string]string{
+	"Urza's Mine": {
 		"ri053":     "175",
 		"miniera53": "176",
 		"miniera56": "177",
@@ -3115,7 +3115,7 @@ var rinVariants = map[string]map[string]string{
 		"v.3": "177",
 		"v.4": "178",
 	},
-	"Urza's Power Plant": map[string]string{
+	"Urza's Power Plant": {
 		"centrale57": "179",
 		"centrale60": "180",
 		"centrale58": "181",
@@ -3140,7 +3140,7 @@ var rinVariants = map[string]map[string]string{
 
 		"rock pot": "179",
 	},
-	"Urza's Tower": map[string]string{
+	"Urza's Tower": {
 		"ri055":   "183",
 		"torre63": "184",
 		"torre62": "185",
@@ -3166,30 +3166,30 @@ var rinVariants = map[string]map[string]string{
 }
 
 var prw2Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"gruul": "B08",
 		"simic": "B09",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"azorius": "B02",
 		"simic":   "B10",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"rakdos": "B06",
 		"gruul":  "B07",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"azorius": "B01",
 		"orzhov":  "B03",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"orzhov": "B04",
 		"rakdos": "B05",
 	},
 }
 
 var ed3Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a": "304",
 		"b": "305",
 		"c": "306",
@@ -3210,7 +3210,7 @@ var ed3Variants = map[string]map[string]string{
 		"v.3": "305",
 		"v.2": "306",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a": "295",
 		"b": "296",
 		"c": "297",
@@ -3231,7 +3231,7 @@ var ed3Variants = map[string]map[string]string{
 		"v.2": "296",
 		"v.3": "297",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a": "301",
 		"b": "302",
 		"c": "303",
@@ -3252,7 +3252,7 @@ var ed3Variants = map[string]map[string]string{
 		"v.2": "302",
 		"v.3": "303",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a": "292",
 		"b": "293",
 		"c": "294",
@@ -3273,7 +3273,7 @@ var ed3Variants = map[string]map[string]string{
 		"v.2": "293",
 		"v.3": "294",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a": "298",
 		"b": "299",
 		"c": "300",
@@ -3297,43 +3297,43 @@ var ed3Variants = map[string]map[string]string{
 }
 
 var sldVariants = map[string]map[string]string{
-	"Serum Visions": map[string]string{
+	"Serum Visions": {
 		"secret lair 29 collantes": "29",
 		"secret lair 30 dxtr":      "30",
 		"secret lair 31 ys":        "31",
 		"secret lair 32 zuverza":   "32",
 	},
-	"Forest": map[string]string{
+	"Forest": {
 		"godzilla":                       "67",
 		"godzilla lands":                 "67",
 		"crushing brutality":             "243",
 		"secret lair crushing brutality": "243",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"godzilla":                       "64",
 		"godzilla lands":                 "64",
 		"crushing brutality":             "240",
 		"secret lair crushing brutality": "240",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"godzilla":                       "66",
 		"godzilla lands":                 "66",
 		"crushing brutality":             "242",
 		"secret lair crushing brutality": "242",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"godzilla":                       "63",
 		"godzilla lands":                 "63",
 		"crushing brutality":             "239",
 		"secret lair crushing brutality": "239",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"godzilla":                       "65",
 		"godzilla lands":                 "65",
 		"crushing brutality":             "241",
 		"secret lair crushing brutality": "241",
 	},
-	"Karn, the Great Creator": map[string]string{
+	"Karn, the Great Creator": {
 		"retro frame":                        "253",
 		"secret lair retro frame":            "253",
 		"secret lair: teferi's time trouble": "253",
@@ -3342,7 +3342,7 @@ var sldVariants = map[string]map[string]string{
 		"stained glass":                      "501",
 		"stained glass art":                  "501",
 	},
-	"Teferi, Time Raveler": map[string]string{
+	"Teferi, Time Raveler": {
 		"retro frame":                        "252",
 		"secret lair retro frame":            "252",
 		"secret lair: teferi's time trouble": "252",
@@ -3352,7 +3352,7 @@ var sldVariants = map[string]map[string]string{
 		"stained glass art":                  "526",
 		"sld stained glass promo":            "526",
 	},
-	"Arcane Signet": map[string]string{
+	"Arcane Signet": {
 		"":                                    "201",
 		"secret lair":                         "201",
 		"secret lair: a box of rocks":         "201",
@@ -3362,53 +3362,53 @@ var sldVariants = map[string]map[string]string{
 		"secret lair: dan frazier is back":    "589",
 		"v.2":                                 "589",
 	},
-	"Birds of Paradise": map[string]string{
+	"Birds of Paradise": {
 		"":                                    "92",
 		"secret lair":                         "92",
 		"secret lair: ornithological studies": "92",
 		"secret lair: series: mark poole":     "176",
 	},
-	"Brainstorm": map[string]string{
+	"Brainstorm": {
 		"":                                "174",
 		"secret lair: series: mark poole": "174",
 	},
-	"Swords to Plowshares": map[string]string{
+	"Swords to Plowshares": {
 		"":            "110",
 		"secret lair": "110",
 	},
-	"Snow-Covered Forest": map[string]string{
+	"Snow-Covered Forest": {
 		"":            "5",
 		"secret lair": "5",
 	},
-	"Snow-Covered Island": map[string]string{
+	"Snow-Covered Island": {
 		"":            "2",
 		"secret lair": "2",
 	},
-	"Snow-Covered Mountain": map[string]string{
+	"Snow-Covered Mountain": {
 		"":            "4",
 		"secret lair": "4",
 	},
-	"Snow-Covered Plains": map[string]string{
+	"Snow-Covered Plains": {
 		"":            "1",
 		"secret lair": "1",
 	},
-	"Snow-Covered Swamp": map[string]string{
+	"Snow-Covered Swamp": {
 		"":            "3",
 		"secret lair": "3",
 	},
-	"Lightning Bolt": map[string]string{
+	"Lightning Bolt": {
 		"v.1": "83",
 		"v.2": "84",
 		"v.3": "85",
 		"v.4": "86",
 	},
-	"Thalia, Guardian of Thraben": map[string]string{
+	"Thalia, Guardian of Thraben": {
 		"v.1": "37",
 		"v.2": "38",
 		"v.3": "39",
 		"v.4": "40",
 	},
-	"Walker": map[string]string{
+	"Walker": {
 		"v.1": "148",
 		"v.2": "149",
 		"v.3": "150",
@@ -3446,7 +3446,7 @@ var sldVariants = map[string]map[string]string{
 }
 
 var soiVariants = map[string]map[string]string{
-	"Tamiyo's Journal": map[string]string{
+	"Tamiyo's Journal": {
 		"":          "265",
 		"foil":      "265†b",
 		"entry 434": "265",
@@ -3459,7 +3459,7 @@ var soiVariants = map[string]map[string]string{
 }
 
 var psoiVariants = map[string]map[string]string{
-	"Tamiyo's Journal": map[string]string{
+	"Tamiyo's Journal": {
 		"prerelease promo entry 855":              "265s",
 		"prerelease promo entry 653":              "265s†",
 		"shadows over innistrad prerelease promo": "265s†",
@@ -3470,7 +3470,7 @@ var psoiVariants = map[string]map[string]string{
 }
 
 var tmpVariants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"a":                       "347",
 		"b":                       "348",
 		"c":                       "349",
@@ -3488,7 +3488,7 @@ var tmpVariants = map[string]map[string]string{
 		"cloudy":                  "349",
 		"ledge":                   "350",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"a": "335",
 		"b": "336",
 		"c": "337",
@@ -3508,7 +3508,7 @@ var tmpVariants = map[string]map[string]string{
 		"inlet":          "338",
 		"spire":          "337",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"a":                                  "343",
 		"b":                                  "344",
 		"c":                                  "345",
@@ -3528,7 +3528,7 @@ var tmpVariants = map[string]map[string]string{
 		"joined":   "345",
 		"left":     "346",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"a":                             "331",
 		"b":                             "332",
 		"c":                             "333",
@@ -3548,7 +3548,7 @@ var tmpVariants = map[string]map[string]string{
 		"shrub":     "333",
 		"ant hill":  "334",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"a":                                  "339",
 		"b":                                  "340",
 		"c":                                  "341",
@@ -3571,14 +3571,14 @@ var tmpVariants = map[string]map[string]string{
 }
 
 var ulgVariants = map[string]map[string]string{
-	"B.F.M. (Big Furry Monster)": map[string]string{
+	"B.F.M. (Big Furry Monster)": {
 		"left":  "28",
 		"right": "29",
 	},
 }
 
 var ustVariants = map[string]map[string]string{
-	"Amateur Auteur": map[string]string{
+	"Amateur Auteur": {
 		"ravnica":        "3a",
 		"innistrad":      "3b",
 		"theros":         "3c",
@@ -3594,7 +3594,7 @@ var ustVariants = map[string]map[string]string{
 		"v.4": "3c",
 		"v.2": "3d",
 	},
-	"Beast in Show": map[string]string{
+	"Beast in Show": {
 		"tyrranax":  "103a",
 		"gnarlid":   "103b",
 		"baloth":    "103c",
@@ -3606,7 +3606,7 @@ var ustVariants = map[string]map[string]string{
 		"v.2": "103c",
 		"v.4": "103d",
 	},
-	"Everythingamajig": map[string]string{
+	"Everythingamajig": {
 		"move":               "147a",
 		"draw":               "147b",
 		"flip":               "147c",
@@ -3634,7 +3634,7 @@ var ustVariants = map[string]map[string]string{
 		"v.5": "147e",
 		"v.6": "147f",
 	},
-	"Extremely Slow Zombie": map[string]string{
+	"Extremely Slow Zombie": {
 		"summer":    "54a",
 		"fall":      "54b",
 		"winter":    "54c",
@@ -3647,7 +3647,7 @@ var ustVariants = map[string]map[string]string{
 		"v.3": "54c",
 		"v.4": "54d",
 	},
-	"Garbage Elemental": map[string]string{
+	"Garbage Elemental": {
 		"2/4":                     "82a",
 		"3/1":                     "82b",
 		"3/2":                     "82c",
@@ -3675,7 +3675,7 @@ var ustVariants = map[string]map[string]string{
 		"v.6": "82e",
 		"v.3": "82f",
 	},
-	"Ineffable Blessing": map[string]string{
+	"Ineffable Blessing": {
 		"choose flavor":                  "113a",
 		"choose artist":                  "113b",
 		"choose border":                  "113c",
@@ -3706,7 +3706,7 @@ var ustVariants = map[string]map[string]string{
 		"v.2": "113e",
 		"v.6": "113f",
 	},
-	"Knight of the Kitchen Sink": map[string]string{
+	"Knight of the Kitchen Sink": {
 		"black borders":                            "12a",
 		"even collector numbers":                   "12b",
 		"loose lips":                               "12c",
@@ -3730,7 +3730,7 @@ var ustVariants = map[string]map[string]string{
 		"v.6": "12e",
 		"v.5": "12f",
 	},
-	"Novellamental": map[string]string{
+	"Novellamental": {
 		"''my grandmother…''": "41a",
 		"''this pendant…''":   "41b",
 		"''the chain…''":      "41c",
@@ -3746,7 +3746,7 @@ var ustVariants = map[string]map[string]string{
 		"v.3": "41c",
 		"v.4": "41d",
 	},
-	"Secret Base": map[string]string{
+	"Secret Base": {
 		"order of the widget":      "165a",
 		"agents of s.n.e.a.k.":     "165b",
 		"league of dastardly doom": "165c",
@@ -3766,7 +3766,7 @@ var ustVariants = map[string]map[string]string{
 		"v.3": "165d",
 		"v.2": "165e",
 	},
-	"Sly Spy": map[string]string{
+	"Sly Spy": {
 		"reveal hand":                                "67a",
 		"destroy creature facing left":               "67b",
 		"lose a finger":                              "67c",
@@ -3794,7 +3794,7 @@ var ustVariants = map[string]map[string]string{
 		"v.4": "67e",
 		"v.3": "67f",
 	},
-	"Target Minotaur": map[string]string{
+	"Target Minotaur": {
 		"ice":       "98a",
 		"rain":      "98b",
 		"fire":      "98c",
@@ -3810,7 +3810,7 @@ var ustVariants = map[string]map[string]string{
 		"v.2": "98c",
 		"v.4": "98d",
 	},
-	"Very Cryptic Command": map[string]string{
+	"Very Cryptic Command": {
 		"switch":                    "49a",
 		"untap":                     "49b",
 		"draw":                      "49c",
@@ -3842,7 +3842,7 @@ var ustVariants = map[string]map[string]string{
 }
 
 var wc97Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"5th edition a svend geertsen 1997": "sg446",
 		"5th edition b svend geertsen 1997": "sg447",
 		"5th edition c svend geertsen 1997": "sg448",
@@ -3852,7 +3852,7 @@ var wc97Variants = map[string]map[string]string{
 		"1997 svend geertsen 5ed 419":       "sg448",
 		"1997 svend geertsen 5ed 420":       "sg449",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"5th edition a janosch kuehn 1997": "jk434",
 		"5th edition b janosch kuehn 1997": "jk435",
 		"5th edition c janosch kuehn 1997": "jk436",
@@ -3870,7 +3870,7 @@ var wc97Variants = map[string]map[string]string{
 		"1997 paul mccabe 5ed 427":         "pm436",
 		"1997 paul mccabe 5ed 428":         "pm437",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"5th edition a paul mccabe 1997":   "pm442",
 		"5th edition b paul mccabe 1997":   "pm443",
 		"5th edition c paul mccabe 1997":   "pm444",
@@ -3888,7 +3888,7 @@ var wc97Variants = map[string]map[string]string{
 		"1997 janosch kuhn 5ed 432":        "jk444",
 		"1997 janosch kuhn 5ed 433":        "jk445",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"5th edition a janosch kuehn 1997": "jk430",
 		"5th edition b janosch kuehn 1997": "jk431",
 		"5th edition c janosch kuehn 1997": "jk432",
@@ -3898,7 +3898,7 @@ var wc97Variants = map[string]map[string]string{
 		"1997 janosch kuhn 5ed 436":        "jk432",
 		"1997 janosch kuhn 5ed 437":        "jk433",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"5th edition a jakub slemr 1997": "js438",
 		"5th edition b jakub slemr 1997": "js439",
 		"5th edition c jakub slemr 1997": "js440",
@@ -3911,45 +3911,45 @@ var wc97Variants = map[string]map[string]string{
 }
 
 var wc98Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"tempest a brian seldon 1998": "bs347",
 		"tempest b brian seldon 1998": "bs348",
 		"tempest c brian seldon 1998": "bs349",
 		"tempest d brian seldon 1998": "bs350",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"tempest a randy buehler 1998": "rb335",
 		"tempest b randy buehler 1998": "rb336",
 		"tempest c randy buehler 1998": "rb337",
 		"tempest d randy buehler 1998": "rb338",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"tempest a ben rubin 1998": "br343",
 		"tempest b ben rubin 1998": "br344",
 		"tempest c ben rubin 1998": "br345",
 		"tempest d ben rubin 1998": "br346",
 	},
-	"Plains": map[string]string{
+	"Plains": {
 		"tempest a brian hacker 1998": "bh331",
 		"tempest b brian hacker 1998": "bh332",
 		"tempest c brian hacker 1998": "bh333",
 		"tempest d brian hacker 1998": "bh334",
 	},
-	"Firestorm": map[string]string{
+	"Firestorm": {
 		"brian seldon 1998":        "bs101",
 		"sideboard ben rubin 1998": "br101sb",
 	},
 }
 
 var wc99Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"tempest a matt linde 1999":       "ml347a",
 		"6th edition 347 matt linde 1999": "ml347b",
 
 		"1999 matt linde tmp 347": "ml347a",
 		"1999 matt linde 6ed 347": "ml347b",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"6th edition 343 mark le pine 1999": "mlp346a",
 
 		"6th edition 346 mark le pine 1999": "mlp346a",
@@ -3965,7 +3965,7 @@ var wc99Variants = map[string]map[string]string{
 		"1999 kai budde 6ed 343":    "kb343",
 		"1999 kai budde usg 346":    "kb346",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"urza's saga 346 jakub slemr 1999": "js339",
 		"tempest b jakub slemr 1999":       "js340a",
 		"6th edition 340 jakub slemr 1999": "js340b",
@@ -3976,7 +3976,7 @@ var wc99Variants = map[string]map[string]string{
 }
 
 var wc01Variants = map[string]map[string]string{
-	"Forest": map[string]string{
+	"Forest": {
 		"mercadian masques 347 jan tomcani 2001": "jt347",
 		"invasion 347 jan tomcani 2001":          "jt347a",
 		"mercadian masques 348 jan tomcani 2001": "jt348",
@@ -3991,7 +3991,7 @@ var wc01Variants = map[string]map[string]string{
 		"2001 jan tomcani mmq 349": "jt349",
 		"2001 jan tomcani inv 349": "jt349a",
 	},
-	"Island": map[string]string{
+	"Island": {
 		"7th edition 335 alex borteh 2001":        "ab335",
 		"invasion 335 alex borteh 2001":           "ab335a",
 		"mercadian masques 335 alex borteh 2001":  "ab335b",
@@ -4022,7 +4022,7 @@ var wc01Variants = map[string]map[string]string{
 		"2001 antoine ruel inv 336": "ar336",
 		"2001 antoine ruel mmq 336": "ar336a",
 	},
-	"Mountain": map[string]string{
+	"Mountain": {
 		"invasion 343 jan tomcani 2001":              "jt343",
 		"mercadian masques 343 jan tomcani 2001":     "jt343a",
 		"invasion 343 tom van de logt 2001":          "tvdl343",
@@ -4033,13 +4033,13 @@ var wc01Variants = map[string]map[string]string{
 		"2001 tom van de logt inv 343": "tvdl343",
 		"2001 tom van de logt mmq 343": "tvdl343b",
 	},
-	"Swamp": map[string]string{
+	"Swamp": {
 		"invasion 339 tom van de logt 2001":          "tvdl339",
 		"mercadian masques 339 tom van de logt 2001": "tvdl339a",
 		"2001 tom van de logt inv 339":               "tvdl339",
 		"2001 tom van de logt mmq 339":               "tvdl339a",
 	},
-	"Counterspell": map[string]string{
+	"Counterspell": {
 		"7th edition alex borteh 2001":        "ab67",
 		"mercadian masques alex borteh 2001":  "ab69",
 		"7th edition antoine ruel 2001":       "ar67",
@@ -4053,7 +4053,7 @@ var wc01Variants = map[string]map[string]string{
 }
 
 var wc02Variants = map[string]map[string]string{
-	"Island": map[string]string{
+	"Island": {
 		"odyssey 335 carlos romao 2002":     "cr335",
 		"invasion 335 carlos romao 2002":    "cr335a",
 		"7th edition 335 carlos romao 2002": "cr335b",
