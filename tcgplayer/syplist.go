@@ -26,7 +26,7 @@ type TCGSYPList struct {
 }
 
 const (
-	sypExportCSVURL = "https://bancsvs.s3.us-east-2.amazonaws.com/SYP_Export.csv"
+	sypExportCSVURL = "https://bancsvs.s3.us-east-2.amazonaws.com/SYP_export.csv"
 )
 
 func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
