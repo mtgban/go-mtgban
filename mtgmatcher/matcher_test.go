@@ -2555,6 +2555,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Coldsnap",
 		},
 	},
+	MatchTest{
+		Id:   "dfdc9b7d-99a7-5c64-9144-2c879871a926",
+		Desc: "mb1_thelist_variant",
+		In: Card{
+			Name:      "Grim Haruspex",
+			Variation: "Ugin's Fate",
+			Edition:   "The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
