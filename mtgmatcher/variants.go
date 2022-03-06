@@ -2464,6 +2464,7 @@ var neoVariants = map[string]map[string]string{
 		"neon ink red":                "429",
 		"neon ink green":              "430",
 		"neon ink blue":               "431",
+		"neon ink yellow":             "432",
 		"neon ink yellow wpn premium": "432",
 	},
 }
