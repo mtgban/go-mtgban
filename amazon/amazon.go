@@ -1,6 +1,7 @@
 package amazon
 
 import (
+	"errors"
 	"strings"
 	"sync"
 	"time"
@@ -85,7 +86,24 @@ func (amz *Amazon) processUUIDs(channel chan<- respChan, ids []string) error {
 	return nil
 }
 
+// Retrieve one price from a set at random to check the server is running
+func (amz *Amazon) ping() error {
+	sets := mtgmatcher.GetSets()
+	for _, set := range sets {
+		for _, card := range set.Cards {
+			_, err := amz.client.GetPrices([]string{card.UUID})
+			return err
+		}
+	}
+	return nil
+}
+
 func (amz *Amazon) scrape() error {
+	err := amz.ping()
+	if err != nil {
+		return errors.New("server unreachable")
+	}
+
 	pages := make(chan string)
 	channel := make(chan respChan)
 	var wg sync.WaitGroup
