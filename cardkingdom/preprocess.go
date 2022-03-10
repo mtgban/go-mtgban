@@ -56,6 +56,9 @@ var skuFixupTable = map[string]string{
 	"FUST-165B": "FUST-165C",
 	"FUST-165C": "FUST-165D",
 	"FUST-165A": "FUST-165E",
+
+	// Yellow Hidetsugu
+	"PNEO-432": "NEO-432",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
