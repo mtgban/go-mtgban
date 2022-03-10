@@ -2712,6 +2712,16 @@ var mb1plistVariants = map[string]map[string]string{
 		"gk1":                          "1405",
 		"guilds of ravnica guild kits": "1405",
 	},
+	"Chaos Warp": {
+		"commander 2017": "885",
+		"commander 2020": "46",
+	},
+	"Counterspell": {
+		"masters 25": "336",
+	},
+	"Daretti, Scrap Savant": {
+		"non-foil - commander 2014": "898",
+	},
 	"Demonic Tutor": {
 		"duel deck: divine vs. demonic": "620",
 		"duel decks: demonic vs divine": "620",
@@ -2733,9 +2743,15 @@ var mb1plistVariants = map[string]map[string]string{
 		"cm2":                         "919",
 		"commander anthology vol. ii": "919",
 	},
+	"Fiery Gambit": {
+		"foil": "49",
+	},
 	"Fireball": {
 		"iconic masters": "926",
 		"ima":            "926",
+	},
+	"Great Furnace": {
+		"non-foil - commander 2018": "1675",
 	},
 	"Guttersnipe": {
 		"iconic masters": "970",
@@ -2748,6 +2764,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Imperious Perfect": {
 		"cma":                 "1242",
 		"commander anthology": "1242",
+	},
+	"Island": {
+		"jmp - 050": "403",
 	},
 	"Lightning Bolt": {
 		"archenemy: nicol bolas": "1001",
@@ -2770,9 +2789,15 @@ var mb1plistVariants = map[string]map[string]string{
 
 		"rna magicfest promo": "142",
 	},
+	"Lightning Greaves": {
+		"commander 2019": "1600",
+	},
 	"Man-o'-War": {
 		"a25":        "421",
 		"masters 25": "421",
+	},
+	"Mind Stone": {
+		"non-foil - commander 2018": "1609",
 	},
 	"Mortify": {
 		"c18":                     "1457",
@@ -2782,15 +2807,28 @@ var mb1plistVariants = map[string]map[string]string{
 	"Negate": {
 		"rivals of ixalan": "443",
 		"rix":              "443",
+		"player rewards":   "68",
 	},
 	"Painful Lesson": {
 		"akh":      "727",
 		"amonkhet": "727",
 	},
+	"Preordain": {
+		"commander 2015": "460",
+	},
+	"Reliquary Tower": {
+		"core set 2019": "1683",
+	},
+	"Rogue's Passage": {
+		"non-foil - commander 2017": "1684",
+	},
 	"Skullclamp": {
 		"c17":                     "1630",
 		"commander 2017":          "1630",
 		"commander: 2017 edition": "1630",
+	},
+	"Sol Ring": {
+		"commander 2018": "1633",
 	},
 	"Sorin Markov": {
 		"zendikar": "778",
@@ -2799,14 +2837,21 @@ var mb1plistVariants = map[string]map[string]string{
 		"core set 2019": "495",
 		"m19":           "495",
 	},
+	"Temple of the False God": {
+		"commander 2018": "1691",
+	},
 	"Terminate": {
 		"cma":                 "1495",
 		"commander anthology": "1495",
+	},
+	"Temur Battle Rage": {
+		"fate reforged": "1081",
 	},
 	"Thought Vessel": {
 		"cm2":                           "1639",
 		"commander anthology vol. ii":   "1639",
 		"commander anthology volume ii": "1639",
+		"commander 2015":                "274",
 	},
 	"Vampire Nighthawk": {
 		"e02":                 "813",
@@ -4099,37 +4144,39 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Fourth Edition Foreign Black Border": ed4Variants,
 	"Fourth Edition":                      ed4Variants,
 	"GRN Ravnica Weekend":                 prwkVariants,
-	"Homelands":                           hmlVariants,
-	"Ice Age":                             iceVariants,
-	"Intl. Collectors’ Edition":           oldLandVariants,
-	"Introductory Two-Player Set":         itpVariants,
-	"Kaldheim":                            khmVariants,
-	"Kamigawa: Neon Dynasty":              neoVariants,
-	"League Tokens 2013":                  l13Variants,
-	"Limited Edition Alpha":               leaVariants,
-	"Limited Edition Beta":                oldLandVariants,
-	"Magic Premiere Shop 2005":            pmpsVariants,
-	"Mirage":                              mirVariants,
-	"Mystery Booster":                     mb1plistVariants,
-	"Oath of the Gatewatch":               ogwVariants,
-	"Portal Second Age":                   po2Variants,
-	"Portal":                              porVariants,
-	"Pro Tour Collector Set":              ptcVariants,
-	"RNA Ravnica Weekend":                 prw2Variants,
-	"Revised Edition":                     ed3Variants,
-	"Rinascimento":                        rinVariants,
-	"Secret Lair Drop":                    sldVariants,
-	"Shadows over Innistrad Promos":       psoiVariants,
-	"Shadows over Innistrad":              soiVariants,
-	"Summer Magic / Edgar":                ed3Variants,
-	"Tempest":                             tmpVariants,
-	"The List":                            mb1plistVariants,
-	"Unglued":                             ulgVariants,
-	"Unlimited Edition":                   oldLandVariants,
-	"Unstable":                            ustVariants,
-	"World Championship Decks 1997":       wc97Variants,
-	"World Championship Decks 1998":       wc98Variants,
-	"World Championship Decks 1999":       wc99Variants,
-	"World Championship Decks 2001":       wc01Variants,
-	"World Championship Decks 2002":       wc02Variants,
+	//"Heads I Win, Tails You Lose":          mb1plistVariants,
+	"Homelands":                            hmlVariants,
+	"Ice Age":                              iceVariants,
+	"Intl. Collectors’ Edition":            oldLandVariants,
+	"Introductory Two-Player Set":          itpVariants,
+	"Kaldheim":                             khmVariants,
+	"Kamigawa: Neon Dynasty":               neoVariants,
+	"League Tokens 2013":                   l13Variants,
+	"Limited Edition Alpha":                leaVariants,
+	"Limited Edition Beta":                 oldLandVariants,
+	"Magic Premiere Shop 2005":             pmpsVariants,
+	"Mirage":                               mirVariants,
+	"Mystery Booster Retail Edition Foils": mb1plistVariants,
+	"Mystery Booster":                      mb1plistVariants,
+	"Oath of the Gatewatch":                ogwVariants,
+	"Portal Second Age":                    po2Variants,
+	"Portal":                               porVariants,
+	"Pro Tour Collector Set":               ptcVariants,
+	"RNA Ravnica Weekend":                  prw2Variants,
+	"Revised Edition":                      ed3Variants,
+	"Rinascimento":                         rinVariants,
+	"Secret Lair Drop":                     sldVariants,
+	"Shadows over Innistrad Promos":        psoiVariants,
+	"Shadows over Innistrad":               soiVariants,
+	"Summer Magic / Edgar":                 ed3Variants,
+	"Tempest":                              tmpVariants,
+	"The List":                             mb1plistVariants,
+	"Unglued":                              ulgVariants,
+	"Unlimited Edition":                    oldLandVariants,
+	"Unstable":                             ustVariants,
+	"World Championship Decks 1997":        wc97Variants,
+	"World Championship Decks 1998":        wc98Variants,
+	"World Championship Decks 1999":        wc99Variants,
+	"World Championship Decks 2001":        wc01Variants,
+	"World Championship Decks 2002":        wc02Variants,
 }

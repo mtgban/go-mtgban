@@ -187,6 +187,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if !(inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || strings.Contains(inCard.Variation, "V.2")) {
 					continue
 				}
+			case "PHED":
 			default:
 				continue
 			}
@@ -1092,16 +1093,37 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			outCards = filteredOutCards
 		}
 	}
-	// If card is indistinguishable across MB1 or PLIST, select PLIST
-	// Duplicate MB1 cards should have an entry in variants.go
+	// In case card is indistinguishable between MB1, PLIST or PHED:
+	// - first check whether we have an exact variant:number association
+	// - if not, and there is a PLIST printing, select PLIST
+	// - if not, and there is a PHED printing, select PHED
 	if len(outCards) > 1 && inCard.isMysteryList() {
 		var filteredOutCards []mtgjson.Card
-		for _, card := range outCards {
-			if card.SetCode != "PLIST" {
-				continue
+
+		cn, found := mb1plistVariants[inCard.Name][strings.ToLower(inCard.Variation)]
+		if found {
+			for _, card := range outCards {
+				if card.Number != cn {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
 			}
-			filteredOutCards = append(filteredOutCards, card)
+		} else if len(MatchInSet(inCard.Name, "PLIST")) > 0 {
+			for _, card := range outCards {
+				if card.SetCode != "PLIST" {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
+			}
+		} else if len(MatchInSet(inCard.Name, "PHED")) > 0 {
+			for _, card := range outCards {
+				if card.SetCode != "PHED" {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
+			}
 		}
+
 		outCards = filteredOutCards
 	}
 

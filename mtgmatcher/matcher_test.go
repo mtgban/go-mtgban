@@ -2564,6 +2564,40 @@ var MatchTests = []MatchTest{
 			Edition:   "The List",
 		},
 	},
+	MatchTest{
+		Id:   "ddc17c53-b3d0-51fc-92f5-12f9ba6080e6",
+		Desc: "mb1_commander_deck",
+		In: Card{
+			Name:    "Desolate Lighthouse",
+			Edition: "Mystery Booster/The List",
+		},
+	},
+	MatchTest{
+		Id:   "a6ecaa21-642e-54f9-ba82-5333408f55e3",
+		Desc: "mb1_commander_deck_foil",
+		In: Card{
+			Name:      "Swiftfoot Boots",
+			Variation: "Foil",
+			Edition:   "Mystery Booster/The List",
+		},
+	},
+	MatchTest{
+		Id:   "aab75aa6-01eb-55a3-bb03-3db1d5fc2359",
+		Desc: "mb1_commander_deck_indistinguishable",
+		In: Card{
+			Name:    "Boompile",
+			Edition: "Mystery Booster/The List",
+		},
+	},
+	MatchTest{
+		Id:   "841fca52-9f90-508f-a2de-a13d4c062a4d",
+		Desc: "mb1_commander_deck_dupe_mb1",
+		In: Card{
+			Name:      "Chaos Warp",
+			Variation: "Commander 2017",
+			Edition:   "Mystery Booster/The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
