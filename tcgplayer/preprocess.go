@@ -106,6 +106,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if variant == "Winner" || variant == "Top 8" {
 			return nil, errors.New("untracked")
 		}
+		switch cardName {
+		case "Consider":
+			edition = "PW22"
+		}
 	case "Launch Party & Release Event Promos":
 		if mtgmatcher.IsBasicLand(cardName) {
 			edition = "Ravnica Weekend"
