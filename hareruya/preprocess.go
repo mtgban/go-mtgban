@@ -436,6 +436,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 		if variant == "magic fest版" {
 			variant = "magicfest"
 		}
+	case "Mystery Booster Playtest Cards":
+		variant = strings.Replace(variant, "Emblem", "Symbol", 1)
 	default:
 		ed, found := editionTable[edition]
 		if found {
