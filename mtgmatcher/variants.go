@@ -844,6 +844,7 @@ var atqVariants = map[string]map[string]string{
 		"version 4": "82c",
 		"version 1": "82d",
 
+		"c nohrizon":  "82a",
 		"c nohorizon": "82a",
 		"d even":      "82b",
 		"a tower":     "82c",

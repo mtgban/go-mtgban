@@ -33,6 +33,7 @@ var EditionTable = map[string]string{
 	// Adventures in the Forgotten Realms Ampersand
 	"AFR Ampersand Promos": "Adventures in the Forgotten Realms Promos",
 	"Ampersand Foil":       "Adventures in the Forgotten Realms Promos",
+	"Ampersand PROMOS":     "Adventures in the Forgotten Realms Promos",
 	"Ampersand":            "Adventures in the Forgotten Realms Promos",
 	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
 
@@ -274,6 +275,7 @@ var EditionTable = map[string]string{
 	"2010 Grand Prix Promo":              "Grand Prix Promos",
 	"2018 Grand Prix Promo":              "Grand Prix Promos",
 	"GP Promo":                           "Grand Prix Promos",
+	"GP Promos":                          "Grand Prix Promos",
 	"Gran Prix Promo":                    "Grand Prix Promos",
 	"Grand Prix":                         "Grand Prix Promos",
 	"Grand Prix Foil":                    "Grand Prix Promos",

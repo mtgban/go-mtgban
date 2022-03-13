@@ -34,10 +34,12 @@ var missingTable = map[string]string{
 }
 
 var promoTable = map[string]string{
-	"Jace Beleren":    "PBOOK",
-	"Liliana Vess":    "PDP10",
-	"Phyrexian Rager": "PMEI",
-	"Mana Crypt":      "PHPR",
+	"Jace Beleren":      "PBOOK",
+	"Liliana Vess":      "PDP10",
+	"Phyrexian Rager":   "PMEI",
+	"Warmonger":         "PMEI",
+	"Mana Crypt":        "PHPR",
+	"Underworld Dreams": "P2HG",
 
 	"Garruk Wildspeaker": "PDTP",
 	"Grave Titan":        "PDP12",
@@ -138,6 +140,7 @@ var editionTable = map[string]string{
 	"CSP構築済":             "CST",
 	"CSP Theme Deck":     "CST",
 	"World Championship": "PWOR",
+	"Basic Set Promos":   "G18",
 
 	"対戦キット":   "Clash Pack",
 	"GPプロモ":   "PGPX",
@@ -351,6 +354,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 				return nil, errors.New("non single")
 			}
 		}
+	case "Test print":
+		return nil, errors.New("unsupported")
 	case "SDCC":
 		// `【EN】【Foil】《紅蓮の達人チャンドラ/Chandra, Pyromaster》(SDCC2013)[SDCC] 赤`
 		variant = strings.Replace(variant, "SDCC", "SDCC ", 1)
@@ -441,6 +446,14 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 			edition = "P" + strings.TrimSuffix(edition, "-PRE")
 			variant = strings.Replace(variant, "Prereleace", "Prerelease", 1)
 			variant = strings.Replace(variant, "プレリリース", "Prerelease", 1)
+		} else if strings.HasPrefix(edition, "Retro Frame Promos") {
+			if cardName == "Fabled Passage" {
+				edition = "PW21"
+			} else {
+				edition = "PLG21"
+			}
+		} else if strings.Contains(edition, "Silver screen") {
+			edition = "DBL"
 		} else if strings.HasSuffix(edition, "-BF") {
 			fields := strings.Split(edition, "-")
 			set, err := mtgmatcher.GetSet(fields[0])
