@@ -884,6 +884,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// (only works if card has no other duplicates within the same edition)
 			case "Battlebond",
 				"Conspiracy: Take the Crown",
+				"Fate Reforged",
+				"Onslaught",
 				"Tenth Edition",
 				"Unhinged":
 				if inCard.Foil && card.HasFinish(mtgjson.FinishNonfoil) {
