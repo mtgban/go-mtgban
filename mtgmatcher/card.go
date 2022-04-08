@@ -264,6 +264,7 @@ func (c *Card) isUnsupported() bool {
 		c.Contains("Heroes of the Realm") || // HTR*
 		c.Contains("Memorabilia") ||
 		c.Contains("Sealed") ||
+		c.Contains("Charlie Brown") || // abu
 		// Oversized are usually ok, but 8th and 9th ed box topper variants
 		// conflict with the actual edition name, so skip them
 		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
