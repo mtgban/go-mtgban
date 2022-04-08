@@ -2462,11 +2462,16 @@ var khmVariants = map[string]map[string]string{
 
 var neoVariants = map[string]map[string]string{
 	"Hidetsugu, Devouring Chaos": {
-		"neon ink red":                "429",
-		"neon ink green":              "430",
+		"neon ink blue promo":         "431",
 		"neon ink blue":               "431",
-		"neon ink yellow":             "432",
+		"neon ink green promo":        "430",
+		"neon ink green":              "430",
+		"neon ink red promo":          "429",
+		"neon ink red":                "429",
+		"neon ink yellow promo":       "432",
 		"neon ink yellow wpn premium": "432",
+		"neon ink yellow":             "432",
+		"showcase":                    "378",
 	},
 }
 
