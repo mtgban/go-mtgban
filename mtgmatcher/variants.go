@@ -2793,6 +2793,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Lightning Greaves": {
 		"commander 2019": "1600",
 	},
+	"Living Death": {
+		"masters 25": "702",
+	},
 	"Man-o'-War": {
 		"a25":        "421",
 		"masters 25": "421",
@@ -2804,6 +2807,9 @@ var mb1plistVariants = map[string]map[string]string{
 		"c18":                     "1457",
 		"commander 2018":          "1457",
 		"commander: 2018 edition": "1457",
+	},
+	"Mountain": {
+		"unhinged #139 full art": "453",
 	},
 	"Negate": {
 		"rivals of ixalan": "443",
