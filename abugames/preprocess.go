@@ -255,6 +255,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		} else if mtgmatcher.IsBasicLand(cardName) && strings.Contains(variation, "Full-Text") {
 			card.Edition = "SLD"
 			variation = strings.TrimPrefix(variation, "Full-Text ")
+		} else if strings.Contains(variation, "Play Promo") {
+			variation = strings.Replace(variation, "FNM", "", 1)
 		}
 	case "Conspiracy":
 		if cardName == "Magister of Worth" && variation == "Buy-a-Box Promo" {
