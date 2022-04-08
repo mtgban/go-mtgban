@@ -247,7 +247,7 @@ func isToken(name string) bool {
 
 func (c *Card) isUnsupported() bool {
 	return c.Contains("Art Series") ||
-		c.IsSurrounded("Complete", "Set") || // a complete collection
+		c.Contains("Complete") || // a complete collection
 		c.Contains("Fallen Empires: Wyvern Misprints") ||
 		c.Contains("Simplified Chinese Alternate Art Cards") ||
 		c.Contains("Ultra-Pro Puzzle") ||

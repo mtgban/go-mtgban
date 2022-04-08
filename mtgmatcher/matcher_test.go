@@ -123,6 +123,15 @@ var MatchTests = []MatchTest{
 			Edition: "Dragons of Tarkir",
 		},
 	},
+	MatchTest{
+		Desc: "tok_unsupported_complete",
+		Err:  ErrUnsupported,
+		In: Card{
+			Name:      "Fallen Empires",
+			Variation: "Complete FEM Set",
+			Edition:   "Complete Sets",
+		},
+	},
 
 	// ID lookup
 	MatchTest{
