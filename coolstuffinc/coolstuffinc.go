@@ -475,7 +475,7 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 			cardId: cardId,
 			buyEntry: &mtgban.BuylistEntry{
 				BuyPrice:   price,
-				TradePrice: price * 1.35,
+				TradePrice: price * 1.3,
 				Quantity:   0,
 				PriceRatio: priceRatio,
 				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",

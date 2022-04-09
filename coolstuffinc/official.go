@@ -108,7 +108,7 @@ func (csi *CoolstuffincOfficial) scrape() error {
 
 			out := &mtgban.BuylistEntry{
 				BuyPrice:   card.PriceBuy,
-				TradePrice: card.PriceBuy * 1.35,
+				TradePrice: card.PriceBuy * 1.3,
 				PriceRatio: priceRatio,
 				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",
 			}
