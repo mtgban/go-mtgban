@@ -97,7 +97,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		if variation != "" {
 			variation += " "
 		}
-		variation = variants[1]
+		variation = strings.Join(variants[1:], " ")
 	}
 
 	// Repeat to catch numbers
