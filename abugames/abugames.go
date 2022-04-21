@@ -140,8 +140,8 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				u.Path = "/magic-the-gathering/singles"
 
 				v := url.Values{}
-				v.Set("search", "\""+card.SimpleTitle+"\"")
-				if card.Edition != "Promo" {
+				v.Set("search", card.SimpleTitle)
+				if card.Edition != "Promo" && card.Edition != "The List" {
 					v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				}
 				v.Set("card_style", "[\"Normal\"]")
