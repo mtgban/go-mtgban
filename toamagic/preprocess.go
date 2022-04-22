@@ -15,6 +15,7 @@ var cardTable = map[string]string{
 var promoTags = []string{
 	"2016 Welcome Deck",
 	"Foil",
+	"Godzilla Lands",
 }
 
 func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
