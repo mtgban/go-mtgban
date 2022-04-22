@@ -2713,6 +2713,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Burst Lightning": {
 		"mm2":                 "879",
 		"modern masters 2015": "879",
+		"p10":                 "126",
 	},
 	"Call of the Nightwing": {
 		"gk1":                          "1405",
@@ -2820,6 +2821,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"rivals of ixalan": "443",
 		"rix":              "443",
 		"player rewards":   "68",
+		"p09":              "68",
 	},
 	"Painful Lesson": {
 		"akh":      "727",
