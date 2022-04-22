@@ -2607,6 +2607,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Mystery Booster/The List",
 		},
 	},
+	MatchTest{
+		Id:   "96472135-42b3-5127-8e18-240d592cce1e",
+		Desc: "thelist_polluting_older_sets",
+		In: Card{
+			Name:    "Rafiq of the Many",
+			Edition: "The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{

@@ -657,8 +657,13 @@ func adjustEdition(inCard *Card) {
 
 	// Special handling since so many providers get this wrong
 	switch {
-	// Do nothing here, prevent tags from being mixed up
+	// Prevent tags from being mixed up, only take care of edition changes
 	case inCard.isMysteryList():
+		switch inCard.Name {
+		case "Rafiq of the Many":
+			edition = "Shards of Alara"
+			variation = "250"
+		}
 
 	// XLN Treasure Chest
 	case inCard.isBaB() && len(MatchInSet(inCard.Name, "PXTC")) != 0:
