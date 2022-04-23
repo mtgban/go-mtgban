@@ -610,13 +610,25 @@ func adjustEdition(inCard *Card) {
 		if ed != "" {
 			edition = ed
 			// These sets have display commanders in the same set
-			if edition == "Neon Dynasty Commander Display Commanders" {
+			switch edition {
+			case "Neon Dynasty Commander Display Commanders",
+				"Streets of New Capenna Display Commanders":
 				edition = strings.TrimRight(edition, " Display Commanders")
 				switch inCard.Name {
 				case "Chishiro, the Shattered Blade":
 					variation = "77"
 				case "Kotori, Pilot Prodigy":
 					variation = "78"
+				case "Perrie, the Pulverizer":
+					variation = "190"
+				case "Kitt Kanto, Mayhem Diva":
+					variation = "189"
+				case "Kamiz, Obscura Oculus":
+					variation = "188"
+				case "Henzie \"Toolbox\" Torre":
+					variation = "187"
+				case "Anhelo, the Painter":
+					variation = "186"
 				}
 			}
 		}
@@ -982,6 +994,30 @@ func adjustEdition(inCard *Card) {
 						variation = "306"
 					}
 				}
+			}
+		case "Gala Greeters":
+			edition = "Streets of New Capenna"
+			switch {
+			case strings.Contains(variation, "Spanish"):
+				variation = "460"
+			case strings.Contains(variation, "Russian"):
+				variation = "459"
+			case strings.Contains(variation, "Portuguese"):
+				variation = "458"
+			case strings.Contains(variation, "Korean"):
+				variation = "457"
+			case strings.Contains(variation, "Japanese"):
+				variation = "456"
+			case strings.Contains(variation, "Italian"):
+				variation = "455"
+			case strings.Contains(variation, "French"):
+				variation = "454"
+			case strings.Contains(variation, "German"):
+				variation = "453"
+			case strings.Contains(variation, "Chinese Traditional"):
+				variation = "452"
+			case strings.Contains(variation, "Chinese Simplified"):
+				variation = "451"
 			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
