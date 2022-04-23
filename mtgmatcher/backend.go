@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -202,6 +203,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			// Override all to tokens so that duplicates get named differently
 			case "TFTH", "TBTH", "TDAG":
 				card.Layout = "token"
+			// Introduce a custom frame effect to tell gilded cards apart
+			case "SNC":
+				num, _ := strconv.Atoi(card.Number)
+				if num >= 361 && num <= 405 {
+					card.FrameEffects = append(card.FrameEffects, "custom_gilded")
+				}
 			default:
 				// Override any "double_faced_token" entries
 				if strings.Contains(card.Layout, "token") {

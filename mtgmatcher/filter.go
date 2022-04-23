@@ -753,7 +753,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				// ELD-Style showcase
-				if inCard.isShowcase() {
+				if inCard.isShowcase() || inCard.isGilded() {
 					if !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 						continue
 					}
@@ -777,6 +777,17 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if inCard.isBaB() && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
 						continue
 					} else if !inCard.isBaB() && card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+						continue
+					}
+				}
+
+				// SNC-Style gilded
+				if inCard.isGilded() {
+					if !card.HasFrameEffect("custom_gilded") {
+						continue
+					}
+				} else {
+					if card.HasFrameEffect("custom_gilded") {
 						continue
 					}
 				}

@@ -405,6 +405,10 @@ func (c *Card) isReskin() bool {
 		!c.isBasicLand()
 }
 
+func (c *Card) isGilded() bool {
+	return Contains(c.Variation, "Gilded")
+}
+
 func (c *Card) isFNM() bool {
 	return c.Contains("FNM") ||
 		c.Contains("Friday Night Magic")
