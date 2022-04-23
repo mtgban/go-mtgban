@@ -177,19 +177,20 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				continue
 			}
 
-			// Skip duplicate cards that cause trouble down the road
+			// Custom modifications or skips
 			switch set.Code {
+			// Skip duplicate cards that cause trouble down the road
 			case "INV", "USG", "POR", "7ED", "6ED":
 				if strings.HasSuffix(card.Number, "s") {
 					continue
 				}
+			// One of the tokens is a DFC but burns a card number, skip it
 			case "SLD":
-				// One of the tokens is a DFC but burns a card number, skip it
 				if card.Number == "28" {
 					continue
 				}
+			// Only keep dungeons, and fix their layout to make sure they are tokens
 			case "AFR":
-				// Only keep dungeons, and fix their layout to make sure they are tokens
 				if card.SetCode == "TAFR" {
 					switch card.Number {
 					case "20", "21", "22":
@@ -198,8 +199,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 						continue
 					}
 				}
+			// Override all to tokens so that duplicates get named differently
 			case "TFTH", "TBTH", "TDAG":
-				// Override all to tokens so that duplicates get named differently
 				card.Layout = "token"
 			default:
 				// Override any "double_faced_token" entries
