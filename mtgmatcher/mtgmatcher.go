@@ -995,6 +995,21 @@ func adjustEdition(inCard *Card) {
 					}
 				}
 			}
+		case "Urabrask, Heretic Praetor":
+			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
+				num := ExtractNumber(inCard.Variation)
+				if num == "" {
+					if Contains(inCard.Variation, "Phyrexian") {
+						variation = "360"
+					} else if inCard.isShowcase() {
+						if inCard.isEtched() {
+							variation = "446"
+						} else {
+							variation = "346"
+						}
+					}
+				}
+			}
 		case "Gala Greeters":
 			edition = "Streets of New Capenna"
 			switch {
