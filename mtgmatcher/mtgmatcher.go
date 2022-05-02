@@ -675,6 +675,10 @@ func adjustEdition(inCard *Card) {
 		case "Rafiq of the Many":
 			edition = "Shards of Alara"
 			variation = "250"
+		default:
+			if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
+				edition = backend.Sets["SLX"].Name
+			}
 		}
 
 	// XLN Treasure Chest
@@ -704,7 +708,9 @@ func adjustEdition(inCard *Card) {
 			"Zndrsplt, Eye of Wisdom":
 			inCard.Name = inCard.Name + " // " + inCard.Name
 		}
-		if len(MatchInSet(inCard.Name, "SLU")) != 0 {
+		if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
+			edition = backend.Sets["SLX"].Name
+		} else if len(MatchInSet(inCard.Name, "SLU")) != 0 {
 			edition = backend.Sets["SLU"].Name
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
 			edition = backend.Sets["SLD"].Name

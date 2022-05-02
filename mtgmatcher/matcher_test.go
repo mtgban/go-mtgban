@@ -2615,6 +2615,30 @@ var MatchTests = []MatchTest{
 			Edition: "The List",
 		},
 	},
+	MatchTest{
+		Id:   "219b0f63-c6f8-5c00-8b41-f54530f48560",
+		Desc: "thelist_mistag_sld",
+		In: Card{
+			Name:    "Arvinox, the Mind Flail",
+			Edition: "Mystery Booster/The List",
+		},
+	},
+	MatchTest{
+		Id:   "219b0f63-c6f8-5c00-8b41-f54530f48560",
+		Desc: "thelist_correcttag_sld",
+		In: Card{
+			Name:    "Arvinox, the Mind Flail",
+			Edition: "Secret Lair",
+		},
+	},
+	MatchTest{
+		Id:   "d465de12-cc8b-58a8-aa5f-3b9d2b13adca",
+		Desc: "thelist_correcttag_alt",
+		In: Card{
+			Name:    "Mind Flayer, the Shadow",
+			Edition: "Secret Lair",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
