@@ -239,6 +239,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				cardName = "Hangarback Walker"
 				card.Edition = "PLG20"
 			}
+		case "Hidetsugu, Devouring Chaos":
+			card.Edition = "NEO"
+		case "Rafiq of the Many":
+			card.Edition = "SHA"
+			variation = "250"
 		}
 		if strings.Contains(variation, "United Kingdom") {
 			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
