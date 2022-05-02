@@ -574,6 +574,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Secret Lair Drop Series",
 		},
 	},
+	MatchTest{
+		Id:   "16015cde-4407-5b6a-b12b-62808c71be8b",
+		Desc: "dual_face_card_different_name",
+		In: Card{
+			Name:    "Hawkins National Laboratory",
+			Edition: "Secret Lair",
+		},
+	},
 
 	// Incorrect editions
 	MatchTest{

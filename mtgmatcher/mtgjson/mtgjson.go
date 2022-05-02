@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 )
 
 type Set struct {
@@ -173,6 +174,17 @@ func (c *Card) IsPlaneswalker() bool {
 		}
 	}
 	return false
+}
+
+// Check if a dual-faced card has the same for both faces
+func (c *Card) IsDFCSameName() bool {
+	idx := strings.Index(c.Name, " // ")
+	if idx < 0 {
+		return false
+	}
+	left := c.Name[:idx]
+	right := c.Name[idx+4:]
+	return left == right
 }
 
 type TCGSku struct {

@@ -236,7 +236,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				}
 				// Skip faces of DFCs with same names, so that faces don't pollute
 				// the main dictionary with a wrong rename
-				if set.Code == "SLD" && strings.Contains(card.Name, "//") {
+				if set.Code == "SLD" && card.IsDFCSameName() {
 					continue
 				}
 				alternates[Normalize(name)] = alternateProps{

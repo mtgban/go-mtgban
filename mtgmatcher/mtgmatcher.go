@@ -444,6 +444,13 @@ func adjustName(inCard *Card) {
 			inCard.Name = "Mechagodzilla, the Weapon"
 		}
 	}
+	// Rename reskinned dual faced cards, only keep one side and keep the
+	// flavor name, to make the following lookup in AlternateProps work
+	if strings.Contains(inCard.Edition, "Secret Lair") {
+		if strings.Contains(inCard.Name, "Hawkins National") {
+			inCard.Name = "Hawkins National Laboratory"
+		}
+	}
 	// Check if this card may be known as something else
 	altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
 	if found {
