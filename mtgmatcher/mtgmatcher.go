@@ -545,7 +545,7 @@ func adjustEdition(inCard *Card) {
 	// The Anthologies set has one land with a variant named as an expansion,
 	// so what is found should not overwrite the edition in this case
 	// As for The List, ignore any further variation
-	if found && edition != "Anthologies" && edition != "The List" {
+	if found && edition != "Anthologies" && !strings.Contains(edition, "The List") {
 		edition = ed
 
 		// If edition was found through the variation tag, drop it

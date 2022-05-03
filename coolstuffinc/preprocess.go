@@ -21,6 +21,7 @@ var cardTable = map[string]string{
 	"Stratozeppilid":             "Stratozeppelid",
 	"Elder Garganoth":            "Elder Gargaroth",
 	"Immerstrurm Predator":       "Immersturm Predator",
+	"Inspiried Idea":             "Inspired Idea",
 
 	"Circle of Protection Red FNM Foil": "Circle of Protection: Red",
 
@@ -190,10 +191,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			edition = "Double Masters"
 			variant = "Release"
 		}
-	case "Bloodchief's Thirst", "Into the Roil":
-		if edition == "Promo" {
-			variant = "Promo Pack"
-		}
 
 	default:
 		if strings.Contains(cardName, "Booster Box") ||
@@ -288,10 +285,12 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			cardName = vars[0]
 			variant = vars[1]
 		}
-		switch cardName {
-		case "Dirge Bat", "Mysterious Egg", "Crystalline Giant":
-			if variant == "Japanese" {
+		if strings.Contains(variant, "Japanese") {
+			switch cardName {
+			case "Dirge Bat", "Mysterious Egg", "Crystalline Giant":
 				variant = "godzilla"
+			default:
+				return nil, errors.New("not english")
 			}
 		}
 	case "Zendikar Rising":
@@ -307,8 +306,18 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			variant = "Borderless"
 		}
 	case "Promo":
-		if cardName == "Eye of Ugin" && variant == "" {
-			edition = "J20"
+		switch cardName {
+		case "Eye of Ugin":
+			if variant == "" {
+				edition = "J20"
+			}
+		case "Bloodchief's Thirst",
+			"Into the Roil":
+			variant = "Promo Pack"
+		case "Dauntless Dourbark":
+			variant = "Gateway 2007"
+		case "Jaya Ballard, Task Mage":
+			variant = "Resale"
 		}
 	}
 

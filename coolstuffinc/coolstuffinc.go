@@ -270,7 +270,8 @@ func (csi *Coolstuffinc) scrape() error {
 				switch {
 				case theCard.IsBasicLand(),
 					strings.HasSuffix(theCard.Name, "Guildgate"),
-					strings.HasSuffix(theCard.Name, "Signet"):
+					strings.HasSuffix(theCard.Name, "Signet"),
+					strings.Contains(cardName, "Token"):
 				default:
 					csi.printf("%v", err)
 					csi.printf("%v", theCard)
@@ -442,7 +443,8 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 			return
 		} else if err != nil {
 			switch {
-			case theCard.IsBasicLand():
+			case theCard.IsBasicLand(),
+				strings.Contains(cardName, "Token"):
 			default:
 				csi.printf("%v", err)
 				csi.printf("%q", theCard)

@@ -2472,6 +2472,7 @@ var neoVariants = map[string]map[string]string{
 		"neon ink yellow wpn premium": "432",
 		"neon ink yellow":             "432",
 		"showcase":                    "378",
+		"soft glow showcase frame":    "378",
 	},
 }
 
@@ -2730,6 +2731,8 @@ var mb1plistVariants = map[string]map[string]string{
 		"non-foil - commander 2014": "898",
 	},
 	"Demonic Tutor": {
+		"ultimate masters":              "472",
+		"duel deck: divine vs demonic":  "620",
 		"duel deck: divine vs. demonic": "620",
 		"duel decks: demonic vs divine": "620",
 		"dvd":                           "620",
@@ -2745,6 +2748,8 @@ var mb1plistVariants = map[string]map[string]string{
 	"Fact or Fiction": {
 		"cm2":                         "371",
 		"commander anthology vol. ii": "371",
+		"commander anthology ii":      "371",
+		"modern horizons":             "415",
 	},
 	"Faithless Looting": {
 		"cm2":                         "919",
@@ -3477,6 +3482,7 @@ var sldVariants = map[string]map[string]string{
 		"v.5": "152",
 	},
 	"Persistent Petitioners": {
+		"skeleton art":   "596",
 		"secret lair":    "597",
 		"blueprint card": "597",
 		"birds art":      "598",
@@ -3503,6 +3509,9 @@ var sldVariants = map[string]map[string]string{
 	"Sphere of Safety": {
 		"secret lair: series johannes voss":                "280",
 		"sketch variant secret lair: series johannes voss": "588",
+	},
+	"Questing Phelddagrif": {
+		"secret lair: extra life 2021": "671",
 	},
 }
 
