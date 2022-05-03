@@ -107,7 +107,7 @@ func (c *Card) addToVariant(tag string) {
 }
 
 // Returns whether the input string may represent a token
-func isToken(name string) bool {
+func IsToken(name string) bool {
 	switch name {
 	// Known token names
 	case "A Threat to Alara: Nicol Bolas",
@@ -335,7 +335,7 @@ func (c *Card) isBasicLand() bool {
 func (c *Card) isGenericPromo() bool {
 	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() && !c.isSDCC() &&
 		!c.Contains("Deckmasters") && // no real promos here, just foils
-		!c.Contains("Token") && !isToken(c.Name) &&
+		!c.Contains("Token") && !IsToken(c.Name) &&
 		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
 			c.Contains("Draft Weekend") || // scg
 			c.Contains("Game Day") ||

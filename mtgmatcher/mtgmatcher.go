@@ -153,7 +153,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		entry, found = backend.Cards[Normalize(inCard.Name)]
 		if !found {
 			// Return a safe error if it's a token
-			if isToken(ogName) || Contains(inCard.Variation, "Oversize") {
+			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
 				return "", ErrUnsupported
 			}
 			return "", ErrCardDoesNotExist
@@ -212,7 +212,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		// in either case, nothing else to be done here.
 		if len(printings) == 0 {
 			// Return a safe error if it's a token
-			if isToken(ogName) || Contains(inCard.Variation, "Oversize") {
+			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
 				return "", ErrUnsupported
 			}
 			return "", ErrCardNotInEdition
@@ -393,7 +393,7 @@ func adjustName(inCard *Card) {
 		inCard.Name += " Token"
 		return
 	}
-	if isToken(inCard.Name) {
+	if IsToken(inCard.Name) {
 		return
 	}
 
