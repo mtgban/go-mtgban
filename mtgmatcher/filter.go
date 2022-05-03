@@ -428,7 +428,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.Contains("Lunar New Year"):
 			switch set.Code {
-			case "PLNY", "PL21":
+			case "PLNY",
+				"PL21",
+				"PL22":
 			default:
 				continue
 			}
