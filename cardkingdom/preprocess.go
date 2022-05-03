@@ -144,6 +144,8 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			strings.Contains(variation, "League"),
 			strings.Contains(variation, "MPS"):
 			variation = number
+		case edition == "PW22":
+			variation = ""
 		}
 	case "World Championships":
 		edition = setCode
