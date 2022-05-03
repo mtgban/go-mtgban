@@ -449,6 +449,9 @@ func adjustName(inCard *Card) {
 	if strings.Contains(inCard.Edition, "Secret Lair") {
 		if strings.Contains(inCard.Name, "Hawkins National") {
 			inCard.Name = "Hawkins National Laboratory"
+		} else if strings.Contains(inCard.Name, "Plains") && strings.Contains(inCard.Name, "Battlefield Forge") {
+			inCard.Name = "Plains"
+			inCard.Variation = "670"
 		}
 	}
 	// Check if this card may be known as something else

@@ -3386,6 +3386,7 @@ var sldVariants = map[string]map[string]string{
 		"godzilla lands":                 "63",
 		"crushing brutality":             "239",
 		"secret lair crushing brutality": "239",
+		"unpeeled":                       "670",
 	},
 	"Swamp": {
 		"godzilla":                       "65",
