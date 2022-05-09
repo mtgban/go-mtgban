@@ -622,7 +622,7 @@ func adjustEdition(inCard *Card) {
 			// These sets have display commanders in the same set
 			switch edition {
 			case "Neon Dynasty Commander Display Commanders",
-				"Streets of New Capenna Display Commanders":
+				"New Capenna Commander Display Commanders":
 				edition = strings.TrimRight(edition, " Display Commanders")
 				switch inCard.Name {
 				case "Chishiro, the Shattered Blade":
