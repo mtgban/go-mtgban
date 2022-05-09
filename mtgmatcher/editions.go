@@ -410,6 +410,7 @@ var EditionTable = map[string]string{
 	// MB1/PLIST need to be explicitly set to override the edition
 	"The List":        "The List",
 	"Mystery Booster": "Mystery Booster",
+	"SLX Cards":       "Universes Within",
 
 	// Time Spiral Remastered retro frame
 	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
