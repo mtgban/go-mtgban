@@ -823,13 +823,21 @@ func ParseCommanderEdition(edition, variant string) string {
 	isThick := strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") ||
 		strings.Contains(variant, "Display") || strings.Contains(variant, "Thick")
 
+	// Legends series
+	if strings.Contains(edition, "Legends") {
+		if edition == "Commander Legends" {
+			return "Commander Legends"
+		} else if strings.Contains(edition, "Baldur's Gate") {
+			return "Commander Legends: Battle for Baldur's Gate"
+		}
+	}
+
 	// Well-known extra tags
 	perSetCommander := map[string]string{
 		"Launch":          "Commander 2011 Launch Party",
 		"Arsenal":         "Commander's Arsenal",
 		"Ikoria":          "Commander 2020",
 		"Zendikar Rising": "Zendikar Rising Commander",
-		"Legends":         "Commander Legends",
 		"Kaldheim":        "Kaldheim Commander",
 		"Strixhaven":      "Commander 2021",
 		"Forgotten":       "Forgotten Realms Commander",
