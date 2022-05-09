@@ -1027,7 +1027,9 @@ func adjustEdition(inCard *Card) {
 				}
 			}
 		case "Gala Greeters":
-			edition = "Streets of New Capenna"
+			if !inCard.isPromoPack() && !inCard.isPrerelease() {
+				edition = "Streets of New Capenna"
+			}
 			switch {
 			case strings.Contains(variation, "Spanish"):
 				variation = "460"
@@ -1049,6 +1051,8 @@ func adjustEdition(inCard *Card) {
 				variation = "452"
 			case strings.Contains(variation, "Chinese Simplified"):
 				variation = "451"
+			case strings.Contains(variation, "English"):
+				variation = "450"
 			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
