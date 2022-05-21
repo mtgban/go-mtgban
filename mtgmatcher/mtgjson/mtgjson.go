@@ -46,10 +46,10 @@ type Card struct {
 	IsAlternative       bool              `json:"isAlternative"`
 	IsFullArt           bool              `json:"isFullArt"`
 	IsFunny             bool              `json:"isFunny"`
+	IsOnlineOnly        bool              `json:"isOnlineOnly"`
 	IsOversized         bool              `json:"isOversized"`
 	IsPromo             bool              `json:"isPromo"`
 	IsReserved          bool              `json:"isReserved"`
-	IsRebalanced        bool              `json:"isRebalanced"`
 	Layout              string            `json:"layout"`
 	Name                string            `json:"name"`
 	Number              string            `json:"number"`

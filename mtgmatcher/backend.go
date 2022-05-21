@@ -174,7 +174,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 		for _, card := range allCards {
 			// Skip anything non-paper
-			if card.IsRebalanced {
+			if card.IsOnlineOnly {
 				continue
 			}
 
