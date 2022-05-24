@@ -1003,7 +1003,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// Similar to the 10E case
 			case "Kamigawa: Neon Dynasty",
 				"New Capenna Commander",
-				"Streets of New Capenna":
+				"Streets of New Capenna",
+				"Commander Legends: Battle for Baldur's Gate":
 				if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
 					continue
 				} else if !inCard.isEtched() && card.HasFinish(mtgjson.FinishEtched) {
