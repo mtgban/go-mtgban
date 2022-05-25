@@ -2860,15 +2860,6 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "3f9a0369-5fe7-5aee-85fe-3cfaacd275af",
-		Desc: "untagged_promo_promopack_in_set",
-		In: Card{
-			Name:          "Bloodchief's Thirst",
-			Edition:       "Promos",
-			promoWildcard: true,
-		},
-	},
-	MatchTest{
 		Id:   "c6c2a57b-1422-54f5-be68-1d64328e3679",
 		Desc: "untagged_promo_expansion",
 		In: Card{
@@ -2938,6 +2929,15 @@ var MatchTests = []MatchTest{
 			Name:          "Batterskull",
 			Edition:       "Promo",
 			promoWildcard: true,
+		},
+	},
+	MatchTest{
+		Id:   "12b9c3de-91f6-5591-bb9e-c9297b76a1a7",
+		Desc: "untagged_promo_gameday",
+		In: Card{
+			Name:      "Power Word Kill",
+			Variation: "Game Day",
+			Edition:   "Promotional",
 		},
 	},
 
