@@ -22,6 +22,7 @@ var cardTable = map[string]string{
 	"Elder Garganoth":            "Elder Gargaroth",
 	"Immerstrurm Predator":       "Immersturm Predator",
 	"Inspiried Idea":             "Inspired Idea",
+	"Shadow of Morality":         "Shadow of Mortality",
 
 	"Circle of Protection Red FNM Foil": "Circle of Protection: Red",
 

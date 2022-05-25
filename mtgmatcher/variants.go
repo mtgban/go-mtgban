@@ -590,6 +590,7 @@ var allVariants = map[string]map[string]string{
 		"swampmosquito":           "63a",
 		"az169":                   "63b",
 		"fallen tree":             "63a",
+		"facing left":             "63a",
 		"mosquito facing left":    "63a",
 		"mosquito facing forward": "63b",
 		"v.2":                     "63a",
