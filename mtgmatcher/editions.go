@@ -408,9 +408,10 @@ var EditionTable = map[string]string{
 	"Vanguard":                 "Vanguard Series",
 
 	// MB1/PLIST need to be explicitly set to override the edition
-	"The List":        "The List",
-	"Mystery Booster": "Mystery Booster",
-	"SLX Cards":       "Universes Within",
+	"The List":         "The List",
+	"Mystery Booster":  "Mystery Booster",
+	"SLX Cards":        "Universes Within",
+	"Universes Within": "Universes Within",
 
 	// Time Spiral Remastered retro frame
 	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
