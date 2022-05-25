@@ -3440,8 +3440,9 @@ var sldVariants = map[string]map[string]string{
 		"secret lair: series: mark poole": "174",
 	},
 	"Swords to Plowshares": {
-		"":            "110",
-		"secret lair": "110",
+		"":                       "110",
+		"secret lair":            "110",
+		"secret lair hand drawn": "364",
 	},
 	"Snow-Covered Forest": {
 		"":            "5",
