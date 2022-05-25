@@ -71,6 +71,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		number = strings.Join(fields[1:], "")
 		number = strings.TrimLeft(number, "0")
 		number = strings.ToLower(number)
+		number = strings.TrimRight(number, "jp")
 
 		if len(setCode) > 3 && strings.HasPrefix(setCode, "F") {
 			// Some Arena foil are using this custom code that confuses the matcher
