@@ -484,6 +484,10 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			edition = "PMPS"
 		}
 	case "Strixhaven: School of Mages Japanese":
+		// These are normal frame STA cards but in Japanese
+		if strings.Contains(variant, "Japanese") && !strings.Contains(variant, "Alternate Art") {
+			return nil, errors.New("non-english")
+		}
 		variant = strings.Replace(variant, "Alternate Art", "Mystical Archive", 1)
 		variant = strings.Replace(variant, "Extended Art", "Mystical Archive", 1)
 	case "The List":
