@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	ctFilterURL     = "https://www.cardtrader.com/cards/%d/filter.json"
-	ctBlueprintsURL = "https://api.cardtrader.com/api/full/v1/blueprints/export?expansion_id="
+	ctFilterURL = "https://www.cardtrader.com/cards/%d/filter.json"
 
-	ctExpansionsURL  = "https://api.cardtrader.com/api/full/v1/expansions"
-	ctMarketplaceURL = "https://api.cardtrader.com/api/full/v1/marketplace/products?expansion_id="
+	ctBlueprintsURL  = "https://api.cardtrader.com/api/v2/blueprints/export?expansion_id="
+	ctExpansionsURL  = "https://api.cardtrader.com/api/v2/expansions"
+	ctMarketplaceURL = "https://api.cardtrader.com/api/v2/marketplace/products?expansion_id="
 
 	ctBulkCreateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_create"
 	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
