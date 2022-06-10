@@ -412,6 +412,7 @@ var EditionTable = map[string]string{
 	"Mystery Booster":  "Mystery Booster",
 	"SLX Cards":        "Universes Within",
 	"Universes Within": "Universes Within",
+	"Secret Lair Commander: Heads I Win, Tales You Lose": "Heads I Win, Tails You Lose",
 
 	// Time Spiral Remastered retro frame
 	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
