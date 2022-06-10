@@ -204,7 +204,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		// TCG has a single version but there are multiple ones available
 		// So just preserve whichever is filed in Scryfall
 		ed, found := map[string]string{
-			"Royal Assassin":     "PJSE",
 			"Sakura-Tribe Elder": "PJSE",
 			"Shard Phoenix":      "PJSE",
 			"Whirling Dervish":   "PJSE",
@@ -214,7 +213,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = ed
 		} else if variant == "Japan Junior Series" {
 			edition = "PJJT"
-		} else if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
+		} else if cardName != "Royal Assassin" && len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
 			edition = "PSUS"
 		}
 	case "Judge Promos":
