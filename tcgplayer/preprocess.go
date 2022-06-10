@@ -264,6 +264,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Plains // Battlefield Forge":
 			cardName = "Battlefield Forge"
 			variant = "669"
+		case "Hadoken":
+			cardName = "Lightning Bolt"
+			variant = "675"
 		// These cards have a different number than reported
 		case "Demonlord Belzenlok",
 			"Griselbrand",
