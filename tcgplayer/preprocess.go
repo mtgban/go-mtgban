@@ -258,24 +258,20 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = "PSS1"
 		}
 	case "Secret Lair Drop Series":
-		if cardName == "Thalia, Guardian of Thraben" && variant == "" {
-			variant = "37"
-		} else if cardName == "Plains // Battlefield Forge" {
+		ogVariant := variant
+		variant = product.getNum()
+		switch cardName {
+		case "Plains // Battlefield Forge":
 			cardName = "Battlefield Forge"
 			variant = "669"
-		} else {
-			ogVariant := variant
-			variant = product.getNum()
-			// These cards have a different number than reported
+		// These cards have a different number than reported
+		case "Demonlord Belzenlok",
+			"Griselbrand",
+			"Liliana's Contract",
+			"Kothophed, Soul Hoarder",
+			"Razaketh, the Foulblooded":
 			if strings.Contains(ogVariant, "Etched") {
-				switch cardName {
-				case "Demonlord Belzenlok",
-					"Griselbrand",
-					"Liliana's Contract",
-					"Kothophed, Soul Hoarder",
-					"Razaketh, the Foulblooded":
-					variant = "etched"
-				}
+				variant = "etched"
 			}
 		}
 	case "Planeswalker Event Promos":
