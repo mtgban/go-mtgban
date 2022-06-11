@@ -827,12 +827,18 @@ func ParseCommanderEdition(edition, variant string) string {
 	isThick := strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") ||
 		strings.Contains(variant, "Display") || strings.Contains(variant, "Thick")
 
+	isPromo := strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo")
+
 	// Legends series
 	if strings.Contains(edition, "Legends") {
 		if edition == "Commander Legends" {
 			return "Commander Legends"
 		} else if strings.Contains(edition, "Baldur's Gate") {
-			return "Commander Legends: Battle for Baldur's Gate"
+			edition = "Commander Legends: Battle for Baldur's Gate"
+			if isPromo {
+				edition += " Promos"
+			}
+			return edition
 		}
 	}
 
@@ -854,6 +860,8 @@ func ParseCommanderEdition(edition, variant string) string {
 		if strings.Contains(edition, key) {
 			if isThick {
 				ed += " Display Commanders"
+			} else if isPromo {
+				ed += " Promos"
 			}
 			return ed
 		}
@@ -884,6 +892,8 @@ func ParseCommanderEdition(edition, variant string) string {
 		parsed := "Commander " + year
 		if isThick {
 			parsed += " Display Commanders"
+		} else if isPromo {
+			parsed += " Promos"
 		}
 		return parsed
 	}
