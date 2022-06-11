@@ -766,7 +766,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				// ELD-Style showcase
-				if inCard.isShowcase() || inCard.isGilded() {
+				if inCard.isShowcase() || inCard.isGilded() || inCard.isPhyrexian() {
 					if !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 						continue
 					}
@@ -800,6 +800,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else {
 					if card.HasFrameEffect("custom_gilded") {
+						continue
+					}
+				}
+
+				if inCard.isPhyrexian() {
+					if !card.HasFrameEffect("custom_phyrexian") {
+						continue
+					}
+				} else {
+					if card.HasFrameEffect("custom_phyrexian") {
 						continue
 					}
 				}

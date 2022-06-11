@@ -927,18 +927,6 @@ func adjustEdition(inCard *Card) {
 					variation = "75"
 				}
 			}
-		case "Vorinclex, Monstrous Raider":
-			// Missing the proper FrameEffect property
-			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
-				num := ExtractNumber(inCard.Variation)
-				if num == "" {
-					if Contains(inCard.Variation, "Phyrexian") {
-						variation = "333"
-					} else if inCard.isShowcase() {
-						variation = "320"
-					}
-				}
-			}
 		case "Mind Stone":
 			// Skip the check if this card already has the right edition
 			if inCard.isWPNGateway() && edition != "Gateway 2007" && edition != "Wizards Play Network 2021" {
@@ -956,51 +944,6 @@ func adjustEdition(inCard *Card) {
 						variation = "327"
 					} else if inCard.isShowcase() {
 						variation = "316"
-					}
-				}
-			}
-		case "Jin-Gitaxias, Progress Tyrant":
-			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
-				num := ExtractNumber(inCard.Variation)
-				if num == "" {
-					if Contains(inCard.Variation, "Phyrexian") {
-						if inCard.isEtched() {
-							variation = "427"
-						} else {
-							variation = "307"
-						}
-					} else if inCard.isShowcase() {
-						variation = "371"
-					}
-				}
-			}
-		case "Tamiyo, Compleated Sage":
-			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
-				num := ExtractNumber(inCard.Variation)
-				if num == "" {
-					if Contains(inCard.Variation, "Phyrexian") {
-						if inCard.isEtched() {
-							variation = "428"
-						} else {
-							variation = "308"
-						}
-					} else if inCard.isShowcase() {
-						variation = "306"
-					}
-				}
-			}
-		case "Urabrask, Heretic Praetor":
-			if inCard.isShowcase() || Contains(inCard.Variation, "Phyrexian") {
-				num := ExtractNumber(inCard.Variation)
-				if num == "" {
-					if Contains(inCard.Variation, "Phyrexian") {
-						variation = "360"
-					} else if inCard.isShowcase() {
-						if inCard.isEtched() {
-							variation = "446"
-						} else {
-							variation = "346"
-						}
 					}
 				}
 			}

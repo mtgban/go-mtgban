@@ -735,6 +735,10 @@ func (c *Card) isThickDisplay() bool {
 	return c.Contains("Display") || c.Contains("Thick")
 }
 
+func (c *Card) isPhyrexian() bool {
+	return Contains(c.Variation, "Phyrexian")
+}
+
 func (c *Card) possibleNumberSuffix() string {
 	fields := strings.Fields(c.Variation)
 	for _, field := range fields {

@@ -1118,6 +1118,24 @@ var MatchTests = []MatchTest{
 			Edition:   "Innistrad: Crimson Vow Variants",
 		},
 	},
+	MatchTest{
+		Id:   "e621d8f1-11ea-5f82-bf85-ae07aef1733d",
+		Desc: "possible_phyrexian_not_it",
+		In: Card{
+			Name:      "Urabrask, Heretic Praetor",
+			Variation: "Showcase",
+			Edition:   "Streets of New Capenna",
+		},
+	},
+	MatchTest{
+		Id:   "cdca0e63-4e54-5618-8b84-6a79c20dc742",
+		Desc: "possible_phyrexian_it",
+		In: Card{
+			Name:      "Urabrask, Heretic Praetor",
+			Variation: "Phyrexian",
+			Edition:   "Streets of New Capenna",
+		},
+	},
 
 	// Reskinned frame
 	MatchTest{
