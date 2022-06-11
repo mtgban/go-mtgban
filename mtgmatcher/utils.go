@@ -54,6 +54,9 @@ var PromosForEverybodyYay = time.Date(2019, time.October, 1, 0, 0, 0, 0, time.UT
 // Date since BuyABox cards are not unique any more
 var BuyABoxNotUniqueDate = time.Date(2020, time.September, 1, 0, 0, 0, 0, time.UTC)
 
+// Date since different finishes (etched, gilded, thick) get separate collector numbers
+var SeparateFinishCollectorNumberDate = time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)
+
 // SplitVariants returns an array of strings from the parentheses-defined fields
 // commonly used to distinguish some cards across editions.
 func SplitVariants(str string) []string {

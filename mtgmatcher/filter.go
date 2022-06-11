@@ -792,6 +792,15 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
+
+				// Separate finishes have different collector numbers
+				if set.Code == "CMR" || setDate.After(SeparateFinishCollectorNumberDate) {
+					if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
+						continue
+					} else if !inCard.isEtched() && card.HasFinish(mtgjson.FinishEtched) {
+						continue
+					}
+				}
 			}
 
 			// Only do this check if we are in a safe parsing status
@@ -944,13 +953,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Identical cards
 			case "Commander Legends":
-				// This set uses a different card frame for etched cards
-				if inCard.isEtched() && !card.HasFrameEffect(mtgjson.FrameEffectEtched) {
-					continue
-				} else if !inCard.isEtched() && card.HasFrameEffect(mtgjson.FrameEffectEtched) {
-					continue
-				}
-
 				// Filter only cards that may have the flag set
 				hasAlternate := card.IsAlternative
 				for _, id := range card.Variations {
@@ -998,16 +1000,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isWPNGateway() && !card.HasPromoType(mtgjson.PromoTypeWPN) {
 					continue
 				} else if !inCard.isWPNGateway() && card.HasFinish(mtgjson.PromoTypeWPN) {
-					continue
-				}
-			// Similar to the 10E case
-			case "Kamigawa: Neon Dynasty",
-				"New Capenna Commander",
-				"Streets of New Capenna",
-				"Commander Legends: Battle for Baldur's Gate":
-				if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
-					continue
-				} else if !inCard.isEtched() && card.HasFinish(mtgjson.FinishEtched) {
 					continue
 				}
 			default:
