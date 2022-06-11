@@ -824,8 +824,11 @@ func ParseCommanderEdition(edition, variant string) string {
 		return ""
 	}
 
-	isThick := strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") ||
-		strings.Contains(variant, "Display") || strings.Contains(variant, "Thick")
+	// Append a custom display tag to avoid including the main set during filtering
+	if strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") ||
+		strings.Contains(variant, "Display") || strings.Contains(variant, "Thick") {
+		return edition + " Display"
+	}
 
 	isPromo := strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo")
 
@@ -858,9 +861,7 @@ func ParseCommanderEdition(edition, variant string) string {
 	}
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {
-			if isThick {
-				ed += " Display Commanders"
-			} else if isPromo {
+			if isPromo {
 				ed += " Promos"
 			}
 			return ed
@@ -890,9 +891,7 @@ func ParseCommanderEdition(edition, variant string) string {
 	year := ExtractYear(edition)
 	if year != "" {
 		parsed := "Commander " + year
-		if isThick {
-			parsed += " Display Commanders"
-		} else if isPromo {
+		if isPromo {
 			parsed += " Promos"
 		}
 		return parsed

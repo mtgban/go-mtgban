@@ -209,6 +209,22 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if num >= 361 && num <= 405 {
 					card.FrameEffects = append(card.FrameEffects, "custom_gilded")
 				}
+			// Introduce a custom frame effect for thick display commander cards
+			case "NEC":
+				switch card.Number {
+				case "77", "78":
+					card.FrameEffects = append(card.FrameEffects, "custom_thick")
+				}
+			case "NCC":
+				switch card.Number {
+				case "186", "187", "188", "189", "190":
+					card.FrameEffects = append(card.FrameEffects, "custom_thick")
+				}
+			case "CLB":
+				switch card.Number {
+				case "931", "932", "933", "934":
+					card.FrameEffects = append(card.FrameEffects, "custom_thick")
+				}
 			default:
 				// Override any "double_faced_token" entries
 				if strings.Contains(card.Layout, "token") {

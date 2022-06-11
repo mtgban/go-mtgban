@@ -2830,12 +2830,21 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "db6edd23-8783-5009-89bc-021aca680a49",
-		Desc: "display_commander",
+		Id:   "bcf2f96c-821e-5b2e-8a2d-5df7ab7e902a",
+		Desc: "display_commander_separate",
 		In: Card{
-			Name:      "Prosper, Tome-Bound",
+			Name:      "Osgir, the Reconstructor",
 			Variation: "Display Commander - Not Tournament Legal",
-			Edition:   "Adventures in the Forgotten Realms Commander Decks",
+			Edition:   "Commander 2021",
+		},
+	},
+	MatchTest{
+		Id:   "352094fb-6dc2-5b86-b48d-b59818d30443",
+		Desc: "display_commander_internal_etched",
+		In: Card{
+			Name:      "Perrie, the Pulverizer",
+			Variation: "Thick Stock Display Commander",
+			Edition:   "Commander: Streets of New Capenna",
 		},
 	},
 

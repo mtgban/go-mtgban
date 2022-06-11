@@ -435,6 +435,17 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
+		case inCard.isThickDisplay():
+			switch set.Code {
+			// The sets with thick display cards separate from the main commander set
+			case "OC21", "OAFC", "OMIC", "OVOC":
+			default:
+				// Skip any set before this date if not from the sets above
+				if setDate.Before(SeparateFinishCollectorNumberDate) {
+					continue
+				}
+			}
+
 		case inCard.Contains("Bring-A-Friend") ||
 			inCard.Contains("Love Your LGS") ||
 			inCard.Contains("Welcome Back") ||
@@ -797,7 +808,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if set.Code == "CMR" || setDate.After(SeparateFinishCollectorNumberDate) {
 					if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
 						continue
-					} else if !inCard.isEtched() && card.HasFinish(mtgjson.FinishEtched) {
+						// Some thick display cards are not marked as etched
+					} else if !inCard.isEtched() && !inCard.isThickDisplay() && card.HasFinish(mtgjson.FinishEtched) {
+						continue
+					}
+
+					if inCard.isThickDisplay() && !card.HasFrameEffect("custom_thick") {
+						continue
+					} else if !inCard.isThickDisplay() && card.HasFrameEffect("custom_thick") {
 						continue
 					}
 				}

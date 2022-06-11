@@ -619,45 +619,6 @@ func adjustEdition(inCard *Card) {
 		ed := ParseCommanderEdition(edition, variation)
 		if ed != "" {
 			edition = ed
-			// These sets have display commanders in the same set
-			switch edition {
-			case "Neon Dynasty Commander Display Commanders",
-				"New Capenna Commander Display Commanders",
-				"Commander Legends: Battle for Baldur's Gate":
-				edition = strings.TrimRight(edition, " Display Commanders")
-				switch inCard.Name {
-				case "Chishiro, the Shattered Blade":
-					variation = "77"
-				case "Kotori, Pilot Prodigy":
-					variation = "78"
-				case "Perrie, the Pulverizer":
-					variation = "190"
-				case "Kitt Kanto, Mayhem Diva":
-					variation = "189"
-				case "Kamiz, Obscura Oculus":
-					variation = "188"
-				case "Henzie \"Toolbox\" Torre":
-					variation = "187"
-				case "Anhelo, the Painter":
-					variation = "186"
-				case "Captain N'ghathrod":
-					if inCard.isThickDisplay() {
-						variation = "931"
-					}
-				case "Faldorn, Dread Wolf Herald":
-					if inCard.isThickDisplay() {
-						variation = "932"
-					}
-				case "Firkraag, Cunning Instigator":
-					if inCard.isThickDisplay() {
-						variation = "933"
-					}
-				case "Nalia de'Arnise":
-					if inCard.isThickDisplay() {
-						variation = "934"
-					}
-				}
-			}
 		}
 	case strings.Contains(variation, "Ravnica Weekend") ||
 		(strings.Contains(edition, "Weekend") && !Contains(edition, "Planeswalker")):
