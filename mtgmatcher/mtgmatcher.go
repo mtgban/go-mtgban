@@ -622,7 +622,8 @@ func adjustEdition(inCard *Card) {
 			// These sets have display commanders in the same set
 			switch edition {
 			case "Neon Dynasty Commander Display Commanders",
-				"New Capenna Commander Display Commanders":
+				"New Capenna Commander Display Commanders",
+				"Commander Legends: Battle for Baldur's Gate":
 				edition = strings.TrimRight(edition, " Display Commanders")
 				switch inCard.Name {
 				case "Chishiro, the Shattered Blade":
@@ -639,6 +640,22 @@ func adjustEdition(inCard *Card) {
 					variation = "187"
 				case "Anhelo, the Painter":
 					variation = "186"
+				case "Captain N'ghathrod":
+					if inCard.isThickDisplay() {
+						variation = "931"
+					}
+				case "Faldorn, Dread Wolf Herald":
+					if inCard.isThickDisplay() {
+						variation = "932"
+					}
+				case "Firkraag, Cunning Instigator":
+					if inCard.isThickDisplay() {
+						variation = "933"
+					}
+				case "Nalia de'Arnise":
+					if inCard.isThickDisplay() {
+						variation = "934"
+					}
 				}
 			}
 		}
