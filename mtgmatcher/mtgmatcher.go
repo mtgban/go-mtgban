@@ -569,8 +569,7 @@ func adjustEdition(inCard *Card) {
 				variation = "Borderless"
 			}
 		}
-	case strings.Contains(edition, "Mythic Edition"),
-		strings.Contains(inCard.Variation, "Mythic Edition"):
+	case inCard.Contains("Mythic Edition"):
 		edition = "Mythic Edition"
 	case strings.Contains(edition, "Invocation") ||
 		((edition == "Hour of Devastation" || edition == "Amonkhet") &&
