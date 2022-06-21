@@ -560,7 +560,7 @@ func adjustEdition(inCard *Card) {
 
 	// Adjust box set
 	switch {
-	case Contains(edition, "Double Masters"):
+	case Contains(edition, "Double Masters") && !Contains(edition, "2022"):
 		if Contains(edition, "Box Toppers") ||
 			Contains(edition, "Extras") ||
 			Contains(edition, "Variants") {
