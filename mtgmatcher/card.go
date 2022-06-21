@@ -219,6 +219,7 @@ func IsToken(name string) bool {
 		Contains(name, "Art Series"),
 		Contains(name, "Charlie Brown"),
 		Contains(name, "Checklist"),
+		Contains(name, "Copy"),
 		Contains(name, "Decklist"),
 		Contains(name, "DFC Helper"),
 		Contains(name, "Dungeon of the Mad Mage"),
