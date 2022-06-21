@@ -681,10 +681,6 @@ func adjustEdition(inCard *Card) {
 	case inCard.isGenericExtendedArt() && len(MatchInSet(inCard.Name, "PCMP")) != 0:
 		edition = backend.Sets["PCMP"].Name
 
-	// Portal Demo Game
-	case inCard.isPortalAlt() && len(MatchInSet(inCard.Name, "PPOD")) != 0:
-		edition = backend.Sets["PPOD"].Name
-
 	// Secret Lair {Ultimate,Drop}
 	case inCard.Contains("Secret") || Contains(inCard.Variation, "Lair"):
 		// Restore the canonical name for these specific cards

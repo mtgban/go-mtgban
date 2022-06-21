@@ -966,9 +966,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Variants related to flavor text presence
 			case "Portal":
-				if inCard.isPortalAlt() && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+				if inCard.isPortalAlt() && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) && !strings.HasSuffix(card.Number, "d") {
 					continue
-				} else if !inCard.isPortalAlt() && strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+				} else if !inCard.isPortalAlt() && (strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, "d")) {
 					continue
 				}
 			// Launch promos within the set itself

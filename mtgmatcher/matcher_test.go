@@ -2443,7 +2443,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "593d4dcc-f98f-5f35-84a0-a71014a9b3b4",
+		Id:   "399a36ae-aba7-5c74-9d57-74e6d4c66ea4",
 		Desc: "portal_demo_game",
 		In: Card{
 			Name:      "Cloud Pirates",
