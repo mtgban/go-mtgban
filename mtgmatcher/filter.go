@@ -1086,6 +1086,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						expectedSuffix = mtgjson.SuffixSpecial
 						checkNumberSuffix = inCard.isEtched()
 					}
+				case "Beast of Burden":
+					if set.Name == "Urza's Legacy Promos" && Contains(inCard.Variation, "No Expansion Symbol") {
+						checkNumberSuffix = true
+					}
 				}
 
 				if checkNumberSuffix && !strings.HasSuffix(card.Number, expectedSuffix) {
