@@ -1090,6 +1090,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if set.Name == "Urza's Legacy Promos" && Contains(inCard.Variation, "No Expansion Symbol") {
 						checkNumberSuffix = true
 					}
+				case "Strict Proctor":
+					if set.Name == "Strixhaven: School of Mages" {
+						expectedSuffix = mtgjson.SuffixSpecial
+						checkNumberSuffix = inCard.Foil
+					}
 				}
 
 				if checkNumberSuffix && !strings.HasSuffix(card.Number, expectedSuffix) {
