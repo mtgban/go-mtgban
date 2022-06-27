@@ -182,6 +182,7 @@ var EditionTable = map[string]string{
 
 	// Portal
 	"Portal 1":          "Portal",
+	"Portal Demo Game":  "Portal",
 	"Portal II":         "Portal Second Age",
 	"Portal 2nd Age":    "Portal Second Age",
 	"Portal 3K":         "Portal Three Kingdoms",
