@@ -237,6 +237,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				case "931", "932", "933", "934":
 					card.FrameEffects = append(card.FrameEffects, "custom_thick")
 				}
+			// Introduce a custom frame effect to tell textured cards apart
+			case "2X2":
+				switch card.Number {
+				case "573", "574", "575", "576", "577":
+					card.FrameEffects = append(card.FrameEffects, "custom_textured")
+				}
 			default:
 				// Override any "double_faced_token" entries
 				if strings.Contains(card.Layout, "token") {

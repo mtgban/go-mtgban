@@ -740,6 +740,10 @@ func (c *Card) isPhyrexian() bool {
 	return Contains(c.Variation, "Phyrexian")
 }
 
+func (c *Card) isTextured() bool {
+	return Contains(c.Variation, "Textured")
+}
+
 func (c *Card) possibleNumberSuffix() string {
 	fields := strings.Fields(c.Variation)
 	for _, field := range fields {

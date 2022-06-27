@@ -737,7 +737,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			} else if (setDate.After(PromosForEverybodyYay) || set.Code == "ALA") && !inCard.isMysteryList() {
 				// ELD-Style borderless
-				if inCard.isBorderless() {
+				if inCard.isBorderless() || inCard.isTextured() {
 					if card.BorderColor != mtgjson.BorderColorBorderless {
 						continue
 					}
@@ -810,6 +810,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else {
 					if card.HasFrameEffect("custom_phyrexian") {
+						continue
+					}
+				}
+
+				if inCard.isTextured() {
+					if !card.HasFrameEffect("custom_textured") {
+						continue
+					}
+				} else {
+					if card.HasFrameEffect("custom_textured") {
 						continue
 					}
 				}

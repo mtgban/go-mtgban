@@ -1025,6 +1025,24 @@ var MatchTests = []MatchTest{
 			Edition: "Double Masters Box Toppers",
 		},
 	},
+	MatchTest{
+		Id:   "a9e37c90-1112-53ea-a442-27897a256f76",
+		Desc: "borderless_textured",
+		In: Card{
+			Name:      "Emrakul, the Aeons Torn",
+			Variation: "Textured Foil",
+			Edition:   "Double Masters 2022 Variants",
+		},
+	},
+	MatchTest{
+		Id:   "d0d78dd8-cbe2-5387-8433-5ce7e4ef0d11",
+		Desc: "borderless_non_textured",
+		In: Card{
+			Name:      "Liliana, the Last Hope",
+			Variation: "Borderless",
+			Edition:   "Double Masters 2022",
+		},
+	},
 
 	// Box topper-style extended art
 	MatchTest{
