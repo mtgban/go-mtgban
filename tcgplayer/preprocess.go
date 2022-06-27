@@ -389,7 +389,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "Mystery Booster Cards":
 		edition = "MB1"
 	case "Innistrad: Double Feature",
-		"Kamigawa: Neon Dynasty":
+		"Kamigawa: Neon Dynasty",
+		"Unfinity":
 		variant = product.getNum()
 	}
 
