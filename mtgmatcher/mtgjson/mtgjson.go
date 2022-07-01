@@ -111,14 +111,20 @@ const (
 	PromoTypePlayPromo  = "playpromo"
 	PromoTypeWPN        = "wizardsplaynetwork"
 	PromoTypeGateway    = "gateway"
+	PromoTypeGilded     = "gilded"
+	PromoTypeTextured   = "textured"
+	PromoTypeNeonInk    = "neonink"
 
+	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
 	PromoTypeArenaLeague   = "arenaleague"
 	PromoTypePlayerRewards = "playerrewards"
 
 	BorderColorBorderless = "borderless"
+	BorderColorGold       = "gold"
 
-	LanguageJapanese = "Japanese"
+	LanguageJapanese  = "Japanese"
+	LanguagePhyrexian = "Phyrexian"
 
 	SuffixLightMana = "†"
 	SuffixSpecial   = "★"
