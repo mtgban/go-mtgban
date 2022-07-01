@@ -131,6 +131,29 @@ const (
 	SuffixVariant   = "†"
 )
 
+var AllPromoTypes = []string{
+	PromoTypeArenaLeague,
+	PromoTypeBoosterfun,
+	PromoTypeBundle,
+	PromoTypeBuyABox,
+	PromoTypeDracula,
+	PromoTypeGameDay,
+	PromoTypeGateway,
+	PromoTypeGilded,
+	PromoTypeGodzilla,
+	PromoTypeIntroPack,
+	PromoTypeJudgeGift,
+	PromoTypeNeonInk,
+	PromoTypePlayPromo,
+	PromoTypePlayerRewards,
+	PromoTypePrerelease,
+	PromoTypePromoPack,
+	PromoTypeRelease,
+	PromoTypeTextured,
+	PromoTypeThickDisplay,
+	PromoTypeWPN,
+}
+
 func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
 	err = json.NewDecoder(r).Decode(&payload)
 	if err == nil && len(payload.Data) == 0 {
