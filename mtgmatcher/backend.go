@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -203,46 +202,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			// Override all to tokens so that duplicates get named differently
 			case "TFTH", "TBTH", "TDAG":
 				card.Layout = "token"
-			// Introduce a custom frame effect for Phyrexian cards
-			case "KHM":
-				if card.Number == "333" {
-					card.FrameEffects = append(card.FrameEffects, "custom_phyrexian")
-				}
-			case "NEO":
-				switch card.Number {
-				case "307", "308", "427", "428":
-					card.FrameEffects = append(card.FrameEffects, "custom_phyrexian")
-				}
-			// Introduce a custom frame effect to tell gilded cards apart
-			case "SNC":
-				num, _ := strconv.Atoi(card.Number)
-				if num >= 361 && num <= 405 {
-					card.FrameEffects = append(card.FrameEffects, "custom_gilded")
-				} else if num == 360 {
-					card.FrameEffects = append(card.FrameEffects, "custom_phyrexian")
-				}
-			// Introduce a custom frame effect for thick display commander cards
-			case "NEC":
-				switch card.Number {
-				case "77", "78":
-					card.FrameEffects = append(card.FrameEffects, "custom_thick")
-				}
-			case "NCC":
-				switch card.Number {
-				case "186", "187", "188", "189", "190":
-					card.FrameEffects = append(card.FrameEffects, "custom_thick")
-				}
-			case "CLB":
-				switch card.Number {
-				case "931", "932", "933", "934":
-					card.FrameEffects = append(card.FrameEffects, "custom_thick")
-				}
-			// Introduce a custom frame effect to tell textured cards apart
-			case "2X2":
-				switch card.Number {
-				case "573", "574", "575", "576", "577":
-					card.FrameEffects = append(card.FrameEffects, "custom_textured")
-				}
 			default:
 				// Override any "double_faced_token" entries
 				if strings.Contains(card.Layout, "token") {

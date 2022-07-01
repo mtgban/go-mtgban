@@ -795,31 +795,31 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 				// SNC-Style gilded
 				if inCard.isGilded() {
-					if !card.HasFrameEffect("custom_gilded") {
+					if !card.HasPromoType(mtgjson.PromoTypeGilded) {
 						continue
 					}
 				} else {
-					if card.HasFrameEffect("custom_gilded") {
+					if card.HasPromoType(mtgjson.PromoTypeGilded) {
 						continue
 					}
 				}
 
 				if inCard.isPhyrexian() {
-					if !card.HasFrameEffect("custom_phyrexian") {
+					if !card.HasUniqueLanguage(mtgjson.LanguagePhyrexian) {
 						continue
 					}
 				} else {
-					if card.HasFrameEffect("custom_phyrexian") {
+					if card.HasUniqueLanguage(mtgjson.LanguagePhyrexian) {
 						continue
 					}
 				}
 
 				if inCard.isTextured() {
-					if !card.HasFrameEffect("custom_textured") {
+					if !card.HasPromoType(mtgjson.PromoTypeTextured) {
 						continue
 					}
 				} else {
-					if card.HasFrameEffect("custom_textured") {
+					if card.HasPromoType(mtgjson.PromoTypeTextured) {
 						continue
 					}
 				}
@@ -833,9 +833,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 
-					if inCard.isThickDisplay() && !card.HasFrameEffect("custom_thick") {
+					if inCard.isThickDisplay() && !card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
 						continue
-					} else if !inCard.isThickDisplay() && card.HasFrameEffect("custom_thick") {
+					} else if !inCard.isThickDisplay() && card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
 						continue
 					}
 				}
