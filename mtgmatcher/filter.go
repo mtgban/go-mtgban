@@ -1102,7 +1102,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						checkNumberSuffix = true
 					}
 				case "Strict Proctor":
-					if set.Name == "Strixhaven: School of Mages" {
+					if set.Name == "Strixhaven: School of Mages" && !inCard.isExtendedArt() {
 						expectedSuffix = mtgjson.SuffixSpecial
 						checkNumberSuffix = inCard.Foil
 					}
