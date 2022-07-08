@@ -4022,20 +4022,12 @@ var wc99Variants = map[string]map[string]string{
 		"1999 matt linde 6ed 347": "ml347b",
 	},
 	"Mountain": {
-		"6th edition 343 mark le pine 1999": "mlp346a",
-
-		"6th edition 346 mark le pine 1999": "mlp346a",
-		"urza's saga 346 mark le pine 1999": "mlp346b",
-		"tempest a mark le pine 1999":       "mlp344a",
+		"6th edition 346 mark le pine 1999": "mlp343",
+		"tempest a mark le pine 1999":       "mlp344",
 		"tempest b mark le pine 1999":       "mlp344",
 		"tempest a kai budde 1999":          "kb343",
 		"tempest b kai budde 1999":          "kb344",
-		"tempest c kai budde 1999":          "kb345",
-
-		"1999 mark le pine 6ed 343": "mlp346a",
-		"1999 mark le pine usg 346": "mlp346b",
-		"1999 kai budde 6ed 343":    "kb343",
-		"1999 kai budde usg 346":    "kb346",
+		"tempest c kai budde 1999":          "kb346",
 	},
 	"Swamp": {
 		"urza's saga 346 jakub slemr 1999": "js339",
