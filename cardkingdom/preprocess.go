@@ -14,8 +14,6 @@ import (
 // be mistaken for edition codes (thus misdirecting the matcher) or that contain
 // incorrect numbers. Sometimes both.
 var skuFixupTable = map[string]string{
-	"FEM-070B": "FEM-030B",
-
 	"ATQ-080A": "ATQ-080C",
 	"ATQ-080B": "ATQ-080A",
 	"ATQ-080C": "ATQ-080B",
@@ -25,10 +23,7 @@ var skuFixupTable = map[string]string{
 	"PAL96-003": "PARL-003",
 	"PAL96-004": "PARL-004",
 
-	"PUMA-062A": "PDTK-061A",
-
-	"FDOM-269P": "PDOM-001P",
-	"MPS-001A":  "PRES-001A",
+	"MPS-001A": "PRES-001A",
 
 	"PJMP-496B": "JMP-496",
 	"P2XM-383":  "2XM-383",
@@ -39,7 +34,12 @@ var skuFixupTable = map[string]string{
 
 	"WC97-JS097":    "WC97-JS242",
 	"WC97-PM037":    "WC97-PM037B",
+	"WC98-343":      "WC98-BR343",
+	"WC98-344":      "WC98-BR344",
+	"WC98-345":      "WC98-BR345",
+	"WC98-346":      "WC98-BR346",
 	"WC98-RB330":    "WC98-RB330SB",
+	"WC02-SHH336":   "WC02-SHH336A",
 	"WC01-AB078":    "WC01-AB078SB",
 	"WC02-SHH266":   "WC02-SHH266SB",
 	"WC02-CR057SBA": "WC02-CR057SB",
