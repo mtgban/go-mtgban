@@ -77,11 +77,14 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch set.Name {
 			case "Promotional Planes":
 			case "Double Masters",
-				"Jumpstart":
+				"Jumpstart",
+				"Double Masters 2022":
 				switch inCard.Name {
 				case "Wrath of God",
 					"Chord of Calling",
-					"Scholar of the Lost Trove":
+					"Scholar of the Lost Trove",
+					"Weathered Wayfarer",
+					"Bring to Light":
 				default:
 					continue
 				}
