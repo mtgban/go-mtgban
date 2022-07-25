@@ -179,10 +179,11 @@ func (tcg *TCGPlayerIndex) scrape() error {
 					}
 				}
 
-				tcgId, found = card.Identifiers["tcgplayerEtchedProductId"]
-				if found {
+				// Sometimes etched-only cards have two tcgIds by mistake, skip one
+				tcgEtchedId, found := card.Identifiers["tcgplayerEtchedProductId"]
+				if found && tcgEtchedId != tcgId {
 					pages <- indexChan{
-						TCGProductId: tcgId,
+						TCGProductId: tcgEtchedId,
 						UUID:         card.UUID,
 						Etched:       true,
 					}

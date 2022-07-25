@@ -1109,6 +1109,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						expectedSuffix = mtgjson.SuffixSpecial
 						checkNumberSuffix = inCard.Foil
 					}
+				case "Stocking Tiger":
+					if Contains(inCard.Variation, "No Stamp") {
+						checkNumberSuffix = true
+					}
 				}
 
 				if checkNumberSuffix && !strings.HasSuffix(card.Number, expectedSuffix) {
