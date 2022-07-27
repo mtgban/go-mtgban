@@ -36,7 +36,9 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		variant += strings.Join(s[1:], " ")
 	}
 
-	if strings.Contains(variant, "BGS") {
+	if strings.Contains(variant, "BGS") ||
+		strings.Contains(cardName, "Deprecated") ||
+		strings.Contains(cardName, "Does not exist") {
 		return nil, errors.New("unsupported")
 	}
 
