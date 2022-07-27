@@ -1113,6 +1113,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if Contains(inCard.Variation, "No Stamp") {
 						checkNumberSuffix = true
 					}
+				case "Shadow Lance":
+					if set.Name == "Guildpact" {
+						expectedSuffix = mtgjson.SuffixSpecial
+					}
 				}
 
 				if checkNumberSuffix && !strings.HasSuffix(card.Number, expectedSuffix) {
