@@ -39,10 +39,13 @@ var skuFixupTable = map[string]string{
 	"WC98-345":      "WC98-BR345",
 	"WC98-346":      "WC98-BR346",
 	"WC98-RB330":    "WC98-RB330SB",
-	"WC02-SHH336":   "WC02-SHH336A",
 	"WC01-AB078":    "WC01-AB078SB",
 	"WC02-SHH266":   "WC02-SHH266SB",
 	"WC02-CR057SBA": "WC02-CR057SB",
+	"WC02-CR337":    "WC02-CR337A",
+	"WC02-CR337A":   "WC02-CR337B",
+	"WC02-RL337":    "WC02-RL337A",
+	"WC02-RL337A":   "WC02-RL337B",
 	"WC03-WE062":    "WC03-WE062SB",
 
 	// Yellow Hidetsugu
