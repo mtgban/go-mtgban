@@ -414,7 +414,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 }
 
 var promoTable = map[string]string{
-	"Abrupt Decay":               "PWCQ",
+	"Abrupt Decay":               "WMC",
 	"Abzan Beastmaster":          "F15",
 	"Accumulated Knowledge":      "F04",
 	"Acidic Slime":               "F12",

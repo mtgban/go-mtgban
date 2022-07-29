@@ -401,7 +401,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 			edition = "Special Occasion"
 		} else {
 			for _, tag := range []string{
-				"PIDW", "PI13", "PI14", "PPRO", "PWCQ", "PSUS", "PCMP", "PSS1",
+				"PIDW", "PI13", "PI14", "PPRO", "WMC", "PSUS", "PCMP", "PSS1",
 			} {
 				if len(mtgmatcher.MatchInSet(cardName, tag)) == 1 {
 					edition = tag
