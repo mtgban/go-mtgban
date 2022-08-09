@@ -326,6 +326,7 @@ var EditionTable = map[string]string{
 	"2016 WMCQ Promo":                     "World Magic Cup Qualifiers",
 	"2017 WMCQ Promo":                     "World Magic Cup Qualifiers",
 	"DCI Promo World Magic Cup Qualifier": "World Magic Cup Qualifiers",
+	"Promos: WMCQ":                        "World Magic Cup Qualifiers",
 	"WCQ":                                 "World Magic Cup Qualifiers",
 	"WMC Promo":                           "World Magic Cup Qualifiers",
 	"WMC Qualifier":                       "World Magic Cup Qualifiers",
