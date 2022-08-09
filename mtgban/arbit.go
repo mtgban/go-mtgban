@@ -248,7 +248,6 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 					blEntry.Conditions = invEntry.Conditions
 					blEntry.BuyPrice = blEntries[nmIndex].BuyPrice * grade[invEntry.Conditions]
 					blEntry.TradePrice = blEntries[nmIndex].TradePrice * grade[invEntry.Conditions]
-
 				}
 			}
 
