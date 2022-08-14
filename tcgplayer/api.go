@@ -464,22 +464,24 @@ type latestSalesRequest struct {
 }
 
 type latestSalesResponse struct {
-	PreviousPage string `json:"previousPage"`
-	NextPage     string `json:"nextPage"`
-	ResultCount  int    `json:"resultCount"`
-	TotalResults int    `json:"totalResults"`
-	Data         []struct {
-		Condition       string    `json:"condition"`
-		Variant         string    `json:"variant"`
-		Language        string    `json:"language"`
-		Quantity        int       `json:"quantity"`
-		Title           string    `json:"title"`
-		ListingType     string    `json:"listingType"`
-		CustomListingID string    `json:"customListingId"`
-		PurchasePrice   float64   `json:"purchasePrice"`
-		ShippingPrice   float64   `json:"shippingPrice"`
-		OrderDate       time.Time `json:"orderDate"`
-	} `json:"data"`
+	PreviousPage string            `json:"previousPage"`
+	NextPage     string            `json:"nextPage"`
+	ResultCount  int               `json:"resultCount"`
+	TotalResults int               `json:"totalResults"`
+	Data         []LatestSalesData `json:"data"`
+}
+
+type LatestSalesData struct {
+	Condition       string    `json:"condition"`
+	Variant         string    `json:"variant"`
+	Language        string    `json:"language"`
+	Quantity        int       `json:"quantity"`
+	Title           string    `json:"title"`
+	ListingType     string    `json:"listingType"`
+	CustomListingID string    `json:"customListingId"`
+	PurchasePrice   float64   `json:"purchasePrice"`
+	ShippingPrice   float64   `json:"shippingPrice"`
+	OrderDate       time.Time `json:"orderDate"`
 }
 
 const (
