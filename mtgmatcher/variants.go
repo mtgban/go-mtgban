@@ -4126,17 +4126,17 @@ var wc02Variants = map[string]map[string]string{
 		"odyssey 336 sim han how 2002":      "shh336a",
 		"invasion 337 carlos romao 2002":    "cr337",
 		"odyssey 337 carlos romao 2002":     "cr337a",
-		"odyssey 337 raphael levy 2002":     "rl337",
+		"odyssey 337 raphael levy 2002":     "rl337b",
 		"invasion 337 raphael levy 2002":    "rl337a",
 
 		"2002 carlos romao 7ed 335": "cr335b",
 		"2002 carlos romao inv 335": "cr335a",
 		"2002 carlos romao ody 337": "cr337a",
 		"2002 raphael levy 7ed 333": "rl333",
-		"2002 raphael levy inv 336": "rl336",
-		"2002 raphael levy ody 336": "rl336a",
-		"2002 raphael levy ody 337": "rl337",
+		"2002 raphael levy inv 336": "rl336a",
+		"2002 raphael levy ody 336": "rl336b",
 		"2002 raphael levy inv 337": "rl337a",
+		"2002 raphael levy ody 337": "rl337b",
 	},
 }
 
