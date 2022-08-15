@@ -179,6 +179,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 			// Custom modifications or skips
 			switch set.Code {
+			// Skip non-English promo cards
+			case "PLG21":
+				switch card.Number {
+				case "C1", "C2":
+					continue
+				}
 			// Skip duplicate cards that cause trouble down the road
 			case "INV", "USG", "POR", "7ED", "6ED":
 				if strings.HasSuffix(card.Number, "s") {
