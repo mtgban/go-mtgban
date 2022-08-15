@@ -43,6 +43,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 
 	if cardName == "Bruna, Light of Alabaster" && variant == "Commander 2018" {
 		return nil, errors.New("does not exist")
+	} else if cardName == "Elvish Vanguard" && (strings.Contains(variant, "Spanish") || strings.Contains(variant, "Italian")) {
+
+		return nil, errors.New("non english")
 	}
 
 	ogVariant := variant
