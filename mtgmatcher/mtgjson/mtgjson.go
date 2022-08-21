@@ -50,6 +50,7 @@ type Card struct {
 	IsOversized         bool              `json:"isOversized"`
 	IsPromo             bool              `json:"isPromo"`
 	IsReserved          bool              `json:"isReserved"`
+	Language            string            `json:"language"`
 	Layout              string            `json:"layout"`
 	Name                string            `json:"name"`
 	Number              string            `json:"number"`
