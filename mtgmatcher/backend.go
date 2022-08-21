@@ -505,6 +505,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.AlternateNames = altNames
 }
 
+var langs = map[string]string{
+	"JPN": "Japanese",
+	"ITA": "Italian",
+}
+
 func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
 	// Copy base set information
 	dup := mtgjson.Set{}
@@ -551,6 +556,7 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 		dup.Cards[i] = sets[code].Cards[i]
 		dup.Cards[i].UUID += "_" + strings.ToLower(tag)
 		dup.Cards[i].SetCode = dup.Code
+		dup.Cards[i].Language = langs[tag]
 
 		// Update printings for the CardInfo map
 		ci := cards[Normalize(dup.Cards[i].Name)]
