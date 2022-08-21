@@ -190,13 +190,6 @@ func (c *Card) HasPromoType(pt string) bool {
 	return false
 }
 
-func (c *Card) HasUniqueLanguage(lang string) bool {
-	if len(c.ForeignData) != 1 {
-		return false
-	}
-	return c.ForeignData[0].Language == lang
-}
-
 func (c *Card) IsPlaneswalker() bool {
 	for _, typeLine := range c.Types {
 		if typeLine == "Planeswalker" {

@@ -476,7 +476,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				// It is required to set a proper tag to parse non-English
 				// cards or well-known promos
 				for _, card := range foundCards {
-					if card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
+					if card.Language == mtgjson.LanguageJapanese {
 						skip = true
 						break
 					}
@@ -671,11 +671,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 			// JPN
 			if inCard.isJPN() && set.Code != "PMEI" && !strings.HasPrefix(set.Name, "Magic Premiere Shop") && set.Code != "STA" {
-				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && !card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
+				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && card.Language != mtgjson.LanguageJapanese {
 					continue
 				}
 			} else {
-				if strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && card.HasUniqueLanguage(mtgjson.LanguageJapanese) {
+				if strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && card.Language == mtgjson.LanguageJapanese {
 					continue
 				}
 			}
@@ -809,11 +809,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				if inCard.isPhyrexian() {
-					if !card.HasUniqueLanguage(mtgjson.LanguagePhyrexian) {
+					if card.Language != mtgjson.LanguagePhyrexian {
 						continue
 					}
 				} else {
-					if card.HasUniqueLanguage(mtgjson.LanguagePhyrexian) {
+					if card.Language == mtgjson.LanguagePhyrexian {
 						continue
 					}
 				}

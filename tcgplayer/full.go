@@ -149,7 +149,7 @@ func (tcg *TCGPlayerFull) processEntry(channel chan<- responseChan, req requestC
 			switch lang {
 			case "":
 			case "Japanese":
-				if co.Card.HasUniqueLanguage("Japanese") {
+				if co.Language == "Japanese" {
 					return
 				}
 			default:
