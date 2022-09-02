@@ -43,7 +43,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 
 	if cardName == "Bruna, Light of Alabaster" && variant == "Commander 2018" {
 		return nil, errors.New("does not exist")
-	} else if cardName == "Elvish Vanguard" && (strings.Contains(variant, "Spanish") || strings.Contains(variant, "Italian")) {
+	} else if cardName == "Elvish Vanguard" && (strings.Contains(variant, "Spanish") || strings.Contains(variant, "French") || strings.Contains(variant, "Italian")) {
 
 		return nil, errors.New("non english")
 	}
@@ -121,6 +121,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Lotus Bloom":
 			edition = "TSR"
 			variant = "411"
+		case "Shivan Dragon":
+			if variant == "Moscow 2005" {
+				edition = "P9ED"
+			}
 		}
 	case "Media Promos":
 		switch cardName {
