@@ -2746,6 +2746,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Daretti, Scrap Savant": {
 		"non-foil - commander 2014": "898",
 	},
+	"Dark Ritual": {
+		"masters 25": "611",
+	},
 	"Demonic Tutor": {
 		"ultimate masters":              "472",
 		"duel deck: divine vs demonic":  "620",
