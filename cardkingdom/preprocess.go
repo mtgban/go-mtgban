@@ -48,6 +48,9 @@ var skuFixupTable = map[string]string{
 	"WC02-RL337A":   "WC02-RL337B",
 	"WC03-WE062":    "WC03-WE062SB",
 
+	// Ertai, the Corrupted Alt Art
+	"PPLS-107": "PLS-107★",
+
 	// Yellow Hidetsugu
 	"PNEO-432": "NEO-432",
 }
