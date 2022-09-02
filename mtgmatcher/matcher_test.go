@@ -1027,7 +1027,7 @@ var MatchTests = []MatchTest{
 	},
 	MatchTest{
 		Id:   "a9e37c90-1112-53ea-a442-27897a256f76",
-		Desc: "borderless_textured",
+		Desc: "textured_borderless",
 		In: Card{
 			Name:      "Emrakul, the Aeons Torn",
 			Variation: "Textured Foil",
@@ -1036,11 +1036,20 @@ var MatchTests = []MatchTest{
 	},
 	MatchTest{
 		Id:   "d0d78dd8-cbe2-5387-8433-5ce7e4ef0d11",
-		Desc: "borderless_non_textured",
+		Desc: "textured_non_borderless",
 		In: Card{
 			Name:      "Liliana, the Last Hope",
 			Variation: "Borderless",
 			Edition:   "Double Masters 2022",
+		},
+	},
+	MatchTest{
+		Id:   "f0f79ddd-ed23-5531-affa-70ebd0a297b2",
+		Desc: "textured_showcase",
+		In: Card{
+			Name:      "Ivy, Gleeful Spellthief",
+			Variation: "Textured Foil",
+			Edition:   "Dominaria United",
 		},
 	},
 

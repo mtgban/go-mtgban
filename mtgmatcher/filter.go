@@ -741,12 +741,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			} else if (setDate.After(PromosForEverybodyYay) || set.Code == "ALA") && !inCard.isMysteryList() {
 				// ELD-Style borderless
-				if inCard.isBorderless() || inCard.isTextured() {
+				if inCard.isBorderless() {
 					if card.BorderColor != mtgjson.BorderColorBorderless {
 						continue
 					}
-					// BaB are allowed to have borderless
-				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+					// BaB are allowed to have borderless, same as Textured cards
+				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) && !card.HasPromoType(mtgjson.PromoTypeTextured) {
 					// IKO may have showcase cards which happen to be borderless
 					// or reskinned ones. Also all cards from STA are borderless,
 					// so they are never tagged as such.
@@ -776,7 +776,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else {
 					// NEO has showcase cards that aren't marked as such when they are Etched
-					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) && !inCard.isEtched() {
+					// same for DMU and Textured
+					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) && !inCard.isEtched() && !inCard.isTextured() {
 						continue
 					}
 				}
