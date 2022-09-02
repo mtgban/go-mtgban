@@ -970,6 +970,10 @@ func adjustEdition(inCard *Card) {
 			case strings.Contains(variation, "English"):
 				variation = "450"
 			}
+		case "Diabolic Tutor":
+			if inCard.isIDWMagazineBook() {
+				edition = "Secret Lair Drop"
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps
