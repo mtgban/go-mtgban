@@ -7,19 +7,19 @@ import (
 	"github.com/kodabb/go-mtgban/mtgban"
 )
 
-type TCGDirectNoFees struct {
+type TCGDirectNet struct {
 	buylistDate     time.Time
 	buylist         mtgban.BuylistRecord
 	DirectInventory mtgban.InventoryRecord
 }
 
-func NewTCGDirectNoFees() *TCGDirectNoFees {
-	tcg := TCGDirectNoFees{}
+func NewTCGDirectNet() *TCGDirectNet {
+	tcg := TCGDirectNet{}
 	tcg.buylist = mtgban.BuylistRecord{}
 	return &tcg
 }
 
-func (tcg *TCGDirectNoFees) Buylist() (mtgban.BuylistRecord, error) {
+func (tcg *TCGDirectNet) Buylist() (mtgban.BuylistRecord, error) {
 	if len(tcg.DirectInventory) == 0 {
 		return nil, errors.New("missing inventory")
 	}
@@ -64,9 +64,9 @@ func (tcg *TCGDirectNoFees) Buylist() (mtgban.BuylistRecord, error) {
 	return tcg.buylist, nil
 }
 
-func (tcg *TCGDirectNoFees) Info() (info mtgban.ScraperInfo) {
-	info.Name = "TCG Direct No Fees"
-	info.Shorthand = "TCGDirectNF"
+func (tcg *TCGDirectNet) Info() (info mtgban.ScraperInfo) {
+	info.Name = "TCG Direct (net)"
+	info.Shorthand = "TCGDirectNet"
 	info.BuylistTimestamp = tcg.buylistDate
 	info.MultiCondBuylist = true
 	info.NoCredit = true
