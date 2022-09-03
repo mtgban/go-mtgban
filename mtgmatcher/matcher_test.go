@@ -16,6 +16,21 @@ type MatchTest struct {
 }
 
 var MatchTests = []MatchTest{
+	MatchTest{
+		Id:   "3a532aa6-591a-5aa8-8f86-19485642e741",
+		Desc: "no_edition",
+		In: Card{
+			Name: "Passionate Archaeologist (Extended Art)",
+		},
+	},
+	MatchTest{
+		Desc: "no_variant",
+		Err:  ErrAliasing,
+		In: Card{
+			Name: "Forest (269)",
+		},
+	},
+
 	// Errors
 	MatchTest{
 		Desc: "card_does_not_exist",
