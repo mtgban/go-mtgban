@@ -18,6 +18,9 @@ type CardtraderMarket struct {
 	MaxConcurrency int
 	ShareCode      string
 
+	// Only retrieve data from a single edition
+	TargetEdition string
+
 	// Keep same-conditions entries
 	KeepDuplicates bool
 
@@ -145,6 +148,10 @@ func (ct *CardtraderMarket) scrape() error {
 		if exp.GameId != GameIdMagic {
 			continue
 		}
+		if ct.TargetEdition != "" && exp.Name != ct.TargetEdition {
+			continue
+		}
+
 		bp, err := ct.client.Blueprints(exp.Id)
 		if err != nil {
 			ct.printf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
@@ -177,6 +184,9 @@ func (ct *CardtraderMarket) scrape() error {
 
 	go func() {
 		for id, expName := range expansions {
+			if ct.TargetEdition != "" && expName != ct.TargetEdition {
+				continue
+			}
 			ct.printf("Processing %s (%d)", expName, id)
 			expansionIds <- id
 		}
