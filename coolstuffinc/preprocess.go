@@ -224,7 +224,8 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	}
 	switch edition {
 	case "", "Overwhelming Swarm", "Special Offers", "Unique Boutique", "Magic Mics Merch",
-		"Authenticated Collectibles", "New Player Series", "Heavy Metal Magic Supplies":
+		"Authenticated Collectibles", "New Player Series", "Heavy Metal Magic Supplies",
+		"Online Arena":
 		return nil, errors.New("set not mtg")
 	case "Prerelease Promos":
 		if variant != "" {
@@ -448,6 +449,8 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
+	case "Online Arena":
+		return nil, errors.New("not supported")
 	case "Black Bordered (foreign)":
 		switch variant {
 		case "German", "French":
