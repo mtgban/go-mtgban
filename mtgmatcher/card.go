@@ -463,7 +463,7 @@ func (c *Card) isJudge() bool {
 }
 
 func (c *Card) isRewards() bool {
-	return (Contains(c.Variation, "Textless") && !Contains(c.Variation, "Lunar")) ||
+	return (Contains(c.Variation, "Textless") && !Contains(c.Variation, "Lunar") && !Contains(c.Variation, "Store")) ||
 		(c.Contains("Reward") && !c.isJudge())
 }
 
