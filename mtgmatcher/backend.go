@@ -190,10 +190,14 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if strings.HasSuffix(card.Number, "s") {
 					continue
 				}
-			// One of the tokens is a DFC but burns a card number, skip it
 			case "SLD":
-				if card.Number == "28" {
+				switch card.Number {
+				// One of the tokens is a DFC but burns a card number, skip it
+				case "28":
 					continue
+				// Source is "technically correct" but it gets too messy to track
+				case "589":
+					card.Finishes = []string{"nonfoil", "etched"}
 				}
 			// Only keep dungeons, and fix their layout to make sure they are tokens
 			case "AFR":
