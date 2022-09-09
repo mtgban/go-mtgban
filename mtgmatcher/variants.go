@@ -3510,14 +3510,20 @@ var sldVariants = map[string]map[string]string{
 	"Mulldrifter": {
 		"secret lair: extra life 2021 magali villeneuve age 41": "373",
 		"secret lair: extra life 2021 aliya age 5 1/2":          "374",
+		"v.1": "373",
+		"v.2": "374",
 	},
 	"Craterhoof Behemoth": {
 		"secret lair: extra life 2021 lars grant-west age 52": "375",
 		"secret lair: extra life 2021 kira age 5 1/2":         "376",
+		"v.1": "375",
+		"v.2": "376",
 	},
 	"Metalwork Colossus": {
 		"secret lair: extra life 2021 chris rahn age 36": "377",
 		"secret lair: extra life 2021 hyan tran age 6":   "378",
+		"v.1": "377",
+		"v.2": "378",
 	},
 	"Mother of Runes": {
 		"secret lair: mother's day 2021": "298",
@@ -3532,6 +3538,12 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Questing Phelddagrif": {
 		"secret lair: extra life 2021": "671",
+	},
+	"Grim Tutor": {
+		"secret lair hand drawn": "365",
+	},
+	"Primeval Titan": {
+		"secret lair showcase": "221",
 	},
 }
 
