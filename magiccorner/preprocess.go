@@ -28,6 +28,7 @@ var cardTable = map[string]string{
 
 	"Valentin, Dean of the Vein // Lisette, Dean of the": "Valentin, Dean of the Vein",
 	"Mourning Patrol // Mourning Apparition":             "Mourning Patrol",
+	"Growing Rites of Itlimoc / Itlimoc, Cradle of the":  "Growing Rites of Itlimoc",
 
 	"Insegnamenti Mistici": "Mystical Teachings",
 	"Massa Chimerica ":     "Chimeric Mass",
@@ -36,6 +37,11 @@ var cardTable = map[string]string{
 	"Torpore":              "Stupor",
 	"Tattica del Cenn":     "Cenn's Tactician",
 	"Aeronaut":             "Helionaut",
+
+	"Lullamage's Familiar":    "Lullmage's Familiar",
+	"Sword of Heart and Home": "Sword of Hearth and Home",
+	"Allosaurus Sheperd":      "Allosaurus Shepherd",
+	"Brazen Bucaneers":        "Brazen Buccaneers",
 }
 
 var editionTable = map[string]string{
