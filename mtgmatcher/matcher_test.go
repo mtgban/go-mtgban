@@ -2811,6 +2811,24 @@ var MatchTests = []MatchTest{
 		},
 	},
 
+	// CLB puts some extended arts before normal printings
+	MatchTest{
+		Id:   "472e2abd-2edd-5369-9a0d-6b843361361e",
+		Desc: "extras_come_before",
+		In: Card{
+			Name:    "Seasoned Dungeoneer",
+			Edition: "Commander Legends: Battle for Baldur's Gate: Extras",
+		},
+	},
+	MatchTest{
+		Id:   "350929d4-a62a-5d53-921f-3f0d42f70fe9",
+		Desc: "extras_come_before_alt",
+		In: Card{
+			Name:    "Elminster",
+			Edition: "Commander Legends: Battle for Baldur's Gate: Extras",
+		},
+	},
+
 	// Known fixups
 	MatchTest{
 		Id:   "85e31db0-769e-51d8-a677-8d810653e70a_e",

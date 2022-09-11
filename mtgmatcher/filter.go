@@ -1016,6 +1016,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
+			// EA cards from commander decks appear before the normal prints, beyondBaseSet needs help
+			case "Commander Legends: Battle for Baldur's Gate":
+				cn, _ := strconv.Atoi(card.Number)
+				if cn > 607 && cn < 930 {
+					if inCard.isExtendedArt() && !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
+						continue
+					} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) && card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
+						continue
+					}
+				}
 			// Intro pack
 			case "Aether Revolt",
 				"Kaladesh":
