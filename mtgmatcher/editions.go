@@ -26,6 +26,8 @@ var EditionTable = map[string]string{
 	"Unlimited":            "Unlimited Edition",
 	"Summer Magic (Edgar)": "Summer Magic / Edgar",
 
+	"Universes Beyond: Warhammer 40,000": "Warhammer 40,000",
+
 	// Double Feature
 	"Innistrad: Double Feature - Crimson Vow":   "Innistrad: Double Feature",
 	"Innistrad: Double Feature - Midnight Hunt": "Innistrad: Double Feature",
