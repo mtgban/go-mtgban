@@ -106,18 +106,39 @@ func (csi *CoolstuffincOfficial) scrape() error {
 				priceRatio = card.PriceBuy / card.PriceRetail * 100
 			}
 
-			out := &mtgban.BuylistEntry{
+			// NM
+			out := mtgban.BuylistEntry{
+				Conditions: "NM",
 				BuyPrice:   card.PriceBuy,
 				TradePrice: card.PriceBuy * 1.3,
 				PriceRatio: priceRatio,
 				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",
 			}
-			err = csi.buylist.Add(cardId, out)
+			err = csi.buylist.Add(cardId, &out)
 			if err != nil {
 				csi.printf("%v", err)
 				csi.printf("%q", theCard)
 				csi.printf("%q", card)
 			}
+			// Same as NM
+			out.Conditions = "SP"
+			err = csi.buylist.Add(cardId, &out)
+			if err != nil {
+				csi.printf("%v", err)
+				csi.printf("%q", theCard)
+				csi.printf("%q", card)
+			}
+			// 0.75 of NM
+			out.Conditions = "MP"
+			out.BuyPrice = card.PriceBuy * 0.75
+			out.TradePrice = card.PriceBuy * 0.75 * 1.3
+			err = csi.buylist.Add(cardId, &out)
+			if err != nil {
+				csi.printf("%v", err)
+				csi.printf("%q", theCard)
+				csi.printf("%q", card)
+			}
+			// No HP
 		}
 	}
 
@@ -159,6 +180,5 @@ func (csi *CoolstuffincOfficial) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CSI"
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
-	info.Grading = mtgban.DefaultGrading
 	return
 }

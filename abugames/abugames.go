@@ -306,6 +306,5 @@ func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "ABU"
 	info.InventoryTimestamp = &abu.inventoryDate
 	info.BuylistTimestamp = &abu.buylistDate
-	info.MultiCondBuylist = true
 	return
 }

@@ -162,15 +162,10 @@ func (bp *Blueprint) Buylist() (mtgban.BuylistRecord, error) {
 	return bp.buylist, nil
 }
 
-func grading(_ string, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	return nil
-}
-
 func (bp *Blueprint) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Blueprint"
 	info.Shorthand = "BP"
 	info.BuylistTimestamp = &bp.buylistDate
-	info.Grading = grading
 	info.NoCredit = true
 	return
 }

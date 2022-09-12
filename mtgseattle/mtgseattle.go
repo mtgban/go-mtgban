@@ -215,16 +215,17 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 			return
 		}
 
-		out := responseChan{
-			cardId: cardId,
-		}
 		if mode == modeInventory {
-			out.invEntry = &mtgban.InventoryEntry{
-				Price:      price,
-				Conditions: conditions,
-				Quantity:   qty,
-				URL:        "https://www.mtgseattle.com" + link,
+			out := responseChan{
+				cardId: cardId,
+				invEntry: &mtgban.InventoryEntry{
+					Price:      price,
+					Conditions: conditions,
+					Quantity:   qty,
+					URL:        "https://www.mtgseattle.com" + link,
+				},
 			}
+			channel <- out
 		} else if mode == modeBuylist {
 			var priceRatio, sellPrice float64
 
@@ -237,15 +238,23 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 				priceRatio = price / sellPrice * 100
 			}
 
-			out.buyEntry = &mtgban.BuylistEntry{
-				BuyPrice:   price,
-				TradePrice: credit,
-				PriceRatio: priceRatio,
-				Quantity:   qty,
-				URL:        "https://www.mtgseattle.com" + link,
+			gradeMap := grading(cardId, price)
+			for _, grade := range mtgban.DefaultGradeTags {
+				factor := gradeMap[grade]
+				out := responseChan{
+					cardId: cardId,
+					buyEntry: &mtgban.BuylistEntry{
+						Conditions: grade,
+						BuyPrice:   price * factor,
+						TradePrice: credit * factor,
+						PriceRatio: priceRatio,
+						Quantity:   qty,
+						URL:        "https://www.mtgseattle.com" + link,
+					},
+				}
+				channel <- out
 			}
 		}
-		channel <- out
 	})
 
 	// Search for the next page, if not found we processed them all
@@ -362,57 +371,57 @@ func (ms *MTGSeattle) Buylist() (mtgban.BuylistRecord, error) {
 	return ms.buylist, nil
 }
 
-func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
+func grading(cardId string, price float64) map[string]float64 {
 	co, err := mtgmatcher.GetUUID(cardId)
 	if err != nil {
 		return nil
 	}
 
 	if co.Foil {
-		if entry.BuyPrice >= 50 {
+		if price >= 50 {
 			return map[string]float64{
-				"SP": 0.8, "MP": 0.6, "HP": 0.4,
+				"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
 			}
 		}
-		if entry.BuyPrice >= 5 {
+		if price >= 5 {
 			return map[string]float64{
-				"SP": 0.75, "MP": 0.5, "HP": 0.3,
+				"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
 			}
 		}
 		return map[string]float64{
-			"SP": 0.7, "MP": 0.4, "HP": 0.25,
+			"NM": 1, "SP": 0.7, "MP": 0.4, "HP": 0.25,
 		}
 	}
 
 	switch co.SetCode {
 	case "LEA", "LEB", "2ED":
-		if entry.BuyPrice >= 50 {
+		if price >= 50 {
 			return map[string]float64{
-				"SP": 0.8, "MP": 0.6, "HP": 0.4,
+				"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
 			}
 		}
-		if entry.BuyPrice >= 5 {
+		if price >= 5 {
 			return map[string]float64{
-				"SP": 0.75, "MP": 0.55, "HP": 0.35,
+				"NM": 1, "SP": 0.75, "MP": 0.55, "HP": 0.35,
 			}
 		}
 		return map[string]float64{
-			"SP": 0.7, "MP": 0.5, "HP": 0.3,
+			"NM": 1, "SP": 0.7, "MP": 0.5, "HP": 0.3,
 		}
 	}
 
-	if entry.BuyPrice >= 50 {
+	if price >= 50 {
 		return map[string]float64{
-			"SP": 0.85, "MP": 0.75, "HP": 0.65,
+			"NM": 1, "SP": 0.85, "MP": 0.75, "HP": 0.65,
 		}
 	}
-	if entry.BuyPrice >= 5 {
+	if price >= 5 {
 		return map[string]float64{
-			"SP": 0.80, "MP": 0.7, "HP": 0.6,
+			"NM": 1, "SP": 0.80, "MP": 0.7, "HP": 0.6,
 		}
 	}
 	return map[string]float64{
-		"SP": 0.75, "MP": 0.6, "HP": 0.5,
+		"NM": 1, "SP": 0.75, "MP": 0.6, "HP": 0.5,
 	}
 }
 
@@ -421,6 +430,5 @@ func (ms *MTGSeattle) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "MS"
 	info.InventoryTimestamp = &ms.inventoryDate
 	info.BuylistTimestamp = &ms.buylistDate
-	info.Grading = grading
 	return
 }

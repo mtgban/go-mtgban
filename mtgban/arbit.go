@@ -165,16 +165,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 
-		// Look up the first NM printing to use as base
-		nmIndex := 0
-		if vendor.Info().MultiCondBuylist {
-			for nmIndex = range blEntries {
-				if blEntries[nmIndex].Conditions == "NM" {
-					break
-				}
-			}
-		}
-		blEntry := blEntries[nmIndex]
+		// The first entry is always NM
+		blEntry := blEntries[0]
 
 		if maxPriceRatio != 0 && blEntry.PriceRatio > maxPriceRatio {
 			continue
@@ -227,27 +219,19 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			price := invEntry.Price * rate
 
-			// When invEntry is not NM, we need to account for conditions, which
-			// means either take a percentage off, or use a differen blEntry entirely
+			// When invEntry is not NM, we need to account for conditions
 			if invEntry.Conditions != "NM" {
-				if vendor.Info().MultiCondBuylist {
-					i := 0
-					for i = range blEntries {
-						if blEntries[i].Conditions == invEntry.Conditions {
-							break
-						}
+				i := 0
+				for i = range blEntries {
+					if blEntries[i].Conditions == invEntry.Conditions {
+						break
 					}
-					blEntry = blEntries[i]
-					// If, after looping, a matching condition was not found,
-					// just skip the current invEntry
-					if blEntry.Conditions != invEntry.Conditions {
-						continue
-					}
-				} else {
-					grade := vendor.Info().Grading(cardId, blEntries[nmIndex])
-					blEntry.Conditions = invEntry.Conditions
-					blEntry.BuyPrice = blEntries[nmIndex].BuyPrice * grade[invEntry.Conditions]
-					blEntry.TradePrice = blEntries[nmIndex].TradePrice * grade[invEntry.Conditions]
+				}
+				blEntry = blEntries[i]
+				// If, after looping, a matching condition was not found,
+				// just skip the current invEntry
+				if blEntry.Conditions != invEntry.Conditions {
+					continue
 				}
 			}
 
@@ -387,6 +371,11 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 	return
 }
 
+// A generic grading map that estimates common deductions
+var defaultGradeMap = map[string]float64{
+	"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
+}
+
 func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEntry, err error) {
 	minDiff := DefaultMismatchMinDiff
 	minSpread := DefaultMismatchMinSpread
@@ -501,12 +490,8 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 				refPrice := refEntry.Price
 				price := invEntry.Price
 
-				// When invEntry is not NM, we need to account for conditions,
-				// using the default ladder
-				if invEntry.Conditions != "NM" {
-					grade := DefaultGrading("", BuylistEntry{})
-					refPrice *= grade[invEntry.Conditions]
-				}
+				// We need to account for conditions, using a default ladder
+				refPrice *= defaultGradeMap[invEntry.Conditions]
 
 				if price == 0 {
 					continue

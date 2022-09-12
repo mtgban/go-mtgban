@@ -210,16 +210,17 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 			return
 		}
 
-		out := responseChan{
-			cardId: cardId,
-		}
 		if mode == modeInventory {
-			out.invEntry = &mtgban.InventoryEntry{
-				Price:      price,
-				Conditions: conditions,
-				Quantity:   qty,
-				URL:        "https://www.toamagic.com" + link,
+			out := responseChan{
+				cardId: cardId,
+				invEntry: &mtgban.InventoryEntry{
+					Price:      price,
+					Conditions: conditions,
+					Quantity:   qty,
+					URL:        "https://www.toamagic.com" + link,
+				},
 			}
+			channel <- out
 		} else if mode == modeBuylist {
 			var priceRatio, sellPrice float64
 
@@ -232,15 +233,55 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 				priceRatio = price / sellPrice * 100
 			}
 
-			out.buyEntry = &mtgban.BuylistEntry{
-				BuyPrice:   price,
-				TradePrice: credit,
-				PriceRatio: priceRatio,
-				Quantity:   qty,
-				URL:        "https://www.toamagic.com" + link,
+			out := responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "NM",
+					BuyPrice:   price,
+					TradePrice: credit,
+					PriceRatio: priceRatio,
+					Quantity:   qty,
+					URL:        "https://www.toamagic.com" + link,
+				},
 			}
+			channel <- out
+
+			out = responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "SP",
+					BuyPrice:   price,
+					TradePrice: credit,
+					PriceRatio: priceRatio,
+					URL:        "https://www.toamagic.com" + link,
+				},
+			}
+			channel <- out
+
+			out = responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "MP",
+					BuyPrice:   price * 0.70,
+					TradePrice: credit * 0.70,
+					PriceRatio: priceRatio,
+					URL:        "https://www.toamagic.com" + link,
+				},
+			}
+			channel <- out
+
+			out = responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "HP",
+					BuyPrice:   price * 0.40,
+					TradePrice: credit * 0.40,
+					PriceRatio: priceRatio,
+					URL:        "https://www.toamagic.com" + link,
+				},
+			}
+			channel <- out
 		}
-		channel <- out
 	})
 
 	// Search for the next page, if not found we processed them all
@@ -360,6 +401,5 @@ func (toa *TOAMagic) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TOA"
 	info.InventoryTimestamp = &toa.inventoryDate
 	info.BuylistTimestamp = &toa.buylistDate
-	info.Grading = mtgban.DefaultGrading
 	return
 }

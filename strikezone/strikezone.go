@@ -320,16 +320,11 @@ func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
 	return sz.buylist, nil
 }
 
-func grading(_ string, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	return nil
-}
-
 func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Strike Zone"
 	info.Shorthand = "SZ"
 	info.InventoryTimestamp = &sz.inventoryDate
 	info.BuylistTimestamp = &sz.buylistDate
-	info.Grading = grading
 	info.NoCredit = true
 	return
 }

@@ -374,6 +374,5 @@ func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "SCG"
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
-	info.MultiCondBuylist = true
 	return
 }

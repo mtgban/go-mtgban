@@ -288,16 +288,34 @@ func (mmtg *Mythicmtg) parseBL() error {
 				priceRatio = price / sellPrice * 100
 			}
 
-			out := &mtgban.BuylistEntry{
+			out := mtgban.BuylistEntry{
+				Conditions: "NM",
 				BuyPrice:   price,
 				PriceRatio: priceRatio,
 				TradePrice: credit,
 				Quantity:   qty,
 				URL:        mmtgBuylistURL,
 			}
-			err = mmtg.buylist.Add(cardId, out)
+			err = mmtg.buylist.Add(cardId, &out)
 			if err != nil {
 				mmtg.printf("%v", err)
+			}
+			if price >= 30 {
+				out.Conditions = "SP"
+				out.BuyPrice = price * 0.8
+				out.TradePrice = credit * 0.8
+				err = mmtg.buylist.Add(cardId, &out)
+				if err != nil {
+					mmtg.printf("%v", err)
+				}
+
+				out.Conditions = "MP"
+				out.BuyPrice = price * 0.6
+				out.TradePrice = credit * 0.6
+				err = mmtg.buylist.Add(cardId, &out)
+				if err != nil {
+					mmtg.printf("%v", err)
+				}
 			}
 		})
 	})
@@ -337,6 +355,5 @@ func (mmtg *Mythicmtg) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "MMTG"
 	info.InventoryTimestamp = &mmtg.inventoryDate
 	info.BuylistTimestamp = &mmtg.buylistDate
-	info.Grading = grading
 	return
 }

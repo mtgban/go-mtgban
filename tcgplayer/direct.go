@@ -68,7 +68,6 @@ func (tcg *TCGDirectNet) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Direct (net)"
 	info.Shorthand = "TCGDirectNet"
 	info.BuylistTimestamp = &tcg.buylistDate
-	info.MultiCondBuylist = true
 	info.NoCredit = true
 	return
 }

@@ -92,7 +92,9 @@ func (ck *CardkingdomHotBuylist) processPage(channel chan<- respChan) error {
 			ck.printf("%v %v", err, card)
 		}
 
-		if price > 0 {
+		gradeMap := grading(cardId, price)
+		for _, grade := range mtgban.DefaultGradeTags {
+			factor := gradeMap[grade]
 			var priceRatio float64
 
 			if sellPrice > 0 {
@@ -102,8 +104,8 @@ func (ck *CardkingdomHotBuylist) processPage(channel chan<- respChan) error {
 			out := respChan{
 				cardId: cardId,
 				buyEntry: &mtgban.BuylistEntry{
-					BuyPrice:   price,
-					TradePrice: price * 1.3,
+					BuyPrice:   price * factor,
+					TradePrice: price * factor * 1.3,
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 				},
@@ -179,6 +181,5 @@ func (ck *CardkingdomHotBuylist) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom Hot Buylist"
 	info.Shorthand = "CKHot"
 	info.BuylistTimestamp = &ck.buylistDate
-	info.Grading = mtgban.DefaultGrading
 	return
 }

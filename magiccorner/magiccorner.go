@@ -313,13 +313,18 @@ func (mc *Magiccorner) parseBL() error {
 			continue
 		}
 
-		out := &mtgban.BuylistEntry{
-			BuyPrice: price * mc.exchangeRate,
-			URL:      "https://www.magiccorner.it/it/vendi-letue-carte",
-		}
-		err = mc.buylist.Add(cardId, out)
-		if err != nil {
-			mc.printf("%v", err)
+		gradeMap := grading(cardId)
+		for _, grade := range mtgban.DefaultGradeTags {
+			factor := gradeMap[grade]
+			out := &mtgban.BuylistEntry{
+				Conditions: grade,
+				BuyPrice:   price * mc.exchangeRate * factor,
+				URL:        "https://www.magiccorner.it/it/vendi-letue-carte",
+			}
+			err = mc.buylist.Add(cardId, out)
+			if err != nil {
+				mc.printf("%v", err)
+			}
 		}
 
 		// Repeat for foils, or skip
@@ -345,13 +350,18 @@ func (mc *Magiccorner) parseBL() error {
 			continue
 		}
 
-		out = &mtgban.BuylistEntry{
-			BuyPrice: price * mc.exchangeRate,
-			URL:      buylistURL,
-		}
-		err = mc.buylist.Add(cardId, out)
-		if err != nil {
-			mc.printf("%v", err)
+		gradeMap = grading(cardId)
+		for _, grade := range mtgban.DefaultGradeTags {
+			factor := gradeMap[grade]
+			out := &mtgban.BuylistEntry{
+				Conditions: grade,
+				BuyPrice:   price * mc.exchangeRate * factor,
+				URL:        buylistURL,
+			}
+			err = mc.buylist.Add(cardId, out)
+			if err != nil {
+				mc.printf("%v", err)
+			}
 		}
 	}
 
@@ -375,7 +385,7 @@ func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
 
 var eighthEditionDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
 
-func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
+func grading(cardId string) map[string]float64 {
 	set, err := mtgmatcher.GetSetUUID(cardId)
 	if err != nil {
 		return nil
@@ -388,12 +398,12 @@ func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
 
 	if setDate.After(eighthEditionDate) {
 		return map[string]float64{
-			"SP": 0.8, "MP": 0.7, "HP": 0.5,
+			"NM": 1, "SP": 0.8, "MP": 0.7, "HP": 0.5,
 		}
 	}
 
 	return map[string]float64{
-		"SP": 0.7, "MP": 0.5, "HP": 0.3,
+		"NM": 1, "SP": 0.7, "MP": 0.5, "HP": 0.3,
 	}
 }
 
@@ -403,7 +413,6 @@ func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mc.inventoryDate
 	info.BuylistTimestamp = &mc.buylistDate
-	info.Grading = grading
 	info.NoCredit = true
 	return
 }

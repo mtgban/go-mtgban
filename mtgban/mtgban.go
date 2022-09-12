@@ -19,7 +19,7 @@ type InventoryEntry struct {
 	Quantity int
 
 	// The grade of the current entry
-	// Only supported values are "NM", "SP", "MP", "HP", and "PO"
+	// Only supported values are listed in DefaultGradeTags
 	Conditions string
 
 	// The price of this entry, in USD
@@ -61,7 +61,7 @@ type BuylistEntry struct {
 	Quantity int
 
 	// The grade of the current entry
-	// Only supported values are "NM", "SP", "MP", "HP", and "PO"
+	// Only supported values are listed in DefaultGradeTags
 	// If empty it is considered "NM".
 	Conditions string
 
@@ -119,23 +119,13 @@ type ScraperInfo struct {
 	// Inventory quantities are not available
 	NoQuantityInventory bool
 
-	// Buylist contains multiple prices for different conditions
-	MultiCondBuylist bool
-
 	// Scraper contains sealed information instead of singles
 	SealedMode bool
-
-	// Return the grading scale for adjusting prices according to conditions
-	// Should be set only if MultiCondBuylist is false
-	Grading func(string, BuylistEntry) map[string]float64
 }
 
-// A generic grading function that estimates deductions when not available
-func DefaultGrading(_ string, entry BuylistEntry) (grade map[string]float64) {
-	grade = map[string]float64{
-		"SP": 0.8, "MP": 0.6, "HP": 0.4,
-	}
-	return
+// The list of supported conditions
+var DefaultGradeTags = []string{
+	"NM", "SP", "MP", "HP", "PO",
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement

@@ -448,7 +448,6 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TCGMkt"
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.BuylistTimestamp = &tcg.buylistDate
-	info.MultiCondBuylist = true
 	info.NoQuantityInventory = true
 	info.NoCredit = true
 	return

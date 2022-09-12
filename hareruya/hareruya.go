@@ -159,16 +159,16 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 			return
 		}
 
-		out := responseChan{
-			cardId: cardId,
-		}
 		if mode == modeInventory {
 			if price != 0 && qty != 0 {
-				out.invEntry = &mtgban.InventoryEntry{
-					Price:      price * ha.exchangeRate,
-					Conditions: cond,
-					Quantity:   qty,
-					URL:        "https://www.hareruyamtg.com" + link,
+				out := responseChan{
+					cardId: cardId,
+					invEntry: &mtgban.InventoryEntry{
+						Price:      price * ha.exchangeRate,
+						Conditions: cond,
+						Quantity:   qty,
+						URL:        "https://www.hareruyamtg.com" + link,
+					},
 				}
 				channel <- out
 			}
@@ -184,12 +184,50 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 				priceRatio = price / sellPrice * 100
 			}
 
-			out.buyEntry = &mtgban.BuylistEntry{
-				BuyPrice:   price * ha.exchangeRate,
-				PriceRatio: priceRatio,
-				URL:        "https://www.hareruyamtg.com" + link,
+			out := responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "NM",
+					BuyPrice:   price * ha.exchangeRate,
+					PriceRatio: priceRatio,
+					URL:        "https://www.hareruyamtg.com" + link,
+				},
 			}
 			channel <- out
+
+			out = responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "SP",
+					BuyPrice:   price * ha.exchangeRate * 0.8,
+					PriceRatio: priceRatio,
+					URL:        "https://www.hareruyamtg.com" + link,
+				},
+			}
+			channel <- out
+
+			out = responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "MP",
+					BuyPrice:   price * ha.exchangeRate * 0.6,
+					PriceRatio: priceRatio,
+					URL:        "https://www.hareruyamtg.com" + link,
+				},
+			}
+			channel <- out
+
+			out = responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "HP",
+					BuyPrice:   price * ha.exchangeRate * 0.4,
+					PriceRatio: priceRatio,
+					URL:        "https://www.hareruyamtg.com" + link,
+				},
+			}
+			channel <- out
+
 			return
 		}
 
@@ -210,11 +248,14 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 			cond := sub.Find(`strong`).Text()
 
 			if price != 0 && qty != 0 {
-				out.invEntry = &mtgban.InventoryEntry{
-					Price:      price * ha.exchangeRate,
-					Conditions: cond,
-					Quantity:   qty,
-					URL:        "https://www.hareruyamtg.com" + link,
+				out := responseChan{
+					cardId: cardId,
+					invEntry: &mtgban.InventoryEntry{
+						Price:      price * ha.exchangeRate,
+						Conditions: cond,
+						Quantity:   qty,
+						URL:        "https://www.hareruyamtg.com" + link,
+					},
 				}
 				channel <- out
 			}
@@ -338,7 +379,6 @@ func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "JP"
 	info.InventoryTimestamp = &ha.inventoryDate
 	info.BuylistTimestamp = &ha.buylistDate
-	info.Grading = mtgban.DefaultGrading
 	info.NoCredit = true
 	return
 }

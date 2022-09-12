@@ -158,7 +158,10 @@ func (ck *Cardkingdom) scrape() error {
 			if err != nil {
 				ck.printf("%v", err)
 			}
-			if price > 0 {
+
+			gradeMap := grading(cardId, price)
+			for _, grade := range mtgban.DefaultGradeTags {
+				factor := gradeMap[grade]
 				var priceRatio float64
 
 				if sellPrice > 0 {
@@ -194,8 +197,9 @@ func (ck *Cardkingdom) scrape() error {
 				u.RawQuery = q.Encode()
 
 				out := &mtgban.BuylistEntry{
-					BuyPrice:   price,
-					TradePrice: price * 1.3,
+					Conditions: grade,
+					BuyPrice:   price * factor,
+					TradePrice: price * factor * 1.3,
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String(),
@@ -241,7 +245,7 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 	return ck.buylist, nil
 }
 
-func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64) {
+func grading(cardId string, price float64) (grade map[string]float64) {
 	co, err := mtgmatcher.GetUUID(cardId)
 	if err != nil {
 		return
@@ -250,23 +254,23 @@ func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64
 	switch {
 	case co.Foil:
 		grade = map[string]float64{
-			"SP": 0.75, "MP": 0.5, "HP": 0.3,
+			"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
 		}
-	case entry.BuyPrice < 15:
+	case price < 15:
 		grade = map[string]float64{
-			"SP": 0.8, "MP": 0.7, "HP": 0.5,
+			"NM": 1, "SP": 0.8, "MP": 0.7, "HP": 0.5,
 		}
-	case entry.BuyPrice >= 15 && entry.BuyPrice < 25:
+	case price >= 15 && price < 25:
 		grade = map[string]float64{
-			"SP": 0.85, "MP": 0.7, "HP": 0.5,
+			"NM": 1, "SP": 0.85, "MP": 0.7, "HP": 0.5,
 		}
-	case entry.BuyPrice >= 25 && entry.BuyPrice < 100:
+	case price >= 25 && price < 100:
 		grade = map[string]float64{
-			"SP": 0.85, "MP": 0.75, "HP": 0.65,
+			"NM": 1, "SP": 0.85, "MP": 0.75, "HP": 0.65,
 		}
-	case entry.BuyPrice >= 100:
+	case price >= 100:
 		grade = map[string]float64{
-			"SP": 0.9, "MP": 0.8, "HP": 0.7,
+			"NM": 1, "SP": 0.9, "MP": 0.8, "HP": 0.7,
 		}
 	}
 
@@ -275,7 +279,7 @@ func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64
 		"Limited Edition Beta",
 		"Unlimited Edition":
 		grade = map[string]float64{
-			"SP": 0.8, "MP": 0.6, "HP": 0.4,
+			"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
 		}
 	}
 
@@ -287,6 +291,5 @@ func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CK"
 	info.InventoryTimestamp = &ck.inventoryDate
 	info.BuylistTimestamp = &ck.buylistDate
-	info.Grading = grading
 	return
 }

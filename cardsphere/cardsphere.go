@@ -224,6 +224,5 @@ func (cs *CardsphereFull) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CS"
 	info.BuylistTimestamp = &cs.buylistDate
 	info.NoCredit = true
-	info.MultiCondBuylist = true
 	return
 }

@@ -276,7 +276,6 @@ func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "95"
 	info.InventoryTimestamp = &nf.inventoryDate
 	info.BuylistTimestamp = &nf.buylistDate
-	info.MultiCondBuylist = true
 	info.NoCredit = true
 	return
 }

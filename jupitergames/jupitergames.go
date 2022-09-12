@@ -350,7 +350,6 @@ func (jup *Jupitergames) parseBL() error {
 		}
 
 		buyEntry := &mtgban.BuylistEntry{
-			Quantity:   1,
 			BuyPrice:   price,
 			TradePrice: price * 1.25,
 			PriceRatio: priceRatio,
@@ -387,6 +386,5 @@ func (jup *Jupitergames) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "JUP"
 	info.InventoryTimestamp = &jup.inventoryDate
 	info.BuylistTimestamp = &jup.buylistDate
-	info.Grading = mtgban.DefaultGrading
 	return
 }
