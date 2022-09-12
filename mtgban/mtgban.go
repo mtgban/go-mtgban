@@ -16,35 +16,35 @@ type GenericEntry interface {
 // InventoryEntry represents an entry for selling a particular Card
 type InventoryEntry struct {
 	// Quantity of this entry
-	Quantity int
+	Quantity int `json:"quantity"`
 
 	// The grade of the current entry
-	// Only supported values are listed in DefaultGradeTags
-	Conditions string
+	// Only supported values are listed in DefaultGradeTags and "PO"
+	Conditions string `json:"conditions"`
 
 	// The price of this entry, in USD
-	Price float64
+	Price float64 `json:"price"`
 
 	// The link for this entry on the scraper website (if available)
-	URL string
+	URL string `json:"url"`
 
 	// Only used for a Marketplace inventory
-	SellerName string
+	SellerName string `json:"seller_name,omitempty"`
 
 	// Part of a hub of sellers that can ship directly
-	Bundle bool
+	Bundle bool `json:"seller_name,omitempty"`
 
 	// Original identifier as available from the scraper
 	// This is usually the "product id".
-	OriginalId string
+	OriginalId string `json:"original_id,omitempty"`
 
 	// Original instance identifier as available from the scraper
 	// This is usually the "SKU", or the id of the entry taking into
 	// account different properties, such as conditions, language etc
-	InstanceId string
+	InstanceId string `json:"instance_id,omitempty"`
 
 	// Any additional custom fields set by the scraper
-	CustomFields map[string]string
+	CustomFields map[string]string `json:"custom_fields,omitempty"`
 }
 
 func (ie InventoryEntry) Pricing() float64 {
@@ -58,31 +58,31 @@ func (ie InventoryEntry) Condition() string {
 // BuylistEntry represents an entry for buying a particular Card
 type BuylistEntry struct {
 	// Quantity of this entry
-	Quantity int
+	Quantity int `json:"quantity"`
 
 	// The grade of the current entry
 	// Only supported values are listed in DefaultGradeTags
 	// If empty it is considered "NM".
-	Conditions string
+	Conditions string `json:"conditions"`
 
 	// The price at which this entry is bought, in USD
-	BuyPrice float64
+	BuyPrice float64 `json:"buy_price"`
 
 	// The price at which this entry is bought, in store credit
-	TradePrice float64
+	TradePrice float64 `json:"trade_price,omitempty"`
 
 	// The ratio between the sale and buy prices, indicating desiderability
 	// of the entry by the provider
-	PriceRatio float64
+	PriceRatio float64 `json:"price_ratio,omitempty"`
 
 	// The link for this entry on the scraper website (if available)
-	URL string
+	URL string `json:"url"`
 
 	// Name of the vendor providing the entry
-	VendorName string
+	VendorName string `json:"vendor_name,omitempty"`
 
 	// Original identifier as available from the scraper
-	OriginalId string
+	OriginalId string `json:"original_id,omitempty"`
 }
 
 func (be BuylistEntry) Pricing() float64 {
@@ -96,36 +96,36 @@ func (be BuylistEntry) Condition() string {
 // ScraperInfo contains
 type ScraperInfo struct {
 	// Full name of the store
-	Name string
+	Name string `json:"name"`
 
 	// Shorthand or ID of the store
-	Shorthand string
+	Shorthand string `json:"shorthand"`
 
 	// Symbol for worldwide stores
-	CountryFlag string
+	CountryFlag string `json:"country"`
 
 	// Timestamp of the last Inventory() execution
-	InventoryTimestamp *time.Time
+	InventoryTimestamp *time.Time `json:"inventory_ts"`
 
 	// Timestamp of the last Buylist() execution
-	BuylistTimestamp *time.Time
+	BuylistTimestamp *time.Time `json:"buylist_ts"`
 
 	// Only index-style data is available, no quantities or conditions
-	MetadataOnly bool
+	MetadataOnly bool `json:"metadata"`
 
 	// Vendor has no store credit bonus
-	NoCredit bool
+	NoCredit bool `json:"no_credit"`
 
 	// Inventory quantities are not available
-	NoQuantityInventory bool
+	NoQuantityInventory bool `json:"no_qty_inventory"`
 
 	// Scraper contains sealed information instead of singles
-	SealedMode bool
+	SealedMode bool `json:"sealed"`
 }
 
 // The list of supported conditions
 var DefaultGradeTags = []string{
-	"NM", "SP", "MP", "HP", "PO",
+	"NM", "SP", "MP", "HP",
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement
