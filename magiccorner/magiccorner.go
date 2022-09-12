@@ -401,8 +401,8 @@ func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
 	info.CountryFlag = "EU"
-	info.InventoryTimestamp = mc.inventoryDate
-	info.BuylistTimestamp = mc.buylistDate
+	info.InventoryTimestamp = &mc.inventoryDate
+	info.BuylistTimestamp = &mc.buylistDate
 	info.Grading = grading
 	info.NoCredit = true
 	return

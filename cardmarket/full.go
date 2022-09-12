@@ -454,6 +454,6 @@ func (mkm *CardMarketFull) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Market Full"
 	info.Shorthand = "MKMFull"
 	info.CountryFlag = "EU"
-	info.InventoryTimestamp = mkm.inventoryDate
+	info.InventoryTimestamp = &mkm.inventoryDate
 	return
 }

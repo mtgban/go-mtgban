@@ -105,10 +105,10 @@ type ScraperInfo struct {
 	CountryFlag string
 
 	// Timestamp of the last Inventory() execution
-	InventoryTimestamp time.Time
+	InventoryTimestamp *time.Time
 
 	// Timestamp of the last Buylist() execution
-	BuylistTimestamp time.Time
+	BuylistTimestamp *time.Time
 
 	// Only index-style data is available, no quantities or conditions
 	MetadataOnly bool

@@ -285,8 +285,8 @@ func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64
 func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom"
 	info.Shorthand = "CK"
-	info.InventoryTimestamp = ck.inventoryDate
-	info.BuylistTimestamp = ck.buylistDate
+	info.InventoryTimestamp = &ck.inventoryDate
+	info.BuylistTimestamp = &ck.buylistDate
 	info.Grading = grading
 	return
 }

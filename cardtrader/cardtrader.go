@@ -440,7 +440,7 @@ func (ct *CardtraderMarket) InitializeInventory(reader io.Reader) error {
 func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader"
 	info.Shorthand = "CT"
-	info.InventoryTimestamp = ct.inventoryDate
+	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	return
 }

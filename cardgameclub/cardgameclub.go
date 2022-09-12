@@ -351,6 +351,6 @@ func (cgc *Cardgameclub) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Game Club"
 	info.Shorthand = "CGC"
 	info.CountryFlag = "IT"
-	info.InventoryTimestamp = cgc.inventoryDate
+	info.InventoryTimestamp = &cgc.inventoryDate
 	return
 }

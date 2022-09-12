@@ -227,7 +227,7 @@ func (stks *MTGStocks) InventoryForSeller(sellerName string) (mtgban.InventoryRe
 func (stks *MTGStocks) Info() (info mtgban.ScraperInfo) {
 	info.Name = "MTGStocks"
 	info.Shorthand = "STKS"
-	info.InventoryTimestamp = stks.inventoryDate
+	info.InventoryTimestamp = &stks.inventoryDate
 	info.MetadataOnly = true
 	return
 }

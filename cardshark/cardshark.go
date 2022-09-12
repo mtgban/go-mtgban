@@ -346,6 +346,6 @@ func (cs *Cardshark) InitializeInventory(reader io.Reader) error {
 func (cs *Cardshark) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Shark"
 	info.Shorthand = "CShark"
-	info.InventoryTimestamp = cs.inventoryDate
+	info.InventoryTimestamp = &cs.inventoryDate
 	return
 }

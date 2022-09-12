@@ -358,8 +358,8 @@ func (toa *TOAMagic) Buylist() (mtgban.BuylistRecord, error) {
 func (toa *TOAMagic) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TOAMagic"
 	info.Shorthand = "TOA"
-	info.InventoryTimestamp = toa.inventoryDate
-	info.BuylistTimestamp = toa.buylistDate
+	info.InventoryTimestamp = &toa.inventoryDate
+	info.BuylistTimestamp = &toa.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

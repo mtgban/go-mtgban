@@ -304,8 +304,8 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "ABU Games"
 	info.Shorthand = "ABU"
-	info.InventoryTimestamp = abu.inventoryDate
-	info.BuylistTimestamp = abu.buylistDate
+	info.InventoryTimestamp = &abu.inventoryDate
+	info.BuylistTimestamp = &abu.buylistDate
 	info.MultiCondBuylist = true
 	return
 }

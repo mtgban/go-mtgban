@@ -352,7 +352,7 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Market Index"
 	info.Shorthand = "MKMIndex"
 	info.CountryFlag = "EU"
-	info.InventoryTimestamp = mkm.inventoryDate
+	info.InventoryTimestamp = &mkm.inventoryDate
 	info.MetadataOnly = true
 	return
 }

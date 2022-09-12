@@ -327,8 +327,8 @@ func grading(_ string, entry mtgban.BuylistEntry) (grade map[string]float64) {
 func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Strike Zone"
 	info.Shorthand = "SZ"
-	info.InventoryTimestamp = sz.inventoryDate
-	info.BuylistTimestamp = sz.buylistDate
+	info.InventoryTimestamp = &sz.inventoryDate
+	info.BuylistTimestamp = &sz.buylistDate
 	info.Grading = grading
 	info.NoCredit = true
 	return

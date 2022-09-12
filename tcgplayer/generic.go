@@ -255,7 +255,7 @@ func (tcg *TCGPlayerGeneric) InitializeInventory(reader io.Reader) error {
 func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player - " + tcg.categoryDisplayName
 	info.Shorthand = "TCG+" + tcg.categoryName
-	info.InventoryTimestamp = tcg.inventoryDate
+	info.InventoryTimestamp = &tcg.inventoryDate
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
 

@@ -176,7 +176,7 @@ func (amz *Amazon) Inventory() (mtgban.InventoryRecord, error) {
 func (amz *Amazon) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Amazon"
 	info.Shorthand = "AMZ"
-	info.InventoryTimestamp = amz.inventoryDate
+	info.InventoryTimestamp = &amz.inventoryDate
 	info.NoQuantityInventory = true
 	return
 }

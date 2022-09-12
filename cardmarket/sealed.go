@@ -951,7 +951,7 @@ func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardmarket"
 	info.Shorthand = "MKMSealed"
 	info.CountryFlag = "EU"
-	info.InventoryTimestamp = mkm.inventoryDate
+	info.InventoryTimestamp = &mkm.inventoryDate
 	info.SealedMode = true
 	return
 }

@@ -372,8 +372,8 @@ func (scg *Starcitygames) Buylist() (mtgban.BuylistRecord, error) {
 func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Star City Games"
 	info.Shorthand = "SCG"
-	info.InventoryTimestamp = scg.inventoryDate
-	info.BuylistTimestamp = scg.buylistDate
+	info.InventoryTimestamp = &scg.inventoryDate
+	info.BuylistTimestamp = &scg.buylistDate
 	info.MultiCondBuylist = true
 	return
 }

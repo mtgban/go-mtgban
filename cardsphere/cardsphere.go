@@ -222,7 +222,7 @@ func (cs *CardsphereFull) Buylist() (mtgban.BuylistRecord, error) {
 func (cs *CardsphereFull) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardsphere"
 	info.Shorthand = "CS"
-	info.BuylistTimestamp = cs.buylistDate
+	info.BuylistTimestamp = &cs.buylistDate
 	info.NoCredit = true
 	info.MultiCondBuylist = true
 	return

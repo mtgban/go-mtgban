@@ -419,8 +419,8 @@ func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
 func (ms *MTGSeattle) Info() (info mtgban.ScraperInfo) {
 	info.Name = "MTGSeattle"
 	info.Shorthand = "MS"
-	info.InventoryTimestamp = ms.inventoryDate
-	info.BuylistTimestamp = ms.buylistDate
+	info.InventoryTimestamp = &ms.inventoryDate
+	info.BuylistTimestamp = &ms.buylistDate
 	info.Grading = grading
 	return
 }

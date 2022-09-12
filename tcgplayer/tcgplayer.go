@@ -446,8 +446,8 @@ func (tcg *TCGPlayerMarket) InitializeBuylist(reader io.Reader) error {
 func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Market"
 	info.Shorthand = "TCGMkt"
-	info.InventoryTimestamp = tcg.inventoryDate
-	info.BuylistTimestamp = tcg.buylistDate
+	info.InventoryTimestamp = &tcg.inventoryDate
+	info.BuylistTimestamp = &tcg.buylistDate
 	info.MultiCondBuylist = true
 	info.NoQuantityInventory = true
 	info.NoCredit = true

@@ -145,7 +145,7 @@ func (tcg *TCGSYPList) Inventory() (mtgban.InventoryRecord, error) {
 func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player SYP List"
 	info.Shorthand = "TCGSYPList"
-	info.InventoryTimestamp = tcg.inventoryDate
+	info.InventoryTimestamp = &tcg.inventoryDate
 	info.MetadataOnly = true
 	return
 }

@@ -157,8 +157,8 @@ func (csi *CoolstuffincOfficial) Buylist() (mtgban.BuylistRecord, error) {
 func (csi *CoolstuffincOfficial) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Coolstuffinc"
 	info.Shorthand = "CSI"
-	info.InventoryTimestamp = csi.inventoryDate
-	info.BuylistTimestamp = csi.buylistDate
+	info.InventoryTimestamp = &csi.inventoryDate
+	info.BuylistTimestamp = &csi.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

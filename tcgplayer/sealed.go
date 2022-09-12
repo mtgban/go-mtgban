@@ -175,7 +175,7 @@ func (tcg *TCGPlayerSealed) Inventory() (mtgban.InventoryRecord, error) {
 func (tcg *TCGPlayerSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player"
 	info.Shorthand = "TCGSealed"
-	info.InventoryTimestamp = tcg.inventoryDate
+	info.InventoryTimestamp = &tcg.inventoryDate
 	info.NoQuantityInventory = true
 	info.SealedMode = true
 	return

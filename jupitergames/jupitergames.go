@@ -385,8 +385,8 @@ func (jup *Jupitergames) Buylist() (mtgban.BuylistRecord, error) {
 func (jup *Jupitergames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Jupiter Games"
 	info.Shorthand = "JUP"
-	info.InventoryTimestamp = jup.inventoryDate
-	info.BuylistTimestamp = jup.buylistDate
+	info.InventoryTimestamp = &jup.inventoryDate
+	info.BuylistTimestamp = &jup.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

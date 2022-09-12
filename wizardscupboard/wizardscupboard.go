@@ -235,6 +235,6 @@ func (wc *Wizardscupboard) Inventory() (mtgban.InventoryRecord, error) {
 func (wc *Wizardscupboard) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Wizard's Cupboard"
 	info.Shorthand = "WC"
-	info.InventoryTimestamp = wc.inventoryDate
+	info.InventoryTimestamp = &wc.inventoryDate
 	return
 }

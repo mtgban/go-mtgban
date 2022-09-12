@@ -430,8 +430,8 @@ func (ck *CardkingdomSealed) Buylist() (mtgban.BuylistRecord, error) {
 func (ck *CardkingdomSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom"
 	info.Shorthand = "CKSealed"
-	info.InventoryTimestamp = ck.inventoryDate
-	info.BuylistTimestamp = ck.buylistDate
+	info.InventoryTimestamp = &ck.inventoryDate
+	info.BuylistTimestamp = &ck.buylistDate
 	info.SealedMode = true
 	return
 }

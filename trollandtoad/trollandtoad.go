@@ -415,8 +415,8 @@ func (tat *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
 func (tat *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TAT"
-	info.InventoryTimestamp = tat.inventoryDate
-	info.BuylistTimestamp = tat.buylistDate
+	info.InventoryTimestamp = &tat.inventoryDate
+	info.BuylistTimestamp = &tat.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }

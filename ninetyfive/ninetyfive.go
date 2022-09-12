@@ -274,8 +274,8 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Name = "95mtg"
 	info.Shorthand = "95"
-	info.InventoryTimestamp = nf.inventoryDate
-	info.BuylistTimestamp = nf.buylistDate
+	info.InventoryTimestamp = &nf.inventoryDate
+	info.BuylistTimestamp = &nf.buylistDate
 	info.MultiCondBuylist = true
 	info.NoCredit = true
 	return

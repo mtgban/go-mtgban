@@ -178,7 +178,7 @@ func (ck *CardkingdomHotBuylist) Buylist() (mtgban.BuylistRecord, error) {
 func (ck *CardkingdomHotBuylist) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom Hot Buylist"
 	info.Shorthand = "CKHot"
-	info.BuylistTimestamp = ck.buylistDate
+	info.BuylistTimestamp = &ck.buylistDate
 	info.Grading = mtgban.DefaultGrading
 	return
 }
