@@ -3,19 +3,17 @@ package cardsphere
 import (
 	"errors"
 	"fmt"
-	"strings"
+	"sync"
 	"time"
-
-	colly "github.com/gocolly/colly/v2"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
-	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 const (
 	defaultConcurrency = 4
-	buylistURL         = "https://www.cardsphere.com/sets"
+	baseUrl            = "https://www.cardsphere.com/cards/"
+	csMaxOffset        = 80000
 )
 
 var gradingMap = map[string]float64{
@@ -25,19 +23,31 @@ var gradingMap = map[string]float64{
 	"HP": 0.6,
 }
 
-type CardsphereIndex struct {
+type CardsphereFull struct {
 	LogCallback    mtgban.LogCallbackFunc
 	buylistDate    time.Time
 	MaxConcurrency int
 
+	client  *CardSphereClient
 	buylist mtgban.BuylistRecord
 }
 
-func NewScraperIndex() *CardsphereIndex {
-	cs := CardsphereIndex{}
+func NewScraperFull(email, password string) (*CardsphereFull, error) {
+	cs := CardsphereFull{}
 	cs.buylist = mtgban.BuylistRecord{}
 	cs.MaxConcurrency = defaultConcurrency
-	return &cs
+	client, err := NewCardSphereClient(email, password)
+	if err != nil {
+		return nil, err
+	}
+	cs.client = client
+	return &cs, nil
+}
+
+func (cs *CardsphereFull) printf(format string, a ...interface{}) {
+	if cs.LogCallback != nil {
+		cs.LogCallback("[CSF] "+format, a...)
+	}
 }
 
 type responseChan struct {
@@ -45,120 +55,139 @@ type responseChan struct {
 	blEntry *mtgban.BuylistEntry
 }
 
-func (cs *CardsphereIndex) printf(format string, a ...interface{}) {
-	if cs.LogCallback != nil {
-		cs.LogCallback("[CSphereIndex] "+format, a...)
+func (cs *CardsphereFull) processPage(results chan<- responseChan, offset int) error {
+	offers, err := cs.client.GetOfferListByMaxAbsolute(offset)
+	if err != nil {
+		return err
 	}
-}
 
-func (cs *CardsphereIndex) parseBL() error {
-	results := make(chan responseChan)
-
-	c := colly.NewCollector(
-		colly.AllowedDomains("www.cardsphere.com"),
-
-		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
-
-		colly.Async(true),
-	)
-
-	c.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		RandomDelay: 1 * time.Second,
-		Parallelism: cs.MaxConcurrency,
-	})
-
-	c.OnRequest(func(r *colly.Request) {
-		//cs.printf("Visiting %s", r.URL.String())
-	})
-
-	c.OnHTML(`ul[class="list-unstyled"]`, func(e *colly.HTMLElement) {
-		link := e.Request.AbsoluteURL("")
-		isEditionList := strings.HasSuffix(link, "/sets")
-
-		pageTitle := e.DOM.ParentsUntil("~").Find(`h3[class="text-center"]`).Text()
-		edition := strings.TrimSpace(pageTitle)
-
-		if isEditionList {
-			e.ForEach(`li`, func(_ int, el *colly.HTMLElement) {
-				//editionName := el.ChildText("a")
-				editionPath := el.ChildAttr("a", "href")
-
-				c.Visit(e.Request.AbsoluteURL(editionPath))
-			})
-			return
+	for _, offer := range offers {
+		skip := true
+		for _, lang := range offer.Languages {
+			if lang == "EN" {
+				skip = false
+				break
+			}
 		}
 
-		e.ForEach(`li`, func(_ int, el *colly.HTMLElement) {
-			link := el.ChildAttr(`span:nth-child(1) a[class="cardpeek"]`, "href")
+		// When multiple printings are reported, it's impossible to tell
+		// apart which price between max and mi belong to which edition
+		if len(offer.Sets) > 1 || len(offer.Finishes) > 1 {
+			skip = true
+		}
 
-			cardName := el.ChildText("span:nth-child(1)")
-			priceNonFoilStr := el.ChildText("span:nth-child(2)")
-			priceFoilStr := el.ChildText("span:nth-child(3)")
+		if skip {
+			continue
+		}
 
-			theCard, err := preprocess(cardName, edition)
-			if err != nil {
-				return
+		cardName := offer.CardName
+		edition := offer.Sets[0].Name
+		foil := offer.Finishes[0] == "F"
+
+		theCard, err := preprocess(cardName, edition)
+		if err != nil {
+			continue
+		}
+		theCard.Foil = foil
+
+		cardId, err := mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
+			cs.printf("%v", err)
+			cs.printf("%v", theCard)
+			cs.printf("%v", offer)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					cs.printf("- %s", card)
+				}
+			}
+			break
+		}
+
+		price := float64(offer.MaxOffer) / 100
+		indexPrice := float64(offer.MaxIndex) / 100
+		var priceRatio float64
+		if indexPrice > 0 {
+			priceRatio = price / indexPrice * 100
+		}
+
+		for _, cond := range offer.Conditions {
+			conditions := ""
+			switch cond {
+			case 40:
+				conditions = "NM"
+			case 30:
+				conditions = "SP"
+			case 20:
+				conditions = "MP"
+			case 10:
+				conditions = "HP"
+			default:
+				cs.printf("Unsupported %s condition for %s", cond, theCard)
+				continue
 			}
 
-			for i, priceStr := range []string{priceNonFoilStr, priceFoilStr} {
-				price, err := mtgmatcher.ParsePrice(priceStr)
+			price *= gradingMap[conditions]
+			if int(price*100) > offer.Balance {
+				continue
+			}
+
+			out := responseChan{
+				cardId: cardId,
+				blEntry: &mtgban.BuylistEntry{
+					BuyPrice:   price,
+					Conditions: conditions,
+					Quantity:   offer.Quantity,
+					PriceRatio: priceRatio,
+					URL:        fmt.Sprintf("%s%d", baseUrl, offer.MasterId),
+					VendorName: offer.UserDisplay,
+				},
+			}
+
+			results <- out
+		}
+	}
+
+	return nil
+}
+
+func (cs *CardsphereFull) parseBL() error {
+	results := make(chan responseChan)
+	offsets := make(chan int)
+	var wg sync.WaitGroup
+
+	for i := 0; i < cs.MaxConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for offset := range offsets {
+				err := cs.processPage(results, offset)
 				if err != nil {
-					continue
+					cs.printf("%s", err.Error())
 				}
-
-				theCard.Foil = i == 1
-
-				cardId, err := mtgmatcher.Match(theCard)
-				if errors.Is(err, mtgmatcher.ErrUnsupported) {
-					continue
-				} else if err != nil {
-					cs.printf("%v", err)
-					cs.printf("%v", theCard)
-					cs.printf("%s | %s", cardName, edition)
-
-					var alias *mtgmatcher.AliasingError
-					if errors.As(err, &alias) {
-						probes := alias.Probe()
-						for _, probe := range probes {
-							card, _ := mtgmatcher.GetUUID(probe)
-							cs.printf("- %s", card)
-						}
-					}
-					return
-				}
-
-				card, _ := mtgmatcher.GetUUID(cardId)
-				if (!theCard.Foil && !card.HasFinish(mtgjson.FinishNonfoil)) ||
-					(theCard.Foil && !card.HasFinish(mtgjson.FinishFoil)) {
-					continue
-				}
-
-				out := responseChan{
-					cardId: cardId,
-					blEntry: &mtgban.BuylistEntry{
-						BuyPrice: price,
-						Quantity: 0,
-						URL:      e.Request.AbsoluteURL(link),
-					},
-				}
-
-				results <- out
+				time.Sleep(3 * time.Second)
 			}
-		})
-	})
-
-	c.Visit(buylistURL)
+			wg.Done()
+		}()
+	}
 
 	go func() {
-		c.Wait()
+		for i := 0; i < csMaxOffset; i += 100 {
+			offsets <- i
+		}
+		close(offsets)
+
+		wg.Wait()
 		close(results)
 	}()
 
 	lastTime := time.Now()
-
 	for result := range results {
-		err := cs.buylist.Add(result.cardId, result.blEntry)
+		err := cs.buylist.AddRelaxed(result.cardId, result.blEntry)
 		if err != nil {
 			cs.printf("%v", err)
 			continue
@@ -177,7 +206,7 @@ func (cs *CardsphereIndex) parseBL() error {
 	return nil
 }
 
-func (cs *CardsphereIndex) Buylist() (mtgban.BuylistRecord, error) {
+func (cs *CardsphereFull) Buylist() (mtgban.BuylistRecord, error) {
 	if len(cs.buylist) > 0 {
 		return cs.buylist, nil
 	}
@@ -190,16 +219,11 @@ func (cs *CardsphereIndex) Buylist() (mtgban.BuylistRecord, error) {
 	return cs.buylist, nil
 }
 
-func grading(cardId string, entry mtgban.BuylistEntry) map[string]float64 {
-	return gradingMap
-}
-
-func (cs *CardsphereIndex) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Cardsphere Index"
-	info.Shorthand = "CSphereIndex"
+func (cs *CardsphereFull) Info() (info mtgban.ScraperInfo) {
+	info.Name = "Cardsphere"
+	info.Shorthand = "CS"
 	info.BuylistTimestamp = cs.buylistDate
-	info.Grading = grading
 	info.NoCredit = true
-	info.MetadataOnly = true
+	info.MultiCondBuylist = true
 	return
 }
