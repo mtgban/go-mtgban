@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
+	"sort"
 	"sync"
 	"time"
 
@@ -16,44 +16,46 @@ const (
 	defaultConcurrency = 8
 )
 
-type Cardtrader struct {
+type CardtraderMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
-	InventoryDate  time.Time
+	inventoryDate  time.Time
 	MaxConcurrency int
 	ShareCode      string
 
-	exchangeRate float64
+	// Only retrieve data from a single edition
+	TargetEdition string
 
-	authClient  *CTAuthClient
+	// Keep same-conditions entries
+	KeepDuplicates bool
+
+	exchangeRate float64
+	client       *CTAuthClient
+	loggedClient *CTLoggedClient
+
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
 
-	// Custom map of ids to consider
-	FilterId map[string]string
-
-	client *CTClient
+	blueprints map[int]*Blueprint
 }
 
-func NewScraper(token string) (*Cardtrader, error) {
-	ct := Cardtrader{}
+func NewScraperMarket(token string) (*CardtraderMarket, error) {
+	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.marketplace = map[string]mtgban.InventoryRecord{}
-	ct.MaxConcurrency = defaultConcurrency
-	ct.client = NewCTClient()
-	ct.authClient = NewCTAuthClient(token)
+	ct.MaxConcurrency = 1
+	ct.client = NewCTAuthClient(token)
 
 	rate, err := mtgban.GetExchangeRate("EUR")
 	if err != nil {
 		return nil, err
 	}
 	ct.exchangeRate = rate
-
 	return &ct, nil
 }
 
-func (ct *Cardtrader) printf(format string, a ...interface{}) {
+func (ct *CardtraderMarket) printf(format string, a ...interface{}) {
 	if ct.LogCallback != nil {
-		ct.LogCallback("[CTF] "+format, a...)
+		ct.LogCallback("[CT] "+format, a...)
 	}
 }
 
@@ -187,38 +189,89 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 	return nil
 }
 
-func (ct *Cardtrader) processEntry(channel chan<- resultChan, blueprintId int) error {
-	filter, err := ct.client.ProductsForBlueprint(blueprintId)
+func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId int) error {
+	allProducts, err := ct.client.ProductsForExpansion(expansionId)
 	if err != nil {
 		return err
 	}
 
-	theCard, err := Preprocess(&filter.Blueprint)
-	if err != nil {
-		return nil
-	}
+	for id, products := range allProducts {
+		blueprint, found := ct.blueprints[id]
+		if !found {
+			continue
+		}
 
-	err = processProducts(channel, theCard, filter.Products, ct.ShareCode, ct.exchangeRate)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
-		return nil
-	} else if err != nil {
-		ct.printf("%q", theCard)
-		ct.printf("%d %q", filter.Blueprint.Id, filter.Blueprint)
+		theCard, err := Preprocess(blueprint)
+		if err != nil {
+			continue
+		}
 
-		var alias *mtgmatcher.AliasingError
-		if errors.As(err, &alias) {
-			probes := alias.Probe()
-			for _, probe := range probes {
-				card, _ := mtgmatcher.GetUUID(probe)
-				ct.printf("- %s", card)
+		err = processProducts(channel, theCard, products, ct.ShareCode, ct.exchangeRate)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
+			ct.printf("%v", err)
+			ct.printf("%q", theCard)
+			ct.printf("%d %q", blueprint.Id, blueprint)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					ct.printf("- %s", card)
+				}
 			}
 		}
 	}
-	return err
+
+	return nil
 }
 
-func (ct *Cardtrader) scrape() error {
-	expansionsRaw, err := ct.authClient.Expansions()
+func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion) (map[int]*Blueprint, map[int]string) {
+	// Create a map to be able to retrieve edition name in the blueprint
+	formatted := map[int]*Blueprint{}
+	expansions := map[int]string{}
+	for i := range blueprints {
+		switch blueprints[i].GameId {
+		case GameIdMagic:
+		default:
+			continue
+		}
+		switch blueprints[i].CategoryId {
+		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized:
+		default:
+			continue
+		}
+
+		// Keep track of blueprints as they are more accurate that the
+		// information found in product
+		formatted[blueprints[i].Id] = &blueprints[i]
+
+		// Load expansions array
+		_, found := expansions[blueprints[i].ExpansionId]
+		if !found {
+			for j := range inExpansions {
+				if inExpansions[j].Id == blueprints[i].ExpansionId {
+					expansions[blueprints[i].ExpansionId] = inExpansions[j].Name
+				}
+			}
+		}
+
+		// The name is missing from the blueprints endpoint, fill it with data
+		// retrieved from the expansions endpoint
+		formatted[blueprints[i].Id].Expansion.Name = expansions[blueprints[i].ExpansionId]
+
+		// Move the blueprint properties from the custom structure from blueprints
+		// to the place as expected by Preprocess()
+		formatted[blueprints[i].Id].Properties = formatted[blueprints[i].Id].FixedProperties
+	}
+
+	return formatted, expansions
+}
+
+func (ct *CardtraderMarket) scrape() error {
+	expansionsRaw, err := ct.client.Expansions()
 	if err != nil {
 		return err
 	}
@@ -229,32 +282,32 @@ func (ct *Cardtrader) scrape() error {
 		if exp.GameId != GameIdMagic {
 			continue
 		}
+		if ct.TargetEdition != "" && exp.Name != ct.TargetEdition {
+			continue
+		}
 
-		bp, err := ct.authClient.Blueprints(exp.Id)
+		bp, err := ct.client.Blueprints(exp.Id)
 		if err != nil {
-			return err
+			ct.printf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
+			continue
 		}
 		blueprintsRaw = append(blueprintsRaw, bp...)
 	}
-	total := len(blueprintsRaw)
-	ct.printf("Found %d blueprints", total)
+	ct.printf("Found %d blueprints", len(blueprintsRaw))
 
-	blueprints, _ := FormatBlueprints(blueprintsRaw, expansionsRaw)
+	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw)
+	ct.blueprints = blueprints
+	ct.printf("Parsing %d mtg elements", len(expansions))
 
-	if ct.FilterId != nil {
-		total = len(ct.FilterId)
-		ct.printf("Filtering to %d entries", total)
-	}
-
-	blueprintIds := make(chan int)
+	expansionIds := make(chan int)
 	results := make(chan resultChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < ct.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for blueprintId := range blueprintIds {
-				err := ct.processEntry(results, blueprintId)
+			for expansionId := range expansionIds {
+				err := ct.processEntry(results, expansionId)
 				if err != nil {
 					ct.printf("%v", err)
 				}
@@ -264,60 +317,64 @@ func (ct *Cardtrader) scrape() error {
 	}
 
 	go func() {
-		for _, bp := range blueprints {
-			if ct.FilterId != nil {
-				theCard, err := Preprocess(bp)
-				if err != nil {
-					continue
-				}
-				cardId, err := mtgmatcher.Match(theCard)
-				if err != nil {
-					continue
-				}
-
-				_, found := ct.FilterId[cardId]
-				_, foundFoil := ct.FilterId[cardId+"_f"]
-				if !found && !foundFoil {
-					continue
-				}
+		for id, expName := range expansions {
+			if ct.TargetEdition != "" && expName != ct.TargetEdition {
+				continue
 			}
-
-			blueprintIds <- bp.Id
+			ct.printf("Processing %s (%d)", expName, id)
+			expansionIds <- id
 		}
-		close(blueprintIds)
+		close(expansionIds)
 
 		wg.Wait()
 		close(results)
 	}()
 
-	lastTime := time.Now()
-	current := 0
 	for result := range results {
-		if ct.inventory[result.cardId] == nil {
-			if !strings.HasSuffix(result.cardId, "_f") {
-				current++
+		// Only keep one offer per condition
+		skip := false
+		entries := ct.inventory[result.cardId]
+		for _, entry := range entries {
+			if entry.Conditions == result.invEntry.Conditions && entry.Bundle == result.invEntry.Bundle {
+				skip = true
+				break
 			}
 		}
-		err := ct.inventory.AddRelaxed(result.cardId, result.invEntry)
+		if skip && !ct.KeepDuplicates {
+			continue
+		}
+
+		// Assign a seller name as required by Market
+		result.invEntry.SellerName = "Card Trader"
+		if result.invEntry.Bundle {
+			result.invEntry.SellerName = "Card Trader Zero"
+		}
+		var err error
+		if ct.KeepDuplicates {
+			err = ct.inventory.AddRelaxed(result.cardId, result.invEntry)
+		} else {
+			err = ct.inventory.Add(result.cardId, result.invEntry)
+		}
 		if err != nil {
 			ct.printf("%s", err.Error())
 			continue
 		}
-		// This would be better with a select, but for now just print a message
-		// that we're still alive every minute
-		if time.Now().After(lastTime.Add(60 * time.Second)) {
-			card, _ := mtgmatcher.GetUUID(result.cardId)
-			ct.printf("Still going %d/%d, last processed card: %s", current, total, card)
-			lastTime = time.Now()
-		}
 	}
 
-	ct.InventoryDate = time.Now()
+	// Sort to keep NM-SP-MP-HP-PO order
+	conds := map[string]int{"NM": 0, "SP": 1, "MP": 2, "HP": 3, "PO": 4}
+	for cardId := range ct.inventory {
+		sort.Slice(ct.inventory[cardId], func(i, j int) bool {
+			return conds[ct.inventory[cardId][i].Conditions] < conds[ct.inventory[cardId][j].Conditions]
+		})
+	}
+
+	ct.inventoryDate = time.Now()
 
 	return nil
 }
 
-func (ct *Cardtrader) Inventory() (mtgban.InventoryRecord, error) {
+func (ct *CardtraderMarket) Inventory() (mtgban.InventoryRecord, error) {
 	if len(ct.inventory) > 0 {
 		return ct.inventory, nil
 	}
@@ -330,7 +387,7 @@ func (ct *Cardtrader) Inventory() (mtgban.InventoryRecord, error) {
 	return ct.inventory, nil
 }
 
-func (ct *Cardtrader) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
+func (ct *CardtraderMarket) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
 	if len(ct.inventory) == 0 {
 		_, err := ct.Inventory()
 		if err != nil {
@@ -363,7 +420,7 @@ func (ct *Cardtrader) InventoryForSeller(sellerName string) (mtgban.InventoryRec
 	return ct.marketplace[sellerName], nil
 }
 
-func (ct *Cardtrader) InitializeInventory(reader io.Reader) error {
+func (ct *CardtraderMarket) InitializeInventory(reader io.Reader) error {
 	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
@@ -380,9 +437,10 @@ func (ct *Cardtrader) InitializeInventory(reader io.Reader) error {
 	return nil
 }
 
-func (ct *Cardtrader) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Card Trader Full"
-	info.Shorthand = "CTF"
-	info.InventoryTimestamp = ct.InventoryDate
+func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
+	info.Name = "Card Trader"
+	info.Shorthand = "CT"
+	info.InventoryTimestamp = ct.inventoryDate
+	info.CountryFlag = "EU"
 	return
 }
