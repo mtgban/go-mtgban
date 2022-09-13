@@ -17,10 +17,10 @@ type MatchTest struct {
 
 var MatchTests = []MatchTest{
 	MatchTest{
-		Id:   "3a532aa6-591a-5aa8-8f86-19485642e741",
+		Id:   "3ef6edae-e899-521c-a731-3aeeff8b154e",
 		Desc: "no_edition",
 		In: Card{
-			Name: "Passionate Archaeologist (Extended Art)",
+			Name: "The Great Henge (Extended Art)",
 		},
 	},
 	MatchTest{
