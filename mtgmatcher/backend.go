@@ -111,6 +111,42 @@ var setAllowedForTokens = map[string]bool{
 	"UST":  true,
 }
 
+var missingPELPtags = map[string]string{
+	"1":  "Schwarzwald, Germany",
+	"2":  "Danish Island, Scandinavia",
+	"3":  "Vesuvio, Italy",
+	"4":  "Scottish Highlands, United Kingdom",
+	"5":  "Ardennes Fagnes, Belgium",
+	"6":  "Brocéliande, France",
+	"7":  "Venezia, Italy",
+	"8":  "Pyrenees, Spain",
+	"9":  "Lowlands, Netherlands",
+	"10": "Lake District National Park, United Kingdom",
+	"11": "Nottingham Forest, United Kingdom",
+	"12": "White Cliffs of Dover, United Kingdom",
+	"13": "Mont Blanc, France",
+	"14": "Steppe Tundra, Russia",
+	"15": "Camargue, France",
+}
+
+var missingPALPtags = map[string]string{
+	"1":  "Japan",
+	"2":  "Hong Kong",
+	"3":  "Banaue Rice Terraces, Philippines",
+	"4":  "Japan",
+	"5":  "New Zealand",
+	"6":  "China",
+	"7":  "Meoto Iwa, Japan",
+	"8":  "Taiwan",
+	"9":  "Uluru, Australia",
+	"10": "Japan",
+	"11": "Korea",
+	"12": "Singapore",
+	"13": "Mount Fuji, Japan",
+	"14": "Great Wall of China",
+	"15": "Indonesia",
+}
+
 func skipSet(set *mtgjson.Set) bool {
 	// Skip unsupported sets
 	switch set.Code {
@@ -179,6 +215,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 			// Custom modifications or skips
 			switch set.Code {
+			// Missing variant tags
+			case "PALP":
+				card.FlavorText = missingPALPtags[card.Number]
+			case "PELP":
+				card.FlavorText = missingPELPtags[card.Number]
 			// Skip non-English promo cards
 			case "PLG21":
 				switch card.Number {
