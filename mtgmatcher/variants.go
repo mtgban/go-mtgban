@@ -3487,6 +3487,8 @@ var sldVariants = map[string]map[string]string{
 		"v.2": "84",
 		"v.3": "85",
 		"v.4": "86",
+
+		"secret lair x street fighter": "675",
 	},
 	"Thalia, Guardian of Thraben": {
 		"v.1": "37",
@@ -3502,10 +3504,14 @@ var sldVariants = map[string]map[string]string{
 		"v.5": "152",
 	},
 	"Persistent Petitioners": {
+		"secret lair": "597",
+
+		"toys art":       "593",
+		"women art":      "595",
 		"skeleton art":   "596",
-		"secret lair":    "597",
 		"blueprint card": "597",
 		"birds art":      "598",
+		"monks art":      "599",
 	},
 	"Mulldrifter": {
 		"secret lair: extra life 2021 magali villeneuve age 41": "373",
@@ -3541,9 +3547,12 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Grim Tutor": {
 		"secret lair hand drawn": "365",
+		"secret lair x mschf":    "365",
+		"secret lair x fortnite": "444",
 	},
 	"Primeval Titan": {
-		"secret lair showcase": "221",
+		"secret lair showcase":                   "221",
+		"secret lair: showcase: kaldheim part 1": "221",
 	},
 }
 
