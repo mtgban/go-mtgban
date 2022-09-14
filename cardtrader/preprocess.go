@@ -122,6 +122,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Mystery Booster",
 		"Mystery Booster Retail Edition Foils",
 		"Mystery Booster: Convention Edition Playtest Cards",
+		"Double Masters 2022 Collectors",
 		"Strixhaven: School of Mages Promos",
 		"Strixhaven: School of Mages Prerelease",
 		"The List":
