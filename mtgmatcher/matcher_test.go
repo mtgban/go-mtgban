@@ -2828,6 +2828,15 @@ var MatchTests = []MatchTest{
 			Edition: "Commander Legends: Battle for Baldur's Gate: Extras",
 		},
 	},
+	MatchTest{
+		Id:   "d285f4d8-b5b6-514a-86d5-e7866fe54f5e",
+		Desc: "extras_normal",
+		In: Card{
+			Name:      "Black Market Connections",
+			Variation: "Extended Art",
+			Edition:   "Commander Legends: Battle for Baldur's Gate",
+		},
+	},
 
 	// Known fixups
 	MatchTest{

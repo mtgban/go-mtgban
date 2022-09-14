@@ -1022,7 +1022,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if cn > 607 && cn < 930 {
 					if inCard.isExtendedArt() && !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
 						continue
-					} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) && card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
+					} else if !inCard.isExtendedArt() && card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
 						continue
 					}
 				}
