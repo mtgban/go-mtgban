@@ -102,7 +102,7 @@ type ScraperInfo struct {
 	Shorthand string `json:"shorthand"`
 
 	// Symbol for worldwide stores
-	CountryFlag string `json:"country"`
+	CountryFlag string `json:"country,omitempty"`
 
 	// Timestamp of the last Inventory() execution
 	InventoryTimestamp *time.Time `json:"inventory_ts,omitempty"`
@@ -111,16 +111,16 @@ type ScraperInfo struct {
 	BuylistTimestamp *time.Time `json:"buylist_ts,omitempty"`
 
 	// Only index-style data is available, no quantities or conditions
-	MetadataOnly bool `json:"metadata"`
+	MetadataOnly bool `json:"metadata,omitempty"`
 
 	// Vendor has no store credit bonus
-	NoCredit bool `json:"no_credit"`
+	NoCredit bool `json:"no_credit,omitempty"`
 
 	// Inventory quantities are not available
-	NoQuantityInventory bool `json:"no_qty_inventory"`
+	NoQuantityInventory bool `json:"no_qty_inventory,omitempty"`
 
 	// Scraper contains sealed information instead of singles
-	SealedMode bool `json:"sealed"`
+	SealedMode bool `json:"sealed,omitempty"`
 }
 
 // The list of supported conditions
