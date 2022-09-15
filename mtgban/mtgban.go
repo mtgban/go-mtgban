@@ -32,7 +32,7 @@ type InventoryEntry struct {
 	SellerName string `json:"seller_name,omitempty"`
 
 	// Part of a hub of sellers that can ship directly
-	Bundle bool `json:"seller_name,omitempty"`
+	Bundle bool `json:"bundle,omitempty"`
 
 	// Original identifier as available from the scraper
 	// This is usually the "product id".
