@@ -187,6 +187,19 @@ func (cs *CardsphereFull) parseBL() error {
 
 	lastTime := time.Now()
 	for result := range results {
+		// Only keep one offer per condition
+		var skip bool
+		entries := cs.buylist[result.cardId]
+		for _, entry := range entries {
+			if entry.Conditions == result.blEntry.Conditions {
+				skip = true
+				break
+			}
+		}
+		if skip {
+			continue
+		}
+
 		err := cs.buylist.AddRelaxed(result.cardId, result.blEntry)
 		if err != nil {
 			cs.printf("%v", err)
