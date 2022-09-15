@@ -1,7 +1,6 @@
 package mtgban
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
@@ -80,9 +79,8 @@ func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict int) erro
 }
 
 type BaseSeller struct {
-	inventory   InventoryRecord
-	marketplace map[string]InventoryRecord
-	info        ScraperInfo
+	inventory InventoryRecord
+	info      ScraperInfo
 }
 
 func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
@@ -91,38 +89,6 @@ func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
 
 func (seller *BaseSeller) Info() ScraperInfo {
 	return seller.info
-}
-
-func (seller *BaseSeller) InventoryForSeller(sellerName string) (InventoryRecord, error) {
-	if len(seller.inventory) == 0 {
-		_, err := seller.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if seller.marketplace == nil {
-		seller.marketplace = map[string]InventoryRecord{}
-	}
-
-	for card := range seller.inventory {
-		for i := range seller.inventory[card] {
-			if seller.inventory[card][i].SellerName == sellerName {
-				if seller.inventory[card][i].Price == 0 {
-					continue
-				}
-				if seller.marketplace[sellerName] == nil {
-					seller.marketplace[sellerName] = InventoryRecord{}
-				}
-				seller.marketplace[sellerName][card] = append(seller.marketplace[sellerName][card], seller.inventory[card][i])
-			}
-		}
-	}
-
-	if len(seller.marketplace[sellerName]) == 0 {
-		return nil, errors.New("seller not found")
-	}
-	return seller.marketplace[sellerName], nil
 }
 
 func NewSellerFromInventory(inventory InventoryRecord, info ScraperInfo) Seller {
