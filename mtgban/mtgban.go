@@ -105,10 +105,10 @@ type ScraperInfo struct {
 	CountryFlag string `json:"country"`
 
 	// Timestamp of the last Inventory() execution
-	InventoryTimestamp *time.Time `json:"inventory_ts"`
+	InventoryTimestamp *time.Time `json:"inventory_ts,omitempty"`
 
 	// Timestamp of the last Buylist() execution
-	BuylistTimestamp *time.Time `json:"buylist_ts"`
+	BuylistTimestamp *time.Time `json:"buylist_ts,omitempty"`
 
 	// Only index-style data is available, no quantities or conditions
 	MetadataOnly bool `json:"metadata"`
