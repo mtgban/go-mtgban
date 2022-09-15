@@ -173,6 +173,9 @@ type Market interface {
 
 	// Return some information about the market
 	Info() ScraperInfo
+
+	// Return all names for the sellers present in the Market
+	MarketNames() []string
 }
 
 // Seller is the interface describing actions to be performed on a seller inventory

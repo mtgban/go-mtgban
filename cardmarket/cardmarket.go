@@ -36,6 +36,10 @@ type CardMarketIndex struct {
 	client *MKMClient
 }
 
+var availableIndexNames = []string{
+	"MKM Low", "MKM Trend",
+}
+
 func (mkm *CardMarketIndex) printf(format string, a ...interface{}) {
 	if mkm.LogCallback != nil {
 		mkm.LogCallback("[MKMIndex] "+format, a...)
@@ -118,9 +122,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	// in case the card has a foreign-only printing available
 	v.Set("language", "1")
 
-	names := []string{
-		"MKM Low", "MKM Trend",
-	}
+	// Sorted as availableIndexNames
 	prices := []float64{
 		priceGuide[product.IdProduct].LowPriceEx, priceGuide[product.IdProduct].TrendPrice,
 	}
@@ -139,7 +141,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	if !co.Foil && !co.Etched {
 		link.RawQuery = v.Encode()
 
-		for i := range names {
+		for i := range availableIndexNames {
 			if prices[i] == 0 {
 				continue
 			}
@@ -152,7 +154,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 					Price:      prices[i] * mkm.exchangeRate,
 					Quantity:   product.CountArticles - product.CountFoils,
 					URL:        link.String(),
-					SellerName: names[i],
+					SellerName: availableIndexNames[i],
 				},
 			}
 
@@ -173,7 +175,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			}
 			// If the id is the same it means that the card was really nonfoil-only
 			if cardId != cardIdFoil {
-				for i := range names {
+				for i := range availableIndexNames {
 					if foilprices[i] == 0 {
 						continue
 					}
@@ -185,7 +187,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 							Price:      foilprices[i] * mkm.exchangeRate,
 							Quantity:   product.CountFoils,
 							URL:        link.String(),
-							SellerName: names[i],
+							SellerName: availableIndexNames[i],
 						},
 					}
 
@@ -197,7 +199,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		v.Set("isFoil", "Y")
 		link.RawQuery = v.Encode()
 
-		for i := range names {
+		for i := range availableIndexNames {
 			if foilprices[i] == 0 || product.CountFoils == 0 {
 				continue
 			}
@@ -209,7 +211,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 					Price:      foilprices[i] * mkm.exchangeRate,
 					Quantity:   product.CountFoils,
 					URL:        link.String(),
-					SellerName: names[i],
+					SellerName: availableIndexNames[i],
 				},
 			}
 
@@ -346,6 +348,10 @@ func (mkm *CardMarketIndex) InitializeInventory(reader io.Reader) error {
 	mkm.printf("Loaded inventory from file")
 
 	return nil
+}
+
+func (mkm *CardMarketIndex) MarketNames() []string {
+	return availableIndexNames
 }
 
 func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {

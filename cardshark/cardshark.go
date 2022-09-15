@@ -343,6 +343,25 @@ func (cs *Cardshark) InitializeInventory(reader io.Reader) error {
 	return nil
 }
 
+func (cs *Cardshark) MarketNames() []string {
+	var out []string
+	dupes := map[string]bool{}
+
+	for card := range cs.inventory {
+		for i := range cs.inventory[card] {
+			sellerName := cs.inventory[card][i].SellerName
+			if dupes[sellerName] {
+				continue
+			}
+
+			dupes[sellerName] = true
+			out = append(out, sellerName)
+		}
+	}
+
+	return out
+}
+
 func (cs *Cardshark) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Shark"
 	info.Shorthand = "CShark"

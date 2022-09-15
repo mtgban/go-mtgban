@@ -33,6 +33,10 @@ func NewScraperIndex() *MTGStocksIndex {
 	return &stks
 }
 
+var availableIndexNames = []string{
+	"Stocks TCG Mid", "Stocks TCG Market",
+}
+
 func (stks *MTGStocksIndex) processEntry(channel chan<- responseChan, id int, edition string) error {
 	printings, err := GetPrints(id)
 	if err != nil {
@@ -93,11 +97,9 @@ func (stks *MTGStocksIndex) processEntry(channel chan<- responseChan, id int, ed
 			stks.printf("invalid data type used for %s", printing.Name)
 		}
 
+		// Sorted as availableIndexNames (for regular and foil)
 		prices := []float64{
 			printing.LatestPrice.Avg, printing.LatestPrice.Market, printing.LatestPrice.Foil, printing.LatestPrice.MarketFoil,
-		}
-		names := []string{
-			"TCG Mid", "TCG Market", "TCG Mid", "TCG Market",
 		}
 
 		// Skip the empty prices
@@ -131,7 +133,7 @@ func (stks *MTGStocksIndex) processEntry(channel chan<- responseChan, id int, ed
 					Quantity:   1,
 					Price:      priceFiltered[i],
 					URL:        link,
-					SellerName: names[i],
+					SellerName: availableIndexNames[i%2],
 				},
 			}
 
@@ -234,6 +236,10 @@ func (stks *MTGStocksIndex) InventoryForSeller(sellerName string) (mtgban.Invent
 		return nil, fmt.Errorf("seller %s not found", sellerName)
 	}
 	return stks.marketplace[sellerName], nil
+}
+
+func (tcg *MTGStocksIndex) MarketNames() []string {
+	return availableIndexNames
 }
 
 func (stks *MTGStocksIndex) Info() (info mtgban.ScraperInfo) {

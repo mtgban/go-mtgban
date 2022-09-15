@@ -38,6 +38,10 @@ type CardtraderMarket struct {
 	blueprints map[int]*Blueprint
 }
 
+var availableMarketNames = []string{
+	"Card Trader", "Card Trader Zero",
+}
+
 func NewScraperMarket(token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
@@ -435,6 +439,10 @@ func (ct *CardtraderMarket) InitializeInventory(reader io.Reader) error {
 	ct.printf("Loaded inventory from file")
 
 	return nil
+}
+
+func (tcg *CardtraderMarket) MarketNames() []string {
+	return availableMarketNames
 }
 
 func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {

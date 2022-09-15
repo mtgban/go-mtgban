@@ -6,21 +6,16 @@ import (
 
 // Separate a Market into multiple Seller objects
 func Seller2Sellers(market Market) ([]Seller, error) {
-	inventory, err := market.Inventory()
+	// Make sure inventory is loaded
+	_, err := market.Inventory()
 	if err != nil {
 		return nil, err
 	}
 
-	// This is an unorthodox way to retrieve a list of unique sellers
-	listSellers := map[string]bool{}
-	for _, entries := range inventory {
-		for _, entry := range entries {
-			listSellers[entry.SellerName] = true
-		}
-	}
-
+	// Retrieve the list of unique sellers, and create a single seller
+	listSellers := market.MarketNames()
 	sellers := make([]Seller, 0, len(listSellers))
-	for sellerName := range listSellers {
+	for _, sellerName := range listSellers {
 		inventory, err := market.InventoryForSeller(sellerName)
 		if err != nil {
 			return nil, err

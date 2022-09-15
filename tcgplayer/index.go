@@ -23,6 +23,10 @@ type TCGPlayerIndex struct {
 	client *TCGClient
 }
 
+var availableIndexNames = []string{
+	"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
+}
+
 type indexChan struct {
 	TCGProductId string
 	UUID         string
@@ -89,16 +93,13 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 			continue
 		}
 
+		// These are sorted as in availableIndexNames
 		prices := []float64{
 			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
 		}
-		names := []string{
-			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
-		}
-
 		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate)
 
-		for i := range names {
+		for i := range availableIndexNames {
 			if prices[i] == 0 {
 				continue
 			}
@@ -109,7 +110,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 					Price:      prices[i],
 					Quantity:   1,
 					URL:        link,
-					SellerName: names[i],
+					SellerName: availableIndexNames[i],
 					Bundle:     i == 3,
 				},
 			}
@@ -272,6 +273,10 @@ func (tcg *TCGPlayerIndex) InitializeInventory(reader io.Reader) error {
 	tcg.printf("Loaded inventory from file")
 
 	return nil
+}
+
+func (tcg *TCGPlayerIndex) MarketNames() []string {
+	return availableIndexNames
 }
 
 func (tcg *TCGPlayerIndex) Info() (info mtgban.ScraperInfo) {

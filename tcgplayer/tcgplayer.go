@@ -50,6 +50,10 @@ const (
 	allSkusBackupURL = "https://mtgjson.com/api/v5_backup/TcgplayerSkus.json.bz2"
 )
 
+var availableMarketNames = []string{
+	"TCG Player", "TCG Direct",
+}
+
 var skuConditions = map[string]string{
 	"NEAR MINT":         "NM",
 	"LIGHTLY PLAYED":    "SP",
@@ -125,20 +129,17 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 		}
 
 		if mode == "inventory" {
+			// Sorted as in availableMarketNames
 			prices := []float64{
 				result.LowestListingPrice, result.DirectLowPrice,
 			}
-			names := []string{
-				"TCG Player", "TCG Direct",
-			}
-
 			printing := "Normal"
 			if req.Printing == "FOIL" {
 				printing = "Foil"
 			}
 			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate)
 
-			for i := range names {
+			for i := range availableMarketNames {
 				if prices[i] == 0 {
 					continue
 				}
@@ -149,7 +150,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 						Price:      prices[i],
 						Quantity:   1,
 						URL:        link,
-						SellerName: names[i],
+						SellerName: availableMarketNames[i],
 						Bundle:     i == 1,
 					},
 				}
@@ -441,6 +442,10 @@ func (tcg *TCGPlayerMarket) InitializeBuylist(reader io.Reader) error {
 	tcg.printf("Loaded buylist from file")
 
 	return nil
+}
+
+func (tcg *TCGPlayerMarket) MarketNames() []string {
+	return availableMarketNames
 }
 
 func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
