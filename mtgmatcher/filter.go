@@ -462,6 +462,20 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
+		case inCard.Contains("30th Anniversary"):
+			switch set.Code {
+			case "P30A":
+				if inCard.isJPN() {
+					continue
+				}
+			case "P30H":
+				if !inCard.isJPN() {
+					continue
+				}
+			default:
+				continue
+			}
+
 		// Last resort, if this is set on the input card, and there were
 		// no better descriptors earlier, try looking at the set type
 		case inCard.promoWildcard:
@@ -1054,6 +1068,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isWPNGateway() && !card.HasPromoType(mtgjson.PromoTypeWPN) {
 					continue
 				} else if !inCard.isWPNGateway() && card.HasFinish(mtgjson.PromoTypeWPN) {
+					continue
+				}
+			// Duplicates, only frame changes
+			case "30th Anniversary History Promos":
+				if Contains(inCard.Variation, "Retro") && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+					continue
+				} else if !Contains(inCard.Variation, "Retro") && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 					continue
 				}
 			default:
