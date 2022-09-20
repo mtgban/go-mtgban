@@ -200,6 +200,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			} else if variant == "25th Anniversary Exposition" {
 				edition = "PDOM"
 			}
+		default:
+			// Skip PL21 cards incorrectly tagged as "Summer Vacation"
+			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
+				edition = "PSVC"
+			}
 		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
