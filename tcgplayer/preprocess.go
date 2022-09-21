@@ -404,6 +404,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"Kamigawa: Neon Dynasty",
 		"Unfinity":
 		variant = product.getNum()
+	case "Dominaria United":
+		// These lands are not tagged as such
+		if mtgmatcher.IsBasicLand(cardName) && variant == "Showcase" {
+			variant = ""
+		}
 	}
 
 	// Outside the main loop to catch everything
