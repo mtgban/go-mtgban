@@ -231,6 +231,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				if strings.HasSuffix(card.Number, "s") {
 					continue
 				}
+			// Remove frame effects and borders where they don't belong
+			case "STA", "PLIST":
+				card.FrameEffects = nil
+				card.BorderColor = "black"
 			case "SLD":
 				switch card.Number {
 				// One of the tokens is a DFC but burns a card number, skip it

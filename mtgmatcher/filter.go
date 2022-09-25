@@ -762,11 +762,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					// BaB are allowed to have borderless, same as Textured cards
 				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) && !card.HasPromoType(mtgjson.PromoTypeTextured) {
 					// IKO may have showcase cards which happen to be borderless
-					// or reskinned ones. Also all cards from STA are borderless,
-					// so they are never tagged as such.
+					// or reskinned ones.
 					if card.BorderColor == mtgjson.BorderColorBorderless &&
-						!card.HasFrameEffect(mtgjson.FrameEffectShowcase) && card.FlavorName == "" &&
-						set.Name != "Strixhaven Mystical Archive" {
+						!card.HasFrameEffect(mtgjson.FrameEffectShowcase) && card.FlavorName == "" {
 						continue
 					}
 				}
