@@ -2773,6 +2773,8 @@ var mb1plistVariants = map[string]map[string]string{
 	"Faithless Looting": {
 		"cm2":                         "919",
 		"commander anthology vol. ii": "919",
+		"commander anthology ii":      "919",
+		"duel deck: sorin vs tibalt":  "533",
 	},
 	"Fiery Gambit": {
 		"foil": "49",
@@ -3489,6 +3491,7 @@ var sldVariants = map[string]map[string]string{
 		"v.4": "86",
 
 		"secret lair x street fighter": "675",
+		"secret lair reskin":           "675",
 	},
 	"Thalia, Guardian of Thraben": {
 		"v.1": "37",
@@ -3532,7 +3535,8 @@ var sldVariants = map[string]map[string]string{
 		"v.2": "378",
 	},
 	"Mother of Runes": {
-		"secret lair: mother's day 2021": "298",
+		"secret lair: mother's day 2021":                "298",
+		"secret lair: artist series: magali villeneuve": "473",
 	},
 	"Spellskite": {
 		"secret lair: series thomas m. baxa":                "277",
@@ -3553,6 +3557,19 @@ var sldVariants = map[string]map[string]string{
 	"Primeval Titan": {
 		"secret lair showcase":                   "221",
 		"secret lair: showcase: kaldheim part 1": "221",
+	},
+	"Command Tower": {
+		"secret lair x arcane: lands": "697",
+		"secret lair reskin":          "697",
+	},
+	"Elspeth, Knight-Errant": {
+		"series: volkan baga": "1001",
+	},
+	"Ghost Quarter": {
+		"secret lair: series: sidharth chaturvedi": "468",
+	},
+	"Sol Ring": {
+		"secret lair": "249",
 	},
 }
 
