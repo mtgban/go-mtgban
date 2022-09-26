@@ -28,6 +28,11 @@ var EditionTable = map[string]string{
 
 	"Universes Beyond: Warhammer 40,000": "Warhammer 40,000",
 
+	// PL22
+	"APAC Year of the Tiger":     "Year of the Tiger 2022",
+	"Textless Year of the Tiger": "Year of the Tiger 2022",
+	"Year of the Tiger":          "Year of the Tiger 2022",
+
 	// Double Feature
 	"Innistrad: Double Feature - Crimson Vow":   "Innistrad: Double Feature",
 	"Innistrad: Double Feature - Midnight Hunt": "Innistrad: Double Feature",
