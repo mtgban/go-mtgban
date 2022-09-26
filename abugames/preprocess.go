@@ -244,10 +244,13 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		case "Rafiq of the Many":
 			card.Edition = "SHA"
 			variation = "250"
+		case "Swiftfoot Boots":
+			card.Edition = "PW22"
+			variation = "4"
+		case "Brood Sliver":
+			card.Edition = "SLD"
 		}
-		if strings.Contains(variation, "United Kingdom") {
-			variation = strings.Replace(variation, "United Kingdom", "U.K.", 1)
-		} else if strings.Contains(variation, "Scandanavia") {
+		if strings.Contains(variation, "Scandanavia") {
 			variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
 		} else if strings.Contains(variation, "Secret") || strings.Contains(variation, "Lair") {
 			num := mtgmatcher.ExtractNumber(variation)
@@ -302,6 +305,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	case "Summer Magic / Edgar":
 		if mtgmatcher.IsBasicLand(cardName) {
 			return nil, errors.New("unsupported")
+		}
+	case "Streets of New Capenna Commander":
+		if strings.Contains(cardName, "Spellbinding Soprano") && strings.Contains(cardName, "The List") {
+			cardName = "Spellbinding Soprano"
+			variation = "Promo Pack"
 		}
 	}
 
