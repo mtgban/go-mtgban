@@ -702,7 +702,7 @@ func adjustEdition(inCard *Card) {
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
 	// Promo handling, but they are not set as such in mtgjson/scryfall
-	case inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PLS")) == 2:
+	case (inCard.isGenericPromo() || inCard.isGenericAltArt()) && len(MatchInSet(inCard.Name, "PLS")) == 2:
 		edition = "PLS"
 		variation = "Alternate Art"
 
