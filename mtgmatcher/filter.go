@@ -1075,6 +1075,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !Contains(inCard.Variation, "Retro") && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 					continue
 				}
+			// Pick one of the printings in case they are not specified
+			case "Guilds of Ravnica", "Ravnica Allegiance":
+				if strings.Contains(card.Name, "Guildgate") && inCard.Variation == "" {
+					cn, _ := strconv.Atoi(card.Number)
+					if cn%2 == 0 {
+						continue
+					}
+				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant

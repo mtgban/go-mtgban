@@ -309,10 +309,6 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 			"Windreaver":
 			edition = "RNA Guild Kit"
 		}
-	case "Guilds of Ravnica", "Ravnica Allegiance":
-		if strings.Contains(cardName, "Guildgate") {
-			return nil, errors.New("dupe")
-		}
 	case "Chronicles":
 		switch cardName {
 		case "Urza's Power Plant", "Urza's Tower", "Urza's Mine":

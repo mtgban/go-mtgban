@@ -275,10 +275,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			}
 			variant += maybeNum
 		}
-		switch cardName {
-		case "Boros Guildgate":
-			return nil, errors.New("unsupported")
-		}
 	case "Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling":
 		edition = "Global Series Jiang Yanggu & Mu Yanling"
 	case "Ikoria: Lair of Behemoths: Variants":

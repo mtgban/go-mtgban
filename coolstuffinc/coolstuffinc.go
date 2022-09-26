@@ -269,7 +269,6 @@ func (csi *Coolstuffinc) scrape() error {
 			} else if err != nil {
 				switch {
 				case theCard.IsBasicLand(),
-					strings.HasSuffix(theCard.Name, "Guildgate"),
 					strings.HasSuffix(theCard.Name, "Signet"),
 					strings.Contains(cardName, "Token"):
 				default:
