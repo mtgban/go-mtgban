@@ -772,29 +772,16 @@ func adjustEdition(inCard *Card) {
 
 	// All the oversized commander cards
 	case inCard.Contains("Oversize"):
-		switch {
-		case inCard.Contains("Arsenal") && len(MatchInSet(inCard.Name, "OCM1")) == 1:
-			edition = backend.Sets["OCM1"].Name
-		case len(MatchInSet(inCard.Name, "PCMD")) == 1:
-			edition = backend.Sets["PCMD"].Name
-		case len(MatchInSet(inCard.Name, "OCMD")) == 1:
-			edition = backend.Sets["OCMD"].Name
-		case len(MatchInSet(inCard.Name, "OC13")) == 1:
-			edition = backend.Sets["OC13"].Name
-		case len(MatchInSet(inCard.Name, "OC14")) == 1:
-			edition = backend.Sets["OC14"].Name
-		case len(MatchInSet(inCard.Name, "OC15")) == 1:
-			edition = backend.Sets["OC15"].Name
-		case len(MatchInSet(inCard.Name, "OC16")) == 1:
-			edition = backend.Sets["OC16"].Name
-		case len(MatchInSet(inCard.Name, "OC17")) == 1:
-			edition = backend.Sets["OC17"].Name
-		case len(MatchInSet(inCard.Name, "OC18")) == 1:
-			edition = backend.Sets["OC18"].Name
-		case len(MatchInSet(inCard.Name, "OC19")) == 1:
-			edition = backend.Sets["OC19"].Name
-		case len(MatchInSet(inCard.Name, "OC20")) == 1:
-			edition = backend.Sets["OC20"].Name
+		for _, tag := range []string{
+			"OCM1", "PCMD", "OCMD", "OC13", "OC14", "OC15", "OC16", "OC17", "OC18", "OC19", "OC20",
+		} {
+			if inCard.Name == "Mayael the Anima" && !inCard.Contains("Arsenal") {
+				edition = backend.Sets["OC13"].Name
+				break
+			} else if len(MatchInSet(inCard.Name, tag)) == 1 {
+				edition = backend.Sets[tag].Name
+				break
+			}
 		}
 
 	// Lunar Year Promos
