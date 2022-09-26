@@ -316,6 +316,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			variant = "Gateway 2007"
 		case "Jaya Ballard, Task Mage":
 			variant = "Resale"
+		case "Greater Auramancy":
+			if variant == "" {
+				edition = "P22"
+			}
 		}
 	default:
 		if strings.HasSuffix(edition, ": Variants") && variant == "" {
