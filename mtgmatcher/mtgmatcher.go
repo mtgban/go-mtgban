@@ -560,15 +560,6 @@ func adjustEdition(inCard *Card) {
 
 	// Adjust box set
 	switch {
-	case Contains(edition, "Double Masters") && !Contains(edition, "2022"):
-		if Contains(edition, "Box Toppers") ||
-			Contains(edition, "Extras") ||
-			Contains(edition, "Variants") {
-			edition = "Double Masters"
-			if !inCard.isBasicLand() {
-				variation = "Borderless"
-			}
-		}
 	case inCard.Contains("Mythic Edition"):
 		edition = "Mythic Edition"
 	case strings.Contains(edition, "Invocation") ||
@@ -589,6 +580,7 @@ func adjustEdition(inCard *Card) {
 		}
 	default:
 		for _, tag := range []string{
+			"Box Toppers",
 			"(Collector Edition)",
 			"Collectors",
 			"Collector Booster",

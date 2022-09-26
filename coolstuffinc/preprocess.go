@@ -299,7 +299,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.HasPrefix(cardName, "Blank Card") {
 			return nil, errors.New("untracked")
 		}
-	case "Mystical Archive":
+	case "Mystical Archive", "Double Masters: Variants":
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
 		}
@@ -321,18 +321,18 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		case "Jaya Ballard, Task Mage":
 			variant = "Resale"
 		}
-	}
-
-	if strings.HasSuffix(edition, ": Variants") && variant == "" {
-		switch {
-		case mtgmatcher.HasEtchedPrinting(cardName):
-			variant = "Etched"
-		case mtgmatcher.HasExtendedArtPrinting(cardName):
-			variant = "Extended Art"
-		case mtgmatcher.HasBorderlessPrinting(cardName):
-			variant = "Borderless"
-		case mtgmatcher.HasShowcasePrinting(cardName):
-			variant = "Showcase"
+	default:
+		if strings.HasSuffix(edition, ": Variants") && variant == "" {
+			switch {
+			case mtgmatcher.HasEtchedPrinting(cardName):
+				variant = "Etched"
+			case mtgmatcher.HasExtendedArtPrinting(cardName):
+				variant = "Extended Art"
+			case mtgmatcher.HasBorderlessPrinting(cardName):
+				variant = "Borderless"
+			case mtgmatcher.HasShowcasePrinting(cardName):
+				variant = "Showcase"
+			}
 		}
 	}
 
@@ -477,7 +477,7 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		if variant == "Japanese" || variant == "Chinese" {
 			return nil, errors.New("not english")
 		}
-	case "Mystical Archive":
+	case "Mystical Archive", "Double Masters: Variants":
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
 		}
