@@ -446,6 +446,14 @@ var EditionTable = map[string]string{
 	"MED3": "Mythic Edition",
 	"RMB1": "Mystery Booster Retail Edition Foils",
 
+	// Alt Fourth
+	"4th Edition - Alternate":    "Alternate Fourth Edition",
+	"Alternate 4th Edition":      "Alternate Fourth Edition",
+	"Alternate 4th":              "Alternate Fourth Edition",
+	"Fourth (Alternate Edition)": "Alternate Fourth Edition",
+	"Fourth Edition (Alt)":       "Alternate Fourth Edition",
+	"Fourth Edition: Alternate":  "Alternate Fourth Edition",
+
 	// Foreign-only
 	"3rd Edition (Foreign Black Border)":     "Foreign Black Border",
 	"3rd Edition BB":                         "Foreign Black Border",

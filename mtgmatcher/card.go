@@ -254,11 +254,6 @@ func (c *Card) isUnsupported() bool {
 		c.Contains("Ultra-Pro Puzzle") ||
 		c.Contains("Player Cards") || // scg pro players
 		c.Contains("Foreign White Border") || // for REV and 4ED
-		c.Contains("4th Edition - Alternate") ||
-		c.Contains("Alternate 4th Edition") ||
-		c.Contains("Fourth Edition: Alternate") ||
-		c.Contains("Fourth (Alternate Edition)") ||
-		c.Contains("Fourth Edition (Alt)") ||
 		c.Contains("Filler Cards") || // Misprints from mkm and ct
 		c.Contains("Salvat") || // Salvat-Hachette 2005/2011
 		c.Contains("Redemption Program") || // PRES

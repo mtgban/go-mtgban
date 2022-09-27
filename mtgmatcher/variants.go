@@ -4199,6 +4199,7 @@ var wc02Variants = map[string]map[string]string{
 
 var VariantsTable = map[string]map[string]map[string]string{
 	"Alliances":                           allVariants,
+	"Alternate Fourth Edition":            ed4Variants,
 	"Anthologies":                         athVariants,
 	"Antiquities":                         atqVariants,
 	"Arena League 2001":                   pal01Variants,
