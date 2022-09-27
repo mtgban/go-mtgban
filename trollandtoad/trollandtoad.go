@@ -340,8 +340,8 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 			cardId: cardId,
 			buyEntry: &mtgban.BuylistEntry{
 				Conditions: "SP",
-				BuyPrice:   price,
-				TradePrice: price * 1.30,
+				BuyPrice:   price * 0.6,
+				TradePrice: price * 0.6 * 1.30,
 				Quantity:   qty,
 				PriceRatio: priceRatio,
 				URL:        "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name),
@@ -351,8 +351,19 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 			cardId: cardId,
 			buyEntry: &mtgban.BuylistEntry{
 				Conditions: "MP",
-				BuyPrice:   price * 0.75,
-				TradePrice: price * 0.75 * 1.30,
+				BuyPrice:   price * 0.6,
+				TradePrice: price * 0.6 * 1.30,
+				Quantity:   qty,
+				PriceRatio: priceRatio,
+				URL:        "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name),
+			},
+		}
+		channel <- responseChan{
+			cardId: cardId,
+			buyEntry: &mtgban.BuylistEntry{
+				Conditions: "HP",
+				BuyPrice:   price * 0.6,
+				TradePrice: price * 0.6 * 1.30,
 				Quantity:   qty,
 				PriceRatio: priceRatio,
 				URL:        "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name),
