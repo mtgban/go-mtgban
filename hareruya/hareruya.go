@@ -184,49 +184,19 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 				priceRatio = price / sellPrice * 100
 			}
 
-			out := responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "NM",
-					BuyPrice:   price * ha.exchangeRate,
-					PriceRatio: priceRatio,
-					URL:        "https://www.hareruyamtg.com" + link,
-				},
+			deductions := []float64{1, 0.8, 0.6, 0.4}
+			for i, deduction := range deductions {
+				out := responseChan{
+					cardId: cardId,
+					buyEntry: &mtgban.BuylistEntry{
+						Conditions: mtgban.DefaultGradeTags[i],
+						BuyPrice:   price * deduction * ha.exchangeRate,
+						PriceRatio: priceRatio,
+						URL:        "https://www.hareruyamtg.com" + link,
+					},
+				}
+				channel <- out
 			}
-			channel <- out
-
-			out = responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "SP",
-					BuyPrice:   price * ha.exchangeRate * 0.8,
-					PriceRatio: priceRatio,
-					URL:        "https://www.hareruyamtg.com" + link,
-				},
-			}
-			channel <- out
-
-			out = responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "MP",
-					BuyPrice:   price * ha.exchangeRate * 0.6,
-					PriceRatio: priceRatio,
-					URL:        "https://www.hareruyamtg.com" + link,
-				},
-			}
-			channel <- out
-
-			out = responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "HP",
-					BuyPrice:   price * ha.exchangeRate * 0.4,
-					PriceRatio: priceRatio,
-					URL:        "https://www.hareruyamtg.com" + link,
-				},
-			}
-			channel <- out
 
 			return
 		}

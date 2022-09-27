@@ -233,54 +233,21 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 				priceRatio = price / sellPrice * 100
 			}
 
-			out := responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "NM",
-					BuyPrice:   price,
-					TradePrice: credit,
-					PriceRatio: priceRatio,
-					Quantity:   qty,
-					URL:        "https://www.toamagic.com" + link,
-				},
+			deductions := []float64{1, 1, 0.7, 0.4}
+			for i, deduction := range deductions {
+				out := responseChan{
+					cardId: cardId,
+					buyEntry: &mtgban.BuylistEntry{
+						Conditions: mtgban.DefaultGradeTags[i],
+						BuyPrice:   price * deduction,
+						TradePrice: credit * deduction,
+						PriceRatio: priceRatio,
+						Quantity:   qty,
+						URL:        "https://www.toamagic.com" + link,
+					},
+				}
+				channel <- out
 			}
-			channel <- out
-
-			out = responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "SP",
-					BuyPrice:   price,
-					TradePrice: credit,
-					PriceRatio: priceRatio,
-					URL:        "https://www.toamagic.com" + link,
-				},
-			}
-			channel <- out
-
-			out = responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "MP",
-					BuyPrice:   price * 0.70,
-					TradePrice: credit * 0.70,
-					PriceRatio: priceRatio,
-					URL:        "https://www.toamagic.com" + link,
-				},
-			}
-			channel <- out
-
-			out = responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "HP",
-					BuyPrice:   price * 0.40,
-					TradePrice: credit * 0.40,
-					PriceRatio: priceRatio,
-					URL:        "https://www.toamagic.com" + link,
-				},
-			}
-			channel <- out
 		}
 	})
 

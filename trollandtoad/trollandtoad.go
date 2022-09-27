@@ -325,49 +325,20 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 			priceRatio = price / sellPrice * 100
 		}
 
-		channel <- responseChan{
-			cardId: cardId,
-			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "NM",
-				BuyPrice:   price,
-				TradePrice: price * 1.30,
-				Quantity:   qty,
-				PriceRatio: priceRatio,
-				URL:        "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name),
-			},
-		}
-		channel <- responseChan{
-			cardId: cardId,
-			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "SP",
-				BuyPrice:   price * 0.6,
-				TradePrice: price * 0.6 * 1.30,
-				Quantity:   qty,
-				PriceRatio: priceRatio,
-				URL:        "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name),
-			},
-		}
-		channel <- responseChan{
-			cardId: cardId,
-			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "MP",
-				BuyPrice:   price * 0.6,
-				TradePrice: price * 0.6 * 1.30,
-				Quantity:   qty,
-				PriceRatio: priceRatio,
-				URL:        "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name),
-			},
-		}
-		channel <- responseChan{
-			cardId: cardId,
-			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "HP",
-				BuyPrice:   price * 0.6,
-				TradePrice: price * 0.6 * 1.30,
-				Quantity:   qty,
-				PriceRatio: priceRatio,
-				URL:        "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name),
-			},
+		link := "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name)
+		deductions := []float64{1, 0.6, 0.6, 0.6, 0.6}
+		for i, deduction := range deductions {
+			channel <- responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: mtgban.DefaultGradeTags[i],
+					BuyPrice:   price * deduction,
+					TradePrice: price * deduction * 1.30,
+					Quantity:   qty,
+					PriceRatio: priceRatio,
+					URL:        link,
+				},
+			}
 		}
 	}
 	return nil

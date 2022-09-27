@@ -28,7 +28,11 @@ const (
 
 	csiInventoryURL = "https://www.coolstuffinc.com/magic+the+gathering/"
 	csiBuylistURL   = "https://www.coolstuffinc.com/ajax_buylist.php"
+
+	defaultBuylistPage = "https://www.coolstuffinc.com/main_buylist_display.php"
 )
+
+var deductions = []float64{1, 1, 0.75}
 
 type Coolstuffinc struct {
 	LogCallback mtgban.LogCallbackFunc
@@ -472,35 +476,17 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 			priceRatio = price / sellPrice * 100
 		}
 
-		channel <- responseChan{
-			cardId: cardId,
-			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "NM",
-				BuyPrice:   price,
-				TradePrice: price * 1.3,
-				PriceRatio: priceRatio,
-				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",
-			},
-		}
-		channel <- responseChan{
-			cardId: cardId,
-			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "SP",
-				BuyPrice:   price,
-				TradePrice: price * 1.3,
-				PriceRatio: priceRatio,
-				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",
-			},
-		}
-		channel <- responseChan{
-			cardId: cardId,
-			buyEntry: &mtgban.BuylistEntry{
-				Conditions: "MP",
-				BuyPrice:   price * 0.75,
-				TradePrice: price * 0.75 * 1.3,
-				PriceRatio: priceRatio,
-				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",
-			},
+		for i, deduction := range deductions {
+			channel <- responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: mtgban.DefaultGradeTags[i],
+					BuyPrice:   price * deduction,
+					TradePrice: price * deduction * 1.3,
+					PriceRatio: priceRatio,
+					URL:        defaultBuylistPage,
+				},
+			}
 		}
 	})
 	return nil

@@ -106,39 +106,21 @@ func (csi *CoolstuffincOfficial) scrape() error {
 				priceRatio = card.PriceBuy / card.PriceRetail * 100
 			}
 
-			// NM
-			out := mtgban.BuylistEntry{
-				Conditions: "NM",
-				BuyPrice:   card.PriceBuy,
-				TradePrice: card.PriceBuy * 1.3,
-				PriceRatio: priceRatio,
-				URL:        "https://www.coolstuffinc.com/main_buylist_display.php",
+			for i, deduction := range deductions {
+				out := mtgban.BuylistEntry{
+					Conditions: mtgban.DefaultGradeTags[i],
+					BuyPrice:   card.PriceBuy * deduction,
+					TradePrice: card.PriceBuy * deduction * 1.3,
+					PriceRatio: priceRatio,
+					URL:        defaultBuylistPage,
+				}
+				err = csi.buylist.Add(cardId, &out)
+				if err != nil && i == 0 {
+					csi.printf("%v", err)
+					csi.printf("%q", theCard)
+					csi.printf("%q", card)
+				}
 			}
-			err = csi.buylist.Add(cardId, &out)
-			if err != nil {
-				csi.printf("%v", err)
-				csi.printf("%q", theCard)
-				csi.printf("%q", card)
-			}
-			// Same as NM
-			out.Conditions = "SP"
-			err = csi.buylist.Add(cardId, &out)
-			if err != nil {
-				csi.printf("%v", err)
-				csi.printf("%q", theCard)
-				csi.printf("%q", card)
-			}
-			// 0.75 of NM
-			out.Conditions = "MP"
-			out.BuyPrice = card.PriceBuy * 0.75
-			out.TradePrice = card.PriceBuy * 0.75 * 1.3
-			err = csi.buylist.Add(cardId, &out)
-			if err != nil {
-				csi.printf("%v", err)
-				csi.printf("%q", theCard)
-				csi.printf("%q", card)
-			}
-			// No HP
 		}
 	}
 
