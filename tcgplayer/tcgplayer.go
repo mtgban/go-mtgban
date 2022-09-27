@@ -271,45 +271,26 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 				}
 				for _, sku := range skus {
 					// Skip languages that we do not track
+					if mtgmatcher.SkipLanguage(card.Name, set.Name, sku.Language) {
+						continue
+					}
+
+					// Tweak custom sets
 					switch sku.Language {
-					case "ENGLISH":
 					case "ITALIAN":
 						switch set.Name {
 						case "Legends", "The Dark":
 							uuid = card.UUID + "_ita"
-						case "Rinascimento":
-						default:
-							continue
 						}
 					case "JAPANESE":
 						switch set.Name {
 						case "Chronicles":
 							uuid = card.UUID + "_jpn"
-						case "Fourth Edition Foreign Black Border":
 						case "War of the Spark", "War of the Spark Promos":
 							if !strings.Contains(card.Number, "★") {
 								continue
 							}
-						case "Ikoria: Lair of Behemoths":
-							switch card.Name {
-							case "Mysterious Egg", "Dirge Bat", "Crystalline Giant":
-							default:
-								continue
-							}
-						case "Secrat Lair Drop",
-							"URL/Convention Promos",
-							"Resale Promos",
-							"Media Inserts":
-							// No specific card because it's an "always open" set
-						case "Kaldheim Promos":
-							if card.Name != "Fiendish Duo" {
-								continue
-							}
-						default:
-							continue
 						}
-					default:
-						continue
 					}
 
 					pages <- marketChan{

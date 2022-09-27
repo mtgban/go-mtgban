@@ -15,11 +15,14 @@ var cardTable = map[string]string{
 }
 
 func shouldSkipLang(cardName, edition, variant, language string) bool {
+	if mtgmatcher.SkipLanguage(cardName, edition, language) {
+		return true
+	}
+
+	// Additional language rules
 	switch language {
-	case "English":
 	case "Japanese":
 		switch edition {
-		case "Chronicles":
 		case "4th Edition BB":
 			if mtgmatcher.IsBasicLand(cardName) {
 				return true
@@ -30,16 +33,6 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 			if variant != "Alternate Art" {
 				return true
 			}
-		case "Ikoria: Lair of Behemoths - Variants":
-			switch cardName {
-			case "Crystalline Giant",
-				"Battra, Dark Destroyer",
-				"Mothra's Great Cocoon":
-			default:
-				return true
-			}
-		default:
-			return true
 		}
 	case "Italian":
 		switch edition {
@@ -47,14 +40,7 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 			if mtgmatcher.IsBasicLand(cardName) {
 				return true
 			}
-		case "Legends":
-		case "Renaissance":
-		case "The Dark":
-		default:
-			return true
 		}
-	default:
-		return true
 	}
 
 	return false

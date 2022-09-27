@@ -84,37 +84,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 	var cardIdFoil string
 
 	for _, product := range products {
-		switch product.Properties.Language {
-		case "en":
-		case "it":
-			switch product.Expansion.Name {
-			case "Foreign Black Bordered":
-			case "Rinascimento":
-			case "Legends Italian":
-			case "The Dark Italian":
-			default:
-				continue
-			}
-		case "jp":
-			switch product.Expansion.Name {
-			case "Chronicles Japanese",
-				"Fourth Edition Black Bordered",
-				"Magic Premiere Shop",
-				"Mystical Archive: Japanese alternate-art",
-				"War of the Spark: Japanese alternate-art Planeswalker",
-				"War of the Spark: Japanese alternate-art Planeswalker Promo":
-			case "Ikoria: Lair of Behemoths Collectors":
-				switch theCard.Name {
-				case "Crystalline Giant",
-					"Battra, Dark Destroyer",
-					"Mothra's Great Cocoon":
-				default:
-					continue
-				}
-			default:
-				continue
-			}
-		default:
+		if mtgmatcher.SkipLanguage(theCard.Name, product.Expansion.Name, product.Properties.Language) {
 			continue
 		}
 

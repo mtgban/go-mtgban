@@ -56,32 +56,7 @@ var promoTags = []string{
 
 func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	if len(card.Language) > 0 {
-		switch card.Language[0] {
-		case "English":
-		case "Italian":
-			switch card.Edition {
-			case "Legends":
-			case "The Dark":
-			case "Renaissance":
-			default:
-				return nil, errors.New("non-English card")
-			}
-		case "Japanese":
-			switch card.Edition {
-			case "Chronicles":
-			case "4th Edition":
-			case "War of the Spark":
-			case "Ikoria: Lair of Behemoths":
-				switch card.SimpleTitle {
-				case "Mysterious Egg", "Dirge Bat", "Crystalline Giant":
-				default:
-					return nil, errors.New("non-English card")
-				}
-			case "Strixhaven Mystical Archive":
-			default:
-				return nil, errors.New("non-English card")
-			}
-		default:
+		if mtgmatcher.SkipLanguage(card.SimpleTitle, card.Edition, card.Language[0]) {
 			return nil, errors.New("non-English card")
 		}
 	}

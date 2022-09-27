@@ -246,6 +246,66 @@ func IsToken(name string) bool {
 	return false
 }
 
+// List of editions and specific cards supported in a non-English language
+func SkipLanguage(cardName, edition, language string) bool {
+	ed, found := EditionTable[edition]
+	if found {
+		edition = ed
+	}
+
+	switch strings.ToLower(language) {
+	case "en", "english", "":
+	case "it", "italian":
+		switch edition {
+		case "Foreign Black Border",
+			"Legends Italian",
+			"Legends",
+			"Renaissance",
+			"Rinascimento",
+			"The Dark Italian",
+			"The Dark":
+		default:
+			return true
+		}
+	case "jp", "japanese":
+		switch edition {
+		case "Chronicles Japanese",
+			"Chronicles",
+			"Fourth Edition Foreign Black Border",
+			"Fourth Edition",
+			"Magic Premiere Shop",
+			"Strixhaven Mystical Archive",
+			"War of the Spark",
+			"War of the Spark Promos":
+		case "Ikoria: Lair of Behemoths",
+			"Ikoria: Lair of Behemoths - Variants",
+			"Ikoria: Lair of Behemoths Collectors":
+			switch cardName {
+			case "Mysterious Egg", "Mothra's Great Cocoon",
+				"Dirge Bat", "Battra, Dark Destroyer",
+				"Crystalline Giant", "Mechagodzilla, the Weapon":
+			default:
+				return true
+			}
+		case "Kaldheim Promos":
+			if cardName != "Fiendish Duo" {
+				return true
+			}
+		case "Secrat Lair Drop",
+			"URL/Convention Promos",
+			"Resale Promos",
+			"Media Inserts":
+			// No specific card because these are a evolving sets,
+			// with new cards added every now and then
+		default:
+			return true
+		}
+	default:
+		return true
+	}
+	return false
+}
+
 func (c *Card) isUnsupported() bool {
 	return c.Contains("Art Series") ||
 		c.Contains("Complete") || // a complete collection
