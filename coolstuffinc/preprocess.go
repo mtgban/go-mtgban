@@ -453,11 +453,12 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		return nil, errors.New("not supported")
 	case "Black Bordered (foreign)":
 		switch variant {
-		case "German", "French":
+		case "German", "French", "Spanish", "Chinese", "Korean":
 			return nil, errors.New("not supported")
-		case "Spanish", "Chinese", "Japanese":
+		case "Italian":
+			edition = "FBB"
+		case "Japanese":
 			edition = "4BB"
-			return nil, errors.New("not supported")
 		}
 	case "Ikoria: Lair of Behemoths: Variants":
 		if variant == "Japanese" {
