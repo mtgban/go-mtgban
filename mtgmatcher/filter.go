@@ -759,8 +759,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if card.BorderColor != mtgjson.BorderColorBorderless {
 						continue
 					}
-					// BaB are allowed to have borderless, same as Textured cards
-				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) && !card.HasPromoType(mtgjson.PromoTypeTextured) {
+					// BaB are allowed to have borderless, same as a few foiling types
+				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) &&
+					!card.HasPromoType(mtgjson.PromoTypeTextured) &&
+					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
 					// IKO may have showcase cards which happen to be borderless
 					// or reskinned ones.
 					if card.BorderColor == mtgjson.BorderColorBorderless &&
@@ -837,6 +839,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else {
 					if card.HasPromoType(mtgjson.PromoTypeTextured) {
+						continue
+					}
+				}
+
+				if inCard.isGalaxyFoil() {
+					if !card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
+						continue
+					}
+				} else {
+					if card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
 						continue
 					}
 				}

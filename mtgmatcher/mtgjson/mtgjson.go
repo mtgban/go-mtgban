@@ -115,6 +115,7 @@ const (
 	PromoTypeGilded     = "gilded"
 	PromoTypeTextured   = "textured"
 	PromoTypeNeonInk    = "neonink"
+	PromoTypeGalaxyFoil = "galaxyfoil"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"

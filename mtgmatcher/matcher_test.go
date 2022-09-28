@@ -3361,6 +3361,18 @@ var MatchTests = []MatchTest{
 			Edition: "TBTH",
 		},
 	},
+
+	// Unfinity
+	MatchTest{
+		Id:   "80ca86c8-8661-55bb-a400-bd1a39cb2323",
+		Desc: "galaxy",
+		In: Card{
+			Name:      "Robo-Pinata",
+			Variation: "Galaxy-Foil",
+			Edition:   "Unfinity",
+			Foil:      true,
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
