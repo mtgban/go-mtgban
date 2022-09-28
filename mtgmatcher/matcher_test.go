@@ -3373,6 +3373,22 @@ var MatchTests = []MatchTest{
 			Foil:      true,
 		},
 	},
+	MatchTest{
+		Id:   "0b8b4f04-36e7-5f22-ac81-4a20fb5b3b94",
+		Desc: "stickers",
+		In: Card{
+			Name:    "Urza's Dark Cannonball",
+			Edition: "Unfinity",
+		},
+	},
+	MatchTest{
+		Id:   "0b8b4f04-36e7-5f22-ac81-4a20fb5b3b94",
+		Desc: "sticker_sheets",
+		In: Card{
+			Name:    "Urza's Dark Cannonball Sticker Sheet",
+			Edition: "Unfinity",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

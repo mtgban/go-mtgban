@@ -384,6 +384,13 @@ func MatchInSet(cardName string, setCode string) (outCards []mtgjson.Card) {
 // variant attribute. This should only be used in case the card name
 // was not found.
 func adjustName(inCard *Card) {
+	// Sticker sheet adjustments
+	if strings.Contains(inCard.Name, "Sticker") {
+		inCard.Name = strings.Replace(inCard.Name, "Sticker", "", 1)
+		inCard.Name = strings.Replace(inCard.Name, "Sheet", "", 1)
+		inCard.Name = strings.TrimSpace(inCard.Name)
+	}
+
 	// Skip for tokens, we need them to be exact or the prefix search interferes
 	if strings.Contains(strings.ToLower(inCard.Name), "token") {
 		return
@@ -787,6 +794,10 @@ func adjustEdition(inCard *Card) {
 	// WPN 2021
 	case inCard.Name != "Mind Stone" && inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PW21")) == 1:
 		edition = backend.Sets["PW21"].Name
+
+	// Unfinity Sticker Sheets
+	case inCard.Edition == "Unfinity" && len(MatchInSet(inCard.Name, "SUNF")) == 1:
+		edition = backend.Sets["SUNF"].Name
 
 	// Single card mismatches
 	default:
