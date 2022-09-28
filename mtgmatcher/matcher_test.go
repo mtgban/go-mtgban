@@ -90,22 +90,7 @@ var MatchTests = []MatchTest{
 			Id: "not-an-id",
 		},
 	},
-	MatchTest{
-		Desc: "tok_unsupported",
-		Err:  ErrUnsupported,
-		In: Card{
-			Name:    "Cat Token",
-			Edition: "Scars of Mirrodin",
-		},
-	},
-	MatchTest{
-		Desc: "tok_unsupported_gold",
-		Err:  ErrUnsupported,
-		In: Card{
-			Name:    "Gold Token",
-			Edition: "Born of the Gods",
-		},
-	},
+
 	MatchTest{
 		Desc: "tok_unsupported_alias",
 		Err:  ErrUnsupported,

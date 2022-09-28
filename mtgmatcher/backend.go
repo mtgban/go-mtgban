@@ -81,6 +81,7 @@ const (
 	suffixEtched = "_e"
 )
 
+// Editions with interesting tokens
 var setAllowedForTokens = map[string]bool{
 	// League Tokens
 	"L12": true,
@@ -101,16 +102,56 @@ var setAllowedForTokens = map[string]bool{
 	"F17": true,
 	"F18": true,
 
-	"AFR":  true,
-	"H17":  true,
+	// FtV: Lore
+	"V16": true,
+
+	// Holiday
+	"H17": true,
+
+	// Secret lair
+	"SLD": true,
+
+	// Guild kits
+	"GK1": true,
+	"GK2": true,
+
+	// Token sets
 	"PHEL": true,
 	"PL21": true,
 	"PLNY": true,
-	"SLD":  true,
+
+	"10E": true,
+	"A25": true,
+	"AFR": true,
+	"ALA": true,
+	"ARB": true,
+	"BFZ": true,
+	"BNG": true,
+	"DKA": true,
+	"DMU": true,
+	"DOM": true,
+	"FRF": true,
+	"ISD": true,
+	"JOU": true,
+	"M15": true,
+	"MBS": true,
+	"NPH": true,
+	"NEO": true,
+	"RTR": true,
+	"SOM": true,
+	"SHM": true,
+	"WAR": true,
+	"ZEN": true,
+
+	// Theros token sets
 	"TBTH": true,
 	"TDAG": true,
 	"TFTH": true,
+
+	// Funny token sets
+	"SUNF": true,
 	"UGL":  true,
+	"UNF":  true,
 	"UST":  true,
 }
 
@@ -150,6 +191,11 @@ var missingPALPtags = map[string]string{
 	"15": "Indonesia",
 }
 
+func okForTokens(set *mtgjson.Set) bool {
+	return setAllowedForTokens[set.Code] ||
+		strings.Contains(set.Name, "Duel Deck")
+}
+
 func skipSet(set *mtgjson.Set) bool {
 	// Skip unsupported sets
 	switch set.Code {
@@ -161,7 +207,7 @@ func skipSet(set *mtgjson.Set) bool {
 	}
 	// Skip online sets, and any token-based sets
 	if set.IsOnlineOnly ||
-		(set.Type == "token" && !setAllowedForTokens[set.Code]) ||
+		(set.Type == "token" && !okForTokens(set)) ||
 		strings.HasSuffix(set.Name, "Art Series") ||
 		strings.HasSuffix(set.Name, "Minigames") ||
 		strings.Contains(set.Name, "Heroes of the Realm") {
@@ -209,7 +255,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			tokens[token.Name] = true
 		}
 
-		if setAllowedForTokens[set.Code] {
+		if okForTokens(set) {
 			// Append tokens to the list of considered cards
 			allCards = append(allCards, set.Tokens...)
 		} else {

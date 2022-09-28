@@ -32,6 +32,7 @@ var replacer = strings.NewReplacer(
 	"+", "",
 
 	// Separators
+	"goblin // soldier", "goblin // soldier",
 	"/", "",
 	"|", "",
 	"trial and error", "trial and error",
