@@ -148,11 +148,18 @@ var editionTable = map[string]string{
 	"BOXプロモ":  "Box Promo",
 	"褒賞プログラム": "Reward Program",
 	"ゲートウェイ":  "Gateway",
+	"ゲームデー":   "Game Day Promos",
 	"ウギンの運命":  "Ugin's Fate",
 
-	"アンパサンド・カード": "PAFR",
-	"旧正月プロモ":     "Lunar New Year",
-	"旧枠プロモ":      "Retro Frame",
+	"チャレンジャーデッキ":   "Challenger Deck",
+	"ストアチャンピオンシップ": "Store Championship",
+
+	"アンパサンド・カード":  "PAFR",
+	"旧正月プロモ":      "Lunar New Year",
+	"旧枠プロモ":       "Retro Frame",
+	"WMCQプロモ":     "WMC",
+	"Nationalプロモ": "PNAT",
+	"プレリリース 土地":   "Prerelease",
 }
 
 func preprocess(title string) (*mtgmatcher.Card, error) {
@@ -401,7 +408,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 			edition = "Special Occasion"
 		} else {
 			for _, tag := range []string{
-				"PIDW", "PI13", "PI14", "PPRO", "WMC", "PSUS", "PCMP", "PSS1",
+				"PIDW", "PI13", "PI14", "PPRO", "WMC", "PSUS", "PCMP", "PSS1", "PDP10",
 			} {
 				if len(mtgmatcher.MatchInSet(cardName, tag)) == 1 {
 					edition = tag
@@ -433,7 +440,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 			variant = "unglued"
 		}
 	case "The List":
-		if variant == "magic fest版" {
+		if strings.ToLower(variant) == "magic fest版" {
 			variant = "magicfest"
 		}
 	case "Mystery Booster Playtest Cards":

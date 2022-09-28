@@ -3497,6 +3497,7 @@ var sldVariants = map[string]map[string]string{
 
 		"secret lair x street fighter": "675",
 		"secret lair reskin":           "675",
+		"*** reskin":                   "675",
 	},
 	"Thalia, Guardian of Thraben": {
 		"v.1": "37",
