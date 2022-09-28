@@ -326,7 +326,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 		}
 
 		link := "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name)
-		deductions := []float64{1, 0.6, 0.6, 0.6, 0.6}
+		deductions := []float64{1, 0.6, 0.6, 0.6}
 		for i, deduction := range deductions {
 			channel <- responseChan{
 				cardId: cardId,
