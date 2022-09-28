@@ -2801,6 +2801,11 @@ var mb1plistVariants = map[string]map[string]string{
 	"Island": {
 		"jmp - 050": "403",
 	},
+	"Kiki-Jiki, Mirror Breaker": {
+		"mm2":                   "991",
+		"modern masters 2015":   "991",
+		"champions of kamigawa": "684",
+	},
 	"Lightning Bolt": {
 		"archenemy: nicol bolas": "1001",
 		"e01":                    "1001",
@@ -3570,6 +3575,9 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Sol Ring": {
 		"secret lair": "249",
+	},
+	"Olivia, Mobilized for War": {
+		"series: livia prima": "699",
 	},
 }
 
