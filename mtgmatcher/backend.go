@@ -50,6 +50,9 @@ var backend struct {
 	Cards map[string]cardinfo
 	UUIDs map[string]CardObject
 
+	// Map with token names
+	Tokens map[string]bool
+
 	// Slice with every uniquely normalized name
 	AllNames []string
 	// Slice with every uniquely normalized product name
@@ -186,6 +189,7 @@ func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
 func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
+	tokens := map[string]bool{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
@@ -199,6 +203,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		var filteredCards []mtgjson.Card
 
 		allCards := set.Cards
+
+		// Load token names
+		for _, token := range set.Tokens {
+			tokens[token.Name] = true
+		}
+
 		if setAllowedForTokens[set.Code] {
 			// Append tokens to the list of considered cards
 			allCards = append(allCards, set.Tokens...)

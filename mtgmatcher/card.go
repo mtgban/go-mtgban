@@ -108,100 +108,21 @@ func (c *Card) addToVariant(tag string) {
 
 // Returns whether the input string may represent a token
 func IsToken(name string) bool {
+	// Check main table first
+	if backend.Tokens[name] {
+		return true
+	}
 	switch name {
-	// Known token names
+	// Custom token names
 	case "A Threat to Alara: Nicol Bolas",
-		"Acorn Stash",
-		"Angel",
-		"Ashaya, the Awoken World",
-		"Bat",
-		"Bear",
-		"Bird",
-		"Cat Dragon",
-		"Cat Warrior",
-		"Cat",
-		"City's Blessing",
-		"Cleric",
-		"Clue",
-		"Companion",
-		"Construct",
-		"Day // Night",
-		"Demon",
-		"Dinosaur",
-		"Drake",
-		"Eldrazi Spawn",
-		"Elemental Shaman",
-		"Elemental",
-		"Elephant",
-		"Elf Warrior",
-		"Energy Reserve",
-		"Faerie Rogue",
-		"Faerie",
-		"Food",
-		"Foretell",
 		"Fun Format: Pack Wars",
-		"Germ",
-		"Giant",
-		"Gold",
-		"Golem",
-		"Human",
-		"Human Cleric",
-		"Human Rogue",
-		"Human Soldier",
-		"Human Warrior",
-		"Insect",
-		"Karox Bladewing",
-		"Knight",
-		"Kraken",
-		"Manifest",
-		"Marit Lage",
-		"Merfolk",
-		"Minion",
-		"Minotaur",
-		"Morph",
-		"Mouse",
-		"Myr",
-		"Nightmare Horror",
-		"On Your Turn",
-		"On an Adventure",
-		"Ooze",
-		"Pirate",
-		"Plant",
-		"Poison Counter",
 		"Pyromantic Pixels",
-		"Rat",
-		"Samurai",
-		"Saproling",
-		"Shapeshifter",
-		"Sliver",
-		"Snake",
-		"Shrine",
-		"Thopter",
-		"Thrull",
-		"Treasure",
-		"Vampire",
-		"Walker",
-		"Wolf",
-		"Wurm",
-		"Zombie Knight",
 		"Theme: WUBRG Cards":
 		return true
 	// WCD extra cards
 	case "Biography",
 		"Blank",
 		"Overview":
-		return true
-	// Un-tokens
-	case "Beast",
-		"Beeble",
-		"Dragon",
-		"Goblin",
-		"Pegasus",
-		"Spirit",
-		"Sheep",
-		"Soldier",
-		"Squirrel",
-		"Zombie":
 		return true
 	}
 	switch {
