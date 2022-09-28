@@ -155,7 +155,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	case "Alpha", "Beta", "Unlimited", "3rd Edition", "4th Edition",
 		"Antiquities", "Fallen Empires", "Alliances", "Homelands",
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
-		"Unstable", "Unglued", "Portal II", "Secret Lair":
+		"Unstable", "Unglued", "Unfinity", "Portal II", "Secret Lair":
 		variation = number
 	}
 
@@ -168,6 +168,10 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	if strings.Contains(card.Name, " // ") &&
 		(strings.Contains(card.Name, "Token") || (len(setCode) > 3 && setCode[0] == 'T')) {
 		card.Name = strings.Split(card.Name, " // ")[0] + " Token"
+	}
+	// Use number for tokens
+	if strings.Contains(card.Name, "Token") {
+		variation = number
 	}
 
 	return &mtgmatcher.Card{
