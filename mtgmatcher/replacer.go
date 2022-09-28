@@ -51,6 +51,7 @@ var replacer = strings.NewReplacer(
 	"ú", "u",
 	"û", "u",
 	"ü", "u",
+	"ñ", "n",
 
 	// Ancient ligature
 	"æ", "ae",
