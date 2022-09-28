@@ -638,7 +638,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						}
 					}
 				}
-			} else if num != "" && !inCard.Contains("Misprint") {
+			} else if num != "" && !inCard.Contains("Misprint") && card.AttractionLights == nil {
 				// The empty string will allow to test the number without any
 				// additional prefix first
 				possibleSuffixes := []string{""}
@@ -1092,6 +1092,19 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if strings.Contains(card.Name, "Guildgate") && inCard.Variation == "" {
 					cn, _ := strconv.Atoi(card.Number)
 					if cn%2 == 0 {
+						continue
+					}
+				}
+			// Handle the different Attractions
+			case "Unfinity":
+				if card.AttractionLights != nil && strings.Contains(inCard.Variation, "/") {
+					lights := make([]string, 0, len(card.AttractionLights))
+					for _, light := range card.AttractionLights {
+						lights = append(lights, strconv.Itoa(light))
+					}
+					tag := strings.Join(lights, "/")
+					variation := strings.Replace(inCard.Variation, " ", "", -1)
+					if variation != tag {
 						continue
 					}
 				}

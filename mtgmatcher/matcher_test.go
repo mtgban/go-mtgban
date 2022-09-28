@@ -3389,6 +3389,15 @@ var MatchTests = []MatchTest{
 			Edition: "Unfinity",
 		},
 	},
+	MatchTest{
+		Id:   "5a2b4057-bf9b-5598-ba95-f7beda0bcfe3",
+		Desc: "attractions",
+		In: Card{
+			Name:      "Bumper Cars",
+			Variation: "2/3/6",
+			Edition:   "Unfinity",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
