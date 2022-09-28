@@ -269,7 +269,8 @@ func SkipLanguage(cardName, edition, language string) bool {
 		}
 	case "jp", "japanese":
 		switch edition {
-		case "Chronicles Japanese",
+		case "30th Anniversary Promos",
+			"Chronicles Japanese",
 			"Chronicles",
 			"Fourth Edition Foreign Black Border",
 			"Fourth Edition",
