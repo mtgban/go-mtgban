@@ -3316,6 +3316,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Magic Player Rewards",
 		},
 	},
+	MatchTest{
+		Id:   "d98a1805-56ab-5ef2-b496-391468d5ff21",
+		Desc: "tok_emblem",
+		In: Card{
+			Name:    "Ajani, Sleeper Agent Emblem",
+			Edition: "DMU",
+		},
+	},
 
 	// NEO etched
 	MatchTest{

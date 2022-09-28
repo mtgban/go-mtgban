@@ -319,11 +319,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				case "578", "579":
 					card.IsAlternative = true
 				}
-			default:
-				// Override any "double_faced_token" entries
-				if strings.Contains(card.Layout, "token") {
-					card.Layout = "token"
-				}
+			}
+			// Override any "double_faced_token" entries and emblems
+			if strings.Contains(card.Layout, "token") || card.Layout == "emblem" {
+				card.Layout = "token"
 			}
 
 			for i, name := range []string{card.FaceName, card.FlavorName, card.FaceFlavorName} {
