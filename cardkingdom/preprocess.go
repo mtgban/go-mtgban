@@ -55,6 +55,9 @@ var skuFixupTable = map[string]string{
 
 	// Yellow Hidetsugu
 	"PNEO-432": "NEO-432",
+
+	"SLD-339":  "SLD-359",
+	"FSLD-339": "FSLD-359",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
