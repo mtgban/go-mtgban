@@ -320,6 +320,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			if variant == "" {
 				edition = "P22"
 			}
+		case "Conjurer's Closet":
+			if variant == "" {
+				edition = "PW21"
+			}
 		}
 	default:
 		if strings.HasSuffix(edition, ": Variants") && variant == "" {
