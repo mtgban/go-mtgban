@@ -25,6 +25,7 @@ var EditionTable = map[string]string{
 	"Revised 3rd Edition":  "Revised Edition",
 	"Unlimited":            "Unlimited Edition",
 	"Summer Magic (Edgar)": "Summer Magic / Edgar",
+	"Summer Magic":         "Summer Magic / Edgar",
 
 	"Universes Beyond: Warhammer 40,000": "Warhammer 40,000",
 
