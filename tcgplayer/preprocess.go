@@ -125,6 +125,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if variant == "Moscow 2005" {
 				edition = "P9ED"
 			}
+		case "Water Gun Balloon Game":
+			edition = "UNF"
 		}
 	case "Media Promos":
 		switch cardName {
