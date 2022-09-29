@@ -7,6 +7,22 @@ import (
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
+var tokenIds = map[int]string{
+	78630:  "P03",
+	78526:  "L13",
+	78417:  "L12",
+	78623:  "P03",
+	78631:  "PR2",
+	78444:  "L14",
+	82612:  "L13",
+	108437: "L14",
+	108436: "L13",
+	78618:  "MPR",
+	108434: "L14",
+	78636:  "PR2",
+	78613:  "P04",
+}
+
 func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card, error) {
 	cardName := product.Name
 	variant := ""
@@ -413,16 +429,41 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"Kamigawa: Neon Dynasty",
 		"Unfinity":
 		variant = product.getNum()
+
+		if edition == "Kamigawa: Neon Dynasty" && mtgmatcher.Contains(product.CleanName, "Double-Sided") {
+			return nil, errors.New("duplicate")
+		}
 	case "Dominaria United":
 		// These lands are not tagged as such
 		if mtgmatcher.IsBasicLand(cardName) && variant == "Showcase" {
 			variant = ""
+		}
+		if strings.Contains(product.CleanName, "Double sided") {
+			return nil, errors.New("duplicate")
 		}
 	}
 
 	// Outside the main loop to catch everything
 	if mtgmatcher.IsBasicLand(cardName) && variant == "" {
 		variant = product.getNum()
+	}
+	if mtgmatcher.IsToken(cardName) && edition != "Unfinity" {
+		// Strip pw/tou numbers that could be misinterpreted as numbers
+		if strings.Contains(variant, "/") {
+			variant = ""
+		}
+		// If number is available, use it as it's usually accurate
+		num := product.getNum()
+		if num != "" {
+			variant = num
+		}
+		// Decouple
+		ed, found := tokenIds[product.ProductId]
+		if found {
+			edition = ed
+		}
+	} else if mtgmatcher.IsToken(cardName) {
+		variant = strings.Replace(variant, "-", "/", -1)
 	}
 
 	// Handle any particular finish
