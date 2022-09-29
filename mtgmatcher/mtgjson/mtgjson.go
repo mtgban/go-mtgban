@@ -31,7 +31,7 @@ type Set struct {
 
 type Card struct {
 	Artist           string   `json:"artist"`
-	AttractionLights []int    `json:"attraction_lights,omitempty"`
+	AttractionLights []int    `json:"attractionLights,omitempty"`
 	BorderColor      string   `json:"borderColor"`
 	FaceName         string   `json:"faceName"`
 	FaceFlavorName   string   `json:"faceFlavorName"`

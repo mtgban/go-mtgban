@@ -3390,7 +3390,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "0b8b4f04-36e7-5f22-ac81-4a20fb5b3b94",
+		Id:   "694f2922-092f-5f8e-9a6a-d7ddb7d99487",
 		Desc: "stickers",
 		In: Card{
 			Name:    "Urza's Dark Cannonball",
@@ -3398,7 +3398,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
-		Id:   "0b8b4f04-36e7-5f22-ac81-4a20fb5b3b94",
+		Id:   "694f2922-092f-5f8e-9a6a-d7ddb7d99487",
 		Desc: "sticker_sheets",
 		In: Card{
 			Name:    "Urza's Dark Cannonball Sticker Sheet",
