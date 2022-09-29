@@ -191,6 +191,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					continue
 				}
 			case "PHED":
+			case "UPLIST":
 			default:
 				continue
 			}

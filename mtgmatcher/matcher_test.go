@@ -2692,6 +2692,14 @@ var MatchTests = []MatchTest{
 			Edition: "Secret Lair",
 		},
 	},
+	MatchTest{
+		Id:   "38f40a36-a7ba-56dc-8e2f-0d7559e1f4fd",
+		Desc: "thelist_unfinity",
+		In: Card{
+			Name:    "B-I-N-G-O",
+			Edition: "The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
