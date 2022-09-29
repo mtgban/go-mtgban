@@ -200,10 +200,17 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			} else if variant == "25th Anniversary Exposition" {
 				edition = "PDOM"
 			}
+		case "Moraug, Fury of Akoum", "Ox of Agonas", "Angrath, the Flame-Chained", "Tahngarth, First Mate":
+			if strings.Contains(variant, "JP Exclusive") {
+				return nil, errors.New("non-english")
+			}
 		default:
-			// Skip PL21 cards incorrectly tagged as "Summer Vacation"
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
+			} else if strings.Contains(variant, "JP Amazon Exclusive") ||
+				strings.Contains(variant, "JP WonderGOO Exclusive") ||
+				strings.Contains(variant, "JP Hareruya Exclusive") {
+				return nil, errors.New("unofficial")
 			}
 		}
 	case "Special Occasion":
