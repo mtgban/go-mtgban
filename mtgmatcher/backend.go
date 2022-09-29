@@ -228,6 +228,10 @@ func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
 			return false
 		}
 
+		if setDateI.Equal(setDateJ) {
+			return ap.Data[printings[i]].Name < ap.Data[printings[j]].Name
+		}
+
 		return setDateI.After(setDateJ)
 	})
 }
