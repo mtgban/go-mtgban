@@ -216,6 +216,21 @@ func HasEtchedPrinting(name string, editions ...string) bool {
 	return hasPrinting(name, "finish", mtgjson.FinishEtched, editions...)
 }
 
+var setsWithChineseAltArt = []string{
+	"5ED", "6ED", "7ED", "8ED", "9ED", "10E",
+	"POR", "USG", "PCY", "INV", "ODY", "DKS",
+	"RAV", "DIS",
+	"TSP", "FUT", "PLC",
+	"LRW", "MOR", "SHM", "EVE",
+}
+
+func HasChineseAltArtPrinting(name string, editions ...string) bool {
+	if len(editions) > 0 {
+		return hasPrinting(name, "promo_type", mtgjson.PromoTypeSChineseAltArt, editions...)
+	}
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypeSChineseAltArt, setsWithChineseAltArt...)
+}
+
 func hasPrinting(name, field, value string, editions ...string) bool {
 	if backend.Sets == nil {
 		return false

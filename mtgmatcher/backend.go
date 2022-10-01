@@ -291,11 +291,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				case "C1", "C2":
 					continue
 				}
-			// Skip duplicate cards that cause trouble down the road
-			case "INV", "USG", "POR", "7ED", "6ED":
-				if strings.HasSuffix(card.Number, "s") {
-					continue
-				}
 			// Remove frame effects and borders where they don't belong
 			case "STA", "PLIST":
 				card.FrameEffects = nil

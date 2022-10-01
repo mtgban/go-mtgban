@@ -125,6 +125,8 @@ const (
 	PromoTypeArenaLeague   = "arenaleague"
 	PromoTypePlayerRewards = "playerrewards"
 
+	PromoTypeSChineseAltArt = "schinesealtart"
+
 	BorderColorBorderless = "borderless"
 	BorderColorGold       = "gold"
 

@@ -3414,6 +3414,24 @@ var MatchTests = []MatchTest{
 			Edition:   "Unfinity",
 		},
 	},
+
+	// Simplified Chinese Alt Art
+	MatchTest{
+		Id:   "915ca991-1d1b-557b-bb42-fe0d5afb9b50",
+		Desc: "simplified_chinese_alt",
+		In: Card{
+			Name:    "Taunt",
+			Edition: "Simplified Chinese Alternate Art Cards",
+		},
+	},
+	MatchTest{
+		Id:   "766ba887-5246-57d2-b376-657c528113b9",
+		Desc: "simplified_chinese_main",
+		In: Card{
+			Name:    "Coffin Puppets",
+			Edition: "Prophecy",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

@@ -582,6 +582,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				continue
 			}
 
+			// Support the Simplified Chinese Alternative Art Cards
+			// Needs to be before number parsing to handle number variants
+			if inCard.Contains("Chinese") && !card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
+				continue
+			} else if !inCard.Contains("Chinese") && card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
+				continue
+			}
+
 			// Lucky case, variation is just the collector number
 			num = ExtractNumber(inCard.Variation)
 			// But first, special handling for WCD (skip if player details are missing)
@@ -726,12 +734,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			} else {
 				if card.HasPromoType(mtgjson.PromoTypePrerelease) {
-					continue
-				}
-				// Skip some Simplified Chinese cards that have different art
-				// This should probably check for ZHS language, but the ForeignData
-				// array is empty - as are cards from Prerelease, so check it here
-				if len(card.ForeignData) == 0 && strings.HasSuffix(card.Number, "s") {
 					continue
 				}
 			}

@@ -231,6 +231,10 @@ func SkipLanguage(cardName, edition, language string) bool {
 	case "zhs", "chinese", "simplified chinese", "chinese simplified":
 		switch edition {
 		case "30th Anniversary Promos":
+		case "Simplified Chinese Alternate Art Cards":
+			if !HasChineseAltArtPrinting(cardName) {
+				return true
+			}
 		default:
 			return true
 		}
@@ -244,7 +248,6 @@ func (c *Card) isUnsupported() bool {
 	return c.Contains("Art Series") ||
 		c.Contains("Complete") || // a complete collection
 		c.Contains("Fallen Empires: Wyvern Misprints") ||
-		c.Contains("Simplified Chinese Alternate Art Cards") ||
 		c.Contains("Ultra-Pro Puzzle") ||
 		c.Contains("Player Cards") || // scg pro players
 		c.Contains("Foreign White Border") || // for REV and 4ED
