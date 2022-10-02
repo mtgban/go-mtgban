@@ -46,8 +46,13 @@ type alternateProps struct {
 }
 
 var backend struct {
-	Sets  map[string]*mtgjson.Set
+	// Map of set code : mtgjson.Set
+	Sets map[string]*mtgjson.Set
+
+	// Map of normalized name : cardinfo
 	Cards map[string]cardinfo
+
+	// Map of uuid ; CardObject
 	UUIDs map[string]CardObject
 
 	// Map with token names
