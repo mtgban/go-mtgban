@@ -360,7 +360,6 @@ func (c *Card) isGenericExtendedArt() bool {
 func (c *Card) isPrerelease() bool {
 	return c.Contains("Prerelease") ||
 		c.Contains("Preview") // scg
-
 }
 
 func (c *Card) isPromoPack() bool {
