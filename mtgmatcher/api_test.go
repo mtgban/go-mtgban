@@ -39,3 +39,16 @@ func BenchmarkSearchContains(b *testing.B) {
 		SearchContains(name)
 	}
 }
+
+func BenchmarkSearchRegexp(b *testing.B) {
+	if NameToBeFound == "" {
+		setupBenchmark()
+	}
+
+	name := NameToBeFound[len(NameToBeFound)/4:] + ".*"
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		SearchRegexp(name)
+	}
+}

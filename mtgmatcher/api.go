@@ -1,6 +1,7 @@
 package mtgmatcher
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
@@ -144,6 +145,23 @@ func SearchContains(name string) ([]string, error) {
 		return searchFunc(name, backend.AlternateNames, strings.Contains)
 	}
 	return results, nil
+}
+
+func SearchRegexp(name string) ([]string, error) {
+	var hashes []string
+	re, err := regexp.Compile(name)
+	if err != nil {
+		return nil, err
+	}
+	for i := range backend.AllNames {
+		if re.MatchString(backend.AllNames[i]) {
+			hashes = append(hashes, backend.Hashes[backend.AllNames[i]]...)
+		}
+	}
+	if hashes == nil {
+		return nil, ErrCardDoesNotExist
+	}
+	return hashes, nil
 }
 
 func SearchSealedContains(name string) ([]string, error) {
