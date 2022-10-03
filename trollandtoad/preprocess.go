@@ -169,7 +169,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		switch edition {
 		case "Legends (Italian) Singles",
 			"The Dark (Italian) Singles",
-			"Revised Black Border Italian Singles":
+			"Revised Black Border Italian Singles",
+			"Fouth Edition White Border Italian Singles":
 			// Most cards are named "Italian name (English name)", invert them
 			fields := mtgmatcher.SplitVariants(fullName)
 			if len(fields) > 1 {

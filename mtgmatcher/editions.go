@@ -472,6 +472,12 @@ var EditionTable = map[string]string{
 	"Fourth Edition Black Bordered":  "Fourth Edition Foreign Black Border",
 	"Fourth Edition: Black Bordered": "Fourth Edition Foreign Black Border",
 
+	"Fourth Edition (Foreign White Border)": "Foreign White Border",
+	"Foreign White Bordered (FWB)":          "Foreign White Border",
+	"Foreign White Bordered":                "Foreign White Border",
+	"Italian Revised FWB":                   "Foreign White Border",
+	"Revised White Border Italian":          "Foreign White Border",
+
 	"Italian Renaissance": "Rinascimento",
 	"Renaissance Italian": "Rinascimento",
 	"Italian Legends":     "Legends Italian",

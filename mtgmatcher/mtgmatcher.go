@@ -741,6 +741,8 @@ func adjustEdition(inCard *Card) {
 		variation = strings.TrimSpace(inCard.Variation)
 	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
 		edition = "Fourth Edition Foreign Black Border"
+	case (inCard.Edition == "Revised Edition" || inCard.Edition == "Fourth Edition") && Contains(inCard.Variation, "Italian"):
+		edition = "Foreign White Border"
 
 	// JPN promos from PRES
 	case inCard.isIDWMagazineBook() && inCard.isJPN() && len(MatchInSet(inCard.Name, "PRES")) != 0:
