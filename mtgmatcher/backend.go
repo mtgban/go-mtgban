@@ -280,6 +280,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 			// Custom modifications or skips
 			switch set.Code {
+			// Override non-English Language
+			case "FBB":
+				card.Language = "Italian"
+			case "4BB":
+				card.Language = "Japanese"
 			// Missing variant tags
 			case "PALP":
 				card.FlavorText = missingPALPtags[card.Number]
