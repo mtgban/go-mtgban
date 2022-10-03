@@ -673,6 +673,11 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 		ci.Printings = printings
 		cards[Normalize(dup.Cards[i].Name)] = ci
 
+		// Remove store references from sets that differ by more than language
+		if tag == "ALT" {
+			delete(dup.Cards[i].Identifiers, "tcgplayerProductId")
+		}
+
 		// Add the new uuid to the UUID map
 		uuids[dup.Cards[i].UUID] = CardObject{
 			Card:    dup.Cards[i],
