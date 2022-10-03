@@ -7,7 +7,7 @@ import (
 
 const baseProductURL = "https://www.tcgplayer.com/product/"
 
-func TCGPlayerProductURL(productId int, printing string, affiliate string) string {
+func TCGPlayerProductURL(productId int, printing, affiliate, language string) string {
 	u, err := url.Parse(baseProductURL + fmt.Sprint(productId))
 	if err != nil {
 		return ""
@@ -22,6 +22,9 @@ func TCGPlayerProductURL(productId int, printing string, affiliate string) strin
 		v.Set("utm_medium", affiliate)
 		v.Set("utm_source", affiliate)
 		v.Set("partner", affiliate)
+	}
+	if language != "" {
+		v.Set("Language", strings.Title(language))
 	}
 	u.RawQuery = v.Encode()
 

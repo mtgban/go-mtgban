@@ -97,7 +97,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		prices := []float64{
 			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
 		}
-		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate)
+		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "")
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {

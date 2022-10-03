@@ -37,6 +37,7 @@ type marketChan struct {
 	Finish    string
 	ProductId int
 	SkuId     int
+	Language  string
 }
 
 type responseChan struct {
@@ -137,7 +138,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			if req.Printing == "FOIL" {
 				printing = "Foil"
 			}
-			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate)
+			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, req.Language)
 
 			for i := range availableMarketNames {
 				if prices[i] == 0 {
@@ -275,6 +276,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						continue
 					}
 
+					language := sku.Language
+
 					// Tweak custom sets
 					switch sku.Language {
 					case "ITALIAN":
@@ -291,6 +294,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 								continue
 							}
 						}
+					case "CHINESE SIMPLIFIED":
+						language = "Chinese (S)"
 					}
 
 					pages <- marketChan{
@@ -300,6 +305,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						Finish:    sku.Finish,
 						ProductId: sku.ProductId,
 						SkuId:     sku.SkuId,
+						Language:  language,
 					}
 				}
 			}
