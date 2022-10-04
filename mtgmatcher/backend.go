@@ -680,7 +680,12 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 
 		// Remove store references from sets that differ by more than language
 		if tag == "ALT" {
-			delete(dup.Cards[i].Identifiers, "tcgplayerProductId")
+			altIdentifiers := map[string]string{}
+			for k, v := range dup.Cards[i].Identifiers {
+				altIdentifiers[k] = v
+			}
+			delete(altIdentifiers, "tcgplayerProductId")
+			dup.Cards[i].Identifiers = altIdentifiers
 		}
 
 		// Add the new uuid to the UUID map
