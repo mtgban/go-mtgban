@@ -1085,9 +1085,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Duplicates, only frame changes
 			case "30th Anniversary History Promos":
-				if Contains(inCard.Variation, "Retro") && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+				isRetro := Contains(inCard.Variation, "Retro") || inCard.Variation == "V.2"
+				if isRetro && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 					continue
-				} else if !Contains(inCard.Variation, "Retro") && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+				} else if !isRetro && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 					continue
 				}
 			// Pick one of the printings in case they are not specified
