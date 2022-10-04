@@ -3414,6 +3414,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Unfinity",
 		},
 	},
+	MatchTest{
+		Id:   "c9f5f07b-3646-5f2e-ae29-5f8798a4e239",
+		Desc: "blanks",
+		In: Card{
+			Name:      "Wizards of the _______",
+			Variation: "350",
+			Edition:   "Unfinity",
+		},
+	},
 
 	// Simplified Chinese Alt Art
 	MatchTest{
