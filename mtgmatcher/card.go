@@ -178,7 +178,8 @@ func SkipLanguage(cardName, edition, language string) bool {
 	case "en", "english", "":
 	case "it", "italian":
 		switch edition {
-		case "Foreign Black Border",
+		case "30th Anniversary Promos",
+			"Foreign Black Border",
 			"Legends Italian",
 			"Legends",
 			"Renaissance",
@@ -223,6 +224,24 @@ func SkipLanguage(cardName, edition, language string) bool {
 			return true
 		}
 	case "de", "german":
+		switch edition {
+		case "30th Anniversary Promos":
+		default:
+			return true
+		}
+	case "pt", "portuguese":
+		switch edition {
+		case "30th Anniversary Promos":
+		default:
+			return true
+		}
+	case "es", "spanish":
+		switch edition {
+		case "30th Anniversary Promos":
+		default:
+			return true
+		}
+	case "fr", "french":
 		switch edition {
 		case "30th Anniversary Promos":
 		default:
