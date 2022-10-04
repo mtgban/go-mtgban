@@ -261,6 +261,10 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 		sets := mtgmatcher.GetSets()
 		i := 1
 		for _, set := range sets {
+			if strings.HasSuffix(set.Code, "ALT") {
+				continue
+			}
+
 			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
 			i++
 
