@@ -562,7 +562,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicate(ap.Data, cards, uuids, "The Dark Italian", "DRK", "ITA", "1995-08-01")
 	duplicate(ap.Data, cards, uuids, "Chronicles Japanese", "CHR", "JPN", "1995-07-01")
 	duplicate(ap.Data, cards, uuids, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
-	duplicate(ap.Data, cards, uuids, "Foreign White Border", "4ED", "ITA", "1995-04-01")
 
 	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}

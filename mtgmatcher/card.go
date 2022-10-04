@@ -178,12 +178,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 	case "en", "english", "":
 	case "it", "italian":
 		switch edition {
-		case "3rd Edition",
-			"3rd Edition/Revised",
-			"Foreign Black Border",
-			"Foreign White Border",
-			"Fourth Edition Foreign White Border",
-			"Fourth Edition",
+		case "Foreign Black Border",
 			"Legends Italian",
 			"Legends",
 			"Renaissance",
@@ -255,6 +250,7 @@ func (c *Card) isUnsupported() bool {
 		c.Contains("Fallen Empires: Wyvern Misprints") ||
 		c.Contains("Ultra-Pro Puzzle") ||
 		c.Contains("Player Cards") || // scg pro players
+		c.Contains("Foreign White Border") || // for REV and 4ED
 		c.Contains("Filler Cards") || // Misprints from mkm and ct
 		c.Contains("Salvat") || // Salvat-Hachette 2005/2011
 		c.Contains("Redemption Program") || // PRES

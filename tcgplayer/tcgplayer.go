@@ -286,9 +286,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					switch sku.Language {
 					case "ITALIAN":
 						switch set.Name {
-						case "Foreign White Border",
-							"Legends",
-							"The Dark":
+						case "Legends", "The Dark":
 							uuid = card.UUID + "_ita"
 						}
 					case "JAPANESE":
