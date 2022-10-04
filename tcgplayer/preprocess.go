@@ -13,7 +13,7 @@ var tokenIds = map[int]string{
 	78417:  "L12",
 	78623:  "P03",
 	78631:  "PR2",
-	78444:  "L14",
+	78444:  "L13",
 	82612:  "L13",
 	108437: "L14",
 	108436: "L13",
@@ -468,6 +468,14 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		ed, found := tokenIds[product.ProductId]
 		if found {
 			edition = ed
+		}
+
+		if edition == "L13" {
+			if product.ProductId == 82612 {
+				variant = "4"
+			} else if product.ProductId == 78444 {
+				variant = "1"
+			}
 		}
 	}
 
