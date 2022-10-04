@@ -228,7 +228,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 		default:
 			return true
 		}
-	case "zhs", "chinese", "simplified chinese", "chinese simplified":
+	case "zhs", "zh-CN", "chinese", "simplified chinese", "chinese simplified":
 		switch edition {
 		case "30th Anniversary Promos":
 		case "Simplified Chinese Alternate Art Cards":
