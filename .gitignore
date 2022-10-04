@@ -16,3 +16,6 @@
 
 # Colly caches
 .cache
+
+# Scrapers data
+*.csv
