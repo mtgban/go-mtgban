@@ -81,14 +81,15 @@ var EditionTable = map[string]string{
 	"Treasure Map":          "XLN Treasure Chest",
 
 	// Game Night
-	"Game Night 2018":               "Game Night",
-	"Game Night 2019":               "Game Night 2019",
-	"Magic Game Night":              "Game Night",
-	"Magic Game Night 2019":         "Game Night 2019",
-	"Game Night: 2018":              "Game Night",
-	"Game Night: 2019":              "Game Night 2019",
-	"Magic Game Night 2018 Box Set": "Game Night",
-	"Magic Game Night 2019 Box Set": "Game Night 2019",
+	"Game Night 2018":                "Game Night",
+	"Game Night 2019":                "Game Night 2019",
+	"Magic Game Night":               "Game Night",
+	"Magic Game Night 2019":          "Game Night 2019",
+	"Game Night: 2018":               "Game Night",
+	"Game Night: 2019":               "Game Night 2019",
+	"Magic Game Night 2018 Box Set":  "Game Night",
+	"Magic Game Night 2019 Box Set":  "Game Night 2019",
+	"Magic Game Night: Free-For-All": "Game Night 2022",
 
 	// Old school lands
 	"Apac Lands":       "Asia Pacific Land Program",
