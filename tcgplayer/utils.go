@@ -3,6 +3,8 @@ package tcgplayer
 import (
 	"fmt"
 	"net/url"
+
+	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
 
 const baseProductURL = "https://www.tcgplayer.com/product/"
@@ -24,7 +26,7 @@ func TCGPlayerProductURL(productId int, printing, affiliate, language string) st
 		v.Set("partner", affiliate)
 	}
 	if language != "" {
-		v.Set("Language", strings.Title(language))
+		v.Set("Language", mtgmatcher.Title(language))
 	}
 	u.RawQuery = v.Encode()
 

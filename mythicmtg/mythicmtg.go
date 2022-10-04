@@ -98,7 +98,7 @@ func (mmtg *Mythicmtg) processPage(channel chan<- respChan, start int) error {
 			edition := ""
 			if len(fields) > 4 {
 				edition = fields[4]
-				edition = strings.Title(strings.Replace(edition, "-", " ", -1))
+				edition = mtgmatcher.Title(strings.Replace(edition, "-", " ", -1))
 			}
 
 			priceStr := sub.Find(`span[class="ty-price-num"]`).Text()

@@ -9,6 +9,8 @@ import (
 	"unicode"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var ErrDatastoreEmpty = errors.New("datastore is empty")
@@ -254,4 +256,11 @@ func ParsePrice(priceStr string) (float64, error) {
 	priceStr = strings.Replace(priceStr, ",", "", -1)
 	priceStr = strings.TrimSpace(priceStr)
 	return strconv.ParseFloat(priceStr, 64)
+}
+
+// Wrapper for the deprecated strings.Title
+// abc -> Abc
+// ABC -> Abc
+func Title(str string) string {
+	return cases.Title(language.English).String(str)
 }

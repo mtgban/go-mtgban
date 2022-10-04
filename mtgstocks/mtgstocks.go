@@ -3,7 +3,6 @@ package mtgstocks
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -102,7 +101,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 			Price:      req.interest.PresentPrice,
 			Quantity:   1,
 			URL:        link,
-			SellerName: req.name + " " + strings.Title(req.interest.InterestType),
+			SellerName: req.name + " " + mtgmatcher.Title(req.interest.InterestType),
 		},
 	}
 

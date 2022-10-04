@@ -300,3 +300,33 @@ func TestSplit(t *testing.T) {
 		})
 	}
 }
+
+var TitleTests = []ExtractTest{
+	{
+		In:  "abc abc",
+		Out: "Abc Abc",
+	},
+	{
+		In:  "Abc abC",
+		Out: "Abc Abc",
+	},
+	{
+		In:  "ABC ABC",
+		Out: "Abc Abc",
+	},
+}
+
+func TestTitle(t *testing.T) {
+	for _, probe := range TitleTests {
+		test := probe
+		t.Run(test.In, func(t *testing.T) {
+			t.Parallel()
+			out := Title(test.In)
+			if out != test.Out {
+				t.Errorf("FAIL %s: Expected '%s' got '%s'", test.In, test.Out, out)
+				return
+			}
+			t.Log("PASS:", test.In)
+		})
+	}
+}
