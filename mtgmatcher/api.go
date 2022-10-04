@@ -153,9 +153,9 @@ func SearchRegexp(name string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	for i := range backend.AllNames {
-		if re.MatchString(backend.AllNames[i]) {
-			hashes = append(hashes, backend.Hashes[backend.AllNames[i]]...)
+	for i := range backend.AllUUIDs {
+		if re.MatchString(backend.UUIDs[backend.AllUUIDs[i]].Name) {
+			hashes = append(hashes, backend.AllUUIDs[i])
 		}
 	}
 	if hashes == nil {
