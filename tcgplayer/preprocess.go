@@ -426,8 +426,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "Mystery Booster Cards":
 		edition = "MB1"
 	case "Innistrad: Double Feature",
-		"Kamigawa: Neon Dynasty",
-		"Unfinity":
+		"Kamigawa: Neon Dynasty":
 		variant = product.getNum()
 
 		if edition == "Kamigawa: Neon Dynasty" && mtgmatcher.Contains(product.CleanName, "Double-Sided") {
@@ -440,6 +439,14 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		}
 		if strings.Contains(product.CleanName, "Double sided") {
 			return nil, errors.New("duplicate")
+		}
+	case "Unfinity":
+		num := product.getNum()
+
+		if strings.Contains(variant, "-") {
+			variant = strings.Replace(variant, "-", "/", -1)
+		} else {
+			variant = num
 		}
 	}
 
@@ -462,8 +469,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if found {
 			edition = ed
 		}
-	} else if mtgmatcher.IsToken(cardName) {
-		variant = strings.Replace(variant, "-", "/", -1)
 	}
 
 	// Handle any particular finish
