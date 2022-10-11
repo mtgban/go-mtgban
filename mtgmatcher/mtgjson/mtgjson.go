@@ -22,6 +22,8 @@ type Set struct {
 	Tokens        []Card `json:"tokens"`
 	Type          string `json:"type"`
 
+	TCGPlayerGroupId int `json:"tcgplayerGroupId"`
+
 	SealedProduct []struct {
 		Identifiers map[string]string `json:"identifiers"`
 		Name        string            `json:"name"`
