@@ -284,8 +284,6 @@ func (c *Card) isUnsupported() bool {
 
 func (c *Card) isSpecificUnsupported() bool {
 	switch c.Name {
-	case "Squire":
-		return strings.Contains(c.Edition, "Secret Lair")
 	case "Hero of Bladehold",
 		"Rampaging Baloths",
 		"Feral Hydra":
@@ -297,7 +295,7 @@ func (c *Card) isSpecificUnsupported() bool {
 		"Forest",
 		"Sapphire Medallion",
 		"Serra Angel",
-		"Time ELemental",
+		"Time Elemental",
 		"Thunderheads",
 		"Winged Sliver":
 		return c.Contains("Misprint")
