@@ -159,6 +159,34 @@ func (ck *Cardkingdom) scrape() error {
 				ck.printf("%v", err)
 			}
 
+			q := u.Query()
+			q.Set("filter[search]", "mtg_advanced")
+
+			// Include as much detail as possible in the name
+			cardName := card.Name
+			if card.Variation != "" {
+				cardName = fmt.Sprintf("%s (%s)", card.Name, card.Variation)
+			}
+			q.Set("filter[name]", cardName)
+
+			// Always show both non-foil and foil cards, the filtering
+			// on the website accurate enough (ie for Prerelease)
+			q.Set("filter[singles]", "1")
+			q.Set("filter[foils]", "1")
+
+			// Edition is derived from the url itself, not the edition field
+			urlPaths := strings.Split(card.URL, "/")
+			if len(urlPaths) > 2 {
+				q.Set("filter[edition]", urlPaths[1])
+			}
+			if ck.Partner != "" {
+				q.Set("partner", ck.Partner)
+				q.Set("utm_source", ck.Partner)
+				q.Set("utm_medium", "affiliate")
+				q.Set("utm_campaign", ck.Partner)
+			}
+			u.RawQuery = q.Encode()
+
 			gradeMap := grading(cardId, price)
 			for _, grade := range mtgban.DefaultGradeTags {
 				factor := gradeMap[grade]
@@ -167,34 +195,6 @@ func (ck *Cardkingdom) scrape() error {
 				if sellPrice > 0 {
 					priceRatio = price / sellPrice * 100
 				}
-
-				q := u.Query()
-				q.Set("filter[search]", "mtg_advanced")
-
-				// Include as much detail as possible in the name
-				cardName := card.Name
-				if card.Variation != "" {
-					cardName = fmt.Sprintf("%s (%s)", card.Name, card.Variation)
-				}
-				q.Set("filter[name]", cardName)
-
-				// Always show both non-foil and foil cards, the filtering
-				// on the website accurate enough (ie for Prerelease)
-				q.Set("filter[singles]", "1")
-				q.Set("filter[foils]", "1")
-
-				// Edition is derived from the url itself, not the edition field
-				urlPaths := strings.Split(card.URL, "/")
-				if len(urlPaths) > 2 {
-					q.Set("filter[edition]", urlPaths[1])
-				}
-				if ck.Partner != "" {
-					q.Set("partner", ck.Partner)
-					q.Set("utm_source", ck.Partner)
-					q.Set("utm_medium", "affiliate")
-					q.Set("utm_campaign", ck.Partner)
-				}
-				u.RawQuery = q.Encode()
 
 				out := &mtgban.BuylistEntry{
 					Conditions: grade,
