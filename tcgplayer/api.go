@@ -303,13 +303,13 @@ func (tcg *TCGClient) ListAllGroups(category int, offset int, limit int) ([]TCGG
 	return out, nil
 }
 
-func (tcg *TCGClient) EditionMap(category int) (map[int]string, error) {
+func (tcg *TCGClient) EditionMap(category int) (map[int]TCGGroup, error) {
 	totals, err := tcg.TotalGroups(category)
 	if err != nil {
 		return nil, err
 	}
 
-	results := map[int]string{}
+	results := map[int]TCGGroup{}
 	for i := 0; i < totals; i += MaxLimit {
 		groups, err := tcg.ListAllGroups(category, i, MaxLimit)
 		if err != nil {
@@ -317,7 +317,7 @@ func (tcg *TCGClient) EditionMap(category int) (map[int]string, error) {
 		}
 
 		for _, group := range groups {
-			results[group.GroupID] = group.Name
+			results[group.GroupID] = group
 		}
 	}
 

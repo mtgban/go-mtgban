@@ -21,7 +21,7 @@ type TCGPlayerGeneric struct {
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
 
-	editions map[int]string
+	editions map[int]TCGGroup
 
 	category            int
 	categoryName        string
@@ -107,7 +107,7 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 		keys := []string{
 			fmt.Sprint(result.ProductId),
 			prodMap[result.ProductId].Name,
-			tcg.editions[prodMap[result.ProductId].GroupId],
+			tcg.editions[prodMap[result.ProductId].GroupId].Name,
 			result.SubTypeName,
 		}
 
