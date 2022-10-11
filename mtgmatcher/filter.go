@@ -1112,6 +1112,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
+			case "30th Anniversary Edition":
+				cn, _ := strconv.Atoi(card.Number)
+				isRetro := Contains(inCard.Variation, "Retro")
+				if isRetro && !(cn < 298) {
+					continue
+				} else if !isRetro && cn < 298 {
+					continue
+				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant
