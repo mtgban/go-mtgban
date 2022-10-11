@@ -672,6 +672,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					possibleSuffixes = append(possibleSuffixes, "a")
 				}
 
+				// 40K could have numbers reported alongside the surge tag
+				if inCard.isSurgeFoil() && !inCard.isThickDisplay() {
+					possibleSuffixes = []string{mtgjson.SuffixSpecial}
+				}
+
 				for _, numSuffix := range possibleSuffixes {
 					// The self test is already expressed by the empty string
 					// This avoids an odd case of testing 1.1 = 11
@@ -852,6 +857,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else {
 					if card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
+						continue
+					}
+				}
+
+				if inCard.isSurgeFoil() {
+					if !card.HasPromoType(mtgjson.PromoTypeSurgeFoil) {
+						continue
+					}
+				} else {
+					if card.HasPromoType(mtgjson.PromoTypeSurgeFoil) {
 						continue
 					}
 				}

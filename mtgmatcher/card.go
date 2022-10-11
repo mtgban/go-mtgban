@@ -758,6 +758,10 @@ func (c *Card) isGalaxyFoil() bool {
 	return Contains(c.Variation, "Galaxy")
 }
 
+func (c *Card) isSurgeFoil() bool {
+	return Contains(c.Variation, "Surge")
+}
+
 func (c *Card) possibleNumberSuffix() string {
 	fields := strings.Fields(c.Variation)
 	for _, field := range fields {

@@ -119,6 +119,7 @@ const (
 	PromoTypeTextured   = "textured"
 	PromoTypeNeonInk    = "neonink"
 	PromoTypeGalaxyFoil = "galaxyfoil"
+	PromoTypeSurgeFoil  = "surgefoil"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
@@ -158,6 +159,7 @@ var AllPromoTypes = []string{
 	PromoTypePromoPack,
 	PromoTypeRelease,
 	PromoTypeSChineseAltArt,
+	PromoTypeSurgeFoil,
 	PromoTypeTextured,
 	PromoTypeThickDisplay,
 	PromoTypeWPN,

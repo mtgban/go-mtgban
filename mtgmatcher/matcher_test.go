@@ -1430,6 +1430,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Unstable",
 		},
 	},
+	MatchTest{
+		Id:   "23550282-bb05-5958-8b43-e1b81b32a630",
+		Desc: "number_and_surge",
+		In: Card{
+			Name:      "Sol Ring",
+			Variation: "249 Surge Foil",
+			Edition:   "Warhammer 40,000 Commander",
+		},
+	},
 
 	// FNM promos (often confused with set promos)
 	MatchTest{
