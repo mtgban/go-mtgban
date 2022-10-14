@@ -83,6 +83,9 @@ type BuylistEntry struct {
 
 	// Original identifier as available from the scraper
 	OriginalId string `json:"original_id,omitempty"`
+
+	// Any additional custom fields set by the scraper
+	CustomFields map[string]string `json:"custom_fields,omitempty"`
 }
 
 func (be BuylistEntry) Pricing() float64 {
