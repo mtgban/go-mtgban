@@ -19,3 +19,6 @@
 
 # Scrapers data
 *.csv
+
+# macOS Finder
+.DS_Store
