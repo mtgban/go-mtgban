@@ -204,6 +204,14 @@ func (ck *Cardkingdom) scrape() error {
 					PriceRatio: priceRatio,
 					URL:        u.String(),
 				}
+				// Add the line entry as needed by the csv import
+				if grade == "NM" {
+					out.CustomFields = map[string]string{
+						"CKTitle":   cardName,
+						"CKEdition": card.Edition,
+						"CKFoil":    card.IsFoil,
+					}
+				}
 				err = ck.buylist.Add(cardId, out)
 				if err != nil {
 					ck.printf("%v", err)
