@@ -173,6 +173,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		switch cardName {
 		case "Char":
 			edition = "P15A"
+		case "Gideon, Ally of Zendikar", "Selfless Spirit", "Thraben Inspector":
+			edition = "PRCQ"
 		}
 	case "WMCQ Promo Cards":
 		switch cardName {
