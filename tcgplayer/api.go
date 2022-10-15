@@ -154,6 +154,21 @@ const (
 	CategoryYuGiOh  = 2
 	CategoryPokemon = 3
 
+	ProductTypeCards               = "Cards"
+	ProductTypeBoosterBox          = "Booster Box"
+	ProductTypeBoosterPack         = "Booster Pack"
+	ProductTypeSealedProducts      = "Sealed Products"
+	ProductTypeIntroPack           = "Intro Pack"
+	ProductTypeFatPack             = "Fat Pack"
+	ProductTypeBoxSets             = "Box Sets"
+	ProductTypePreconEventDecks    = "Precon/Event Decks"
+	ProductTypeMagicDeckPack       = "Magic Deck Pack"
+	ProductTypeMagicBoosterBoxCase = "Magic Booster Box Case"
+	ProductTypeAll5IntroPacks      = "All 5 Intro Packs"
+	ProductTypeIntroPackDisplay    = "Intro Pack Display"
+	ProductType3xMagicBoosterPacks = "3x Magic Booster Packs"
+	ProductTypeBoosterBattlePack   = "Booster Battle Pack"
+
 	MaxLimit = 100
 )
 
