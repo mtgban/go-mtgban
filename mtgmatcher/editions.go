@@ -28,6 +28,9 @@ var EditionTable = map[string]string{
 	"Summer Magic":         "Summer Magic / Edgar",
 
 	"Universes Beyond: Warhammer 40,000": "Warhammer 40,000 Commander",
+	"Universes Beyond: Transformers":     "Transformers",
+
+	"The Brothers' War: Retro Frame Artifacts": "The Brothers' War Retro Artifacts",
 
 	// PL22
 	"APAC Year of the Tiger":     "Year of the Tiger 2022",
