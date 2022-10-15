@@ -3450,6 +3450,17 @@ var MatchTests = []MatchTest{
 			Edition: "Prophecy",
 		},
 	},
+
+	// BRRRRRRRR
+	MatchTest{
+		Id:   "c72c683a-c014-5de4-a8d1-0e034dab2d3b",
+		Desc: "schematic",
+		In: Card{
+			Name:      "Wurmcoil Engine",
+			Variation: "Schematic",
+			Edition:   "The Brothers' War: Retro Frame Artifacts",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

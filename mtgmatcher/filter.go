@@ -1136,6 +1136,29 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !isRetro && cn < 298 {
 					continue
 				}
+			case "Dominaria Remastered":
+				isRetro := inCard.isRetro()
+				if isRetro && card.FrameVersion != "1997" {
+					continue
+				} else if !isRetro && card.FrameVersion == "1997" {
+					continue
+				}
+			case "The Brothers' War":
+				cn, _ := strconv.Atoi(card.Number)
+				isRetro := inCard.isRetro()
+				if isRetro && cn < 378 {
+					continue
+				} else if !isRetro && cn >= 378 {
+					continue
+				}
+			case "The Brothers' War Retro Artifacts":
+				cn, _ := strconv.Atoi(card.Number)
+				isSchematic := inCard.Contains("Schematic")
+				if isSchematic && cn < 64 {
+					continue
+				} else if !isSchematic && cn >= 64 {
+					continue
+				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant
