@@ -27,7 +27,7 @@ var EditionTable = map[string]string{
 	"Summer Magic (Edgar)": "Summer Magic / Edgar",
 	"Summer Magic":         "Summer Magic / Edgar",
 
-	"Universes Beyond: Warhammer 40,000": "Warhammer 40,000",
+	"Universes Beyond: Warhammer 40,000": "Warhammer 40,000 Commander",
 
 	// PL22
 	"APAC Year of the Tiger":     "Year of the Tiger 2022",
