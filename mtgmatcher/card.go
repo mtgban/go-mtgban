@@ -169,10 +169,13 @@ func IsToken(name string) bool {
 
 // List of editions and specific cards supported in a non-English language
 func SkipLanguage(cardName, edition, language string) bool {
-	ed, found := EditionTable[edition]
-	if found {
-		edition = ed
+	card := Card{
+		Name:      cardName,
+		Edition:   edition,
+		Variation: language,
 	}
+	adjustEdition(&card)
+	edition = card.Edition
 
 	switch strings.ToLower(language) {
 	case "en", "english", "":
@@ -181,11 +184,8 @@ func SkipLanguage(cardName, edition, language string) bool {
 		case "30th Anniversary Play Promos",
 			"Foreign Black Border",
 			"Legends Italian",
-			"Legends",
-			"Renaissance",
 			"Rinascimento",
-			"The Dark Italian",
-			"The Dark":
+			"The Dark Italian":
 		default:
 			return true
 		}
@@ -193,16 +193,12 @@ func SkipLanguage(cardName, edition, language string) bool {
 		switch edition {
 		case "30th Anniversary Play Promos",
 			"Chronicles Japanese",
-			"Chronicles",
 			"Fourth Edition Foreign Black Border",
-			"Fourth Edition",
 			"Magic Premiere Shop",
 			"Strixhaven Mystical Archive",
 			"War of the Spark",
 			"War of the Spark Promos":
-		case "Ikoria: Lair of Behemoths",
-			"Ikoria: Lair of Behemoths - Variants",
-			"Ikoria: Lair of Behemoths Collectors":
+		case "Ikoria: Lair of Behemoths":
 			switch cardName {
 			case "Mysterious Egg", "Mothra's Great Cocoon",
 				"Dirge Bat", "Battra, Dark Destroyer",
