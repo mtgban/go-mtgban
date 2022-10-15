@@ -517,6 +517,10 @@ func (c *Card) isSDCC() bool {
 		c.Contains("San Diego Comic-Con")
 }
 
+func (c *Card) isRetro() bool {
+	return c.Contains("Retro")
+}
+
 func (c *Card) playerRewardsYear(maybeYear string) string {
 	if maybeYear == "" {
 		switch c.Name {

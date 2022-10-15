@@ -1086,9 +1086,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			case "Modern Horizons 2":
 				cn, _ := strconv.Atoi(card.Number)
-				if Contains(inCard.Variation, "Retro") && (cn <= 380 || cn > 441) {
+				isRetro := inCard.isRetro()
+				if isRetro && (cn <= 380 || cn > 441) {
 					continue
-				} else if !(Contains(inCard.Variation, "Retro") || inCard.beyondBaseSet) && !(cn <= 380 || cn > 441) {
+				} else if !(isRetro || inCard.beyondBaseSet) && !(cn <= 380 || cn > 441) {
 					continue
 				}
 			// Due to the WPN lands
@@ -1100,7 +1101,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Duplicates, only frame changes
 			case "30th Anniversary History Promos":
-				isRetro := Contains(inCard.Variation, "Retro") || inCard.Variation == "V.2"
+				isRetro := inCard.isRetro() || inCard.Variation == "V.2"
 				if isRetro && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 					continue
 				} else if !isRetro && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
@@ -1129,7 +1130,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			case "30th Anniversary Edition":
 				cn, _ := strconv.Atoi(card.Number)
-				isRetro := Contains(inCard.Variation, "Retro")
+				isRetro := inCard.isRetro()
 				if isRetro && !(cn < 298) {
 					continue
 				} else if !isRetro && cn < 298 {
