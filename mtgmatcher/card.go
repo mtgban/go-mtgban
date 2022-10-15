@@ -741,7 +741,8 @@ func (c *Card) duelDecksVariant() string {
 }
 
 func (c *Card) isMysteryList() bool {
-	return c.Contains("Mystery") || c.Contains("The List")
+	return c.Contains("Mystery") || c.Contains("The List") ||
+		c.Contains("Heads I Win, Tails You Lose")
 }
 
 func (c *Card) isThickDisplay() bool {

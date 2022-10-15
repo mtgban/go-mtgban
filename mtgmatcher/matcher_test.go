@@ -2709,6 +2709,14 @@ var MatchTests = []MatchTest{
 			Edition: "The List",
 		},
 	},
+	MatchTest{
+		Id:   "d8a8c6df-c901-5bed-9d3a-a1bfaef12e23",
+		Desc: "phed_reprint",
+		In: Card{
+			Name:    "Yusri, Fortune's Flame",
+			Edition: "Secret Lair Commander: Heads I Win, Tails You Lose",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
