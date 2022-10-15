@@ -214,7 +214,7 @@ type TCGProduct struct {
 		Name        string `json:"name"`
 		DisplayName string `json:"displayName"`
 		Value       string `json:"value"`
-	}
+	} `json:"extendedData,omitempty"`
 }
 
 func (tcg *TCGClient) TotalProducts(category int, productTypes []string) (int, error) {
