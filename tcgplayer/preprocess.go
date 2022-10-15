@@ -430,17 +430,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "Innistrad: Double Feature",
 		"Kamigawa: Neon Dynasty":
 		variant = product.getNum()
-
-		if edition == "Kamigawa: Neon Dynasty" && mtgmatcher.Contains(product.CleanName, "Double-Sided") {
-			return nil, errors.New("duplicate")
-		}
 	case "Dominaria United":
 		// These lands are not tagged as such
 		if mtgmatcher.IsBasicLand(cardName) && variant == "Showcase" {
 			variant = ""
-		}
-		if strings.Contains(product.CleanName, "Double sided") {
-			return nil, errors.New("duplicate")
 		}
 	case "Unfinity":
 		num := product.getNum()
@@ -450,6 +443,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		} else {
 			variant = num
 		}
+	}
+
+	// Upstream does not manage dfc tokens (yet?)
+	if strings.Contains(product.CleanName, "Token") && strings.Contains(product.CleanName, "Double") {
+		return nil, errors.New("duplicate")
 	}
 
 	// Outside the main loop to catch everything
