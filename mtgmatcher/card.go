@@ -178,7 +178,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 	case "en", "english", "":
 	case "it", "italian":
 		switch edition {
-		case "30th Anniversary Promos",
+		case "30th Anniversary Play Promos",
 			"Foreign Black Border",
 			"Legends Italian",
 			"Legends",
@@ -191,7 +191,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 		}
 	case "jp", "japanese":
 		switch edition {
-		case "30th Anniversary Promos",
+		case "30th Anniversary Play Promos",
 			"Chronicles Japanese",
 			"Chronicles",
 			"Fourth Edition Foreign Black Border",
@@ -225,31 +225,31 @@ func SkipLanguage(cardName, edition, language string) bool {
 		}
 	case "de", "german":
 		switch edition {
-		case "30th Anniversary Promos":
+		case "30th Anniversary Play Promos":
 		default:
 			return true
 		}
 	case "pt", "portuguese":
 		switch edition {
-		case "30th Anniversary Promos":
+		case "30th Anniversary Play Promos":
 		default:
 			return true
 		}
 	case "es", "spanish":
 		switch edition {
-		case "30th Anniversary Promos":
+		case "30th Anniversary Play Promos":
 		default:
 			return true
 		}
 	case "fr", "french":
 		switch edition {
-		case "30th Anniversary Promos":
+		case "30th Anniversary Play Promos":
 		default:
 			return true
 		}
 	case "zhs", "zh-CN", "chinese", "simplified chinese", "chinese simplified":
 		switch edition {
-		case "30th Anniversary Promos":
+		case "30th Anniversary Play Promos":
 		case "Simplified Chinese Alternate Art Cards":
 			if !HasChineseAltArtPrinting(cardName) {
 				return true
