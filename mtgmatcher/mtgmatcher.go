@@ -472,7 +472,8 @@ func adjustName(inCard *Card) {
 	}
 
 	// Special case for Un-sets that sometimes drop the parenthesis
-	if strings.Contains(inCard.Edition, "Unglued") ||
+	if strings.Contains(inCard.Edition, "The List") ||
+		strings.Contains(inCard.Edition, "Unglued") ||
 		strings.Contains(inCard.Edition, "Unhinged") ||
 		strings.Contains(inCard.Edition, "Unstable") ||
 		strings.Contains(inCard.Edition, "Unsanctioned") {
