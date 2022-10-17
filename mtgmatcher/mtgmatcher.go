@@ -693,6 +693,8 @@ func adjustEdition(inCard *Card) {
 		}
 		if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
 			edition = backend.Sets["SLX"].Name
+		} else if inCard.Contains("30th") && len(MatchInSet(inCard.Name, "SLC")) != 0 {
+			edition = backend.Sets["SLC"].Name
 		} else if len(MatchInSet(inCard.Name, "SLU")) != 0 {
 			edition = backend.Sets["SLU"].Name
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
