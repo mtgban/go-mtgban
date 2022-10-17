@@ -700,7 +700,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 					// 40K could have numbers reported alongside the surge tag
 					if inCard.isSurgeFoil() && !inCard.isThickDisplay() {
-						possibleSuffixes = []string{mtgjson.SuffixSpecial}
+						// Exclude the first 8 cards that do not have the special suffix
+						cn, err := strconv.Atoi(card.Number)
+						if err != nil || cn > 8 {
+							possibleSuffixes = []string{mtgjson.SuffixSpecial}
+						}
 					}
 
 					for _, numSuffix := range possibleSuffixes {

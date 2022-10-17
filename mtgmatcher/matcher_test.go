@@ -1439,6 +1439,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Warhammer 40,000 Commander",
 		},
 	},
+	MatchTest{
+		Id:   "ca4dfea2-1832-5cf9-a91f-792d85a19cd3",
+		Desc: "number_and_surge_no_suffix",
+		In: Card{
+			Name:      "The Swarmlord",
+			Variation: "004 - Surge Foil",
+			Edition:   "Warhammer 40,000 Commander",
+		},
+	},
 
 	// FNM promos (often confused with set promos)
 	MatchTest{
