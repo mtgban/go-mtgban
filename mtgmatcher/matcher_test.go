@@ -3461,6 +3461,25 @@ var MatchTests = []MatchTest{
 			Edition:   "The Brothers' War: Retro Frame Artifacts",
 		},
 	},
+
+	// BOTs
+	MatchTest{
+		Id:   "e8c93a99-ef44-56e7-a2f8-6de8008d1c3b",
+		Desc: "shatteredglass_not",
+		In: Card{
+			Name:    "Megatron, Tyrant // Megatron, Destructive Force",
+			Edition: "Transformers",
+		},
+	},
+	MatchTest{
+		Id:   "0ee3c442-0b35-5dec-8693-c4d0875c6e47",
+		Desc: "shatteredglass",
+		In: Card{
+			Name:      "Megatron, Tyrant // Megatron, Destructive Force",
+			Variation: "Shattered Glass",
+			Edition:   "Transformers",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

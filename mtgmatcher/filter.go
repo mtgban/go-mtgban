@@ -770,6 +770,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					// BaB are allowed to have borderless, same as a few foiling types
 				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) &&
 					!card.HasPromoType(mtgjson.PromoTypeTextured) &&
+					!card.HasFrameEffect(mtgjson.FrameEffectShattered) &&
 					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
 					// IKO may have showcase cards which happen to be borderless
 					// or reskinned ones.
@@ -1157,6 +1158,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if isSchematic && cn < 64 {
 					continue
 				} else if !isSchematic && cn >= 64 {
+					continue
+				}
+			case "Transformers":
+				isShattered := inCard.Contains("Shattered")
+				if isShattered && !card.HasFrameEffect(mtgjson.FrameEffectShattered) {
+					continue
+				} else if !isShattered && card.HasFrameEffect(mtgjson.FrameEffectShattered) {
 					continue
 				}
 			default:

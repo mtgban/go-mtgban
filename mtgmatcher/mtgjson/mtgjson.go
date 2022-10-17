@@ -103,6 +103,7 @@ const (
 	FrameEffectEtched      = "etched"
 	FrameEffectInverted    = "inverted"
 	FrameEffectShowcase    = "showcase"
+	FrameEffectShattered   = "shatteredglass"
 
 	PromoTypeBundle     = "bundle"
 	PromoTypeBuyABox    = "buyabox"
