@@ -670,7 +670,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			} else if num != "" {
 				checkNum := true
 				if inCard.Contains("Misprint") ||
-					card.AttractionLights != nil {
+					(card.AttractionLights != nil && strings.Contains(inCard.Variation, "/")) {
 					checkNum = false
 				}
 				if checkNum {

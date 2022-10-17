@@ -3432,6 +3432,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "0def53d4-b985-5b7b-8ba1-4941eaf78fdf",
+		Desc: "attractions_number",
+		In: Card{
+			Name:      "Information Booth",
+			Variation: "218a",
+			Edition:   "Unfinity",
+		},
+	},
+	MatchTest{
 		Id:   "c9f5f07b-3646-5f2e-ae29-5f8798a4e239",
 		Desc: "blanks",
 		In: Card{
