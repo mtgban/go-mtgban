@@ -667,54 +667,61 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						}
 					}
 				}
-			} else if num != "" && !inCard.Contains("Misprint") && card.AttractionLights == nil {
-				// The empty string will allow to test the number without any
-				// additional prefix first
-				possibleSuffixes := []string{""}
-				variation := strings.Replace(inCard.Variation, "-", "", 1)
-				fields := strings.Fields(strings.ToLower(variation))
-				possibleSuffixes = append(possibleSuffixes, fields...)
+			} else if num != "" {
+				checkNum := true
+				if inCard.Contains("Misprint") ||
+					card.AttractionLights != nil {
+					checkNum = false
+				}
+				if checkNum {
+					// The empty string will allow to test the number without any
+					// additional prefix first
+					possibleSuffixes := []string{""}
+					variation := strings.Replace(inCard.Variation, "-", "", 1)
+					fields := strings.Fields(strings.ToLower(variation))
+					possibleSuffixes = append(possibleSuffixes, fields...)
 
-				// Short circuit the possible suffixes if we know what we're dealing with
-				if inCard.isJPN() {
-					switch set.Code {
-					case "WAR", "PWAR":
-						possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
+					// Short circuit the possible suffixes if we know what we're dealing with
+					if inCard.isJPN() {
+						switch set.Code {
+						case "WAR", "PWAR":
+							possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
+						}
+					} else if inCard.isPrerelease() {
+						possibleSuffixes = append(possibleSuffixes, "s")
+					} else if inCard.isPromoPack() {
+						possibleSuffixes = append(possibleSuffixes, "p")
 					}
-				} else if inCard.isPrerelease() {
-					possibleSuffixes = append(possibleSuffixes, "s")
-				} else if inCard.isPromoPack() {
-					possibleSuffixes = append(possibleSuffixes, "p")
-				}
 
-				// BFZ and ZEN intro lands non-fullart always have this
-				if inCard.isBasicNonFullArt() {
-					possibleSuffixes = append(possibleSuffixes, "a")
-				}
-
-				// 40K could have numbers reported alongside the surge tag
-				if inCard.isSurgeFoil() && !inCard.isThickDisplay() {
-					possibleSuffixes = []string{mtgjson.SuffixSpecial}
-				}
-
-				for _, numSuffix := range possibleSuffixes {
-					// The self test is already expressed by the empty string
-					// This avoids an odd case of testing 1.1 = 11
-					if num == numSuffix {
-						continue
+					// BFZ and ZEN intro lands non-fullart always have this
+					if inCard.isBasicNonFullArt() {
+						possibleSuffixes = append(possibleSuffixes, "a")
 					}
-					number := num + numSuffix
-					if number == card.Number {
-						outCards = append(outCards, card)
 
-						// Card was found, skip any other suffix
-						break
+					// 40K could have numbers reported alongside the surge tag
+					if inCard.isSurgeFoil() && !inCard.isThickDisplay() {
+						possibleSuffixes = []string{mtgjson.SuffixSpecial}
 					}
-				}
 
-				// If a variant is a number we expect that this information is
-				// reliable, so skip anything else
-				continue
+					for _, numSuffix := range possibleSuffixes {
+						// The self test is already expressed by the empty string
+						// This avoids an odd case of testing 1.1 = 11
+						if num == numSuffix {
+							continue
+						}
+						number := num + numSuffix
+						if number == card.Number {
+							outCards = append(outCards, card)
+
+							// Card was found, skip any other suffix
+							break
+						}
+					}
+
+					// If a variant is a number we expect that this information is
+					// reliable, so skip anything else
+					continue
+				}
 			}
 
 			// JPN
