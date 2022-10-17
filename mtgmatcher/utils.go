@@ -72,6 +72,7 @@ func SplitVariants(str string) []string {
 	if len(fields) > 1 {
 		if strings.HasPrefix(str, "Erase (Not the Urza's Legacy One)") ||
 			strings.HasPrefix(str, "Hazmat Suit (Used") ||
+			strings.HasPrefix(str, "B.O.B.") ||
 			(Contains(str, "B.F.M.") && strings.Contains(str, "Big Furry Monster")) {
 			fields[0] = fmt.Sprintf("%s (%s)", fields[0], fields[1])
 			fields = append(fields[:1], fields[2:]...)
