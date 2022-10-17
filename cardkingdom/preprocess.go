@@ -25,9 +25,14 @@ var skuFixupTable = map[string]string{
 
 	"MPS-001A": "PRES-001A",
 
+	// Sets containing launch promos
 	"PJMP-496B": "JMP-496",
 	"P2XM-383":  "2XM-383",
 	"P2XM-384":  "2XM-384",
+	"P2X2-578":  "2X2-578",
+	"P2X2-579":  "2X2-579",
+	"P40K-181":  "40K-181",
+	"PUNF-538":  "UNF-538",
 
 	"FPLGS-001":  "PLG20-001",
 	"FPLG21-001": "PW21-005",
