@@ -58,6 +58,12 @@ var skuFixupTable = map[string]string{
 
 	"SLD-339":  "SLD-359",
 	"FSLD-339": "FSLD-359",
+
+	// Duplicated UPLIST cards
+	"FMUST-147A": "UPLIST-55",
+	"FMUST-147F": "UPLIST-56",
+	"FMUST-113A": "UPLIST-38",
+	"FMUST-113C": "UPLIST-37",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
@@ -160,6 +166,11 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
 		"Unstable", "Unglued", "Unfinity", "Portal II", "Secret Lair":
 		variation = number
+	default:
+		if setCode == "UPLIST" {
+			edition = setCode
+			variation = number
+		}
 	}
 
 	// Preserve Etched property in case variation became overwritten with the number
