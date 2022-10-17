@@ -124,6 +124,7 @@ var setAllowedForTokens = map[string]bool{
 	"PHEL": true,
 	"PL21": true,
 	"PLNY": true,
+	"PDWA": true,
 
 	"10E": true,
 	"A25": true,

@@ -231,6 +231,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
+			} else if mtgmatcher.IsToken(cardName) && strings.Contains(variant, "JPN Exclusive") {
+				edition = "PDWA"
 			} else if strings.Contains(variant, "JP Amazon Exclusive") ||
 				strings.Contains(variant, "JP WonderGOO Exclusive") ||
 				strings.Contains(variant, "JP Hareruya Exclusive") {

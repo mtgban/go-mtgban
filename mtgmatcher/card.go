@@ -212,6 +212,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 			}
 		case "Secrat Lair Drop",
 			"URL/Convention Promos",
+			"Unique and Miscellaneous Promos",
 			"Resale Promos",
 			"Media Inserts":
 			// No specific card because these are a evolving sets,
