@@ -447,6 +447,21 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		} else {
 			variant = num
 		}
+	case "The List":
+		switch cardName {
+		case "Everythingamajig":
+			if variant == "A" {
+				variant = "55"
+			} else if variant == "F" {
+				variant = "56"
+			}
+		case "Ineffable Blessing":
+			if variant == "A" {
+				variant = "38"
+			} else if variant == "C" {
+				variant = "37"
+			}
+		}
 	}
 
 	// Upstream does not manage dfc tokens (yet?)
