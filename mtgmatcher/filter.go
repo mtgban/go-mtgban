@@ -41,6 +41,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				"Resale Promos",
 				"World Championship Promos":
 				continue
+			case "30th Anniversary History Promos",
+				"30th Anniversary Play Promos":
+				continue
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
@@ -55,6 +58,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "M20 Promo Packs":
 			default:
 				switch {
+				case strings.HasPrefix(set.Name, "30th Anniversary"):
+					continue
 				case strings.HasSuffix(set.Name, "Promos"):
 				case setDate.After(PromosForEverybodyYay) && (set.Type == "expansion" || set.Type == "core"):
 					skip := true
@@ -88,6 +93,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				default:
 					continue
 				}
+			case "30th Anniversary History Promos",
+				"30th Anniversary Play Promos":
+				continue
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
@@ -233,6 +241,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isIDWMagazineBook():
 			switch {
+			case strings.HasPrefix(set.Name, "30th Anniversary"):
+				continue
 			case !inCard.isJPN() && strings.HasPrefix(set.Name, "IDW Comics "+maybeYear):
 			case !inCard.isJPN() && strings.HasPrefix(set.Name, "Duels of the Planeswalkers "+maybeYear):
 			case !inCard.isJPN() && strings.HasSuffix(set.Name, "Promos"):
@@ -276,6 +286,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.Contains("Convention"):
 			switch set.Name {
 			case "URL/Convention Promos":
+			case "30th Anniversary History Promos",
+				"30th Anniversary Play Promos":
+				continue
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
@@ -298,6 +311,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch {
 			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
 			case set.Code == "P30A":
+				if inCard.Name != "Arcane Signet" && inCard.Name != "Richard Garfield, Ph.D." {
+					continue
+				}
 			default:
 				continue
 			}
@@ -356,6 +372,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "Champs and States",
 				"Gateway 2007":
 			case "Grand Prix Promos":
+				continue
+			case "30th Anniversary History Promos",
+				"30th Anniversary Play Promos":
 				continue
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
@@ -482,8 +501,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.promoWildcard:
 			switch set.Type {
 			case "promo":
-				// Skip Judge promos, they are usually correctly listed
-				if strings.HasPrefix(set.Name, "Judge Gift") {
+				// Skip common promos, they are usually correctly listed
+				if strings.HasPrefix(set.Name, "Judge Gift") ||
+					strings.HasPrefix(set.Name, "30th Anniversary") {
 					continue
 				}
 				skip := false
