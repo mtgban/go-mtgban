@@ -322,12 +322,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			// Override all to tokens so that duplicates get named differently
 			case "TFTH", "TBTH", "TDAG":
 				card.Layout = "token"
-				// Set the altenative flags until they get fixed upstream
-			case "2X2":
-				switch card.Number {
-				case "578", "579":
-					card.IsAlternative = true
-				}
 			}
 			// Override any "double_faced_token" entries and emblems
 			if strings.Contains(card.Layout, "token") || card.Layout == "emblem" {
