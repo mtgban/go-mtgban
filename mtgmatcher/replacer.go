@@ -34,6 +34,7 @@ var replacer = strings.NewReplacer(
 	// UNF blanks
 	"________", "_____",
 	"_______", "_____",
+	"______", "_____",
 
 	// Separators
 	"goblin // soldier", "goblin // soldier",
