@@ -145,6 +145,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Water Gun Balloon Game":
 			edition = "UNF"
+		case "Fabricate":
+			edition = "40K"
 		}
 	case "Media Promos":
 		switch cardName {
