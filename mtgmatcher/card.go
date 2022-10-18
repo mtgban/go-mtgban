@@ -177,12 +177,16 @@ func SkipLanguage(cardName, edition, language string) bool {
 	adjustEdition(&card)
 	edition = card.Edition
 
+	switch {
+	case strings.HasPrefix(edition, "30th Anniversary"):
+		return false
+	}
+
 	switch strings.ToLower(language) {
 	case "en", "english", "":
 	case "it", "italian":
 		switch edition {
-		case "30th Anniversary Play Promos",
-			"Foreign Black Border",
+		case "Foreign Black Border",
 			"Legends Italian",
 			"Rinascimento",
 			"The Dark Italian":
@@ -191,8 +195,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 		}
 	case "jp", "japanese":
 		switch edition {
-		case "30th Anniversary Play Promos",
-			"Chronicles Japanese",
+		case "Chronicles Japanese",
 			"Fourth Edition Foreign Black Border",
 			"Magic Premiere Shop",
 			"Strixhaven Mystical Archive",
@@ -220,33 +223,8 @@ func SkipLanguage(cardName, edition, language string) bool {
 		default:
 			return true
 		}
-	case "de", "german":
-		switch edition {
-		case "30th Anniversary Play Promos":
-		default:
-			return true
-		}
-	case "pt", "portuguese":
-		switch edition {
-		case "30th Anniversary Play Promos":
-		default:
-			return true
-		}
-	case "es", "spanish":
-		switch edition {
-		case "30th Anniversary Play Promos":
-		default:
-			return true
-		}
-	case "fr", "french":
-		switch edition {
-		case "30th Anniversary Play Promos":
-		default:
-			return true
-		}
 	case "zhs", "zh-CN", "chinese", "simplified chinese", "chinese simplified":
 		switch edition {
-		case "30th Anniversary Play Promos":
 		case "Simplified Chinese Alternate Art Cards":
 			if !HasChineseAltArtPrinting(cardName) {
 				return true
