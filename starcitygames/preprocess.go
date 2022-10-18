@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
-	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 var cardTable = map[string]string{
@@ -112,42 +111,6 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 				variant += " "
 			}
 			variant += card.Language
-		}
-	}
-
-	switch edition {
-	case "3rd Edition BB":
-		variant = strings.TrimSuffix(variant, " BB")
-	case "Promo: General":
-		switch cardName {
-		case "Eliminate":
-			if variant == "Promo Pack Core Set 2021" {
-				edition = "Core Set 2021"
-			}
-		}
-	default:
-		if strings.HasSuffix(edition, "Alternate Frame") {
-			edition = strings.TrimSuffix(edition, " - Alternate Frame")
-
-			// Decouple showcase and boderless from this tag
-			if strings.Contains(variant, "Alternate Art") {
-				set, err := mtgmatcher.GetSet(edition)
-				if err != nil {
-					return nil, err
-				}
-				for _, card := range set.Cards {
-					if card.Name == cardName {
-						if card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
-							variant = "Showcase"
-							break
-						}
-						if card.BorderColor == mtgjson.BorderColorBorderless {
-							variant = "Borderless"
-							break
-						}
-					}
-				}
-			}
 		}
 	}
 
