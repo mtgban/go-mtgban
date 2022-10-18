@@ -3580,6 +3580,9 @@ var sldVariants = map[string]map[string]string{
 	"Olivia, Mobilized for War": {
 		"series: livia prima": "699",
 	},
+	"Huntmaster of the Fells // Ravager of the Fells": {
+		"series: chris rahn": "495",
+	},
 }
 
 var soiVariants = map[string]map[string]string{
