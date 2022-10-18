@@ -3714,6 +3714,21 @@ var ulgVariants = map[string]map[string]string{
 	},
 }
 
+var uplistVariants = map[string]map[string]string{
+	"Everythingamajig": {
+		"a":   "55",
+		"f":   "56",
+		"v.1": "55",
+		"v.2": "56",
+	},
+	"Ineffable Blessing": {
+		"a":   "38",
+		"c":   "37",
+		"v.1": "38",
+		"v.2": "37",
+	},
+}
+
 var ustVariants = map[string]map[string]string{
 	"Amateur Auteur": {
 		"ravnica":        "3a",
@@ -4255,6 +4270,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Shadows over Innistrad":               soiVariants,
 	"Summer Magic / Edgar":                 ed3Variants,
 	"Tempest":                              tmpVariants,
+	"The List (Unfinity Foil Edition)":     uplistVariants,
 	"The List":                             mb1plistVariants,
 	"Unglued":                              ulgVariants,
 	"Unlimited Edition":                    oldLandVariants,
