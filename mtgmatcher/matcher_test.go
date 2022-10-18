@@ -3458,6 +3458,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Unfinity",
 		},
 	},
+	MatchTest{
+		Id:   "0608ab2f-66a6-55c0-9117-bd831ebf6f48",
+		Desc: "galaxy_borderless",
+		In: Card{
+			Name:      "Watery Grave",
+			Variation: "Borderless Galaxy Foil",
+			Edition:   "Unfinity - Variants - Galaxy Foil",
+		},
+	},
 
 	// Simplified Chinese Alt Art
 	MatchTest{

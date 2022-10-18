@@ -587,6 +587,18 @@ func adjustEdition(inCard *Card) {
 			edition = backend.Sets["TSR"].Name
 		}
 	default:
+		// Cut the edition at the first dash, but avoid Prerelease and PromoPack and MB1/List cards
+		// since they are often separated with a dash, but are processed elsewhere
+		// Test for "- " and " -" to avoid catching dashes in the name of the edition
+		if !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isMysteryList() &&
+			(strings.Contains(edition, "- ") || strings.Contains(edition, " -")) {
+			edition = strings.Split(edition, "-")[0]
+			edition = strings.TrimSpace(edition)
+			if variation == "" {
+				inCard.beyondBaseSet = true
+			}
+		}
+		// Loop through known editions tags
 		for _, tag := range []string{
 			"Box Toppers",
 			"(Collector Edition)",
@@ -594,9 +606,7 @@ func adjustEdition(inCard *Card) {
 			"Collector Booster",
 			"Extras",
 			"Variants",
-			"Foil Etched",
 			"Etched",
-			"Foil Etched / Textured",
 		} {
 			// Strip away any extra tags
 			if strings.HasSuffix(edition, tag) {
