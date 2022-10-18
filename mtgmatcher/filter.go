@@ -1160,6 +1160,18 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
+				switch card.Name {
+				case "Space Beleren", "Comet, Stellar Pup":
+					if inCard.isBorderless() && !inCard.isGalaxyFoil() {
+						if card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
+							continue
+						}
+					} else if inCard.isGalaxyFoil() && !inCard.isBorderless() {
+						if card.BorderColor == mtgjson.BorderColorBorderless {
+							continue
+						}
+					}
+				}
 			case "30th Anniversary Edition":
 				cn, _ := strconv.Atoi(card.Number)
 				isRetro := inCard.isRetro()

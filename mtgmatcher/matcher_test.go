@@ -3467,6 +3467,24 @@ var MatchTests = []MatchTest{
 			Edition:   "Unfinity - Variants - Galaxy Foil",
 		},
 	},
+	MatchTest{
+		Id:   "533e84f0-05f5-50c9-856d-f9db6dfd787c",
+		Desc: "unf_dupe_galaxy",
+		In: Card{
+			Name:      "Space Beleren",
+			Variation: "Galaxy Foil",
+			Edition:   "Unfinity",
+		},
+	},
+	MatchTest{
+		Id:   "e652bab7-775e-5ec0-9707-2641e9d4217d",
+		Desc: "unf_dupe_borderless",
+		In: Card{
+			Name:      "Space Beleren",
+			Variation: "Borderless",
+			Edition:   "Unfinity",
+		},
+	},
 
 	// Simplified Chinese Alt Art
 	MatchTest{
