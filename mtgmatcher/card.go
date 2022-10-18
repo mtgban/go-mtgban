@@ -739,7 +739,9 @@ func (c *Card) isGalaxyFoil() bool {
 }
 
 func (c *Card) isSurgeFoil() bool {
-	return Contains(c.Variation, "Surge")
+	return strings.Contains(c.Variation, "Surge") ||
+		strings.Contains(c.Variation, "surge")
+
 }
 
 func (c *Card) possibleNumberSuffix() string {
