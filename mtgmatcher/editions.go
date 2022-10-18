@@ -27,8 +27,10 @@ var EditionTable = map[string]string{
 	"Summer Magic (Edgar)": "Summer Magic / Edgar",
 	"Summer Magic":         "Summer Magic / Edgar",
 
-	"Universes Beyond: Warhammer 40,000": "Warhammer 40,000 Commander",
-	"Universes Beyond: Transformers":     "Transformers",
+	// Universes Beyond
+	"Universes Beyond: Transformers":            "Transformers",
+	"Universes Beyond: Warhammer 40,000":        "Warhammer 40,000 Commander",
+	"Universes Beyond: Warhammer 40k Commander": "Warhammer 40,000 Commander",
 
 	"The Brothers' War: Retro Frame Artifacts": "The Brothers' War Retro Artifacts",
 
