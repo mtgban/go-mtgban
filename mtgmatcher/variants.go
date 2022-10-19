@@ -2759,6 +2759,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Disenchant": {
 		"core set 2020": "77",
 		"m20":           "77",
+		"p07":           "13",
 	},
 	"Eternal Witness": {
 		"ultimate masters": "1200",
@@ -2793,6 +2794,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Harmonize": {
 		"c17":            "1234",
 		"commander 2017": "1234",
+		"p08":            "174",
 	},
 	"Imperious Perfect": {
 		"cma":                 "1242",
@@ -2888,6 +2890,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Terminate": {
 		"cma":                 "1495",
 		"commander anthology": "1495",
+		"p09":                 "230",
 	},
 	"Temur Battle Rage": {
 		"fate reforged": "1081",
@@ -2896,6 +2899,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"cm2":                           "1639",
 		"commander anthology vol. ii":   "1639",
 		"commander anthology volume ii": "1639",
+		"c5":                            "274",
 		"commander 2015":                "274",
 	},
 	"Vampire Nighthawk": {
@@ -3463,6 +3467,7 @@ var sldVariants = map[string]map[string]string{
 	"Brainstorm": {
 		"":                                "174",
 		"secret lair: series: mark poole": "174",
+		"sketch showcase":                 "582",
 	},
 	"Swords to Plowshares": {
 		"":                       "110",
@@ -3511,6 +3516,12 @@ var sldVariants = map[string]map[string]string{
 		"v.3": "150",
 		"v.4": "151",
 		"v.5": "152",
+
+		"bicycle girl":             "148",
+		"well walker bicycle girl": "149",
+		"blade walker well walker": "150",
+		"winslow blade walker":     "151",
+		"metal head winslow":       "152",
 	},
 	"Persistent Petitioners": {
 		"secret lair": "597",
@@ -3545,11 +3556,13 @@ var sldVariants = map[string]map[string]string{
 		"secret lair: artist series: magali villeneuve": "473",
 	},
 	"Spellskite": {
-		"secret lair: series thomas m. baxa":                "277",
+		"":                                   "277",
+		"secret lair: series thomas m. baxa": "277",
 		"sketch variant secret lair: series thomas m. baxa": "587",
 	},
 	"Sphere of Safety": {
-		"secret lair: series johannes voss":                "280",
+		"":                                  "280",
+		"secret lair: series johannes voss": "280",
 		"sketch variant secret lair: series johannes voss": "588",
 	},
 	"Questing Phelddagrif": {
