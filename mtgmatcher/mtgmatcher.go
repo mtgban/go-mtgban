@@ -812,6 +812,10 @@ func adjustEdition(inCard *Card) {
 	case inCard.Edition == "Unfinity" && len(MatchInSet(inCard.Name, "SUNF")) == 1:
 		edition = backend.Sets["SUNF"].Name
 
+	// Move Release to Prerelease for Battlebond
+	case inCard.isRelease() && strings.Contains(edition, "Battlebond") && len(MatchInSet(inCard.Name, "PBBD")) == 1:
+		edition = backend.Sets["PBBD"].Name
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {
