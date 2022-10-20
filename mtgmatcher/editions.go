@@ -52,6 +52,7 @@ var EditionTable = map[string]string{
 	"D&D: Adventures in the Forgotten Realms: Variants": "Adventures in the Forgotten Realms: Variants",
 
 	// Strixhaven Mystical Archive alts
+	"Japanese Mystical Archive":                 "Strixhaven Mystical Archive",
 	"Mystical Archive":                          "Strixhaven Mystical Archive",
 	"Mystical Archive: Japanese alternate-art":  "Strixhaven Mystical Archive",
 	"Strixhaven Mystical Archive - Foil Etched": "Strixhaven Mystical Archive",

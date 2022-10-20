@@ -77,12 +77,34 @@ var cardTable = map[string]string{
 	"Dr. Juilus Jumblemorph":                "Dr. Julius Jumblemorph",
 	"Villanous Wealth":                      "Villainous Wealth",
 
+	"Tergrid, God of Fright | Tergid's Lantern":   "Tergrid, God of Fright // Tergrid's Lantern",
+	"Valki, God of Lies | Tibalt Cosmic Imposter": "Valki, God of Lies // Tibalt Cosmic Impostor",
+	"Skyclave Cleric | Skyclave Ballista":         "Skyclave Cleric // Skyclave Basilica",
+
 	"The Ultimate Nightmare of Wizards of the Coast? Customer Service": "The Ultimate Nightmare of Wizards of the Coast® Customer Service",
 
 	"Breya, the Etherium Shaper": "Breya, Etherium Shaper",
 	"Kinght of the White Orchid": "Knight of the White Orchid",
 	"Mythos of Vardok":           "Mythos of Vadrok",
 	"Sharbraz, the Skyshark":     "Shabraz, the Skyshark",
+	"Catti-brie of Mithril Hall": "Catti-brie of Mithral Hall",
+	"Winds of wrath":             "Winds of Rath",
+	"Reinterperet":               "Reinterpret",
+	"Dargo, the Shipwreaker":     "Dargo, the Shipwrecker",
+	"Fallaji Wayfinder":          "Fallaji Wayfinder",
+	"Glint-Eye Nephalim":         "Glint-Eye Nephilim",
+	"Thrill of Possibilty":       "Thrill of Possibility",
+	"Karador, Ghost Chieftan":    "Karador, Ghost Chieftain",
+	"Steel Sabatoge":             "Steel Sabotoge",
+	"Fall of the Imposter":       "Fall of the Impostor",
+	"Glimpse of the Cosmos":      "Glimpse the Cosmos",
+	"Craven Caryatid":            "Carven Caryatid",
+	"Lightning-Core Extractor":   "Lightning-Core Excavator",
+	"Caldia Guardian":            "Caldaia Guardian",
+	"Dr Juilus Jumblemorph":      "Dr. Julius Jumblemorph",
+	"An Incident Has Occured":    "An Incident Has Occurred",
+	"Benalish Calvary":           "Benalish Cavalry",
+	"Ridged Kustie":              "Ridged Kusite",
 }
 
 var commonTags = []string{

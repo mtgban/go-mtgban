@@ -384,6 +384,8 @@ var allVariants = map[string]map[string]string{
 		"v.2":             "55a",
 		"v.1":             "55b",
 		"18":              "55b",
+		"1":               "55a",
+		"2":               "55b",
 	},
 	"Martyrdom": {
 		"alive":                          "10a",
@@ -1497,6 +1499,8 @@ var dkmVariants = map[string]map[string]string{
 		"v.2":       "6b",
 		"ver. 1":    "6a",
 		"ver. 2":    "6b",
+		"1":         "6a",
+		"2":         "6b",
 	},
 	"Phantasmal Fiend": {
 		"brick background": "8a",
