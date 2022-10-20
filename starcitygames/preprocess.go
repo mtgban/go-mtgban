@@ -67,6 +67,15 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 		variant += strings.Join(vars[1:], " ")
 	}
 
+	vars = mtgmatcher.SplitVariants(edition)
+	edition = vars[0]
+	if len(vars) > 1 {
+		if variant != "" {
+			variant += " "
+		}
+		variant += strings.Join(vars[1:], " ")
+	}
+
 	if shouldSkipLang(cardName, edition, variant, card.Language) {
 		return nil, errors.New("non-english")
 	}
