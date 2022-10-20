@@ -8,7 +8,6 @@ import (
 )
 
 var cardTable = map[string]string{
-	"_________":            "_____",
 	"Scornful Ã†ther-Lich": "Scornful Aether-Lich",
 }
 
