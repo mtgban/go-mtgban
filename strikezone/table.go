@@ -117,8 +117,7 @@ var cardTable = map[string]string{
 	"Turntimber Symbyosis / Turntimber, Serpentine Wood":   "Turntimber Symbiosis // Turntimber, Serpentine Wood",
 
 	// Funny cards
-	"Who What When Where Why": "Who",
-	"(Untitled Card":          "_____",
+	"(Untitled Card": "_____",
 }
 
 // Map a card/edition set to a correct edition

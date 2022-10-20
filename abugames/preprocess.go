@@ -27,7 +27,6 @@ var cardTable = map[string]string{
 
 	// Funny cards
 	"No Name":                         "_____",
-	"Who What When Where Why":         "Who",
 	"Absolute Longest Card Name Ever": mtgmatcher.LongestCardEver,
 }
 

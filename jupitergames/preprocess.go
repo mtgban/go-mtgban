@@ -71,7 +71,6 @@ var cardTable = map[string]string{
 	"True-Faith Censor":                     "True-Faith Censer",
 	"Twins of Marer Estate":                 "Twins of Maurer Estate",
 	"Scholar of Atheros":                    "Scholar of Athreos",
-	"Who|What|When|Where|Why":               "Who",
 	"Hazmat Suit _Used_":                    "Hazmat Suit (Used)",
 	"Erase [Not the Urza's Legacy One]":     "Erase (Not the Urza's Legacy One)",
 	"Kill Destroy":                          "Kill! Destroy!",

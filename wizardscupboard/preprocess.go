@@ -57,7 +57,6 @@ var cardTable = map[string]string{
 
 	"Fire/Ice":                                 "Fire // Ice",
 	"Start /// Finish":                         "Start // Finish",
-	"Who/What/When/Where/Why":                  "Who // What // When // Where // Why",
 	"Cryptolith Fragment // Aura of Emrakul":   "Cryptolith Fragment // Aurora of Emrakul",
 	"Docent of Perfection // Final Iteratioin": "Docent of Perfection // Final Iteration",
 }

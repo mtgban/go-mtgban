@@ -499,6 +499,12 @@ func adjustName(inCard *Card) {
 			inCard.Name = "Surgeon ~General~ Commander"
 			return
 		}
+		if Contains(inCard.Name, "Who") && Contains(inCard.Name, "What") &&
+			Contains(inCard.Name, "When") && Contains(inCard.Name, "Where") &&
+			Contains(inCard.Name, "Why") {
+			inCard.Name = "Who // What // When // Where // Why"
+			return
+		}
 
 		for cardName, props := range backend.Cards {
 			if HasPrefix(cardName, inCard.Name) {

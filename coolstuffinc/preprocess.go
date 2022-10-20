@@ -26,8 +26,6 @@ var cardTable = map[string]string{
 
 	"Circle of Protection Red FNM Foil": "Circle of Protection: Red",
 
-	"Who/What/When/Where/Why": "Who",
-
 	"Startled Awake // Persistant Nightmare": "Startled Awake //  Persistent Nightmare",
 
 	"Needleverge Patheway // Pillarverge Pathway": "Needleverge Pathway // Pillarverge Pathway",

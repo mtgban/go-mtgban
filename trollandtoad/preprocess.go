@@ -73,8 +73,6 @@ var cardTable = map[string]string{
 	"Increasing Vengeancce":     "Increasing Vengeance",
 	"Furycallm Snarl":           "Furycalm Snarl",
 	"Pyromancer's Gogggles":     "Pyromancer's Goggles",
-
-	"Who/ What/ When/ Where/ Why": "Who",
 }
 
 var fullLineTable = map[string]string{
