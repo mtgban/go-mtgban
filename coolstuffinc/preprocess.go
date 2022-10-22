@@ -447,7 +447,7 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		if variant != "" {
 			variant += " "
 		}
-		variant += fields[1]
+		variant += strings.Join(fields[1:], " ")
 	}
 
 	switch edition {
