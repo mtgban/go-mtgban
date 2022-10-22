@@ -295,6 +295,14 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
+		case inCard.Contains("Premier Play"):
+			switch set.Name {
+			case "Pro Tour Promos",
+				"Regional Championship Qualifiers 2022":
+			default:
+				continue
+			}
+
 		case inCard.isWorldChamp():
 			switch {
 			case (maybeYear == "1996" || maybeYear == "") && set.Name == "Pro Tour Collector Set":

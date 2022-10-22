@@ -320,7 +320,6 @@ var EditionTable = map[string]string{
 	"Players Tour Promo":                  "Pro Tour Promos",
 	"Players Tour Qualifier PTQ Promo":    "Pro Tour Promos",
 	"Players Tour Qualifier":              "Pro Tour Promos",
-	"Premier Play":                        "Pro Tour Promos",
 	"Pro Tour Foil":                       "Pro Tour Promos",
 	"Pro Tour Promo":                      "Pro Tour Promos",
 	"Pro Tour Promos":                     "Pro Tour Promos",
