@@ -251,6 +251,10 @@ type SplitTest struct {
 
 var SplitTests = []SplitTest{
 	{
+		In:  "A",
+		Out: []string{"A"},
+	},
+	{
 		In:  "A B",
 		Out: []string{"A B"},
 	},
@@ -281,6 +285,14 @@ var SplitTests = []SplitTest{
 	{
 		In:  "B.F.M. (Big Furry Monster) (Left)",
 		Out: []string{"B.F.M. (Big Furry Monster)", "Left"},
+	},
+	{
+		In:  "A (B)(C)",
+		Out: []string{"A", "B", "C"},
+	},
+	{
+		In:  "A (B (C))",
+		Out: []string{"A", "B", "C"},
 	},
 }
 

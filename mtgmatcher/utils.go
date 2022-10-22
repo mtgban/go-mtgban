@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -59,10 +60,13 @@ var BuyABoxNotUniqueDate = time.Date(2020, time.September, 1, 0, 0, 0, 0, time.U
 // Date since different finishes (etched, gilded, thick) get separate collector numbers
 var SeparateFinishCollectorNumberDate = time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)
 
+// Regexp for SplitVariants, an optional space and a parenthesis
+var re = regexp.MustCompile(` ?\(`)
+
 // SplitVariants returns an array of strings from the parentheses-defined fields
 // commonly used to distinguish some cards across editions.
 func SplitVariants(str string) []string {
-	fields := strings.Split(str, " (")
+	fields := re.Split(str, -1)
 	for i := range fields {
 		pos := strings.Index(fields[i], ")")
 		if pos > 0 {
