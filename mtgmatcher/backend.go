@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -530,9 +531,13 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			continue
 		}
 		if setDate.After(PromosForEverybodyYay) {
-			for i, card := range set.Cards {
+			for _, card := range set.Cards {
 				if card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
-					set.BaseSetSize = i + 1
+					// Usually boosterfun cards have real numbers
+					cn, err := strconv.Atoi(card.Number)
+					if err == nil {
+						set.BaseSetSize = cn - 1
+					}
 					break
 				}
 			}
