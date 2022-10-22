@@ -290,9 +290,13 @@ func TestSplit(t *testing.T) {
 		t.Run(test.In, func(t *testing.T) {
 			t.Parallel()
 			out := SplitVariants(test.In)
+			if len(out) != len(test.Out) {
+				t.Errorf("FAIL %s: Expected '%q' got '%q'", test.In, test.Out, out)
+				return
+			}
 			for i := range out {
 				if out[i] != test.Out[i] {
-					t.Errorf("FAIL %s: Expected '%s' got '%q'", test.In, test.Out, out)
+					t.Errorf("FAIL %s: Expected '%q' got '%q'", test.In, test.Out, out)
 					return
 				}
 			}
