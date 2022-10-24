@@ -1179,6 +1179,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 							continue
 						}
 					}
+				default:
+					if !inCard.isBorderless() && !inCard.isGalaxyFoil() &&
+						sliceStringHas(card.Types, "Land") &&
+						card.BorderColor == mtgjson.BorderColorBorderless &&
+						card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
+						continue
+					}
 				}
 			case "30th Anniversary Edition":
 				cn, _ := strconv.Atoi(card.Number)

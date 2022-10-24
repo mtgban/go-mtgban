@@ -3468,6 +3468,14 @@ var MatchTests = []MatchTest{
 		},
 	},
 	MatchTest{
+		Id:   "22d7ef95-42b3-5cdf-8882-c070a4982dc3",
+		Desc: "borderlessc_card_implied",
+		In: Card{
+			Name:    "Temple Garden",
+			Edition: "Unfinity Variants",
+		},
+	},
+	MatchTest{
 		Id:   "533e84f0-05f5-50c9-856d-f9db6dfd787c",
 		Desc: "unf_dupe_galaxy",
 		In: Card{

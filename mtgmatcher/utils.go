@@ -269,3 +269,13 @@ func ParsePrice(priceStr string) (float64, error) {
 func Title(str string) string {
 	return cases.Title(language.English).String(str)
 }
+
+// Return whether a slice of strings contains probe
+func sliceStringHas(slice []string, probe string) bool {
+	for i := range slice {
+		if slice[i] == probe {
+			return true
+		}
+	}
+	return false
+}
