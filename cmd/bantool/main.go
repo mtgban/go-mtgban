@@ -441,6 +441,12 @@ func run() int {
 		return 1
 	}
 
+	u, err := url.Parse(*outputPathOpt)
+	if err != nil {
+		log.Println("cannot parse output-path", err)
+		return 1
+	}
+
 	// If a service account file is passed in, create a bucket object and update the output path
 	if *serviceAccOpt != "" {
 		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(*serviceAccOpt))
@@ -449,11 +455,6 @@ func run() int {
 			return 1
 		}
 
-		u, err := url.Parse(*outputPathOpt)
-		if err != nil {
-			log.Println("cannot parse output-path", err)
-			return 1
-		}
 		if u.Scheme != "gs" {
 			log.Println("unsupported scheme in output-path")
 			return 1
@@ -463,6 +464,15 @@ func run() int {
 
 		// Trim to avoid creating an empty directory in the bucket
 		*outputPathOpt = strings.TrimPrefix(u.Path, "/")
+	} else if u.Scheme != "" {
+		log.Println("missing svc-acc file for cloud access")
+		return 1
+	} else {
+		_, err := os.Stat(*outputPathOpt)
+		if os.IsNotExist(err) {
+			log.Println("output-path does not exist")
+			return 1
+		}
 	}
 
 	// Enable Scrapers or Sellers/Vendors
