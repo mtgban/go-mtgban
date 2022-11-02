@@ -424,6 +424,8 @@ var EditionTable = map[string]string{
 	"Starter 2000":             "Starter 2000",
 	"Vanguard":                 "Vanguard Series",
 
+	"Conspiracy - Take the Crown": "Conspiracy: Take the Crown",
+
 	// MB1/PLIST need to be explicitly set to override the edition
 	"The List":         "The List",
 	"Mystery Booster":  "Mystery Booster",
