@@ -3467,6 +3467,7 @@ var sldVariants = map[string]map[string]string{
 		"secret lair":                         "92",
 		"secret lair: ornithological studies": "92",
 		"secret lair: series: mark poole":     "176",
+		"secret lair: extra life 2022":        "1147",
 	},
 	"Brainstorm": {
 		"":                                "174",
@@ -3599,6 +3600,15 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Huntmaster of the Fells // Ravager of the Fells": {
 		"series: chris rahn": "495",
+	},
+	"Fellwar Stone": {
+		"secret lair x blood bowl": "1040",
+	},
+	"Knight Exemplar": {
+		"secret lair: series: victor adame minguez": "1044",
+	},
+	"Lathliss, Dragon Queen": {
+		"secret lair: extra life 2022": "1145",
 	},
 }
 
