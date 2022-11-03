@@ -131,7 +131,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		"Brokkos, Apex of Forever":
 		return nil, errors.New("impossible to track")
 	case "Demonic Tutor":
-		if variant == "Judge Rewards Promo" {
+		if variant == "Daarken Judge Rewards Promo" {
 			variant = "Judge 2008"
 		} else if variant == "Judge Promo" {
 			variant = "Judge 2020"
@@ -483,6 +483,10 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	case "Mystical Archive", "Double Masters: Variants":
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
+		}
+	case "Dominaria United: Variants":
+		if variant == "Stained Glass Frame" {
+			variant = "Showcase"
 		}
 	}
 
