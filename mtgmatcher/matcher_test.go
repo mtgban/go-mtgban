@@ -1770,6 +1770,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Promo",
 		},
 	},
+	MatchTest{
+		Id:   "02e61365-9958-58fb-a1ff-58f182ffb6ea",
+		Desc: "promo_mixed_in_set",
+		In: Card{
+			Name:      "Fabricate",
+			Variation: "Launch",
+			Edition:   "Promo: General",
+		},
+	},
 
 	// Release cards
 	MatchTest{

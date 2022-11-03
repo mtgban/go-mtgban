@@ -83,13 +83,15 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "Promotional Planes":
 			case "Double Masters",
 				"Jumpstart",
-				"Double Masters 2022":
+				"Double Masters 2022",
+				"Warhammer 40,000 Commander":
 				switch inCard.Name {
 				case "Wrath of God",
 					"Chord of Calling",
 					"Scholar of the Lost Trove",
 					"Weathered Wayfarer",
-					"Bring to Light":
+					"Bring to Light",
+					"Fabricate":
 				default:
 					continue
 				}
