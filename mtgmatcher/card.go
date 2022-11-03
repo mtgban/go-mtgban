@@ -275,6 +275,16 @@ func (c *Card) isSpecificUnsupported() bool {
 		"Thunderheads",
 		"Winged Sliver":
 		return c.Contains("Misprint")
+	// SLD JPN non-unique cards
+	case "Thoughtseize",
+		"Plaguecrafter",
+		"Doomsday",
+		"Carrion Feeder",
+		"Solemn Simulacrum",
+		"Skullclamp",
+		"Tezzeret the Seeker",
+		"Phyrexian Metamorph":
+		return c.Contains("Secret Lair") && c.isJPN()
 	}
 	return false
 }
