@@ -16,7 +16,7 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 					return fmt.Errorf("duplicate inventory key, same conditions and price:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
 
-				if strict > 0 && entry.URL == entries[i].URL && entry.Quantity == entries[i].Quantity {
+				if strict > 0 && entry.URL == entries[i].URL && entry.Quantity == entries[i].Quantity && entry.Bundle == entries[i].Bundle {
 					card, _ := mtgmatcher.GetUUID(cardId)
 					return fmt.Errorf("duplicate inventory key, same url, and qty:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 				}
