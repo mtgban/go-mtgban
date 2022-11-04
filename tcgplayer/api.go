@@ -195,7 +195,7 @@ func (tcg *TCGClient) Get(url string) (*TCGResponse, error) {
 	var response TCGResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
 	}
 
 	return &response, nil
@@ -538,7 +538,7 @@ func TCGLatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, er
 	var response latestSalesResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
 	}
 
 	return &response, nil
