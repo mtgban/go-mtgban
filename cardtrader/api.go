@@ -20,6 +20,7 @@ const (
 
 	ctBulkCreateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_create"
 	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
+	ctBulkDeleteURL = "https://api.cardtrader.com/api/full/v1/products/bulk_destroy"
 
 	ctProductsExport = "https://api.cardtrader.com/api/v2/products/export"
 	ctAddProductCart = "https://api.cardtrader.com/api/v2/cart/add"
@@ -294,6 +295,13 @@ func (ct *CTAuthClient) BulkCreate(products []BulkProduct) ([]string, error) {
 // job ids is returned to monitor the execution status.
 func (ct *CTAuthClient) BulkUpdate(products []BulkProduct) ([]string, error) {
 	return ct.bulkOperation(ctBulkUpdateURL, products)
+}
+
+// Delete existing listings using the products slice, separating into multiple
+// requests if there are more than MaxBulkUploadItems elements. A list of
+// job ids is returned to monitor the execution status.
+func (ct *CTAuthClient) BulkDelete(products []BulkProduct) ([]string, error) {
+	return ct.bulkOperation(ctBulkDeleteURL, products)
 }
 
 func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]string, error) {
