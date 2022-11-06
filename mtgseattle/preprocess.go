@@ -148,6 +148,10 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 				variant = tag
 			}
 		}
+	case "Core Set 2021":
+		if strings.Contains(variant, "Alternate Art") {
+			variant = "Borderless"
+		}
 	}
 
 	lutName, found := cardTable[cardName]
