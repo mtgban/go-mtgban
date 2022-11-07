@@ -46,7 +46,7 @@ type StocksInterest struct {
 }
 
 type MTGStocksInterests struct {
-	Date    int64           `json:"date"`
+	Date    string          `json:"date"`
 	Average *StocksInterest `json:"average"`
 	Market  *StocksInterest `json:"market"`
 }
