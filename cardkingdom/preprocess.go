@@ -164,8 +164,35 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		variation = number
 
 		// Duplicate sku
-		if sku == "PTC-ET015SB" && card.Name == "Circle of Protection: Red" {
-			variation = "et17sb"
+		switch sku {
+		case "PTC-ET015SB":
+			if card.Name == "Circle of Protection: Red" {
+				variation = "et17sb"
+			}
+		case "PTC-MJ364":
+			if strings.Contains(card.Variation, "Michael Loconto") {
+				variation = "ml364"
+			}
+		case "PTC-MJ365":
+			if strings.Contains(card.Variation, "Michael Loconto") {
+				variation = "ml365"
+			}
+		case "PTC-MJ366":
+			if strings.Contains(card.Variation, "Michael Loconto") {
+				variation = "ml366"
+			}
+		case "WC99-ML347b":
+			if strings.Contains(card.Variation, "TMP - A") {
+				variation = "ml347a"
+			}
+		case "WC02-CR335":
+			if strings.Contains(card.Variation, "Sim Han How") {
+				variation = "shh335"
+			}
+		default:
+			if strings.HasPrefix(variation, "sr") {
+				variation = strings.Replace(variation, "sr", "shr", 1)
+			}
 		}
 	case "Alpha", "Beta", "Unlimited", "3rd Edition", "4th Edition",
 		"Antiquities", "Fallen Empires", "Alliances", "Homelands",
