@@ -1124,14 +1124,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !inCard.isJPN() && cn > 63 {
 					continue
 				}
-			case "Modern Horizons 2":
-				cn, _ := strconv.Atoi(card.Number)
-				isRetro := inCard.isRetro()
-				if isRetro && (cn <= 380 || cn > 441) {
-					continue
-				} else if !(isRetro || inCard.beyondBaseSet) && !(cn <= 380 || cn > 441) {
-					continue
-				}
 			// Due to the WPN lands
 			case "Innistrad: Crimson Vow":
 				if inCard.isWPNGateway() && !card.HasPromoType(mtgjson.PromoTypeWPN) {
@@ -1140,11 +1132,15 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 			// Duplicates, only frame changes
-			case "30th Anniversary History Promos":
+			case "Modern Horizons 2",
+				"30th Anniversary History Promos",
+				"30th Anniversary Edition",
+				"Dominaria Remastered",
+				"The Brothers' War":
 				isRetro := inCard.isRetro() || inCard.Variation == "V.2"
-				if isRetro && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+				if isRetro && card.FrameVersion != "1997" {
 					continue
-				} else if !isRetro && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+				} else if !(isRetro || inCard.beyondBaseSet) && card.FrameVersion == "1997" {
 					continue
 				}
 			// Pick one of the printings in case they are not specified
@@ -1186,29 +1182,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
 						continue
 					}
-				}
-			case "30th Anniversary Edition":
-				cn, _ := strconv.Atoi(card.Number)
-				isRetro := inCard.isRetro()
-				if isRetro && !(cn < 298) {
-					continue
-				} else if !isRetro && cn < 298 {
-					continue
-				}
-			case "Dominaria Remastered":
-				isRetro := inCard.isRetro()
-				if isRetro && card.FrameVersion != "1997" {
-					continue
-				} else if !isRetro && card.FrameVersion == "1997" {
-					continue
-				}
-			case "The Brothers' War":
-				cn, _ := strconv.Atoi(card.Number)
-				isRetro := inCard.isRetro()
-				if isRetro && cn < 378 {
-					continue
-				} else if !isRetro && cn >= 378 {
-					continue
 				}
 			case "The Brothers' War Retro Artifacts":
 				cn, _ := strconv.Atoi(card.Number)
