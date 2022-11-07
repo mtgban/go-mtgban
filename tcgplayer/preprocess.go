@@ -168,7 +168,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = "PMEI"
 		default:
 			if !strings.Contains(variant, "SDCC") {
-				edition = "Magazine Inserts"
+				edition = "PMEI"
 			} else {
 				edition = "SDCC"
 			}
