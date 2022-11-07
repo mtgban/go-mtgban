@@ -1184,12 +1184,21 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 			case "The Brothers' War Retro Artifacts":
-				cn, _ := strconv.Atoi(card.Number)
-				isSchematic := inCard.Contains("Schematic")
-				if isSchematic && cn < 64 {
+				isSerial := inCard.Contains("Serial")
+				if isSerial && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 					continue
-				} else if !isSchematic && cn >= 64 {
+				} else if !isSerial && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 					continue
+				}
+
+				if !isSerial {
+					cn, _ := strconv.Atoi(card.Number)
+					isSchematic := inCard.Contains("Schematic")
+					if isSchematic && cn < 64 {
+						continue
+					} else if !isSchematic && cn >= 64 {
+						continue
+					}
 				}
 			case "Transformers":
 				isShattered := inCard.Contains("Shattered")
