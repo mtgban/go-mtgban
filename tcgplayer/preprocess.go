@@ -253,7 +253,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		ed, found := map[string]string{
 			"Sakura-Tribe Elder": "PJSE",
 			"Shard Phoenix":      "PJSE",
-			"Whirling Dervish":   "PJSE",
 			"Mad Auntie":         "PJJT",
 		}[cardName]
 		if found {
