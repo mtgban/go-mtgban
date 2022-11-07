@@ -164,6 +164,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = "H17"
 		case "Shepherd of the Lost":
 			edition = "PURL"
+		case "Counterspell":
+			edition = "PMEI"
 		default:
 			if !strings.Contains(variant, "SDCC") {
 				edition = "Magazine Inserts"
