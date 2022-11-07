@@ -738,17 +738,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
-			// JPN
-			if inCard.isJPN() && set.Code != "PMEI" && !strings.HasPrefix(set.Name, "Magic Premiere Shop") && set.Code != "STA" {
-				if !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && card.Language != mtgjson.LanguageJapanese {
-					continue
-				}
-			} else {
-				if strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) && card.Language == mtgjson.LanguageJapanese {
-					continue
-				}
-			}
-
 			// The last-ditch effort from above - when this is set, only check
 			// the non-promo sets as some promos can be mixed next to the
 			// normal cards - in this way, promo sets can process as normal and
@@ -1116,6 +1105,15 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if !Contains(inCard.Variation, "Intro") && card.HasPromoType(mtgjson.PromoTypeIntroPack) {
 					continue
 				} else if Contains(inCard.Variation, "Intro") && !card.HasPromoType(mtgjson.PromoTypeIntroPack) {
+					continue
+				}
+			// Japanese Planeswalkers
+			case "Duel Decks: Jace vs. Chandra",
+				"War of the Spark",
+				"War of the Spark Promos":
+				if inCard.isJPN() && card.Language != mtgjson.LanguageJapanese {
+					continue
+				} else if !inCard.isJPN() && card.Language == mtgjson.LanguageJapanese {
 					continue
 				}
 			// Separate JPN and non-JPN cards (foil-etched are parsed above)
