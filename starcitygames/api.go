@@ -33,7 +33,7 @@ type SCGSearch struct {
 }
 
 const (
-	scgInventoryURL = "https://starcitygames.hawksearch.com/sites/starcitygames/?instockonly=Yes&mpp=1&product_type=Singles"
+	scgInventoryURL = "https://lusearchapi-na.hawksearch.com/sites/starcitygames/?instockonly=Yes&mpp=1&product_type=Singles"
 	scgBuylistURL   = "https://old.starcitygames.com/buylist/search?search-type=category&id="
 
 	scgDefaultPages = 200
