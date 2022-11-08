@@ -1201,7 +1201,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 			case "Transformers":
-				isShattered := inCard.Contains("Shattered")
+				isShattered := inCard.Contains("Shattered") || inCard.Contains("Borderless")
 				if isShattered && !card.HasFrameEffect(mtgjson.FrameEffectShattered) {
 					continue
 				} else if !isShattered && card.HasFrameEffect(mtgjson.FrameEffectShattered) {

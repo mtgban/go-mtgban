@@ -123,6 +123,19 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 		}
 	}
 
+	switch edition {
+	case "Promo: General":
+		switch cardName {
+		case "Water Gun Balloon Game":
+			edition = "UNF"
+		case "Swiftfoot Boots":
+			if variant == "Launch" {
+				edition = "PW22"
+				variant = ""
+			}
+		}
+	}
+
 	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variant,

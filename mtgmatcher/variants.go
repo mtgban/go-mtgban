@@ -3746,16 +3746,20 @@ var ulgVariants = map[string]map[string]string{
 
 var uplistVariants = map[string]map[string]string{
 	"Everythingamajig": {
-		"a":   "55",
-		"f":   "56",
-		"v.1": "55",
-		"v.2": "56",
+		"a":    "55",
+		"f":    "56",
+		"v.1":  "55",
+		"v.2":  "56",
+		"move": "55",
+		"scry": "56",
 	},
 	"Ineffable Blessing": {
-		"a":   "38",
-		"c":   "37",
-		"v.1": "38",
-		"v.2": "37",
+		"a":           "38",
+		"c":           "37",
+		"v.1":         "38",
+		"v.2":         "37",
+		"flavor text": "38",
+		"border":      "37",
 	},
 }
 
