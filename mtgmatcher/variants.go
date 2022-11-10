@@ -2958,9 +2958,9 @@ var po2Variants = map[string]map[string]string{
 		"v.3": "156",
 	},
 	"Mountain": {
-		"a":                    "160",
+		"c":                    "160",
 		"b":                    "161",
-		"c":                    "162",
+		"a":                    "162",
 		"red mist":             "160",
 		"fog - foreground":     "161",
 		"archway - right side": "162",
