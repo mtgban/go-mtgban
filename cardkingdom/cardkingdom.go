@@ -41,6 +41,8 @@ type retailDetail struct {
 	price     float64
 }
 
+var CKErrUnsupported = errors.New("unsupported")
+
 /* For newly added cards the embedded nmPrice may not be initialized, so we
  * use the fallbackPrice that is known to be always valid. */
 func parseConditions(values conditionValues, fallbackPrice float64) (out []retailDetail) {
@@ -96,7 +98,9 @@ func (ck *Cardkingdom) scrape() error {
 	for _, card := range pricelist {
 		theCard, err := Preprocess(card)
 		if err != nil {
-			ck.printf("%v", err)
+			if err != CKErrUnsupported {
+				ck.printf("%v", err)
+			}
 			continue
 		}
 

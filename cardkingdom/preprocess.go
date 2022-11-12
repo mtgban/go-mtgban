@@ -212,13 +212,22 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	}
 
 	// Drop one side of dfc tokens
-	if strings.Contains(card.Name, " // ") &&
+	if (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
 		(strings.Contains(card.Name, "Token") || (len(setCode) > 3 && setCode[0] == 'T')) {
-		card.Name = strings.Split(card.Name, " // ")[0] + " Token"
+		if strings.Contains(card.Name, " // ") {
+			card.Name = strings.Split(card.Name, " // ")[0] + " Token"
+		} else {
+			card.Name = strings.Split(card.Name, " - ")[0] + " Token"
+		}
 	}
 	// Use number for tokens
 	if strings.Contains(card.Name, "Token") {
 		variation = number
+
+		// Quiet exit for duplicated tokens from this set
+		if setCode == "TC16" && (strings.HasSuffix(number, "a") || strings.HasSuffix(number, "b")) {
+			return nil, CKErrUnsupported
+		}
 	}
 
 	return &mtgmatcher.Card{
