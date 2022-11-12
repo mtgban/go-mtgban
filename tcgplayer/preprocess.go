@@ -233,7 +233,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
-			} else if mtgmatcher.IsToken(cardName) && strings.Contains(variant, "JPN Exclusive") {
+			} else if product.isToken() && strings.Contains(variant, "JPN Exclusive") {
 				edition = "PDWA"
 			} else if strings.Contains(variant, "JP Amazon Exclusive") ||
 				strings.Contains(variant, "JP WonderGOO Exclusive") ||
@@ -461,7 +461,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	if mtgmatcher.IsBasicLand(cardName) && variant == "" {
 		variant = product.getNum()
 	}
-	if mtgmatcher.IsToken(cardName) && edition != "Unfinity" {
+	if product.isToken() && edition != "Unfinity" {
 		// Strip pw/tou numbers that could be misinterpreted as numbers
 		if strings.Contains(variant, "/") {
 			variant = ""
@@ -510,4 +510,13 @@ func (tcgp *TCGProduct) getNum() string {
 		}
 	}
 	return ""
+}
+
+func (tcgp *TCGProduct) isToken() bool {
+	for _, extData := range tcgp.ExtendedData {
+		if extData.Name == "SubType" {
+			return strings.Contains(extData.Value, "Token")
+		}
+	}
+	return false
 }
