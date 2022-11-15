@@ -45,10 +45,12 @@ var EditionTable = map[string]string{
 	"Innistrad: Double Feature - Midnight Hunt": "Innistrad: Double Feature",
 
 	// Adventures in the Forgotten Realms Ampersand
-	"AFR Ampersand Promos": "Adventures in the Forgotten Realms Promos",
-	"Ampersand Foil":       "Adventures in the Forgotten Realms Promos",
-	"Ampersand PROMOS":     "Adventures in the Forgotten Realms Promos",
-	"Ampersand":            "Adventures in the Forgotten Realms Promos",
+	"AFR Ampersand Promos":  "Adventures in the Forgotten Realms Promos",
+	"Ampersand Foil":        "Adventures in the Forgotten Realms Promos",
+	"Ampersand PROMOS":      "Adventures in the Forgotten Realms Promos",
+	"Ampersand":             "Adventures in the Forgotten Realms Promos",
+	"Promos: AFR Ampersand": "Adventures in the Forgotten Realms Promos",
+
 	"D&D: Adventures in the Forgotten Realms":           "Adventures in the Forgotten Realms",
 	"D&D: Adventures in the Forgotten Realms: Variants": "Adventures in the Forgotten Realms: Variants",
 
@@ -99,17 +101,20 @@ var EditionTable = map[string]string{
 	"Magic Game Night: Free-For-All": "Game Night: Free-for-All",
 
 	// Old school lands
-	"Apac Lands":       "Asia Pacific Land Program",
-	"Apac Land Promos": "Asia Pacific Land Program",
-	"APAC Land":        "Asia Pacific Land Program",
-	"APAC Lands":       "Asia Pacific Land Program",
-	"GURU":             "Guru",
-	"Guru Land":        "Guru",
-	"Guru Lands":       "Guru",
-	"Guru":             "Guru",
-	"Euro Land Promos": "European Land Program",
-	"Euro Lands":       "European Land Program",
-	"European Lands":   "European Land Program",
+	"Apac Lands":         "Asia Pacific Land Program",
+	"Apac Land Promos":   "Asia Pacific Land Program",
+	"APAC Land":          "Asia Pacific Land Program",
+	"APAC Lands":         "Asia Pacific Land Program",
+	"Promos: APAC Lands": "Asia Pacific Land Program",
+	"GURU":               "Guru",
+	"Guru Land":          "Guru",
+	"Guru Lands":         "Guru",
+	"Guru":               "Guru",
+	"Promos: Guru Lands": "Guru",
+	"Euro Land Promos":   "European Land Program",
+	"Euro Lands":         "European Land Program",
+	"European Lands":     "European Land Program",
+	"Promos: Euro Lands": "European Land Program",
 
 	// Secret Lair extra cards
 	"SLD Stained Glass Promo": "Secret Lair Drop",
@@ -253,11 +258,12 @@ var EditionTable = map[string]string{
 	"Planechase: 2012 Edition - Planes": "Planechase 2012 Planes",
 
 	// Deckmasters
-	"Deckmaster Promo":               "Deckmasters",
-	"Deckmaster":                     "Deckmasters",
-	"Deckmasters":                    "Deckmasters",
-	"Deckmasters Garfield vs Finkel": "Deckmasters",
-	"Deckmasters Garfield Vs Finkel": "Deckmasters",
+	"Deckmaster Promo":                       "Deckmasters",
+	"Deckmaster":                             "Deckmasters",
+	"Deckmasters":                            "Deckmasters",
+	"Deckmasters Garfield vs Finkel":         "Deckmasters",
+	"Deckmasters Garfield Vs Finkel":         "Deckmasters",
+	"Promos: Deckmasters Garfield vs Finkel": "Deckmasters",
 
 	// Junior Super/Europe/APAC Series
 	"European Junior Series":          "Junior Series Europe",
