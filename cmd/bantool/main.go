@@ -53,7 +53,7 @@ type scraperOption struct {
 }
 
 var options = map[string]*scraperOption{
-	"magiccorner": &scraperOption{
+	"magiccorner": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper, err := magiccorner.NewScraper()
 			if err != nil {
@@ -63,7 +63,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"strikezone": &scraperOption{
+	"strikezone": {
 		OnlySeller: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := strikezone.NewScraper()
@@ -71,7 +71,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardkingdom": &scraperOption{
+	"cardkingdom": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := cardkingdom.NewScraper()
 			scraper.LogCallback = log.Printf
@@ -79,14 +79,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"abugames": &scraperOption{
+	"abugames": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := abugames.NewScraper()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"ninetyfive": &scraperOption{
+	"ninetyfive": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper, err := ninetyfive.NewScraper(true)
 			if err != nil {
@@ -96,14 +96,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mythicmtg": &scraperOption{
+	"mythicmtg": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mythicmtg.NewScraper()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"tcg_index": &scraperOption{
+	"tcg_index": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
 			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
@@ -118,7 +118,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_market": &scraperOption{
+	"tcg_market": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
 			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
@@ -133,7 +133,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc": &scraperOption{
+	"coolstuffinc": {
 		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper()
@@ -142,7 +142,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"starcitygames": &scraperOption{
+	"starcitygames": {
 		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
 			scgUsername := os.Getenv("SCG_USERNAME")
@@ -159,7 +159,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"trollandtoad": &scraperOption{
+	"trollandtoad": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := trollandtoad.NewScraper()
 			scraper.LogCallback = log.Printf
@@ -167,7 +167,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"jupitergames": &scraperOption{
+	"jupitergames": {
 		OnlySeller: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := jupitergames.NewScraper()
@@ -175,35 +175,35 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mtgstocks": &scraperOption{
+	"mtgstocks": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgstocks.NewScraper()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"mtgstocks_index": &scraperOption{
+	"mtgstocks_index": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgstocks.NewScraperIndex()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"tcgplayer_syp": &scraperOption{
+	"tcgplayer_syp": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := tcgplayer.NewScraperSYP()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"wizardscupboard": &scraperOption{
+	"wizardscupboard": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := wizardscupboard.NewScraper()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"cardtrader": &scraperOption{
+	"cardtrader": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 			if ctTokenBearer == "" {
@@ -219,14 +219,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"blueprint": &scraperOption{
+	"blueprint": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := blueprint.NewScraper()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"mkm_index": &scraperOption{
+	"mkm_index": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -244,7 +244,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardshark": &scraperOption{
+	"cardshark": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := cardshark.NewScraper()
 			scraper.LogCallback = log.Printf
@@ -252,7 +252,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardsphere": &scraperOption{
+	"cardsphere": {
 		Init: func() (mtgban.Scraper, error) {
 			csphereEmail := os.Getenv("CARDSPHERE_EMAIL")
 			cspherePassword := os.Getenv("CARDSPHERE_PASSWORD")
@@ -268,7 +268,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"amazon": &scraperOption{
+	"amazon": {
 		Init: func() (mtgban.Scraper, error) {
 			amzToken := os.Getenv("AMAZON_TOKEN")
 			if amzToken == "" {
@@ -280,7 +280,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_official": &scraperOption{
+	"coolstuffinc_official": {
 		Init: func() (mtgban.Scraper, error) {
 			csiKey := os.Getenv("CSI_KEY")
 			if csiKey == "" {
@@ -293,14 +293,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mtgseattle": &scraperOption{
+	"mtgseattle": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgseattle.NewScraper()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"hareruya": &scraperOption{
+	"hareruya": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper, err := hareruya.NewScraper()
 			if err != nil {
@@ -310,14 +310,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"toamagic": &scraperOption{
+	"toamagic": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := toamagic.NewScraper()
 			scraper.LogCallback = log.Printf
 			return scraper, nil
 		},
 	},
-	"tcg_sealed": &scraperOption{
+	"tcg_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
 			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
@@ -331,7 +331,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardkingdom_sealed": &scraperOption{
+	"cardkingdom_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := cardkingdom.NewScraperSealed()
 			scraper.LogCallback = log.Printf
@@ -339,7 +339,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mkm_sealed": &scraperOption{
+	"mkm_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
