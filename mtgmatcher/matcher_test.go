@@ -2665,17 +2665,9 @@ var MatchTests = []MatchTest{
 		Id:   "a6ecaa21-642e-54f9-ba82-5333408f55e3",
 		Desc: "mb1_commander_deck_foil",
 		In: Card{
-			Name:      "Swiftfoot Boots",
-			Variation: "Foil",
-			Edition:   "Mystery Booster/The List",
-		},
-	},
-	MatchTest{
-		Id:   "aab75aa6-01eb-55a3-bb03-3db1d5fc2359",
-		Desc: "mb1_commander_deck_indistinguishable",
-		In: Card{
-			Name:    "Boompile",
+			Name:    "Swiftfoot Boots",
 			Edition: "Mystery Booster/The List",
+			Foil:    true,
 		},
 	},
 	MatchTest{
@@ -2733,6 +2725,22 @@ var MatchTests = []MatchTest{
 		In: Card{
 			Name:    "Yusri, Fortune's Flame",
 			Edition: "Secret Lair Commander: Heads I Win, Tails You Lose",
+		},
+	},
+	MatchTest{
+		Id:   "da9dbad5-63b2-54ec-993c-4f8b527172d2",
+		Desc: "phed_skipped_not",
+		In: Card{
+			Name:    "Counterspell",
+			Edition: "Secret Lair Commander: Heads I Win, Tails You Lose",
+		},
+	},
+	MatchTest{
+		Id:   "6026411a-f851-52fd-9896-d4f1c25b26e2",
+		Desc: "phed_skipped_yes",
+		In: Card{
+			Name:    "Counterspell",
+			Edition: "Mystery Booster/The List",
 		},
 	},
 
