@@ -45,7 +45,7 @@ import (
 var date = time.Now().Format("2006-01-02")
 var GCSBucket *storage.BucketHandle
 
-var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
+var GlobalLogCallback mtgban.LogCallbackFunc
 
 type scraperOption struct {
 	Enabled    bool
@@ -428,7 +428,12 @@ func run() int {
 	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable")
 	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable")
 
+	devOpt := flag.Bool("dev", false, "Enable dev operations (debugging)")
 	flag.Parse()
+
+	if *devOpt {
+		GlobalLogCallback = log.Printf
+	}
 
 	// Load static data
 	err := mtgmatcher.LoadDatastoreFile(*mtgjsonOpt)
