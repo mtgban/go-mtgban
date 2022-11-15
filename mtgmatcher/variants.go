@@ -1540,6 +1540,24 @@ var dkmVariants = map[string]map[string]string{
 	},
 }
 
+var douVariants = map[string]map[string]string{
+	"Forest": {
+		"showcase": "281",
+	},
+	"Island": {
+		"showcase": "278",
+	},
+	"Mountain": {
+		"showcase": "280",
+	},
+	"Plains": {
+		"showcase": "277",
+	},
+	"Swamp": {
+		"showcase": "279",
+	},
+}
+
 var xm2Variants = map[string]map[string]string{
 	"Forest": {
 		"unglued": "381",
@@ -4270,6 +4288,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Commander Anthology Volume II":       cm2Variants,
 	"Conspiracy: Take the Crown":          cn2Variants,
 	"Deckmasters":                         dkmVariants,
+	"Dominaria United":                    douVariants,
 	"Double Masters":                      xm2Variants,
 	"European Land Program":               pelpVariants,
 	"Fallen Empires":                      femVariants,
