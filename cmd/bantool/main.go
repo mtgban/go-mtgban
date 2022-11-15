@@ -45,6 +45,8 @@ import (
 var date = time.Now().Format("2006-01-02")
 var GCSBucket *storage.BucketHandle
 
+var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
+
 type scraperOption struct {
 	Enabled    bool
 	OnlySeller bool
@@ -59,7 +61,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -67,14 +69,14 @@ var options = map[string]*scraperOption{
 		OnlySeller: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := strikezone.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"cardkingdom": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := cardkingdom.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CK_PARTNER")
 			return scraper, nil
 		},
@@ -82,7 +84,7 @@ var options = map[string]*scraperOption{
 	"abugames": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := abugames.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -92,14 +94,14 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"mythicmtg": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mythicmtg.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -112,7 +114,7 @@ var options = map[string]*scraperOption{
 			}
 
 			scraper := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
 			scraper.MaxConcurrency = 6
 			return scraper, nil
@@ -127,7 +129,7 @@ var options = map[string]*scraperOption{
 			}
 
 			scraper := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
 			scraper.MaxConcurrency = 6
 			return scraper, nil
@@ -137,7 +139,7 @@ var options = map[string]*scraperOption{
 		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CSI_PARTNER")
 			return scraper, nil
 		},
@@ -155,14 +157,14 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"trollandtoad": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := trollandtoad.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.MaxConcurrency = 6
 			return scraper, nil
 		},
@@ -171,35 +173,35 @@ var options = map[string]*scraperOption{
 		OnlySeller: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := jupitergames.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"mtgstocks": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgstocks.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"mtgstocks_index": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgstocks.NewScraperIndex()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"tcgplayer_syp": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := tcgplayer.NewScraperSYP()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"wizardscupboard": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := wizardscupboard.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -214,7 +216,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.ShareCode = os.Getenv("CT_SHARECODE")
 			return scraper, nil
 		},
@@ -222,7 +224,7 @@ var options = map[string]*scraperOption{
 	"blueprint": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := blueprint.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -239,7 +241,7 @@ var options = map[string]*scraperOption{
 				return nil, err
 			}
 			scraper.Affiliate = "mtgban"
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
 			return scraper, nil
 		},
@@ -247,7 +249,7 @@ var options = map[string]*scraperOption{
 	"cardshark": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := cardshark.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Referral = "kodamtg"
 			return scraper, nil
 		},
@@ -264,7 +266,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -276,7 +278,7 @@ var options = map[string]*scraperOption{
 			}
 
 			scraper := amazon.NewScraper(amzToken)
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -288,7 +290,7 @@ var options = map[string]*scraperOption{
 			}
 
 			scraper := coolstuffinc.NewScraperOfficial(csiKey)
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CSI_PARTNER")
 			return scraper, nil
 		},
@@ -296,7 +298,7 @@ var options = map[string]*scraperOption{
 	"mtgseattle": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgseattle.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -306,14 +308,14 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
 	"toamagic": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := toamagic.NewScraper()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -326,7 +328,7 @@ var options = map[string]*scraperOption{
 			}
 
 			scraper := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
 			return scraper, nil
 		},
@@ -334,7 +336,7 @@ var options = map[string]*scraperOption{
 	"cardkingdom_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := cardkingdom.NewScraperSealed()
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CK_PARTNER")
 			return scraper, nil
 		},
@@ -351,7 +353,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = log.Printf
+			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
 			return scraper, nil
 		},
