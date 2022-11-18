@@ -43,16 +43,6 @@ func NewCTLoggedClient(user, pass string) (*CTLoggedClient, error) {
 	}
 	defer resp.Body.Close()
 
-	d, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	msg, _ := d.Find(`div[data-controller="flash"]`).Attr("data-flash-type")
-	if msg != "success" {
-		return nil, fmt.Errorf("invalid credentials")
-	}
-
 	return &ct, nil
 }
 
