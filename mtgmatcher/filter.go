@@ -1204,7 +1204,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 				if !isSerial {
 					cn, _ := strconv.Atoi(card.Number)
-					isSchematic := inCard.Contains("Schematic")
+					isSchematic := inCard.Contains("Schematic") || inCard.Contains("Blueprint")
 					if isSchematic && cn < 64 {
 						continue
 					} else if !isSchematic && cn >= 64 {
