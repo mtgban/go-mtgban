@@ -465,6 +465,7 @@ var EditionTable = map[string]string{
 
 	// Alt Fourth
 	"4th Edition - Alternate":    "Alternate Fourth Edition",
+	"4th Edition (Alternate)":    "Alternate Fourth Edition",
 	"Alternate 4th Edition":      "Alternate Fourth Edition",
 	"Alternate 4th":              "Alternate Fourth Edition",
 	"Fourth (Alternate Edition)": "Alternate Fourth Edition",
@@ -491,4 +492,7 @@ var EditionTable = map[string]string{
 	"Italian Renaissance": "Rinascimento",
 	"Renaissance Italian": "Rinascimento",
 	"Italian Legends":     "Legends Italian",
+
+	"Japanese Chronicles": "Chronicles Japanese",
+	"Italian The Dark":    "The Dark Italian",
 }

@@ -586,6 +586,7 @@ func (c *Card) isWorldChamp() bool {
 	return Contains(c.Edition, "Pro Tour Collect") ||
 		Contains(c.Edition, "Pro Tour 1996") ||
 		Contains(c.Edition, "World Championship") ||
+		Contains(c.Edition, "Championship Deck") ||
 		Contains(c.Edition, "WCD")
 }
 
