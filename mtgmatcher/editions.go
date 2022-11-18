@@ -33,6 +33,8 @@ var EditionTable = map[string]string{
 	"Universes Beyond: Warhammer 40,000":        "Warhammer 40,000 Commander",
 	"Universes Beyond: Warhammer 40k Commander": "Warhammer 40,000 Commander",
 
+	// BRR
+	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
 	"The Brothers' War: Retro Frame Artifacts": "The Brothers' War Retro Artifacts",
 
 	// PL22
