@@ -262,9 +262,13 @@ func grading(cardId string, price float64) (grade map[string]float64) {
 	if err != nil {
 		return
 	}
+	set, err := mtgmatcher.GetSet(co.SetCode)
+	if err != nil {
+		return
+	}
 
 	switch {
-	case co.Foil:
+	case co.Foil && !set.IsFoilOnly:
 		grade = map[string]float64{
 			"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
 		}
