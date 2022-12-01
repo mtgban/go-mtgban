@@ -286,6 +286,9 @@ func (c *Card) isSpecificUnsupported() bool {
 		"Tezzeret the Seeker",
 		"Phyrexian Metamorph":
 		return c.Contains("Secret Lair") && c.isJPN()
+	// Erraneous release information
+	case "Zombify":
+		return c.Contains("Game Night")
 	}
 	return false
 }
