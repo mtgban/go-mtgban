@@ -1149,6 +1149,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				"Dominaria Remastered",
 				"The Brothers' War":
 				isRetro := inCard.isRetro() || inCard.Variation == "V.2"
+				// This edition has retro-only promotional cards, but most
+				// providers only tag the promo type, instead of the frame
+				if set.Name == "The Brothers' War" {
+					isRetro = inCard.isBundle() || inCard.isBaB()
+				}
 				if isRetro && card.FrameVersion != "1997" {
 					continue
 				} else if !(isRetro || inCard.beyondBaseSet) && card.FrameVersion == "1997" {
