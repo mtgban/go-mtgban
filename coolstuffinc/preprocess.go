@@ -133,7 +133,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	case "Demonic Tutor":
 		if variant == "Daarken Judge Rewards Promo" {
 			variant = "Judge 2008"
-		} else if variant == "Judge Promo" {
+		} else if variant == "Anna Steinbauer Judge Promo" {
 			variant = "Judge 2020"
 		}
 	case "Wasteland":
@@ -297,7 +297,8 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.Contains(variant, "Showcase Frame") {
 			variant = strings.Replace(variant, "Showcase Frame", "", 1)
 		}
-	case "D&D: Adventures in the Forgotten Realms: Variants":
+	case "D&D: Adventures in the Forgotten Realms: Variants",
+		"Unfinity: Variants":
 		if cardName == "Zariel, Archduke of Avernus" && variant == "Showcase Frame" {
 			variant = "Borderless"
 		}
