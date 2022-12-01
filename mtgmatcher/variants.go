@@ -3605,7 +3605,8 @@ var sldVariants = map[string]map[string]string{
 		"secret lair reskin":          "697",
 	},
 	"Elspeth, Knight-Errant": {
-		"series: volkan baga": "1001",
+		"series: volkan baga":                "1001",
+		"sketch variant series: volkan baga": "701",
 	},
 	"Ghost Quarter": {
 		"secret lair: series: sidharth chaturvedi": "468",
@@ -3614,19 +3615,25 @@ var sldVariants = map[string]map[string]string{
 		"secret lair": "249",
 	},
 	"Olivia, Mobilized for War": {
-		"series: livia prima": "699",
+		"series: livia prima":                "492",
+		"sketch variant series: livia prima": "699",
 	},
 	"Huntmaster of the Fells // Ravager of the Fells": {
 		"series: chris rahn": "495",
 	},
 	"Fellwar Stone": {
-		"secret lair x blood bowl": "1040",
+		"secret lair x blood bowl":          "1040",
+		"secret lair dan frazier talismans": "708",
 	},
 	"Knight Exemplar": {
 		"secret lair: series: victor adame minguez": "1044",
 	},
 	"Lathliss, Dragon Queen": {
 		"secret lair: extra life 2022": "1145",
+	},
+	"Maro": {
+		"secret lair: extra life 2022":                 "718",
+		"sketch variant: secret lair: extra life 2022": "719",
 	},
 }
 
