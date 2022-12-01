@@ -448,7 +448,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	}
 
 	// Upstream does not manage dfc tokens (yet?)
-	if strings.Contains(product.CleanName, "Token") && strings.Contains(product.CleanName, "Double") {
+	if product.isToken() && strings.Contains(product.CleanName, "Double") {
 		return nil, errors.New("duplicate")
 	}
 
@@ -512,6 +512,10 @@ func (tcgp *TCGProduct) isToken() bool {
 		if extData.Name == "SubType" {
 			return strings.Contains(extData.Value, "Token")
 		}
+	}
+	// There are some tokens not marked as such
+	if strings.Contains(tcgp.CleanName, "Token") {
+		return true
 	}
 	return false
 }
