@@ -435,6 +435,8 @@ var EditionTable = map[string]string{
 
 	"Conspiracy - Take the Crown": "Conspiracy: Take the Crown",
 
+	"Magic 30th Anniversary Edition": "30th Anniversary Edition",
+
 	// MB1/PLIST need to be explicitly set to override the edition
 	"The List":         "The List",
 	"Mystery Booster":  "Mystery Booster",
