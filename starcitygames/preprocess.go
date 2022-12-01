@@ -133,6 +133,15 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 				edition = "PW22"
 				variant = ""
 			}
+		case "Dismember":
+			if variant == "Commander Party Phyrexian" {
+				edition = "PW22"
+			}
+		}
+	case "Promo: General - Foil Etched":
+		switch cardName {
+		case "Arcane Signet":
+			edition = "P30A"
 		}
 	}
 
