@@ -208,7 +208,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if !inCard.Foil {
 					if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
 						if inCard.Edition != "Heads I Win, Tails You Lose" {
-							continue
+							// Except these two cards, when they are tagged as C21, it means they are from this set
+							if inCard.Name != "Sol Ring" && inCard.Name != "Reliquary Tower" && !inCard.Contains("Commander 2018") {
+								continue
+							}
 						}
 					}
 				}

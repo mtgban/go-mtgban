@@ -2743,6 +2743,24 @@ var MatchTests = []MatchTest{
 			Edition: "Mystery Booster/The List",
 		},
 	},
+	MatchTest{
+		Id:   "c901ac44-1dd7-5226-9839-911e03ce08f6",
+		Desc: "mb1_sol_ring",
+		In: Card{
+			Name:      "Sol Ring",
+			Variation: "Commander 2018",
+			Edition:   "Mystery Booster / The List",
+		},
+	},
+	MatchTest{
+		Id:   "0c7115ea-01c5-5d49-bd1b-853ab0074aac",
+		Desc: "phed_sol_ring",
+		In: Card{
+			Name:      "Sol Ring",
+			Variation: "Commander 2021",
+			Edition:   "Mystery Booster / The List",
+		},
+	},
 
 	// Triple card because of double misprint
 	MatchTest{
