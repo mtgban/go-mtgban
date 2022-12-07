@@ -2864,6 +2864,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Mind Stone": {
 		"non-foil - commander 2018": "1609",
 	},
+	"Mishra's Factory": {
+		"modern horizons 2": "960",
+	},
 	"Mortify": {
 		"c18":                     "1457",
 		"commander 2018":          "1457",
