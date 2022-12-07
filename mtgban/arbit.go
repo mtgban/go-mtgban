@@ -2,6 +2,7 @@ package mtgban
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
 )
@@ -544,12 +545,13 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 
 		isRare := co.Card.Rarity == "rare"
 		isMythic := co.Card.Rarity == "mythic"
-		isLand := mtgmatcher.IsBasicLand(co.Name) && co.Card.IsFullArt
-		if !isRare && !isMythic && !isLand {
+		isLand := mtgmatcher.IsBasicLand(co.Name)
+		isPromo := co.Card.IsPromo || strings.HasSuffix(co.Edition, "Promos")
+		if !isRare && !isMythic && !isLand && !isPromo {
 			continue
 		}
 
-		if co.BorderColor == "gold" || co.BorderColor == "silver" {
+		if co.BorderColor == "gold" || co.IsFunny {
 			continue
 		}
 
@@ -558,12 +560,13 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 				continue
 			}
 
-			pennyMythic := !co.Foil && isMythic && entry.Price <= 0.25
-			pennyRare := !co.Foil && isRare && entry.Price <= 0.07
-			pennyLand := !co.Foil && isLand && entry.Price <= 0.05
-			pennyFoil := co.Foil && entry.Price <= 0.05
+			pennyMythic := isMythic && entry.Price <= 0.25
+			pennyRare := isRare && (!co.Foil && entry.Price <= 0.05 || co.Foil && entry.Price <= 0.15)
+			pennyLand := isLand && (!co.Foil && co.Card.IsFullArt || co.Foil) && entry.Price <= 0.05
+			pennyFoil := co.Foil && entry.Price <= 0.01
+			pennyPromo := isPromo && entry.Price <= 0.03
 
-			if pennyMythic || pennyRare || pennyLand || pennyFoil {
+			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
 				result = append(result, PennystockEntry{
 					CardId:         cardId,
 					InventoryEntry: entry,
