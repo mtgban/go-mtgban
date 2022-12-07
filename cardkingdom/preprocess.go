@@ -14,16 +14,22 @@ import (
 // be mistaken for edition codes (thus misdirecting the matcher) or that contain
 // incorrect numbers. Sometimes both.
 var skuFixupTable = map[string]string{
+	// Mishra's Factory
 	"ATQ-080A": "ATQ-080C",
 	"ATQ-080B": "ATQ-080A",
 	"ATQ-080C": "ATQ-080B",
 	"ATQ-080D": "ATQ-080D",
 
+	// Extremely Slow Zombie
+	"UST-054C": "UST-54A",
+	"UST-054A": "UST-54B",
+	"UST-054D": "UST-54C",
+	"UST-054B": "UST-54D",
+
+	// Some of the lands from the first Arena set
 	"PAL96-001": "PARL-001",
 	"PAL96-003": "PARL-003",
 	"PAL96-004": "PARL-004",
-
-	"MPS-001A": "PRES-001A",
 
 	// Sets containing launch promos
 	"PJMP-496B": "JMP-496",
@@ -34,9 +40,16 @@ var skuFixupTable = map[string]string{
 	"P40K-181":  "40K-181",
 	"PUNF-538":  "UNF-538",
 
-	"FPLGS-001":  "PLG20-001",
+	// Jaya Ballard, Task Mage
+	"MPS-001A": "PRES-001A",
+
+	// Mind Stone
 	"FPLG21-001": "PW21-005",
 
+	// Yellow Hidetsugu
+	"PNEO-432": "NEO-432",
+
+	// Random WCD cards
 	"WC97-JS097":    "WC97-JS242",
 	"WC97-PM037":    "WC97-PM037B",
 	"WC98-343":      "WC98-BR343",
@@ -55,14 +68,10 @@ var skuFixupTable = map[string]string{
 	"WC02-RL337A":   "WC02-RL337B",
 	"WC03-WE062":    "WC03-WE062SB",
 
-	// Ertai, the Corrupted Alt Art
+	// Planeshift Alt Art
+	"PPLS-074": "PLS-074★",
 	"PPLS-107": "PLS-107★",
-
-	// Yellow Hidetsugu
-	"PNEO-432": "NEO-432",
-
-	"SLD-339":  "SLD-359",
-	"FSLD-339": "FSLD-359",
+	"PPLS-133": "PLS-133★",
 
 	// Duplicated UPLIST cards
 	"FMUST-147A": "UPLIST-55",
