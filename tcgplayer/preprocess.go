@@ -438,12 +438,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"Kamigawa: Neon Dynasty":
 		variant = product.getNum()
 	case "Unfinity":
-		num := product.getNum()
-
-		if strings.Contains(variant, "-") {
-			variant = strings.Replace(variant, "-", "/", -1)
-		} else {
-			variant = num
+		// Skip attractions, number is incorrect
+		if !strings.Contains(variant, "-") {
+			variant = product.getNum()
 		}
 	}
 

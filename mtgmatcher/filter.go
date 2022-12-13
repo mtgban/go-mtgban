@@ -1172,13 +1172,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Handle the different Attractions
 			case "Unfinity":
-				if card.AttractionLights != nil && strings.Contains(inCard.Variation, "/") {
+				if card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-")) {
 					lights := make([]string, 0, len(card.AttractionLights))
 					for _, light := range card.AttractionLights {
 						lights = append(lights, strconv.Itoa(light))
 					}
 					tag := strings.Join(lights, "/")
 					variation := strings.Replace(inCard.Variation, " ", "", -1)
+					if strings.Contains(variation, "-") {
+						variation = strings.Replace(variation, "-", "/", -1)
+					}
 					if variation != tag {
 						continue
 					}
