@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 const (
@@ -551,7 +552,8 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 			continue
 		}
 
-		if co.BorderColor == "gold" || co.IsFunny {
+		// Silver is to catch UPLIST, IsFunny to catch anything after Unfinity
+		if co.BorderColor == "gold" || co.BorderColor == "silver" || co.IsFunny || co.HasPromoType(mtgjson.PromoTypeThickDisplay) {
 			continue
 		}
 
@@ -560,11 +562,11 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 				continue
 			}
 
-			pennyMythic := isMythic && entry.Price <= 0.25
-			pennyRare := isRare && (!co.Foil && entry.Price <= 0.05 || co.Foil && entry.Price <= 0.15)
-			pennyLand := isLand && (!co.Foil && co.Card.IsFullArt || co.Foil) && entry.Price <= 0.05
+			pennyMythic := isMythic && (!co.Foil || (co.Foil && !strings.Contains(co.Edition, "Commander") && !strings.Contains(co.Edition, "From the Vault"))) && entry.Price <= 0.16
+			pennyRare := isRare && ((!co.Foil && entry.Price <= 0.02) || (co.Foil && entry.Price <= 0.05))
+			pennyLand := isLand && ((!co.Foil && co.Card.IsFullArt) || co.Foil) && entry.Price <= 0.02
 			pennyFoil := co.Foil && entry.Price <= 0.01
-			pennyPromo := isPromo && entry.Price <= 0.03
+			pennyPromo := isPromo && entry.Price <= 0.02
 
 			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
 				result = append(result, PennystockEntry{
