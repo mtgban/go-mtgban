@@ -49,7 +49,9 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 
 	// If the input card was requested as foil, we should double check
 	// if the original card has a foil under a separate id
-	if co.Foil != isFoil {
+	// Skip this for SLD because not really needed and the amount of numbers
+	// favors clashes (ie Swamp 486 and 48)
+	if co.Foil != isFoil && co.SetCode != "SLD" {
 		// So we iterate over the Variations array and try outputing ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
