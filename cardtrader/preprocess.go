@@ -260,8 +260,11 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			edition = "PG08"
 		}
 	case "The List":
-		if cardName == "Lightning Bolt" {
+		switch cardName {
+		case "Lightning Bolt":
 			variant = number
+		case "Everythingamajig", "Ineffable Blessing":
+			variant = bp.Version
 		}
 	case "Mystery Booster: Convention Edition Playtest Cards":
 		variant = bp.Version
