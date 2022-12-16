@@ -233,7 +233,7 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 				priceRatio = price / sellPrice * 100
 			}
 
-			deductions := []float64{1, 1, 0.7, 0.4}
+			deductions := []float64{1, 1, 0.5, 0.3}
 			for i, deduction := range deductions {
 				out := responseChan{
 					cardId: cardId,
