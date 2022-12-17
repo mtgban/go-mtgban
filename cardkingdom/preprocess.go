@@ -21,10 +21,14 @@ var skuFixupTable = map[string]string{
 	"ATQ-080D": "ATQ-080D",
 
 	// Extremely Slow Zombie
-	"UST-054C": "UST-54A",
-	"UST-054A": "UST-54B",
-	"UST-054D": "UST-54C",
-	"UST-054B": "UST-54D",
+	"UST-054C":  "UST-54A",
+	"UST-054A":  "UST-54B",
+	"UST-054D":  "UST-54C",
+	"UST-054B":  "UST-54D",
+	"FUST-054C": "UST-54A",
+	"FUST-054A": "UST-54B",
+	"FUST-054D": "UST-54C",
+	"FUST-054B": "UST-54D",
 
 	// Some of the lands from the first Arena set
 	"PAL96-001": "PARL-001",
