@@ -215,6 +215,7 @@ func (ck *Cardkingdom) scrape() error {
 						"CKEdition": card.Edition,
 						"CKFoil":    card.IsFoil,
 						"CKSKU":     card.SKU,
+						"CKID":      fmt.Sprint(card.Id),
 					}
 				}
 				err = ck.buylist.Add(cardId, out)
