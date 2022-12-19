@@ -638,8 +638,7 @@ func adjustEdition(inCard *Card) {
 		if ed != "" {
 			edition = ed
 		}
-	case strings.Contains(variation, "Ravnica Weekend") ||
-		(strings.Contains(edition, "Weekend") && !Contains(edition, "Planeswalker")):
+	case inCard.Contains("Ravnica Weekend"):
 		edition, variation = inCard.ravnicaWeekend()
 	case inCard.Contains("Guild Kit"):
 		edition = inCard.ravnicaGuidKit()
