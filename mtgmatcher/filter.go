@@ -84,6 +84,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "Double Masters",
 				"Jumpstart",
 				"Double Masters 2022",
+				"Dominaria Remastered",
 				"Warhammer 40,000 Commander":
 				switch inCard.Name {
 				case "Wrath of God",
@@ -91,6 +92,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					"Scholar of the Lost Trove",
 					"Weathered Wayfarer",
 					"Bring to Light",
+					"Counterspell",
 					"Fabricate":
 				default:
 					continue
@@ -1156,6 +1158,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				// providers only tag the promo type, instead of the frame
 				if set.Name == "The Brothers' War" {
 					isRetro = inCard.isBundle() || inCard.isBaB()
+				}
+				if set.Name == "Dominaria Remastered" {
+					if inCard.isRelease() && !card.IsAlternative {
+						continue
+					} else if !inCard.isRelease() && card.IsAlternative {
+						continue
+					}
+					isRetro = isRetro || inCard.isRelease()
 				}
 				if isRetro && card.FrameVersion != "1997" {
 					continue
