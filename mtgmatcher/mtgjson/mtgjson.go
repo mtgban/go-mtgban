@@ -97,7 +97,6 @@ const (
 	FinishNonfoil = "nonfoil"
 	FinishFoil    = "foil"
 	FinishEtched  = "etched"
-	FinishGlossy  = "glossy"
 
 	FrameEffectExtendedArt = "extendedart"
 	FrameEffectEtched      = "etched"
@@ -123,6 +122,7 @@ const (
 	PromoTypeNeonInk    = "neonink"
 	PromoTypeGalaxyFoil = "galaxyfoil"
 	PromoTypeSurgeFoil  = "surgefoil"
+	PromoTypeGlossy     = "glossy"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
@@ -152,6 +152,7 @@ var AllPromoTypes = []string{
 	PromoTypeGameDay,
 	PromoTypeGateway,
 	PromoTypeGilded,
+	PromoTypeGlossy,
 	PromoTypeGodzilla,
 	PromoTypeIntroPack,
 	PromoTypeJudgeGift,
