@@ -506,8 +506,8 @@ func (tcgp *TCGProduct) getNum() string {
 
 func (tcgp *TCGProduct) isToken() bool {
 	for _, extData := range tcgp.ExtendedData {
-		if extData.Name == "SubType" {
-			return strings.Contains(extData.Value, "Token")
+		if extData.Name == "SubType" && strings.Contains(extData.Value, "Token") {
+			return true
 		}
 	}
 	// There are some tokens not marked as such
