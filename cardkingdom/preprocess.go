@@ -212,6 +212,11 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
 		"Unstable", "Unglued", "Unfinity", "Portal II", "Secret Lair":
 		variation = number
+
+		// Override variation due to the SLD thick cards using the same non-thick number
+		if edition == "Secret Lair" && strings.Contains(card.Variation, "Display") {
+			variation = "Thick Display"
+		}
 	default:
 		if setCode == "UPLIST" {
 			edition = setCode
