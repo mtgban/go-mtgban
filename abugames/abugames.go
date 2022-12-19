@@ -168,7 +168,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 				v := url.Values{}
 				v.Set("search", "\""+card.SimpleTitle+"\"")
-				if card.Edition != "Promo" {
+				if card.Edition != "Promo" && card.Edition != "The List" {
 					v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				}
 				v.Set("card_style", "[\"Normal\"]")
