@@ -817,7 +817,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) &&
 					!card.HasPromoType(mtgjson.PromoTypeTextured) &&
 					!card.HasFrameEffect(mtgjson.FrameEffectShattered) &&
-					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
+					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) &&
+					!card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
 					// IKO may have showcase cards which happen to be borderless
 					// or reskinned ones.
 					if card.BorderColor == mtgjson.BorderColorBorderless &&
