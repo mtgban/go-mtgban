@@ -419,11 +419,19 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 	return err
 }
 
-func dump(bc *mtgban.BanClient, outputPath, format string) error {
+func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	for _, seller := range bc.Sellers() {
 		err := dumpSeller(seller, outputPath, format)
 		if err != nil {
 			return err
+		}
+
+		if meta && format != "json" {
+			sellerMeta := mtgban.NewSellerFromInventory(nil, seller.Info())
+			err := dumpSeller(sellerMeta, outputPath, "json")
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -431,6 +439,14 @@ func dump(bc *mtgban.BanClient, outputPath, format string) error {
 		err := dumpVendor(vendor, outputPath, format)
 		if err != nil {
 			return err
+		}
+
+		if meta && format != "json" {
+			vendorMeta := mtgban.NewVendorFromBuylist(nil, vendor.Info())
+			err := dumpVendor(vendorMeta, outputPath, "json")
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -451,6 +467,7 @@ func run() int {
 	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable")
 
 	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv)")
+	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
 	devOpt := flag.Bool("dev", false, "Enable dev operations (debugging)")
 	flag.Parse()
@@ -577,7 +594,7 @@ func run() int {
 	}
 
 	// Dump the results
-	err = dump(bc, *outputPathOpt, *fileFormatOpt)
+	err = dump(bc, *outputPathOpt, *fileFormatOpt, *metaOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
