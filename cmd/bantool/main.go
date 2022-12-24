@@ -361,56 +361,61 @@ var options = map[string]*scraperOption{
 	},
 }
 
-func dump(bc *mtgban.BanClient, outputPath string) error {
-	for _, seller := range bc.Sellers() {
+func dumpSeller(seller mtgban.Seller, outputPath string) error {
+	fname := fmt.Sprintf("%s_%s_Inventory.json", date, seller.Info().Shorthand)
+	filePath := path.Join(outputPath, fname)
 
-		fname := fmt.Sprintf("%s_%s_Inventory.json", date, seller.Info().Shorthand)
-		filePath := path.Join(outputPath, fname)
-
-		var writer io.WriteCloser
-		if GCSBucket == nil {
-			log.Println("Dumping seller", seller.Info().Shorthand)
-			file, err := os.Create(filePath)
-			if err != nil {
-				return err
-			}
-			writer = file
-		} else {
-			log.Println("Uploading seller", seller.Info().Shorthand)
-			writer = GCSBucket.Object(filePath).NewWriter(context.Background())
-		}
-
-		err := mtgban.WriteSellerToJSON(seller, writer)
+	var writer io.WriteCloser
+	if GCSBucket == nil {
+		log.Println("Dumping seller", seller.Info().Shorthand)
+		file, err := os.Create(filePath)
 		if err != nil {
-			writer.Close()
 			return err
 		}
-		writer.Close()
+		writer = file
+	} else {
+		log.Println("Uploading seller", seller.Info().Shorthand)
+		writer = GCSBucket.Object(filePath).NewWriter(context.Background())
+	}
+	defer writer.Close()
+
+	return mtgban.WriteSellerToJSON(seller, writer)
+}
+
+func dumpVendor(vendor mtgban.Vendor, outputPath string) error {
+	fname := fmt.Sprintf("%s_%s_Buylist.json", date, vendor.Info().Shorthand)
+	filePath := path.Join(outputPath, fname)
+
+	var writer io.WriteCloser
+	if GCSBucket == nil {
+		log.Println("Dumping vendor", vendor.Info().Shorthand)
+		file, err := os.Create(filePath)
+		if err != nil {
+			return err
+		}
+		writer = file
+	} else {
+		log.Println("Uploading vendor", vendor.Info().Shorthand)
+		writer = GCSBucket.Object(filePath).NewWriter(context.Background())
+	}
+	defer writer.Close()
+
+	return mtgban.WriteVendorToJSON(vendor, writer)
+}
+
+func dump(bc *mtgban.BanClient, outputPath string) error {
+	for _, seller := range bc.Sellers() {
+		err := dumpSeller(seller, outputPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, vendor := range bc.Vendors() {
-		fname := fmt.Sprintf("%s_%s_Buylist.json", date, vendor.Info().Shorthand)
-		filePath := path.Join(outputPath, fname)
-
-		var writer io.WriteCloser
-		if GCSBucket == nil {
-			log.Println("Dumping vendor", vendor.Info().Shorthand)
-			file, err := os.Create(filePath)
-			if err != nil {
-				return err
-			}
-			writer = file
-		} else {
-			log.Println("Uploading vendor", vendor.Info().Shorthand)
-			writer = GCSBucket.Object(filePath).NewWriter(context.Background())
-		}
-
-		err := mtgban.WriteVendorToJSON(vendor, writer)
+		err := dumpVendor(vendor, outputPath)
 		if err != nil {
-			writer.Close()
 			return err
 		}
-		writer.Close()
 	}
 
 	return nil
