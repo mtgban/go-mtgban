@@ -11,8 +11,10 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.6.6
+	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff
 	github.com/joho/godotenv v1.4.0
-	github.com/scizorman/go-ndjson v0.0.0-20200902005011-1d92486df71e
+	github.com/scizorman/go-ndjson v0.0.0-20200902005011-1d92486df71e // indirect
+	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/text v0.3.7
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	google.golang.org/api v0.100.0
