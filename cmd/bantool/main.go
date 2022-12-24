@@ -361,8 +361,8 @@ var options = map[string]*scraperOption{
 	},
 }
 
-func dumpSeller(seller mtgban.Seller, outputPath string) error {
-	fname := fmt.Sprintf("%s_%s_Inventory.json", date, seller.Info().Shorthand)
+func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
+	fname := fmt.Sprintf("%s_%s_Inventory.%s", date, seller.Info().Shorthand, format)
 	filePath := path.Join(outputPath, fname)
 
 	var writer io.WriteCloser
@@ -379,11 +379,19 @@ func dumpSeller(seller mtgban.Seller, outputPath string) error {
 	}
 	defer writer.Close()
 
-	return mtgban.WriteSellerToJSON(seller, writer)
+	var err error
+	switch format {
+	case "json":
+		err = mtgban.WriteSellerToJSON(seller, writer)
+	case "csv":
+		err = mtgban.WriteSellerToCSV(seller, writer)
+	}
+
+	return err
 }
 
-func dumpVendor(vendor mtgban.Vendor, outputPath string) error {
-	fname := fmt.Sprintf("%s_%s_Buylist.json", date, vendor.Info().Shorthand)
+func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
+	fname := fmt.Sprintf("%s_%s_Buylist.%s", date, vendor.Info().Shorthand, format)
 	filePath := path.Join(outputPath, fname)
 
 	var writer io.WriteCloser
@@ -400,19 +408,27 @@ func dumpVendor(vendor mtgban.Vendor, outputPath string) error {
 	}
 	defer writer.Close()
 
-	return mtgban.WriteVendorToJSON(vendor, writer)
+	var err error
+	switch format {
+	case "json":
+		err = mtgban.WriteVendorToJSON(vendor, writer)
+	case "csv":
+		err = mtgban.WriteVendorToCSV(vendor, writer)
+	}
+
+	return err
 }
 
-func dump(bc *mtgban.BanClient, outputPath string) error {
+func dump(bc *mtgban.BanClient, outputPath, format string) error {
 	for _, seller := range bc.Sellers() {
-		err := dumpSeller(seller, outputPath)
+		err := dumpSeller(seller, outputPath, format)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, vendor := range bc.Vendors() {
-		err := dumpVendor(vendor, outputPath)
+		err := dumpVendor(vendor, outputPath, format)
 		if err != nil {
 			return err
 		}
@@ -434,11 +450,20 @@ func run() int {
 	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable")
 	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable")
 
+	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv)")
+
 	devOpt := flag.Bool("dev", false, "Enable dev operations (debugging)")
 	flag.Parse()
 
 	if *devOpt {
 		GlobalLogCallback = log.Printf
+	}
+
+	switch *fileFormatOpt {
+	case "json", "csv":
+	default:
+		log.Println("Invalid -format option, see -h for supported values")
+		return 1
 	}
 
 	// Load static data
@@ -552,7 +577,7 @@ func run() int {
 	}
 
 	// Dump the results
-	err = dump(bc, *outputPathOpt)
+	err = dump(bc, *outputPathOpt, *fileFormatOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
