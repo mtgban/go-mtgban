@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/scizorman/go-ndjson"
 	"google.golang.org/api/option"
 
 	"github.com/kodabb/go-mtgban/abugames"
@@ -361,6 +362,66 @@ var options = map[string]*scraperOption{
 	},
 }
 
+type inventoryElement struct {
+	UUID string
+	mtgban.InventoryEntry
+}
+
+type buylistElement struct {
+	UUID string
+	mtgban.BuylistEntry
+}
+
+func writeSellerToNDJSON(seller mtgban.Seller, w io.Writer) error {
+	inventory, err := seller.Inventory()
+	if err != nil {
+		return err
+	}
+
+	var inventoryFlat []inventoryElement
+	for uuid, entries := range inventory {
+		for _, entry := range entries {
+			inventoryFlat = append(inventoryFlat, inventoryElement{
+				UUID:           uuid,
+				InventoryEntry: entry,
+			})
+		}
+	}
+
+	output, err := ndjson.Marshal(inventoryFlat)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(output)
+	return err
+}
+
+func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
+	buylist, err := vendor.Buylist()
+	if err != nil {
+		return err
+	}
+
+	var buylistFlat []buylistElement
+	for uuid, entries := range buylist {
+		for _, entry := range entries {
+			buylistFlat = append(buylistFlat, buylistElement{
+				UUID:         uuid,
+				BuylistEntry: entry,
+			})
+		}
+	}
+
+	output, err := ndjson.Marshal(buylistFlat)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(output)
+	return err
+}
+
 func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	fname := fmt.Sprintf("%s_%s_Inventory.%s", date, seller.Info().Shorthand, format)
 	filePath := path.Join(outputPath, fname)
@@ -385,6 +446,8 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 		err = mtgban.WriteSellerToJSON(seller, writer)
 	case "csv":
 		err = mtgban.WriteSellerToCSV(seller, writer)
+	case "ndjson":
+		err = writeSellerToNDJSON(seller, writer)
 	}
 
 	return err
@@ -414,6 +477,8 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 		err = mtgban.WriteVendorToJSON(vendor, writer)
 	case "csv":
 		err = mtgban.WriteVendorToCSV(vendor, writer)
+	case "ndjson":
+		err = writeVendorToNDJSON(vendor, writer)
 	}
 
 	return err
@@ -466,7 +531,7 @@ func run() int {
 	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable")
 	vendorsOpt := flag.String("vendors", "", "Comma-separated list of vendors to enable")
 
-	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv)")
+	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv/ndjson)")
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
 	devOpt := flag.Bool("dev", false, "Enable dev operations (debugging)")
@@ -477,7 +542,7 @@ func run() int {
 	}
 
 	switch *fileFormatOpt {
-	case "json", "csv":
+	case "json", "csv", "ndjson":
 	default:
 		log.Println("Invalid -format option, see -h for supported values")
 		return 1
