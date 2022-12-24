@@ -8,6 +8,23 @@ import (
 	"strings"
 )
 
+type Sheet struct {
+	BalanceColors bool           `json:"balanceColors"`
+	Cards         map[string]int `json:"cards"`
+	Foil          bool           `json:"foil"`
+	TotalWeight   int            `json:"totalWeight"`
+}
+
+type Booster struct {
+	Boosters []struct {
+		Contents map[string]int `json:"contents"`
+		Weight   int            `json:"weight"`
+	} `json:"boosters"`
+	BoostersTotalWeight int              `json:"boostersTotalWeight"`
+	Sheets              map[string]Sheet `json:"sheets"`
+	Name                string           `json:"name"`
+}
+
 type Set struct {
 	BaseSetSize   int    `json:"baseSetSize"`
 	Code          string `json:"code"`
@@ -24,9 +41,13 @@ type Set struct {
 
 	TCGPlayerGroupId int `json:"tcgplayerGroupId"`
 
+	Booster       map[string]Booster `json:"booster"`
 	SealedProduct []struct {
+		Category    string            `json:"category"`
 		Identifiers map[string]string `json:"identifiers"`
 		Name        string            `json:"name"`
+		ProductSize int               `json:"productSize"`
+		Subtype     string            `json:"subtype"`
 		UUID        string            `json:"uuid"`
 	} `json:"sealedProduct"`
 }
