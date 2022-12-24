@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/option"
+
 	"github.com/kodabb/go-mtgban/abugames"
 	"github.com/kodabb/go-mtgban/amazon"
 	"github.com/kodabb/go-mtgban/blueprint"
@@ -36,7 +38,6 @@ import (
 	"github.com/kodabb/go-mtgban/toamagic"
 	"github.com/kodabb/go-mtgban/trollandtoad"
 	"github.com/kodabb/go-mtgban/wizardscupboard"
-	"google.golang.org/api/option"
 
 	"github.com/kodabb/go-mtgban/mtgban"
 	"github.com/kodabb/go-mtgban/mtgmatcher"
