@@ -15,6 +15,7 @@ require (
 	github.com/googleapis/gax-go v1.0.3 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.6.6
+	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/scizorman/go-ndjson v0.0.0-20200902005011-1d92486df71e // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/text v0.3.7

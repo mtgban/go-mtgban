@@ -17,6 +17,7 @@ import (
 	"github.com/scizorman/go-ndjson"
 	"google.golang.org/api/option"
 
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/kodabb/go-mtgban/abugames"
 	"github.com/kodabb/go-mtgban/amazon"
 	"github.com/kodabb/go-mtgban/blueprint"
