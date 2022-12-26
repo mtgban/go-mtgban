@@ -127,14 +127,20 @@ var options = map[string]*scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
 			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
-			if tcgPublicId == "" || tcgPrivateId == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
+			mtgjsonTCGSKUFilepathBZ2 := os.Getenv("MTGJSON_TCGSKU_FILEPATH_BZ2")
+			if tcgPublicId == "" || tcgPrivateId == "" || mtgjsonTCGSKUFilepathBZ2 == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_FILEPATH_BZ2 env vars")
 			}
 
 			scraper := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
 			scraper.MaxConcurrency = 6
+			reader, err := os.Open(mtgjsonTCGSKUFilepathBZ2)
+			if err != nil {
+				return nil, err
+			}
+			scraper.SKUFileReader = reader
 			return scraper, nil
 		},
 	},
