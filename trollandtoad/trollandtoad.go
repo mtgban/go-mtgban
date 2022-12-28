@@ -3,7 +3,6 @@ package trollandtoad
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -325,7 +324,9 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 			priceRatio = price / sellPrice * 100
 		}
 
-		link := "https://www2.trollandtoad.com/buylist/#!/search/All/" + url.QueryEscape(theCard.Name)
+		// TnT buylist gets confused with an apostrophe in the card name
+		cleanName := strings.Replace(theCard.Name, "'", "", -1)
+		link := "https://www2.trollandtoad.com/buylist/#!/search/All/" + cleanName
 		deductions := []float64{1, 0.6, 0.6}
 		for i, deduction := range deductions {
 			channel <- responseChan{
