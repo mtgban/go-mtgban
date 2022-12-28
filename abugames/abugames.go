@@ -132,15 +132,18 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			var invEntry *mtgban.InventoryEntry
 			var buyEntry *mtgban.BuylistEntry
 
+			// For URL genration searchQuery needs to be in plaintext, not URL-encoded
+			searchQuery := "&search=" + card.SimpleTitle
+
 			u, err := url.Parse("https://abugames.com")
 			if err != nil {
 				return err
 			}
+
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
 				u.Path = "/magic-the-gathering/singles"
 
 				v := url.Values{}
-				v.Set("search", card.SimpleTitle)
 				if card.Edition != "Promo" && card.Edition != "The List" {
 					v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				}
@@ -154,7 +157,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					Conditions: cond,
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
-					URL:        u.String(),
+					URL:        u.String() + searchQuery,
 				}
 			}
 
@@ -167,7 +170,6 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				u.Path = "/buylist/magic-the-gathering/singles"
 
 				v := url.Values{}
-				v.Set("search", "\""+card.SimpleTitle+"\"")
 				if card.Edition != "Promo" && card.Edition != "The List" {
 					v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				}
@@ -183,7 +185,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					TradePrice: card.TradePrice,
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
-					URL:        u.String(),
+					URL:        u.String() + searchQuery,
 				}
 			}
 
