@@ -88,12 +88,14 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	isFoil := strings.Contains(strings.ToLower(card.DisplayTitle), " foil") ||
 		strings.Contains(strings.ToLower(card.DisplayTitle), " - fol") // SS3 Pyroblast
 
+	edition := card.Edition
+
 	// Split by -, rebuild the cardname in a standardized way
 	variation := ""
 	vars := strings.Split(card.DisplayTitle, " - ")
 	cardName := vars[0]
 	if len(vars) > 1 {
-		if vars[len(vars)-1] == card.Edition {
+		if vars[len(vars)-1] == edition {
 			vars = vars[:len(vars)-1]
 		}
 
@@ -101,8 +103,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 
 		// Fix some untagged prerelease cards
 		// Nahiri's Wrath, Tendershoot Dryad
-		if strings.Contains(variation, card.Edition+" FOIL") {
-			variation = strings.Replace(variation, card.Edition+" FOIL", "Prerelease", 1)
+		if strings.Contains(variation, edition+" FOIL") {
+			variation = strings.Replace(variation, edition+" FOIL", "Prerelease", 1)
 		}
 	}
 
@@ -151,7 +153,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				"Throne of Eldraine",
 				"Eldritch Moon",
 				"Innistrad: Crimson Vow":
-				variation += " " + card.Edition
+				variation += " " + edition
 			}
 			card.Edition = "Promo"
 		}
@@ -167,10 +169,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	case "Promo":
 		switch cardName {
 		case "Skirk Marauder":
-			card.Edition = "Arena League 2003"
+			edition = "Arena League 2003"
 		case "Damnation(Secret Lair":
 			cardName = "Damnation"
-			card.Edition = "SLD"
+			edition = "SLD"
 		case "Elvish Aberration":
 			if variation == "FNM" {
 				variation = "Arena"
@@ -205,24 +207,24 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			}
 		case "Magister of Worth":
 			if variation == "Buy-a-Box Promo" {
-				card.Edition = "Conspiracy"
+				edition = "Conspiracy"
 				variation = "Release"
 			}
 		case "Mechagodzilla, Battle Fortress / Hangarback Walker":
 			if variation == "Welcome Back" {
 				cardName = "Hangarback Walker"
-				card.Edition = "PLG20"
+				edition = "PLG20"
 			}
 		case "Hidetsugu, Devouring Chaos":
-			card.Edition = "NEO"
+			edition = "NEO"
 		case "Rafiq of the Many":
-			card.Edition = "SHA"
+			edition = "SHA"
 			variation = "250"
 		case "Swiftfoot Boots":
-			card.Edition = "PW22"
+			edition = "PW22"
 			variation = "4"
 		case "Brood Sliver":
-			card.Edition = "SLD"
+			edition = "SLD"
 		}
 		if strings.Contains(variation, "Scandanavia") {
 			variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
@@ -233,9 +235,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			} else if strings.Contains(variation, "Seb McKinnon") {
 				variation = "119"
 			}
-			card.Edition = "Secret Lair Drop"
+			edition = "Secret Lair Drop"
 		} else if mtgmatcher.IsBasicLand(cardName) && strings.Contains(variation, "Full-Text") {
-			card.Edition = "SLD"
+			edition = "SLD"
 			variation = strings.TrimPrefix(variation, "Full-Text ")
 		} else if strings.Contains(variation, "Play Promo") {
 			variation = strings.Replace(variation, "FNM", "", 1)
@@ -288,8 +290,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	}
 
 	if strings.Contains(variation, "The List") {
-		variation = card.Edition
-		card.Edition = "The List"
+		variation = edition
+		edition = "The List"
 	}
 
 	name, found := cardTable[cardName]
@@ -308,7 +310,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	return &mtgmatcher.Card{
 		Name:      cardName,
 		Variation: variation,
-		Edition:   card.Edition,
+		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
 }

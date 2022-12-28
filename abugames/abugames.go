@@ -144,9 +144,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				u.Path = "/magic-the-gathering/singles"
 
 				v := url.Values{}
-				if card.Edition != "Promo" && card.Edition != "The List" {
-					v.Set("magic_edition", "[\""+card.Edition+"\"]")
-				}
+				v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				v.Set("card_style", "[\"Normal\"]")
 				if theCard.Foil {
 					v.Set("card_style", "[\"Foil\"]")
@@ -170,9 +168,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				u.Path = "/buylist/magic-the-gathering/singles"
 
 				v := url.Values{}
-				if card.Edition != "Promo" && card.Edition != "The List" {
-					v.Set("magic_edition", "[\""+card.Edition+"\"]")
-				}
+				v.Set("magic_edition", "[\""+card.Edition+"\"]")
 				v.Set("card_style", "[\"Normal\"]")
 				if theCard.Foil {
 					v.Set("card_style", "[\"Foil\"]")
