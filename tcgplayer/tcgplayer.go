@@ -268,12 +268,14 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 	go func() {
 		sets := mtgmatcher.GetSets()
 		i := 1
+		allSetsSzie := len(sets) - 1
 		for _, set := range sets {
-			if strings.HasSuffix(set.Code, "ALT") {
+			switch set.Code {
+			case "4EDALT":
 				continue
 			}
 
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i, allSetsSzie)
 			i++
 
 			for _, card := range set.Cards {
