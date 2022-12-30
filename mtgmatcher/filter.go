@@ -1299,7 +1299,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						checkNumberSuffix = inCard.isEtched()
 					}
 				case "Beast of Burden":
-					if set.Name == "Urza's Legacy Promos" && Contains(inCard.Variation, "No Expansion Symbol") {
+					if set.Name == "Urza's Legacy Promos" &&
+						(inCard.Contains("No Expansion Symbol") || inCard.Contains("No Date")) {
 						checkNumberSuffix = true
 					}
 				case "Strict Proctor":
