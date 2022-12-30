@@ -1,10 +1,13 @@
 package tcgplayer
 
 import (
+	"compress/bzip2"
 	"fmt"
+	"io"
 	"net/url"
 
 	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
 )
 
 const baseProductURL = "https://www.tcgplayer.com/product/"
@@ -31,4 +34,8 @@ func TCGPlayerProductURL(productId int, printing, affiliate, language string) st
 	u.RawQuery = v.Encode()
 
 	return u.String()
+}
+
+func LoadTCGSKUs(reader io.Reader) (mtgjson.AllTCGSkus, error) {
+	return mtgjson.LoadAllTCGSkus(bzip2.NewReader(reader))
 }

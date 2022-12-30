@@ -1,7 +1,6 @@
 package tcgplayer
 
 import (
-	"compress/bzip2"
 	"errors"
 	"fmt"
 	"io"
@@ -23,9 +22,9 @@ type TCGPlayerMarket struct {
 	Affiliate      string
 	MaxConcurrency int
 
-	// The reader from which to read SKU data (usually in .bz2)
-	// The scraper will close the passed reader once done
-	SKUFileReader io.ReadCloser
+	// The cache data defining SKU data, if not set it will be loaded
+	// from the default location on mtgjson website.
+	SKUsData map[string][]mtgjson.TCGSku
 
 	inventory   mtgban.InventoryRecord
 	buylist     mtgban.BuylistRecord
@@ -213,10 +212,15 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 }
 
 func (tcg *TCGPlayerMarket) scrape(mode string) error {
-	tcg.printf("Retrieving skus")
-	skusMap, err := getAllSKUs(tcg.SKUFileReader)
-	if err != nil {
-		return err
+	skusMap := tcg.SKUsData
+	if skusMap == nil {
+		var err error
+		tcg.printf("Retrieving skus")
+		skusMap, err = getAllSKUs()
+		if err != nil {
+			return err
+
+		}
 	}
 	tcg.printf("Found skus for %d entries", len(skusMap))
 
@@ -453,20 +457,17 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	return
 }
 
-func getAllSKUs(reader io.ReadCloser) (map[string][]mtgjson.TCGSku, error) {
-	if reader == nil {
-		resp, err := cleanhttp.DefaultClient().Get(allSkusURL)
+func getAllSKUs() (map[string][]mtgjson.TCGSku, error) {
+	resp, err := cleanhttp.DefaultClient().Get(allSkusURL)
+	if err != nil {
+		resp, err = cleanhttp.DefaultClient().Get(allSkusBackupURL)
 		if err != nil {
-			resp, err = cleanhttp.DefaultClient().Get(allSkusBackupURL)
-			if err != nil {
-				return nil, err
-			}
+			return nil, err
 		}
-		reader = resp.Body
 	}
-	defer reader.Close()
+	defer resp.Body.Close()
 
-	skus, err := mtgjson.LoadAllTCGSkus(bzip2.NewReader(reader))
+	skus, err := LoadTCGSKUs(resp.Body)
 	if err != nil {
 		return nil, err
 	}

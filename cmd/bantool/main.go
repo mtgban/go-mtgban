@@ -140,7 +140,12 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.SKUFileReader = reader
+			defer reader.Close()
+			skus, err := tcgplayer.LoadTCGSKUs(reader)
+			if err != nil {
+				return nil, err
+			}
+			scraper.SKUsData = skus.Data
 			return scraper, nil
 		},
 	},

@@ -44,7 +44,7 @@ func NewScraperSYP() *TCGSYPList {
 
 func (tcg *TCGSYPList) scrape() error {
 	tcg.printf("Retrieving skus")
-	uuid2skusMap, err := getAllSKUs(nil)
+	uuid2skusMap, err := getAllSKUs()
 	if err != nil {
 		return err
 	}
