@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -305,6 +306,11 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 							uuid = card.UUID + "_jpn"
 						case "War of the Spark", "War of the Spark Promos":
 							if !strings.Contains(card.Number, "★") {
+								continue
+							}
+						case "Strixhaven Mystical Archive":
+							num, _ := strconv.Atoi(card.Number)
+							if num < 64 {
 								continue
 							}
 						}
