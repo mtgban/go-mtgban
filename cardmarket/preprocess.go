@@ -245,6 +245,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		"Secret Lair Drop Series":
 		// Could have been lost in SplitVariant, and it's more reliable
 		variant = number
+	case "Secret Lair Drop Series: Secretversary 2021":
+		edition = "PHED"
 	case "Theros",
 		"Born of the Gods",
 		"Journey into Nyx":
