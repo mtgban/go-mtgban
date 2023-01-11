@@ -955,11 +955,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// Light/Dark mana cost
 			case "Arabian Nights":
 				if inCard.isARNLightMana() {
-					if !strings.HasSuffix(card.Number, mtgjson.SuffixLightMana) {
+					if !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
 						continue
 					}
 				} else if inCard.isARNDarkMana() || inCard.Variation == "" {
-					if strings.HasSuffix(card.Number, mtgjson.SuffixLightMana) {
+					if strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
 						continue
 					}
 				}

@@ -137,9 +137,8 @@ const (
 	LanguageJapanese  = "Japanese"
 	LanguagePhyrexian = "Phyrexian"
 
-	SuffixLightMana = "†"
-	SuffixSpecial   = "★"
-	SuffixVariant   = "†"
+	SuffixSpecial = "★"
+	SuffixVariant = "†"
 )
 
 var AllPromoTypes = []string{
