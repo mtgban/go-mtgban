@@ -639,6 +639,11 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 	// Copy card information
 	dup.Cards = make([]mtgjson.Card, len(sets[code].Cards))
 	for i := range sets[code].Cards {
+		// Skip misprints from main sets
+		if strings.HasSuffix(sets[code].Cards[i].Number, mtgjson.SuffixVariant) {
+			continue
+		}
+
 		// Update printings for the original set
 		printings := append(sets[code].Cards[i].Printings, dup.Code)
 		sets[code].Cards[i].Printings = printings
