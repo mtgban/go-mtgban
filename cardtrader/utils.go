@@ -31,7 +31,7 @@ func ExportStock(blueprints map[int]*Blueprint, token string, rates ...float64) 
 	defer gzipReader.Close()
 
 	csvReader := csv.NewReader(gzipReader)
-	// id,blueprint_id,bundle,category_id,description,name_en,expansion_id,expansion_name,expansion_code,game_id,graded,price_cents,price_currency,quantity,mtg_rarity,condition,mtg_language,mtg_foil,signed,altered
+	// id,blueprint_id,mkm_id,bundle,category_id,description,name_en,expansion_id,expansion_name,expansion_code,game_id,graded,price_cents,price_currency,quantity,mtg_rarity,condition,mtg_language,mtg_foil,signed,altered
 	_, err = csvReader.Read()
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func ExportStock(blueprints map[int]*Blueprint, token string, rates ...float64) 
 			continue
 		}
 
-		theCard.Foil, err = strconv.ParseBool(record[17])
+		theCard.Foil, err = strconv.ParseBool(record[18])
 		if err != nil {
 			return nil, err
 		}
@@ -66,23 +66,23 @@ func ExportStock(blueprints map[int]*Blueprint, token string, rates ...float64) 
 			continue
 		}
 
-		priceCents, err := strconv.Atoi(record[11])
+		priceCents, err := strconv.Atoi(record[12])
 		if err != nil {
 			return nil, err
 		}
 		price := float64(priceCents) / 100.0
 
-		currency := record[12]
+		currency := record[13]
 		if currency == "EUR" && len(rates) > 0 && rates[0] != 0 {
 			price *= rates[0]
 		}
 
-		quantity, err := strconv.Atoi(record[13])
+		quantity, err := strconv.Atoi(record[14])
 		if err != nil {
 			return nil, err
 		}
 
-		conditions := record[15]
+		conditions := record[16]
 		conds, found := condMap[conditions]
 		if !found {
 			continue
