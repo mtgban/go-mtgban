@@ -886,6 +886,7 @@ func ParseCommanderEdition(edition, variant string) string {
 		"Brothers":        "The Brothers' War Commander",
 		"Heads I Win":     "Heads I Win, Tails You Lose",
 		"Starter":         "Starter Commander Decks",
+		"All Will Be One": "Phyrexia: All Will Be One Commander",
 	}
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {
