@@ -245,6 +245,10 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				conditions = "NM"
 			case "PL":
 				conditions = "SP"
+				// Stricter grading for foils
+				if result.Foil {
+					conditions = "MP"
+				}
 			case "HP":
 				conditions = "MP"
 			default:
