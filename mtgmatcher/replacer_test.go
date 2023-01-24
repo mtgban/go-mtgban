@@ -8,83 +8,83 @@ type NormalizeTest struct {
 }
 
 var NormalizeTests = []NormalizeTest{
-	NormalizeTest{
+	{
 		In:  "Lotus Bloom",
 		Out: "lotubloom",
 	},
-	NormalizeTest{
+	{
 		In:  "Lotus Blossom",
 		Out: "lotublossom",
 	},
-	NormalizeTest{
+	{
 		In:  "Tangle Asp",
 		Out: "tangleasp",
 	},
-	NormalizeTest{
+	{
 		In:  "Tanglesap",
 		Out: "tangleap",
 	},
-	NormalizeTest{
+	{
 		In:  "Ghazbán Ogre",
 		Out: "ghazbanogre",
 	},
-	NormalizeTest{
+	{
 		In:  "Ghazban Ogress",
 		Out: "ghazbanogress",
 	},
-	NormalizeTest{
+	{
 		In:  "Flame Slash",
 		Out: "flameslash",
 	},
-	NormalizeTest{
+	{
 		In:  "Flame Lash",
 		Out: "flamelah",
 	},
-	NormalizeTest{
+	{
 		In:  "Waste Land",
 		Out: "waste land",
 	},
-	NormalizeTest{
+	{
 		In:  "Wasteland",
 		Out: "wateland",
 	},
-	NormalizeTest{
+	{
 		In:  "  spaaaaaaace  ",
 		Out: "paaaaaaace",
 	},
-	NormalizeTest{
+	{
 		In:  "Ætherflux reservoir",
 		Out: "aetherfluxreervoir",
 	},
-	NormalizeTest{
+	{
 		In:  "forest b",
 		Out: "foretb",
 	},
-	NormalizeTest{
+	{
 		In:  "them the removed",
 		Out: "themremoved",
 	},
-	NormalizeTest{
+	{
 		In:  "Jakub Šlem",
 		Out: "jakublem",
 	},
-	NormalizeTest{
+	{
 		In:  "Fire // Ice",
 		Out: "fireice",
 	},
-	NormalizeTest{
+	{
 		In:  "Commit to Memory",
 		Out: "commitmemory",
 	},
-	NormalizeTest{
+	{
 		In:  "Trial // Error",
 		Out: "trialerror",
 	},
-	NormalizeTest{
+	{
 		In:  "Trial and Error",
 		Out: "trial and error",
 	},
-	NormalizeTest{
+	{
 		In:  "Will o' the Wisp",
 		Out: "willowip",
 	},
