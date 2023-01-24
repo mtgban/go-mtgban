@@ -585,10 +585,10 @@ var MatchTests = []MatchTest{
 
 	// Incorrect editions
 	MatchTest{
-		Id:   "0ebdbff9-e756-511f-a17d-43951169d0ea",
+		Id:   "e452b3bc-4618-538f-80a1-403b65eed48e",
 		Desc: "incorrect_edition_but_card_has_a_single_printing",
 		In: Card{
-			Name:    "Mirrodin Besieged",
+			Name:    "Camel",
 			Edition: "Scars of Phyrexia",
 		},
 	},
