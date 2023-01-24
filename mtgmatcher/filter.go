@@ -1246,6 +1246,21 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !isShattered && card.HasFrameEffect(mtgjson.FrameEffectShattered) {
 					continue
 				}
+			case "Jumpstart 2022":
+				switch card.Name {
+				case "Valorous Stance",
+					"Dragon Fodder",
+					"Stitcher's Supplier",
+					"Tragic Slip",
+					"Thermo-Alchemist":
+					cn, _ := strconv.Atoi(card.Number)
+					isAnime := inCard.Contains("Anime") || inCard.Contains("V.1")
+					if isAnime && (cn < 52 || cn > 97) {
+						continue
+					} else if !isAnime && cn >= 52 && cn <= 97 {
+						continue
+					}
+				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant
