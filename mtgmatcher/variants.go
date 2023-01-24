@@ -3584,6 +3584,7 @@ var sldVariants = map[string]map[string]string{
 	"Spellskite": {
 		"":                                   "277",
 		"secret lair: series thomas m. baxa": "277",
+		"secret lair: series thomas m. baxa non-sketch":     "277",
 		"sketch variant secret lair: series thomas m. baxa": "587",
 	},
 	"Sphere of Safety": {
@@ -3615,7 +3616,8 @@ var sldVariants = map[string]map[string]string{
 		"secret lair: series: sidharth chaturvedi": "468",
 	},
 	"Sol Ring": {
-		"secret lair": "249",
+		"secret lair":                 "249",
+		"secret lair: black is magic": "249",
 	},
 	"Olivia, Mobilized for War": {
 		"series: livia prima":                "492",
@@ -3637,6 +3639,9 @@ var sldVariants = map[string]map[string]string{
 	"Maro": {
 		"secret lair: extra life 2022":                 "718",
 		"sketch variant: secret lair: extra life 2022": "719",
+	},
+	"Sliver Legion": {
+		"secret lair: extra life 2022": "1149",
 	},
 }
 
@@ -3780,6 +3785,9 @@ var uplistVariants = map[string]map[string]string{
 		"v.2":  "56",
 		"move": "55",
 		"scry": "56",
+
+		"move a counter..": "55",
+		"scry 2..":         "56",
 	},
 	"Ineffable Blessing": {
 		"a":           "38",
@@ -3788,6 +3796,9 @@ var uplistVariants = map[string]map[string]string{
 		"v.2":         "37",
 		"flavor text": "38",
 		"border":      "37",
+
+		"choose flavor": "38",
+		"choose border": "37",
 	},
 }
 
