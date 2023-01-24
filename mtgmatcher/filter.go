@@ -86,14 +86,18 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				"Double Masters 2022",
 				"Dominaria Remastered",
 				"Warhammer 40,000 Commander":
+				// If the list of cards is present in any other edition they need special casing
 				switch inCard.Name {
-				case "Wrath of God",
-					"Chord of Calling",
+				case "Chord of Calling",
 					"Scholar of the Lost Trove",
 					"Weathered Wayfarer",
 					"Bring to Light",
 					"Counterspell",
 					"Fabricate":
+				case "Wrath of God":
+					if set.Name != "Double Masters" {
+						continue
+					}
 				default:
 					continue
 				}

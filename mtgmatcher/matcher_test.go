@@ -1052,6 +1052,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Dominaria United",
 		},
 	},
+	{
+		Id:   "cd131db0-d77b-5048-9f45-69e660389e9a",
+		Desc: "decouple_double_masters_promos",
+		In: Card{
+			Name:      "Wrath of God",
+			Variation: "Launch",
+			Edition:   "Promo: General",
+		},
+	},
 
 	// Box topper-style extended art
 	{
