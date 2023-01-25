@@ -2891,6 +2891,10 @@ var mb1plistVariants = map[string]map[string]string{
 	"Reliquary Tower": {
 		"core set 2019": "1683",
 	},
+	"Rout": {
+		"commander 2017": "970",
+		"invasion":       "823",
+	},
 	"Rogue's Passage": {
 		"non-foil - commander 2017": "1684",
 	},
