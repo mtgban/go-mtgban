@@ -1,6 +1,7 @@
 package starcitygames
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,43 +11,25 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-cleanhttp"
 )
-
-type SCGCard struct {
-	Id        string `json:"id"`
-	Name      string `json:"name"`
-	Subtitle  string `json:"subtitle"`
-	Condition string `json:"condition"`
-	Foil      bool   `json:"foil"`
-	Language  string `json:"language"`
-	Price     string `json:"price"`
-	Rarity    string `json:"rarity"`
-	Image     string `json:"image"`
-}
-
-type SCGSearch struct {
-	Ok      bool        `json:"ok"`
-	Msg     string      `json:"msg"`
-	Edition string      `json:"search"`
-	Results [][]SCGCard `json:"results"`
-}
 
 const (
 	scgInventoryURL = "https://lusearchapi-na.hawksearch.com/sites/starcitygames/?instockonly=Yes&mpp=1&product_type=Singles"
-	scgBuylistURL   = "https://old.starcitygames.com/buylist/search?search-type=category&id="
+	scgBuylistURL   = "https://search.starcitygames.com/indexes/sell_list_products/search"
 
-	scgDefaultPages = 200
+	DefaultRequestLimit = 200
 )
 
 type SCGClient struct {
-	client *retryablehttp.Client
+	client *http.Client
+	bearer string
 }
 
-func NewSCGClient() *SCGClient {
+func NewSCGClient(bearer string) *SCGClient {
 	scg := SCGClient{}
-	scg.client = retryablehttp.NewClient()
-	scg.client.Logger = nil
+	scg.client = cleanhttp.DefaultClient()
+	scg.bearer = bearer
 	return &scg
 }
 
@@ -77,15 +60,90 @@ func (scg *SCGClient) GetPage(page int) (*http.Response, error) {
 		return nil, err
 	}
 	v := u.Query()
-	v.Set("mpp", fmt.Sprint(scgDefaultPages))
+	v.Set("mpp", fmt.Sprint(DefaultRequestLimit))
 	v.Set("pg", fmt.Sprint(page))
 	u.RawQuery = v.Encode()
 
 	return scg.client.Get(u.String())
 }
 
-func (scg *SCGClient) SearchProduct(product string) (*SCGSearch, error) {
-	resp, err := scg.client.Get(scgBuylistURL + product)
+type SCGSearchRequest struct {
+	Q                string   `json:"q"`
+	Filter           string   `json:"filter"`
+	MatchingStrategy string   `json:"matchingStrategy"`
+	Limit            int      `json:"limit"`
+	Offset           int      `json:"offset"`
+	Sort             []string `json:"sort"`
+}
+
+type SCGSearchResponse struct {
+	Message            string    `json:"message,omitempty"`
+	Code               string    `json:"code,omitempty"`
+	Type               string    `json:"type,omitempty"`
+	Link               string    `json:"link,omitempty"`
+	Hits               []SCGCard `json:"hits"`
+	Query              string    `json:"query"`
+	ProcessingTimeMs   int       `json:"processingTimeMs"`
+	Limit              int       `json:"limit"`
+	Offset             int       `json:"offset"`
+	EstimatedTotalHits int       `json:"estimatedTotalHits"`
+}
+
+type SCGCard struct {
+	Name            string           `json:"name"`
+	ID              int              `json:"id"`
+	Subtitle        string           `json:"subtitle"`
+	Sku             string           `json:"sku"`
+	ProductType     string           `json:"product_type"`
+	CardName        string           `json:"card_name"`
+	Finish          string           `json:"finish"`
+	Language        string           `json:"language"`
+	CollectorNumber string           `json:"collector_number"`
+	Rarity          string           `json:"rarity"`
+	SetID           int              `json:"set_id"`
+	SetName         string           `json:"set_name"`
+	SetReleaseDate  int              `json:"set_release_date"`
+	SetSymbol       string           `json:"set_symbol"`
+	IsBuying        int              `json:"is_buying"`
+	Hotlist         int              `json:"hotlist"`
+	Variants        []SCGCardVariant `json:"variants"`
+}
+
+type SCGCardVariant struct {
+	ID                 int     `json:"id"`
+	Name               string  `json:"name"`
+	Subtitle           string  `json:"subtitle"`
+	VariantName        string  `json:"variant_name"`
+	VariantValue       string  `json:"variant_value"`
+	Sku                string  `json:"sku"`
+	IsBuying           int     `json:"is_buying"`
+	Hotlist            float64 `json:"hotlist"`
+	BuyPrice           float64 `json:"buy_price"`
+	TradePrice         float64 `json:"trade_price"`
+	BonusCalculationID int     `json:"bonus_calculation_id"`
+}
+
+func (scg *SCGClient) SearchAll(offset, limit int) (*SCGSearchResponse, error) {
+	q := SCGSearchRequest{
+		Filter:           "is_buying = 1 AND (product_type = \"Singles\") AND ((language = \"en\") OR (language = \"ja\"))",
+		MatchingStrategy: "all",
+		Limit:            limit,
+		Offset:           offset,
+		Sort:             []string{"name:asc", "set_name:asc", "finish:desc"},
+	}
+	payload, err := json.Marshal(&q)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, scgBuylistURL, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", "Bearer "+scg.bearer)
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := scg.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -96,16 +154,14 @@ func (scg *SCGClient) SearchProduct(product string) (*SCGSearch, error) {
 		return nil, err
 	}
 
-	var search SCGSearch
+	var search SCGSearchResponse
 	err = json.Unmarshal(data, &search)
 	if err != nil {
 		return nil, err
 	}
-	if !search.Ok {
-		return nil, fmt.Errorf("%s", search.Msg)
-	}
-	if search.Results == nil {
-		return nil, fmt.Errorf("product %s not found", product)
+
+	if search.Message != "" {
+		return nil, fmt.Errorf(search.Message)
 	}
 
 	return &search, nil

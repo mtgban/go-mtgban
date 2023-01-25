@@ -2,6 +2,8 @@ package starcitygames
 
 import (
 	"errors"
+	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,6 +17,8 @@ import (
 
 const (
 	defaultConcurrency = 8
+
+	buylistBookmark = "https://sellyourcards.starcitygames.com/bookmark/"
 )
 
 type Starcitygames struct {
@@ -26,22 +30,16 @@ type Starcitygames struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	client   *SCGClient
-	blClient *SCGBuylistClient
+	client *SCGClient
 }
 
-func NewScraper(username, password string) (*Starcitygames, error) {
+func NewScraper(bearer string) *Starcitygames {
 	scg := Starcitygames{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient()
+	scg.client = NewSCGClient(bearer)
 	scg.MaxConcurrency = defaultConcurrency
-	blClient, err := NewSCGBuylistClient(username, password)
-	if err != nil {
-		return nil, err
-	}
-	scg.blClient = blClient
-	return &scg, nil
+	return &scg
 }
 
 type responseChan struct {
@@ -88,11 +86,10 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 			conditions := strings.TrimSpace(fields[0])
 			language := strings.TrimSpace(fields[1])
 
-			cc := SCGCard{
-				Name:     cardName,
-				Language: language,
+			cc := SCGCardVariant{
+				Name: cardName,
 			}
-			theCard, err := preprocess(&cc, edition)
+			theCard, err := preprocess(&cc, edition, language, false)
 			if err != nil {
 				return
 			}
@@ -171,7 +168,7 @@ func (scg *Starcitygames) scrape() error {
 	if err != nil {
 		return err
 	}
-	totalPages := items/scgDefaultPages + 1
+	totalPages := items/DefaultRequestLimit + 1
 	scg.printf("Found %d items for %d pages", items, totalPages)
 
 	pages := make(chan int)
@@ -227,26 +224,38 @@ func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
 
 }
 
-func (scg *Starcitygames) processProduct(channel chan<- responseChan, product string) error {
-	search, err := scg.client.SearchProduct(product)
+func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) error {
+	search, err := scg.client.SearchAll(page, DefaultRequestLimit)
 	if err != nil {
 		return err
 	}
 
-	for _, results := range search.Results {
-		if len(results) == 0 {
-			continue
+	for _, hit := range search.Hits {
+		foil := ","
+		if hit.Finish == "foil" {
+			foil = "f"
 		}
+		link, _ := url.JoinPath(
+			buylistBookmark,
+			url.QueryEscape(hit.Name),
+			",/0/0/0", // various faucets (hot list, rarity, bulk etc)
+			fmt.Sprint(hit.SetID),
+			",", // unclear
+			hit.Language,
+			"0/999999.99", // min/max price range
+			foil,
+			"default",
+		)
 
-		for _, result := range results {
-			conditions := result.Condition
+		for _, result := range hit.Variants {
+			conditions := result.VariantValue
 			switch conditions {
-			case "NM/M":
+			case "NM", "NM/M":
 				conditions = "NM"
 			case "PL":
 				conditions = "SP"
 				// Stricter grading for foils
-				if result.Foil {
+				if hit.Finish == "foil" {
 					conditions = "MP"
 				}
 			case "HP":
@@ -256,7 +265,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				continue
 			}
 
-			theCard, err := preprocess(&result, search.Edition)
+			theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "foil")
 			if err != nil {
 				continue
 			}
@@ -267,7 +276,7 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 			} else if err != nil {
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
-				scg.printf("'%q' (%s)", result, search.Edition)
+				scg.printf("'%q' (%s, %s, %s)", result, hit.SetName, hit.Language, hit.Finish)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
@@ -280,13 +289,9 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				continue
 			}
 
-			price, err := strconv.ParseFloat(result.Price, 64)
-			if err != nil {
-				scg.printf("%s %s", theCard.Name, err)
-				continue
-			}
-
 			var priceRatio, sellPrice float64
+			price := result.BuyPrice
+			trade := result.TradePrice
 
 			invCards := scg.inventory[cardId]
 			for _, invCard := range invCards {
@@ -297,15 +302,27 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 				priceRatio = price / sellPrice * 100
 			}
 
+			// Add the line entry as needed by the csv import
+			var customFields map[string]string
+			if conditions == "NM" {
+				customFields = map[string]string{
+					"SCGName":     hit.Name,
+					"SCGEdition":  hit.SetName,
+					"SCGLanguage": hit.Language,
+					"SCGFinish":   hit.Finish,
+				}
+			}
+
 			channel <- responseChan{
 				cardId: cardId,
 				buyEntry: &mtgban.BuylistEntry{
-					Conditions: conditions,
-					BuyPrice:   price,
-					TradePrice: price * 1.30,
-					Quantity:   0,
-					PriceRatio: priceRatio,
-					URL:        "https://old.starcitygames.com/buylist",
+					Conditions:   conditions,
+					BuyPrice:     price,
+					TradePrice:   trade,
+					Quantity:     0,
+					PriceRatio:   priceRatio,
+					URL:          link,
+					CustomFields: customFields,
 				},
 			}
 		}
@@ -314,21 +331,22 @@ func (scg *Starcitygames) processProduct(channel chan<- responseChan, product st
 }
 
 func (scg *Starcitygames) parseBL() error {
-	categories, err := scg.blClient.ParseCategories()
+	search, err := scg.client.SearchAll(0, 1)
 	if err != nil {
 		return err
 	}
-	scg.printf("Parsing %d categories", len(categories))
+	scg.printf("Parsing %d cards", search.EstimatedTotalHits)
 
-	products := make(chan string)
+	pages := make(chan int)
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < scg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for product := range products {
-				err := scg.processProduct(results, product)
+			for page := range pages {
+				scg.printf("Processing page %d", page)
+				err := scg.processBLPage(results, page)
 				if err != nil {
 					scg.printf("%v", err)
 				}
@@ -338,10 +356,10 @@ func (scg *Starcitygames) parseBL() error {
 	}
 
 	go func() {
-		for _, category := range categories {
-			products <- category.Id
+		for j := 0; j < search.EstimatedTotalHits; j += DefaultRequestLimit {
+			pages <- j
 		}
-		close(products)
+		close(pages)
 
 		wg.Wait()
 		close(results)

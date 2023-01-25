@@ -45,13 +45,13 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 	return false
 }
 
-func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
+func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtgmatcher.Card, error) {
 	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
 
 	edition = strings.Replace(edition, "&amp;", "&", -1)
 	if strings.HasSuffix(edition, "(Foil)") {
 		edition = strings.TrimSuffix(edition, " (Foil)")
-		card.Foil = true
+		foil = true
 	}
 
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
@@ -76,7 +76,7 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 		variant += strings.Join(vars[1:], " ")
 	}
 
-	if shouldSkipLang(cardName, edition, variant, card.Language) {
+	if shouldSkipLang(cardName, edition, variant, language) {
 		return nil, errors.New("non-english")
 	}
 
@@ -102,7 +102,7 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 
 	// Make sure not to pollute variants with the language otherwise multiple
 	// variants may be aliased (ie urzalands)
-	switch card.Language {
+	switch language {
 	case "Japanese":
 		if edition == "Chronicles" {
 			edition = "Chronicles Japanese"
@@ -110,7 +110,7 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 			if variant != "" {
 				variant += " "
 			}
-			variant += card.Language
+			variant += language
 		}
 	case "Italian":
 		if edition == "Renaissance" {
@@ -119,7 +119,7 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 			if variant != "" {
 				variant += " "
 			}
-			variant += card.Language
+			variant += language
 		}
 	}
 
@@ -149,6 +149,6 @@ func preprocess(card *SCGCard, edition string) (*mtgmatcher.Card, error) {
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
-		Foil:      card.Foil,
+		Foil:      foil,
 	}, nil
 }
