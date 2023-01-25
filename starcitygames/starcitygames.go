@@ -260,6 +260,10 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 				}
 			case "HP":
 				conditions = "MP"
+				// Stricter grading for foils
+				if hit.Finish == "foil" {
+					conditions = "HP"
+				}
 			default:
 				scg.printf("unknown condition %s for %v", conditions, result)
 				continue
