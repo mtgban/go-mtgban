@@ -3208,6 +3208,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Strixhaven: School of Mages",
 		},
 	},
+	{
+		Id:   "54146218-c228-5e3f-b7de-58fe8df5aabd",
+		Desc: "sta_number_with_just_alt",
+		In: Card{
+			Name:      "Swords to Plowshares",
+			Variation: "Alternate Art",
+			Edition:   "Strixhaven Mystical Archive",
+		},
+	},
 
 	// MH2 and H1R
 	{

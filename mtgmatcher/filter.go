@@ -1130,19 +1130,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Japanese Planeswalkers
 			case "Duel Decks: Jace vs. Chandra",
+				"Strixhaven Mystical Archive",
 				"War of the Spark",
 				"War of the Spark Promos":
-				if inCard.isJPN() && card.Language != mtgjson.LanguageJapanese {
+				if (inCard.isJPN() || inCard.isGenericAltArt()) && card.Language != mtgjson.LanguageJapanese {
 					continue
-				} else if !inCard.isJPN() && card.Language == mtgjson.LanguageJapanese {
-					continue
-				}
-			// Separate JPN and non-JPN cards (foil-etched are parsed above)
-			case "Strixhaven Mystical Archive":
-				cn, _ := strconv.Atoi(card.Number)
-				if (inCard.isJPN() || inCard.isGenericAltArt()) && cn <= 63 {
-					continue
-				} else if !inCard.isJPN() && cn > 63 {
+				} else if !inCard.isJPN() && !inCard.isGenericAltArt() && card.Language == mtgjson.LanguageJapanese {
 					continue
 				}
 			// Due to the WPN lands
