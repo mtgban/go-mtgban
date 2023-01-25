@@ -634,9 +634,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 			// Support the Simplified Chinese Alternative Art Cards
 			// Needs to be before number parsing to handle number variants
-			if inCard.Contains("Chinese") && !card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
+			schineseTag := inCard.Contains("Chinese") || (strings.Contains(inCard.Variation, "CS") && inCard.isGenericAltArt())
+			if schineseTag && !card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
 				continue
-			} else if !inCard.Contains("Chinese") && card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
+			} else if !schineseTag && card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
 				continue
 			}
 

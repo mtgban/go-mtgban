@@ -3573,6 +3573,15 @@ var MatchTests = []MatchTest{
 			Edition: "Prophecy",
 		},
 	},
+	{
+		Id:   "2ebe4799-b0d6-5e10-b2aa-41bfb3764c2f",
+		Desc: "simplified_chinese_short_alt",
+		In: Card{
+			Name:      "Mountain",
+			Variation: "CS Alternate Art 208s",
+			Edition:   "Portal",
+		},
+	},
 
 	// BRRRRRRRR
 	{
