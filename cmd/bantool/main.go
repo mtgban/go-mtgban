@@ -161,16 +161,12 @@ var options = map[string]*scraperOption{
 	"starcitygames": {
 		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
-			scgUsername := os.Getenv("SCG_USERNAME")
-			scgPassword := os.Getenv("SCG_PASSWORD")
-			if scgUsername == "" || scgPassword == "" {
-				return nil, errors.New("missing SCG_USERNAME or SCG_PASSWORD env vars")
+			scgBearer := os.Getenv("SCG_BEARER")
+			if scgBearer == "" {
+				return nil, errors.New("missing SCG_BEARER env var")
 			}
 
-			scraper, err := starcitygames.NewScraper(scgUsername, scgPassword)
-			if err != nil {
-				return nil, err
-			}
+			scraper := starcitygames.NewScraper(scgBearer)
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
