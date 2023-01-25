@@ -58,14 +58,6 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 	duplicate := map[string]bool{}
 
 	for _, group := range product.Grouped.ProductId.Groups {
-		// Use a different grading scale if MINT is present
-		hasMintSeparate := false
-		for _, card := range group.Doclist.Cards {
-			if card.Condition == "MINT" {
-				hasMintSeparate = true
-				break
-			}
-		}
 		for _, card := range group.Doclist.Cards {
 			// Deprecated value
 			if card.Condition == "SP" {
@@ -75,22 +67,13 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			cond := card.Condition
 			switch cond {
 			case "MINT":
-				cond = "NM"
+				continue
 			case "NM":
 				cond = "NM"
-				if hasMintSeparate {
-					cond = "SP"
-				}
 			case "PLD":
 				cond = "SP"
-				if hasMintSeparate {
-					cond = "MP"
-				}
 			case "HP":
 				cond = "MP"
-				if hasMintSeparate {
-					cond = "HP"
-				}
 			default:
 				abu.printf("Unknown '%s' condition", cond)
 				continue
