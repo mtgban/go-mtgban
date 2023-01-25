@@ -1103,7 +1103,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				// Only check when cards do have alts, as some vendors use the
 				// Variation field for unnecessary info for unrelated cards
 				// Skip EA because it does not need this deduplication
-				if !inCard.isExtendedArt() && hasAlternate {
+				if !inCard.isExtendedArt() && !inCard.isEtched() && hasAlternate {
 					if inCard.Variation == "" && card.IsAlternative {
 						continue
 					} else if inCard.Variation != "" && !card.IsAlternative {

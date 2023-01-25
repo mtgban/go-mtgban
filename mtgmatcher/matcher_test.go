@@ -2873,6 +2873,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Buy A Box",
 		},
 	},
+	{
+		Id:   "e511d4fa-81ee-5879-a9fd-fe2217aba7b3",
+		Desc: "cmr_etched_not_launch",
+		In: Card{
+			Name:      "Sengir, the Dark Baron",
+			Variation: "Foil Etched",
+			Edition:   "Commander Legends Variants",
+		},
+	},
 
 	// CLB puts some extended arts before normal printings
 	{
