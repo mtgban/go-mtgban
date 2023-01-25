@@ -175,10 +175,11 @@ func SkipLanguage(cardName, edition, language string) bool {
 		Variation: language,
 	}
 	adjustEdition(&card)
-	edition = card.Edition
+	edition = strings.ToLower(card.Edition)
+	cardName = strings.ToLower(card.Name)
 
 	switch {
-	case strings.HasPrefix(edition, "30th Anniversary"):
+	case strings.HasPrefix(edition, "30th anniversary"):
 		return false
 	}
 
@@ -186,39 +187,39 @@ func SkipLanguage(cardName, edition, language string) bool {
 	case "en", "english", "":
 	case "it", "italian":
 		switch edition {
-		case "Foreign Black Border",
-			"Legends Italian",
-			"Rinascimento",
-			"The Dark Italian":
+		case "foreign black border",
+			"legends italian",
+			"rinascimento",
+			"the dark italian":
 		default:
 			return true
 		}
 	case "jp", "japanese":
 		switch edition {
-		case "Chronicles Japanese",
-			"Dominaria United Japanese Promo Tokens",
-			"Fourth Edition Foreign Black Border",
-			"Magic Premiere Shop",
-			"Strixhaven Mystical Archive",
-			"War of the Spark",
-			"War of the Spark Promos":
-		case "Ikoria: Lair of Behemoths":
+		case "chronicles japanese",
+			"dominaria united japanese promo tokens",
+			"fourth edition foreign black border",
+			"magic premiere shop",
+			"strixhaven mystical archive",
+			"war of the spark",
+			"war of the spark promos":
+		case "ikoria: lair of behemoths":
 			switch cardName {
-			case "Mysterious Egg", "Mothra's Great Cocoon",
-				"Dirge Bat", "Battra, Dark Destroyer",
-				"Crystalline Giant", "Mechagodzilla, the Weapon":
+			case "mysterious egg", "mothra's great cocoon",
+				"dirge bat", "battra, dark destroyer",
+				"crystalline giant", "mechagodzilla, the weapon":
 			default:
 				return true
 			}
-		case "Kaldheim Promos":
-			if cardName != "Fiendish Duo" {
+		case "kaldheim promos":
+			if cardName != "fiendish duo" {
 				return true
 			}
-		case "Secrat Lair Drop",
-			"URL/Convention Promos",
-			"Unique and Miscellaneous Promos",
-			"Resale Promos",
-			"Media Inserts":
+		case "secrat lair drop",
+			"url/convention promos",
+			"unique and miscellaneous promos",
+			"resale promos",
+			"media inserts":
 			// No specific card because these are a evolving sets,
 			// with new cards added every now and then
 		default:
@@ -226,7 +227,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 		}
 	case "zhs", "zh-CN", "chinese", "simplified chinese", "chinese simplified":
 		switch edition {
-		case "Simplified Chinese Alternate Art Cards":
+		case "simplified chinese alternate art cards":
 			if !HasChineseAltArtPrinting(cardName) {
 				return true
 			}
