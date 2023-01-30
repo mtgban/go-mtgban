@@ -2892,7 +2892,9 @@ var mb1plistVariants = map[string]map[string]string{
 		"core set 2019": "1683",
 	},
 	"Rout": {
-		"commander 2017": "970",
+		"c21":            "970",
+		"commander 2021": "970",
+		"inv":            "823",
 		"invasion":       "823",
 	},
 	"Rogue's Passage": {
