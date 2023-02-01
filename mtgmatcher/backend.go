@@ -672,6 +672,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.AllSealed = sealed
 	backend.Sets = ap.Data
 	backend.Cards = cards
+	backend.Tokens = tokens
 	backend.UUIDs = uuids
 	backend.Scryfall = scryfall
 	backend.Tcgplayer = tcgplayer
