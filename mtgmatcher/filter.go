@@ -493,6 +493,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch set.Code {
 			// The sets with thick display cards separate from the main commander set
 			case "OC21", "OAFC", "OMIC", "OVOC":
+			// SLD may contain DFC with thick display
+			case "SLD":
 			default:
 				// Skip any set before this date if not from the sets above
 				if setDate.Before(SeparateFinishCollectorNumberDate) {

@@ -3006,6 +3006,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Commander: Streets of New Capenna",
 		},
 	},
+	{
+		Id:   "2ef3715f-fcb9-5385-a161-962c83ae5bab",
+		Desc: "display_commander_sld",
+		In: Card{
+			Name:      "Zndrsplt, Eye of Wisdom // Zndrsplt, Eye of Wisdom",
+			Variation: "Thick Stock Display Commander",
+			Edition:   "Secret Lair Drop Series",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported
