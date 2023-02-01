@@ -58,6 +58,8 @@ var backend struct {
 
 	// Map with token names
 	Tokens map[string]bool
+	// DFC with equal names on both sides
+	DFCSameNames map[string]bool
 
 	// Slice with every uniquely normalized name
 	AllNames []string
@@ -300,6 +302,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
 	tokens := map[string]bool{}
+	dfcSameNames := map[string]bool{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
@@ -411,6 +414,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				// Skip faces of DFCs with same names, so that faces don't pollute
 				// the main dictionary with a wrong rename
 				if set.Code == "SLD" && card.IsDFCSameName() {
+					// Save the names so that we don't have to keep a list
+					dfcSameNames[Normalize(name)] = true
 					continue
 				}
 				alternates[Normalize(name)] = alternateProps{
@@ -673,6 +678,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.Tokens = tokens
+	backend.DFCSameNames = dfcSameNames
 	backend.UUIDs = uuids
 	backend.Scryfall = scryfall
 	backend.Tcgplayer = tcgplayer

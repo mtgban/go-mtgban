@@ -700,13 +700,8 @@ func adjustEdition(inCard *Card) {
 
 	// Secret Lair {Ultimate,Drop}
 	case inCard.Contains("Secret") || Contains(inCard.Variation, "Lair"):
-		// Restore the canonical name for these specific cards
-		switch inCard.Name {
-		case "Krark's Thumb",
-			"Okaun, Eye of Chaos",
-			"Propaganda",
-			"Stitch in Time",
-			"Zndrsplt, Eye of Wisdom":
+		// Restore the canonical name for DFC cards with same names
+		if backend.DFCSameNames[Normalize(inCard.Name)] {
 			inCard.Name = inCard.Name + " // " + inCard.Name
 		}
 		if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
