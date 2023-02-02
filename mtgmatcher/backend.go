@@ -411,9 +411,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					"Start":
 					continue
 				}
-				// Skip faces of DFCs with same names, so that faces don't pollute
-				// the main dictionary with a wrong rename
-				if set.Code == "SLD" && card.IsDFCSameName() {
+				// Skip faces of DFCs with same names that aren't reskin version of other cars,
+				// so that face names don't pollute the main dictionary with a wrong rename
+				if set.Code == "SLD" && card.IsDFCSameName() && card.FlavorName == "" {
 					// Save the names so that we don't have to keep a list
 					dfcSameNames[Normalize(name)] = true
 					continue

@@ -1278,6 +1278,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Innistrad: Crimson Vow Variants",
 		},
 	},
+	{
+		Id:   "6a3c769c-af38-5fcc-adb7-126dad4f7f86",
+		Desc: "dfc_reprint_flavor",
+		In: Card{
+			Name:      "The AllSpark",
+			Variation: "1080",
+			Edition:   "Secret Lair Drop Series",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	{
