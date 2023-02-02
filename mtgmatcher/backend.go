@@ -671,6 +671,14 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		allUUIDs = append(allUUIDs, uuid)
 	}
 
+	// Filter out token names with same names as real cards
+	for tokenName := range tokens {
+		_, found := cards[Normalize(tokenName)]
+		if found {
+			delete(tokens, tokenName)
+		}
+	}
+
 	backend.Hashes = hashes
 	backend.AllUUIDs = allUUIDs
 	backend.AllNames = names
