@@ -582,6 +582,14 @@ var MatchTests = []MatchTest{
 			Edition: "Secret Lair",
 		},
 	},
+	{
+		Id:   "9f9c49af-02d5-5219-8827-98b857cfae3f",
+		Desc: "dfc_sld_has_thick_variant",
+		In: Card{
+			Name:    "Zndrsplt, Eye of Wisdom // Zndrsplt, Eye of Wisdom",
+			Edition: "Secret Lair Series",
+		},
+	},
 
 	// Incorrect editions
 	{
