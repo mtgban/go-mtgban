@@ -64,6 +64,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	} else if cardName == "Elvish Vanguard" && (strings.Contains(variant, "Spanish") || strings.Contains(variant, "French") || strings.Contains(variant, "Italian")) {
 
 		return nil, errors.New("non english")
+	} else if strings.Contains(variant, "JP Amazon Exclusive") ||
+		strings.Contains(variant, "SEA Exclusive") ||
+		strings.Contains(variant, "JP WonderGOO Exclusive") ||
+		strings.Contains(variant, "JP Hareruya Exclusive") {
+		return nil, errors.New("unofficial")
 	}
 
 	ogVariant := variant
@@ -235,11 +240,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				edition = "PSVC"
 			} else if product.isToken() && strings.Contains(variant, "JP") && strings.Contains(variant, "Exclusive") {
 				edition = "WDMU"
-			} else if strings.Contains(variant, "JP Amazon Exclusive") ||
-				strings.Contains(variant, "SEA Exclusive") ||
-				strings.Contains(variant, "JP WonderGOO Exclusive") ||
-				strings.Contains(variant, "JP Hareruya Exclusive") {
-				return nil, errors.New("unofficial")
 			}
 		}
 	case "Special Occasion":
