@@ -109,7 +109,8 @@ var months = []string{
 
 // ExtractNumber returns as lower case string with the _first_ collector number
 // below 1993 found in a given string, or an empty string if none could be found.
-// The input string may have a single character as prefix or suffix (but not both).
+// The input string may have a single character as prefix or up to two characters
+// as suffix (one letter and one special character), but not both.
 // Any extra letters will be ignored while determining the number portion, but
 // preserved in the ouput, and returned as lowercase.
 // Any leading # characters, zeroes or parenthesis are stripped away.
@@ -150,12 +151,12 @@ func ExtractNumber(str string) string {
 				strings.HasSuffix(num, mtgjson.SuffixVariant) {
 				// Strip any extra characters at the end
 				trimmed := num
-				if unicode.IsLetter(rune(num[len(num)-1])) {
-					trimmed = num[:len(num)-1]
-				} else {
-					trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixSpecial)
-					trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixVariant)
+				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixSpecial)
+				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixVariant)
+				if unicode.IsLetter(rune(trimmed[len(trimmed)-1])) {
+					trimmed = trimmed[:len(trimmed)-1]
 				}
+
 				// Try converting to an integer number
 				val, err = strconv.Atoi(trimmed)
 				if err == nil && val < 1993 {

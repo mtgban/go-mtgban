@@ -80,6 +80,10 @@ var NumberTests = []ExtractTest{
 		In:  "37★",
 		Out: "37★",
 	},
+	{
+		In:  "1F★",
+		Out: "1f★",
+	},
 }
 
 func TestExtractNumber(t *testing.T) {
