@@ -65,6 +65,7 @@ type Card struct {
 	Rarity              string            `json:"rarity"`
 	SetCode             string            `json:"setCode"`
 	Side                string            `json:"side"`
+	Subsets             []string          `json:"subsets"`
 	Types               []string          `json:"types"`
 	Subtypes            []string          `json:"subtypes"`
 	Supertypes          []string          `json:"supertypes"`
