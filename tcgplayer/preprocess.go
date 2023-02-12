@@ -184,6 +184,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = "P15A"
 		case "Gideon, Ally of Zendikar", "Selfless Spirit", "Thraben Inspector":
 			edition = "PRCQ"
+		case "Thing in the Ice // Awoken Horror":
+			edition = "PR23"
+		default:
+			if len(mtgmatcher.MatchInSet(cardName, "PR23")) > 0 {
+				edition = "PR23"
+			}
 		}
 	case "WMCQ Promo Cards":
 		switch cardName {
