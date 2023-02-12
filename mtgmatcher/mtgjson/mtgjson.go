@@ -124,6 +124,10 @@ const (
 	PromoTypeSurgeFoil  = "surgefoil"
 	PromoTypeGlossy     = "glossy"
 
+	PromoTypeStepAndCompleat = "stepandcompleat"
+	PromoTypeOilSlick        = "oilslick"
+	PromoTypeConcept         = "concept"
+
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
 	PromoTypeArenaLeague   = "arenaleague"
@@ -146,6 +150,7 @@ var AllPromoTypes = []string{
 	PromoTypeBoosterfun,
 	PromoTypeBundle,
 	PromoTypeBuyABox,
+	PromoTypeConcept,
 	PromoTypeDracula,
 	PromoTypeGalaxyFoil,
 	PromoTypeGameDay,
@@ -156,12 +161,14 @@ var AllPromoTypes = []string{
 	PromoTypeIntroPack,
 	PromoTypeJudgeGift,
 	PromoTypeNeonInk,
+	PromoTypeOilSlick,
 	PromoTypePlayPromo,
 	PromoTypePlayerRewards,
 	PromoTypePrerelease,
 	PromoTypePromoPack,
 	PromoTypeRelease,
 	PromoTypeSChineseAltArt,
+	PromoTypeStepAndCompleat,
 	PromoTypeSurgeFoil,
 	PromoTypeTextured,
 	PromoTypeThickDisplay,

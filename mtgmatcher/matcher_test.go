@@ -3638,6 +3638,71 @@ var MatchTests = []MatchTest{
 			Edition:   "Transformers",
 		},
 	},
+
+	// ONE cards
+	{
+		Id:   "aff50d55-5c85-5871-b7b5-20f00bf6f617",
+		Desc: "one_step_wrong_edition",
+		In: Card{
+			Name:      "Urabrask, Heretic Praetor",
+			Variation: "Concept Praetor Step-And-Compleat Foil",
+			Edition:   "Phyrexia: All Will Be One",
+		},
+	},
+	{
+		Id:   "d54d0c03-a5ba-531d-97ae-4c065a3bbf11",
+		Desc: "one_step_normal_tag",
+		In: Card{
+			Name:      "Thrummingbird",
+			Variation: "Showcase Step-and-Compleat Foil",
+			Edition:   "Phyrexia: All Will Be One",
+		},
+	},
+	{
+		Id:   "ec5bbe93-5a39-5d12-b9d5-2a310fee0d85",
+		Desc: "one_showcase_tag",
+		In: Card{
+			Name:      "Thrummingbird",
+			Variation: "Showcase",
+			Edition:   "Phyrexia: All Will Be One",
+		},
+	},
+	{
+		Id:   "1ada23b6-f837-5c93-8be4-256481515379",
+		Desc: "one_many_tags",
+		In: Card{
+			Name:      "Island",
+			Variation: "Full Art Oil Slick Raised Foil Phyrexian",
+			Edition:   "Phyrexia: All Will Be One",
+			Foil:      true,
+		},
+	},
+	{
+		Id:   "b72c847f-81f7-508f-bdd8-8580cdd589af",
+		Desc: "one_normal_tag",
+		In: Card{
+			Name:    "Migloz, Maze Crusher",
+			Edition: "Phyrexia: All Will Be One",
+		},
+	},
+	{
+		Id:   "81f3f988-934e-5aa0-8938-9aa7393b52c2",
+		Desc: "one_incomplete_tag",
+		In: Card{
+			Name:      "Mondrak, Glory Dominus",
+			Variation: "Showcase",
+			Edition:   "Phyrexia: All Will Be One",
+		},
+	},
+	{
+		Id:   "1a21a7f0-f5f6-5107-906b-5a33b9f5532e",
+		Desc: "one_wrong_tag",
+		In: Card{
+			Name:      "Sheoldred, the Apocalypse",
+			Variation: "Concept Praetor",
+			Edition:   "Phyrexia: All Will Be One",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

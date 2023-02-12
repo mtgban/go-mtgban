@@ -818,6 +818,13 @@ func adjustEdition(inCard *Card) {
 	case inCard.isRelease() && strings.Contains(edition, "Battlebond") && len(MatchInSet(inCard.Name, "PBBD")) == 1:
 		edition = backend.Sets["PBBD"].Name
 
+	// Remove edition since the cards are either in ONE or in another set, but single printed
+	case inCard.Contains("Phyrexia: All") && inCard.Contains("Concept"):
+		switch inCard.Name {
+		default:
+			edition = "ignored"
+		}
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {

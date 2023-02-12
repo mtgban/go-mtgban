@@ -395,6 +395,7 @@ func (c *Card) isExtendedArt() bool {
 func (c *Card) isShowcase() bool {
 	return Contains(c.Variation, "Showcase") ||
 		Contains(c.Variation, "Eternal Night") ||
+		Contains(c.Variation, "Ichor") ||
 		Contains(c.Variation, "Sketch") // binderpos
 }
 
@@ -408,6 +409,18 @@ func (c *Card) isReskin() bool {
 
 func (c *Card) isGilded() bool {
 	return Contains(c.Variation, "Gilded")
+}
+
+func (c *Card) isStepAndCompleat() bool {
+	return Contains(c.Variation, "Compleat")
+}
+
+func (c *Card) isOilSlick() bool {
+	return Contains(c.Variation, "Slick")
+}
+
+func (c *Card) isConcept() bool {
+	return Contains(c.Variation, "Concept")
 }
 
 func (c *Card) isFNM() bool {

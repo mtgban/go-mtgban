@@ -825,6 +825,9 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					!card.HasPromoType(mtgjson.PromoTypeTextured) &&
 					!card.HasFrameEffect(mtgjson.FrameEffectShattered) &&
 					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) &&
+					!card.HasPromoType(mtgjson.PromoTypeOilSlick) &&
+					!card.HasPromoType(mtgjson.PromoTypeStepAndCompleat) &&
+					!card.HasPromoType(mtgjson.PromoTypeConcept) &&
 					!card.HasPromoType(mtgjson.PromoTypeThickDisplay) &&
 					!card.IsDFCSameName() {
 					// IKO may have showcase cards which happen to be borderless
@@ -848,11 +851,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				// ELD-Style showcase
-				if inCard.isShowcase() || inCard.isGilded() || inCard.isPhyrexian() {
+				if inCard.isShowcase() || inCard.isGilded() || (inCard.isPhyrexian() && !inCard.isBasicFullArt()) {
 					if !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 						continue
 					}
-				} else {
+					//
+				} else if !card.HasPromoType(mtgjson.PromoTypeOilSlick) {
 					// NEO has showcase cards that aren't marked as such when they are Etched
 					// same for DMU and Textured
 					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) && !inCard.isEtched() && !inCard.isTextured() {
@@ -923,6 +927,37 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				} else {
 					if card.HasPromoType(mtgjson.PromoTypeSurgeFoil) {
+						continue
+					}
+				}
+
+				// ONE-style, present across many editions
+				if inCard.isStepAndCompleat() {
+					if !card.HasPromoType(mtgjson.PromoTypeStepAndCompleat) {
+						continue
+					}
+				} else {
+					if card.HasPromoType(mtgjson.PromoTypeStepAndCompleat) {
+						continue
+					}
+				}
+
+				if inCard.isConcept() {
+					if !card.HasPromoType(mtgjson.PromoTypeConcept) {
+						continue
+					}
+				} else {
+					if card.HasPromoType(mtgjson.PromoTypeConcept) {
+						continue
+					}
+				}
+
+				if inCard.isOilSlick() {
+					if !card.HasPromoType(mtgjson.PromoTypeOilSlick) {
+						continue
+					}
+				} else {
+					if card.HasPromoType(mtgjson.PromoTypeOilSlick) {
 						continue
 					}
 				}
