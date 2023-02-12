@@ -107,12 +107,12 @@ var months = []string{
 	"december",
 }
 
-// ExtractNumber returns as string with _first_ number below 1993 found in a
-// given string, or an empty string if none could be found.
-// The input string may have a single character as prefix or suffix (but not both),
-// which will be ignored while determining the number portion, but preserved,
-// in lowercase if suffix, or as-is if prefix.
-// Any leading # characters or parenthesis are stripped away.
+// ExtractNumber returns as lower case string with the _first_ collector number
+// below 1993 found in a given string, or an empty string if none could be found.
+// The input string may have a single character as prefix or suffix (but not both).
+// Any extra letters will be ignored while determining the number portion, but
+// preserved in the ouput, and returned as lowercase.
+// Any leading # characters, zeroes or parenthesis are stripped away.
 // Numbers starting with M are ignored because they could be confused
 // with core set names.
 // If a month name is detected anywhere as a single word in the input string,
@@ -165,7 +165,7 @@ func ExtractNumber(str string) string {
 			if !unicode.IsDigit(rune(num[0])) && num[0] != 'M' {
 				val, err = strconv.Atoi(strings.TrimLeft(num[1:], "0"))
 				if err == nil && val < 1993 {
-					return num
+					return strings.ToLower(num)
 				}
 			}
 		}

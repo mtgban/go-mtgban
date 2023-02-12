@@ -38,7 +38,7 @@ var NumberTests = []ExtractTest{
 	},
 	{
 		In:  "A08",
-		Out: "A08",
+		Out: "a08",
 	},
 	{
 		In:  "2000",

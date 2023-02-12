@@ -788,9 +788,9 @@ var arnGuilds = []string{"azorius", "gruul", "orzhov", "rakdos", "simic"}
 
 func (c *Card) ravnicaWeekend() (string, string) {
 	num := ExtractNumber(c.Variation)
-	if strings.HasPrefix(num, "A") {
+	if strings.HasPrefix(num, "a") {
 		return "GRN Ravnica Weekend", num
-	} else if strings.HasPrefix(num, "B") {
+	} else if strings.HasPrefix(num, "b") {
 		return "RNA Ravnica Weekend", num
 	}
 

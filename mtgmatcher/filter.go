@@ -747,7 +747,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 							continue
 						}
 						number := num + numSuffix
-						if number == card.Number {
+						if number == strings.ToLower(card.Number) {
 							outCards = append(outCards, card)
 
 							// Card was found, skip any other suffix
