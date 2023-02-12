@@ -322,6 +322,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if strings.Contains(ogVariant, "Etched") {
 				variant = "etched"
 			}
+		case "Zndrsplt, Eye of Wisdom", "Okaun, Eye of Chaos":
+			variant = ogVariant
 		}
 	case "Planeswalker Event Promos":
 		variant = ""
