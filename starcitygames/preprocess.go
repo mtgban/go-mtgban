@@ -142,6 +142,7 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 		switch cardName {
 		case "Arcane Signet":
 			edition = "P30A"
+			variant = "1F★"
 		}
 	}
 
