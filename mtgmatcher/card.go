@@ -482,6 +482,7 @@ func (c *Card) isRewards() bool {
 
 func (c *Card) isMagicFest() bool {
 	return c.Contains("Magic Fest") ||
+		strings.Contains(c.Edition, "MFP") || // tcg collection
 		strings.Contains(c.Variation, "MFP") || // tcg collection
 		c.Variation == "Commander Promo" // ck
 }
