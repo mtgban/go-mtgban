@@ -2502,6 +2502,16 @@ var MatchTests = []MatchTest{
 			Foil:    true,
 		},
 	},
+	{
+		Id:   "474cf6a0-9d91-59f1-aef8-2b0b8b5e23a5",
+		Desc: "7ED_duplicate_foil_number",
+		In: Card{
+			Name:      "Plains",
+			Edition:   "Seventh Edition",
+			Variation: "343",
+			Foil:      true,
+		},
+	},
 
 	// Portal variants
 	{

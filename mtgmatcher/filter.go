@@ -740,6 +740,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						}
 					}
 
+					// Some editions duplicate foil and nonfoil in the same set
+					if inCard.Foil {
+						switch set.Code {
+						case "7ED", "8ED", "9ED", "10E":
+							possibleSuffixes = []string{mtgjson.SuffixSpecial}
+						}
+					}
+
 					for _, numSuffix := range possibleSuffixes {
 						// The self test is already expressed by the empty string
 						// This avoids an odd case of testing 1.1 = 11
