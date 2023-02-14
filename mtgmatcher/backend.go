@@ -263,8 +263,7 @@ func skipSet(set *mtgjson.Set) bool {
 	switch set.Code {
 	case "PRED", // a single foreign card
 		"PSAL", "PS11", "PHUK", "PHJ", // foreign-only
-		"OLGC", "PMIC", "OVNT", // oversize
-		"FJMP": // jumpstart front cards
+		"OLGC", "PMIC", "OVNT": // oversize
 		return true
 	}
 	// Skip online sets, and any token-based sets
@@ -272,6 +271,7 @@ func skipSet(set *mtgjson.Set) bool {
 		(set.Type == "token" && !okForTokens(set)) ||
 		strings.HasSuffix(set.Name, "Art Series") ||
 		strings.HasSuffix(set.Name, "Minigames") ||
+		strings.HasSuffix(set.Name, "Front Cards") ||
 		strings.Contains(set.Name, "Heroes of the Realm") {
 		return true
 	}
