@@ -77,6 +77,11 @@ func Match(inCard *Card) (cardId string, err error) {
 		return "", ErrDatastoreEmpty
 	}
 
+	// Adjust flag as needed
+	if Contains(inCard.Variation, "foil") && !Contains(inCard.Variation, "non") {
+		inCard.Foil = true
+	}
+
 	// Look up by uuid
 	if inCard.Id != "" {
 		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())

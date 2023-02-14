@@ -201,6 +201,14 @@ var MatchTests = []MatchTest{
 			Variation: "Etched",
 		},
 	},
+	{
+		Id:   "f3a94132-ce71-5556-bfd3-1461601a810d_f",
+		Desc: "id_lookup_foil_in_variation",
+		In: Card{
+			Id:        "f3a94132-ce71-5556-bfd3-1461601a810d",
+			Variation: "Foil",
+		},
+	},
 
 	// Number duplicates
 	{
