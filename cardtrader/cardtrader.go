@@ -123,7 +123,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 		conditions, found := condMap[cond]
 		if !found {
-			return fmt.Errorf("Unsupported %s condition", cond)
+			return fmt.Errorf("unsupported %s condition", cond)
 		}
 
 		finalCardId := cardId
