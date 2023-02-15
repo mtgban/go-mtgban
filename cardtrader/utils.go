@@ -88,7 +88,7 @@ func ExportStock(blueprints map[int]*Blueprint, token string, rates ...float64) 
 			continue
 		}
 
-		err = inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
+		inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
 			Price:      price,
 			Quantity:   quantity,
 			Conditions: conds,
@@ -140,7 +140,7 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 			}
 		}
 
-		err = inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
+		inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
 			Price:        price,
 			Quantity:     quantity,
 			Conditions:   conds,

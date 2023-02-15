@@ -188,8 +188,6 @@ func (cs *Cardshark) scrape() error {
 				if errors.Is(err, mtgmatcher.ErrUnsupported) {
 					return
 				} else if err != nil {
-					return
-				} else if err != nil {
 					// Ignore aliasing errors for this match
 					var alias *mtgmatcher.AliasingError
 					if errors.As(err, &alias) {

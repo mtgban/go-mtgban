@@ -204,7 +204,7 @@ func ConvertItems(blueprints map[int]*Blueprint, products []OrderItem, rates ...
 			continue
 		}
 
-		err = inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
+		inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
 			Price:      price,
 			Quantity:   quantity,
 			Conditions: conds,

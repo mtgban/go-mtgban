@@ -119,7 +119,6 @@ func (ck *CardkingdomHotBuylist) processPage(channel chan<- respChan) error {
 
 type respChan struct {
 	cardId   string
-	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
 
@@ -131,7 +130,7 @@ func (ck *CardkingdomHotBuylist) scrape() error {
 	for i := 0; i < ck.Concurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for _ = range pages {
+			for range pages {
 				err := ck.processPage(channel)
 				if err != nil {
 					ck.printf("%s", err.Error())

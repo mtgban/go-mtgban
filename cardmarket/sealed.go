@@ -21,7 +21,6 @@ type CardMarketSealed struct {
 
 	// Used to skip unrelated products
 	productList MKMProductList
-	editions    []MKMExpansionIdPair
 
 	// Debug aid, set it to print a full product mapping
 	filterEdition string

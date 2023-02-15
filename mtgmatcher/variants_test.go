@@ -10,7 +10,7 @@ func TestVariants(t *testing.T) {
 		table := tables
 
 		for card, variants := range table {
-			for key, _ := range variants {
+			for key := range variants {
 				if key != strings.ToLower(key) {
 					t.Errorf("FAIL: [%s] %s (%s) is not lowercase", edition, card, key)
 				}

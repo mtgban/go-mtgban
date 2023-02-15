@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"strconv"
 
 	"time"
@@ -21,8 +20,6 @@ type TCGSYPList struct {
 	inventoryDate time.Time
 
 	inventory mtgban.InventoryRecord
-
-	client *http.Client
 }
 
 const (
