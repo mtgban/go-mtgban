@@ -124,6 +124,7 @@ const (
 	PromoTypeGalaxyFoil = "galaxyfoil"
 	PromoTypeSurgeFoil  = "surgefoil"
 	PromoTypeGlossy     = "glossy"
+	PromoTypeAmpersand  = "ampersand"
 
 	PromoTypeStepAndCompleat = "stepandcompleat"
 	PromoTypeOilSlick        = "oilslick"
@@ -147,6 +148,7 @@ const (
 )
 
 var AllPromoTypes = []string{
+	PromoTypeAmpersand,
 	PromoTypeArenaLeague,
 	PromoTypeBoosterfun,
 	PromoTypeBundle,
