@@ -320,18 +320,23 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 	// Buylist mode and other random cards
 	// `【EN】《蒸気打ちの親分/Steamflogger Boss》[UST]`
 	if strings.Contains(cardName, "/") {
+		hasJPNtext := false
+		// Check if string contains Japanese text
 		for _, runeValue := range cardName {
-			// Only do this replacement if there is Japanese text, otherwise,
-			// assume a typo and replace the slash with the expected char
 			if unicode.In(runeValue, unicode.Han, unicode.Hiragana, unicode.Katakana) {
-				subfields := strings.Split(cardName, "/")
-				if len(subfields) > 1 {
-					cardName = subfields[1]
-				}
-			} else if !strings.Contains(cardName, "//") {
-				cardName = strings.Replace(cardName, "/", "+", 1)
+				hasJPNtext = true
+				break
 			}
-			break
+		}
+		// Only do this replacement if there is Japanese text, otherwise,
+		// assume a typo and replace the slash with the expected char
+		if hasJPNtext {
+			subfields := strings.Split(cardName, "/")
+			if len(subfields) > 1 {
+				cardName = subfields[1]
+			}
+		} else if !strings.Contains(cardName, "//") {
+			cardName = strings.Replace(cardName, "/", "+", 1)
 		}
 	}
 
