@@ -751,14 +751,14 @@ func adjustEdition(inCard *Card) {
 		edition = "Rinascimento"
 		// This set has lots of variants, strip away any excess data
 		variation = strings.ToLower(inCard.Variation)
-		variation = strings.Replace(inCard.Variation, "italian", "", 1)
-		variation = strings.TrimSpace(inCard.Variation)
+		variation = strings.Replace(variation, "italian", "", 1)
+		variation = strings.TrimSpace(variation)
 	case inCard.Edition == "Chronicles" && Contains(inCard.Variation, "Japanese"):
 		edition += " Japanese"
 		// This set has lots of variants, strip away any excess data
 		variation = strings.ToLower(inCard.Variation)
-		variation = strings.Replace(inCard.Variation, "japanese", "", 1)
-		variation = strings.TrimSpace(inCard.Variation)
+		variation = strings.Replace(variation, "japanese", "", 1)
+		variation = strings.TrimSpace(variation)
 	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
 		edition = "Fourth Edition Foreign Black Border"
 
