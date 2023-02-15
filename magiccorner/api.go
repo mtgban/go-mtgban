@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	http "github.com/hashicorp/go-retryablehttp"
 )
@@ -92,7 +92,7 @@ func (mc *MCClient) GetEditionList(addPromoEd bool) ([]MCEdition, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) 
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, err)
 	}

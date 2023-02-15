@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
@@ -170,7 +170,7 @@ func (ct *CTAuthClient) Expansions() ([]Expansion, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) 
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (ct *CTAuthClient) Blueprints(expansionId int) ([]Blueprint, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (ct *CTAuthClient) ProductsExport() ([]Product, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -327,7 +327,7 @@ func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]st
 			return nil, err
 		}
 
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			return nil, err
@@ -412,7 +412,7 @@ func (ct *CTAuthClient) AddProductToCart(productId, quantity int, zero bool) (*C
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -444,7 +444,7 @@ func (ct *CTClient) ProductsForBlueprint(id int) (*BlueprintFilter, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

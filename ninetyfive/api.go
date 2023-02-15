@@ -3,7 +3,7 @@ package ninetyfive
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
@@ -139,7 +139,7 @@ func (nf *NFClient) query(searchURL string, start, maxResults int) (*NFSearchRes
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -64,9 +64,9 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 // The api seems to return a 200 status code with a plain-text error message
 // "Too Many Requests" even when there just one in progress.
 func customCheckRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	data, _ := ioutil.ReadAll(resp.Body)
+	data, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+	resp.Body = io.NopCloser(bytes.NewBuffer(data))
 	if string(data) == "Too Many Requests" {
 		return true, errors.New(string(data))
 	}
@@ -84,7 +84,7 @@ func (mkm *MKMClient) MKMRawPriceGuide() (string, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -108,7 +108,7 @@ func (mkm *MKMClient) MKMRawProductList() (string, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -141,7 +141,7 @@ func (mkm *MKMClient) MKMExpansions() (map[int]MKMExpansion, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func (mkm *MKMClient) MKMProduct(id int) (*MKMProduct, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func (mkm *MKMClient) MKMProductsInExpansion(id int) ([]MKMProduct, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +299,7 @@ func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
 			return nil, err
 		}
 
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			return nil, err

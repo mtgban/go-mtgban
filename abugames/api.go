@@ -3,7 +3,7 @@ package abugames
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 
 	http "github.com/hashicorp/go-retryablehttp"
@@ -67,7 +67,7 @@ func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

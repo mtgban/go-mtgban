@@ -3,7 +3,7 @@ package cardtrader
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -95,7 +95,7 @@ func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func (ct *CTLoggedClient) GetItemsForOrder(orderId int) ([]OrderItem, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

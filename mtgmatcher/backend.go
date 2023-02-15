@@ -3,7 +3,6 @@ package mtgmatcher
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"sort"
@@ -82,7 +81,7 @@ var backend struct {
 	Tcgplayer map[string]string
 }
 
-var logger = log.New(ioutil.Discard, "", log.LstdFlags)
+var logger = log.New(io.Discard, "", log.LstdFlags)
 
 const (
 	suffixFoil   = "_f"

@@ -3,7 +3,7 @@ package trollandtoad
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/url"
 
 	http "github.com/hashicorp/go-retryablehttp"
@@ -65,7 +65,7 @@ func (tat *TATClient) GetProductOptions(productId string) ([]TATBuyingOption, er
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (tat *TATClient) listEditions(code string) ([]TATEdition, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (tat *TATClient) ProductsForId(id string, code string) (*TATProduct, error)
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

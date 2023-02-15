@@ -2,7 +2,7 @@ package amazon
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -45,7 +45,7 @@ func (amz *AMZClient) GetPrices(list []string) (map[string]map[string]float64, e
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

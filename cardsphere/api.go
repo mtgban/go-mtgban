@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
@@ -32,7 +32,7 @@ func NewCardSphereClient(email, password string) (*CardSphereClient, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (cs *CardSphereClient) getOfferList(offset int, mode string) ([]CardSphereO
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

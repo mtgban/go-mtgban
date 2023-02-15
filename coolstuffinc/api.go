@@ -2,7 +2,7 @@ package coolstuffinc
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 
 	http "github.com/hashicorp/go-retryablehttp"
 )
@@ -45,7 +45,7 @@ func (csi *CSIClient) GetPriceList() ([]CSICard, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

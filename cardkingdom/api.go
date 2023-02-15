@@ -3,7 +3,7 @@ package cardkingdom
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	http "github.com/hashicorp/go-retryablehttp"
 )
@@ -76,7 +76,7 @@ func (ck *CKClient) getList(link string) ([]CKCard, error) {
 		return ck.getList(ckBackupURL)
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (ck *CKClient) GetHotBuylist() ([]CKCard, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
