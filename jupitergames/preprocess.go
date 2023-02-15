@@ -146,9 +146,7 @@ func preprocess(cardName, variant, edition, format string) (*mtgmatcher.Card, er
 	}
 
 	isFoil := strings.Contains(format, "FOIL") && !strings.Contains(format, "NON")
-	if strings.HasPrefix(edition, "Promo - ") {
-		edition = strings.TrimPrefix(edition, "Promo - ")
-	}
+	edition = strings.TrimPrefix(edition, "Promo - ")
 	if strings.Contains(edition, "Prelease") || strings.Contains(edition, "Prerlease") {
 		edition += " Prerelease"
 	}

@@ -294,9 +294,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			return nil, errors.New("untracked")
 		}
 	case "Mystical Archive", "Double Masters: Variants":
-		if strings.Contains(variant, "Showcase Frame") {
-			variant = strings.Replace(variant, "Showcase Frame", "", 1)
-		}
+		variant = strings.Replace(variant, "Showcase Frame", "", 1)
 	case "D&D: Adventures in the Forgotten Realms: Variants",
 		"Unfinity: Variants":
 		if cardName == "Zariel, Archduke of Avernus" && variant == "Showcase Frame" {
@@ -382,13 +380,10 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		}
 	}
 
+	cardName = strings.TrimSuffix(cardName, " -")
 	lutName, found := cardTable[cardName]
 	if found {
 		cardName = lutName
-	}
-
-	if strings.HasSuffix(cardName, " -") {
-		cardName = cardName[:len(cardName)-2]
 	}
 
 	if mtgmatcher.IsBasicLand(cardName) {
@@ -466,9 +461,7 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 			return nil, errors.New("not english")
 		}
 	case "Mystical Archive", "Double Masters: Variants":
-		if strings.Contains(variant, "Showcase Frame") {
-			variant = strings.Replace(variant, "Showcase Frame", "", 1)
-		}
+		variant = strings.Replace(variant, "Showcase Frame", "", 1)
 	case "Dominaria United: Variants":
 		if variant == "Stained Glass Frame" {
 			variant = "Showcase"

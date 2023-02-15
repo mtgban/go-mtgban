@@ -1237,9 +1237,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 					tag := strings.Join(lights, "/")
 					variation := strings.Replace(inCard.Variation, " ", "", -1)
-					if strings.Contains(variation, "-") {
-						variation = strings.Replace(variation, "-", "/", -1)
-					}
+					variation = strings.Replace(variation, "-", "/", -1)
 					if variation != tag {
 						continue
 					}

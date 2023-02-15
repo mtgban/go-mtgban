@@ -474,9 +474,7 @@ func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
 	if strings.HasSuffix(cardName, " HP") {
 		return nil, errors.New("duplicate")
 	}
-	if strings.HasSuffix(cardName, " NM") {
-		cardName = strings.TrimSuffix(cardName, " NM")
-	}
+	cardName = strings.TrimSuffix(cardName, " NM")
 
 	variant := ""
 	if strings.Contains(edition, "(") {

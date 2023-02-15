@@ -187,9 +187,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 	if strings.HasPrefix(title, "【Foil】") {
 		isFoil = true
 		title = strings.TrimPrefix(title, "【Foil】")
-	} else if strings.HasPrefix(title, "【Non-Foil】") {
-		title = strings.TrimPrefix(title, "【Non-Foil】")
 	}
+	title = strings.TrimPrefix(title, "【Non-Foil】")
 	title = strings.TrimSpace(title)
 
 	// Parenthesis variant can be anywhere, in the middle of the title
@@ -223,12 +222,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 	}
 
 	// Double faced cards (+ handle typo)
-	if strings.Contains(title, "》/ 《") {
-		title = strings.Replace(title, "》/ 《", "》/《", 1)
-	}
-	if strings.Contains(title, "》/《") {
-		title = strings.Replace(title, "》/《", " // ", 1)
-	}
+	title = strings.Replace(title, "》/ 《", "》/《", 1)
+	title = strings.Replace(title, "》/《", " // ", 1)
 
 	// Separate name from edition (which may contain some variants)
 	fields := strings.Split(title, "》")
@@ -280,11 +275,8 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 			edition = subsubfields[0]
 			if len(subsubfields) > 1 {
 				maybeYear := subsubfields[1]
-				if strings.HasSuffix(maybeYear, "ver") {
-					maybeYear = strings.TrimSuffix(maybeYear, "ver")
-				} else if strings.HasSuffix(maybeYear, "年版") {
-					maybeYear = strings.TrimSuffix(maybeYear, "年版")
-				}
+				maybeYear = strings.TrimSuffix(maybeYear, "ver")
+				maybeYear = strings.TrimSuffix(maybeYear, "年版")
 				maybeYear = mtgmatcher.ExtractYear(maybeYear)
 				if variant != "" {
 					variant += " "
@@ -341,7 +333,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 	}
 
 	//【EN】《Boom+Bust》[PLC]
-	if strings.Contains(cardName, "+") {
+	if strings.Contains(cardName, "+") && !strings.HasPrefix(cardName, "+") {
 		cardName = strings.Replace(cardName, "+", " // ", 1)
 	}
 
