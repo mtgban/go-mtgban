@@ -244,7 +244,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 
 		// Quiet exit for duplicated tokens from this set
 		if setCode == "TC16" && (strings.HasSuffix(number, "a") || strings.HasSuffix(number, "b")) {
-			return nil, CKErrUnsupported
+			return nil, mtgmatcher.ErrUnsupported
 		}
 	}
 
