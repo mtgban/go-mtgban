@@ -231,6 +231,6 @@ func (bigoc *BigOrbitCards) Inventory() (mtgban.InventoryRecord, error) {
 func (bigoc *BigOrbitCards) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Big Orbit Cards"
 	info.Shorthand = "BIGOC"
-	info.InventoryTimestamp = bigoc.inventoryDate
+	info.InventoryTimestamp = &bigoc.inventoryDate
 	return
 }
