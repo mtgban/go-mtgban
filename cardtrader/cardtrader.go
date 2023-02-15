@@ -46,7 +46,7 @@ func NewScraperMarket(token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.marketplace = map[string]mtgban.InventoryRecord{}
-	ct.MaxConcurrency = 1
+	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
 
 	rate, err := mtgban.GetExchangeRate("EUR")
