@@ -417,22 +417,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	}, nil
 }
 
-var promoTable = map[string]string{
-	"Abrupt Decay":               "WMC",
-	"Abzan Beastmaster":          "F15",
-	"Accumulated Knowledge":      "F04",
-	"Acidic Slime":               "F12",
-	"Acquire":                    "PI14",
-	"Aether Hub":                 "F17",
-	"Ainok Tracker":              "UGIN",
-	"Ajani Steadfast":            "PS14",
-	"Ajani, Caller of the Pride": "PSDC",
-	"Albino Troll":               "F02",
-	"Altar of the Brood":         "UGIN",
-	"Anathemancer":               "F10",
-	"Ancient Grudge":             "F12",
-}
-
 func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	cardName := card.Name
 	variant := card.Variation

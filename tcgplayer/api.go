@@ -23,9 +23,6 @@ const (
 	defaultAPIRetry    = 5
 	maxIdsInRequest    = 250
 
-	pagesPerRequest = 50
-	tcgBaseURL      = "https://shop.tcgplayer.com/productcatalog/product/getpricetable?productId=0&gameName=magic&useV2Listings=true&page=0&pageSize=0&sortValue=price"
-
 	tcgApiTokenURL = "https://api.tcgplayer.com/token"
 
 	tcgApiListProductsURL = "https://api.tcgplayer.com/catalog/products"
@@ -37,9 +34,7 @@ const (
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
 	tcgApiPricingURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/sku/"
 	tcgApiBuylistURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/buy/sku/"
-
-	tcgApiSKUsURL   = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
-	tcgApiSearchURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/categories/1/search"
+	tcgApiSKUsURL    = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
 
 	tcgLatestSalesURL = "https://mpapi.tcgplayer.com/v2/product/%s/latestsales"
 )

@@ -338,18 +338,6 @@ func (mmtg *Mythicmtg) Buylist() (mtgban.BuylistRecord, error) {
 	return mmtg.buylist, nil
 }
 
-func grading(cardId string, entry mtgban.BuylistEntry) (grade map[string]float64) {
-	if entry.BuyPrice < 30 {
-		return nil
-	}
-
-	grade = map[string]float64{
-		"SP": 0.8, "MP": 0.6, "HP": 0,
-	}
-
-	return
-}
-
 func (mmtg *Mythicmtg) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Mythic MTG"
 	info.Shorthand = "MMTG"
