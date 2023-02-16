@@ -11,6 +11,7 @@ type CSICard struct {
 	Id             int     `json:"id,string"`
 	URL            string  `json:"url"`
 	Name           string  `json:"name"`
+	ScryfallId     string  `json:"scryfallid"`
 	Variation      string  `json:"variation"`
 	Edition        string  `json:"edition"`
 	Language       string  `json:"language"`
