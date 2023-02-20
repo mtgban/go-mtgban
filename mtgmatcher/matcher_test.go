@@ -369,6 +369,14 @@ var MatchTests = []MatchTest{
 			Edition:   "Secret Lair Drop Series",
 		},
 	},
+	{
+		Id:   "a494d14e-b4c3-5467-8af5-bad8b41da09a_f",
+		Desc: "number_and_foil_same_line",
+		In: Card{
+			Name:    "Island (369) - [Foil]",
+			Edition: "10th Edition",
+		},
+	},
 
 	// Naming conventions
 	{
