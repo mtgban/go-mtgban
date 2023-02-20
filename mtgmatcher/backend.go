@@ -250,6 +250,16 @@ var specialTags = map[string]string{
 	"Stomping Ground":     "shockland",
 	"Temple Garden":       "shockland",
 	"Watery Grave":        "shockland",
+	"Clifftop Retreat":    "checkland",
+	"Dragonskull Summit":  "checkland",
+	"Drowned Catacomb":    "checkland",
+	"Glacial Fortress":    "checkland",
+	"Hinterland Harbor":   "checkland",
+	"Isolated Chapel":     "checkland",
+	"Rootbound Crag":      "checkland",
+	"Sulfur Falls":        "checkland",
+	"Sunpetal Grove":      "checkland",
+	"Woodland Cemetery":   "checkland",
 }
 
 func okForTokens(set *mtgjson.Set) bool {
