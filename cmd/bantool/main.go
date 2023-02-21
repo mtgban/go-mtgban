@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,6 +50,8 @@ var date = time.Now().Format("2006-01-02")
 var GCSBucket *storage.BucketHandle
 
 var GlobalLogCallback mtgban.LogCallbackFunc
+
+var MaxConcurrency = os.Getenv("MAX_CONCURRENCY")
 
 type scraperOption struct {
 	Enabled    bool
@@ -119,7 +122,10 @@ var options = map[string]*scraperOption{
 			scraper := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
-			scraper.MaxConcurrency = 6
+			num, _ := strconv.Atoi(MaxConcurrency)
+			if num != 0 {
+				scraper.MaxConcurrency = num
+			}
 			return scraper, nil
 		},
 	},
@@ -135,7 +141,10 @@ var options = map[string]*scraperOption{
 			scraper := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
-			scraper.MaxConcurrency = 6
+			num, _ := strconv.Atoi(MaxConcurrency)
+			if num != 0 {
+				scraper.MaxConcurrency = num
+			}
 			reader, err := os.Open(mtgjsonTCGSKUFilepathBZ2)
 			if err != nil {
 				return nil, err
@@ -175,7 +184,10 @@ var options = map[string]*scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			scraper := trollandtoad.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
-			scraper.MaxConcurrency = 6
+			num, _ := strconv.Atoi(MaxConcurrency)
+			if num != 0 {
+				scraper.MaxConcurrency = num
+			}
 			return scraper, nil
 		},
 	},
