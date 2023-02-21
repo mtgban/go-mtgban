@@ -745,7 +745,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						switch set.Code {
 						case "7ED", "8ED", "9ED":
 							possibleSuffixes = []string{mtgjson.SuffixSpecial}
-						case "10E":
+						case "10E", "UNH":
 							possibleSuffixes = []string{"", mtgjson.SuffixSpecial}
 						}
 					}
