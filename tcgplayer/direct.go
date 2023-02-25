@@ -33,15 +33,15 @@ func (tcg *TCGDirectNet) Buylist() (mtgban.BuylistRecord, error) {
 			directCost := 0.3 + entry.Price*(0.0895+0.025)
 
 			var replacementFees float64
-			if entry.Price < 1.50 {
+			if entry.Price < 3 {
 				replacementFees = entry.Price / 2
 				directCost = 0
 			} else if entry.Price < 20 {
-				replacementFees = 1.09
+				replacementFees = 1.12
 			} else if entry.Price < 250 {
-				replacementFees = 3.75
+				replacementFees = 3.97
 			} else {
-				replacementFees = 6.48
+				replacementFees = 6.85
 			}
 
 			link := entry.URL
