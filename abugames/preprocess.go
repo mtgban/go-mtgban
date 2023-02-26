@@ -145,16 +145,19 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		if isPromo {
 			// Handle promo cards appearing in multiple editions
 			// like Sorcerous Spyglass
-			switch edition {
-			case "Aether Revolt",
-				"Ixalan",
-				"Core Set 2020 / M20",
-				"Core Set 2021 / M21",
-				"Throne of Eldraine",
-				"Eldritch Moon",
-				"Innistrad: Crimson Vow":
-				variation += " " + edition
+			if strings.Contains(variation, "Promo Pack") || strings.Contains(variation, "Prerelease") {
+				switch edition {
+				case "Aether Revolt",
+					"Ixalan",
+					"Core Set 2020 / M20",
+					"Core Set 2021 / M21",
+					"Throne of Eldraine",
+					"Eldritch Moon",
+					"Innistrad: Crimson Vow":
+					variation += " " + edition
+				}
 			}
+			// Reset edition, and trust mtgmatcher to find it by its variation
 			edition = "Promo"
 		}
 	}
