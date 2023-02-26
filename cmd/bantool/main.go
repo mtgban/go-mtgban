@@ -72,7 +72,6 @@ var options = map[string]*scraperOption{
 		},
 	},
 	"strikezone": {
-		OnlySeller: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := strikezone.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
@@ -168,7 +167,6 @@ var options = map[string]*scraperOption{
 		},
 	},
 	"starcitygames": {
-		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
 			scgBearer := os.Getenv("SCG_BEARER")
 			if scgBearer == "" {
