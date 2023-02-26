@@ -1311,6 +1311,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Secret Lair Drop Series",
 		},
 	},
+	{
+		Id:   "7beb2d19-5f06-5d83-a9bb-312627934e55",
+		Desc: "dfc_reprint_number",
+		In: Card{
+			Name:      "Blightsteel Colossus",
+			Variation: "1079",
+			Edition:   "Secret Lair",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	{

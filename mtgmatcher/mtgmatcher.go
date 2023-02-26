@@ -717,6 +717,13 @@ func adjustEdition(inCard *Card) {
 			edition = backend.Sets["SLU"].Name
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
 			edition = backend.Sets["SLD"].Name
+		} else {
+			// Last try, check if the card Name exists as DFC
+			altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
+			if found && len(MatchInSet(altProps.OriginalName, "SLD")) != 0 {
+				inCard.Name = altProps.OriginalName
+				edition = backend.Sets["SLD"].Name
+			}
 		}
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
