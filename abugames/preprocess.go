@@ -145,7 +145,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		if isPromo {
 			// Handle promo cards appearing in multiple editions
 			// like Sorcerous Spyglass
-			switch card.Edition {
+			switch edition {
 			case "Aether Revolt",
 				"Ixalan",
 				"Core Set 2020 / M20",
@@ -155,11 +155,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				"Innistrad: Crimson Vow":
 				variation += " " + edition
 			}
-			card.Edition = "Promo"
+			edition = "Promo"
 		}
 	}
 
-	switch card.Edition {
+	switch edition {
 	case "":
 		if mtgmatcher.IsBasicLand(cardName) {
 			card.Edition = "GK2"
