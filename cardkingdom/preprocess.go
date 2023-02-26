@@ -82,6 +82,10 @@ var skuFixupTable = map[string]string{
 	"FMUST-147F": "UPLIST-56",
 	"FMUST-113A": "UPLIST-38",
 	"FMUST-113C": "UPLIST-37",
+
+	// Arcane Signet
+	"FP30A-001":  "P30A-1F",
+	"FEP30A-001": "P30A-1F★",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
