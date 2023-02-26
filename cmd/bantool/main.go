@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +53,17 @@ var GCSBucket *storage.BucketHandle
 var GlobalLogCallback mtgban.LogCallbackFunc
 
 var MaxConcurrency = os.Getenv("MAX_CONCURRENCY")
+
+var Commit = func() string {
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			if setting.Key == "vcs.revision" {
+				return setting.Value
+			}
+		}
+	}
+	return ""
+}()
 
 type scraperOption struct {
 	Enabled    bool
@@ -553,7 +565,13 @@ func run() int {
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
 	devOpt := flag.Bool("dev", false, "Enable dev operations (debugging)")
+	versionOpt := flag.Bool("v", false, "Print version information")
 	flag.Parse()
+
+	if *versionOpt {
+		log.Println("bantool version", Commit)
+		return 0
+	}
 
 	if *devOpt {
 		GlobalLogCallback = log.Printf
