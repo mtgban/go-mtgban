@@ -137,12 +137,19 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 			if variant == "Commander Party Phyrexian" {
 				edition = "PW22"
 			}
+		case "Arcane Signet":
+			if strings.Contains(variant, "Festival") {
+				edition = "P30A"
+				variant = "1F"
+			}
 		}
 	case "Promo: General - Foil Etched":
 		switch cardName {
 		case "Arcane Signet":
-			edition = "P30A"
-			variant = "1F★"
+			if strings.Contains(variant, "Festival") {
+				edition = "P30A"
+				variant = "1F★"
+			}
 		}
 	}
 
