@@ -2807,7 +2807,9 @@ var mb1plistVariants = map[string]map[string]string{
 		"ima":            "926",
 	},
 	"Great Furnace": {
+		"mirrodin":                  "1013",
 		"non-foil - commander 2018": "1675",
+		"commander 2018":            "1675",
 	},
 	"Guttersnipe": {
 		"iconic masters": "970",
@@ -3648,6 +3650,12 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Sliver Legion": {
 		"secret lair: extra life 2022": "1149",
+	},
+	"Nissa, Who Shakes the World": {
+		"stained glass": "518",
+	},
+	"Seize the Day": {
+		"secret lair reskin": "480",
 	},
 }
 
