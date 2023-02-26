@@ -713,6 +713,8 @@ func adjustEdition(inCard *Card) {
 			edition = backend.Sets["SLX"].Name
 		} else if (inCard.Contains("30th") || inCard.Contains("Countdown")) && len(MatchInSet(inCard.Name, "SLC")) != 0 {
 			edition = backend.Sets["SLC"].Name
+		} else if (inCard.Contains("Showdown") || inCard.Contains("Play")) && len(MatchInSet(inCard.Name, "SLP")) != 0 {
+			edition = backend.Sets["SLP"].Name
 		} else if len(MatchInSet(inCard.Name, "SLU")) != 0 {
 			edition = backend.Sets["SLU"].Name
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
