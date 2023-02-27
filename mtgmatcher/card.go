@@ -869,17 +869,12 @@ func ParseCommanderEdition(edition, variant string) string {
 		return edition + " Display"
 	}
 
-	isPromo := strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo")
-
 	// Legends series
 	if strings.Contains(edition, "Legends") {
 		if edition == "Commander Legends" {
 			return "Commander Legends"
 		} else if strings.Contains(edition, "Baldur's Gate") {
 			edition = "Commander Legends: Battle for Baldur's Gate"
-			if isPromo {
-				edition += " Promos"
-			}
 			return edition
 		}
 	}
@@ -900,7 +895,7 @@ func ParseCommanderEdition(edition, variant string) string {
 	}
 	for key, ed := range backend.CommanderKeywordMap {
 		if strings.Contains(edition, key) {
-			if isPromo {
+			if strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo") {
 				ed += " Promos"
 			}
 			return ed
@@ -929,11 +924,7 @@ func ParseCommanderEdition(edition, variant string) string {
 	// Is there a year available?
 	year := ExtractYear(edition)
 	if year != "" {
-		parsed := "Commander " + year
-		if isPromo {
-			parsed += " Promos"
-		}
-		return parsed
+		return "Commander " + year
 	}
 
 	// Special fallbacks
