@@ -249,7 +249,7 @@ func (ct *CardtraderMarket) scrape() error {
 	if err != nil {
 		return err
 	}
-	ct.printf("Retrieved %d expansions", len(expansionsRaw))
+	ct.printf("Retrieved %d global sets", len(expansionsRaw))
 
 	var blueprintsRaw []Blueprint
 	for _, exp := range expansionsRaw {
@@ -271,7 +271,7 @@ func (ct *CardtraderMarket) scrape() error {
 
 	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw)
 	ct.blueprints = blueprints
-	ct.printf("Parsing %d mtg elements", len(expansions))
+	ct.printf("Parsing %d expansions", len(expansions))
 
 	expansionIds := make(chan int)
 	results := make(chan resultChan)
@@ -291,12 +291,14 @@ func (ct *CardtraderMarket) scrape() error {
 	}
 
 	go func() {
+		num := 1
 		for id, expName := range expansions {
 			if ct.TargetEdition != "" && expName != ct.TargetEdition {
 				continue
 			}
-			ct.printf("Processing %s (%d)", expName, id)
+			ct.printf("Processing %s (%d/%d) [%d]", expName, num, len(expansions), id)
 			expansionIds <- id
+			num++
 		}
 		close(expansionIds)
 
