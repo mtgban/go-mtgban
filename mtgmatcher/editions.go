@@ -437,6 +437,11 @@ var EditionTable = map[string]string{
 
 	"Magic 30th Anniversary Edition": "30th Anniversary Edition",
 
+	"March of the Machine: Multiverse Legends": "Multiverse Legends",
+
+	// Since there are oversized cards in this set
+	"Commander: March of the Machine": "March of the Machine Commander",
+
 	// MB1/PLIST need to be explicitly set to override the edition
 	"The List":         "The List",
 	"Mystery Booster":  "Mystery Booster",
