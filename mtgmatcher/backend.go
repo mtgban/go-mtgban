@@ -81,6 +81,9 @@ var backend struct {
 	Scryfall map[string]string
 	// TCG player Product ID to MTGJSON UUID
 	Tcgplayer map[string]string
+
+	// A list of keywords mapped to the full Commander set name
+	CommanderKeywordMap map[string]string
 }
 
 var logger = log.New(io.Discard, "", log.LstdFlags)
@@ -317,6 +320,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
+	commanderKeywordMap := map[string]string{}
 
 	for code, set := range ap.Data {
 		if skipSet(set) {
@@ -619,6 +623,19 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			}
 		}
 
+		// Retrieve the best describing word for a commander set and save it for later reuse
+		if strings.HasSuffix(set.Name, "Commander") && !strings.Contains(set.Name, "Display") {
+			fields := strings.Fields(strings.TrimSuffix(set.Name, "Commander"))
+			keyword := ""
+			for _, field := range fields {
+				field = strings.TrimRight(field, ":'")
+				if len(field) > len(keyword) {
+					keyword = field
+				}
+			}
+			commanderKeywordMap[keyword] = set.Name
+		}
+
 		for _, product := range set.SealedProduct {
 			uuids[product.UUID] = CardObject{
 				Card: mtgjson.Card{
@@ -703,6 +720,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Tcgplayer = tcgplayer
 	backend.AlternateProps = alternates
 	backend.AlternateNames = altNames
+
+	backend.CommanderKeywordMap = commanderKeywordMap
 }
 
 var langs = map[string]string{

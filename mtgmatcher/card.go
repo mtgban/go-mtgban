@@ -886,24 +886,19 @@ func ParseCommanderEdition(edition, variant string) string {
 
 	// Well-known extra tags
 	perSetCommander := map[string]string{
-		"Launch":          "Commander 2011 Launch Party",
-		"Arsenal":         "Commander's Arsenal",
-		"Ikoria":          "Commander 2020",
-		"Zendikar Rising": "Zendikar Rising Commander",
-		"Kaldheim":        "Kaldheim Commander",
-		"Strixhaven":      "Commander 2021",
-		"Forgotten":       "Forgotten Realms Commander",
-		"Midnight":        "Midnight Hunt Commander",
-		"Crimson Vow":     "Crimson Vow Commander",
-		"Neon Dynasty":    "Neon Dynasty Commander",
-		"New Capenna":     "New Capenna Commander",
-		"Dominaria":       "Dominaria United Commander",
-		"Brothers":        "The Brothers' War Commander",
-		"Heads I Win":     "Heads I Win, Tails You Lose",
-		"Starter":         "Starter Commander Decks",
-		"All Will Be One": "Phyrexia: All Will Be One Commander",
+		"Launch":      "Commander 2011 Launch Party",
+		"Arsenal":     "Commander's Arsenal",
+		"Ikoria":      "Commander 2020",
+		"Strixhaven":  "Commander 2021",
+		"Heads I Win": "Heads I Win, Tails You Lose",
+		"Starter":     "Starter Commander Decks",
 	}
 	for key, ed := range perSetCommander {
+		if strings.Contains(edition, key) {
+			return ed
+		}
+	}
+	for key, ed := range backend.CommanderKeywordMap {
 		if strings.Contains(edition, key) {
 			if isPromo {
 				ed += " Promos"
