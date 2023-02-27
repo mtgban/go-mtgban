@@ -77,7 +77,9 @@ var backend struct {
 	// Slice with every possible uuid
 	AllUUIDs []string
 
-	Scryfall  map[string]string
+	// Scryfall UUID to MTGJSON UUID
+	Scryfall map[string]string
+	// TCG player Product ID to MTGJSON UUID
 	Tcgplayer map[string]string
 }
 
