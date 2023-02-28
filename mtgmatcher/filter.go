@@ -1455,7 +1455,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					filteredOutCards = append(filteredOutCards, card)
 				}
 			}
-			outCards = filteredOutCards
+
+			// Don't throw away what was found if filtering checks is too aggressive
+			if len(filteredOutCards) > 0 {
+				outCards = filteredOutCards
+			}
 		}
 	}
 	// In case card is indistinguishable between MB1, PLIST or PHED:
