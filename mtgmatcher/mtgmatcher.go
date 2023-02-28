@@ -710,6 +710,25 @@ func adjustEdition(inCard *Card) {
 		if backend.DFCSameNames[Normalize(inCard.Name)] {
 			inCard.Name = inCard.Name + " // " + inCard.Name
 		}
+		// Check if there are also FlavorNames associated to this card
+		// It might happen that a non-FlavorName is requested, so check number too
+		altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
+		if found && len(MatchInSet(altProps.OriginalName, "SLD")) != 0 {
+			var shouldRename bool
+			cards := MatchInSet(altProps.OriginalName, "SLD")
+			num := ExtractNumber(inCard.Variation)
+			for _, card := range cards {
+				if card.Number == num || (card.FaceFlavorName != "" && Contains(inCard.Variation, card.FaceFlavorName)) {
+					shouldRename = true
+					break
+				}
+			}
+
+			if shouldRename {
+				inCard.Name = altProps.OriginalName
+			}
+		}
+
 		if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
 			edition = backend.Sets["SLX"].Name
 		} else if (inCard.Contains("30th") || inCard.Contains("Countdown")) && len(MatchInSet(inCard.Name, "SLC")) != 0 {
@@ -720,13 +739,6 @@ func adjustEdition(inCard *Card) {
 			edition = backend.Sets["SLU"].Name
 		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
 			edition = backend.Sets["SLD"].Name
-		} else {
-			// Last try, check if the card Name exists as DFC
-			altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
-			if found && len(MatchInSet(altProps.OriginalName, "SLD")) != 0 {
-				inCard.Name = altProps.OriginalName
-				edition = backend.Sets["SLD"].Name
-			}
 		}
 
 	// Untagged Planeshift Alternate Art - these could be solved with the

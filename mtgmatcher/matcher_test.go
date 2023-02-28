@@ -1331,10 +1331,28 @@ var MatchTests = []MatchTest{
 	},
 	{
 		Id:   "7beb2d19-5f06-5d83-a9bb-312627934e55",
-		Desc: "dfc_reprint_number",
+		Desc: "dfc_reprint_reskin",
 		In: Card{
 			Name:      "Blightsteel Colossus",
-			Variation: "1079",
+			Variation: "Megatron Secret Lair Transformers Reversible Borderless",
+			Edition:   "Secret Lair Transformers",
+		},
+	},
+	{
+		Id:   "ff9fd322-ceac-5456-8012-f927248a3ce0",
+		Desc: "dfc_reprint_number_dfc",
+		In: Card{
+			Name:      "Darksteel Colossus",
+			Variation: "1081",
+			Edition:   "Secret Lair",
+		},
+	},
+	{
+		Id:   "08585c69-7aa0-540e-8474-c975207abd3c",
+		Desc: "dfc_reprint_number_normal",
+		In: Card{
+			Name:      "Darksteel Colossus",
+			Variation: "57",
 			Edition:   "Secret Lair",
 		},
 	},
