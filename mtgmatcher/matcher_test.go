@@ -934,6 +934,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
+		Id:   "f0b33b7b-f42c-5dc2-9e1a-da941ddb811a",
+		Desc: "JPN_prerelease_with_another_reprint_promo_set",
+		In: Card{
+			Name:      "Nissa, Who Shakes the World",
+			Variation: "169 - JPN Alternate Art Prerelease Foil",
+			Edition:   "ignored",
+		},
+	},
+	{
 		Id:   "5849e009-a208-59e0-b2dc-230b053bf015",
 		Desc: "prerelease_in_promos_after_the_date_but_without_s_suffix",
 		In: Card{

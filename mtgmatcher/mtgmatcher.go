@@ -255,9 +255,10 @@ func Match(inCard *Card) (cardId string, err error) {
 
 				// In case it's a well known promo, consider the promo sets (or vice
 				// versa for promo sets) in order to let filtering take care of them
-				if inCard.isPrerelease() || inCard.isPromoPack() ||
+				// JPN cards are skipped because they are well set usually
+				if !inCard.isJPN() && (inCard.isPrerelease() || inCard.isPromoPack() ||
 					(inCard.isBundle() && setDate.After(PromosForEverybodyYay)) ||
-					(inCard.isBaB() && setDate.After(BuyABoxInExpansionSetsDate)) {
+					(inCard.isBaB() && setDate.After(BuyABoxInExpansionSetsDate))) {
 					setName := backend.Sets[setCode].Name
 					if !strings.HasSuffix(setName, "Promos") {
 						setCode = "P" + setCode

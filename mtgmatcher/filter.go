@@ -748,8 +748,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					// Short circuit the possible suffixes if we know what we're dealing with
 					if inCard.isJPN() {
 						switch set.Code {
-						case "WAR", "PWAR":
-							possibleSuffixes = []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
+						case "WAR":
+							possibleSuffixes = []string{mtgjson.SuffixSpecial}
+						case "PWAR":
+							possibleSuffixes = []string{"s" + mtgjson.SuffixSpecial}
 						}
 					} else if inCard.isPrerelease() {
 						possibleSuffixes = append(possibleSuffixes, "s")
