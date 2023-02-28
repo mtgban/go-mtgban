@@ -24,16 +24,6 @@ var promoTable = map[string]string{
 	// Prerelease Stamped
 	"Obelisk of Alara": "Launch Parties",
 
-	// Promotional Gateway
-	"Emeria Angel":        "Zendikar Promos",
-	"Hada Freeblade":      "Worldwake Promos",
-	"Staggershock":        "Rise of the Eldrazi Promos",
-	"Hellspark Elemental": "Wizards Play Network 2009",
-	"Marisi's Twinclaws":  "Wizards Play Network 2009",
-	"Woolly Thoctar":      "Wizards Play Network 2008",
-	"Naya Sojourners":     "Magic 2010 Promos",
-	"Reckless Wurm":       "Gateway 2007",
-
 	// Promotional Other
 	"Sprouting Thrinax":   "Wizards Play Network 2008",
 	"Imperious Perfect":   "Champs and States",

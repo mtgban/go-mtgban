@@ -314,14 +314,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 	case "Gateway Promos":
 		switch cardName {
-		case "Naya Sojourners":
-			edition = "PM10"
 		case "Fling",
 			"Sylvan Ranger":
 			if variant == "V.1" {
-				variant = "WPN 2010"
+				variant = "DCI"
 			} else if variant == "V.2" {
-				variant = "WPN 2011"
+				variant = "WPN"
 			}
 		}
 	case "Friday Night Magic Promos":

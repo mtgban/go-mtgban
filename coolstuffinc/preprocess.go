@@ -151,11 +151,11 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	case "Fling":
 		// Only one of the two is present
 		if variant == "Gateway Promo Wizards Play Network Daren Bader art" {
-			variant = "WPN 2010"
+			variant = "DCI"
 		}
 	case "Sylvan Ranger":
 		if variant == "Judge Rewards Promo Mark Zug art" {
-			variant = "WPN 2011"
+			variant = "WPN"
 		}
 	case "Goblin Warchief":
 		if variant == "Friday Night Magic Promo Old Border" {
@@ -310,7 +310,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 			"Into the Roil":
 			variant = "Promo Pack"
 		case "Dauntless Dourbark":
-			variant = "Gateway 2007"
+			variant = "PDCI"
 		case "Jaya Ballard, Task Mage":
 			variant = "Resale"
 		case "Greater Auramancy":

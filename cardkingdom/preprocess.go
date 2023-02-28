@@ -50,6 +50,10 @@ var skuFixupTable = map[string]string{
 	// Mind Stone
 	"FPLG21-001": "PW21-005",
 
+	// Path of Ancestry
+	"PF21-001":  "PLG21-C3",
+	"FPF21-001": "PLG21-C3",
+
 	// Yellow Hidetsugu
 	"PNEO-432": "NEO-432",
 
@@ -72,7 +76,7 @@ var skuFixupTable = map[string]string{
 	"WC02-RL337A":   "WC02-RL337B",
 	"WC03-WE062":    "WC03-WE062SB",
 
-	// Planeshift Alt Art
+	// Planeshift Altx Art
 	"PPLS-074": "PLS-074★",
 	"PPLS-107": "PLS-107★",
 	"PPLS-133": "PLS-133★",
@@ -86,6 +90,9 @@ var skuFixupTable = map[string]string{
 	// Arcane Signet
 	"FP30A-001":  "P30A-1F",
 	"FEP30A-001": "P30A-1F★",
+
+	// Naya Sojourners
+	"PM10-028": "PDCI-29",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
@@ -171,6 +178,8 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			strings.Contains(variation, "Euro"),
 			strings.Contains(variation, "League"),
 			strings.Contains(variation, "Premier"),
+			strings.Contains(variation, "Commander Promo"),
+			strings.Contains(variation, "Festival"),
 			strings.Contains(variation, "MPS"):
 			variation = number
 		case edition == "PW22":

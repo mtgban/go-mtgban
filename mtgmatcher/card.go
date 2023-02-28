@@ -446,8 +446,7 @@ func (c *Card) isWPNGateway() bool {
 	return c.Contains("WPN") ||
 		c.Contains("Gateway") ||
 		Contains(c.Variation, "Wizards Play Network") ||
-		c.Variation == "Commander Party" || // scg
-		c.Variation == "Euro Promo" || // cfb
+		Contains(c.Variation, "Commander Party") || // scg
 		Contains(c.Variation, "Moonlit Lands") // ck
 }
 
@@ -483,8 +482,7 @@ func (c *Card) isRewards() bool {
 func (c *Card) isMagicFest() bool {
 	return c.Contains("Magic Fest") ||
 		strings.Contains(c.Edition, "MFP") || // tcg collection
-		strings.Contains(c.Variation, "MFP") || // tcg collection
-		c.Variation == "Commander Promo" // ck
+		strings.Contains(c.Variation, "MFP") // tcg collection
 }
 
 func (c *Card) isBaB() bool {

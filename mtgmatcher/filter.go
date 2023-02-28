@@ -250,7 +250,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.isWPNGateway():
 			switch set.Name {
 			case "Summer of Magic",
-				"Promotional Planes":
+				"DCI Promos":
 			case "Innistrad: Crimson Vow":
 				skip := true
 				foundCards := MatchInSet(inCard.Name, "VOW")
@@ -266,7 +266,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			default:
 				switch {
 				case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):
-				case strings.HasPrefix(set.Name, "Gateway "+maybeYear):
 				case strings.HasPrefix(set.Name, "Love Your LGS "+maybeYear):
 				default:
 					continue
@@ -277,11 +276,12 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch {
 			case strings.HasPrefix(set.Name, "30th Anniversary"):
 				continue
-			case !inCard.isJPN() && strings.HasPrefix(set.Name, "IDW Comics "+maybeYear):
+			case !inCard.isJPN() && set.Name == "IDW Comics Inserts":
 			case !inCard.isJPN() && strings.HasPrefix(set.Name, "Duels of the Planeswalkers "+maybeYear):
 			case !inCard.isJPN() && strings.HasSuffix(set.Name, "Promos"):
 				switch set.Name {
 				case "Grand Prix Promos",
+					"Planeswalker Championship Promos",
 					"Pro Tour Promos",
 					"World Championship Promos":
 					continue
@@ -356,6 +356,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if inCard.Name != "Arcane Signet" && inCard.Name != "Richard Garfield, Ph.D." {
 					continue
 				}
+			case set.Code == "PLG21":
 			default:
 				continue
 			}
@@ -411,8 +412,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case strings.Contains(inCard.Variation, "Champs") ||
 			strings.Contains(inCard.Variation, "States"):
 			switch set.Name {
-			case "Champs and States",
-				"Gateway 2007":
+			case "Champs and States":
 			case "Grand Prix Promos":
 				continue
 			case "30th Anniversary History Promos",
@@ -538,6 +538,25 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			default:
 				continue
+			}
+
+		case inCard.Contains("Planeswalker") && inCard.Contains("Promos"):
+			switch set.Code {
+			case "PWCS":
+			default:
+				if !strings.HasSuffix(set.Name, "Promos") {
+					continue
+				}
+			}
+
+		// For all the promos with "Extended Art" which refer to the full art promo
+		case inCard.isExtendedArt() && !inCard.Contains("Game Day"):
+			if setDate.Before(PromosForEverybodyYay) {
+				switch set.Code {
+				case "PDCI":
+				default:
+					continue
+				}
 			}
 
 		// Last resort, if this is set on the input card, and there were

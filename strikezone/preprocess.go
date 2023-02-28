@@ -167,7 +167,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 			"Wasteland":
 			variation = "Magic Player Rewards"
 		case "Zoetic Cavern":
-			variation = "Gateway"
+			variation = "DCI Promos"
 		default:
 			variation = "FNM"
 		}

@@ -14,7 +14,7 @@ var promoTable = map[string]string{
 	"Sol Ring":          "MagicFest 2019",
 
 	"Pristine Talisman":  "New Phyrexia Promos",
-	"Dauntless Dourbark": "Gateway 2007",
+	"Dauntless Dourbark": "PDCI",
 }
 
 var tagsTable = map[string]string{

@@ -528,7 +528,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			}
 		case "Fling":
 			if strings.Contains(variant, "Gateway") {
-				variant = "WPN 2010"
+				variant = "DCI"
 			}
 		case "Vampiric Tutor":
 			if strings.Contains(variant, "Judge") && !strings.Contains(variant, "2018") {
@@ -548,7 +548,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			}
 		case "Fiery Temper":
 			if variant == "Arena" {
-				variant = "Gateway"
+				variant = "DCI Promos"
 			} else if variant == "FNM Promo" {
 				variant = "FNM"
 			}
@@ -566,7 +566,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			}
 		case "Calciderm":
 			if variant == "Arena" {
-				variant = "Gateway"
+				variant = "DCI Promos"
 			}
 		case "Godzilla, King of the Monsters":
 			cardName = "Zilortha, Strength Incarnate"
@@ -587,7 +587,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 			"Yixlid Jailer",
 			"Zoetic Cavern",
 			"Icatian Javelineers":
-			variant = "Gateway"
+			variant = "DCI Promos"
 		case "Lu Bu, Master-at-Arms":
 			variant += " Prerelease"
 		case "Goblin Mime", "Circle of Protection: Art", "Booster Tutor":

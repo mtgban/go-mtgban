@@ -161,7 +161,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Duress":
 			if variant == "IDW Comics 2014" {
-				edition = "IDW Comics 2014"
+				edition = "PIDW"
 			}
 		case "Stocking Tiger":
 			variant = "misprint"
@@ -202,7 +202,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if variant == "2021" {
 				variant = "WPN 2021"
 			} else {
-				variant = "Gateway"
+				edition = "PDCI"
 			}
 		case "Orb of Dragonkind":
 			num := mtgmatcher.ExtractNumber(variant)
@@ -333,9 +333,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		}
 	case "Planeswalker Event Promos":
 		variant = ""
-		if len(mtgmatcher.MatchInSet(cardName, "PPRO")) != 0 || cardName == "Fae of Wishes" {
-			edition = "PPRO"
-		}
 	case "Core Set 2021":
 		if variant == "Alternate Art" {
 			variant = "Borderless"

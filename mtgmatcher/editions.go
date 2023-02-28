@@ -427,11 +427,14 @@ var EditionTable = map[string]string{
 	"Battle Royale":            "Battle Royale Box Set",
 	"Battle the Horde":         "Battle the Horde",
 	"Conspiracy: 2014 Edition": "Conspiracy",
+	"DCI Promos":               "DCI Promos",
 	"Introductory 4th Edition": "Introductory Two-Player Set",
 	"PS3 Promo":                "Duels of the Planeswalkers 2012 Promos",
 	"Starter":                  "Starter 1999",
 	"Starter 2000":             "Starter 2000",
 	"Vanguard":                 "Vanguard Series",
+
+	"Planeswalker Event Promos": "Planeswalker Championship Promos",
 
 	"Conspiracy - Take the Crown": "Conspiracy: Take the Crown",
 

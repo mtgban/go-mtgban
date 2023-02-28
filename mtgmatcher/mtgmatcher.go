@@ -638,7 +638,7 @@ func adjustEdition(inCard *Card) {
 	}
 
 	switch {
-	case strings.Contains(edition, "Commander") && !inCard.Contains("Oversize"):
+	case strings.Contains(edition, "Commander") && !inCard.Contains("Oversize") && !inCard.Contains("Party"):
 		ed := ParseCommanderEdition(edition, variation)
 		if ed != "" {
 			edition = ed
@@ -739,8 +739,8 @@ func adjustEdition(inCard *Card) {
 		variation = "Etched"
 
 	// Planechase deduplication
-	case inCard.Contains("Planechase") && len(MatchInSet(inCard.Name, "PHOP")) != 0 && (inCard.isRelease() || inCard.isDCIPromo() || inCard.isWPNGateway()):
-		edition = backend.Sets["PHOP"].Name
+	case inCard.Contains("Planechase") && len(MatchInSet(inCard.Name, "PDCI")) != 0 && (inCard.isRelease() || inCard.isDCIPromo() || inCard.isWPNGateway()):
+		edition = backend.Sets["PDCI"].Name
 	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
 		edition = backend.Sets["OHOP"].Name
 	case inCard.Equals("Planechase 2012") && len(MatchInSet(inCard.Name, "OPC2")) != 0:
@@ -896,13 +896,27 @@ func adjustEdition(inCard *Card) {
 			if inCard.isDCIPromo() || inCard.Contains("15th Anniversary") || inCard.isGenericPromo() {
 				edition = "15th Anniversary Cards"
 			}
-		case "Fling", "Sylvan Ranger":
-			if ExtractNumber(inCard.Variation) == "" {
+		case "Fling":
+			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
+				edition = backend.Sets["PDCI"].Name
 				if inCard.isDCIPromo() {
-					edition = "Wizards Play Network 2010"
+					variation = "50"
 				} else if inCard.isWPNGateway() {
-					edition = "Wizards Play Network 2011"
+					variation = "69"
 				}
+			}
+		case "Sylvan Ranger":
+			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
+				edition = backend.Sets["PDCI"].Name
+				if inCard.isDCIPromo() {
+					variation = "51"
+				} else if inCard.isWPNGateway() {
+					variation = "70"
+				}
+			}
+		case "Naya Sojourners":
+			if inCard.isGenericPromo() {
+				edition = backend.Sets["PDCI"].Name
 			}
 		case "Hall of Triumph":
 			if inCard.isGenericPromo() {
@@ -955,9 +969,9 @@ func adjustEdition(inCard *Card) {
 			}
 		case "Mind Stone":
 			// Skip the check if this card already has the right edition
-			if inCard.isWPNGateway() && edition != "Gateway 2007" && edition != "Wizards Play Network 2021" {
+			if inCard.isWPNGateway() && edition != "DCI Promos" && edition != "Wizards Play Network 2021" {
 				if Contains(inCard.Variation, "Gateway") {
-					edition = "Gateway 2007"
+					edition = "DCI Promos"
 				} else {
 					edition = "Wizards Play Network 2021"
 				}

@@ -117,7 +117,6 @@ const (
 	PromoTypeDracula    = "draculaseries"
 	PromoTypePlayPromo  = "playpromo"
 	PromoTypeWPN        = "wizardsplaynetwork"
-	PromoTypeGateway    = "gateway"
 	PromoTypeGilded     = "gilded"
 	PromoTypeTextured   = "textured"
 	PromoTypeNeonInk    = "neonink"
@@ -157,7 +156,6 @@ var AllPromoTypes = []string{
 	PromoTypeDracula,
 	PromoTypeGalaxyFoil,
 	PromoTypeGameDay,
-	PromoTypeGateway,
 	PromoTypeGilded,
 	PromoTypeGlossy,
 	PromoTypeGodzilla,

@@ -57,8 +57,6 @@ var promoTable = map[string]string{
 	"Crystalline Sliver":          "F03",
 	"Reya Dawnbringer":            "P10E",
 
-	"Naya Sojourners":              "PM10",
-	"Emeria Angel":                 "PZEN",
 	"Valakut, the Molten Pinnacle": "PZEN",
 	"Kalastria Highborn":           "PWWK",
 	"Black Sun's Zenith":           "PMBS",
@@ -405,7 +403,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 			edition = "Special Occasion"
 		} else {
 			for _, tag := range []string{
-				"PIDW", "PI13", "PI14", "PPRO", "WMC", "PSUS", "PCMP", "PSS1", "PDP10",
+				"PIDW", "PPRO", "WMC", "PSUS", "PCMP", "PSS1", "PDP10",
 			} {
 				if len(mtgmatcher.MatchInSet(cardName, tag)) == 1 {
 					edition = tag

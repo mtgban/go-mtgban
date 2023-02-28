@@ -1667,7 +1667,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
-		Id:   "d44d615b-2902-549a-8821-14845925556d",
+		Id:   "c7f4004c-3a72-5bad-9708-e659d4cf5db6",
 		Desc: "gateway_normal",
 		In: Card{
 			Name:      "Lava Axe",
@@ -2236,7 +2236,7 @@ var MatchTests = []MatchTest{
 
 	// Champs
 	{
-		Id:   "59efdba1-25d8-56b0-8b82-d17839e19ff3",
+		Id:   "9a55bce9-8d53-560b-83d6-d60af37274f9",
 		Desc: "states_but_is_gateway",
 		In: Card{
 			Name:      "Dauntless Dourbark",
@@ -2274,7 +2274,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
-		Id:   "55a4b8cf-4e8e-5c2c-abf6-3b1ed592d323",
+		Id:   "82b14a71-55ba-57d3-8d4b-597a801e4d65",
 		Desc: "idw_normal",
 		In: Card{
 			Name:      "Wash Out",
@@ -2283,7 +2283,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
-		Id:   "d1f8693c-4cdc-5558-b678-5fcefc0d220d",
+		Id:   "e473e14a-eda6-559a-bfc5-4b23931747e5",
 		Desc: "idw_also_magazine",
 		In: Card{
 			Name:      "Duress",
@@ -2310,7 +2310,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
-		Id:   "d1f8693c-4cdc-5558-b678-5fcefc0d220d",
+		Id:   "e473e14a-eda6-559a-bfc5-4b23931747e5",
 		Desc: "duress_dupe_idw",
 		In: Card{
 			Name:      "Duress",
@@ -2350,15 +2350,6 @@ var MatchTests = []MatchTest{
 		In: Card{
 			Name:    "Guttersnipe",
 			Edition: "Core Set 2019 / M19",
-		},
-	},
-	{
-		Id:   "5561b2e3-b0fd-5f2c-be7e-0ccd448bb8e2",
-		Desc: "coreset_confusing_promo",
-		In: Card{
-			Name:      "Naya Sojourners",
-			Variation: "Magic 2010 Game Day",
-			Edition:   "Promo Magic 2010 Game Day",
 		},
 	},
 
