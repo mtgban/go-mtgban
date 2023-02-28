@@ -625,14 +625,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 		// Retrieve the best describing word for a commander set and save it for later reuse
 		if strings.HasSuffix(set.Name, "Commander") && !strings.Contains(set.Name, "Display") {
-			fields := strings.Fields(strings.TrimSuffix(set.Name, "Commander"))
-			keyword := ""
-			for _, field := range fields {
-				field = strings.TrimRight(field, ":'")
-				if len(field) > len(keyword) {
-					keyword = field
-				}
-			}
+			keyword := longestWordInEditionName(strings.TrimSuffix(set.Name, "Commander"))
 			commanderKeywordMap[keyword] = set.Name
 		}
 

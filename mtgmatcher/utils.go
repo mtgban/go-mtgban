@@ -280,3 +280,16 @@ func sliceStringHas(slice []string, probe string) bool {
 	}
 	return false
 }
+
+// Find the keyword in an edition name, ignoring punctuation
+func longestWordInEditionName(str string) string {
+	fields := strings.Fields(str)
+	longest := ""
+	for _, field := range fields {
+		field = strings.TrimRight(field, ":'")
+		if len(field) > len(longest) {
+			longest = field
+		}
+	}
+	return longest
+}

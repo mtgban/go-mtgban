@@ -961,6 +961,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
+		Id:   "b6b19a5b-bd1b-59d0-a668-fa6dc0b0059f",
+		Desc: "prerelease_with_duplication_and_normalization",
+		In: Card{
+			Name:      "Blast Zone",
+			Variation: "Prerelease The Brothers' War",
+			Edition:   "Promo: Date Stamped",
+		},
+	},
+	{
 		Id:   "6b0ad772-5c2b-59b2-9a51-5296d3383077",
 		Desc: "lubu_dedup_july",
 		In: Card{

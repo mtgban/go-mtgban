@@ -1444,10 +1444,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				// ie "Core 2021" instead of "Core Set 2021"
 				year := ExtractYear(set.Name)
 				// Drop any printing that don't have the ParentCode
-				// or the edition name itself in the Variation field
+				// or the edition name itself in the Variation or Edition field
+				// (by looking at the longest word present in the parent Edition
+				// to avoid aliasing with short words that could ger Normalized away)
 				// or the year matches across
+				keyword := longestWordInEditionName(backend.Sets[set.ParentCode].Name)
 				if strings.Contains(inCard.Variation, set.ParentCode) ||
-					inCard.Contains(backend.Sets[set.ParentCode].Name) ||
+					(year == "" && inCard.Contains(keyword)) ||
 					(year != "" && inCard.Contains(year)) {
 					filteredOutCards = append(filteredOutCards, card)
 				}
