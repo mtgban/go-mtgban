@@ -217,15 +217,13 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 							// Except the following cards, when they are not tagged as specified,
 							// it means they are actually from this set
 							switch inCard.Name {
-							case "Sol Ring":
+							case "Sol Ring",
+								"Reliquary Tower":
 								if !inCard.Contains("2021") {
 									continue
 								}
-							case "Reliquary Tower":
-								if !inCard.Contains("2021") {
-									continue
-								}
-							case "Counterspell":
+							case "Counterspell",
+								"Temur Battle Rage":
 								if !inCard.Contains("Legends") {
 									continue
 								}
