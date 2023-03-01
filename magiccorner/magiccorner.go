@@ -18,7 +18,7 @@ import (
 const (
 	defaultConcurrency = 8
 
-	buylistURL = "https://www.magiccorner.it/it/vendi-letue-carte"
+	buylistURL = "https://www.cardgamecorner.com/it/vendi-letue-carte"
 )
 
 type Magiccorner struct {
@@ -117,6 +117,8 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 			case "NM/M":
 				cond = "NM"
 			case "SP", "HP":
+			case "GD":
+				cond = "MP"
 			case "D":
 				cond = "PO"
 			default:

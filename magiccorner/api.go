@@ -57,7 +57,7 @@ type mcEditionParam struct {
 }
 
 const (
-	mcBaseURL       = "https://www.magiccorner.it/12/modules/store/mcpub.asmx/"
+	mcBaseURL       = "https://www.cardgamecorner.com/12/modules/store/mcpub.asmx/"
 	mcEditionsEndpt = "espansioni"
 	mcCardsEndpt    = "carte"
 
