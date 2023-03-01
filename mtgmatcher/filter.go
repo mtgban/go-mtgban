@@ -494,11 +494,11 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.Contains("Lunar New Year"):
 			switch set.Code {
-			case "PLNY",
-				"PL21",
-				"PL22":
+			case "PLNY":
 			default:
-				continue
+				if !strings.HasPrefix(set.Name, "Year of the ") {
+					continue
+				}
 			}
 
 		case inCard.isThickDisplay():
