@@ -504,7 +504,5 @@ var EditionTable = map[string]string{
 	"Italian Renaissance": "Rinascimento",
 	"Renaissance Italian": "Rinascimento",
 	"Italian Legends":     "Legends Italian",
-
-	"Japanese Chronicles": "Chronicles Japanese",
 	"Italian The Dark":    "The Dark Italian",
 }

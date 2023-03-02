@@ -3199,7 +3199,7 @@ var MatchTests = []MatchTest{
 
 	// Non-English custom sets
 	{
-		Id:   "dcb15a6c-4629-59a8-bdbf-a17eb57d6fe3_jpn",
+		Id:   "fe9dbfd3-6aaa-57af-90c9-e0f4427dce97",
 		Desc: "custom_language_number",
 		In: Card{
 			Name:      "Urza's Power Plant",
