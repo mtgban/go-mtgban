@@ -124,6 +124,9 @@ type ScraperInfo struct {
 
 	// Scraper contains sealed information instead of singles
 	SealedMode bool `json:"sealed,omitempty"`
+
+	// Any additional custom fields set by the user
+	CustomFields map[string]string `json:"custom_fields,omitempty"`
 }
 
 // The list of supported conditions
