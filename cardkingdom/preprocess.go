@@ -223,11 +223,16 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	case "Alpha", "Beta", "Unlimited", "3rd Edition", "4th Edition",
 		"Antiquities", "Fallen Empires", "Alliances", "Homelands",
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
-		"Unstable", "Unglued", "Unfinity", "Portal II", "Secret Lair":
+		"Unstable", "Unglued", "Unfinity", "Portal II":
 		variation = number
 
+	case "Secret Lair":
+		// The SLP cards need to be recognized differently
+		if !strings.Contains(variation, "Prize") {
+			variation = number
+		}
 		// Override variation due to the SLD thick cards using the same non-thick number
-		if edition == "Secret Lair" && strings.Contains(card.Variation, "Display") {
+		if strings.Contains(card.Variation, "Display") {
 			variation = "Thick Display"
 		}
 	default:
