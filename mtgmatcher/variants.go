@@ -3607,6 +3607,7 @@ var sldVariants = map[string]map[string]string{
 	"Grim Tutor": {
 		"secret lair hand drawn": "365",
 		"secret lair x mschf":    "365",
+		"silver laminate":        "365",
 		"secret lair x fortnite": "444",
 	},
 	"Primeval Titan": {
@@ -3657,6 +3658,9 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Seize the Day": {
 		"secret lair reskin": "480",
+	},
+	"Narset, Parter of Veils": {
+		"retro frame": "1041",
 	},
 }
 
