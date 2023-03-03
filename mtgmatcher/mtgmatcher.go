@@ -629,6 +629,13 @@ func adjustEdition(inCard *Card) {
 				edition = strings.TrimSuffix(edition, ":")
 				edition = strings.TrimSuffix(edition, "-")
 				edition = strings.TrimSpace(edition)
+
+				// Check if the edition name needs further processing
+				ed, found = EditionTable[edition]
+				if found {
+					edition = ed
+				}
+
 				// If no other variation, set this flag to do a best effort search
 				if variation == "" {
 					inCard.beyondBaseSet = true

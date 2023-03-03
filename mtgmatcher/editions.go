@@ -53,8 +53,7 @@ var EditionTable = map[string]string{
 	"Ampersand":             "Adventures in the Forgotten Realms Promos",
 	"Promos: AFR Ampersand": "Adventures in the Forgotten Realms Promos",
 
-	"D&D: Adventures in the Forgotten Realms":           "Adventures in the Forgotten Realms",
-	"D&D: Adventures in the Forgotten Realms: Variants": "Adventures in the Forgotten Realms: Variants",
+	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
 
 	// Strixhaven Mystical Archive alts
 	"Japanese Mystical Archive":                 "Strixhaven Mystical Archive",
