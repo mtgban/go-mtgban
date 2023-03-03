@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
@@ -55,6 +56,8 @@ const (
 	stksAverageURL = "https://api.mtgstocks.com/interests/average"
 	stksMarketURL  = "https://api.mtgstocks.com/interests/market"
 	stksSetsURL    = "https://api.mtgstocks.com/card_sets"
+
+	defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Windows 1.0; rv:100.0)"
 )
 
 func AverageInterests() (*StocksInterest, error) {
@@ -74,7 +77,13 @@ func MarketInterests() (*StocksInterest, error) {
 }
 
 func query(link string) (*MTGStocksInterests, error) {
-	resp, err := cleanhttp.DefaultClient().Get(link)
+	req, err := http.NewRequest("GET", link, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", defaultUserAgent)
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +135,13 @@ type MTGStocksSet struct {
 }
 
 func GetSets() ([]MTGStocksSet, error) {
-	resp, err := cleanhttp.DefaultClient().Get(stksSetsURL)
+	req, err := http.NewRequest("GET", stksSetsURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", defaultUserAgent)
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +162,14 @@ func GetSets() ([]MTGStocksSet, error) {
 }
 
 func GetPrints(id int) ([]MTGStockPrint, error) {
-	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf("%s/%d", stksSetsURL, id))
+	link := fmt.Sprintf("%s/%d", stksSetsURL, id)
+	req, err := http.NewRequest("GET", link, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", defaultUserAgent)
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
