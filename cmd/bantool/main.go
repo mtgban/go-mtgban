@@ -568,8 +568,8 @@ func run() int {
 	versionOpt := flag.Bool("v", false, "Print version information")
 	flag.Parse()
 
+	log.Println("bantool version", Commit)
 	if *versionOpt {
-		log.Println("bantool version", Commit)
 		return 0
 	}
 
