@@ -894,12 +894,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				// ELD-Style showcase
-				if inCard.isShowcase() || inCard.isGilded() || (inCard.isPhyrexian() && !inCard.isBasicFullArt()) {
+				if inCard.isShowcase() || inCard.isGilded() {
 					if !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 						continue
 					}
 					//
-				} else if !card.HasPromoType(mtgjson.PromoTypeOilSlick) {
+				} else if !card.HasPromoType(mtgjson.PromoTypeOilSlick) &&
+					// Phyrexian cards _may_ be showcase sometimes
+					card.Language != mtgjson.LanguagePhyrexian {
 					// NEO has showcase cards that aren't marked as such when they are Etched
 					// same for DMU and Textured
 					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) && !inCard.isEtched() && !inCard.isTextured() {

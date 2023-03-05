@@ -3765,6 +3765,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Phyrexia: All Will Be One",
 		},
 	},
+	{
+		Id:   "dab29a67-28a9-5847-a77e-1f0771b55be1",
+		Desc: "one_phyrexian_bundle",
+		In: Card{
+			Name:      "Phyrexian Arena",
+			Variation: "Bundle Foil - Phyrexian",
+			Edition:   "ONE",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
