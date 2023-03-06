@@ -782,9 +782,6 @@ func (c *Card) possibleNumberSuffix() string {
 	return ""
 }
 
-var grnGuilds = []string{"boros", "dimir", "golgari", "izzet", "selesnya"}
-var arnGuilds = []string{"azorius", "gruul", "orzhov", "rakdos", "simic"}
-
 func (c *Card) ravnicaWeekend() (string, string) {
 	num := ExtractNumber(c.Variation)
 	if strings.HasPrefix(num, "a") {
@@ -793,12 +790,12 @@ func (c *Card) ravnicaWeekend() (string, string) {
 		return "RNA Ravnica Weekend", num
 	}
 
-	for _, guild := range grnGuilds {
+	for _, guild := range GRNGuilds {
 		if c.Contains(guild) {
 			return "GRN Ravnica Weekend", prwkVariants[c.Name][guild]
 		}
 	}
-	for _, guild := range arnGuilds {
+	for _, guild := range ARNGuilds {
 		if c.Contains(guild) {
 			return "RNA Ravnica Weekend", prw2Variants[c.Name][guild]
 		}
@@ -818,12 +815,12 @@ func (c *Card) ravnicaGuidKit() string {
 		return "RNA Guild Kit"
 	}
 
-	for _, guild := range grnGuilds {
+	for _, guild := range GRNGuilds {
 		if c.Contains(guild) {
 			return "GRN Guild Kit"
 		}
 	}
-	for _, guild := range arnGuilds {
+	for _, guild := range ARNGuilds {
 		if c.Contains(guild) {
 			return "RNA Guild Kit"
 		}

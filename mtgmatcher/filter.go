@@ -426,18 +426,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isPremiereShop():
 			if maybeYear == "" {
-				guilds := []string{
-					"Azorius",
-					"Boros",
-					"Dimir",
-					"Golgari",
-					"Gruul",
-					"Izzet",
-					"Orzhov",
-					"Rakdos",
-					"Selesnya",
-					"Simic",
-				}
+				guilds := append(GRNGuilds, ARNGuilds...)
 				for _, guild := range guilds {
 					if strings.Contains(inCard.Variation, guild) {
 						maybeYear = "2005"

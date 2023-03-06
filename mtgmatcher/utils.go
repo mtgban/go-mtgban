@@ -60,6 +60,12 @@ var BuyABoxNotUniqueDate = time.Date(2020, time.September, 1, 0, 0, 0, 0, time.U
 // Date since different finishes (etched, gilded, thick) get separate collector numbers
 var SeparateFinishCollectorNumberDate = time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)
 
+// Guilds found in GRN
+var GRNGuilds = []string{"Boros", "Dimir", "Golgari", "Izzet", "Selesnya"}
+
+// Guilds found in ARN
+var ARNGuilds = []string{"Azorius", "Gruul", "Orzhov", "Rakdos", "Simic"}
+
 // Regexp for SplitVariants, an optional space and a parenthesis
 var re = regexp.MustCompile(` ?\(`)
 
