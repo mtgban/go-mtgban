@@ -150,6 +150,7 @@ var setAllowedForTokens = map[string]bool{
 	"MBS": true,
 	"NPH": true,
 	"NEO": true,
+	"NEC": true,
 	"RTR": true,
 	"SOM": true,
 	"SHM": true,
