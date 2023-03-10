@@ -2564,6 +2564,16 @@ var MatchTests = []MatchTest{
 			Foil:      true,
 		},
 	},
+	{
+		Id:   "153d08d8-2466-59fb-9ebe-801aeda30d66",
+		Desc: "9ED_foil_number_star",
+		In: Card{
+			Name:      "Island",
+			Edition:   "Ninth Edition",
+			Variation: "337★",
+			Foil:      true,
+		},
+	},
 
 	// Portal variants
 	{
