@@ -738,7 +738,7 @@ func adjustEdition(inCard *Card) {
 
 		if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
 			edition = backend.Sets["SLX"].Name
-		} else if (inCard.Contains("30th") || inCard.Contains("Countdown")) && len(MatchInSet(inCard.Name, "SLC")) != 0 {
+		} else if (inCard.Contains("30th") || inCard.Contains("Countdown") || ExtractYear(inCard.Variation) != "") && len(MatchInSet(inCard.Name, "SLC")) != 0 {
 			edition = backend.Sets["SLC"].Name
 		} else if (inCard.Contains("Showdown") || inCard.Contains("Prize") || inCard.Contains("Play")) && len(MatchInSet(inCard.Name, "SLP")) != 0 {
 			edition = backend.Sets["SLP"].Name

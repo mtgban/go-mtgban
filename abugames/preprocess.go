@@ -239,10 +239,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 				variation = "119"
 			}
 			edition = "Secret Lair Drop"
-			// Prioritize SLC if not found in the main SLD of if there is a year attached
-			if (len(mtgmatcher.MatchInSet(cardName, "SLD")) == 0 || mtgmatcher.ExtractYear(variation) != "") && len(mtgmatcher.MatchInSet(cardName, "SLC")) > 0 {
-				edition = "SLC"
-			}
 		} else if mtgmatcher.IsBasicLand(cardName) && strings.Contains(variation, "Full-Text") {
 			edition = "SLD"
 			variation = strings.TrimPrefix(variation, "Full-Text ")
