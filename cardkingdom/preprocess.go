@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 // This table contains all SKUs that contain incorrect codes or codes that could

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 var titleTable = map[string]string{

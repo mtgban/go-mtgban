@@ -1,4 +1,4 @@
-module github.com/kodabb/go-mtgban
+module github.com/mtgban/go-mtgban
 
 go 1.14
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 var promoTable = map[string]string{

@@ -6,7 +6,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 // Remove any unrelated edition from the input array.

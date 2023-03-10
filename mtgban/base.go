@@ -3,7 +3,7 @@ package mtgban
 import (
 	"fmt"
 
-	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {

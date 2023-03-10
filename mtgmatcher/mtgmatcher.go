@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 
 	"github.com/google/uuid"
 )

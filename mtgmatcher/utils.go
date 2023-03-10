@@ -9,7 +9,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/kodabb/go-mtgban/mtgmatcher/mtgjson"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )

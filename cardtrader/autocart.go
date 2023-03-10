@@ -11,8 +11,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
-	"github.com/kodabb/go-mtgban/mtgban"
-	"github.com/kodabb/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 type CTLoggedClient struct {
