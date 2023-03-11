@@ -2218,7 +2218,7 @@ var MatchTests = []MatchTest{
 		Desc: "duel_decks_variant_jpn",
 		In: Card{
 			Name:      "Jace Beleren",
-			Variation: "Japanese",
+			Variation: "Japanese Jace vs. Chandra Foil",
 			Edition:   "Duel Decks: Jace vs. Chandra",
 		},
 	},

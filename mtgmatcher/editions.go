@@ -211,7 +211,6 @@ var EditionTable = map[string]string{
 	"Portal 3 Kingdoms": "Portal Three Kingdoms",
 
 	// Duel Decks
-	"Japanese Jace vs. Chandra Foil": "Duel Decks: Jace vs. Chandra",
 	"Duel Deck Heros VS Monsters":    "Duel Decks: Heroes vs. Monsters",
 	"Duel Decks: Heros vs. Monsters": "Duel Decks: Heroes vs. Monsters",
 	"Duel Decks Kiora vs. Elspeth":   "Duel Decks: Elspeth vs. Kiora",
