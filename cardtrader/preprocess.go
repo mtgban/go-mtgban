@@ -124,8 +124,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		"Mystery Booster: Convention Edition Playtest Cards",
 		"Double Masters 2022 Collectors",
 		"Strixhaven: School of Mages Promos",
-		"Strixhaven: School of Mages Prerelease",
-		"The List":
+		"Strixhaven: School of Mages Prerelease":
 		skipHashLookup = true
 	// Avoid confusing the matcher further
 	case "Arena League Promos":
@@ -133,6 +132,12 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Battlebond":
 		if cardName == "Will Kenrith" || cardName == "Rowan Kenrith" {
 			return nil, errors.New("dupe")
+		}
+	case "The List":
+		switch cardName {
+		case "Rout":
+		default:
+			skipHashLookup = true
 		}
 	}
 
