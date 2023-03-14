@@ -223,6 +223,9 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			variation = "4"
 		case "Brood Sliver":
 			edition = "SLD"
+		case "Lavinia, Azorius Renegade":
+			edition = "PRNA"
+			variation = "189"
 		}
 		if strings.Contains(variation, "Scandanavia") {
 			variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
