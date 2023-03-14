@@ -1039,6 +1039,10 @@ func adjustEdition(inCard *Card) {
 			if inCard.isIDWMagazineBook() {
 				edition = "Secret Lair Drop"
 			}
+		case "Magister of Worth":
+			if inCard.isBaB() {
+				variation = "Launch"
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps

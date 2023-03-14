@@ -72,7 +72,6 @@ var notesTable = map[string]string{
 	"Smash to Smithereens":    "Friday Night Magic 2016",
 	"Fortune's Favor":         "Friday Night Magic 2017",
 	"Figure of Destiny":       "Launch Parties",
-	"Magister of Worth":       "Launch Parties",
 	"Hero's Downfall":         "Fate Reforged Clash Pack",
 	"Warmonger":               "Magazine Inserts",
 	"Lightning Hounds":        "Magazine Inserts",

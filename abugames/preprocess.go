@@ -208,11 +208,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			if variation == "Prerelease No Expansion Symbol FOIL" {
 				variation = "Prerelease misprint"
 			}
-		case "Magister of Worth":
-			if variation == "Buy-a-Box Promo" {
-				edition = "Conspiracy"
-				variation = "Release"
-			}
 		case "Mechagodzilla, Battle Fortress / Hangarback Walker":
 			if variation == "Welcome Back" {
 				cardName = "Hangarback Walker"
@@ -244,10 +239,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			variation = strings.TrimPrefix(variation, "Full-Text ")
 		} else if strings.Contains(variation, "Play Promo") {
 			variation = strings.Replace(variation, "FNM", "", 1)
-		}
-	case "Conspiracy":
-		if cardName == "Magister of Worth" && variation == "Buy-a-Box Promo" {
-			variation = "Release"
 		}
 	case "Anthologies":
 		if cardName == "Mountain" {
