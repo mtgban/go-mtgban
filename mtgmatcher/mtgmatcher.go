@@ -783,7 +783,7 @@ func adjustEdition(inCard *Card) {
 		variation = strings.Replace(variation, "italian", "", 1)
 		variation = strings.TrimSpace(variation)
 	case strings.Contains(inCard.Edition, "Chronicles") && (inCard.Contains("Japanese") || inCard.Contains("FBB")):
-		edition = "FBB Chronicles"
+		edition = "Chronicles Foreign Black Border"
 		// This set has lots of variants, strip away any excess data
 		variation = strings.ToLower(inCard.Variation)
 		variation = strings.Replace(variation, "japanese", "", 1)

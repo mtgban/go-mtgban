@@ -105,7 +105,7 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 	switch language {
 	case "Japanese":
 		if edition == "Chronicles" {
-			edition = "Chronicles Japanese"
+			edition = "BCHR"
 		} else {
 			if variant != "" {
 				variant += " "

@@ -4322,7 +4322,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Asia Pacific Land Program":           palpVariants,
 	"Battle Royale Box Set":               brbVariants,
 	"Champions of Kamigawa":               chkVariants,
-	"Chronicles Japanese":                 chrVariants,
+	"Chronicles Foreign Black Border":     chrVariants,
 	"Chronicles":                          chrVariants,
 	"Collectors’ Edition":                 oldLandVariants,
 	"Commander Anthology Volume II":       cm2Variants,
