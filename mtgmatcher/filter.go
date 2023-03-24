@@ -227,6 +227,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 								if !inCard.Contains("Legends") {
 									continue
 								}
+							case "Mountain":
+								if !inCard.Contains("Battlebond") {
+									continue
+								}
 							default:
 								continue
 							}
