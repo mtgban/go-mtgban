@@ -219,8 +219,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			edition = "SHA"
 			variation = "250"
 		case "Swiftfoot Boots":
-			edition = "PW22"
-			variation = "4"
+			if strings.Contains(variation, "Launch") {
+				edition = "PW22"
+				variation = "4"
+			}
 		case "Brood Sliver":
 			edition = "SLD"
 		case "Lavinia, Azorius Renegade":
