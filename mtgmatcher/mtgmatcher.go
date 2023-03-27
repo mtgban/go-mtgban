@@ -998,12 +998,16 @@ func adjustEdition(inCard *Card) {
 				}
 			}
 		case "Mind Stone":
+			switch edition {
 			// Skip the check if this card already has the right edition
-			if inCard.isWPNGateway() && edition != "DCI Promos" && edition != "Wizards Play Network 2021" {
-				if Contains(inCard.Variation, "Gateway") {
-					edition = "DCI Promos"
-				} else {
+			case "DCI Promos",
+				"Wizards Play Network 2021":
+			default:
+				if inCard.isWPNGateway() {
 					edition = "Wizards Play Network 2021"
+					if inCard.Contains("Gateway") {
+						edition = "DCI Promos"
+					}
 				}
 			}
 		case "Runo Stromkirk", "Runo Stromkirk // Krothuss, Lord of the Deep":
