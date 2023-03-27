@@ -736,15 +736,25 @@ func adjustEdition(inCard *Card) {
 			}
 		}
 
-		if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
+		switch {
+		case len(MatchInSet(inCard.Name, "SLX")) != 0 &&
+			!inCard.isReskin():
 			edition = backend.Sets["SLX"].Name
-		} else if (inCard.Contains("30th") || inCard.Contains("Countdown") || ExtractYear(inCard.Variation) != "") && len(MatchInSet(inCard.Name, "SLC")) != 0 {
+		case len(MatchInSet(inCard.Name, "SLC")) != 0 &&
+			(len(MatchInSet(inCard.Name, "SLD")) == 0 ||
+				inCard.Contains("30th") ||
+				inCard.Contains("Countdown") ||
+				ExtractYear(inCard.Variation) != ""):
 			edition = backend.Sets["SLC"].Name
-		} else if (inCard.Contains("Showdown") || inCard.Contains("Prize") || inCard.Contains("Play")) && len(MatchInSet(inCard.Name, "SLP")) != 0 {
+		case len(MatchInSet(inCard.Name, "SLP")) != 0 &&
+			(len(MatchInSet(inCard.Name, "SLD")) == 0 ||
+				inCard.Contains("Showdown") ||
+				inCard.Contains("Prize") ||
+				inCard.Contains("Play")):
 			edition = backend.Sets["SLP"].Name
-		} else if len(MatchInSet(inCard.Name, "SLU")) != 0 {
+		case len(MatchInSet(inCard.Name, "SLU")) != 0:
 			edition = backend.Sets["SLU"].Name
-		} else if len(MatchInSet(inCard.Name, "SLD")) != 0 {
+		case len(MatchInSet(inCard.Name, "SLD")) != 0:
 			edition = backend.Sets["SLD"].Name
 		}
 
