@@ -3,13 +3,9 @@ package magiccorner
 import (
 	"errors"
 	"fmt"
-	"strconv"
+	"net/url"
 	"sync"
 	"time"
-
-	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -50,8 +46,9 @@ func NewScraper() (*Magiccorner, error) {
 }
 
 type resultChan struct {
-	cardId string
-	entry  *mtgban.InventoryEntry
+	cardId   string
+	invEntry *mtgban.InventoryEntry
+	buyEntry *mtgban.BuylistEntry
 }
 
 func (mc *Magiccorner) printf(format string, a ...interface{}) {
@@ -158,7 +155,7 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 
 			channel <- resultChan{
 				cardId: cardId,
-				entry: &mtgban.InventoryEntry{
+				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      v.Price * mc.exchangeRate,
 					Quantity:   v.Quantity,
@@ -210,7 +207,7 @@ func (mc *Magiccorner) scrape() error {
 	}()
 
 	for result := range results {
-		err = mc.inventory.AddRelaxed(result.cardId, result.entry)
+		err = mc.inventory.AddRelaxed(result.cardId, result.invEntry)
 		if err != nil {
 			mc.printf("%s", err.Error())
 			continue
@@ -234,140 +231,84 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 
 	return mc.inventory, nil
 }
-
-func getSpreadsheetURL() (string, error) {
-	resp, err := cleanhttp.DefaultClient().Get(buylistURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	link, found := doc.Find(`div[class="panel-body"] ul li a`).First().Attr("href")
-	if !found {
-		return "", errors.New("spreadsheet anchor tag not found")
-	}
-
-	return "https://www.magiccorner.it/" + link, nil
-}
-
-func (mc *Magiccorner) parseBL() error {
-	blURL, err := getSpreadsheetURL()
-	if err != nil {
-		return err
-	}
-	mc.printf("Using %s as input spreadsheet", blURL)
-
-	resp, err := cleanhttp.DefaultClient().Get(blURL)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	f, err := excelize.OpenReader(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	// Get all the rows in the Sheet1.
-	rows, err := f.GetRows(f.GetSheetList()[0])
-	if err != nil {
-		return err
-	}
-	for i, row := range rows {
-		if i < 5 || len(row) < 8 {
-			continue
-		}
-		cardName := row[1]
-		edition := row[3]
-		price, _ := strconv.ParseFloat(row[4], 64)
-		priceFoil, _ := strconv.ParseFloat(row[8], 64)
-
-		if cardName == "" || edition == "" || price == 0 {
-			continue
-		}
-
-		theCard, err := preprocessBL(cardName, edition)
+func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition string) error {
+	i := 1
+	totals := 0
+	for {
+		mc.printf("Querying %s page %d", edition, i)
+		result, err := mc.client.GetBuylistForEdition(edition, i)
 		if err != nil {
-			continue
+			return err
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			mc.printf("%v", err)
-			mc.printf("%q", theCard)
-			mc.printf("%q", row)
+		for _, product := range result.Products {
+			cardName := product.ModelEn
+			edition := product.Category
+			price := product.MinAcquisto
+			credit := product.MaxAcquisto
+			qty := product.Quantity
+			if qty > 4 {
+				qty = 4
+			}
 
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					mc.printf("- %s", card)
+			if price == 0 {
+				continue
+			}
+
+			theCard, err := preprocessBL(cardName, edition, product.ID)
+			if err != nil {
+				continue
+			}
+
+			cardId, err := mtgmatcher.Match(theCard)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				mc.printf("%v", err)
+				mc.printf("%q", theCard)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						mc.printf("- %s", card)
+					}
+				}
+				continue
+			}
+
+			link := fmt.Sprintf("https://www.cardgamecorner.com/it/buylist?q=%s&game=magic", url.QueryEscape(product.ModelEn))
+
+			gradeMap := map[string]float64{
+				"NM": 1, "SP": 0.77, "MP": 0, "HP": 0.36,
+			}
+			for _, grade := range mtgban.DefaultGradeTags {
+				factor := gradeMap[grade]
+				if factor == 0 {
+					continue
+				}
+
+				channel <- resultChan{
+					cardId: cardId,
+					buyEntry: &mtgban.BuylistEntry{
+						Quantity:   qty,
+						Conditions: grade,
+						BuyPrice:   price * mc.exchangeRate * factor,
+						TradePrice: credit * mc.exchangeRate * factor,
+						URL:        link,
+						OriginalId: product.ID,
+					},
 				}
 			}
-			continue
 		}
 
-		gradeMap := grading(cardId)
-		for _, grade := range mtgban.DefaultGradeTags {
-			factor := gradeMap[grade]
-			out := &mtgban.BuylistEntry{
-				Conditions: grade,
-				BuyPrice:   price * mc.exchangeRate * factor,
-				URL:        "https://www.magiccorner.it/it/vendi-letue-carte",
-			}
-			err = mc.buylist.Add(cardId, out)
-			if err != nil {
-				mc.printf("%v", err)
-			}
-		}
-
-		// Repeat for foils, or skip
-		if priceFoil == 0 {
-			continue
-		}
-
-		theCard.Foil = true
-
-		cardId, err = mtgmatcher.Match(theCard)
-		if err != nil {
-			mc.printf("%v", err)
-			mc.printf("%q", theCard)
-			mc.printf("%q", row)
-			alias, ok := err.(*mtgmatcher.AliasingError)
-			if ok {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					mc.printf("- %s", card)
-				}
-			}
-			continue
-		}
-
-		gradeMap = grading(cardId)
-		for _, grade := range mtgban.DefaultGradeTags {
-			factor := gradeMap[grade]
-			out := &mtgban.BuylistEntry{
-				Conditions: grade,
-				BuyPrice:   price * mc.exchangeRate * factor,
-				URL:        buylistURL,
-			}
-			err = mc.buylist.Add(cardId, out)
-			if err != nil {
-				mc.printf("%v", err)
-			}
+		i++
+		totals += len(result.Products)
+		if totals >= result.Total {
+			break
 		}
 	}
-
-	mc.buylistDate = time.Now()
 
 	return nil
 }
@@ -377,36 +318,50 @@ func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
 		return mc.buylist, nil
 	}
 
-	err := mc.parseBL()
+	editions, err := mc.client.GetBuylistEditions()
 	if err != nil {
 		return nil, err
 	}
+	mc.printf("Found %d editions", len(editions))
 
-	return mc.buylist, nil
-}
+	editionsChan := make(chan string)
+	results := make(chan resultChan)
+	var wg sync.WaitGroup
 
-var eighthEditionDate = time.Date(2003, time.July, 1, 0, 0, 0, 0, time.UTC)
-
-func grading(cardId string) map[string]float64 {
-	set, err := mtgmatcher.GetSetUUID(cardId)
-	if err != nil {
-		return nil
+	for i := 0; i < mc.MaxConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for edition := range editionsChan {
+				err := mc.parseBL(results, edition)
+				if err != nil {
+					mc.printf("%v", err)
+				}
+			}
+			wg.Done()
+		}()
 	}
 
-	setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
-	if err != nil {
-		return nil
-	}
+	go func() {
+		for _, edition := range editions {
+			editionsChan <- edition
+		}
+		close(editionsChan)
 
-	if setDate.After(eighthEditionDate) {
-		return map[string]float64{
-			"NM": 1, "SP": 0.8, "MP": 0.7, "HP": 0.5,
+		wg.Wait()
+		close(results)
+	}()
+
+	for record := range results {
+		err := mc.buylist.AddRelaxed(record.cardId, record.buyEntry)
+		if err != nil {
+			mc.printf("%s", err.Error())
+			continue
 		}
 	}
 
-	return map[string]float64{
-		"NM": 1, "SP": 0.7, "MP": 0.5, "HP": 0.3,
-	}
+	mc.buylistDate = time.Now()
+
+	return mc.buylist, nil
 }
 
 func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
@@ -415,6 +370,5 @@ func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mc.inventoryDate
 	info.BuylistTimestamp = &mc.buylistDate
-	info.NoCredit = true
 	return
 }

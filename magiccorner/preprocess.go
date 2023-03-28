@@ -180,6 +180,33 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		cardName = cn
 	}
 
+	cardName, edition, variation = internalPreprocess(cardName, edition, variation, extra)
+
+	var id string
+	switch edition {
+	case "Core 2021: Extras",
+		"Ikoria: Lair of Behemoths: Extras",
+		"Zendikar Rising: Extras":
+		id = extra
+	case "Commander Anthology 2018":
+		variation = card.URL
+	}
+
+	lutName, found := editionTable[edition]
+	if found {
+		edition = lutName
+	}
+
+	return &mtgmatcher.Card{
+		Id:        id,
+		Name:      cardName,
+		Variation: variation,
+		Edition:   edition,
+		Foil:      isFoil,
+	}, nil
+}
+
+func internalPreprocess(cardName, edition, variation, extra string) (string, string, string) {
 	switch edition {
 	case "Unlimited":
 		cardName = mtgmatcher.Cut(cardName, "Unlimited")[0]
@@ -352,11 +379,8 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			variation = "extended art"
 		}
 	case "Secret Lair Drop Series":
-		switch cardName {
-		case "Serum Visions", "Faerie Rogue Token":
-			if strings.HasPrefix(extra, "SLD") {
-				variation = strings.TrimLeft(extra[3:], "0")
-			}
+		if strings.HasPrefix(extra, "SLD") {
+			variation = strings.TrimLeft(extra[3:], "0")
 		}
 	default:
 		// All the prelease/promopack versions >= THB
@@ -377,7 +401,6 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	id := ""
 	if variation == "" {
 		switch edition {
 		// Work around missing tags until (if) they add them
@@ -421,14 +444,8 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 			"Alliances", "Reinassance", "Rinascimento", "Homelands":
 			variation = extra
 		// Same for this one, except the specifier is elsewhere
-		case "Commander Anthology 2018":
-			variation = card.URL
 		case "Core 2020: Extras":
 			variation = "Promo Pack"
-		case "Core 2021: Extras",
-			"Ikoria: Lair of Behemoths: Extras",
-			"Zendikar Rising: Extras":
-			id = extra
 		// Full-art Zendikar lands
 		case "Zendikar":
 			if mtgmatcher.IsBasicLand(cardName) {
@@ -456,26 +473,10 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	lutName, found := editionTable[edition]
-	if found {
-		edition = lutName
-	}
-
-	return &mtgmatcher.Card{
-		Id:        id,
-		Name:      cardName,
-		Variation: variation,
-		Edition:   edition,
-		Foil:      isFoil,
-	}, nil
+	return cardName, edition, variation
 }
 
-func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
-	if strings.HasSuffix(cardName, " HP") {
-		return nil, errors.New("duplicate")
-	}
-	cardName = strings.TrimSuffix(cardName, " NM")
-
+func preprocessBL(cardName, edition, extra string) (*mtgmatcher.Card, error) {
 	variant := ""
 	if strings.Contains(edition, "(") {
 		vars := mtgmatcher.SplitVariants(edition)
@@ -485,53 +486,7 @@ func preprocessBL(cardName, edition string) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	switch edition {
-	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
-		edition = "War of the Spark"
-		variant = "Japanese"
-	case "DCI Promos":
-		switch cardName {
-		case "Abrupt Decay", "Inkmoth Nexus", "Vengevine", "Thalia, Guardian of Thraben":
-			edition = "World Magic Cup Qualifiers"
-		}
-	case "Judge Rewards":
-		switch cardName {
-		case "Vampiric Tutor":
-			if variant == "V1" {
-				variant = "Judge 2000"
-			} else if variant == "V2" {
-				variant = "Judge 2018"
-			}
-		case "Vindicate":
-			if variant == "V1" {
-				variant = "Judge 2007"
-			} else if variant == "V2" {
-				variant = "Judge 2013"
-			}
-		}
-	case "Judge Rewards Promos":
-		if cardName == "Demonic Tutor" {
-			if variant == "V1" {
-				variant = "Judge 2008"
-			} else if variant == "V2" {
-				variant = "Judge 2020"
-			}
-		}
-	case "Buy a Box Promos":
-		switch cardName {
-		case "Surgical Extraction":
-			edition = "New Phyrexia Promos"
-		case "Chord of Calling":
-			edition = "2XM"
-		}
-	case "Promos":
-		if cardName == "Hangarback Walker" {
-			edition = "Love your LGS"
-		}
-	case "Modern Horizons II: Old Frame":
-		edition = "Modern Horizons 2"
-		variant += " Retro Frame"
-	}
+	cardName, edition, variant = internalPreprocess(cardName, edition, variant, extra)
 
 	cn, found := cardTable[cardName]
 	if found {

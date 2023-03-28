@@ -61,6 +61,10 @@ const (
 	mcEditionsEndpt = "espansioni"
 	mcCardsEndpt    = "carte"
 
+	mcHotBuylistURL      = "https://www.cardgamecorner.com/webapi/mcbuylist/magic/-/0"
+	mcEditionBuylistURL  = "https://www.cardgamecorner.com/webapi/mclistboxes/magic/it"
+	mcAdvancedBuylistURL = "https://www.cardgamecorner.com/webapi/mcadvsearch"
+
 	mcPromoEditionId      = 1113
 	mcMerfolksVsGoblinsId = 1116
 )
@@ -176,4 +180,141 @@ func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) 
 	}
 
 	return response.Data, nil
+}
+
+type MCBuylistEditionResponse struct {
+	Expansions []struct {
+		Espansione string `json:"Espansione"`
+		Enabled    bool   `json:"Enabled"`
+	} `json:"Expansions"`
+}
+
+func (mc *MCClient) GetBuylistEditions() ([]string, error) {
+	resp, err := mc.client.Get(mcEditionBuylistURL)
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+
+	var response MCBuylistEditionResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+
+	editions := make([]string, 0, len(response.Expansions))
+	for _, edition := range response.Expansions {
+		if !edition.Enabled {
+			continue
+		}
+		editions = append(editions, edition.Espansione)
+	}
+
+	return editions, nil
+}
+
+type MCBuylistRequest struct {
+	Q              string  `json:"q"`
+	Game           string  `json:"game"`
+	Edition        string  `json:"edition"`
+	Rarity         string  `json:"rarity"`
+	Color          string  `json:"color"`
+	Firstedition   string  `json:"firstedition"`
+	Foil           string  `json:"foil"`
+	Language       *string `json:"language"`
+	Page           int     `json:"page"`
+	Sort           int     `json:"sort"`
+	IsBuyList      bool    `json:"isBuyList"`
+	OnlyHotBuyList bool    `json:"onlyHotBuyList"`
+	OnlyAvailable  bool    `json:"onlyAvailable"`
+}
+
+type MCBuylistResponse struct {
+	Result MCBuylistResult `json:"Result"`
+
+	ID              int  `json:"Id"`
+	Status          int  `json:"Status"`
+	IsCanceled      bool `json:"IsCanceled"`
+	IsCompleted     bool `json:"IsCompleted"`
+	CreationOptions int  `json:"CreationOptions"`
+	IsFaulted       bool `json:"IsFaulted"`
+}
+
+type MCBuylistResult struct {
+	Products []MCProduct `json:"Products"`
+	Total    int         `json:"Total"`
+}
+
+type MCProduct struct {
+	ID          string  `json:"Id"`
+	Game        string  `json:"Game"`
+	ModelEn     string  `json:"ModelEn"`
+	Rarity      string  `json:"Rarity"`
+	Category    string  `json:"Category"`
+	Quantity    int     `json:"Quantity"`
+	MinAcquisto float64 `json:"MinAcquisto"`
+	MaxAcquisto float64 `json:"MaxAcquisto"`
+	Language    int     `json:"Language"`
+}
+
+func (mc *MCClient) GetHotBuylistPage(page int) ([]MCProduct, error) {
+	resp, err := mc.client.Get(mcHotBuylistURL + "?p=" + fmt.Sprint(page))
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+
+	var response MCBuylistResult
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+
+	return response.Products, nil
+}
+
+func (mc *MCClient) GetBuylistForEdition(edition string, page int) (*MCBuylistResult, error) {
+	payload, err := json.Marshal(&MCBuylistRequest{
+		IsBuyList: true,
+		Game:      "magic",
+		Page:      page,
+		Edition:   edition,
+		Sort:      5,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	link := mcAdvancedBuylistURL
+	if page > 1 {
+		link = fmt.Sprintf("%s?p=%d", mcAdvancedBuylistURL, page)
+	}
+	resp, err := mc.client.Post(link, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+
+	var response MCBuylistResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+	}
+
+	return &response.Result, nil
 }
