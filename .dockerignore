@@ -1,0 +1,4 @@
+#Omit from builds
+Dockerfile
+.gitignore
+compose-dev.yaml
