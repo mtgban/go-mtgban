@@ -22,3 +22,6 @@
 
 # macOS Finder
 .DS_Store
+
+# VSCode dev environment config
+compose-dev.yaml 
