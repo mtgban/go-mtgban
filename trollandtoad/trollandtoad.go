@@ -334,7 +334,7 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 				buyEntry: &mtgban.BuylistEntry{
 					Conditions: mtgban.DefaultGradeTags[i],
 					BuyPrice:   price * deduction,
-					TradePrice: price * deduction * 1.30,
+					TradePrice: price * deduction * 1.25,
 					Quantity:   qty,
 					PriceRatio: priceRatio,
 					URL:        link,
