@@ -12,17 +12,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-var cardTable = map[string]string{
-	"Vivien Reid (vers. 1)":          "Vivien Reid",
-	"Thalia, Protettrice di Thraben": "Thalia, Guardian of Thraben",
-	"iko Yidaro, Wandering Monster":  "Yidaro, Wandering Monster",
-	"iko Cartographer's Hawk":        "Cartographer's Hawk",
-	"iko Martial Impetus":            "Martial Impetus",
-	"Swamp (V.2)":                    "Swamp",
-
-	"Karametra, God of Harvests  Karametra, God of Harvests ": "Karametra, God of Harvests",
-}
-
 var id2edition = map[int]string{
 	// Wasteland
 	19144: "G10",
@@ -111,11 +100,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	number := strings.TrimLeft(bp.Properties.Number, "0")
 	variant := ""
 
-	altName, found := cardTable[cardName]
-	if found {
-		cardName = altName
-	}
-
 	var skipHashLookup bool
 	switch edition {
 	// Some of the hashes are not correctly set for these editions
@@ -161,15 +145,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "":
-		if bp.Properties.Language == "jp" {
-			edition = "PMEI"
-			if cardName == "Load Lion" {
-				edition = "PRES"
-			}
-		} else {
-			return nil, errors.New("missing edition")
-		}
 	case "Alliances", "Fallen Empires", "Homelands",
 		"Guilds of Ravnica",
 		"Ravnica Allegiance",
@@ -233,12 +208,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		}
 	case "Secret Lair Drop Series":
 		variant = number
-		switch cardName {
-		case "Birds of Paradise":
-			if variant == "94" {
-				variant = "92"
-			}
-		}
 	case "Champs and States":
 		if cardName == "Crucible of Worlds" {
 			edition = "World Championship Promos"
@@ -246,12 +215,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Core Set 2021":
 		if cardName == "Teferi, Master of Time" {
 			variant = number
-		}
-	case "Signature Spellbook: Chandra":
-		if bp.Id == 133840 {
-			cardName = "Cathartic Reunion"
-		} else if bp.Id == 133841 {
-			cardName = "Pyroblast"
 		}
 	case "DCI Promos":
 		switch cardName {
@@ -262,7 +225,19 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		}
 	case "Grand Prix Promos":
 		if cardName == "Wilt-Leaf Cavaliers" {
-			edition = "PG08"
+			edition = "PDCI"
+		}
+	case "Misc Promos":
+		switch variant {
+		case "Retro Frame":
+			edition = "PEWK"
+		case "Summer Vacation Promos 2022":
+			edition = variant
+		default:
+			edition = "PMEI"
+			if cardName == "Loam Lion" {
+				edition = "PRES"
+			}
 		}
 	case "The List":
 		switch cardName {
@@ -279,35 +254,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
 			variant = number
-
-			switch edition {
-			case "Throne of Eldraine Collectors":
-				if cardName == "Castle Vantress" && number == "360" {
-					variant = "390"
-				}
-			case "Theros: Beyond Death Collectors":
-				if cardName == "Purphoros's Intervention" && number == "313" {
-					return nil, errors.New("duplicate")
-				}
-			case "Commander Legends Collectors":
-				if cardName == "Three Visits" && number == "685" {
-					variant = "686"
-				}
-			case "Strixhaven: School of Mages Collectors":
-				if cardName == "Magma Opus" && number == "336" {
-					variant = "346"
-				}
-			case "Commander: Strixhaven Collectors":
-				if cardName == "Inkshield" && number == "395" {
-					variant = "398"
-				} else if cardName == "Willowdusk, Essence Seer" && number == "331" {
-					variant = "333"
-				}
-			case "Modern Horizons 2 Collectors":
-				if cardName == "Gaea's Will" && number == "413" {
-					variant = "412"
-				}
-			}
 		} else if strings.HasPrefix(edition, "WCD") ||
 			strings.HasPrefix(edition, "Pro Tour 1996") {
 			variant = number
@@ -433,14 +379,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					}
 				}
 			case "D&D: Adventures in the Forgotten Realms Promos":
-				// Missing ampersand
 				variant = "Promo Pack"
 				edition = "PAFR"
-			case "Ikoria: Lair of Behemoths Promos":
-				if cardName == "Ketria Triome" {
-					number = "250"
-				}
-				fallthrough
 			default:
 				set, err := mtgmatcher.GetSet(bp.Expansion.Code)
 				if err != nil {
@@ -463,12 +403,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 						variant = "Promo Pack"
 					} else {
 						edition = strings.TrimSuffix(edition, " Promos")
-						switch cardName {
-						case "Frantic Inventory":
-							variant = "394"
-						case "You Find the Villains' Lair":
-							variant = "399"
-						}
 					}
 				} else {
 					switch edition {
@@ -494,14 +428,12 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 			"Collectors’ Edition":
 			return nil, errors.New("pass")
 		// Some basic land foil are mapped to the Promos
-		case "Guilds of Ravnica Promos":
-			edition = "Guilds of Ravnica"
+		case "Guilds of Ravnica Promos",
+			"Ravnica Allegiance Promos":
+			edition = strings.TrimSuffix(edition, " Promos")
 			if strings.HasPrefix(variant, "A") {
 				edition = "GRN Ravnica Weekend"
-			}
-		case "Ravnica Allegiance Promos":
-			edition = "Ravnica Allegiance"
-			if strings.HasPrefix(variant, "B") {
+			} else if strings.HasPrefix(variant, "B") {
 				edition = "RNA Ravnica Weekend"
 			}
 		// Some lands have years set
@@ -524,18 +456,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 					variant = "2001"
 				}
 			}
-		case "Game Night 2019":
-			if cardName == "Swamp" && number == "61" {
-				variant = "60"
-			}
-		case "Theros: Beyond Death Theme Deck":
-			if cardName == "Swamp" && number == "281" {
-				variant = "282"
-			}
-		case "Core Set 2021 Collectors":
-			if cardName == "Mountain" && number == "310" {
-				variant = "312"
-			}
 		case "Magic Premiere Shop":
 			if number == "" {
 				number = fmt.Sprint(bp.Id)
@@ -549,9 +469,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		variant = "Prerelease"
 
 		switch cardName {
-		case "Curious Pair // Treats to Share":
-			edition = "Throne of Eldraine"
-			variant = "Showcase"
 		case "Lu Bu, Master-at-Arms":
 			edition = "Prerelease Events"
 			if number == "6" {
