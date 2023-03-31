@@ -29,7 +29,6 @@ var EditionTable = map[string]string{
 	"Summer Magic":          "Summer Magic / Edgar",
 
 	// Universes Beyond
-	"Universes Beyond: Transformers":            "Transformers",
 	"Universes Beyond: Warhammer 40,000":        "Warhammer 40,000 Commander",
 	"Universes Beyond: Warhammer 40k Commander": "Warhammer 40,000 Commander",
 
