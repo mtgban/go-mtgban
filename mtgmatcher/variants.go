@@ -2887,6 +2887,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"akh":      "727",
 		"amonkhet": "727",
 	},
+	"Phantom Centaur": {
+		"127":      "1292",
+		"misprint": "1292†",
+	},
 	"Preordain": {
 		"commander 2015": "460",
 	},
