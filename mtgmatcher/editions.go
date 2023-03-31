@@ -40,6 +40,7 @@ var EditionTable = map[string]string{
 	"APAC Year of the Tiger":     "Year of the Tiger 2022",
 	"Textless Year of the Tiger": "Year of the Tiger 2022",
 	"Year of the Tiger":          "Year of the Tiger 2022",
+	"Year of the Rabbit 2023":    "Year of the Rabbit 2023",
 
 	// Double Feature
 	"Innistrad: Double Feature - Crimson Vow":   "Innistrad: Double Feature",
