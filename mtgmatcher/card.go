@@ -395,8 +395,6 @@ func (c *Card) isExtendedArt() bool {
 
 func (c *Card) isShowcase() bool {
 	return Contains(c.Variation, "Showcase") ||
-		Contains(c.Variation, "Eternal Night") ||
-		Contains(c.Variation, "Ichor") ||
 		Contains(c.Variation, "Sketch") // binderpos
 }
 
