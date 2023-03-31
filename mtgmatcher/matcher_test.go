@@ -886,6 +886,24 @@ var MatchTests = []MatchTest{
 			Edition: "Play Promo",
 		},
 	},
+	{
+		Id:   "151082c2-730d-559a-b2f0-2051065e3b6c",
+		Desc: "promopack_imprecise_number",
+		In: Card{
+			Name:      "Steel Leaf Champion",
+			Variation: "182",
+			Edition:   "Promo Pack: Core Set 2020",
+		},
+	},
+	{
+		Id:   "151082c2-730d-559a-b2f0-2051065e3b6c",
+		Desc: "promopack_precise_number",
+		In: Card{
+			Name:      "Steel Leaf Champion",
+			Variation: "182p",
+			Edition:   "Core Set 2020 Promos",
+		},
+	},
 
 	// Prerelease
 	{

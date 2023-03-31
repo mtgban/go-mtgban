@@ -787,6 +787,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 							number += numSuffix
 						}
 						if number == strings.ToLower(card.Number) {
+							if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
+								continue
+							} else if !inCard.isPromoPack() && card.HasPromoType(mtgjson.PromoTypePromoPack) {
+								continue
+							}
+
 							outCards = append(outCards, card)
 
 							// Card was found, skip any other suffix

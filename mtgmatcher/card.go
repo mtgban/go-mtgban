@@ -377,7 +377,8 @@ func (c *Card) isPrerelease() bool {
 func (c *Card) isPromoPack() bool {
 	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
-		Contains(c.Variation, "Planeswalker Stamp")
+		Contains(c.Variation, "Planeswalker Stamp") ||
+		strings.HasSuffix(ExtractNumber(c.Variation), "p")
 }
 
 func (c *Card) isPlayPromo() bool {
