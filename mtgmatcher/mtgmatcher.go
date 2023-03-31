@@ -78,7 +78,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	}
 
 	// Adjust flag as needed
-	if Contains(inCard.Variation, "foil") && !Contains(inCard.Variation, "non") {
+	if Contains(inCard.Variation, "foil") && !Contains(inCard.Variation, "non") && !Contains(inCard.Variation, "etched") {
 		inCard.Foil = true
 	}
 
