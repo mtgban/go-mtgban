@@ -1057,6 +1057,15 @@ func adjustEdition(inCard *Card) {
 			if inCard.isBaB() {
 				variation = "Launch"
 			}
+		case "Arcane Signet":
+			if inCard.Contains("Festival") || inCard.Contains("MagicFest") || inCard.Contains("30th") {
+				edition = "30th Anniversary Play Promos"
+				if inCard.isEtched() {
+					variation = "1F★"
+				} else {
+					variation = "1F"
+				}
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps

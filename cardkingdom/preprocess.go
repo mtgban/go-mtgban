@@ -87,10 +87,6 @@ var skuFixupTable = map[string]string{
 	"FMUST-113A": "UPLIST-38",
 	"FMUST-113C": "UPLIST-37",
 
-	// Arcane Signet
-	"FP30A-001":  "P30A-1F",
-	"FEP30A-001": "P30A-1F★",
-
 	// Naya Sojourners
 	"PM10-028": "PDCI-29",
 }

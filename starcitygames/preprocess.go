@@ -138,22 +138,6 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 				edition = "PW22"
 			}
 		}
-	case "Promo: General - Alternate Foil":
-		switch cardName {
-		case "Arcane Signet":
-			if strings.Contains(variant, "Festival") {
-				edition = "P30A"
-				variant = "1F"
-			}
-		}
-	case "Promo: General - Foil Etched":
-		switch cardName {
-		case "Arcane Signet":
-			if strings.Contains(variant, "Festival") {
-				edition = "P30A"
-				variant = "1F★"
-			}
-		}
 	}
 
 	return &mtgmatcher.Card{
