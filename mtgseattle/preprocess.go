@@ -148,6 +148,9 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 				variant = tag
 			}
 		}
+		if variant == "Winner" {
+			return nil, errors.New("unsupported")
+		}
 	case "Core Set 2021":
 		if strings.Contains(variant, "Alternate Art") && mtgmatcher.ExtractNumber(variant) == "" {
 			variant = "Borderless"
