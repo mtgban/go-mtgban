@@ -101,25 +101,24 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		}
 	case "Judge Rewards Promos",
 		"Judge Academy Promo":
+		var year string
 		switch cardName {
 		case "Demonic Tutor":
 			if variant == "DCI Judge Promo" {
-				variant = "2008"
-			} else {
-				variant = "2020"
+				year = "2008"
+			} else if variant == "Judge Academy Promo" {
+				year = "2020"
 			}
 		case "Vampiric Tutor":
-			if variant == "DCI Judge Promo" {
-				variant = "2000"
-			} else {
-				variant = "2018"
+			year = mtgmatcher.ExtractYear(variant)
+			if year == "" {
+				year = "2000"
 			}
 		case "Wasteland":
-			if variant == "DCI Judge Promo" {
-				variant = "2010"
-			} else {
-				variant = "2015"
-			}
+			year = mtgmatcher.ExtractYear(variant)
+		}
+		if year != "" {
+			variant = year
 		}
 	case "Unique & Misc Promos":
 		switch cardName {
