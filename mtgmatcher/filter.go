@@ -750,6 +750,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						possibleSuffixes = append(possibleSuffixes, "s")
 					} else if inCard.isPromoPack() {
 						possibleSuffixes = append(possibleSuffixes, "p")
+					} else if schineseTag {
+						possibleSuffixes = []string{"s"}
 					}
 
 					// BFZ and ZEN intro lands non-fullart always have this
