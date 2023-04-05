@@ -89,6 +89,8 @@ var skuFixupTable = map[string]string{
 
 	// Naya Sojourners
 	"PM10-028": "PDCI-29",
+	// Liliana's Specter
+	"PM11-104": "PDCI-52",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
