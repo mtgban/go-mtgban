@@ -3793,6 +3793,17 @@ var MatchTests = []MatchTest{
 			Edition:   "ONE",
 		},
 	},
+
+	// Serialized
+	{
+		Id:   "bc7bf2ae-8508-536f-94f5-2d76c0bed706",
+		Desc: "serialized_schematic",
+		In: Card{
+			Name:      "Chromatic Star",
+			Variation: "Schematic Serial Numbered",
+			Edition:   "The Brothers' War Retro Artifacts",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

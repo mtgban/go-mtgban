@@ -252,7 +252,6 @@ func (c *Card) isUnsupported() bool {
 		c.Contains("Redemption Program") || // PRES
 		c.Contains("Heroes of the Realm") || // HTR*
 		c.Contains("Memorabilia") ||
-		(c.Contains("Serial Number") && !c.Contains("Secret Lair")) ||
 		c.Contains("Sealed") ||
 		c.Contains("Charlie Brown") || // abu
 		// Oversized are usually ok, but 8th and 9th ed box topper variants

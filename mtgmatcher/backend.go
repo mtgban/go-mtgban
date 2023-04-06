@@ -396,11 +396,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			// Override all to tokens so that duplicates get named differently
 			case "TFTH", "TBTH", "TDAG":
 				card.Layout = "token"
-			// Skip serialized cards
-			case "BRR":
-				if strings.HasSuffix(card.Number, "z") {
-					continue
-				}
 			}
 
 			// Set any custom tag

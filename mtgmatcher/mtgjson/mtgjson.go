@@ -124,6 +124,7 @@ const (
 	PromoTypeSurgeFoil  = "surgefoil"
 	PromoTypeGlossy     = "glossy"
 	PromoTypeAmpersand  = "ampersand"
+	PromoTypeSerialized = "serialized"
 
 	PromoTypeStepAndCompleat = "stepandcompleat"
 	PromoTypeOilSlick        = "oilslick"
@@ -169,6 +170,7 @@ var AllPromoTypes = []string{
 	PromoTypePromoPack,
 	PromoTypeRelease,
 	PromoTypeSChineseAltArt,
+	PromoTypeSerialized,
 	PromoTypeStepAndCompleat,
 	PromoTypeSurgeFoil,
 	PromoTypeTextured,

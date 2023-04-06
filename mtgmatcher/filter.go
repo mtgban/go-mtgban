@@ -1304,12 +1304,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			case "The Brothers' War Retro Artifacts":
 				isSerial := inCard.Contains("Serial") || inCard.Contains("V.3")
-				if isSerial && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+				if isSerial && !card.HasPromoType(mtgjson.PromoTypeSerialized) {
 					continue
-				} else if !isSerial && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+				} else if !isSerial && card.HasPromoType(mtgjson.PromoTypeSerialized) {
 					continue
 				}
 
+				// Skip check for serialized cards as collector numbers would not match
 				if !isSerial {
 					cn, _ := strconv.Atoi(card.Number)
 					isSchematic := inCard.Contains("Schematic") || inCard.Contains("Blueprint") ||
@@ -1342,6 +1343,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					} else if !isAnime && cn >= 52 && cn <= 97 {
 						continue
 					}
+				}
+			case "Multiverse Legends":
+				isSerial := inCard.Contains("Serial") || inCard.Contains("V.3")
+				if isSerial && !card.HasPromoType(mtgjson.PromoTypeSerialized) {
+					continue
+				} else if !isSerial && card.HasPromoType(mtgjson.PromoTypeSerialized) {
+					continue
 				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
