@@ -125,6 +125,7 @@ const (
 	PromoTypeGlossy     = "glossy"
 	PromoTypeAmpersand  = "ampersand"
 	PromoTypeSerialized = "serialized"
+	PromoTypeHaloFoil   = "halofoil"
 
 	PromoTypeStepAndCompleat = "stepandcompleat"
 	PromoTypeOilSlick        = "oilslick"
@@ -160,6 +161,7 @@ var AllPromoTypes = []string{
 	PromoTypeGilded,
 	PromoTypeGlossy,
 	PromoTypeGodzilla,
+	PromoTypeHaloFoil,
 	PromoTypeIntroPack,
 	PromoTypeJudgeGift,
 	PromoTypeNeonInk,
