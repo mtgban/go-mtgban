@@ -1377,11 +1377,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						expectedSuffix = mtgjson.SuffixSpecial
 						checkNumberSuffix = inCard.Foil
 					}
-				case "Void Beckoner":
-					if set.Name == "Ikoria: Lair of Behemoths" {
-						expectedSuffix = "A"
-						checkNumberSuffix = inCard.isReskin()
-					}
 				case "Island":
 					if set.Name == "Arena League 1999" && Contains(inCard.Variation, "NO SYMBOL") {
 						checkNumberSuffix = true
