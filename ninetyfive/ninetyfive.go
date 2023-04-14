@@ -57,6 +57,13 @@ func (nf *Ninetyfive) printf(format string, a ...interface{}) {
 	}
 }
 
+var gradingMap = map[string]float64{
+	"NM": 1,
+	"SP": 1,
+	"MP": 0.5,
+	"HP": 0.5,
+}
+
 func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode string) error {
 	var products []NFProduct
 	var err error
@@ -143,20 +150,8 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 				break
 			}
 
-			for _, cond := range product.Conditions {
-				if cond == "DMG" {
-					cond = "PO"
-				}
-
-				price := float64(product.Price) / 100 * nf.exchangeRate
-				if cond != "NM" {
-					price *= map[string]float64{
-						"SP": 0.8,
-						"MP": 0.65,
-						"HP": 0.6,
-						"PO": 0.55,
-					}[cond]
-				}
+			for _, grade := range mtgban.DefaultGradeTags {
+				price := float64(product.Price) / 100 * nf.exchangeRate * gradingMap[grade]
 
 				if sellPrice > 0 {
 					priceRatio = price / sellPrice * 100
@@ -165,7 +160,7 @@ func (nf *Ninetyfive) processPage(channel chan<- respChan, start int, mode strin
 				channel <- respChan{
 					cardId: cardId,
 					buyEntry: &mtgban.BuylistEntry{
-						Conditions: cond,
+						Conditions: grade,
 						BuyPrice:   price,
 						PriceRatio: priceRatio,
 						URL:        link,
