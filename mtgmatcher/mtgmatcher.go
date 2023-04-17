@@ -872,6 +872,9 @@ func adjustEdition(inCard *Card) {
 			edition = "ignored"
 		}
 
+	case inCard.Contains("30th Anniversary") && !inCard.Contains("Edition") && len(MatchInSet(inCard.Name, "P30H")) > 0:
+		edition = backend.Sets["P30H"].Name
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {
