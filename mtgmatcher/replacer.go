@@ -54,6 +54,7 @@ var replacer = strings.NewReplacer(
 	"é", "e",
 	"í", "i",
 	"ö", "o",
+	"ó", "o",
 	"ú", "u",
 	"û", "u",
 	"ü", "u",
