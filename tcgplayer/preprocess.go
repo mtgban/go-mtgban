@@ -260,8 +260,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if strings.Contains(variant, "JP Exclusive") {
 				return nil, errors.New("non-english")
 			}
-		case "Yuriko, the Tiger's Shadow", "Xantcha, Sleeper Agent":
-			edition = "PLG21"
+		case "Yuriko, the Tiger's Shadow":
+			if variant == "" {
+				edition = "PL22"
+			}
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"

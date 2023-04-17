@@ -364,12 +364,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				card.FlavorText = missingPALPtags[card.Number]
 			case "PELP":
 				card.FlavorText = missingPELPtags[card.Number]
-			// Skip non-English promo cards
-			case "PLG21":
-				switch card.Number {
-				case "C1", "C2":
-					continue
-				}
 			// Remove frame effects and borders where they don't belong
 			case "STA", "PLIST":
 				card.FrameEffects = nil
