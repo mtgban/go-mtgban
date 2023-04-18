@@ -926,7 +926,7 @@ func adjustEdition(inCard *Card) {
 			}
 		case "Faerie Conclave", "Treetop Village":
 			if inCard.isWPNGateway() || inCard.Contains("Summer") {
-				edition = "Summer of Magic"
+				edition = "Tenth Edition Promos"
 			}
 		case "Kamahl, Pit Fighter", "Char":
 			if inCard.isDCIPromo() || inCard.Contains("15th Anniversary") || inCard.isGenericPromo() {

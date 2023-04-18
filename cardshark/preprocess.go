@@ -29,7 +29,7 @@ var promoTable = map[string]string{
 	"Imperious Perfect":   "Champs and States",
 	"Scent of Cinder":     "Magazine Inserts",
 	"Fireball":            "Magazine Inserts",
-	"Treetop Village":     "Summer of Magic",
+	"Treetop Village":     "Tenth Edition Promos",
 	"Storm Entity":        "Release Events",
 	"Azorius Guildmage":   "Release Events",
 	"Ghost-Lit Raider":    "Release Events",

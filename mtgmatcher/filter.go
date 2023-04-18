@@ -253,8 +253,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isWPNGateway():
 			switch set.Name {
-			case "Summer of Magic",
-				"DCI Promos":
+			case "DCI Promos":
 			case "Innistrad: Crimson Vow":
 				skip := true
 				foundCards := MatchInSet(inCard.Name, "VOW")
