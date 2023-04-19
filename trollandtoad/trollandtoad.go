@@ -327,19 +327,16 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 		// TnT buylist gets confused with an apostrophe in the card name
 		cleanName := strings.Replace(theCard.Name, "'", "", -1)
 		link := "https://www2.trollandtoad.com/buylist/#!/search/All/" + cleanName
-		deductions := []float64{1, 0.6, 0.6}
-		for i, deduction := range deductions {
-			channel <- responseChan{
-				cardId: cardId,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: mtgban.DefaultGradeTags[i],
-					BuyPrice:   price * deduction,
-					TradePrice: price * deduction * 1.25,
-					Quantity:   qty,
-					PriceRatio: priceRatio,
-					URL:        link,
-				},
-			}
+		channel <- responseChan{
+			cardId: cardId,
+			buyEntry: &mtgban.BuylistEntry{
+				Conditions: "NM",
+				BuyPrice:   price,
+				TradePrice: price * 1.25,
+				Quantity:   qty,
+				PriceRatio: priceRatio,
+				URL:        link,
+			},
 		}
 	}
 	return nil
