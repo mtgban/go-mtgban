@@ -916,7 +916,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if inCard.isBundle() && !card.HasPromoType(mtgjson.PromoTypeBundle) {
 					continue
 				} else if !inCard.isBundle() && card.HasPromoType(mtgjson.PromoTypeBundle) {
-					continue
+					// oilslick cards may not have the bundle tag attached to them
+					if !card.HasPromoType(mtgjson.PromoTypeOilSlick) {
+						continue
+					}
 				}
 
 				// ZNR-Style buy-a-box but card is also present in main set
