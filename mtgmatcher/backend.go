@@ -632,6 +632,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					SetCode:     code,
 					Identifiers: product.Identifiers,
 					Rarity:      "Product",
+					Layout:      product.Category,
+					Side:        product.Subtype,
 				},
 				Sealed:  true,
 				Edition: set.Name,
