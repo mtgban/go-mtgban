@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jmcvetta/randutil"
+	"github.com/mroth/weightedrand/v2"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
@@ -315,19 +315,16 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 	}
 
 	// Pick a rarity distribution as defined in Contents at random using their weight
-	var choices []randutil.Choice
+	var choices []weightedrand.Choice[map[string]int, int]
 	for _, booster := range set.Booster[boosterType].Boosters {
-		choices = append(choices, randutil.Choice{
-			Weight: booster.Weight,
-			Item:   booster.Contents,
-		})
+		choices = append(choices, weightedrand.NewChoice(booster.Contents, booster.Weight))
 	}
-	choice, err := randutil.WeightedChoice(choices)
+	sheetChooser, err := weightedrand.NewChooser(choices...)
 	if err != nil {
 		return nil, err
 	}
 
-	contents := choice.Item.(map[string]int)
+	contents := sheetChooser.Pick()
 
 	var picks []string
 	// For each sheet, pick a card at random using the weight
@@ -336,23 +333,21 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 		sheet := set.Booster[boosterType].Sheets[sheetName]
 
 		// Move sheet data into randutil data type
-		var cardChoices []randutil.Choice
+		var cardChoices []weightedrand.Choice[string, int]
 		for cardId, weight := range sheet.Cards {
-			cardChoices = append(cardChoices, randutil.Choice{
-				Weight: weight,
-				Item:   cardId,
-			})
+			cardChoices = append(cardChoices, weightedrand.NewChoice(cardId, weight))
+		}
+
+		cardChooser, err := weightedrand.NewChooser(cardChoices...)
+		if err != nil {
+			return nil, err
 		}
 
 		// Pick a card uuid as many times as defined by its frequency
 		// Note that it's ok to pick the same card from the same sheet multiple times
 		balanced := map[string]bool{}
 		for j := 0; j < frequency; j++ {
-			choice, err := randutil.WeightedChoice(cardChoices)
-			if err != nil {
-				return nil, err
-			}
-			item := choice.Item.(string)
+			item := cardChooser.Pick()
 			// Validate card exists (ie in case of online-only printing)
 			co, found := backend.UUIDs[item]
 			if !found {
