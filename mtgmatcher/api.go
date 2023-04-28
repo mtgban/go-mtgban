@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jmcvetta/randutil"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
@@ -295,4 +296,96 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 	}
 
 	return false
+}
+
+func BoosterGen(setCode, boosterType string) ([]string, error) {
+	if backend.Sets == nil {
+		return nil, ErrDatastoreEmpty
+	}
+	set, found := backend.Sets[setCode]
+	if !found {
+		return nil, ErrCardNotInEdition
+	}
+	if set.Booster == nil {
+		return nil, ErrCardNotInEdition
+	}
+	_, found = set.Booster[boosterType]
+	if !found {
+		return nil, ErrCardNotInEdition
+	}
+
+	// Pick a rarity distribution as defined in Contents at random using their weight
+	var choices []randutil.Choice
+	for _, booster := range set.Booster[boosterType].Boosters {
+		choices = append(choices, randutil.Choice{
+			Weight: booster.Weight,
+			Item:   booster.Contents,
+		})
+	}
+	choice, err := randutil.WeightedChoice(choices)
+	if err != nil {
+		return nil, err
+	}
+
+	contents := choice.Item.(map[string]int)
+
+	var picks []string
+	// For each sheet, pick a card at random using the weight
+	for sheetName, frequency := range contents {
+		// Grab the sheet
+		sheet := set.Booster[boosterType].Sheets[sheetName]
+
+		// Move sheet data into randutil data type
+		var cardChoices []randutil.Choice
+		for cardId, weight := range sheet.Cards {
+			cardChoices = append(cardChoices, randutil.Choice{
+				Weight: weight,
+				Item:   cardId,
+			})
+		}
+
+		// Pick a card uuid as many times as defined by its frequency
+		// Note that it's ok to pick the same card from the same sheet multiple times
+		balanced := map[string]bool{}
+		for j := 0; j < frequency; j++ {
+			choice, err := randutil.WeightedChoice(cardChoices)
+			if err != nil {
+				return nil, err
+			}
+			item := choice.Item.(string)
+			// Validate card exists (ie in case of online-only printing)
+			co, found := backend.UUIDs[item]
+			if !found {
+				j--
+				continue
+			}
+
+			// Check if we need to reroll due to BalanceColors
+			if sheet.BalanceColors && frequency > 4 && j < 5 {
+				// Reroll for the first five cards, the first 5 cards cannot be multicolor or colorless
+				if len(co.Colors) != 1 {
+					j--
+					continue
+				}
+				// Reroll if one of the single colors was already found
+				if balanced[co.Colors[0]] {
+					j--
+					continue
+				}
+				// Found!
+				balanced[co.Colors[0]] = true
+			}
+
+			// Convert to custom IDs
+			uuid, err := MatchId(item, sheet.Foil)
+			if err != nil {
+				j--
+				continue
+			}
+
+			picks = append(picks, uuid)
+		}
+	}
+
+	return picks, nil
 }
