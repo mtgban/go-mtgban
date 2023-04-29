@@ -11,7 +11,7 @@ on:
       steps:
       -
         name: Checkout 
-        uses: actions/checkout@v3'
+        uses: actions/checkout@v3
       -
         name: auth
         uses: google-github-actions/auth@v2
@@ -29,8 +29,16 @@ on:
         name: configure docker
         run: gcloud --quiet auth configure-docker
       -
+        name: set up Buildx
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.GCP_APP_NAME }}
+      -
         name: build image 
-        run: docker build --no-cache --rm=false -t $IMAGE_NAME:latest .
+        run: docker build --no-cache --rm=false -t ${{ secrets.GCP_APP_NAME }} .
       -
         name: push to GCP
-        run: docker push $IMAGE_NAME:latest
+        run: docker push ${{ secrets.GCP_APP_NAME }}
