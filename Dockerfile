@@ -1,26 +1,21 @@
 # First stage: build the Go binary
-FROM golang:1.19 AS stage-1
+FROM golang:1.19 AS build-stage
 
 RUN go env -w GO111MODULE=auto
 
 WORKDIR /app
 
-COPY . /app
+COPY go.mod go.sum ./
+RUN go mod download
 
-WORKDIR /app/go-mtgban/cmd/bantool
+COPY *.go ./
 
-RUN go build -o ../../../bantool.exe
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bantool
 
 # Second stage: Run the Go binary
-FROM golang AS stage-2
+FROM alpine:latest AS build-release-stage
 
-RUN go env -w GO111MODULE=auto
-
-RUN apt-get update
-
-RUN apt-get install sudo
-
-RUN sudo apt-get install -y curl xz-utils
+RUN apk update && apk add --no-cache sudo curl xz
 
 RUN mkdir /app
 
@@ -28,12 +23,8 @@ WORKDIR /app
 
 RUN curl "https://mtgjson.com/api/v5/AllPrintings.json.xz" |  xz -dc > allprintings5.json
 
-COPY --from=stage-1 /app/bantool.exe ./bantool.exe
+COPY --from=build-stage /bantool ./bantool
 
-COPY gcp.json gcp.json
-
-COPY .env .env
-
-ENTRYPOINT ["./bantool.exe"]
+ENTRYPOINT ["./bantool"]
 
 CMD [""]
