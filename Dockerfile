@@ -12,7 +12,7 @@ COPY *.go ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bantool
 
-# Second stage: Run the Go binary
+# Second stage: Run Go binary
 FROM alpine:latest AS build-release-stage
 
 RUN apk update && apk add --no-cache sudo curl xz
