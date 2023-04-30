@@ -1,0 +1,24 @@
+name: Bantool CI/CD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+    build:
+      name: build and push
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
+      - name: building and pushing the image
+        uses: RafikFarhad/push-to-gcr-github-action@v5-beta
+        with:
+          gcloud_service_key: "${{ secrets.GCR_KEY }}"
+          registry: gcr.io
+          project_id: ban-on-fire
+          image_name: strudelboogie
+          image_tag: latest
+          dockerfile: ./Dockerfile
+          context: .
+          target: build
