@@ -491,6 +491,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	if strings.Contains(strings.ToLower(ogVariant), "display commander") {
 		variant = ogVariant
 	}
+	if strings.Contains(strings.ToLower(ogVariant), "serial") {
+		if variant != "" {
+			variant += " "
+		}
+		variant += "serial"
+	}
 
 	// Handle any particular finish
 	isFoil := strings.Contains(ogVariant, "Foil")

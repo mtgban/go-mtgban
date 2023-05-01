@@ -751,6 +751,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						possibleSuffixes = append(possibleSuffixes, "p")
 					} else if schineseTag {
 						possibleSuffixes = []string{"s"}
+					} else if inCard.Contains("Serial") {
+						switch set.Code {
+						case "SLD", "MOM":
+						default:
+							possibleSuffixes = []string{"z"}
+						}
 					}
 
 					// BFZ and ZEN intro lands non-fullart always have this
