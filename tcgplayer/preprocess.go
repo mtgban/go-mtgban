@@ -394,6 +394,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Zndrsplt, Eye of Wisdom", "Okaun, Eye of Chaos":
 			variant = ogVariant
+		case "Plague Sliver", "Shadowborn Apostle", "Toxin Sliver", "Virulent Sliver":
+			if strings.Contains(ogVariant, "Compleat") {
+				variant = ogVariant
+			}
 		}
 	case "AFR Ampersand Promos":
 		variant = product.getNum() + "a"
