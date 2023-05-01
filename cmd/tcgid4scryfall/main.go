@@ -23,7 +23,7 @@ var Client *tcgplayer.TCGClient
 
 var Editions map[int]string
 
-var QuietOpt *bool
+var VerboseOpt *bool
 var StepOpt *int
 var StepSizeOpt *int
 var StepStartOpt *int
@@ -62,7 +62,7 @@ func processCards(channel chan<- responseChan, page int) error {
 			case "Un-Known Event Playtest Cards":
 				continue
 			}
-			if *QuietOpt &&
+			if !*VerboseOpt &&
 				(strings.HasPrefix(theCard.Edition, "Promo Pack") ||
 					theCard.Edition == "Prerelease Cards" ||
 					theCard.Edition == "The List") {
@@ -259,7 +259,7 @@ func run() int {
 }
 
 func main() {
-	QuietOpt = flag.Bool("quiet", false, "Skip errors from sets that might be too new")
+	VerboseOpt = flag.Bool("verbose", false, "Skip errors from sets that might be too new")
 	StepOpt = flag.Int("step", 0, "How many ranges should be processed")
 	StepSizeOpt = flag.Int("step-size", 1000, "Size of the range")
 	StepStartOpt = flag.Int("step-start", 0, "Start offset of the range")
