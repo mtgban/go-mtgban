@@ -904,6 +904,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Core Set 2020 Promos",
 		},
 	},
+	{
+		Id:   "ade05a63-24a2-5618-aa7f-bf25c6093c8a",
+		Desc: "promopack_precise_number_not_tagged",
+		In: Card{
+			Name:      "Rumor Gatherer",
+			Variation: "463",
+			Edition:   "Streets of New Capenna",
+		},
+	},
 
 	// Prerelease
 	{

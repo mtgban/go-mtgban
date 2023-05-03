@@ -794,10 +794,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 							number += numSuffix
 						}
 						if number == strings.ToLower(card.Number) {
-							if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
-								continue
-							} else if !inCard.isPromoPack() && card.HasPromoType(mtgjson.PromoTypePromoPack) {
-								continue
+							// Repeat promo pack check for sets where "p" and "" may be mixed
+							if strings.HasSuffix(set.Name, "Promos") {
+								if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
+									continue
+								} else if !inCard.isPromoPack() && card.HasPromoType(mtgjson.PromoTypePromoPack) {
+									continue
+								}
 							}
 
 							outCards = append(outCards, card)
