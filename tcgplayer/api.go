@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"golang.org/x/time/rate"
@@ -534,6 +535,229 @@ func TCGLatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, er
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+	}
+
+	return &response, nil
+}
+
+const (
+	SellersPageURL     = "https://shop.tcgplayer.com/sellers"
+	SellerInventoryURL = "https://mpapi.tcgplayer.com/v2/search/request?q=&isList=true"
+
+	DefaultSellerRequestSize = 500
+
+	MaxGlobalScrapingValue = 8000
+)
+
+func SellerName2ID(sellerName string) (string, error) {
+	if sellerName == "" {
+		return "", errors.New("missing seller name")
+	}
+
+	v := url.Values{}
+	v.Set("name", "foo")
+	v.Set("SellerName", sellerName)
+	v.Set("isDirect", "false")
+	v.Set("isCertified", "false")
+	v.Set("isGoldStar", "false")
+	v.Set("categoryId", "1") // 1 = mtg
+	v.Set("returnUrl", "")
+
+	req, err := http.NewRequest(http.MethodPost, SellersPageURL, strings.NewReader(v.Encode()))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	link, ok := doc.Find(`div.scTitle a`).Attr("href")
+	if !ok {
+		return "", errors.New("not found")
+	}
+
+	return strings.TrimPrefix(link, "/sellerfeedback/"), nil
+}
+
+type sellerInventoryRequest struct {
+	Algorithm string `json:"algorithm"`
+	From      int    `json:"from"`
+	Size      int    `json:"size"`
+	Filters   struct {
+		Term struct {
+			ProductLineName []string `json:"productLineName,omitempty"`
+			ProductTypeName []string `json:"productTypeName,omitempty"`
+			SetName         []string `json:"setName,omitempty"`
+		} `json:"term"`
+		Range struct {
+		} `json:"range"`
+		Match struct {
+		} `json:"match"`
+	} `json:"filters"`
+	ListingSearch struct {
+		Filters struct {
+			Term struct {
+				SellerStatus string   `json:"sellerStatus"`
+				ChannelID    int      `json:"channelId"`
+				SellerKey    []string `json:"sellerKey"`
+			} `json:"term"`
+			Range struct {
+				Quantity struct {
+					GreaterThanOrEqual int `json:"gte"`
+				} `json:"quantity"`
+			} `json:"range"`
+			Exclude struct {
+				ChannelExclusion int `json:"channelExclusion"`
+			} `json:"exclude"`
+		} `json:"filters"`
+		Context struct {
+			Cart struct {
+			} `json:"cart"`
+		} `json:"context"`
+	} `json:"listingSearch"`
+	Context struct {
+		Cart struct {
+		} `json:"cart"`
+		ShippingCountry string `json:"shippingCountry"`
+	} `json:"context"`
+	Settings struct {
+		UseFuzzySearch bool `json:"useFuzzySearch"`
+	} `json:"settings"`
+	Sort struct {
+	} `json:"sort"`
+}
+
+type sellerInventoryResponse struct {
+	Errors  []any `json:"errors"`
+	Results []struct {
+		Aggregations struct {
+			SetName []struct {
+				URLValue string  `json:"urlValue"`
+				IsActive bool    `json:"isActive"`
+				Value    string  `json:"value"`
+				Count    float64 `json:"count"`
+			} `json:"setName"`
+		} `json:"aggregations"`
+		TotalResults int                     `json:"totalResults"`
+		ResultID     string                  `json:"resultId"`
+		Algorithm    string                  `json:"algorithm"`
+		SearchType   string                  `json:"searchType"`
+		Results      []SellerInventoryResult `json:"results"`
+	} `json:"results"`
+}
+
+type SellerInventoryResult struct {
+	FoilOnly                bool    `json:"foilOnly"`
+	ImageCount              float64 `json:"imageCount"`
+	LowestPrice             float64 `json:"lowestPrice"`
+	LowestPriceWithShipping float64 `json:"lowestPriceWithShipping"`
+	MarketPrice             float64 `json:"marketPrice"`
+	MaxFulfillableQuantity  float64 `json:"maxFulfillableQuantity"`
+	NormalOnly              bool    `json:"normalOnly"`
+	ProductID               float64 `json:"productId"`
+	ProductLineID           float64 `json:"productLineId"`
+	ProductLineName         string  `json:"productLineName"`
+	ProductLineURLName      string  `json:"productLineUrlName"`
+	ProductName             string  `json:"productName"`
+	ProductStatusID         float64 `json:"productStatusId"`
+	ProductTypeID           float64 `json:"productTypeId"`
+	ProductTypeName         string  `json:"productTypeName"`
+	ProductURLName          string  `json:"productUrlName"`
+	RarityName              string  `json:"rarityName"`
+	Score                   float64 `json:"score"`
+	Sealed                  bool    `json:"sealed"`
+	SellerListable          bool    `json:"sellerListable"`
+	Sellers                 float64 `json:"sellers"`
+	SetCode                 string  `json:"setCode"`
+	SetID                   float64 `json:"setId"`
+	SetName                 string  `json:"setName"`
+	SetURLName              string  `json:"setUrlName"`
+	ShippingCategoryID      float64 `json:"shippingCategoryId"`
+	TotalListings           float64 `json:"totalListings"`
+	CustomAttributes        struct {
+		Number string `json:"number"`
+	} `json:"customAttributes"`
+	Listings []struct {
+		ChannelID            float64 `json:"channelId"`
+		Condition            string  `json:"condition"`
+		ConditionID          float64 `json:"conditionId"`
+		DirectInventory      float64 `json:"directInventory"`
+		DirectProduct        bool    `json:"directProduct"`
+		DirectSeller         bool    `json:"directSeller"`
+		ForwardFreight       bool    `json:"forwardFreight"`
+		GoldSeller           bool    `json:"goldSeller"`
+		Language             string  `json:"language"`
+		LanguageAbbreviation string  `json:"languageAbbreviation"`
+		LanguageID           float64 `json:"languageId"`
+		ListingID            float64 `json:"listingId"`
+		ListingType          string  `json:"listingType"`
+		Price                float64 `json:"price"`
+		Printing             string  `json:"printing"`
+		ProductConditionID   float64 `json:"productConditionId"`
+		ProductID            float64 `json:"productId"`
+		Quantity             float64 `json:"quantity"`
+		RankedShippingPrice  float64 `json:"rankedShippingPrice"`
+		Score                float64 `json:"score"`
+		SellerID             string  `json:"sellerId"`
+		SellerKey            string  `json:"sellerKey"`
+		SellerName           string  `json:"sellerName"`
+		SellerRating         float64 `json:"sellerRating"`
+		SellerSales          string  `json:"sellerSales"`
+		SellerShippingPrice  float64 `json:"sellerShippingPrice"`
+		ShippingPrice        float64 `json:"shippingPrice"`
+		VerifiedSeller       bool    `json:"verifiedSeller"`
+	} `json:"listings"`
+}
+
+func TCGInventoryForSeller(sellerID string, size, page int, sets ...string) (*sellerInventoryResponse, error) {
+	var params sellerInventoryRequest
+	params.Algorithm = "salespna"
+	params.From = size * page
+	params.Size = size
+	params.Filters.Term.ProductLineName = []string{"magic"}
+	params.Filters.Term.ProductTypeName = []string{"Cards"}
+	params.Filters.Term.SetName = sets
+	params.ListingSearch.Filters.Term.SellerStatus = "Live"
+	params.ListingSearch.Filters.Term.SellerKey = []string{sellerID}
+	params.ListingSearch.Filters.Range.Quantity.GreaterThanOrEqual = 1
+	params.Context.ShippingCountry = "US"
+
+	payload, err := json.Marshal(&params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Post(SellerInventoryURL, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response sellerInventoryResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+	}
+
+	if len(response.Errors) != 0 {
+		return nil, fmt.Errorf("error: %v", response.Errors)
+	}
+	if len(response.Results) == 0 {
+		return nil, fmt.Errorf("emtpy results in response at page %d", page)
 	}
 
 	return &response, nil
