@@ -243,6 +243,7 @@ func SkipLanguage(cardName, edition, language string) bool {
 
 func (c *Card) isUnsupported() bool {
 	return c.Contains("Art Series") ||
+		(c.Contains("Art Card") && !c.Contains("Chinese")) || // Art Series, except a well-known edition
 		c.Contains("Complete") || // a complete collection
 		c.Contains("Fallen Empires: Wyvern Misprints") ||
 		c.Contains("Ultra-Pro Puzzle") ||
