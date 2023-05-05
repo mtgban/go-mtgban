@@ -3122,6 +3122,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Secret Lair Drop Series",
 		},
 	},
+	{
+		Id:   "678a79aa-21ee-517f-8be5-da9349c85662",
+		Desc: "etching_present_in_name",
+		In: Card{
+			Name:      "Elesh Norn // The Argent Etchings",
+			Variation: "// The Argent Etchings Borderless Showcase",
+			Edition:   "March of the Machine",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported
