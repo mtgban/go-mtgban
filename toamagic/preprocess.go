@@ -53,6 +53,10 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		} else if variant == "2" {
 			variant = "Reminder Text"
 		}
+	case "The Brothers' War Art Variants":
+		if strings.Contains(variant, "Retro") {
+			edition = "BRR"
+		}
 	case "Archenemy Nicol Bolas":
 		if cardName == "Highland Lake" || cardName == "Submerged Boneyard" {
 			return nil, errors.New("does not exist")
