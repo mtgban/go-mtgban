@@ -3131,6 +3131,15 @@ var MatchTests = []MatchTest{
 			Edition:   "March of the Machine",
 		},
 	},
+	{
+		Id:   "5476c579-9498-559f-8ce9-1cea7d3c79de",
+		Desc: "secret_lair_sticker",
+		In: Card{
+			Name:      "Plains",
+			Variation: "// Battlefield Forge Secret Lair Full Art Unpeeled",
+			Edition:   "SLD",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported

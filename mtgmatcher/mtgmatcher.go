@@ -739,6 +739,16 @@ func adjustEdition(inCard *Card) {
 			}
 		}
 
+		if inCard.Contains("Plains") || inCard.Contains("Battlefield Forge") {
+			if inCard.Contains("Unpeeled") {
+				inCard.Name = "Battlefield Forge"
+				inCard.Variation = "669"
+			} else if inCard.Contains("Peeled") {
+				inCard.Name = "Plains"
+				inCard.Variation = "670"
+			}
+		}
+
 		switch {
 		case len(MatchInSet(inCard.Name, "SLX")) != 0 &&
 			!inCard.isReskin():
