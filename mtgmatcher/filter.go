@@ -333,9 +333,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 
 		case inCard.Contains("Premier Play"):
-			switch set.Name {
-			case "Pro Tour Promos",
-				"Regional Championship Qualifiers 2022":
+			switch {
+			case set.Name == "Pro Tour Promos":
+			case strings.HasPrefix(set.Name, "Regional Championship Qualifiers "+maybeYear):
 			default:
 				continue
 			}
