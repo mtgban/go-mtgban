@@ -447,7 +447,6 @@ var EditionTable = map[string]string{
 	// MB1/PLIST need to be explicitly set to override the edition
 	"The List":                           "The List",
 	"Mystery Booster":                    "Mystery Booster",
-	"Mystery Booster Cards":              "Mystery Booster",
 	"Mystery Booster: Retail Exclusives": "Mystery Booster Retail Edition Foils",
 	"SLX Cards":                          "Universes Within",
 	"Universes Within":                   "Universes Within",
