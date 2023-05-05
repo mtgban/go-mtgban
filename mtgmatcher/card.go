@@ -116,6 +116,7 @@ func IsToken(name string) bool {
 	// Custom token names
 	case "A Threat to Alara: Nicol Bolas",
 		"Fun Format: Pack Wars",
+		"On An Adventure",
 		"Pyromantic Pixels",
 		"Theme: WUBRG Cards":
 		return true
