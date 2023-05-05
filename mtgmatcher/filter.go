@@ -41,7 +41,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				"Resale Promos",
 				"World Championship Promos":
 				continue
-			case "30th Anniversary History Promos",
+			case "30th Anniversary History Japanese Promos",
+				"30th Anniversary History Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -101,7 +102,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				default:
 					continue
 				}
-			case "30th Anniversary History Promos",
+			case "30th Anniversary History Japanese Promos",
+				"30th Anniversary History Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -323,7 +325,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.Contains("Convention"):
 			switch set.Name {
 			case "URL/Convention Promos":
-			case "30th Anniversary History Promos",
+			case "30th Anniversary History Japanese Promos",
+				"30th Anniversary History Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -418,7 +421,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "Champs and States":
 			case "Grand Prix Promos":
 				continue
-			case "30th Anniversary History Promos",
+			case "30th Anniversary History Japanese Promos",
+				"30th Anniversary History Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -520,11 +524,11 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.Contains("30th Anniversary"):
 			switch set.Code {
-			case "P30A":
+			case "P30A", "P30H":
 				if inCard.isJPN() {
 					continue
 				}
-			case "P30H":
+			case "P30HJPN":
 				if !inCard.isJPN() {
 					continue
 				}
@@ -1250,6 +1254,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			// Duplicates, only frame changes
 			case "Modern Horizons 2",
+				"30th Anniversary History Japanese Promos",
 				"30th Anniversary History Promos",
 				"30th Anniversary Edition",
 				"Dominaria Remastered",
