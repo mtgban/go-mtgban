@@ -47,6 +47,8 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 
 func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtgmatcher.Card, error) {
 	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
+	cardName = strings.Replace(card.Name, "{;", "", -1)
+	cardName = strings.Replace(card.Name, "}", "", -1)
 
 	edition = strings.Replace(edition, "&amp;", "&", -1)
 	if strings.HasSuffix(edition, "(Foil)") {
