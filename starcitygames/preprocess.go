@@ -140,6 +140,13 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 				edition = "PW22"
 			}
 		}
+	case "Promo: General (Foil)":
+		switch cardName {
+		case "Rukh Egg":
+			if variant == "10th Anniversary" {
+				edition = "P8ED"
+			}
+		}
 	}
 
 	return &mtgmatcher.Card{
