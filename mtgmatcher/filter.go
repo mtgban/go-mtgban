@@ -1029,6 +1029,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 
+				isHalo := inCard.Contains("Halo")
+				if isHalo && !card.HasPromoType(mtgjson.PromoTypeHaloFoil) {
+					continue
+				} else if !isHalo && card.HasPromoType(mtgjson.PromoTypeHaloFoil) {
+					continue
+				}
+
 				// Separate finishes have different collector numbers
 				if set.Code == "SLD" || set.Code == "CMR" || setDate.After(SeparateFinishCollectorNumberDate) {
 					if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
@@ -1371,12 +1378,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 
-				isHalo := inCard.Contains("Halo")
-				if isHalo && !card.HasPromoType(mtgjson.PromoTypeHaloFoil) {
-					continue
-				} else if !isHalo && card.HasPromoType(mtgjson.PromoTypeHaloFoil) {
-					continue
-				}
 			default:
 				// Variants/misprints have different suffixes depending on foil or style
 				expectedSuffix := mtgjson.SuffixVariant
