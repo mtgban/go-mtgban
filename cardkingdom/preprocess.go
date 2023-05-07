@@ -233,6 +233,10 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		if strings.Contains(card.Variation, "Display") {
 			variation = "Thick Display"
 		}
+	case "Innistrad: Midnight Hunt Variants", "Innistrad: Crimson Vow Variants":
+		if variation == "Eternal Night" {
+			variation = "Showcase"
+		}
 	default:
 		if setCode == "UPLIST" {
 			edition = setCode
