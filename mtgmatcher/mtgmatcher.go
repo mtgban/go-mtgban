@@ -646,7 +646,9 @@ func adjustEdition(inCard *Card) {
 	}
 
 	switch {
-	case strings.Contains(edition, "Commander") && !inCard.Contains("Oversize") && !inCard.Contains("Party"):
+	case strings.Contains(edition, "Commander") &&
+		(!inCard.Contains("Oversize") || inCard.Contains("Plane") || inCard.Contains("Phenomenon")) &&
+		!inCard.Contains("Party"):
 		ed := ParseCommanderEdition(edition, variation)
 		if ed != "" {
 			edition = ed
@@ -842,7 +844,7 @@ func adjustEdition(inCard *Card) {
 		variation = ""
 
 	// All the oversized commander cards
-	case inCard.Contains("Oversize"):
+	case inCard.Contains("Oversize") && !inCard.Contains("Plane") && !inCard.Contains("Phenomenon"):
 		for _, tag := range []string{
 			"OCM1", "PCMD", "OCMD", "OC13", "OC14", "OC15", "OC16", "OC17", "OC18", "OC19", "OC20",
 		} {

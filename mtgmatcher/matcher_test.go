@@ -3148,6 +3148,15 @@ var MatchTests = []MatchTest{
 			Edition: "Multiverse Legends",
 		},
 	},
+	{
+		Id:   "41bcaa56-5cb1-5d08-bff0-fe76d752fdf6",
+		Desc: "commander_with_planes",
+		In: Card{
+			Name:      "The Great Forest",
+			Variation: "Plane Oversized",
+			Edition:   "March of the Machine Commander Decks",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported
