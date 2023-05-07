@@ -3157,6 +3157,15 @@ var MatchTests = []MatchTest{
 			Edition:   "March of the Machine Commander Decks",
 		},
 	},
+	{
+		Id:   "95a84f80-3513-5091-a8fe-4239e61b3506",
+		Desc: "halofoil_showcase",
+		In: Card{
+			Name:      "Coppercoat Vanguard",
+			Variation: "Halo Foil",
+			Edition:   "March of the Machine: The Aftermath",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported

@@ -919,6 +919,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				} else if !card.HasPromoType(mtgjson.PromoTypeOilSlick) &&
 					// Every card in this set is tagged as showcase
 					card.SetCode != "MUL" &&
+					// Halo foil may be showcase
+					!card.HasPromoType(mtgjson.PromoTypeHaloFoil) &&
 					// Phyrexian cards _may_ be showcase sometimes
 					card.Language != mtgjson.LanguagePhyrexian {
 					// NEO has showcase cards that aren't marked as such when they are Etched
