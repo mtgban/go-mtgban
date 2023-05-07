@@ -3140,6 +3140,14 @@ var MatchTests = []MatchTest{
 			Edition:   "SLD",
 		},
 	},
+	{
+		Id:   "5507e55e-f034-51f2-8d4c-83008f18a950",
+		Desc: "empty_variant_cause_showcase",
+		In: Card{
+			Name:    "Niv-Mizzet Reborn",
+			Edition: "Multiverse Legends",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported
