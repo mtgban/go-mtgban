@@ -1437,7 +1437,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						checkNumberSuffix = inCard.Foil
 					}
 				case "Stocking Tiger":
-					if Contains(inCard.Variation, "No Stamp") {
+					if Contains(inCard.Variation, "No Stamp") || Contains(inCard.Variation, "No Date") {
 						checkNumberSuffix = true
 					}
 				case "Shadow Lance":
