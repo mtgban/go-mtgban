@@ -661,7 +661,7 @@ func adjustEdition(inCard *Card) {
 			variation = strings.Replace(variation, num+" ", "", 1)
 		}
 	case strings.HasPrefix(variation, "Junior") && strings.Contains(variation, "APAC"),
-		strings.HasPrefix(variation, "Junior APAC Series U"):
+		strings.HasPrefix(variation, "Junior APAC Series") && strings.Contains(variation, "U"):
 		edition = "Junior APAC Series"
 	case strings.HasPrefix(variation, "Junior Super Series"),
 		strings.HasPrefix(variation, "MSS Foil"),
