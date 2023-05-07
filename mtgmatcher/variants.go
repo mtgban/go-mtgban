@@ -2832,6 +2832,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"modern masters 2015":   "991",
 		"champions of kamigawa": "684",
 	},
+	"Laboratory Maniac": {
+		"innistrad":        "1026",
+		"ultimate masters": "415",
+	},
 	"Lightning Bolt": {
 		"archenemy: nicol bolas": "1001",
 		"e01":                    "1001",
