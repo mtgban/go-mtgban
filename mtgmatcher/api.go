@@ -329,8 +329,19 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 	var picks []string
 	// For each sheet, pick a card at random using the weight
 	for sheetName, frequency := range contents {
+		var duplicated map[string]bool
+		var balanced map[string]bool
+
 		// Grab the sheet
 		sheet := set.Booster[boosterType].Sheets[sheetName]
+
+		// Prepare maps to keep track of duplicates and balaced colors if necessary
+		if !sheet.AllowDuplicates {
+			duplicated = map[string]bool{}
+		}
+		if sheet.BalanceColors {
+			balanced = map[string]bool{}
+		}
 
 		// Move sheet data into randutil data type
 		var cardChoices []weightedrand.Choice[string, int]
@@ -345,7 +356,6 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 
 		// Pick a card uuid as many times as defined by its frequency
 		// Note that it's ok to pick the same card from the same sheet multiple times
-		balanced := map[string]bool{}
 		for j := 0; j < frequency; j++ {
 			item := cardChooser.Pick()
 			// Validate card exists (ie in case of online-only printing)
@@ -369,6 +379,16 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				}
 				// Found!
 				balanced[co.Colors[0]] = true
+			}
+
+			// Check if the sheet allows duplicates, and, if not, pick again
+			// in case the uuid was already picked
+			if !sheet.AllowDuplicates {
+				if duplicated[item] {
+					j--
+					continue
+				}
+				duplicated[item] = true
 			}
 
 			// Convert to custom IDs

@@ -9,10 +9,11 @@ import (
 )
 
 type Sheet struct {
-	BalanceColors bool           `json:"balanceColors"`
-	Cards         map[string]int `json:"cards"`
-	Foil          bool           `json:"foil"`
-	TotalWeight   int            `json:"totalWeight"`
+	AllowDuplicates bool           `json:"allowDuplicates"`
+	BalanceColors   bool           `json:"balanceColors"`
+	Cards           map[string]int `json:"cards"`
+	Foil            bool           `json:"foil"`
+	TotalWeight     int            `json:"totalWeight"`
 }
 
 type Booster struct {
