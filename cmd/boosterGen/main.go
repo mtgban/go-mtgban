@@ -153,7 +153,7 @@ func main() {
 	NumberOfBoosters = flag.Int("n", 0, "Number of boosters to generate")
 	BoosterTypeOpt = flag.String("t", "default", "Type of booster to pick (default/set/collector)")
 	OnlyInfoOpt = flag.Bool("i", false, "Only display information available")
-	AllPrintingsOpt = flag.String("i", "allprintings5.json", "Load AllPrintings file path")
+	AllPrintingsOpt = flag.String("a", "allprintings5.json", "Load AllPrintings file path")
 
 	flag.Parse()
 
