@@ -14,6 +14,7 @@ var NumberOfBoosters *int
 var BoosterTypeOpt *string
 var OnlyInfoOpt *bool
 var AllPrintingsOpt *string
+var ColorOpt *string
 
 type Pick struct {
 	CardId string
@@ -58,8 +59,8 @@ func run() int {
 			}
 		}
 		if numOfBoosters == 0 {
-			fmt.Fprintln(os.Stderr, *SetCodeOpt, "does not have", *BoosterTypeOpt, "booster box information")
-			return 1
+			fmt.Fprintln(os.Stderr, *SetCodeOpt, "does not have", *BoosterTypeOpt, " box information")
+			numOfBoosters = 1
 		}
 	}
 
@@ -171,15 +172,24 @@ func run() int {
 func main() {
 	SetCodeOpt = flag.String("s", "", "Set code to choose")
 	NumberOfBoosters = flag.Int("n", 0, "Number of boosters to generate")
-	BoosterTypeOpt = flag.String("t", "default", "Type of booster to pick (default/set/collector)")
+	BoosterTypeOpt = flag.String("t", "default", "Type of booster to pick (default/set/collector/theme)")
 	OnlyInfoOpt = flag.Bool("i", false, "Only display information available")
 	AllPrintingsOpt = flag.String("a", "allprintings5.json", "Load AllPrintings file path")
+	ColorOpt = flag.String("c", "", "One letter color of the theme booster")
 
 	flag.Parse()
 
 	if *SetCodeOpt == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
+	}
+
+	if *BoosterTypeOpt == "theme" {
+		if *ColorOpt == "" {
+			fmt.Fprintln(os.Stderr, "theme booster needs color information")
+			os.Exit(1)
+		}
+		*BoosterTypeOpt += "-" + *ColorOpt
 	}
 
 	os.Exit(run())
