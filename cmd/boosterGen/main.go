@@ -86,76 +86,89 @@ func run() int {
 		var picks []Pick
 		// For each sheet, pick a card at random using the weight
 		for sheetName, frequency := range contents {
-			var duplicated map[string]bool
-			var balanced map[string]bool
-
 			// Grab the sheet
 			sheet := set.Booster[*BoosterTypeOpt].Sheets[sheetName]
 
-			// Prepare maps to keep track of duplicates and balaced colors if necessary
-			if !sheet.AllowDuplicates {
-				duplicated = map[string]bool{}
-			}
-			if sheet.BalanceColors {
-				balanced = map[string]bool{}
-			}
-
-			// Move sheet data into randutil data type
-			var cardChoices []randutil.Choice
-			for cardId, weight := range sheet.Cards {
-				cardChoices = append(cardChoices, randutil.Choice{
-					Weight: weight,
-					Item:   cardId,
-				})
-			}
-
-			// Pick a card uuid as many times as defined by its frequency
-			// Note that it's ok to pick the same card from the same sheet multiple times
-			for j := 0; j < frequency; j++ {
-				choice, err := randutil.WeightedChoice(cardChoices)
-				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
-					return 1
-				}
-				item := choice.Item.(string)
-				// Validate card exists (ie in case of online-only printing)
-				co, err := mtgmatcher.GetUUID(item)
-				if err != nil {
-					j--
-					continue
-				}
-
-				// Check if we need to reroll due to BalanceColors
-				if sheet.BalanceColors && frequency > 4 && j < 5 {
-					// Reroll for the first five cards, the first 5 cards cannot be multicolor or colorless
-					if len(co.Colors) != 1 {
-						j--
-						continue
+			if sheet.Fixed {
+				// Fixed means there is no randomness, just pick the cards as listed
+				for cardId, frequency := range sheet.Cards {
+					for j := 0; j < frequency; j++ {
+						picks = append(picks, Pick{
+							CardId: cardId,
+							Sheet:  sheetName,
+							Foil:   sheet.Foil,
+						})
 					}
-					// Reroll if one of the single colors was already found
-					if balanced[co.Colors[0]] {
-						j--
-						continue
-					}
-					// Found!
-					balanced[co.Colors[0]] = true
 				}
+			} else {
+				var duplicated map[string]bool
+				var balanced map[string]bool
 
-				// Check if the sheet allows duplicates, and, if not, pick again
-				// in case the uuid was already picked
+				// Prepare maps to keep track of duplicates and balaced colors if necessary
 				if !sheet.AllowDuplicates {
-					if duplicated[item] {
+					duplicated = map[string]bool{}
+				}
+				if sheet.BalanceColors {
+					balanced = map[string]bool{}
+				}
+
+				// Move sheet data into randutil data type
+				var cardChoices []randutil.Choice
+				for cardId, weight := range sheet.Cards {
+					cardChoices = append(cardChoices, randutil.Choice{
+						Weight: weight,
+						Item:   cardId,
+					})
+				}
+
+				// Pick a card uuid as many times as defined by its frequency
+				// Note that it's ok to pick the same card from the same sheet multiple times
+				for j := 0; j < frequency; j++ {
+					choice, err := randutil.WeightedChoice(cardChoices)
+					if err != nil {
+						fmt.Fprintln(os.Stderr, err)
+						return 1
+					}
+					item := choice.Item.(string)
+					// Validate card exists (ie in case of online-only printing)
+					co, err := mtgmatcher.GetUUID(item)
+					if err != nil {
 						j--
 						continue
 					}
-					duplicated[item] = true
-				}
 
-				picks = append(picks, Pick{
-					CardId: item,
-					Sheet:  sheetName,
-					Foil:   sheet.Foil,
-				})
+					// Check if we need to reroll due to BalanceColors
+					if sheet.BalanceColors && frequency > 4 && j < 5 {
+						// Reroll for the first five cards, the first 5 cards cannot be multicolor or colorless
+						if len(co.Colors) != 1 {
+							j--
+							continue
+						}
+						// Reroll if one of the single colors was already found
+						if balanced[co.Colors[0]] {
+							j--
+							continue
+						}
+						// Found!
+						balanced[co.Colors[0]] = true
+					}
+
+					// Check if the sheet allows duplicates, and, if not, pick again
+					// in case the uuid was already picked
+					if !sheet.AllowDuplicates {
+						if duplicated[item] {
+							j--
+							continue
+						}
+						duplicated[item] = true
+					}
+
+					picks = append(picks, Pick{
+						CardId: item,
+						Sheet:  sheetName,
+						Foil:   sheet.Foil,
+					})
+				}
 			}
 		}
 

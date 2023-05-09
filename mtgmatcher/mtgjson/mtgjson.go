@@ -12,6 +12,7 @@ type Sheet struct {
 	AllowDuplicates bool           `json:"allowDuplicates"`
 	BalanceColors   bool           `json:"balanceColors"`
 	Cards           map[string]int `json:"cards"`
+	Fixed           bool           `json:"fixed"`
 	Foil            bool           `json:"foil"`
 	TotalWeight     int            `json:"totalWeight"`
 }

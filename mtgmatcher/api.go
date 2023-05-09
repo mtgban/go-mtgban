@@ -329,76 +329,90 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 	var picks []string
 	// For each sheet, pick a card at random using the weight
 	for sheetName, frequency := range contents {
-		var duplicated map[string]bool
-		var balanced map[string]bool
-
 		// Grab the sheet
 		sheet := set.Booster[boosterType].Sheets[sheetName]
 
-		// Prepare maps to keep track of duplicates and balaced colors if necessary
-		if !sheet.AllowDuplicates {
-			duplicated = map[string]bool{}
-		}
-		if sheet.BalanceColors {
-			balanced = map[string]bool{}
-		}
-
-		// Move sheet data into randutil data type
-		var cardChoices []weightedrand.Choice[string, int]
-		for cardId, weight := range sheet.Cards {
-			cardChoices = append(cardChoices, weightedrand.NewChoice(cardId, weight))
-		}
-
-		cardChooser, err := weightedrand.NewChooser(cardChoices...)
-		if err != nil {
-			return nil, err
-		}
-
-		// Pick a card uuid as many times as defined by its frequency
-		// Note that it's ok to pick the same card from the same sheet multiple times
-		for j := 0; j < frequency; j++ {
-			item := cardChooser.Pick()
-			// Validate card exists (ie in case of online-only printing)
-			co, found := backend.UUIDs[item]
-			if !found {
-				j--
-				continue
-			}
-
-			// Check if we need to reroll due to BalanceColors
-			if sheet.BalanceColors && frequency > 4 && j < 5 {
-				// Reroll for the first five cards, the first 5 cards cannot be multicolor or colorless
-				if len(co.Colors) != 1 {
-					j--
-					continue
+		if sheet.Fixed {
+			// Fixed means there is no randomness, just pick the cards as listed
+			for cardId, frequency := range sheet.Cards {
+				// Convert to custom IDs
+				uuid, err := MatchId(cardId, sheet.Foil)
+				if err != nil {
+					return nil, ErrCardUnknownId
 				}
-				// Reroll if one of the single colors was already found
-				if balanced[co.Colors[0]] {
-					j--
-					continue
+				for j := 0; j < frequency; j++ {
+					picks = append(picks, uuid)
 				}
-				// Found!
-				balanced[co.Colors[0]] = true
 			}
+		} else {
+			var duplicated map[string]bool
+			var balanced map[string]bool
 
-			// Check if the sheet allows duplicates, and, if not, pick again
-			// in case the uuid was already picked
+			// Prepare maps to keep track of duplicates and balaced colors if necessary
 			if !sheet.AllowDuplicates {
-				if duplicated[item] {
+				duplicated = map[string]bool{}
+			}
+			if sheet.BalanceColors {
+				balanced = map[string]bool{}
+			}
+
+			// Move sheet data into randutil data type
+			var cardChoices []weightedrand.Choice[string, int]
+			for cardId, weight := range sheet.Cards {
+				cardChoices = append(cardChoices, weightedrand.NewChoice(cardId, weight))
+			}
+
+			cardChooser, err := weightedrand.NewChooser(cardChoices...)
+			if err != nil {
+				return nil, err
+			}
+
+			// Pick a card uuid as many times as defined by its frequency
+			// Note that it's ok to pick the same card from the same sheet multiple times
+			for j := 0; j < frequency; j++ {
+				item := cardChooser.Pick()
+				// Validate card exists (ie in case of online-only printing)
+				co, found := backend.UUIDs[item]
+				if !found {
 					j--
 					continue
 				}
-				duplicated[item] = true
-			}
 
-			// Convert to custom IDs
-			uuid, err := MatchId(item, sheet.Foil)
-			if err != nil {
-				j--
-				continue
-			}
+				// Check if we need to reroll due to BalanceColors
+				if sheet.BalanceColors && frequency > 4 && j < 5 {
+					// Reroll for the first five cards, the first 5 cards cannot be multicolor or colorless
+					if len(co.Colors) != 1 {
+						j--
+						continue
+					}
+					// Reroll if one of the single colors was already found
+					if balanced[co.Colors[0]] {
+						j--
+						continue
+					}
+					// Found!
+					balanced[co.Colors[0]] = true
+				}
 
-			picks = append(picks, uuid)
+				// Check if the sheet allows duplicates, and, if not, pick again
+				// in case the uuid was already picked
+				if !sheet.AllowDuplicates {
+					if duplicated[item] {
+						j--
+						continue
+					}
+					duplicated[item] = true
+				}
+
+				// Convert to custom IDs
+				uuid, err := MatchId(item, sheet.Foil)
+				if err != nil {
+					j--
+					continue
+				}
+
+				picks = append(picks, uuid)
+			}
 		}
 	}
 
