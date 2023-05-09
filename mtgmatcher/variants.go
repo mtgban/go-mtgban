@@ -2872,6 +2872,9 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Mishra's Factory": {
 		"modern horizons 2": "960",
+		"mh2":               "960",
+		"masters 25":        "1680",
+		"a25":               "1680",
 	},
 	"Mortify": {
 		"c18":                     "1457",
