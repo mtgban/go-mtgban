@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"text/tabwriter"
 
 	"github.com/jmcvetta/randutil"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -179,12 +180,13 @@ func run() int {
 			return picks[i].Sheet < picks[j].Sheet
 		})
 
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		for _, pick := range picks {
 			id, _ := mtgmatcher.MatchId(pick.CardId, pick.Foil)
 			co, _ := mtgmatcher.GetUUID(id)
-			fmt.Fprintf(os.Stderr, "%s\t%s|%s\n", pick.Sheet, co, co.Rarity)
+			fmt.Fprintf(w, "%s\t%s|%s\n", pick.Sheet, co, co.Rarity)
 		}
-		fmt.Fprintln(os.Stderr, "-------------")
+		w.Flush()
 	}
 
 	return 0
