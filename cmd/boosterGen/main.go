@@ -193,7 +193,7 @@ func run() int {
 func main() {
 	SetCodeOpt = flag.String("s", "", "Set code to choose")
 	NumberOfBoosters = flag.Int("n", 0, "Number of boosters to generate")
-	BoosterTypeOpt = flag.String("t", "default", "Type of booster to pick (default/set/collector/theme)")
+	BoosterTypeOpt = flag.String("t", "default", "Type of booster to pick (default/set/collector/theme/jumpstart)")
 	OnlyInfoOpt = flag.Bool("i", false, "Only display information available")
 	AllPrintingsOpt = flag.String("a", "allprintings5.json", "Load AllPrintings file path")
 	ColorOpt = flag.String("c", "", "One letter color of the theme booster")
