@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/jmcvetta/randutil"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -157,6 +158,13 @@ func run() int {
 				})
 			}
 		}
+
+		sort.Slice(picks, func(i, j int) bool {
+			if picks[i].Sheet == picks[j].Sheet {
+				return picks[i].CardId < picks[j].CardId
+			}
+			return picks[i].Sheet < picks[j].Sheet
+		})
 
 		for _, pick := range picks {
 			id, _ := mtgmatcher.MatchId(pick.CardId, pick.Foil)
