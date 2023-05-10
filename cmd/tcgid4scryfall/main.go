@@ -57,11 +57,6 @@ func processCards(channel chan<- responseChan, page int) error {
 				"Heroic Intervention": //page 47
 				continue
 			}
-			// Missing edition
-			switch theCard.Edition {
-			case "Un-Known Event Playtest Cards":
-				continue
-			}
 			if !*VerboseOpt &&
 				(strings.HasPrefix(theCard.Edition, "Promo Pack") ||
 					mtgmatcher.IsBasicLand(theCard.Name) ||
