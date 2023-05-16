@@ -60,6 +60,8 @@ func processCards(channel chan<- responseChan, page int) error {
 			if !*VerboseOpt &&
 				(strings.HasPrefix(theCard.Edition, "Promo Pack") ||
 					mtgmatcher.IsBasicLand(theCard.Name) ||
+					strings.Contains(strings.ToLower(theCard.Variation), "serial") ||
+					strings.Contains(theCard.Variation, "Thick Stock") ||
 					theCard.Edition == "Prerelease Cards" ||
 					theCard.Edition == "The List") {
 				continue
