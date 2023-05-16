@@ -761,6 +761,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						default:
 							possibleSuffixes = []string{"z"}
 						}
+					} else if inCard.isStepAndCompleat() && set.Code == "SLD" {
+						possibleSuffixes = []string{"φ"}
 					}
 
 					// BFZ and ZEN intro lands non-fullart always have this
@@ -1448,6 +1450,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				case "Shadow Lance":
 					if set.Name == "Guildpact" {
 						expectedSuffix = mtgjson.SuffixSpecial
+					}
+				case "Plague Sliver",
+					"Shadowborn Apostle",
+					"Toxin Sliver",
+					"Virulent Sliver":
+					if set.Name == "Secret Lair Drop" {
+						expectedSuffix = "Φ"
+						checkNumberSuffix = inCard.isStepAndCompleat()
 					}
 				}
 

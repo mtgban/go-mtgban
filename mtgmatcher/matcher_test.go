@@ -377,6 +377,24 @@ var MatchTests = []MatchTest{
 			Edition: "10th Edition",
 		},
 	},
+	{
+		Id:   "2c28317d-3a8b-56ce-9467-e52270a234ea",
+		Desc: "extra_phi_for_compleat_with_num",
+		In: Card{
+			Name:      "Shadowborn Apostle",
+			Variation: "681 Step-and-Compleat Foil",
+			Edition:   "Secret Lair Drop Series",
+		},
+	},
+	{
+		Id:   "7f054dc5-611f-5cf9-8211-7106a158f84e",
+		Desc: "extra_phi_for_complea_without_numt",
+		In: Card{
+			Name:      "Virulent Sliver",
+			Variation: "Extended Art Step-and-Compleat Foil",
+			Edition:   "Secret Lair Drop Series",
+		},
+	},
 
 	// Naming conventions
 	{
