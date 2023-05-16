@@ -450,6 +450,7 @@ var EditionTable = map[string]string{
 	"Mystery Booster: Retail Exclusives": "Mystery Booster Retail Edition Foils",
 	"SLX Cards":                          "Universes Within",
 	"Universes Within":                   "Universes Within",
+	"Secret Lair Commander: From Cute to Brute":          "From Cute to Brute",
 	"Secret Lair Commander: Heads I Win, Tales You Lose": "Heads I Win, Tails You Lose",
 	"Secret Lair - Planeswalker Symbol":                  "Heads I Win, Tails You Lose",
 
