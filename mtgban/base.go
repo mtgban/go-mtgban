@@ -3,10 +3,42 @@ package mtgban
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+func computeSKU(cardId, condition string) (string, error) {
+	co, err := mtgmatcher.GetUUID(cardId)
+	if err != nil {
+		return "", err
+	}
+
+	scryfallUUIDSpace, err := uuid.Parse(co.Identifiers["scryfallId"])
+	if err != nil {
+		return "", err
+	}
+
+	data := condition + co.Language
+	if co.Etched {
+		data += "etched"
+	} else if co.Foil {
+		data += "foil"
+	} else {
+		data += "nonfoil"
+	}
+
+	sku := uuid.NewSHA1(scryfallUUIDSpace, []byte(data))
+	return sku.String(), nil
+}
+
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
+	if entry.Conditions == "" {
+		entry.Conditions = "NM"
+	}
+	if entry.SKUID == "" {
+		entry.SKUID, _ = computeSKU(cardId, entry.Conditions)
+	}
+
 	entries, found := inv[cardId]
 	if found {
 		for i := range entries {
@@ -57,6 +89,9 @@ func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict bool) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
+	}
+	if entry.SKUID == "" {
+		entry.SKUID, _ = computeSKU(cardId, entry.Conditions)
 	}
 
 	entries, found := bl[cardId]
