@@ -25,7 +25,7 @@ WORKDIR /app
 
 RUN curl "https://mtgjson.com/api/v5/AllPrintings.json.xz" |  xz -dc > allprintings5.json
 
-COPY --from=build-stage /bantool ./bantool
+COPY --from=build /bantool ./bantool
 
 ENTRYPOINT ["./bantool"]
 
