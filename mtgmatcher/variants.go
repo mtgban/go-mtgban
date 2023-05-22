@@ -2740,6 +2740,9 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander":      "1392",
 		"commander 2011": "1392",
 	},
+	"Beast Within": {
+		"bbd": "1134",
+	},
 	"Bojuka Bog": {
 		"c18":                     "1660",
 		"commander 2018":          "1660",
@@ -2759,8 +2762,12 @@ var mb1plistVariants = map[string]map[string]string{
 		"guilds of ravnica guild kits": "1405",
 	},
 	"Chaos Warp": {
+		"c17":            "885",
 		"commander 2017": "885",
 		"commander 2020": "46",
+	},
+	"Chromatic Lantern": {
+		"grn": "1559",
 	},
 	"Counterspell": {
 		"masters 25": "336",
@@ -2770,6 +2777,7 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Dark Ritual": {
 		"masters 25": "611",
+		"a25":        "611",
 	},
 	"Demonic Tutor": {
 		"ultimate masters":              "472",
@@ -2777,6 +2785,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"duel deck: divine vs. demonic": "620",
 		"duel decks: demonic vs divine": "620",
 		"dvd":                           "620",
+	},
+	"Deny Reality": {
+		"pca": "1415",
+		"arb": "709",
 	},
 	"Disenchant": {
 		"core set 2020": "77",
@@ -2786,6 +2798,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Eternal Witness": {
 		"ultimate masters": "1200",
 		"uma":              "1200",
+	},
+	"Evolving Wilds": {
+		"c18": "1665",
 	},
 	"Fact or Fiction": {
 		"cm2":                         "371",
@@ -2799,8 +2814,14 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander anthology ii":      "919",
 		"duel deck: sorin vs tibalt":  "533",
 	},
+	"Farseek": {
+		"c17": "1206",
+	},
 	"Fiery Gambit": {
 		"foil": "49",
+	},
+	"Frontier Bivouac": {
+		"c17": "1669",
 	},
 	"Fireball": {
 		"iconic masters": "926",
@@ -2810,6 +2831,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"mirrodin":                  "1013",
 		"non-foil - commander 2018": "1675",
 		"commander 2018":            "1675",
+		"c18":                       "1675",
 	},
 	"Guttersnipe": {
 		"iconic masters": "970",
@@ -2827,6 +2849,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Island": {
 		"jmp - 050": "403",
 	},
+	"Jungle Shrine": {
+		"c17": "1677",
+	},
 	"Kiki-Jiki, Mirror Breaker": {
 		"mm2":                   "991",
 		"modern masters 2015":   "991",
@@ -2835,6 +2860,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Laboratory Maniac": {
 		"innistrad":        "1026",
 		"ultimate masters": "415",
+		"uma":              "415",
 	},
 	"Lightning Bolt": {
 		"archenemy: nicol bolas": "1001",
@@ -2876,6 +2902,11 @@ var mb1plistVariants = map[string]map[string]string{
 		"masters 25":        "1680",
 		"a25":               "1680",
 	},
+	"Mistmeadow Witch": {
+		"":    "1527",
+		"cma": "1527",
+		"shm": "635",
+	},
 	"Mortify": {
 		"c18":                     "1457",
 		"commander 2018":          "1457",
@@ -2901,6 +2932,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Preordain": {
 		"commander 2015": "460",
 	},
+	"Putrefy": {
+		"gk1": "1466",
+	},
 	"Reliquary Tower": {
 		"core set 2019": "1683",
 	},
@@ -2914,6 +2948,13 @@ var mb1plistVariants = map[string]map[string]string{
 	"Rogue's Passage": {
 		"non-foil - commander 2017": "1684",
 	},
+	"Sandsteppe Citadel": {
+		"cm2": "1685",
+	},
+	"Sea Gate Oracle": {
+		"khc": "761",
+		"c17": "480",
+	},
 	"Skullclamp": {
 		"c17":                     "1630",
 		"commander 2017":          "1630",
@@ -2921,9 +2962,11 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Sol Ring": {
 		"commander 2018": "1633",
+		"c18":            "1633",
 	},
 	"Sorin Markov": {
 		"zendikar": "778",
+		"zen":      "778",
 	},
 	"Sleep": {
 		"core set 2019": "495",
