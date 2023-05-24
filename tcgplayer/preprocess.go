@@ -453,6 +453,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"Universes Beyond: Warhammer 40,000",
 		"The List",
 		"The Brothers' War: Retro Frame Artifacts",
+		"Secret Lair Commander: Heads I Win, Tails You Lose",
+		"Secret Lair Commander: From Cute to Brute",
+		"Mystery Booster Cards",
 		"": // cosmetic
 		// Variants are fine as is
 	default:
