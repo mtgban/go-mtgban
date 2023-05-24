@@ -40,6 +40,7 @@ require (
 	github.com/mroth/weightedrand/v2 v2.0.1 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/temoto/robotstxt v1.1.1 // indirect
+	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xuri/efp v0.0.0-20191019043341-b7dc4fe9aa91 // indirect
 	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect

@@ -16,7 +16,9 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
+	"github.com/ulikunitz/xz"
 	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -553,7 +555,7 @@ func run() int {
 		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
 	}
 
-	mtgjsonOpt := flag.String("mtgjson", "allprintings5.json", "Path to AllPrintings file")
+	mtgjsonOpt := flag.String("mtgjson", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
 	serviceAccOpt := flag.String("svc-acc", "", "Service account with write permission on the bucket")
 
@@ -581,14 +583,6 @@ func run() int {
 	case "json", "csv", "ndjson":
 	default:
 		log.Println("Invalid -format option, see -h for supported values")
-		return 1
-	}
-
-	// Load static data
-	err := mtgmatcher.LoadDatastoreFile(*mtgjsonOpt)
-	if err != nil {
-		log.Println("Couldn't load MTGJSON file...")
-		log.Println(err)
 		return 1
 	}
 
@@ -686,6 +680,20 @@ func run() int {
 		return 1
 	}
 
+	// Load static data
+	if *mtgjsonOpt != "" {
+		log.Println("Loading MTGJSON from", *mtgjsonOpt)
+		err = mtgmatcher.LoadDatastoreFile(*mtgjsonOpt)
+	} else {
+		log.Println("Loading MTGJSON from net")
+		err = loadMTGJSONfromNet()
+	}
+	if err != nil {
+		log.Println("Couldn't load MTGJSON...")
+		log.Println(err)
+		return 1
+	}
+
 	// Load the data
 	err = bc.Load()
 	if err != nil {
@@ -708,4 +716,21 @@ func run() int {
 
 func main() {
 	os.Exit(run())
+}
+
+const AllPrintingsURL = "https://mtgjson.com/api/v5/AllPrintings.json.xz"
+
+func loadMTGJSONfromNet() error {
+	resp, err := cleanhttp.DefaultClient().Get(AllPrintingsURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	reader, err := xz.NewReader(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return mtgmatcher.LoadDatastore(reader)
 }
