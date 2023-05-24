@@ -213,27 +213,27 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "PHED":
 				// If the card is not foil, and has been printed somewhere else,
 				// only pick this edition if explicilty requested
-				if !inCard.Foil {
-					if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
-						if inCard.Edition != "Heads I Win, Tails You Lose" {
-							// Except the following cards, when they are not tagged as specified,
-							// it means they are actually from this set
-							switch inCard.Name {
-							case "Sol Ring",
-								"Reliquary Tower":
-								if !inCard.Contains("2021") {
-									continue
-								}
-							case "Counterspell",
-								"Temur Battle Rage":
-								if !inCard.Contains("Legends") {
-									continue
-								}
-							case "Mountain":
-								if !inCard.Contains("Battlebond") {
-									continue
-								}
-							default:
+				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
+					if inCard.Edition != "Heads I Win, Tails You Lose" {
+						// Except the following cards, when they are not tagged as specified,
+						// it means they are actually from this set
+						switch inCard.Name {
+						case "Sol Ring",
+							"Reliquary Tower":
+							if !inCard.Contains("2021") {
+								continue
+							}
+						case "Counterspell",
+							"Temur Battle Rage":
+							if !inCard.Contains("Legends") {
+								continue
+							}
+						case "Island", "Mountain":
+							if !inCard.Contains("Battlebond") {
+								continue
+							}
+						default:
+							if !inCard.Foil {
 								continue
 							}
 						}
