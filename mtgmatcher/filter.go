@@ -185,6 +185,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "MB1":
 				if inCard.Variation == "The List" || inCard.Edition == "The List" ||
 					inCard.Edition == "Heads I Win, Tails You Lose" ||
+					inCard.Edition == "From Cute to Brute" ||
 					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
 					continue
 				}
@@ -196,6 +197,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "PLIST":
 				if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" ||
 					inCard.Edition == "Heads I Win, Tails You Lose" ||
+					inCard.Edition == "From Cute to Brute" ||
 					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non") ||
 					// Explicitly skip playtest cards unless using the correct edition is used
 					// They are visually the same as CMB1 and nobody tracks them separately
@@ -237,6 +239,14 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 								continue
 							}
 						}
+					}
+				}
+			case "PCTB":
+				// If the card is not foil, and has been printed somewhere else,
+				// only pick this edition if explicilty requested
+				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
+					if inCard.Edition != "From Cute to Brute" {
+						continue
 					}
 				}
 			case "UPLIST":
@@ -1514,6 +1524,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 	// - first check whether we have an exact variant:number association
 	// - if not, and there is a PLIST printing, select PLIST
 	// - if not, and there is a PHED printing, select PHED
+	// - if not, and there is a PCTB printing, select PCTB
 	if len(outCards) > 1 && inCard.isMysteryList() {
 		var filteredOutCards []mtgjson.Card
 
@@ -1535,6 +1546,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 		} else if len(MatchInSet(inCard.Name, "PHED")) > 0 {
 			for _, card := range outCards {
 				if card.SetCode != "PHED" {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
+			}
+		} else if len(MatchInSet(inCard.Name, "PCTB")) > 0 {
+			for _, card := range outCards {
+				if card.SetCode != "PCTB" {
 					continue
 				}
 				filteredOutCards = append(filteredOutCards, card)
