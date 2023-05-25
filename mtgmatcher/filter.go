@@ -1385,7 +1385,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 			case "Multiverse Legends":
-				isSerial := inCard.Contains("Serial") || inCard.Contains("V.3")
+				isSerial := inCard.Contains("Serial") || inCard.Contains("V.4")
 				if isSerial && !card.HasPromoType(mtgjson.PromoTypeSerialized) {
 					continue
 				} else if !isSerial && card.HasPromoType(mtgjson.PromoTypeSerialized) {
