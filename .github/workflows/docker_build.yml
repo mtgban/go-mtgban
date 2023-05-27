@@ -1,0 +1,35 @@
+name: Build and Push to GCR
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE: ${{ secrets.GCP_APP_NAME }}
+  REGISTRY_HOSTNAME: gcr.io
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.5.0
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          service_account_key: ${{ secrets.GCR_KEY }}
+
+      - name: Configure Docker to use gcloud command-line tool
+        run: gcloud auth configure-docker
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA .
+          docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
+          docker tag $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:latest
+          docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:latest
