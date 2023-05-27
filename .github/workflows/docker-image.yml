@@ -3,22 +3,36 @@ name: Bantool CI/CD
 on:
   push:
     branches:
-      - master
-
+      - 'master'
+env:
+  IMAGE: 'strudelboogie'
+  REGISTRY_HOSTNAME: 'gcr.io'
+  PROJECT_ID: '${{ secrets.GCP_PROJECT_ID }}'
+    
 jobs:
     build:
-      name: build and push
-      runs-on: ubuntu-latest
+      name: 'build and push'
+      runs-on: 'ubuntu-latest'
       steps:
-      - uses: actions/checkout@v3
-      - name: building and pushing the image
-        uses: RafikFarhad/push-to-gcr-github-action@v5-beta
-        with:
-          gcloud_service_key: "${{ secrets.GCR_KEY }}"
-          registry: gcr.io
-          project_id: ban-on-fire
-          image_name: strudelboogie
-          image_tag: latest
-          dockerfile: ./Dockerfile
-          context: .
-          target: build
+        - uses: 'actions/checkout@v3'
+  
+        - name: 'Authenticate to Google Cloud'
+          uses: 'google-github-actions/auth@v1'
+          with:
+            credentials_json: '${{ secrets.GCR_KEY }}'
+            
+        - name: 'Set up Google Cloud SDK'
+          uses: 'google-github-actions/setup-gcloud@v0.5.0'
+          with:
+            project_id: '${{ env.PROJECT_ID }}'
+            service_account_key: '${{ secrets.GCR_KEY }}'
+
+        - name: 'Configure Docker to use gcloud command-line tool'
+          run: 'gcloud auth configure-docker'
+            
+        - name: 'build/push image'
+          run: |
+            docker build -t $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA .
+            docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
+            docker tag $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:latest
+            docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:latest
