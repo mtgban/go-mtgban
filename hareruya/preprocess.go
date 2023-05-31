@@ -158,6 +158,7 @@ var editionTable = map[string]string{
 	"WMCQプロモ":     "WMC",
 	"Nationalプロモ": "PNAT",
 	"プレリリース 土地":   "Prerelease",
+	"ダブルレインボウ":    "Serialized", // Double rainbow
 }
 
 func preprocess(title string) (*mtgmatcher.Card, error) {
