@@ -22,15 +22,13 @@ jobs=(
     "ninetyfive '-ninetyfive'"
     "scg '-starcitygames'"
     "strikezone '-strikezone'"
-    "tcg '-tcg_index'"
     "tcgbuylist '-tcg_market'"
     "tcgindex '-tcg_index'"
-    "tcgmkt '-tcg_market'"
     "tcgsealed '-tcg_sealed'"
     "tcgsyp '-tcgplayer_syp'"
     "tnt '-trollandtoad'"
     "toa '-talesofadventure'"
-    "wizcupboard '-wizardscupboard'" 
+    "wizcupboard '-wizardscupboard'"
 )
 
 # Execute bantool binary with generated command line flags
@@ -39,7 +37,6 @@ for job in "${jobs[@]}"; do
     job_name="${job%% *}"
     flags="${job#* }"
 
-    export OUTPUT_PATH='gs://mtgbanzai/$job_name'
-    eval "./bantool '-svc'-acc '/tmp/cloudrunner' '-format 'ndjson' '-output'-path '$OUTPUT_PATH' $flags"
+    export OUTPUT_PATH="gs://mtgbanzai/$job_name"
+    eval "./bantool -svc-acc '/tmp/cloudrunner' -format 'ndjson' -output-path '$OUTPUT_PATH' $flags"
 done
-
