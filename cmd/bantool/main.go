@@ -75,19 +75,28 @@ type scraperOption struct {
 }
 
 var options = map[string]*scraperOption{
-	"magiccorner": {
+	"abugames": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper, err := magiccorner.NewScraper()
-			if err != nil {
-				return nil, err
-			}
+			scraper := abugames.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
-	"strikezone": {
+	"amazon": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := strikezone.NewScraper()
+			amzToken := os.Getenv("AMAZON_TOKEN")
+			if amzToken == "" {
+				return nil, errors.New("missing AMAZON_TOKEN env var")
+			}
+
+			scraper := amazon.NewScraper(amzToken)
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"blueprint": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := blueprint.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -100,9 +109,162 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"abugames": {
+	"cardkingdom_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := abugames.NewScraper()
+			scraper := cardkingdom.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CK_PARTNER")
+			return scraper, nil
+		},
+	},
+	"cardshark": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := cardshark.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Referral = "kodamtg"
+			return scraper, nil
+		},
+	},
+	"cardsphere": {
+		Init: func() (mtgban.Scraper, error) {
+			csphereEmail := os.Getenv("CARDSPHERE_EMAIL")
+			cspherePassword := os.Getenv("CARDSPHERE_PASSWORD")
+			if csphereEmail == "" || cspherePassword == "" {
+				return nil, errors.New("missing CARDSPHERE_EMAIL or CARDSPHERE_PASSWORD env vars")
+			}
+
+			scraper, err := cardsphere.NewScraperFull(csphereEmail, cspherePassword)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"cardtrader": {
+		Init: func() (mtgban.Scraper, error) {
+			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+			if ctTokenBearer == "" {
+				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+			}
+
+			scraper, err := cardtrader.NewScraperMarket(ctTokenBearer)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"coolstuffinc": {
+		OnlyVendor: true,
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			return scraper, nil
+		},
+	},
+	"coolstuffinc_official": {
+		Init: func() (mtgban.Scraper, error) {
+			csiKey := os.Getenv("CSI_KEY")
+			if csiKey == "" {
+				return nil, errors.New("missing CSI_KEY env var")
+			}
+
+			scraper := coolstuffinc.NewScraperOfficial(csiKey)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			return scraper, nil
+		},
+	},
+	"hareruya": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper, err := hareruya.NewScraper()
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"jupitergames": {
+		OnlySeller: true,
+		Init: func() (mtgban.Scraper, error) {
+			scraper := jupitergames.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"magiccorner": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper, err := magiccorner.NewScraper()
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"mkm_index": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperIndex(mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.Affiliate = "mtgban"
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
+			return scraper, nil
+		},
+	},
+	"mkm_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperSealed(mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
+			return scraper, nil
+		},
+	},
+	"mtgseattle": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := mtgseattle.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"mtgstocks": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := mtgstocks.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"mtgstocks_index": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := mtgstocks.NewScraperIndex()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"mythicmtg": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := mythicmtg.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -117,9 +279,21 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mythicmtg": {
+	"starcitygames": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := mythicmtg.NewScraper()
+			scgBearer := os.Getenv("SCG_BEARER")
+			if scgBearer == "" {
+				return nil, errors.New("missing SCG_BEARER env var")
+			}
+
+			scraper := starcitygames.NewScraper(scgBearer)
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"strikezone": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := strikezone.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -171,23 +345,30 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc": {
-		OnlyVendor: true,
+	"tcg_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := coolstuffinc.NewScraper()
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
+			if tcgPublicId == "" || tcgPrivateId == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
+			}
+
+			scraper := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Partner = os.Getenv("CSI_PARTNER")
+			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
 			return scraper, nil
 		},
 	},
-	"starcitygames": {
+	"tcgplayer_syp": {
 		Init: func() (mtgban.Scraper, error) {
-			scgBearer := os.Getenv("SCG_BEARER")
-			if scgBearer == "" {
-				return nil, errors.New("missing SCG_BEARER env var")
-			}
-
-			scraper := starcitygames.NewScraper(scgBearer)
+			scraper := tcgplayer.NewScraperSYP()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"toamagic": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := toamagic.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -203,192 +384,10 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"jupitergames": {
-		OnlySeller: true,
-		Init: func() (mtgban.Scraper, error) {
-			scraper := jupitergames.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"mtgstocks": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := mtgstocks.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"mtgstocks_index": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := mtgstocks.NewScraperIndex()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"tcgplayer_syp": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := tcgplayer.NewScraperSYP()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
 	"wizardscupboard": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := wizardscupboard.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"cardtrader": {
-		Init: func() (mtgban.Scraper, error) {
-			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
-			if ctTokenBearer == "" {
-				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
-			}
-
-			scraper, err := cardtrader.NewScraperMarket(ctTokenBearer)
-			if err != nil {
-				return nil, err
-			}
-			scraper.LogCallback = GlobalLogCallback
-			scraper.ShareCode = os.Getenv("CT_SHARECODE")
-			return scraper, nil
-		},
-	},
-	"blueprint": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := blueprint.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"mkm_index": {
-		Init: func() (mtgban.Scraper, error) {
-			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
-			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
-			if mkmAppToken == "" || mkmAppSecret == "" {
-				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
-			}
-
-			scraper, err := cardmarket.NewScraperIndex(mkmAppToken, mkmAppSecret)
-			if err != nil {
-				return nil, err
-			}
-			scraper.Affiliate = "mtgban"
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
-			return scraper, nil
-		},
-	},
-	"cardshark": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := cardshark.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Referral = "kodamtg"
-			return scraper, nil
-		},
-	},
-	"cardsphere": {
-		Init: func() (mtgban.Scraper, error) {
-			csphereEmail := os.Getenv("CARDSPHERE_EMAIL")
-			cspherePassword := os.Getenv("CARDSPHERE_PASSWORD")
-			if csphereEmail == "" || cspherePassword == "" {
-				return nil, errors.New("missing CARDSPHERE_EMAIL or CARDSPHERE_PASSWORD env vars")
-			}
-
-			scraper, err := cardsphere.NewScraperFull(csphereEmail, cspherePassword)
-			if err != nil {
-				return nil, err
-			}
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"amazon": {
-		Init: func() (mtgban.Scraper, error) {
-			amzToken := os.Getenv("AMAZON_TOKEN")
-			if amzToken == "" {
-				return nil, errors.New("missing AMAZON_TOKEN env var")
-			}
-
-			scraper := amazon.NewScraper(amzToken)
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"coolstuffinc_official": {
-		Init: func() (mtgban.Scraper, error) {
-			csiKey := os.Getenv("CSI_KEY")
-			if csiKey == "" {
-				return nil, errors.New("missing CSI_KEY env var")
-			}
-
-			scraper := coolstuffinc.NewScraperOfficial(csiKey)
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Partner = os.Getenv("CSI_PARTNER")
-			return scraper, nil
-		},
-	},
-	"mtgseattle": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := mtgseattle.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"hareruya": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper, err := hareruya.NewScraper()
-			if err != nil {
-				return nil, err
-			}
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"toamagic": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := toamagic.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"tcg_sealed": {
-		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
-			if tcgPublicId == "" || tcgPrivateId == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
-			}
-
-			scraper := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
-			return scraper, nil
-		},
-	},
-	"cardkingdom_sealed": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := cardkingdom.NewScraperSealed()
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Partner = os.Getenv("CK_PARTNER")
-			return scraper, nil
-		},
-	},
-	"mkm_sealed": {
-		Init: func() (mtgban.Scraper, error) {
-			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
-			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
-			if mkmAppToken == "" || mkmAppSecret == "" {
-				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
-			}
-
-			scraper, err := cardmarket.NewScraperSealed(mkmAppToken, mkmAppSecret)
-			if err != nil {
-				return nil, err
-			}
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
 			return scraper, nil
 		},
 	},
