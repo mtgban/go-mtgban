@@ -28,4 +28,4 @@ WORKDIR /app
 
 COPY --from=build /bantool ./bantool
 
-CMD ["sh", "-c", "./bantool -svc-acc tmp/cloudrunner -format ndjson -output-path gs://mtgbanzai/$OUTPUT_PATH -$TARGET"]
+CMD ["./bantool", "-svc-acc", "tmp/cloudrunner", "-format", "ndjson", "-output-path"]
