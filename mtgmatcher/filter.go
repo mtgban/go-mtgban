@@ -1281,6 +1281,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				"30th Anniversary History Promos",
 				"30th Anniversary Edition",
 				"Dominaria Remastered",
+				"March of the Machine: The Aftermath",
 				"The Brothers' War":
 				isRetro := inCard.isRetro() || inCard.Variation == "V.2"
 				// This edition has retro-only promotional cards, but most
