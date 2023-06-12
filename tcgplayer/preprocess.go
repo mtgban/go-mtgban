@@ -57,19 +57,31 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 
 	edition := editions[product.GroupId]
 
-	if cardName == "Bruna, Light of Alabaster" && variant == "Commander 2018" {
-		return nil, errors.New("does not exist")
-	} else if cardName == "Glissa, the Traitor" && variant == "Mirrodin Besieged" {
-		return nil, errors.New("untracked")
-	} else if cardName == "Elvish Vanguard" && (strings.Contains(variant, "Spanish") || strings.Contains(variant, "French") || strings.Contains(variant, "Italian")) {
-		return nil, errors.New("non english")
-	} else if strings.Contains(variant, "JP Amazon Exclusive") ||
-		strings.Contains(variant, "SEA Exclusive") ||
-		strings.Contains(variant, "JP WonderGOO Exclusive") ||
-		strings.Contains(variant, "JP Hareruya Exclusive") {
-		return nil, errors.New("unofficial")
-	} else if product.isToken() && strings.Contains(product.CleanName, "Double") {
-		return nil, errors.New("duplicate")
+	// Unsupported cards depending on their variant
+	switch cardName {
+	case "Bruna, Light of Alabaster":
+		if variant == "Commander 2018" {
+			return nil, errors.New("does not exist")
+		}
+	case "Glissa, the Traitor":
+		if variant == "Mirrodin Besieged" {
+			return nil, errors.New("untracked")
+		}
+	case "Elvish Vanguard":
+		if strings.Contains(variant, "Spanish") ||
+			strings.Contains(variant, "French") ||
+			strings.Contains(variant, "Italian") {
+			return nil, errors.New("non english")
+		}
+	default:
+		if strings.Contains(variant, "JP Amazon Exclusive") ||
+			strings.Contains(variant, "SEA Exclusive") ||
+			strings.Contains(variant, "JP WonderGOO Exclusive") ||
+			strings.Contains(variant, "JP Hareruya Exclusive") {
+			return nil, errors.New("unofficial")
+		} else if product.isToken() && strings.Contains(product.CleanName, "Double") {
+			return nil, errors.New("duplicate")
+		}
 	}
 
 	ogVariant := variant
