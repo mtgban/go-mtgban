@@ -2921,6 +2921,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"player rewards":   "68",
 		"p09":              "68",
 	},
+	"Opportunity": {
+		"c17": "450",
+		"ulg": "906",
+	},
 	"Painful Lesson": {
 		"akh":      "727",
 		"amonkhet": "727",
@@ -2937,6 +2941,9 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Reliquary Tower": {
 		"core set 2019": "1683",
+	},
+	"Thopter Foundry": {
+		"c16": "1535",
 	},
 	"Rout": {
 		"c21":                     "970",
