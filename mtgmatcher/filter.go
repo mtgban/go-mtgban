@@ -824,7 +824,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if err == nil && num < set.BaseSetSize {
 					continue
 				}
-			} else if (setDate.After(PromosForEverybodyYay) || set.Code == "ALA") && !inCard.isMysteryList() {
+			} else if setDate.After(PromosForEverybodyYay) && !inCard.isMysteryList() {
 				// ELD-Style borderless
 				if inCard.isBorderless() {
 					if card.BorderColor != mtgjson.BorderColorBorderless {
