@@ -1525,8 +1525,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 	// In case card is indistinguishable between MB1, PLIST or PHED:
 	// - first check whether we have an exact variant:number association
 	// - if not, and there is a PLIST printing, select PLIST
-	// - if not, and there is a PHED printing, select PHED
-	// - if not, and there is a PCTB printing, select PCTB
+	// - repeat for PHED, PCTB, and other mixed sets
 	if len(outCards) > 1 && inCard.isMysteryList() {
 		var filteredOutCards []mtgjson.Card
 
@@ -1538,26 +1537,17 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 				filteredOutCards = append(filteredOutCards, card)
 			}
-		} else if len(MatchInSet(inCard.Name, "PLIST")) > 0 {
-			for _, card := range outCards {
-				if card.SetCode != "PLIST" {
-					continue
+		} else {
+			for _, code := range []string{"PLIST", "PHED", "PCTB"} {
+				if len(MatchInSet(inCard.Name, code)) > 0 {
+					for _, card := range outCards {
+						if card.SetCode != code {
+							continue
+						}
+						filteredOutCards = append(filteredOutCards, card)
+					}
+					break
 				}
-				filteredOutCards = append(filteredOutCards, card)
-			}
-		} else if len(MatchInSet(inCard.Name, "PHED")) > 0 {
-			for _, card := range outCards {
-				if card.SetCode != "PHED" {
-					continue
-				}
-				filteredOutCards = append(filteredOutCards, card)
-			}
-		} else if len(MatchInSet(inCard.Name, "PCTB")) > 0 {
-			for _, card := range outCards {
-				if card.SetCode != "PCTB" {
-					continue
-				}
-				filteredOutCards = append(filteredOutCards, card)
 			}
 		}
 
