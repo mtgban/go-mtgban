@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
@@ -680,70 +679,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				continue
 			}
 
-			// Lucky case, variation is just the collector number
-			num = ExtractNumber(inCard.Variation)
-			// But first, special handling for WCD (skip if player details are missing)
-			if inCard.isWorldChamp() {
-				prefix, sideboard := inCard.worldChampPrefix()
-				wcdNum := extractWCDNumber(inCard.Variation, prefix, sideboard)
-
-				// If a wcdNum is found, check that it's matching the card number
-				// Else rebuild the number manually using prefix, sideboard, and num as hints
-				if wcdNum != "" {
-					if wcdNum == card.Number {
-						outCards = append(outCards, card)
-					}
-					// Skip anything else, the number needs to be correct
-					continue
-				} else if prefix != "" {
-					// Copy this field so we can discard portions that have
-					// already been used for deduplication
-					cn := card.Number
-					if sideboard && !strings.HasSuffix(cn, "sb") {
-						continue
-					} else if !sideboard && strings.HasSuffix(cn, "sb") {
-						continue
-					}
-					cn = strings.Replace(cn, "sb", "", 1)
-
-					// ML and MLP conflict with HasPrefix, so strip away
-					// the numeric part and do a straight equal
-					idx := strings.IndexFunc(cn, func(c rune) bool {
-						return unicode.IsDigit(c)
-					})
-					if idx < 1 || prefix != cn[:idx] {
-						continue
-					}
-					cn = strings.Replace(cn, prefix, "", 1)
-
-					// Coming straight from ExtractNumber above
-					if num != "" {
-						cnn := cn
-						// Strip last character if it's a letter
-						if unicode.IsLetter(rune(cn[len(cn)-1])) {
-							cnn = cn[:len(cn)-1]
-						}
-						// Try both simple number and original collector number
-						if num != cnn && num != cn {
-							continue
-						}
-						cn = strings.Replace(cn, num, "", 1)
-					}
-
-					if len(cn) > 0 && unicode.IsLetter(rune(cn[len(cn)-1])) {
-						suffix := inCard.possibleNumberSuffix()
-						if suffix != "" && !strings.HasSuffix(cn, suffix) {
-							continue
-						}
-					}
-				}
-			} else if num != "" {
-				checkNum := true
-				if inCard.Contains("Misprint") ||
-					(card.AttractionLights != nil && strings.Contains(inCard.Variation, "/")) {
-					checkNum = false
-				}
-				if checkNum {
+			checkNum := true
+			if inCard.Contains("Misprint") ||
+				inCard.isWorldChamp() ||
+				(card.AttractionLights != nil && strings.Contains(inCard.Variation, "/")) {
+				checkNum = false
+			}
+			if checkNum {
+				// Lucky case, variation is just the collector number
+				num = ExtractNumber(inCard.Variation)
+				if num != "" {
 					// The empty string will allow to test the number without any
 					// additional prefix first
 					possibleSuffixes := []string{""}

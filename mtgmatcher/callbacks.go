@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
@@ -87,6 +88,16 @@ var cardFilterCallbacks = map[string]cardFilterCallback{
 	"PULG":  nodateMisprint,
 	"HHO":   nodateMisprint,
 	"PTOR":  laquatusMisprint,
+
+	"PTC":  wcdNumberCompare,
+	"WC97": wcdNumberCompare,
+	"WC98": wcdNumberCompare,
+	"WC99": wcdNumberCompare,
+	"WC00": wcdNumberCompare,
+	"WC01": wcdNumberCompare,
+	"WC02": wcdNumberCompare,
+	"WC03": wcdNumberCompare,
+	"WC04": wcdNumberCompare,
 }
 
 func lightDarkManaCost(inCard *Card, card *mtgjson.Card) bool {
@@ -503,6 +514,65 @@ func sldVariant(inCard *Card, card *mtgjson.Card) bool {
 		"Virulent Sliver":
 		if inCard.isStepAndCompleat() {
 			return !strings.HasSuffix(card.Number, "Φ")
+		}
+	}
+	return false
+}
+
+func wcdNumberCompare(inCard *Card, card *mtgjson.Card) bool {
+	prefix, sideboard := inCard.worldChampPrefix()
+	wcdNum := extractWCDNumber(inCard.Variation, prefix, sideboard)
+
+	// If a wcdNum is found, check that it's matching the card number
+	if wcdNum != "" {
+		if wcdNum == card.Number {
+			return false
+		}
+		// Skip anything else, the number needs to be correct
+		return true
+	}
+
+	// Else rebuild the number manually using prefix, sideboard, and num as hints
+	if prefix != "" {
+		// Copy this field so we can discard portions that have
+		// already been used for deduplication
+		cn := card.Number
+		if sideboard && !strings.HasSuffix(cn, "sb") {
+			return true
+		} else if !sideboard && strings.HasSuffix(cn, "sb") {
+			return true
+		}
+		cn = strings.Replace(cn, "sb", "", 1)
+
+		// ML and MLP conflict with HasPrefix, so strip away
+		// the numeric part and do a straight equal
+		idx := strings.IndexFunc(cn, func(c rune) bool {
+			return unicode.IsDigit(c)
+		})
+		if idx < 1 || prefix != cn[:idx] {
+			return true
+		}
+		cn = strings.Replace(cn, prefix, "", 1)
+
+		num := ExtractNumber(inCard.Variation)
+		if num != "" {
+			cnn := cn
+			// Strip last character if it's a letter
+			if unicode.IsLetter(rune(cn[len(cn)-1])) {
+				cnn = cn[:len(cn)-1]
+			}
+			// Try both simple number and original collector number
+			if num != cnn && num != cn {
+				return true
+			}
+			cn = strings.Replace(cn, num, "", 1)
+		}
+
+		if len(cn) > 0 && unicode.IsLetter(rune(cn[len(cn)-1])) {
+			suffix := inCard.possibleNumberSuffix()
+			if suffix != "" && !strings.HasSuffix(cn, suffix) {
+				return true
+			}
 		}
 	}
 	return false
