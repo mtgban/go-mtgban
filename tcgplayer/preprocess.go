@@ -73,6 +73,13 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			strings.Contains(variant, "Italian") {
 			return nil, errors.New("non english")
 		}
+	case "Tamiyo's Journal":
+		if edition == "Shadows over Innistrad" {
+			_, found := mtgmatcher.VariantsTable[edition][variant]
+			if !found {
+				return nil, errors.New("non english")
+			}
+		}
 	default:
 		if strings.Contains(variant, "JP Amazon Exclusive") ||
 			strings.Contains(variant, "SEA Exclusive") ||
