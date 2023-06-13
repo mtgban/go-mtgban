@@ -799,13 +799,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if !card.HasPromoType(mtgjson.PromoTypePrerelease) {
 					continue
 				}
-				if card.Name == "Lu Bu, Master-at-Arms" {
-					if (strings.Contains(inCard.Variation, "April") || strings.Contains(inCard.Variation, "4/29/1999")) && card.OriginalReleaseDate != "1999-04-29" {
-						continue
-					} else if (strings.Contains(inCard.Variation, "July") || strings.Contains(inCard.Variation, "7/4/1999")) && card.OriginalReleaseDate != "1999-07-04" {
-						continue
-					}
-				}
 				// MAT has prerelease cards with showcase tag
 			} else if !inCard.isShowcase() {
 				if card.HasPromoType(mtgjson.PromoTypePrerelease) {

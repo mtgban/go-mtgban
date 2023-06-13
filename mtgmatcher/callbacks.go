@@ -98,6 +98,8 @@ var cardFilterCallbacks = map[string]cardFilterCallback{
 	"WC02": wcdNumberCompare,
 	"WC03": wcdNumberCompare,
 	"WC04": wcdNumberCompare,
+
+	"PPTK": lubuPrereleaseVariant,
 }
 
 func lightDarkManaCost(inCard *Card, card *mtgjson.Card) bool {
@@ -574,6 +576,15 @@ func wcdNumberCompare(inCard *Card, card *mtgjson.Card) bool {
 				return true
 			}
 		}
+	}
+	return false
+}
+
+func lubuPrereleaseVariant(inCard *Card, card *mtgjson.Card) bool {
+	if (strings.Contains(inCard.Variation, "April") || strings.Contains(inCard.Variation, "4/29/1999")) && card.OriginalReleaseDate != "1999-04-29" {
+		return true
+	} else if (strings.Contains(inCard.Variation, "July") || strings.Contains(inCard.Variation, "7/4/1999")) && card.OriginalReleaseDate != "1999-07-04" {
+		return true
 	}
 	return false
 }
