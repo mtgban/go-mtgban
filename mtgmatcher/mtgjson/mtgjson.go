@@ -158,6 +158,7 @@ const (
 	PromoTypeJudgeGift     = "judgegift"
 	PromoTypeArenaLeague   = "arenaleague"
 	PromoTypePlayerRewards = "playerrewards"
+	PromoTypeStarterDeck   = "starterdeck"
 
 	PromoTypeSChineseAltArt = "schinesealtart"
 
@@ -196,6 +197,7 @@ var AllPromoTypes = []string{
 	PromoTypeRelease,
 	PromoTypeSChineseAltArt,
 	PromoTypeSerialized,
+	PromoTypeStarterDeck,
 	PromoTypeStepAndCompleat,
 	PromoTypeSurgeFoil,
 	PromoTypeTextured,

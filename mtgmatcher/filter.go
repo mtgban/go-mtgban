@@ -839,7 +839,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			if inCard.promoWildcard {
 				switch set.Type {
 				case "expansion", "core", "masters", "draft_innovation":
-					if !card.HasPromoType(mtgjson.PromoTypeBoosterfun) && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
+					if !card.HasPromoType(mtgjson.PromoTypeBoosterfun) && !card.HasPromoType(mtgjson.PromoTypePromoPack) && !card.HasPromoType(mtgjson.PromoTypeStarterDeck) {
 						// Consider Promos, non-promo Intro Pack cards, and non-promo special cards
 						if card.IsPromo || card.HasPromoType(mtgjson.PromoTypeIntroPack) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
 							outCards = append(outCards, card)
@@ -1250,12 +1250,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						continue
 					}
 				}
-			// Intro pack
+			// Starter deck
 			case "Aether Revolt",
 				"Kaladesh":
-				if !Contains(inCard.Variation, "Intro") && card.HasPromoType(mtgjson.PromoTypeIntroPack) {
+				isStarter := Contains(inCard.Variation, "Starter") || Contains(inCard.Variation, "Intro")
+				if !isStarter && card.HasPromoType(mtgjson.PromoTypeStarterDeck) {
 					continue
-				} else if Contains(inCard.Variation, "Intro") && !card.HasPromoType(mtgjson.PromoTypeIntroPack) {
+				} else if isStarter && !card.HasPromoType(mtgjson.PromoTypeStarterDeck) {
 					continue
 				}
 			// Japanese Planeswalkers
