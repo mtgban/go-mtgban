@@ -1090,6 +1090,10 @@ func adjustEdition(inCard *Card) {
 					variation = "1F"
 				}
 			}
+		case "Hangarback Walker":
+			if inCard.isReskin() || inCard.isGenericPromo() || strings.Contains(inCard.Edition, "LGS") {
+				edition = backend.Sets["PLG20"].Name
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps

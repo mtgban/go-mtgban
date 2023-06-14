@@ -60,8 +60,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"GRN": guildgateVariant,
 	"RNA": guildgateVariant,
 
-	"VOW": wpnCheck,
-
 	"UNF": attractionVariant,
 
 	"BOT": shatteredCheck,
@@ -99,11 +97,14 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"PPTK": lubuPrereleaseVariant,
 
 	"ALA": showcaseCheck,
+
+	"IKO": reskinGodzillaCheck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"BRR": []cardFilterCallback{serializedCheck, schematicCheck},
 	"DMR": []cardFilterCallback{launchPromoInSet, releaseRetroCheck},
+	"VOW": []cardFilterCallback{wpnCheck, reskinDraculaCheck},
 }
 
 func lightDarkManaCost(inCard *Card, card *mtgjson.Card) bool {
@@ -592,6 +593,26 @@ func showcaseCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.isShowcase() && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 		return true
 	} else if !inCard.isShowcase() && card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+		return true
+	}
+	return false
+}
+
+// IKO-Style cards with different names
+func reskinGodzillaCheck(inCard *Card, card *mtgjson.Card) bool {
+	// Also some providers do not tag Japanese-only Godzilla cards as such
+	if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+		return true
+	} else if !inCard.isReskin() && !inCard.beyondBaseSet && card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+		return true
+	}
+	return false
+}
+
+func reskinDraculaCheck(inCard *Card, card *mtgjson.Card) bool {
+	if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeDracula) {
+		return true
+	} else if !inCard.isReskin() && !inCard.beyondBaseSet && card.HasPromoType(mtgjson.PromoTypeDracula) {
 		return true
 	}
 	return false
