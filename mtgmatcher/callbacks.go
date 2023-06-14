@@ -10,7 +10,7 @@ import (
 
 type cardFilterCallback func(inCard *Card, card *mtgjson.Card) bool
 
-var cardFilterCallbacks = map[string]cardFilterCallback{
+var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"ARN": lightDarkManaCost,
 
 	"FEM":  femVariantInArtist,
@@ -65,7 +65,6 @@ var cardFilterCallbacks = map[string]cardFilterCallback{
 	"UNF": attractionVariant,
 
 	"BOT": shatteredCheck,
-	"BRR": serializedAndSchematicCheck,
 	"MUL": serializedCheck,
 
 	"MH2":     retroCheck,
@@ -74,8 +73,6 @@ var cardFilterCallbacks = map[string]cardFilterCallback{
 	"30A":     retroCheck,
 
 	"BRO": babOrBuyaboxRetroCheck,
-
-	"DMR": launchAndRetroCheck,
 
 	"SLD": sldVariant,
 
@@ -102,6 +99,11 @@ var cardFilterCallbacks = map[string]cardFilterCallback{
 	"PPTK": lubuPrereleaseVariant,
 
 	"ALA": showcaseCheck,
+}
+
+var complexFilterCallbacks = map[string][]cardFilterCallback{
+	"BRR": []cardFilterCallback{serializedCheck, schematicCheck},
+	"DMR": []cardFilterCallback{launchPromoInSet, releaseRetroCheck},
 }
 
 func lightDarkManaCost(inCard *Card, card *mtgjson.Card) bool {
@@ -381,20 +383,18 @@ func serializedCheck(inCard *Card, card *mtgjson.Card) bool {
 	return false
 }
 
-func serializedAndSchematicCheck(inCard *Card, card *mtgjson.Card) bool {
-	if serializedCheck(inCard, card) {
-		return true
+func schematicCheck(inCard *Card, card *mtgjson.Card) bool {
+	// Skip check for serialized cards as collector numbers would not match
+	if inCard.isSerialized() {
+		return false
 	}
 
-	// Skip check for serialized cards as collector numbers would not match
-	if !inCard.isSerialized() {
-		cn, _ := strconv.Atoi(card.Number)
-		isSchematic := inCard.Contains("Schematic") || inCard.Contains("Blueprint")
-		if isSchematic && cn < 64 {
-			return true
-		} else if !isSchematic && cn >= 64 {
-			return true
-		}
+	cn, _ := strconv.Atoi(card.Number)
+	isSchematic := inCard.Contains("Schematic") || inCard.Contains("Blueprint")
+	if isSchematic && cn < 64 {
+		return true
+	} else if !isSchematic && cn >= 64 {
+		return true
 	}
 	return false
 }
@@ -436,10 +436,7 @@ func babOrBuyaboxRetroCheck(inCard *Card, card *mtgjson.Card) bool {
 	return retroCheckInternal(inCard.isBundle() || inCard.isBaB(), card.FrameVersion)
 }
 
-func launchAndRetroCheck(inCard *Card, card *mtgjson.Card) bool {
-	if launchPromoInSet(inCard, card) {
-		return true
-	}
+func releaseRetroCheck(inCard *Card, card *mtgjson.Card) bool {
 	return retroCheckInternal(inCard.isRetro() || inCard.isRelease(), card.FrameVersion)
 }
 

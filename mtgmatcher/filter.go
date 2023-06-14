@@ -1019,9 +1019,21 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
-			cardFilterFunc, found := cardFilterCallbacks[setCode]
-			if found {
+			cardFilterFunc, foundSimple := simpleFilterCallbacks[setCode]
+			cardFilterFuncs, foundComplex := complexFilterCallbacks[setCode]
+			if foundSimple {
 				if cardFilterFunc(inCard, &card) {
+					continue
+				}
+			} else if foundComplex {
+				shouldContinue := false
+				for _, fn := range cardFilterFuncs {
+					if fn(inCard, &card) {
+						shouldContinue = true
+						break
+					}
+				}
+				if shouldContinue {
 					continue
 				}
 			} else {
