@@ -568,6 +568,45 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.2":
 			variant = "Foil Etched"
 		}
+	case "Universes Beyond: Transformers":
+		switch variant {
+		case "V.1":
+			variant = ""
+		case "V.2":
+			variant = "Shattered"
+		}
+	case "Retro Frame Artifacts":
+		switch variant {
+		case "V.1":
+			variant = ""
+		case "V.2":
+			variant = "Schematic"
+		case "V.3":
+			variant = "Serialized"
+		}
+		edition = "BRR"
+	case "Multiverse Legends":
+		switch variant {
+		case "V.1":
+			variant = ""
+		case "V.2":
+			variant = "Etched"
+		case "V.3":
+			variant = "Halo"
+		case "V.4":
+			variant = "Serialized"
+		}
+	case "Jumpstart 2022":
+		if !mtgmatcher.IsBasicLand(cardName) {
+			switch variant {
+			case "V.1":
+				variant = "Anime"
+			case "V.2":
+				variant = ""
+			}
+		}
+	case "March of the Machine: The Aftermath: Extras":
+		variant = number
 
 	default:
 		if strings.Contains(edition, "Commander") {

@@ -770,7 +770,10 @@ func (c *Card) isGalaxyFoil() bool {
 func (c *Card) isSurgeFoil() bool {
 	return strings.Contains(c.Variation, "Surge") ||
 		strings.Contains(c.Variation, "surge")
+}
 
+func (c *Card) isSerialized() bool {
+	return c.Contains("Serial")
 }
 
 func (c *Card) possibleNumberSuffix() string {
