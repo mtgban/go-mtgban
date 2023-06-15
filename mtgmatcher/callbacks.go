@@ -46,7 +46,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"JMP": launchPromoInSet,
 	"J22": animeCheck,
 
-	"CMR": variantInCommanderDeck,
 	"CLB": variantBeforePlainCard,
 
 	"KLD": starterDeckCheck,
@@ -71,8 +70,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"30A":     retroCheck,
 
 	"BRO": babOrBuyaboxRetroCheck,
-
-	"SLD": sldVariant,
 
 	"THB": foilMisprint,
 	"STX": foilMisprint,
@@ -105,6 +102,8 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"BRR": []cardFilterCallback{serializedCheck, schematicCheck},
 	"DMR": []cardFilterCallback{launchPromoInSet, releaseRetroCheck},
 	"VOW": []cardFilterCallback{wpnCheck, reskinDraculaCheck},
+	"SLD": []cardFilterCallback{sldVariant, etchedCheck, thickDisplayCheck},
+	"CMR": []cardFilterCallback{variantInCommanderDeck, etchedCheck, thickDisplayCheck},
 }
 
 func lightDarkManaCost(inCard *Card, card *mtgjson.Card) bool {
@@ -195,6 +194,25 @@ func foilCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.Foil && card.HasFinish(mtgjson.FinishNonfoil) {
 		return true
 	} else if !inCard.Foil && card.HasFinish(mtgjson.FinishFoil) {
+		return true
+	}
+	return false
+}
+
+func etchedCheck(inCard *Card, card *mtgjson.Card) bool {
+	if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
+		return true
+		// Some thick display cards are not marked as etched
+	} else if !inCard.isEtched() && !inCard.isThickDisplay() && card.HasFinish(mtgjson.FinishEtched) {
+		return true
+	}
+	return false
+}
+
+func thickDisplayCheck(inCard *Card, card *mtgjson.Card) bool {
+	if inCard.isThickDisplay() && !card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
+		return true
+	} else if !inCard.isThickDisplay() && card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
 		return true
 	}
 	return false

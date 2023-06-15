@@ -989,7 +989,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 
 				// Separate finishes have different collector numbers
-				if set.Code == "SLD" || set.Code == "CMR" || setDate.After(SeparateFinishCollectorNumberDate) {
+				if setDate.After(SeparateFinishCollectorNumberDate) {
 					if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
 						continue
 						// Some thick display cards are not marked as etched
