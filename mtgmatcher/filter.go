@@ -799,8 +799,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if !card.HasPromoType(mtgjson.PromoTypePrerelease) {
 					continue
 				}
-				// MAT has prerelease cards with showcase tag
-			} else if !inCard.isShowcase() {
+			} else {
 				if card.HasPromoType(mtgjson.PromoTypePrerelease) {
 					continue
 				}

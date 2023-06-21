@@ -1094,6 +1094,11 @@ func adjustEdition(inCard *Card) {
 			if inCard.isReskin() || inCard.isGenericPromo() || strings.Contains(inCard.Edition, "LGS") {
 				edition = backend.Sets["PLG20"].Name
 			}
+		// Sometimes these cards are not marked as prerelease because they are showcase
+		case "Goro-Goro and Satoru", "Katilda and Lier", "Slimefoot and Squee":
+			if inCard.isShowcase() && !inCard.isPrerelease() {
+				variation += " Prerelease"
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps

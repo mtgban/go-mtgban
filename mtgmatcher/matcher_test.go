@@ -3184,6 +3184,15 @@ var MatchTests = []MatchTest{
 			Edition:   "March of the Machine: The Aftermath",
 		},
 	},
+	{
+		Id:   "299bd0f7-15c0-512b-96b0-341bf45f7d64",
+		Desc: "missing_prerelease_showcase",
+		In: Card{
+			Name:      "Goro-Goro and Satoru",
+			Variation: "Showcase",
+			Edition:   "MOC",
+		},
+	},
 
 	// Best effort mode, when the user gives up and sets the Promo
 	// flag, this small subsets of promos should still be supported
