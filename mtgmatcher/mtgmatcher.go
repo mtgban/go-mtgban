@@ -893,6 +893,10 @@ func adjustEdition(inCard *Card) {
 			edition = backend.Sets["P30A"].Name
 		}
 
+	// Oilslick lands may not have the bundle tag attached to them
+	case inCard.isBasicLand() && inCard.isOilSlick() && !inCard.isBundle():
+		variation += " Bundle"
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {

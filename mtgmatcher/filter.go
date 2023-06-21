@@ -751,33 +751,33 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
-			// Prerelease
-			if inCard.isPrerelease() {
-				if !card.HasPromoType(mtgjson.PromoTypePrerelease) {
+			var shouldContinue bool
+			for _, promoElement := range promoTypeElements {
+				if setDate.Before(promoElement.ValidDate) {
 					continue
 				}
-			} else {
-				if card.HasPromoType(mtgjson.PromoTypePrerelease) {
-					continue
+
+				var tagPresent bool
+				if promoElement.TagFunc != nil {
+					tagPresent = promoElement.TagFunc(inCard)
+				} else {
+					for _, tag := range promoElement.Tags {
+						if inCard.Contains(tag) {
+							tagPresent = true
+							break
+						}
+					}
+				}
+
+				if tagPresent && !card.HasPromoType(promoElement.PromoType) {
+					shouldContinue = true
+					break
+				} else if !tagPresent && card.HasPromoType(promoElement.PromoType) {
+					shouldContinue = true
+					break
 				}
 			}
-
-			// Promo pack and Play promo
-			if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
-				continue
-			} else if !inCard.isPromoPack() && card.HasPromoType(mtgjson.PromoTypePromoPack) {
-				continue
-			}
-			if inCard.isPlayPromo() && !card.HasPromoType(mtgjson.PromoTypePlayPromo) {
-				continue
-			} else if !inCard.isPlayPromo() && card.HasPromoType(mtgjson.PromoTypePlayPromo) {
-				continue
-			}
-
-			// Support the Simplified Chinese Alternative Art Cards
-			if inCard.isChineseAltArt() && !card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
-				continue
-			} else if !inCard.isChineseAltArt() && card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
+			if shouldContinue {
 				continue
 			}
 
@@ -800,116 +800,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 
-				// ELD-Style bundle
-				if inCard.isBundle() && !card.HasPromoType(mtgjson.PromoTypeBundle) {
-					continue
-				} else if !inCard.isBundle() && card.HasPromoType(mtgjson.PromoTypeBundle) {
-					// oilslick cards may not have the bundle tag attached to them
-					if !card.HasPromoType(mtgjson.PromoTypeOilSlick) {
-						continue
-					}
-				}
-
-				// ZNR-Style buy-a-box but card is also present in main set
-				if setDate.After(BuyABoxNotUniqueDate) {
-					if inCard.isBaB() && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
-						continue
-					} else if !inCard.isBaB() && card.HasPromoType(mtgjson.PromoTypeBuyABox) {
-						continue
-					}
-				}
-
-				// SNC-Style gilded
-				if inCard.isGilded() {
-					if !card.HasPromoType(mtgjson.PromoTypeGilded) {
-						continue
-					}
-				} else {
-					if card.HasPromoType(mtgjson.PromoTypeGilded) {
-						continue
-					}
-				}
-
-				if inCard.isTextured() {
-					if !card.HasPromoType(mtgjson.PromoTypeTextured) {
-						continue
-					}
-				} else {
-					if card.HasPromoType(mtgjson.PromoTypeTextured) {
-						continue
-					}
-				}
-
-				if inCard.isGalaxyFoil() {
-					if !card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
-						continue
-					}
-				} else {
-					if card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
-						continue
-					}
-				}
-
-				if inCard.isSurgeFoil() {
-					if !card.HasPromoType(mtgjson.PromoTypeSurgeFoil) {
-						continue
-					}
-				} else {
-					if card.HasPromoType(mtgjson.PromoTypeSurgeFoil) {
-						continue
-					}
-				}
-
-				// ONE-style, present across many editions
-				if inCard.isStepAndCompleat() {
-					if !card.HasPromoType(mtgjson.PromoTypeStepAndCompleat) {
-						continue
-					}
-				} else {
-					if card.HasPromoType(mtgjson.PromoTypeStepAndCompleat) {
-						continue
-					}
-				}
-
-				if inCard.isConcept() {
-					if !card.HasPromoType(mtgjson.PromoTypeConcept) {
-						continue
-					}
-				} else {
-					if card.HasPromoType(mtgjson.PromoTypeConcept) {
-						continue
-					}
-				}
-
-				if inCard.isOilSlick() {
-					if !card.HasPromoType(mtgjson.PromoTypeOilSlick) {
-						continue
-					}
-				} else {
-					if card.HasPromoType(mtgjson.PromoTypeOilSlick) {
-						continue
-					}
-				}
-
-				isHalo := inCard.Contains("Halo")
-				if isHalo && !card.HasPromoType(mtgjson.PromoTypeHaloFoil) {
-					continue
-				} else if !isHalo && card.HasPromoType(mtgjson.PromoTypeHaloFoil) {
-					continue
-				}
-
 				// Separate finishes have different collector numbers
 				if setDate.After(SeparateFinishCollectorNumberDate) {
 					if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
 						continue
 						// Some thick display cards are not marked as etched
 					} else if !inCard.isEtched() && !inCard.isThickDisplay() && card.HasFinish(mtgjson.FinishEtched) {
-						continue
-					}
-
-					if inCard.isThickDisplay() && !card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
-						continue
-					} else if !inCard.isThickDisplay() && card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
 						continue
 					}
 				}

@@ -3,12 +3,103 @@ package mtgmatcher
 import (
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type cardFilterCallback func(inCard *Card, card *mtgjson.Card) bool
+
+type promoTypeElement struct {
+	// Name of the promo type to validate
+	PromoType string
+
+	// Validity date of the check, skipped if set is published before this
+	ValidDate time.Time
+
+	// Tag function
+	TagFunc func(inCard *Card) bool
+
+	// Simple tags to check, if TagFunc is not set
+	Tags []string
+}
+
+var promoTypeElements = []promoTypeElement{
+	{
+		PromoType: mtgjson.PromoTypePrerelease,
+		Tags:      []string{"Prerelease", "Preview"},
+	},
+	{
+		PromoType: mtgjson.PromoTypePlayPromo,
+		Tags:      []string{"Play Promo"},
+	},
+	{
+		PromoType: mtgjson.PromoTypePromoPack,
+		TagFunc: func(inCard *Card) bool {
+			return inCard.isPromoPack()
+		},
+	},
+	{
+		PromoType: mtgjson.PromoTypeSChineseAltArt,
+		TagFunc: func(inCard *Card) bool {
+			return inCard.isChineseAltArt()
+		},
+	},
+	{
+		PromoType: mtgjson.PromoTypeBuyABox,
+		// After ZNR buy-a-box is also present in main set
+		ValidDate: BuyABoxNotUniqueDate,
+		TagFunc: func(inCard *Card) bool {
+			return inCard.isBaB()
+		},
+	},
+	{
+		PromoType: mtgjson.PromoTypeBundle,
+		Tags:      []string{"Bundle"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeGilded,
+		Tags:      []string{"Gilded"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeTextured,
+		Tags:      []string{"Textured"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeGalaxyFoil,
+		Tags:      []string{"Galaxy"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeSurgeFoil,
+		TagFunc: func(inCard *Card) bool {
+			return inCard.isSurgeFoil()
+		},
+	},
+	{
+		PromoType: mtgjson.PromoTypeStepAndCompleat,
+		Tags:      []string{"Compleat"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeConcept,
+		Tags:      []string{"Concept"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeOilSlick,
+		TagFunc: func(inCard *Card) bool {
+			return inCard.isOilSlick()
+		},
+	},
+	{
+		PromoType: mtgjson.PromoTypeHaloFoil,
+		Tags:      []string{"Halo"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeThickDisplay,
+		ValidDate: SeparateFinishCollectorNumberDate,
+		Tags:      []string{"Display", "Thick"},
+	},
+}
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"ARN": lightDarkManaCost,
