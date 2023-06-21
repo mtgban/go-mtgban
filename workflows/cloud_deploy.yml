@@ -3,9 +3,7 @@ name: Deploy docker to GCP registry
 on:
   push:
     branches:
-      - "jette-smash"
       - "master"
-
   jobs:
     build:
       runs-on: ubuntu-latest

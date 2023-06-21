@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -15,10 +16,14 @@ import (
 	"strings"
 	"time"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"cloud.google.com/go/storage"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
 	"github.com/ulikunitz/xz"
+	"golang.org/x/oauth2/google"
+	"golang.org/x/text/unicode/norm"
 	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -48,6 +53,19 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
+
+type SecretsConfig struct {
+	Type                    string `json:"type"`
+	ProjectID               string `json:"project_id"`
+	PrivateKeyID            string `json:"private_key_id"`
+	PrivateKey              string `json:"private_key"`
+	ClientEmail             string `json:"client_email"`
+	ClientID                string `json:"client_id"`
+	AuthURI                 string `json:"auth_uri"`
+	TokenURI                string `json:"token_uri"`
+	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"`
+	ClientX509CertURL       string `json:"client_x509_cert_url"`
+}
 
 var date = time.Now().Format("2006-01-02")
 var GCSBucket *storage.BucketHandle
@@ -549,14 +567,44 @@ func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	return nil
 }
 
+func getSecret() (*SecretsConfig, error) {
+	projectID := os.Getenv("PROJECT_ID")
+	secretID := os.Getenv("SECRET_ID")
+
+	ctx := context.Background()
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to setup client: %w", err)
+	}
+
+	secretName := fmt.Sprintf("projects/%s/secrets/%s/versions/latest", projectID, secretID)
+	request := &secretmanagerpb.AccessSecretVersionRequest{Name: secretName}
+
+	result, err := client.AccessSecretVersion(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to access secret version: %w", err)
+	}
+
+	var config SecretsConfig
+	if err := json.Unmarshal(result.Payload.Data, &config); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal secret to service account key: %w", err)
+	}
+
+	return &config, nil
+}
+
 func run() int {
-	for key, val := range options {
-		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
+	options := make(map[string]Opt)
+	for key, opt := range options {
+		normalizedKey := strings.ToLower(key)
+		tag := language.MakeTag(norm.NFC.String(normalizedKey))
+		val := opt
+		flag.BoolVar(&val.Enabled, key, false, fmt.Sprintf("Enable %s", +Cases.Title(strings(key))))
+		options[key] = val
 	}
 
 	mtgjsonOpt := flag.String("mtgjson", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
-	serviceAccOpt := flag.String("svc-acc", "", "Service account with write permission on the bucket")
 
 	scrapersOpt := flag.String("scrapers", "", "Comma-separated list of scrapers to enable")
 	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable")
@@ -596,26 +644,34 @@ func run() int {
 		return 1
 	}
 
-	// If a service account file is passed in, create a bucket object and update the output path
-	if *serviceAccOpt != "" {
-		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(*serviceAccOpt))
+	if u.Scheme == "gs" {
+		config, err := getSecret()
 		if err != nil {
-			log.Println("error creating the GCS client", err)
+			log.Println("did not get secret", err)
 			return 1
 		}
 
-		if u.Scheme != "gs" {
-			log.Println("unsupported scheme in output-path")
+		jsonKey, err := json.Marshal(config)
+		if err != nil {
+			log.Println("cannot marshal config to json", err)
+			return 1
+		}
+
+		creds, err := google.CredentialsFromJSON(context.Background(), jsonKey)
+		if err != nil {
+			log.Println("could not create credentials", err)
+			return 1
+		}
+
+		client, err := storage.NewClient(context.Background(), option.WithCredentials(creds))
+		if err != nil {
+			log.Println("error creating GCS client", err)
 			return 1
 		}
 
 		GCSBucket = client.Bucket(u.Host)
-
 		// Trim to avoid creating an empty directory in the bucket
 		*outputPathOpt = strings.TrimPrefix(u.Path, "/")
-	} else if u.Scheme != "" {
-		log.Println("missing svc-acc file for cloud access")
-		return 1
 	} else {
 		_, err := os.Stat(*outputPathOpt)
 		if os.IsNotExist(err) {
