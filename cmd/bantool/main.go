@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +20,7 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
 	"github.com/ulikunitz/xz"
+	"golang.org/x/exp/maps"
 	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -567,10 +569,31 @@ func run() int {
 
 	devOpt := flag.Bool("dev", false, "Enable dev operations (debugging)")
 	versionOpt := flag.Bool("v", false, "Print version information")
+	listOpt := flag.Bool("l", false, "List all scrapers available")
 	flag.Parse()
 
 	log.Println("bantool version", Commit)
 	if *versionOpt {
+		return 0
+	}
+
+	if *listOpt {
+		keys := maps.Keys(options)
+		sort.Strings(keys)
+		for _, key := range keys {
+			var list []string
+			if options[key].OnlyVendor {
+				list = append(list, "❌")
+			} else {
+				list = append(list, "✅")
+			}
+			if options[key].OnlySeller {
+				list = append(list, "❌")
+			} else {
+				list = append(list, "✅")
+			}
+			fmt.Println(list, key)
+		}
 		return 0
 	}
 
