@@ -23,7 +23,6 @@ import (
 	"github.com/scizorman/go-ndjson"
 	"github.com/ulikunitz/xz"
 	"golang.org/x/oauth2/google"
-	"golang.org/x/text/unicode/norm"
 	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -594,15 +593,6 @@ func getSecret() (*SecretsConfig, error) {
 }
 
 func run() int {
-	options := make(map[string]Opt)
-	for key, opt := range options {
-		normalizedKey := strings.ToLower(key)
-		tag := language.MakeTag(norm.NFC.String(normalizedKey))
-		val := opt
-		flag.BoolVar(&val.Enabled, key, false, fmt.Sprintf("Enable %s", +Cases.Title(strings(key))))
-		options[key] = val
-	}
-
 	mtgjsonOpt := flag.String("mtgjson", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
 
