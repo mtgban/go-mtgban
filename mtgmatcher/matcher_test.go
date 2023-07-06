@@ -3742,6 +3742,16 @@ var MatchTests = []MatchTest{
 			Edition:   "Unfinity",
 		},
 	},
+	{
+		Id:   "147668b5-b081-5aad-b715-a11539bd2749",
+		Desc: "lotr_surge_reskin",
+		In: Card{
+			Name:      "Yavimaya, Cradle of Growth",
+			Variation: "Fangorn Forest Borderless Surge Foil",
+			Edition:   "The Lord of the Rings Commander",
+			Foil:      true,
+		},
+	},
 
 	// Simplified Chinese Alt Art
 	{
