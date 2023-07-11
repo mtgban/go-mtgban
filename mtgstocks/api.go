@@ -2,6 +2,7 @@ package mtgstocks
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,7 +10,7 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 )
 
-type Interest struct {
+type StocksInterest struct {
 	InterestType string  `json:"interest_type"`
 	Foil         bool    `json:"foil"`
 	Percentage   float64 `json:"percentage"`
@@ -41,15 +42,10 @@ type Interest struct {
 	} `json:"print"`
 }
 
-type StocksInterest struct {
-	Foil   []Interest `json:"foil"`
-	Normal []Interest `json:"normal"`
-}
-
 type MTGStocksInterests struct {
-	Date    string          `json:"date"`
-	Average *StocksInterest `json:"average"`
-	Market  *StocksInterest `json:"market"`
+	Error     string           `json:"error"`
+	Date      string           `json:"date"`
+	Interests []StocksInterest `json:"interests"`
 }
 
 const (
@@ -60,23 +56,29 @@ const (
 	defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Windows 1.0; rv:100.0)"
 )
 
-func AverageInterests() (*StocksInterest, error) {
-	out, err := query(stksAverageURL)
+func AverageInterests(foil bool) ([]StocksInterest, error) {
+	out, err := query(stksAverageURL, foil)
 	if err != nil {
 		return nil, err
 	}
-	return out.Average, nil
+	return out.Interests, nil
 }
 
-func MarketInterests() (*StocksInterest, error) {
-	out, err := query(stksMarketURL)
+func MarketInterests(foil bool) ([]StocksInterest, error) {
+	out, err := query(stksMarketURL, foil)
 	if err != nil {
 		return nil, err
 	}
-	return out.Market, nil
+	return out.Interests, nil
 }
 
-func query(link string) (*MTGStocksInterests, error) {
+func query(link string, foil bool) (*MTGStocksInterests, error) {
+	extra := "/regular"
+	if foil {
+		extra = "/foil"
+	}
+	link += extra
+
 	req, err := http.NewRequest("GET", link, nil)
 	if err != nil {
 		return nil, err
@@ -98,6 +100,10 @@ func query(link string) (*MTGStocksInterests, error) {
 	err = json.Unmarshal(data, &interests)
 	if err != nil {
 		return nil, err
+	}
+
+	if interests.Error != "" {
+		return nil, errors.New(interests.Error)
 	}
 
 	return &interests, nil

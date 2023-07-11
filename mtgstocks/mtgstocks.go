@@ -25,7 +25,7 @@ type MTGStocks struct {
 
 type requestChan struct {
 	name     string
-	interest Interest
+	interest StocksInterest
 }
 
 type responseChan struct {
@@ -111,11 +111,19 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 }
 
 func (stks *MTGStocks) scrape() error {
-	averages, err := AverageInterests()
+	averagesRegular, err := AverageInterests(false)
 	if err != nil {
 		return err
 	}
-	markets, err := MarketInterests()
+	averagesFoil, err := AverageInterests(true)
+	if err != nil {
+		return err
+	}
+	marketsRegular, err := MarketInterests(false)
+	if err != nil {
+		return err
+	}
+	marketsFoil, err := MarketInterests(true)
 	if err != nil {
 		return err
 	}
@@ -138,25 +146,25 @@ func (stks *MTGStocks) scrape() error {
 	}
 
 	go func() {
-		for _, interest := range averages.Foil {
+		for _, interest := range averagesFoil {
 			pages <- requestChan{
 				name:     "Average",
 				interest: interest,
 			}
 		}
-		for _, interest := range averages.Normal {
+		for _, interest := range averagesRegular {
 			pages <- requestChan{
 				name:     "Average",
 				interest: interest,
 			}
 		}
-		for _, interest := range markets.Foil {
+		for _, interest := range marketsFoil {
 			pages <- requestChan{
 				name:     "Market",
 				interest: interest,
 			}
 		}
-		for _, interest := range markets.Normal {
+		for _, interest := range marketsRegular {
 			pages <- requestChan{
 				name:     "Market",
 				interest: interest,
