@@ -535,6 +535,14 @@ func sldVariant(inCard *Card, card *mtgjson.Card) bool {
 		if inCard.isStepAndCompleat() {
 			return !strings.HasSuffix(card.Number, "Φ")
 		}
+	case "Goblin Lackey",
+		"Goblin Matron",
+		"Goblin Recruiter",
+		"Muxus, Goblin Grandee",
+		"Shattergang Brothers":
+		if inCard.Foil {
+			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+		}
 	}
 	return false
 }
