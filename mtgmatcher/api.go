@@ -36,7 +36,7 @@ func GetSet(code string) (*mtgjson.Set, error) {
 
 	set, found := backend.Sets[strings.ToUpper(code)]
 	if !found {
-		return nil, ErrCardUnknownId
+		return nil, ErrCardNotInEdition
 	}
 
 	return set, nil
@@ -299,19 +299,16 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 }
 
 func BoosterGen(setCode, boosterType string) ([]string, error) {
-	if backend.Sets == nil {
-		return nil, ErrDatastoreEmpty
-	}
-	set, found := backend.Sets[setCode]
-	if !found {
-		return nil, ErrCardNotInEdition
+	set, err := GetSet(setCode)
+	if err != nil {
+		return nil, err
 	}
 	if set.Booster == nil {
-		return nil, ErrCardNotInEdition
+		return nil, ErrEditionNoSealed
 	}
-	_, found = set.Booster[boosterType]
+	_, found := set.Booster[boosterType]
 	if !found {
-		return nil, ErrCardNotInEdition
+		return nil, ErrEditionNoBoosterSheet
 	}
 
 	// Pick a rarity distribution as defined in Contents at random using their weight
