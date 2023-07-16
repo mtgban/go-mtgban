@@ -45,13 +45,36 @@ type Set struct {
 
 	Booster       map[string]Booster `json:"booster"`
 	SealedProduct []struct {
-		Category    string            `json:"category"`
+		Category string `json:"category"`
+		Contents map[string][]struct {
+			Code    string `json:"code"`
+			Configs []struct {
+				Deck []struct {
+					Name string `json:"name"`
+					Set  string `json:"set"`
+				} `json:"deck"`
+			} `json:"configs"`
+			Count int    `json:"count"`
+			Foil  bool   `json:"foil"`
+			Name  string `json:"name"`
+			Set   string `json:"set"`
+			UUID  string `json:"uuid"`
+		} `json:"contents"`
 		Identifiers map[string]string `json:"identifiers"`
 		Name        string            `json:"name"`
 		ProductSize int               `json:"productSize"`
 		Subtype     string            `json:"subtype"`
 		UUID        string            `json:"uuid"`
 	} `json:"sealedProduct"`
+	Decks []struct {
+		Cards []struct {
+			Count  int    `json:"count"`
+			Finish string `json:"finish"`
+			UUID   string `json:"uuid"`
+		} `json:"cards"`
+		Name               string   `json:"name"`
+		SealedProductUuids []string `json:"sealedProductUuids"`
+	} `json:"decks"`
 }
 
 type Card struct {
