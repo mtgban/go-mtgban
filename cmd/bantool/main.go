@@ -40,6 +40,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgstocks"
 	"github.com/mtgban/go-mtgban/mythicmtg"
 	"github.com/mtgban/go-mtgban/ninetyfive"
+	"github.com/mtgban/go-mtgban/sealedev"
 	"github.com/mtgban/go-mtgban/starcitygames"
 	"github.com/mtgban/go-mtgban/strikezone"
 	"github.com/mtgban/go-mtgban/tcgplayer"
@@ -277,6 +278,18 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"sealed_ev": {
+		Init: func() (mtgban.Scraper, error) {
+			banKey := os.Getenv("BAN_API_KEY")
+			if banKey == "" {
+				return nil, errors.New("missing BAN_API_KEY env var")
+			}
+			scraper := sealedev.NewScraper(banKey)
+			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
