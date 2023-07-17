@@ -290,6 +290,7 @@ var options = map[string]*scraperOption{
 			}
 			scraper := sealedev.NewScraper(banKey)
 			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
+			scraper.BuylistAffiliate = os.Getenv("CK_PARTNER")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},

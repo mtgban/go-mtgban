@@ -2,6 +2,7 @@ package sealedev
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"math/rand"
 	"strconv"
@@ -16,17 +17,22 @@ import (
 
 const (
 	EVAverageRepetition = 5000
+
+	ckBuylistLink = "https: //www.cardkingdom.com/purchasing/mtg_singles"
 )
 
 type SealedEVScraper struct {
-	LogCallback mtgban.LogCallbackFunc
-	FastMode    bool
-	Affiliate   string
+	LogCallback      mtgban.LogCallbackFunc
+	FastMode         bool
+	Affiliate        string
+	BuylistAffiliate string
 
 	inventoryDate time.Time
+	buylistDate   time.Time
 
 	inventory   mtgban.InventoryRecord
 	marketplace map[string]mtgban.InventoryRecord
+	buylist     mtgban.BuylistRecord
 
 	banpriceKey string
 }
@@ -36,6 +42,7 @@ type evConfig struct {
 	StatsFunc      func(values []float64) (float64, error)
 	SourceName     string
 	FoundInBuylist bool
+	TargetsBuylist bool
 }
 
 var evParameters = []evConfig{
@@ -76,6 +83,7 @@ var evParameters = []evConfig{
 		},
 		SourceName:     "CK",
 		FoundInBuylist: true,
+		TargetsBuylist: true,
 	},
 }
 
@@ -88,6 +96,7 @@ func NewScraper(sig string) *SealedEVScraper {
 	ss := SealedEVScraper{}
 	ss.inventory = mtgban.InventoryRecord{}
 	ss.marketplace = map[string]mtgban.InventoryRecord{}
+	ss.buylist = mtgban.BuylistRecord{}
 	ss.banpriceKey = sig
 	return &ss
 }
@@ -361,22 +370,35 @@ func (ss *SealedEVScraper) scrape() error {
 				}
 
 				var link string
-				tcgID, _ := strconv.Atoi(product.Identifiers["tcgplayerProductId"])
-				if tcgID != 0 {
-					link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "")
-				}
+				if evParameters[i].TargetsBuylist {
+					link = ckBuylistLink
+					if ss.BuylistAffiliate != "" {
+						link += fmt.Sprintf("?partner=%s&utm_campaign=%s&utm_medium=affiliate&utm_source=%s", ss.BuylistAffiliate, ss.BuylistAffiliate, ss.BuylistAffiliate)
+					}
+					ss.buylist.Add(product.UUID, &mtgban.BuylistEntry{
+						Conditions: "INDEX",
+						BuyPrice:   price,
+						URL:        link,
+					})
+				} else {
+					tcgID, _ := strconv.Atoi(product.Identifiers["tcgplayerProductId"])
+					if tcgID != 0 {
+						link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "")
+					}
 
-				ss.inventory.Add(product.UUID, &mtgban.InventoryEntry{
-					Conditions: "INDEX",
-					Price:      price,
-					SellerName: evParameters[i].Name,
-					URL:        link,
-				})
+					ss.inventory.Add(product.UUID, &mtgban.InventoryEntry{
+						Conditions: "INDEX",
+						Price:      price,
+						SellerName: evParameters[i].Name,
+						URL:        link,
+					})
+				}
 			}
 		}
 	}
 
 	ss.inventoryDate = time.Now()
+	ss.buylistDate = time.Now()
 
 	return nil
 }
@@ -392,6 +414,19 @@ func (ss *SealedEVScraper) Inventory() (mtgban.InventoryRecord, error) {
 	}
 
 	return ss.inventory, nil
+}
+
+func (ss *SealedEVScraper) Buylist() (mtgban.BuylistRecord, error) {
+	if len(ss.buylist) > 0 {
+		return ss.buylist, nil
+	}
+
+	err := ss.scrape()
+	if err != nil {
+		return nil, err
+	}
+
+	return ss.buylist, nil
 }
 
 func (ss *SealedEVScraper) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
@@ -447,6 +482,9 @@ func (ss *SealedEVScraper) InitializeInventory(reader io.Reader) error {
 func (tcg *SealedEVScraper) MarketNames() []string {
 	var names []string
 	for _, param := range evParameters {
+		if param.TargetsBuylist {
+			continue
+		}
 		names = append(names, param.Name)
 	}
 	return names
@@ -456,6 +494,7 @@ func (ss *SealedEVScraper) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Sealed EV Scraper"
 	info.Shorthand = "SS"
 	info.InventoryTimestamp = &ss.inventoryDate
+	info.BuylistTimestamp = &ss.buylistDate
 	info.SealedMode = true
 	info.MetadataOnly = true
 	return
