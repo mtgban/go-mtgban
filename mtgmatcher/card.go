@@ -345,7 +345,7 @@ func (c *Card) isGenericPromo() bool {
 			c.Contains("Draft Weekend") || // scg
 			c.Contains("Game Day") ||
 			c.Contains("Gift Box") || // ck+scg
-			c.Contains("Intro Pack") || // scg
+			(c.Contains("Promo") && c.Contains("Intro Pack")) || // scg
 			c.Contains("League") ||
 			c.Contains("Miscellaneous") ||
 			c.Contains("Open House") || // tcg

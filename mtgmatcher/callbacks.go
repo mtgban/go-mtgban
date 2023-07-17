@@ -307,9 +307,9 @@ func variantBeforePlainCard(inCard *Card, card *mtgjson.Card) bool {
 // Intro/Starter deck
 func starterDeckCheck(inCard *Card, card *mtgjson.Card) bool {
 	isStarter := Contains(inCard.Variation, "Starter") || Contains(inCard.Variation, "Intro")
-	if !isStarter && card.HasPromoType(mtgjson.PromoTypeStarterDeck) {
+	if !isStarter && (card.HasPromoType(mtgjson.PromoTypeStarterDeck) || card.IsAlternative) {
 		return true
-	} else if isStarter && !card.HasPromoType(mtgjson.PromoTypeStarterDeck) {
+	} else if isStarter && !card.HasPromoType(mtgjson.PromoTypeStarterDeck) && !card.IsAlternative {
 		return true
 	}
 	return false
