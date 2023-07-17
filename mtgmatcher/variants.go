@@ -2795,6 +2795,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"m20":           "77",
 		"p07":           "13",
 	},
+	"Doomed Traveler": {
+		"2x2": "1095",
+		"cn2": "83",
+	},
 	"Eternal Witness": {
 		"ultimate masters": "1200",
 		"uma":              "1200",

@@ -213,19 +213,18 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		}
 	case "Junior Series Promos":
-		// TCG has a single version but there are multiple ones available
-		// So just preserve whichever is filed in Scryfall
-		ed, found := map[string]string{
-			"Sakura-Tribe Elder": "PJSE",
-			"Shard Phoenix":      "PJSE",
-			"Mad Auntie":         "PJJT",
-		}[cardName]
-		if found {
-			edition = ed
-		} else if variant == "Japan Junior Series" {
+		if variant == "Japan Junior Tournament" {
 			edition = "PJJT"
-		} else if cardName != "Royal Assassin" && len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
-			edition = "PSUS"
+		} else {
+			switch cardName {
+			case "Royal Assassin",
+				"Mad Auntie",
+				"Sakura-Tribe Elder":
+			default:
+				if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
+					edition = "PSUS"
+				}
+			}
 		}
 	case "Judge Promos":
 		switch cardName {
@@ -415,6 +414,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if strings.Contains(ogVariant, "Etched") {
 				variant = "etched"
 			}
+		case "Goblin Lackey",
+			"Goblin Matron",
+			"Goblin Recruiter",
+			"Muxus, Goblin Grandee",
+			"Shattergang Brothers":
+			variant = ogVariant
 		case "Zndrsplt, Eye of Wisdom", "Okaun, Eye of Chaos":
 			variant = ogVariant
 		case "Plague Sliver", "Shadowborn Apostle", "Toxin Sliver", "Virulent Sliver":
