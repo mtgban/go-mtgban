@@ -242,6 +242,11 @@ func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition string) error 
 		}
 
 		for _, product := range result.Products {
+			// Product is not being bought
+			if product.SerialNumber == 99999 {
+				continue
+			}
+
 			cardName := product.ModelEn
 			edition := product.Category
 			price := product.MinAcquisto

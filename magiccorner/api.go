@@ -251,15 +251,16 @@ type MCBuylistResult struct {
 }
 
 type MCProduct struct {
-	ID          string  `json:"Id"`
-	Game        string  `json:"Game"`
-	ModelEn     string  `json:"ModelEn"`
-	Rarity      string  `json:"Rarity"`
-	Category    string  `json:"Category"`
-	Quantity    int     `json:"Quantity"`
-	MinAcquisto float64 `json:"MinAcquisto"`
-	MaxAcquisto float64 `json:"MaxAcquisto"`
-	Language    int     `json:"Language"`
+	ID           string  `json:"Id"`
+	Game         string  `json:"Game"`
+	ModelEn      string  `json:"ModelEn"`
+	Rarity       string  `json:"Rarity"`
+	Category     string  `json:"Category"`
+	Quantity     int     `json:"Quantity"`
+	MinAcquisto  float64 `json:"MinAcquisto"`
+	MaxAcquisto  float64 `json:"MaxAcquisto"`
+	Language     int     `json:"Language"`
+	SerialNumber int     `json:"SerialNumber"`
 }
 
 func (mc *MCClient) GetHotBuylistPage(page int) ([]MCProduct, error) {
