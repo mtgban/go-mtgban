@@ -32,6 +32,7 @@ var EditionTable = map[string]string{
 	"Universes Beyond: Warhammer 40,000":        "Warhammer 40,000 Commander",
 	"Universes Beyond: Warhammer 40k Commander": "Warhammer 40,000 Commander",
 	"The Lord of the Rings Commander":           "Tales of Middle-earth Commander",
+	"LOTR - Realms and Relic Box Topper":        "Tales of Middle-earth Commander",
 
 	// BRR
 	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
