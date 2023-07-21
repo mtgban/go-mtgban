@@ -443,6 +443,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if variant == "Winner" || variant == "Top 8" {
 			return nil, errors.New("untracked")
 		}
+		switch cardName {
+		case "Saruman of Many Colors":
+			edition = "LTR"
+			variant = "300"
+		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
 			edition = "PCEL"
