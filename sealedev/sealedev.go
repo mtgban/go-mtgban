@@ -369,9 +369,8 @@ func (ss *SealedEVScraper) scrape() error {
 					continue
 				}
 
-				var link string
 				if evParameters[i].TargetsBuylist {
-					link = ckBuylistLink
+					link := ckBuylistLink
 					if ss.BuylistAffiliate != "" {
 						link += fmt.Sprintf("?partner=%s&utm_campaign=%s&utm_medium=affiliate&utm_source=%s", ss.BuylistAffiliate, ss.BuylistAffiliate, ss.BuylistAffiliate)
 					}
@@ -381,6 +380,7 @@ func (ss *SealedEVScraper) scrape() error {
 						URL:        link,
 					})
 				} else {
+					var link string
 					tcgID, _ := strconv.Atoi(product.Identifiers["tcgplayerProductId"])
 					if tcgID != 0 {
 						link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "")
