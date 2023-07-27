@@ -10,6 +10,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+const (
+	ckBuylistLink = "https://www.cardkingdom.com/purchasing/mtg_sealed"
+)
+
 type CardkingdomSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -356,7 +360,6 @@ func (ck *CardkingdomSealed) scrape() error {
 			}
 		}
 
-		u, _ = url.Parse("https://www.cardkingdom.com/purchasing/mtg_sealed")
 		buyPrice, err := strconv.ParseFloat(sealed.BuyPrice, 64)
 		if err != nil {
 			ck.printf("%v", err)
@@ -368,7 +371,13 @@ func (ck *CardkingdomSealed) scrape() error {
 				priceRatio = buyPrice / sellPrice * 100
 			}
 
+			u, _ = url.Parse(ckBuylistLink)
 			q := u.Query()
+			q.Set("filter[sort]", "price_desc")
+			q.Set("search", "mtg_advanced")
+			q.Set("filter[name]", sealed.Name)
+			q.Set("filter[edition]", "")
+			q.Set("filter[subtype]", "all")
 			if ck.Partner != "" {
 				q.Set("partner", ck.Partner)
 				q.Set("utm_source", ck.Partner)
