@@ -88,6 +88,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			return nil, errors.New("unofficial")
 		} else if product.isToken() && strings.Contains(product.CleanName, "Double") {
 			return nil, errors.New("duplicate")
+		} else if strings.Contains(edition, "Tales of Middle-earth") && strings.HasSuffix(cardName, "Scene") {
+			return nil, errors.New("unsupported")
 		}
 	}
 
