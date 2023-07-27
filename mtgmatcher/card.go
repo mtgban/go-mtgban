@@ -381,7 +381,7 @@ func (c *Card) isPromoPack() bool {
 	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
 		Contains(c.Variation, "Planeswalker Stamp") ||
-		strings.HasSuffix(ExtractNumber(c.Variation), "p")
+		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
 }
 
 func (c *Card) isPlayPromo() bool {

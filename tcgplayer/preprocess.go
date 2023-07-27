@@ -80,6 +80,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				return nil, errors.New("non english")
 			}
 		}
+	case "Tarmogoyf":
+		if variant == "JP Exclusive" {
+			variant = ""
+		}
 	default:
 		if strings.Contains(variant, "JP Amazon Exclusive") ||
 			strings.Contains(variant, "SEA Exclusive") ||

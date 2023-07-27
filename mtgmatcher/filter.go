@@ -42,6 +42,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			case "30th Anniversary History Japanese Promos",
 				"30th Anniversary History Promos",
+				"30th Anniversary Misc Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -103,6 +104,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			case "30th Anniversary History Japanese Promos",
 				"30th Anniversary History Promos",
+				"30th Anniversary Misc Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -336,6 +338,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "URL/Convention Promos":
 			case "30th Anniversary History Japanese Promos",
 				"30th Anniversary History Promos",
+				"30th Anniversary Misc Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -432,6 +435,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			case "30th Anniversary History Japanese Promos",
 				"30th Anniversary History Promos",
+				"30th Anniversary Misc Promos",
 				"30th Anniversary Play Promos":
 				continue
 			default:
@@ -541,6 +545,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if !inCard.isJPN() {
 					continue
 				}
+			case "P30M":
 			default:
 				continue
 			}
