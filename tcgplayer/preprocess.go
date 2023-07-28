@@ -224,7 +224,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		} else {
 			switch cardName {
 			case "Royal Assassin",
-				"Mad Auntie",
 				"Sakura-Tribe Elder":
 			default:
 				if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
@@ -425,7 +424,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			"Goblin Recruiter",
 			"Muxus, Goblin Grandee",
 			"Shattergang Brothers":
-			variant = ogVariant
+			variant += " " + ogVariant
 		case "Zndrsplt, Eye of Wisdom", "Okaun, Eye of Chaos":
 			variant = ogVariant
 		case "Plague Sliver", "Shadowborn Apostle", "Toxin Sliver", "Virulent Sliver":
@@ -491,6 +490,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"Secret Lair Commander: Heads I Win, Tails You Lose",
 		"Secret Lair Commander: From Cute to Brute",
 		"Mystery Booster Cards",
+		"MagicFest Cards",
 		"": // cosmetic
 		// Variants are fine as is
 	default:
