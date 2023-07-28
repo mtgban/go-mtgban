@@ -352,15 +352,6 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
-		Id:   "e771d473-2b2e-54c9-824e-1e309cdf42ec",
-		Desc: "etched_different_number",
-		In: Card{
-			Name:      "Demonlord Belzenlok",
-			Variation: "Foil Etched",
-			Edition:   "Secret Lair Drop Series",
-		},
-	},
-	{
 		Id:   "a494d14e-b4c3-5467-8af5-bad8b41da09a_f",
 		Desc: "number_and_foil_same_line",
 		In: Card{
@@ -368,9 +359,29 @@ var MatchTests = []MatchTest{
 			Edition: "10th Edition",
 		},
 	},
+
+	// Number duplicates prefetching
+	{
+		Id:   "eeeea359-07bc-5a6e-937a-c581e6097d0d",
+		Desc: "duplicates_number_and_tag_etched",
+		In: Card{
+			Name:      "Griselbrand",
+			Variation: "160 Etched",
+			Edition:   "SLD",
+		},
+	},
+	{
+		Id:   "e771d473-2b2e-54c9-824e-1e309cdf42ec",
+		Desc: "duplicates_tag_etched_only",
+		In: Card{
+			Name:      "Demonlord Belzenlok",
+			Variation: "Foil Etched",
+			Edition:   "Secret Lair Drop Series",
+		},
+	},
 	{
 		Id:   "2c28317d-3a8b-56ce-9467-e52270a234ea",
-		Desc: "extra_phi_for_compleat_with_num",
+		Desc: "duplicates_number_and_tag_compleat",
 		In: Card{
 			Name:      "Shadowborn Apostle",
 			Variation: "681 Step-and-Compleat Foil",
@@ -379,11 +390,30 @@ var MatchTests = []MatchTest{
 	},
 	{
 		Id:   "7f054dc5-611f-5cf9-8211-7106a158f84e",
-		Desc: "extra_phi_for_complea_without_numt",
+		Desc: "duplicates_tag_compleat_only",
 		In: Card{
 			Name:      "Virulent Sliver",
 			Variation: "Extended Art Step-and-Compleat Foil",
 			Edition:   "Secret Lair Drop Series",
+		},
+	},
+	{
+		Id:   "61158e3c-73ed-5fdc-80b4-67ce53f7d249",
+		Desc: "duplicates_number_and_tag_rainbow",
+		In: Card{
+			Name:      "Shattergang Brothers",
+			Variation: "1315 Rainbow Foil",
+			Edition:   "SLD",
+			Foil:      true,
+		},
+	},
+	{
+		Id:   "f32e01cc-5930-5319-a6c0-72628a1f571a",
+		Desc: "duplicates_number_only",
+		In: Card{
+			Name:      "Shattergang Brothers",
+			Variation: "1315",
+			Edition:   "SLD",
 		},
 	},
 
