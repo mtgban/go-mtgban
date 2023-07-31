@@ -702,14 +702,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					possibleSuffixes = append(possibleSuffixes, fields...)
 
 					// Short circuit the possible suffixes if we know what we're dealing with
-					if inCard.isJPN() {
-						switch set.Code {
-						case "WAR":
-							possibleSuffixes = []string{mtgjson.SuffixSpecial}
-						case "PWAR":
-							possibleSuffixes = []string{"s" + mtgjson.SuffixSpecial}
-						}
-					} else if inCard.isPrerelease() {
+					if inCard.isPrerelease() {
 						possibleSuffixes = append(possibleSuffixes, "s")
 					} else if inCard.isPromoPack() {
 						possibleSuffixes = append(possibleSuffixes, "p")
@@ -721,31 +714,14 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						default:
 							possibleSuffixes = []string{"z"}
 						}
-					} else if inCard.isStepAndCompleat() && set.Code == "SLD" {
-						possibleSuffixes = []string{"φ"}
 					}
 
-					// BFZ and ZEN intro lands non-fullart always have this
-					if inCard.isBasicNonFullArt() {
-						possibleSuffixes = append(possibleSuffixes, "a")
-					}
-
-					// 40K could have numbers reported alongside the surge tag
-					if inCard.isSurgeFoil() && !inCard.isThickDisplay() {
-						// Exclude the first 8 cards that do not have the special suffix
-						cn, err := strconv.Atoi(card.Number)
-						if err != nil || cn > 8 {
-							possibleSuffixes = []string{mtgjson.SuffixSpecial}
-						}
-					}
-
-					// Some editions duplicate foil and nonfoil in the same set
-					if inCard.Foil {
-						switch set.Code {
-						case "7ED", "8ED", "9ED":
-							possibleSuffixes = []string{mtgjson.SuffixSpecial}
-						case "10E", "UNH":
-							possibleSuffixes = []string{"", mtgjson.SuffixSpecial}
+					// Check if edition-specific numbers need special suffixes
+					numFilterFunc, found := numberFilterCallbacks[set.Code]
+					if found {
+						overrides := numFilterFunc(inCard)
+						if overrides != nil {
+							possibleSuffixes = overrides
 						}
 					}
 

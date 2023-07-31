@@ -35,6 +35,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"7ED": foilCheck,
 	"10E": foilCheck,
 	"UNH": foilCheck,
+	"40K": foilCheck,
 
 	"DKM": deckmastersVariant,
 	"UST": singleLetterVariant,
@@ -642,4 +643,71 @@ func reskinDraculaCheck(inCard *Card, card *mtgjson.Card) bool {
 		return true
 	}
 	return false
+}
+
+type numberFilterCallback func(inCard *Card) []string
+
+var numberFilterCallbacks = map[string]numberFilterCallback{
+	// Some editions duplicate foil and nonfoil in the same set
+	"7ED": duplicateEveryFoil,
+	"8ED": duplicateEveryFoil,
+	"9ED": duplicateEveryFoil,
+
+	// These editions duplicate foil and nonfoil for some cards only
+	"10E": duplicateSomeFoil,
+	"UNH": duplicateSomeFoil,
+	"FRF": duplicateSomeFoil,
+	"ONS": duplicateSomeFoil,
+
+	// BFZ and ZEN intro lands non-fullart always have this
+	"ZEN": duplicateBasicLands,
+	"BFZ": duplicateBasicLands,
+
+	// JPN planeswalkers
+	"WAR":  duplicateJPNPlaneswalkers,
+	"PWAR": duplicateJPNPlaneswalkers,
+
+	// 40K could have numbers reported alongside the surge tag
+	"40K": duplicateSomeFoil,
+
+	// This is a mess
+	"SLD": duplicateSLD,
+}
+
+func duplicateEveryFoil(inCard *Card) []string {
+	if inCard.Foil {
+		return []string{mtgjson.SuffixSpecial}
+	}
+	return nil
+}
+
+func duplicateSomeFoil(inCard *Card) []string {
+	if inCard.Foil {
+		return []string{mtgjson.SuffixSpecial, ""}
+	}
+	return nil
+}
+
+func duplicateBasicLands(inCard *Card) []string {
+	if inCard.isBasicNonFullArt() {
+		return []string{"a"}
+	}
+	return nil
+}
+
+func duplicateJPNPlaneswalkers(inCard *Card) []string {
+	if inCard.isJPN() {
+		return []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
+	}
+	return nil
+}
+
+func duplicateSLD(inCard *Card) []string {
+	if inCard.isStepAndCompleat() {
+		return []string{"φ"}
+	}
+	if inCard.Foil || inCard.isEtched() {
+		return []string{mtgjson.SuffixSpecial, ""}
+	}
+	return nil
 }
