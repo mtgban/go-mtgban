@@ -75,15 +75,6 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
-		Desc: "missing_variant",
-		Err:  ErrCardMissingVariant,
-		In: Card{
-			Name:      "Arcane Denial",
-			Variation: "",
-			Edition:   "Alliances",
-		},
-	},
-	{
 		Desc: "invalid_id",
 		Err:  ErrCardDoesNotExist,
 		In: Card{

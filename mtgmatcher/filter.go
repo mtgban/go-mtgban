@@ -1009,8 +1009,15 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
-			cardFilterFunc, foundSimple := simpleFilterCallbacks[setCode]
-			cardFilterFuncs, foundComplex := complexFilterCallbacks[setCode]
+			outCards = append(outCards, card)
+		}
+	}
+
+	if len(outCards) > 1 {
+		var filteredOutCards []mtgjson.Card
+		for _, card := range outCards {
+			cardFilterFunc, foundSimple := simpleFilterCallbacks[card.SetCode]
+			cardFilterFuncs, foundComplex := complexFilterCallbacks[card.SetCode]
 			if foundSimple {
 				if cardFilterFunc(inCard, &card) {
 					continue
@@ -1034,7 +1041,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
-			outCards = append(outCards, card)
+			filteredOutCards = append(filteredOutCards, card)
+		}
+
+		// Don't throw away what was found if filtering checks is too aggressive
+		if len(filteredOutCards) > 0 {
+			outCards = filteredOutCards
 		}
 	}
 
