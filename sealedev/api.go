@@ -69,8 +69,11 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 			directPrice = basedirect.Regular + basedirect.Foil + basedirect.Etched
 		}
 
-		if basePrice != 0 && directPrice > 100*basePrice {
-			delete(response.Buylist[uuid], "TCGDirectNet")
+		// Cap maximum price to twice as much tcg low
+		if basePrice != 0 && directPrice > 2*basePrice {
+			response.Buylist[uuid]["TCGDirectNet"].Regular = response.Retail[uuid]["TCG Low"].Regular * 2
+			response.Buylist[uuid]["TCGDirectNet"].Foil = response.Retail[uuid]["TCG Low"].Foil * 2
+			response.Buylist[uuid]["TCGDirectNet"].Etched = response.Retail[uuid]["TCG Low"].Etched * 2
 			delete(response.Retail[uuid], "TCG Direct")
 		}
 	}
