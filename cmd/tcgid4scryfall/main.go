@@ -89,6 +89,7 @@ func processCards(channel chan<- responseChan, page int) error {
 				Quantity:   1,
 				SellerName: "tcg",
 				OriginalId: fmt.Sprint(product.ProductId),
+				InstanceId: fmt.Sprint(page),
 			},
 		}
 
