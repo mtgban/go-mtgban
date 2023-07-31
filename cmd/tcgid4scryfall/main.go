@@ -143,7 +143,7 @@ func run() int {
 			return 1
 		}
 		fmt.Fprintln(os.Stderr, "Found", totals, "products")
-		start = 0
+		start = *StepStartOpt
 		end = totals
 	}
 
