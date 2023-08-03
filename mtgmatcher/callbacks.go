@@ -100,11 +100,11 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
-	"BRR": []cardFilterCallback{serializedCheck, schematicCheck},
-	"DMR": []cardFilterCallback{launchPromoInSet, releaseRetroCheck},
-	"VOW": []cardFilterCallback{wpnCheck, reskinDraculaCheck},
-	"SLD": []cardFilterCallback{sldVariant, etchedCheck, thickDisplayCheck},
-	"CMR": []cardFilterCallback{variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+	"BRR": {serializedCheck, schematicCheck},
+	"DMR": {launchPromoInSet, releaseRetroCheck},
+	"VOW": {wpnCheck, reskinDraculaCheck},
+	"SLD": {sldVariant, etchedCheck, thickDisplayCheck},
+	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
 }
 
 func lightDarkManaCost(inCard *Card, card *mtgjson.Card) bool {
