@@ -29,10 +29,13 @@ var EditionTable = map[string]string{
 	"Summer Magic":          "Summer Magic / Edgar",
 
 	// Universes Beyond
-	"Universes Beyond: Warhammer 40,000":        "Warhammer 40,000 Commander",
-	"Universes Beyond: Warhammer 40k Commander": "Warhammer 40,000 Commander",
-	"The Lord of the Rings Commander":           "Tales of Middle-earth Commander",
-	"LOTR - Realms and Relic Box Topper":        "Tales of Middle-earth Commander",
+	"Universes Beyond: Warhammer 40,000":           "Warhammer 40,000 Commander",
+	"Universes Beyond: Warhammer 40k Commander":    "Warhammer 40,000 Commander",
+	"The Lord of the Rings Commander - Serialized": "Tales of Middle-earth Commander",
+	"The Lord of the Rings Commander - Surge Foil": "Tales of Middle-earth Commander",
+	"The Lord of the Rings Commander - Variants":   "Tales of Middle-earth Commander",
+	"The Lord of the Rings Commander":              "Tales of Middle-earth Commander",
+	"LOTR - Realms and Relic Box Topper":           "Tales of Middle-earth Commander",
 
 	// BRR
 	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
