@@ -418,7 +418,8 @@ func (c *Card) isStepAndCompleat() bool {
 }
 
 func (c *Card) isOilSlick() bool {
-	return Contains(c.Variation, "Slick")
+	return strings.Contains(strings.ToLower(c.Variation), "slick") ||
+		strings.Contains(strings.ToLower(c.Edition), "slick")
 }
 
 func (c *Card) isConcept() bool {
@@ -768,12 +769,13 @@ func (c *Card) isGalaxyFoil() bool {
 }
 
 func (c *Card) isSurgeFoil() bool {
-	return strings.Contains(c.Variation, "Surge") ||
-		strings.Contains(c.Variation, "surge")
+	return strings.Contains(strings.ToLower(c.Variation), "surge") ||
+		strings.Contains(strings.ToLower(c.Edition), "surge")
 }
 
 func (c *Card) isSerialized() bool {
-	return c.Contains("Serial")
+	return strings.Contains(strings.ToLower(c.Variation), "serial") ||
+		strings.Contains(strings.ToLower(c.Edition), "serial")
 }
 
 func (c *Card) possibleNumberSuffix() string {

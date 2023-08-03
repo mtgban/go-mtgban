@@ -1271,6 +1271,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Streets of New Capenna",
 		},
 	},
+	{
+		Id:   "4c10387e-abef-5de0-990f-053af3a67ff4",
+		Desc: "rename_aliasing_oilslick",
+		In: Card{
+			Name:      "Etali, Primal Conqueror // Etali, Primal Sicknes",
+			Variation: "// Etali, Primal Sickness Showcase",
+			Edition:   "March of the Machine",
+		},
+	},
 
 	// Reskinned frame
 	{
