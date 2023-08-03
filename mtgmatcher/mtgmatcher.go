@@ -1101,6 +1101,11 @@ func adjustEdition(inCard *Card) {
 			if inCard.isShowcase() && !inCard.isPrerelease() {
 				variation += " Prerelease"
 			}
+		// There are three Prerelease editions across two editions
+		case "Delighted Halfling":
+			if inCard.isBorderless() && !inCard.isPrerelease() {
+				variation += " Prerelease"
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps

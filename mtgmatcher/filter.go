@@ -45,6 +45,19 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				"30th Anniversary Misc Promos",
 				"30th Anniversary Play Promos":
 				continue
+			case "The Lord of the Rings: Tales of Middle-earth":
+				skip := true
+				foundCards := MatchInSet(inCard.Name, setCode)
+				for _, card := range foundCards {
+					if card.HasPromoType(mtgjson.PromoTypePrerelease) {
+						skip = false
+						break
+					}
+				}
+
+				if skip {
+					continue
+				}
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
@@ -813,6 +826,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					// BaB are allowed to have borderless, same as a few foiling types
 				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) &&
 					!card.HasPromoType(mtgjson.PromoTypeTextured) &&
+					!card.HasFrameEffect(mtgjson.FrameEffectShowcase) &&
 					!card.HasFrameEffect(mtgjson.FrameEffectShattered) &&
 					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) &&
 					!card.HasPromoType(mtgjson.PromoTypeOilSlick) &&

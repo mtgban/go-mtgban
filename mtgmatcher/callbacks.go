@@ -97,6 +97,9 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"ALA": showcaseCheck,
 
 	"IKO": reskinGodzillaCheck,
+
+	"LTR":  lotrTripleFiltering,
+	"PLTR": lotrTripleFiltering,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
@@ -105,6 +108,29 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+}
+
+func lotrTripleFiltering(inCard *Card, card *mtgjson.Card) bool {
+	switch card.Name {
+	case "Delighted Halfling",
+		"Lobelia Sackville-Baggins",
+		"Frodo Baggins",
+		"Bilbo, Retired Burglar",
+		"Gandalf, Friend of the Shire",
+		"Wizard's Rockets":
+		num := ExtractNumber(inCard.Variation)
+		if num != "" && (Contains(inCard.Edition, "Prerelease") || Contains(inCard.Edition, "Promo")) {
+			return card.SetCode != "PLTR"
+		}
+		if inCard.Contains("Stamp") {
+			if !inCard.Contains("No") && card.SetCode != "PLTR" {
+				return true
+			} else if inCard.Contains("No") && card.SetCode == "PLTR" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func lightDarkManaCost(inCard *Card, card *mtgjson.Card) bool {

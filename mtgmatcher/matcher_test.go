@@ -3924,6 +3924,57 @@ var MatchTests = []MatchTest{
 			Edition:   "The Brothers' War Retro Artifacts",
 		},
 	},
+
+	// LotR
+	{
+		Id:   "3b598e5f-d03f-5627-b70a-c2713065737e",
+		Desc: "prerelease_in_set_normal_nonfoil",
+		In: Card{
+			Name:      "Delighted Halfling",
+			Variation: "Borderless",
+			Edition:   "The Lord of the Rings",
+		},
+	},
+	{
+		Id:   "3b598e5f-d03f-5627-b70a-c2713065737e_f",
+		Desc: "prerelease_in_set_normal_foil",
+		In: Card{
+			Name:      "Delighted Halfling",
+			Variation: "Borderless",
+			Edition:   "The Lord of the Rings",
+			Foil:      true,
+		},
+	},
+	{
+		Id:   "c830ff03-0753-5454-86b9-bb1ac22f8ddd",
+		Desc: "prerelease_in_set_promos_no_number",
+		In: Card{
+			Name:      "Delighted Halfling",
+			Variation: "Borderless Stamped",
+			Edition:   "The Lord of the Rings Prerelease",
+			Foil:      true,
+		},
+	},
+	{
+		Id:   "c830ff03-0753-5454-86b9-bb1ac22f8ddd",
+		Desc: "prerelease_in_set_promos_number",
+		In: Card{
+			Name:      "Delighted Halfling",
+			Variation: "402",
+			Edition:   "The Lord of the Rings Prerelease",
+			Foil:      true,
+		},
+	},
+	{
+		Id:   "f154f3d9-bf7b-563e-8971-cc1d0202da72_f",
+		Desc: "prerelease_in_set_normal_custom",
+		In: Card{
+			Name:      "Gandalf, Friend of the Shire",
+			Variation: "No-Stamp Prerelease Foil",
+			Edition:   "Promotional",
+			Foil:      true,
+		},
+	},
 }
 
 func TestMain(m *testing.M) {
