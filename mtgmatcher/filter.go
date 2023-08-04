@@ -818,31 +818,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 			} else if setDate.After(PromosForEverybodyYay) && !inCard.isMysteryList() {
-				// ELD-Style borderless
-				if inCard.isBorderless() {
-					if card.BorderColor != mtgjson.BorderColorBorderless {
-						continue
-					}
-					// BaB are allowed to have borderless, same as a few foiling types
-				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) &&
-					!card.HasPromoType(mtgjson.PromoTypeTextured) &&
-					!card.HasFrameEffect(mtgjson.FrameEffectShowcase) &&
-					!card.HasFrameEffect(mtgjson.FrameEffectShattered) &&
-					!card.HasPromoType(mtgjson.PromoTypeBundle) &&
-					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) &&
-					!card.HasPromoType(mtgjson.PromoTypeOilSlick) &&
-					!card.HasPromoType(mtgjson.PromoTypeStepAndCompleat) &&
-					!card.HasPromoType(mtgjson.PromoTypeConcept) &&
-					!card.HasPromoType(mtgjson.PromoTypeThickDisplay) &&
-					!card.IsDFCSameName() {
-					// IKO may have showcase cards which happen to be borderless
-					// or reskinned ones.
-					if card.BorderColor == mtgjson.BorderColorBorderless &&
-						!card.HasFrameEffect(mtgjson.FrameEffectShowcase) && card.FlavorName == "" {
-						continue
-					}
-				}
-
 				// ELD-Style extended art
 				if inCard.isExtendedArt() {
 					if !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
@@ -1090,6 +1065,22 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 		outCards = filteredOutCards
 	} else if len(outCards) > 1 && ExtractNumber(inCard.Variation) == "" {
+		// If above filters were not enough, check the boder, but dont skip card if it's showcase
+		if len(outCards) > 1 {
+			var filteredOutCards []mtgjson.Card
+			for _, card := range outCards {
+				if borderlessCheck(inCard, &card) {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
+			}
+
+			// Don't throw away what was found if filtering checks are too aggressive
+			if len(filteredOutCards) > 0 {
+				outCards = filteredOutCards
+			}
+		}
+
 		// If above filters were not enough, check the frameEffect
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgjson.Card

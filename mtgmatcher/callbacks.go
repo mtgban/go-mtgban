@@ -635,6 +635,15 @@ func lubuPrereleaseVariant(inCard *Card, card *mtgjson.Card) bool {
 	return false
 }
 
+func borderlessCheck(inCard *Card, card *mtgjson.Card) bool {
+	if inCard.isBorderless() && card.BorderColor != mtgjson.BorderColorBorderless {
+		return true
+	} else if !inCard.isBorderless() && card.BorderColor == mtgjson.BorderColorBorderless && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+		return true
+	}
+	return false
+}
+
 func showcaseCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.isShowcase() && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 		return true
