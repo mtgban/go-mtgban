@@ -1,5 +1,87 @@
 package cardtrader
 
+var id2edition = map[int]string{
+	// Wasteland
+	19144: "G10",
+	10702: "J15",
+	// Demonic Tutor
+	21492: "G08",
+	62651: "J20",
+	// Vampiric Tutor
+	30009: "G00",
+	2515:  "J18",
+	// Vindicate
+	14713: "J13",
+	22805: "G07",
+	// Lightning Bolt
+	32746: "JGP",
+	// Sol Ring
+	58550: "PF19",
+
+	// Goblin Warchief
+	23929: "F06",
+	8503:  "F16",
+
+	// Sylvan Ranger
+	19128: "PW10",
+	17634: "PW11",
+	// Fling
+	19129: "PW10",
+	17635: "PW11",
+
+	// Arena Forest
+	34697: "PARL",
+	31629: "PAL99",
+	29998: "PAL00",
+	29063: "PAL01",
+	29053: "PAL01",
+	27023: "PAL03",
+	25893: "PAL04",
+	24945: "PAL05",
+	23843: "PAL06",
+
+	// Arena Island
+	34700: "PARL",
+	31627: "PAL99",
+	30001: "PAL00",
+	29061: "PAL01",
+	27844: "PAL02",
+	27026: "PAL03",
+	25896: "PAL04",
+	24948: "PAL05",
+	23846: "PAL06",
+
+	// Arena Mountain
+	34698: "PARL",
+	31625: "PAL99",
+	29999: "PAL00",
+	29059: "PAL01",
+	27024: "PAL03",
+	25894: "PAL04",
+	24946: "PAL05",
+	23844: "PAL06",
+
+	// Arena Plains
+	34701: "PARL",
+	31623: "PAL99",
+	30002: "PAL00",
+	29057: "PAL01",
+	27027: "PAL03",
+	25897: "PAL04",
+	24949: "PAL05",
+	23847: "PAL06",
+
+	// Arena Swamp
+	34699: "PARL",
+	31621: "PAL99",
+	30000: "PAL00",
+	29055: "PAL01",
+	27025: "PAL03",
+	25895: "PAL04",
+	24947: "PAL05",
+	23845: "PAL06",
+}
+
 var pmpsTable = map[string]string{
 	"117":   "2005 288",
 	"44581": "2005 290",
