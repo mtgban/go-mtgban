@@ -855,26 +855,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 
-				// ELD-Style showcase
-				if inCard.isShowcase() || inCard.isGilded() {
-					if !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
-						continue
-					}
-					//
-				} else if !card.HasPromoType(mtgjson.PromoTypeOilSlick) &&
-					// Every card in this set is tagged as showcase
-					card.SetCode != "MUL" &&
-					// Halo foil may be showcase
-					!card.HasPromoType(mtgjson.PromoTypeHaloFoil) &&
-					// Phyrexian cards _may_ be showcase sometimes
-					card.Language != mtgjson.LanguagePhyrexian {
-					// NEO has showcase cards that aren't marked as such when they are Etched
-					// same for DMU and Textured
-					if card.HasFrameEffect(mtgjson.FrameEffectShowcase) && !inCard.isEtched() && !inCard.isTextured() {
-						continue
-					}
-				}
-
 				// ELD-Style bundle
 				if inCard.isBundle() && !card.HasPromoType(mtgjson.PromoTypeBundle) {
 					continue
@@ -1109,6 +1089,22 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 		}
 
 		outCards = filteredOutCards
+	} else if len(outCards) > 1 && ExtractNumber(inCard.Variation) == "" {
+		// If above filters were not enough, check the frameEffect
+		if len(outCards) > 1 {
+			var filteredOutCards []mtgjson.Card
+			for _, card := range outCards {
+				if showcaseCheck(inCard, &card) {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
+			}
+
+			// Don't throw away what was found if filtering checks are too aggressive
+			if len(filteredOutCards) > 0 {
+				outCards = filteredOutCards
+			}
+		}
 	}
 
 	return

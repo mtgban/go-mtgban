@@ -3782,6 +3782,15 @@ var MatchTests = []MatchTest{
 			Foil:      true,
 		},
 	},
+	{
+		Id:   "cd122077-902e-5cce-a873-30da9a058930",
+		Desc: "borderless_and_showcase",
+		In: Card{
+			Name:      "Spark Rupture",
+			Variation: "Borderless",
+			Edition:   "MAT",
+		},
+	},
 
 	// Simplified Chinese Alt Art
 	{
