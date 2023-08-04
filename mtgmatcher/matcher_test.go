@@ -3832,7 +3832,7 @@ var MatchTests = []MatchTest{
 	},
 	{
 		Id:   "0ee3c442-0b35-5dec-8693-c4d0875c6e47",
-		Desc: "shatteredglass",
+		Desc: "shatteredglass_yes",
 		In: Card{
 			Name:      "Megatron, Tyrant // Megatron, Destructive Force",
 			Variation: "Shattered Glass",
