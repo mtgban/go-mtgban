@@ -529,18 +529,12 @@ func laquatusMisprint(inCard *Card, card *mtgjson.Card) bool {
 	switch card.Name {
 	case "Laquatus's Champion":
 		if Contains(inCard.Variation, "dark") {
-			if card.Number != "67†a" {
-				return true
-			}
-		} else if Contains(inCard.Variation, "misprint") {
-			if card.Number != "67†" {
-				return true
-			}
-		} else {
-			if card.Number != "67" {
-				return true
-			}
+			return card.Number != "67†a"
 		}
+		if Contains(inCard.Variation, "misprint") {
+			return card.Number != "67†"
+		}
+		return card.Number != "67"
 	}
 	return false
 }
