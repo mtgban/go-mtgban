@@ -221,7 +221,10 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	case "Alpha", "Beta", "Unlimited", "3rd Edition", "4th Edition",
 		"Antiquities", "Fallen Empires", "Alliances", "Homelands",
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
-		"Unstable", "Unglued", "Unfinity", "Portal II":
+		"Unstable", "Unglued", "Unfinity", "Portal II",
+		"The Lord of the Rings: Tales of Middle-earth",
+		"The Lord of the Rings: Tales of Middle-earth Commander Decks",
+		"The Lord of the Rings: Tales of Middle-earth Variants":
 		variation = number
 
 	case "Secret Lair":
