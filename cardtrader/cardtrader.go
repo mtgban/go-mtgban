@@ -94,9 +94,6 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			product.Properties.Altered:
 			continue
 		case mtgmatcher.Contains(product.Description, "ita"),
-			mtgmatcher.Contains(product.Description, "signed"),
-			mtgmatcher.Contains(product.Description, "inked"),
-			mtgmatcher.Contains(product.Description, "stamp"),
 			mtgmatcher.Contains(product.Description, "mix"):
 			continue
 		}
@@ -115,9 +112,14 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 
 		cond := product.Properties.Condition
-		if product.Properties.Signed {
-			cond = "Heavily Played"
+		if product.Properties.Signed ||
+			mtgmatcher.Contains(product.Description, "signed") ||
+			mtgmatcher.Contains(product.Description, "inked") ||
+			mtgmatcher.Contains(product.Description, "stamp") ||
+			mtgmatcher.Contains(product.Description, "water") {
+			cond = "Poor"
 		}
+
 		conditions, found := condMap[cond]
 		if !found {
 			return fmt.Errorf("unsupported %s condition", cond)
