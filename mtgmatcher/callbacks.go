@@ -429,13 +429,12 @@ func serializedCheck(inCard *Card, card *mtgjson.Card) bool {
 	return false
 }
 
+// This check skips serialized cards as their collector numbers would not match
 func schematicCheck(inCard *Card, card *mtgjson.Card) bool {
-	// Skip check for serialized cards as collector numbers would not match
-	if inCard.isSerialized() {
+	cn, err := strconv.Atoi(card.Number)
+	if err != nil {
 		return false
 	}
-
-	cn, _ := strconv.Atoi(card.Number)
 	isSchematic := inCard.Contains("Schematic") || inCard.Contains("Blueprint")
 	if isSchematic && cn < 64 {
 		return true
