@@ -3975,6 +3975,14 @@ var MatchTests = []MatchTest{
 			Foil:      true,
 		},
 	},
+	{
+		Id:   "86b023d0-5971-5ecd-9478-eeecf3fd8b80_f",
+		Desc: "bundle_and_borderless",
+		In: Card{
+			Name:      "The One Ring",
+			Variation: "Bundle Foil",
+		},
+	},
 }
 
 func TestMain(m *testing.M) {

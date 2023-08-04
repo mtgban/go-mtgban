@@ -828,6 +828,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					!card.HasPromoType(mtgjson.PromoTypeTextured) &&
 					!card.HasFrameEffect(mtgjson.FrameEffectShowcase) &&
 					!card.HasFrameEffect(mtgjson.FrameEffectShattered) &&
+					!card.HasPromoType(mtgjson.PromoTypeBundle) &&
 					!card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) &&
 					!card.HasPromoType(mtgjson.PromoTypeOilSlick) &&
 					!card.HasPromoType(mtgjson.PromoTypeStepAndCompleat) &&
