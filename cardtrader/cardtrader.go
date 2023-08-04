@@ -88,11 +88,11 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			continue
 		}
 
-		if product.Quantity < 1 || product.OnVacation || product.Properties.Altered {
-			continue
-		}
-
 		switch {
+		case product.Quantity < 1,
+			product.OnVacation,
+			product.Properties.Altered:
+			continue
 		case mtgmatcher.Contains(product.Description, "ita"),
 			mtgmatcher.Contains(product.Description, "signed"),
 			mtgmatcher.Contains(product.Description, "inked"),
@@ -117,9 +117,6 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		cond := product.Properties.Condition
 		if product.Properties.Signed {
 			cond = "Heavily Played"
-		}
-		if product.Properties.Altered {
-			continue
 		}
 		conditions, found := condMap[cond]
 		if !found {
