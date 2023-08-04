@@ -2824,12 +2824,20 @@ var mb1plistVariants = map[string]map[string]string{
 	"Fiery Gambit": {
 		"foil": "49",
 	},
+	"Forest": {
+		"198 - hour of devastation": "93",
+		"199 - hour of devastation": "94",
+		"268 - amonkhet":            "95",
+	},
 	"Frontier Bivouac": {
 		"c17": "1669",
 	},
 	"Fireball": {
 		"iconic masters": "926",
 		"ima":            "926",
+	},
+	"Gisa and Geralf": {
+		"": "630",
 	},
 	"Great Furnace": {
 		"mirrodin":                  "1013",
@@ -4401,6 +4409,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Foreign Black Border":                ed3Variants,
 	"Fourth Edition Foreign Black Border": ed4Variants,
 	"Fourth Edition":                      ed4Variants,
+	"From Cute to Brute":                  mb1plistVariants,
 	"GRN Ravnica Weekend":                 prwkVariants,
 	//"Heads I Win, Tails You Lose":          mb1plistVariants,
 	"Homelands":                            hmlVariants,
