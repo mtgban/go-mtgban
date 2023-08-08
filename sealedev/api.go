@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 type BanPrice struct {
@@ -55,8 +56,9 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 		return nil, errors.New(response.Error)
 	}
 
-	// Remove outliers from Direct
-	for uuid := range response.Buylist {
+	uuids := mtgmatcher.GetUUIDs()
+	for _, uuid := range uuids {
+		// Remove outliers from Direct
 		var basePrice float64
 		basetcg, found := response.Retail[uuid]["TCG Low"]
 		if found {
@@ -76,9 +78,60 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 			response.Buylist[uuid]["TCGDirectNet"].Etched = response.Retail[uuid]["TCG Low"].Etched * 2
 			delete(response.Retail[uuid], "TCG Direct")
 		}
+
+		// Add bulk pricing
+		_, found = response.Buylist[uuid]["CK"]
+		if !found {
+			co, _ := mtgmatcher.GetUUID(uuid)
+			price := bulkBuylist(co)
+			if response.Buylist[uuid] == nil {
+				response.Buylist[uuid] = map[string]*BanPrice{}
+			}
+			if response.Buylist[uuid]["CK"] == nil {
+				response.Buylist[uuid]["CK"] = &BanPrice{}
+			}
+			if co.Etched {
+				response.Buylist[uuid]["CK"].Etched = price
+			} else if co.Foil {
+				response.Buylist[uuid]["CK"].Foil = price
+			} else {
+				response.Buylist[uuid]["CK"].Regular = price
+			}
+		}
 	}
 
 	return &response, nil
+}
+
+func bulkBuylist(co *mtgmatcher.CardObject) float64 {
+	var price float64
+	switch co.Rarity {
+	case "mythic":
+		price = 0.30
+		if co.Foil {
+			price = 0.25
+		}
+	case "rare":
+		price = 0.08
+		if co.Foil {
+			price = 0.15
+		}
+	case "common", "uncommon":
+		price = 5.0 / 1000
+		if co.Foil {
+			price = 0.02
+		}
+	default:
+		if co.IsPromo {
+			price = 0.05
+		} else if mtgmatcher.IsBasicLand(co.Name) {
+			price = 0.01
+			if co.Foil {
+				price = 0.10
+			}
+		}
+	}
+	return price
 }
 
 func valueInBooster(uuids []string, prices map[string]map[string]*BanPrice, source string) float64 {
