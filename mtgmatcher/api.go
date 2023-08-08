@@ -8,8 +8,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
-func GetUUIDs() map[string]CardObject {
-	return backend.UUIDs
+func GetUUIDs() []string {
+	return backend.AllUUIDs
 }
 
 func GetUUID(uuid string) (*CardObject, error) {
