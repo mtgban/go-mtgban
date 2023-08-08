@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/jmcvetta/randutil"
@@ -20,7 +21,7 @@ var ColorOpt *string
 type Pick struct {
 	CardId string
 	Sheet  string
-	Foil   bool
+	Finish string
 }
 
 func run() int {
@@ -89,6 +90,15 @@ func run() int {
 			// Grab the sheet
 			sheet := set.Booster[*BoosterTypeOpt].Sheets[sheetName]
 
+			// Determine foiling status
+			finish := "nonfoil"
+			if sheet.Foil {
+				finish = "foil"
+			}
+			if strings.Contains(sheetName, "etched") {
+				finish = "etched"
+			}
+
 			if sheet.Fixed {
 				// Fixed means there is no randomness, just pick the cards as listed
 				for cardId, frequency := range sheet.Cards {
@@ -96,7 +106,7 @@ func run() int {
 						picks = append(picks, Pick{
 							CardId: cardId,
 							Sheet:  sheetName,
-							Foil:   sheet.Foil,
+							Finish: finish,
 						})
 					}
 				}
@@ -166,7 +176,7 @@ func run() int {
 					picks = append(picks, Pick{
 						CardId: item,
 						Sheet:  sheetName,
-						Foil:   sheet.Foil,
+						Finish: finish,
 					})
 				}
 			}
@@ -181,7 +191,7 @@ func run() int {
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		for _, pick := range picks {
-			id, _ := mtgmatcher.MatchId(pick.CardId, pick.Foil)
+			id, _ := mtgmatcher.MatchId(pick.CardId, pick.Finish == "foil", pick.Finish == "etched")
 			co, _ := mtgmatcher.GetUUID(id)
 			fmt.Fprintf(w, "%s\t%s|%s\n", pick.Sheet, co, co.Rarity)
 		}
