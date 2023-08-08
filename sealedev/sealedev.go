@@ -4,14 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
 	"strconv"
 	"time"
 
 	"github.com/montanaflynn/stats"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -175,79 +173,38 @@ func getPicksForDeck(setCode, deckName string) ([]string, error) {
 }
 
 func getPicksForSealed(setCode, sealedUUID string) ([]string, error) {
-	var picks []string
-
-	set, err := mtgmatcher.GetSet(setCode)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, product := range set.SealedProduct {
-		if sealedUUID != product.UUID {
-			continue
+	picks, err := mtgmatcher.GetPicksForSealed(setCode, sealedUUID)
+	if len(picks) == 0 {
+		set, err := mtgmatcher.GetSet(setCode)
+		if err != nil {
+			return nil, err
 		}
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
-				case "card":
-					uuid, err := mtgmatcher.MatchId(content.UUID, content.Foil)
-					if err != nil {
-						return nil, err
-					}
-					picks = append(picks, uuid)
-				case "pack":
-					boosterPicks, err := mtgmatcher.BoosterGen(content.Set, content.Code)
-					if err != nil {
-						return nil, err
-					}
-					picks = append(picks, boosterPicks...)
-				case "sealed":
-					for i := 0; i < content.Count; i++ {
-						sealedPicks, err := getPicksForSealed(content.Set, content.UUID)
-						if err != nil {
-							return nil, err
-						}
-						picks = append(picks, sealedPicks...)
-					}
-				case "deck":
-					deckPicks, err := getPicksForDeck(content.Set, content.Name)
-					if err != nil {
-						return nil, err
-					}
-					picks = append(picks, deckPicks...)
-				case "variable":
-					variableIndex := rand.Intn(len(content.Configs))
+		// Retry with the custom estimation
+		for _, product := range set.SealedProduct {
+			if sealedUUID != product.UUID {
+				continue
+			}
 
-					for _, deck := range content.Configs[variableIndex].Deck {
-						deckPicks, err := getPicksForDeck(deck.Set, deck.Name)
-						if err != nil {
-							return nil, err
-						}
-						picks = append(picks, deckPicks...)
-					}
-				case "other":
-				default:
-					return nil, errors.New("unknown key")
-				}
+			if product.Contents == nil {
+				picks = classicSealedCalc(setCode, product.UUID)
 			}
 		}
-
-		if product.Contents == nil {
-			picks = append(picks, classicSealedCalc(set, product.UUID)...)
-		}
 	}
-
 	if len(picks) == 0 {
-		return nil, errors.New("nothing was picked")
+		return nil, err
 	}
-
 	return picks, nil
 }
 
 // This function can be dropped once all Sealed has the Contents array in place
-func classicSealedCalc(set *mtgjson.Set, sealedUUID string) []string {
+func classicSealedCalc(setCode, sealedUUID string) []string {
 	var picks []string
+
+	set, err := mtgmatcher.GetSet(setCode)
+	if err != nil {
+		return nil
+	}
 
 	for _, product := range set.SealedProduct {
 		if sealedUUID != product.UUID {

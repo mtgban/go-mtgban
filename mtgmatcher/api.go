@@ -1,6 +1,8 @@
 package mtgmatcher
 
 import (
+	"errors"
+	"math/rand"
 	"regexp"
 	"strings"
 
@@ -411,6 +413,100 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				picks = append(picks, uuid)
 			}
 		}
+	}
+
+	return picks, nil
+}
+
+func GetPicksForDeck(setCode, deckName string) ([]string, error) {
+	var picks []string
+
+	set, err := GetSet(setCode)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, deck := range set.Decks {
+		if deck.Name != deckName {
+			continue
+		}
+
+		for _, card := range deck.Cards {
+			uuid, err := MatchId(card.UUID, card.Finish == "foil", card.Finish == "etched")
+			if err != nil {
+				return nil, err
+			}
+
+			for i := 0; i < card.Count; i++ {
+				picks = append(picks, uuid)
+			}
+		}
+	}
+
+	return picks, nil
+}
+
+func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
+	var picks []string
+
+	set, err := GetSet(setCode)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, product := range set.SealedProduct {
+		if sealedUUID != product.UUID {
+			continue
+		}
+
+		for key, contents := range product.Contents {
+			for _, content := range contents {
+				switch key {
+				case "card":
+					uuid, err := MatchId(content.UUID, content.Foil)
+					if err != nil {
+						return nil, err
+					}
+					picks = append(picks, uuid)
+				case "pack":
+					boosterPicks, err := BoosterGen(content.Set, content.Code)
+					if err != nil {
+						return nil, err
+					}
+					picks = append(picks, boosterPicks...)
+				case "sealed":
+					for i := 0; i < content.Count; i++ {
+						sealedPicks, err := GetPicksForSealed(content.Set, content.UUID)
+						if err != nil {
+							return nil, err
+						}
+						picks = append(picks, sealedPicks...)
+					}
+				case "deck":
+					deckPicks, err := GetPicksForDeck(content.Set, content.Name)
+					if err != nil {
+						return nil, err
+					}
+					picks = append(picks, deckPicks...)
+				case "variable":
+					variableIndex := rand.Intn(len(content.Configs))
+					for _, deck := range content.Configs[variableIndex].Deck {
+						deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
+						if err != nil {
+							return nil, err
+						}
+						picks = append(picks, deckPicks...)
+					}
+				case "other":
+				default:
+					return nil, errors.New("unknown key")
+				}
+			}
+		}
+	}
+
+	if len(picks) == 0 {
+		return nil, errors.New("nothing was picked")
 	}
 
 	return picks, nil
