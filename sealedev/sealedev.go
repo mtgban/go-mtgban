@@ -16,7 +16,7 @@ import (
 const (
 	EVAverageRepetition = 5000
 
-	ckBuylistLink = "https: //www.cardkingdom.com/purchasing/mtg_singles"
+	ckBuylistLink = "https://www.cardkingdom.com/purchasing/mtg_singles"
 )
 
 type SealedEVScraper struct {
