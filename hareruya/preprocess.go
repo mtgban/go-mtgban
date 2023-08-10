@@ -101,6 +101,7 @@ var editionTable = map[string]string{
 	"VvK": "DDI",
 	"ZvE": "DDP",
 
+	"ZvE/DDP": "DDP",
 	"DD3・DvD": "DVD",
 	"DD3・EvG": "EVG",
 	"DD3・GvL": "GVL",
@@ -141,7 +142,8 @@ var editionTable = map[string]string{
 	"Basic Set Promos":   "G18",
 
 	"対戦キット":   "Clash Pack",
-	"GPプロモ":   "PGPX",
+	"GPプロモ":   "Grand Prix Promos",
+	"RPTQプロモ": "RPTQ Promos",
 	"アリーナ":    "Arena",
 	"BOXプロモ":  "Box Promo",
 	"褒賞プログラム": "Reward Program",
@@ -149,16 +151,21 @@ var editionTable = map[string]string{
 	"ゲームデー":   "Game Day Promos",
 	"ウギンの運命":  "Ugin's Fate",
 
+	"プロツアープロモ": "PRCQ",
+
 	"チャレンジャーデッキ":   "Challenger Deck",
 	"ストアチャンピオンシップ": "Store Championship",
 
+	"DCIマーク":      "DCI Promos",
 	"アンパサンド・カード":  "PAFR",
 	"旧正月プロモ":      "Lunar New Year",
 	"旧枠プロモ":       "Retro Frame",
+	"旧枠":          "Retro Frame",
 	"WMCQプロモ":     "WMC",
 	"Nationalプロモ": "PNAT",
 	"プレリリース 土地":   "Prerelease",
 	"ダブルレインボウ":    "Serialized", // Double rainbow
+	"ボーダーレス":      "Borderless",
 }
 
 func preprocess(title string) (*mtgmatcher.Card, error) {
