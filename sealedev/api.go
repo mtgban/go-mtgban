@@ -69,6 +69,14 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 		basedirect, found := response.Buylist[uuid]["TCGDirectNet"]
 		if found {
 			directPrice = basedirect.Regular + basedirect.Foil + basedirect.Etched
+		} else {
+			// Use TCG Market or Low if Direct is fully missing
+			replacement, found := response.Retail[uuid]["TCG Market"]
+			if !found {
+				replacement = response.Retail[uuid]["TCG Low"]
+			}
+
+			response.Buylist[uuid]["TCGDirectNet"] = replacement
 		}
 
 		// Cap maximum price to twice as much tcg low
