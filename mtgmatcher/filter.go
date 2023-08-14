@@ -99,7 +99,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				"Jumpstart",
 				"Double Masters 2022",
 				"Dominaria Remastered",
-				"Warhammer 40,000 Commander":
+				"Warhammer 40,000 Commander",
+				"Commander Masters":
 				// If the list of cards is present in any other edition they need special casing
 				switch inCard.Name {
 				case "Chord of Calling",
