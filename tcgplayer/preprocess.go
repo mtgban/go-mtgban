@@ -23,6 +23,11 @@ var tokenIds = map[int]string{
 	78613:  "P04",
 }
 
+var cardIds = map[int]string{
+	284951: "P30A",
+	284923: "P30H",
+}
+
 func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card, error) {
 	cardName := product.Name
 	variant := ""
@@ -501,6 +506,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if num != "" && mtgmatcher.ExtractYear(variant) == "" {
 			variant = num
 		}
+	}
+
+	// Override any complex cases
+	ed, found := cardIds[product.ProductId]
+	if found {
+		edition = ed
 	}
 
 	if product.isToken() && edition != "Unfinity" {
