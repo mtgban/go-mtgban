@@ -93,38 +93,16 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 
 		case inCard.isRelease():
-			switch set.Name {
-			case "Promotional Planes":
-			case "Double Masters",
-				"Jumpstart",
-				"Double Masters 2022",
-				"Dominaria Remastered",
-				"Warhammer 40,000 Commander",
-				"Commander Masters":
-				// If the list of cards is present in any other edition they need special casing
-				switch inCard.Name {
-				case "Chord of Calling",
-					"Scholar of the Lost Trove",
-					"Weathered Wayfarer",
-					"Bring to Light",
-					"Counterspell",
-					"Fabricate":
-				case "Wrath of God":
-					if set.Name != "Double Masters" {
-						continue
-					}
-				default:
-					continue
+			skip := true
+			foundCards := MatchInSet(inCard.Name, setCode)
+			for _, card := range foundCards {
+				if card.HasPromoType(mtgjson.PromoTypeRelease) {
+					skip = false
+					break
 				}
-			case "30th Anniversary History Japanese Promos",
-				"30th Anniversary History Promos",
-				"30th Anniversary Misc Promos",
-				"30th Anniversary Play Promos":
+			}
+			if skip {
 				continue
-			default:
-				if !strings.HasSuffix(set.Name, "Promos") {
-					continue
-				}
 			}
 
 		case inCard.isBaB():
