@@ -278,7 +278,7 @@ func skipSet(set *mtgjson.Set) bool {
 	switch set.Code {
 	case "PRED", // a single foreign card
 		"PSAL", "PS11", "PHUK", "PHJ", // foreign-only
-		"OLGC", "OLEP", "PMIC", "OVNT": // oversize
+		"OLGC", "OLEP", "OVNT": // oversize
 		return true
 	}
 	// Skip online sets, and any token-based sets
@@ -344,6 +344,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		} else {
 			// Clean a bit of memory
 			set.Tokens = nil
+		}
+
+		switch set.Code {
+		// Remove reference to an online-only set
+		case "PMIC":
+			set.ParentCode = ""
 		}
 
 		for _, card := range allCards {

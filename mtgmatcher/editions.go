@@ -439,6 +439,7 @@ var EditionTable = map[string]string{
 	"Starter":                  "Starter 1999",
 	"Starter 2000":             "Starter 2000",
 	"Vanguard":                 "Vanguard Series",
+	"MicroProse":               "MicroProse Promos",
 
 	"Planeswalker Event Promos": "Planeswalker Championship Promos",
 
