@@ -381,10 +381,13 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Water Gun Balloon Game":
 			edition = "UNF"
+			variant = "538"
 		case "Fabricate":
 			edition = "40K"
+			variant = "181"
 		case "Disrupt Decorum":
 			edition = "CMM"
+			variant = "1067"
 		}
 	case "Renaissance":
 		if strings.Contains(variant, "French") || strings.Contains(variant, "German") {
