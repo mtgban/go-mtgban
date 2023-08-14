@@ -311,6 +311,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 							if num < 64 {
 								continue
 							}
+						case "30th Anniversary History Japanese Promos":
+							uuid = card.UUID + "_jpn"
 						}
 					case "CHINESE SIMPLIFIED":
 						language = "Chinese (S)"
