@@ -692,7 +692,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					case inCard.isPromoPack():
 						possibleSuffixes = append(possibleSuffixes, "p")
 					case inCard.isChineseAltArt():
-						possibleSuffixes = append(possibleSuffixes, "s")
+						possibleSuffixes = append(possibleSuffixes, "s", mtgjson.SuffixSpecial+"s", mtgjson.SuffixVariant+"s")
 					case inCard.isSerialized():
 						possibleSuffixes = append(possibleSuffixes, "z")
 					}
