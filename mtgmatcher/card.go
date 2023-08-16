@@ -362,8 +362,8 @@ func (c *Card) isDCIPromo() bool {
 }
 
 func (c *Card) isGenericAltArt() bool {
-	return Contains(c.Variation, "Alt") && // includes Alternative
-		Contains(c.Variation, "Art")
+	// "Alt" includes Alternative
+	return c.Contains("Alt") && c.Contains("Art")
 }
 
 func (c *Card) isGenericExtendedArt() bool {
@@ -437,6 +437,10 @@ func (c *Card) isJPN() bool {
 		c.Contains("Japanese") ||
 		Contains(c.Variation, "Gotta") ||
 		Contains(c.Variation, "Dengeki")
+}
+
+func (c *Card) isChineseAltArt() bool {
+	return (c.Contains("Chinese") || strings.Contains(c.Variation, "CS")) && c.isGenericAltArt()
 }
 
 func (c *Card) isRelease() bool {

@@ -667,15 +667,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				continue
 			}
 
-			// Support the Simplified Chinese Alternative Art Cards
-			// Needs to be before number parsing to handle number variants
-			schineseTag := inCard.Contains("Chinese") || (strings.Contains(inCard.Variation, "CS") && inCard.isGenericAltArt())
-			if schineseTag && !card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
-				continue
-			} else if !schineseTag && card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
-				continue
-			}
-
 			checkNum := true
 			if inCard.Contains("Misprint") ||
 				inCard.isWorldChamp() ||
@@ -698,8 +689,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						possibleSuffixes = append(possibleSuffixes, "s")
 					} else if inCard.isPromoPack() {
 						possibleSuffixes = append(possibleSuffixes, "p")
-					} else if schineseTag {
-						possibleSuffixes = []string{"s"}
+					} else if inCard.isChineseAltArt() {
+						possibleSuffixes = append(possibleSuffixes, "s")
 					} else if inCard.Contains("Serial") {
 						switch set.Code {
 						case "SLD", "MOM":
@@ -787,6 +778,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			if inCard.isPlayPromo() && !card.HasPromoType(mtgjson.PromoTypePlayPromo) {
 				continue
 			} else if !inCard.isPlayPromo() && card.HasPromoType(mtgjson.PromoTypePlayPromo) {
+				continue
+			}
+
+			// Support the Simplified Chinese Alternative Art Cards
+			if inCard.isChineseAltArt() && !card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
+				continue
+			} else if !inCard.isChineseAltArt() && card.HasPromoType(mtgjson.PromoTypeSChineseAltArt) {
 				continue
 			}
 
