@@ -787,28 +787,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				if err == nil && num < set.BaseSetSize {
 					continue
 				}
-			} else if setDate.After(PromosForEverybodyYay) && !inCard.isMysteryList() {
-				// ELD-Style extended art
-				if inCard.isExtendedArt() {
-					if !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
-						continue
-					}
-					// BaB are allowed to have extendedart
-				} else if !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
-					if card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
-						continue
-					}
-				}
-
-				// Separate finishes have different collector numbers
-				if setDate.After(SeparateFinishCollectorNumberDate) {
-					if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
-						continue
-						// Some thick display cards are not marked as etched
-					} else if !inCard.isEtched() && !inCard.isThickDisplay() && card.HasFinish(mtgjson.FinishEtched) {
-						continue
-					}
-				}
 			}
 
 			outCards = append(outCards, card)
@@ -921,7 +899,26 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 
 		outCards = filteredOutCards
 	} else if len(outCards) > 1 && ExtractNumber(inCard.Variation) == "" {
+		// Separate finishes have different collector numbers after this date
+		if len(outCards) > 1 {
+			var filteredOutCards []mtgjson.Card
+			for _, card := range outCards {
+				set := backend.Sets[card.SetCode]
+				setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+				if setDate.After(SeparateFinishCollectorNumberDate) && etchedCheck(inCard, &card) {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
+			}
+
+			// Don't throw away what was found if filtering checks are too aggressive
+			if len(filteredOutCards) > 0 {
+				outCards = filteredOutCards
+			}
+		}
+
 		// If above filters were not enough, check the boder, but dont skip card if it's showcase
+		// ExtendedArt is fine as there cannot be a borderless one
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgjson.Card
 			for _, card := range outCards {
@@ -937,7 +934,28 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			}
 		}
 
-		// If above filters were not enough, check the frameEffect
+		// If above filters were not enough, check the frameEffects
+		// Extended Art
+		if len(outCards) > 1 {
+			var filteredOutCards []mtgjson.Card
+			for _, card := range outCards {
+				// This needs date check because some old full art promos are marked
+				// as extended art, in a different way of what modern Extended Art is
+				set := backend.Sets[card.SetCode]
+				setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+				if setDate.After(PromosForEverybodyYay) && extendedartCheck(inCard, &card) {
+					continue
+				}
+				filteredOutCards = append(filteredOutCards, card)
+			}
+
+			// Don't throw away what was found if filtering checks are too aggressive
+			if len(filteredOutCards) > 0 {
+				outCards = filteredOutCards
+			}
+		}
+
+		// Showcase
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgjson.Card
 			for _, card := range outCards {

@@ -447,11 +447,7 @@ func variantInCommanderDeck(inCard *Card, card *mtgjson.Card) bool {
 func variantBeforePlainCard(inCard *Card, card *mtgjson.Card) bool {
 	cn, _ := strconv.Atoi(card.Number)
 	if cn > 607 && cn < 930 {
-		if inCard.isExtendedArt() && !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
-			return true
-		} else if !inCard.isExtendedArt() && card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
-			return true
-		}
+		return extendedartCheck(inCard, card)
 	}
 	return false
 }
@@ -764,6 +760,16 @@ func showcaseCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.isShowcase() && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
 		return true
 	} else if !inCard.isShowcase() && card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+		return true
+	}
+	return false
+}
+
+func extendedartCheck(inCard *Card, card *mtgjson.Card) bool {
+	if inCard.isExtendedArt() && !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
+		return true
+		// BaB are allowed to have extendedart
+	} else if !inCard.isExtendedArt() && card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
 		return true
 	}
 	return false
