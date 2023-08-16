@@ -2926,7 +2926,7 @@ var MatchTests = []MatchTest{
 		},
 	},
 
-	// Triple card because of double misprint
+	// Various misprints
 	{
 		Id:   "89d7f595-d549-526a-ba83-6f976f6c542c",
 		Desc: "prerelease_with_multiple_misprints_dark",
@@ -2952,6 +2952,43 @@ var MatchTests = []MatchTest{
 			Name:      "Laquatus's Champion",
 			Variation: "Prerelease",
 			Edition:   "ignored",
+		},
+	},
+	{
+		Id:   "07d0a735-dec4-5b23-a5d5-6b9f0d7a9625",
+		Desc: "normalcard_hasmisprint",
+		In: Card{
+			Name:    "Thunderheads",
+			Edition: "GPT",
+		},
+	},
+	{
+		Id:   "469f6976-ec7d-590d-8e57-573f2fb7c37d",
+		Desc: "normalcard_ismisprint",
+		In: Card{
+			Name:      "Thunderheads",
+			Variation: "Misprint",
+			Edition:   "GPT",
+			Foil:      true,
+		},
+	},
+	{
+		Id:   "a67c3cd2-d09d-5c2e-807b-5f4772c367e7",
+		Desc: "eacard_ismisprint_always",
+		In: Card{
+			Name:      "Temple of Abandon",
+			Variation: "Extended Art",
+			Edition:   "THB",
+			Foil:      true,
+		},
+	},
+	{
+		Id:   "38fc8e52-821b-5701-a5bd-7402ee13a51c",
+		Desc: "eacard_nonfoil_isnot_misprint",
+		In: Card{
+			Name:      "Temple of Abandon",
+			Variation: "Extended Art",
+			Edition:   "THB",
 		},
 	},
 

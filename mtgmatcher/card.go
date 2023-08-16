@@ -277,7 +277,6 @@ func (c *Card) isSpecificUnsupported() bool {
 		"Sapphire Medallion",
 		"Serra Angel",
 		"Time Elemental",
-		"Thunderheads",
 		"Winged Sliver":
 		return c.Contains("Misprint")
 	// SLD JPN non-unique cards

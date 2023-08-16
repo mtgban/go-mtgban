@@ -175,7 +175,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"THB": foilMisprint,
 	"STX": foilMisprint,
 	"SHM": foilMisprint,
-	"GPT": foilMisprint,
 
 	"PAL99": nodateMisprint,
 	"PULG":  nodateMisprint,
@@ -602,6 +601,7 @@ func releaseRetroCheck(inCard *Card, card *mtgjson.Card) bool {
 	return retroCheckInternal(inCard.isRetro() || inCard.isRelease(), card.FrameVersion)
 }
 
+// Foil cards which exist *only* as misprints
 func foilMisprint(inCard *Card, card *mtgjson.Card) bool {
 	if !inCard.Foil {
 		return strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
@@ -617,10 +617,6 @@ func foilMisprint(inCard *Card, card *mtgjson.Card) bool {
 		}
 	case "Reflecting Pool":
 		return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
-	case "Shadow Lance":
-		if inCard.Contains("Misprint") {
-			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
-		}
 	}
 	return strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 }
