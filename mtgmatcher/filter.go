@@ -683,12 +683,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						possibleSuffixes = append(possibleSuffixes, "p")
 					} else if inCard.isChineseAltArt() {
 						possibleSuffixes = append(possibleSuffixes, "s")
-					} else if inCard.Contains("Serial") {
-						switch set.Code {
-						case "SLD", "MOM":
-						default:
-							possibleSuffixes = []string{"z"}
-						}
+					} else if inCard.isSerialized() {
+						possibleSuffixes = append(possibleSuffixes, "z")
 					}
 
 					// Check if edition-specific numbers need special suffixes
