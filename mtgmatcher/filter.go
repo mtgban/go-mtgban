@@ -676,17 +676,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					fields := strings.Fields(strings.ToLower(variation))
 					possibleSuffixes = append(possibleSuffixes, fields...)
 
-					// Short circuit the possible suffixes if we know what we're dealing with
-					if inCard.isPrerelease() {
-						possibleSuffixes = append(possibleSuffixes, "s")
-					} else if inCard.isPromoPack() {
-						possibleSuffixes = append(possibleSuffixes, "p")
-					} else if inCard.isChineseAltArt() {
-						possibleSuffixes = append(possibleSuffixes, "s")
-					} else if inCard.isSerialized() {
-						possibleSuffixes = append(possibleSuffixes, "z")
-					}
-
 					// Check if edition-specific numbers need special suffixes
 					numFilterFunc, found := numberFilterCallbacks[set.Code]
 					if found {
@@ -694,6 +683,18 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						if overrides != nil {
 							possibleSuffixes = overrides
 						}
+					}
+
+					// Add any possible extra suffixes if we know what we're dealing with
+					switch {
+					case inCard.isPrerelease():
+						possibleSuffixes = append(possibleSuffixes, "s")
+					case inCard.isPromoPack():
+						possibleSuffixes = append(possibleSuffixes, "p")
+					case inCard.isChineseAltArt():
+						possibleSuffixes = append(possibleSuffixes, "s")
+					case inCard.isSerialized():
+						possibleSuffixes = append(possibleSuffixes, "z")
 					}
 
 					for _, numSuffix := range possibleSuffixes {
