@@ -66,7 +66,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"MH2":     retroCheck,
 	"P30H":    retroCheck,
-	"P30HJAP": retroCheck,
+	"P30HJPN": retroCheck,
 	"30A":     retroCheck,
 
 	"BRO": babOrBuyaboxRetroCheck,
