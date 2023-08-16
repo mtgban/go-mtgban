@@ -169,6 +169,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Modern Horizons 2",
 		"Modern Horizons 1: Timeshifted":
 		variant = number
+	case "Commander: The Lord of the Rings - Tales of Middle-earth Collectors":
+		variant = strings.Replace(number, "s", "z", 1)
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
 			variant = number
