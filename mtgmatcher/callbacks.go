@@ -99,6 +99,12 @@ var promoTypeElements = []promoTypeElement{
 		ValidDate: SeparateFinishCollectorNumberDate,
 		Tags:      []string{"Display", "Thick"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeSerialized,
+		TagFunc: func(inCard *Card) bool {
+			return inCard.isSerialized()
+		},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
@@ -153,7 +159,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"UNF": attractionVariant,
 
 	"BOT": shatteredCheck,
-	"MUL": serializedCheck,
 
 	"MH2":     retroCheck,
 	"P30H":    retroCheck,
@@ -204,7 +209,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"JMP": {launchPromoInSet, phyrexianCheck},
-	"BRR": {serializedCheck, schematicCheck},
+	"BRR": {schematicCheck},
 	"DMR": {launchPromoInSet, releaseRetroCheck},
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck},
@@ -535,15 +540,6 @@ func shatteredCheck(inCard *Card, card *mtgjson.Card) bool {
 	if isShattered && !card.HasFrameEffect(mtgjson.FrameEffectShattered) {
 		return true
 	} else if !isShattered && card.HasFrameEffect(mtgjson.FrameEffectShattered) {
-		return true
-	}
-	return false
-}
-
-func serializedCheck(inCard *Card, card *mtgjson.Card) bool {
-	if inCard.isSerialized() && !card.HasPromoType(mtgjson.PromoTypeSerialized) {
-		return true
-	} else if !inCard.isSerialized() && card.HasPromoType(mtgjson.PromoTypeSerialized) {
 		return true
 	}
 	return false
