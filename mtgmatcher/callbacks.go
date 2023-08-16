@@ -23,6 +23,9 @@ type promoTypeElement struct {
 
 	// Simple tags to check, if TagFunc is not set
 	Tags []string
+
+	// Whether certain promos are not tagged, and are selected as wildcards
+	CanBeWild bool
 }
 
 var promoTypeElements = []promoTypeElement{
@@ -53,10 +56,12 @@ var promoTypeElements = []promoTypeElement{
 		TagFunc: func(inCard *Card) bool {
 			return inCard.isBaB()
 		},
+		CanBeWild: true,
 	},
 	{
 		PromoType: mtgjson.PromoTypeBundle,
 		Tags:      []string{"Bundle"},
+		CanBeWild: true,
 	},
 	{
 		PromoType: mtgjson.PromoTypeGilded,

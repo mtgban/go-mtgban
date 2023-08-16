@@ -646,7 +646,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mtgjson.Card) {
 	for setCode, inCards := range cardSet {
 		set := backend.Sets[setCode]
-		setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
 
 		for _, card := range inCards {
 			// Super lucky case, we were expecting the card
@@ -712,15 +711,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 							number += numSuffix
 						}
 						if number == strings.ToLower(card.Number) {
-							// Repeat promo pack check for sets where "p" and "" may be mixed
-							if strings.HasSuffix(set.Name, "Promos") {
-								if inCard.isPromoPack() && !card.HasPromoType(mtgjson.PromoTypePromoPack) {
-									continue
-								} else if !inCard.isPromoPack() && card.HasPromoType(mtgjson.PromoTypePromoPack) {
-									continue
-								}
-							}
-
 							outCards = append(outCards, card)
 
 							// Card was found, skip any other suffix
@@ -751,9 +741,23 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				}
 			}
 
+			outCards = append(outCards, card)
+		}
+	}
+
+	// Sort through the array of promo types
+	if len(outCards) > 1 {
+		var filteredOutCards []mtgjson.Card
+		for _, card := range outCards {
+			set := backend.Sets[card.SetCode]
+			setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+
 			var shouldContinue bool
 			for _, promoElement := range promoTypeElements {
 				if setDate.Before(promoElement.ValidDate) {
+					continue
+				}
+				if promoElement.CanBeWild && inCard.promoWildcard {
 					continue
 				}
 
@@ -788,11 +792,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 			}
+			filteredOutCards = append(filteredOutCards, card)
+		}
 
-			outCards = append(outCards, card)
+		// Don't throw away what was found if filtering checks is too aggressive
+		if len(filteredOutCards) > 0 {
+			outCards = filteredOutCards
 		}
 	}
 
+	// Sort through any custom per-edition filter(s)
 	if len(outCards) > 1 {
 		var filteredOutCards []mtgjson.Card
 		for _, card := range outCards {
