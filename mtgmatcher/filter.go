@@ -830,16 +830,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					}
 				}
 
-				if inCard.isPhyrexian() {
-					if card.Language != mtgjson.LanguagePhyrexian {
-						continue
-					}
-				} else {
-					if card.Language == mtgjson.LanguagePhyrexian {
-						continue
-					}
-				}
-
 				if inCard.isTextured() {
 					if !card.HasPromoType(mtgjson.PromoTypeTextured) {
 						continue

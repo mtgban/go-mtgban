@@ -44,7 +44,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"2XM": launchPromoInSet,
 	"2X2": launchPromoInSet,
-	"JMP": launchPromoInSet,
 	"J22": animeCheck,
 
 	"CLB": variantBeforePlainCard,
@@ -103,14 +102,31 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"BFZ": fullartCheckForBasicLands,
 	"ZEN": fullartCheckForBasicLands,
+
+	// This is needed only for sets with multiple printings of the same card
+	"KHM": phyrexianCheck,
+	"NEO": phyrexianCheck,
+	"SNC": phyrexianCheck,
+	"DMU": phyrexianCheck,
+	"ONE": phyrexianCheck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
+	"JMP": {launchPromoInSet, phyrexianCheck},
 	"BRR": {serializedCheck, schematicCheck},
 	"DMR": {launchPromoInSet, releaseRetroCheck},
 	"VOW": {wpnCheck, reskinDraculaCheck},
-	"SLD": {sldVariant, etchedCheck, thickDisplayCheck},
+	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+}
+
+func phyrexianCheck(inCard *Card, card *mtgjson.Card) bool {
+	if inCard.isPhyrexian() && card.Language != mtgjson.LanguagePhyrexian {
+		return true
+	} else if !inCard.isPhyrexian() && card.Language == mtgjson.LanguagePhyrexian {
+		return true
+	}
+	return false
 }
 
 // Handle full vs nonfull art basic land
