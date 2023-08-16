@@ -660,13 +660,6 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				continue
 			}
 
-			// Handle full vs nonfull art basic lands, helps number parsing below
-			if inCard.isBasicFullArt() && !card.IsFullArt {
-				continue
-			} else if inCard.isBasicNonFullArt() && card.IsFullArt {
-				continue
-			}
-
 			checkNum := true
 			if inCard.Contains("Misprint") ||
 				inCard.isWorldChamp() ||

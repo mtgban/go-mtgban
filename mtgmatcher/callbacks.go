@@ -100,6 +100,9 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"LTR":  lotrTripleFiltering,
 	"PLTR": lotrTripleFiltering,
+
+	"BFZ": fullartCheckForBasicLands,
+	"ZEN": fullartCheckForBasicLands,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
@@ -108,6 +111,16 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+}
+
+// Handle full vs nonfull art basic land
+func fullartCheckForBasicLands(inCard *Card, card *mtgjson.Card) bool {
+	if inCard.isBasicFullArt() && !card.IsFullArt {
+		return true
+	} else if inCard.isBasicNonFullArt() && card.IsFullArt {
+		return true
+	}
+	return false
 }
 
 func lotrTripleFiltering(inCard *Card, card *mtgjson.Card) bool {
