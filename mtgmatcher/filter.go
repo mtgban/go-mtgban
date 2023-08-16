@@ -728,16 +728,16 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			// the non-promo sets as some promos can be mixed next to the
 			// normal cards - in this way, promo sets can process as normal and
 			// deduplicate all the various prerelease and promo packs
-			if inCard.promoWildcard {
-				switch set.Type {
-				case "expansion", "core", "masters", "draft_innovation":
-					if !card.HasPromoType(mtgjson.PromoTypeBoosterfun) && !card.HasPromoType(mtgjson.PromoTypePromoPack) && !card.HasPromoType(mtgjson.PromoTypeStarterDeck) {
-						// Consider Promos, non-promo Intro Pack cards, and non-promo special cards
-						if card.IsPromo || card.HasPromoType(mtgjson.PromoTypeIntroPack) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
-							outCards = append(outCards, card)
-						}
-						continue
-					}
+			switch set.Type {
+			case "expansion", "core", "masters", "draft_innovation":
+				if inCard.promoWildcard &&
+					!card.HasPromoType(mtgjson.PromoTypeBoosterfun) &&
+					!card.HasPromoType(mtgjson.PromoTypePromoPack) &&
+					!card.HasPromoType(mtgjson.PromoTypeStarterDeck) &&
+					!card.HasPromoType(mtgjson.PromoTypeIntroPack) &&
+					!strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) &&
+					!card.IsPromo {
+					continue
 				}
 			}
 
