@@ -40,7 +40,7 @@ func getListForBooster(setCode, boosterType string) ([]string, error) {
 		// Grab the sheet
 		sheet := set.Booster[boosterType].Sheets[sheetName]
 		for cardId := range sheet.Cards {
-			uuid, err := mtgmatcher.MatchId(cardId, sheet.Foil, strings.Contains(sheetName, "etched"))
+			uuid, err := mtgmatcher.MatchId(cardId, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 			if err != nil {
 				continue
 			}

@@ -95,7 +95,7 @@ func run() int {
 			if sheet.Foil {
 				finish = "foil"
 			}
-			if strings.Contains(sheetName, "etched") {
+			if strings.Contains(strings.ToLower(sheetName), "etched") {
 				finish = "etched"
 			}
 

@@ -335,7 +335,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 			// Fixed means there is no randomness, just pick the cards as listed
 			for cardId, frequency := range sheet.Cards {
 				// Convert to custom IDs
-				uuid, err := MatchId(cardId, sheet.Foil, strings.Contains(sheetName, "etched"))
+				uuid, err := MatchId(cardId, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 				if err != nil {
 					return nil, ErrCardUnknownId
 				}
@@ -404,7 +404,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				}
 
 				// Convert to custom IDs
-				uuid, err := MatchId(item, sheet.Foil, strings.Contains(sheetName, "etched"))
+				uuid, err := MatchId(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 				if err != nil {
 					j--
 					continue
