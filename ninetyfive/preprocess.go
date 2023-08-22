@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 var mediaTable = map[string]string{
@@ -89,6 +90,8 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		if !mtgmatcher.IsBasicLand(cardName) {
 			variant = ""
 		}
+	case "Warhammer 40,000":
+		variant = strings.Replace(variant, "u", mtgjson.SuffixSpecial, 1)
 	}
 
 	return &mtgmatcher.Card{
