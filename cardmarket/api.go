@@ -31,7 +31,7 @@ const (
 	mkmProductListURL = "https://api.cardmarket.com/ws/v2.0/output.json/productlist"
 	mkmExpansionsURL  = "https://api.cardmarket.com/ws/v2.0/output.json/games/1/expansions"
 
-	mkmMaxEntities = 1000
+	mkmMaxEntities = 100
 )
 
 type MKMClient struct {
