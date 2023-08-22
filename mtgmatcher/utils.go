@@ -155,10 +155,14 @@ func ExtractNumber(str string) string {
 		}
 		if len(num) > 1 {
 			if unicode.IsLetter(rune(num[len(num)-1])) ||
+				strings.HasSuffix(num, mtgjson.SuffixPhiUp) ||
+				strings.HasSuffix(num, mtgjson.SuffixPhiLow) ||
 				strings.HasSuffix(num, mtgjson.SuffixSpecial) ||
 				strings.HasSuffix(num, mtgjson.SuffixVariant) {
 				// Strip any extra characters at the end
 				trimmed := num
+				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixPhiUp)
+				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixPhiLow)
 				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixSpecial)
 				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixVariant)
 				if unicode.IsLetter(rune(trimmed[len(trimmed)-1])) {

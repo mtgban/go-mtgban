@@ -193,6 +193,8 @@ const (
 
 	SuffixSpecial = "★"
 	SuffixVariant = "†"
+	SuffixPhiUp   = "Φ"
+	SuffixPhiLow  = "φ"
 )
 
 var AllPromoTypes = []string{

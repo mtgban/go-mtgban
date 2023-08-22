@@ -398,6 +398,15 @@ var MatchTests = []MatchTest{
 		},
 	},
 	{
+		Id:   "7f054dc5-611f-5cf9-8211-7106a158f84e",
+		Desc: "duplicates_number_correct",
+		In: Card{
+			Name:      "Virulent Sliver",
+			Variation: "659Φ",
+			Edition:   "SLD",
+		},
+	},
+	{
 		Id:   "61158e3c-73ed-5fdc-80b4-67ce53f7d249",
 		Desc: "duplicates_number_and_tag_rainbow",
 		In: Card{
