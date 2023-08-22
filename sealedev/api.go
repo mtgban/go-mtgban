@@ -73,10 +73,15 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 			// Use TCG Market or Low if Direct is fully missing
 			replacement, found := response.Retail[uuid]["TCG Market"]
 			if !found {
-				replacement = response.Retail[uuid]["TCG Low"]
+				replacement, found = response.Retail[uuid]["TCG Low"]
 			}
 
-			response.Buylist[uuid]["TCGDirectNet"] = replacement
+			if found {
+				if response.Buylist[uuid] == nil {
+					response.Buylist[uuid] = map[string]*BanPrice{}
+				}
+				response.Buylist[uuid]["TCGDirectNet"] = replacement
+			}
 		}
 
 		// Cap maximum price to twice as much tcg low
