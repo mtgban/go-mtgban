@@ -490,7 +490,30 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 					picks = append(picks, deckPicks...)
 				case "variable":
 					variableIndex := rand.Intn(len(content.Configs))
-					for _, deck := range content.Configs[variableIndex].Deck {
+					for _, card := range content.Configs[variableIndex]["card"] {
+						uuid, err := MatchId(card.UUID, card.Foil)
+						if err != nil {
+							return nil, err
+						}
+						picks = append(picks, uuid)
+					}
+					for _, booster := range content.Configs[variableIndex]["pack"] {
+						boosterPicks, err := BoosterGen(booster.Set, booster.Code)
+						if err != nil {
+							return nil, err
+						}
+						picks = append(picks, boosterPicks...)
+					}
+					for _, sealed := range content.Configs[variableIndex]["sealed"] {
+						for i := 0; i < sealed.Count; i++ {
+							sealedPicks, err := GetPicksForSealed(sealed.Set, sealed.UUID)
+							if err != nil {
+								return nil, err
+							}
+							picks = append(picks, sealedPicks...)
+						}
+					}
+					for _, deck := range content.Configs[variableIndex]["deck"] {
 						deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
 						if err != nil {
 							return nil, err

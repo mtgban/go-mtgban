@@ -122,7 +122,28 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 
 				case "variable":
 					for _, config := range content.Configs {
-						for _, deck := range config.Deck {
+						for _, card := range config["card"] {
+							uuid, err := mtgmatcher.MatchId(card.UUID, card.Foil)
+							if err != nil {
+								return nil, err
+							}
+							list = append(list, uuid)
+						}
+						for _, pack := range config["pack"] {
+							boosterList, err := getListForBooster(pack.Set, pack.Code)
+							if err != nil {
+								return nil, err
+							}
+							list = append(list, boosterList...)
+						}
+						for _, sealed := range config["sealed"] {
+							sealedList, err := getListForSealed(sealed.Set, sealed.UUID)
+							if err != nil {
+								return nil, err
+							}
+							list = append(list, sealedList...)
+						}
+						for _, deck := range config["deck"] {
 							deckList, err := getListForDeck(deck.Set, deck.Name)
 							if err != nil {
 								return nil, err

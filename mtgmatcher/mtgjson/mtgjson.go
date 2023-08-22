@@ -27,6 +27,19 @@ type Booster struct {
 	Name                string           `json:"name"`
 }
 
+type SealedContent struct {
+	Code  string `json:"code"`
+	Count int    `json:"count"`
+	Foil  bool   `json:"foil"`
+	Name  string `json:"name"`
+	Set   string `json:"set"`
+	UUID  string `json:"uuid"`
+
+	// This recursive definition is used for "variable" mode in which one
+	// possible configuration is chosen at random
+	Configs []map[string][]SealedContent `json:"configs"`
+}
+
 type Set struct {
 	BaseSetSize   int    `json:"baseSetSize"`
 	Code          string `json:"code"`
@@ -45,26 +58,13 @@ type Set struct {
 
 	Booster       map[string]Booster `json:"booster"`
 	SealedProduct []struct {
-		Category string `json:"category"`
-		Contents map[string][]struct {
-			Code    string `json:"code"`
-			Configs []struct {
-				Deck []struct {
-					Name string `json:"name"`
-					Set  string `json:"set"`
-				} `json:"deck"`
-			} `json:"configs"`
-			Count int    `json:"count"`
-			Foil  bool   `json:"foil"`
-			Name  string `json:"name"`
-			Set   string `json:"set"`
-			UUID  string `json:"uuid"`
-		} `json:"contents"`
-		Identifiers map[string]string `json:"identifiers"`
-		Name        string            `json:"name"`
-		ProductSize int               `json:"productSize"`
-		Subtype     string            `json:"subtype"`
-		UUID        string            `json:"uuid"`
+		Category    string                     `json:"category"`
+		Contents    map[string][]SealedContent `json:"contents"`
+		Identifiers map[string]string          `json:"identifiers"`
+		Name        string                     `json:"name"`
+		ProductSize int                        `json:"productSize"`
+		Subtype     string                     `json:"subtype"`
+		UUID        string                     `json:"uuid"`
 	} `json:"sealedProduct"`
 	Decks []struct {
 		Cards []struct {
