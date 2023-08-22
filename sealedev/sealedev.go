@@ -144,34 +144,6 @@ func needsRandom(setCode, sealedUUID string) bool {
 	return false
 }
 
-func getPicksForDeck(setCode, deckName string) ([]string, error) {
-	var picks []string
-
-	set, err := mtgmatcher.GetSet(setCode)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, deck := range set.Decks {
-		if deck.Name != deckName {
-			continue
-		}
-
-		for _, card := range deck.Cards {
-			uuid, err := mtgmatcher.MatchId(card.UUID, card.Finish == "foil", card.Finish == "etched")
-			if err != nil {
-				return nil, err
-			}
-
-			for i := 0; i < card.Count; i++ {
-				picks = append(picks, uuid)
-			}
-		}
-	}
-
-	return picks, nil
-}
-
 func getPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 	picks, err := mtgmatcher.GetPicksForSealed(setCode, sealedUUID)
 	if len(picks) == 0 {
