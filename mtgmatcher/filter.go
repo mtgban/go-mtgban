@@ -746,7 +746,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 	if len(outCards) > 1 {
 		var filteredOutCards []mtgjson.Card
 		for _, card := range outCards {
-			set := backend.Sets[card.SetCode]
+			set, found := backend.Sets[card.SetCode]
+			if !found {
+				continue
+			}
 			setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
 
 			var shouldContinue bool
@@ -909,7 +912,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgjson.Card
 			for _, card := range outCards {
-				set := backend.Sets[card.SetCode]
+				set, found := backend.Sets[card.SetCode]
+				if !found {
+					continue
+				}
 				setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
 				if setDate.After(SeparateFinishCollectorNumberDate) && etchedCheck(inCard, &card) {
 					continue
@@ -947,7 +953,10 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			for _, card := range outCards {
 				// This needs date check because some old full art promos are marked
 				// as extended art, in a different way of what modern Extended Art is
-				set := backend.Sets[card.SetCode]
+				set, found := backend.Sets[card.SetCode]
+				if !found {
+					continue
+				}
 				setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
 				if setDate.After(PromosForEverybodyYay) && extendedartCheck(inCard, &card) {
 					continue
