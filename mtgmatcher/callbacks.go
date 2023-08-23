@@ -165,6 +165,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"BOT": shatteredCheck,
 
+	"MAT":     retroCheck,
 	"MH2":     retroCheck,
 	"P30H":    retroCheck,
 	"P30HJPN": retroCheck,

@@ -1289,6 +1289,16 @@ var MatchTests = []MatchTest{
 			Edition:   "March of the Machine",
 		},
 	},
+	{
+		Id:   "37ba121f-b65d-5237-897f-cdfa3991b50f_f",
+		Desc: "retroframe_but_also_showcase_notmarked",
+		In: Card{
+			Name:      "Nissa, Resurgent Animist",
+			Variation: "Retro Frame",
+			Edition:   "March of the Machine: The Aftermath Variants",
+			Foil:      true,
+		},
+	},
 
 	// Reskinned frame
 	{
