@@ -176,6 +176,7 @@ const (
 	PromoTypeStepAndCompleat = "stepandcompleat"
 	PromoTypeOilSlick        = "oilslick"
 	PromoTypeConcept         = "concept"
+	PromoTypeConfettiFoil    = "confettifoil"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
@@ -204,6 +205,7 @@ var AllPromoTypes = []string{
 	PromoTypeBundle,
 	PromoTypeBuyABox,
 	PromoTypeConcept,
+	PromoTypeConfettiFoil,
 	PromoTypeDracula,
 	PromoTypeGalaxyFoil,
 	PromoTypeGameDay,

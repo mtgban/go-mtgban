@@ -110,6 +110,10 @@ var promoTypeElements = []promoTypeElement{
 			return inCard.isSerialized()
 		},
 	},
+	{
+		PromoType: mtgjson.PromoTypeConfettiFoil,
+		Tags:      []string{"Confetti"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
