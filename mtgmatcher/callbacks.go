@@ -114,6 +114,10 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: mtgjson.PromoTypeConfettiFoil,
 		Tags:      []string{"Confetti"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeAmpersand,
+		Tags:      []string{"Ampersand"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{

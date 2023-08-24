@@ -52,13 +52,6 @@ var EditionTable = map[string]string{
 	"Innistrad: Double Feature - Crimson Vow":   "Innistrad: Double Feature",
 	"Innistrad: Double Feature - Midnight Hunt": "Innistrad: Double Feature",
 
-	// Adventures in the Forgotten Realms Ampersand
-	"AFR Ampersand Promos":  "Adventures in the Forgotten Realms Promos",
-	"Ampersand Foil":        "Adventures in the Forgotten Realms Promos",
-	"Ampersand PROMOS":      "Adventures in the Forgotten Realms Promos",
-	"Ampersand":             "Adventures in the Forgotten Realms Promos",
-	"Promos: AFR Ampersand": "Adventures in the Forgotten Realms Promos",
-
 	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
 
 	// Strixhaven Mystical Archive alts
