@@ -297,12 +297,13 @@ var options = map[string]*scraperOption{
 	},
 	"starcitygames": {
 		Init: func() (mtgban.Scraper, error) {
+			scgGUID := os.Getenv("SCG_GUID")
 			scgBearer := os.Getenv("SCG_BEARER")
-			if scgBearer == "" {
-				return nil, errors.New("missing SCG_BEARER env var")
+			if scgGUID == "" || scgBearer == "" {
+				return nil, errors.New("missing SCG_GUID or SCG_BEARER env var")
 			}
 
-			scraper := starcitygames.NewScraper(scgBearer)
+			scraper := starcitygames.NewScraper(scgGUID, scgBearer)
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},

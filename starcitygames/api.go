@@ -6,65 +6,131 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-cleanhttp"
 )
 
 const (
-	scgInventoryURL = "https://lusearchapi-na.hawksearch.com/sites/starcitygames/?instockonly=Yes&mpp=1&product_type=Singles"
+	scgInventoryURL = "https://essearchapi-na.hawksearch.com/api/v2/search"
 	scgBuylistURL   = "https://search.starcitygames.com/indexes/sell_list_products/search"
 
-	DefaultRequestLimit = 200
+	maxResultsPerPage = 96
 )
 
 type SCGClient struct {
 	client *http.Client
+	guid   string
 	bearer string
 }
 
-func NewSCGClient(bearer string) *SCGClient {
+func NewSCGClient(guid, bearer string) *SCGClient {
 	scg := SCGClient{}
 	scg.client = cleanhttp.DefaultClient()
+	scg.guid = guid
 	scg.bearer = bearer
 	return &scg
 }
 
-func (scg *SCGClient) NumberOfItems() (int, error) {
-	resp, err := scg.client.Get(scgInventoryURL)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return 0, err
-	}
-
-	pagination := doc.Find(`div[id="hawktoppager"]`).Find(`div[class="hawk-searchrange"] span`).Text()
-	items := strings.Split(pagination, " of ")
-	if len(items) > 1 {
-		return strconv.Atoi(items[1])
-	}
-
-	return 0, fmt.Errorf("invalid pagination value: %s", pagination)
+// https://bridgeline.atlassian.net/wiki/spaces/HSKB/pages/3462479664/Hawksearch+v4.0+-+Search+API
+type scgRetailRequest struct {
+	Keyword         string              `json:"Keyword"`
+	FacetSelections map[string][]string `json:"FacetSelections"`
+	PageNo          int                 `json:"PageNo"`
+	MaxPerPage      int                 `json:"MaxPerPage"`
+	ClientGUID      string              `json:"clientguid"`
 }
 
-func (scg *SCGClient) GetPage(page int) (*http.Response, error) {
-	u, err := url.Parse(scgInventoryURL)
+type scgRetailResponse struct {
+	Pagination struct {
+		NofResults  int `json:"NofResults"`
+		CurrentPage int `json:"CurrentPage"`
+		MaxPerPage  int `json:"MaxPerPage"`
+		NofPages    int `json:"NofPages"`
+	} `json:"Pagination"`
+	Results []scgRetailResult `json:"Results"`
+}
+
+type scgRetailResult struct {
+	Document struct {
+		Subtitle            []string `json:"subtitle"`
+		UniqueID            []string `json:"unique_id"`
+		CardName            []string `json:"card_name"`
+		Language            []string `json:"language"`
+		Set                 []string `json:"set"`
+		CollectorNumber     []string `json:"collector_number"`
+		Finish              []string `json:"finish"`
+		ProductType         []string `json:"product_type"`
+		URLDetail           []string `json:"url_detail"`
+		HawkChildAttributes []struct {
+			Price           []string `json:"price"`
+			ProdID          []string `json:"prod_id"`
+			VariantSku      []string `json:"variant_sku"`
+			Qty             []string `json:"qty"`
+			VariantLanguage []string `json:"variant_language"`
+			Condition       []string `json:"condition"`
+		} `json:"hawk_child_attributes"`
+	} `json:"Document"`
+	IsVisible bool `json:"IsVisible"`
+}
+
+func (scg *SCGClient) sendRetailRequest(page int) (*scgRetailResponse, error) {
+	q := scgRetailRequest{
+		ClientGUID: scg.guid,
+		MaxPerPage: maxResultsPerPage,
+		PageNo:     page,
+		FacetSelections: map[string][]string{
+			"variant_instockonly": {"Yes"},
+			"product_type":        {"Singles"},
+			"game":                {"Magic: The Gathering"},
+		},
+	}
+
+	payload, err := json.Marshal(&q)
 	if err != nil {
 		return nil, err
 	}
-	v := u.Query()
-	v.Set("mpp", fmt.Sprint(DefaultRequestLimit))
-	v.Set("pg", fmt.Sprint(page))
-	u.RawQuery = v.Encode()
 
-	return scg.client.Get(u.String())
+	req, err := http.NewRequest(http.MethodPost, scgInventoryURL, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("X-HawkSearch-IgnoreTracking", "true")
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := scg.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var search scgRetailResponse
+	err = json.Unmarshal(data, &search)
+	if err != nil {
+		return nil, err
+	}
+
+	return &search, nil
+}
+
+func (scg *SCGClient) NumberOfPages() (int, error) {
+	response, err := scg.sendRetailRequest(0)
+	if err != nil {
+		return 0, err
+	}
+	return response.Pagination.NofPages, nil
+}
+
+func (scg *SCGClient) GetPage(page int) ([]scgRetailResult, error) {
+	response, err := scg.sendRetailRequest(page)
+	if err != nil {
+		return nil, err
+	}
+	return response.Results, nil
 }
 
 type SCGSearchRequest struct {

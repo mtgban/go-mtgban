@@ -10,7 +10,7 @@ import (
 var cardTable = map[string]string{
 	"Who / What / When / Where / Why": "Who // What // When // Where // Why",
 
-	"Jushi Apprentice // Tomoya The Revealer // Tomoya The Revealer": " Jushi Apprentice // Tomoya The Revealer",
+	"Jushi Apprentice // Tomoya The Revealer // Tomoya The Revealer": "Jushi Apprentice // Tomoya The Revealer",
 }
 
 func shouldSkipLang(cardName, edition, variant, language string) bool {
@@ -45,10 +45,15 @@ func shouldSkipLang(cardName, edition, variant, language string) bool {
 	return false
 }
 
-func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtgmatcher.Card, error) {
+func preprocess(card *SCGCardVariant, edition, language string, foil bool, number string) (*mtgmatcher.Card, error) {
 	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
-	cardName = strings.Replace(card.Name, "{;", "", -1)
-	cardName = strings.Replace(card.Name, "}", "", -1)
+
+	if edition != "Unfinity" && strings.Contains(cardName, "{") && strings.Contains(cardName, "}") {
+		return nil, errors.New("non-single")
+	}
+
+	cardName = strings.Replace(cardName, "{", "", -1)
+	cardName = strings.Replace(cardName, "}", "", -1)
 
 	edition = strings.Replace(edition, "&amp;", "&", -1)
 	if strings.HasSuffix(edition, "(Foil)") {
@@ -83,9 +88,9 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 	}
 
 	switch {
+	// These are the sealed packs
 	case strings.HasPrefix(cardName, "APAC Land"),
-		strings.HasPrefix(cardName, "Euro Land"),
-		strings.Contains(cardName, "{") && strings.Contains(cardName, "}"):
+		strings.HasPrefix(cardName, "Euro Land"):
 		return nil, errors.New("non-single")
 	}
 
@@ -128,8 +133,6 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 	switch edition {
 	case "Promo: General":
 		switch cardName {
-		case "Water Gun Balloon Game":
-			edition = "UNF"
 		case "Swiftfoot Boots":
 			if variant == "Launch" {
 				edition = "PW22"
@@ -139,13 +142,29 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool) (*mtg
 			if variant == "Commander Party Phyrexian" {
 				edition = "PW22"
 			}
-		}
-	case "Promo: General (Foil)":
-		switch cardName {
 		case "Rukh Egg":
 			if variant == "10th Anniversary" {
 				edition = "P8ED"
 			}
+		}
+		if strings.Contains(variant, "The Lord of the Rings") && number != "" {
+			variant = number
+		}
+	case "Promo: Date Stamped":
+		if variant == "Launch" && len(mtgmatcher.MatchInSet(cardName, "PBBD")) > 0 {
+			variant = "Prerelease"
+			edition = "PBBD"
+		}
+	case "Unfinity":
+		if strings.Contains(variant, "/") && number != "" {
+			variant = number
+		}
+		if strings.Contains(cardName, "Sticker Sheet") {
+			edition = "SUNF"
+		}
+	case "The Lord of the Rings Commander - Serialized":
+		if cardName == "Sol Ring" && number != "" {
+			variant = number
 		}
 	}
 

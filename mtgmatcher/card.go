@@ -752,6 +752,7 @@ func (c *Card) duelDecksVariant() string {
 
 func (c *Card) isMysteryList() bool {
 	return c.Contains("Mystery") || c.Contains("The List") ||
+		c.Contains("Planeswalker Symbol Reprints") ||
 		c.Contains("Heads I Win, Tails You Lose") ||
 		c.Contains("From Cute to Brute")
 }

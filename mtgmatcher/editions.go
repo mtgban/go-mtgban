@@ -72,6 +72,8 @@ var EditionTable = map[string]string{
 	"War of the Spark: Japanese alternate-art Planeswalker Promo": "War of the Spark Promos",
 	"War of the Spark: Japanese alternate-art Planeswalker":       "War of the Spark",
 
+	"Enchanting Tales": "Wilds of Eldraine: Enchanting Tales",
+
 	// Gift pack
 	"2017 Gift Pack":       "2017 Gift Pack",
 	"2018 Gift Pack":       "M19 Gift Pack",

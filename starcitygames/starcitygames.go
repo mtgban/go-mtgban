@@ -9,14 +9,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
-
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 const (
-	defaultConcurrency = 8
+	defaultConcurrency  = 8
+	defaultRequestLimit = 200
 
 	buylistBookmark = "https://sellyourcards.starcitygames.com/bookmark/"
 )
@@ -33,11 +32,11 @@ type Starcitygames struct {
 	client *SCGClient
 }
 
-func NewScraper(bearer string) *Starcitygames {
+func NewScraper(guid, bearer string) *Starcitygames {
 	scg := Starcitygames{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient(bearer)
+	scg.client = NewSCGClient(guid, bearer)
 	scg.MaxConcurrency = defaultConcurrency
 	return &scg
 }
@@ -57,119 +56,159 @@ func (scg *Starcitygames) printf(format string, a ...interface{}) {
 }
 
 func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) error {
-	resp, err := scg.client.GetPage(page)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	results, err := scg.client.GetPage(page)
 	if err != nil {
 		return err
 	}
 
-	// Iterate on each result
-	doc.Find(`div[class="hawk-results-item"]`).Each(func(_ int, s *goquery.Selection) {
-		cardName := s.Find(`h2[class="hawk-results-item__title"]`).Text()
-		edition := s.Find(`p[class="hawk-results-item__category"]`).Text()
-		link, _ := s.Find(`h2[class="hawk-results-item__title"] a`).Attr("href")
-		link = "http://starcitygames.com" + link
+	for _, result := range results {
+		if len(result.Document.ProductType) == 0 {
+			return errors.New("malformed product_type")
+		}
+		if result.Document.ProductType[0] != "Singles" {
+			scg.printf("Skipping product_type %s", result.Document.ProductType[0])
+			continue
+		}
 
-		// Iterate on each condition
-		s.Find(`div[class="hawk-results-item__options-table-row"]`).Each(func(_ int, se *goquery.Selection) {
-			condLang := se.Find(`div[class="hawk-results-item__options-table-cell hawk-results-item__options-table-cell--name childCondition"]`).Text()
-			fields := strings.Split(condLang, " - ")
-			if len(fields) < 2 {
-				scg.printf("invalid condLang format: %s", condLang)
-				return
-			}
-			conditions := strings.TrimSpace(fields[0])
-			language := strings.TrimSpace(fields[1])
+		if len(result.Document.CardName) == 0 {
+			return errors.New("malformed card_name")
+		}
+		if len(result.Document.Set) == 0 {
+			return errors.New("malformed set")
+		}
+		if len(result.Document.Finish) == 0 {
+			return errors.New("malformed finish")
+		}
+		if len(result.Document.Language) == 0 {
+			return errors.New("malformed language")
+		}
+		if len(result.Document.UniqueID) == 0 {
+			return errors.New("malformed unique_id")
+		}
+		cardName := result.Document.CardName[0]
+		edition := result.Document.Set[0]
+		finish := result.Document.Finish[0]
+		language := result.Document.Language[0]
+		id := result.Document.UniqueID[0]
 
-			cc := SCGCardVariant{
-				Name: cardName,
-			}
-			theCard, err := preprocess(&cc, edition, language, false)
-			if err != nil {
-				return
-			}
+		var number string
+		if len(result.Document.CollectorNumber) > 0 {
+			number = result.Document.CollectorNumber[0]
+		}
+		var variant string
+		if len(result.Document.Subtitle) > 0 {
+			variant += result.Document.Subtitle[0]
+		}
 
-			cardId, err := mtgmatcher.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				return
-			} else if err != nil {
-				scg.printf("%v", err)
-				scg.printf("%q", theCard)
-				scg.printf("%v ~ %s", cc, edition)
+		cc := SCGCardVariant{
+			Name:     cardName,
+			Subtitle: variant,
+		}
+		theCard, err := preprocess(&cc, edition, language, finish == "Foil", number)
+		if err != nil {
+			continue
+		}
 
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						scg.printf("- %s", card)
-					}
+		cardId, err := mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil && strings.Contains(edition, "Planeswalker Symbol Reprints") {
+			continue
+		} else if err != nil {
+			scg.printf("%v", err)
+			scg.printf("%q", theCard)
+			scg.printf("%v ~ %s ~ %s", cc, edition, number)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					scg.printf("- %s", card)
 				}
-				return
+			}
+			continue
+		}
+
+		var link string
+		if len(result.Document.URLDetail) > 0 {
+			link = "https://starcitygames.com" + result.Document.URLDetail[0]
+		}
+
+		for _, attribute := range result.Document.HawkChildAttributes {
+			if len(attribute.VariantLanguage) == 0 {
+				return errors.New("malformed variant_language")
 			}
 
-			switch conditions {
+			if attribute.VariantLanguage[0] != language {
+				continue
+			}
+
+			if len(attribute.Price) == 0 {
+				return errors.New("malformed price")
+			}
+			if len(attribute.Qty) == 0 {
+				return errors.New("malformed qty")
+			}
+			if len(attribute.Condition) == 0 {
+				return errors.New("malformed condition")
+			}
+			priceStr := attribute.Price[0]
+			qtyStr := attribute.Qty[0]
+			condition := attribute.Condition[0]
+
+			switch condition {
 			case "Near Mint":
-				conditions = "NM"
+				condition = "NM"
 			case "Played":
-				conditions = "SP"
+				condition = "SP"
 			case "Heavily Played":
-				conditions = "HP"
+				condition = "HP"
 			default:
-				scg.printf("unknown condition %s for %s", conditions, cardName)
-				return
+				scg.printf("unknown condition %s for %s", condition, cardName)
+				continue
 			}
 
-			priceStr := se.Find(`span[class="hawkSalePrice"]`).Text()
-			if priceStr == "" {
-				priceStr = se.Find(`span[class="hawk-old-price"]`).Text()
-				if priceStr == "" {
-					priceStr = se.Find(`div[class="hawk-results-item__options-table-cell hawk-results-item__options-table-cell--price childAttributes"]`).Text()
-				}
-			}
 			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
 				scg.printf("invalid price for %s: %s", cardName, err.Error())
-				return
+				continue
 			}
 
-			qtyStr := se.Find(`div[class="hawk-results-item__options-table-cell hawk-results-item__options-table-cell--qty childAttributes"]`).Text()
-			qtyStr = strings.TrimPrefix(qtyStr, "QTY: ")
 			qty, err := strconv.Atoi(qtyStr)
 			if err != nil {
 				scg.printf("invalid price for %s: %s", cardName, err.Error())
-				return
+				continue
+			}
+
+			if qty == 0 || price == 0 {
+				continue
 			}
 
 			out := responseChan{
 				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Price:      price,
-					Conditions: conditions,
+					Conditions: condition,
 					Quantity:   qty,
+					OriginalId: id,
 					URL:        link,
 				},
 				ignoreErr: strings.Contains(edition, "World Championship") && theCard.IsBasicLand(),
 			}
 			channel <- out
-		})
-	})
+		}
+	}
 
 	return nil
 }
 
 func (scg *Starcitygames) scrape() error {
-	items, err := scg.client.NumberOfItems()
+	totalPages, err := scg.client.NumberOfPages()
 	if err != nil {
 		return err
 	}
-	totalPages := items/DefaultRequestLimit + 1
-	scg.printf("Found %d items for %d pages", items, totalPages)
+	scg.printf("Found %d pages", totalPages)
 
 	pages := make(chan int)
 	results := make(chan responseChan)
@@ -179,6 +218,7 @@ func (scg *Starcitygames) scrape() error {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
+				scg.printf("Processing page %d", page)
 				err := scg.processPage(results, page)
 				if err != nil {
 					scg.printf("%v", err)
@@ -225,7 +265,7 @@ func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) error {
-	search, err := scg.client.SearchAll(page, DefaultRequestLimit)
+	search, err := scg.client.SearchAll(page, defaultRequestLimit)
 	if err != nil {
 		return err
 	}
@@ -269,7 +309,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 				continue
 			}
 
-			theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "foil")
+			theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "foil", "")
 			if err != nil {
 				continue
 			}
@@ -360,7 +400,7 @@ func (scg *Starcitygames) parseBL() error {
 	}
 
 	go func() {
-		for j := 0; j < search.EstimatedTotalHits; j += DefaultRequestLimit {
+		for j := 0; j < search.EstimatedTotalHits; j += defaultRequestLimit {
 			pages <- j
 		}
 		close(pages)
