@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -251,13 +250,14 @@ func (ha *Hareruya) totalPages(mode string) (int, error) {
 		return 0, err
 	}
 
-	href, _ := doc.Find(`span[class="navipage_last_"] a`).Attr("href")
-	u, err := url.Parse(href)
-	if err != nil {
-		return 0, err
+	pagination := doc.Find(`div[class="result_pagenum"]`).Text()
+	fields := strings.Fields(strings.TrimSpace(pagination))
+	if len(fields) == 0 {
+		return 0, errors.New("malformed pagination")
 	}
 
-	return strconv.Atoi(u.Query().Get("page"))
+	pagenum := strings.TrimSuffix(strings.TrimPrefix(fields[0], "Page1/"), "ページ中1ページ目")
+	return strconv.Atoi(pagenum)
 }
 
 func (ha *Hareruya) scrape(mode string) error {
