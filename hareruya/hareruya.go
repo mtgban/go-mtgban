@@ -253,6 +253,7 @@ func (ha *Hareruya) totalPages(mode string) (int, error) {
 	pagination := doc.Find(`div[class="result_pagenum"]`).Text()
 	fields := strings.Fields(strings.TrimSpace(pagination))
 	if len(fields) == 0 {
+		ha.printf("unsupported structure %v", fields)
 		return 0, errors.New("malformed pagination")
 	}
 
