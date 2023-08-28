@@ -91,33 +91,34 @@ type Card struct {
 	ForeignData      []struct {
 		Language string `json:"language"`
 	} `json:"foreignData"`
-	FrameEffects        []string          `json:"frameEffects"`
-	FrameVersion        string            `json:"frameVersion"`
-	Identifiers         map[string]string `json:"identifiers"`
-	IsAlternative       bool              `json:"isAlternative"`
-	IsFullArt           bool              `json:"isFullArt"`
-	IsFunny             bool              `json:"isFunny"`
-	IsOnlineOnly        bool              `json:"isOnlineOnly"`
-	IsOversized         bool              `json:"isOversized"`
-	IsPromo             bool              `json:"isPromo"`
-	IsReserved          bool              `json:"isReserved"`
-	Language            string            `json:"language"`
-	Layout              string            `json:"layout"`
-	Name                string            `json:"name"`
-	Number              string            `json:"number"`
-	OriginalReleaseDate string            `json:"originalReleaseDate"`
-	Printings           []string          `json:"printings"`
-	PromoTypes          []string          `json:"promoTypes"`
-	Rarity              string            `json:"rarity"`
-	SetCode             string            `json:"setCode"`
-	Side                string            `json:"side"`
-	Subsets             []string          `json:"subsets"`
-	Types               []string          `json:"types"`
-	Subtypes            []string          `json:"subtypes"`
-	Supertypes          []string          `json:"supertypes"`
-	UUID                string            `json:"uuid"`
-	Variations          []string          `json:"variations"`
-	Watermark           string            `json:"watermark"`
+	FrameEffects        []string            `json:"frameEffects"`
+	FrameVersion        string              `json:"frameVersion"`
+	Identifiers         map[string]string   `json:"identifiers"`
+	IsAlternative       bool                `json:"isAlternative"`
+	IsFullArt           bool                `json:"isFullArt"`
+	IsFunny             bool                `json:"isFunny"`
+	IsOnlineOnly        bool                `json:"isOnlineOnly"`
+	IsOversized         bool                `json:"isOversized"`
+	IsPromo             bool                `json:"isPromo"`
+	IsReserved          bool                `json:"isReserved"`
+	Language            string              `json:"language"`
+	Layout              string              `json:"layout"`
+	Name                string              `json:"name"`
+	Number              string              `json:"number"`
+	OriginalReleaseDate string              `json:"originalReleaseDate"`
+	Printings           []string            `json:"printings"`
+	PromoTypes          []string            `json:"promoTypes"`
+	Rarity              string              `json:"rarity"`
+	SetCode             string              `json:"setCode"`
+	SourceProducts      map[string][]string `json:"sourceProducts"`
+	Side                string              `json:"side"`
+	Subsets             []string            `json:"subsets"`
+	Types               []string            `json:"types"`
+	Subtypes            []string            `json:"subtypes"`
+	Supertypes          []string            `json:"supertypes"`
+	UUID                string              `json:"uuid"`
+	Variations          []string            `json:"variations"`
+	Watermark           string              `json:"watermark"`
 }
 
 // Card implements the Stringer interface
