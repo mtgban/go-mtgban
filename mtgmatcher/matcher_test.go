@@ -1951,6 +1951,15 @@ var MatchTests = []MatchTest{
 			Edition:   "Promo: General",
 		},
 	},
+	{
+		Id:   "b84b4b86-e8ed-5a6f-adc6-026b64ea0ddf",
+		Desc: "promo_draft_weekend",
+		In: Card{
+			Name:      "Ramunap Excavator",
+			Variation: "Draft Weekend",
+			Edition:   "Launch Party & Release Event Promos",
+		},
+	},
 
 	// Release cards
 	{

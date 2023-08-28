@@ -184,6 +184,7 @@ const (
 	PromoTypeArenaLeague   = "arenaleague"
 	PromoTypePlayerRewards = "playerrewards"
 	PromoTypeStarterDeck   = "starterdeck"
+	PromoTypeDraftWeekend  = "draftweekend"
 
 	PromoTypeSChineseAltArt = "schinesealtart"
 
@@ -208,6 +209,7 @@ var AllPromoTypes = []string{
 	PromoTypeConcept,
 	PromoTypeConfettiFoil,
 	PromoTypeDracula,
+	PromoTypeDraftWeekend,
 	PromoTypeGalaxyFoil,
 	PromoTypeGameDay,
 	PromoTypeGilded,
