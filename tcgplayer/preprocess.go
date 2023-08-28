@@ -296,6 +296,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if strings.Contains(variant, "Italian") {
 				return nil, errors.New("non-english")
 			}
+		case "Lotus Petal":
+			edition = "P30M"
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
