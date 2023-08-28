@@ -897,6 +897,11 @@ func adjustEdition(inCard *Card) {
 	case inCard.isBasicLand() && inCard.isOilSlick() && !inCard.isBundle():
 		variation += " Bundle"
 
+	// Many providers don't tag these promos correctly
+	case inCard.isRelease() && len(MatchInSet(inCard.Name, "PBBD")) == 1:
+		edition = backend.Sets["PBBD"].Name
+		variation = "Prerelease"
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {

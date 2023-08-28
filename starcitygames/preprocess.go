@@ -150,11 +150,6 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 		if strings.Contains(variant, "The Lord of the Rings") && number != "" {
 			variant = number
 		}
-	case "Promo: Date Stamped":
-		if variant == "Launch" && len(mtgmatcher.MatchInSet(cardName, "PBBD")) > 0 {
-			variant = "Prerelease"
-			edition = "PBBD"
-		}
 	case "Unfinity":
 		if strings.Contains(variant, "/") && number != "" {
 			variant = number
