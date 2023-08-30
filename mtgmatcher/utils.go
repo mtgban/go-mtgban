@@ -283,16 +283,6 @@ func Title(str string) string {
 	return cases.Title(language.English).String(str)
 }
 
-// Return whether a slice of strings contains probe
-func sliceStringHas(slice []string, probe string) bool {
-	for i := range slice {
-		if slice[i] == probe {
-			return true
-		}
-	}
-	return false
-}
-
 // Find the keyword in an edition name, ignoring punctuation
 func longestWordInEditionName(str string) string {
 	fields := strings.Fields(str)

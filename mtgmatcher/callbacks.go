@@ -7,6 +7,7 @@ import (
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/exp/slices"
 )
 
 type cardFilterCallback func(inCard *Card, card *mtgjson.Card) bool
@@ -539,7 +540,7 @@ func attractionVariant(inCard *Card, card *mtgjson.Card) bool {
 		}
 	default:
 		if !inCard.isBorderless() && !inCard.isGalaxyFoil() &&
-			sliceStringHas(card.Types, "Land") &&
+			slices.Contains(card.Types, "Land") &&
 			card.BorderColor == mtgjson.BorderColorBorderless &&
 			card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
 			return true
