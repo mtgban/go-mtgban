@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/exp/slices"
 )
 
 type cardinfo struct {
@@ -640,6 +641,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					Rarity:      "Product",
 					Layout:      product.Category,
 					Side:        product.Subtype,
+					// Will be filled later
+					SourceProducts: map[string][]string{},
 				},
 				Sealed:  true,
 				Edition: set.Name,
@@ -718,6 +721,110 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.AlternateNames = altNames
 
 	backend.CommanderKeywordMap = commanderKeywordMap
+
+	fillinSealedContents()
+}
+
+// Add a map of which kind of products sealed contains
+func fillinSealedContents() {
+	result := map[string][]string{}
+	tmp := map[string][]string{}
+
+	for _, set := range backend.Sets {
+		for _, product := range set.SealedProduct {
+			dedup := map[string]int{}
+			list := SealedWithinSealed(set.Code, product.UUID)
+			for _, item := range list {
+				dedup[item]++
+			}
+			for uuid := range dedup {
+				tmp[product.UUID] = append(tmp[product.UUID], uuid)
+			}
+		}
+	}
+
+	// Reverse to be compatible with SourceProducts model
+	for _, list := range tmp {
+		for _, item := range list {
+			for key, sublist := range tmp {
+				// Add if item is in the sublist, and the key was not already added
+				if slices.Contains(sublist, item) && !slices.Contains(result[item], key) {
+					result[item] = append(result[item], key)
+				}
+			}
+		}
+	}
+
+	for uuid, co := range backend.UUIDs {
+		if !co.Sealed {
+			continue
+		}
+
+		res, found := result[uuid]
+		if !found {
+			continue
+		}
+
+		backend.UUIDs[uuid].SourceProducts["sealed"] = res
+	}
+}
+
+// Match the name of the deck with the product UUID(s)
+func findDeck(setCode, deckName string) []string {
+	var list []string
+
+	set, found := backend.Sets[setCode]
+	if !found {
+		return nil
+	}
+
+	for _, deck := range set.Decks {
+		if deck.Name != deckName {
+			continue
+		}
+		list = append(list, deck.SealedProductUUIDs...)
+	}
+
+	return list
+}
+
+// Return a list of sealed products contained by the input product
+// Decks and Packs and Card cannot contain other sealed product, so they are ignored here
+func SealedWithinSealed(setCode, sealedUUID string) []string {
+	var list []string
+
+	set, found := backend.Sets[setCode]
+	if !found {
+		return nil
+	}
+
+	for _, product := range set.SealedProduct {
+		if sealedUUID != product.UUID {
+			continue
+		}
+
+		for key, contents := range product.Contents {
+			for _, content := range contents {
+				switch key {
+				case "sealed":
+					list = append(list, content.UUID)
+
+				case "variable":
+					for _, config := range content.Configs {
+						for _, sealed := range config["sealed"] {
+							list = append(list, sealed.UUID)
+						}
+						for _, deck := range config["deck"] {
+							decklist := findDeck(deck.Set, deck.Name)
+							list = append(list, decklist...)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return list
 }
 
 var langs = map[string]string{

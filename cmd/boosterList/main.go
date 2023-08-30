@@ -168,66 +168,6 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 	return list, nil
 }
 
-func findDeck(setCode, deckName string) ([]string, error) {
-	var list []string
-
-	set, err := mtgmatcher.GetSet(setCode)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, deck := range set.Decks {
-		if deck.Name != deckName {
-			continue
-		}
-
-		list = append(list, deck.SealedProductUUIDs...)
-	}
-
-	return list, nil
-}
-
-// Return sealed products that contain other sealed products
-func getSealedListForSealed(setCode, sealedUUID string) ([]string, error) {
-	var list []string
-
-	set, err := mtgmatcher.GetSet(setCode)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, product := range set.SealedProduct {
-		if sealedUUID != product.UUID {
-			continue
-		}
-
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
-				case "sealed":
-					list = append(list, content.UUID)
-
-				case "variable":
-					for _, config := range content.Configs {
-						for _, sealed := range config["sealed"] {
-							list = append(list, sealed.UUID)
-						}
-						for _, deck := range config["deck"] {
-							decklist, err := findDeck(deck.Set, deck.Name)
-							if err != nil {
-								continue
-							}
-							list = append(list, decklist...)
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return list, nil
-}
-
 func main() {
 	SetCodeOpt = flag.String("s", "", "Set code to choose")
 	SealedMode = flag.Bool("b", false, "List sealed without unpacking it")
@@ -272,7 +212,7 @@ func run() int {
 		var list []string
 		var err error
 		if *SealedMode {
-			list, err = getSealedListForSealed(set.Code, product.UUID)
+			list, err = mtgmatcher.SealedWithinSealed(set.Code, product.UUID)
 		} else {
 			list, err = getListForSealed(set.Code, product.UUID)
 		}
