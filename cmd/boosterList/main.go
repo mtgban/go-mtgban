@@ -208,8 +208,8 @@ func run() int {
 	for _, product := range set.SealedProduct {
 		list, err := getListForSealed(set.Code, product.UUID)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
+			fmt.Fprintln(os.Stderr, product.Name, err)
+			continue
 		}
 		dedup := map[string]int{}
 		for _, item := range list {
