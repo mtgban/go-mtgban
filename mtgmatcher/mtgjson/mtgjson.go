@@ -73,7 +73,7 @@ type Set struct {
 			UUID   string `json:"uuid"`
 		} `json:"cards"`
 		Name               string   `json:"name"`
-		SealedProductUuids []string `json:"sealedProductUuids"`
+		SealedProductUUIDs []string `json:"sealedProductUuids"`
 	} `json:"decks"`
 }
 
