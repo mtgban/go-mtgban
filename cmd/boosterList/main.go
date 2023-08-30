@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"golang.org/x/exp/slices"
 )
 
 func getListForBooster(setCode, boosterType string) ([]string, error) {
@@ -230,6 +231,7 @@ func getSealedListForSealed(setCode, sealedUUID string) ([]string, error) {
 func main() {
 	SetCodeOpt = flag.String("s", "", "Set code to choose")
 	SealedMode = flag.Bool("b", false, "List sealed without unpacking it")
+	Reverse = flag.Bool("r", false, "Reverse results tree")
 	allprintingsPath := flag.String("a", "allprintings5.json", "Load AllPrintings file path")
 
 	flag.Parse()
@@ -297,6 +299,25 @@ func run() int {
 		sort.Strings(result[product.Name])
 	}
 
+	if *Reverse {
+		tmp := map[string][]string{}
+
+		for _, list := range result {
+			for _, item := range list {
+				if tmp[item] != nil {
+					continue
+				}
+				for key, sublist := range result {
+					if slices.Contains(sublist, item) {
+						tmp[item] = append(tmp[item], key)
+					}
+				}
+			}
+		}
+
+		result = tmp
+	}
+
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	err = enc.Encode(result)
@@ -308,3 +329,4 @@ func run() int {
 
 var SetCodeOpt *string
 var SealedMode *bool
+var Reverse *bool
