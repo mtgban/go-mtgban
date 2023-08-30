@@ -6,6 +6,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -182,7 +183,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		if err != nil {
 			continue
 		}
-		if sliceStringHas(filterRarities, co.Rarity) {
+		if slices.Contains(filterRarities, co.Rarity) {
 			continue
 		}
 		if filterFoil && (co.Foil || co.Etched) {
@@ -194,10 +195,10 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		if filterRLOnly && !co.IsReserved {
 			continue
 		}
-		if sliceStringHas(filterEditions, co.Edition) {
+		if slices.Contains(filterEditions, co.Edition) {
 			continue
 		}
-		if filterSelectedEditions != nil && !sliceStringHas(filterSelectedEditions, co.Edition) {
+		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) {
 			continue
 		}
 		cnRange, found := filterSelectedCNRange[co.Edition]
@@ -209,7 +210,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 
 		for _, invEntry := range invEntries {
-			if sliceStringHas(filterConditions, invEntry.Conditions) {
+			if slices.Contains(filterConditions, invEntry.Conditions) {
 				continue
 			}
 			if !seller.Info().NoQuantityInventory && invEntry.Quantity < minQty {
@@ -444,7 +445,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		if err != nil {
 			continue
 		}
-		if sliceStringHas(filterRarities, co.Rarity) {
+		if slices.Contains(filterRarities, co.Rarity) {
 			continue
 		}
 		if filterFoil && (co.Foil || co.Etched) {
@@ -456,10 +457,10 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		if filterRLOnly && !co.IsReserved {
 			continue
 		}
-		if sliceStringHas(filterEditions, co.Edition) {
+		if slices.Contains(filterEditions, co.Edition) {
 			continue
 		}
-		if filterSelectedEditions != nil && !sliceStringHas(filterSelectedEditions, co.Edition) {
+		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) {
 			continue
 		}
 		cnRange, found := filterSelectedCNRange[co.Edition]
@@ -474,12 +475,12 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			if refEntry.Price == 0 {
 				continue
 			}
-			if sliceStringHas(filterConditions, refEntry.Conditions) {
+			if slices.Contains(filterConditions, refEntry.Conditions) {
 				continue
 			}
 
 			for _, invEntry := range invEntries {
-				if sliceStringHas(filterConditions, invEntry.Conditions) {
+				if slices.Contains(filterConditions, invEntry.Conditions) {
 					continue
 				}
 				if !probe.Info().NoQuantityInventory && invEntry.Quantity < minQty {
