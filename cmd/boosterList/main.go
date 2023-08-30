@@ -6,10 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"golang.org/x/exp/maps"
 )
 
 func getListForBooster(setCode, boosterType string) ([]string, error) {
@@ -216,7 +216,14 @@ func run() int {
 			dedup[item]++
 		}
 
-		result[product.UUID] = maps.Keys(dedup)
+		for uuid := range dedup {
+			co, err := mtgmatcher.GetUUID(uuid)
+			if err != nil {
+				continue
+			}
+			result[product.Name] = append(result[product.Name], co.String())
+		}
+		sort.Strings(result[product.Name])
 	}
 
 	enc := json.NewEncoder(os.Stdout)
