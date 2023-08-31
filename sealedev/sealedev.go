@@ -159,7 +159,7 @@ func (ss *SealedEVScraper) scrape() error {
 		case "FBB", "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":
 			continue
 		}
-		if set.SealedProduct == nil || set.Booster == nil {
+		if set.SealedProduct == nil {
 			continue
 		}
 
