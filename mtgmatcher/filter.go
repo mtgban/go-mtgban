@@ -179,6 +179,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if inCard.Variation == "The List" || inCard.Edition == "The List" ||
 					inCard.Contains("Heads I Win, Tails You Lose") ||
 					inCard.Contains("From Cute to Brute") ||
+					inCard.Contains("They're Just Like Us") ||
 					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
 					continue
 				}
@@ -191,6 +192,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" ||
 					inCard.Contains("Heads I Win, Tails You Lose") ||
 					inCard.Contains("From Cute to Brute") ||
+					inCard.Contains("They're Just Like Us") ||
 					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non") ||
 					// Explicitly skip playtest cards unless using the correct edition is used
 					// They are visually the same as CMB1 and nobody tracks them separately
@@ -240,6 +242,35 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
 					if inCard.Edition != set.Name {
 						continue
+					}
+				}
+			case "PAGL":
+				// If the card is not foil, and has been printed somewhere else,
+				// only pick this edition if explicilty requested
+				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
+					if inCard.Edition != set.Name {
+						// Except the following cards, when they are not tagged as specified,
+						// it means they are actually from this set
+						switch inCard.Name {
+						case "Angelic Field Marshal",
+							"Angel of Destiny",
+							"Angel of Serenity",
+							"Angel of Vitality",
+							"Archangel of Tithes",
+							"Emeria Shepherd",
+							"Entreat the Angels",
+							"Righteous Valkyrie",
+							"Sephara, Sky's Blade",
+							"Shattered Angel",
+							"Sunblast Angel":
+							if !inCard.Foil {
+								continue
+							}
+						default:
+							if inCard.Foil {
+								continue
+							}
+						}
 					}
 				}
 			case "UPLIST":
@@ -893,7 +924,12 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				filteredOutCards = append(filteredOutCards, card)
 			}
 		} else {
-			for _, code := range []string{"PLIST", "PHED", "PCTB"} {
+			for _, code := range []string{
+				"PLIST",
+				"PHED",
+				"PCTB",
+				"PAGL",
+			} {
 				if len(MatchInSet(inCard.Name, code)) > 0 {
 					for _, card := range outCards {
 						if card.SetCode != code {
