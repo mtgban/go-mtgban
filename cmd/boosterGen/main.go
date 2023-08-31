@@ -61,7 +61,7 @@ func run() int {
 			}
 		}
 		if numOfBoosters == 0 {
-			fmt.Fprintln(os.Stderr, *SetCodeOpt, "does not have", *BoosterTypeOpt, " box information")
+			fmt.Fprintln(os.Stderr, *SetCodeOpt, "does not have", *BoosterTypeOpt, "box information")
 			numOfBoosters = 1
 		}
 	}
