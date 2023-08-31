@@ -177,8 +177,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch set.Code {
 			case "MB1":
 				if inCard.Variation == "The List" || inCard.Edition == "The List" ||
-					inCard.Edition == "Heads I Win, Tails You Lose" ||
-					inCard.Edition == "From Cute to Brute" ||
+					inCard.Contains("Heads I Win, Tails You Lose") ||
+					inCard.Contains("From Cute to Brute") ||
 					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
 					continue
 				}
@@ -189,8 +189,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			case "PLIST":
 				if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" ||
-					inCard.Edition == "Heads I Win, Tails You Lose" ||
-					inCard.Edition == "From Cute to Brute" ||
+					inCard.Contains("Heads I Win, Tails You Lose") ||
+					inCard.Contains("From Cute to Brute") ||
 					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non") ||
 					// Explicitly skip playtest cards unless using the correct edition is used
 					// They are visually the same as CMB1 and nobody tracks them separately
@@ -209,7 +209,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				// If the card is not foil, and has been printed somewhere else,
 				// only pick this edition if explicilty requested
 				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
-					if inCard.Edition != "Heads I Win, Tails You Lose" {
+					if inCard.Edition != set.Name {
 						// Except the following cards, when they are not tagged as specified,
 						// it means they are actually from this set
 						switch inCard.Name {
@@ -238,7 +238,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				// If the card is not foil, and has been printed somewhere else,
 				// only pick this edition if explicilty requested
 				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
-					if inCard.Edition != "From Cute to Brute" {
+					if inCard.Edition != set.Name {
 						continue
 					}
 				}
