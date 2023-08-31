@@ -183,7 +183,7 @@ func (ss *SealedEVScraper) scrape() error {
 			for j := 0; j < repeats; j++ {
 				picks, err := mtgmatcher.GetPicksForSealed(set.Code, product.UUID)
 				if err != nil {
-					if product.Contents != nil && !errPrinted && product.Category != "land_station" {
+					if !errPrinted && product.Category != "land_station" {
 						ss.printf("[%s] '%s' error: %s", set.Code, product.Name, err.Error())
 						errPrinted = true
 					}
