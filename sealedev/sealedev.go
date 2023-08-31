@@ -144,94 +144,6 @@ func needsRandom(setCode, sealedUUID string) bool {
 	return false
 }
 
-func getPicksForSealed(setCode, sealedUUID string) ([]string, error) {
-	picks, err := mtgmatcher.GetPicksForSealed(setCode, sealedUUID)
-	if len(picks) == 0 {
-		set, err := mtgmatcher.GetSet(setCode)
-		if err != nil {
-			return nil, err
-		}
-
-		// Retry with the custom estimation
-		for _, product := range set.SealedProduct {
-			if sealedUUID != product.UUID {
-				continue
-			}
-
-			if product.Contents == nil {
-				picks = classicSealedCalc(setCode, product.UUID)
-			}
-		}
-	}
-	if len(picks) == 0 {
-		return nil, err
-	}
-	return picks, nil
-}
-
-// This function can be dropped once all Sealed has the Contents array in place
-func classicSealedCalc(setCode, sealedUUID string) []string {
-	var picks []string
-
-	set, err := mtgmatcher.GetSet(setCode)
-	if err != nil {
-		return nil
-	}
-
-	for _, product := range set.SealedProduct {
-		if sealedUUID != product.UUID {
-			continue
-		}
-
-		// Only keep booster-like items
-		switch product.Category {
-		case "booster_box",
-			"booster_pack",
-			"draft_set":
-		default:
-			continue
-		}
-
-		subType := product.Subtype
-		switch subType {
-		case "default",
-			"collector",
-			"jumpstart",
-			"set":
-		case "topper":
-			subType = "box-topper"
-		case "theme":
-			if product.Category != "booster_pack" {
-				continue
-			}
-			for boosterType, booster := range set.Booster {
-				if mtgmatcher.SealedEquals(booster.Name, product.Name) {
-					subType = boosterType
-					break
-				}
-			}
-		default:
-			continue
-		}
-
-		// Derive how many boosters the product contains
-		productSize := 1
-		if product.ProductSize != 0 {
-			productSize = product.ProductSize
-		}
-
-		for e := 0; e < productSize; e++ {
-			boosterPicks, err := mtgmatcher.BoosterGen(set.Code, subType)
-			if err != nil {
-				continue
-			}
-			picks = append(picks, boosterPicks...)
-		}
-	}
-
-	return picks
-}
-
 func (ss *SealedEVScraper) scrape() error {
 	ss.printf("Loading BAN prices")
 	prices, err := loadPrices(ss.banpriceKey)
@@ -269,7 +181,7 @@ func (ss *SealedEVScraper) scrape() error {
 			datasets := make([][]float64, len(evParameters))
 
 			for j := 0; j < repeats; j++ {
-				picks, err := getPicksForSealed(set.Code, product.UUID)
+				picks, err := mtgmatcher.GetPicksForSealed(set.Code, product.UUID)
 				if err != nil {
 					if product.Contents != nil && !errPrinted && product.Category != "land_station" {
 						ss.printf("[%s] '%s' error: %s", set.Code, product.Name, err.Error())
