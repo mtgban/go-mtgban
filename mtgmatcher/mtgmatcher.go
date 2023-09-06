@@ -741,13 +741,20 @@ func adjustEdition(inCard *Card) {
 			}
 		}
 
-		if inCard.Contains("Plains") || inCard.Contains("Battlefield Forge") {
+		switch {
+		case inCard.Contains("Plains"), inCard.Contains("Battlefield Forge"):
 			if inCard.Contains("Unpeeled") {
 				inCard.Name = "Battlefield Forge"
 				inCard.Variation = "669"
 			} else if inCard.Contains("Peeled") {
 				inCard.Name = "Plains"
 				inCard.Variation = "670"
+			}
+		// There is a DFC with same name, we need to decouple in some way
+		case Contains(inCard.Name, "Garruk Wildspeaker"):
+			if inCard.isBorderless() || inCard.Contains("Li’l’ler Walkers") || strings.Contains(inCard.Variation, "1142") {
+				inCard.Name = "Garruk Wildspeaker"
+				inCard.Variation = "1142"
 			}
 		}
 

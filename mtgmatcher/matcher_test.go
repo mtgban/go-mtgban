@@ -1441,6 +1441,24 @@ var MatchTests = []MatchTest{
 			Edition:   "Secret Lair",
 		},
 	},
+	{
+		Id:   "1d6d8b1a-be16-5d1a-9b49-d0fb7e9178fe",
+		Desc: "dfc_with_a_reprint_samename",
+		In: Card{
+			Name:      "Garruk Wildspeaker",
+			Variation: "1457",
+			Edition:   "Secret Lair",
+		},
+	},
+	{
+		Id:   "0e7c42dd-89b9-511c-a64c-c772680cfdc9",
+		Desc: "dfc_with_a_reprint_borderless",
+		In: Card{
+			Name:      "Garruk Wildspeaker",
+			Variation: "Borderless",
+			Edition:   "Secret Lair",
+		},
+	},
 
 	// Arabian Nights different mana symbol
 	{
