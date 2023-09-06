@@ -2732,7 +2732,7 @@ var mirVariants = map[string]map[string]string{
 // Cards present in MB1 that got reprinted in PLIST using a different tag. Also
 // works for cards in PLIST that got printed multiple times. This is because in
 // case of multiple matches, PLIST is selected.
-// https://scryfall.com/search?q=in%3Aplist+in%3Amb1+%28e%3Amb1+or+e%3Aplist%29&unique=prints
+// https://scryfall.com/search?q=in%3Aplist+in%3Amb1+%28e%3Amb1+or+e%3Aplist+or+e%3Aphed+or+e%3Apctb+or+e%3Apagl%29&unique=prints&as=grid&order=name
 var mb1plistVariants = map[string]map[string]string{
 	// MB1 cards reprinted in PLIST
 	"Aura Shards": {
