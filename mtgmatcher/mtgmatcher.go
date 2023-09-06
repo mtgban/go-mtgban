@@ -560,7 +560,7 @@ func adjustEdition(inCard *Card) {
 		edition = ed
 	}
 	set, found = backend.Sets[strings.ToUpper(variation)]
-	if found && inCard.isJudge() {
+	if found && (inCard.isJudge() || inCard.isDuelDecks() || inCard.isDuelDecksAnthology()) {
 		edition = set.Name
 	}
 	ed, found = EditionTable[variation]

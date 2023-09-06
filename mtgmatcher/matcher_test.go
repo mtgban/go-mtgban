@@ -676,7 +676,7 @@ var MatchTests = []MatchTest{
 	},
 	{
 		Id:   "ff963a6c-5c2c-5d51-a75b-abce3e819db1",
-		Desc: "incorrect_edition_but_salvageable",
+		Desc: "incorrect_edition_but_salvageable_plain",
 		In: Card{
 			Name:    "Polluted Mire",
 			Edition: "Duel Decks Anthology",
@@ -2314,6 +2314,15 @@ var MatchTests = []MatchTest{
 			Name:      "Jace Beleren",
 			Variation: "Japanese Jace vs. Chandra Foil",
 			Edition:   "Duel Decks: Jace vs. Chandra",
+		},
+	},
+	{
+		Id:   "796f148f-c47a-5cc3-86bf-46352a179d9b",
+		Desc: "duel_decks_variant_real_edition_in_variant",
+		In: Card{
+			Name:      "Corrupt",
+			Variation: "GVL",
+			Edition:   "Duel Decks: Anthology",
 		},
 	},
 

@@ -723,9 +723,8 @@ func (c *Card) isDuelDecks() bool {
 }
 
 func (c *Card) isDuelDecksAnthology() bool {
-	return Contains(c.Edition, "Duel Decks Anthology") &&
-		(c.Contains(" vs ") ||
-			strings.Contains(c.Variation, " v. ")) // tcg
+	return strings.Contains(c.Edition, "DDA") ||
+		(Contains(c.Edition, "Duel Decks") && Contains(c.Edition, "Anthology"))
 }
 
 func (c *Card) duelDecksVariant() string {

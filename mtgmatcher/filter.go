@@ -431,7 +431,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 						break
 					}
 				}
-				if !found {
+				if inCard.Variation != "" && !found {
 					continue
 				}
 			default:
