@@ -26,6 +26,7 @@ var tokenIds = map[int]string{
 var cardIds = map[int]string{
 	284951: "P30A",
 	284923: "P30H",
+	284921: "P30H",
 }
 
 func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card, error) {
