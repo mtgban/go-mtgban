@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/exp/slices"
 )
 
 // Remove any unrelated edition from the input array.
@@ -640,7 +641,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				case "SLD":
 					foundCards := MatchInSet(inCard.Name, setCode)
 					for _, card := range foundCards {
-						if card.IsPlaneswalker() {
+						if slices.Contains(card.Types, "Planeswalker") {
 							skip = false
 							break
 						}

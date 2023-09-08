@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 type Sheet struct {
@@ -244,39 +246,15 @@ func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
 }
 
 func (c *Card) HasFinish(fi string) bool {
-	for i := range c.Finishes {
-		if c.Finishes[i] == fi {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(c.Finishes, fi)
 }
 
 func (c *Card) HasFrameEffect(fe string) bool {
-	for i := range c.FrameEffects {
-		if c.FrameEffects[i] == fe {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(c.FrameEffects, fe)
 }
 
 func (c *Card) HasPromoType(pt string) bool {
-	for i := range c.PromoTypes {
-		if c.PromoTypes[i] == pt {
-			return true
-		}
-	}
-	return false
-}
-
-func (c *Card) IsPlaneswalker() bool {
-	for _, typeLine := range c.Types {
-		if typeLine == "Planeswalker" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(c.PromoTypes, pt)
 }
 
 // Check if a dual-faced card has the same for both faces
