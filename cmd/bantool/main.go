@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -349,9 +350,19 @@ var options = map[string]*scraperOption{
 			if num != 0 {
 				scraper.MaxConcurrency = num
 			}
-			reader, err := os.Open(mtgjsonTCGSKUFilepathBZ2)
-			if err != nil {
-				return nil, err
+			var reader io.ReadCloser
+			var err error
+			if strings.HasPrefix(mtgjsonTCGSKUFilepathBZ2, "http") {
+				resp, err := http.Get(mtgjsonTCGSKUFilepathBZ2)
+				if err != nil {
+					return nil, err
+				}
+				reader = resp.Body
+			} else {
+				reader, err = os.Open(mtgjsonTCGSKUFilepathBZ2)
+				if err != nil {
+					return nil, err
+				}
 			}
 			defer reader.Close()
 			skus, err := tcgplayer.LoadTCGSKUs(reader)
