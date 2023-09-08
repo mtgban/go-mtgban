@@ -149,7 +149,6 @@ const (
 	FinishEtched  = "etched"
 
 	FrameEffectExtendedArt = "extendedart"
-	FrameEffectEtched      = "etched"
 	FrameEffectInverted    = "inverted"
 	FrameEffectShowcase    = "showcase"
 	FrameEffectShattered   = "shatteredglass"
