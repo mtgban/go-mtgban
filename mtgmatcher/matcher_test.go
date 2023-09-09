@@ -2,6 +2,7 @@ package mtgmatcher
 
 import (
 	"encoding/json"
+	"flag"
 	"log"
 	"os"
 	"testing"
@@ -19,6 +20,8 @@ type MatchTest struct {
 }
 
 const TestDataFile = "matcher_test_data.json"
+
+var UpdateTests = flag.Bool("u", false, "Update test ids while running")
 
 var MatchTests []MatchTest
 
@@ -60,11 +63,15 @@ func TestMain(m *testing.M) {
 }
 
 func TestMatch(t *testing.T) {
-	for _, probe := range MatchTests {
+	var shouldUpdateTests bool
+
+	for i, probe := range MatchTests {
 		test := probe
 		t.Run(test.Desc, func(t *testing.T) {
-			t.Parallel()
-
+			// Need to run tests sequentially if we're updating them
+			if !*UpdateTests {
+				t.Parallel()
+			}
 			card := test.In
 			card.promoWildcard = test.Wildcard
 			cardId, err := Match(&card)
@@ -82,12 +89,33 @@ func TestMatch(t *testing.T) {
 					return
 				}
 			} else if cardId != test.Id {
+				if *UpdateTests {
+					t.Logf("NOTE: Updating test result from '%s' to '%s'", test.Id, cardId)
+					MatchTests[i].Id = cardId
+					shouldUpdateTests = true
+					return
+				}
 				t.Errorf("FAIL: Id mismatch: expected '%s', got '%s'", test.Id, cardId)
 				return
 			}
 
 			t.Log("PASS:", test.Desc)
 		})
+	}
+
+	if shouldUpdateTests {
+		fileWriter, err := os.Create(TestDataFile)
+		if err != nil {
+			t.Errorf("FAIL: Unable to update test data file: %s", err.Error())
+			return
+		}
+		enc := json.NewEncoder(fileWriter)
+		enc.SetIndent("", "    ")
+		err = enc.Encode(MatchTests)
+		if err != nil {
+			t.Errorf("FAIL: Error while updating test data file: %s", err.Error())
+			return
+		}
 	}
 }
 
