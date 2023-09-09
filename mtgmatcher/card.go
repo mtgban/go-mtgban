@@ -12,19 +12,19 @@ import (
 type Card struct {
 	// The mtgjson unique identifier of the card
 	// When used as input it can host mtgjson or scryfall id
-	Id string
+	Id string `json:"id,omitempty"`
 
 	// The canonical name of the card
-	Name string
+	Name string `json:"name,omitempty"`
 
 	// The hint or commonly know variation
-	Variation string
+	Variation string `json:"variant,omitempty"`
 
 	// The set the card comes from, or a portion of it
-	Edition string
+	Edition string `json:"edition,omitempty"`
 
 	// Whether the card is foil or not
-	Foil bool
+	Foil bool `json:"foil,omitempty"`
 
 	// The card belongs to the extended side of the set, usually containing
 	// variants with the same name of existing cards in the same set, but with

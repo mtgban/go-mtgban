@@ -1,0 +1,3984 @@
+[
+    {
+        "uuid": "3ef6edae-e899-521c-a731-3aeeff8b154e",
+        "description": "error_no_edition",
+        "input": {
+            "name": "The Great Henge (Extended Art)"
+        }
+    },
+    {
+        "error": "aliasing detected",
+        "description": "error_no_variant",
+        "input": {
+            "name": "Forest (269)"
+        }
+    },
+    {
+        "error": "unknown card name",
+        "description": "error_card_does_not_exist",
+        "input": {
+            "name": "I do not exist"
+        }
+    },
+    {
+        "error": "unknown variant",
+        "description": "error_wrong_card_number",
+        "input": {
+            "name": "Arcane Denial",
+            "variant": "10",
+            "edition": "Alliances"
+        }
+    },
+    {
+        "error": "unknown edition",
+        "description": "error_not_in_a_promo_pack",
+        "input": {
+            "name": "Demonic Tutor",
+            "edition": "Promo Pack"
+        }
+    },
+    {
+        "error": "unknown edition",
+        "description": "error_not_a_prerelease",
+        "input": {
+            "name": "Lobotomy",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "error": "aliasing detected",
+        "description": "error_pure_aliasing",
+        "input": {
+            "name": "Forest",
+            "edition": "Zendikar"
+        }
+    },
+    {
+        "error": "unknown card name",
+        "description": "error_invalid_id",
+        "input": {
+            "id": "not-an-id"
+        }
+    },
+    {
+        "error": "unsupported",
+        "description": "error_tok_unsupported_alias",
+        "input": {
+            "name": "Earthshaker Khenra Token",
+            "edition": "Hour of Devastation"
+        }
+    },
+    {
+        "error": "unsupported",
+        "description": "error_tok_unsupported_bat",
+        "input": {
+            "name": "Bat Token",
+            "edition": "Modern Masters"
+        }
+    },
+    {
+        "error": "unsupported",
+        "description": "error_tok_unsupported_commander",
+        "input": {
+            "name": "Bat (002) // Vampire (004) Double-sided Token",
+            "edition": "Commander 2017"
+        }
+    },
+    {
+        "error": "unsupported",
+        "description": "error_tok_unsupported_morph",
+        "input": {
+            "name": "Morph",
+            "edition": "Dragons of Tarkir"
+        }
+    },
+    {
+        "error": "unsupported",
+        "description": "error_tok_unsupported_complete",
+        "input": {
+            "name": "Fallen Empires",
+            "variant": "Complete FEM Set",
+            "edition": "Complete Sets"
+        }
+    },
+    {
+        "uuid": "f3a94132-ce71-5556-bfd3-1461601a810d",
+        "description": "id_lookup_mtgjson",
+        "input": {
+            "id": "f3a94132-ce71-5556-bfd3-1461601a810d"
+        }
+    },
+    {
+        "uuid": "f3a94132-ce71-5556-bfd3-1461601a810d_f",
+        "description": "id_lookup_foil",
+        "input": {
+            "id": "f3a94132-ce71-5556-bfd3-1461601a810d",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "b2f56602-e85a-588f-a4be-40b6e56f44f7",
+        "description": "id_lookup_alt_foil",
+        "input": {
+            "id": "be665b02-1cf2-50c6-8861-85da921bc853",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "095ecbbf-7e08-5bc7-85f9-7d830b9141a2_f",
+        "description": "id_lookup_variant_ea_foil",
+        "input": {
+            "id": "095ecbbf-7e08-5bc7-85f9-7d830b9141a2",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "0b77872e-c4eb-54f4-8f63-57fcf68e682a",
+        "description": "id_lookup_non_foil",
+        "input": {
+            "id": "7a6610cf-7d53-5e4b-bb76-9be1708d3892"
+        }
+    },
+    {
+        "uuid": "38fc8e52-821b-5701-a5bd-7402ee13a51c",
+        "description": "id_lookup_multi_variants",
+        "input": {
+            "id": "a67c3cd2-d09d-5c2e-807b-5f4772c367e7"
+        }
+    },
+    {
+        "uuid": "91cff9f4-41ec-5359-8723-dd2e6ba6efc4",
+        "description": "id_lookup_scryfall",
+        "input": {
+            "id": "0535c823-f6e9-4a2f-8adf-f69b6f0fea1f"
+        }
+    },
+    {
+        "uuid": "efdbf638-dbe6-5813-ba0b-dafbac1e1468",
+        "description": "id_lookup_tcg",
+        "input": {
+            "id": "239436"
+        }
+    },
+    {
+        "uuid": "9f35aba6-72d9-565b-bb8b-2ba628282b2e_e",
+        "description": "id_lookup_etched",
+        "input": {
+            "id": "9f35aba6-72d9-565b-bb8b-2ba628282b2e",
+            "variant": "Etched"
+        }
+    },
+    {
+        "uuid": "f3a94132-ce71-5556-bfd3-1461601a810d_f",
+        "description": "id_lookup_foil_in_variant",
+        "input": {
+            "id": "f3a94132-ce71-5556-bfd3-1461601a810d",
+            "variant": "foil"
+        }
+    },
+    {
+        "uuid": "fb083deb-30ea-5ff4-8aa8-cee8531cd7ec",
+        "description": "number_dupes_fullart_land",
+        "input": {
+            "name": "Swamp",
+            "variant": "241",
+            "edition": "Zendikar"
+        }
+    },
+    {
+        "uuid": "aed5fe79-ddec-5bf7-93b3-63a042faf863",
+        "description": "number_dupes_fullart_land_could_be_confused_with_suffix",
+        "input": {
+            "name": "Island",
+            "variant": "234 A - Full Art",
+            "edition": "Zendikar"
+        }
+    },
+    {
+        "uuid": "4fb5d3f7-cc7b-5502-8906-555ba919bd02",
+        "description": "number_dupes_nonfullart_land_could_be_confused_with_suffix",
+        "input": {
+            "name": "Forest",
+            "variant": "274 A - Non-Full Art",
+            "edition": "Battle for Zendikar"
+        }
+    },
+    {
+        "uuid": "df3a4387-62c5-5fcc-a675-1c5e04d6103b",
+        "description": "number_dupes_complex_number_variant",
+        "input": {
+            "name": "Plains",
+            "variant": "87 - A",
+            "edition": "Unsanctioned"
+        }
+    },
+    {
+        "uuid": "a7d7f03a-d876-52aa-97f6-44d371226533",
+        "description": "number_dupes_alternative_complex_number_variant",
+        "input": {
+            "name": "Brothers Yamazaki",
+            "variant": "160 A",
+            "edition": "Champions of Kamigawa"
+        }
+    },
+    {
+        "uuid": "aacfd47d-9b20-52ad-a62c-cba3414357ad",
+        "description": "number_dupes_second_alternative_complex_number_variant",
+        "input": {
+            "name": "Brothers Yamazaki",
+            "variant": "160 - B",
+            "edition": "Champions of Kamigawa"
+        }
+    },
+    {
+        "uuid": "c7f233d4-0770-5b10-9836-b4034047a9f8",
+        "description": "number_dupes_borderless_lands",
+        "input": {
+            "name": "Plains",
+            "edition": "Unstable"
+        }
+    },
+    {
+        "uuid": "af8f1ee0-f235-5e76-9994-60c8d809da47",
+        "description": "number_dupes_weekend_lands",
+        "input": {
+            "name": "Island",
+            "variant": "Ravnica Weekend B02",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "7b64a5cf-a4c9-5391-bbba-0dd945281569",
+        "description": "number_dupes_mps_lands_2006",
+        "input": {
+            "name": "Swamp",
+            "edition": "Magic Premiere Shop 2006",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "77321166-66e1-5e9a-b630-35dcddb4b818",
+        "description": "number_dupes_mps_lands_2009",
+        "input": {
+            "name": "Island",
+            "variant": "Rob Alexander MPS 2009",
+            "edition": "Promos: MPS Lands"
+        }
+    },
+    {
+        "uuid": "053c8559-8ab8-5a1a-9444-6140b41470c4",
+        "description": "number_dupes_plains_from_set_with_special_cards_and_C_to_be_ignored",
+        "input": {
+            "name": "Plains",
+            "variant": "366 C",
+            "edition": "Tenth edition"
+        }
+    },
+    {
+        "uuid": "5675b6f8-ca15-5455-aaf7-56dfb038ec52",
+        "description": "number_dupes_nonfullart_land_with_incomplete_number",
+        "input": {
+            "name": "Forest",
+            "variant": "Non-Full Art 271",
+            "edition": "Battle for Zendikar"
+        }
+    },
+    {
+        "uuid": "b2f53204-4357-56e7-a8f4-7f29ed9e674c",
+        "description": "number_dupes_land_with_letter",
+        "input": {
+            "name": "Forest B",
+            "edition": "Intl. Collectors' edition"
+        }
+    },
+    {
+        "uuid": "d0fbb33b-cd41-5fb7-8518-382dd07860d1",
+        "description": "number_dupes_forest_F",
+        "input": {
+            "name": "Forest F",
+            "edition": "Battle Royale"
+        }
+    },
+    {
+        "uuid": "4fb5d3f7-cc7b-5502-8906-555ba919bd02",
+        "description": "number_dupes_intro_land",
+        "input": {
+            "name": "Forest",
+            "variant": "274 Intro",
+            "edition": "Battle for Zendikar"
+        }
+    },
+    {
+        "uuid": "057df7fb-238d-55b1-93dd-ec76548a0fca",
+        "description": "number_dupes_land_with_collectors_number",
+        "input": {
+            "name": "Forest 277",
+            "edition": "Ixalan"
+        }
+    },
+    {
+        "uuid": "19a31a18-1d66-585b-b145-e638345ffad9",
+        "description": "number_dupes_jp_land_full",
+        "input": {
+            "name": "Island",
+            "variant": "JP Full Art 296",
+            "edition": "Kamigawa: Neon Dynasty"
+        }
+    },
+    {
+        "uuid": "a494d14e-b4c3-5467-8af5-bad8b41da09a_f",
+        "description": "number_dupes_number_and_foil_same_line",
+        "input": {
+            "name": "Island (369) - [foil]",
+            "edition": "10th Edition"
+        }
+    },
+    {
+        "uuid": "eeeea359-07bc-5a6e-937a-c581e6097d0d",
+        "description": "number_dupes_number_and_tag_etched",
+        "input": {
+            "name": "Griselbrand",
+            "variant": "160 Etched",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "e771d473-2b2e-54c9-824e-1e309cdf42ec",
+        "description": "number_dupes__tag_etched_only",
+        "input": {
+            "name": "Demonlord Belzenlok",
+            "variant": "Foil Etched",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
+        "uuid": "2c28317d-3a8b-56ce-9467-e52270a234ea",
+        "description": "number_dupes__number_and_tag_compleat",
+        "input": {
+            "name": "Shadowborn Apostle",
+            "variant": "681 Step-and-Compleat Foil",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
+        "uuid": "7f054dc5-611f-5cf9-8211-7106a158f84e",
+        "description": "number_dupes__tag_compleat_only",
+        "input": {
+            "name": "Virulent Sliver",
+            "variant": "Extended Art Step-and-Compleat Foil",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
+        "uuid": "7f054dc5-611f-5cf9-8211-7106a158f84e",
+        "description": "number_dupes_number_correct",
+        "input": {
+            "name": "Virulent Sliver",
+            "variant": "659Φ",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "61158e3c-73ed-5fdc-80b4-67ce53f7d249",
+        "description": "number_dupes_number_and_tag_rainbow",
+        "input": {
+            "name": "Shattergang Brothers",
+            "variant": "1315 Rainbow Foil",
+            "edition": "SLD",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "f32e01cc-5930-5319-a6c0-72628a1f571a",
+        "description": "number_dupes_number_only",
+        "input": {
+            "name": "Shattergang Brothers",
+            "variant": "1315",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "bf0aa055-3635-5efd-930d-4f0a7caaa411",
+        "description": "names_transform_card",
+        "input": {
+            "name": "Daybreak Ranger / Nightfall Predator",
+            "edition": "Innistrad"
+        }
+    },
+    {
+        "uuid": "7e6e9448-42ab-58e1-828a-ebef7b5ada77",
+        "description": "names_aftermath_card",
+        "input": {
+            "name": "Commit to Memory",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "0ad9df53-068e-5bbd-9a83-d0dc4168ce6e",
+        "description": "names_split_card",
+        "input": {
+            "name": "Fire // Ice",
+            "edition": "Apocalypse"
+        }
+    },
+    {
+        "uuid": "88400e25-72b6-54b9-8e0d-40851b42bcdd",
+        "description": "names_flip_card_not_really",
+        "input": {
+            "name": "Journey to Eternity",
+            "edition": "Rivals of Ixalan"
+        }
+    },
+    {
+        "uuid": "7170634e-89fc-5e19-b7e6-ae4393b143d5",
+        "description": "names_flip_card",
+        "input": {
+            "name": "Startled Awake - Persistent Nightmare",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "7170634e-89fc-5e19-b7e6-ae4393b143d5",
+        "description": "names_flip_card_half",
+        "input": {
+            "name": "Startled Awake",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "6081d8fd-26e1-5e6a-9c98-417d03214856",
+        "description": "names_meld_card",
+        "input": {
+            "name": "Bruna, the Fading Light",
+            "edition": "Eldritch Moon"
+        }
+    },
+    {
+        "uuid": "46b6d569-0deb-58e3-af91-f4652dd709bc",
+        "description": "names_meld_card_b",
+        "input": {
+            "name": "Gisela, the Broken Blade | Brisela, Voice of Nightmares",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "98a0d909-5db8-53b2-9e5a-080a9b7e94e8",
+        "description": "names_triple_card",
+        "input": {
+            "name": "Smelt // Herd // Saw",
+            "edition": "Mystery Booster Playtest Cards"
+        }
+    },
+    {
+        "uuid": "17100b0d-3b74-5329-a832-dfad07d5c35b",
+        "description": "names_double_card_with_lots_of_matches_first",
+        "input": {
+            "name": "Start",
+            "edition": "Amonkhet"
+        }
+    },
+    {
+        "uuid": "2b29b236-1f37-5d41-b15e-a4fafe265885",
+        "description": "names_double_card_with_lots_of_matches_second",
+        "input": {
+            "name": "Start",
+            "edition": "Mystery Booster Playtest Cards 2019"
+        }
+    },
+    {
+        "uuid": "25463956-7fc1-5781-88cb-abba28a59ddd",
+        "description": "names_incorrect_name_but_salvageable",
+        "input": {
+            "name": "B.O.B.",
+            "edition": "Unsanctioned"
+        }
+    },
+    {
+        "uuid": "c98bf90b-e3b8-5a16-a797-73391ca6e4d6",
+        "description": "names_parenthesis_in_the_name",
+        "input": {
+            "name": "Erase (Not the Urza's Legacy One)",
+            "edition": "Unhinged"
+        }
+    },
+    {
+        "uuid": "451ac233-9ba8-59db-8fff-6962e0b173f6",
+        "description": "names_parenthesis_in_the_name_and_variant",
+        "input": {
+            "name": "B.F.M. (Big Furry Monster)",
+            "variant": "29",
+            "edition": "Unglued"
+        }
+    },
+    {
+        "uuid": "33b10155-90dc-5846-9c82-af414ba6c1e5",
+        "description": "names_custom_name_for_variant",
+        "input": {
+            "name": "B.F.M. Left",
+            "edition": "Unglued"
+        }
+    },
+    {
+        "uuid": "fb3bdc21-d1c3-5fa2-8ea6-3ff48b11a5bc",
+        "description": "names_number_in_the_name",
+        "input": {
+            "name": "Serum Visions (30)",
+            "edition": "Secret Lair Drop"
+        }
+    },
+    {
+        "uuid": "f193238a-07a8-53b6-8383-e30e95353891",
+        "description": "names_ignore_b_side_face_foil_consequences",
+        "input": {
+            "name": "Curse of the Fire Penguin",
+            "edition": "Unhinged"
+        }
+    },
+    {
+        "uuid": "591c29a1-c671-5a53-b754-88a9aaa6e726",
+        "description": "names_binderpos_syntax",
+        "input": {
+            "name": "Callous Bloodmage (Extended) [Strixhaven: School of Mages]"
+        }
+    },
+    {
+        "uuid": "5e255230-447d-5262-9006-d600e9c661a3",
+        "description": "names_binderpos_syntax_setcode",
+        "input": {
+            "name": "Lotus Cobra (Showcase) [ZNR]"
+        }
+    },
+    {
+        "uuid": "d8a65e0b-37e8-50b3-99b5-b9460552e822",
+        "description": "names_binderpos_syntax_bab",
+        "input": {
+            "name": "Champion of the Perished [BABP]"
+        }
+    },
+    {
+        "uuid": "11727081-4070-56db-8162-b970dd7f94bc_f",
+        "description": "names_tcgcollection_syntax",
+        "input": {
+            "name": "Adarkar Wastes - [foil]",
+            "edition": "Tenth Edition"
+        }
+    },
+    {
+        "uuid": "5e255230-447d-5262-9006-d600e9c661a3_f",
+        "description": "names_crystalcommerce_syntax_dashes",
+        "input": {
+            "name": "Lotus Cobra - Showcase - Foil",
+            "edition": "ZNR"
+        }
+    },
+    {
+        "uuid": "4d3e619d-0b1d-5aab-89f9-fbdbed01bdda",
+        "description": "names_tcgcollection_syntax_promopack",
+        "input": {
+            "name": "Shark Typhoon [PPIKO]",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
+        "description": "names_dual_face_card_same_name",
+        "input": {
+            "name": "Propaganda // Propaganda",
+            "edition": "Secret Lair Drop"
+        }
+    },
+    {
+        "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
+        "description": "names_dual_face_card_same_name_only_one",
+        "input": {
+            "name": "Propaganda",
+            "edition": "Secret Lair Drop"
+        }
+    },
+    {
+        "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
+        "description": "names_dual_face_card_wrong_ed",
+        "input": {
+            "name": "Propaganda",
+            "variant": "381",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
+        "uuid": "16015cde-4407-5b6a-b12b-62808c71be8b",
+        "description": "names_dual_face_card_different_name",
+        "input": {
+            "name": "Hawkins National Laboratory",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "9f9c49af-02d5-5219-8827-98b857cfae3f",
+        "description": "names_dfc_sld_has_thick_variant",
+        "input": {
+            "name": "Zndrsplt, Eye of Wisdom // Zndrsplt, Eye of Wisdom",
+            "edition": "Secret Lair Series"
+        }
+    },
+    {
+        "uuid": "e93f698b-5d46-54cc-ad04-6ba93a3bca57",
+        "description": "names_renames_with_reprints_first",
+        "input": {
+            "name": "Cybertron",
+            "edition": "Secret Lair Series"
+        }
+    },
+    {
+        "uuid": "a45a4e2c-1437-51dd-837a-5e62520c3e2d",
+        "description": "names_renames_with_reprints_second",
+        "input": {
+            "name": "Summoner's Rift",
+            "edition": "Secret Lair Series"
+        }
+    },
+    {
+        "uuid": "e452b3bc-4618-538f-80a1-403b65eed48e",
+        "description": "incorrect_edition_but_card_has_a_single_printing",
+        "input": {
+            "name": "Camel",
+            "edition": "Scars of Phyrexia"
+        }
+    },
+    {
+        "uuid": "c0439fdf-36e9-5578-94c0-36a056ede97d",
+        "description": "incorrect_edition_set_name_does_not_interfere_with_number",
+        "input": {
+            "name": "Death Baron",
+            "variant": "Convention Foil M19",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "ff963a6c-5c2c-5d51-a75b-abce3e819db1",
+        "description": "incorrect_edition_but_salvageable_plain",
+        "input": {
+            "name": "Polluted Mire",
+            "edition": "Duel Decks Anthology"
+        }
+    },
+    {
+        "uuid": "b6698d85-bcd9-5262-a91d-2b3eb746e24c",
+        "description": "incorrect_edition_but_salvageable_and_could_alias_other_cards",
+        "input": {
+            "name": "Garruk Wildspeaker",
+            "edition": "Duel Decks Anthology"
+        }
+    },
+    {
+        "uuid": "70d57c64-c2a1-52e8-a807-bc965fb2ddb7",
+        "description": "incorrect_edition_but_salvageable_missing_only_a_chunk",
+        "input": {
+            "name": "No One Will Hear Your Cries",
+            "edition": "Archenemy: Nicol Bolas"
+        }
+    },
+    {
+        "uuid": "f0f9e5f9-17e9-5827-b97e-c56e693a5beb",
+        "description": "incorrect_edition_belongs_to_a_foilonly_subset",
+        "input": {
+            "name": "Zur's Weirding",
+            "variant": "Foil",
+            "edition": "Mystery Booster"
+        }
+    },
+    {
+        "uuid": "8067d275-fb65-5277-b812-8cf33604a788",
+        "description": "incorrect_edition_year_should_not_interfere",
+        "input": {
+            "name": "Yule Ooze",
+            "variant": "2011 Holiday",
+            "edition": "Happy Holidays"
+        }
+    },
+    {
+        "uuid": "fbdf9d58-2746-5ed5-ad97-0a9780d066ca",
+        "description": "incorrect_edition_champs_and_states",
+        "input": {
+            "name": "Mutavault",
+            "variant": "Extended art",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "15bd27f2-c842-5f2c-9862-d3a8d36143b7",
+        "description": "incorrect_edition_champ_in_variant_but_not_champs_and_states",
+        "input": {
+            "name": "Champion of Lambholt",
+            "variant": "commander-anthology-2018-champion-of-lambholt",
+            "edition": "Commander Anthology 2018"
+        }
+    },
+    {
+        "uuid": "2126fb89-1eab-5d06-a7d9-953db1242849",
+        "description": "incorrect_edition_mismatching_year",
+        "input": {
+            "name": "Mountain",
+            "variant": "Grand Prix 2018",
+            "edition": "MagicFest 2019",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "5e7c2039-a072-5907-8053-74f518384e8a",
+        "description": "incorrect_edition_not_grand_prix_but_magic_fest",
+        "input": {
+            "name": "Lightning Bolt",
+            "variant": "Grand Prix",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "a6e7bc06-ea7d-5186-8dd4-d95086e4e8d2",
+        "description": "incorrect_edition_apac_lands",
+        "input": {
+            "name": "Forest",
+            "variant": "Pete Venters",
+            "edition": "Asia Pacific Land Program"
+        }
+    },
+    {
+        "uuid": "7760d40f-2afd-5552-b59f-7d395ed4b7be",
+        "description": "incorrect_edition_euro_lands",
+        "input": {
+            "name": "Plains",
+            "variant": "EURO Land Steppe Tundra Ben Thompson art",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "44c98b84-1a4b-5101-912a-c26a87463cc5",
+        "description": "incorrect_edition_euro_lands_comma",
+        "input": {
+            "name": "Island",
+            "variant": "EURO Land, Venezia",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "afa31d2e-b5a2-5557-9a94-0a1d46ab9026",
+        "description": "incorrect_edition_incorrect_shortcode",
+        "input": {
+            "name": "Collected Company",
+            "variant": "Store Championship Foil",
+            "edition": "PWP21"
+        }
+    },
+    {
+        "uuid": "9d3e0596-a001-51ac-922a-e4b11cd09126",
+        "description": "promo_packs_m20_lands",
+        "input": {
+            "name": "Plains",
+            "edition": "Promo Pack"
+        }
+    },
+    {
+        "uuid": "f37a6201-033a-58b3-a816-94bf813891b7",
+        "description": "promo_packs_m20_lands_variant",
+        "input": {
+            "name": "Swamp",
+            "variant": "M20 Promo Pack",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "338a6aea-1d26-5a37-87f8-42de7ce9dc2b",
+        "description": "promo_pack_in_promos_with_pw_stamp",
+        "input": {
+            "name": "Zendikar Resurgent",
+            "edition": "Promo Pack"
+        }
+    },
+    {
+        "uuid": "61ca0be6-5672-5d82-a9df-b10d15fc6be1",
+        "description": "promo_pack_in_expansion_with_inverted_frame",
+        "input": {
+            "name": "Alseid of Life's Bounty",
+            "edition": "Promo Pack"
+        }
+    },
+    {
+        "uuid": "d6a7fe98-1a0b-569f-9a49-f012698fe2ba",
+        "description": "promo_pack_in_promos_with_inverted_frame",
+        "input": {
+            "name": "Negate",
+            "edition": "Promo Pack"
+        }
+    },
+    {
+        "uuid": "beb3990e-ee5c-51e0-9651-e1e5a5f336c0",
+        "description": "promo_pack_nonpromo_card_that_may_have_a_promo_pack_version",
+        "input": {
+            "name": "Slaying Fire",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "d3ca5ef5-78d2-5bf1-b10b-10119df615a7",
+        "description": "promo_pack_with_duplication",
+        "input": {
+            "name": "Sorcerous Spyglass",
+            "variant": "Promo Pack XLN",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "3438d2d9-4e87-573a-bc3f-28e703fe47ee",
+        "description": "promo_pack_nonpromo_pack_is_fine_too",
+        "input": {
+            "name": "Sorcerous Spyglass",
+            "edition": "XLN"
+        }
+    },
+    {
+        "uuid": "0b473d58-3a60-5ed6-8de6-02866f43d125",
+        "description": "promo_pack_so_many_variants_and_untagged",
+        "input": {
+            "name": "Teferi, Master of Time",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "4f1f9adc-1aee-5d28-97c3-e44e51e38879",
+        "description": "promo_pack_so_many_variants_and_tagged",
+        "input": {
+            "name": "Teferi, Master of Time",
+            "variant": "#075 Promo Pack Core Set 2021",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "f877637f-fde4-52c8-a7be-ca5c494c38f3",
+        "description": "promo_pack_core_2020",
+        "input": {
+            "name": "Temple of Triumph",
+            "edition": "Core 2020 - Promo Pack"
+        }
+    },
+    {
+        "uuid": "351ae10e-91ac-5baa-90b2-cbf1555d9de6",
+        "description": "promo_pack_core_2021_main",
+        "input": {
+            "name": "Temple of Triumph",
+            "edition": "Core 2021 - Promo Pack"
+        }
+    },
+    {
+        "uuid": "e2033df0-b1b5-5b9b-90cb-bf738cda501b",
+        "description": "promo_pack_core_2021_alt",
+        "input": {
+            "name": "Temple of Mystery",
+            "variant": "Promo Pack - M21",
+            "edition": "Promo Pack"
+        }
+    },
+    {
+        "uuid": "24a266a1-c13e-5790-a649-b03139d47ccc",
+        "description": "promo_pack_core_old",
+        "input": {
+            "name": "Heroic Intervention",
+            "edition": "Core 2021 - Promo Pack"
+        }
+    },
+    {
+        "uuid": "7165c42c-7210-5564-b5a9-e666de59034a",
+        "description": "promo_pack_tagged_in_core",
+        "input": {
+            "name": "Eliminate",
+            "variant": "Promo Pack",
+            "edition": "Promo Pack"
+        }
+    },
+    {
+        "uuid": "1b5e2821-8feb-5a16-bdd1-11a301ce9087",
+        "description": "promo_pack_wrong_edition",
+        "input": {
+            "name": "Dragonsguard Elite",
+            "variant": "Promo Pack",
+            "edition": "Strixhaven: School of Mages"
+        }
+    },
+    {
+        "uuid": "6650c7e1-fdce-59d5-b8ee-d16b674397f3",
+        "description": "promo_pack_playpromo",
+        "input": {
+            "name": "Fell Stinger",
+            "edition": "Play Promo"
+        }
+    },
+    {
+        "uuid": "151082c2-730d-559a-b2f0-2051065e3b6c",
+        "description": "promo_pack_imprecise_number",
+        "input": {
+            "name": "Steel Leaf Champion",
+            "variant": "182",
+            "edition": "Promo Pack: Core Set 2020"
+        }
+    },
+    {
+        "uuid": "151082c2-730d-559a-b2f0-2051065e3b6c",
+        "description": "promo_pack_precise_number",
+        "input": {
+            "name": "Steel Leaf Champion",
+            "variant": "182p",
+            "edition": "Core Set 2020 Promos"
+        }
+    },
+    {
+        "uuid": "ade05a63-24a2-5618-aa7f-bf25c6093c8a",
+        "description": "promo_pack_precise_number_not_tagged",
+        "input": {
+            "name": "Rumor Gatherer",
+            "variant": "463",
+            "edition": "Streets of New Capenna"
+        }
+    },
+    {
+        "uuid": "8d9f230c-ad3f-5b5f-9132-96368bb04ace",
+        "description": "prerelease_old",
+        "input": {
+            "name": "Glory",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "45f8e8cc-db7e-5448-b5b5-c49b9e43efbd",
+        "description": "prerelease_in_promos_before_the_date_but_without_s_suffix",
+        "input": {
+            "name": "Scourge of Fleets",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "51be1904-c38c-5303-b2b7-d889aeb66819",
+        "description": "prerelease_with_s_suffix",
+        "input": {
+            "name": "Pristine Skywise",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "09f6ce54-cfba-5e7f-b2c1-c36f95e26ab1",
+        "description": "prerelease_JPN_with_s_suffix",
+        "input": {
+            "name": "Ugin, the Ineffable",
+            "variant": "JPN Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "a8a8aac9-b986-5fbe-be9d-511fb272f6d8",
+        "description": "prerelease_JPN_with_s_suffix_but_number_could_interfere",
+        "input": {
+            "name": "Teyo, the Shieldmage",
+            "variant": "032 - JPN Alternate Art Prerelease Foil",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "f0b33b7b-f42c-5dc2-9e1a-da941ddb811a",
+        "description": "prerelease_JPN_with_another_reprint_promo_set",
+        "input": {
+            "name": "Nissa, Who Shakes the World",
+            "variant": "169 - JPN Alternate Art Prerelease Foil",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "5849e009-a208-59e0-b2dc-230b053bf015",
+        "description": "prerelease_in_promos_after_the_date_but_without_s_suffix",
+        "input": {
+            "name": "Astral Drift",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "7efa76e4-a6a8-5f6c-a337-9d88acc1d593",
+        "description": "prerelease_with_duplication",
+        "input": {
+            "name": "Sorcerous Spyglass",
+            "variant": "Ixalan Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "b6b19a5b-bd1b-59d0-a668-fa6dc0b0059f",
+        "description": "prerelease_with_duplication_and_normalization",
+        "input": {
+            "name": "Blast Zone",
+            "variant": "Prerelease The Brothers' War",
+            "edition": "Promo: Date Stamped"
+        }
+    },
+    {
+        "uuid": "6b0ad772-5c2b-59b2-9a51-5296d3383077",
+        "description": "prerelease_lubu_dedup_july",
+        "input": {
+            "name": "Lu Bu, Master-at-Arms",
+            "variant": "July 4 Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "c3371edb-da62-5153-a202-e391364b88c7",
+        "description": "prerelease_number_missing_suffix",
+        "input": {
+            "name": "Bonders' Enclave",
+            "variant": "245/274 IOK Prerelease Promo",
+            "edition": "Promo Cards"
+        }
+    },
+    {
+        "uuid": "a0c99852-b08e-5f09-9f48-317f2253df15",
+        "description": "jpn_alt_nonJPN_version",
+        "input": {
+            "name": "Vraska, Swarm's Eminence",
+            "edition": "War of the Spark"
+        }
+    },
+    {
+        "uuid": "bfbf2df1-007f-500a-bfe5-1310ad1bad5d",
+        "description": "jpn_alt_variant",
+        "input": {
+            "name": "Vraska, Swarm's Eminence",
+            "variant": "JPN Alternate Art",
+            "edition": "War of the Spark"
+        }
+    },
+    {
+        "uuid": "2f4942dd-d6d7-5b79-8dd9-91c9cd0daf1c",
+        "description": "jpn_alt_but_number_could_interfere",
+        "input": {
+            "name": "Teyo, the Shieldmage",
+            "variant": "032 - JPN Alternate Art",
+            "edition": "War of the Spark"
+        }
+    },
+    {
+        "uuid": "fc82e07b-fa39-56ec-8b31-3e5837753347",
+        "description": "jpn_alt_nonJPN_but_number_is",
+        "input": {
+            "name": "The Wanderer",
+            "variant": "37★",
+            "edition": "War of the Spark"
+        }
+    },
+    {
+        "uuid": "46153afe-5e05-5082-852a-648c03924bcf",
+        "description": "borderless_nonborderless",
+        "input": {
+            "name": "Oko, Thief of Crowns",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "f203bad8-9c07-507c-9699-fc8fec69e2d2",
+        "description": "borderless_variant",
+        "input": {
+            "name": "Oko, Thief of Crowns",
+            "variant": "Borderless",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "09618c19-c87e-51e2-959c-8b176156c9ca",
+        "description": "borderless_but_from_a_funny_set",
+        "input": {
+            "name": "Sap Sucker",
+            "edition": "Unstable"
+        }
+    },
+    {
+        "uuid": "1b30ae75-338a-574f-9232-e0b119f8a6a5",
+        "description": "borderless_boxtopper",
+        "input": {
+            "name": "Ancient Tomb",
+            "edition": "PUMA"
+        }
+    },
+    {
+        "uuid": "f2bfda59-3560-55a7-80a1-9d19f1a1d163",
+        "description": "borderless_but_also_alternative",
+        "input": {
+            "name": "Doubling Season",
+            "edition": "Double Masters Box Toppers"
+        }
+    },
+    {
+        "uuid": "a9e37c90-1112-53ea-a442-27897a256f76",
+        "description": "borderless_textured",
+        "input": {
+            "name": "Emrakul, the Aeons Torn",
+            "variant": "Textured Foil",
+            "edition": "Double Masters 2022 Variants"
+        }
+    },
+    {
+        "uuid": "d0d78dd8-cbe2-5387-8433-5ce7e4ef0d11",
+        "description": "borderless_textured_non_borderless",
+        "input": {
+            "name": "Liliana, the Last Hope",
+            "variant": "Borderless",
+            "edition": "Double Masters 2022"
+        }
+    },
+    {
+        "uuid": "f0f79ddd-ed23-5531-affa-70ebd0a297b2",
+        "description": "borderless_textured_showcase",
+        "input": {
+            "name": "Ivy, Gleeful Spellthief",
+            "variant": "Textured Foil",
+            "edition": "Dominaria United"
+        }
+    },
+    {
+        "uuid": "cd131db0-d77b-5048-9f45-69e660389e9a",
+        "description": "borderless_decouple_double_masters_promos",
+        "input": {
+            "name": "Wrath of God",
+            "variant": "Launch",
+            "edition": "Promo: General"
+        }
+    },
+    {
+        "uuid": "c67e23df-18de-5668-83f8-4fc9c23299bf",
+        "description": "boxtopper_nonextendedart_variant",
+        "input": {
+            "name": "Heliod's Intervention",
+            "edition": "Theros Beyond Death"
+        }
+    },
+    {
+        "uuid": "39b197ca-526c-5aa4-be3c-97b5db042efc",
+        "description": "boxtopper_extendedart_variant",
+        "input": {
+            "name": "Heliod's Intervention",
+            "variant": "Extended Art",
+            "edition": "Theros Beyond Death"
+        }
+    },
+    {
+        "uuid": "7bab8861-40c1-5895-91d7-504b0eaaeae1",
+        "description": "boxtopper_extendedart_vs_bab",
+        "input": {
+            "name": "Orah, Skyclave Hierophant",
+            "variant": "Extended Art",
+            "edition": "Zendikar Rising"
+        }
+    },
+    {
+        "uuid": "fce0a486-fb7e-5e33-bea2-573c4e6529be",
+        "description": "boxtopper_bab_vs_extendedart",
+        "input": {
+            "name": "Orah, Skyclave Hierophant",
+            "variant": "Buy-A-Box Foil",
+            "edition": "Zendikar Rising",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "51c8a322-0601-51ed-b5f9-bebb5d97b5d9",
+        "description": "showcase_nonshowcase_variant",
+        "input": {
+            "name": "Brazen Borrower",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "66819bb9-e044-512b-921e-7a5a82be79f5",
+        "description": "showcase_variant",
+        "input": {
+            "name": "Brazen Borrower",
+            "variant": "Showcase",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "f082ca30-a227-5c88-b95a-37ca03cefcd9",
+        "description": "showcase_borderless",
+        "input": {
+            "name": "Zagoth Triome",
+            "variant": "Showcase",
+            "edition": "Ikoria: Lair of Behemoths"
+        }
+    },
+    {
+        "uuid": "cb0847b3-ef9b-560c-9cbd-37e91acfd86d",
+        "description": "showcase_correct_number_but_no_tag",
+        "input": {
+            "name": "Renata, Called to the Hunt",
+            "variant": "267",
+            "edition": "Theros Beyond Death"
+        }
+    },
+    {
+        "uuid": "79f546ad-9452-5880-b095-9496480a9561",
+        "description": "showcase_dfc_with_possible_dracula",
+        "input": {
+            "name": "Voldaren Bloodcaster",
+            "variant": "Showcase",
+            "edition": "Innistrad: Crimson Vow Variants"
+        }
+    },
+    {
+        "uuid": "e621d8f1-11ea-5f82-bf85-ae07aef1733d",
+        "description": "showcase_possible_phyrexian_not_it",
+        "input": {
+            "name": "Urabrask, Heretic Praetor",
+            "variant": "Showcase",
+            "edition": "Streets of New Capenna"
+        }
+    },
+    {
+        "uuid": "cdca0e63-4e54-5618-8b84-6a79c20dc742",
+        "description": "showcase_possible_phyrexian_it",
+        "input": {
+            "name": "Urabrask, Heretic Praetor",
+            "variant": "Phyrexian",
+            "edition": "Streets of New Capenna"
+        }
+    },
+    {
+        "uuid": "4c10387e-abef-5de0-990f-053af3a67ff4",
+        "description": "showcase_rename_aliasing_oilslick",
+        "input": {
+            "name": "Etali, Primal Conqueror // Etali, Primal Sicknes",
+            "variant": "// Etali, Primal Sickness Showcase",
+            "edition": "March of the Machine"
+        }
+    },
+    {
+        "uuid": "37ba121f-b65d-5237-897f-cdfa3991b50f_f",
+        "description": "showcase_retroframe_but_also_showcase_notmarked",
+        "input": {
+            "name": "Nissa, Resurgent Animist",
+            "variant": "Retro Frame",
+            "edition": "March of the Machine: The Aftermath Variants",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "f3a94132-ce71-5556-bfd3-1461601a810d",
+        "description": "reskin_nongodzilla_variant",
+        "input": {
+            "name": "Sprite Dragon",
+            "edition": "Ikoria: Lair of Behemoths"
+        }
+    },
+    {
+        "uuid": "793cba6b-4f65-5834-b055-b83822576a86_f",
+        "description": "reskin_nongodzilla_notjapanese_variant",
+        "input": {
+            "name": "Dirge Bat",
+            "edition": "Ikoria: Lair of Behemoths",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "7a8fdc89-bdd8-5f81-8fe1-af8c5663907f",
+        "description": "reskin_godzilla_variant",
+        "input": {
+            "name": "Sprite Dragon",
+            "variant": "Godzilla",
+            "edition": "Ikoria: Lair of Behemoths"
+        }
+    },
+    {
+        "uuid": "7a8fdc89-bdd8-5f81-8fe1-af8c5663907f",
+        "description": "reskin_godzilla_variant_alt_name",
+        "input": {
+            "name": "Dorat, the Perfect Pet",
+            "edition": "Ikoria: Lair of Behemoths"
+        }
+    },
+    {
+        "uuid": "eaf748e5-ed61-504f-8799-bd52eb3ea9cd",
+        "description": "reskin_godzilla_variant_promo",
+        "input": {
+            "name": "Hangarback Walker",
+            "variant": "Godzilla",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "eaf748e5-ed61-504f-8799-bd52eb3ea9cd",
+        "description": "reskin_godzilla_variant_reskin_name",
+        "input": {
+            "name": "Mechagodzilla Battle Fortress",
+            "edition": "Promo Cards"
+        }
+    },
+    {
+        "uuid": "fd9ff43c-fee9-5bdb-ab0a-d4c55f2178fd",
+        "description": "reskin_godzilla_variant_japanese",
+        "input": {
+            "name": "Dirge Bat",
+            "variant": "Godzilla Series Japanese",
+            "edition": "Ikoria"
+        }
+    },
+    {
+        "uuid": "fd9ff43c-fee9-5bdb-ab0a-d4c55f2178fd",
+        "description": "reskin_godzilla_variant_japanese_alt",
+        "input": {
+            "name": "Battra, Terror of the City",
+            "variant": "Dirge Bat JP Alternate Art",
+            "edition": "Ikoria: Lair of Behemoths"
+        }
+    },
+    {
+        "uuid": "5df3565b-ab85-5cc7-83c4-9cd3bb5674da",
+        "description": "reskin_godzilla_variant_jpn_name",
+        "input": {
+            "name": "Mothra's Giant Cocoon",
+            "edition": "Ikoria: Lair"
+        }
+    },
+    {
+        "uuid": "5df3565b-ab85-5cc7-83c4-9cd3bb5674da",
+        "description": "reskin_godzilla_long_variant_jpn",
+        "input": {
+            "name": "Mysterious Egg",
+            "variant": "JPN - \"Mothra's Giant Cocoon\" - Godzilla Series - 385",
+            "edition": "Ikoria: Lair of Behemoths Variants"
+        }
+    },
+    {
+        "uuid": "ccd21ae8-ca0b-529c-8dd4-006e4834b09c",
+        "description": "reskin_dracula_series",
+        "input": {
+            "name": "Savior of Ollenbock",
+            "variant": "Abraham Van Helsing - Dracula Series",
+            "edition": "Innistrad: Crimson Vow Variants"
+        }
+    },
+    {
+        "uuid": "ee52dc1d-3c5b-5fba-ae84-e2017c039deb",
+        "description": "reskin_dracula_series_dfc",
+        "input": {
+            "name": "Voldaren Bloodcaster",
+            "variant": "Dracula, Lord of Blood - Dracula Series",
+            "edition": "Innistrad: Crimson Vow Variants"
+        }
+    },
+    {
+        "uuid": "6a3c769c-af38-5fcc-adb7-126dad4f7f86",
+        "description": "dfc_reprint_flavor",
+        "input": {
+            "name": "The AllSpark",
+            "variant": "1080",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
+        "uuid": "7beb2d19-5f06-5d83-a9bb-312627934e55",
+        "description": "dfc_reprint_reskin",
+        "input": {
+            "name": "Blightsteel Colossus",
+            "variant": "Megatron Secret Lair Transformers Reversible Borderless",
+            "edition": "Secret Lair Transformers"
+        }
+    },
+    {
+        "uuid": "ff9fd322-ceac-5456-8012-f927248a3ce0",
+        "description": "dfc_reprint_number_dfc",
+        "input": {
+            "name": "Darksteel Colossus",
+            "variant": "1081",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "08585c69-7aa0-540e-8474-c975207abd3c",
+        "description": "dfc_reprint_number_normal",
+        "input": {
+            "name": "Darksteel Colossus",
+            "variant": "57",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "1d6d8b1a-be16-5d1a-9b49-d0fb7e9178fe",
+        "description": "dfc_reprint_with_a_reprint_samename",
+        "input": {
+            "name": "Garruk Wildspeaker",
+            "variant": "1457",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "0e7c42dd-89b9-511c-a64c-c772680cfdc9",
+        "description": "dfc_reprint_with_a_reprint_borderless",
+        "input": {
+            "name": "Garruk Wildspeaker",
+            "variant": "Borderless",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "d429117f-4b10-5e66-ad2f-e233252a034a",
+        "description": "arn_light_variant",
+        "input": {
+            "name": "Wyluli Wolf",
+            "variant": "light circle",
+            "edition": "Arabian Nights"
+        }
+    },
+    {
+        "uuid": "184eabef-2042-5e2d-a2b3-96921e251de0",
+        "description": "arn_dark_variant",
+        "input": {
+            "name": "Oubliette",
+            "variant": "dark circle",
+            "edition": "Arabian Nights"
+        }
+    },
+    {
+        "uuid": "184eabef-2042-5e2d-a2b3-96921e251de0",
+        "description": "arn_dark_variant_implied",
+        "input": {
+            "name": "Oubliette",
+            "edition": "Arabian Nights"
+        }
+    },
+    {
+        "uuid": "3dd0bd56-5340-5542-8457-646b9acd58ff",
+        "description": "arn_no_variant",
+        "input": {
+            "name": "Abu Ja'far",
+            "edition": "Arabian Nights"
+        }
+    },
+    {
+        "uuid": "ab071a55-aec9-5b7c-8f8e-133f1f902152",
+        "description": "arn_dark_variant_in_name",
+        "input": {
+            "name": "Army of Allah (2)",
+            "edition": "Arabian Nights"
+        }
+    },
+    {
+        "uuid": "7a5ab36e-15b0-51d1-87c0-b4b3a5cd93a2",
+        "description": "arn_light_variant_in_name",
+        "input": {
+            "name": "Army of Allah (2†)",
+            "edition": "Arabian Nights"
+        }
+    },
+    {
+        "uuid": "e8cad79a-2808-52a0-9504-469eab1d2486",
+        "description": "variant_with_no_special_tag",
+        "input": {
+            "name": "Will Kenrith",
+            "edition": "Battlebond",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "a5d41107-bb39-5a10-ad0a-66513a31aa4d",
+        "description": "variant_kaya_is_special",
+        "input": {
+            "name": "Kaya, Ghost Assassin",
+            "edition": "Conspiracy: Take the Crown"
+        }
+    },
+    {
+        "uuid": "e0a1d531-00b4-587e-bfde-49de60e78f8e",
+        "description": "variant_kaya_is_very_special",
+        "input": {
+            "name": "Kaya, Ghost Assassin",
+            "edition": "Conspiracy: Take the Crown",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "b33e380c-0615-5559-93da-2ba3610d2b68",
+        "description": "variant_too_many_variants",
+        "input": {
+            "name": "Tamiyo's Journal",
+            "edition": "Shadows over Innistrad"
+        }
+    },
+    {
+        "uuid": "eb08862e-454a-510e-90f4-04e5adc335d5",
+        "description": "variant_too_many_variants_foil",
+        "input": {
+            "name": "Tamiyo's Journal",
+            "edition": "Shadows over Innistrad",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "9b53ce45-735c-5247-b744-9fcac2dbdc4b",
+        "description": "variant_too_many_variants_what_did_i_say",
+        "input": {
+            "name": "Tamiyo's Journal",
+            "variant": "Entry 546",
+            "edition": "Shadows over Innistrad"
+        }
+    },
+    {
+        "uuid": "7a9a79d8-c997-55b7-8a52-f8b54d5b60ee",
+        "description": "variant_custom",
+        "input": {
+            "name": "Urza's Tower",
+            "variant": "Mountains",
+            "edition": "Chronicles"
+        }
+    },
+    {
+        "uuid": "825770fb-6760-5b0d-993f-0dfe58b55aa6",
+        "description": "variant_number_with_suffix_in_variant",
+        "input": {
+            "name": "Arcane Denial",
+            "variant": "22b",
+            "edition": "Alliances"
+        }
+    },
+    {
+        "uuid": "0aad334d-ac52-54b1-a044-1dd3641a6569",
+        "description": "variant_one_funny_variant",
+        "input": {
+            "name": "Secret Base",
+            "variant": "Version 2",
+            "edition": "Unstable"
+        }
+    },
+    {
+        "uuid": "4e62e057-32c2-55e6-bbe7-ddf0d0391d6b",
+        "description": "variant_single_printintg_multiple_variants",
+        "input": {
+            "name": "Taste of Paradise",
+            "variant": "TasteOfParadise",
+            "edition": "Alliances"
+        }
+    },
+    {
+        "uuid": "a7aacf96-8097-51a0-a50b-09d258edbc51",
+        "description": "variant_artist_last_name_too_many_s",
+        "input": {
+            "name": "Simic Signet",
+            "variant": "Mike Sass",
+            "edition": "Commander Anthology Volume II"
+        }
+    },
+    {
+        "uuid": "b8551573-9c09-5dc2-a440-d260fcbe6fad",
+        "description": "variant_unstable_letter",
+        "input": {
+            "name": "Very Cryptic Command",
+            "variant": "E Counter/Return/Untap/Roll",
+            "edition": "Unstable"
+        }
+    },
+    {
+        "uuid": "23550282-bb05-5958-8b43-e1b81b32a630",
+        "description": "variant_number_and_surge",
+        "input": {
+            "name": "Sol Ring",
+            "variant": "249 Surge Foil",
+            "edition": "Warhammer 40,000 Commander"
+        }
+    },
+    {
+        "uuid": "ca4dfea2-1832-5cf9-a91f-792d85a19cd3",
+        "description": "variant_number_and_surge_no_suffix",
+        "input": {
+            "name": "The Swarmlord",
+            "variant": "004 - Surge Foil",
+            "edition": "Warhammer 40,000 Commander"
+        }
+    },
+    {
+        "uuid": "0b5151a5-ada5-5045-a7a9-ecbe69593f69",
+        "description": "fnm_normal",
+        "input": {
+            "name": "Aether Hub",
+            "variant": "FNM",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "c72fd89d-60f2-59a5-9f77-8d138aebd38c",
+        "description": "fnm_plus_year",
+        "input": {
+            "name": "Goblin Warchief",
+            "variant": "FNM 2016",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "43805f80-743b-57ef-8f99-3ad19631120e",
+        "description": "fnm_with_promo_alias",
+        "input": {
+            "name": "Reliquary Tower",
+            "variant": "FNM",
+            "edition": "Promo"
+        }
+    },
+    {
+        "uuid": "ad497aaa-2367-55c3-a599-ad038a3b1b7e",
+        "description": "fnm_nonpromo_with_fnm_alias",
+        "input": {
+            "name": "Reliquary Tower",
+            "edition": "In-Store League Promos"
+        }
+    },
+    {
+        "uuid": "588fba1e-9027-500d-ba10-83b79404a8a3",
+        "description": "fnm_wrong_info",
+        "input": {
+            "name": "Shanna, Sisay's Legacy",
+            "variant": "FNM Foil",
+            "edition": "Promos: FNM"
+        }
+    },
+    {
+        "uuid": "8c9f9179-3a9f-51a0-8443-dfb19508b74c",
+        "description": "fnm_with_inverted_frame",
+        "input": {
+            "name": "Dovin's Veto",
+            "variant": "FNM",
+            "edition": "Promo"
+        }
+    },
+    {
+        "uuid": "c136db2b-2e01-5e83-9eea-c40c05a24efe",
+        "description": "arena_normal",
+        "input": {
+            "name": "Enlightened Tutor",
+            "variant": "Arena",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "6667e7b7-f067-573f-ba33-69f836a02b47",
+        "description": "arena_with_year",
+        "input": {
+            "name": "Mountain",
+            "variant": "Arena 1999",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "abcb6c78-34f0-5654-a3bd-1116bb870f76",
+        "description": "arena_no_year",
+        "input": {
+            "name": "Forest",
+            "variant": "Arena Foil - Mercadian Masques",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "c8914a27-d1d2-5a60-95f7-c5517ad91caa",
+        "description": "arena_misprint",
+        "input": {
+            "name": "Island",
+            "variant": "Arena 1999 misprint",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "c8914a27-d1d2-5a60-95f7-c5517ad91caa",
+        "description": "arena_misprint_alt",
+        "input": {
+            "name": "Island",
+            "variant": "Urza's Saga Arena Foil NO SYMBOL",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "d879ae07-3ac7-5f03-a873-ce66d38fd61b",
+        "description": "arena_land_with_number",
+        "input": {
+            "name": "Forest",
+            "variant": "Arena 2001 1",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "8ba3c9bf-e5b0-5008-9755-267c97c4b81f",
+        "description": "judge_normal",
+        "input": {
+            "name": "Tradewind Rider",
+            "variant": "Judge",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "a5af462e-afe3-53b5-9d9f-ab836e00b5ce",
+        "description": "judge_with_year",
+        "input": {
+            "name": "Vindicate",
+            "variant": "Judge 2007",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "818ab3df-bb0b-58b0-a15e-3daa53dafb15",
+        "description": "judge_with_set",
+        "input": {
+            "name": "Vampiric Tutor",
+            "variant": "J18",
+            "edition": "Judge Promos"
+        }
+    },
+    {
+        "uuid": "4b8eb39c-6b31-5da8-9b13-9a53b4772d90",
+        "description": "sdcc_main",
+        "input": {
+            "name": "Liliana Vess",
+            "variant": "2014 SDCC",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "4b8eb39c-6b31-5da8-9b13-9a53b4772d90",
+        "description": "sdcc_extended_name",
+        "input": {
+            "name": "Liliana Vess",
+            "variant": "San Diego Comic Con",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "64614b74-7b1a-5b4d-b1b1-72af112cc287",
+        "description": "textless_normal",
+        "input": {
+            "name": "Fireball",
+            "variant": "Textless",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "c7f4004c-3a72-5bad-9708-e659d4cf5db6",
+        "description": "gateway_normal",
+        "input": {
+            "name": "Lava Axe",
+            "variant": "Gateway",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "db9b31f8-e602-5930-9b52-dee275646f80",
+        "description": "wpn_normal",
+        "input": {
+            "name": "Curse of Thirst",
+            "variant": "WPN",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "db9b31f8-e602-5930-9b52-dee275646f80",
+        "description": "maybe_gateway_or_wpn",
+        "input": {
+            "name": "Curse of Thirst",
+            "variant": "Gateway WPN",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "9f91350e-c7e4-566f-b353-da466d46573d",
+        "description": "moonlit_land_wpn",
+        "input": {
+            "name": "Island",
+            "variant": "Moonlit Land Foil Etched",
+            "edition": "WPN \u0026 Gateway Promos"
+        }
+    },
+    {
+        "uuid": "4c17977b-5aca-5b0a-a456-4d4a0d5e42a1",
+        "description": "heros_path_promo",
+        "input": {
+            "name": "The Explorer",
+            "variant": "Hero's Path",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "0dd114e6-2a55-5338-9b6d-a4da134e4660",
+        "description": "duels_of_the_pw",
+        "input": {
+            "name": "Vigor",
+            "variant": "Duels",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "47ccb61a-3662-5dde-968d-24ae77e072c5",
+        "description": "duels_of_the_pw_with_year",
+        "input": {
+            "name": "Ogre Battledriver",
+            "variant": "Duels of the Planeswalkers 2014",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "58625b64-eba5-5e6b-aa79-c5f06039214d",
+        "description": "clash_pack",
+        "input": {
+            "name": "Temple of Mystery",
+            "variant": "Clash Pack",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "58625b64-eba5-5e6b-aa79-c5f06039214d",
+        "description": "clash_pack_alt",
+        "input": {
+            "name": "Temple of Mystery",
+            "edition": "Clash Pack Promos"
+        }
+    },
+    {
+        "uuid": "218dee6b-c9ca-5d09-bec2-5517467db69b",
+        "description": "variant_has_no_useful_info",
+        "input": {
+            "name": "Zombie Apocalypse",
+            "variant": "Some Kind of Promo",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "73ba75f6-9f27-5c75-9646-634e2f26bea7",
+        "description": "variant_has_no_useful_info_may_trigger_dupes_if_incorrectly_handled",
+        "input": {
+            "name": "Unclaimed Territory",
+            "variant": "League Promo",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "40a038b4-87c9-552e-966b-d4dacac5ec38",
+        "description": "unknown_promo",
+        "input": {
+            "name": "Trueheart Duelist",
+            "variant": "Game Day Extended",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "35c17fee-50a9-5273-ba96-492b156cbfff_f",
+        "description": "magicfest_normal",
+        "input": {
+            "name": "Path to Exile",
+            "variant": "Magic Fest",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "35c17fee-50a9-5273-ba96-492b156cbfff",
+        "description": "magicfest_textless",
+        "input": {
+            "name": "Path to Exile",
+            "variant": "MagicFest Textless",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "a95b64f0-9976-592f-b7ad-aa09158aa63c",
+        "description": "bfz_std_with_wrong_info",
+        "input": {
+            "name": "Sunken Hollow",
+            "variant": "alt art",
+            "edition": "Dominaria"
+        }
+    },
+    {
+        "uuid": "decc16dd-0325-50ae-bd43-07ad43d75753",
+        "description": "lunar_promo",
+        "input": {
+            "name": "Sethron, Hurloon General",
+            "variant": "(Lunar New Year)",
+            "edition": "Promo: General"
+        }
+    },
+    {
+        "uuid": "7f0cf9b2-d30e-5fe1-ab97-3a204624ee14",
+        "description": "duels_xbox_promo",
+        "input": {
+            "name": "Soul of Ravnica",
+            "variant": "Duels of the Planeswalkers 2015 Xbox Promo",
+            "edition": "Promo"
+        }
+    },
+    {
+        "uuid": "02e61365-9958-58fb-a1ff-58f182ffb6ea",
+        "description": "promo_mixed_in_set",
+        "input": {
+            "name": "Fabricate",
+            "variant": "Launch",
+            "edition": "Promo: General"
+        }
+    },
+    {
+        "uuid": "b84b4b86-e8ed-5a6f-adc6-026b64ea0ddf",
+        "description": "promo_draft_weekend",
+        "input": {
+            "name": "Ramunap Excavator",
+            "variant": "Draft Weekend",
+            "edition": "Launch Party \u0026 Release Event Promos"
+        }
+    },
+    {
+        "uuid": "ec6031e8-8d33-547c-b446-3bd0112a931d",
+        "description": "release_but_it_is_a_promo",
+        "input": {
+            "name": "Valakut, the Molten Pinnacle",
+            "variant": "Release Event",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "674e74e5-e5ad-56b4-acc7-ffd550d9b36d",
+        "description": "release_but_it_is_from_launch_parties",
+        "input": {
+            "name": "Vexing Shusher",
+            "variant": "Release Event",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "dbfdf3b7-4eb9-5a78-b1fb-6db73491d59f",
+        "description": "release_events",
+        "input": {
+            "name": "Shriekmaw",
+            "variant": "Release Event",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "7f43c4bb-2b38-5a05-9ce2-e2042009af0e",
+        "description": "release_but_there_is_a_prerelease_too",
+        "input": {
+            "name": "Identity Thief",
+            "variant": "Release Event",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "734e9eb3-d86b-564d-9553-4ffb48b5e13a",
+        "description": "release_prerelease_but_there_is_a_release_too",
+        "input": {
+            "name": "Identity Thief",
+            "variant": "Prerelease Event",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "1498e66b-3ddf-54e1-a4c4-a76a664a4bf1",
+        "description": "release_nonpromo_version",
+        "input": {
+            "name": "Identity Thief",
+            "edition": "Eldritch Moon"
+        }
+    },
+    {
+        "uuid": "7f43c4bb-2b38-5a05-9ce2-e2042009af0e",
+        "description": "release_too_much_info",
+        "input": {
+            "name": "Identity Thief",
+            "variant": "Eldritch Moon Launch Foil 22 July 2016",
+            "edition": "Promos: Miscellaneous"
+        }
+    },
+    {
+        "uuid": "412013dc-8a6a-54f8-beb7-77b56baa5057",
+        "description": "launch_in_the_set_itself",
+        "input": {
+            "name": "Scholar of the Lost Trove",
+            "variant": "Launch Promo Foil",
+            "edition": "Jumpstart"
+        }
+    },
+    {
+        "uuid": "bcd861de-1206-5df9-a2c5-e6a3464b37b8",
+        "description": "launch_in_the_set_wrong_edition",
+        "input": {
+            "name": "Chord of Calling",
+            "variant": "Launch",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "ad5c0740-144d-58fd-8fde-e2f3aee52fc8",
+        "description": "bab_marked_as_promo_but_it_is_really_in_the_set",
+        "input": {
+            "name": "Impervious Greatwurm",
+            "variant": "BIBB",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "eaae1532-4362-54f9-8855-477ce59eab99",
+        "description": "bab_marked_as_promo_but_it_is_really_in_the_set_set_is_not_expansion",
+        "input": {
+            "name": "Flusterstorm",
+            "variant": "buy a box",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "c36c2a16-d6b7-51c9-8c94-e505ab618d66",
+        "description": "bab_marked_as_promo_but_it's_really_in_the_set_set_is_core",
+        "input": {
+            "name": "Rienne Angel of Rebirth",
+            "variant": "M20 BIBB",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "cf72208c-ac68-55d4-bb68-66487d682749",
+        "description": "bab_old_style_it_is_in_Promos",
+        "input": {
+            "name": "Sylvan Caryatid",
+            "variant": "buy-a-box",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "e548ac74-e9a5-5a0e-9401-32cc5a74dc6b",
+        "description": "bab_but_also_pro_tour",
+        "input": {
+            "name": "Surgical Extraction",
+            "variant": "BIBB Promo",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "9aa8535c-407e-5c43-a8bd-1adf83dbafcb",
+        "description": "bab_but_also_in_normal_set",
+        "input": {
+            "name": "Mirran Crusader",
+            "variant": "Buy-a-Box",
+            "edition": "ignored",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "daa40fb0-cd50-5c75-bee6-1b6adafbb590",
+        "description": "bab_in_separate_set_with_wrong_info",
+        "input": {
+            "name": "Growing Rites of Itlimoc",
+            "variant": "buy-a-box",
+            "edition": "Ixalan Promos"
+        }
+    },
+    {
+        "uuid": "66468e25-da7d-56e7-8ae8-542eeadfbb5f",
+        "description": "bab_generic_promo_edition",
+        "input": {
+            "name": "Dragonsguard Elite",
+            "variant": "buy-a-box",
+            "edition": "Promo"
+        }
+    },
+    {
+        "uuid": "3c188337-5046-5441-a875-6adbb970ccd6",
+        "description": "bab_reprinted",
+        "input": {
+            "name": "Relic Seeker",
+            "edition": "buy-a-box"
+        }
+    },
+    {
+        "uuid": "8d93fe3c-e3d1-52e0-8cc5-1dd3c8b01c01",
+        "description": "bab_neo",
+        "input": {
+            "name": "Satoru Umezawa",
+            "edition": "Buy-A-Box Promos"
+        }
+    },
+    {
+        "uuid": "372145ed-c7a8-5494-b1e6-6f5aec74d7c0",
+        "description": "bundle_nonpromo_in_the_same_set",
+        "input": {
+            "name": "Piper of the Swarm",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "37fdc0d7-976d-5e5e-af6c-ee6b50795454",
+        "description": "bundle_in_the_same_set",
+        "input": {
+            "name": "Piper of the Swarm",
+            "variant": "Bundle",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "37fdc0d7-976d-5e5e-af6c-ee6b50795454",
+        "description": "bundle_in_the_same_set_but_unknown_set",
+        "input": {
+            "name": "Piper of the Swarm",
+            "variant": "Bundle Promo",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "cb8c4745-f3d2-51d6-87ab-71612430ae5f",
+        "description": "nonbundle_in_the_same_set_but_special_version",
+        "input": {
+            "name": "Piper of the Swarm",
+            "variant": "Extended Art",
+            "edition": "Throne of Eldraine"
+        }
+    },
+    {
+        "uuid": "40ccb40a-60f4-5df4-8eff-f8c1efcea7f5",
+        "description": "bundle_generic_promo_edition",
+        "input": {
+            "name": "Yusri, Fortune's Flame",
+            "variant": "Bundle",
+            "edition": "Promo"
+        }
+    },
+    {
+        "uuid": "b335008d-c678-52cd-8f87-7fc71832365b",
+        "description": "bundle_perfect_promo_edition_but_wrong",
+        "input": {
+            "name": "Charix, the Raging Isle",
+            "variant": "Bundle",
+            "edition": "Zendikar Rising: Promos"
+        }
+    },
+    {
+        "uuid": "64a0d121-4a0b-5015-bcf2-985a996f196f",
+        "description": "homelands_flavor",
+        "input": {
+            "name": "Abbey Matron",
+            "variant": "Quote Halina, Dwarven Trader",
+            "edition": "Homelands"
+        }
+    },
+    {
+        "uuid": "5a8aacf9-dfb4-5d3a-a36e-87b2ef6cca43",
+        "description": "homelands_flavor_alt",
+        "input": {
+            "name": "Folk of An-Havva",
+            "variant": "Quote Joskun, An-Havva Constable",
+            "edition": "Homelands"
+        }
+    },
+    {
+        "uuid": "2f01f5b8-6fe8-510e-8c35-3b209dbd41ce",
+        "description": "homelands_flavor_with_extra",
+        "input": {
+            "name": "Memory Lapse",
+            "variant": "Quote Chandler, Female Art",
+            "edition": "Homelands"
+        }
+    },
+    {
+        "uuid": "a860ebd5-1f8a-54b8-bf83-473fd7594a15",
+        "description": "fem_artist",
+        "input": {
+            "name": "Armor Thrull",
+            "variant": "Jeff A. Menges",
+            "edition": "Fallen Empires"
+        }
+    },
+    {
+        "uuid": "d4324874-0c9d-5d2e-936c-d24b8f5de060",
+        "description": "fem_artist_incomplete",
+        "input": {
+            "name": "Icatian Javelineers",
+            "variant": "Melissa Benson",
+            "edition": "Fallen Empires"
+        }
+    },
+    {
+        "uuid": "46015c37-2fbb-5d1c-b4f5-8378e777fb6f",
+        "description": "fem_variant_is_number_suffix",
+        "input": {
+            "name": "Homarid Warrior",
+            "variant": "B",
+            "edition": "Fallen Empires"
+        }
+    },
+    {
+        "uuid": "1e5e8355-c4c0-552c-a000-ad80e603844e",
+        "description": "fem_variant_is_polluted",
+        "input": {
+            "name": "Basal Thrull",
+            "variant": "Artist Phil Foglio",
+            "edition": "Fallen Empires"
+        }
+    },
+    {
+        "uuid": "0ecf4a89-44f9-5c9a-9ecd-422702e44ef2",
+        "description": "duel_decks_variant",
+        "input": {
+            "name": "Goblin Rabblemaster",
+            "edition": "DD: Merfolk vs Goblins"
+        }
+    },
+    {
+        "uuid": "f4ca3eba-d073-5a83-8732-c5d465b06a11",
+        "description": "duel_decks_variant_with_number",
+        "input": {
+            "name": "Forest",
+            "variant": "#38",
+            "edition": "DD: Zendikar vs. Eldrazi"
+        }
+    },
+    {
+        "uuid": "15ce106a-8fde-5848-99b3-21eceb764be0",
+        "description": "duel_decks_variant_with_mb1_tag",
+        "input": {
+            "name": "Elvish Warrior",
+            "variant": "Mystery Booster",
+            "edition": "Elves vs. Goblins"
+        }
+    },
+    {
+        "uuid": "12420bff-ce07-5ce1-8f72-03af7df3f1ef",
+        "description": "duel_decks_dda_in_variant",
+        "input": {
+            "name": "Flamewave Invoker",
+            "variant": "Jace vs Chandra",
+            "edition": "Duel Decks Anthology"
+        }
+    },
+    {
+        "uuid": "3626181e-e565-5dfa-8c59-2d02e47beff3",
+        "description": "duel_decks_dda_in_variant_inverted",
+        "input": {
+            "name": "Flamewave Invoker",
+            "variant": "Goblins vs Elves",
+            "edition": "Duel Decks Anthology"
+        }
+    },
+    {
+        "uuid": "8882a58b-a123-5c16-bd10-a86c6faf4155",
+        "description": "duel_decks_variant_jpn",
+        "input": {
+            "name": "Jace Beleren",
+            "variant": "Japanese Jace vs. Chandra Foil",
+            "edition": "Duel Decks: Jace vs. Chandra"
+        }
+    },
+    {
+        "uuid": "796f148f-c47a-5cc3-86bf-46352a179d9b",
+        "description": "duel_decks_variant_real_edition_in_variant",
+        "input": {
+            "name": "Corrupt",
+            "variant": "GVL",
+            "edition": "Duel Decks: Anthology"
+        }
+    },
+    {
+        "uuid": "3bc39616-8759-51eb-ab74-cf8271c339f6",
+        "description": "deckmasters_number_in_variant_with_other_text",
+        "input": {
+            "name": "Phyrexian War Beast",
+            "variant": "37A Propeller Right",
+            "edition": "DKM"
+        }
+    },
+    {
+        "uuid": "3bc39616-8759-51eb-ab74-cf8271c339f6",
+        "description": "deckmasters_use_first_if_empty",
+        "input": {
+            "name": "Phyrexian War Beast",
+            "edition": "DKM"
+        }
+    },
+    {
+        "uuid": "7a6610cf-7d53-5e4b-bb76-9be1708d3892",
+        "description": "deckmasters_variant_foil",
+        "input": {
+            "name": "Incinerate",
+            "variant": "Foil",
+            "edition": "Deckmasters",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "0b77872e-c4eb-54f4-8f63-57fcf68e682a",
+        "description": "deckmasters_variant_non_foil",
+        "input": {
+            "name": "Incinerate",
+            "edition": "Deckmasters"
+        }
+    },
+    {
+        "uuid": "982dabaa-9e5c-5a15-9fc2-cb4de4f13f11",
+        "description": "deckmasters_foil_variant_but_untagged",
+        "input": {
+            "name": "Icy Manipulator",
+            "variant": "Promo",
+            "edition": "Deckmasters"
+        }
+    },
+    {
+        "uuid": "9a55bce9-8d53-560b-83d6-d60af37274f9",
+        "description": "champs_and_states_but_is_gateway",
+        "input": {
+            "name": "Dauntless Dourbark",
+            "variant": "2008 States",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "79cbb056-116f-53b6-83ff-6af010bf6e49",
+        "description": "champs_and_states_main",
+        "input": {
+            "name": "Voidslime",
+            "variant": "Champs",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "0c99ba44-73d6-535d-b68e-3dcc690aadd6",
+        "description": "champs_and_states_not_champs",
+        "input": {
+            "name": "Ghalta, Primal Hunger",
+            "variant": "Champs / States",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "095baf23-4c83-5be7-b12f-67fbb7deddb4",
+        "description": "book_promo",
+        "input": {
+            "name": "Jace Beleren",
+            "variant": "Book",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "82b14a71-55ba-57d3-8d4b-597a801e4d65",
+        "description": "idw_normal",
+        "input": {
+            "name": "Wash Out",
+            "variant": "IDW",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "e473e14a-eda6-559a-bfc5-4b23931747e5",
+        "description": "idw_also_magazine",
+        "input": {
+            "name": "Duress",
+            "variant": "IDW Promo",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "c964334d-1153-55da-87d2-b986282af243",
+        "description": "idw_but_also_magazine",
+        "input": {
+            "name": "Duress",
+            "variant": "Japanese Magazine Promo",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "2a0a421a-418d-519c-b316-04e8071c36d7",
+        "description": "japanese_magazine_insert",
+        "input": {
+            "name": "Shivan Dragon",
+            "variant": "Japanese Gotta Comic Promo",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "e473e14a-eda6-559a-bfc5-4b23931747e5",
+        "description": "idw_duress_dupe",
+        "input": {
+            "name": "Duress",
+            "variant": "Comic promo",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "7d5ea62e-47af-5802-a24f-8090ba028f18",
+        "description": "magazine_insert_not_tagged_jpn",
+        "input": {
+            "name": "Lava Coil",
+            "edition": "Magazine Inserts"
+        }
+    },
+    {
+        "uuid": "cf72208c-ac68-55d4-bb68-66487d682749",
+        "description": "magazine_insert_in_generic_promo",
+        "input": {
+            "name": "Sylvan Caryatid",
+            "edition": "Magazine Inserts"
+        }
+    },
+    {
+        "uuid": "857618a8-7f5f-5a1f-8435-b210a8e8250c",
+        "description": "magazine_insert_as_pres",
+        "input": {
+            "name": "Beast Whisperer",
+            "edition": "Magazine Inserts"
+        }
+    },
+    {
+        "uuid": "9a72fcfd-5d43-55fb-8ade-8476d38f506b",
+        "description": "coreset_normal",
+        "input": {
+            "name": "Guttersnipe",
+            "edition": "Core Set 2019 / M19"
+        }
+    },
+    {
+        "uuid": "d36e37ff-9b07-50a4-9cb1-451caa554159",
+        "description": "wcd_pick_the_first_one_if_not_enough_info",
+        "input": {
+            "name": "Ancient Tomb",
+            "variant": "Tokyo 1999 - Not Tournament Legal",
+            "edition": "World Championships"
+        }
+    },
+    {
+        "uuid": "d50a6f25-d392-55e6-a34e-f83ad2b89c33",
+        "description": "wcd_with_number",
+        "input": {
+            "name": "Plains",
+            "variant": "8th Edition 332 Julien Nuijten 2004",
+            "edition": "World Championship"
+        }
+    },
+    {
+        "uuid": "ae03bc21-485c-5175-9a41-7fc5421d62ef",
+        "description": "wcd_with_variant",
+        "input": {
+            "name": "Memory Lapse",
+            "variant": "Statue A Sideboard Shawn Hammer Regnier",
+            "edition": "World Championship"
+        }
+    },
+    {
+        "uuid": "09ec16b3-b9b3-5be4-ba2c-7b52dc330b05",
+        "description": "wcd_with_variant_embedded_in_number",
+        "input": {
+            "name": "Plains",
+            "variant": "Odyssey 331 Brian Kibler 2002",
+            "edition": "World Championship"
+        }
+    },
+    {
+        "uuid": "70dc718c-b23b-51a8-b9d8-36433a438d79",
+        "description": "wcd_with_player_name_aliasing",
+        "input": {
+            "name": "Cursed Scroll",
+            "variant": "Matt Linde 1999",
+            "edition": "World Championship"
+        }
+    },
+    {
+        "uuid": "19a00cd2-3fdd-5b82-9eab-b561d94e362a",
+        "description": "wcd_with_correct_number",
+        "input": {
+            "name": "Strip Mine",
+            "variant": "ll363",
+            "edition": "Pro Tour Collector Set"
+        }
+    },
+    {
+        "uuid": "f87e1c26-4767-5738-95d2-3fc36b77db04",
+        "description": "wcd_with_correct_number_and_zero",
+        "input": {
+            "name": "Cabal Therapy",
+            "variant": "pk062",
+            "edition": "WC03"
+        }
+    },
+    {
+        "uuid": "c1db27a8-7128-5b2c-bf2e-9db972aa54e2",
+        "description": "wcd_with_correct_number_and_three_letters",
+        "input": {
+            "name": "Ancient Tomb",
+            "variant": "mlp315",
+            "edition": "WC99"
+        }
+    },
+    {
+        "uuid": "fbd3ea3e-80cb-5f55-b41e-5730aff46c6a",
+        "description": "wcd_with_correct_original_number",
+        "input": {
+            "name": "Order of Leitbur",
+            "variant": "1996 Bertrand Lestree FEM Male 16b",
+            "edition": "World Championship Decks"
+        }
+    },
+    {
+        "uuid": "df552574-7dbd-5bc3-bcd9-ba8d9c745b41",
+        "description": "wcd_with_correct_sideboard_number",
+        "input": {
+            "name": "Krosan Reclamation",
+            "variant": "dz122sb",
+            "edition": "WCD 2003: Daniel Zink"
+        }
+    },
+    {
+        "uuid": "0e1e5130-d97a-56f5-9188-5df2f9e965e1",
+        "description": "wcd_only_the_year",
+        "input": {
+            "name": "Karplusan Forest",
+            "variant": "Brussels, August 2000",
+            "edition": "World Championships 2000"
+        }
+    },
+    {
+        "uuid": "15d4bf85-0746-59c5-83e7-1f40646672b8",
+        "description": "wcd_minimal_info",
+        "input": {
+            "name": "City of Brass",
+            "edition": "WCD 1997: Paul McCabe"
+        }
+    },
+    {
+        "uuid": "c831b7f4-6c7e-58f2-90b3-344d78a7297f",
+        "description": "wcd_ptc_dupe",
+        "input": {
+            "name": "Circle of Protection: Green",
+            "variant": "bl014sb",
+            "edition": "PTC"
+        }
+    },
+    {
+        "uuid": "a237310c-464d-58d5-9387-f53e283378c4",
+        "description": "wcd_ptc_dupe_alt",
+        "input": {
+            "name": "Circle of Protection: Green",
+            "variant": "bl016sb",
+            "edition": "PTC"
+        }
+    },
+    {
+        "uuid": "a05c82be-c929-5720-a509-7b9f51156db9_f",
+        "description": "foil_only_booster_normal_pls",
+        "input": {
+            "name": "Skyship Weatherlight",
+            "edition": "Planeshift",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "dcc4ee11-6a61-55f0-966a-d19732010ffa",
+        "description": "foil_only_booster_alternate",
+        "input": {
+            "name": "Skyship Weatherlight",
+            "variant": "Alternate Art",
+            "edition": "Planeshift",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "4b375581-c43d-5bd1-b990-a0fa496b8262",
+        "description": "foil_only_booster_clean",
+        "input": {
+            "name": "Time Stop",
+            "edition": "Tenth Edition",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "3b77bb52-4181-57f5-b3cd-f3a15b95aa29_f",
+        "description": "foil_only_booster_normal_10e",
+        "input": {
+            "name": "Angelic Chorus",
+            "edition": "Tenth Edition",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "474cf6a0-9d91-59f1-aef8-2b0b8b5e23a5",
+        "description": "foil_only_duplicate_foil_number",
+        "input": {
+            "name": "Plains",
+            "variant": "343",
+            "edition": "Seventh Edition",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "153d08d8-2466-59fb-9ebe-801aeda30d66",
+        "description": "foil_only_number_star",
+        "input": {
+            "name": "Island",
+            "variant": "337★",
+            "edition": "Ninth Edition",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "73b7e8ec-6b0c-5c35-92ca-dc0cd1156456",
+        "description": "portal_starter_deck",
+        "input": {
+            "name": "Blaze",
+            "variant": "reminder text",
+            "edition": "Portal"
+        }
+    },
+    {
+        "uuid": "e410cea1-ca02-5fce-b4e9-ad8b6dfb6a30",
+        "description": "portal_starter_deck_alt",
+        "input": {
+            "name": "Raging Goblin",
+            "variant": "No flavor text",
+            "edition": "Portal"
+        }
+    },
+    {
+        "uuid": "399a36ae-aba7-5c74-9d57-74e6d4c66ea4",
+        "description": "portal_demo_game",
+        "input": {
+            "name": "Cloud Pirates",
+            "variant": "reminder text",
+            "edition": "Portal"
+        }
+    },
+    {
+        "uuid": "9c6f7fe2-544c-5d92-b5c7-777a5c944561",
+        "description": "portal_simplified_chinese_no_alias",
+        "input": {
+            "name": "Assassin's Blade",
+            "edition": "Portal"
+        }
+    },
+    {
+        "uuid": "b66e5217-c523-5d72-b94b-252787083ec6",
+        "description": "mb1list_only_in_list",
+        "input": {
+            "name": "Scroll Rack",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "0c466efd-2923-5e49-b0d7-ae69c279296a",
+        "description": "mb1list_only_in_mb1",
+        "input": {
+            "name": "Mana Crypt",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "12e7087f-56ce-5e19-92d9-028fcaa5cda4",
+        "description": "mb1list_in_both_undistinguishable",
+        "input": {
+            "name": "Living Death",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "65166320-c130-50e5-a78a-8f60bc8c453c",
+        "description": "mb1list_in_both_list_tagged",
+        "input": {
+            "name": "Imperious Perfect",
+            "variant": "Extended Art",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "65166320-c130-50e5-a78a-8f60bc8c453c",
+        "description": "mb1list_in_both_plist_priority",
+        "input": {
+            "name": "Imperious Perfect",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "2ea9464a-c6f9-5e0c-a0bf-55f89fa42252",
+        "description": "mb1list_in_both_tagged_mb1",
+        "input": {
+            "name": "Bojuka Bog",
+            "variant": "Worldwake",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "706ca274-e840-56e6-b252-4d7da8f13063",
+        "description": "mb1list_in_both_tagged_plist",
+        "input": {
+            "name": "Bojuka Bog",
+            "variant": "Commander 2018",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "a057d0d7-11fb-5d77-9217-96d8cd26dd67",
+        "description": "mb1list_in_both_mb1_foil",
+        "input": {
+            "name": "Helix Pinnacle",
+            "variant": "Foil",
+            "edition": "Mystery Booster The List",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "9ef93f93-52a8-5807-8c47-aa32048c25ce",
+        "description": "mb1list_in_both_list_nonfoil",
+        "input": {
+            "name": "Helix Pinnacle",
+            "variant": "Non-Foil",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "7cac5a8b-f4cc-5169-acf1-f4e0b2b553b6",
+        "description": "mb1list_explicit_list",
+        "input": {
+            "name": "Scourge of the Throne",
+            "edition": "The List"
+        }
+    },
+    {
+        "uuid": "d26069ff-4e63-547f-a64b-cbf2d83cdbdf",
+        "description": "mb1list_explicit_variant_list",
+        "input": {
+            "name": "Thought Vessel",
+            "variant": "The List",
+            "edition": "Ignored"
+        }
+    },
+    {
+        "uuid": "3aa53e39-08e2-5095-b1d7-05290568248b",
+        "description": "mb1list_triple_combo",
+        "input": {
+            "name": "Lightning Bolt (142)",
+            "edition": "The List"
+        }
+    },
+    {
+        "uuid": "37d7eb2a-2512-5e56-829f-2c10571bb4a7",
+        "description": "mb1list_has_two_variants",
+        "input": {
+            "name": "Phantom Centaur",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "dae3ddb3-56c3-5181-ab10-1371270e1f20",
+        "description": "mb1list_has_two_variants_misprint",
+        "input": {
+            "name": "Phantom Centaur",
+            "variant": "Misprint",
+            "edition": "Mystery Booster Cards"
+        }
+    },
+    {
+        "uuid": "eaf5912c-be71-52d7-addc-2cb2823080ba",
+        "description": "mb1list_wrong_edition_and_foil",
+        "input": {
+            "name": "Sheltering Ancient",
+            "variant": "Mystery Booster",
+            "edition": "Coldsnap"
+        }
+    },
+    {
+        "uuid": "dfdc9b7d-99a7-5c64-9144-2c879871a926",
+        "description": "mb1list_thelist_variant",
+        "input": {
+            "name": "Grim Haruspex",
+            "variant": "Ugin's Fate",
+            "edition": "The List"
+        }
+    },
+    {
+        "uuid": "ddc17c53-b3d0-51fc-92f5-12f9ba6080e6",
+        "description": "mb1list_commander_deck",
+        "input": {
+            "name": "Desolate Lighthouse",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "a6ecaa21-642e-54f9-ba82-5333408f55e3",
+        "description": "mb1list_commander_deck_foil",
+        "input": {
+            "name": "Swiftfoot Boots",
+            "edition": "Mystery Booster/The List",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "841fca52-9f90-508f-a2de-a13d4c062a4d",
+        "description": "mb1list_commander_deck_dupe_mb1",
+        "input": {
+            "name": "Chaos Warp",
+            "variant": "Commander 2017",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "96472135-42b3-5127-8e18-240d592cce1e",
+        "description": "mb1list_thelist_polluting_older_sets",
+        "input": {
+            "name": "Rafiq of the Many",
+            "edition": "The List"
+        }
+    },
+    {
+        "uuid": "219b0f63-c6f8-5c00-8b41-f54530f48560",
+        "description": "mb1list_thelist_mistag_sld",
+        "input": {
+            "name": "Arvinox, the Mind Flail",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "219b0f63-c6f8-5c00-8b41-f54530f48560",
+        "description": "mb1list_thelist_correcttag_sld",
+        "input": {
+            "name": "Arvinox, the Mind Flail",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "d465de12-cc8b-58a8-aa5f-3b9d2b13adca",
+        "description": "mb1list_thelist_correcttag_alt",
+        "input": {
+            "name": "Mind Flayer, the Shadow",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "38f40a36-a7ba-56dc-8e2f-0d7559e1f4fd",
+        "description": "mb1list_thelist_unfinity",
+        "input": {
+            "name": "B-I-N-G-O",
+            "edition": "The List"
+        }
+    },
+    {
+        "uuid": "d8a8c6df-c901-5bed-9d3a-a1bfaef12e23",
+        "description": "mb1list_phed_reprint",
+        "input": {
+            "name": "Yusri, Fortune's Flame",
+            "edition": "Secret Lair Commander: Heads I Win, Tails You Lose"
+        }
+    },
+    {
+        "uuid": "da9dbad5-63b2-54ec-993c-4f8b527172d2",
+        "description": "mb1list_phed_skipped_not",
+        "input": {
+            "name": "Counterspell",
+            "edition": "Secret Lair Commander: Heads I Win, Tails You Lose"
+        }
+    },
+    {
+        "uuid": "6026411a-f851-52fd-9896-d4f1c25b26e2",
+        "description": "mb1list_phed_skipped_yes",
+        "input": {
+            "name": "Counterspell",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "c901ac44-1dd7-5226-9839-911e03ce08f6",
+        "description": "mb1list_mb1_sol_ring",
+        "input": {
+            "name": "Sol Ring",
+            "variant": "Commander 2018",
+            "edition": "Mystery Booster / The List"
+        }
+    },
+    {
+        "uuid": "0c7115ea-01c5-5d49-bd1b-853ab0074aac",
+        "description": "mb1list_phed_sol_ring",
+        "input": {
+            "name": "Sol Ring",
+            "variant": "Commander 2021",
+            "edition": "Mystery Booster / The List"
+        }
+    },
+    {
+        "uuid": "89d7f595-d549-526a-ba83-6f976f6c542c",
+        "description": "misprints_prerelease_with_multiple_misprints_dark",
+        "input": {
+            "name": "Laquatus's Champion",
+            "variant": "dark misprint",
+            "edition": "Prerelease Events"
+        }
+    },
+    {
+        "uuid": "7c3cac05-a2a1-5e74-8a5f-dc73a3f3b013",
+        "description": "misprints_prerelease_with_multiple_misprints_nondark",
+        "input": {
+            "name": "Laquatus's Champion",
+            "variant": "misprint",
+            "edition": "Prerelease Events"
+        }
+    },
+    {
+        "uuid": "5351f6ca-4c00-57c4-ba43-272f6eb622df",
+        "description": "misprints_prerelease_with_multiple_misprints_normal",
+        "input": {
+            "name": "Laquatus's Champion",
+            "variant": "Prerelease",
+            "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "07d0a735-dec4-5b23-a5d5-6b9f0d7a9625",
+        "description": "misprints_normalcard_has_misprint",
+        "input": {
+            "name": "Thunderheads",
+            "edition": "GPT"
+        }
+    },
+    {
+        "uuid": "469f6976-ec7d-590d-8e57-573f2fb7c37d",
+        "description": "misprints_normalcard_is_misprint",
+        "input": {
+            "name": "Thunderheads",
+            "variant": "Misprint",
+            "edition": "GPT",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "a67c3cd2-d09d-5c2e-807b-5f4772c367e7",
+        "description": "misprints_eacard_is_misprint_always",
+        "input": {
+            "name": "Temple of Abandon",
+            "variant": "Extended Art",
+            "edition": "THB",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "38fc8e52-821b-5701-a5bd-7402ee13a51c",
+        "description": "misprints_eacard_nonfoil_is_not_misprint",
+        "input": {
+            "name": "Temple of Abandon",
+            "variant": "Extended Art",
+            "edition": "THB"
+        }
+    },
+    {
+        "uuid": "0dfd6f8d-f7e6-5aba-ab2b-88fb15e8aeb3",
+        "description": "cmr_duplicates_main",
+        "input": {
+            "name": "Return to Dust",
+            "edition": "Commander Legends"
+        }
+    },
+    {
+        "uuid": "5d1ddb47-9191-5527-a695-458bf67ec2f9",
+        "description": "cmr_duplicates_decks_actually",
+        "input": {
+            "name": "Return to Dust",
+            "variant": "not in draft",
+            "edition": "Commander Legends"
+        }
+    },
+    {
+        "uuid": "57ec163e-2368-5a73-abef-f1851339ae58",
+        "description": "cmr_duplicates_ea",
+        "input": {
+            "name": "Return to Dust",
+            "variant": "Extended Art",
+            "edition": "Commander Legends"
+        }
+    },
+    {
+        "uuid": "cc3d585e-6835-5442-a227-7cdc23b6a839",
+        "description": "cmr_duplicates_decks_notreally",
+        "input": {
+            "name": "Acidic Slimes",
+            "variant": "anything",
+            "edition": "Commander Legends"
+        }
+    },
+    {
+        "uuid": "0fba90e8-f8a6-534b-8d0c-096f5ff4d116_f",
+        "description": "cmr_duplicates_normal_foil",
+        "input": {
+            "name": "Yurlok of Scorch Thrash",
+            "edition": "Commander Legends",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "acaf7712-434a-5a18-a1c9-1f92081a7ca1",
+        "description": "cmr_duplicates_etched_foil_one",
+        "input": {
+            "name": "Yurlok of Scorch Thrash",
+            "variant": "Etched Foil",
+            "edition": "Commander Legends",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "3777b628-6807-51dc-855a-12224af0f4a8",
+        "description": "cmr_duplicates_etched_foil_two",
+        "input": {
+            "name": "Nevinyrral, Urborg Tyrant",
+            "variant": "Foil-Etched",
+            "edition": "Commander Legends"
+        }
+    },
+    {
+        "uuid": "0f8e79b8-c429-5e9d-bb51-849c114bf5de",
+        "description": "cmr_duplicates_bab",
+        "input": {
+            "name": "Mana Confluence",
+            "variant": "721",
+            "edition": "Buy A Box"
+        }
+    },
+    {
+        "uuid": "e511d4fa-81ee-5879-a9fd-fe2217aba7b3",
+        "description": "cmr_etched_not_launch",
+        "input": {
+            "name": "Sengir, the Dark Baron",
+            "variant": "Foil Etched",
+            "edition": "Commander Legends Variants"
+        }
+    },
+    {
+        "uuid": "472e2abd-2edd-5369-9a0d-6b843361361e",
+        "description": "extras_come_before",
+        "input": {
+            "name": "Seasoned Dungeoneer",
+            "edition": "Commander Legends: Battle for Baldur's Gate: Extras"
+        }
+    },
+    {
+        "uuid": "350929d4-a62a-5d53-921f-3f0d42f70fe9",
+        "description": "extras_come_before_alt",
+        "input": {
+            "name": "Elminster",
+            "edition": "Commander Legends: Battle for Baldur's Gate: Extras"
+        }
+    },
+    {
+        "uuid": "d285f4d8-b5b6-514a-86d5-e7866fe54f5e",
+        "description": "extras_normal",
+        "input": {
+            "name": "Black Market Connections",
+            "variant": "Extended Art",
+            "edition": "Commander Legends: Battle for Baldur's Gate"
+        }
+    },
+    {
+        "uuid": "85e31db0-769e-51d8-a677-8d810653e70a_e",
+        "description": "boosterfun_foil_etched",
+        "input": {
+            "name": "Marsh Flats",
+            "variant": "Retro Frame Foil Etched",
+            "edition": "Modern Horizons 2 - Foil Etched"
+        }
+    },
+    {
+        "uuid": "9fce4a02-01ec-5dc3-a3e9-92646a69e6fd",
+        "description": "planechase_planes",
+        "input": {
+            "name": "The Hippodrome",
+            "edition": "Planechase"
+        }
+    },
+    {
+        "uuid": "b4067278-0d0e-53ee-9e4a-d880c56f6e56",
+        "description": "planechase_planes_oversize",
+        "input": {
+            "name": "Feeding Grounds",
+            "variant": "Plane Oversized",
+            "edition": "Planechase"
+        }
+    },
+    {
+        "uuid": "a82e3d86-2ffb-593d-88b5-16db79ce2025",
+        "description": "boosterfun_variant",
+        "input": {
+            "name": "Shadowspear",
+            "edition": "Theros Beyond Death: Extras"
+        }
+    },
+    {
+        "uuid": "a82e3d86-2ffb-593d-88b5-16db79ce2025_f",
+        "description": "boosterfun_variant_generic",
+        "input": {
+            "name": "Shadowspear",
+            "variant": "Boosterfun",
+            "edition": "Theros Beyond Death",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "4986aa22-de4e-5f16-88bd-f378f8071905",
+        "description": "boosterfun_variant_but_custom_setsize",
+        "input": {
+            "name": "Abrade",
+            "edition": "Commander Legends: Variants"
+        }
+    },
+    {
+        "uuid": "3aa21396-8dcd-5f9a-9243-677182293d4a",
+        "description": "boosterfun_variant_but_needs_tags",
+        "input": {
+            "name": "Pollywog Symbiote",
+            "edition": "Ikoria: Lair of Behemoths: Variants"
+        }
+    },
+    {
+        "uuid": "e1b8fc9f-e974-51cd-972f-624b3e9d0c1b",
+        "description": "intropack_dedup_normal",
+        "input": {
+            "name": "Wind Drake",
+            "edition": "Kaladesh"
+        }
+    },
+    {
+        "uuid": "992c07f2-f9b9-5c7a-a66c-efd497c3c9b2",
+        "description": "intropack_dedup_intro",
+        "input": {
+            "name": "Wind Drake",
+            "variant": "Intro Pack",
+            "edition": "Kaladesh"
+        }
+    },
+    {
+        "uuid": "bcf2f96c-821e-5b2e-8a2d-5df7ab7e902a",
+        "description": "display_commander_separate",
+        "input": {
+            "name": "Osgir, the Reconstructor",
+            "variant": "Display Commander - Not Tournament Legal",
+            "edition": "Commander 2021"
+        }
+    },
+    {
+        "uuid": "352094fb-6dc2-5b86-b48d-b59818d30443",
+        "description": "display_commander_internal_etched",
+        "input": {
+            "name": "Perrie, the Pulverizer",
+            "variant": "Thick Stock Display Commander",
+            "edition": "Commander: Streets of New Capenna"
+        }
+    },
+    {
+        "uuid": "2ef3715f-fcb9-5385-a161-962c83ae5bab",
+        "description": "display_commander_sld",
+        "input": {
+            "name": "Zndrsplt, Eye of Wisdom // Zndrsplt, Eye of Wisdom",
+            "variant": "Thick Stock Display Commander",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
+        "uuid": "678a79aa-21ee-517f-8be5-da9349c85662",
+        "description": "etching_present_in_name",
+        "input": {
+            "name": "Elesh Norn // The Argent Etchings",
+            "variant": "// The Argent Etchings Borderless Showcase",
+            "edition": "March of the Machine"
+        }
+    },
+    {
+        "uuid": "5476c579-9498-559f-8ce9-1cea7d3c79de",
+        "description": "secret_lair_sticker",
+        "input": {
+            "name": "Plains",
+            "variant": "// Battlefield Forge Secret Lair Full Art Unpeeled",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "5507e55e-f034-51f2-8d4c-83008f18a950",
+        "description": "empty_variant_cause_showcase",
+        "input": {
+            "name": "Niv-Mizzet Reborn",
+            "edition": "Multiverse Legends"
+        }
+    },
+    {
+        "uuid": "41bcaa56-5cb1-5d08-bff0-fe76d752fdf6",
+        "description": "commander_with_planes",
+        "input": {
+            "name": "The Great Forest",
+            "variant": "Plane Oversized",
+            "edition": "March of the Machine Commander Decks"
+        }
+    },
+    {
+        "uuid": "95a84f80-3513-5091-a8fe-4239e61b3506",
+        "description": "halofoil_showcase",
+        "input": {
+            "name": "Coppercoat Vanguard",
+            "variant": "Halo Foil",
+            "edition": "March of the Machine: The Aftermath"
+        }
+    },
+    {
+        "uuid": "299bd0f7-15c0-512b-96b0-341bf45f7d64",
+        "description": "missing_prerelease_showcase",
+        "input": {
+            "name": "Goro-Goro and Satoru",
+            "variant": "Showcase",
+            "edition": "MOC"
+        }
+    },
+    {
+        "uuid": "f87da7e0-10e5-5cae-917e-6e5a92f7880c",
+        "description": "besteffort_untagged_promo_anypromoset",
+        "input": {
+            "name": "Acidic Slime",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "21beeb79-a0e0-5809-94df-25e44b45220f",
+        "description": "besteffort_untagged_promo_clashpack",
+        "input": {
+            "name": "Courser of Kruphix",
+            "edition": "Promotional Other"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "c6c2a57b-1422-54f5-be68-1d64328e3679",
+        "description": "besteffort_untagged_promo_expansion",
+        "input": {
+            "name": "Adorned Pouncer",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "faf229ab-b135-5c37-abb7-dbf68a1dad9b",
+        "description": "besteffort_untagged_promo_coreset",
+        "input": {
+            "name": "Alhammarret, High Arbiter",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "bcd861de-1206-5df9-a2c5-e6a3464b37b8",
+        "description": "besteffort_untagged_promo_masters",
+        "input": {
+            "name": "Chord of Calling",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "0f8e79b8-c429-5e9d-bb51-849c114bf5de",
+        "description": "besteffort_untagged_promo_draft",
+        "input": {
+            "name": "Mana Confluence",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "dcc4ee11-6a61-55f0-966a-d19732010ffa",
+        "description": "besteffort_untagged_promo_nonpromo",
+        "input": {
+            "name": "Skyship Weatherlight",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "37fdc0d7-976d-5e5e-af6c-ee6b50795454",
+        "description": "besteffort_untagged_promo_bundle",
+        "input": {
+            "name": "Piper of the Swarm",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "63ef8762-36b8-5891-97ae-744d0e5d3f78",
+        "description": "besteffort_untagged_promo_bab",
+        "input": {
+            "name": "Realmwalker",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "1cb28add-17dd-5e08-9d02-7d6c2275a1fa",
+        "description": "besteffort_untagged_promo_not_boxtopper",
+        "input": {
+            "name": "Batterskull",
+            "edition": "Promo"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "12b9c3de-91f6-5591-bb9e-c9297b76a1a7",
+        "description": "besteffort_untagged_promo_gameday",
+        "input": {
+            "name": "Power Word Kill",
+            "variant": "Game Day",
+            "edition": "Promotional"
+        },
+        "wildcard": true
+    },
+    {
+        "uuid": "fe9dbfd3-6aaa-57af-90c9-e0f4427dce97",
+        "description": "custom_language_number",
+        "input": {
+            "name": "Urza's Power Plant",
+            "variant": "115d",
+            "edition": "Chronicles Japanese"
+        }
+    },
+    {
+        "uuid": "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
+        "description": "custom_language_tag",
+        "input": {
+            "name": "Sylvan Library",
+            "edition": "Legends Italian"
+        }
+    },
+    {
+        "uuid": "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita",
+        "description": "custom_language_id_lookup",
+        "input": {
+            "id": "9ecb374f-fc0d-54d3-a26b-f590306026a0_ita"
+        }
+    },
+    {
+        "uuid": "f2aa69f2-db69-5564-8661-d51855c6796a",
+        "description": "sta_double_variant_normal",
+        "input": {
+            "name": "Demonic Tutor",
+            "edition": "Mystical Archive"
+        }
+    },
+    {
+        "uuid": "b076bded-cee7-5f26-b9d8-3540918f68fa",
+        "description": "sta_double_variant_jpn",
+        "input": {
+            "name": "Demonic Tutor",
+            "variant": "JPN",
+            "edition": "Strixhaven Mystical Archive"
+        }
+    },
+    {
+        "uuid": "b076bded-cee7-5f26-b9d8-3540918f68fa",
+        "description": "sta_double_variant_jpn_number",
+        "input": {
+            "name": "Demonic Tutor",
+            "variant": "JPN 90",
+            "edition": "Strixhaven Mystical Archives"
+        }
+    },
+    {
+        "uuid": "f2aa69f2-db69-5564-8661-d51855c6796a_f",
+        "description": "sta_normal_foil",
+        "input": {
+            "name": "Demonic Tutor",
+            "edition": "Strixhaven Mystical Archives",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "f2aa69f2-db69-5564-8661-d51855c6796a_e",
+        "description": "sta_normal_etched",
+        "input": {
+            "name": "Demonic Tutor",
+            "variant": "Foil Etched",
+            "edition": "Strixhaven Mystical Archives",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "b076bded-cee7-5f26-b9d8-3540918f68fa_e",
+        "description": "sta_jpn_etched",
+        "input": {
+            "name": "Demonic Tutor",
+            "variant": "JP Alternate Art Foil Etched",
+            "edition": "Strixhaven Mystical Archives"
+        }
+    },
+    {
+        "uuid": "6c82bc6b-0e97-5283-ae43-e5d16f53e19a",
+        "description": "sta_double_variant_japanese_noforeigndata",
+        "input": {
+            "name": "Negate",
+            "variant": "Japanese",
+            "edition": "Strixhaven Mystical Archive"
+        }
+    },
+    {
+        "uuid": "aab28e8e-a9c6-5cdc-86b4-204292662a65_e",
+        "description": "sta_number_and_etched",
+        "input": {
+            "name": "Time Warp",
+            "variant": "Etched 22",
+            "edition": "Strixhaven: School of Mages Etched"
+        }
+    },
+    {
+        "uuid": "aab28e8e-a9c6-5cdc-86b4-204292662a65_e",
+        "description": "sta_number_with_suffix",
+        "input": {
+            "name": "Time Warp",
+            "variant": "022e",
+            "edition": "Strixhaven: School of Mages"
+        }
+    },
+    {
+        "uuid": "54146218-c228-5e3f-b7de-58fe8df5aabd",
+        "description": "sta_number_with_just_alt",
+        "input": {
+            "name": "Swords to Plowshares",
+            "variant": "Alternate Art",
+            "edition": "Strixhaven Mystical Archive"
+        }
+    },
+    {
+        "uuid": "de7f21d1-dadd-512c-94a6-eb2e7d237306",
+        "description": "mh2_beyond_retro",
+        "input": {
+            "name": "Blacksmith's Skill",
+            "edition": "Modern Horizons 2: Extras"
+        }
+    },
+    {
+        "uuid": "31492d9b-e4cd-55f1-b9ce-71dfc66dda4f",
+        "description": "mh2_h1r_foil",
+        "input": {
+            "name": "Archmage's Charm",
+            "edition": "Modern Horizons 1 Timeshifts",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "31492d9b-e4cd-55f1-b9ce-71dfc66dda4f_e",
+        "description": "mh2_h1r_etched",
+        "input": {
+            "name": "Archmage's Charm",
+            "variant": "Etched",
+            "edition": "Modern Horizons 1 Timeshifts"
+        }
+    },
+    {
+        "uuid": "2d7d2e89-b5f2-5326-ba37-a1b5832937fd",
+        "description": "mb1playtest_first_printing",
+        "input": {
+            "name": "Soulmates",
+            "edition": "Mystery Booster Playtest Cards"
+        }
+    },
+    {
+        "uuid": "3d8882da-a9e9-50f9-8bca-f79f0f9f2383",
+        "description": "mb1playtest_second_printing",
+        "input": {
+            "name": "Soulmates",
+            "variant": "No PW Symbol",
+            "edition": "Mystery Booster Playtest Cards"
+        }
+    },
+    {
+        "uuid": "a3f3de35-f107-57a5-aa87-74195a77795f",
+        "description": "mb1playtest_alt_first_printing",
+        "input": {
+            "name": "Baneslayer Aspirant",
+            "edition": "Mystery Booster - Test Cards (Symbol)"
+        }
+    },
+    {
+        "uuid": "60ff6d75-8c6f-56af-8106-39b777824bad",
+        "description": "mb1playtest_alt_second_printing",
+        "input": {
+            "name": "Baneslayer Aspirant",
+            "edition": "Mystery Booster - Test Cards (No Symbol)"
+        }
+    },
+    {
+        "uuid": "dd9ca932-57da-5922-9fb0-20618924f31d",
+        "description": "mb1playtest_not_plist",
+        "input": {
+            "name": "Puresteel Angel",
+            "variant": "V.2",
+            "edition": "Mystery Booster - Test Cards"
+        }
+    },
+    {
+        "uuid": "1327e84b-cfcd-5bfb-83ea-499fb5565101",
+        "description": "mb1playtest_plist",
+        "input": {
+            "name": "Puresteel Angel",
+            "edition": "The List"
+        }
+    },
+    {
+        "uuid": "3f69e09e-11e0-5299-9384-811c264a97ae",
+        "description": "tok_sld",
+        "input": {
+            "name": "Faerie Rogue Token",
+            "variant": "014 - B",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "01a9f60d-207a-56e2-9d39-9734ce7ba567",
+        "description": "tok_dupe",
+        "input": {
+            "name": "Cat",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "237a0941-3118-512d-a40d-a42c0c518c5a",
+        "description": "tok_treasure",
+        "input": {
+            "name": "Treasure Token",
+            "variant": "2018 Lunar New Year",
+            "edition": "Promotional"
+        }
+    },
+    {
+        "uuid": "9dfd9bba-809e-55e9-809e-69285b7a9b35",
+        "description": "tok_herospath_card",
+        "input": {
+            "name": "Altar of Mogis",
+            "edition": "Hero's Path Promos"
+        }
+    },
+    {
+        "uuid": "0b8abfd2-3d3e-5d5a-844c-2317150c197b",
+        "description": "tok_herospath_token",
+        "input": {
+            "name": "Snapping Fang Head",
+            "edition": "Hero's Path Promos"
+        }
+    },
+    {
+        "uuid": "8904fd5b-295f-557d-9d48-d70471c59df0",
+        "description": "tok_oversize",
+        "input": {
+            "name": "Avacyn, Angel of Hope",
+            "variant": "Avacyn Restored",
+            "edition": "Oversize Cards"
+        }
+    },
+    {
+        "uuid": "8904fd5b-295f-557d-9d48-d70471c59df0_f",
+        "description": "tok_oversize_foil",
+        "input": {
+            "name": "Avacyn, Angel of Hope",
+            "variant": "Foil Helvault Promo",
+            "edition": "Promotional",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "deb0e4bd-0431-526c-8ad7-d10716d4d58f",
+        "description": "tok_dungeon",
+        "input": {
+            "name": "Lost Mine of Phandelver",
+            "edition": "Adventures in the Forgotten Realms"
+        }
+    },
+    {
+        "uuid": "4b4026c0-114f-55c2-a520-9eab77881ee6",
+        "description": "tok_commander",
+        "input": {
+            "name": "Azusa, Lost but Seeking",
+            "variant": "Commander's Arsenal",
+            "edition": "Commander's Arsenal Oversized"
+        }
+    },
+    {
+        "uuid": "3efed27e-93fc-564b-a358-9ead4a13bac3",
+        "description": "tok_league",
+        "input": {
+            "name": "Soldier",
+            "variant": "Gatecrash",
+            "edition": "League Tokens 2013"
+        }
+    },
+    {
+        "uuid": "4ec88554-f174-556b-98eb-9c315caafb77",
+        "description": "tok_mps",
+        "input": {
+            "name": "Angel Token",
+            "edition": "Magic Player Rewards"
+        }
+    },
+    {
+        "uuid": "18e320e5-9766-5783-b74a-a7208e05068a",
+        "description": "tok_bear",
+        "input": {
+            "name": "Bear",
+            "variant": "Odyssey",
+            "edition": "Magic Player Rewards"
+        }
+    },
+    {
+        "uuid": "d98a1805-56ab-5ef2-b496-391468d5ff21",
+        "description": "tok_emblem",
+        "input": {
+            "name": "Ajani, Sleeper Agent Emblem",
+            "edition": "DMU"
+        }
+    },
+    {
+        "uuid": "841679dc-4fad-59e6-a1f6-f736a3be4b2f",
+        "description": "neo_separate_etched_variant_normal",
+        "input": {
+            "name": "Blade of the Oni",
+            "edition": "Kamigawa: Neon Dynasty"
+        }
+    },
+    {
+        "uuid": "a319e2b9-8155-5eb2-9f29-c4c6356a9581_f",
+        "description": "neo_separate_etched_variant_showcase",
+        "input": {
+            "name": "Blade of the Oni",
+            "variant": "Showcase",
+            "edition": "Kamigawa: Neon Dynasty Variants",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "e885d0d4-7a5c-5f81-8621-64115ec6b475",
+        "description": "noe_separate_etched_variant_etched",
+        "input": {
+            "name": "Blade of the Oni",
+            "variant": "Foil-Etched",
+            "edition": "Kamigawa: Neon Dynasty Variants"
+        }
+    },
+    {
+        "uuid": "e97bac27-b2ee-5d13-acc3-187ead365879",
+        "description": "neo_duplicate_name_nec",
+        "input": {
+            "name": "Unquenchable Fury",
+            "edition": "NEC"
+        }
+    },
+    {
+        "uuid": "b515bbb3-e4b8-5d29-a661-0851e58e64d2",
+        "description": "neo_duplicate_name_tok",
+        "input": {
+            "name": "Unquenchable Fury",
+            "edition": "TBTH"
+        }
+    },
+    {
+        "uuid": "80ca86c8-8661-55bb-a400-bd1a39cb2323",
+        "description": "unf_galaxy",
+        "input": {
+            "name": "Robo-Pinata",
+            "variant": "Galaxy-Foil",
+            "edition": "Unfinity",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "694f2922-092f-5f8e-9a6a-d7ddb7d99487",
+        "description": "unf_stickers",
+        "input": {
+            "name": "Urza's Dark Cannonball",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "694f2922-092f-5f8e-9a6a-d7ddb7d99487",
+        "description": "unf_sticker_sheets",
+        "input": {
+            "name": "Urza's Dark Cannonball Sticker Sheet",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "5a2b4057-bf9b-5598-ba95-f7beda0bcfe3",
+        "description": "unf_attractions",
+        "input": {
+            "name": "Bumper Cars",
+            "variant": "2/3/6",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "0def53d4-b985-5b7b-8ba1-4941eaf78fdf",
+        "description": "unf_attractions_number",
+        "input": {
+            "name": "Information Booth",
+            "variant": "218a",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "c9f5f07b-3646-5f2e-ae29-5f8798a4e239",
+        "description": "unf_blanks",
+        "input": {
+            "name": "Wizards of the _______",
+            "variant": "350",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "0608ab2f-66a6-55c0-9117-bd831ebf6f48",
+        "description": "unf_galaxy_borderless",
+        "input": {
+            "name": "Watery Grave",
+            "variant": "Borderless Galaxy Foil",
+            "edition": "Unfinity - Variants - Galaxy Foil"
+        }
+    },
+    {
+        "uuid": "22d7ef95-42b3-5cdf-8882-c070a4982dc3",
+        "description": "unf_borderlessc_card_implied",
+        "input": {
+            "name": "Temple Garden",
+            "edition": "Unfinity Variants"
+        }
+    },
+    {
+        "uuid": "533e84f0-05f5-50c9-856d-f9db6dfd787c",
+        "description": "unf_dupe_galaxy",
+        "input": {
+            "name": "Space Beleren",
+            "variant": "Galaxy Foil",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "e652bab7-775e-5ec0-9707-2641e9d4217d",
+        "description": "unf_dupe_borderless",
+        "input": {
+            "name": "Space Beleren",
+            "variant": "Borderless",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "147668b5-b081-5aad-b715-a11539bd2749",
+        "description": "unf_lotr_surge_reskin",
+        "input": {
+            "name": "Yavimaya, Cradle of Growth",
+            "variant": "Fangorn Forest Borderless Surge Foil",
+            "edition": "The Lord of the Rings Commander",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "cd122077-902e-5cce-a873-30da9a058930",
+        "description": "unf_borderless_and_showcase",
+        "input": {
+            "name": "Spark Rupture",
+            "variant": "Borderless",
+            "edition": "MAT"
+        }
+    },
+    {
+        "uuid": "915ca991-1d1b-557b-bb42-fe0d5afb9b50",
+        "description": "simplified_chinese_alt",
+        "input": {
+            "name": "Taunt",
+            "edition": "Simplified Chinese Alternate Art Cards"
+        }
+    },
+    {
+        "uuid": "766ba887-5246-57d2-b376-657c528113b9",
+        "description": "simplified_chinese_main",
+        "input": {
+            "name": "Coffin Puppets",
+            "edition": "Prophecy"
+        }
+    },
+    {
+        "uuid": "2ebe4799-b0d6-5e10-b2aa-41bfb3764c2f",
+        "description": "simplified_chinese_short_alt",
+        "input": {
+            "name": "Mountain",
+            "variant": "CS Alternate Art 208s",
+            "edition": "Portal"
+        }
+    },
+    {
+        "uuid": "c72c683a-c014-5de4-a8d1-0e034dab2d3b",
+        "description": "brr_schematic",
+        "input": {
+            "name": "Wurmcoil Engine",
+            "variant": "Schematic",
+            "edition": "The Brothers' War: Retro Frame Artifacts"
+        }
+    },
+    {
+        "uuid": "bc7bf2ae-8508-536f-94f5-2d76c0bed706",
+        "description": "brr_serialized_schematic",
+        "input": {
+            "name": "Chromatic Star",
+            "variant": "Schematic Serial Numbered",
+            "edition": "The Brothers' War Retro Artifacts"
+        }
+    },
+    {
+        "uuid": "e8c93a99-ef44-56e7-a2f8-6de8008d1c3b",
+        "description": "bot_shatteredglass_not",
+        "input": {
+            "name": "Megatron, Tyrant // Megatron, Destructive Force",
+            "edition": "Transformers"
+        }
+    },
+    {
+        "uuid": "0ee3c442-0b35-5dec-8693-c4d0875c6e47",
+        "description": "bot_shatteredglass_yes",
+        "input": {
+            "name": "Megatron, Tyrant // Megatron, Destructive Force",
+            "variant": "Shattered Glass",
+            "edition": "Transformers"
+        }
+    },
+    {
+        "uuid": "aff50d55-5c85-5871-b7b5-20f00bf6f617",
+        "description": "one_step_wrong_edition",
+        "input": {
+            "name": "Urabrask, Heretic Praetor",
+            "variant": "Concept Praetor Step-And-Compleat Foil",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
+        "uuid": "d54d0c03-a5ba-531d-97ae-4c065a3bbf11",
+        "description": "one_step_normal_tag",
+        "input": {
+            "name": "Thrummingbird",
+            "variant": "Showcase Step-and-Compleat Foil",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
+        "uuid": "ec5bbe93-5a39-5d12-b9d5-2a310fee0d85",
+        "description": "one_showcase_tag",
+        "input": {
+            "name": "Thrummingbird",
+            "variant": "Showcase",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
+        "uuid": "1ada23b6-f837-5c93-8be4-256481515379",
+        "description": "one_many_tags",
+        "input": {
+            "name": "Island",
+            "variant": "Full Art Oil Slick Raised Foil Phyrexian",
+            "edition": "Phyrexia: All Will Be One",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "b72c847f-81f7-508f-bdd8-8580cdd589af",
+        "description": "one_normal_tag",
+        "input": {
+            "name": "Migloz, Maze Crusher",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
+        "uuid": "81f3f988-934e-5aa0-8938-9aa7393b52c2",
+        "description": "one_incomplete_tag",
+        "input": {
+            "name": "Mondrak, Glory Dominus",
+            "variant": "Showcase",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
+        "uuid": "1a21a7f0-f5f6-5107-906b-5a33b9f5532e",
+        "description": "one_wrong_tag",
+        "input": {
+            "name": "Sheoldred, the Apocalypse",
+            "variant": "Concept Praetor",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
+        "uuid": "dab29a67-28a9-5847-a77e-1f0771b55be1",
+        "description": "one_phyrexian_bundle",
+        "input": {
+            "name": "Phyrexian Arena",
+            "variant": "Bundle Foil - Phyrexian",
+            "edition": "ONE"
+        }
+    },
+    {
+        "uuid": "3b598e5f-d03f-5627-b70a-c2713065737e",
+        "description": "lotr_prerelease_in_set_normal_nonfoil",
+        "input": {
+            "name": "Delighted Halfling",
+            "variant": "Borderless",
+            "edition": "The Lord of the Rings"
+        }
+    },
+    {
+        "uuid": "3b598e5f-d03f-5627-b70a-c2713065737e_f",
+        "description": "lotr_prerelease_in_set_normal_foil",
+        "input": {
+            "name": "Delighted Halfling",
+            "variant": "Borderless",
+            "edition": "The Lord of the Rings",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "c830ff03-0753-5454-86b9-bb1ac22f8ddd",
+        "description": "lotr_prerelease_in_set_promos_no_number",
+        "input": {
+            "name": "Delighted Halfling",
+            "variant": "Borderless Stamped",
+            "edition": "The Lord of the Rings Prerelease",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "c830ff03-0753-5454-86b9-bb1ac22f8ddd",
+        "description": "lotr_prerelease_in_set_promos_number",
+        "input": {
+            "name": "Delighted Halfling",
+            "variant": "402",
+            "edition": "The Lord of the Rings Prerelease",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "f154f3d9-bf7b-563e-8971-cc1d0202da72_f",
+        "description": "lotr_prerelease_in_set_normal_custom",
+        "input": {
+            "name": "Gandalf, Friend of the Shire",
+            "variant": "No-Stamp Prerelease Foil",
+            "edition": "Promotional",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "86b023d0-5971-5ecd-9478-eeecf3fd8b80_f",
+        "description": "lotr_bundle_and_borderless",
+        "input": {
+            "name": "The One Ring",
+            "variant": "Bundle Foil"
+        }
+    }
+]
