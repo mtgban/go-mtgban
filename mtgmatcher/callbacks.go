@@ -230,7 +230,7 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"BRR": {schematicCheck},
 	"DMR": {launchPromoInSet, releaseRetroCheck},
 	"VOW": {wpnCheck, reskinDraculaCheck},
-	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck},
+	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
 }
 
@@ -805,6 +805,19 @@ func reskinDraculaCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeDracula) {
 		return true
 	} else if !inCard.isReskin() && !inCard.beyondBaseSet && card.HasPromoType(mtgjson.PromoTypeDracula) {
+		return true
+	}
+	return false
+}
+
+// In case there is no number information and the card may known with other names
+func reskinRenameCheck(inCard *Card, card *mtgjson.Card) bool {
+	if ExtractNumber(inCard.Variation) != "" || card.FlavorName == "" {
+		return false
+	}
+	if inCard.isReskin() && !inCard.Contains(card.FlavorName) {
+		return true
+	} else if !inCard.isReskin() && inCard.Contains(card.FlavorName) {
 		return true
 	}
 	return false

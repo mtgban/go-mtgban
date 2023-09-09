@@ -472,6 +472,9 @@ func adjustName(inCard *Card) {
 	// Check if this card may be known as something else
 	altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
 	if found {
+		// Stash the current name for later decoupling if needed
+		inCard.addToVariant(inCard.Name)
+
 		inCard.Name = altProps.OriginalName
 		if altProps.IsFlavor {
 			inCard.addToVariant("Reskin")

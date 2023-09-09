@@ -654,6 +654,22 @@ var MatchTests = []MatchTest{
 			Edition: "Secret Lair Series",
 		},
 	},
+	{
+		Id:   "e93f698b-5d46-54cc-ad04-6ba93a3bca57",
+		Desc: "renames_with_reprints_first",
+		In: Card{
+			Name:    "Cybertron",
+			Edition: "Secret Lair Series",
+		},
+	},
+	{
+		Id:   "a45a4e2c-1437-51dd-837a-5e62520c3e2d",
+		Desc: "renames_with_reprints_second",
+		In: Card{
+			Name:    "Summoner's Rift",
+			Edition: "Secret Lair Series",
+		},
+	},
 
 	// Incorrect editions
 	{
