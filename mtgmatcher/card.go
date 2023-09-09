@@ -26,9 +26,6 @@ type Card struct {
 	// Whether the card is foil or not
 	Foil bool
 
-	// The collector number of the card (output only)
-	Number string
-
 	// The card belongs to the extended side of the set, usually containing
 	// variants with the same name of existing cards in the same set, but with
 	// different frames or border effects
@@ -52,7 +49,7 @@ func (c *Card) String() string {
 	} else if c.Foil {
 		finish = " (foil)"
 	}
-	return fmt.Sprintf("%s [%s%s] {%s}", out, c.Edition, finish, c.Number)
+	return fmt.Sprintf("%s [%s%s]", out, c.Edition, finish)
 }
 
 func output(card mtgjson.Card, flags ...bool) string {
