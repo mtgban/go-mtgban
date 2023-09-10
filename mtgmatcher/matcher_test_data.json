@@ -532,6 +532,14 @@
         }
     },
     {
+        "uuid": "7f965cb3-2341-510d-948f-543206845d02",
+        "description": "names_original_edition_plist_in_the_name",
+        "input": {
+            "name": "Plains (Amonkhet)",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
         "uuid": "f193238a-07a8-53b6-8383-e30e95353891",
         "description": "names_ignore_b_side_face_foil_consequences",
         "input": {

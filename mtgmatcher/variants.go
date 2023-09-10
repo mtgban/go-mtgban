@@ -2859,6 +2859,8 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander anthology": "1242",
 	},
 	"Island": {
+		"akh":       "90",
+		"amonkhet":  "90",
 		"jmp - 050": "403",
 	},
 	"Jungle Shrine": {
@@ -2925,6 +2927,8 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander: 2018 edition": "1457",
 	},
 	"Mountain": {
+		"akh":                    "92",
+		"amonkhet":               "92",
 		"unhinged #139 full art": "453",
 	},
 	"Negate": {
@@ -2944,6 +2948,10 @@ var mb1plistVariants = map[string]map[string]string{
 	"Phantom Centaur": {
 		"127":      "1292",
 		"misprint": "1292†",
+	},
+	"Plains": {
+		"akh":      "89",
+		"amonkhet": "89",
 	},
 	"Preordain": {
 		"commander 2015": "460",
@@ -2990,6 +2998,10 @@ var mb1plistVariants = map[string]map[string]string{
 	"Sleep": {
 		"core set 2019": "495",
 		"m19":           "495",
+	},
+	"Swamp": {
+		"hour of devastation": "91",
+		"hou":                 "91",
 	},
 	"Temple of the False God": {
 		"commander 2018": "1691",

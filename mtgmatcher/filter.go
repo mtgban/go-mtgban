@@ -242,7 +242,25 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				// only pick this edition if explicilty requested
 				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
 					if inCard.Edition != set.Name {
-						continue
+						// Except the following cards, when they are not tagged as specified,
+						// it means they are actually from this set
+						switch inCard.Name {
+						case "Island", "Mountain", "Plains":
+							if !inCard.Contains("amonkhet") && !inCard.Contains("akh") {
+								continue
+							}
+						case "Swamp":
+							if !inCard.Contains("hour") && !inCard.Contains("hou") {
+								continue
+							}
+						case "Forest":
+							if !inCard.Contains("amonkhet") && !inCard.Contains("akh") &&
+								!inCard.Contains("hour") && !inCard.Contains("hou") {
+								continue
+							}
+						default:
+							continue
+						}
 					}
 				}
 			case "PAGL":
