@@ -94,6 +94,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	if inCard.Name == "" {
 		return "", ErrCardDoesNotExist
 	}
+	ogName := inCard.Name
 
 	// Binderpos weird syntax, with the edition embedded in the name
 	if strings.Contains(inCard.Name, "[") {
@@ -141,6 +142,9 @@ func Match(inCard *Card) (cardId string, err error) {
 			}
 		}
 	}
+	if ogName != inCard.Name {
+		logger.Printf("Pre-adjusted name from '%s' to '%s'", ogName, inCard.Name)
+	}
 
 	// Skip unsupported sets
 	if inCard.isUnsupported() {
@@ -168,7 +172,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	}
 
 	// Restore the card to the canonical MTGJSON name
-	ogName := inCard.Name
+	ogName = inCard.Name
 	inCard.Name = entry.Name
 
 	// Fix up edition
