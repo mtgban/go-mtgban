@@ -31,17 +31,12 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.isPrerelease():
 			switch set.Name {
+			// Sets that could be marked as prerelease, but they aren't really
+			case "Open the Helvault":
 			// Sets that have prerelease cards mixed in
-			case "Open the Helvault",
-				"Promotional Planes",
-				"Innistrad: Double Feature":
-			case "Duels of the Planeswalkers 2012 Promos",
-				"Grand Prix Promos",
-				"Pro Tour Promos",
-				"Resale Promos",
-				"World Championship Promos":
-				continue
-			case "The Lord of the Rings: Tales of Middle-earth":
+			case "Innistrad: Double Feature",
+				"March of the Machine Commander",
+				"The Lord of the Rings: Tales of Middle-earth":
 				skip := true
 				foundCards := MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
@@ -50,10 +45,15 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 						break
 					}
 				}
-
 				if skip {
 					continue
 				}
+			case "Duels of the Planeswalkers 2012 Promos",
+				"Grand Prix Promos",
+				"Pro Tour Promos",
+				"Resale Promos",
+				"World Championship Promos":
+				continue
 			default:
 				if strings.HasPrefix(set.Name, "30th Anniversary") {
 					continue
