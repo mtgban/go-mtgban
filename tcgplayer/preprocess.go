@@ -321,8 +321,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				edition = variant
 			}
 		default:
-			if len(mtgmatcher.MatchInSet(cardName, "PR23")) > 0 {
-				edition = "PR23"
+			for _, code := range []string{"PR23", "SLP"} {
+				if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
+					edition = code
+					break
+				}
 			}
 		}
 	case "Battle for Zendikar",
