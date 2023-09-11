@@ -41,11 +41,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				"Resale Promos",
 				"World Championship Promos":
 				continue
-			case "30th Anniversary History Japanese Promos",
-				"30th Anniversary History Promos",
-				"30th Anniversary Misc Promos",
-				"30th Anniversary Play Promos":
-				continue
 			case "The Lord of the Rings: Tales of Middle-earth":
 				skip := true
 				foundCards := MatchInSet(inCard.Name, setCode)
@@ -60,6 +55,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					continue
 				}
 			default:
+				if strings.HasPrefix(set.Name, "30th Anniversary") {
+					continue
+				}
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
 				}
@@ -378,12 +376,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.Contains("Convention"):
 			switch set.Name {
 			case "URL/Convention Promos":
-			case "30th Anniversary History Japanese Promos",
-				"30th Anniversary History Promos",
-				"30th Anniversary Misc Promos",
-				"30th Anniversary Play Promos":
-				continue
 			default:
+				if strings.HasPrefix(set.Name, "30th Anniversary") {
+					continue
+				}
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
 				}
@@ -475,12 +471,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case "Champs and States":
 			case "Grand Prix Promos":
 				continue
-			case "30th Anniversary History Japanese Promos",
-				"30th Anniversary History Promos",
-				"30th Anniversary Misc Promos",
-				"30th Anniversary Play Promos":
-				continue
 			default:
+				if strings.HasPrefix(set.Name, "30th Anniversary") {
+					continue
+				}
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
 				}
@@ -585,6 +579,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			case "P30HJPN":
 				if !inCard.isJPN() {
+					continue
+				}
+			case "P30T":
+				if inCard.isRetro() {
 					continue
 				}
 			case "P30M":
