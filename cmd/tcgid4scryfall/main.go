@@ -63,7 +63,7 @@ func processCards(channel chan<- responseChan, page int) error {
 					strings.Contains(strings.ToLower(theCard.Variation), "serial") ||
 					strings.Contains(theCard.Variation, "Thick Stock") ||
 					theCard.Edition == "Prerelease Cards" ||
-					theCard.Edition == "The List") {
+					theCard.Edition == "The List Reprints") {
 				continue
 			}
 

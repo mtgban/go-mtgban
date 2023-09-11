@@ -481,6 +481,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if !strings.Contains(variant, "-") {
 			variant = product.getNum()
 		}
+	case "The List Reprints":
+		// This rename allows variants to be processed correctly
+		edition = "The List"
 	case "Fourth Edition",
 		"Revised Edition",
 		"Mirage",
@@ -500,7 +503,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"Modern Horizons",
 		"30th Anniversary Promos",
 		"Universes Beyond: Warhammer 40,000",
-		"The List Reprints",
 		"The Brothers' War: Retro Frame Artifacts",
 		"Secret Lair Commander: Heads I Win, Tails You Lose",
 		"Secret Lair Commander: From Cute to Brute",
