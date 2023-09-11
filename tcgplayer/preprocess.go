@@ -24,9 +24,14 @@ var tokenIds = map[int]string{
 }
 
 var cardIds = map[int]string{
+	// Serra Angel
 	284951: "P30A",
 	284923: "P30H",
 	284921: "P30H",
+	// Shivan Dragon
+	515925: "P30T",
+	284937: "P30H",
+	284939: "P30H",
 }
 
 func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card, error) {
@@ -301,6 +306,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Lotus Petal":
 			edition = "P30M"
+		case "Cultivate":
+			edition = "PW23"
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
