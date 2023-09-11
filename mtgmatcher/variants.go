@@ -2740,6 +2740,13 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander":      "1392",
 		"commander 2011": "1392",
 	},
+	"Angel of Serenity": {
+		"c15": "405",
+	},
+	"Arcane Signet": {
+		"throne of eldraine": "49", // pagl is #33
+		"commander 2021":     "45",
+	},
 	"Beast Within": {
 		"bbd": "1134",
 	},
@@ -2764,7 +2771,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Chaos Warp": {
 		"c17":            "885",
 		"commander 2017": "885",
-		"commander 2020": "46",
+		"commander 2020": "19",
 	},
 	"Chromatic Lantern": {
 		"grn": "1559",
@@ -2802,6 +2809,10 @@ var mb1plistVariants = map[string]map[string]string{
 	"Eternal Witness": {
 		"ultimate masters": "1200",
 		"uma":              "1200",
+	},
+	"Entreat the Angels": {
+		"mm3": "17",
+		"avr": "15",
 	},
 	"Evolving Wilds": {
 		"c18": "1665",
@@ -2866,10 +2877,20 @@ var mb1plistVariants = map[string]map[string]string{
 	"Jungle Shrine": {
 		"c17": "1677",
 	},
+	"Karoo": {
+		"c14": "303",
+		"vis": "54",
+	},
 	"Kiki-Jiki, Mirror Breaker": {
 		"mm2":                   "991",
 		"modern masters 2015":   "991",
 		"champions of kamigawa": "684",
+	},
+	"Knight Exemplar": {
+		"m11":                           "1102",
+		"2011 core set":                 "1102",
+		"ddg":                           "1168",
+		"duel deck: knights vs dragons": "1168",
 	},
 	"Laboratory Maniac": {
 		"innistrad":        "1026",
@@ -2899,6 +2920,7 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Lightning Greaves": {
 		"commander 2019": "1600",
+		"c19":            "1600",
 	},
 	"Living Death": {
 		"masters 25": "702",
@@ -2909,6 +2931,8 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Mind Stone": {
 		"non-foil - commander 2018": "1609",
+		"c18":                       "1609",
+		"non-foil - weatherlight":   "41",
 	},
 	"Mishra's Factory": {
 		"modern horizons 2": "960",
@@ -2931,6 +2955,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"amonkhet":               "92",
 		"unhinged #139 full art": "453",
 	},
+	"Myriad Landscape": {
+		"c14":               "55",
+		"foil - masters 25": "69",
+	},
 	"Negate": {
 		"rivals of ixalan": "443",
 		"rix":              "443",
@@ -2944,6 +2972,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Painful Lesson": {
 		"akh":      "727",
 		"amonkhet": "727",
+	},
+	"Path to Exile": {
+		"e02": "196",
 	},
 	"Phantom Centaur": {
 		"127":      "1292",
@@ -2988,6 +3019,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander: 2017 edition": "1630",
 	},
 	"Sol Ring": {
+		"commander 2011": "58",
 		"commander 2018": "1633",
 		"c18":            "1633",
 	},
@@ -3002,6 +3034,21 @@ var mb1plistVariants = map[string]map[string]string{
 	"Swamp": {
 		"hour of devastation": "91",
 		"hou":                 "91",
+	},
+	"Swiftfoot Boots": {
+		"m12":                   "45",
+		"a25":                   "54",
+		"non-foil - masters 25": "54",
+	},
+	"Sword of the Animist": {
+		"e01": "1638",
+	},
+	"Swords to Plowshares": {
+		"":    "253",
+		"c16": "253",
+	},
+	"Taurean Mauler": {
+		"cm2": "1079",
 	},
 	"Temple of the False God": {
 		"commander 2018": "1691",
@@ -4399,31 +4446,32 @@ var wc02Variants = map[string]map[string]string{
 }
 
 var VariantsTable = map[string]map[string]map[string]string{
-	"Alliances":                           allVariants,
-	"Alternate Fourth Edition":            ed4Variants,
-	"Anthologies":                         athVariants,
-	"Antiquities":                         atqVariants,
-	"Arena League 2001":                   pal01Variants,
-	"Asia Pacific Land Program":           palpVariants,
-	"Battle Royale Box Set":               brbVariants,
-	"Champions of Kamigawa":               chkVariants,
-	"Chronicles Foreign Black Border":     chrVariants,
-	"Chronicles":                          chrVariants,
-	"Collectors' Edition":                 oldLandVariants,
-	"Commander Anthology Volume II":       cm2Variants,
-	"Conspiracy: Take the Crown":          cn2Variants,
-	"Deckmasters":                         dkmVariants,
-	"Dominaria United":                    douVariants,
-	"Double Masters":                      xm2Variants,
-	"European Land Program":               pelpVariants,
-	"Fallen Empires":                      femVariants,
-	"Fifth Edition":                       ed5Variants,
-	"Foreign Black Border":                ed3Variants,
-	"Fourth Edition Foreign Black Border": ed4Variants,
-	"Fourth Edition":                      ed4Variants,
-	"From Cute to Brute":                  mb1plistVariants,
-	"GRN Ravnica Weekend":                 prwkVariants,
-	//"Heads I Win, Tails You Lose":          mb1plistVariants,
+	"Angels: They're Just Like Us but Cooler and with Wings": mb1plistVariants,
+	"Alliances":                            allVariants,
+	"Alternate Fourth Edition":             ed4Variants,
+	"Anthologies":                          athVariants,
+	"Antiquities":                          atqVariants,
+	"Arena League 2001":                    pal01Variants,
+	"Asia Pacific Land Program":            palpVariants,
+	"Battle Royale Box Set":                brbVariants,
+	"Champions of Kamigawa":                chkVariants,
+	"Chronicles Foreign Black Border":      chrVariants,
+	"Chronicles":                           chrVariants,
+	"Collectors' Edition":                  oldLandVariants,
+	"Commander Anthology Volume II":        cm2Variants,
+	"Conspiracy: Take the Crown":           cn2Variants,
+	"Deckmasters":                          dkmVariants,
+	"Dominaria United":                     douVariants,
+	"Double Masters":                       xm2Variants,
+	"European Land Program":                pelpVariants,
+	"Fallen Empires":                       femVariants,
+	"Fifth Edition":                        ed5Variants,
+	"Foreign Black Border":                 ed3Variants,
+	"Fourth Edition Foreign Black Border":  ed4Variants,
+	"Fourth Edition":                       ed4Variants,
+	"From Cute to Brute":                   mb1plistVariants,
+	"GRN Ravnica Weekend":                  prwkVariants,
+	"Heads I Win, Tails You Lose":          mb1plistVariants,
 	"Homelands":                            hmlVariants,
 	"Ice Age":                              iceVariants,
 	"Intl. Collectors' Edition":            oldLandVariants,
