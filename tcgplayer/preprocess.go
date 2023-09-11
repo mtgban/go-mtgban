@@ -514,13 +514,15 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"30th Anniversary Promos",
 		"Universes Beyond: Warhammer 40,000",
 		"The Brothers' War: Retro Frame Artifacts",
-		"Secret Lair Commander: Heads I Win, Tails You Lose",
-		"Secret Lair Commander: From Cute to Brute",
 		"Mystery Booster Cards",
 		"MagicFest Cards",
 		"": // cosmetic
 		// Variants are fine as is
 	default:
+		// Variants are fine as is here too
+		if strings.HasPrefix(edition, "Secret Lair Commander") {
+			break
+		}
 		num := product.getNum()
 
 		if num != "" && mtgmatcher.ExtractYear(variant) == "" {
