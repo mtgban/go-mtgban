@@ -1125,7 +1125,12 @@ func adjustEdition(inCard *Card) {
 				variation += " Prerelease"
 			}
 		// There are three Prerelease editions across two editions
-		case "Delighted Halfling":
+		case "Delighted Halfling",
+			"Lobelia Sackville-Baggins",
+			"Frodo Baggins",
+			"Bilbo, Retired Burglar",
+			"Gandalf, Friend of the Shire",
+			"Wizard's Rockets":
 			if inCard.isBorderless() && !inCard.isPrerelease() {
 				variation += " Prerelease"
 			}
