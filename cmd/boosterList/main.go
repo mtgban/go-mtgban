@@ -212,7 +212,7 @@ func run() int {
 		var list []string
 		var err error
 		if *SealedMode {
-			list, err = mtgmatcher.SealedWithinSealed(set.Code, product.UUID)
+			list = mtgmatcher.SealedWithinSealed(set.Code, product.UUID)
 		} else {
 			list, err = getListForSealed(set.Code, product.UUID)
 		}
