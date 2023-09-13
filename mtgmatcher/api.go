@@ -431,14 +431,16 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			continue
 		}
 
-		for _, card := range deck.Cards {
-			uuid, err := MatchId(card.UUID, card.Finish == "foil", card.Finish == "etched")
-			if err != nil {
-				return nil, err
-			}
+		for _, board := range [][]mtgjson.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
+			for _, card := range board {
+				uuid, err := MatchId(card.UUID, card.IsFoil)
+				if err != nil {
+					return nil, err
+				}
 
-			for i := 0; i < card.Count; i++ {
-				picks = append(picks, uuid)
+				for i := 0; i < card.Count; i++ {
+					picks = append(picks, uuid)
+				}
 			}
 		}
 	}

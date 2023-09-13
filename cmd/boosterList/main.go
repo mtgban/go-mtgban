@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"golang.org/x/exp/slices"
 )
 
@@ -65,12 +66,15 @@ func getListForDeck(setCode, deckName string) ([]string, error) {
 			continue
 		}
 
-		for _, card := range deck.Cards {
-			uuid, err := mtgmatcher.MatchId(card.UUID, card.Finish == "foil", card.Finish == "etched")
-			if err != nil {
-				continue
+		for _, board := range [][]mtgjson.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
+			for _, card := range board {
+				uuid, err := mtgmatcher.MatchId(card.UUID, card.IsFoil)
+				if err != nil {
+					continue
+				}
+
+				list = append(list, uuid)
 			}
-			list = append(list, uuid)
 		}
 	}
 

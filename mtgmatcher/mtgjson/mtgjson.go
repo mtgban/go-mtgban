@@ -42,6 +42,12 @@ type SealedContent struct {
 	Configs []map[string][]SealedContent `json:"configs"`
 }
 
+type DeckCard struct {
+	Count  int    `json:"count"`
+	IsFoil bool   `json:"isFoil"`
+	UUID   string `json:"uuid"`
+}
+
 type Set struct {
 	BaseSetSize   int    `json:"baseSetSize"`
 	Code          string `json:"code"`
@@ -69,13 +75,12 @@ type Set struct {
 		UUID        string                     `json:"uuid"`
 	} `json:"sealedProduct"`
 	Decks []struct {
-		Cards []struct {
-			Count  int    `json:"count"`
-			Finish string `json:"finish"`
-			UUID   string `json:"uuid"`
-		} `json:"cards"`
-		Name               string   `json:"name"`
-		SealedProductUUIDs []string `json:"sealedProductUuids"`
+		Code               string     `json:"code"`
+		Commander          []DeckCard `json:"commander"`
+		MainBoard          []DeckCard `json:"mainBoard"`
+		SideBoard          []DeckCard `json:"sideBoard"`
+		Name               string     `json:"name"`
+		SealedProductUUIDs []string   `json:"sealedProductUuids"`
 	} `json:"decks"`
 }
 
