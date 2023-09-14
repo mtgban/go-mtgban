@@ -313,6 +313,10 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 							}
 						case "30th Anniversary History Japanese Promos":
 							uuid = card.UUID + "_jpn"
+						case "Love Your LGS 2021":
+							if !strings.HasPrefix(card.Number, "J") {
+								continue
+							}
 						}
 					case "CHINESE SIMPLIFIED":
 						language = "Chinese (S)"
