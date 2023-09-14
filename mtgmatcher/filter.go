@@ -566,8 +566,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			inCard.Contains("LGS Promo"):
 			switch {
 			case strings.HasPrefix(set.Name, "Love Your LGS "+maybeYear):
-			// There is a lot overlap in this set
-			case set.Name == "Wizards Play Network 2021":
+			case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):
 			default:
 				continue
 			}

@@ -306,8 +306,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Lotus Petal":
 			edition = "P30M"
-		case "Cultivate":
-			edition = "PW23"
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
