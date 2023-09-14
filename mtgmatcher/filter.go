@@ -32,7 +32,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.isPrerelease():
 			switch set.Name {
 			// Sets that could be marked as prerelease, but they aren't really
-			case "Open the Helvault":
+			case "M15 Prerelease Challenge",
+				"Open the Helvault":
 			// Sets that have prerelease cards mixed in
 			case "Innistrad: Double Feature",
 				"March of the Machine Commander",
