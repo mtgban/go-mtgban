@@ -306,6 +306,7 @@ var options = map[string]*scraperOption{
 
 			scraper := starcitygames.NewScraper(scgGUID, scgBearer)
 			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("SCG_AFFILIATE")
 			return scraper, nil
 		},
 	},

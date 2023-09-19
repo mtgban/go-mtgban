@@ -26,6 +26,8 @@ type Starcitygames struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
+	Affiliate string
+
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
@@ -133,6 +135,9 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 		var link string
 		if len(result.Document.URLDetail) > 0 {
 			link = "https://starcitygames.com" + result.Document.URLDetail[0]
+			if scg.Affiliate != "" {
+				link += "?aff=" + scg.Affiliate
+			}
 		}
 
 		for _, attribute := range result.Document.HawkChildAttributes {
