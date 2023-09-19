@@ -937,6 +937,10 @@ func adjustEdition(inCard *Card) {
 				variation = "Release"
 				edition = "Release Events"
 			}
+		case "Reya Dawnbringer":
+			if inCard.isRelease() {
+				edition = "P10E"
+			}
 		case "Ajani Vengeant":
 			if inCard.isRelease() {
 				variation = "Prerelease"
