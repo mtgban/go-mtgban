@@ -894,7 +894,7 @@ func adjustEdition(inCard *Card) {
 		}
 
 	// Decouple P30A from P30H and its Japanese version
-	case inCard.Contains("30th Anniversary") && !inCard.Contains("Edition") && len(MatchInSet(inCard.Name, "P30H")) > 0:
+	case inCard.Contains("30th Anniversary") && !inCard.Contains("Edition") && !inCard.Contains("Tokyo") && !inCard.Contains("Misc") && len(MatchInSet(inCard.Name, "P30H")) > 0:
 		edition = backend.Sets["P30H"].Name
 		if inCard.Contains("Japanese") {
 			edition = backend.Sets["P30HJPN"].Name
