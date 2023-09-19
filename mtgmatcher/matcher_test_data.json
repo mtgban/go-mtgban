@@ -3678,6 +3678,23 @@
         }
     },
     {
+        "uuid": "36ef3448-d5b3-5687-a0b1-972d37dc9ff7",
+        "description": "tok_oversized",
+        "input": {
+            "name": "Lightning Bolt",
+            "variant": "Oversize",
+            "edition": "Magic Player Rewards"
+        }
+    },
+    {
+        "uuid": "d7621fd8-dfff-526d-908b-32faad3eef69",
+        "description": "tok_actual_card",
+        "input": {
+            "name": "Lightning Bolt",
+            "edition": "Magic Player Rewards"
+        }
+    },
+    {
         "uuid": "841679dc-4fad-59e6-a1f6-f736a3be4b2f",
         "description": "neo_separate_etched_variant_normal",
         "input": {

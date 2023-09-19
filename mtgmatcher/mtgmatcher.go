@@ -196,7 +196,8 @@ func Match(inCard *Card) (cardId string, err error) {
 	// For any unsupported set that wasn't processed previously
 	case inCard.Contains("Oversize") &&
 		!(inCard.Contains("Commander") || inCard.Contains("Vanguard") ||
-			inCard.Contains("Planechase") || inCard.Contains("Archenemy")):
+			inCard.Contains("Planechase") || inCard.Contains("Archenemy") ||
+			inCard.Contains("Player Rewards")):
 		return "", ErrUnsupported
 	// For any specific missing card
 	case inCard.isSpecificUnsupported():

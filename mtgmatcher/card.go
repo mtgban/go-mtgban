@@ -262,10 +262,6 @@ func (c *Card) isUnsupported() bool {
 
 func (c *Card) isSpecificUnsupported() bool {
 	switch c.Name {
-	case "Hero of Bladehold",
-		"Rampaging Baloths",
-		"Feral Hydra":
-		return c.isRewards()
 	case "Spined Wurm":
 		return Contains(c.Edition, "Starter 2000")
 	case "Drudge Skeletons",
@@ -556,6 +552,12 @@ func (c *Card) playerRewardsYear(maybeYear string) string {
 				maybeYear = "2001"
 			} else if c.Variation == "Champions" {
 				maybeYear = "2004"
+			}
+		case "Lightning Bolt":
+			if c.Contains("Oversize") {
+				maybeYear = "2009"
+			} else {
+				maybeYear = "2010"
 			}
 		}
 	}
