@@ -104,3 +104,47 @@ func TestNormalize(t *testing.T) {
 		})
 	}
 }
+
+type ContainsTest struct {
+	First  string
+	Second string
+	Result bool
+}
+
+var ContainsTests = []ContainsTest{
+	{
+		First:  "Name",
+		Second: "ame",
+		Result: true,
+	},
+	{
+		First:  "Object",
+		Second: "Name",
+		Result: false,
+	},
+	{
+		First:  "Empty",
+		Second: "",
+		Result: true,
+	},
+	{
+		First:  "",
+		Second: "Test",
+		Result: false,
+	},
+}
+
+func TestContains(t *testing.T) {
+	for _, probe := range ContainsTests {
+		test := probe
+		t.Run(test.First, func(t *testing.T) {
+			t.Parallel()
+			out := Contains(test.First, test.Second)
+			if out != test.Result {
+				t.Errorf("FAIL %s: Expected '%v'", test.First, test.Result)
+				return
+			}
+			t.Log("PASS:", test.First)
+		})
+	}
+}
