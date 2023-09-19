@@ -89,7 +89,6 @@ var EditionTable = map[string]string{
 	// Treasure Chest
 	"Ixalan Treasure Chest": "XLN Treasure Chest",
 	"Treasure Chest Promo":  "XLN Treasure Chest",
-	"Treasure Map":          "XLN Treasure Chest",
 
 	// Game Night
 	"Game Night 2018":                "Game Night",
