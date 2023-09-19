@@ -134,6 +134,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.isFNM():
 			switch {
 			case strings.HasPrefix(set.Name, "Friday Night Magic "+maybeYear):
+			case set.Name == "Magic × Duel Masters Promos":
 			case strings.HasSuffix(set.Name, "Promos"):
 				skip := true
 				foundCards := MatchInSet(inCard.Name, setCode)
