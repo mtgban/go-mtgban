@@ -724,7 +724,7 @@ func adjustEdition(inCard *Card) {
 		edition = backend.Sets["PCMP"].Name
 
 	// Secret Lair {Ultimate,Drop}
-	case inCard.Contains("Secret") || Contains(inCard.Variation, "Lair"):
+	case inCard.Contains("Secret Lair"):
 		// Restore the canonical name for DFC cards with same names
 		if backend.DFCSameNames[Normalize(inCard.Name)] {
 			inCard.Name = inCard.Name + " // " + inCard.Name

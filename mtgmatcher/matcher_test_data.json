@@ -1439,6 +1439,14 @@
         }
     },
     {
+        "uuid": "88d06769-564f-5474-a0a4-50b95b409224",
+        "description": "dfc_rename_might_interfere_with_sld",
+        "input": {
+            "name": "Delver of Secrets",
+            "edition": "Innistrad"
+        }
+    },
+    {
         "uuid": "d429117f-4b10-5e66-ad2f-e233252a034a",
         "description": "arn_light_variant",
         "input": {
