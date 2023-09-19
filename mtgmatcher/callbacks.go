@@ -666,32 +666,36 @@ func laquatusMisprint(inCard *Card, card *mtgjson.Card) bool {
 }
 
 func sldVariant(inCard *Card, card *mtgjson.Card) bool {
+	var result bool
 	switch card.Name {
 	case "Demonlord Belzenlok",
 		"Griselbrand",
 		"Liliana's Contract",
 		"Kothophed, Soul Hoarder",
 		"Razaketh, the Foulblooded":
+		result = strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		if inCard.isEtched() {
-			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+			result = !result
 		}
 	case "Plague Sliver",
 		"Shadowborn Apostle",
 		"Toxin Sliver",
 		"Virulent Sliver":
+		result = strings.HasSuffix(card.Number, "Φ")
 		if inCard.isStepAndCompleat() {
-			return !strings.HasSuffix(card.Number, "Φ")
+			result = !result
 		}
 	case "Goblin Lackey",
 		"Goblin Matron",
 		"Goblin Recruiter",
 		"Muxus, Goblin Grandee",
 		"Shattergang Brothers":
+		result = strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		if inCard.Foil {
-			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+			result = !result
 		}
 	}
-	return false
+	return result
 }
 
 func wcdNumberCompare(inCard *Card, card *mtgjson.Card) bool {

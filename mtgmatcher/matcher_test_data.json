@@ -3222,6 +3222,25 @@
         }
     },
     {
+        "uuid": "c694a639-b62a-5ea2-8e2f-2cbb649b3fee",
+        "description": "secret_lair_dedup_nonfoil",
+        "input": {
+            "name": "Goblin Matron",
+            "variant": "Secret Lair Hand Drawn",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "ea633847-dd70-565a-bad1-dd778d9b8797",
+        "description": "secret_lair_dedup_foil",
+        "input": {
+            "name": "Goblin Matron",
+            "variant": "Secret Lair Hand Drawn",
+            "edition": "SLD",
+            "foil": true
+        }
+    },
+    {
         "uuid": "5507e55e-f034-51f2-8d4c-83008f18a950",
         "description": "empty_variant_cause_showcase",
         "input": {
