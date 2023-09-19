@@ -500,6 +500,10 @@ func (c *Card) isBundle() bool {
 	return c.Contains("Bundle")
 }
 
+func (c *Card) isFoil() bool {
+	return Contains(c.Variation, "Foil") && !Contains(c.Variation, "Non") && !c.isEtched()
+}
+
 func (c *Card) isEtched() bool {
 	// Note this can't be just "etch" because it would catch the "sketch" cards
 	return Contains(c.Variation, "Etched")

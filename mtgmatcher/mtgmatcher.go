@@ -78,7 +78,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	}
 
 	// Adjust flag as needed
-	if Contains(inCard.Variation, "foil") && !Contains(inCard.Variation, "non") && !Contains(inCard.Variation, "etched") {
+	if inCard.isFoil() {
 		inCard.Foil = true
 	}
 
@@ -108,10 +108,6 @@ func Match(inCard *Card) (cardId string, err error) {
 			set, err := GetSetByName(maybeEdition)
 			if err != nil {
 				inCard.Variation = maybeEdition
-				// For the TCG collection weird syntax
-				if strings.Contains(inCard.Variation, "Foil") {
-					inCard.Foil = true
-				}
 				// TCG Promo Pack prepends a second P to the edition
 				if strings.HasPrefix(maybeEdition, "PP") {
 					inCard.Variation = "Promo Pack"
@@ -127,9 +123,6 @@ func Match(inCard *Card) (cardId string, err error) {
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
 			inCard.addToVariant(strings.Join(vars[1:], " "))
-			if Contains(inCard.Variation, "foil") {
-				inCard.Foil = true
-			}
 		}
 	}
 	if strings.Contains(inCard.Name, " - ") {
@@ -137,13 +130,15 @@ func Match(inCard *Card) (cardId string, err error) {
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
 			inCard.addToVariant(strings.Join(vars[1:], " "))
-			if Contains(inCard.Variation, "foil") {
-				inCard.Foil = true
-			}
 		}
 	}
 	if ogName != inCard.Name {
 		logger.Printf("Pre-adjusted name from '%s' to '%s'", ogName, inCard.Name)
+	}
+
+	// Repeat the check in case the card was renamed above
+	if inCard.isFoil() {
+		inCard.Foil = true
 	}
 
 	// Skip unsupported sets
