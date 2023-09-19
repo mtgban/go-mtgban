@@ -409,10 +409,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 			switch {
 			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
-			case set.Code == "P30A":
-				if inCard.Name != "Arcane Signet" && inCard.Name != "Richard Garfield, Ph.D." {
-					continue
-				}
 			case set.Code == "PLG21":
 			default:
 				continue
