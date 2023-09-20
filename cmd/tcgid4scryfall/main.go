@@ -81,15 +81,22 @@ func processCards(channel chan<- responseChan, page int) error {
 			continue
 		}
 
+		_, variant := product.GetNameAndVariant()
+		custom_fields := map[string]string{
+			"number":  product.GetNumber(),
+			"variant": variant,
+		}
+
 		out := responseChan{
 			cardId: cardId,
 			entry: mtgban.InventoryEntry{
-				Conditions: "NM",
-				Price:      1,
-				Quantity:   1,
-				SellerName: "tcg",
-				OriginalId: fmt.Sprint(product.ProductId),
-				InstanceId: fmt.Sprint(page),
+				Conditions:   "NM",
+				Price:        1,
+				Quantity:     1,
+				SellerName:   "tcg",
+				OriginalId:   fmt.Sprint(product.ProductId),
+				InstanceId:   fmt.Sprint(page),
+				CustomFields: custom_fields,
 			},
 		}
 
