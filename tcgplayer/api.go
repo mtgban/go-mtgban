@@ -16,6 +16,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"golang.org/x/time/rate"
 )
 
@@ -220,6 +221,41 @@ func (tcgp *TCGProduct) GetNumber() string {
 		}
 	}
 	return ""
+}
+
+func (tcgp *TCGProduct) GetNameAndVariant() (string, string) {
+	cardName := tcgp.Name
+	variant := ""
+
+	if strings.Contains(cardName, " - ") {
+		fields := strings.Split(cardName, " - ")
+		cardName = fields[0]
+		if len(fields) > 1 {
+			variant = strings.Join(fields[1:], " ")
+		}
+	}
+	if strings.Contains(cardName, " [") {
+		cardName = strings.Replace(cardName, "[", "(", -1)
+		cardName = strings.Replace(cardName, "]", ")", -1)
+	}
+	if strings.Contains(cardName, " (") {
+		fields := mtgmatcher.SplitVariants(cardName)
+		cardName = fields[0]
+		if len(fields) > 1 {
+			if variant != "" {
+				variant += " "
+			}
+			variant += strings.Join(fields[1:], " ")
+
+			variant = strings.TrimSuffix(variant, " CE")
+			variant = strings.TrimSuffix(variant, " IE")
+		}
+	}
+
+	variant = strings.Replace(variant, "(", "", -1)
+	variant = strings.Replace(variant, ")", "", -1)
+
+	return cardName, variant
 }
 
 func (tcgp *TCGProduct) IsToken() bool {

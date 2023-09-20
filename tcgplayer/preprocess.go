@@ -35,36 +35,7 @@ var cardIds = map[int]string{
 }
 
 func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card, error) {
-	cardName := product.Name
-	variant := ""
-
-	if strings.Contains(cardName, " - ") {
-		fields := strings.Split(cardName, " - ")
-		cardName = fields[0]
-		if len(fields) > 1 {
-			variant = strings.Join(fields[1:], " ")
-		}
-	}
-	if strings.Contains(cardName, " [") {
-		cardName = strings.Replace(cardName, "[", "(", -1)
-		cardName = strings.Replace(cardName, "]", ")", -1)
-	}
-	if strings.Contains(cardName, " (") {
-		fields := mtgmatcher.SplitVariants(cardName)
-		cardName = fields[0]
-		if len(fields) > 1 {
-			if variant != "" {
-				variant += " "
-			}
-			variant += strings.Join(fields[1:], " ")
-
-			variant = strings.TrimSuffix(variant, " CE")
-			variant = strings.TrimSuffix(variant, " IE")
-		}
-	}
-
-	variant = strings.Replace(variant, "(", "", -1)
-	variant = strings.Replace(variant, ")", "", -1)
+	cardName, variant := product.GetNameAndVariant()
 
 	edition := editions[product.GroupId]
 
