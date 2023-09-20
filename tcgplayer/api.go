@@ -213,6 +213,28 @@ type TCGProduct struct {
 	} `json:"extendedData,omitempty"`
 }
 
+func (tcgp *TCGProduct) GetNumber() string {
+	for _, extData := range tcgp.ExtendedData {
+		if extData.Name == "Number" {
+			return extData.Value
+		}
+	}
+	return ""
+}
+
+func (tcgp *TCGProduct) IsToken() bool {
+	for _, extData := range tcgp.ExtendedData {
+		if extData.Name == "SubType" && strings.Contains(extData.Value, "Token") {
+			return true
+		}
+	}
+	// There are some tokens not marked as such
+	if strings.Contains(tcgp.CleanName, "Token") {
+		return true
+	}
+	return false
+}
+
 func (tcg *TCGClient) TotalProducts(category int, productTypes []string) (int, error) {
 	return tcg.queryTotal(tcgApiListProductsURL, category, productTypes)
 }

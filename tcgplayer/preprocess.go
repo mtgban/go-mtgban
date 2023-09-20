@@ -101,7 +101,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			strings.Contains(variant, "JP WonderGOO Exclusive") ||
 			strings.Contains(variant, "JP Hareruya Exclusive") {
 			return nil, errors.New("unofficial")
-		} else if product.isToken() && strings.Contains(product.CleanName, "Double") {
+		} else if product.IsToken() && strings.Contains(product.CleanName, "Double") {
 			return nil, errors.New("duplicate")
 		} else if strings.Contains(edition, "Tales of Middle-earth") && strings.HasSuffix(cardName, "Scene") {
 			return nil, errors.New("unsupported")
@@ -138,7 +138,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "Alliances",
 		"Portal Second Age":
 		if variant == "" {
-			variant = product.getNum()
+			variant = product.GetNumber()
 			// Missing everything
 			if cardName == "Awesome Presence" {
 				variant = "arms spread"
@@ -172,7 +172,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		}
 	case "Homelands":
-		num := product.getNum()
+		num := product.GetNumber()
 		fixup, found := map[string]string{
 			"Abbey Matron":    "2",
 			"Aliban's Tower":  "61",
@@ -309,7 +309,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
-			} else if product.isToken() && strings.Contains(variant, "JP") && strings.Contains(variant, "Exclusive") {
+			} else if product.IsToken() && strings.Contains(variant, "JP") && strings.Contains(variant, "Exclusive") {
 				edition = "WDMU"
 			}
 		}
@@ -424,7 +424,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			variant = "Intro Pack"
 		}
 	case "Secret Lair Drop Series":
-		variant = product.getNum()
+		variant = product.GetNumber()
 		switch cardName {
 		case "Plains // Battlefield Forge":
 			cardName = "Battlefield Forge"
@@ -456,7 +456,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		}
 	case "AFR Ampersand Promos":
-		variant = product.getNum() + "a"
+		variant = product.GetNumber() + "a"
 	case "WPN & Gateway Promos":
 		switch cardName {
 		case "Mind Stone":
@@ -465,7 +465,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				edition = "PW21"
 			}
 		case "Orb of Dragonkind":
-			variant = "J" + product.getNum()
+			variant = "J" + product.GetNumber()
 		}
 	case "Game Day & Store Championship Promos":
 		if variant == "Winner" || variant == "Top 8" {
@@ -487,7 +487,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "Unfinity":
 		// Skip attractions, number is incorrect
 		if !strings.Contains(variant, "-") {
-			variant = product.getNum()
+			variant = product.GetNumber()
 		}
 	case "The List Reprints":
 		// This rename allows variants to be processed correctly
@@ -521,7 +521,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if strings.HasPrefix(edition, "Secret Lair Commander") {
 			break
 		}
-		num := product.getNum()
+		num := product.GetNumber()
 
 		if num != "" && mtgmatcher.ExtractYear(variant) == "" {
 			variant = num
@@ -534,13 +534,13 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		edition = ed
 	}
 
-	if product.isToken() && edition != "Unfinity" {
+	if product.IsToken() && edition != "Unfinity" {
 		// Strip pw/tou numbers that could be misinterpreted as numbers
 		if strings.Contains(variant, "/") {
 			variant = ""
 		}
 		// If number is available, use it as it's usually accurate
-		num := product.getNum()
+		num := product.GetNumber()
 		if num != "" {
 			variant = num
 		}
@@ -588,26 +588,4 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		Variation: variant,
 		Foil:      isFoil,
 	}, nil
-}
-
-func (tcgp *TCGProduct) getNum() string {
-	for _, extData := range tcgp.ExtendedData {
-		if extData.Name == "Number" {
-			return extData.Value
-		}
-	}
-	return ""
-}
-
-func (tcgp *TCGProduct) isToken() bool {
-	for _, extData := range tcgp.ExtendedData {
-		if extData.Name == "SubType" && strings.Contains(extData.Value, "Token") {
-			return true
-		}
-	}
-	// There are some tokens not marked as such
-	if strings.Contains(tcgp.CleanName, "Token") {
-		return true
-	}
-	return false
 }
