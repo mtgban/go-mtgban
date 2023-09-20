@@ -132,14 +132,6 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 			continue
 		}
 
-		var link string
-		if len(result.Document.URLDetail) > 0 {
-			link = "https://starcitygames.com" + result.Document.URLDetail[0]
-			if scg.Affiliate != "" {
-				link += "?aff=" + scg.Affiliate
-			}
-		}
-
 		for _, attribute := range result.Document.HawkChildAttributes {
 			if len(attribute.VariantLanguage) == 0 {
 				return errors.New("malformed variant_language")
@@ -197,7 +189,7 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 					Conditions: condition,
 					Quantity:   qty,
 					OriginalId: id,
-					URL:        link,
+					URL:        SCGProductURL(result.Document.URLDetail, attribute.VariantSKU, scg.Affiliate),
 				},
 				ignoreErr: strings.Contains(edition, "World Championship") && theCard.IsBasicLand(),
 			}

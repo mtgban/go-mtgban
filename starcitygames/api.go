@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
@@ -64,7 +65,7 @@ type scgRetailResult struct {
 		HawkChildAttributes []struct {
 			Price           []string `json:"price"`
 			ProdID          []string `json:"prod_id"`
-			VariantSku      []string `json:"variant_sku"`
+			VariantSKU      []string `json:"variant_sku"`
 			Qty             []string `json:"qty"`
 			VariantLanguage []string `json:"variant_language"`
 			Condition       []string `json:"condition"`
@@ -231,4 +232,29 @@ func (scg *SCGClient) SearchAll(offset, limit int) (*SCGSearchResponse, error) {
 	}
 
 	return &search, nil
+}
+
+const baseURL = "https://starcitygames.com"
+
+func SCGProductURL(URLDetail, variantSKU []string, affiliate string) string {
+	if len(URLDetail) == 0 {
+		return ""
+	}
+
+	link := baseURL + URLDetail[0]
+	u, err := url.Parse(link)
+	if err != nil {
+		return ""
+	}
+
+	v := u.Query()
+	if len(variantSKU) > 0 {
+		v.Set("sku", variantSKU[0])
+	}
+	if affiliate != "" {
+		v.Set("aff", affiliate)
+	}
+	u.RawQuery = v.Encode()
+
+	return u.String()
 }
