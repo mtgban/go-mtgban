@@ -536,3 +536,42 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 
 	return picks, nil
 }
+
+func SealedIsRandom(setCode, sealedUUID string) bool {
+	set, err := GetSet(setCode)
+	if err != nil {
+		return false
+	}
+
+	for _, product := range set.SealedProduct {
+		if sealedUUID != product.UUID {
+			continue
+		}
+
+		if product.Contents == nil {
+			return true
+		}
+
+		for key, contents := range product.Contents {
+			for _, content := range contents {
+				switch key {
+				case "card":
+				case "pack":
+					return true
+				case "sealed":
+					if SealedIsRandom(content.Set, content.UUID) {
+						return true
+					}
+				case "deck":
+				case "variable":
+					return true
+				case "other":
+				default:
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}

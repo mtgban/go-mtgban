@@ -105,45 +105,6 @@ func (ss *SealedEVScraper) printf(format string, a ...interface{}) {
 	}
 }
 
-func needsRandom(setCode, sealedUUID string) bool {
-	set, err := mtgmatcher.GetSet(setCode)
-	if err != nil {
-		return false
-	}
-
-	for _, product := range set.SealedProduct {
-		if sealedUUID != product.UUID {
-			continue
-		}
-
-		if product.Contents == nil {
-			return true
-		}
-
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
-				case "card":
-				case "pack":
-					return true
-				case "sealed":
-					if needsRandom(content.Set, content.UUID) {
-						return true
-					}
-				case "deck":
-				case "variable":
-					return true
-				case "other":
-				default:
-					return true
-				}
-			}
-		}
-	}
-
-	return false
-}
-
 func (ss *SealedEVScraper) scrape() error {
 	ss.printf("Loading BAN prices")
 	prices, err := loadPrices(ss.banpriceKey)
@@ -174,7 +135,7 @@ func (ss *SealedEVScraper) scrape() error {
 			if ss.FastMode {
 				repeats = 10
 			}
-			if !needsRandom(set.Code, product.UUID) {
+			if !mtgmatcher.SealedIsRandom(set.Code, product.UUID) {
 				repeats = 1
 			}
 
