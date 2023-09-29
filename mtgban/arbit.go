@@ -554,7 +554,11 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 		}
 
 		// Silver is to catch UPLIST, IsFunny to catch anything after Unfinity
-		if co.BorderColor == "gold" || co.BorderColor == "silver" || co.IsFunny || co.HasPromoType(mtgjson.PromoTypeThickDisplay) {
+		switch co.BorderColor {
+		case "gold", "silver", "white":
+			continue
+		}
+		if co.IsFunny || co.HasPromoType(mtgjson.PromoTypeThickDisplay) {
 			continue
 		}
 
