@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -144,7 +145,8 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 			}
 
 			isFoil := listing.Printing == "Foil"
-			cardId, err := mtgmatcher.MatchId(id, isFoil)
+			isEtched := strings.Contains(result.ProductName, "Foil Etched")
+			cardId, err := mtgmatcher.MatchId(id, isFoil, isEtched)
 			if err != nil {
 				continue
 			}
