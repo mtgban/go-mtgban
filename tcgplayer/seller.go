@@ -154,6 +154,8 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 					URL:        link,
 					SellerName: listing.SellerName,
 					Bundle:     listing.DirectProduct,
+					OriginalId: fmt.Sprint(int(listing.ProductID)),
+					InstanceId: fmt.Sprint(int(listing.ProductConditionID)),
 				},
 			}
 
