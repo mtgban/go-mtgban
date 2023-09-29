@@ -776,7 +776,7 @@ type SellerInventoryResult struct {
 	} `json:"listings"`
 }
 
-func TCGInventoryForSeller(sellerID string, size, page int, sets ...string) (*sellerInventoryResponse, error) {
+func TCGInventoryForSeller(sellerKey string, size, page int, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
 	params.Algorithm = "salespna"
 	params.From = size * page
@@ -785,7 +785,7 @@ func TCGInventoryForSeller(sellerID string, size, page int, sets ...string) (*se
 	params.Filters.Term.ProductTypeName = []string{"Cards"}
 	params.Filters.Term.SetName = sets
 	params.ListingSearch.Filters.Term.SellerStatus = "Live"
-	params.ListingSearch.Filters.Term.SellerKey = []string{sellerID}
+	params.ListingSearch.Filters.Term.SellerKey = []string{sellerKey}
 	params.ListingSearch.Filters.Range.Quantity.GreaterThanOrEqual = 1
 	params.Context.ShippingCountry = "US"
 
