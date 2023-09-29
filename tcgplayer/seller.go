@@ -24,7 +24,11 @@ type TCGSellerInventory struct {
 
 func (tcg *TCGSellerInventory) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
-		tcg.LogCallback("[TCGSI_"+tcg.sellerKey+"] "+format, a...)
+		tag := tcg.sellerKey
+		if tcg.sellerKey == "" {
+			tag = "direct"
+		}
+		tcg.LogCallback("[TCGSI_"+tag+"] "+format, a...)
 	}
 }
 
@@ -156,6 +160,9 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 					Bundle:     listing.DirectProduct,
 					OriginalId: fmt.Sprint(int(listing.ProductID)),
 					InstanceId: fmt.Sprint(int(listing.ProductConditionID)),
+					CustomFields: map[string]string{
+						"sellerKey": listing.SellerKey,
+					},
 				},
 			}
 
@@ -262,6 +269,9 @@ func (tcg *TCGSellerInventory) Inventory() (mtgban.InventoryRecord, error) {
 func (tcg *TCGSellerInventory) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Seller Inventory"
 	info.Shorthand = "TCGSI_" + tcg.sellerKey
+	if tcg.sellerKey == "" {
+		info.Shorthand = "TCGSI_direct"
+	}
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.CountryFlag = "EU"
 	return

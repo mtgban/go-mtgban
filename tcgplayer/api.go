@@ -664,10 +664,12 @@ type sellerInventoryRequest struct {
 	ListingSearch struct {
 		Filters struct {
 			Term struct {
-				SellerStatus string   `json:"sellerStatus"`
-				ChannelID    int      `json:"channelId"`
-				SellerKey    []string `json:"sellerKey"`
-				Language     []string `json:"language,omitempty"`
+				SellerStatus  string   `json:"sellerStatus,omitempty"`
+				ChannelID     int      `json:"channelId"`
+				DirectSeller  bool     `json:"direct-seller,omitempty"`
+				DirectProduct bool     `json:"directProduct,omitempty"`
+				SellerKey     []string `json:"sellerKey,omitempty"`
+				Language      []string `json:"language,omitempty"`
 			} `json:"term"`
 			Range struct {
 				Quantity struct {
@@ -789,7 +791,12 @@ func TCGInventoryForSeller(sellerKey string, size, page int, sets ...string) (*s
 	// one thing and the actual listing saying another (ie with STA)
 	params.ListingSearch.Filters.Term.Language = []string{"English"}
 	params.ListingSearch.Filters.Term.SellerStatus = "Live"
-	params.ListingSearch.Filters.Term.SellerKey = []string{sellerKey}
+	if sellerKey != "" {
+		params.ListingSearch.Filters.Term.SellerKey = []string{sellerKey}
+	} else {
+		params.ListingSearch.Filters.Term.DirectProduct = true
+		params.ListingSearch.Filters.Term.DirectSeller = true
+	}
 	params.ListingSearch.Filters.Range.Quantity.GreaterThanOrEqual = 1
 	params.Context.ShippingCountry = "US"
 
