@@ -17,7 +17,6 @@ type TCGSellerInventory struct {
 	Affiliate      string
 
 	sellerKey     string
-	sellerName    string
 	requestSize   int
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
@@ -37,14 +36,17 @@ func NewScraperForSeller(sellerName string) (*TCGSellerInventory, error) {
 		return nil, err
 	}
 
+	return NewScraperForSellerId(sellerKey), nil
+}
+
+func NewScraperForSellerId(sellerKey string) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.sellerKey = sellerKey
-	tcg.sellerName = sellerName
 
 	tcg.MaxConcurrency = defaultSellerInventoryConcurrency
 
-	return &tcg, nil
+	return &tcg
 }
 
 type itemsRecap struct {
@@ -183,7 +185,7 @@ func (tcg *TCGSellerInventory) scrape() error {
 	}
 
 	tcg.requestSize = DefaultSellerRequestSize
-	tcg.printf("Found %d results for %s", ret.TotalResults, tcg.sellerName)
+	tcg.printf("Found %d results for seller id %s", ret.TotalResults, tcg.sellerKey)
 
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -270,7 +272,7 @@ func (tcg *TCGSellerInventory) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (tcg *TCGSellerInventory) Info() (info mtgban.ScraperInfo) {
-	info.Name = "TCG Seller Inventory: " + tcg.sellerName
+	info.Name = "TCG Seller Inventory"
 	info.Shorthand = "TCGSI_" + tcg.sellerKey
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.CountryFlag = "EU"
