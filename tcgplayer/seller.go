@@ -3,7 +3,6 @@ package tcgplayer
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -129,24 +128,9 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 		}
 
 		for _, listing := range result.Listings {
-			if mtgmatcher.SkipLanguage(result.ProductName, result.SetName, listing.Language) {
-				continue
-			}
-
-			id := uuid
-			switch result.SetName {
-			case "Legends", "The Dark":
-				id += "_ita"
-			case "Strixhaven Mystical Archive":
-				num, _ := strconv.Atoi(result.CustomAttributes.Number)
-				if listing.Language == "Japanese" && num < 64 {
-					continue
-				}
-			}
-
 			isFoil := listing.Printing == "Foil"
 			isEtched := strings.Contains(result.ProductName, "Foil Etched")
-			cardId, err := mtgmatcher.MatchId(id, isFoil, isEtched)
+			cardId, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
 			if err != nil {
 				continue
 			}
