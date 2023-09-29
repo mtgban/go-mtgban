@@ -533,7 +533,7 @@ type PennystockEntry struct {
 	InventoryEntry
 }
 
-func Pennystock(seller Seller) (result []PennystockEntry, err error) {
+func Pennystock(seller Seller, full bool) (result []PennystockEntry, err error) {
 	inventory, err := seller.Inventory()
 	if err != nil {
 		return nil, err
@@ -567,11 +567,14 @@ func Pennystock(seller Seller) (result []PennystockEntry, err error) {
 				continue
 			}
 
-			pennyMythic := isMythic && (!co.Foil || (co.Foil && !strings.Contains(co.Edition, "Commander") && !strings.Contains(co.Edition, "From the Vault"))) && entry.Price <= 0.16
-			pennyRare := isRare && ((!co.Foil && entry.Price <= 0.02) || (co.Foil && entry.Price <= 0.05))
-			pennyLand := isLand && ((!co.Foil && co.Card.IsFullArt) || co.Foil) && entry.Price <= 0.02
-			pennyFoil := co.Foil && entry.Price <= 0.01
-			pennyPromo := isPromo && entry.Price <= 0.02
+			var pennyMythic, pennyRare, pennyLand, pennyFoil, pennyPromo bool
+			pennyMythic = isMythic && (!co.Foil || (co.Foil && !strings.Contains(co.Edition, "Commander") && !strings.Contains(co.Edition, "From the Vault"))) && entry.Price <= 0.16
+			if full {
+				pennyRare = isRare && ((!co.Foil && entry.Price <= 0.02) || (co.Foil && entry.Price <= 0.05))
+				pennyLand = isLand && ((!co.Foil && co.Card.IsFullArt) || co.Foil) && entry.Price <= 0.02
+				pennyFoil = co.Foil && entry.Price <= 0.01
+				pennyPromo = isPromo && entry.Price <= 0.02
+			}
 
 			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
 				result = append(result, PennystockEntry{
