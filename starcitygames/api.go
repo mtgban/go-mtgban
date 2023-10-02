@@ -22,6 +22,8 @@ type SCGClient struct {
 	client *http.Client
 	guid   string
 	bearer string
+
+	SealedMode bool
 }
 
 func NewSCGClient(guid, bearer string) *SCGClient {
@@ -39,6 +41,20 @@ type scgRetailRequest struct {
 	PageNo          int                 `json:"PageNo"`
 	MaxPerPage      int                 `json:"MaxPerPage"`
 	ClientGUID      string              `json:"clientguid"`
+}
+
+type scgSealedFacetSelection struct {
+	VariantInStockOnly []string `json:"variant_instockonly"`
+	ProductType        []string `json:"product_type"`
+	Game               string   `json:"game"`
+}
+
+type scgRetailSealedRequest struct {
+	Keyword         string                  `json:"Keyword"`
+	FacetSelections scgSealedFacetSelection `json:"FacetSelections"`
+	PageNo          int                     `json:"PageNo"`
+	MaxPerPage      int                     `json:"MaxPerPage"`
+	ClientGUID      string                  `json:"clientguid"`
 }
 
 type scgRetailResponse struct {
@@ -62,6 +78,7 @@ type scgRetailResult struct {
 		Finish              []string `json:"finish"`
 		ProductType         []string `json:"product_type"`
 		URLDetail           []string `json:"url_detail"`
+		ItemDisplayName     []string `json:"item_display_name"`
 		HawkChildAttributes []struct {
 			Price           []string `json:"price"`
 			ProdID          []string `json:"prod_id"`
@@ -75,18 +92,33 @@ type scgRetailResult struct {
 }
 
 func (scg *SCGClient) sendRetailRequest(page int) (*scgRetailResponse, error) {
-	q := scgRetailRequest{
-		ClientGUID: scg.guid,
-		MaxPerPage: maxResultsPerPage,
-		PageNo:     page,
-		FacetSelections: map[string][]string{
-			"variant_instockonly": {"Yes"},
-			"product_type":        {"Singles"},
-			"game":                {"Magic: The Gathering"},
-		},
+	var payload []byte
+	var err error
+	if scg.SealedMode {
+		q := scgRetailSealedRequest{
+			ClientGUID: scg.guid,
+			MaxPerPage: maxResultsPerPage,
+			PageNo:     page,
+			FacetSelections: scgSealedFacetSelection{
+				VariantInStockOnly: []string{"Yes"},
+				ProductType:        []string{"Sealed"},
+				Game:               "Magic: The Gathering",
+			},
+		}
+		payload, err = json.Marshal(&q)
+	} else {
+		q := scgRetailRequest{
+			ClientGUID: scg.guid,
+			MaxPerPage: maxResultsPerPage,
+			PageNo:     page,
+			FacetSelections: map[string][]string{
+				"variant_instockonly": {"Yes"},
+				"product_type":        {"Singles"},
+				"game":                {"Magic: The Gathering"},
+			},
+		}
+		payload, err = json.Marshal(&q)
 	}
-
-	payload, err := json.Marshal(&q)
 	if err != nil {
 		return nil, err
 	}
@@ -191,8 +223,12 @@ type SCGCardVariant struct {
 }
 
 func (scg *SCGClient) SearchAll(offset, limit int) (*SCGSearchResponse, error) {
+	filter := "is_buying = 1 AND (product_type = \"Singles\") AND ((language = \"en\") OR (language = \"ja\"))"
+	if scg.SealedMode {
+		filter = "is_buying = 1 AND (product_type != \"Singles\") AND ((language = \"en\") OR (language = \"ja\"))"
+	}
 	q := SCGSearchRequest{
-		Filter:           "is_buying = 1 AND (product_type = \"Singles\") AND ((language = \"en\") OR (language = \"ja\"))",
+		Filter:           filter,
 		MatchingStrategy: "all",
 		Limit:            limit,
 		Offset:           offset,

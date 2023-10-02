@@ -120,6 +120,7 @@ var sealedReplacer = strings.NewReplacer(
 	"magic arena", "arena",
 	"magic game night", "game night",
 	"magic 30th", "30th",
+	"free for all set", "free for all",
 
 	"2010 core set", "magic 2010",
 	"2011 core set", "magic 2011",
@@ -139,6 +140,10 @@ var sealedReplacer = strings.NewReplacer(
 	"universes beyond", "",
 	"complete set", "",
 	"multi player", "",
+	"inaugural edition", "",
+
+	"beatdown box set", "beatdown",
+	"anthologies box set", "anthologies",
 
 	"theme deck box", "theme deck display",
 	"fat pack bundle", "bundle",
@@ -173,9 +178,11 @@ var sealedReplacer = strings.NewReplacer(
 	"start deck", "starter",
 	"starter deck box", "starter",
 
+	"(premium)", "premium",
 	"summer superdrop", "",
 	"city of guilds", "",
 
+	"game pack", "",
 	" 12", "",
 	" 10", "",
 	"pack", "",

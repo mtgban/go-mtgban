@@ -325,6 +325,20 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"starcitygames_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			scgGUID := os.Getenv("SCG_GUID")
+			scgBearer := os.Getenv("SCG_BEARER")
+			if scgGUID == "" || scgBearer == "" {
+				return nil, errors.New("missing SCG_GUID or SCG_BEARER env var")
+			}
+
+			scraper := starcitygames.NewScraperSealed(scgGUID, scgBearer)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("SCG_AFFILIATE")
+			return scraper, nil
+		},
+	},
 	"strikezone": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := strikezone.NewScraper()
