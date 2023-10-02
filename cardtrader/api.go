@@ -35,16 +35,20 @@ const (
 	CategoryMagicTokens
 	CategoryMagicOversized
 	CategoryMagicBoosterBoxes
+	CategoryMagicBoosters
 	CategoryMagicCompleteSets
 	CategoryMagicStarterDecks
 	CategoryMagicEmptyPackaging
 	CategoryMagicBooks
-	CategoryMagicExtras
+	CategoryMagicBoxDisplays
+	_
 	CategoryMagicSleeves
 	CategoryMagicBoxedSet
+	_
 	CategoryMagicAlbums
 	CategoryMagicDeckBoxes
 	CategoryMagicPreconstructedDecks
+	CategoryMagicMemorabilia
 	CategoryMagicPlaymats
 	CategoryMagicLifeCounter
 	CategoryMagicCardStorage
@@ -53,6 +57,7 @@ const (
 	CategoryMagicTournamentPrereleasePacks
 	CategoryMagicDividers
 	CategoryMagicBinderPages
+	_
 	CategoryMagicGamingStones
 )
 
@@ -97,8 +102,9 @@ type Product struct {
 		Signed    bool   `json:"signed"`
 	} `json:"properties_hash"`
 	User struct {
-		Name string `json:"username"`
-		Zero bool   `json:"can_sell_via_hub"`
+		Name        string `json:"username"`
+		SinglesZero bool   `json:"can_sell_via_hub"`
+		SealedZero  bool   `json:"can_sell_sealed_with_ct_zero"`
 	} `json:"user"`
 	Price struct {
 		Cents    int    `json:"cents"`

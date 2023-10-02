@@ -111,3 +111,54 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 
 	return inventory
 }
+
+func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed bool) (map[int]*Blueprint, map[int]string) {
+	// Create a map to be able to retrieve edition name in the blueprint
+	formatted := map[int]*Blueprint{}
+	expansions := map[int]string{}
+	for i := range blueprints {
+		switch blueprints[i].GameId {
+		case GameIdMagic:
+		default:
+			continue
+		}
+		switch blueprints[i].CategoryId {
+		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized:
+			if sealed {
+				continue
+			}
+		case CategoryMagicBoosterBoxes, CategoryMagicBoosters, CategoryMagicStarterDecks,
+			CategoryMagicBoxDisplays, CategoryMagicBoxedSet, CategoryMagicPreconstructedDecks,
+			CategoryMagicBundles, CategoryMagicTournamentPrereleasePacks:
+			if !sealed {
+				continue
+			}
+		default:
+			continue
+		}
+
+		// Keep track of blueprints as they are more accurate that the
+		// information found in product
+		formatted[blueprints[i].Id] = &blueprints[i]
+
+		// Load expansions array
+		_, found := expansions[blueprints[i].ExpansionId]
+		if !found {
+			for j := range inExpansions {
+				if inExpansions[j].Id == blueprints[i].ExpansionId {
+					expansions[blueprints[i].ExpansionId] = inExpansions[j].Name
+				}
+			}
+		}
+
+		// The name is missing from the blueprints endpoint, fill it with data
+		// retrieved from the expansions endpoint
+		formatted[blueprints[i].Id].Expansion.Name = expansions[blueprints[i].ExpansionId]
+
+		// Move the blueprint properties from the custom structure from blueprints
+		// to the place as expected by Preprocess()
+		formatted[blueprints[i].Id].Properties = formatted[blueprints[i].Id].FixedProperties
+	}
+
+	return formatted, expansions
+}

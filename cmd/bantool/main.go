@@ -160,6 +160,21 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardtrader_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+			if ctTokenBearer == "" {
+				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+			}
+
+			scraper, err := cardtrader.NewScraperSealed(ctTokenBearer)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
 	"coolstuffinc": {
 		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {

@@ -1,52 +1,41 @@
 package cardtrader
 
 import (
-	"errors"
 	"fmt"
 	"io"
-	"sort"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"golang.org/x/exp/slices"
 )
 
-const (
-	defaultConcurrency = 8
-)
-
-type CardtraderMarket struct {
+type CardtraderSealed struct {
 	LogCallback    mtgban.LogCallbackFunc
-	inventoryDate  time.Time
 	MaxConcurrency int
 	ShareCode      string
 
 	// Only retrieve data from a single edition
 	TargetEdition string
 
-	// Keep same-conditions entries
-	KeepDuplicates bool
-
 	exchangeRate float64
 	client       *CTAuthClient
-	loggedClient *CTLoggedClient
 
-	inventory   mtgban.InventoryRecord
-	marketplace map[string]mtgban.InventoryRecord
+	inventoryDate time.Time
+	inventory     mtgban.InventoryRecord
+	marketplace   map[string]mtgban.InventoryRecord
 
 	blueprints map[int]*Blueprint
 }
 
-var availableMarketNames = []string{
-	"Card Trader", "Card Trader Zero",
-}
-
-func NewScraperMarket(token string) (*CardtraderMarket, error) {
-	ct := CardtraderMarket{}
+func NewScraperSealed(token string) (*CardtraderSealed, error) {
+	ct := CardtraderSealed{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.marketplace = map[string]mtgban.InventoryRecord{}
-	ct.MaxConcurrency = defaultConcurrency
+	// API is strongly rated limited, hardcode a lower amount
+	ct.MaxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
 
 	rate, err := mtgban.GetExchangeRate("EUR")
@@ -57,77 +46,22 @@ func NewScraperMarket(token string) (*CardtraderMarket, error) {
 	return &ct, nil
 }
 
-func (ct *CardtraderMarket) printf(format string, a ...interface{}) {
+func (ct *CardtraderSealed) printf(format string, a ...interface{}) {
 	if ct.LogCallback != nil {
-		ct.LogCallback("[CT] "+format, a...)
+		ct.LogCallback("[CTSealed] "+format, a...)
 	}
 }
 
-type resultChan struct {
-	cardId   string
-	invEntry *mtgban.InventoryEntry
-}
-
-var condMap = map[string]string{
-	"":                  "NM",
-	"Mint":              "NM",
-	"Near Mint":         "NM",
-	"Slightly Played":   "SP",
-	"Moderately Played": "MP",
-	"Played":            "HP",
-	"Heavily Played":    "HP",
-	"Poor":              "PO",
-}
-
-func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product, shareCode string, rate float64) error {
-	var cardId string
-	var cardIdFoil string
-
+func processSealedProducts(channel chan<- resultChan, uuid string, products []Product, shareCode string, rate float64) error {
 	for _, product := range products {
-		if mtgmatcher.SkipLanguage(theCard.Name, product.Expansion.Name, product.Properties.Language) {
-			continue
-		}
-
 		switch {
 		case product.Quantity < 1,
 			product.OnVacation,
 			product.Properties.Altered:
 			continue
 		case mtgmatcher.Contains(product.Description, "ita"),
-			mtgmatcher.Contains(product.Description, "mix"):
+			mtgmatcher.Contains(product.Description, "deck box only"):
 			continue
-		}
-
-		var err error
-		if cardId == "" {
-			cardId, err = mtgmatcher.Match(theCard)
-			if err != nil {
-				return err
-			}
-		}
-
-		if cardIdFoil == "" && product.Properties.Foil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			// The function retuns empty string on error
-			cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
-		}
-
-		cond := product.Properties.Condition
-		if product.Properties.Signed ||
-			mtgmatcher.Contains(product.Description, "signed") ||
-			mtgmatcher.Contains(product.Description, "inked") ||
-			mtgmatcher.Contains(product.Description, "stamp") ||
-			mtgmatcher.Contains(product.Description, "water") {
-			cond = "Poor"
-		}
-
-		conditions, found := condMap[cond]
-		if !found {
-			return fmt.Errorf("unsupported %s condition", cond)
-		}
-
-		finalCardId := cardId
-		if product.Properties.Foil && cardIdFoil != "" {
-			finalCardId = cardIdFoil
 		}
 
 		qty := product.Quantity
@@ -144,15 +78,16 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		if product.Price.Currency != "USD" {
 			price *= rate
 		}
+
 		channel <- resultChan{
-			cardId: finalCardId,
+			cardId: uuid,
 			invEntry: &mtgban.InventoryEntry{
-				Conditions: conditions,
+				Conditions: "NM",
 				Price:      price,
 				Quantity:   qty,
 				URL:        link,
 				SellerName: product.User.Name,
-				Bundle:     product.User.SinglesZero,
+				Bundle:     product.User.SealedZero,
 				OriginalId: fmt.Sprint(product.BlueprintId),
 				InstanceId: fmt.Sprint(product.Id),
 			},
@@ -162,11 +97,30 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 	return nil
 }
 
-func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId int) error {
+func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId int, expansionName string) error {
 	allProducts, err := ct.client.ProductsForExpansion(expansionId)
 	if err != nil {
 		return err
 	}
+
+	switch {
+	case strings.Contains(expansionName, "Creature Forge"),
+		expansionName == "Arena League Promos":
+		return nil
+	// Workaround WCD decks
+	case strings.HasPrefix(expansionName, "WCD"):
+		year := mtgmatcher.ExtractYear(expansionName)
+		if len(year) == 4 {
+			expansionName = "WC" + year[2:4]
+		}
+	}
+
+	set, err := mtgmatcher.GetSetByName(expansionName)
+	if err != nil {
+		return fmt.Errorf("%s: %s", expansionName, err.Error())
+	}
+
+	var warned []string
 
 	for id, products := range allProducts {
 		blueprint, found := ct.blueprints[id]
@@ -174,34 +128,59 @@ func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId 
 			continue
 		}
 
-		theCard, err := Preprocess(blueprint)
-		if err != nil {
+		switch {
+		case strings.Contains(blueprint.Name, "Promo Pack"),
+			strings.Contains(blueprint.Name, "Land Pack"):
 			continue
 		}
 
-		err = processProducts(channel, theCard, products, ct.ShareCode, ct.exchangeRate)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			ct.printf("%v", err)
-			ct.printf("%q", theCard)
-			ct.printf("%d %q", blueprint.Id, blueprint)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					ct.printf("- %s", card)
+		var uuid string
+		for _, sealedProduct := range set.SealedProduct {
+			if mtgmatcher.SealedEquals(sealedProduct.Name, blueprint.Name) {
+				uuid = sealedProduct.UUID
+				break
+			}
+			// If not found, look if the a chunk of the name is present in the deck name
+			if uuid == "" {
+				switch {
+				case strings.HasSuffix(blueprint.Name, "Booster"):
+					if mtgmatcher.SealedEquals(sealedProduct.Name, blueprint.Name+" Pack") {
+						uuid = sealedProduct.UUID
+					}
+				case strings.Contains(blueprint.Name, "Deck"),
+					strings.Contains(blueprint.Name, "Intro Pack"):
+					decks, found := sealedProduct.Contents["deck"]
+					if found {
+						for _, deck := range decks {
+							if mtgmatcher.SealedContains(blueprint.Name, deck.Name) {
+								uuid = sealedProduct.UUID
+								break
+							}
+						}
+					}
 				}
 			}
+			if uuid != "" {
+				break
+			}
 		}
+
+		if uuid == "" {
+			if slices.Contains(warned, blueprint.Name) {
+				continue
+			}
+			warned = append(warned, blueprint.Name)
+			ct.printf("No association for %s", blueprint.Name)
+			continue
+		}
+
+		processSealedProducts(channel, uuid, products, ct.ShareCode, ct.exchangeRate)
 	}
 
 	return nil
 }
 
-func (ct *CardtraderMarket) scrape() error {
+func (ct *CardtraderSealed) scrape() error {
 	expansionsRaw, err := ct.client.Expansions()
 	if err != nil {
 		return err
@@ -226,7 +205,7 @@ func (ct *CardtraderMarket) scrape() error {
 	}
 	ct.printf("Found %d blueprints", len(blueprintsRaw))
 
-	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, false)
+	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, true)
 	ct.blueprints = blueprints
 	ct.printf("Parsing %d expansions", len(expansions))
 
@@ -238,7 +217,7 @@ func (ct *CardtraderMarket) scrape() error {
 		wg.Add(1)
 		go func() {
 			for expansionId := range expansionIds {
-				err := ct.processEntry(results, expansionId)
+				err := ct.processEntry(results, expansionId, expansions[expansionId])
 				if err != nil {
 					ct.printf("%v", err)
 				}
@@ -273,7 +252,7 @@ func (ct *CardtraderMarket) scrape() error {
 				break
 			}
 		}
-		if skip && !ct.KeepDuplicates {
+		if skip {
 			continue
 		}
 
@@ -283,23 +262,11 @@ func (ct *CardtraderMarket) scrape() error {
 			result.invEntry.SellerName = "Card Trader Zero"
 		}
 		var err error
-		if ct.KeepDuplicates {
-			err = ct.inventory.AddRelaxed(result.cardId, result.invEntry)
-		} else {
-			err = ct.inventory.Add(result.cardId, result.invEntry)
-		}
+		err = ct.inventory.Add(result.cardId, result.invEntry)
 		if err != nil {
 			ct.printf("%s", err.Error())
 			continue
 		}
-	}
-
-	// Sort to keep NM-SP-MP-HP-PO order
-	conds := map[string]int{"NM": 0, "SP": 1, "MP": 2, "HP": 3, "PO": 4}
-	for cardId := range ct.inventory {
-		sort.Slice(ct.inventory[cardId], func(i, j int) bool {
-			return conds[ct.inventory[cardId][i].Conditions] < conds[ct.inventory[cardId][j].Conditions]
-		})
 	}
 
 	ct.inventoryDate = time.Now()
@@ -307,7 +274,7 @@ func (ct *CardtraderMarket) scrape() error {
 	return nil
 }
 
-func (ct *CardtraderMarket) Inventory() (mtgban.InventoryRecord, error) {
+func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
 	if len(ct.inventory) > 0 {
 		return ct.inventory, nil
 	}
@@ -320,7 +287,7 @@ func (ct *CardtraderMarket) Inventory() (mtgban.InventoryRecord, error) {
 	return ct.inventory, nil
 }
 
-func (ct *CardtraderMarket) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
+func (ct *CardtraderSealed) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
 	if len(ct.inventory) == 0 {
 		_, err := ct.Inventory()
 		if err != nil {
@@ -353,7 +320,7 @@ func (ct *CardtraderMarket) InventoryForSeller(sellerName string) (mtgban.Invent
 	return ct.marketplace[sellerName], nil
 }
 
-func (ct *CardtraderMarket) InitializeInventory(reader io.Reader) error {
+func (ct *CardtraderSealed) InitializeInventory(reader io.Reader) error {
 	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
 	if err != nil {
 		return err
@@ -370,14 +337,15 @@ func (ct *CardtraderMarket) InitializeInventory(reader io.Reader) error {
 	return nil
 }
 
-func (tcg *CardtraderMarket) MarketNames() []string {
+func (tcg *CardtraderSealed) MarketNames() []string {
 	return availableMarketNames
 }
 
-func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
+func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader"
-	info.Shorthand = "CT"
+	info.Shorthand = "CTSealed"
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
+	info.SealedMode = true
 	return
 }

@@ -119,6 +119,7 @@ var sealedReplacer = strings.NewReplacer(
 	"magic modern", "modern",
 	"magic arena", "arena",
 	"magic game night", "game night",
+	"magic 30th", "30th",
 
 	"2010 core set", "magic 2010",
 	"2011 core set", "magic 2011",
@@ -133,6 +134,14 @@ var sealedReplacer = strings.NewReplacer(
 	"m14", "",
 	"m15", "",
 
+	"core 20", "core set 20",
+	"revised booster", "revised edition booster",
+	"universes beyond", "",
+	"complete set", "",
+	"multi player", "",
+
+	"theme deck box", "theme deck display",
+	"fat pack bundle", "bundle",
 	"boxset", "set",
 	"box set", "set",
 	"prerelease box", "prerelease",
