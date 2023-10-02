@@ -63,7 +63,7 @@ func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
 		}
 	}
 
-	return nil, ErrCardUnknownId
+	return nil, ErrCardNotInEdition
 }
 
 func GetSetUUID(uuid string) (*mtgjson.Set, error) {
