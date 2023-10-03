@@ -134,6 +134,7 @@ var sealedReplacer = strings.NewReplacer(
 	"m13", "",
 	"m14", "",
 	"m15", "",
+	"(core set)", "",
 
 	"core 20", "core set 20",
 	"revised booster", "revised edition booster",

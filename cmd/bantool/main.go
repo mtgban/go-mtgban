@@ -197,6 +197,15 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"coolstuffinc_sealed": {
+		OnlyVendor: true,
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			return scraper, nil
+		},
+	},
 	"hareruya": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper, err := hareruya.NewScraper()

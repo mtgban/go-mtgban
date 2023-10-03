@@ -476,3 +476,84 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		Foil:      card.IsFoil,
 	}, nil
 }
+
+var sealedRenames = map[string]string{
+	"Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling": "Global Series Jiang Yanggu and Mu Yanling",
+
+	"War of the Spark -  Booster Box (Japanese)": "War of the Spark Booster Box (Non-English JAPANESE)",
+
+	"Revised (Third Edition) - Booster Box": "Revised Edition Booster Box",
+	"Pro Tour 1996 Collector Set":           "Pro Tour Collector Set",
+	"Time Spiral - Tournament Deck":         "Time Spiral Tournament Pack",
+
+	"Starter - Booster Box":  "Starter 1999 Booster Box",
+	"Starter - Booster Pack": "Starter 1999 Booster Pack",
+}
+
+func preprocessSealed(productName, edition string) (string, error) {
+	switch edition {
+	case "World Championship Decks":
+		// WCD products are merged in a single edition in mtgjson
+		edition = "WC97"
+
+		year := mtgmatcher.ExtractYear(productName)
+		if year != "1996" {
+			productName = strings.Replace(productName, "("+year+") ", "", 1)
+			productName = strings.TrimSuffix(productName, "Deck")
+			productName = year + " " + productName
+		}
+	}
+
+	set, err := mtgmatcher.GetSetByName(edition)
+	if err != nil {
+		return "", err
+	}
+
+	productName = strings.TrimSuffix(productName, " (1)")
+
+	rename, found := sealedRenames[productName]
+	if found {
+		productName = rename
+	}
+
+	switch {
+	case strings.Contains(productName, "Life Counter"):
+		return "", errors.New("unsupported")
+	case strings.HasPrefix(productName, "From the Vault"),
+		strings.HasPrefix(productName, "Signature Spellbook"):
+		productName = strings.TrimSuffix(productName, " - Box Set")
+	}
+
+	var uuid string
+	for _, sealedProduct := range set.SealedProduct {
+		if mtgmatcher.SealedEquals(sealedProduct.Name, productName) {
+			uuid = sealedProduct.UUID
+			break
+		}
+	}
+
+	if uuid == "" {
+		for _, sealedProduct := range set.SealedProduct {
+			// If not found, look if the a chunk of the name is present in the deck name
+			switch {
+			case strings.Contains(productName, "Archenemy"),
+				strings.Contains(productName, "uels of the Planeswalkers "),
+				strings.Contains(productName, "Planechase"):
+				decks, found := sealedProduct.Contents["deck"]
+				if found {
+					for _, deck := range decks {
+						// Work around internal names that are too long, like
+						// "Teeth of the Predator - the Garruk Wildspeaker Deck"
+						deckName := strings.Split(deck.Name, " - ")[0]
+						if mtgmatcher.SealedContains(productName, deckName) {
+							uuid = sealedProduct.UUID
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return uuid, nil
+}
