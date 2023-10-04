@@ -99,7 +99,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Binderpos weird syntax, with the edition embedded in the name
 	if strings.Contains(inCard.Name, "[") {
 		vars := strings.Split(inCard.Name, "[")
-		inCard.Name = vars[0]
+		inCard.Name = strings.TrimSpace(vars[0])
 		if len(vars) > 1 {
 			maybeEdition := strings.Join(vars[1:], " ")
 			maybeEdition = strings.Replace(maybeEdition, "]", "", -1)
