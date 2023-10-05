@@ -179,6 +179,7 @@ func (ss *SealedEVScraper) scrape() error {
 					ss.buylist.Add(product.UUID, &mtgban.BuylistEntry{
 						Conditions: "INDEX",
 						BuyPrice:   price,
+						TradePrice: price * 1.3,
 						URL:        link,
 					})
 				} else {
