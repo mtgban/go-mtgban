@@ -53,6 +53,10 @@ func (ct *CardtraderSealed) printf(format string, a ...interface{}) {
 
 func processSealedProducts(channel chan<- resultChan, uuid string, products []Product, shareCode string, rate float64) error {
 	for _, product := range products {
+		if product.Properties.Language != "en" {
+			continue
+		}
+
 		switch {
 		case product.Quantity < 1,
 			product.OnVacation,
