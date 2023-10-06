@@ -213,9 +213,9 @@ func (ct *CardtraderSealed) scrape() error {
 		}
 
 		// Assign a seller name as required by Market
-		result.invEntry.SellerName = "Card Trader"
+		result.invEntry.SellerName = "Card Trader Sealed"
 		if result.invEntry.Bundle {
-			result.invEntry.SellerName = "Card Trader Zero"
+			result.invEntry.SellerName = "Card Trader Zero Sealed"
 		}
 		var err error
 		err = ct.inventory.Add(result.cardId, result.invEntry)
@@ -293,12 +293,16 @@ func (ct *CardtraderSealed) InitializeInventory(reader io.Reader) error {
 	return nil
 }
 
+var availableMarketNamesSealed = []string{
+	"Card Trader Sealed", "Card Trader Zero Sealed",
+}
+
 func (tcg *CardtraderSealed) MarketNames() []string {
-	return availableMarketNames
+	return availableMarketNamesSealed
 }
 
 func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Card Trader"
+	info.Name = "Card Trader Sealed"
 	info.Shorthand = "CTSealed"
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
