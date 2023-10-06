@@ -124,6 +124,7 @@ var EditionTable = map[string]string{
 	"Stained Glass":           "Secret Lair Drop",
 	"Stained Glass Art":       "Secret Lair Drop",
 	"Stained Glass Promo":     "Secret Lair Drop",
+	"Secret Lair Drop Series": "Secret Lair Drop",
 
 	// Ponies
 	"Ponies: The Galloping": "Ponies: The Galloping",
@@ -453,6 +454,7 @@ var EditionTable = map[string]string{
 	"SLX Cards":                          "Universes Within",
 	"Universes Within":                   "Universes Within",
 	"Secret Lair Commander: From Cute to Brute":          "From Cute to Brute",
+	"Secret Lair: From Cute to Brute":                    "From Cute to Brute",
 	"Secret Lair Commander: Heads I Win, Tales You Lose": "Heads I Win, Tails You Lose",
 	"Secret Lair - Planeswalker Symbol":                  "Heads I Win, Tails You Lose",
 

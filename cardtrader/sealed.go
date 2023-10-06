@@ -3,7 +3,6 @@ package cardtrader
 import (
 	"fmt"
 	"io"
-	"strings"
 	"sync"
 	"time"
 
@@ -103,23 +102,6 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 		return err
 	}
 
-	switch {
-	case strings.Contains(expansionName, "Creature Forge"),
-		expansionName == "Arena League Promos":
-		return nil
-	// Workaround WCD decks
-	case strings.HasPrefix(expansionName, "WCD"):
-		year := mtgmatcher.ExtractYear(expansionName)
-		if len(year) == 4 {
-			expansionName = "WC" + year[2:4]
-		}
-	}
-
-	set, err := mtgmatcher.GetSetByName(expansionName)
-	if err != nil {
-		return fmt.Errorf("%s: %s", expansionName, err.Error())
-	}
-
 	var warned []string
 
 	for id, products := range allProducts {
@@ -128,49 +110,19 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 			continue
 		}
 
-		switch {
-		case strings.Contains(blueprint.Name, "Promo Pack"),
-			strings.Contains(blueprint.Name, "Land Pack"):
-			continue
-		}
-
-		var uuid string
-		for _, sealedProduct := range set.SealedProduct {
-			if mtgmatcher.SealedEquals(sealedProduct.Name, blueprint.Name) {
-				uuid = sealedProduct.UUID
-				break
+		uuid, err := preprocessSealed(expansionName, blueprint.Name)
+		if err != nil {
+			if err.Error() == "unknown edition" {
+				return fmt.Errorf("%s: %s", expansionName, err.Error())
 			}
-			// If not found, look if the a chunk of the name is present in the deck name
-			if uuid == "" {
-				switch {
-				case strings.HasSuffix(blueprint.Name, "Booster"):
-					if mtgmatcher.SealedEquals(sealedProduct.Name, blueprint.Name+" Pack") {
-						uuid = sealedProduct.UUID
-					}
-				case strings.Contains(blueprint.Name, "Deck"),
-					strings.Contains(blueprint.Name, "Intro Pack"):
-					decks, found := sealedProduct.Contents["deck"]
-					if found {
-						for _, deck := range decks {
-							if mtgmatcher.SealedContains(blueprint.Name, deck.Name) {
-								uuid = sealedProduct.UUID
-								break
-							}
-						}
-					}
-				}
+			if err.Error() == "unsupported" {
+				continue
 			}
-			if uuid != "" {
-				break
-			}
-		}
-
-		if uuid == "" {
 			if slices.Contains(warned, blueprint.Name) {
 				continue
 			}
 			warned = append(warned, blueprint.Name)
-			ct.printf("No association for %s", blueprint.Name)
+			ct.printf("No association for '%s' in '%s'", blueprint.Name, expansionName)
 			continue
 		}
 
