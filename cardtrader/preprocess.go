@@ -466,6 +466,10 @@ func preprocessSealed(edition, productName string) (string, error) {
 		return "", errors.New("unsupported")
 	case strings.Contains(productName, "Secret Lair 30th Anniversary Countdown Kit") && mtgmatcher.ExtractYear(productName) != "":
 		return "", errors.New("unsupported")
+	case strings.HasPrefix(productName, "Duel Decks") && strings.HasSuffix(productName, "Deck"),
+		strings.HasPrefix(productName, "Commander Anthology") && strings.HasSuffix(productName, "Deck"):
+		// Opened single deck
+		return "", errors.New("unsupported")
 	}
 
 	switch {
