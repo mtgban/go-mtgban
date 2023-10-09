@@ -180,8 +180,15 @@ var sealedReplacer = strings.NewReplacer(
 	"starter deck box", "starter",
 
 	"(premium)", "premium",
+	"showcase", "",
+	"drop", "",
+	"series", "",
+	"non foil", "",
 	"summer superdrop", "",
 	"city of guilds", "",
+
+	// This is to avoid matching contains calls
+	"foil etched", "etched foil",
 
 	"game pack", "",
 	" 12", "",
