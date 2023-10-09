@@ -525,6 +525,7 @@ func preprocessSealed(edition, productName string) (string, error) {
 						uuid = product.UUID
 					}
 				case strings.Contains(productName, "Deck"),
+					strings.Contains(productName, "Secret Lair"),
 					strings.Contains(productName, "Intro Pack"):
 					decks, found := product.Contents["deck"]
 					if found {

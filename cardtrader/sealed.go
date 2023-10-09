@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -51,8 +52,10 @@ func (ct *CardtraderSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func processSealedProducts(channel chan<- resultChan, uuid string, products []Product, shareCode string, rate float64) error {
+func (ct *CardtraderSealed) processSealedProducts(channel chan<- resultChan, uuid string, products []Product, shareCode string, rate float64) error {
 	for _, product := range products {
+		productId := uuid
+
 		if product.Properties.Language != "en" {
 			continue
 		}
@@ -66,6 +69,22 @@ func processSealedProducts(channel chan<- resultChan, uuid string, products []Pr
 			mtgmatcher.Contains(product.Description, "empty box"),
 			mtgmatcher.Contains(product.Description, "deck box only"):
 			continue
+		}
+
+		if product.Properties.Foil {
+			blueprint, found := ct.blueprints[product.BlueprintId]
+			if !found {
+				continue
+			}
+
+			if strings.Contains(blueprint.Name, "Secret Lair") {
+				var err error
+				productId, err = preprocessSealed("SLD", blueprint.Name+" Foil Edition")
+				if err != nil {
+					ct.printf("No association for '%s'", blueprint.Name)
+					continue
+				}
+			}
 		}
 
 		qty := product.Quantity
@@ -84,7 +103,7 @@ func processSealedProducts(channel chan<- resultChan, uuid string, products []Pr
 		}
 
 		channel <- resultChan{
-			cardId: uuid,
+			cardId: productId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: "NM",
 				Price:      price,
@@ -131,7 +150,7 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 			continue
 		}
 
-		processSealedProducts(channel, uuid, products, ct.ShareCode, ct.exchangeRate)
+		ct.processSealedProducts(channel, uuid, products, ct.ShareCode, ct.exchangeRate)
 	}
 
 	return nil
