@@ -63,6 +63,7 @@ func processSealedProducts(channel chan<- resultChan, uuid string, products []Pr
 			product.Properties.Altered:
 			continue
 		case mtgmatcher.Contains(product.Description, "ita"),
+			mtgmatcher.Contains(product.Description, "empty box"),
 			mtgmatcher.Contains(product.Description, "deck box only"):
 			continue
 		}
