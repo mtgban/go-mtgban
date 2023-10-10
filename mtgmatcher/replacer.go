@@ -153,6 +153,7 @@ var sealedReplacer = strings.NewReplacer(
 	"beatdown box set", "beatdown",
 	"anthologies box set", "anthologies",
 
+	"booster case", "booster box case",
 	"theme deck box", "theme deck display",
 	"fat pack bundle", "bundle",
 	"boxset", "set",
@@ -205,6 +206,8 @@ var sealedReplacer = strings.NewReplacer(
 	"non foil", "",
 	"summer superdrop", "",
 	"city of guilds", "",
+	"bundle gift edition", "gift bundle",
+	"gift edition bundle", "gift bundle",
 
 	// This is to avoid matching contains calls
 	"foil etched", "etched foil",

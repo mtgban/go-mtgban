@@ -130,6 +130,10 @@ var SealedNormalizeTests = []NormalizeTest{
 		In:  "Secret Lair Drop Series Special Guest Kozyndan - The Lands",
 		Out: "ecretlairkozyndanland",
 	},
+	{
+		In:  "The Brothers' War - Bundle Gift Edition",
+		Out: "brotherwargiftbundle",
+	},
 }
 
 func TestSealedNormalize(t *testing.T) {

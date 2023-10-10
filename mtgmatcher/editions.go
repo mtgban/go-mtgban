@@ -54,6 +54,9 @@ var EditionTable = map[string]string{
 
 	"D&D: Adventures in the Forgotten Realms": "Adventures in the Forgotten Realms",
 
+	"Phyrexia - All Will Be One": "Phyrexia: All Will Be One",
+	"Lost Caverns of Ixalan":     "The Lost Caverns of Ixalan",
+
 	// Strixhaven Mystical Archive alts
 	"Japanese Mystical Archive":                 "Strixhaven Mystical Archive",
 	"Mystical Archive":                          "Strixhaven Mystical Archive",
