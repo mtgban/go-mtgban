@@ -488,10 +488,20 @@ var sealedRenames = map[string]string{
 
 	"Starter - Booster Box":  "Starter 1999 Booster Box",
 	"Starter - Booster Pack": "Starter 1999 Booster Pack",
+
+	"Mystery Booster (Convention Edition) - Booster Box":       "Mystery Booster Booster Box (Convention Edition)",
+	"Mystery Booster (Convention Edition) - Booster Pack":      "Mystery Booster Booster Pack (Convention Edition)",
+	"Mystery Booster (Convention Edition 2021) - Booster Box":  "Mystery Booster Booster Box (Convention Edition - 2021)",
+	"Mystery Booster (Convention Edition 2021) - Booster Pack": "Mystery Booster Booster Pack (Convention Edition - 2021)",
+
+	"Secret Lair Drop Series - Ultimate Edition":           "Secret Lair Ultimate Edition Box",
+	"Phyrexia: All Will Be One - Bundle: Compleat Edition": "Phyrexia All Will Be One Compleat Bundle",
 }
 
 func preprocessSealed(productName, edition string) (string, error) {
 	switch edition {
+	case "Mystery Booster - The List":
+		edition = "MB1"
 	case "World Championship Decks":
 		// WCD products are merged in a single edition in mtgjson
 		edition = "WC97"
@@ -502,14 +512,33 @@ func preprocessSealed(productName, edition string) (string, error) {
 			productName = strings.TrimSuffix(productName, "Deck")
 			productName = year + " " + productName
 		}
+	case "Secret Lair":
+		if strings.Contains(productName, "Ultimate") {
+			edition = "SLU"
+		} else {
+			edition = "SLD"
+		}
+	case "Draft", "Magic":
+		return "", errors.New("unsupported")
+	default:
+		if strings.Contains(productName, "Challenger Deck") {
+			edition = ""
+		}
 	}
 
+	// If edition is empty, do not return and instead loop through
+	var setCode string
 	set, err := mtgmatcher.GetSetByName(edition)
 	if err != nil {
-		return "", err
+		if edition != "" {
+			return "", err
+		}
+	} else {
+		setCode = set.Code
 	}
 
 	productName = strings.TrimSuffix(productName, " (1)")
+	productName = strings.Replace(productName, "(6)", "Case", 1)
 
 	rename, found := sealedRenames[productName]
 	if found {
@@ -517,7 +546,14 @@ func preprocessSealed(productName, edition string) (string, error) {
 	}
 
 	switch {
-	case strings.Contains(productName, "Life Counter"):
+	case strings.Contains(productName, "Life Counter"),
+		strings.Contains(productName, "Booster Box (3)"),
+		strings.Contains(productName, "Scene Box"),
+		strings.Contains(productName, "Player's Guide"),
+		strings.Contains(productName, "Bundle Card Box"),
+		strings.Contains(productName, "D20 Set"),
+		strings.Contains(productName, "Born of the Gods - Japanese"),
+		strings.Contains(productName, "Variety Pack"):
 		return "", errors.New("unsupported")
 	case strings.HasPrefix(productName, "From the Vault"),
 		strings.HasPrefix(productName, "Signature Spellbook"):
@@ -525,34 +561,61 @@ func preprocessSealed(productName, edition string) (string, error) {
 	}
 
 	var uuid string
-	for _, sealedProduct := range set.SealedProduct {
-		if mtgmatcher.SealedEquals(sealedProduct.Name, productName) {
-			uuid = sealedProduct.UUID
-			break
+	for _, set := range mtgmatcher.GetSets() {
+		if setCode != "" && setCode != set.Code {
+			continue
 		}
-	}
 
-	if uuid == "" {
 		for _, sealedProduct := range set.SealedProduct {
-			// If not found, look if the a chunk of the name is present in the deck name
-			switch {
-			case strings.Contains(productName, "Archenemy"),
-				strings.Contains(productName, "uels of the Planeswalkers "),
-				strings.Contains(productName, "Planechase"):
-				decks, found := sealedProduct.Contents["deck"]
-				if found {
-					for _, deck := range decks {
-						// Work around internal names that are too long, like
-						// "Teeth of the Predator - the Garruk Wildspeaker Deck"
-						deckName := strings.Split(deck.Name, " - ")[0]
-						if mtgmatcher.SealedContains(productName, deckName) {
-							uuid = sealedProduct.UUID
-							break
+			if mtgmatcher.SealedEquals(sealedProduct.Name, productName) {
+				uuid = sealedProduct.UUID
+				break
+			}
+		}
+
+		if uuid == "" {
+			for _, sealedProduct := range set.SealedProduct {
+				// If not found, look if the a chunk of the name is present in the deck name
+				switch {
+				case strings.Contains(productName, "Archenemy"),
+					strings.Contains(productName, "Duels of the Planeswalkers"),
+					strings.Contains(productName, "Commander"),
+					strings.Contains(productName, "Secret Lair"),
+					strings.Contains(productName, "Planechase"):
+					decks, found := sealedProduct.Contents["deck"]
+					if found {
+						for _, deck := range decks {
+							// Work around internal names that are too long, like
+							// "Teeth of the Predator - the Garruk Wildspeaker Deck"
+							deckName := strings.Split(deck.Name, " - ")[0]
+							if mtgmatcher.SealedContains(productName, deckName) {
+								uuid = sealedProduct.UUID
+								break
+							}
+							// Scret Lair may have
+							deckName = strings.TrimSuffix(strings.ToLower(deckName), " foil")
+							if mtgmatcher.SealedContains(productName, deckName) {
+								uuid = sealedProduct.UUID
+								break
+							}
 						}
 					}
 				}
+				if uuid != "" {
+					break
+				}
 			}
 		}
+
+		// Last chance (in case edition is known)
+		if uuid == "" && setCode != "" && len(set.SealedProduct) == 1 {
+			uuid = set.SealedProduct[0].UUID
+		}
+
+		if uuid != "" {
+			break
+		}
+
 	}
 
 	return uuid, nil

@@ -110,6 +110,26 @@ var SealedNormalizeTests = []NormalizeTest{
 		In:  "2010 Core Set Booster Box",
 		Out: "magic2010booterbox",
 	},
+	{
+		In:  "Commander (2017 Edition) - Complete Set of 4",
+		Out: "commander2017diplay",
+	},
+	{
+		In:  "Warhammer 40k Commander Deck: Collector Edition - Set of 4",
+		Out: "warhammer40000deckcollectoreditiondiplay",
+	},
+	{
+		In:  "D&D: Adventures in the Forgotten Realms - Commander Deck - Set of 4",
+		Out: "adventureinforgottenrealmdeckdiplay",
+	},
+	{
+		In:  "March of the Machine: The Aftermath - Epilogue Collector Booster Box",
+		Out: "marchofmachineaftermathepiloguebooterbox",
+	},
+	{
+		In:  "Secret Lair Drop Series Special Guest Kozyndan - The Lands",
+		Out: "ecretlairkozyndanland",
+	},
 }
 
 func TestSealedNormalize(t *testing.T) {
