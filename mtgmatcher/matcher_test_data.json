@@ -2856,6 +2856,16 @@
         }
     },
     {
+        "uuid": "d6562884-aff6-5d3a-b54c-4d467e5e2336",
+        "description": "mb1list_exact_edition_tag",
+        "input": {
+            "name": "Rune-Tail, Kitsune Ascendant",
+            "variant": "Mystery Booster",
+            "edition": "Saviors of Kamigawa",
+            "foil": true
+        }
+    },
+    {
         "uuid": "219b0f63-c6f8-5c00-8b41-f54530f48560",
         "description": "mb1list_thelist_mistag_sld",
         "input": {

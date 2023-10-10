@@ -26,7 +26,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		switch {
 		// If the edition matches, use it as is
-		case Equals(inCard.Edition, set.Name):
+		case Equals(inCard.Edition, set.Name) && !inCard.isMysteryList():
 			// pass-through
 
 		case inCard.isPrerelease():
