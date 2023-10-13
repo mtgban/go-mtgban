@@ -229,7 +229,8 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 
 	case "Secret Lair":
 		// The SLP cards need to be recognized differently
-		if !strings.Contains(variation, "Prize") {
+		// So do the the Step-and-Compleat cards
+		if !strings.Contains(variation, "Prize") && !strings.HasPrefix(sku, "SAC") {
 			variation = number
 		}
 		// Override variation due to the SLD thick cards using the same non-thick number
