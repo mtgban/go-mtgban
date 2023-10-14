@@ -461,8 +461,19 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			variant = product.GetNumber()
 		}
 	case "The List Reprints":
-		// This rename allows variants to be processed correctly
-		edition = "The List"
+		var possibleEdition string
+		for _, code := range []string{"FMB1", "MB1", "PLIST", "PHED", "PCTB", "PAGL"} {
+			if len(mtgmatcher.MatchInSet(cardName, code)) == 1 {
+				if possibleEdition != "" {
+					possibleEdition = ""
+					break
+				}
+				possibleEdition = code
+			}
+		}
+		if possibleEdition != "" {
+			edition = possibleEdition
+		}
 	case "Fourth Edition",
 		"Revised Edition",
 		"Mirage",
