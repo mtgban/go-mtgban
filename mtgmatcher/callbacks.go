@@ -689,7 +689,12 @@ func sldVariant(inCard *Card, card *mtgjson.Card) bool {
 		"Goblin Matron",
 		"Goblin Recruiter",
 		"Muxus, Goblin Grandee",
-		"Shattergang Brothers":
+		"Shattergang Brothers",
+		"Aminatou, the Fateshifter",
+		"Chandra, Flame's Catalyst",
+		"Daretti, Ingenious Iconoclast",
+		"Karn, Scion of Urza",
+		"Venser, the Sojourner":
 		result = strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		if inCard.Foil {
 			result = !result
