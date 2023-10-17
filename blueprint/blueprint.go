@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	excelize "github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/xuri/excelize/v2"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
