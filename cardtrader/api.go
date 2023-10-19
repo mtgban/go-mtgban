@@ -110,9 +110,6 @@ type Product struct {
 		Cents    int    `json:"cents"`
 		Currency string `json:"currency"`
 	} `json:"price"`
-	Expansion struct {
-		Name string `json:"name"`
-	} `json:"expansion"`
 
 	UserDataField string `json:"user_data_field"`
 	PriceCents    int    `json:"price_cents"`

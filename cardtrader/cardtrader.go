@@ -84,7 +84,7 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 	var cardIdFoil string
 
 	for _, product := range products {
-		if mtgmatcher.SkipLanguage(theCard.Name, product.Expansion.Name, product.Properties.Language) {
+		if mtgmatcher.SkipLanguage(theCard.Name, theCard.Edition, product.Properties.Language) {
 			continue
 		}
 
