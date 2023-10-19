@@ -76,6 +76,7 @@ type Set struct {
 	} `json:"sealedProduct"`
 	Decks []struct {
 		Code               string     `json:"code"`
+		Bonus              []DeckCard `json:"bonus"`
 		Commander          []DeckCard `json:"commander"`
 		MainBoard          []DeckCard `json:"mainBoard"`
 		SideBoard          []DeckCard `json:"sideBoard"`

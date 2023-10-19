@@ -431,7 +431,9 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			continue
 		}
 
-		for _, board := range [][]mtgjson.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
+		for _, board := range [][]mtgjson.DeckCard{
+			deck.Bonus, deck.Commander, deck.MainBoard, deck.SideBoard,
+		} {
 			for _, card := range board {
 				uuid, err := MatchId(card.UUID, card.IsFoil)
 				if err != nil {
