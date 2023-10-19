@@ -19,7 +19,7 @@ type InventoryEntry struct {
 	Quantity int `json:"quantity"`
 
 	// The grade of the current entry
-	// Only supported values are listed in DefaultGradeTags and "PO"
+	// Only supported values are listed in FullGradeTags
 	Conditions string `json:"conditions"`
 
 	// The price of this entry, in USD
@@ -64,7 +64,7 @@ type BuylistEntry struct {
 	Quantity int `json:"quantity"`
 
 	// The grade of the current entry
-	// Only supported values are listed in DefaultGradeTags
+	// Only supported values are listed in FullGradeTags
 	// If empty it is considered "NM".
 	Conditions string `json:"conditions"`
 
@@ -135,9 +135,14 @@ type ScraperInfo struct {
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
 }
 
-// The list of supported conditions
+// The default list of conditions most scrapers output
 var DefaultGradeTags = []string{
 	"NM", "SP", "MP", "HP",
+}
+
+// The full list of conditions supported
+var FullGradeTags = []string{
+	"NM", "SP", "MP", "HP", "PO",
 }
 
 // Scraper is the interface both Sellers and Vendors need to implement
