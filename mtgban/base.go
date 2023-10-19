@@ -2,9 +2,11 @@ package mtgban
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/google/uuid"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"golang.org/x/exp/slices"
 )
 
 func computeSKU(cardId, condition string) (string, error) {
@@ -60,6 +62,24 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 	}
 
 	inv[cardId] = append(inv[cardId], *entry)
+
+	// Keep array sorted
+	sort.Slice(inv[cardId], func(i, j int) bool {
+		iIdx := slices.Index(FullGradeTags, inv[cardId][i].Conditions)
+		jIdx := slices.Index(FullGradeTags, inv[cardId][j].Conditions)
+
+		if iIdx == jIdx {
+			if inv[cardId][i].Price == inv[cardId][j].Price {
+				// Prioritize higher quantity for same price and same condition
+				return inv[cardId][i].Quantity > inv[cardId][j].Quantity
+			}
+			// Prioritize lower prices first for the same condition
+			return inv[cardId][i].Price < inv[cardId][j].Price
+		}
+
+		return iIdx < jIdx
+	})
+
 	return nil
 }
 
@@ -109,6 +129,22 @@ func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict bool) err
 	}
 
 	bl[cardId] = append(bl[cardId], *entry)
+
+	sort.Slice(bl[cardId], func(i, j int) bool {
+		iIdx := slices.Index(FullGradeTags, bl[cardId][i].Conditions)
+		jIdx := slices.Index(FullGradeTags, bl[cardId][j].Conditions)
+
+		if iIdx == jIdx {
+			if bl[cardId][i].BuyPrice == bl[cardId][j].BuyPrice {
+				// Prioritize higher quantity for same price and same condition
+				return bl[cardId][i].Quantity > bl[cardId][j].Quantity
+			}
+			// Prioritize higher prices first for the same condition
+			return bl[cardId][i].BuyPrice > bl[cardId][j].BuyPrice
+		}
+
+		return iIdx < jIdx
+	})
 
 	return nil
 }

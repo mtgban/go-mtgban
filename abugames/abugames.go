@@ -3,7 +3,6 @@ package abugames
 import (
 	"errors"
 	"net/url"
-	"sort"
 	"sync"
 	"time"
 
@@ -236,18 +235,6 @@ func (abu *ABUGames) scrape() error {
 				abu.printf("%s", err.Error())
 			}
 		}
-	}
-
-	// Sort to keep NM entries first
-	for cardId := range abu.inventory {
-		sort.Slice(abu.inventory[cardId], func(i, j int) bool {
-			return abu.inventory[cardId][i].Price > abu.inventory[cardId][j].Price
-		})
-	}
-	for cardId := range abu.buylist {
-		sort.Slice(abu.buylist[cardId], func(i, j int) bool {
-			return abu.buylist[cardId][i].BuyPrice > abu.buylist[cardId][j].BuyPrice
-		})
 	}
 
 	abu.inventoryDate = time.Now()
