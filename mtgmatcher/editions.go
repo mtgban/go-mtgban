@@ -105,6 +105,7 @@ var EditionTable = map[string]string{
 	"Magic Game Night 2018 Box Set":  "Game Night",
 	"Magic Game Night 2019 Box Set":  "Game Night 2019",
 	"Magic Game Night: Free-For-All": "Game Night: Free-for-All",
+	"Game Night 3":                   "Game Night: Free-for-All",
 
 	// Old school lands
 	"Apac Lands":         "Asia Pacific Land Program",
