@@ -148,16 +148,17 @@ func (ss *SealedEVScraper) scrape() error {
 			ss.printf("Running sealed EV on %s", set.Name)
 		}
 
-		for _, product := range set.SealedProduct {
+		for i := range set.SealedProduct {
 			wgOut.Add(1)
-			go func() {
+			go func(setCode string, i int) {
 				defer wgOut.Done()
+				product := sets[setCode].SealedProduct[i]
 
 				repeats := EVAverageRepetition
 				if ss.FastMode {
 					repeats = 10
 				}
-				if !mtgmatcher.SealedIsRandom(set.Code, product.UUID) {
+				if !mtgmatcher.SealedIsRandom(setCode, product.UUID) {
 					repeats = 1
 				}
 
@@ -172,11 +173,11 @@ func (ss *SealedEVScraper) scrape() error {
 					go func() {
 						defer wg.Done()
 
-						picks, err := mtgmatcher.GetPicksForSealed(set.Code, product.UUID)
+						picks, err := mtgmatcher.GetPicksForSealed(setCode, product.UUID)
 						if err != nil {
 							if product.Category != "land_station" {
 								channel <- resultChan{
-									err: fmt.Errorf("[%s] '%s' error: %s", set.Code, product.Name, err.Error()),
+									err: fmt.Errorf("[%s] '%s' error: %s", setCode, product.Name, err.Error()),
 								}
 							}
 							return
@@ -254,7 +255,7 @@ func (ss *SealedEVScraper) scrape() error {
 						}
 					}
 				}
-			}()
+			}(set.Code, i)
 		}
 
 		go func() {
