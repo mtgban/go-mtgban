@@ -177,7 +177,7 @@ const (
 	PromoTypeGalaxyFoil = "galaxyfoil"
 	PromoTypeSurgeFoil  = "surgefoil"
 	PromoTypeGlossy     = "glossy"
-	PromoTypeAmpersand  = "ampersand"
+	PromoTypeEmbossed   = "embossed"
 	PromoTypeSerialized = "serialized"
 	PromoTypeHaloFoil   = "halofoil"
 
@@ -208,7 +208,6 @@ const (
 )
 
 var AllPromoTypes = []string{
-	PromoTypeAmpersand,
 	PromoTypeArenaLeague,
 	PromoTypeBoosterfun,
 	PromoTypeBundle,
@@ -217,6 +216,7 @@ var AllPromoTypes = []string{
 	PromoTypeConfettiFoil,
 	PromoTypeDracula,
 	PromoTypeDraftWeekend,
+	PromoTypeEmbossed,
 	PromoTypeGalaxyFoil,
 	PromoTypeGameDay,
 	PromoTypeGilded,

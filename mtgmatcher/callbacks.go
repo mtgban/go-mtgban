@@ -116,7 +116,7 @@ var promoTypeElements = []promoTypeElement{
 		Tags:      []string{"Confetti"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeAmpersand,
+		PromoType: mtgjson.PromoTypeEmbossed,
 		Tags:      []string{"Ampersand"},
 	},
 	{
