@@ -496,6 +496,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"The Brothers' War: Retro Frame Artifacts",
 		"Mystery Booster Cards",
 		"MagicFest Cards",
+		"Planeshift",
 		"": // cosmetic
 		// Variants are fine as is
 	default:
