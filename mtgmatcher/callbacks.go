@@ -117,7 +117,7 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: mtgjson.PromoTypeEmbossed,
-		Tags:      []string{"Ampersand"},
+		Tags:      []string{"Ampersand", "Emblem", "Embossed"},
 	},
 	{
 		PromoType: mtgjson.PromoTypeDraftWeekend,
