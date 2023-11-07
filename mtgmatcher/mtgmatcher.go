@@ -1148,7 +1148,7 @@ func adjustEdition(inCard *Card) {
 
 	// Adjust incorrect numbers sometimes used for Etched
 	num := ExtractNumber(inCard.Variation)
-	if num != "" && strings.HasSuffix(num, "e") && HasEtchedPrinting(inCard.Name) {
+	if num != "" && strings.HasSuffix(num, "e") && HasEtchedPrinting(inCard.Name, inCard.Edition) {
 		fixedNum := strings.TrimSuffix(num, "e")
 		variation = strings.Replace(variation, num, fixedNum, -1)
 		if !Contains(variation, "Etched") {

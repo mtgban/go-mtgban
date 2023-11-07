@@ -3119,6 +3119,15 @@
         }
     },
     {
+        "uuid": "60319026-82e9-55e9-9f21-25a9d173238b",
+        "description": "boosterfun_e_is_not_etched",
+        "input": {
+            "name": "Cavern of Souls",
+            "variant": "(0410e) (Borderless)",
+            "edition": "LCI"
+        }
+    },
+    {
         "uuid": "9fce4a02-01ec-5dc3-a3e9-92646a69e6fd",
         "description": "planechase_planes",
         "input": {
@@ -3487,7 +3496,7 @@
         "input": {
             "name": "Time Warp",
             "variant": "022e",
-            "edition": "Strixhaven: School of Mages"
+            "edition": "Strixhaven Mystical Archive"
         }
     },
     {
