@@ -45,6 +45,7 @@ var replacer = strings.NewReplacer(
 	" and ", "",
 	" to ", "",
 	" & ", "",
+	"reverse the polarity", "reverse the polarity",
 
 	// Accented characters
 	"â", "a",
