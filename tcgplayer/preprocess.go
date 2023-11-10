@@ -463,7 +463,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	case "The List Reprints":
 		var possibleEdition string
 		for _, code := range []string{"FMB1", "MB1", "PLIST", "PHED", "PCTB", "PAGL"} {
-			if len(mtgmatcher.MatchInSet(cardName, code)) == 1 {
+			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
 				if possibleEdition != "" {
 					possibleEdition = ""
 					break
