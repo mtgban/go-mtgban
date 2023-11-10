@@ -2735,20 +2735,23 @@ var mirVariants = map[string]map[string]string{
 // https://scryfall.com/search?q=in%3Aplist+in%3Amb1+%28e%3Amb1+or+e%3Aplist+or+e%3Aphed+or+e%3Apctb+or+e%3Apagl%29&unique=prints&as=grid&order=name
 var mb1plistVariants = map[string]map[string]string{
 	// MB1 cards reprinted in PLIST
+	"Angel of Serenity": {
+		"c15": "405",
+	},
+	"Arcane Signet": {
+		"throne of eldraine": "49",
+		"commander 2021":     "45",
+		"eld":                "49",
+		"c21":                "45",
+	},
 	"Aura Shards": {
 		"cmd":            "1392",
 		"commander":      "1392",
 		"commander 2011": "1392",
 	},
-	"Angel of Serenity": {
-		"c15": "405",
-	},
-	"Arcane Signet": {
-		"throne of eldraine": "49", // pagl is #33
-		"commander 2021":     "45",
-	},
 	"Beast Within": {
 		"bbd": "1134",
+		"nph": "26",
 	},
 	"Bojuka Bog": {
 		"c18":                     "1660",
@@ -2770,17 +2773,24 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Chaos Warp": {
 		"c17":            "885",
+		"c20":            "19",
+		"cmd":            "1199",
 		"commander 2017": "885",
 		"commander 2020": "19",
 	},
 	"Chromatic Lantern": {
 		"grn": "1559",
+		"rtr": "51",
 	},
 	"Counterspell": {
 		"masters 25": "336",
+		"a25":        "336",
+		"cmr":        "1",
 	},
 	"Daretti, Scrap Savant": {
 		"non-foil - commander 2014": "898",
+		"c14":                       "898",
+		"cm2":                       "20",
 	},
 	"Dark Ritual": {
 		"masters 25": "611",
@@ -2816,6 +2826,7 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Evolving Wilds": {
 		"c18": "1665",
+		"rix": "70",
 	},
 	"Fact or Fiction": {
 		"cm2":                         "371",
@@ -2831,21 +2842,30 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Farseek": {
 		"c17": "1206",
+		"rav": "27",
+	},
+	"Fellwar Stone": {
+		"cmd": "55",
+		"c15": "255",
 	},
 	"Fiery Gambit": {
 		"foil": "49",
+	},
+	"Frontier Bivouac": {
+		"c17": "1669",
+		"ktk": "72",
+	},
+	"Fireball": {
+		"iconic masters": "926",
+		"ima":            "926",
 	},
 	"Forest": {
 		"198 - hour of devastation": "93",
 		"199 - hour of devastation": "94",
 		"268 - amonkhet":            "95",
-	},
-	"Frontier Bivouac": {
-		"c17": "1669",
-	},
-	"Fireball": {
-		"iconic masters": "926",
-		"ima":            "926",
+		"198":                       "93",
+		"199":                       "94",
+		"268":                       "95",
 	},
 	"Gisa and Geralf": {
 		"": "630",
@@ -2864,6 +2884,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"c17":            "1234",
 		"commander 2017": "1234",
 		"p08":            "174",
+		"c20":            "30",
 	},
 	"Imperious Perfect": {
 		"cma":                 "1242",
@@ -2872,10 +2893,14 @@ var mb1plistVariants = map[string]map[string]string{
 	"Island": {
 		"akh":       "90",
 		"amonkhet":  "90",
+		"258":       "90",
 		"jmp - 050": "403",
+		"jmp":       "403",
+		"50":        "403",
 	},
 	"Jungle Shrine": {
 		"c17": "1677",
+		"ala": "74",
 	},
 	"Karoo": {
 		"c14": "303",
@@ -2921,6 +2946,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Lightning Greaves": {
 		"commander 2019": "1600",
 		"c19":            "1600",
+		"2xm":            "50",
 	},
 	"Living Death": {
 		"masters 25": "702",
@@ -2933,6 +2959,8 @@ var mb1plistVariants = map[string]map[string]string{
 		"non-foil - commander 2018": "1609",
 		"c18":                       "1609",
 		"non-foil - weatherlight":   "41",
+		"wth":                       "41",
+		"ima":                       "51",
 	},
 	"Mishra's Factory": {
 		"modern horizons 2": "960",
@@ -2953,7 +2981,9 @@ var mb1plistVariants = map[string]map[string]string{
 	"Mountain": {
 		"akh":                    "92",
 		"amonkhet":               "92",
+		"bbd":                    "82",
 		"unhinged #139 full art": "453",
+		"unh":                    "453",
 	},
 	"Myriad Landscape": {
 		"c14":               "55",
@@ -2964,6 +2994,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"rix":              "443",
 		"player rewards":   "68",
 		"p09":              "68",
+		"znr":              "5",
 	},
 	"Opportunity": {
 		"c17": "450",
@@ -2981,20 +3012,32 @@ var mb1plistVariants = map[string]map[string]string{
 		"misprint": "1292†",
 	},
 	"Plains": {
+		"256":      "89",
 		"akh":      "89",
 		"amonkhet": "89",
 	},
 	"Preordain": {
 		"commander 2015": "460",
+		"c15":            "460",
+		"cmr":            "7",
 	},
 	"Putrefy": {
 		"gk1": "1466",
+		"khc": "44",
 	},
 	"Reliquary Tower": {
 		"core set 2019": "1683",
+		"m19":           "1683",
+		"c21":           "71",
 	},
-	"Thopter Foundry": {
-		"c16": "1535",
+	"Reshape": {
+		"dst": "1029",
+		"2xm": "8",
+	},
+	"Rogue's Passage": {
+		"non-foil - commander 2017": "1684",
+		"c17":                       "1684",
+		"uma":                       "72",
 	},
 	"Rout": {
 		"c21":                     "970",
@@ -3003,11 +3046,13 @@ var mb1plistVariants = map[string]map[string]string{
 		"inv":                     "823",
 		"invasion":                "823",
 	},
-	"Rogue's Passage": {
-		"non-foil - commander 2017": "1684",
-	},
 	"Sandsteppe Citadel": {
 		"cm2": "1685",
+		"ktk": "80",
+	},
+	"Sandstone Oracle": {
+		"c15": "57",
+		"cm2": "1625",
 	},
 	"Sea Gate Oracle": {
 		"khc": "761",
@@ -3021,7 +3066,10 @@ var mb1plistVariants = map[string]map[string]string{
 	"Sol Ring": {
 		"commander 2011": "58",
 		"commander 2018": "1633",
+		"commander 2021": "53",
+		"cmd":            "58",
 		"c18":            "1633",
+		"c21":            "53",
 	},
 	"Sorin Markov": {
 		"zendikar": "778",
@@ -3047,11 +3095,17 @@ var mb1plistVariants = map[string]map[string]string{
 		"":    "253",
 		"c16": "253",
 	},
+	"Path of Ancestry": {
+		"cmr": "70",
+		"c17": "77",
+	},
 	"Taurean Mauler": {
 		"cm2": "1079",
 	},
 	"Temple of the False God": {
 		"commander 2018": "1691",
+		"c18":            "1691",
+		"c21":            "77",
 	},
 	"Terminate": {
 		"cma":                 "1495",
@@ -3060,13 +3114,19 @@ var mb1plistVariants = map[string]map[string]string{
 	},
 	"Temur Battle Rage": {
 		"fate reforged": "1081",
+		"frf":           "1081",
+		"cmr":           "37",
+	},
+	"Thopter Foundry": {
+		"c16": "1535",
 	},
 	"Thought Vessel": {
 		"cm2":                           "1639",
 		"commander anthology vol. ii":   "1639",
 		"commander anthology volume ii": "1639",
-		"c5":                            "274",
+		"c15":                           "274",
 		"commander 2015":                "274",
+		"cmr":                           "57",
 	},
 	"Vampire Nighthawk": {
 		"e02":                 "813",
@@ -3075,6 +3135,14 @@ var mb1plistVariants = map[string]map[string]string{
 	"Young Pyromancer": {
 		"dds":                       "1105",
 		"duel deck: mind vs. might": "1105",
+	},
+	"Wall of Omens": {
+		"khc": "58",
+		"ema": "1649",
+	},
+	"Whispersilk Cloak": {
+		"m11": "58",
+		"pca": "1649",
 	},
 }
 
