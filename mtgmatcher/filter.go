@@ -218,20 +218,51 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 						switch inCard.Name {
 						case "Sol Ring",
 							"Reliquary Tower":
-							if !inCard.Contains("2021") {
+							if !inCard.Contains("21") {
 								continue
 							}
 						case "Counterspell",
 							"Temur Battle Rage":
-							if !inCard.Contains("Legends") {
+							if !inCard.Contains("Legends") && !inCard.Contains("cmr") {
 								continue
 							}
-						case "Island", "Mountain":
-							if !inCard.Contains("Battlebond") {
+						case "Fabricate",
+							"Negate",
+							"Spark Double",
+							"Tribute Mage",
+							"Blasphemous Act",
+							"Daretti, Scrap Savant",
+							"Fiery Gambit",
+							"Goblin Archaeologist",
+							"Goblin Kaboomist",
+							"Karplusan Minotaur",
+							"Krark, the Thumbless",
+							"Tavern Scoundrel",
+							"Frenetic Sliver",
+							"Niv-Mizzet, Parun",
+							"Ral Zarek",
+							"Izzet Signet",
+							"Lightning Greaves",
+							"Mind Stone",
+							"Swiftfoot Boots",
+							"Sword of Vengeance",
+							"Thought Vessel",
+							"Whispersilk Cloak",
+							"Buried Ruin",
+							"Great Furnace",
+							"Izzet Boilerworks",
+							"Myriad Landscape",
+							"Path of Ancestry",
+							"Rogue's Passage",
+							"Temple of Epiphany",
+							"Wandering Fumarole",
+							"Island",
+							"Mountain":
+							if !inCard.Foil {
 								continue
 							}
 						default:
-							if !inCard.Foil {
+							if inCard.Foil {
 								continue
 							}
 						}
