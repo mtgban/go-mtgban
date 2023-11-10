@@ -217,7 +217,7 @@ type TCGProduct struct {
 func (tcgp *TCGProduct) GetNumber() string {
 	for _, extData := range tcgp.ExtendedData {
 		if extData.Name == "Number" {
-			return extData.Value
+			return strings.TrimLeft(extData.Value, "0")
 		}
 	}
 	return ""
