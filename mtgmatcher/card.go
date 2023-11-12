@@ -400,10 +400,6 @@ func (c *Card) isReskin() bool {
 		!c.isBasicLand()
 }
 
-func (c *Card) isGilded() bool {
-	return Contains(c.Variation, "Gilded")
-}
-
 func (c *Card) isStepAndCompleat() bool {
 	return Contains(c.Variation, "Compleat")
 }
@@ -411,10 +407,6 @@ func (c *Card) isStepAndCompleat() bool {
 func (c *Card) isOilSlick() bool {
 	return strings.Contains(strings.ToLower(c.Variation), "slick") ||
 		strings.Contains(strings.ToLower(c.Edition), "slick")
-}
-
-func (c *Card) isConcept() bool {
-	return Contains(c.Variation, "Concept")
 }
 
 func (c *Card) isFNM() bool {
@@ -767,10 +759,6 @@ func (c *Card) isPhyrexian() bool {
 	return Contains(c.Variation, "Phyrexian")
 }
 
-func (c *Card) isTextured() bool {
-	return Contains(c.Variation, "Textured")
-}
-
 func (c *Card) isGalaxyFoil() bool {
 	return Contains(c.Variation, "Galaxy")
 }
@@ -851,11 +839,6 @@ func (c *Card) ravnicaGuidKit() string {
 	}
 
 	return ""
-}
-
-func (c *Card) IsSurrounded(prefix, suffix string) bool {
-	return (HasPrefix(c.Edition, prefix) && HasSuffix(c.Edition, prefix)) ||
-		(HasPrefix(c.Variation, prefix) && HasSuffix(c.Variation, prefix))
 }
 
 func (c *Card) Contains(prop string) bool {
