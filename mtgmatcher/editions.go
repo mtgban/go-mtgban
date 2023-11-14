@@ -37,7 +37,8 @@ var EditionTable = map[string]string{
 	"The Lord of the Rings Commander":              "Tales of Middle-earth Commander",
 	"LOTR - Realms and Relic Box Topper":           "Tales of Middle-earth Commander",
 
-	"The Lord of the Rings: Tales of Middle-earth Holiday Release": "The Lord of the Rings: Tales of Middle-earth",
+	"The Lord of the Rings: Tales of Middle-earth Holiday Release":            "The Lord of the Rings: Tales of Middle-earth",
+	"The Lord of the Rings: Tales of Middle-earth Holiday Release Collectors": "The Lord of the Rings: Tales of Middle-earth",
 
 	// BRR
 	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
