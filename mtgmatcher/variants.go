@@ -2758,6 +2758,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"commander 2018":          "1660",
 		"commander: 2018 edition": "1660",
 	},
+	"Bottle Gnomes": {
+		"cm2": "1554",
+		"tmp": "1330",
+	},
 	"Brainstorm": {
 		"a25":        "301",
 		"masters 25": "301",
@@ -2781,6 +2785,10 @@ var mb1plistVariants = map[string]map[string]string{
 	"Chromatic Lantern": {
 		"grn": "1559",
 		"rtr": "51",
+	},
+	"Command Tower": {
+		"c21": "62",
+		"cmd": "67",
 	},
 	"Counterspell": {
 		"masters 25": "336",
@@ -2828,6 +2836,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"c18": "1665",
 		"rix": "70",
 	},
+	"Exotic Orchard": {
+		"c21": "64",
+		"con": "71",
+	},
 	"Fact or Fiction": {
 		"cm2":                         "371",
 		"commander anthology vol. ii": "371",
@@ -2859,6 +2871,10 @@ var mb1plistVariants = map[string]map[string]string{
 		"iconic masters": "926",
 		"ima":            "926",
 	},
+	"Flamekin Village": {
+		"cm2": "65",
+		"c14": "1235",
+	},
 	"Forest": {
 		"198 - hour of devastation": "93",
 		"199 - hour of devastation": "94",
@@ -2879,6 +2895,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Guttersnipe": {
 		"iconic masters": "970",
 		"ima":            "970",
+		"e01":            "367",
 	},
 	"Harmonize": {
 		"c17":            "1234",
@@ -2903,7 +2920,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"ala": "74",
 	},
 	"Karoo": {
-		"c14": "303",
+		"c14": "575",
 		"vis": "54",
 	},
 	"Kiki-Jiki, Mirror Breaker": {
@@ -2977,6 +2994,7 @@ var mb1plistVariants = map[string]map[string]string{
 		"c18":                     "1457",
 		"commander 2018":          "1457",
 		"commander: 2018 edition": "1457",
+		"p07":                     "561",
 	},
 	"Mountain": {
 		"akh":                    "92",
@@ -2988,6 +3006,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Myriad Landscape": {
 		"c14":               "55",
 		"foil - masters 25": "69",
+		"a25":               "69",
 	},
 	"Negate": {
 		"rivals of ixalan": "443",
@@ -3078,6 +3097,7 @@ var mb1plistVariants = map[string]map[string]string{
 	"Sleep": {
 		"core set 2019": "495",
 		"m19":           "495",
+		"c15":           "465",
 	},
 	"Swamp": {
 		"hour of devastation": "91",
@@ -3137,8 +3157,8 @@ var mb1plistVariants = map[string]map[string]string{
 		"duel deck: mind vs. might": "1105",
 	},
 	"Wall of Omens": {
-		"khc": "58",
-		"ema": "1649",
+		"khc": "1339",
+		"ema": "270",
 	},
 	"Whispersilk Cloak": {
 		"m11": "58",
