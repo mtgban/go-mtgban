@@ -18,6 +18,9 @@ import (
 const (
 	EVAverageRepetition = 5000
 
+	DefaultRepeatConcurrency = 8
+	DefaultSetConcurrency    = 32
+
 	ckBuylistLink = "https://www.cardkingdom.com/purchasing/mtg_singles"
 )
 
@@ -120,6 +123,127 @@ type respChan struct {
 	err       error
 }
 
+type productChan struct {
+	setCode string
+	index   int
+}
+
+func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, prices *BANPriceResponse) {
+	sets := mtgmatcher.GetSets()
+
+	setCode := prod.setCode
+	i := prod.index
+	product := sets[setCode].SealedProduct[i]
+
+	repeats := EVAverageRepetition
+	if ss.FastMode {
+		repeats = 10
+	}
+	if !mtgmatcher.SealedIsRandom(setCode, product.UUID) {
+		repeats = 1
+	}
+
+	var wg sync.WaitGroup
+
+	datasets := make([][]float64, len(evParameters))
+	channel := make(chan resultChan)
+	repeatsChannel := make(chan int)
+
+	for j := 0; j < DefaultRepeatConcurrency; j++ {
+		wg.Add(1)
+		go func() {
+			for _ = range repeatsChannel {
+				picks, err := mtgmatcher.GetPicksForSealed(setCode, product.UUID)
+				if err != nil {
+					if product.Category != "land_station" {
+						channel <- resultChan{
+							err: fmt.Errorf("[%s] '%s' error: %s", setCode, product.Name, err.Error()),
+						}
+					}
+					continue
+				}
+
+				for i := range evParameters {
+					priceSource := prices.Retail
+					if evParameters[i].FoundInBuylist {
+						priceSource = prices.Buylist
+					}
+					ev := valueInBooster(picks, priceSource, evParameters[i].SourceName)
+					channel <- resultChan{
+						i:  i,
+						ev: ev,
+					}
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	go func(repeatsChannel chan int, channel chan resultChan) {
+		for j := 0; j < repeats; j++ {
+			repeatsChannel <- j
+		}
+		close(repeatsChannel)
+
+		wg.Wait()
+		close(channel)
+	}(repeatsChannel, channel)
+
+	for resp := range channel {
+		if resp.err != nil {
+			channelOut <- respChan{
+				err: resp.err,
+			}
+			continue
+		}
+
+		datasets[resp.i] = append(datasets[resp.i], resp.ev)
+	}
+
+	for i, dataset := range datasets {
+		price, err := evParameters[i].StatsFunc(dataset)
+		if err != nil {
+			continue
+		}
+
+		if price == 0 {
+			continue
+		}
+
+		if evParameters[i].TargetsBuylist {
+			link := ckBuylistLink
+			if ss.BuylistAffiliate != "" {
+				link += fmt.Sprintf("?partner=%s&utm_campaign=%s&utm_medium=affiliate&utm_source=%s", ss.BuylistAffiliate, ss.BuylistAffiliate, ss.BuylistAffiliate)
+			}
+			channelOut <- respChan{
+				productId: product.UUID,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: "INDEX",
+					BuyPrice:   price,
+					TradePrice: price * 1.3,
+					URL:        link,
+				},
+			}
+		} else {
+			var link string
+			tcgID, _ := strconv.Atoi(product.Identifiers["tcgplayerProductId"])
+			if tcgID != 0 {
+				link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "")
+			}
+
+			channelOut <- respChan{
+				productId: product.UUID,
+				invEntry: &mtgban.InventoryEntry{
+					Conditions: "INDEX",
+					Price:      price,
+					SellerName: evParameters[i].Name,
+					URL:        link,
+				},
+			}
+		}
+	}
+}
+
 func (ss *SealedEVScraper) scrape() error {
 	ss.printf("Loading BAN prices")
 	prices, err := loadPrices(ss.banpriceKey)
@@ -132,9 +256,6 @@ func (ss *SealedEVScraper) scrape() error {
 
 	sets := mtgmatcher.GetSets()
 	for _, set := range sets {
-		var wgOut sync.WaitGroup
-		channelOut := make(chan respChan)
-
 		// Skip products without Sealed or Booster information
 		switch set.Code {
 		case "FBB", "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":
@@ -144,124 +265,39 @@ func (ss *SealedEVScraper) scrape() error {
 			continue
 		}
 
-		if !ss.FastMode {
-			ss.printf("Running sealed EV on %s", set.Name)
-		}
+		var wgOut sync.WaitGroup
+		channelOut := make(chan respChan)
+		productChannel := make(chan productChan)
 
-		for i := range set.SealedProduct {
+		for e := 0; e < DefaultSetConcurrency; e++ {
 			wgOut.Add(1)
-			go func(setCode string, i int) {
-				defer wgOut.Done()
-				product := sets[setCode].SealedProduct[i]
 
-				repeats := EVAverageRepetition
-				if ss.FastMode {
-					repeats = 10
-				}
-				if !mtgmatcher.SealedIsRandom(setCode, product.UUID) {
-					repeats = 1
-				}
-
-				var wg sync.WaitGroup
-
-				datasets := make([][]float64, len(evParameters))
-				channel := make(chan resultChan)
-
-				for j := 0; j < repeats; j++ {
-					wg.Add(1)
-
-					go func() {
-						defer wg.Done()
-
-						picks, err := mtgmatcher.GetPicksForSealed(setCode, product.UUID)
-						if err != nil {
-							if product.Category != "land_station" {
-								channel <- resultChan{
-									err: fmt.Errorf("[%s] '%s' error: %s", setCode, product.Name, err.Error()),
-								}
-							}
-							return
-						}
-
-						for i := range evParameters {
-							priceSource := prices.Retail
-							if evParameters[i].FoundInBuylist {
-								priceSource = prices.Buylist
-							}
-							ev := valueInBooster(picks, priceSource, evParameters[i].SourceName)
-							channel <- resultChan{
-								i:  i,
-								ev: ev,
-							}
-						}
-					}()
-				}
-
-				go func() {
-					wg.Wait()
-					close(channel)
-				}()
-
-				for resp := range channel {
-					if resp.err != nil {
-						channelOut <- respChan{
-							err: resp.err,
-						}
-						continue
+			go func() {
+				for prod := range productChannel {
+					if !ss.FastMode {
+						ss.printf("Running sealed EV on %s", sets[prod.setCode].Name)
 					}
 
-					datasets[resp.i] = append(datasets[resp.i], resp.ev)
+					ss.runEV(prod, channelOut, prices)
 				}
-
-				for i, dataset := range datasets {
-					price, err := evParameters[i].StatsFunc(dataset)
-					if err != nil {
-						continue
-					}
-
-					if price == 0 {
-						continue
-					}
-
-					if evParameters[i].TargetsBuylist {
-						link := ckBuylistLink
-						if ss.BuylistAffiliate != "" {
-							link += fmt.Sprintf("?partner=%s&utm_campaign=%s&utm_medium=affiliate&utm_source=%s", ss.BuylistAffiliate, ss.BuylistAffiliate, ss.BuylistAffiliate)
-						}
-						channelOut <- respChan{
-							productId: product.UUID,
-							buyEntry: &mtgban.BuylistEntry{
-								Conditions: "INDEX",
-								BuyPrice:   price,
-								TradePrice: price * 1.3,
-								URL:        link,
-							},
-						}
-					} else {
-						var link string
-						tcgID, _ := strconv.Atoi(product.Identifiers["tcgplayerProductId"])
-						if tcgID != 0 {
-							link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "")
-						}
-
-						channelOut <- respChan{
-							productId: product.UUID,
-							invEntry: &mtgban.InventoryEntry{
-								Conditions: "INDEX",
-								Price:      price,
-								SellerName: evParameters[i].Name,
-								URL:        link,
-							},
-						}
-					}
-				}
-			}(set.Code, i)
+				wgOut.Done()
+			}()
 		}
 
-		go func() {
+		go func(setCode string, productChannel chan productChan, channelOut chan respChan) {
+			set := sets[setCode]
+
+			for i := range set.SealedProduct {
+				productChannel <- productChan{
+					setCode: setCode,
+					index:   i,
+				}
+			}
+			close(productChannel)
+
 			wgOut.Wait()
 			close(channelOut)
-		}()
+		}(set.Code, productChannel, channelOut)
 
 		var printedErrors []string
 		for result := range channelOut {
