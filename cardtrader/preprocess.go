@@ -3,8 +3,6 @@ package cardtrader
 import (
 	"errors"
 	"fmt"
-	"net/url"
-	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -18,48 +16,17 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	number := strings.TrimLeft(bp.Properties.Number, "0")
 	variant := ""
 
-	var skipHashLookup bool
-	switch edition {
-	// Some of the hashes are not correctly set for these editions
-	case "Mystery Booster",
-		"Mystery Booster Retail Edition Foils",
-		"Mystery Booster: Convention Edition Playtest Cards",
-		"Double Masters 2022 Collectors",
-		"Strixhaven: School of Mages Promos",
-		"Strixhaven: School of Mages Prerelease":
-		skipHashLookup = true
-	// Avoid confusing the matcher further
-	case "Arena League Promos":
-		variant = ""
-	case "Battlebond":
-		if cardName == "Will Kenrith" || cardName == "Rowan Kenrith" {
-			return nil, errors.New("dupe")
-		}
-	case "The List":
-		switch cardName {
-		case "Rout":
-		default:
-			skipHashLookup = true
-		}
-	}
-
 	// Some, but not all, have a proper id we can reuse right away
-	u, err := url.Parse(bp.ScryfallId)
-	if err == nil && !skipHashLookup {
-		base := path.Base(u.Path)
-		base = strings.TrimSuffix(base, ".")
-
-		id := mtgmatcher.Scryfall2UUID(base)
-		if id != "" {
-			return &mtgmatcher.Card{
-				Id: id,
-				// Not needed but help debugging
-				Name:    cardName,
-				Edition: edition,
-				// Needed to tell apart etched finish
-				Variation: bp.Version,
-			}, nil
-		}
+	id := mtgmatcher.Scryfall2UUID(bp.ScryfallId)
+	if id != "" {
+		return &mtgmatcher.Card{
+			Id: id,
+			// Not needed, but helps debugging
+			Name:    cardName,
+			Edition: edition,
+			// Needed to detect etched finish
+			Variation: bp.Version,
+		}, nil
 	}
 
 	switch edition {
