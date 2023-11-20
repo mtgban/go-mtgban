@@ -3996,6 +3996,15 @@
         }
     },
     {
+        "uuid": "35e7935c-755c-58d0-8d5f-a4a01640f66e",
+        "description": "lotr_multiple_edition_renames_dash",
+        "input": {
+            "name": "Explore",
+            "variant": "Borderless",
+            "edition": "The Lord of the Rings Commander - Variants"
+        }
+    },
+    {
         "uuid": "3b598e5f-d03f-5627-b70a-c2713065737e",
         "description": "lotr_prerelease_in_set_normal_nonfoil",
         "input": {
