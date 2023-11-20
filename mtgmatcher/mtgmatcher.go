@@ -631,6 +631,9 @@ func adjustEdition(inCard *Card) {
 			"Extras",
 			"Variants",
 			"Etched",
+			"Serialized",
+			"Surge Foil",
+			"Holiday Release",
 		} {
 			// Strip away any extra tags
 			if strings.HasSuffix(edition, tag) {
