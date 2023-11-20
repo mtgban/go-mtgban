@@ -4005,6 +4005,14 @@
         }
     },
     {
+        "uuid": "33413ff7-336f-5340-888f-cbca91e3caa1",
+        "description": "lotr_multiple_edition_renames_multi",
+        "input": {
+            "name": "Banish from Edoras",
+            "edition": "The Lord of the Rings: Tales of Middle-earth Holiday Release Collectors"
+        }
+    },
+    {
         "uuid": "3b598e5f-d03f-5627-b70a-c2713065737e",
         "description": "lotr_prerelease_in_set_normal_nonfoil",
         "input": {

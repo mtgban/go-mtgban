@@ -650,7 +650,6 @@ func adjustEdition(inCard *Card) {
 				if variation == "" {
 					inCard.beyondBaseSet = true
 				}
-				break
 			}
 		}
 	}
