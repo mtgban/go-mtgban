@@ -92,6 +92,10 @@ var NormalizeTests = []NormalizeTest{
 		In:  "Reverse the Polarity",
 		Out: "reverse the polarity",
 	},
+	{
+		In:  "Welcome to...",
+		Out: "welcometo",
+	},
 }
 
 func TestNormalize(t *testing.T) {

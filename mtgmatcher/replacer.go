@@ -42,6 +42,7 @@ var replacer = strings.NewReplacer(
 	"/", "",
 	"|", "",
 	"trial and error", "trial and error",
+	"welcome to", "welcometo",
 	" and ", "",
 	" to ", "",
 	" & ", "",
