@@ -252,6 +252,7 @@ func (c *Card) isUnsupported() bool {
 		c.Contains("Redemption Program") || // PRES
 		c.Contains("Heroes of the Realm") || // HTR*
 		c.Contains("Memorabilia") ||
+		(c.Contains("Duel Masters") && c.Contains("Not Tournament Legal")) || // scg
 		c.Contains("Sealed") ||
 		c.Contains("Un-Known Event Playtest") ||
 		c.Contains("Charlie Brown") || // abu
