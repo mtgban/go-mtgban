@@ -54,10 +54,9 @@ var promoTags = []string{
 }
 
 func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
+	lang := ""
 	if len(card.Language) > 0 {
-		if mtgmatcher.SkipLanguage(card.SimpleTitle, card.Edition, card.Language[0]) {
-			return nil, errors.New("non-English card")
-		}
+		lang = card.Language[0]
 	}
 
 	// Non-Singles magic cards
@@ -299,11 +298,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 	}
 
 	// Stash the language information (filtered earlier)
-	if len(card.Language) > 0 && card.Language[0] != "English" {
+	if lang != "" && lang != "English" {
 		if variation != "" {
 			variation += " "
 		}
-		variation += card.Language[0]
+		variation += lang
 	}
 
 	return &mtgmatcher.Card{
@@ -311,5 +310,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		Variation: variation,
 		Edition:   edition,
 		Foil:      isFoil,
+		Language:  lang,
 	}, nil
 }

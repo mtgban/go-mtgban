@@ -139,6 +139,13 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				continue
 			}
 
+			if listing.Language != "English" {
+				co, _ := mtgmatcher.GetUUID(cardId)
+				if listing.Language != co.Language {
+					continue
+				}
+			}
+
 			cond, found := conditionMap[listing.Condition]
 			if !found {
 				return fmt.Errorf("condition not found: %s", listing.Condition)

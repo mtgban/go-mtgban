@@ -13,38 +13,6 @@ var cardTable = map[string]string{
 	"Jushi Apprentice // Tomoya The Revealer // Tomoya The Revealer": "Jushi Apprentice // Tomoya The Revealer",
 }
 
-func shouldSkipLang(cardName, edition, variant, language string) bool {
-	if mtgmatcher.SkipLanguage(cardName, edition, language) {
-		return true
-	}
-
-	// Additional language rules
-	switch language {
-	case "Japanese":
-		switch edition {
-		case "4th Edition BB":
-			if mtgmatcher.IsBasicLand(cardName) {
-				return true
-			}
-		case "War of the Spark",
-			"Strixhaven Mystical Archive",
-			"Strixhaven Mystical Archive - Foil Etched":
-			if variant != "Alternate Art" {
-				return true
-			}
-		}
-	case "Italian":
-		switch edition {
-		case "3rd Edition BB":
-			if mtgmatcher.IsBasicLand(cardName) {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
 func preprocess(card *SCGCardVariant, edition, language string, foil bool, number string) (*mtgmatcher.Card, error) {
 	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
 
@@ -81,10 +49,6 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 			variant += " "
 		}
 		variant += strings.Join(vars[1:], " ")
-	}
-
-	if shouldSkipLang(cardName, edition, variant, language) {
-		return nil, errors.New("non-english")
 	}
 
 	switch {
@@ -176,6 +140,7 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 		Variation: variant,
 		Edition:   edition,
 		Foil:      foil,
+		Language:  language,
 	}, nil
 }
 

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -124,6 +123,10 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 		if !co.Etched &&
 			((co.Foil && req.Printing != "FOIL") ||
 				(!co.Foil && req.Printing != "NON FOIL")) {
+			continue
+		}
+
+		if req.Language != "ENGLISH" && !strings.Contains(co.Language, mtgmatcher.Title(req.Language)) {
 			continue
 		}
 
@@ -286,42 +289,6 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					continue
 				}
 				for _, sku := range skus {
-					// Skip languages that we do not track
-					if mtgmatcher.SkipLanguage(card.Name, set.Name, sku.Language) {
-						continue
-					}
-
-					language := sku.Language
-
-					// Tweak custom sets
-					switch sku.Language {
-					case "ITALIAN":
-						switch set.Name {
-						case "Legends", "The Dark":
-							uuid = card.UUID + "_ita"
-						}
-					case "JAPANESE":
-						switch set.Name {
-						case "War of the Spark", "War of the Spark Promos":
-							if !strings.Contains(card.Number, "★") {
-								continue
-							}
-						case "Strixhaven Mystical Archive":
-							num, _ := strconv.Atoi(card.Number)
-							if num < 64 {
-								continue
-							}
-						case "30th Anniversary History Japanese Promos":
-							uuid = card.UUID + "_jpn"
-						case "Love Your LGS 2021":
-							if !strings.HasPrefix(card.Number, "J") {
-								continue
-							}
-						}
-					case "CHINESE SIMPLIFIED":
-						language = "Chinese (S)"
-					}
-
 					pages <- marketChan{
 						UUID:      uuid,
 						Condition: sku.Condition,
@@ -329,7 +296,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						Finish:    sku.Finish,
 						ProductId: sku.ProductId,
 						SkuId:     sku.SkuId,
-						Language:  language,
+						Language:  sku.Language,
 					}
 				}
 			}

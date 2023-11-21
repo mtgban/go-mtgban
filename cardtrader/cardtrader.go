@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -78,6 +79,20 @@ var condMap = map[string]string{
 	"Poor":              "PO",
 }
 
+var langMap = map[string]string{
+	"en":    "",
+	"fr":    "French",
+	"de":    "German",
+	"es":    "Spanish",
+	"it":    "Italian",
+	"jp":    "Japanese",
+	"kr":    "Korean",
+	"pt":    "Portuguese",
+	"ru":    "Russian",
+	"zh-cn": "Chinese",
+	"zh-tw": "Chinese",
+}
+
 func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int, products []Product) {
 	blueprint, found := ct.blueprints[bpId]
 	if !found {
@@ -90,8 +105,15 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 	}
 
 	for _, product := range products {
-		if mtgmatcher.SkipLanguage(theCard.Name, theCard.Edition, product.Properties.Language) {
-			continue
+		lang := product.Properties.Language
+		if lang != "" {
+			lang, found = langMap[strings.ToLower(lang)]
+			if !found {
+				ct.printf("unsupported '%s' language", product.Properties.Language)
+				ct.printf("%s '%q'", theCard, product)
+				continue
+			}
+			theCard.Language = lang
 		}
 
 		switch {

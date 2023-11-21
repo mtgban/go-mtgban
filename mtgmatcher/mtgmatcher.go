@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/exp/slices"
 
 	"github.com/google/uuid"
 )
@@ -82,13 +83,46 @@ func Match(inCard *Card) (cardId string, err error) {
 		inCard.Foil = true
 	}
 
+	// Set up language
+	if inCard.Language != "" {
+		for _, field := range strings.Fields(inCard.Language) {
+			field = Title(field)
+			if slices.Contains(allLanguageTags, field) {
+				inCard.Language = field
+				break
+			}
+		}
+	}
+	// Override if needed
+	for _, tag := range allLanguageTags {
+		if inCard.Contains(tag) {
+			inCard.Language = tag
+			break
+		}
+	}
+
 	// Look up by uuid
 	if inCard.Id != "" {
 		logger.Printf("Perforing id lookup")
 		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
 		if err == nil {
-			logger.Printf("Id found")
-			return outId, nil
+			co, _ := backend.UUIDs[outId]
+			if inCard.Language == "" || strings.Contains(co.Language, inCard.Language) {
+				logger.Printf("Id found")
+				return outId, nil
+			}
+			// Tokens are unsupported for broken ids in different languages
+			if co.Layout == "token" {
+				return "", ErrUnsupported
+			}
+			logger.Printf("Language validation failed, resetting card")
+			inCard.Name = co.Name
+			inCard.Edition = co.Edition
+			inCard.Variation = co.Number
+			inCard.Foil = co.Foil
+			if co.Etched {
+				inCard.addToVariant("etched")
+			}
 		}
 		logger.Printf("Id lookup failed, attempting full match")
 	}
@@ -350,6 +384,21 @@ func Match(inCard *Card) (cardId string, err error) {
 		}
 	}
 
+	// Language check - out of filterCards to catch single cases too
+	if inCard.Language != "" || len(outCards) > 1 {
+		var filteredOutCards []mtgjson.Card
+		for _, card := range outCards {
+			if (inCard.Language == "" && card.Language != "English") ||
+				!strings.Contains(card.Language, inCard.Language) {
+				logger.Println("Dropping different language prints...")
+				logger.Println(card.SetCode, card.Name, card.Number, card.Language)
+				continue
+			}
+			filteredOutCards = append(filteredOutCards, card)
+		}
+		outCards = filteredOutCards
+	}
+
 	// Finish line
 	switch len(outCards) {
 	// Not found, rip
@@ -358,6 +407,9 @@ func Match(inCard *Card) (cardId string, err error) {
 		err = ErrCardWrongVariant
 		if inCard.Variation == "" {
 			err = ErrCardMissingVariant
+		}
+		if inCard.Language != "" {
+			err = ErrUnsupported
 		}
 	// Victory
 	case 1:
@@ -1080,34 +1132,6 @@ func adjustEdition(inCard *Card) {
 						variation = "316"
 					}
 				}
-			}
-		case "Gala Greeters":
-			if !inCard.isPromoPack() && !inCard.isPrerelease() {
-				edition = "Streets of New Capenna"
-			}
-			switch {
-			case strings.Contains(variation, "Spanish"):
-				variation = "460"
-			case strings.Contains(variation, "Russian"):
-				variation = "459"
-			case strings.Contains(variation, "Portuguese"):
-				variation = "458"
-			case strings.Contains(variation, "Korean"):
-				variation = "457"
-			case strings.Contains(variation, "Japanese"):
-				variation = "456"
-			case strings.Contains(variation, "Italian"):
-				variation = "455"
-			case strings.Contains(variation, "French"):
-				variation = "454"
-			case strings.Contains(variation, "German"):
-				variation = "453"
-			case strings.Contains(variation, "Chinese Traditional"):
-				variation = "452"
-			case strings.Contains(variation, "Chinese Simplified"):
-				variation = "451"
-			case strings.Contains(variation, "English"):
-				variation = "450"
 			}
 		case "Diabolic Tutor":
 			if inCard.isIDWMagazineBook() {

@@ -103,6 +103,32 @@
         }
     },
     {
+        "error": "unsupported",
+        "description": "error_unsupported_language_full",
+        "input": {
+            "name": "Finale of Devastation",
+            "variant": "Japanese",
+            "edition": "War of the Spark"
+        }
+    },
+    {
+        "error": "unsupported",
+        "description": "error_unsupported_language_tag",
+        "input": {
+            "name": "Alert Shu Infantry",
+            "edition": "Portal Three Kingdoms",
+            "language": "Chinese - Traditional"
+        }
+    },
+    {
+        "error": "unsupported",
+        "description": "error_unsupported_language_id",
+        "input": {
+            "id": "91946740-2846-5b8b-b8b7-f112bad19290",
+            "language":"Japanese"
+        }
+    },
+    {
         "uuid": "f3a94132-ce71-5556-bfd3-1461601a810d",
         "description": "id_lookup_mtgjson",
         "input": {
@@ -4067,6 +4093,14 @@
         "input": {
             "name": "The One Ring",
             "variant": "Bundle Foil"
+        }
+    },
+    {
+        "uuid": "7013ac0b-f73b-5f67-a854-38dba4d4d394",
+        "description": "language_only_non_english",
+        "input": {
+            "name": "Howltooth Hollow",
+            "edition": "SLD"
         }
     }
 ]

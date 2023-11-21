@@ -35,6 +35,9 @@ type Card struct {
 	// perform a best-effor search, which will try to isolate promo
 	// printings from the others
 	promoWildcard bool
+
+	// The language as parsed
+	Language string `json:"language,omitempty"`
 }
 
 // Card implements the Stringer interface
@@ -49,7 +52,11 @@ func (c *Card) String() string {
 	} else if c.Foil {
 		finish = " (foil)"
 	}
-	return fmt.Sprintf("%s [%s%s]", out, c.Edition, finish)
+	lang := ""
+	if c.Language != "" && c.Language != "English" {
+		lang = " {" + c.Language + "}"
+	}
+	return fmt.Sprintf("%s [%s%s]%s", out, c.Edition, finish, lang)
 }
 
 func output(card mtgjson.Card, flags ...bool) string {
@@ -162,79 +169,6 @@ func IsToken(name string) bool {
 		return true
 	}
 
-	return false
-}
-
-// List of editions and specific cards supported in a non-English language
-func SkipLanguage(cardName, edition, language string) bool {
-	card := Card{
-		Name:      cardName,
-		Edition:   edition,
-		Variation: language,
-	}
-	adjustEdition(&card)
-	edition = strings.ToLower(card.Edition)
-	cardName = strings.ToLower(card.Name)
-
-	switch {
-	case strings.HasPrefix(edition, "30th anniversary"):
-		return false
-	}
-
-	switch strings.ToLower(language) {
-	case "en", "english", "":
-	case "it", "italian":
-		switch edition {
-		case "foreign black border",
-			"legends italian",
-			"rinascimento",
-			"the dark italian":
-		default:
-			return true
-		}
-	case "ja", "jp", "japanese":
-		switch edition {
-		case "chronicles japanese",
-			"dominaria united japanese promo tokens",
-			"fourth edition foreign black border",
-			"magic premiere shop",
-			"strixhaven mystical archive",
-			"war of the spark",
-			"war of the spark promos":
-		case "ikoria: lair of behemoths":
-			switch cardName {
-			case "mysterious egg", "mothra's great cocoon",
-				"dirge bat", "battra, dark destroyer",
-				"crystalline giant", "mechagodzilla, the weapon":
-			default:
-				return true
-			}
-		case "kaldheim promos":
-			if cardName != "fiendish duo" {
-				return true
-			}
-		case "secrat lair drop",
-			"url/convention promos",
-			"unique and miscellaneous promos",
-			"resale promos",
-			"media inserts":
-			// No specific card because these are a evolving sets,
-			// with new cards added every now and then
-		default:
-			return true
-		}
-	case "zhs", "zh-CN", "chinese", "simplified chinese", "chinese simplified":
-		switch edition {
-		case "simplified chinese alternate art cards":
-			if !HasChineseAltArtPrinting(cardName) {
-				return true
-			}
-		default:
-			return true
-		}
-	default:
-		return true
-	}
 	return false
 }
 

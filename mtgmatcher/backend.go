@@ -94,6 +94,25 @@ const (
 	suffixEtched = "_e"
 )
 
+var allLanguageTags = []string{
+	"French",
+	"German",
+	"Italian",
+	"Japanese",
+	"Korean",
+	"Russian",
+	"Spanish",
+
+	// Not languages but unique tags found in the language field
+	"Brazil",
+	"Simplified",
+	"Traditional",
+
+	// Languages affected by the tags above
+	"Chinese",
+	"Portuguese",
+}
+
 // Editions with interesting tokens
 var setAllowedForTokens = map[string]bool{
 	// League Tokens
