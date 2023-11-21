@@ -78,9 +78,16 @@ var condMap = map[string]string{
 	"Poor":              "PO",
 }
 
-func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, products []Product, shareCode string, rate float64) error {
-	var cardId string
-	var cardIdFoil string
+func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int, products []Product) {
+	blueprint, found := ct.blueprints[bpId]
+	if !found {
+		return
+	}
+
+	theCard, err := Preprocess(blueprint)
+	if err != nil {
+		return
+	}
 
 	for _, product := range products {
 		if mtgmatcher.SkipLanguage(theCard.Name, theCard.Edition, product.Properties.Language) {
@@ -97,19 +104,6 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 			continue
 		}
 
-		var err error
-		if cardId == "" {
-			cardId, err = mtgmatcher.Match(theCard)
-			if err != nil {
-				return err
-			}
-		}
-
-		if cardIdFoil == "" && product.Properties.Foil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			// The function retuns empty string on error
-			cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
-		}
-
 		cond := product.Properties.Condition
 		if product.Properties.Signed ||
 			mtgmatcher.Contains(product.Description, "signed") ||
@@ -121,12 +115,34 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 
 		conditions, found := condMap[cond]
 		if !found {
-			return fmt.Errorf("unsupported %s condition", cond)
+			ct.printf("unsupported %s condition", cond)
+			continue
 		}
 
-		finalCardId := cardId
-		if product.Properties.Foil && cardIdFoil != "" {
-			finalCardId = cardIdFoil
+		cardId, err := mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
+			ct.printf("%v", err)
+			ct.printf("%q", theCard)
+			ct.printf("%d %q", bpId, blueprint)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					ct.printf("- %s", card)
+				}
+			}
+			break
+		}
+
+		if product.Properties.Foil && mtgmatcher.HasFoilPrinting(theCard.Name) {
+			cardIdFoil, err := mtgmatcher.MatchId(cardId, true)
+			if err == nil {
+				cardId = cardIdFoil
+			}
 		}
 
 		qty := product.Quantity
@@ -135,16 +151,16 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 
 		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintId)
-		if shareCode != "" {
-			link += "?share_code=" + shareCode
+		if ct.ShareCode != "" {
+			link += "?share_code=" + ct.ShareCode
 		}
 
 		price := float64(product.Price.Cents) / 100
 		if product.Price.Currency != "USD" {
-			price *= rate
+			price *= ct.exchangeRate
 		}
 		channel <- resultChan{
-			cardId: finalCardId,
+			cardId: cardId,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,
 				Price:      price,
@@ -158,43 +174,17 @@ func processProducts(channel chan<- resultChan, theCard *mtgmatcher.Card, produc
 		}
 	}
 
-	return nil
+	return
 }
 
-func (ct *CardtraderMarket) processEntry(channel chan<- resultChan, expansionId int) error {
+func (ct *CardtraderMarket) processExpansion(channel chan<- resultChan, expansionId int) error {
 	allProducts, err := ct.client.ProductsForExpansion(expansionId)
 	if err != nil {
 		return err
 	}
 
 	for id, products := range allProducts {
-		blueprint, found := ct.blueprints[id]
-		if !found {
-			continue
-		}
-
-		theCard, err := Preprocess(blueprint)
-		if err != nil {
-			continue
-		}
-
-		err = processProducts(channel, theCard, products, ct.ShareCode, ct.exchangeRate)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			ct.printf("%v", err)
-			ct.printf("%q", theCard)
-			ct.printf("%d %q", blueprint.Id, blueprint)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					ct.printf("- %s", card)
-				}
-			}
-		}
+		ct.processProducts(channel, id, products)
 	}
 
 	return nil
@@ -237,7 +227,7 @@ func (ct *CardtraderMarket) scrape() error {
 		wg.Add(1)
 		go func() {
 			for expansionId := range expansionIds {
-				err := ct.processEntry(results, expansionId)
+				err := ct.processExpansion(results, expansionId)
 				if err != nil {
 					ct.printf("%v", err)
 				}
