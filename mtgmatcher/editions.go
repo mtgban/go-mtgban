@@ -443,6 +443,7 @@ var EditionTable = map[string]string{
 	"Conspiracy - Take the Crown": "Conspiracy: Take the Crown",
 
 	"Magic 30th Anniversary Edition": "30th Anniversary Edition",
+	"30th Birthday Foil":             "30th Anniversary Misc Promos",
 
 	"March of the Machine: Multiverse Legends": "Multiverse Legends",
 
