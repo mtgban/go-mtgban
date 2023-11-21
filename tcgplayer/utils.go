@@ -29,7 +29,16 @@ func TCGPlayerProductURL(productId int, printing, affiliate, language string) st
 		v.Set("partner", affiliate)
 	}
 	if language != "" {
-		v.Set("Language", mtgmatcher.Title(language))
+		language = mtgmatcher.Title(language)
+		switch language {
+		case "Portuguese (Brazil)":
+			language = "Portugese"
+		case "Chinese Simplified":
+			language = "Chinese (S)"
+		case "Chinese Traditional":
+			language = "Chinese (T)"
+		}
+		v.Set("Language", language)
 	}
 	u.RawQuery = v.Encode()
 

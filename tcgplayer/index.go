@@ -93,20 +93,11 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 			continue
 		}
 
-		lang := co.Language
-		if lang == "Portuguese (Brazil)" {
-			lang = "Portugese"
-		} else if lang == "Chinese Simplified" {
-			lang = "Chinese (S)"
-		} else if lang == "Chinese Traditional" {
-			lang = "Chinese (T)"
-		}
-
 		// These are sorted as in availableIndexNames
 		prices := []float64{
 			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
 		}
-		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, lang)
+		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, co.Language)
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
