@@ -388,10 +388,7 @@ type CTCartResponse struct {
 	ShippingCost                     CTPrice `json:"shipping_cost"`
 
 	ErrorCode string `json:"error_code"`
-	Errors    struct {
-		ProductID []string `json:"product_id"`
-	} `json:"errors"`
-	Extra struct {
+	Extra     struct {
 		Message string `json:"message"`
 	} `json:"extra"`
 	RequestID string `json:"request_id"`
