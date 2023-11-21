@@ -598,12 +598,15 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.Contains("Bring-A-Friend") ||
 			inCard.Contains("Love Your LGS") ||
 			inCard.Contains("Welcome Back") ||
+			inCard.Contains("Open House") ||
 			inCard.Contains("LGS Promo"):
 			switch {
 			case strings.HasPrefix(set.Name, "Love Your LGS "+maybeYear):
 			case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):
 			default:
-				continue
+				if !strings.HasSuffix(set.Name, "Promos") {
+					continue
+				}
 			}
 
 		case inCard.Contains("30th Anniversary"):
