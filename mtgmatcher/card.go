@@ -207,16 +207,6 @@ func (c *Card) isSpecificUnsupported() bool {
 		"Time Elemental",
 		"Winged Sliver":
 		return c.Contains("Misprint")
-	// SLD JPN non-unique cards
-	case "Thoughtseize",
-		"Plaguecrafter",
-		"Doomsday",
-		"Carrion Feeder",
-		"Solemn Simulacrum",
-		"Skullclamp",
-		"Tezzeret the Seeker",
-		"Phyrexian Metamorph":
-		return c.Contains("Secret Lair") && c.isJPN()
 	// Erraneous release information
 	case "Zombify":
 		return c.Contains("Game Night")

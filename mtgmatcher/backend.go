@@ -288,6 +288,11 @@ var specialTags = map[string]string{
 	"Woodland Cemetery":   "checkland",
 }
 
+// List of numbers in SLD that need to be decoupled
+var sldJPNLangDupes = []string{
+	"1110", "1111", "1112", "1113", "1114", "1115", "1116", "1117",
+}
+
 func okForTokens(set *mtgjson.Set) bool {
 	return setAllowedForTokens[set.Code] ||
 		strings.Contains(set.Name, "Duel Deck")
@@ -674,6 +679,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicate(ap.Data, cards, uuids, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
 	duplicate(ap.Data, cards, uuids, "30th Anniversary History Japanese Promos", "P30H", "JPN", "2022-09-09")
 
+	duplicateCards(ap.Data, cards, uuids, "SLD", "JPN", sldJPNLangDupes)
+
 	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}
 	var names []string
@@ -926,6 +933,45 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 	}
 
 	sets[dup.Code] = &dup
+}
+
+func duplicateCards(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, code, tag string, numbers []string) {
+	var duplicates []mtgjson.Card
+
+	for i := range sets[code].Cards {
+		// Skip unneeded
+		if !slices.Contains(numbers, sets[code].Cards[i].Number) {
+			continue
+		}
+
+		mainUUID := sets[code].Cards[i].UUID
+
+		// Update with new info
+		dupeCard := sets[code].Cards[i]
+		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
+		dupeCard.Language = langs[tag]
+
+		duplicates = append(duplicates, dupeCard)
+
+		// Add the new uuid to the UUID map
+		for _, suffixTag := range []string{suffixEtched, suffixFoil, ""} {
+			uuid := mainUUID + suffixTag
+			co, found := uuids[uuid]
+			if !found {
+				continue
+			}
+
+			dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag) + suffixTag
+			uuids[uuid] = CardObject{
+				Card:    dupeCard,
+				Edition: sets[code].Name,
+				Etched:  co.Etched,
+				Foil:    co.Foil,
+			}
+		}
+	}
+
+	sets[code].Cards = append(sets[code].Cards, duplicates...)
 }
 
 func LoadDatastore(reader io.Reader) error {

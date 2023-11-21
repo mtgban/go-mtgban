@@ -4102,5 +4102,23 @@
             "name": "Howltooth Hollow",
             "edition": "SLD"
         }
+    },
+    {
+        "uuid": "92cdc45a-4135-5e7c-a177-a381f9b99e1c",
+        "description": "language_main",
+        "input": {
+            "name": "Solemn Simulacrum",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "92cdc45a-4135-5e7c-a177-a381f9b99e1c_jpn_f",
+        "description": "language_duplicate",
+        "input": {
+            "name": "Solemn Simulacrum",
+            "edition": "SLD",
+            "language": "Japanese",
+            "foil": true
+        }
     }
 ]
