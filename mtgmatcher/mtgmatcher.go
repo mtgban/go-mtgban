@@ -84,10 +84,13 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// Look up by uuid
 	if inCard.Id != "" {
+		logger.Printf("Perforing id lookup")
 		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
 		if err == nil {
+			logger.Printf("Id found")
 			return outId, nil
 		}
+		logger.Printf("Id lookup failed, attempting full match")
 	}
 
 	// In case id lookup failed, an no more data is present
