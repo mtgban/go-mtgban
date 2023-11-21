@@ -161,6 +161,14 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 		if cardName == "Sol Ring" && number != "" {
 			variant = number
 		}
+	case "The Lost Caverns of Ixalan - Alternate Foil":
+		if cardName == "Cavern of Souls" && number != "" {
+			variant = number
+		}
+	case "Special Guests - Alternate Foil":
+		if cardName == "Mana Crypt" && number != "" {
+			variant = number
+		}
 	}
 
 	return &mtgmatcher.Card{
