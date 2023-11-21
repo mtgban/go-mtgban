@@ -138,6 +138,19 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		variant = number
 	case "Commander: The Lord of the Rings - Tales of Middle-earth Collectors":
 		variant = strings.Replace(number, "s", "z", 1)
+	case "Simplified Chinese Alternate Art Cards":
+		switch cardName {
+		case "Drudge Skeletons":
+			if bp.Version != "" {
+				edition = bp.Version
+			}
+			variant = number
+		}
+	case "Secret Lair Showdown":
+		switch cardName {
+		case "Relentless Rats":
+			variant = number
+		}
 	default:
 		if strings.HasSuffix(edition, "Collectors") {
 			variant = number
