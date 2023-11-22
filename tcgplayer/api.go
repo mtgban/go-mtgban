@@ -600,9 +600,9 @@ func TCGLatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, er
 
 const (
 	SellersPageURL     = "https://shop.tcgplayer.com/sellers"
-	SellerInventoryURL = "https://mp-search-api.tcgplayer.com/v1/search/request?q=&isList=true"
+	SellerInventoryURL = "https://mp-search-api.tcgplayer.com/v1/search/request?q=&isList=true&mpfev=1953"
 
-	DefaultSellerRequestSize = 500
+	DefaultSellerRequestSize = 50
 
 	MaxGlobalScrapingValue = 8000
 )
@@ -669,12 +669,14 @@ type sellerInventoryRequest struct {
 				DirectSeller  bool     `json:"direct-seller,omitempty"`
 				DirectProduct bool     `json:"directProduct,omitempty"`
 				SellerKey     []string `json:"sellerKey,omitempty"`
-				Language      []string `json:"language,omitempty"`
 			} `json:"term"`
 			Range struct {
 				Quantity struct {
 					GreaterThanOrEqual int `json:"gte"`
 				} `json:"quantity"`
+				DirectInventory struct {
+					GreaterThanOrEqual int `json:"gte"`
+				} `json:"directInventory"`
 			} `json:"range"`
 			Exclude struct {
 				ChannelExclusion int `json:"channelExclusion"`
@@ -694,11 +696,15 @@ type sellerInventoryRequest struct {
 		UseFuzzySearch bool `json:"useFuzzySearch"`
 	} `json:"settings"`
 	Sort struct {
+		Field string `json:"field"`
+		Order string `json:"order"`
 	} `json:"sort"`
 }
 
 type sellerInventoryResponse struct {
-	Errors  []any `json:"errors"`
+	Title  string `json:"title"`
+	Status int    `json:"status"`
+
 	Results []struct {
 		Aggregations struct {
 			SetName []struct {
@@ -781,24 +787,25 @@ type SellerInventoryResult struct {
 
 func TCGInventoryForSeller(sellerKey string, size, page int, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
-	params.Algorithm = "salespna"
+	params.Algorithm = "sales_exp_fields_experiment"
 	params.From = size * page
 	params.Size = size
 	params.Filters.Term.ProductLineName = []string{"magic"}
 	params.Filters.Term.ProductTypeName = []string{"Cards"}
 	params.Filters.Term.SetName = sets
-	// Set main language as English to avoid mixing up the research result saying
-	// one thing and the actual listing saying another (ie with STA)
-	params.ListingSearch.Filters.Term.Language = []string{"English"}
 	params.ListingSearch.Filters.Term.SellerStatus = "Live"
 	if sellerKey != "" {
 		params.ListingSearch.Filters.Term.SellerKey = []string{sellerKey}
 	} else {
 		params.ListingSearch.Filters.Term.DirectProduct = true
 		params.ListingSearch.Filters.Term.DirectSeller = true
+		params.ListingSearch.Filters.Range.DirectInventory.GreaterThanOrEqual = 1
 	}
 	params.ListingSearch.Filters.Range.Quantity.GreaterThanOrEqual = 1
 	params.Context.ShippingCountry = "US"
+	params.Settings.UseFuzzySearch = true
+	params.Sort.Field = "product-sorting-name"
+	params.Sort.Order = "asc"
 
 	payload, err := json.Marshal(&params)
 	if err != nil {
@@ -816,14 +823,18 @@ func TCGInventoryForSeller(sellerKey string, size, page int, sets ...string) (*s
 		return nil, err
 	}
 
+	if string(data) == "Internal Server Error" {
+		return nil, errors.New(string(data))
+	}
+
 	var response sellerInventoryResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
 	}
 
-	if len(response.Errors) != 0 {
-		return nil, fmt.Errorf("error: %v", response.Errors)
+	if response.Title != "" {
+		return nil, fmt.Errorf("error: %s (%d)", response.Title, response.Status)
 	}
 	if len(response.Results) == 0 {
 		return nil, fmt.Errorf("emtpy results in response at page %d", page)
