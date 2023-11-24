@@ -277,8 +277,8 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 			url.QueryEscape(hit.Name),
 			",/0/0/0", // various faucets (hot list, rarity, bulk etc)
 			fmt.Sprint(hit.SetID),
-			",", // unclear
 			hit.Language,
+			",",           // rarity
 			"0/999999.99", // min/max price range
 			foil,
 			"default",
