@@ -12,7 +12,7 @@ import (
 
 const baseProductURL = "https://www.tcgplayer.com/product/"
 
-func TCGPlayerProductURL(productId int, printing, affiliate, language string) string {
+func TCGPlayerProductURL(productId int, printing, affiliate, condition, language string) string {
 	u, err := url.Parse(baseProductURL + fmt.Sprint(productId))
 	if err != nil {
 		return ""
@@ -27,6 +27,15 @@ func TCGPlayerProductURL(productId int, printing, affiliate, language string) st
 		v.Set("utm_medium", affiliate)
 		v.Set("utm_source", affiliate)
 		v.Set("partner", affiliate)
+	}
+	if condition != "" {
+		for full, short := range conditionMap {
+			if short == condition {
+				condition = full
+				break
+			}
+		}
+		v.Set("Condition", condition)
 	}
 	if language != "" {
 		language = mtgmatcher.Title(language)

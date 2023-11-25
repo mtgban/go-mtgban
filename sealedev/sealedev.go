@@ -228,7 +228,7 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 			var link string
 			tcgID, _ := strconv.Atoi(product.Identifiers["tcgplayerProductId"])
 			if tcgID != 0 {
-				link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "")
+				link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "", "")
 			}
 
 			channelOut <- respChan{

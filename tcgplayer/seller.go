@@ -164,7 +164,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				"sellerKey": listing.SellerKey,
 			}
 
-			link := TCGPlayerProductURL(int(result.ProductID), listing.Printing, tcg.Affiliate, listing.Language)
+			link := TCGPlayerProductURL(int(result.ProductID), listing.Printing, tcg.Affiliate, listing.Condition, listing.Language)
 
 			isDirect := listing.DirectSeller && listing.DirectProduct && listing.DirectInventory > 0
 			if isDirect {

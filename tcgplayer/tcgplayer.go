@@ -145,7 +145,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			if req.Printing == "FOIL" {
 				printing = "Foil"
 			}
-			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, req.Language)
+			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language)
 
 			for i := range availableMarketNames {
 				if prices[i] == 0 {
