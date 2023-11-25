@@ -67,6 +67,9 @@ type ArbitOpts struct {
 
 	// List of per-edition collector numbers to select
 	OnlyCollectorNumberRanges map[string][2]int
+
+	// Only run for products with static decklists
+	SealedDecklist bool
 }
 
 type ArbitEntry struct {
@@ -109,6 +112,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	filterFoil := false
 	filterOnlyFoil := false
 	filterRLOnly := false
+	filterDecksOnly := false
 	var filterConditions []string
 	var filterRarities []string
 	var filterEditions []string
@@ -135,6 +139,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		filterFoil = opts.NoFoil
 		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
+		filterDecksOnly = opts.SealedDecklist
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -193,6 +198,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			continue
 		}
 		if filterRLOnly && !co.IsReserved {
+			continue
+		}
+		if filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
 			continue
 		}
 		if slices.Contains(filterEditions, co.Edition) {
