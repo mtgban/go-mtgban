@@ -16,7 +16,8 @@ type TCGSellerInventory struct {
 	MaxConcurrency int
 	Affiliate      string
 
-	sellerKey     string
+	sellerKeys    []string
+	onlyDirect    bool
 	requestSize   int
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
@@ -24,29 +25,31 @@ type TCGSellerInventory struct {
 
 func (tcg *TCGSellerInventory) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
-		tag := tcg.sellerKey
-		if tcg.sellerKey == "" {
-			tag = "direct"
-		}
-		tcg.LogCallback("[TCGSI_"+tag+"] "+format, a...)
+		tcg.LogCallback("["+tcg.Info().Shorthand+"] "+format, a...)
 	}
 }
 
 const defaultSellerInventoryConcurrency = 8
 
-func NewScraperForSeller(sellerName string) (*TCGSellerInventory, error) {
-	sellerKey, err := SellerName2ID(sellerName)
-	if err != nil {
-		return nil, err
+func NewScraperForSeller(sellerName string, onlyDirect bool) (*TCGSellerInventory, error) {
+	var sellerKeys []string
+
+	if sellerName != "" {
+		sellerKey, err := SellerName2ID(sellerName)
+		if err != nil {
+			return nil, err
+		}
+		sellerKeys = append(sellerKeys, sellerKey)
 	}
 
-	return NewScraperForSellerId(sellerKey), nil
+	return NewScraperForSellerIds(sellerKeys, onlyDirect), nil
 }
 
-func NewScraperForSellerId(sellerKey string) *TCGSellerInventory {
+func NewScraperForSellerIds(sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.sellerKey = sellerKey
+	tcg.sellerKeys = sellerKeys
+	tcg.onlyDirect = onlyDirect
 
 	tcg.MaxConcurrency = defaultSellerInventoryConcurrency
 
@@ -64,7 +67,7 @@ type setCountPair struct {
 }
 
 func (tcg *TCGSellerInventory) totalItems() (*itemsRecap, error) {
-	resp, err := TCGInventoryForSeller(tcg.sellerKey, 0, 0)
+	resp, err := TCGInventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +99,7 @@ var conditionMap = map[string]string{
 }
 
 func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page int) error {
-	resp, err := TCGInventoryForSeller(tcg.sellerKey, tcg.requestSize, page)
+	resp, err := TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect)
 	if err != nil {
 		return err
 	}
@@ -106,7 +109,7 @@ func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page in
 
 func (tcg *TCGSellerInventory) processEdition(channel chan<- responseChan, setName string, count int) error {
 	for i := 0; i <= count/tcg.requestSize; i++ {
-		resp, err := TCGInventoryForSeller(tcg.sellerKey, tcg.requestSize, i, setName)
+		resp, err := TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, setName)
 		if err != nil {
 			return err
 		}
@@ -155,21 +158,30 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				continue
 			}
 
+			customFields := map[string]string{
+				"sellerKey": listing.SellerKey,
+			}
+
 			link := TCGPlayerProductURL(int(result.ProductID), listing.Printing, tcg.Affiliate, listing.Language)
+
+			isDirect := listing.DirectSeller && listing.DirectProduct && listing.DirectInventory > 0
+			if isDirect {
+				link += "&direct=true"
+				customFields["directInventory"] = fmt.Sprint(int(listing.DirectInventory))
+			}
+
 			out := responseChan{
 				cardId: cardId,
 				entry: mtgban.InventoryEntry{
-					Price:      listing.Price,
-					Quantity:   int(listing.Quantity),
-					Conditions: cond,
-					URL:        link,
-					SellerName: listing.SellerName,
-					Bundle:     listing.DirectProduct,
-					OriginalId: fmt.Sprint(int(listing.ProductID)),
-					InstanceId: fmt.Sprint(int(listing.ProductConditionID)),
-					CustomFields: map[string]string{
-						"sellerKey": listing.SellerKey,
-					},
+					Price:        listing.Price,
+					Quantity:     int(listing.Quantity),
+					Conditions:   cond,
+					URL:          link,
+					SellerName:   listing.SellerName,
+					Bundle:       isDirect,
+					OriginalId:   fmt.Sprint(int(listing.ProductID)),
+					InstanceId:   fmt.Sprint(int(listing.ProductConditionID)),
+					CustomFields: customFields,
 				},
 			}
 
@@ -187,7 +199,7 @@ func (tcg *TCGSellerInventory) scrape() error {
 	}
 
 	tcg.requestSize = DefaultSellerRequestSize
-	tcg.printf("Found %d results for seller id %s", ret.TotalResults, tcg.sellerKey)
+	tcg.printf("Found %d results for seller id %s", ret.TotalResults, tcg.Info().Shorthand)
 
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -275,10 +287,17 @@ func (tcg *TCGSellerInventory) Inventory() (mtgban.InventoryRecord, error) {
 
 func (tcg *TCGSellerInventory) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Seller Inventory"
-	info.Shorthand = "TCGSI_" + tcg.sellerKey
-	if tcg.sellerKey == "" {
-		info.Shorthand = "TCGSI_direct"
+	tag := strings.Join(tcg.sellerKeys, ",")
+	if tcg.onlyDirect {
+		if tag != "" {
+			tag += "+"
+		}
+		tag += "direct"
 	}
+	if tag != "" {
+		tag = "_" + tag
+	}
+	info.Shorthand = "TCGSI" + tag
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.CountryFlag = "EU"
 	return

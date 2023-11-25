@@ -785,7 +785,7 @@ type SellerInventoryResult struct {
 	} `json:"listings"`
 }
 
-func TCGInventoryForSeller(sellerKey string, size, page int, sets ...string) (*sellerInventoryResponse, error) {
+func TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
 	params.Algorithm = "sales_exp_fields_experiment"
 	params.From = size * page
@@ -794,9 +794,8 @@ func TCGInventoryForSeller(sellerKey string, size, page int, sets ...string) (*s
 	params.Filters.Term.ProductTypeName = []string{"Cards"}
 	params.Filters.Term.SetName = sets
 	params.ListingSearch.Filters.Term.SellerStatus = "Live"
-	if sellerKey != "" {
-		params.ListingSearch.Filters.Term.SellerKey = []string{sellerKey}
-	} else {
+	params.ListingSearch.Filters.Term.SellerKey = sellerKeys
+	if useDirect {
 		params.ListingSearch.Filters.Term.DirectProduct = true
 		params.ListingSearch.Filters.Term.DirectSeller = true
 		params.ListingSearch.Filters.Range.DirectInventory.GreaterThanOrEqual = 1
