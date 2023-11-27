@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"os"
@@ -17,6 +18,9 @@ var NumberOfBoosters *int
 var BoosterTypeOpt *string
 var AllPrintingsOpt *string
 var ColorOpt *string
+
+var CSVOutput *bool
+var CSVWriter *csv.Writer
 
 type Pick struct {
 	CardId string
@@ -61,9 +65,13 @@ func run() int {
 			}
 		}
 		if numOfBoosters == 0 {
-			fmt.Fprintln(os.Stderr, *SetCodeOpt, "does not have", *BoosterTypeOpt, "box information")
 			numOfBoosters = 1
 		}
+	}
+
+	if *CSVOutput {
+		CSVWriter = csv.NewWriter(os.Stderr)
+		CSVWriter.Write([]string{"setCode", "number", "name", "isFoil"})
 	}
 
 	for i := 0; i < numOfBoosters; i++ {
@@ -80,7 +88,7 @@ func run() int {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Fprintf(os.Stderr, "%v\n", choice.Item)
+		fmt.Fprintf(os.Stdout, "%v\n", choice.Item)
 
 		contents := choice.Item.(map[string]int)
 
@@ -194,8 +202,14 @@ func run() int {
 			id, _ := mtgmatcher.MatchId(pick.CardId, pick.Finish == "foil", pick.Finish == "etched")
 			co, _ := mtgmatcher.GetUUID(id)
 			fmt.Fprintf(w, "%s\t%s|%s\n", pick.Sheet, co, co.Rarity)
+			if *CSVOutput {
+				CSVWriter.Write([]string{co.SetCode, co.Number, co.Name, fmt.Sprint(co.Foil)})
+			}
 		}
 		w.Flush()
+		if *CSVOutput {
+			CSVWriter.Flush()
+		}
 	}
 
 	return 0
@@ -207,6 +221,7 @@ func main() {
 	BoosterTypeOpt = flag.String("t", "default", "Type of booster to pick (default/set/collector/theme/jumpstart)")
 	AllPrintingsOpt = flag.String("a", "allprintings5.json", "Load AllPrintings file path")
 	ColorOpt = flag.String("c", "", "One letter color of the theme booster")
+	CSVOutput = flag.Bool("csv", false, "Output a csv of the data")
 
 	flag.Parse()
 
