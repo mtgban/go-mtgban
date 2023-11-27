@@ -19,6 +19,7 @@ type TCGSellerInventory struct {
 	sellerKeys    []string
 	onlyDirect    bool
 	requestSize   int
+	client        *TCGClient
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
 }
@@ -51,6 +52,7 @@ func NewScraperForSellerIds(sellerKeys []string, onlyDirect bool) *TCGSellerInve
 	tcg.sellerKeys = sellerKeys
 	tcg.onlyDirect = onlyDirect
 
+	tcg.client = NewTCGSellerClient()
 	tcg.MaxConcurrency = defaultSellerInventoryConcurrency
 
 	return &tcg
@@ -67,7 +69,7 @@ type setCountPair struct {
 }
 
 func (tcg *TCGSellerInventory) totalItems() (*itemsRecap, error) {
-	resp, err := TCGInventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect)
+	resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +101,7 @@ var conditionMap = map[string]string{
 }
 
 func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page int) error {
-	resp, err := TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect)
+	resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect)
 	if err != nil {
 		return err
 	}
@@ -109,7 +111,7 @@ func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page in
 
 func (tcg *TCGSellerInventory) processEdition(channel chan<- responseChan, setName string, count int) error {
 	for i := 0; i <= count/tcg.requestSize; i++ {
-		resp, err := TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, setName)
+		resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, setName)
 		if err != nil {
 			return err
 		}

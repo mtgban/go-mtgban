@@ -785,7 +785,14 @@ type SellerInventoryResult struct {
 	} `json:"listings"`
 }
 
-func TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, sets ...string) (*sellerInventoryResponse, error) {
+func NewTCGSellerClient() *TCGClient {
+	tcg := TCGClient{}
+	tcg.client = retryablehttp.NewClient()
+	tcg.client.Logger = nil
+	return &tcg
+}
+
+func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
 	params.Algorithm = "sales_exp_fields_experiment"
 	params.From = size * page
@@ -811,7 +818,7 @@ func TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, 
 		return nil, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Post(SellerInventoryURL, "application/json", bytes.NewReader(payload))
+	resp, err := tcg.client.Post(SellerInventoryURL, "application/json", bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -820,10 +827,6 @@ func TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
-	}
-
-	if string(data) == "Internal Server Error" {
-		return nil, errors.New(string(data))
 	}
 
 	var response sellerInventoryResponse
