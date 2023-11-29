@@ -135,6 +135,11 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 	i := prod.index
 	product := sets[setCode].SealedProduct[i]
 
+	// Skip unsupported types
+	if product.Category == "land_station" {
+		return
+	}
+
 	repeats := EVAverageRepetition
 	if ss.FastMode {
 		repeats = 10
@@ -155,10 +160,8 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 			for _ = range repeatsChannel {
 				picks, err := mtgmatcher.GetPicksForSealed(setCode, product.UUID)
 				if err != nil {
-					if product.Category != "land_station" {
-						channel <- resultChan{
-							err: fmt.Errorf("[%s] '%s' error: %s", setCode, product.Name, err.Error()),
-						}
+					channel <- resultChan{
+						err: fmt.Errorf("[%s] '%s' error: %s", setCode, product.Name, err.Error()),
 					}
 					continue
 				}
