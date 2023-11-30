@@ -10,7 +10,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
-const baseProductURL = "https://www.tcgplayer.com/product/"
+const (
+	baseProductURL    = "https://www.tcgplayer.com/product/"
+	partnerProductURL = "https://tcgplayer.pxf.io/c/%s/1830156/21018"
+)
 
 func TCGPlayerProductURL(productId int, printing, affiliate, condition, language string) string {
 	u, err := url.Parse(baseProductURL + fmt.Sprint(productId))
@@ -21,12 +24,6 @@ func TCGPlayerProductURL(productId int, printing, affiliate, condition, language
 	v := u.Query()
 	if printing != "" {
 		v.Set("Printing", printing)
-	}
-	if affiliate != "" {
-		v.Set("utm_campaign", "affiliate")
-		v.Set("utm_medium", affiliate)
-		v.Set("utm_source", affiliate)
-		v.Set("partner", affiliate)
 	}
 	if condition != "" {
 		for full, short := range conditionMap {
@@ -49,6 +46,22 @@ func TCGPlayerProductURL(productId int, printing, affiliate, condition, language
 		}
 		v.Set("Language", language)
 	}
+
+	// This chunk needs to be last, stash the built link in a query param
+	// and use the impact URL instead
+	if affiliate != "" {
+		u.RawQuery = v.Encode()
+		link := u.String()
+
+		u, err = url.Parse(fmt.Sprintf(partnerProductURL, affiliate))
+		if err != nil {
+			return ""
+		}
+
+		v = url.Values{}
+		v.Set("u", link)
+	}
+
 	u.RawQuery = v.Encode()
 
 	return u.String()
