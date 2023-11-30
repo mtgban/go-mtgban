@@ -180,6 +180,9 @@ const (
 	PromoTypeEmbossed   = "embossed"
 	PromoTypeSerialized = "serialized"
 	PromoTypeHaloFoil   = "halofoil"
+	PromoTypeScroll     = "scroll"
+	PromoTypePoster     = "poster"
+	PromoTypeSilverFoil = "silverfoil"
 
 	PromoTypeStepAndCompleat = "stepandcompleat"
 	PromoTypeOilSlick        = "oilslick"
@@ -229,11 +232,14 @@ var AllPromoTypes = []string{
 	PromoTypeOilSlick,
 	PromoTypePlayPromo,
 	PromoTypePlayerRewards,
+	PromoTypePoster,
 	PromoTypePrerelease,
 	PromoTypePromoPack,
 	PromoTypeRelease,
 	PromoTypeSChineseAltArt,
+	PromoTypeScroll,
 	PromoTypeSerialized,
+	PromoTypeSilverFoil,
 	PromoTypeStarterDeck,
 	PromoTypeStepAndCompleat,
 	PromoTypeSurgeFoil,

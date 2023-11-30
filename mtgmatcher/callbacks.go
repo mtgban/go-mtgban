@@ -123,6 +123,14 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: mtgjson.PromoTypeDraftWeekend,
 		Tags:      []string{"Draft Weekend"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeScroll,
+		Tags:      []string{"Scroll"},
+	},
+	{
+		PromoType: mtgjson.PromoTypePoster,
+		Tags:      []string{"Poster", "Hand Drawn"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
