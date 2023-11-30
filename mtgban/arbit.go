@@ -70,6 +70,17 @@ type ArbitOpts struct {
 
 	// Only run for products with static decklists
 	SealedDecklist bool
+
+	// Only select entries which are part of a bundle
+	OnlyBundles bool
+
+	// List of seller name that wil be considered
+	Sellers []string
+
+	// Custom function to be run on the card
+	// It returns a custom factor to be applied on the buylist price,
+	// and whether the entry shoul be skipped
+	CustomCardFilter func(co *mtgmatcher.CardObject) (float64, bool)
 }
 
 type ArbitEntry struct {
@@ -113,11 +124,14 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	filterOnlyFoil := false
 	filterRLOnly := false
 	filterDecksOnly := false
+	filterBundle := false
 	var filterConditions []string
 	var filterRarities []string
 	var filterEditions []string
 	var filterSelectedEditions []string
 	var filterSelectedCNRange map[string][2]int
+	var filterSellers []string
+	var filterFunc func(co *mtgmatcher.CardObject) (float64, bool)
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -140,6 +154,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
 		filterDecksOnly = opts.SealedDecklist
+		filterBundle = opts.OnlyBundles
+		filterFunc = opts.CustomCardFilter
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -155,6 +171,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 		if len(opts.OnlyCollectorNumberRanges) != 0 {
 			filterSelectedCNRange = opts.OnlyCollectorNumberRanges
+		}
+		if len(opts.Sellers) != 0 {
+			filterSellers = opts.Sellers
 		}
 	}
 
@@ -217,8 +236,22 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			}
 		}
 
+		if filterFunc != nil {
+			factor, skip := filterFunc(co)
+			if skip {
+				continue
+			}
+			blEntry.BuyPrice *= factor
+		}
+
 		for _, invEntry := range invEntries {
 			if slices.Contains(filterConditions, invEntry.Conditions) {
+				continue
+			}
+			if filterSellers != nil && !slices.Contains(filterSellers, invEntry.SellerName) {
+				continue
+			}
+			if filterBundle && !invEntry.Bundle {
 				continue
 			}
 			if !seller.Info().NoQuantityInventory && invEntry.Quantity < minQty {
