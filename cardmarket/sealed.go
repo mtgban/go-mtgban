@@ -795,6 +795,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 		if mtgmatcher.Contains(article.Comments, "empty") ||
 			mtgmatcher.Contains(article.Comments, "only the deck") ||
 			mtgmatcher.Contains(article.Comments, "only 60 cards") ||
+			mtgmatcher.Contains(article.Comments, "only box") ||
 			mtgmatcher.Contains(article.Comments, "deck only") ||
 			mtgmatcher.Contains(article.Comments, "cards only") ||
 			mtgmatcher.Contains(article.Comments, "only cards") ||
