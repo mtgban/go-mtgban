@@ -17,7 +17,7 @@ const (
 	defaultConcurrency  = 8
 	defaultRequestLimit = 200
 
-	buylistBookmark = "https://sellyourcards.starcitygames.com/bookmark/"
+	buylistBookmark = "https://sellyourcards.starcitygames.com/mtg/bookmark/"
 )
 
 type Starcitygames struct {
