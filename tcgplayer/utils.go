@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	baseProductURL    = "https://www.tcgplayer.com/product/"
-	partnerProductURL = "https://tcgplayer.pxf.io/c/%s/1830156/21018"
+	BaseProductURL    = "https://www.tcgplayer.com/product/"
+	PartnerProductURL = "https://tcgplayer.pxf.io/c/%s/1830156/21018"
 )
 
 func TCGPlayerProductURL(productId int, printing, affiliate, condition, language string) string {
-	u, err := url.Parse(baseProductURL + fmt.Sprint(productId))
+	u, err := url.Parse(BaseProductURL + fmt.Sprint(productId))
 	if err != nil {
 		return ""
 	}
@@ -53,7 +53,7 @@ func TCGPlayerProductURL(productId int, printing, affiliate, condition, language
 		u.RawQuery = v.Encode()
 		link := u.String()
 
-		u, err = url.Parse(fmt.Sprintf(partnerProductURL, affiliate))
+		u, err = url.Parse(fmt.Sprintf(PartnerProductURL, affiliate))
 		if err != nil {
 			return ""
 		}
