@@ -45,6 +45,8 @@ func TCGPlayerProductURL(productId int, printing, affiliate, condition, language
 			language = "Chinese (T)"
 		}
 		v.Set("Language", language)
+	} else {
+		v.Set("Language", "all")
 	}
 
 	// This chunk needs to be last, stash the built link in a query param
