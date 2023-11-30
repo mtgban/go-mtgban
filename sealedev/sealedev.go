@@ -11,12 +11,15 @@ import (
 	"github.com/montanaflynn/stats"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 	"golang.org/x/exp/slices"
 )
 
 const (
 	EVAverageRepetition = 5000
+
+	EVMaxRepickCount = 10
 
 	DefaultRepeatConcurrency = 8
 	DefaultSetConcurrency    = 32
@@ -128,6 +131,41 @@ type productChan struct {
 	index   int
 }
 
+func (ss *SealedEVScraper) repeatedPicks(setCode, productUUID string) ([]string, error) {
+	pickCount := 0
+	for {
+		pickCount++
+		// Prevent deadlocking
+		if pickCount > EVMaxRepickCount {
+			return nil, errors.New("repicked too many times")
+		}
+
+		picks, err := mtgmatcher.GetPicksForSealed(setCode, productUUID)
+		if err != nil {
+			return nil, err
+		}
+
+		// Repeat booster generation if there is one card type known to skew values
+		rePick := false
+		for _, pick := range picks {
+			co, err := mtgmatcher.GetUUID(pick)
+			if err != nil {
+				return nil, err
+			}
+			if co.HasPromoType(mtgjson.PromoTypeSerialized) {
+				rePick = true
+				break
+			}
+		}
+		if rePick {
+			ss.printf("%s - %s: repicking product (%d/%d)", setCode, productUUID, pickCount, EVMaxRepickCount)
+			continue
+		}
+
+		return picks, nil
+	}
+}
+
 func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, prices *BANPriceResponse) {
 	sets := mtgmatcher.GetSets()
 
@@ -158,7 +196,7 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 		wg.Add(1)
 		go func() {
 			for _ = range repeatsChannel {
-				picks, err := mtgmatcher.GetPicksForSealed(setCode, product.UUID)
+				picks, err := ss.repeatedPicks(setCode, product.UUID)
 				if err != nil {
 					channel <- resultChan{
 						err: fmt.Errorf("[%s] '%s' error: %s", setCode, product.Name, err.Error()),
