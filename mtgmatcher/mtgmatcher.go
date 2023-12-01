@@ -85,11 +85,16 @@ func Match(inCard *Card) (cardId string, err error) {
 
 	// Set up language
 	if inCard.Language != "" {
-		for _, field := range strings.Fields(inCard.Language) {
-			field = Title(field)
-			if slices.Contains(allLanguageTags, field) {
-				inCard.Language = field
-				break
+		lang, found := languageCode2LanguageTag[strings.ToLower(inCard.Language)]
+		if found {
+			inCard.Language = lang
+		} else {
+			for _, field := range strings.Fields(inCard.Language) {
+				field = Title(field)
+				if slices.Contains(allLanguageTags, field) {
+					inCard.Language = field
+					break
+				}
 			}
 		}
 	}

@@ -94,6 +94,23 @@ const (
 	suffixEtched = "_e"
 )
 
+var languageCode2LanguageTag = map[string]string{
+	"en":    "",
+	"fr":    "French",
+	"de":    "German",
+	"it":    "Italian",
+	"ja":    "Japanese",
+	"ko":    "Korean",
+	"ru":    "Russian",
+	"es":    "Spanish",
+	"pt":    "Portuguese",
+	"pt-bz": "Portuguese",
+	"zs":    "Chinese Simplified",
+	"zt":    "Chinese Traditional",
+	"zhs":   "Chinese Simplified",
+	"zht":   "Chinese Traditional",
+}
+
 var allLanguageTags = []string{
 	"French",
 	"German",
