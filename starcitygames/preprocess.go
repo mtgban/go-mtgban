@@ -74,23 +74,23 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 	// Make sure not to pollute variants with the language otherwise multiple
 	// variants may be aliased (ie urzalands)
 	switch language {
-	case "Japanese":
+	case "Japanese", "ja":
 		if edition == "Chronicles" {
 			edition = "BCHR"
 		} else {
 			if variant != "" {
 				variant += " "
 			}
-			variant += language
+			variant += "Japanese"
 		}
-	case "Italian":
+	case "Italian", "it":
 		if edition == "Renaissance" {
 			edition = "Rinascimento"
 		} else {
 			if variant != "" {
 				variant += " "
 			}
-			variant += language
+			variant += "Italian"
 		}
 	}
 
