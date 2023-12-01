@@ -223,12 +223,13 @@ type SCGCardVariant struct {
 }
 
 func (scg *SCGClient) SearchAll(offset, limit int) (*SCGSearchResponse, error) {
-	filter := `is_buying = 1 AND product_type ="Singles"`
+	filter := `is_buying = 1 AND product_type %s "Singles"`
+	mode := "="
 	if scg.SealedMode {
-		filter = `is_buying = 1 AND product_type != "Singles"`
+		mode = "!="
 	}
 	q := SCGSearchRequest{
-		Filter:           filter,
+		Filter:           fmt.Sprintf(filter, mode),
 		MatchingStrategy: "all",
 		Limit:            limit,
 		Offset:           offset,
