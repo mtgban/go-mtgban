@@ -223,9 +223,9 @@ type SCGCardVariant struct {
 }
 
 func (scg *SCGClient) SearchAll(offset, limit int) (*SCGSearchResponse, error) {
-	filter := "is_buying = 1 AND (product_type = \"Singles\") AND ((language = \"en\") OR (language = \"ja\"))"
+	filter := `is_buying = 1 AND product_type ="Singles"`
 	if scg.SealedMode {
-		filter = "is_buying = 1 AND (product_type != \"Singles\") AND ((language = \"en\") OR (language = \"ja\"))"
+		filter = `is_buying = 1 AND product_type != "Singles"`
 	}
 	q := SCGSearchRequest{
 		Filter:           filter,
