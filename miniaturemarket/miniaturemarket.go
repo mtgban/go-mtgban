@@ -49,6 +49,10 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 	resp = resp
 
 	for _, product := range resp.Response.Products {
+		if product.Quantity == 0 {
+			continue
+		}
+
 		productName := strings.TrimPrefix(product.Title, "Magic the Gathering: ")
 		productName = strings.TrimSuffix(productName, " (Preorder)")
 		edition := product.Edition
