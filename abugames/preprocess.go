@@ -152,6 +152,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 					"Core Set 2021 / M21",
 					"Throne of Eldraine",
 					"Eldritch Moon",
+					"War of teh Spark",
+					"The Brothers' War",
 					"Innistrad: Crimson Vow":
 					variation += " " + edition
 				}
