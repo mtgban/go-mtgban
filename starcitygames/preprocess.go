@@ -75,9 +75,13 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 	// variants may be aliased (ie urzalands)
 	switch language {
 	case "Japanese", "ja":
-		if edition == "Chronicles" {
+		switch edition {
+		case "Chronicles":
 			edition = "BCHR"
-		} else {
+		case "4th Edition - Black Border":
+			edition = "4BB"
+			variant = strings.TrimSuffix(variant, " BB")
+		default:
 			if variant != "" {
 				variant += " "
 			}
