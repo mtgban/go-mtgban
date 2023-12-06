@@ -606,6 +606,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch {
 			case strings.HasPrefix(set.Name, "Love Your LGS "+maybeYear):
 			case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):
+			case set.Name == "Grand Prix Promos":
+				continue
 			default:
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
