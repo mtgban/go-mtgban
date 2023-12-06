@@ -125,7 +125,7 @@
         "description": "error_unsupported_language_id",
         "input": {
             "id": "91946740-2846-5b8b-b8b7-f112bad19290",
-            "language":"Japanese"
+            "language": "Japanese"
         }
     },
     {
@@ -4117,8 +4117,8 @@
         "input": {
             "name": "Solemn Simulacrum",
             "edition": "SLD",
-            "language": "Japanese",
-            "foil": true
+            "foil": true,
+            "language": "Japanese"
         }
     }
 ]
