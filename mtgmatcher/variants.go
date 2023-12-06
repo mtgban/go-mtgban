@@ -3897,6 +3897,18 @@ var soiVariants = map[string]map[string]string{
 	},
 }
 
+var spgVariants = map[string]map[string]string{
+	"Mana Crypt": {
+		"borderless":                      "17",
+		"borderless neon ink three-color": "17a",
+		"borderless neon ink yellow":      "17b",
+		"borderless neon ink blue":        "17c",
+		"borderless neon ink purple":      "17d",
+		"borderless neon ink red":         "17e",
+		"borderless neon ink green":       "17f",
+	},
+}
+
 var psoiVariants = map[string]map[string]string{
 	"Tamiyo's Journal": {
 		"prerelease promo entry 855":              "265s",
@@ -3905,6 +3917,14 @@ var psoiVariants = map[string]map[string]string{
 
 		"entry 855": "265s",
 		"entry 653": "265s†",
+	},
+}
+
+var ltcVariants = map[string]map[string]string{
+	"Sol Ring": {
+		"elven serial number":   "408z",
+		"dwarven serial number": "409z",
+		"human serial number":   "410z",
 	},
 }
 
@@ -4006,6 +4026,18 @@ var tmpVariants = map[string]map[string]string{
 		"horizontal log": "340",
 		"boulder":        "341",
 		"river":          "342",
+	},
+}
+
+var lciVariants = map[string]map[string]string{
+	"Cavern of Soul": {
+		"borderless":                             "345",
+		"borderless neon ink three-color":        "410a",
+		"borderless neon ink yellow wpn premium": "410b",
+		"borderless neon ink blue":               "410c",
+		"borderless neon ink purple":             "410d",
+		"borderless neon ink green":              "410f",
+		"borderless neon ink red":                "410e",
 	},
 }
 
@@ -4583,10 +4615,13 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Secret Lair Drop":                     sldVariants,
 	"Shadows over Innistrad Promos":        psoiVariants,
 	"Shadows over Innistrad":               soiVariants,
+	"Special Guests":                       spgVariants,
 	"Summer Magic / Edgar":                 ed3Variants,
+	"Tales of Middle-earth Commander":      ltcVariants,
 	"Tempest":                              tmpVariants,
 	"The List (Unfinity Foil Edition)":     uplistVariants,
 	"The List":                             mb1plistVariants,
+	"The Lost Caverns of Ixalan":           lciVariants,
 	"Unglued":                              ulgVariants,
 	"Unlimited Edition":                    oldLandVariants,
 	"Unstable":                             ustVariants,
