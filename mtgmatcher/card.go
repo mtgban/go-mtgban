@@ -718,12 +718,12 @@ func (c *Card) ravnicaWeekend() (string, string) {
 
 	for _, guild := range GRNGuilds {
 		if c.Contains(guild) {
-			return "GRN Ravnica Weekend", prwkVariants[c.Name][guild]
+			return "GRN Ravnica Weekend", prwkVariants[c.Name][strings.ToLower(guild)]
 		}
 	}
 	for _, guild := range ARNGuilds {
 		if c.Contains(guild) {
-			return "RNA Ravnica Weekend", prw2Variants[c.Name][guild]
+			return "RNA Ravnica Weekend", prw2Variants[c.Name][strings.ToLower(guild)]
 		}
 	}
 	return "", ""
