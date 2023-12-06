@@ -697,6 +697,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicate(ap.Data, cards, uuids, "30th Anniversary History Japanese Promos", "P30H", "JPN", "2022-09-09")
 
 	duplicateCards(ap.Data, cards, uuids, "SLD", "JPN", sldJPNLangDupes)
+	duplicateCards(ap.Data, cards, uuids, "PURL", "JPN", []string{"1"})
 
 	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}

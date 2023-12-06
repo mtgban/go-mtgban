@@ -388,6 +388,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			default:
 				switch set.Name {
+				case "URL/Convention Promos":
 				case "Hobby Japan Promos":
 				case "DCI Legend Membership":
 				case "Media Inserts":
