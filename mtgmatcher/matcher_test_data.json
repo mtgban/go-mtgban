@@ -4120,5 +4120,15 @@
             "foil": true,
             "language": "Japanese"
         }
+    },
+    {
+        "uuid": "7e844d22-64ce-5fd5-9f15-699333732a94",
+        "description": "language_foreign_set",
+        "input": {
+            "name": "Ihsan's Shade",
+            "variant": "Hobby Japan Promo Japanese",
+            "edition": "Promo",
+            "language": "Japanese"
+        }
     }
 ]

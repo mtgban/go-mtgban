@@ -379,6 +379,7 @@ func (c *Card) isIDWMagazineBook() bool {
 		c.Contains("JP Graphic Novel") || // stks
 		strings.Contains(c.Variation, "Book Promo") || // sz
 		c.Contains("Top Deck") || // csi
+		c.Contains("Hobby Japan") || // abu+tcg
 		Contains(c.Edition, "CardZ") || // mkm
 		Contains(c.Edition, "Dengeki") || // mkm
 		c.Variation == "Insert Foil" || // ck

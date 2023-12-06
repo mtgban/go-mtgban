@@ -319,7 +319,7 @@ func skipSet(set *mtgjson.Set) bool {
 	// Skip unsupported sets
 	switch set.Code {
 	case "PRED", // a single foreign card
-		"PSAL", "PS11", "PHUK", "PHJ", // foreign-only
+		"PSAL", "PS11", "PHUK", // salvat05, salvat11, hachette
 		"OLGC", "OLEP", "OVNT": // oversize
 		return true
 	}
