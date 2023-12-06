@@ -44,7 +44,7 @@ type ABUProduct struct {
 }
 
 const (
-	maxEntryPerRequest = 40
+	maxEntryPerRequest = 200
 
 	abuBaseUrl = "https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%20-buy_price%3A0%20-buy_list_quantity%3A0%20%2Blanguage%3A(%22English%22%2C%20%22Italian%22%2C%20%22Japanese%22)%20%2Bdisplay_title%3A*&group=true&group.field=product_id&group.ngroups=true&group.limit=10&start=0&rows=0&wt=json"
 )
