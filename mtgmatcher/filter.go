@@ -347,13 +347,14 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		case inCard.isWPNGateway():
 			switch set.Name {
 			case "DCI Promos":
-			case "Innistrad: Crimson Vow":
+			case "Innistrad: Crimson Vow",
+				"The Lost Cavern of Ixalan":
 				skip := true
-				foundCards := MatchInSet(inCard.Name, "VOW")
+				foundCards := MatchInSet(inCard.Name, set.Code)
 				for _, card := range foundCards {
-					switch card.Number {
-					case "408", "409", "410", "411", "412":
+					if card.HasPromoType(mtgjson.PromoTypeWPN) {
 						skip = false
+						break
 					}
 				}
 				if skip {
