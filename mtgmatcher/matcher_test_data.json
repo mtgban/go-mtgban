@@ -710,6 +710,15 @@
         }
     },
     {
+        "uuid": "96e2bf05-f2a0-5c60-b241-3f63f6923d0d",
+        "description": "incorrect_edition_but_correct_number",
+        "input": {
+            "name": "Swamp",
+            "variant": "#59",
+            "edition": "Duel Decks Anthology"
+        }
+    },
+    {
         "uuid": "70d57c64-c2a1-52e8-a807-bc965fb2ddb7",
         "description": "incorrect_edition_but_salvageable_missing_only_a_chunk",
         "input": {

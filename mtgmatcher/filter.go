@@ -470,19 +470,30 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		// DDA with deck variant specified in the variation
+		// DDA with number or deck variant specified in the variation
 		case inCard.isDuelDecksAnthology():
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks Anthology"):
-				fields := strings.Fields(inCard.Variation)
 				found := false
-				for _, field := range fields {
-					if len(field) < 4 {
-						continue
+				num := ExtractNumber(inCard.Variation)
+				if num != "" {
+					foundCards := MatchInSet(inCard.Name, setCode)
+					for _, card := range foundCards {
+						if card.Number == num {
+							found = true
+							break
+						}
 					}
-					if Contains(set.Name, field) {
-						found = true
-						break
+				} else {
+					fields := strings.Fields(inCard.Variation)
+					for _, field := range fields {
+						if len(field) < 4 {
+							continue
+						}
+						if Contains(set.Name, field) {
+							found = true
+							break
+						}
 					}
 				}
 				if inCard.Variation != "" && !found {
