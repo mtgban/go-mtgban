@@ -268,10 +268,6 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 	}
 
 	for _, hit := range search.Hits {
-		foil := ","
-		if hit.Finish == "foil" {
-			foil = "f"
-		}
 		link, _ := url.JoinPath(
 			buylistBookmark,
 			url.QueryEscape(hit.Name),
@@ -280,7 +276,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 			hit.Language,
 			",",           // rarity
 			"0/999999.99", // min/max price range
-			foil,
+			hit.Finish,    // N F or N,F
 			"default",
 		)
 
