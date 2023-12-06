@@ -245,6 +245,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			variation = strings.TrimPrefix(variation, "Full-Text ")
 		} else if strings.Contains(variation, "Play Promo") {
 			variation = strings.Replace(variation, "FNM", "", 1)
+		} else if card.Layout == "Planar" {
+			edition = "Planechase Promos"
 		}
 	case "Anthologies":
 		if cardName == "Mountain" {
