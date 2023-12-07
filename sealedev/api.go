@@ -81,6 +81,7 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 					response.Buylist[uuid] = map[string]*BanPrice{}
 				}
 				response.Buylist[uuid]["TCGDirectNet"] = replacement
+				directPrice = replacement.Regular + replacement.Foil + replacement.Etched
 			}
 		}
 
