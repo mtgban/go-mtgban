@@ -32,6 +32,8 @@ type BANPriceResponse struct {
 
 const (
 	BANAPIURL = "https://www.mtgban.com/api/mtgban/all.json?sig="
+
+	BulkThreshold = 0.3
 )
 
 func loadPrices(sig string) (*BANPriceResponse, error) {
@@ -92,60 +94,20 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 			response.Buylist[uuid]["TCGDirectNet"].Etched = response.Retail[uuid]["TCG Low"].Etched * 2
 			delete(response.Retail[uuid], "TCG Direct")
 		}
+	}
 
-		// Add bulk pricing
-		_, found = response.Buylist[uuid]["CK"]
-		if !found {
-			co, _ := mtgmatcher.GetUUID(uuid)
-			price := bulkBuylist(co)
-			if response.Buylist[uuid] == nil {
-				response.Buylist[uuid] = map[string]*BanPrice{}
-			}
-			if response.Buylist[uuid]["CK"] == nil {
-				response.Buylist[uuid]["CK"] = &BanPrice{}
-			}
-			if co.Etched {
-				response.Buylist[uuid]["CK"].Etched = price
-			} else if co.Foil {
-				response.Buylist[uuid]["CK"].Foil = price
-			} else {
-				response.Buylist[uuid]["CK"].Regular = price
+	// Remove prices that are too low
+	for _, uuid := range uuids {
+		for _, category := range []map[string]map[string]*BanPrice{response.Retail, response.Buylist} {
+			for store, price := range category[uuid] {
+				if price.Regular+price.Foil+price.Etched < BulkThreshold {
+					delete(category[uuid], store)
+				}
 			}
 		}
 	}
 
 	return &response, nil
-}
-
-func bulkBuylist(co *mtgmatcher.CardObject) float64 {
-	var price float64
-	switch co.Rarity {
-	case "mythic":
-		price = 0.30
-		if co.Foil {
-			price = 0.25
-		}
-	case "rare":
-		price = 0.08
-		if co.Foil {
-			price = 0.15
-		}
-	case "common", "uncommon":
-		price = 5.0 / 1000
-		if co.Foil {
-			price = 0.02
-		}
-	default:
-		if co.IsPromo {
-			price = 0.05
-		} else if mtgmatcher.IsBasicLand(co.Name) {
-			price = 0.01
-			if co.Foil {
-				price = 0.10
-			}
-		}
-	}
-	return price
 }
 
 func valueInBooster(uuids []string, prices map[string]map[string]*BanPrice, source string) float64 {
