@@ -242,69 +242,6 @@ var missingPALPtags = map[string]string{
 	"15": "Indonesia",
 }
 
-var specialTags = map[string]string{
-	"Badlands":            "dual",
-	"Bayou":               "dual",
-	"Plateau":             "dual",
-	"Savannah":            "dual",
-	"Scrubland":           "dual",
-	"Taiga":               "dual",
-	"Tropical Island":     "dual",
-	"Tundra":              "dual",
-	"Underground Sea":     "dual",
-	"Volcanic Island":     "dual",
-	"Blackcleave Cliffs":  "fastland",
-	"Blooming Marsh":      "fastland",
-	"Botanical Sanctum":   "fastland",
-	"Concealed Courtyard": "fastland",
-	"Copperline Gorge":    "fastland",
-	"Darkslick Shores":    "fastland",
-	"Inspiring Vantage":   "fastland",
-	"Razorverge Thicket":  "fastland",
-	"Seachrome Coast":     "fastland",
-	"Spirebluff Canal":    "fastland",
-	"Arid Mesa":           "fetchland",
-	"Bloodstained Mire":   "fetchland",
-	"Flooded Strand":      "fetchland",
-	"Marsh Flats":         "fetchland",
-	"Misty Rainforest":    "fetchland",
-	"Polluted Delta":      "fetchland",
-	"Scalding Tarn":       "fetchland",
-	"Verdant Catacombs":   "fetchland",
-	"Windswept Heath":     "fetchland",
-	"Wooded Foothills":    "fetchland",
-	"Adarkar Wastes":      "painland",
-	"Battlefield Forge":   "painland",
-	"Brushland":           "painland",
-	"Caves of Koilos":     "painland",
-	"Karplusan Forest":    "painland",
-	"Llanowar Wastes":     "painland",
-	"Shivan Reef":         "painland",
-	"Sulfurous Springs":   "painland",
-	"Underground River":   "painland",
-	"Yavimaya Coast":      "painland",
-	"Blood Crypt":         "shockland",
-	"Breeding Pool":       "shockland",
-	"Godless Shrine":      "shockland",
-	"Hallowed Fountain":   "shockland",
-	"Overgrown Tomb":      "shockland",
-	"Sacred Foundry":      "shockland",
-	"Steam Vents":         "shockland",
-	"Stomping Ground":     "shockland",
-	"Temple Garden":       "shockland",
-	"Watery Grave":        "shockland",
-	"Clifftop Retreat":    "checkland",
-	"Dragonskull Summit":  "checkland",
-	"Drowned Catacomb":    "checkland",
-	"Glacial Fortress":    "checkland",
-	"Hinterland Harbor":   "checkland",
-	"Isolated Chapel":     "checkland",
-	"Rootbound Crag":      "checkland",
-	"Sulfur Falls":        "checkland",
-	"Sunpetal Grove":      "checkland",
-	"Woodland Cemetery":   "checkland",
-}
-
 // List of numbers in SLD that need to be decoupled
 var sldJPNLangDupes = []string{
 	"1110", "1111", "1112", "1113", "1114", "1115", "1116", "1117",
@@ -440,12 +377,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				card.Layout = "token"
 			}
 
-			// Set any custom tag
-			customTag, found := specialTags[card.Name]
-			if found {
-				card.Identifiers["customTag"] = customTag
-			}
-
 			// Override any "double_faced_token" entries and emblems
 			if strings.Contains(card.Layout, "token") || card.Layout == "emblem" {
 				card.Layout = "token"
@@ -523,7 +454,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			}
 
 			norm := Normalize(name)
-			_, found = cards[norm]
+			_, found := cards[norm]
 			if !found {
 				cards[norm] = cardinfo{
 					Name:      card.Name,
