@@ -4117,6 +4117,7 @@
         "description": "language_main",
         "input": {
             "name": "Solemn Simulacrum",
+            "variant": "1113",
             "edition": "SLD"
         }
     },
@@ -4125,6 +4126,7 @@
         "description": "language_duplicate",
         "input": {
             "name": "Solemn Simulacrum",
+            "variant": "1113",
             "edition": "SLD",
             "foil": true,
             "language": "Japanese"
