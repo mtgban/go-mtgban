@@ -32,6 +32,9 @@ type CardObject struct {
 
 // Card implements the Stringer interface
 func (co CardObject) String() string {
+	if co.Sealed {
+		return co.Card.String()
+	}
 	finish := "nonfoil"
 	if co.Etched {
 		finish = "etched"
