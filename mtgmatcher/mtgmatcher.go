@@ -534,6 +534,10 @@ func adjustName(inCard *Card) {
 	if found {
 		// Stash the current name for later decoupling if needed
 		inCard.addToVariant(inCard.Name)
+		// Same for number if available
+		if altProps.OriginalNumber != "" {
+			inCard.addToVariant(altProps.OriginalNumber)
+		}
 
 		inCard.Name = altProps.OriginalName
 		if altProps.IsFlavor {

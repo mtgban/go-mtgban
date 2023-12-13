@@ -42,8 +42,9 @@ func (co CardObject) String() string {
 }
 
 type alternateProps struct {
-	OriginalName string
-	IsFlavor     bool
+	OriginalName   string
+	OriginalNumber string
+	IsFlavor       bool
 }
 
 var backend struct {
@@ -407,10 +408,20 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					dfcSameNames[Normalize(name)] = true
 					continue
 				}
-				alternates[Normalize(name)] = alternateProps{
-					OriginalName: card.Name,
-					IsFlavor:     i > 0,
+				// If the name is unique, keep track of the numbers so that they
+				// can be decoupled later for reprints of the main card.
+				// If the name is not unique, we might overwrite data and lose
+				// track of the main version
+				props := alternateProps{
+					OriginalName:   card.Name,
+					OriginalNumber: card.Number,
+					IsFlavor:       i > 0,
 				}
+				_, found := alternates[Normalize(name)]
+				if found {
+					props.OriginalNumber = ""
+				}
+				alternates[Normalize(name)] = props
 			}
 
 			// MTGJSON v5 contains duplicated card info for each face, and we do
