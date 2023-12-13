@@ -188,6 +188,15 @@ func Match(inCard *Card) (cardId string, err error) {
 		return "", ErrUnsupported
 	}
 
+	// Normalize card DFC card names if the set rule applies
+	// (first word of the set needs to be present, ie "Secret")
+	dfcsnProps := backend.DFCSameNames[Normalize(inCard.Name)]
+	for _, dfcsnProp := range dfcsnProps {
+		if inCard.Contains(dfcsnProp.Rule) {
+			inCard.Name = dfcsnProp.Name
+		}
+	}
+
 	// Get the card basic info to retrieve the Printings array
 	entry, found := backend.Cards[Normalize(inCard.Name)]
 	if !found {
@@ -795,10 +804,6 @@ func adjustEdition(inCard *Card) {
 
 	// Secret Lair {Ultimate,Drop}
 	case inCard.Contains("Secret Lair"):
-		// Restore the canonical name for DFC cards with same names
-		if backend.DFCSameNames[Normalize(inCard.Name)] {
-			inCard.Name = inCard.Name + " // " + inCard.Name
-		}
 		// Check if there are also FlavorNames associated to this card
 		// It might happen that a non-FlavorName is requested, so check number too
 		altProps, found := backend.AlternateProps[Normalize(inCard.Name)]

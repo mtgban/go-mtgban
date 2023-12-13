@@ -1482,6 +1482,14 @@
         }
     },
     {
+        "uuid": "807e8a59-a21f-571b-bd4d-582820105fab",
+        "description": "dfc_plains_same_name",
+        "input": {
+            "name": "Plains",
+            "edition": "Jurassic World Collection"
+        }
+    },
+    {
         "uuid": "d429117f-4b10-5e66-ad2f-e233252a034a",
         "description": "arn_light_variant",
         "input": {

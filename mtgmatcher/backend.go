@@ -47,6 +47,11 @@ type alternateProps struct {
 	IsFlavor       bool
 }
 
+type dfcProps struct {
+	Rule string
+	Name string
+}
+
 var backend struct {
 	// Map of set code : mtgjson.Set
 	Sets map[string]*mtgjson.Set
@@ -60,7 +65,7 @@ var backend struct {
 	// Map with token names
 	Tokens map[string]bool
 	// DFC with equal names on both sides
-	DFCSameNames map[string]bool
+	DFCSameNames map[string][]dfcProps
 
 	// Slice with every uniquely normalized name
 	AllNames []string
@@ -297,7 +302,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
 	tokens := map[string]bool{}
-	dfcSameNames := map[string]bool{}
+	dfcSameNames := map[string][]dfcProps{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
@@ -403,9 +408,13 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				}
 				// Skip faces of DFCs with same names that aren't reskin version of other cars,
 				// so that face names don't pollute the main dictionary with a wrong rename
-				if set.Code == "SLD" && card.IsDFCSameName() && card.FlavorName == "" {
-					// Save the names so that we don't have to keep a list
-					dfcSameNames[Normalize(name)] = true
+				if card.IsDFCSameName() && card.FlavorName == "" {
+					// Save the names of the cards so that we don't have to keep a list
+					// and store the set name so that we can retrieve it later
+					dfcSameNames[Normalize(name)] = append(dfcSameNames[Normalize(name)], dfcProps{
+						Rule: strings.Fields(set.Name)[0],
+						Name: card.Name,
+					})
 					continue
 				}
 				// If the name is unique, keep track of the numbers so that they
