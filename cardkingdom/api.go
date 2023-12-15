@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-cleanhttp"
 )
 
 type conditionValues struct {
@@ -44,6 +45,7 @@ const (
 	ckSealedListURL = "https://api.cardkingdom.com/api/sealed_pricelist"
 
 	ckBackupURL = "https://mtgban.com/api/cardkingdom/pricelist.json"
+	ckUserAgent = "MTGBAN/CK"
 )
 
 type CKClient struct {
@@ -52,8 +54,7 @@ type CKClient struct {
 
 func NewCKClient() *CKClient {
 	ck := CKClient{}
-	ck.client = http.NewClient()
-	ck.client.Logger = nil
+	ck.client = cleanhttp.DefaultClient()
 	return &ck
 }
 
@@ -66,7 +67,13 @@ func (ck *CKClient) GetSealedList() ([]CKCard, error) {
 }
 
 func (ck *CKClient) getList(link string) ([]CKCard, error) {
-	resp, err := ck.client.Get(link)
+	req, err := http.NewRequest("GET", link, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("User-Agent", ckUserAgent)
+
+	resp, err := ck.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
