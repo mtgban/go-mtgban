@@ -125,7 +125,7 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: mtgjson.PromoTypeScroll,
-		Tags:      []string{"Scroll"},
+		Tags:      []string{"Scroll", "Showcase Silver Foil"},
 	},
 	{
 		PromoType: mtgjson.PromoTypePoster,

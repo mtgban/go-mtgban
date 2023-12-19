@@ -4113,6 +4113,15 @@
         }
     },
     {
+        "uuid": "6708a29e-81cc-5c8e-85d7-2f2ec722fd7d_f",
+        "description": "lotr_showcase_means_scroll",
+        "input": {
+            "name": "Anduril, Flame of the West",
+            "variant": "Showcase Silver Foil",
+            "edition": "The Lord of the Rings - Alternate Foil"
+        }
+    },
+    {
         "uuid": "7013ac0b-f73b-5f67-a854-38dba4d4d394",
         "description": "language_only_non_english",
         "input": {
