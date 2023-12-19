@@ -75,6 +75,8 @@ var EditionTable = map[string]string{
 
 	"Enchanting Tales": "Wilds of Eldraine: Enchanting Tales",
 
+	"Beadle & Grimm Phyrexian": "Media Inserts",
+
 	// Gift pack
 	"2017 Gift Pack":       "2017 Gift Pack",
 	"2018 Gift Pack":       "M19 Gift Pack",
