@@ -2983,6 +2983,14 @@
         }
     },
     {
+        "uuid": "12bf443e-1d6d-5846-9db4-5940cf276bc4",
+        "description": "mb1list_empty_tag_may_alias_number_short",
+        "input": {
+            "name": "Birds of Paradise",
+            "edition": "Planeswalker Symbol Reprints"
+        }
+    },
+    {
         "uuid": "89d7f595-d549-526a-ba83-6f976f6c542c",
         "description": "misprints_prerelease_with_multiple_misprints_dark",
         "input": {

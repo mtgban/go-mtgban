@@ -176,10 +176,14 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 		// This needs to be above any possible printing type below
 		case inCard.isMysteryList():
 			// Short-circuit the upcoming number check to avoid the manual validation below
-			_, found := VariantsTable[set.Name][inCard.Name][strings.ToLower(inCard.Variation)]
-			if found {
-				printings = append(printings, setCode)
-				continue
+			// (only for the appropriate sets of course)
+			switch set.Code {
+			case "MB1", "FMB1", "PLIST", "PHED", "PCTB", "PAGL":
+				_, found := VariantsTable[set.Name][inCard.Name][strings.ToLower(inCard.Variation)]
+				if found {
+					printings = append(printings, setCode)
+					continue
+				}
 			}
 
 			switch set.Code {
