@@ -54,6 +54,7 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 	switch {
 	// These are the sealed packs
 	case strings.HasPrefix(cardName, "APAC Land"),
+		strings.HasPrefix(cardName, "Arena Land Set"),
 		strings.HasPrefix(cardName, "Euro Land"):
 		return nil, errors.New("non-single")
 	}
@@ -115,26 +116,18 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 				edition = "P8ED"
 			}
 		}
-		if strings.Contains(variant, "The Lord of the Rings") && number != "" {
+		if strings.Contains(variant, "The Lord of the Rings") {
 			variant = number
 		}
 	case "Unfinity":
-		if strings.Contains(variant, "/") && number != "" {
+		if strings.Contains(variant, "/") {
 			variant = number
 		}
 		if strings.Contains(cardName, "Sticker Sheet") {
 			edition = "SUNF"
 		}
-	case "The Lord of the Rings Commander - Serialized":
-		if cardName == "Sol Ring" && number != "" {
-			variant = number
-		}
-	case "The Lost Caverns of Ixalan - Alternate Foil":
-		if cardName == "Cavern of Souls" && number != "" {
-			variant = number
-		}
-	case "Special Guests - Alternate Foil":
-		if cardName == "Mana Crypt" && number != "" {
+	case "The Lord of the Rings - Variants":
+		if strings.Contains(variant, "Showcase") {
 			variant = number
 		}
 	}

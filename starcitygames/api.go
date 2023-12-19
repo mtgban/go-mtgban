@@ -13,7 +13,7 @@ import (
 
 const (
 	scgInventoryURL = "https://essearchapi-na.hawksearch.com/api/v2/search"
-	scgBuylistURL   = "https://search.starcitygames.com/indexes/sell_list_products/search"
+	scgBuylistURL   = "https://search.starcitygames.com/indexes/sell_list_products_v2/search"
 
 	maxResultsPerPage = 96
 )
@@ -192,41 +192,39 @@ type SCGCard struct {
 	Name            string           `json:"name"`
 	ID              int              `json:"id"`
 	Subtitle        string           `json:"subtitle"`
-	Sku             string           `json:"sku"`
 	ProductType     string           `json:"product_type"`
-	CardName        string           `json:"card_name"`
 	Finish          string           `json:"finish"`
 	Language        string           `json:"language"`
-	CollectorNumber string           `json:"collector_number"`
 	Rarity          string           `json:"rarity"`
+	IsBuying        int              `json:"is_buying"`
+	Hotlist         int              `json:"hotlist"`
+	BorderColor     string           `json:"border_color"`
+	CollectorNumber string           `json:"collector_number"`
 	SetID           int              `json:"set_id"`
 	SetName         string           `json:"set_name"`
 	SetReleaseDate  int              `json:"set_release_date"`
 	SetSymbol       string           `json:"set_symbol"`
-	IsBuying        int              `json:"is_buying"`
-	Hotlist         int              `json:"hotlist"`
 	Variants        []SCGCardVariant `json:"variants"`
 }
 
 type SCGCardVariant struct {
-	ID                 int     `json:"id"`
-	Name               string  `json:"name"`
-	Subtitle           string  `json:"subtitle"`
-	VariantName        string  `json:"variant_name"`
-	VariantValue       string  `json:"variant_value"`
-	Sku                string  `json:"sku"`
-	IsBuying           int     `json:"is_buying"`
-	Hotlist            float64 `json:"hotlist"`
-	BuyPrice           float64 `json:"buy_price"`
-	TradePrice         float64 `json:"trade_price"`
-	BonusCalculationID int     `json:"bonus_calculation_id"`
+	ID           int     `json:"id"`
+	Name         string  `json:"name"`
+	Subtitle     string  `json:"subtitle"`
+	Sku          string  `json:"sku"`
+	IsBuying     int     `json:"is_buying"`
+	Hotlist      float64 `json:"hotlist"`
+	VariantName  string  `json:"variant_name"`
+	VariantValue string  `json:"variant_value"`
+	BuyPrice     float64 `json:"buy_price"`
+	TradePrice   float64 `json:"trade_price"`
 }
 
 func (scg *SCGClient) SearchAll(offset, limit int) (*SCGSearchResponse, error) {
-	filter := `is_buying = 1 AND product_type %s "Singles"`
-	mode := "="
+	filter := `game_id = 1 AND price_category_id = %s AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
+	mode := "1"
 	if scg.SealedMode {
-		mode = "!="
+		mode = "2"
 	}
 	q := SCGSearchRequest{
 		Filter:           fmt.Sprintf(filter, mode),

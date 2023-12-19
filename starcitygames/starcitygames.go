@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultConcurrency  = 8
+	defaultConcurrency  = 4
 	defaultRequestLimit = 200
 
 	buylistBookmark = "https://sellyourcards.starcitygames.com/mtg/bookmark/"
@@ -271,7 +271,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 		link, _ := url.JoinPath(
 			buylistBookmark,
 			url.QueryEscape(hit.Name),
-			",/0/0/0", // various faucets (hot list, rarity, bulk etc)
+			"0/1/0/0", // various faucets (bulk, hotlist, etc)
 			fmt.Sprint(hit.SetID),
 			hit.Language,
 			",",           // rarity
@@ -288,13 +288,13 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 			case "PL":
 				conditions = "SP"
 				// Stricter grading for foils
-				if hit.Finish == "foil" {
+				if hit.Finish == "F" {
 					conditions = "MP"
 				}
 			case "HP":
 				conditions = "MP"
 				// Stricter grading for foils
-				if hit.Finish == "foil" {
+				if hit.Finish == "F" {
 					conditions = "HP"
 				}
 			default:
@@ -302,7 +302,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 				continue
 			}
 
-			theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "foil", "")
+			theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "F", hit.CollectorNumber)
 			if err != nil {
 				continue
 			}
@@ -347,6 +347,9 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 					"SCGEdition":  hit.SetName,
 					"SCGLanguage": hit.Language,
 					"SCGFinish":   hit.Finish,
+					// custom, helps debugging
+					"scgSubtitle": hit.Subtitle,
+					"scgNumber":   hit.CollectorNumber,
 				}
 			}
 
@@ -405,6 +408,10 @@ func (scg *Starcitygames) parseBL() error {
 	for record := range results {
 		err := scg.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
+			co, _ := mtgmatcher.GetUUID(record.cardId)
+			if co.Layout == "token" {
+				continue
+			}
 			scg.printf("%s", err.Error())
 			continue
 		}
