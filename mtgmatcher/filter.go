@@ -964,23 +964,22 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 		}
 
 		if allSameEdition {
+			logger.Println("allSameEdition pass needed")
 			var filteredOutCards []mtgjson.Card
 			for _, card := range outCards {
 				set := backend.Sets[card.SetCode]
 				// The year is necessary to decouple PM20 and PM21 cards
-				// when the edition name is different than the canonical one
-				// ie "Core 2021" instead of "Core Set 2021"
 				year := ExtractYear(set.Name)
-				// Drop any printing that don't have the ParentCode
-				// or the edition name itself in the Variation or Edition field
-				// (by looking at the longest word present in the parent Edition
-				// to avoid aliasing with short words that could ger Normalized away)
-				// or the year matches across
-				keyword := longestWordInEditionName(backend.Sets[set.ParentCode].Name)
+				// Check if the parent set code is present in the variation
 				if strings.Contains(inCard.Variation, set.ParentCode) ||
-					(year == "" && inCard.Contains(keyword)) ||
 					(year != "" && inCard.Contains(year)) {
 					filteredOutCards = append(filteredOutCards, card)
+				} else {
+					for probe, number := range multiPromosTable[set.Name][card.Name] {
+						if inCard.Contains(probe) && strings.HasPrefix(card.Number, number) {
+							filteredOutCards = append(filteredOutCards, card)
+						}
+					}
 				}
 			}
 

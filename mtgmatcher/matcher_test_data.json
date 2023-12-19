@@ -1087,6 +1087,24 @@
         }
     },
     {
+        "uuid": "e5ffc105-ff51-5ace-9f4a-dbe3cdb1e52e",
+        "description": "prerelease_with_edition_containing_another",
+        "input": {
+            "name": "Gishath, Sun's Avatar",
+            "variant": "Prerelease The Lost Caverns of Ixalan",
+            "edition": "Promo: Date Stamped"
+        }
+    },
+    {
+        "uuid": "3077b363-0e55-5201-8dda-d90acbbde060",
+        "description": "prerelease_with_edition_containing_main",
+        "input": {
+            "name": "Gishath, Sun's Avatar",
+            "variant": "Prerelease Ixalan",
+            "edition": "Promo: Date Stamped"
+        }
+    },
+    {
         "uuid": "a0c99852-b08e-5f09-9f48-317f2253df15",
         "description": "jpn_alt_nonJPN_version",
         "input": {

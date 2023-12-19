@@ -4631,3 +4631,45 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"World Championship Decks 2001":        wc01Variants,
 	"World Championship Decks 2002":        wc02Variants,
 }
+
+// Note that the number is checked with a prefix in order to catch
+// prerelease and promopack
+var multiPromosVariants = map[string]map[string]string{
+	"Blast Zone": {
+		"brothers": "258",
+		"spark":    "244",
+	},
+	"Gishath, Sun's Avatar": {
+		"caverns":           "229",
+		"prerelease ixalan": "222",
+	},
+	"Fabled Passage": {
+		"2021":     "246",
+		"eldraine": "244",
+	},
+	"Heroic Intervention": {
+		"2021":   "188",
+		"revolt": "109",
+	},
+	"Resplendent Angel": {
+		"2019":    "34",
+		"caverns": "32",
+	},
+	"Sorcerous Spyglass": {
+		"eldraine": "233",
+		"ixalan":   "248",
+	},
+	// not listed here: all the temples
+}
+
+// This list is for editions with conflicting promotional cards
+var multiPromosTable = map[string]map[string]map[string]string{
+	"Aether Revolt Promos":              multiPromosVariants,
+	"Core Set 2019 Promos":              multiPromosVariants,
+	"Core Set 2021 Promos":              multiPromosVariants,
+	"Ixalan Promos":                     multiPromosVariants,
+	"The Brothers' War Promos":          multiPromosVariants,
+	"The Lost Caverns of Ixalan Promos": multiPromosVariants,
+	"Throne of Eldraine Promos":         multiPromosVariants,
+	"War of the Spark Promos":           multiPromosVariants,
+}
