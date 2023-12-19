@@ -941,6 +941,13 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 		}
 	}
 
+	if len(outCards) > 1 {
+		logger.Println("Filtering status after main loop")
+		for _, card := range outCards {
+			logger.Println(card.SetCode, card.Number, card.Name)
+		}
+	}
+
 	// Check if there are multiple printings for Prerelease and Promo Pack cards
 	// Sometimes these contain the ParentCode or the parent edition name in the field
 	if len(outCards) > 1 && (inCard.isPrerelease() || inCard.isPromoPack()) {
