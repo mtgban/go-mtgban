@@ -4030,7 +4030,7 @@ var tmpVariants = map[string]map[string]string{
 }
 
 var lciVariants = map[string]map[string]string{
-	"Cavern of Soul": {
+	"Cavern of Souls": {
 		"borderless":                             "345",
 		"borderless neon ink three-color":        "410a",
 		"borderless neon ink yellow wpn premium": "410b",
