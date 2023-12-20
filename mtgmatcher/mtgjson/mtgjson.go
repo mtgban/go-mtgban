@@ -188,6 +188,7 @@ const (
 	PromoTypeOilSlick        = "oilslick"
 	PromoTypeConcept         = "concept"
 	PromoTypeConfettiFoil    = "confettifoil"
+	PromoTypeDoubleRainbow   = "doublerainbow"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
@@ -217,6 +218,7 @@ var AllPromoTypes = []string{
 	PromoTypeBuyABox,
 	PromoTypeConcept,
 	PromoTypeConfettiFoil,
+	PromoTypeDoubleRainbow,
 	PromoTypeDracula,
 	PromoTypeDraftWeekend,
 	PromoTypeEmbossed,
