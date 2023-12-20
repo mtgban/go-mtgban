@@ -49,6 +49,20 @@ func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
 		return nil, ErrDatastoreEmpty
 	}
 
+	// 1. Check if input is just the set code
+	set, err := GetSet(edition)
+	if err == nil {
+		return set, nil
+	}
+
+	// 2. Check if input is the full name of the set
+	for _, set := range backend.Sets {
+		if Equals(set.Name, edition) {
+			return set, nil
+		}
+	}
+
+	// 3. Attempt adjusting the edition with a fake card object
 	card := &Card{
 		Edition: edition,
 	}
@@ -58,11 +72,12 @@ func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
 	adjustEdition(card)
 
 	for _, set := range backend.Sets {
-		if Equals(set.Name, card.Edition) || set.Code == card.Edition {
+		if Equals(set.Name, card.Edition) {
 			return set, nil
 		}
 	}
 
+	// 4. We tried
 	return nil, ErrCardNotInEdition
 }
 
