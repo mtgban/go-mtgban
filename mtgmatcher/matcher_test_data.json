@@ -3577,14 +3577,6 @@
         }
     },
     {
-        "uuid": "01a9f60d-207a-56e2-9d39-9734ce7ba567",
-        "description": "tok_dupe",
-        "input": {
-            "name": "Cat",
-            "edition": "Secret Lair"
-        }
-    },
-    {
         "uuid": "237a0941-3118-512d-a40d-a42c0c518c5a",
         "description": "tok_treasure",
         "input": {
