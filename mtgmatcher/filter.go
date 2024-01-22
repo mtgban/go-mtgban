@@ -203,7 +203,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch set.Name {
 			case "DCI Promos":
 			case "Innistrad: Crimson Vow",
-				"The Lost Cavern of Ixalan":
+				"The Lost Caverns of Ixalan":
 				skip := true
 				foundCards := MatchInSet(inCard.Name, set.Code)
 				for _, card := range foundCards {
