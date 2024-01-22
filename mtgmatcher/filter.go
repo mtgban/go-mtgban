@@ -929,9 +929,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 			} else {
-				if inCard.Contains("Misprint") && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
-					continue
-				} else if !inCard.Contains("Misprint") && (strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)) {
+				if misprintCheck(inCard, &card) {
 					continue
 				}
 			}

@@ -840,6 +840,16 @@ func reskinRenameCheck(inCard *Card, card *mtgjson.Card) bool {
 	return false
 }
 
+func misprintCheck(inCard *Card, card *mtgjson.Card) bool {
+	hasSuffix := strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+	if inCard.Contains("Misprint") && !hasSuffix {
+		return true
+	} else if !inCard.Contains("Misprint") && hasSuffix {
+		return true
+	}
+	return false
+}
+
 type numberFilterCallback func(inCard *Card) []string
 
 var numberFilterCallbacks = map[string]numberFilterCallback{
