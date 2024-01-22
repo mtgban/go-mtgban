@@ -3800,6 +3800,14 @@
         }
     },
     {
+        "uuid": "40ff777d-b64a-53c5-8954-9737ef41fe45",
+        "description": "unf_attractions_dashes",
+        "input": {
+            "name": "Memory Test (5-6)",
+            "edition": "Unfinity"
+        }
+    },
+    {
         "uuid": "c9f5f07b-3646-5f2e-ae29-5f8798a4e239",
         "description": "unf_blanks",
         "input": {
