@@ -153,11 +153,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 
 		case inCard.isJudge():
-			if maybeYear == "" {
-				if inCard.isGenericExtendedArt() {
-					maybeYear = "2014"
-				}
-			}
 			switch {
 			case strings.HasPrefix(set.Name, "Judge Gift Cards "+maybeYear):
 			default:
