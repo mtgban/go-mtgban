@@ -236,6 +236,8 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"SNC": phyrexianCheck,
 	"DMU": phyrexianCheck,
 	"ONE": phyrexianCheck,
+
+	"PLST": thelistCheck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
@@ -245,6 +247,38 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+}
+
+// This function is a bit different than the others because it's stricter,
+// as it needs to parse the CN of the card to match it with the original set
+func thelistCheck(inCard *Card, card *mtgjson.Card) bool {
+	fields := strings.Split(card.Number, "-")
+	if len(fields) != 2 {
+		return true
+	}
+	number := fields[1]
+	varNum := ExtractNumber(inCard.Variation)
+
+	if varNum == number || strings.HasSuffix(varNum, "-"+number) {
+		return false
+	}
+
+	code := fields[0]
+	set, err := GetSet(code)
+	if err != nil {
+		return true
+	}
+
+	if inCard.Contains(code) || inCard.Contains(set.Name) || EditionTable[inCard.Variation] == set.Name {
+		return false
+	}
+
+	switch inCard.Name {
+	case "Phantom Centaur":
+		return misprintCheck(inCard, card)
+	}
+
+	return true
 }
 
 func phyrexianCheck(inCard *Card, card *mtgjson.Card) bool {

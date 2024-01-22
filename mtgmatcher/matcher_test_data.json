@@ -558,7 +558,7 @@
         }
     },
     {
-        "uuid": "7f965cb3-2341-510d-948f-543206845d02",
+        "uuid": "fb1d716c-e9c9-53d7-abd6-c49a8c860711",
         "description": "names_original_edition_plist_in_the_name",
         "input": {
             "name": "Plains (Amonkhet)",
@@ -727,7 +727,7 @@
         }
     },
     {
-        "uuid": "f0f9e5f9-17e9-5827-b97e-c56e693a5beb",
+        "uuid": "bbf6d05e-9aed-55b3-99a1-2d99feea6961",
         "description": "incorrect_edition_belongs_to_a_foilonly_subset",
         "input": {
             "name": "Zur's Weirding",
@@ -2326,7 +2326,7 @@
         }
     },
     {
-        "uuid": "15ce106a-8fde-5848-99b3-21eceb764be0",
+        "uuid": "6f0451a1-0a71-58b0-b84e-7760a27478f7",
         "description": "duel_decks_variant_with_mb1_tag",
         "input": {
             "name": "Elvish Warrior",
@@ -2745,7 +2745,7 @@
         }
     },
     {
-        "uuid": "b66e5217-c523-5d72-b94b-252787083ec6",
+        "uuid": "da9ffa0a-86bb-511b-8614-17ff0cb522d2",
         "description": "mb1list_only_in_list",
         "input": {
             "name": "Scroll Rack",
@@ -2753,7 +2753,7 @@
         }
     },
     {
-        "uuid": "0c466efd-2923-5e49-b0d7-ae69c279296a",
+        "uuid": "3201c108-4dd0-533f-b24b-3c31a60f04c1",
         "description": "mb1list_only_in_mb1",
         "input": {
             "name": "Mana Crypt",
@@ -2761,7 +2761,7 @@
         }
     },
     {
-        "uuid": "12e7087f-56ce-5e19-92d9-028fcaa5cda4",
+        "uuid": "562aefe2-614b-534c-8ef5-6038b2245484",
         "description": "mb1list_in_both_undistinguishable",
         "input": {
             "name": "Living Death",
@@ -2769,8 +2769,8 @@
         }
     },
     {
-        "uuid": "65166320-c130-50e5-a78a-8f60bc8c453c",
-        "description": "mb1list_in_both_list_tagged",
+        "uuid": "7a2bd73e-f1c8-55ea-8c29-75694b67a3a2",
+        "description": "mb1list_tagged_ea",
         "input": {
             "name": "Imperious Perfect",
             "variant": "Extended Art",
@@ -2778,34 +2778,17 @@
         }
     },
     {
-        "uuid": "65166320-c130-50e5-a78a-8f60bc8c453c",
-        "description": "mb1list_in_both_plist_priority",
+        "uuid": "9caf9b6a-7474-502b-8686-5dee4ca7098e",
+        "description": "mb1list_tagged_full_edition_name",
         "input": {
             "name": "Imperious Perfect",
+            "variant": "Commander Anthology",
             "edition": "Mystery Booster The List"
         }
     },
     {
-        "uuid": "2ea9464a-c6f9-5e0c-a0bf-55f89fa42252",
-        "description": "mb1list_in_both_tagged_mb1",
-        "input": {
-            "name": "Bojuka Bog",
-            "variant": "Worldwake",
-            "edition": "Mystery Booster The List"
-        }
-    },
-    {
-        "uuid": "706ca274-e840-56e6-b252-4d7da8f13063",
-        "description": "mb1list_in_both_tagged_plist",
-        "input": {
-            "name": "Bojuka Bog",
-            "variant": "Commander 2018",
-            "edition": "Mystery Booster The List"
-        }
-    },
-    {
-        "uuid": "a057d0d7-11fb-5d77-9217-96d8cd26dd67",
-        "description": "mb1list_in_both_mb1_foil",
+        "uuid": "e095c5ed-75bc-5131-8d8d-1604eb2d5eb0_f",
+        "description": "mb1list_fmb1_foil",
         "input": {
             "name": "Helix Pinnacle",
             "variant": "Foil",
@@ -2814,8 +2797,8 @@
         }
     },
     {
-        "uuid": "9ef93f93-52a8-5807-8c47-aa32048c25ce",
-        "description": "mb1list_in_both_list_nonfoil",
+        "uuid": "e095c5ed-75bc-5131-8d8d-1604eb2d5eb0",
+        "description": "mb1list_list_nonfoil",
         "input": {
             "name": "Helix Pinnacle",
             "variant": "Non-Foil",
@@ -2823,7 +2806,7 @@
         }
     },
     {
-        "uuid": "7cac5a8b-f4cc-5169-acf1-f4e0b2b553b6",
+        "uuid": "a8cec241-cf8b-532e-88b8-8bae60c2cc59",
         "description": "mb1list_explicit_list",
         "input": {
             "name": "Scourge of the Throne",
@@ -2831,32 +2814,32 @@
         }
     },
     {
-        "uuid": "d26069ff-4e63-547f-a64b-cbf2d83cdbdf",
+        "uuid": "ed42e3c2-a70b-5419-b1a2-0772979e41a0",
         "description": "mb1list_explicit_variant_list",
         "input": {
             "name": "Thought Vessel",
-            "variant": "The List",
-            "edition": "Ignored"
+            "variant": "Foil - Commander Legends",
+            "edition": "Mystery Booster/The List"
         }
     },
     {
-        "uuid": "3aa53e39-08e2-5095-b1d7-05290568248b",
-        "description": "mb1list_triple_combo",
+        "uuid": "ef018e83-134b-55eb-8b84-d2acd404d195",
+        "description": "mb1list_only_part_of_number",
         "input": {
-            "name": "Lightning Bolt (142)",
+            "name": "Lightning Bolt (141)",
             "edition": "The List"
         }
     },
     {
-        "uuid": "37d7eb2a-2512-5e56-829f-2c10571bb4a7",
-        "description": "mb1list_has_two_variants",
+        "uuid": "22ae6810-1bd8-5b7c-a285-28d04c750a07",
+        "description": "mb1list_has_two_variants_ok",
         "input": {
             "name": "Phantom Centaur",
             "edition": "Mystery Booster/The List"
         }
     },
     {
-        "uuid": "dae3ddb3-56c3-5181-ab10-1371270e1f20",
+        "uuid": "e703725b-8e35-5b35-834c-e30b82ec6913",
         "description": "mb1list_has_two_variants_misprint",
         "input": {
             "name": "Phantom Centaur",
@@ -2865,7 +2848,7 @@
         }
     },
     {
-        "uuid": "eaf5912c-be71-52d7-addc-2cb2823080ba",
+        "uuid": "29bd0d99-395d-52b7-b63d-8d9b8ee991a0",
         "description": "mb1list_wrong_edition_and_foil",
         "input": {
             "name": "Sheltering Ancient",
@@ -2874,37 +2857,10 @@
         }
     },
     {
-        "uuid": "dfdc9b7d-99a7-5c64-9144-2c879871a926",
-        "description": "mb1list_thelist_variant",
-        "input": {
-            "name": "Grim Haruspex",
-            "variant": "Ugin's Fate",
-            "edition": "The List"
-        }
-    },
-    {
-        "uuid": "ddc17c53-b3d0-51fc-92f5-12f9ba6080e6",
-        "description": "mb1list_commander_deck",
+        "uuid": "b7b18e3b-c963-5a7b-a231-068992ad27a8",
+        "description": "mb1list_commander_deck_nonfoil",
         "input": {
             "name": "Desolate Lighthouse",
-            "edition": "Mystery Booster/The List"
-        }
-    },
-    {
-        "uuid": "a6ecaa21-642e-54f9-ba82-5333408f55e3",
-        "description": "mb1list_commander_deck_foil",
-        "input": {
-            "name": "Swiftfoot Boots",
-            "edition": "Mystery Booster/The List",
-            "foil": true
-        }
-    },
-    {
-        "uuid": "841fca52-9f90-508f-a2de-a13d4c062a4d",
-        "description": "mb1list_commander_deck_dupe_mb1",
-        "input": {
-            "name": "Chaos Warp",
-            "variant": "Commander 2017",
             "edition": "Mystery Booster/The List"
         }
     },
@@ -2917,7 +2873,7 @@
         }
     },
     {
-        "uuid": "d6562884-aff6-5d3a-b54c-4d467e5e2336",
+        "uuid": "1b1dd605-7b51-5de4-a923-7c4fd234acdd_f",
         "description": "mb1list_exact_edition_tag",
         "input": {
             "name": "Rune-Tail, Kitsune Ascendant",
@@ -2959,53 +2915,11 @@
         }
     },
     {
-        "uuid": "d8a8c6df-c901-5bed-9d3a-a1bfaef12e23",
+        "uuid": "96879e5a-5bfa-5a6a-b186-d545bcd890c3",
         "description": "mb1list_phed_reprint",
         "input": {
             "name": "Yusri, Fortune's Flame",
             "edition": "Secret Lair Commander: Heads I Win, Tails You Lose"
-        }
-    },
-    {
-        "uuid": "da9dbad5-63b2-54ec-993c-4f8b527172d2",
-        "description": "mb1list_phed_skipped_not",
-        "input": {
-            "name": "Counterspell",
-            "edition": "Secret Lair Commander: Heads I Win, Tails You Lose"
-        }
-    },
-    {
-        "uuid": "6026411a-f851-52fd-9896-d4f1c25b26e2",
-        "description": "mb1list_phed_skipped_yes",
-        "input": {
-            "name": "Counterspell",
-            "edition": "Mystery Booster/The List"
-        }
-    },
-    {
-        "uuid": "c901ac44-1dd7-5226-9839-911e03ce08f6",
-        "description": "mb1list_mb1_sol_ring",
-        "input": {
-            "name": "Sol Ring",
-            "variant": "Commander 2018",
-            "edition": "Mystery Booster / The List"
-        }
-    },
-    {
-        "uuid": "0c7115ea-01c5-5d49-bd1b-853ab0074aac",
-        "description": "mb1list_phed_sol_ring",
-        "input": {
-            "name": "Sol Ring",
-            "variant": "Commander 2021",
-            "edition": "Mystery Booster / The List"
-        }
-    },
-    {
-        "uuid": "12bf443e-1d6d-5846-9db4-5940cf276bc4",
-        "description": "mb1list_empty_tag_may_alias_number_short",
-        "input": {
-            "name": "Birds of Paradise",
-            "edition": "Planeswalker Symbol Reprints"
         }
     },
     {
@@ -3646,7 +3560,7 @@
         }
     },
     {
-        "uuid": "1327e84b-cfcd-5bfb-83ea-499fb5565101",
+        "uuid": "bae00b36-86e6-5d01-a240-21d6da4c4246",
         "description": "mb1playtest_plist",
         "input": {
             "name": "Puresteel Angel",

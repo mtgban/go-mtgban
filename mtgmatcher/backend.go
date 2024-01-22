@@ -359,7 +359,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			case "PELP":
 				card.FlavorText = missingPELPtags[card.Number]
 			// Remove frame effects and borders where they don't belong
-			case "STA", "PLIST":
+			case "STA", "PLST":
 				card.FrameEffects = nil
 				card.BorderColor = "black"
 			case "SLD":

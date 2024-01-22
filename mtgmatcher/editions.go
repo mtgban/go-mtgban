@@ -452,16 +452,8 @@ var EditionTable = map[string]string{
 	// Since there are oversized cards in this set
 	"Commander: March of the Machine": "March of the Machine Commander",
 
-	// MB1/PLIST need to be explicitly set to override the edition
-	"The List":                           "The List",
-	"Mystery Booster":                    "Mystery Booster",
-	"Mystery Booster: Retail Exclusives": "Mystery Booster Retail Edition Foils",
-	"SLX Cards":                          "Universes Within",
-	"Universes Within":                   "Universes Within",
-	"Secret Lair Commander: From Cute to Brute":          "From Cute to Brute",
-	"Secret Lair: From Cute to Brute":                    "From Cute to Brute",
-	"Secret Lair Commander: Heads I Win, Tales You Lose": "Heads I Win, Tails You Lose",
-	"Secret Lair - Planeswalker Symbol":                  "Heads I Win, Tails You Lose",
+	"SLX Cards":        "Universes Within",
+	"Universes Within": "Universes Within",
 
 	// Time Spiral Remastered retro frame
 	"Time Spiral Remastered: Extras": "Time Spiral Remastered",
@@ -483,7 +475,7 @@ var EditionTable = map[string]string{
 	// Custom set codes
 	"MED2": "Mythic Edition",
 	"MED3": "Mythic Edition",
-	"RMB1": "Mystery Booster Retail Edition Foils",
+	"RMB1": "The List",
 
 	// Two-letter set codes
 	"1E": "Limited Edition Alpha",
