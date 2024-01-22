@@ -197,6 +197,14 @@ func Match(inCard *Card) (cardId string, err error) {
 		}
 	}
 
+	switch inCard.Name {
+	case "Red Herring",
+		"Pick Your Poison":
+		if inCard.isMysteryList() {
+			inCard.Name += " Playtest"
+		}
+	}
+
 	// Get the card basic info to retrieve the Printings array
 	entry, found := backend.Cards[Normalize(inCard.Name)]
 	if !found {
@@ -227,9 +235,13 @@ func Match(inCard *Card) (cardId string, err error) {
 	if ogName != inCard.Name {
 		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		// If renamed, reload metadata in case of duplicate names
-		if inCard.Name == "Unquenchable Fury Token" {
+		switch inCard.Name {
+		case "Unquenchable Fury Token",
+			"Red Herring Playtest",
+			"Pick Your Poison Playtest":
 			entry = backend.Cards[Normalize(inCard.Name)]
 			inCard.Name = entry.Name
+			logger.Printf("Clashing name adjusted to '%s'", inCard.Name)
 		}
 	}
 	if ogEdition != inCard.Edition {
@@ -1099,6 +1111,11 @@ func adjustEdition(inCard *Card) {
 		case "Unquenchable Fury":
 			if inCard.Edition == "Battle the Horde" {
 				inCard.Name += " Token"
+			}
+		case "Pick Your Poison",
+			"Red Herring":
+			if strings.Contains(edition, "Playtest") {
+				inCard.Name += " Playtest"
 			}
 		case "Teferi, Master of Time":
 			num := ExtractNumber(variation)

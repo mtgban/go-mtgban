@@ -205,8 +205,6 @@ func run() int {
 			if co.Edition == "Open the Helvault" {
 				continue
 			}
-		case "Unquenchable Fury":
-			continue
 		}
 
 		newTcgId := cards[0].OriginalId

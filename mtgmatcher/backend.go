@@ -476,6 +476,15 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				name += " Token"
 			}
 
+			// Deduplicate clashing names
+			switch name {
+			case "Pick Your Poison",
+				"Red Herring":
+				if strings.Contains(set.Name, "Playtest") {
+					name += " Playtest"
+				}
+			}
+
 			norm := Normalize(name)
 			_, found := cards[norm]
 			if !found {

@@ -3811,7 +3811,7 @@
     },
     {
         "uuid": "e97bac27-b2ee-5d13-acc3-187ead365879",
-        "description": "neo_duplicate_name_nec",
+        "description": "duplicate_name_nec",
         "input": {
             "name": "Unquenchable Fury",
             "edition": "NEC"
@@ -3819,10 +3819,26 @@
     },
     {
         "uuid": "b515bbb3-e4b8-5d29-a661-0851e58e64d2",
-        "description": "neo_duplicate_name_tok",
+        "description": "duplicate_name_tok",
         "input": {
             "name": "Unquenchable Fury",
             "edition": "TBTH"
+        }
+    },
+    {
+        "uuid": "81099d80-6a55-5eae-b50e-150e300d5fc7",
+        "description": "duplicate_name_mkm",
+        "input": {
+            "name": "Red Herring",
+            "edition": "Murders at Karlov Manor"
+        }
+    },
+    {
+        "uuid": "8f3f48e4-f635-5bfb-b44a-2032d9eb5e18",
+        "description": "duplicate_name_cmb1",
+        "input": {
+            "name": "Red Herring",
+            "edition": "Mystery Booster Playtest Cards"
         }
     },
     {
