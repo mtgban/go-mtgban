@@ -334,7 +334,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 						}
 					}
 				}
-			case "UPLIST":
+			case "ULST":
 			default:
 				continue
 			}

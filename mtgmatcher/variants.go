@@ -4048,7 +4048,7 @@ var ulgVariants = map[string]map[string]string{
 	},
 }
 
-var uplistVariants = map[string]map[string]string{
+var ulstVariants = map[string]map[string]string{
 	"Everythingamajig": {
 		"a":    "55",
 		"f":    "56",
@@ -4619,7 +4619,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"Summer Magic / Edgar":                 ed3Variants,
 	"Tales of Middle-earth Commander":      ltcVariants,
 	"Tempest":                              tmpVariants,
-	"The List (Unfinity Foil Edition)":     uplistVariants,
+	"The List (Unfinity Foil Edition)":     ulstVariants,
 	"The List":                             mb1plistVariants,
 	"The Lost Caverns of Ixalan":           lciVariants,
 	"Unglued":                              ulgVariants,

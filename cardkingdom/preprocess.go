@@ -81,11 +81,11 @@ var skuFixupTable = map[string]string{
 	"PPLS-107": "PLS-107★",
 	"PPLS-133": "PLS-133★",
 
-	// Duplicated UPLIST cards
-	"FMUST-147A": "UPLIST-55",
-	"FMUST-147F": "UPLIST-56",
-	"FMUST-113A": "UPLIST-38",
-	"FMUST-113C": "UPLIST-37",
+	// Duplicated ULST cards
+	"FMUST-147A": "ULST-55",
+	"FMUST-147F": "ULST-56",
+	"FMUST-113A": "ULST-38",
+	"FMUST-113C": "ULST-37",
 
 	// Naya Sojourners
 	"PM10-028": "PDCI-29",
@@ -242,7 +242,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			variation = "Showcase"
 		}
 	default:
-		if setCode == "UPLIST" {
+		if setCode == "ULST" {
 			edition = setCode
 			variation = number
 		}
