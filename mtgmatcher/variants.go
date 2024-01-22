@@ -3445,6 +3445,9 @@ var sldVariants = map[string]map[string]string{
 	"Narset, Parter of Veils": {
 		"retro frame": "1041",
 	},
+	"Counterspell": {
+		"sctlr": "SCTLR",
+	},
 }
 
 var soiVariants = map[string]map[string]string{
