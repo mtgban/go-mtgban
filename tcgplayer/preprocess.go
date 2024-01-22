@@ -460,20 +460,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if !strings.Contains(variant, "-") {
 			variant = product.GetNumber()
 		}
-	case "The List Reprints":
-		var possibleEdition string
-		for _, code := range []string{"FMB1", "MB1", "PLIST", "PHED", "PCTB", "PAGL"} {
-			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
-				if possibleEdition != "" {
-					possibleEdition = ""
-					break
-				}
-				possibleEdition = code
-			}
-		}
-		if possibleEdition != "" {
-			edition = possibleEdition
-		}
 	case "Fourth Edition",
 		"Revised Edition",
 		"Mirage",
@@ -500,10 +486,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"": // cosmetic
 		// Variants are fine as is
 	default:
-		// Variants are fine as is here too
-		if strings.HasPrefix(edition, "Secret Lair Commander") {
-			break
-		}
 		num := product.GetNumber()
 
 		if num != "" && mtgmatcher.ExtractYear(variant) == "" {
