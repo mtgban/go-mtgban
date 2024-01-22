@@ -131,6 +131,10 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: mtgjson.PromoTypePoster,
 		Tags:      []string{"Poster", "Hand Drawn"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeInvisibleInk,
+		Tags:      []string{"Invisible"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{

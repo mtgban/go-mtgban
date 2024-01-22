@@ -196,6 +196,7 @@ const (
 	PromoTypePlayerRewards = "playerrewards"
 	PromoTypeStarterDeck   = "starterdeck"
 	PromoTypeDraftWeekend  = "draftweekend"
+	PromoTypeInvisibleInk  = "invisibleink"
 
 	PromoTypeSChineseAltArt = "schinesealtart"
 
@@ -229,6 +230,7 @@ var AllPromoTypes = []string{
 	PromoTypeGodzilla,
 	PromoTypeHaloFoil,
 	PromoTypeIntroPack,
+	PromoTypeInvisibleInk,
 	PromoTypeJudgeGift,
 	PromoTypeNeonInk,
 	PromoTypeOilSlick,
