@@ -396,6 +396,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		logger.Println("Now filtering...")
 		outCards = filterCards(inCard, cardSet)
 
+		logger.Println("Post filtering status...")
 		for _, card := range outCards {
 			logger.Println(card.SetCode, card.Name, card.Number)
 		}

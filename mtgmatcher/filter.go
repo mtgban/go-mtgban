@@ -948,7 +948,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 	if len(outCards) > 1 {
 		logger.Println("Filtering status after main loop")
 		for _, card := range outCards {
-			logger.Println(card.SetCode, card.Number, card.Name)
+			logger.Println(card.SetCode, card.Name, card.Number)
 		}
 	}
 
