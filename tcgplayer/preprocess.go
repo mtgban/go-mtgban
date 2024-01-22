@@ -277,6 +277,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Lotus Petal":
 			edition = "P30M"
+		case "Gala Greeters":
+			if variant == "English" {
+				edition = "SNC"
+				variant = "450"
+			}
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
@@ -296,6 +301,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if variant == "Regional Championship Qualifiers 2023" {
 				edition = variant
 			}
+		case "Sauron, the Dark Lord":
+			edition = "LTR"
+			variant = "301"
 		default:
 			for _, code := range []string{"PR23", "SLP"} {
 				if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
@@ -424,6 +432,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Plague Sliver", "Shadowborn Apostle", "Toxin Sliver", "Virulent Sliver":
 			if strings.Contains(ogVariant, "Compleat") {
 				variant = ogVariant
+			}
+		case "Counterspell":
+			if ogVariant == "SL PLAYTEST" {
+				variant = "SCTLR"
 			}
 		}
 	case "AFR Ampersand Promos":
