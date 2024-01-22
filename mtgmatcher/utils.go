@@ -181,6 +181,16 @@ func ExtractNumber(str string) string {
 					return strings.ToLower(num)
 				}
 			}
+			// Check for the PLST numbering system
+			if strings.Contains(field, "-") {
+				subfields := strings.Split(field, "-")
+				if len(subfields) == 2 {
+					parsed := ExtractNumber(subfields[1])
+					if parsed != "" {
+						return field
+					}
+				}
+			}
 		}
 	}
 	return ""

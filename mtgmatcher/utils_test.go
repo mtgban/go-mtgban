@@ -88,6 +88,10 @@ var NumberTests = []ExtractTest{
 		In:  "659Φ",
 		Out: "659φ",
 	},
+	{
+		In:  "A25-141",
+		Out: "A25-141",
+	},
 }
 
 func TestExtractNumber(t *testing.T) {
