@@ -175,7 +175,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		}
 	}
 	if ogName != inCard.Name {
-		logger.Printf("Pre-adjusted name from '%s' to '%s'", ogName, inCard.Name)
+		logger.Printf("Pre-adjusted name from '%s' to '%s' '%s'", ogName, inCard.Name, inCard.Variation)
 	}
 
 	// Repeat the check in case the card was renamed above
