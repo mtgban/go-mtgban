@@ -87,6 +87,11 @@ var skuFixupTable = map[string]string{
 	"FMUST-113A": "ULST-38",
 	"FMUST-113C": "ULST-37",
 
+	// Wrong PLST codes
+	"MDDC-049": "MDVD-049",
+	"MF19-001": "MPF19-001",
+	"MZNR-091": "MKHC-091",
+
 	// Naya Sojourners
 	"PM10-028": "PDCI-29",
 	// Liliana's Specter
@@ -243,10 +248,12 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		if variation == "Eternal Night" {
 			variation = "Showcase"
 		}
-	default:
+	case "Mystery Booster/The List":
 		if setCode == "ULST" {
 			edition = setCode
 			variation = number
+		} else if variation != "" {
+			variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
 		}
 	}
 
@@ -267,6 +274,10 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	// Use number for tokens
 	if strings.Contains(card.Name, "Token") {
 		variation = number
+
+		if edition == "Duel Decks: Garruk Vs. Liliana" && card.Name == "Beast Token" {
+			variation = "T" + number
+		}
 
 		// Quiet exit for duplicated tokens from this set
 		if setCode == "TC16" && (strings.HasSuffix(number, "a") || strings.HasSuffix(number, "b")) {
