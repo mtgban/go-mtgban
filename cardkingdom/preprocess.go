@@ -224,7 +224,9 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		"Unstable", "Unglued", "Unfinity", "Portal II",
 		"The Lord of the Rings: Tales of Middle-earth",
 		"The Lord of the Rings: Tales of Middle-earth Commander Decks",
-		"The Lord of the Rings: Tales of Middle-earth Variants":
+		"The Lord of the Rings: Tales of Middle-earth Variants",
+		"Ravnica Remastered", "Ravnica Remastered Variants",
+		"Murders at Karlov Manor", "Murders at Karlov Manor Variants":
 		variation = number
 
 	case "Secret Lair":
