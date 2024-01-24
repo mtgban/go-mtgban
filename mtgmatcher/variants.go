@@ -4210,6 +4210,10 @@ var multiPromosVariants = map[string]map[string]string{
 		"caverns":           "229",
 		"prerelease ixalan": "222",
 	},
+	"Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun": {
+		"caverns":           "188",
+		"prerelease ixalan": "191",
+	},
 	"Fabled Passage": {
 		"2021":     "246",
 		"eldraine": "244",
