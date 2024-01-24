@@ -2968,6 +2968,15 @@
         }
     },
     {
+        "uuid": "cd86f7dc-5e04-56c6-9b10-2e8d2714b63f",
+        "description": "mb1list_explicit_zeros",
+        "input": {
+            "name": "Harmonize",
+            "variant": "P08-005",
+            "edition": "Planeswalker Symbol Reprints"
+        }
+    },
+    {
         "uuid": "89d7f595-d549-526a-ba83-6f976f6c542c",
         "description": "misprints_prerelease_with_multiple_misprints_dark",
         "input": {

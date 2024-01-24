@@ -187,7 +187,7 @@ func ExtractNumber(str string) string {
 				if len(subfields) == 2 {
 					parsed := ExtractNumber(subfields[1])
 					if parsed != "" {
-						return field
+						return subfields[0] + "-" + strings.TrimLeft(subfields[1], "0")
 					}
 				}
 			}
