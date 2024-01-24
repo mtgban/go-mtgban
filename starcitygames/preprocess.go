@@ -115,6 +115,15 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 			if variant == "10th Anniversary" {
 				edition = "P8ED"
 			}
+		case "Mind Stone":
+			if variant == "Bring-a-Friend" {
+				edition = "PW21"
+				variant = ""
+			}
+		case "Scavenging Ooze":
+			if variant == "Love Your LGS Retro Frame" {
+				edition = "PLG21"
+			}
 		}
 		if strings.Contains(variant, "The Lord of the Rings") {
 			variant = number
