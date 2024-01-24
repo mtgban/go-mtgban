@@ -2371,6 +2371,15 @@
         }
     },
     {
+        "uuid": "fa38c2a6-7dd3-5910-aa7c-5aaad13f24a0",
+        "description": "duel_decks_edition_and_number_in_variant",
+        "input": {
+            "name": "Forest",
+            "variant": "Garruk vs Liliana 29 B",
+            "edition": "Duel Decks: Anthology"
+        }
+    },
+    {
         "uuid": "3bc39616-8759-51eb-ab74-cf8271c339f6",
         "description": "deckmasters_number_in_variant_with_other_text",
         "input": {

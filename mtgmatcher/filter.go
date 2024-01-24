@@ -326,24 +326,28 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks Anthology"):
 				found := false
-				num := ExtractNumber(inCard.Variation)
-				if num != "" {
-					foundCards := MatchInSet(inCard.Name, setCode)
-					for _, card := range foundCards {
-						if card.Number == num {
-							found = true
-							break
-						}
+				fields := strings.Fields(inCard.Variation)
+				for _, field := range fields {
+					if len(field) < 4 {
+						continue
 					}
-				} else {
-					fields := strings.Fields(inCard.Variation)
-					for _, field := range fields {
-						if len(field) < 4 {
-							continue
-						}
-						if Contains(set.Name, field) {
-							found = true
-							break
+					if Contains(set.Name, field) {
+						found = true
+						break
+					}
+				}
+				// Do number check only if well known elements are missing
+				if !found &&
+					!(inCard.Contains("Divine") || inCard.Contains("Garruk") ||
+						inCard.Contains("Chandra") || inCard.Contains("Goblins")) {
+					num := ExtractNumber(inCard.Variation)
+					if num != "" {
+						foundCards := MatchInSet(inCard.Name, setCode)
+						for _, card := range foundCards {
+							if card.Number == num {
+								found = true
+								break
+							}
 						}
 					}
 				}
