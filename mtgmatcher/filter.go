@@ -619,7 +619,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			checkNum := true
 			if inCard.Contains("Misprint") ||
 				inCard.isWorldChamp() ||
-				inCard.isMysteryList() || // this is better handled in thelistCheck()
+				(inCard.isMysteryList() && !inCard.Contains("Unfinity")) || // this is better handled in thelistCheck()
 				(card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-"))) {
 				checkNum = false
 			}
