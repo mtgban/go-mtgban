@@ -3597,7 +3597,14 @@ var tmpVariants = map[string]map[string]string{
 
 var plstVariants = map[string]map[string]string{
 	"Imperious Perfect": {
-		"extended art": "PCMP-9",
+		"extended art":    "PCMP-9",
+		"champs full art": "PCMP-9",
+	},
+	"Lightning Bolt": {
+		"magicfest": "PF19-1",
+	},
+	"Demonic Tutor": {
+		"duel decks: divine vs demonic": "DVD-49",
 	},
 }
 
