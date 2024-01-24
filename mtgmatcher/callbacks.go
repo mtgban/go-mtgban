@@ -236,8 +236,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"SNC": phyrexianCheck,
 	"DMU": phyrexianCheck,
 	"ONE": phyrexianCheck,
-
-	"PLST": thelistCheck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
@@ -247,38 +245,65 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+
+	// These two checks need to be separate in case two cards have the same number
+	// but are originally from two different editions
+	"PLST": {listNumberCompare, listEditionCheck},
 }
 
-// This function is a bit different than the others because it's stricter,
-// as it needs to parse the CN of the card to match it with the original set
-func thelistCheck(inCard *Card, card *mtgjson.Card) bool {
-	fields := strings.Split(card.Number, "-")
-	if len(fields) != 2 {
-		return true
-	}
-	number := fields[1]
-	varNum := ExtractNumber(inCard.Variation)
+func listNumberCompare(inCard *Card, card *mtgjson.Card) bool {
+	listNum := ExtractNumber(inCard.Variation)
 
-	if varNum == number || strings.HasSuffix(varNum, "-"+number) {
-		return false
+	// If a listNum is found, check that it's matching the card number
+	if listNum != "" {
+		if strings.Contains(listNum, "-") && listNum == card.Number {
+			return false
+		} else if strings.HasSuffix(card.Number, "-"+listNum) {
+			return false
+		}
+
+		// Skip anything else, the number needs to be correct,
+		// unless there is actually an edition name (ie Masters 25)
+		// that will be processed later
+		maybeEdition := inCard.Variation
+		maybeEdition = strings.Replace(maybeEdition, "Non-Foil", "", 1)
+		maybeEdition = strings.Replace(maybeEdition, "Foil", "", 1)
+		maybeEdition = strings.TrimLeft(maybeEdition, " -")
+		_, err := GetSetByName(maybeEdition)
+		if err != nil {
+			return true
+		}
 	}
 
-	code := fields[0]
+	return false
+}
+
+func listEditionCheck(inCard *Card, card *mtgjson.Card) bool {
+	code := strings.Split(card.Number, "-")[0]
 	set, err := GetSet(code)
 	if err != nil {
 		return true
 	}
 
-	if inCard.Contains(code) || inCard.Contains(set.Name) || EditionTable[inCard.Variation] == set.Name {
-		return false
-	}
-
 	switch inCard.Name {
 	case "Phantom Centaur":
 		return misprintCheck(inCard, card)
+	default:
+		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
+			// This chunk is needed in case there was a plain number already
+			// processed in the previous step
+			listNum := ExtractNumber(inCard.Variation)
+			if strings.Contains(listNum, "-") && listNum == card.Number {
+				return false
+			} else if strings.HasSuffix(card.Number, "-"+listNum) {
+				return false
+			}
+
+			return true
+		}
 	}
 
-	return true
+	return false
 }
 
 func phyrexianCheck(inCard *Card, card *mtgjson.Card) bool {
