@@ -653,6 +653,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						possibleSuffixes = append(possibleSuffixes, "s", mtgjson.SuffixSpecial+"s", mtgjson.SuffixVariant+"s")
 					case inCard.isSerialized():
 						possibleSuffixes = append(possibleSuffixes, "z")
+					case inCard.isJudge():
+						possibleSuffixes = append(possibleSuffixes, mtgjson.SuffixSpecial)
 					}
 
 					for _, numSuffix := range possibleSuffixes {
