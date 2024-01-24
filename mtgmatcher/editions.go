@@ -439,6 +439,7 @@ var EditionTable = map[string]string{
 	"Starter 2000":             "Starter 2000",
 	"Vanguard":                 "Vanguard Series",
 	"MicroProse":               "MicroProse Promos",
+	"Duel Masters Japanese":    "Magic × Duel Masters Promos",
 
 	"Planeswalker Event Promos": "Planeswalker Championship Promos",
 
