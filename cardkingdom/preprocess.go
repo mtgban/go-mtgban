@@ -249,11 +249,15 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			variation = "Showcase"
 		}
 	case "Mystery Booster/The List":
-		if setCode == "ULST" {
+		switch setCode {
+		case "ULST":
 			edition = setCode
 			variation = number
-		} else if variation != "" {
-			variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
+		case "MCMB1", "CMB1":
+		default:
+			if variation != "" {
+				variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
+			}
 		}
 	}
 
