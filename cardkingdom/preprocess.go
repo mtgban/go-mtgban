@@ -88,7 +88,6 @@ var skuFixupTable = map[string]string{
 	"FMUST-113C": "ULST-37",
 
 	// Wrong PLST codes
-	"MDDC-049": "MDVD-049",
 	"MF19-001": "MPF19-001",
 	"MZNR-091": "MKHC-091",
 

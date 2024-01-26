@@ -3603,9 +3603,6 @@ var plstVariants = map[string]map[string]string{
 	"Lightning Bolt": {
 		"magicfest": "PF19-1",
 	},
-	"Demonic Tutor": {
-		"duel decks: divine vs demonic": "DVD-49",
-	},
 }
 
 var lciVariants = map[string]map[string]string{
