@@ -2917,6 +2917,15 @@
         }
     },
     {
+        "uuid": "61b8865c-4e98-53dd-a92f-c610aa3a25a2",
+        "description": "mb1list_sld_edh",
+        "input": {
+            "name": "Bloodline Keeper / Lord of Lineage",
+            "variant": "1157",
+            "edition": "Secret Lair Commander Deck: From Cute to Brute"
+        }
+    },
+    {
         "uuid": "d465de12-cc8b-58a8-aa5f-3b9d2b13adca",
         "description": "mb1list_thelist_correcttag_alt",
         "input": {

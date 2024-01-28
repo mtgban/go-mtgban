@@ -181,6 +181,10 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			case "PLST":
 			case "ULST":
+			case "SLD":
+				if len(MatchInSet(inCard.Name, "PLST")) != 0 {
+					continue
+				}
 			default:
 				continue
 			}
