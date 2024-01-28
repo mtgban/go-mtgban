@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -50,6 +51,11 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 			Name:        exp.Name,
 		})
 	}
+
+	// Keep list sorted for reproducible results
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].IdExpansion < out[j].IdExpansion
+	})
 
 	return out, nil
 }
