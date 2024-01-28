@@ -89,7 +89,9 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
-		if theCard.Edition == "Pro Tour Collector Set" || strings.HasPrefix(theCard.Edition, "World Championship Decks") {
+		if mtgmatcher.IsToken(theCard.Name) ||
+			theCard.Edition == "Pro Tour Collector Set" ||
+			strings.HasPrefix(theCard.Edition, "World Championship Decks") {
 			return nil
 		}
 
@@ -273,8 +275,10 @@ func (mkm *CardMarketIndex) scrape() error {
 				mkm.printf("%d - %s: %s", result.ogId, cerr.Error(), result.cardId)
 				continue
 			}
-			// Skip WCD, too many errors
-			if card.Edition == "Pro Tour Collector Set" || strings.HasPrefix(card.Edition, "World Championship Decks") {
+			// Skip too many errors
+			if mtgmatcher.IsToken(card.Name) ||
+				card.Edition == "Pro Tour Collector Set" ||
+				strings.HasPrefix(card.Edition, "World Championship Decks") {
 				continue
 			}
 			mkm.printf("%d - %s", result.ogId, err.Error())
