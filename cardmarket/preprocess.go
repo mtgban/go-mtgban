@@ -1,7 +1,6 @@
 package cardmarket
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -89,7 +88,7 @@ var promo2editionTable = map[string]string{
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	for _, name := range filteredExpansions {
 		if edition == name {
-			return nil, errors.New("not single")
+			return nil, mtgmatcher.ErrUnsupported
 		}
 	}
 
@@ -144,11 +143,11 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "Beast of Burden":
 			variant = "prerelease misprint"
 		case "Demigod of Revenge":
-			return nil, errors.New("unsupported misprint")
+			return nil, mtgmatcher.ErrUnsupported
 		case "Island":
 			variant = "Arena 1999 misprint"
 		default:
-			return nil, errors.New("untracked")
+			return nil, mtgmatcher.ErrUnsupported
 		}
 
 	case "Arabian Nights":
@@ -238,7 +237,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	case "Visions":
 		if variant == "V.2" {
-			return nil, errors.New("unsupported")
+			return nil, mtgmatcher.ErrUnsupported
 		}
 
 	case "Foreign Black Bordered",
@@ -247,7 +246,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	case "Fourth Edition: Black Bordered":
 		if mtgmatcher.IsBasicLand(cardName) {
-			return nil, errors.New("unsupported")
+			return nil, mtgmatcher.ErrUnsupported
 		}
 
 	case "Commander's Arsenal":
@@ -312,7 +311,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		switch cardName {
 		case "Dirtcowl Wurm":
 			if variant == "V.2" {
-				return nil, errors.New("unsupported misprint")
+				return nil, mtgmatcher.ErrUnsupported
 			}
 		case "Lu Bu, Master-at-Arms":
 			if variant == "V.1" {
@@ -332,7 +331,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	case "Harper Prism Promos":
 		if variant == "V.2" {
-			return nil, errors.New("non-english")
+			return nil, mtgmatcher.ErrUnsupported
 		}
 
 	case "Duel Decks: Jace vs. Chandra":
@@ -472,7 +471,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if len(mtgmatcher.MatchInSet(cardName, "PCMD")) == 1 {
 			edition = "PCMD"
 		} else if cardName == "Shivan Dragon" {
-			return nil, errors.New("non english")
+			return nil, mtgmatcher.ErrUnsupported
 		}
 
 	// Catch-all sets for anything promo
@@ -778,7 +777,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 						promopTag = "V.1"
 						prerelTag = "V.2"
 						if variant == "V.1" && strings.Contains(cardName, " // ") {
-							return nil, errors.New("not exist")
+							return nil, mtgmatcher.ErrUnsupported
 						}
 					case "Adventures in the Forgotten Realms: Promos":
 						speciaTag = "V.3"
@@ -820,7 +819,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Duels of the Planeswalkers Decks",
 			"Duel Decks: Anthology",
 			"Archenemy":
-			return nil, errors.New("unsupported")
+			return nil, mtgmatcher.ErrUnsupported
 		case "Core 2020: Extras":
 			variant = "Promo Pack"
 		case "Zendikar":
