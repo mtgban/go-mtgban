@@ -74,6 +74,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	switch number {
 	case "1 of 1":
 		return nil, mtgmatcher.ErrUnsupported
+	default:
+		// Strip extra letters that may interfere later on
+		// (ie IDW Promos P4 becomeing Starter 2000)
+		number = strings.TrimLeft(number, "P")
 	}
 	switch cardName {
 	case "Magic Guru":
