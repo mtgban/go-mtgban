@@ -1538,6 +1538,21 @@ var dkmVariants = map[string]map[string]string{
 		"v.1": "14★",
 		"v.2": "14",
 	},
+	"Forest": {
+		"v.1": "48",
+		"v.2": "49",
+		"v.3": "50",
+	},
+	"Mountain": {
+		"v.1": "45",
+		"v.2": "46",
+		"v.3": "47",
+	},
+	"Swamp": {
+		"v.1": "42",
+		"v.2": "43",
+		"v.3": "44",
+	},
 }
 
 var douVariants = map[string]map[string]string{
