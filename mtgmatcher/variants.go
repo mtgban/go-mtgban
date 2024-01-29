@@ -3333,6 +3333,7 @@ var sldVariants = map[string]map[string]string{
 		"v.3": "85",
 		"v.4": "86",
 
+		"999":                          "675",
 		"secret lair x street fighter": "675",
 		"secret lair reskin":           "675",
 		"*** reskin":                   "675",
@@ -3461,7 +3462,8 @@ var sldVariants = map[string]map[string]string{
 		"retro frame": "1041",
 	},
 	"Counterspell": {
-		"sctlr": "SCTLR",
+		"sctlr":      "SCTLR",
+		"4 jan 2023": "SCTLR",
 	},
 }
 
