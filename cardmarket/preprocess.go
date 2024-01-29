@@ -105,6 +105,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "The Dark Italian":
 		number = ""
 		variant = ""
+
 	case "Player Rewards Promos":
 		switch cardName {
 		case "Lightning Bolt":
@@ -122,6 +123,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Wurmcoil Engine":
 			variant = "oversized"
 		}
+
 	case "Misprints":
 		switch cardName {
 		case "Laquatus's Champion":
@@ -149,6 +151,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		} else if variant == "V.2" {
 			variant = "light"
 		}
+
 	case "Champions of Kamigawa":
 		if cardName == "Brothers Yamazaki" {
 			if variant == "V.1" {
@@ -157,6 +160,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "160b"
 			}
 		}
+
 	case "Fallen Empires",
 		"Homelands":
 		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
@@ -168,12 +172,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				break
 			}
 		}
+
 	case "Unglued":
 		if variant == "V.1" {
 			variant = "28"
 		} else if variant == "V.2" {
 			variant = "29"
 		}
+
 	case "Duel Decks: Anthology":
 		switch cardName {
 		case "Giant Growth":
@@ -201,6 +207,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition = "GVL"
 			}
 		}
+
 	case "Portal":
 		switch cardName {
 		case "Armored Pegasus",
@@ -217,25 +224,31 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "Reminder Text"
 			}
 		}
+
 	case "Planeshift":
 		if variant == "V.2" {
 			variant = "Alt Art"
 		}
+
 	case "Visions":
 		if variant == "V.2" {
 			return nil, errors.New("unsupported")
 		}
+
 	case "Foreign Black Bordered",
 		"Tenth Edition":
 		variant = ""
+
 	case "Fourth Edition: Black Bordered":
 		if mtgmatcher.IsBasicLand(cardName) {
 			return nil, errors.New("unsupported")
 		}
+
 	case "Commander's Arsenal":
 		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
 			edition = "OCM1"
 		}
+
 	case "Commander Anthology II",
 		"Ravnica Allegiance",
 		"Guilds of Ravnica",
@@ -245,8 +258,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		"Secret Lair Drop Series":
 		// Could have been lost in SplitVariant, and it's more reliable
 		variant = number
+
 	case "Secret Lair Drop Series: Secretversary 2021":
 		edition = "PHED"
+
 	case "Theros",
 		"Born of the Gods",
 		"Journey into Nyx":
@@ -260,6 +275,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition = "Defeat a God"
 			}
 		}
+
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
 		if variant == "V.1" {
 			variant = "Japanese"
@@ -268,6 +284,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Prerelease Japanese"
 			edition = "War of the Spark Promos"
 		}
+
 	case "Judge Rewards Promos":
 		switch cardName {
 		case "Demonic Tutor",
@@ -277,12 +294,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			vars = strings.Split(number, "-")
 			variant = vars[0]
 		}
+
 	case "MagicFest Promos":
 		vars = strings.Split(number, "-")
 		edition += " " + vars[0]
 		if len(vars) > 1 {
 			variant = vars[1]
 		}
+
 	case "Prerelease Promos":
 		switch cardName {
 		case "Dirtcowl Wurm":
@@ -304,14 +323,17 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if variant == number {
 			variant = ""
 		}
+
 	case "Harper Prism Promos":
 		if variant == "V.2" {
 			return nil, errors.New("non-english")
 		}
+
 	case "Duel Decks: Jace vs. Chandra":
 		if variant == "V.2" {
 			variant = "Japanese"
 		}
+
 	case "Gateway Promos":
 		switch cardName {
 		case "Fling",
@@ -322,6 +344,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "WPN"
 			}
 		}
+
 	case "Friday Night Magic Promos":
 		switch cardName {
 		case "Goblin Warchief":
@@ -331,6 +354,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition = "F16"
 			}
 		}
+
 	case "Weekend Promos":
 		switch cardName {
 		case "Time Wipe",
@@ -338,6 +362,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			edition = "War of the Spark Promos"
 			variant = "" // Drop WAR
 		}
+
 	case "Arena League Promos":
 		switch variant {
 		case "V.1":
@@ -383,6 +408,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition = "Japan Junior Tournament"
 			}
 		}
+
 	case "APAC Lands":
 		var landMap = map[string]string{
 			"R1": "4",
@@ -402,6 +428,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"C5": "11",
 		}
 		variant = landMap[number]
+
 	case "Euro Lands":
 		var landMap = map[string]string{
 			"1":  "1",
@@ -421,18 +448,21 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"15": "15",
 		}
 		variant = landMap[number]
+
 	case "Standard Showdown Promos":
 		if variant == "V.1" {
 			edition = "XLN Standard Showdown"
 		} else if variant == "V.2" {
 			edition = "M19 Standard Showdown"
 		}
+
 	case "Release Promos":
 		if len(mtgmatcher.MatchInSet(cardName, "PCMD")) == 1 {
 			edition = "PCMD"
 		} else if cardName == "Shivan Dragon" {
 			return nil, errors.New("non english")
 		}
+
 	// Catch-all sets for anything promo
 	case "Dengeki Maoh Promos",
 		"Promos",
@@ -449,12 +479,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if found {
 			edition = ed
 		}
+
 	case "Magic Origins: Promos":
 		if variant == "V.2" {
 			variant = number
 		} else {
 			variant = "Prerelease"
 		}
+
 	case "Core 2019: Promos":
 		variant = "Prerelease"
 		edition = "PM19"
@@ -462,6 +494,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = ""
 			edition = "M19 Gift Pack"
 		}
+
 	case "Core 2020: Extras":
 		if cardName == "Chandra's Regulator" {
 			if variant == "V.1" {
@@ -485,17 +518,20 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = ""
 			}
 		}
+
 	case "Mystery Booster":
 		// Decouple the foils from this set, they need to marked as foil
 		if len(mtgmatcher.MatchInSet(cardName, "FMB1")) > 0 {
 			edition = "Mystery Booster Retail Edition Foils"
 		}
 		variant = ""
+
 	// This is the only CMD set that needs it
 	case "Commander: Zendikar Rising":
 		if variant == "V.2" {
 			variant = "Extended Art"
 		}
+
 	case "Mystical Archive":
 		switch variant {
 		case "V.1":
@@ -507,6 +543,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.4":
 			variant = "JPN Foil-Etched"
 		}
+
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
 		if mtgmatcher.IsBasicLand(cardName) {
@@ -561,6 +598,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "Foil Etched"
 			}
 		}
+
 	case "Modern Horizons: Retro Frame Cards":
 		switch variant {
 		case "V.1":
@@ -568,6 +606,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.2":
 			variant = "Foil Etched"
 		}
+
 	case "Universes Beyond: Transformers":
 		switch variant {
 		case "V.1":
@@ -575,6 +614,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.2":
 			variant = "Shattered"
 		}
+
 	case "Retro Frame Artifacts":
 		switch variant {
 		case "V.1":
@@ -585,6 +625,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Serialized"
 		}
 		edition = "BRR"
+
 	case "Multiverse Legends":
 		switch variant {
 		case "V.1":
@@ -596,6 +637,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.4":
 			variant = "Serialized"
 		}
+
 	case "Jumpstart 2022":
 		if !mtgmatcher.IsBasicLand(cardName) {
 			switch variant {
@@ -605,6 +647,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = ""
 			}
 		}
+
 	case "March of the Machine: The Aftermath: Extras":
 		variant = number
 
