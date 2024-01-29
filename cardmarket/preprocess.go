@@ -513,7 +513,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "Prerelease"
 			}
 		case "Nicol Bolas, Dragon-God":
-			return nil, errors.New("dupe")
+			variant = "Promo Pack"
 		default:
 			if variant == "V.1" || mtgmatcher.IsBasicLand(cardName) {
 				variant = "Promo Pack"
