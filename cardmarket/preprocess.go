@@ -95,6 +95,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	ogEdition := edition
 	number := variant
+
+	switch number {
+	case "1 of 1":
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	vars := mtgmatcher.SplitVariants(cardName)
 	if len(vars) > 1 {
 		cardName = vars[0]
