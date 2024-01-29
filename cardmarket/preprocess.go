@@ -46,6 +46,20 @@ var promo2editionTable = map[string]string{
 	"Swamp":    "2017 Gift Pack",
 }
 
+var convention2editionTable = map[string]string{
+	"Serra Angel":         "PDOM",
+	"Steward of Valeron":  "PURL",
+	"Kor Skyfisher":       "PURL",
+	"Bloodthrone Vampire": "PURL",
+	"Merfolk Mesmerist":   "PURL",
+	"Chandra's Fury":      "PURL",
+	"Stealer of Secrets":  "PURL",
+	"Aeronaut Tinkerer":   "PURL",
+	"Nightpack Ambusher":  "PM20",
+	"Deeproot Champion":   "PXLN",
+	"Death Baron":         "PM19",
+}
+
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	for _, name := range filteredExpansions {
 		if edition == name {
@@ -474,6 +488,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		ed, found := promo2editionTable[cardName]
 		if found {
 			edition = ed
+		}
+
+	case "Convention Promos":
+		ed, found := convention2editionTable[cardName]
+		if found {
+			edition = ed
+			variant = ""
 		}
 
 	case "Duel Decks: Jace vs. Chandra":
