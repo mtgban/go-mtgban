@@ -92,6 +92,11 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	ogVariant := variant
 
 	switch edition {
+	case "Anthologies",
+		"Deckmasters",
+		"Unstable":
+		// Variants good as is
+
 	case "The Dark Italian",
 		"Foreign Black Bordered",
 		"Coldsnap Theme Decks",
