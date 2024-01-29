@@ -496,7 +496,8 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	case "Core 2020: Extras":
-		if cardName == "Chandra's Regulator" {
+		switch cardName {
+		case "Chandra's Regulator":
 			if variant == "V.1" {
 				variant = "131"
 				edition = "PM20"
@@ -505,9 +506,9 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			} else if variant == "V.3" {
 				variant = "Prerelease"
 			}
-		} else if cardName == "Nicol Bolas, Dragon-God" {
+		case "Nicol Bolas, Dragon-God":
 			return nil, errors.New("dupe")
-		} else {
+		default:
 			if variant == "V.1" || mtgmatcher.IsBasicLand(cardName) {
 				variant = "Promo Pack"
 			} else if variant == "V.2" {
