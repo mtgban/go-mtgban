@@ -122,6 +122,7 @@ func IsToken(name string) bool {
 		"Fun Format: Pack Wars",
 		"On An Adventure",
 		"Pyromantic Pixels",
+		"Theme: The Gold Standard",
 		"Theme: WUBRG Cards":
 		return true
 	// WCD extra cards
