@@ -53,7 +53,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	ogEdition := edition
 	number := variant
 
 	switch number {
@@ -69,7 +68,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	ogVariant := variant
 
 	switch edition {
-
 	case "The Dark Italian",
 		"Foreign Black Bordered",
 		"Coldsnap Theme Decks",
@@ -152,13 +150,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 
-	case "Unglued":
-		if variant == "V.1" {
-			variant = "28"
-		} else if variant == "V.2" {
-			variant = "29"
-		}
-
 	case "Duel Decks: Anthology":
 		switch cardName {
 		case "Giant Growth":
@@ -224,22 +215,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
-	case "Commander Anthology II",
-		"Ravnica Allegiance",
-		"Guilds of Ravnica",
-		"Conspiracy: Take the Crown",
-		"Battlebond",
-		"Kaldheim",
-		"Secret Lair Drop Series":
-		// Could have been lost in SplitVariant, and it's more reliable
-		variant = number
-
-	case "Secret Lair Drop Series: Secretversary 2021":
-		edition = "PHED"
-
 	case "Theros",
 		"Born of the Gods",
 		"Journey into Nyx":
+		variant = number
 		if strings.HasPrefix(variant, "C") {
 			switch edition {
 			case "Theros":
@@ -623,13 +602,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 
-	case "Mystery Booster":
-		// Decouple the foils from this set, they need to marked as foil
-		if len(mtgmatcher.MatchInSet(cardName, "FMB1")) > 0 {
-			edition = "Mystery Booster Retail Edition Foils"
-		}
-		variant = ""
-
 	case "Mystical Archive":
 		switch variant {
 		case "V.1":
@@ -705,37 +677,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Foil Etched"
 		}
 
-	case "Universes Beyond: Transformers":
-		switch variant {
-		case "V.1":
-			variant = ""
-		case "V.2":
-			variant = "Shattered"
-		}
-
-	case "Retro Frame Artifacts":
-		switch variant {
-		case "V.1":
-			variant = ""
-		case "V.2":
-			variant = "Schematic"
-		case "V.3":
-			variant = "Serialized"
-		}
-		edition = "BRR"
-
-	case "Multiverse Legends":
-		switch variant {
-		case "V.1":
-			variant = ""
-		case "V.2":
-			variant = "Etched"
-		case "V.3":
-			variant = "Halo"
-		case "V.4":
-			variant = "Serialized"
-		}
-
 	case "Commander's Arsenal":
 		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
 			edition = "OCM1"
@@ -760,19 +701,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	case "Commander: Streets of New Capenna: Promos":
 		variant = "Promo Pack"
-
-	case "Jumpstart 2022":
-		if !mtgmatcher.IsBasicLand(cardName) {
-			switch variant {
-			case "V.1":
-				variant = "Anime"
-			case "V.2":
-				variant = ""
-			}
-		}
-
-	case "March of the Machine: The Aftermath: Extras":
-		variant = number
 
 	default:
 		switch {
@@ -888,13 +816,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 					}
 				}
 			}
-		}
-	}
-
-	// Lands are named as "Island (V.1)" and similar, keep the collector number
-	// which is surprisingly accurate (errors are ignored for lands anyway)
-	if mtgmatcher.IsBasicLand(cardName) {
-		switch ogEdition {
 		default:
 			// Old editions do not have any number assigned, if so, then keep
 			// the V.1 V.2 etc style and process in variants.go
