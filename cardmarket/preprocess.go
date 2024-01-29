@@ -563,35 +563,21 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	case "Duel Decks: Anthology":
-		switch cardName {
-		case "Giant Growth":
-			if variant == "V.1" {
-				edition = "GVL"
-			} else if variant == "V.2" {
-				edition = "EVG"
-			}
-		case "Flamewave Invoker":
-			if variant == "V.1" {
-				edition = "JVC"
-			} else if variant == "V.2" {
-				edition = "EVG"
-			}
-		case "Corrupt":
-			if variant == "V.1" {
-				edition = "DVD"
-			} else if variant == "V.2" {
-				edition = "GVL"
-			}
-		case "Harmonize":
-			if variant == "V.1" {
-				edition = "EVG"
-			} else if variant == "V.2" {
-				edition = "GVL"
-			}
-		default:
-			variant = ""
-			if mtgmatcher.IsBasicLand(cardName) {
-				return nil, mtgmatcher.ErrUnsupported
+		if len(number) > 2 {
+			variant = number[2:]
+			if cardName == "Tranquil Thicket" {
+				variant = "26"
+			} else if mtgmatcher.IsBasicLand(cardName) {
+				switch number[:2] {
+				case "10", "20":
+					edition = "EVG"
+				case "30", "40":
+					edition = "JVC"
+				case "50", "60":
+					edition = "DVD"
+				case "70", "80":
+					edition = "GVL"
+				}
 			}
 		}
 
