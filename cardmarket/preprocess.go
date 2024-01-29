@@ -68,9 +68,20 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	}
 
 	switch edition {
-	case "The Dark Italian":
-		number = ""
+
+	case "The Dark Italian",
+		"Foreign Black Bordered",
+		"Coldsnap Theme Decks",
+		"Summer Magic",
+		"Introductory Two-Player Set",
+		"Duels of the Planeswalkers Decks",
+		"Archenemy":
+		// Drop variant and number
 		variant = ""
+
+		if mtgmatcher.IsBasicLand(cardName) {
+			return nil, mtgmatcher.ErrUnsupported
+		}
 
 	case "Player Rewards Promos":
 		switch cardName {
@@ -172,6 +183,11 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			} else if variant == "V.2" {
 				edition = "GVL"
 			}
+		default:
+			variant = ""
+			if mtgmatcher.IsBasicLand(cardName) {
+				return nil, mtgmatcher.ErrUnsupported
+			}
 		}
 
 	case "Portal":
@@ -200,10 +216,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		if variant == "V.2" {
 			return nil, mtgmatcher.ErrUnsupported
 		}
-
-	case "Foreign Black Bordered",
-		"Tenth Edition":
-		variant = ""
 
 	case "Fourth Edition: Black Bordered":
 		if mtgmatcher.IsBasicLand(cardName) {
@@ -235,6 +247,23 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			case "Journey into Nyx":
 				edition = "Defeat a God"
 			}
+		}
+
+	case "Zendikar":
+		switch variant {
+		case "V.1", "V.3", "V.5", "V.7":
+			variant = number + "a"
+		default:
+			variant = number
+		}
+
+	case "Battle for Zendikar",
+		"Oath of the Gatewatch":
+		switch variant {
+		case "V.2", "V.4", "V.6", "V.8", "V.10":
+			variant = number + "a"
+		default:
+			variant = number
 		}
 
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
@@ -420,6 +449,25 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"15": "15",
 		}
 		variant = landMap[number]
+
+	case "Magic Premiere Shop Promos":
+		switch variant {
+		default:
+			edition = "PMPS"
+			// Further untangling in variants.go
+		case "V.5":
+			edition = "PMPS06"
+		case "V.6":
+			edition = "PMPS07"
+		case "V.7":
+			edition = "PMPS08"
+		case "V.8":
+			edition = "PMPS09"
+		case "V.9":
+			edition = "PMPS10"
+		case "V.10":
+			edition = "PMPS11"
+		}
 
 	case "Standard Showdown Promos":
 		switch variant {
@@ -841,61 +889,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	// which is surprisingly accurate (errors are ignored for lands anyway)
 	if mtgmatcher.IsBasicLand(cardName) {
 		switch ogEdition {
-		// Too much
-		case "Foreign Black Bordered",
-			"Deckmasters",
-			"Coldsnap Theme Decks",
-			"Summer Magic",
-			"Introductory Two-Player Set",
-			"Duels of the Planeswalkers Decks",
-			"Duel Decks: Anthology",
-			"Archenemy":
-			return nil, mtgmatcher.ErrUnsupported
-		case "Core 2020: Extras":
-			variant = "Promo Pack"
-		case "Zendikar":
-			switch variant {
-			case "V.1", "V.3", "V.5", "V.7":
-				variant = number + "a"
-			default:
-				variant = number
-			}
-		case "Battle for Zendikar",
-			"Oath of the Gatewatch":
-			switch variant {
-			case "V.2", "V.4", "V.6", "V.8", "V.10":
-				variant = number + "a"
-			default:
-				variant = number
-			}
-		case "Magic Premiere Shop Promos":
-			switch variant {
-			default:
-				edition = "PMPS"
-				// Further untangling in variants.go
-			case "V.5":
-				edition = "PMPS06"
-			case "V.6":
-				edition = "PMPS07"
-			case "V.7":
-				edition = "PMPS08"
-			case "V.8":
-				edition = "PMPS09"
-			case "V.9":
-				edition = "PMPS10"
-			case "V.10":
-				edition = "PMPS11"
-			}
-		// Use as is, drop variant
-		case "Guru Lands":
-			variant = ""
-		// Sets preprocessed earlier, or with invalid numbers, don't do anything
-		case "Arena League Promos",
-			"APAC Lands",
-			"Euro Lands",
-			"Anthologies",
-			"Misprints",
-			"Modern Horizons 2: Extras":
 		default:
 			// Old editions do not have any number assigned, if so, then keep
 			// the V.1 V.2 etc style and process in variants.go
