@@ -61,6 +61,8 @@ var convention2editionTable = map[string]string{
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
+	var foil bool
+
 	for _, name := range filteredExpansions {
 		if edition == name {
 			return nil, mtgmatcher.ErrUnsupported
@@ -115,6 +117,47 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Arena 1999 misprint"
 		default:
 			return nil, mtgmatcher.ErrUnsupported
+		}
+
+	case "Simplified Chinese Alternate Art Cards":
+		switch cardName {
+		case "Drudge Skeletons":
+			switch variant {
+			case "V.1":
+				edition = "6ED"
+			case "V.2", "V.3":
+				edition = "7ED"
+			case "V.4", "V.5":
+				edition = "8ED"
+			case "V.6", "V.7":
+				edition = "9ED"
+			}
+			switch variant {
+			case "V.3", "V.5", "V.7":
+				foil = true
+			}
+			variant = "Simplified Chinese Alternate Art Cards"
+		case "Raise Dead":
+			switch variant {
+			case "V.1", "V.2":
+				edition = "7ED"
+				foil = (variant == "V.2")
+			case "":
+				edition = "POR"
+			}
+			variant = "Simplified Chinese Alternate Art Cards"
+		case "Blaze":
+			edition = "POR"
+			switch variant {
+			case "V.1":
+				variant = "118†s"
+			case "V.2":
+				variant = "118s"
+			}
+		case "Charcoal Diamond":
+			edition = "7ED"
+			foil = (variant == "V.2")
+			variant = "Simplified Chinese Alternate Art Cards"
 		}
 
 	case "Arabian Nights":
@@ -850,5 +893,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
+		Foil:      foil,
 	}, nil
 }
