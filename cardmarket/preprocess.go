@@ -456,10 +456,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		variant = landMap[number]
 
 	case "Standard Showdown Promos":
-		if variant == "V.1" {
+		switch variant {
+		case "V.1":
 			edition = "XLN Standard Showdown"
-		} else if variant == "V.2" {
+		case "V.2":
 			edition = "M19 Standard Showdown"
+		case "V.3":
+			edition = "MKM Standard Showdown"
 		}
 
 	case "Release Promos":
