@@ -19,9 +19,6 @@ func (pe *PreprocessError) Error() string {
 }
 
 var promo2editionTable = map[string]string{
-	// Dengeki Maoh Promos
-	"Shepherd of the Lost": "URL/Convention Promos",
-
 	// Promos
 	"Evolving Wilds":      "Tarkir Dragonfury",
 	"Ruthless Cullblade":  "Worldwake Promos",
@@ -58,6 +55,13 @@ var convention2editionTable = map[string]string{
 	"Nightpack Ambusher":  "PM20",
 	"Deeproot Champion":   "PXLN",
 	"Death Baron":         "PM19",
+}
+
+var dengeki2editionTable = map[string]string{
+	"Shepherd of the Lost": "PURL",
+	"Chandra's Spitfire":   "PMEI",
+	"Cunning Sparkmage":    "PMEI",
+	"Chandra's Outrage":    "PMEI",
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
@@ -449,8 +453,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	// Catch-all sets for anything promo
-	case "Dengeki Maoh Promos",
-		"Promos",
+	case "Promos",
 		"DCI Promos",
 		"Magic the Gathering Products",
 		"MagicCon Products":
@@ -544,6 +547,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		ed, found := promo2editionTable[cardName]
 		if found {
 			edition = ed
+		}
+
+	case "Dengeki Maoh Promos":
+		ed, found := dengeki2editionTable[cardName]
+		if found {
+			edition = ed
+			variant = ""
 		}
 
 	case "Convention Promos":
