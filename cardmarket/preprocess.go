@@ -66,6 +66,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		cardName = vars[0]
 		variant = vars[1]
 	}
+	ogVariant := variant
 
 	switch edition {
 
@@ -130,10 +131,11 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	case "Champions of Kamigawa":
+		variant = number
 		if cardName == "Brothers Yamazaki" {
-			if variant == "V.1" {
+			if ogVariant == "V.1" {
 				variant = "160a"
-			} else if variant == "V.2" {
+			} else if ogVariant == "V.2" {
 				variant = "160b"
 			}
 		}
@@ -328,8 +330,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	case "Duel Decks: Jace vs. Chandra":
-		if variant == "V.2" {
-			variant = "Japanese"
+		variant = number
+		switch cardName {
+		case "Chandra Nalaar", "Jace Beleren":
+			if ogVariant == "V.2" {
+				variant = "Japanese"
+			}
 		}
 
 	case "Gateway Promos":
