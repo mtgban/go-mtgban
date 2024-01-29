@@ -210,11 +210,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
-	case "Commander's Arsenal":
-		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
-			edition = "OCM1"
-		}
-
 	case "Commander Anthology II",
 		"Ravnica Allegiance",
 		"Guilds of Ravnica",
@@ -588,12 +583,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 		variant = ""
 
-	// This is the only CMD set that needs it
-	case "Commander: Zendikar Rising":
-		if variant == "V.2" {
-			variant = "Extended Art"
-		}
-
 	case "Mystical Archive":
 		switch variant {
 		case "V.1":
@@ -700,6 +689,31 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Serialized"
 		}
 
+	case "Commander's Arsenal":
+		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
+			edition = "OCM1"
+		}
+
+	case "Commander",
+		"Commander 2013",
+		"Commander 2014",
+		"Commander 2015",
+		"Commander 2016",
+		"Commander 2017",
+		"Commander 2018",
+		"Commander 2019",
+		"Commander: Ikoria":
+		variant = number
+		if ogVariant == "V.2" && !mtgmatcher.IsBasicLand(cardName) {
+			variant = "oversized"
+		}
+
+	case "Commander Legends: Battle for Baldur's Gate: Promos":
+		variant = "Prerelease"
+
+	case "Commander: Streets of New Capenna: Promos":
+		variant = "Promo Pack"
+
 	case "Jumpstart 2022":
 		if !mtgmatcher.IsBasicLand(cardName) {
 			switch variant {
@@ -714,26 +728,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		variant = number
 
 	default:
-		if strings.Contains(edition, "Commander") {
-			hasExtra := strings.HasSuffix(edition, ": Extras")
-			edition = mtgmatcher.ParseCommanderEdition(edition, "")
-
-			// This tag is used randomly
-			if variant == "V.2" {
-				// Catch any older oversized commander
-				if strings.HasPrefix(edition, "Commander 20") {
-					variant = "oversized"
-					// CMR has multiple prints in different sets (ie Return to Dust)
-				} else if strings.HasPrefix(edition, "Commander Legends") {
-					variant = "Extended Art"
-					// Otherwise it's the new thick stock print
-				} else if hasExtra {
-					variant = "Thick Stock"
-				}
-			} else if hasExtra {
-				variant = number
-			}
-		} else if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
+		if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
 			// Pre-search the card, if not found it's likely a sideboard variant
 			_, err := mtgmatcher.Match(&mtgmatcher.Card{
 				Name:    cardName,
