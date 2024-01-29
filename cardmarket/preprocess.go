@@ -536,13 +536,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			edition = ed
 		}
 
-	case "Magic Origins: Promos":
-		if variant == "V.2" {
-			variant = number
-		} else {
-			variant = "Prerelease"
-		}
-
 	case "Core 2019: Promos":
 		variant = "Prerelease"
 		edition = "PM19"
@@ -728,8 +721,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		variant = number
 
 	default:
-		if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
-			// Pre-search the card, if not found it's likely a sideboard variant
+		switch {
+		// Pre-search the card, if not found it's likely a sideboard variant
+		case strings.HasPrefix(edition, "Pro Tour 1996:"),
+			strings.HasPrefix(edition, "WCD "):
 			_, err := mtgmatcher.Match(&mtgmatcher.Card{
 				Name:    cardName,
 				Edition: edition,
@@ -737,16 +732,16 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			if err != nil {
 				edition += " Sideboard"
 			}
-		} else if strings.Contains(edition, ": Extras") || strings.Contains(edition, ": Promos") {
-			// These sets usually have incorrect numbering
-			if variant == number {
-				variant = ""
-			}
 
-			editionNoSuffix := strings.TrimSuffix(edition, ": Extras")
+		// All the various promos
+		case strings.Contains(edition, ": Promos"):
+			editionNoSuffix := edition
 			editionNoSuffix = strings.TrimSuffix(editionNoSuffix, ": Promos")
 			editionNoSuffix = strings.Replace(editionNoSuffix, "Core", "Core Set", 1)
+			editionNoSuffix = strings.TrimSpace(editionNoSuffix)
 
+			// Retrieve the set date because different tags mean different things
+			// depending on the epoch
 			set, err := mtgmatcher.GetSetByName(editionNoSuffix)
 			if err != nil {
 				return nil, &PreprocessError{
@@ -762,89 +757,71 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				}
 			}
 
-			if strings.Contains(edition, ": Extras") {
-				if setDate.Before(mtgmatcher.PromosForEverybodyYay) {
-					if mtgmatcher.HasPrereleasePrinting(cardName) {
-						variant = "Prerelease"
-						edition = strings.Replace(edition, ": Extras", " Promos", 1)
-					}
-					if mtgmatcher.IsBasicLand(cardName) {
-						edition = strings.Replace(edition, " Promos", "", 1)
-					}
-				} else {
-					// KHM: Extras has spurious promo pack cards in it
-					if len(mtgmatcher.MatchInSet(cardName, set.Code)) != 0 {
-						variant = number
-					} else {
-						if mtgmatcher.HasPromoPackPrinting(cardName) {
-							variant = "Promo Pack"
-						} else if mtgmatcher.HasPrereleasePrinting(cardName) {
-							variant = "Prerelease"
-						}
-					}
+			// Anything between KTK and ELD
+			// These sets are always Prerelease, except for a couple of intro packs
+			// that are marked in an unpredictable way
+			if setDate.After(mtgmatcher.NewPrereleaseDate) &&
+				setDate.Before(mtgmatcher.PromosForEverybodyYay) {
+				variant = "Prerelease"
+
+				prereleaseTag := "V.1"
+				switch editionNoSuffix {
+				case "Eldrich Moon",
+					"Shadows over Innistrad",
+					"Oath of the Gatewatch",
+					"Magic Origins":
+					prereleaseTag = "V.2"
 				}
-			} else if strings.Contains(edition, ": Promos") {
-				if setDate.After(mtgmatcher.NewPrereleaseDate) &&
-					setDate.Before(mtgmatcher.PromosForEverybodyYay) {
-					if strings.HasPrefix(variant, "V.") {
-						if variant == "V.1" {
-							variant = number
-						} else if variant == "V.2" {
-							variant = "Prerelease"
-						}
-					} else {
-						variant = "Prerelease"
-					}
-				} else if setDate.After(mtgmatcher.PromosForEverybodyYay) {
-					// Default tags
-					speciaTag := "V.0" // custom, ignored for most cases
-					prerelTag := "V.1"
-					promopTag := "V.2"
-					bundleTag := "V.3"
+				if ogVariant == prereleaseTag {
+					variant = "Prerelease"
+				} else if ogVariant != number {
+					variant = number
+				}
 
-					// Special cases
-					switch edition {
-					case "Theros Beyond Death: Promos":
-						promopTag = "V.1"
-						prerelTag = "V.2"
-						if cardName == "Arasta of the Endless Web" {
-							bundleTag = "V.1"
-							promopTag = "V.2"
-							prerelTag = "V.3"
-						}
-					case "Ikoria: Lair of Behemoths: Promos":
-						promopTag = "V.1"
-						prerelTag = "V.2"
-						if cardName == "Colossification" && variant == "" {
-							variant = bundleTag
-						}
-					case "Zendikar Rising: Promos":
-						promopTag = "V.1"
-						prerelTag = "V.2"
-						if variant == "V.1" && strings.Contains(cardName, " // ") {
-							return nil, mtgmatcher.ErrUnsupported
-						}
-					case "Adventures in the Forgotten Realms: Promos":
-						speciaTag = "V.3"
-						bundleTag = "V.4"
-					}
+			} else if setDate.After(mtgmatcher.PromosForEverybodyYay) {
+				// Default tags
+				customVariant := ""
+				specialTag := "V.0" // custom, ignored for most cases
+				prerelTag := "V.1"
+				promoTag := "V.2"
+				bundleTag := "V.3"
 
-					switch variant {
-					case speciaTag:
-						switch edition {
-						case "Adventures in the Forgotten Realms: Promos":
-							variant = "Ampersand"
+				// Special cases
+				switch editionNoSuffix {
+				case "Theros Beyond Death",
+					"Ikoria: Lair of Behemoths",
+					"Zendikar Rising":
+					promoTag = "V.1"
+					prerelTag = "V.2"
+					switch cardName {
+					case "Arasta of the Endless Web":
+						promoTag = "V.2"
+						prerelTag = "V.3"
+					case "Colossification":
+						if number == "364" {
+							bundleTag = ""
 						}
-					case bundleTag:
-						variant = "Bundle"
-					case promopTag:
+					}
+				case "Adventures in the Forgotten Realms":
+					specialTag = "V.3"
+					customVariant = "Ampersand"
+					bundleTag = "V.4"
+				}
+
+				switch variant {
+				case specialTag:
+					variant = customVariant
+				case promoTag:
+					variant = "Promo Pack"
+				case prerelTag:
+					variant = "Prerelease"
+				case bundleTag:
+					variant = "Bundle"
+				default:
+					if strings.Contains(cardName, "//") {
+						variant = number
+					} else if mtgmatcher.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
-					case prerelTag:
-						variant = "Prerelease"
-					default:
-						if mtgmatcher.HasPromoPackPrinting(cardName) {
-							variant = "Promo Pack"
-						}
 					}
 				}
 			}
