@@ -284,6 +284,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Wrath of God":
 			edition = "2XM"
 			variant = "Launch"
+		case "Weathered Wayfarer",
+			"Bring to Light":
+			edition = "2X2"
+			variant = "Launch"
+		default:
+			if len(mtgmatcher.MatchInSet(cardName, "PHEL")) == 1 {
+				edition = "PHEL"
+			}
 		}
 		// This set has incorrect numbering
 		if variant == number {
