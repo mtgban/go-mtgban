@@ -367,6 +367,9 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Karn's Bastion":
 			edition = "War of the Spark Promos"
 			variant = "" // Drop WAR
+		default:
+			edition = "Ravnica Weekend"
+			variant = number
 		}
 
 	case "Arena League Promos":
