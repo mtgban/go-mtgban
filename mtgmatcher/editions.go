@@ -440,6 +440,7 @@ var EditionTable = map[string]string{
 	"Vanguard":                 "Vanguard Series",
 	"MicroProse":               "MicroProse Promos",
 	"Duel Masters Japanese":    "Magic × Duel Masters Promos",
+	"Harper Prism Promos":      "HarperPrism Book Promos",
 
 	"Planeswalker Event Promos": "Planeswalker Championship Promos",
 
