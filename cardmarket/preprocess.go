@@ -82,24 +82,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
-	case "Player Rewards Promos":
-		switch cardName {
-		case "Lightning Bolt":
-			if variant == "V.1" {
-				variant = "oversized"
-			}
-		case "Comet Storm",
-			"Emrakul, the Aeons Torn",
-			"Feral Hydra",
-			"Glissa, the Traitor",
-			"Hero of Bladehold",
-			"Rampaging Baloths",
-			"Spellbreaker Behemoth",
-			"Sun Titan",
-			"Wurmcoil Engine":
-			variant = "oversized"
-		}
-
 	case "Misprints":
 		switch cardName {
 		case "Laquatus's Champion":
@@ -128,16 +110,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "light"
 		}
 
-	case "Champions of Kamigawa":
-		variant = number
-		if cardName == "Brothers Yamazaki" {
-			if ogVariant == "V.1" {
-				variant = "160a"
-			} else if ogVariant == "V.2" {
-				variant = "160b"
-			}
-		}
-
 	case "Fallen Empires",
 		"Homelands":
 		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
@@ -147,39 +119,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				(variant == "V.4" && strings.HasSuffix(num, "d")) {
 				variant = num
 				break
-			}
-		}
-
-	case "Duel Decks: Anthology":
-		switch cardName {
-		case "Giant Growth":
-			if variant == "V.1" {
-				edition = "GVL"
-			} else if variant == "V.2" {
-				edition = "EVG"
-			}
-		case "Flamewave Invoker":
-			if variant == "V.1" {
-				edition = "JVC"
-			} else if variant == "V.2" {
-				edition = "EVG"
-			}
-		case "Corrupt":
-			if variant == "V.1" {
-				edition = "DVD"
-			} else if variant == "V.2" {
-				edition = "GVL"
-			}
-		case "Harmonize":
-			if variant == "V.1" {
-				edition = "EVG"
-			} else if variant == "V.2" {
-				edition = "GVL"
-			}
-		default:
-			variant = ""
-			if mtgmatcher.IsBasicLand(cardName) {
-				return nil, mtgmatcher.ErrUnsupported
 			}
 		}
 
@@ -200,11 +139,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 
-	case "Planeshift":
-		if variant == "V.2" {
-			variant = "Alt Art"
-		}
-
 	case "Visions":
 		if variant == "V.2" {
 			return nil, mtgmatcher.ErrUnsupported
@@ -215,45 +149,9 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
-	case "Theros",
-		"Born of the Gods",
-		"Journey into Nyx":
-		variant = number
-		if strings.HasPrefix(variant, "C") {
-			switch edition {
-			case "Theros":
-				edition = "Face the Hydra"
-			case "Born of the Gods":
-				edition = "Battle the Horde"
-			case "Journey into Nyx":
-				edition = "Defeat a God"
-			}
-		}
-
-	case "Zendikar":
-		switch variant {
-		case "V.1", "V.3", "V.5", "V.7":
-			variant = number + "a"
-		default:
-			variant = number
-		}
-
-	case "Battle for Zendikar",
-		"Oath of the Gatewatch":
-		switch variant {
-		case "V.2", "V.4", "V.6", "V.8", "V.10":
-			variant = number + "a"
-		default:
-			variant = number
-		}
-
-	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
-		if variant == "V.1" {
-			variant = "Japanese"
-			edition = "War of the Spark"
-		} else if variant == "V.2" {
-			variant = "Prerelease Japanese"
-			edition = "War of the Spark Promos"
+	case "Planeshift":
+		if variant == "V.2" {
+			variant = "Alt Art"
 		}
 
 	case "Judge Rewards Promos":
@@ -308,15 +206,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
-	case "Duel Decks: Jace vs. Chandra":
-		variant = number
-		switch cardName {
-		case "Chandra Nalaar", "Jace Beleren":
-			if ogVariant == "V.2" {
-				variant = "Japanese"
-			}
-		}
-
 	case "Gateway Promos":
 		switch cardName {
 		case "Fling",
@@ -347,6 +236,24 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		default:
 			edition = "Ravnica Weekend"
 			variant = number
+		}
+
+	case "Player Rewards Promos":
+		switch cardName {
+		case "Lightning Bolt":
+			if variant == "V.1" {
+				variant = "oversized"
+			}
+		case "Comet Storm",
+			"Emrakul, the Aeons Torn",
+			"Feral Hydra",
+			"Glissa, the Traitor",
+			"Hero of Bladehold",
+			"Rampaging Baloths",
+			"Spellbreaker Behemoth",
+			"Sun Titan",
+			"Wurmcoil Engine":
+			variant = "oversized"
 		}
 
 	case "Arena League Promos":
@@ -569,6 +476,99 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			edition = ed
 		}
 
+	case "Duel Decks: Jace vs. Chandra":
+		variant = number
+		switch cardName {
+		case "Chandra Nalaar", "Jace Beleren":
+			if ogVariant == "V.2" {
+				variant = "Japanese"
+			}
+		}
+
+	case "Duel Decks: Anthology":
+		switch cardName {
+		case "Giant Growth":
+			if variant == "V.1" {
+				edition = "GVL"
+			} else if variant == "V.2" {
+				edition = "EVG"
+			}
+		case "Flamewave Invoker":
+			if variant == "V.1" {
+				edition = "JVC"
+			} else if variant == "V.2" {
+				edition = "EVG"
+			}
+		case "Corrupt":
+			if variant == "V.1" {
+				edition = "DVD"
+			} else if variant == "V.2" {
+				edition = "GVL"
+			}
+		case "Harmonize":
+			if variant == "V.1" {
+				edition = "EVG"
+			} else if variant == "V.2" {
+				edition = "GVL"
+			}
+		default:
+			variant = ""
+			if mtgmatcher.IsBasicLand(cardName) {
+				return nil, mtgmatcher.ErrUnsupported
+			}
+		}
+
+	case "Champions of Kamigawa":
+		variant = number
+		if cardName == "Brothers Yamazaki" {
+			if ogVariant == "V.1" {
+				variant = "160a"
+			} else if ogVariant == "V.2" {
+				variant = "160b"
+			}
+		}
+
+	case "Zendikar":
+		switch variant {
+		case "V.1", "V.3", "V.5", "V.7":
+			variant = number + "a"
+		default:
+			variant = number
+		}
+
+	case "Theros",
+		"Born of the Gods",
+		"Journey into Nyx":
+		variant = number
+		if strings.HasPrefix(variant, "C") {
+			switch edition {
+			case "Theros":
+				edition = "Face the Hydra"
+			case "Born of the Gods":
+				edition = "Battle the Horde"
+			case "Journey into Nyx":
+				edition = "Defeat a God"
+			}
+		}
+
+	case "Battle for Zendikar",
+		"Oath of the Gatewatch":
+		switch variant {
+		case "V.2", "V.4", "V.6", "V.8", "V.10":
+			variant = number + "a"
+		default:
+			variant = number
+		}
+
+	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
+		if variant == "V.1" {
+			variant = "Japanese"
+			edition = "War of the Spark"
+		} else if variant == "V.2" {
+			variant = "Prerelease Japanese"
+			edition = "War of the Spark Promos"
+		}
+
 	case "Core 2019: Promos":
 		variant = "Prerelease"
 		edition = "PM19"
@@ -600,18 +600,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			} else {
 				variant = ""
 			}
-		}
-
-	case "Mystical Archive":
-		switch variant {
-		case "V.1":
-			variant = ""
-		case "V.2":
-			variant = "JPN"
-		case "V.3":
-			variant = "Foil-Etched"
-		case "V.4":
-			variant = "JPN Foil-Etched"
 		}
 
 	case "Modern Horizons 2: Extras":
@@ -675,6 +663,18 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "Retro Frame"
 		case "V.2":
 			variant = "Foil Etched"
+		}
+
+	case "Mystical Archive":
+		switch variant {
+		case "V.1":
+			variant = ""
+		case "V.2":
+			variant = "JPN"
+		case "V.3":
+			variant = "Foil-Etched"
+		case "V.4":
+			variant = "JPN Foil-Etched"
 		}
 
 	case "Commander's Arsenal":
