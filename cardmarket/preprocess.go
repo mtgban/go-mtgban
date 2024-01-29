@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,10 +29,6 @@ var promo2editionTable = map[string]string{
 	"Dreg Mangler":        "Return to Ravnica Promos",
 	"Karametra's Acolyte": "Theros Promos",
 
-	"Goblin Chieftain":        "Resale Promos",
-	"Oran-Rief, the Vastwood": "Resale Promos",
-	"Loam Lion":               "Resale Promos",
-
 	"Dragon Fodder":        "Tarkir Dragonfury",
 	"Dragonlord's Servant": "Tarkir Dragonfury",
 	"Foe-Razer Regent":     "Tarkir Dragonfury",
@@ -39,50 +36,14 @@ var promo2editionTable = map[string]string{
 	"Reliquary Tower":   "Love Your LGS",
 	"Hangarback Walker": "Love Your LGS",
 
-	"Geist of Saint Traft": "World Magic Cup Qualifiers",
-	"Sol Ring":             "MagicFest 2019",
-	"Crucible of Worlds":   "World Championship Promos",
+	"Sol Ring":           "MagicFest 2019",
+	"Crucible of Worlds": "World Championship Promos",
 
 	"Forest":   "2017 Gift Pack",
 	"Island":   "2017 Gift Pack",
 	"Mountain": "2017 Gift Pack",
 	"Plains":   "2017 Gift Pack",
 	"Swamp":    "2017 Gift Pack",
-
-	// Media Inserts
-	"Archangel":                           "PMEI",
-	"Ascendant Evincar":                   "PMEI",
-	"Bone Shredder":                       "PMEI",
-	"Cast Down":                           "PMEI",
-	"Counterspell":                        "PMEI",
-	"Crop Rotation":                       "PMEI",
-	"Dark Ritual":                         "PMEI",
-	"Darksteel Juggernaut":                "PMEI",
-	"Daxos, Blessed by the Sun":           "PMEI",
-	"Diabolic Edict":                      "PMEI",
-	"Duress":                              "PMEI",
-	"Heliod's Pilgrim":                    "PMEI",
-	"Hypnotic Sprite // Mesmeric Glare":   "PMEI",
-	"Jamuraan Lion":                       "PMEI",
-	"Kuldotha Phoenix":                    "PMEI",
-	"Lava Coil":                           "PMEI",
-	"Phantasmal Dragon":                   "PMEI",
-	"Shivan Dragon":                       "PMEI",
-	"Shock":                               "PMEI",
-	"Sprite Dragon":                       "PMEI",
-	"Staggering Insight":                  "PMEI",
-	"Tangled Florahedron // Tangled Vale": "PMEI",
-	"Thorn Elemental":                     "PMEI",
-	"Voltaic Key":                         "PMEI",
-
-	// DCI Promos
-	"Abrupt Decay":                "World Magic Cup Qualifiers",
-	"Inkmoth Nexus":               "World Magic Cup Qualifiers",
-	"Thalia, Guardian of Thraben": "World Magic Cup Qualifiers",
-	"Vengevine":                   "World Magic Cup Qualifiers",
-
-	// Retro Frame
-	"Fabled Passage": "PW21",
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
@@ -477,15 +438,96 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	// Catch-all sets for anything promo
 	case "Dengeki Maoh Promos",
 		"Promos",
-		"DCI Promos":
+		"DCI Promos",
+		"Magic the Gathering Products",
+		"MagicCon Products":
 		switch cardName {
-		case "Mayor of Avabruck / Howlpack Alpha":
+		case "Mayor of Avabruck / Howlpack Alpha",
+			"Ancestral Recall",
+			"Scrubland",
+			"Time Walk",
+			"Gaea's Cradle":
 			variant = "oversized"
 		case "Nalathni Dragon":
-			edition = "Redemption Program"
+			return nil, mtgmatcher.ErrUnsupported
+		case "Relentless Rats":
+			switch number {
+			case "":
+				edition = "PM11"
+			case "10", "11":
+				edition = "SLP"
+				variant = number
+			}
+		case "Mystical Dispute":
+			if variant == "V.1" {
+				edition = "PWCS"
+			} else if variant == "V.2" {
+				edition = "PR23"
+			}
+		case "Snapcaster Mage ":
+			if variant == "V.1" {
+				edition = "PPRO"
+			} else if variant == "V.2" {
+				edition = "PR23"
+			}
+		case "Liliana of the Veil":
+			if variant == "V.1" {
+				edition = "PPRO"
+			} else if variant == "V.2" {
+				edition = "PWCS"
+			}
+		case "Orb of Dragonkind":
+			edition = "PLG21"
+			if variant == "V.1" {
+				variant = "J1"
+			} else if variant == "V.2" {
+				variant = "J2"
+			} else if variant == "V.3" {
+				variant = "J3"
+			}
+		case "Arcane Signet":
+			if number == "1" {
+				edition = "P30M"
+				variant = "1F★"
+				if edition == "MagicCon Products" {
+					variant = "1F"
+				}
+			} else if variant == "3" {
+				edition = "PSVC"
+				variant = ""
+			}
+
+		default:
+			for _, code := range []string{
+				"PMEI", "PPRO", "PEWK", "PNAT", "WMC", "PWCS", "PRES",
+				"P30T", "PF23", "PLG21",
+				"SLD", "SLP",
+				"PW21", "PW22", "PW23",
+				"PL21", "PL22", "PL23",
+			} {
+				// number is often wrong, so
+				num, _ := strconv.Atoi(number)
+				results := mtgmatcher.MatchInSetNumber(cardName, code, strings.TrimLeft(number, "0"))
+				switch code {
+				case "PMEI", "PEWK", "PW21", "PW22", "PW23":
+					results = mtgmatcher.MatchInSet(cardName, code)
+				default:
+					if num < 10 {
+						results = mtgmatcher.MatchInSet(cardName, code)
+					}
+				}
+				if len(results) == 1 {
+					edition = code
+					variant = ""
+					if num >= 10 {
+						variant = number
+					}
+					break
+				}
+			}
+
 		}
-		// Variant is always unreliable
-		variant = ""
+
 		ed, found := promo2editionTable[cardName]
 		if found {
 			edition = ed
