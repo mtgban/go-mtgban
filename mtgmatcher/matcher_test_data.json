@@ -902,6 +902,15 @@
         }
     },
     {
+        "uuid": "4f1f9adc-1aee-5d28-97c3-e44e51e38879",
+        "description": "promo_pack_only_number_tagged",
+        "input": {
+            "name": "Teferi, Master of Time",
+            "variant": "75p",
+            "edition": "Core 2021: Promos"
+        }
+    },
+    {
         "uuid": "f877637f-fde4-52c8-a7be-ca5c494c38f3",
         "description": "promo_pack_core_2020",
         "input": {

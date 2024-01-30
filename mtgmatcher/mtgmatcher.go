@@ -1158,6 +1158,9 @@ func adjustEdition(inCard *Card) {
 					variation = "75"
 				}
 			}
+			if strings.HasSuffix(variation, "s") || strings.HasSuffix(variation, "p") {
+				edition = backend.Sets["PM21"].Name
+			}
 		case "Mind Stone":
 			switch edition {
 			// Skip the check if this card already has the right edition
