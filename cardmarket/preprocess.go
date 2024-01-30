@@ -789,6 +789,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				// Special cases
 				switch editionNoSuffix {
 				case "Theros Beyond Death",
+					"Core 2021",
 					"Ikoria: Lair of Behemoths",
 					"Zendikar Rising":
 					promoTag = "V.1"
@@ -806,6 +807,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 					specialTag = "V.3"
 					customVariant = "Ampersand"
 					bundleTag = "V.4"
+				case "Kamigawa: Neon Dynasty",
+					"The Brothers' War":
+					specialTag = "V.3"
+					customVariant = "oversized"
+					bundleTag = "V.4"
+				case "Innistrad: Crimson Vow: Promos":
+					specialTag = "V.3"
+					customVariant = "Play Promo"
 				}
 
 				switch variant {
