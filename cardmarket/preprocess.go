@@ -687,6 +687,35 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 
+	case "Mystery Booster":
+		variant = number
+		switch cardName {
+		case "Laboratory Maniac":
+			variant = "UMA-61"
+		case "Plains":
+			variant = "UGL-84"
+		}
+
+	case "The List":
+		variant = number
+		switch cardName {
+		case "Laboratory Maniac":
+			variant = "ISD-61"
+		case "Bottle Gnomes":
+			variant = "TMP-278"
+		case "Man-o'-War":
+			variant = "VIS-37"
+		case "Ineffable Blessing",
+			"Everythingamajig":
+			variant = ogVariant
+		case "Imperious Perfect":
+			variant = "PCMP-9"
+		case "Burst Lightning":
+			variant = "P10-8"
+		case "Plains":
+			variant = "AKH-256"
+		}
+
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
 		if mtgmatcher.IsBasicLand(cardName) {
