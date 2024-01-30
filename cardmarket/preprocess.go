@@ -64,6 +64,21 @@ var dengeki2editionTable = map[string]string{
 	"Chandra's Outrage":    "PMEI",
 }
 
+var gameday2editionTable = map[string]string{
+	"Consider":                 "PW22",
+	"Recruitment Officer":      "GDY",
+	"Touch the Spirit Realm":   "GDY",
+	"Power Word Kill":          "GDY",
+	"Fateful Absence":          "PW22",
+	"Atsushi, the Blazing Sky": "PW22",
+	"Skyclave Apparition":      "GDY",
+	"All-Seeing Arbiter":       "GDY",
+	"Shivan Devastator":        "GDY",
+	"Workshop Warchief":        "GDY",
+	"Braids, Arisen Nightmare": "GDY",
+	"Surge Engine":             "GDY",
+}
+
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	var foil bool
 
@@ -558,6 +573,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	case "Convention Promos":
 		ed, found := convention2editionTable[cardName]
+		if found {
+			edition = ed
+			variant = ""
+		}
+
+	case "Game Day Promos":
+		ed, found := gameday2editionTable[cardName]
 		if found {
 			edition = ed
 			variant = ""
