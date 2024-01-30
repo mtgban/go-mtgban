@@ -738,6 +738,16 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "AKH-256"
 		}
 
+	// Some cards from PLST overflow here
+	case "Secret Lair Drop Series: Secretversary 2021":
+		variant = number
+		for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
+			if strings.HasSuffix(card.Number, "-"+number) {
+				edition = "PLST"
+				variant = card.Number
+			}
+		}
+
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
 		if mtgmatcher.IsBasicLand(cardName) {
