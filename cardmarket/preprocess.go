@@ -748,6 +748,17 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 
+	case "Modern Horizons 2",
+		"Secret Lair Drop Series: June Superdrop 2022":
+		switch variant {
+		case "V.1":
+			variant = number
+		case "V.2":
+			variant = number + " Etched"
+		default:
+			variant = number
+		}
+
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
 		if mtgmatcher.IsBasicLand(cardName) {
