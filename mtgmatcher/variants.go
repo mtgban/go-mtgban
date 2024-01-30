@@ -4223,6 +4223,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 var multiPromosVariants = map[string]map[string]string{
 	"Blast Zone": {
 		"brothers": "258",
+		"theros":   "244",
 		"spark":    "244",
 	},
 	"Gishath, Sun's Avatar": {
@@ -4230,8 +4231,9 @@ var multiPromosVariants = map[string]map[string]string{
 		"prerelease ixalan": "222",
 	},
 	"Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun": {
-		"caverns":           "188",
-		"prerelease ixalan": "191",
+		"caverns of ixalan: promos": "188",
+		"caverns":                   "188",
+		"prerelease ixalan":         "191",
 	},
 	"Fabled Passage": {
 		"2021":     "246",
@@ -4239,14 +4241,17 @@ var multiPromosVariants = map[string]map[string]string{
 	},
 	"Heroic Intervention": {
 		"2021":   "188",
+		"theros": "109",
 		"revolt": "109",
 	},
 	"Resplendent Angel": {
 		"2019":    "34",
+		"2020":    "34",
 		"caverns": "32",
 	},
 	"Sorcerous Spyglass": {
 		"eldraine": "233",
+		"2020":     "248",
 		"ixalan":   "248",
 	},
 	// not listed here: all the temples
