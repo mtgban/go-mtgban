@@ -633,6 +633,18 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = number
 		}
 
+	case "Guilds of Ravanica: Extras",
+		"Ravnica Allegiance: Extras",
+		"War of the Spark: Extras":
+		variant = "Prerelease"
+		set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
+		if err == nil {
+			num, _ := strconv.Atoi(number)
+			if num > set.BaseSetSize {
+				variant = number
+			}
+		}
+
 	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
 		if variant == "V.1" {
 			variant = "Japanese"
