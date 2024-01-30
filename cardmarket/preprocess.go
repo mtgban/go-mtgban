@@ -834,6 +834,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "JPN Foil-Etched"
 		}
 
+	// Skip Attraction lights, too many
+	case "Unfinity":
+		if len(mtgmatcher.MatchInSet(cardName, "UNF")) > 1 {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
 	case "Commander's Arsenal":
 		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
 			edition = "OCM1"
