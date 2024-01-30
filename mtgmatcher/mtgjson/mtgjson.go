@@ -212,46 +212,6 @@ const (
 	SuffixPhiLow  = "φ"
 )
 
-var AllPromoTypes = []string{
-	PromoTypeArenaLeague,
-	PromoTypeBoosterfun,
-	PromoTypeBundle,
-	PromoTypeBuyABox,
-	PromoTypeConcept,
-	PromoTypeConfettiFoil,
-	PromoTypeDoubleRainbow,
-	PromoTypeDracula,
-	PromoTypeDraftWeekend,
-	PromoTypeEmbossed,
-	PromoTypeGalaxyFoil,
-	PromoTypeGameDay,
-	PromoTypeGilded,
-	PromoTypeGlossy,
-	PromoTypeGodzilla,
-	PromoTypeHaloFoil,
-	PromoTypeIntroPack,
-	PromoTypeInvisibleInk,
-	PromoTypeJudgeGift,
-	PromoTypeNeonInk,
-	PromoTypeOilSlick,
-	PromoTypePlayPromo,
-	PromoTypePlayerRewards,
-	PromoTypePoster,
-	PromoTypePrerelease,
-	PromoTypePromoPack,
-	PromoTypeRelease,
-	PromoTypeSChineseAltArt,
-	PromoTypeScroll,
-	PromoTypeSerialized,
-	PromoTypeSilverFoil,
-	PromoTypeStarterDeck,
-	PromoTypeStepAndCompleat,
-	PromoTypeSurgeFoil,
-	PromoTypeTextured,
-	PromoTypeThickDisplay,
-	PromoTypeWPN,
-}
-
 func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
 	err = json.NewDecoder(r).Decode(&payload)
 	if err == nil && len(payload.Data) == 0 {

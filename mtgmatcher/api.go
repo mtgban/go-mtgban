@@ -107,6 +107,10 @@ func Tcg2UUID(id string) string {
 	return backend.Tcgplayer[id]
 }
 
+func AllPromoTypes() []string {
+	return backend.AllPromoTypes
+}
+
 func SearchEquals(name string) ([]string, error) {
 	if name == "" {
 		return backend.AllUUIDs, nil

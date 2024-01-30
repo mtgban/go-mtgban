@@ -94,6 +94,9 @@ var backend struct {
 
 	// A list of keywords mapped to the full Commander set name
 	CommanderKeywordMap map[string]string
+
+	// A list of promo types as exported by mtgjson
+	AllPromoTypes []string
 }
 
 var logger = log.New(io.Discard, "", log.LstdFlags)
@@ -310,6 +313,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
+	var promoTypes []string
 
 	for code, set := range ap.Data {
 		if skipSet(set) {
@@ -604,6 +608,13 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				// Single printing, use as-is
 				uuids[card.UUID] = co
 			}
+
+			// Add to the ever growing list of promo types
+			for _, promoType := range card.PromoTypes {
+				if !slices.Contains(promoTypes, promoType) {
+					promoTypes = append(promoTypes, promoType)
+				}
+			}
 		}
 
 		// Replace the original array with the filtered one
@@ -713,6 +724,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 	}
 
+	sort.Strings(promoTypes)
+
 	backend.Hashes = hashes
 	backend.AllUUIDs = allUUIDs
 	backend.AllNames = names
@@ -726,6 +739,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Tcgplayer = tcgplayer
 	backend.AlternateProps = alternates
 	backend.AlternateNames = altNames
+	backend.AllPromoTypes = promoTypes
 
 	backend.CommanderKeywordMap = commanderKeywordMap
 
