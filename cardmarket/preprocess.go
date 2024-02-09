@@ -875,6 +875,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 
 	default:
 		switch {
+		// Try to derive the serialized status from the various Extras sets
+		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && mtgmatcher.HasSerializedPrinting(cardName, strings.TrimSuffix(edition, ": Extras")):
+			variant = "serial"
+
 		// Pre-search the card, if not found it's likely a sideboard variant
 		case strings.HasPrefix(edition, "Pro Tour 1996:"),
 			strings.HasPrefix(edition, "WCD "):

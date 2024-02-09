@@ -222,6 +222,10 @@ func HasPrereleasePrinting(name string, editions ...string) bool {
 	return hasPrinting(name, "promo_type", mtgjson.PromoTypePrerelease, editions...)
 }
 
+func HasSerializedPrinting(name string, editions ...string) bool {
+	return hasPrinting(name, "promo_type", mtgjson.PromoTypeSerialized, editions...)
+}
+
 func HasRetroFramePrinting(name string, editions ...string) bool {
 	return hasPrinting(name, "frame_version", "1997", editions...)
 }
