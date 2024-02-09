@@ -472,6 +472,12 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if !strings.Contains(variant, "-") {
 			variant = product.GetNumber()
 		}
+	case "Murders at Karlov Manor":
+		num := product.GetNumber()
+
+		if num != "" && variant != "a" && variant != "b" {
+			variant = num
+		}
 	case "Fourth Edition",
 		"Revised Edition",
 		"Mirage",

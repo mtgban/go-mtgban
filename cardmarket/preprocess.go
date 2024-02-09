@@ -865,6 +865,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "Commander: Streets of New Capenna: Promos":
 		variant = "Promo Pack"
 
+	case "Murders at Karlov Manor":
+		variant = number
+		if ogVariant == "V.1" {
+			variant = "a"
+		} else if ogVariant == "V.2" {
+			variant = "b"
+		}
+
 	default:
 		switch {
 		// Pre-search the card, if not found it's likely a sideboard variant
