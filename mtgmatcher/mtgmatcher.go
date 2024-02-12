@@ -188,15 +188,6 @@ func Match(inCard *Card) (cardId string, err error) {
 		return "", ErrUnsupported
 	}
 
-	// Normalize card DFC card names if the set rule applies
-	// (first word of the set needs to be present, ie "Secret")
-	dfcsnProps := backend.DFCSameNames[Normalize(inCard.Name)]
-	for _, dfcsnProp := range dfcsnProps {
-		if inCard.Contains(dfcsnProp.Rule) {
-			inCard.Name = dfcsnProp.Name
-		}
-	}
-
 	switch inCard.Name {
 	case "Red Herring",
 		"Pick Your Poison":
@@ -627,6 +618,13 @@ func adjustName(inCard *Card) {
 		}
 	}
 
+	// Rename a DFC with same name
+	splits := strings.Split(inCard.Name, "//")
+	if len(splits) == 2 && strings.TrimSpace(splits[0]) == strings.TrimSpace(splits[1]) {
+		inCard.Name = strings.TrimSpace(splits[0])
+		return
+	}
+
 	// Altenatively try checking across any prefix, as long as it's a double
 	// sided card, for some particular cases, like meld cards, or Treasure Chest
 	// Attempt first to check cards in the same edition if possible
@@ -861,12 +859,6 @@ func adjustEdition(inCard *Card) {
 			} else if inCard.Contains("Peeled") {
 				inCard.Name = "Plains"
 				inCard.Variation = "670"
-			}
-		// There is a DFC with same name, we need to decouple in some way
-		case Contains(inCard.Name, "Garruk Wildspeaker"):
-			if inCard.isBorderless() || inCard.Contains("Li’l’ler Walkers") || strings.Contains(inCard.Variation, "1142") {
-				inCard.Name = "Garruk Wildspeaker"
-				inCard.Variation = "1142"
 			}
 		}
 

@@ -1483,24 +1483,6 @@
         }
     },
     {
-        "uuid": "1d6d8b1a-be16-5d1a-9b49-d0fb7e9178fe",
-        "description": "dfc_reprint_with_a_reprint_samename",
-        "input": {
-            "name": "Garruk Wildspeaker",
-            "variant": "1457",
-            "edition": "Secret Lair"
-        }
-    },
-    {
-        "uuid": "0e7c42dd-89b9-511c-a64c-c772680cfdc9",
-        "description": "dfc_reprint_with_a_reprint_borderless",
-        "input": {
-            "name": "Garruk Wildspeaker",
-            "variant": "Borderless",
-            "edition": "Secret Lair"
-        }
-    },
-    {
         "uuid": "88d06769-564f-5474-a0a4-50b95b409224",
         "description": "dfc_rename_might_interfere_with_sld",
         "input": {
@@ -3312,6 +3294,15 @@
             "variant": "Secret Lair Hand Drawn",
             "edition": "SLD",
             "foil": true
+        }
+    },
+    {
+        "uuid": "2204fa4d-32e6-50b0-9339-55f668732d6f",
+        "description": "secret_lair_dfcsamename_renamed",
+        "input": {
+            "name": "Sol Ring",
+            "variant": "1512",
+            "edition": "SLD"
         }
     },
     {

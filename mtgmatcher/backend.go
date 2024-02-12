@@ -50,11 +50,6 @@ type alternateProps struct {
 	IsFlavor       bool
 }
 
-type dfcProps struct {
-	Rule string
-	Name string
-}
-
 var backend struct {
 	// Map of set code : mtgjson.Set
 	Sets map[string]*mtgjson.Set
@@ -67,8 +62,6 @@ var backend struct {
 
 	// Map with token names
 	Tokens map[string]bool
-	// DFC with equal names on both sides
-	DFCSameNames map[string][]dfcProps
 
 	// Slice with every uniquely normalized name
 	AllNames []string
@@ -308,7 +301,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
 	tokens := map[string]bool{}
-	dfcSameNames := map[string][]dfcProps{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
@@ -395,6 +387,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				card.Layout = "token"
 			}
 
+			// Rename DFCs into a single name
+			dfcSameName := card.IsDFCSameName()
+			if dfcSameName {
+				card.Name = strings.Split(card.Name, " // ")[0]
+			}
+
 			for i, name := range []string{card.FaceName, card.FlavorName, card.FaceFlavorName} {
 				// Skip empty entries
 				if name == "" {
@@ -413,17 +411,15 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					"Start":
 					continue
 				}
-				// Skip faces of DFCs with same names that aren't reskin version of other cars,
-				// so that face names don't pollute the main dictionary with a wrong rename
-				if card.IsDFCSameName() && card.FlavorName == "" {
-					// Save the names of the cards so that we don't have to keep a list
-					// and store the set name so that we can retrieve it later
-					dfcSameNames[Normalize(name)] = append(dfcSameNames[Normalize(name)], dfcProps{
-						Rule: strings.Fields(set.Name)[0],
-						Name: card.Name,
-					})
+				// Skip faces of DFCs with same names that aren't reskin version of other cars
+				if dfcSameName && card.FlavorName == "" {
 					continue
 				}
+				// Rename the sub-name of a DFC card
+				if dfcSameName {
+					name = strings.Split(name, " // ")[0]
+				}
+
 				// If the name is unique, keep track of the numbers so that they
 				// can be decoupled later for reprints of the main card.
 				// If the name is not unique, we might overwrite data and lose
@@ -733,7 +729,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.Tokens = tokens
-	backend.DFCSameNames = dfcSameNames
 	backend.UUIDs = uuids
 	backend.Scryfall = scryfall
 	backend.Tcgplayer = tcgplayer
