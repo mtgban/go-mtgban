@@ -1989,6 +1989,15 @@
         }
     },
     {
+        "uuid": "c2c63eb2-f0fd-5a09-a81b-28e99eb3115b",
+        "description": "lunar_generic_year_of",
+        "input": {
+            "name": "Dragonlord's Servant",
+            "variant": "Year of the Dragon 2024",
+            "edition": "Standard Showdown Promos"
+        }
+    },
+    {
         "uuid": "7f0cf9b2-d30e-5fe1-ab97-3a204624ee14",
         "description": "duels_xbox_promo",
         "input": {

@@ -40,11 +40,7 @@ var EditionTable = map[string]string{
 	"The Brothers' War: Retro Frame Artifacts": "The Brothers' War Retro Artifacts",
 
 	// PL22
-	"APAC Year of the Tiger":     "Year of the Tiger 2022",
-	"Textless Year of the Tiger": "Year of the Tiger 2022",
-	"Year of the Tiger":          "Year of the Tiger 2022",
-	"Year of the Rabbit 2023":    "Year of the Rabbit 2023",
-	"Love Your LGS 2021":         "Love Your LGS 2021",
+	"Love Your LGS 2021": "Love Your LGS 2021",
 
 	// Double Feature
 	"Innistrad: Double Feature - Crimson Vow":   "Innistrad: Double Feature",
