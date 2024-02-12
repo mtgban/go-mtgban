@@ -411,31 +411,16 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Hadoken":
 			cardName = "Lightning Bolt"
 			variant = "675"
-		// These cards have a different number than reported,
-		// cannot rely on the etched detection below
-		case "Demonlord Belzenlok",
-			"Griselbrand",
-			"Liliana's Contract",
-			"Kothophed, Soul Hoarder",
-			"Razaketh, the Foulblooded":
-			if strings.Contains(ogVariant, "Etched") {
-				variant = "etched"
-			}
-		case "Goblin Lackey",
-			"Goblin Matron",
-			"Goblin Recruiter",
-			"Muxus, Goblin Grandee",
-			"Shattergang Brothers":
-			variant += " " + ogVariant
 		case "Zndrsplt, Eye of Wisdom", "Okaun, Eye of Chaos":
 			variant = ogVariant
-		case "Plague Sliver", "Shadowborn Apostle", "Toxin Sliver", "Virulent Sliver":
-			if strings.Contains(ogVariant, "Compleat") {
-				variant = ogVariant
-			}
 		case "Counterspell":
 			if ogVariant == "SL PLAYTEST" {
 				variant = "SCTLR"
+			}
+		default:
+			// Preserve all etched/galaxy/rainbow foil properties
+			if strings.Contains(ogVariant, "Foil") {
+				variant += " " + ogVariant
 			}
 		}
 	case "AFR Ampersand Promos":
