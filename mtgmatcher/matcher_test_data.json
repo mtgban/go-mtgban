@@ -3306,6 +3306,15 @@
         }
     },
     {
+        "uuid": "d21e4d29-ac69-59c5-a2d8-abe854a34426",
+        "description": "secret_lair_rainbow_dedup",
+        "input": {
+            "name": "Obeka, Brute Chronologist",
+            "variant": "1579 Rainbow Foil",
+            "edition": "SLD"
+        }
+    },
+    {
         "uuid": "5507e55e-f034-51f2-8d4c-83008f18a950",
         "description": "empty_variant_cause_showcase",
         "input": {

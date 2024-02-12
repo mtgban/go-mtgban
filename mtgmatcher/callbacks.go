@@ -759,10 +759,10 @@ func sldVariant(inCard *Card, card *mtgjson.Card) bool {
 			result = !result
 		}
 	}
-	// All the DoubleRainbow SLD cards not serialized are tagged as two different entries
+	// All the Rainbow SLD cards not serialized are tagged as two different entries
 	// ie Goblin Lackey or Aminatou, the Fateshifter
-	if hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeDoubleRainbow, "SLD") &&
-		!hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeSerialized, "SLD") {
+	if hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeRainbowFoil, "SLD") ||
+		hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD") {
 		result = strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		if inCard.Foil {
 			result = !result

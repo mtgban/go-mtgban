@@ -189,6 +189,7 @@ const (
 	PromoTypeConcept         = "concept"
 	PromoTypeConfettiFoil    = "confettifoil"
 	PromoTypeDoubleRainbow   = "doublerainbow"
+	PromoTypeRainbowFoil     = "rainbow"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
