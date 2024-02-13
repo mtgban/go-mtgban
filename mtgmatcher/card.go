@@ -257,6 +257,7 @@ func (c *Card) isBasicLand() bool {
 func (c *Card) isGenericPromo() bool {
 	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() && !c.isSDCC() &&
 		!c.isRetro() &&
+		!c.Contains("Year of the") && // tcg
 		!c.Contains("Deckmasters") && // no real promos here, just foils
 		!c.Contains("Token") && !IsToken(c.Name) &&
 		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
