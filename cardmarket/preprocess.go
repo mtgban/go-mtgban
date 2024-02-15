@@ -865,6 +865,27 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "Commander: Streets of New Capenna: Promos":
 		variant = "Promo Pack"
 
+	case "Commander: The Lord of the Rings: Tales of Middle-earth: Extras":
+		variant = number
+		switch cardName {
+		case "Sol Ring":
+			switch ogVariant {
+			case "V.2", "V.4", "V.6":
+				variant += " serial"
+			}
+		}
+
+	case "The Lord of the Rings: Tales of Middle-earth Holiday Release":
+		variant = number
+		if len(mtgmatcher.MatchInSet(cardName, "LTC")) > 0 {
+			edition = "LTC"
+			if mtgmatcher.HasSerializedPrinting(cardName, "LTC") {
+				variant = "serial"
+			}
+		} else if len(mtgmatcher.MatchInSet(cardName, "LTR")) > 0 {
+			edition = "LTR"
+		}
+
 	case "Murders at Karlov Manor":
 		variant = number
 		if ogVariant == "V.1" {
