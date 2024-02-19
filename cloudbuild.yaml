@@ -4,11 +4,11 @@ steps:
       - 'build'
       - '--no-cache'
       - '-t'
-      - '${{ secrets.STRUDEL_BOOGIE }}:latest'
+      - 'gcr.io/ban-on-fire/strudelboogie:latest'
       - '.'
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '${{ secrets.STRUDEL_BOOGIE }}:latest'
+      - 'gcr.io/ban-on-fire/strudelboogie:latest'
 images:
-  - '${{ secrets.STRUDEL_BOOGIE }}:latest'
+  - 'gcr.io/ban-on-fire/strudelboogie:latest'
