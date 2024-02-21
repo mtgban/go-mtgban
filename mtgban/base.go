@@ -1,21 +1,17 @@
 package mtgban
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"sort"
 
-	"github.com/google/uuid"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"golang.org/x/exp/slices"
 )
 
 func computeSKU(cardId, condition string) (string, error) {
 	co, err := mtgmatcher.GetUUID(cardId)
-	if err != nil {
-		return "", err
-	}
-
-	scryfallUUIDSpace, err := uuid.Parse(co.Identifiers["scryfallId"])
 	if err != nil {
 		return "", err
 	}
@@ -29,8 +25,12 @@ func computeSKU(cardId, condition string) (string, error) {
 		data += "nonfoil"
 	}
 
-	sku := uuid.NewSHA1(scryfallUUIDSpace, []byte(data))
-	return sku.String(), nil
+	hasher := sha256.New()
+	hasher.Write([]byte(data))
+	sha256Hash := hasher.Sum(nil)
+
+	sku := base64.RawURLEncoding.EncodeToString(sha256Hash)
+	return sku, nil
 }
 
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
