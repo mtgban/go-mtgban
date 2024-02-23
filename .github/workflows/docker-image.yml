@@ -33,12 +33,12 @@ jobs:
           run: 'gcloud auth configure-docker'
 
         - name: 'Set Image Tag'
-          id: set_tag
           run: |
             if [[ ${{ github.ref }} == 'refs/heads/master' ]]; then
               echo "TAG=latest" >> $GITHUB_ENV
             else
-              echo "TAG=testing" >> $GITHUB_ENV
+              BRANCH_NAME=$(echo ${{ github.ref }} | sed 's|refs/heads||')
+              echo "TAG=${BRANCH_NAME//\//-}" >> $GITHUB_ENV
             fi
 
         - name: 'build/push image'
@@ -48,4 +48,3 @@ jobs:
             if [[ ${{ env.TAG }} == 'latest' ]]; then
               docker tag $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:latest $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
               docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
-            fi
