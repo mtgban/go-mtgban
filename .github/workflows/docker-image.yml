@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - 'master'
+      - 'id-swap'
+
 env:
   IMAGE: 'strudelboogie'
   REGISTRY_HOSTNAME: 'gcr.io'
@@ -30,19 +32,20 @@ jobs:
         - name: 'Configure Docker to use gcloud command-line tool'
           run: 'gcloud auth configure-docker'
 
-        - name: 'Set Image Tab'
+        - name: 'Set Image Tag'
+          id: set_tag
           run: |
             if [[ ${{ github.ref }} == 'refs/heads/master' ]]; then
               echo "TAG=latest" >> $GITHUB_ENV
             else
-              BRANCH_NAME=$(echo ${{ github.ref }} | sed 's|refs/heads/||')
-              echo "TAG=${BRANCH_NAME//\//-}" >> $GITHUB_ENV
+              echo "TAG=testing" >> $GITHUB__ENV
             fi
-            
+
         - name: 'build/push image'
           run: |
-            docker build -t $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:${{ env.TAG  }} -f Dockerfile .
+            docker build -t $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:${{ env.TAG }} -f Dockerfile .
             docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:${{ env.TAG }}
             if [[ ${{ env.TAG }} == 'latest' ]]; then
-            docker tag $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:latest $GITHUB_SHA $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
-            docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
+              docker tag $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:latest $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
+              docker push $REGISTRY_HOSTNAME/$PROJECT_ID/$IMAGE:$GITHUB_SHA
+            fi
