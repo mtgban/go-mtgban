@@ -38,7 +38,7 @@ jobs:
             if [[ ${{ github.ref }} == 'refs/heads/master' ]]; then
               echo "TAG=latest" >> $GITHUB_ENV
             else
-              echo "TAG=testing" >> $GITHUB__ENV
+              echo "TAG=testing" >> $GITHUB_ENV
             fi
 
         - name: 'build/push image'
