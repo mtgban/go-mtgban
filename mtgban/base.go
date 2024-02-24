@@ -1,8 +1,11 @@
 package mtgban
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -15,12 +18,12 @@ func computeSKU(cardId, condition string) (string, error) {
 		return "", err
 	}
 
-	scryfallUUIDSpace, err := uuid.Parse(co.Identifiers["scryfallId"])
+	scryfallId, err := uuid.Parse(co.Identifiers["scryfallId"])
 	if err != nil {
 		return "", err
 	}
 
-	data := condition + co.Language
+	data := strings.ToLower(fmt.Sprintf("%s_%s_%s_", scryfallId, condition, co.Language))
 	if co.Etched {
 		data += "etched"
 	} else if co.Foil {
@@ -29,8 +32,14 @@ func computeSKU(cardId, condition string) (string, error) {
 		data += "nonfoil"
 	}
 
-	sku := uuid.NewSHA1(scryfallUUIDSpace, []byte(data))
-	return sku.String(), nil
+	// Generate a SHA-256 hash of the data
+	hasher := sha256.New()
+	hasher.Write([]byte(data))
+	sha256Hash := hasher.Sum(nil)
+
+	sku_id := base64.URLEncoding.EncodeToString(sha256Hash)
+
+	return sku_id, nil
 }
 
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
