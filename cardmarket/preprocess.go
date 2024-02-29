@@ -532,7 +532,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			for _, code := range []string{
 				"PMEI", "PPRO", "PEWK", "PNAT", "WMC", "PWCS", "PRES",
 				"P30T", "PF23", "PLG21",
-				"SLD", "SLP",
+				"SLP", "SLC", "SLD",
 				"PW21", "PW22", "PW23",
 				"PL21", "PL22", "PL23",
 			} {
