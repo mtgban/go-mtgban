@@ -3,6 +3,7 @@ package abugames
 import (
 	"errors"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -109,6 +110,18 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					}
 				}
 				continue
+			}
+
+			// Sanity check, a bunch of EA cards are market as foil when they
+			// actually don't have a foil printing, just skip them
+			if strings.Contains(card.DisplayTitle, "(Extended Art) - FOIL") {
+				co, err := mtgmatcher.GetUUID(cardId)
+				if err != nil {
+					continue
+				}
+				if !co.Foil {
+					continue
+				}
 			}
 
 			var invEntry *mtgban.InventoryEntry
