@@ -83,8 +83,18 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	switch edition {
 	case "Portal":
 		switch cardName {
+		case "Blaze":
+			switch variant {
+			case "CS Alternate Art":
+				variant = "118†s"
+			case "Starter Deck CS Alternate Art":
+				variant = "118s"
+			case "Flavor Text":
+				variant = "118"
+			default:
+				variant = "118†"
+			}
 		case "Warrior's Charge",
-			"Blaze",
 			"Raging Goblin",
 			"Anaconda",
 			"Elite Cat Warrior",
