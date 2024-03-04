@@ -613,3 +613,182 @@ func SealedHasDecklist(setCode, sealedUUID string) bool {
 
 	return false
 }
+
+type ProductProbabilities struct {
+	UUID        string
+	Probability float64
+}
+
+func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabilities, error) {
+	set, err := GetSet(setCode)
+	if err != nil {
+		return nil, err
+	}
+
+	boosterConfig, found := set.Booster[boosterType]
+	if !found {
+		return nil, errors.New("booster not found")
+	}
+
+	tmp := map[string]float64{}
+	for _, booster := range boosterConfig.Boosters {
+		for sheetName, count := range booster.Contents {
+			probs, err := SealedSheetProbabilities(setCode, boosterType, sheetName)
+			if err != nil {
+				return nil, err
+			}
+
+			// Add to the map in case a card appears in different slots/sheets
+			// (very common in old boosters, and crazy modern boosters)
+			for i := range probs {
+				tmp[probs[i].UUID] += probs[i].Probability * float64(count) * float64(booster.Weight)
+			}
+		}
+	}
+
+	// Normalize booster weight with the provided totals
+	var probabilities []ProductProbabilities
+	for uuid, probability := range tmp {
+		probabilities = append(probabilities, ProductProbabilities{
+			UUID:        uuid,
+			Probability: probability / float64(boosterConfig.BoostersTotalWeight),
+		})
+	}
+	return probabilities, nil
+}
+
+func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
+	set, err := GetSet(setCode)
+	if err != nil {
+		return nil, err
+	}
+
+	sheet, found := set.Booster[boosterType].Sheets[sheetName]
+	if !found {
+		return nil, errors.New("sheet not found")
+	}
+
+	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
+	var probs []ProductProbabilities
+
+	for cardId, frequency := range sheet.Cards {
+		uuid, err := MatchId(cardId, sheet.Foil, isEtched)
+		if err != nil {
+			return nil, err
+		}
+		probability := float64(frequency) / float64(sheet.TotalWeight)
+		probs = append(probs, ProductProbabilities{
+			UUID:        uuid,
+			Probability: probability,
+		})
+	}
+
+	return probs, nil
+}
+
+func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabilities, error) {
+	set, err := GetSet(setCode)
+	if err != nil {
+		return nil, err
+	}
+
+	var probs []ProductProbabilities
+
+	for _, product := range set.SealedProduct {
+		if sealedUUID != product.UUID {
+			continue
+		}
+
+		for key, contents := range product.Contents {
+			for _, content := range contents {
+				switch key {
+				case "card":
+					uuid, err := MatchId(content.UUID, content.Foil)
+					if err != nil {
+						return nil, err
+					}
+					probs = append(probs, ProductProbabilities{
+						UUID:        uuid,
+						Probability: 1,
+					})
+				case "pack":
+					boosterProbabilities, err := SealedBoosterProbabilities(content.Set, content.Code)
+					if err != nil {
+						return nil, err
+					}
+					probs = append(probs, boosterProbabilities...)
+				case "sealed":
+					sealedProbabilities, err := GetProbabilitiesForSealed(content.Set, content.UUID)
+					if err != nil {
+						return nil, err
+					}
+					for i := range sealedProbabilities {
+						sealedProbabilities[i].Probability *= float64(content.Count)
+					}
+					probs = append(probs, sealedProbabilities...)
+				case "deck":
+					deckPicks, err := GetPicksForDeck(content.Set, content.Name)
+					if err != nil {
+						return nil, err
+					}
+					for _, uuid := range deckPicks {
+						probs = append(probs, ProductProbabilities{
+							UUID:        uuid,
+							Probability: 1,
+						})
+					}
+				case "variable":
+					variableIndex := rand.Intn(len(content.Configs))
+					for _, card := range content.Configs[variableIndex]["card"] {
+						uuid, err := MatchId(card.UUID, card.Foil)
+						if err != nil {
+							return nil, err
+						}
+						probs = append(probs, ProductProbabilities{
+							UUID:        uuid,
+							Probability: 1,
+						})
+					}
+					for _, booster := range content.Configs[variableIndex]["pack"] {
+						boosterProbabilities, err := SealedBoosterProbabilities(booster.Set, booster.Code)
+						if err != nil {
+							return nil, err
+						}
+						probs = append(probs, boosterProbabilities...)
+					}
+					for _, sealed := range content.Configs[variableIndex]["sealed"] {
+						sealedProbabilities, err := GetProbabilitiesForSealed(sealed.Set, sealed.UUID)
+						if err != nil {
+							return nil, err
+						}
+						for i := range sealedProbabilities {
+							sealedProbabilities[i].Probability *= float64(sealed.Count)
+						}
+						probs = append(probs, sealedProbabilities...)
+					}
+					for _, deck := range content.Configs[variableIndex]["deck"] {
+						deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
+						if err != nil {
+							return nil, err
+						}
+						for _, uuid := range deckPicks {
+							probs = append(probs, ProductProbabilities{
+								UUID:        uuid,
+								Probability: 1,
+							})
+						}
+					}
+				case "other":
+				default:
+					return nil, errors.New("unknown key")
+				}
+			}
+		}
+	}
+
+	if len(probs) == 0 {
+		return nil, errors.New("nothing was probs")
+	}
+
+	return probs, nil
+}
