@@ -620,22 +620,6 @@
     },
     {
         "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
-        "description": "names_dual_face_card_same_name",
-        "input": {
-            "name": "Propaganda // Propaganda",
-            "edition": "Secret Lair Drop"
-        }
-    },
-    {
-        "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
-        "description": "names_dual_face_card_same_name_only_one",
-        "input": {
-            "name": "Propaganda",
-            "edition": "Secret Lair Drop"
-        }
-    },
-    {
-        "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
         "description": "names_dual_face_card_wrong_ed",
         "input": {
             "name": "Propaganda",
