@@ -253,8 +253,18 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 			var probPicks []string
 			var probProbs []float64
 			for _, probability := range probabilities {
+				co, err := mtgmatcher.GetUUID(probability.UUID)
+				if err != nil {
+					continue
+				}
+
+				prob := probability.Probability
+				if co.HasPromoType(mtgjson.PromoTypeSerialized) {
+					prob = 0
+				}
+
+				probProbs = append(probProbs, prob)
 				probPicks = append(probPicks, probability.UUID)
-				probProbs = append(probProbs, probability.Probability)
 			}
 
 			for i := range evParameters {
