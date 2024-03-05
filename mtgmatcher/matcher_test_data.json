@@ -2548,6 +2548,15 @@
         }
     },
     {
+        "uuid": "8a913b69-514f-5b49-9b10-50630fbef759",
+        "description": "wcd_with_number_ed",
+        "input": {
+            "name": "Mountain",
+            "variant": "2001 Tom van de Logt 7ED 337",
+            "edition": "World Championship"
+        }
+    },
+    {
         "uuid": "ae03bc21-485c-5175-9a41-7fc5421d62ef",
         "description": "wcd_with_variant",
         "input": {
@@ -2743,6 +2752,15 @@
         "description": "portal_simplified_chinese_no_alias",
         "input": {
             "name": "Assassin's Blade",
+            "edition": "Portal"
+        }
+    },
+    {
+        "uuid": "dfcf1cd5-61e9-56db-b3c0-7e84c4f05b96",
+        "description": "portal_simplified_chinese_number",
+        "input": {
+            "name": "Blaze",
+            "variant": "118†s",
             "edition": "Portal"
         }
     },

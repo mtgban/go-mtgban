@@ -9,7 +9,6 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -148,25 +147,40 @@ func ExtractNumber(str string) string {
 			field = strings.TrimSpace(subfields[0])
 		}
 
+		// Skip any ordinal number that would be caught up in the check below
+		ordinal := strings.ToLower(field)
+		if strings.HasSuffix(ordinal, "th") ||
+			strings.HasSuffix(ordinal, "st") ||
+			strings.HasSuffix(ordinal, "nd") ||
+			strings.HasSuffix(ordinal, "rd") {
+			continue
+		}
+
+		// Skip tags that could be confused with set codes
+		_, err := GetSet(field)
+		if err == nil {
+			continue
+		}
+
 		num := strings.TrimLeft(field, "0")
 		val, err := strconv.Atoi(num)
 		if err == nil && val < 1993 {
 			return num
 		}
 		if len(num) > 1 {
-			if unicode.IsLetter(rune(num[len(num)-1])) ||
-				strings.HasSuffix(num, mtgjson.SuffixPhiUp) ||
-				strings.HasSuffix(num, mtgjson.SuffixPhiLow) ||
-				strings.HasSuffix(num, mtgjson.SuffixSpecial) ||
-				strings.HasSuffix(num, mtgjson.SuffixVariant) {
-				// Strip any extra characters at the end
+			if !unicode.IsDigit(rune(num[len(num)-1])) {
 				trimmed := num
-				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixPhiUp)
-				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixPhiLow)
-				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixSpecial)
-				trimmed = strings.TrimSuffix(trimmed, mtgjson.SuffixVariant)
-				if unicode.IsLetter(rune(trimmed[len(trimmed)-1])) {
-					trimmed = trimmed[:len(trimmed)-1]
+
+				// Remove any suffix
+				index := -1
+				for i, r := range num {
+					if !unicode.IsDigit(r) {
+						index = i
+						break
+					}
+				}
+				if index > 0 {
+					trimmed = num[:index]
 				}
 
 				// Try converting to an integer number
