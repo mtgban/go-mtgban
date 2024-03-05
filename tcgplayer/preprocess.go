@@ -292,6 +292,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				edition = "SNC"
 				variant = "450"
 			}
+		case "Ponder":
+			if variant == "Eternal Weekend 2022 Promo" {
+				edition = "PEWK"
+				variant = "2"
+			}
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
@@ -453,6 +458,8 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Saruman of Many Colors":
 			edition = "LTR"
 			variant = "300"
+		case "Mortify":
+			edition = "SCH"
 		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
