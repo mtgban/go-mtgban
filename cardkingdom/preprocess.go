@@ -95,6 +95,8 @@ var skuFixupTable = map[string]string{
 	"PM10-028": "PDCI-29",
 	// Liliana's Specter
 	"PM11-104": "PDCI-52",
+	// Mitotic Slime
+	"PM11-185": "PDCI-53",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
