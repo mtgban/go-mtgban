@@ -1,8 +1,6 @@
 package mtgban
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"sort"
 	"strings"
@@ -18,28 +16,36 @@ func computeSKU(cardId, condition string) (string, error) {
 		return "", err
 	}
 
-	scryfallId, err := uuid.Parse(co.Identifiers["scryfallId"])
+	scryfallNamespace, err := uuid.Parse(co.Identifiers["scryfallId"])
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid scryfall ID: %v", err)
+	}
+	condition = strings.ToLower(condition)
+
+	conditionMap := map[string]string{
+		"nm": "nm", "near mint": "nm",
+		"lp": "sp", "lightly played": "sp", "slightly played": "sp",
+		"mp": "mp", "moderately played": "mp",
+		"hp": "hp", "heavily played": "hp",
+		"po": "po", "damaged": "po", "poor": "po",
+	}
+	conditionCode, ok := conditionMap[condition]
+	if !ok {
+		conditionCode = "nm"
 	}
 
-	data := strings.ToLower(fmt.Sprintf("%s_%s_%s_", scryfallId, condition, co.Language))
+	language := strings.ToLower(co.Language)
+	printing := "nonfoil"
 	if co.Etched {
-		data += "etched"
+		printing = "etched"
 	} else if co.Foil {
-		data += "foil"
-	} else {
-		data += "nonfoil"
+		printing = "foil"
 	}
 
-	// Generate a SHA-256 hash of the data
-	hasher := sha256.New()
-	hasher.Write([]byte(data))
-	sha256Hash := hasher.Sum(nil)
+	data := fmt.Sprintf("%s_%s_%s", conditionCode, language, printing)
 
-	sku_id := base64.URLEncoding.EncodeToString(sha256Hash)
-
-	return sku_id, nil
+	sku := uuid.NewSHA1(scryfallNamespace, []byte(data))
+	return sku.String(), nil
 }
 
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
