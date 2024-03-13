@@ -157,8 +157,9 @@ func ExtractNumber(str string) string {
 		}
 
 		// Skip tags that could be confused with set codes
+		// unless it ends with "a" (ie 30A)
 		_, err := GetSet(field)
-		if err == nil {
+		if err == nil && !strings.HasSuffix(field, "a") {
 			continue
 		}
 

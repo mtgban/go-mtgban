@@ -108,6 +108,10 @@ var NumberTests = []ExtractTest{
 		In:  "2001 Tom van de Logt 7ED 337",
 		Out: "337",
 	},
+	{
+		In:  "30a",
+		Out: "30a",
+	},
 }
 
 func TestExtractNumber(t *testing.T) {
