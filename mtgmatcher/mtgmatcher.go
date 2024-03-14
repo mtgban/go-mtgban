@@ -511,9 +511,14 @@ func adjustName(inCard *Card) {
 				break
 			}
 		}
-		inCard.Name = strings.Join(fields, " ")
-		inCard.addToVariant(num)
-		return
+		// Check card exists before updating the name
+		tmpName := strings.Join(fields, " ")
+		_, found := backend.Cards[Normalize(tmpName)]
+		if found {
+			inCard.Name = tmpName
+			inCard.addToVariant(num)
+			return
+		}
 	}
 
 	// Move any single letter variation from name to beginning variation

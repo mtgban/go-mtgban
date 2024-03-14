@@ -1657,6 +1657,15 @@
         }
     },
     {
+        "uuid": "b473055a-bbc2-56bc-8000-a6eec3d2bbf1",
+        "description": "variant_number_missing_name_if_aggressive",
+        "input": {
+            "name": "Specimen 73 - Hornet Queen",
+            "variant": "350",
+            "edition": "PIP"
+        }
+    },
+    {
         "uuid": "0b5151a5-ada5-5045-a7a9-ecbe69593f69",
         "description": "fnm_normal",
         "input": {
