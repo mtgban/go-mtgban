@@ -543,6 +543,21 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				variant = "1"
 			}
 		}
+
+		// Skip double-faced token cards by checking if there are
+		// multiple collector numbers reported
+		if strings.Contains(num, "//") {
+			duplicates := 0
+			for _, field := range strings.Fields(variant) {
+				num := mtgmatcher.ExtractNumber(field)
+				if num != "" {
+					duplicates++
+				}
+			}
+			if duplicates > 1 {
+				return nil, errors.New("duplicate")
+			}
+		}
 	}
 
 	// Special tags
