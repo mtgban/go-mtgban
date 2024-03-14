@@ -460,6 +460,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			variant = "300"
 		case "Mortify":
 			edition = "SCH"
+			variant = "21"
 		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
