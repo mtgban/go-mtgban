@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	http "github.com/hashicorp/go-retryablehttp"
 )
 
@@ -24,6 +25,9 @@ type CSICard struct {
 
 const (
 	csiPricelistURL = "https://www.coolstuffinc.com/gateway_json.php?k="
+
+	csiBuylistURL  = "https://www.coolstuffinc.com/GeneratedFiles/SellList/Section-mtg.json"
+	csiBuylistLink = "https://www.coolstuffinc.com/main_selllist.php?s=mtg"
 )
 
 type CSIClient struct {
@@ -63,4 +67,47 @@ func (csi *CSIClient) GetPriceList() ([]CSICard, error) {
 	}
 
 	return pricelist.Data, nil
+}
+
+type CSIPriceEntry struct {
+	// Pid           string `json:"PID"`
+	// Ppqid         string `json:"PPQID"`
+	Name string `json:"Name"`
+	// Rarity        string `json:"Rarity"`
+	ItemSet string `json:"ItemSet"`
+	// Image   string `json:"Image"`
+	Notes string `json:"Notes"`
+	// SName         string `json:"sName"`
+	// SAbbreviation string `json:"sAbbreviation"`
+	Price string `json:"Price"`
+	// TName         string `json:"tName"`
+	// Color         string `json:"Color"`
+	Number string `json:"Number"`
+	// Code   string `json:"Code"`
+	// BuyListNotes  string `json:"BuyListNotes"`
+	// FullImage     struct {} `json:"FullImage"`
+	RarityName  string `json:"RarityName"`
+	IsFoil      int    `json:"isFoil"`
+	CreditPrice string `json:"CreditPrice"`
+}
+
+func GetBuylist() ([]CSIPriceEntry, error) {
+	resp, err := cleanhttp.DefaultClient().Get(csiBuylistURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var entries []CSIPriceEntry
+	err = json.Unmarshal(data, &entries)
+	if err != nil {
+		return nil, err
+	}
+
+	return entries, nil
 }

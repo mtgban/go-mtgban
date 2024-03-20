@@ -27,7 +27,6 @@ const (
 	defaultConcurrency = 8
 
 	csiInventoryURL = "https://www.coolstuffinc.com/magic+the+gathering/"
-	csiBuylistURL   = "https://www.coolstuffinc.com/ajax_buylist.php"
 
 	defaultBuylistPage = "https://www.coolstuffinc.com/main_buylist_display.php"
 )

@@ -2,8 +2,12 @@ package coolstuffinc
 
 import (
 	"errors"
+	"fmt"
+	"net/url"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -19,6 +23,8 @@ type CoolstuffincOfficial struct {
 	buylist   mtgban.BuylistRecord
 
 	client *CSIClient
+
+	edition2id map[string]string
 }
 
 func NewScraperOfficial(key string) *CoolstuffincOfficial {
@@ -26,6 +32,7 @@ func NewScraperOfficial(key string) *CoolstuffincOfficial {
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
 	csi.client = NewCSIClient(key)
+	csi.edition2id = map[string]string{}
 	return &csi
 }
 
@@ -144,12 +151,152 @@ func (csi *CoolstuffincOfficial) Inventory() (mtgban.InventoryRecord, error) {
 
 }
 
+// Load the list of editions to id used to build links
+func (csi *CoolstuffincOfficial) loadEditions() error {
+	resp, err := cleanhttp.DefaultClient().Get(csiBuylistLink)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	doc.Find(`option`).Each(func(_ int, s *goquery.Selection) {
+		ed := s.Text()
+		if ed == "" {
+			return
+		}
+		id, found := s.Attr("value")
+		if !found || id == "" {
+			return
+		}
+		_, found = csi.edition2id[ed]
+		if found {
+			return
+		}
+
+		csi.edition2id[ed] = id
+	})
+
+	return nil
+}
+
+func (csi *CoolstuffincOfficial) parseBL() error {
+	err := csi.loadEditions()
+	if err != nil {
+		return err
+	}
+	csi.printf("Loaded %d editions", len(csi.edition2id))
+
+	products, err := GetBuylist()
+	if err != nil {
+		return err
+	}
+	csi.printf("Found %d products", len(products))
+
+	for _, product := range products {
+		if product.RarityName == "Box" {
+			continue
+		}
+
+		// Build link early to help debug
+		u, _ := url.Parse(csiBuylistLink)
+		v := url.Values{}
+		v.Set("s", "mtg")
+		v.Set("a", "1")
+		v.Set("name", product.Name)
+		v.Set("f[]", fmt.Sprint(product.IsFoil))
+
+		id, found := csi.edition2id[product.ItemSet]
+		if found {
+			v.Set("is[]", id)
+		}
+		u.RawQuery = v.Encode()
+		link := u.String()
+
+		theCard, err := PreprocessBuylist(product)
+		if err != nil {
+			continue
+		}
+
+		cardId, err := mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
+			switch {
+			//case theCard.IsBasicLand(),
+			//	strings.Contains(cardName, "Token"):
+			default:
+				csi.printf("error: %v", err)
+				csi.printf("original: %q", product)
+				csi.printf("preprocessed: %q", theCard)
+				csi.printf("link: %q", link)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						csi.printf("- %s", card)
+					}
+				}
+			}
+			continue
+		}
+
+		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
+		if err != nil {
+			csi.printf("%s error: %s", product.Name, err.Error())
+			continue
+		}
+		creditPrice, err := mtgmatcher.ParsePrice(product.CreditPrice)
+		if err != nil {
+			csi.printf("%s error (credit): %s", product.Name, err.Error())
+			creditPrice = buyPrice * 1.3
+		}
+
+		var priceRatio, sellPrice float64
+
+		invCards := csi.inventory[cardId]
+		for _, invCard := range invCards {
+			sellPrice = invCard.Price
+			break
+		}
+		if sellPrice > 0 {
+			priceRatio = buyPrice / sellPrice * 100
+		}
+
+		for i, deduction := range deductions {
+			buyEntry := mtgban.BuylistEntry{
+				Conditions: mtgban.DefaultGradeTags[i],
+				BuyPrice:   buyPrice * deduction,
+				TradePrice: creditPrice * deduction,
+				PriceRatio: priceRatio,
+				URL:        link,
+			}
+
+			err := csi.buylist.Add(cardId, &buyEntry)
+			if err != nil {
+				csi.printf("%s", err.Error())
+				continue
+			}
+		}
+	}
+
+	csi.buylistDate = time.Now()
+
+	return nil
+}
+
 func (csi *CoolstuffincOfficial) Buylist() (mtgban.BuylistRecord, error) {
 	if len(csi.buylist) > 0 {
 		return csi.buylist, nil
 	}
 
-	err := csi.scrape()
+	err := csi.parseBL()
 	if err != nil {
 		return nil, err
 	}

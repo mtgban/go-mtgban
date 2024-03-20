@@ -881,6 +881,7 @@ func adjustEdition(inCard *Card) {
 			(len(MatchInSet(inCard.Name, "SLD")) == 0 ||
 				inCard.Contains("Showdown") ||
 				inCard.Contains("Prize") ||
+				inCard.Contains("Finish") ||
 				inCard.Contains("Play")):
 			edition = backend.Sets["SLP"].Name
 		case len(MatchInSet(inCard.Name, "SLU")) != 0:
@@ -1191,7 +1192,7 @@ func adjustEdition(inCard *Card) {
 				variation = "Launch"
 			}
 		case "Arcane Signet":
-			if inCard.Contains("Festival") || inCard.Contains("MagicFest") || inCard.Contains("30th") {
+			if inCard.Contains("Festival") || inCard.Contains("MagicFest") || inCard.Contains("30th") || inCard.Contains("Magic 30") {
 				edition = "30th Anniversary Misc Promos"
 				if inCard.isEtched() {
 					variation = "1F★"

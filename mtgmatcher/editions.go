@@ -32,8 +32,12 @@ var EditionTable = map[string]string{
 	"Universes Beyond: Warhammer 40,000":        "Warhammer 40,000 Commander",
 	"Universes Beyond: Warhammer 40k Commander": "Warhammer 40,000 Commander",
 	"The Lord of the Rings Commander":           "Tales of Middle-earth Commander",
-	"LOTR - Realms and Relic Box Topper":        "Tales of Middle-earth Commander",
-	"Doctor Who Commander":                      "Doctor Who",
+
+	"The Lord of the Rings: Tales of Middle-earth - Commander":          "Tales of Middle-earth Commander",
+	"The Lord of the Rings: Tales of Middle-earth - Commander Variants": "Tales of Middle-earth Commander",
+
+	"LOTR - Realms and Relic Box Topper": "Tales of Middle-earth Commander",
+	"Doctor Who Commander":               "Doctor Who",
 
 	// BRR
 	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
@@ -134,6 +138,7 @@ var EditionTable = map[string]string{
 	"Champs":                 "Champs and States",
 	"Champs Promos":          "Champs and States",
 	"Champs & States Promos": "Champs and States",
+	"Store Championship":     "Store Championships",
 
 	// Welcome decks
 	"Shadows over Innistrad Welcome Deck": "Welcome Deck 2016",
