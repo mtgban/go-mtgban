@@ -47,6 +47,8 @@ var skuFixupTable = map[string]string{
 
 	// Yellow Hidetsugu
 	"PNEO-432": "NEO-432",
+	// Goro Goro
+	"PNEO-145": "PMEI-059",
 
 	// Random WCD cards
 	"WC97-JS097":    "WC97-JS242",
