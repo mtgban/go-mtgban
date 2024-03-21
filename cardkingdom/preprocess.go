@@ -229,6 +229,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
 		"Unstable", "Unglued", "Unfinity", "Portal II",
 		"The Lord of the Rings: Tales of Middle-earth",
+		"The Lord of the Rings: Tales of Middle-earth Commander Decks Variants",
 		"The Lord of the Rings: Tales of Middle-earth Commander Decks",
 		"The Lord of the Rings: Tales of Middle-earth Variants",
 		"Ravnica Remastered", "Ravnica Remastered Variants",
