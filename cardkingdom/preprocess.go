@@ -35,15 +35,6 @@ var skuFixupTable = map[string]string{
 	"PAL96-003": "PARL-003",
 	"PAL96-004": "PARL-004",
 
-	// Sets containing launch promos
-	"PJMP-496B": "JMP-496",
-	"P2XM-383":  "2XM-383",
-	"P2XM-384":  "2XM-384",
-	"P2X2-578":  "2X2-578",
-	"P2X2-579":  "2X2-579",
-	"P40K-181":  "40K-181",
-	"PUNF-538":  "UNF-538",
-
 	// Jaya Ballard, Task Mage
 	"MPS-001A": "PRES-001A",
 
@@ -152,6 +143,13 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			if mtgmatcher.Contains(card.Variation, "buyabox") && setDate.After(mtgmatcher.BuyABoxNotUniqueDate) {
 				setCode = setCode[1:]
 			} else if mtgmatcher.Contains(card.Variation, "bundle") && setDate.After(mtgmatcher.BuyABoxInExpansionSetsDate) {
+				setCode = setCode[1:]
+			}
+		}
+
+		// Certain launch/release promos get promoted to Promos set despite belonging to the main set
+		if len(setCode) > 3 && strings.HasPrefix(setCode, "P") && (mtgmatcher.Contains(card.Variation, "release") || mtgmatcher.Contains(card.Variation, "launch")) {
+			if len(mtgmatcher.MatchInSetNumber(card.Name, setCode[1:], number)) == 1 {
 				setCode = setCode[1:]
 			}
 		}
