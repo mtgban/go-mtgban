@@ -190,22 +190,17 @@ func (csi *CoolstuffincOfficial) parseBL() error {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
-			switch {
-			//case theCard.IsBasicLand(),
-			//	strings.Contains(cardName, "Token"):
-			default:
-				csi.printf("error: %v", err)
-				csi.printf("original: %q", product)
-				csi.printf("preprocessed: %q", theCard)
-				csi.printf("link: %q", link)
+			csi.printf("error: %v", err)
+			csi.printf("original: %q", product)
+			csi.printf("preprocessed: %q", theCard)
+			csi.printf("link: %q", link)
 
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						csi.printf("- %s", card)
-					}
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					csi.printf("- %s", card)
 				}
 			}
 			continue
