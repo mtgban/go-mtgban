@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	http "github.com/hashicorp/go-retryablehttp"
 )
@@ -110,4 +111,39 @@ func GetBuylist() ([]CSIPriceEntry, error) {
 	}
 
 	return entries, nil
+}
+
+// Load the list of editions to id used to build links
+func LoadBuylistEditions() (map[string]string, error) {
+	resp, err := cleanhttp.DefaultClient().Get(csiBuylistLink)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	edition2id := map[string]string{}
+
+	doc.Find(`option`).Each(func(_ int, s *goquery.Selection) {
+		ed := s.Text()
+		if ed == "" {
+			return
+		}
+		id, found := s.Attr("value")
+		if !found || id == "" {
+			return
+		}
+		_, found = edition2id[ed]
+		if found {
+			return
+		}
+
+		edition2id[ed] = id
+	})
+
+	return edition2id, nil
 }

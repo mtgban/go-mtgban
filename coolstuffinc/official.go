@@ -6,8 +6,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -32,7 +30,6 @@ func NewScraperOfficial(key string) *CoolstuffincOfficial {
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
 	csi.client = NewCSIClient(key)
-	csi.edition2id = map[string]string{}
 	return &csi
 }
 
@@ -151,45 +148,12 @@ func (csi *CoolstuffincOfficial) Inventory() (mtgban.InventoryRecord, error) {
 
 }
 
-// Load the list of editions to id used to build links
-func (csi *CoolstuffincOfficial) loadEditions() error {
-	resp, err := cleanhttp.DefaultClient().Get(csiBuylistLink)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	doc.Find(`option`).Each(func(_ int, s *goquery.Selection) {
-		ed := s.Text()
-		if ed == "" {
-			return
-		}
-		id, found := s.Attr("value")
-		if !found || id == "" {
-			return
-		}
-		_, found = csi.edition2id[ed]
-		if found {
-			return
-		}
-
-		csi.edition2id[ed] = id
-	})
-
-	return nil
-}
-
 func (csi *CoolstuffincOfficial) parseBL() error {
-	err := csi.loadEditions()
+	edition2id, err := LoadBuylistEditions()
 	if err != nil {
 		return err
 	}
-	csi.printf("Loaded %d editions", len(csi.edition2id))
+	csi.printf("Loaded %d editions", len(edition2id))
 
 	products, err := GetBuylist()
 	if err != nil {
@@ -210,7 +174,7 @@ func (csi *CoolstuffincOfficial) parseBL() error {
 		v.Set("name", product.Name)
 		v.Set("f[]", fmt.Sprint(product.IsFoil))
 
-		id, found := csi.edition2id[product.ItemSet]
+		id, found := edition2id[product.ItemSet]
 		if found {
 			v.Set("is[]", id)
 		}
