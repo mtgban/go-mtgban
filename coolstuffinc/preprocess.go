@@ -646,15 +646,18 @@ func preprocessSealed(productName, edition string) (string, error) {
 	switch edition {
 	case "Mystery Booster - The List":
 		edition = "MB1"
+	case "Bulk Magic":
+		return "", mtgmatcher.ErrUnsupported
 	case "World Championship Decks":
-		// WCD products are merged in a single edition in mtgjson
-		edition = "WC97"
-
 		year := mtgmatcher.ExtractYear(productName)
-		if year != "1996" {
+		if year == "1996" {
+			edition = "PTC"
+		} else {
 			productName = strings.Replace(productName, "("+year+") ", "", 1)
-			productName = strings.TrimSuffix(productName, "Deck")
+			productName = strings.TrimSuffix(productName, " Deck")
+			productName = strings.Replace(productName, " - ", " ", 1)
 			productName = year + " " + productName
+			edition += " " + year
 		}
 	case "Secret Lair":
 		if strings.Contains(productName, "Ultimate") {
@@ -662,8 +665,6 @@ func preprocessSealed(productName, edition string) (string, error) {
 		} else {
 			edition = "SLD"
 		}
-	case "Draft", "Magic":
-		return "", errors.New("unsupported")
 	default:
 		if strings.Contains(productName, "Challenger Deck") {
 			edition = ""
@@ -698,7 +699,7 @@ func preprocessSealed(productName, edition string) (string, error) {
 		strings.Contains(productName, "D20 Set"),
 		strings.Contains(productName, "Born of the Gods - Japanese"),
 		strings.Contains(productName, "Variety Pack"):
-		return "", errors.New("unsupported")
+		return "", mtgmatcher.ErrUnsupported
 	case strings.HasPrefix(productName, "From the Vault"),
 		strings.HasPrefix(productName, "Signature Spellbook"):
 		productName = strings.TrimSuffix(productName, " - Box Set")
