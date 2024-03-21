@@ -279,6 +279,10 @@ func listNumberCompare(inCard *Card, card *mtgjson.Card) bool {
 	return false
 }
 
+var allPlayerRewardsSet = []string{
+	"P03", "P04", "P05", "P06", "P07", "P08", "P09", "P10", "P11",
+}
+
 func listEditionCheck(inCard *Card, card *mtgjson.Card) bool {
 	code := strings.Split(card.Number, "-")[0]
 	set, err := GetSet(code)
@@ -290,6 +294,10 @@ func listEditionCheck(inCard *Card, card *mtgjson.Card) bool {
 	case "Phantom Centaur":
 		return misprintCheck(inCard, card)
 	default:
+		if inCard.Contains("Player Rewards") && slices.Contains(allPlayerRewardsSet, code) {
+			return false
+		}
+
 		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step

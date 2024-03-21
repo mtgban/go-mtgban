@@ -139,13 +139,6 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 		if strings.Contains(variant, "Showcase") {
 			variant = number
 		}
-	case "Planeswalker Symbol Reprints":
-		if variant == "Player Rewards Textless" {
-			variant = card.Sku
-			variant = strings.TrimPrefix(variant, "SGL-MTG-PWSB-PRM_PLYR_")
-			variant = strings.Split(variant, "-")[0]
-			variant = strings.Replace(variant, "_", "-", 1)
-		}
 	}
 
 	return &mtgmatcher.Card{

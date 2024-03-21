@@ -2774,6 +2774,15 @@
         }
     },
     {
+        "uuid": "bb3decb2-05b5-5a0f-8727-246a69b76e77",
+        "description": "mb1list_player_rewards",
+        "input": {
+            "name": "Negate",
+            "variant": "Magic Player Rewards",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
         "uuid": "da9ffa0a-86bb-511b-8614-17ff0cb522d2",
         "description": "mb1list_only_in_list",
         "input": {
