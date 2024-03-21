@@ -2988,6 +2988,15 @@
         }
     },
     {
+        "uuid": "ffd6051f-450b-5ad4-8908-c250261dadf7",
+        "description": "mb1list_explicit_dupe_extended",
+        "input": {
+            "name": "Laboratory Maniac",
+            "variant": "061 Ultimate Masters",
+            "edition": "MB1"
+        }
+    },
+    {
         "uuid": "ef018e83-134b-55eb-8b84-d2acd404d195",
         "description": "mb1list_edition_may_confuse_number",
         "input": {
