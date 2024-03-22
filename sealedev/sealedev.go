@@ -69,14 +69,6 @@ var evParameters = []evConfig{
 		TargetsBuylist: true,
 	},
 	{
-		Name: "TCG Low Sim Mean",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Mean(values)
-		},
-		SourceName: "TCG Low",
-		Simulation: true,
-	},
-	{
 		Name: "TCG Low Sim Median",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
@@ -85,18 +77,26 @@ var evParameters = []evConfig{
 		Simulation: true,
 	},
 	{
-		Name: "TCG Direct (net) Sim Mean",
+		Name: "TCG Low Sim StdDev",
 		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Mean(values)
+			return stats.StandardDeviation(values)
+		},
+		SourceName: "TCG Low",
+		Simulation: true,
+	},
+	{
+		Name: "TCG Direct (net) Sim Median",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.Median(values)
 		},
 		SourceName:     "TCGDirectNet",
 		FoundInBuylist: true,
 		Simulation:     true,
 	},
 	{
-		Name: "TCG Direct (net) Sim Median",
+		Name: "TCG Direct (net) Sim StdDev",
 		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Median(values)
+			return stats.StandardDeviation(values)
 		},
 		SourceName:     "TCGDirectNet",
 		FoundInBuylist: true,
