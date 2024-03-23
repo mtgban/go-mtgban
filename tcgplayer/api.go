@@ -794,7 +794,7 @@ func NewTCGSellerClient() *TCGClient {
 
 func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
-	params.Algorithm = "sales_exp_fields_experiment"
+	params.Algorithm = "revenue_synonym_v2"
 	params.From = size * page
 	params.Size = size
 	params.Filters.Term.ProductLineName = []string{"magic"}
