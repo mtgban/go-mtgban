@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -91,7 +90,7 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 		edition := result.Document.Set[0]
 		finish := result.Document.Finish[0]
 		language := result.Document.Language[0]
-		id := result.Document.UniqueID[0]
+		id := fmt.Sprint(result.Document.UniqueID[0])
 
 		var number string
 		if len(result.Document.CollectorNumber) > 0 {
@@ -151,7 +150,7 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				return errors.New("malformed condition")
 			}
 			priceStr := attribute.Price[0]
-			qtyStr := attribute.Qty[0]
+			qty := attribute.Qty[0]
 			condition := attribute.Condition[0]
 
 			switch condition {
@@ -167,12 +166,6 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 			}
 
 			price, err := mtgmatcher.ParsePrice(priceStr)
-			if err != nil {
-				scg.printf("invalid price for %s: %s", cardName, err.Error())
-				continue
-			}
-
-			qty, err := strconv.Atoi(qtyStr)
 			if err != nil {
 				scg.printf("invalid price for %s: %s", cardName, err.Error())
 				continue

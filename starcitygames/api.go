@@ -70,7 +70,7 @@ type scgRetailResponse struct {
 type scgRetailResult struct {
 	Document struct {
 		Subtitle            []string `json:"subtitle"`
-		UniqueID            []string `json:"unique_id"`
+		UniqueID            []int    `json:"unique_id"`
 		CardName            []string `json:"card_name"`
 		Language            []string `json:"language"`
 		Set                 []string `json:"set"`
@@ -81,9 +81,8 @@ type scgRetailResult struct {
 		ItemDisplayName     []string `json:"item_display_name"`
 		HawkChildAttributes []struct {
 			Price           []string `json:"price"`
-			ProdID          []string `json:"prod_id"`
 			VariantSKU      []string `json:"variant_sku"`
-			Qty             []string `json:"qty"`
+			Qty             []int    `json:"qty"`
 			VariantLanguage []string `json:"variant_language"`
 			Condition       []string `json:"condition"`
 		} `json:"hawk_child_attributes"`

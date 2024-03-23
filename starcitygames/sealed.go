@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -70,7 +69,7 @@ func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page in
 		}
 
 		productName := result.Document.ItemDisplayName[0]
-		id := result.Document.UniqueID[0]
+		id := fmt.Sprint(result.Document.UniqueID[0])
 		urlPath := result.Document.URLDetail[0]
 
 		if !strings.Contains(urlPath, "-mtg-") {
@@ -95,15 +94,9 @@ func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page in
 				return errors.New("malformed qty")
 			}
 			priceStr := attribute.Price[0]
-			qtyStr := attribute.Qty[0]
+			qty := attribute.Qty[0]
 
 			price, err := mtgmatcher.ParsePrice(priceStr)
-			if err != nil {
-				scg.printf("invalid price for %s: %s", productName, err.Error())
-				continue
-			}
-
-			qty, err := strconv.Atoi(qtyStr)
 			if err != nil {
 				scg.printf("invalid price for %s: %s", productName, err.Error())
 				continue
