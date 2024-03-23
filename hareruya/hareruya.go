@@ -3,7 +3,6 @@ package hareruya
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -210,7 +209,7 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 			priceStr = strings.TrimPrefix(priceStr, "¥ ")
 			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
-				log.Println(err)
+				ha.printf("%s", err.Error())
 				return
 			}
 
