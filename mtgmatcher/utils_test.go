@@ -88,6 +88,30 @@ var NumberTests = []ExtractTest{
 		In:  "659Φ",
 		Out: "659φ",
 	},
+	{
+		In:  "A25-141",
+		Out: "A25-141",
+	},
+	{
+		In:  "P09-008",
+		Out: "P09-8",
+	},
+	{
+		In:  "118†s",
+		Out: "118†s",
+	},
+	{
+		In:  "8th Edition 332 Julien Nuijten 2004",
+		Out: "332",
+	},
+	{
+		In:  "2001 Tom van de Logt 7ED 337",
+		Out: "337",
+	},
+	{
+		In:  "30a",
+		Out: "30a",
+	},
 }
 
 func TestExtractNumber(t *testing.T) {

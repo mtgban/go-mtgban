@@ -3,11 +3,7 @@ package mtgmatcher
 import (
 	"strings"
 	"testing"
-
-	"golang.org/x/exp/slices"
 )
-
-var cursedListCodes = []string{"MB1", "FMB1", "PLIST", "PHED", "PCTB", "PAGL"}
 
 func TestVariants(t *testing.T) {
 	for edition, table := range VariantsTable {
@@ -25,7 +21,7 @@ func TestVariants(t *testing.T) {
 					break
 				}
 			}
-			if !found && !slices.Contains(cursedListCodes, set.Code) {
+			if !found {
 				t.Errorf("FAIL: [%s] '%s' name not found", edition, cardName)
 				continue
 			}

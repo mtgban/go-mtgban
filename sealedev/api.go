@@ -110,15 +110,25 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 	return &response, nil
 }
 
-func valueInBooster(uuids []string, prices map[string]map[string]*BanPrice, source string) float64 {
+func valueInBooster(uuids []string, prices map[string]map[string]*BanPrice, source string, probabilities []float64) float64 {
 	var total float64
-	for _, uuid := range uuids {
-		price, found := prices[uuid][source]
+	for i, uuid := range uuids {
+		priceEntry, found := prices[uuid][source]
 		if !found {
 			continue
 		}
+
 		// Only one of these will be non-zero
-		total += price.Regular + price.Foil + price.Etched
+		price := priceEntry.Regular + priceEntry.Foil + priceEntry.Etched
+
+		// Adjust price by its probability
+		probability := 1.0
+		if probabilities != nil {
+			probability = probabilities[i]
+		}
+
+		// Add to the final value
+		total += price * probability
 	}
 	return total
 }

@@ -50,11 +50,6 @@ type alternateProps struct {
 	IsFlavor       bool
 }
 
-type dfcProps struct {
-	Rule string
-	Name string
-}
-
 var backend struct {
 	// Map of set code : mtgjson.Set
 	Sets map[string]*mtgjson.Set
@@ -67,8 +62,6 @@ var backend struct {
 
 	// Map with token names
 	Tokens map[string]bool
-	// DFC with equal names on both sides
-	DFCSameNames map[string][]dfcProps
 
 	// Slice with every uniquely normalized name
 	AllNames []string
@@ -94,6 +87,9 @@ var backend struct {
 
 	// A list of keywords mapped to the full Commander set name
 	CommanderKeywordMap map[string]string
+
+	// A list of promo types as exported by mtgjson
+	AllPromoTypes []string
 }
 
 var logger = log.New(io.Discard, "", log.LstdFlags)
@@ -266,7 +262,7 @@ func skipSet(set *mtgjson.Set) bool {
 	switch set.Code {
 	case "PRED", // a single foreign card
 		"PSAL", "PS11", "PHUK", // salvat05, salvat11, hachette
-		"OLGC", "OLEP", "OVNT": // oversize
+		"OLGC", "OLEP", "OVNT", "O90P": // oversize
 		return true
 	}
 	// Skip online sets, and any token-based sets
@@ -305,11 +301,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
 	tokens := map[string]bool{}
-	dfcSameNames := map[string][]dfcProps{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
+	var promoTypes []string
 
 	for code, set := range ap.Data {
 		if skipSet(set) {
@@ -359,7 +355,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			case "PELP":
 				card.FlavorText = missingPELPtags[card.Number]
 			// Remove frame effects and borders where they don't belong
-			case "STA", "PLIST":
+			case "STA", "PLST":
 				card.FrameEffects = nil
 				card.BorderColor = "black"
 			case "SLD":
@@ -391,6 +387,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				card.Layout = "token"
 			}
 
+			// Rename DFCs into a single name
+			dfcSameName := card.IsDFCSameName()
+			if dfcSameName {
+				card.Name = strings.Split(card.Name, " // ")[0]
+			}
+
 			for i, name := range []string{card.FaceName, card.FlavorName, card.FaceFlavorName} {
 				// Skip empty entries
 				if name == "" {
@@ -409,17 +411,15 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					"Start":
 					continue
 				}
-				// Skip faces of DFCs with same names that aren't reskin version of other cars,
-				// so that face names don't pollute the main dictionary with a wrong rename
-				if card.IsDFCSameName() && card.FlavorName == "" {
-					// Save the names of the cards so that we don't have to keep a list
-					// and store the set name so that we can retrieve it later
-					dfcSameNames[Normalize(name)] = append(dfcSameNames[Normalize(name)], dfcProps{
-						Rule: strings.Fields(set.Name)[0],
-						Name: card.Name,
-					})
+				// Skip faces of DFCs with same names that aren't reskin version of other cars
+				if dfcSameName && card.FlavorName == "" {
 					continue
 				}
+				// Rename the sub-name of a DFC card
+				if dfcSameName {
+					name = strings.Split(name, " // ")[0]
+				}
+
 				// If the name is unique, keep track of the numbers so that they
 				// can be decoupled later for reprints of the main card.
 				// If the name is not unique, we might overwrite data and lose
@@ -474,6 +474,15 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			// are still using the official Scryfall name (without the extra Token)
 			if card.Layout == "token" {
 				name += " Token"
+			}
+
+			// Deduplicate clashing names
+			switch name {
+			case "Pick Your Poison",
+				"Red Herring":
+				if strings.Contains(set.Name, "Playtest") {
+					name += " Playtest"
+				}
 			}
 
 			norm := Normalize(name)
@@ -595,6 +604,13 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				// Single printing, use as-is
 				uuids[card.UUID] = co
 			}
+
+			// Add to the ever growing list of promo types
+			for _, promoType := range card.PromoTypes {
+				if !slices.Contains(promoTypes, promoType) {
+					promoTypes = append(promoTypes, promoType)
+				}
+			}
 		}
 
 		// Replace the original array with the filtered one
@@ -704,6 +720,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 	}
 
+	sort.Strings(promoTypes)
+
 	backend.Hashes = hashes
 	backend.AllUUIDs = allUUIDs
 	backend.AllNames = names
@@ -711,12 +729,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.Tokens = tokens
-	backend.DFCSameNames = dfcSameNames
 	backend.UUIDs = uuids
 	backend.Scryfall = scryfall
 	backend.Tcgplayer = tcgplayer
 	backend.AlternateProps = alternates
 	backend.AlternateNames = altNames
+	backend.AllPromoTypes = promoTypes
 
 	backend.CommanderKeywordMap = commanderKeywordMap
 

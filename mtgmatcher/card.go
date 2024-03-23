@@ -122,6 +122,7 @@ func IsToken(name string) bool {
 		"Fun Format: Pack Wars",
 		"On An Adventure",
 		"Pyromantic Pixels",
+		"Theme: The Gold Standard",
 		"Theme: WUBRG Cards":
 		return true
 	// WCD extra cards
@@ -256,6 +257,7 @@ func (c *Card) isBasicLand() bool {
 func (c *Card) isGenericPromo() bool {
 	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() && !c.isSDCC() &&
 		!c.isRetro() &&
+		!c.Contains("Year of the") && // tcg
 		!c.Contains("Deckmasters") && // no real promos here, just foils
 		!c.Contains("Token") && !IsToken(c.Name) &&
 		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
@@ -384,6 +386,7 @@ func (c *Card) isIDWMagazineBook() bool {
 		Contains(c.Edition, "Dengeki") || // mkm
 		c.Variation == "Insert Foil" || // ck
 		c.Contains("Beadle & Grimm Phyrexian") || // scg
+		c.Contains("Stance Socks") || // scg
 		c.Contains("Media Insert") // mm+nf
 }
 
@@ -392,7 +395,10 @@ func (c *Card) isJudge() bool {
 }
 
 func (c *Card) isRewards() bool {
-	return (Contains(c.Variation, "Textless") && !Contains(c.Variation, "Lunar") && !Contains(c.Variation, "Store")) ||
+	return (Contains(c.Variation, "Textless") &&
+		!Contains(c.Variation, "Year of") &&
+		!Contains(c.Variation, "Lunar") &&
+		!Contains(c.Variation, "Store")) ||
 		(c.Contains("Reward") && !c.isJudge())
 }
 

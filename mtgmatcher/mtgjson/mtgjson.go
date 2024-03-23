@@ -189,6 +189,7 @@ const (
 	PromoTypeConcept         = "concept"
 	PromoTypeConfettiFoil    = "confettifoil"
 	PromoTypeDoubleRainbow   = "doublerainbow"
+	PromoTypeRainbowFoil     = "rainbow"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"
@@ -196,6 +197,7 @@ const (
 	PromoTypePlayerRewards = "playerrewards"
 	PromoTypeStarterDeck   = "starterdeck"
 	PromoTypeDraftWeekend  = "draftweekend"
+	PromoTypeInvisibleInk  = "invisibleink"
 
 	PromoTypeSChineseAltArt = "schinesealtart"
 
@@ -210,45 +212,6 @@ const (
 	SuffixPhiUp   = "Φ"
 	SuffixPhiLow  = "φ"
 )
-
-var AllPromoTypes = []string{
-	PromoTypeArenaLeague,
-	PromoTypeBoosterfun,
-	PromoTypeBundle,
-	PromoTypeBuyABox,
-	PromoTypeConcept,
-	PromoTypeConfettiFoil,
-	PromoTypeDoubleRainbow,
-	PromoTypeDracula,
-	PromoTypeDraftWeekend,
-	PromoTypeEmbossed,
-	PromoTypeGalaxyFoil,
-	PromoTypeGameDay,
-	PromoTypeGilded,
-	PromoTypeGlossy,
-	PromoTypeGodzilla,
-	PromoTypeHaloFoil,
-	PromoTypeIntroPack,
-	PromoTypeJudgeGift,
-	PromoTypeNeonInk,
-	PromoTypeOilSlick,
-	PromoTypePlayPromo,
-	PromoTypePlayerRewards,
-	PromoTypePoster,
-	PromoTypePrerelease,
-	PromoTypePromoPack,
-	PromoTypeRelease,
-	PromoTypeSChineseAltArt,
-	PromoTypeScroll,
-	PromoTypeSerialized,
-	PromoTypeSilverFoil,
-	PromoTypeStarterDeck,
-	PromoTypeStepAndCompleat,
-	PromoTypeSurgeFoil,
-	PromoTypeTextured,
-	PromoTypeThickDisplay,
-	PromoTypeWPN,
-}
 
 func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
 	err = json.NewDecoder(r).Decode(&payload)

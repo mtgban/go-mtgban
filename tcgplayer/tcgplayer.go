@@ -160,6 +160,9 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 						URL:        link,
 						SellerName: availableMarketNames[i],
 						Bundle:     i == 1,
+						CustomFields: map[string]string{
+							"TCGSKUID": fmt.Sprint(req.SkuId),
+						},
 					},
 				}
 

@@ -153,11 +153,6 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 
 		case inCard.isJudge():
-			if maybeYear == "" {
-				if inCard.isGenericExtendedArt() {
-					maybeYear = "2014"
-				}
-			}
 			switch {
 			case strings.HasPrefix(set.Name, "Judge Gift Cards "+maybeYear):
 			default:
@@ -175,42 +170,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		// This needs to be above any possible printing type below
 		case inCard.isMysteryList():
-			// Short-circuit the upcoming number check to avoid the manual validation below
-			// (only for the appropriate sets of course)
 			switch set.Code {
-			case "MB1", "FMB1", "PLIST", "PHED", "PCTB", "PAGL":
-				_, found := VariantsTable[set.Name][inCard.Name][strings.ToLower(inCard.Variation)]
-				if found {
-					printings = append(printings, setCode)
-					continue
-				}
-			}
-
-			switch set.Code {
-			case "MB1":
-				if inCard.Variation == "The List" || inCard.Edition == "The List" ||
-					inCard.Contains("Heads I Win, Tails You Lose") ||
-					inCard.Contains("From Cute to Brute") ||
-					inCard.Contains("They're Just Like Us") ||
-					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non")) {
-					continue
-				}
-			case "FMB1":
-				if inCard.Variation == "The List" || inCard.Edition == "The List" ||
-					inCard.Contains("Non-Foil") {
-					continue
-				}
-			case "PLIST":
-				if inCard.Variation == "Mystery Booster" || inCard.Edition == "Mystery Booster" ||
-					inCard.Contains("Heads I Win, Tails You Lose") ||
-					inCard.Contains("From Cute to Brute") ||
-					inCard.Contains("They're Just Like Us") ||
-					inCard.Foil || (inCard.Contains("Foil") && !inCard.Contains("Non") ||
-					// Explicitly skip playtest cards unless using the correct edition is used
-					// They are visually the same as CMB1 and nobody tracks them separately
-					(len(MatchInSet(inCard.Name, "CMB1")) > 0 && inCard.Edition != "The List")) {
-					continue
-				}
 			case "CMB1":
 				if inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || strings.Contains(inCard.Variation, "V.2") {
 					continue
@@ -219,122 +179,12 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if !(inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || strings.Contains(inCard.Variation, "V.2")) {
 					continue
 				}
-			case "PHED":
-				// If the card is not foil, and has been printed somewhere else,
-				// only pick this edition if explicilty requested
-				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
-					if inCard.Edition != set.Name {
-						// Except the following cards, when they are not tagged as specified,
-						// it means they are actually from this set
-						switch inCard.Name {
-						case "Sol Ring",
-							"Reliquary Tower":
-							if !inCard.Contains("21") {
-								continue
-							}
-						case "Counterspell",
-							"Temur Battle Rage":
-							if !inCard.Contains("Legends") && !inCard.Contains("cmr") {
-								continue
-							}
-						case "Fabricate",
-							"Negate",
-							"Spark Double",
-							"Tribute Mage",
-							"Blasphemous Act",
-							"Daretti, Scrap Savant",
-							"Fiery Gambit",
-							"Goblin Archaeologist",
-							"Goblin Kaboomist",
-							"Karplusan Minotaur",
-							"Krark, the Thumbless",
-							"Tavern Scoundrel",
-							"Frenetic Sliver",
-							"Niv-Mizzet, Parun",
-							"Ral Zarek",
-							"Izzet Signet",
-							"Lightning Greaves",
-							"Mind Stone",
-							"Swiftfoot Boots",
-							"Sword of Vengeance",
-							"Thought Vessel",
-							"Whispersilk Cloak",
-							"Buried Ruin",
-							"Great Furnace",
-							"Izzet Boilerworks",
-							"Myriad Landscape",
-							"Path of Ancestry",
-							"Rogue's Passage",
-							"Temple of Epiphany",
-							"Wandering Fumarole",
-							"Island",
-							"Mountain":
-							if !inCard.Foil {
-								continue
-							}
-						default:
-							if inCard.Foil {
-								continue
-							}
-						}
-					}
+			case "PLST":
+			case "ULST":
+			case "SLD":
+				if len(MatchInSet(inCard.Name, "PLST")) != 0 {
+					continue
 				}
-			case "PCTB":
-				// If the card is not foil, and has been printed somewhere else,
-				// only pick this edition if explicilty requested
-				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
-					if inCard.Edition != set.Name {
-						// Except the following cards, when they are not tagged as specified,
-						// it means they are actually from this set
-						switch inCard.Name {
-						case "Island", "Mountain", "Plains":
-							if !inCard.Contains("amonkhet") && !inCard.Contains("akh") {
-								continue
-							}
-						case "Swamp":
-							if !inCard.Contains("hour") && !inCard.Contains("hou") {
-								continue
-							}
-						case "Forest":
-							if !inCard.Contains("amonkhet") && !inCard.Contains("akh") &&
-								!inCard.Contains("hour") && !inCard.Contains("hou") {
-								continue
-							}
-						default:
-							continue
-						}
-					}
-				}
-			case "PAGL":
-				// If the card is not foil, and has been printed somewhere else,
-				// only pick this edition if explicilty requested
-				if len(MatchInSet(inCard.Name, "MB1")) > 0 || len(MatchInSet(inCard.Name, "PLIST")) > 0 {
-					if inCard.Edition != set.Name {
-						// Except the following cards, when they are not tagged as specified,
-						// it means they are actually from this set
-						switch inCard.Name {
-						case "Angelic Field Marshal",
-							"Angel of Destiny",
-							"Angel of Serenity",
-							"Angel of Vitality",
-							"Archangel of Tithes",
-							"Emeria Shepherd",
-							"Entreat the Angels",
-							"Righteous Valkyrie",
-							"Sephara, Sky's Blade",
-							"Shattered Angel",
-							"Sunblast Angel":
-							if !inCard.Foil {
-								continue
-							}
-						default:
-							if inCard.Foil {
-								continue
-							}
-						}
-					}
-				}
-			case "UPLIST":
 			default:
 				continue
 			}
@@ -352,7 +202,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch set.Name {
 			case "DCI Promos":
 			case "Innistrad: Crimson Vow",
-				"The Lost Cavern of Ixalan":
+				"The Lost Caverns of Ixalan":
 				skip := true
 				foundCards := MatchInSet(inCard.Name, set.Code)
 				for _, card := range foundCards {
@@ -456,6 +306,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch {
 			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
 			case set.Code == "PLG21":
+			case set.Code == "PEWK":
 			default:
 				continue
 			}
@@ -479,24 +330,28 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks Anthology"):
 				found := false
-				num := ExtractNumber(inCard.Variation)
-				if num != "" {
-					foundCards := MatchInSet(inCard.Name, setCode)
-					for _, card := range foundCards {
-						if card.Number == num {
-							found = true
-							break
-						}
+				fields := strings.Fields(inCard.Variation)
+				for _, field := range fields {
+					if len(field) < 4 {
+						continue
 					}
-				} else {
-					fields := strings.Fields(inCard.Variation)
-					for _, field := range fields {
-						if len(field) < 4 {
-							continue
-						}
-						if Contains(set.Name, field) {
-							found = true
-							break
+					if Contains(set.Name, field) {
+						found = true
+						break
+					}
+				}
+				// Do number check only if well known elements are missing
+				if !found &&
+					!(inCard.Contains("Divine") || inCard.Contains("Garruk") ||
+						inCard.Contains("Chandra") || inCard.Contains("Goblins")) {
+					num := ExtractNumber(inCard.Variation)
+					if num != "" {
+						foundCards := MatchInSet(inCard.Name, setCode)
+						for _, card := range foundCards {
+							if card.Number == num {
+								found = true
+								break
+							}
 						}
 					}
 				}
@@ -591,7 +446,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
-		case inCard.Contains("Lunar New Year"):
+		case inCard.Contains("Lunar New Year") || inCard.Contains("Year of the "):
 			switch set.Code {
 			case "PLNY":
 			default:
@@ -768,7 +623,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			checkNum := true
 			if inCard.Contains("Misprint") ||
 				inCard.isWorldChamp() ||
-				(card.AttractionLights != nil && strings.Contains(inCard.Variation, "/")) {
+				(inCard.isMysteryList() && !inCard.Contains("Unfinity")) || // this is better handled in thelistCheck()
+				(card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-"))) {
 				checkNum = false
 			}
 			if checkNum {
@@ -801,6 +657,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 						possibleSuffixes = append(possibleSuffixes, "s", mtgjson.SuffixSpecial+"s", mtgjson.SuffixVariant+"s")
 					case inCard.isSerialized():
 						possibleSuffixes = append(possibleSuffixes, "z")
+					case inCard.isJudge():
+						possibleSuffixes = append(possibleSuffixes, mtgjson.SuffixSpecial)
 					}
 
 					for _, numSuffix := range possibleSuffixes {
@@ -929,9 +787,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					continue
 				}
 			} else {
-				if inCard.Contains("Misprint") && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
-					continue
-				} else if !inCard.Contains("Misprint") && (strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)) {
+				if misprintCheck(inCard, &card) {
 					continue
 				}
 			}
@@ -948,7 +804,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 	if len(outCards) > 1 {
 		logger.Println("Filtering status after main loop")
 		for _, card := range outCards {
-			logger.Println(card.SetCode, card.Number, card.Name)
+			logger.Println(card.SetCode, card.Name, card.Number)
 		}
 	}
 
@@ -989,42 +845,8 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			}
 		}
 	}
-	// In case card is indistinguishable between MB1, PLIST or PHED:
-	// - first check whether we have an exact variant:number association
-	// - if not, and there is a PLIST printing, select PLIST
-	// - repeat for PHED, PCTB, and other mixed sets
-	if len(outCards) > 1 && inCard.isMysteryList() {
-		var filteredOutCards []mtgjson.Card
 
-		cn, found := mb1plistVariants[inCard.Name][strings.ToLower(inCard.Variation)]
-		if found {
-			for _, card := range outCards {
-				if card.Number != cn {
-					continue
-				}
-				filteredOutCards = append(filteredOutCards, card)
-			}
-		} else {
-			for _, code := range []string{
-				"PLIST",
-				"PHED",
-				"PCTB",
-				"PAGL",
-			} {
-				if len(MatchInSet(inCard.Name, code)) > 0 {
-					for _, card := range outCards {
-						if card.SetCode != code {
-							continue
-						}
-						filteredOutCards = append(filteredOutCards, card)
-					}
-					break
-				}
-			}
-		}
-
-		outCards = filteredOutCards
-	} else if len(outCards) > 1 && ExtractNumber(inCard.Variation) == "" {
+	if len(outCards) > 1 && ExtractNumber(inCard.Variation) == "" {
 		// Separate finishes have different collector numbers after this date
 		if len(outCards) > 1 {
 			var filteredOutCards []mtgjson.Card

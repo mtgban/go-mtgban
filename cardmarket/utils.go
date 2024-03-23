@@ -7,14 +7,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 var filteredExpansions = []string{
 	"GnD Cards",
 	"Rk post Products",
 	"Starcity Games: Creature Collection",
+	"Three for One",
 }
 
 type MKMExpansionIdPair struct {
@@ -30,19 +34,12 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 
 	var out []MKMExpansionIdPair
 	for _, exp := range expansions {
-		skipExpansion := false
-		for _, expName := range filteredExpansions {
-			if exp.Name == expName {
-				skipExpansion = true
-				break
-			}
+		if slices.Contains(filteredExpansions, exp.Name) {
+			continue
 		}
 		if strings.Contains(exp.Name, "Token") ||
 			strings.Contains(exp.Name, "Oversized") ||
 			strings.Contains(exp.Name, "Player Cards") {
-			skipExpansion = true
-		}
-		if skipExpansion {
 			continue
 		}
 		out = append(out, MKMExpansionIdPair{
@@ -50,6 +47,11 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 			Name:        exp.Name,
 		})
 	}
+
+	// Keep list sorted for reproducible results
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].IdExpansion < out[j].IdExpansion
+	})
 
 	return out, nil
 }

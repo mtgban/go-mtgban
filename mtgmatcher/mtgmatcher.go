@@ -175,7 +175,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		}
 	}
 	if ogName != inCard.Name {
-		logger.Printf("Pre-adjusted name from '%s' to '%s'", ogName, inCard.Name)
+		logger.Printf("Pre-adjusted name from '%s' to '%s' '%s'", ogName, inCard.Name, inCard.Variation)
 	}
 
 	// Repeat the check in case the card was renamed above
@@ -188,12 +188,11 @@ func Match(inCard *Card) (cardId string, err error) {
 		return "", ErrUnsupported
 	}
 
-	// Normalize card DFC card names if the set rule applies
-	// (first word of the set needs to be present, ie "Secret")
-	dfcsnProps := backend.DFCSameNames[Normalize(inCard.Name)]
-	for _, dfcsnProp := range dfcsnProps {
-		if inCard.Contains(dfcsnProp.Rule) {
-			inCard.Name = dfcsnProp.Name
+	switch inCard.Name {
+	case "Red Herring",
+		"Pick Your Poison":
+		if inCard.isMysteryList() {
+			inCard.Name += " Playtest"
 		}
 	}
 
@@ -227,9 +226,13 @@ func Match(inCard *Card) (cardId string, err error) {
 	if ogName != inCard.Name {
 		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		// If renamed, reload metadata in case of duplicate names
-		if inCard.Name == "Unquenchable Fury Token" {
+		switch inCard.Name {
+		case "Unquenchable Fury Token",
+			"Red Herring Playtest",
+			"Pick Your Poison Playtest":
 			entry = backend.Cards[Normalize(inCard.Name)]
 			inCard.Name = entry.Name
+			logger.Printf("Clashing name adjusted to '%s'", inCard.Name)
 		}
 	}
 	if ogEdition != inCard.Edition {
@@ -384,6 +387,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		logger.Println("Now filtering...")
 		outCards = filterCards(inCard, cardSet)
 
+		logger.Println("Post filtering status...")
 		for _, card := range outCards {
 			logger.Println(card.SetCode, card.Name, card.Number)
 		}
@@ -457,6 +461,22 @@ func MatchInSet(cardName string, setCode string) (outCards []mtgjson.Card) {
 	return
 }
 
+// Return an array of mtgjson.Card containing all the cards with the exact
+// same name as the input name in the Set identified by setCode with the
+// specified collector number.
+func MatchInSetNumber(cardName, setCode, number string) (outCards []mtgjson.Card) {
+	set, found := backend.Sets[setCode]
+	if !found {
+		return
+	}
+	for _, card := range set.Cards {
+		if cardName == card.Name && card.Number == number {
+			outCards = append(outCards, card)
+		}
+	}
+	return
+}
+
 // Try to fixup the name of the card or move extra varitions to the
 // variant attribute. This should only be used in case the card name
 // was not found.
@@ -491,9 +511,14 @@ func adjustName(inCard *Card) {
 				break
 			}
 		}
-		inCard.Name = strings.Join(fields, " ")
-		inCard.addToVariant(num)
-		return
+		// Check card exists before updating the name
+		tmpName := strings.Join(fields, " ")
+		_, found := backend.Cards[Normalize(tmpName)]
+		if found {
+			inCard.Name = tmpName
+			inCard.addToVariant(num)
+			return
+		}
 	}
 
 	// Move any single letter variation from name to beginning variation
@@ -596,6 +621,13 @@ func adjustName(inCard *Card) {
 				return
 			}
 		}
+	}
+
+	// Rename a DFC with same name
+	splits := strings.Split(inCard.Name, "//")
+	if len(splits) == 2 && strings.TrimSpace(splits[0]) == strings.TrimSpace(splits[1]) {
+		inCard.Name = strings.TrimSpace(splits[0])
+		return
 	}
 
 	// Altenatively try checking across any prefix, as long as it's a double
@@ -708,6 +740,7 @@ func adjustEdition(inCard *Card) {
 			"Surge Foil",
 			"Holiday Release",
 			"Alternate Foil",
+			"Retro Frame",
 		} {
 			// Strip away any extra tags
 			if strings.HasSuffix(edition, tag) {
@@ -832,12 +865,6 @@ func adjustEdition(inCard *Card) {
 				inCard.Name = "Plains"
 				inCard.Variation = "670"
 			}
-		// There is a DFC with same name, we need to decouple in some way
-		case Contains(inCard.Name, "Garruk Wildspeaker"):
-			if inCard.isBorderless() || inCard.Contains("Li’l’ler Walkers") || strings.Contains(inCard.Variation, "1142") {
-				inCard.Name = "Garruk Wildspeaker"
-				inCard.Variation = "1142"
-			}
 		}
 
 		switch {
@@ -854,6 +881,7 @@ func adjustEdition(inCard *Card) {
 			(len(MatchInSet(inCard.Name, "SLD")) == 0 ||
 				inCard.Contains("Showdown") ||
 				inCard.Contains("Prize") ||
+				inCard.Contains("Finish") ||
 				inCard.Contains("Play")):
 			edition = backend.Sets["SLP"].Name
 		case len(MatchInSet(inCard.Name, "SLU")) != 0:
@@ -1100,6 +1128,11 @@ func adjustEdition(inCard *Card) {
 			if inCard.Edition == "Battle the Horde" {
 				inCard.Name += " Token"
 			}
+		case "Pick Your Poison",
+			"Red Herring":
+			if strings.Contains(edition, "Playtest") {
+				inCard.Name += " Playtest"
+			}
 		case "Teferi, Master of Time":
 			num := ExtractNumber(variation)
 			_, err := strconv.Atoi(num)
@@ -1122,6 +1155,9 @@ func adjustEdition(inCard *Card) {
 				} else {
 					variation = "75"
 				}
+			}
+			if strings.HasSuffix(variation, "s") || strings.HasSuffix(variation, "p") {
+				edition = backend.Sets["PM21"].Name
 			}
 		case "Mind Stone":
 			switch edition {
@@ -1156,7 +1192,7 @@ func adjustEdition(inCard *Card) {
 				variation = "Launch"
 			}
 		case "Arcane Signet":
-			if inCard.Contains("Festival") || inCard.Contains("MagicFest") || inCard.Contains("30th") {
+			if inCard.Contains("Festival") || inCard.Contains("MagicFest") || inCard.Contains("30th") || inCard.Contains("Magic 30") {
 				edition = "30th Anniversary Misc Promos"
 				if inCard.isEtched() {
 					variation = "1F★"

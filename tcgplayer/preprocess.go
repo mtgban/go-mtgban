@@ -83,8 +83,18 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 	switch edition {
 	case "Portal":
 		switch cardName {
+		case "Blaze":
+			switch variant {
+			case "CS Alternate Art":
+				variant = "118†s"
+			case "Starter Deck CS Alternate Art":
+				variant = "118s"
+			case "Flavor Text":
+				variant = "118"
+			default:
+				variant = "118†"
+			}
 		case "Warrior's Charge",
-			"Blaze",
 			"Raging Goblin",
 			"Anaconda",
 			"Elite Cat Warrior",
@@ -277,6 +287,16 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			}
 		case "Lotus Petal":
 			edition = "P30M"
+		case "Gala Greeters":
+			if variant == "English" {
+				edition = "SNC"
+				variant = "450"
+			}
+		case "Ponder":
+			if variant == "Eternal Weekend 2022 Promo" {
+				edition = "PEWK"
+				variant = "2"
+			}
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
@@ -296,6 +316,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			if variant == "Regional Championship Qualifiers 2023" {
 				edition = variant
 			}
+		case "Sauron, the Dark Lord":
+			edition = "LTR"
+			variant = "301"
 		default:
 			for _, code := range []string{"PR23", "SLP"} {
 				if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
@@ -403,27 +426,16 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Hadoken":
 			cardName = "Lightning Bolt"
 			variant = "675"
-		// These cards have a different number than reported,
-		// cannot rely on the etched detection below
-		case "Demonlord Belzenlok",
-			"Griselbrand",
-			"Liliana's Contract",
-			"Kothophed, Soul Hoarder",
-			"Razaketh, the Foulblooded":
-			if strings.Contains(ogVariant, "Etched") {
-				variant = "etched"
-			}
-		case "Goblin Lackey",
-			"Goblin Matron",
-			"Goblin Recruiter",
-			"Muxus, Goblin Grandee",
-			"Shattergang Brothers":
-			variant += " " + ogVariant
 		case "Zndrsplt, Eye of Wisdom", "Okaun, Eye of Chaos":
 			variant = ogVariant
-		case "Plague Sliver", "Shadowborn Apostle", "Toxin Sliver", "Virulent Sliver":
-			if strings.Contains(ogVariant, "Compleat") {
-				variant = ogVariant
+		case "Counterspell":
+			if ogVariant == "SL PLAYTEST" {
+				variant = "SCTLR"
+			}
+		default:
+			// Preserve all etched/galaxy/rainbow foil properties
+			if strings.Contains(ogVariant, "Foil") {
+				variant += " " + ogVariant
 			}
 		}
 	case "AFR Ampersand Promos":
@@ -446,6 +458,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		case "Saruman of Many Colors":
 			edition = "LTR"
 			variant = "300"
+		case "Mortify":
+			edition = "SCH"
+			variant = "21"
 		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
@@ -460,19 +475,11 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		if !strings.Contains(variant, "-") {
 			variant = product.GetNumber()
 		}
-	case "The List Reprints":
-		var possibleEdition string
-		for _, code := range []string{"FMB1", "MB1", "PLIST", "PHED", "PCTB", "PAGL"} {
-			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
-				if possibleEdition != "" {
-					possibleEdition = ""
-					break
-				}
-				possibleEdition = code
-			}
-		}
-		if possibleEdition != "" {
-			edition = possibleEdition
+	case "Murders at Karlov Manor":
+		num := product.GetNumber()
+
+		if num != "" && variant != "a" && variant != "b" {
+			variant = num
 		}
 	case "Fourth Edition",
 		"Revised Edition",
@@ -500,10 +507,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		"": // cosmetic
 		// Variants are fine as is
 	default:
-		// Variants are fine as is here too
-		if strings.HasPrefix(edition, "Secret Lair Commander") {
-			break
-		}
 		num := product.GetNumber()
 
 		if num != "" && mtgmatcher.ExtractYear(variant) == "" {
@@ -538,6 +541,21 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				variant = "4"
 			} else if product.ProductId == 78444 {
 				variant = "1"
+			}
+		}
+
+		// Skip double-faced token cards by checking if there are
+		// multiple collector numbers reported
+		if strings.Contains(num, "//") {
+			duplicates := 0
+			for _, field := range strings.Fields(variant) {
+				num := mtgmatcher.ExtractNumber(field)
+				if num != "" {
+					duplicates++
+				}
+			}
+			if duplicates > 1 {
+				return nil, errors.New("duplicate")
 			}
 		}
 	}

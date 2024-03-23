@@ -558,7 +558,7 @@
         }
     },
     {
-        "uuid": "7f965cb3-2341-510d-948f-543206845d02",
+        "uuid": "fb1d716c-e9c9-53d7-abd6-c49a8c860711",
         "description": "names_original_edition_plist_in_the_name",
         "input": {
             "name": "Plains (Amonkhet)",
@@ -616,22 +616,6 @@
         "input": {
             "name": "Shark Typhoon [PPIKO]",
             "edition": "ignored"
-        }
-    },
-    {
-        "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
-        "description": "names_dual_face_card_same_name",
-        "input": {
-            "name": "Propaganda // Propaganda",
-            "edition": "Secret Lair Drop"
-        }
-    },
-    {
-        "uuid": "4df6612d-7a84-54a5-8fc0-00438fb3e1d3",
-        "description": "names_dual_face_card_same_name_only_one",
-        "input": {
-            "name": "Propaganda",
-            "edition": "Secret Lair Drop"
         }
     },
     {
@@ -727,7 +711,7 @@
         }
     },
     {
-        "uuid": "f0f9e5f9-17e9-5827-b97e-c56e693a5beb",
+        "uuid": "bbf6d05e-9aed-55b3-99a1-2d99feea6961",
         "description": "incorrect_edition_belongs_to_a_foilonly_subset",
         "input": {
             "name": "Zur's Weirding",
@@ -899,6 +883,15 @@
             "name": "Teferi, Master of Time",
             "variant": "#075 Promo Pack Core Set 2021",
             "edition": "ignored"
+        }
+    },
+    {
+        "uuid": "4f1f9adc-1aee-5d28-97c3-e44e51e38879",
+        "description": "promo_pack_only_number_tagged",
+        "input": {
+            "name": "Teferi, Master of Time",
+            "variant": "75p",
+            "edition": "Core 2021: Promos"
         }
     },
     {
@@ -1474,24 +1467,6 @@
         }
     },
     {
-        "uuid": "1d6d8b1a-be16-5d1a-9b49-d0fb7e9178fe",
-        "description": "dfc_reprint_with_a_reprint_samename",
-        "input": {
-            "name": "Garruk Wildspeaker",
-            "variant": "1457",
-            "edition": "Secret Lair"
-        }
-    },
-    {
-        "uuid": "0e7c42dd-89b9-511c-a64c-c772680cfdc9",
-        "description": "dfc_reprint_with_a_reprint_borderless",
-        "input": {
-            "name": "Garruk Wildspeaker",
-            "variant": "Borderless",
-            "edition": "Secret Lair"
-        }
-    },
-    {
         "uuid": "88d06769-564f-5474-a0a4-50b95b409224",
         "description": "dfc_rename_might_interfere_with_sld",
         "input": {
@@ -1682,6 +1657,15 @@
         }
     },
     {
+        "uuid": "b473055a-bbc2-56bc-8000-a6eec3d2bbf1",
+        "description": "variant_number_missing_name_if_aggressive",
+        "input": {
+            "name": "Specimen 73 - Hornet Queen",
+            "variant": "350",
+            "edition": "PIP"
+        }
+    },
+    {
         "uuid": "0b5151a5-ada5-5045-a7a9-ecbe69593f69",
         "description": "fnm_normal",
         "input": {
@@ -1813,6 +1797,15 @@
             "name": "Vampiric Tutor",
             "variant": "J18",
             "edition": "Judge Promos"
+        }
+    },
+    {
+        "uuid": "ab1c9ddc-a955-5952-921a-fe55cd597522",
+        "description": "judge_star",
+        "input": {
+            "name": "Mountain",
+            "variant": "Judge #004 Full Art",
+            "edition": "Promo: General"
         }
     },
     {
@@ -1986,6 +1979,15 @@
             "name": "Sethron, Hurloon General",
             "variant": "(Lunar New Year)",
             "edition": "Promo: General"
+        }
+    },
+    {
+        "uuid": "c2c63eb2-f0fd-5a09-a81b-28e99eb3115b",
+        "description": "lunar_generic_year_of",
+        "input": {
+            "name": "Dragonlord's Servant",
+            "variant": "Year of the Dragon 2024",
+            "edition": "Standard Showdown Promos"
         }
     },
     {
@@ -2326,7 +2328,7 @@
         }
     },
     {
-        "uuid": "15ce106a-8fde-5848-99b3-21eceb764be0",
+        "uuid": "6f0451a1-0a71-58b0-b84e-7760a27478f7",
         "description": "duel_decks_variant_with_mb1_tag",
         "input": {
             "name": "Elvish Warrior",
@@ -2367,6 +2369,15 @@
         "input": {
             "name": "Corrupt",
             "variant": "GVL",
+            "edition": "Duel Decks: Anthology"
+        }
+    },
+    {
+        "uuid": "fa38c2a6-7dd3-5910-aa7c-5aaad13f24a0",
+        "description": "duel_decks_edition_and_number_in_variant",
+        "input": {
+            "name": "Forest",
+            "variant": "Garruk vs Liliana 29 B",
             "edition": "Duel Decks: Anthology"
         }
     },
@@ -2542,6 +2553,15 @@
         "input": {
             "name": "Plains",
             "variant": "8th Edition 332 Julien Nuijten 2004",
+            "edition": "World Championship"
+        }
+    },
+    {
+        "uuid": "8a913b69-514f-5b49-9b10-50630fbef759",
+        "description": "wcd_with_number_ed",
+        "input": {
+            "name": "Mountain",
+            "variant": "2001 Tom van de Logt 7ED 337",
             "edition": "World Championship"
         }
     },
@@ -2745,7 +2765,25 @@
         }
     },
     {
-        "uuid": "b66e5217-c523-5d72-b94b-252787083ec6",
+        "uuid": "dfcf1cd5-61e9-56db-b3c0-7e84c4f05b96",
+        "description": "portal_simplified_chinese_number",
+        "input": {
+            "name": "Blaze",
+            "variant": "118†s",
+            "edition": "Portal"
+        }
+    },
+    {
+        "uuid": "bb3decb2-05b5-5a0f-8727-246a69b76e77",
+        "description": "mb1list_player_rewards",
+        "input": {
+            "name": "Negate",
+            "variant": "Magic Player Rewards",
+            "edition": "Mystery Booster The List"
+        }
+    },
+    {
+        "uuid": "da9ffa0a-86bb-511b-8614-17ff0cb522d2",
         "description": "mb1list_only_in_list",
         "input": {
             "name": "Scroll Rack",
@@ -2753,7 +2791,7 @@
         }
     },
     {
-        "uuid": "0c466efd-2923-5e49-b0d7-ae69c279296a",
+        "uuid": "3201c108-4dd0-533f-b24b-3c31a60f04c1",
         "description": "mb1list_only_in_mb1",
         "input": {
             "name": "Mana Crypt",
@@ -2761,7 +2799,7 @@
         }
     },
     {
-        "uuid": "12e7087f-56ce-5e19-92d9-028fcaa5cda4",
+        "uuid": "562aefe2-614b-534c-8ef5-6038b2245484",
         "description": "mb1list_in_both_undistinguishable",
         "input": {
             "name": "Living Death",
@@ -2769,8 +2807,8 @@
         }
     },
     {
-        "uuid": "65166320-c130-50e5-a78a-8f60bc8c453c",
-        "description": "mb1list_in_both_list_tagged",
+        "uuid": "7a2bd73e-f1c8-55ea-8c29-75694b67a3a2",
+        "description": "mb1list_tagged_ea",
         "input": {
             "name": "Imperious Perfect",
             "variant": "Extended Art",
@@ -2778,34 +2816,17 @@
         }
     },
     {
-        "uuid": "65166320-c130-50e5-a78a-8f60bc8c453c",
-        "description": "mb1list_in_both_plist_priority",
+        "uuid": "9caf9b6a-7474-502b-8686-5dee4ca7098e",
+        "description": "mb1list_tagged_full_edition_name",
         "input": {
             "name": "Imperious Perfect",
+            "variant": "Commander Anthology",
             "edition": "Mystery Booster The List"
         }
     },
     {
-        "uuid": "2ea9464a-c6f9-5e0c-a0bf-55f89fa42252",
-        "description": "mb1list_in_both_tagged_mb1",
-        "input": {
-            "name": "Bojuka Bog",
-            "variant": "Worldwake",
-            "edition": "Mystery Booster The List"
-        }
-    },
-    {
-        "uuid": "706ca274-e840-56e6-b252-4d7da8f13063",
-        "description": "mb1list_in_both_tagged_plist",
-        "input": {
-            "name": "Bojuka Bog",
-            "variant": "Commander 2018",
-            "edition": "Mystery Booster The List"
-        }
-    },
-    {
-        "uuid": "a057d0d7-11fb-5d77-9217-96d8cd26dd67",
-        "description": "mb1list_in_both_mb1_foil",
+        "uuid": "e095c5ed-75bc-5131-8d8d-1604eb2d5eb0_f",
+        "description": "mb1list_fmb1_foil",
         "input": {
             "name": "Helix Pinnacle",
             "variant": "Foil",
@@ -2814,8 +2835,8 @@
         }
     },
     {
-        "uuid": "9ef93f93-52a8-5807-8c47-aa32048c25ce",
-        "description": "mb1list_in_both_list_nonfoil",
+        "uuid": "e095c5ed-75bc-5131-8d8d-1604eb2d5eb0",
+        "description": "mb1list_list_nonfoil",
         "input": {
             "name": "Helix Pinnacle",
             "variant": "Non-Foil",
@@ -2823,7 +2844,7 @@
         }
     },
     {
-        "uuid": "7cac5a8b-f4cc-5169-acf1-f4e0b2b553b6",
+        "uuid": "a8cec241-cf8b-532e-88b8-8bae60c2cc59",
         "description": "mb1list_explicit_list",
         "input": {
             "name": "Scourge of the Throne",
@@ -2831,32 +2852,32 @@
         }
     },
     {
-        "uuid": "d26069ff-4e63-547f-a64b-cbf2d83cdbdf",
+        "uuid": "ed42e3c2-a70b-5419-b1a2-0772979e41a0",
         "description": "mb1list_explicit_variant_list",
         "input": {
             "name": "Thought Vessel",
-            "variant": "The List",
-            "edition": "Ignored"
+            "variant": "Foil - Commander Legends",
+            "edition": "Mystery Booster/The List"
         }
     },
     {
-        "uuid": "3aa53e39-08e2-5095-b1d7-05290568248b",
-        "description": "mb1list_triple_combo",
+        "uuid": "ef018e83-134b-55eb-8b84-d2acd404d195",
+        "description": "mb1list_only_part_of_number",
         "input": {
-            "name": "Lightning Bolt (142)",
+            "name": "Lightning Bolt (141)",
             "edition": "The List"
         }
     },
     {
-        "uuid": "37d7eb2a-2512-5e56-829f-2c10571bb4a7",
-        "description": "mb1list_has_two_variants",
+        "uuid": "22ae6810-1bd8-5b7c-a285-28d04c750a07",
+        "description": "mb1list_has_two_variants_ok",
         "input": {
             "name": "Phantom Centaur",
             "edition": "Mystery Booster/The List"
         }
     },
     {
-        "uuid": "dae3ddb3-56c3-5181-ab10-1371270e1f20",
+        "uuid": "e703725b-8e35-5b35-834c-e30b82ec6913",
         "description": "mb1list_has_two_variants_misprint",
         "input": {
             "name": "Phantom Centaur",
@@ -2865,7 +2886,7 @@
         }
     },
     {
-        "uuid": "eaf5912c-be71-52d7-addc-2cb2823080ba",
+        "uuid": "29bd0d99-395d-52b7-b63d-8d9b8ee991a0",
         "description": "mb1list_wrong_edition_and_foil",
         "input": {
             "name": "Sheltering Ancient",
@@ -2874,37 +2895,10 @@
         }
     },
     {
-        "uuid": "dfdc9b7d-99a7-5c64-9144-2c879871a926",
-        "description": "mb1list_thelist_variant",
-        "input": {
-            "name": "Grim Haruspex",
-            "variant": "Ugin's Fate",
-            "edition": "The List"
-        }
-    },
-    {
-        "uuid": "ddc17c53-b3d0-51fc-92f5-12f9ba6080e6",
-        "description": "mb1list_commander_deck",
+        "uuid": "b7b18e3b-c963-5a7b-a231-068992ad27a8",
+        "description": "mb1list_commander_deck_nonfoil",
         "input": {
             "name": "Desolate Lighthouse",
-            "edition": "Mystery Booster/The List"
-        }
-    },
-    {
-        "uuid": "a6ecaa21-642e-54f9-ba82-5333408f55e3",
-        "description": "mb1list_commander_deck_foil",
-        "input": {
-            "name": "Swiftfoot Boots",
-            "edition": "Mystery Booster/The List",
-            "foil": true
-        }
-    },
-    {
-        "uuid": "841fca52-9f90-508f-a2de-a13d4c062a4d",
-        "description": "mb1list_commander_deck_dupe_mb1",
-        "input": {
-            "name": "Chaos Warp",
-            "variant": "Commander 2017",
             "edition": "Mystery Booster/The List"
         }
     },
@@ -2917,7 +2911,7 @@
         }
     },
     {
-        "uuid": "d6562884-aff6-5d3a-b54c-4d467e5e2336",
+        "uuid": "1b1dd605-7b51-5de4-a923-7c4fd234acdd_f",
         "description": "mb1list_exact_edition_tag",
         "input": {
             "name": "Rune-Tail, Kitsune Ascendant",
@@ -2943,6 +2937,15 @@
         }
     },
     {
+        "uuid": "61b8865c-4e98-53dd-a92f-c610aa3a25a2",
+        "description": "mb1list_sld_edh",
+        "input": {
+            "name": "Bloodline Keeper / Lord of Lineage",
+            "variant": "1157",
+            "edition": "Secret Lair Commander Deck: From Cute to Brute"
+        }
+    },
+    {
         "uuid": "d465de12-cc8b-58a8-aa5f-3b9d2b13adca",
         "description": "mb1list_thelist_correcttag_alt",
         "input": {
@@ -2951,7 +2954,7 @@
         }
     },
     {
-        "uuid": "38f40a36-a7ba-56dc-8e2f-0d7559e1f4fd",
+        "uuid": "e383111c-fd23-5c10-a669-4a3cc3dfa595",
         "description": "mb1list_thelist_unfinity",
         "input": {
             "name": "B-I-N-G-O",
@@ -2959,7 +2962,7 @@
         }
     },
     {
-        "uuid": "d8a8c6df-c901-5bed-9d3a-a1bfaef12e23",
+        "uuid": "96879e5a-5bfa-5a6a-b186-d545bcd890c3",
         "description": "mb1list_phed_reprint",
         "input": {
             "name": "Yusri, Fortune's Flame",
@@ -2967,44 +2970,47 @@
         }
     },
     {
-        "uuid": "da9dbad5-63b2-54ec-993c-4f8b527172d2",
-        "description": "mb1list_phed_skipped_not",
+        "uuid": "b53acf86-e0ef-5d20-9ce8-b876a91a4091",
+        "description": "mb1list_explicit_num",
         "input": {
-            "name": "Counterspell",
-            "edition": "Secret Lair Commander: Heads I Win, Tails You Lose"
-        }
-    },
-    {
-        "uuid": "6026411a-f851-52fd-9896-d4f1c25b26e2",
-        "description": "mb1list_phed_skipped_yes",
-        "input": {
-            "name": "Counterspell",
+            "name": "Forest",
+            "variant": "HOU-198",
             "edition": "Mystery Booster/The List"
         }
     },
     {
-        "uuid": "c901ac44-1dd7-5226-9839-911e03ce08f6",
-        "description": "mb1list_mb1_sol_ring",
+        "uuid": "ffd6051f-450b-5ad4-8908-c250261dadf7",
+        "description": "mb1list_explicit_dupe",
         "input": {
-            "name": "Sol Ring",
-            "variant": "Commander 2018",
-            "edition": "Mystery Booster / The List"
+            "name": "Laboratory Maniac",
+            "variant": "UMA-61",
+            "edition": "Mystery Booster/The List"
         }
     },
     {
-        "uuid": "0c7115ea-01c5-5d49-bd1b-853ab0074aac",
-        "description": "mb1list_phed_sol_ring",
+        "uuid": "ffd6051f-450b-5ad4-8908-c250261dadf7",
+        "description": "mb1list_explicit_dupe_extended",
         "input": {
-            "name": "Sol Ring",
-            "variant": "Commander 2021",
-            "edition": "Mystery Booster / The List"
+            "name": "Laboratory Maniac",
+            "variant": "061 Ultimate Masters",
+            "edition": "MB1"
         }
     },
     {
-        "uuid": "12bf443e-1d6d-5846-9db4-5940cf276bc4",
-        "description": "mb1list_empty_tag_may_alias_number_short",
+        "uuid": "ef018e83-134b-55eb-8b84-d2acd404d195",
+        "description": "mb1list_edition_may_confuse_number",
         "input": {
-            "name": "Birds of Paradise",
+            "name": "Lightning Bolt",
+            "variant": "Masters 25",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "cd86f7dc-5e04-56c6-9b10-2e8d2714b63f",
+        "description": "mb1list_explicit_zeros",
+        "input": {
+            "name": "Harmonize",
+            "variant": "P08-005",
             "edition": "Planeswalker Symbol Reprints"
         }
     },
@@ -3329,6 +3335,24 @@
         }
     },
     {
+        "uuid": "2204fa4d-32e6-50b0-9339-55f668732d6f",
+        "description": "secret_lair_dfcsamename_renamed",
+        "input": {
+            "name": "Sol Ring",
+            "variant": "1512",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "d21e4d29-ac69-59c5-a2d8-abe854a34426",
+        "description": "secret_lair_rainbow_dedup",
+        "input": {
+            "name": "Obeka, Brute Chronologist",
+            "variant": "1579 Rainbow Foil",
+            "edition": "SLD"
+        }
+    },
+    {
         "uuid": "5507e55e-f034-51f2-8d4c-83008f18a950",
         "description": "empty_variant_cause_showcase",
         "input": {
@@ -3646,7 +3670,7 @@
         }
     },
     {
-        "uuid": "1327e84b-cfcd-5bfb-83ea-499fb5565101",
+        "uuid": "bae00b36-86e6-5d01-a240-21d6da4c4246",
         "description": "mb1playtest_plist",
         "input": {
             "name": "Puresteel Angel",
@@ -3659,14 +3683,6 @@
         "input": {
             "name": "Faerie Rogue Token",
             "variant": "014 - B",
-            "edition": "Secret Lair"
-        }
-    },
-    {
-        "uuid": "01a9f60d-207a-56e2-9d39-9734ce7ba567",
-        "description": "tok_dupe",
-        "input": {
-            "name": "Cat",
             "edition": "Secret Lair"
         }
     },
@@ -3811,7 +3827,7 @@
     },
     {
         "uuid": "e97bac27-b2ee-5d13-acc3-187ead365879",
-        "description": "neo_duplicate_name_nec",
+        "description": "duplicate_name_nec",
         "input": {
             "name": "Unquenchable Fury",
             "edition": "NEC"
@@ -3819,10 +3835,26 @@
     },
     {
         "uuid": "b515bbb3-e4b8-5d29-a661-0851e58e64d2",
-        "description": "neo_duplicate_name_tok",
+        "description": "duplicate_name_tok",
         "input": {
             "name": "Unquenchable Fury",
             "edition": "TBTH"
+        }
+    },
+    {
+        "uuid": "81099d80-6a55-5eae-b50e-150e300d5fc7",
+        "description": "duplicate_name_mkm",
+        "input": {
+            "name": "Red Herring",
+            "edition": "Murders at Karlov Manor"
+        }
+    },
+    {
+        "uuid": "8f3f48e4-f635-5bfb-b44a-2032d9eb5e18",
+        "description": "duplicate_name_cmb1",
+        "input": {
+            "name": "Red Herring",
+            "edition": "Mystery Booster Playtest Cards"
         }
     },
     {
@@ -3866,6 +3898,14 @@
         "input": {
             "name": "Information Booth",
             "variant": "218a",
+            "edition": "Unfinity"
+        }
+    },
+    {
+        "uuid": "40ff777d-b64a-53c5-8954-9737ef41fe45",
+        "description": "unf_attractions_dashes",
+        "input": {
+            "name": "Memory Test (5-6)",
             "edition": "Unfinity"
         }
     },

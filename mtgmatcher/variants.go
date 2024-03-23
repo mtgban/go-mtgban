@@ -959,27 +959,29 @@ var atqVariants = map[string]map[string]string{
 
 var pal01Variants = map[string]map[string]string{
 	"Forest": {
-		"arena 2001 foil":           "1",
-		"arena 2002 foil":           "11",
-		"arena ia":                  "1",
-		"arena beta":                "11",
-		"arena 2001 ice age":        "1",
-		"arena 2002 beta":           "11",
-		"ice age art arena 2001":    "1",
-		"beta art arena 2001":       "11",
-		"arena 2001":                "1",
-		"arena 2002":                "11",
-		"arena ice age":             "1",
-		"arena ice age art 2001":    "1",
-		"arena beta art 2001":       "11",
-		"arena 2001 foil - ice age": "1",
-		"arena 2001 foil - beta":    "11",
-		"ice age 2001":              "1",
-		"beta 2002":                 "11",
-		"2001 ice age":              "1",
-		"2001 beta":                 "11",
-		"ice":                       "1",
-		"β":                         "11",
+		"arena 2001 foil":                  "1",
+		"arena 2002 foil":                  "11",
+		"arena ia":                         "1",
+		"arena beta":                       "11",
+		"arena 2001 ice age":               "1",
+		"arena 2002 beta":                  "11",
+		"ice age art arena 2001":           "1",
+		"beta art arena 2001":              "11",
+		"arena 2001":                       "1",
+		"arena 2002":                       "11",
+		"arena ice age":                    "1",
+		"arena ice age art 2001":           "1",
+		"arena beta art 2001":              "11",
+		"arena 2001 foil - ice age":        "1",
+		"arena 2001 foil - beta":           "11",
+		"ice age 2001":                     "1",
+		"beta 2002":                        "11",
+		"2001 ice age":                     "1",
+		"2001 beta":                        "11",
+		"ice":                              "1",
+		"β":                                "11",
+		"arena league promo pat lewis art": "1",
+		"arena league promo christopher rush art": "11",
 	},
 }
 
@@ -1018,7 +1020,7 @@ var palpVariants = map[string]map[string]string{
 		"ron spears, small person":                           "15",
 		"apac set red pack graveyard":                        "10",
 		"apac set clear pack person in swamp":                "15",
-		"apac land japan fire in graveyard, ron spears art":  "10",
+		"apac land japan fire in graveyard ron spears art":   "10",
 		"apac land indonesia zombie in swamp ron spears art": "15",
 		"apac blue taiwan":                                   "10",
 		"apac clear australia":                               "15",
@@ -1537,6 +1539,21 @@ var dkmVariants = map[string]map[string]string{
 	"Incinerate": {
 		"v.1": "14★",
 		"v.2": "14",
+	},
+	"Forest": {
+		"v.1": "48",
+		"v.2": "49",
+		"v.3": "50",
+	},
+	"Mountain": {
+		"v.1": "45",
+		"v.2": "46",
+		"v.3": "47",
+	},
+	"Swamp": {
+		"v.1": "42",
+		"v.2": "43",
+		"v.3": "44",
 	},
 }
 
@@ -2729,440 +2746,46 @@ var mirVariants = map[string]map[string]string{
 	},
 }
 
-// Cards present in MB1 that got reprinted in PLIST using a different tag. Also
-// works for cards in PLIST that got printed multiple times. This is because in
-// case of multiple matches, PLIST is selected.
-// https://scryfall.com/search?q=in%3Aplist+in%3Amb1+%28e%3Amb1+or+e%3Aplist+or+e%3Aphed+or+e%3Apctb+or+e%3Apagl%29&unique=prints&as=grid&order=name
-var mb1plistVariants = map[string]map[string]string{
-	// MB1 cards reprinted in PLIST
-	"Angel of Serenity": {
-		"c15": "405",
-	},
-	"Arcane Signet": {
-		"throne of eldraine": "49",
-		"commander 2021":     "45",
-		"eld":                "49",
-		"c21":                "45",
-	},
-	"Aura Shards": {
-		"cmd":            "1392",
-		"commander":      "1392",
-		"commander 2011": "1392",
-	},
-	"Beast Within": {
-		"bbd": "1134",
-		"nph": "26",
-	},
-	"Bojuka Bog": {
-		"c18":                     "1660",
-		"commander 2018":          "1660",
-		"commander: 2018 edition": "1660",
-	},
-	"Bottle Gnomes": {
-		"cm2": "1554",
-		"tmp": "1330",
-	},
-	"Brainstorm": {
-		"a25":        "301",
-		"masters 25": "301",
-	},
-	"Burst Lightning": {
-		"mm2":                 "879",
-		"modern masters 2015": "879",
-		"p10":                 "126",
-	},
-	"Call of the Nightwing": {
-		"gk1":                          "1405",
-		"guilds of ravnica guild kits": "1405",
-	},
-	"Chaos Warp": {
-		"c17":            "885",
-		"c20":            "19",
-		"cmd":            "1199",
-		"commander 2017": "885",
-		"commander 2020": "19",
-	},
-	"Chromatic Lantern": {
-		"grn": "1559",
-		"rtr": "51",
-	},
-	"Command Tower": {
-		"c21": "62",
-		"cmd": "67",
-	},
-	"Counterspell": {
-		"masters 25": "336",
-		"a25":        "336",
-		"cmr":        "1",
-	},
-	"Daretti, Scrap Savant": {
-		"non-foil - commander 2014": "898",
-		"c14":                       "898",
-		"cm2":                       "20",
-	},
-	"Dark Ritual": {
-		"masters 25": "611",
-		"a25":        "611",
-	},
-	"Demonic Tutor": {
-		"ultimate masters":              "472",
-		"duel deck: divine vs demonic":  "620",
-		"duel deck: divine vs. demonic": "620",
-		"duel decks: demonic vs divine": "620",
-		"dvd":                           "620",
-	},
-	"Deny Reality": {
-		"pca": "1415",
-		"arb": "709",
-	},
-	"Disenchant": {
-		"core set 2020": "77",
-		"m20":           "77",
-		"p07":           "13",
-	},
-	"Doomed Traveler": {
-		"2x2": "1095",
-		"cn2": "83",
-	},
-	"Eternal Witness": {
-		"ultimate masters": "1200",
-		"uma":              "1200",
-	},
-	"Entreat the Angels": {
-		"mm3": "17",
-		"avr": "15",
-	},
-	"Evolving Wilds": {
-		"c18": "1665",
-		"rix": "70",
-	},
-	"Exotic Orchard": {
-		"c21": "64",
-		"con": "71",
-	},
-	"Fact or Fiction": {
-		"cm2":                         "371",
-		"commander anthology vol. ii": "371",
-		"commander anthology ii":      "371",
-		"modern horizons":             "415",
-	},
-	"Faithless Looting": {
-		"cm2":                         "919",
-		"commander anthology vol. ii": "919",
-		"commander anthology ii":      "919",
-		"duel deck: sorin vs tibalt":  "533",
-	},
-	"Farseek": {
-		"c17": "1206",
-		"rav": "27",
-	},
-	"Fellwar Stone": {
-		"cmd": "55",
-		"c15": "255",
-	},
-	"Fiery Gambit": {
-		"foil": "49",
-	},
-	"Frontier Bivouac": {
-		"c17": "1669",
-		"ktk": "72",
-	},
-	"Fireball": {
-		"iconic masters": "926",
-		"ima":            "926",
-	},
-	"Flamekin Village": {
-		"cm2": "65",
-		"c14": "1235",
-	},
-	"Forest": {
-		"198 - hour of devastation": "93",
-		"199 - hour of devastation": "94",
-		"268 - amonkhet":            "95",
-		"198":                       "93",
-		"199":                       "94",
-		"268":                       "95",
-	},
-	"Gisa and Geralf": {
-		"": "630",
-	},
-	"Great Furnace": {
-		"mirrodin":                  "1013",
-		"non-foil - commander 2018": "1675",
-		"commander 2018":            "1675",
-		"c18":                       "1675",
-	},
-	"Guttersnipe": {
-		"iconic masters": "970",
-		"ima":            "970",
-		"e01":            "367",
-	},
-	"Harmonize": {
-		"c17":            "1234",
-		"commander 2017": "1234",
-		"p08":            "174",
-		"c20":            "30",
-	},
-	"Imperious Perfect": {
-		"cma":                 "1242",
-		"commander anthology": "1242",
-	},
-	"Island": {
-		"akh":       "90",
-		"amonkhet":  "90",
-		"258":       "90",
-		"jmp - 050": "403",
-		"jmp":       "403",
-		"50":        "403",
-	},
-	"Jungle Shrine": {
-		"c17": "1677",
-		"ala": "74",
-	},
-	"Karoo": {
-		"c14": "575",
-		"vis": "54",
-	},
-	"Kiki-Jiki, Mirror Breaker": {
-		"mm2":                   "991",
-		"modern masters 2015":   "991",
-		"champions of kamigawa": "684",
-	},
-	"Knight Exemplar": {
-		"m11":                           "1102",
-		"2011 core set":                 "1102",
-		"ddg":                           "1168",
-		"duel deck: knights vs dragons": "1168",
-	},
-	"Laboratory Maniac": {
-		"innistrad":        "1026",
-		"ultimate masters": "415",
-		"uma":              "415",
-	},
-	"Lightning Bolt": {
-		"archenemy: nicol bolas": "1001",
-		"e01":                    "1001",
-
-		// PLIST variants
-		"magicfest":      "142",
-		"masters 25":     "429",
-		"prm":            "142",
-		"a25":            "429",
-		"142":            "142",
-		"141":            "429",
-		"the list 001":   "142",
-		"promo":          "142",
-		"v.1":            "142",
-		"v.2":            "429",
-		"magicfest art":  "142",
-		"masters 25 art": "429",
-		"1":              "142",
-
-		"rna magicfest promo": "142",
-	},
-	"Lightning Greaves": {
-		"commander 2019": "1600",
-		"c19":            "1600",
-		"2xm":            "50",
-	},
-	"Living Death": {
-		"masters 25": "702",
-	},
-	"Man-o'-War": {
-		"a25":        "421",
-		"masters 25": "421",
-	},
-	"Mind Stone": {
-		"non-foil - commander 2018": "1609",
-		"c18":                       "1609",
-		"non-foil - weatherlight":   "41",
-		"wth":                       "41",
-		"ima":                       "51",
-	},
-	"Mishra's Factory": {
-		"modern horizons 2": "960",
-		"mh2":               "960",
-		"masters 25":        "1680",
-		"a25":               "1680",
-	},
-	"Mistmeadow Witch": {
-		"":    "1527",
-		"cma": "1527",
-		"shm": "635",
-	},
-	"Mortify": {
-		"c18":                     "1457",
-		"commander 2018":          "1457",
-		"commander: 2018 edition": "1457",
-		"p07":                     "561",
-	},
-	"Mountain": {
-		"akh":                    "92",
-		"amonkhet":               "92",
-		"bbd":                    "82",
-		"unhinged #139 full art": "453",
-		"unh":                    "453",
-	},
-	"Myriad Landscape": {
-		"c14":               "55",
-		"foil - masters 25": "69",
-		"a25":               "69",
-	},
-	"Negate": {
-		"rivals of ixalan": "443",
-		"rix":              "443",
-		"player rewards":   "68",
-		"p09":              "68",
-		"znr":              "5",
-	},
-	"Opportunity": {
-		"c17": "450",
-		"ulg": "906",
-	},
-	"Painful Lesson": {
-		"akh":      "727",
-		"amonkhet": "727",
-	},
-	"Path to Exile": {
-		"e02": "196",
-	},
-	"Phantom Centaur": {
-		"127":      "1292",
-		"misprint": "1292†",
-	},
-	"Plains": {
-		"256":      "89",
-		"akh":      "89",
-		"amonkhet": "89",
-	},
-	"Preordain": {
-		"commander 2015": "460",
-		"c15":            "460",
-		"cmr":            "7",
-	},
-	"Putrefy": {
-		"gk1": "1466",
-		"khc": "44",
-	},
-	"Reliquary Tower": {
-		"core set 2019": "1683",
-		"m19":           "1683",
-		"c21":           "71",
-	},
-	"Reshape": {
-		"dst": "1029",
-		"2xm": "8",
-	},
-	"Rogue's Passage": {
-		"non-foil - commander 2017": "1684",
-		"c17":                       "1684",
-		"uma":                       "72",
-	},
-	"Rout": {
-		"c21":                     "970",
-		"commander 2021":          "970",
-		"commander: 2021 edition": "970",
-		"inv":                     "823",
-		"invasion":                "823",
-	},
-	"Sandsteppe Citadel": {
-		"cm2": "1685",
-		"ktk": "80",
-	},
-	"Sandstone Oracle": {
-		"c15": "57",
-		"cm2": "1625",
-	},
-	"Sea Gate Oracle": {
-		"khc": "761",
-		"c17": "480",
-	},
-	"Skullclamp": {
-		"c17":                     "1630",
-		"commander 2017":          "1630",
-		"commander: 2017 edition": "1630",
-	},
-	"Sol Ring": {
-		"commander 2011": "58",
-		"commander 2018": "1633",
-		"commander 2021": "53",
-		"cmd":            "58",
-		"c18":            "1633",
-		"c21":            "53",
-	},
-	"Sorin Markov": {
-		"zendikar": "778",
-		"zen":      "778",
-	},
-	"Sleep": {
-		"core set 2019": "495",
-		"m19":           "495",
-		"c15":           "465",
-	},
-	"Swamp": {
-		"hour of devastation": "91",
-		"hou":                 "91",
-	},
-	"Swiftfoot Boots": {
-		"m12":                   "45",
-		"a25":                   "54",
-		"non-foil - masters 25": "54",
-	},
-	"Sword of the Animist": {
-		"e01": "1638",
-	},
-	"Swords to Plowshares": {
-		"":    "253",
-		"c16": "253",
-	},
-	"Path of Ancestry": {
-		"cmr": "70",
-		"c17": "77",
-	},
-	"Taurean Mauler": {
-		"cm2": "1079",
-	},
-	"Temple of the False God": {
-		"commander 2018": "1691",
-		"c18":            "1691",
-		"c21":            "77",
-	},
-	"Terminate": {
-		"cma":                 "1495",
-		"commander anthology": "1495",
-		"p09":                 "230",
-	},
-	"Temur Battle Rage": {
-		"fate reforged": "1081",
-		"frf":           "1081",
-		"cmr":           "37",
-	},
-	"Thopter Foundry": {
-		"c16": "1535",
-	},
-	"Thought Vessel": {
-		"cm2":                           "1639",
-		"commander anthology vol. ii":   "1639",
-		"commander anthology volume ii": "1639",
-		"c15":                           "274",
-		"commander 2015":                "274",
-		"cmr":                           "57",
-	},
-	"Vampire Nighthawk": {
-		"e02":                 "813",
-		"explorers of ixalan": "813",
-	},
-	"Young Pyromancer": {
-		"dds":                       "1105",
-		"duel deck: mind vs. might": "1105",
-	},
-	"Wall of Omens": {
-		"khc": "1339",
-		"ema": "270",
-	},
-	"Whispersilk Cloak": {
-		"m11": "58",
-		"pca": "1649",
+var mkmVariants = map[string]map[string]string{
+	"Case File Auditor": {
+		"a": "7",
+		"b": "7†",
+	},
+	"Wojek Investigator": {
+		"a": "36",
+		"b": "36†",
+	},
+	"Sudden Setback": {
+		"a": "72",
+		"b": "72†",
+	},
+	"Surveillance Monitor": {
+		"a": "73",
+		"b": "73†",
+	},
+	"Case of the Gorgon's Kiss": {
+		"a": "79",
+		"b": "79†",
+	},
+	"Clandestine Meddler": {
+		"a": "82",
+		"b": "82†",
+	},
+	"Torch the Witness": {
+		"a": "146",
+		"b": "146†",
+	},
+	"Break Out": {
+		"a": "190",
+		"b": "190†",
+	},
+	"Kraul Whipcracker": {
+		"a": "213",
+		"b": "213†",
+	},
+	"Undercover Crocodelf": {
+		"a": "239",
+		"b": "239†",
 	},
 }
 
@@ -3755,6 +3378,7 @@ var sldVariants = map[string]map[string]string{
 		"v.3": "85",
 		"v.4": "86",
 
+		"999":                          "675",
 		"secret lair x street fighter": "675",
 		"secret lair reskin":           "675",
 		"*** reskin":                   "675",
@@ -3881,6 +3505,10 @@ var sldVariants = map[string]map[string]string{
 	},
 	"Narset, Parter of Veils": {
 		"retro frame": "1041",
+	},
+	"Counterspell": {
+		"sctlr":      "SCTLR",
+		"4 jan 2023": "SCTLR",
 	},
 }
 
@@ -4029,6 +3657,21 @@ var tmpVariants = map[string]map[string]string{
 	},
 }
 
+var plstVariants = map[string]map[string]string{
+	"Imperious Perfect": {
+		"extended art":       "PCMP-9",
+		"champs full art":    "PCMP-9",
+		"state champs promo": "PCMP-9",
+	},
+	"Lightning Bolt": {
+		"magicfest":           "PF19-1",
+		"rna magicfest promo": "PF19-1",
+	},
+	"Plains": {
+		"": "UGL-84",
+	},
+}
+
 var lciVariants = map[string]map[string]string{
 	"Cavern of Souls": {
 		"borderless":                             "345",
@@ -4038,6 +3681,7 @@ var lciVariants = map[string]map[string]string{
 		"borderless neon ink purple":             "410d",
 		"borderless neon ink green":              "410f",
 		"borderless neon ink red":                "410e",
+		"neon yellow":                            "410b",
 	},
 }
 
@@ -4048,7 +3692,7 @@ var ulgVariants = map[string]map[string]string{
 	},
 }
 
-var uplistVariants = map[string]map[string]string{
+var ulstVariants = map[string]map[string]string{
 	"Everythingamajig": {
 		"a":    "55",
 		"f":    "56",
@@ -4057,8 +3701,8 @@ var uplistVariants = map[string]map[string]string{
 		"move": "55",
 		"scry": "56",
 
-		"move a counter..": "55",
-		"scry 2..":         "56",
+		"move a counter": "55",
+		"scry 2":         "56",
 	},
 	"Ineffable Blessing": {
 		"a":           "38",
@@ -4103,25 +3747,20 @@ var ustVariants = map[string]map[string]string{
 		"v.4": "103d",
 	},
 	"Everythingamajig": {
-		"move":               "147a",
-		"draw":               "147b",
-		"flip":               "147c",
-		"add":                "147d",
-		"sacrifice":          "147e",
-		"scry":               "147f",
-		"version 1":          "147a",
-		"move a counter..":   "147a",
-		"draw a card..":      "147b",
-		"flip a coin..":      "147c",
-		"add one mana..":     "147d",
-		"sacrifice a land..": "147e",
-		"scry 2..":           "147f",
-		"proliferate":        "147a",
-		"draw a card":        "147b",
-		"flip a coin":        "147c",
-		"add one mana":       "147d",
-		"sacrifice a land":   "147e",
-		"scry 2":             "147f",
+		"move":             "147a",
+		"draw":             "147b",
+		"flip":             "147c",
+		"add":              "147d",
+		"sacrifice":        "147e",
+		"scry":             "147f",
+		"version 1":        "147a",
+		"move a counter":   "147a",
+		"draw a card":      "147b",
+		"flip a coin":      "147c",
+		"add one mana":     "147d",
+		"sacrifice a land": "147e",
+		"scry 2":           "147f",
+		"proliferate":      "147a",
 
 		"v.1": "147a",
 		"v.2": "147b",
@@ -4322,11 +3961,11 @@ var ustVariants = map[string]map[string]string{
 		"roll two":                  "49e",
 		"return all artifacts":      "49f",
 		"wayne england art":         "49a",
-		"untap two..":               "49b",
-		"draw a card..":             "49c",
-		"return target..":           "49d",
-		"counter target..":          "49e",
-		"scry 3..":                  "49f",
+		"untap two":                 "49b",
+		"draw a card":               "49c",
+		"return target":             "49d",
+		"counter target":            "49e",
+		"scry 3":                    "49f",
 
 		"v.5": "49a",
 		"v.1": "49b",
@@ -4566,70 +4205,66 @@ var wc02Variants = map[string]map[string]string{
 }
 
 var VariantsTable = map[string]map[string]map[string]string{
-	"Angels: They're Just Like Us but Cooler and with Wings": mb1plistVariants,
-	"Alliances":                            allVariants,
-	"Alternate Fourth Edition":             ed4Variants,
-	"Anthologies":                          athVariants,
-	"Antiquities":                          atqVariants,
-	"Arena League 2001":                    pal01Variants,
-	"Asia Pacific Land Program":            palpVariants,
-	"Battle Royale Box Set":                brbVariants,
-	"Champions of Kamigawa":                chkVariants,
-	"Chronicles Foreign Black Border":      chrVariants,
-	"Chronicles":                           chrVariants,
-	"Collectors' Edition":                  oldLandVariants,
-	"Commander Anthology Volume II":        cm2Variants,
-	"Conspiracy: Take the Crown":           cn2Variants,
-	"Deckmasters":                          dkmVariants,
-	"Dominaria United":                     douVariants,
-	"Double Masters":                       xm2Variants,
-	"European Land Program":                pelpVariants,
-	"Fallen Empires":                       femVariants,
-	"Fifth Edition":                        ed5Variants,
-	"Foreign Black Border":                 ed3Variants,
-	"Fourth Edition Foreign Black Border":  ed4Variants,
-	"Fourth Edition":                       ed4Variants,
-	"From Cute to Brute":                   mb1plistVariants,
-	"GRN Ravnica Weekend":                  prwkVariants,
-	"Heads I Win, Tails You Lose":          mb1plistVariants,
-	"Homelands":                            hmlVariants,
-	"Ice Age":                              iceVariants,
-	"Intl. Collectors' Edition":            oldLandVariants,
-	"Introductory Two-Player Set":          itpVariants,
-	"Kaldheim":                             khmVariants,
-	"Kamigawa: Neon Dynasty":               neoVariants,
-	"League Tokens 2013":                   l13Variants,
-	"Limited Edition Alpha":                leaVariants,
-	"Limited Edition Beta":                 oldLandVariants,
-	"Magic Premiere Shop 2005":             pmpsVariants,
-	"Mirage":                               mirVariants,
-	"Mystery Booster Retail Edition Foils": mb1plistVariants,
-	"Mystery Booster":                      mb1plistVariants,
-	"Oath of the Gatewatch":                ogwVariants,
-	"Portal Second Age":                    po2Variants,
-	"Portal":                               porVariants,
-	"Pro Tour Collector Set":               ptcVariants,
-	"RNA Ravnica Weekend":                  prw2Variants,
-	"Revised Edition":                      ed3Variants,
-	"Rinascimento":                         rinVariants,
-	"Secret Lair Drop":                     sldVariants,
-	"Shadows over Innistrad Promos":        psoiVariants,
-	"Shadows over Innistrad":               soiVariants,
-	"Special Guests":                       spgVariants,
-	"Summer Magic / Edgar":                 ed3Variants,
-	"Tales of Middle-earth Commander":      ltcVariants,
-	"Tempest":                              tmpVariants,
-	"The List (Unfinity Foil Edition)":     uplistVariants,
-	"The List":                             mb1plistVariants,
-	"The Lost Caverns of Ixalan":           lciVariants,
-	"Unglued":                              ulgVariants,
-	"Unlimited Edition":                    oldLandVariants,
-	"Unstable":                             ustVariants,
-	"World Championship Decks 1997":        wc97Variants,
-	"World Championship Decks 1998":        wc98Variants,
-	"World Championship Decks 1999":        wc99Variants,
-	"World Championship Decks 2001":        wc01Variants,
-	"World Championship Decks 2002":        wc02Variants,
+	"Alliances":                           allVariants,
+	"Alternate Fourth Edition":            ed4Variants,
+	"Anthologies":                         athVariants,
+	"Antiquities":                         atqVariants,
+	"Arena League 2001":                   pal01Variants,
+	"Asia Pacific Land Program":           palpVariants,
+	"Battle Royale Box Set":               brbVariants,
+	"Champions of Kamigawa":               chkVariants,
+	"Chronicles Foreign Black Border":     chrVariants,
+	"Chronicles":                          chrVariants,
+	"Collectors' Edition":                 oldLandVariants,
+	"Commander Anthology Volume II":       cm2Variants,
+	"Conspiracy: Take the Crown":          cn2Variants,
+	"Deckmasters":                         dkmVariants,
+	"Dominaria United":                    douVariants,
+	"Double Masters":                      xm2Variants,
+	"European Land Program":               pelpVariants,
+	"Fallen Empires":                      femVariants,
+	"Fifth Edition":                       ed5Variants,
+	"Foreign Black Border":                ed3Variants,
+	"Fourth Edition Foreign Black Border": ed4Variants,
+	"Fourth Edition":                      ed4Variants,
+	"GRN Ravnica Weekend":                 prwkVariants,
+	"Homelands":                           hmlVariants,
+	"Ice Age":                             iceVariants,
+	"Intl. Collectors' Edition":           oldLandVariants,
+	"Introductory Two-Player Set":         itpVariants,
+	"Kaldheim":                            khmVariants,
+	"Kamigawa: Neon Dynasty":              neoVariants,
+	"League Tokens 2013":                  l13Variants,
+	"Limited Edition Alpha":               leaVariants,
+	"Limited Edition Beta":                oldLandVariants,
+	"Magic Premiere Shop 2005":            pmpsVariants,
+	"Mirage":                              mirVariants,
+	"Murders at Karlov Manor":             mkmVariants,
+	"Oath of the Gatewatch":               ogwVariants,
+	"Portal Second Age":                   po2Variants,
+	"Portal":                              porVariants,
+	"Pro Tour Collector Set":              ptcVariants,
+	"RNA Ravnica Weekend":                 prw2Variants,
+	"Revised Edition":                     ed3Variants,
+	"Rinascimento":                        rinVariants,
+	"Secret Lair Drop":                    sldVariants,
+	"Shadows over Innistrad Promos":       psoiVariants,
+	"Shadows over Innistrad":              soiVariants,
+	"Special Guests":                      spgVariants,
+	"Summer Magic / Edgar":                ed3Variants,
+	"Tales of Middle-earth Commander":     ltcVariants,
+	"Tempest":                             tmpVariants,
+	"The List":                            plstVariants,
+	"The List (Unfinity Foil Edition)":    ulstVariants,
+	"The Lost Caverns of Ixalan":          lciVariants,
+	"Unglued":                             ulgVariants,
+	"Unlimited Edition":                   oldLandVariants,
+	"Unstable":                            ustVariants,
+	"World Championship Decks 1997":       wc97Variants,
+	"World Championship Decks 1998":       wc98Variants,
+	"World Championship Decks 1999":       wc99Variants,
+	"World Championship Decks 2001":       wc01Variants,
+	"World Championship Decks 2002":       wc02Variants,
 }
 
 // Note that the number is checked with a prefix in order to catch
@@ -4637,11 +4272,17 @@ var VariantsTable = map[string]map[string]map[string]string{
 var multiPromosVariants = map[string]map[string]string{
 	"Blast Zone": {
 		"brothers": "258",
+		"theros":   "244",
 		"spark":    "244",
 	},
 	"Gishath, Sun's Avatar": {
 		"caverns":           "229",
 		"prerelease ixalan": "222",
+	},
+	"Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun": {
+		"caverns of ixalan: promos": "188",
+		"caverns":                   "188",
+		"prerelease ixalan":         "191",
 	},
 	"Fabled Passage": {
 		"2021":     "246",
@@ -4649,14 +4290,17 @@ var multiPromosVariants = map[string]map[string]string{
 	},
 	"Heroic Intervention": {
 		"2021":   "188",
+		"theros": "109",
 		"revolt": "109",
 	},
 	"Resplendent Angel": {
 		"2019":    "34",
+		"2020":    "34",
 		"caverns": "32",
 	},
 	"Sorcerous Spyglass": {
 		"eldraine": "233",
+		"2020":     "248",
 		"ixalan":   "248",
 	},
 	// not listed here: all the temples

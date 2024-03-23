@@ -9,48 +9,35 @@ import (
 )
 
 var cardTable = map[string]string{
-	"Banewhip Punishe":           "Banewhip Punisher",
-	"Chant of the Vitu-Ghazi":    "Chant of Vitu-Ghazi",
-	"Curse of the Fool's Wisdom": "Curse of Fool's Wisdom",
-	"Deputized Protestor":        "Deputized Protester",
-	"Erdwall Illuminator":        "Erdwal Illuminator",
-	"Mistfoot Kirin":             "Misthoof Kirin",
-	"Holy Justicar":              "Holy Justiciar",
-	"Nearhearth Chaplain":        "Nearheath Chaplain",
-	"Shatter Assumpions":         "Shatter Assumptions",
-	"Stratozeppilid":             "Stratozeppelid",
-	"Elder Garganoth":            "Elder Gargaroth",
-	"Immerstrurm Predator":       "Immersturm Predator",
-	"Inspiried Idea":             "Inspired Idea",
-	"Shadow of Morality":         "Shadow of Mortality",
-
-	"Circle of Protection Red FNM Foil": "Circle of Protection: Red",
+	"Chant of the Vitu-Ghazi": "Chant of Vitu-Ghazi",
+	"Deputized Protestor":     "Deputized Protester",
+	"Erdwall Illuminator":     "Erdwal Illuminator",
+	"Mistfoot Kirin":          "Misthoof Kirin",
+	"Holy Justicar":           "Holy Justiciar",
+	"Nearhearth Chaplain":     "Nearheath Chaplain",
+	"Shatter Assumpions":      "Shatter Assumptions",
+	"Stratozeppilid":          "Stratozeppelid",
+	"Immerstrurm Predator":    "Immersturm Predator",
+	"Inspiried Idea":          "Inspired Idea",
+	"Shadow of Morality":      "Shadow of Mortality",
 
 	"Startled Awake // Persistant Nightmare": "Startled Awake //  Persistent Nightmare",
-
-	"Needleverge Patheway // Pillarverge Pathway": "Needleverge Pathway // Pillarverge Pathway",
 }
 
 var variantTable = map[string]string{
-	"Tarkir Dragonfury Prerelease Promo":               "Tarkir Dragonfury Promo",
 	"Jeff A Menges":                                    "Jeff A. Menges",
 	"Jeff a Menges":                                    "Jeff A. Menges",
-	"Not available in Draft Boosters":                  "",
 	"San Diego Comic-Con Promo M15":                    "SDCC 2014",
 	"San Diego Comic-Con Promo M14":                    "SDCC 2013",
-	"Arena Foil no Urza's Saga symbol Donato Giancola": "Arena 1999 misprint",
-	"EURO Land White Cliffs of Dover Ben Thompson art": "EURO  White Cliffs of Dover",
+	"EURO Land White Cliffs of Dover Ben Thompson art": "EURO White Cliffs of Dover",
 	"EURO Land Danish Island Ben Thompson art":         "EURO Land Danish Island",
-	"Aether Revolt Prerelease Promo":                   "AER Prerelease",
-	"Core 21 Prerelease Promo":                         "M21 Prerelease",
-	"Silver Planeswalker Symbol Core 21":               "M21 Promo Pack",
-	"Throne of Eldraine Prerelease promo":              "ELD Prerelease",
 	"Eighth Edition Prerelease Promo":                  "Release Promo",
 	"Release 27 Promo":                                 "Release",
 	"2/2 Power and Toughness":                          "misprint",
 	"Big Furry Monster Left Side":                      "28",
 	"Big Furry Monster Right Side":                     "29",
-	"Arena League Promo 2001 Mark Poole art":           "Arena 2002",
+
+	"Deckmasters cards are white bordered and have a stylized D as their set symbol FOIL versions are black bordered": "",
 }
 
 func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
@@ -60,25 +47,7 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		cuts := mtgmatcher.Cut(variant, "Deckmaster")
 		variant = cuts[0]
 	}
-	if strings.Contains(variant, "Picture") {
-		variant = strings.Replace(variant, "Picture 1", "", 1)
-		variant = strings.Replace(variant, "Picture 2", "", 1)
-		variant = strings.Replace(variant, "Picture 3", "", 1)
-		variant = strings.Replace(variant, "Picture 4", "", 1)
-	}
-	if strings.Contains(variant, "Artist") {
-		variant = strings.Replace(variant, "Artist ", "", 1)
-	}
-	variant = strings.Replace(variant, "\n", " ", -1)
-	variant = strings.Replace(variant, "(", "", -1)
-	variant = strings.Replace(variant, ")", "", -1)
-	variant = strings.Replace(variant, ")", "", -1)
-	variant = strings.Replace(variant, ",", "", -1)
-	variant = strings.Replace(variant, "- ", "", 1)
-	variant = strings.Replace(variant, "  ", " ", -1)
-	variant = strings.TrimSuffix(variant, " ")
-	variant = strings.TrimSuffix(variant, ".")
-	variant = strings.TrimSpace(variant)
+	variant = cleanVariant(variant)
 
 	vars, found := variantTable[variant]
 	if found {
@@ -412,6 +381,181 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 	}, nil
 }
 
+func cleanVariant(variant string) string {
+	if strings.Contains(variant, "Picture") {
+		variant = strings.Replace(variant, "Picture 1", "", 1)
+		variant = strings.Replace(variant, "Picture 2", "", 1)
+		variant = strings.Replace(variant, "Picture 3", "", 1)
+		variant = strings.Replace(variant, "Picture 4", "", 1)
+	}
+	if strings.Contains(variant, "Artist") {
+		variant = strings.Replace(variant, "Artist ", "", 1)
+	}
+	variant = strings.Replace(variant, "(", "", -1)
+	variant = strings.Replace(variant, ")", "", -1)
+	variant = strings.Replace(variant, ",", "", -1)
+	variant = strings.Replace(variant, ".", "", -1)
+	variant = strings.Replace(variant, "- ", "", 1)
+	variant = strings.Replace(variant, "  ", " ", -1)
+	variant = strings.Replace(variant, "\r\n", " ", -1)
+	return strings.TrimSpace(variant)
+}
+
+func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
+	num := strings.TrimLeft(card.Number, "0")
+	cleanVar := cleanVariant(card.Notes)
+	edition := card.ItemSet
+	isFoil := card.IsFoil == 1
+	cardName := card.Name
+	variant := num
+	if variant == "" {
+		variant = cleanVar
+	}
+
+	// This tag could be in name, variant, or notes
+	if strings.Contains(card.Notes, "Etched") &&
+		!strings.Contains(variant, "Etched") &&
+		!strings.Contains(cardName, "Etched") {
+		variant += " Etched"
+	}
+
+	fixup, found := cardTable[cardName]
+	if found {
+		cardName = fixup
+	}
+	vars, found := variantTable[variant]
+	if found {
+		variant = vars
+		cleanVar = vars
+	}
+
+	switch edition {
+	case "Coldsnap Theme Deck":
+		if mtgmatcher.IsBasicLand(cardName) {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+	case "Zendikar", "Battle for Zendikar", "Oath of the Gatewatch":
+		// Strip the extra letter from the name
+		if mtgmatcher.IsBasicLand(cardName) {
+			cardName = strings.Fields(cardName)[0]
+		}
+	case "Mystery Booster - The List":
+		variant = cleanVar
+
+		if num != "" && cardName != "Everythingamajig" && cardName != "Ineffable Blessing" {
+			variant = num + " " + cleanVar
+		}
+	case "Promo":
+		variant = cleanVar
+		switch variant {
+		case "Ravnica Weekend Promo":
+			edition = variant
+			variant = num
+		case "Stained Glass Art":
+			edition = "SLD"
+			variant = num
+		default:
+			switch cardName {
+			case "Demonic Tutor":
+				if variant == "Daarken Judge Rewards Promo" {
+					variant = "Judge 2008"
+				} else if variant == "Anna Steinbauer Judge Promo" {
+					variant = "Judge 2020"
+				}
+			case "Vampiric Tutor":
+				if variant == "Judge Rewards Promo Old Border" {
+					variant = "Judge 2000"
+				} else if variant == "Judge Rewards Promo New Border" {
+					variant = "Judge 2018"
+				}
+			case "Wasteland":
+				if variant == "Judge Rewards Promo Carl Critchlow art" {
+					variant = "Judge 2010"
+				} else if variant == "Judge Rewards Promo Steve Belledin art" {
+					variant = "Judge 2015"
+				}
+			case "Vindicate":
+				if variant == "Judge Rewards Promo Mark Zug art" {
+					variant = "Judge 2007"
+				} else if variant == "Judge Rewards Promo Karla Ortiz art" {
+					variant = "Judge 2013"
+				}
+			case "Fling":
+				// Only one of the two is present
+				if variant == "Gateway Promo Wizards Play Network Daren Bader art" {
+					variant = "DCI"
+				}
+			case "Sylvan Ranger":
+				if variant == "Judge Rewards Promo Mark Zug art" {
+					variant = "WPN"
+				}
+			case "Goblin Warchief":
+				if variant == "Friday Night Magic Promo Old Border" {
+					variant = "FNM 2006"
+				} else if variant == "Friday Night Magic Promo New Border" {
+					variant = "FNM 2016"
+				}
+			case "Mind Warp":
+				if variant == "Arena League Promo" {
+					variant = "FNM 2000"
+				}
+			case "Cabal Therapy":
+				if strings.HasPrefix(variant, "Gold-bordered") {
+					variant = "2003"
+				}
+			case "Rishadan Port":
+				if strings.HasPrefix(variant, "Gold-bordered") {
+					variant = "2000"
+				}
+			case "Mana Crypt":
+				if strings.HasPrefix(variant, "Harper Prism Promo") {
+					if !strings.Contains(variant, "English") {
+						return nil, errors.New("non-english")
+					}
+				}
+			case "Hangarback Walker":
+				edition = "Love your LGS"
+			case "Chord of Calling", "Wrath of God":
+				edition = "Double Masters"
+				variant = "Release"
+			case "Conjurer's Closet":
+				edition = "PW21"
+			case "Bolas's Citadel":
+				edition = "PWAR"
+				variant = "79"
+			case "Cryptic Command":
+				if variant == "Qualifier Promo" {
+					edition = "PPRO"
+					variant = "2020-1"
+				}
+			case "Dauntless Dourbark":
+				edition = "PDCI"
+				variant = "12"
+			case "Eye of Ugin":
+				edition = "J20"
+			case "Serra Avatar":
+				if variant == "Junior Super Series Promo Dermot Power art" {
+					edition = "PSUS"
+					variant = "2"
+				}
+			case "Steward of Valeron":
+				edition = "PURL"
+			case "Goblin Guide":
+				if variant == "Love Your Local Game Store Promo" {
+					edition = "PLG21"
+				}
+			}
+		}
+	}
+
+	return &mtgmatcher.Card{
+		Name:      cardName,
+		Variation: variant,
+		Edition:   edition,
+		Foil:      isFoil,
+	}, nil
+}
+
 func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 	cardName := card.Name
 	variant := card.Variation
@@ -502,15 +646,18 @@ func preprocessSealed(productName, edition string) (string, error) {
 	switch edition {
 	case "Mystery Booster - The List":
 		edition = "MB1"
+	case "Bulk Magic":
+		return "", mtgmatcher.ErrUnsupported
 	case "World Championship Decks":
-		// WCD products are merged in a single edition in mtgjson
-		edition = "WC97"
-
 		year := mtgmatcher.ExtractYear(productName)
-		if year != "1996" {
+		if year == "1996" {
+			edition = "PTC"
+		} else {
 			productName = strings.Replace(productName, "("+year+") ", "", 1)
-			productName = strings.TrimSuffix(productName, "Deck")
+			productName = strings.TrimSuffix(productName, " Deck")
+			productName = strings.Replace(productName, " - ", " ", 1)
 			productName = year + " " + productName
+			edition += " " + year
 		}
 	case "Secret Lair":
 		if strings.Contains(productName, "Ultimate") {
@@ -518,8 +665,6 @@ func preprocessSealed(productName, edition string) (string, error) {
 		} else {
 			edition = "SLD"
 		}
-	case "Draft", "Magic":
-		return "", errors.New("unsupported")
 	default:
 		if strings.Contains(productName, "Challenger Deck") {
 			edition = ""
@@ -554,7 +699,7 @@ func preprocessSealed(productName, edition string) (string, error) {
 		strings.Contains(productName, "D20 Set"),
 		strings.Contains(productName, "Born of the Gods - Japanese"),
 		strings.Contains(productName, "Variety Pack"):
-		return "", errors.New("unsupported")
+		return "", mtgmatcher.ErrUnsupported
 	case strings.HasPrefix(productName, "From the Vault"),
 		strings.HasPrefix(productName, "Signature Spellbook"):
 		productName = strings.TrimSuffix(productName, " - Box Set")

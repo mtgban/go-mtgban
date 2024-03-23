@@ -3,6 +3,7 @@ package mtgban
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -15,21 +16,35 @@ func computeSKU(cardId, condition string) (string, error) {
 		return "", err
 	}
 
-	scryfallUUIDSpace, err := uuid.Parse(co.Identifiers["scryfallId"])
+	scryfallNamespace, err := uuid.Parse(co.Identifiers["scryfallId"])
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid scryfall ID: %v", err)
+	}
+	condition = strings.ToLower(condition)
+
+	conditionMap := map[string]string{
+		"nm": "nm", "near mint": "nm",
+		"lp": "sp", "lightly played": "sp", "slightly played": "sp",
+		"mp": "mp", "moderately played": "mp",
+		"hp": "hp", "heavily played": "hp",
+		"po": "po", "damaged": "po", "poor": "po",
+	}
+	conditionCode, ok := conditionMap[condition]
+	if !ok {
+		conditionCode = "nm"
 	}
 
-	data := condition + co.Language
+	language := strings.ToLower(co.Language)
+	printing := "nonfoil"
 	if co.Etched {
-		data += "etched"
+		printing = "etched"
 	} else if co.Foil {
-		data += "foil"
-	} else {
-		data += "nonfoil"
+		printing = "foil"
 	}
 
-	sku := uuid.NewSHA1(scryfallUUIDSpace, []byte(data))
+	data := fmt.Sprintf("%s_%s_%s", conditionCode, language, printing)
+
+	sku := uuid.NewSHA1(scryfallNamespace, []byte(data))
 	return sku.String(), nil
 }
 

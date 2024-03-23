@@ -1,10 +1,8 @@
 package coolstuffinc
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/url"
 	"strconv"
 	"strings"
@@ -15,6 +13,7 @@ import (
 	http "github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 type CoolstuffincSealed struct {
@@ -218,141 +217,88 @@ func (csi *CoolstuffincSealed) Inventory() (mtgban.InventoryRecord, error) {
 	return csi.inventory, nil
 }
 
-func (csi *CoolstuffincSealed) processPage(channel chan<- responseChan, edition string) error {
-	resp, err := csi.httpclient.PostForm(csiBuylistURL, url.Values{
-		"ajaxtype": {"selectProductSetName2"},
-		"ajaxdata": {edition},
-		"gamename": {"mtg"},
-	})
+func (csi *CoolstuffincSealed) parseBL() error {
+	edition2id, err := LoadBuylistEditions()
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	csi.printf("Loaded %d editions", len(edition2id))
 
-	data, err := io.ReadAll(resp.Body)
+	products, err := GetBuylist()
 	if err != nil {
 		return err
 	}
+	csi.printf("Found %d products", len(products))
 
-	var blob struct {
-		HTML string `json:"html"`
-	}
-	err = json.Unmarshal(data, &blob)
-	if err != nil {
-		return err
-	}
-
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(blob.HTML))
-	if err != nil {
-		return err
-	}
-
-	doc.Find(".main-container").Each(func(i int, s *goquery.Selection) {
-		extra := s.Find(".search-info-cell").Find(".mini-print").Not(".breadcrumb-trail").Text()
-		extra = strings.Replace(extra, "\n", " ", -1)
-		info := s.Find(".search-info-cell").Find(".breadcrumb-trail").Text()
-		if !strings.Contains(info, "Sealed") {
-			return
+	for _, product := range products {
+		if product.RarityName != "Box" {
+			continue
 		}
 
-		productName, _ := s.Attr("data-name")
+		// Build link early to help debug
+		u, _ := url.Parse(csiBuylistLink)
+		v := url.Values{}
+		v.Set("s", "mtg")
+		v.Set("a", "1")
+		v.Set("name", product.Name)
+		v.Set("f[]", fmt.Sprint(product.IsFoil))
 
-		uuid, err := preprocessSealed(productName, edition)
+		id, found := edition2id[product.ItemSet]
+		if found {
+			v.Set("is[]", id)
+		}
+		u.RawQuery = v.Encode()
+		link := u.String()
+
+		uuid, err := preprocessSealed(product.Name, product.ItemSet)
 		if err != nil {
-			if err.Error() != "unsupported" {
-				csi.printf("%s: %s for %s", err.Error(), edition, productName)
+			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+				csi.printf("%s: %s for %s", err.Error(), product.ItemSet, product.Name)
 			}
-			return
+			continue
 		}
 
 		if uuid == "" {
-			csi.printf("unable to parse %s in", productName)
-			return
-		}
-
-		priceStr, _ := s.Attr("data-price")
-		price, err := strconv.ParseFloat(priceStr, 64)
-		if err != nil {
-			csi.printf("%v", err)
-			return
-		}
-
-		channel <- responseChan{
-			cardId: uuid,
-			buyEntry: &mtgban.BuylistEntry{
-				BuyPrice:   price,
-				TradePrice: price * 1.3,
-				URL:        defaultBuylistPage,
-			},
-		}
-	})
-	return nil
-}
-
-func (csi *CoolstuffincSealed) parseBL() error {
-	resp, err := csi.httpclient.PostForm(csiBuylistURL, url.Values{
-		"ajaxtype": {"selectsearchgamename2"},
-		"ajaxdata": {"mtg"},
-	})
-	if err != nil {
-		return err
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	var blob struct {
-		HTML string `json:"html"`
-	}
-	err = json.Unmarshal(data, &blob)
-	if err != nil {
-		return err
-	}
-
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(blob.HTML))
-	if err != nil {
-		return err
-	}
-
-	editions := make(chan string)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < csi.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for edition := range editions {
-				err := csi.processPage(results, edition)
-				if err != nil {
-					csi.printf("%v", err)
-				}
-			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		doc.Find("option").Each(func(_ int, s *goquery.Selection) {
-			edition := s.Text()
-			if edition == "Bulk Magic" {
-				return
-			}
-			editions <- edition
-		})
-		close(editions)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		err := csi.buylist.Add(record.cardId, record.buyEntry)
-		if err != nil {
-			csi.printf("%s", err.Error())
+			csi.printf("unable to parse %s in %s", product.Name, product.ItemSet)
 			continue
+		}
+
+		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
+		if err != nil {
+			csi.printf("%s error: %s", product.Name, err.Error())
+			continue
+		}
+		creditPrice, err := mtgmatcher.ParsePrice(product.CreditPrice)
+		if err != nil {
+			csi.printf("%s error (credit): %s", product.Name, err.Error())
+			creditPrice = buyPrice * 1.3
+		}
+
+		var priceRatio, sellPrice float64
+
+		invCards := csi.inventory[uuid]
+		for _, invCard := range invCards {
+			sellPrice = invCard.Price
+			break
+		}
+		if sellPrice > 0 {
+			priceRatio = buyPrice / sellPrice * 100
+		}
+
+		for i, deduction := range deductions {
+			buyEntry := mtgban.BuylistEntry{
+				Conditions: mtgban.DefaultGradeTags[i],
+				BuyPrice:   buyPrice * deduction,
+				TradePrice: creditPrice * deduction,
+				PriceRatio: priceRatio,
+				URL:        link,
+			}
+
+			err := csi.buylist.Add(uuid, &buyEntry)
+			if err != nil {
+				csi.printf("%s", err.Error())
+				continue
+			}
 		}
 	}
 

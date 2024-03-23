@@ -45,9 +45,9 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 	// The api is very sensitive to multiple concurrent requests,
 	// This backoff strategy lets the system chill out a bit before retrying
 	mkm.client.Backoff = retryablehttp.LinearJitterBackoff
-	mkm.client.RetryWaitMin = 1 * time.Second
-	mkm.client.RetryWaitMax = 5 * time.Second
-	mkm.client.RetryMax = 15
+	mkm.client.RetryWaitMin = 2 * time.Second
+	mkm.client.RetryWaitMax = 10 * time.Second
+	mkm.client.RetryMax = 20
 	mkm.client.CheckRetry = customCheckRetry
 	mkm.client.HTTPClient.Transport = &authTransport{
 		Parent:    mkm.client.HTTPClient.Transport,
@@ -55,7 +55,7 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 		AppSecret: appSecret,
 		// Set a more conservative limit than defined below to avoid losing requests
 		// https://www.cardmarket.com/en/Magic/News/Additional-Request-Limits-For-Our-API
-		Limiter: rate.NewLimiter(8, 1),
+		Limiter: rate.NewLimiter(rate.Every(10), 1),
 	}
 	return &mkm
 }

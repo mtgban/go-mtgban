@@ -1,8 +1,8 @@
 package cardmarket
 
 import (
-	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,19 +19,12 @@ func (pe *PreprocessError) Error() string {
 }
 
 var promo2editionTable = map[string]string{
-	// Dengeki Maoh Promos
-	"Shepherd of the Lost": "URL/Convention Promos",
-
 	// Promos
 	"Evolving Wilds":      "Tarkir Dragonfury",
 	"Ruthless Cullblade":  "Worldwake Promos",
 	"Pestilence Demon":    "Rise of the Eldrazi Promos",
 	"Dreg Mangler":        "Return to Ravnica Promos",
 	"Karametra's Acolyte": "Theros Promos",
-
-	"Goblin Chieftain":        "Resale Promos",
-	"Oran-Rief, the Vastwood": "Resale Promos",
-	"Loam Lion":               "Resale Promos",
 
 	"Dragon Fodder":        "Tarkir Dragonfury",
 	"Dragonlord's Servant": "Tarkir Dragonfury",
@@ -40,71 +33,300 @@ var promo2editionTable = map[string]string{
 	"Reliquary Tower":   "Love Your LGS",
 	"Hangarback Walker": "Love Your LGS",
 
-	"Geist of Saint Traft": "World Magic Cup Qualifiers",
-	"Sol Ring":             "MagicFest 2019",
-	"Crucible of Worlds":   "World Championship Promos",
+	"Sol Ring":           "MagicFest 2019",
+	"Crucible of Worlds": "World Championship Promos",
 
 	"Forest":   "2017 Gift Pack",
 	"Island":   "2017 Gift Pack",
 	"Mountain": "2017 Gift Pack",
 	"Plains":   "2017 Gift Pack",
 	"Swamp":    "2017 Gift Pack",
+}
 
-	// Media Inserts
-	"Archangel":                           "PMEI",
-	"Ascendant Evincar":                   "PMEI",
-	"Bone Shredder":                       "PMEI",
-	"Cast Down":                           "PMEI",
-	"Counterspell":                        "PMEI",
-	"Crop Rotation":                       "PMEI",
-	"Dark Ritual":                         "PMEI",
-	"Darksteel Juggernaut":                "PMEI",
-	"Daxos, Blessed by the Sun":           "PMEI",
-	"Diabolic Edict":                      "PMEI",
-	"Duress":                              "PMEI",
-	"Heliod's Pilgrim":                    "PMEI",
-	"Hypnotic Sprite // Mesmeric Glare":   "PMEI",
-	"Jamuraan Lion":                       "PMEI",
-	"Kuldotha Phoenix":                    "PMEI",
-	"Lava Coil":                           "PMEI",
-	"Phantasmal Dragon":                   "PMEI",
-	"Shivan Dragon":                       "PMEI",
-	"Shock":                               "PMEI",
-	"Sprite Dragon":                       "PMEI",
-	"Staggering Insight":                  "PMEI",
-	"Tangled Florahedron // Tangled Vale": "PMEI",
-	"Thorn Elemental":                     "PMEI",
-	"Voltaic Key":                         "PMEI",
+var convention2editionTable = map[string]string{
+	"Serra Angel":         "PDOM",
+	"Steward of Valeron":  "PURL",
+	"Kor Skyfisher":       "PURL",
+	"Bloodthrone Vampire": "PURL",
+	"Merfolk Mesmerist":   "PURL",
+	"Chandra's Fury":      "PURL",
+	"Stealer of Secrets":  "PURL",
+	"Aeronaut Tinkerer":   "PURL",
+	"Nightpack Ambusher":  "PM20",
+	"Deeproot Champion":   "PXLN",
+	"Death Baron":         "PM19",
+}
 
-	// DCI Promos
-	"Abrupt Decay":                "World Magic Cup Qualifiers",
-	"Inkmoth Nexus":               "World Magic Cup Qualifiers",
-	"Thalia, Guardian of Thraben": "World Magic Cup Qualifiers",
-	"Vengevine":                   "World Magic Cup Qualifiers",
+var dengeki2editionTable = map[string]string{
+	"Shepherd of the Lost": "PURL",
+	"Chandra's Spitfire":   "PMEI",
+	"Cunning Sparkmage":    "PMEI",
+	"Chandra's Outrage":    "PMEI",
+}
 
-	// Retro Frame
-	"Fabled Passage": "PW21",
+var gameday2editionTable = map[string]string{
+	"Consider":                 "PW22",
+	"Recruitment Officer":      "GDY",
+	"Touch the Spirit Realm":   "GDY",
+	"Power Word Kill":          "GDY",
+	"Fateful Absence":          "PW22",
+	"Atsushi, the Blazing Sky": "PW22",
+	"Skyclave Apparition":      "GDY",
+	"All-Seeing Arbiter":       "GDY",
+	"Shivan Devastator":        "GDY",
+	"Workshop Warchief":        "GDY",
+	"Braids, Arisen Nightmare": "GDY",
+	"Surge Engine":             "GDY",
 }
 
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
+	var foil bool
+
 	for _, name := range filteredExpansions {
 		if edition == name {
-			return nil, errors.New("not single")
+			return nil, mtgmatcher.ErrUnsupported
 		}
 	}
 
-	ogEdition := edition
 	number := variant
+
+	switch number {
+	case "1 of 1":
+		return nil, mtgmatcher.ErrUnsupported
+	default:
+		// Strip extra letters that may interfere later on
+		// (ie IDW Promos P4 becomeing Starter 2000)
+		number = strings.TrimLeft(number, "P")
+	}
+	switch cardName {
+	case "Magic Guru":
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	vars := mtgmatcher.SplitVariants(cardName)
 	if len(vars) > 1 {
 		cardName = vars[0]
 		variant = vars[1]
 	}
+	ogVariant := variant
 
 	switch edition {
-	case "The Dark Italian":
-		number = ""
+	case "Anthologies",
+		"Deckmasters",
+		"Unstable":
+		// Variants good as is
+
+	case "The Dark Italian",
+		"Foreign Black Bordered",
+		"Coldsnap Theme Decks",
+		"Summer Magic",
+		"Introductory Two-Player Set",
+		"Duels of the Planeswalkers Decks",
+		"Archenemy":
+		// Drop variant and number
 		variant = ""
+
+		if mtgmatcher.IsBasicLand(cardName) {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
+	case "Misprints":
+		switch cardName {
+		case "Laquatus's Champion":
+			if variant == "V.1" {
+				variant = "prerelease misprint dark"
+			} else if variant == "V.2" {
+				variant = "prerelease misprint"
+			}
+		case "Corpse Knight",
+			"Stocking Tiger":
+			variant = "misprint"
+		case "Beast of Burden":
+			variant = "prerelease misprint"
+		case "Demigod of Revenge":
+			return nil, mtgmatcher.ErrUnsupported
+		case "Island":
+			variant = "Arena 1999 misprint"
+		default:
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
+	case "Simplified Chinese Alternate Art Cards":
+		switch cardName {
+		case "Drudge Skeletons":
+			switch variant {
+			case "V.1":
+				edition = "6ED"
+			case "V.2", "V.3":
+				edition = "7ED"
+			case "V.4", "V.5":
+				edition = "8ED"
+			case "V.6", "V.7":
+				edition = "9ED"
+			}
+			switch variant {
+			case "V.3", "V.5", "V.7":
+				foil = true
+			}
+			variant = "Simplified Chinese Alternate Art Cards"
+		case "Raise Dead":
+			switch variant {
+			case "V.1", "V.2":
+				edition = "7ED"
+				foil = (variant == "V.2")
+			case "":
+				edition = "POR"
+			}
+			variant = "Simplified Chinese Alternate Art Cards"
+		case "Blaze":
+			edition = "POR"
+			switch variant {
+			case "V.1":
+				variant = "118†s"
+			case "V.2":
+				variant = "118s"
+			}
+		case "Charcoal Diamond":
+			edition = "7ED"
+			foil = (variant == "V.2")
+			variant = "Simplified Chinese Alternate Art Cards"
+		}
+
+	case "Arabian Nights":
+		if variant == "V.1" {
+			variant = "dark"
+		} else if variant == "V.2" {
+			variant = "light"
+		}
+
+	case "Fallen Empires",
+		"Homelands":
+		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
+			if (variant == "V.1" && strings.HasSuffix(num, "a")) ||
+				(variant == "V.2" && strings.HasSuffix(num, "b")) ||
+				(variant == "V.3" && strings.HasSuffix(num, "c")) ||
+				(variant == "V.4" && strings.HasSuffix(num, "d")) {
+				variant = num
+				break
+			}
+		}
+
+	case "Portal":
+		switch cardName {
+		case "Armored Pegasus",
+			"Bull Hippo",
+			"Cloud Pirates",
+			"Feral Shadow",
+			"Snapping Drake",
+			"Storm Crow":
+			if variant == "V.2" {
+				variant = "Reminder Text"
+			}
+		default:
+			if variant == "V.1" && !mtgmatcher.IsBasicLand(cardName) {
+				variant = "Reminder Text"
+			}
+		}
+
+	case "Visions":
+		if variant == "V.2" {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
+	case "Fourth Edition: Black Bordered":
+		if mtgmatcher.IsBasicLand(cardName) {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
+	case "Planeshift":
+		if variant == "V.2" {
+			variant = "Alt Art"
+		}
+
+	case "Judge Rewards Promos":
+		switch cardName {
+		case "Demonic Tutor",
+			"Vampiric Tutor",
+			"Vindicate",
+			"Wasteland":
+			vars = strings.Split(number, "-")
+			variant = vars[0]
+		}
+
+	case "MagicFest Promos":
+		vars = strings.Split(number, "-")
+		edition += " " + vars[0]
+		if len(vars) > 1 {
+			variant = vars[1]
+		}
+
+	case "Prerelease Promos":
+		switch cardName {
+		case "Dirtcowl Wurm":
+			if variant == "V.2" {
+				return nil, mtgmatcher.ErrUnsupported
+			}
+		case "Lu Bu, Master-at-Arms":
+			if variant == "V.1" {
+				variant = "April"
+			} else if variant == "V.2" {
+				variant = "July"
+			}
+		case "Chord of Calling",
+			"Wrath of God":
+			edition = "2XM"
+			variant = "Launch"
+		case "Weathered Wayfarer",
+			"Bring to Light":
+			edition = "2X2"
+			variant = "Launch"
+		default:
+			if len(mtgmatcher.MatchInSet(cardName, "PHEL")) == 1 {
+				edition = "PHEL"
+			}
+		}
+		// This set has incorrect numbering
+		if variant == number {
+			variant = ""
+		}
+
+	case "Harper Prism Promos":
+		if variant == "V.2" {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
+	case "Gateway Promos":
+		switch cardName {
+		case "Fling",
+			"Sylvan Ranger":
+			if variant == "V.1" {
+				variant = "DCI"
+			} else if variant == "V.2" {
+				variant = "WPN"
+			}
+		}
+
+	case "Friday Night Magic Promos":
+		switch cardName {
+		case "Goblin Warchief":
+			if variant == "V.1" {
+				edition = "F06"
+			} else if variant == "V.2" {
+				edition = "F16"
+			}
+		}
+
+	case "Weekend Promos":
+		switch cardName {
+		case "Time Wipe",
+			"Karn's Bastion":
+			edition = "War of the Spark Promos"
+			variant = "" // Drop WAR
+		default:
+			edition = "Ravnica Weekend"
+			variant = number
+		}
+
 	case "Player Rewards Promos":
 		switch cardName {
 		case "Lightning Bolt":
@@ -122,222 +344,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"Wurmcoil Engine":
 			variant = "oversized"
 		}
-	case "Misprints":
-		switch cardName {
-		case "Laquatus's Champion":
-			if variant == "V.1" {
-				variant = "prerelease misprint dark"
-			} else if variant == "V.2" {
-				variant = "prerelease misprint"
-			}
-		case "Corpse Knight",
-			"Stocking Tiger":
-			variant = "misprint"
-		case "Beast of Burden":
-			variant = "prerelease misprint"
-		case "Demigod of Revenge":
-			return nil, errors.New("unsupported misprint")
-		case "Island":
-			variant = "Arena 1999 misprint"
-		default:
-			return nil, errors.New("untracked")
-		}
 
-	case "Arabian Nights":
-		if variant == "V.1" {
-			variant = "dark"
-		} else if variant == "V.2" {
-			variant = "light"
-		}
-	case "Champions of Kamigawa":
-		if cardName == "Brothers Yamazaki" {
-			if variant == "V.1" {
-				variant = "160a"
-			} else if variant == "V.2" {
-				variant = "160b"
-			}
-		}
-	case "Fallen Empires",
-		"Homelands":
-		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
-			if (variant == "V.1" && strings.HasSuffix(num, "a")) ||
-				(variant == "V.2" && strings.HasSuffix(num, "b")) ||
-				(variant == "V.3" && strings.HasSuffix(num, "c")) ||
-				(variant == "V.4" && strings.HasSuffix(num, "d")) {
-				variant = num
-				break
-			}
-		}
-	case "Unglued":
-		if variant == "V.1" {
-			variant = "28"
-		} else if variant == "V.2" {
-			variant = "29"
-		}
-	case "Duel Decks: Anthology":
-		switch cardName {
-		case "Giant Growth":
-			if variant == "V.1" {
-				edition = "GVL"
-			} else if variant == "V.2" {
-				edition = "EVG"
-			}
-		case "Flamewave Invoker":
-			if variant == "V.1" {
-				edition = "JVC"
-			} else if variant == "V.2" {
-				edition = "EVG"
-			}
-		case "Corrupt":
-			if variant == "V.1" {
-				edition = "DVD"
-			} else if variant == "V.2" {
-				edition = "GVL"
-			}
-		case "Harmonize":
-			if variant == "V.1" {
-				edition = "EVG"
-			} else if variant == "V.2" {
-				edition = "GVL"
-			}
-		}
-	case "Portal":
-		switch cardName {
-		case "Armored Pegasus",
-			"Bull Hippo",
-			"Cloud Pirates",
-			"Feral Shadow",
-			"Snapping Drake",
-			"Storm Crow":
-			if variant == "V.2" {
-				variant = "Reminder Text"
-			}
-		default:
-			if variant == "V.1" && !mtgmatcher.IsBasicLand(cardName) {
-				variant = "Reminder Text"
-			}
-		}
-	case "Planeshift":
-		if variant == "V.2" {
-			variant = "Alt Art"
-		}
-	case "Visions":
-		if variant == "V.2" {
-			return nil, errors.New("unsupported")
-		}
-	case "Foreign Black Bordered",
-		"Tenth Edition":
-		variant = ""
-	case "Fourth Edition: Black Bordered":
-		if mtgmatcher.IsBasicLand(cardName) {
-			return nil, errors.New("unsupported")
-		}
-	case "Commander's Arsenal":
-		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
-			edition = "OCM1"
-		}
-	case "Commander Anthology II",
-		"Ravnica Allegiance",
-		"Guilds of Ravnica",
-		"Conspiracy: Take the Crown",
-		"Battlebond",
-		"Kaldheim",
-		"Secret Lair Drop Series":
-		// Could have been lost in SplitVariant, and it's more reliable
-		variant = number
-	case "Secret Lair Drop Series: Secretversary 2021":
-		edition = "PHED"
-	case "Theros",
-		"Born of the Gods",
-		"Journey into Nyx":
-		if strings.HasPrefix(variant, "C") {
-			switch edition {
-			case "Theros":
-				edition = "Face the Hydra"
-			case "Born of the Gods":
-				edition = "Battle the Horde"
-			case "Journey into Nyx":
-				edition = "Defeat a God"
-			}
-		}
-	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
-		if variant == "V.1" {
-			variant = "Japanese"
-			edition = "War of the Spark"
-		} else if variant == "V.2" {
-			variant = "Prerelease Japanese"
-			edition = "War of the Spark Promos"
-		}
-	case "Judge Rewards Promos":
-		switch cardName {
-		case "Demonic Tutor",
-			"Vampiric Tutor",
-			"Vindicate",
-			"Wasteland":
-			vars = strings.Split(number, "-")
-			variant = vars[0]
-		}
-	case "MagicFest Promos":
-		vars = strings.Split(number, "-")
-		edition += " " + vars[0]
-		if len(vars) > 1 {
-			variant = vars[1]
-		}
-	case "Prerelease Promos":
-		switch cardName {
-		case "Dirtcowl Wurm":
-			if variant == "V.2" {
-				return nil, errors.New("unsupported misprint")
-			}
-		case "Lu Bu, Master-at-Arms":
-			if variant == "V.1" {
-				variant = "April"
-			} else if variant == "V.2" {
-				variant = "July"
-			}
-		case "Chord of Calling",
-			"Wrath of God":
-			edition = "2XM"
-			variant = "Launch"
-		}
-		// This set has incorrect numbering
-		if variant == number {
-			variant = ""
-		}
-	case "Harper Prism Promos":
-		if variant == "V.2" {
-			return nil, errors.New("non-english")
-		}
-	case "Duel Decks: Jace vs. Chandra":
-		if variant == "V.2" {
-			variant = "Japanese"
-		}
-	case "Gateway Promos":
-		switch cardName {
-		case "Fling",
-			"Sylvan Ranger":
-			if variant == "V.1" {
-				variant = "DCI"
-			} else if variant == "V.2" {
-				variant = "WPN"
-			}
-		}
-	case "Friday Night Magic Promos":
-		switch cardName {
-		case "Goblin Warchief":
-			if variant == "V.1" {
-				edition = "F06"
-			} else if variant == "V.2" {
-				edition = "F16"
-			}
-		}
-	case "Weekend Promos":
-		switch cardName {
-		case "Time Wipe",
-			"Karn's Bastion":
-			edition = "War of the Spark Promos"
-			variant = "" // Drop WAR
-		}
 	case "Arena League Promos":
 		switch variant {
 		case "V.1":
@@ -383,6 +390,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				edition = "Japan Junior Tournament"
 			}
 		}
+
 	case "APAC Lands":
 		var landMap = map[string]string{
 			"R1": "4",
@@ -402,6 +410,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"C5": "11",
 		}
 		variant = landMap[number]
+
 	case "Euro Lands":
 		var landMap = map[string]string{
 			"1":  "1",
@@ -421,40 +430,252 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			"15": "15",
 		}
 		variant = landMap[number]
-	case "Standard Showdown Promos":
-		if variant == "V.1" {
-			edition = "XLN Standard Showdown"
-		} else if variant == "V.2" {
-			edition = "M19 Standard Showdown"
+
+	case "Magic Premiere Shop Promos":
+		switch variant {
+		default:
+			edition = "PMPS"
+			// Further untangling in variants.go
+		case "V.5":
+			edition = "PMPS06"
+		case "V.6":
+			edition = "PMPS07"
+		case "V.7":
+			edition = "PMPS08"
+		case "V.8":
+			edition = "PMPS09"
+		case "V.9":
+			edition = "PMPS10"
+		case "V.10":
+			edition = "PMPS11"
 		}
+
+	case "Standard Showdown Promos":
+		switch variant {
+		case "V.1":
+			edition = "XLN Standard Showdown"
+		case "V.2":
+			edition = "M19 Standard Showdown"
+		case "V.3":
+			edition = "MKM Standard Showdown"
+		}
+
 	case "Release Promos":
 		if len(mtgmatcher.MatchInSet(cardName, "PCMD")) == 1 {
 			edition = "PCMD"
 		} else if cardName == "Shivan Dragon" {
-			return nil, errors.New("non english")
+			return nil, mtgmatcher.ErrUnsupported
 		}
+
 	// Catch-all sets for anything promo
-	case "Dengeki Maoh Promos",
-		"Promos",
-		"DCI Promos":
+	case "Promos",
+		"DCI Promos",
+		"Magic the Gathering Products",
+		"MagicCon Products":
 		switch cardName {
-		case "Mayor of Avabruck / Howlpack Alpha":
+		case "Mayor of Avabruck / Howlpack Alpha",
+			"Ancestral Recall",
+			"Scrubland",
+			"Time Walk",
+			"Gaea's Cradle":
 			variant = "oversized"
 		case "Nalathni Dragon":
-			edition = "Redemption Program"
+			return nil, mtgmatcher.ErrUnsupported
+		case "Relentless Rats":
+			switch number {
+			case "":
+				edition = "PM11"
+			case "10", "11":
+				edition = "SLP"
+				variant = number
+			}
+		case "Mystical Dispute":
+			if variant == "V.1" {
+				edition = "PWCS"
+			} else if variant == "V.2" {
+				edition = "PR23"
+			}
+		case "Snapcaster Mage ":
+			if variant == "V.1" {
+				edition = "PPRO"
+			} else if variant == "V.2" {
+				edition = "PR23"
+			}
+		case "Liliana of the Veil":
+			if variant == "V.1" {
+				edition = "PPRO"
+			} else if variant == "V.2" {
+				edition = "PWCS"
+			}
+		case "Orb of Dragonkind":
+			edition = "PLG21"
+			if variant == "V.1" {
+				variant = "J1"
+			} else if variant == "V.2" {
+				variant = "J2"
+			} else if variant == "V.3" {
+				variant = "J3"
+			}
+		case "Arcane Signet":
+			if number == "1" {
+				edition = "P30M"
+				variant = "1F★"
+				if edition == "MagicCon Products" {
+					variant = "1F"
+				}
+			} else if variant == "3" {
+				edition = "PSVC"
+				variant = ""
+			}
+
+		default:
+			for _, code := range []string{
+				"PMEI", "PPRO", "PEWK", "PNAT", "WMC", "PWCS", "PRES",
+				"P30T", "PF23", "PLG21",
+				"SLP", "SLC", "SLD",
+				"PW21", "PW22", "PW23",
+				"PL21", "PL22", "PL23",
+			} {
+				// number is often wrong, so
+				num, _ := strconv.Atoi(number)
+				results := mtgmatcher.MatchInSetNumber(cardName, code, strings.TrimLeft(number, "0"))
+				switch code {
+				case "PMEI", "PEWK", "PW21", "PW22", "PW23":
+					results = mtgmatcher.MatchInSet(cardName, code)
+				default:
+					if num < 10 {
+						results = mtgmatcher.MatchInSet(cardName, code)
+					}
+				}
+				if len(results) == 1 {
+					edition = code
+					variant = ""
+					if num >= 10 {
+						variant = number
+					}
+					break
+				}
+			}
+
 		}
-		// Variant is always unreliable
-		variant = ""
+
 		ed, found := promo2editionTable[cardName]
 		if found {
 			edition = ed
 		}
-	case "Magic Origins: Promos":
-		if variant == "V.2" {
-			variant = number
-		} else {
-			variant = "Prerelease"
+
+	case "Dengeki Maoh Promos":
+		ed, found := dengeki2editionTable[cardName]
+		if found {
+			edition = ed
+			variant = ""
 		}
+
+	case "Convention Promos":
+		ed, found := convention2editionTable[cardName]
+		if found {
+			edition = ed
+			variant = ""
+		}
+
+	case "Game Day Promos":
+		ed, found := gameday2editionTable[cardName]
+		if found {
+			edition = ed
+			variant = ""
+		}
+
+	case "Duel Decks: Jace vs. Chandra":
+		variant = number
+		switch cardName {
+		case "Chandra Nalaar", "Jace Beleren":
+			if ogVariant == "V.2" {
+				variant = "Japanese"
+			}
+		}
+
+	case "Duel Decks: Anthology":
+		if len(number) > 2 {
+			variant = number[2:]
+			if cardName == "Tranquil Thicket" {
+				variant = "26"
+			} else if mtgmatcher.IsBasicLand(cardName) {
+				switch number[:2] {
+				case "10", "20":
+					edition = "EVG"
+				case "30", "40":
+					edition = "JVC"
+				case "50", "60":
+					edition = "DVD"
+				case "70", "80":
+					edition = "GVL"
+				}
+			}
+		}
+
+	case "Champions of Kamigawa":
+		variant = number
+		if cardName == "Brothers Yamazaki" {
+			if ogVariant == "V.1" {
+				variant = "160a"
+			} else if ogVariant == "V.2" {
+				variant = "160b"
+			}
+		}
+
+	case "Zendikar":
+		switch variant {
+		case "V.1", "V.3", "V.5", "V.7":
+			variant = number + "a"
+		default:
+			variant = number
+		}
+
+	case "Theros",
+		"Born of the Gods",
+		"Journey into Nyx":
+		variant = number
+		if strings.HasPrefix(variant, "C") {
+			switch edition {
+			case "Theros":
+				edition = "Face the Hydra"
+			case "Born of the Gods":
+				edition = "Battle the Horde"
+			case "Journey into Nyx":
+				edition = "Defeat a God"
+			}
+		}
+
+	case "Battle for Zendikar",
+		"Oath of the Gatewatch":
+		switch variant {
+		case "V.2", "V.4", "V.6", "V.8", "V.10":
+			variant = number + "a"
+		default:
+			variant = number
+		}
+
+	case "Guilds of Ravanica: Extras",
+		"Ravnica Allegiance: Extras",
+		"War of the Spark: Extras":
+		variant = "Prerelease"
+		set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
+		if err == nil {
+			num, _ := strconv.Atoi(number)
+			if num > set.BaseSetSize {
+				variant = number
+			}
+		}
+
+	case "War of the Spark: Japanese Alternate-Art Planeswalkers":
+		if variant == "V.1" {
+			variant = "Japanese"
+			edition = "War of the Spark"
+		} else if variant == "V.2" {
+			variant = "Prerelease Japanese"
+			edition = "War of the Spark Promos"
+		}
+
 	case "Core 2019: Promos":
 		variant = "Prerelease"
 		edition = "PM19"
@@ -462,8 +683,10 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = ""
 			edition = "M19 Gift Pack"
 		}
+
 	case "Core 2020: Extras":
-		if cardName == "Chandra's Regulator" {
+		switch cardName {
+		case "Chandra's Regulator":
 			if variant == "V.1" {
 				variant = "131"
 				edition = "PM20"
@@ -472,9 +695,9 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			} else if variant == "V.3" {
 				variant = "Prerelease"
 			}
-		} else if cardName == "Nicol Bolas, Dragon-God" {
-			return nil, errors.New("dupe")
-		} else {
+		case "Nicol Bolas, Dragon-God":
+			variant = "Promo Pack"
+		default:
 			if variant == "V.1" || mtgmatcher.IsBasicLand(cardName) {
 				variant = "Promo Pack"
 			} else if variant == "V.2" {
@@ -485,28 +708,57 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = ""
 			}
 		}
+
 	case "Mystery Booster":
-		// Decouple the foils from this set, they need to marked as foil
-		if len(mtgmatcher.MatchInSet(cardName, "FMB1")) > 0 {
-			edition = "Mystery Booster Retail Edition Foils"
+		variant = number
+		switch cardName {
+		case "Laboratory Maniac":
+			variant = "UMA-61"
+		case "Plains":
+			variant = "UGL-84"
 		}
-		variant = ""
-	// This is the only CMD set that needs it
-	case "Commander: Zendikar Rising":
-		if variant == "V.2" {
-			variant = "Extended Art"
+
+	case "The List":
+		variant = number
+		switch cardName {
+		case "Laboratory Maniac":
+			variant = "ISD-61"
+		case "Bottle Gnomes":
+			variant = "TMP-278"
+		case "Man-o'-War":
+			variant = "VIS-37"
+		case "Ineffable Blessing",
+			"Everythingamajig":
+			variant = ogVariant
+		case "Imperious Perfect":
+			variant = "PCMP-9"
+		case "Burst Lightning":
+			variant = "P10-8"
+		case "Plains":
+			variant = "AKH-256"
 		}
-	case "Mystical Archive":
+
+	// Some cards from PLST overflow here
+	case "Secret Lair Drop Series: Secretversary 2021":
+		variant = number
+		for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
+			if strings.HasSuffix(card.Number, "-"+number) {
+				edition = "PLST"
+				variant = card.Number
+			}
+		}
+
+	case "Modern Horizons 2",
+		"Secret Lair Drop Series: June Superdrop 2022":
 		switch variant {
 		case "V.1":
-			variant = ""
+			variant = number
 		case "V.2":
-			variant = "JPN"
-		case "V.3":
-			variant = "Foil-Etched"
-		case "V.4":
-			variant = "JPN Foil-Etched"
+			variant = number + " Etched"
+		default:
+			variant = number
 		}
+
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
 		if mtgmatcher.IsBasicLand(cardName) {
@@ -561,6 +813,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				variant = "Foil Etched"
 			}
 		}
+
 	case "Modern Horizons: Retro Frame Cards":
 		switch variant {
 		case "V.1":
@@ -568,68 +821,88 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		case "V.2":
 			variant = "Foil Etched"
 		}
-	case "Universes Beyond: Transformers":
+
+	case "Mystical Archive":
 		switch variant {
 		case "V.1":
 			variant = ""
 		case "V.2":
-			variant = "Shattered"
-		}
-	case "Retro Frame Artifacts":
-		switch variant {
-		case "V.1":
-			variant = ""
-		case "V.2":
-			variant = "Schematic"
+			variant = "JPN"
 		case "V.3":
-			variant = "Serialized"
-		}
-		edition = "BRR"
-	case "Multiverse Legends":
-		switch variant {
-		case "V.1":
-			variant = ""
-		case "V.2":
-			variant = "Etched"
-		case "V.3":
-			variant = "Halo"
+			variant = "Foil-Etched"
 		case "V.4":
-			variant = "Serialized"
+			variant = "JPN Foil-Etched"
 		}
-	case "Jumpstart 2022":
-		if !mtgmatcher.IsBasicLand(cardName) {
-			switch variant {
-			case "V.1":
-				variant = "Anime"
-			case "V.2":
-				variant = ""
+
+	// Skip Attraction lights, too many
+	case "Unfinity":
+		if len(mtgmatcher.MatchInSet(cardName, "UNF")) > 1 {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
+	case "Commander's Arsenal":
+		if len(mtgmatcher.MatchInSet(cardName, "OCM1")) == 1 {
+			edition = "OCM1"
+		}
+
+	case "Commander",
+		"Commander 2013",
+		"Commander 2014",
+		"Commander 2015",
+		"Commander 2016",
+		"Commander 2017",
+		"Commander 2018",
+		"Commander 2019",
+		"Commander: Ikoria":
+		variant = number
+		if ogVariant == "V.2" && !mtgmatcher.IsBasicLand(cardName) {
+			variant = "oversized"
+		}
+
+	case "Commander Legends: Battle for Baldur's Gate: Promos":
+		variant = "Prerelease"
+
+	case "Commander: Streets of New Capenna: Promos":
+		variant = "Promo Pack"
+
+	case "Commander: The Lord of the Rings: Tales of Middle-earth: Extras":
+		variant = number
+		switch cardName {
+		case "Sol Ring":
+			switch ogVariant {
+			case "V.2", "V.4", "V.6":
+				variant += " serial"
 			}
 		}
-	case "March of the Machine: The Aftermath: Extras":
+
+	case "The Lord of the Rings: Tales of Middle-earth Holiday Release":
 		variant = number
+		if len(mtgmatcher.MatchInSet(cardName, "LTC")) > 0 {
+			edition = "LTC"
+			if mtgmatcher.HasSerializedPrinting(cardName, "LTC") {
+				variant = "serial"
+			}
+		} else if len(mtgmatcher.MatchInSet(cardName, "LTR")) > 0 {
+			edition = "LTR"
+		}
+
+	case "Murders at Karlov Manor":
+		variant = number
+		if ogVariant == "V.1" {
+			variant = "a"
+		} else if ogVariant == "V.2" {
+			variant = "b"
+		}
 
 	default:
-		if strings.Contains(edition, "Commander") {
-			hasExtra := strings.HasSuffix(edition, ": Extras")
-			edition = mtgmatcher.ParseCommanderEdition(edition, "")
+		switch {
+		// Try to derive the serialized status from the various Extras sets
+		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && mtgmatcher.HasSerializedPrinting(cardName, strings.TrimSuffix(edition, ": Extras")):
+			variant = "serial"
 
-			// This tag is used randomly
-			if variant == "V.2" {
-				// Catch any older oversized commander
-				if strings.HasPrefix(edition, "Commander 20") {
-					variant = "oversized"
-					// CMR has multiple prints in different sets (ie Return to Dust)
-				} else if strings.HasPrefix(edition, "Commander Legends") {
-					variant = "Extended Art"
-					// Otherwise it's the new thick stock print
-				} else if hasExtra {
-					variant = "Thick Stock"
-				}
-			} else if hasExtra {
-				variant = number
-			}
-		} else if strings.HasPrefix(edition, "Pro Tour 1996:") || strings.HasPrefix(edition, "WCD ") {
-			// Pre-search the card, if not found it's likely a sideboard variant
+		// Pre-search the card, if not found it's likely a sideboard variant
+		case strings.HasPrefix(edition, "Pro Tour 1996:"),
+			strings.HasPrefix(edition, "WCD "):
 			_, err := mtgmatcher.Match(&mtgmatcher.Card{
 				Name:    cardName,
 				Edition: edition,
@@ -637,16 +910,16 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			if err != nil {
 				edition += " Sideboard"
 			}
-		} else if strings.Contains(edition, ": Extras") || strings.Contains(edition, ": Promos") {
-			// These sets usually have incorrect numbering
-			if variant == number {
-				variant = ""
-			}
 
-			editionNoSuffix := strings.TrimSuffix(edition, ": Extras")
+		// All the various promos
+		case strings.Contains(edition, ": Promos"):
+			editionNoSuffix := edition
 			editionNoSuffix = strings.TrimSuffix(editionNoSuffix, ": Promos")
 			editionNoSuffix = strings.Replace(editionNoSuffix, "Core", "Core Set", 1)
+			editionNoSuffix = strings.TrimSpace(editionNoSuffix)
 
+			// Retrieve the set date because different tags mean different things
+			// depending on the epoch
 			set, err := mtgmatcher.GetSetByName(editionNoSuffix)
 			if err != nil {
 				return nil, &PreprocessError{
@@ -662,154 +935,83 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 				}
 			}
 
-			if strings.Contains(edition, ": Extras") {
-				if setDate.Before(mtgmatcher.PromosForEverybodyYay) {
-					if mtgmatcher.HasPrereleasePrinting(cardName) {
-						variant = "Prerelease"
-						edition = strings.Replace(edition, ": Extras", " Promos", 1)
+			// Anything between KTK and ELD
+			// These sets are always Prerelease, except for a couple of intro packs
+			// that are marked in an unpredictable way
+			if setDate.After(mtgmatcher.NewPrereleaseDate) &&
+				setDate.Before(mtgmatcher.PromosForEverybodyYay) {
+				variant = "Prerelease"
+
+				prereleaseTag := "V.1"
+				switch editionNoSuffix {
+				case "Eldrich Moon",
+					"Shadows over Innistrad",
+					"Oath of the Gatewatch",
+					"Magic Origins":
+					prereleaseTag = "V.2"
+				}
+				if ogVariant == prereleaseTag {
+					variant = "Prerelease"
+				} else if ogVariant != number {
+					variant = number
+				}
+
+			} else if setDate.After(mtgmatcher.PromosForEverybodyYay) {
+				// Default tags
+				customVariant := ""
+				specialTag := "V.0" // custom, ignored for most cases
+				prerelTag := "V.1"
+				promoTag := "V.2"
+				bundleTag := "V.3"
+
+				// Special cases
+				switch editionNoSuffix {
+				case "Theros Beyond Death",
+					"Core 2021",
+					"Ikoria: Lair of Behemoths",
+					"Zendikar Rising":
+					promoTag = "V.1"
+					prerelTag = "V.2"
+					switch cardName {
+					case "Arasta of the Endless Web":
+						promoTag = "V.2"
+						prerelTag = "V.3"
+					case "Colossification":
+						if number == "364" {
+							bundleTag = ""
+						}
 					}
-					if mtgmatcher.IsBasicLand(cardName) {
-						edition = strings.Replace(edition, " Promos", "", 1)
-					}
-				} else {
-					// KHM: Extras has spurious promo pack cards in it
-					if len(mtgmatcher.MatchInSet(cardName, set.Code)) != 0 {
+				case "Adventures in the Forgotten Realms":
+					specialTag = "V.3"
+					customVariant = "Ampersand"
+					bundleTag = "V.4"
+				case "Kamigawa: Neon Dynasty",
+					"The Brothers' War":
+					specialTag = "V.3"
+					customVariant = "oversized"
+					bundleTag = "V.4"
+				case "Innistrad: Crimson Vow: Promos":
+					specialTag = "V.3"
+					customVariant = "Play Promo"
+				}
+
+				switch variant {
+				case specialTag:
+					variant = customVariant
+				case promoTag:
+					variant = "Promo Pack"
+				case prerelTag:
+					variant = "Prerelease"
+				case bundleTag:
+					variant = "Bundle"
+				default:
+					if strings.Contains(cardName, "//") {
 						variant = number
-					} else {
-						if mtgmatcher.HasPromoPackPrinting(cardName) {
-							variant = "Promo Pack"
-						} else if mtgmatcher.HasPrereleasePrinting(cardName) {
-							variant = "Prerelease"
-						}
-					}
-				}
-			} else if strings.Contains(edition, ": Promos") {
-				if setDate.After(mtgmatcher.NewPrereleaseDate) &&
-					setDate.Before(mtgmatcher.PromosForEverybodyYay) {
-					if strings.HasPrefix(variant, "V.") {
-						if variant == "V.1" {
-							variant = number
-						} else if variant == "V.2" {
-							variant = "Prerelease"
-						}
-					} else {
-						variant = "Prerelease"
-					}
-				} else if setDate.After(mtgmatcher.PromosForEverybodyYay) {
-					// Default tags
-					speciaTag := "V.0" // custom, ignored for most cases
-					prerelTag := "V.1"
-					promopTag := "V.2"
-					bundleTag := "V.3"
-
-					// Special cases
-					switch edition {
-					case "Theros Beyond Death: Promos":
-						promopTag = "V.1"
-						prerelTag = "V.2"
-						if cardName == "Arasta of the Endless Web" {
-							bundleTag = "V.1"
-							promopTag = "V.2"
-							prerelTag = "V.3"
-						}
-					case "Ikoria: Lair of Behemoths: Promos":
-						promopTag = "V.1"
-						prerelTag = "V.2"
-						if cardName == "Colossification" && variant == "" {
-							variant = bundleTag
-						}
-					case "Zendikar Rising: Promos":
-						promopTag = "V.1"
-						prerelTag = "V.2"
-						if variant == "V.1" && strings.Contains(cardName, " // ") {
-							return nil, errors.New("not exist")
-						}
-					case "Adventures in the Forgotten Realms: Promos":
-						speciaTag = "V.3"
-						bundleTag = "V.4"
-					}
-
-					switch variant {
-					case speciaTag:
-						switch edition {
-						case "Adventures in the Forgotten Realms: Promos":
-							variant = "Ampersand"
-						}
-					case bundleTag:
-						variant = "Bundle"
-					case promopTag:
+					} else if mtgmatcher.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
-					case prerelTag:
-						variant = "Prerelease"
-					default:
-						if mtgmatcher.HasPromoPackPrinting(cardName) {
-							variant = "Promo Pack"
-						}
 					}
 				}
 			}
-		}
-	}
-
-	// Lands are named as "Island (V.1)" and similar, keep the collector number
-	// which is surprisingly accurate (errors are ignored for lands anyway)
-	if mtgmatcher.IsBasicLand(cardName) {
-		switch ogEdition {
-		// Too much
-		case "Foreign Black Bordered",
-			"Deckmasters",
-			"Coldsnap Theme Decks",
-			"Summer Magic",
-			"Introductory Two-Player Set",
-			"Duels of the Planeswalkers Decks",
-			"Duel Decks: Anthology",
-			"Archenemy":
-			return nil, errors.New("unsupported")
-		case "Core 2020: Extras":
-			variant = "Promo Pack"
-		case "Zendikar":
-			switch variant {
-			case "V.1", "V.3", "V.5", "V.7":
-				variant = number + "a"
-			default:
-				variant = number
-			}
-		case "Battle for Zendikar",
-			"Oath of the Gatewatch":
-			switch variant {
-			case "V.2", "V.4", "V.6", "V.8", "V.10":
-				variant = number + "a"
-			default:
-				variant = number
-			}
-		case "Magic Premiere Shop Promos":
-			switch variant {
-			default:
-				edition = "PMPS"
-				// Further untangling in variants.go
-			case "V.5":
-				edition = "PMPS06"
-			case "V.6":
-				edition = "PMPS07"
-			case "V.7":
-				edition = "PMPS08"
-			case "V.8":
-				edition = "PMPS09"
-			case "V.9":
-				edition = "PMPS10"
-			case "V.10":
-				edition = "PMPS11"
-			}
-		// Use as is, drop variant
-		case "Guru Lands":
-			variant = ""
-		// Sets preprocessed earlier, or with invalid numbers, don't do anything
-		case "Arena League Promos",
-			"APAC Lands",
-			"Euro Lands",
-			"Anthologies",
-			"Misprints",
-			"Modern Horizons 2: Extras":
 		default:
 			// Old editions do not have any number assigned, if so, then keep
 			// the V.1 V.2 etc style and process in variants.go
@@ -823,5 +1025,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
+		Foil:      foil,
 	}, nil
 }

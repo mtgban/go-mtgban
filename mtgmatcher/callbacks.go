@@ -131,6 +131,10 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: mtgjson.PromoTypePoster,
 		Tags:      []string{"Poster", "Hand Drawn"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeInvisibleInk,
+		Tags:      []string{"Invisible"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
@@ -192,6 +196,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"P30HJPN": retroCheck,
 	"30A":     retroCheck,
 	"PW23":    retroCheck,
+	"RVR":     retroCheck,
 
 	"BRO": babOrBuyaboxRetroCheck,
 
@@ -241,6 +246,78 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+
+	// These two checks need to be separate in case two cards have the same number
+	// but are originally from two different editions
+	"PLST": {listNumberCompare, listEditionCheck},
+}
+
+func listNumberCompare(inCard *Card, card *mtgjson.Card) bool {
+	listNum := ExtractNumber(inCard.Variation)
+
+	// If a listNum is found, check that it's matching the card number
+	if listNum != "" {
+		if strings.Contains(listNum, "-") && listNum == card.Number {
+			return false
+		} else if strings.HasSuffix(card.Number, "-"+listNum) {
+			return false
+		}
+
+		// Skip anything else, the number needs to be correct,
+		// unless there is actually an edition name (ie Masters 25)
+		// that will be processed later
+		maybeEdition := inCard.Variation
+		maybeEdition = strings.Replace(maybeEdition, "Non-Foil", "", 1)
+		maybeEdition = strings.Replace(maybeEdition, "Foil", "", 1)
+		maybeEdition = strings.TrimLeft(maybeEdition, " -")
+		_, err := GetSetByName(maybeEdition)
+		if err != nil {
+			return true
+		}
+	}
+
+	return false
+}
+
+var allPlayerRewardsSet = []string{
+	"P03", "P04", "P05", "P06", "P07", "P08", "P09", "P10", "P11",
+}
+
+func listEditionCheck(inCard *Card, card *mtgjson.Card) bool {
+	code := strings.Split(card.Number, "-")[0]
+	set, err := GetSet(code)
+	if err != nil {
+		return true
+	}
+
+	switch inCard.Name {
+	case "Phantom Centaur":
+		return misprintCheck(inCard, card)
+	case "Laboratory Maniac":
+		// Only card with same number, so the chunk below trips the check
+		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
+			return true
+		}
+	default:
+		if inCard.Contains("Player Rewards") && slices.Contains(allPlayerRewardsSet, code) {
+			return false
+		}
+
+		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
+			// This chunk is needed in case there was a plain number already
+			// processed in the previous step
+			listNum := ExtractNumber(inCard.Variation)
+			if strings.Contains(listNum, "-") && listNum == card.Number {
+				return false
+			} else if strings.HasSuffix(card.Number, "-"+listNum) {
+				return false
+			}
+
+			return true
+		}
+	}
+
+	return false
 }
 
 func phyrexianCheck(inCard *Card, card *mtgjson.Card) bool {
@@ -695,10 +772,10 @@ func sldVariant(inCard *Card, card *mtgjson.Card) bool {
 			result = !result
 		}
 	}
-	// All the DoubleRainbow SLD cards not serialized are tagged as two different entries
+	// All the Rainbow SLD cards not serialized are tagged as two different entries
 	// ie Goblin Lackey or Aminatou, the Fateshifter
-	if hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeDoubleRainbow, "SLD") &&
-		!hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeSerialized, "SLD") {
+	if hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeRainbowFoil, "SLD") ||
+		hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD") {
 		result = strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		if inCard.Foil {
 			result = !result
@@ -831,6 +908,16 @@ func reskinRenameCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.isReskin() && !inCard.Contains(card.FlavorName) {
 		return true
 	} else if !inCard.isReskin() && inCard.Contains(card.FlavorName) {
+		return true
+	}
+	return false
+}
+
+func misprintCheck(inCard *Card, card *mtgjson.Card) bool {
+	hasSuffix := strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+	if inCard.Contains("Misprint") && !hasSuffix {
+		return true
+	} else if !inCard.Contains("Misprint") && hasSuffix {
 		return true
 	}
 	return false

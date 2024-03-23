@@ -49,47 +49,58 @@ type evConfig struct {
 	SourceName     string
 	FoundInBuylist bool
 	TargetsBuylist bool
+	Simulation     bool
 }
 
 var evParameters = []evConfig{
 	{
-		Name: "TCG Low EV Mean",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Mean(values)
-		},
+		Name:       "TCG Low EV",
 		SourceName: "TCG Low",
 	},
 	{
-		Name: "TCG Low EV Median",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Median(values)
-		},
-		SourceName: "TCG Low",
-	},
-	{
-		Name: "TCG Direct (net) EV Mean",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Mean(values)
-		},
+		Name:           "TCG Direct (net) EV",
 		SourceName:     "TCGDirectNet",
 		FoundInBuylist: true,
 	},
 	{
-		Name: "TCG Direct (net) EV Median",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Median(values)
-		},
-		SourceName:     "TCGDirectNet",
-		FoundInBuylist: true,
-	},
-	{
-		Name: "CK Buylist for Singles",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.Mean(values)
-		},
+		Name:           "CK Buylist EV for Singles",
 		SourceName:     "CK",
 		FoundInBuylist: true,
 		TargetsBuylist: true,
+	},
+	{
+		Name: "TCG Low Sim Median",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.Median(values)
+		},
+		SourceName: "TCG Low",
+		Simulation: true,
+	},
+	{
+		Name: "TCG Low Sim StdDev",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.StandardDeviation(values)
+		},
+		SourceName: "TCG Low",
+		Simulation: true,
+	},
+	{
+		Name: "TCG Direct (net) Sim Median",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.Median(values)
+		},
+		SourceName:     "TCGDirectNet",
+		FoundInBuylist: true,
+		Simulation:     true,
+	},
+	{
+		Name: "TCG Direct (net) Sim StdDev",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.StandardDeviation(values)
+		},
+		SourceName:     "TCGDirectNet",
+		FoundInBuylist: true,
+		Simulation:     true,
 	},
 }
 
@@ -193,27 +204,84 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 	repeatsChannel := make(chan int)
 
 	for j := 0; j < DefaultRepeatConcurrency; j++ {
-		wg.Add(1)
+		wg.Add(2)
+
+		// Simulations
 		go func() {
 			for _ = range repeatsChannel {
 				picks, err := ss.repeatedPicks(setCode, product.UUID)
 				if err != nil {
 					channel <- resultChan{
-						err: fmt.Errorf("[%s] '%s' error: %s", setCode, product.Name, err.Error()),
+						err: fmt.Errorf("[%s] '%s' picks error: %s", setCode, product.Name, err.Error()),
 					}
 					continue
 				}
 
 				for i := range evParameters {
+					if !evParameters[i].Simulation {
+						continue
+					}
+
 					priceSource := prices.Retail
 					if evParameters[i].FoundInBuylist {
 						priceSource = prices.Buylist
 					}
-					ev := valueInBooster(picks, priceSource, evParameters[i].SourceName)
+
+					ev := valueInBooster(picks, priceSource, evParameters[i].SourceName, nil)
+
 					channel <- resultChan{
 						i:  i,
 						ev: ev,
 					}
+				}
+			}
+			wg.Done()
+		}()
+
+		// Probability EV
+		go func() {
+			probabilities, err := mtgmatcher.GetProbabilitiesForSealed(setCode, product.UUID)
+			if err != nil {
+				channel <- resultChan{
+					err: fmt.Errorf("[%s] '%s' probabilities error: %s", setCode, product.Name, err.Error()),
+				}
+				wg.Done()
+				return
+			}
+
+			// Split probabilities in two simpler arrays for later reuse
+			var probPicks []string
+			var probProbs []float64
+			for _, probability := range probabilities {
+				co, err := mtgmatcher.GetUUID(probability.UUID)
+				if err != nil {
+					continue
+				}
+
+				prob := probability.Probability
+				if co.HasPromoType(mtgjson.PromoTypeSerialized) {
+					prob = 0
+				}
+
+				probProbs = append(probProbs, prob)
+				probPicks = append(probPicks, probability.UUID)
+			}
+
+			for i := range evParameters {
+				if evParameters[i].Simulation {
+					continue
+				}
+
+				priceSource := prices.Retail
+				if evParameters[i].FoundInBuylist {
+					priceSource = prices.Buylist
+				}
+
+				ev := valueInBooster(probPicks, priceSource, evParameters[i].SourceName, probProbs)
+
+				channel <- resultChan{
+					i:  i,
+					ev: ev,
 				}
 			}
 			wg.Done()
@@ -242,9 +310,15 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 	}
 
 	for i, dataset := range datasets {
-		price, err := evParameters[i].StatsFunc(dataset)
-		if err != nil {
-			continue
+		var price float64
+		if evParameters[i].Simulation {
+			var err error
+			price, err = evParameters[i].StatsFunc(dataset)
+			if err != nil {
+				continue
+			}
+		} else if len(dataset) > 0 {
+			price = dataset[0]
 		}
 
 		if price == 0 {

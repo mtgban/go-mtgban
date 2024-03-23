@@ -131,6 +131,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			mtgmatcher.Contains(product.Description, "signed") ||
 			mtgmatcher.Contains(product.Description, "inked") ||
 			mtgmatcher.Contains(product.Description, "stamp") ||
+			mtgmatcher.Contains(product.Description, "poor") ||
 			mtgmatcher.Contains(product.Description, "water") {
 			cond = "Poor"
 		}

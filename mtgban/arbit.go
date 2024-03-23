@@ -594,7 +594,7 @@ func Pennystock(seller Seller, full bool) (result []PennystockEntry, err error) 
 			continue
 		}
 
-		// Silver is to catch UPLIST, IsFunny to catch anything after Unfinity
+		// Silver is to catch ULST, IsFunny to catch anything after Unfinity
 		switch co.BorderColor {
 		case "gold", "silver", "white":
 			continue

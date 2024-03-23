@@ -35,15 +35,6 @@ var skuFixupTable = map[string]string{
 	"PAL96-003": "PARL-003",
 	"PAL96-004": "PARL-004",
 
-	// Sets containing launch promos
-	"PJMP-496B": "JMP-496",
-	"P2XM-383":  "2XM-383",
-	"P2XM-384":  "2XM-384",
-	"P2X2-578":  "2X2-578",
-	"P2X2-579":  "2X2-579",
-	"P40K-181":  "40K-181",
-	"PUNF-538":  "UNF-538",
-
 	// Jaya Ballard, Task Mage
 	"MPS-001A": "PRES-001A",
 
@@ -56,6 +47,8 @@ var skuFixupTable = map[string]string{
 
 	// Yellow Hidetsugu
 	"PNEO-432": "NEO-432",
+	// Goro Goro
+	"PNEO-145": "PMEI-059",
 
 	// Random WCD cards
 	"WC97-JS097":    "WC97-JS242",
@@ -81,16 +74,22 @@ var skuFixupTable = map[string]string{
 	"PPLS-107": "PLS-107★",
 	"PPLS-133": "PLS-133★",
 
-	// Duplicated UPLIST cards
-	"FMUST-147A": "UPLIST-55",
-	"FMUST-147F": "UPLIST-56",
-	"FMUST-113A": "UPLIST-38",
-	"FMUST-113C": "UPLIST-37",
+	// Duplicated ULST cards
+	"FMUST-147A": "ULST-55",
+	"FMUST-147F": "ULST-56",
+	"FMUST-113A": "ULST-38",
+	"FMUST-113C": "ULST-37",
+
+	// Wrong PLST codes
+	"MF19-001": "MPF19-001",
+	"MZNR-091": "MKHC-091",
 
 	// Naya Sojourners
 	"PM10-028": "PDCI-29",
 	// Liliana's Specter
 	"PM11-104": "PDCI-52",
+	// Mitotic Slime
+	"PM11-185": "PDCI-53",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
@@ -146,6 +145,13 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			if mtgmatcher.Contains(card.Variation, "buyabox") && setDate.After(mtgmatcher.BuyABoxNotUniqueDate) {
 				setCode = setCode[1:]
 			} else if mtgmatcher.Contains(card.Variation, "bundle") && setDate.After(mtgmatcher.BuyABoxInExpansionSetsDate) {
+				setCode = setCode[1:]
+			}
+		}
+
+		// Certain launch/release promos get promoted to Promos set despite belonging to the main set
+		if len(setCode) > 3 && strings.HasPrefix(setCode, "P") && (mtgmatcher.Contains(card.Variation, "release") || mtgmatcher.Contains(card.Variation, "launch")) {
+			if len(mtgmatcher.MatchInSetNumber(card.Name, setCode[1:], number)) == 1 {
 				setCode = setCode[1:]
 			}
 		}
@@ -223,8 +229,11 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
 		"Unstable", "Unglued", "Unfinity", "Portal II",
 		"The Lord of the Rings: Tales of Middle-earth",
+		"The Lord of the Rings: Tales of Middle-earth Commander Decks Variants",
 		"The Lord of the Rings: Tales of Middle-earth Commander Decks",
-		"The Lord of the Rings: Tales of Middle-earth Variants":
+		"The Lord of the Rings: Tales of Middle-earth Variants",
+		"Ravnica Remastered", "Ravnica Remastered Variants",
+		"Murders at Karlov Manor", "Murders at Karlov Manor Variants":
 		variation = number
 
 	case "Secret Lair":
@@ -241,10 +250,16 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		if variation == "Eternal Night" {
 			variation = "Showcase"
 		}
-	default:
-		if setCode == "UPLIST" {
+	case "Mystery Booster/The List":
+		switch setCode {
+		case "ULST":
 			edition = setCode
 			variation = number
+		case "MCMB1", "CMB1":
+		default:
+			if variation != "" {
+				variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
+			}
 		}
 	}
 
@@ -265,6 +280,10 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	// Use number for tokens
 	if strings.Contains(card.Name, "Token") {
 		variation = number
+
+		if edition == "Duel Decks: Garruk Vs. Liliana" && card.Name == "Beast Token" {
+			variation = "T" + number
+		}
 
 		// Quiet exit for duplicated tokens from this set
 		if setCode == "TC16" && (strings.HasSuffix(number, "a") || strings.HasSuffix(number, "b")) {

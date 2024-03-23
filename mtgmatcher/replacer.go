@@ -10,6 +10,8 @@ var replacer = strings.NewReplacer(
 	// it needs to be before removing the dash step
 	" the ", "",
 	"-the-", "",
+	// Hopefully "of the" is specific enough
+	"of the", "of the",
 
 	// Quotes and commas and whatnot
 	"''", "",
