@@ -14,6 +14,10 @@ type CoolstuffincOfficial struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
+	// false = load buylist from main api
+	// true  = load buylist from buylist endpoint
+	IgnoreOfficialBuylist bool
+
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -30,6 +34,7 @@ func NewScraperOfficial(key string) *CoolstuffincOfficial {
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
 	csi.client = NewCSIClient(key)
+	csi.IgnoreOfficialBuylist = true
 	return &csi
 }
 
@@ -103,7 +108,7 @@ func (csi *CoolstuffincOfficial) scrape() error {
 			}
 		}
 
-		if card.PriceBuy > 0 {
+		if card.PriceBuy > 0 && !csi.IgnoreOfficialBuylist {
 			var priceRatio float64
 
 			if card.PriceRetail > 0 {
@@ -129,7 +134,9 @@ func (csi *CoolstuffincOfficial) scrape() error {
 	}
 
 	csi.inventoryDate = time.Now()
-	csi.buylistDate = time.Now()
+	if !csi.IgnoreOfficialBuylist {
+		csi.buylistDate = time.Now()
+	}
 
 	return nil
 }
