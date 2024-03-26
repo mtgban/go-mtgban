@@ -136,7 +136,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Modern Horizons 2",
 		"Modern Horizons 1: Timeshifted":
 		variant = number
-	case "Commander: The Lord of the Rings - Tales of Middle-earth Collectors":
+	case "Commander: The Lord of the Rings - Tales of Middle-earth Collectors",
+		"The Lord of the Rings: Tales of Middle-earth Holiday Release":
 		variant = strings.Replace(number, "s", "z", 1)
 	case "Simplified Chinese Alternate Art Cards":
 		switch cardName {
@@ -145,6 +146,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 				edition = bp.Version
 			}
 			variant = number
+			if !strings.HasSuffix(variant, "s") {
+				variant += "s"
+			}
 		}
 	case "Secret Lair Showdown":
 		switch cardName {
