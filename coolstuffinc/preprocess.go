@@ -446,7 +446,8 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 		if mtgmatcher.IsBasicLand(cardName) {
 			cardName = strings.Fields(cardName)[0]
 		}
-	case "Mystery Booster - The List":
+	case "Mystery Booster - The List",
+		"Secret Lair":
 		variant = cleanVar
 
 		if num != "" && cardName != "Everythingamajig" && cardName != "Ineffable Blessing" {
