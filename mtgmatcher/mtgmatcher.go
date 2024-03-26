@@ -63,6 +63,17 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 				strings.HasPrefix(altCo.Number, co.Number) {
 				maybeId := output(altCo.Card, isFoil, isEtched)
 				altCo = backend.UUIDs[maybeId]
+
+				// Make sure we're dealing with the same card
+				// (this helps with promos that have similar numbers)
+				sameCardProps := slices.Equal(co.PromoTypes, altCo.PromoTypes) &&
+					slices.Equal(co.FrameEffects, altCo.FrameEffects)
+				if !sameCardProps {
+					continue
+				}
+
+				// If the alt card finish matches the expected one
+				// then replace the final output uuid
 				if altCo.Foil == isFoil {
 					outId = maybeId
 					break

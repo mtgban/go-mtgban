@@ -204,6 +204,13 @@
         }
     },
     {
+        "uuid": "f2d765fe-326b-503b-a878-16d68e836dcb",
+        "description": "id_lookup_promos_clash",
+        "input": {
+            "id": "f2d765fe-326b-503b-a878-16d68e836dcb"
+        }
+    },
+    {
         "uuid": "fb083deb-30ea-5ff4-8aa8-cee8531cd7ec",
         "description": "number_dupes_fullart_land",
         "input": {
