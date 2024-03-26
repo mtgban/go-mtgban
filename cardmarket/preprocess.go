@@ -109,6 +109,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		variant = vars[1]
 	}
 	ogVariant := variant
+	ogEdition := edition
 
 	switch edition {
 	case "Anthologies",
@@ -748,6 +749,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 
+	// This set is missing PLST collector numbers for no reason
+	case "Secret Lair Commander Deck: Angels: They're Just Like Us but Cooler":
+		edition = "SLD"
+		variant = number
+		if variant == "" {
+			edition = "PLST"
+		}
+
 	case "Modern Horizons 2",
 		"Secret Lair Drop Series: June Superdrop 2022":
 		switch variant {
@@ -1018,6 +1027,21 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			if number != "" {
 				variant = number
 			}
+		}
+	}
+
+	// Try separating SLD and PLST cards if possible
+	if strings.Contains(ogEdition, "Secret Lair Commander Deck") {
+		for _, card := range mtgmatcher.MatchInSetNumber(cardName, "PLST", number) {
+			if strings.HasSuffix(card.Number, "-"+number) {
+				edition = "PLST"
+				variant = number
+			}
+		}
+
+		// Detect thick display commander from these sets
+		if !mtgmatcher.IsBasicLand(cardName) && ogVariant == "V.2" {
+			variant += " Thick"
 		}
 	}
 
