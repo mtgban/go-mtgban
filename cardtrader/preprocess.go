@@ -407,9 +407,15 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	if bp.CategoryId == CategoryMagicTokens && !strings.Contains(cardName, "Token") {
 		cardName += " Token"
 	}
-	// Make sure the oversize tag is always present
-	if bp.CategoryId == CategoryMagicOversized && !strings.Contains(edition, "Oversize") {
-		edition += " Oversize"
+	if bp.CategoryId == CategoryMagicOversized {
+		switch {
+		// Preserve the Display Commander tag
+		case strings.Contains(bp.Version, "Display"):
+			variant += " Display"
+		// Make sure the oversize tag is always present
+		case !strings.Contains(edition, "Oversize"):
+			edition += " Oversize"
+		}
 	}
 
 	return &mtgmatcher.Card{
