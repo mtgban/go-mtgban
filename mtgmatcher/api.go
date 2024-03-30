@@ -309,6 +309,8 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 	return false
 }
 
+const maxRerollThreshold = 50
+
 func BoosterGen(setCode, boosterType string) ([]string, error) {
 	set, err := GetSet(setCode)
 	if err != nil {
@@ -395,41 +397,52 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 
 			// Pick a card uuid as many times as defined by its frequency
 			for j := 0; j < frequency; j++ {
-				item := cardChooser.Pick()
-				// Validate card exists (ie in case of online-only printing)
-				co, found := backend.UUIDs[item]
-				if !found {
-					return nil, errors.New("picked id does not exists")
-				}
+				var uuid string
+				var e int
 
-				// Check if we need to reroll due to BalanceColors
-				// for the first N cards, where N is the number of
-				// colors found in the sheet
-				if sheet.BalanceColors && j < len(colorsPresent) {
-					// The first N cards cannot be multicolor or colorless
-					// Reroll if one of the single colors was already found
-					if len(co.Colors) != 1 || balanced[co.Colors[0]] {
-						j--
-						continue
+				// Repeat rerolls up to the specified threshold
+				for e = 0; e < maxRerollThreshold; e++ {
+					item := cardChooser.Pick()
+
+					// Validate card exists (ie in case of online-only printing)
+					co, found := backend.UUIDs[item]
+					if !found {
+						return nil, errors.New("picked id does not exists")
 					}
-					// Found!
-					balanced[co.Colors[0]] = true
-				}
 
-				// Check if the sheet allows duplicates, and, if not, pick again
-				// in case the uuid was already picked
-				if !sheet.AllowDuplicates {
-					if duplicated[item] {
-						j--
-						continue
+					// Check if we need to reroll due to BalanceColors
+					// for the first N cards, where N is the number of
+					// colors found in the sheet
+					if sheet.BalanceColors && j < len(colorsPresent) {
+						// The first N cards cannot be multicolor or colorless
+						// Reroll if one of the single colors was already found
+						if len(co.Colors) != 1 || balanced[co.Colors[0]] {
+							continue
+						}
+						// Found!
+						balanced[co.Colors[0]] = true
 					}
-					duplicated[item] = true
-				}
 
-				// Convert to custom IDs
-				uuid, err := MatchId(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
-				if err != nil {
-					return nil, err
+					// Check if the sheet allows duplicates, and, if not, pick again
+					// in case the uuid was already picked
+					if !sheet.AllowDuplicates {
+						if duplicated[item] {
+							continue
+						}
+						duplicated[item] = true
+					}
+
+					// Convert to custom IDs
+					uuid, err = MatchId(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
+					if err != nil {
+						return nil, err
+					}
+
+					// Gotem
+					break
+				}
+				if e == maxRerollThreshold {
+					return nil, errors.New("reroll threshold reached")
 				}
 
 				picks = append(picks, uuid)
