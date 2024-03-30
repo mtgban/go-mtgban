@@ -429,6 +429,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	filterFoil := false
 	filterOnlyFoil := false
 	filterRLOnly := false
+	filterDecksOnly := false
 	var filterConditions []string
 	var filterRarities []string
 	var filterEditions []string
@@ -449,6 +450,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		filterFoil = opts.NoFoil
 		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
+		filterDecksOnly = opts.SealedDecklist
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -493,6 +495,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			continue
 		}
 		if filterOnlyFoil && !co.Foil && !co.Etched {
+			continue
+		}
+		if filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
 			continue
 		}
 		if filterRLOnly && !co.IsReserved {
