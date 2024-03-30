@@ -8,6 +8,7 @@ import (
 
 	"github.com/mroth/weightedrand/v2"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/exp/slices"
 )
 
 func GetUUIDs() []string {
@@ -354,6 +355,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 		} else {
 			var duplicated map[string]bool
 			var balanced map[string]bool
+			var colorsPresent []string
 
 			// Prepare maps to keep track of duplicates and balaced colors if necessary
 			if !sheet.AllowDuplicates {
@@ -361,6 +363,23 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 			}
 			if sheet.BalanceColors {
 				balanced = map[string]bool{}
+
+				// Count the number of colors actually present in the sheet
+				for cardId := range sheet.Cards {
+					co, found := backend.UUIDs[cardId]
+					if !found {
+						return nil, errors.New("sheet contains an unknown id")
+					}
+					for _, color := range co.Colors {
+						if !slices.Contains(colorsPresent, color) {
+							colorsPresent = append(colorsPresent, color)
+						}
+					}
+				}
+				// Sanity check
+				if frequency < len(colorsPresent) {
+					return nil, errors.New("fewer slots than colors")
+				}
 			}
 
 			// Move sheet data into randutil data type
@@ -385,14 +404,12 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				}
 
 				// Check if we need to reroll due to BalanceColors
-				if sheet.BalanceColors && frequency > 4 && j < 5 {
-					// Reroll for the first five cards, the first 5 cards cannot be multicolor or colorless
-					if len(co.Colors) != 1 {
-						j--
-						continue
-					}
+				// for the first N cards, where N is the number of
+				// colors found in the sheet
+				if sheet.BalanceColors && j < len(colorsPresent) {
+					// The first N cards cannot be multicolor or colorless
 					// Reroll if one of the single colors was already found
-					if balanced[co.Colors[0]] {
+					if len(co.Colors) != 1 || balanced[co.Colors[0]] {
 						j--
 						continue
 					}
