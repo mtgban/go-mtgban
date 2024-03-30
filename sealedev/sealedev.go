@@ -53,20 +53,18 @@ type evConfig struct {
 }
 
 var evParameters = []evConfig{
-	{
-		Name:       "TCG Low EV",
-		SourceName: "TCG Low",
-	},
-	{
-		Name:           "TCG Direct (net) EV",
-		SourceName:     "TCGDirectNet",
-		FoundInBuylist: true,
-	},
+	// CK Buylist
 	{
 		Name:           "CK Buylist EV for Singles",
 		SourceName:     "CK",
 		FoundInBuylist: true,
 		TargetsBuylist: true,
+	},
+
+	// TCG Low
+	{
+		Name:       "TCG Low EV",
+		SourceName: "TCG Low",
 	},
 	{
 		Name: "TCG Low Sim Median",
@@ -83,6 +81,13 @@ var evParameters = []evConfig{
 		},
 		SourceName: "TCG Low",
 		Simulation: true,
+	},
+
+	// TCG Direct (net)
+	{
+		Name:           "TCG Direct (net) EV",
+		SourceName:     "TCGDirectNet",
+		FoundInBuylist: true,
 	},
 	{
 		Name: "TCG Direct (net) Sim Median",
