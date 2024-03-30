@@ -526,6 +526,18 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 					if err != nil {
 						return nil, err
 					}
+
+					// This set data cannot be represented in mtgjson data without
+					// breaking the output format, instead hack things here
+					if content.Set == "SLC" {
+						for i := 0; i < len(deckPicks)-1; i++ {
+							n := rand.Intn(10)
+							if n < 3 {
+								deckPicks[i] += suffixFoil
+							}
+						}
+					}
+
 					picks = append(picks, deckPicks...)
 				case "variable":
 					variableIndex := rand.Intn(len(content.Configs))
@@ -600,6 +612,11 @@ func SealedIsRandom(setCode, sealedUUID string) bool {
 						return true
 					}
 				case "deck":
+					// This set data cannot be represented in mtgjson data without
+					// breaking the output format, instead hack things here
+					if content.Set == "SLC" {
+						return true
+					}
 				case "variable":
 					return true
 				case "other":
@@ -763,6 +780,20 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 							UUID:        uuid,
 							Probability: 1,
 						})
+					}
+
+					// This set data cannot be represented in mtgjson data without
+					// breaking the output format, instead hack things here
+					if content.Set == "SLC" {
+						for i := 0; i < len(deckPicks)-1; i++ {
+							probs[i].Probability = 0.7
+						}
+						for i := 0; i < len(deckPicks)-1; i++ {
+							pick := probs[i]
+							pick.Probability = 0.3
+							pick.UUID += suffixFoil
+							probs = append(probs, pick)
+						}
 					}
 				case "variable":
 					variableIndex := rand.Intn(len(content.Configs))
