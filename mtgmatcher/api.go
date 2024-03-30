@@ -485,6 +485,70 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	return picks, nil
 }
 
+func GetDecklist(setCode, sealedUUID string) ([]string, error) {
+	var picks []string
+
+	if !SealedHasDecklist(setCode, sealedUUID) {
+		return nil, errors.New("product does not have a decklist")
+	}
+
+	set, err := GetSet(setCode)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, product := range set.SealedProduct {
+		if sealedUUID != product.UUID {
+			continue
+		}
+
+		for key, contents := range product.Contents {
+			for _, content := range contents {
+				switch key {
+				case "card":
+					uuid, err := MatchId(content.UUID, content.Foil)
+					if err != nil {
+						return nil, err
+					}
+					picks = append(picks, uuid)
+				case "sealed":
+					for i := 0; i < content.Count; i++ {
+						sealedPicks, err := GetDecklist(content.Set, content.UUID)
+						// Content of sealed is unpredictable, so ignore errors
+						if err == nil {
+							picks = append(picks, sealedPicks...)
+						}
+					}
+				case "deck":
+					deckPicks, err := GetPicksForDeck(content.Set, content.Name)
+					if err != nil {
+						return nil, err
+					}
+
+					// This set data cannot be represented in mtgjson data without
+					// breaking the output format, instead hack things here
+					if content.Set == "slc" {
+						for i := 0; i < len(deckPicks)-1; i++ {
+							n := rand.Intn(10)
+							if n < 3 {
+								deckPicks[i] += suffixFoil
+							}
+						}
+					}
+
+					picks = append(picks, deckPicks...)
+				}
+			}
+		}
+	}
+
+	if len(picks) == 0 {
+		return nil, errors.New("nothing was picked")
+	}
+
+	return picks, nil
+}
+
 func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 	var picks []string
 
