@@ -102,6 +102,28 @@ var evParameters = []evConfig{
 		FoundInBuylist: true,
 		Simulation:     true,
 	},
+
+	// Card Trader Zero
+	{
+		Name:       "CT Zero EV",
+		SourceName: "Card Trader Zero",
+	},
+	{
+		Name: "CT Zero Sim Median",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.Median(values)
+		},
+		SourceName: "Card Trader Zero",
+		Simulation: true,
+	},
+	{
+		Name: "CT Zero Sim StdDev",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.StandardDeviation(values)
+		},
+		SourceName: "Card Trader Zero",
+		Simulation: true,
+	},
 }
 
 type evOutputStash struct {
