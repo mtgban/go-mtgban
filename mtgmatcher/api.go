@@ -394,7 +394,6 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 			}
 
 			// Pick a card uuid as many times as defined by its frequency
-			// Note that it's ok to pick the same card from the same sheet multiple times
 			for j := 0; j < frequency; j++ {
 				item := cardChooser.Pick()
 				// Validate card exists (ie in case of online-only printing)
