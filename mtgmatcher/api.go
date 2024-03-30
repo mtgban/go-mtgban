@@ -345,7 +345,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				// Convert to custom IDs
 				uuid, err := MatchId(cardId, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 				if err != nil {
-					return nil, ErrCardUnknownId
+					return nil, err
 				}
 				for j := 0; j < frequency; j++ {
 					picks = append(picks, uuid)
@@ -381,8 +381,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				// Validate card exists (ie in case of online-only printing)
 				co, found := backend.UUIDs[item]
 				if !found {
-					j--
-					continue
+					return nil, errors.New("picked id does not exists")
 				}
 
 				// Check if we need to reroll due to BalanceColors
@@ -414,8 +413,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				// Convert to custom IDs
 				uuid, err := MatchId(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 				if err != nil {
-					j--
-					continue
+					return nil, err
 				}
 
 				picks = append(picks, uuid)
