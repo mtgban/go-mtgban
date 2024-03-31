@@ -2,6 +2,7 @@ package starcitygames
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -15,6 +16,7 @@ var cardTable = map[string]string{
 
 func preprocess(card *SCGCardVariant, edition, language string, foil bool, number string) (*mtgmatcher.Card, error) {
 	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
+	number = strings.TrimLeft(number, "0")
 
 	if edition != "Unfinity" && strings.Contains(cardName, "{") && strings.Contains(cardName, "}") {
 		return nil, errors.New("non-single")
@@ -82,6 +84,19 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 		case "4th Edition - Black Border":
 			edition = "4BB"
 			variant = strings.TrimSuffix(variant, " BB")
+		case "Strixhaven Mystical Archive",
+			"Strixhaven Mystical Archive - Foil Etched":
+			num, err := strconv.Atoi(number)
+			if err != nil {
+				return nil, err
+			}
+			if num < 64 {
+				return nil, errors.New("non-english")
+			}
+		case "War of the Spark":
+			if !strings.Contains(variant, "Alternate Art") {
+				return nil, errors.New("non-english")
+			}
 		default:
 			if variant != "" {
 				variant += " "
