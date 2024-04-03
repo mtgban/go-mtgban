@@ -1012,14 +1012,13 @@ func adjustEdition(inCard *Card) {
 			edition = "ignored"
 		}
 
-	// Decouple P30A from P30H and its Japanese version
+	// Decouple P30A from P30H and P30T
 	case inCard.Contains("30th Anniversary") && !inCard.Contains("Edition") && !inCard.Contains("Tokyo") && !inCard.Contains("Misc") && len(MatchInSet(inCard.Name, "P30H")) > 0:
-		edition = backend.Sets["P30H"].Name
-		if inCard.Contains("Japanese") {
-			edition = backend.Sets["P30HJPN"].Name
-		} else if inCard.Name == "Serra Angel" && (!inCard.Contains("History") || ExtractYear(inCard.Variation) != "") {
-			edition = backend.Sets["P30A"].Name
+		maybeEdition := backend.Sets["P30H"].Name
+		if inCard.Name == "Serra Angel" && (!inCard.Contains("History") || ExtractYear(inCard.Variation) != "") {
+			maybeEdition = backend.Sets["P30A"].Name
 		}
+		edition = maybeEdition
 
 	// Oilslick lands may not have the bundle tag attached to them
 	case inCard.isBasicLand() && inCard.isOilSlick() && !inCard.isBundle():

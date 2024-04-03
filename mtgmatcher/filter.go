@@ -486,19 +486,11 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.Contains("30th"):
 			switch set.Code {
-			case "P30A", "P30H":
-				if inCard.isJPN() && inCard.Name != "Tarmogoyf" {
-					continue
-				}
-			case "P30HJPN":
-				if !inCard.isJPN() {
-					continue
-				}
+			case "P30A", "P30H", "P30M":
 			case "P30T":
-				if inCard.isRetro() {
+				if inCard.isRetro() || !inCard.isJPN() {
 					continue
 				}
-			case "P30M":
 			default:
 				continue
 			}

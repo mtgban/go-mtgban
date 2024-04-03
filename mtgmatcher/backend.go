@@ -664,7 +664,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicate(ap.Data, cards, uuids, "Legends Italian", "LEG", "ITA", "1995-09-01")
 	duplicate(ap.Data, cards, uuids, "The Dark Italian", "DRK", "ITA", "1995-08-01")
 	duplicate(ap.Data, cards, uuids, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
-	duplicate(ap.Data, cards, uuids, "30th Anniversary History Japanese Promos", "P30H", "JPN", "2022-09-09")
 
 	duplicateCards(ap.Data, cards, uuids, "SLD", "JPN", sldJPNLangDupes)
 	duplicateCards(ap.Data, cards, uuids, "PURL", "JPN", []string{"1"})

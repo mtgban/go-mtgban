@@ -190,13 +190,12 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"BOT": shatteredCheck,
 
-	"MAT":     retroCheck,
-	"MH2":     retroCheck,
-	"P30H":    retroCheck,
-	"P30HJPN": retroCheck,
-	"30A":     retroCheck,
-	"PW23":    retroCheck,
-	"RVR":     retroCheck,
+	"MAT":  retroCheck,
+	"MH2":  retroCheck,
+	"P30H": retroCheck,
+	"30A":  retroCheck,
+	"PW23": retroCheck,
+	"RVR":  retroCheck,
 
 	"BRO": babOrBuyaboxRetroCheck,
 
