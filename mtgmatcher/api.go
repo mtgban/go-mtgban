@@ -356,31 +356,68 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 			}
 		} else {
 			var duplicated map[string]bool
-			var balanced map[string]bool
-			var colorsPresent []string
+			var balancedSheets map[string][]weightedrand.Choice[string, int]
 
 			// Prepare maps to keep track of duplicates and balaced colors if necessary
 			if !sheet.AllowDuplicates {
 				duplicated = map[string]bool{}
 			}
-			if sheet.BalanceColors {
-				balanced = map[string]bool{}
 
-				// Count the number of colors actually present in the sheet
-				for cardId := range sheet.Cards {
+			// This is an approximation of the actual algorithm since we don't
+			// have precise print sheet information availabe.
+			// The first N cards (where N is the number of colors) get picked
+			// from these special sheets.
+			// See https://github.com/taw/magic-search-engine/blob/master/search-engine/lib/color_balanced_card_sheet.rb
+			if sheet.BalanceColors {
+				balancedSheets = map[string][]weightedrand.Choice[string, int]{}
+
+				// Rescale weights of the subsheets
+				mult := 1
+				for _, weight := range sheet.Cards {
+					mult = LCM(mult, weight)
+				}
+
+				// Create subsheets for each color (multi color gets included
+				// multiple times)
+				for cardId, weight := range sheet.Cards {
 					co, found := backend.UUIDs[cardId]
 					if !found {
 						return nil, errors.New("sheet contains an unknown id")
 					}
-					for _, color := range co.Colors {
-						if !slices.Contains(colorsPresent, color) {
-							colorsPresent = append(colorsPresent, color)
-						}
+
+					choice := weightedrand.NewChoice(cardId, weight*mult)
+					for _, color := range co.ColorIdentity {
+						balancedSheets[color] = append(balancedSheets[color], choice)
+					}
+					if len(co.ColorIdentity) < 1 && !slices.Contains(co.Types, "Land") {
+						balancedSheets["C"] = append(balancedSheets["C"], choice)
 					}
 				}
+
 				// Sanity check
-				if count < len(colorsPresent) {
+				if count < len(balancedSheets) {
 					return nil, errors.New("fewer slots than colors")
+				}
+
+				// Prefill the balanced slots
+				for _, cardChoices := range balancedSheets {
+					cardChooser, err := weightedrand.NewChooser(cardChoices...)
+					if err != nil {
+						return nil, err
+					}
+					item := cardChooser.Pick()
+
+					// Convert to custom IDs
+					uuid, err := MatchId(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
+					if err != nil {
+						return nil, err
+					}
+
+					// Add to what's found
+					picks = append(picks, uuid)
+
+					// One slot was filled, reduce the number of remaining ones
+					count--
 				}
 			}
 
@@ -396,6 +433,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 			}
 
 			// Pick a card uuid as many times as defined by its count
+			// (count may have been adjusted due to balanceColors)
 			for j := 0; j < count; j++ {
 				var uuid string
 				var e int
@@ -405,22 +443,9 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 					item := cardChooser.Pick()
 
 					// Validate card exists (ie in case of online-only printing)
-					co, found := backend.UUIDs[item]
+					_, found := backend.UUIDs[item]
 					if !found {
 						return nil, errors.New("picked id does not exists")
-					}
-
-					// Check if we need to reroll due to BalanceColors
-					// for the first N cards, where N is the number of
-					// colors found in the sheet
-					if sheet.BalanceColors && j < len(colorsPresent) {
-						// The first N cards cannot be multicolor or colorless
-						// Reroll if one of the single colors was already found
-						if len(co.Colors) != 1 || balanced[co.Colors[0]] {
-							continue
-						}
-						// Found!
-						balanced[co.Colors[0]] = true
 					}
 
 					// Check if the sheet allows duplicates, and, if not, pick again
