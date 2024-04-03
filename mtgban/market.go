@@ -2,6 +2,8 @@ package mtgban
 
 import (
 	"sort"
+
+	"golang.org/x/exp/maps"
 )
 
 // Separate a Market into multiple Seller objects
@@ -25,6 +27,7 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 		seller.info = market.Info()
 		seller.info.Name = sellerName
 		seller.info.Shorthand = sellerName
+		seller.info.CustomFields = maps.Clone(market.Info().CustomFields)
 		sellers = append(sellers, seller)
 	}
 	return sellers, nil
