@@ -338,19 +338,19 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 
 	var picks []string
 	// For each sheet, pick a card at random using the weight
-	for sheetName, frequency := range contents {
+	for sheetName, count := range contents {
 		// Grab the sheet
 		sheet := set.Booster[boosterType].Sheets[sheetName]
 
 		if sheet.Fixed {
 			// Fixed means there is no randomness, just pick the cards as listed
-			for cardId, frequency := range sheet.Cards {
+			for cardId, subcount := range sheet.Cards {
 				// Convert to custom IDs
 				uuid, err := MatchId(cardId, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 				if err != nil {
 					return nil, err
 				}
-				for j := 0; j < frequency; j++ {
+				for j := 0; j < subcount; j++ {
 					picks = append(picks, uuid)
 				}
 			}
@@ -379,7 +379,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 					}
 				}
 				// Sanity check
-				if frequency < len(colorsPresent) {
+				if count < len(colorsPresent) {
 					return nil, errors.New("fewer slots than colors")
 				}
 			}
@@ -395,8 +395,8 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				return nil, err
 			}
 
-			// Pick a card uuid as many times as defined by its frequency
-			for j := 0; j < frequency; j++ {
+			// Pick a card uuid as many times as defined by its count
+			for j := 0; j < count; j++ {
 				var uuid string
 				var e int
 
@@ -779,12 +779,12 @@ func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]Product
 	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 	var probs []ProductProbabilities
 
-	for cardId, frequency := range sheet.Cards {
+	for cardId, count := range sheet.Cards {
 		uuid, err := MatchId(cardId, sheet.Foil, isEtched)
 		if err != nil {
 			return nil, err
 		}
-		probability := float64(frequency) / float64(sheet.TotalWeight)
+		probability := float64(count) / float64(sheet.TotalWeight)
 		probs = append(probs, ProductProbabilities{
 			UUID:        uuid,
 			Probability: probability,
