@@ -445,7 +445,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 					// Validate card exists (ie in case of online-only printing)
 					_, found := backend.UUIDs[item]
 					if !found {
-						return nil, errors.New("picked id does not exists")
+						return nil, errors.New("picked id does not exist")
 					}
 
 					// Check if the sheet allows duplicates, and, if not, pick again
