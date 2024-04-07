@@ -90,6 +90,11 @@ var skuFixupTable = map[string]string{
 	"PM11-104": "PDCI-52",
 	// Mitotic Slime
 	"PM11-185": "PDCI-53",
+
+	// Duel Decks Beast Token
+	"TDDD-001": "TDDD-T1",
+	"TDDD-002": "TDDD-T2",
+	"TDDD-003": "TDDD-T3",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
@@ -280,10 +285,6 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	// Use number for tokens
 	if strings.Contains(card.Name, "Token") {
 		variation = number
-
-		if edition == "Duel Decks: Garruk Vs. Liliana" && card.Name == "Beast Token" {
-			variation = "T" + number
-		}
 
 		// Quiet exit for duplicated tokens from this set
 		if setCode == "TC16" && (strings.HasSuffix(number, "a") || strings.HasSuffix(number, "b")) {
