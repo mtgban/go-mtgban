@@ -92,7 +92,7 @@ func (ck *CardkingdomHotBuylist) processPage(channel chan<- respChan) error {
 			ck.printf("%v %v", err, card)
 		}
 
-		gradeMap := grading(cardId, price)
+		gradeMap := grading(cardId, price, card.Edition == "Promotional")
 		for _, grade := range mtgban.DefaultGradeTags {
 			factor := gradeMap[grade]
 			var priceRatio float64
