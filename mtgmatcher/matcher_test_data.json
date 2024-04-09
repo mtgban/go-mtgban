@@ -3378,6 +3378,15 @@
         }
     },
     {
+        "uuid": "960ab9ae-076b-5130-971f-373682a8f470",
+        "description": "secret_lair_normal_step_number",
+        "input": {
+            "name": "Phyrexian Crusader",
+            "variant": "1214 - Step-and-Compleat Foil",
+            "edition": "Secret Lair"
+        }
+    },
+    {
         "uuid": "fc2aa84c-af96-5469-ae8d-2d1fd5d220fb_f",
         "description": "secret_lair_wrong_set_right_number",
         "input": {

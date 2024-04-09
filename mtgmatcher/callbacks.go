@@ -987,7 +987,7 @@ func duplicateJPNPlaneswalkers(inCard *Card) []string {
 
 func duplicateSLD(inCard *Card) []string {
 	if inCard.isStepAndCompleat() {
-		return []string{mtgjson.SuffixPhiLow}
+		return []string{mtgjson.SuffixPhiLow, ""}
 	}
 	if inCard.Foil || inCard.isEtched() {
 		return []string{mtgjson.SuffixSpecial, ""}
