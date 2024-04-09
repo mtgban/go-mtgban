@@ -806,12 +806,11 @@ func ParseCommanderEdition(edition, variant string) string {
 
 	// Well-known extra tags
 	perSetCommander := map[string]string{
-		"Launch":      "Commander 2011 Launch Party",
-		"Arsenal":     "Commander's Arsenal",
-		"Ikoria":      "Commander 2020",
-		"Strixhaven":  "Commander 2021",
-		"Heads I Win": "Heads I Win, Tails You Lose",
-		"Starter":     "Starter Commander Decks",
+		"Launch":     "Commander 2011 Launch Party",
+		"Arsenal":    "Commander's Arsenal",
+		"Ikoria":     "Commander 2020",
+		"Strixhaven": "Commander 2021",
+		"Starter":    "Starter Commander Decks",
 	}
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {
