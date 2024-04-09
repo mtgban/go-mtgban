@@ -3378,6 +3378,15 @@
         }
     },
     {
+        "uuid": "8f29700d-0193-53c9-b26d-2345fa446a40",
+        "description": "mb1plist_with_timeshift_keyword",
+        "input": {
+            "name": "Silence",
+            "variant": "Timeshifted (Old Border)",
+            "edition": "Mystery Booster - The List"
+        }
+    },
+    {
         "uuid": "960ab9ae-076b-5130-971f-373682a8f470",
         "description": "secret_lair_normal_step_number",
         "input": {
