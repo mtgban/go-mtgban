@@ -3030,6 +3030,15 @@
         }
     },
     {
+        "uuid": "c91ecb8e-c3ea-528e-b770-8ac4c33dda02",
+        "description": "mb1list_could_alias_with_170",
+        "input": {
+            "name": "Nature's Lore",
+            "variant": "MDDD-017",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
         "uuid": "e1553981-a57c-5654-a78e-4390b312010b",
         "description": "mb1list_reprints_in_slu",
         "input": {

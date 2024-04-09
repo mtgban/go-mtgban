@@ -252,13 +252,16 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 }
 
 func listNumberCompare(inCard *Card, card *mtgjson.Card) bool {
-	listNum := ExtractNumber(inCard.Variation)
+	number := ExtractNumber(inCard.Variation)
 
-	// If a listNum is found, check that it's matching the card number
-	if listNum != "" {
-		if strings.Contains(listNum, "-") && listNum == card.Number {
-			return false
-		} else if strings.HasSuffix(card.Number, "-"+listNum) {
+	// If a number is found, check that it's matching the card number
+	if number != "" {
+		// Compare the number portion of the field only
+		cardNumbers := strings.Split(card.Number, "-")
+		listNumbers := strings.Split(number, "-")
+		cardNumber := cardNumbers[len(cardNumbers)-1]
+		listNumber := listNumbers[len(listNumbers)-1]
+		if cardNumber == listNumber {
 			return false
 		}
 
@@ -305,10 +308,13 @@ func listEditionCheck(inCard *Card, card *mtgjson.Card) bool {
 		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step
-			listNum := ExtractNumber(inCard.Variation)
-			if strings.Contains(listNum, "-") && listNum == card.Number {
-				return false
-			} else if strings.HasSuffix(card.Number, "-"+listNum) {
+			number := ExtractNumber(inCard.Variation)
+
+			cardNumbers := strings.Split(card.Number, "-")
+			listNumbers := strings.Split(number, "-")
+			cardNumber := cardNumbers[len(cardNumbers)-1]
+			listNumber := listNumbers[len(listNumbers)-1]
+			if cardNumber == listNumber {
 				return false
 			}
 
