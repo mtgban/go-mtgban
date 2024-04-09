@@ -387,6 +387,7 @@ var EditionTable = map[string]string{
 	"Tarkir Dragonfury":                       "Tarkir Dragonfury",
 	"Tarkir Dragonfury Promo":                 "Tarkir Dragonfury",
 	"Tarkir Dragonfury Promos":                "Tarkir Dragonfury",
+	"Tarkir Dragonfury Prerelease Promo":      "Tarkir Dragonfury",
 	"Ugin's Fate Promo":                       "Ugin's Fate",
 	"Ugin's Fate":                             "Ugin's Fate",
 	"Ugins Fate":                              "Ugin's Fate",
