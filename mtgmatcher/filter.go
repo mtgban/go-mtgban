@@ -183,6 +183,11 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					continue
 				}
 			case "PLST":
+				// We can't check for tags here because PLST could be mixed in with SLD
+				// due to the various commander decks
+				if len(MatchInSetNumber(inCard.Name, "SLD", ExtractNumber(inCard.Variation))) != 0 {
+					continue
+				}
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
 				// If these have no strict matches AND are not properly tagged, skip them

@@ -3442,6 +3442,15 @@
         }
     },
     {
+        "uuid": "e3343aa0-6cb4-504f-9ba1-010a00655335",
+        "description": "secret_lair_could_mix_with_plst",
+        "input": {
+            "name": "Contagion Engine",
+            "variant": "Secret Lair 1095",
+            "edition": "Promo"
+        }
+    },
+    {
         "uuid": "0f9ce191-2205-551b-8ce5-0cc9916853f3",
         "description": "secret_lair_slu_wrong_edition_strict",
         "input": {
