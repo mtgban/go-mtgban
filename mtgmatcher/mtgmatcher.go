@@ -814,8 +814,10 @@ func adjustEdition(inCard *Card) {
 		edition = "Junior Series Europe"
 	case Contains(variation, "Boosterfun"):
 		inCard.beyondBaseSet = true
-	case strings.HasPrefix(edition, "Universes Beyond"):
+	case strings.HasPrefix(edition, "Universes Beyond"),
+		strings.HasPrefix(edition, "UB:"):
 		edition = strings.TrimPrefix(edition, "Universes Beyond")
+		edition = strings.TrimPrefix(edition, "UB")
 		edition = strings.TrimLeft(edition, ":- ")
 	}
 	inCard.Edition = edition
