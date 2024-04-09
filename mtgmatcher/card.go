@@ -679,10 +679,34 @@ func (c *Card) duelDecksVariant() string {
 
 func (c *Card) isMysteryList() bool {
 	return c.Contains("Mystery") || c.Contains("The List") ||
-		c.Contains("Planeswalker Symbol Reprints") ||
-		c.Contains("Heads I Win, Tails You Lose") ||
-		c.Contains("From Cute to Brute") ||
-		c.Contains("They're Just Like Us")
+		c.Contains("Planeswalker Symbol Reprints")
+}
+
+func (c *Card) isSecretLair() bool {
+	return c.Contains("Secret Lair")
+}
+
+func (c *Card) hasSecretLairTag(code string) bool {
+	var tag bool
+	switch code {
+	case "SLU":
+		// SLU is mostly static and cards are unlikely to reappear elsewhere
+		tag = c.Contains("Ultimate") || len(MatchInSet(c.Name, "SLU")) == 1
+	case "SLX":
+		// SLX only has plain cards, if they are reskinned, they are from SLD
+		tag = !c.isReskin() || c.Contains("Within")
+	case "SLC":
+		// These cards are numbered after the year they represent
+		tag = c.Contains("30th") || c.Contains("Countdown") || ExtractYear(c.Variation) != ""
+	case "SLP":
+		// Simple check the variations
+		tag = c.Contains("Showdown") || c.Contains("Prize") || c.Contains("Finish") || c.Contains("Play")
+	case "PLST":
+		// Trick to make sure PLST is not tagged with Secret Lair
+		return !c.isSecretLair()
+	}
+
+	return c.isSecretLair() && tag
 }
 
 func (c *Card) isThickDisplay() bool {

@@ -298,7 +298,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
 		cardSet[printings[0]] = MatchInSet(inCard.Name, printings[0])
-	} else if !inCard.promoWildcard {
+	} else if !inCard.promoWildcard && !inCard.isSecretLair() {
 		// If multiple printing, try filtering to the closest name
 		// described by the inCard.Edition.
 		// This is skipped if we're in the wildcard Promo mode, as we
@@ -566,7 +566,7 @@ func adjustName(inCard *Card) {
 	}
 	// Rename reskinned dual faced cards, only keep one side and keep the
 	// flavor name, to make the following lookup in AlternateProps work
-	if strings.Contains(inCard.Edition, "Secret Lair") {
+	if inCard.isSecretLair() {
 		if strings.Contains(inCard.Name, "Hawkins National") {
 			inCard.Name = "Hawkins National Laboratory"
 		} else if strings.Contains(inCard.Name, "Plains") && strings.Contains(inCard.Name, "Battlefield Forge") {
@@ -850,7 +850,7 @@ func adjustEdition(inCard *Card) {
 		edition = backend.Sets["PCMP"].Name
 
 	// Secret Lair {Ultimate,Drop}
-	case inCard.Contains("Secret Lair"):
+	case inCard.isSecretLair():
 		// Check if there are also FlavorNames associated to this card
 		// It might happen that a non-FlavorName is requested, so check number too
 		altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
@@ -879,29 +879,6 @@ func adjustEdition(inCard *Card) {
 				inCard.Name = "Plains"
 				inCard.Variation = "670"
 			}
-		}
-
-		switch {
-		case len(MatchInSet(inCard.Name, "SLX")) != 0 &&
-			!inCard.isReskin():
-			edition = backend.Sets["SLX"].Name
-		case len(MatchInSet(inCard.Name, "SLC")) != 0 &&
-			(len(MatchInSet(inCard.Name, "SLD")) == 0 ||
-				inCard.Contains("30th") ||
-				inCard.Contains("Countdown") ||
-				ExtractYear(inCard.Variation) != ""):
-			edition = backend.Sets["SLC"].Name
-		case len(MatchInSet(inCard.Name, "SLP")) != 0 &&
-			(len(MatchInSet(inCard.Name, "SLD")) == 0 ||
-				inCard.Contains("Showdown") ||
-				inCard.Contains("Prize") ||
-				inCard.Contains("Finish") ||
-				inCard.Contains("Play")):
-			edition = backend.Sets["SLP"].Name
-		case len(MatchInSet(inCard.Name, "SLU")) != 0:
-			edition = backend.Sets["SLU"].Name
-		case len(MatchInSet(inCard.Name, "SLD")) != 0:
-			edition = backend.Sets["SLD"].Name
 		}
 
 	// Untagged Planeshift Alternate Art - these could be solved with the

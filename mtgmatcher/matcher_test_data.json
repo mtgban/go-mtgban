@@ -2944,6 +2944,14 @@
         }
     },
     {
+        "uuid": "d465de12-cc8b-58a8-aa5f-3b9d2b13adca",
+        "description": "mb1list_thelist_correcttag_not_slx",
+        "input": {
+            "name": "Mind Flayer, the Shadow",
+            "edition": "Secret Lair"
+        }
+    },
+    {
         "uuid": "61b8865c-4e98-53dd-a92f-c610aa3a25a2",
         "description": "mb1list_sld_edh",
         "input": {
@@ -3019,6 +3027,15 @@
             "name": "Harmonize",
             "variant": "P08-005",
             "edition": "Planeswalker Symbol Reprints"
+        }
+    },
+    {
+        "uuid": "e1553981-a57c-5654-a78e-4390b312010b",
+        "description": "mb1list_reprints_in_slu",
+        "input": {
+            "name": "Barkchannel Pathway // Tidechannel Pathway",
+            "variant": "KHM-251 Barkchannel Pathway",
+            "edition": "Mystery Booster / The List"
         }
     },
     {
@@ -3342,6 +3359,35 @@
         }
     },
     {
+        "uuid": "de38eca4-0829-5e71-b79a-14b64339f928",
+        "description": "secret_lair_number_side_of_sld_of_mb1list",
+        "input": {
+            "name": "Angel of the Ruins",
+            "variant": "1343 Secret Lair: Angels: They're Just Like Us but Cooler and with Wings",
+            "edition": "Secret Lair",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "fc2aa84c-af96-5469-ae8d-2d1fd5d220fb_f",
+        "description": "secret_lair_wrong_set_right_number",
+        "input": {
+            "name": "Relentless Rats",
+            "variant": "11 Secret Lair Promo",
+            "edition": "Secret Lair",
+            "foil": true
+        }
+    },
+    {
+        "uuid": "7e4ea12d-3f85-5256-bb56-bacde38c4ee4",
+        "description": "secret_lair_misleading_set_name_right_number",
+        "input": {
+            "name": "Death's Shadow",
+            "variant": "0008",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
         "uuid": "2204fa4d-32e6-50b0-9339-55f668732d6f",
         "description": "secret_lair_dfcsamename_renamed",
         "input": {
@@ -3357,6 +3403,32 @@
             "name": "Obeka, Brute Chronologist",
             "variant": "1579 Rainbow Foil",
             "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "f441e048-448a-516f-be06-bf0b14bf068f",
+        "description": "secret_lair_countdown_year",
+        "input": {
+            "name": "Ponder",
+            "variant": "2007",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "0f9ce191-2205-551b-8ce5-0cc9916853f3",
+        "description": "secret_lair_slu_wrong_edition_strict",
+        "input": {
+            "name": "Arid Mesa",
+            "variant": "4",
+            "edition": "Secret Lair"
+        }
+    },
+    {
+        "uuid": "0f9ce191-2205-551b-8ce5-0cc9916853f3",
+        "description": "secret_lair_slu_wrong_edition_relax",
+        "input": {
+            "name": "Arid Mesa",
+            "edition": "Secret Lair"
         }
     },
     {

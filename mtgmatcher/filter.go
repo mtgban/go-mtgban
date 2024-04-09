@@ -26,7 +26,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		switch {
 		// If the edition matches, use it as is
-		case Equals(inCard.Edition, set.Name) && !inCard.isMysteryList():
+		// except for two "catch all" sometimes overlapping sets
+		case Equals(inCard.Edition, set.Name) && !inCard.isMysteryList() && !inCard.isSecretLair():
 			// pass-through
 
 		case inCard.isPrerelease():
@@ -169,7 +170,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			}
 
 		// This needs to be above any possible printing type below
-		case inCard.isMysteryList():
+		// Both kinds need to be checked in the same place as there is
+		// a lot of overlap in the product and naming across stores
+		case inCard.isMysteryList() || inCard.isSecretLair():
 			switch set.Code {
 			case "CMB1":
 				if inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || strings.Contains(inCard.Variation, "V.2") {
@@ -181,8 +184,23 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			case "PLST":
 			case "ULST":
+			case "SLX", "SLU", "SLC", "SLP":
+				// If these have no strict matches AND are not properly tagged, skip them
+				if len(MatchInSetNumber(inCard.Name, set.Code, ExtractNumber(inCard.Variation))) == 0 && !inCard.hasSecretLairTag(set.Code) {
+					continue
+				}
 			case "SLD":
-				if len(MatchInSet(inCard.Name, "PLST")) != 0 {
+				skip := false
+
+				// Iterate on all possible combinations of tags, and skip if a
+				// condition is unmet
+				for _, code := range []string{"SLU", "SLX", "SLC", "SLP", "PLST"} {
+					if len(MatchInSet(inCard.Name, code)) > 0 && inCard.hasSecretLairTag(code) {
+						skip = true
+						break
+					}
+				}
+				if skip {
 					continue
 				}
 			default:
