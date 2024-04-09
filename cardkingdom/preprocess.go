@@ -158,6 +158,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		if len(setCode) > 3 && strings.HasPrefix(setCode, "P") && (mtgmatcher.Contains(card.Variation, "release") || mtgmatcher.Contains(card.Variation, "launch")) {
 			if len(mtgmatcher.MatchInSetNumber(card.Name, setCode[1:], number)) == 1 {
 				setCode = setCode[1:]
+				card.Variation = number
 			}
 		}
 
