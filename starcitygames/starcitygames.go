@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultConcurrency  = 4
+	defaultConcurrency  = 3
 	defaultRequestLimit = 200
 
 	buylistBookmark = "https://sellyourcards.starcitygames.com/mtg/bookmark/"
