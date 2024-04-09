@@ -38,6 +38,7 @@ var EditionTable = map[string]string{
 
 	"LOTR - Realms and Relic Box Topper": "Tales of Middle-earth Commander",
 	"Doctor Who Commander":               "Doctor Who",
+	"Fallout Commander":                  "Fallout",
 
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
 	"Outlaws of Thunder Junction The Big Score":  "The Big Score",
