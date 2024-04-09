@@ -636,6 +636,7 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 				(inCard.isMysteryList() && !inCard.Contains("Unfinity")) || // this is better handled in thelistCheck()
 				(card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-"))) {
 				checkNum = false
+				logger.Println("Skipping number check")
 			}
 			if checkNum {
 				// Lucky case, variation is just the collector number
