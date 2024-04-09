@@ -216,6 +216,10 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 		return
 	}
 
+	if !ss.FastMode {
+		ss.printf("Running sealed EV on [%s] %s", setCode, product.Name)
+	}
+
 	repeats := EVAverageRepetition
 	if ss.FastMode {
 		repeats = 10
@@ -416,10 +420,6 @@ func (ss *SealedEVScraper) scrape() error {
 
 			go func() {
 				for prod := range productChannel {
-					if !ss.FastMode {
-						ss.printf("Running sealed EV on %s", sets[prod.setCode].Name)
-					}
-
 					ss.runEV(prod, channelOut, prices)
 				}
 				wgOut.Done()
