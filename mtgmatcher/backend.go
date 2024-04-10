@@ -387,6 +387,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				card.Layout = "token"
 			}
 
+			// Make sure this property is correctly initialized
+			if strings.HasSuffix(card.Number, "p") && !slices.Contains(card.PromoTypes, mtgjson.PromoTypePromoPack) {
+				card.PromoTypes = append(card.PromoTypes, mtgjson.PromoTypePromoPack)
+			}
+
 			// Rename DFCs into a single name
 			dfcSameName := card.IsDFCSameName()
 			if dfcSameName {
