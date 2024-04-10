@@ -2381,6 +2381,15 @@
         }
     },
     {
+        "uuid": "8882a58b-a123-5c16-bd10-a86c6faf4155",
+        "description": "duel_decks_jpn_number",
+        "input": {
+            "name": "Jace Beleren",
+            "variant": "1 Japanese",
+            "edition": "DD2"
+        }
+    },
+    {
         "uuid": "796f148f-c47a-5cc3-86bf-46352a179d9b",
         "description": "duel_decks_variant_real_edition_in_variant",
         "input": {

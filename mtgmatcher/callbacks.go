@@ -960,6 +960,7 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 	// JPN planeswalkers
 	"WAR":  duplicateJPNPlaneswalkers,
 	"PWAR": duplicateJPNPlaneswalkers,
+	"DD2":  duplicateJPNPlaneswalkers,
 
 	// 40K could have numbers reported alongside the surge tag
 	"40K": duplicateSomeFoil,
