@@ -399,8 +399,8 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	}
 
 	// Serialized uses a different suffix than scryfall
-	if strings.Contains(bp.Version, "Serialized") && strings.HasSuffix(variant, "s") {
-		variant = strings.Replace(variant, "s", "z", 1)
+	if strings.Contains(bp.Version, "Serialized") {
+		variant = "Serialized"
 	}
 
 	// Make sure the token tag is always present
