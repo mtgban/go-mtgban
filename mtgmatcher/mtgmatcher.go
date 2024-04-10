@@ -64,7 +64,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 
 				// Make sure we're dealing with the same card
 				// (this helps with promos that have similar numbers)
-				sameCardProps := slices.Equal(co.PromoTypes, altCo.PromoTypes) &&
+				sameCardProps := len(co.Finishes) == len(altCo.Finishes) &&
 					slices.Equal(co.FrameEffects, altCo.FrameEffects) &&
 					co.Language == altCo.Language
 				if !sameCardProps {
