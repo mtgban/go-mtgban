@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -41,6 +42,7 @@ type SealedEVScraper struct {
 	buylist     mtgban.BuylistRecord
 
 	banpriceKey string
+	prices      *BANPriceResponse
 }
 
 type evConfig struct {
@@ -157,16 +159,11 @@ type resultChan struct {
 	err error
 }
 
-type respChan struct {
+type result struct {
 	productId string
 	invEntry  *mtgban.InventoryEntry
 	buyEntry  *mtgban.BuylistEntry
 	err       error
-}
-
-type productChan struct {
-	setCode string
-	index   int
 }
 
 func (ss *SealedEVScraper) repeatedPicks(setCode, productUUID string) ([]string, error) {
@@ -204,27 +201,20 @@ func (ss *SealedEVScraper) repeatedPicks(setCode, productUUID string) ([]string,
 	}
 }
 
-func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, prices *BANPriceResponse) {
-	sets := mtgmatcher.GetSets()
-
-	setCode := prod.setCode
-	i := prod.index
-	product := sets[setCode].SealedProduct[i]
-
-	// Skip unsupported types
-	if product.Category == "land_station" {
-		return
+func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil {
+		return nil, []string{err.Error()}
 	}
 
-	if !ss.FastMode {
-		ss.printf("Running sealed EV on [%s] %s", setCode, product.Name)
-	}
+	productUUID := co.UUID
+	setCode := co.SetCode
 
 	repeats := EVAverageRepetition
 	if ss.FastMode {
 		repeats = 10
 	}
-	if !mtgmatcher.SealedIsRandom(setCode, product.UUID) {
+	if !mtgmatcher.SealedIsRandom(setCode, productUUID) {
 		repeats = 1
 	}
 
@@ -240,10 +230,10 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 		// Simulations
 		go func() {
 			for _ = range repeatsChannel {
-				picks, err := ss.repeatedPicks(setCode, product.UUID)
+				picks, err := ss.repeatedPicks(setCode, productUUID)
 				if err != nil {
 					channel <- resultChan{
-						err: fmt.Errorf("[%s] '%s' picks error: %s", setCode, product.Name, err.Error()),
+						err: err,
 					}
 					continue
 				}
@@ -253,9 +243,9 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 						continue
 					}
 
-					priceSource := prices.Retail
+					priceSource := ss.prices.Retail
 					if evParameters[i].FoundInBuylist {
-						priceSource = prices.Buylist
+						priceSource = ss.prices.Buylist
 					}
 
 					ev := valueInBooster(picks, priceSource, evParameters[i].SourceName, nil)
@@ -271,10 +261,10 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 
 		// Probability EV
 		go func() {
-			probabilities, err := mtgmatcher.GetProbabilitiesForSealed(setCode, product.UUID)
+			probabilities, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
 			if err != nil {
 				channel <- resultChan{
-					err: fmt.Errorf("[%s] '%s' probabilities error: %s", setCode, product.Name, err.Error()),
+					err: err,
 				}
 				wg.Done()
 				return
@@ -303,9 +293,9 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 					continue
 				}
 
-				priceSource := prices.Retail
+				priceSource := ss.prices.Retail
 				if evParameters[i].FoundInBuylist {
-					priceSource = prices.Buylist
+					priceSource = ss.prices.Buylist
 				}
 
 				ev := valueInBooster(probPicks, priceSource, evParameters[i].SourceName, probProbs)
@@ -329,17 +319,18 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 		close(channel)
 	}(repeatsChannel, channel)
 
+	var allTheErrors []string
 	for resp := range channel {
-		if resp.err != nil {
-			channelOut <- respChan{
-				err: resp.err,
-			}
+		// Collect all the errors from this product
+		if resp.err != nil && !slices.Contains(allTheErrors, resp.err.Error()) {
+			allTheErrors = append(allTheErrors, resp.err.Error())
 			continue
 		}
 
 		datasets[resp.i] = append(datasets[resp.i], resp.ev)
 	}
 
+	var out []result
 	for i, dataset := range datasets {
 		var price float64
 		if evParameters[i].Simulation {
@@ -356,38 +347,41 @@ func (ss *SealedEVScraper) runEV(prod productChan, channelOut chan respChan, pri
 			continue
 		}
 
+		res := result{
+			productId: productUUID,
+		}
+
 		if evParameters[i].TargetsBuylist {
 			link := ckBuylistLink
 			if ss.BuylistAffiliate != "" {
 				link += fmt.Sprintf("?partner=%s&utm_campaign=%s&utm_medium=affiliate&utm_source=%s", ss.BuylistAffiliate, ss.BuylistAffiliate, ss.BuylistAffiliate)
 			}
-			channelOut <- respChan{
-				productId: product.UUID,
-				buyEntry: &mtgban.BuylistEntry{
-					Conditions: "INDEX",
-					BuyPrice:   price,
-					TradePrice: price * 1.3,
-					URL:        link,
-				},
+
+			res.buyEntry = &mtgban.BuylistEntry{
+				Conditions: "INDEX",
+				BuyPrice:   price,
+				TradePrice: price * 1.3,
+				URL:        link,
 			}
 		} else {
 			var link string
-			tcgID, _ := strconv.Atoi(product.Identifiers["tcgplayerProductId"])
+			tcgID, _ := strconv.Atoi(co.Identifiers["tcgplayerProductId"])
 			if tcgID != 0 {
 				link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "", "")
 			}
 
-			channelOut <- respChan{
-				productId: product.UUID,
-				invEntry: &mtgban.InventoryEntry{
-					Conditions: "INDEX",
-					Price:      price,
-					SellerName: evParameters[i].Name,
-					URL:        link,
-				},
+			res.invEntry = &mtgban.InventoryEntry{
+				Conditions: "INDEX",
+				Price:      price,
+				SellerName: evParameters[i].Name,
+				URL:        link,
 			}
 		}
+
+		out = append(out, res)
 	}
+
+	return out, allTheErrors
 }
 
 func (ss *SealedEVScraper) scrape() error {
@@ -397,58 +391,47 @@ func (ss *SealedEVScraper) scrape() error {
 		return err
 	}
 	ss.printf("Retrieved %d+%d prices", len(prices.Retail), len(prices.Buylist))
-
-	start := time.Now()
+	ss.prices = prices
 
 	sets := mtgmatcher.GetSets()
+	var uuids []string
 	for _, set := range sets {
 		// Skip products without Sealed or Booster information
 		switch set.Code {
 		case "FBB", "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":
 			continue
 		}
-		if set.SealedProduct == nil {
+
+		for _, product := range set.SealedProduct {
+			// Skip unsupported types
+			if product.Category == "land_station" {
+				continue
+			}
+			uuids = append(uuids, product.UUID)
+		}
+	}
+	ss.printf("Found %d products over %d sets", len(uuids), len(sets))
+
+	start := time.Now()
+
+	for i, uuid := range uuids {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
 			continue
 		}
 
-		var wgOut sync.WaitGroup
-		channelOut := make(chan respChan)
-		productChannel := make(chan productChan)
-
-		for e := 0; e < DefaultSetConcurrency; e++ {
-			wgOut.Add(1)
-
-			go func() {
-				for prod := range productChannel {
-					ss.runEV(prod, channelOut, prices)
-				}
-				wgOut.Done()
-			}()
+		if !ss.FastMode {
+			ss.printf("Running EV on [%s] %s (%d/%d)", co.SetCode, co.Name, i+1, len(uuids))
 		}
 
-		go func(setCode string, productChannel chan productChan, channelOut chan respChan) {
-			set := sets[setCode]
+		results, messages := ss.runEV(uuid)
 
-			for i := range set.SealedProduct {
-				productChannel <- productChan{
-					setCode: setCode,
-					index:   i,
-				}
-			}
-			close(productChannel)
+		// Print errors if necessary
+		if len(messages) > 0 {
+			ss.printf("runEV error: %s", strings.Join(messages, " | "))
+		}
 
-			wgOut.Wait()
-			close(channelOut)
-		}(set.Code, productChannel, channelOut)
-
-		var printedErrors []string
-		for result := range channelOut {
-			if result.err != nil && !slices.Contains(printedErrors, result.err.Error()) {
-				ss.printf("%s", result.err.Error())
-				printedErrors = append(printedErrors, result.err.Error())
-				continue
-			}
-
+		for _, result := range results {
 			if result.invEntry != nil {
 				ss.inventory.Add(result.productId, result.invEntry)
 			}
@@ -456,7 +439,6 @@ func (ss *SealedEVScraper) scrape() error {
 				ss.buylist.Add(result.productId, result.buyEntry)
 			}
 		}
-
 	}
 
 	ss.printf("Took %v", time.Since(start))
