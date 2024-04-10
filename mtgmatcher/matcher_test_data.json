@@ -3349,6 +3349,16 @@
         }
     },
     {
+        "uuid": "11a30ea2-b647-5636-8185-e5564e0b2b8e",
+        "description": "secret_lair_finish_upgrade",
+        "input": {
+            "name": "Lightning Greaves",
+            "variant": "1493 - Foil",
+            "edition": "Secret Lair",
+            "foil": true
+        }
+    },
+    {
         "uuid": "21a3ecdb-e282-5f28-a464-3cf7bb5e900d",
         "description": "secret_lair_numbered_sticker",
         "input": {

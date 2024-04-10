@@ -74,7 +74,16 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: mtgjson.PromoTypeGalaxyFoil,
-		Tags:      []string{"Galaxy"},
+		TagFunc: func(inCard *Card) bool {
+			// A lot of providers don't tag SLD cards as Galaxy, but just foil
+			// (same for RainbowFoil), so this check essentially makes the test
+			// pass, and let filtering continue elsewhere
+			if inCard.isSecretLair() &&
+				hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD") {
+				return inCard.Foil || inCard.Contains("Glaxy")
+			}
+			return inCard.Contains("Galaxy")
+		},
 	},
 	{
 		PromoType: mtgjson.PromoTypeSurgeFoil,
