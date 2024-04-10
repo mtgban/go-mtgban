@@ -50,9 +50,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 
 	// If the input card was requested as foil, we should double check
 	// if the original card has a foil under a separate id
-	// Skip this for SLD because not really needed and the amount of numbers
-	// favors clashes (ie Swamp 486 and 48)
-	if co.Foil != isFoil && co.SetCode != "SLD" {
+	if co.Foil != isFoil {
 		// So we iterate over the Variations array and try outputing ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
@@ -67,7 +65,8 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 				// Make sure we're dealing with the same card
 				// (this helps with promos that have similar numbers)
 				sameCardProps := slices.Equal(co.PromoTypes, altCo.PromoTypes) &&
-					slices.Equal(co.FrameEffects, altCo.FrameEffects)
+					slices.Equal(co.FrameEffects, altCo.FrameEffects) &&
+					co.Language == altCo.Language
 				if !sameCardProps {
 					continue
 				}
