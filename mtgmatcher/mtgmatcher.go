@@ -598,10 +598,10 @@ func adjustName(inCard *Card) {
 
 	// Special case for Un-sets that sometimes drop the parenthesis
 	if strings.Contains(inCard.Edition, "The List") ||
-		strings.Contains(inCard.Edition, "Unglued") ||
-		strings.Contains(inCard.Edition, "Unhinged") ||
-		strings.Contains(inCard.Edition, "Unstable") ||
-		strings.Contains(inCard.Edition, "Unsanctioned") {
+		strings.Contains(inCard.Edition, "Unglued") || inCard.Edition == "UGL" ||
+		strings.Contains(inCard.Edition, "Unhinged") || inCard.Edition == "UNH" ||
+		strings.Contains(inCard.Edition, "Unstable") || inCard.Edition == "UST" ||
+		strings.Contains(inCard.Edition, "Unsanctioned") || inCard.Edition == "UND" {
 		if HasPrefix(inCard.Name, "B.F.M.") {
 			cardName := inCard.Name
 			inCard.Name = "B.F.M. (Big Furry Monster)"
