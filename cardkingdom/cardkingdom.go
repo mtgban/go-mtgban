@@ -147,7 +147,7 @@ func (ck *Cardkingdom) scrape() error {
 					Quantity:   detail.quantity,
 					URL:        u.String(),
 				}
-				err = ck.inventory.Add(cardId, out)
+				err = ck.inventory.AddStrict(cardId, out)
 				if err != nil {
 					ck.printf("%v", err)
 				}

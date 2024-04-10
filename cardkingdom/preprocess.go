@@ -2,10 +2,8 @@ package cardkingdom
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -21,14 +19,10 @@ var skuFixupTable = map[string]string{
 	"ATQ-080D": "ATQ-080D",
 
 	// Extremely Slow Zombie
-	"UST-054C":  "UST-54A",
-	"UST-054A":  "UST-54B",
-	"UST-054D":  "UST-54C",
-	"UST-054B":  "UST-54D",
-	"FUST-054C": "UST-54A",
-	"FUST-054A": "UST-54B",
-	"FUST-054D": "UST-54C",
-	"FUST-054B": "UST-54D",
+	"UST-054C": "UST-54A",
+	"UST-054A": "UST-54B",
+	"UST-054D": "UST-54C",
+	"UST-054B": "UST-54D",
 
 	// Some of the lands from the first Arena set
 	"PAL96-001": "PARL-001",
@@ -38,17 +32,17 @@ var skuFixupTable = map[string]string{
 	// Jaya Ballard, Task Mage
 	"MPS-001A": "PRES-001A",
 
+	// Jace Beleren book promo
+	"PBOK-001": "PBOOK-001",
+
 	// Mind Stone
-	"FPLG21-001": "PW21-005",
+	"PLG21-001": "PW21-005",
 
 	// Path of Ancestry
-	"PF21-001":  "PLG21-C3",
-	"FPF21-001": "PLG21-C3",
+	"PF21-001": "PLG21-C3",
 
 	// Yellow Hidetsugu
 	"PNEO-432": "NEO-432",
-	// Goro Goro
-	"PNEO-145": "PMEI-059",
 
 	// Random WCD cards
 	"WC97-JS097":    "WC97-JS242",
@@ -95,191 +89,161 @@ var skuFixupTable = map[string]string{
 	"TDDD-001": "TDDD-T1",
 	"TDDD-002": "TDDD-T2",
 	"TDDD-003": "TDDD-T3",
+
+	// M20 Promo Pack lands
+	"PRM-001P": "PPP1-1",
+	"PRM-002P": "PPP1-2",
+	"PRM-003P": "PPP1-3",
+	"PRM-004P": "PPP1-4",
+	"PRM-005P": "PPP1-5",
+
+	// Crucible of Words promo
+	"PWOR19-001": "PWOR-2019",
+}
+
+// List of tags under Promotional that will reset the collector number
+// and use card.Variation instead for better matching
+var promoTags = []string{
+	"30th",
+	"Alternate Art",
+	"Arena",
+	"Bundle",
+	"Buy-a-Box",
+	"Commander Party",
+	"Commander Promo",
+	"Draft Weekend",
+	"Duels Promo",
+	"FNM",
+	"Game Day",
+	"Gameday",
+	"Gateway",
+	"Judge",
+	"Launch",
+	"Love Your LGS",
+	"MPS",
+	"MagicFest",
+	"Misprint",
+	"PWCQ",
+	"Play Promo",
+	"Premier Play",
+	"Prerelease",
+	"Promo Pack",
+	"Release",
+	"Resale",
+	"Store",
+	"Ugin's Fate",
+	"WMC",
+}
+
+// List of tags that need to be preserved in one way or another
+var preserveTags = []string{
+	"Etched",
+	"Japanese",
+	"JPN",
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
-	// Non-foil cards of this set do not exist
-	if card.Variation == "MagicFest Non-Foil - 2020" {
-		return nil, errors.New("doesn't exist")
+	isFoil, _ := strconv.ParseBool(card.IsFoil)
+	sets := mtgmatcher.GetSets()
+	sku := card.SKU
+	if sku == "" {
+		return nil, errors.New("unsupported SKU format")
 	}
 
-	setCode := ""
-	number := ""
-	isFoil, _ := strconv.ParseBool(card.IsFoil)
+	// Strip the initial F from set codes that do not exist
+	if isFoil && strings.HasPrefix(sku, "F") && sets[strings.Split(sku, "-")[0][1:]] != nil {
+		sku = sku[1:]
+	}
 
-	sku := card.SKU
+	// Custom replacements
 	fixup, found := skuFixupTable[sku]
 	if found {
 		sku = fixup
 	}
 
+	// Retrieve setCode and number
 	fields := strings.Split(sku, "-")
-	if len(fields) > 1 {
-		setCode = fields[0]
-		number = strings.Join(fields[1:], "")
-		number = strings.TrimLeft(number, "0")
-		number = strings.ToLower(number)
-		number = strings.TrimRight(number, "jp")
+	if len(fields) < 2 {
+		return nil, errors.New("unsupported SKU format")
+	}
+	setCode := fields[0]
+	number := strings.Join(fields[1:], "")
+	number = strings.TrimLeft(number, "0")
+	number = strings.ToLower(number)
+	number = strings.TrimRight(number, "jp")
 
-		if len(setCode) > 3 && strings.HasPrefix(setCode, "F") {
-			// Some Arena foil are using this custom code that confuses the matcher
-			// Just not set for them, and rely on the Variation field as is
-			if setCode != "FUSG" && setCode != "F6ED" {
-				setCode = setCode[1:]
-			}
+	edition := setCode
+	variation := number
 
-			// Foil-Etched sets
-			if len(setCode) > 3 && setCode[0] == 'E' {
-				setCode = setCode[1:]
-			}
-
-			// Prerelease cards in foreign language get mixed up in the normal set
-			if number == "666" {
-				setCode = "Prerelease"
-			}
-		}
-		if len(setCode) == 4 && (mtgmatcher.Contains(card.Variation, "buyabox") || mtgmatcher.Contains(card.Variation, "bundle")) {
-			set, err := mtgmatcher.GetSet(setCode[1:])
-			if err != nil {
-				return nil, fmt.Errorf("unknown edition code %s", setCode)
-			}
-			setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
-			if err != nil {
-				return nil, fmt.Errorf("unknown set date %s", err.Error())
-			}
-			if mtgmatcher.Contains(card.Variation, "buyabox") && setDate.After(mtgmatcher.BuyABoxNotUniqueDate) {
-				setCode = setCode[1:]
-			} else if mtgmatcher.Contains(card.Variation, "bundle") && setDate.After(mtgmatcher.BuyABoxInExpansionSetsDate) {
-				setCode = setCode[1:]
-			}
-		}
-
-		// Certain launch/release promos get promoted to Promos set despite belonging to the main set
-		isRelease := (mtgmatcher.Contains(card.Variation, "release") &&
-			!mtgmatcher.Contains(card.Variation, "prerelease")) ||
-			mtgmatcher.Contains(card.Variation, "launch")
-		if len(setCode) > 3 && strings.HasPrefix(setCode, "P") && isRelease {
-			if len(mtgmatcher.MatchInSetNumber(card.Name, setCode[1:], number)) == 1 {
-				setCode = setCode[1:]
-				card.Variation = number
-			}
-		}
-
-		if (card.Variation == "Game Day Extended Art" ||
-			card.Variation == "Game Day Extended" ||
-			card.Variation == "Gameday Extended Art" ||
-			card.Variation == "Game Day Promo") && strings.HasSuffix(number, "p") {
-			if len(setCode) == 3 {
-				setCode = "P" + setCode
-			}
-			number = number[:len(number)-1]
-		}
-
-		// Full rename due to differen set codes
-		if strings.HasPrefix(setCode, "PWP2") {
-			setCode = strings.Replace(setCode, "PWP2", "PW2", 1)
+	// Validate if setCode exists, if not preserve info from the card
+	if sets[setCode] == nil {
+		if (len(setCode) > 3 && sets[setCode[len(setCode)-3:]] != nil) ||
+			(len(setCode) > 4 && sets[setCode[len(setCode)-4:]] != nil) {
+			edition = card.Edition
+			variation += " " + card.Variation
 		}
 	}
 
-	variation := card.Variation
-	edition := card.Edition
-	switch edition {
-	case "Promotional":
-		edition = setCode
-		switch {
-		case strings.Contains(variation, "APAC"),
-			strings.Contains(variation, "Euro"),
-			strings.Contains(variation, "League"),
-			strings.Contains(variation, "Premier"),
-			strings.Contains(variation, "Commander Promo"),
-			strings.Contains(variation, "Festival"),
-			strings.Contains(variation, "MPS"):
-			variation = number
-		case edition == "PW22":
-			variation = ""
-		}
+	switch card.Edition {
 	case "World Championships":
-		edition = setCode
-		variation = number
-
-		// Duplicate sku
-		switch sku {
-		case "PTC-ET015SB":
-			if card.Name == "Circle of Protection: Red" {
-				variation = "et17sb"
-			}
-		case "PTC-MJ364":
-			if strings.Contains(card.Variation, "Michael Loconto") {
-				variation = "ml364"
-			}
-		case "PTC-MJ365":
-			if strings.Contains(card.Variation, "Michael Loconto") {
-				variation = "ml365"
-			}
-		case "PTC-MJ366":
-			if strings.Contains(card.Variation, "Michael Loconto") {
-				variation = "ml366"
-			}
-		case "WC99-ML347b":
-			if strings.Contains(card.Variation, "TMP - A") {
-				variation = "ml347a"
-			}
-		case "WC02-CR335":
-			if strings.Contains(card.Variation, "Sim Han How") {
-				variation = "shh335"
-			}
-		default:
-			if strings.HasPrefix(variation, "sr") {
-				variation = strings.Replace(variation, "sr", "shr", 1)
+		if strings.HasPrefix(number, "SR") {
+			variation = strings.Replace(number, "SR", "SHR", 1)
+		}
+	case "Deckmaster",
+		"Collectors Ed",
+		"Collectors Ed Intl":
+		variation = card.Variation
+	case "Promo Pack":
+		variation = card.Variation
+		edition = card.Edition
+	case "Promotional":
+		for _, tag := range promoTags {
+			if strings.Contains(card.Variation, tag) {
+				variation = card.Variation
+				break
 			}
 		}
-	case "Alpha", "Beta", "Unlimited", "3rd Edition", "4th Edition",
-		"Antiquities", "Fallen Empires", "Alliances", "Homelands",
-		"Zendikar", "Battle for Zendikar", "Oath of the Gatewatch",
-		"Unstable", "Unglued", "Unfinity", "Portal II",
-		"The Lord of the Rings: Tales of Middle-earth",
-		"The Lord of the Rings: Tales of Middle-earth Commander Decks Variants",
-		"The Lord of the Rings: Tales of Middle-earth Commander Decks",
-		"The Lord of the Rings: Tales of Middle-earth Variants",
-		"Ravnica Remastered", "Ravnica Remastered Variants",
-		"Murders at Karlov Manor", "Murders at Karlov Manor Variants":
-		variation = number
-
-	case "Secret Lair":
-		// The SLP cards need to be recognized differently
-		// So do the the Step-and-Compleat cards
-		if !strings.Contains(variation, "Prize") && !strings.HasPrefix(sku, "SAC") {
-			variation = number
-		}
-		// Override variation due to the SLD thick cards using the same non-thick number
-		if strings.Contains(card.Variation, "Display") {
-			variation = "Thick Display"
-		}
-	case "Innistrad: Midnight Hunt Variants", "Innistrad: Crimson Vow Variants":
-		if variation == "Eternal Night" {
-			variation = "Showcase"
+		switch {
+		case strings.Contains(card.Variation, "Gift Pack"):
+			edition = card.Variation
+		case strings.Contains(card.Variation, "Arena"),
+			strings.Contains(card.Variation, "Game Day"):
+			edition = card.Edition
+		case strings.Contains(card.Variation, "Resale"):
+			edition = "PRES"
+			if len(mtgmatcher.MatchInSet(card.Name, "PMEI")) > 0 {
+				edition = "PMEI"
+				variation = ""
+			}
 		}
 	case "Mystery Booster/The List":
+		edition = card.Edition
 		switch setCode {
+		case "CMB1":
+			variation = card.Variation
+		// Code modified from original SKU
 		case "ULST":
 			edition = setCode
 			variation = number
-		case "MCMB1", "CMB1":
 		default:
-			if variation != "" {
-				variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
-			}
+			variation = setCode[1:] + "-" + strings.TrimLeft(number, "0")
+		}
+	case "Streets of New Capenna Variants":
+		if card.Name == "Gala Greeters" {
+			variation = card.Variation
 		}
 	}
 
-	// Preserve Etched property in case variation became overwritten with the number
-	if strings.Contains(card.Variation, "Etched") && !strings.Contains(variation, "Etched") {
-		variation += " Etched"
+	// Preserve any remaining tag
+	for _, tag := range preserveTags {
+		if strings.Contains(card.Variation, tag) && !strings.Contains(variation, tag) {
+			variation += " " + tag
+		}
 	}
 
 	// Drop one side of dfc tokens
 	if (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
-		(strings.Contains(card.Name, "Token") || (len(setCode) > 3 && setCode[0] == 'T')) {
+		(strings.Contains(card.Name, "Token") || strings.HasPrefix(setCode, "T") || strings.HasPrefix(setCode, "FT")) {
 		if strings.Contains(card.Name, " // ") {
 			card.Name = strings.Split(card.Name, " // ")[0] + " Token"
 		} else {
@@ -287,11 +251,9 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		}
 	}
 	// Use number for tokens
-	if strings.Contains(card.Name, "Token") {
-		variation = number
-
+	if strings.Contains(card.Name, "Token") || strings.Contains(card.Name, "Bounty") {
 		// Quiet exit for duplicated tokens from this set
-		if setCode == "TC16" && (strings.HasSuffix(number, "a") || strings.HasSuffix(number, "b")) {
+		if len(mtgmatcher.MatchInSetNumber(card.Name, setCode, number)) == 0 {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 	}
