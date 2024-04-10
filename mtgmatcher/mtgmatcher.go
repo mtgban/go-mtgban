@@ -602,7 +602,7 @@ func adjustName(inCard *Card) {
 		strings.Contains(inCard.Edition, "Unhinged") || inCard.Edition == "UNH" ||
 		strings.Contains(inCard.Edition, "Unstable") || inCard.Edition == "UST" ||
 		strings.Contains(inCard.Edition, "Unsanctioned") || inCard.Edition == "UND" {
-		if HasPrefix(inCard.Name, "B.F.M.") {
+		if HasPrefix(inCard.Name, "B.F.M.") || HasPrefix(inCard.Name, "BFM") {
 			cardName := inCard.Name
 			inCard.Name = "B.F.M. (Big Furry Monster)"
 			if Contains(cardName, "Left") || Contains(inCard.Variation, "Left") {
