@@ -2092,6 +2092,16 @@
         }
     },
     {
+        "uuid": "624bd5c5-876e-5bf8-88a4-53e941287eef",
+        "description": "release_retro_not_set",
+        "input": {
+            "name": "Lavinia, Foil to Conspiracy",
+            "variant": "Launch Party Foil",
+            "edition": "Promotional",
+            "foil": true
+        }
+    },
+    {
         "uuid": "412013dc-8a6a-54f8-beb7-77b56baa5057",
         "description": "launch_in_the_set_itself",
         "input": {
