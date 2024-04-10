@@ -570,8 +570,13 @@ func adjustName(inCard *Card) {
 		if strings.Contains(inCard.Name, "Hawkins National") {
 			inCard.Name = "Hawkins National Laboratory"
 		} else if strings.Contains(inCard.Name, "Plains") && strings.Contains(inCard.Name, "Battlefield Forge") {
-			inCard.Name = "Plains"
-			inCard.Variation = "670"
+			if inCard.Contains("Unpeeled") || inCard.Contains("669") {
+				inCard.Name = "Battlefield Forge"
+				inCard.Variation = "669"
+			} else if inCard.Contains("Peeled") || inCard.Contains("670") {
+				inCard.Name = "Plains"
+				inCard.Variation = "670"
+			}
 		}
 	}
 	// Check if this card may be known as something else
@@ -870,12 +875,14 @@ func adjustEdition(inCard *Card) {
 			}
 		}
 
+		// This needs to be repeated because this could be skipped if the
+		// actual name is used instead
 		switch {
-		case inCard.Contains("Plains"), inCard.Contains("Battlefield Forge"):
-			if inCard.Contains("Unpeeled") {
+		case inCard.Contains("Plains") || inCard.Contains("Battlefield Forge"):
+			if inCard.Contains("Unpeeled") || inCard.Contains("669") {
 				inCard.Name = "Battlefield Forge"
 				inCard.Variation = "669"
-			} else if inCard.Contains("Peeled") {
+			} else if inCard.Contains("Peeled") || inCard.Contains("670") {
 				inCard.Name = "Plains"
 				inCard.Variation = "670"
 			}

@@ -683,7 +683,7 @@ func (c *Card) isMysteryList() bool {
 }
 
 func (c *Card) isSecretLair() bool {
-	return c.Contains("Secret Lair")
+	return c.Contains("Secret Lair") || strings.Contains(c.Edition, "SLD")
 }
 
 func (c *Card) hasSecretLairTag(code string) bool {

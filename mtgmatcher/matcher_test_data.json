@@ -3349,6 +3349,15 @@
         }
     },
     {
+        "uuid": "21a3ecdb-e282-5f28-a464-3cf7bb5e900d",
+        "description": "secret_lair_numbered_sticker",
+        "input": {
+            "name": "Plains // Battlefield Forge",
+            "variant": "670",
+            "edition": "SLD"
+        }
+    },
+    {
         "uuid": "c694a639-b62a-5ea2-8e2f-2cbb649b3fee",
         "description": "secret_lair_dedup_nonfoil",
         "input": {
