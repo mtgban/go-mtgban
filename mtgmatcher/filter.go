@@ -502,6 +502,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case set.Name == "Grand Prix Promos":
 				continue
 			default:
+				if strings.HasPrefix(set.Name, "30th Anniversary") {
+					continue
+				}
 				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
 				}
