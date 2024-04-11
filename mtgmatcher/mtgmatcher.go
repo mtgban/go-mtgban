@@ -213,6 +213,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		// Fixup up the name and try again
 		adjustName(inCard)
 		if ogName != inCard.Name {
+			inCard.originalName = ogName
 			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		}
 
@@ -581,9 +582,7 @@ func adjustName(inCard *Card) {
 	// Check if this card may be known as something else
 	altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
 	if found {
-		// Stash the current name for later decoupling if needed
-		inCard.addToVariant(inCard.Name)
-		// Same for number if available
+		// Stash the number for later decoupling if available
 		if altProps.OriginalNumber != "" {
 			inCard.addToVariant(altProps.OriginalNumber)
 		}

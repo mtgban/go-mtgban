@@ -675,6 +675,15 @@
         }
     },
     {
+        "uuid": "a45a4e2c-1437-51dd-837a-5e62520c3e2d_f",
+        "description": "names_renames_could_trip_etched_detection",
+        "input": {
+            "name": "Summoner's Rift",
+            "edition": "Secret Lair Series",
+            "foil": true
+        }
+    },
+    {
         "uuid": "e452b3bc-4618-538f-80a1-403b65eed48e",
         "description": "incorrect_edition_but_card_has_a_single_printing",
         "input": {

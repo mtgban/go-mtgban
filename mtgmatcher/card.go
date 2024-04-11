@@ -36,6 +36,10 @@ type Card struct {
 	// printings from the others
 	promoWildcard bool
 
+	// In case card got renamed in some way, this contains the original
+	// card name, instead of the sanitized version
+	originalName string
+
 	// The language as parsed
 	Language string `json:"language,omitempty"`
 }

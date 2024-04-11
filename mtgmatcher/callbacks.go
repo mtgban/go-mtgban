@@ -927,9 +927,9 @@ func reskinRenameCheck(inCard *Card, card *mtgjson.Card) bool {
 	if ExtractNumber(inCard.Variation) != "" || card.FlavorName == "" {
 		return false
 	}
-	if inCard.isReskin() && !inCard.Contains(card.FlavorName) {
+	if inCard.isReskin() && !Contains(inCard.originalName, card.FlavorName) {
 		return true
-	} else if !inCard.isReskin() && inCard.Contains(card.FlavorName) {
+	} else if !inCard.isReskin() && Contains(inCard.originalName, card.FlavorName) {
 		return true
 	}
 	return false
