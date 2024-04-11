@@ -1048,7 +1048,7 @@ func adjustEdition(inCard *Card) {
 				variation = "Prerelease"
 			}
 		case "Tamiyo's Journal":
-			if inCard.Variation == "" && inCard.Foil {
+			if (inCard.Variation == "" || ExtractNumber(inCard.Variation) == "265") && inCard.Foil {
 				variation = "Foil"
 			}
 		case "Underworld Dreams":
