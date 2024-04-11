@@ -953,9 +953,10 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 	"FRF": duplicateSomeFoil,
 	"ONS": duplicateSomeFoil,
 
-	// BFZ and ZEN intro lands non-fullart always have this
+	// Intro lands from these sets when non-fullart always have this
 	"ZEN": duplicateBasicLands,
 	"BFZ": duplicateBasicLands,
+	"OGW": duplicateBasicLands,
 
 	// JPN planeswalkers
 	"WAR":  duplicateJPNPlaneswalkers,
