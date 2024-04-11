@@ -59,6 +59,11 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 	entries, found := inv[cardId]
 	if found {
 		for i := range entries {
+			if strict > 2 && entry.Conditions == entries[i].Conditions {
+				card, _ := mtgmatcher.GetUUID(cardId)
+				return fmt.Errorf("duplicate inventory key, same conditions:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
+			}
+
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price && entry.SellerName == entries[i].SellerName {
 				if strict > 1 {
 					card, _ := mtgmatcher.GetUUID(cardId)
@@ -111,6 +116,11 @@ func (inv InventoryRecord) Add(cardId string, entry *InventoryEntry) error {
 // Add new record to the inventory, similar existing entries are not merged
 func (inv InventoryRecord) AddStrict(cardId string, entry *InventoryEntry) error {
 	return inv.add(cardId, entry, 2)
+}
+
+// Add new record to the inventory, if same card and condition exist, error out
+func (inv InventoryRecord) AddUnique(cardId string, entry *InventoryEntry) error {
+	return inv.add(cardId, entry, 3)
 }
 
 func (bl BuylistRecord) AddRelaxed(cardId string, entry *BuylistEntry) error {
