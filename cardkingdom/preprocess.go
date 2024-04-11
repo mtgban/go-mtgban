@@ -232,6 +232,8 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		if card.Name == "Gala Greeters" {
 			variation = card.Variation
 		}
+	case "Ultimate Box Topper":
+		edition = "PUMA"
 	}
 
 	// Preserve any remaining tag
