@@ -533,9 +533,12 @@ func portalDemoGame(inCard *Card, card *mtgjson.Card) bool {
 
 // Launch promos within the set itself
 func launchPromoInSet(inCard *Card, card *mtgjson.Card) bool {
-	if (inCard.isRelease() || inCard.isBaB()) && !card.IsAlternative {
+	anyAlternative := card.IsAlternative ||
+		card.BorderColor == mtgjson.BorderColorBorderless ||
+		card.HasFrameEffect(mtgjson.FrameEffectExtendedArt)
+	if (inCard.isRelease() || inCard.isBaB()) && !anyAlternative {
 		return true
-	} else if !(inCard.isRelease() || inCard.isBaB()) && card.IsAlternative && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+	} else if !(inCard.isRelease() || inCard.isBaB()) && anyAlternative && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
 		return true
 	}
 	return false

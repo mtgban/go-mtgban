@@ -2146,6 +2146,15 @@
         }
     },
     {
+        "uuid": "53a89e07-979b-5bb6-9a09-9b643b48ac2d",
+        "description": "launch_but_isAlternative_false",
+        "input": {
+            "name": "Kibo, Uktabi Prince",
+            "variant": "Release Foil",
+            "edition": "Promotional"
+        }
+    },
+    {
         "uuid": "ad5c0740-144d-58fd-8fde-e2f3aee52fc8",
         "description": "bab_marked_as_promo_but_it_is_really_in_the_set",
         "input": {
