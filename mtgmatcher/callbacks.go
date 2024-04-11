@@ -55,7 +55,7 @@ var promoTypeElements = []promoTypeElement{
 		// After ZNR buy-a-box is also present in main set
 		ValidDate: BuyABoxNotUniqueDate,
 		TagFunc: func(inCard *Card) bool {
-			return inCard.isBaB()
+			return inCard.isBaB() || inCard.isRelease()
 		},
 		CanBeWild: true,
 	},

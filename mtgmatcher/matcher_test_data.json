@@ -2137,6 +2137,15 @@
         }
     },
     {
+        "uuid": "9940c435-2bf3-50e8-9e9b-ce3651bfb6f6",
+        "description": "launch_but_also_has_bab_tag_attached",
+        "input": {
+            "name": "Lotus Bloom",
+            "variant": "Launch Foil",
+            "edition": "Promotional"
+        }
+    },
+    {
         "uuid": "ad5c0740-144d-58fd-8fde-e2f3aee52fc8",
         "description": "bab_marked_as_promo_but_it_is_really_in_the_set",
         "input": {
