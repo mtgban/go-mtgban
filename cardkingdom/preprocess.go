@@ -102,40 +102,6 @@ var skuFixupTable = map[string]string{
 	"PWOR19-001": "PWOR-2019",
 }
 
-// List of tags under Promotional that will reset the collector number
-// and use card.Variation instead for better matching
-var promoTags = []string{
-	"30th",
-	"Alternate Art",
-	"Arena",
-	"Bundle",
-	"Buy-a-Box",
-	"Commander Party",
-	"Commander Promo",
-	"Draft Weekend",
-	"Duels Promo",
-	"FNM",
-	"Game Day",
-	"Gameday",
-	"Gateway",
-	"Judge",
-	"Launch",
-	"Love Your LGS",
-	"MPS",
-	"MagicFest",
-	"Misprint",
-	"PWCQ",
-	"Play Promo",
-	"Premier Play",
-	"Prerelease",
-	"Promo Pack",
-	"Release",
-	"Resale",
-	"Store",
-	"Ugin's Fate",
-	"WMC",
-}
-
 // List of tags that need to be preserved in one way or another
 var preserveTags = []string{
 	"Etched",
@@ -198,19 +164,15 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		variation = card.Variation
 		edition = card.Edition
 	case "Promotional":
-		for _, tag := range promoTags {
-			if strings.Contains(card.Variation, tag) {
-				variation = card.Variation
-				break
-			}
-		}
+		variation = card.Variation
 		switch {
-		case strings.Contains(card.Variation, "Gift Pack"):
-			edition = card.Variation
-		case strings.Contains(card.Variation, "Arena"),
-			strings.Contains(card.Variation, "Game Day"):
+		case strings.Contains(variation, "APAC"),
+			strings.Contains(variation, "Euro"):
+			variation = number
+		case strings.Contains(variation, "Arena"),
+			strings.Contains(variation, "Game Day"):
 			edition = card.Edition
-		case strings.Contains(card.Variation, "Resale"):
+		case strings.Contains(variation, "Resale"):
 			edition = "PRES"
 			if len(mtgmatcher.MatchInSet(card.Name, "PMEI")) > 0 {
 				edition = "PMEI"
