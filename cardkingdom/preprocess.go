@@ -104,6 +104,7 @@ var skuFixupTable = map[string]string{
 
 // List of tags that need to be preserved in one way or another
 var preserveTags = []string{
+	"Display",
 	"Etched",
 	"Japanese",
 	"JPN",
