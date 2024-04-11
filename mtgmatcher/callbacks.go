@@ -180,7 +180,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"2XM": launchPromoInSet,
 	"2X2": launchPromoInSet,
-	"J22": animeCheck,
+	"CMM": launchPromoInSet,
 
 	"CLB": variantBeforePlainCard,
 
@@ -246,11 +246,13 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"DMU": phyrexianCheck,
 	"ONE": phyrexianCheck,
 
+	"TSR": releaseRetroCheck,
 	"CLU": releaseRetroCheck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"JMP": {launchPromoInSet, phyrexianCheck},
+	"J22": {launchPromoInSet, animeCheck},
 	"BRR": {schematicCheck},
 	"DMR": {launchPromoInSet, releaseRetroCheck},
 	"VOW": {wpnCheck, reskinDraculaCheck},
