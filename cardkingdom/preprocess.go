@@ -186,8 +186,8 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 
 	switch card.Edition {
 	case "World Championships":
-		if strings.HasPrefix(number, "SR") {
-			variation = strings.Replace(number, "SR", "SHR", 1)
+		if strings.HasPrefix(number, "sr") {
+			variation = strings.Replace(number, "sr", "shr", 1)
 		}
 	case "Deckmaster",
 		"Collectors Ed",
