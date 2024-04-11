@@ -128,30 +128,38 @@ func (ck *Cardkingdom) scrape() error {
 		if err != nil {
 			ck.printf("%v", err)
 		}
-		if card.SellQuantity > 0 && sellPrice > 0 {
-			u.Path = card.URL
-			if ck.Partner != "" {
-				q := u.Query()
-				q.Set("partner", ck.Partner)
-				q.Set("utm_source", ck.Partner)
-				q.Set("utm_medium", "affiliate")
-				q.Set("utm_campaign", ck.Partner)
-				u.RawQuery = q.Encode()
-			}
 
+		u.Path = card.URL
+		if ck.Partner != "" {
+			q := u.Query()
+			q.Set("partner", ck.Partner)
+			q.Set("utm_source", ck.Partner)
+			q.Set("utm_medium", "affiliate")
+			q.Set("utm_campaign", ck.Partner)
+			u.RawQuery = q.Encode()
+		}
+		link := u.String()
+
+		if card.SellQuantity > 0 && sellPrice > 0 {
 			details := parseConditions(card.ConditionValues, sellPrice)
 			for _, detail := range details {
 				out := &mtgban.InventoryEntry{
 					Conditions: detail.condition,
 					Price:      detail.price,
 					Quantity:   detail.quantity,
-					URL:        u.String(),
+					URL:        link,
 				}
-				err = ck.inventory.AddStrict(cardId, out)
-				if err != nil {
-					ck.printf("%v", err)
-				}
+				err = ck.inventory.AddUnique(cardId, out)
 			}
+		} else {
+			// Only save URL information
+			out := &mtgban.InventoryEntry{
+				URL: link,
+			}
+			err = ck.inventory.AddUnique(cardId, out)
+		}
+		if err != nil {
+			ck.printf("%v", err)
 		}
 
 		u, _ = url.Parse("https://www.cardkingdom.com/purchasing/mtg_singles")
