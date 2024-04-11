@@ -1014,7 +1014,7 @@ func duplicateSLD(inCard *Card) []string {
 	if inCard.isStepAndCompleat() {
 		return []string{mtgjson.SuffixPhiLow, ""}
 	}
-	if inCard.Foil || inCard.isEtched() {
+	if inCard.Foil || inCard.isEtched() || inCard.isThickDisplay() {
 		return []string{mtgjson.SuffixSpecial, ""}
 	}
 	return nil
