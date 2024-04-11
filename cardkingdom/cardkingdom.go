@@ -13,8 +13,10 @@ import (
 )
 
 type Cardkingdom struct {
-	LogCallback   mtgban.LogCallbackFunc
-	Partner       string
+	LogCallback mtgban.LogCallbackFunc
+	Partner     string
+	PreserveOOS bool
+
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -151,7 +153,7 @@ func (ck *Cardkingdom) scrape() error {
 				}
 				err = ck.inventory.AddUnique(cardId, out)
 			}
-		} else {
+		} else if ck.PreserveOOS {
 			// Only save URL information
 			out := &mtgban.InventoryEntry{
 				URL: link,
