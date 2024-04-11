@@ -722,13 +722,17 @@ func foilMisprint(inCard *Card, card *mtgjson.Card) bool {
 	if !inCard.Foil {
 		return strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 	}
+
+	// Get number in case there is no EA information available
+	maybeNumber := ExtractNumber(inCard.Variation)
+
 	switch card.Name {
 	case "Temple of Abandon":
-		if inCard.isExtendedArt() {
+		if inCard.isExtendedArt() || strings.HasPrefix(maybeNumber, "347") {
 			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		}
 	case "Strict Proctor":
-		if !inCard.isExtendedArt() {
+		if !inCard.isExtendedArt() || strings.HasPrefix(maybeNumber, "33") {
 			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		}
 	case "Reflecting Pool":
@@ -952,6 +956,9 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 	"UNH": duplicateSomeFoil,
 	"FRF": duplicateSomeFoil,
 	"ONS": duplicateSomeFoil,
+	"THB": duplicateSomeFoil,
+	"STX": duplicateSomeFoil,
+	"SHM": duplicateSomeFoil,
 
 	// Intro lands from these sets when non-fullart always have this
 	"ZEN": duplicateBasicLands,

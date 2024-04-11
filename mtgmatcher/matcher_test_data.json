@@ -3139,6 +3139,16 @@
         }
     },
     {
+        "uuid": "a67c3cd2-d09d-5c2e-807b-5f4772c367e7",
+        "description": "misprints_eacard_number",
+        "input": {
+            "name": "Temple of Abandon",
+            "variant": "347",
+            "edition": "THB",
+            "foil": true
+        }
+    },
+    {
         "uuid": "0dfd6f8d-f7e6-5aba-ab2b-88fb15e8aeb3",
         "description": "cmr_duplicates_main",
         "input": {
