@@ -136,6 +136,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	case "Modern Horizons 2",
 		"Modern Horizons 1: Timeshifted":
 		variant = number
+		if strings.HasSuffix(variant, "e") {
+			variant = strings.TrimSuffix(variant, "e")
+			variant += " Etched"
+		}
 	case "Commander: The Lord of the Rings - Tales of Middle-earth Collectors",
 		"The Lord of the Rings: Tales of Middle-earth Holiday Release":
 		variant = strings.Replace(number, "s", "z", 1)
@@ -391,7 +395,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		edition = strings.TrimSuffix(edition, " Theme Deck")
 	}
 
-	if strings.Contains(bp.Version, "Etched") {
+	if strings.Contains(bp.Version, "Etched") && !strings.Contains(variant, "Etched") {
 		if variant != "" {
 			variant += " "
 		}

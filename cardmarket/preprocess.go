@@ -903,6 +903,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "b"
 		}
 
+	case "30th Anniversary History Promos":
+		variant = number
+		if ogVariant == "V.2" {
+			variant += " retro"
+		}
+
 	default:
 		switch {
 		// Try to derive the serialized status from the various Extras sets
