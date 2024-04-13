@@ -1215,6 +1215,10 @@ func adjustEdition(inCard *Card) {
 			if inCard.isBorderless() && !inCard.isPrerelease() {
 				variation += " Prerelease"
 			}
+		case "Goro-Goro, Disciple of Ryusei":
+			if inCard.Contains("Resale") {
+				edition = backend.Sets["PMEI"].Name
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps
