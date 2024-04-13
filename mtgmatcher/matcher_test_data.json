@@ -219,6 +219,37 @@
         }
     },
     {
+        "uuid": "3f70b4a7-2f84-5610-a256-6c6bbb5796c0",
+        "description": "id_lookup_separate_etched",
+        "input": {
+            "id": "49dff80a-61b3-5550-af95-8d3cce7686e2",
+            "variant": "Etched"
+        }
+    },
+    {
+        "uuid": "88efa464-925a-5de1-a66a-5cdf8d159277",
+        "description": "id_lookup_allinone_nonfoil",
+        "input": {
+            "id": "e0d18742-d661-4223-8880-9ed995379b2e"
+        }
+    },
+    {
+        "uuid": "88efa464-925a-5de1-a66a-5cdf8d159277_f",
+        "description": "id_lookup_allinone_foil",
+        "input": {
+            "id": "e0d18742-d661-4223-8880-9ed995379b2e",
+            "variant": "Foil"
+        }
+    },
+    {
+        "uuid": "88efa464-925a-5de1-a66a-5cdf8d159277_e",
+        "description": "id_lookup_allinone_etched",
+        "input": {
+            "id": "e0d18742-d661-4223-8880-9ed995379b2e",
+            "variant": "Etched"
+        }
+    },
+    {
         "uuid": "fb083deb-30ea-5ff4-8aa8-cee8531cd7ec",
         "description": "number_dupes_fullart_land",
         "input": {

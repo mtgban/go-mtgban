@@ -50,7 +50,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 
 	// If the input card was requested as foil, we should double check
 	// if the original card has a foil under a separate id
-	if co.Foil != isFoil {
+	if co.Foil != isFoil || co.Etched != isEtched {
 		// So we iterate over the Variations array and try outputing ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
@@ -63,16 +63,17 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 
 				// Make sure we're dealing with the same card
 				// (this helps with promos that have similar numbers)
-				sameCardProps := len(co.Finishes) == len(altCo.Finishes) &&
-					slices.Equal(co.FrameEffects, altCo.FrameEffects) &&
-					co.Language == altCo.Language
-				if !sameCardProps {
+				// but different finish
+				sameFinish := (co.HasFinish(mtgjson.FinishNonfoil) && altCo.HasFinish(mtgjson.FinishNonfoil)) ||
+					(co.HasFinish(mtgjson.FinishFoil) && altCo.HasFinish(mtgjson.FinishFoil)) ||
+					(co.HasFinish(mtgjson.FinishEtched) && altCo.HasFinish(mtgjson.FinishEtched))
+				if sameFinish {
 					continue
 				}
 
 				// If the alt card finish matches the expected one
 				// then replace the final output uuid
-				if altCo.Foil == isFoil {
+				if altCo.Foil == isFoil && altCo.Etched == isEtched {
 					outId = maybeId
 					break
 				}
