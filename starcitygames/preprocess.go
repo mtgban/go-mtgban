@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -14,68 +15,7 @@ var cardTable = map[string]string{
 	"Jushi Apprentice // Tomoya The Revealer // Tomoya The Revealer": "Jushi Apprentice // Tomoya The Revealer",
 }
 
-func preprocess(card *SCGCardVariant, edition, language string, foil bool, number string) (*mtgmatcher.Card, error) {
-	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
-	number = strings.TrimLeft(number, "0")
-
-	if edition != "Unfinity" && strings.Contains(cardName, "{") && strings.Contains(cardName, "}") {
-		return nil, errors.New("non-single")
-	}
-
-	cardName = strings.Replace(cardName, "{", "", -1)
-	cardName = strings.Replace(cardName, "}", "", -1)
-
-	edition = strings.Replace(edition, "&amp;", "&", -1)
-	if strings.HasSuffix(edition, "(Foil)") {
-		edition = strings.TrimSuffix(edition, " (Foil)")
-		foil = true
-	}
-
-	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
-	variant = strings.Replace(variant, "(", "", -1)
-	variant = strings.Replace(variant, ")", "", -1)
-
-	vars := mtgmatcher.SplitVariants(cardName)
-	cardName = vars[0]
-	if len(vars) > 1 {
-		if variant != "" {
-			variant += " "
-		}
-		variant += strings.Join(vars[1:], " ")
-	}
-
-	vars = mtgmatcher.SplitVariants(edition)
-	edition = vars[0]
-	if len(vars) > 1 {
-		if variant != "" {
-			variant += " "
-		}
-		variant += strings.Join(vars[1:], " ")
-	}
-
-	switch {
-	// These are the sealed packs
-	case strings.HasPrefix(cardName, "APAC Land"),
-		strings.HasPrefix(cardName, "Arena Land Set"),
-		strings.HasPrefix(cardName, "Euro Land"):
-		return nil, errors.New("non-single")
-	}
-
-	lutName, found := cardTable[cardName]
-	if found {
-		cardName = lutName
-	}
-
-	if mtgmatcher.IsBasicLand(cardName) {
-		if strings.Contains(variant, "APAC") {
-			edition = "Asia Pacific Land Program"
-		} else if strings.Contains(variant, "Euro") {
-			edition = "European Land Program"
-		}
-	}
-
-	// Make sure not to pollute variants with the language otherwise multiple
-	// variants may be aliased (ie urzalands)
+func languageTags(language, edition, variant, number string) (string, string, error) {
 	switch language {
 	case "Japanese", "ja":
 		switch edition {
@@ -86,16 +26,16 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 			variant = strings.TrimSuffix(variant, " BB")
 		case "Strixhaven Mystical Archive",
 			"Strixhaven Mystical Archive - Foil Etched":
-			num, err := strconv.Atoi(number)
+			num, err := strconv.Atoi(strings.TrimLeft(number, "0"))
 			if err != nil {
-				return nil, err
+				return "", "", err
 			}
 			if num < 64 {
-				return nil, errors.New("non-english")
+				return "", "", errors.New("non-english")
 			}
 		case "War of the Spark":
 			if !strings.Contains(variant, "Alternate Art") {
-				return nil, errors.New("non-english")
+				return "", "", errors.New("non-english")
 			}
 		default:
 			if variant != "" {
@@ -113,9 +53,136 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 			variant += "Italian"
 		}
 	}
+	return edition, variant, nil
+}
+
+func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, cn string) (*mtgmatcher.Card, error) {
+	// Processing variant first because it gets added on later
+	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
+	variant = strings.Replace(variant, "(", "", -1)
+	variant = strings.Replace(variant, ")", "", -1)
+
+	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
+	cardName = strings.Replace(cardName, "{", "", -1)
+	cardName = strings.Replace(cardName, "}", "", -1)
+
+	vars := mtgmatcher.SplitVariants(cardName)
+	cardName = vars[0]
+	if len(vars) > 1 {
+		if variant != "" {
+			variant += " "
+		}
+		variant += strings.Join(vars[1:], " ")
+	}
+
+	lutName, found := cardTable[cardName]
+	if found {
+		cardName = lutName
+	}
+
+	edition := strings.Replace(cardEdition, "&amp;", "&", -1)
+	if strings.HasSuffix(edition, "(Foil)") {
+		edition = strings.TrimSuffix(edition, " (Foil)")
+		foil = true
+	}
+	vars = mtgmatcher.SplitVariants(edition)
+	edition = vars[0]
+	if len(vars) > 1 {
+		if variant != "" {
+			variant += " "
+		}
+		variant += strings.Join(vars[1:], " ")
+	}
+
+	var err error
+	edition, variant, err = languageTags(language, edition, variant, cn)
+	if err != nil {
+		return nil, err
+	}
+
+	// SKU documented as
+	// * for singles:
+	// SGL-[Brand]-[Set]-[Collector Number]-[Language][Foiling][Condition]
+	// * for world champtionship:
+	// SGL-[Brand]-WCPH-[Year][Player Initials][Set][Collector Number][Sideboard]-[Language][Foiling][Condition]
+	// * for promotional cards:
+	// SGL-[Brand]-PRM-[Promo][Set][Collector Number]-[Language][Foiling][Condition]
+	//
+	// examples
+	// * SGL-MTG-PRM-SECRET_SLD_1095-ENN1
+	// * SGL-MTG-PRM-PP_MKM_187-ENN
+	// * SGL-MTG-PWSB-PCA_115-ENN1
+
+	var number string
+	fields := strings.Split(card.Sku, "-")
+	if len(fields) > 3 && (language == "en" || language == "English") {
+		setCode := fields[2]
+		number = strings.TrimLeft(fields[3], "0")
+
+		switch setCode {
+		case "MPS2":
+			setCode = "MPS"
+		case "MPS3":
+			setCode = "MP2"
+		case "PWSB":
+			setCode = "PLST"
+			fields := strings.Split(number, "_")
+			if len(fields) == 2 {
+				number = fields[0] + "-" + strings.TrimLeft(fields[1], "0")
+			} else if len(fields) == 4 {
+				if fields[0] == "PRM" {
+					number = fields[2] + "-" + strings.TrimLeft(fields[3], "0")
+				}
+			}
+		case "PRM", "PRM3":
+			fields := strings.Split(number, "_")
+			if len(fields) > 2 && fields[0] == "SECRET" {
+				setCode = fields[1]
+				number = strings.TrimLeft(fields[2], "0")
+			} else if strings.HasPrefix(number, "PRE_LTR_") {
+				number = strings.TrimPrefix(number, "PRE_LTR_")
+				if strings.HasSuffix(number, "a") {
+					setCode = "PLTR"
+					number = strings.Replace(number, "a", "s", 1)
+				} else if strings.HasSuffix(number, "b") {
+					setCode = "LTR"
+					number = strings.TrimSuffix(number, "b")
+				}
+			}
+		default:
+			// Disable quick search for Oversized cards, as they are embdded
+			// in the same set and id lookup doesn't support extending over
+			if strings.Contains(variant, "Oversized") {
+				setCode = ""
+				break
+			}
+
+			if strings.Contains(cardName, "//") && strings.HasSuffix(number, "a") {
+				number = strings.TrimSuffix(number, "a")
+			}
+
+			// Handle set renames like OTC2 and LTR2
+			_, err := mtgmatcher.GetSet(setCode)
+			if err != nil && len(setCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
+				setCode = setCode[:len(setCode)-1]
+			}
+		}
+
+		// Check if we found it and return the id
+		out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
+		if len(out) == 1 {
+			return &mtgmatcher.Card{
+				Id:        out[0].UUID,
+				Foil:      foil,
+				Variation: variant,
+				Language:  language,
+			}, nil
+		}
+	}
 
 	switch edition {
-	case "Promo: General":
+	case "Promo: General",
+		"Promo: General - Alternate Foil":
 		switch cardName {
 		case "Swiftfoot Boots":
 			if variant == "Launch" {
@@ -139,20 +206,50 @@ func preprocess(card *SCGCardVariant, edition, language string, foil bool, numbe
 			if variant == "Love Your LGS Retro Frame" {
 				edition = "PLG21"
 			}
-		}
-		if strings.Contains(variant, "The Lord of the Rings") {
-			variant = number
+		case "Arcane Signet":
+			switch variant {
+			case "Play Draft Retro Frame":
+				edition = "P30M"
+				variant = "1P"
+			case "Festival":
+				edition = "P30M"
+				variant = "1F"
+			case "Festival Foil Etched":
+				edition = "P30M"
+				variant = "1F★"
+			}
+		case "Counterspell":
+			switch variant {
+			case "Festival Full Art":
+				edition = "PF24"
+			}
+		case "Llanowar Elves":
+			switch variant {
+			case "Resale Retro Frame":
+				edition = "PRES"
+			}
+		case "Pyromancer's Gauntlet":
+			switch variant {
+			case "Hasbro Retro Frame":
+				edition = "PMEI"
+			}
+		case "Lathril, Blade of the Elves":
+			switch variant {
+			case "Resale Foil Etched":
+				edition = "PRES"
+			}
+		case "Rampant Growth":
+			if variant == "Release Foil Etched" {
+				edition = "PW23"
+			}
+		case "Commander's Sphere":
+			if variant == "Play Draft" {
+				edition = "PW24"
+			}
 		}
 	case "Unfinity":
-		if strings.Contains(variant, "/") {
-			variant = number
-		}
 		if strings.Contains(cardName, "Sticker Sheet") {
 			edition = "SUNF"
-		}
-	case "The Lord of the Rings - Variants":
-		if strings.Contains(variant, "Showcase") {
-			variant = number
 		}
 	}
 

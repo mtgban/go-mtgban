@@ -119,12 +119,16 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 		cardId, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
-		} else if err != nil && strings.Contains(edition, "Planeswalker Symbol Reprints") {
-			continue
 		} else if err != nil {
+			// Skip errors from tokens and similar
+			if strings.Contains(cardName, "Token") ||
+				strings.Contains(variant, "Token") ||
+				strings.HasPrefix(cardName, "{") {
+				continue
+			}
 			scg.printf("%v", err)
 			scg.printf("%q", theCard)
-			scg.printf("%v ~ %s ~ %s", cc, edition, number)
+			scg.printf("%v ~ %s ~ %s ~ %s", cc, edition, finish, number)
 
 			var alias *mtgmatcher.AliasingError
 			if errors.As(err, &alias) {
@@ -135,6 +139,16 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				}
 			}
 			continue
+		}
+
+		customFields := map[string]string{
+			"SCGName":     cardName,
+			"SCGEdition":  edition,
+			"SCGLanguage": language,
+			"SCGFinish":   finish,
+			"scgSubtitle": variant,
+			"scgNumber":   number,
+			"scgSKU":      sku,
 		}
 
 		for _, attribute := range result.Document.HawkChildAttributes {
@@ -190,7 +204,10 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 					OriginalId: id,
 					URL:        SCGProductURL(result.Document.URLDetail, attribute.VariantSKU, scg.Affiliate),
 				},
-				ignoreErr: strings.Contains(edition, "World Championship") && theCard.IsBasicLand(),
+				ignoreErr: strings.Contains(edition, "World Championship"),
+			}
+			if condition == "NM" {
+				out.invEntry.CustomFields = customFields
 			}
 			channel <- out
 		}
@@ -235,7 +252,7 @@ func (scg *Starcitygames) scrape() error {
 	}()
 
 	for record := range results {
-		err := scg.inventory.Add(record.cardId, record.invEntry)
+		err := scg.inventory.AddStrict(record.cardId, record.invEntry)
 		if err != nil && !record.ignoreErr {
 			scg.printf("%s", err.Error())
 		}
