@@ -211,6 +211,22 @@ func ExtractNumber(str string) string {
 	return ""
 }
 
+func numericalValue(str string) string {
+	startFound := false
+	start := 0
+	end := len(str)
+	for i, c := range str {
+		if unicode.IsDigit(c) && !startFound {
+			start = i
+			startFound = true
+		} else if !unicode.IsDigit(c) && startFound {
+			end = i
+			break
+		}
+	}
+	return str[start:end]
+}
+
 // Specialized version of ExtractNumber, suited for parsing WCD numbers
 func extractWCDNumber(str, prefix string, sideboard bool) string {
 	fields := strings.Fields(str)

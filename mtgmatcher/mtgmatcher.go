@@ -57,8 +57,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 			altCo := backend.UUIDs[variation]
 			// We assume that the collector number between the two version
 			// stays the same, with a different suffix
-			if strings.HasPrefix(co.Number, altCo.Number) ||
-				strings.HasPrefix(altCo.Number, co.Number) {
+			if numericalValue(co.Number) == numericalValue(altCo.Number) {
 				maybeId := output(altCo.Card, isFoil, isEtched)
 				altCo = backend.UUIDs[maybeId]
 
