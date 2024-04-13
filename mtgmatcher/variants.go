@@ -3522,6 +3522,12 @@ var soiVariants = map[string]map[string]string{
 		"entry 711": "265†c",
 		"entry 855": "265†d",
 		"entry 922": "265†e",
+		"v.1":       "265",
+		"v.2":       "265†a",
+		"v.3":       "265†b",
+		"v.4":       "265†c",
+		"v.5":       "265†d",
+		"v.6":       "265†e",
 	},
 }
 
