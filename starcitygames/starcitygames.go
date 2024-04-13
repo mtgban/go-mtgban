@@ -297,12 +297,12 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 
 			theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "F", hit.CollectorNumber)
 			if err != nil {
-				continue
+				break
 			}
 
 			cardId, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				continue
+				break
 			} else if err != nil {
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
@@ -316,7 +316,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 						scg.printf("- %s", card)
 					}
 				}
-				continue
+				break
 			}
 
 			var priceRatio, sellPrice float64
