@@ -1026,6 +1026,34 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant += " retro"
 		}
 
+	case "Universes Beyond: Warhammer 40,000":
+		variant = number
+		edition = "40K"
+		switch cardName {
+		case "Abaddon the Despoiler",
+			"Be'lakor, the Dark Master",
+			"Imotekh the Stormlord",
+			"Inquisitor Greyfax",
+			"Magus Lucea Kane",
+			"Marneus Calgar",
+			"Szarekh, the Silent King",
+			"The Swarmlord":
+			switch ogVariant {
+			case "V.1":
+				variant += " surge foil"
+			case "V.2":
+				variant += ""
+			case "V.3":
+				variant += " display surge foil"
+			case "V.4":
+				variant += " display etched foil"
+			}
+		default:
+			if ogVariant == "V.2" && mtgmatcher.HasFoilPrinting(cardName, "40K") {
+				variant += " surge foil"
+			}
+		}
+
 	default:
 		switch {
 		// Try to derive the serialized status from the various Extras sets
