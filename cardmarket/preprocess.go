@@ -1066,6 +1066,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			}
 		}
 
+	case "Retro Frame Artifacts":
+		variant = number
+		if ogVariant == "V.3" {
+			variant += " serialized"
+		}
+
 	default:
 		switch {
 		// Try to derive the serialized status from the various Extras sets
