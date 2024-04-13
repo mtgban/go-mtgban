@@ -834,10 +834,22 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	// Some cards from PLST overflow here
 	case "Secret Lair Drop Series: Secretversary 2021":
 		variant = number
-		for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
-			if strings.HasSuffix(card.Number, "-"+number) {
-				edition = "PLST"
-				variant = card.Number
+		switch {
+		case mtgmatcher.IsBasicLand(cardName):
+			edition = "SLD"
+			if ogVariant == "V.2" {
+				variant += " etched"
+			}
+		case cardName == "Okaun, Eye of Chaos", cardName == "Zndrsplt, Eye of Wisdom":
+			if ogVariant == "V.2" {
+				variant += " display"
+			}
+		default:
+			for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
+				if strings.HasSuffix(card.Number, "-"+number) {
+					edition = "PLST"
+					variant = card.Number
+				}
 			}
 		}
 
