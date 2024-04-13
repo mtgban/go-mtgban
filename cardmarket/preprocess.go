@@ -784,6 +784,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		}
 
 	case "Mystery Booster":
+		edition = "PLST"
 		variant = number
 		switch cardName {
 		case "Laboratory Maniac":
