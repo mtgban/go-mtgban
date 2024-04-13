@@ -95,7 +95,8 @@ func TestMatch(t *testing.T) {
 					shouldUpdateTests = true
 					return
 				}
-				t.Errorf("FAIL: Id mismatch: expected '%s', got '%s'", test.Id, cardId)
+				co, _ := GetUUID(cardId)
+				t.Errorf("FAIL: Id mismatch: expected '%s', got '%s' (%v)", test.Id, cardId, co)
 				return
 			}
 
