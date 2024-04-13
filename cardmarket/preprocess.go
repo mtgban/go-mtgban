@@ -468,11 +468,40 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 
+	case "MagicCon Products":
+		switch cardName {
+		case "Relentless Rats":
+			switch number {
+			case "11":
+				edition = "SLP"
+				variant = number
+			}
+		case "Arcane Signet":
+			if number == "1" {
+				edition = "P30M"
+				variant = "1F"
+			}
+		default:
+			for _, code := range []string{
+				"SLD", "SLP",
+			} {
+				if len(mtgmatcher.MatchInSetNumber(cardName, code, strings.TrimLeft(number, "0"))) == 1 {
+					edition = code
+					variant = number
+				}
+			}
+		}
+
+	case "Magic the Gathering Products":
+		variant = number
+		switch cardName {
+		case "Culling the Weak", "Disenchant":
+			edition = "PMEI"
+		}
+
 	// Catch-all sets for anything promo
 	case "Promos",
-		"DCI Promos",
-		"Magic the Gathering Products",
-		"MagicCon Products":
+		"DCI Promos":
 		switch cardName {
 		case "Mayor of Avabruck / Howlpack Alpha",
 			"Ancestral Recall",
@@ -486,7 +515,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			switch number {
 			case "":
 				edition = "PM11"
-			case "10", "11":
+			case "10":
 				edition = "SLP"
 				variant = number
 			}
@@ -533,7 +562,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			for _, code := range []string{
 				"PMEI", "PPRO", "PEWK", "PNAT", "WMC", "PWCS", "PRES",
 				"P30T", "PF23", "PLG21",
-				"SLP", "SLC", "SLD",
+				"SLC",
 				"PW21", "PW22", "PW23",
 				"PL21", "PL22", "PL23",
 			} {
