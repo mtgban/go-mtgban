@@ -639,69 +639,71 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 			}
 
 			checkNum := true
+			// Lucky case, variation is just the collector number
+			num = ExtractNumber(inCard.Variation)
 			if inCard.Contains("Misprint") ||
 				inCard.isWorldChamp() ||
 				(inCard.isMysteryList() && !inCard.Contains("Unfinity")) || // this is better handled in thelistCheck()
-				(card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-"))) {
+				(card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-"))) ||
+				// If the number is the same as in the edition, it might be a
+				// variation pollutin, so it is unreliable - ignore sets with years
+				// as it may trigger false postives
+				(num != "" && ExtractYear(set.Name) == "" && strings.Contains(set.Name, num)) {
 				checkNum = false
 				logger.Println("Skipping number check")
 			}
-			if checkNum {
-				// Lucky case, variation is just the collector number
-				num = ExtractNumber(inCard.Variation)
-				if num != "" {
-					// The empty string will allow to test the number without any
-					// additional prefix first
-					possibleSuffixes := []string{""}
-					variation := strings.Replace(inCard.Variation, "-", "", 1)
-					fields := strings.Fields(strings.ToLower(variation))
-					possibleSuffixes = append(possibleSuffixes, fields...)
+			if checkNum && num != "" {
+				// The empty string will allow to test the number without any
+				// additional prefix first
+				possibleSuffixes := []string{""}
+				variation := strings.Replace(inCard.Variation, "-", "", 1)
+				fields := strings.Fields(strings.ToLower(variation))
+				possibleSuffixes = append(possibleSuffixes, fields...)
 
-					// Check if edition-specific numbers need special suffixes
-					numFilterFunc, found := numberFilterCallbacks[set.Code]
-					if found {
-						overrides := numFilterFunc(inCard)
-						if overrides != nil {
-							possibleSuffixes = overrides
-						}
+				// Check if edition-specific numbers need special suffixes
+				numFilterFunc, found := numberFilterCallbacks[set.Code]
+				if found {
+					overrides := numFilterFunc(inCard)
+					if overrides != nil {
+						possibleSuffixes = overrides
 					}
-
-					// Add any possible extra suffixes if we know what we're dealing with
-					switch {
-					case inCard.isPrerelease():
-						possibleSuffixes = append(possibleSuffixes, "s")
-					case inCard.isPromoPack():
-						possibleSuffixes = append(possibleSuffixes, "p")
-					case inCard.isChineseAltArt():
-						possibleSuffixes = append(possibleSuffixes, "s", mtgjson.SuffixSpecial+"s", mtgjson.SuffixVariant+"s")
-					case inCard.isSerialized():
-						possibleSuffixes = append(possibleSuffixes, "z")
-					case inCard.isJudge():
-						possibleSuffixes = append(possibleSuffixes, mtgjson.SuffixSpecial)
-					}
-
-					for _, numSuffix := range possibleSuffixes {
-						// The self test is already expressed by the empty string
-						// This avoids an odd case of testing 1.1 = 11
-						if num == numSuffix {
-							continue
-						}
-						number := num
-						if numSuffix != "" && !strings.HasSuffix(number, numSuffix) {
-							number += numSuffix
-						}
-						if number == strings.ToLower(card.Number) {
-							outCards = append(outCards, card)
-
-							// Card was found, skip any other suffix
-							break
-						}
-					}
-
-					// If a variant is a number we expect that this information is
-					// reliable, so skip anything else
-					continue
 				}
+
+				// Add any possible extra suffixes if we know what we're dealing with
+				switch {
+				case inCard.isPrerelease():
+					possibleSuffixes = append(possibleSuffixes, "s")
+				case inCard.isPromoPack():
+					possibleSuffixes = append(possibleSuffixes, "p")
+				case inCard.isChineseAltArt():
+					possibleSuffixes = append(possibleSuffixes, "s", mtgjson.SuffixSpecial+"s", mtgjson.SuffixVariant+"s")
+				case inCard.isSerialized():
+					possibleSuffixes = append(possibleSuffixes, "z")
+				case inCard.isJudge():
+					possibleSuffixes = append(possibleSuffixes, mtgjson.SuffixSpecial)
+				}
+
+				for _, numSuffix := range possibleSuffixes {
+					// The self test is already expressed by the empty string
+					// This avoids an odd case of testing 1.1 = 11
+					if num == numSuffix {
+						continue
+					}
+					number := num
+					if numSuffix != "" && !strings.HasSuffix(number, numSuffix) {
+						number += numSuffix
+					}
+					if number == strings.ToLower(card.Number) {
+						outCards = append(outCards, card)
+
+						// Card was found, skip any other suffix
+						break
+					}
+				}
+
+				// If a variant is a number we expect that this information is
+				// reliable, so skip anything else
+				continue
 			}
 
 			// The last-ditch effort from above - when this is set, only check

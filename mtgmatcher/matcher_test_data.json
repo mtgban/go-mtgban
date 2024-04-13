@@ -1122,6 +1122,15 @@
         }
     },
     {
+        "uuid": "395175ba-4c35-5879-b913-fc0986aba61f",
+        "description": "prerelease_with_edition_with_number",
+        "input": {
+            "name": "Unmarked Grave",
+            "variant": "Prerelease Modern Horizons 2",
+            "edition": "Promo: Date Stamped"
+        }
+    },
+    {
         "uuid": "a0c99852-b08e-5f09-9f48-317f2253df15",
         "description": "jpn_alt_nonJPN_version",
         "input": {
