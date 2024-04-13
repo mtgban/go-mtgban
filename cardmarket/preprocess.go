@@ -869,7 +869,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			case "V.2", "V.4":
 				variant = number + " Etched"
 			}
-		} else if mtgmatcher.HasExtendedArtPrinting(cardName) {
+		} else if mtgmatcher.HasExtendedArtPrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -878,19 +878,19 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			case "V.3":
 				variant = "Extended Art"
 			}
-		} else if mtgmatcher.HasBorderlessPrinting(cardName) {
+		} else if mtgmatcher.HasBorderlessPrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Borderless"
 			case "V.2":
 				variant = "Retro Frame"
-				if mtgmatcher.HasShowcasePrinting(cardName) {
+				if mtgmatcher.HasShowcasePrinting(cardName, "MH2") {
 					variant = "Showcase"
 				}
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if mtgmatcher.HasShowcasePrinting(cardName) {
+		} else if mtgmatcher.HasShowcasePrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Showcase"
@@ -899,7 +899,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if mtgmatcher.HasRetroFramePrinting(cardName) {
+		} else if mtgmatcher.HasRetroFramePrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
