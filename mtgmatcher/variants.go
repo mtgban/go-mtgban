@@ -4309,6 +4309,11 @@ var multiPromosVariants = map[string]map[string]string{
 		"2020":     "248",
 		"ixalan":   "248",
 	},
+	"Assassin's Trophy": {
+		"ravnica": "152",
+		"2020":    "152",
+		"karlov":  "187",
+	},
 	// not listed here: all the temples
 }
 
@@ -4317,7 +4322,9 @@ var multiPromosTable = map[string]map[string]map[string]string{
 	"Aether Revolt Promos":              multiPromosVariants,
 	"Core Set 2019 Promos":              multiPromosVariants,
 	"Core Set 2021 Promos":              multiPromosVariants,
+	"Guilds of Ravnica Promos":          multiPromosVariants,
 	"Ixalan Promos":                     multiPromosVariants,
+	"Murders at Karlov Manor Promos":    multiPromosVariants,
 	"The Brothers' War Promos":          multiPromosVariants,
 	"The Lost Caverns of Ixalan Promos": multiPromosVariants,
 	"Throne of Eldraine Promos":         multiPromosVariants,
