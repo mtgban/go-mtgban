@@ -59,7 +59,7 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 	entries, found := inv[cardId]
 	if found {
 		for i := range entries {
-			if strict > 2 && entry.Conditions == entries[i].Conditions {
+			if strict > 2 && entry.Conditions == entries[i].Conditions && entry.SellerName == entries[i].SellerName {
 				card, _ := mtgmatcher.GetUUID(cardId)
 				return fmt.Errorf("duplicate inventory key, same conditions:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
 			}
