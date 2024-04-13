@@ -33,7 +33,6 @@ var promo2editionTable = map[string]string{
 	"Reliquary Tower":   "Love Your LGS",
 	"Hangarback Walker": "Love Your LGS",
 
-	"Sol Ring":           "MagicFest 2019",
 	"Crucible of Worlds": "World Championship Promos",
 
 	"Forest":   "2017 Gift Pack",
@@ -550,18 +549,52 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			if number == "1" {
 				edition = "P30M"
 				variant = "1F★"
-				if edition == "MagicCon Products" {
-					variant = "1F"
-				}
+			} else if number == "PBD/1" {
+				edition = "P30M"
+				variant = "1P"
 			} else if variant == "3" {
 				edition = "PSVC"
 				variant = ""
+			}
+		case "Chaos Warp":
+			if number == "2024/1" {
+				edition = "PW24"
+				variant = "7"
+			}
+		case "Commander's Sphere":
+			if number == "2024/2" {
+				edition = "PW24"
+				variant = "8"
+			}
+		case "Costly Plunder":
+			if edition == "Promos" {
+				edition = "PW24"
+			}
+		case "Sol Ring":
+			if edition == "Promos" {
+				if number == "001" {
+					edition = "PF19"
+				} else if number == "LGS" {
+					edition = "PLG22"
+				}
+			}
+		case "Shivan Dragon":
+			if edition == "Promos" {
+				if variant == "V.1" {
+					edition = "PMEI"
+				} else if variant == "V.2" {
+					edition = "P30T"
+				}
+			}
+		case "Destroy Evil":
+			if edition == "Promos" {
+				edition = "P30T"
 			}
 
 		default:
 			for _, code := range []string{
 				"PMEI", "PPRO", "PEWK", "PNAT", "WMC", "PWCS", "PRES",
-				"P30T", "PF23", "PLG21",
+				"PF23", "PLG21",
 				"SLC",
 				"PW21", "PW22", "PW23",
 				"PL21", "PL22", "PL23",
