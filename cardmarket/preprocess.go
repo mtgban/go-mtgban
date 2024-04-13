@@ -252,6 +252,15 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			vars = strings.Split(number, "-")
 			variant = vars[0]
 		}
+		if mtgmatcher.IsBasicLand(cardName) {
+			if variant == "V.1" {
+				edition = "J14"
+				variant = ""
+			} else if variant == "V.2" {
+				edition = "P23"
+				variant = ""
+			}
+		}
 
 	case "MagicFest Promos":
 		vars = strings.Split(number, "-")
