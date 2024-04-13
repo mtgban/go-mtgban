@@ -533,11 +533,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			} else if variant == "V.2" {
 				edition = "PR23"
 			}
-		case "Snapcaster Mage ":
+		case "Snapcaster Mage":
 			if variant == "V.1" {
 				edition = "PPRO"
+				variant = "2016"
 			} else if variant == "V.2" {
 				edition = "PR23"
+				variant = "2"
 			}
 		case "Liliana of the Veil":
 			if variant == "V.1" {
