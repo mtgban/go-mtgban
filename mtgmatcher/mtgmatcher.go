@@ -488,6 +488,21 @@ func MatchInSetNumber(cardName, setCode, number string) (outCards []mtgjson.Card
 	return
 }
 
+// Return an array of mtgjson.Card containing all the cards with the exact
+// set code and collector number, using the name as hint (can be empty)
+func MatchWithNumber(cardName, setCode, number string) (outCards []mtgjson.Card) {
+	set, found := backend.Sets[setCode]
+	if !found {
+		return
+	}
+	for _, card := range set.Cards {
+		if Contains(card.Name, cardName) && card.Number == number {
+			outCards = append(outCards, card)
+		}
+	}
+	return
+}
+
 // Try to fixup the name of the card or move extra varitions to the
 // variant attribute. This should only be used in case the card name
 // was not found.
