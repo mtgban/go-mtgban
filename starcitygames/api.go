@@ -7,8 +7,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
-	"github.com/hashicorp/go-cleanhttp"
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -28,7 +29,11 @@ type SCGClient struct {
 
 func NewSCGClient(guid, bearer string) *SCGClient {
 	scg := SCGClient{}
-	scg.client = cleanhttp.DefaultClient()
+	cli := retryablehttp.NewClient()
+	cli.Logger = nil
+	cli.RetryMax = 10
+	cli.RetryWaitMin = 2 * time.Second
+	scg.client = cli.StandardClient()
 	scg.guid = guid
 	scg.bearer = bearer
 	return &scg
