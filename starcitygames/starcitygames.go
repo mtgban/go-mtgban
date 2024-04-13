@@ -100,10 +100,16 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 		if len(result.Document.Subtitle) > 0 {
 			variant += result.Document.Subtitle[0]
 		}
+		var sku string
+		if len(result.Document.HawkChildAttributes) > 0 &&
+			len(result.Document.HawkChildAttributes[0].VariantSKU) > 0 {
+			sku = result.Document.HawkChildAttributes[0].VariantSKU[0]
+		}
 
 		cc := SCGCardVariant{
 			Name:     cardName,
 			Subtitle: variant,
+			Sku:      sku,
 		}
 		theCard, err := preprocess(&cc, edition, language, finish == "Foil", number)
 		if err != nil {
@@ -343,6 +349,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 					// custom, helps debugging
 					"scgSubtitle": hit.Subtitle,
 					"scgNumber":   hit.CollectorNumber,
+					"scgSKU":      result.Sku,
 				}
 			}
 
