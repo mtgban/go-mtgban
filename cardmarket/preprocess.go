@@ -946,6 +946,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			edition = "OCM1"
 		}
 
+	// Oversized commander cards
 	case "Commander",
 		"Commander 2013",
 		"Commander 2014",
@@ -958,6 +959,30 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		variant = number
 		if ogVariant == "V.2" && !mtgmatcher.IsBasicLand(cardName) {
 			variant = "oversized"
+		}
+
+	// Display commander (V.2 separate edition)
+	case "Commander: Strixhaven: Extras",
+		"Commander: Adventures in the Forgotten Realms: Extras":
+		variant = number
+		if ogVariant == "V.2" {
+			variant = "Display"
+			set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
+			if err == nil {
+				edition = "O" + set.Code
+			}
+		}
+
+	// Display commander (V.3 separate edition)
+	case "Commander: Innistrad: Midnight Hunt",
+		"Commander: Innistrad: Crimson Vow":
+		variant = number
+		if ogVariant == "V.3" {
+			variant = "Display"
+			set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
+			if err == nil {
+				edition = "O" + set.Code
+			}
 		}
 
 	case "Commander Legends: Battle for Baldur's Gate: Promos":
