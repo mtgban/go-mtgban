@@ -732,11 +732,13 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "Guilds of Ravanica: Extras",
 		"Ravnica Allegiance: Extras",
 		"War of the Spark: Extras":
+		// All cards from these set are Prerelease
 		variant = "Prerelease"
+		// Except for Planeswalker Decks cards
 		set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
 		if err == nil {
-			num, _ := strconv.Atoi(number)
-			if num > set.BaseSetSize {
+			if len(mtgmatcher.MatchInSet(cardName, set.Code)) > 0 {
+				edition = set.Code
 				variant = number
 			}
 		}
