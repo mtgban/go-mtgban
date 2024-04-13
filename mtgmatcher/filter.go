@@ -689,10 +689,11 @@ func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mt
 					if num == numSuffix {
 						continue
 					}
-					number := num
+					number := strings.ToLower(num)
 					if numSuffix != "" && !strings.HasSuffix(number, numSuffix) {
 						number += numSuffix
 					}
+
 					if number == strings.ToLower(card.Number) {
 						outCards = append(outCards, card)
 

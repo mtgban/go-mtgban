@@ -3142,6 +3142,15 @@
         }
     },
     {
+        "uuid": "884602a8-7f3f-5c9f-8c05-38402833eba9",
+        "description": "mb1list_incorrect_sld_right_number",
+        "input": {
+            "name": "Swords to Plowshares",
+            "variant": "VOC-99",
+            "edition": "Secret Lair Decks: Angels"
+        }
+    },
+    {
         "uuid": "89d7f595-d549-526a-ba83-6f976f6c542c",
         "description": "misprints_prerelease_with_multiple_misprints_dark",
         "input": {
