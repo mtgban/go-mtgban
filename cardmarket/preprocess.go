@@ -815,6 +815,22 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant = "AKH-256"
 		}
 
+	case "Secret Lair Drop Series":
+		variant = number
+		switch cardName {
+		case "Plague Sliver",
+			"Shadowborn Apostle",
+			"Toxin Sliver",
+			"Virulent Sliver":
+			if ogVariant == "V.2" {
+				variant += " step-and-compleat"
+			}
+		case "Fellwar Stone":
+			if ogVariant == "V.2" {
+				variant = "708 etched"
+			}
+		}
+
 	// Some cards from PLST overflow here
 	case "Secret Lair Drop Series: Secretversary 2021":
 		variant = number
