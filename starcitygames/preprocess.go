@@ -122,9 +122,16 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 	// * SGL-MTG-PRM-PP_MKM_187-ENN
 	// * SGL-MTG-PWSB-PCA_115-ENN1
 
+	canProcessSKU := language == "en" || language == "English"
+	// We can't use the numbers reported because they match the plain version
+	// and the Match search doesn't upgrade these custom tags
+	if strings.Contains(variant, "Serial") || strings.Contains(variant, "Compleat") {
+		canProcessSKU = false
+	}
+
 	var number string
 	fields := strings.Split(card.Sku, "-")
-	if len(fields) > 3 && (language == "en" || language == "English") {
+	if len(fields) > 3 && canProcessSKU {
 		setCode := fields[2]
 		number = strings.TrimLeft(fields[3], "0")
 
