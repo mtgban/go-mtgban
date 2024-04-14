@@ -360,6 +360,7 @@ func (c *Card) isChineseAltArt() bool {
 func (c *Card) isRelease() bool {
 	return !c.Contains("Prerelease") &&
 		(c.Contains("Release") ||
+			c.Contains("Draft Weekend") ||
 			c.Contains("Launch"))
 }
 

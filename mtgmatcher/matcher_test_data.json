@@ -2159,6 +2159,33 @@
         }
     },
     {
+        "uuid": "f98ccf15-cddb-5666-90ed-d86063a75848",
+        "description": "release_but_its_actually_draft",
+        "input": {
+            "name": "Simic Ascendancy",
+            "variant": "RNA",
+            "edition": "Release Promos"
+        }
+    },
+    {
+        "uuid": "a536bd96-be01-5095-949a-f85adef490fa",
+        "description": "release_but_its_really_prerelease",
+        "input": {
+            "name": "Simic Ascendancy",
+            "variant": "RNA",
+            "edition": "Prerelease Promos"
+        }
+    },
+    {
+        "uuid": "b84b4b86-e8ed-5a6f-adc6-026b64ea0ddf",
+        "description": "release_but_tagged_as_draft_weekend",
+        "input": {
+            "name": "Ramunap Excavator",
+            "variant": "Draft Weekend",
+            "edition": "Promo: Date Stamped"
+        }
+    },
+    {
         "uuid": "412013dc-8a6a-54f8-beb7-77b56baa5057",
         "description": "launch_in_the_set_itself",
         "input": {

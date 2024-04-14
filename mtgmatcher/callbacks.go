@@ -129,10 +129,6 @@ var promoTypeElements = []promoTypeElement{
 		Tags:      []string{"Ampersand", "Emblem", "Embossed"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeDraftWeekend,
-		Tags:      []string{"Draft Weekend"},
-	},
-	{
 		PromoType: mtgjson.PromoTypeScroll,
 		Tags:      []string{"Scroll", "Showcase Silver Foil"},
 	},
@@ -187,10 +183,9 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"KLD": starterDeckCheck,
 	"AER": starterDeckCheck,
 
-	"DD2":  japaneseCheck,
-	"STA":  japaneseCheck,
-	"WAR":  japaneseCheck,
-	"PWAR": japaneseCheck,
+	"DD2": japaneseCheck,
+	"STA": japaneseCheck,
+	"WAR": japaneseCheck,
 
 	"GRN": guildgateVariant,
 	"RNA": guildgateVariant,
@@ -248,6 +243,15 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"TSR": releaseRetroCheck,
 	"CLU": releaseRetroCheck,
+
+	"PHOU": draftweekendCheck,
+	"PXLN": draftweekendCheck,
+	"PUST": draftweekendCheck,
+	"PRIX": draftweekendCheck,
+	"PDOM": draftweekendCheck,
+	"PM19": draftweekendCheck,
+	"PGRN": draftweekendCheck,
+	"PRNA": draftweekendCheck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
@@ -258,6 +262,8 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
+
+	"PWAR": {japaneseCheck, draftweekendCheck},
 
 	// These two checks need to be separate in case two cards have the same number
 	// but are originally from two different editions
@@ -943,6 +949,16 @@ func misprintCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.Contains("Misprint") && !hasSuffix {
 		return true
 	} else if !inCard.Contains("Misprint") && hasSuffix {
+		return true
+	}
+	return false
+}
+
+func draftweekendCheck(inCard *Card, card *mtgjson.Card) bool {
+	releaseOrDraft := inCard.Contains("Draft Weekend") || (inCard.Contains("Release") && !inCard.isPrerelease())
+	if releaseOrDraft && !card.HasPromoType(mtgjson.PromoTypeDraftWeekend) {
+		return true
+	} else if !releaseOrDraft && card.HasPromoType(mtgjson.PromoTypeDraftWeekend) {
 		return true
 	}
 	return false
