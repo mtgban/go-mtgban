@@ -183,10 +183,41 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					continue
 				}
 			case "PLST":
-				// We can't check for tags here because PLST could be mixed in with SLD
-				// due to the various commander decks
+				// Check if there is an exact match in plain SLD
 				if len(MatchInSetNumber(inCard.Name, "SLD", ExtractNumber(inCard.Variation))) != 0 {
 					continue
+				}
+				// Else if check if it's a PLST card coming from one mixed decks
+				if ExtractNumber(inCard.Variation) == "" && inCard.isSecretLair() && len(MatchInSet(inCard.Name, "SLD")) > 0 {
+					skip := false
+					for _, product := range backend.Sets["SLD"].SealedProduct {
+						if strings.HasPrefix(product.Name, "Secret Lair Commander") {
+							picks, err := GetDecklist("SLD", product.UUID)
+							if err != nil {
+								continue
+							}
+							for _, uuid := range picks {
+								co, found := backend.UUIDs[uuid]
+								if !found {
+									continue
+								}
+								// If a card is found here, it means that a
+								//correctly-tagged version of this card exists and
+								// thus the currently processed cards must belong
+								// to some other set (probably SLD)
+								if co.SetCode != "SLD" && co.Name == inCard.Name && (co.Foil == inCard.Foil || co.Etched == inCard.isEtched()) {
+									skip = true
+									break
+								}
+							}
+							if skip {
+								break
+							}
+						}
+					}
+					if skip {
+						continue
+					}
 				}
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
