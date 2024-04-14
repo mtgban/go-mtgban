@@ -1072,6 +1072,12 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			variant += " serialized"
 		}
 
+	case "Multiverse Legends":
+		variant = number
+		if ogVariant == "V.4" {
+			variant += " serialized"
+		}
+
 	default:
 		switch {
 		// Try to derive the serialized status from the various Extras sets
