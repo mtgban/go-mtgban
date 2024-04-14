@@ -344,6 +344,29 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
+		case inCard.Contains("Store Championship"):
+			switch set.Code {
+			case "SCH":
+			case "PW21":
+			case "LTR":
+			default:
+				if strings.HasSuffix(set.Name, "Promos") {
+					skip := true
+					foundCards := MatchInSet(inCard.Name, set.Code)
+					for _, card := range foundCards {
+						if card.HasPromoType("storechampionship") {
+							skip = false
+							break
+						}
+					}
+					if skip {
+						continue
+					}
+				} else {
+					continue
+				}
+			}
+
 		case inCard.isWorldChamp():
 			switch {
 			case (maybeYear == "1996" || maybeYear == "") && set.Name == "Pro Tour Collector Set":

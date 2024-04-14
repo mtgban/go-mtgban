@@ -144,7 +144,6 @@ var EditionTable = map[string]string{
 	"Champs":                 "Champs and States",
 	"Champs Promos":          "Champs and States",
 	"Champs & States Promos": "Champs and States",
-	"Store Championship":     "Store Championships",
 
 	// Welcome decks
 	"Shadows over Innistrad Welcome Deck": "Welcome Deck 2016",

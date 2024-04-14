@@ -275,7 +275,6 @@ func (c *Card) isGenericPromo() bool {
 			c.Contains("Planeswalker Event") || // tcg
 			c.Contains("Planeswalker Weekend") || // scg
 			c.Contains("Store Challenge") || // scg
-			c.Contains("Store Championship") || // ck
 			c.Contains("Unique")) // mtgs
 }
 

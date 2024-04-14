@@ -2082,6 +2082,15 @@
         }
     },
     {
+        "uuid": "f00b678c-b98a-55dc-863a-f99e0909de31",
+        "description": "promo_store_champtioniship",
+        "input": {
+            "name": "Mortify",
+            "variant": "Store Championship Full Art",
+            "edition": "Promos"
+        }
+    },
+    {
         "uuid": "ec6031e8-8d33-547c-b446-3bd0112a931d",
         "description": "release_but_it_is_a_promo",
         "input": {
