@@ -3183,7 +3183,7 @@
         "input": {
             "name": "Swords to Plowshares",
             "variant": "VOC-99",
-            "edition": "Secret Lair Decks: Angels"
+            "edition": "Secret Lair: Angels: They're Just Like Us but Cooler and with Wings"
         }
     },
     {
@@ -3651,6 +3651,22 @@
             "name": "Blasphemous Act",
             "edition": "The List Reprints",
             "foil": true
+        }
+    },
+    {
+        "uuid": "4cf23946-f0df-561f-a0c5-da6ba0844347",
+        "description": "secret_lair_does_alias_plst",
+        "input": {
+            "name": "Beast Whisperer",
+            "edition": "Secret Lair: Heads I Win Tails You Lose"
+        }
+    },
+    {
+        "uuid": "b603099b-7901-5f49-887a-8e72ed8b9ff1",
+        "description": "secret_lair_gets_alias_plst",
+        "input": {
+            "name": "Beast Whisperer",
+            "edition": "Secret Lair "
         }
     },
     {

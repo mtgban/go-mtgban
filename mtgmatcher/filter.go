@@ -187,32 +187,11 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				if len(MatchInSetNumber(inCard.Name, "SLD", ExtractNumber(inCard.Variation))) != 0 {
 					continue
 				}
-				// Else if check if it's a PLST card coming from one mixed decks
-				if ExtractNumber(inCard.Variation) == "" && inCard.isSecretLair() && len(MatchInSet(inCard.Name, "SLD")) > 0 {
-					skip := false
-					for _, product := range backend.Sets["SLD"].SealedProduct {
-						if strings.HasPrefix(product.Name, "Secret Lair Commander") {
-							picks, err := GetDecklist("SLD", product.UUID)
-							if err != nil {
-								continue
-							}
-							for _, uuid := range picks {
-								co, found := backend.UUIDs[uuid]
-								if !found {
-									continue
-								}
-								// If a card is found here, it means that a
-								//correctly-tagged version of this card exists and
-								// thus the currently processed cards must belong
-								// to some other set (probably SLD)
-								if co.SetCode != "SLD" && co.Name == inCard.Name && (co.Foil == inCard.Foil || co.Etched == inCard.isEtched()) {
-									skip = true
-									break
-								}
-							}
-							if skip {
-								break
-							}
+				if inCard.isSecretLair() {
+					skip := true
+					for _, name := range backend.SLDDeckNames {
+						if Contains(inCard.Edition, name) || Contains(inCard.Variation, name) {
+							skip = false
 						}
 					}
 					if skip {
@@ -230,12 +209,28 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 				// Iterate on all possible combinations of tags, and skip if a
 				// condition is unmet
-				for _, code := range []string{"SLU", "SLX", "SLC", "SLP", "PLST"} {
+				for _, code := range []string{"SLU", "SLX", "SLC", "SLP"} {
 					if len(MatchInSet(inCard.Name, code)) > 0 && inCard.hasSecretLairTag(code) {
 						skip = true
 						break
 					}
 				}
+
+				// No PLST in SLD
+				if inCard.isMysteryList() {
+					skip = true
+				}
+
+				// Check that the card reporte is not coming from a SLD Deck
+				// or if it does, make sure it is actually from SLD
+				for _, name := range backend.SLDDeckNames {
+					deckNameInCard := Contains(inCard.Edition, name) || Contains(inCard.Variation, name)
+					if deckNameInCard && len(MatchInSet(inCard.Name, "PLST")) > 0 {
+						skip = true
+						break
+					}
+				}
+
 				if skip {
 					continue
 				}

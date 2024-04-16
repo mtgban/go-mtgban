@@ -705,9 +705,6 @@ func (c *Card) hasSecretLairTag(code string) bool {
 	case "SLP":
 		// Simple check the variations
 		tag = c.Contains("Showdown") || c.Contains("Prize") || c.Contains("Finish") || c.Contains("Play")
-	case "PLST":
-		// Trick to make sure PLST is not tagged with Secret Lair
-		return !c.isSecretLair()
 	}
 
 	return c.isSecretLair() && tag

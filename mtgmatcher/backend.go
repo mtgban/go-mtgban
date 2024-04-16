@@ -90,6 +90,9 @@ var backend struct {
 
 	// A list of promo types as exported by mtgjson
 	AllPromoTypes []string
+
+	// A list of deck names of Secret Lair Commander cards
+	SLDDeckNames []string
 }
 
 var logger = log.New(io.Discard, "", log.LstdFlags)
@@ -743,6 +746,18 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.CommanderKeywordMap = commanderKeywordMap
 
 	fillinSealedContents()
+	fillinSLDdecks()
+}
+
+func fillinSLDdecks() {
+	for _, product := range backend.Sets["SLD"].SealedProduct {
+		if strings.HasPrefix(product.Name, "Secret Lair Commander") {
+			name := strings.TrimPrefix(product.Name, "Secret Lair Commander Deck ")
+			if !slices.Contains(backend.SLDDeckNames, name) {
+				backend.SLDDeckNames = append(backend.SLDDeckNames, name)
+			}
+		}
+	}
 }
 
 // Add a map of which kind of products sealed contains
