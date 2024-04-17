@@ -138,6 +138,14 @@
         }
     },
     {
+        "error": "unsupported",
+        "description": "error_id_prerelease_version_not_loaded",
+        "input": {
+            "id": "ba93c50a-2440-4e92-9cba-d97e20b1d29c",
+            "variant": "Prerelease"
+        }
+    },
+    {
         "uuid": "f3a94132-ce71-5556-bfd3-1461601a810d",
         "description": "id_lookup_mtgjson",
         "input": {

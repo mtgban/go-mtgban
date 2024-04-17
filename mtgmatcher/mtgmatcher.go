@@ -139,6 +139,12 @@ func Match(inCard *Card) (cardId string, err error) {
 			// Tokens are unsupported for broken ids in different languages
 			case inCard.Language != "" && co.Layout == "token":
 				return "", ErrUnsupported
+			// These promo types take the longest to appear upstream
+			case inCard.isPrerelease() && !co.HasPromoType(mtgjson.PromoTypePrerelease),
+				inCard.isPromoPack() && !co.HasPromoType(mtgjson.PromoTypePromoPack),
+				inCard.isSerialized() && !co.HasPromoType(mtgjson.PromoTypeSerialized):
+				logger.Println("Missing necessary tag")
+				return "", ErrUnsupported
 			// Actually found id
 			default:
 				return outId, nil
