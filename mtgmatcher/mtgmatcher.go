@@ -122,21 +122,26 @@ func Match(inCard *Card) (cardId string, err error) {
 		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
 		if err == nil {
 			co, _ := backend.UUIDs[outId]
-			if inCard.Language == "" || strings.Contains(co.Language, inCard.Language) {
-				logger.Printf("Id found")
-				return outId, nil
-			}
+			logger.Printf("Id found")
+
+			// Validation step
+			switch {
+			// Only the default language is supported by id
+			case inCard.Language != "" && !strings.Contains(co.Language, inCard.Language):
+				logger.Printf("Language validation failed, resetting card")
+				inCard.Name = co.Name
+				inCard.Edition = co.Edition
+				inCard.Variation = co.Number
+				inCard.Foil = co.Foil
+				if co.Etched {
+					inCard.addToVariant("etched")
+				}
 			// Tokens are unsupported for broken ids in different languages
-			if co.Layout == "token" {
+			case inCard.Language != "" && co.Layout == "token":
 				return "", ErrUnsupported
-			}
-			logger.Printf("Language validation failed, resetting card")
-			inCard.Name = co.Name
-			inCard.Edition = co.Edition
-			inCard.Variation = co.Number
-			inCard.Foil = co.Foil
-			if co.Etched {
-				inCard.addToVariant("etched")
+			// Actually found id
+			default:
+				return outId, nil
 			}
 		}
 		logger.Printf("Id lookup failed, attempting full match")
