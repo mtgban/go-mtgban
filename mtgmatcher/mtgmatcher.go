@@ -443,7 +443,21 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Victory
 	case 1:
 		logger.Println("Found it!")
+
 		cardId = output(outCards[0], inCard.Foil, inCard.isEtched())
+
+		co := backend.UUIDs[cardId]
+		logger.Println(inCard, "->", co)
+
+		// Validation step
+		switch {
+		// These promo types take the longest to appear upstream
+		case inCard.isPrerelease() && !co.HasPromoType(mtgjson.PromoTypePrerelease),
+			inCard.isPromoPack() && !co.HasPromoType(mtgjson.PromoTypePromoPack),
+			inCard.isSerialized() && !co.HasPromoType(mtgjson.PromoTypeSerialized):
+			logger.Println("...but it's invalid")
+			return "", ErrUnsupported
+		}
 	// FOR SHAME
 	default:
 		logger.Println("Aliasing...")
