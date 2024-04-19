@@ -184,6 +184,8 @@ const (
 	PromoTypePoster     = "poster"
 	PromoTypeSilverFoil = "silverfoil"
 
+	PromoTypeStoreChampionship = "storechampionship"
+
 	PromoTypeStepAndCompleat = "stepandcompleat"
 	PromoTypeOilSlick        = "oilslick"
 	PromoTypeConcept         = "concept"

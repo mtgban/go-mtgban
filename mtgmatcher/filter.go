@@ -339,25 +339,26 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				continue
 			}
 
-		case inCard.Contains("Store Championship"):
+		case inCard.Contains("Game Day") || inCard.Contains("Store Championship"):
 			switch set.Code {
 			case "SCH":
-			case "PW21":
 			case "LTR":
 			default:
-				if strings.HasSuffix(set.Name, "Promos") {
-					skip := true
+				skip := true
+				switch {
+				case strings.HasSuffix(set.Name, "Promos"):
 					foundCards := MatchInSet(inCard.Name, set.Code)
 					for _, card := range foundCards {
-						if card.HasPromoType("storechampionship") {
+						if card.HasPromoType(mtgjson.PromoTypeStoreChampionship) ||
+							card.HasPromoType(mtgjson.PromoTypeGameDay) {
 							skip = false
 							break
 						}
 					}
-					if skip {
-						continue
-					}
-				} else {
+				case strings.HasPrefix(set.Name, "Wizards Play Network "+maybeYear):
+					skip = false
+				}
+				if skip {
 					continue
 				}
 			}

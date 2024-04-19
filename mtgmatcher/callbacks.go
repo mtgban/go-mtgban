@@ -382,6 +382,12 @@ func lotrTripleFiltering(inCard *Card, card *mtgjson.Card) bool {
 				return true
 			}
 		}
+	case "Saruman of Many Colors":
+		if inCard.Contains("Store Champ") && !card.HasPromoType(mtgjson.PromoTypeStoreChampionship) {
+			return true
+		} else if !inCard.Contains("Store Champ") && card.HasPromoType(mtgjson.PromoTypeStoreChampionship) {
+			return true
+		}
 	}
 	return false
 }

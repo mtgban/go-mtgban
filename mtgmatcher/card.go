@@ -265,7 +265,6 @@ func (c *Card) isGenericPromo() bool {
 		!c.Contains("Deckmasters") && // no real promos here, just foils
 		!c.Contains("Token") && !IsToken(c.Name) &&
 		(Contains(c.Variation, "Promo") || // catch-all (*not* Edition)
-			c.Contains("Game Day") ||
 			c.Contains("Gift Box") || // ck+scg
 			(c.Contains("Promo") && c.Contains("Intro Pack")) || // scg
 			c.Contains("League") ||
