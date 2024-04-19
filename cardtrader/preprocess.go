@@ -410,6 +410,9 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	// Make sure the token tag is always present
 	if bp.CategoryId == CategoryMagicTokens && !strings.Contains(cardName, "Token") {
 		cardName += " Token"
+		if variant == "" {
+			variant = strings.TrimPrefix(number, "T")
+		}
 	}
 	if bp.CategoryId == CategoryMagicOversized {
 		switch {
