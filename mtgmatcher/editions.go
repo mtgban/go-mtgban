@@ -198,6 +198,7 @@ var EditionTable = map[string]string{
 	"Ultimate Masters: Box Topper":   "Ultimate Box Topper",
 	"Ultimate Masters: Box Toppers":  "Ultimate Box Topper",
 	"Modern Horizons - Retro Frames": "Modern Horizons 1 Timeshifts",
+	"Modern Horizons 1: Timeshifted": "Modern Horizons 1 Timeshifts",
 	"Modern Horizons II":             "Modern Horizons 2",
 
 	// CE and IE editions
