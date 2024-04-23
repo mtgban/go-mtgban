@@ -544,6 +544,15 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 				if variant == "Love Your Local Game Store Promo" {
 					edition = "PLG21"
 				}
+			case "Llanowar Elves":
+				if variant == "Friday Night Magic Promo" {
+					edition = "FNM"
+				} else if variant == "Open House Promo" {
+					edition = "PDOM"
+				}
+			case "Masked Vandal":
+				edition = "KHM"
+				variant = "405"
 			}
 		}
 	}
