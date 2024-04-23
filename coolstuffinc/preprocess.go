@@ -495,10 +495,6 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 				} else if variant == "Friday Night Magic Promo New Border" {
 					variant = "FNM 2016"
 				}
-			case "Mind Warp":
-				if variant == "Arena League Promo" {
-					variant = "FNM 2000"
-				}
 			case "Cabal Therapy":
 				if strings.HasPrefix(variant, "Gold-bordered") {
 					variant = "2003"
@@ -506,12 +502,6 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 			case "Rishadan Port":
 				if strings.HasPrefix(variant, "Gold-bordered") {
 					variant = "2000"
-				}
-			case "Mana Crypt":
-				if strings.HasPrefix(variant, "Harper Prism Promo") {
-					if !strings.Contains(variant, "English") {
-						return nil, errors.New("non-english")
-					}
 				}
 			case "Hangarback Walker":
 				edition = "Love your LGS"
