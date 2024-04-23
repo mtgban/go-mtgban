@@ -531,6 +531,8 @@ func (c *Card) arenaYear(maybeYear string) string {
 		}
 	} else if c.Name == "Forest" && strings.Contains(maybeYear, "2002") {
 		maybeYear = "2001"
+	} else if c.Name == "Island" && strings.Contains(maybeYear, "2001") && strings.Contains(c.Variation, "Poole") {
+		maybeYear = "2002"
 	}
 	return maybeYear
 }
