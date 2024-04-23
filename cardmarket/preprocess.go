@@ -1035,7 +1035,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	case "30th Anniversary History Promos":
 		variant = number
 		if ogVariant == "V.2" {
-			variant += " retro"
+			variant = "retro"
 		}
 
 	case "Universes Beyond: Warhammer 40,000":
