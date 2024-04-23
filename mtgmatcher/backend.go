@@ -971,7 +971,7 @@ func duplicateCards(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uui
 			}
 
 			dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag) + suffixTag
-			uuids[uuid] = CardObject{
+			uuids[dupeCard.UUID] = CardObject{
 				Card:    dupeCard,
 				Edition: sets[code].Name,
 				Etched:  co.Etched,
