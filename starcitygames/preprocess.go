@@ -66,15 +66,6 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 	cardName = strings.Replace(cardName, "{", "", -1)
 	cardName = strings.Replace(cardName, "}", "", -1)
 
-	// Check tokens with the same name as certain cards (and skip them)
-	isToken := strings.HasPrefix(card.Name, "{") && strings.HasSuffix(card.Name, "}")
-	if isToken {
-		switch cardName {
-		case "Phyrexian Hydra":
-			return nil, mtgmatcher.ErrUnsupported
-		}
-	}
-
 	vars := mtgmatcher.SplitVariants(cardName)
 	cardName = vars[0]
 	if len(vars) > 1 {
@@ -87,6 +78,12 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 	lutName, found := cardTable[cardName]
 	if found {
 		cardName = lutName
+	}
+
+	// Check tokens with the same name as certain cards
+	isToken := strings.HasPrefix(card.Name, "{") && strings.Contains(card.Name, "}")
+	if isToken && !strings.Contains(cardName, "Token") {
+		cardName += " Token"
 	}
 
 	edition := strings.Replace(cardEdition, "&amp;", "&", -1)
