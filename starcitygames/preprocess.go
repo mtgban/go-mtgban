@@ -137,6 +137,11 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 			setCode = "MPS"
 		case "MPS3":
 			setCode = "MP2"
+		case "CN2":
+			// Kaya, Ghost Assassin fixup
+			if number == "75" && foil {
+				number = "222"
+			}
 		case "PWSB":
 			setCode = "PLST"
 			fields := strings.Split(number, "_")
