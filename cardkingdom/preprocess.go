@@ -171,7 +171,8 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 			strings.Contains(variation, "Euro"):
 			variation = number
 		case strings.Contains(variation, "Arena"),
-			strings.Contains(variation, "Game Day"):
+			strings.Contains(variation, "Game Day"),
+			strings.Contains(variation, "Gameday"):
 			edition = card.Edition
 		case strings.Contains(variation, "Resale"):
 			edition = "PRES"
