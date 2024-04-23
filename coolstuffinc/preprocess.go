@@ -401,6 +401,12 @@ func cleanVariant(variant string) string {
 	return strings.TrimSpace(variant)
 }
 
+var preserveTags = []string{
+	"Etched",
+	"Step-and-Compleat",
+	"Serialized",
+}
+
 func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 	num := strings.TrimLeft(card.Number, "0")
 	cleanVar := cleanVariant(card.Notes)
@@ -410,20 +416,6 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 	variant := num
 	if variant == "" {
 		variant = cleanVar
-	}
-
-	isEtched := false
-	// This tag could be in name, variant, or notes
-	if strings.Contains(card.Notes, "Etched") &&
-		!strings.Contains(variant, "Etched") &&
-		!strings.Contains(cardName, "Etched") {
-		isEtched = true
-	}
-	isStep := false
-	if mtgmatcher.Contains(card.Notes, "Step-and-Compleat") &&
-		!mtgmatcher.Contains(variant, "Step-and-Compleat") &&
-		!mtgmatcher.Contains(cardName, "Step-and-Compleat") {
-		isStep = true
 	}
 
 	fixup, found := cardTable[cardName]
@@ -557,11 +549,10 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 	}
 
 	// Add previously removed/ignored tags
-	if isEtched {
-		variant += " Etched"
-	}
-	if isStep {
-		variant += " Step-and-Compleat"
+	for _, tag := range preserveTags {
+		if strings.Contains(cleanVar, tag) && !strings.Contains(variant, tag) {
+			variant += " " + tag
+		}
 	}
 
 	return &mtgmatcher.Card{
