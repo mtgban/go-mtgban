@@ -3863,6 +3863,10 @@ var ustVariants = map[string]map[string]string{
 		"protection from watermarks":               "12f",
 		"odd":                                      "12d",
 		"even":                                     "12b",
+		"protection from black-bordered":           "12a",
+		"protection from even numbers":             "12b",
+		"protection from odd numbers":              "12d",
+		"protection from watermark":                "12f",
 
 		"v.1": "12a",
 		"v.2": "12b",
