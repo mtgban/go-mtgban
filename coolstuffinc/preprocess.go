@@ -537,8 +537,10 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 			case "Llanowar Elves":
 				if variant == "Friday Night Magic Promo" {
 					edition = "FNM"
+					variant = "11"
 				} else if variant == "Open House Promo" {
 					edition = "PDOM"
+					variant = "168"
 				}
 			case "Masked Vandal":
 				edition = "KHM"
