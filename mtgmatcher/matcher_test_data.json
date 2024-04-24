@@ -3687,6 +3687,15 @@
         }
     },
     {
+        "uuid": "688bf216-ebe2-5383-b800-51ed39998c87",
+        "description": "secret_lair_deck_with_number",
+        "input": {
+            "name": "Commander's Plate",
+            "variant": "1339 Secret Lair: Angels: They're Just Like Us but Cooler and with Wings",
+            "edition": "Secret Lair"
+        }
+    },
+    {
         "uuid": "5507e55e-f034-51f2-8d4c-83008f18a950",
         "description": "empty_variant_cause_showcase",
         "input": {

@@ -223,11 +223,13 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 				// Check that the card reporte is not coming from a SLD Deck
 				// or if it does, make sure it is actually from SLD
-				for _, name := range backend.SLDDeckNames {
-					deckNameInCard := Contains(inCard.Edition, name) || Contains(inCard.Variation, name)
-					if deckNameInCard && len(MatchInSet(inCard.Name, "PLST")) > 0 {
-						skip = true
-						break
+				if len(MatchInSetNumber(inCard.Name, "SLD", ExtractNumber(inCard.Variation))) == 0 && len(MatchInSet(inCard.Name, "PLST")) > 0 {
+					for _, name := range backend.SLDDeckNames {
+						deckNameInCard := Contains(inCard.Edition, name) || Contains(inCard.Variation, name)
+						if deckNameInCard {
+							skip = true
+							break
+						}
 					}
 				}
 
