@@ -154,10 +154,14 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 			}
 		case "PRM", "PRM3":
 			fields := strings.Split(number, "_")
-			if len(fields) > 2 && fields[0] == "SECRET" {
+
+			switch {
+			// Decouple Secret Lair
+			case len(fields) > 2 && fields[0] == "SECRET":
 				setCode = fields[1]
 				number = strings.TrimLeft(fields[2], "0")
-			} else if strings.HasPrefix(number, "PRE_LTR_") {
+			// Separate the multiple LTR Prerelease cards
+			case strings.HasPrefix(number, "PRE_LTR_"):
 				number = strings.TrimPrefix(number, "PRE_LTR_")
 				if strings.HasSuffix(number, "a") {
 					setCode = "PLTR"
@@ -166,6 +170,10 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 					setCode = "LTR"
 					number = strings.TrimSuffix(number, "b")
 				}
+			// Prevent edition from mismatching
+			case strings.HasPrefix(number, "PP_2023_"):
+				edition = "PF23"
+				number = strings.TrimLeft(fields[2], "0")
 			}
 		default:
 			// Disable quick search for Oversized cards, as they are embdded
