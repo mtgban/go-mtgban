@@ -456,6 +456,10 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 		case "Stained Glass Art":
 			edition = "SLD"
 			variant = num
+		case "Junior Super Series Promo",
+			"Junior Super Series Promo Carl Critchlow art":
+			edition = "PSUS"
+			variant = ""
 		default:
 			switch cardName {
 			case "Demonic Tutor":
