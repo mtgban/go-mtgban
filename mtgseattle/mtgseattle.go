@@ -215,6 +215,15 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 			return
 		}
 
+		// Sanity check, a bunch of EA cards are market as foil when they
+		// actually don't have a foil printing, just skip them
+		if strings.Contains(cardName, "Foil - Extended Art") {
+			co, err := mtgmatcher.GetUUID(cardId)
+			if err != nil || !co.Foil {
+				return
+			}
+		}
+
 		if mode == modeInventory {
 			out := responseChan{
 				cardId: cardId,
