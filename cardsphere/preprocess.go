@@ -2,6 +2,7 @@ package cardsphere
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -28,9 +29,34 @@ var tagsTable = map[string]string{
 	"Showcase":        "Showcase",
 }
 
-func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
+func preprocess(offer CardSphereOfferList) (*mtgmatcher.Card, error) {
+
+	cardName := offer.CardName
 	cardName = strings.TrimSpace(cardName)
+	edition := offer.Sets[0].Name
 	edition = strings.TrimSpace(edition)
+	foil := offer.Finishes[0] == "F"
+
+	id := ""
+
+	// Attempt at finding the original id from the multiverse bridge
+	set, err := mtgmatcher.GetSet(offer.Sets[0].Code)
+	if err == nil {
+		tag := "cardsphereId"
+		if foil {
+			tag = "cardsphereFoilId"
+		}
+		for _, card := range set.Cards {
+			csId, found := card.Identifiers[tag]
+			if !found {
+				continue
+			}
+			if csId == fmt.Sprint(offer.MasterId) {
+				id = card.UUID
+				break
+			}
+		}
+	}
 
 	switch cardName {
 	case "Adaptive Enchantment",
@@ -173,8 +199,10 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 	}
 
 	return &mtgmatcher.Card{
+		Id:        id,
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
+		Foil:      foil,
 	}, nil
 }

@@ -80,15 +80,10 @@ func (cs *CardsphereFull) processPage(results chan<- responseChan, offset int) e
 			continue
 		}
 
-		cardName := offer.CardName
-		edition := offer.Sets[0].Name
-		foil := offer.Finishes[0] == "F"
-
-		theCard, err := preprocess(cardName, edition)
+		theCard, err := preprocess(offer)
 		if err != nil {
 			continue
 		}
-		theCard.Foil = foil
 
 		cardId, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
