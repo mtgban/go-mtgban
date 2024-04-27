@@ -642,12 +642,27 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		}
 	}
 
+	// Remove some X/X numbers
+	fields = strings.Fields(cardName)
+	if strings.Contains(fields[len(fields)-1], "/") {
+		fields[len(fields)-1] = strings.Split(fields[len(fields)-1], "/")[0]
+		cardName = strings.Join(fields, " ")
+	}
+
 	// Some cards have an extra number at the end, use it as variant
 	// and strip it from the card name
 	extraNum := mtgmatcher.ExtractNumber(cardName)
+	// In case there is a second number in the card name
+	if strings.HasSuffix(extraNum, ":") {
+		idx := strings.Index(cardName, ":")
+		if idx > 0 {
+			extraNum = mtgmatcher.ExtractNumber(cardName[idx:])
+		}
+	}
 	if extraNum != "" {
-		cardName = strings.TrimSuffix(cardName, " "+extraNum)
-		cardName = strings.TrimSuffix(cardName, " 0"+extraNum)
+		cardName = strings.TrimSuffix(cardName, extraNum)
+		cardName = strings.TrimRight(cardName, "0")
+		cardName = strings.TrimSpace(cardName)
 		if variant != "" {
 			variant += " "
 		}
