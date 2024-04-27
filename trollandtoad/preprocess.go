@@ -89,18 +89,24 @@ var fullLineTable = map[string]string{
 
 var tagsTable = []string{
 	"Magicfest Textless Full Art Promo", // Needs to be before the shorter version
+	"Retro Frame Bundle Promo",
+	"Showcase Borderless",
+	"Borderless Showcase",
 
-	"Alternate Art Showcase",
+	"Anime",
+	"Alternate Art",
 	"Box Topper",
+	"Borderless",
 	"Brawl Deck",
 	"Bundle Promo",
-	"Buy-A-Box Promo",
 	"Buy-A-Box",
-	"Buy-a-Box Promo",
 	"Buy-a-Box",
+	"Concept Praetor",
+	"Display Commander",
 	"DotP 2015 Promo (D15)",
 	"DotP",
-	"Extended Art Promo",
+	"Etched",
+	"Extended Art",
 	"FNM Promo",
 	"Full Art Promo",
 	"Game Day Promo",
@@ -112,14 +118,17 @@ var tagsTable = []string{
 	"MagicFest Textless Promo",
 	"Media Promo",
 	"Mystery Booster",
-	"Planeswalker Deck Exclusive",
+	"Non-Foil",
+	"Oil Slick Raised",
+	"Phyrexian Language",
+	"Planar Showcase",
 	"Planeswalker Deck",
 	"Pre-Release",
 	"Prerelease Promo",
+	"Retro Frame",
 	"Silver Stamped",
-	"SLD Promo Sealed",
+	"Showcase",
 	"SLD Promo",
-	"Textless Player Rewards Promo",
 	"Textless Player Rewards",
 	"Walmart Promo",
 	"Welcome Deck 2019 Exclusive",
@@ -228,15 +237,19 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		fullName = strings.Replace(fullName, " - Foil", "", -1)
 		// Some cards have the foil tag leaking to the card name
 		fullName = strings.Replace(fullName, "- Foil", "", -1)
+		fullName = strings.Replace(fullName, " Surge Foil", "", -1)
 		fullName = strings.Replace(fullName, " Foil", "", -1)
 	}
 
 	fullName = strings.TrimPrefix(fullName, "Basic Land - ")
+	fullName = strings.TrimPrefix(fullName, "Phyrexian ")
 
 	// Every edition has "Singles", the foil ones have "Foil Singles"
 	edition = strings.TrimSuffix(edition, " Singles")
+	edition = strings.TrimSuffix(edition, " Surge Foil")
 	edition = strings.TrimSuffix(edition, " Foil")
 	edition = strings.TrimSuffix(edition, " English")
+	edition = strings.TrimSuffix(edition, " Planar")
 	edition = strings.TrimPrefix(edition, "MTG ")
 	edition = strings.TrimPrefix(edition, "Magic: The Gathering ")
 
