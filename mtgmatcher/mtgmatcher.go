@@ -819,6 +819,11 @@ func adjustEdition(inCard *Card) {
 	}
 
 	switch {
+	case strings.HasPrefix(edition, "Universes Beyond"),
+		strings.HasPrefix(edition, "UB:"):
+		edition = strings.TrimPrefix(edition, "Universes Beyond")
+		edition = strings.TrimPrefix(edition, "UB")
+		edition = strings.TrimLeft(edition, ":- ")
 	case strings.Contains(edition, "Commander") &&
 		(!inCard.Contains("Oversize") || inCard.Contains("Plane") || inCard.Contains("Phenomenon")) &&
 		!inCard.Contains("Party"):
@@ -856,11 +861,6 @@ func adjustEdition(inCard *Card) {
 		edition = "Junior Series Europe"
 	case Contains(variation, "Boosterfun"):
 		inCard.beyondBaseSet = true
-	case strings.HasPrefix(edition, "Universes Beyond"),
-		strings.HasPrefix(edition, "UB:"):
-		edition = strings.TrimPrefix(edition, "Universes Beyond")
-		edition = strings.TrimPrefix(edition, "UB")
-		edition = strings.TrimLeft(edition, ":- ")
 	}
 	inCard.Edition = edition
 	inCard.Variation = variation
