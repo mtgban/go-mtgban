@@ -29,16 +29,15 @@ var EditionTable = map[string]string{
 	"Summer Magic":          "Summer Magic / Edgar",
 
 	// Universes Beyond
-	"Universes Beyond: Warhammer 40,000":        "Warhammer 40,000 Commander",
-	"Universes Beyond: Warhammer 40k Commander": "Warhammer 40,000 Commander",
-	"The Lord of the Rings Commander":           "Tales of Middle-earth Commander",
-
+	"The Lord of the Rings Commander":                                   "Tales of Middle-earth Commander",
 	"The Lord of the Rings: Tales of Middle-earth - Commander":          "Tales of Middle-earth Commander",
 	"The Lord of the Rings: Tales of Middle-earth - Commander Variants": "Tales of Middle-earth Commander",
+	"LOTR - Realms and Relic Box Topper":                                "Tales of Middle-earth Commander",
 
-	"LOTR - Realms and Relic Box Topper": "Tales of Middle-earth Commander",
-	"Doctor Who Commander":               "Doctor Who",
-	"Fallout Commander":                  "Fallout",
+	"Doctor Who Commander":    "Doctor Who",
+	"Fallout Commander":       "Fallout",
+	"Warhammer 40,000":        "Warhammer 40,000 Commander",
+	"Warhammer 40k Commander": "Warhammer 40,000 Commander",
 
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
 	"Outlaws of Thunder Junction The Big Score":  "The Big Score",

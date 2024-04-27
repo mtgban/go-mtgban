@@ -824,6 +824,11 @@ func adjustEdition(inCard *Card) {
 		edition = strings.TrimPrefix(edition, "Universes Beyond")
 		edition = strings.TrimPrefix(edition, "UB")
 		edition = strings.TrimLeft(edition, ":- ")
+
+		ed, found = EditionTable[edition]
+		if found {
+			edition = ed
+		}
 	case strings.Contains(edition, "Commander") &&
 		(!inCard.Contains("Oversize") || inCard.Contains("Plane") || inCard.Contains("Phenomenon")) &&
 		!inCard.Contains("Party"):
