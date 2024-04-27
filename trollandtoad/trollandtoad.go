@@ -20,10 +20,10 @@ import (
 const (
 	defaultConcurrency = 8
 
-	tatOptions = "?Keywords=&hide-oos=on&min-price=&max-price=&items-pp=60&item-condition=&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
+	tntOptions = "?Keywords=&hide-oos=on&min-price=&max-price=&items-pp=60&item-condition=&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
-var tatAllPagesURL = []string{
+var tntAllPagesURL = []string{
 	"https://www.trollandtoad.com/magic-the-gathering/all-singles/7085",
 	"https://www.trollandtoad.com/magic-the-gathering/all-foil-singles/7880",
 	"https://www.trollandtoad.com/magic-the-gathering/-non-english-sets-singles/6713",
@@ -46,16 +46,16 @@ type Trollandtoad struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	client *TATClient
+	client *TNTClient
 }
 
 func NewScraper() *Trollandtoad {
-	tat := Trollandtoad{}
-	tat.inventory = mtgban.InventoryRecord{}
-	tat.buylist = mtgban.BuylistRecord{}
-	tat.client = NewTATClient()
-	tat.MaxConcurrency = defaultConcurrency
-	return &tat
+	tnt := Trollandtoad{}
+	tnt.inventory = mtgban.InventoryRecord{}
+	tnt.buylist = mtgban.BuylistRecord{}
+	tnt.client = NewTNTClient()
+	tnt.MaxConcurrency = defaultConcurrency
+	return &tnt
 }
 
 type responseChan struct {
@@ -64,13 +64,13 @@ type responseChan struct {
 	buyEntry *mtgban.BuylistEntry
 }
 
-func (tat *Trollandtoad) printf(format string, a ...interface{}) {
-	if tat.LogCallback != nil {
-		tat.LogCallback("[TAT] "+format, a...)
+func (tnt *Trollandtoad) printf(format string, a ...interface{}) {
+	if tnt.LogCallback != nil {
+		tnt.LogCallback("[TNT] "+format, a...)
 	}
 }
 
-func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
+func (tnt *Trollandtoad) parsePages(link string, lastPage int) error {
 	channel := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -86,11 +86,11 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		RandomDelay: 2 * time.Second,
-		Parallelism: tat.MaxConcurrency,
+		Parallelism: tnt.MaxConcurrency,
 	})
 
 	c.OnRequest(func(r *colly.Request) {
-		tat.printf("Visiting page %s", r.URL.Query().Get("page-no"))
+		tnt.printf("Visiting page %s", r.URL.Query().Get("page-no"))
 	})
 
 	c.OnHTML(`div[class="product-col col-12 p-0 my-1 mx-sm-1 mw-100"]`, func(e *colly.HTMLElement) {
@@ -115,16 +115,16 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 			case strings.Contains(edition, "World Championships"):
 			case theCard.IsBasicLand():
 			default:
-				tat.printf("%v", err)
-				tat.printf("%q", theCard)
-				tat.printf("%s ~ %s", cardName, edition)
+				tnt.printf("%v", err)
+				tnt.printf("%q", theCard)
+				tnt.printf("%s ~ %s", cardName, edition)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)
-						tat.printf("- %s", card)
+						tnt.printf("- %s", card)
 					}
 				}
 			}
@@ -143,7 +143,7 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 			case strings.Contains(conditions, "See Image for Condition"):
 				return
 			default:
-				tat.printf("Unsupported %s condition for %s %s", conditions, cardName, edition)
+				tnt.printf("Unsupported %s condition for %s %s", conditions, cardName, edition)
 				return
 			}
 
@@ -160,7 +160,7 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 			priceStr := el.ChildText(`div[class='col-2 text-center p-1']`)
 			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
-				tat.printf("%s: %s", theCard, err.Error())
+				tnt.printf("%s: %s", theCard, err.Error())
 				return
 			}
 			if price == 0 {
@@ -181,12 +181,12 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 	})
 
 	q, _ := queue.New(
-		tat.MaxConcurrency,
+		tnt.MaxConcurrency,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 
 	for i := 1; i <= lastPage; i++ {
-		opts := fmt.Sprintf(tatOptions, i)
+		opts := fmt.Sprintf(tntOptions, i)
 		q.AddURL(link + opts)
 	}
 
@@ -198,19 +198,19 @@ func (tat *Trollandtoad) parsePages(link string, lastPage int) error {
 	}()
 
 	for res := range channel {
-		err := tat.inventory.Add(res.cardId, res.invEntry)
+		err := tnt.inventory.Add(res.cardId, res.invEntry)
 		if err != nil {
 			// Too many false positives
-			//tat.printf("%v", err)
+			//tnt.printf("%v", err)
 		}
 	}
 
-	tat.inventoryDate = time.Now()
+	tnt.inventoryDate = time.Now()
 
 	return nil
 }
 
-func (tat *Trollandtoad) scrapePages(link string) error {
+func (tnt *Trollandtoad) scrapePages(link string) error {
 	resp, err := cleanhttp.DefaultClient().Get(link)
 	if err != nil {
 		return err
@@ -234,13 +234,13 @@ func (tat *Trollandtoad) scrapePages(link string) error {
 	if lastPage == 0 {
 		lastPage = 1
 	}
-	tat.printf("Parsing %d pages from %s", lastPage, link)
-	return tat.parsePages(link, lastPage)
+	tnt.printf("Parsing %d pages from %s", lastPage, link)
+	return tnt.parsePages(link, lastPage)
 }
 
-func (tat *Trollandtoad) scrape() error {
-	for _, link := range tatAllPagesURL {
-		err := tat.scrapePages(link)
+func (tnt *Trollandtoad) scrape() error {
+	for _, link := range tntAllPagesURL {
+		err := tnt.scrapePages(link)
 		if err != nil {
 			return err
 		}
@@ -248,21 +248,21 @@ func (tat *Trollandtoad) scrape() error {
 	return nil
 }
 
-func (tat *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tat.inventory) > 0 {
-		return tat.inventory, nil
+func (tnt *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
+	if len(tnt.inventory) > 0 {
+		return tnt.inventory, nil
 	}
 
-	err := tat.scrape()
+	err := tnt.scrape()
 	if err != nil {
 		return nil, err
 	}
 
-	return tat.inventory, nil
+	return tnt.inventory, nil
 }
 
-func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code string) error {
-	products, err := tat.client.ProductsForId(id, code)
+func (tnt *Trollandtoad) processPage(channel chan<- responseChan, id, code string) error {
+	products, err := tnt.client.ProductsForId(id, code)
 	if err != nil {
 		return err
 	}
@@ -285,16 +285,16 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 			case strings.Contains(card.Edition, "World Championships"):
 			case theCard.IsBasicLand():
 			default:
-				tat.printf("%v", err)
-				tat.printf("%q", theCard)
-				tat.printf("%s ~ %s", card.Name, card.Edition)
+				tnt.printf("%v", err)
+				tnt.printf("%q", theCard)
+				tnt.printf("%s ~ %s", card.Name, card.Edition)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
 						card, _ := mtgmatcher.GetUUID(probe)
-						tat.printf("- %s", card)
+						tnt.printf("- %s", card)
 					}
 				}
 			}
@@ -303,19 +303,19 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 
 		price, err := mtgmatcher.ParsePrice(card.BuyPrice)
 		if err != nil {
-			tat.printf("%s %v", card.Name, err)
+			tnt.printf("%s %v", card.Name, err)
 			continue
 		}
 
 		qty, err := strconv.Atoi(card.Quantity)
 		if err != nil {
-			tat.printf("%s %v", card.Name, err)
+			tnt.printf("%s %v", card.Name, err)
 			continue
 		}
 
 		var priceRatio, sellPrice float64
 
-		invCards := tat.inventory[cardId]
+		invCards := tnt.inventory[cardId]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -342,31 +342,31 @@ func (tat *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 	return nil
 }
 
-func (tat *Trollandtoad) parseBL() error {
-	modern, err := tat.client.ListModernEditions()
+func (tnt *Trollandtoad) parseBL() error {
+	modern, err := tnt.client.ListModernEditions()
 	if err != nil {
 		return err
 	}
-	vintage, err := tat.client.ListVintageEditions()
+	vintage, err := tnt.client.ListVintageEditions()
 	if err != nil {
 		return err
 	}
 
 	list := append(modern, vintage...)
 
-	tat.printf("Processing %d editions", len(list))
+	tnt.printf("Processing %d editions", len(list))
 
-	editions := make(chan TATEdition)
+	editions := make(chan TNTEdition)
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < tat.MaxConcurrency; i++ {
+	for i := 0; i < tnt.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for edition := range editions {
-				err := tat.processPage(results, edition.CategoryId, edition.DeptId)
+				err := tnt.processPage(results, edition.CategoryId, edition.DeptId)
 				if err != nil {
-					tat.printf("%v", err)
+					tnt.printf("%v", err)
 				}
 			}
 			wg.Done()
@@ -379,7 +379,7 @@ func (tat *Trollandtoad) parseBL() error {
 			if product.CategoryId == "" {
 				continue
 			}
-			tat.printf("Processing %s", product.CategoryName)
+			tnt.printf("Processing %s", product.CategoryName)
 
 			editions <- product
 		}
@@ -390,35 +390,35 @@ func (tat *Trollandtoad) parseBL() error {
 	}()
 
 	for record := range results {
-		err := tat.buylist.Add(record.cardId, record.buyEntry)
+		err := tnt.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil {
-			tat.printf("%s", err.Error())
+			tnt.printf("%s", err.Error())
 			continue
 		}
 	}
 
-	tat.buylistDate = time.Now()
+	tnt.buylistDate = time.Now()
 
 	return nil
 }
 
-func (tat *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
-	if len(tat.buylist) > 0 {
-		return tat.buylist, nil
+func (tnt *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
+	if len(tnt.buylist) > 0 {
+		return tnt.buylist, nil
 	}
 
-	err := tat.parseBL()
+	err := tnt.parseBL()
 	if err != nil {
 		return nil, err
 	}
 
-	return tat.buylist, nil
+	return tnt.buylist, nil
 }
 
-func (tat *Trollandtoad) Info() (info mtgban.ScraperInfo) {
+func (tnt *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
-	info.Shorthand = "TAT"
-	info.InventoryTimestamp = &tat.inventoryDate
-	info.BuylistTimestamp = &tat.buylistDate
+	info.Shorthand = "TNT"
+	info.InventoryTimestamp = &tnt.inventoryDate
+	info.BuylistTimestamp = &tnt.buylistDate
 	return
 }

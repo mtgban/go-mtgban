@@ -9,26 +9,26 @@ import (
 	http "github.com/hashicorp/go-retryablehttp"
 )
 
-type tatParam struct {
+type tntParam struct {
 	Action     string `json:"action"`
 	DeptCode   string `json:"deptCode"`
 	CategoryId string `json:"catid"`
 }
 
-type TATBuyingOption struct {
+type TNTBuyingOption struct {
 	ProductId  int     `json:"productid"`
 	Price      float64 `json:"saleprice"`
 	Quantity   int     `json:"quantityonsite"`
 	Conditions string  `json:"conditioncode"`
 }
 
-type TATEdition struct {
+type TNTEdition struct {
 	DeptId       string `json:"dept_id"`
 	CategoryId   string `json:"category_id"`
 	CategoryName string `json:"category_name"`
 }
 
-type TATProduct struct {
+type TNTProduct struct {
 	Product map[string]struct {
 		Name      string `json:"name"`
 		Edition   string `json:"catname"`
@@ -38,24 +38,24 @@ type TATProduct struct {
 	} `json:"product"`
 }
 
-type TATClient struct {
+type TNTClient struct {
 	client *http.Client
 }
 
 const (
-	tatInventoryURL = "https://www.trollandtoad.com/ajax/productAjax.php"
-	tatBuylistURL   = "https://www2.trollandtoad.com/buylist/ajax_scripts/buylist.php"
+	tntInventoryURL = "https://www.trollandtoad.com/ajax/productAjax.php"
+	tntBuylistURL   = "https://www2.trollandtoad.com/buylist/ajax_scripts/buylist.php"
 )
 
-func NewTATClient() *TATClient {
-	tat := TATClient{}
-	tat.client = http.NewClient()
-	tat.client.Logger = nil
-	return &tat
+func NewTNTClient() *TNTClient {
+	tnt := TNTClient{}
+	tnt.client = http.NewClient()
+	tnt.client.Logger = nil
+	return &tnt
 }
 
-func (tat *TATClient) GetProductOptions(productId string) ([]TATBuyingOption, error) {
-	resp, err := tat.client.PostForm(tatInventoryURL, url.Values{
+func (tnt *TNTClient) GetProductOptions(productId string) ([]TNTBuyingOption, error) {
+	resp, err := tnt.client.PostForm(tntInventoryURL, url.Values{
 		"productid": {productId},
 		"action":    {"getBuyingOptions"},
 	})
@@ -70,7 +70,7 @@ func (tat *TATClient) GetProductOptions(productId string) ([]TATBuyingOption, er
 		return nil, err
 	}
 
-	var options []TATBuyingOption
+	var options []TNTBuyingOption
 	err = json.Unmarshal(data, &options)
 	if err != nil {
 		return nil, err
@@ -79,16 +79,16 @@ func (tat *TATClient) GetProductOptions(productId string) ([]TATBuyingOption, er
 	return options, nil
 }
 
-func (tat *TATClient) ListVintageEditions() ([]TATEdition, error) {
-	return tat.listEditions("V")
+func (tnt *TNTClient) ListVintageEditions() ([]TNTEdition, error) {
+	return tnt.listEditions("V")
 }
 
-func (tat *TATClient) ListModernEditions() ([]TATEdition, error) {
-	return tat.listEditions("M")
+func (tnt *TNTClient) ListModernEditions() ([]TNTEdition, error) {
+	return tnt.listEditions("M")
 }
 
-func (tat *TATClient) listEditions(code string) ([]TATEdition, error) {
-	param := tatParam{
+func (tnt *TNTClient) listEditions(code string) ([]TNTEdition, error) {
+	param := tntParam{
 		Action:   "getdeptcategorylist",
 		DeptCode: code,
 	}
@@ -97,7 +97,7 @@ func (tat *TATClient) listEditions(code string) ([]TATEdition, error) {
 		return nil, err
 	}
 
-	resp, err := tat.client.Post(tatBuylistURL, "application/json", bytes.NewReader(reqBody))
+	resp, err := tnt.client.Post(tntBuylistURL, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, err
 
@@ -109,7 +109,7 @@ func (tat *TATClient) listEditions(code string) ([]TATEdition, error) {
 		return nil, err
 	}
 
-	var editions []TATEdition
+	var editions []TNTEdition
 	err = json.Unmarshal(data, &editions)
 	if err != nil {
 		return nil, err
@@ -118,15 +118,15 @@ func (tat *TATClient) listEditions(code string) ([]TATEdition, error) {
 	return editions, nil
 }
 
-func (tat *TATClient) ProductsForId(id string, code string) (*TATProduct, error) {
-	param := tatParam{
+func (tnt *TNTClient) ProductsForId(id string, code string) (*TNTProduct, error) {
+	param := tntParam{
 		Action:     "getbuylist",
 		DeptCode:   code,
 		CategoryId: id,
 	}
 	reqBody, _ := json.Marshal(&param)
 
-	resp, err := tat.client.Post(tatBuylistURL, "application/json", bytes.NewReader(reqBody))
+	resp, err := tnt.client.Post(tntBuylistURL, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (tat *TATClient) ProductsForId(id string, code string) (*TATProduct, error)
 		return nil, err
 	}
 
-	var products TATProduct
+	var products TNTProduct
 	err = json.Unmarshal(data, &products)
 	if err != nil {
 		return nil, err
