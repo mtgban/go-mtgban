@@ -73,6 +73,12 @@ var cardTable = map[string]string{
 	"Increasing Vengeancce":     "Increasing Vengeance",
 	"Furycallm Snarl":           "Furycalm Snarl",
 	"Pyromancer's Gogggles":     "Pyromancer's Goggles",
+	"Bastion of Rememberance":   "Bastion of Remembrance",
+	"Electrocute":               "Eelectrocute",
+
+	"Oakshade Stalker // Moonlight Ambusher":  "Oakshade Stalker // Moonlit Ambusher",
+	"Howlpack Piper // Wildtune Howler":       "Howlpack Piper // Wildsong Howler",
+	"Invasion of Ravnica // Guildpac Paragon": "Invasion of Ravnica // Guildpact Paragon",
 }
 
 var fullLineTable = map[string]string{
