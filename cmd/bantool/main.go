@@ -124,7 +124,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDSPHERE_EMAIL or CARDSPHERE_PASSWORD env vars")
 			}
 
-			scraper, err := cardsphere.NewScraperFull(csphereEmail, cspherePassword)
+			scraper, err := cardsphere.NewScraper(csphereEmail, cspherePassword)
 			if err != nil {
 				return nil, err
 			}

@@ -23,7 +23,7 @@ var gradingMap = map[string]float64{
 	"HP": 0.6,
 }
 
-type CardsphereFull struct {
+type Cardsphere struct {
 	LogCallback    mtgban.LogCallbackFunc
 	buylistDate    time.Time
 	MaxConcurrency int
@@ -32,8 +32,8 @@ type CardsphereFull struct {
 	buylist mtgban.BuylistRecord
 }
 
-func NewScraperFull(email, password string) (*CardsphereFull, error) {
-	cs := CardsphereFull{}
+func NewScraper(email, password string) (*Cardsphere, error) {
+	cs := Cardsphere{}
 	cs.buylist = mtgban.BuylistRecord{}
 	cs.MaxConcurrency = defaultConcurrency
 	client, err := NewCardSphereClient(email, password)
@@ -44,9 +44,9 @@ func NewScraperFull(email, password string) (*CardsphereFull, error) {
 	return &cs, nil
 }
 
-func (cs *CardsphereFull) printf(format string, a ...interface{}) {
+func (cs *Cardsphere) printf(format string, a ...interface{}) {
 	if cs.LogCallback != nil {
-		cs.LogCallback("[CSF] "+format, a...)
+		cs.LogCallback("[CS] "+format, a...)
 	}
 }
 
@@ -55,7 +55,7 @@ type responseChan struct {
 	blEntry *mtgban.BuylistEntry
 }
 
-func (cs *CardsphereFull) processPage(results chan<- responseChan, offset int) error {
+func (cs *Cardsphere) processPage(results chan<- responseChan, offset int) error {
 	offers, err := cs.client.GetOfferListByMaxAbsolute(offset)
 	if err != nil {
 		return err
@@ -151,7 +151,7 @@ func (cs *CardsphereFull) processPage(results chan<- responseChan, offset int) e
 	return nil
 }
 
-func (cs *CardsphereFull) parseBL() error {
+func (cs *Cardsphere) parseBL() error {
 	results := make(chan responseChan)
 	offsets := make(chan int)
 	var wg sync.WaitGroup
@@ -214,7 +214,7 @@ func (cs *CardsphereFull) parseBL() error {
 	return nil
 }
 
-func (cs *CardsphereFull) Buylist() (mtgban.BuylistRecord, error) {
+func (cs *Cardsphere) Buylist() (mtgban.BuylistRecord, error) {
 	if len(cs.buylist) > 0 {
 		return cs.buylist, nil
 	}
@@ -227,7 +227,7 @@ func (cs *CardsphereFull) Buylist() (mtgban.BuylistRecord, error) {
 	return cs.buylist, nil
 }
 
-func (cs *CardsphereFull) Info() (info mtgban.ScraperInfo) {
+func (cs *Cardsphere) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardsphere"
 	info.Shorthand = "CS"
 	info.BuylistTimestamp = &cs.buylistDate
