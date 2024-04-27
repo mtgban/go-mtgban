@@ -26,7 +26,6 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/mtgban/go-mtgban/abugames"
-	"github.com/mtgban/go-mtgban/amazon"
 	"github.com/mtgban/go-mtgban/blueprint"
 	"github.com/mtgban/go-mtgban/cardkingdom"
 	"github.com/mtgban/go-mtgban/cardmarket"
@@ -82,18 +81,6 @@ var options = map[string]*scraperOption{
 	"abugames": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := abugames.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"amazon": {
-		Init: func() (mtgban.Scraper, error) {
-			amzToken := os.Getenv("AMAZON_TOKEN")
-			if amzToken == "" {
-				return nil, errors.New("missing AMAZON_TOKEN env var")
-			}
-
-			scraper := amazon.NewScraper(amzToken)
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
