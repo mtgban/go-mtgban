@@ -283,6 +283,8 @@ func (tnt *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 		} else if err != nil {
 			switch {
 			case strings.Contains(card.Edition, "World Championships"):
+			case strings.Contains(card.Name, "Token"):
+			case strings.Contains(card.Name, "Silver Stamped"):
 			case theCard.IsBasicLand():
 			default:
 				tnt.printf("%v", err)
