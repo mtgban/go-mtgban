@@ -32,6 +32,34 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 	return sellers, nil
 }
 
+// Base structure for the conversion of a Market to a standard Seller
+// This will hold the original Market scraper and retrieve the loaded
+// subseller from its ScraperInfo
+type BaseMarket struct {
+	inventory InventoryRecord
+	info      ScraperInfo
+	scraper   Market
+}
+
+func (m *BaseMarket) Inventory() (InventoryRecord, error) {
+	if m.inventory == nil {
+		// Retrieve inventory from the original scraper
+		inventory, err := m.scraper.InventoryForSeller(m.info.Shorthand)
+		if err != nil {
+			return nil, err
+		}
+		m.inventory = inventory
+
+		// Original scraper is not useful any more here
+		m.scraper = nil
+	}
+	return m.inventory, nil
+}
+
+func (m *BaseMarket) Info() ScraperInfo {
+	return m.info
+}
+
 type MarketTotalsEntry struct {
 	CardId string
 
