@@ -3504,7 +3504,9 @@ var sldVariants = map[string]map[string]string{
 		"secret lair reskin": "480",
 	},
 	"Narset, Parter of Veils": {
-		"retro frame": "1041",
+		"":              "508",
+		"stained glass": "508",
+		"retro frame":   "1041",
 	},
 	"Counterspell": {
 		"sctlr":      "SCTLR",
@@ -3665,9 +3667,10 @@ var tmpVariants = map[string]map[string]string{
 
 var plstVariants = map[string]map[string]string{
 	"Imperious Perfect": {
-		"extended art":       "PCMP-9",
-		"champs full art":    "PCMP-9",
-		"state champs promo": "PCMP-9",
+		"extended art":                       "PCMP-9",
+		"champs full art":                    "PCMP-9",
+		"state champs promo":                 "PCMP-9",
+		"the list extended art champs promo": "PCMP-9",
 	},
 	"Lightning Bolt": {
 		"magicfest":           "PF19-1",
