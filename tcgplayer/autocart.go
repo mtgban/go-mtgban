@@ -10,7 +10,7 @@ import (
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 )
 
-const tcgAdd2CartURL = "https://mpapi.tcgplayer.com/v2/cart/%s/item/add"
+const tcgAdd2CartURL = "https://mpgateway.tcgplayer.com/v1/cart/%s/item/add"
 
 type TCGAutoClient struct {
 	client *http.Client
