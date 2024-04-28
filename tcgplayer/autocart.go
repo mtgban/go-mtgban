@@ -37,7 +37,7 @@ type TCGAutocartResponse struct {
 	Errors []struct {
 		Code    string `json:"Code"`
 		Message string `json:"Message"`
-	}
+	} `json:"errors"`
 	Results []struct {
 		IsDirect                bool    `json:"IsDirect"`
 		SellerQuantityAvailable int     `json:"SellerQuantityAvailable"`
