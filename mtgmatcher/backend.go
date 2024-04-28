@@ -60,8 +60,8 @@ var backend struct {
 	// Map of uuid ; CardObject
 	UUIDs map[string]CardObject
 
-	// Map with token names
-	Tokens map[string]bool
+	// Slice with token names (not normalized and without any "Token" tags)
+	Tokens []string
 
 	// Slice with every uniquely normalized name
 	AllNames []string
@@ -303,31 +303,49 @@ func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
 func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
 	cards := map[string]cardinfo{}
-	tokens := map[string]bool{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
 	var promoTypes []string
+	var allCardNames []string
+	var tokens []string
 
 	for code, set := range ap.Data {
+		// Filer out unneeded data
 		if skipSet(set) {
 			delete(ap.Data, code)
 			continue
 		}
 
+		// Load all possible card names
+		for _, card := range set.Cards {
+			if !slices.Contains(allCardNames, card.Name) {
+				allCardNames = append(allCardNames, card.Name)
+			}
+		}
+
+		// Load token names (that don't have the same name of a real card)
+		for _, token := range set.Tokens {
+			if !slices.Contains(tokens, token.Name) && !slices.Contains(allCardNames, token.Name) {
+				tokens = append(tokens, token.Name)
+			}
+		}
+	}
+
+	for code, set := range ap.Data {
 		var filteredCards []mtgjson.Card
 
 		allCards := set.Cards
 
-		// Load token names
-		for _, token := range set.Tokens {
-			tokens[token.Name] = true
-		}
-
 		if okForTokens(set) {
 			// Append tokens to the list of considered cards
-			allCards = append(allCards, set.Tokens...)
+			// if they are not named in the same way of a real card
+			for _, token := range set.Tokens {
+				if !slices.Contains(allCardNames, token.Name) {
+					allCards = append(allCards, token)
+				}
+			}
 		} else {
 			// Clean a bit of memory
 			set.Tokens = nil
@@ -717,14 +735,6 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			continue
 		}
 		allUUIDs = append(allUUIDs, uuid)
-	}
-
-	// Filter out token names with same names as real cards
-	for tokenName := range tokens {
-		_, found := cards[Normalize(tokenName)]
-		if found {
-			delete(tokens, tokenName)
-		}
 	}
 
 	sort.Strings(promoTypes)

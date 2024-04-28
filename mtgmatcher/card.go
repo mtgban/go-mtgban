@@ -6,6 +6,7 @@ import (
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	"golang.org/x/exp/slices"
 )
 
 // Card is a generic card representation using fields defined by the MTGJSON project.
@@ -117,7 +118,7 @@ func (c *Card) addToVariant(tag string) {
 // Returns whether the input string may represent a token
 func IsToken(name string) bool {
 	// Check main table first
-	if backend.Tokens[name] {
+	if slices.Contains(backend.Tokens, name) {
 		return true
 	}
 	switch name {
