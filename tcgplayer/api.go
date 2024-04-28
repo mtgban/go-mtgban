@@ -601,6 +601,7 @@ func TCGLatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, er
 const (
 	SellersPageURL     = "https://shop.tcgplayer.com/sellers"
 	SellerInventoryURL = "https://mp-search-api.tcgplayer.com/v1/search/request?q=&isList=true&mpfev=1953"
+	SellerListingURL   = "https://mp-search-api.tcgplayer.com/v1/product/%d/listings"
 
 	DefaultSellerRequestSize = 50
 
@@ -722,6 +723,37 @@ type sellerInventoryResponse struct {
 	} `json:"results"`
 }
 
+type SellerListing struct {
+	ChannelID            float64 `json:"channelId"`
+	Condition            string  `json:"condition"`
+	ConditionID          float64 `json:"conditionId"`
+	DirectInventory      float64 `json:"directInventory"`
+	DirectProduct        bool    `json:"directProduct"`
+	DirectSeller         bool    `json:"directSeller"`
+	ForwardFreight       bool    `json:"forwardFreight"`
+	GoldSeller           bool    `json:"goldSeller"`
+	Language             string  `json:"language"`
+	LanguageAbbreviation string  `json:"languageAbbreviation"`
+	LanguageID           float64 `json:"languageId"`
+	ListingID            float64 `json:"listingId"`
+	ListingType          string  `json:"listingType"`
+	Price                float64 `json:"price"`
+	Printing             string  `json:"printing"`
+	ProductConditionID   float64 `json:"productConditionId"`
+	ProductID            float64 `json:"productId"`
+	Quantity             float64 `json:"quantity"`
+	RankedShippingPrice  float64 `json:"rankedShippingPrice"`
+	Score                float64 `json:"score"`
+	SellerID             string  `json:"sellerId"`
+	SellerKey            string  `json:"sellerKey"`
+	SellerName           string  `json:"sellerName"`
+	SellerRating         float64 `json:"sellerRating"`
+	SellerSales          string  `json:"sellerSales"`
+	SellerShippingPrice  float64 `json:"sellerShippingPrice"`
+	ShippingPrice        float64 `json:"shippingPrice"`
+	VerifiedSeller       bool    `json:"verifiedSeller"`
+}
+
 type SellerInventoryResult struct {
 	FoilOnly                bool    `json:"foilOnly"`
 	ImageCount              float64 `json:"imageCount"`
@@ -753,36 +785,7 @@ type SellerInventoryResult struct {
 	CustomAttributes        struct {
 		Number string `json:"number"`
 	} `json:"customAttributes"`
-	Listings []struct {
-		ChannelID            float64 `json:"channelId"`
-		Condition            string  `json:"condition"`
-		ConditionID          float64 `json:"conditionId"`
-		DirectInventory      float64 `json:"directInventory"`
-		DirectProduct        bool    `json:"directProduct"`
-		DirectSeller         bool    `json:"directSeller"`
-		ForwardFreight       bool    `json:"forwardFreight"`
-		GoldSeller           bool    `json:"goldSeller"`
-		Language             string  `json:"language"`
-		LanguageAbbreviation string  `json:"languageAbbreviation"`
-		LanguageID           float64 `json:"languageId"`
-		ListingID            float64 `json:"listingId"`
-		ListingType          string  `json:"listingType"`
-		Price                float64 `json:"price"`
-		Printing             string  `json:"printing"`
-		ProductConditionID   float64 `json:"productConditionId"`
-		ProductID            float64 `json:"productId"`
-		Quantity             float64 `json:"quantity"`
-		RankedShippingPrice  float64 `json:"rankedShippingPrice"`
-		Score                float64 `json:"score"`
-		SellerID             string  `json:"sellerId"`
-		SellerKey            string  `json:"sellerKey"`
-		SellerName           string  `json:"sellerName"`
-		SellerRating         float64 `json:"sellerRating"`
-		SellerSales          string  `json:"sellerSales"`
-		SellerShippingPrice  float64 `json:"sellerShippingPrice"`
-		ShippingPrice        float64 `json:"shippingPrice"`
-		VerifiedSeller       bool    `json:"verifiedSeller"`
-	} `json:"listings"`
+	Listings []SellerListing `json:"listings"`
 }
 
 func NewTCGSellerClient() *TCGClient {
@@ -843,4 +846,86 @@ func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int,
 	}
 
 	return &response, nil
+}
+
+type sellerInventoryListingRequest struct {
+	Filters struct {
+		Term struct {
+			SellerStatus string `json:"sellerStatus"`
+			ChannelID    int    `json:"channelId"`
+		} `json:"term"`
+		Range struct {
+			Quantity struct {
+				Gte int `json:"gte"`
+			} `json:"quantity"`
+		} `json:"range"`
+		Exclude struct {
+			ChannelExclusion int `json:"channelExclusion"`
+		} `json:"exclude"`
+	} `json:"filters"`
+	Context struct {
+		ShippingCountry string `json:"shippingCountry"`
+		Cart            struct {
+		} `json:"cart"`
+	} `json:"context"`
+	Aggregations []string `json:"aggregations"`
+	From         int      `json:"from"`
+	Size         int      `json:"size"`
+	Sort         struct {
+		Field string `json:"field"`
+		Order string `json:"order"`
+	} `json:"sort"`
+}
+
+type sellerInventoryListingResponse struct {
+	Errors []struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	} `json:"errors"`
+	Results []struct {
+		TotalResults int             `json:"totalResults"`
+		Results      []SellerListing `json:"results"`
+	} `json:"results"`
+}
+
+func (tcg *TCGClient) TCGInventoryListing(productId, size, page int) ([]SellerListing, error) {
+	var params sellerInventoryListingRequest
+	params.Filters.Term.SellerStatus = "Live"
+	params.Filters.Range.Quantity.Gte = 1
+	params.Context.ShippingCountry = "US"
+	params.Aggregations = []string{"listingType"}
+	params.From = size * page
+	params.Size = size
+	params.Sort.Field = "price"
+	params.Sort.Order = "asc"
+
+	payload, err := json.Marshal(&params)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := tcg.client.Post(SellerListingURL, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response sellerInventoryListingResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+	}
+	if len(response.Errors) > 0 {
+		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
+	}
+	if len(response.Results) == 0 {
+		return nil, fmt.Errorf("emtpy results in response at page %d", page)
+	}
+
+	return response.Results[0].Results, nil
 }
