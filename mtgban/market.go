@@ -15,9 +15,8 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 	}
 
 	// Retrieve the list of unique sellers, and create a single seller
-	listSellers := market.MarketNames()
-	sellers := make([]Seller, 0, len(listSellers))
-	for _, sellerName := range listSellers {
+	var sellers []Seller
+	for _, sellerName := range market.MarketNames() {
 		inventory, err := market.InventoryForSeller(sellerName)
 		if err != nil {
 			return nil, err
