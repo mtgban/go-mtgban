@@ -231,15 +231,6 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		fullName = strings.Replace(fullName, " Foil", "", -1)
 	}
 
-	// Sometimes there are tags at the end of the card name,
-	// but without parenthesis, so make sure they are present.
-	for _, tag := range tagsTable {
-		if strings.HasSuffix(fullName, tag) {
-			fullName = strings.Replace(fullName, tag, "("+tag+")", 1)
-			break
-		}
-	}
-
 	fullName = strings.TrimPrefix(fullName, "Basic Land - ")
 
 	// Every edition has "Singles", the foil ones have "Foil Singles"
@@ -273,10 +264,12 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		variant = strings.Join(s[1:], " ")
 	}
 
-	// Repeat after splitting by " - ", make sure to exclude numbers at the end
+	// Sometimes there are tags at the end of the card name,
+	// but without parenthesis, so make sure they are present.
 	for _, tag := range tagsTable {
-		if strings.HasSuffix(removeNumber(cardName), tag) {
-			cardName = strings.Replace(cardName, tag, "("+tag+")", 1)
+		if strings.Contains(cardName, tag) {
+			splits := mtgmatcher.Cut(cardName, tag)
+			cardName = splits[0] + " (" + splits[1] + ")"
 			break
 		}
 	}
