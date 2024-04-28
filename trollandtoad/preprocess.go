@@ -656,6 +656,8 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 				variant = strings.Replace(variant, "Top 8", "", 1)
 			} else if strings.Contains(variant, "SLD Promo") {
 				edition = "SLD"
+			} else if variant == "Walmart" {
+				edition = "PRES"
 			}
 
 			switch variant {
