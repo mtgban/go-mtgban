@@ -231,12 +231,12 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 
 	return mc.inventory, nil
 }
-func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition string) error {
+func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) error {
 	i := 1
 	totals := 0
 	for {
-		mc.printf("Querying %s page %d", edition, i)
-		result, err := mc.client.GetBuylistForEdition(edition, i)
+		mc.printf("Querying %s page %d", edition.Name, i)
+		result, err := mc.client.GetBuylistForEdition(edition.Id, i)
 		if err != nil {
 			return err
 		}
@@ -329,7 +329,7 @@ func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
 	}
 	mc.printf("Found %d editions", len(editions))
 
-	editionsChan := make(chan string)
+	editionsChan := make(chan MCExpansion)
 	results := make(chan resultChan)
 	var wg sync.WaitGroup
 

@@ -182,14 +182,17 @@ func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) 
 	return response.Data, nil
 }
 
-type MCBuylistEditionResponse struct {
-	Expansions []struct {
-		Espansione string `json:"Espansione"`
-		Enabled    bool   `json:"Enabled"`
-	} `json:"Expansions"`
+type MCExpansion struct {
+	Id      int    `json:"Id"`
+	Name    string `json:"Espansione"`
+	Enabled bool   `json:"Enabled"`
 }
 
-func (mc *MCClient) GetBuylistEditions() ([]string, error) {
+type MCBuylistEditionResponse struct {
+	Expansions []MCExpansion `json:"Expansions"`
+}
+
+func (mc *MCClient) GetBuylistEditions() ([]MCExpansion, error) {
 	resp, err := mc.client.Get(mcEditionBuylistURL)
 	if err != nil {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
@@ -207,21 +210,13 @@ func (mc *MCClient) GetBuylistEditions() ([]string, error) {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
 	}
 
-	editions := make([]string, 0, len(response.Expansions))
-	for _, edition := range response.Expansions {
-		if !edition.Enabled {
-			continue
-		}
-		editions = append(editions, edition.Espansione)
-	}
-
-	return editions, nil
+	return response.Expansions, nil
 }
 
 type MCBuylistRequest struct {
 	Q              string  `json:"q"`
 	Game           string  `json:"game"`
-	Edition        string  `json:"edition"`
+	Edition        int     `json:"edition"`
 	Rarity         string  `json:"rarity"`
 	Color          string  `json:"color"`
 	Firstedition   string  `json:"firstedition"`
@@ -284,7 +279,7 @@ func (mc *MCClient) GetHotBuylistPage(page int) ([]MCProduct, error) {
 	return response.Products, nil
 }
 
-func (mc *MCClient) GetBuylistForEdition(edition string, page int) (*MCBuylistResult, error) {
+func (mc *MCClient) GetBuylistForEdition(edition, page int) (*MCBuylistResult, error) {
 	payload, err := json.Marshal(&MCBuylistRequest{
 		IsBuyList: true,
 		Game:      "magic",
