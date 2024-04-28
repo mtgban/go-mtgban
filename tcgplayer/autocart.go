@@ -35,15 +35,15 @@ type TCGAutocartRequest struct {
 
 type TCGAutocartResponse struct {
 	Errors []struct {
-		Code    string `json:"Code"`
-		Message string `json:"Message"`
+		Code    string `json:"code"`
+		Message string `json:"message"`
 	} `json:"errors"`
 	Results []struct {
-		IsDirect                bool    `json:"IsDirect"`
-		SellerQuantityAvailable int     `json:"SellerQuantityAvailable"`
-		ItemQuantityInCart      int     `json:"ItemQuantityInCart"`
-		CurrentPrice            float64 `json:"CurrentPrice"`
-		Status                  int     `json:"Status"`
+		IsDirect                bool    `json:"isDirect"`
+		SellerQuantityAvailable int     `json:"sellerQuantityAvailable"`
+		ItemQuantityInCart      int     `json:"itemQuantityInCart"`
+		CurrentPrice            float64 `json:"currentPrice"`
+		Status                  int     `json:"status"`
 	}
 }
 
