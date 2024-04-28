@@ -30,6 +30,7 @@ var EditionTable = map[string]string{
 
 	// Universes Beyond
 	"The Lord of the Rings Commander":                                   "Tales of Middle-earth Commander",
+	"The Lord of the Rings: Tales of Middle-Earth Commander":            "Tales of Middle-earth Commander",
 	"The Lord of the Rings: Tales of Middle-earth - Commander":          "Tales of Middle-earth Commander",
 	"The Lord of the Rings: Tales of Middle-earth - Commander Variants": "Tales of Middle-earth Commander",
 	"LOTR - Realms and Relic Box Topper":                                "Tales of Middle-earth Commander",
