@@ -137,6 +137,8 @@ var tagsTable = []string{
 	"Sealed", // Needs to be the very last
 }
 
+const MB1ProductHash = "48ff4766-9d88-5426-800a-1613c990011b"
+
 func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	if edition == "Bulk" || fullName == "" {
 		return nil, errors.New("bulk")
@@ -513,6 +515,25 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 	case "Innistrad Midnight Hunt Collector Booster":
 		if strings.Contains(cardName, "Tovolar, Dire Overlord") {
 			cardName = "Tovolar, Dire Overlord // Tovolar, the Midnight Scourge"
+		}
+
+	case "Mystery Booster":
+		picks, err := mtgmatcher.GetProbabilitiesForSealed("MB1", MB1ProductHash)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, pick := range picks {
+			co, err := mtgmatcher.GetUUID(pick.UUID)
+			if err != nil {
+				continue
+			}
+			if co.Name != cardName {
+				continue
+			}
+			variant = co.Number
+			edition = "PLST"
+			break
 		}
 
 	case "Promo Cards", "Promos":
