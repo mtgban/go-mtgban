@@ -646,12 +646,6 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		default:
 			if strings.Contains(fullName, "005") && strings.Contains(fullName, "GP") {
 				edition = "G18"
-			} else if strings.Contains(variant, "Prerelease") {
-				cardName = removeNumber(cardName)
-
-				if cardName == "Omnispell Adept" || cardName == "Dream Eater" {
-					return nil, errors.New("doesn't exist")
-				}
 			} else if strings.Contains(variant, "Top 8") {
 				variant = strings.Replace(variant, "Top 8", "", 1)
 			} else if strings.Contains(variant, "SLD Promo") {
@@ -714,16 +708,4 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		Edition:   edition,
 		Foil:      isFoil,
 	}, nil
-}
-
-func removeNumber(input string) string {
-	cs := strings.Fields(input)
-	for i := range cs {
-		if mtgmatcher.ExtractNumber(cs[i]) != "" {
-			cs[i] = ""
-		}
-	}
-	output := strings.Join(cs, " ")
-	output = strings.Replace(output, "  ", " ", -1)
-	return strings.TrimSpace(output)
 }
