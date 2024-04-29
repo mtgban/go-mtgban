@@ -37,9 +37,8 @@ type SealedEVScraper struct {
 	inventoryDate time.Time
 	buylistDate   time.Time
 
-	inventory   mtgban.InventoryRecord
-	marketplace map[string]mtgban.InventoryRecord
-	buylist     mtgban.BuylistRecord
+	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 
 	banpriceKey string
 	prices      *BANPriceResponse
@@ -141,7 +140,6 @@ type evOutputStash struct {
 func NewScraper(sig string) *SealedEVScraper {
 	ss := SealedEVScraper{}
 	ss.inventory = mtgban.InventoryRecord{}
-	ss.marketplace = map[string]mtgban.InventoryRecord{}
 	ss.buylist = mtgban.BuylistRecord{}
 	ss.banpriceKey = sig
 	return &ss
@@ -475,41 +473,8 @@ func (ss *SealedEVScraper) Buylist() (mtgban.BuylistRecord, error) {
 	return ss.buylist, nil
 }
 
-func (ss *SealedEVScraper) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
-	if len(ss.inventory) == 0 {
-		_, err := ss.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inventory, found := ss.marketplace[sellerName]
-	if found {
-		return inventory, nil
-	}
-
-	for card := range ss.inventory {
-		for i := range ss.inventory[card] {
-			if ss.inventory[card][i].SellerName == sellerName {
-				if ss.inventory[card][i].Price == 0 {
-					continue
-				}
-				if ss.marketplace[sellerName] == nil {
-					ss.marketplace[sellerName] = mtgban.InventoryRecord{}
-				}
-				ss.marketplace[sellerName][card] = append(ss.marketplace[sellerName][card], ss.inventory[card][i])
-			}
-		}
-	}
-
-	if len(ss.marketplace[sellerName]) == 0 {
-		return nil, errors.New("seller not found")
-	}
-	return ss.marketplace[sellerName], nil
-}
-
 func (ss *SealedEVScraper) InitializeInventory(reader io.Reader) error {
-	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
+	inventory, err := mtgban.LoadInventoryFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -517,7 +482,6 @@ func (ss *SealedEVScraper) InitializeInventory(reader io.Reader) error {
 		return errors.New("nothing was loaded")
 	}
 
-	ss.marketplace = market
 	ss.inventory = inventory
 
 	ss.printf("Loaded inventory from file")

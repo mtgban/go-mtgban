@@ -184,10 +184,6 @@ type Market interface {
 	// it will start scraping the seller gathering the necessary data.
 	Inventory() (InventoryRecord, error)
 
-	// Return the inventory for any given seller present in the market.
-	// If possible, it will use the Inventory() call to populate data.
-	InventoryForSeller(string) (InventoryRecord, error)
-
 	// Return some information about the market
 	Info() ScraperInfo
 

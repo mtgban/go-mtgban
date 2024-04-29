@@ -29,14 +29,12 @@ type Cardshark struct {
 	Referral       string
 	MaxConcurrency int
 
-	inventory   mtgban.InventoryRecord
-	marketplace map[string]mtgban.InventoryRecord
+	inventory mtgban.InventoryRecord
 }
 
 func NewScraper() *Cardshark {
 	cs := Cardshark{}
 	cs.inventory = mtgban.InventoryRecord{}
-	cs.marketplace = map[string]mtgban.InventoryRecord{}
 	cs.MaxConcurrency = defaultConcurrency
 	return &cs
 }
@@ -291,41 +289,8 @@ func (cs *Cardshark) Inventory() (mtgban.InventoryRecord, error) {
 
 }
 
-func (cs *Cardshark) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
-	if len(cs.inventory) == 0 {
-		_, err := cs.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inventory, found := cs.marketplace[sellerName]
-	if found {
-		return inventory, nil
-	}
-
-	for card := range cs.inventory {
-		for i := range cs.inventory[card] {
-			if cs.inventory[card][i].SellerName == sellerName {
-				if cs.inventory[card][i].Price == 0 {
-					continue
-				}
-				if cs.marketplace[sellerName] == nil {
-					cs.marketplace[sellerName] = mtgban.InventoryRecord{}
-				}
-				cs.marketplace[sellerName][card] = append(cs.marketplace[sellerName][card], cs.inventory[card][i])
-			}
-		}
-	}
-
-	if len(cs.marketplace[sellerName]) == 0 {
-		return nil, fmt.Errorf("seller %s not found", sellerName)
-	}
-	return cs.marketplace[sellerName], nil
-}
-
 func (cs *Cardshark) InitializeInventory(reader io.Reader) error {
-	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
+	inventory, err := mtgban.LoadInventoryFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -333,7 +298,6 @@ func (cs *Cardshark) InitializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
-	cs.marketplace = market
 	cs.inventory = inventory
 
 	cs.printf("Loaded inventory from file")

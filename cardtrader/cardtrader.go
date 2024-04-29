@@ -32,8 +32,7 @@ type CardtraderMarket struct {
 	client       *CTAuthClient
 	loggedClient *CTLoggedClient
 
-	inventory   mtgban.InventoryRecord
-	marketplace map[string]mtgban.InventoryRecord
+	inventory mtgban.InventoryRecord
 
 	blueprints map[int]*Blueprint
 }
@@ -45,7 +44,6 @@ var availableMarketNames = []string{
 func NewScraperMarket(token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
-	ct.marketplace = map[string]mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
 
@@ -324,41 +322,8 @@ func (ct *CardtraderMarket) Inventory() (mtgban.InventoryRecord, error) {
 	return ct.inventory, nil
 }
 
-func (ct *CardtraderMarket) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
-	if len(ct.inventory) == 0 {
-		_, err := ct.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inventory, found := ct.marketplace[sellerName]
-	if found {
-		return inventory, nil
-	}
-
-	for card := range ct.inventory {
-		for i := range ct.inventory[card] {
-			if ct.inventory[card][i].SellerName == sellerName {
-				if ct.inventory[card][i].Price == 0 {
-					continue
-				}
-				if ct.marketplace[sellerName] == nil {
-					ct.marketplace[sellerName] = mtgban.InventoryRecord{}
-				}
-				ct.marketplace[sellerName][card] = append(ct.marketplace[sellerName][card], ct.inventory[card][i])
-			}
-		}
-	}
-
-	if len(ct.marketplace[sellerName]) == 0 {
-		return nil, fmt.Errorf("seller %s not found", sellerName)
-	}
-	return ct.marketplace[sellerName], nil
-}
-
 func (ct *CardtraderMarket) InitializeInventory(reader io.Reader) error {
-	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
+	inventory, err := mtgban.LoadInventoryFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -366,7 +331,6 @@ func (ct *CardtraderMarket) InitializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
-	ct.marketplace = market
 	ct.inventory = inventory
 
 	ct.printf("Loaded inventory from file")

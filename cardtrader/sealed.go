@@ -25,7 +25,6 @@ type CardtraderSealed struct {
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
-	marketplace   map[string]mtgban.InventoryRecord
 
 	blueprints map[int]*Blueprint
 }
@@ -33,7 +32,6 @@ type CardtraderSealed struct {
 func NewScraperSealed(token string) (*CardtraderSealed, error) {
 	ct := CardtraderSealed{}
 	ct.inventory = mtgban.InventoryRecord{}
-	ct.marketplace = map[string]mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
 	ct.MaxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
@@ -263,41 +261,8 @@ func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
 	return ct.inventory, nil
 }
 
-func (ct *CardtraderSealed) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
-	if len(ct.inventory) == 0 {
-		_, err := ct.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inventory, found := ct.marketplace[sellerName]
-	if found {
-		return inventory, nil
-	}
-
-	for card := range ct.inventory {
-		for i := range ct.inventory[card] {
-			if ct.inventory[card][i].SellerName == sellerName {
-				if ct.inventory[card][i].Price == 0 {
-					continue
-				}
-				if ct.marketplace[sellerName] == nil {
-					ct.marketplace[sellerName] = mtgban.InventoryRecord{}
-				}
-				ct.marketplace[sellerName][card] = append(ct.marketplace[sellerName][card], ct.inventory[card][i])
-			}
-		}
-	}
-
-	if len(ct.marketplace[sellerName]) == 0 {
-		return nil, fmt.Errorf("seller %s not found", sellerName)
-	}
-	return ct.marketplace[sellerName], nil
-}
-
 func (ct *CardtraderSealed) InitializeInventory(reader io.Reader) error {
-	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
+	inventory, err := mtgban.LoadInventoryFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -305,7 +270,6 @@ func (ct *CardtraderSealed) InitializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
-	ct.marketplace = market
 	ct.inventory = inventory
 
 	ct.printf("Loaded inventory from file")

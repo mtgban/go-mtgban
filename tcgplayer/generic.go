@@ -18,8 +18,7 @@ type TCGPlayerGeneric struct {
 	Affiliate      string
 	MaxConcurrency int
 
-	inventory   mtgban.InventoryRecord
-	marketplace map[string]mtgban.InventoryRecord
+	inventory mtgban.InventoryRecord
 
 	editions map[int]TCGGroup
 
@@ -45,7 +44,6 @@ func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 func NewScraperGeneric(publicId, privateId string, category int, groups ...string) (*TCGPlayerGeneric, error) {
 	tcg := TCGPlayerGeneric{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.marketplace = map[string]mtgban.InventoryRecord{}
 	tcg.client = NewTCGClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 	check, err := tcg.client.TCGCategoriesDetails([]int{category})
@@ -202,41 +200,8 @@ func (tcg *TCGPlayerGeneric) Inventory() (mtgban.InventoryRecord, error) {
 	return tcg.inventory, nil
 }
 
-func (tcg *TCGPlayerGeneric) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) == 0 {
-		_, err := tcg.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inventory, found := tcg.marketplace[sellerName]
-	if found {
-		return inventory, nil
-	}
-
-	for card := range tcg.inventory {
-		for i := range tcg.inventory[card] {
-			if tcg.inventory[card][i].SellerName == sellerName {
-				if tcg.inventory[card][i].Price == 0 {
-					continue
-				}
-				if tcg.marketplace[sellerName] == nil {
-					tcg.marketplace[sellerName] = mtgban.InventoryRecord{}
-				}
-				tcg.marketplace[sellerName][card] = append(tcg.marketplace[sellerName][card], tcg.inventory[card][i])
-			}
-		}
-	}
-
-	if len(tcg.marketplace[sellerName]) == 0 {
-		return nil, fmt.Errorf("seller %s not found", sellerName)
-	}
-	return tcg.marketplace[sellerName], nil
-}
-
 func (tcg *TCGPlayerGeneric) InitializeInventory(reader io.Reader) error {
-	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
+	inventory, err := mtgban.LoadInventoryFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -244,7 +209,6 @@ func (tcg *TCGPlayerGeneric) InitializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
-	tcg.marketplace = market
 	tcg.inventory = inventory
 
 	tcg.printf("Loaded inventory from file")

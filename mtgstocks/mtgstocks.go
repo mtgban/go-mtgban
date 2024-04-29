@@ -2,7 +2,6 @@ package mtgstocks
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -19,8 +18,7 @@ type MTGStocks struct {
 	inventoryDate  time.Time
 	MaxConcurrency int
 
-	inventory   mtgban.InventoryRecord
-	marketplace map[string]mtgban.InventoryRecord
+	inventory mtgban.InventoryRecord
 }
 
 type requestChan struct {
@@ -46,7 +44,6 @@ func (stks *MTGStocks) printf(format string, a ...interface{}) {
 func NewScraper() *MTGStocks {
 	stks := MTGStocks{}
 	stks.inventory = mtgban.InventoryRecord{}
-	stks.marketplace = map[string]mtgban.InventoryRecord{}
 	stks.MaxConcurrency = defaultConcurrency
 	return &stks
 }
@@ -200,39 +197,6 @@ func (stks *MTGStocks) Inventory() (mtgban.InventoryRecord, error) {
 	}
 
 	return stks.inventory, nil
-}
-
-func (stks *MTGStocks) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
-	if len(stks.inventory) == 0 {
-		_, err := stks.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inventory, found := stks.marketplace[sellerName]
-	if found {
-		return inventory, nil
-	}
-
-	for card := range stks.inventory {
-		for i := range stks.inventory[card] {
-			if stks.inventory[card][i].SellerName == sellerName {
-				if stks.inventory[card][i].Price == 0 {
-					continue
-				}
-				if stks.marketplace[sellerName] == nil {
-					stks.marketplace[sellerName] = mtgban.InventoryRecord{}
-				}
-				stks.marketplace[sellerName][card] = append(stks.marketplace[sellerName][card], stks.inventory[card][i])
-			}
-		}
-	}
-
-	if len(stks.marketplace[sellerName]) == 0 {
-		return nil, fmt.Errorf("seller %s not found", sellerName)
-	}
-	return stks.marketplace[sellerName], nil
 }
 
 func (tcg *MTGStocks) MarketNames() []string {

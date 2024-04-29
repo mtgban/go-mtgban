@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"fmt"
 	"sort"
 
 	"golang.org/x/exp/maps"
@@ -17,7 +18,7 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 	// Retrieve the list of unique sellers, and create a single seller
 	var sellers []Seller
 	for _, sellerName := range market.MarketNames() {
-		inventory, err := market.InventoryForSeller(sellerName)
+		inventory, err := InventoryForSeller(market, sellerName)
 		if err != nil {
 			return nil, err
 		}
@@ -32,6 +33,30 @@ func Seller2Sellers(market Market) ([]Seller, error) {
 	return sellers, nil
 }
 
+// Return the inventory for any given seller present in the market.
+// If possible, it will use the Inventory() call to populate data.
+func InventoryForSeller(seller Seller, sellerName string) (InventoryRecord, error) {
+	inventory, err := seller.Inventory()
+	if err != nil {
+		return nil, err
+	}
+
+	marketplace := InventoryRecord{}
+	for uuid := range inventory {
+		for i := range inventory[uuid] {
+			if inventory[uuid][i].SellerName == sellerName {
+				marketplace[uuid] = append(marketplace[uuid], inventory[uuid][i])
+			}
+		}
+	}
+
+	if len(marketplace) == 0 {
+		return nil, fmt.Errorf("seller %s not found", sellerName)
+	}
+
+	return marketplace, nil
+}
+
 // Base structure for the conversion of a Market to a standard Seller
 // This will hold the original Market scraper and retrieve the loaded
 // subseller from its ScraperInfo
@@ -44,7 +69,7 @@ type BaseMarket struct {
 func (m *BaseMarket) Inventory() (InventoryRecord, error) {
 	if m.inventory == nil {
 		// Retrieve inventory from the original scraper
-		inventory, err := m.scraper.InventoryForSeller(m.info.Shorthand)
+		inventory, err := InventoryForSeller(m.scraper, m.info.Shorthand)
 		if err != nil {
 			return nil, err
 		}

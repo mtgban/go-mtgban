@@ -30,8 +30,7 @@ type CardMarketIndex struct {
 	MaxConcurrency int
 	exchangeRate   float64
 
-	inventory   mtgban.InventoryRecord
-	marketplace map[string]mtgban.InventoryRecord
+	inventory mtgban.InventoryRecord
 
 	client *MKMClient
 }
@@ -49,7 +48,6 @@ func (mkm *CardMarketIndex) printf(format string, a ...interface{}) {
 func NewScraperIndex(appToken, appSecret string) (*CardMarketIndex, error) {
 	mkm := CardMarketIndex{}
 	mkm.inventory = mtgban.InventoryRecord{}
-	mkm.marketplace = map[string]mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
 	rate, err := mtgban.GetExchangeRate("EUR")
@@ -304,41 +302,8 @@ func (mkm *CardMarketIndex) Inventory() (mtgban.InventoryRecord, error) {
 	return mkm.inventory, nil
 }
 
-func (mkm *CardMarketIndex) InventoryForSeller(sellerName string) (mtgban.InventoryRecord, error) {
-	if len(mkm.inventory) == 0 {
-		_, err := mkm.Inventory()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inventory, found := mkm.marketplace[sellerName]
-	if found {
-		return inventory, nil
-	}
-
-	for card := range mkm.inventory {
-		for i := range mkm.inventory[card] {
-			if mkm.inventory[card][i].SellerName == sellerName {
-				if mkm.inventory[card][i].Price == 0 {
-					continue
-				}
-				if mkm.marketplace[sellerName] == nil {
-					mkm.marketplace[sellerName] = mtgban.InventoryRecord{}
-				}
-				mkm.marketplace[sellerName][card] = append(mkm.marketplace[sellerName][card], mkm.inventory[card][i])
-			}
-		}
-	}
-
-	if len(mkm.marketplace[sellerName]) == 0 {
-		return nil, fmt.Errorf("seller %s not found", sellerName)
-	}
-	return mkm.marketplace[sellerName], nil
-}
-
 func (mkm *CardMarketIndex) InitializeInventory(reader io.Reader) error {
-	market, inventory, err := mtgban.LoadMarketFromCSV(reader)
+	inventory, err := mtgban.LoadInventoryFromCSV(reader)
 	if err != nil {
 		return err
 	}
@@ -346,7 +311,6 @@ func (mkm *CardMarketIndex) InitializeInventory(reader io.Reader) error {
 		return fmt.Errorf("nothing was loaded")
 	}
 
-	mkm.marketplace = market
 	mkm.inventory = inventory
 
 	mkm.printf("Loaded inventory from file")
