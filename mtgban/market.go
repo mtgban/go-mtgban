@@ -63,7 +63,7 @@ func InventoryForSeller(seller Seller, sellerName string) (InventoryRecord, erro
 type BaseMarket struct {
 	inventory InventoryRecord
 	info      ScraperInfo
-	scraper   Market
+	scraper   Seller
 }
 
 func (m *BaseMarket) Inventory() (InventoryRecord, error) {

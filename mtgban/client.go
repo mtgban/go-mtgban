@@ -61,7 +61,7 @@ func (bc *BanClient) RegisterSeller(scraper Scraper) {
 // Add a Scraper to the client, enable the Market with the given shorthand
 func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
 	market := &BaseMarket{}
-	market.scraper = scraper.(Market)
+	market.scraper = scraper.(Seller)
 	market.info = scraper.Info()
 	market.info.Name = shorthand
 	market.info.Shorthand = shorthand
