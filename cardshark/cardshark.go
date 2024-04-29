@@ -13,6 +13,8 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -343,16 +345,14 @@ func (cs *Cardshark) InitializeInventory(reader io.Reader) error {
 
 func (cs *Cardshark) MarketNames() []string {
 	var out []string
-	dupes := map[string]bool{}
 
 	for card := range cs.inventory {
 		for i := range cs.inventory[card] {
 			sellerName := cs.inventory[card][i].SellerName
-			if dupes[sellerName] {
+			if slices.Contains(out, sellerName) {
 				continue
 			}
 
-			dupes[sellerName] = true
 			out = append(out, sellerName)
 		}
 	}
