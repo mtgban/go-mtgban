@@ -2,8 +2,6 @@ package cardmarket
 
 import (
 	"errors"
-	"fmt"
-	"io"
 	"net/url"
 	"strings"
 	"sync"
@@ -300,22 +298,6 @@ func (mkm *CardMarketIndex) Inventory() (mtgban.InventoryRecord, error) {
 	}
 
 	return mkm.inventory, nil
-}
-
-func (mkm *CardMarketIndex) InitializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(inventory) == 0 {
-		return fmt.Errorf("nothing was loaded")
-	}
-
-	mkm.inventory = inventory
-
-	mkm.printf("Loaded inventory from file")
-
-	return nil
 }
 
 func (mkm *CardMarketIndex) MarketNames() []string {

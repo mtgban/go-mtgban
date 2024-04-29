@@ -2,7 +2,6 @@ package cardtrader
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"sync"
 	"time"
@@ -259,22 +258,6 @@ func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
 	}
 
 	return ct.inventory, nil
-}
-
-func (ct *CardtraderSealed) InitializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(inventory) == 0 {
-		return fmt.Errorf("nothing was loaded")
-	}
-
-	ct.inventory = inventory
-
-	ct.printf("Loaded inventory from file")
-
-	return nil
 }
 
 var availableMarketNamesSealed = []string{

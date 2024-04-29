@@ -3,7 +3,6 @@
 package mtgban
 
 import (
-	"io"
 	"time"
 )
 
@@ -148,20 +147,6 @@ var FullGradeTags = []string{
 // Scraper is the interface both Sellers and Vendors need to implement
 type Scraper interface {
 	Info() ScraperInfo
-}
-
-// InventoryInitializer is the inteface used to identify scrapers that can
-// have inventory data loaded offline.
-type InventoryInitializer interface {
-	// Initialize an inventory.
-	InitializeInventory(io.Reader) error
-}
-
-// BuylistInitializer is the inteface used to identify scrapers that can
-// have buylist data loaded offline.
-type BuylistInitializer interface {
-	// Initialize a buylist.
-	InitializeBuylist(io.Reader) error
 }
 
 // Carter is the inteface used to identify Seller scrapers that can

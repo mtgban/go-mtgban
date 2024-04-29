@@ -3,7 +3,6 @@ package cardshark
 import (
 	"errors"
 	"fmt"
-	"io"
 	"path"
 	"strconv"
 	"strings"
@@ -287,24 +286,6 @@ func (cs *Cardshark) Inventory() (mtgban.InventoryRecord, error) {
 
 	return cs.inventory, nil
 
-}
-
-func (cs *Cardshark) InitializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(inventory) == 0 {
-		return fmt.Errorf("nothing was loaded")
-	}
-
-	cs.inventory = inventory
-
-	cs.printf("Loaded inventory from file")
-
-	cs.printf("Loaded inventory from file")
-
-	return nil
 }
 
 func (cs *Cardshark) MarketNames() []string {

@@ -2,7 +2,6 @@ package tcgplayer
 
 import (
 	"fmt"
-	"io"
 	"sync"
 
 	"time"
@@ -221,22 +220,6 @@ func (tcg *TCGPlayerIndex) Inventory() (mtgban.InventoryRecord, error) {
 	}
 
 	return tcg.inventory, nil
-}
-
-func (tcg *TCGPlayerIndex) InitializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(inventory) == 0 {
-		return fmt.Errorf("nothing was loaded")
-	}
-
-	tcg.inventory = inventory
-
-	tcg.printf("Loaded inventory from file")
-
-	return nil
 }
 
 func (tcg *TCGPlayerIndex) MarketNames() []string {

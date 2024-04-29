@@ -3,7 +3,6 @@ package sealedev
 import (
 	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"strings"
 	"sync"
@@ -471,22 +470,6 @@ func (ss *SealedEVScraper) Buylist() (mtgban.BuylistRecord, error) {
 	}
 
 	return ss.buylist, nil
-}
-
-func (ss *SealedEVScraper) InitializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(inventory) == 0 {
-		return errors.New("nothing was loaded")
-	}
-
-	ss.inventory = inventory
-
-	ss.printf("Loaded inventory from file")
-
-	return nil
 }
 
 func (tcg *SealedEVScraper) MarketNames() []string {

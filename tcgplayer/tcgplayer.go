@@ -1,9 +1,7 @@
 package tcgplayer
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"sync"
 	"time"
@@ -344,22 +342,6 @@ func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
 	return tcg.inventory, nil
 }
 
-func (tcg *TCGPlayerMarket) InitializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(inventory) == 0 {
-		return fmt.Errorf("nothing was loaded")
-	}
-
-	tcg.inventory = inventory
-
-	tcg.printf("Loaded inventory from file")
-
-	return nil
-}
-
 func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
 	if len(tcg.buylist) > 0 {
 		return tcg.buylist, nil
@@ -371,22 +353,6 @@ func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
 	}
 
 	return tcg.buylist, nil
-}
-
-func (tcg *TCGPlayerMarket) InitializeBuylist(reader io.Reader) error {
-	buylist, err := mtgban.LoadBuylistFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(buylist) == 0 {
-		return errors.New("empty buylist")
-	}
-
-	tcg.buylist = buylist
-
-	tcg.printf("Loaded buylist from file")
-
-	return nil
 }
 
 func (tcg *TCGPlayerMarket) MarketNames() []string {

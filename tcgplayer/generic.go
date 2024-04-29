@@ -3,7 +3,6 @@ package tcgplayer
 import (
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"sync"
 
@@ -198,22 +197,6 @@ func (tcg *TCGPlayerGeneric) Inventory() (mtgban.InventoryRecord, error) {
 	}
 
 	return tcg.inventory, nil
-}
-
-func (tcg *TCGPlayerGeneric) InitializeInventory(reader io.Reader) error {
-	inventory, err := mtgban.LoadInventoryFromCSV(reader)
-	if err != nil {
-		return err
-	}
-	if len(inventory) == 0 {
-		return fmt.Errorf("nothing was loaded")
-	}
-
-	tcg.inventory = inventory
-
-	tcg.printf("Loaded inventory from file")
-
-	return nil
 }
 
 func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {
