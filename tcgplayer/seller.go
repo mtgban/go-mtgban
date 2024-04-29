@@ -38,7 +38,10 @@ func NewScraperForSeller(sellerName string, onlyDirect bool) (*TCGSellerInventor
 	if sellerName != "" {
 		sellerKey, err := SellerName2ID(sellerName)
 		if err != nil {
-			return nil, err
+			if !SellerKeyExists(sellerName) {
+				return nil, err
+			}
+			sellerKey = sellerName
 		}
 		sellerKeys = append(sellerKeys, sellerKey)
 	}

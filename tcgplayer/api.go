@@ -608,6 +608,23 @@ const (
 	MaxGlobalScrapingValue = 8000
 )
 
+func SellerKeyExists(sellerKey string) bool {
+	client := cleanhttp.DefaultClient()
+
+	// Do not follow redirects
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	resp, err := client.Get("https://shop.tcgplayer.com/sellerfeedback/" + sellerKey)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	return resp.StatusCode == 200
+}
+
 func SellerName2ID(sellerName string) (string, error) {
 	if sellerName == "" {
 		return "", errors.New("missing seller name")
