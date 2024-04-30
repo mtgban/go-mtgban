@@ -614,7 +614,7 @@ func Pennystock(seller Seller, full bool) (result []PennystockEntry, err error) 
 			}
 
 			var pennyMythic, pennyRare, pennyLand, pennyFoil, pennyPromo bool
-			pennyMythic = isMythic && (!co.Foil || (co.Foil && !strings.Contains(co.Edition, "Commander") && !strings.Contains(co.Edition, "From the Vault"))) && entry.Price <= 0.16
+			pennyMythic = isMythic && !co.Foil && !co.Etched && entry.Price <= 0.12
 			if full {
 				pennyRare = isRare && ((!co.Foil && entry.Price <= 0.02) || (co.Foil && entry.Price <= 0.05))
 				pennyLand = isLand && ((!co.Foil && co.Card.IsFullArt) || co.Foil) && entry.Price <= 0.02
