@@ -59,10 +59,10 @@ type ArbitOpts struct {
 	// List of rarities to ignore
 	Rarities []string
 
-	// List of editions to ignore
+	// List of editions (or set codes) to ignore
 	Editions []string
 
-	// List of editions to select
+	// List of editions (or set codes) to select
 	OnlyEditions []string
 
 	// List of per-edition collector numbers to select
@@ -222,10 +222,10 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		if filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
 			continue
 		}
-		if slices.Contains(filterEditions, co.Edition) {
+		if slices.Contains(filterEditions, co.Edition) || slices.Contains(filterEditions, co.SetCode) {
 			continue
 		}
-		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) {
+		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) && !slices.Contains(filterSelectedEditions, co.SetCode) {
 			continue
 		}
 		cnRange, found := filterSelectedCNRange[co.Edition]
@@ -503,10 +503,10 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		if filterRLOnly && !co.IsReserved {
 			continue
 		}
-		if slices.Contains(filterEditions, co.Edition) {
+		if slices.Contains(filterEditions, co.Edition) || slices.Contains(filterEditions, co.SetCode) {
 			continue
 		}
-		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) {
+		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) && !slices.Contains(filterSelectedEditions, co.SetCode) {
 			continue
 		}
 		cnRange, found := filterSelectedCNRange[co.Edition]
