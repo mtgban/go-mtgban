@@ -97,7 +97,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			skip := true
 			foundCards := MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
-				if card.HasPromoType(mtgjson.PromoTypeRelease) || card.HasPromoType(mtgjson.PromoTypeDraftWeekend) {
+				if card.HasPromoType(mtgjson.PromoTypeRelease) ||
+					card.HasPromoType(mtgjson.PromoTypeDraftWeekend) ||
+					card.HasPromoType(mtgjson.PromoTypeWPN) {
 					skip = false
 					break
 				}
