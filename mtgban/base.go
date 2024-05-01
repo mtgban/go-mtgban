@@ -23,11 +23,18 @@ func ComputeSKU(cardId, condition string, flags ...string) (string, error) {
 	condition = strings.ToLower(condition)
 
 	conditionMap := map[string]string{
-		"nm": "nm", "near mint": "nm",
-		"lp": "sp", "lightly played": "sp", "slightly played": "sp",
-		"mp": "mp", "moderately played": "mp",
-		"hp": "hp", "heavily played": "hp",
-		"po": "po", "damaged": "po", "poor": "po",
+		"nm":                "nm",
+		"lp":                "sp",
+		"mp":                "mp",
+		"hp":                "hp",
+		"po":                "po",
+		"near mint":         "nm",
+		"lightly played":    "sp",
+		"slightly played":   "sp",
+		"moderately played": "mp",
+		"heavily played":    "hp",
+		"damaged":           "po",
+		"poor":              "po",
 	}
 	conditionCode, ok := conditionMap[condition]
 	if !ok {
