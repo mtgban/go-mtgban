@@ -28,8 +28,8 @@ func GetUUID(uuid string) (*CardObject, error) {
 	return &co, nil
 }
 
-func GetSets() map[string]*mtgjson.Set {
-	return backend.Sets
+func GetAllSets() []string {
+	return backend.AllSets
 }
 
 func GetSet(code string) (*mtgjson.Set, error) {

@@ -354,7 +354,6 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		}
 		// Try parsing the rightmost portion of the data, by looking up
 		// any recurring tag available in the VariantsTable
-		sets := mtgmatcher.GetSets()
 		for _, code := range []string{"FEM", "4ED", "TMP"} {
 			if strings.Contains(variant, code) {
 				fields := mtgmatcher.Cut(variant, code)
@@ -366,7 +365,9 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 				vars = strings.ToLower(vars)
 
 				if vars != "" {
-					tag := mtgmatcher.VariantsTable[sets[code].Name][cardName][vars]
+					set, _ := mtgmatcher.GetSet(code)
+
+					tag := mtgmatcher.VariantsTable[set.Name][cardName][vars]
 					if tag != "" {
 						variant += " " + tag
 					}

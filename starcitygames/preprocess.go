@@ -359,10 +359,12 @@ func preprocessSealed(productName string) (string, error) {
 		}
 	}
 
-	sets := mtgmatcher.GetSets()
+	sets := mtgmatcher.GetAllSets()
 
 	var uuid string
-	for _, set := range sets {
+	for _, code := range sets {
+		set, _ := mtgmatcher.GetSet(code)
+
 		for _, sealedProduct := range set.SealedProduct {
 			if mtgmatcher.SealedEquals(sealedProduct.Name, productName) {
 				uuid = sealedProduct.UUID
@@ -379,7 +381,8 @@ func preprocessSealed(productName string) (string, error) {
 		// on everything is very wide, it's better to avoid false positives
 		year := mtgmatcher.ExtractYear(productName)
 		if year != "" && (strings.Contains(productName, "Deck") || strings.Contains(productName, "Archenemy")) {
-			for _, set := range sets {
+			for _, code := range sets {
+				set, _ := mtgmatcher.GetSet(code)
 				if !strings.Contains(set.Name, year) && !strings.Contains(set.Name, "Archenemy") {
 					continue
 				}

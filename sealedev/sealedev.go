@@ -390,9 +390,11 @@ func (ss *SealedEVScraper) scrape() error {
 	ss.printf("Retrieved %d+%d prices", len(prices.Retail), len(prices.Buylist))
 	ss.prices = prices
 
-	sets := mtgmatcher.GetSets()
+	sets := mtgmatcher.GetAllSets()
 	var uuids []string
-	for _, set := range sets {
+	for _, code := range sets {
+		set, _ := mtgmatcher.GetSet(code)
+
 		// Skip products without Sealed or Booster information
 		switch set.Code {
 		case "FBB", "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":

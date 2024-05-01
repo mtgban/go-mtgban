@@ -269,10 +269,12 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 	}
 
 	go func() {
-		sets := mtgmatcher.GetSets()
+		sets := mtgmatcher.GetAllSets()
 		i := 1
 		allSetsSzie := len(sets) - 1
-		for _, set := range sets {
+		for _, code := range sets {
+			set, _ := mtgmatcher.GetSet(code)
+
 			switch set.Code {
 			case "4EDALT":
 				continue

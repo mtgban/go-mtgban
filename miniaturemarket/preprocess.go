@@ -74,7 +74,9 @@ func preprocessSealed(productName, edition string) (string, error) {
 	}
 
 	var uuid string
-	for _, set := range mtgmatcher.GetSets() {
+	for _, code := range mtgmatcher.GetAllSets() {
+		set, _ := mtgmatcher.GetSet(code)
+
 		if setCode != "" && setCode != set.Code {
 			continue
 		}

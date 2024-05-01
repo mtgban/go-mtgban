@@ -51,6 +51,9 @@ type alternateProps struct {
 }
 
 var backend struct {
+	// Slice of all set codes loaded
+	AllSets []string
+
 	// Map of set code : mtgjson.Set
 	Sets map[string]*mtgjson.Set
 
@@ -310,6 +313,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	var promoTypes []string
 	var allCardNames []string
 	var tokens []string
+	var allSets []string
 
 	for code, set := range ap.Data {
 		// Filer out unneeded data
@@ -335,6 +339,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 	for code, set := range ap.Data {
 		var filteredCards []mtgjson.Card
+
+		allSets = append(allSets, code)
 
 		allCards := set.Cards
 
@@ -738,8 +744,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	}
 
 	sort.Strings(promoTypes)
+	sort.Strings(allSets)
 
 	backend.Hashes = hashes
+	backend.AllSets = allSets
 	backend.AllUUIDs = allUUIDs
 	backend.AllNames = names
 	backend.AllSealed = sealed

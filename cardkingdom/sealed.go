@@ -46,8 +46,10 @@ func (ck *CardkingdomSealed) scrape() error {
 
 	foundProduct := 0
 
-	sets := mtgmatcher.GetSets()
-	for _, set := range sets {
+	sets := mtgmatcher.GetAllSets()
+	for _, code := range sets {
+		set, _ := mtgmatcher.GetSet(code)
+
 		// Skip products without Sealed or Booster information
 		switch set.Code {
 		case "FBB", "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":

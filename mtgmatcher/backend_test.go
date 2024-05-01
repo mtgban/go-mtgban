@@ -13,8 +13,8 @@ var SliceOfObj []cardinfo
 var SliceOfStr []string
 
 func setupBenchmark() {
-	sets := GetSets()
-	for _, set := range sets {
+	for _, code := range GetAllSets() {
+		set, _ := GetSet(code)
 		if len(set.Cards) == 0 {
 			continue
 		}

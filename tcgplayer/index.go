@@ -162,9 +162,11 @@ func (tcg *TCGPlayerIndex) scrape() error {
 	}
 
 	go func() {
-		sets := mtgmatcher.GetSets()
+		sets := mtgmatcher.GetAllSets()
 		i := 1
-		for _, set := range sets {
+		for _, code := range sets {
+			set, _ := mtgmatcher.GetSet(code)
+
 			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
 			i++
 

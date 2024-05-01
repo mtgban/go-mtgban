@@ -110,16 +110,21 @@ var preserveTags = []string{
 	"JPN",
 }
 
+func setCodeExists(code string) bool {
+	_, err := mtgmatcher.GetSet(code)
+	return err == nil
+}
+
 func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	isFoil, _ := strconv.ParseBool(card.IsFoil)
-	sets := mtgmatcher.GetSets()
+
 	sku := card.SKU
 	if sku == "" {
 		return nil, errors.New("unsupported SKU format")
 	}
 
 	// Strip the initial F from set codes that do not exist
-	if isFoil && strings.HasPrefix(sku, "F") && sets[strings.Split(sku, "-")[0][1:]] != nil {
+	if isFoil && strings.HasPrefix(sku, "F") && setCodeExists(strings.Split(sku, "-")[0][1:]) {
 		sku = sku[1:]
 	}
 
@@ -144,9 +149,9 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 	variation := number
 
 	// Validate if setCode exists, if not preserve info from the card
-	if sets[setCode] == nil {
-		if (len(setCode) > 3 && sets[setCode[len(setCode)-3:]] != nil) ||
-			(len(setCode) > 4 && sets[setCode[len(setCode)-4:]] != nil) {
+	if !setCodeExists(setCode) {
+		if (len(setCode) > 3 && setCodeExists(setCode[len(setCode)-3:])) ||
+			(len(setCode) > 4 && setCodeExists(setCode[len(setCode)-4:])) {
 			edition = card.Edition
 			variation += " " + card.Variation
 		}
