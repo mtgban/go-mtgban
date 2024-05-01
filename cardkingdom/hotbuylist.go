@@ -101,12 +101,17 @@ func (ck *CardkingdomHotBuylist) processPage(channel chan<- respChan) error {
 				priceRatio = price / sellPrice * 100
 			}
 
+			var quantity int
+			if grade == "NM" {
+				quantity = card.BuyQuantity
+			}
+
 			out := respChan{
 				cardId: cardId,
 				buyEntry: &mtgban.BuylistEntry{
 					BuyPrice:   price * factor,
 					TradePrice: price * factor * 1.3,
-					Quantity:   card.BuyQuantity,
+					Quantity:   quantity,
 					PriceRatio: priceRatio,
 				},
 			}

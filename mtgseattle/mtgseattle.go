@@ -249,6 +249,11 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 
 			gradeMap := grading(cardId, price)
 			for _, grade := range mtgban.DefaultGradeTags {
+				var quantity int
+				if grade == "NM" {
+					quantity = qty
+				}
+
 				factor := gradeMap[grade]
 				out := responseChan{
 					cardId: cardId,
@@ -257,7 +262,7 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 						BuyPrice:   price * factor,
 						TradePrice: credit * factor,
 						PriceRatio: priceRatio,
-						Quantity:   qty,
+						Quantity:   quantity,
 						URL:        "https://www.mtgseattle.com" + link,
 					},
 				}

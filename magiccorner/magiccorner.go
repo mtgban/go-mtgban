@@ -294,10 +294,15 @@ func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) e
 					continue
 				}
 
+				var quantity int
+				if grade == "NM" {
+					quantity = qty
+				}
+
 				channel <- resultChan{
 					cardId: cardId,
 					buyEntry: &mtgban.BuylistEntry{
-						Quantity:   qty,
+						Quantity:   quantity,
 						Conditions: grade,
 						BuyPrice:   price * mc.exchangeRate * factor,
 						TradePrice: credit * mc.exchangeRate * factor,

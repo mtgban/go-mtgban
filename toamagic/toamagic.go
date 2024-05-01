@@ -235,6 +235,11 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 
 			deductions := []float64{1, 1, 0.5, 0.3}
 			for i, deduction := range deductions {
+				var quantity int
+				if i == 0 {
+					quantity = qty
+				}
+
 				out := responseChan{
 					cardId: cardId,
 					buyEntry: &mtgban.BuylistEntry{
@@ -242,7 +247,7 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 						BuyPrice:   price * deduction,
 						TradePrice: credit * deduction,
 						PriceRatio: priceRatio,
-						Quantity:   qty,
+						Quantity:   quantity,
 						URL:        "https://www.toamagic.com" + link,
 					},
 				}
