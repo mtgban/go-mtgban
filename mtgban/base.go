@@ -10,7 +10,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func ComputeSKU(cardId, condition string) (string, error) {
+func ComputeSKU(cardId, condition string, flags ...string) (string, error) {
 	co, err := mtgmatcher.GetUUID(cardId)
 	if err != nil {
 		return "", err
@@ -35,10 +35,16 @@ func ComputeSKU(cardId, condition string) (string, error) {
 	}
 
 	language := strings.ToLower(co.Language)
+
+	overrideFinish := ""
+	if len(flags) > 0 {
+		overrideFinish = flags[0]
+	}
+
 	printing := "nonfoil"
-	if co.Etched {
+	if co.Etched || overrideFinish == "etched" {
 		printing = "etched"
-	} else if co.Foil {
+	} else if co.Foil || overrideFinish == "foil" {
 		printing = "foil"
 	}
 
