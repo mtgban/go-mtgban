@@ -10,7 +10,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func computeSKU(cardId, condition string) (string, error) {
+func ComputeSKU(cardId, condition string) (string, error) {
 	co, err := mtgmatcher.GetUUID(cardId)
 	if err != nil {
 		return "", err
@@ -53,7 +53,7 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 		entry.Conditions = "NM"
 	}
 	if entry.SKUID == "" {
-		entry.SKUID, _ = computeSKU(cardId, entry.Conditions)
+		entry.SKUID, _ = ComputeSKU(cardId, entry.Conditions)
 	}
 
 	entries, found := inv[cardId]
@@ -136,7 +136,7 @@ func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict bool) err
 		entry.Conditions = "NM"
 	}
 	if entry.SKUID == "" {
-		entry.SKUID, _ = computeSKU(cardId, entry.Conditions)
+		entry.SKUID, _ = ComputeSKU(cardId, entry.Conditions)
 	}
 
 	entries, found := bl[cardId]
