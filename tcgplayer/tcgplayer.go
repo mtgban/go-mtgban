@@ -156,9 +156,8 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 						URL:        link,
 						SellerName: availableMarketNames[i],
 						Bundle:     i == 1,
-						CustomFields: map[string]string{
-							"TCGSKUID": fmt.Sprint(req.SkuId),
-						},
+						OriginalId: fmt.Sprint(result.ProductId),
+						InstanceId: fmt.Sprint(result.SkuId),
 					},
 				}
 
@@ -203,6 +202,8 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 					Quantity:   0,
 					PriceRatio: priceRatio,
 					URL:        "https://store.tcgplayer.com/buylist",
+					OriginalId: fmt.Sprint(result.ProductId),
+					InstanceId: fmt.Sprint(result.SkuId),
 				},
 			}
 
