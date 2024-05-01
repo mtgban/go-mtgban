@@ -24,6 +24,7 @@ func ComputeSKU(cardId, condition string, flags ...string) (string, error) {
 
 	conditionMap := map[string]string{
 		"nm":                "nm",
+		"sp":                "sp",
 		"lp":                "sp",
 		"mp":                "mp",
 		"hp":                "hp",
