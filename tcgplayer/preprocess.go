@@ -380,22 +380,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 			edition = "Ravnica Weekend"
 		}
 		switch cardName {
-		case "Lotus Bloom":
-			edition = "TSR"
-			variant = "411"
 		case "Shivan Dragon":
 			if variant == "Moscow 2005" {
 				edition = "P9ED"
 			}
-		case "Water Gun Balloon Game":
-			edition = "UNF"
-			variant = "538"
-		case "Fabricate":
-			edition = "40K"
-			variant = "181"
-		case "Disrupt Decorum":
-			edition = "CMM"
-			variant = "1067"
 		}
 	case "Renaissance":
 		if strings.Contains(variant, "French") || strings.Contains(variant, "German") {
