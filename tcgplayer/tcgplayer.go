@@ -291,6 +291,11 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					continue
 				}
 				for _, sku := range skus {
+					// Skip sealed products
+					if sku.Condition == "UNOPENED" {
+						continue
+					}
+
 					pages <- marketChan{
 						UUID:      uuid,
 						Condition: sku.Condition,
