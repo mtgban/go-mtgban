@@ -1890,6 +1890,24 @@
         }
     },
     {
+        "uuid": "8fa8096a-91c3-5755-8ec5-9be33e36618c",
+        "description": "judge_not_misprint",
+        "input": {
+            "name": "Plains",
+            "variant": "Judge Rewards Promo",
+            "edition": "Promo"
+        }
+    },
+    {
+        "uuid": "539dceb9-8dd6-5f13-b535-91553f19944b",
+        "description": "judge_other_version",
+        "input": {
+            "name": "Plains",
+            "variant": "Judge 2023",
+            "edition": "Promo"
+        }
+    },
+    {
         "uuid": "4b8eb39c-6b31-5da8-9b13-9a53b4772d90",
         "description": "sdcc_main",
         "input": {

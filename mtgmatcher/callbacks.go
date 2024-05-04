@@ -252,6 +252,9 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"PM19": draftweekendCheck,
 	"PGRN": draftweekendCheck,
 	"PRNA": draftweekendCheck,
+
+	"G14": judgeLandCheck,
+	"P23": judgeLandCheck,
 }
 
 var complexFilterCallbacks = map[string][]cardFilterCallback{
@@ -268,6 +271,17 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	// These two checks need to be separate in case two cards have the same number
 	// but are originally from two different editions
 	"PLST": {listNumberCompare, listEditionCheck},
+}
+
+func judgeLandCheck(inCard *Card, card *mtgjson.Card) bool {
+	if (inCard.Contains("14") && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)) ||
+		inCard.Contains("23") && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+		return true
+	} else if !inCard.Contains("14") && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) ||
+		!inCard.Contains("23") && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+		return true
+	}
+	return false
 }
 
 func listNumberCompare(inCard *Card, card *mtgjson.Card) bool {
@@ -951,6 +965,11 @@ func reskinRenameCheck(inCard *Card, card *mtgjson.Card) bool {
 }
 
 func misprintCheck(inCard *Card, card *mtgjson.Card) bool {
+	// These cards are allowed to have the star at the end
+	if inCard.isBasicLand() && inCard.isJudge() {
+		return false
+	}
+
 	hasSuffix := strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 	if inCard.Contains("Misprint") && !hasSuffix {
 		return true
