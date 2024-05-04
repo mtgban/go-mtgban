@@ -45,8 +45,8 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 	isFoil := strings.Contains(variant, "Foil")
 	if isFoil {
 		variant = strings.Replace(variant, "Foil", "", 1)
-		variant = strings.TrimSpace(variant)
 	}
+	variant = strings.TrimSpace(variant)
 
 	switch edition {
 	case "French Revised FBB",
