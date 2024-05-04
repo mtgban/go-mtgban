@@ -37,6 +37,7 @@ var EditionTable = map[string]string{
 
 	"Doctor Who Commander":    "Doctor Who",
 	"Fallout Commander":       "Fallout",
+	"Warhammer 40K":           "Warhammer 40,000 Commander",
 	"Warhammer 40,000":        "Warhammer 40,000 Commander",
 	"Warhammer 40k Commander": "Warhammer 40,000 Commander",
 
@@ -353,6 +354,9 @@ var EditionTable = map[string]string{
 	"Regional PTQ Promo Foil":             "Pro Tour Promos",
 	"Regional PTQ Promo":                  "Pro Tour Promos",
 	"Regional PTQ":                        "Pro Tour Promos",
+	"2020 Players Tour Qualifier Promo":   "Pro Tour Promos",
+
+	"Regional Championship Qualifiers 2023": "Regional Championship Qualifiers 2023",
 
 	// Worlds
 	"Worlds":                  "World Championship Promos",

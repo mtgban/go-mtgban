@@ -154,6 +154,10 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		if strings.Contains(variant, "Alternate Art") && mtgmatcher.ExtractNumber(variant) == "" {
 			variant = "Borderless"
 		}
+	case "Secret Lair Drop Series":
+		if variant == "Borderless" && len(mtgmatcher.MatchInSet(cardName, "SLC")) > 0 {
+			edition = "SLC"
+		}
 	}
 
 	lutName, found := cardTable[cardName]
