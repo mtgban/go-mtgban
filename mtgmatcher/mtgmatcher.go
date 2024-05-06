@@ -121,7 +121,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		logger.Printf("Perforing id lookup")
 		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
 		if err == nil {
-			co, _ := backend.UUIDs[outId]
+			co := backend.UUIDs[outId]
 			logger.Printf("Id found")
 
 			// Validation step
