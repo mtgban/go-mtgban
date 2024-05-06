@@ -777,6 +777,8 @@ var NotSealedComments = []string{
 	"just",
 	"missing",
 	"no box",
+	"no rulebook",
+	"no scellé",
 	"not sealed",
 	"only 60 cards",
 	"only box",
@@ -785,6 +787,7 @@ var NotSealedComments = []string{
 	"open",
 	"ouvert",
 	"sampler",
+	"unsealed",
 	"used",
 	"without",
 }
