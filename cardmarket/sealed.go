@@ -765,6 +765,30 @@ func (mkm *CardMarketSealed) processUUID(name, edition string) (string, error) {
 	return uuid, nil
 }
 
+// List of comments commonly used to describe something that it is not
+// actually sealed (usually offered at a lower price)
+var NotSealedComments = []string{
+	"abierto",
+	"all cards sleeved",
+	"cards only",
+	"damaged",
+	"deck only",
+	"empty",
+	"just",
+	"missing",
+	"no box",
+	"not sealed",
+	"only 60 cards",
+	"only box",
+	"only cards",
+	"only the deck",
+	"open",
+	"ouvert",
+	"sampler",
+	"used",
+	"without",
+}
+
 func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuid string) error {
 	anyLang := false
 	articles, err := mkm.client.MKMArticles(idProduct, anyLang)
@@ -792,26 +816,14 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 		}
 
 		// Skip all the silly non-really-sealed listings
-		if mtgmatcher.Contains(article.Comments, "empty") ||
-			mtgmatcher.Contains(article.Comments, "only the deck") ||
-			mtgmatcher.Contains(article.Comments, "only 60 cards") ||
-			mtgmatcher.Contains(article.Comments, "only box") ||
-			mtgmatcher.Contains(article.Comments, "deck only") ||
-			mtgmatcher.Contains(article.Comments, "cards only") ||
-			mtgmatcher.Contains(article.Comments, "only cards") ||
-			mtgmatcher.Contains(article.Comments, "all cards sleeved") ||
-			mtgmatcher.Contains(article.Comments, "just the") ||
-			mtgmatcher.Contains(article.Comments, "not sealed") ||
-			mtgmatcher.Contains(article.Comments, "open") ||
-			mtgmatcher.Contains(article.Comments, "used") ||
-			mtgmatcher.Contains(article.Comments, "sampler") ||
-			mtgmatcher.Contains(article.Comments, "ouvert") ||
-			mtgmatcher.Contains(article.Comments, "abierto") ||
-			mtgmatcher.Contains(article.Comments, "without") ||
-			mtgmatcher.Contains(article.Comments, "missing") ||
-			mtgmatcher.Contains(article.Comments, "just") ||
-			mtgmatcher.Contains(article.Comments, "damaged") ||
-			mtgmatcher.Contains(article.Comments, "no box") {
+		skip := false
+		for _, comment := range NotSealedComments {
+			if mtgmatcher.Contains(article.Comments, comment) {
+				skip = true
+				break
+			}
+		}
+		if skip {
 			continue
 		}
 
