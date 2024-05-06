@@ -7,6 +7,7 @@ import (
 	"time"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"golang.org/x/exp/slices"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -235,16 +236,15 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 	for i := 0; i < tcg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			idFound := map[int]string{}
+			var idsFound []int
 			buffer := make([]marketChan, 0, maxIdsInRequest)
 
 			for page := range pages {
 				// Skip dupes
-				_, found := idFound[page.SkuId]
-				if found {
+				if slices.Contains(idsFound, page.SkuId) {
 					continue
 				}
-				idFound[page.SkuId] = ""
+				idsFound = append(idsFound, page.SkuId)
 
 				// Add our data to the buffer
 				buffer = append(buffer, page)
