@@ -888,8 +888,7 @@ var langs = map[string]string{
 
 func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
 	// Copy base set information
-	dup := mtgjson.Set{}
-	dup = *sets[code]
+	dup := *sets[code]
 
 	// Update with new info
 	dup.Name = name
