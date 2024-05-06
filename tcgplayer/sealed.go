@@ -3,17 +3,21 @@ package tcgplayer
 import (
 	"fmt"
 	"sync"
-
 	"time"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type TCGPlayerSealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	Affiliate      string
 	MaxConcurrency int
+
+	SKUsData map[string][]mtgjson.TCGSku
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
@@ -34,40 +38,42 @@ func NewScraperSealed(publicId, privateId string) *TCGPlayerSealed {
 	return &tcg
 }
 
-func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []indexChan) error {
+func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []marketChan) error {
 	ids := make([]string, len(reqs))
 	for i := range reqs {
-		ids[i] = reqs[i].TCGProductId
+		ids[i] = fmt.Sprint(reqs[i].SkuId)
 	}
 
-	results, err := tcg.client.TCGPricesForIds(ids)
+	results, err := tcg.client.TCGPricesForSKUs(ids)
 	if err != nil {
 		return err
 	}
 
 	for _, result := range results {
-		if result.LowPrice == 0 {
+		if result.LowestListingPrice == 0 {
 			continue
 		}
 
-		productId := fmt.Sprint(result.ProductId)
-
 		uuid := ""
+		productId := 0
 		for _, req := range reqs {
-			if req.TCGProductId == productId {
+			if result.SkuId == req.SkuId {
 				uuid = req.UUID
+				productId = req.ProductId
 				break
 			}
 		}
 
-		link := TCGPlayerProductURL(result.ProductId, "", tcg.Affiliate, "", "")
+		link := TCGPlayerProductURL(productId, "", tcg.Affiliate, "", "")
 		out := responseChan{
 			cardId: uuid,
 			entry: mtgban.InventoryEntry{
 				Conditions: "NM",
-				Price:      result.LowPrice,
+				Price:      result.LowestListingPrice,
 				Quantity:   1,
 				URL:        link,
+				OriginalId: fmt.Sprint(productId),
+				InstanceId: fmt.Sprint(result.SkuId),
 			},
 		}
 
@@ -78,23 +84,34 @@ func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []i
 }
 
 func (tcg *TCGPlayerSealed) scrape() error {
-	pages := make(chan indexChan)
+	skusMap := tcg.SKUsData
+	if skusMap == nil {
+		var err error
+		tcg.printf("Retrieving skus")
+		skusMap, err = getAllSKUs()
+		if err != nil {
+			return err
+
+		}
+	}
+	tcg.printf("Found skus for %d entries", len(skusMap))
+
+	pages := make(chan marketChan)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < tcg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			idFound := map[string]string{}
-			buffer := make([]indexChan, 0, maxIdsInRequest)
+			var idsFound []int
+			buffer := make([]marketChan, 0, maxIdsInRequest)
 
 			for page := range pages {
 				// Skip dupes
-				_, found := idFound[page.TCGProductId]
-				if found {
+				if slices.Contains(idsFound, page.SkuId) {
 					continue
 				}
-				idFound[page.TCGProductId] = ""
+				idsFound = append(idsFound, page.SkuId)
 
 				// Add our pair to the buffer
 				buffer = append(buffer, page)
@@ -121,22 +138,30 @@ func (tcg *TCGPlayerSealed) scrape() error {
 
 	go func() {
 		sets := mtgmatcher.GetAllSets()
-		i := 1
 		for _, code := range sets {
 			set, _ := mtgmatcher.GetSet(code)
 
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
-			i++
-
 			for _, product := range set.SealedProduct {
-				tcgId, found := product.Identifiers["tcgplayerProductId"]
+				uuid := product.UUID
+				skus, found := skusMap[uuid]
 				if !found {
 					continue
 				}
+				for _, sku := range skus {
+					// Only keep sealed products
+					if sku.Condition != "UNOPENED" {
+						continue
+					}
 
-				pages <- indexChan{
-					TCGProductId: tcgId,
-					UUID:         product.UUID,
+					pages <- marketChan{
+						UUID:      uuid,
+						Condition: sku.Condition,
+						Printing:  sku.Printing,
+						Finish:    sku.Finish,
+						ProductId: sku.ProductId,
+						SkuId:     sku.SkuId,
+						Language:  sku.Language,
+					}
 				}
 			}
 		}
