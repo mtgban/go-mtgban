@@ -307,10 +307,6 @@ func (c *Card) isPromoPack() bool {
 		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
 }
 
-func (c *Card) isPlayPromo() bool {
-	return c.Contains("Play Promo")
-}
-
 func (c *Card) isBorderless() bool {
 	return Contains(c.Variation, "Borderless")
 }
