@@ -9,15 +9,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const (
-	DefaultArbitMinDiff      = 0.2
-	DefaultArbitMinSpread    = 25.0
-	DefaultMultiMinDiff      = 5.0
-	DefaultMultiMinSpread    = 100.0
-	DefaultMismatchMinDiff   = 1.0
-	DefaultMismatchMinSpread = 100.0
-)
-
 type ArbitOpts struct {
 	// Extra factor to modify Inventory prices
 	Rate float64
@@ -110,8 +101,8 @@ type ArbitEntry struct {
 }
 
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, err error) {
-	minDiff := DefaultArbitMinDiff
-	minSpread := DefaultArbitMinSpread
+	minDiff := 0.0
+	minSpread := 0.0
 	useTrades := false
 	rate := 1.0
 
@@ -359,8 +350,8 @@ func MultiArbit(opts *MultiArbitOpts, vendor Vendor, market Market) (result []Mu
 		return
 	}
 
-	minDiff := DefaultMultiMinDiff
-	minSpread := DefaultMultiMinSpread
+	minDiff := 0.0
+	minSpread := 0.0
 
 	extra := 0.0
 	var arbitOpts *ArbitOpts
@@ -421,8 +412,8 @@ var defaultGradeMap = map[string]float64{
 }
 
 func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEntry, err error) {
-	minDiff := DefaultMismatchMinDiff
-	minSpread := DefaultMismatchMinSpread
+	minDiff := 0.0
+	minSpread := 0.0
 	maxSpread := 0.0
 	minPrice := 0.0
 	minQty := 0
