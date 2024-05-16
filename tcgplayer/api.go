@@ -962,3 +962,77 @@ func (tcg *TCGClient) TCGInventoryListing(productId, size, page int, useDirect b
 
 	return response.Results[0].Results, nil
 }
+
+type TCGUserData struct {
+	UserName                string `json:"userName"`
+	UserID                  int    `json:"userId"`
+	UserKey                 string `json:"userKey"`
+	IsSubscriber            bool   `json:"isSubscriber"`
+	LastUsedShippingAddress struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Address1  string `json:"address1"`
+		Address2  string `json:"address2"`
+		City      string `json:"city"`
+		State     string `json:"state"`
+		Zipcode   string `json:"zipcode"`
+		Country   string `json:"country"`
+		Phone     string `json:"phone"`
+	} `json:"lastUsedShippingAddress"`
+	ShippingCountry     string `json:"shippingCountry"`
+	CreatedAt           string `json:"createdAt"`
+	ExternalUserID      string `json:"externalUserId"`
+	IsGuest             any    `json:"isGuest"`
+	IsValidated         bool   `json:"isValidated"`
+	CartKey             string `json:"cartKey"`
+	SaveForLaterKey     string `json:"saveForLaterKey"`
+	ProductLineAffinity any    `json:"productLineAffinity"`
+	Traits              struct {
+		ProductLineAffinityMostViewed any `json:"product_line_affinity_most_viewed"`
+		Apv                           int `json:"apv"`
+	} `json:"traits"`
+	SellerKeys []string `json:"sellerKeys"`
+}
+
+type TCGUserResponse struct {
+	Errors []struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	} `json:"errors"`
+	Results []TCGUserData `json:"results"`
+}
+
+const TCGUserDataURL = "https://mpapi.tcgplayer.com/v2/user?isGuest=false"
+
+func TCGGetUserData(authKey string) (*TCGUserData, error) {
+	req, err := http.NewRequest(http.MethodGet, TCGUserDataURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Cookie", "TCGAuthTicket_Production="+authKey+";")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response TCGUserResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+	}
+	if len(response.Errors) > 0 {
+		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
+	}
+	if len(response.Results) == 0 {
+		return nil, fmt.Errorf("emtpy results in user request")
+	}
+
+	return &response.Results[0], nil
+}
