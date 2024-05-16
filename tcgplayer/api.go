@@ -870,13 +870,19 @@ func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int,
 type sellerInventoryListingRequest struct {
 	Filters struct {
 		Term struct {
-			SellerStatus string `json:"sellerStatus"`
-			ChannelID    int    `json:"channelId"`
+			SellerStatus  string   `json:"sellerStatus"`
+			ChannelID     int      `json:"channelId"`
+			DirectSeller  bool     `json:"direct-seller,omitempty"`
+			DirectProduct bool     `json:"directProduct,omitempty"`
+			Language      []string `json:"language,omitempty"`
 		} `json:"term"`
 		Range struct {
 			Quantity struct {
 				Gte int `json:"gte"`
 			} `json:"quantity"`
+			DirectInventory struct {
+				Gte int `json:"gte,omitempty"`
+			} `json:"directInventory,omitempty"`
 		} `json:"range"`
 		Exclude struct {
 			ChannelExclusion int `json:"channelExclusion"`
@@ -907,9 +913,16 @@ type sellerInventoryListingResponse struct {
 	} `json:"results"`
 }
 
-func (tcg *TCGClient) TCGInventoryListing(productId, size, page int) ([]SellerListing, error) {
+func (tcg *TCGClient) TCGInventoryListing(productId, size, page int, useDirect bool) ([]SellerListing, error) {
 	var params sellerInventoryListingRequest
 	params.Filters.Term.SellerStatus = "Live"
+	if useDirect {
+		params.Filters.Term.SellerStatus = "Live"
+		params.Filters.Term.DirectSeller = true
+		params.Filters.Term.DirectProduct = true
+		params.Filters.Term.Language = []string{"English"}
+		params.Filters.Range.DirectInventory.Gte = 1
+	}
 	params.Filters.Range.Quantity.Gte = 1
 	params.Context.ShippingCountry = "US"
 	params.Aggregations = []string{"listingType"}
