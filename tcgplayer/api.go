@@ -921,7 +921,8 @@ func (tcg *TCGClient) TCGInventoryListing(productId, size, page int) ([]SellerLi
 		return nil, err
 	}
 
-	resp, err := tcg.client.Post(SellerListingURL, "application/json", bytes.NewReader(payload))
+	link := fmt.Sprintf(SellerListingURL, productId)
+	resp, err := tcg.client.Post(link, "application/json", bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
