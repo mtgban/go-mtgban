@@ -72,7 +72,7 @@ type setCountPair struct {
 }
 
 func (tcg *TCGSellerInventory) totalItems() (*itemsRecap, error) {
-	resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect)
+	resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -104,24 +104,28 @@ var conditionMap = map[string]string{
 }
 
 func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page int) error {
-	resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect)
-	if err != nil {
-		return err
+	for _, finish := range []string{"Normal", "Foil"} {
+		resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
+		if err == nil {
+			err = tcg.processInventory(channel, resp.Results[0].Results)
+			if err != nil {
+				tcg.printf("%s %s", finish, err.Error())
+			}
+		}
 	}
-
-	return tcg.processInventory(channel, resp.Results[0].Results)
+	return nil
 }
 
 func (tcg *TCGSellerInventory) processEdition(channel chan<- responseChan, setName string, count int) error {
 	for i := 0; i <= count/tcg.requestSize; i++ {
-		resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, setName)
-		if err != nil {
-			return err
-		}
-
-		err = tcg.processInventory(channel, resp.Results[0].Results)
-		if err != nil {
-			return err
+		for _, finish := range []string{"Normal", "Foil"} {
+			resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
+			if err == nil {
+				err = tcg.processInventory(channel, resp.Results[0].Results)
+				if err != nil {
+					tcg.printf("%s", err.Error())
+				}
+			}
 		}
 	}
 	return nil

@@ -687,6 +687,7 @@ type sellerInventoryRequest struct {
 				DirectSeller  bool     `json:"direct-seller,omitempty"`
 				DirectProduct bool     `json:"directProduct,omitempty"`
 				SellerKey     []string `json:"sellerKey,omitempty"`
+				Printing      []string `json:"printing,omitempty"`
 			} `json:"term"`
 			Range struct {
 				Quantity struct {
@@ -812,7 +813,7 @@ func NewTCGSellerClient() *TCGClient {
 	return &tcg
 }
 
-func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, sets ...string) (*sellerInventoryResponse, error) {
+func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, finishes []string, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
 	params.Algorithm = "revenue_synonym_v2"
 	params.From = size * page
@@ -822,6 +823,7 @@ func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int,
 	params.Filters.Term.SetName = sets
 	params.ListingSearch.Filters.Term.SellerStatus = "Live"
 	params.ListingSearch.Filters.Term.SellerKey = sellerKeys
+	params.ListingSearch.Filters.Term.Printing = finishes
 	if useDirect {
 		params.ListingSearch.Filters.Term.DirectProduct = true
 		params.ListingSearch.Filters.Term.DirectSeller = true
