@@ -1036,3 +1036,49 @@ func TCGGetUserData(authKey string) (*TCGUserData, error) {
 
 	return &response.Results[0], nil
 }
+
+const TCGCreateCartURL = "https://mpgateway.tcgplayer.com/v1/cart/create/usercart"
+
+func TCGCreateCartKey(userId string) (string, error) {
+	var params struct {
+		ExternalUserId string `json:"externalUserId"`
+	}
+	params.ExternalUserId = userId
+
+	payload, err := json.Marshal(&params)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, TCGCreateCartURL, bytes.NewReader(payload))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var response TCGUserResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return "", fmt.Errorf("%s: %s", err.Error(), string(data))
+	}
+	if len(response.Errors) > 0 {
+		return "", fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
+	}
+	if len(response.Results) == 0 {
+		return "", fmt.Errorf("emtpy results in user request")
+	}
+
+	return response.Results[0].CartKey, nil
+
+}
