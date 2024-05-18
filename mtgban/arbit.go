@@ -604,12 +604,13 @@ func Pennystock(seller Seller, full bool) (result []PennystockEntry, err error) 
 				continue
 			}
 
+			isFoil := co.Foil || co.Etched
 			var pennyMythic, pennyRare, pennyLand, pennyFoil, pennyPromo bool
-			pennyMythic = isMythic && !co.Foil && !co.Etched && entry.Price <= 0.12
+			pennyMythic = isMythic && !isFoil && entry.Price <= 0.12
 			if full {
-				pennyRare = isRare && ((!co.Foil && entry.Price <= 0.02) || (co.Foil && entry.Price <= 0.05))
-				pennyLand = isLand && ((!co.Foil && co.Card.IsFullArt) || co.Foil) && entry.Price <= 0.02
-				pennyFoil = co.Foil && entry.Price <= 0.01
+				pennyRare = isRare && ((!isFoil && entry.Price <= 0.02) || (co.Foil && entry.Price <= 0.05))
+				pennyLand = isLand && ((!isFoil && co.Card.IsFullArt) || isFoil) && entry.Price <= 0.02
+				pennyFoil = isFoil && !isPromo && !isLand && entry.Price <= 0.01
 				pennyPromo = isPromo && entry.Price <= 0.02
 			}
 
