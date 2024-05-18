@@ -570,7 +570,7 @@ type PennystockEntry struct {
 	InventoryEntry
 }
 
-func Pennystock(seller Seller, full bool) (result []PennystockEntry, err error) {
+func Pennystock(seller Seller, full bool, thresholds ...float64) (result []PennystockEntry, err error) {
 	inventory, err := seller.Inventory()
 	if err != nil {
 		return nil, err
@@ -599,6 +599,18 @@ func Pennystock(seller Seller, full bool) (result []PennystockEntry, err error) 
 			continue
 		}
 
+		priceThreshold := []float64{0.12, 0.02, 0.05, 0.02, 0.01, 0.02}
+		for i := range thresholds {
+			if i > len(priceThreshold) {
+				break
+			}
+			if thresholds[i] == 0 {
+				continue
+			}
+
+			priceThreshold[i] = thresholds[i]
+		}
+
 		for _, entry := range entries {
 			if entry.Conditions == "PO" || entry.Conditions == "HP" {
 				continue
@@ -606,12 +618,12 @@ func Pennystock(seller Seller, full bool) (result []PennystockEntry, err error) 
 
 			isFoil := co.Foil || co.Etched
 			var pennyMythic, pennyRare, pennyLand, pennyFoil, pennyPromo bool
-			pennyMythic = isMythic && !isFoil && entry.Price <= 0.12
+			pennyMythic = isMythic && !isFoil && entry.Price <= priceThreshold[0]
 			if full {
-				pennyRare = isRare && ((!isFoil && entry.Price <= 0.02) || (co.Foil && entry.Price <= 0.05))
-				pennyLand = isLand && ((!isFoil && co.Card.IsFullArt) || isFoil) && entry.Price <= 0.02
-				pennyFoil = isFoil && !isPromo && !isLand && entry.Price <= 0.01
-				pennyPromo = isPromo && entry.Price <= 0.02
+				pennyRare = isRare && ((!isFoil && entry.Price <= priceThreshold[1]) || (co.Foil && entry.Price <= priceThreshold[2]))
+				pennyLand = isLand && ((!isFoil && co.Card.IsFullArt) || isFoil) && entry.Price <= priceThreshold[3]
+				pennyFoil = isFoil && !isPromo && !isLand && entry.Price <= priceThreshold[4]
+				pennyPromo = isPromo && entry.Price <= priceThreshold[5]
 			}
 
 			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
