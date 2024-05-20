@@ -159,9 +159,7 @@ func (mkm *MKMClient) MKMPriceGuide() ([]MKMPriceGuide, error) {
 	return priceGuide, nil
 }
 
-type MKMProductList map[int]MKMProductListElement
-
-type MKMProductListElement struct {
+type MKMProductList struct {
 	IdProduct   int
 	Name        string
 	CategoryId  int
@@ -171,7 +169,7 @@ type MKMProductListElement struct {
 	DateAdded   string
 }
 
-func (mkm *MKMClient) MKMProductList() (MKMProductList, error) {
+func (mkm *MKMClient) MKMProductList() ([]MKMProductList, error) {
 	raw, err := mkm.MKMRawProductList()
 	if err != nil {
 		return nil, err
@@ -194,7 +192,7 @@ func (mkm *MKMClient) MKMProductList() (MKMProductList, error) {
 		return nil, fmt.Errorf("error reading csv header: %v", err)
 	}
 
-	out := MKMProductList{}
+	var productList []MKMProductList
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -212,7 +210,7 @@ func (mkm *MKMClient) MKMProductList() (MKMProductList, error) {
 		metacardId, _ := strconv.Atoi(record[5])
 		dateAdded := record[6]
 
-		out[idProduct] = MKMProductListElement{
+		out := MKMProductList{
 			IdProduct:   idProduct,
 			Name:        name,
 			CategoryId:  categoryId,
@@ -221,7 +219,9 @@ func (mkm *MKMClient) MKMProductList() (MKMProductList, error) {
 			MetacardId:  metacardId,
 			DateAdded:   dateAdded,
 		}
+
+		productList = append(productList, out)
 	}
 
-	return out, nil
+	return productList, nil
 }

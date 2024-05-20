@@ -20,7 +20,7 @@ type CardMarketSealed struct {
 	exchangeRate  float64
 
 	// Used to skip unrelated products
-	productList MKMProductList
+	productList []MKMProductList
 
 	// Debug aid, set it to print a full product mapping
 	filterEdition string
