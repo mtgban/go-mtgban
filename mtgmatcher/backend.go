@@ -80,8 +80,10 @@ var backend struct {
 	// Slice with every uniquely normalized alternative name
 	AlternateNames []string
 
-	// Slice with every possible uuid
+	// Slice with every possible non-sealed uuid
 	AllUUIDs []string
+	// Slice with every possible sealed uuid
+	AllSealedUUIDs []string
 
 	// Scryfall UUID to MTGJSON UUID
 	Scryfall map[string]string
@@ -734,10 +736,12 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 	}
 
-	// Finally save all the non-sealed uuids generated
+	// Finally save all the  uuids generated
 	var allUUIDs []string
-	for uuid, card := range uuids {
-		if card.Sealed {
+	var allSealedUUIDs []string
+	for uuid, co := range uuids {
+		if co.Sealed {
+			allSealedUUIDs = append(allSealedUUIDs, uuid)
 			continue
 		}
 		allUUIDs = append(allUUIDs, uuid)
@@ -749,6 +753,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.Hashes = hashes
 	backend.AllSets = allSets
 	backend.AllUUIDs = allUUIDs
+	backend.AllSealedUUIDs = allSealedUUIDs
 	backend.AllNames = names
 	backend.AllSealed = sealed
 	backend.Sets = ap.Data

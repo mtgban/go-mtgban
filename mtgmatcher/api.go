@@ -15,6 +15,10 @@ func GetUUIDs() []string {
 	return backend.AllUUIDs
 }
 
+func GetSealedUUIDs() []string {
+	return backend.AllSealedUUIDs
+}
+
 func GetUUID(uuid string) (*CardObject, error) {
 	if backend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
