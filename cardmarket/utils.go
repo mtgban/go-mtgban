@@ -57,22 +57,22 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 }
 
 type MKMPriceGuide struct {
-	IdProduct      int
-	AvgSellPrice   float64
-	LowPrice       float64
-	TrendPrice     float64
-	GermanProLow   float64
-	SuggestedPrice float64
-	FoilSell       float64
-	FoilLow        float64
-	FoilTrend      float64
-	LowPriceEx     float64
-	AvgDay1        float64
-	AvgDay7        float64
-	AvgDay30       float64
-	FoilAvgDay1    float64
-	FoilAvgDay7    float64
-	FoilAvgDay30   float64
+	IdProduct      int     `json:"idProduct"`
+	AvgSellPrice   float64 `json:"avgSellPrice"`
+	LowPrice       float64 `json:"lowPrice"`
+	TrendPrice     float64 `json:"trendPrice"`
+	GermanProLow   float64 `json:"germanProLow"`
+	SuggestedPrice float64 `json:"suggestedPrice"`
+	FoilSell       float64 `json:"foilSell"`
+	FoilLow        float64 `json:"foilLow"`
+	FoilTrend      float64 `json:"foilTrend"`
+	LowPriceEx     float64 `json:"lowPriceEx"`
+	AvgDay1        float64 `json:"avgDay1"`
+	AvgDay7        float64 `json:"avgDay7"`
+	AvgDay30       float64 `json:"avgDay30"`
+	FoilAvgDay1    float64 `json:"foilAvgDay1"`
+	FoilAvgDay7    float64 `json:"foilAvgDay7"`
+	FoilAvgDay30   float64 `json:"foilAvgDay30"`
 }
 
 func (mkm *MKMClient) MKMPriceGuide() ([]MKMPriceGuide, error) {
