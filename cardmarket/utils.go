@@ -16,9 +16,14 @@ import (
 
 var filteredExpansions = []string{
 	"GnD Cards",
+	"MKM Series",
 	"Rk post Products",
 	"Starcity Games: Creature Collection",
 	"Three for One",
+	"Filler Cards",
+	"Revista Serra Promos",
+	"SAWATARIX",
+	"TokyoMTG Products",
 }
 
 type MKMExpansionIdPair struct {
@@ -38,6 +43,7 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 			continue
 		}
 		if strings.Contains(exp.Name, "Token") ||
+			strings.Contains(exp.Name, "Starcity") ||
 			strings.Contains(exp.Name, "Oversized") ||
 			strings.Contains(exp.Name, "Player Cards") {
 			continue
