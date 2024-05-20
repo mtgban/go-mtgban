@@ -160,13 +160,13 @@ func (mkm *MKMClient) MKMPriceGuide() ([]MKMPriceGuide, error) {
 }
 
 type MKMProductList struct {
-	IdProduct   int
-	Name        string
-	CategoryId  int
-	Category    string
-	ExpansionId int
-	MetacardId  int
-	DateAdded   string
+	IdProduct   int    `json:"idProduct"`
+	Name        string `json:"name"`
+	CategoryId  int    `json:"categoryId"`
+	Category    string `json:"category"`
+	ExpansionId int    `json:"expansionId"`
+	MetacardId  int    `json:"metacardId"`
+	DateAdded   string `json:"dateAdded"`
 }
 
 func (mkm *MKMClient) MKMProductList() ([]MKMProductList, error) {
