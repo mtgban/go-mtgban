@@ -823,6 +823,11 @@ func sldVariant(inCard *Card, card *mtgjson.Card) bool {
 			result = !result
 		}
 	}
+	// Prevent flipping the result below if multiple printings are present (ie Griselbrand)
+	if inCard.isEtched() || inCard.isStepAndCompleat() {
+		return result
+	}
+
 	// All the Rainbow SLD cards not serialized are tagged as two different entries
 	// ie Goblin Lackey or Aminatou, the Fateshifter
 	if hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeRainbowFoil, "SLD") ||
