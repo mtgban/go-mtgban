@@ -254,7 +254,7 @@ type MKMArticle struct {
 	IsAltered bool `json:"isAltered"`
 }
 
-func (mkm *MKMClient) MKMArticles(id int, anyLanguage bool) ([]MKMArticle, error) {
+func (mkm *MKMClient) MKMAllArticles(id int, anyLanguage bool) ([]MKMArticle, error) {
 	u, err := url.Parse(mkmArticlesBaseURL + fmt.Sprint(id))
 	if err != nil {
 		return nil, err
@@ -268,68 +268,35 @@ func (mkm *MKMClient) MKMArticles(id int, anyLanguage bool) ([]MKMArticle, error
 	params.Set("isSigned", "false")
 	params.Set("isAltered", "false")
 
-	return mkm.articles(u.String())
+	return mkm.allArticles(u.String())
 }
 
-func (mkm *MKMClient) MKMUserArticles(user string) ([]MKMArticle, error) {
-	return mkm.articles(fmt.Sprintf(mkmUserArticlesFormatURL, user))
+func (mkm *MKMClient) MKMAllUserArticles(user string) ([]MKMArticle, error) {
+	return mkm.allArticles(fmt.Sprintf(mkmUserArticlesFormatURL, user))
 }
 
-func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
-	u, err := url.Parse(link)
-	if err != nil {
-		return nil, err
-	}
-	params := u.Query()
-
+func (mkm *MKMClient) allArticles(link string) ([]MKMArticle, error) {
 	var i int
 	var articles []MKMArticle
-	var response struct {
-		ErrorDescription string       `json:"mkm_error_description"`
-		Articles         []MKMArticle `json:"article"`
-	}
-	// Keep polling 1000 entities at a time
+
+	// Keep polling 100 entities at a time
 	for {
-		params.Set("start", fmt.Sprint(i*mkmMaxEntities))
-		params.Set("maxResults", fmt.Sprint(mkmMaxEntities))
-		u.RawQuery = params.Encode()
-
-		resp, err := mkm.client.Get(u.String())
+		res, err := mkm.articles(link, i, mkmMaxEntities)
 		if err != nil {
 			return nil, err
-		}
-
-		data, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			return nil, err
-		}
-
-		// No more data to read, break to avoid a "no data" unmarshal error
-		if len(data) == 0 {
-			break
-		}
-
-		err = json.Unmarshal(data, &response)
-		if err != nil {
-			return nil, errors.New(string(data))
-		}
-
-		if response.ErrorDescription != "" {
-			return nil, errors.New(response.ErrorDescription)
 		}
 
 		// Stash the result
-		articles = append(articles, response.Articles...)
-
-		// Avoid an infinite loop
-		if i > 0 && articles[(i-1)*mkmMaxEntities] == response.Articles[0] {
-			return nil, errors.New("broken api")
-		}
+		articles = append(articles, res...)
 
 		// No more entities left, we can break now
-		if len(response.Articles) < mkmMaxEntities {
+		if len(res) < mkmMaxEntities {
 			break
+		}
+
+		// Avoid an infinite loop in which the same set of results is reported over and over
+		if articles[len(articles)-1] == res[len(res)-1] {
+			return nil, errors.New("broken api")
 		}
 
 		// Next round
@@ -337,6 +304,67 @@ func (mkm *MKMClient) articles(link string) ([]MKMArticle, error) {
 	}
 
 	return articles, nil
+}
+
+func (mkm *MKMClient) MKMArticles(id int, anyLanguage bool, page, count int) ([]MKMArticle, error) {
+	u, err := url.Parse(mkmArticlesBaseURL + fmt.Sprint(id))
+	if err != nil {
+		return nil, err
+	}
+	params := url.Values{}
+	if !anyLanguage {
+		params.Set("idLanguage", "1")
+	}
+	params.Set("minCondition", "GD")
+	params.Set("minUserScore", "3")
+	params.Set("isSigned", "false")
+	params.Set("isAltered", "false")
+
+	return mkm.articles(u.String(), page, count)
+}
+
+func (mkm *MKMClient) articles(link string, page, count int) ([]MKMArticle, error) {
+	u, err := url.Parse(link)
+	if err != nil {
+		return nil, err
+	}
+
+	var response struct {
+		ErrorDescription string       `json:"mkm_error_description"`
+		Articles         []MKMArticle `json:"article"`
+	}
+
+	params := u.Query()
+	params.Set("start", fmt.Sprint(page*count))
+	params.Set("maxResults", fmt.Sprint(count))
+	u.RawQuery = params.Encode()
+
+	resp, err := mkm.client.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// No more data to read, break to avoid a "no data" unmarshal error
+	if len(data) == 0 {
+		return nil, nil
+	}
+
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, errors.New(string(data))
+	}
+
+	if response.ErrorDescription != "" {
+		return nil, errors.New(response.ErrorDescription)
+	}
+
+	return response.Articles, nil
 }
 
 type authTransport struct {

@@ -794,7 +794,7 @@ var NotSealedComments = []string{
 
 func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuid string) error {
 	anyLang := false
-	articles, err := mkm.client.MKMArticles(idProduct, anyLang)
+	articles, err := mkm.client.MKMAllArticles(idProduct, anyLang)
 	if err != nil {
 		return err
 	}
