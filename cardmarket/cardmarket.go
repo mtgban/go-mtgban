@@ -56,7 +56,7 @@ func NewScraperIndex(appToken, appSecret string) (*CardMarketIndex, error) {
 	return &mkm, nil
 }
 
-func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair, priceGuide MKMPriceGuide) error {
+func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair, priceGuide []MKMPriceGuide) error {
 	products, err := mkm.client.MKMProductsInExpansion(pair.IdExpansion)
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MK
 	return nil
 }
 
-func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide MKMPriceGuide) error {
+func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide []MKMPriceGuide) error {
 	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
 	if err != nil {
 		_, ok := err.(*PreprocessError)
@@ -120,12 +120,19 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	// in case the card has a foreign-only printing available
 	v.Set("language", "1")
 
+	var index int
+	for index = range priceGuide {
+		if priceGuide[index].IdProduct == product.IdProduct {
+			break
+		}
+	}
+
 	// Sorted as availableIndexNames
 	prices := []float64{
-		priceGuide[product.IdProduct].LowPriceEx, priceGuide[product.IdProduct].TrendPrice,
+		priceGuide[index].LowPriceEx, priceGuide[index].TrendPrice,
 	}
 	foilprices := []float64{
-		priceGuide[product.IdProduct].FoilLow, priceGuide[product.IdProduct].FoilTrend,
+		priceGuide[index].FoilLow, priceGuide[index].FoilTrend,
 	}
 
 	co, err := mtgmatcher.GetUUID(cardId)

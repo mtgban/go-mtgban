@@ -56,9 +56,7 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 	return out, nil
 }
 
-type MKMPriceGuide map[int]MKMProductPriceGuide
-
-type MKMProductPriceGuide struct {
+type MKMPriceGuide struct {
 	IdProduct      int
 	AvgSellPrice   float64
 	LowPrice       float64
@@ -77,7 +75,7 @@ type MKMProductPriceGuide struct {
 	FoilAvgDay30   float64
 }
 
-func (mkm *MKMClient) MKMPriceGuide() (MKMPriceGuide, error) {
+func (mkm *MKMClient) MKMPriceGuide() ([]MKMPriceGuide, error) {
 	raw, err := mkm.MKMRawPriceGuide()
 	if err != nil {
 		return nil, err
@@ -103,7 +101,7 @@ func (mkm *MKMClient) MKMPriceGuide() (MKMPriceGuide, error) {
 	// The CSV has a trailing comma at the end of the header
 	csvReader.FieldsPerRecord = len(first) - 1
 
-	out := MKMPriceGuide{}
+	var priceGuide []MKMPriceGuide
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -130,7 +128,7 @@ func (mkm *MKMClient) MKMPriceGuide() (MKMPriceGuide, error) {
 		foilAvgDay7, _ := strconv.ParseFloat(record[14], 64)
 		foilAvgDay30, _ := strconv.ParseFloat(record[15], 64)
 
-		out[idProduct] = MKMProductPriceGuide{
+		row := MKMPriceGuide{
 			IdProduct:      idProduct,
 			AvgSellPrice:   avgSellPrice,
 			LowPrice:       lowPrice,
@@ -148,9 +146,11 @@ func (mkm *MKMClient) MKMPriceGuide() (MKMPriceGuide, error) {
 			FoilAvgDay7:    foilAvgDay7,
 			FoilAvgDay30:   foilAvgDay30,
 		}
+
+		priceGuide = append(priceGuide, row)
 	}
 
-	return out, nil
+	return priceGuide, nil
 }
 
 type MKMProductList map[int]MKMProductListElement
