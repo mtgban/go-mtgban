@@ -131,6 +131,9 @@ type Card struct {
 
 // Card implements the Stringer interface
 func (c Card) String() string {
+	if c.Number == "" {
+		return fmt.Sprintf("[%s] %s", c.SetCode, c.Name)
+	}
 	return fmt.Sprintf("%s|%s|%s", c.Name, c.SetCode, c.Number)
 }
 
