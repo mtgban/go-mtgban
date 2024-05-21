@@ -295,11 +295,11 @@ func cardId2record(cardId string) ([]string, error) {
 		return nil, err
 	}
 
-	finish := ""
+	finish := "nonfoil"
 	if co.Foil {
-		finish = "FOIL"
+		finish = "foil"
 	} else if co.Etched {
-		finish = "ETCHED"
+		finish = "etched"
 	}
 
 	record := []string{
