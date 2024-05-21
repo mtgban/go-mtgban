@@ -550,12 +550,22 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 					continue
 				}
 
+				// Find the minimum amount tradable
+				qty := invEntry.Quantity
+				if refEntry.Quantity != 0 {
+					qty = refEntry.Quantity
+					if invEntry.Quantity < refEntry.Quantity {
+						qty = invEntry.Quantity
+					}
+				}
+
 				res := ArbitEntry{
 					CardId:         cardId,
 					InventoryEntry: invEntry,
 					ReferenceEntry: refEntry,
 					Difference:     difference,
 					Spread:         spread,
+					Quantity:       qty,
 				}
 				result = append(result, res)
 			}
