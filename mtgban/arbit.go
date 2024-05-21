@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"math"
 	"strconv"
 	"strings"
 
@@ -72,6 +73,13 @@ type ArbitOpts struct {
 	// It returns a custom factor to be applied on the buylist price,
 	// and whether the entry shoul be skipped
 	CustomCardFilter func(co *mtgmatcher.CardObject) (float64, bool)
+
+	// Constant used to offset prices (the higher the value, the less impactful
+	// lower prices will be, and viceversa)
+	ProfitabilityConstant float64
+
+	// Minimum profitability value
+	MinProfitability float64
 }
 
 type ArbitEntry struct {
@@ -98,6 +106,10 @@ type ArbitEntry struct {
 
 	// Amount of cards that can be applied
 	Quantity int
+
+	// The higher the number the better the arbit is. Using this formula
+	// Profitability Index (PI) = (Difference / (Sell Price + 10)) * log(1 + Spread) * sqrt(Units)
+	Profitability float64
 }
 
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, err error) {
@@ -105,12 +117,14 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	minSpread := 0.0
 	useTrades := false
 	rate := 1.0
+	profitabilityConstant := 0.0
 
 	minPrice := 0.0
 	minBuyPrice := 0.0
 	minQty := 0
 	maxSpread := 0.0
 	maxPriceRatio := 0.0
+	minProfitability := 0.0
 	filterFoil := false
 	filterOnlyFoil := false
 	filterRLOnly := false
@@ -134,6 +148,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		if opts.Rate != 0 {
 			rate = opts.Rate
 		}
+		if opts.ProfitabilityConstant > 0 {
+			profitabilityConstant = opts.ProfitabilityConstant
+		}
 		useTrades = opts.UseTrades
 
 		minPrice = opts.MinPrice
@@ -141,6 +158,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		minQty = opts.MinQuantity
 		maxPriceRatio = opts.MaxPriceRatio
 		maxSpread = opts.MaxSpread
+		minProfitability = opts.MinProfitability
 		filterFoil = opts.NoFoil
 		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
@@ -306,6 +324,15 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 				}
 			}
 
+			profitability := (difference / (price + profitabilityConstant)) * math.Log(1+spread)
+			if qty > 1 {
+				profitability *= math.Sqrt(float64(qty))
+			}
+
+			if profitability < minProfitability {
+				continue
+			}
+
 			res := ArbitEntry{
 				CardId:             cardId,
 				BuylistEntry:       blEntry,
@@ -314,6 +341,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 				AbsoluteDifference: difference * float64(qty),
 				Spread:             spread,
 				Quantity:           qty,
+				Profitability:      profitability,
 			}
 			result = append(result, res)
 		}
@@ -417,6 +445,8 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	maxSpread := 0.0
 	minPrice := 0.0
 	minQty := 0
+	minProfitability := 0.0
+	profitabilityConstant := 0.0
 	filterFoil := false
 	filterOnlyFoil := false
 	filterRLOnly := false
@@ -434,10 +464,14 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		if opts.MinSpread != 0 {
 			minSpread = opts.MinSpread
 		}
+		if opts.ProfitabilityConstant > 0 {
+			profitabilityConstant = opts.ProfitabilityConstant
+		}
 
 		minPrice = opts.MinPrice
 		maxSpread = opts.MaxSpread
 		minQty = opts.MinQuantity
+		minProfitability = opts.MinProfitability
 		filterFoil = opts.NoFoil
 		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
@@ -559,6 +593,15 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 					}
 				}
 
+				profitability := (difference / (price + profitabilityConstant)) * math.Log(1+spread)
+				if qty > 1 {
+					profitability *= math.Sqrt(float64(qty))
+				}
+
+				if profitability < minProfitability {
+					continue
+				}
+
 				res := ArbitEntry{
 					CardId:         cardId,
 					InventoryEntry: invEntry,
@@ -566,6 +609,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 					Difference:     difference,
 					Spread:         spread,
 					Quantity:       qty,
+					Profitability:  profitability,
 				}
 				result = append(result, res)
 			}
