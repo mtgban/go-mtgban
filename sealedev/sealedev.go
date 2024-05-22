@@ -355,7 +355,6 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 			}
 
 			res.buyEntry = &mtgban.BuylistEntry{
-				Conditions: "INDEX",
 				BuyPrice:   price,
 				TradePrice: price * 1.3,
 				URL:        link,
@@ -368,7 +367,6 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 			}
 
 			res.invEntry = &mtgban.InventoryEntry{
-				Conditions: "INDEX",
 				Price:      price,
 				SellerName: evParameters[i].Name,
 				URL:        link,
