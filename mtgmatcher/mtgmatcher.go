@@ -980,8 +980,12 @@ func adjustEdition(inCard *Card) {
 	// Separate timeshifted cards
 	case inCard.Contains("Modern Horizons") &&
 		(inCard.Contains("Retro Frame") || inCard.Contains("Timeshift")) &&
-		len(MatchInSet(inCard.Name, "H1R")) != 0:
-		edition = backend.Sets["H1R"].Name
+		(len(MatchInSet(inCard.Name, "H1R")) != 0 || len(MatchInSet(inCard.Name, "H2R")) != 0):
+		if len(MatchInSet(inCard.Name, "H1R")) != 0 {
+			edition = backend.Sets["H1R"].Name
+		} else if len(MatchInSet(inCard.Name, "H2R")) != 0 {
+			edition = backend.Sets["H2R"].Name
+		}
 
 	// Clash pack promos
 	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "CP1")) == 1:
