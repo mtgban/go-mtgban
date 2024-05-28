@@ -747,6 +747,27 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		allUUIDs = append(allUUIDs, uuid)
 	}
 
+	// Remove promo tags that apply to a single finish only
+	for uuid, card := range uuids {
+		if !card.Foil && !card.Etched {
+			for _, promoType := range []string{
+				mtgjson.PromoTypeSilverFoil,
+				mtgjson.PromoTypeRainbowFoil,
+			} {
+				if card.HasPromoType(promoType) {
+					var filtered []string
+					for _, pt := range card.PromoTypes {
+						if pt != promoType {
+							filtered = append(filtered, pt)
+						}
+					}
+					card.PromoTypes = filtered
+					uuids[uuid] = card
+				}
+			}
+		}
+	}
+
 	sort.Strings(promoTypes)
 	sort.Strings(allSets)
 
