@@ -217,12 +217,16 @@ func (ct *CardtraderMarket) scrape() error {
 	}
 	ct.printf("Retrieved %d global sets", len(expansionsRaw))
 
+	if ct.TargetEdition != "" {
+		ct.printf("-> only targeting edition %s", ct.TargetEdition)
+	}
+
 	var blueprintsRaw []Blueprint
 	for _, exp := range expansionsRaw {
 		if exp.GameId != GameIdMagic {
 			continue
 		}
-		if ct.TargetEdition != "" && exp.Name != ct.TargetEdition {
+		if ct.TargetEdition != "" && exp.Name != ct.TargetEdition && exp.Code != strings.ToLower(ct.TargetEdition) {
 			continue
 		}
 
@@ -259,9 +263,6 @@ func (ct *CardtraderMarket) scrape() error {
 	go func() {
 		num := 1
 		for id, expName := range expansions {
-			if ct.TargetEdition != "" && expName != ct.TargetEdition {
-				continue
-			}
 			ct.printf("Processing %s (%d/%d) [%d]", expName, num, len(expansions), id)
 			expansionIds <- id
 			num++
