@@ -296,7 +296,9 @@ func cardId2record(cardId string) ([]string, error) {
 	}
 
 	finish := "nonfoil"
-	if co.Foil {
+	if co.Sealed {
+		finish = "sealed"
+	} else if co.Foil {
 		finish = "foil"
 	} else if co.Etched {
 		finish = "etched"
