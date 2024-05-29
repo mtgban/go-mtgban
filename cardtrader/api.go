@@ -16,7 +16,7 @@ const (
 
 	ctBlueprintsURL  = "https://api.cardtrader.com/api/v2/blueprints/export?expansion_id="
 	ctExpansionsURL  = "https://api.cardtrader.com/api/v2/expansions"
-	ctMarketplaceURL = "https://api.cardtrader.com/api/v2/marketplace/products?expansion_id="
+	ctMarketplaceURL = "https://api.cardtrader.com/api/v2/marketplace/products"
 
 	ctBulkCreateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_create"
 	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
@@ -187,9 +187,9 @@ func (ct *CTAuthClient) Expansions() ([]Expansion, error) {
 	return out, nil
 }
 
-// Returns all products from an Expansion, with the 15 cheapest listings per product
+// Returns all products from an Expansion, with the 25 cheapest listings per product
 func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) {
-	resp, err := ct.client.Get(ctMarketplaceURL + fmt.Sprint(id))
+	resp, err := ct.client.Get(fmt.Sprintf("%s?expansion_id=%d", ctMarketplaceURL, id))
 	if err != nil {
 		return nil, err
 	}
@@ -207,6 +207,28 @@ func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) 
 	}
 
 	return out, nil
+}
+
+// Returns all products from a given blueprint id, with the 25 cheapest listings
+func (ct *CTAuthClient) ProductsForBlueprint(id int) ([]Product, error) {
+	resp, err := ct.client.Get(fmt.Sprintf("%s?blueprint_id=%d", ctMarketplaceURL, id))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var out map[int][]Product
+	err = json.Unmarshal(data, &out)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %s", id, string(data))
+	}
+
+	return out[id], nil
 }
 
 func (ct *CTAuthClient) Blueprints(expansionId int) ([]Blueprint, error) {
