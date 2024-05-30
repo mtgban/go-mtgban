@@ -2,7 +2,6 @@ package cardtrader
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -115,36 +114,7 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 }
 
 func (ct *CardtraderSealed) scrape() error {
-	productMap := map[int][]string{}
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
-		if err != nil || !co.Sealed {
-			continue
-		}
-		ctId := co.Identifiers["cardtraderId"]
-
-		// Some products do not carry an id because they are already assigned
-		// For specific cases, look for them since we have the canonical number
-		if ctId == "" && co.SetCode == "SLD" && strings.HasSuffix(co.Name, " Foil") {
-			uuids, err := mtgmatcher.SearchSealedEquals(strings.TrimSuffix(co.Name, " Foil"))
-			if err != nil {
-				continue
-			}
-			subco, err := mtgmatcher.GetUUID(uuids[0])
-			if err != nil {
-				continue
-			}
-			ctId = subco.Identifiers["cardtraderId"]
-		}
-		cardtraderId, err := strconv.Atoi(ctId)
-		if err != nil {
-			continue
-		}
-		// We also know that nonfoil comes before foil since product names are sorted
-		// so we can guarantee that the first element is nonfoil, and the second one
-		// is actually foil
-		productMap[cardtraderId] = append(productMap[cardtraderId], uuid)
-	}
+	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
 	ct.printf("Loaded %d sealed products", len(productMap))
 
 	expansionsRaw, err := ct.client.Expansions()

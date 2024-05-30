@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/mroth/weightedrand/v2"
@@ -942,4 +943,42 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 	}
 
 	return probs, nil
+}
+
+// Provide a map of ids with a slice of uuids
+// For most cases the slice will be of size one, but some ids may hold
+// a second uuid representing the foil version of the product
+func BuildSealedProductMap(idName string) map[int][]string {
+	productMap := map[int][]string{}
+	for _, uuid := range backend.AllSealedUUIDs {
+		co, err := GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		id := co.Identifiers[idName]
+
+		// Some products do not carry an id because they are already assigned
+		// For specific cases, look for them since we have the canonical number
+		if id == "" && co.SetCode == "SLD" && strings.HasSuffix(co.Name, " Foil") {
+			uuids, err := SearchSealedEquals(strings.TrimSuffix(co.Name, " Foil"))
+			if err != nil {
+				continue
+			}
+			subco, found := backend.UUIDs[uuids[0]]
+			if !found {
+				continue
+			}
+			id = subco.Identifiers[idName]
+		}
+
+		idNum, err := strconv.Atoi(id)
+		if err != nil {
+			continue
+		}
+		// We also know that nonfoil comes before foil since product names are sorted
+		// so we can guarantee that the first element is nonfoil, and the second one
+		// is actually foil
+		productMap[idNum] = append(productMap[idNum], uuid)
+	}
+	return productMap
 }

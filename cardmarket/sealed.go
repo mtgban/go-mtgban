@@ -3,7 +3,6 @@ package cardmarket
 import (
 	"fmt"
 	"net/url"
-	"strconv"
 	"sync"
 	"time"
 
@@ -72,7 +71,7 @@ var notSealedComments = []string{
 	"without",
 }
 
-func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuid string) error {
+func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuids []string) error {
 	u, err := url.Parse("https://www.cardmarket.com/en/Magic/Products/Search")
 	if err != nil {
 		return err
@@ -100,6 +99,11 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 			// Filter by language (the search option in the API seems to have no effect)
 			if article.Language.LanguageName != "English" {
 				continue
+			}
+
+			uuid := uuids[0]
+			if article.IsFoil && len(uuids) > 1 {
+				uuid = uuids[1]
 			}
 
 			// Skip all the silly non-really-sealed listings
@@ -148,18 +152,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 }
 
 func (mkm *CardMarketSealed) scrape() error {
-	productMap := map[int]string{}
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
-		if err != nil || !co.Sealed || co.Identifiers["mcmId"] == "" {
-			continue
-		}
-		mcmId, err := strconv.Atoi(co.Identifiers["mcmId"])
-		if err != nil {
-			continue
-		}
-		productMap[mcmId] = uuid
-	}
+	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 
 	productList, err := mkm.client.MKMProductList()
@@ -186,11 +179,11 @@ func (mkm *CardMarketSealed) scrape() error {
 		wg.Add(1)
 		go func() {
 			for idProduct := range products {
-				uuid := productMap[idProduct]
-				co, _ := mtgmatcher.GetUUID(uuid)
+				uuids := productMap[idProduct]
+				co, _ := mtgmatcher.GetUUID(uuids[0])
 				mkm.printf("Processing %s (%d/%d)...", co, slices.Index(productIds, idProduct)+1, len(productIds))
 
-				err = mkm.processProduct(channel, idProduct, uuid)
+				err = mkm.processProduct(channel, idProduct, uuids)
 				if err != nil {
 					mkm.printf("%s (%d) %s", co, idProduct, err.Error())
 					continue
