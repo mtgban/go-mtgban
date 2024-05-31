@@ -444,7 +444,6 @@ type TCGSKUPrice struct {
 	SkuId int `json:"skuId"`
 
 	// Only availabe from TCGPricesForSKUs()
-	ProductId          int     `json:"productId"`
 	LowPrice           float64 `json:"lowPrice"`
 	LowestShipping     float64 `json:"lowestShipping"`
 	LowestListingPrice float64 `json:"lowestListingPrice"`

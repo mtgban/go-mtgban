@@ -110,7 +110,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 		isEtched := req.Finish == "FOIL ETCHED"
 		cardId, err := mtgmatcher.MatchId(req.UUID, isFoil, isEtched)
 		if err != nil {
-			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), result.ProductId, req.UUID)
+			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductId, req.UUID)
 			continue
 		}
 
@@ -157,7 +157,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 						URL:        link,
 						SellerName: availableMarketNames[i],
 						Bundle:     i == 1,
-						OriginalId: fmt.Sprint(result.ProductId),
+						OriginalId: fmt.Sprint(req.ProductId),
 						InstanceId: fmt.Sprint(result.SkuId),
 					},
 				}
@@ -203,7 +203,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 					Quantity:   0,
 					PriceRatio: priceRatio,
 					URL:        "https://store.tcgplayer.com/buylist",
-					OriginalId: fmt.Sprint(result.ProductId),
+					OriginalId: fmt.Sprint(req.ProductId),
 					InstanceId: fmt.Sprint(result.SkuId),
 				},
 			}
