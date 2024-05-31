@@ -272,7 +272,6 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 	go func() {
 		sets := mtgmatcher.GetAllSets()
 		i := 1
-		allSetsSzie := len(sets) - 1
 		for _, code := range sets {
 			set, _ := mtgmatcher.GetSet(code)
 
@@ -281,7 +280,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 				continue
 			}
 
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i, allSetsSzie)
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
 			i++
 
 			for _, card := range set.Cards {
