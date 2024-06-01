@@ -1,11 +1,11 @@
 package miniaturemarket
 
 import (
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 type Miniaturemarket struct {
@@ -16,6 +16,7 @@ type Miniaturemarket struct {
 	inventoryDate time.Time
 	client        *MMClient
 	inventory     mtgban.InventoryRecord
+	productMap    map[string]string
 }
 
 func NewScraperSealed() *Miniaturemarket {
@@ -23,6 +24,7 @@ func NewScraperSealed() *Miniaturemarket {
 	mm.client = NewMMClient()
 	mm.inventory = mtgban.InventoryRecord{}
 	mm.MaxConcurrency = defaultConcurrency
+	mm.productMap = map[string]string{}
 	return &mm
 }
 
@@ -53,27 +55,8 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 			continue
 		}
 
-		productName := strings.TrimPrefix(product.Title, "Magic the Gathering: ")
-		productName = strings.TrimSuffix(productName, " (Preorder)")
-		edition := product.Edition
-
-		uuid, err := preprocessSealed(productName, edition)
-		if (err != nil || uuid == "") && strings.Contains(productName, "Commander") && !strings.Contains(edition, "Commander") {
-			uuid, err = preprocessSealed(productName, edition+" Commander")
-		}
-		if err != nil {
-			if err.Error() != "unsupported" {
-				mm.printf("%s in %s | %s", productName, edition, err.Error())
-			}
-			continue
-		}
-
-		if uuid == "" {
-			if !strings.Contains(productName, "Prerelease Pack") &&
-				!strings.Contains(productName, "Starter Kit") &&
-				!strings.Contains(productName, "Case") {
-				mm.printf("unable to parse %s in %s", productName, edition)
-			}
+		uuid, found := mm.productMap[product.EntityId]
+		if !found {
 			continue
 		}
 
@@ -96,6 +79,15 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 }
 
 func (mm *Miniaturemarket) scrape() error {
+	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil || co.Identifiers["miniaturemarketId"] == "" {
+			continue
+		}
+		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
+	}
+	mm.printf("Loaded %d sealed products", len(mm.productMap))
+
 	pages := make(chan int)
 	channel := make(chan respChan)
 	var wg sync.WaitGroup

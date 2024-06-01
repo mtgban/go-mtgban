@@ -11,6 +11,7 @@ import (
 
 type MMProduct struct {
 	UUID     string  `json:"uniqueId"`
+	EntityId string  `json:"entity_id"`
 	Edition  string  `json:"mtg_set"`
 	Title    string  `json:"title"`
 	URL      string  `json:"productUrl"`
