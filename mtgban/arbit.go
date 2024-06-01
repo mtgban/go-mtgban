@@ -326,7 +326,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			profitability := (difference / (price + profitabilityConstant)) * math.Log(1+spread)
 			if qty > 1 {
-				profitability *= math.Sqrt(float64(qty))
+				profitability *= math.Pow(float64(qty), 0.25)
 			}
 
 			if profitability < minProfitability {
@@ -595,7 +595,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 
 				profitability := (difference / (price + profitabilityConstant)) * math.Log(1+spread)
 				if qty > 1 {
-					profitability *= math.Sqrt(float64(qty))
+					profitability *= math.Pow(float64(qty), 0.25)
 				}
 
 				if profitability < minProfitability {
