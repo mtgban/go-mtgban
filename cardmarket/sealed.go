@@ -66,6 +66,7 @@ var notSealedComments = []string{
 	"open",
 	"ouvert",
 	"sampler",
+	"sans",
 	"unsealed",
 	"used",
 	"without",
