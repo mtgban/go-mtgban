@@ -71,17 +71,13 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 			switch {
 			case product.Quantity < 1,
 				product.OnVacation,
+				product.Bundle,
 				product.Properties.Altered:
 				continue
 			case mtgmatcher.Contains(product.Description, "ita"),
 				mtgmatcher.Contains(product.Description, "empty box"),
 				mtgmatcher.Contains(product.Description, "deck box only"):
 				continue
-			}
-
-			qty := product.Quantity
-			if product.Bundle {
-				qty *= 4
 			}
 
 			link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintId)
@@ -99,7 +95,7 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      price,
-					Quantity:   qty,
+					Quantity:   product.Quantity,
 					URL:        link,
 					SellerName: product.User.Name,
 					Bundle:     product.User.SealedZero,
