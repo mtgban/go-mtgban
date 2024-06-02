@@ -541,28 +541,21 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 		}
 	}
 
-	// Special tags
-	if strings.Contains(strings.ToLower(ogVariant), "misprint") {
-		variant = "misprint"
+	// Special tags and finishes
+	for _, tag := range []string{"misprint", "serial", "etched", "retro frame"} {
+		if strings.Contains(strings.ToLower(ogVariant), tag) {
+			if variant != "" {
+				variant += " "
+			}
+			variant += tag
+		}
 	}
+	// Need to erase any previously added numbers number that may confuse the assignment
 	if strings.Contains(strings.ToLower(ogVariant), "display commander") {
 		variant = ogVariant
 	}
-	if strings.Contains(strings.ToLower(ogVariant), "serial") {
-		if variant != "" {
-			variant += " "
-		}
-		variant += "serial"
-	}
 
-	// Handle any particular finish
 	isFoil := strings.Contains(ogVariant, "Foil")
-	if strings.Contains(ogVariant, "Etched") {
-		if variant != "" {
-			variant += " "
-		}
-		variant += "Etched"
-	}
 
 	return &mtgmatcher.Card{
 		Name:      cardName,
