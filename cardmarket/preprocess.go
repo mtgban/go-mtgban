@@ -601,6 +601,14 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			if edition == "Promos" {
 				edition = "P30T"
 			}
+		case "Mental Misstep":
+			if edition == "Promos" {
+				edition = "PMEI"
+				variant = "51"
+			} else if edition == "DCI Promos" {
+				edition = "PEWK"
+				variant = ""
+			}
 
 		default:
 			for _, code := range []string{
