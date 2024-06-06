@@ -144,79 +144,79 @@ var allLanguageTags = []string{
 }
 
 // Editions with interesting tokens
-var setAllowedForTokens = map[string]bool{
+var setAllowedForTokens = []string{
 	// League Tokens
-	"L12": true,
-	"L13": true,
-	"L14": true,
-	"L15": true,
-	"L16": true,
-	"L17": true,
+	"L12",
+	"L13",
+	"L14",
+	"L15",
+	"L16",
+	"L17",
 
 	// Magic Player Rewards
-	"MPR": true,
-	"PR2": true,
-	"P03": true,
-	"P04": true,
+	"MPR",
+	"PR2",
+	"P03",
+	"P04",
 
 	// FNM
-	"F12": true,
-	"F17": true,
-	"F18": true,
+	"F12",
+	"F17",
+	"F18",
 
 	// FtV: Lore
-	"V16": true,
+	"V16",
 
 	// Holiday
-	"H17": true,
+	"H17",
 
 	// Secret lair
-	"SLD": true,
+	"SLD",
 
 	// Guild kits
-	"GK1": true,
-	"GK2": true,
+	"GK1",
+	"GK2",
 
 	// Token sets
-	"PHEL": true,
-	"PL21": true,
-	"PLNY": true,
-	"WDMU": true,
+	"PHEL",
+	"PL21",
+	"PLNY",
+	"WDMU",
 
-	"10E": true,
-	"A25": true,
-	"AFR": true,
-	"ALA": true,
-	"ARB": true,
-	"BFZ": true,
-	"BNG": true,
-	"DKA": true,
-	"DMU": true,
-	"DOM": true,
-	"FRF": true,
-	"ISD": true,
-	"JOU": true,
-	"M15": true,
-	"MBS": true,
-	"NPH": true,
-	"NEO": true,
-	"NEC": true,
-	"RTR": true,
-	"SOM": true,
-	"SHM": true,
-	"WAR": true,
-	"ZEN": true,
+	"10E",
+	"A25",
+	"AFR",
+	"ALA",
+	"ARB",
+	"BFZ",
+	"BNG",
+	"DKA",
+	"DMU",
+	"DOM",
+	"FRF",
+	"ISD",
+	"JOU",
+	"M15",
+	"MBS",
+	"NPH",
+	"NEO",
+	"NEC",
+	"RTR",
+	"SOM",
+	"SHM",
+	"WAR",
+	"ZEN",
 
 	// Theros token sets
-	"TBTH": true,
-	"TDAG": true,
-	"TFTH": true,
+	"TBTH",
+	"TDAG",
+	"TFTH",
 
 	// Funny token sets
-	"SUNF": true,
-	"UGL":  true,
-	"UNF":  true,
-	"UST":  true,
+	"SUNF",
+	"UGL",
+	"UNF",
+	"UST",
 }
 
 var missingPELPtags = map[string]string{
@@ -261,7 +261,7 @@ var sldJPNLangDupes = []string{
 }
 
 func okForTokens(set *mtgjson.Set) bool {
-	return setAllowedForTokens[set.Code] ||
+	return slices.Contains(setAllowedForTokens, set.Code) ||
 		strings.Contains(set.Name, "Duel Deck")
 }
 
