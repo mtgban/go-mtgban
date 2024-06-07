@@ -140,6 +140,10 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: mtgjson.PromoTypeInvisibleInk,
 		Tags:      []string{"Invisible"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeRippleFoil,
+		Tags:      []string{"Ripple"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
