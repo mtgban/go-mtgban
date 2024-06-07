@@ -260,6 +260,18 @@ var sldJPNLangDupes = []string{
 	"1110", "1111", "1112", "1113", "1114", "1115", "1116", "1117",
 }
 
+// List of numbers that need to have their number/uuid revisioned due
+// to having foil and nonfoil merged in the same card object
+var foilDupes = map[string][]string{
+	"SLD": {
+		"1614", "1615", "1616", "1617",
+		"1618", "1619", "1620", "1621", "1622",
+		"1623", "1624", "1625", "1626",
+		"1703", "1704", "1705", "1706", "1707",
+		"9990", "9991", "9992", "9993",
+	},
+}
+
 func okForTokens(set *mtgjson.Set) bool {
 	return slices.Contains(setAllowedForTokens, set.Code) ||
 		strings.Contains(set.Name, "Duel Deck")
@@ -702,6 +714,10 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicateCards(ap.Data, cards, uuids, "SLD", "JPN", sldJPNLangDupes)
 	duplicateCards(ap.Data, cards, uuids, "PURL", "JPN", []string{"1"})
 
+	for setCode, numbers := range foilDupes {
+		spinoffFoils(ap.Data, cards, uuids, setCode, numbers)
+	}
+
 	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}
 	var names []string
@@ -1024,6 +1040,53 @@ func duplicateCards(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uui
 	}
 
 	sets[code].Cards = append(sets[code].Cards, duplicates...)
+}
+
+func spinoffFoils(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, code string, numbers []string) {
+	var newCardsArray []mtgjson.Card
+
+	for i := range sets[code].Cards {
+		dupeCard := sets[code].Cards[i]
+
+		// Skip unneeded (just preserve the card as-is)
+		if !slices.Contains(numbers, sets[code].Cards[i].Number) {
+			newCardsArray = append(newCardsArray, dupeCard)
+			continue
+		}
+
+		// Retrieve the main card object
+		co, found := uuids[dupeCard.UUID]
+		if !found {
+			continue
+		}
+
+		// Change properties
+		dupeCard.Finishes = []string{"nonfoil"}
+
+		// Propagate changes across the board
+		co.Card = dupeCard
+		uuids[dupeCard.UUID] = co
+		newCardsArray = append(newCardsArray, dupeCard)
+
+		// Move to the foil version
+		co, found = uuids[dupeCard.UUID+suffixFoil]
+		if !found {
+			continue
+		}
+
+		// Change properties
+		delete(uuids, dupeCard.UUID+suffixFoil)
+		dupeCard.UUID = strings.Split(dupeCard.UUID, "_")[0] + "+foil"
+		dupeCard.Number += mtgjson.SuffixSpecial
+		dupeCard.Finishes = []string{"foil"}
+
+		// Update or create the new card object, add the new card to the list
+		co.Card = dupeCard
+		uuids[dupeCard.UUID] = co
+		newCardsArray = append(newCardsArray, dupeCard)
+	}
+
+	sets[code].Cards = newCardsArray
 }
 
 func LoadDatastore(reader io.Reader) error {

@@ -488,6 +488,23 @@
         }
     },
     {
+        "uuid": "084501f1-884f-56ab-b879-bcdcde480ff1",
+        "description": "number_dupes_foildupe_nonfoil",
+        "input": {
+            "name": "Doom Blade",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "084501f1-884f-56ab-b879-bcdcde480ff1+foil",
+        "description": "number_dupes_foildupe_foil",
+        "input": {
+            "name": "Doom Blade",
+            "edition": "SLD",
+            "foil": true
+        }
+    },
+    {
         "uuid": "bf0aa055-3635-5efd-930d-4f0a7caaa411",
         "description": "names_transform_card",
         "input": {
