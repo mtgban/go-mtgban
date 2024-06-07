@@ -827,6 +827,10 @@ func sldVariant(inCard *Card, card *mtgjson.Card) bool {
 		if inCard.isStepAndCompleat() {
 			result = !result
 		}
+	case "Mogis, God of Slaughter":
+		if card.BorderColor != mtgjson.BorderColorBorderless && !inCard.Foil {
+			return true
+		}
 	}
 	// Prevent flipping the result below if multiple printings are present (ie Griselbrand)
 	if inCard.isEtched() || inCard.isStepAndCompleat() {
