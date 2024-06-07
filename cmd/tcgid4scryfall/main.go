@@ -111,10 +111,9 @@ type Properties struct {
 	Number     string
 	ScryfallId string
 
-	OldTcgId string
-	NewTcgId string
-
-	OldEtchedTcgId string
+	OldTcgId       string
+	NewTcgId       string
+	NewFoilTcgId   string
 	NewEtchedTcgId string
 }
 
@@ -208,17 +207,29 @@ func run() int {
 		}
 
 		newTcgId := cards[0].OriginalId
+		newFoilTcgId := ""
 		newEtchedTcgId := ""
 		oldTcgId := co.Identifiers["tcgplayerProductId"]
 
+		// If etched, there is always going to be a separate id,
+		// but the same is not guaranteed for every foil card
 		if co.Etched {
 			newEtchedTcgId = newTcgId
 			newTcgId = ""
 			oldTcgId = co.Identifiers["tcgplayerEtchedProductId"]
+		} else if co.Foil && len(co.Finishes) > 1 {
+			newFoilTcgId = newTcgId
+			newTcgId = ""
+			replace, found := co.Identifiers["tcgplayerFoilProductId"]
+			if found {
+				oldTcgId = replace
+			}
 		}
 
 		identifier := co.Identifiers["scryfallId"]
-		if (newTcgId != "" && oldTcgId != newTcgId) || (newEtchedTcgId != "" && oldTcgId != newEtchedTcgId) {
+		if (newTcgId != "" && oldTcgId != newTcgId) ||
+			(newEtchedTcgId != "" && oldTcgId != newEtchedTcgId) ||
+			(newFoilTcgId != "" && oldTcgId != newFoilTcgId) {
 			_, found := output[identifier]
 			if !found {
 				output[identifier] = &Properties{}
@@ -228,11 +239,12 @@ func run() int {
 			output[identifier].Number = co.Number
 			output[identifier].ScryfallId = identifier
 
+			output[identifier].OldTcgId = oldTcgId
 			if co.Etched {
-				output[identifier].OldEtchedTcgId = oldTcgId
 				output[identifier].NewEtchedTcgId = newEtchedTcgId
-			} else {
-				output[identifier].OldTcgId = oldTcgId
+			} else if co.Foil && len(co.Finishes) > 1 {
+				output[identifier].NewFoilTcgId = newFoilTcgId
+			} else if newTcgId != "" {
 				output[identifier].NewTcgId = newTcgId
 			}
 		}
@@ -240,7 +252,7 @@ func run() int {
 
 	csvWriter := csv.NewWriter(os.Stdout)
 	csvWriter.Write([]string{
-		"name", "set", "cn", "scryfall_id", "old_tcgplayer_id", "new_tcgplayer_id", "old_tcgplayer_etched_id", "new_tcgplayer_etched_id",
+		"name", "set", "cn", "scryfall_id", "old_tcgplayer_id", "new_tcgplayer_id", "new_tcgplayer_foil_id", "new_tcgplayer_etched_id",
 	})
 	fixes := 0
 	for _, props := range output {
@@ -252,7 +264,7 @@ func run() int {
 			props.ScryfallId,
 			props.OldTcgId,
 			props.NewTcgId,
-			props.OldEtchedTcgId,
+			props.NewFoilTcgId,
 			props.NewEtchedTcgId,
 		})
 		csvWriter.Flush()
