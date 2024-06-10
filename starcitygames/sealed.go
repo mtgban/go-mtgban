@@ -23,7 +23,8 @@ type StarcitygamesSealed struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	client *SCGClient
+	productMap map[string]string
+	client     *SCGClient
 }
 
 func NewScraperSealed(guid, bearer string) *StarcitygamesSealed {
@@ -40,6 +41,19 @@ func (scg *StarcitygamesSealed) printf(format string, a ...interface{}) {
 	if scg.LogCallback != nil {
 		scg.LogCallback("[SCGSealed] "+format, a...)
 	}
+}
+
+func buildProductMap() map[string]string {
+	out := map[string]string{}
+	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		scgId := co.Identifiers["scgId"]
+		out[scgId] = uuid
+	}
+	return out
 }
 
 func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page int) error {
@@ -67,26 +81,23 @@ func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page in
 		if len(result.Document.URLDetail) == 0 {
 			return errors.New("malformed url_detail")
 		}
-
-		productName := result.Document.ItemDisplayName[0]
-		id := fmt.Sprint(result.Document.UniqueID[0])
 		urlPath := result.Document.URLDetail[0]
 
 		if !strings.Contains(urlPath, "-mtg-") {
 			continue
 		}
 
-		uuid, err := preprocessSealed(productName)
-		if err != nil {
-			continue
-		}
-
-		if uuid == "" {
-			scg.printf("unable to parse %s", productName)
-			continue
-		}
-
 		for _, attribute := range result.Document.HawkChildAttributes {
+			if len(attribute.VariantSKU) == 0 {
+				return errors.New("malformed sku")
+			}
+			sku := attribute.VariantSKU[0]
+
+			uuid, found := scg.productMap[sku]
+			if !found {
+				continue
+			}
+
 			if len(attribute.Price) == 0 {
 				return errors.New("malformed price")
 			}
@@ -98,7 +109,8 @@ func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page in
 
 			price, err := mtgmatcher.ParsePrice(priceStr)
 			if err != nil {
-				scg.printf("invalid price for %s: %s", productName, err.Error())
+				co, _ := mtgmatcher.GetUUID(uuid)
+				scg.printf("invalid price for %s: %s", co, err.Error())
 				continue
 			}
 
@@ -113,7 +125,7 @@ func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page in
 				invEntry: &mtgban.InventoryEntry{
 					Price:      price,
 					Quantity:   qty,
-					OriginalId: id,
+					OriginalId: sku,
 					URL:        link,
 				},
 			}
@@ -125,6 +137,8 @@ func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page in
 }
 
 func (scg *StarcitygamesSealed) scrape() error {
+	scg.productMap = buildProductMap()
+
 	totalPages, err := scg.client.NumberOfPages()
 	if err != nil {
 		return err
@@ -192,18 +206,6 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 	}
 
 	for _, hit := range search.Hits {
-		productName := hit.Name
-
-		uuid, err := preprocessSealed(productName)
-		if err != nil {
-			continue
-		}
-
-		if uuid == "" {
-			scg.printf("unable to parse %s", productName)
-			continue
-		}
-
 		link, _ := url.JoinPath(
 			buylistBookmark,
 			url.QueryEscape(hit.Name),
@@ -217,6 +219,11 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 		)
 
 		for _, result := range hit.Variants {
+			uuid, found := scg.productMap[result.Sku]
+			if !found {
+				continue
+			}
+
 			var priceRatio, sellPrice float64
 			price := result.BuyPrice
 			trade := result.TradePrice
@@ -235,7 +242,6 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 				buyEntry: &mtgban.BuylistEntry{
 					BuyPrice:   price,
 					TradePrice: trade,
-					Quantity:   0,
 					PriceRatio: priceRatio,
 					URL:        link,
 				},
@@ -246,6 +252,8 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 }
 
 func (scg *StarcitygamesSealed) parseBL() error {
+	scg.productMap = buildProductMap()
+
 	search, err := scg.client.SearchAll(0, 1)
 	if err != nil {
 		return err
