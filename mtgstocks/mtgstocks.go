@@ -110,19 +110,23 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 func (stks *MTGStocks) scrape() error {
 	averagesRegular, err := AverageInterests(false)
 	if err != nil {
-		return err
+		stks.printf("averages regular " + err.Error())
 	}
 	averagesFoil, err := AverageInterests(true)
 	if err != nil {
-		return err
+		stks.printf("averages foil " + err.Error())
 	}
 	marketsRegular, err := MarketInterests(false)
 	if err != nil {
-		return err
+		stks.printf("market regular " + err.Error())
 	}
 	marketsFoil, err := MarketInterests(true)
 	if err != nil {
-		return err
+		stks.printf("market foil" + err.Error())
+	}
+	if len(averagesRegular) == 0 && len(averagesFoil) == 0 &&
+		len(marketsRegular) == 0 && len(marketsFoil) == 0 {
+		return errors.New("nothing was loaded from mtgstocks")
 	}
 
 	pages := make(chan requestChan)
