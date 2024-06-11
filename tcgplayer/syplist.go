@@ -1,15 +1,10 @@
 package tcgplayer
 
 import (
-	"encoding/csv"
-	"errors"
 	"fmt"
-	"io"
-	"strconv"
 
 	"time"
 
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
@@ -22,10 +17,6 @@ type TCGSYPList struct {
 	inventory mtgban.InventoryRecord
 }
 
-const (
-	sypExportCSVURL = "https://bancsvs.s3.us-east-2.amazonaws.com/SYP_export.csv"
-)
-
 func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGSYPList] "+format, a...)
@@ -35,7 +26,6 @@ func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
 func NewScraperSYP() *TCGSYPList {
 	tcg := TCGSYPList{}
 	tcg.inventory = mtgban.InventoryRecord{}
-
 	return &tcg
 }
 
@@ -48,43 +38,21 @@ func (tcg *TCGSYPList) scrape() error {
 	tcg.printf("Found skus for %d entries", len(uuid2skusMap))
 
 	// Convert to a map of id:sku, we'll regenerate the uuid differently
-	sku2product := map[string]mtgjson.TCGSku{}
+	sku2product := map[int]mtgjson.TCGSku{}
 	for _, skus := range uuid2skusMap {
 		for _, sku := range skus {
-			sku2product[fmt.Sprint(sku.SkuId)] = sku
+			sku2product[sku.SkuId] = sku
 		}
 	}
 
-	resp, err := cleanhttp.DefaultClient().Get(sypExportCSVURL)
+	sypList, err := LoadSyp()
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	tcg.printf("Found syp list of %d entries", len(sypList))
 
-	r := csv.NewReader(resp.Body)
-	r.LazyQuotes = true
-
-	// Header
-	// TCGplayer Id,Category,Product Name,Number,Rarity,Set,Condition,Market Price,Max QTY
-	record, err := r.Read()
-	if err != nil {
-		return err
-	}
-	if len(record) < 8 {
-		tcg.printf("%q", record)
-		return errors.New("unexpected csv format")
-	}
-
-	for {
-		record, err = r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		sku, found := sku2product[record[0]]
+	for _, syp := range sypList {
+		sku, found := sku2product[syp.SkuId]
 		if !found {
 			continue
 		}
@@ -93,15 +61,8 @@ func (tcg *TCGSYPList) scrape() error {
 		isEtched := sku.Finish == "FOIL ETCHED"
 		cardId, err := mtgmatcher.MatchId(fmt.Sprint(sku.ProductId), isFoil, isEtched)
 		if err != nil {
-			// Skip errors for tokens and promos
-			if record[4] != "T" && record[4] != "P" {
-				tcg.printf("%d not found [%s %s]", sku.ProductId, record[2], record[5])
-			}
 			continue
 		}
-
-		qty, _ := strconv.Atoi(record[8])
-		price, _ := strconv.ParseFloat(record[7], 64)
 
 		cond, found := skuConditions[sku.Condition]
 		if !found {
@@ -110,8 +71,8 @@ func (tcg *TCGSYPList) scrape() error {
 
 		entry := mtgban.InventoryEntry{
 			Conditions: cond,
-			Price:      price,
-			Quantity:   qty,
+			Price:      syp.MarketPrice,
+			Quantity:   syp.MaxQty,
 		}
 
 		err = tcg.inventory.Add(cardId, &entry)
