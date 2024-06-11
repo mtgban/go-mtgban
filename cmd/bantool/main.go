@@ -270,13 +270,6 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mtgstocks_index": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := mtgstocks.NewScraperIndex()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
 	"mythicmtg": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mythicmtg.NewScraper()
