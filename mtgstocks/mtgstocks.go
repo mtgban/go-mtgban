@@ -18,6 +18,7 @@ type MTGStocks struct {
 	inventoryDate  time.Time
 	MaxConcurrency int
 
+	client    *STKSClient
 	inventory mtgban.InventoryRecord
 }
 
@@ -43,6 +44,7 @@ func (stks *MTGStocks) printf(format string, a ...interface{}) {
 
 func NewScraper() *MTGStocks {
 	stks := MTGStocks{}
+	stks.client = NewClient()
 	stks.inventory = mtgban.InventoryRecord{}
 	stks.MaxConcurrency = defaultConcurrency
 	return &stks
@@ -108,19 +110,19 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 }
 
 func (stks *MTGStocks) scrape() error {
-	averagesRegular, err := AverageInterests(false)
+	averagesRegular, err := stks.client.AverageInterests(false)
 	if err != nil {
 		stks.printf("averages regular " + err.Error())
 	}
-	averagesFoil, err := AverageInterests(true)
+	averagesFoil, err := stks.client.AverageInterests(true)
 	if err != nil {
 		stks.printf("averages foil " + err.Error())
 	}
-	marketsRegular, err := MarketInterests(false)
+	marketsRegular, err := stks.client.MarketInterests(false)
 	if err != nil {
 		stks.printf("market regular " + err.Error())
 	}
-	marketsFoil, err := MarketInterests(true)
+	marketsFoil, err := stks.client.MarketInterests(true)
 	if err != nil {
 		stks.printf("market foil" + err.Error())
 	}

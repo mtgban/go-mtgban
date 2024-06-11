@@ -6,7 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/hashicorp/go-cleanhttp"
+	"github.com/corpix/uarand"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type StocksInterest struct {
@@ -51,27 +52,37 @@ const (
 	stksAverageURL = "https://api.mtgstocks.com/interests/average"
 	stksMarketURL  = "https://api.mtgstocks.com/interests/market"
 	stksSetsURL    = "https://api.mtgstocks.com/card_sets"
-
-	defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Windows 1.0; rv:100.0)"
 )
 
-func AverageInterests(foil bool) ([]StocksInterest, error) {
-	out, err := query(stksAverageURL, foil)
+type STKSClient struct {
+	client *retryablehttp.Client
+	ua     string
+}
+
+func NewClient() *STKSClient {
+	stks := STKSClient{}
+	stks.client = retryablehttp.NewClient()
+	stks.ua = uarand.GetRandom()
+	return &stks
+}
+
+func (s *STKSClient) AverageInterests(foil bool) ([]StocksInterest, error) {
+	out, err := s.query(stksAverageURL, foil)
 	if err != nil {
 		return nil, err
 	}
 	return out.Interests, nil
 }
 
-func MarketInterests(foil bool) ([]StocksInterest, error) {
-	out, err := query(stksMarketURL, foil)
+func (s *STKSClient) MarketInterests(foil bool) ([]StocksInterest, error) {
+	out, err := s.query(stksMarketURL, foil)
 	if err != nil {
 		return nil, err
 	}
 	return out.Interests, nil
 }
 
-func query(link string, foil bool) (*MTGStocksInterests, error) {
+func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) {
 	extra := "/regular"
 	if foil {
 		extra = "/foil"
@@ -82,9 +93,12 @@ func query(link string, foil bool) (*MTGStocksInterests, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", defaultUserAgent)
+	req.Header.Set("User-Agent", s.ua)
+	req.Header.Set("Accept", "application/json, text/plain, */*")
+	req.Header.Set("Referer", "https://www.mtgstocks.com/")
+	req.Header.Set("Origin", "https://www.mtgstocks.com")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
