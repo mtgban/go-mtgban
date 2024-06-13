@@ -795,6 +795,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			for _, promoType := range []string{
 				mtgjson.PromoTypeSilverFoil,
 				mtgjson.PromoTypeRainbowFoil,
+				mtgjson.PromoTypeRippleFoil,
 			} {
 				if card.HasPromoType(promoType) {
 					var filtered []string
