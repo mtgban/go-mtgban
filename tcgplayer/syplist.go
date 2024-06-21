@@ -11,10 +11,11 @@ import (
 )
 
 type TCGSYPList struct {
-	LogCallback   mtgban.LogCallbackFunc
-	inventoryDate time.Time
+	LogCallback mtgban.LogCallbackFunc
+	Affiliate   string
 
-	inventory mtgban.InventoryRecord
+	inventoryDate time.Time
+	inventory     mtgban.InventoryRecord
 }
 
 func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
@@ -69,10 +70,17 @@ func (tcg *TCGSYPList) scrape() error {
 			continue
 		}
 
+		printing := "Normal"
+		if sku.Printing == "FOIL" {
+			printing = "Foil"
+		}
+		link := TCGPlayerProductURL(sku.ProductId, printing, tcg.Affiliate, cond, "English")
+
 		entry := mtgban.InventoryEntry{
 			Conditions: cond,
 			Price:      syp.MarketPrice,
 			Quantity:   syp.MaxQty,
+			URL:        link,
 		}
 
 		err = tcg.inventory.Add(cardId, &entry)
