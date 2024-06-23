@@ -1,10 +1,14 @@
 package mtgstocks
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/corpix/uarand"
 	"github.com/hashicorp/go-retryablehttp"
@@ -62,8 +66,31 @@ type STKSClient struct {
 func NewClient() *STKSClient {
 	stks := STKSClient{}
 	stks.client = retryablehttp.NewClient()
+	stks.client.Backoff = retryablehttp.LinearJitterBackoff
+	stks.client.RetryWaitMin = 2 * time.Second
+	stks.client.RetryWaitMax = 10 * time.Second
+	stks.client.RetryMax = 10
+	stks.client.CheckRetry = customCheckRetry
+	stks.client.PrepareRetry = customPrepareRetry
 	stks.ua = uarand.GetRandom()
 	return &stks
+}
+
+// Implement our own retry policy to leverage the internal retry mechanism
+func customCheckRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	data, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	resp.Body = io.NopCloser(bytes.NewBuffer(data))
+	if strings.Contains(string(data), "HTML") || strings.Contains(string(data), "ERROR") {
+		return true, errors.New(string(data))
+	}
+	return false, err
+}
+
+// Change user agent before another retry
+func customPrepareRetry(req *http.Request) error {
+	req.Header.Set("User-Agent", uarand.GetRandom())
+	return nil
 }
 
 func (s *STKSClient) AverageInterests(foil bool) ([]StocksInterest, error) {
