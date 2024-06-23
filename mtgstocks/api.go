@@ -98,7 +98,7 @@ func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) 
 	req.Header.Set("Referer", "https://www.mtgstocks.com/")
 	req.Header.Set("Origin", "https://www.mtgstocks.com")
 
-	resp, err := s.client.HTTPClient.Do(req)
+	resp, err := s.client.StandardClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
