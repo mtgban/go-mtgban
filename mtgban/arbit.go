@@ -460,6 +460,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	var filterEditions []string
 	var filterSelectedEditions []string
 	var filterSelectedCNRange map[string][2]int
+	var filterFunc func(co *mtgmatcher.CardObject) (float64, bool)
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -480,6 +481,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		filterOnlyFoil = opts.OnlyFoil
 		filterRLOnly = opts.OnlyReserveList
 		filterDecksOnly = opts.SealedDecklist
+		filterFunc = opts.CustomCardFilter
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -546,6 +548,15 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			}
 		}
 
+		customFactor := 1.0
+		if filterFunc != nil {
+			factor, skip := filterFunc(co)
+			if skip {
+				continue
+			}
+			customFactor = factor
+		}
+
 		for _, refEntry := range refEntries {
 			if refEntry.Price == 0 {
 				continue
@@ -565,7 +576,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 					continue
 				}
 
-				refPrice := refEntry.Price
+				refPrice := refEntry.Price * customFactor
 				price := invEntry.Price
 
 				// We need to account for conditions, using a default ladder
