@@ -245,12 +245,13 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			}
 		}
 
+		customFactor := 1.0
 		if filterFunc != nil {
 			factor, skip := filterFunc(co)
 			if skip {
 				continue
 			}
-			blEntry.BuyPrice *= factor
+			customFactor = factor
 		}
 
 		for _, invEntry := range invEntries {
@@ -292,6 +293,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			if useTrades {
 				blPrice = blEntry.TradePrice
 			}
+
+			// Apply the optional previously established factor
+			blPrice *= customFactor
 
 			if price == 0 || blPrice == 0 {
 				continue
