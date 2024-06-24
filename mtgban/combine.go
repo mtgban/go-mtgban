@@ -84,7 +84,7 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 
 			price := entry.BuyPrice
 			if useCredit {
-				price = entry.TradePrice
+				price *= vendor.Info().CreditMultiplier
 			}
 
 			res := CombineEntry{

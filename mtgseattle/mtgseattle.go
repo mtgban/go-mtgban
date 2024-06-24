@@ -129,12 +129,6 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 
 		priceStr := s.Find(`div[class="product-price"] span[class="regular price"]`).Text()
 
-		creditStr := s.Find(`div[class="product-price"] span[class="store-credit"]`).Text()
-		creditStr = strings.TrimSpace(creditStr)
-		creditStr = strings.TrimPrefix(creditStr, "/ ")
-		creditStr = strings.TrimSuffix(creditStr, "credit")
-		creditStr = strings.TrimSpace(creditStr)
-
 		qty, err := strconv.Atoi(qtyStr)
 		if err != nil {
 			return
@@ -144,7 +138,6 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 		if price == 0 {
 			return
 		}
-		credit, _ := mtgmatcher.ParsePrice(creditStr)
 
 		conditions := ""
 		if mode == modeInventory {
@@ -260,7 +253,6 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 					buyEntry: &mtgban.BuylistEntry{
 						Conditions: grade,
 						BuyPrice:   price * factor,
-						TradePrice: credit * factor,
 						PriceRatio: priceRatio,
 						Quantity:   quantity,
 						URL:        "https://www.mtgseattle.com" + link,
@@ -444,5 +436,6 @@ func (ms *MTGSeattle) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "MS"
 	info.InventoryTimestamp = &ms.inventoryDate
 	info.BuylistTimestamp = &ms.buylistDate
+	info.CreditMultiplier = 1.33
 	return
 }

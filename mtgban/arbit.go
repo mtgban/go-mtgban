@@ -291,7 +291,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 
 			blPrice := blEntry.BuyPrice
 			if useTrades {
-				blPrice = blEntry.TradePrice
+				blPrice *= vendor.Info().CreditMultiplier
 			}
 
 			// Apply the optional previously established factor

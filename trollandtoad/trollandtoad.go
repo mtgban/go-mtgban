@@ -334,7 +334,6 @@ func (tnt *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 			buyEntry: &mtgban.BuylistEntry{
 				Conditions: "NM",
 				BuyPrice:   price,
-				TradePrice: price * 1.25,
 				Quantity:   qty,
 				PriceRatio: priceRatio,
 				URL:        link,
@@ -422,5 +421,6 @@ func (tnt *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "TNT"
 	info.InventoryTimestamp = &tnt.inventoryDate
 	info.BuylistTimestamp = &tnt.buylistDate
+	info.CreditMultiplier = 1.25
 	return
 }

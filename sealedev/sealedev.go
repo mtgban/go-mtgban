@@ -355,9 +355,8 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 			}
 
 			res.buyEntry = &mtgban.BuylistEntry{
-				BuyPrice:   price,
-				TradePrice: price * 1.3,
-				URL:        link,
+				BuyPrice: price,
+				URL:      link,
 			}
 		} else {
 			var link string
@@ -490,5 +489,6 @@ func (ss *SealedEVScraper) Info() (info mtgban.ScraperInfo) {
 	info.BuylistTimestamp = &ss.buylistDate
 	info.SealedMode = true
 	info.MetadataOnly = true
+	info.CreditMultiplier = 1.3
 	return
 }

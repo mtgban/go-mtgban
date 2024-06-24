@@ -250,7 +250,6 @@ func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) e
 			cardName := product.ModelEn
 			edition := product.Category
 			price := product.MinAcquisto
-			credit := product.MaxAcquisto
 			qty := product.Quantity
 			if qty > 4 {
 				qty = 4
@@ -305,7 +304,6 @@ func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) e
 						Quantity:   quantity,
 						Conditions: grade,
 						BuyPrice:   price * mc.exchangeRate * factor,
-						TradePrice: credit * mc.exchangeRate * factor,
 						URL:        link,
 						OriginalId: product.ID,
 					},
@@ -380,5 +378,6 @@ func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mc.inventoryDate
 	info.BuylistTimestamp = &mc.buylistDate
+	info.CreditMultiplier = 1.07145
 	return
 }

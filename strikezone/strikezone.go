@@ -325,6 +325,5 @@ func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "SZ"
 	info.InventoryTimestamp = &sz.inventoryDate
 	info.BuylistTimestamp = &sz.buylistDate
-	info.NoCredit = true
 	return
 }
