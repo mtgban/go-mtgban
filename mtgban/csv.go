@@ -317,10 +317,7 @@ func WriteSellerToCSV(seller Seller, w io.Writer) error {
 	if len(inventory) == 0 {
 		return nil
 	}
-	return WriteInventoryToCSV(inventory, w)
-}
 
-func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -335,7 +332,7 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 		break
 	}
 
-	err := csvWriter.Write(header)
+	err = csvWriter.Write(header)
 	if err != nil {
 		return err
 	}
@@ -385,14 +382,11 @@ func WriteVendorToCSV(vendor Vendor, w io.Writer) error {
 	if len(buylist) == 0 {
 		return nil
 	}
-	return WriteBuylistToCSV(buylist, w)
-}
 
-func WriteBuylistToCSV(buylist BuylistRecord, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
-	err := csvWriter.Write(BuylistHeader)
+	err = csvWriter.Write(BuylistHeader)
 	if err != nil {
 		return err
 	}
