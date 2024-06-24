@@ -26,7 +26,6 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/mtgban/go-mtgban/abugames"
-	"github.com/mtgban/go-mtgban/blueprint"
 	"github.com/mtgban/go-mtgban/cardkingdom"
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardshark"
@@ -81,13 +80,6 @@ var options = map[string]*scraperOption{
 	"abugames": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := abugames.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"blueprint": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := blueprint.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
