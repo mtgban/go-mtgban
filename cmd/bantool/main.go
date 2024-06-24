@@ -37,7 +37,6 @@ import (
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/mtgstocks"
-	"github.com/mtgban/go-mtgban/mythicmtg"
 	"github.com/mtgban/go-mtgban/ninetyfive"
 	"github.com/mtgban/go-mtgban/sealedev"
 	"github.com/mtgban/go-mtgban/starcitygames"
@@ -258,13 +257,6 @@ var options = map[string]*scraperOption{
 	"mtgstocks": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgstocks.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"mythicmtg": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := mythicmtg.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
