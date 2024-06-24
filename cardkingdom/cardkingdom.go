@@ -216,7 +216,6 @@ func (ck *Cardkingdom) scrape() error {
 				out := &mtgban.BuylistEntry{
 					Conditions: grade,
 					BuyPrice:   price * factor,
-					TradePrice: price * factor * 1.3,
 					Quantity:   quantity,
 					PriceRatio: priceRatio,
 					URL:        u.String(),
@@ -318,5 +317,6 @@ func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CK"
 	info.InventoryTimestamp = &ck.inventoryDate
 	info.BuylistTimestamp = &ck.buylistDate
+	info.CreditMultiplier = 1.3
 	return
 }

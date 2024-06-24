@@ -231,6 +231,5 @@ func (cs *Cardsphere) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardsphere"
 	info.Shorthand = "CS"
 	info.BuylistTimestamp = &cs.buylistDate
-	info.NoCredit = true
 	return
 }

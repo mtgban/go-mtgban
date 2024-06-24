@@ -28,7 +28,7 @@ var (
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = append(CardHeader, "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Vendor")
 
-	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Profitability")
+	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Difference", "Spread", "Abs Difference", "Profitability")
 
 	MismatchHeader = append(CardHeader, "Conditions", "Price", "Reference", "Difference", "Spread")
 )
@@ -217,14 +217,10 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 			continue
 		}
 		index++
-		tradePrice, err := strconv.ParseFloat(record[index], 64)
-		if err != nil {
-			if strict {
-				return nil, fmt.Errorf("error reading record %s: %v", record[index], err)
-			}
-			continue
-		}
+
+		// Skip TradePrice
 		index++
+
 		qty, err := strconv.Atoi(record[index])
 		if err != nil {
 			if strict {
@@ -254,7 +250,6 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		entry := &BuylistEntry{
 			Conditions: cond,
 			BuyPrice:   buyPrice,
-			TradePrice: tradePrice,
 			Quantity:   qty,
 			PriceRatio: priceRatio,
 			URL:        URL,
@@ -401,7 +396,7 @@ func WriteVendorToCSV(vendor Vendor, w io.Writer) error {
 			record = append(record,
 				entry.Conditions,
 				fmt.Sprintf("%0.2f", entry.BuyPrice),
-				fmt.Sprintf("%0.2f", entry.TradePrice),
+				fmt.Sprintf("%0.2f", entry.BuyPrice*vendor.Info().CreditMultiplier),
 				fmt.Sprint(entry.Quantity),
 				fmt.Sprintf("%0.2f", entry.PriceRatio),
 				entry.URL,
@@ -449,7 +444,6 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			fmt.Sprintf("%d", inv.Quantity),
 			fmt.Sprintf("%0.2f", inv.Price),
 			fmt.Sprintf("%0.2f", bl.BuyPrice),
-			fmt.Sprintf("%0.2f", bl.TradePrice),
 			fmt.Sprintf("%0.2f", entry.Difference),
 			fmt.Sprintf("%0.2f", entry.Spread),
 			fmt.Sprintf("%0.2f", entry.AbsoluteDifference),

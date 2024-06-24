@@ -481,7 +481,6 @@ func (csi *Coolstuffinc) processPage(channel chan<- responseChan, edition string
 				buyEntry: &mtgban.BuylistEntry{
 					Conditions: mtgban.DefaultGradeTags[i],
 					BuyPrice:   price * deduction,
-					TradePrice: price * deduction * 1.3,
 					PriceRatio: priceRatio,
 					URL:        defaultBuylistPage,
 				},
@@ -581,5 +580,6 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CSI"
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
+	info.CreditMultiplier = 1.25
 	return
 }

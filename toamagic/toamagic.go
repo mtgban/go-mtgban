@@ -126,12 +126,6 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 
 		priceStr := s.Find(`div[class="product-price"] span[class="regular price"]`).Text()
 
-		creditStr := s.Find(`div[class="product-price"] span[class="store-credit"]`).Text()
-		creditStr = strings.TrimSpace(creditStr)
-		creditStr = strings.TrimPrefix(creditStr, "/ ")
-		creditStr = strings.TrimSuffix(creditStr, "credit")
-		creditStr = strings.TrimSpace(creditStr)
-
 		qty, err := strconv.Atoi(qtyStr)
 		if err != nil {
 			return
@@ -141,7 +135,6 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 		if price == 0 {
 			return
 		}
-		credit, _ := mtgmatcher.ParsePrice(creditStr)
 
 		conditions := ""
 		if mode == modeInventory {
@@ -245,7 +238,6 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath, mo
 					buyEntry: &mtgban.BuylistEntry{
 						Conditions: mtgban.DefaultGradeTags[i],
 						BuyPrice:   price * deduction,
-						TradePrice: credit * deduction,
 						PriceRatio: priceRatio,
 						Quantity:   quantity,
 						URL:        "https://www.toamagic.com" + link,

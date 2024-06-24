@@ -349,6 +349,5 @@ func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "JP"
 	info.InventoryTimestamp = &ha.inventoryDate
 	info.BuylistTimestamp = &ha.buylistDate
-	info.NoCredit = true
 	return
 }

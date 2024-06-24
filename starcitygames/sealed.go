@@ -226,7 +226,6 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 
 			var priceRatio, sellPrice float64
 			price := result.BuyPrice
-			trade := result.TradePrice
 
 			invCards := scg.inventory[uuid]
 			for _, invCard := range invCards {
@@ -241,7 +240,6 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 				cardId: uuid,
 				buyEntry: &mtgban.BuylistEntry{
 					BuyPrice:   price,
-					TradePrice: trade,
 					PriceRatio: priceRatio,
 					URL:        link,
 				},
@@ -320,5 +318,6 @@ func (scg *StarcitygamesSealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.SealedMode = true
+	info.CreditMultiplier = 1.3
 	return
 }

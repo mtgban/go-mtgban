@@ -74,7 +74,7 @@ func BuylistForVendor(vendor Vendor, vendorName string) (BuylistRecord, error) {
 	}
 
 	if len(traderpost) == 0 {
-		return nil, fmt.Errorf("seller %s not found", vendorName)
+		return nil, fmt.Errorf("vendor %s not found", vendorName)
 	}
 
 	return traderpost, nil

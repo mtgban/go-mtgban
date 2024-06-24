@@ -70,9 +70,6 @@ type BuylistEntry struct {
 	// The price at which this entry is bought, in USD
 	BuyPrice float64 `json:"buy_price"`
 
-	// The price at which this entry is bought, in store credit
-	TradePrice float64 `json:"trade_price,omitempty"`
-
 	// The ratio between the sale and buy prices, indicating desiderability
 	// of the entry by the provider
 	PriceRatio float64 `json:"price_ratio,omitempty"`
@@ -126,8 +123,8 @@ type ScraperInfo struct {
 	// Only index-style data is available, no quantities or conditions
 	MetadataOnly bool `json:"metadata,omitempty"`
 
-	// Vendor has no store credit bonus
-	NoCredit bool `json:"no_credit,omitempty"`
+	// Percentage multiplier for the store credit
+	CreditMultiplier float64 `json:"credit_multiplier,omitempty"`
 
 	// Inventory quantities are not available
 	NoQuantityInventory bool `json:"no_qty_inventory,omitempty"`

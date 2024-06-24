@@ -351,7 +351,6 @@ func (jup *Jupitergames) parseBL() error {
 
 		buyEntry := &mtgban.BuylistEntry{
 			BuyPrice:   price,
-			TradePrice: price * 1.25,
 			PriceRatio: priceRatio,
 			URL:        "https://jupitergames.info/store/find/buypricebyname/" + url.QueryEscape(cardName),
 		}
@@ -386,5 +385,6 @@ func (jup *Jupitergames) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "JUP"
 	info.InventoryTimestamp = &jup.inventoryDate
 	info.BuylistTimestamp = &jup.buylistDate
+	info.CreditMultiplier = 1.25
 	return
 }

@@ -119,7 +119,6 @@ func (csi *CoolstuffincOfficial) scrape() error {
 				out := mtgban.BuylistEntry{
 					Conditions: mtgban.DefaultGradeTags[i],
 					BuyPrice:   card.PriceBuy * deduction,
-					TradePrice: card.PriceBuy * deduction * 1.3,
 					PriceRatio: priceRatio,
 					URL:        defaultBuylistPage,
 				}
@@ -218,11 +217,6 @@ func (csi *CoolstuffincOfficial) parseBL() error {
 			csi.printf("%s error: %s", product.Name, err.Error())
 			continue
 		}
-		creditPrice, err := mtgmatcher.ParsePrice(product.CreditPrice)
-		if err != nil {
-			csi.printf("%s error (credit): %s", product.Name, err.Error())
-			creditPrice = buyPrice * 1.3
-		}
 
 		var priceRatio, sellPrice float64
 
@@ -239,7 +233,6 @@ func (csi *CoolstuffincOfficial) parseBL() error {
 			buyEntry := mtgban.BuylistEntry{
 				Conditions: mtgban.DefaultGradeTags[i],
 				BuyPrice:   buyPrice * deduction,
-				TradePrice: creditPrice * deduction,
 				PriceRatio: priceRatio,
 				URL:        link,
 			}
@@ -275,5 +268,6 @@ func (csi *CoolstuffincOfficial) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CSI"
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
+	info.CreditMultiplier = 1.25
 	return
 }

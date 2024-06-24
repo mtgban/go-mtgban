@@ -268,11 +268,6 @@ func (csi *CoolstuffincSealed) parseBL() error {
 			csi.printf("%s error: %s", product.Name, err.Error())
 			continue
 		}
-		creditPrice, err := mtgmatcher.ParsePrice(product.CreditPrice)
-		if err != nil {
-			csi.printf("%s error (credit): %s", product.Name, err.Error())
-			creditPrice = buyPrice * 1.3
-		}
 
 		var priceRatio, sellPrice float64
 
@@ -289,7 +284,6 @@ func (csi *CoolstuffincSealed) parseBL() error {
 			buyEntry := mtgban.BuylistEntry{
 				Conditions: mtgban.DefaultGradeTags[i],
 				BuyPrice:   buyPrice * deduction,
-				TradePrice: creditPrice * deduction,
 				PriceRatio: priceRatio,
 				URL:        link,
 			}
@@ -326,5 +320,6 @@ func (csi *CoolstuffincSealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
 	info.SealedMode = true
+	info.CreditMultiplier = 1.25
 	return
 }
