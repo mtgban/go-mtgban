@@ -4321,6 +4321,10 @@ var multiPromosVariants = map[string]map[string]string{
 		"2020":    "152",
 		"karlov":  "187",
 	},
+	"Terror of the Peaks": {
+		"2021":    "164",
+		"outlaws": "149",
+	},
 	// not listed here: all the temples
 }
 
