@@ -170,15 +170,11 @@ type InventoryRecord map[string][]InventoryEntry
 // Market is the interface describing actions to be performed on the
 // inventory available on a platform, usually combining different sellers
 type Market interface {
-	// Return the whole inventory for a Market. If not already loaded,
-	// it will start scraping the seller gathering the necessary data.
-	Inventory() (InventoryRecord, error)
-
-	// Return some information about the market
-	Info() ScraperInfo
-
 	// Return all names for the sellers present in the Market
 	MarketNames() []string
+
+	// Market implements the Seller interface
+	Seller
 }
 
 // Seller is the interface describing actions to be performed on a seller inventory
