@@ -28,11 +28,19 @@ func NewClient() *BanClient {
 
 // Add a Scraper to the client
 func (bc *BanClient) Register(scraper Scraper) {
-	market, ok := scraper.(Market)
-	if ok {
+	market, isMarket := scraper.(Market)
+	if isMarket {
 		for _, name := range market.MarketNames() {
 			bc.RegisterMarket(scraper, name)
 		}
+	}
+	trader, isTrader := scraper.(Trader)
+	if isTrader {
+		for _, name := range trader.TraderNames() {
+			bc.RegisterTrader(scraper, name)
+		}
+	}
+	if isMarket || isTrader {
 		return
 	}
 
@@ -69,9 +77,30 @@ func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
 }
 
 // Add a Scraper to the client, enable the vendor side only (if any)
+// If the added scraper is a trader, it will be split into its subvendors
 func (bc *BanClient) RegisterVendor(scraper Scraper) {
+	trader, ok := scraper.(Trader)
+	if ok {
+		for _, name := range trader.TraderNames() {
+			bc.RegisterTrader(scraper, name)
+		}
+		return
+	}
+
 	bc.scrapers[scraper.Info().Shorthand] = scraper
 	bc.sellerDisabled[scraper.Info().Shorthand] = true
+}
+
+// Add a Scraper to the client, enable the Trader with the given shorthand
+func (bc *BanClient) RegisterTrader(scraper Scraper, shorthand string) {
+	trader := &BaseTrader{}
+	trader.scraper = scraper.(Vendor)
+	trader.info = scraper.Info()
+	trader.info.Name = shorthand
+	trader.info.Shorthand = shorthand
+	trader.info.CustomFields = maps.Clone(trader.Info().CustomFields)
+	bc.sellerDisabled[shorthand] = true
+	bc.scrapers[shorthand] = trader
 }
 
 // Load inventory and buylist content for each scraper registered in the client

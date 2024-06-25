@@ -56,6 +56,30 @@ func InventoryForSeller(seller Seller, sellerName string) (InventoryRecord, erro
 	return marketplace, nil
 }
 
+// Return the buylsit for any given vendor present in the Trader.
+// If possible, it will use the Buylist() call to populate data.
+func BuylistForVendor(vendor Vendor, vendorName string) (BuylistRecord, error) {
+	buylist, err := vendor.Buylist()
+	if err != nil {
+		return nil, err
+	}
+
+	traderpost := BuylistRecord{}
+	for uuid := range buylist {
+		for i := range buylist[uuid] {
+			if buylist[uuid][i].VendorName == vendorName {
+				traderpost[uuid] = append(traderpost[uuid], buylist[uuid][i])
+			}
+		}
+	}
+
+	if len(traderpost) == 0 {
+		return nil, fmt.Errorf("seller %s not found", vendorName)
+	}
+
+	return traderpost, nil
+}
+
 // Base structure for the conversion of a Market to a standard Seller
 // This will hold the original Market scraper and retrieve the loaded
 // subseller from its ScraperInfo
@@ -81,5 +105,33 @@ func (m *BaseMarket) Inventory() (InventoryRecord, error) {
 }
 
 func (m *BaseMarket) Info() ScraperInfo {
+	return m.info
+}
+
+// Base structure for the conversion of a Trader to a standard Vendor
+// This will hold the original Trader scraper and retrieve the loaded
+// subvendor from its ScraperInfo
+type BaseTrader struct {
+	buylist BuylistRecord
+	info    ScraperInfo
+	scraper Vendor
+}
+
+func (m *BaseTrader) Buylist() (BuylistRecord, error) {
+	if m.buylist == nil {
+		// Retrieve inventory from the original scraper
+		buylist, err := BuylistForVendor(m.scraper, m.info.Shorthand)
+		if err != nil {
+			return nil, err
+		}
+		m.buylist = buylist
+
+		// Original scraper is not useful any more here
+		m.scraper = nil
+	}
+	return m.buylist, nil
+}
+
+func (m *BaseTrader) Info() ScraperInfo {
 	return m.info
 }

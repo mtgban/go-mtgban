@@ -177,6 +177,16 @@ type Market interface {
 	Seller
 }
 
+// Trader is the interface describing actions to be performed on the
+// buylist available on a platform, usually combining different vendors
+type Trader interface {
+	// Return all names for the sellers present in the Trader
+	TraderNames() []string
+
+	// Trader implements the Vendor interface
+	Vendor
+}
+
 // Seller is the interface describing actions to be performed on a seller inventory
 type Seller interface {
 	// Return the inventory for a Seller. If not already loaded, it will start
