@@ -60,7 +60,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 	var duplicates []string
 
 	for _, group := range product.Grouped.ProductId.Groups {
-		for _, card := range group.Doclist.Cards {
+		for i, card := range group.Doclist.Cards {
 			// Deprecated value
 			if card.Condition == "SP" {
 				continue
@@ -95,6 +95,11 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
+				// Reduce error reporting for repeated conditions
+				if i > 0 {
+					continue
+				}
+
 				// There is a bunch of non-existing prerelease cards from mh2
 				if theCard.Variation == "Prerelease" {
 					continue
