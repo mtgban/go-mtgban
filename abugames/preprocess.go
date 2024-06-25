@@ -234,6 +234,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		}
 		if strings.Contains(variation, "Scandanavia") {
 			variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
+		} else if strings.Contains(variation, "Phillippines") {
+			variation = strings.Replace(variation, "Phillippines", "Philippines", 1)
 		} else if strings.Contains(variation, "Secret") || strings.Contains(variation, "Lair") {
 			num := mtgmatcher.ExtractNumber(variation)
 			if num != "" {
