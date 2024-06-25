@@ -204,6 +204,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"30A":  retroCheck,
 	"PW23": retroCheck,
 	"RVR":  retroCheck,
+	"MH3":  retroCheck,
 
 	"BRO": babOrBuyaboxRetroCheck,
 
