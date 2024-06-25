@@ -39,10 +39,11 @@ func NewScraper() *ABUGames {
 }
 
 type resultChan struct {
-	theCard  mtgmatcher.Card
-	cardId   string
-	invEntry *mtgban.InventoryEntry
-	buyEntry *mtgban.BuylistEntry
+	theCard    mtgmatcher.Card
+	cardId     string
+	invEntry   *mtgban.InventoryEntry
+	buyEntry   *mtgban.BuylistEntry
+	tradeEntry *mtgban.BuylistEntry
 }
 
 func (abu *ABUGames) printf(format string, a ...interface{}) {
@@ -135,6 +136,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 			var invEntry *mtgban.InventoryEntry
 			var buyEntry *mtgban.BuylistEntry
+			var tradeEntry *mtgban.BuylistEntry
 
 			// For URL genration searchQuery needs to be in plaintext, not URL-encoded
 			searchQuery := "&search=" + card.SimpleTitle
@@ -163,7 +165,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 			}
 
-			if card.BuyQuantity > 0 && card.BuyPrice > 0 && card.TradePrice > 0 {
+			if card.BuyQuantity > 0 && card.BuyPrice > 0 {
 				var priceRatio float64
 				if card.SellPrice > 0 {
 					priceRatio = card.BuyPrice / card.SellPrice * 100
@@ -182,19 +184,32 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				buyEntry = &mtgban.BuylistEntry{
 					Conditions: cond,
 					BuyPrice:   card.BuyPrice,
-					TradePrice: card.TradePrice,
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
+					VendorName: abuShorthands[0],
+				}
+
+				if card.SellPrice > 0 {
+					priceRatio = card.TradePrice / card.SellPrice * 100
+				}
+				tradeEntry = &mtgban.BuylistEntry{
+					Conditions: cond,
+					BuyPrice:   card.TradePrice,
+					Quantity:   card.BuyQuantity,
+					PriceRatio: priceRatio,
+					URL:        u.String() + searchQuery,
+					VendorName: abuShorthands[1],
 				}
 			}
 
 			if invEntry != nil || buyEntry != nil {
 				channel <- resultChan{
-					theCard:  *theCard,
-					cardId:   cardId,
-					invEntry: invEntry,
-					buyEntry: buyEntry,
+					theCard:    *theCard,
+					cardId:     cardId,
+					invEntry:   invEntry,
+					buyEntry:   buyEntry,
+					tradeEntry: tradeEntry,
 				}
 			}
 
@@ -257,6 +272,13 @@ func (abu *ABUGames) scrape() error {
 				abu.printf("%s", err.Error())
 			}
 		}
+		if result.tradeEntry != nil {
+			err = abu.buylist.AddRelaxed(result.cardId, result.tradeEntry)
+			if err != nil {
+				abu.printf("%s", &result.theCard)
+				abu.printf("%s", err.Error())
+			}
+		}
 	}
 
 	abu.inventoryDate = time.Now()
@@ -289,6 +311,12 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 	}
 
 	return abu.buylist, nil
+}
+
+var abuShorthands = []string{"ABUGames", "ABUCredit"}
+
+func (abu *ABUGames) TraderNames() []string {
+	return abuShorthands
 }
 
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
