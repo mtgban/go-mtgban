@@ -31,8 +31,6 @@ var (
 	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Trade Price", "Difference", "Spread", "Abs Difference", "Profitability")
 
 	MismatchHeader = append(CardHeader, "Conditions", "Price", "Reference", "Difference", "Spread")
-
-	MarketTotalsHeader = append(CardHeader, "Listings", "Total Quantity", "Lowest Price", "Average", "Spread")
 )
 
 func record2entry(record []string) (*InventoryEntry, error) {
@@ -602,40 +600,6 @@ func WritePennyToCSV(penny []PennystockEntry, w io.Writer) error {
 			}
 			record = append(record, bundle)
 		}
-		err = csvWriter.Write(record)
-		if err != nil {
-			return err
-		}
-
-		csvWriter.Flush()
-	}
-
-	return nil
-}
-
-func WriteTotalsToCSV(totals []MarketTotalsEntry, w io.Writer) error {
-	csvWriter := csv.NewWriter(w)
-	defer csvWriter.Flush()
-
-	header := MarketTotalsHeader
-	err := csvWriter.Write(header)
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range totals {
-		record, err := cardId2record(entry.CardId)
-		if err != nil {
-			continue
-		}
-
-		record = append(record,
-			fmt.Sprintf("%d", entry.SingleListings),
-			fmt.Sprintf("%d", entry.TotalQuantities),
-			fmt.Sprintf("%0.2f", entry.Lowest),
-			fmt.Sprintf("%0.2f", entry.Average),
-			fmt.Sprintf("%0.2f", entry.Spread),
-		)
 		err = csvWriter.Write(record)
 		if err != nil {
 			return err
