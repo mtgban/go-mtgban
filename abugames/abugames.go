@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -55,7 +57,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 		return err
 	}
 
-	duplicate := map[string]bool{}
+	var duplicates []string
 
 	for _, group := range product.Grouped.ProductId.Groups {
 		for _, card := range group.Doclist.Cards {
@@ -79,7 +81,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				continue
 			}
 
-			if duplicate[card.Id] {
+			if slices.Contains(duplicates, card.Id) {
 				abu.printf("Skipping duplicate card: %s (%s)", card.DisplayTitle, card.Edition)
 				continue
 			}
@@ -189,7 +191,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 			}
 
-			duplicate[card.Id] = true
+			duplicates = append(duplicates, card.Id)
 		}
 	}
 
