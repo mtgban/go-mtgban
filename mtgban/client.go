@@ -48,9 +48,7 @@ func (bc *BanClient) RegisterSeller(scraper Scraper) {
 	if ok {
 		for _, name := range market.MarketNames() {
 			bc.RegisterMarket(scraper, name)
-			bc.vendorDisabled[name] = true
 		}
-		bc.vendorDisabled[scraper.Info().Shorthand] = true
 		return
 	}
 
@@ -66,6 +64,7 @@ func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
 	market.info.Name = shorthand
 	market.info.Shorthand = shorthand
 	market.info.CustomFields = maps.Clone(market.Info().CustomFields)
+	bc.vendorDisabled[shorthand] = true
 	bc.scrapers[shorthand] = market
 }
 
