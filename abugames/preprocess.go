@@ -252,6 +252,14 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		} else if card.Layout == "Planar" {
 			edition = "Planechase Promos"
 		}
+	case "Secret Lair":
+		edition = "Secret Lair Drop"
+		if len(mtgmatcher.MatchInSetNumber(cardName, "SLC", card.Number)) > 0 {
+			edition = "SLC"
+			variation = card.Number
+		} else if card.Number != "" {
+			variation += " " + card.Number
+		}
 	case "Anthologies":
 		if cardName == "Mountain" {
 			if variation == "A" {
@@ -293,11 +301,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 			cardName = "Spellbinding Soprano"
 			variation = "Promo Pack"
 		}
-	}
-
-	if strings.Contains(variation, "The List") {
-		variation = edition
-		edition = "The List"
 	}
 
 	name, found := cardTable[cardName]
