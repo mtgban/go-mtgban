@@ -344,7 +344,12 @@ func listEditionCheck(inCard *Card, card *mtgjson.Card) bool {
 			return false
 		}
 
-		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
+		edition := set.Name
+		if strings.Contains(inCard.Variation, "vs.") {
+			edition = strings.TrimPrefix(edition, "Duel Decks: ")
+		}
+
+		if !inCard.Contains(code) && !inCard.Contains(edition) && EditionTable[inCard.Variation] != set.Name {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step
 			number := ExtractNumber(inCard.Variation)
