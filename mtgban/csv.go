@@ -32,10 +32,6 @@ var (
 
 	MismatchHeader = append(CardHeader, "Conditions", "Price", "Reference", "Difference", "Spread")
 
-	MultiArbitHeader = []string{
-		"Seller", "Cards", "Listings", "Total Prices", "Total Buylist", "Difference", "Spread",
-	}
-
 	MarketTotalsHeader = append(CardHeader, "Listings", "Total Quantity", "Lowest Price", "Average", "Spread")
 )
 
@@ -558,35 +554,6 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 		}
 
 		err = csvWriter.Write(out)
-		if err != nil {
-			return err
-		}
-
-		csvWriter.Flush()
-	}
-
-	return nil
-}
-
-func WriteMultiArbitrageToCSV(multi []MultiArbitEntry, w io.Writer) error {
-	csvWriter := csv.NewWriter(w)
-	defer csvWriter.Flush()
-
-	err := csvWriter.Write(MultiArbitHeader)
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range multi {
-		err = csvWriter.Write([]string{
-			entry.SellerName,
-			fmt.Sprintf("%d", entry.Quantity),
-			fmt.Sprintf("%d", len(entry.Entries)),
-			fmt.Sprintf("%0.2f", entry.Price),
-			fmt.Sprintf("%0.2f", entry.BuylistPrice),
-			fmt.Sprintf("%0.2f", entry.Difference),
-			fmt.Sprintf("%0.2f", entry.Spread),
-		})
 		if err != nil {
 			return err
 		}
