@@ -22,6 +22,8 @@ var cardTable = map[string]string{
 	"Svagthos, the Restless Tomb":         "Svogthos, the Restless Tomb",
 	"Trial and Error":                     "Trial // Error",
 	"Simic Signat":                        "Simic Signet",
+	"Specmen 73":                          "Specimen 73",
+	"Zilortha, Strength Incarnated":       "Zilortha, Strength Incarnate",
 
 	"Godzilla, King of the Monsters / Zilortha, Strength Incarnate": "Zilortha, Strength Incarnate",
 
