@@ -111,8 +111,8 @@ func (tcg *TCGSYPList) Buylist() (mtgban.BuylistRecord, error) {
 }
 
 func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {
-	info.Name = "TCG Player SYP List"
-	info.Shorthand = "TCGSYPList"
+	info.Name = "TCGplayer SYP"
+	info.Shorthand = "SYP"
 	info.BuylistTimestamp = &tcg.buylistDate
 	info.MetadataOnly = true
 	return
