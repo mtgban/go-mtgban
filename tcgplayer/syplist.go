@@ -14,9 +14,9 @@ type TCGSYPList struct {
 	LogCallback mtgban.LogCallbackFunc
 	Affiliate   string
 
-	auth          string
-	inventoryDate time.Time
-	inventory     mtgban.InventoryRecord
+	auth        string
+	buylistDate time.Time
+	buylist     mtgban.BuylistRecord
 }
 
 func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
@@ -27,7 +27,7 @@ func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
 
 func NewScraperSYP(auth string) *TCGSYPList {
 	tcg := TCGSYPList{}
-	tcg.inventory = mtgban.InventoryRecord{}
+	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.auth = auth
 	return &tcg
 }
@@ -78,28 +78,28 @@ func (tcg *TCGSYPList) scrape() error {
 		}
 		link := TCGPlayerProductURL(sku.ProductId, printing, tcg.Affiliate, cond, "English")
 
-		entry := mtgban.InventoryEntry{
+		entry := mtgban.BuylistEntry{
 			Conditions: cond,
-			Price:      syp.MarketPrice,
+			BuyPrice:   syp.MarketPrice,
 			Quantity:   syp.MaxQty,
 			URL:        link,
 		}
 
-		err = tcg.inventory.Add(cardId, &entry)
+		err = tcg.buylist.Add(cardId, &entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 			continue
 		}
 	}
 
-	tcg.inventoryDate = time.Now()
+	tcg.buylistDate = time.Now()
 
 	return nil
 }
 
-func (tcg *TCGSYPList) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) > 0 {
-		return tcg.inventory, nil
+func (tcg *TCGSYPList) Buylist() (mtgban.BuylistRecord, error) {
+	if len(tcg.buylist) > 0 {
+		return tcg.buylist, nil
 	}
 
 	err := tcg.scrape()
@@ -107,13 +107,13 @@ func (tcg *TCGSYPList) Inventory() (mtgban.InventoryRecord, error) {
 		return nil, err
 	}
 
-	return tcg.inventory, nil
+	return tcg.buylist, nil
 }
 
 func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player SYP List"
 	info.Shorthand = "TCGSYPList"
-	info.InventoryTimestamp = &tcg.inventoryDate
+	info.BuylistTimestamp = &tcg.buylistDate
 	info.MetadataOnly = true
 	return
 }
