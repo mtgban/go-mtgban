@@ -2,9 +2,10 @@ package tcgplayer
 
 import (
 	"compress/bzip2"
-	"encoding/json"
+	"encoding/csv"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"strconv"
 
@@ -76,7 +77,7 @@ func LoadTCGSKUs(reader io.Reader) (mtgjson.AllTCGSkus, error) {
 	return mtgjson.LoadAllTCGSkus(bzip2.NewReader(reader))
 }
 
-const tcgplayerSypURL = "https://koda-api-k5mdrgjrhq-uk.a.run.app/data"
+const tcgplayerSypURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList?categoryid=1&setNameId=All&conditionId=All"
 
 type TCGSYP struct {
 	SkuId       int
@@ -84,39 +85,52 @@ type TCGSYP struct {
 	MaxQty      int
 }
 
-func LoadSyp() ([]TCGSYP, error) {
-	resp, err := cleanhttp.DefaultClient().Get(tcgplayerSypURL)
+func LoadSyp(auth string) ([]TCGSYP, error) {
+	req, err := http.NewRequest(http.MethodGet, tcgplayerSypURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Cookie", "TCGAuthTicket_Production="+auth)
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Export the raw JSON due to a unicode character present in the field name
-	var raw []map[string]string
-	err = json.Unmarshal(data, &raw)
-	if err != nil {
-		return nil, err
-	}
+	csvReader := csv.NewReader(resp.Body)
 
 	var result []TCGSYP
-	for _, item := range raw {
-		out := TCGSYP{}
-		for key, val := range item {
-			switch key {
-			case "market_price":
-				out.MarketPrice, _ = strconv.ParseFloat(val, 64)
-			case "max_qty":
-				out.MaxQty, _ = strconv.Atoi(val)
-			default:
-				out.SkuId, _ = strconv.Atoi(val)
-			}
+	for {
+		record, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			continue
 		}
-		result = append(result, out)
+
+		if len(record) < 8 {
+			continue
+		}
+
+		id, err := strconv.Atoi(record[0])
+		if err != nil {
+			continue
+		}
+		price, err := strconv.ParseFloat(record[7], 64)
+		if err != nil {
+			continue
+		}
+		qty, err := strconv.Atoi(record[8])
+		if err != nil {
+			continue
+		}
+
+		result = append(result, TCGSYP{
+			SkuId:       id,
+			MarketPrice: price,
+			MaxQty:      qty,
+		})
 	}
 
 	return result, nil

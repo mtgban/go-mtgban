@@ -14,6 +14,7 @@ type TCGSYPList struct {
 	LogCallback mtgban.LogCallbackFunc
 	Affiliate   string
 
+	auth          string
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 }
@@ -24,9 +25,10 @@ func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperSYP() *TCGSYPList {
+func NewScraperSYP(auth string) *TCGSYPList {
 	tcg := TCGSYPList{}
 	tcg.inventory = mtgban.InventoryRecord{}
+	tcg.auth = auth
 	return &tcg
 }
 
@@ -46,7 +48,7 @@ func (tcg *TCGSYPList) scrape() error {
 		}
 	}
 
-	sypList, err := LoadSyp()
+	sypList, err := LoadSyp(tcg.auth)
 	if err != nil {
 		return err
 	}

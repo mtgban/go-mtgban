@@ -392,7 +392,11 @@ var options = map[string]*scraperOption{
 	},
 	"tcgplayer_syp": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := tcgplayer.NewScraperSYP()
+			tcgAuth := os.Getenv("TCGPLAYER_AUTH")
+			if tcgAuth == "" {
+				return nil, errors.New("missing TCGPLAYER_AUTH env var")
+			}
+			scraper := tcgplayer.NewScraperSYP(tcgAuth)
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
