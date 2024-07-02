@@ -184,6 +184,7 @@ var setAllowedForTokens = []string{
 	"WDMU",
 
 	"10E",
+	"30A",
 	"A25",
 	"AFR",
 	"ALA",
