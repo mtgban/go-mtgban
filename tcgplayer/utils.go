@@ -137,3 +137,21 @@ func LoadSyp(auth string) ([]TCGSYP, error) {
 
 	return result, nil
 }
+
+func DirectPriceAfterFees(price float64) float64 {
+	directCost := 0.3 + price*(0.0895+0.025)
+
+	var replacementFees float64
+	if price < 3 {
+		replacementFees = price / 2
+		directCost = 0
+	} else if price < 20 {
+		replacementFees = 1.12
+	} else if price < 250 {
+		replacementFees = 3.97
+	} else {
+		replacementFees = 6.85
+	}
+
+	return price - directCost - replacementFees
+}
