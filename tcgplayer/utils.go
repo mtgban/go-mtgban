@@ -77,7 +77,9 @@ func LoadTCGSKUs(reader io.Reader) (mtgjson.AllTCGSkus, error) {
 	return mtgjson.LoadAllTCGSkus(bzip2.NewReader(reader))
 }
 
-const tcgplayerSypURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList?categoryid=1&setNameId=All&conditionId=All"
+const (
+	SYPCSVURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList?categoryid=1&setNameId=All&conditionId=All"
+)
 
 type TCGSYP struct {
 	SkuId       int
@@ -86,7 +88,7 @@ type TCGSYP struct {
 }
 
 func LoadSyp(auth string) ([]TCGSYP, error) {
-	req, err := http.NewRequest(http.MethodGet, tcgplayerSypURL, nil)
+	req, err := http.NewRequest(http.MethodGet, SYPCSVURL, nil)
 	if err != nil {
 		return nil, err
 	}
