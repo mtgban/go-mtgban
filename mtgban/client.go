@@ -28,6 +28,10 @@ func NewClient() *BanClient {
 
 // Add a Scraper to the client
 func (bc *BanClient) Register(scraper Scraper) {
+	// Reset state
+	bc.sellerDisabled[scraper.Info().Shorthand] = false
+	bc.vendorDisabled[scraper.Info().Shorthand] = false
+
 	market, isMarket := scraper.(Market)
 	if isMarket {
 		for _, name := range market.MarketNames() {
@@ -40,13 +44,9 @@ func (bc *BanClient) Register(scraper Scraper) {
 			bc.RegisterTrader(scraper, name)
 		}
 	}
-	if isMarket || isTrader {
-		return
-	}
 
+	// Register
 	bc.scrapers[scraper.Info().Shorthand] = scraper
-	bc.sellerDisabled[scraper.Info().Shorthand] = false
-	bc.vendorDisabled[scraper.Info().Shorthand] = false
 }
 
 // Add a Scraper to the client, enable the seller side only (if any)
@@ -72,7 +72,13 @@ func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
 	market.info.Name = shorthand
 	market.info.Shorthand = shorthand
 	market.info.CustomFields = maps.Clone(market.Info().CustomFields)
+
+	// Disable the market itself from providing seller data
+	bc.sellerDisabled[scraper.Info().Shorthand] = true
+	// Disable any vendor side of the split market (not the market itself)
 	bc.vendorDisabled[shorthand] = true
+
+	// Register
 	bc.scrapers[shorthand] = market
 }
 
@@ -99,7 +105,13 @@ func (bc *BanClient) RegisterTrader(scraper Scraper, shorthand string) {
 	trader.info.Name = shorthand
 	trader.info.Shorthand = shorthand
 	trader.info.CustomFields = maps.Clone(trader.Info().CustomFields)
+
+	// Disable the trader itself from providing vendor data
+	bc.vendorDisabled[scraper.Info().Shorthand] = true
+	// Disable any seller side of the split trader (not the trader itself)
 	bc.sellerDisabled[shorthand] = true
+
+	// Register
 	bc.scrapers[shorthand] = trader
 }
 
