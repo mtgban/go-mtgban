@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -40,11 +39,9 @@ var tntAllPagesURL = []string{
 type Trollandtoad struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	buylistDate    time.Time
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
-	buylist   mtgban.BuylistRecord
 
 	client *TNTClient
 }
@@ -52,7 +49,6 @@ type Trollandtoad struct {
 func NewScraper() *Trollandtoad {
 	tnt := Trollandtoad{}
 	tnt.inventory = mtgban.InventoryRecord{}
-	tnt.buylist = mtgban.BuylistRecord{}
 	tnt.client = NewTNTClient()
 	tnt.MaxConcurrency = defaultConcurrency
 	return &tnt
@@ -343,84 +339,9 @@ func (tnt *Trollandtoad) processPage(channel chan<- responseChan, id, code strin
 	return nil
 }
 
-func (tnt *Trollandtoad) parseBL() error {
-	modern, err := tnt.client.ListModernEditions()
-	if err != nil {
-		return err
-	}
-	vintage, err := tnt.client.ListVintageEditions()
-	if err != nil {
-		return err
-	}
-
-	list := append(modern, vintage...)
-
-	tnt.printf("Processing %d editions", len(list))
-
-	editions := make(chan TNTEdition)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < tnt.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for edition := range editions {
-				err := tnt.processPage(results, edition.CategoryId, edition.DeptId)
-				if err != nil {
-					tnt.printf("%v", err)
-				}
-			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for _, product := range list {
-			// Bulk cards
-			if product.CategoryId == "" {
-				continue
-			}
-			tnt.printf("Processing %s", product.CategoryName)
-
-			editions <- product
-		}
-		close(editions)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		err := tnt.buylist.Add(record.cardId, record.buyEntry)
-		if err != nil {
-			tnt.printf("%s", err.Error())
-			continue
-		}
-	}
-
-	tnt.buylistDate = time.Now()
-
-	return nil
-}
-
-func (tnt *Trollandtoad) Buylist() (mtgban.BuylistRecord, error) {
-	if len(tnt.buylist) > 0 {
-		return tnt.buylist, nil
-	}
-
-	err := tnt.parseBL()
-	if err != nil {
-		return nil, err
-	}
-
-	return tnt.buylist, nil
-}
-
 func (tnt *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TNT"
 	info.InventoryTimestamp = &tnt.inventoryDate
-	info.BuylistTimestamp = &tnt.buylistDate
-	info.CreditMultiplier = 1.25
 	return
 }
