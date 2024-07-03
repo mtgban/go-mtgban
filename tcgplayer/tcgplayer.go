@@ -236,16 +236,9 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 	for i := 0; i < tcg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			var idsFound []int
 			buffer := make([]marketChan, 0, maxIdsInRequest)
 
 			for page := range pages {
-				// Skip dupes
-				if slices.Contains(idsFound, page.SkuId) {
-					continue
-				}
-				idsFound = append(idsFound, page.SkuId)
-
 				// Add our data to the buffer
 				buffer = append(buffer, page)
 
@@ -272,6 +265,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 	go func() {
 		sets := mtgmatcher.GetAllSets()
 		i := 1
+
+		var idsFound []int
 		for _, code := range sets {
 			set, _ := mtgmatcher.GetSet(code)
 
@@ -294,6 +289,11 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					if sku.Condition == "UNOPENED" {
 						continue
 					}
+					// Skip dupes
+					if slices.Contains(idsFound, sku.SkuId) {
+						continue
+					}
+					idsFound = append(idsFound, sku.SkuId)
 
 					pages <- marketChan{
 						UUID:      uuid,
@@ -315,7 +315,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 
 	if mode == "inventory" {
 		for result := range channel {
-			err := tcg.inventory.Add(result.cardId, &result.entry)
+			err := tcg.inventory.AddStrict(result.cardId, &result.entry)
 			if err != nil {
 				tcg.printf("%s", err.Error())
 				continue
