@@ -400,7 +400,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcgplayer_syp": {
+	"tcg_syplist": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgAuth := os.Getenv("TCGPLAYER_AUTH")
 			if tcgAuth == "" {
