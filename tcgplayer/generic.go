@@ -99,8 +99,6 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 			"TCG Low", "TCG Market", "TCG Mid", "TCG Direct Low",
 		}
 
-		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "")
-
 		keys := []string{
 			fmt.Sprint(result.ProductId),
 			prodMap[result.ProductId].Name,
@@ -112,6 +110,10 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 			if prices[i] == 0 {
 				continue
 			}
+
+			isDirect := names[i] == "TCG Direct Low"
+			link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
+
 			out := genericChan{
 				key: strings.Join(keys, "|"),
 				entry: mtgban.InventoryEntry{
@@ -120,7 +122,7 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 					Quantity:   1,
 					URL:        link,
 					SellerName: names[i],
-					Bundle:     i == 3,
+					Bundle:     isDirect,
 				},
 			}
 

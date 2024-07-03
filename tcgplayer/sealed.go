@@ -64,7 +64,8 @@ func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []m
 			}
 		}
 
-		link := TCGPlayerProductURL(productId, "", tcg.Affiliate, "", "")
+		link := TCGPlayerProductURL(productId, "", tcg.Affiliate, "", "", false)
+
 		out := responseChan{
 			cardId: uuid,
 			entry: mtgban.InventoryEntry{

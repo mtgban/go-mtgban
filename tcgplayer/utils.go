@@ -19,7 +19,7 @@ const (
 	PartnerProductURL = "https://tcgplayer.pxf.io/c/%s/1830156/21018"
 )
 
-func TCGPlayerProductURL(productId int, printing, affiliate, condition, language string) string {
+func TCGPlayerProductURL(productId int, printing, affiliate, condition, language string, isDirect bool) string {
 	u, err := url.Parse(BaseProductURL + fmt.Sprint(productId))
 	if err != nil {
 		return ""
@@ -51,6 +51,10 @@ func TCGPlayerProductURL(productId int, printing, affiliate, condition, language
 		v.Set("Language", language)
 	} else {
 		v.Set("Language", "all")
+	}
+	v.Set("direct", "false")
+	if isDirect {
+		v.Set("direct", "true")
 	}
 
 	// This chunk needs to be last, stash the built link in a query param

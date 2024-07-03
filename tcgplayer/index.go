@@ -94,12 +94,15 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		prices := []float64{
 			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
 		}
-		link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", co.Language)
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
 				continue
 			}
+
+			isDirect := availableIndexNames[i] == "TCG Direct Low"
+			link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", co.Language, isDirect)
+
 			out := responseChan{
 				cardId: cardId,
 				entry: mtgban.InventoryEntry{
@@ -108,7 +111,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 					Quantity:   1,
 					URL:        link,
 					SellerName: availableIndexNames[i],
-					Bundle:     i == 3,
+					Bundle:     isDirect,
 				},
 			}
 

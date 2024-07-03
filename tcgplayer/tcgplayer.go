@@ -142,12 +142,14 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			if req.Printing == "FOIL" {
 				printing = "Foil"
 			}
-			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language)
-
 			for i := range availableMarketNames {
 				if prices[i] == 0 {
 					continue
 				}
+
+				isDirect := i == 1
+				link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
+
 				out := responseChan{
 					cardId: cardId,
 					entry: mtgban.InventoryEntry{
@@ -156,7 +158,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 						Quantity:   1,
 						URL:        link,
 						SellerName: availableMarketNames[i],
-						Bundle:     i == 1,
+						Bundle:     isDirect,
 						OriginalId: fmt.Sprint(req.ProductId),
 						InstanceId: fmt.Sprint(result.SkuId),
 					},
