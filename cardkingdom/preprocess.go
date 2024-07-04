@@ -12,18 +12,6 @@ import (
 // be mistaken for edition codes (thus misdirecting the matcher) or that contain
 // incorrect numbers. Sometimes both.
 var skuFixupTable = map[string]string{
-	// Mishra's Factory
-	"ATQ-080A": "ATQ-080C",
-	"ATQ-080B": "ATQ-080A",
-	"ATQ-080C": "ATQ-080B",
-	"ATQ-080D": "ATQ-080D",
-
-	// Extremely Slow Zombie
-	"UST-054C": "UST-54A",
-	"UST-054A": "UST-54B",
-	"UST-054D": "UST-54C",
-	"UST-054B": "UST-54D",
-
 	// Some of the lands from the first Arena set
 	"PAL96-001": "PARL-001",
 	"PAL96-003": "PARL-003",
@@ -81,8 +69,6 @@ var skuFixupTable = map[string]string{
 
 	// Naya Sojourners
 	"PM10-028": "PDCI-29",
-	// Liliana's Specter
-	"PM11-104": "PDCI-52",
 	// Mitotic Slime
 	"PM11-185": "PDCI-53",
 
