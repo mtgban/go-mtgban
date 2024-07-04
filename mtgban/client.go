@@ -2,8 +2,6 @@ package mtgban
 
 import (
 	"errors"
-
-	"golang.org/x/exp/maps"
 )
 
 var ErrScraperNotFound = errors.New("scraper not found")
@@ -71,7 +69,6 @@ func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
 	market.info = scraper.Info()
 	market.info.Name = shorthand
 	market.info.Shorthand = shorthand
-	market.info.CustomFields = maps.Clone(market.Info().CustomFields)
 
 	// Disable the market itself from providing seller data
 	bc.sellerDisabled[scraper.Info().Shorthand] = true
@@ -104,7 +101,6 @@ func (bc *BanClient) RegisterTrader(scraper Scraper, shorthand string) {
 	trader.info = scraper.Info()
 	trader.info.Name = shorthand
 	trader.info.Shorthand = shorthand
-	trader.info.CustomFields = maps.Clone(trader.Info().CustomFields)
 
 	// Disable the trader itself from providing vendor data
 	bc.vendorDisabled[scraper.Info().Shorthand] = true
