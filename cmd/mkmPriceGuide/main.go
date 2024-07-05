@@ -30,7 +30,9 @@ func run() int {
 		return 1
 	}
 
-	err = json.NewEncoder(os.Stdout).Encode(output)
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	err = enc.Encode(output)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
