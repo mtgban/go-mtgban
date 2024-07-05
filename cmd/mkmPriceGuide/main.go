@@ -10,30 +10,27 @@ import (
 )
 
 func run() int {
-	appToken := flag.String("token", "", "App Token")
-	appSecret := flag.String("secret", "", "App Secret")
+	mode := flag.String("mode", "prices", "Which file to download [prices]/singles/sealed")
+
 	flag.Parse()
 
-	if *appToken == "" {
-		*appToken = os.Getenv("MKM_TOKEN")
-	}
-	if *appSecret == "" {
-		*appSecret = os.Getenv("MKM_SECRET")
-	}
+	var output interface{}
+	var err error
 
-	if *appToken == "" || *appSecret == "" {
-		fmt.Fprintln(os.Stderr, "Missing token or secret parameter")
-		return 1
+	switch *mode {
+	default:
+		output, err = cardmarket.GetPriceGuide()
+	case "singles":
+		output, err = cardmarket.GetProductListSingles()
+	case "sealed":
+		output, err = cardmarket.GetProductListSealed()
 	}
-
-	client := cardmarket.NewMKMClient(*appToken, *appSecret)
-	priceGuide, err := client.MKMPriceGuide()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
 
-	err = json.NewEncoder(os.Stdout).Encode(&priceGuide)
+	err = json.NewEncoder(os.Stdout).Encode(output)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1

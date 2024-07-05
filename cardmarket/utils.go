@@ -1,16 +1,12 @@
 package cardmarket
 
 import (
-	"compress/gzip"
-	"encoding/base64"
-	"encoding/csv"
-	"errors"
-	"fmt"
+	"encoding/json"
 	"io"
 	"sort"
-	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-cleanhttp"
 	"golang.org/x/exp/slices"
 )
 
@@ -62,166 +58,92 @@ func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
 	return out, nil
 }
 
-type MKMPriceGuide struct {
-	IdProduct      int     `json:"idProduct"`
-	AvgSellPrice   float64 `json:"avgSellPrice"`
-	LowPrice       float64 `json:"lowPrice"`
-	TrendPrice     float64 `json:"trendPrice"`
-	GermanProLow   float64 `json:"germanProLow"`
-	SuggestedPrice float64 `json:"suggestedPrice"`
-	FoilSell       float64 `json:"foilSell"`
-	FoilLow        float64 `json:"foilLow"`
-	FoilTrend      float64 `json:"foilTrend"`
-	LowPriceEx     float64 `json:"lowPriceEx"`
-	AvgDay1        float64 `json:"avgDay1"`
-	AvgDay7        float64 `json:"avgDay7"`
-	AvgDay30       float64 `json:"avgDay30"`
-	FoilAvgDay1    float64 `json:"foilAvgDay1"`
-	FoilAvgDay7    float64 `json:"foilAvgDay7"`
-	FoilAvgDay30   float64 `json:"foilAvgDay30"`
+type PriceGuide struct {
+	IdProduct        int     `json:"idProduct"`
+	AvgSellPrice     float64 `json:"avg"`
+	LowPrice         float64 `json:"low"`
+	TrendPrice       float64 `json:"trend"`
+	FoilAvgSellPrice float64 `json:"avg-foil"`
+	FoilLowPrice     float64 `json:"low-foil"`
+	FoilTrendPrice   float64 `json:"trend-foil"`
+	AvgDay1          float64 `json:"avg1"`
+	AvgDay7          float64 `json:"avg7"`
+	AvgDay30         float64 `json:"avg30"`
+	FoilAvgDay1      float64 `json:"avg1-foil"`
+	FoilAvgDay7      float64 `json:"avg7-foil"`
+	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
-func (mkm *MKMClient) MKMPriceGuide() ([]MKMPriceGuide, error) {
-	raw, err := mkm.MKMRawPriceGuide()
+const (
+	PriceGuideURL         = "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_1.json"
+	ProductListSinglesURL = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_1.json"
+	ProductListSealedURL  = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_nonsingles_1.json"
+)
+
+func GetPriceGuide() ([]PriceGuide, error) {
+	resp, err := cleanhttp.DefaultClient().Get(PriceGuideURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	d := base64.NewDecoder(base64.StdEncoding, strings.NewReader(raw))
-	gzipReader, err := gzip.NewReader(d)
+	var response struct {
+		Version     int          `json:"version"`
+		CreatedAt   string       `json:"createdAt"`
+		PriceGuides []PriceGuide `json:"priceGuides"`
+	}
+	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, err
 	}
-	defer gzipReader.Close()
 
-	csvReader := csv.NewReader(gzipReader)
-	// "idProduct","Avg. Sell Price","Low Price","Trend Price","German Pro Low","Suggested Price","Foil Sell","Foil Low","Foil Trend","Low Price Ex+","AVG1","AVG7","AVG30","Foil AVG1","Foil AVG7","Foil AVG30",
-	first, err := csvReader.Read()
-	if err == io.EOF {
-		return nil, errors.New("empty csv")
-	}
-	if err != nil {
-		return nil, fmt.Errorf("error reading csv header: %v", err)
-	}
-
-	// The CSV has a trailing comma at the end of the header
-	csvReader.FieldsPerRecord = len(first) - 1
-
-	var priceGuide []MKMPriceGuide
-	for {
-		record, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			continue
-		}
-
-		idProduct, _ := strconv.Atoi(record[0])
-		avgSellPrice, _ := strconv.ParseFloat(record[1], 64)
-		lowPrice, _ := strconv.ParseFloat(record[2], 64)
-		trendPrice, _ := strconv.ParseFloat(record[3], 64)
-		germanProLow, _ := strconv.ParseFloat(record[4], 64)
-		suggestedPrice, _ := strconv.ParseFloat(record[5], 64)
-		foilSell, _ := strconv.ParseFloat(record[6], 64)
-		foilLow, _ := strconv.ParseFloat(record[7], 64)
-		foilTrend, _ := strconv.ParseFloat(record[8], 64)
-		lowPriceEx, _ := strconv.ParseFloat(record[9], 64)
-		avgDay1, _ := strconv.ParseFloat(record[10], 64)
-		avgDay7, _ := strconv.ParseFloat(record[11], 64)
-		avgDay30, _ := strconv.ParseFloat(record[12], 64)
-		foilAvgDay1, _ := strconv.ParseFloat(record[13], 64)
-		foilAvgDay7, _ := strconv.ParseFloat(record[14], 64)
-		foilAvgDay30, _ := strconv.ParseFloat(record[15], 64)
-
-		row := MKMPriceGuide{
-			IdProduct:      idProduct,
-			AvgSellPrice:   avgSellPrice,
-			LowPrice:       lowPrice,
-			TrendPrice:     trendPrice,
-			GermanProLow:   germanProLow,
-			SuggestedPrice: suggestedPrice,
-			FoilSell:       foilSell,
-			FoilLow:        foilLow,
-			FoilTrend:      foilTrend,
-			LowPriceEx:     lowPriceEx,
-			AvgDay1:        avgDay1,
-			AvgDay7:        avgDay7,
-			AvgDay30:       avgDay30,
-			FoilAvgDay1:    foilAvgDay1,
-			FoilAvgDay7:    foilAvgDay7,
-			FoilAvgDay30:   foilAvgDay30,
-		}
-
-		priceGuide = append(priceGuide, row)
-	}
-
-	return priceGuide, nil
+	return response.PriceGuides, nil
 }
 
-type MKMProductList struct {
-	IdProduct   int    `json:"idProduct"`
-	Name        string `json:"name"`
-	CategoryId  int    `json:"categoryId"`
-	Category    string `json:"category"`
-	ExpansionId int    `json:"expansionId"`
-	MetacardId  int    `json:"metacardId"`
-	DateAdded   string `json:"dateAdded"`
+type ProductList struct {
+	IdProduct    int    `json:"idProduct"`
+	Name         string `json:"name"`
+	CategoryID   int    `json:"idCategory"`
+	CategoryName string `json:"categoryName"`
+	ExpansionID  int    `json:"idExpansion"`
+	MetacardID   int    `json:"idMetacard"`
+	DateAdded    string `json:"dateAdded"`
 }
 
-func (mkm *MKMClient) MKMProductList() ([]MKMProductList, error) {
-	raw, err := mkm.MKMRawProductList()
+func GetProductListSingles() ([]ProductList, error) {
+	return getProductList(ProductListSinglesURL)
+}
+
+func GetProductListSealed() ([]ProductList, error) {
+	return getProductList(ProductListSealedURL)
+}
+
+func getProductList(link string) ([]ProductList, error) {
+	resp, err := cleanhttp.DefaultClient().Get(link)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	d := base64.NewDecoder(base64.StdEncoding, strings.NewReader(raw))
-	gzipReader, err := gzip.NewReader(d)
+	var response struct {
+		Version   int           `json:"version"`
+		CreatedAt string        `json:"createdAt"`
+		Products  []ProductList `json:"products"`
+	}
+	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, err
 	}
-	defer gzipReader.Close()
 
-	csvReader := csv.NewReader(gzipReader)
-	// idProduct,Name,"Category ID","Category","Expansion ID","Metacard ID","Date Added"
-	_, err = csvReader.Read()
-	if err == io.EOF {
-		return nil, errors.New("empty csv")
-	}
-	if err != nil {
-		return nil, fmt.Errorf("error reading csv header: %v", err)
-	}
-
-	var productList []MKMProductList
-	for {
-		record, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			continue
-		}
-
-		idProduct, _ := strconv.Atoi(record[0])
-		name := record[1]
-		categoryId, _ := strconv.Atoi(record[2])
-		category := record[3]
-		expansionId, _ := strconv.Atoi(record[4])
-		metacardId, _ := strconv.Atoi(record[5])
-		dateAdded := record[6]
-
-		out := MKMProductList{
-			IdProduct:   idProduct,
-			Name:        name,
-			CategoryId:  categoryId,
-			Category:    category,
-			ExpansionId: expansionId,
-			MetacardId:  metacardId,
-			DateAdded:   dateAdded,
-		}
-
-		productList = append(productList, out)
-	}
-
-	return productList, nil
+	return response.Products, nil
 }

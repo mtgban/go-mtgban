@@ -56,7 +56,7 @@ func NewScraperIndex(appToken, appSecret string) (*CardMarketIndex, error) {
 	return &mkm, nil
 }
 
-func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair, priceGuide []MKMPriceGuide) error {
+func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair, priceGuide []PriceGuide) error {
 	products, err := mkm.client.MKMProductsInExpansion(pair.IdExpansion)
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MK
 	return nil
 }
 
-func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide []MKMPriceGuide) error {
+func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide []PriceGuide) error {
 	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
 	if err != nil {
 		_, ok := err.(*PreprocessError)
@@ -129,10 +129,10 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 
 	// Sorted as availableIndexNames
 	prices := []float64{
-		priceGuide[index].LowPriceEx, priceGuide[index].TrendPrice,
+		priceGuide[index].LowPrice, priceGuide[index].TrendPrice,
 	}
 	foilprices := []float64{
-		priceGuide[index].FoilLow, priceGuide[index].FoilTrend,
+		priceGuide[index].FoilLowPrice, priceGuide[index].FoilTrendPrice,
 	}
 
 	co, err := mtgmatcher.GetUUID(cardId)
@@ -228,7 +228,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 }
 
 func (mkm *CardMarketIndex) scrape() error {
-	priceGuide, err := mkm.client.MKMPriceGuide()
+	priceGuide, err := GetPriceGuide()
 	if err != nil {
 		return err
 	}

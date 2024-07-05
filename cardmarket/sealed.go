@@ -156,7 +156,7 @@ func (mkm *CardMarketSealed) scrape() error {
 	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 
-	productList, err := mkm.client.MKMProductList()
+	productList, err := GetProductListSealed()
 	if err != nil {
 		return err
 	}
