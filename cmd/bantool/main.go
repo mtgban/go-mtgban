@@ -28,7 +28,6 @@ import (
 	"github.com/mtgban/go-mtgban/abugames"
 	"github.com/mtgban/go-mtgban/cardkingdom"
 	"github.com/mtgban/go-mtgban/cardmarket"
-	"github.com/mtgban/go-mtgban/cardshark"
 	"github.com/mtgban/go-mtgban/cardsphere"
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/coolstuffinc"
@@ -96,14 +95,6 @@ var options = map[string]*scraperOption{
 			scraper := cardkingdom.NewScraperSealed()
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CK_PARTNER")
-			return scraper, nil
-		},
-	},
-	"cardshark": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := cardshark.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Referral = "kodamtg"
 			return scraper, nil
 		},
 	},
