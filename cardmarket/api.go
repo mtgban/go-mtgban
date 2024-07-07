@@ -194,6 +194,9 @@ type MKMArticle struct {
 	Seller struct {
 		IdUser   int    `json:"idUser"`
 		Username string `json:"username"`
+		Address  struct {
+			Country string `json:"country"`
+		} `json:"address"`
 	}
 	IsFoil    bool `json:"isFoil"`
 	IsSigned  bool `json:"isSigned"`
@@ -201,37 +204,32 @@ type MKMArticle struct {
 	IsAltered bool `json:"isAltered"`
 }
 
-func (mkm *MKMClient) MKMArticles(id int, anyLanguage bool, page, count int) ([]MKMArticle, error) {
+func (mkm *MKMClient) MKMSimpleArticles(id int, onlyEnglish bool, page, maxResults int) ([]MKMArticle, error) {
+	options := map[string]string{
+		"minCondition": "GD",
+		"minUserScore": "3",
+		"isSigned":     "false",
+		"isAltered":    "false",
+	}
+	if onlyEnglish {
+		options["idLanguage"] = "1"
+	}
+
+	return mkm.MKMArticles(id, options, page, maxResults)
+}
+
+// Note that page should start from 0
+func (mkm *MKMClient) MKMArticles(id int, options map[string]string, page, maxResults int) ([]MKMArticle, error) {
 	u, err := url.Parse(mkmArticlesBaseURL + fmt.Sprint(id))
 	if err != nil {
 		return nil, err
 	}
 	params := url.Values{}
-	if !anyLanguage {
-		params.Set("idLanguage", "1")
+	for key, value := range options {
+		params.Set(key, value)
 	}
-	params.Set("minCondition", "GD")
-	params.Set("minUserScore", "3")
-	params.Set("isSigned", "false")
-	params.Set("isAltered", "false")
-
-	return mkm.articles(u.String(), page, count)
-}
-
-func (mkm *MKMClient) articles(link string, page, count int) ([]MKMArticle, error) {
-	u, err := url.Parse(link)
-	if err != nil {
-		return nil, err
-	}
-
-	var response struct {
-		ErrorDescription string       `json:"mkm_error_description"`
-		Articles         []MKMArticle `json:"article"`
-	}
-
-	params := u.Query()
-	params.Set("start", fmt.Sprint(page*count))
-	params.Set("maxResults", fmt.Sprint(count))
+	params.Set("start", fmt.Sprint(page*maxResults))
+	params.Set("maxResults", fmt.Sprint(maxResults))
 	u.RawQuery = params.Encode()
 
 	resp, err := mkm.client.Get(u.String())
@@ -250,6 +248,10 @@ func (mkm *MKMClient) articles(link string, page, count int) ([]MKMArticle, erro
 		return nil, nil
 	}
 
+	var response struct {
+		ErrorDescription string       `json:"mkm_error_description"`
+		Articles         []MKMArticle `json:"article"`
+	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, errors.New(string(data))

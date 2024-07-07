@@ -82,7 +82,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 	var i int
 	for !done {
 		// We process a tenth of the typical request because we only need the first few results
-		articles, err := mkm.client.MKMArticles(idProduct, false, i, mkmMaxEntities/10)
+		articles, err := mkm.client.MKMSimpleArticles(idProduct, true, i, mkmMaxEntities/10)
 		if err != nil {
 			return err
 		}
@@ -94,11 +94,6 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 
 		for _, article := range articles {
 			if article.Price == 0 {
-				continue
-			}
-
-			// Filter by language (the search option in the API seems to have no effect)
-			if article.Language.LanguageName != "English" {
 				continue
 			}
 
