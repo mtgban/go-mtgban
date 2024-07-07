@@ -56,8 +56,8 @@ func NewScraperIndex(appToken, appSecret string) (*CardMarketIndex, error) {
 	return &mkm, nil
 }
 
-func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, pair *MKMExpansionIdPair, priceGuide []PriceGuide) error {
-	products, err := mkm.client.MKMProductsInExpansion(pair.IdExpansion)
+func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, idExpansion int, priceGuide []PriceGuide) error {
+	products, err := mkm.client.MKMProductsInExpansion(idExpansion)
 	if err != nil {
 		return err
 	}
@@ -235,24 +235,24 @@ func (mkm *CardMarketIndex) scrape() error {
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	list, err := mkm.client.ListExpansionIds()
+	list, err := mkm.client.FilteredExpansions()
 	if err != nil {
 		return err
 	}
 
 	mkm.printf("Parsing %d expansion ids", len(list))
 
-	expansions := make(chan MKMExpansionIdPair)
+	expansions := make(chan int)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < mkm.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for expansion := range expansions {
-				err := mkm.processEdition(channel, &expansion, priceGuide)
+			for i := range expansions {
+				err := mkm.processEdition(channel, list[i].IdExpansion, priceGuide)
 				if err != nil {
-					mkm.printf("expansion id %d returned %s", expansion.IdExpansion, err)
+					mkm.printf("expansion %s (id %d) returned %s", list[i].Name, list[i].IdExpansion, err.Error())
 				}
 			}
 			wg.Done()
@@ -260,9 +260,9 @@ func (mkm *CardMarketIndex) scrape() error {
 	}
 
 	go func() {
-		for i, pair := range list {
-			mkm.printf("Processing %s (%d) %d/%d", pair.Name, pair.IdExpansion, i+1, len(list))
-			expansions <- pair
+		for i := range list {
+			mkm.printf("Processing %s (%d) %d/%d", list[i].Name, list[i].IdExpansion, i+1, len(list))
+			expansions <- i
 		}
 		close(expansions)
 

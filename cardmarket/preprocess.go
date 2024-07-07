@@ -81,8 +81,8 @@ var gameday2editionTable = map[string]string{
 func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 	var foil bool
 
-	for _, name := range filteredExpansions {
-		if edition == name {
+	for _, tag := range filteredExpansionsTags {
+		if strings.Contains(edition, tag) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 	}

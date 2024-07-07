@@ -3,22 +3,25 @@ package cardmarket
 import (
 	"encoding/json"
 	"io"
-	"sort"
 	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
-	"golang.org/x/exp/slices"
 )
 
-var filteredExpansions = []string{
-	"GnD Cards",
-	"MKM Series",
-	"Rk post Products",
-	"Starcity Games: Creature Collection",
-	"Three for One",
+var filteredExpansionsTags = []string{
 	"Filler Cards",
+	"GnD Cards",
+	"Heroes of the Realm",
+	"MKM Series",
+	"Oversized",
+	"Player Cards",
 	"Revista Serra Promos",
+	"Rk post Products",
 	"SAWATARIX",
+	"Starcity Games: Creature Collection",
+	"Starcity",
+	"Three for One",
+	"Token",
 	"TokyoMTG Products",
 }
 
@@ -27,33 +30,26 @@ type MKMExpansionIdPair struct {
 	Name        string
 }
 
-func (mkm *MKMClient) ListExpansionIds() ([]MKMExpansionIdPair, error) {
+func (mkm *MKMClient) FilteredExpansions() ([]MKMExpansion, error) {
 	expansions, err := mkm.MKMExpansions()
 	if err != nil {
 		return nil, err
 	}
 
-	var out []MKMExpansionIdPair
+	var out []MKMExpansion
 	for _, exp := range expansions {
-		if slices.Contains(filteredExpansions, exp.Name) {
+		var skip bool
+		for _, tag := range filteredExpansionsTags {
+			if strings.Contains(exp.Name, tag) {
+				skip = true
+				break
+			}
+		}
+		if skip {
 			continue
 		}
-		if strings.Contains(exp.Name, "Token") ||
-			strings.Contains(exp.Name, "Starcity") ||
-			strings.Contains(exp.Name, "Oversized") ||
-			strings.Contains(exp.Name, "Player Cards") {
-			continue
-		}
-		out = append(out, MKMExpansionIdPair{
-			IdExpansion: exp.IdExpansion,
-			Name:        exp.Name,
-		})
+		out = append(out, exp)
 	}
-
-	// Keep list sorted for reproducible results
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].IdExpansion < out[j].IdExpansion
-	})
 
 	return out, nil
 }

@@ -86,7 +86,7 @@ type MKMExpansion struct {
 	IsReleased  bool   `json:"isReleased"`
 }
 
-func (mkm *MKMClient) MKMExpansions() (map[int]MKMExpansion, error) {
+func (mkm *MKMClient) MKMExpansions() ([]MKMExpansion, error) {
 	resp, err := mkm.client.Get(mkmExpansionsURL)
 	if err != nil {
 		return nil, err
@@ -106,12 +106,7 @@ func (mkm *MKMClient) MKMExpansions() (map[int]MKMExpansion, error) {
 		return nil, errors.New(string(data))
 	}
 
-	editionMap := map[int]MKMExpansion{}
-	for _, exp := range response.Expansions {
-		editionMap[exp.IdExpansion] = exp
-	}
-
-	return editionMap, nil
+	return response.Expansions, nil
 }
 
 type MKMProduct struct {
