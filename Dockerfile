@@ -8,13 +8,11 @@ RUN mkdir /src
 WORKDIR /src
 
 COPY go.mod go.sum ./
-
-RUN go mod download
-
 COPY . /src
 
 WORKDIR /src/cmd/bantool
 
+RUN go get
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bantool -v -x
 
 # Second stage: Run Go binary
