@@ -78,7 +78,7 @@ var gameday2editionTable = map[string]string{
 	"Surge Engine":             "GDY",
 }
 
-func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
+func Preprocess(cardName, number, edition string) (*mtgmatcher.Card, error) {
 	var foil bool
 
 	for _, tag := range filteredExpansionsTags {
@@ -86,8 +86,6 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 			return nil, mtgmatcher.ErrUnsupported
 		}
 	}
-
-	number := variant
 
 	switch number {
 	case "1 of 1":
@@ -102,6 +100,7 @@ func Preprocess(cardName, variant, edition string) (*mtgmatcher.Card, error) {
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
+	var variant string
 	vars := mtgmatcher.SplitVariants(cardName)
 	if len(vars) > 1 {
 		cardName = vars[0]
