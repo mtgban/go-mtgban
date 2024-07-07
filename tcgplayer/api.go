@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -1093,4 +1094,95 @@ func TCGCreateCartKey(userId string) (string, error) {
 
 	return response.Results[0].CartKey, nil
 
+}
+
+const TCGBuylistUpdateQtyURL = "https://store.tcgplayer.com/buylist/updatequantity"
+
+func (tcg *TCGCookieClient) TCGBuylistSetQuantity(skuId, qty int) (string, error) {
+	payload := url.Values{}
+	payload.Set("productConditionId", fmt.Sprint(skuId))
+	payload.Set("reqQty", fmt.Sprint(qty))
+	payload.Set("availQty", "0")
+	payload.Set("overrideQty", "true")
+
+	req, err := http.NewRequest(http.MethodPost, TCGBuylistUpdateQtyURL, strings.NewReader(payload.Encode()))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Cookie", "TCGAuthTicket_Production="+tcg.authKey+";")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New("buylist not ok")
+	}
+
+	// Nothing interesting in the response
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	response := string(data)
+
+	return response, nil
+}
+
+const TCGBuylistOffersURL = "https://store.tcgplayer.com/buylist/viewtopsellerprices?productConditionId="
+
+type TCGBuylistOffer struct {
+	SkuId      int
+	SellerName string
+	Price      float64
+	Quantity   int
+}
+
+func (tcg *TCGCookieClient) TCGBuylistViewOffers(skuId int) ([]TCGBuylistOffer, error) {
+	req, err := http.NewRequest(http.MethodGet, TCGBuylistOffersURL+fmt.Sprint(skuId), nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Cookie", "TCGAuthTicket_Production="+tcg.authKey+";")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var offers []TCGBuylistOffer
+	doc.Find(`tbody`).Find(`tr`).Each(func(i int, s *goquery.Selection) {
+		sellerName := strings.TrimSpace(s.Find("td:nth-child(1)").Text())
+		offerPrice := strings.TrimSpace(s.Find("td:nth-child(2)").Text())
+		offerQty := strings.TrimSpace(s.Find("td:nth-child(3)").Text())
+
+		price, _ := mtgmatcher.ParsePrice(offerPrice)
+		qty, _ := strconv.Atoi(offerQty)
+
+		if price == 0 || qty == 0 {
+			return
+		}
+
+		offers = append(offers, TCGBuylistOffer{
+			SkuId:      skuId,
+			SellerName: sellerName,
+			Price:      price,
+			Quantity:   qty,
+		})
+	})
+
+	if len(offers) == 0 {
+		return nil, errors.New("no offers in buylist")
+	}
+
+	return offers, nil
 }
