@@ -77,54 +77,6 @@ func (mkm *MKMClient) RequestNo() int {
 	return mkm.client.HTTPClient.Transport.(*authTransport).RequestNo
 }
 
-func (mkm *MKMClient) MKMRawPriceGuide() (string, error) {
-	resp, err := mkm.client.Get(mkmPriceGuideURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var response struct {
-		PriceGuideFile string `json:"priceguidefile"`
-		MIME           string `json:"mime"`
-	}
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		return "", errors.New(string(data))
-	}
-
-	return response.PriceGuideFile, nil
-}
-
-func (mkm *MKMClient) MKMRawProductList() (string, error) {
-	resp, err := mkm.client.Get(mkmProductListURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var response struct {
-		ProductsFile string `json:"productsfile"`
-		MIME         string `json:"mime"`
-	}
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		return "", err
-	}
-
-	return response.ProductsFile, nil
-}
-
 type MKMExpansion struct {
 	IdExpansion int    `json:"idExpansion"`
 	Name        string `json:"enName"`
@@ -252,58 +204,6 @@ type MKMArticle struct {
 	IsSigned  bool `json:"isSigned"`
 	IsPlayset bool `json:"isPlayset"`
 	IsAltered bool `json:"isAltered"`
-}
-
-func (mkm *MKMClient) MKMAllArticles(id int, anyLanguage bool) ([]MKMArticle, error) {
-	u, err := url.Parse(mkmArticlesBaseURL + fmt.Sprint(id))
-	if err != nil {
-		return nil, err
-	}
-	params := url.Values{}
-	if !anyLanguage {
-		params.Set("idLanguage", "1")
-	}
-	params.Set("minCondition", "GD")
-	params.Set("minUserScore", "3")
-	params.Set("isSigned", "false")
-	params.Set("isAltered", "false")
-
-	return mkm.allArticles(u.String())
-}
-
-func (mkm *MKMClient) MKMAllUserArticles(user string) ([]MKMArticle, error) {
-	return mkm.allArticles(fmt.Sprintf(mkmUserArticlesFormatURL, user))
-}
-
-func (mkm *MKMClient) allArticles(link string) ([]MKMArticle, error) {
-	var i int
-	var articles []MKMArticle
-
-	// Keep polling 100 entities at a time
-	for {
-		res, err := mkm.articles(link, i, mkmMaxEntities)
-		if err != nil {
-			return nil, err
-		}
-
-		// Stash the result
-		articles = append(articles, res...)
-
-		// No more entities left, we can break now
-		if len(res) < mkmMaxEntities {
-			break
-		}
-
-		// Avoid an infinite loop in which the same set of results is reported over and over
-		if articles[len(articles)-1] == res[len(res)-1] {
-			return nil, errors.New("broken api")
-		}
-
-		// Next round
-		i++
-	}
-
-	return articles, nil
 }
 
 func (mkm *MKMClient) MKMArticles(id int, anyLanguage bool, page, count int) ([]MKMArticle, error) {
