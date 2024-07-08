@@ -402,9 +402,10 @@ func cleanVariant(variant string) string {
 }
 
 var preserveTags = []string{
-	"Etched",
-	"Step-and-Compleat",
-	"Serialized",
+	"etched",
+	"retro frame",
+	"step-and-compleat",
+	"serialized",
 }
 
 func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
@@ -557,7 +558,7 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 
 	// Add previously removed/ignored tags
 	for _, tag := range preserveTags {
-		if strings.Contains(cleanVar, tag) && !strings.Contains(variant, tag) {
+		if strings.Contains(strings.ToLower(cleanVar), tag) && !strings.Contains(strings.ToLower(variant), tag) {
 			variant += " " + tag
 		}
 	}
