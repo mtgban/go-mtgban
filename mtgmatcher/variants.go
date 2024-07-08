@@ -593,6 +593,7 @@ var allVariants = map[string]map[string]string{
 		"az169":                   "63b",
 		"fallen tree":             "63a",
 		"facing left":             "63a",
+		"facing forward":          "63b",
 		"mosquito facing left":    "63a",
 		"mosquito facing forward": "63b",
 		"v.2":                     "63a",
@@ -981,7 +982,8 @@ var pal01Variants = map[string]map[string]string{
 		"ice":                              "1",
 		"β":                                "11",
 		"arena league promo pat lewis art": "1",
-		"arena league promo christopher rush art": "11",
+		"arena league promo christopher rush art":      "11",
+		"arena league promo ice age pat morrissey art": "1",
 	},
 }
 
