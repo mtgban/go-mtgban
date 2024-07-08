@@ -228,6 +228,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 			return err
 
 		}
+		tcg.SKUsData = skusMap
 	}
 	tcg.printf("Found skus for %d %s entries", len(skusMap), mode)
 
