@@ -229,7 +229,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 
 		}
 	}
-	tcg.printf("Found skus for %d entries", len(skusMap))
+	tcg.printf("Found skus for %d %s entries", len(skusMap), mode)
 
 	pages := make(chan marketChan)
 	channel := make(chan responseChan)
@@ -277,7 +277,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 				continue
 			}
 
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
+			tcg.printf("[%s] Scraping %s (%d/%d)", mode, set.Name, i, len(sets))
 			i++
 
 			for _, card := range set.Cards {
