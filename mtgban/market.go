@@ -4,31 +4,6 @@ import (
 	"fmt"
 )
 
-// Separate a Market into multiple Seller objects
-func Seller2Sellers(market Market) ([]Seller, error) {
-	// Make sure inventory is loaded
-	_, err := market.Inventory()
-	if err != nil {
-		return nil, err
-	}
-
-	// Retrieve the list of unique sellers, and create a single seller
-	var sellers []Seller
-	for _, sellerName := range market.MarketNames() {
-		inventory, err := InventoryForSeller(market, sellerName)
-		if err != nil {
-			return nil, err
-		}
-		seller := &BaseSeller{}
-		seller.inventory = inventory
-		seller.info = market.Info()
-		seller.info.Name = sellerName
-		seller.info.Shorthand = sellerName
-		sellers = append(sellers, seller)
-	}
-	return sellers, nil
-}
-
 // Return the inventory for any given seller present in the market.
 // If possible, it will use the Inventory() call to populate data.
 func InventoryForSeller(seller Seller, sellerName string) (InventoryRecord, error) {
