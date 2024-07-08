@@ -147,6 +147,7 @@ func IsToken(name string) bool {
 	// Anything token
 	case strings.Contains(name, " Card"),
 		strings.Contains(name, "Card "),
+		strings.HasPrefix(name, "Bounty"),
 		Contains(name, "Arena Code"),
 		Contains(name, "Art Series"),
 		Contains(name, "Charlie Brown"),
