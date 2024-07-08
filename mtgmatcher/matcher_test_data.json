@@ -3598,12 +3598,21 @@
         }
     },
     {
+        "uuid": "c49d0575-0833-5b66-bacf-de5eccda930c",
+        "description": "mbplist_with_sld_same_number",
+        "input": {
+            "name": "Birds of Paradise",
+            "variant": "176",
+            "edition": "Mystery Booster - The List"
+        }
+    },
+    {
         "uuid": "8f29700d-0193-53c9-b26d-2345fa446a40",
         "description": "mb1plist_with_timeshift_keyword",
         "input": {
-            "name": "Silence",
-            "variant": "Timeshifted (Old Border)",
-            "edition": "Mystery Booster - The List"
+            "name": "silence",
+            "variant": "timeshifted (old border)",
+            "edition": "mystery booster - the list"
         }
     },
     {

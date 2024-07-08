@@ -186,8 +186,25 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			case "PLST":
 				// Check if there is an exact match in plain SLD
-				if len(MatchInSetNumber(inCard.Name, "SLD", ExtractNumber(inCard.Variation))) != 0 {
-					continue
+				num := ExtractNumber(inCard.Variation)
+				if len(MatchInSetNumber(inCard.Name, "SLD", num)) != 0 {
+					// If there is a match, make sure there are no other cards in PLST with the same number
+					shouldNotContinue := false
+					cardsWithSameName := MatchInSet(inCard.Name, "PLST")
+					for _, altCard := range cardsWithSameName {
+						var altNum string
+						altNums := strings.Split(altCard.Number, "-")
+						if len(altNums) > 1 {
+							altNum = altNums[1]
+						}
+						if altNum == num {
+							shouldNotContinue = true
+							break
+						}
+					}
+					if !shouldNotContinue {
+						continue
+					}
 				}
 				if inCard.isSecretLair() {
 					skip := true
