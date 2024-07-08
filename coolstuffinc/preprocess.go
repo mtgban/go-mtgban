@@ -453,6 +453,12 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 		if num != "" && cardName != "Everythingamajig" && cardName != "Ineffable Blessing" {
 			variant = num + " " + cleanVar
 		}
+	case "Deckmasters":
+		variant = strings.Split(variant, " Deckmaster ")[0]
+	case "Duel Decks: Anthology":
+		if num != "" {
+			variant = num + " " + cleanVar
+		}
 	case "Promo":
 		variant = cleanVar
 		switch variant {
