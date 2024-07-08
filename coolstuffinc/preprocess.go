@@ -414,6 +414,11 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 	edition := card.ItemSet
 	isFoil := card.IsFoil == 1
 	cardName := card.Name
+
+	if mtgmatcher.Contains(cardName, "signed by") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	variant := num
 	if variant == "" {
 		variant = cleanVar
