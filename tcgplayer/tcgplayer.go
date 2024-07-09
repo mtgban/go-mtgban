@@ -231,6 +231,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 	}
 	tcg.printf("Found skus for %d %s entries", len(skusMap), mode)
 
+	start := time.Now()
+
 	pages := make(chan marketChan)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -334,6 +336,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 		}
 		tcg.buylistDate = time.Now()
 	}
+
+	tcg.printf("Took %v", time.Since(start))
 
 	return nil
 }
