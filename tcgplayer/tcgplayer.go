@@ -123,10 +123,6 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			continue
 		}
 
-		if req.Language != "ENGLISH" && !strings.Contains(co.Language, mtgmatcher.Title(req.Language)) {
-			continue
-		}
-
 		cond, found := skuConditions[req.Condition]
 		if !found {
 			tcg.printf("unknown condition %d for %d", req.Condition, req.SkuId)
@@ -292,6 +288,10 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 				for _, sku := range skus {
 					// Skip sealed products
 					if sku.Condition == "UNOPENED" {
+						continue
+					}
+					// Skip non-main languages
+					if sku.Language != "ENGLISH" && !strings.Contains(card.Language, mtgmatcher.Title(sku.Language)) {
 						continue
 					}
 					// Skip dupes
