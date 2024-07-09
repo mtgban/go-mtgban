@@ -2,6 +2,7 @@ package mtgstocks
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"errors"
@@ -124,6 +125,10 @@ func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) 
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Referer", "https://www.mtgstocks.com/")
 	req.Header.Set("Origin", "https://www.mtgstocks.com")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br, zstd")
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("DNT", "1")
 
 	resp, err := s.client.StandardClient().Do(req)
 	if err != nil {
@@ -131,7 +136,13 @@ func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) 
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	gzipReader, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer gzipReader.Close()
+
+	data, err := io.ReadAll(gzipReader)
 	if err != nil {
 		return nil, err
 	}
