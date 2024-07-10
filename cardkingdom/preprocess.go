@@ -86,6 +86,9 @@ var skuFixupTable = map[string]string{
 
 	// Crucible of Words promo
 	"PWOR19-001": "PWOR-2019",
+
+	// Greated Good
+	"SLD-1693-IT": "SLD-1693",
 }
 
 // List of tags that need to be preserved in one way or another
