@@ -150,6 +150,7 @@ func (ck *Cardkingdom) scrape() error {
 					Price:      detail.price,
 					Quantity:   detail.quantity,
 					URL:        link,
+					OriginalId: fmt.Sprint(card.Id),
 				}
 				err = ck.inventory.AddUnique(cardId, out)
 			}
@@ -219,6 +220,7 @@ func (ck *Cardkingdom) scrape() error {
 					Quantity:   quantity,
 					PriceRatio: priceRatio,
 					URL:        u.String(),
+					OriginalId: fmt.Sprint(card.Id),
 				}
 				// Add the line entry as needed by the csv import
 				if grade == "NM" {
