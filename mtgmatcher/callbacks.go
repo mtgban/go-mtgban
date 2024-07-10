@@ -1076,8 +1076,16 @@ func duplicateSLD(inCard *Card) []string {
 	if inCard.isStepAndCompleat() {
 		return []string{mtgjson.SuffixPhiLow, ""}
 	}
-	if inCard.Foil || inCard.isEtched() || inCard.isThickDisplay() {
+
+	if inCard.isEtched() || inCard.isThickDisplay() {
 		return []string{mtgjson.SuffixSpecial, ""}
 	}
+
+	if inCard.Foil &&
+		(hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeRainbowFoil, "SLD") ||
+			hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD")) {
+		return []string{mtgjson.SuffixSpecial, ""}
+	}
+
 	return nil
 }
