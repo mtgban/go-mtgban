@@ -963,13 +963,13 @@ func (tcg *TCGClient) TCGInventoryListing(productId, size, page int, useDirect b
 	return response.Results[0].Results, nil
 }
 
-type TCGCookieClient struct {
+type CookieClient struct {
 	client  *retryablehttp.Client
 	authKey string
 }
 
-func NewTCGCookieClient(authKey string) *TCGCookieClient {
-	tcg := TCGCookieClient{}
+func NewCookieClient(authKey string) *CookieClient {
+	tcg := CookieClient{}
 	tcg.client = retryablehttp.NewClient()
 	tcg.client.Logger = nil
 	tcg.authKey = authKey
@@ -1017,7 +1017,7 @@ type TCGUserResponse struct {
 
 const TCGUserDataURL = "https://mpapi.tcgplayer.com/v2/user?isGuest=false"
 
-func (tcg *TCGCookieClient) TCGGetUserData() (*TCGUserData, error) {
+func (tcg *CookieClient) GetUserData() (*TCGUserData, error) {
 	req, err := http.NewRequest(http.MethodGet, TCGUserDataURL, nil)
 	if err != nil {
 		return nil, err
@@ -1098,7 +1098,7 @@ func TCGCreateCartKey(userId string) (string, error) {
 
 const TCGBuylistUpdateQtyURL = "https://store.tcgplayer.com/buylist/updatequantity"
 
-func (tcg *TCGCookieClient) TCGBuylistSetQuantity(skuId, qty int) (string, error) {
+func (tcg *CookieClient) BuylistSetQuantity(skuId, qty int) (string, error) {
 	payload := url.Values{}
 	payload.Set("productConditionId", fmt.Sprint(skuId))
 	payload.Set("reqQty", fmt.Sprint(qty))
@@ -1141,7 +1141,7 @@ type TCGBuylistOffer struct {
 	Quantity   int
 }
 
-func (tcg *TCGCookieClient) TCGBuylistViewOffers(skuId int) ([]TCGBuylistOffer, error) {
+func (tcg *CookieClient) BuylistViewOffers(skuId int) ([]TCGBuylistOffer, error) {
 	req, err := http.NewRequest(http.MethodGet, TCGBuylistOffersURL+fmt.Sprint(skuId), nil)
 	if err != nil {
 		return nil, err
