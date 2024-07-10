@@ -285,6 +285,11 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 				if !found {
 					continue
 				}
+
+				hasNonfoil := card.HasFinish(mtgjson.FinishNonfoil)
+				hasFoil := card.HasFinish(mtgjson.FinishFoil)
+				hasEtched := card.HasFinish(mtgjson.FinishEtched)
+
 				for _, sku := range skus {
 					// Skip sealed products
 					if sku.Condition == "UNOPENED" {
@@ -292,6 +297,20 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					}
 					// Skip non-main languages
 					if sku.Language != "ENGLISH" && !strings.Contains(card.Language, mtgmatcher.Title(sku.Language)) {
+						continue
+					}
+					// Extra validation for incorrect data
+					if !hasNonfoil && sku.Printing == "NON FOIL" {
+						continue
+					}
+					if !hasFoil && !hasEtched && (sku.Printing == "FOIL" || sku.Finish == "FOIL ETCHED") {
+						continue
+					}
+					if !hasEtched && sku.Finish == "FOIL ETCHED" {
+						continue
+					}
+					// Make sure the right id is parsed
+					if sku.Finish != "FOIL ETCHED" && fmt.Sprint(sku.ProductId) != card.Identifiers["tcgplayerProductId"] {
 						continue
 					}
 					// Skip dupes
