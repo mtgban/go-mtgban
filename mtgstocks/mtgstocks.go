@@ -32,10 +32,6 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
-var availableNames = []string{
-	"Average Day", "Average Week", "Market Day", "Market Week",
-}
-
 func (stks *MTGStocks) printf(format string, a ...interface{}) {
 	if stks.LogCallback != nil {
 		stks.LogCallback("[STKS] "+format, a...)
@@ -203,10 +199,6 @@ func (stks *MTGStocks) Inventory() (mtgban.InventoryRecord, error) {
 	}
 
 	return stks.inventory, nil
-}
-
-func (tcg *MTGStocks) MarketNames() []string {
-	return availableNames
 }
 
 func (stks *MTGStocks) Info() (info mtgban.ScraperInfo) {
