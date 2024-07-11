@@ -3,71 +3,14 @@ package mtgban
 import (
 	"fmt"
 	"sort"
-	"strings"
 
-	"github.com/google/uuid"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"golang.org/x/exp/slices"
 )
 
-func ComputeSKU(cardId, condition string, flags ...string) (string, error) {
-	co, err := mtgmatcher.GetUUID(cardId)
-	if err != nil {
-		return "", err
-	}
-
-	scryfallNamespace, err := uuid.Parse(co.Identifiers["scryfallId"])
-	if err != nil {
-		return "", fmt.Errorf("invalid scryfall ID: %v", err)
-	}
-	condition = strings.ToLower(condition)
-
-	conditionMap := map[string]string{
-		"nm":                "nm",
-		"sp":                "sp",
-		"lp":                "sp",
-		"mp":                "mp",
-		"hp":                "hp",
-		"po":                "po",
-		"near mint":         "nm",
-		"lightly played":    "sp",
-		"slightly played":   "sp",
-		"moderately played": "mp",
-		"heavily played":    "hp",
-		"damaged":           "po",
-		"poor":              "po",
-	}
-	conditionCode, ok := conditionMap[condition]
-	if !ok {
-		conditionCode = "nm"
-	}
-
-	language := strings.ToLower(co.Language)
-
-	overrideFinish := ""
-	if len(flags) > 0 {
-		overrideFinish = flags[0]
-	}
-
-	printing := "nonfoil"
-	if co.Etched || overrideFinish == "etched" {
-		printing = "etched"
-	} else if co.Foil || overrideFinish == "foil" {
-		printing = "foil"
-	}
-
-	data := fmt.Sprintf("%s_%s_%s", conditionCode, language, printing)
-
-	sku := uuid.NewSHA1(scryfallNamespace, []byte(data))
-	return sku.String(), nil
-}
-
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
-	}
-	if entry.SKUID == "" {
-		entry.SKUID, _ = ComputeSKU(cardId, entry.Conditions)
 	}
 
 	entries, found := inv[cardId]
@@ -148,9 +91,6 @@ func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict bool) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
-	}
-	if entry.SKUID == "" {
-		entry.SKUID, _ = ComputeSKU(cardId, entry.Conditions)
 	}
 
 	entries, found := bl[cardId]

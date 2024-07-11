@@ -44,9 +44,6 @@ type InventoryEntry struct {
 
 	// Any additional custom fields set by the scraper
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
-
-	// SKU id, composed of ScryfallId, language, finish, and condition
-	SKUID string `json:"sku_id,omitempty"`
 }
 
 func (ie InventoryEntry) Pricing() float64 {
@@ -90,9 +87,6 @@ type BuylistEntry struct {
 
 	// Any additional custom fields set by the scraper
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
-
-	// SKU id, composed of ScryfallId, language, finish, and condition
-	SKUID string `json:"sku_id,omitempty"`
 }
 
 func (be BuylistEntry) Pricing() float64 {
