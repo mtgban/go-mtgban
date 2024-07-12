@@ -209,15 +209,10 @@ func (ck *Cardkingdom) scrape() error {
 					priceRatio = price / sellPrice * 100
 				}
 
-				var quantity int
-				if grade == "NM" {
-					quantity = card.BuyQuantity
-				}
-
 				out := &mtgban.BuylistEntry{
 					Conditions: grade,
 					BuyPrice:   price * factor,
-					Quantity:   quantity,
+					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String(),
 					OriginalId: fmt.Sprint(card.Id),
