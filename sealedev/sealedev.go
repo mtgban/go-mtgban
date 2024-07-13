@@ -491,5 +491,6 @@ func (ss *SealedEVScraper) Info() (info mtgban.ScraperInfo) {
 	info.SealedMode = true
 	info.MetadataOnly = true
 	info.CreditMultiplier = 1.3
+	info.Family = "EV"
 	return
 }

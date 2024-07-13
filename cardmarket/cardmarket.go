@@ -317,5 +317,6 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.MetadataOnly = true
+	info.Family = "MKM"
 	return
 }

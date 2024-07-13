@@ -331,5 +331,6 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "CT"
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
+	info.Family = "CT"
 	return
 }

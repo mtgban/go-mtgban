@@ -237,5 +237,6 @@ func (tcg *TCGPlayerIndex) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
+	info.Family = "TCG"
 	return
 }

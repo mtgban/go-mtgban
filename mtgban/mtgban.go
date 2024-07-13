@@ -125,6 +125,9 @@ type ScraperInfo struct {
 
 	// Scraper contains sealed information instead of singles
 	SealedMode bool `json:"sealed,omitempty"`
+
+	// Whether the prices can be coalesced in a single entity
+	Family string `json:"family,omitempty"`
 }
 
 // The default list of conditions most scrapers output
