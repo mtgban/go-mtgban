@@ -24,6 +24,8 @@ type CoolstuffincSealed struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
+	productMap map[string]string
+
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
@@ -37,6 +39,19 @@ func NewScraperSealed() *CoolstuffincSealed {
 	csi.httpclient = http.NewClient()
 	csi.httpclient.Logger = nil
 	csi.MaxConcurrency = defaultConcurrency
+
+	csi.productMap = map[string]string{}
+	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		id, found := co.Identifiers["csiId"]
+		if !found {
+			continue
+		}
+		csi.productMap[id] = co.UUID
+	}
 	return &csi
 }
 
@@ -105,23 +120,12 @@ func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, pa
 
 	doc.Find(".main-container").Each(func(i int, s *goquery.Selection) {
 		productName := s.Find(`span[itemprop="name"]`).Text()
+		path, _ := s.Find(`a[class="productLink"]`).Attr("href")
 
-		edition := s.Find(`div[class="breadcrumb-trail"]`).Text()
-		edition = strings.TrimPrefix(edition, "Magic: The Gathering » ")
+		csiId := strings.TrimPrefix(path, "/p/")
 
-		uuid, err := preprocessSealed(productName, edition)
-		if (err != nil || uuid == "") && strings.Contains(productName, "Commander") && !strings.Contains(edition, "Commander") {
-			uuid, err = preprocessSealed(productName, edition+" Commander")
-		}
-		if err != nil {
-			if err.Error() != "unsupported" {
-				csi.printf("%s in %s | %s", productName, edition, err.Error())
-			}
-			return
-		}
-
-		if uuid == "" {
-			csi.printf("unable to parse %s in %s", productName, edition)
+		uuid, found := csi.productMap[csiId]
+		if !found {
 			return
 		}
 
@@ -139,7 +143,6 @@ func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, pa
 			return
 		}
 
-		path, _ := s.Find(`a[class="productLink"]`).Attr("href")
 		link := "https://coolstuffinc.com" + path
 
 		out := responseChan{
@@ -250,16 +253,8 @@ func (csi *CoolstuffincSealed) parseBL() error {
 		u.RawQuery = v.Encode()
 		link := u.String()
 
-		uuid, err := preprocessSealed(product.Name, product.ItemSet)
-		if err != nil {
-			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
-				csi.printf("%s: %s for %s", err.Error(), product.ItemSet, product.Name)
-			}
-			continue
-		}
-
-		if uuid == "" {
-			csi.printf("unable to parse %s in %s", product.Name, product.ItemSet)
+		uuid, found := csi.productMap[product.PID]
+		if !found {
 			continue
 		}
 

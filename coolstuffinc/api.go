@@ -71,7 +71,7 @@ func (csi *CSIClient) GetPriceList() ([]CSICard, error) {
 }
 
 type CSIPriceEntry struct {
-	// Pid           string `json:"PID"`
+	PID string `json:"PID"`
 	// Ppqid         string `json:"PPQID"`
 	Name string `json:"Name"`
 	// Rarity        string `json:"Rarity"`
