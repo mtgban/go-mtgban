@@ -665,9 +665,6 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 						}
 						picks = append(picks, deckPicks...)
 					}
-				case "other":
-				default:
-					return nil, errors.New("unknown key")
 				}
 			}
 		}
@@ -930,9 +927,6 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 							})
 						}
 					}
-				case "other":
-				default:
-					return nil, errors.New("unknown key")
 				}
 			}
 		}

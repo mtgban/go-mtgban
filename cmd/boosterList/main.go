@@ -156,10 +156,6 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 							list = append(list, deckList...)
 						}
 					}
-
-				case "other":
-				default:
-					return nil, errors.New("unknown key")
 				}
 			}
 		}
