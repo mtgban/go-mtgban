@@ -221,12 +221,6 @@ func (csi *CoolstuffincSealed) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (csi *CoolstuffincSealed) parseBL() error {
-	edition2id, err := LoadBuylistEditions()
-	if err != nil {
-		return err
-	}
-	csi.printf("Loaded %d editions", len(edition2id))
-
 	products, err := GetBuylist()
 	if err != nil {
 		return err
@@ -244,12 +238,6 @@ func (csi *CoolstuffincSealed) parseBL() error {
 		v.Set("s", "mtg")
 		v.Set("a", "1")
 		v.Set("name", product.Name)
-		v.Set("f[]", fmt.Sprint(product.IsFoil))
-
-		id, found := edition2id[product.ItemSet]
-		if found {
-			v.Set("is[]", id)
-		}
 		u.RawQuery = v.Encode()
 		link := u.String()
 
