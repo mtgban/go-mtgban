@@ -69,9 +69,9 @@ type ArbitOpts struct {
 	// List of seller name that wil be considered
 	Sellers []string
 
-	// Custom function to be run on the card
-	// It returns a custom factor to be applied on the buylist price,
-	// and whether the entry shoul be skipped
+	// Custom function to be run on the card object
+	// It returns a custom factor to be applied on the compared price,
+	// and whether the entry should be skipped or not
 	CustomCardFilter func(co *mtgmatcher.CardObject) (float64, bool)
 
 	// Constant used to offset prices (the higher the value, the less impactful
