@@ -74,6 +74,11 @@ type ArbitOpts struct {
 	// and whether the entry should be skipped or not
 	CustomCardFilter func(co *mtgmatcher.CardObject) (float64, bool)
 
+	// Custom function to be run on the probed inventory entry
+	// It returns a custom factor to be applied on the compared price,
+	// and whether the entry should be skipped or not
+	CustomPriceFilter func(string, InventoryEntry) (float64, bool)
+
 	// Constant used to offset prices (the higher the value, the less impactful
 	// lower prices will be, and viceversa)
 	ProfitabilityConstant float64
@@ -137,6 +142,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 	var filterSelectedCNRange map[string][2]int
 	var filterSellers []string
 	var filterFunc func(co *mtgmatcher.CardObject) (float64, bool)
+	var filterPriceFunc func(string, InventoryEntry) (float64, bool)
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -165,6 +171,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		filterDecksOnly = opts.SealedDecklist
 		filterBundle = opts.OnlyBundles
 		filterFunc = opts.CustomCardFilter
+		filterPriceFunc = opts.CustomPriceFilter
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -269,6 +276,15 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			}
 			if invEntry.Price < minPrice {
 				continue
+			}
+
+			if filterPriceFunc != nil {
+				factor, skip := filterPriceFunc(cardId, invEntry)
+				if skip {
+					continue
+				}
+
+				rate *= factor
 			}
 
 			price := invEntry.Price * rate
@@ -377,6 +393,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 	var filterSelectedEditions []string
 	var filterSelectedCNRange map[string][2]int
 	var filterFunc func(co *mtgmatcher.CardObject) (float64, bool)
+	var filterPriceFunc func(string, InventoryEntry) (float64, bool)
 
 	if opts != nil {
 		if opts.MinDiff != 0 {
@@ -398,6 +415,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		filterRLOnly = opts.OnlyReserveList
 		filterDecksOnly = opts.SealedDecklist
 		filterFunc = opts.CustomCardFilter
+		filterPriceFunc = opts.CustomPriceFilter
 
 		if len(opts.Conditions) != 0 {
 			filterConditions = opts.Conditions
@@ -479,6 +497,14 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			}
 			if slices.Contains(filterConditions, refEntry.Conditions) {
 				continue
+			}
+
+			if filterPriceFunc != nil {
+				factor, skip := filterPriceFunc(cardId, refEntry)
+				if skip {
+					continue
+				}
+				customFactor *= factor
 			}
 
 			for _, invEntry := range invEntries {
