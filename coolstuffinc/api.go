@@ -1,12 +1,15 @@
 package coolstuffinc
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
-	http "github.com/hashicorp/go-retryablehttp"
 )
 
 type CSICard struct {
@@ -38,8 +41,7 @@ type CSIClient struct {
 
 func NewCSIClient(key string) *CSIClient {
 	csi := CSIClient{}
-	csi.client = http.NewClient()
-	csi.client.Logger = nil
+	csi.client = cleanhttp.DefaultClient()
 	csi.key = key
 	return &csi
 }
@@ -146,4 +148,84 @@ func LoadBuylistEditions() (map[string]string, error) {
 	})
 
 	return edition2id, nil
+}
+
+type SearchResult struct {
+	PageId string
+	Data   []byte
+}
+
+// Convert the item name to the id and the first page of results
+func Search(itemName string, skipOOS bool) (*SearchResult, error) {
+	v := url.Values{}
+	v.Set("name", "")
+	v.Set("f[Artist][]", "")
+	v.Add("f[Cost][]", "")
+	v.Add("f[Cost][]", "")
+	v.Set("f[Number][]", "")
+	v.Set("f[Type][]", "")
+	v.Set("f[Card+Text][]", "")
+	v.Set("notes", "")
+	v.Set("sign-Cost", "<")
+	v.Set("sign-Power", "<")
+	v.Set("f[Power][]", "")
+	v.Set("sign-Toughness", "<")
+	v.Set("f[Toughness][]", "")
+	v.Set("sign-Loyalty", "<")
+	v.Set("f[Loyalty][]", "")
+	v.Set("signprice", "<")
+	v.Set("price", "")
+	if !skipOOS {
+		// This excludes all cards that lack a NM copy
+		v.Set("options[instock]", "1")
+	}
+	v.Add("f[Rarity][]", "C")
+	v.Add("f[Rarity][]", "MR")
+	v.Add("f[Rarity][]", "R")
+	v.Add("f[Rarity][]", "U")
+	v.Add("f[Rarity][]", "TC")
+	v.Add("f[Rarity][]", "F")
+	v.Add("f[Rarity][]", "PO")
+	v.Set("f[ItemSet][]", itemName)
+	v.Set("s", "mtg")
+	v.Set("page", "1")
+	v.Set("resultsPerPage", "50")
+	v.Set("submit", "Search")
+
+	req, err := http.NewRequest(http.MethodPost, "https://www.coolstuffinc.com/sq/", strings.NewReader(v.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Add("User-Agent", "curl/8.6.0")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	nextLink, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
+	u, err := url.Parse(nextLink)
+	if err != nil {
+		return nil, err
+	}
+
+	clean := strings.Split(strings.TrimPrefix(u.Path, "/sq/"), "&")[0]
+
+	return &SearchResult{
+		PageId: clean,
+		Data:   data,
+	}, nil
 }

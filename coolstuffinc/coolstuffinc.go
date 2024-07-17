@@ -1,21 +1,20 @@
 package coolstuffinc
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
-	"path"
-	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	colly "github.com/gocolly/colly/v2"
-	queue "github.com/gocolly/colly/v2/queue"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	http "github.com/hashicorp/go-retryablehttp"
 
@@ -26,7 +25,7 @@ import (
 const (
 	defaultConcurrency = 8
 
-	csiInventoryURL = "https://www.coolstuffinc.com/magic+the+gathering/"
+	csiInventoryURL = "https://www.coolstuffinc.com/sq/?s=mtg"
 
 	defaultBuylistPage = "https://www.coolstuffinc.com/main_buylist_display.php"
 )
@@ -36,6 +35,10 @@ var deductions = []float64{1, 1, 0.75}
 type Coolstuffinc struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
+
+	// If set to true scrape will skip all entries without a nonfoil NM price
+	// but will be almost twice as fast
+	FastMode bool
 
 	inventoryDate  time.Time
 	buylistDate    time.Time
@@ -69,247 +72,187 @@ func (csi *Coolstuffinc) printf(format string, a ...interface{}) {
 	}
 }
 
-func (csi *Coolstuffinc) scrape() error {
-	channel := make(chan responseChan)
+func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName string) error {
+	result, err := Search(itemName, csi.FastMode)
+	if err != nil {
+		return err
+	}
 
-	allowedPages := []string{}
+	// result.PageId may be empty if the results have only one page
+	for page := 1; ; page++ {
+		data := result.Data
 
-	c := colly.NewCollector(
-		colly.AllowedDomains("www.coolstuffinc.com"),
+		if page > 1 {
+			link := "https://www.coolstuffinc.com/sq/" + result.PageId + "?page=" + fmt.Sprint(page)
 
-		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
-
-		colly.Async(true),
-	)
-
-	c.SetClient(cleanhttp.DefaultClient())
-
-	c.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		RandomDelay: 1 * time.Second,
-		Parallelism: csi.MaxConcurrency,
-	})
-
-	c.OnRequest(func(r *colly.Request) {
-		//csi.printf("Visiting %s", r.URL.String())
-	})
-
-	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-		link := e.Attr("href")
-		class := e.Attr("class")
-		// Skip "commons" "uncommons" and other categories containing the same data
-		if class == "nav-singles" || strings.Contains(e.Text, "Japanese") {
-			return
-		}
-
-		u, err := url.Parse(link)
-		if err != nil {
-			return
-		}
-
-		// Only visit a real mtg url
-		found := false
-		for _, page := range allowedPages {
-			if u.Path == page {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return
-		}
-
-		// Ignore url with incorrect encodes (missing the '?'
-		// to separate query from path)
-		if strings.HasPrefix(u.Path, "&") {
-			return
-		}
-
-		q := u.Query()
-		page := q.Get("page")
-		num, _ := strconv.Atoi(page)
-		if num < 1 {
-			return
-		}
-		singles := q.Get("sh")
-		if singles != "" && singles != "1" {
-			return
-		}
-		res := q.Get("resultsperpage")
-		if res != "" && res != "25" {
-			return
-		}
-		set := q.Get("s")
-		if set != "" && set != "mtg" {
-			return
-		}
-		sort := q.Get("sb")
-		if sort != "" && sort != "price|asc" {
-			return
-		}
-
-		u.RawQuery = fmt.Sprintf("resultsperpage=25&sb=&sh=1&s=mtg&page=%s", page)
-		err = c.Visit(u.String())
-		if err != nil {
-			if err != colly.ErrAlreadyVisited {
-				//csi.printf("error while linking %s: %s", e.Request.AbsoluteURL(link), err.Error())
-			}
-		}
-	})
-
-	// Callback for when a scraped page contains a form element
-	c.OnHTML(`div[class="row product-search-row main-container"]`, func(e *colly.HTMLElement) {
-		// Skip the "on sale" pages, these will appear elsewhere
-		pageTitle := e.DOM.ParentsUntil("~").Find("title").Text()
-		if strings.Contains(pageTitle, " Sale") || strings.Contains(pageTitle, " Signed") {
-			return
-		}
-
-		cardName := e.ChildText(`span[itemprop="name"]`)
-		fullEdition := e.ChildText(`div[class="breadcrumb-trail"]`)
-		// Strip mtg away, skip anything that is not prefixed like it
-		if !strings.HasPrefix(fullEdition, "Magic: The Gathering") {
-			return
-		}
-		edition := strings.TrimPrefix(fullEdition, "Magic: The Gathering » ")
-
-		// These special cards are mixed in the normal edition
-		if strings.HasPrefix(edition, "Magic: The Gathering » Masterpiece") {
-			if !strings.Contains(pageTitle, "Inventions") &&
-				!strings.Contains(pageTitle, "Expeditions") &&
-				!strings.Contains(pageTitle, "Invocations") {
-				return
-			}
-		}
-
-		notes := e.ChildText(`div[class="large-8 medium-12 small- 12 product-notes"]`)
-
-		// Extract number or set information
-		imgURL := e.ChildAttr(`div[class="large-12 medium-12 small-12"] div[class="large-2 medium-2 small-4 columns search-photo-cell"] img[itemprop="image"]`, "data-src")
-		altImgURL := e.ChildAttr(`div[class="large-12 medium-12 small-12"] div[class="productLink"] img[itemprop="image"]`, "src")
-		imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
-		altImgName := strings.TrimSuffix(path.Base(altImgURL), filepath.Ext(altImgURL))
-		if len(altImgName) > len(imgName) {
-			imgName = altImgName
-		}
-		maybeNum := strings.TrimPrefix(imgName, strings.Replace(cardName, " ", "", -1))
-
-		e.ForEach(`div[itemprop="offers"]`, func(_ int, elem *colly.HTMLElement) {
-			theCard, err := preprocess(cardName, edition, notes, maybeNum)
+			resp, err := cleanhttp.DefaultClient().Get(link)
 			if err != nil {
-				return
+				continue
 			}
-
-			soon := elem.ChildText(`div[class="large-12 medium-12 small-12"]`)
-			if strings.Contains(soon, "Estimated") {
-				return
+			data, err = io.ReadAll(resp.Body)
+			resp.Body.Close()
+			if err != nil {
+				continue
 			}
+		}
 
-			qtyStr := elem.ChildText(`div[class="row"]:first-child`)
-			switch {
-			case qtyStr == "",
-				qtyStr == "Out of Stock",
-				strings.Contains(qtyStr, "Estimated"),
-				strings.HasPrefix(qtyStr, "Near"),
-				strings.HasPrefix(qtyStr, "Foil"):
-				return
-			}
-			fields := strings.Split(qtyStr, " ")
-			qtyStr = strings.Replace(fields[0], "+", "", 1)
+		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
+		if err != nil {
+			csi.printf("newDoc - %s", err.Error())
+			continue
+		}
 
-			isFoil := len(fields) > 1 && fields[1] == "Foil"
-			idx := 1
-			if isFoil {
-				idx = 2
-			}
+		doc.Find(`div[class="row product-search-row main-container"]`).Each(func(i int, s *goquery.Selection) {
+			cardName := s.Find(`span[itemprop="name"]`).Text()
 
-			conditions := strings.Join(fields[idx:], " ")
-			switch conditions {
-			case "Mint",
-				"Near Mint":
-				conditions = "NM"
-			case "Played":
-				conditions = "MP"
-			default:
-				switch {
-				case strings.Contains(conditions, "BGS"),
-					strings.Contains(conditions, "New"),
-					strings.Contains(conditions, "signature"),
-					strings.Contains(conditions, "Summer Magic"),
-					strings.Contains(conditions, "Unique"):
-				default:
-					csi.printf("Unsupported %s condition for %s", conditions, theCard)
+			pid, _ := s.Find(`span[class="rating-display "]`).Attr("data-pid")
+			edition := itemName
+			notes := s.Find(`div[class="large-8 medium-12 small- 12 product-notes"]`).Text()
+			notes = strings.TrimPrefix(notes, "Notes: ")
+
+			imgURL, _ := s.Find(`a[class="productLink"]`).Find("img").Attr("data-src")
+			if imgURL == "" {
+				imgURL, _ = s.Find(`a[class="productLink"]`).Find("img").Attr("src")
+				if imgURL == "" {
+					log.Println("img not found", cardName, edition)
 				}
-				return
-			}
-			if strings.Contains(cardName, "Signed by") {
-				conditions = "HP"
 			}
 
-			qty, err := strconv.Atoi(qtyStr)
+			theCard, err := preprocess(cardName, edition, notes, imgURL)
 			if err != nil {
-				csi.printf("%s %s %v", cardName, edition, err)
 				return
 			}
 
-			priceStr := elem.ChildText(`b[itemprop="price"]`)
-			price, err := strconv.ParseFloat(priceStr, 64)
-			if err != nil {
-				csi.printf("%v", err)
-				return
-			}
-
-			if price == 0.0 || qty == 0 {
-				return
-			}
-
-			// preprocess() might return something that derived foil status
-			// from one of the fields (cardName in particular)
-			theCard.Foil = theCard.Foil || isFoil
-			cardId, err := mtgmatcher.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				return
-			} else if err != nil {
+			s.Find(`div[itemprop="offers"]`).Each(func(i int, se *goquery.Selection) {
+				fullRow := strings.TrimSpace(se.Text())
 				switch {
-				case theCard.IsBasicLand(),
-					strings.HasSuffix(theCard.Name, "Signet"),
-					strings.Contains(cardName, "Token"):
-				default:
-					csi.printf("%v", err)
-					csi.printf("%v", theCard)
-					csi.printf("'%s' '%s' '%s' '%s'", cardName, fullEdition, notes, maybeNum)
+				case strings.Contains(fullRow, "Out of Stock"),
+					strings.Contains(fullRow, "not currently available"):
+					return
+				}
 
-					var alias *mtgmatcher.AliasingError
-					if errors.As(err, &alias) {
-						probes := alias.Probe()
-						for _, probe := range probes {
-							card, _ := mtgmatcher.GetUUID(probe)
-							csi.printf("- %s", card)
+				qtyStr := se.Find(`span[class="card-qty"]`).Text()
+				qtyStr = strings.TrimSpace(strings.TrimSuffix(qtyStr, "+"))
+				// If preorder has no quantity,, set max allowed
+				if qtyStr == "" && strings.Contains(notes, "Preorder") {
+					qtyStr = "20"
+				}
+
+				qty, err := strconv.Atoi(qtyStr)
+				if err != nil {
+					log.Println(fullRow)
+					csi.printf("%s %s %v", cardName, edition, err)
+					return
+				}
+
+				bundleStr := se.Find(`div[class="b1-gx-free"]`).Text()
+				bundle := bundleStr == "Buy 1 get 3 free!"
+
+				if !bundle && bundleStr != "" {
+					log.Println(bundleStr)
+				}
+
+				// Derive the condition portion
+				conditions := strings.TrimLeft(fullRow, qtyStr+"+ ")
+				conditions = strings.Split(conditions, "$")[0]
+				conditions = strings.TrimSuffix(conditions, bundleStr)
+				// From the sale text, there is a weird space
+				conditions = strings.TrimSuffix(conditions, "Was ")
+
+				isFoil := strings.HasPrefix(conditions, "Foil")
+
+				switch conditions {
+				case "Near Mint", "Foil Near Mint":
+					conditions = "NM"
+				case "Played", "Foil Played":
+					conditions = "MP"
+				default:
+					switch {
+					case strings.Contains(conditions, "BGS"),
+						strings.Contains(conditions, "Unique"):
+					default:
+						csi.printf("Unsupported '%s' condition for %s", conditions, theCard)
+					}
+					return
+				}
+				if strings.Contains(cardName, "Signed by") {
+					conditions = "HP"
+				}
+
+				priceStr := se.Find(`b[itemprop="price"]`).Text()
+				price, err := strconv.ParseFloat(priceStr, 64)
+				if err != nil {
+					csi.printf("%v", err)
+					return
+				}
+				if bundle {
+					price /= 4
+				}
+
+				if price == 0.0 || qty == 0 {
+					return
+				}
+
+				link := "https://www.coolstuffinc.com/p/" + pid
+				if csi.Partner != "" {
+					link += "?utm_referrer=mtgban"
+				}
+
+				// preprocess() might return something that derived foil status
+				// from one of the fields (cardName in particular)
+				theCard.Foil = theCard.Foil || isFoil
+				cardId, err := mtgmatcher.Match(theCard)
+				if errors.Is(err, mtgmatcher.ErrUnsupported) {
+					return
+				} else if err != nil {
+					switch {
+					// Ignore errors
+					case theCard.IsBasicLand(),
+						notes == "" && strings.Contains(edition, "The List"),
+						strings.Contains(notes, "Preorder"):
+					default:
+						csi.printf("%v", err)
+						csi.printf("%v", theCard)
+						csi.printf("'%s' '%s' '%s'", cardName, edition, notes)
+						csi.printf("- %s", link)
+
+						var alias *mtgmatcher.AliasingError
+						if errors.As(err, &alias) {
+							probes := alias.Probe()
+							for _, probe := range probes {
+								card, _ := mtgmatcher.GetUUID(probe)
+								csi.printf("- %s", card)
+							}
 						}
 					}
+					return
 				}
-				return
-			}
 
-			link := elem.ChildAttr(`div[class="large-3 medium-3 small-2 columns text-right"] link[itemprop="url"]`, "content")
-			if csi.Partner != "" {
-				link += "?utm_referrer=mtgban"
-			}
+				out := responseChan{
+					cardId: cardId,
+					invEntry: &mtgban.InventoryEntry{
+						Conditions: conditions,
+						Price:      price,
+						Quantity:   qty,
+						URL:        link,
+						OriginalId: pid,
+					},
+				}
 
-			out := responseChan{
-				cardId: cardId,
-				invEntry: &mtgban.InventoryEntry{
-					Conditions: conditions,
-					Price:      price,
-					Quantity:   qty,
-					URL:        link,
-				},
-			}
-
-			channel <- out
+				results <- out
+			})
 		})
-	})
 
+		next, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
+		if next == "" {
+			break
+		}
+	}
+
+	return nil
+}
+
+func (csi *Coolstuffinc) scrape() error {
 	resp, err := csi.httpclient.Get(csiInventoryURL)
 	if err != nil {
 		return err
@@ -321,47 +264,66 @@ func (csi *Coolstuffinc) scrape() error {
 		return err
 	}
 
-	q, _ := queue.New(
-		csi.MaxConcurrency,
-		&queue.InMemoryQueueStorage{MaxSize: 10000},
-	)
-
-	doc.Find(`div[class="set-wrapper"]`).Find("li").Each(func(i int, s *goquery.Selection) {
-		editionUrl, _ := s.Find("a").Attr("href")
-		editionName := s.Find("a").Text()
-
-		if editionName == "" {
+	var itemNames []string
+	doc.Find(`fieldset`).Each(func(i int, s *goquery.Selection) {
+		title := s.Find(`h2[class="mb10"] b`).Text()
+		if title != "Item Set" {
 			return
 		}
-		if strings.HasSuffix(editionUrl, "/") {
-			return
-		}
+		s.Find(`div[class="toggleTable"]`).Find("li").Each(func(j int, se *goquery.Selection) {
+			itemName, _ := se.Find(`input[type="checkbox"]`).Attr("value")
+			switch {
+			case strings.Contains(itemName, "Bulk"),
+				strings.Contains(itemName, "Relic Token"),
+				itemName == "Magic":
+				return
+			}
 
-		allowedPages = append(allowedPages, editionUrl)
-
-		q.AddURL("https://www.coolstuffinc.com" + editionUrl + "?resultsperpage=25&sb=&sh=1&s=mtg&page=1")
+			itemNames = append(itemNames, itemName)
+		})
 	})
+	// Sort for predictable results
+	sort.Strings(itemNames)
 
-	q.Run(c)
+	csi.printf("Found %d items", len(itemNames))
 
+	start := time.Now()
+
+	items := make(chan string)
+	results := make(chan responseChan)
+	var wg sync.WaitGroup
+
+	for i := 0; i < csi.MaxConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for itemName := range items {
+				csi.printf("Processing %s", itemName)
+				err := csi.processSearch(results, itemName)
+				if err != nil {
+					csi.printf("%v for %s", err, itemName)
+				}
+			}
+			wg.Done()
+		}()
+	}
 	go func() {
-		c.Wait()
-		close(channel)
+		for _, item := range itemNames {
+			items <- item
+		}
+		close(items)
+
+		wg.Wait()
+		close(results)
 	}()
 
-	dupes := map[string]bool{}
-	for res := range channel {
-		key := res.cardId + res.invEntry.Conditions
-		if dupes[key] {
-			continue
-		}
-		dupes[key] = true
-
-		err := csi.inventory.Add(res.cardId, res.invEntry)
+	for record := range results {
+		err := csi.inventory.Add(record.cardId, record.invEntry)
 		if err != nil {
-			csi.printf("%v", err)
+			csi.printf("%s", err.Error())
 		}
 	}
+
+	log.Println("This operation took", time.Since(start))
 
 	csi.inventoryDate = time.Now()
 

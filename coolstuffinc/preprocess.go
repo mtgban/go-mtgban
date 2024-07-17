@@ -2,26 +2,23 @@ package coolstuffinc
 
 import (
 	"errors"
-	"strconv"
+	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-var cardTable = map[string]string{
-	"Chant of the Vitu-Ghazi": "Chant of Vitu-Ghazi",
-	"Deputized Protestor":     "Deputized Protester",
-	"Erdwall Illuminator":     "Erdwal Illuminator",
-	"Mistfoot Kirin":          "Misthoof Kirin",
-	"Holy Justicar":           "Holy Justiciar",
-	"Nearhearth Chaplain":     "Nearheath Chaplain",
-	"Shatter Assumpions":      "Shatter Assumptions",
-	"Stratozeppilid":          "Stratozeppelid",
-	"Immerstrurm Predator":    "Immersturm Predator",
-	"Inspiried Idea":          "Inspired Idea",
-	"Shadow of Morality":      "Shadow of Mortality",
-
-	"Startled Awake // Persistant Nightmare": "Startled Awake //  Persistent Nightmare",
+var numFixes = map[string]string{
+	"GolgariSignetCM2":            "CM2191",
+	"GolgariSignetCM2v2":          "CM2192",
+	"TempleoftheFalse_God271":     "CM2271",
+	"TempleoftheFalseGod":         "CM2272",
+	"Aura_Shards":                 "PLSTCMD-182",
+	"aurashardslist2":             "PLSTINV-233",
+	"NissaWhoShakestheWorld518v2": "SLD518",
+	"SorcerousSpyglassv2":         "UPPXLN248",
+	"253486Signed_gold":           "WC97JK1",
 }
 
 var variantTable = map[string]string{
@@ -36,74 +33,156 @@ var variantTable = map[string]string{
 	"2/2 Power and Toughness":                          "misprint",
 	"Big Furry Monster Left Side":                      "28",
 	"Big Furry Monster Right Side":                     "29",
-
-	"Deckmasters cards are white bordered and have a stylized D as their set symbol FOIL versions are black bordered": "",
 }
 
-func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, error) {
-	// Clean up notes, removing extra prefixes, and ueless characters
-	variant := strings.TrimPrefix(notes, "Notes:")
-	if strings.Contains(variant, "Deckmaster") {
-		cuts := mtgmatcher.Cut(variant, "Deckmaster")
-		variant = cuts[0]
+func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.Card, error) {
+	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
+	fixup, found := numFixes[imgName]
+	if found {
+		imgName = fixup
 	}
-	variant = cleanVariant(variant)
 
+	variant = cleanVariant(variant)
 	vars, found := variantTable[variant]
 	if found {
 		variant = vars
 	}
 
-	switch variant {
-	case "Silver Planeswalker Symbol":
-		switch cardName {
-		// Impossible to decouple
-		case "Sorcerous Spyglass",
-			"Fabled Passage",
-			"Temple of Epiphany",
-			"Temple of Malady",
-			"Temple of Mystery",
-			"Temple of Silence",
-			"Temple of Triumph":
-			return nil, errors.New("unsupported")
-		// Does not exist
-		case "Elspeth's Devotee":
-			return nil, errors.New("invalid")
+	if strings.Contains(cardName, "Signed") && strings.Contains(cardName, "by") {
+		cuts := mtgmatcher.Cut(cardName, "Signed")
+		cardName = cuts[0]
+	}
+
+	variants := mtgmatcher.SplitVariants(cardName)
+	if len(variants) > 1 {
+		cardName = variants[0]
+		if variant != "" {
+			variant += " "
 		}
-	case "Secret Lair":
-		switch cardName {
-		// Impossible to decouple (except for some fortunate cases from retail)
-		case "Serum Visions":
-			return nil, errors.New("unsupported")
-		case "Thalia, Guardian of Thraben":
-			if strings.HasPrefix(maybeNum, "ThaliaGuardianofThraben0") {
-				variant = strings.TrimPrefix(maybeNum, "ThaliaGuardianofThraben0")
-			} else {
-				return nil, errors.New("unsupported")
-			}
-		}
-	case "Secret Lair: Mountain Go":
-		switch cardName {
-		case "Lightning Bolt":
-			if strings.HasPrefix(maybeNum, "SLD0") {
-				variant = strings.TrimPrefix(maybeNum, "SLD0")
-			} else {
-				return nil, errors.New("unsupported")
+		variant += strings.Join(variants[1:], " ")
+	}
+
+	isFoil := false
+	if strings.Contains(cardName, "FOIL") {
+		cardName = strings.Replace(cardName, " FOIL", "", 1)
+		isFoil = true
+	}
+
+	if strings.HasSuffix(cardName, "Promo") {
+		cuts := mtgmatcher.Cut(cardName, "Promo")
+		cardName = cuts[0]
+	}
+	cardName = strings.TrimSpace(cardName)
+
+	// todo fix Barad-dûr LTR
+	if len(imgName) > 4 {
+		for i := 0; i < 2; i++ {
+			maybeSet := strings.ToUpper(imgName[:i+3])
+			maybeNum := strings.TrimLeft(imgName[i+3:len(imgName)], "_0")
+			if len(mtgmatcher.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
+				return &mtgmatcher.Card{
+					Name:      cardName,
+					Variation: maybeNum,
+					Edition:   maybeSet,
+					Foil:      isFoil,
+				}, nil
 			}
 		}
 	}
 
-	isFoilFromName := false
+	switch edition {
+	case "Promo":
+		// Black Lotus - Ultra Pro Puzzle - Eight of 9
+		if strings.Contains(cardName, "Ultra Pro Puzzle") {
+			return nil, mtgmatcher.ErrUnsupported
+		}
+
+		switch variant {
+		case "Junior Super Series Promo",
+			"Junior Super Series Promo Carl Critchlow art":
+			edition = "PSUS"
+			variant = ""
+		default:
+			possibleEd, possibleVar := card2promo(cardName, variant)
+			if variant != possibleVar {
+				variant = possibleVar
+			}
+			if possibleEd != "" {
+				edition = possibleEd
+			}
+		}
+
+	case "Prerelease Promo":
+		variant = strings.Replace(variant, "Core 21", "Core Set 2021", 1)
+		if variant == "Ixalan Prerelease Promo" {
+			variant = "Prerelease Ixalan"
+		}
+
+	case "Universal Promo Pack":
+		if strings.HasPrefix(imgName, "UPP") && len(imgName) > 6 {
+			maybeSet := strings.ToUpper(imgName[3:6])
+			if maybeSet != "" {
+				variant = maybeSet
+			}
+		}
+
+	case "Deckmasters":
+		variant = strings.TrimSpace(strings.Split(variant, "Deckmaster")[0])
+
+	case "Unfinity":
+		variant = strings.Replace(variant, ",", "/", -1)
+	}
+
+	return &mtgmatcher.Card{
+		Name:      cardName,
+		Variation: variant,
+		Edition:   edition,
+		Foil:      isFoil,
+	}, nil
+}
+
+func cleanVariant(variant string) string {
+	if strings.Contains(variant, "Picture") {
+		variant = strings.Replace(variant, "Picture 1", "", 1)
+		variant = strings.Replace(variant, "Picture 2", "", 1)
+		variant = strings.Replace(variant, "Picture 3", "", 1)
+		variant = strings.Replace(variant, "Picture 4", "", 1)
+	}
+	if strings.Contains(variant, "Artist") {
+		variant = strings.Replace(variant, "Artist ", "", 1)
+	}
+	variant = strings.Replace(variant, "(", "", -1)
+	variant = strings.Replace(variant, ")", "", -1)
+	variant = strings.Replace(variant, ",", "", -1)
+	variant = strings.Replace(variant, ".", "", -1)
+	variant = strings.Replace(variant, "- ", "", 1)
+	variant = strings.Replace(variant, "  ", " ", -1)
+	variant = strings.Replace(variant, "\r\n", " ", -1)
+	variant = strings.Replace(variant, "\n", " ", -1)
+	return strings.TrimSpace(variant)
+}
+
+var preserveTags = []string{
+	"etched",
+	"retro frame",
+	"step-and-compleat",
+	"serialized",
+}
+
+func card2promo(cardName, variant string) (string, string) {
+	var edition string
 	switch cardName {
-	case "Teferi, Master of Time",
-		"Lukka, Coppercoat Outcast",
-		"Brokkos, Apex of Forever":
-		return nil, errors.New("impossible to track")
 	case "Demonic Tutor":
 		if variant == "Daarken Judge Rewards Promo" {
 			variant = "Judge 2008"
 		} else if variant == "Anna Steinbauer Judge Promo" {
 			variant = "Judge 2020"
+		}
+	case "Vampiric Tutor":
+		if variant == "Judge Rewards Promo Old Border" {
+			variant = "Judge 2000"
+		} else if variant == "Judge Rewards Promo New Border" {
+			variant = "Judge 2018"
 		}
 	case "Wasteland":
 		if variant == "Judge Rewards Promo Carl Critchlow art" {
@@ -132,10 +211,6 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		} else if variant == "Friday Night Magic Promo New Border" {
 			variant = "FNM 2016"
 		}
-	case "Mind Warp":
-		if variant == "Arena League Promo" {
-			variant = "FNM 2000"
-		}
 	case "Cabal Therapy":
 		if strings.HasPrefix(variant, "Gold-bordered") {
 			variant = "2003"
@@ -144,268 +219,60 @@ func preprocess(cardName, edition, notes, maybeNum string) (*mtgmatcher.Card, er
 		if strings.HasPrefix(variant, "Gold-bordered") {
 			variant = "2000"
 		}
-	case "Mana Crypt":
-		if strings.HasPrefix(variant, "Harper Prism Promo") {
-			if !strings.Contains(variant, "English") {
-				return nil, errors.New("non-english")
-			}
-		}
 	case "Hangarback Walker":
-		if edition == "Promo" {
-			edition = "Love your LGS"
-		}
+		edition = "Love your LGS"
+		variant = "2"
 	case "Chord of Calling", "Wrath of God":
-		if edition == "Promo" {
-			edition = "Double Masters"
-			variant = "Release"
+		edition = "Double Masters"
+		variant = "Release"
+	case "Conjurer's Closet":
+		edition = "PW21"
+		variant = "6"
+	case "Bolas's Citadel":
+		edition = "PWAR"
+		variant = "79"
+	case "Cryptic Command":
+		if variant == "Qualifier Promo" {
+			edition = "PPRO"
+			variant = "2020-1"
 		}
-
-	default:
-		if strings.Contains(cardName, "Booster Box") ||
-			strings.Contains(cardName, "Booster Pack") ||
-			strings.Contains(cardName, "Fat Pack") ||
-			strings.Contains(cardName, "Bundle") ||
-			strings.Contains(cardName, "Spindown") ||
-			strings.Contains(cardName, "Box Set") ||
-			strings.Contains(cardName, "Bulk") ||
-			strings.Contains(cardName, "Signed by") ||
-			strings.Contains(cardName, "Proxy Card") ||
-			strings.Contains(cardName, "Chinese") {
-			return nil, errors.New("not single")
+	case "Dauntless Dourbark":
+		edition = "PDCI"
+		variant = "12"
+	case "Eye of Ugin":
+		edition = "J20"
+		variant = "10"
+	case "Serra Avatar":
+		if variant == "Junior Super Series Promo Dermot Power art" {
+			edition = "PSUS"
+			variant = "2"
 		}
-		if strings.Contains(variant, "Preorder") {
-			return nil, errors.New("not out yet")
+	case "Steward of Valeron":
+		edition = "PURL"
+		variant = "1"
+	case "Llanowar Elves":
+		if variant == "Friday Night Magic Promo" {
+			edition = "FNM"
+			variant = "11"
+		} else if variant == "Open House Promo" {
+			edition = "PDOM"
+			variant = "168"
 		}
-		if strings.Contains(cardName, "FOIL") {
-			cardName = strings.Replace(cardName, " FOIL", "", 1)
-			isFoilFromName = true
+	case "Masked Vandal":
+		edition = "KHM"
+		variant = "405"
+	case "Goro-Goro, Disciple of Ryusei":
+		if variant == "Watermark Color Pie Media Insert Promo" {
+			edition = "PMEI"
+			variant = "59"
 		}
-		if strings.Contains(cardName, "Signed") && strings.Contains(cardName, "by") {
-			cuts := mtgmatcher.Cut(cardName, "Signed")
-			cardName = cuts[0]
-		}
-	}
-
-	if strings.Contains(edition, "Challenger Decks") {
-		return nil, errors.New("set not mtg")
-	}
-	switch edition {
-	case "", "Overwhelming Swarm", "Special Offers", "Unique Boutique", "Magic Mics Merch",
-		"Authenticated Collectibles", "New Player Series", "Heavy Metal Magic Supplies",
-		"Online Arena":
-		return nil, errors.New("set not mtg")
-	case "Prerelease Promos":
-		if variant != "" {
-			variant = " "
-		}
-		variant += "Prerelease"
-	case "Portal 3 Kingdoms", "Jace vs. Chandra":
-		if strings.Contains(cardName, "Japanese") {
-			return nil, errors.New("not english")
-		}
-	case "Duel Decks: Anthology":
-		if len(maybeNum) == 3 {
-			edition = maybeNum
-		}
-	case "Commander Anthology Volume II":
-		if maybeNum == "" {
-			switch cardName {
-			case "Solemn Simulacrum",
-				"Golgari Signet",
-				"Simic Signet",
-				"Temple of the False God":
-				return nil, errors.New("unsupported")
-			}
-		}
-		variant = maybeNum
-	case "Unstable", "Unsanctioned":
-		switch cardName {
-		case "Amateur Auteur",
-			"Everythingamajig",
-			"Very Cryptic Command":
-		default:
-			variant = maybeNum
-		}
-		if maybeNum == "" || maybeNum == "." {
-			if cardName == "Extremely Slow Zombie" || cardName == "Sly Spy" {
-				variant = "a"
-			}
-			if cardName == "Secret Base" {
-				variant = "b"
-			}
-		}
-	case "Guilds of Ravnica", "Ravnica Allegiance":
-		_, err := strconv.Atoi(maybeNum)
-		if err == nil && !strings.Contains(maybeNum, "486") {
-			if variant != "" {
-				variant += " "
-			}
-			variant += maybeNum
-		}
-	case "Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling":
-		edition = "Global Series Jiang Yanggu & Mu Yanling"
-	case "Ikoria: Lair of Behemoths: Variants":
-		vars := mtgmatcher.SplitVariants(cardName)
-		if len(vars) > 1 {
-			cardName = vars[0]
-			variant = vars[1]
-		}
-		if strings.Contains(variant, "Japanese") {
-			switch cardName {
-			case "Dirge Bat", "Mysterious Egg", "Crystalline Giant":
-				variant = "godzilla"
-			default:
-				return nil, errors.New("not english")
-			}
-		}
-	case "Zendikar Rising":
-		if strings.HasPrefix(cardName, "Blank Card") {
-			return nil, errors.New("untracked")
-		}
-	case "Mystical Archive", "Double Masters: Variants":
-		variant = strings.Replace(variant, "Showcase Frame", "", 1)
-	case "D&D: Adventures in the Forgotten Realms: Variants",
-		"Unfinity: Variants":
-		if cardName == "Zariel, Archduke of Avernus" && variant == "Showcase Frame" {
-			variant = "Borderless"
-		}
-	case "Promo":
-		switch cardName {
-		case "Eye of Ugin":
-			if variant == "" {
-				edition = "J20"
-			}
-		case "Bloodchief's Thirst",
-			"Into the Roil":
-			variant = "Promo Pack"
-		case "Dauntless Dourbark":
-			variant = "PDCI"
-		case "Jaya Ballard, Task Mage":
-			variant = "Resale"
-		case "Greater Auramancy":
-			if variant == "" {
-				edition = "P22"
-			}
-		case "Conjurer's Closet":
-			if variant == "" {
-				edition = "PW21"
-			}
-		}
-	default:
-		if strings.HasSuffix(edition, ": Variants") && variant == "" {
-			switch {
-			case mtgmatcher.HasEtchedPrinting(cardName):
-				variant = "Etched"
-			case mtgmatcher.HasExtendedArtPrinting(cardName):
-				variant = "Extended Art"
-			case mtgmatcher.HasBorderlessPrinting(cardName):
-				variant = "Borderless"
-			case mtgmatcher.HasShowcasePrinting(cardName):
-				variant = "Showcase"
-			}
+	case "Reliquary Tower":
+		if variant == "Textless Commander Promo" {
+			edition = "PF23"
+			variant = "3"
 		}
 	}
-
-	// Cut a few tags a the end of the card
-	if strings.HasSuffix(cardName, "Promo") {
-		cuts := mtgmatcher.Cut(cardName, "Promo")
-		cardName = cuts[0]
-	} else if strings.HasSuffix(cardName, "PROMO") {
-		cuts := mtgmatcher.Cut(cardName, "PROMO")
-		cardName = cuts[0]
-		if strings.HasSuffix(cardName, "Textless") {
-			cuts = mtgmatcher.Cut(cardName, "Textless")
-			cardName = cuts[0]
-		}
-	}
-
-	variants := mtgmatcher.SplitVariants(cardName)
-	cardName = variants[0]
-	if len(variants) > 1 {
-		switch edition {
-		// Skip the check for the following sets, known to contain JPN-only cards
-		case "War of the Spark":
-		case "Promo":
-			// Black Lotus - Ultra Pro Puzzle - Eight of 9
-			if cardName == "Black Lotus" {
-				return nil, errors.New("untracked")
-			}
-		default:
-			// If notes contain the same language there are good chances
-			// it's a foreign card
-			if !strings.Contains(variant, variants[1]) {
-				return nil, errors.New("non-english")
-			}
-		}
-	}
-	if strings.Contains(cardName, " - ") {
-		variants := strings.Split(cardName, " - ")
-		cardName = variants[0]
-		if len(variants) > 1 {
-			if variant != "" {
-				variant += " "
-			}
-			variant += variants[1]
-		}
-	}
-
-	cardName = strings.TrimSuffix(cardName, " -")
-	lutName, found := cardTable[cardName]
-	if found {
-		cardName = lutName
-	}
-
-	if mtgmatcher.IsBasicLand(cardName) {
-		cardName = strings.TrimSuffix(cardName, "Gift Pack")
-
-		if variant == "" || len(variant) == 1 || variant == "This is NOT the full art version" {
-			if variant != "" {
-				variant += " "
-			}
-
-			maybeNum = strings.Replace(maybeNum, "v2", "", 1)
-			maybeNum = strings.TrimPrefix(strings.ToLower(maybeNum), "plains")
-			maybeNum = strings.TrimPrefix(strings.ToLower(maybeNum), "island")
-			maybeNum = strings.TrimPrefix(strings.ToLower(maybeNum), "swamp")
-			maybeNum = strings.TrimPrefix(strings.ToLower(maybeNum), "mountain")
-			maybeNum = strings.TrimPrefix(strings.ToLower(maybeNum), "forest")
-			variant += maybeNum
-		}
-	}
-
-	return &mtgmatcher.Card{
-		Name:      cardName,
-		Variation: variant,
-		Edition:   edition,
-		Foil:      isFoilFromName,
-	}, nil
-}
-
-func cleanVariant(variant string) string {
-	if strings.Contains(variant, "Picture") {
-		variant = strings.Replace(variant, "Picture 1", "", 1)
-		variant = strings.Replace(variant, "Picture 2", "", 1)
-		variant = strings.Replace(variant, "Picture 3", "", 1)
-		variant = strings.Replace(variant, "Picture 4", "", 1)
-	}
-	if strings.Contains(variant, "Artist") {
-		variant = strings.Replace(variant, "Artist ", "", 1)
-	}
-	variant = strings.Replace(variant, "(", "", -1)
-	variant = strings.Replace(variant, ")", "", -1)
-	variant = strings.Replace(variant, ",", "", -1)
-	variant = strings.Replace(variant, ".", "", -1)
-	variant = strings.Replace(variant, "- ", "", 1)
-	variant = strings.Replace(variant, "  ", " ", -1)
-	variant = strings.Replace(variant, "\r\n", " ", -1)
-	return strings.TrimSpace(variant)
-}
-
-var preserveTags = []string{
-	"etched",
-	"retro frame",
-	"step-and-compleat",
-	"serialized",
+	return edition, variant
 }
 
 func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
@@ -424,10 +291,6 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 		variant = cleanVar
 	}
 
-	fixup, found := cardTable[cardName]
-	if found {
-		cardName = fixup
-	}
 	vars, found := variantTable[variant]
 	if found {
 		variant = vars
@@ -454,7 +317,7 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 			variant = num + " " + cleanVar
 		}
 	case "Deckmasters":
-		variant = strings.Split(variant, " Deckmaster ")[0]
+		variant = strings.TrimSpace(strings.Split(variant, "Deckmaster")[0])
 	case "Duel Decks: Anthology":
 		if num != "" {
 			variant = num + " " + cleanVar
@@ -473,96 +336,12 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 			edition = "PSUS"
 			variant = ""
 		default:
-			switch cardName {
-			case "Demonic Tutor":
-				if variant == "Daarken Judge Rewards Promo" {
-					variant = "Judge 2008"
-				} else if variant == "Anna Steinbauer Judge Promo" {
-					variant = "Judge 2020"
-				}
-			case "Vampiric Tutor":
-				if variant == "Judge Rewards Promo Old Border" {
-					variant = "Judge 2000"
-				} else if variant == "Judge Rewards Promo New Border" {
-					variant = "Judge 2018"
-				}
-			case "Wasteland":
-				if variant == "Judge Rewards Promo Carl Critchlow art" {
-					variant = "Judge 2010"
-				} else if variant == "Judge Rewards Promo Steve Belledin art" {
-					variant = "Judge 2015"
-				}
-			case "Vindicate":
-				if variant == "Judge Rewards Promo Mark Zug art" {
-					variant = "Judge 2007"
-				} else if variant == "Judge Rewards Promo Karla Ortiz art" {
-					variant = "Judge 2013"
-				}
-			case "Fling":
-				// Only one of the two is present
-				if variant == "Gateway Promo Wizards Play Network Daren Bader art" {
-					variant = "DCI"
-				}
-			case "Sylvan Ranger":
-				if variant == "Judge Rewards Promo Mark Zug art" {
-					variant = "WPN"
-				}
-			case "Goblin Warchief":
-				if variant == "Friday Night Magic Promo Old Border" {
-					variant = "FNM 2006"
-				} else if variant == "Friday Night Magic Promo New Border" {
-					variant = "FNM 2016"
-				}
-			case "Cabal Therapy":
-				if strings.HasPrefix(variant, "Gold-bordered") {
-					variant = "2003"
-				}
-			case "Rishadan Port":
-				if strings.HasPrefix(variant, "Gold-bordered") {
-					variant = "2000"
-				}
-			case "Hangarback Walker":
-				edition = "Love your LGS"
-			case "Chord of Calling", "Wrath of God":
-				edition = "Double Masters"
-				variant = "Release"
-			case "Conjurer's Closet":
-				edition = "PW21"
-			case "Bolas's Citadel":
-				edition = "PWAR"
-				variant = "79"
-			case "Cryptic Command":
-				if variant == "Qualifier Promo" {
-					edition = "PPRO"
-					variant = "2020-1"
-				}
-			case "Dauntless Dourbark":
-				edition = "PDCI"
-				variant = "12"
-			case "Eye of Ugin":
-				edition = "J20"
-			case "Serra Avatar":
-				if variant == "Junior Super Series Promo Dermot Power art" {
-					edition = "PSUS"
-					variant = "2"
-				}
-			case "Steward of Valeron":
-				edition = "PURL"
-			case "Goblin Guide":
-				if variant == "Love Your Local Game Store Promo" {
-					edition = "PLG21"
-				}
-			case "Llanowar Elves":
-				if variant == "Friday Night Magic Promo" {
-					edition = "FNM"
-					variant = "11"
-				} else if variant == "Open House Promo" {
-					edition = "PDOM"
-					variant = "168"
-				}
-			case "Masked Vandal":
-				edition = "KHM"
-				variant = "405"
+			possibleEd, possibleVar := card2promo(cardName, variant)
+			if variant != possibleVar {
+				variant = possibleVar
+			}
+			if possibleEd != "" {
+				edition = possibleEd
 			}
 		}
 	}
