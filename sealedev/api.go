@@ -36,6 +36,22 @@ const (
 	BulkThreshold = 0.3
 )
 
+func getRetail(response BANPriceResponse, source, uuid string) float64 {
+	price, found := response.Retail[uuid][source]
+	if !found {
+		return 0
+	}
+	return price.Regular + price.Foil + price.Etched
+}
+
+func getBuylist(response BANPriceResponse, source, uuid string) float64 {
+	price, found := response.Buylist[uuid][source]
+	if !found {
+		return 0
+	}
+	return price.Regular + price.Foil + price.Etched
+}
+
 func loadPrices(sig string) (*BANPriceResponse, error) {
 	resp, err := cleanhttp.DefaultClient().Get(BANAPIURL + sig)
 	if err != nil {
@@ -58,41 +74,40 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 		return nil, errors.New(response.Error)
 	}
 
+	// Remove outliers from Direct
 	uuids := mtgmatcher.GetUUIDs()
 	for _, uuid := range uuids {
-		// Remove outliers from Direct
-		var basePrice float64
-		basetcg, found := response.Retail[uuid]["TCG Low"]
-		if found {
-			basePrice = basetcg.Regular + basetcg.Foil + basetcg.Etched
-		}
+		tcgMarket := getRetail(response, "TCG Market", uuid)
+		directNet := getBuylist(response, "TCGDirectNet", uuid)
 
-		var directPrice float64
-		basedirect, found := response.Buylist[uuid]["TCGDirectNet"]
-		if found {
-			directPrice = basedirect.Regular + basedirect.Foil + basedirect.Etched
-		} else {
-			// Use TCG Market or Low if Direct is fully missing
-			replacement, found := response.Retail[uuid]["TCG Market"]
-			if !found {
-				replacement, found = response.Retail[uuid]["TCG Low"]
+		// If TCG Direct (net) is fully missing, try assigning Market and fallback to Low
+		if directNet == 0 {
+			// If both fallbacks are missing, then just skip the entry entirely
+			if response.Retail[uuid]["TCG Market"] == nil && response.Retail[uuid]["TCG Low"] == nil {
+				continue
+			}
+			// Allocate memory
+			if response.Buylist[uuid] == nil {
+				response.Buylist[uuid] = map[string]*BanPrice{}
+			}
+			// Assign Market price
+			response.Buylist[uuid]["TCGDirectNet"] = response.Retail[uuid]["TCG Market"]
+
+			// If Market is absent, use the Low
+			if tcgMarket == 0 {
+				tcgMarket = getRetail(response, "TCG Low", uuid)
+				response.Buylist[uuid]["TCGDirectNet"] = response.Retail[uuid]["TCG Low"]
 			}
 
-			if found {
-				if response.Buylist[uuid] == nil {
-					response.Buylist[uuid] = map[string]*BanPrice{}
-				}
-				response.Buylist[uuid]["TCGDirectNet"] = replacement
-				directPrice = replacement.Regular + replacement.Foil + replacement.Etched
-			}
+			// Refresh the price
+			directNet = getBuylist(response, "TCGDirectNet", uuid)
 		}
 
-		// Cap maximum price to twice as much tcg low
-		if basePrice != 0 && directPrice > 2*basePrice {
+		// If Direct looks unreliable, cap maximum price to twice TCG_LOW (estimate)
+		if directNet/2 > tcgMarket {
 			response.Buylist[uuid]["TCGDirectNet"].Regular = response.Retail[uuid]["TCG Low"].Regular * 2
 			response.Buylist[uuid]["TCGDirectNet"].Foil = response.Retail[uuid]["TCG Low"].Foil * 2
 			response.Buylist[uuid]["TCGDirectNet"].Etched = response.Retail[uuid]["TCG Low"].Etched * 2
-			delete(response.Retail[uuid], "TCG Direct")
 		}
 	}
 
