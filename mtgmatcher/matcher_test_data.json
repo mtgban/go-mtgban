@@ -2535,6 +2535,15 @@
         }
     },
     {
+        "uuid": "d27ba6c4-6fbf-5933-99eb-3709f26107ae",
+        "description": "duel_decks_dda_variant is unrelated",
+        "input": {
+            "name": "Akroma, Angel of Wrath",
+            "variant": "All copies of this card are foil",
+            "edition": "Duel Decks: Anthology"
+        }
+    },
+    {
         "uuid": "8882a58b-a123-5c16-bd10-a86c6faf4155",
         "description": "duel_decks_variant_jpn",
         "input": {

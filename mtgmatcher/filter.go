@@ -435,9 +435,9 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 					}
 				}
 				// Do number check only if well known elements are missing
-				if !found &&
-					!(inCard.Contains("Divine") || inCard.Contains("Garruk") ||
-						inCard.Contains("Chandra") || inCard.Contains("Goblins")) {
+				wellKnownTags := inCard.Contains("Divine") || inCard.Contains("Garruk") ||
+					inCard.Contains("Chandra") || inCard.Contains("Goblins")
+				if !found && !wellKnownTags {
 					num := ExtractNumber(inCard.Variation)
 					if num != "" {
 						foundCards := MatchInSet(inCard.Name, setCode)
@@ -449,7 +449,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 						}
 					}
 				}
-				if inCard.Variation != "" && !found {
+				if wellKnownTags && !found {
 					continue
 				}
 			default:
