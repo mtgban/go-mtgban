@@ -352,7 +352,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 				}
 			}
 
-		case inCard.Contains("Premier Play"):
+		case inCard.Contains("Premier Play") || inCard.Contains("Regional Championship Qualifiers"):
 			switch {
 			case set.Name == "Pro Tour Promos":
 			case strings.HasPrefix(set.Name, "Regional Championship Qualifiers "+maybeYear):
@@ -564,6 +564,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 
 		case inCard.Contains("Bring-A-Friend") ||
 			inCard.Contains("Love Your LGS") ||
+			inCard.Contains("Love Your Local Game Store") ||
 			inCard.Contains("Welcome Back") ||
 			inCard.Contains("Open House") ||
 			inCard.Contains("LGS Promo"):
@@ -573,7 +574,8 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 			case set.Name == "Grand Prix Promos":
 				continue
 			default:
-				if strings.HasPrefix(set.Name, "30th Anniversary") {
+				if strings.HasPrefix(set.Name, "30th Anniversary") ||
+					strings.HasPrefix(set.Name, "Duels of the Planeswalkers") {
 					continue
 				}
 				if !strings.HasSuffix(set.Name, "Promos") {
