@@ -543,15 +543,21 @@ func singleLetterVariant(inCard *Card, card *mtgjson.Card) bool {
 
 func deckmastersVariant(inCard *Card, card *mtgjson.Card) bool {
 	numberSuffix := inCard.possibleNumberSuffix()
-	if len(card.Variations) > 0 && numberSuffix == "" {
-		numberSuffix = "a"
-		if inCard.Foil || inCard.Contains("Promo") {
-			numberSuffix = mtgjson.SuffixSpecial
-		} else if card.HasFinish(mtgjson.FinishNonfoil) &&
-			(card.Name == "Incinerate" || card.Name == "Icy Manipulator") {
+	switch card.Name {
+	case "Incinerate", "Icy Manipulator":
+		inCard.Foil = inCard.Foil || inCard.Contains("Promo")
+		return foilCheck(inCard, card)
+	default:
+		// Pick the first of the two if not specified
+		if len(card.Variations) > 0 && numberSuffix == "" {
+			numberSuffix = "a"
+		}
+		// Reset for lands
+		if inCard.isBasicLand() {
 			numberSuffix = ""
 		}
 	}
+
 	if numberSuffix != "" && !strings.HasSuffix(card.Number, numberSuffix) {
 		return true
 	}
@@ -1026,6 +1032,7 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 	"STX": duplicateSomeFoil,
 	"SHM": duplicateSomeFoil,
 	"M3C": duplicateSomeFoil,
+	"DKM": duplicateSomeFoil,
 
 	// Intro lands from these sets when non-fullart always have this
 	"ZEN": duplicateBasicLands,

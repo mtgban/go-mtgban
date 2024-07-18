@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
@@ -18,6 +19,8 @@ type CookieClient struct {
 func NewCookieClient(session string) *CookieClient {
 	ck := CookieClient{}
 	ck.client = cleanhttp.DefaultClient()
+	jar, _ := cookiejar.New(nil)
+	ck.client.Jar = jar
 	ck.session = session
 	return &ck
 }
