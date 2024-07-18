@@ -650,7 +650,7 @@ func guildgateVariant(inCard *Card, card *mtgjson.Card) bool {
 func wpnCheck(inCard *Card, card *mtgjson.Card) bool {
 	if inCard.isWPNGateway() && !card.HasPromoType(mtgjson.PromoTypeWPN) {
 		return true
-	} else if !inCard.isWPNGateway() && card.HasFinish(mtgjson.PromoTypeWPN) {
+	} else if !inCard.isWPNGateway() && card.HasPromoType(mtgjson.PromoTypeWPN) {
 		return true
 	}
 	return false
