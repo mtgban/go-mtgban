@@ -4295,9 +4295,8 @@ var multiPromosVariants = map[string]map[string]string{
 		"prerelease ixalan": "222",
 	},
 	"Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun": {
-		"caverns of ixalan: promos": "188",
-		"caverns":                   "188",
-		"prerelease ixalan":         "191",
+		"caverns":           "188",
+		"prerelease ixalan": "191",
 	},
 	"Treasure Map // Treasure Cove": {
 		"caverns":           "188",
