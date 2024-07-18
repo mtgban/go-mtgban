@@ -4299,6 +4299,10 @@ var multiPromosVariants = map[string]map[string]string{
 		"caverns":                   "188",
 		"prerelease ixalan":         "191",
 	},
+	"Treasure Map // Treasure Cove": {
+		"caverns":           "188",
+		"prerelease ixalan": "250",
+	},
 	"Fabled Passage": {
 		"2021":     "246",
 		"eldraine": "244",
@@ -4327,19 +4331,41 @@ var multiPromosVariants = map[string]map[string]string{
 		"2021":    "164",
 		"outlaws": "149",
 	},
+	"Blooming Marsh": {
+		"kaladesh": "243",
+		"outlaws":  "266",
+	},
+	"Botanical Sanctum": {
+		"kaladesh": "244",
+		"outlaws":  "267",
+	},
+	"Concealed Courtyard": {
+		"kaladesh": "245",
+		"outlaws":  "268",
+	},
+	"Inspiring Vantage": {
+		"kaladesh": "246",
+		"outlaws":  "269",
+	},
+	"Spirebluff Canal": {
+		"kaladesh": "249",
+		"outlaws":  "270",
+	},
 	// not listed here: all the temples
 }
 
 // This list is for editions with conflicting promotional cards
 var multiPromosTable = map[string]map[string]map[string]string{
-	"Aether Revolt Promos":              multiPromosVariants,
-	"Core Set 2019 Promos":              multiPromosVariants,
-	"Core Set 2021 Promos":              multiPromosVariants,
-	"Guilds of Ravnica Promos":          multiPromosVariants,
-	"Ixalan Promos":                     multiPromosVariants,
-	"Murders at Karlov Manor Promos":    multiPromosVariants,
-	"The Brothers' War Promos":          multiPromosVariants,
-	"The Lost Caverns of Ixalan Promos": multiPromosVariants,
-	"Throne of Eldraine Promos":         multiPromosVariants,
-	"War of the Spark Promos":           multiPromosVariants,
+	"Aether Revolt Promos":               multiPromosVariants,
+	"Core Set 2019 Promos":               multiPromosVariants,
+	"Core Set 2021 Promos":               multiPromosVariants,
+	"Guilds of Ravnica Promos":           multiPromosVariants,
+	"Ixalan Promos":                      multiPromosVariants,
+	"Kaladesh Promos":                    multiPromosVariants,
+	"Murders at Karlov Manor Promos":     multiPromosVariants,
+	"Outlaws of Thunder Junction Promos": multiPromosVariants,
+	"The Brothers' War Promos":           multiPromosVariants,
+	"The Lost Caverns of Ixalan Promos":  multiPromosVariants,
+	"Throne of Eldraine Promos":          multiPromosVariants,
+	"War of the Spark Promos":            multiPromosVariants,
 }
