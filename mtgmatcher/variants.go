@@ -3514,6 +3514,9 @@ var sldVariants = map[string]map[string]string{
 		"sctlr":      "SCTLR",
 		"4 jan 2023": "SCTLR",
 	},
+	"Rin and Seri, Inseparable": {
+		"raining cats and dogs": "1508",
+	},
 }
 
 var soiVariants = map[string]map[string]string{
