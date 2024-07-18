@@ -466,6 +466,8 @@ var EditionTable = map[string]string{
 
 	// Since there are oversized cards in this set
 	"Commander: March of the Machine": "March of the Machine Commander",
+	"Commander Anthology 2":           "Commander Anthology Volume II",
+	"Commander Anthology II":          "Commander Anthology Volume II",
 
 	"SLX Cards":        "Universes Within",
 	"Universes Within": "Universes Within",
