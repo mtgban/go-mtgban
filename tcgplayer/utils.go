@@ -159,3 +159,45 @@ func DirectPriceAfterFees(price float64) float64 {
 
 	return price - directCost - replacementFees
 }
+
+const (
+	defaultListingSize = 20
+)
+
+type ListingData struct {
+	ProductId       int
+	SkuId           int
+	Quantity        int
+	SellerKey       string
+	Price           float64
+	DirectInventory int
+}
+
+func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
+	client := NewTCGSellerClient()
+
+	var result []ListingData
+	for i := 0; ; i++ {
+		listings, err := client.TCGInventoryListing(productId, defaultListingSize, i, onlyDirect)
+		if err != nil || len(listings) == 0 {
+			break
+		}
+
+		for _, listing := range listings {
+			if !listing.DirectProduct || !listing.DirectSeller {
+				continue
+			}
+
+			result = append(result, ListingData{
+				ProductId:       productId,
+				SkuId:           int(listing.ProductConditionID),
+				Quantity:        int(listing.Quantity),
+				SellerKey:       listing.SellerKey,
+				Price:           listing.Price,
+				DirectInventory: int(listing.DirectInventory),
+			})
+		}
+	}
+
+	return result
+}
