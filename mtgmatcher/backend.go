@@ -1105,6 +1105,7 @@ func spinoffFoils(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids
 		// Change properties
 		delete(uuids, dupeCard.UUID+suffixFoil)
 		dupeCard.UUID = strings.Split(dupeCard.UUID, "_")[0] + "+foil"
+		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		dupeCard.Number += mtgjson.SuffixSpecial
 		dupeCard.Finishes = []string{"foil"}
 
