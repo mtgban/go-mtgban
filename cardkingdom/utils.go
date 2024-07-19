@@ -48,7 +48,7 @@ func (ck *CookieClient) InventorySetQuantity(ckId, cond string, qty int) (string
 }
 
 func (ck *CookieClient) BuylistSetQuantity(ckId, cond string, qty int) (string, error) {
-	return ck.setQuantity(ckBuylistAddURL, ckId, cond, qty)
+	return ck.setQuantity(ckBuylistAddURL, ckId, "NM", qty)
 }
 
 func (ck *CookieClient) setQuantity(link, ckId, cond string, qty int) (string, error) {
