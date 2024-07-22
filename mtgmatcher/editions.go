@@ -357,6 +357,7 @@ var EditionTable = map[string]string{
 	"Regional PTQ":                        "Pro Tour Promos",
 	"2020 Players Tour Qualifier Promo":   "Pro Tour Promos",
 
+	"Regional Championship Qualifiers 2022": "Regional Championship Qualifiers 2022",
 	"Regional Championship Qualifiers 2023": "Regional Championship Qualifiers 2023",
 
 	// Worlds

@@ -222,9 +222,17 @@ func card2promo(cardName, variant string) (string, string) {
 	case "Hangarback Walker":
 		edition = "Love your LGS"
 		variant = "2"
-	case "Chord of Calling", "Wrath of God":
+	case "Chord of Calling":
 		edition = "Double Masters"
 		variant = "Release"
+	case "Wrath of God":
+		if variant == "Player Rewards Promo textless" {
+			edition = "P07"
+			variant = "1"
+		} else {
+			edition = "Double Masters"
+			variant = "Release"
+		}
 	case "Conjurer's Closet":
 		edition = "PW21"
 		variant = "6"
@@ -270,6 +278,14 @@ func card2promo(cardName, variant string) (string, string) {
 		if variant == "Textless Commander Promo" {
 			edition = "PF23"
 			variant = "3"
+		}
+	case "Gideon, Ally of Zendikar":
+		if variant == "2016 San Diego Comic Con Zombie Promo BFZ" {
+			edition = "PS16"
+			variant = "29"
+		} else if variant == "Regional Championship Qualifiers 2022" {
+			edition = "PRCQ"
+			variant = "1"
 		}
 	}
 	return edition, variant
