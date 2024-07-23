@@ -67,8 +67,7 @@ func (tcg *TCGSYPList) scrape() error {
 			continue
 		}
 
-		cond, found := skuConditions[sku.Condition]
-		if !found {
+		if sku.Condition != "NEAR MINT" {
 			continue
 		}
 
@@ -76,13 +75,12 @@ func (tcg *TCGSYPList) scrape() error {
 		if sku.Printing == "FOIL" {
 			printing = "Foil"
 		}
-		link := TCGPlayerProductURL(sku.ProductId, printing, tcg.Affiliate, cond, "English", true)
+		link := TCGPlayerProductURL(sku.ProductId, printing, tcg.Affiliate, "", "English", true)
 
 		entry := mtgban.BuylistEntry{
-			Conditions: cond,
-			BuyPrice:   syp.MarketPrice,
-			Quantity:   syp.MaxQty,
-			URL:        link,
+			BuyPrice: syp.MarketPrice,
+			Quantity: syp.MaxQty,
+			URL:      link,
 		}
 
 		err = tcg.buylist.Add(cardId, &entry)
