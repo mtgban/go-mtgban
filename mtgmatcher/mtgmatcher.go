@@ -620,8 +620,11 @@ func adjustName(inCard *Card) {
 		}
 	}
 	// Check if this card may be known as something else
-	altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
-	if found {
+	for altName, altProps := range backend.AlternateProps {
+		if !Equals(altName, inCard.Name) {
+			continue
+		}
+
 		// Stash the number for later decoupling if available
 		if altProps.OriginalNumber != "" {
 			inCard.addToVariant(altProps.OriginalNumber)
@@ -900,7 +903,7 @@ func adjustEdition(inCard *Card) {
 	case inCard.isSecretLair():
 		// Check if there are also FlavorNames associated to this card
 		// It might happen that a non-FlavorName is requested, so check number too
-		altProps, found := backend.AlternateProps[Normalize(inCard.Name)]
+		altProps, found := backend.AlternateProps[inCard.Name]
 		if found && len(MatchInSet(altProps.OriginalName, "SLD")) != 0 {
 			var shouldRename bool
 			cards := MatchInSet(altProps.OriginalName, "SLD")

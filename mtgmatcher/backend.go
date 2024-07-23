@@ -73,8 +73,9 @@ var backend struct {
 	// Map of normalized names to slice of uuids
 	Hashes map[string][]string
 
-	// Map of normalized face/flavor names to canonical (non-normalized) names
-	// with an extra property to determine FlavorNames
+	// Map of face/flavor names to set of canonical properties, such as original
+	// name, and number, as well as a way to determine FlavorNames
+	// Neither key nor values are normalized
 	AlternateProps map[string]alternateProps
 
 	// Slice with every uniquely normalized alternative name
@@ -502,11 +503,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 					OriginalNumber: card.Number,
 					IsFlavor:       i > 0,
 				}
-				_, found := alternates[Normalize(name)]
+				_, found := alternates[name]
 				if found {
 					props.OriginalNumber = ""
 				}
-				alternates[Normalize(name)] = props
+				alternates[name] = props
 			}
 
 			// MTGJSON v5 contains duplicated card info for each face, and we do
@@ -757,13 +758,16 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				sealed = append(sealed, norm)
 			} else {
 				names = append(names, norm)
+				fullNames = append(fullNames, card.Name)
+				lowerNames = append(lowerNames, strings.ToLower(lowerNames))
 			}
 		}
 		hashes[norm] = append(hashes[norm], uuid)
 	}
 	// Add all alternative names too
 	var altNames []string
-	for altNorm, altProps := range alternates {
+	for altName, altProps := range alternates {
+		altNorm := Normalize(altName)
 		altNames = append(altNames, altNorm)
 		if altProps.IsFlavor {
 			// Retrieve all the uuids with a FlavorName attached
