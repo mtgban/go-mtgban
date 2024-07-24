@@ -68,8 +68,18 @@ var backend struct {
 
 	// Slice with every uniquely normalized name
 	AllNames []string
+	// Slice with every unique name, as it would appear on a card
+	AllCanonicalNames []string
+	// Slice with every unique name, lower case
+	AllLowerNames []string
+
 	// Slice with every uniquely normalized product name
 	AllSealed []string
+	// Slice with every unique product name, as defined by mtgjson
+	AllCanonicalSealed []string
+	// Slice with every unique product name, lower case
+	AllLowerSealed []string
+
 	// Map of normalized names to slice of uuids
 	Hashes map[string][]string
 
@@ -749,18 +759,20 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}
-	var names []string
-	var sealed []string
+	var names, fullNames, lowerNames []string
+	var sealed, fullSealed, lowerSealed []string
 	for uuid, card := range uuids {
 		norm := Normalize(card.Name)
 		_, found := hashes[norm]
 		if !found {
 			if card.Sealed {
 				sealed = append(sealed, norm)
+				fullSealed = append(fullSealed, card.Name)
+				lowerSealed = append(lowerSealed, strings.ToLower(card.Name))
 			} else {
 				names = append(names, norm)
 				fullNames = append(fullNames, card.Name)
-				lowerNames = append(lowerNames, strings.ToLower(lowerNames))
+				lowerNames = append(lowerNames, strings.ToLower(card.Name))
 			}
 		}
 		hashes[norm] = append(hashes[norm], uuid)
@@ -770,6 +782,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	for altName, altProps := range alternates {
 		altNorm := Normalize(altName)
 		altNames = append(altNames, altNorm)
+		fullNames = append(fullNames, altName)
+		lowerNames = append(lowerNames, strings.ToLower(altName))
 		if altProps.IsFlavor {
 			// Retrieve all the uuids with a FlavorName attached
 			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
@@ -820,12 +834,23 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	sort.Strings(promoTypes)
 	sort.Strings(allSets)
 
+	sort.Strings(names)
+	sort.Strings(fullNames)
+	sort.Strings(lowerNames)
+
 	backend.Hashes = hashes
 	backend.AllSets = allSets
 	backend.AllUUIDs = allUUIDs
 	backend.AllSealedUUIDs = allSealedUUIDs
+
 	backend.AllNames = names
+	backend.AllCanonicalNames = fullNames
+	backend.AllLowerNames = lowerNames
+
 	backend.AllSealed = sealed
+	backend.AllCanonicalSealed = fullSealed
+	backend.AllLowerSealed = lowerSealed
+
 	backend.Sets = ap.Data
 	backend.Cards = cards
 	backend.Tokens = tokens

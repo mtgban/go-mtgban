@@ -117,6 +117,29 @@ func AllPromoTypes() []string {
 	return backend.AllPromoTypes
 }
 
+// Return a slice of all names loaded up, in three different fashion
+// normalized, lowercase, or canonical
+func AllNames(variant string, sealed bool) []string {
+	switch variant {
+	case "normalized":
+		if sealed {
+			return backend.AllSealed
+		}
+		return backend.AllNames
+	case "canonical":
+		if sealed {
+			return backend.AllCanonicalSealed
+		}
+		return backend.AllCanonicalNames
+	case "lowercase":
+		if sealed {
+			return backend.AllLowerSealed
+		}
+		return backend.AllLowerNames
+	}
+	return nil
+}
+
 func SearchEquals(name string) ([]string, error) {
 	if name == "" {
 		return backend.AllUUIDs, nil
