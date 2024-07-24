@@ -2,7 +2,6 @@ package tcgplayer
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -280,7 +279,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 			i++
 
 			for _, card := range set.Cards {
-				uuid := card.UUID
+				uuid := card.Identifiers["mtgjsonId"]
 				skus, found := skusMap[uuid]
 				if !found {
 					continue
@@ -296,8 +295,16 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						continue
 					}
 					// Skip non-main languages
-					if sku.Language != "ENGLISH" && !strings.Contains(card.Language, mtgmatcher.Title(sku.Language)) {
-						continue
+					if !mtgmatcher.Equals(sku.Language, card.Language) {
+						// These two sets contain English sku, skip them
+						switch set.Code {
+						case "LEGITA", "DRKITA":
+							continue
+						}
+						// Otherwise many Japanese and special cards are listed as English, skip anything else
+						if sku.Language != "ENGLISH" {
+							continue
+						}
 					}
 					// Extra validation for incorrect data
 					if !hasNonfoil && sku.Printing == "NON FOIL" {
@@ -310,7 +317,8 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 						continue
 					}
 					// Make sure the right id is parsed
-					if sku.Finish != "FOIL ETCHED" && fmt.Sprint(sku.ProductId) != card.Identifiers["tcgplayerProductId"] {
+					// Check for tcgplayerProductId due to non-English cards from duplicated sets
+					if sku.Finish != "FOIL ETCHED" && card.Identifiers["tcgplayerProductId"] != "" && fmt.Sprint(sku.ProductId) != card.Identifiers["tcgplayerProductId"] {
 						continue
 					}
 					// Skip dupes
@@ -320,7 +328,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 					idsFound = append(idsFound, sku.SkuId)
 
 					pages <- marketChan{
-						UUID:      uuid,
+						UUID:      card.UUID,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
 						Finish:    sku.Finish,
