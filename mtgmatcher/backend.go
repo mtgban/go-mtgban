@@ -843,6 +843,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	sort.Strings(names)
 	sort.Strings(fullNames)
 	sort.Strings(lowerNames)
+	sort.Strings(sealed)
+	sort.Strings(fullSealed)
+	sort.Strings(lowerSealed)
 
 	backend.Hashes = hashes
 	backend.AllSets = allSets
