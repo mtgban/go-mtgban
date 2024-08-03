@@ -586,15 +586,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			} else if card.Layout == "token" {
 				// If already present, check if this set is already contained
 				// in the current array, otherwise add it
-				shouldAddPrinting := true
-				for _, printing := range cards[norm].Printings {
-					if printing == code {
-						shouldAddPrinting = false
-						break
-					}
-				}
 				// Note the setCode will be from the parent
-				if shouldAddPrinting {
+				if !slices.Contains(cards[norm].Printings, code) {
 					printings := append(cards[norm].Printings, set.Code)
 					sortPrintings(ap, printings)
 
