@@ -58,9 +58,10 @@ var backend struct {
 	Sets map[string]*mtgjson.Set
 
 	// Map of normalized name : cardinfo
+	// Only the main canonical name is stored here
 	CardInfo map[string]cardinfo
 
-	// Map of uuid ; CardObject
+	// Map of uuid : CardObject
 	UUIDs map[string]CardObject
 
 	// Slice with token names (not normalized and without any "Token" tags)
@@ -80,7 +81,7 @@ var backend struct {
 	// Slice with every unique product name, lower case
 	AllLowerSealed []string
 
-	// Map of normalized names to slice of uuids
+	// Map of all normalized names to slice of uuids
 	Hashes map[string][]string
 
 	// Map of face/flavor names to set of canonical properties, such as original
