@@ -58,7 +58,7 @@ var backend struct {
 	Sets map[string]*mtgjson.Set
 
 	// Map of normalized name : cardinfo
-	Cards map[string]cardinfo
+	CardInfo map[string]cardinfo
 
 	// Map of uuid ; CardObject
 	UUIDs map[string]CardObject
@@ -357,7 +357,7 @@ func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
 
 func NewDatastore(ap mtgjson.AllPrintings) {
 	uuids := map[string]CardObject{}
-	cards := map[string]cardinfo{}
+	cardInfo := map[string]cardinfo{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
@@ -576,9 +576,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 			}
 
 			norm := Normalize(name)
-			_, found := cards[norm]
+			_, found := cardInfo[norm]
 			if !found {
-				cards[norm] = cardinfo{
+				cardInfo[norm] = cardinfo{
 					Name:      card.Name,
 					Printings: card.Printings,
 					Layout:    card.Layout,
@@ -587,8 +587,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 				// If already present, check if this set is already contained
 				// in the current array, otherwise add it
 				// Note the setCode will be from the parent
-				if !slices.Contains(cards[norm].Printings, code) {
-					printings := append(cards[norm].Printings, set.Code)
+				if !slices.Contains(cardInfo[norm].Printings, code) {
+					printings := append(cardInfo[norm].Printings, set.Code)
 					sortPrintings(ap, printings)
 
 					ci := cardinfo{
@@ -596,13 +596,13 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 						Printings: printings,
 						Layout:    card.Layout,
 					}
-					cards[norm] = ci
+					cardInfo[norm] = ci
 				}
 			}
 
 			// Custom properties for tokens
 			if card.Layout == "token" {
-				card.Printings = cards[Normalize(card.Name+" Token")].Printings
+				card.Printings = cardInfo[Normalize(card.Name+" Token")].Printings
 				card.Rarity = "token"
 			}
 			if card.IsOversized {
@@ -744,9 +744,9 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 		}
 	}
 
-	duplicate(ap.Data, cards, uuids, "Legends Italian", "LEG", "ITA", "1995-09-01")
-	duplicate(ap.Data, cards, uuids, "The Dark Italian", "DRK", "ITA", "1995-08-01")
-	duplicate(ap.Data, cards, uuids, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
+	duplicate(ap.Data, cardInfo, uuids, "Legends Italian", "LEG", "ITA", "1995-09-01")
+	duplicate(ap.Data, cardInfo, uuids, "The Dark Italian", "DRK", "ITA", "1995-08-01")
+	duplicate(ap.Data, cardInfo, uuids, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
 	allSets = append(allSets, "LEGITA", "DRKITA", "4EDALT")
 
 	duplicateCards(ap.Data, uuids, "SLD", "JPN", sldJPNLangDupes)
@@ -856,7 +856,7 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.AllLowerSealed = lowerSealed
 
 	backend.Sets = ap.Data
-	backend.Cards = cards
+	backend.CardInfo = cardInfo
 	backend.Tokens = tokens
 	backend.UUIDs = uuids
 	backend.Scryfall = scryfall
@@ -990,7 +990,7 @@ var langs = map[string]string{
 	"ALT": "English",
 }
 
-func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
+func duplicate(sets map[string]*mtgjson.Set, cardInfo map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
 	// Copy base set information
 	dup := *sets[code]
 
@@ -1043,9 +1043,9 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 		dup.Cards[i].Language = langs[tag]
 
 		// Update printings for the CardInfo map
-		ci := cards[Normalize(dup.Cards[i].Name)]
+		ci := cardInfo[Normalize(dup.Cards[i].Name)]
 		ci.Printings = printings
-		cards[Normalize(dup.Cards[i].Name)] = ci
+		cardInfo[Normalize(dup.Cards[i].Name)] = ci
 
 		// Remove store references to avoid duplicates
 		altIdentifiers := map[string]string{}

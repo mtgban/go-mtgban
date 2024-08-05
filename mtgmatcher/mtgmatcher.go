@@ -218,7 +218,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	}
 
 	// Get the card basic info to retrieve the Printings array
-	entry, found := backend.Cards[Normalize(inCard.Name)]
+	entry, found := backend.CardInfo[Normalize(inCard.Name)]
 	if !found {
 		ogName := inCard.Name
 		// Fixup up the name and try again
@@ -228,7 +228,7 @@ func Match(inCard *Card) (cardId string, err error) {
 			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		}
 
-		entry, found = backend.Cards[Normalize(inCard.Name)]
+		entry, found = backend.CardInfo[Normalize(inCard.Name)]
 		if !found {
 			// Return a safe error if it's a token
 			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
@@ -252,7 +252,7 @@ func Match(inCard *Card) (cardId string, err error) {
 		case "Unquenchable Fury Token",
 			"Red Herring Playtest",
 			"Pick Your Poison Playtest":
-			entry = backend.Cards[Normalize(inCard.Name)]
+			entry = backend.CardInfo[Normalize(inCard.Name)]
 			inCard.Name = entry.Name
 			logger.Printf("Clashing name adjusted to '%s'", inCard.Name)
 		}
@@ -287,7 +287,7 @@ func Match(inCard *Card) (cardId string, err error) {
 	// Given that many tokens are not supported, make sure to filter
 	// out unrelated editions.
 	printings := entry.Printings
-	if len(printings) > 1 || backend.Cards[Normalize(ogName)].Layout == "token" {
+	if len(printings) > 1 || backend.CardInfo[Normalize(ogName)].Layout == "token" {
 		printings = filterPrintings(inCard, printings)
 		logger.Println("Filtered printings:", printings)
 
@@ -543,7 +543,7 @@ func adjustName(inCard *Card) {
 	if strings.Contains(strings.ToLower(inCard.Name), "token") {
 		return
 	}
-	_, found := backend.Cards[Normalize(inCard.Name+" Token")]
+	_, found := backend.CardInfo[Normalize(inCard.Name+" Token")]
 	if found {
 		inCard.Name += " Token"
 		return
@@ -564,7 +564,7 @@ func adjustName(inCard *Card) {
 		}
 		// Check card exists before updating the name
 		tmpName := strings.Join(fields, " ")
-		_, found := backend.Cards[Normalize(tmpName)]
+		_, found := backend.CardInfo[Normalize(tmpName)]
 		if found {
 			inCard.Name = tmpName
 			inCard.addToVariant(num)
@@ -672,7 +672,7 @@ func adjustName(inCard *Card) {
 			return
 		}
 
-		for cardName, props := range backend.Cards {
+		for cardName, props := range backend.CardInfo {
 			if HasPrefix(cardName, inCard.Name) {
 				inCard.Name = props.Name
 				return
@@ -701,7 +701,7 @@ func adjustName(inCard *Card) {
 			}
 		}
 	}
-	for cardName, props := range backend.Cards {
+	for cardName, props := range backend.CardInfo {
 		if props.Layout != "normal" && props.Layout != "token" && HasPrefix(cardName, inCard.Name) {
 			inCard.Name = props.Name
 			return

@@ -220,7 +220,7 @@ func SearchSealedContains(name string) ([]string, error) {
 }
 
 func Printings4Card(name string) ([]string, error) {
-	entry, found := backend.Cards[Normalize(name)]
+	entry, found := backend.CardInfo[Normalize(name)]
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
@@ -302,13 +302,13 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 		return false
 	}
 
-	card, found := backend.Cards[Normalize(name)]
+	card, found := backend.CardInfo[Normalize(name)]
 	if !found {
 		cc := &Card{
 			Name: name,
 		}
 		adjustName(cc)
-		card, found = backend.Cards[Normalize(cc.Name)]
+		card, found = backend.CardInfo[Normalize(cc.Name)]
 		if !found {
 			return false
 		}
