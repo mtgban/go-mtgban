@@ -840,6 +840,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	sort.Strings(fullSealed)
 	sort.Strings(lowerSealed)
 
+	fillinSealedContents(ap.Data, uuids)
+
 	backend.Hashes = hashes
 	backend.AllSets = allSets
 	backend.AllUUIDs = allUUIDs
@@ -864,28 +866,28 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	backend.AllPromoTypes = promoTypes
 
 	backend.CommanderKeywordMap = commanderKeywordMap
-
-	fillinSealedContents()
-	fillinSLDdecks()
+	backend.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 }
 
-func fillinSLDdecks() {
-	for _, product := range backend.Sets["SLD"].SealedProduct {
+func fillinSLDdecks(set *mtgjson.Set) []string {
+	var output []string
+	for _, product := range set.SealedProduct {
 		if strings.HasPrefix(product.Name, "Secret Lair Commander") {
 			name := strings.TrimPrefix(product.Name, "Secret Lair Commander Deck ")
-			if !slices.Contains(backend.SLDDeckNames, name) {
-				backend.SLDDeckNames = append(backend.SLDDeckNames, name)
+			if !slices.Contains(output, name) {
+				output = append(output, name)
 			}
 		}
 	}
+	return output
 }
 
 // Add a map of which kind of products sealed contains
-func fillinSealedContents() {
+func fillinSealedContents(sets map[string]*mtgjson.Set, uuids map[string]CardObject) {
 	result := map[string][]string{}
 	tmp := map[string][]string{}
 
-	for _, set := range backend.Sets {
+	for _, set := range sets {
 		for _, product := range set.SealedProduct {
 			dedup := map[string]int{}
 			list := SealedWithinSealed(set.Code, product.UUID)
@@ -910,7 +912,7 @@ func fillinSealedContents() {
 		}
 	}
 
-	for uuid, co := range backend.UUIDs {
+	for uuid, co := range uuids {
 		if !co.Sealed {
 			continue
 		}
@@ -920,7 +922,7 @@ func fillinSealedContents() {
 			continue
 		}
 
-		backend.UUIDs[uuid].SourceProducts["sealed"] = res
+		uuids[uuid].SourceProducts["sealed"] = res
 	}
 }
 
