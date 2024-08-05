@@ -749,11 +749,11 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 	duplicate(ap.Data, cards, uuids, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
 	allSets = append(allSets, "LEGITA", "DRKITA", "4EDALT")
 
-	duplicateCards(ap.Data, cards, uuids, "SLD", "JPN", sldJPNLangDupes)
-	duplicateCards(ap.Data, cards, uuids, "PURL", "JPN", []string{"1"})
+	duplicateCards(ap.Data, uuids, "SLD", "JPN", sldJPNLangDupes)
+	duplicateCards(ap.Data, uuids, "PURL", "JPN", []string{"1"})
 
 	for setCode, numbers := range foilDupes {
-		spinoffFoils(ap.Data, cards, uuids, setCode, numbers)
+		spinoffFoils(ap.Data, uuids, setCode, numbers)
 	}
 
 	// Add all names and associated uuids to the global names and hashes arrays
@@ -1065,7 +1065,7 @@ func duplicate(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids ma
 	sets[dup.Code] = &dup
 }
 
-func duplicateCards(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, code, tag string, numbers []string) {
+func duplicateCards(sets map[string]*mtgjson.Set, uuids map[string]CardObject, code, tag string, numbers []string) {
 	var duplicates []mtgjson.Card
 
 	for i := range sets[code].Cards {
@@ -1104,7 +1104,7 @@ func duplicateCards(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uui
 	sets[code].Cards = append(sets[code].Cards, duplicates...)
 }
 
-func spinoffFoils(sets map[string]*mtgjson.Set, cards map[string]cardinfo, uuids map[string]CardObject, code string, numbers []string) {
+func spinoffFoils(sets map[string]*mtgjson.Set, uuids map[string]CardObject, code string, numbers []string) {
 	var newCardsArray []mtgjson.Card
 
 	for i := range sets[code].Cards {
