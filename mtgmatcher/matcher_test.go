@@ -42,7 +42,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	NewDatastore(allprints)
+	backend = NewDatastore(allprints)
 
 	// Close the file right away so that it can be modified later
 	testDataReader, err := os.Open(TestDataFile)

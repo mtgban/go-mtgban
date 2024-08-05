@@ -50,7 +50,9 @@ type alternateProps struct {
 	IsFlavor       bool
 }
 
-var backend struct {
+var backend cardBackend
+
+type cardBackend struct {
 	// Slice of all set codes loaded
 	AllSets []string
 
@@ -356,7 +358,7 @@ func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
 	})
 }
 
-func NewDatastore(ap mtgjson.AllPrintings) {
+func NewDatastore(ap mtgjson.AllPrintings) cardBackend {
 	uuids := map[string]CardObject{}
 	cardInfo := map[string]cardinfo{}
 	scryfall := map[string]string{}
@@ -843,6 +845,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 	fillinSealedContents(ap.Data, uuids)
 
+	var backend cardBackend
+
 	backend.Hashes = hashes
 	backend.AllSets = allSets
 	backend.AllUUIDs = allUUIDs
@@ -868,6 +872,8 @@ func NewDatastore(ap mtgjson.AllPrintings) {
 
 	backend.CommanderKeywordMap = commanderKeywordMap
 	backend.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
+
+	return backend
 }
 
 func fillinSLDdecks(set *mtgjson.Set) []string {
@@ -1153,13 +1159,17 @@ func spinoffFoils(sets map[string]*mtgjson.Set, uuids map[string]CardObject, cod
 	sets[code].Cards = newCardsArray
 }
 
+func SetGlobalDatastore(datastore cardBackend) {
+	backend = datastore
+}
+
 func LoadDatastore(reader io.Reader) error {
 	allprints, err := mtgjson.LoadAllPrintings(reader)
 	if err != nil {
 		return err
 	}
 
-	NewDatastore(allprints)
+	backend = NewDatastore(allprints)
 	return nil
 }
 
