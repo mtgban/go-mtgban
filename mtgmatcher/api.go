@@ -87,24 +87,6 @@ func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
 	return nil, ErrCardNotInEdition
 }
 
-func GetSetUUID(uuid string) (*mtgjson.Set, error) {
-	if backend.UUIDs == nil || backend.Sets == nil {
-		return nil, ErrDatastoreEmpty
-	}
-
-	co, found := backend.UUIDs[uuid]
-	if !found {
-		return nil, ErrCardUnknownId
-	}
-
-	set, found := backend.Sets[co.SetCode]
-	if !found {
-		return nil, ErrCardUnknownId
-	}
-
-	return set, nil
-}
-
 func Scryfall2UUID(id string) string {
 	return backend.Scryfall[id]
 }
