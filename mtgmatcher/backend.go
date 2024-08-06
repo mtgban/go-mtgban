@@ -1,6 +1,7 @@
 package mtgmatcher
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -1168,9 +1169,15 @@ func SetGlobalDatastore(datastore cardBackend) {
 }
 
 func LoadDatastore(reader io.Reader) error {
-	datastore, err := LoadAllPrintings(reader)
+	var buf bytes.Buffer
+	tee := io.TeeReader(reader, &buf)
+
+	datastore, err := LoadAllPrintings(tee)
 	if err != nil {
-		return err
+		datastore, err = LoadLorcana(&buf)
+		if err != nil {
+			return err
+		}
 	}
 
 	backend = datastore.Load()
