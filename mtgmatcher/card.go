@@ -64,7 +64,7 @@ func (c *InputCard) String() string {
 	return fmt.Sprintf("%s [%s%s]%s", out, c.Edition, finish, lang)
 }
 
-func output(card mtgjson.Card, flags ...bool) string {
+func output(card Card, flags ...bool) string {
 	hasNonfoil := card.HasFinish(mtgjson.FinishNonfoil)
 	hasFoil := card.HasFinish(mtgjson.FinishFoil)
 	hasEtched := card.HasFinish(mtgjson.FinishEtched)

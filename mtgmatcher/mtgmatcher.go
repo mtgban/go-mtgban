@@ -304,7 +304,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 
 	// This map will contain the setCode and an array of possible matches for
 	// each edition.
-	cardSet := map[string][]mtgjson.Card{}
+	cardSet := map[string][]Card{}
 
 	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
@@ -399,7 +399,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Use the result as-is if it comes from a single card in a single set
-	var outCards []mtgjson.Card
+	var outCards []Card
 	if single {
 		logger.Println("Single printing, using it right away")
 		for _, outCards = range cardSet {
@@ -420,13 +420,13 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		if inCard.isWorldChamp() {
 			logger.Println("Dropping a few extra entries...")
 			logger.Println(outCards[1:])
-			outCards = []mtgjson.Card{outCards[0]}
+			outCards = []Card{outCards[0]}
 		}
 	}
 
 	// Language check - out of filterCards to catch single cases too
 	if inCard.Language != "" || len(outCards) > 1 {
-		var filteredOutCards []mtgjson.Card
+		var filteredOutCards []Card
 		for _, card := range outCards {
 			if (inCard.Language == "" && card.Language != "English") ||
 				!strings.Contains(card.Language, inCard.Language) {
@@ -482,9 +482,9 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	return
 }
 
-// Return an array of mtgjson.Card containing all the cards with the exact
+// Return an array of Card containing all the cards with the exact
 // same name as the input name in the Set identified by setCode.
-func MatchInSet(cardName string, setCode string) (outCards []mtgjson.Card) {
+func MatchInSet(cardName string, setCode string) (outCards []Card) {
 	set, found := backend.Sets[setCode]
 	if !found {
 		return
@@ -497,10 +497,10 @@ func MatchInSet(cardName string, setCode string) (outCards []mtgjson.Card) {
 	return
 }
 
-// Return an array of mtgjson.Card containing all the cards with the exact
+// Return an array of Card containing all the cards with the exact
 // same name as the input name in the Set identified by setCode with the
 // specified collector number.
-func MatchInSetNumber(cardName, setCode, number string) (outCards []mtgjson.Card) {
+func MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
 	set, found := backend.Sets[setCode]
 	if !found {
 		return
@@ -513,9 +513,9 @@ func MatchInSetNumber(cardName, setCode, number string) (outCards []mtgjson.Card
 	return
 }
 
-// Return an array of mtgjson.Card containing all the cards with the exact
+// Return an array of Card containing all the cards with the exact
 // set code and collector number, using the name as hint (can be empty)
-func MatchWithNumber(cardName, setCode, number string) (outCards []mtgjson.Card) {
+func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 	set, found := backend.Sets[setCode]
 	if !found {
 		return

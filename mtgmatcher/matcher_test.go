@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"testing"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type MatchTest struct {
@@ -38,7 +36,7 @@ func TestMain(m *testing.M) {
 	}
 	defer allPrintingsReader.Close()
 
-	allprints, err := mtgjson.LoadAllPrintings(allPrintingsReader)
+	allprints, err := LoadAllPrintings(allPrintingsReader)
 	if err != nil {
 		log.Fatalln(err)
 	}

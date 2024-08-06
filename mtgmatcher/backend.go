@@ -23,7 +23,7 @@ type cardinfo struct {
 // CardObject is an extension of mtgjson.Card, containing fields that cannot
 // be easily represented in the original object.
 type CardObject struct {
-	mtgjson.Card
+	Card
 	Edition string
 	Foil    bool
 	Etched  bool
@@ -56,8 +56,8 @@ type cardBackend struct {
 	// Slice of all set codes loaded
 	AllSets []string
 
-	// Map of set code : mtgjson.Set
-	Sets map[string]*mtgjson.Set
+	// Map of set code : Set
+	Sets map[string]*Set
 
 	// Map of normalized name : cardinfo
 	// Only the main canonical name is stored here
@@ -313,12 +313,12 @@ var foilDupes = map[string][]string{
 	},
 }
 
-func okForTokens(set *mtgjson.Set) bool {
+func okForTokens(set *Set) bool {
 	return slices.Contains(setAllowedForTokens, set.Code) ||
 		strings.Contains(set.Name, "Duel Deck")
 }
 
-func skipSet(set *mtgjson.Set) bool {
+func skipSet(set *Set) bool {
 	// Skip unsupported sets
 	switch set.Code {
 	case "PRED", // a single foreign card
@@ -342,7 +342,7 @@ func skipSet(set *mtgjson.Set) bool {
 	return false
 }
 
-func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
+func sortPrintings(ap AllPrintings, printings []string) {
 	sort.Slice(printings, func(i, j int) bool {
 		setDateI, errI := time.Parse("2006-01-02", ap.Data[printings[i]].ReleaseDate)
 		setDateJ, errJ := time.Parse("2006-01-02", ap.Data[printings[j]].ReleaseDate)
@@ -358,7 +358,7 @@ func sortPrintings(ap mtgjson.AllPrintings, printings []string) {
 	})
 }
 
-func NewDatastore(ap mtgjson.AllPrintings) cardBackend {
+func NewDatastore(ap AllPrintings) cardBackend {
 	uuids := map[string]CardObject{}
 	cardInfo := map[string]cardinfo{}
 	scryfall := map[string]string{}
@@ -393,7 +393,7 @@ func NewDatastore(ap mtgjson.AllPrintings) cardBackend {
 	}
 
 	for code, set := range ap.Data {
-		var filteredCards []mtgjson.Card
+		var filteredCards []Card
 
 		allSets = append(allSets, code)
 
@@ -730,7 +730,7 @@ func NewDatastore(ap mtgjson.AllPrintings) cardBackend {
 
 		for _, product := range set.SealedProduct {
 			uuids[product.UUID] = CardObject{
-				Card: mtgjson.Card{
+				Card: Card{
 					UUID:        product.UUID,
 					Name:        product.Name,
 					SetCode:     code,
@@ -876,7 +876,7 @@ func NewDatastore(ap mtgjson.AllPrintings) cardBackend {
 	return backend
 }
 
-func fillinSLDdecks(set *mtgjson.Set) []string {
+func fillinSLDdecks(set *Set) []string {
 	var output []string
 	for _, product := range set.SealedProduct {
 		if strings.HasPrefix(product.Name, "Secret Lair Commander") {
@@ -890,7 +890,7 @@ func fillinSLDdecks(set *mtgjson.Set) []string {
 }
 
 // Add a map of which kind of products sealed contains
-func fillinSealedContents(sets map[string]*mtgjson.Set, uuids map[string]CardObject) {
+func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 	result := map[string][]string{}
 	tmp := map[string][]string{}
 
@@ -997,7 +997,7 @@ var langs = map[string]string{
 	"ALT": "English",
 }
 
-func duplicate(sets map[string]*mtgjson.Set, cardInfo map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
+func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
 	// Copy base set information
 	dup := *sets[code]
 
@@ -1008,7 +1008,7 @@ func duplicate(sets map[string]*mtgjson.Set, cardInfo map[string]cardinfo, uuids
 	dup.ReleaseDate = date
 
 	// Copy card information
-	dup.Cards = make([]mtgjson.Card, len(sets[code].Cards))
+	dup.Cards = make([]Card, len(sets[code].Cards))
 	for i := range sets[code].Cards {
 		// Skip misprints from main sets
 		if strings.HasSuffix(sets[code].Cards[i].Number, mtgjson.SuffixVariant) {
@@ -1072,8 +1072,8 @@ func duplicate(sets map[string]*mtgjson.Set, cardInfo map[string]cardinfo, uuids
 	sets[dup.Code] = &dup
 }
 
-func duplicateCards(sets map[string]*mtgjson.Set, uuids map[string]CardObject, code, tag string, numbers []string) {
-	var duplicates []mtgjson.Card
+func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag string, numbers []string) {
+	var duplicates []Card
 
 	for i := range sets[code].Cards {
 		// Skip unneeded
@@ -1111,8 +1111,8 @@ func duplicateCards(sets map[string]*mtgjson.Set, uuids map[string]CardObject, c
 	sets[code].Cards = append(sets[code].Cards, duplicates...)
 }
 
-func spinoffFoils(sets map[string]*mtgjson.Set, uuids map[string]CardObject, code string, numbers []string) {
-	var newCardsArray []mtgjson.Card
+func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string, numbers []string) {
+	var newCardsArray []Card
 
 	for i := range sets[code].Cards {
 		dupeCard := sets[code].Cards[i]
@@ -1164,7 +1164,7 @@ func SetGlobalDatastore(datastore cardBackend) {
 }
 
 func LoadDatastore(reader io.Reader) error {
-	allprints, err := mtgjson.LoadAllPrintings(reader)
+	allprints, err := LoadAllPrintings(reader)
 	if err != nil {
 		return err
 	}

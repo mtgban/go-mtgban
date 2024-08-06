@@ -695,7 +695,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 }
 
 // Deduplicate cards with the same name.
-func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards []mtgjson.Card) {
+func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card) {
 	for setCode, inCards := range cardSet {
 		set := backend.Sets[setCode]
 
@@ -803,7 +803,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards
 
 	// Sort through the array of promo types
 	if len(outCards) > 1 {
-		var filteredOutCards []mtgjson.Card
+		var filteredOutCards []Card
 		for _, card := range outCards {
 			set, found := backend.Sets[card.SetCode]
 			if !found {
@@ -862,7 +862,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards
 
 	// Sort through any custom per-edition filter(s)
 	if len(outCards) > 1 {
-		var filteredOutCards []mtgjson.Card
+		var filteredOutCards []Card
 		for _, card := range outCards {
 			cardFilterFunc, foundSimple := simpleFilterCallbacks[card.SetCode]
 			cardFilterFuncs, foundComplex := complexFilterCallbacks[card.SetCode]
@@ -916,7 +916,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards
 
 		if allSameEdition {
 			logger.Println("allSameEdition pass needed")
-			var filteredOutCards []mtgjson.Card
+			var filteredOutCards []Card
 			for _, card := range outCards {
 				set := backend.Sets[card.SetCode]
 				// The year is necessary to decouple PM20 and PM21 cards
@@ -944,7 +944,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards
 	if len(outCards) > 1 && ExtractNumber(inCard.Variation) == "" {
 		// Separate finishes have different collector numbers after this date
 		if len(outCards) > 1 {
-			var filteredOutCards []mtgjson.Card
+			var filteredOutCards []Card
 			for _, card := range outCards {
 				set, found := backend.Sets[card.SetCode]
 				if !found {
@@ -966,7 +966,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards
 		// If above filters were not enough, check the boder, but dont skip card if it's showcase
 		// ExtendedArt is fine as there cannot be a borderless one
 		if len(outCards) > 1 {
-			var filteredOutCards []mtgjson.Card
+			var filteredOutCards []Card
 			for _, card := range outCards {
 				if borderlessCheck(inCard, &card) {
 					continue
@@ -983,7 +983,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards
 		// If above filters were not enough, check the frameEffects
 		// Extended Art
 		if len(outCards) > 1 {
-			var filteredOutCards []mtgjson.Card
+			var filteredOutCards []Card
 			for _, card := range outCards {
 				// This needs date check because some old full art promos are marked
 				// as extended art, in a different way of what modern Extended Art is
@@ -1006,7 +1006,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards
 
 		// Showcase
 		if len(outCards) > 1 {
-			var filteredOutCards []mtgjson.Card
+			var filteredOutCards []Card
 			for _, card := range outCards {
 				if showcaseCheck(inCard, &card) {
 					continue

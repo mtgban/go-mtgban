@@ -37,7 +37,7 @@ func GetAllSets() []string {
 	return backend.AllSets
 }
 
-func GetSet(code string) (*mtgjson.Set, error) {
+func GetSet(code string) (*Set, error) {
 	if backend.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
@@ -50,7 +50,7 @@ func GetSet(code string) (*mtgjson.Set, error) {
 	return set, nil
 }
 
-func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
+func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	if backend.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
@@ -258,26 +258,26 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 		return false
 	}
 
-	var checkFunc func(mtgjson.Card, string) bool
+	var checkFunc func(Card, string) bool
 	switch field {
 	case "promo_type":
-		checkFunc = func(card mtgjson.Card, value string) bool {
+		checkFunc = func(card Card, value string) bool {
 			return card.HasPromoType(value)
 		}
 	case "frame_effect":
-		checkFunc = func(card mtgjson.Card, value string) bool {
+		checkFunc = func(card Card, value string) bool {
 			return card.HasFrameEffect(value)
 		}
 	case "border_color":
-		checkFunc = func(card mtgjson.Card, value string) bool {
+		checkFunc = func(card Card, value string) bool {
 			return card.BorderColor == value
 		}
 	case "frame_version":
-		checkFunc = func(card mtgjson.Card, value string) bool {
+		checkFunc = func(card Card, value string) bool {
 			return card.FrameVersion == value
 		}
 	case "finish":
-		checkFunc = func(card mtgjson.Card, value string) bool {
+		checkFunc = func(card Card, value string) bool {
 			return card.HasFinish(value)
 		}
 	default:
@@ -296,7 +296,7 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 		}
 	}
 	for _, code := range card.Printings {
-		var set *mtgjson.Set
+		var set *Set
 		if len(editions) > 0 {
 			set, found = backend.Sets[editions[0]]
 			if !found {
@@ -501,7 +501,7 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			continue
 		}
 
-		for _, board := range [][]mtgjson.DeckCard{
+		for _, board := range [][]DeckCard{
 			deck.Bonus, deck.Commander, deck.MainBoard, deck.SideBoard,
 		} {
 			for _, card := range board {
