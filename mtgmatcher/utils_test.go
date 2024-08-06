@@ -234,7 +234,7 @@ func TestCut(t *testing.T) {
 }
 
 func TestAlias(t *testing.T) {
-	inCard := &Card{
+	inCard := &InputCard{
 		Name:      "Forest",
 		Variation: "Full-Art",
 		Edition:   "Zendikar",

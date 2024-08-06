@@ -78,7 +78,7 @@ var gameday2editionTable = map[string]string{
 	"Surge Engine":             "GDY",
 }
 
-func Preprocess(cardName, number, edition string) (*mtgmatcher.Card, error) {
+func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error) {
 	var foil bool
 
 	for _, tag := range filteredExpansionsTags {
@@ -1094,7 +1094,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.Card, error) {
 		// Pre-search the card, if not found it's likely a sideboard variant
 		case strings.HasPrefix(edition, "Pro Tour 1996:"),
 			strings.HasPrefix(edition, "WCD "):
-			_, err := mtgmatcher.Match(&mtgmatcher.Card{
+			_, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 				Name:    cardName,
 				Edition: edition,
 			})
@@ -1227,7 +1227,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

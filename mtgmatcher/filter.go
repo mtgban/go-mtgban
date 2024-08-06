@@ -10,7 +10,7 @@ import (
 )
 
 // Remove any unrelated edition from the input array.
-func filterPrintings(inCard *Card, editions []string) (printings []string) {
+func filterPrintings(inCard *InputCard, editions []string) (printings []string) {
 	maybeYear := ExtractYear(inCard.Variation)
 	if maybeYear == "" {
 		maybeYear = ExtractYear(inCard.Edition)
@@ -695,7 +695,7 @@ func filterPrintings(inCard *Card, editions []string) (printings []string) {
 }
 
 // Deduplicate cards with the same name.
-func filterCards(inCard *Card, cardSet map[string][]mtgjson.Card) (outCards []mtgjson.Card) {
+func filterCards(inCard *InputCard, cardSet map[string][]mtgjson.Card) (outCards []mtgjson.Card) {
 	for setCode, inCards := range cardSet {
 		set := backend.Sets[setCode]
 

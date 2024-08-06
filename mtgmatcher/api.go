@@ -69,7 +69,7 @@ func GetSetByName(edition string, flags ...bool) (*mtgjson.Set, error) {
 	}
 
 	// 3. Attempt adjusting the edition with a fake card object
-	card := &Card{
+	card := &InputCard{
 		Edition: edition,
 	}
 	if len(flags) > 0 {
@@ -286,7 +286,7 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 
 	card, found := backend.CardInfo[Normalize(name)]
 	if !found {
-		cc := &Card{
+		cc := &InputCard{
 			Name: name,
 		}
 		adjustName(cc)

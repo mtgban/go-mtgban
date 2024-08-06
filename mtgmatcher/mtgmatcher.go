@@ -83,7 +83,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 	return outId, nil
 }
 
-func Match(inCard *Card) (cardId string, err error) {
+func Match(inCard *InputCard) (cardId string, err error) {
 	if backend.Sets == nil {
 		return "", ErrDatastoreEmpty
 	}
@@ -531,7 +531,7 @@ func MatchWithNumber(cardName, setCode, number string) (outCards []mtgjson.Card)
 // Try to fixup the name of the card or move extra varitions to the
 // variant attribute. This should only be used in case the card name
 // was not found.
-func adjustName(inCard *Card) {
+func adjustName(inCard *InputCard) {
 	// Sticker sheet adjustments
 	if strings.Contains(inCard.Name, "Sticker") {
 		inCard.Name = strings.Replace(inCard.Name, "Sticker", "", 1)
@@ -712,7 +712,7 @@ func adjustName(inCard *Card) {
 // Try to fixup the edition and variant of the card, using well-known variantions,
 // or use edition/variant attributes to determine the correct edition/variant combo,
 // or look up known cards in small sets.
-func adjustEdition(inCard *Card) {
+func adjustEdition(inCard *InputCard) {
 	edition := inCard.Edition
 	variation := inCard.Variation
 

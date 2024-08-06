@@ -14,7 +14,8 @@ type MatchTest struct {
 	Id   string `json:"uuid,omitempty"`
 	Err  string `json:"error,omitempty"`
 	Desc string `json:"description"`
-	In   Card   `json:"input"`
+
+	In InputCard `json:"input"`
 
 	Wildcard bool `json:"wildcard,omitempty"`
 }

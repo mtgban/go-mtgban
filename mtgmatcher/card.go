@@ -10,7 +10,7 @@ import (
 )
 
 // Card is a generic card representation using fields defined by the MTGJSON project.
-type Card struct {
+type InputCard struct {
 	// The mtgjson unique identifier of the card
 	// When used as input it can host mtgjson or scryfall id
 	Id string `json:"id,omitempty"`
@@ -46,7 +46,7 @@ type Card struct {
 }
 
 // Card implements the Stringer interface
-func (c *Card) String() string {
+func (c *InputCard) String() string {
 	out := c.Name
 	if c.Variation != "" {
 		out = fmt.Sprintf("%s (%s)", out, c.Variation)
@@ -108,7 +108,7 @@ func output(card mtgjson.Card, flags ...bool) string {
 	return id
 }
 
-func (c *Card) addToVariant(tag string) {
+func (c *InputCard) addToVariant(tag string) {
 	if c.Variation != "" {
 		c.Variation += " "
 	}
@@ -179,7 +179,7 @@ func IsToken(name string) bool {
 	return false
 }
 
-func (c *Card) isUnsupported() bool {
+func (c *InputCard) isUnsupported() bool {
 	return c.Contains("Art Series") ||
 		strings.HasSuffix(c.Edition, "Art Variants") || // toa
 		(c.Contains("Art Card") && !c.Contains("Chinese")) || // Art Series, except a well-known edition
@@ -202,7 +202,7 @@ func (c *Card) isUnsupported() bool {
 		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
 }
 
-func (c *Card) isSpecificUnsupported() bool {
+func (c *InputCard) isSpecificUnsupported() bool {
 	switch c.Name {
 	case "Spined Wurm":
 		return Contains(c.Edition, "Starter 2000")
@@ -245,12 +245,12 @@ func IsBasicLand(name string) bool {
 }
 
 // Returns whether the card is a basic land
-func (c *Card) IsBasicLand() bool {
+func (c *InputCard) IsBasicLand() bool {
 	return IsBasicLand(c.Name)
 }
 
 // More specific version of the above, for internal use only
-func (c *Card) isBasicLand() bool {
+func (c *InputCard) isBasicLand() bool {
 	switch c.Name {
 	case "Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes":
 		return true
@@ -260,7 +260,7 @@ func (c *Card) isBasicLand() bool {
 
 // Returns whether the cards is a "generic" promo, that probably needs
 // further analysis to be fully categorized. Tokens are excluded.
-func (c *Card) isGenericPromo() bool {
+func (c *InputCard) isGenericPromo() bool {
 	return !c.isBaB() && !c.isPromoPack() && !c.isPrerelease() && !c.isSDCC() &&
 		!c.isRetro() &&
 		!c.Contains("Year of the") && // tcg
@@ -280,27 +280,27 @@ func (c *Card) isGenericPromo() bool {
 			c.Contains("Unique")) // mtgs
 }
 
-func (c *Card) isDCIPromo() bool {
+func (c *InputCard) isDCIPromo() bool {
 	return c.Contains("DCI") && !c.Contains("Judge")
 }
 
-func (c *Card) isGenericAltArt() bool {
+func (c *InputCard) isGenericAltArt() bool {
 	// "Alt" includes Alternative
 	return c.Contains("Alt") && c.Contains("Art")
 }
 
-func (c *Card) isGenericExtendedArt() bool {
+func (c *InputCard) isGenericExtendedArt() bool {
 	return Contains(c.Variation, "Art") &&
 		(Contains(c.Variation, "Extended") ||
 			Contains(c.Variation, "Full"))
 }
 
-func (c *Card) isPrerelease() bool {
+func (c *InputCard) isPrerelease() bool {
 	return c.Contains("Prerelease") ||
 		c.Contains("Preview") // scg
 }
 
-func (c *Card) isPromoPack() bool {
+func (c *InputCard) isPromoPack() bool {
 	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
 		Contains(c.Variation, "Planeswalker Stamp") ||
@@ -308,20 +308,20 @@ func (c *Card) isPromoPack() bool {
 		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
 }
 
-func (c *Card) isBorderless() bool {
+func (c *InputCard) isBorderless() bool {
 	return Contains(c.Variation, "Borderless")
 }
 
-func (c *Card) isExtendedArt() bool {
+func (c *InputCard) isExtendedArt() bool {
 	return Contains(c.Variation, "Extended")
 }
 
-func (c *Card) isShowcase() bool {
+func (c *InputCard) isShowcase() bool {
 	return Contains(c.Variation, "Showcase") ||
 		Contains(c.Variation, "Sketch") // binderpos
 }
 
-func (c *Card) isReskin() bool {
+func (c *InputCard) isReskin() bool {
 	return (Contains(c.Variation, "Reskin") ||
 		Contains(c.Variation, "Dracula") ||
 		Contains(c.Variation, "Godzilla")) &&
@@ -329,21 +329,21 @@ func (c *Card) isReskin() bool {
 		!c.isBasicLand()
 }
 
-func (c *Card) isStepAndCompleat() bool {
+func (c *InputCard) isStepAndCompleat() bool {
 	return Contains(c.Variation, "Compleat")
 }
 
-func (c *Card) isOilSlick() bool {
+func (c *InputCard) isOilSlick() bool {
 	return strings.Contains(strings.ToLower(c.Variation), "slick") ||
 		strings.Contains(strings.ToLower(c.Edition), "slick")
 }
 
-func (c *Card) isFNM() bool {
+func (c *InputCard) isFNM() bool {
 	return c.Contains("FNM") ||
 		c.Contains("Friday Night Magic")
 }
 
-func (c *Card) isJPN() bool {
+func (c *InputCard) isJPN() bool {
 	return strings.Contains(c.Variation, "JPN") ||
 		strings.Contains(c.Variation, "JP") ||
 		c.Contains("Japanese") ||
@@ -351,18 +351,18 @@ func (c *Card) isJPN() bool {
 		Contains(c.Variation, "Dengeki")
 }
 
-func (c *Card) isChineseAltArt() bool {
+func (c *InputCard) isChineseAltArt() bool {
 	return (c.Contains("Chinese") || strings.Contains(c.Variation, "CS")) && c.isGenericAltArt()
 }
 
-func (c *Card) isRelease() bool {
+func (c *InputCard) isRelease() bool {
 	return !c.Contains("Prerelease") &&
 		(c.Contains("Release") ||
 			c.Contains("Draft Weekend") ||
 			c.Contains("Launch"))
 }
 
-func (c *Card) isWPNGateway() bool {
+func (c *InputCard) isWPNGateway() bool {
 	return c.Contains("WPN") ||
 		c.Contains("Gateway") ||
 		Contains(c.Variation, "Wizards Play Network") ||
@@ -370,7 +370,7 @@ func (c *Card) isWPNGateway() bool {
 		Contains(c.Variation, "Moonlit Lands") // ck
 }
 
-func (c *Card) isIDWMagazineBook() bool {
+func (c *InputCard) isIDWMagazineBook() bool {
 	return strings.HasPrefix(c.Variation, "IDW") || strings.HasPrefix(c.Edition, "IDW") ||
 		c.Contains("Magazine") ||
 		c.Contains("Duelist") ||
@@ -394,11 +394,11 @@ func (c *Card) isIDWMagazineBook() bool {
 		c.Contains("Media Insert") // mm+nf
 }
 
-func (c *Card) isJudge() bool {
+func (c *InputCard) isJudge() bool {
 	return c.Contains("Judge")
 }
 
-func (c *Card) isRewards() bool {
+func (c *InputCard) isRewards() bool {
 	return (Contains(c.Variation, "Textless") &&
 		!Contains(c.Variation, "Year of") &&
 		!Contains(c.Variation, "Lunar") &&
@@ -406,14 +406,14 @@ func (c *Card) isRewards() bool {
 		(c.Contains("Reward") && !c.isJudge())
 }
 
-func (c *Card) isMagicFest() bool {
+func (c *InputCard) isMagicFest() bool {
 	return c.Contains("Magic Fest") ||
 		c.Contains("MagicCon") || // scg
 		strings.Contains(c.Edition, "MFP") || // tcg collection
 		strings.Contains(c.Variation, "MFP") // tcg collection
 }
 
-func (c *Card) isBaB() bool {
+func (c *InputCard) isBaB() bool {
 	return c.Contains("Buy a Box") ||
 		strings.Contains(c.Variation, "BABP") || // tcg collection
 		strings.Contains(c.Variation, "BIBB") || // sz
@@ -422,41 +422,41 @@ func (c *Card) isBaB() bool {
 			!c.Contains("Gift")) // csi
 }
 
-func (c *Card) isBundle() bool {
+func (c *InputCard) isBundle() bool {
 	return c.Contains("Bundle")
 }
 
-func (c *Card) isFoil() bool {
+func (c *InputCard) isFoil() bool {
 	return Contains(c.Variation, "Foil") && !Contains(c.Variation, "Non") && !c.isEtched()
 }
 
-func (c *Card) isEtched() bool {
+func (c *InputCard) isEtched() bool {
 	// Note this can't be just "etch" because it would catch the "sketch" cards
 	return Contains(c.Variation, "Etched")
 }
 
-func (c *Card) isARNLightMana() bool {
+func (c *InputCard) isARNLightMana() bool {
 	return Contains(c.Variation, "light") || strings.Contains(c.Variation, "†")
 }
 
-func (c *Card) isARNDarkMana() bool {
+func (c *InputCard) isARNDarkMana() bool {
 	return Contains(c.Variation, "dark")
 }
 
-func (c *Card) isArena() bool {
+func (c *InputCard) isArena() bool {
 	return c.Contains("Arena")
 }
 
-func (c *Card) isSDCC() bool {
+func (c *InputCard) isSDCC() bool {
 	return c.Contains("SDCC") ||
 		c.Contains("San Diego Comic-Con")
 }
 
-func (c *Card) isRetro() bool {
+func (c *InputCard) isRetro() bool {
 	return c.Contains("Retro")
 }
 
-func (c *Card) playerRewardsYear(maybeYear string) string {
+func (c *InputCard) playerRewardsYear(maybeYear string) string {
 	if maybeYear == "" {
 		switch c.Name {
 		case "Bear":
@@ -494,7 +494,7 @@ func (c *Card) playerRewardsYear(maybeYear string) string {
 	return maybeYear
 }
 
-func (c *Card) arenaYear(maybeYear string) string {
+func (c *InputCard) arenaYear(maybeYear string) string {
 	if maybeYear == "" {
 		switch {
 		case strings.Contains(c.Variation, "Tony Roberts"):
@@ -537,7 +537,7 @@ func (c *Card) arenaYear(maybeYear string) string {
 	return maybeYear
 }
 
-func (c *Card) isWorldChamp() bool {
+func (c *InputCard) isWorldChamp() bool {
 	return Contains(c.Edition, "Pro Tour Collect") ||
 		Contains(c.Edition, "Pro Tour 1996") ||
 		Contains(c.Edition, "World Championship") ||
@@ -605,7 +605,7 @@ func parseWorldChampPrefix(variation string) (string, bool) {
 	return "", false
 }
 
-func (c *Card) worldChampPrefix() (string, bool) {
+func (c *InputCard) worldChampPrefix() (string, bool) {
 	prefix, sideboard := parseWorldChampPrefix(c.Variation)
 	if prefix == "" {
 		return parseWorldChampPrefix(c.Edition)
@@ -613,14 +613,14 @@ func (c *Card) worldChampPrefix() (string, bool) {
 	return prefix, sideboard
 }
 
-func (c *Card) isDuelsOfThePW() bool {
+func (c *InputCard) isDuelsOfThePW() bool {
 	// XXX: do not use c.Contains here
 	return strings.Contains(c.Variation, "Duels") ||
 		strings.Contains(c.Edition, "Duels") ||
 		Contains(c.Variation, "DotP") // tat
 }
 
-func (c *Card) isBasicFullArt() bool {
+func (c *InputCard) isBasicFullArt() bool {
 	return c.isBasicLand() &&
 		(Contains(c.Variation, "full art") ||
 			c.Variation == "FA") && // csi
@@ -628,14 +628,14 @@ func (c *Card) isBasicFullArt() bool {
 		!Contains(c.Variation, "not") // csi
 }
 
-func (c *Card) isBasicNonFullArt() bool {
+func (c *InputCard) isBasicNonFullArt() bool {
 	return c.isBasicLand() &&
 		Contains(c.Variation, "non-full art") ||
 		Contains(c.Variation, "Intro") || // abu
 		Contains(c.Variation, "NOT the full art") // csi
 }
 
-func (c *Card) isPremiereShop() bool {
+func (c *InputCard) isPremiereShop() bool {
 	return c.isBasicLand() &&
 		// XXX: do not use c.Contains here
 		(strings.Contains(c.Variation, "MPS") ||
@@ -644,25 +644,25 @@ func (c *Card) isPremiereShop() bool {
 			strings.Contains(c.Edition, "Premiere Shop")) // mkm
 }
 
-func (c *Card) isPortalAlt() bool {
+func (c *InputCard) isPortalAlt() bool {
 	return (Contains(c.Variation, "Reminder Text") &&
 		!Contains(c.Variation, "No")) ||
 		Contains(c.Variation, "No Flavor Text") || // csi
 		Contains(c.Variation, "Without Flavor Text") // csi
 }
 
-func (c *Card) isDuelDecks() bool {
+func (c *InputCard) isDuelDecks() bool {
 	return ((c.Contains(" vs ")) ||
 		(strings.Contains(c.Variation, " v. "))) && // tcg
 		!c.Contains("Anthology")
 }
 
-func (c *Card) isDuelDecksAnthology() bool {
+func (c *InputCard) isDuelDecksAnthology() bool {
 	return strings.Contains(c.Edition, "DDA") ||
 		(Contains(c.Edition, "Duel Decks") && Contains(c.Edition, "Anthology"))
 }
 
-func (c *Card) duelDecksVariant() string {
+func (c *InputCard) duelDecksVariant() string {
 	if !c.isDuelDecks() {
 		return ""
 	}
@@ -683,16 +683,16 @@ func (c *Card) duelDecksVariant() string {
 	return variant
 }
 
-func (c *Card) isMysteryList() bool {
+func (c *InputCard) isMysteryList() bool {
 	return c.Contains("Mystery") || c.Contains("The List") ||
 		c.Contains("Planeswalker Symbol Reprints")
 }
 
-func (c *Card) isSecretLair() bool {
+func (c *InputCard) isSecretLair() bool {
 	return c.Contains("Secret Lair") || strings.Contains(c.Edition, "SLD")
 }
 
-func (c *Card) hasSecretLairTag(code string) bool {
+func (c *InputCard) hasSecretLairTag(code string) bool {
 	var tag bool
 	switch code {
 	case "SLU":
@@ -712,29 +712,29 @@ func (c *Card) hasSecretLairTag(code string) bool {
 	return c.isSecretLair() && tag
 }
 
-func (c *Card) isThickDisplay() bool {
+func (c *InputCard) isThickDisplay() bool {
 	return c.Contains("Display") || c.Contains("Thick")
 }
 
-func (c *Card) isPhyrexian() bool {
+func (c *InputCard) isPhyrexian() bool {
 	return Contains(c.Variation, "Phyrexian")
 }
 
-func (c *Card) isGalaxyFoil() bool {
+func (c *InputCard) isGalaxyFoil() bool {
 	return Contains(c.Variation, "Galaxy")
 }
 
-func (c *Card) isSurgeFoil() bool {
+func (c *InputCard) isSurgeFoil() bool {
 	return strings.Contains(strings.ToLower(c.Variation), "surge") ||
 		strings.Contains(strings.ToLower(c.Edition), "surge")
 }
 
-func (c *Card) isSerialized() bool {
+func (c *InputCard) isSerialized() bool {
 	return strings.Contains(strings.ToLower(c.Variation), "serial") ||
 		strings.Contains(strings.ToLower(c.Edition), "serial")
 }
 
-func (c *Card) possibleNumberSuffix() string {
+func (c *InputCard) possibleNumberSuffix() string {
 	fields := strings.Fields(c.Variation)
 	for _, field := range fields {
 		if len(field) == 1 && unicode.IsLetter(rune(field[0])) {
@@ -744,7 +744,7 @@ func (c *Card) possibleNumberSuffix() string {
 	return ""
 }
 
-func (c *Card) ravnicaWeekend() (string, string) {
+func (c *InputCard) ravnicaWeekend() (string, string) {
 	num := ExtractNumber(c.Variation)
 	if strings.HasPrefix(num, "a") {
 		return "GRN Ravnica Weekend", num
@@ -765,7 +765,7 @@ func (c *Card) ravnicaWeekend() (string, string) {
 	return "", ""
 }
 
-func (c *Card) ravnicaGuidKit() string {
+func (c *InputCard) ravnicaGuidKit() string {
 	if !c.Contains("Guild Kit") {
 		return ""
 	}
@@ -802,11 +802,11 @@ func (c *Card) ravnicaGuidKit() string {
 	return ""
 }
 
-func (c *Card) Contains(prop string) bool {
+func (c *InputCard) Contains(prop string) bool {
 	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
 }
 
-func (c *Card) Equals(prop string) bool {
+func (c *InputCard) Equals(prop string) bool {
 	return Equals(c.Edition, prop) || Equals(c.Variation, prop)
 }
 

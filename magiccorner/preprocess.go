@@ -129,7 +129,7 @@ var editionTable = map[string]string{
 	"Journey to Nyx": "Journey into Nyx",
 }
 
-func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
+func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 	cardName := card.Name
 	edition := card.Edition
 
@@ -197,7 +197,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.Card, error) {
 		edition = lutName
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Id:        id,
 		Name:      cardName,
 		Variation: variation,
@@ -476,7 +476,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 	return cardName, edition, variation
 }
 
-func preprocessBL(cardName, edition, extra string) (*mtgmatcher.Card, error) {
+func preprocessBL(cardName, edition, extra string) (*mtgmatcher.InputCard, error) {
 	variant := ""
 	if strings.Contains(edition, "(") {
 		vars := mtgmatcher.SplitVariants(edition)
@@ -498,7 +498,7 @@ func preprocessBL(cardName, edition, extra string) (*mtgmatcher.Card, error) {
 		edition = lutName
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

@@ -14,7 +14,7 @@ var mediaTable = map[string]string{
 	"Disenchant":       "PARL",
 }
 
-func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
+func preprocess(product *NFProduct) (*mtgmatcher.InputCard, error) {
 	card := product.Card
 	edition := product.Set.Name
 	variant := ""
@@ -94,7 +94,7 @@ func preprocess(product *NFProduct) (*mtgmatcher.Card, error) {
 		variant = strings.Replace(variant, "u", mtgjson.SuffixSpecial, 1)
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

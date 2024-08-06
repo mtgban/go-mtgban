@@ -139,7 +139,7 @@ var tagsTable = []string{
 
 const MB1ProductHash = "48ff4766-9d88-5426-800a-1613c990011b"
 
-func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
+func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 	if edition == "Bulk" || fullName == "" {
 		return nil, errors.New("bulk")
 	}
@@ -702,7 +702,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.Card, error) {
 		return nil, errors.New("sealed")
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

@@ -29,7 +29,7 @@ var tagsTable = map[string]string{
 	"Showcase":        "Showcase",
 }
 
-func preprocess(offer CardSphereOfferList) (*mtgmatcher.Card, error) {
+func preprocess(offer CardSphereOfferList) (*mtgmatcher.InputCard, error) {
 
 	cardName := offer.CardName
 	cardName = strings.TrimSpace(cardName)
@@ -198,7 +198,7 @@ func preprocess(offer CardSphereOfferList) (*mtgmatcher.Card, error) {
 		edition = "Core Set 2021 Promos"
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Id:        id,
 		Name:      cardName,
 		Variation: variant,

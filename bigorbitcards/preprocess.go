@@ -7,7 +7,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
+func preprocess(cardName, edition string) (*mtgmatcher.InputCard, error) {
 	fields := mtgmatcher.SplitVariants(cardName)
 	cardName = fields[0]
 	variant := ""
@@ -20,7 +20,7 @@ func preprocess(cardName, edition string) (*mtgmatcher.Card, error) {
 		return nil, errors.New("unsupported")
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

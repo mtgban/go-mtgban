@@ -55,7 +55,7 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
-func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
+func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	lang := ""
 	if len(card.Language) > 0 {
 		lang = card.Language[0]
@@ -305,7 +305,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.Card, error) {
 		variation += lang
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,

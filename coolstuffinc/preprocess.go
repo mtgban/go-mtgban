@@ -35,7 +35,7 @@ var variantTable = map[string]string{
 	"Big Furry Monster Right Side":                     "29",
 }
 
-func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.Card, error) {
+func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
 	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
 	fixup, found := numFixes[imgName]
 	if found {
@@ -80,7 +80,7 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.Card, er
 			maybeSet := strings.ToUpper(imgName[:i+3])
 			maybeNum := strings.TrimLeft(imgName[i+3:len(imgName)], "_0")
 			if len(mtgmatcher.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {
-				return &mtgmatcher.Card{
+				return &mtgmatcher.InputCard{
 					Name:      cardName,
 					Variation: maybeNum,
 					Edition:   maybeSet,
@@ -133,7 +133,7 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.Card, er
 		variant = strings.Replace(variant, ",", "/", -1)
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
@@ -291,7 +291,7 @@ func card2promo(cardName, variant string) (string, string) {
 	return edition, variant
 }
 
-func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
+func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 	num := strings.TrimLeft(card.Number, "0")
 	cleanVar := cleanVariant(card.Notes)
 	edition := card.ItemSet
@@ -369,7 +369,7 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,
@@ -377,7 +377,7 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.Card, error) {
 	}, nil
 }
 
-func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
+func Preprocess(card CSICard) (*mtgmatcher.InputCard, error) {
 	cardName := card.Name
 	variant := card.Variation
 	edition := card.Edition
@@ -433,7 +433,7 @@ func Preprocess(card CSICard) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Id:        card.ScryfallId,
 		Name:      cardName,
 		Variation: variant,

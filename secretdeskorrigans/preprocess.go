@@ -15,7 +15,7 @@ var promoTags = []string{
 	"Godzilla Lands",
 }
 
-func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
+func preprocess(cardName, edition, variant string) (*mtgmatcher.InputCard, error) {
 	s := mtgmatcher.SplitVariants(cardName)
 	cardName = s[0]
 	if len(s) > 1 {
@@ -64,7 +64,7 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.Card, error) {
 		cardName = lutName
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

@@ -206,7 +206,7 @@ func parseConditions(notes string) (string, error) {
 	return conditions, nil
 }
 
-func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
+func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
 	switch {
 	case (strings.Contains(notes, "asian") ||
 		strings.Contains(notes, "russian") ||
@@ -389,7 +389,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		cardName = lutName
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

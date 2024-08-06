@@ -168,7 +168,7 @@ var editionTable = map[string]string{
 	"ボーダーレス":      "Borderless",
 }
 
-func preprocess(title string) (*mtgmatcher.Card, error) {
+func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	// For the hardest cases
 	lut, found := titleTable[title]
 	if found {
@@ -529,7 +529,7 @@ func preprocess(title string) (*mtgmatcher.Card, error) {
 
 	variant = strings.TrimSpace(variant)
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

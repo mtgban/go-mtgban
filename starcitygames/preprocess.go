@@ -56,7 +56,7 @@ func languageTags(language, edition, variant, number string) (string, string, er
 	return edition, variant, nil
 }
 
-func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, cn string) (*mtgmatcher.Card, error) {
+func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, cn string) (*mtgmatcher.InputCard, error) {
 	// Processing variant first because it gets added on later
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
 	variant = strings.Replace(variant, "(", "", -1)
@@ -197,7 +197,7 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 		// Check if we found it and return the id
 		out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
 		if len(out) == 1 {
-			return &mtgmatcher.Card{
+			return &mtgmatcher.InputCard{
 				Id:        out[0].UUID,
 				Foil:      foil,
 				Variation: variant,
@@ -279,7 +279,7 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 		}
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

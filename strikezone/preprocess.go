@@ -7,7 +7,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
+func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
 	var variation string
 
 	cn, found := cardTable[cardName]
@@ -226,7 +226,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.Card, error) {
 		variation += "Etched"
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,

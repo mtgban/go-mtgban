@@ -34,7 +34,7 @@ var cardIds = map[int]string{
 	284939: "P30H",
 }
 
-func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card, error) {
+func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.InputCard, error) {
 	cardName, variant := product.GetNameAndVariant()
 
 	edition := editions[product.GroupId]
@@ -557,7 +557,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Card,
 
 	isFoil := strings.Contains(ogVariant, "Foil")
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

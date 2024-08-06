@@ -39,7 +39,7 @@ func NewScraper() *ABUGames {
 }
 
 type resultChan struct {
-	theCard    mtgmatcher.Card
+	theCard    mtgmatcher.InputCard
 	cardId     string
 	invEntry   *mtgban.InventoryEntry
 	buyEntry   *mtgban.BuylistEntry

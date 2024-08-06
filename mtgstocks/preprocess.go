@@ -64,7 +64,7 @@ var promoTable = map[string]string{
 	"Chandra, Torch of Defiance": "Q06",
 }
 
-func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
+func preprocess(fullName, edition string, foil bool) (*mtgmatcher.InputCard, error) {
 	fullName = strings.Replace(fullName, "[", "(", 1)
 	fullName = strings.Replace(fullName, "]", ")", 1)
 
@@ -172,7 +172,7 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.Card, error) {
 		edition = "Ikoria: Lair of Behemoths"
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

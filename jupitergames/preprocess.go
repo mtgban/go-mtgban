@@ -140,7 +140,7 @@ var commonTags = []string{
 	"April", "July",
 }
 
-func preprocess(cardName, variant, edition, format string) (*mtgmatcher.Card, error) {
+func preprocess(cardName, variant, edition, format string) (*mtgmatcher.InputCard, error) {
 	if edition == "Promo - Ikoria: Lair of Behemoths Prerelease" {
 		return nil, errors.New("not yet supported")
 	}
@@ -424,7 +424,7 @@ func preprocess(cardName, variant, edition, format string) (*mtgmatcher.Card, er
 		variant += " full art"
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

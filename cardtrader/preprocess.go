@@ -10,7 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
+func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	cardName := bp.Name
 	edition := bp.Expansion.Name
 	number := strings.TrimLeft(bp.Properties.Number, "0")
@@ -19,7 +19,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 	// Some, but not all, have a proper id we can reuse right away
 	id := mtgmatcher.Scryfall2UUID(bp.ScryfallId)
 	if id != "" {
-		return &mtgmatcher.Card{
+		return &mtgmatcher.InputCard{
 			Id: id,
 			// Not needed, but helps debugging
 			Name:    cardName,
@@ -425,7 +425,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,

@@ -104,7 +104,7 @@ func setCodeExists(code string) bool {
 	return err == nil
 }
 
-func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
+func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 	isFoil, _ := strconv.ParseBool(card.IsFoil)
 
 	sku := card.SKU
@@ -219,7 +219,7 @@ func Preprocess(card CKCard) (*mtgmatcher.Card, error) {
 		}
 	}
 
-	return &mtgmatcher.Card{
+	return &mtgmatcher.InputCard{
 		Name:      card.Name,
 		Edition:   edition,
 		Variation: variation,
