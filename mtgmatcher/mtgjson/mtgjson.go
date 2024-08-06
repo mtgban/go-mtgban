@@ -86,19 +86,16 @@ type Set struct {
 }
 
 type Card struct {
-	Artist           string   `json:"artist"`
-	AttractionLights []int    `json:"attractionLights"`
-	BorderColor      string   `json:"borderColor"`
-	Colors           []string `json:"colors"`
-	ColorIdentity    []string `json:"colorIdentity"`
-	FaceName         string   `json:"faceName"`
-	FaceFlavorName   string   `json:"faceFlavorName"`
-	Finishes         []string `json:"finishes"`
-	FlavorName       string   `json:"flavorName"`
-	FlavorText       string   `json:"flavorText"`
-	ForeignData      []struct {
-		Language string `json:"language"`
-	} `json:"foreignData"`
+	Artist              string              `json:"artist"`
+	AttractionLights    []int               `json:"attractionLights"`
+	BorderColor         string              `json:"borderColor"`
+	Colors              []string            `json:"colors"`
+	ColorIdentity       []string            `json:"colorIdentity"`
+	FaceName            string              `json:"faceName"`
+	FaceFlavorName      string              `json:"faceFlavorName"`
+	Finishes            []string            `json:"finishes"`
+	FlavorName          string              `json:"flavorName"`
+	FlavorText          string              `json:"flavorText"`
 	FrameEffects        []string            `json:"frameEffects"`
 	FrameVersion        string              `json:"frameVersion"`
 	Identifiers         map[string]string   `json:"identifiers"`
