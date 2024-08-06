@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	backend = NewDatastore(allprints)
+	backend = allprints.Load()
 
 	// Close the file right away so that it can be modified later
 	testDataReader, err := os.Open(TestDataFile)

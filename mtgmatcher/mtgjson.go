@@ -142,12 +142,16 @@ type AllPrintings struct {
 	} `json:"meta"`
 }
 
-func LoadAllPrintings(r io.Reader) (payload AllPrintings, err error) {
-	err = json.NewDecoder(r).Decode(&payload)
-	if err == nil && len(payload.Data) == 0 {
-		err = errors.New("empty AllPrintings file")
+func LoadAllPrintings(r io.Reader) (DataStore, error) {
+	var payload AllPrintings
+	err := json.NewDecoder(r).Decode(&payload)
+	if err != nil {
+		return nil, err
 	}
-	return
+	if len(payload.Data) == 0 {
+		return nil, errors.New("empty AllPrintings file")
+	}
+	return payload, nil
 }
 
 func (c *Card) HasFinish(fi string) bool {

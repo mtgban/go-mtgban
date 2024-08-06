@@ -14,6 +14,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+type DataStore interface {
+	Load() cardBackend
+}
+
 type cardinfo struct {
 	Name      string
 	Printings []string
@@ -358,7 +362,7 @@ func sortPrintings(ap AllPrintings, printings []string) {
 	})
 }
 
-func NewDatastore(ap AllPrintings) cardBackend {
+func (ap AllPrintings) Load() cardBackend {
 	uuids := map[string]CardObject{}
 	cardInfo := map[string]cardinfo{}
 	scryfall := map[string]string{}
@@ -1164,12 +1168,12 @@ func SetGlobalDatastore(datastore cardBackend) {
 }
 
 func LoadDatastore(reader io.Reader) error {
-	allprints, err := LoadAllPrintings(reader)
+	datastore, err := LoadAllPrintings(reader)
 	if err != nil {
 		return err
 	}
 
-	backend = NewDatastore(allprints)
+	backend = datastore.Load()
 	return nil
 }
 
