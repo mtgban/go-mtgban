@@ -1250,6 +1250,7 @@ func LoadDatastoreFile(filename string) error {
 	if err != nil {
 		return err
 	}
+	defer reader.Close()
 	return LoadDatastore(reader)
 }
 
