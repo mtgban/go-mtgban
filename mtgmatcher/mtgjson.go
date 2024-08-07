@@ -124,6 +124,10 @@ type Card struct {
 	UUID                string              `json:"uuid"`
 	Variations          []string            `json:"variations"`
 	Watermark           string              `json:"watermark"`
+
+	// A list of URLs containing the image of the card
+	// At a minimum "full" and "thumbnail" versions should be provided
+	Images map[string]string
 }
 
 // Card implements the Stringer interface

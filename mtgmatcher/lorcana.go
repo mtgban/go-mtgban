@@ -142,6 +142,7 @@ func (lj LorcanaJSON) Load() cardBackend {
 			SetCode:  card.SetCode,
 			Finishes: finishes,
 			Number:   fmt.Sprint(card.Number),
+			Images:   card.Images,
 
 			Colors: []string{strings.ToLower(card.Color)},
 			Rarity: rarity,

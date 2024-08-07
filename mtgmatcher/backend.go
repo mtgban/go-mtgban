@@ -363,6 +363,37 @@ func sortPrintings(ap AllPrintings, printings []string) {
 	})
 }
 
+func scryfallImageURL(card Card, version string) string {
+	number := card.Number
+
+	// Retrieve the original number if present
+	dupe, found := card.Identifiers["originalScryfallNumber"]
+	if found {
+		number = dupe
+	}
+
+	// Support BAN's custom sets
+	code := strings.ToLower(card.SetCode)
+	if strings.HasSuffix(code, "ita") {
+		code = strings.TrimSuffix(code, "ita")
+		number += "/it"
+	} else if strings.HasSuffix(code, "jpn") {
+		code = strings.TrimSuffix(code, "jpn")
+		number += "/ja"
+	}
+	code = strings.TrimSuffix(code, "alt")
+
+	return fmt.Sprintf("https://api.scryfall.com/cards/%s/%s?format=image&version=%s", code, number, version)
+}
+
+func sealedImageURL(card Card) string {
+	tcgId, found := card.Identifiers["tcgplayerProductId"]
+	if !found {
+		return ""
+	}
+	return "https://product-images.tcgplayer.com/" + tcgId + ".jpg"
+}
+
 func (ap AllPrintings) Load() cardBackend {
 	uuids := map[string]CardObject{}
 	cardInfo := map[string]cardinfo{}
@@ -428,6 +459,11 @@ func (ap AllPrintings) Load() cardBackend {
 			if card.IsOnlineOnly {
 				continue
 			}
+
+			card.Images = map[string]string{}
+			card.Images["full"] = scryfallImageURL(card, "normal")
+			card.Images["thumbnail"] = scryfallImageURL(card, "small")
+			card.Images["crop"] = scryfallImageURL(card, "art_crop")
 
 			// Custom modifications or skips
 			switch set.Code {
@@ -734,18 +770,25 @@ func (ap AllPrintings) Load() cardBackend {
 		}
 
 		for _, product := range set.SealedProduct {
+			card := Card{
+				UUID:        product.UUID,
+				Name:        product.Name,
+				SetCode:     code,
+				Identifiers: product.Identifiers,
+				Rarity:      "Product",
+				Layout:      product.Category,
+				Side:        product.Subtype,
+				// Will be filled later
+				SourceProducts: map[string][]string{},
+				Images:         map[string]string{},
+			}
+
+			card.Images["full"] = sealedImageURL(card)
+			card.Images["thumbnail"] = sealedImageURL(card)
+			card.Images["crop"] = sealedImageURL(card)
+
 			uuids[product.UUID] = CardObject{
-				Card: Card{
-					UUID:        product.UUID,
-					Name:        product.Name,
-					SetCode:     code,
-					Identifiers: product.Identifiers,
-					Rarity:      "Product",
-					Layout:      product.Category,
-					Side:        product.Subtype,
-					// Will be filled later
-					SourceProducts: map[string][]string{},
-				},
+				Card:    card,
 				Sealed:  true,
 				Edition: set.Name,
 			}
@@ -1054,6 +1097,12 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 		dup.Cards[i].SetCode = dup.Code
 		dup.Cards[i].Language = langs[tag]
 
+		// Update images
+		dup.Cards[i].Images = map[string]string{}
+		dup.Cards[i].Images["full"] = scryfallImageURL(dup.Cards[i], "normal")
+		dup.Cards[i].Images["thumbnail"] = scryfallImageURL(dup.Cards[i], "small")
+		dup.Cards[i].Images["crop"] = scryfallImageURL(dup.Cards[i], "art_crop")
+
 		// Update printings for the CardInfo map
 		ci := cardInfo[Normalize(dup.Cards[i].Name)]
 		ci.Printings = printings
@@ -1092,6 +1141,12 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 		dupeCard := sets[code].Cards[i]
 		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
 		dupeCard.Language = langs[tag]
+
+		// Update images
+		dupeCard.Images = map[string]string{}
+		dupeCard.Images["full"] = scryfallImageURL(dupeCard, "normal")
+		dupeCard.Images["thumbnail"] = scryfallImageURL(dupeCard, "small")
+		dupeCard.Images["crop"] = scryfallImageURL(dupeCard, "art_crop")
 
 		duplicates = append(duplicates, dupeCard)
 
@@ -1154,6 +1209,12 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		dupeCard.Number += mtgjson.SuffixSpecial
 		dupeCard.Finishes = []string{"foil"}
+
+		// Update images
+		dupeCard.Images = map[string]string{}
+		dupeCard.Images["full"] = scryfallImageURL(dupeCard, "normal")
+		dupeCard.Images["thumbnail"] = scryfallImageURL(dupeCard, "small")
+		dupeCard.Images["crop"] = scryfallImageURL(dupeCard, "art_crop")
 
 		// Update or create the new card object, add the new card to the list
 		co.Card = dupeCard
