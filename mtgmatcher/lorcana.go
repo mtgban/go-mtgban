@@ -184,6 +184,7 @@ func (lj LorcanaJSON) Load() cardBackend {
 
 	// Update any reamining details on Sets after Cards loading
 	for code := range backend.Sets {
+		var rarities, colors []string
 		backend.Sets[code].IsFoilOnly = true
 		backend.Sets[code].IsNonFoilOnly = true
 		for _, card := range backend.Sets[code].Cards {
@@ -197,8 +198,33 @@ func (lj LorcanaJSON) Load() cardBackend {
 			if !card.HasFinish("nonfoil") {
 				backend.Sets[code].IsFoilOnly = false
 			}
+
+			if !slices.Contains(rarities, card.Rarity) {
+				rarities = append(rarities, card.Rarity)
+			}
+			if len(card.Colors) > 0 && !slices.Contains(colors, card.Colors[0]) {
+				colors = append(colors, card.Colors[0])
+			}
 		}
+
+		sort.Slice(rarities, func(i, j int) bool {
+			return lorcanaRarityMap[rarities[i]] > lorcanaRarityMap[rarities[j]]
+		})
+		backend.Sets[code].Rarities = rarities
+
+		sort.Strings(colors)
+		backend.Sets[code].Colors = colors
 	}
 
 	return backend
+}
+
+var lorcanaRarityMap = map[string]int{
+	"common":    1,
+	"uncommon":  2,
+	"rare":      3,
+	"superrare": 4,
+	"legendary": 5,
+	"enchanted": 6,
+	"special":   7,
 }
