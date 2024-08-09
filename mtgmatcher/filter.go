@@ -184,6 +184,10 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				if !(inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || strings.Contains(inCard.Variation, "V.2")) {
 					continue
 				}
+			case "MB2":
+				if !inCard.Contains("Mystery Booster 2") {
+					continue
+				}
 			case "PLST":
 				// Check if there is an exact match in plain SLD
 				num := ExtractNumber(inCard.Variation)
