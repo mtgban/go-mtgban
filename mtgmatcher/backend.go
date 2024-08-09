@@ -775,7 +775,7 @@ func (ap AllPrintings) Load() cardBackend {
 				Name:        product.Name,
 				SetCode:     code,
 				Identifiers: product.Identifiers,
-				Rarity:      "Product",
+				Rarity:      "product",
 				Layout:      product.Category,
 				Side:        product.Subtype,
 				// Will be filled later
