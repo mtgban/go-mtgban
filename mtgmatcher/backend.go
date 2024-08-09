@@ -430,6 +430,7 @@ func (ap AllPrintings) Load() cardBackend {
 
 	for code, set := range ap.Data {
 		var filteredCards []Card
+		var rarities, colors []string
 
 		allSets = append(allSets, code)
 
@@ -738,10 +739,37 @@ func (ap AllPrintings) Load() cardBackend {
 					promoTypes = append(promoTypes, promoType)
 				}
 			}
+
+			// Add possible rarities and colors
+			if !slices.Contains(rarities, card.Rarity) {
+				rarities = append(rarities, card.Rarity)
+			}
+			for _, color := range card.Colors {
+				if !slices.Contains(colors, mtgColorNameMap[color]) {
+					colors = append(colors, mtgColorNameMap[color])
+				}
+			}
+			if len(card.Colors) == 0 && !slices.Contains(colors, "colorless") {
+				colors = append(colors, "colorless")
+			}
+			if len(card.Colors) > 1 && !slices.Contains(colors, "multicolor") {
+				colors = append(colors, "multicolor")
+			}
+
 		}
 
 		// Replace the original array with the filtered one
 		set.Cards = filteredCards
+
+		// Assign the rarities and colors present in the set
+		sort.Slice(rarities, func(i, j int) bool {
+			return mtgRarityMap[rarities[i]] > mtgRarityMap[rarities[j]]
+		})
+		set.Rarities = rarities
+		sort.Slice(colors, func(i, j int) bool {
+			return mtgColorMap[colors[i]] > mtgColorMap[colors[j]]
+		})
+		set.Colors = colors
 
 		// Adjust the setBaseSize to take into account the cards with
 		// the same name in the same set (also make sure that it is
@@ -922,6 +950,34 @@ func (ap AllPrintings) Load() cardBackend {
 	backend.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 
 	return backend
+}
+
+var mtgRarityMap = map[string]int{
+	"token":    1,
+	"common":   2,
+	"uncommon": 3,
+	"rare":     4,
+	"mythic":   5,
+	"special":  6,
+	"oversize": 7,
+}
+
+var mtgColorNameMap = map[string]string{
+	"W": "white",
+	"U": "blue",
+	"B": "black",
+	"R": "red",
+	"G": "green",
+}
+
+var mtgColorMap = map[string]int{
+	"white":      7,
+	"blue":       6,
+	"black":      5,
+	"red":        4,
+	"green":      3,
+	"colorless":  2,
+	"multicolor": 1,
 }
 
 func fillinSLDdecks(set *Set) []string {

@@ -62,6 +62,11 @@ type Set struct {
 	Tokens        []Card `json:"tokens"`
 	Type          string `json:"type"`
 
+	// List of rarities present in the set
+	Rarities []string
+	// List of card colors present in the set
+	Colors []string
+
 	TCGPlayerGroupId int `json:"tcgplayerGroupId"`
 
 	Booster       map[string]Booster `json:"booster"`
