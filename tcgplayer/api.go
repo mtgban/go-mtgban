@@ -195,6 +195,9 @@ func (tcg *TCGClient) Get(url string) (*TCGResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
 	}
+	if len(response.Errors) > 0 {
+		return nil, fmt.Errorf(strings.Join(response.Errors, " "))
+	}
 
 	return &response, nil
 }
