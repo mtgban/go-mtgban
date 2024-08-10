@@ -151,6 +151,7 @@ const (
 	CategoryMagic   = 1
 	CategoryYuGiOh  = 2
 	CategoryPokemon = 3
+	CategoryLorcana = 71
 
 	ProductTypeCards               = "Cards"
 	ProductTypeBoosterBox          = "Booster Box"
@@ -223,7 +224,9 @@ type TCGProduct struct {
 func (tcgp *TCGProduct) GetNumber() string {
 	for _, extData := range tcgp.ExtendedData {
 		if extData.Name == "Number" {
-			return strings.TrimLeft(extData.Value, "0")
+			num := strings.TrimLeft(extData.Value, "0")
+			num = strings.Split(num, "/")[0]
+			return num
 		}
 	}
 	return ""
