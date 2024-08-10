@@ -123,6 +123,7 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 					URL:        link,
 					SellerName: names[i],
 					Bundle:     isDirect,
+					OriginalId: fmt.Sprint(result.ProductId),
 				},
 			}
 
