@@ -301,6 +301,40 @@ func (tcg *TCGClient) queryTotal(link string, category int, productTypes []strin
 	return response.TotalItems, nil
 }
 
+func (tcg *TCGClient) ListProducts(productIds []int, includeSkus bool) ([]TCGProduct, error) {
+	link := tcgApiListProductsURL + "/"
+	for _, pid := range productIds {
+		link += fmt.Sprintf("%d,", pid)
+	}
+	link = strings.TrimLeft(link, ",")
+
+	u, err := url.Parse(link)
+	if err != nil {
+		return nil, err
+	}
+
+	v := url.Values{}
+	v.Set("getExtendedFields", "true")
+	if includeSkus {
+		v.Set("includeSkus", "true")
+	}
+
+	u.RawQuery = v.Encode()
+
+	resp, err := tcg.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+
+	var out []TCGProduct
+	err = json.Unmarshal(resp.Results, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
 func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, includeSkus bool, offset int, limit int) ([]TCGProduct, error) {
 	u, err := url.Parse(tcgApiListProductsURL)
 	if err != nil {
