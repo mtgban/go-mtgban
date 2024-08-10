@@ -203,14 +203,16 @@ func (tcg *TCGClient) Get(url string) (*TCGResponse, error) {
 }
 
 type TCGProduct struct {
-	ProductId    int      `json:"productId"`
-	Name         string   `json:"name"`
-	CleanName    string   `json:"cleanName"`
-	ImageUrl     string   `json:"imageUrl"`
-	GroupId      int      `json:"groupId"`
-	URL          string   `json:"url"`
-	ModifiedOn   string   `json:"modifiedOn"`
-	Skus         []TCGSKU `json:"skus,omitempty"`
+	ProductId  int      `json:"productId"`
+	Name       string   `json:"name"`
+	CleanName  string   `json:"cleanName"`
+	ImageUrl   string   `json:"imageUrl"`
+	GroupId    int      `json:"groupId"`
+	URL        string   `json:"url"`
+	ModifiedOn string   `json:"modifiedOn"`
+	Skus       []TCGSKU `json:"skus,omitempty"`
+
+	// Only available for catalog/products API calls
 	ExtendedData []struct {
 		Name        string `json:"name"`
 		DisplayName string `json:"displayName"`
