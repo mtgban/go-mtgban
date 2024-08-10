@@ -203,7 +203,7 @@ func (tcg *TCGPlayerGeneric) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {
-	info.Name = "TCG Player - " + tcg.categoryDisplayName
+	info.Name = "TCGplayer - " + tcg.categoryDisplayName
 	info.Shorthand = "TCG+" + tcg.categoryName
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.MetadataOnly = true
