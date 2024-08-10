@@ -32,6 +32,7 @@ const (
 	tcgApiListGroupsURL   = "https://api.tcgplayer.com/catalog/groups"
 
 	tcgApiCategoriesURL = "https://api.tcgplayer.com/catalog/categories/"
+	tcgApiPrintingsURL  = "https://api.tcgplayer.com/catalog/categories/%d/printings"
 
 	tcgApiVersion    = "v1.39.0"
 	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
@@ -304,6 +305,26 @@ func (tcg *TCGClient) queryTotal(link string, category int, productTypes []strin
 	return response.TotalItems, nil
 }
 
+type TCGPrinting struct {
+	PrintingId int    `json:"printingId"`
+	Name       string `json:"name"`
+}
+
+func (tcg *TCGClient) ListCategoryPrintings(category int) ([]TCGPrinting, error) {
+	resp, err := tcg.Get(fmt.Sprintf(tcgApiPrintingsURL, category))
+	if err != nil {
+		return nil, err
+	}
+
+	var out []TCGPrinting
+	err = json.Unmarshal(resp.Results, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
 func (tcg *TCGClient) ListProducts(productIds []int, includeSkus bool) ([]TCGProduct, error) {
 	link := tcgApiListProductsURL + "/"
 	for _, pid := range productIds {
@@ -458,6 +479,14 @@ func (tcg *TCGClient) TCGPricesForIds(productIds []string) ([]TCGPrice, error) {
 	}
 
 	return out, nil
+}
+
+var SKUConditionMap = map[int]string{
+	1: "NM",
+	2: "SP",
+	3: "MP",
+	4: "HP",
+	5: "PO",
 }
 
 type TCGSKU struct {
