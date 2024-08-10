@@ -97,6 +97,11 @@ func (be BuylistEntry) Condition() string {
 	return be.Conditions
 }
 
+const (
+	GameMagic   = ""
+	GameLorcana = "Lorcana"
+)
+
 // ScraperInfo contains
 type ScraperInfo struct {
 	// Full name of the store
@@ -128,6 +133,9 @@ type ScraperInfo struct {
 
 	// Whether the prices can be coalesced in a single entity
 	Family string `json:"family,omitempty"`
+
+	// Which game the scraper belongs to
+	Game string `json:"game,omitempty"`
 }
 
 // The default list of conditions most scrapers output
