@@ -638,9 +638,9 @@ func TCGLatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, er
 
 	if len(foil) > 0 {
 		if foil[0] {
-			params.Variants = []string{"2"}
+			params.Variants = []string{"2", "133", "141"}
 		} else {
-			params.Variants = []string{"1"}
+			params.Variants = []string{"1", "132"}
 		}
 	}
 
