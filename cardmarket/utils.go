@@ -25,11 +25,6 @@ var filteredExpansionsTags = []string{
 	"TokyoMTG Products",
 }
 
-type MKMExpansionIdPair struct {
-	IdExpansion int
-	Name        string
-}
-
 func (mkm *MKMClient) FilteredExpansions() ([]MKMExpansion, error) {
 	expansions, err := mkm.MKMExpansions()
 	if err != nil {
