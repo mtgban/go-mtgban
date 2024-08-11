@@ -3,6 +3,7 @@ package coolstuffinc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -30,8 +31,8 @@ type CSICard struct {
 const (
 	csiPricelistURL = "https://www.coolstuffinc.com/gateway_json.php?k="
 
-	csiBuylistURL  = "https://www.coolstuffinc.com/GeneratedFiles/SellList/Section-mtg.json"
-	csiBuylistLink = "https://www.coolstuffinc.com/main_selllist.php?s=mtg"
+	csiBuylistURL  = "https://www.coolstuffinc.com/GeneratedFiles/SellList/Section-%s.json"
+	csiBuylistLink = "https://www.coolstuffinc.com/main_selllist.php?s=%s"
 )
 
 type CSIClient struct {
@@ -94,8 +95,8 @@ type CSIPriceEntry struct {
 	CreditPrice string `json:"CreditPrice"`
 }
 
-func GetBuylist() ([]CSIPriceEntry, error) {
-	resp, err := cleanhttp.DefaultClient().Get(csiBuylistURL)
+func GetBuylist(game string) ([]CSIPriceEntry, error) {
+	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(csiBuylistURL, game))
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +117,8 @@ func GetBuylist() ([]CSIPriceEntry, error) {
 }
 
 // Load the list of editions to id used to build links
-func LoadBuylistEditions() (map[string]string, error) {
-	resp, err := cleanhttp.DefaultClient().Get(csiBuylistLink)
+func LoadBuylistEditions(game string) (map[string]string, error) {
+	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(csiBuylistLink, game))
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +157,7 @@ type SearchResult struct {
 }
 
 // Convert the item name to the id and the first page of results
-func Search(itemName string, skipOOS bool) (*SearchResult, error) {
+func Search(game, itemName string, skipOOS bool) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", "")
 	v.Set("f[Artist][]", "")
@@ -187,7 +188,7 @@ func Search(itemName string, skipOOS bool) (*SearchResult, error) {
 	v.Add("f[Rarity][]", "F")
 	v.Add("f[Rarity][]", "PO")
 	v.Set("f[ItemSet][]", itemName)
-	v.Set("s", "mtg")
+	v.Set("s", game)
 	v.Set("page", "1")
 	v.Set("resultsPerPage", "50")
 	v.Set("submit", "Search")

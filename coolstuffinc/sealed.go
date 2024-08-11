@@ -30,6 +30,7 @@ type CoolstuffincSealed struct {
 	buylist   mtgban.BuylistRecord
 
 	httpclient *http.Client
+	game       string
 }
 
 func NewScraperSealed() *CoolstuffincSealed {
@@ -52,6 +53,7 @@ func NewScraperSealed() *CoolstuffincSealed {
 		}
 		csi.productMap[id] = co.UUID
 	}
+	csi.game = GameMagic
 	return &csi
 }
 
@@ -221,7 +223,7 @@ func (csi *CoolstuffincSealed) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (csi *CoolstuffincSealed) parseBL() error {
-	products, err := GetBuylist()
+	products, err := GetBuylist(csi.game)
 	if err != nil {
 		return err
 	}

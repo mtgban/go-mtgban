@@ -24,9 +24,17 @@ import (
 const (
 	defaultConcurrency = 8
 
-	csiInventoryURL = "https://www.coolstuffinc.com/sq/?s=mtg"
+	csiInventoryURL = "https://www.coolstuffinc.com/sq/?s="
 
 	defaultBuylistPage = "https://www.coolstuffinc.com/main_buylist_display.php"
+
+	GameMagic             = "mtg"
+	GameLorcana           = "lorcana"
+	GameYugioh            = "yugioh"
+	GameDragonBallSuper   = "dbs"
+	GameOnePiece          = "optcg"
+	GameStarWarsUnlimited = "swu"
+	GamePokemon           = "pokemon"
 )
 
 var deductions = []float64{1, 1, 0.75}
@@ -47,15 +55,17 @@ type Coolstuffinc struct {
 	buylist   mtgban.BuylistRecord
 
 	httpclient *http.Client
+	game       string
 }
 
-func NewScraper() *Coolstuffinc {
+func NewScraper(game string) *Coolstuffinc {
 	csi := Coolstuffinc{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
 	csi.httpclient = http.NewClient()
 	csi.httpclient.Logger = nil
 	csi.MaxConcurrency = defaultConcurrency
+	csi.game = game
 	return &csi
 }
 
@@ -72,7 +82,7 @@ func (csi *Coolstuffinc) printf(format string, a ...interface{}) {
 }
 
 func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName string) error {
-	result, err := Search(itemName, csi.FastMode)
+	result, err := Search(csi.game, itemName, csi.FastMode)
 	if err != nil {
 		return err
 	}
@@ -115,11 +125,6 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 				if imgURL == "" {
 					log.Println("img not found", cardName, edition)
 				}
-			}
-
-			theCard, err := preprocess(cardName, edition, notes, imgURL)
-			if err != nil {
-				return
 			}
 
 			s.Find(`div[itemprop="offers"]`).Each(func(i int, se *goquery.Selection) {
@@ -170,7 +175,7 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 					case strings.Contains(conditions, "BGS"),
 						strings.Contains(conditions, "Unique"):
 					default:
-						csi.printf("Unsupported '%s' condition for %s", conditions, theCard)
+						csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
 					}
 					return
 				}
@@ -197,33 +202,45 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 					link += "?utm_referrer=mtgban"
 				}
 
-				// preprocess() might return something that derived foil status
-				// from one of the fields (cardName in particular)
-				theCard.Foil = theCard.Foil || isFoil
-				cardId, err := mtgmatcher.Match(theCard)
-				if errors.Is(err, mtgmatcher.ErrUnsupported) {
-					return
-				} else if err != nil {
-					switch {
-					// Ignore errors
-					case theCard.IsBasicLand(),
-						notes == "" && strings.Contains(edition, "The List"),
-						strings.Contains(notes, "Preorder"):
-					default:
-						csi.printf("%v", err)
-						csi.printf("%v", theCard)
-						csi.printf("'%s' '%s' '%s'", cardName, edition, notes)
-						csi.printf("- %s", link)
+				var cardId string
+				switch csi.game {
+				case GameMagic:
+					theCard, err := preprocess(cardName, edition, notes, imgURL)
+					if err != nil {
+						return
+					}
+					// preprocess() might return something that derived foil status
+					// from one of the fields (cardName in particular)
+					theCard.Foil = theCard.Foil || isFoil
 
-						var alias *mtgmatcher.AliasingError
-						if errors.As(err, &alias) {
-							probes := alias.Probe()
-							for _, probe := range probes {
-								card, _ := mtgmatcher.GetUUID(probe)
-								csi.printf("- %s", card)
+					cardId, err = mtgmatcher.Match(theCard)
+					if errors.Is(err, mtgmatcher.ErrUnsupported) {
+						return
+					} else if err != nil {
+						switch {
+						// Ignore errors
+						case theCard.IsBasicLand(),
+							notes == "" && strings.Contains(edition, "The List"),
+							strings.Contains(notes, "Preorder"):
+						default:
+							csi.printf("%v", err)
+							csi.printf("%v", theCard)
+							csi.printf("'%s' '%s' '%s'", cardName, edition, notes)
+							csi.printf("- %s", link)
+
+							var alias *mtgmatcher.AliasingError
+							if errors.As(err, &alias) {
+								probes := alias.Probe()
+								for _, probe := range probes {
+									card, _ := mtgmatcher.GetUUID(probe)
+									csi.printf("- %s", card)
+								}
 							}
 						}
+						return
 					}
+				default:
+					csi.printf("unsupported game")
 					return
 				}
 
@@ -252,7 +269,7 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 }
 
 func (csi *Coolstuffinc) scrape() error {
-	resp, err := csi.httpclient.Get(csiInventoryURL)
+	resp, err := csi.httpclient.Get(csiInventoryURL + csi.game)
 	if err != nil {
 		return err
 	}
@@ -344,13 +361,13 @@ func (csi *Coolstuffinc) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (csi *Coolstuffinc) parseBL() error {
-	edition2id, err := LoadBuylistEditions()
+	edition2id, err := LoadBuylistEditions(csi.game)
 	if err != nil {
 		return err
 	}
 	csi.printf("Loaded %d editions", len(edition2id))
 
-	products, err := GetBuylist()
+	products, err := GetBuylist(csi.game)
 	if err != nil {
 		return err
 	}
@@ -362,9 +379,9 @@ func (csi *Coolstuffinc) parseBL() error {
 		}
 
 		// Build link early to help debug
-		u, _ := url.Parse(csiBuylistLink)
+		u, _ := url.Parse(fmt.Sprintf(csiBuylistLink, csi.game))
 		v := url.Values{}
-		v.Set("s", "mtg")
+		v.Set("s", csi.game)
 		v.Set("a", "1")
 		v.Set("name", product.Name)
 		v.Set("f[]", fmt.Sprint(product.IsFoil))
@@ -376,29 +393,34 @@ func (csi *Coolstuffinc) parseBL() error {
 		u.RawQuery = v.Encode()
 		link := u.String()
 
-		theCard, err := PreprocessBuylist(product)
-		if err != nil {
-			continue
-		}
-
-		cardId, err := mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			csi.printf("error: %v", err)
-			csi.printf("original: %q", product)
-			csi.printf("preprocessed: %q", theCard)
-			csi.printf("link: %q", link)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					csi.printf("- %s", card)
-				}
+		var cardId string
+		if csi.game == GameMagic {
+			theCard, err := PreprocessBuylist(product)
+			if err != nil {
+				continue
 			}
-			continue
+
+			cardId, err = mtgmatcher.Match(theCard)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				csi.printf("error: %v", err)
+				csi.printf("original: %q", product)
+				csi.printf("preprocessed: %q", theCard)
+				csi.printf("link: %q", link)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						csi.printf("- %s", card)
+					}
+				}
+				continue
+			}
+		} else {
+			return errors.New("unsupported game")
 		}
 
 		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
@@ -458,5 +480,9 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
 	info.CreditMultiplier = 1.25
+	switch csi.game {
+	case GameMagic:
+		info.Game = mtgban.GameMagic
+	}
 	return
 }
