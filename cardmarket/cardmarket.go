@@ -74,38 +74,51 @@ func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, idExpans
 }
 
 func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide []PriceGuide) error {
-	theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
-	if err != nil {
-		_, ok := err.(*PreprocessError)
-		if ok {
-			return err
-		}
-		return nil
-	}
+	var cardId string
 	var cardIdFoil string
-	cardId, err := mtgmatcher.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
-		return nil
-	} else if err != nil {
-		if mtgmatcher.IsToken(theCard.Name) ||
-			theCard.Edition == "Pro Tour Collector Set" ||
-			strings.HasPrefix(theCard.Edition, "World Championship Decks") {
+
+	switch mkm.gameId {
+	case GameIdMagic:
+		theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
+		if err != nil {
+			_, ok := err.(*PreprocessError)
+			if ok {
+				return err
+			}
 			return nil
 		}
 
-		mkm.printf("%v", err)
-		mkm.printf("%q", theCard)
-		mkm.printf("%v|%v|%v", product.Name, product.Number, product.ExpansionName)
-
-		var alias *mtgmatcher.AliasingError
-		if errors.As(err, &alias) {
-			probes := alias.Probe()
-			for _, probe := range probes {
-				card, _ := mtgmatcher.GetUUID(probe)
-				mkm.printf("- %s", card)
+		cardId, err = mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return nil
+		} else if err != nil {
+			if mtgmatcher.IsToken(theCard.Name) ||
+				theCard.Edition == "Pro Tour Collector Set" ||
+				strings.HasPrefix(theCard.Edition, "World Championship Decks") {
+				return nil
 			}
+
+			mkm.printf("%v", err)
+			mkm.printf("%q", theCard)
+			mkm.printf("%v|%v|%v", product.Name, product.Number, product.ExpansionName)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					mkm.printf("- %s", card)
+				}
+			}
+			return err
 		}
-		return err
+
+		cardIdFoil, err = mtgmatcher.MatchId(cardId, true)
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("unsupported game")
 	}
 
 	link, err := url.Parse("https://www.cardmarket.com" + product.Website)
@@ -172,14 +185,6 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			v.Set("isFoil", "Y")
 			link.RawQuery = v.Encode()
 
-			if cardIdFoil == "" {
-				theCard, _ = Preprocess(product.Name, product.Number, product.ExpansionName)
-				theCard.Foil = true
-				cardIdFoil, err = mtgmatcher.Match(theCard)
-				if err != nil {
-					return nil
-				}
-			}
 			// If the id is the same it means that the card was really nonfoil-only
 			if cardId != cardIdFoil {
 				for i := range availableIndexNames {
