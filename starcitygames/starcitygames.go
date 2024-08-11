@@ -108,39 +108,45 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 			sku = result.Document.HawkChildAttributes[0].VariantSKU[0]
 		}
 
-		cc := SCGCardVariant{
-			Name:     cardName,
-			Subtitle: variant,
-			Sku:      sku,
-		}
-		theCard, err := preprocess(&cc, edition, language, finish == "Foil", number)
-		if err != nil {
-			continue
-		}
-
-		cardId, err := mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			// Skip errors from tokens and similar
-			if strings.Contains(cardName, "Token") ||
-				strings.Contains(variant, "Token") ||
-				strings.HasPrefix(cardName, "{") {
+		var cardId string
+		switch scg.game {
+		case GameMagic:
+			cc := SCGCardVariant{
+				Name:     cardName,
+				Subtitle: variant,
+				Sku:      sku,
+			}
+			theCard, err := preprocess(&cc, edition, language, finish == "Foil", number)
+			if err != nil {
 				continue
 			}
-			scg.printf("%v", err)
-			scg.printf("%q", theCard)
-			scg.printf("%v ~ %s ~ %s ~ %s", cc, edition, finish, number)
 
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					scg.printf("- %s", card)
+			cardId, err = mtgmatcher.Match(theCard)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				// Skip errors from tokens and similar
+				if strings.Contains(cardName, "Token") ||
+					strings.Contains(variant, "Token") ||
+					strings.HasPrefix(cardName, "{") {
+					continue
 				}
+				scg.printf("%v", err)
+				scg.printf("%q", theCard)
+				scg.printf("%v ~ %s ~ %s ~ %s", cc, edition, finish, number)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						scg.printf("- %s", card)
+					}
+				}
+				continue
 			}
-			continue
+		default:
+			return errors.New("unsupported game")
 		}
 
 		customFields := map[string]string{
@@ -320,28 +326,33 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 				continue
 			}
 
-			theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "F", hit.CollectorNumber)
-			if err != nil {
-				break
-			}
-
-			cardId, err := mtgmatcher.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				break
-			} else if err != nil {
-				scg.printf("%v", err)
-				scg.printf("%q", theCard)
-				scg.printf("'%q' (%s, %s, %s)", result, hit.SetName, hit.Language, hit.Finish)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						scg.printf("- %s", card)
-					}
+			var cardId string
+			if scg.game == GameMagic {
+				theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "F", hit.CollectorNumber)
+				if err != nil {
+					break
 				}
-				break
+
+				cardId, err = mtgmatcher.Match(theCard)
+				if errors.Is(err, mtgmatcher.ErrUnsupported) {
+					break
+				} else if err != nil {
+					scg.printf("%v", err)
+					scg.printf("%q", theCard)
+					scg.printf("'%q' (%s, %s, %s)", result, hit.SetName, hit.Language, hit.Finish)
+
+					var alias *mtgmatcher.AliasingError
+					if errors.As(err, &alias) {
+						probes := alias.Probe()
+						for _, probe := range probes {
+							card, _ := mtgmatcher.GetUUID(probe)
+							scg.printf("- %s", card)
+						}
+					}
+					break
+				}
+			} else {
+				return errors.New("unsupported game")
 			}
 
 			var priceRatio, sellPrice float64
@@ -458,5 +469,9 @@ func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.CreditMultiplier = 1.3
+	switch scg.game {
+	case GameMagic:
+		info.Game = mtgban.GameMagic
+	}
 	return
 }
