@@ -176,6 +176,32 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 					cardId = cardIdFoil
 				}
 			}
+		} else if ct.gameId == GameIdLorcana {
+			if product.Properties.LorcanaLanguage != "en" {
+				continue
+			}
+
+			cardName := blueprint.Name
+			collectorNumber := strings.TrimLeft(product.Properties.Number, "0")
+
+			cardId, err = mtgmatcher.SimpleSearch(cardName, collectorNumber, product.Properties.LorcanaFoil)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				ct.printf("%v", err)
+				ct.printf("%+v", blueprint)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					ct.printf("%s got ids: %s", cardName, probes)
+					for _, probe := range probes {
+						co, _ := mtgmatcher.GetUUID(probe)
+						ct.printf("%s: %s", probe, co)
+					}
+				}
+				continue
+			}
 		} else {
 			ct.printf("unsupported game %d", ct.gameId)
 			return
@@ -351,6 +377,8 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	switch ct.gameId {
 	case GameIdMagic:
 		info.Game = mtgban.GameMagic
+	case GameIdLorcana:
+		info.Game = mtgban.GameLorcana
 	}
 	return
 }

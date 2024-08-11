@@ -71,6 +71,27 @@ const (
 	CategoryMagicGamingStones
 )
 
+const (
+	CategoryLorcanaSingles = iota + 214
+	CategoryLorcanaBoosterBoxes
+	CategoryLorcanaBoosters
+	CategoryLorcanaBundles
+	CategoryLorcanaBoxDisplays
+	CategoryLorcanaStarterDecks
+	CategoryLorcanaPlaymats
+	CategoryLorcanaAlbums
+	CategoryLorcanaSleeves
+	CategoryLorcanaDeckBoxes
+	_
+	_
+	_
+	_
+	_
+	CategoryLorcanaMemorabilia
+	CategoryLorcanaOversized
+	CategoryLorcanaCompleteSets
+)
+
 type Blueprint struct {
 	Id         int    `json:"id"`
 	Name       string `json:"name"`
@@ -111,6 +132,9 @@ type Product struct {
 
 		MTGLanguage string `json:"mtg_language,omitempty"`
 		MTGFoil     bool   `json:"mtg_foil,omitempty"`
+
+		LorcanaLanguage string `json:"lorcana_language,omitempty"`
+		LorcanaFoil     bool   `json:"lorcana_foil,omitempty"`
 	} `json:"properties_hash"`
 	User struct {
 		Name        string `json:"username"`
