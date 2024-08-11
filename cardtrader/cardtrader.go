@@ -34,13 +34,15 @@ type CardtraderMarket struct {
 	inventory mtgban.InventoryRecord
 
 	blueprints map[int]*Blueprint
+
+	gameId int
 }
 
 var availableMarketNames = []string{
 	"Card Trader", "Card Trader Zero",
 }
 
-func NewScraperMarket(token string) (*CardtraderMarket, error) {
+func NewScraperMarket(gameId int, token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
@@ -51,6 +53,8 @@ func NewScraperMarket(token string) (*CardtraderMarket, error) {
 		return nil, err
 	}
 	ct.exchangeRate = rate
+
+	ct.gameId = gameId
 	return &ct, nil
 }
 
@@ -96,23 +100,16 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 		return
 	}
 
-	theCard, err := Preprocess(blueprint)
-	if err != nil {
-		return
+	var theCard *mtgmatcher.InputCard
+	if ct.gameId == GameIdMagic {
+		var err error
+		theCard, err = Preprocess(blueprint)
+		if err != nil {
+			return
+		}
 	}
 
 	for _, product := range products {
-		lang := product.Properties.MTGLanguage
-		if lang != "" {
-			lang, found = langMap[strings.ToLower(lang)]
-			if !found {
-				ct.printf("unsupported '%s' language", product.Properties.MTGLanguage)
-				ct.printf("%s '%q'", theCard, product)
-				continue
-			}
-			theCard.Language = lang
-		}
-
 		switch {
 		case product.Quantity < 1,
 			product.OnVacation,
@@ -139,30 +136,49 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			continue
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			ct.printf("%v", err)
-			ct.printf("%q", theCard)
-			ct.printf("%d %q", bpId, blueprint)
+		var cardId string
+		var err error
 
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					ct.printf("- %s", card)
+		if ct.gameId == GameIdMagic {
+			lang := product.Properties.MTGLanguage
+			if lang != "" {
+				lang, found = langMap[strings.ToLower(lang)]
+				if !found {
+					ct.printf("unsupported '%s' language", product.Properties.MTGLanguage)
+					ct.printf("%s '%q'", theCard, product)
+					continue
+				}
+				theCard.Language = lang
+			}
+
+			cardId, err = mtgmatcher.Match(theCard)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				ct.printf("%v", err)
+				ct.printf("%q", theCard)
+				ct.printf("%d %q", bpId, blueprint)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						ct.printf("- %s", card)
+					}
+				}
+				break
+			}
+
+			if product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
+				cardIdFoil, err := mtgmatcher.MatchId(cardId, true)
+				if err == nil {
+					cardId = cardIdFoil
 				}
 			}
-			break
-		}
-
-		if product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			cardIdFoil, err := mtgmatcher.MatchId(cardId, true)
-			if err == nil {
-				cardId = cardIdFoil
-			}
+		} else {
+			ct.printf("unsupported game %d", ct.gameId)
+			return
 		}
 
 		qty := product.Quantity
@@ -223,7 +239,7 @@ func (ct *CardtraderMarket) scrape() error {
 
 	var blueprintsRaw []Blueprint
 	for _, exp := range expansionsRaw {
-		if exp.GameId != GameIdMagic {
+		if exp.GameId != ct.gameId {
 			continue
 		}
 		if ct.TargetEdition != "" && exp.Name != ct.TargetEdition && exp.Code != strings.ToLower(ct.TargetEdition) {
@@ -332,5 +348,9 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.Family = "CT"
+	switch ct.gameId {
+	case GameIdMagic:
+		info.Game = mtgban.GameMagic
+	}
 	return
 }

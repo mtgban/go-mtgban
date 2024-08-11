@@ -23,6 +23,7 @@ type CardtraderSealed struct {
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
+	gameId        int
 }
 
 func NewScraperSealed(token string) (*CardtraderSealed, error) {
@@ -37,6 +38,8 @@ func NewScraperSealed(token string) (*CardtraderSealed, error) {
 		return nil, err
 	}
 	ct.exchangeRate = rate
+
+	ct.gameId = GameIdMagic
 	return &ct, nil
 }
 
@@ -125,7 +128,7 @@ func (ct *CardtraderSealed) scrape() error {
 
 	var blueprintsRaw []Blueprint
 	for _, exp := range expansionsRaw {
-		if exp.GameId != GameIdMagic {
+		if exp.GameId != ct.gameId {
 			continue
 		}
 		if ct.TargetEdition != "" && exp.Name != ct.TargetEdition && exp.Code != strings.ToLower(ct.TargetEdition) {

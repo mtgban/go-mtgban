@@ -27,7 +27,17 @@ const (
 
 	MaxBulkUploadItems = 450
 
-	GameIdMagic = 1
+	GameIdMagic             = 1
+	GameIdYuGiOh            = 4
+	GameIdPokemon           = 5
+	GameIdFleshAndBlood     = 5
+	GameIdDigimon           = 8
+	GameIdDragonBallSuper   = 9
+	GameIdVanguard          = 10
+	GameIdMyHeroAcademia    = 14
+	GameIdOnePiece          = 15
+	GameIdLorcana           = 18
+	GameIdStarWarsUnlimited = 20
 )
 
 const (

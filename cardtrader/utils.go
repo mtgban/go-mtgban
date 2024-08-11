@@ -117,11 +117,6 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 	formatted := map[int]*Blueprint{}
 	expansions := map[int]string{}
 	for i := range blueprints {
-		switch blueprints[i].GameId {
-		case GameIdMagic:
-		default:
-			continue
-		}
 		switch blueprints[i].CategoryId {
 		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized:
 			if sealed {
