@@ -11,6 +11,7 @@ import (
 
 func run() int {
 	mode := flag.String("mode", "prices", "Which file to download [prices]/singles/sealed")
+	game := flag.Int("game", 1, "Select which game (default=magic)")
 
 	flag.Parse()
 
@@ -19,11 +20,11 @@ func run() int {
 
 	switch *mode {
 	default:
-		output, err = cardmarket.GetPriceGuide()
+		output, err = cardmarket.GetPriceGuide(*game)
 	case "singles":
-		output, err = cardmarket.GetProductListSingles()
+		output, err = cardmarket.GetProductListSingles(*game)
 	case "sealed":
-		output, err = cardmarket.GetProductListSealed()
+		output, err = cardmarket.GetProductListSealed(*game)
 	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

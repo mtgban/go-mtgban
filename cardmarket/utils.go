@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -24,6 +25,34 @@ var filteredExpansionsTags = []string{
 	"TokyoMTG Products",
 }
 
+const (
+	GameIdMagic = iota + 1
+	GameIdWorldOfWarcraft
+	GameIdYugioh
+	GameIdTheSpoils
+	GameIdPokemon
+	GameIdForceOfWill
+	GameIdCardfightVanguard
+	GameIdFinalFantasy
+	GameIdWeissSchwarz
+	GameIdDragoborne
+	GameIdMyLittlePony
+	GameIdDragonBallSuper
+	GameIdStarWarsDestiny
+	GameIdFleshAndBlood
+	GameIdDigimon
+	GameIdOnePiece
+	GameIdLorcana
+	GameIdBattleSpiritsSaga
+	GameIdStarWarsUnlimited
+)
+
+const (
+	priceGuideURL         = "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_%d.json"
+	productListSinglesURL = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_%d.json"
+	productListSealedURL  = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_nonsingles_%d.json"
+)
+
 type PriceGuide struct {
 	IdProduct        int     `json:"idProduct"`
 	AvgSellPrice     float64 `json:"avg"`
@@ -40,14 +69,8 @@ type PriceGuide struct {
 	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
-const (
-	PriceGuideURL         = "https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_1.json"
-	ProductListSinglesURL = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_1.json"
-	ProductListSealedURL  = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_nonsingles_1.json"
-)
-
-func GetPriceGuide() ([]PriceGuide, error) {
-	resp, err := cleanhttp.DefaultClient().Get(PriceGuideURL)
+func GetPriceGuide(gameId int) ([]PriceGuide, error) {
+	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(priceGuideURL, gameId))
 	if err != nil {
 		return nil, err
 	}
@@ -81,16 +104,16 @@ type ProductList struct {
 	DateAdded    string `json:"dateAdded"`
 }
 
-func GetProductListSingles() ([]ProductList, error) {
-	return getProductList(ProductListSinglesURL)
+func GetProductListSingles(gameId int) ([]ProductList, error) {
+	return getProductList(gameId, productListSinglesURL)
 }
 
-func GetProductListSealed() ([]ProductList, error) {
-	return getProductList(ProductListSealedURL)
+func GetProductListSealed(gameId int) ([]ProductList, error) {
+	return getProductList(gameId, productListSealedURL)
 }
 
-func getProductList(link string) ([]ProductList, error) {
-	resp, err := cleanhttp.DefaultClient().Get(link)
+func getProductList(gameId int, link string) ([]ProductList, error) {
+	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(link, gameId))
 	if err != nil {
 		return nil, err
 	}

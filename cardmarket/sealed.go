@@ -23,6 +23,7 @@ type CardMarketSealed struct {
 	inventory mtgban.InventoryRecord
 
 	client *MKMClient
+	gameId int
 }
 
 func (mkm *CardMarketSealed) printf(format string, a ...interface{}) {
@@ -41,6 +42,7 @@ func NewScraperSealed(appToken, appSecret string) (*CardMarketSealed, error) {
 		return nil, err
 	}
 	mkm.exchangeRate = rate
+	mkm.gameId = GameIdMagic
 	return &mkm, nil
 }
 
@@ -151,7 +153,7 @@ func (mkm *CardMarketSealed) scrape() error {
 	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 
-	productList, err := GetProductListSealed()
+	productList, err := GetProductListSealed(mkm.gameId)
 	if err != nil {
 		return err
 	}

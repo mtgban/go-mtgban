@@ -211,7 +211,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdMagic, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}

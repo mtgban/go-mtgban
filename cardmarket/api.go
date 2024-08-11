@@ -29,7 +29,7 @@ const (
 
 	mkmPriceGuideURL  = "https://api.cardmarket.com/ws/v2.0/output.json/priceguide"
 	mkmProductListURL = "https://api.cardmarket.com/ws/v2.0/output.json/productlist"
-	mkmExpansionsURL  = "https://api.cardmarket.com/ws/v2.0/output.json/games/1/expansions"
+	mkmExpansionsURL  = "https://api.cardmarket.com/ws/v2.0/output.json/games/%d/expansions"
 
 	mkmMaxEntities = 100
 )
@@ -86,8 +86,8 @@ type MKMExpansion struct {
 	IsReleased  bool   `json:"isReleased"`
 }
 
-func (mkm *MKMClient) Expansions() ([]MKMExpansion, error) {
-	resp, err := mkm.client.Get(mkmExpansionsURL)
+func (mkm *MKMClient) Expansions(gameId int) ([]MKMExpansion, error) {
+	resp, err := mkm.client.Get(fmt.Sprintf(mkmExpansionsURL, gameId))
 	if err != nil {
 		return nil, err
 	}

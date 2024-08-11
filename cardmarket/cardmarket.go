@@ -31,6 +31,7 @@ type CardMarketIndex struct {
 	inventory mtgban.InventoryRecord
 
 	client *MKMClient
+	gameId int
 }
 
 var availableIndexNames = []string{
@@ -43,7 +44,7 @@ func (mkm *CardMarketIndex) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperIndex(appToken, appSecret string) (*CardMarketIndex, error) {
+func NewScraperIndex(gameId int, appToken, appSecret string) (*CardMarketIndex, error) {
 	mkm := CardMarketIndex{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
@@ -53,6 +54,7 @@ func NewScraperIndex(appToken, appSecret string) (*CardMarketIndex, error) {
 		return nil, err
 	}
 	mkm.exchangeRate = rate
+	mkm.gameId = gameId
 	return &mkm, nil
 }
 
@@ -228,14 +230,14 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 }
 
 func (mkm *CardMarketIndex) scrape() error {
-	priceGuide, err := GetPriceGuide()
+	priceGuide, err := GetPriceGuide(mkm.gameId)
 	if err != nil {
 		return err
 	}
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	list, err := mkm.client.Expansions()
+	list, err := mkm.client.Expansions(mkm.gameId)
 	if err != nil {
 		return err
 	}
@@ -318,5 +320,9 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.MetadataOnly = true
 	info.Family = "MKM"
+	switch mkm.gameId {
+	case GameIdMagic:
+		info.Game = mtgban.GameMagic
+	}
 	return
 }
