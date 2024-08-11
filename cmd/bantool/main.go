@@ -147,7 +147,7 @@ var options = map[string]*scraperOption{
 	"coolstuffinc": {
 		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
-			scraper := coolstuffinc.NewScraper()
+			scraper := coolstuffinc.NewScraper(coolstuffinc.GameMagic)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CSI_PARTNER")
 			return scraper, nil

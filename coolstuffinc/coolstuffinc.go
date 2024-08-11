@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/url"
 	"sort"
 	"strconv"
@@ -123,7 +122,7 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 			if imgURL == "" {
 				imgURL, _ = s.Find(`a[class="productLink"]`).Find("img").Attr("src")
 				if imgURL == "" {
-					log.Println("img not found", cardName, edition)
+					csi.printf("img not found %s %s", cardName, edition)
 				}
 			}
 
@@ -144,17 +143,13 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 
 				qty, err := strconv.Atoi(qtyStr)
 				if err != nil {
-					log.Println(fullRow)
+					csi.printf("%s", fullRow)
 					csi.printf("%s %s %v", cardName, edition, err)
 					return
 				}
 
 				bundleStr := se.Find(`div[class="b1-gx-free"]`).Text()
 				bundle := bundleStr == "Buy 1 get 3 free!"
-
-				if !bundle && bundleStr != "" {
-					log.Println(bundleStr)
-				}
 
 				// Derive the condition portion
 				conditions := strings.TrimLeft(fullRow, qtyStr+"+ ")
@@ -339,7 +334,7 @@ func (csi *Coolstuffinc) scrape() error {
 		}
 	}
 
-	log.Println("This operation took", time.Since(start))
+	csi.printf("This operation took %v", time.Since(start))
 
 	csi.inventoryDate = time.Now()
 
