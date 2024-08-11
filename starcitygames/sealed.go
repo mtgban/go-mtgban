@@ -25,6 +25,7 @@ type StarcitygamesSealed struct {
 
 	productMap map[string]string
 	client     *SCGClient
+	game       int
 }
 
 func NewScraperSealed(guid, bearer string) *StarcitygamesSealed {
@@ -34,6 +35,7 @@ func NewScraperSealed(guid, bearer string) *StarcitygamesSealed {
 	scg.client = NewSCGClient(guid, bearer)
 	scg.client.SealedMode = true
 	scg.MaxConcurrency = defaultConcurrency
+	scg.game = GameMagic
 	return &scg
 }
 
@@ -57,7 +59,7 @@ func buildProductMap() map[string]string {
 }
 
 func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page int) error {
-	results, err := scg.client.GetPage(page)
+	results, err := scg.client.GetPage(scg.game, page)
 	if err != nil {
 		return err
 	}
@@ -139,7 +141,7 @@ func (scg *StarcitygamesSealed) processPage(channel chan<- responseChan, page in
 func (scg *StarcitygamesSealed) scrape() error {
 	scg.productMap = buildProductMap()
 
-	totalPages, err := scg.client.NumberOfPages()
+	totalPages, err := scg.client.NumberOfPages(scg.game)
 	if err != nil {
 		return err
 	}
@@ -200,7 +202,7 @@ func (scg *StarcitygamesSealed) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page int) error {
-	search, err := scg.client.SearchAll(page, defaultRequestLimit)
+	search, err := scg.client.SearchAll(scg.game, page, defaultRequestLimit)
 	if err != nil {
 		return err
 	}
@@ -252,7 +254,7 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 func (scg *StarcitygamesSealed) parseBL() error {
 	scg.productMap = buildProductMap()
 
-	search, err := scg.client.SearchAll(0, 1)
+	search, err := scg.client.SearchAll(scg.game, 0, 1)
 	if err != nil {
 		return err
 	}

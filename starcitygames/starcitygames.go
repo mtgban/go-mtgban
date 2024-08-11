@@ -31,14 +31,16 @@ type Starcitygames struct {
 	buylist   mtgban.BuylistRecord
 
 	client *SCGClient
+	game   int
 }
 
-func NewScraper(guid, bearer string) *Starcitygames {
+func NewScraper(game int, guid, bearer string) *Starcitygames {
 	scg := Starcitygames{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient(guid, bearer)
 	scg.MaxConcurrency = defaultConcurrency
+	scg.game = game
 	return &scg
 }
 
@@ -57,7 +59,7 @@ func (scg *Starcitygames) printf(format string, a ...interface{}) {
 }
 
 func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) error {
-	results, err := scg.client.GetPage(page)
+	results, err := scg.client.GetPage(scg.game, page)
 	if err != nil {
 		return err
 	}
@@ -217,7 +219,7 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 }
 
 func (scg *Starcitygames) scrape() error {
-	totalPages, err := scg.client.NumberOfPages()
+	totalPages, err := scg.client.NumberOfPages(scg.game)
 	if err != nil {
 		return err
 	}
@@ -278,7 +280,7 @@ func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) error {
-	search, err := scg.client.SearchAll(page, defaultRequestLimit)
+	search, err := scg.client.SearchAll(scg.game, page, defaultRequestLimit)
 	if err != nil {
 		return err
 	}
@@ -386,7 +388,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 }
 
 func (scg *Starcitygames) parseBL() error {
-	search, err := scg.client.SearchAll(0, 1)
+	search, err := scg.client.SearchAll(scg.game, 0, 1)
 	if err != nil {
 		return err
 	}

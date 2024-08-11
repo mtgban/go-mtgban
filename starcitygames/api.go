@@ -17,6 +17,10 @@ const (
 	scgBuylistURL   = "https://search.starcitygames.com/indexes/sell_list_products_v2/search"
 
 	maxResultsPerPage = 96
+
+	GameMagic         = 1
+	GameFleshAndBlood = 2
+	GameLorcana       = 3
 )
 
 type SCGClient struct {
@@ -95,7 +99,15 @@ type scgRetailResult struct {
 	IsVisible bool `json:"IsVisible"`
 }
 
-func (scg *SCGClient) sendRetailRequest(page int) (*scgRetailResponse, error) {
+func (scg *SCGClient) sendRetailRequest(game, page int) (*scgRetailResponse, error) {
+	gameStr := "Magic: The Gathering"
+	switch game {
+	case GameFleshAndBlood:
+		gameStr = "Flesh and Blood"
+	case GameLorcana:
+		gameStr = "Lorcana"
+	}
+
 	var payload []byte
 	var err error
 	if scg.SealedMode {
@@ -106,7 +118,7 @@ func (scg *SCGClient) sendRetailRequest(page int) (*scgRetailResponse, error) {
 			FacetSelections: scgSealedFacetSelection{
 				VariantInStockOnly: []string{"Yes"},
 				ProductType:        []string{"Sealed"},
-				Game:               "Magic: The Gathering",
+				Game:               gameStr,
 			},
 		}
 		payload, err = json.Marshal(&q)
@@ -118,7 +130,7 @@ func (scg *SCGClient) sendRetailRequest(page int) (*scgRetailResponse, error) {
 			FacetSelections: map[string][]string{
 				"variant_instockonly": {"Yes"},
 				"product_type":        {"Singles"},
-				"game":                {"Magic: The Gathering"},
+				"game":                {gameStr},
 			},
 		}
 		payload, err = json.Marshal(&q)
@@ -154,16 +166,16 @@ func (scg *SCGClient) sendRetailRequest(page int) (*scgRetailResponse, error) {
 	return &search, nil
 }
 
-func (scg *SCGClient) NumberOfPages() (int, error) {
-	response, err := scg.sendRetailRequest(0)
+func (scg *SCGClient) NumberOfPages(game int) (int, error) {
+	response, err := scg.sendRetailRequest(game, 0)
 	if err != nil {
 		return 0, err
 	}
 	return response.Pagination.NofPages, nil
 }
 
-func (scg *SCGClient) GetPage(page int) ([]scgRetailResult, error) {
-	response, err := scg.sendRetailRequest(page)
+func (scg *SCGClient) GetPage(game, page int) ([]scgRetailResult, error) {
+	response, err := scg.sendRetailRequest(game, page)
 	if err != nil {
 		return nil, err
 	}
@@ -224,8 +236,8 @@ type SCGCardVariant struct {
 	TradePrice   float64 `json:"trade_price"`
 }
 
-func (scg *SCGClient) SearchAll(offset, limit int) (*SCGSearchResponse, error) {
-	filter := `game_id = 1 AND price_category_id = %s AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
+func (scg *SCGClient) SearchAll(game, offset, limit int) (*SCGSearchResponse, error) {
+	filter := `game_id = ` + fmt.Sprint(game) + ` AND price_category_id = %s AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
 	mode := "1"
 	if scg.SealedMode {
 		mode = "2"

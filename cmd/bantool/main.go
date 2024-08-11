@@ -283,7 +283,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing SCG_GUID or SCG_BEARER env var")
 			}
 
-			scraper := starcitygames.NewScraper(scgGUID, scgBearer)
+			scraper := starcitygames.NewScraper(starcitygames.GameMagic, scgGUID, scgBearer)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_AFFILIATE")
 			return scraper, nil
