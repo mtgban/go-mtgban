@@ -283,7 +283,7 @@ func (ct *CardtraderMarket) scrape() error {
 
 	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, false)
 	ct.blueprints = blueprints
-	ct.printf("Parsing %d expansions", len(expansions))
+	ct.printf("Parsing %d expansions with %d blueprints", len(expansions), len(blueprints))
 
 	expansionIds := make(chan int)
 	results := make(chan resultChan)
