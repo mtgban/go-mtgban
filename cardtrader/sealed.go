@@ -59,12 +59,12 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 				continue
 			}
 
-			if product.Properties.Language != "en" {
+			if product.Properties.MTGLanguage != "en" {
 				continue
 			}
 
 			uuid := uuids[0]
-			if product.Properties.Foil && len(uuids) > 1 {
+			if product.Properties.MTGFoil && len(uuids) > 1 {
 				uuid = uuids[1]
 			}
 

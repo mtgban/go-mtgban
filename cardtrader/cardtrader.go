@@ -102,11 +102,11 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 	}
 
 	for _, product := range products {
-		lang := product.Properties.Language
+		lang := product.Properties.MTGLanguage
 		if lang != "" {
 			lang, found = langMap[strings.ToLower(lang)]
 			if !found {
-				ct.printf("unsupported '%s' language", product.Properties.Language)
+				ct.printf("unsupported '%s' language", product.Properties.MTGLanguage)
 				ct.printf("%s '%q'", theCard, product)
 				continue
 			}
@@ -158,7 +158,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			break
 		}
 
-		if product.Properties.Foil && mtgmatcher.HasFoilPrinting(theCard.Name) {
+		if product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
 			cardIdFoil, err := mtgmatcher.MatchId(cardId, true)
 			if err == nil {
 				cardId = cardIdFoil

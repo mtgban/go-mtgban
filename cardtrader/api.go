@@ -95,11 +95,12 @@ type Product struct {
 	Bundle      bool   `json:"bundle"`
 	Properties  struct {
 		Condition string `json:"condition"`
-		Language  string `json:"mtg_language"`
 		Number    string `json:"collector_number"`
-		Foil      bool   `json:"mtg_foil"`
 		Altered   bool   `json:"altered"`
 		Signed    bool   `json:"signed"`
+
+		MTGLanguage string `json:"mtg_language,omitempty"`
+		MTGFoil     bool   `json:"mtg_foil,omitempty"`
 	} `json:"properties_hash"`
 	User struct {
 		Name        string `json:"username"`

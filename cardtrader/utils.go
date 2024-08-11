@@ -30,7 +30,7 @@ func (ct *CTAuthClient) ExportStock(blueprints map[int]*Blueprint) (mtgban.Inven
 		if err != nil {
 			continue
 		}
-		theCard.Foil = product.Properties.Foil
+		theCard.Foil = product.Properties.MTGFoil
 
 		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
@@ -66,7 +66,7 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 		if err != nil {
 			continue
 		}
-		theCard.Foil = product.Properties.Foil
+		theCard.Foil = product.Properties.MTGFoil
 
 		cardId, err := mtgmatcher.Match(theCard)
 		if err != nil {
