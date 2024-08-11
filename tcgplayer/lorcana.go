@@ -119,17 +119,22 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 			}
 
 			cardName := mtgmatcher.SplitVariants(product.Name)[0]
-			cardIds, err := GenericSearch(cardName, tcg.printings[sku.PrintingId], product.GetNumber())
-			if err != nil {
+			cardId, err := mtgmatcher.SimpleSearch(cardName, product.GetNumber(), tcg.printings[sku.PrintingId] != "Normal")
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
-			}
-			if len(cardIds) != 1 {
-				tcg.printf("%d %s got ids: %s", sku.ProductId, cardName, cardIds)
-				for _, uuid := range cardIds {
-					co, _ := mtgmatcher.GetUUID(uuid)
-					tcg.printf("%s: %s", uuid, co)
-				}
+			} else if err != nil {
+				tcg.printf("%v", err)
 				tcg.printf("%+v", result)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					tcg.printf("%d %s got ids: %s", sku.ProductId, cardName, probes)
+					for _, probe := range probes {
+						co, _ := mtgmatcher.GetUUID(probe)
+						tcg.printf("%s: %s", probe, co)
+					}
+				}
 				continue
 			}
 
@@ -138,7 +143,7 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 			link := TCGPlayerProductURL(sku.ProductId, tcg.printings[sku.PrintingId], tcg.Affiliate, condition, "", false)
 
 			out := genericChan{
-				key: cardIds[0],
+				key: cardId,
 				entry: mtgban.InventoryEntry{
 					Conditions: condition,
 					Price:      price,

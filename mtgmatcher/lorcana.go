@@ -228,3 +228,45 @@ var lorcanaRarityMap = map[string]int{
 	"enchanted": 6,
 	"special":   7,
 }
+
+func SimpleSearch(cardName, number string, foil bool) (string, error) {
+	uuids, err := SearchEquals(cardName)
+	if err != nil {
+		return "", err
+	}
+
+	if len(uuids) == 1 {
+		return uuids[0], nil
+	}
+
+	var cardIds []string
+	for _, uuid := range uuids {
+		co, err := GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+
+		if foil && !co.Foil {
+			continue
+		} else if !foil && co.Foil {
+			continue
+		}
+
+		if number != "" && number != co.Number {
+			continue
+		}
+		cardIds = append(cardIds, uuid)
+	}
+
+	if len(cardIds) < 1 {
+		return "", ErrCardWrongVariant
+	}
+
+	if len(cardIds) > 1 {
+		alias := newAliasingError()
+		alias.dupes = uuids
+		return "", err
+	}
+
+	return cardIds[0], nil
+}

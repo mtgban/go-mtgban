@@ -3,7 +3,6 @@ package tcgplayer
 import (
 	"compress/bzip2"
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -201,40 +200,4 @@ func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
 	}
 
 	return result
-}
-
-func GenericSearch(cardName, printing, number string) ([]string, error) {
-	uuids, err := mtgmatcher.SearchEquals(cardName)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(uuids) == 1 {
-		return uuids, nil
-	}
-
-	var cardIds []string
-	for _, uuid := range uuids {
-		co, err := mtgmatcher.GetUUID(uuid)
-		if err != nil {
-			continue
-		}
-
-		if printing == "Normal" && co.Foil {
-			continue
-		} else if printing != "Normal" && !co.Foil {
-			continue
-		}
-
-		if number != "" && number != co.Number {
-			continue
-		}
-		cardIds = append(cardIds, uuid)
-	}
-
-	if len(cardIds) < 1 {
-		return nil, errors.New("not found")
-	}
-
-	return cardIds, nil
 }

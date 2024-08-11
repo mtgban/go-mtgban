@@ -92,17 +92,22 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 		}
 
 		cardName := mtgmatcher.SplitVariants(productMap[result.ProductId].Name)[0]
-		cardIds, err := GenericSearch(cardName, result.SubTypeName, product.GetNumber())
-		if err != nil {
+		cardId, err := mtgmatcher.SimpleSearch(cardName, product.GetNumber(), result.SubTypeName != "Normal")
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
-		}
-		if len(cardIds) != 1 {
-			tcg.printf("%d %s got ids: %s", result.ProductId, cardName, cardIds)
-			for _, uuid := range cardIds {
-				co, _ := mtgmatcher.GetUUID(uuid)
-				tcg.printf("%s: %s", uuid, co)
-			}
+		} else if err != nil {
+			tcg.printf("%v", err)
 			tcg.printf("%+v", result)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				tcg.printf("%d %s got ids: %s", product.ProductId, cardName, probes)
+				for _, probe := range probes {
+					co, _ := mtgmatcher.GetUUID(probe)
+					tcg.printf("%s: %s", probe, co)
+				}
+			}
 			continue
 		}
 
@@ -119,7 +124,7 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 			link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
 
 			out := genericChan{
-				key: cardIds[0],
+				key: cardId,
 				entry: mtgban.InventoryEntry{
 					Price:      prices[i],
 					Quantity:   1,
