@@ -392,6 +392,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 					URL:          link,
 					CustomFields: customFields,
 				},
+				ignoreErr: strings.Contains(hit.Name, "Token"),
 			}
 		}
 	}
@@ -435,13 +436,8 @@ func (scg *Starcitygames) parseBL() error {
 
 	for record := range results {
 		err := scg.buylist.Add(record.cardId, record.buyEntry)
-		if err != nil {
-			co, _ := mtgmatcher.GetUUID(record.cardId)
-			if co.Layout == "token" {
-				continue
-			}
+		if err != nil && !record.ignoreErr {
 			scg.printf("%s", err.Error())
-			continue
 		}
 	}
 
