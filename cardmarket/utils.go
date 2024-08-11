@@ -3,7 +3,6 @@ package cardmarket
 import (
 	"encoding/json"
 	"io"
-	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
@@ -23,30 +22,6 @@ var filteredExpansionsTags = []string{
 	"Three for One",
 	"Token",
 	"TokyoMTG Products",
-}
-
-func (mkm *MKMClient) FilteredExpansions() ([]MKMExpansion, error) {
-	expansions, err := mkm.MKMExpansions()
-	if err != nil {
-		return nil, err
-	}
-
-	var out []MKMExpansion
-	for _, exp := range expansions {
-		var skip bool
-		for _, tag := range filteredExpansionsTags {
-			if strings.Contains(exp.Name, tag) {
-				skip = true
-				break
-			}
-		}
-		if skip {
-			continue
-		}
-		out = append(out, exp)
-	}
-
-	return out, nil
 }
 
 type PriceGuide struct {

@@ -235,7 +235,7 @@ func (mkm *CardMarketIndex) scrape() error {
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	list, err := mkm.client.FilteredExpansions()
+	list, err := mkm.client.Expansions()
 	if err != nil {
 		return err
 	}
