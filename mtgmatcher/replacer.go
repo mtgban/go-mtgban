@@ -33,6 +33,7 @@ var replacer = strings.NewReplacer(
 	"!", "",
 	"?", "",
 	"+", "",
+	"…", "",
 
 	// UNF blanks
 	"_________", "_____",

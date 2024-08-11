@@ -145,6 +145,27 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				}
 				continue
 			}
+		case GameLorcana:
+			collectorNumber := strings.TrimLeft(number, "0")
+
+			cardId, err = mtgmatcher.SimpleSearch(cardName, collectorNumber, finish != "Non-foil")
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				scg.printf("%v", err)
+				scg.printf("%+v", result)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					scg.printf("%s got ids: %s", cardName, probes)
+					for _, probe := range probes {
+						co, _ := mtgmatcher.GetUUID(probe)
+						scg.printf("%s: %s", probe, co)
+					}
+				}
+				continue
+			}
 		default:
 			return errors.New("unsupported game")
 		}
@@ -334,25 +355,29 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 				}
 
 				cardId, err = mtgmatcher.Match(theCard)
-				if errors.Is(err, mtgmatcher.ErrUnsupported) {
-					break
-				} else if err != nil {
-					scg.printf("%v", err)
-					scg.printf("%q", theCard)
-					scg.printf("'%q' (%s, %s, %s)", result, hit.SetName, hit.Language, hit.Finish)
-
-					var alias *mtgmatcher.AliasingError
-					if errors.As(err, &alias) {
-						probes := alias.Probe()
-						for _, probe := range probes {
-							card, _ := mtgmatcher.GetUUID(probe)
-							scg.printf("- %s", card)
-						}
-					}
-					break
-				}
+			} else if scg.game == GameLorcana {
+				cardName := result.Name
+				number := strings.TrimLeft(hit.CollectorNumber, "0")
+				cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.Finish != "N")
 			} else {
 				return errors.New("unsupported game")
+			}
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				break
+			} else if err != nil {
+				scg.printf("%v", err)
+				scg.printf("%+v", result)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					scg.printf("%s got ids: %s", result.Name, probes)
+					for _, probe := range probes {
+						co, _ := mtgmatcher.GetUUID(probe)
+						scg.printf("%s: %s", probe, co)
+					}
+				}
+				break
 			}
 
 			var priceRatio, sellPrice float64
@@ -468,6 +493,8 @@ func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	switch scg.game {
 	case GameMagic:
 		info.Game = mtgban.GameMagic
+	case GameLorcana:
+		info.Game = mtgban.GameLorcana
 	}
 	return
 }
