@@ -234,6 +234,28 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 						}
 						return
 					}
+				case GameLorcana:
+					cardName = mtgmatcher.SplitVariants(cardName)[0]
+					number := mtgmatcher.ExtractNumber(strings.Split(notes, "/")[0])
+
+					cardId, err = mtgmatcher.SimpleSearch(cardName, number, isFoil)
+					if errors.Is(err, mtgmatcher.ErrUnsupported) {
+						return
+					} else if err != nil {
+						csi.printf("%v", err)
+						csi.printf("%s %s %v", cardName, number, isFoil)
+
+						var alias *mtgmatcher.AliasingError
+						if errors.As(err, &alias) {
+							probes := alias.Probe()
+							csi.printf("%s got ids: %s", cardName, probes)
+							for _, probe := range probes {
+								co, _ := mtgmatcher.GetUUID(probe)
+								csi.printf("%s: %s", probe, co)
+							}
+						}
+						return
+					}
 				default:
 					csi.printf("unsupported game")
 					return
@@ -285,6 +307,7 @@ func (csi *Coolstuffinc) scrape() error {
 			itemName, _ := se.Find(`input[type="checkbox"]`).Attr("value")
 			switch {
 			case strings.Contains(itemName, "Bulk"),
+				strings.Contains(itemName, "Random Lots"),
 				strings.Contains(itemName, "Relic Token"),
 				itemName == "Magic":
 				return
@@ -414,6 +437,28 @@ func (csi *Coolstuffinc) parseBL() error {
 				}
 				continue
 			}
+		} else if csi.game == GameLorcana {
+			number := strings.Split(strings.TrimLeft(product.Number, "0"), "/")[0]
+			cardName := product.Name
+
+			cardId, err = mtgmatcher.SimpleSearch(cardName, number, product.IsFoil == 1)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				csi.printf("%v", err)
+				csi.printf("%+v", product)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					csi.printf("%s got ids: %s", cardName, probes)
+					for _, probe := range probes {
+						co, _ := mtgmatcher.GetUUID(probe)
+						csi.printf("%s: %s", probe, co)
+					}
+				}
+				continue
+			}
 		} else {
 			return errors.New("unsupported game")
 		}
@@ -478,6 +523,8 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	switch csi.game {
 	case GameMagic:
 		info.Game = mtgban.GameMagic
+	case GameLorcana:
+		info.Game = mtgban.GameLorcana
 	}
 	return
 }
