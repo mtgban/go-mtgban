@@ -29,6 +29,7 @@ const (
 	GameIdMagic = iota + 1
 	GameIdWorldOfWarcraft
 	GameIdYugioh
+	_
 	GameIdTheSpoils
 	GameIdPokemon
 	GameIdForceOfWill
@@ -38,6 +39,7 @@ const (
 	GameIdDragoborne
 	GameIdMyLittlePony
 	GameIdDragonBallSuper
+	_
 	GameIdStarWarsDestiny
 	GameIdFleshAndBlood
 	GameIdDigimon

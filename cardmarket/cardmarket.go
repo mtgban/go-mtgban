@@ -76,6 +76,7 @@ func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, idExpans
 func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide []PriceGuide) error {
 	var cardId string
 	var cardIdFoil string
+	var err error
 
 	switch mkm.gameId {
 	case GameIdMagic:
@@ -116,6 +117,36 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		cardIdFoil, err = mtgmatcher.MatchId(cardId, true)
 		if err != nil {
 			return err
+		}
+	case GameIdLorcana:
+		cardName := mtgmatcher.SplitVariants(product.Name)[0]
+		number := product.Number
+
+		cardId, err = mtgmatcher.SimpleSearch(cardName, number, false)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return nil
+		} else if err != nil {
+			mkm.printf("%v", err)
+			mkm.printf("%+v", product)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				mkm.printf("%s got ids: %s", cardName, probes)
+				for _, probe := range probes {
+					co, _ := mtgmatcher.GetUUID(probe)
+					mkm.printf("%s: %s", probe, co)
+				}
+			}
+			return err
+		}
+		cardIdFoil, _ = mtgmatcher.SimpleSearch(cardName, number, true)
+		if cardId == "" {
+			cardId = cardIdFoil
+		}
+
+		if cardId == "" {
+			return nil
 		}
 	default:
 		return errors.New("unsupported game")
@@ -328,6 +359,8 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 	switch mkm.gameId {
 	case GameIdMagic:
 		info.Game = mtgban.GameMagic
+	case GameIdLorcana:
+		info.Game = mtgban.GameLorcana
 	}
 	return
 }
