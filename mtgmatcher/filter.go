@@ -405,6 +405,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
 			case set.Code == "PLG21":
 			case set.Code == "PEWK":
+			case set.Code == "SLP":
 			default:
 				continue
 			}
