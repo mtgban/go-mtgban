@@ -173,6 +173,8 @@ type ListingData struct {
 	DirectInventory int
 	ConditionFull   string
 	Condition       string
+	Printing        string
+	Foil            bool
 }
 
 func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
@@ -199,6 +201,8 @@ func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
 				DirectInventory: int(listing.DirectInventory),
 				ConditionFull:   listing.Condition,
 				Condition:       conditionMap[listing.Condition],
+				Printing:        listing.Printing,
+				Foil:            listing.Printing != "Normal",
 			})
 		}
 	}
