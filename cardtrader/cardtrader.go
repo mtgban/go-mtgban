@@ -39,7 +39,7 @@ type CardtraderMarket struct {
 }
 
 var availableMarketNames = []string{
-	"Card Trader", "Card Trader Zero",
+	"Card Trader", "Card Trader Zero", "Card Trader 1DR",
 }
 
 func NewScraperMarket(gameId int, token string) (*CardtraderMarket, error) {
@@ -221,6 +221,16 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 		if product.Price.Currency != "USD" {
 			price *= ct.exchangeRate
 		}
+
+		// Assign a seller name as required by Market
+		sellerName := availableMarketNames[0]
+		if product.User.SinglesZero {
+			sellerName = availableMarketNames[1]
+			if strings.Contains(strings.ToLower(product.User.Name), "day ready") {
+				sellerName = availableMarketNames[2]
+			}
+		}
+
 		channel <- resultChan{
 			cardId: cardId,
 			invEntry: &mtgban.InventoryEntry{
@@ -228,10 +238,13 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 				Price:      price,
 				Quantity:   qty,
 				URL:        link,
-				SellerName: product.User.Name,
+				SellerName: sellerName,
 				Bundle:     product.User.SinglesZero,
 				OriginalId: fmt.Sprint(product.BlueprintId),
 				InstanceId: fmt.Sprint(product.Id),
+				CustomFields: map[string]string{
+					"SubSellerName": product.User.Name,
+				},
 			},
 		}
 	}
@@ -320,7 +333,7 @@ func (ct *CardtraderMarket) scrape() error {
 		skip := false
 		entries := ct.inventory[result.cardId]
 		for _, entry := range entries {
-			if entry.Conditions == result.invEntry.Conditions && entry.Bundle == result.invEntry.Bundle {
+			if entry.Conditions == result.invEntry.Conditions && entry.SellerName == result.invEntry.SellerName {
 				skip = true
 				break
 			}
@@ -329,11 +342,6 @@ func (ct *CardtraderMarket) scrape() error {
 			continue
 		}
 
-		// Assign a seller name as required by Market
-		result.invEntry.SellerName = "Card Trader"
-		if result.invEntry.Bundle {
-			result.invEntry.SellerName = "Card Trader Zero"
-		}
 		var err error
 		if ct.KeepDuplicates {
 			err = ct.inventory.AddRelaxed(result.cardId, result.invEntry)
