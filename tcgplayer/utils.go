@@ -165,16 +165,16 @@ const (
 )
 
 type ListingData struct {
-	ProductId       int
-	SkuId           int
-	Quantity        int
-	SellerKey       string
-	Price           float64
-	DirectInventory int
-	ConditionFull   string
-	Condition       string
-	Printing        string
-	Foil            bool
+	ProductId       int     `json:"product_id"`
+	SkuId           int     `json:"sku_id"`
+	Quantity        int     `json:"quantity"`
+	SellerKey       string  `json:"seller_key"`
+	Price           float64 `json:"price"`
+	DirectInventory int     `json:"direct_inventory"`
+	ConditionFull   string  `json:"condition_full"`
+	Condition       string  `json:"condition"`
+	Printing        string  `json:"printing"`
+	Foil            bool    `json:"foil"`
 }
 
 func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
