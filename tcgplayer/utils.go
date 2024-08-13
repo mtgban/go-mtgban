@@ -171,6 +171,8 @@ type ListingData struct {
 	SellerKey       string
 	Price           float64
 	DirectInventory int
+	ConditionFull   string
+	Condition       string
 }
 
 func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
@@ -195,6 +197,8 @@ func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
 				SellerKey:       listing.SellerKey,
 				Price:           listing.Price,
 				DirectInventory: int(listing.DirectInventory),
+				ConditionFull:   listing.Condition,
+				Condition:       conditionMap[listing.Condition],
 			})
 		}
 	}
