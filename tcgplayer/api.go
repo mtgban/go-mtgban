@@ -172,6 +172,23 @@ const (
 	MaxLimit = 100
 )
 
+var AllProductTypes = []string{
+	ProductTypeCards,
+	ProductTypeBoosterBox,
+	ProductTypeBoosterPack,
+	ProductTypeSealedProducts,
+	ProductTypeIntroPack,
+	ProductTypeFatPack,
+	ProductTypeBoxSets,
+	ProductTypePreconEventDecks,
+	ProductTypeMagicDeckPack,
+	ProductTypeMagicBoosterBoxCase,
+	ProductTypeAll5IntroPacks,
+	ProductTypeIntroPackDisplay,
+	ProductType3xMagicBoosterPacks,
+	ProductTypeBoosterBattlePack,
+}
+
 type TCGResponse struct {
 	TotalItems int             `json:"totalItems"`
 	Success    bool            `json:"success"`
