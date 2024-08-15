@@ -26,6 +26,9 @@ var skuFixupTable = map[string]string{
 	// Mind Stone
 	"PLG21-001": "PW21-005",
 
+	// Lightning Bolt
+	"F19-001": "PF19-001",
+
 	// Path of Ancestry
 	"PF21-001": "PLG21-C3",
 
