@@ -25,7 +25,7 @@ type TCGPlayerGeneric struct {
 	categoryName        string
 	categoryDisplayName string
 
-	groups []string
+	productTypes []string
 
 	client *TCGClient
 }
@@ -33,14 +33,14 @@ type TCGPlayerGeneric struct {
 func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if tcg.groups[0] != "Cards" {
-			tag += "{" + strings.Join(tcg.groups, ",") + "} "
+		if tcg.productTypes[0] != "Cards" {
+			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
 	}
 }
 
-func NewScraperGeneric(publicId, privateId string, category int, groups ...string) (*TCGPlayerGeneric, error) {
+func NewScraperGeneric(publicId, privateId string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
 	tcg := TCGPlayerGeneric{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = NewTCGClient(publicId, privateId)
@@ -56,9 +56,9 @@ func NewScraperGeneric(publicId, privateId string, category int, groups ...strin
 	tcg.categoryName = check[0].Name
 	tcg.categoryDisplayName = check[0].DisplayName
 
-	tcg.groups = groups
-	if len(tcg.groups) == 0 {
-		tcg.groups = []string{"Cards"}
+	tcg.productTypes = productTypes
+	if len(tcg.productTypes) == 0 {
+		tcg.productTypes = []string{"Cards"}
 	}
 
 	return &tcg, nil
@@ -70,7 +70,7 @@ type genericChan struct {
 }
 
 func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.groups, false, page, MaxLimit)
+	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page, MaxLimit)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func (tcg *TCGPlayerGeneric) scrape() error {
 	tcg.editions = editions
 	tcg.printf("Found %d editions", len(editions))
 
-	totals, err := tcg.client.TotalProducts(tcg.category, []string{"Cards"})
+	totals, err := tcg.client.TotalProducts(tcg.category, tcg.productTypes)
 	if err != nil {
 		return err
 	}
@@ -209,9 +209,9 @@ func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
 
-	if tcg.groups[0] != "Cards" {
-		info.Name += " " + strings.Join(tcg.groups, ",")
-		info.Shorthand += "+" + strings.Join(tcg.groups, ",")
+	if tcg.productTypes[0] != "Cards" {
+		info.Name += " " + strings.Join(tcg.productTypes, ",")
+		info.Shorthand += "+" + strings.Join(tcg.productTypes, ",")
 	}
 	return
 }

@@ -26,7 +26,7 @@ type TCGLorcanaIndex struct {
 	categoryName        string
 	categoryDisplayName string
 
-	groups []string
+	productTypes []string
 
 	client *TCGClient
 }
@@ -34,8 +34,8 @@ type TCGLorcanaIndex struct {
 func (tcg *TCGLorcanaIndex) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if tcg.groups[0] != "Cards" {
-			tag += "{" + strings.Join(tcg.groups, ",") + "} "
+		if tcg.productTypes[0] != "Cards" {
+			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
 	}
@@ -58,13 +58,13 @@ func NewLorcanaIndex(publicId, privateId string) (*TCGLorcanaIndex, error) {
 	}
 	tcg.categoryName = check[0].Name
 	tcg.categoryDisplayName = check[0].DisplayName
-	tcg.groups = []string{"Cards"}
+	tcg.productTypes = []string{"Cards"}
 
 	return &tcg, nil
 }
 
 func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.groups, false, page, MaxLimit)
+	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page, MaxLimit)
 	if err != nil {
 		return err
 	}
