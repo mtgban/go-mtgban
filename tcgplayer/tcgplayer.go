@@ -16,7 +16,6 @@ import (
 type TCGPlayerMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
-	buylistDate    time.Time
 	Affiliate      string
 	MaxConcurrency int
 
@@ -25,7 +24,6 @@ type TCGPlayerMarket struct {
 	SKUsData map[string][]mtgjson.TCGSku
 
 	inventory mtgban.InventoryRecord
-	buylist   mtgban.BuylistRecord
 
 	client *TCGClient
 }
@@ -72,27 +70,19 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
 func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 	tcg := TCGPlayerMarket{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.client = NewTCGClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
 }
 
-func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []marketChan, mode string) error {
+func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []marketChan) error {
 	ids := make([]string, len(reqs))
 	for i := range reqs {
 		ids[i] = fmt.Sprint(reqs[i].SkuId)
 	}
 
-	var results []TCGSKUPrice
-	var err error
-
 	// Retrieve a list of skus with their prices
-	if mode == "inventory" {
-		results, err = tcg.client.TCGPricesForSKUs(ids)
-	} else if mode == "buylist" {
-		results, err = tcg.client.TCGBuylistPricesForSKUs(ids)
-	}
+	results, err := tcg.client.TCGPricesForSKUs(ids)
 	if err != nil {
 		return err
 	}
@@ -128,92 +118,44 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			continue
 		}
 
-		if mode == "inventory" {
-			// Sorted as in availableMarketNames
-			prices := []float64{
-				result.LowestListingPrice, result.DirectLowPrice,
-			}
-			printing := "Normal"
-			if req.Printing == "FOIL" {
-				printing = "Foil"
-			}
-			for i := range availableMarketNames {
-				if prices[i] == 0 {
-					continue
-				}
-
-				isDirect := i == 1
-				link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
-
-				out := responseChan{
-					cardId: cardId,
-					entry: mtgban.InventoryEntry{
-						Conditions: cond,
-						Price:      prices[i],
-						Quantity:   1,
-						URL:        link,
-						SellerName: availableMarketNames[i],
-						Bundle:     isDirect,
-						OriginalId: fmt.Sprint(req.ProductId),
-						InstanceId: fmt.Sprint(result.SkuId),
-					},
-				}
-
-				channel <- out
-			}
-		} else if mode == "buylist" {
-			price := result.BuylistPrices.High
-			if price == 0 {
+		// Sorted as in availableMarketNames
+		prices := []float64{
+			result.LowestListingPrice, result.DirectLowPrice,
+		}
+		printing := "Normal"
+		if req.Printing == "FOIL" {
+			printing = "Foil"
+		}
+		for i := range availableMarketNames {
+			if prices[i] == 0 {
 				continue
 			}
 
-			var sellPrice, priceRatio float64
-			var backupPrice float64
+			isDirect := i == 1
+			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
 
-			// Find the NM Market price of the same card id, if missing for
-			// whatever reason use the tcg direct one
-			invCards := tcg.inventory[cardId]
-			for _, invCard := range invCards {
-				if invCard.Conditions != "NM" {
-					continue
-				}
-				if invCard.SellerName == "TCG Player" {
-					backupPrice = invCard.Price
-				}
-				if invCard.SellerName == "TCG Direct" {
-					sellPrice = invCard.Price
-					break
-				}
-			}
-			if sellPrice == 0 {
-				sellPrice = backupPrice
-			}
-
-			if sellPrice > 0 {
-				priceRatio = price / sellPrice * 100
-			}
 			out := responseChan{
 				cardId: cardId,
-				bl: mtgban.BuylistEntry{
+				entry: mtgban.InventoryEntry{
 					Conditions: cond,
-					BuyPrice:   price,
-					Quantity:   0,
-					PriceRatio: priceRatio,
-					URL:        "https://store.tcgplayer.com/buylist",
+					Price:      prices[i],
+					Quantity:   1,
+					URL:        link,
+					SellerName: availableMarketNames[i],
+					Bundle:     isDirect,
 					OriginalId: fmt.Sprint(req.ProductId),
 					InstanceId: fmt.Sprint(result.SkuId),
 				},
 			}
 
 			channel <- out
-
 		}
 	}
 
 	return nil
 }
 
-func (tcg *TCGPlayerMarket) scrape(mode string) error {
+func (tcg *TCGPlayerMarket) scrape() error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
 		var err error
@@ -225,7 +167,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 		}
 		tcg.SKUsData = skusMap
 	}
-	tcg.printf("Found skus for %d %s entries", len(skusMap), mode)
+	tcg.printf("Found skus for %d entries", len(skusMap))
 
 	start := time.Now()
 
@@ -244,7 +186,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 
 				// When buffer is full, process its contents and empty it
 				if len(buffer) == maxIdsInRequest {
-					err := tcg.processEntry(channel, buffer, mode)
+					err := tcg.processEntry(channel, buffer)
 					if err != nil {
 						tcg.printf("%s", err.Error())
 					}
@@ -253,7 +195,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 			}
 			// Process any spillover
 			if len(buffer) != 0 {
-				err := tcg.processEntry(channel, buffer, mode)
+				err := tcg.processEntry(channel, buffer)
 				if err != nil {
 					tcg.printf("%s", err.Error())
 				}
@@ -275,7 +217,7 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 				continue
 			}
 
-			tcg.printf("[%s] Scraping %s (%d/%d)", mode, set.Name, i, len(sets))
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
 			i++
 
 			for _, card := range set.Cards {
@@ -345,25 +287,14 @@ func (tcg *TCGPlayerMarket) scrape(mode string) error {
 		close(channel)
 	}()
 
-	if mode == "inventory" {
-		for result := range channel {
-			err := tcg.inventory.AddStrict(result.cardId, &result.entry)
-			if err != nil {
-				tcg.printf("%s", err.Error())
-				continue
-			}
+	for result := range channel {
+		err := tcg.inventory.AddStrict(result.cardId, &result.entry)
+		if err != nil {
+			tcg.printf("%s", err.Error())
+			continue
 		}
-		tcg.inventoryDate = time.Now()
-	} else if mode == "buylist" {
-		for result := range channel {
-			err := tcg.buylist.Add(result.cardId, &result.bl)
-			if err != nil {
-				tcg.printf("%s", err.Error())
-				continue
-			}
-		}
-		tcg.buylistDate = time.Now()
 	}
+	tcg.inventoryDate = time.Now()
 
 	tcg.printf("Took %v", time.Since(start))
 
@@ -375,25 +306,12 @@ func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	err := tcg.scrape("inventory")
+	err := tcg.scrape()
 	if err != nil {
 		return nil, err
 	}
 
 	return tcg.inventory, nil
-}
-
-func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
-	if len(tcg.buylist) > 0 {
-		return tcg.buylist, nil
-	}
-
-	err := tcg.scrape("buylist")
-	if err != nil {
-		return nil, err
-	}
-
-	return tcg.buylist, nil
 }
 
 func (tcg *TCGPlayerMarket) MarketNames() []string {
@@ -404,7 +322,6 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Market"
 	info.Shorthand = "TCGMkt"
 	info.InventoryTimestamp = &tcg.inventoryDate
-	info.BuylistTimestamp = &tcg.buylistDate
 	info.NoQuantityInventory = true
 	return
 }

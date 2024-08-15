@@ -538,31 +538,10 @@ type TCGSKUPrice struct {
 	LowestListingPrice float64 `json:"lowestListingPrice"`
 	MarketPrice        float64 `json:"marketPrice"`
 	DirectLowPrice     float64 `json:"directLowPrice"`
-
-	// Only available from TCGBuylistPricesForSKUs()
-	BuylistPrices struct {
-		High   float64 `json:"high"`
-		Market float64 `json:"market"`
-	} `json:"prices"`
 }
 
 func (tcg *TCGClient) TCGPricesForSKUs(ids []string) ([]TCGSKUPrice, error) {
 	resp, err := tcg.Get(tcgApiPricingURL + strings.Join(ids, ","))
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGSKUPrice
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func (tcg *TCGClient) TCGBuylistPricesForSKUs(ids []string) ([]TCGSKUPrice, error) {
-	resp, err := tcg.Get(tcgApiBuylistURL + strings.Join(ids, ","))
 	if err != nil {
 		return nil, err
 	}
