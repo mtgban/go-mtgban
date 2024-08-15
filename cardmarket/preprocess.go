@@ -1029,6 +1029,9 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			}
 		} else if len(mtgmatcher.MatchInSet(cardName, "LTR")) > 0 {
 			edition = "LTR"
+			if ogVariant == "V.5" {
+				variant += " serial"
+			}
 		}
 
 	case "Murders at Karlov Manor":
