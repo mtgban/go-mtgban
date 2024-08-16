@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
 
 var tokenIds = map[int]string{
@@ -34,9 +35,10 @@ var cardIds = map[int]string{
 	284939: "P30H",
 }
 
-func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.InputCard, error) {
-	cardName, variant := product.GetNameAndVariant()
+func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatcher.InputCard, error) {
+	cardName, variant := GetProductNameAndVariant(product)
 
+	number := GetProductNumber(product)
 	edition := editions[product.GroupId]
 
 	// Unsupported cards depending on their variant
@@ -72,7 +74,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 			strings.Contains(variant, "JP WonderGOO Exclusive") ||
 			strings.Contains(variant, "JP Hareruya Exclusive") {
 			return nil, errors.New("unofficial")
-		} else if product.IsToken() && strings.Contains(product.CleanName, "Double") {
+		} else if isToken(product) && strings.Contains(product.CleanName, "Double") {
 			return nil, errors.New("duplicate")
 		} else if strings.Contains(edition, "Tales of Middle-earth") && strings.HasSuffix(cardName, "Scene") {
 			return nil, errors.New("unsupported")
@@ -119,7 +121,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 	case "Alliances",
 		"Portal Second Age":
 		if variant == "" {
-			variant = product.GetNumber()
+			variant = number
 			// Missing everything
 			if cardName == "Awesome Presence" {
 				variant = "arms spread"
@@ -153,7 +155,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 			}
 		}
 	case "Homelands":
-		num := product.GetNumber()
+		num := number
 		fixup, found := map[string]string{
 			"Abbey Matron":    "2",
 			"Aliban's Tower":  "61",
@@ -300,7 +302,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
-			} else if product.IsToken() && strings.Contains(variant, "JP") && strings.Contains(variant, "Exclusive") {
+			} else if isToken(product) && strings.Contains(variant, "JP") && strings.Contains(variant, "Exclusive") {
 				edition = "WDMU"
 			}
 		}
@@ -407,7 +409,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 			variant = "Intro Pack"
 		}
 	case "Secret Lair Drop Series":
-		variant = product.GetNumber()
+		variant = number
 		switch cardName {
 		case "Plains // Battlefield Forge":
 			cardName = "Battlefield Forge"
@@ -428,7 +430,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 			}
 		}
 	case "AFR Ampersand Promos":
-		variant = product.GetNumber() + "a"
+		variant = number + "a"
 	case "WPN & Gateway Promos":
 		switch cardName {
 		case "Mind Stone":
@@ -437,7 +439,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 				edition = "PW21"
 			}
 		case "Orb of Dragonkind":
-			variant = "J" + product.GetNumber()
+			variant = "J" + number
 		}
 	case "Game Day & Store Championship Promos":
 		if variant == "Winner" || variant == "Top 8" {
@@ -454,10 +456,10 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 	case "Unfinity":
 		// Skip attractions, number is incorrect
 		if !strings.Contains(variant, "-") {
-			variant = product.GetNumber()
+			variant = number
 		}
 	case "Murders at Karlov Manor":
-		num := product.GetNumber()
+		num := number
 
 		if num != "" && variant != "a" && variant != "b" {
 			variant = num
@@ -488,7 +490,7 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 		"": // cosmetic
 		// Variants are fine as is
 	default:
-		num := product.GetNumber()
+		num := number
 
 		if num != "" && mtgmatcher.ExtractYear(variant) == "" {
 			variant = num
@@ -501,13 +503,13 @@ func Preprocess(product *TCGProduct, editions map[int]string) (*mtgmatcher.Input
 		edition = ed
 	}
 
-	if product.IsToken() && edition != "Unfinity" {
+	if isToken(product) && edition != "Unfinity" {
 		// Strip pw/tou numbers that could be misinterpreted as numbers
 		if strings.Contains(variant, "/") {
 			variant = ""
 		}
 		// If number is available, use it as it's usually accurate
-		num := product.GetNumber()
+		num := number
 		if num != "" {
 			variant = num
 		}

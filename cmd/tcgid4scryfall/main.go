@@ -13,13 +13,14 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/tcgplayer"
+	api "github.com/mtgban/go-tcgplayer"
 )
 
 const (
 	defaultConcurrency = 8
 )
 
-var Client *tcgplayer.TCGClient
+var Client *api.Client
 
 var Editions map[int]string
 
@@ -35,7 +36,7 @@ type responseChan struct {
 }
 
 func processCards(channel chan<- responseChan, page int) error {
-	products, err := Client.ListAllProducts(tcgplayer.CategoryMagic, []string{"Cards"}, false, page, tcgplayer.MaxLimit)
+	products, err := Client.ListAllProducts(api.CategoryMagic, []string{"Cards"}, false, page)
 	if err != nil {
 		return err
 	}
@@ -81,9 +82,9 @@ func processCards(channel chan<- responseChan, page int) error {
 			continue
 		}
 
-		_, variant := product.GetNameAndVariant()
+		_, variant := tcgplayer.GetProductNameAndVariant(&product)
 		custom_fields := map[string]string{
-			"number":  product.GetNumber(),
+			"number":  tcgplayer.GetProductNumber(&product),
 			"variant": variant,
 		}
 
@@ -130,7 +131,7 @@ func run() int {
 		return 1
 	}
 
-	editions, err := Client.EditionMap(tcgplayer.CategoryMagic)
+	editions, err := tcgplayer.EditionMap(Client, api.CategoryMagic)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -143,7 +144,7 @@ func run() int {
 	start := *StepStartOpt + *StepSizeOpt*(*StepOpt-1)
 	end := *StepStartOpt + *StepSizeOpt*(*StepOpt)
 	if *StepOpt == 0 {
-		totals, err := Client.TotalProducts(tcgplayer.CategoryMagic, []string{"Cards"})
+		totals, err := Client.TotalProducts(api.CategoryMagic, []string{"Cards"})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
@@ -171,7 +172,7 @@ func run() int {
 	}
 
 	go func() {
-		for i := start; i < end; i += tcgplayer.MaxLimit {
+		for i := start; i < end; i += api.MaxItemsInResponse {
 			pages <- i
 		}
 		close(pages)
@@ -297,6 +298,6 @@ func main() {
 		log.Fatalln("Missing TCGplayer keys")
 	}
 
-	Client = tcgplayer.NewTCGClient(*tcgPublicKeyOpt, *tcgPrivateKeyOpt)
+	Client = api.NewClient(*tcgPublicKeyOpt, *tcgPrivateKeyOpt)
 	os.Exit(run())
 }

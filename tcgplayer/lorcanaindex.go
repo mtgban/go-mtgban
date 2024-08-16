@@ -10,6 +10,8 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"golang.org/x/exp/slices"
 )
 
 type TCGLorcanaIndex struct {
@@ -20,7 +22,7 @@ type TCGLorcanaIndex struct {
 
 	inventory mtgban.InventoryRecord
 
-	editions map[int]TCGGroup
+	editions map[int]tcgplayer.Group
 
 	category            int
 	categoryName        string
@@ -28,13 +30,13 @@ type TCGLorcanaIndex struct {
 
 	productTypes []string
 
-	client *TCGClient
+	client *tcgplayer.Client
 }
 
 func (tcg *TCGLorcanaIndex) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if tcg.productTypes[0] != "Cards" {
+		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
@@ -44,39 +46,39 @@ func (tcg *TCGLorcanaIndex) printf(format string, a ...interface{}) {
 func NewLorcanaIndex(publicId, privateId string) (*TCGLorcanaIndex, error) {
 	tcg := TCGLorcanaIndex{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = NewTCGClient(publicId, privateId)
+	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
+	tcg.category = tcgplayer.CategoryLorcana
 
-	tcg.category = CategoryLorcana
-
-	check, err := tcg.client.TCGCategoriesDetails([]int{tcg.category})
+	check, err := tcg.client.GetCategoriesDetails([]int{tcg.category})
 	if err != nil {
 		return nil, err
 	}
 	if len(check) == 0 {
 		return nil, errors.New("empty categories response")
 	}
+
 	tcg.categoryName = check[0].Name
 	tcg.categoryDisplayName = check[0].DisplayName
-	tcg.productTypes = []string{"Cards"}
+	tcg.productTypes = tcgplayer.ProductTypesSingles
 
 	return &tcg, nil
 }
 
 func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page, MaxLimit)
+	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page)
 	if err != nil {
 		return err
 	}
 
-	productMap := map[int]TCGProduct{}
-	ids := make([]string, 0, len(products))
-	for _, product := range products {
-		ids = append(ids, fmt.Sprint(product.ProductId))
+	productMap := map[int]tcgplayer.Product{}
+	ids := make([]int, len(products))
+	for i, product := range products {
+		ids[i] = product.ProductId
 		productMap[product.ProductId] = product
 	}
 
-	results, err := tcg.client.TCGPricesForIds(ids)
+	results, err := tcg.client.GetMarketPricesByProducts(ids)
 	if err != nil {
 		return err
 	}
@@ -92,7 +94,8 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 		}
 
 		cardName := mtgmatcher.SplitVariants(productMap[result.ProductId].Name)[0]
-		cardId, err := mtgmatcher.SimpleSearch(cardName, product.GetNumber(), result.SubTypeName != "Normal")
+		number := GetProductNumber(&product)
+		cardId, err := mtgmatcher.SimpleSearch(cardName, number, result.SubTypeName != "Normal")
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -143,7 +146,7 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 }
 
 func (tcg *TCGLorcanaIndex) scrape() error {
-	editions, err := tcg.client.EditionMap(tcg.category)
+	editions, err := EditionMap(tcg.client, tcg.category)
 	if err != nil {
 		return err
 	}
@@ -175,7 +178,7 @@ func (tcg *TCGLorcanaIndex) scrape() error {
 	}
 
 	go func() {
-		for i := 0; i < totals; i += MaxLimit {
+		for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
 			pages <- i
 		}
 		close(pages)

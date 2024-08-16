@@ -2,7 +2,6 @@ package tcgplayer
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,235 +10,22 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"golang.org/x/time/rate"
+	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
 
 const (
 	defaultConcurrency = 8
-	defaultAPIRetry    = 5
-	maxIdsInRequest    = 250
-
-	tcgApiTokenURL = "https://api.tcgplayer.com/token"
-
-	tcgApiListProductsURL = "https://api.tcgplayer.com/catalog/products"
-	tcgApiListGroupsURL   = "https://api.tcgplayer.com/catalog/groups"
-
-	tcgApiCategoriesURL = "https://api.tcgplayer.com/catalog/categories/"
-	tcgApiPrintingsURL  = "https://api.tcgplayer.com/catalog/categories/%d/printings"
-
-	tcgApiVersion    = "v1.39.0"
-	tcgApiProductURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/product/"
-	tcgApiPricingURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/sku/"
-	tcgApiBuylistURL = "https://api.tcgplayer.com/" + tcgApiVersion + "/pricing/buy/sku/"
-	tcgApiSKUsURL    = "https://api.tcgplayer.com/" + tcgApiVersion + "/catalog/products/%s/skus"
 
 	tcgLatestSalesURL = "https://mpapi.tcgplayer.com/v2/product/%s/latestsales"
 )
 
-type TCGClient struct {
-	client *retryablehttp.Client
-}
-
-func NewTCGClient(publicId, privateId string) *TCGClient {
-	tcg := TCGClient{}
-	tcg.client = retryablehttp.NewClient()
-	tcg.client.Logger = nil
-	tcg.client.HTTPClient.Transport = &authTransport{
-		Parent:    tcg.client.HTTPClient.Transport,
-		PublicId:  publicId,
-		PrivateId: privateId,
-
-		// Set a relatively high rate to prevent unexpected limits later
-		Limiter: rate.NewLimiter(80, 20),
-
-		mtx: sync.RWMutex{},
-	}
-	return &tcg
-}
-
-type authTransport struct {
-	Parent    http.RoundTripper
-	PublicId  string
-	PrivateId string
-	token     string
-	expires   time.Time
-	Limiter   *rate.Limiter
-	mtx       sync.RWMutex
-}
-
-func (t *authTransport) authToken() (string, time.Time, error) {
-	params := url.Values{}
-	params.Set("grant_type", "client_credentials")
-	params.Set("client_id", t.PublicId)
-	params.Set("client_secret", t.PrivateId)
-	body := strings.NewReader(params.Encode())
-
-	resp, err := cleanhttp.DefaultClient().Post(tcgApiTokenURL, "application/json", body)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-
-	var response struct {
-		AccessToken string        `json:"access_token"`
-		ExpiresIn   time.Duration `json:"expires_in"`
-	}
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-
-	expires := time.Now().Add(response.ExpiresIn * time.Second)
-	return response.AccessToken, expires, nil
-}
-
-func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	err := t.Limiter.Wait(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	if t.PublicId == "" || t.PrivateId == "" {
-		return nil, fmt.Errorf("missing public or private id")
-	}
-
-	// Retrieve the static values
-	t.mtx.RLock()
-	token := t.token
-	expires := t.expires
-	t.mtx.RUnlock()
-
-	// If there is a token, make sure it's still valid
-	if token != "" || time.Now().After(expires.Add(-1*time.Hour)) {
-		// If not valid, ask for generating a new one
-		t.mtx.Lock()
-		token = ""
-		t.mtx.Unlock()
-	}
-
-	// Generate a new token
-	if token == "" {
-		t.mtx.Lock()
-		// Only perform this action once, for the routine that got the mutex first
-		// The others will just use the updated token immediately after
-		if token == t.token {
-			t.token, t.expires, err = t.authToken()
-		}
-		token = t.token
-		t.mtx.Unlock()
-		// If anything fails
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-	return t.Parent.RoundTrip(req)
-}
-
-const (
-	CategoryMagic   = 1
-	CategoryYuGiOh  = 2
-	CategoryPokemon = 3
-	CategoryLorcana = 71
-
-	ProductTypeCards               = "Cards"
-	ProductTypeBoosterBox          = "Booster Box"
-	ProductTypeBoosterPack         = "Booster Pack"
-	ProductTypeSealedProducts      = "Sealed Products"
-	ProductTypeIntroPack           = "Intro Pack"
-	ProductTypeFatPack             = "Fat Pack"
-	ProductTypeBoxSets             = "Box Sets"
-	ProductTypePreconEventDecks    = "Precon/Event Decks"
-	ProductTypeMagicDeckPack       = "Magic Deck Pack"
-	ProductTypeMagicBoosterBoxCase = "Magic Booster Box Case"
-	ProductTypeAll5IntroPacks      = "All 5 Intro Packs"
-	ProductTypeIntroPackDisplay    = "Intro Pack Display"
-	ProductType3xMagicBoosterPacks = "3x Magic Booster Packs"
-	ProductTypeBoosterBattlePack   = "Booster Battle Pack"
-
-	MaxLimit = 100
-)
-
-var AllProductTypes = []string{
-	ProductTypeCards,
-	ProductTypeBoosterBox,
-	ProductTypeBoosterPack,
-	ProductTypeSealedProducts,
-	ProductTypeIntroPack,
-	ProductTypeFatPack,
-	ProductTypeBoxSets,
-	ProductTypePreconEventDecks,
-	ProductTypeMagicDeckPack,
-	ProductTypeMagicBoosterBoxCase,
-	ProductTypeAll5IntroPacks,
-	ProductTypeIntroPackDisplay,
-	ProductType3xMagicBoosterPacks,
-	ProductTypeBoosterBattlePack,
-}
-
-type TCGResponse struct {
-	TotalItems int             `json:"totalItems"`
-	Success    bool            `json:"success"`
-	Errors     []string        `json:"errors"`
-	Results    json.RawMessage `json:"results"`
-}
-
-// Perform an authenticated GET request on any URL
-func (tcg *TCGClient) Get(url string) (*TCGResponse, error) {
-	resp, err := tcg.client.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var response TCGResponse
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
-	}
-	if len(response.Errors) > 0 {
-		return nil, fmt.Errorf(strings.Join(response.Errors, " "))
-	}
-
-	return &response, nil
-}
-
-type TCGProduct struct {
-	ProductId  int      `json:"productId"`
-	Name       string   `json:"name"`
-	CleanName  string   `json:"cleanName"`
-	ImageUrl   string   `json:"imageUrl"`
-	GroupId    int      `json:"groupId"`
-	URL        string   `json:"url"`
-	ModifiedOn string   `json:"modifiedOn"`
-	Skus       []TCGSKU `json:"skus,omitempty"`
-
-	// Only available for catalog/products API calls
-	ExtendedData []struct {
-		Name        string `json:"name"`
-		DisplayName string `json:"displayName"`
-		Value       string `json:"value"`
-	} `json:"extendedData,omitempty"`
-}
-
-func (tcgp *TCGProduct) GetNumber() string {
+func GetProductNumber(tcgp *tcgplayer.Product) string {
 	for _, extData := range tcgp.ExtendedData {
 		if extData.Name == "Number" {
 			num := strings.TrimLeft(extData.Value, "0")
@@ -250,7 +36,7 @@ func (tcgp *TCGProduct) GetNumber() string {
 	return ""
 }
 
-func (tcgp *TCGProduct) GetNameAndVariant() (string, string) {
+func GetProductNameAndVariant(tcgp *tcgplayer.Product) (string, string) {
 	cardName := tcgp.Name
 	variant := ""
 
@@ -285,7 +71,7 @@ func (tcgp *TCGProduct) GetNameAndVariant() (string, string) {
 	return cardName, variant
 }
 
-func (tcgp *TCGProduct) IsToken() bool {
+func isToken(tcgp *tcgplayer.Product) bool {
 	for _, extData := range tcgp.ExtendedData {
 		if extData.Name == "SubType" && strings.Contains(extData.Value, "Token") {
 			return true
@@ -298,170 +84,15 @@ func (tcgp *TCGProduct) IsToken() bool {
 	return false
 }
 
-func (tcg *TCGClient) TotalProducts(category int, productTypes []string) (int, error) {
-	return tcg.queryTotal(tcgApiListProductsURL, category, productTypes)
-}
-
-func (tcg *TCGClient) queryTotal(link string, category int, productTypes []string) (int, error) {
-	u, err := url.Parse(link)
-	if err != nil {
-		return 0, err
-	}
-	v := url.Values{}
-	v.Set("categoryId", fmt.Sprint(category))
-	if productTypes != nil {
-		v.Set("productTypes", strings.Join(productTypes, ","))
-	}
-	v.Set("limit", fmt.Sprint(1))
-	u.RawQuery = v.Encode()
-
-	response, err := tcg.Get(u.String())
-	if err != nil {
-		return 0, err
-	}
-	return response.TotalItems, nil
-}
-
-type TCGPrinting struct {
-	PrintingId int    `json:"printingId"`
-	Name       string `json:"name"`
-}
-
-func (tcg *TCGClient) ListCategoryPrintings(category int) ([]TCGPrinting, error) {
-	resp, err := tcg.Get(fmt.Sprintf(tcgApiPrintingsURL, category))
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGPrinting
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func (tcg *TCGClient) ListProducts(productIds []int, includeSkus bool) ([]TCGProduct, error) {
-	link := tcgApiListProductsURL + "/"
-	for _, pid := range productIds {
-		link += fmt.Sprintf("%d,", pid)
-	}
-	link = strings.TrimLeft(link, ",")
-
-	u, err := url.Parse(link)
-	if err != nil {
-		return nil, err
-	}
-
-	v := url.Values{}
-	v.Set("getExtendedFields", "true")
-	if includeSkus {
-		v.Set("includeSkus", "true")
-	}
-
-	u.RawQuery = v.Encode()
-
-	resp, err := tcg.Get(u.String())
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGProduct
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func (tcg *TCGClient) ListAllProducts(category int, productTypes []string, includeSkus bool, offset int, limit int) ([]TCGProduct, error) {
-	u, err := url.Parse(tcgApiListProductsURL)
-	if err != nil {
-		return nil, err
-	}
-
-	if limit > MaxLimit {
-		return nil, errors.New("invalid limit parameter")
-	}
-
-	v := url.Values{}
-	v.Set("getExtendedFields", "true")
-	v.Set("categoryId", fmt.Sprint(category))
-	if productTypes != nil {
-		v.Set("productTypes", strings.Join(productTypes, ","))
-	}
-	if includeSkus {
-		v.Set("includeSkus", "true")
-	}
-	v.Set("offset", fmt.Sprint(offset))
-
-	v.Set("limit", fmt.Sprint(limit))
-	u.RawQuery = v.Encode()
-
-	resp, err := tcg.Get(u.String())
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGProduct
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-type TCGGroup struct {
-	GroupID      int    `json:"groupId"`
-	Name         string `json:"name"`
-	Abbreviation string `json:"abbreviation"`
-	Supplemental bool   `json:"supplemental"`
-	PublishedOn  string `json:"publishedOn"`
-	ModifiedOn   string `json:"modifiedOn"`
-	CategoryID   int    `json:"categoryId"`
-}
-
-func (tcg *TCGClient) TotalGroups(category int) (int, error) {
-	return tcg.queryTotal(tcgApiListGroupsURL, category, nil)
-}
-
-func (tcg *TCGClient) ListAllGroups(category int, offset int, limit int) ([]TCGGroup, error) {
-	u, err := url.Parse(tcgApiListGroupsURL)
-	if err != nil {
-		return nil, err
-	}
-	v := url.Values{}
-	v.Set("categoryId", fmt.Sprint(category))
-	v.Set("offset", fmt.Sprint(offset))
-	v.Set("limit", fmt.Sprint(limit))
-	u.RawQuery = v.Encode()
-
-	resp, err := tcg.Get(u.String())
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGGroup
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-func (tcg *TCGClient) EditionMap(category int) (map[int]TCGGroup, error) {
+func EditionMap(tcg *tcgplayer.Client, category int) (map[int]tcgplayer.Group, error) {
 	totals, err := tcg.TotalGroups(category)
 	if err != nil {
 		return nil, err
 	}
 
-	results := map[int]TCGGroup{}
-	for i := 0; i < totals; i += MaxLimit {
-		groups, err := tcg.ListAllGroups(category, i, MaxLimit)
+	results := map[int]tcgplayer.Group{}
+	for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
+		groups, err := tcg.ListAllCategoryGroups(category, i)
 		if err != nil {
 			return nil, err
 		}
@@ -474,121 +105,12 @@ func (tcg *TCGClient) EditionMap(category int) (map[int]TCGGroup, error) {
 	return results, nil
 }
 
-type TCGPrice struct {
-	ProductId      int     `json:"productId"`
-	LowPrice       float64 `json:"lowPrice"`
-	MarketPrice    float64 `json:"marketPrice"`
-	MidPrice       float64 `json:"midPrice"`
-	DirectLowPrice float64 `json:"directLowPrice"`
-	SubTypeName    string  `json:"subTypeName"`
-}
-
-func (tcg *TCGClient) TCGPricesForIds(productIds []string) ([]TCGPrice, error) {
-	resp, err := tcg.Get(tcgApiProductURL + strings.Join(productIds, ","))
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGPrice
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
 var SKUConditionMap = map[int]string{
 	1: "NM",
 	2: "SP",
 	3: "MP",
 	4: "HP",
 	5: "PO",
-}
-
-type TCGSKU struct {
-	SkuId       int `json:"skuId"`
-	ProductId   int `json:"productId"`
-	LanguageId  int `json:"languageId"`
-	PrintingId  int `json:"printingId"`
-	ConditionId int `json:"conditionId"`
-}
-
-func (tcg *TCGClient) SKUsForId(productId string) ([]TCGSKU, error) {
-	resp, err := tcg.Get(fmt.Sprintf(tcgApiSKUsURL, productId))
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGSKU
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-type TCGSKUPrice struct {
-	SkuId int `json:"skuId"`
-
-	// Only availabe from TCGPricesForSKUs()
-	LowPrice           float64 `json:"lowPrice"`
-	LowestShipping     float64 `json:"lowestShipping"`
-	LowestListingPrice float64 `json:"lowestListingPrice"`
-	MarketPrice        float64 `json:"marketPrice"`
-	DirectLowPrice     float64 `json:"directLowPrice"`
-}
-
-func (tcg *TCGClient) TCGPricesForSKUs(ids []string) ([]TCGSKUPrice, error) {
-	resp, err := tcg.Get(tcgApiPricingURL + strings.Join(ids, ","))
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGSKUPrice
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-type TCGCategory struct {
-	CategoryID        int    `json:"categoryId"`
-	Name              string `json:"name"`
-	ModifiedOn        string `json:"modifiedOn"`
-	DisplayName       string `json:"displayName"`
-	SeoCategoryName   string `json:"seoCategoryName"`
-	SealedLabel       string `json:"sealedLabel"`
-	NonSealedLabel    string `json:"nonSealedLabel"`
-	ConditionGuideURL string `json:"conditionGuideUrl"`
-	IsScannable       bool   `json:"isScannable"`
-	Popularity        int    `json:"popularity"`
-}
-
-func (tcg *TCGClient) TCGCategoriesDetails(ids []int) ([]TCGCategory, error) {
-	link := tcgApiCategoriesURL
-	for i, id := range ids {
-		if i != 0 {
-			link += ","
-		}
-		link += fmt.Sprint(id)
-	}
-
-	resp, err := tcg.Get(link)
-	if err != nil {
-		return nil, err
-	}
-
-	var out []TCGCategory
-	err = json.Unmarshal(resp.Results, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
 }
 
 type latestSalesRequest struct {
@@ -871,6 +393,10 @@ type SellerInventoryResult struct {
 		Number string `json:"number"`
 	} `json:"customAttributes"`
 	Listings []SellerListing `json:"listings"`
+}
+
+type TCGClient struct {
+	client *retryablehttp.Client
 }
 
 func NewTCGSellerClient() *TCGClient {

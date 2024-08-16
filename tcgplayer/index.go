@@ -2,12 +2,14 @@ package tcgplayer
 
 import (
 	"fmt"
+	"strconv"
 	"sync"
 
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
 
 type TCGPlayerIndex struct {
@@ -18,7 +20,7 @@ type TCGPlayerIndex struct {
 
 	inventory mtgban.InventoryRecord
 
-	client *TCGClient
+	client *tcgplayer.Client
 }
 
 var availableIndexNames = []string{
@@ -40,18 +42,22 @@ func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
 func NewScraperIndex(publicId, privateId string) *TCGPlayerIndex {
 	tcg := TCGPlayerIndex{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = NewTCGClient(publicId, privateId)
+	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
 }
 
 func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []indexChan) error {
-	ids := make([]string, len(reqs))
+	var ids []int
 	for i := range reqs {
-		ids[i] = reqs[i].TCGProductId
+		id, err := strconv.Atoi(reqs[i].TCGProductId)
+		if err != nil {
+			continue
+		}
+		ids = append(ids, id)
 	}
 
-	results, err := tcg.client.TCGPricesForIds(ids)
+	results, err := tcg.client.GetMarketPricesByProducts(ids)
 	if err != nil {
 		return err
 	}
@@ -131,7 +137,7 @@ func (tcg *TCGPlayerIndex) scrape() error {
 		wg.Add(1)
 		go func() {
 			idFound := map[string]string{}
-			buffer := make([]indexChan, 0, maxIdsInRequest)
+			buffer := make([]indexChan, 0, tcgplayer.MaxIdsInRequest)
 
 			for page := range pages {
 				// Skip dupes
@@ -145,7 +151,7 @@ func (tcg *TCGPlayerIndex) scrape() error {
 				buffer = append(buffer, page)
 
 				// When buffer is full, process its contents and empty it
-				if len(buffer) == maxIdsInRequest {
+				if len(buffer) == tcgplayer.MaxIdsInRequest {
 					err := tcg.processEntry(channel, buffer)
 					if err != nil {
 						tcg.printf("%s", err.Error())

@@ -10,6 +10,8 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"golang.org/x/exp/slices"
 )
 
 type TCGLorcana struct {
@@ -20,7 +22,7 @@ type TCGLorcana struct {
 
 	inventory mtgban.InventoryRecord
 
-	editions map[int]TCGGroup
+	editions map[int]tcgplayer.Group
 
 	printings map[int]string
 
@@ -30,13 +32,13 @@ type TCGLorcana struct {
 
 	productTypes []string
 
-	client *TCGClient
+	client *tcgplayer.Client
 }
 
 func (tcg *TCGLorcana) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if tcg.productTypes[0] != "Cards" {
+		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
@@ -46,21 +48,22 @@ func (tcg *TCGLorcana) printf(format string, a ...interface{}) {
 func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
 	tcg := TCGLorcana{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = NewTCGClient(publicId, privateId)
+	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 
-	tcg.category = CategoryLorcana
+	tcg.category = tcgplayer.CategoryLorcana
 
-	check, err := tcg.client.TCGCategoriesDetails([]int{tcg.category})
+	check, err := tcg.client.GetCategoriesDetails([]int{tcg.category})
 	if err != nil {
 		return nil, err
 	}
 	if len(check) == 0 {
 		return nil, errors.New("empty categories response")
 	}
+
 	tcg.categoryName = check[0].Name
 	tcg.categoryDisplayName = check[0].DisplayName
-	tcg.productTypes = []string{"Cards"}
+	tcg.productTypes = tcgplayer.ProductTypesSingles
 
 	tcg.printings = map[int]string{}
 
@@ -68,14 +71,14 @@ func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
 }
 
 func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, true, page, MaxLimit)
+	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, true, page)
 	if err != nil {
 		return err
 	}
 
-	productMap := map[int]TCGProduct{}
-	skuMap := map[int]TCGSKU{}
-	var skuIds []string
+	productMap := map[int]tcgplayer.Product{}
+	skuMap := map[int]tcgplayer.SKU{}
+	var skuIds []int
 	for _, product := range products {
 		productMap[product.ProductId] = product
 
@@ -89,19 +92,19 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 				continue
 			}
 
-			skuIds = append(skuIds, fmt.Sprint(sku.SkuId))
+			skuIds = append(skuIds, sku.SkuId)
 			skuMap[sku.SkuId] = sku
 		}
 	}
 
-	for i := 0; i < len(skuIds); i += maxIdsInRequest {
+	for i := 0; i < len(skuIds); i += tcgplayer.MaxIdsInRequest {
 		start := i
-		end := i + maxIdsInRequest
+		end := i + tcgplayer.MaxIdsInRequest
 		if end > len(skuIds) {
 			end = len(skuIds)
 		}
 
-		results, err := tcg.client.TCGPricesForSKUs(skuIds[start:end])
+		results, err := tcg.client.GetMarketPricesBySKUs(skuIds[start:end])
 		if err != nil {
 			return err
 		}
@@ -119,7 +122,8 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 			}
 
 			cardName := mtgmatcher.SplitVariants(product.Name)[0]
-			cardId, err := mtgmatcher.SimpleSearch(cardName, product.GetNumber(), tcg.printings[sku.PrintingId] != "Normal")
+			number := GetProductNumber(&product)
+			cardId, err := mtgmatcher.SimpleSearch(cardName, number, tcg.printings[sku.PrintingId] != "Normal")
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -171,7 +175,7 @@ func (tcg *TCGLorcana) scrape() error {
 		tcg.printings[printing.PrintingId] = printing.Name
 	}
 
-	editions, err := tcg.client.EditionMap(tcg.category)
+	editions, err := EditionMap(tcg.client, tcg.category)
 	if err != nil {
 		return err
 	}
@@ -203,7 +207,7 @@ func (tcg *TCGLorcana) scrape() error {
 	}
 
 	go func() {
-		for i := 0; i < totals; i += MaxLimit {
+		for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
 			pages <- i
 		}
 		close(pages)

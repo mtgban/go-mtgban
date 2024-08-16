@@ -10,6 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
 
 type TCGPlayerSealed struct {
@@ -21,7 +22,7 @@ type TCGPlayerSealed struct {
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
-	client        *TCGClient
+	client        *tcgplayer.Client
 }
 
 func (tcg *TCGPlayerSealed) printf(format string, a ...interface{}) {
@@ -33,18 +34,18 @@ func (tcg *TCGPlayerSealed) printf(format string, a ...interface{}) {
 func NewScraperSealed(publicId, privateId string) *TCGPlayerSealed {
 	tcg := TCGPlayerSealed{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = NewTCGClient(publicId, privateId)
+	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
 }
 
 func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []marketChan) error {
-	ids := make([]string, len(reqs))
+	ids := make([]int, len(reqs))
 	for i := range reqs {
-		ids[i] = fmt.Sprint(reqs[i].SkuId)
+		ids[i] = reqs[i].SkuId
 	}
 
-	results, err := tcg.client.TCGPricesForSKUs(ids)
+	results, err := tcg.client.GetMarketPricesBySKUs(ids)
 	if err != nil {
 		return err
 	}
@@ -105,7 +106,7 @@ func (tcg *TCGPlayerSealed) scrape() error {
 		wg.Add(1)
 		go func() {
 			var idsFound []int
-			buffer := make([]marketChan, 0, maxIdsInRequest)
+			buffer := make([]marketChan, 0, tcgplayer.MaxIdsInRequest)
 
 			for page := range pages {
 				// Skip dupes
@@ -118,7 +119,7 @@ func (tcg *TCGPlayerSealed) scrape() error {
 				buffer = append(buffer, page)
 
 				// When buffer is full, process its contents and empty it
-				if len(buffer) == maxIdsInRequest {
+				if len(buffer) == cap(buffer) {
 					err := tcg.processEntries(channel, buffer)
 					if err != nil {
 						tcg.printf("%s", err.Error())

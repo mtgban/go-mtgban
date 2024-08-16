@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"golang.org/x/exp/slices"
 )
 
 type TCGPlayerGeneric struct {
@@ -19,7 +21,7 @@ type TCGPlayerGeneric struct {
 
 	inventory mtgban.InventoryRecord
 
-	editions map[int]TCGGroup
+	editions map[int]tcgplayer.Group
 
 	category            int
 	categoryName        string
@@ -27,13 +29,13 @@ type TCGPlayerGeneric struct {
 
 	productTypes []string
 
-	client *TCGClient
+	client *tcgplayer.Client
 }
 
 func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if tcg.productTypes[0] != "Cards" {
+		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
@@ -43,22 +45,24 @@ func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 func NewScraperGeneric(publicId, privateId string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
 	tcg := TCGPlayerGeneric{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = NewTCGClient(publicId, privateId)
+	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
-	check, err := tcg.client.TCGCategoriesDetails([]int{category})
+
+	check, err := tcg.client.GetCategoriesDetails([]int{category})
 	if err != nil {
 		return nil, err
 	}
 	if len(check) == 0 {
 		return nil, errors.New("empty categories response")
 	}
+
 	tcg.category = category
 	tcg.categoryName = check[0].Name
 	tcg.categoryDisplayName = check[0].DisplayName
 
 	tcg.productTypes = productTypes
 	if len(tcg.productTypes) == 0 {
-		tcg.productTypes = []string{"Cards"}
+		tcg.productTypes = tcgplayer.ProductTypesSingles
 	}
 
 	return &tcg, nil
@@ -70,19 +74,19 @@ type genericChan struct {
 }
 
 func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page, MaxLimit)
+	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page)
 	if err != nil {
 		return err
 	}
 
-	prodMap := map[int]TCGProduct{}
-	ids := make([]string, 0, len(products))
-	for _, product := range products {
-		ids = append(ids, fmt.Sprint(product.ProductId))
+	prodMap := map[int]tcgplayer.Product{}
+	ids := make([]int, len(products))
+	for i, product := range products {
+		ids[i] = product.ProductId
 		prodMap[product.ProductId] = product
 	}
 
-	results, err := tcg.client.TCGPricesForIds(ids)
+	results, err := tcg.client.GetMarketPricesByProducts(ids)
 	if err != nil {
 		return err
 	}
@@ -135,7 +139,7 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 }
 
 func (tcg *TCGPlayerGeneric) scrape() error {
-	editions, err := tcg.client.EditionMap(tcg.category)
+	editions, err := EditionMap(tcg.client, tcg.category)
 	if err != nil {
 		return err
 	}
@@ -167,7 +171,7 @@ func (tcg *TCGPlayerGeneric) scrape() error {
 	}
 
 	go func() {
-		for i := 0; i < totals; i += MaxLimit {
+		for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
 			pages <- i
 		}
 		close(pages)
@@ -209,7 +213,7 @@ func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
 
-	if tcg.productTypes[0] != "Cards" {
+	if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
 		info.Name += " " + strings.Join(tcg.productTypes, ",")
 		info.Shorthand += "+" + strings.Join(tcg.productTypes, ",")
 	}
