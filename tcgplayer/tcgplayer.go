@@ -207,6 +207,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 
 	go func() {
 		sets := mtgmatcher.GetAllSets()
+		total := len(sets) - 1
 		i := 1
 
 		var idsFound []int
@@ -218,7 +219,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 				continue
 			}
 
-			tcg.printf("Scraping %s (%d/%d)", set.Name, i, len(sets))
+			tcg.printf("Scraping %s (%d/%d)", set.Name, i, total)
 			i++
 
 			for _, card := range set.Cards {
