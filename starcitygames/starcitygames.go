@@ -146,9 +146,7 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				continue
 			}
 		case GameLorcana:
-			collectorNumber := strings.TrimLeft(number, "0")
-
-			cardId, err = mtgmatcher.SimpleSearch(cardName, collectorNumber, finish != "Non-foil")
+			cardId, err = mtgmatcher.SimpleSearch(cardName, number, finish != "Non-foil")
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -357,7 +355,7 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 				cardId, err = mtgmatcher.Match(theCard)
 			} else if scg.game == GameLorcana {
 				cardName := result.Name
-				number := strings.TrimLeft(hit.CollectorNumber, "0")
+				number := hit.CollectorNumber
 				cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.Finish != "N")
 			} else {
 				return errors.New("unsupported game")

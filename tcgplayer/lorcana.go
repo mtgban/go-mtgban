@@ -121,7 +121,7 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 				continue
 			}
 
-			cardName := mtgmatcher.SplitVariants(product.Name)[0]
+			cardName := product.Name
 			number := GetProductNumber(&product)
 			cardId, err := mtgmatcher.SimpleSearch(cardName, number, tcg.printings[sku.PrintingId] != "Normal")
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {

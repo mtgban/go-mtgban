@@ -235,7 +235,6 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 						return
 					}
 				case GameLorcana:
-					cardName = mtgmatcher.SplitVariants(cardName)[0]
 					number := mtgmatcher.ExtractNumber(strings.Split(notes, "/")[0])
 
 					cardId, err = mtgmatcher.SimpleSearch(cardName, number, isFoil)

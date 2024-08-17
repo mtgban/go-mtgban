@@ -119,7 +119,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			return err
 		}
 	case GameIdLorcana:
-		cardName := mtgmatcher.SplitVariants(product.Name)[0]
+		cardName := product.Name
 		number := product.Number
 
 		cardId, err = mtgmatcher.SimpleSearch(cardName, number, false)

@@ -93,7 +93,7 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 			continue
 		}
 
-		cardName := mtgmatcher.SplitVariants(productMap[result.ProductId].Name)[0]
+		cardName := productMap[result.ProductId].Name
 		number := GetProductNumber(&product)
 		cardId, err := mtgmatcher.SimpleSearch(cardName, number, result.SubTypeName != "Normal")
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {

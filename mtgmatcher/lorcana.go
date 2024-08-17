@@ -230,6 +230,11 @@ var lorcanaRarityMap = map[string]int{
 }
 
 func SimpleSearch(cardName, number string, foil bool) (string, error) {
+	number = strings.TrimLeft(number, "0")
+	number = strings.Split(number, "/")[0]
+
+	cardName = SplitVariants(cardName)[0]
+
 	uuids, err := SearchEquals(cardName)
 	if err != nil {
 		return "", err
