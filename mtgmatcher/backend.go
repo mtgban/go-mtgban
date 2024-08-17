@@ -498,7 +498,7 @@ func (ap AllPrintings) Load() cardBackend {
 				default:
 					num, _ := strconv.Atoi(card.Number)
 					// Override the frame type for the Braindead drops
-					if num == 821 || num == 824 || (num >= 1652 && num <= 1666) {
+					if (num >= 821 && num <= 824) || (num >= 1652 && num <= 1666) {
 						card.FrameVersion = "2015"
 					}
 				}
