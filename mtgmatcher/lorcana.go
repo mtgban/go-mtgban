@@ -237,7 +237,10 @@ func SimpleSearch(cardName, number string, foil bool) (string, error) {
 
 	uuids, err := SearchEquals(cardName)
 	if err != nil {
-		return "", err
+		uuids, err = SearchHasPrefix(cardName)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	if len(uuids) == 1 {
