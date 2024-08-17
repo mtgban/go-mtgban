@@ -57,6 +57,7 @@ var replacer = strings.NewReplacer(
 	"á", "a",
 	"à", "a",
 	"ä", "a",
+	"ā", "a",
 	"é", "e",
 	"í", "i",
 	"ï", "i",
