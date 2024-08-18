@@ -1,17 +1,14 @@
 package strikezone
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
-	"io"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gocolly/colly"
-	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -20,7 +17,10 @@ const (
 	defaultConcurrency = 8
 
 	szInventoryURL = "http://shop.strikezoneonline.com/Category/Magic_the_Gathering_Singles.html"
-	szBuylistURL   = "http://shop.strikezoneonline.com/List/MagicBuyList.txt"
+	szBuylistURL   = "http://shop.strikezoneonline.com/BuyList/Magic_the_Gathering.html"
+
+	GameMagic   = "Magic_the_Gathering"
+	GameLorcana = "Lorcana"
 )
 
 type Strikezone struct {
@@ -49,10 +49,118 @@ func (sz *Strikezone) printf(format string, a ...interface{}) {
 
 type respChan struct {
 	cardId string
-	entry  *mtgban.InventoryEntry
+	inv    *mtgban.InventoryEntry
+	bl     *mtgban.BuylistEntry
 }
 
-func (sz *Strikezone) scrape() error {
+func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly.HTMLElement, edition string) {
+	var cardName, pathURL, notes, cond, qty, price string
+
+	cardName = el.ChildText("td:nth-child(1)")
+	if cardName == "" || cardName == "Name" {
+		return
+	}
+
+	pathURL = el.ChildAttr("a", "href")
+	if mode == "inventory" {
+		notes = el.ChildText("td:nth-child(4)")
+		cond = el.ChildText("td:nth-child(5)")
+		qty = el.ChildText("td:nth-child(6)")
+		price = el.ChildText("td:nth-child(7)")
+	} else if mode == "buylist" {
+		notes = el.ChildText("td:nth-child(4)")
+		cond = notes
+		qty = el.ChildText("td:nth-child(5)")
+		price = el.ChildText("td:nth-child(6)")
+	}
+
+	theCard, err := preprocess(cardName, edition, notes)
+	if err != nil {
+		return
+	}
+
+	cardId, err := mtgmatcher.Match(theCard)
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return
+	} else if err != nil {
+		sz.printf("%v", err)
+		sz.printf("%q", theCard)
+		sz.printf("%s|%s|%s", cardName, edition, notes)
+
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
+			probes := alias.Probe()
+			for _, probe := range probes {
+				card, _ := mtgmatcher.GetUUID(probe)
+				sz.printf("- %s", card)
+			}
+		}
+		return
+	}
+
+	cardPrice, _ := strconv.ParseFloat(price, 64)
+	if cardPrice <= 0 {
+		return
+	}
+
+	quantity, _ := strconv.Atoi(qty)
+	if quantity <= 0 {
+		return
+	}
+
+	switch {
+	case strings.Contains(cond, "Mint"):
+		cond = "NM"
+	case strings.Contains(cond, "Light"):
+		cond = "SP"
+	case strings.Contains(cond, "Medium"):
+		cond = "MP"
+	case strings.Contains(cond, "Heavy"):
+		cond = "HP"
+	default:
+		sz.printf("Unsupported %s condition", cond)
+		return
+	}
+
+	if mode == "inventory" {
+		channel <- respChan{
+			cardId: cardId,
+			inv: &mtgban.InventoryEntry{
+				Conditions: cond,
+				Price:      cardPrice,
+				Quantity:   quantity,
+				URL:        "http://shop.strikezoneonline.com" + pathURL,
+			},
+		}
+	} else if mode == "buylist" {
+		var sellPrice, priceRatio float64
+
+		invCards := sz.inventory[cardId]
+		for _, invCard := range invCards {
+			if invCard.Conditions == "NM" {
+				sellPrice = invCard.Price
+				break
+			}
+		}
+
+		if sellPrice > 0 {
+			priceRatio = cardPrice / sellPrice * 100
+		}
+
+		channel <- respChan{
+			cardId: cardId,
+			bl: &mtgban.BuylistEntry{
+				Conditions: cond,
+				BuyPrice:   cardPrice,
+				Quantity:   quantity,
+				PriceRatio: priceRatio,
+				URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + url.QueryEscape(theCard.Name),
+			},
+		}
+	}
+}
+
+func (sz *Strikezone) scrape(mode string) error {
 	channel := make(chan respChan)
 
 	c := colly.NewCollector(
@@ -79,12 +187,18 @@ func (sz *Strikezone) scrape() error {
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
 
-		if strings.Contains(link, "/Category/") &&
+		basePath := "/Category/"
+		if mode == "buylist" {
+			basePath = "/BuyList/"
+		}
+
+		if strings.Contains(link, basePath) &&
 			!strings.HasSuffix(link, "_ByTable.html") &&
 			!strings.HasSuffix(link, "_ByRarity.html") &&
 			!strings.HasSuffix(link, "Games.html") &&
 			!strings.HasSuffix(link, "Magic_Booster_Boxes.html") &&
 			!strings.HasSuffix(link, "Fat_Packs.html") &&
+			!strings.HasSuffix(link, "Gift_Sets_and_Secret_Lairs.html") &&
 			!strings.HasSuffix(link, "Preconstructed_Decks.html") {
 			c.Visit(e.Request.AbsoluteURL(link))
 		}
@@ -92,86 +206,30 @@ func (sz *Strikezone) scrape() error {
 
 	// Callback for when a scraped page contains a form element
 	c.OnHTML("body", func(e *colly.HTMLElement) {
-		var cardName, pathURL, notes, cond, qty, price string
 		edition := e.ChildText("h1")
+		edition = strings.TrimSuffix(edition, " Buy Lists")
+		edition = strings.TrimPrefix(edition, "Singles ")
 
-		e.ForEach("table.rtti tr", func(_ int, el *colly.HTMLElement) {
-			cardName = el.ChildText("td:nth-child(1)")
-			pathURL = el.ChildAttr("a", "href")
-			notes = el.ChildText("td:nth-child(4)")
-			cond = el.ChildText("td:nth-child(5)")
-			qty = el.ChildText("td:nth-child(6)")
-			price = el.ChildText("td:nth-child(7)")
-			if cardName == "" {
-				return
-			}
+		sz.printf("Parsing %s", edition)
 
-			cardPrice, _ := strconv.ParseFloat(price, 64)
-			if cardPrice <= 0 {
-				return
-			}
+		tableRowName := "table.rtti tr"
+		if mode == "buylist" {
+			tableRowName = "table.ItemTable tr"
+		}
 
-			quantity, _ := strconv.Atoi(qty)
-			if quantity <= 0 {
-				return
-			}
-
-			switch cond {
-			case "Near Mint", "Mint":
-				cond = "NM"
-			case "Light Play":
-				cond = "SP"
-			case "Medium Play":
-				cond = "MP"
-			case "Heavy Play":
-				cond = "HP"
-			default:
-				sz.printf("Unsupported %s condition", cond)
-				return
-			}
-
-			// skip tokens, too many variations
-			if strings.Contains(cardName, "Token") {
-				return
-			}
-
-			theCard, err := preprocess(cardName, edition, notes)
-			if err != nil {
-				return
-			}
-
-			cardId, err := mtgmatcher.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				return
-			} else if err != nil {
-				sz.printf("%v", err)
-				sz.printf("%q", theCard)
-				sz.printf("%s|%s|%s", cardName, edition, notes)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						sz.printf("- %s", card)
-					}
-				}
-				return
-			}
-
-			channel <- respChan{
-				cardId: cardId,
-				entry: &mtgban.InventoryEntry{
-					Conditions: cond,
-					Price:      cardPrice,
-					Quantity:   quantity,
-					URL:        "http://shop.strikezoneonline.com" + pathURL,
-				},
-			}
+		e.ForEach(tableRowName, func(_ int, el *colly.HTMLElement) {
+			sz.processRow(mode, channel, el, edition)
 		})
 	})
 
-	c.Visit(szInventoryURL)
+	var link string
+	if mode == "inventory" {
+		link = szInventoryURL
+	} else if mode == "buylist" {
+		link = szBuylistURL
+	}
+	sz.printf("Visiting %s", link)
+	c.Visit(link)
 
 	go func() {
 		c.Wait()
@@ -179,117 +237,25 @@ func (sz *Strikezone) scrape() error {
 	}()
 
 	for resp := range channel {
-		err := sz.inventory.Add(resp.cardId, resp.entry)
-		if err != nil {
-			sz.printf("%v", err)
-			continue
-		}
-	}
-
-	sz.inventoryDate = time.Now()
-
-	return nil
-}
-
-func (sz *Strikezone) parseBL() error {
-	resp, err := cleanhttp.DefaultClient().Get(szBuylistURL)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	r := csv.NewReader(resp.Body)
-	r.Comma = '	'
-	r.LazyQuotes = true
-
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		if len(record) < 5 {
-			return fmt.Errorf("unsupported buylist format (%d)", len(record))
-		}
-
-		cardName := strings.TrimSpace(record[1])
-		edition := strings.TrimSpace(record[0])
-
-		notes := strings.TrimSpace(record[2])
-
-		quantity, err := strconv.Atoi(strings.TrimSpace(record[3]))
-		if err != nil {
-			return err
-		}
-
-		price, err := mtgmatcher.ParsePrice(record[4])
-		if err != nil {
-			return err
-		}
-
-		// skip invalid offers
-		if price <= 0 || quantity <= 0 {
-			continue
-		}
-
-		// skip duplicates, with less than NM conditions
-		if strings.Contains(notes, "Play") {
-			continue
-		}
-
-		theCard, err := preprocess(cardName, edition, notes)
-		if err != nil {
-			continue
-		}
-
-		cardId, err := mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			sz.printf("%v", err)
-			sz.printf("%q", theCard)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					sz.printf("- %s", card)
-				}
-			}
-			continue
-		}
-
-		var sellPrice, priceRatio float64
-
-		invCards := sz.inventory[cardId]
-		for _, invCard := range invCards {
-			if invCard.Conditions == "NM" {
-				sellPrice = invCard.Price
-				break
+		if resp.inv != nil {
+			err := sz.inventory.Add(resp.cardId, resp.inv)
+			if err != nil {
+				sz.printf("%v", err)
 			}
 		}
-
-		if sellPrice > 0 {
-			priceRatio = price / sellPrice * 100
-		}
-
-		out := &mtgban.BuylistEntry{
-			BuyPrice:   price,
-			Quantity:   quantity,
-			PriceRatio: priceRatio,
-			URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + url.QueryEscape(theCard.Name),
-		}
-		err = sz.buylist.Add(cardId, out)
-		if err != nil {
-			sz.printf("%v", err)
+		if resp.bl != nil {
+			err := sz.buylist.Add(resp.cardId, resp.bl)
+			if err != nil {
+				sz.printf("%v", err)
+			}
 		}
 	}
 
-	sz.buylistDate = time.Now()
+	if mode == "inventory" {
+		sz.inventoryDate = time.Now()
+	} else if mode == "buylist" {
+		sz.buylistDate = time.Now()
+	}
 
 	return nil
 }
@@ -299,7 +265,7 @@ func (sz *Strikezone) Inventory() (mtgban.InventoryRecord, error) {
 		return sz.inventory, nil
 	}
 
-	err := sz.scrape()
+	err := sz.scrape("inventory")
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +278,7 @@ func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
 		return sz.buylist, nil
 	}
 
-	err := sz.parseBL()
+	err := sz.scrape("buylist")
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,11 @@ import (
 func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
 	var variation string
 
+	// Skip tokens, too many variations
+	if strings.Contains(cardName, "Token") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	cn, found := cardTable[cardName]
 	if found {
 		cardName = cn
@@ -218,8 +223,8 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 	}
 
 	// Set finish
-	isFoil := strings.Contains(notes, "Foil")
-	if strings.Contains(notes, "Etched") {
+	isFoil := strings.Contains(strings.ToLower(notes), "foil")
+	if strings.Contains(strings.ToLower(notes), "etched") {
 		if variation != "" {
 			variation += " "
 		}
