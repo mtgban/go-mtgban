@@ -103,11 +103,16 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 			directNet = getBuylist(response, "TCGDirectNet", uuid)
 		}
 
-		// If Direct looks unreliable, cap maximum price to twice TCG_LOW (estimate)
+		// If Direct looks unreliable, cap maximum price (estimate) or delete it
 		if directNet/2 > tcgMarket {
-			response.Buylist[uuid]["TCGDirectNet"].Regular = response.Retail[uuid]["TCG Low"].Regular * 2
-			response.Buylist[uuid]["TCGDirectNet"].Foil = response.Retail[uuid]["TCG Low"].Foil * 2
-			response.Buylist[uuid]["TCGDirectNet"].Etched = response.Retail[uuid]["TCG Low"].Etched * 2
+			estimate, found := response.Retail[uuid]["TCG Low"]
+			if !found {
+				delete(response.Buylist[uuid], "TCGDirectNet")
+			} else {
+				response.Buylist[uuid]["TCGDirectNet"].Regular = estimate.Regular * 2
+				response.Buylist[uuid]["TCGDirectNet"].Foil = estimate.Foil * 2
+				response.Buylist[uuid]["TCGDirectNet"].Etched = estimate.Etched * 2
+			}
 		}
 	}
 
