@@ -1,7 +1,6 @@
 package strikezone
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -196,20 +195,23 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		}
 	}
 
-	if edition == "Promotional Cards" && variation == "" {
-		ed, found = promo2setTable[cardName]
-		if found {
-			edition = ed
+	switch edition {
+	case "Promotional Cards":
+		if variation == "" {
+			ed, found = promo2setTable[cardName]
+			if found {
+				edition = ed
+			}
 		}
-	} else if edition == "Ikoria: Lair of Behemoths" && strings.Contains(cardName, " - ") {
-		s := strings.Split(cardName, " - ")
-		cardName = s[1]
-		variation = "Godzilla"
-		if strings.Contains(notes, "Japanese") {
-			variation += " Japanese"
+	case "Ikoria: Lair of Behemoths":
+		if strings.Contains(cardName, " - ") {
+			s := strings.Split(cardName, " - ")
+			cardName = s[1]
+			variation = "Godzilla"
+			if strings.Contains(notes, "Japanese") {
+				variation += " Japanese"
+			}
 		}
-	} else if edition == "Eternal Masters" && strings.Contains(notes, "Japanese") {
-		return nil, errors.New("non-english card")
 	}
 
 	// Second pass in case some tags interfered with the lookup
