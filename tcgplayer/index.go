@@ -10,6 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"golang.org/x/exp/slices"
 )
 
 type TCGPlayerIndex struct {
@@ -136,16 +137,15 @@ func (tcg *TCGPlayerIndex) scrape() error {
 	for i := 0; i < tcg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			idFound := map[string]string{}
+			var dupes []string
 			buffer := make([]indexChan, 0, tcgplayer.MaxIdsInRequest)
 
 			for page := range pages {
 				// Skip dupes
-				_, found := idFound[page.TCGProductId]
-				if found {
+				if slices.Contains(dupes, page.TCGProductId) {
 					continue
 				}
-				idFound[page.TCGProductId] = ""
+				dupes = append(dupes, page.TCGProductId)
 
 				// Add our pair to the buffer
 				buffer = append(buffer, page)
