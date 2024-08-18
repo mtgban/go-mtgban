@@ -151,7 +151,7 @@ func (tcg *TCGPlayerIndex) scrape() error {
 				buffer = append(buffer, page)
 
 				// When buffer is full, process its contents and empty it
-				if len(buffer) == tcgplayer.MaxIdsInRequest {
+				if len(buffer) == cap(buffer) {
 					err := tcg.processEntry(channel, buffer)
 					if err != nil {
 						tcg.printf("%s", err.Error())
