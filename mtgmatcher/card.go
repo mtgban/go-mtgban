@@ -47,9 +47,19 @@ type InputCard struct {
 
 // Card implements the Stringer interface
 func (c *InputCard) String() string {
-	out := c.Name
+	name := c.Name
+	edition := c.Edition
+
+	if name == "" {
+		co, err := GetUUID(c.Id)
+		if err == nil {
+			name = co.Name
+			edition = co.Edition
+		}
+	}
+
 	if c.Variation != "" {
-		out = fmt.Sprintf("%s (%s)", out, c.Variation)
+		name = fmt.Sprintf("%s ('%s')", name, c.Variation)
 	}
 	finish := ""
 	if c.isEtched() {
@@ -61,7 +71,7 @@ func (c *InputCard) String() string {
 	if c.Language != "" && c.Language != "English" {
 		lang = " {" + c.Language + "}"
 	}
-	return fmt.Sprintf("%s [%s%s]%s", out, c.Edition, finish, lang)
+	return fmt.Sprintf("%s [%s%s]%s", name, edition, finish, lang)
 }
 
 func output(card Card, flags ...bool) string {
