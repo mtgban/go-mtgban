@@ -22,7 +22,6 @@ func languageTags(language, edition, variant, number string) (string, string, er
 		case "Chronicles":
 			edition = "BCHR"
 		case "4th Edition - Black Border":
-			edition = "4BB"
 			variant = strings.TrimSuffix(variant, " BB")
 		case "Strixhaven Mystical Archive",
 			"Strixhaven Mystical Archive - Foil Etched":

@@ -564,6 +564,7 @@ var EditionTable = map[string]string{
 	"Revised Edition Foreign Black Border":   "Foreign Black Border",
 
 	"4th Edition BB":                        "Fourth Edition Foreign Black Border",
+	"4th Edition - Black Border":            "Fourth Edition Foreign Black Border",
 	"Fourth Edition Black Bordered":         "Fourth Edition Foreign Black Border",
 	"Fourth Edition: Black Bordered":        "Fourth Edition Foreign Black Border",
 	"Fourth Edition (Foreign Black Border)": "Fourth Edition Foreign Black Border",
