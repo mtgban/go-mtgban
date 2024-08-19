@@ -139,6 +139,11 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 			return
 		}
 
+		// Adjust price for their discount when bought from the website
+		if mode == modeInventory {
+			price *= 0.95
+		}
+
 		conditions := ""
 		if mode == modeInventory {
 			cond := strings.Split(condLang, ", ")[0]
