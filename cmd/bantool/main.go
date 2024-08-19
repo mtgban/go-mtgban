@@ -305,7 +305,7 @@ var options = map[string]*scraperOption{
 	},
 	"strikezone": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := strikezone.NewScraper()
+			scraper := strikezone.NewScraper(strikezone.GameMagic)
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
