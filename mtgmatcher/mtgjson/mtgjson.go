@@ -48,6 +48,7 @@ const (
 	PromoTypePoster     = "poster"
 	PromoTypeSilverFoil = "silverfoil"
 	PromoTypeRippleFoil = "ripplefoil"
+	PromoTypeRaisedFoil = "raisedfoil"
 
 	PromoTypeStoreChampionship = "storechampionship"
 

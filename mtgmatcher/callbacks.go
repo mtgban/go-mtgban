@@ -144,6 +144,12 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: mtgjson.PromoTypeRippleFoil,
 		Tags:      []string{"Ripple"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeRaisedFoil,
+		Tags:      []string{"Raised"},
+		// Needed due to oilslick cards from ONE sometimes being referred to as raised
+		ValidDate: time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC),
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
