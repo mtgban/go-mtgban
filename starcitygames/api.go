@@ -9,12 +9,15 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/hashicorp/go-cleanhttp"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 )
 
 const (
 	scgInventoryURL = "https://essearchapi-na.hawksearch.com/api/v2/search"
 	scgBuylistURL   = "https://search.starcitygames.com/indexes/sell_list_products_v2/search"
+
+	scgSettingsURL = "https://sellyourcards.starcitygames.com/api/settings"
 
 	maxResultsPerPage = 96
 
@@ -236,14 +239,54 @@ type SCGCardVariant struct {
 	TradePrice   float64 `json:"trade_price"`
 }
 
-func (scg *SCGClient) SearchAll(game, offset, limit int) (*SCGSearchResponse, error) {
+type Settings struct {
+	CardRarities []struct {
+		ID               int       `json:"id"`
+		Name             string    `json:"name"`
+		GameID           int       `json:"game_id"`
+		Abbr             string    `json:"abbr"`
+		ExternalRarityID int       `json:"external_rarity_id"`
+		SortOrder        int       `json:"sort_order"`
+		CreatedAt        time.Time `json:"created_at"`
+		UpdatedAt        time.Time `json:"updated_at"`
+	} `json:"cardRarities"`
+}
+
+func SearchSettings() (*Settings, error) {
+	resp, err := cleanhttp.DefaultClient().Get(scgSettingsURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var search Settings
+	err = json.Unmarshal(data, &search)
+	if err != nil {
+		return nil, err
+	}
+
+	return &search, nil
+}
+
+func (scg *SCGClient) SearchAll(game, offset, limit int, rarity string) (*SCGSearchResponse, error) {
 	filter := `game_id = %d AND price_category_id = %s AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
 	mode := "1"
 	if scg.SealedMode {
 		mode = "2"
 	}
+	query := fmt.Sprintf(filter, game, mode)
+
+	if rarity != "" {
+		query += ` AND rarity = "` + rarity + `"`
+	}
+
 	q := SCGSearchRequest{
-		Filter:           fmt.Sprintf(filter, game, mode),
+		Filter:           query,
 		MatchingStrategy: "all",
 		Limit:            limit,
 		Offset:           offset,

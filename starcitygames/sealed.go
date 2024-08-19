@@ -202,7 +202,7 @@ func (scg *StarcitygamesSealed) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page int) error {
-	search, err := scg.client.SearchAll(scg.game, page, defaultRequestLimit)
+	search, err := scg.client.SearchAll(scg.game, page, defaultRequestLimit, "")
 	if err != nil {
 		return err
 	}
@@ -254,7 +254,7 @@ func (scg *StarcitygamesSealed) processBLPage(channel chan<- responseChan, page 
 func (scg *StarcitygamesSealed) parseBL() error {
 	scg.productMap = buildProductMap()
 
-	search, err := scg.client.SearchAll(scg.game, 0, 1)
+	search, err := scg.client.SearchAll(scg.game, 0, 1, "")
 	if err != nil {
 		return err
 	}

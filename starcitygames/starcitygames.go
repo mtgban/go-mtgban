@@ -306,8 +306,8 @@ func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
 
 }
 
-func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) error {
-	search, err := scg.client.SearchAll(scg.game, page, defaultRequestLimit)
+func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int, rarity string) error {
+	search, err := scg.client.SearchAll(scg.game, page, defaultRequestLimit, rarity)
 	if err != nil {
 		return err
 	}
@@ -426,12 +426,13 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 	return nil
 }
 
-func (scg *Starcitygames) parseBL() error {
-	search, err := scg.client.SearchAll(scg.game, 0, 1)
+func (scg *Starcitygames) parseBL(rarity string) error {
+	search, err := scg.client.SearchAll(scg.game, 0, 1, rarity)
 	if err != nil {
 		return err
 	}
-	scg.printf("Parsing %d cards", search.EstimatedTotalHits)
+	totals := search.EstimatedTotalHits
+	scg.printf("Parsing %d cards for rarity %s", totals, rarity)
 
 	pages := make(chan int)
 	results := make(chan responseChan)
@@ -442,7 +443,7 @@ func (scg *Starcitygames) parseBL() error {
 		go func() {
 			for page := range pages {
 				scg.printf("Processing page %d", page)
-				err := scg.processBLPage(results, page)
+				err := scg.processBLPage(results, page, rarity)
 				if err != nil {
 					scg.printf("%v", err)
 				}
@@ -452,7 +453,7 @@ func (scg *Starcitygames) parseBL() error {
 	}
 
 	go func() {
-		for j := 0; j < search.EstimatedTotalHits; j += defaultRequestLimit {
+		for j := 0; j < totals; j += defaultRequestLimit {
 			pages <- j
 		}
 		close(pages)
@@ -468,6 +469,25 @@ func (scg *Starcitygames) parseBL() error {
 		}
 	}
 
+	return nil
+}
+
+func (scg *Starcitygames) scrapeBL() error {
+	settings, err := SearchSettings()
+	if err != nil {
+		return err
+	}
+
+	for _, setting := range settings.CardRarities {
+		if setting.GameID != scg.game {
+			continue
+		}
+		err := scg.parseBL(setting.Abbr)
+		if err != nil {
+			return err
+		}
+	}
+
 	scg.buylistDate = time.Now()
 
 	return nil
@@ -478,7 +498,7 @@ func (scg *Starcitygames) Buylist() (mtgban.BuylistRecord, error) {
 		return scg.buylist, nil
 	}
 
-	err := scg.parseBL()
+	err := scg.scrapeBL()
 	if err != nil {
 		return nil, err
 	}
