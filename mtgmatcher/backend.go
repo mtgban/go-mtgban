@@ -1202,6 +1202,8 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 		dupeCard := sets[code].Cards[i]
 		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
 		dupeCard.Language = langs[tag]
+		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
+		dupeCard.Number += strings.ToLower(tag)
 
 		// Update images
 		dupeCard.Images = map[string]string{}
