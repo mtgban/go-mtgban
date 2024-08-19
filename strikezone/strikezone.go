@@ -16,8 +16,8 @@ import (
 const (
 	defaultConcurrency = 8
 
-	szInventoryURL = "http://shop.strikezoneonline.com/Category/Magic_the_Gathering_Singles.html"
-	szBuylistURL   = "http://shop.strikezoneonline.com/BuyList/Magic_the_Gathering.html"
+	szInventoryURL = "http://shop.strikezoneonline.com/Category/%s_Singles.html"
+	szBuylistURL   = "http://shop.strikezoneonline.com/BuyList/%s.html"
 
 	GameMagic   = "Magic_the_Gathering"
 	GameLorcana = "Lorcana"
@@ -31,13 +31,16 @@ type Strikezone struct {
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
+
+	game string
 }
 
-func NewScraper() *Strikezone {
+func NewScraper(game string) *Strikezone {
 	sz := Strikezone{}
 	sz.inventory = mtgban.InventoryRecord{}
 	sz.buylist = mtgban.BuylistRecord{}
 	sz.MaxConcurrency = defaultConcurrency
+	sz.game = game
 	return &sz
 }
 
@@ -62,45 +65,76 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	}
 
 	pathURL = el.ChildAttr("a", "href")
-	if mode == "inventory" {
-		notes = el.ChildText("td:nth-child(4)")
-		cond = el.ChildText("td:nth-child(5)")
-		qty = el.ChildText("td:nth-child(6)")
-		price = el.ChildText("td:nth-child(7)")
-	} else if mode == "buylist" {
-		notes = el.ChildText("td:nth-child(4)")
-		cond = notes
-		qty = el.ChildText("td:nth-child(5)")
-		price = el.ChildText("td:nth-child(6)")
-	}
 
-	theCard, err := preprocess(cardName, edition, notes)
-	if err != nil {
-		return
-	}
+	var cardId string
+	var err error
+	switch sz.game {
+	case GameMagic:
+		if mode == "inventory" {
+			notes = el.ChildText("td:nth-child(4)")
+			cond = el.ChildText("td:nth-child(5)")
+			qty = el.ChildText("td:nth-child(6)")
+			price = el.ChildText("td:nth-child(7)")
+		} else if mode == "buylist" {
+			notes = el.ChildText("td:nth-child(4)")
+			cond = notes
+			qty = el.ChildText("td:nth-child(5)")
+			price = el.ChildText("td:nth-child(6)")
+		}
 
-	cardId, err := mtgmatcher.Match(theCard)
-	if errors.Is(err, mtgmatcher.ErrUnsupported) {
-		return
-	} else if err != nil {
-		// Skip errors from these sets, there is not enough information
-		switch edition {
-		case "Secret Lair", "The List", "Mystery Booster":
+		theCard, err := preprocess(cardName, edition, notes)
+		if err != nil {
 			return
 		}
-		sz.printf("%v", err)
-		sz.printf("%q", theCard)
-		sz.printf("%s|%s|%s", cardName, edition, notes)
 
-		var alias *mtgmatcher.AliasingError
-		if errors.As(err, &alias) {
-			probes := alias.Probe()
-			for _, probe := range probes {
-				card, _ := mtgmatcher.GetUUID(probe)
-				sz.printf("- %s", card)
+		cardId, err = mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
+			// Skip errors from these sets, there is not enough information
+			switch edition {
+			case "Secret Lair", "The List", "Mystery Booster":
+				return
 			}
+			sz.printf("%v", err)
+			sz.printf("%q", theCard)
+			sz.printf("%s|%s|%s", cardName, edition, notes)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					sz.printf("- %s", card)
+				}
+			}
+			return
 		}
-		return
+	case GameLorcana:
+		notes = el.ChildText("td:nth-child(2)")
+		cond = el.ChildText("td:nth-child(4)")
+		qty = el.ChildText("td:nth-child(5)")
+		price = el.ChildText("td:nth-child(6)")
+
+		foil := strings.Contains(strings.ToLower(cond), "foil")
+
+		cardId, err = mtgmatcher.SimpleSearch(cardName, notes, foil)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			return
+		} else if err != nil {
+			sz.printf("%v", err)
+			sz.printf("%s|%s|%s", cardName, edition, notes)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					sz.printf("- %s", card)
+				}
+			}
+			return
+		}
 	}
 
 	cardPrice, _ := strconv.ParseFloat(price, 64)
@@ -159,7 +193,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 				BuyPrice:   cardPrice,
 				Quantity:   quantity,
 				PriceRatio: priceRatio,
-				URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + url.QueryEscape(theCard.Name),
+				URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + url.QueryEscape(cardName),
 			},
 		}
 	}
@@ -218,7 +252,7 @@ func (sz *Strikezone) scrape(mode string) error {
 		sz.printf("Parsing %s", edition)
 
 		tableRowName := "table.rtti tr"
-		if mode == "buylist" {
+		if mode == "buylist" || sz.game == GameLorcana {
 			tableRowName = "table.ItemTable tr"
 		}
 
@@ -229,9 +263,9 @@ func (sz *Strikezone) scrape(mode string) error {
 
 	var link string
 	if mode == "inventory" {
-		link = szInventoryURL
+		link = fmt.Sprintf(szInventoryURL, sz.game)
 	} else if mode == "buylist" {
-		link = szBuylistURL
+		link = fmt.Sprintf(szBuylistURL, sz.game)
 	}
 	sz.printf("Visiting %s", link)
 	c.Visit(link)
@@ -296,5 +330,11 @@ func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "SZ"
 	info.InventoryTimestamp = &sz.inventoryDate
 	info.BuylistTimestamp = &sz.buylistDate
+	switch sz.game {
+	case GameMagic:
+		info.Game = mtgban.GameMagic
+	case GameLorcana:
+		info.Game = mtgban.GameLorcana
+	}
 	return
 }
