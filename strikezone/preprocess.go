@@ -66,15 +66,17 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		edition = "SLD"
 	// APAC and EURO lands, drop specifier
 	case strings.Contains(cardName, "APAC") || strings.Contains(cardName, "EURO"):
-		edition = "European Land Program"
-		if strings.Contains(cardName, "APAC") {
-			edition = "Asia Pacific Land Program"
-		}
 		variants := mtgmatcher.SplitVariants(cardName)
 		cardName = variants[0]
-		fields := strings.Fields(cardName)
-		cardName = fields[0]
-		variation = variants[1]
+		if mtgmatcher.IsBasicLand(cardName) {
+			edition = "European Land Program"
+			if strings.Contains(cardName, "APAC") {
+				edition = "Asia Pacific Land Program"
+			}
+			fields := strings.Fields(cardName)
+			cardName = fields[0]
+			variation = variants[1]
+		}
 	// Ravnica weekend lands, move to variation
 	case strings.Contains(cardName, "Ravnica Weekend"):
 		fields := strings.Fields(cardName)
@@ -211,6 +213,70 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 			if strings.Contains(notes, "Japanese") {
 				variation += " Japanese"
 			}
+		}
+	case "Promos: Play":
+		edition = "Promotional"
+		variation = "playpromo"
+	case "Promos: Standard Showdown":
+		if len(mtgmatcher.MatchInSet(cardName, "PSS1")) > 0 {
+			edition = "PSS1"
+		}
+	case "Promos: Champs":
+		edition = "PCMP"
+	case "Promos: Pro Tour":
+		for _, code := range []string{"PPRO", "SLP", "LTR", "PRCQ", "PR23"} {
+			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
+				edition = code
+			}
+		}
+	case "Promos: Media":
+		for _, code := range []string{
+			"PHPR", "PMEI", "PURL", "PRES", "PBOOK",
+			"PDTP", "PDP10", "PDP12", "PDP13", "PDP14", "PDP15",
+		} {
+			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
+				edition = code
+			}
+		}
+	case "Promos: Junior Series":
+		for _, code := range []string{"PSUS"} {
+			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
+				edition = code
+			}
+		}
+	case "Promos: Arena":
+		cardName = strings.TrimSuffix(cardName, " Arena Promo")
+	case "Promos: Judge":
+		cardName = strings.TrimSuffix(cardName, " Full Art")
+	case "Promos: Planeswalker Event":
+		edition = "PWCS"
+		if variation == "Top 8" {
+			variation = ""
+		}
+	case "Promos: Unique and Miscellaneous":
+		switch cardName {
+		case "Lotus Petal":
+			edition = "P30M"
+		case "Serra Angel":
+			edition = "PWOS"
+		}
+	case "Promos: Launch Party and Release Event":
+		if mtgmatcher.IsBasicLand(cardName) {
+			edition = "Ravnica Weekend"
+		}
+	case "Promos: WPN and Gateway":
+		switch cardName {
+		case "Orb of Dragonkind":
+			edition = "PLG21"
+			variation = "J" + strings.TrimLeft(variation, "0")
+		}
+	case "Hours of Devestation":
+		edition = "HOU"
+	case "Secret Lair Commander: Heads I Win":
+		edition = "Secret Lair Commander: Heads I Win, Tails You Lose"
+	case "Battlebond":
+		if strings.HasSuffix(cardName, "Alternate Art") {
+			cardName = strings.TrimSuffix(cardName, " Alternate Art")
 		}
 	}
 

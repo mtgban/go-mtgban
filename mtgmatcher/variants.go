@@ -1036,6 +1036,8 @@ var palpVariants = map[string]map[string]string{
 		"apac3  illus.ron spears b":                          "15",
 		"(blue pack) spears":                                 "10",
 		"(clear pack) spears":                                "15",
+		"spears blue pack":                                   "10",
+		"spears clear pack":                                  "15",
 	},
 }
 
@@ -3282,18 +3284,21 @@ var sldVariants = map[string]map[string]string{
 		"godzilla lands":                 "67",
 		"crushing brutality":             "243",
 		"secret lair crushing brutality": "243",
+		"post malone":                    "1194",
 	},
 	"Island": {
 		"godzilla":                       "64",
 		"godzilla lands":                 "64",
 		"crushing brutality":             "240",
 		"secret lair crushing brutality": "240",
+		"post malone":                    "1191",
 	},
 	"Mountain": {
 		"godzilla":                       "66",
 		"godzilla lands":                 "66",
 		"crushing brutality":             "242",
 		"secret lair crushing brutality": "242",
+		"post malone":                    "1193",
 	},
 	"Plains": {
 		"godzilla":                       "63",
@@ -3301,12 +3306,14 @@ var sldVariants = map[string]map[string]string{
 		"crushing brutality":             "239",
 		"secret lair crushing brutality": "239",
 		"unpeeled":                       "670",
+		"post malone":                    "1190",
 	},
 	"Swamp": {
 		"godzilla":                       "65",
 		"godzilla lands":                 "65",
 		"crushing brutality":             "241",
 		"secret lair crushing brutality": "241",
+		"post malone":                    "1192",
 	},
 	"Karn, the Great Creator": {
 		"retro frame":                        "253",
@@ -3511,8 +3518,9 @@ var sldVariants = map[string]map[string]string{
 		"retro frame":   "1041",
 	},
 	"Counterspell": {
-		"sctlr":      "SCTLR",
-		"4 jan 2023": "SCTLR",
+		"sctlr":       "SCTLR",
+		"4 jan 2023":  "SCTLR",
+		"sl playtest": "SCTLR",
 	},
 	"Rin and Seri, Inseparable": {
 		"raining cats and dogs": "1508",
@@ -3563,6 +3571,7 @@ var psoiVariants = map[string]map[string]string{
 
 var ltcVariants = map[string]map[string]string{
 	"Sol Ring": {
+		"":                      "284",
 		"elven serial number":   "408z",
 		"dwarven serial number": "409z",
 		"human serial number":   "410z",

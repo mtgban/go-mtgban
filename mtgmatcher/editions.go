@@ -49,6 +49,7 @@ var EditionTable = map[string]string{
 
 	// BRR
 	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
+	"The Brothers War: Retro Frame Artifacts":  "The Brothers' War Retro Artifacts",
 	"The Brothers' War: Retro Frame Artifacts": "The Brothers' War Retro Artifacts",
 
 	// PL22
@@ -405,6 +406,7 @@ var EditionTable = map[string]string{
 	"Ugin’s Fate Promo":                       "Ugin's Fate",
 	"Ugin's Fate Promos":                      "Ugin's Fate",
 	"Ugin's Fate promos":                      "Ugin's Fate",
+	"Promos: Ugins Fate":                      "Ugin's Fate",
 
 	// Resale
 	"Media Promo":     "Resale Promos",

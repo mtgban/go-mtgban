@@ -82,6 +82,11 @@ var cardTable = map[string]string{
 	"Laughing Hyenas":            "Laughing Hyena",
 	"Teshar Acnestor s Aspostle": "Teshar, Ancestor's Apostle",
 	"Rin and Seri Inseperable":   "Rin and Seri, Inseparable",
+	"Bloodrot Apothecary":        "Bloodroot Apothecary",
+	"Narset, Perter of Veils":    "Narset, Parter of Veils",
+	"Fact of Fiction":            "Fact or Fiction",
+	"Teferi Hero of Dominaria":   "Teferi, Hero of Dominaria",
+	"Sun Ce, Young Conqueror":    "Sun Ce, Young Conquerer",
 
 	// Typos AND edition
 	"Faithless Lootoing (IDW Promo)":                "Faithless Looting (IDW)",
