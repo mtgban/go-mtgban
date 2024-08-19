@@ -145,7 +145,16 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 			setCode = "PLST"
 			fields := strings.Split(number, "_")
 			if len(fields) == 2 {
-				number = fields[0] + "-" + strings.TrimLeft(fields[1], "0")
+				subSetCode := fields[0]
+				subNumber := fields[1]
+
+				// Handle MH22 and similar
+				_, err := mtgmatcher.GetSet(subSetCode)
+				if err != nil && len(subSetCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
+					subSetCode = subSetCode[:len(subSetCode)-1]
+				}
+
+				number = subSetCode + "-" + strings.TrimLeft(subNumber, "0")
 			} else if len(fields) == 4 {
 				if fields[0] == "PRM" {
 					number = fields[2] + "-" + strings.TrimLeft(fields[3], "0")
