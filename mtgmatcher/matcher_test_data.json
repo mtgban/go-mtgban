@@ -4620,5 +4620,15 @@
             "edition": "Promo",
             "language": "Japanese"
         }
+    },
+    {
+        "uuid": "0d7fd981-f560-542c-92e5-92c364093ecc",
+        "description": "mh3_serialized",
+        "input": {
+            "name": "Kozilek, the Broken Reality",
+            "variant": "Borderless Serial Numbered",
+            "edition": "Modern Horizons 3"
+        }
     }
+
 ]

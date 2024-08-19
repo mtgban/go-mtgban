@@ -204,7 +204,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"30A":  retroCheck,
 	"PW23": retroCheck,
 	"RVR":  retroCheck,
-	"MH3":  retroCheck,
 
 	"BRO": babOrBuyaboxRetroCheck,
 
@@ -274,6 +273,7 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 
 	"PWAR": {japaneseCheck, draftweekendCheck},
 
+	"MH3": {retroCheck, serialCheck},
 	// These two checks need to be separate in case two cards have the same number
 	// but are originally from two different editions
 	"PLST": {listNumberCompare, listEditionCheck},
@@ -738,6 +738,15 @@ func animeCheck(inCard *InputCard, card *Card) bool {
 		} else if !isAnime && cn >= 52 && cn <= 97 {
 			return true
 		}
+	}
+	return false
+}
+
+func serialCheck(inCard *InputCard, card *Card) bool {
+	if inCard.isSerialized() && !card.HasPromoType(mtgjson.PromoTypeSerialized) {
+		return true
+	} else if !inCard.isSerialized() && card.HasPromoType(mtgjson.PromoTypeSerialized) {
+		return true
 	}
 	return false
 }
