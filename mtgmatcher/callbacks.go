@@ -210,6 +210,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"30A":  retroCheck,
 	"PW23": retroCheck,
 	"RVR":  retroCheck,
+	"MH1":  retroCheck, // Due to Flusterstorm in MH3
 
 	"BRO": babOrBuyaboxRetroCheck,
 

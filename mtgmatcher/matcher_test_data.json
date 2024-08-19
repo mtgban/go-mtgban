@@ -2302,6 +2302,15 @@
         }
     },
     {
+        "uuid": "2ded6de3-83f3-530b-af2c-54e9408e0b7e",
+        "description": "bab_from_mh3_may_alias_mh1",
+        "input": {
+            "name": "Flusterstorm",
+            "variant": "Retro Frame",
+            "edition": "Promos: Buy-a-Box"
+        }
+    },
+    {
         "uuid": "c36c2a16-d6b7-51c9-8c94-e505ab618d66",
         "description": "bab_marked_as_promo_but_it's_really_in_the_set_set_is_core",
         "input": {
@@ -4630,5 +4639,4 @@
             "edition": "Modern Horizons 3"
         }
     }
-
 ]
