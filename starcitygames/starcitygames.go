@@ -109,6 +109,7 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 		}
 
 		var cardId string
+		var err error
 		switch scg.game {
 		case GameMagic:
 			cc := SCGCardVariant{
@@ -116,7 +117,8 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				Subtitle: variant,
 				Sku:      sku,
 			}
-			theCard, err := preprocess(&cc, edition, language, finish == "Foil", number)
+			var theCard *mtgmatcher.InputCard
+			theCard, err = preprocess(&cc, edition, language, finish == "Foil", number)
 			if err != nil {
 				continue
 			}
@@ -346,8 +348,10 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int) e
 			}
 
 			var cardId string
+			var err error
 			if scg.game == GameMagic {
-				theCard, err := preprocess(&result, hit.SetName, hit.Language, hit.Finish == "F", hit.CollectorNumber)
+				var theCard *mtgmatcher.InputCard
+				theCard, err = preprocess(&result, hit.SetName, hit.Language, hit.Finish == "F", hit.CollectorNumber)
 				if err != nil {
 					break
 				}
