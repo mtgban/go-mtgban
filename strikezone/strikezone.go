@@ -83,6 +83,11 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return
 	} else if err != nil {
+		// Skip errors from these sets, there is not enough information
+		switch edition {
+		case "Secret Lair", "The List", "Mystery Booster":
+			return
+		}
 		sz.printf("%v", err)
 		sz.printf("%q", theCard)
 		sz.printf("%s|%s|%s", cardName, edition, notes)
