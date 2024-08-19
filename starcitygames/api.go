@@ -237,13 +237,13 @@ type SCGCardVariant struct {
 }
 
 func (scg *SCGClient) SearchAll(game, offset, limit int) (*SCGSearchResponse, error) {
-	filter := `game_id = ` + fmt.Sprint(game) + ` AND price_category_id = %s AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
+	filter := `game_id = %d AND price_category_id = %s AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
 	mode := "1"
 	if scg.SealedMode {
 		mode = "2"
 	}
 	q := SCGSearchRequest{
-		Filter:           fmt.Sprintf(filter, mode),
+		Filter:           fmt.Sprintf(filter, game, mode),
 		MatchingStrategy: "all",
 		Limit:            limit,
 		Offset:           offset,
