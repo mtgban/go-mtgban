@@ -744,7 +744,8 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		// Except for Planeswalker Decks cards
 		set, err := mtgmatcher.GetSetByName(strings.TrimSuffix(edition, ": Extras"))
 		if err == nil {
-			if len(mtgmatcher.MatchInSet(cardName, set.Code)) > 0 {
+			num, _ := strconv.Atoi(number)
+			if num > set.BaseSetSize && len(mtgmatcher.MatchInSet(cardName, set.Code)) > 0 {
 				edition = set.Code
 				variant = number
 			}
