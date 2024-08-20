@@ -357,7 +357,6 @@ func (c *InputCard) isJPN() bool {
 	return strings.Contains(c.Variation, "JPN") ||
 		strings.Contains(c.Variation, "JP") ||
 		c.Contains("Japanese") ||
-		c.Language == "Japanese" ||
 		Contains(c.Variation, "Gotta") ||
 		Contains(c.Variation, "Dengeki")
 }
