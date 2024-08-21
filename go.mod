@@ -24,7 +24,7 @@ require (
 	github.com/corpix/uarand v0.2.0
 	github.com/montanaflynn/stats v0.7.1
 	github.com/mroth/weightedrand/v2 v2.1.0
-	github.com/mtgban/go-tcgplayer v0.0.0-20240818123426-d44ea5a8db11
+	github.com/mtgban/go-tcgplayer v0.0.0-20240821150414-caace4f5b3f4
 	github.com/ulikunitz/xz v0.5.11
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )
