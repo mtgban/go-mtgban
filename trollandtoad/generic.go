@@ -391,6 +391,8 @@ func (tnt *TrollAndToadGeneric) Buylist() (mtgban.BuylistRecord, error) {
 		return nil, err
 	}
 
+	tnt.buylistDate = time.Now()
+
 	return tnt.buylist, nil
 }
 
