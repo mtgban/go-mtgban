@@ -170,8 +170,9 @@ func (tcg *TCGLorcana) scrape() error {
 	if err != nil {
 		return err
 	}
-	tcg.printf("Found %d printings", len(printings))
+	tcg.printf("Found %d printings for category %d", len(printings), tcg.category)
 	for _, printing := range printings {
+		tcg.printf("%d - %s", printing.PrintingId, printing.Name)
 		tcg.printings[printing.PrintingId] = printing.Name
 	}
 
