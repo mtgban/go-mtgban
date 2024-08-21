@@ -59,7 +59,11 @@ func (bc *BanClient) RegisterSeller(scraper Scraper) {
 	}
 
 	bc.scrapers[scraper.Info().Shorthand] = scraper
-	bc.vendorDisabled[scraper.Info().Shorthand] = true
+	bc.sellerDisabled[scraper.Info().Shorthand] = false
+	_, found := bc.vendorDisabled[scraper.Info().Shorthand]
+	if !found {
+		bc.vendorDisabled[scraper.Info().Shorthand] = true
+	}
 }
 
 // Add a Scraper to the client, enable the Market with the given shorthand
@@ -73,7 +77,10 @@ func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
 	// Disable the market itself from providing seller data
 	bc.sellerDisabled[scraper.Info().Shorthand] = true
 	// Disable any vendor side of the split market (not the market itself)
-	bc.vendorDisabled[shorthand] = true
+	_, found := bc.vendorDisabled[shorthand]
+	if !found {
+		bc.vendorDisabled[shorthand] = true
+	}
 
 	// Register
 	bc.scrapers[shorthand] = market
@@ -91,7 +98,11 @@ func (bc *BanClient) RegisterVendor(scraper Scraper) {
 	}
 
 	bc.scrapers[scraper.Info().Shorthand] = scraper
-	bc.sellerDisabled[scraper.Info().Shorthand] = true
+	_, found := bc.sellerDisabled[scraper.Info().Shorthand]
+	if !found {
+		bc.sellerDisabled[scraper.Info().Shorthand] = true
+	}
+	bc.vendorDisabled[scraper.Info().Shorthand] = false
 }
 
 // Add a Scraper to the client, enable the Trader with the given shorthand
@@ -105,7 +116,10 @@ func (bc *BanClient) RegisterTrader(scraper Scraper, shorthand string) {
 	// Disable the trader itself from providing vendor data
 	bc.vendorDisabled[scraper.Info().Shorthand] = true
 	// Disable any seller side of the split trader (not the trader itself)
-	bc.sellerDisabled[shorthand] = true
+	_, found := bc.sellerDisabled[shorthand]
+	if !found {
+		bc.sellerDisabled[shorthand] = true
+	}
 
 	// Register
 	bc.scrapers[shorthand] = trader
