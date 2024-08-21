@@ -16,7 +16,7 @@ const (
 	defaultConcurrency  = 3
 	defaultRequestLimit = 200
 
-	buylistBookmark = "https://sellyourcards.starcitygames.com/mtg/bookmark/"
+	buylistBookmark = "https://sellyourcards.starcitygames.com/"
 )
 
 type Starcitygames struct {
@@ -312,9 +312,16 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int, r
 		return err
 	}
 
+	gamePath := "mtg"
+	if scg.game == GameLorcana {
+		gamePath = "lorcana"
+	}
+
 	for _, hit := range search.Hits {
 		link, _ := url.JoinPath(
 			buylistBookmark,
+			gamePath,
+			"bookmark",
 			url.QueryEscape(hit.Name),
 			"0/1/0/0", // various faucets (bulk, hotlist, etc)
 			fmt.Sprint(hit.SetID),
