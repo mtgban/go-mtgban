@@ -95,3 +95,15 @@ func (ck *CookieClient) setQuantity(link, ckId, cond string, qty int) (string, e
 
 	return response, err
 }
+
+func (ck *CookieClient) Get(link string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, link, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
+	req.Header.Add("User-Agent", "curl/8.6.0")
+
+	return ck.client.Do(req)
+}
