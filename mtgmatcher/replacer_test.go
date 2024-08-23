@@ -96,6 +96,10 @@ var NormalizeTests = []NormalizeTest{
 		In:  "Welcome to...",
 		Out: "welcometo",
 	},
+	{
+		In:  "Henzie &quot;Toolbox&quot; Torre",
+		Out: "henzietoolboxtorre",
+	},
 }
 
 func TestNormalize(t *testing.T) {

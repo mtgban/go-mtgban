@@ -13,6 +13,9 @@ var replacer = strings.NewReplacer(
 	// Hopefully "of the" is specific enough
 	"of the", "of the",
 
+	// Wrong escaping or conversion
+	"&quot;", "",
+
 	// Quotes and commas and whatnot
 	"''", "",
 	"“", "",
