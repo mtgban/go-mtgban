@@ -556,15 +556,25 @@ func (tcg *TCGClient) TCGInventoryListing(productId, size, page int, useDirect b
 }
 
 type CookieClient struct {
-	client  *retryablehttp.Client
-	authKey string
+	client     *retryablehttp.Client
+	cookieLine string
 }
 
 func NewCookieClient(authKey string) *CookieClient {
 	tcg := CookieClient{}
 	tcg.client = retryablehttp.NewClient()
 	tcg.client.Logger = nil
-	tcg.authKey = authKey
+	tcg.cookieLine = "TCGAuthTicket_Production=" + authKey + ";"
+	return &tcg
+}
+
+func NewCookieSetClient(cookies map[string]string) *CookieClient {
+	tcg := CookieClient{}
+	tcg.client = retryablehttp.NewClient()
+	tcg.client.Logger = nil
+	for name, value := range cookies {
+		tcg.cookieLine += fmt.Sprintf("%s=%s; ", name, value)
+	}
 	return &tcg
 }
 
@@ -609,14 +619,19 @@ type TCGUserResponse struct {
 
 const TCGUserDataURL = "https://mpapi.tcgplayer.com/v2/user?isGuest=false"
 
-func (tcg *CookieClient) GetUserData() (*TCGUserData, error) {
-	req, err := http.NewRequest(http.MethodGet, TCGUserDataURL, nil)
+func (tcg *CookieClient) Get(link string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, link, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Cookie", "TCGAuthTicket_Production="+tcg.authKey+";")
+	req.Header.Add("Cookie", tcg.cookieLine)
+	req.Header.Add("User-Agent", "curl/8.6.0")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	return cleanhttp.DefaultClient().Do(req)
+}
+
+func (tcg *CookieClient) GetUserData() (*TCGUserData, error) {
+	resp, err := tcg.Get(TCGUserDataURL)
 	if err != nil {
 		return nil, err
 	}
