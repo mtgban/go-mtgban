@@ -93,6 +93,15 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 				price *= ct.exchangeRate
 			}
 
+			// Assign a seller name as required by Market
+			sellerName := availableMarketNamesSealed[0]
+			if product.User.SealedZero {
+				sellerName = availableMarketNamesSealed[1]
+				if strings.Contains(strings.ToLower(product.User.Name), "day ready") {
+					sellerName = availableMarketNamesSealed[2]
+				}
+			}
+
 			channel <- resultChan{
 				cardId: uuid,
 				invEntry: &mtgban.InventoryEntry{
@@ -100,10 +109,13 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 					Price:      price,
 					Quantity:   product.Quantity,
 					URL:        link,
-					SellerName: product.User.Name,
+					SellerName: sellerName,
 					Bundle:     product.User.SealedZero,
 					OriginalId: fmt.Sprint(product.BlueprintId),
 					InstanceId: fmt.Sprint(product.Id),
+					CustomFields: map[string]string{
+						"SubSellerName": product.User.Name,
+					},
 				},
 			}
 		}
@@ -191,11 +203,6 @@ func (ct *CardtraderSealed) scrape() error {
 			continue
 		}
 
-		// Assign a seller name as required by Market
-		result.invEntry.SellerName = "Card Trader Sealed"
-		if result.invEntry.Bundle {
-			result.invEntry.SellerName = "Card Trader Zero Sealed"
-		}
 		var err error
 		err = ct.inventory.Add(result.cardId, result.invEntry)
 		if err != nil {
@@ -223,7 +230,7 @@ func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 var availableMarketNamesSealed = []string{
-	"Card Trader Sealed", "Card Trader Zero Sealed",
+	"Card Trader Sealed", "Card Trader Zero Sealed", "Card Trader 1DR Sealed",
 }
 
 func (tcg *CardtraderSealed) MarketNames() []string {
