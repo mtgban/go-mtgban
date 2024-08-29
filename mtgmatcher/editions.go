@@ -418,6 +418,7 @@ var EditionTable = map[string]string{
 	"Resale":          "Resale Promos",
 	"Store Foil":      "Resale Promos",
 	"Walmart Resale":  "Resale Promos",
+	"Walmart Foil":    "Resale Promos",
 
 	// Convention
 	"Dragon'Con 1994":       "Dragon Con",
@@ -468,6 +469,7 @@ var EditionTable = map[string]string{
 	"30th Birthday Foil":             "30th Anniversary Misc Promos",
 
 	"March of the Machine: Multiverse Legends": "Multiverse Legends",
+	"March of the Machine: Multiverse Legend":  "Multiverse Legends",
 
 	// Since there are oversized cards in this set
 	"Commander: March of the Machine": "March of the Machine Commander",

@@ -1862,6 +1862,9 @@ var femVariants = map[string]map[string]string{
 
 		"woman": "16a",
 		"man":   "16b",
+
+		"female knight bryon wackwitz art": "16a",
+		"male knight bryon wackwitz art":   "16b",
 	},
 	"Spore Cloud": {
 		"fe083": "72a",
@@ -3726,6 +3729,9 @@ var ulstVariants = map[string]map[string]string{
 
 		"move a counter": "55",
 		"scry 2":         "56",
+
+		"proliferate 147/216 the list a": "55",
+		"scry 2 147/216 the list f":      "56",
 	},
 	"Ineffable Blessing": {
 		"a":           "38",
@@ -3737,6 +3743,9 @@ var ulstVariants = map[string]map[string]string{
 
 		"choose flavor": "38",
 		"choose border": "37",
+
+		"flavorful/bland 113/216 the list a":                "38",
+		"white-bordered/silver-bordered 113/216 the list c": "37",
 	},
 }
 
@@ -3791,6 +3800,8 @@ var ustVariants = map[string]map[string]string{
 		"v.4": "147d",
 		"v.5": "147e",
 		"v.6": "147f",
+
+		"scry 2 f": "147f",
 	},
 	"Extremely Slow Zombie": {
 		"summer":    "54a",

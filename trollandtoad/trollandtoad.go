@@ -22,20 +22,6 @@ const (
 	tntOptions = "?Keywords=&hide-oos=on&min-price=&max-price=&items-pp=60&item-condition=&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
-var tntAllPagesURL = []string{
-	"https://www.trollandtoad.com/magic-the-gathering/all-singles/7085",
-	"https://www.trollandtoad.com/magic-the-gathering/all-foil-singles/7880",
-	"https://www.trollandtoad.com/magic-the-gathering/-non-english-sets-singles/6713",
-	"https://www.trollandtoad.com/revised-black-border-italian-singles/12388",
-	"https://www.trollandtoad.com/magic-the-gathering/the-dark-italian-/939",
-	"https://www.trollandtoad.com/magic-the-gathering/-comic-idw-/7993",
-	"https://www.trollandtoad.com/magic-the-gathering/-silver-stamped-singles/15513",
-	"https://www.trollandtoad.com/magic-the-gathering/-from-the-vault/10963",
-	"https://www.trollandtoad.com/magic-the-gathering/-guild-kits/14079",
-	"https://www.trollandtoad.com/magic-the-gathering/-duel-decks/10962",
-	"https://www.trollandtoad.com/magic-the-gathering/-planeswalker-deck-exclusives/11872",
-}
-
 type Trollandtoad struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -109,6 +95,10 @@ func (tnt *Trollandtoad) parsePages(link string, lastPage int) error {
 		} else if err != nil {
 			switch {
 			case strings.Contains(edition, "World Championships"):
+			case strings.Contains(edition, "The List"):
+			case strings.Contains(edition, "Mystery Booster"):
+			case strings.Contains(theCard.Variation, "Token"):
+			case mtgmatcher.IsToken(theCard.Name):
 			case theCard.IsBasicLand():
 			default:
 				tnt.printf("%v", err)
@@ -201,12 +191,10 @@ func (tnt *Trollandtoad) parsePages(link string, lastPage int) error {
 		}
 	}
 
-	tnt.inventoryDate = time.Now()
-
 	return nil
 }
 
-func (tnt *Trollandtoad) scrapePages(link string) error {
+func (tnt *Trollandtoad) scrapePages(link, edition string) error {
 	resp, err := cleanhttp.DefaultClient().Get(link)
 	if err != nil {
 		return err
@@ -230,17 +218,70 @@ func (tnt *Trollandtoad) scrapePages(link string) error {
 	if lastPage == 0 {
 		lastPage = 1
 	}
-	tnt.printf("Parsing %d pages from %s", lastPage, link)
+	tnt.printf("Parsing %d pages from %s", lastPage, edition)
 	return tnt.parsePages(link, lastPage)
 }
 
+const (
+	categoryPage = "https://www.trollandtoad.com/magic-the-gathering/1041"
+)
+
 func (tnt *Trollandtoad) scrape() error {
-	for _, link := range tntAllPagesURL {
-		err := tnt.scrapePages(link)
+	resp, err := cleanhttp.DefaultClient().Get(categoryPage)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var pages []string
+	var titles []string
+	doc.Find(`div[class="card-body d-none d-sm-block py-0"] ul li a`).Each(func(_ int, s *goquery.Selection) {
+		page, found := s.Attr("href")
+		if !found {
+			return
+		}
+
+		title := strings.Replace(strings.TrimSpace(s.Text()), "  ", " ", -1)
+		switch title {
+		case "All Foil Singles",
+			"All Singles",
+			"Arena Codes",
+			"Artist Alters",
+			"Artist's Proofs",
+			"Booster Boxes",
+			"Complete Sets",
+			"Creature Forge",
+			"Fat Packs/Bundles",
+			"Magic: The Gathering Lots & Bundles",
+			"Memorabilia",
+			"Misprints",
+			"Modern Legal Sets",
+			"PSA Graded Magic Cards",
+			"Sealed Product",
+			"Standard Legal Sets",
+			"Supplies",
+			"Token Cards",
+			"Toy Figures":
+			return
+		}
+		pages = append(pages, page)
+		titles = append(titles, title)
+	})
+
+	for i, page := range pages {
+		err := tnt.scrapePages("https://www.trollandtoad.com"+page+tntOptions, titles[i])
 		if err != nil {
-			return err
+			tnt.printf("%s error: %s", titles[i], err.Error())
 		}
 	}
+
+	tnt.inventoryDate = time.Now()
+
 	return nil
 }
 

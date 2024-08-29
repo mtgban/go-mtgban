@@ -22,6 +22,16 @@ var cardTable = map[string]string{
 	"Isand":                 "Island",
 	"Military Intelligance": "Military Intelligence",
 	"Combustible Gearhulkk": "Combustible Gearhulk",
+	"Devilthron Fox":        "Devilthorn Fox",
+	"Runway Carriage":       "Runaway Carriage",
+	"Morkrut Nercopod":      "Morkrut Necropod",
+	"Basri's Lietuenant":    "Basri's Lieutenant",
+	"Agnozing Syphon":       "Agonizing Syphon",
+	"Ehemeral Shields":      "Ephemeral Shields",
+	"Myr Batlesphere":       "Myr Battlesphere",
+	"Secluded Stepe":        "Secluded Steppe",
+	"Merciless Evition":     "Merciless Eviction",
+	"Lavinia,":              "Lavinia, Foil to Conspiracy",
 
 	"Gadrak, the Crown-Scrouge": "Gadrak, the Crown-Scourge",
 	"Kasmina's Transformation":  "Kasmina's Transmutation",
@@ -39,6 +49,11 @@ var cardTable = map[string]string{
 	"Maja, Bretgard Protector": "Maja, Bretagard Protector",
 	"Arni Brokenbow":           "Arni Brokenbrow",
 
+	"Arabic Stone-Tongue Basilisk": "Stone-Tongue Basilisk",
+	"Kavu Furens":                  "Raging Kavu",
+	"Latin Raging Kavu":            "Raging Kavu",
+	"Sanskrit Fungal Shambler":     "Fungal Shambler",
+
 	"Mizzik's Mastery":  "Mizzix's Mastery",
 	"Agonizing Remose":  "Agonizing Remorse",
 	"Devouring Tendrls": "Devouring Tendrils",
@@ -49,6 +64,7 @@ var cardTable = map[string]string{
 	"Fangblade Brigand // Bladefang Eviscerator":     "Fangblade Brigand // Fangblade Eviscerator",
 	"Heirloom Mirror // Inherited Demon":             "Heirloom Mirror // Inherited Fiend",
 	"Mysterious Tome // Creepy Chronicle":            "Mysterious Tome // Chilling Chronicle",
+	"Avacynian Missionaries // Lunarch Inquistitors": "Avacynian Missionaries // Lunarch Inquisitors",
 
 	"Chandra, Fire of Kaladesh // Chandra The Roaring Flame": "Chandra, Fire of Kaladesh // Chandra, Roaring Flame",
 	"Delver of Secrets // Insectible Abomination":            "Delver of Secrets // Insectile Aberration",
@@ -81,12 +97,6 @@ var cardTable = map[string]string{
 	"Invasion of Ravnica // Guildpac Paragon": "Invasion of Ravnica // Guildpact Paragon",
 }
 
-var fullLineTable = map[string]string{
-	"Arabic Stone-Tongue Basilisk - Prerelease Promo ~ Other Languages Promos":      "Stone-Tongue Basilisk",
-	"Kavu Furens (Raging Kavu) - Pre-Release Foil (Latin) ~ Other Languages Promos": "Raging Kavu (Prerelease) ~ Other Languages Promos",
-	"Sanskrit Fungal Shambler - APC Prerelease Foil Promo ~ Other Languages Promos": "Fungal Shambler (Prerelease) ~ Other Languages Promos",
-}
-
 var tagsTable = []string{
 	"Magicfest Textless Full Art Promo", // Needs to be before the shorter version
 	"Retro Frame Bundle Promo",
@@ -95,6 +105,7 @@ var tagsTable = []string{
 
 	"Anime",
 	"Alternate Art",
+	"Ampersand Promo",
 	"Box Topper",
 	"Borderless",
 	"Brawl Deck",
@@ -124,15 +135,22 @@ var tagsTable = []string{
 	"Planar Showcase",
 	"Planeswalker Deck",
 	"Pre-Release",
+	"Prerelease Foil Promo",
 	"Prerelease Promo",
+	"Promo Pack",
 	"Retro Frame",
 	"Silver Stamped",
 	"Showcase",
 	"SLD Promo",
+	"Store Championship Promo",
 	"Textless Player Rewards",
 	"Walmart Promo",
+	"Walmart Foil Promo",
 	"Welcome Deck 2019 Exclusive",
 	"Zendikar Rising Expeditions",
+
+	"Japanese",
+	"Foil",
 
 	"Sealed", // Needs to be the very last
 }
@@ -145,11 +163,6 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 	}
 
 	fullName = strings.TrimSpace(fullName)
-
-	lut, found := fullLineTable[fullName]
-	if found {
-		fullName = lut
-	}
 
 	switch {
 	case strings.Contains(fullName, "Miscut"),
@@ -222,6 +235,9 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		return nil, errors.New("unsupported")
 	case strings.Contains(fullName, "Artist Signed"),
 		strings.Contains(fullName, "Somber Hoverguard Misprint"),
+		strings.Contains(fullName, "Double Sided Token"),
+		strings.Contains(fullName, "Manifest Overlay"),
+		strings.Contains(fullName, "Spindown Life Counter"),
 		strings.Contains(fullName, "Test Misprint Filler"):
 		return nil, errors.New("unsupported")
 	}
@@ -240,11 +256,9 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		// Some cards have the foil tag leaking to the card name
 		fullName = strings.Replace(fullName, "- Foil", "", -1)
 		fullName = strings.Replace(fullName, " Surge Foil", "", -1)
-		fullName = strings.Replace(fullName, " Foil", "", -1)
 	}
 
 	fullName = strings.TrimPrefix(fullName, "Basic Land - ")
-	fullName = strings.TrimPrefix(fullName, "Phyrexian ")
 
 	// Every edition has "Singles", the foil ones have "Foil Singles"
 	edition = strings.TrimSuffix(edition, " Singles")
@@ -285,7 +299,6 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		if strings.Contains(cardName, tag) {
 			splits := mtgmatcher.Cut(cardName, tag)
 			cardName = splits[0] + " (" + splits[1] + ")"
-			break
 		}
 	}
 
@@ -365,7 +378,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		last = fields[len(fields)-1]
 	}
 	if strings.Contains(last, "/") {
-		if !mtgmatcher.IsBasicLand(cardName) || (mtgmatcher.IsBasicLand(cardName) && edition == "Promo Cards") {
+		if !mtgmatcher.IsBasicLand(cardName) || (mtgmatcher.IsBasicLand(cardName) && strings.Contains(edition, "Promo")) {
 			// Some cards have their number appended at the very end, strip it out
 			cardName = strings.Join(fields[:len(fields)-1], " ")
 		}
@@ -404,15 +417,22 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 			edition = variant
 		}
 	case "Alliances",
+		"Deckmasters",
 		"Champions of Kamigawa",
 		"Fallen Empires",
 		"Homelands":
-		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
-			if (variant == "Ver. 1" && strings.HasSuffix(num, "a")) ||
-				(variant == "Ver. 2" && strings.HasSuffix(num, "b")) ||
-				(variant == "Ver. 3" && strings.HasSuffix(num, "c")) {
-				variant = num
-				break
+		for subCardName, subMap := range mtgmatcher.VariantsTable[edition] {
+			if !mtgmatcher.Equals(subCardName, cardName) {
+				continue
+			}
+			for _, num := range subMap {
+				if (variant == "Ver. 1" && strings.HasSuffix(num, "a")) ||
+					(variant == "Ver. 2" && strings.HasSuffix(num, "b")) ||
+					(variant == "Ver. 3" && strings.HasSuffix(num, "c")) ||
+					(variant == "Ver. 4" && strings.HasSuffix(num, "d")) {
+					variant = num
+					break
+				}
 			}
 		}
 	case "Anthologies",
