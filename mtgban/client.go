@@ -33,13 +33,13 @@ func (bc *BanClient) Register(scraper Scraper) {
 	market, isMarket := scraper.(Market)
 	if isMarket {
 		for _, name := range market.MarketNames() {
-			bc.RegisterMarket(scraper, name)
+			bc.RegisterMarket(market, name)
 		}
 	}
 	trader, isTrader := scraper.(Trader)
 	if isTrader {
 		for _, name := range trader.TraderNames() {
-			bc.RegisterTrader(scraper, name)
+			bc.RegisterTrader(trader, name)
 		}
 	}
 
@@ -50,10 +50,10 @@ func (bc *BanClient) Register(scraper Scraper) {
 // Add a Scraper to the client, enable the seller side only (if any)
 // If the added scraper is a market, it will be split into its subsellers
 func (bc *BanClient) RegisterSeller(scraper Scraper) {
-	market, ok := scraper.(Market)
-	if ok {
+	market, isMarket := scraper.(Market)
+	if isMarket {
 		for _, name := range market.MarketNames() {
-			bc.RegisterMarket(scraper, name)
+			bc.RegisterMarket(market, name)
 		}
 		return
 	}
@@ -67,9 +67,9 @@ func (bc *BanClient) RegisterSeller(scraper Scraper) {
 }
 
 // Add a Scraper to the client, enable the Market with the given shorthand
-func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
+func (bc *BanClient) RegisterMarket(scraper Market, shorthand string) {
 	market := &BaseMarket{}
-	market.scraper = scraper.(Seller)
+	market.scraper = scraper
 	market.info = scraper.Info()
 	market.info.Name = shorthand
 	market.info.Shorthand = shorthand
@@ -89,10 +89,10 @@ func (bc *BanClient) RegisterMarket(scraper Scraper, shorthand string) {
 // Add a Scraper to the client, enable the vendor side only (if any)
 // If the added scraper is a trader, it will be split into its subvendors
 func (bc *BanClient) RegisterVendor(scraper Scraper) {
-	trader, ok := scraper.(Trader)
-	if ok {
+	trader, isTrader := scraper.(Trader)
+	if isTrader {
 		for _, name := range trader.TraderNames() {
-			bc.RegisterTrader(scraper, name)
+			bc.RegisterTrader(trader, name)
 		}
 		return
 	}
@@ -106,9 +106,9 @@ func (bc *BanClient) RegisterVendor(scraper Scraper) {
 }
 
 // Add a Scraper to the client, enable the Trader with the given shorthand
-func (bc *BanClient) RegisterTrader(scraper Scraper, shorthand string) {
+func (bc *BanClient) RegisterTrader(scraper Trader, shorthand string) {
 	trader := &BaseTrader{}
-	trader.scraper = scraper.(Vendor)
+	trader.scraper = scraper
 	trader.info = scraper.Info()
 	trader.info.Name = shorthand
 	trader.info.Shorthand = shorthand

@@ -6,7 +6,7 @@ import (
 
 // Return the inventory for any given seller present in the market.
 // If possible, it will use the Inventory() call to populate data.
-func InventoryForSeller(seller Seller, sellerName string) (InventoryRecord, error) {
+func InventoryForSeller(seller Market, sellerName string) (InventoryRecord, error) {
 	inventory, err := seller.Inventory()
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func InventoryForSeller(seller Seller, sellerName string) (InventoryRecord, erro
 
 // Return the buylsit for any given vendor present in the Trader.
 // If possible, it will use the Buylist() call to populate data.
-func BuylistForVendor(vendor Vendor, vendorName string) (BuylistRecord, error) {
+func BuylistForVendor(vendor Trader, vendorName string) (BuylistRecord, error) {
 	buylist, err := vendor.Buylist()
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func BuylistForVendor(vendor Vendor, vendorName string) (BuylistRecord, error) {
 type BaseMarket struct {
 	inventory InventoryRecord
 	info      ScraperInfo
-	scraper   Seller
+	scraper   Market
 }
 
 func (m *BaseMarket) Inventory() (InventoryRecord, error) {
@@ -86,7 +86,7 @@ func (m *BaseMarket) Info() ScraperInfo {
 type BaseTrader struct {
 	buylist BuylistRecord
 	info    ScraperInfo
-	scraper Vendor
+	scraper Trader
 }
 
 func (m *BaseTrader) Buylist() (BuylistRecord, error) {
