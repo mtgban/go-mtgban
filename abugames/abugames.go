@@ -187,7 +187,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
-					VendorName: abuShorthands[0],
+					VendorName: availableTraderNames[0],
 				}
 
 				if card.SellPrice > 0 {
@@ -199,7 +199,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
-					VendorName: abuShorthands[1],
+					VendorName: availableTraderNames[1],
 				}
 			}
 
@@ -313,10 +313,13 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 	return abu.buylist, nil
 }
 
-var abuShorthands = []string{"ABUGames", "ABUCredit"}
+var availableTraderNames = []string{
+	"ABUGames",
+	"ABUCredit",
+}
 
 func (abu *ABUGames) TraderNames() []string {
-	return abuShorthands
+	return availableTraderNames
 }
 
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
