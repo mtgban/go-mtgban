@@ -66,7 +66,7 @@ type BaseMarket struct {
 func (m *BaseMarket) Inventory() (InventoryRecord, error) {
 	if m.inventory == nil {
 		// Retrieve inventory from the original scraper
-		inventory, err := InventoryForSeller(m.scraper, m.info.Shorthand)
+		inventory, err := InventoryForSeller(m.scraper, m.info.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +94,7 @@ type BaseTrader struct {
 func (m *BaseTrader) Buylist() (BuylistRecord, error) {
 	if m.buylist == nil {
 		// Retrieve inventory from the original scraper
-		buylist, err := BuylistForVendor(m.scraper, m.info.Shorthand)
+		buylist, err := BuylistForVendor(m.scraper, m.info.Name)
 		if err != nil {
 			return nil, err
 		}
