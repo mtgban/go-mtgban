@@ -2,6 +2,8 @@ package mtgban
 
 import (
 	"fmt"
+
+	"golang.org/x/exp/slices"
 )
 
 // Return the inventory for any given seller present in the market.
@@ -12,6 +14,10 @@ func InventoryForSeller(seller Market, sellerName string) (InventoryRecord, erro
 		return nil, err
 	}
 
+	if !slices.Contains(seller.MarketNames(), sellerName) {
+		return nil, fmt.Errorf("%s is not present in %s", sellerName, seller.Info().Name)
+	}
+
 	marketplace := InventoryRecord{}
 	for uuid := range inventory {
 		for i := range inventory[uuid] {
@@ -19,10 +25,6 @@ func InventoryForSeller(seller Market, sellerName string) (InventoryRecord, erro
 				marketplace[uuid] = append(marketplace[uuid], inventory[uuid][i])
 			}
 		}
-	}
-
-	if len(marketplace) == 0 {
-		return nil, fmt.Errorf("seller %s not found", sellerName)
 	}
 
 	return marketplace, nil
@@ -36,6 +38,10 @@ func BuylistForVendor(vendor Trader, vendorName string) (BuylistRecord, error) {
 		return nil, err
 	}
 
+	if !slices.Contains(vendor.TraderNames(), vendorName) {
+		return nil, fmt.Errorf("%s is not present in %s", vendorName, vendor.Info().Name)
+	}
+
 	traderpost := BuylistRecord{}
 	for uuid := range buylist {
 		for i := range buylist[uuid] {
@@ -43,10 +49,6 @@ func BuylistForVendor(vendor Trader, vendorName string) (BuylistRecord, error) {
 				traderpost[uuid] = append(traderpost[uuid], buylist[uuid][i])
 			}
 		}
-	}
-
-	if len(traderpost) == 0 {
-		return nil, fmt.Errorf("vendor %s not found", vendorName)
 	}
 
 	return traderpost, nil
