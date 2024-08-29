@@ -42,6 +42,16 @@ var availableMarketNames = []string{
 	"Card Trader", "Card Trader Zero", "Card Trader 1DR",
 }
 
+var name2shorthand = map[string]string{
+	"Card Trader":      "CT",
+	"Card Trader Zero": "CT0",
+	"Card Trader 1DR":  "CT1DR",
+
+	"Card Trader Sealed":      "CTSealed",
+	"Card Trader Zero Sealed": "CT0Sealed",
+	"Card Trader 1DR Sealed":  "CT1DRSealed",
+}
+
 func NewScraperMarket(gameId int, token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
@@ -376,9 +386,16 @@ func (tcg *CardtraderMarket) MarketNames() []string {
 	return availableMarketNames
 }
 
+func (ct *CardtraderMarket) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := ct.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
+}
+
 func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader"
-	info.Shorthand = "CT"
+	info.Shorthand = "CTMarket"
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.Family = "CT"

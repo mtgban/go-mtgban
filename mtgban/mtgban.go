@@ -150,7 +150,17 @@ var FullGradeTags = []string{
 
 // Scraper is the interface both Sellers and Vendors need to implement
 type Scraper interface {
+	// Retrieve the ScraperInfo associated with the scraper
 	Info() ScraperInfo
+}
+
+// MultiScraper is the interface both Market and Trader need to implement
+type MultiScraper interface {
+	// Retrieve the ScraperInfo for one of the internal scrapers
+	InfoForScraper(string) ScraperInfo
+
+	// MultiScraper implements the Scraper interface
+	Scraper
 }
 
 // Carter is the inteface used to identify Seller scrapers that can
@@ -174,6 +184,9 @@ type Market interface {
 
 	// Market implements the Seller interface
 	Seller
+
+	// Market implements the MultiScraper interface
+	MultiScraper
 }
 
 // Trader is the interface describing actions to be performed on the
@@ -184,6 +197,9 @@ type Trader interface {
 
 	// Trader implements the Vendor interface
 	Vendor
+
+	// Trader implements the MultiScraper interface
+	MultiScraper
 }
 
 // Seller is the interface describing actions to be performed on a seller inventory

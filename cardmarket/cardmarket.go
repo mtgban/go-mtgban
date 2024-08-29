@@ -38,6 +38,11 @@ var availableIndexNames = []string{
 	"MKM Low", "MKM Trend",
 }
 
+var name2shorthand = map[string]string{
+	"MKM Low":   "MKMLow",
+	"MKM Trend": "MKMTrend",
+}
+
 func (mkm *CardMarketIndex) printf(format string, a ...interface{}) {
 	if mkm.LogCallback != nil {
 		mkm.LogCallback("[MKMIndex] "+format, a...)
@@ -347,6 +352,13 @@ func (mkm *CardMarketIndex) Inventory() (mtgban.InventoryRecord, error) {
 
 func (mkm *CardMarketIndex) MarketNames() []string {
 	return availableIndexNames
+}
+
+func (mkm *CardMarketIndex) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := mkm.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
 }
 
 func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {

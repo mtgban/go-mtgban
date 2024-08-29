@@ -237,6 +237,13 @@ func (tcg *TCGPlayerIndex) MarketNames() []string {
 	return availableIndexNames
 }
 
+func (tcg *TCGPlayerIndex) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := tcg.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
+}
+
 func (tcg *TCGPlayerIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Index"
 	info.Shorthand = "TCGIndex"

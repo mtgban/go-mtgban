@@ -47,6 +47,7 @@ type evConfig struct {
 	Name           string
 	StatsFunc      func(values []float64) (float64, error)
 	SourceName     string
+	Shorthand      string
 	FoundInBuylist bool
 	TargetsBuylist bool
 	Simulation     bool
@@ -56,6 +57,7 @@ var evParameters = []evConfig{
 	// CK Buylist
 	{
 		Name:           "CK Buylist EV for Singles",
+		Shorthand:      "SS",
 		SourceName:     "CK",
 		FoundInBuylist: true,
 		TargetsBuylist: true,
@@ -64,10 +66,12 @@ var evParameters = []evConfig{
 	// TCG Low
 	{
 		Name:       "TCG Low EV",
+		Shorthand:  "TCGLowEV",
 		SourceName: "TCG Low",
 	},
 	{
-		Name: "TCG Low Sim Median",
+		Name:      "TCG Low Sim Median",
+		Shorthand: "TCGLowSimMed",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
 		},
@@ -75,7 +79,8 @@ var evParameters = []evConfig{
 		Simulation: true,
 	},
 	{
-		Name: "TCG Low Sim StdDev",
+		Name:      "TCG Low Sim StdDev",
+		Shorthand: "TCGLowSimStd",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.StandardDeviation(values)
 		},
@@ -86,11 +91,13 @@ var evParameters = []evConfig{
 	// TCG Direct (net)
 	{
 		Name:           "TCG Direct (net) EV",
+		Shorthand:      "TCGDirectNetEV",
 		SourceName:     "TCGDirectNet",
 		FoundInBuylist: true,
 	},
 	{
-		Name: "TCG Direct (net) Sim Median",
+		Name:      "TCG Direct (net) Sim Median",
+		Shorthand: "TCGDirectNetSimMed",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
 		},
@@ -99,7 +106,8 @@ var evParameters = []evConfig{
 		Simulation:     true,
 	},
 	{
-		Name: "TCG Direct (net) Sim StdDev",
+		Name:      "TCG Direct (net) Sim StdDev",
+		Shorthand: "TCGDirectNetSimStd",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.StandardDeviation(values)
 		},
@@ -111,10 +119,12 @@ var evParameters = []evConfig{
 	// Card Trader Zero
 	{
 		Name:       "CT Zero EV",
+		Shorthand:  "CTZeroEV",
 		SourceName: "Card Trader Zero",
 	},
 	{
-		Name: "CT Zero Sim Median",
+		Name:      "CT Zero Sim Median",
+		Shorthand: "CTZeroSimMed",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
 		},
@@ -122,7 +132,8 @@ var evParameters = []evConfig{
 		Simulation: true,
 	},
 	{
-		Name: "CT Zero Sim StdDev",
+		Name:      "CT Zero Sim StdDev",
+		Shorthand: "CTZeroSimStd",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.StandardDeviation(values)
 		},
@@ -483,13 +494,27 @@ func (tcg *SealedEVScraper) MarketNames() []string {
 	return names
 }
 
+func (ss *SealedEVScraper) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := ss.Info()
+	info.Name = name
+	for _, param := range evParameters {
+		if param.Name == name {
+			info.Shorthand = param.Shorthand
+
+			// Only the retail side is metadata only
+			info.MetadataOnly = !param.TargetsBuylist
+			break
+		}
+	}
+	return info
+}
+
 func (ss *SealedEVScraper) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Sealed EV Scraper"
 	info.Shorthand = "SS"
 	info.InventoryTimestamp = &ss.inventoryDate
 	info.BuylistTimestamp = &ss.buylistDate
 	info.SealedMode = true
-	info.MetadataOnly = true
 	info.CreditMultiplier = 1.3
 	info.Family = "EV"
 	return

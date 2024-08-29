@@ -237,9 +237,16 @@ func (tcg *CardtraderSealed) MarketNames() []string {
 	return availableMarketNamesSealed
 }
 
+func (ct *CardtraderSealed) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := ct.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
+}
+
 func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader Sealed"
-	info.Shorthand = "CTSealed"
+	info.Shorthand = "CTSealedWrapper"
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.SealedMode = true

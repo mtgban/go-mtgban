@@ -70,9 +70,7 @@ func (bc *BanClient) RegisterSeller(scraper Scraper) {
 func (bc *BanClient) RegisterMarket(scraper Market, shorthand string) {
 	market := &BaseMarket{}
 	market.scraper = scraper
-	market.info = scraper.Info()
-	market.info.Name = shorthand
-	market.info.Shorthand = shorthand
+	market.info = scraper.InfoForScraper(shorthand)
 
 	// Disable the market itself from providing seller data
 	bc.sellerDisabled[scraper.Info().Shorthand] = true
@@ -109,9 +107,7 @@ func (bc *BanClient) RegisterVendor(scraper Scraper) {
 func (bc *BanClient) RegisterTrader(scraper Trader, shorthand string) {
 	trader := &BaseTrader{}
 	trader.scraper = scraper
-	trader.info = scraper.Info()
-	trader.info.Name = shorthand
-	trader.info.Shorthand = shorthand
+	trader.info = scraper.InfoForScraper(shorthand)
 
 	// Disable the trader itself from providing vendor data
 	bc.vendorDisabled[scraper.Info().Shorthand] = true

@@ -217,6 +217,13 @@ func (tcg *TCGLorcanaIndex) MarketNames() []string {
 	return availableIndexNames[:len(availableIndexNames)-1]
 }
 
+func (tcg *TCGLorcanaIndex) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := tcg.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
+}
+
 func (tcg *TCGLorcanaIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Index"
 	info.Shorthand = "TCGIndex"

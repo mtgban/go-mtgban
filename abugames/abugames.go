@@ -314,12 +314,24 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 }
 
 var availableTraderNames = []string{
-	"ABUGames",
-	"ABUCredit",
+	"ABU Games",
+	"ABU Games (credit)",
+}
+
+var name2shorthand = map[string]string{
+	"ABU Games":          "ABUGames",
+	"ABU Games (credit)": "ABUCredit",
 }
 
 func (abu *ABUGames) TraderNames() []string {
 	return availableTraderNames
+}
+
+func (abu *ABUGames) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := abu.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
 }
 
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {

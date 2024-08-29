@@ -54,6 +54,17 @@ var availableMarketNames = []string{
 	"TCG Player", "TCG Direct",
 }
 
+var name2shorthand = map[string]string{
+	"TCG Low":          "TCGLow",
+	"TCG Market":       "TCGMarket",
+	"TCG Mid":          "TCGMid",
+	"TCG Direct Low":   "TCGDirectLow",
+	"TCG Player":       "TCGPlayer",
+	"TCG Direct":       "TCGDirect",
+	"TCGplayer":        "TCGPlayer",
+	"TCGplayer Direct": "TCGDirect",
+}
+
 var skuConditions = map[string]string{
 	"NEAR MINT":         "NM",
 	"LIGHTLY PLAYED":    "SP",
@@ -318,6 +329,13 @@ func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
 
 func (tcg *TCGPlayerMarket) MarketNames() []string {
 	return availableMarketNames
+}
+
+func (tcg *TCGPlayerMarket) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := tcg.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
 }
 
 func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
