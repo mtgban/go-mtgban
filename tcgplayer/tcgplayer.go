@@ -144,7 +144,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 			}
 
 			isDirect := i == 1
-			link := TCGPlayerProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
+			link := GenerateProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
 
 			out := responseChan{
 				cardId: cardId,

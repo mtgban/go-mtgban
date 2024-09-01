@@ -108,7 +108,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 			}
 
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", co.Language, isDirect)
+			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", co.Language, isDirect)
 
 			out := responseChan{
 				cardId: cardId,

@@ -19,7 +19,7 @@ type TCGSellerInventory struct {
 	sellerKeys    []string
 	onlyDirect    bool
 	requestSize   int
-	client        *TCGClient
+	client        *SellerClient
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
 }
@@ -55,7 +55,7 @@ func NewScraperForSellerIds(sellerKeys []string, onlyDirect bool) *TCGSellerInve
 	tcg.sellerKeys = sellerKeys
 	tcg.onlyDirect = onlyDirect
 
-	tcg.client = NewTCGSellerClient()
+	tcg.client = NewSellerClient()
 	tcg.MaxConcurrency = defaultSellerInventoryConcurrency
 
 	return &tcg
@@ -72,7 +72,7 @@ type setCountPair struct {
 }
 
 func (tcg *TCGSellerInventory) totalItems() (*itemsRecap, error) {
-	resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect, nil)
+	resp, err := tcg.client.InventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ var conditionMap = map[string]string{
 
 func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page int) error {
 	for _, finish := range []string{"Normal", "Foil"} {
-		resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
+		resp, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
 		if err == nil {
 			err = tcg.processInventory(channel, resp.Results[0].Results)
 			if err != nil {
@@ -119,7 +119,7 @@ func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page in
 func (tcg *TCGSellerInventory) processEdition(channel chan<- responseChan, setName string, count int) error {
 	for i := 0; i <= count/tcg.requestSize; i++ {
 		for _, finish := range []string{"Normal", "Foil"} {
-			resp, err := tcg.client.TCGInventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
+			resp, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
 			if err == nil {
 				err = tcg.processInventory(channel, resp.Results[0].Results)
 				if err != nil {
@@ -176,7 +176,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 				customFields["directInventory"] = fmt.Sprint(int(listing.DirectInventory))
 			}
 
-			link := TCGPlayerProductURL(int(result.ProductID), listing.Printing, tcg.Affiliate, listing.Condition, listing.Language, isDirect)
+			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.Affiliate, listing.Condition, listing.Language, isDirect)
 
 			out := responseChan{
 				cardId: cardId,

@@ -65,7 +65,7 @@ func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []m
 			}
 		}
 
-		link := TCGPlayerProductURL(productId, "", tcg.Affiliate, "", "", false)
+		link := GenerateProductURL(productId, "", tcg.Affiliate, "", "", false)
 
 		out := responseChan{
 			cardId: uuid,

@@ -19,7 +19,7 @@ const (
 	PartnerProductURL = "https://tcgplayer.pxf.io/c/%s/1830156/21018"
 )
 
-func TCGPlayerProductURL(productId int, printing, affiliate, condition, language string, isDirect bool) string {
+func GenerateProductURL(productId int, printing, affiliate, condition, language string, isDirect bool) string {
 	u, err := url.Parse(BaseProductURL + fmt.Sprint(productId))
 	if err != nil {
 		return ""
@@ -178,11 +178,11 @@ type ListingData struct {
 }
 
 func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
-	client := NewTCGSellerClient()
+	client := NewSellerClient()
 
 	var result []ListingData
 	for i := 0; ; i++ {
-		listings, err := client.TCGInventoryListing(productId, defaultListingSize, i, onlyDirect)
+		listings, err := client.InventoryListing(productId, defaultListingSize, i, onlyDirect)
 		if err != nil || len(listings) == 0 {
 			break
 		}

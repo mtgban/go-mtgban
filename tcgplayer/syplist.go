@@ -75,7 +75,7 @@ func (tcg *TCGSYPList) scrape() error {
 		if sku.Printing == "FOIL" {
 			printing = "Foil"
 		}
-		link := TCGPlayerProductURL(sku.ProductId, printing, tcg.Affiliate, "", "English", true)
+		link := GenerateProductURL(sku.ProductId, printing, tcg.Affiliate, "", "English", true)
 
 		entry := mtgban.BuylistEntry{
 			BuyPrice: syp.MarketPrice,

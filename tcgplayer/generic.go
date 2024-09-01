@@ -116,7 +116,7 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 			}
 
 			isDirect := names[i] == "TCG Direct Low"
-			link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
+			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
 
 			out := genericChan{
 				key: strings.Join(keys, "|"),

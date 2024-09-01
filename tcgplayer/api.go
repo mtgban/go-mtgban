@@ -146,7 +146,7 @@ const (
 	defaultLimitLastestSales      = 25
 )
 
-func TCGLatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, error) {
+func LatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, error) {
 	link := fmt.Sprintf(tcgLatestSalesURL, tcgProductId)
 
 	var params latestSalesRequest
@@ -394,18 +394,18 @@ type SellerInventoryResult struct {
 	Listings []SellerListing `json:"listings"`
 }
 
-type TCGClient struct {
+type SellerClient struct {
 	client *retryablehttp.Client
 }
 
-func NewTCGSellerClient() *TCGClient {
-	tcg := TCGClient{}
+func NewSellerClient() *SellerClient {
+	tcg := SellerClient{}
 	tcg.client = retryablehttp.NewClient()
 	tcg.client.Logger = nil
 	return &tcg
 }
 
-func (tcg *TCGClient) TCGInventoryForSeller(sellerKeys []string, size, page int, useDirect bool, finishes []string, sets ...string) (*sellerInventoryResponse, error) {
+func (tcg *SellerClient) InventoryForSeller(sellerKeys []string, size, page int, useDirect bool, finishes []string, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
 	params.Algorithm = "revenue_synonym_v2"
 	params.From = size * page
@@ -505,7 +505,7 @@ type sellerInventoryListingResponse struct {
 	} `json:"results"`
 }
 
-func (tcg *TCGClient) TCGInventoryListing(productId, size, page int, useDirect bool) ([]SellerListing, error) {
+func (tcg *SellerClient) InventoryListing(productId, size, page int, useDirect bool) ([]SellerListing, error) {
 	var params sellerInventoryListingRequest
 	params.Filters.Term.SellerStatus = "Live"
 	if useDirect {
@@ -578,7 +578,7 @@ func NewCookieSetClient(cookies map[string]string) *CookieClient {
 	return &tcg
 }
 
-type TCGUserData struct {
+type UserData struct {
 	UserName                string `json:"userName"`
 	UserID                  int    `json:"userId"`
 	UserKey                 string `json:"userKey"`
@@ -609,15 +609,15 @@ type TCGUserData struct {
 	SellerKeys []string `json:"sellerKeys"`
 }
 
-type TCGUserResponse struct {
+type UserResponse struct {
 	Errors []struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
 	} `json:"errors"`
-	Results []TCGUserData `json:"results"`
+	Results []UserData `json:"results"`
 }
 
-const TCGUserDataURL = "https://mpapi.tcgplayer.com/v2/user?isGuest=false"
+const tcgUserDataURL = "https://mpapi.tcgplayer.com/v2/user?isGuest=false"
 
 func (tcg *CookieClient) Get(link string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, link, nil)
@@ -642,8 +642,8 @@ func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.R
 	return cleanhttp.DefaultClient().Do(req)
 }
 
-func (tcg *CookieClient) GetUserData() (*TCGUserData, error) {
-	resp, err := tcg.Get(TCGUserDataURL)
+func (tcg *CookieClient) GetUserData() (*UserData, error) {
+	resp, err := tcg.Get(tcgUserDataURL)
 	if err != nil {
 		return nil, err
 	}
@@ -654,7 +654,7 @@ func (tcg *CookieClient) GetUserData() (*TCGUserData, error) {
 		return nil, err
 	}
 
-	var response TCGUserResponse
+	var response UserResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
@@ -669,9 +669,9 @@ func (tcg *CookieClient) GetUserData() (*TCGUserData, error) {
 	return &response.Results[0], nil
 }
 
-const TCGCreateCartURL = "https://mpgateway.tcgplayer.com/v1/cart/create/usercart"
+const tcgCreateCartURL = "https://mpgateway.tcgplayer.com/v1/cart/create/usercart"
 
-func TCGCreateCartKey(userId string) (string, error) {
+func CreateCartKey(userId string) (string, error) {
 	var params struct {
 		ExternalUserId string `json:"externalUserId"`
 	}
@@ -682,7 +682,7 @@ func TCGCreateCartKey(userId string) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, TCGCreateCartURL, bytes.NewReader(payload))
+	req, err := http.NewRequest(http.MethodPost, tcgCreateCartURL, bytes.NewReader(payload))
 	if err != nil {
 		return "", err
 	}
@@ -699,7 +699,7 @@ func TCGCreateCartKey(userId string) (string, error) {
 		return "", err
 	}
 
-	var response TCGUserResponse
+	var response UserResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return "", fmt.Errorf("%s: %s", err.Error(), string(data))

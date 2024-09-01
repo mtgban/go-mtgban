@@ -124,7 +124,7 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 			}
 
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := TCGPlayerProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
+			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
 
 			out := genericChan{
 				key: cardId,

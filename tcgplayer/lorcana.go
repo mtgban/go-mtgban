@@ -144,7 +144,7 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 
 			condition := SKUConditionMap[sku.ConditionId]
 
-			link := TCGPlayerProductURL(sku.ProductId, tcg.printings[sku.PrintingId], tcg.Affiliate, condition, "", false)
+			link := GenerateProductURL(sku.ProductId, tcg.printings[sku.PrintingId], tcg.Affiliate, condition, "", false)
 
 			out := genericChan{
 				key: cardId,

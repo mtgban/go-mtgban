@@ -374,7 +374,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 			tcgID, _ := strconv.Atoi(co.Identifiers["tcgplayerProductId"])
 			if tcgID != 0 {
 				isDirect := evParameters[i].SourceName == "TCGDirectNet"
-				link = tcgplayer.TCGPlayerProductURL(tcgID, "", ss.Affiliate, "", "", isDirect)
+				link = tcgplayer.GenerateProductURL(tcgID, "", ss.Affiliate, "", "", isDirect)
 			}
 
 			res.invEntry = &mtgban.InventoryEntry{
