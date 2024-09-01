@@ -630,6 +630,18 @@ func (tcg *CookieClient) Get(link string) (*http.Response, error) {
 	return cleanhttp.DefaultClient().Do(req)
 }
 
+func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPost, link, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Cookie", tcg.cookieLine)
+	req.Header.Add("Content-Type", contentType)
+	req.Header.Add("User-Agent", "curl/8.6.0")
+
+	return cleanhttp.DefaultClient().Do(req)
+}
+
 func (tcg *CookieClient) GetUserData() (*TCGUserData, error) {
 	resp, err := tcg.Get(TCGUserDataURL)
 	if err != nil {
@@ -701,4 +713,47 @@ func TCGCreateCartKey(userId string) (string, error) {
 
 	return response.Results[0].CartKey, nil
 
+}
+
+type AddressConfig struct {
+	FirstName                 string `json:"firstName"`
+	LastName                  string `json:"lastName"`
+	AddressLine1              string `json:"addressLine1"`
+	AddressLine2              string `json:"addressLine2"`
+	City                      string `json:"city"`
+	ZipCode                   string `json:"zipCode"`
+	StateProvinceRegion       string `json:"stateProvinceRegion"`
+	Phone                     string `json:"phone"`
+	IsDefaultAddress          bool   `json:"isDefaultAddress"`
+	SaveAddressOnPaymentSave  bool   `json:"saveAddressOnPaymentSave"`
+	ExternalUserID            string `json:"externalUserId"`
+	CountryCode               string `json:"countryCode"`
+	ID                        int    `json:"id"`
+	EasyPostShippingAddressID string `json:"easyPostShippingAddressId"`
+	IsEasyPostVerified        bool   `json:"isEasyPostVerified"`
+	CreatedAt                 string `json:"createdAt"`
+	LastUsedAt                string `json:"lastUsedAt"`
+}
+
+const (
+	addressUpdateURL = "https://mpgateway.tcgplayer.com/v2/useraddressbooks/update"
+)
+
+func (tcg *CookieClient) SetAddress(address AddressConfig) error {
+	payload, err := json.Marshal(&address)
+	if err != nil {
+		return err
+	}
+
+	resp, err := tcg.Post(addressUpdateURL, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(http.StatusText(resp.StatusCode))
+	}
+
+	return nil
 }
