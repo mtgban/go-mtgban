@@ -35,7 +35,8 @@ type ABUProduct struct {
 		ProductId struct {
 			Count  int `json:"ngroups"`
 			Groups []struct {
-				Doclist struct {
+				GroupValue string `json:"groupValue"`
+				Doclist    struct {
 					Cards []ABUCard `json:"docs"`
 				} `json:"doclist"`
 			} `json:"groups"`

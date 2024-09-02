@@ -162,6 +162,8 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					Price:      card.SellPrice,
 					Quantity:   card.SellQuantity,
 					URL:        u.String() + searchQuery,
+					OriginalId: group.GroupValue,
+					InstanceId: card.Id,
 				}
 			}
 
@@ -187,6 +189,8 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
+					OriginalId: group.GroupValue,
+					InstanceId: card.Id,
 					VendorName: availableTraderNames[0],
 				}
 
@@ -199,6 +203,8 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					Quantity:   card.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
+					OriginalId: group.GroupValue,
+					InstanceId: card.Id,
 					VendorName: availableTraderNames[1],
 				}
 			}
