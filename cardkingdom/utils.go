@@ -68,15 +68,7 @@ func (ck *CookieClient) setQuantity(link, ckId, cond string, qty int) (string, e
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, link, bytes.NewReader(reqBody))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Add("Cookie", "laravel_session="+ck.session+";")
-	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
-	req.Header.Add("User-Agent", "curl/8.6.0")
-
-	resp, err := ck.client.Do(req)
+	resp, err := ck.Post(link, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return "", err
 	}
@@ -103,6 +95,18 @@ func (ck *CookieClient) Get(link string) (*http.Response, error) {
 	}
 	req.Header.Add("Cookie", "laravel_session="+ck.session+";")
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
+	req.Header.Add("User-Agent", "curl/8.6.0")
+
+	return ck.client.Do(req)
+}
+
+func (ck *CookieClient) Post(url, contentType string, reader io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPost, url, reader)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("User-Agent", "curl/8.6.0")
 
 	return ck.client.Do(req)
