@@ -63,6 +63,15 @@ func NewABUClient() *ABUClient {
 	return &abu
 }
 
+func (abu *ABUClient) Get(url string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return abu.client.Do(req)
+}
+
 func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 	resp, err := abu.client.Get(url)
 	if err != nil {
