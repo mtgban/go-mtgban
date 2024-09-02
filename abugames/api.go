@@ -52,7 +52,8 @@ const (
 )
 
 type ABUClient struct {
-	client *http.Client
+	client        *http.Client
+	authorization string
 }
 
 func NewABUClient() *ABUClient {
@@ -63,10 +64,20 @@ func NewABUClient() *ABUClient {
 	return &abu
 }
 
+func NewABUClientWithBearer(token string) *ABUClient {
+	abu := NewABUClient()
+	abu.authorization = token
+	return abu
+}
+
 func (abu *ABUClient) Get(url string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if abu.authorization != "" {
+		req.Header.Add("Authorization", "Bearer "+abu.authorization)
 	}
 
 	return abu.client.Do(req)
