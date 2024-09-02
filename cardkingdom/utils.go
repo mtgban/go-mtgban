@@ -25,7 +25,7 @@ func NewCookieClient(session string) *CookieClient {
 	return &ck
 }
 
-type InventoryRequest struct {
+type CartRequest struct {
 	ProductID string `json:"product_id"`
 	Style     string `json:"style"`
 	Quantity  int    `json:"quantity"`
@@ -43,21 +43,21 @@ const (
 	ckBuylistAddURL   = "https://www.cardkingdom.com/api/sellcart/add"
 )
 
-func (ck *CookieClient) InventorySetQuantity(ckId, cond string, qty int) (string, error) {
-	return ck.setQuantity(ckInventoryAddURL, ckId, cond, qty)
+func (ck *CookieClient) SetCartInventory(ckId, cond string, qty int) (string, error) {
+	return ck.setCart(ckInventoryAddURL, ckId, cond, qty)
 }
 
-func (ck *CookieClient) BuylistSetQuantity(ckId, cond string, qty int) (string, error) {
-	return ck.setQuantity(ckBuylistAddURL, ckId, "NM", qty)
+func (ck *CookieClient) SetCartBuylist(ckId string, qty int) (string, error) {
+	return ck.setCart(ckBuylistAddURL, ckId, "NM", qty)
 }
 
-func (ck *CookieClient) setQuantity(link, ckId, cond string, qty int) (string, error) {
+func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (string, error) {
 	style, found := condMap[cond]
 	if found {
 		cond = style
 	}
 
-	payload := InventoryRequest{
+	payload := CartRequest{
 		ProductID: ckId,
 		Style:     cond,
 		Quantity:  qty,
@@ -82,7 +82,7 @@ func (ck *CookieClient) setQuantity(link, ckId, cond string, qty int) (string, e
 	response := string(data)
 
 	if resp.StatusCode != http.StatusOK {
-		err = errors.New("inventory not ok")
+		err = errors.New("cart not ok")
 	}
 
 	return response, err
@@ -94,7 +94,6 @@ func (ck *CookieClient) Get(link string) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Add("Cookie", "laravel_session="+ck.session+";")
-	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
 	req.Header.Add("User-Agent", "curl/8.6.0")
 
 	return ck.client.Do(req)
