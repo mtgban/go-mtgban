@@ -156,8 +156,8 @@ type Scraper interface {
 
 // MultiScraper is the interface both Market and Trader need to implement
 type MultiScraper interface {
-	// Retrieve the ScraperInfo for one of the internal scrapers
-	InfoForScraper(string) ScraperInfo
+	// Retrieve the ScraperInfo for an internal scraper with the given name
+	InfoForScraper(name string) ScraperInfo
 
 	// MultiScraper implements the Scraper interface
 	Scraper

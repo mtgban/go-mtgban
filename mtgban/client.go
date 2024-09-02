@@ -66,22 +66,22 @@ func (bc *BanClient) RegisterSeller(scraper Scraper) {
 	}
 }
 
-// Add a Scraper to the client, enable the Market with the given shorthand
-func (bc *BanClient) RegisterMarket(scraper Market, shorthand string) {
+// Add a Scraper to the client, enable the Market with the given name
+func (bc *BanClient) RegisterMarket(scraper Market, name string) {
 	market := &BaseMarket{}
 	market.scraper = scraper
-	market.info = scraper.InfoForScraper(shorthand)
+	market.info = scraper.InfoForScraper(name)
 
 	// Disable the market itself from providing seller data
 	bc.sellerDisabled[scraper.Info().Shorthand] = true
 	// Disable any vendor side of the split market (not the market itself)
-	_, found := bc.vendorDisabled[shorthand]
+	_, found := bc.vendorDisabled[market.info.Shorthand]
 	if !found {
-		bc.vendorDisabled[shorthand] = true
+		bc.vendorDisabled[market.info.Shorthand] = true
 	}
 
 	// Register
-	bc.scrapers[shorthand] = market
+	bc.scrapers[market.info.Shorthand] = market
 }
 
 // Add a Scraper to the client, enable the vendor side only (if any)
@@ -103,22 +103,22 @@ func (bc *BanClient) RegisterVendor(scraper Scraper) {
 	bc.vendorDisabled[scraper.Info().Shorthand] = false
 }
 
-// Add a Scraper to the client, enable the Trader with the given shorthand
-func (bc *BanClient) RegisterTrader(scraper Trader, shorthand string) {
+// Add a Scraper to the client, enable the Trader with the given name
+func (bc *BanClient) RegisterTrader(scraper Trader, name string) {
 	trader := &BaseTrader{}
 	trader.scraper = scraper
-	trader.info = scraper.InfoForScraper(shorthand)
+	trader.info = scraper.InfoForScraper(name)
 
 	// Disable the trader itself from providing vendor data
 	bc.vendorDisabled[scraper.Info().Shorthand] = true
 	// Disable any seller side of the split trader (not the trader itself)
-	_, found := bc.sellerDisabled[shorthand]
+	_, found := bc.sellerDisabled[trader.info.Shorthand]
 	if !found {
-		bc.sellerDisabled[shorthand] = true
+		bc.sellerDisabled[trader.info.Shorthand] = true
 	}
 
 	// Register
-	bc.scrapers[shorthand] = trader
+	bc.scrapers[trader.info.Shorthand] = trader
 }
 
 // Load inventory and buylist content for each scraper registered in the client
