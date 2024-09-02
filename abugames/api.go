@@ -1,7 +1,9 @@
 package abugames
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -134,4 +136,77 @@ func (abu *ABUClient) GetProduct(pageStart int) (*ABUProduct, error) {
 	u.RawQuery = q.Encode()
 
 	return abu.sendRequest(u.String())
+}
+
+type CartRequest struct {
+	ItemId   string `json:"item_id"`
+	Quantity int    `json:"quantity"`
+	// Ignored on buylist
+	Call string `json:"call,omitempty"`
+}
+
+type CartResponse struct {
+	BuyList string `json:"buyList"`
+	NqData  struct {
+		Maxqty int `json:"maxqty"`
+	} `json:"nqData"`
+	ConditionRowID int `json:"condition_row_id"`
+	Resp           struct {
+		Exception any   `json:"exception"`
+		Headers   []any `json:"headers"`
+		Original  any   `json:"original"`
+	} `json:"resp"`
+
+	Message    string `json:"message"`
+	Code       string `json:"code"`
+	StatusCode int    `json:"status_code"`
+}
+
+const (
+	abuInventoryAddURL = "https://api.abugames.com/cart/item"
+	abuBuylistAddURL   = "https://api.abugames.com/buy-list-cart/item"
+)
+
+func (abu *ABUClient) SetCartInventory(abuId string, qty int) (*CartResponse, error) {
+	return abu.setCart(abuInventoryAddURL, abuId, qty)
+}
+
+func (abu *ABUClient) SetCartBuylist(abuId string, qty int) (*CartResponse, error) {
+	return abu.setCart(abuBuylistAddURL, abuId, qty)
+}
+
+func (abu *ABUClient) setCart(link, abuId string, qty int) (*CartResponse, error) {
+	payload := CartRequest{
+		ItemId:   abuId,
+		Quantity: qty,
+		Call:     "add",
+	}
+
+	reqBody, err := json.Marshal(&payload)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := abu.Post(link, "application/json", bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response CartResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response.Message) > 0 {
+		return nil, errors.New(response.Message)
+	}
+
+	return &response, nil
 }
