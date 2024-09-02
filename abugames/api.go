@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type ABUCard struct {
@@ -56,8 +57,9 @@ type ABUClient struct {
 
 func NewABUClient() *ABUClient {
 	abu := ABUClient{}
-	abu.client = http.NewClient()
-	abu.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	abu.client = client.StandardClient()
 	return &abu
 }
 
