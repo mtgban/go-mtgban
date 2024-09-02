@@ -83,6 +83,20 @@ func (abu *ABUClient) Get(url string) (*http.Response, error) {
 	return abu.client.Do(req)
 }
 
+func (abu *ABUClient) Post(url, contentType string, reader io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPost, url, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	if abu.authorization != "" {
+		req.Header.Add("Authorization", "Bearer "+abu.authorization)
+	}
+
+	return abu.client.Do(req)
+}
+
 func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 	resp, err := abu.client.Get(url)
 	if err != nil {
