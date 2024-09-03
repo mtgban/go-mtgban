@@ -485,6 +485,7 @@ func (ap AllPrintings) Load() cardBackend {
 				card.FlavorText = missingPELPtags[card.Number]
 			// Remove frame effects and borders where they don't belong
 			case "STA", "PLST":
+				card.PromoTypes = nil
 				card.FrameEffects = nil
 				card.BorderColor = "black"
 			case "SLD":
