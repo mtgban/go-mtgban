@@ -211,7 +211,8 @@ func Match(inCard *InputCard) (cardId string, err error) {
 
 	switch inCard.Name {
 	case "Red Herring",
-		"Pick Your Poison":
+		"Pick Your Poison",
+		"Glimpse, the Unthinkable":
 		if inCard.isMysteryList() {
 			inCard.Name += " Playtest"
 		}
