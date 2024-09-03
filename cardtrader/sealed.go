@@ -94,11 +94,11 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 			}
 
 			// Assign a seller name as required by Market
-			sellerName := availableMarketNamesSealed[0]
+			sellerName := availableMarketNames[0]
 			if product.User.SealedZero {
-				sellerName = availableMarketNamesSealed[1]
+				sellerName = availableMarketNames[1]
 				if strings.Contains(strings.ToLower(product.User.Name), "day ready") {
-					sellerName = availableMarketNamesSealed[2]
+					sellerName = availableMarketNames[2]
 				}
 			}
 
@@ -229,18 +229,20 @@ func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
 	return ct.inventory, nil
 }
 
-var availableMarketNamesSealed = []string{
-	"Card Trader Sealed", "Card Trader Zero Sealed", "Card Trader 1DR Sealed",
+func (tcg *CardtraderSealed) MarketNames() []string {
+	return availableMarketNames
 }
 
-func (tcg *CardtraderSealed) MarketNames() []string {
-	return availableMarketNamesSealed
+var name2shorthandSealed = map[string]string{
+	"Card Trader":      "CTSealed",
+	"Card Trader Zero": "CT0Sealed",
+	"Card Trader 1DR":  "CT1DRSealed",
 }
 
 func (ct *CardtraderSealed) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ct.Info()
 	info.Name = name
-	info.Shorthand = name2shorthand[name]
+	info.Shorthand = name2shorthandSealed[name]
 	return info
 }
 

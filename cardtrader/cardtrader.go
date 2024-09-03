@@ -46,10 +46,6 @@ var name2shorthand = map[string]string{
 	"Card Trader":      "CT",
 	"Card Trader Zero": "CT0",
 	"Card Trader 1DR":  "CT1DR",
-
-	"Card Trader Sealed":      "CTSealed",
-	"Card Trader Zero Sealed": "CT0Sealed",
-	"Card Trader 1DR Sealed":  "CT1DRSealed",
 }
 
 func NewScraperMarket(gameId int, token string) (*CardtraderMarket, error) {
