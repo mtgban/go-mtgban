@@ -236,6 +236,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 	case strings.Contains(fullName, "Artist Signed"),
 		strings.Contains(fullName, "Somber Hoverguard Misprint"),
 		strings.Contains(fullName, "Double Sided Token"),
+		strings.Contains(fullName, "Checklist"),
 		strings.Contains(fullName, "Manifest Overlay"),
 		strings.Contains(fullName, "Spindown Life Counter"),
 		strings.Contains(fullName, "Test Misprint Filler"):
