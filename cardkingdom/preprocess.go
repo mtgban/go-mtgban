@@ -92,6 +92,10 @@ var skuFixupTable = map[string]string{
 
 	// Greated Good
 	"SLD-1693-IT": "SLD-1693",
+
+	// Flusterstorm BaB
+	"MH1-255P":  "MH1-255",
+	"PMH3-0496": "MH3-496",
 }
 
 // List of tags that need to be preserved in one way or another
