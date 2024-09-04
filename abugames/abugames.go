@@ -61,13 +61,13 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 	var duplicates []string
 
 	for _, group := range product.Grouped.ProductId.Groups {
-		for i, card := range group.Doclist.Cards {
+		for i, doc := range group.Doclist.Docs {
 			// Deprecated value
-			if card.Condition == "SP" {
+			if doc.Condition == "SP" {
 				continue
 			}
 
-			cond := card.Condition
+			cond := doc.Condition
 			switch cond {
 			case "MINT":
 				continue
@@ -82,12 +82,12 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				continue
 			}
 
-			if slices.Contains(duplicates, card.Id) {
-				abu.printf("Skipping duplicate card: %s (%s)", card.DisplayTitle, card.Edition)
+			if slices.Contains(duplicates, doc.Id) {
+				abu.printf("Skipping duplicate card: %s (%s)", doc.DisplayTitle, doc.Edition)
 				continue
 			}
 
-			theCard, err := preprocess(&card)
+			theCard, err := preprocess(&doc)
 			if err != nil {
 				continue
 			}
@@ -108,7 +108,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 					continue
 				}
 				abu.printf("%v", theCard)
-				abu.printf("%v", card)
+				abu.printf("%v", doc)
 				abu.printf("%v", err)
 
 				var alias *mtgmatcher.AliasingError
@@ -124,7 +124,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 			// Sanity check, a bunch of EA cards are market as foil when they
 			// actually don't have a foil printing, just skip them
-			if strings.Contains(card.DisplayTitle, "(Extended Art) - FOIL") {
+			if strings.Contains(doc.DisplayTitle, "(Extended Art) - FOIL") {
 				co, err := mtgmatcher.GetUUID(cardId)
 				if err != nil {
 					continue
@@ -139,7 +139,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			var tradeEntry *mtgban.BuylistEntry
 
 			// For URL genration searchQuery needs to be in plaintext, not URL-encoded
-			searchQuery := "&search=" + card.SimpleTitle
+			searchQuery := "&search=" + doc.SimpleTitle
 
 			u, err := url.Parse("https://abugames.com")
 			if err != nil {
@@ -147,56 +147,56 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 			}
 
 			v := url.Values{}
-			v.Set("magic_edition", "[\""+card.Edition+"\"]")
+			v.Set("magic_edition", "[\""+doc.Edition+"\"]")
 			v.Set("card_style", "[\"Normal\"]")
 			if theCard.Foil {
 				v.Set("card_style", "[\"Foil\"]")
 			}
 			u.RawQuery = v.Encode()
 
-			if card.SellQuantity > 0 && card.SellPrice > 0 {
+			if doc.SellQuantity > 0 && doc.SellPrice > 0 {
 				u.Path = "/magic-the-gathering/singles"
 
 				invEntry = &mtgban.InventoryEntry{
 					Conditions: cond,
-					Price:      card.SellPrice,
-					Quantity:   card.SellQuantity,
+					Price:      doc.SellPrice,
+					Quantity:   doc.SellQuantity,
 					URL:        u.String() + searchQuery,
 					OriginalId: group.GroupValue,
-					InstanceId: card.Id,
+					InstanceId: doc.Id,
 				}
 			}
 
-			if card.BuyQuantity > 0 && card.BuyPrice > 0 {
+			if doc.BuyQuantity > 0 && doc.BuyPrice > 0 {
 				var priceRatio float64
-				if card.SellPrice > 0 {
-					priceRatio = card.BuyPrice / card.SellPrice * 100
+				if doc.SellPrice > 0 {
+					priceRatio = doc.BuyPrice / doc.SellPrice * 100
 				}
 
 				u.Path = "/buylist/magic-the-gathering/singles"
 
 				buyEntry = &mtgban.BuylistEntry{
 					Conditions: cond,
-					BuyPrice:   card.BuyPrice,
-					Quantity:   card.BuyQuantity,
+					BuyPrice:   doc.BuyPrice,
+					Quantity:   doc.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
 					OriginalId: group.GroupValue,
-					InstanceId: card.Id,
+					InstanceId: doc.Id,
 					VendorName: availableTraderNames[0],
 				}
 
-				if card.SellPrice > 0 {
-					priceRatio = card.TradePrice / card.SellPrice * 100
+				if doc.SellPrice > 0 {
+					priceRatio = doc.TradePrice / doc.SellPrice * 100
 				}
 				tradeEntry = &mtgban.BuylistEntry{
 					Conditions: cond,
-					BuyPrice:   card.TradePrice,
-					Quantity:   card.BuyQuantity,
+					BuyPrice:   doc.TradePrice,
+					Quantity:   doc.BuyQuantity,
 					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
 					OriginalId: group.GroupValue,
-					InstanceId: card.Id,
+					InstanceId: doc.Id,
 					VendorName: availableTraderNames[1],
 				}
 			}
@@ -211,7 +211,7 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 			}
 
-			duplicates = append(duplicates, card.Id)
+			duplicates = append(duplicates, doc.Id)
 		}
 	}
 

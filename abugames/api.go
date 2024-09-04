@@ -40,7 +40,7 @@ type ABUProduct struct {
 			Groups []struct {
 				GroupValue string `json:"groupValue"`
 				Doclist    struct {
-					Cards []ABUCard `json:"docs"`
+					Docs []ABUCard `json:"docs"`
 				} `json:"doclist"`
 			} `json:"groups"`
 		} `json:"product_id"`
