@@ -146,16 +146,16 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				return err
 			}
 
+			v := url.Values{}
+			v.Set("magic_edition", "[\""+card.Edition+"\"]")
+			v.Set("card_style", "[\"Normal\"]")
+			if theCard.Foil {
+				v.Set("card_style", "[\"Foil\"]")
+			}
+			u.RawQuery = v.Encode()
+
 			if card.SellQuantity > 0 && card.SellPrice > 0 {
 				u.Path = "/magic-the-gathering/singles"
-
-				v := url.Values{}
-				v.Set("magic_edition", "[\""+card.Edition+"\"]")
-				v.Set("card_style", "[\"Normal\"]")
-				if theCard.Foil {
-					v.Set("card_style", "[\"Foil\"]")
-				}
-				u.RawQuery = v.Encode()
 
 				invEntry = &mtgban.InventoryEntry{
 					Conditions: cond,
@@ -174,14 +174,6 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				}
 
 				u.Path = "/buylist/magic-the-gathering/singles"
-
-				v := url.Values{}
-				v.Set("magic_edition", "[\""+card.Edition+"\"]")
-				v.Set("card_style", "[\"Normal\"]")
-				if theCard.Foil {
-					v.Set("card_style", "[\"Foil\"]")
-				}
-				u.RawQuery = v.Encode()
 
 				buyEntry = &mtgban.BuylistEntry{
 					Conditions: cond,
