@@ -220,12 +220,10 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 // Scrape returns an array of Entry, containing pricing and card information
 func (abu *ABUGames) scrape() error {
-	product, err := abu.client.GetInfo()
+	count, err := abu.client.GetTotalItems()
 	if err != nil {
 		return err
 	}
-
-	count := product.Grouped.ProductId.Count
 	abu.printf("Parsing %d entries", count)
 
 	pages := make(chan int)

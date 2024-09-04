@@ -120,8 +120,13 @@ func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 	return &product, nil
 }
 
-func (abu *ABUClient) GetInfo() (*ABUProduct, error) {
-	return abu.sendRequest(abuBaseUrl)
+// Use the URL as is, with just one row requested to fetch the number of items
+func (abu *ABUClient) GetTotalItems() (int, error) {
+	product, err := abu.sendRequest(abuBaseUrl)
+	if err != nil {
+		return 0, err
+	}
+	return product.Grouped.ProductId.Count, nil
 }
 
 func (abu *ABUClient) GetProduct(pageStart int) (*ABUProduct, error) {
