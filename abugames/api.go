@@ -47,10 +47,21 @@ type ABUProduct struct {
 	} `json:"grouped"`
 }
 
+type ABUResponse struct {
+	Response struct {
+		NumFound      int       `json:"numFound"`
+		Start         int       `json:"start"`
+		NumFoundExact bool      `json:"numFoundExact"`
+		Docs          []ABUCard `json:"docs"`
+	} `json:"response"`
+}
+
 const (
 	maxEntryPerRequest = 200
 
 	abuBaseUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%20-buy_price%3A0%20-buy_list_quantity%3A0%20%2Blanguage%3A(%22English%22%2C%20%22Italian%22%2C%20%22Japanese%22)%20%2Bdisplay_title%3A*&group=true&group.field=product_id&group.ngroups=true&group.limit=10&start=0&rows=0&wt=json`
+
+	abuBaseSealedUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
 )
 
 type ABUClient struct {
@@ -120,6 +131,27 @@ func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 	return &product, nil
 }
 
+func (abu *ABUClient) sendSealedRequest(url string) (*ABUResponse, error) {
+	resp, err := abu.client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var reponse ABUResponse
+	err = json.Unmarshal(data, &reponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &reponse, nil
+}
+
 // Use the URL as is, with just one row requested to fetch the number of items
 func (abu *ABUClient) GetTotalItems() (int, error) {
 	product, err := abu.sendRequest(abuBaseUrl)
@@ -127,6 +159,14 @@ func (abu *ABUClient) GetTotalItems() (int, error) {
 		return 0, err
 	}
 	return product.Grouped.ProductId.Count, nil
+}
+
+func (abu *ABUClient) GetTotalSealedItems() (int, error) {
+	response, err := abu.sendSealedRequest(abuBaseSealedUrl)
+	if err != nil {
+		return 0, err
+	}
+	return response.Response.NumFound, nil
 }
 
 func (abu *ABUClient) GetProduct(pageStart int) (*ABUProduct, error) {
@@ -141,6 +181,20 @@ func (abu *ABUClient) GetProduct(pageStart int) (*ABUProduct, error) {
 	u.RawQuery = q.Encode()
 
 	return abu.sendRequest(u.String())
+}
+
+func (abu *ABUClient) GetSealedProduct(pageStart int) (*ABUResponse, error) {
+	u, err := url.Parse(abuBaseSealedUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	q := u.Query()
+	q.Set("rows", fmt.Sprintf("%d", maxEntryPerRequest))
+	q.Set("start", fmt.Sprintf("%d", pageStart))
+	u.RawQuery = q.Encode()
+
+	return abu.sendSealedRequest(u.String())
 }
 
 type CartRequest struct {
