@@ -310,16 +310,6 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_directnet": {
-		Init: func() (mtgban.Scraper, error) {
-			banKey := os.Getenv("BAN_API_KEY")
-			if banKey == "" {
-				return nil, errors.New("missing BAN_API_KEY env var")
-			}
-			scraper := tcgplayer.NewTCGDirectNet(banKey)
-			return scraper, nil
-		},
-	},
 	"tcg_index": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")

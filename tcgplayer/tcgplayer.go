@@ -17,6 +17,7 @@ import (
 type TCGPlayerMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
+	buylistDate    time.Time
 	Affiliate      string
 	MaxConcurrency int
 
@@ -25,6 +26,7 @@ type TCGPlayerMarket struct {
 	SKUsData map[string][]mtgjson.TCGSku
 
 	inventory mtgban.InventoryRecord
+	buylist   mtgban.BuylistRecord
 
 	client *tcgplayer.Client
 }
@@ -42,7 +44,7 @@ type marketChan struct {
 type responseChan struct {
 	cardId string
 	entry  mtgban.InventoryEntry
-	bl     mtgban.BuylistEntry
+	bl     *mtgban.BuylistEntry
 }
 
 const (
@@ -61,6 +63,7 @@ var name2shorthand = map[string]string{
 	"TCG Direct Low":   "TCGDirectLow",
 	"TCG Player":       "TCGPlayer",
 	"TCG Direct":       "TCGDirect",
+	"TCG Direct (net)": "TCGDirectNet",
 	"TCGplayer":        "TCGPlayer",
 	"TCGplayer Direct": "TCGDirect",
 }
@@ -82,6 +85,7 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
 func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
 	tcg := TCGPlayerMarket{}
 	tcg.inventory = mtgban.InventoryRecord{}
+	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg
@@ -158,6 +162,20 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 					OriginalId: fmt.Sprint(req.ProductId),
 					InstanceId: fmt.Sprint(result.SkuId),
 				},
+			}
+
+			if isDirect {
+				price := DirectPriceAfterFees(prices[i])
+				if price > 0 {
+					out.bl = &mtgban.BuylistEntry{
+						Conditions: cond,
+						BuyPrice:   price,
+						URL:        link,
+						VendorName: "TCG Direct (net)",
+						OriginalId: fmt.Sprint(req.ProductId),
+						InstanceId: fmt.Sprint(result.SkuId),
+					}
+				}
 			}
 
 			channel <- out
@@ -304,10 +322,16 @@ func (tcg *TCGPlayerMarket) scrape() error {
 		err := tcg.inventory.AddStrict(result.cardId, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
-			continue
+		}
+		if result.bl != nil {
+			err := tcg.buylist.Add(result.cardId, result.bl)
+			if err != nil {
+				tcg.printf("%s", err.Error())
+			}
 		}
 	}
 	tcg.inventoryDate = time.Now()
+	tcg.buylistDate = time.Now()
 
 	tcg.printf("Took %v", time.Since(start))
 
@@ -327,8 +351,25 @@ func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
 	return tcg.inventory, nil
 }
 
+func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
+	if len(tcg.buylist) > 0 {
+		return tcg.buylist, nil
+	}
+
+	err := tcg.scrape()
+	if err != nil {
+		return nil, err
+	}
+
+	return tcg.buylist, nil
+}
+
 func (tcg *TCGPlayerMarket) MarketNames() []string {
 	return availableMarketNames
+}
+
+func (tcg *TCGPlayerMarket) TraderNames() []string {
+	return []string{"TCG Direct (net)"}
 }
 
 func (tcg *TCGPlayerMarket) InfoForScraper(name string) mtgban.ScraperInfo {
@@ -342,6 +383,7 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Market"
 	info.Shorthand = "TCGMkt"
 	info.InventoryTimestamp = &tcg.inventoryDate
+	info.BuylistTimestamp = &tcg.buylistDate
 	info.NoQuantityInventory = true
 	return
 }
