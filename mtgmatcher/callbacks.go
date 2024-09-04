@@ -341,9 +341,14 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 	switch inCard.Name {
 	case "Phantom Centaur":
 		return misprintCheck(inCard, card)
-	case "Laboratory Maniac":
-		// Only card with same number, so the chunk below trips the check
+	// Cards with same numeric part need special treatment because the chunk below trips the later check
+	case "Laboratory Maniac",
+		"Bad Moon",
+		"Strangleroot Geist":
 		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
+			return true
+		}
+		if inCard.Name == "Strangleroot Geist" && inCard.Contains("P"+code) {
 			return true
 		}
 	default:

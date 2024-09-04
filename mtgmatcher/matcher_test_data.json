@@ -3257,6 +3257,24 @@
         }
     },
     {
+        "uuid": "f3f73551-7892-5527-a2d6-0534974eecde",
+        "description": "mb1list_samenumericportion_but_conflicting",
+        "input": {
+            "name": "Strangleroot Geist",
+            "variant": "DKA-127",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "6005537d-54e2-505b-8742-510eb35b5603",
+        "description": "mb1list_samenumericportion_but_conflicting_P",
+        "input": {
+            "name": "Strangleroot Geist",
+            "variant": "PDKA-127",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
         "uuid": "89d7f595-d549-526a-ba83-6f976f6c542c",
         "description": "misprints_prerelease_with_multiple_misprints_dark",
         "input": {
