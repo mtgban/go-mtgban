@@ -403,20 +403,14 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			}
 			switch {
 			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
-				switch inCard.Name {
-				case "Lightning Bolt":
-					if !inCard.Contains("Fest") {
-						continue
-					}
+				if len(MatchInSet(inCard.Name, "SLP")) > 0 && !inCard.Contains("Fest") {
+					continue
 				}
 			case set.Code == "PLG21":
 			case set.Code == "PEWK":
 			case set.Code == "SLP":
-				switch inCard.Name {
-				case "Lightning Bolt":
-					if !inCard.Contains("Secret") {
-						continue
-					}
+				if len(MatchInSet(inCard.Name, "PF19")) > 0 && !inCard.Contains("Secret") {
+					continue
 				}
 			default:
 				continue
