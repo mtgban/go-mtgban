@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultConcurrency = 8
+	defaultConcurrency = 4
 )
 
 type ABUGames struct {
