@@ -59,7 +59,7 @@ type ABUResponse struct {
 const (
 	maxEntryPerRequest = 200
 
-	abuBaseUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%20-buy_price%3A0%20-buy_list_quantity%3A0%20%2Blanguage%3A(%22English%22%2C%20%22Italian%22%2C%20%22Japanese%22)%20%2Bdisplay_title%3A*&group=true&group.field=product_id&group.ngroups=true&group.limit=10&start=0&rows=0&wt=json`
+	abuBaseUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.ngroups=true&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20-magic_features%3A(%22Actual%20Picture%20Card%22)`
 
 	abuBaseSealedUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
 )
