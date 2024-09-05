@@ -1855,6 +1855,8 @@ var femVariants = map[string]map[string]string{
 		"guy with shield on horse":      "16b",
 		"bryon wackwitz female knight":  "16a",
 		"bryon wackwitz male knight":    "16b",
+		"bryon wackwitz flag":           "16a",
+		"bryon wackwitz shield":         "16b",
 
 		"female": "16a",
 		"male":   "16b",
@@ -3089,6 +3091,11 @@ var rinVariants = map[string]map[string]string{
 
 		"sphere": "176",
 
+		"b mouth":      "175",
+		"a bathyscape": "176",
+		"c pulley":     "177",
+		"d tower":      "178",
+
 		"v.2": "175",
 		"v.1": "176",
 		"v.3": "177",
@@ -3111,6 +3118,11 @@ var rinVariants = map[string]map[string]string{
 		"bug":         "182",
 
 		"pot": "179",
+
+		"d vat":    "179",
+		"b pillar": "180",
+		"c sphere": "181",
+		"a bug":    "182",
 
 		"v.3": "179",
 		"v.2": "180",
@@ -3136,6 +3148,11 @@ var rinVariants = map[string]map[string]string{
 		"shore":     "186",
 
 		"mountain": "185",
+
+		"a forest":    "183",
+		"c plains":    "184",
+		"b mountains": "185",
+		"d seashore":  "186",
 
 		"v.1": "183",
 		"v.3": "184",

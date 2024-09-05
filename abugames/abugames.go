@@ -104,6 +104,8 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				// There are a bunch of non-existing prerelease cards from mh2
 				// and promo pack DFC from lci (among others)
 				if strings.Contains(theCard.Variation, "Prerelease") ||
+					strings.Contains(theCard.Variation, "The List") ||
+					strings.Contains(theCard.Variation, "Mystery Booster") ||
 					strings.Contains(theCard.Variation, "Promo Pack") {
 					continue
 				}

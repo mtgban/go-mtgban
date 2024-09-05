@@ -24,6 +24,7 @@ var cardTable = map[string]string{
 	"Simic Signat":                        "Simic Signet",
 	"Specmen 73":                          "Specimen 73",
 	"Zilortha, Strength Incarnated":       "Zilortha, Strength Incarnate",
+	"Makindi Siderunner":                  "Makindi Sliderunner",
 
 	"Godzilla, King of the Monsters / Zilortha, Strength Incarnate": "Zilortha, Strength Incarnate",
 
@@ -221,11 +222,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			edition = "PRNA"
 			variation = "189"
 		}
-		if strings.Contains(variation, "Scandanavia") {
-			variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
-		} else if strings.Contains(variation, "Phillippines") {
-			variation = strings.Replace(variation, "Phillippines", "Philippines", 1)
-		} else if strings.Contains(variation, "Secret") || strings.Contains(variation, "Lair") {
+		if strings.Contains(variation, "Secret") || strings.Contains(variation, "Lair") {
 			num := mtgmatcher.ExtractNumber(variation)
 			if num != "" {
 				variation = num
@@ -240,8 +237,12 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			variation = strings.Replace(variation, "FNM", "", 1)
 		} else if card.Layout == "Planar" {
 			edition = "Planechase Promos"
+		} else if variation == "Preview" {
+			if len(mtgmatcher.MatchInSet(cardName, "MGB")) > 0 {
+				edition = "MGB"
+			}
 		}
-	case "Secret Lair":
+	case "Secret Lair", "Secret Lair Drop":
 		edition = "Secret Lair Drop"
 		if len(mtgmatcher.MatchInSetNumber(cardName, "SLC", card.Number)) > 0 {
 			edition = "SLC"
@@ -290,6 +291,25 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			cardName = "Spellbinding Soprano"
 			variation = "Promo Pack"
 		}
+	case "Fourth Edition Foreign Black Border":
+		variation = strings.TrimSuffix(variation, " Japanese")
+		variation = strings.TrimSuffix(variation, " BB")
+		variations := strings.Fields(variation)
+		if len(variations) > 1 && len(variations[0]) == 1 {
+			variation = strings.Join(variations[1:], " ")
+		}
+	case "Fallen Empires":
+		variations := strings.Fields(variation)
+		if len(variations) > 1 && len(variations[0]) == 1 {
+			variation = strings.Join(variations[1:], " ")
+		}
+	}
+
+	// Either Promo or "European Land Program"
+	if strings.Contains(variation, "Scandanavia") {
+		variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
+	} else if strings.Contains(variation, "Phillippines") {
+		variation = strings.Replace(variation, "Phillippines", "Philippines", 1)
 	}
 
 	name, found := cardTable[cardName]
