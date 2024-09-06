@@ -835,22 +835,32 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			}
 		case "Fellwar Stone":
 			if ogVariant == "V.2" {
-				variant = "708 etched"
+				variant += " etched"
 			}
+		}
+
+	case "Secret Lair Drop Series: October Superdrop 2021",
+		"Secret Lair Drop Series: June Superdrop 2022",
+		"Secret Lair Drop Series: August Superdrop 2022":
+		variant = number
+		edition = "SLD"
+		if ogVariant == "V.2" {
+			variant += " etched"
 		}
 
 	// Some cards from PLST overflow here
 	case "Secret Lair Drop Series: Secretversary 2021":
 		variant = number
-		switch {
-		case mtgmatcher.IsBasicLand(cardName):
-			edition = "SLD"
+		edition = "SLD"
+		if ogVariant == "V.2" {
+			variant += " etched"
+		}
+
+		switch cardName {
+		case "Okaun, Eye of Chaos",
+			"Zndrsplt, Eye of Wisdom":
 			if ogVariant == "V.2" {
-				variant += " etched"
-			}
-		case cardName == "Okaun, Eye of Chaos", cardName == "Zndrsplt, Eye of Wisdom":
-			if ogVariant == "V.2" {
-				variant += " display"
+				variant = number + " display"
 			}
 		default:
 			for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
@@ -869,8 +879,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			edition = "PLST"
 		}
 
-	case "Modern Horizons 2",
-		"Secret Lair Drop Series: June Superdrop 2022":
+	case "Modern Horizons 2":
 		switch variant {
 		case "V.1":
 			variant = number
