@@ -101,24 +101,23 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 		// If TCG Direct (net) is fully missing, try assigning Market and fallback to Low
 		if directNet == 0 {
 			// If both fallbacks are missing, then just skip the entry entirely
-			if response.Retail[uuid]["TCG Market"] == nil && response.Retail[uuid]["TCG Low"] == nil {
+			if tcgMarket == 0 && tcgLow == 0 {
 				continue
 			}
+
 			// Allocate memory
 			if response.Buylist[uuid] == nil {
 				response.Buylist[uuid] = map[string]*BanPrice{}
 			}
-			// Assign Market price
-			response.Buylist[uuid]["TCGDirectNet"] = response.Retail[uuid]["TCG Market"]
 
-			// If Market is absent, use the Low
-			if tcgMarket == 0 {
-				tcgMarket = getRetail(response, "TCG Low", uuid)
-				response.Buylist[uuid]["TCGDirectNet"] = response.Retail[uuid]["TCG Low"]
+			// Use Market as base estimate, or Low as fallback
+			directNet = tcgMarket
+			if directNet == 0 {
+				directNet = tcgLow
 			}
 
-			// Refresh the price
-			directNet = getBuylist(response, "TCGDirectNet", uuid)
+			// Set the price
+			setBuylist(response, "TCGDirectNet", uuid, directNet)
 		}
 
 		// If Direct looks unreliable, cap maximum price (estimate) or delete it
