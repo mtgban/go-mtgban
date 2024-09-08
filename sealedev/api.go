@@ -32,7 +32,7 @@ type BANPriceResponse struct {
 }
 
 const (
-	BANAPIURL = "https://www.mtgban.com/api/mtgban/all.json?sig="
+	BANAPIURL = "https://www.mtgban.com/api/mtgban/all.json?tag=tags&sig="
 
 	BulkThreshold = 0.3
 )
@@ -95,8 +95,8 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 	// Remove outliers from Direct
 	uuids := mtgmatcher.GetUUIDs()
 	for _, uuid := range uuids {
-		tcgLow := getRetail(response, "TCG Low", uuid)
-		tcgMarket := getRetail(response, "TCG Market", uuid)
+		tcgLow := getRetail(response, "TCGLow", uuid)
+		tcgMarket := getRetail(response, "TCGMarket", uuid)
 		directNet := getBuylist(response, "TCGDirectNet", uuid)
 
 		// If TCG Direct (net) is fully missing, try assigning Market and fallback to Low

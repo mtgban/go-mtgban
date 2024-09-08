@@ -67,7 +67,7 @@ var evParameters = []evConfig{
 	{
 		Name:       "TCG Low EV",
 		Shorthand:  "TCGLowEV",
-		SourceName: "TCG Low",
+		SourceName: "TCGLow",
 	},
 	{
 		Name:      "TCG Low Sim Median",
@@ -75,7 +75,7 @@ var evParameters = []evConfig{
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
 		},
-		SourceName: "TCG Low",
+		SourceName: "TCGLow",
 		Simulation: true,
 	},
 	{
@@ -84,7 +84,7 @@ var evParameters = []evConfig{
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.StandardDeviation(values)
 		},
-		SourceName: "TCG Low",
+		SourceName: "TCGLow",
 		Simulation: true,
 	},
 
@@ -120,7 +120,7 @@ var evParameters = []evConfig{
 	{
 		Name:       "CT Zero EV",
 		Shorthand:  "CTZeroEV",
-		SourceName: "Card Trader Zero",
+		SourceName: "CT0",
 	},
 	{
 		Name:      "CT Zero Sim Median",
@@ -128,7 +128,7 @@ var evParameters = []evConfig{
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
 		},
-		SourceName: "Card Trader Zero",
+		SourceName: "CT0",
 		Simulation: true,
 	},
 	{
@@ -137,7 +137,7 @@ var evParameters = []evConfig{
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.StandardDeviation(values)
 		},
-		SourceName: "Card Trader Zero",
+		SourceName: "CT0",
 		Simulation: true,
 	},
 }
