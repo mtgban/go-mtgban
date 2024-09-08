@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
 type BanPrice struct {
@@ -116,6 +117,9 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 				directNet = tcgLow
 			}
 
+			// Adjust estimate for fees
+			directNet = tcgplayer.DirectPriceAfterFees(directNet)
+
 			// Set the price
 			setBuylist(response, "TCGDirectNet", uuid, directNet)
 		}
@@ -125,7 +129,10 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 			if tcgLow == 0 {
 				delete(response.Buylist[uuid], "TCGDirectNet")
 			} else {
-				setBuylist(response, "TCGDirectNet", uuid, tcgLow*2)
+				directNet = tcgLow * 2
+				directNet = tcgplayer.DirectPriceAfterFees(directNet)
+
+				setBuylist(response, "TCGDirectNet", uuid, directNet)
 			}
 		}
 	}
