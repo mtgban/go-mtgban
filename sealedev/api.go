@@ -52,6 +52,23 @@ func getBuylist(response BANPriceResponse, source, uuid string) float64 {
 	return price.Regular + price.Foil + price.Etched
 }
 
+func setBuylist(response BANPriceResponse, destination, uuid string, price float64) {
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil {
+		return
+	}
+	if response.Buylist[uuid][destination] == nil {
+		response.Buylist[uuid][destination] = &BanPrice{}
+	}
+	if co.Etched {
+		response.Buylist[uuid][destination].Etched = price
+	} else if co.Foil {
+		response.Buylist[uuid][destination].Regular = price
+	} else {
+		response.Buylist[uuid][destination].Foil = price
+	}
+}
+
 func loadPrices(sig string) (*BANPriceResponse, error) {
 	resp, err := cleanhttp.DefaultClient().Get(BANAPIURL + sig)
 	if err != nil {
@@ -77,6 +94,7 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 	// Remove outliers from Direct
 	uuids := mtgmatcher.GetUUIDs()
 	for _, uuid := range uuids {
+		tcgLow := getRetail(response, "TCG Low", uuid)
 		tcgMarket := getRetail(response, "TCG Market", uuid)
 		directNet := getBuylist(response, "TCGDirectNet", uuid)
 
@@ -105,13 +123,10 @@ func loadPrices(sig string) (*BANPriceResponse, error) {
 
 		// If Direct looks unreliable, cap maximum price (estimate) or delete it
 		if directNet/2 > tcgMarket {
-			estimate, found := response.Retail[uuid]["TCG Low"]
-			if !found {
+			if tcgLow == 0 {
 				delete(response.Buylist[uuid], "TCGDirectNet")
 			} else {
-				response.Buylist[uuid]["TCGDirectNet"].Regular = estimate.Regular * 2
-				response.Buylist[uuid]["TCGDirectNet"].Foil = estimate.Foil * 2
-				response.Buylist[uuid]["TCGDirectNet"].Etched = estimate.Etched * 2
+				setBuylist(response, "TCGDirectNet", uuid, tcgLow*2)
 			}
 		}
 	}
