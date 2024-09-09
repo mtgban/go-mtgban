@@ -3,8 +3,6 @@ package mtgban
 import (
 	"encoding/json"
 	"errors"
-	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -12,50 +10,29 @@ import (
 
 type LogCallbackFunc func(format string, a ...interface{})
 
-const exchangeRateURL = "https://tassidicambio.bancaditalia.it/terzevalute-wf-web/rest/v1.0/latestRates?lang=en"
+const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json"
 
 func GetExchangeRate(currency string) (float64, error) {
-	req, err := http.NewRequest("GET", exchangeRateURL, nil)
-	if err != nil {
-		return 0, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := cleanhttp.DefaultClient().Get(exchangeRateURL)
 	if err != nil {
 		return 0, err
 	}
 	defer resp.Body.Close()
 
-	var reply struct {
-		LatestRates []struct {
-			ISOCode string `json:"isoCode"`
-			USDRate string `json:"usdRate"`
-		} `json:"latestRates"`
+	var response struct {
+		EUR map[string]float64 `json:"eur"`
 	}
-	err = json.NewDecoder(resp.Body).Decode(&reply)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return 0, err
 	}
 
-	for _, rate := range reply.LatestRates {
-		if rate.ISOCode != currency {
-			continue
-		}
-
-		rate, err := strconv.ParseFloat(rate.USDRate, 64)
-		if err != nil {
-			return 0, err
-		}
-		if rate == 0 {
-			return 0, errors.New("no exchange rate obtained")
-		}
-
-		return 1 / rate, nil
+	rate, found := response.EUR["usd"]
+	if !found {
+		return 0, errors.New("usd not found")
 	}
 
-	return 0, errors.New("input currency not found")
+	return rate, nil
 }
 
 func DateEqual(date1, date2 time.Time) bool {
