@@ -171,8 +171,8 @@ func (tnt *Trollandtoad) parsePages(link string, lastPage int) error {
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
 
-	for i := 1; i <= lastPage; i++ {
-		opts := fmt.Sprintf(tntOptions, i)
+	for i := 0; i < lastPage; i++ {
+		opts := fmt.Sprintf(tntOptions, i+1)
 		q.AddURL(link + opts)
 	}
 
