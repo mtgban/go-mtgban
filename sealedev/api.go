@@ -34,7 +34,7 @@ type BANPriceResponse struct {
 const (
 	BANAPIURL = "https://www.mtgban.com/api/mtgban/all.json?tag=tags&sig="
 
-	BulkThreshold = 0.3
+	BulkThreshold = 0.5
 )
 
 func getRetail(response BANPriceResponse, source, uuid string) float64 {
