@@ -457,7 +457,7 @@ func (ss *SealedEVScraper) scrape() error {
 
 		// Print errors if necessary
 		if len(messages) > 0 {
-			ss.printf("runEV error: %s", strings.Join(messages, " | "))
+			ss.printf("%s - runEV error: %s", co.Name, strings.Join(messages, " | "))
 		}
 
 		for _, result := range results {
