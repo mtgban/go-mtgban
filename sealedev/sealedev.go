@@ -32,6 +32,8 @@ type SealedEVScraper struct {
 	FastMode         bool
 	Affiliate        string
 	BuylistAffiliate string
+	TargetEdition    string
+	TargetProduct    string
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -391,23 +393,23 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 }
 
 func (ss *SealedEVScraper) scrape() error {
-	ss.printf("Loading BAN prices")
-	prices, err := loadPrices(ss.banpriceKey)
-	if err != nil {
-		return err
-	}
-	ss.printf("Retrieved %d+%d prices", len(prices.Retail), len(prices.Buylist))
-	ss.prices = prices
+	var selected string
 
+	ss.printf("Loading products")
 	sets := mtgmatcher.GetAllSets()
 	var uuids []string
 	for _, code := range sets {
 		set, _ := mtgmatcher.GetSet(code)
 
-		// Skip products without Sealed or Booster information
 		switch set.Code {
+		// Skip products without Sealed or Booster information
 		case "FBB", "4BB", "DRKITA", "LEGITA", "RIN", "4EDALT", "BCHR":
 			continue
+		default:
+			// Skip filtered editions if set
+			if ss.TargetEdition != "" && set.Code != ss.TargetEdition && set.Name != ss.TargetEdition {
+				continue
+			}
 		}
 
 		for _, product := range set.SealedProduct {
@@ -415,10 +417,29 @@ func (ss *SealedEVScraper) scrape() error {
 			if product.Category == "land_station" {
 				continue
 			}
+
+			// Skip filtered products if set
+			if ss.TargetProduct != "" && product.Name != ss.TargetProduct && product.UUID != ss.TargetProduct {
+				continue
+			}
+
 			uuids = append(uuids, product.UUID)
+		}
+
+		// Keep track of what was selected to reduce price calls
+		if ss.TargetEdition != "" {
+			selected = "/" + set.Code
 		}
 	}
 	ss.printf("Found %d products over %d sets", len(uuids), len(sets))
+
+	ss.printf("Loading BAN prices")
+	prices, err := loadPrices(ss.banpriceKey, selected)
+	if err != nil {
+		return err
+	}
+	ss.printf("Retrieved %d+%d prices", len(prices.Retail), len(prices.Buylist))
+	ss.prices = prices
 
 	start := time.Now()
 

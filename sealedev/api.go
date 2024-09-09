@@ -32,7 +32,7 @@ type BANPriceResponse struct {
 }
 
 const (
-	BANAPIURL = "https://www.mtgban.com/api/mtgban/all.json?tag=tags&sig="
+	banAPIURL = "https://www.mtgban.com/api/mtgban/all%s.json?tag=tags&sig=%s"
 
 	BulkThreshold = 0.5
 )
@@ -70,8 +70,9 @@ func setBuylist(response BANPriceResponse, destination, uuid string, price float
 	}
 }
 
-func loadPrices(sig string) (*BANPriceResponse, error) {
-	resp, err := cleanhttp.DefaultClient().Get(BANAPIURL + sig)
+func loadPrices(sig, selected string) (*BANPriceResponse, error) {
+	link := fmt.Sprintf(banAPIURL, selected, sig)
+	resp, err := cleanhttp.DefaultClient().Get(link)
 	if err != nil {
 		return nil, err
 	}
