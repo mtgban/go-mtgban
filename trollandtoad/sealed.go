@@ -158,6 +158,8 @@ func (tnt *TrollandtoadSealed) parsePages(link string, lastPage int) error {
 		}
 	}
 
+	tnt.inventoryDate = time.Now()
+
 	return nil
 }
 
