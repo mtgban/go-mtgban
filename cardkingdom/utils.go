@@ -74,28 +74,19 @@ type CartResponse struct {
 		ShipDate                   string `json:"ship_date"`
 		IsShiny                    bool   `json:"is_shiny"`
 		DefaultImage               string `json:"default_image"`
-		Images                     []struct {
-			URI             string `json:"uri"`
-			ImgixURI        any    `json:"imgix_uri"`
-			IsDefault       bool   `json:"is_default"`
-			ImgixAttributes struct {
-				BlendMode string `json:"blend-mode"`
-				Blend     string `json:"blend"`
-			} `json:"imgix_attributes"`
-		} `json:"images"`
-		Name             string `json:"name"`
-		Price            string `json:"price"`
-		PriceAfterCoupon string `json:"price_after_coupon"`
-		OriginalPrice    string `json:"original_price"`
-		ProductID        int    `json:"product_id"`
-		Style            string `json:"style"`
-		Total            string `json:"total"`
-		Qty              int    `json:"qty"`
-		OriginalQuantity int    `json:"original_quantity"`
-		IsBuying         bool   `json:"is_buying"`
-		IsSelling        int    `json:"is_selling"`
-		IsTaxable        int    `json:"is_taxable"`
-		CouponDiscount   string `json:"coupon_discount"`
+		Name                       string `json:"name"`
+		Price                      string `json:"price"`
+		PriceAfterCoupon           string `json:"price_after_coupon"`
+		OriginalPrice              string `json:"original_price"`
+		ProductID                  int    `json:"product_id"`
+		Style                      string `json:"style"`
+		Total                      string `json:"total"`
+		Qty                        int    `json:"qty"`
+		OriginalQuantity           int    `json:"original_quantity"`
+		IsBuying                   bool   `json:"is_buying"`
+		IsSelling                  int    `json:"is_selling"`
+		IsTaxable                  int    `json:"is_taxable"`
+		CouponDiscount             string `json:"coupon_discount"`
 	} `json:"lineitems"`
 	PremiumOffer               string `json:"premium_offer"`
 	Status                     string `json:"status"`
