@@ -874,23 +874,25 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 						return nil, err
 					}
 					for _, uuid := range deckPicks {
-						probs = append(probs, ProductProbabilities{
-							UUID:        uuid,
-							Probability: 1,
-						})
-					}
+						// This set data cannot be represented in mtgjson data without
+						// breaking the output format, instead hack things here
+						if content.Set == "slc" {
+							probNF := ProductProbabilities{
+								UUID:        uuid,
+								Probability: 0.7,
+							}
+							probs = append(probs, probNF)
 
-					// This set data cannot be represented in mtgjson data without
-					// breaking the output format, instead hack things here
-					if content.Set == "slc" {
-						for i := 0; i < len(deckPicks)-1; i++ {
-							probs[i].Probability = 0.7
-						}
-						for i := 0; i < len(deckPicks)-1; i++ {
-							pick := probs[i]
-							pick.Probability = 0.3
-							pick.UUID += suffixFoil
-							probs = append(probs, pick)
+							probF := ProductProbabilities{
+								UUID:        uuid + suffixFoil,
+								Probability: 0.3,
+							}
+							probs = append(probs, probF)
+						} else {
+							probs = append(probs, ProductProbabilities{
+								UUID:        uuid,
+								Probability: 1,
+							})
 						}
 					}
 				case "variable":
