@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -115,6 +116,18 @@ type ArbitEntry struct {
 	// The higher the number the better the arbit is. Using this formula
 	// Profitability Index (PI) = (Difference / (Sell Price + 10)) * log(1 + Spread) * sqrt(Units)
 	Profitability float64
+}
+
+// ArbitEntry implements the Stringer interface
+func (ae ArbitEntry) String() string {
+	co, err := mtgmatcher.GetUUID(ae.CardId)
+	if err != nil {
+		return ""
+	}
+	if ae.BuylistEntry.BuyPrice != 0 {
+		return fmt.Sprintf("%s (%d): %f -> %f", co, ae.Quantity, ae.InventoryEntry.Price, ae.BuylistEntry.BuyPrice)
+	}
+	return fmt.Sprintf("%s (%d): %f ~ %f", co, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
 }
 
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, err error) {
