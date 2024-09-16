@@ -113,11 +113,11 @@ var SKUConditionMap = map[int]string{
 }
 
 type latestSalesRequest struct {
-	Variants    []string `json:"variants"`
-	Conditions  []string `json:"conditions"`
-	Languages   []string `json:"languages"`
-	ListingType string   `json:"listingType"`
-	Limit       int      `json:"limit"`
+	Variants    []int  `json:"variants"`
+	Conditions  []int  `json:"conditions"`
+	Languages   []int  `json:"languages"`
+	ListingType string `json:"listingType"`
+	Limit       int    `json:"limit"`
 }
 
 type latestSalesResponse struct {
@@ -155,9 +155,9 @@ func LatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, error
 
 	if len(foil) > 0 {
 		if foil[0] {
-			params.Variants = []string{"2", "133", "141"}
+			params.Variants = []int{2, 133, 141}
 		} else {
-			params.Variants = []string{"1", "132"}
+			params.Variants = []int{1, 132}
 		}
 	}
 
