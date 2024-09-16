@@ -407,7 +407,7 @@ func (ss *SealedEVScraper) scrape() error {
 			continue
 		default:
 			// Skip filtered editions if set
-			if ss.TargetEdition != "" && set.Code != ss.TargetEdition && set.Name != ss.TargetEdition {
+			if ss.TargetEdition != "" && strings.ToLower(set.Code) != strings.ToLower(ss.TargetEdition) && strings.ToLower(set.Name) != strings.ToLower(ss.TargetEdition) {
 				continue
 			}
 		}
