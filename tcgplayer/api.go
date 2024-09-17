@@ -146,19 +146,26 @@ const (
 	defaultLimitLastestSales      = 25
 )
 
-func LatestSales(tcgProductId string, foil ...bool) (*latestSalesResponse, error) {
+func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, error) {
 	link := fmt.Sprintf(tcgLatestSalesURL, tcgProductId)
 
 	var params latestSalesRequest
 	params.ListingType = defaultListingTypeLatestSales
 	params.Limit = defaultLimitLastestSales
 
-	if len(foil) > 0 {
-		if foil[0] {
+	if len(flags) > 0 {
+		foil := flags[0]
+		if foil {
 			params.Variants = []int{2, 133, 141}
 		} else {
 			params.Variants = []int{1, 132}
 		}
+	}
+
+	anyLang := len(flags) > 1 && flags[1]
+	if !anyLang {
+		// 1 being English
+		params.Variants = []int{1}
 	}
 
 	payload, err := json.Marshal(&params)
