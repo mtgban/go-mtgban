@@ -114,7 +114,6 @@ type Properties struct {
 
 	OldTcgId       string
 	NewTcgId       string
-	NewFoilTcgId   string
 	NewEtchedTcgId string
 }
 
@@ -208,7 +207,6 @@ func run() int {
 		}
 
 		newTcgId := cards[0].OriginalId
-		newFoilTcgId := ""
 		newEtchedTcgId := ""
 		oldTcgId := co.Identifiers["tcgplayerProductId"]
 
@@ -218,19 +216,11 @@ func run() int {
 			newEtchedTcgId = newTcgId
 			newTcgId = ""
 			oldTcgId = co.Identifiers["tcgplayerEtchedProductId"]
-		} else if co.Foil && len(co.Finishes) > 1 {
-			newFoilTcgId = newTcgId
-			newTcgId = ""
-			replace, found := co.Identifiers["tcgplayerFoilProductId"]
-			if found {
-				oldTcgId = replace
-			}
 		}
 
 		identifier := co.Identifiers["scryfallId"]
 		if (newTcgId != "" && oldTcgId != newTcgId) ||
-			(newEtchedTcgId != "" && oldTcgId != newEtchedTcgId) ||
-			(newFoilTcgId != "" && oldTcgId != newFoilTcgId) {
+			(newEtchedTcgId != "" && oldTcgId != newEtchedTcgId) {
 			_, found := output[identifier]
 			if !found {
 				output[identifier] = &Properties{}
@@ -243,9 +233,7 @@ func run() int {
 			output[identifier].OldTcgId = oldTcgId
 			if co.Etched {
 				output[identifier].NewEtchedTcgId = newEtchedTcgId
-			} else if co.Foil && len(co.Finishes) > 1 {
-				output[identifier].NewFoilTcgId = newFoilTcgId
-			} else if newTcgId != "" {
+			} else {
 				output[identifier].NewTcgId = newTcgId
 			}
 		}
@@ -253,7 +241,7 @@ func run() int {
 
 	csvWriter := csv.NewWriter(os.Stdout)
 	csvWriter.Write([]string{
-		"name", "set", "cn", "scryfall_id", "old_tcgplayer_id", "new_tcgplayer_id", "new_tcgplayer_foil_id", "new_tcgplayer_etched_id",
+		"name", "set", "cn", "scryfall_id", "old_tcgplayer_id", "new_tcgplayer_id", "new_tcgplayer_etched_id",
 	})
 	fixes := 0
 	for _, props := range output {
@@ -265,7 +253,6 @@ func run() int {
 			props.ScryfallId,
 			props.OldTcgId,
 			props.NewTcgId,
-			props.NewFoilTcgId,
 			props.NewEtchedTcgId,
 		})
 		csvWriter.Flush()
