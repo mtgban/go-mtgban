@@ -170,6 +170,10 @@ var preserveTags = []string{
 }
 
 func card2promo(cardName, variant string) (string, string) {
+	if strings.Contains(variant, "30th Anniversary") && !strings.Contains(variant, "History Promos") {
+		return "P30A", ""
+	}
+
 	var edition string
 	switch cardName {
 	case "Demonic Tutor":
