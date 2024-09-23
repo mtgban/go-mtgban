@@ -718,8 +718,6 @@ func SealedIsRandom(setCode, sealedUUID string) bool {
 				case "variable":
 					return true
 				case "other":
-				default:
-					return true
 				}
 			}
 		}
