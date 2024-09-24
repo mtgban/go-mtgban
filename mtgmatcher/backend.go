@@ -277,7 +277,10 @@ var missingPALPtags = map[string]string{
 
 // List of numbers in SLD that need to be decoupled
 var sldJPNLangDupes = []string{
+	// Specila Guests
 	"1110", "1111", "1112", "1113", "1114", "1115", "1116", "1117",
+	// Miku
+	"1587", "1592", "1594", "1595", "1596", "1597", "1599", "1602", "1603", "1604", "1605", "1607",
 }
 
 // List of numbers that need to have their number/uuid revisioned due
