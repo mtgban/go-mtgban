@@ -3,6 +3,7 @@ package tcgplayer
 import (
 	"compress/bzip2"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -137,6 +138,10 @@ func LoadSyp(auth string) ([]TCGSYP, error) {
 			MarketPrice: price,
 			MaxQty:      qty,
 		})
+	}
+
+	if len(result) == 0 {
+		return nil, errors.New("empty syp csv")
 	}
 
 	return result, nil
