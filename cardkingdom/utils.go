@@ -140,7 +140,7 @@ func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (*CartResponse
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		err = errors.New("cart not ok")
+		return nil, errors.New("cart not ok")
 	}
 
 	data, err := io.ReadAll(resp.Body)
