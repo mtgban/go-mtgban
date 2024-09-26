@@ -721,7 +721,22 @@ func CreateCartKey(userId string) (string, error) {
 	}
 
 	return response.Results[0].CartKey, nil
+}
 
+func EmptyCart(cartKey string) error {
+	link := fmt.Sprintf("https://mpgateway.tcgplayer.com/v1/cart/%s/items/all", cartKey)
+	req, err := http.NewRequest(http.MethodDelete, link, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
 }
 
 type AddressConfig struct {
