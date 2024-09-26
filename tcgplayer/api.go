@@ -563,25 +563,27 @@ func (tcg *SellerClient) InventoryListing(productId, size, page int, useDirect b
 }
 
 type CookieClient struct {
-	client     *retryablehttp.Client
+	client     *http.Client
 	cookieLine string
 }
 
 func NewCookieClient(authKey string) *CookieClient {
+	client := retryablehttp.NewClient()
+	client.Logger = nil
 	tcg := CookieClient{}
-	tcg.client = retryablehttp.NewClient()
-	tcg.client.Logger = nil
 	tcg.cookieLine = "TCGAuthTicket_Production=" + authKey + ";"
+	tcg.client = client.StandardClient()
 	return &tcg
 }
 
 func NewCookieSetClient(cookies map[string]string) *CookieClient {
+	client := retryablehttp.NewClient()
+	client.Logger = nil
 	tcg := CookieClient{}
-	tcg.client = retryablehttp.NewClient()
-	tcg.client.Logger = nil
 	for name, value := range cookies {
 		tcg.cookieLine += fmt.Sprintf("%s=%s; ", name, value)
 	}
+	tcg.client = client.StandardClient()
 	return &tcg
 }
 
@@ -634,7 +636,7 @@ func (tcg *CookieClient) Get(link string) (*http.Response, error) {
 	req.Header.Add("Cookie", tcg.cookieLine)
 	req.Header.Add("User-Agent", "curl/8.6.0")
 
-	return cleanhttp.DefaultClient().Do(req)
+	return tcg.client.Do(req)
 }
 
 func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.Response, error) {
@@ -646,7 +648,7 @@ func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.R
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("User-Agent", "curl/8.6.0")
 
-	return cleanhttp.DefaultClient().Do(req)
+	return tcg.client.Do(req)
 }
 
 func (tcg *CookieClient) GetUserData() (*UserData, error) {
