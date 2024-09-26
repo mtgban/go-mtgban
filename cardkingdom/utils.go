@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -106,6 +108,9 @@ var condMap = map[string]string{
 const (
 	ckInventoryAddURL = "https://www.cardkingdom.com/api/cart/add"
 	ckBuylistAddURL   = "https://www.cardkingdom.com/api/sellcart/add"
+
+	ckInventoryEmptyURL = "https://www.cardkingdom.com/cart/empty"
+	ckBuylistEmptyURL   = "https://www.cardkingdom.com/sellcart/empty_cart"
 )
 
 func (ck *CookieClient) SetCartInventory(ckId, cond string, qty int) (*CartResponse, error) {
@@ -114,6 +119,31 @@ func (ck *CookieClient) SetCartInventory(ckId, cond string, qty int) (*CartRespo
 
 func (ck *CookieClient) SetCartBuylist(ckId string, qty int) (*CartResponse, error) {
 	return ck.setCart(ckBuylistAddURL, ckId, "NM", qty)
+}
+
+func (ck *CookieClient) EmptyCartInventory(cartToken string) error {
+	return ck.emptyCart(ckInventoryEmptyURL, cartToken)
+}
+
+func (ck *CookieClient) EmptyCartBuylist(cartToken string) error {
+	return ck.emptyCart(ckBuylistEmptyURL, cartToken)
+}
+
+func (ck *CookieClient) emptyCart(link, cartToken string) error {
+	v := url.Values{}
+	v.Set("_token", cartToken)
+
+	resp, err := ck.Post(link, "application/x-www-form-urlencoded", strings.NewReader(v.Encode()))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("cart not ok")
+	}
+
+	return nil
 }
 
 func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (*CartResponse, error) {
