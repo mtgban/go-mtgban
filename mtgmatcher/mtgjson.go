@@ -37,6 +37,10 @@ type SealedContent struct {
 	Set   string `json:"set"`
 	UUID  string `json:"uuid"`
 
+	// For variable_config
+	Chance int `json:"chance"`
+	Weight int `json:"weight"`
+
 	// This recursive definition is used for "variable" mode in which one
 	// possible configuration is chosen at random
 	Configs []map[string][]SealedContent `json:"configs"`

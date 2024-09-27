@@ -641,22 +641,40 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 
 					picks = append(picks, deckPicks...)
 				case "variable":
-					variableIndex := rand.Intn(len(content.Configs))
-					for _, card := range content.Configs[variableIndex]["card"] {
+					// Use weightedrand to pick a configuration for us
+					var choices []weightedrand.Choice[map[string][]SealedContent, int]
+					for _, config := range content.Configs {
+						weightedConfigs, found := config["variable_config"]
+						if !found {
+							weightedConfigs = append(weightedConfigs, SealedContent{
+								Chance: 1,
+								Weight: len(content.Configs),
+							})
+						}
+						choices = append(choices, weightedrand.NewChoice(config, weightedConfigs[0].Chance))
+					}
+
+					variableChooser, err := weightedrand.NewChooser(choices...)
+					if err != nil {
+						return nil, err
+					}
+					config := variableChooser.Pick()
+
+					for _, card := range config["card"] {
 						uuid, err := MatchId(card.UUID, card.Foil)
 						if err != nil {
 							return nil, err
 						}
 						picks = append(picks, uuid)
 					}
-					for _, booster := range content.Configs[variableIndex]["pack"] {
+					for _, booster := range config["pack"] {
 						boosterPicks, err := BoosterGen(booster.Set, booster.Code)
 						if err != nil {
 							return nil, err
 						}
 						picks = append(picks, boosterPicks...)
 					}
-					for _, sealed := range content.Configs[variableIndex]["sealed"] {
+					for _, sealed := range config["sealed"] {
 						for i := 0; i < sealed.Count; i++ {
 							sealedPicks, err := GetPicksForSealed(sealed.Set, sealed.UUID)
 							if err != nil {
@@ -665,7 +683,7 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 							picks = append(picks, sealedPicks...)
 						}
 					}
-					for _, deck := range content.Configs[variableIndex]["deck"] {
+					for _, deck := range config["deck"] {
 						deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
 						if err != nil {
 							return nil, err
@@ -894,45 +912,64 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 						}
 					}
 				case "variable":
-					variableIndex := rand.Intn(len(content.Configs))
-					for _, card := range content.Configs[variableIndex]["card"] {
-						uuid, err := MatchId(card.UUID, card.Foil)
-						if err != nil {
-							return nil, err
+					for _, config := range content.Configs {
+						// Retrieve the variable configuration and compute the chance of getting this config
+						weightedConfigs, found := config["variable_config"]
+						if !found {
+							weightedConfigs = append(weightedConfigs, SealedContent{
+								Chance: 1,
+								Weight: len(content.Configs),
+							})
 						}
-						probs = append(probs, ProductProbabilities{
-							UUID:        uuid,
-							Probability: 1,
-						})
-					}
-					for _, booster := range content.Configs[variableIndex]["pack"] {
-						boosterProbabilities, err := SealedBoosterProbabilities(booster.Set, booster.Code)
-						if err != nil {
-							return nil, err
-						}
-						probs = append(probs, boosterProbabilities...)
-					}
-					for _, sealed := range content.Configs[variableIndex]["sealed"] {
-						sealedProbabilities, err := GetProbabilitiesForSealed(sealed.Set, sealed.UUID)
-						if err != nil {
-							return nil, err
-						}
-						for i := range sealedProbabilities {
-							sealedProbabilities[i].Probability *= float64(sealed.Count)
-						}
-						probs = append(probs, sealedProbabilities...)
-					}
-					for _, deck := range content.Configs[variableIndex]["deck"] {
-						deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
-						if err != nil {
-							return nil, err
-						}
-						for _, uuid := range deckPicks {
-							probs = append(probs, ProductProbabilities{
+						variableChance := float64(weightedConfigs[0].Chance) / float64(weightedConfigs[0].Weight)
+
+						var variableProbs []ProductProbabilities
+						for _, card := range config["card"] {
+							uuid, err := MatchId(card.UUID, card.Foil)
+							if err != nil {
+								return nil, err
+							}
+							variableProbs = append(variableProbs, ProductProbabilities{
 								UUID:        uuid,
 								Probability: 1,
 							})
 						}
+						for _, booster := range config["pack"] {
+							boosterProbabilities, err := SealedBoosterProbabilities(booster.Set, booster.Code)
+							if err != nil {
+								return nil, err
+							}
+							variableProbs = append(variableProbs, boosterProbabilities...)
+						}
+						for _, sealed := range config["sealed"] {
+							sealedProbabilities, err := GetProbabilitiesForSealed(sealed.Set, sealed.UUID)
+							if err != nil {
+								return nil, err
+							}
+							for i := range sealedProbabilities {
+								sealedProbabilities[i].Probability *= float64(sealed.Count)
+							}
+							variableProbs = append(variableProbs, sealedProbabilities...)
+						}
+						for _, deck := range config["deck"] {
+							deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
+							if err != nil {
+								return nil, err
+							}
+							for _, uuid := range deckPicks {
+								variableProbs = append(variableProbs, ProductProbabilities{
+									UUID:        uuid,
+									Probability: 1,
+								})
+							}
+						}
+
+						// Modify the retrieved probability according to the chance of this configuration
+						for i := range variableProbs {
+							variableProbs[i].Probability *= variableChance
+						}
+						// Update output probabilities
+						probs = append(probs, variableProbs...)
 					}
 				}
 			}
