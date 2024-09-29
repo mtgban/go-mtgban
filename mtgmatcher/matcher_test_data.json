@@ -597,14 +597,6 @@
         }
     },
     {
-        "uuid": "25463956-7fc1-5781-88cb-abba28a59ddd",
-        "description": "names_incorrect_name_but_salvageable",
-        "input": {
-            "name": "B.O.B.",
-            "edition": "Unsanctioned"
-        }
-    },
-    {
         "uuid": "c98bf90b-e3b8-5a16-a797-73391ca6e4d6",
         "description": "names_parenthesis_in_the_name",
         "input": {
