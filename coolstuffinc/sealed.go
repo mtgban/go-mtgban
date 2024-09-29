@@ -63,7 +63,7 @@ func (csi *CoolstuffincSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-const sealedURL = "https://www.coolstuffinc.com/sq/1555582?page=1&sb=price|desc"
+const sealedURL = "https://www.coolstuffinc.com/sq/2293832?page=1&sb=price|desc"
 
 func (csi *CoolstuffincSealed) numOfPages() (int, error) {
 	resp, err := csi.httpclient.Get(sealedURL)
