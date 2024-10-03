@@ -13,9 +13,7 @@ import (
 )
 
 type BanPrice struct {
-	Regular float64 `json:"regular,omitempty"`
-	Foil    float64 `json:"foil,omitempty"`
-	Etched  float64 `json:"etched,omitempty"`
+	Conditions map[string]float64 `json:"conditions,omitempty"`
 }
 
 type BANPriceResponse struct {
@@ -32,25 +30,42 @@ type BANPriceResponse struct {
 }
 
 const (
-	banAPIURL = "https://www.mtgban.com/api/mtgban/all%s.json?tag=tags&sig=%s"
+	banAPIURL = "https://www.mtgban.com/api/mtgban/all%s.json?tag=tags&conds=true&sig=%s"
 
 	BulkThreshold = 0.5
 )
 
-func getRetail(response BANPriceResponse, source, uuid string) float64 {
-	price, found := response.Retail[uuid][source]
-	if !found {
+func getPrice(price *BanPrice, uuid string) float64 {
+	if price == nil {
 		return 0
 	}
-	return price.Regular + price.Foil + price.Etched
+
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil {
+		return 0
+	}
+
+	var tag string
+	if co.Etched {
+		tag = "_etched"
+	} else if co.Foil {
+		tag = "_foil"
+	}
+
+	result := price.Conditions["NM"+tag]
+	if result == 0 {
+		result = price.Conditions["SP"+tag]
+	}
+
+	return result
+}
+
+func getRetail(response BANPriceResponse, source, uuid string) float64 {
+	return getPrice(response.Retail[uuid][source], uuid)
 }
 
 func getBuylist(response BANPriceResponse, source, uuid string) float64 {
-	price, found := response.Buylist[uuid][source]
-	if !found {
-		return 0
-	}
-	return price.Regular + price.Foil + price.Etched
+	return getPrice(response.Buylist[uuid][source], uuid)
 }
 
 func setBuylist(response BANPriceResponse, destination, uuid string, price float64) {
@@ -58,15 +73,19 @@ func setBuylist(response BANPriceResponse, destination, uuid string, price float
 	if err != nil {
 		return
 	}
-	if response.Buylist[uuid][destination] == nil {
-		response.Buylist[uuid][destination] = &BanPrice{}
-	}
+
+	var tag string
 	if co.Etched {
-		response.Buylist[uuid][destination].Etched = price
+		tag = "_etched"
 	} else if co.Foil {
-		response.Buylist[uuid][destination].Regular = price
-	} else {
-		response.Buylist[uuid][destination].Foil = price
+		tag = "_foil"
+	}
+
+	// Rebuild the price entry
+	response.Buylist[uuid][destination] = &BanPrice{
+		Conditions: map[string]float64{
+			"NM" + tag: price,
+		},
 	}
 }
 
@@ -141,8 +160,8 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 	// Remove prices that are too low
 	for _, uuid := range uuids {
 		for _, category := range []map[string]map[string]*BanPrice{response.Retail, response.Buylist} {
-			for store, price := range category[uuid] {
-				if price.Regular+price.Foil+price.Etched < BulkThreshold {
+			for store := range category[uuid] {
+				if getPrice(category[uuid][store], uuid) < BulkThreshold {
 					delete(category[uuid], store)
 				}
 			}
@@ -155,14 +174,6 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 func valueInBooster(uuids []string, prices map[string]map[string]*BanPrice, source string, probabilities []float64) float64 {
 	var total float64
 	for i, uuid := range uuids {
-		priceEntry, found := prices[uuid][source]
-		if !found {
-			continue
-		}
-
-		// Only one of these will be non-zero
-		price := priceEntry.Regular + priceEntry.Foil + priceEntry.Etched
-
 		// Adjust price by its probability
 		probability := 1.0
 		if probabilities != nil {
@@ -170,7 +181,7 @@ func valueInBooster(uuids []string, prices map[string]map[string]*BanPrice, sour
 		}
 
 		// Add to the final value
-		total += price * probability
+		total += getPrice(prices[uuid][source], uuid) * probability
 	}
 	return total
 }
