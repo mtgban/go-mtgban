@@ -45,6 +45,7 @@ var replacer = strings.NewReplacer(
 	"______", "_____",
 
 	// Separators
+	"lava axe", "lava axe",
 	"goblin // soldier", "goblin // soldier",
 	"/", "",
 	"|", "",
