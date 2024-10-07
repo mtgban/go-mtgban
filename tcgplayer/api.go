@@ -165,7 +165,7 @@ func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, erro
 	anyLang := len(flags) > 1 && flags[1]
 	if !anyLang {
 		// 1 being English
-		params.Variants = []int{1}
+		params.Languages = []int{1}
 	}
 
 	payload, err := json.Marshal(&params)
