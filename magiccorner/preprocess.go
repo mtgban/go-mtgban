@@ -136,6 +136,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 	if strings.Contains(card.Extra, "pokemon") {
 		return nil, errors.New("pokemon")
 	}
+	if strings.Contains(cardName, "Art Series") {
+		return nil, errors.New("art series")
+	}
 
 	// Grab the image url and keep only the image name
 	extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
