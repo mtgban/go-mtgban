@@ -332,9 +332,15 @@ var allPlayerRewardsSet = []string{
 }
 
 func listEditionCheck(inCard *InputCard, card *Card) bool {
+	var setName string
+
 	code := strings.Split(card.Number, "-")[0]
 	set, err := GetSet(code)
-	if err != nil {
+	if err == nil {
+		setName = set.Name
+	} else if code == "TPR" {
+		setName = "Tempest Remastered"
+	} else {
 		return true
 	}
 
@@ -346,7 +352,7 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 		"Bad Moon",
 		"Stasis Snare",
 		"Strangleroot Geist":
-		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
+		if !inCard.Contains(code) && !inCard.Contains(setName) && EditionTable[inCard.Variation] != setName {
 			return true
 		}
 		switch inCard.Name {
@@ -360,12 +366,12 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 			return false
 		}
 
-		edition := set.Name
+		edition := setName
 		if strings.Contains(inCard.Variation, "vs.") {
 			edition = strings.TrimPrefix(edition, "Duel Decks: ")
 		}
 
-		if !inCard.Contains(code) && !inCard.Contains(edition) && EditionTable[inCard.Variation] != set.Name {
+		if !inCard.Contains(code) && !inCard.Contains(edition) && EditionTable[inCard.Variation] != setName {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step
 			number := ExtractNumber(inCard.Variation)
