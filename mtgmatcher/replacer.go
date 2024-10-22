@@ -44,8 +44,12 @@ var replacer = strings.NewReplacer(
 	"_______", "_____",
 	"______", "_____",
 
-	// Separators
+	// Aliasing due to comma in another card name
 	"lava axe", "lava axe",
+	"ransack the lab", "ransack the lab",
+	"glimpse the unthinkable", "glimpse the unthinkable",
+
+	// Separators
 	"goblin // soldier", "goblin // soldier",
 	"/", "",
 	"|", "",
