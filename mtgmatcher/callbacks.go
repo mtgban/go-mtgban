@@ -344,12 +344,16 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 	// Cards with same numeric part need special treatment because the chunk below trips the later check
 	case "Laboratory Maniac",
 		"Bad Moon",
+		"Stasis Snare",
 		"Strangleroot Geist":
 		if !inCard.Contains(code) && !inCard.Contains(set.Name) && EditionTable[inCard.Variation] != set.Name {
 			return true
 		}
-		if inCard.Name == "Strangleroot Geist" && inCard.Contains("P"+code) {
-			return true
+		switch inCard.Name {
+		case "Stasis Snare", "Strangleroot Geist":
+			if inCard.Contains("P" + code) {
+				return true
+			}
 		}
 	default:
 		if inCard.Contains("Player Rewards") && slices.Contains(allPlayerRewardsSet, code) {
