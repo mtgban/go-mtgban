@@ -209,7 +209,7 @@ func (tnt *TrollandtoadSealed) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (tnt *TrollandtoadSealed) Info() (info mtgban.ScraperInfo) {
-	info.Name = "TrollandToad"
+	info.Name = "Troll and Toad"
 	info.Shorthand = "TNTSealed"
 	info.InventoryTimestamp = &tnt.inventoryDate
 	info.SealedMode = true
