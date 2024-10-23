@@ -74,6 +74,11 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 	}
 	cardName = strings.TrimSpace(cardName)
 
+	// Skip tokens with the same names as cards
+	if strings.Contains(variant, "Emblem") && !mtgmatcher.IsToken(cardName) {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	// todo fix Barad-dûr LTR
 	if len(imgName) > 4 {
 		for i := 0; i < 2; i++ {
