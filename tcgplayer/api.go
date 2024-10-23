@@ -651,6 +651,17 @@ func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.R
 	return tcg.client.Do(req)
 }
 
+func (tcg *CookieClient) Delete(link string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodDelete, link, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Cookie", tcg.cookieLine)
+	req.Header.Add("User-Agent", "curl/8.6.0")
+
+	return tcg.client.Do(req)
+}
+
 func (tcg *CookieClient) GetUserData() (*UserData, error) {
 	resp, err := tcg.Get(tcgUserDataURL)
 	if err != nil {
@@ -723,14 +734,10 @@ func CreateCartKey(userId string) (string, error) {
 	return response.Results[0].CartKey, nil
 }
 
-func EmptyCart(cartKey string) error {
+func (tcg *CookieClient) EmptyCart(cartKey string) error {
 	link := fmt.Sprintf("https://mpgateway.tcgplayer.com/v1/cart/%s/items/all", cartKey)
-	req, err := http.NewRequest(http.MethodDelete, link, nil)
-	if err != nil {
-		return err
-	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := tcg.Delete(link)
 	if err != nil {
 		return err
 	}
