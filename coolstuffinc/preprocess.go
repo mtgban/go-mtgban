@@ -19,6 +19,7 @@ var numFixes = map[string]string{
 	"NissaWhoShakestheWorld518v2": "SLD518",
 	"SorcerousSpyglassv2":         "UPPXLN248",
 	"253486Signed_gold":           "WC97JK1",
+	"kayafoil":                    "CN2222",
 }
 
 var variantTable = map[string]string{
@@ -295,6 +296,12 @@ func card2promo(cardName, variant string) (string, string) {
 		} else if variant == "Regional Championship Qualifiers 2022" {
 			edition = "PRCQ"
 			variant = "1"
+		}
+	case "Snapcaster Mage":
+		if variant == "2016 Regional PTQ Promo" {
+			edition = "PPRO"
+		} else if variant == "Regional Championship Qualifiers 2023" {
+			edition = "PRCQ"
 		}
 	}
 	return edition, variant
