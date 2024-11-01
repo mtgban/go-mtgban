@@ -194,7 +194,7 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 
 				link := "https://www.coolstuffinc.com/p/" + pid
 				if csi.Partner != "" {
-					link += "?utm_referrer=mtgban"
+					link += "?utm_referrer=" + csi.Partner
 				}
 
 				var cardId string

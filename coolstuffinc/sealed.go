@@ -146,6 +146,9 @@ func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, pa
 		}
 
 		link := "https://coolstuffinc.com" + path
+		if csi.Partner != "" {
+			link += "?utm_referrer=" + csi.Partner
+		}
 
 		out := responseChan{
 			cardId: uuid,
