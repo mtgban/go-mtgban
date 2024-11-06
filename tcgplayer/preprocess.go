@@ -344,6 +344,10 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = "PSS2"
 		} else if variant == "Alayna Danner" {
 			edition = "PSS3"
+		} else if variant == "Year of the Dragon 2024" {
+			edition = "PL24"
+		} else if len(mtgmatcher.MatchInSet(cardName, "PCBB")) > 0 {
+			edition = "PCBB"
 		}
 	case "World Championship Decks":
 		// Typo
