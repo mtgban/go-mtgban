@@ -542,10 +542,6 @@ func (ap AllPrintings) Load() cardBackend {
 				if name == "" {
 					continue
 				}
-				// Only keep the main face
-				if card.Layout == "token" {
-					continue
-				}
 				// Skip FaceName entries that could be aliased
 				// ie 'Start' could be Start//Finish and Start//Fire
 				switch name {
