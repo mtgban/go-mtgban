@@ -3759,6 +3759,22 @@
         }
     },
     {
+        "uuid": "0fe1a2c4-046f-59ce-90ea-361ca21c96da",
+        "description": "secret_lair_plst_or_slx",
+        "input": {
+            "name": "Elmar, Ulvenwald Informant",
+            "edition": "Universes Within: Secret Lair Exclusives"
+        }
+    },
+    {
+        "uuid": "1b97396f-1f60-5be6-b940-e04d58240b4d",
+        "description": "secret_lair_slx_or_plst",
+        "input": {
+            "name": "Elmar, Ulvenwald Informant",
+            "edition": "The List Reprints"
+        }
+    },
+    {
         "uuid": "688bf216-ebe2-5383-b800-51ed39998c87",
         "description": "secret_lair_deck_with_number",
         "input": {

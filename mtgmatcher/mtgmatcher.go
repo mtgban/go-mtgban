@@ -883,7 +883,9 @@ func adjustEdition(inCard *InputCard) {
 			edition = "Shards of Alara"
 			variation = "250"
 		default:
-			if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 {
+			// Decouple wrong SLX cards bundled in PLST, as long as they are not reprinted in PLST
+			// In that case we trust the source has been properly tagged and will be decoupled later
+			if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 && len(MatchInSet(inCard.Name, "PLST")) == 0 {
 				edition = backend.Sets["SLX"].Name
 			}
 		}
