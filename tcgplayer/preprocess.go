@@ -426,6 +426,9 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		case "Counterspell":
 			if ogVariant == "SL PLAYTEST" {
 				variant = "SCTLR"
+			} else if ogVariant == "0002" {
+				edition = "PURL"
+				variant = "9"
 			}
 		default:
 			// Preserve all etched/galaxy/rainbow foil properties
