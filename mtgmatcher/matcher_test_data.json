@@ -3784,6 +3784,14 @@
         }
     },
     {
+        "uuid": "7499c3c7-8227-53a6-828e-788bcde1fa47",
+        "description": "secret_lair_token_rename",
+        "input": {
+            "name": "The Black Beast of Aaargh",
+            "edition": "Secret Lair"
+        }
+    },
+    {
         "uuid": "5507e55e-f034-51f2-8d4c-83008f18a950",
         "description": "empty_variant_cause_showcase",
         "input": {

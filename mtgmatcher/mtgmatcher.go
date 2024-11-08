@@ -635,6 +635,13 @@ func adjustName(inCard *InputCard) {
 		if altProps.IsFlavor {
 			inCard.addToVariant("Reskin")
 		}
+
+		// Adjust the token name in case it's a reskin
+		if IsToken(inCard.Name) {
+			inCard.Name += " Token"
+			return
+		}
+
 		return
 	}
 
