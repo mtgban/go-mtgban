@@ -2,6 +2,7 @@ package mtgmatcher
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -327,11 +328,11 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 		return nil, err
 	}
 	if set.Booster == nil {
-		return nil, ErrEditionNoSealed
+		return nil, fmt.Errorf("%s is missing booster information", strings.ToUpper(setCode))
 	}
 	_, found := set.Booster[boosterType]
 	if !found {
-		return nil, ErrEditionNoBoosterSheet
+		return nil, fmt.Errorf("%s has no booster named '%s'", strings.ToUpper(setCode), boosterType)
 	}
 
 	// Pick a rarity distribution as defined in Contents at random using their weight
@@ -392,7 +393,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				for cardId, weight := range sheet.Cards {
 					co, found := backend.UUIDs[cardId]
 					if !found {
-						return nil, errors.New("sheet contains an unknown id")
+						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardId)
 					}
 
 					choice := weightedrand.NewChoice(cardId, weight*mult)
@@ -406,7 +407,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 
 				// Sanity check
 				if count < len(balancedSheets) {
-					return nil, errors.New("fewer slots than colors")
+					return nil, fmt.Errorf("fewer slots (%d) than colors (%d) for %s", count, len(balancedSheets), sheetName)
 				}
 
 				// Prefill the balanced slots
@@ -455,7 +456,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 					// Validate card exists (ie in case of online-only printing)
 					_, found := backend.UUIDs[item]
 					if !found {
-						return nil, errors.New("picked id does not exist")
+						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, item)
 					}
 
 					// Check if the sheet allows duplicates, and, if not, pick again
@@ -785,7 +786,7 @@ func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabili
 
 	boosterConfig, found := set.Booster[boosterType]
 	if !found {
-		return nil, errors.New("booster not found")
+		return nil, fmt.Errorf("booster '%s' not found", boosterType)
 	}
 
 	tmp := map[string]float64{}
@@ -823,7 +824,7 @@ func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]Product
 
 	sheet, found := set.Booster[boosterType].Sheets[sheetName]
 	if !found {
-		return nil, errors.New("sheet not found")
+		return nil, fmt.Errorf("sheet '%s' not found", sheetName)
 	}
 
 	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
