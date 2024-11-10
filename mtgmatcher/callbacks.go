@@ -150,6 +150,10 @@ var promoTypeElements = []promoTypeElement{
 		// Needed due to oilslick cards from ONE sometimes being referred to as raised
 		ValidDate: time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC),
 	},
+	{
+		PromoType: mtgjson.PromoTypeFractureFoil,
+		Tags:      []string{"Fracture", "Fractal"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
