@@ -551,11 +551,9 @@ func GetDecklist(setCode, sealedUUID string) ([]string, error) {
 					picks = append(picks, uuid)
 				case "sealed":
 					for i := 0; i < content.Count; i++ {
-						sealedPicks, err := GetDecklist(content.Set, content.UUID)
 						// Content of sealed is unpredictable, so ignore errors
-						if err == nil {
-							picks = append(picks, sealedPicks...)
-						}
+						sealedPicks, _ := GetDecklist(content.Set, content.UUID)
+						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
 					deckPicks, err := GetPicksForDeck(content.Set, content.Name)
@@ -578,10 +576,6 @@ func GetDecklist(setCode, sealedUUID string) ([]string, error) {
 				}
 			}
 		}
-	}
-
-	if len(picks) == 0 {
-		return nil, errors.New("nothing was picked")
 	}
 
 	return picks, nil
@@ -694,10 +688,6 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 				}
 			}
 		}
-	}
-
-	if len(picks) == 0 {
-		return nil, errors.New("nothing was picked")
 	}
 
 	return picks, nil
@@ -975,10 +965,6 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 				}
 			}
 		}
-	}
-
-	if len(probs) == 0 {
-		return nil, errors.New("nothing was probs")
 	}
 
 	return probs, nil
