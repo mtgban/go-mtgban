@@ -214,7 +214,7 @@ func numericalValue(str string) string {
 	start := 0
 	end := len(str)
 	for i, c := range str {
-		if unicode.IsDigit(c) && !startFound {
+		if unicode.IsDigit(c) && c != '0' && !startFound {
 			start = i
 			startFound = true
 		} else if !unicode.IsDigit(c) && startFound {
