@@ -212,7 +212,7 @@ func ExtractNumber(str string) string {
 var reNumerical = regexp.MustCompile(`\d+`)
 
 // Obtain the numerical value of the input so that it can be used for strconv.Atoi()
-func numericalValue(str string) string {
+func ExtractNumericalValue(str string) string {
 	return strings.TrimLeft(reNumerical.FindString(str), "0")
 }
 
