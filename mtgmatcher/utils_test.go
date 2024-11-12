@@ -187,6 +187,96 @@ func TestExtractYear(t *testing.T) {
 	}
 }
 
+var NumericTests = []ExtractTest{
+	{
+		In:  "123",
+		Out: "123",
+	},
+	{
+		In:  "(321)",
+		Out: "321",
+	},
+	{
+		In:  "#24",
+		Out: "24",
+	},
+	{
+		In:  "100 - A",
+		Out: "100",
+	},
+	{
+		In:  "1a",
+		Out: "1",
+	},
+	{
+		In:  "*4",
+		Out: "4",
+	},
+	{
+		In:  "37A Text",
+		Out: "37",
+	},
+	{
+		In:  "A08",
+		Out: "8",
+	},
+	{
+		In:  "2000",
+		Out: "2000",
+	},
+	{
+		In:  "181/185",
+		Out: "181",
+	},
+	{
+		In:  "001/006",
+		Out: "1",
+	},
+	{
+		In:  "May 25",
+		Out: "25",
+	},
+	{
+		In:  "22 January, 2016",
+		Out: "22",
+	},
+	{
+		In:  "7/4/1999",
+		Out: "7",
+	},
+	{
+		In:  "37★",
+		Out: "37",
+	},
+	{
+		In:  "1F★",
+		Out: "1",
+	},
+	{
+		In:  "659Φ",
+		Out: "659",
+	},
+	{
+		In:  "118†s",
+		Out: "118",
+	},
+}
+
+func TestExtractNumericalValue(t *testing.T) {
+	for _, probe := range NumericTests {
+		test := probe
+		t.Run(test.In, func(t *testing.T) {
+			t.Parallel()
+			out := ExtractNumericalValue(test.In)
+			if out != test.Out {
+				t.Errorf("FAIL %s: Expected '%s' got '%s'", test.In, test.Out, out)
+				return
+			}
+			t.Log("PASS:", test.In)
+		})
+	}
+}
+
 type CutTest struct {
 	In  string
 	Tag string
