@@ -209,20 +209,11 @@ func ExtractNumber(str string) string {
 	return ""
 }
 
+var reNumerical = regexp.MustCompile(`\d+`)
+
+// Obtain the numerical value of the input so that it can be used for strconv.Atoi()
 func numericalValue(str string) string {
-	startFound := false
-	start := 0
-	end := len(str)
-	for i, c := range str {
-		if unicode.IsDigit(c) && c != '0' && !startFound {
-			start = i
-			startFound = true
-		} else if !unicode.IsDigit(c) && startFound {
-			end = i
-			break
-		}
-	}
-	return str[start:end]
+	return strings.TrimLeft(reNumerical.FindString(str), "0")
 }
 
 // Specialized version of ExtractNumber, suited for parsing WCD numbers
