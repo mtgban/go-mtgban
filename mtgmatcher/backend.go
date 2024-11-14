@@ -521,6 +521,14 @@ func (ap AllPrintings) Load() cardBackend {
 			// Override all to tokens so that duplicates get named differently
 			case "TFTH", "TBTH", "TDAG":
 				card.Layout = "token"
+			// Modify the Normalize string replacer to ignore replacing card names with commas
+			// that conflict with another card name
+			case "MB2", "DA1":
+				if strings.Contains(card.Name, ",") && slices.Contains(allCardNames, strings.Replace(card.Name, ",", "", 1)) {
+					lower := strings.ToLower(card.Name)
+					replacerStrings = append([]string{lower, lower}, replacerStrings...)
+					replacer = strings.NewReplacer(replacerStrings...)
+				}
 			}
 
 			// Override any "double_faced_token" entries and emblems

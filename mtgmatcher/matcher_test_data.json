@@ -4672,5 +4672,21 @@
             "variant": "Borderless Serial Numbered",
             "edition": "Modern Horizons 3"
         }
+    },
+    {
+        "uuid": "d74d1b4a-b105-5d42-9a7e-9e697229ee73",
+        "description": "da1_commas_intefering_unknownevent",
+        "input": {
+            "name": "Gather, the Townsfolk",
+            "edition": "DA1"
+        }
+    },
+    {
+        "uuid": "1108ac53-50d0-5223-af4c-978afdd9b26f",
+        "description": "da1_commas_intefering_actualcard",
+        "input": {
+            "name": "Gather the Townsfolk",
+            "edition": "DDQ"
+        }
     }
 ]

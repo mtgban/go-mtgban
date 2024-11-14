@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-var replacer = strings.NewReplacer(
+var replacerStrings = []string{
 	// Remove a very common field, sometimes added with no reason
 	// Needs the dashes to work with will-o'-the-wisp, whish is why
 	// it needs to be before removing the dash step
@@ -43,11 +43,6 @@ var replacer = strings.NewReplacer(
 	"________", "_____",
 	"_______", "_____",
 	"______", "_____",
-
-	// Aliasing due to comma in another card name
-	"lava axe", "lava axe",
-	"ransack the lab", "ransack the lab",
-	"glimpse the unthinkable", "glimpse the unthinkable",
 
 	// Separators
 	"goblin // soldier", "goblin // soldier",
@@ -95,7 +90,9 @@ var replacer = strings.NewReplacer(
 	// Spaces are overrated, except when not
 	"waste land", "waste land",
 	" ", "",
-)
+}
+
+var replacer = strings.NewReplacer(replacerStrings...)
 
 // Normalize uses the rules defined in Replacer to replace uncommon elements of
 // card names, dropping all the spaces and producing a lowercase string.
