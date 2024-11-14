@@ -189,6 +189,9 @@ func (ss *SealedEVScraper) repeatedPicks(setCode, productUUID string) ([]string,
 		if err != nil {
 			return nil, err
 		}
+		if len(picks) == 0 {
+			err = errors.New("no picks found")
+		}
 
 		// Repeat booster generation if there is one card type known to skew values
 		rePick := false
@@ -272,7 +275,10 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 		// Probability EV
 		go func() {
 			probabilities, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
-			if err != nil {
+			if len(probabilities) == 0 {
+				if err == nil {
+					err = errors.New("no probabilities found")
+				}
 				channel <- resultChan{
 					err: err,
 				}
