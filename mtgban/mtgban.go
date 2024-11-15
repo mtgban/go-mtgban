@@ -10,6 +10,7 @@ import (
 type GenericEntry interface {
 	Pricing() float64
 	Condition() string
+	Qty() int
 }
 
 // InventoryEntry represents an entry for selling a particular Card
@@ -54,6 +55,10 @@ func (ie InventoryEntry) Condition() string {
 	return ie.Conditions
 }
 
+func (ie InventoryEntry) Qty() int {
+	return ie.Quantity
+}
+
 // BuylistEntry represents an entry for buying a particular Card
 type BuylistEntry struct {
 	// Quantity of this entry
@@ -95,6 +100,10 @@ func (be BuylistEntry) Pricing() float64 {
 
 func (be BuylistEntry) Condition() string {
 	return be.Conditions
+}
+
+func (be BuylistEntry) Qty() int {
+	return be.Quantity
 }
 
 const (
