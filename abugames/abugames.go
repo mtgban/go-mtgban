@@ -329,6 +329,9 @@ func (abu *ABUGames) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := abu.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
+	if info.Shorthand == "ABUCredit" {
+		info.CreditMultiplier = 0.6
+	}
 	return info
 }
 
