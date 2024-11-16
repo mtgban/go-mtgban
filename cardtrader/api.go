@@ -141,10 +141,7 @@ type Product struct {
 		SinglesZero bool   `json:"can_sell_via_hub"`
 		SealedZero  bool   `json:"can_sell_sealed_with_ct_zero"`
 	} `json:"user"`
-	Price struct {
-		Cents    int    `json:"cents"`
-		Currency string `json:"currency"`
-	} `json:"price"`
+	Price CTPrice `json:"price"`
 
 	UserDataField string `json:"user_data_field"`
 	PriceCents    int    `json:"price_cents"`
@@ -414,8 +411,8 @@ type ctProductCart struct {
 }
 
 type CTPrice struct {
-	Cents       int    `json:"cents"`
-	CurrencyIso string `json:"currency_iso"`
+	Cents    int    `json:"cents"`
+	Currency string `json:"currency"`
 }
 
 type CTCartResponse struct {
@@ -438,6 +435,7 @@ type CTCartResponse struct {
 	} `json:"subcarts"`
 
 	Subtotal                         CTPrice `json:"subtotal"`
+	Total                            CTPrice `json:"total"`
 	SafeguardFeeAmount               CTPrice `json:"safeguard_fee_amount"`
 	CtZeroFeeAmount                  CTPrice `json:"ct_zero_fee_amount"`
 	PaymentMethodFeePercentageAmount CTPrice `json:"payment_method_fee_percentage_amount"`
