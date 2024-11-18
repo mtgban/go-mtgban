@@ -22,8 +22,9 @@ const (
 	ctBulkUpdateURL = "https://api.cardtrader.com/api/full/v1/products/bulk_update"
 	ctBulkDeleteURL = "https://api.cardtrader.com/api/full/v1/products/bulk_destroy"
 
-	ctProductsExport = "https://api.cardtrader.com/api/v2/products/export"
-	ctAddProductCart = "https://api.cardtrader.com/api/v2/cart/add"
+	ctProductsExport    = "https://api.cardtrader.com/api/v2/products/export"
+	ctAddProductCart    = "https://api.cardtrader.com/api/v2/cart/add"
+	ctRemoveProductCart = "https://api.cardtrader.com/api/v2/cart/remove"
 
 	MaxBulkUploadItems = 450
 
@@ -455,13 +456,24 @@ func (ct *CTAuthClient) AddProductToCart(productId, quantity int, zero bool) (*C
 		Quantity:  quantity,
 		ViaZero:   zero,
 	}
+	return ct.addremoveCart(product, ctAddProductCart)
+}
 
+func (ct *CTAuthClient) RemoveProductFromCart(productId, quantity int) (*CTCartResponse, error) {
+	product := ctProductCart{
+		ProductId: productId,
+		Quantity:  quantity,
+	}
+	return ct.addremoveCart(product, ctRemoveProductCart)
+}
+
+func (ct *CTAuthClient) addremoveCart(product ctProductCart, link string) (*CTCartResponse, error) {
 	bodyBytes, err := json.Marshal(&product)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := ct.client.Post(ctAddProductCart, "application/json", bytes.NewReader(bodyBytes))
+	resp, err := ct.client.Post(link, "application/json", bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, err
 	}
