@@ -424,6 +424,8 @@ type CTCartResponse struct {
 			ID       int    `json:"id"`
 			Username string `json:"username"`
 		} `json:"seller"`
+		ViaCardtraderZero bool `json:"via_cardtrader_zero"`
+
 		CartItems []struct {
 			Quantity      int    `json:"quantity"`
 			PriceCents    int    `json:"price_cents"`
