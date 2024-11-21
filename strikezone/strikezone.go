@@ -186,6 +186,10 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 			priceRatio = cardPrice / sellPrice * 100
 		}
 
+		// Some buy pages return wrong results if they have a comma
+		cardName = url.QueryEscape(strings.Replace(cardName, ",", "", -1))
+		link := "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + cardName
+
 		channel <- respChan{
 			cardId: cardId,
 			bl: &mtgban.BuylistEntry{
@@ -193,7 +197,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 				BuyPrice:   cardPrice,
 				Quantity:   quantity,
 				PriceRatio: priceRatio,
-				URL:        "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + url.QueryEscape(cardName),
+				URL:        link,
 			},
 		}
 	}
