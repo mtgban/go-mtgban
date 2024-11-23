@@ -125,7 +125,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			number = strings.TrimLeft(fields[2], "0")
 		}
 	default:
-		if strings.Contains(cardName, "//") && strings.HasSuffix(number, "a") {
+		if strings.Contains(cardName, "//") {
 			number = strings.TrimSuffix(number, "a")
 		}
 
