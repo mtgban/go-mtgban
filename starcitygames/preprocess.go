@@ -11,8 +11,6 @@ import (
 
 var cardTable = map[string]string{
 	"Who / What / When / Where / Why": "Who // What // When // Where // Why",
-
-	"Jushi Apprentice // Tomoya The Revealer // Tomoya The Revealer": "Jushi Apprentice // Tomoya The Revealer",
 }
 
 func languageTags(language, edition, variant, number string) (string, string, error) {
@@ -139,11 +137,6 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 			setCode = "MPS"
 		case "MPS3":
 			setCode = "MP2"
-		case "CN2":
-			// Kaya, Ghost Assassin fixup
-			if number == "75" && foil {
-				number = "222"
-			}
 		case "PWSB":
 			setCode = "PLST"
 			fields := strings.Split(number, "_")
