@@ -54,6 +54,16 @@ func languageTags(language, edition, variant, number string) (string, string, er
 	return edition, variant, nil
 }
 
+// Special sets like collectors have an extra number as suffix
+// Handle set renames like OTC2 and LTR2
+func fixupSetCode(setCode string) string {
+	_, err := mtgmatcher.GetSet(setCode)
+	if err != nil && len(setCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
+		setCode = setCode[:len(setCode)-1]
+	}
+	return setCode
+}
+
 // SKU documented as
 // * for singles:
 // SGL-[Brand]-[Set]-[Collector Number]-[Language][Foiling][Condition]
@@ -72,28 +82,20 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		return nil, fmt.Errorf("Malformed SKU: %s", SKU)
 	}
 
-	setCode := fields[2]
+	setCode := fixupSetCode(fields[2])
 	number := strings.TrimLeft(fields[3], "0")
 	language := fields[4][:2]
 	foil := fields[4][2] != 'N'
 
 	switch setCode {
-	case "MPS2":
-		setCode = "MPS"
 	case "MPS3":
 		setCode = "MP2"
 	case "PWSB":
 		setCode = "PLST"
 		fields := strings.Split(number, "_")
 		if len(fields) == 2 {
-			subSetCode := fields[0]
+			subSetCode := fixupSetCode(fields[0])
 			subNumber := fields[1]
-
-			// Handle MH22 and similar
-			_, err := mtgmatcher.GetSet(subSetCode)
-			if err != nil && len(subSetCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
-				subSetCode = subSetCode[:len(subSetCode)-1]
-			}
 
 			number = subSetCode + "-" + strings.TrimLeft(subNumber, "0")
 		} else if len(fields) == 4 {
@@ -127,12 +129,6 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	default:
 		if strings.Contains(cardName, "//") {
 			number = strings.TrimSuffix(number, "a")
-		}
-
-		// Handle set renames like OTC2 and LTR2
-		_, err := mtgmatcher.GetSet(setCode)
-		if err != nil && len(setCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
-			setCode = setCode[:len(setCode)-1]
 		}
 	}
 
