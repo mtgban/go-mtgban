@@ -121,7 +121,10 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 	canProcessSKU := language == "en" || language == "English"
 	// We can't use the numbers reported because they match the plain version
 	// and the Match search doesn't upgrade these custom tags
-	if strings.Contains(variant, "Serial") || strings.Contains(variant, "Compleat") {
+	switch {
+	case strings.Contains(variant, "Serial"),
+		strings.Contains(variant, "Compleat"),
+		strings.Contains(variant, "Oversized"):
 		canProcessSKU = false
 	}
 
@@ -184,13 +187,6 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 				number = strings.TrimLeft(fields[2], "0")
 			}
 		default:
-			// Disable quick search for Oversized cards, as they are embdded
-			// in the same set and id lookup doesn't support extending over
-			if strings.Contains(variant, "Oversized") {
-				setCode = ""
-				break
-			}
-
 			if strings.Contains(cardName, "//") && strings.HasSuffix(number, "a") {
 				number = strings.TrimSuffix(number, "a")
 			}
