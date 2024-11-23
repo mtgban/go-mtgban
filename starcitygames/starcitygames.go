@@ -391,6 +391,9 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int, r
 
 			var priceRatio, sellPrice float64
 			price := result.BuyPrice
+			if price == 0 {
+				continue
+			}
 
 			invCards := scg.inventory[cardId]
 			for _, invCard := range invCards {
