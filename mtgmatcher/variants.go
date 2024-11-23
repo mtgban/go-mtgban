@@ -4343,8 +4343,9 @@ var multiPromosVariants = map[string]map[string]string{
 		"prerelease ixalan": "250",
 	},
 	"Fabled Passage": {
-		"2021":     "246",
-		"eldraine": "244",
+		"2021":        "246",
+		"eldraine":    "244",
+		"bloomburrow": "252",
 	},
 	"Heroic Intervention": {
 		"2021":   "188",
@@ -4390,19 +4391,105 @@ var multiPromosVariants = map[string]map[string]string{
 		"kaladesh": "249",
 		"outlaws":  "270",
 	},
+	"Vivien Reid": {
+		"2019":        "234",
+		"foundations": "208",
+	},
+	"Muldrotha, the Gravetide": {
+		"dominaria":   "199",
+		"foundations": "243",
+	},
+	"Authority of the Consuls": {
+		"kaladesh":    "137",
+		"foundations": "5",
+	},
+	"Giada, Font of Hope": {
+		"streets":     "14",
+		"foundations": "141",
+	},
+	"Painful Quandary": {
+		"brothers":    "111",
+		"foundations": "179",
+	},
+	"Phyrexian Arena": {
+		"all will be one": "104",
+		"foundations":     "180",
+	},
+	"Brass's Bounty": {
+		"rivals":      "190",
+		"foundations": "94",
+	},
+	"Drakuseth, Maw of Flames": {
+		"2020":        "136",
+		"foundations": "193",
+	},
+	"Etali, Primal Storm": {
+		"rivals":      "100",
+		"foundations": "194",
+	},
+	"Flamewake Phoenix": {
+		"reforged":    "104",
+		"foundations": "198",
+	},
+	"Ghalta, Primal Hunger": {
+		"rivals":      "130",
+		"foundations": "222",
+	},
+	"Scavenging Ooze": {
+		"2021":        "204",
+		"foundations": "232",
+	},
+	"Consuming Aberration": {
+		"gatecrash":   "152",
+		"foundations": "238",
+	},
+	"Swiftblade Vindicator": {
+		"guilds":      "203",
+		"foundations": "246",
+	},
+	"Thousand-Year Storm": {
+		"guilds":      "207",
+		"foundations": "248",
+	},
+	"Solemn Simulacrum": {
+		"2021":        "239",
+		"foundations": "257",
+	},
+	"Omniscience": {
+		"2019":        "65",
+		"foundations": "161",
+	},
+	"Liliana, Dreadhorde General": {
+		"spark":       "97",
+		"foundations": "176",
+	},
+	"Splendid Reclamation": {
+		"eldritch": "171",
+		"crimson":  "221",
+	},
 	// not listed here: all the temples
 }
 
 // This list is for editions with conflicting promotional cards
 var multiPromosTable = map[string]map[string]map[string]string{
 	"Aether Revolt Promos":               multiPromosVariants,
+	"Bloomburrow Promos":                 multiPromosVariants,
 	"Core Set 2019 Promos":               multiPromosVariants,
+	"Core Set 2020 Promos":               multiPromosVariants,
 	"Core Set 2021 Promos":               multiPromosVariants,
+	"Dominaria Promos":                   multiPromosVariants,
+	"Eldritch Moon Promos":               multiPromosVariants,
+	"Fate Reforged Promos":               multiPromosVariants,
+	"Gatecrash Promos":                   multiPromosVariants,
 	"Guilds of Ravnica Promos":           multiPromosVariants,
+	"Innistrad: Crimson Vow Promos":      multiPromosVariants,
 	"Ixalan Promos":                      multiPromosVariants,
 	"Kaladesh Promos":                    multiPromosVariants,
 	"Murders at Karlov Manor Promos":     multiPromosVariants,
 	"Outlaws of Thunder Junction Promos": multiPromosVariants,
+	"Phyrexia: All Will Be One Promos":   multiPromosVariants,
+	"Rivals of Ixalan Promos":            multiPromosVariants,
+	"Streets of New Capenna Promos":      multiPromosVariants,
 	"The Brothers' War Promos":           multiPromosVariants,
 	"The Lost Caverns of Ixalan Promos":  multiPromosVariants,
 	"Throne of Eldraine Promos":          multiPromosVariants,
