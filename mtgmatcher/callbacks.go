@@ -80,7 +80,7 @@ var promoTypeElements = []promoTypeElement{
 			// pass, and let filtering continue elsewhere
 			if inCard.isSecretLair() &&
 				hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD") {
-				return inCard.Foil || inCard.Contains("Glaxy")
+				return inCard.Foil || inCard.Contains("Galaxy")
 			}
 			return inCard.Contains("Galaxy")
 		},
