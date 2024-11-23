@@ -19,7 +19,6 @@ var numFixes = map[string]string{
 	"NissaWhoShakestheWorld518v2": "SLD518",
 	"SorcerousSpyglassv2":         "UPPXLN248",
 	"253486Signed_gold":           "WC97JK1",
-	"kayafoil":                    "CN2222",
 }
 
 var variantTable = map[string]string{
@@ -137,6 +136,11 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 
 	case "Unfinity":
 		variant = strings.Replace(variant, ",", "/", -1)
+
+	case "Conspiracy: Take the Crown":
+		if cardName == "Kaya, Ghost Assassin" && variant == "Alternate Art Foil" {
+			variant = "222"
+		}
 	}
 
 	return &mtgmatcher.InputCard{
@@ -300,7 +304,7 @@ func card2promo(cardName, variant string) (string, string) {
 	case "Snapcaster Mage":
 		if variant == "2016 Regional PTQ Promo" {
 			edition = "PPRO"
-		} else if variant == "Regional Championship Qualifiers 2023" {
+		} else if variant == "Regional Championship Qualifier 2023" {
 			edition = "PRCQ"
 		}
 	}
