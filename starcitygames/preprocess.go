@@ -2,6 +2,7 @@ package starcitygames
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
@@ -51,6 +52,107 @@ func languageTags(language, edition, variant, number string) (string, string, er
 		}
 	}
 	return edition, variant, nil
+}
+
+// SKU documented as
+// * for singles:
+// SGL-[Brand]-[Set]-[Collector Number]-[Language][Foiling][Condition]
+// * for world champtionship:
+// SGL-[Brand]-WCPH-[Year][Player Initials][Set][Collector Number][Sideboard]-[Language][Foiling][Condition]
+// * for promotional cards:
+// SGL-[Brand]-PRM-[Promo][Set][Collector Number]-[Language][Foiling][Condition]
+//
+// examples
+// * SGL-MTG-PRM-SECRET_SLD_1095-ENN1
+// * SGL-MTG-PRM-PP_MKM_187-ENN
+// * SGL-MTG-PWSB-PCA_115-ENN1
+func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
+	fields := strings.Split(SKU, "-")
+	if len(fields) < 4 {
+		return nil, fmt.Errorf("Malformed SKU: %s", SKU)
+	}
+
+	setCode := fields[2]
+	number := strings.TrimLeft(fields[3], "0")
+	language := fields[4][:2]
+	foil := fields[4][2] != 'N'
+
+	switch setCode {
+	case "MPS2":
+		setCode = "MPS"
+	case "MPS3":
+		setCode = "MP2"
+	case "PWSB":
+		setCode = "PLST"
+		fields := strings.Split(number, "_")
+		if len(fields) == 2 {
+			subSetCode := fields[0]
+			subNumber := fields[1]
+
+			// Handle MH22 and similar
+			_, err := mtgmatcher.GetSet(subSetCode)
+			if err != nil && len(subSetCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
+				subSetCode = subSetCode[:len(subSetCode)-1]
+			}
+
+			number = subSetCode + "-" + strings.TrimLeft(subNumber, "0")
+		} else if len(fields) == 4 {
+			if fields[0] == "PRM" {
+				number = fields[2] + "-" + strings.TrimLeft(fields[3], "0")
+			}
+		}
+	case "PRM", "PRM3":
+		fields := strings.Split(number, "_")
+
+		switch {
+		// Decouple Secret Lair
+		case len(fields) > 2 && fields[0] == "SECRET":
+			setCode = fields[1]
+			number = strings.TrimLeft(fields[2], "0")
+		// Separate the multiple LTR Prerelease cards
+		case strings.HasPrefix(number, "PRE_LTR_"):
+			number = strings.TrimPrefix(number, "PRE_LTR_")
+			if strings.HasSuffix(number, "a") {
+				setCode = "PLTR"
+				number = strings.Replace(number, "a", "s", 1)
+			} else if strings.HasSuffix(number, "b") {
+				setCode = "LTR"
+				number = strings.TrimSuffix(number, "b")
+			}
+		// Prevent edition from mismatching
+		case strings.HasPrefix(number, "PP_2023_"):
+			setCode = "PF23"
+			number = strings.TrimLeft(fields[2], "0")
+		}
+	default:
+		if strings.Contains(cardName, "//") && strings.HasSuffix(number, "a") {
+			number = strings.TrimSuffix(number, "a")
+		}
+
+		// Handle set renames like OTC2 and LTR2
+		_, err := mtgmatcher.GetSet(setCode)
+		if err != nil && len(setCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
+			setCode = setCode[:len(setCode)-1]
+		}
+	}
+
+	// Check if we found it and return the id
+	out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
+	if len(out) == 1 {
+		return &mtgmatcher.InputCard{
+			Id:       out[0].UUID,
+			Foil:     foil,
+			Language: language,
+		}, nil
+	}
+	if len(out) > 1 {
+		alias := mtgmatcher.NewAliasingError()
+		for _, id := range out {
+			alias.Dupes = append(alias.Dupes, id.UUID)
+		}
+		return nil, alias
+	}
+	return nil, errors.New("not found")
 }
 
 func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, cn string) (*mtgmatcher.InputCard, error) {
@@ -103,19 +205,6 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 		return nil, err
 	}
 
-	// SKU documented as
-	// * for singles:
-	// SGL-[Brand]-[Set]-[Collector Number]-[Language][Foiling][Condition]
-	// * for world champtionship:
-	// SGL-[Brand]-WCPH-[Year][Player Initials][Set][Collector Number][Sideboard]-[Language][Foiling][Condition]
-	// * for promotional cards:
-	// SGL-[Brand]-PRM-[Promo][Set][Collector Number]-[Language][Foiling][Condition]
-	//
-	// examples
-	// * SGL-MTG-PRM-SECRET_SLD_1095-ENN1
-	// * SGL-MTG-PRM-PP_MKM_187-ENN
-	// * SGL-MTG-PWSB-PCA_115-ENN1
-
 	canProcessSKU := language == "en" || language == "English"
 	// We can't use the numbers reported because they match the plain version
 	// and the Match search doesn't upgrade these custom tags
@@ -126,80 +215,13 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 		canProcessSKU = false
 	}
 
-	var number string
-	fields := strings.Split(card.Sku, "-")
-	if len(fields) > 3 && canProcessSKU {
-		setCode := fields[2]
-		number = strings.TrimLeft(fields[3], "0")
-
-		switch setCode {
-		case "MPS2":
-			setCode = "MPS"
-		case "MPS3":
-			setCode = "MP2"
-		case "PWSB":
-			setCode = "PLST"
-			fields := strings.Split(number, "_")
-			if len(fields) == 2 {
-				subSetCode := fields[0]
-				subNumber := fields[1]
-
-				// Handle MH22 and similar
-				_, err := mtgmatcher.GetSet(subSetCode)
-				if err != nil && len(subSetCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
-					subSetCode = subSetCode[:len(subSetCode)-1]
-				}
-
-				number = subSetCode + "-" + strings.TrimLeft(subNumber, "0")
-			} else if len(fields) == 4 {
-				if fields[0] == "PRM" {
-					number = fields[2] + "-" + strings.TrimLeft(fields[3], "0")
-				}
-			}
-		case "PRM", "PRM3":
-			fields := strings.Split(number, "_")
-
-			switch {
-			// Decouple Secret Lair
-			case len(fields) > 2 && fields[0] == "SECRET":
-				setCode = fields[1]
-				number = strings.TrimLeft(fields[2], "0")
-			// Separate the multiple LTR Prerelease cards
-			case strings.HasPrefix(number, "PRE_LTR_"):
-				number = strings.TrimPrefix(number, "PRE_LTR_")
-				if strings.HasSuffix(number, "a") {
-					setCode = "PLTR"
-					number = strings.Replace(number, "a", "s", 1)
-				} else if strings.HasSuffix(number, "b") {
-					setCode = "LTR"
-					number = strings.TrimSuffix(number, "b")
-				}
-			// Prevent edition from mismatching
-			case strings.HasPrefix(number, "PP_2023_"):
-				edition = "PF23"
-				number = strings.TrimLeft(fields[2], "0")
-			}
-		default:
-			if strings.Contains(cardName, "//") && strings.HasSuffix(number, "a") {
-				number = strings.TrimSuffix(number, "a")
-			}
-
-			// Handle set renames like OTC2 and LTR2
-			_, err := mtgmatcher.GetSet(setCode)
-			if err != nil && len(setCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
-				setCode = setCode[:len(setCode)-1]
-			}
-		}
-
-		// Check if we found it and return the id
-		out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
-		if len(out) == 1 {
-			return &mtgmatcher.InputCard{
-				Id:        out[0].UUID,
-				Foil:      foil,
-				Variation: variant,
-				Language:  language,
-			}, nil
+	if canProcessSKU {
+		out, err := ProcessSKU(cardName, card.Sku)
+		if err == nil {
+			// We need to attach this field to take into account promotions
+			// like STA (nonfoil/foil/etched) with the same collector number
+			out.Variation = variant
+			return out, nil
 		}
 	}
 
