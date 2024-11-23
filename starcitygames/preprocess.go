@@ -292,6 +292,11 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 		if strings.Contains(cardName, "Sticker Sheet") {
 			edition = "SUNF"
 		}
+	case "Promo: Date Stamped",
+		"Promo: Planeswalker Stamped":
+		if cardName == "Mirror Room" {
+			variant = strings.Replace(variant, "Fractured Room", "", 1)
+		}
 	}
 
 	return &mtgmatcher.InputCard{
