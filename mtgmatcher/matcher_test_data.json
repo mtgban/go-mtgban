@@ -4688,5 +4688,23 @@
             "name": "Gather the Townsfolk",
             "edition": "DDQ"
         }
+    },
+    {
+        "uuid": "603edebc-a536-5987-aeeb-9a0202d06e79",
+        "description": "ltr_serialized_might_mix_with_poster",
+        "input": {
+            "name": "Aragorn, the Uniter",
+            "variant": "Borderless Serial Number",
+            "edition": "The Lord of the Rings - Serialized"
+        }
+    },
+    {
+        "uuid": "9d1b6dca-03ce-5c5c-b0d4-ee294bb89421",
+        "description": "ltr_poster",
+        "input": {
+            "name": "Aragorn, the Uniter",
+            "variant": "Borderless Poster",
+            "edition": "The Lord of the Rings"
+        }
     }
 ]

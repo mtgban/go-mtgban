@@ -243,7 +243,6 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"IKO": reskinGodzillaCheck,
 
-	"LTR":  lotrTripleFiltering,
 	"PLTR": lotrTripleFiltering,
 
 	"BFZ": fullartCheckForBasicLands,
@@ -284,6 +283,7 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 
 	"PWAR": {japaneseCheck, draftweekendCheck},
 
+	"LTR": {lotrTripleFiltering, serialCheck},
 	"MH3": {retroCheck, serialCheck},
 	// These two checks need to be separate in case two cards have the same number
 	// but are originally from two different editions
