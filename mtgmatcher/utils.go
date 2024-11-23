@@ -20,25 +20,26 @@ var ErrCardNotInEdition = errors.New("unknown edition")
 var ErrCardWrongVariant = errors.New("unknown variant")
 var ErrCardMissingVariant = errors.New("missing necessary variant")
 var ErrUnsupported = errors.New("unsupported")
-var ErrAliasing = newAliasingError()
+var ErrAliasing = NewAliasingError()
 
 type AliasingError struct {
-	message string
-	dupes   []string
+	Message string
+	Dupes   []string
 }
 
-func newAliasingError() *AliasingError {
+func NewAliasingError(duplicates ...string) *AliasingError {
 	return &AliasingError{
-		message: "aliasing detected",
+		Message: "aliasing detected",
+		Dupes:   duplicates,
 	}
 }
 
 func (err *AliasingError) Error() string {
-	return err.message
+	return err.Message
 }
 
 func (err *AliasingError) Probe() []string {
-	return err.dupes
+	return err.Dupes
 }
 
 const LongestCardEver = "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"

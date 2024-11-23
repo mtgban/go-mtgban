@@ -271,9 +271,7 @@ func SimpleSearch(cardName, number string, foil bool) (string, error) {
 	}
 
 	if len(cardIds) > 1 {
-		alias := newAliasingError()
-		alias.dupes = uuids
-		return "", err
+		return "", NewAliasingError(uuids...)
 	}
 
 	return cardIds[0], nil

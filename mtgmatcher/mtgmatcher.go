@@ -473,9 +473,9 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	// FOR SHAME
 	default:
 		logger.Println("Aliasing...")
-		alias := newAliasingError()
+		alias := NewAliasingError()
 		for i := range outCards {
-			alias.dupes = append(alias.dupes, output(outCards[i], inCard.Foil, inCard.isEtched()))
+			alias.Dupes = append(alias.Dupes, output(outCards[i], inCard.Foil, inCard.isEtched()))
 		}
 		err = alias
 	}
