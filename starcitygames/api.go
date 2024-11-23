@@ -274,7 +274,7 @@ func SearchSettings() (*Settings, error) {
 }
 
 func (scg *SCGClient) SearchAll(game, offset, limit int, rarity string) (*SCGSearchResponse, error) {
-	filter := `game_id = %d AND price_category_id = %s AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
+	filter := `game_id = %d AND price_category_id = %s AND is_buying = 1 AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
 	mode := "1"
 	if scg.SealedMode {
 		mode = "2"
