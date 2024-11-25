@@ -194,6 +194,8 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = "PMEI"
 		case "Llanowar Elves":
 			edition = "PRES"
+		case "Sleight of Hand", "Lay Down Arms", "Cut Down":
+			edition = "PLG24"
 		default:
 			if !strings.Contains(variant, "SDCC") {
 				edition = "PMEI"
