@@ -879,9 +879,12 @@ func (ap AllPrintings) Load() cardBackend {
 	var altNames []string
 	for altName, altProps := range alternates {
 		altNorm := Normalize(altName)
-		altNames = append(altNames, altNorm)
-		fullNames = append(fullNames, altName)
-		lowerNames = append(lowerNames, strings.ToLower(altName))
+		_, found := hashes[altNorm]
+		if !found {
+			altNames = append(altNames, altNorm)
+			fullNames = append(fullNames, altName)
+			lowerNames = append(lowerNames, strings.ToLower(altName))
+		}
 		if altProps.IsFlavor {
 			// Retrieve all the uuids with a FlavorName attached
 			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
