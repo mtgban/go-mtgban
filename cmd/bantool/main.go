@@ -100,16 +100,11 @@ var options = map[string]*scraperOption{
 	},
 	"cardsphere": {
 		Init: func() (mtgban.Scraper, error) {
-			csphereEmail := os.Getenv("CARDSPHERE_EMAIL")
-			cspherePassword := os.Getenv("CARDSPHERE_PASSWORD")
-			if csphereEmail == "" || cspherePassword == "" {
-				return nil, errors.New("missing CARDSPHERE_EMAIL or CARDSPHERE_PASSWORD env vars")
+			csphereToken := os.Getenv("CARDSPHERE_TOKEN")
+			if csphereToken == "" {
+				return nil, errors.New("missing CARDSPHERE_TOKEN env var")
 			}
-
-			scraper, err := cardsphere.NewScraper(csphereEmail, cspherePassword)
-			if err != nil {
-				return nil, err
-			}
+			scraper := cardsphere.NewScraper(csphereToken)
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},

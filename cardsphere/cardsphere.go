@@ -1,8 +1,8 @@
 package cardsphere
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	defaultConcurrency = 4
+	defaultConcurrency = 2
 	baseUrl            = "https://www.cardsphere.com/cards/"
-	csMaxOffset        = 80000
+	csMaxOffset        = 10000
 )
 
 var gradingMap = map[string]float64{
@@ -32,16 +32,12 @@ type Cardsphere struct {
 	buylist mtgban.BuylistRecord
 }
 
-func NewScraper(email, password string) (*Cardsphere, error) {
+func NewScraper(token string) *Cardsphere {
 	cs := Cardsphere{}
 	cs.buylist = mtgban.BuylistRecord{}
 	cs.MaxConcurrency = defaultConcurrency
-	client, err := NewCardSphereClient(email, password)
-	if err != nil {
-		return nil, err
-	}
-	cs.client = client
-	return &cs, nil
+	cs.client = NewCardSphereClient(token)
+	return &cs
 }
 
 func (cs *Cardsphere) printf(format string, a ...interface{}) {
@@ -56,95 +52,83 @@ type responseChan struct {
 }
 
 func (cs *Cardsphere) processPage(results chan<- responseChan, offset int) error {
-	offers, err := cs.client.GetOfferListByMaxAbsolute(offset)
+	offers, err := cs.client.GetOfferList(offset)
 	if err != nil {
 		return err
 	}
 
 	for _, offer := range offers {
-		skip := true
-		for _, lang := range offer.Languages {
-			if lang == "EN" {
-				skip = false
+		// Look for the right Id
+		ids, _ := mtgmatcher.SearchEquals(offer.CardName)
+		if len(ids) == 0 {
+			continue
+		}
+
+		var foundId string
+		for _, id := range ids {
+			co, err := mtgmatcher.GetUUID(id)
+			if err != nil {
+				continue
+			}
+			if co.Identifiers["cardsphereId"] == fmt.Sprint(offer.MasterId) {
+				foundId = id
 				break
 			}
 		}
 
-		// When multiple printings are reported, it's impossible to tell
-		// apart which price between max and mi belong to which edition
-		if len(offer.Sets) > 1 || len(offer.Finishes) > 1 {
-			skip = true
-		}
-
-		if skip {
+		if foundId == "" {
 			continue
 		}
 
-		theCard, err := preprocess(offer)
-		if err != nil {
-			continue
-		}
+		for _, finish := range offer.Finishes {
+			cardId, err := mtgmatcher.MatchId(foundId, finish == "F", strings.Contains(offer.Sets[0].Name, "Etched"))
+			if err != nil {
+				continue
+			}
 
-		cardId, err := mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			cs.printf("%v", err)
-			cs.printf("%v", theCard)
-			cs.printf("%v", offer)
+			price := float64(offer.MaxOffer) / 100.0
+			indexPrice := float64(offer.MaxIndex) / 100.0
+			var priceRatio float64
+			if indexPrice > 0 {
+				priceRatio = price / indexPrice * 100
+			}
 
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					cs.printf("- %s", card)
+			for _, cond := range offer.Conditions {
+				conditions := ""
+				switch cond {
+				case 40:
+					conditions = "NM"
+				case 30:
+					conditions = "SP"
+				case 20:
+					conditions = "MP"
+				case 10:
+					conditions = "HP"
+				default:
+					cs.printf("Unsupported %s condition for %s", cond, foundId)
+					continue
 				}
+
+				price *= gradingMap[conditions]
+				if int(price*100) > offer.Balance {
+					continue
+				}
+
+				out := responseChan{
+					cardId: cardId,
+					blEntry: &mtgban.BuylistEntry{
+						// Account for processing fees and cash out fee
+						BuyPrice:   price * 0.87,
+						Conditions: conditions,
+						Quantity:   offer.Quantity,
+						PriceRatio: priceRatio,
+						URL:        fmt.Sprintf("%s%d", baseUrl, offer.MasterId),
+						VendorName: offer.UserDisplay,
+					},
+				}
+
+				results <- out
 			}
-			break
-		}
-
-		price := float64(offer.MaxOffer) / 100
-		indexPrice := float64(offer.MaxIndex) / 100
-		var priceRatio float64
-		if indexPrice > 0 {
-			priceRatio = price / indexPrice * 100
-		}
-
-		for _, cond := range offer.Conditions {
-			conditions := ""
-			switch cond {
-			case 40:
-				conditions = "NM"
-			case 30:
-				conditions = "SP"
-			case 20:
-				conditions = "MP"
-			case 10:
-				conditions = "HP"
-			default:
-				cs.printf("Unsupported %s condition for %s", cond, theCard)
-				continue
-			}
-
-			price *= gradingMap[conditions]
-			if int(price*100) > offer.Balance {
-				continue
-			}
-
-			out := responseChan{
-				cardId: cardId,
-				blEntry: &mtgban.BuylistEntry{
-					BuyPrice:   price,
-					Conditions: conditions,
-					Quantity:   offer.Quantity,
-					PriceRatio: priceRatio,
-					URL:        fmt.Sprintf("%s%d", baseUrl, offer.MasterId),
-					VendorName: offer.UserDisplay,
-				},
-			}
-
-			results <- out
 		}
 	}
 
@@ -162,7 +146,7 @@ func (cs *Cardsphere) parseBL() error {
 			for offset := range offsets {
 				err := cs.processPage(results, offset)
 				if err != nil {
-					cs.printf("%s", err.Error())
+					cs.printf("offset %d: %s", offset, err.Error())
 				}
 				time.Sleep(3 * time.Second)
 			}
@@ -230,6 +214,8 @@ func (cs *Cardsphere) Buylist() (mtgban.BuylistRecord, error) {
 func (cs *Cardsphere) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardsphere"
 	info.Shorthand = "CS"
+	// Rebuild the cash out fee
+	info.CreditMultiplier = 1.1
 	info.BuylistTimestamp = &cs.buylistDate
 	return
 }

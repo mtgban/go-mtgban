@@ -5,43 +5,46 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"strings"
+	"time"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type CardSphereClient struct {
-	client *http.Client
+	client *retryablehttp.Client
 }
 
-func NewCardSphereClient(email, password string) (*CardSphereClient, error) {
+func NewCardSphereClient(token string) *CardSphereClient {
 	cs := CardSphereClient{}
-	cs.client = http.NewClient()
+	cs.client = retryablehttp.NewClient()
 	cs.client.Logger = nil
+	// The api is very sensitive to multiple concurrent requests,
+	// This backoff strategy lets the system chill out a bit before retrying
+	cs.client.Backoff = retryablehttp.LinearJitterBackoff
+	cs.client.RetryWaitMin = 2 * time.Second
+	cs.client.RetryWaitMax = 10 * time.Second
+	cs.client.RetryMax = 20
+
 	jar, _ := cookiejar.New(nil)
+
+	var cookies []*http.Cookie
+	cookie := &http.Cookie{
+		Name:   "cardsphere-session-5",
+		Value:  token,
+		Path:   "/",
+		Domain: ".cardsphere.com",
+	}
+	cookies = append(cookies, cookie)
+
+	u, _ := url.Parse(csURL)
+	u.RawQuery = ""
+	jar.SetCookies(u, cookies)
+
 	cs.client.HTTPClient.Jar = jar
-
-	resp, err := cs.client.PostForm("https://www.cardsphere.com/login", url.Values{
-		"email":    {email},
-		"password": {password},
-	})
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if strings.Contains(string(data), "Invalid credentials") {
-		return nil, errors.New("invalid credentials")
-	}
-
-	return &cs, nil
+	return &cs
 }
 
 type CardSphereOfferList struct {
@@ -79,28 +82,25 @@ type csError struct {
 	Message string `json:"message"`
 }
 
-func (cs *CardSphereClient) GetOfferListByMaxRelative(offset int) ([]CardSphereOfferList, error) {
-	return cs.getOfferList(offset, "maxrel")
-}
+const csURL = "https://www.cardsphere.com/rest/v1/offers?offset=0&order=minrel&absge=50&country=USMIL,UM,US,CA&kind=S&language=EN"
 
-func (cs *CardSphereClient) GetOfferListByMaxAbsolute(offset int) ([]CardSphereOfferList, error) {
-	return cs.getOfferList(offset, "maxabs")
-}
-
-func (cs *CardSphereClient) getOfferList(offset int, mode string) ([]CardSphereOfferList, error) {
-	u, err := url.Parse("https://www.cardsphere.com/rest/v1/offers")
+func (cs *CardSphereClient) GetOfferList(offset int) ([]CardSphereOfferList, error) {
+	u, err := url.Parse(csURL)
 	if err != nil {
 		return nil, err
 	}
-	v := url.Values{}
+	v := u.Query()
 	v.Set("offset", fmt.Sprint(offset))
-	v.Set("order", mode)
-	v.Set("country", "CA,MX,US")
-	v.Set("kind", "S")
-	v.Set("language", "EN")
 	u.RawQuery = v.Encode()
 
-	resp, err := cs.client.Get(u.String())
+	req, err := retryablehttp.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("User-Agent", "curl/8.6.0")
+
+	resp, err := cs.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
