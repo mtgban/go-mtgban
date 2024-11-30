@@ -1281,6 +1281,17 @@ func adjustEdition(inCard *InputCard) {
 			if inCard.Contains("Resale") {
 				edition = backend.Sets["PMEI"].Name
 			}
+		case "Diabolic Edict":
+			if inCard.isIDWMagazineBook() {
+				edition = backend.Sets["PMEI"].Name
+
+				if !strings.Contains(variation, "6") && !strings.Contains(variation, "31") {
+					variation = "6"
+					if inCard.isJPN() || inCard.Language == "Japanese" {
+						variation = "31"
+					}
+				}
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps

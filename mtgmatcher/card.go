@@ -391,7 +391,7 @@ func (c *InputCard) isIDWMagazineBook() bool {
 		c.Variation == "Book" ||
 		c.Contains("Book Insert") ||
 		c.Contains("Coro Coro") || // stks
-		c.Contains("JP Graphic Novel") || // stks
+		c.Contains("Graphic Novel") || // stks
 		strings.Contains(c.Variation, "Book Promo") || // sz
 		c.Contains("Top Deck") || // csi
 		c.Contains("Hobby Japan") || // abu+tcg
