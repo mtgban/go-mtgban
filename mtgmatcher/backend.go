@@ -894,8 +894,13 @@ func (ap AllPrintings) Load() cardBackend {
 				}
 			}
 		} else {
-			// Copy the original uuids
-			hashes[altNorm] = append(hashes[altNorm], hashes[Normalize(altProps.OriginalName)]...)
+			// Copy the original uuids, avoiding duplicates for the cards already added
+			for _, hash := range hashes[Normalize(altProps.OriginalName)] {
+				if slices.Contains(hashes[altNorm], hash) {
+					continue
+				}
+				hashes[altNorm] = append(hashes[altNorm], hash)
+			}
 		}
 	}
 
