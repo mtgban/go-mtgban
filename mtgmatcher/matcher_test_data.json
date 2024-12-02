@@ -3250,7 +3250,7 @@
     },
     {
         "uuid": "f3f73551-7892-5527-a2d6-0534974eecde",
-        "description": "mb1list_samenumericportion_but_conflicting",
+        "description": "mb1list_samenumericportion_but_conflicting_nonpromo",
         "input": {
             "name": "Strangleroot Geist",
             "variant": "DKA-127",
@@ -3258,8 +3258,26 @@
         }
     },
     {
+        "uuid": "f3f73551-7892-5527-a2d6-0534974eecde",
+        "description": "mb1list_samenumericportion_but_conflicting_setname",
+        "input": {
+            "name": "Strangleroot Geist",
+            "variant": "Dark Ascension",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
         "uuid": "6005537d-54e2-505b-8742-510eb35b5603",
-        "description": "mb1list_samenumericportion_but_conflicting_P",
+        "description": "mb1list_samenumericportion_but_conflicting_gameday",
+        "input": {
+            "name": "Strangleroot Geist",
+            "variant": "Game Day",
+            "edition": "Mystery Booster/The List"
+        }
+    },
+    {
+        "uuid": "6005537d-54e2-505b-8742-510eb35b5603",
+        "description": "mb1list_samenumericportion_but_conflicting_promo",
         "input": {
             "name": "Strangleroot Geist",
             "variant": "PDKA-127",

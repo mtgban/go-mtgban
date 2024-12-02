@@ -348,34 +348,42 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 		return true
 	}
 
+	// The few promo sets will have the same number, so filter out all input card that might
+	// resemble a promo, unless correctly tagged
+	if !strings.HasSuffix(setName, "Promos") && (inCard.Contains("P"+code) || inCard.Contains("Promos")) {
+		return true
+	}
+
 	switch inCard.Name {
 	case "Phantom Centaur":
 		return misprintCheck(inCard, card)
 	// Cards with same numeric part need special treatment because the chunk below trips the later check
 	case "Laboratory Maniac",
-		"Bad Moon",
-		"Stasis Snare",
-		"Strangleroot Geist":
+		"Bad Moon":
 		if !inCard.Contains(code) && !inCard.Contains(setName) && EditionTable[inCard.Variation] != setName {
 			return true
 		}
-		switch inCard.Name {
-		case "Stasis Snare", "Strangleroot Geist":
-			if inCard.Contains("P" + code) {
-				return true
+	default:
+		switch {
+		case inCard.Contains("Player Rewards"):
+			if slices.Contains(allPlayerRewardsSet, code) {
+				return false
+			}
+		case inCard.Contains("Game Day"):
+			ids, _ := SearchEquals(card.Name)
+			for _, id := range ids {
+				co := backend.UUIDs[id]
+				if co.SetCode == code && co.HasPromoType(mtgjson.PromoTypeGameDay) {
+					return false
+				}
 			}
 		}
-	default:
-		if inCard.Contains("Player Rewards") && slices.Contains(allPlayerRewardsSet, code) {
-			return false
-		}
 
-		edition := setName
 		if strings.Contains(inCard.Variation, "vs.") {
-			edition = strings.TrimPrefix(edition, "Duel Decks: ")
+			setName = strings.TrimPrefix(setName, "Duel Decks: ")
 		}
 
-		if !inCard.Contains(code) && !inCard.Contains(edition) && EditionTable[inCard.Variation] != setName {
+		if !inCard.Contains(code) && !inCard.Contains(setName) && EditionTable[inCard.Variation] != setName {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step
 			number := ExtractNumber(inCard.Variation)
@@ -384,7 +392,8 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 			listNumbers := strings.Split(number, "-")
 			cardNumber := cardNumbers[len(cardNumbers)-1]
 			listNumber := listNumbers[len(listNumbers)-1]
-			if cardNumber == listNumber {
+			// All promos have the same number, so trust the filtering above
+			if cardNumber == listNumber && !strings.HasSuffix(setName, "Promos") {
 				return false
 			}
 
