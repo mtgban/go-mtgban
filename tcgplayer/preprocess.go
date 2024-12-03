@@ -195,18 +195,12 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			variant = "misprint"
 		case "Sword of Dungeons & Dragons":
 			edition = "H17"
-		case "Shepherd of the Lost":
-			edition = "PURL"
-		case "Counterspell":
-			edition = "PMEI"
 		case "Llanowar Elves":
 			edition = "PDMU"
 		case "Sleight of Hand", "Lay Down Arms", "Cut Down":
 			edition = "PLG24"
 		default:
-			if !strings.Contains(variant, "SDCC") {
-				edition = "PMEI"
-			} else {
+			if strings.Contains(variant, "SDCC") {
 				edition = "SDCC"
 			}
 		}

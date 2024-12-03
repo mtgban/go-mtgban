@@ -311,10 +311,31 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			default:
 				switch set.Code {
 				case "PURL", "PHJ", "DLGM":
+				case "PDOM":
+					// This set contains both FNM and Media cards
+					skip := false
+					foundCards := MatchInSet(inCard.Name, set.Code)
+					for _, card := range foundCards {
+						if card.HasPromoType(mtgjson.PromoTypeFNM) {
+							skip = true
+							break
+						}
+					}
+					if skip {
+						continue
+					}
+				case "P9ED":
+					if inCard.isJPN() {
+						continue
+					}
 				case "PMEI":
 					// This is the only card present in IDW and Media Inserts
 					// so make sure it is properly tagged
 					if inCard.Name == "Duress" && !inCard.isJPN() {
+						continue
+					}
+					// This could be mixed in P9ED Russian
+					if inCard.Name == "Shivan Dragon" && !inCard.isJPN() {
 						continue
 					}
 				default:
