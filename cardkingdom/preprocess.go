@@ -61,8 +61,9 @@ var skuFixupTable = map[string]string{
 	"FMUST-113C": "ULST-37",
 
 	// Wrong PLST codes
-	"MF19-001": "MPF19-001",
-	"MZNR-091": "MKHC-091",
+	"MF19-001":  "MPF19-1",
+	"MZNR-091":  "MKHC-91",
+	"MMOC-0219": "MMOC-249",
 
 	// Naya Sojourners
 	"PM10-028": "PDCI-29",
@@ -90,6 +91,9 @@ var skuFixupTable = map[string]string{
 	// Flusterstorm BaB
 	"MH1-255P":  "MH1-255",
 	"PMH3-0496": "MH3-496",
+
+	// Glimpse, the Unthinkable
+	"MB2-0355": "MB2-594",
 }
 
 // List of tags that need to be preserved in one way or another
