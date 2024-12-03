@@ -792,7 +792,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 					possibleSuffixes = append(possibleSuffixes, "s", mtgjson.SuffixSpecial+"s", mtgjson.SuffixVariant+"s")
 				case inCard.isSerialized():
 					possibleSuffixes = append(possibleSuffixes, "z")
-				case inCard.isJudge():
+				case inCard.isJudge() || inCard.isResale():
 					possibleSuffixes = append(possibleSuffixes, mtgjson.SuffixSpecial)
 				case inCard.isJPN():
 					possibleSuffixes = append(possibleSuffixes, "jpn")

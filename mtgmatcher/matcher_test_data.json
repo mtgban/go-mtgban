@@ -2730,6 +2730,15 @@
         }
     },
     {
+        "uuid": "9163d6c1-b733-5796-8386-ed7d925783b1",
+        "description": "resale_number",
+        "input": {
+            "name": "Park Heights Pegasus",
+            "variant": "211",
+            "edition": "Resale Promos"
+        }
+    },
+    {
         "uuid": "9a72fcfd-5d43-55fb-8ade-8476d38f506b",
         "description": "coreset_normal",
         "input": {
