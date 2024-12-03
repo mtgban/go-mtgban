@@ -473,6 +473,11 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		if num != "" && variant != "a" && variant != "b" {
 			variant = num
 		}
+	case "The List Reprints":
+		variant = number + " " + variant
+		if variant == "50 Full Art" {
+			variant = "Game Day"
+		}
 	case "Fourth Edition",
 		"Revised Edition",
 		"Mirage",
