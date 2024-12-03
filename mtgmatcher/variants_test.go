@@ -43,7 +43,8 @@ func TestMultiPromoVariants(t *testing.T) {
 		for key := range table {
 			for _, subkey := range strings.Fields(key) {
 				// This is a trick just to deal with IXL and RIX aliasing
-				if subkey == "prerelease" {
+				switch subkey {
+				case "prerelease", "phyrexian":
 					continue
 				}
 				if slices.Contains(allKeys, subkey) {

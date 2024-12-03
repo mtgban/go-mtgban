@@ -4406,6 +4406,7 @@ var multiPromosVariants = map[string]map[string]string{
 	"Phyrexian Arena": {
 		"all will be one": "104",
 		"foundations":     "180",
+		"phyrexian one":   "283",
 	},
 	"Brass's Bounty": {
 		"rivals":      "190",

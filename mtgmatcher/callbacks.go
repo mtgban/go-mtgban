@@ -254,6 +254,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 	"SNC": phyrexianCheck,
 	"DMU": phyrexianCheck,
 	"ONE": phyrexianCheck,
+	"FDN": phyrexianCheck,
 
 	"TSR": releaseRetroCheck,
 	"CLU": releaseRetroCheck,
