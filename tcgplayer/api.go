@@ -25,11 +25,16 @@ const (
 )
 
 func GetProductNumber(tcgp *tcgplayer.Product) string {
+	num := RawProductNumber(tcgp)
+	num = strings.TrimLeft(num, "0")
+	num = strings.Split(num, "/")[0]
+	return strings.TrimSpace(num)
+}
+
+func RawProductNumber(tcgp *tcgplayer.Product) string {
 	for _, extData := range tcgp.ExtendedData {
 		if extData.Name == "Number" {
-			num := strings.TrimLeft(extData.Value, "0")
-			num = strings.Split(num, "/")[0]
-			return num
+			return extData.Value
 		}
 	}
 	return ""

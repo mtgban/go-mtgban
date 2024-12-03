@@ -550,17 +550,10 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 
 		// Skip double-faced token cards by checking if there are
 		// multiple collector numbers reported
-		if strings.Contains(num, "//") {
-			duplicates := 0
-			for _, field := range strings.Fields(variant) {
-				num := mtgmatcher.ExtractNumber(field)
-				if num != "" {
-					duplicates++
-				}
-			}
-			if duplicates > 1 {
-				return nil, errors.New("duplicate")
-			}
+		// We cannot trust the name exclusively since it can get corrected
+		rawNum := RawProductNumber(product)
+		if strings.Contains(rawNum, "//") {
+			return nil, errors.New("duplicate")
 		}
 	}
 
