@@ -461,6 +461,9 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		if variant == "Winner" || variant == "Top 8" {
 			return nil, errors.New("untracked")
 		}
+		if len(mtgmatcher.MatchInSet(cardName, "PEWK")) == 1 {
+			edition = "PEWK"
+		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
 			edition = "PCEL"
