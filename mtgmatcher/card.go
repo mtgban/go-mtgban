@@ -171,7 +171,7 @@ func IsToken(name string) bool {
 		Contains(name, "Giant Teddy Bear"),
 		Contains(name, "Guild Symbol"),
 		Contains(name, "Magic Minigame"),
-		Contains(name, "Monarch"),
+		Contains(name, "The Monarch"),
 		Contains(name, "Morph Overlay"),
 		Contains(name, "On Your Turn"),
 		Contains(name, "Online Code"),
