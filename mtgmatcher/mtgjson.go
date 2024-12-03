@@ -71,8 +71,6 @@ type Set struct {
 	// List of card colors present in the set
 	Colors []string
 
-	TCGPlayerGroupId int `json:"tcgplayerGroupId"`
-
 	Booster       map[string]Booster `json:"booster"`
 	SealedProduct []struct {
 		Category    string                     `json:"category"`
