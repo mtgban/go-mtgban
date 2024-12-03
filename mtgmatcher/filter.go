@@ -141,7 +141,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				skip := true
 				foundCards := MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
-					if card.HasFrameEffect(mtgjson.FrameEffectInverted) {
+					if card.HasPromoType(mtgjson.PromoTypeFNM) {
 						inCard.Variation = "FNM Promo"
 						skip = false
 						break
