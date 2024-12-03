@@ -4454,6 +4454,7 @@ var multiPromosVariants = map[string]map[string]string{
 	},
 	"Liliana, Dreadhorde General": {
 		"spark":       "97",
+		"alternate":   "97",
 		"foundations": "176",
 	},
 	"Splendid Reclamation": {
