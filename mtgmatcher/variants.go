@@ -4480,6 +4480,7 @@ var multiPromosTable = map[string]map[string]map[string]string{
 	"Dominaria Promos":                   multiPromosVariants,
 	"Eldritch Moon Promos":               multiPromosVariants,
 	"Fate Reforged Promos":               multiPromosVariants,
+	"Foundations Promos":                 multiPromosVariants,
 	"Gatecrash Promos":                   multiPromosVariants,
 	"Guilds of Ravnica Promos":           multiPromosVariants,
 	"Innistrad: Crimson Vow Promos":      multiPromosVariants,
@@ -4494,4 +4495,7 @@ var multiPromosTable = map[string]map[string]map[string]string{
 	"The Lost Caverns of Ixalan Promos":  multiPromosVariants,
 	"Throne of Eldraine Promos":          multiPromosVariants,
 	"War of the Spark Promos":            multiPromosVariants,
+
+	// Not actually used, but needed to have tests pass
+	"Theros Promos": nil,
 }
