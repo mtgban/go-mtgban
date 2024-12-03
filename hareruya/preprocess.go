@@ -34,7 +34,7 @@ var missingTable = map[string]string{
 }
 
 var promoTable = map[string]string{
-	"Jace Beleren":      "PBOOK",
+	"Jace Beleren":      "PMEI",
 	"Liliana Vess":      "PDP10",
 	"Phyrexian Rager":   "PMEI",
 	"Warmonger":         "PMEI",
@@ -52,7 +52,7 @@ var promoTable = map[string]string{
 	"Reliquary Tower":             "PLG20",
 	"Sword of Dungeons & Dragons": "H17",
 	"Steward of Valeron":          "PURL",
-	"Knight Exemplar":             "PRES",
+	"Knight Exemplar":             "PM11",
 	"Incinerate":                  "PLGM",
 	"Crystalline Sliver":          "F03",
 	"Reya Dawnbringer":            "P10E",

@@ -2652,15 +2652,6 @@
         }
     },
     {
-        "uuid": "095baf23-4c83-5be7-b12f-67fbb7deddb4",
-        "description": "book_promo",
-        "input": {
-            "name": "Jace Beleren",
-            "variant": "Book",
-            "edition": "ignored"
-        }
-    },
-    {
         "uuid": "82b14a71-55ba-57d3-8d4b-597a801e4d65",
         "description": "idw_normal",
         "input": {
@@ -2722,11 +2713,20 @@
         }
     },
     {
-        "uuid": "857618a8-7f5f-5a1f-8435-b210a8e8250c",
-        "description": "magazine_insert_as_pres",
+        "uuid": "2a0b743d-9c41-56fc-8d2b-60c3b718d233",
+        "description": "magazine_insert_as_resale",
         "input": {
             "name": "Beast Whisperer",
             "edition": "Magazine Inserts"
+        }
+    },
+    {
+        "uuid": "72e00dcd-a413-5536-9ccc-47e2e3409a18",
+        "description": "resale_promo",
+        "input": {
+            "name": "Broodmate Dragon",
+            "variant": "Store Foil",
+            "edition": "ignored"
         }
     },
     {

@@ -663,7 +663,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 			cardName = "Gaze of Granite"
 			edition = "IDW Comics 2013"
 		case "Genesis Hydra":
-			edition = "PRES"
+			edition = "PM15"
 		default:
 			if strings.Contains(fullName, "005") && strings.Contains(fullName, "GP") {
 				edition = "G18"
@@ -671,8 +671,6 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 				variant = strings.Replace(variant, "Top 8", "", 1)
 			} else if strings.Contains(variant, "SLD Promo") {
 				edition = "SLD"
-			} else if variant == "Walmart" {
-				edition = "PRES"
 			}
 
 			switch variant {

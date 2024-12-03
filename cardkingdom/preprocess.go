@@ -17,12 +17,6 @@ var skuFixupTable = map[string]string{
 	"PAL96-003": "PARL-003",
 	"PAL96-004": "PARL-004",
 
-	// Jaya Ballard, Task Mage
-	"MPS-001A": "PRES-001A",
-
-	// Jace Beleren book promo
-	"PBOK-001": "PBOOK-001",
-
 	// Mind Stone
 	"PLG21-001": "PW21-005",
 
@@ -175,12 +169,6 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 			strings.Contains(variation, "Game Day"),
 			strings.Contains(variation, "Gameday"):
 			edition = card.Edition
-		case strings.Contains(variation, "Resale"):
-			edition = "PRES"
-			if len(mtgmatcher.MatchInSet(card.Name, "PMEI")) > 0 {
-				edition = "PMEI"
-				variation = ""
-			}
 		}
 	case "Mystery Booster/The List":
 		edition = card.Edition

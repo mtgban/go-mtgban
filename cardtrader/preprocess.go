@@ -112,18 +112,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 		if cardName == "Wilt-Leaf Cavaliers" {
 			edition = "PDCI"
 		}
-	case "Misc Promos":
-		switch variant {
-		case "Retro Frame":
-			edition = "PEWK"
-		case "Summer Vacation Promos 2022":
-			edition = variant
-		default:
-			edition = "PMEI"
-			if cardName == "Loam Lion" {
-				edition = "PRES"
-			}
-		}
 	case "The List":
 		switch cardName {
 		case "Lightning Bolt":

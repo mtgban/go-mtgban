@@ -135,9 +135,6 @@ func preprocess(cardName, edition, variant string) (*mtgmatcher.InputCard, error
 			variant = ""
 		case "Warmonger":
 			edition = "PMEI"
-		case "Stonecoil Serpent",
-			"Vito, Thorn of the Dusk Rose":
-			edition = "PRES"
 		case "Sanctum Prelate":
 			edition = "MH2"
 		}

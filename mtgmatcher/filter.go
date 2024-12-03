@@ -53,7 +53,6 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case "Duels of the Planeswalkers 2012 Promos",
 				"Grand Prix Promos",
 				"Pro Tour Promos",
-				"Resale Promos",
 				"World Championship Promos":
 				continue
 			default:
@@ -298,35 +297,44 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			}
 
 		case inCard.isIDWMagazineBook():
-			switch {
-			case strings.HasPrefix(set.Name, "30th Anniversary"):
+			// No Media cards in these sets
+			switch set.Code {
+			case "P30A", "P30H", "P30M":
 				continue
-			case !inCard.isJPN() && set.Name == "IDW Comics Inserts":
+			case "PGPX", "PWOR", "PPRO", "PWCS":
+				continue
+			}
+
+			switch {
+			case !inCard.isJPN() && (set.Name == "IDW Comics Inserts" || set.Name == "HarperPrism Book Promos"):
 			case !inCard.isJPN() && strings.HasPrefix(set.Name, "Duels of the Planeswalkers "+maybeYear):
-			case !inCard.isJPN() && strings.HasSuffix(set.Name, "Promos"):
-				switch set.Name {
-				case "Grand Prix Promos",
-					"Planeswalker Championship Promos",
-					"Pro Tour Promos",
-					"World Championship Promos":
-					continue
-				case "HarperPrism Book Promos",
-					"Miscellaneous Book Promos",
-					"Resale Promos":
-					// Relevant sets falling into the HasSuffix above
-				}
 			default:
-				switch set.Name {
-				case "URL/Convention Promos":
-				case "Hobby Japan Promos":
-				case "DCI Legend Membership":
-				case "Media Inserts":
+				switch set.Code {
+				case "PURL", "PHJ", "DLGM":
+				case "PMEI":
 					// This is the only card present in IDW and Media Inserts
 					// so make sure it is properly tagged
 					if inCard.Name == "Duress" && !inCard.isJPN() {
 						continue
 					}
 				default:
+					if !strings.HasSuffix(set.Name, "Promos") {
+						continue
+					}
+				}
+			}
+
+		case inCard.isResale():
+			switch set.Code {
+			case "PDCI", "P30A", "P30H", "P30M":
+				continue
+			case "PDOM":
+				// This might conflict with Llanowar Elves
+				continue
+			case "PMEI", "PLTC":
+				// These sets may actually contain Resale cards
+			default:
+				if !strings.HasSuffix(set.Name, "Promos") {
 					continue
 				}
 			}

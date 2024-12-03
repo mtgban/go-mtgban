@@ -84,8 +84,6 @@ var EditionTable = map[string]string{
 
 	"Enchanting Tales": "Wilds of Eldraine: Enchanting Tales",
 
-	"Beadle & Grimm Phyrexian": "Media Inserts",
-
 	// Gift pack
 	"2017 Gift Pack":       "2017 Gift Pack",
 	"2018 Gift Pack":       "M19 Gift Pack",
@@ -407,18 +405,6 @@ var EditionTable = map[string]string{
 	"Ugin's Fate Promos":                      "Ugin's Fate",
 	"Ugin's Fate promos":                      "Ugin's Fate",
 	"Promos: Ugins Fate":                      "Ugin's Fate",
-
-	// Resale
-	"Media Promo":     "Resale Promos",
-	"Repack Insert":   "Resale Promos",
-	"Resale Foil":     "Resale Promos",
-	"Resale Promo":    "Resale Promos",
-	"Resale Walmart ": "Resale Promos",
-	"Resale Walmart":  "Resale Promos",
-	"Resale":          "Resale Promos",
-	"Store Foil":      "Resale Promos",
-	"Walmart Resale":  "Resale Promos",
-	"Walmart Foil":    "Resale Promos",
 
 	// Convention
 	"Dragon'Con 1994":       "Dragon Con",

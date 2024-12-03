@@ -986,10 +986,6 @@ func adjustEdition(inCard *InputCard) {
 	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
 		edition = "Fourth Edition Foreign Black Border"
 
-	// JPN promos from PRES
-	case inCard.isIDWMagazineBook() && inCard.isJPN() && len(MatchInSet(inCard.Name, "PRES")) != 0:
-		edition = backend.Sets["PRES"].Name
-
 	// Separate timeshifted cards
 	case inCard.Contains("Modern Horizons") &&
 		(inCard.Contains("Retro Frame") || inCard.Contains("Timeshift")) &&
@@ -1276,10 +1272,6 @@ func adjustEdition(inCard *InputCard) {
 			"Wizard's Rockets":
 			if inCard.isBorderless() && !inCard.isPrerelease() {
 				variation += " Prerelease"
-			}
-		case "Goro-Goro, Disciple of Ryusei":
-			if inCard.Contains("Resale") {
-				edition = backend.Sets["PMEI"].Name
 			}
 		case "Diabolic Edict":
 			if inCard.isIDWMagazineBook() {

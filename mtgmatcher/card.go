@@ -389,7 +389,9 @@ func (c *InputCard) isIDWMagazineBook() bool {
 		// Cannot use Contains because it may trigger a false positive
 		// for cards with "book" in their variation (insidious bookworms)
 		c.Variation == "Book" ||
+		c.Variation == "Japanese Promo" || // tcg
 		c.Contains("Book Insert") ||
+		c.Contains("Walmart") ||
 		c.Contains("Coro Coro") || // stks
 		c.Contains("Graphic Novel") || // stks
 		strings.Contains(c.Variation, "Book Promo") || // sz
@@ -401,7 +403,12 @@ func (c *InputCard) isIDWMagazineBook() bool {
 		c.Contains("Beadle & Grimm Phyrexian") || // scg
 		c.Contains("Stance Socks") || // scg
 		c.Contains("Manga Promo") || // csi
+		c.Contains("Media Promo") || // tcg
 		c.Contains("Media Insert") // mm+nf
+}
+
+func (c *InputCard) isResale() bool {
+	return !c.Contains("Championship") && (c.Contains("Repack") || c.Contains("Store") || c.Contains("Resale"))
 }
 
 func (c *InputCard) isJudge() bool {

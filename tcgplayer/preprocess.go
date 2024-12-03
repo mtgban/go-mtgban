@@ -193,7 +193,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		case "Counterspell":
 			edition = "PMEI"
 		case "Llanowar Elves":
-			edition = "PRES"
+			edition = "PDMU"
 		case "Sleight of Hand", "Lay Down Arms", "Cut Down":
 			edition = "PLG24"
 		default:

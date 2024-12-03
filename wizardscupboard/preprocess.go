@@ -111,7 +111,7 @@ var promo2variant = map[string]string{
 	"Man-o'-War":       "Arena",
 	"Uktabi Orangutan": "Arena",
 
-	"Angelic Skirmisher": "Resale Promos",
+	"Angelic Skirmisher": "Gatecrash Promos",
 	"Ghost-Lit Raider":   "Release Promos",
 	"Lhurgoyf":           "Deckmasters",
 	"Nighthowler":        "Game day Promo",

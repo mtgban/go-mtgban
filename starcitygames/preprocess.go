@@ -264,20 +264,10 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 			case "Festival Full Art":
 				edition = "PF24"
 			}
-		case "Llanowar Elves":
-			switch variant {
-			case "Resale Retro Frame":
-				edition = "PRES"
-			}
 		case "Pyromancer's Gauntlet":
 			switch variant {
 			case "Hasbro Retro Frame":
 				edition = "PMEI"
-			}
-		case "Lathril, Blade of the Elves":
-			switch variant {
-			case "Resale Foil Etched":
-				edition = "PRES"
 			}
 		case "Rampant Growth":
 			if variant == "Release Foil Etched" {

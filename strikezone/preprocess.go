@@ -231,7 +231,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		}
 	case "Promos: Media":
 		for _, code := range []string{
-			"PHPR", "PMEI", "PURL", "PRES", "PBOOK",
+			"PHPR", "PMEI", "PURL",
 			"PDTP", "PDP10", "PDP12", "PDP13", "PDP14", "PDP15",
 		} {
 			if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
