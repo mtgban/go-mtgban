@@ -335,6 +335,16 @@ var allPlayerRewardsSet = []string{
 	"P03", "P04", "P05", "P06", "P07", "P08", "P09", "P10", "P11",
 }
 
+var onlineCodes = map[string]string{
+	"ME1": "Masters Edition I",
+	"ME2": "Masters Edition II",
+	"ME3": "Masters Edition III",
+	"ME4": "Masters Edition IV",
+	"TD0": "Magic Online Theme Decks",
+	"TD2": "Duel Decks: Mirrodin Pure vs. New Phyrexia",
+	"TPR": "Tempest Remastered",
+}
+
 func listEditionCheck(inCard *InputCard, card *Card) bool {
 	var setName string
 
@@ -342,10 +352,11 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 	set, err := GetSet(code)
 	if err == nil {
 		setName = set.Name
-	} else if code == "TPR" {
-		setName = "Tempest Remastered"
 	} else {
-		return true
+		setName = onlineCodes[code]
+		if setName == "" {
+			return true
+		}
 	}
 
 	// The few promo sets will have the same number, so filter out all input card that might
