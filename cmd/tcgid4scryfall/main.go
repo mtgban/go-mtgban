@@ -86,6 +86,7 @@ func processCards(channel chan<- responseChan, page int) error {
 		custom_fields := map[string]string{
 			"number":  tcgplayer.GetProductNumber(&product),
 			"variant": variant,
+			"theCard": theCard.String(),
 		}
 
 		out := responseChan{
