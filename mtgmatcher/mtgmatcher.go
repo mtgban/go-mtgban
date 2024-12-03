@@ -767,7 +767,7 @@ func adjustEdition(inCard *InputCard) {
 		edition = "Zendikar Expeditions"
 	case strings.Contains(edition, "Expeditions") && strings.Contains(edition, "Rising"):
 		edition = "Zendikar Rising Expeditions"
-	case inCard.Contains("Timeshift") && inCard.Contains("Spiral"):
+	case inCard.Contains("Timeshift") && inCard.Contains("Spiral") && !inCard.isMysteryList():
 		if len(MatchInSet(inCard.Name, "TSB")) != 0 {
 			edition = backend.Sets["TSB"].Name
 		} else if len(MatchInSet(inCard.Name, "TSR")) != 0 {
