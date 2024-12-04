@@ -95,6 +95,9 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		// (ie IDW Promos P4 becomeing Starter 2000)
 		number = strings.TrimLeft(number, "P")
 	}
+	number = strings.TrimLeft(number, "0")
+	number = strings.TrimSpace(number)
+
 	switch cardName {
 	case "Magic Guru":
 		return nil, mtgmatcher.ErrUnsupported
@@ -492,7 +495,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			for _, code := range []string{
 				"SLD", "SLP",
 			} {
-				if len(mtgmatcher.MatchInSetNumber(cardName, code, strings.TrimLeft(number, "0"))) == 1 {
+				if len(mtgmatcher.MatchInSetNumber(cardName, code, number)) == 1 {
 					edition = code
 					variant = number
 				}
@@ -619,7 +622,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			} {
 				// number is often wrong, so
 				num, _ := strconv.Atoi(number)
-				results := mtgmatcher.MatchInSetNumber(cardName, code, strings.TrimLeft(number, "0"))
+				results := mtgmatcher.MatchInSetNumber(cardName, code, number)
 				switch code {
 				case "PMEI", "PEWK", "PW21", "PW22", "PW23":
 					results = mtgmatcher.MatchInSet(cardName, code)
