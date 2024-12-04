@@ -283,11 +283,6 @@ func card2promo(cardName, variant string) (string, string) {
 	case "Masked Vandal":
 		edition = "KHM"
 		variant = "405"
-	case "Goro-Goro, Disciple of Ryusei":
-		if variant == "Watermark Color Pie Media Insert Promo" {
-			edition = "PMEI"
-			variant = "59"
-		}
 	case "Reliquary Tower":
 		if variant == "Textless Commander Promo" {
 			edition = "PF23"
