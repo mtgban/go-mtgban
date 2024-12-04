@@ -106,7 +106,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 
 			mkm.printf("%v", err)
 			mkm.printf("%q", theCard)
-			mkm.printf("%v|%v|%v", product.Name, product.Number, product.ExpansionName)
+			mkm.printf("%v | %v | %v ", product.Name, product.ExpansionName, product.Number)
 
 			var alias *mtgmatcher.AliasingError
 			if errors.As(err, &alias) {
