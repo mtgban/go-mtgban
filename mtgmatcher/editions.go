@@ -47,6 +47,13 @@ var EditionTable = map[string]string{
 	"Outlaws of Thunder Junction: Breaking News": "Breaking News",
 	"Outlaws of Thunder Junction: The Big Score": "The Big Score",
 
+	// FDN
+	"Foundations: Beginner Box":                            "Foundations",
+	"Foundations: Starter Collection":                      "Foundations",
+	"Magic: The Gathering Foundations":                     "Foundations",
+	"Magic: The Gathering Foundations: Beginner Box":       "Foundations",
+	"Magic: The Gathering Foundations: Starter Collection": "Foundations",
+
 	// BRR
 	"Retro Frame Artifacts":                    "The Brothers' War Retro Artifacts",
 	"The Brothers War: Retro Frame Artifacts":  "The Brothers' War Retro Artifacts",
