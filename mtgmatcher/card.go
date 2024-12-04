@@ -172,6 +172,7 @@ func IsToken(name string) bool {
 		Contains(name, "Guild Symbol"),
 		Contains(name, "Magic Minigame"),
 		Contains(name, "The Monarch"),
+		strings.Contains(name, "The Initiative"),
 		Contains(name, "Morph Overlay"),
 		Contains(name, "On Your Turn"),
 		Contains(name, "Online Code"),
