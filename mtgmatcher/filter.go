@@ -310,7 +310,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case !inCard.isJPN() && strings.HasPrefix(set.Name, "Duels of the Planeswalkers "+maybeYear):
 			default:
 				switch set.Code {
-				case "PURL", "PHJ", "DLGM":
+				case "PURL", "JP1", "DLGM":
 				case "PDOM":
 					// This set contains both FNM and Media cards
 					skip := false
