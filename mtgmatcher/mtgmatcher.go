@@ -954,8 +954,8 @@ func adjustEdition(inCard *InputCard) {
 		variation = "Etched"
 
 	// Planechase deduplication
-	case inCard.Contains("Planechase") && len(MatchInSet(inCard.Name, "PDCI")) != 0 && (inCard.isRelease() || inCard.isDCIPromo() || inCard.isWPNGateway()):
-		edition = backend.Sets["PDCI"].Name
+	case inCard.Contains("Planechase") && len(MatchInSet(inCard.Name, "DCI")) != 0 && (inCard.isRelease() || inCard.isDCIPromo() || inCard.isWPNGateway()):
+		edition = backend.Sets["DCI"].Name
 	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
 		edition = backend.Sets["OHOP"].Name
 	case inCard.Equals("Planechase 2012") && len(MatchInSet(inCard.Name, "OPC2")) != 0:
@@ -1134,7 +1134,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Fling":
 			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
-				edition = backend.Sets["PDCI"].Name
+				edition = backend.Sets["DCI"].Name
 				if inCard.isDCIPromo() {
 					variation = "50"
 				} else if inCard.isWPNGateway() {
@@ -1143,7 +1143,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Sylvan Ranger":
 			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
-				edition = backend.Sets["PDCI"].Name
+				edition = backend.Sets["DCI"].Name
 				if inCard.isDCIPromo() {
 					variation = "51"
 				} else if inCard.isWPNGateway() {
@@ -1152,7 +1152,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Naya Sojourners":
 			if inCard.isGenericPromo() {
-				edition = backend.Sets["PDCI"].Name
+				edition = backend.Sets["DCI"].Name
 			}
 		case "Hall of Triumph":
 			if inCard.isGenericPromo() {

@@ -66,9 +66,9 @@ var skuFixupTable = map[string]string{
 	"MMOC-0219": "MMOC-249",
 
 	// Naya Sojourners
-	"PM10-028": "PDCI-29",
+	"PM10-028": "DCI-29",
 	// Mitotic Slime
-	"PM11-185": "PDCI-53",
+	"PM11-185": "DCI-53",
 
 	// Duel Decks Beast Token
 	"TDDD-001": "TDDD-T1",

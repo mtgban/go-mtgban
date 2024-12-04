@@ -110,7 +110,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 		}
 	case "Grand Prix Promos":
 		if cardName == "Wilt-Leaf Cavaliers" {
-			edition = "PDCI"
+			edition = "DCI"
 		}
 	case "The List":
 		switch cardName {

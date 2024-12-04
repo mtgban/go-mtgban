@@ -347,7 +347,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 
 		case inCard.isResale():
 			switch set.Code {
-			case "PDCI", "P30A", "P30H", "P30M":
+			case "DCI", "P30A", "P30H", "P30M":
 				continue
 			case "PDOM":
 				// This might conflict with Llanowar Elves
@@ -647,7 +647,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 		case inCard.isExtendedArt() && !inCard.Contains("Game Day"):
 			if setDate.Before(PromosForEverybodyYay) {
 				switch set.Code {
-				case "PDCI":
+				case "DCI":
 				default:
 					continue
 				}

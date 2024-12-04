@@ -444,7 +444,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 	case "WPN & Gateway Promos":
 		switch cardName {
 		case "Mind Stone":
-			edition = "PDCI"
+			edition = "DCI"
 			if variant == "2021" {
 				edition = "PW21"
 			}

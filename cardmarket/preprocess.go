@@ -479,7 +479,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 	case "Release Promos":
 		switch cardName {
 		case "Plots That Span Centuries", "Tazeem":
-			edition = "PDCI"
+			edition = "DCI"
 		case "Stairs to Infinity":
 			edition = "PHOP"
 		case "Reya Dawnbringer":

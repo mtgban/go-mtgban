@@ -259,7 +259,7 @@ func card2promo(cardName, variant string) (string, string) {
 			variant = "2020-1"
 		}
 	case "Dauntless Dourbark":
-		edition = "PDCI"
+		edition = "DCI"
 		variant = "12"
 	case "Eye of Ugin":
 		edition = "J20"
