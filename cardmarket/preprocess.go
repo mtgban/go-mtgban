@@ -631,12 +631,11 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				edition = "P30T"
 			}
 		case "Mental Misstep":
+			variant = ""
 			if edition == "Promos" {
 				edition = "PMEI"
-				variant = "51"
 			} else if edition == "DCI Promos" {
 				edition = "PEWK"
-				variant = ""
 			}
 		case "Sauron, the Dark Lord":
 			edition = "LTR"
