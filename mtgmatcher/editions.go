@@ -147,6 +147,8 @@ var EditionTable = map[string]string{
 	// Ponies
 	"Ponies: The Galloping": "Ponies: The Galloping",
 
+	"Ravnica: Cluedo Edition": "Ravnica: Clue Edition",
+
 	// Champs
 	"Champs / States Promo":  "Champs and States",
 	"Champs":                 "Champs and States",

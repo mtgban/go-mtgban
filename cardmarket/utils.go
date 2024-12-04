@@ -10,6 +10,7 @@ import (
 
 var filteredExpansionsTags = []string{
 	"Filler Cards",
+	"Gatherers' Tavern",
 	"GnD Cards",
 	"Heroes of the Realm",
 	"MKM Series",

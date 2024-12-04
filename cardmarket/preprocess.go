@@ -76,6 +76,7 @@ var gameday2editionTable = map[string]string{
 	"Workshop Warchief":        "GDY",
 	"Braids, Arisen Nightmare": "GDY",
 	"Surge Engine":             "GDY",
+	"Supplant Form":            "PFRF",
 }
 
 func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error) {
@@ -469,14 +470,30 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			edition = "M19 Standard Showdown"
 		case "V.3":
 			edition = "MKM Standard Showdown"
+		default:
+			if len(mtgmatcher.MatchInSet(cardName, "PCBB")) == 1 {
+				edition = "PCBB"
+			}
 		}
 
 	case "Release Promos":
-		if len(mtgmatcher.MatchInSet(cardName, "PCMD")) == 1 {
-			edition = "PCMD"
-		} else if cardName == "Shivan Dragon" {
+		switch cardName {
+		case "Plots That Span Centuries", "Tazeem":
+			edition = "PDCI"
+		case "Stairs to Infinity":
+			edition = "PHOP"
+		case "Reya Dawnbringer":
+			edition = "P10E"
+		case "Shivan Dragon":
 			return nil, mtgmatcher.ErrUnsupported
+		default:
+			if len(mtgmatcher.MatchInSet(cardName, "PCMD")) == 1 {
+				edition = "PCMD"
+			}
 		}
+
+	case "Resale Promos":
+		variant = ""
 
 	case "MagicCon Products":
 		switch cardName {
@@ -503,10 +520,24 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		}
 
 	case "Magic the Gathering Products":
-		variant = number
 		switch cardName {
-		case "Culling the Weak", "Disenchant":
+		case "Culling the Weak",
+			"Disenchant",
+			"Snuff Out":
 			edition = "PMEI"
+		case "Darksteel Colossus":
+			edition = "PW24"
+		case "Approach of the Second Sun":
+			edition = "Q06"
+		case "Lay Down Arms", "Sleight of Hand", "Cut Down":
+			edition = "PLG24"
+		case "Counterspell":
+			if number == "4 JAN 2023" {
+				edition = "SLD"
+				variant = number
+			}
+		default:
+			variant = number
 		}
 
 	// Catch-all sets for anything promo
@@ -562,10 +593,10 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			if number == "1" {
 				edition = "P30M"
 				variant = "1F★"
-			} else if number == "PBD/1" {
+			} else if number == "BD/1" {
 				edition = "P30M"
 				variant = "1P"
-			} else if variant == "3" {
+			} else if number == "3" {
 				edition = "PSVC"
 				variant = ""
 			}
@@ -578,10 +609,6 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			if number == "2024/2" {
 				edition = "PW24"
 				variant = "8"
-			}
-		case "Costly Plunder":
-			if edition == "Promos" {
-				edition = "PW24"
 			}
 		case "Sol Ring":
 			if edition == "Promos" {
@@ -611,20 +638,24 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				edition = "PEWK"
 				variant = ""
 			}
+		case "Sauron, the Dark Lord":
+			edition = "LTR"
+			variant = "301"
 
 		default:
 			for _, code := range []string{
 				"PMEI", "PPRO", "PEWK", "PNAT", "WMC", "PWCS",
-				"PF23", "PLG21",
-				"SLC",
-				"PW21", "PW22", "PW23",
-				"PL21", "PL22", "PL23",
+				"PF23", "PLG21", "PLG22", "PLG23", "PLG24",
+				"SLC", "SLP",
+				"PRCQ", "PRC23", "PRC24",
+				"PW21", "PW22", "PW23", "PW24",
+				"PL21", "PL22", "PL23", "PL24",
 			} {
 				// number is often wrong, so
 				num, _ := strconv.Atoi(number)
 				results := mtgmatcher.MatchInSetNumber(cardName, code, number)
 				switch code {
-				case "PMEI", "PEWK", "PW21", "PW22", "PW23":
+				case "PMEI", "PEWK", "PW21", "PW22", "PW23", "PW24":
 					results = mtgmatcher.MatchInSet(cardName, code)
 				default:
 					if num < 10 {
@@ -805,6 +836,12 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		case "Plains":
 			variant = "UGL-84"
 		}
+
+	case "Mystery Booster 2: Playtest Cards":
+		edition = "MB2"
+
+	case "Mystery Booster 2: Reprints from Across Magic's History":
+		edition = "PLST"
 
 	case "The List":
 		variant = number
@@ -1049,10 +1086,12 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 	case "Murders at Karlov Manor":
 		variant = number
-		if ogVariant == "V.1" {
-			variant = "a"
-		} else if ogVariant == "V.2" {
-			variant = "b"
+		if !mtgmatcher.IsBasicLand(cardName) {
+			if ogVariant == "V.1" {
+				variant = "a"
+			} else if ogVariant == "V.2" {
+				variant = "b"
+			}
 		}
 
 	case "30th Anniversary History Promos":
@@ -1142,27 +1181,15 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				}
 			}
 
-			// Anything between KTK and ELD
 			// These sets are always Prerelease, except for a couple of intro packs
 			// that are marked in an unpredictable way
 			if setDate.After(mtgmatcher.NewPrereleaseDate) &&
 				setDate.Before(mtgmatcher.PromosForEverybodyYay) {
-				variant = "Prerelease"
 
-				prereleaseTag := "V.1"
-				switch editionNoSuffix {
-				case "Eldrich Moon",
-					"Shadows over Innistrad",
-					"Oath of the Gatewatch",
-					"Magic Origins":
-					prereleaseTag = "V.2"
-				}
-				if ogVariant == prereleaseTag {
-					variant = "Prerelease"
-				} else if ogVariant != number {
+				variant = "Prerelease"
+				if ogVariant == "V.2" {
 					variant = number
 				}
-
 			} else if setDate.After(mtgmatcher.PromosForEverybodyYay) {
 				// Default tags
 				customVariant := ""
@@ -1197,7 +1224,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 					specialTag = "V.3"
 					customVariant = "oversized"
 					bundleTag = "V.4"
-				case "Innistrad: Crimson Vow: Promos":
+				case "Innistrad: Crimson Vow":
 					specialTag = "V.3"
 					customVariant = "Play Promo"
 				}
@@ -1230,10 +1257,11 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 	// Try separating SLD and PLST cards if possible
 	if strings.Contains(ogEdition, "Secret Lair Commander Deck") {
-		for _, card := range mtgmatcher.MatchInSetNumber(cardName, "PLST", number) {
+		for _, card := range mtgmatcher.MatchInSet(cardName, "PLST") {
 			if strings.HasSuffix(card.Number, "-"+number) {
 				edition = "PLST"
-				variant = number
+				variant = card.Number
+				break
 			}
 		}
 
