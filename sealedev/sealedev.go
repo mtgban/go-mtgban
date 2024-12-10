@@ -195,6 +195,7 @@ func (ss *SealedEVScraper) repeatedPicks(setCode, productUUID string) ([]string,
 
 		// Repeat booster generation if there is one card type known to skew values
 		rePick := false
+		cardName := ""
 		for _, pick := range picks {
 			co, err := mtgmatcher.GetUUID(pick)
 			if err != nil {
@@ -202,11 +203,12 @@ func (ss *SealedEVScraper) repeatedPicks(setCode, productUUID string) ([]string,
 			}
 			if co.HasPromoType(mtgjson.PromoTypeSerialized) {
 				rePick = true
+				cardName = co.String()
 				break
 			}
 		}
 		if rePick {
-			ss.printf("%s - %s: repicking product (%d/%d)", setCode, productUUID, pickCount, EVMaxRepickCount)
+			ss.printf("%s - %s contains %s: repicking... (%d/%d)", setCode, productUUID, cardName, pickCount, EVMaxRepickCount)
 			continue
 		}
 
