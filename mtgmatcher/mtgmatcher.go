@@ -1098,7 +1098,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Reya Dawnbringer":
 			if inCard.isRelease() {
-				edition = "P10E"
+				edition = "Tenth Edition Promos"
 			}
 		case "Ajani Vengeant":
 			if inCard.isRelease() {
@@ -1134,7 +1134,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Fling":
 			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
-				edition = backend.Sets["DCI"].Name
+				edition = "DCI Promos"
 				if inCard.isDCIPromo() {
 					variation = "50"
 				} else if inCard.isWPNGateway() {
@@ -1143,7 +1143,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Sylvan Ranger":
 			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
-				edition = backend.Sets["DCI"].Name
+				edition = "DCI Promos"
 				if inCard.isDCIPromo() {
 					variation = "51"
 				} else if inCard.isWPNGateway() {
@@ -1152,7 +1152,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Naya Sojourners":
 			if inCard.isGenericPromo() {
-				edition = backend.Sets["DCI"].Name
+				edition = "DCI Promos"
 			}
 		case "Hall of Triumph":
 			if inCard.isGenericPromo() {
@@ -1160,21 +1160,21 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Reliquary Tower":
 			if inCard.Contains("League") {
-				edition = backend.Sets["PM19"].Name
+				edition = "Core Set 2019 Promos"
 			} else if inCard.Contains("Bring a Friend") {
-				edition = backend.Sets["PLG20"].Name
+				edition = "Love Your LGS 2020"
 			}
 		case "Bolas's Citadel":
 			if inCard.isGenericPromo() {
-				edition = backend.Sets["PWAR"].Name
+				edition = "War of the Spark Promos"
 			}
 		case "Llanowar Elves":
 			if inCard.isGenericPromo() {
-				edition = backend.Sets["PDOM"].Name
+				edition = "Dominaria Promos"
 			}
 		case "Evolving Wilds":
 			if inCard.isGenericPromo() {
-				edition = backend.Sets["PRIX"].Name
+				edition = "Rivals of Ixalan Promos"
 			}
 		case "Unquenchable Fury":
 			if inCard.Edition == "Battle the Horde" {
@@ -1209,7 +1209,7 @@ func adjustEdition(inCard *InputCard) {
 				}
 			}
 			if strings.HasSuffix(variation, "s") || strings.HasSuffix(variation, "p") {
-				edition = backend.Sets["PM21"].Name
+				edition = "Core Set 2021 Promos"
 			}
 		case "Mind Stone":
 			switch edition {
@@ -1256,7 +1256,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Hangarback Walker":
 			if inCard.isReskin() || inCard.isGenericPromo() || strings.Contains(inCard.Edition, "LGS") {
-				edition = backend.Sets["PLG20"].Name
+				edition = "Love Your LGS 2020"
 			}
 		// Sometimes these cards are not marked as prerelease because they are showcase
 		case "Goro-Goro and Satoru", "Katilda and Lier", "Slimefoot and Squee":
@@ -1275,7 +1275,7 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case "Diabolic Edict":
 			if inCard.isIDWMagazineBook() {
-				edition = backend.Sets["PMEI"].Name
+				edition = "Media and Collaboration Promos"
 
 				if !strings.Contains(variation, "6") && !strings.Contains(variation, "31") {
 					variation = "6"
