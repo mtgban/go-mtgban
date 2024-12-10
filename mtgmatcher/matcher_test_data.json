@@ -1944,7 +1944,7 @@
         }
     },
     {
-        "uuid": "c7f4004c-3a72-5bad-9708-e659d4cf5db6",
+        "uuid": "ff38f32e-71cc-5305-ba7c-c75c99a258e1",
         "description": "gateway_normal",
         "input": {
             "name": "Lava Axe",
@@ -2625,7 +2625,7 @@
         }
     },
     {
-        "uuid": "9a55bce9-8d53-560b-83d6-d60af37274f9",
+        "uuid": "1e8ea8c6-c40a-5206-8e54-8d174a09169b",
         "description": "champs_and_states_but_is_gateway",
         "input": {
             "name": "Dauntless Dourbark",
@@ -4682,7 +4682,7 @@
         }
     },
     {
-        "uuid": "7e844d22-64ce-5fd5-9f15-699333732a94",
+        "uuid": "2a367b36-f98b-55d2-8b67-ba1fba39bf6c",
         "description": "language_foreign_set",
         "input": {
             "name": "Ihsan's Shade",
