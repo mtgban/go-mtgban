@@ -369,6 +369,10 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		if num != "" {
 			variant = num + " " + cleanVar
 		}
+	case "Conspiracy: Take the Crown":
+		if cardName == "Kaya, Ghost Assassin" && variant == "Alternate Art Foil" {
+			variant = "222"
+		}
 	case "Promo":
 		variant = cleanVar
 		switch variant {
