@@ -236,6 +236,7 @@ func (abu *ABUGames) scrape() error {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
+				abu.printf("Processing page %d/%d", page/maxEntryPerRequest, count/maxEntryPerRequest)
 				err := abu.processEntry(results, page)
 				if err != nil {
 					abu.printf("%v", err)
