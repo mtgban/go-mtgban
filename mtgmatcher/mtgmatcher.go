@@ -1277,11 +1277,10 @@ func adjustEdition(inCard *InputCard) {
 			if inCard.isIDWMagazineBook() {
 				edition = "Media and Collaboration Promos"
 
-				if !strings.Contains(variation, "6") && !strings.Contains(variation, "31") {
-					variation = "6"
-					if inCard.isJPN() || inCard.Language == "Japanese" {
-						variation = "31"
-					}
+				if strings.Contains(variation, "31") || inCard.isJPN() || inCard.Language == "Japanese" {
+					variation = "2019-2"
+				} else {
+					variation = "2024-5"
 				}
 			}
 		default:
