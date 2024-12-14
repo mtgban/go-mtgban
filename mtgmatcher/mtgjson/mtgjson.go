@@ -60,6 +60,7 @@ const (
 	PromoTypeDoubleRainbow   = "doublerainbow"
 	PromoTypeRainbowFoil     = "rainbowfoil"
 	PromoTypeFractureFoil    = "fracturefoil"
+	PromoTypeManaFoil        = "manafoil"
 
 	PromoTypeThickDisplay  = "thick"
 	PromoTypeJudgeGift     = "judgegift"

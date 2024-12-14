@@ -154,6 +154,10 @@ var promoTypeElements = []promoTypeElement{
 		PromoType: mtgjson.PromoTypeFractureFoil,
 		Tags:      []string{"Fracture", "Fractal"},
 	},
+	{
+		PromoType: mtgjson.PromoTypeManaFoil,
+		Tags:      []string{"Mana Foil"},
+	},
 }
 
 var simpleFilterCallbacks = map[string]cardFilterCallback{
