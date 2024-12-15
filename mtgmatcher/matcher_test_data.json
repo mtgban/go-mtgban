@@ -4562,6 +4562,15 @@
         }
     },
     {
+        "uuid": "8685cc2b-7f3e-5f8c-abec-836cd70f21de",
+        "description": "one_missing_tag",
+        "input": {
+            "name": "Sheoldred, the Apocalypse",
+            "variant": "Borderless Step-and-Compleat",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
         "uuid": "dab29a67-28a9-5847-a77e-1f0771b55be1",
         "description": "one_phyrexian_bundle",
         "input": {
