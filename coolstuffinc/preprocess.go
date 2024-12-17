@@ -35,6 +35,12 @@ var variantTable = map[string]string{
 	"Big Furry Monster Right Side":                     "29",
 }
 
+var nameTable = map[string]string{
+	"Yennet, Cryptic Sovereign":              "Yennett, Cryptic Sovereign",
+	"Invasion of Moag // Bloomweaver Dryads": "Invasion of Moag // Bloomwielder Dryads",
+	"Bene Supremo":                           "Greater Good",
+}
+
 func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
 	imgName := strings.TrimSuffix(path.Base(imgURL), filepath.Ext(imgURL))
 	fixup, found := numFixes[imgName]
@@ -73,6 +79,11 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 		cardName = cuts[0]
 	}
 	cardName = strings.TrimSpace(cardName)
+
+	fixup, found = nameTable[cardName]
+	if found {
+		cardName = fixup
+	}
 
 	// Skip tokens with the same names as cards
 	if strings.Contains(variant, "Emblem") && !mtgmatcher.IsToken(cardName) {
@@ -322,6 +333,11 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		variant = cleanVar
 	}
 
+	fixup, found := nameTable[cardName]
+	if found {
+		cardName = fixup
+	}
+
 	vars, found := variantTable[variant]
 	if found {
 		variant = vars
@@ -352,6 +368,10 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 	case "Duel Decks: Anthology":
 		if num != "" {
 			variant = num + " " + cleanVar
+		}
+	case "Conspiracy: Take the Crown":
+		if cardName == "Kaya, Ghost Assassin" && variant == "Alternate Art Foil" {
+			variant = "222"
 		}
 	case "Promo":
 		variant = cleanVar

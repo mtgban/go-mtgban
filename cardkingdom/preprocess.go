@@ -94,6 +94,10 @@ var skuFixupTable = map[string]string{
 
 	// Glimpse, the Unthinkable
 	"MB2-0355": "MB2-594",
+
+	// Arcane Signet
+	"P30M-0001":   "P30M-1P",
+	"FEP30A-001F": "P30M-1F",
 }
 
 // List of tags that need to be preserved in one way or another

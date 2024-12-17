@@ -421,6 +421,23 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			switch {
 			case (maybeYear == "1996" || maybeYear == "") && set.Name == "Pro Tour Collector Set":
 			case maybeYear != "" && strings.HasPrefix(set.Name, "World Championship Decks "+maybeYear):
+			case maybeYear == "" && strings.HasPrefix(set.Name, "World Championship Decks"):
+				skip := true
+				num, _ := parseWorldChampPrefix(inCard.Variation)
+				foundCards := MatchInSet(inCard.Name, set.Code)
+				if num == "" || len(foundCards) == 1 {
+					skip = false
+				} else {
+					for _, card := range foundCards {
+						if card.Number == num {
+							skip = false
+							break
+						}
+					}
+				}
+				if skip {
+					continue
+				}
 			default:
 				continue
 			}

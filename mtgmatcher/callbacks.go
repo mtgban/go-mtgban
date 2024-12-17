@@ -97,7 +97,15 @@ var promoTypeElements = []promoTypeElement{
 	},
 	{
 		PromoType: mtgjson.PromoTypeConcept,
-		Tags:      []string{"Concept"},
+		TagFunc: func(inCard *InputCard) bool {
+			if inCard.Contains("Concept") {
+				return true
+			}
+			if inCard.isBorderless() && hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeConcept) {
+				return true
+			}
+			return false
+		},
 	},
 	{
 		PromoType: mtgjson.PromoTypeOilSlick,
@@ -153,6 +161,10 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: mtgjson.PromoTypeFractureFoil,
 		Tags:      []string{"Fracture", "Fractal"},
+	},
+	{
+		PromoType: mtgjson.PromoTypeManaFoil,
+		Tags:      []string{"Mana Foil"},
 	},
 }
 

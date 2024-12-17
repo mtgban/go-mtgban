@@ -34,6 +34,7 @@ import (
 	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/jupitergames"
 	"github.com/mtgban/go-mtgban/magiccorner"
+	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/mtgstocks"
 	"github.com/mtgban/go-mtgban/ninetyfive"
@@ -194,6 +195,13 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"mintcard": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := mintcard.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},

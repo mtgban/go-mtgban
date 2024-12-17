@@ -59,28 +59,29 @@ func (cs *Cardsphere) processPage(results chan<- responseChan, offset int) error
 
 	for _, offer := range offers {
 		// Look for the right Id
+		masterId := fmt.Sprint(offer.MasterId)
 		ids, _ := mtgmatcher.SearchEquals(offer.CardName)
 		if len(ids) == 0 {
 			continue
 		}
 
-		var foundId string
-		for _, id := range ids {
-			co, err := mtgmatcher.GetUUID(id)
-			if err != nil {
+		for _, finish := range offer.Finishes {
+			var foundId string
+			for _, id := range ids {
+				co, err := mtgmatcher.GetUUID(id)
+				if err != nil {
+					continue
+				}
+				if (co.Identifiers["cardsphereId"] == masterId && finish != "F") ||
+					(co.Identifiers["cardsphereFoilId"] == masterId && finish == "F") {
+					foundId = id
+					break
+				}
+			}
+			if foundId == "" {
 				continue
 			}
-			if co.Identifiers["cardsphereId"] == fmt.Sprint(offer.MasterId) {
-				foundId = id
-				break
-			}
-		}
 
-		if foundId == "" {
-			continue
-		}
-
-		for _, finish := range offer.Finishes {
 			cardId, err := mtgmatcher.MatchId(foundId, finish == "F", strings.Contains(offer.Sets[0].Name, "Etched"))
 			if err != nil {
 				continue

@@ -62,7 +62,11 @@ func (ct *CTAuthClient) ExportStock(blueprints map[int]*Blueprint) (mtgban.Inven
 func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ...float64) mtgban.InventoryRecord {
 	inventory := mtgban.InventoryRecord{}
 	for _, product := range products {
-		theCard, err := Preprocess(blueprints[product.BlueprintId])
+		bp, found := blueprints[product.BlueprintId]
+		if !found {
+			continue
+		}
+		theCard, err := Preprocess(bp)
 		if err != nil {
 			continue
 		}

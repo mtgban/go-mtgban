@@ -2774,7 +2774,7 @@
         }
     },
     {
-        "uuid": "ae03bc21-485c-5175-9a41-7fc5421d62ef",
+        "uuid": "73fc41fe-3305-5fbb-9d88-08fca95846fc",
         "description": "wcd_with_variant",
         "input": {
             "name": "Memory Lapse",
@@ -2878,6 +2878,14 @@
             "name": "Circle of Protection: Green",
             "variant": "bl016sb",
             "edition": "PTC"
+        }
+    },
+    {
+        "uuid": "8bee4e23-793c-51ef-845e-e492f72c9f0d",
+        "description": "wcd_single_printing",
+        "input": {
+            "name": "Covetous Dragon",
+            "edition": "World Championships"
         }
     },
     {
@@ -4558,6 +4566,15 @@
         "input": {
             "name": "Sheoldred, the Apocalypse",
             "variant": "Concept Praetor",
+            "edition": "Phyrexia: All Will Be One"
+        }
+    },
+    {
+        "uuid": "8685cc2b-7f3e-5f8c-abec-836cd70f21de",
+        "description": "one_missing_tag",
+        "input": {
+            "name": "Sheoldred, the Apocalypse",
+            "variant": "Borderless Step-and-Compleat",
             "edition": "Phyrexia: All Will Be One"
         }
     },

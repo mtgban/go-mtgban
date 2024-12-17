@@ -390,6 +390,7 @@ func (c *InputCard) isIDWMagazineBook() bool {
 		// Cannot use Contains because it may trigger a false positive
 		// for cards with "book" in their variation (insidious bookworms)
 		c.Variation == "Book" ||
+		c.Variation == "Insert" || // mmc
 		c.Variation == "Japanese Promo" || // tcg
 		c.Contains("Book Insert") ||
 		c.Contains("Walmart") ||
