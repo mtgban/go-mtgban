@@ -853,6 +853,11 @@ var atqVariants = map[string]map[string]string{
 		"d even":      "82b",
 		"a tower":     "82c",
 
+		"a": "82a",
+		"b": "82b",
+		"c": "82c",
+		"d": "82d",
+
 		"horizon uneven stripes": "82d",
 	},
 	"Urza's Mine": {
@@ -1025,7 +1030,9 @@ var palpVariants = map[string]map[string]string{
 		"apac land japan fire in graveyard ron spears art":   "10",
 		"apac land indonesia zombie in swamp ron spears art": "15",
 		"apac blue taiwan":                                   "10",
+		"apac blue: taiwan":                                  "10",
 		"apac clear australia":                               "15",
+		"apac clear: australia":                              "15",
 		"japan apac two ron spears art":                      "10",
 		"indonesia apac three ron spears art":                "15",
 		"apac land ron spears, fireballs":                    "10",
@@ -2528,13 +2535,17 @@ var neoVariants = map[string]map[string]string{
 	"Hidetsugu, Devouring Chaos": {
 		"neon ink blue promo":         "431",
 		"neon ink blue":               "431",
+		"neon ink blue showcase":      "431",
 		"neon ink green promo":        "430",
 		"neon ink green":              "430",
+		"neon ink green showcase":     "430",
 		"neon ink red promo":          "429",
 		"neon ink red":                "429",
+		"neon ink red showcase":       "429",
 		"neon ink yellow promo":       "432",
 		"neon ink yellow wpn premium": "432",
 		"neon ink yellow":             "432",
+		"neon ink yellow showcase":    "432",
 		"showcase":                    "378",
 		"soft glow showcase frame":    "378",
 	},
@@ -3749,6 +3760,9 @@ var ulstVariants = map[string]map[string]string{
 
 		"proliferate 147/216 the list a": "55",
 		"scry 2 147/216 the list f":      "56",
+
+		"a 'move counter'": "55",
+		"f 'scry'":         "56",
 	},
 	"Ineffable Blessing": {
 		"a":           "38",
@@ -3763,6 +3777,9 @@ var ulstVariants = map[string]map[string]string{
 
 		"flavorful/bland 113/216 the list a":                "38",
 		"white-bordered/silver-bordered 113/216 the list c": "37",
+
+		"a 'flavorful or bland'":       "38",
+		"c 'white or silver-bordered'": "37",
 	},
 }
 

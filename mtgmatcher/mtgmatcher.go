@@ -1217,7 +1217,7 @@ func adjustEdition(inCard *InputCard) {
 			case "DCI Promos",
 				"Wizards Play Network 2021":
 			default:
-				if inCard.isWPNGateway() {
+				if inCard.isWPNGateway() || inCard.Contains("Bring a Friend") {
 					edition = "Wizards Play Network 2021"
 					if inCard.Contains("Gateway") {
 						edition = "DCI Promos"
@@ -1282,6 +1282,10 @@ func adjustEdition(inCard *InputCard) {
 				} else {
 					variation = "2024-5"
 				}
+			}
+		case "Arcbound Ravager":
+			if inCard.Contains("Qualifiers") || inCard.Contains("WMCQ") {
+				edition = "Pro Tour Promos"
 			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
