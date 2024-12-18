@@ -86,8 +86,6 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 		return
 	}
 
-	quantity := 1
-
 	var sellPrice float64
 	if card.Price != "" {
 		sellPrice, err = strconv.ParseFloat(card.Price, 64)
@@ -99,7 +97,7 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 			out := &mtgban.InventoryEntry{
 				Conditions: cond,
 				Price:      sellPrice,
-				Quantity:   quantity,
+				Quantity:   card.Quantity,
 				URL:        link,
 				OriginalId: card.ID,
 			}

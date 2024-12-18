@@ -13,7 +13,7 @@ type Card struct {
 	ID       string `json:"Id"`
 	Name     string `json:"Name"`
 	Number   string `json:"Number,omitempty"`
-	Quantity string `json:"Quantity,omitempty"`
+	Quantity int    `json:"Quantity,omitempty,string"`
 	Price    string `json:"Price,omitempty"`
 	BuyPrice string `json:"Buy Price,omitempty"`
 }
