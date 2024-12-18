@@ -214,12 +214,14 @@ var EditionTable = map[string]string{
 	"Modern Horizons II":             "Modern Horizons 2",
 
 	// CE and IE editions
+	"CEDI":                                "Intl. Collectors' Edition",
 	"Collector's Edition - International": "Intl. Collectors' Edition",
 	"Collectors Ed Intl":                  "Intl. Collectors' Edition",
 	"Collectors' Edition - International": "Intl. Collectors' Edition",
 	"International Collector's Edition":   "Intl. Collectors' Edition",
 	"International Collectors Edition":    "Intl. Collectors' Edition",
 	"International Collectors’ Edition":   "Intl. Collectors' Edition",
+	"International Collectors' Edition":   "Intl. Collectors' Edition",
 	"International Edition":               "Intl. Collectors' Edition",
 	"Collector's Edition International":   "Intl. Collectors' Edition",
 	"Collector's Edition (Domestic)":      "Collectors' Edition",
@@ -372,6 +374,7 @@ var EditionTable = map[string]string{
 	"Regional Championship Qualifiers 2023": "Regional Championship Qualifiers 2023",
 
 	// Worlds
+	"WRL":                     "World Championship Promos",
 	"Worlds":                  "World Championship Promos",
 	"World Championship Foil": "World Championship Promos",
 
@@ -510,6 +513,10 @@ var EditionTable = map[string]string{
 	"LE": "Legends",
 	"DK": "The Dark",
 	"FE": "Fallen Empires",
+	"RE": "Reinassance",
+	"RI": "Rinascimento",
+	"AT": "Anthologies",
+	"DM": "Deckmasters",
 	"4E": "Fourth Edition",
 	"IA": "Ice Age",
 	"CH": "Chronicles",
@@ -550,6 +557,7 @@ var EditionTable = map[string]string{
 	"Fourth (Alternate Edition)": "Alternate Fourth Edition",
 	"Fourth Edition (Alt)":       "Alternate Fourth Edition",
 	"Fourth Edition: Alternate":  "Alternate Fourth Edition",
+	"FEALT":                      "Alternate Fourth Edition",
 
 	// Foreign-only
 	"3rd Edition (Foreign Black Border)":     "Foreign Black Border",
@@ -569,9 +577,11 @@ var EditionTable = map[string]string{
 	"Fourth Edition Black Bordered":         "Fourth Edition Foreign Black Border",
 	"Fourth Edition: Black Bordered":        "Fourth Edition Foreign Black Border",
 	"Fourth Edition (Foreign Black Border)": "Fourth Edition Foreign Black Border",
+	"FEFBB":                                 "Fourth Edition Foreign Black Border",
 
 	"Italian Renaissance": "Rinascimento",
 	"Renaissance Italian": "Rinascimento",
+	"LEITA":               "Legends Italian",
 	"Italian Legends":     "Legends Italian",
 	"Italian The Dark":    "The Dark Italian",
 }
