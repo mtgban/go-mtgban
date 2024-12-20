@@ -1060,7 +1060,7 @@ func reskinRenameCheck(inCard *InputCard, card *Card) bool {
 
 func misprintCheck(inCard *InputCard, card *Card) bool {
 	// These cards are allowed to have the star at the end
-	if inCard.isBasicLand() && inCard.isJudge() {
+	if (inCard.isBasicLand() && inCard.isJudge()) || inCard.isPrerelease() {
 		return false
 	}
 

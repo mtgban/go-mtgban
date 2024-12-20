@@ -1188,6 +1188,15 @@
         }
     },
     {
+        "uuid": "09cb87f1-e41f-5a2a-954b-b917c1297874",
+        "description": "prerelease_edition_star_with_reprint",
+        "input": {
+            "name": "Consuming Aberration",
+            "variant": "GTC",
+            "edition": "Prerelease Cards"
+        }
+    },
+    {
         "uuid": "a0c99852-b08e-5f09-9f48-317f2253df15",
         "description": "jpn_alt_nonJPN_version",
         "input": {
