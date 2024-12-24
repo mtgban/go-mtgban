@@ -174,13 +174,14 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 		// Both kinds need to be checked in the same place as there is
 		// a lot of overlap in the product and naming across stores
 		case inCard.isMysteryList() || inCard.isSecretLair():
+			noSymbol := inCard.Contains("No") && inCard.Contains("Symbol")
 			switch set.Code {
 			case "CMB1":
-				if inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || strings.Contains(inCard.Variation, "V.2") {
+				if noSymbol || strings.Contains(inCard.Variation, "V.2") {
 					continue
 				}
 			case "CMB2":
-				if !(inCard.Contains("No PW Symbol") || inCard.Contains("No Symbol") || strings.Contains(inCard.Variation, "V.2")) {
+				if !noSymbol && !strings.Contains(inCard.Variation, "V.2") {
 					continue
 				}
 			case "MB2":
