@@ -35,7 +35,7 @@ func (mint *MTGMintCard) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, edition, setCode string) {
+func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, edition, setCode, editionId string) {
 	cond := map[string]string{
 		"Mint": "NM",
 		"SP":   "SP",
@@ -119,7 +119,7 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 			priceRatio = buyPrice / sellPrice * 100
 		}
 
-		link := "https://www.mtgmintcard.com/buylist?action=advanced_search&mo_1=1&mo_2=1&card_name=" + url.QueryEscape(card.Name)
+		link := "https://www.mtgmintcard.com/buylist?action=advanced_search&ed=" + editionId + "&mo_1=1&mo_2=1&card_name=" + url.QueryEscape(card.Name)
 		if buyPrice > 0 {
 			out := &mtgban.BuylistEntry{
 				Conditions: cond,
@@ -154,7 +154,7 @@ func (mint *MTGMintCard) scrape() error {
 				for cond, rarities := range conditions {
 					for _, cards := range rarities {
 						for _, card := range cards {
-							mint.processEntry(card, cond, finish, langauge, edition, product.Abbreviation)
+							mint.processEntry(card, cond, finish, langauge, edition, product.Abbreviation, product.EditionId)
 						}
 					}
 				}

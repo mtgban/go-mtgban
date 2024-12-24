@@ -21,6 +21,7 @@ type Card struct {
 // Map with Edition as keys
 type MintData map[string]struct {
 	Abbreviation string `json:"Abbreviation"`
+	EditionId    string `json:"Edition Id"`
 	// Maps of Language - Finish - Condition - Rarity as keys
 	Cards map[string]map[string]map[string]map[string][]Card `json:"Cards"`
 }
