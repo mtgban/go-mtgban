@@ -985,6 +985,11 @@ func adjustEdition(inCard *InputCard) {
 		variation = strings.TrimSpace(variation)
 	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
 		edition = "Fourth Edition Foreign Black Border"
+		// Helps with land variants
+		variation = strings.ToLower(inCard.Variation)
+		variation = strings.Replace(variation, "japanese", "", 1)
+		variation = strings.Replace(variation, "bb", "", 1)
+		variation = strings.TrimSpace(variation)
 
 	// Separate timeshifted cards
 	case inCard.Contains("Modern Horizons") &&
