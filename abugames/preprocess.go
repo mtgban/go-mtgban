@@ -206,6 +206,10 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 				cardName = "Hangarback Walker"
 				edition = "PLG20"
 			}
+		case "Serra Angel":
+			if strings.Contains(variation, "25th Anniversary") {
+				edition = "PDOM"
+			}
 		case "Hidetsugu, Devouring Chaos":
 			edition = "NEO"
 		case "Rafiq of the Many":

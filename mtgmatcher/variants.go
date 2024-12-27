@@ -371,6 +371,8 @@ var allVariants = map[string]map[string]string{
 		"book":                   "30b",
 		"wizard holding scroll":  "30a",
 		"creatures holding book": "30b",
+		"a scroll":               "30a",
+		"b book":                 "30b",
 		"v.1":                    "30a",
 		"v.2":                    "30b",
 	},
@@ -1903,6 +1905,7 @@ var femVariants = map[string]map[string]string{
 		"rob alexander, sun":               "27b",
 		"rob alexander no sun":             "27a",
 		"rob alexander sun visible":        "27b",
+		"rob alexander sun":                "27b",
 		"rob alexander lake":               "27a",
 		"rob alexander sunset":             "27b",
 		"sky":                              "27b",
@@ -3162,6 +3165,7 @@ var rinVariants = map[string]map[string]string{
 
 		"a forest":    "183",
 		"c plains":    "184",
+		"b mountain":  "185",
 		"b mountains": "185",
 		"d seashore":  "186",
 
