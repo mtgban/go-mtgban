@@ -60,15 +60,15 @@ func getPrice(price *BanPrice, uuid string) float64 {
 	return result
 }
 
-func getRetail(response BANPriceResponse, source, uuid string) float64 {
-	return getPrice(response.Retail[uuid][source], uuid)
+func (r *BANPriceResponse) getRetail(source, uuid string) float64 {
+	return getPrice(r.Retail[uuid][source], uuid)
 }
 
-func getBuylist(response BANPriceResponse, source, uuid string) float64 {
-	return getPrice(response.Buylist[uuid][source], uuid)
+func (r *BANPriceResponse) getBuylist(source, uuid string) float64 {
+	return getPrice(r.Buylist[uuid][source], uuid)
 }
 
-func setBuylist(response BANPriceResponse, destination, uuid string, price float64) {
+func (r *BANPriceResponse) setBuylist(destination, uuid string, price float64) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
 		return
@@ -82,7 +82,7 @@ func setBuylist(response BANPriceResponse, destination, uuid string, price float
 	}
 
 	// Rebuild the price entry
-	response.Buylist[uuid][destination] = &BanPrice{
+	r.Buylist[uuid][destination] = &BanPrice{
 		Conditions: map[string]float64{
 			"NM" + tag: price,
 		},
@@ -115,9 +115,9 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 	// Remove outliers from Direct
 	uuids := mtgmatcher.GetUUIDs()
 	for _, uuid := range uuids {
-		tcgLow := getRetail(response, "TCGLow", uuid)
-		tcgMarket := getRetail(response, "TCGMarket", uuid)
-		directNet := getBuylist(response, "TCGDirectNet", uuid)
+		tcgLow := response.getRetail("TCGLow", uuid)
+		tcgMarket := response.getRetail("TCGMarket", uuid)
+		directNet := response.getBuylist("TCGDirectNet", uuid)
 
 		// If TCG Direct (net) is fully missing, try assigning Market and fallback to Low
 		if directNet == 0 {
@@ -141,7 +141,7 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 			directNet = tcgplayer.DirectPriceAfterFees(directNet)
 
 			// Set the price
-			setBuylist(response, "TCGDirectNet", uuid, directNet)
+			response.setBuylist("TCGDirectNet", uuid, directNet)
 		}
 
 		// If Direct looks unreliable, cap maximum price (estimate) or delete it
@@ -153,7 +153,7 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 				directNet = tcgLow * 2
 				directNet = tcgplayer.DirectPriceAfterFees(directNet)
 
-				setBuylist(response, "TCGDirectNet", uuid, directNet)
+				response.setBuylist("TCGDirectNet", uuid, directNet)
 			}
 		}
 	}
