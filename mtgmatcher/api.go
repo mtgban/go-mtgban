@@ -735,6 +735,38 @@ func SealedIsRandom(setCode, sealedUUID string) bool {
 	return false
 }
 
+func SealedCardUnit(setCode, sealedUUID string) int {
+	var result int
+
+	set, err := GetSet(setCode)
+	if err != nil {
+		return 0
+	}
+
+	for _, product := range set.SealedProduct {
+		if sealedUUID != product.UUID {
+			continue
+		}
+
+		for key, contents := range product.Contents {
+			for _, content := range contents {
+				switch key {
+				case "card":
+					result += 1
+				case "pack",
+					"deck":
+					result += product.CardCount
+				case "sealed":
+					result += SealedCardUnit(content.Set, content.UUID) * content.Count
+				case "variable":
+				}
+			}
+		}
+	}
+
+	return result
+}
+
 func SealedHasDecklist(setCode, sealedUUID string) bool {
 	set, err := GetSet(setCode)
 	if err != nil {
