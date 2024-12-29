@@ -58,8 +58,11 @@ type evConfig struct {
 var evParameters = []evConfig{
 	// CK Buylist
 	{
-		Name:           "CK Buylist EV for Singles",
-		Shorthand:      "SS",
+		Name:      "CK Buylist EV for Singles",
+		Shorthand: "SS",
+		StatsFunc: func(values []float64) (float64, error) {
+			return values[0], nil
+		},
 		SourceName:     "CK",
 		FoundInBuylist: true,
 		TargetsBuylist: true,
@@ -67,8 +70,11 @@ var evParameters = []evConfig{
 
 	// TCG Low
 	{
-		Name:       "TCG Low EV",
-		Shorthand:  "TCGLowEV",
+		Name:      "TCG Low EV",
+		Shorthand: "TCGLowEV",
+		StatsFunc: func(values []float64) (float64, error) {
+			return values[0], nil
+		},
 		SourceName: "TCGLow",
 	},
 	{
@@ -92,8 +98,11 @@ var evParameters = []evConfig{
 
 	// TCG Direct (net)
 	{
-		Name:           "TCG Direct (net) EV",
-		Shorthand:      "TCGDirectNetEV",
+		Name:      "TCG Direct (net) EV",
+		Shorthand: "TCGDirectNetEV",
+		StatsFunc: func(values []float64) (float64, error) {
+			return values[0], nil
+		},
 		SourceName:     "TCGDirectNet",
 		FoundInBuylist: true,
 	},
@@ -120,8 +129,11 @@ var evParameters = []evConfig{
 
 	// Card Trader Zero
 	{
-		Name:       "CT Zero EV",
-		Shorthand:  "CTZeroEV",
+		Name:      "CT Zero EV",
+		Shorthand: "CTZeroEV",
+		StatsFunc: func(values []float64) (float64, error) {
+			return values[0], nil
+		},
 		SourceName: "CT0",
 	},
 	{
@@ -316,17 +328,15 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 
 	var out []result
 	for i, dataset := range datasets {
-		var price float64
-		if evParameters[i].Simulation {
-			var err error
-			price, err = evParameters[i].StatsFunc(dataset)
-			if err != nil {
-				continue
-			}
-		} else if len(dataset) > 0 {
-			price = dataset[0]
+		if len(dataset) == 0 {
+			continue
 		}
 
+		price, err := evParameters[i].StatsFunc(dataset)
+		if err != nil {
+			allTheErrors = append(allTheErrors, err.Error())
+			continue
+		}
 		if price == 0 {
 			continue
 		}
