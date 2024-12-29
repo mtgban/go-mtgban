@@ -45,6 +45,9 @@ type InventoryEntry struct {
 
 	// Any additional custom fields set by the scraper
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
+
+	// Any addiitonal extra floating point values
+	ExtraValues map[string]float64 `json:"extra_values,omitempty"`
 }
 
 func (ie InventoryEntry) Pricing() float64 {
