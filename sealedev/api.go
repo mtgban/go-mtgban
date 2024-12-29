@@ -146,7 +146,8 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 
 		// If Direct looks unreliable, cap maximum price (estimate) or delete it
 		if directNet/2 > tcgMarket {
-			if tcgLow == 0 {
+			// If no low or twice as tcglow is within 10% of net, then delete this entry
+			if tcgLow == 0 || tcgLow*2 > directNet*0.9 {
 				delete(response.Buylist[uuid], "TCGDirectNet")
 			} else {
 				directNet = tcgLow * 2
