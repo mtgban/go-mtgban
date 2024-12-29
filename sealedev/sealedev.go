@@ -78,19 +78,10 @@ var evParameters = []evConfig{
 		SourceName: "TCGLow",
 	},
 	{
-		Name:      "TCG Low Sim Median",
-		Shorthand: "TCGLowSimMed",
+		Name:      "TCG Low Sim",
+		Shorthand: "TCGLowSim",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
-		},
-		SourceName: "TCGLow",
-		Simulation: true,
-	},
-	{
-		Name:      "TCG Low Sim StdDev",
-		Shorthand: "TCGLowSimStd",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.StandardDeviation(values)
 		},
 		SourceName: "TCGLow",
 		Simulation: true,
@@ -107,20 +98,10 @@ var evParameters = []evConfig{
 		FoundInBuylist: true,
 	},
 	{
-		Name:      "TCG Direct (net) Sim Median",
-		Shorthand: "TCGDirectNetSimMed",
+		Name:      "TCG Direct (net) Sim",
+		Shorthand: "TCGDirectNetSim",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
-		},
-		SourceName:     "TCGDirectNet",
-		FoundInBuylist: true,
-		Simulation:     true,
-	},
-	{
-		Name:      "TCG Direct (net) Sim StdDev",
-		Shorthand: "TCGDirectNetSimStd",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.StandardDeviation(values)
 		},
 		SourceName:     "TCGDirectNet",
 		FoundInBuylist: true,
@@ -137,19 +118,10 @@ var evParameters = []evConfig{
 		SourceName: "CT0",
 	},
 	{
-		Name:      "CT Zero Sim Median",
-		Shorthand: "CTZeroSimMed",
+		Name:      "CT Zero Sim",
+		Shorthand: "CTZeroSim",
 		StatsFunc: func(values []float64) (float64, error) {
 			return stats.Median(values)
-		},
-		SourceName: "CT0",
-		Simulation: true,
-	},
-	{
-		Name:      "CT Zero Sim StdDev",
-		Shorthand: "CTZeroSimStd",
-		StatsFunc: func(values []float64) (float64, error) {
-			return stats.StandardDeviation(values)
 		},
 		SourceName: "CT0",
 		Simulation: true,
@@ -367,6 +339,16 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 				Price:      price,
 				SellerName: evParameters[i].Name,
 				URL:        link,
+			}
+
+			if evParameters[i].Simulation {
+				stdDev, err := stats.StandardDeviation(dataset)
+				if err == nil && stdDev > 0 {
+					if res.invEntry.ExtraValues == nil {
+						res.invEntry.ExtraValues = map[string]float64{}
+					}
+					res.invEntry.ExtraValues["stdDev"] = stdDev
+				}
 			}
 		}
 
