@@ -176,6 +176,12 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 			strings.Contains(variation, "Game Day"),
 			strings.Contains(variation, "Gameday"):
 			edition = card.Edition
+		case strings.Contains(variation, "Symbol"):
+			maybeNum := setCode[1:] + "-" + strings.TrimLeft(number, "0")
+			if len(mtgmatcher.MatchInSetNumber(card.Name, "PLST", maybeNum)) == 1 {
+				edition = "PLST"
+				variation = maybeNum
+			}
 		}
 	case "Mystery Booster/The List":
 		edition = card.Edition
