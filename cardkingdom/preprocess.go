@@ -114,7 +114,10 @@ func setCodeExists(code string) bool {
 }
 
 func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
-	isFoil, _ := strconv.ParseBool(card.IsFoil)
+	foilFlag, _ := strconv.ParseBool(card.IsFoil)
+	foilVariant := strings.Contains(card.Variation, "Foil") && !strings.Contains(card.Variation, "Non")
+	isFoil := foilFlag || foilVariant
+	isEtched := strings.Contains(card.Variation, "Etched")
 
 	sku := card.SKU
 	if sku == "" {
@@ -124,6 +127,14 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 	// Strip the initial F from set codes that do not exist
 	if isFoil && strings.HasPrefix(sku, "F") && setCodeExists(strings.Split(sku, "-")[0][1:]) {
 		sku = sku[1:]
+	}
+	// Same for Etched and E
+	if isEtched && strings.HasPrefix(sku, "E") && setCodeExists(strings.Split(sku, "-")[0][1:]) {
+		sku = sku[1:]
+	}
+	// ccccombo (EF is for emblem foils)
+	if isFoil && isEtched && strings.HasPrefix(sku, "FE") && setCodeExists(strings.Split(sku, "-")[0][2:]) {
+		sku = sku[2:]
 	}
 
 	// Custom replacements
