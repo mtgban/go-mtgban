@@ -176,46 +176,6 @@ type result struct {
 	err       error
 }
 
-func (ss *SealedEVScraper) repeatedPicks(setCode, productUUID string) ([]string, error) {
-	pickCount := 0
-	for {
-		pickCount++
-		// Prevent deadlocking
-		if pickCount > EVMaxRepickCount {
-			return nil, errors.New("repicked too many times")
-		}
-
-		picks, err := mtgmatcher.GetPicksForSealed(setCode, productUUID)
-		if err != nil {
-			return nil, err
-		}
-		if len(picks) == 0 {
-			err = errors.New("no picks found")
-		}
-
-		// Repeat booster generation if there is one card type known to skew values
-		rePick := false
-		cardName := ""
-		for _, pick := range picks {
-			co, err := mtgmatcher.GetUUID(pick)
-			if err != nil {
-				return nil, err
-			}
-			if co.HasPromoType(mtgjson.PromoTypeSerialized) {
-				rePick = true
-				cardName = co.String()
-				break
-			}
-		}
-		if rePick {
-			ss.printf("%s - %s contains %s: repicking... (%d/%d)", setCode, productUUID, cardName, pickCount, EVMaxRepickCount)
-			continue
-		}
-
-		return picks, nil
-	}
-}
-
 func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
@@ -245,12 +205,22 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 		// Simulations
 		go func() {
 			for _ = range repeatsChannel {
-				picks, err := ss.repeatedPicks(setCode, productUUID)
+				picks, err := mtgmatcher.GetPicksForSealed(setCode, productUUID)
 				if err != nil {
 					channel <- resultChan{
 						err: err,
 					}
 					continue
+				}
+
+				// Delete any serialized card
+				probabilities := make([]float64, len(picks))
+				for i := range picks {
+					co, err := mtgmatcher.GetUUID(picks[i])
+					if err != nil || co.HasPromoType(mtgjson.PromoTypeSerialized) {
+						continue
+					}
+					probabilities[i] = 1
 				}
 
 				for i := range evParameters {
@@ -263,7 +233,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 						priceSource = ss.prices.Buylist
 					}
 
-					ev := valueInBooster(picks, priceSource, evParameters[i].SourceName, nil)
+					ev := valueInBooster(picks, priceSource, evParameters[i].SourceName, probabilities)
 
 					channel <- resultChan{
 						i:  i,
