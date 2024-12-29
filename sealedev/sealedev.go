@@ -349,6 +349,14 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 					}
 					res.invEntry.ExtraValues["stdDev"] = stdDev
 				}
+
+				iqr, err := stats.InterQuartileRange(dataset)
+				if err == nil && iqr > 0 {
+					if res.invEntry.ExtraValues == nil {
+						res.invEntry.ExtraValues = map[string]float64{}
+					}
+					res.invEntry.ExtraValues["iqr"] = iqr
+				}
 			}
 		}
 
