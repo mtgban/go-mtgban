@@ -98,6 +98,8 @@ func (ck *Cardkingdom) scrape() error {
 	ck.printf("Found %d prices", len(pricelist))
 
 	for _, card := range pricelist {
+		skipErrors := card.Edition == "Mystery Booster/The List"
+
 		theCard, err := Preprocess(card)
 		if err != nil {
 			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -110,6 +112,9 @@ func (ck *Cardkingdom) scrape() error {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
+			if skipErrors {
+				continue
+			}
 			ck.printf("%v", err)
 			ck.printf("%q", theCard)
 			ck.printf("%q", card)
@@ -163,7 +168,7 @@ func (ck *Cardkingdom) scrape() error {
 			}
 			err = ck.inventory.AddUnique(cardId, out)
 		}
-		if err != nil {
+		if err != nil && !skipErrors {
 			ck.printf("%v", err)
 		}
 
@@ -230,7 +235,7 @@ func (ck *Cardkingdom) scrape() error {
 					}
 				}
 				err = ck.buylist.Add(cardId, out)
-				if err != nil {
+				if err != nil && !skipErrors {
 					ck.printf("%v", err)
 				}
 			}
