@@ -140,11 +140,10 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 	setCode := fields[0]
 	number := strings.Join(fields[1:], "")
 	number = strings.TrimLeft(number, "0")
-	number = strings.ToLower(number)
-	number = strings.TrimRight(number, "jp")
+	number = strings.TrimRight(number, "JP")
 
 	edition := setCode
-	variation := number
+	variation := strings.ToLower(number)
 
 	// Validate if setCode exists, if not preserve info from the card
 	if !setCodeExists(setCode) {
@@ -157,8 +156,8 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 
 	switch card.Edition {
 	case "World Championships":
-		if strings.HasPrefix(number, "sr") {
-			variation = strings.Replace(number, "sr", "shr", 1)
+		if strings.HasPrefix(variation, "sr") {
+			variation = strings.Replace(variation, "sr", "shr", 1)
 		}
 	case "Deckmaster",
 		"Collectors Ed",
