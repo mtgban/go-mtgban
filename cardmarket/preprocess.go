@@ -590,12 +590,12 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				variant = "J3"
 			}
 		case "Arcane Signet":
-			if number == "1" {
-				edition = "P30M"
-				variant = "1F★"
-			} else if number == "BD/1" {
+			if strings.Contains(number, "BD/1") {
 				edition = "P30M"
 				variant = "1P"
+			} else if number == "1" {
+				edition = "P30M"
+				variant = "1F★"
 			} else if number == "3" {
 				edition = "PSVC"
 				variant = ""

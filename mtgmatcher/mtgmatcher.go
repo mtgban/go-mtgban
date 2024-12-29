@@ -1249,11 +1249,20 @@ func adjustEdition(inCard *InputCard) {
 				variation = "Launch"
 			}
 		case "Arcane Signet":
-			if inCard.Contains("Festival") || inCard.Contains("MagicFest") || inCard.Contains("30th") || inCard.Contains("Magic 30") {
+			switch {
+			case inCard.Contains("Festival"),
+				inCard.Contains("MagicFest"),
+				inCard.Contains("30th"),
+				inCard.Contains("Magic 30"),
+				inCard.Contains("Play") && inCard.Contains("Draft"):
 				edition = "30th Anniversary Misc Promos"
+
+				if Contains(variation, "1F") || Contains(variation, "1P") {
+					break
+				}
 				if inCard.isEtched() {
 					variation = "1F★"
-				} else if inCard.isRetro() {
+				} else if inCard.isRetro() || inCard.Contains("Play") {
 					variation = "1P"
 				} else {
 					variation = "1F"
