@@ -246,8 +246,8 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 
 		// Probability EV
 		go func() {
-			probabilities, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
-			if len(probabilities) == 0 {
+			probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
+			if len(probs) == 0 {
 				if err == nil {
 					err = errors.New("no probabilities found")
 				}
@@ -259,21 +259,17 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 			}
 
 			// Split probabilities in two simpler arrays for later reuse
-			var probPicks []string
-			var probProbs []float64
-			for _, probability := range probabilities {
-				co, err := mtgmatcher.GetUUID(probability.UUID)
-				if err != nil {
+			picks := make([]string, len(probs))
+			probabilities := make([]float64, len(probs))
+			for i := range probs {
+				picks[i] = probs[i].UUID
+
+				// Delete any serialized card
+				co, err := mtgmatcher.GetUUID(probs[i].UUID)
+				if err != nil || co.HasPromoType(mtgjson.PromoTypeSerialized) {
 					continue
 				}
-
-				prob := probability.Probability
-				if co.HasPromoType(mtgjson.PromoTypeSerialized) {
-					prob = 0
-				}
-
-				probProbs = append(probProbs, prob)
-				probPicks = append(probPicks, probability.UUID)
+				probabilities[i] = probs[i].Probability
 			}
 
 			for i := range evParameters {
@@ -286,7 +282,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 					priceSource = ss.prices.Buylist
 				}
 
-				ev := valueInBooster(probPicks, priceSource, evParameters[i].SourceName, probProbs)
+				ev := valueInBooster(picks, priceSource, evParameters[i].SourceName, probabilities)
 
 				channel <- resultChan{
 					i:  i,
