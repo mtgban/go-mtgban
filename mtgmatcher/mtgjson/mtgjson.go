@@ -71,6 +71,7 @@ const (
 	PromoTypeInvisibleInk  = "invisibleink"
 
 	PromoTypeSChineseAltArt = "schinesealtart"
+	PromoTypeDoubleExposure = "doubleexposure"
 
 	BorderColorBorderless = "borderless"
 	BorderColorGold       = "gold"

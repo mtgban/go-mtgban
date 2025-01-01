@@ -927,6 +927,7 @@ func (ap AllPrintings) Load() cardBackend {
 	for uuid, card := range uuids {
 		if !card.Foil && !card.Etched {
 			for _, promoType := range []string{
+				mtgjson.PromoTypeDoubleExposure,
 				mtgjson.PromoTypeSilverFoil,
 				mtgjson.PromoTypeRainbowFoil,
 				mtgjson.PromoTypeRippleFoil,
