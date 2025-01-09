@@ -92,13 +92,16 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 		}
 
 		var customFields map[string]string
-		if product.Description != "" || product.UserDataField != "" {
+		if product.Description != "" || product.UserDataField != "" || product.Tag != "" {
 			customFields = map[string]string{}
 			if product.Description != "" {
 				customFields["description"] = product.Description
 			}
 			if product.UserDataField != "" {
 				customFields["user_data_field"] = product.UserDataField
+			}
+			if product.Tag != "" {
+				customFields["tag"] = product.Tag
 			}
 		}
 

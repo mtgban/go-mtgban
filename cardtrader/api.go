@@ -145,6 +145,7 @@ type Product struct {
 	Price CTPrice `json:"price"`
 
 	UserDataField string `json:"user_data_field"`
+	Tag           string `json:"tag"`
 	PriceCents    int    `json:"price_cents"`
 	PriceCurrency string `json:"price_currency"`
 }
