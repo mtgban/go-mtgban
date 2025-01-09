@@ -68,6 +68,27 @@ func (r *BANPriceResponse) getBuylist(source, uuid string) float64 {
 	return getPrice(r.Buylist[uuid][source], uuid)
 }
 
+func (r *BANPriceResponse) setRetail(destination, uuid string, price float64) {
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil {
+		return
+	}
+
+	var tag string
+	if co.Etched {
+		tag = "_etched"
+	} else if co.Foil {
+		tag = "_foil"
+	}
+
+	// Rebuild the price entry
+	r.Buylist[uuid][destination] = &BanPrice{
+		Conditions: map[string]float64{
+			"NM" + tag: price,
+		},
+	}
+}
+
 func (r *BANPriceResponse) setBuylist(destination, uuid string, price float64) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
@@ -87,6 +108,29 @@ func (r *BANPriceResponse) setBuylist(destination, uuid string, price float64) {
 			"NM" + tag: price,
 		},
 	}
+}
+
+func getCT0fees(price float64) float64 {
+	if price <= 0.25 {
+		return 0.9
+	} else if price <= 3 {
+		return 0.10
+	} else if price <= 5 {
+		return 0.11
+	} else if price <= 7 {
+		return 0.14
+	} else if price <= 10 {
+		return 0.15
+	} else if price <= 15 {
+		return 0.21
+	} else if price <= 20 {
+		return 0.27
+	} else if price <= 30 {
+		return 0.40
+	} else if price <= 40 {
+		return 0.52
+	}
+	return 0.64
 }
 
 func loadPrices(sig, selected string) (*BANPriceResponse, error) {
@@ -155,6 +199,12 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 
 				response.setBuylist("TCGDirectNet", uuid, directNet)
 			}
+		}
+
+		ct0 := response.getRetail("CT0", uuid)
+		ct0 -= getCT0fees(ct0)
+		if ct0 > 0 {
+			response.setRetail("CT0", uuid, ct0)
 		}
 	}
 
