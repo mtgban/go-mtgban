@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 
@@ -8,9 +9,15 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+var ErrInvalidCondition = errors.New("invalid condition")
+
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
+	}
+
+	if !slices.Contains(FullGradeTags, entry.Conditions) {
+		return ErrInvalidCondition
 	}
 
 	entries, found := inv[cardId]
@@ -91,6 +98,10 @@ func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
 func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict bool) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
+	}
+
+	if !slices.Contains(FullGradeTags, entry.Conditions) {
+		return ErrInvalidCondition
 	}
 
 	entries, found := bl[cardId]
