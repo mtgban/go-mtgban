@@ -285,7 +285,7 @@ var sldJPNLangDupes = []string{
 	// Miku
 	"1587", "1592", "1594", "1595", "1596", "1597", "1599", "1602", "1603", "1604", "1605", "1607",
 	// Miku 2
-	"1585", "1590", "1593", "1598", "1600",
+	"1585", "1590", "1593", "1598", "1600", "807",
 }
 
 // List of numbers that need to have their number/uuid revisioned due
