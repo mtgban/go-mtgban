@@ -34,6 +34,7 @@ import (
 	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/jupitergames"
 	"github.com/mtgban/go-mtgban/magiccorner"
+	"github.com/mtgban/go-mtgban/manapool"
 	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/mtgstocks"
@@ -199,9 +200,17 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"manapool": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := manapool.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
 	"mintcard": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mintcard.NewScraper()
+			scraper.Partner = os.Getenv("MP_AFFILIATE")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
