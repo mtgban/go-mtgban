@@ -100,6 +100,10 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			number = subSetCode + "-" + strings.TrimLeft(subNumber, "0")
 		} else if len(fields) == 4 {
 			if fields[0] == "PRM" {
+				// Fix promo set code not being tagged as promo
+				if fields[1] == "GMDY" && !strings.HasPrefix(fields[2], "P") {
+					fields[2] = "P" + fields[2]
+				}
 				number = fields[2] + "-" + strings.TrimLeft(fields[3], "0")
 			}
 		}
