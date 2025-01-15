@@ -57,6 +57,11 @@ func (mp *Manapool) scrape() error {
 			if price == 0 || ids[i] == "" {
 				continue
 			}
+			// Sometimes LP+ is the same as NM, but there is no real difference,
+			// so just skip those prices
+			if (i == 1 || i == 3) && prices[i] == prices[i-1] {
+				continue
+			}
 
 			out := &mtgban.InventoryEntry{
 				Conditions: conds[i],
