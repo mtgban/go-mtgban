@@ -51,12 +51,7 @@ func (mp *Manapool) scrape() error {
 
 		conds := []string{"NM", "SP", "NM", "SP"}
 		ids := []string{cardId, cardId, cardIdFoil, cardIdFoil}
-		prices := []float64{
-			float64(card.PriceCentsNm) / float64(100),
-			float64(card.PriceCentsLpPlus) / float64(100),
-			float64(card.PriceCentsNmFoil) / float64(100),
-			float64(card.PriceCentsLpPlusFoil) / float64(100),
-		}
+		prices := []int{card.PriceCentsNm, card.PriceCentsLpPlus, card.PriceCentsNmFoil, card.PriceCentsLpPlusFoil}
 
 		for i, price := range prices {
 			if price == 0 || ids[i] == "" {
@@ -65,7 +60,7 @@ func (mp *Manapool) scrape() error {
 
 			out := &mtgban.InventoryEntry{
 				Conditions: conds[i],
-				Price:      price,
+				Price:      float64(price) / 100.0,
 				URL:        link,
 			}
 			err = mp.inventory.AddUnique(ids[i], out)
