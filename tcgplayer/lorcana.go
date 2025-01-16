@@ -244,8 +244,8 @@ func (tcg *TCGLorcana) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (tcg *TCGLorcana) Info() (info mtgban.ScraperInfo) {
-	info.Name = "TCG Player"
-	info.Shorthand = "TCG Player"
+	info.Name = "TCGplayer"
+	info.Shorthand = "TCGPlayer"
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.NoQuantityInventory = true
 	info.Game = mtgban.GameLorcana
