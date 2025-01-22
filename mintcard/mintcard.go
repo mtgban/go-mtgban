@@ -120,17 +120,22 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 		}
 
 		link := "https://www.mtgmintcard.com/buylist?action=advanced_search&ed=" + editionId + "&mo_1=1&mo_2=1&card_name=" + url.QueryEscape(card.Name)
-		if buyPrice > 0 {
-			out := &mtgban.BuylistEntry{
-				Conditions: cond,
-				BuyPrice:   buyPrice,
-				PriceRatio: priceRatio,
-				URL:        link,
-				OriginalId: card.ID,
-			}
-			err = mint.buylist.Add(cardId, out)
-			if err != nil {
-				mint.printf("%v", err)
+
+		gradeMap := grading(cardId, buyPrice)
+		for _, grade := range mtgban.DefaultGradeTags {
+			price := buyPrice * gradeMap[grade]
+			if price > 0 {
+				out := &mtgban.BuylistEntry{
+					Conditions: grade,
+					BuyPrice:   price,
+					PriceRatio: priceRatio,
+					URL:        link,
+					OriginalId: card.ID,
+				}
+				err = mint.buylist.Add(cardId, out)
+				if err != nil {
+					mint.printf("%v", err)
+				}
 			}
 		}
 	}
@@ -193,6 +198,45 @@ func (mint *MTGMintCard) Buylist() (mtgban.BuylistRecord, error) {
 	}
 
 	return mint.buylist, nil
+}
+
+func grading(cardId string, price float64) map[string]float64 {
+	co, err := mtgmatcher.GetUUID(cardId)
+	if err != nil {
+		return nil
+	}
+
+	if co.Foil {
+		return map[string]float64{
+			"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
+		}
+	}
+
+	switch co.SetCode {
+	case "LEA", "LEB", "2ED", "3ED":
+		return map[string]float64{
+			"NM": 1,
+		}
+	}
+
+	if price >= 30.25 {
+		return map[string]float64{
+			"NM": 1, "SP": 0.85, "MP": 0.75, "HP": 0.65,
+		}
+	}
+	if price >= 10.25 {
+		return map[string]float64{
+			"NM": 1, "SP": 0.80, "MP": 0.7, "HP": 0.6,
+		}
+	}
+	if price >= 0.25 {
+		return map[string]float64{
+			"NM": 1, "SP": 0.75, "MP": 0.6, "HP": 0.35,
+		}
+	}
+	return map[string]float64{
+		"NM": 1, "SP": 0.5, "MP": 0.5,
+	}
 }
 
 func (mint *MTGMintCard) Info() (info mtgban.ScraperInfo) {
