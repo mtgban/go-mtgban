@@ -2554,6 +2554,15 @@
         }
     },
     {
+        "uuid": "40aa273e-59d2-52f8-a26d-56fcd614a12a",
+        "description": "duel_decks_dda_all_in_edition",
+        "input": {
+            "name": "Skirk Fire Marshal",
+            "variant": "50",
+            "edition": "DDA, Elves vs. Goblin"
+        }
+    },
+    {
         "uuid": "8882a58b-a123-5c16-bd10-a86c6faf4155",
         "description": "duel_decks_variant_jpn",
         "input": {

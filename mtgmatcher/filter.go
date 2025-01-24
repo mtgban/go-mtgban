@@ -482,14 +482,21 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			switch {
 			case strings.HasPrefix(set.Name, "Duel Decks Anthology"):
 				found := false
-				fields := strings.Fields(inCard.Variation)
-				for _, field := range fields {
-					if len(field) < 4 {
+				// Look if the variation or the edition contain part of set name
+				for _, location := range []string{inCard.Variation, inCard.Edition} {
+					if !strings.Contains(location, "vs") {
 						continue
 					}
-					if Contains(set.Name, field) {
-						found = true
-						break
+					fields := strings.Fields(location)
+					for _, field := range fields {
+						// Skip elements that are too short to be representative
+						if len(field) < 4 {
+							continue
+						}
+						if Contains(set.Name, field) {
+							found = true
+							break
+						}
 					}
 				}
 				// Do number check only if well known elements are missing
