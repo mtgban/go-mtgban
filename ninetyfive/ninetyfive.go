@@ -186,6 +186,9 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 		}
 	}
 
+	nf.inventoryDate = time.Now()
+	nf.buylistDate = time.Now()
+
 	return nil
 }
 
