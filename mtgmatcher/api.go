@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -1032,10 +1033,14 @@ func BuildSealedProductMap(idName string) map[int][]string {
 		if err != nil {
 			continue
 		}
-		// We also know that nonfoil comes before foil since product names are sorted
-		// so we can guarantee that the first element is nonfoil, and the second one
-		// is actually foil
 		productMap[idNum] = append(productMap[idNum], uuid)
+
+		// Preserve Foil variant at the end of the slice
+		sort.Slice(productMap[idNum], func(i, j int) bool {
+			coI := backend.UUIDs[productMap[idNum][i]]
+			coJ := backend.UUIDs[productMap[idNum][j]]
+			return coI.Name < coJ.Name
+		})
 	}
 	return productMap
 }
