@@ -1,6 +1,7 @@
 package manapool
 
 import (
+	"net/url"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -44,14 +45,18 @@ func (mp *Manapool) scrape() error {
 		}
 		cardIdFoil, _ := mtgmatcher.MatchId(card.ScryfallID, true)
 
-		link := "https://www.manapool.com" + card.URL
+		u, _ := url.Parse("https://www.manapool.com")
+		u.Path = card.URL
+		v := url.Values{}
 		if mp.Partner != "" {
-			link += "?ref=" + mp.Partner
+			v.Set("ref", mp.Partner)
 		}
 
 		conds := []string{"NM", "SP", "NM", "SP"}
 		ids := []string{cardId, cardId, cardIdFoil, cardIdFoil}
 		prices := []int{card.PriceCentsNm, card.PriceCentsLpPlus, card.PriceCentsNmFoil, card.PriceCentsLpPlusFoil}
+		linkConds := []string{"NM", "LP", "NM", "LP"}
+		linkFinishes := []string{"nonfoil", "nonfoil", "foil", "foil"}
 
 		for i, price := range prices {
 			if price == 0 || ids[i] == "" {
@@ -62,6 +67,10 @@ func (mp *Manapool) scrape() error {
 			if (i == 1 || i == 3) && prices[i] == prices[i-1] {
 				continue
 			}
+			v.Set("conditions", linkConds[i])
+			v.Set("finish", linkFinishes[i])
+			u.RawQuery = v.Encode()
+			link := u.String()
 
 			out := &mtgban.InventoryEntry{
 				Conditions: conds[i],
