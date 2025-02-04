@@ -46,6 +46,8 @@ func (ck *Cardkingdom) scrape() error {
 
 	ck.printf("Found %d prices", len(pricelist))
 
+	start := time.Now()
+
 	for _, card := range pricelist {
 		skipErrors := card.Edition == "Mystery Booster/The List"
 
@@ -210,6 +212,8 @@ func (ck *Cardkingdom) scrape() error {
 			}
 		}
 	}
+
+	ck.printf("Took %v", time.Since(start))
 
 	ck.inventoryDate = time.Now()
 	ck.buylistDate = time.Now()
