@@ -37,57 +37,6 @@ func (ck *Cardkingdom) printf(format string, a ...interface{}) {
 	}
 }
 
-type retailDetail struct {
-	condition string
-	quantity  int
-	price     float64
-}
-
-/* For newly added cards the embedded nmPrice may not be initialized, so we
- * use the fallbackPrice that is known to be always valid. */
-func parseConditions(values conditionValues, fallbackPrice float64) (out []retailDetail) {
-	nmPrice, _ := strconv.ParseFloat(values.NMPrice, 64)
-	if values.NMQty > 0 {
-		if nmPrice == 0 {
-			nmPrice = fallbackPrice
-		}
-		out = append(out, retailDetail{
-			condition: "NM",
-			quantity:  values.NMQty,
-			price:     nmPrice,
-		})
-	}
-
-	exPrice, _ := strconv.ParseFloat(values.EXPrice, 64)
-	if exPrice > 0 && values.EXQty > 0 {
-		out = append(out, retailDetail{
-			condition: "SP",
-			quantity:  values.EXQty,
-			price:     exPrice,
-		})
-	}
-
-	vgPrice, _ := strconv.ParseFloat(values.VGPrice, 64)
-	if vgPrice > 0 && values.VGQty > 0 {
-		out = append(out, retailDetail{
-			condition: "MP",
-			quantity:  values.VGQty,
-			price:     vgPrice,
-		})
-	}
-
-	goPrice, _ := strconv.ParseFloat(values.GOPrice, 64)
-	if goPrice > 0 && values.GOQty > 0 {
-		out = append(out, retailDetail{
-			condition: "HP",
-			quantity:  values.GOQty,
-			price:     goPrice,
-		})
-	}
-
-	return
-}
-
 func (ck *Cardkingdom) scrape() error {
 	ckClient := NewCKClient()
 	pricelist, err := ckClient.GetPriceList()
@@ -150,12 +99,32 @@ func (ck *Cardkingdom) scrape() error {
 		link := u.String()
 
 		if card.SellQuantity > 0 && sellPrice > 0 {
-			details := parseConditions(card.ConditionValues, sellPrice)
-			for _, detail := range details {
+			prices := []string{
+				card.ConditionValues.NMPrice, card.ConditionValues.EXPrice, card.ConditionValues.VGPrice, card.ConditionValues.GOPrice,
+			}
+			qtys := []int{
+				card.ConditionValues.NMQty, card.ConditionValues.EXQty, card.ConditionValues.VGQty, card.ConditionValues.GOQty,
+			}
+
+			for i, cond := range mtgban.DefaultGradeTags {
+				if qtys[i] == 0 {
+					continue
+				}
+
+				price, _ := strconv.ParseFloat(prices[i], 64)
+				if price == 0 {
+					// For newly added cards the nmPrice may not be initialized,
+					// so we the root price value that is known to be valid
+					if i > 0 {
+						continue
+					}
+					price = sellPrice
+				}
+
 				out := &mtgban.InventoryEntry{
-					Conditions: detail.condition,
-					Price:      detail.price,
-					Quantity:   detail.quantity,
+					Conditions: cond,
+					Price:      price,
+					Quantity:   qtys[i],
 					URL:        link,
 					OriginalId: fmt.Sprint(card.Id),
 				}
