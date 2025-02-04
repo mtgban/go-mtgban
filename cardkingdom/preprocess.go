@@ -115,21 +115,24 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 	isFoil := foilFlag || foilVariant
 	isEtched := strings.Contains(card.Variation, "Etched")
 
+	// Retrieve setCode and number
 	sku := card.SKU
-	if sku == "" {
+	fields := strings.Split(sku, "-")
+	if len(fields) < 2 {
 		return nil, errors.New("unsupported SKU format")
 	}
+	setCode := fields[0]
 
 	// Strip the initial F from set codes that do not exist
-	if isFoil && strings.HasPrefix(sku, "F") && setCodeExists(strings.Split(sku, "-")[0][1:]) {
+	if isFoil && strings.HasPrefix(sku, "F") && setCodeExists(setCode[1:]) {
 		sku = sku[1:]
 	}
 	// Same for Etched and E
-	if isEtched && strings.HasPrefix(sku, "E") && setCodeExists(strings.Split(sku, "-")[0][1:]) {
+	if isEtched && strings.HasPrefix(sku, "E") && setCodeExists(setCode[1:]) {
 		sku = sku[1:]
 	}
 	// ccccombo (EF is for emblem foils)
-	if isFoil && isEtched && strings.HasPrefix(sku, "FE") && setCodeExists(strings.Split(sku, "-")[0][2:]) {
+	if isFoil && isEtched && strings.HasPrefix(sku, "FE") && setCodeExists(setCode[2:]) {
 		sku = sku[2:]
 	}
 
@@ -139,12 +142,10 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 		sku = fixup
 	}
 
-	// Retrieve setCode and number
-	fields := strings.Split(sku, "-")
-	if len(fields) < 2 {
-		return nil, errors.New("unsupported SKU format")
-	}
-	setCode := fields[0]
+	// Update the fields if needed
+	fields = strings.Split(sku, "-")
+	setCode = fields[0]
+
 	number := strings.Join(fields[1:], "")
 	number = strings.TrimLeft(number, "0")
 	number = strings.TrimRight(number, "JP")
