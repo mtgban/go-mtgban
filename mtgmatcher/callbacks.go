@@ -270,6 +270,7 @@ var simpleFilterCallbacks = map[string]cardFilterCallback{
 
 	"TSR": releaseRetroCheck,
 	"CLU": releaseRetroCheck,
+	"INR": releaseRetroCheck,
 
 	"PHOU": draftweekendCheck,
 	"PXLN": draftweekendCheck,
