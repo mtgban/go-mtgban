@@ -138,7 +138,7 @@ func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, pa
 			qty = 20
 		}
 
-		priceStr := s.Find(`b[itemprop="price"]`).Text()
+		priceStr := s.Find(`b[itemprop="price"]`).First().Text()
 		price, err := strconv.ParseFloat(priceStr, 64)
 		if err != nil {
 			csi.printf("%s: %s", productName, err.Error())
