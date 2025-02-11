@@ -190,6 +190,8 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 				edition = "PLST"
 				variation = maybeNum
 			}
+		case strings.Contains(variation, "Ugin's Fate"):
+			edition = "UGIN"
 		}
 	case "Mystery Booster/The List":
 		edition = card.Edition
