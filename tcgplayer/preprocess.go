@@ -559,7 +559,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 
 	// Special tags and finishes
 	for _, tag := range []string{"misprint", "serial", "etched", "retro frame"} {
-		if strings.Contains(strings.ToLower(ogVariant), tag) {
+		if strings.Contains(strings.ToLower(ogVariant), tag) && !strings.Contains(strings.ToLower(variant), tag) {
 			if variant != "" {
 				variant += " "
 			}
