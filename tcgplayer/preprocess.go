@@ -324,6 +324,9 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		case "Sauron, the Dark Lord":
 			edition = "LTR"
 			variant = "301"
+		case "Gandalf the White":
+			edition = "LTR"
+			variant = "299"
 		default:
 			for _, code := range []string{"PR23", "SLP"} {
 				if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
