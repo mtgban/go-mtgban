@@ -678,6 +678,13 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				}
 			}
 
+		case inCard.Contains("Eternal Weekend"):
+			switch set.Code {
+			case "PEWK":
+			default:
+				continue
+			}
+
 		// Last resort, if this is set on the input card, and there were
 		// no better descriptors earlier, try looking at the set type
 		case inCard.promoWildcard:

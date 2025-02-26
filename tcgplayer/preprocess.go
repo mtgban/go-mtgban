@@ -297,11 +297,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				edition = "SNC"
 				variant = "450"
 			}
-		case "Ponder":
-			if variant == "Eternal Weekend 2022 Promo" {
-				edition = "PEWK"
-				variant = "2"
-			}
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
@@ -457,9 +452,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 	case "Game Day & Store Championship Promos":
 		if variant == "Winner" || variant == "Top 8" {
 			return nil, errors.New("untracked")
-		}
-		if len(mtgmatcher.MatchInSet(cardName, "PEWK")) == 1 {
-			edition = "PEWK"
 		}
 	case "Special Occasion":
 		if len(mtgmatcher.MatchInSet(cardName, "PCEL")) == 1 {
