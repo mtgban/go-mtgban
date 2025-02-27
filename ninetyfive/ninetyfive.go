@@ -48,13 +48,6 @@ func (nf *Ninetyfive) printf(format string, a ...interface{}) {
 	}
 }
 
-var gradingMap = map[string]float64{
-	"NM": 1,
-	"SP": 1,
-	"MP": 0.5,
-	"HP": 0.5,
-}
-
 func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode string) error {
 	for key, items := range allPrices {
 		if allCards[key].SetSupertype != nf.game {
@@ -168,16 +161,13 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 						priceRatio = price / sellPrice * 100
 					}
 
-					for _, grade := range mtgban.DefaultGradeTags {
-						err = nf.buylist.Add(id, &mtgban.BuylistEntry{
-							Conditions: grade,
-							BuyPrice:   price * gradingMap[grade],
-							PriceRatio: priceRatio,
-							Quantity:   quantity,
-							URL:        link,
-							OriginalId: key,
-						})
-					}
+					err = nf.buylist.Add(id, &mtgban.BuylistEntry{
+						BuyPrice:   price,
+						PriceRatio: priceRatio,
+						Quantity:   quantity,
+						URL:        link,
+						OriginalId: key,
+					})
 				}
 			}
 			// Todo check codes are correct
