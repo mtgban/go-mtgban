@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -11,7 +12,8 @@ import (
 )
 
 const (
-	baseURL = "https://shop.95gamecenter.com/jsons"
+	baseURL  = "https://shop.95gamecenter.com/jsons"
+	staticUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
 )
 
 type NFCard map[string]struct {
@@ -146,7 +148,14 @@ func (nf *NFClient) getFile(name, separator string) ([]byte, error) {
 		return nil, err
 	}
 
-	resp, err := nf.client.Get(u.String())
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("User-Agent", staticUA)
+
+	resp, err := nf.client.StandardClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
