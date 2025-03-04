@@ -22,6 +22,8 @@ const (
 	defaultConcurrency = 8
 
 	tcgLatestSalesURL = "https://mpapi.tcgplayer.com/v2/product/%s/latestsales"
+
+	staticUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
 )
 
 func GetProductNumber(tcgp *tcgplayer.Product) string {
@@ -178,7 +180,15 @@ func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, erro
 		return nil, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Post(link, "application/json", bytes.NewReader(payload))
+	req, err := http.NewRequest(http.MethodPost, link, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("User-Agent", staticUA)
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
