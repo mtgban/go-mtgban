@@ -398,6 +398,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			switch set.Code {
 			case "SCH":
 			case "LTR":
+			case "PEWK":
 			default:
 				skip := true
 				switch {

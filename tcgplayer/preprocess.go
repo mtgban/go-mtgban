@@ -297,6 +297,11 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				edition = "SNC"
 				variant = "450"
 			}
+		case "Tishana's Tidebinder", "Brotherhood's End":
+			if variant == "JP Exclusive" {
+				edition = "pjsc"
+				variant = ""
+			}
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
@@ -410,7 +415,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = "PPRO"
 		}
 	case "Kaladesh":
-		if variant == "17/264" {
+		if variant == "17/264" || variant == "Reprint" {
 			variant = "Intro Pack"
 		}
 	case "Secret Lair Drop Series":
@@ -430,6 +435,10 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			} else if ogVariant == "0002" {
 				edition = "PURL"
 				variant = "9"
+			}
+		case "The First Sliver", "Serra the Benevolent", "Ponder":
+			if variant == "3" || variant == "2" || variant == "1" {
+				edition = "PF25"
 			}
 		default:
 			// Preserve all etched/galaxy/rainbow foil properties
