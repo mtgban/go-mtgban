@@ -644,8 +644,11 @@ func (ap AllPrintings) Load() cardBackend {
 				if strings.Contains(set.Name, "Playtest") {
 					name += " Playtest"
 				}
-			case "Glimpse, the Unthinkable":
-				name += " Playtest"
+			case "Glimpse, the Unthinkable",
+				"______":
+				if strings.Contains(set.Name, "Unknown") {
+					name += " Playtest"
+				}
 			}
 
 			norm := Normalize(name)

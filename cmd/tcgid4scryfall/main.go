@@ -63,6 +63,8 @@ func processCards(channel chan<- responseChan, page int) error {
 					mtgmatcher.IsBasicLand(theCard.Name) ||
 					strings.Contains(strings.ToLower(theCard.Variation), "serial") ||
 					strings.Contains(theCard.Variation, "Thick Stock") ||
+					theCard.Edition == "Secret Lair Drop" ||
+					theCard.Edition == "Modern Horizons 3 Commander" ||
 					theCard.Edition == "Prerelease Cards" ||
 					theCard.Edition == "The List Reprints") {
 				continue
@@ -246,6 +248,10 @@ func run() int {
 	})
 	fixes := 0
 	for _, props := range output {
+		if props.Edition == "Secret Lair Drop" ||
+			props.Edition == "Modern Horizons 3 Commander" {
+			continue
+		}
 		fixes++
 		csvWriter.Write([]string{
 			props.Name,

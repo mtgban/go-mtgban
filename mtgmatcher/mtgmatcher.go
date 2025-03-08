@@ -212,8 +212,9 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	switch inCard.Name {
 	case "Red Herring",
 		"Pick Your Poison",
+		"______",
 		"Glimpse, the Unthinkable":
-		if inCard.isMysteryList() {
+		if inCard.isMysteryList() || inCard.Contains("Unknown") {
 			inCard.Name += " Playtest"
 		}
 	}
@@ -251,6 +252,8 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		// If renamed, reload metadata in case of duplicate names
 		switch inCard.Name {
 		case "Unquenchable Fury Token",
+			"______ Playtest",
+			"Glimpse, the Unthinkable Playtest",
 			"Red Herring Playtest",
 			"Pick Your Poison Playtest":
 			entry = backend.CardInfo[Normalize(inCard.Name)]
