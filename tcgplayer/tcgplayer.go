@@ -2,6 +2,8 @@ package tcgplayer
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -256,6 +258,48 @@ func (tcg *TCGPlayerMarket) scrape() error {
 				skus, found := skusMap[uuid]
 				if !found {
 					continue
+				}
+
+				_, found = card.Identifiers["needsNewTCGSKUs"]
+				if found {
+					tcgId := card.Identifiers["tcgplayerProductId"]
+					id, err := strconv.Atoi(tcgId)
+					if err != nil {
+						continue
+					}
+
+					altSkus, err := tcg.client.ListProductSKUs(id)
+					if err != nil {
+						tcg.printf("Error retrieving alternative SKUs: %s", err.Error())
+						continue
+					}
+
+					skus = skus[:0]
+					for _, sku := range altSkus {
+						printing := "NORMAL"
+						if sku.PrintingId == 2 {
+							printing = "FOIL"
+						}
+
+						cond, found := map[int]string{
+							1: "NEAR MINT",
+							2: "LIGHTLY PLAYED",
+							3: "MODERATELY PLAYED",
+							4: "HEAVILY PLAYED",
+							5: "DAMAGED",
+						}[sku.ConditionId]
+						if !found {
+							continue
+						}
+
+						skus = append(skus, mtgjson.TCGSku{
+							Condition: cond,
+							Language:  strings.ToUpper(card.Language),
+							Printing:  printing,
+							ProductId: id,
+							SkuId:     sku.SkuId,
+						})
+					}
 				}
 
 				hasNonfoil := card.HasFinish(mtgjson.FinishNonfoil)

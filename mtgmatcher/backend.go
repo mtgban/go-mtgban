@@ -1414,6 +1414,8 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 
 			dupeCard.Identifiers = newIdentifiers
 			dupeCard.Identifiers["tcgplayerProductId"] = tcgIds[slices.Index(numbers, sets[code].Cards[i].Number)]
+			// Signal that the TCG SKUs from MTGJSON are not reliable
+			dupeCard.Identifiers["needsNewTCGSKUs"] = "true"
 		}
 		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		dupeCard.Number += mtgjson.SuffixSpecial
