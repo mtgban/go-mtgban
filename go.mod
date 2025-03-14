@@ -15,7 +15,7 @@ require (
 	github.com/scizorman/go-ndjson v0.0.0-20200902005011-1d92486df71e
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/text v0.21.0
-	golang.org/x/time v0.6.0
+	golang.org/x/time v0.11.0
 	google.golang.org/api v0.147.0
 )
 
@@ -23,7 +23,7 @@ require (
 	github.com/corpix/uarand v0.2.0
 	github.com/montanaflynn/stats v0.7.1
 	github.com/mroth/weightedrand/v2 v2.1.0
-	github.com/mtgban/go-tcgplayer v0.0.0-20240821150414-caace4f5b3f4
+	github.com/mtgban/go-tcgplayer v0.0.0-20250314170048-a37ce47d0d4a
 	github.com/ulikunitz/xz v0.5.11
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )
