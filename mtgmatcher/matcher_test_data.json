@@ -2706,15 +2706,6 @@
         }
     },
     {
-        "uuid": "e473e14a-eda6-559a-bfc5-4b23931747e5",
-        "description": "idw_duress_dupe",
-        "input": {
-            "name": "Duress",
-            "variant": "Comic promo",
-            "edition": "ignored"
-        }
-    },
-    {
         "uuid": "7d5ea62e-47af-5802-a24f-8090ba028f18",
         "description": "magazine_insert_not_tagged_jpn",
         "input": {

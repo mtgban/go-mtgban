@@ -1316,6 +1316,21 @@ func adjustEdition(inCard *InputCard) {
 					variation = "2025-1"
 				}
 			}
+		case "Duress":
+			if inCard.isIDWMagazineBook() {
+				if inCard.Contains("IDW") {
+					edition = "IDW Comics Inserts"
+					variation = "17"
+				} else {
+					edition = "Media and Collaboration Promos"
+
+					if strings.Contains(variation, "34") || inCard.isJPN() || inCard.Language == "Japanese" {
+						variation = "2019-6"
+					} else {
+						variation = "2025-7"
+					}
+				}
+			}
 		case "Arcbound Ravager":
 			if inCard.Contains("Qualifiers") || inCard.Contains("WMCQ") {
 				edition = "Pro Tour Promos"
