@@ -59,7 +59,12 @@ func languageTags(language, edition, variant, number string) (string, string, er
 func fixupSetCode(setCode string) string {
 	_, err := mtgmatcher.GetSet(setCode)
 	if err != nil && len(setCode) > 3 && unicode.IsDigit(rune(setCode[len(setCode)-1])) {
-		setCode = setCode[:len(setCode)-1]
+		switch setCode {
+		case "4ED2":
+			setCode = "4EDALT"
+		default:
+			setCode = setCode[:len(setCode)-1]
+		}
 	}
 	return setCode
 }
