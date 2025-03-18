@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 var cardTable = map[string]string{
@@ -144,6 +145,14 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	// Check if we found it and return the id
 	out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
 	if len(out) == 1 {
+		card := out[0]
+		// If there's a single finish make sure the number+finish combination is correct
+		// Otherwise let it be processed upstream
+		if len(card.Finishes) == 1 &&
+			(((card.HasFinish(mtgjson.FinishFoil) || card.HasFinish(mtgjson.FinishEtched)) && !foil) ||
+				(card.HasFinish(mtgjson.FinishNonfoil) && foil)) {
+			return nil, errors.New("invalid number/foil combination")
+		}
 		return &mtgmatcher.InputCard{
 			Id:       out[0].UUID,
 			Foil:     foil,
