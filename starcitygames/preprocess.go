@@ -62,6 +62,8 @@ func fixupSetCode(setCode string) string {
 		switch setCode {
 		case "4ED2":
 			setCode = "4EDALT"
+		case "MPS3":
+			setCode = "MP2"
 		default:
 			setCode = setCode[:len(setCode)-1]
 		}
@@ -93,8 +95,6 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	foil := fields[4][2] != 'N'
 
 	switch setCode {
-	case "MPS3":
-		setCode = "MP2"
 	case "PWSB":
 		setCode = "PLST"
 		fields := strings.Split(number, "_")

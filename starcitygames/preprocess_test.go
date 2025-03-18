@@ -50,6 +50,10 @@ var SKUTests = []SKUTest{
 		In:  "SGL-MTG-LTR4-741-ENF1",
 		Out: "9d1b6dca-03ce-5c5c-b0d4-ee294bb89421",
 	},
+	{
+		In:  "SGL-MTG-MPS3-001-ENF1",
+		Out: "cb4a260d-8f98-5e81-b881-6727d5323917",
+	},
 }
 
 func TestSKU(t *testing.T) {
