@@ -4743,6 +4743,14 @@
         }
     },
     {
+        "uuid": "ff342b26-3058-5373-aaa9-f20684f92031",
+        "description": "multi_promo_number_similar",
+        "input": {
+            "name": "Giada, Font of Hope",
+            "edition": "Prerelease Promos Streets of New Capenna"
+        }
+    },
+    {
         "uuid": "603edebc-a536-5987-aeeb-9a0202d06e79",
         "description": "ltr_serialized_might_mix_with_poster",
         "input": {

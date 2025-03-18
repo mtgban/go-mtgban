@@ -1002,7 +1002,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 					filteredOutCards = append(filteredOutCards, card)
 				} else {
 					for probe, number := range multiPromosTable[set.Name][card.Name] {
-						if inCard.Contains(probe) && strings.HasPrefix(card.Number, number) {
+						if inCard.Contains(probe) && ExtractNumericalValue(card.Number) == number {
 							filteredOutCards = append(filteredOutCards, card)
 						}
 					}
