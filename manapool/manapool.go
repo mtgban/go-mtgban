@@ -46,7 +46,7 @@ func (mp *Manapool) scrape() error {
 		cardIdFoil, _ := mtgmatcher.MatchId(card.ScryfallID, true)
 
 		u, _ := url.Parse("https://www.manapool.com")
-		u.Path = card.URL
+		u.Path, _ = url.PathUnescape(card.URL)
 		v := url.Values{}
 		if mp.Partner != "" {
 			v.Set("ref", mp.Partner)
