@@ -4727,16 +4727,16 @@
         }
     },
     {
-        "uuid": "d74d1b4a-b105-5d42-9a7e-9e697229ee73",
-        "description": "da1_commas_intefering_unknownevent",
+        "uuid": "ab056d44-ad2d-58be-81c7-281a63e5e851",
+        "description": "unknownevent_commas_intefering_unknownevent",
         "input": {
             "name": "Gather, the Townsfolk",
-            "edition": "DA1"
+            "edition": "UNK"
         }
     },
     {
         "uuid": "1108ac53-50d0-5223-af4c-978afdd9b26f",
-        "description": "da1_commas_intefering_actualcard",
+        "description": "unknownevent_commas_intefering_actualcard",
         "input": {
             "name": "Gather the Townsfolk",
             "edition": "DDQ"

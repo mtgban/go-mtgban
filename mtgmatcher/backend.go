@@ -632,7 +632,7 @@ func (ap AllPrintings) Load() cardBackend {
 				card.Layout = "token"
 			// Modify the Normalize string replacer to ignore replacing card names with commas
 			// that conflict with another card name
-			case "MB2", "DA1":
+			case "MB2", "DA1", "UNK":
 				if strings.Contains(card.Name, ",") && slices.Contains(allCardNames, strings.Replace(card.Name, ",", "", 1)) {
 					lower := strings.ToLower(card.Name)
 					replacerStrings = append([]string{lower, lower}, replacerStrings...)
