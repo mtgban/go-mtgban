@@ -85,8 +85,9 @@ var skuFixupTable = map[string]string{
 	// Crucible of Words promo
 	"PWOR19-001": "PWOR-2019",
 
-	// Greated Good
-	"SLD-1693-IT": "SLD-1693",
+	// Greater Good
+	"SLD-1693-IT":  "SLD-1693",
+	"FSLD-1693-IT": "SLD-1693★",
 
 	// Flusterstorm BaB
 	"MH1-255P":  "MH1-255",
