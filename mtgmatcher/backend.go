@@ -767,6 +767,7 @@ func (ap AllPrintings) Load() cardBackend {
 					name += " Playtest"
 				}
 			case "Glimpse, the Unthinkable",
+				"Clear, the Mind",
 				"______":
 				if strings.Contains(set.Name, "Unknown") {
 					name += " Playtest"
