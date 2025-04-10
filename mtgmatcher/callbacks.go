@@ -904,7 +904,7 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 		"Shadowborn Apostle",
 		"Toxin Sliver",
 		"Virulent Sliver":
-		result = strings.HasSuffix(card.Number, "Φ")
+		result = strings.HasSuffix(card.Number, mtgjson.SuffixPhiLow)
 		if inCard.isStepAndCompleat() {
 			result = !result
 		}
