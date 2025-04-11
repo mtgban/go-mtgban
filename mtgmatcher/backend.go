@@ -1401,6 +1401,8 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 
 	for i := range sets[code].Cards {
 		dupeCard := sets[code].Cards[i]
+		ogVariations := dupeCard.Variations
+		ogUUID := dupeCard.UUID
 
 		// Skip unneeded (just preserve the card as-is)
 		if !slices.Contains(numbers, sets[code].Cards[i].Number) {
@@ -1416,6 +1418,7 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 
 		// Change properties
 		dupeCard.Finishes = []string{"nonfoil"}
+		dupeCard.Variations = append(ogVariations, ogUUID+suffixFoil)
 
 		// Propagate changes across the board
 		co.Card = dupeCard
@@ -1445,6 +1448,7 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		dupeCard.Number += mtgjson.SuffixSpecial
 		dupeCard.Finishes = []string{"foil"}
+		dupeCard.Variations = append(ogVariations, ogUUID)
 
 		// Update images
 		dupeCard.Images = map[string]string{}

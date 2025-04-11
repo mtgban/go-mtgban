@@ -3995,6 +3995,14 @@
         }
     },
     {
+        "uuid": "95378e16-e284-54c9-b520-cb065822e6fa_f",
+        "description": "custom_foil_id_lookup",
+        "input": {
+            "id": "04fe475d-5f84-41e5-b2b3-10005dce74f0",
+            "foil": true
+        }
+    },
+    {
         "uuid": "f2aa69f2-db69-5564-8661-d51855c6796a",
         "description": "sta_double_variant_normal",
         "input": {
