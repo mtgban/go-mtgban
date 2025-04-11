@@ -42,6 +42,7 @@ func (pm *Purplemana) scrape() error {
 	if err != nil {
 		return err
 	}
+	pm.printf("Found %d products", len(products))
 
 	for _, product := range products {
 		if product.SellerPayout == 0 {
