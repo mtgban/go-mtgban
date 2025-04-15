@@ -952,6 +952,11 @@ func (ap AllPrintings) Load() cardBackend {
 		}
 
 		for _, product := range set.SealedProduct {
+			if product.Identifiers == nil {
+				product.Identifiers = map[string]string{}
+			}
+			product.Identifiers["mtgjsonId"] = product.UUID
+
 			card := Card{
 				UUID:        product.UUID,
 				Name:        product.Name,
