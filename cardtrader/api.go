@@ -311,6 +311,9 @@ type BulkProduct struct {
 	// A secondary internal-only field
 	UserDataField *string `json:"user_data_field,omitempty"`
 
+	// A field visible to the vendor only
+	Tag *string `json:"tag"`
+
 	// A list of optional properties
 	Properties struct {
 		Condition string `json:"condition,omitempty"`
