@@ -33,6 +33,7 @@ type CKCard struct {
 	BuyPrice        string          `json:"price_buy"`
 	BuyQuantity     int             `json:"qty_buying"`
 	ConditionValues conditionValues `json:"condition_values"`
+	ScryfallId      string          `json:"scryfall_id"`
 
 	// Only from GetHotBuylist()
 	HotPrice  string `json:"price"`
