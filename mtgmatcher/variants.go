@@ -1672,6 +1672,7 @@ var femVariants = map[string]map[string]string{
 		"fe007": "34c",
 		"fe008": "34d",
 
+		"k. foglio": "34a",
 		"p. foglio": "34b",
 	},
 	"Brassclaw Orcs": {
@@ -1679,6 +1680,8 @@ var femVariants = map[string]map[string]string{
 		"fe101":                       "49b",
 		"fe102":                       "49c",
 		"fe103":                       "49d",
+		"alexander pike":              "49a",
+		"alexander claw":              "49c",
 		"rob alexander, spear":        "49a",
 		"rob alexander, no spear":     "49c",
 		"rob alexander, gloved fist":  "49c",
@@ -1866,6 +1869,8 @@ var femVariants = map[string]map[string]string{
 		"bryon wackwitz male knight":    "16b",
 		"bryon wackwitz flag":           "16a",
 		"bryon wackwitz shield":         "16b",
+		"wackwitz facing right":         "16a",
+		"wackwitz facing left":          "16b",
 
 		"female": "16a",
 		"male":   "16b",
@@ -1899,6 +1904,8 @@ var femVariants = map[string]map[string]string{
 		"fe054":                            "27a",
 		"fe055":                            "27b",
 		"fe056":                            "27c",
+		"alexander pond":                   "27a",
+		"alexander marsh":                  "27b",
 		"rob alexander lush horizon":       "27a",
 		"rob alexander sun through clouds": "27b",
 		"rob alexander, lake":              "27a",
