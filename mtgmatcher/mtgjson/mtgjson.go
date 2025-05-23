@@ -81,7 +81,6 @@ const (
 
 	SuffixSpecial = "★"
 	SuffixVariant = "†"
-	SuffixPhiUp   = "Φ"
 	SuffixPhiLow  = "φ"
 )
 

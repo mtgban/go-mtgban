@@ -278,6 +278,18 @@ var missingPALPtags = map[string]string{
 	"15": "Indonesia",
 }
 
+// List of playtest or unknown cards which have a similar name to actual cards
+// in various editions. We change their name appending "Playtest" to treat them
+// differently and tell them apart their main counterpart
+var duplicatedCardNames = []string{
+	"Clear, the Mind",
+	"Glimpse, the Unthinkable",
+	"Pick Your Poison",
+	"Red Herring",
+	"______",
+	"Fast", "Furious", "Fast // Furious",
+}
+
 // List of numbers in SLD that need to be decoupled
 var sldJPNLangDupes = []string{
 	// Specila Guests
@@ -328,6 +340,24 @@ var foilDupes = map[string][]string{
 		"1911", "1912", "1913", "1914", "1915",
 		"1955", "1956", "1957", "1958", "1959",
 		"9990", "9991", "9992", "9993",
+
+		"895", "896",
+		"1428", "1429", "1430", "1431", "1432",
+		"1562", "1563", "1564", "1565",
+		"1753", "1754", "1755", "1756", "1757",
+		"1816", "1817", "1818", "1819", "1820",
+		"1873", "1874", "1875", "1876",
+		"1916", "1917", "1918", "1919", "1920", "1921", "1922", "1923", "1924", "1925",
+		"1926", "1927", "1928", "1929", "1930", "1931", "1932", "1933", "1934", "1935",
+		"1936", "1937", "1938", "1939", "1940", "1941", "1942", "1943",
+		"1970", "1971", "1972", "1973", "1974",
+		"2014", "2015", "2016", "2017", "2018",
+		"1894", "1893", "1892", "1895",
+
+		"1859", "1860", "1861", "1862", "1863", "1864", "1865",
+		"1866", "1867", "1868", "1869", "1870", "1871", "1872",
+		"2005", "2006", "2007", "2008", "2043", "2044", "2046",
+		"2052", "2054", "2056", "2071", "2072", "2074", "2075",
 	},
 	"M3C": {
 		"32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47",
@@ -365,7 +395,7 @@ var foilDupes = map[string][]string{
 
 var tcgIds = map[string][]string{
 	"SLD": {
-		"619189", "554682", "560087", "619186", "554585", "561737", "586982", "557904", "554606",
+		"619189", "554682", "560087", "619186", "554585", "561737", "585049", "557904", "554606",
 		"557959", "586048", "586050", "570915", "587713", "560455", "560458", "560461", "560463",
 		"618007", "618017", "618021", "618027", "618033", "614245", "614249", "614256", "614265",
 		"614275", "617958", "617961", "617965", "617967", "555820", "555824", "555827", "555831",
@@ -389,9 +419,27 @@ var tcgIds = map[string][]string{
 		"565174", "565176", "565178", "565180", "565182", "565184", "565186", "565189", "565191",
 		"565193", "565195", "565197", "565199", "565201", "565203", "565205", "565207", "565209",
 		"565211",
-		"587182", "587183", "587186", "587188", // for "1821", "1822", "1823", "1824"
+		"587182", "587184", "587186", "587188", // for "1821", "1822", "1823", "1824"
 		"617989", "617995", "618000", "618003", "617969", "617971", "617978", "617982", "617984",
 		"617874", "617876", "617878", "617880", "617882", "549465", "549473", "549476", "549478",
+
+		"625635", "625637",
+		"625061", "625063", "625065", "625067", "625068",
+		"625053", "625055", "625057", "625059",
+		"625926", "625930", "625941", "625943", "625945",
+		"625040", "625042", "625044", "625046", "625048",
+		"625084", "625086", "625088", "625090",
+		"624509", "624511", "624513", "624515", "624517", "624483", "624489", "624493", "624497",
+		"624502", "624693", "624692", "624691", "624689", "624690", "624688", "624687", "624694",
+		"624695", "624696", "624697", "624698", "624699", "624700", "624701", "624702", "624703",
+		"624704", "625071", "625073", "625075", "625077", "625079", "625092", "625094", "625096",
+		"625098", "625100",
+		"626516", "629657", "629658", "629656",
+
+		"632095", "632097", "632100", "632104", "632135", "632139", "632145",
+		"632152", "632157", "632106", "632108", "632118", "632123", "632126",
+		"629928", "629933", "629938", "629940", "629990", "629993", "629999",
+		"629968", "629978", "629984", "629903", "629905", "629909", "629911",
 	},
 	"M3C": {
 		"553399", "553438", "553815", "553424", "553433", "553816", "553870", "553379", "553015",
@@ -632,7 +680,7 @@ func (ap AllPrintings) Load() cardBackend {
 				card.Layout = "token"
 			// Modify the Normalize string replacer to ignore replacing card names with commas
 			// that conflict with another card name
-			case "MB2", "DA1":
+			case "MB2", "DA1", "UNK":
 				if strings.Contains(card.Name, ",") && slices.Contains(allCardNames, strings.Replace(card.Name, ",", "", 1)) {
 					lower := strings.ToLower(card.Name)
 					replacerStrings = append([]string{lower, lower}, replacerStrings...)
@@ -736,17 +784,9 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Deduplicate clashing names
-			switch name {
-			case "Pick Your Poison",
-				"Red Herring":
-				if strings.Contains(set.Name, "Playtest") {
-					name += " Playtest"
-				}
-			case "Glimpse, the Unthinkable",
-				"______":
-				if strings.Contains(set.Name, "Unknown") {
-					name += " Playtest"
-				}
+			if slices.Contains(duplicatedCardNames, name) &&
+				(strings.Contains(set.Name, "Playtest") || strings.Contains(set.Name, "Unknown")) {
+				name += " Playtest"
 			}
 
 			norm := Normalize(name)
@@ -927,6 +967,11 @@ func (ap AllPrintings) Load() cardBackend {
 		}
 
 		for _, product := range set.SealedProduct {
+			if product.Identifiers == nil {
+				product.Identifiers = map[string]string{}
+			}
+			product.Identifiers["mtgjsonId"] = product.UUID
+
 			card := Card{
 				UUID:        product.UUID,
 				Name:        product.Name,
@@ -1376,6 +1421,8 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 
 	for i := range sets[code].Cards {
 		dupeCard := sets[code].Cards[i]
+		ogVariations := dupeCard.Variations
+		ogUUID := dupeCard.UUID
 
 		// Skip unneeded (just preserve the card as-is)
 		if !slices.Contains(numbers, sets[code].Cards[i].Number) {
@@ -1391,6 +1438,7 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 
 		// Change properties
 		dupeCard.Finishes = []string{"nonfoil"}
+		dupeCard.Variations = append(ogVariations, ogUUID+suffixFoil)
 
 		// Propagate changes across the board
 		co.Card = dupeCard
@@ -1420,6 +1468,7 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		dupeCard.Number += mtgjson.SuffixSpecial
 		dupeCard.Finishes = []string{"foil"}
+		dupeCard.Variations = append(ogVariations, ogUUID)
 
 		// Update images
 		dupeCard.Images = map[string]string{}

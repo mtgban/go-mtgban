@@ -720,7 +720,7 @@ func (c *InputCard) hasSecretLairTag(code string) bool {
 		tag = c.Contains("Ultimate") || len(MatchInSet(c.Name, "SLU")) == 1
 	case "SLX":
 		// SLX only has plain cards, if they are reskinned, they are from SLD
-		tag = !c.isReskin() || c.Contains("Within")
+		tag = !c.isReskin() || c.Contains("Within") || c.Contains("SLX")
 	case "SLC":
 		// These cards are numbered after the year they represent
 		tag = c.Contains("30th") || c.Contains("Countdown") || ExtractYear(c.Variation) != ""

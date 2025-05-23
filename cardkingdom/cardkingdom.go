@@ -178,7 +178,7 @@ func (ck *Cardkingdom) scrape() error {
 			}
 			u.RawQuery = q.Encode()
 
-			gradeMap := grading(cardId, price, card.Edition == "Promotional")
+			gradeMap := grading(card.Edition, card.IsFoil, price)
 			for _, grade := range mtgban.DefaultGradeTags {
 				factor := gradeMap[grade]
 				var priceRatio float64
@@ -248,14 +248,9 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 	return ck.buylist, nil
 }
 
-func grading(cardId string, price float64, isPromo bool) (grade map[string]float64) {
-	co, err := mtgmatcher.GetUUID(cardId)
-	if err != nil {
-		return
-	}
-
+func grading(edition, isFoil string, price float64) (grade map[string]float64) {
 	switch {
-	case co.Foil && !isPromo:
+	case isFoil == "true":
 		grade = map[string]float64{
 			"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
 		}
@@ -277,10 +272,10 @@ func grading(cardId string, price float64, isPromo bool) (grade map[string]float
 		}
 	}
 
-	switch co.Edition {
-	case "Limited Edition Alpha",
-		"Limited Edition Beta",
-		"Unlimited Edition":
+	switch edition {
+	case "Alpha",
+		"Beta",
+		"Unlimited":
 		grade = map[string]float64{
 			"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
 		}

@@ -42,6 +42,9 @@ var EditionTable = map[string]string{
 	"Warhammer 40k Commander":         "Warhammer 40,000 Commander",
 	"Warhammer 40k Commander (Surge)": "Warhammer 40,000 Commander",
 
+	"FINAL FANTASY: Through the Ages": "Final Fantasy: Through the Ages",
+	"FINAL FANTASY":                   "Final Fantasy",
+
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
 	"Outlaws of Thunder Junction The Big Score":  "The Big Score",
 	"Outlaws of Thunder Junction: Breaking News": "Breaking News",

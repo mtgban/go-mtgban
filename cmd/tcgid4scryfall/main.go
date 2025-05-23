@@ -248,10 +248,6 @@ func run() int {
 	})
 	fixes := 0
 	for _, props := range output {
-		if props.Edition == "Secret Lair Drop" ||
-			props.Edition == "Modern Horizons 3 Commander" {
-			continue
-		}
 		fixes++
 		csvWriter.Write([]string{
 			props.Name,
