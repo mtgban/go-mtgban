@@ -278,6 +278,17 @@ var missingPALPtags = map[string]string{
 	"15": "Indonesia",
 }
 
+// List of playtest or unknown cards which have a similar name to actual cards
+// in various editions. We change their name appending "Playtest" to treat them
+// differently and tell them apart their main counterpart
+var duplicatedCardNames = []string{
+	"Clear, the Mind",
+	"Glimpse, the Unthinkable",
+	"Pick Your Poison",
+	"Red Herring",
+	"______",
+}
+
 // List of numbers in SLD that need to be decoupled
 var sldJPNLangDupes = []string{
 	// Specila Guests
@@ -772,18 +783,9 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Deduplicate clashing names
-			switch name {
-			case "Pick Your Poison",
-				"Red Herring":
-				if strings.Contains(set.Name, "Playtest") {
-					name += " Playtest"
-				}
-			case "Glimpse, the Unthinkable",
-				"Clear, the Mind",
-				"______":
-				if strings.Contains(set.Name, "Unknown") {
-					name += " Playtest"
-				}
+			if slices.Contains(duplicatedCardNames, name) &&
+				(strings.Contains(set.Name, "Playtest") || strings.Contains(set.Name, "Unknown")) {
+				name += " Playtest"
 			}
 
 			norm := Normalize(name)

@@ -250,12 +250,11 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	if ogName != inCard.Name {
 		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		// If renamed, reload metadata in case of duplicate names
-		switch inCard.Name {
-		case "Unquenchable Fury Token",
-			"______ Playtest",
-			"Glimpse, the Unthinkable Playtest",
-			"Red Herring Playtest",
-			"Pick Your Poison Playtest":
+		switch {
+		case inCard.Name == "Unquenchable Fury Token":
+			fallthrough
+		case strings.Contains(inCard.Name, "Playtest") &&
+			slices.Contains(duplicatedCardNames, strings.Replace(inCard.Name, " Playtest", "", 1)):
 			entry = backend.CardInfo[Normalize(inCard.Name)]
 			inCard.Name = entry.Name
 			logger.Printf("Clashing name adjusted to '%s'", inCard.Name)
@@ -1085,6 +1084,11 @@ func adjustEdition(inCard *InputCard) {
 		edition = backend.Sets["PBBD"].Name
 		variation = "Prerelease"
 
+	// Adjust the name of clashing cards
+	case slices.Contains(duplicatedCardNames, inCard.Name) &&
+		(strings.Contains(edition, "Playtest") || strings.Contains(edition, "Unknown")):
+		inCard.Name += " Playtest"
+
 	// Single card mismatches
 	default:
 		switch inCard.Name {
@@ -1193,11 +1197,6 @@ func adjustEdition(inCard *InputCard) {
 		case "Unquenchable Fury":
 			if inCard.Edition == "Battle the Horde" {
 				inCard.Name += " Token"
-			}
-		case "Pick Your Poison",
-			"Red Herring":
-			if strings.Contains(edition, "Playtest") {
-				inCard.Name += " Playtest"
 			}
 		case "Teferi, Master of Time":
 			num := ExtractNumber(variation)
