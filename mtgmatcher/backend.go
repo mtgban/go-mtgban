@@ -287,6 +287,7 @@ var duplicatedCardNames = []string{
 	"Pick Your Poison",
 	"Red Herring",
 	"______",
+	"Fast", "Furious", "Fast // Furious",
 }
 
 // List of numbers in SLD that need to be decoupled
