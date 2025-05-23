@@ -1265,12 +1265,9 @@ func adjustEdition(inCard *InputCard) {
 				inCard.Contains("Play") && inCard.Contains("Draft"):
 				edition = "30th Anniversary Misc Promos"
 
-				if Contains(variation, "1F") || Contains(variation, "1P") {
-					break
-				}
 				if inCard.isEtched() {
 					variation = "1F★"
-				} else if inCard.isRetro() || inCard.Contains("Play") {
+				} else if inCard.isRetro() || inCard.Contains("Play") || Contains(variation, "1P") {
 					variation = "1P"
 				} else {
 					variation = "1F"
