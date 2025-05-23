@@ -889,45 +889,52 @@ func laquatusMisprint(inCard *InputCard, card *Card) bool {
 }
 
 func sldVariant(inCard *InputCard, card *Card) bool {
-	var result bool
 	switch card.Name {
+	case "Geralf's Messenger":
+		return retroCheckInternal(card.Number == "887", card.FrameVersion)
 	case "Demonlord Belzenlok",
 		"Griselbrand",
 		"Liliana's Contract",
 		"Kothophed, Soul Hoarder",
 		"Razaketh, the Foulblooded":
-		result = strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
-		if inCard.isEtched() {
-			result = !result
+		num, _ := strconv.Atoi(ExtractNumericalValue(card.Number))
+		if num < 200 {
+			result := strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+			if inCard.isEtched() {
+				result = !result
+			}
+			return result
 		}
 	case "Plague Sliver",
 		"Shadowborn Apostle",
 		"Toxin Sliver",
 		"Virulent Sliver":
-		result = strings.HasSuffix(card.Number, mtgjson.SuffixPhiLow)
+		result := strings.HasSuffix(card.Number, mtgjson.SuffixPhiLow)
 		if inCard.isStepAndCompleat() {
 			result = !result
 		}
-	case "Mogis, God of Slaughter":
-		if card.BorderColor != mtgjson.BorderColorBorderless && !inCard.Foil {
-			return true
-		}
-	}
-	// Prevent flipping the result below if multiple printings are present (ie Griselbrand)
-	if inCard.isEtched() || inCard.isStepAndCompleat() {
 		return result
-	}
-
-	// All the Rainbow SLD cards not serialized are tagged as two different entries
-	// ie Goblin Lackey or Aminatou, the Fateshifter
-	if hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeRainbowFoil, "SLD") ||
-		hasPrinting(card.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD") {
-		result = strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+	case "Mogis, God of Slaughter":
+		return (card.Number == "78" || card.BorderColor != mtgjson.BorderColorBorderless) && !inCard.Foil
+	case "Blasphemous Act":
+		if card.Number == "322" {
+			return foilCheck(inCard, card)
+		}
+		result := strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
 		if inCard.Foil {
 			result = !result
 		}
+		return result
+	case "Okaun, Eye of Chaos",
+		"Zndrsplt, Eye of Wisdom":
+		result := strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+		if inCard.isThickDisplay() {
+			result = !result
+		}
+		return result
 	}
-	return result
+
+	return foilCheck(inCard, card)
 }
 
 func wcdNumberCompare(inCard *InputCard, card *Card) bool {
@@ -1153,13 +1160,7 @@ func duplicateSLD(inCard *InputCard) []string {
 		return []string{mtgjson.SuffixPhiLow, ""}
 	}
 
-	if inCard.isEtched() || inCard.isThickDisplay() {
-		return []string{mtgjson.SuffixSpecial, ""}
-	}
-
-	if inCard.Foil &&
-		(hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeRainbowFoil, "SLD") ||
-			hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD")) {
+	if inCard.isEtched() || inCard.isThickDisplay() || inCard.Foil {
 		return []string{mtgjson.SuffixSpecial, ""}
 	}
 
