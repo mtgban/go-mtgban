@@ -3822,6 +3822,15 @@
         }
     },
     {
+        "uuid": "594f0e3b-7fc7-53a3-b222-42162734eb6d",
+        "description": "secret_lair_could_alias_galaxy",
+        "input": {
+            "name": "Command Tower",
+            "variant": "7012 7012 Rainbow Foil",
+            "edition": "Secret Lair"
+        }
+    },
+    {
         "uuid": "0fe1a2c4-046f-59ce-90ea-361ca21c96da",
         "description": "secret_lair_plst_or_slx",
         "input": {

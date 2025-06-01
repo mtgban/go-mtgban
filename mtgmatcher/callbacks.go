@@ -80,6 +80,10 @@ var promoTypeElements = []promoTypeElement{
 			// pass, and let filtering continue elsewhere
 			if inCard.isSecretLair() &&
 				hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD") {
+				// The only card which *also* has RainbowFoil, so the check would fail for Galaxy
+				if inCard.Name == "Command Tower" {
+					return inCard.Contains("1496")
+				}
 				return inCard.Foil || inCard.Contains("Galaxy")
 			}
 			return inCard.Contains("Galaxy")
@@ -932,7 +936,7 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 			result = !result
 		}
 		return result
-	case "Food":
+	case "Command Tower", "Food":
 		if !inCard.Contains(ExtractNumericalValue(card.Number)) {
 			return true
 		}
