@@ -918,8 +918,6 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 			result = !result
 		}
 		return result
-	case "Mogis, God of Slaughter":
-		return (card.Number == "78" || card.BorderColor != mtgjson.BorderColorBorderless) && !inCard.Foil
 	case "Blasphemous Act":
 		if card.Number == "322" {
 			return foilCheck(inCard, card)
@@ -937,6 +935,7 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 		}
 		return result
 	case "Command Tower", "Food",
+		"Mogis, God of Slaughter",
 		"Lava Dart", "Monastery Swiftspear", "Soul-Scar Mage", "Underworld Breach", "Mishra's Bauble",
 		"Chain Lightning", "Dragon's Rage Channeler", "Lava Spike", "Rift Bolt", "Skewer the Critics":
 		if !inCard.Contains(ExtractNumericalValue(card.Number)) {
