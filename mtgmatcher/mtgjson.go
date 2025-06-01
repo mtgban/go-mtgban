@@ -107,6 +107,7 @@ type Card struct {
 	FrameVersion        string              `json:"frameVersion"`
 	Identifiers         map[string]string   `json:"identifiers"`
 	IsAlternative       bool                `json:"isAlternative"`
+	IsGameChanger       bool                `json:"isGameChanger"`
 	IsFullArt           bool                `json:"isFullArt"`
 	IsFunny             bool                `json:"isFunny"`
 	IsOnlineOnly        bool                `json:"isOnlineOnly"`
