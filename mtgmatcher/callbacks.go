@@ -932,6 +932,10 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 			result = !result
 		}
 		return result
+	case "Food":
+		if !inCard.Contains(ExtractNumericalValue(card.Number)) {
+			return true
+		}
 	}
 
 	return foilCheck(inCard, card)

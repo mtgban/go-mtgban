@@ -3734,6 +3734,25 @@
         }
     },
     {
+        "uuid": "21a429cb-eaa5-5cfc-af12-e58da7730173",
+        "description": "secret_lair_token_alias",
+        "input": {
+            "name": "Food",
+            "variant": "2010",
+            "edition": "SLD"
+        }
+    },
+    {
+        "uuid": "21a429cb-eaa5-5cfc-af12-e58da7730173_f",
+        "description": "secret_lair_token_alias_foil",
+        "input": {
+            "name": "Food",
+            "variant": "2010",
+            "edition": "SLD",
+            "foil": true
+        }
+    },
+    {
         "uuid": "f441e048-448a-516f-be06-bf0b14bf068f",
         "description": "secret_lair_countdown_year",
         "input": {
