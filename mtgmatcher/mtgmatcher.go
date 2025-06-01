@@ -209,14 +209,9 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		return "", ErrUnsupported
 	}
 
-	switch inCard.Name {
-	case "Red Herring",
-		"Pick Your Poison",
-		"______",
-		"Glimpse, the Unthinkable":
-		if inCard.isMysteryList() || inCard.Contains("Unknown") {
-			inCard.Name += " Playtest"
-		}
+	// Pre-adjust special cards with duplicated names
+	if (inCard.isMysteryList() || strings.Contains(inCard.Edition, "Playtest") || strings.Contains(inCard.Edition, "Unknown")) && slices.Contains(duplicatedCardNames, inCard.Name) {
+		inCard.Name += " Playtest"
 	}
 
 	// Get the card basic info to retrieve the Printings array
@@ -1086,7 +1081,7 @@ func adjustEdition(inCard *InputCard) {
 
 	// Adjust the name of clashing cards
 	case slices.Contains(duplicatedCardNames, inCard.Name) &&
-		(strings.Contains(edition, "Playtest") || strings.Contains(edition, "Unknown")):
+		(inCard.isMysteryList() || strings.Contains(edition, "Playtest") || strings.Contains(edition, "Unknown")):
 		inCard.Name += " Playtest"
 
 	// Single card mismatches
