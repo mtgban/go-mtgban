@@ -936,7 +936,9 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 			result = !result
 		}
 		return result
-	case "Command Tower", "Food":
+	case "Command Tower", "Food",
+		"Lava Dart", "Monastery Swiftspear", "Soul-Scar Mage", "Underworld Breach", "Mishra's Bauble",
+		"Chain Lightning", "Dragon's Rage Channeler", "Lava Spike", "Rift Bolt", "Skewer the Critics":
 		if !inCard.Contains(ExtractNumericalValue(card.Number)) {
 			return true
 		}
