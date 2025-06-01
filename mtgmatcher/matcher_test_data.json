@@ -3761,6 +3761,15 @@
         }
     },
     {
+        "uuid": "9d826d71-e2fe-52c3-925b-9a46c937935c",
+        "description": "secret_lair_dont_alias_slx",
+        "input": {
+            "name": "Themberchaud",
+            "variant": "728",
+            "edition": "Secret Lair Drop Series"
+        }
+    },
+    {
         "uuid": "0f9ce191-2205-551b-8ce5-0cc9916853f3",
         "description": "secret_lair_slu_wrong_edition_relax",
         "input": {

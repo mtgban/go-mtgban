@@ -233,6 +233,10 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				// Iterate on all possible combinations of tags, and skip if a
 				// condition is unmet
 				for _, code := range []string{"SLU", "SLX", "SLC", "SLP"} {
+					// The only card with the same name within and without
+					if code == "SLX" && inCard.Name == "Themberchaud" {
+						continue
+					}
 					if len(MatchInSet(inCard.Name, code)) > 0 && inCard.hasSecretLairTag(code) {
 						skip = true
 						break
