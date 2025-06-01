@@ -3769,15 +3769,6 @@
         }
     },
     {
-        "uuid": "5d5b41b0-aa8b-5d2c-a698-b62149bbb3b4_f",
-        "description": "secret_lair_but_could_alias_plst",
-        "input": {
-            "name": "Blasphemous Act",
-            "edition": "Secret Lair",
-            "foil": true
-        }
-    },
-    {
         "uuid": "bd860c16-3cc4-5f06-9935-1445884d8d62",
         "description": "secret_lair_risk_of_aliasing_plst",
         "input": {
