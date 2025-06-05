@@ -1190,7 +1190,7 @@ func adjustEdition(inCard *InputCard) {
 				edition = "Rivals of Ixalan Promos"
 			}
 		case "Unquenchable Fury":
-			if inCard.Edition == "Battle the Horde" {
+			if inCard.Edition == "Battle the Horde" || inCard.Contains("Hero's Path") {
 				inCard.Name += " Token"
 			}
 		case "Teferi, Master of Time":

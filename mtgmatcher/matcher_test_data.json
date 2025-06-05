@@ -4361,6 +4361,15 @@
         }
     },
     {
+        "uuid": "b515bbb3-e4b8-5d29-a661-0851e58e64d2",
+        "description": "duplicate_name_wrong_edition",
+        "input": {
+            "name": "Unquenchable Fury",
+            "variant": "10",
+            "edition": "Hero's Path Promos"
+        }
+    },
+    {
         "uuid": "81099d80-6a55-5eae-b50e-150e300d5fc7",
         "description": "duplicate_name_mkm",
         "input": {
