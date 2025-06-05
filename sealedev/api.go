@@ -32,7 +32,8 @@ type BANPriceResponse struct {
 const (
 	banAPIURL = "https://www.mtgban.com/api/mtgban/all%s.json?tag=tags&conds=true&sig=%s"
 
-	BulkThreshold = 0.5
+	BulkThreshold  = 0.5
+	MaxSinglePrice = 10000.0
 )
 
 func getPrice(price *BanPrice, uuid string) float64 {
@@ -55,6 +56,15 @@ func getPrice(price *BanPrice, uuid string) float64 {
 	result := price.Conditions["NM"+tag]
 	if result == 0 {
 		result = price.Conditions["SP"+tag]
+	}
+
+	// Ignore broken prices, except for well known editions
+	if result > MaxSinglePrice {
+		switch co.SetCode {
+		case "LEA", "LEB", "3ED", "ARN", "LEG":
+		default:
+			result = 0
+		}
 	}
 
 	return result
