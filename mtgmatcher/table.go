@@ -171,11 +171,13 @@ var sldJPNLangDupes = []string{
 	// Special Guests Junji Ito
 	"1114", "1115", "1116", "1117",
 	// Miku Sakura Superstar
-	"1587", "1594", "1596", "1597",
+	"1587", "1594", "1596", "1597", "805", "808",
 	// Miku Digital Sensation
-	"1592", "1595", "1599", "1603", "1604", "1607",
+	"1592", "1595", "1599", "1603", "1604", "1607", "806",
 	// Miku Electric Entourage
 	"1585", "1590", "1593", "1598", "1600", "807",
+	// Miku Winter Diva
+	"1586", "1588", "1589", "1591", "1601", "1606", "804",
 }
 
 // List of numbers that need to have their number/uuid revisioned due
