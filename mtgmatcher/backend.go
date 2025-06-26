@@ -723,6 +723,7 @@ func (ap AllPrintings) Load() cardBackend {
 				mtgjson.PromoTypeSilverFoil,
 				mtgjson.PromoTypeRainbowFoil,
 				mtgjson.PromoTypeRippleFoil,
+				mtgjson.PromoTypeSurgeFoil,
 			} {
 				if card.HasPromoType(promoType) {
 					var filtered []string
