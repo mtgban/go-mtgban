@@ -166,11 +166,15 @@ var duplicatedCardNames = []string{
 
 // List of numbers in SLD that need to be decoupled
 var sldJPNLangDupes = []string{
-	// Specila Guests
-	"1110", "1111", "1112", "1113", "1114", "1115", "1116", "1117",
-	// Miku
-	"1587", "1592", "1594", "1595", "1596", "1597", "1599", "1602", "1603", "1604", "1605", "1607",
-	// Miku 2
+	// Special Guests Yoji Shinkawa
+	"1110", "1111", "1112", "1113",
+	// Special Guests Junji Ito
+	"1114", "1115", "1116", "1117",
+	// Miku Sakura Superstar
+	"1587", "1594", "1596", "1597",
+	// Miku Digital Sensation
+	"1592", "1595", "1599", "1603", "1604", "1607",
+	// Miku Electric Entourage
 	"1585", "1590", "1593", "1598", "1600", "807",
 }
 
