@@ -178,6 +178,14 @@ var sldJPNLangDupes = []string{
 	"1585", "1590", "1593", "1598", "1600", "807",
 	// Miku Winter Diva
 	"1586", "1588", "1589", "1591", "1601", "1606", "804",
+	// Final Fantasy Game Over
+	"1858", "1859", "1860", "1861", "1862",
+	// Final Fantasy Weapons
+	"1863", "1864", "1865", "1866", "1867",
+	// Final Fantasy Grimoire
+	"1868", "1869", "1870", "1871", "1872",
+	// Summer Superdrop 2025 promo
+	"909",
 }
 
 // List of numbers that need to have their number/uuid revisioned due
