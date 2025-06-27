@@ -20,6 +20,21 @@ var languageCode2LanguageTag = map[string]string{
 	"zht":   "Chinese Traditional",
 }
 
+var LanguageTag2LanguageCode = map[string]string{
+	"":                    "en",
+	"English":             "en",
+	"French":              "fr",
+	"German":              "de",
+	"Italian":             "it",
+	"Japanese":            "ja",
+	"Korean":              "ko",
+	"Russian":             "ru",
+	"Spanish":             "es",
+	"Portuguese":          "pt",
+	"Chinese Simplified":  "zhs",
+	"Chinese Traditional": "zht",
+}
+
 var allLanguageTags = []string{
 	"French",
 	"German",

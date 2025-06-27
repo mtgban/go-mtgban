@@ -193,14 +193,14 @@ func generateImageURL(card Card, version string) string {
 
 	// Support BAN's custom sets
 	code := strings.ToLower(card.SetCode)
-	if strings.HasSuffix(code, "ita") {
-		code = strings.TrimSuffix(code, "ita")
-		number += "/it"
-	} else if strings.HasSuffix(code, "jpn") {
-		code = strings.TrimSuffix(code, "jpn")
-		number += "/ja"
-	}
+	code = strings.TrimSuffix(code, "ita")
+	code = strings.TrimSuffix(code, "jpn")
 	code = strings.TrimSuffix(code, "alt")
+
+	// Pick the right language for duplicated cards
+	if strings.Contains(card.Number, "ita") || strings.Contains(card.Number, "jpn") {
+		number += "/" + LanguageTag2LanguageCode[card.Language]
+	}
 
 	return fmt.Sprintf("https://api.scryfall.com/cards/%s/%s?format=image&version=%s", code, number, version)
 }
