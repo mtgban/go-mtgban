@@ -7,7 +7,6 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type TCGSYPList struct {
@@ -41,7 +40,7 @@ func (tcg *TCGSYPList) scrape() error {
 	tcg.printf("Found skus for %d entries", len(uuid2skusMap))
 
 	// Convert to a map of id:sku, we'll regenerate the uuid differently
-	sku2product := map[int]mtgjson.TCGSku{}
+	sku2product := map[int]TCGSku{}
 	for _, skus := range uuid2skusMap {
 		for _, sku := range skus {
 			sku2product[sku.SkuId] = sku

@@ -25,7 +25,7 @@ type TCGPlayerMarket struct {
 
 	// The cache data defining SKU data, if not set it will be loaded
 	// from the default location on mtgjson website.
-	SKUsData map[string][]mtgjson.TCGSku
+	SKUsData map[string][]TCGSku
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -292,7 +292,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 							continue
 						}
 
-						skus = append(skus, mtgjson.TCGSku{
+						skus = append(skus, TCGSku{
 							Condition: cond,
 							Language:  strings.ToUpper(card.Language),
 							Printing:  printing,
@@ -432,7 +432,7 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	return
 }
 
-func getAllSKUs() (map[string][]mtgjson.TCGSku, error) {
+func getAllSKUs() (map[string][]TCGSku, error) {
 	resp, err := cleanhttp.DefaultClient().Get(allSkusURL)
 	if err != nil {
 		resp, err = cleanhttp.DefaultClient().Get(allSkusBackupURL)

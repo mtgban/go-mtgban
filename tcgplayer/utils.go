@@ -3,6 +3,7 @@ package tcgplayer
 import (
 	"compress/bzip2"
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,7 +13,6 @@ import (
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 const (
@@ -80,8 +80,33 @@ func GenerateProductURL(productId int, printing, affiliate, condition, language 
 	return u.String()
 }
 
-func LoadTCGSKUs(reader io.Reader) (mtgjson.AllTCGSkus, error) {
-	return mtgjson.LoadAllTCGSkus(bzip2.NewReader(reader))
+type TCGSku struct {
+	Condition string `json:"condition"`
+	Language  string `json:"language"`
+	Printing  string `json:"printing"`
+	Finish    string `json:"finish"`
+	ProductId int    `json:"productId"`
+	SkuId     int    `json:"skuId"`
+}
+
+type AllTCGSkus struct {
+	Data map[string][]TCGSku `json:"data"`
+	Meta struct {
+		Date    string `json:"date"`
+		Version string `json:"version"`
+	} `json:"meta"`
+}
+
+func LoadTCGSKUs(reader io.Reader) (AllTCGSkus, error) {
+	var payload AllTCGSkus
+	err := json.NewDecoder(bzip2.NewReader(reader)).Decode(&payload)
+	if err != nil {
+		return payload, err
+	}
+	if len(payload.Data) == 0 {
+		return payload, errors.New("empty AllTCGSkus file")
+	}
+	return payload, nil
 }
 
 const (

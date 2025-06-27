@@ -8,7 +8,6 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
 
@@ -17,7 +16,7 @@ type TCGPlayerSealed struct {
 	Affiliate      string
 	MaxConcurrency int
 
-	SKUsData map[string][]mtgjson.TCGSku
+	SKUsData map[string][]TCGSku
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time

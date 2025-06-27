@@ -1,11 +1,5 @@
 package mtgjson
 
-import (
-	"encoding/json"
-	"errors"
-	"io"
-)
-
 const (
 	LayoutAftermath = "aftermath"
 	LayoutFlip      = "flip"
@@ -83,28 +77,3 @@ const (
 	SuffixVariant = "†"
 	SuffixPhiLow  = "φ"
 )
-
-type TCGSku struct {
-	Condition string `json:"condition"`
-	Language  string `json:"language"`
-	Printing  string `json:"printing"`
-	Finish    string `json:"finish"`
-	ProductId int    `json:"productId"`
-	SkuId     int    `json:"skuId"`
-}
-
-type AllTCGSkus struct {
-	Data map[string][]TCGSku `json:"data"`
-	Meta struct {
-		Date    string `json:"date"`
-		Version string `json:"version"`
-	} `json:"meta"`
-}
-
-func LoadAllTCGSkus(r io.Reader) (payload AllTCGSkus, err error) {
-	err = json.NewDecoder(r).Decode(&payload)
-	if err == nil && len(payload.Data) == 0 {
-		err = errors.New("empty AllTCGSkus file")
-	}
-	return
-}
