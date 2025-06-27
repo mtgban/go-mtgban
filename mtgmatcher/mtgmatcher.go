@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-
 	"github.com/google/uuid"
 )
 
@@ -64,9 +62,9 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 				// Make sure we're dealing with the same card
 				// (this helps with promos that have similar numbers)
 				// but different finish
-				sameFinish := (co.HasFinish(mtgjson.FinishNonfoil) && altCo.HasFinish(mtgjson.FinishNonfoil)) ||
-					(co.HasFinish(mtgjson.FinishFoil) && altCo.HasFinish(mtgjson.FinishFoil)) ||
-					(co.HasFinish(mtgjson.FinishEtched) && altCo.HasFinish(mtgjson.FinishEtched))
+				sameFinish := (co.HasFinish(FinishNonfoil) && altCo.HasFinish(FinishNonfoil)) ||
+					(co.HasFinish(FinishFoil) && altCo.HasFinish(FinishFoil)) ||
+					(co.HasFinish(FinishEtched) && altCo.HasFinish(FinishEtched))
 				if sameFinish {
 					continue
 				}
@@ -140,9 +138,9 @@ func Match(inCard *InputCard) (cardId string, err error) {
 			case inCard.Language != "" && co.Layout == "token":
 				return "", ErrUnsupported
 			// These promo types take the longest to appear upstream
-			case inCard.isPrerelease() && !co.HasPromoType(mtgjson.PromoTypePrerelease),
-				inCard.isPromoPack() && !co.HasPromoType(mtgjson.PromoTypePromoPack),
-				inCard.isSerialized() && !co.HasPromoType(mtgjson.PromoTypeSerialized):
+			case inCard.isPrerelease() && !co.HasPromoType(PromoTypePrerelease),
+				inCard.isPromoPack() && !co.HasPromoType(PromoTypePromoPack),
+				inCard.isSerialized() && !co.HasPromoType(PromoTypeSerialized):
 				logger.Println("Missing necessary tag")
 				return "", ErrUnsupported
 			// Actually found id
@@ -467,9 +465,9 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		// Validation step
 		switch {
 		// These promo types take the longest to appear upstream
-		case inCard.isPrerelease() && !co.HasPromoType(mtgjson.PromoTypePrerelease),
-			inCard.isPromoPack() && !co.HasPromoType(mtgjson.PromoTypePromoPack),
-			inCard.isSerialized() && !co.HasPromoType(mtgjson.PromoTypeSerialized):
+		case inCard.isPrerelease() && !co.HasPromoType(PromoTypePrerelease),
+			inCard.isPromoPack() && !co.HasPromoType(PromoTypePromoPack),
+			inCard.isSerialized() && !co.HasPromoType(PromoTypeSerialized):
 			logger.Println("...but it's invalid")
 			return "", ErrUnsupported
 		}
@@ -947,7 +945,7 @@ func adjustEdition(inCard *InputCard) {
 		}
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
-	// Promo handling, but they are not set as such in mtgjson/scryfall
+	// Promo handling, but they are not set as such in scryfall
 	case (inCard.isGenericPromo() || inCard.isGenericAltArt()) && len(MatchInSet(inCard.Name, "PLS")) == 2:
 		edition = "PLS"
 		variation = "Alternate Art"

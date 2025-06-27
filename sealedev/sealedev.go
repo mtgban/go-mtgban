@@ -12,7 +12,6 @@ import (
 	"github.com/montanaflynn/stats"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -201,7 +200,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 				probabilities := make([]float64, len(picks))
 				for i := range picks {
 					co, err := mtgmatcher.GetUUID(picks[i])
-					if err != nil || co.HasPromoType(mtgjson.PromoTypeSerialized) {
+					if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
 						continue
 					}
 					probabilities[i] = 1
@@ -250,7 +249,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 
 				// Delete any serialized card
 				co, err := mtgmatcher.GetUUID(probs[i].UUID)
-				if err != nil || co.HasPromoType(mtgjson.PromoTypeSerialized) {
+				if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
 					continue
 				}
 				probabilities[i] = probs[i].Probability

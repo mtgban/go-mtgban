@@ -5,14 +5,12 @@ import (
 	"slices"
 	"strings"
 	"unicode"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 // Card is a generic card representation using fields defined by the MTGJSON project.
 type InputCard struct {
-	// The mtgjson unique identifier of the card
-	// When used as input it can host mtgjson or scryfall id
+	// The unique identifier of the card
+	// When used as input it can host or scryfall id
 	Id string `json:"id,omitempty"`
 
 	// The canonical name of the card
@@ -75,9 +73,9 @@ func (c *InputCard) String() string {
 }
 
 func output(card Card, flags ...bool) string {
-	hasNonfoil := card.HasFinish(mtgjson.FinishNonfoil)
-	hasFoil := card.HasFinish(mtgjson.FinishFoil)
-	hasEtched := card.HasFinish(mtgjson.FinishEtched)
+	hasNonfoil := card.HasFinish(FinishNonfoil)
+	hasFoil := card.HasFinish(FinishFoil)
+	hasEtched := card.HasFinish(FinishEtched)
 
 	etched := len(flags) > 1 && flags[1]
 	foil := len(flags) > 0 && flags[0] && !etched

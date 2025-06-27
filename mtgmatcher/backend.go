@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type DataStore interface {
@@ -25,7 +23,7 @@ type cardinfo struct {
 	Layout    string
 }
 
-// CardObject is an extension of mtgjson.Card, containing fields that cannot
+// CardObject is an extension of Card, containing fields that cannot
 // be easily represented in the original object.
 type CardObject struct {
 	Card
@@ -340,8 +338,8 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Make sure this property is correctly initialized
-			if strings.HasSuffix(card.Number, "p") && !slices.Contains(card.PromoTypes, mtgjson.PromoTypePromoPack) {
-				card.PromoTypes = append(card.PromoTypes, mtgjson.PromoTypePromoPack)
+			if strings.HasSuffix(card.Number, "p") && !slices.Contains(card.PromoTypes, PromoTypePromoPack) {
+				card.PromoTypes = append(card.PromoTypes, PromoTypePromoPack)
 			}
 
 			// Rename DFCs into a single name
@@ -488,26 +486,26 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Save the original uuid
-			co.Identifiers["mtgjsonId"] = card.UUID
+			co.Identifiers["d"] = card.UUID
 
 			// Append "_f" and "_e" to uuids, unless etched is the only printing.
 			// If it's not etched, append "_f", unless foil is the only printing.
 			// Leave uuids unchanged, if there is a single printing of any kind.
-			if card.HasFinish(mtgjson.FinishEtched) {
+			if card.HasFinish(FinishEtched) {
 				uuid := card.UUID
 
 				// Etched + Nonfoil [+ Foil]
-				if card.HasFinish(mtgjson.FinishNonfoil) {
+				if card.HasFinish(FinishNonfoil) {
 					// Save the card object
 					uuids[uuid] = co
 				}
 
 				// Etched + Foil
-				if card.HasFinish(mtgjson.FinishFoil) {
+				if card.HasFinish(FinishFoil) {
 					// Set the main property
 					co.Foil = true
 					// Make sure "_f" is appended if a different version exists
-					if card.HasFinish(mtgjson.FinishNonfoil) {
+					if card.HasFinish(FinishNonfoil) {
 						uuid = card.UUID + suffixFoil
 						co.UUID = uuid
 					}
@@ -520,17 +518,17 @@ func (ap AllPrintings) Load() cardBackend {
 				co.Foil = false
 				co.Etched = true
 				// If there are alternative finishes, always append the suffix
-				if card.HasFinish(mtgjson.FinishNonfoil) || card.HasFinish(mtgjson.FinishFoil) {
+				if card.HasFinish(FinishNonfoil) || card.HasFinish(FinishFoil) {
 					uuid = card.UUID + suffixEtched
 					co.UUID = uuid
 				}
 				// Save the card object
 				uuids[uuid] = co
-			} else if card.HasFinish(mtgjson.FinishFoil) {
+			} else if card.HasFinish(FinishFoil) {
 				uuid := card.UUID
 
 				// Foil [+ Nonfoil]
-				if card.HasFinish(mtgjson.FinishNonfoil) {
+				if card.HasFinish(FinishNonfoil) {
 					// Save the card object
 					uuids[uuid] = co
 
@@ -595,7 +593,7 @@ func (ap AllPrintings) Load() cardBackend {
 		}
 		if setDate.After(PromosForEverybodyYay) {
 			for _, card := range set.Cards {
-				if card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+				if card.HasPromoType(PromoTypeBoosterfun) {
 					// Usually boosterfun cards have real numbers
 					cn, err := strconv.Atoi(card.Number)
 					if err == nil {
@@ -616,7 +614,7 @@ func (ap AllPrintings) Load() cardBackend {
 			if product.Identifiers == nil {
 				product.Identifiers = map[string]string{}
 			}
-			product.Identifiers["mtgjsonId"] = product.UUID
+			product.Identifiers["d"] = product.UUID
 
 			card := Card{
 				UUID:        product.UUID,
@@ -719,11 +717,11 @@ func (ap AllPrintings) Load() cardBackend {
 	for uuid, card := range uuids {
 		if !card.Foil && !card.Etched {
 			for _, promoType := range []string{
-				mtgjson.PromoTypeDoubleExposure,
-				mtgjson.PromoTypeSilverFoil,
-				mtgjson.PromoTypeRainbowFoil,
-				mtgjson.PromoTypeRippleFoil,
-				mtgjson.PromoTypeSurgeFoil,
+				PromoTypeDoubleExposure,
+				PromoTypeSilverFoil,
+				PromoTypeRainbowFoil,
+				PromoTypeRippleFoil,
+				PromoTypeSurgeFoil,
 			} {
 				if card.HasPromoType(promoType) {
 					var filtered []string
@@ -945,7 +943,7 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 	dup.Cards = make([]Card, len(sets[code].Cards))
 	for i := range sets[code].Cards {
 		// Skip misprints from main sets
-		if strings.HasSuffix(sets[code].Cards[i].Number, mtgjson.SuffixVariant) {
+		if strings.HasSuffix(sets[code].Cards[i].Number, SuffixVariant) {
 			continue
 		}
 
@@ -1113,7 +1111,7 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 			dupeCard.Identifiers["needsNewTCGSKUs"] = "true"
 		}
 		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
-		dupeCard.Number += mtgjson.SuffixSpecial
+		dupeCard.Number += SuffixSpecial
 		dupeCard.Finishes = []string{"foil"}
 		dupeCard.Variations = append(ogVariations, ogUUID)
 

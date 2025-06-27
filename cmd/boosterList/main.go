@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 func getListForBooster(setCode, boosterType string) ([]string, error) {
@@ -66,7 +65,7 @@ func getListForDeck(setCode, deckName string) ([]string, error) {
 			continue
 		}
 
-		for _, board := range [][]mtgjson.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
+		for _, board := range [][]mtgmatcher.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
 			for _, card := range board {
 				uuid, err := mtgmatcher.MatchId(card.UUID, card.IsFoil)
 				if err != nil {

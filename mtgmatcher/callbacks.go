@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type cardFilterCallback func(inCard *InputCard, card *Card) bool
@@ -31,27 +29,27 @@ type promoTypeElement struct {
 
 var promoTypeElements = []promoTypeElement{
 	{
-		PromoType: mtgjson.PromoTypePrerelease,
+		PromoType: PromoTypePrerelease,
 		Tags:      []string{"Prerelease", "Preview"},
 	},
 	{
-		PromoType: mtgjson.PromoTypePlayPromo,
+		PromoType: PromoTypePlayPromo,
 		Tags:      []string{"Play Promo"},
 	},
 	{
-		PromoType: mtgjson.PromoTypePromoPack,
+		PromoType: PromoTypePromoPack,
 		TagFunc: func(inCard *InputCard) bool {
 			return inCard.isPromoPack()
 		},
 	},
 	{
-		PromoType: mtgjson.PromoTypeSChineseAltArt,
+		PromoType: PromoTypeSChineseAltArt,
 		TagFunc: func(inCard *InputCard) bool {
 			return inCard.isChineseAltArt()
 		},
 	},
 	{
-		PromoType: mtgjson.PromoTypeBuyABox,
+		PromoType: PromoTypeBuyABox,
 		// After ZNR buy-a-box is also present in main set
 		ValidDate: BuyABoxNotUniqueDate,
 		TagFunc: func(inCard *InputCard) bool {
@@ -60,26 +58,26 @@ var promoTypeElements = []promoTypeElement{
 		CanBeWild: true,
 	},
 	{
-		PromoType: mtgjson.PromoTypeBundle,
+		PromoType: PromoTypeBundle,
 		Tags:      []string{"Bundle"},
 		CanBeWild: true,
 	},
 	{
-		PromoType: mtgjson.PromoTypeGilded,
+		PromoType: PromoTypeGilded,
 		Tags:      []string{"Gilded"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeTextured,
+		PromoType: PromoTypeTextured,
 		Tags:      []string{"Textured"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeGalaxyFoil,
+		PromoType: PromoTypeGalaxyFoil,
 		TagFunc: func(inCard *InputCard) bool {
 			// A lot of providers don't tag SLD cards as Galaxy, but just foil
 			// (same for RainbowFoil), so this check essentially makes the test
 			// pass, and let filtering continue elsewhere
 			if inCard.isSecretLair() &&
-				hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeGalaxyFoil, "SLD") {
+				hasPrinting(inCard.Name, "promo_type", PromoTypeGalaxyFoil, "SLD") {
 				// The only card which *also* has RainbowFoil, so the check would fail for Galaxy
 				if inCard.Name == "Command Tower" {
 					return inCard.Contains("1496")
@@ -90,84 +88,84 @@ var promoTypeElements = []promoTypeElement{
 		},
 	},
 	{
-		PromoType: mtgjson.PromoTypeSurgeFoil,
+		PromoType: PromoTypeSurgeFoil,
 		TagFunc: func(inCard *InputCard) bool {
 			return inCard.isSurgeFoil()
 		},
 	},
 	{
-		PromoType: mtgjson.PromoTypeStepAndCompleat,
+		PromoType: PromoTypeStepAndCompleat,
 		Tags:      []string{"Compleat"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeConcept,
+		PromoType: PromoTypeConcept,
 		TagFunc: func(inCard *InputCard) bool {
 			if inCard.Contains("Concept") {
 				return true
 			}
-			if inCard.isBorderless() && hasPrinting(inCard.Name, "promo_type", mtgjson.PromoTypeConcept) {
+			if inCard.isBorderless() && hasPrinting(inCard.Name, "promo_type", PromoTypeConcept) {
 				return true
 			}
 			return false
 		},
 	},
 	{
-		PromoType: mtgjson.PromoTypeOilSlick,
+		PromoType: PromoTypeOilSlick,
 		TagFunc: func(inCard *InputCard) bool {
 			return inCard.isOilSlick()
 		},
 	},
 	{
-		PromoType: mtgjson.PromoTypeHaloFoil,
+		PromoType: PromoTypeHaloFoil,
 		Tags:      []string{"Halo"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeThickDisplay,
+		PromoType: PromoTypeThickDisplay,
 		ValidDate: SeparateFinishCollectorNumberDate,
 		Tags:      []string{"Display", "Thick"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeSerialized,
+		PromoType: PromoTypeSerialized,
 		TagFunc: func(inCard *InputCard) bool {
 			return inCard.isSerialized()
 		},
 	},
 	{
-		PromoType: mtgjson.PromoTypeConfettiFoil,
+		PromoType: PromoTypeConfettiFoil,
 		Tags:      []string{"Confetti"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeEmbossed,
+		PromoType: PromoTypeEmbossed,
 		Tags:      []string{"Ampersand", "Emblem", "Embossed"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeScroll,
+		PromoType: PromoTypeScroll,
 		Tags:      []string{"Scroll", "Showcase Silver Foil"},
 	},
 	{
-		PromoType: mtgjson.PromoTypePoster,
+		PromoType: PromoTypePoster,
 		Tags:      []string{"Poster", "Hand Drawn"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeInvisibleInk,
+		PromoType: PromoTypeInvisibleInk,
 		Tags:      []string{"Invisible"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeRippleFoil,
+		PromoType: PromoTypeRippleFoil,
 		Tags:      []string{"Ripple"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeRaisedFoil,
+		PromoType: PromoTypeRaisedFoil,
 		Tags:      []string{"Raised"},
 		// Needed due to oilslick cards from ONE sometimes being referred to as raised
 		ValidDate: time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC),
 	},
 	{
-		PromoType: mtgjson.PromoTypeFractureFoil,
+		PromoType: PromoTypeFractureFoil,
 		Tags:      []string{"Fracture", "Fractal"},
 	},
 	{
-		PromoType: mtgjson.PromoTypeManaFoil,
+		PromoType: PromoTypeManaFoil,
 		Tags:      []string{"Mana Foil"},
 	},
 }
@@ -309,11 +307,11 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 }
 
 func judgeLandCheck(inCard *InputCard, card *Card) bool {
-	if (inCard.Contains("14") && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)) ||
-		inCard.Contains("23") && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+	if (inCard.Contains("14") && !strings.HasSuffix(card.Number, SuffixSpecial)) ||
+		inCard.Contains("23") && strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
-	} else if !inCard.Contains("14") && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) ||
-		!inCard.Contains("23") && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+	} else if !inCard.Contains("14") && strings.HasSuffix(card.Number, SuffixSpecial) ||
+		!inCard.Contains("23") && !strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
 	}
 	return false
@@ -402,7 +400,7 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 			ids, _ := SearchEquals(card.Name)
 			for _, id := range ids {
 				co := backend.UUIDs[id]
-				if co.SetCode == code && co.HasPromoType(mtgjson.PromoTypeGameDay) {
+				if co.SetCode == code && co.HasPromoType(PromoTypeGameDay) {
 					return false
 				}
 			}
@@ -434,9 +432,9 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 }
 
 func phyrexianCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isPhyrexian() && card.Language != mtgjson.LanguagePhyrexian {
+	if inCard.isPhyrexian() && card.Language != LanguagePhyrexian {
 		return true
-	} else if !inCard.isPhyrexian() && card.Language == mtgjson.LanguagePhyrexian {
+	} else if !inCard.isPhyrexian() && card.Language == LanguagePhyrexian {
 		return true
 	}
 	return false
@@ -472,9 +470,9 @@ func lotrTripleFiltering(inCard *InputCard, card *Card) bool {
 			}
 		}
 	case "Saruman of Many Colors":
-		if inCard.Contains("Store Champ") && !card.HasPromoType(mtgjson.PromoTypeStoreChampionship) {
+		if inCard.Contains("Store Champ") && !card.HasPromoType(PromoTypeStoreChampionship) {
 			return true
-		} else if !inCard.Contains("Store Champ") && card.HasPromoType(mtgjson.PromoTypeStoreChampionship) {
+		} else if !inCard.Contains("Store Champ") && card.HasPromoType(PromoTypeStoreChampionship) {
 			return true
 		}
 	}
@@ -482,9 +480,9 @@ func lotrTripleFiltering(inCard *InputCard, card *Card) bool {
 }
 
 func lightDarkManaCost(inCard *InputCard, card *Card) bool {
-	if inCard.isARNLightMana() && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+	if inCard.isARNLightMana() && !strings.HasSuffix(card.Number, SuffixVariant) {
 		return true
-	} else if (inCard.isARNDarkMana() || inCard.Variation == "") && strings.HasSuffix(card.Number, mtgjson.SuffixVariant) {
+	} else if (inCard.isARNDarkMana() || inCard.Variation == "") && strings.HasSuffix(card.Number, SuffixVariant) {
 		return true
 	}
 	return false
@@ -555,9 +553,9 @@ func variantInWatermark(inCard *InputCard, card *Card) bool {
 
 // Foil-only-booster cards, non-special version has both foil and non-foil
 func altArtCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isGenericAltArt() && !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+	if inCard.isGenericAltArt() && !strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
-	} else if !inCard.isGenericAltArt() && strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) {
+	} else if !inCard.isGenericAltArt() && strings.HasSuffix(card.Number, SuffixSpecial) {
 		return true
 	}
 	return false
@@ -566,28 +564,28 @@ func altArtCheck(inCard *InputCard, card *Card) bool {
 // Foil-only-booster cards, non-special version only have non-foil
 // (only works if card has no other duplicates within the same edition)
 func foilCheck(inCard *InputCard, card *Card) bool {
-	if inCard.Foil && card.HasFinish(mtgjson.FinishNonfoil) {
+	if inCard.Foil && card.HasFinish(FinishNonfoil) {
 		return true
-	} else if !inCard.Foil && card.HasFinish(mtgjson.FinishFoil) {
+	} else if !inCard.Foil && card.HasFinish(FinishFoil) {
 		return true
 	}
 	return false
 }
 
 func etchedCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isEtched() && !card.HasFinish(mtgjson.FinishEtched) {
+	if inCard.isEtched() && !card.HasFinish(FinishEtched) {
 		return true
 		// Some thick display cards are not marked as etched
-	} else if !inCard.isEtched() && !inCard.isThickDisplay() && card.HasFinish(mtgjson.FinishEtched) {
+	} else if !inCard.isEtched() && !inCard.isThickDisplay() && card.HasFinish(FinishEtched) {
 		return true
 	}
 	return false
 }
 
 func thickDisplayCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isThickDisplay() && !card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
+	if inCard.isThickDisplay() && !card.HasPromoType(PromoTypeThickDisplay) {
 		return true
-	} else if !inCard.isThickDisplay() && card.HasPromoType(mtgjson.PromoTypeThickDisplay) {
+	} else if !inCard.isThickDisplay() && card.HasPromoType(PromoTypeThickDisplay) {
 		return true
 	}
 	return false
@@ -630,9 +628,9 @@ func deckmastersVariant(inCard *InputCard, card *Card) bool {
 
 // Variants related to flavor text presence
 func portalDemoGame(inCard *InputCard, card *Card) bool {
-	if inCard.isPortalAlt() && !strings.HasSuffix(card.Number, mtgjson.SuffixVariant) && !strings.HasSuffix(card.Number, "d") {
+	if inCard.isPortalAlt() && !strings.HasSuffix(card.Number, SuffixVariant) && !strings.HasSuffix(card.Number, "d") {
 		return true
-	} else if !inCard.isPortalAlt() && (strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, "d")) {
+	} else if !inCard.isPortalAlt() && (strings.HasSuffix(card.Number, SuffixVariant) || strings.HasSuffix(card.Number, "d")) {
 		return true
 	}
 	return false
@@ -641,11 +639,11 @@ func portalDemoGame(inCard *InputCard, card *Card) bool {
 // Launch promos within the set itself
 func launchPromoInSet(inCard *InputCard, card *Card) bool {
 	anyAlternative := card.IsAlternative ||
-		card.BorderColor == mtgjson.BorderColorBorderless ||
-		card.HasFrameEffect(mtgjson.FrameEffectExtendedArt)
+		card.BorderColor == BorderColorBorderless ||
+		card.HasFrameEffect(FrameEffectExtendedArt)
 	if (inCard.isRelease() || inCard.isBaB()) && !anyAlternative {
 		return true
-	} else if !(inCard.isRelease() || inCard.isBaB()) && anyAlternative && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+	} else if !(inCard.isRelease() || inCard.isBaB()) && anyAlternative && !card.HasPromoType(PromoTypeBoosterfun) {
 		return true
 	}
 	return false
@@ -687,9 +685,9 @@ func variantBeforePlainCard(inCard *InputCard, card *Card) bool {
 // Intro/Starter deck
 func starterDeckCheck(inCard *InputCard, card *Card) bool {
 	isStarter := Contains(inCard.Variation, "Starter") || Contains(inCard.Variation, "Intro")
-	if !isStarter && (card.HasPromoType(mtgjson.PromoTypeStarterDeck) || card.IsAlternative) {
+	if !isStarter && (card.HasPromoType(PromoTypeStarterDeck) || card.IsAlternative) {
 		return true
-	} else if isStarter && !card.HasPromoType(mtgjson.PromoTypeStarterDeck) && !card.IsAlternative {
+	} else if isStarter && !card.HasPromoType(PromoTypeStarterDeck) && !card.IsAlternative {
 		return true
 	}
 	return false
@@ -697,9 +695,9 @@ func starterDeckCheck(inCard *InputCard, card *Card) bool {
 
 // Japanese Planeswalkers
 func japaneseCheck(inCard *InputCard, card *Card) bool {
-	if (inCard.isJPN() || inCard.isGenericAltArt()) && card.Language != mtgjson.LanguageJapanese {
+	if (inCard.isJPN() || inCard.isGenericAltArt()) && card.Language != LanguageJapanese {
 		return true
-	} else if !inCard.isJPN() && !inCard.isGenericAltArt() && card.Language == mtgjson.LanguageJapanese {
+	} else if !inCard.isJPN() && !inCard.isGenericAltArt() && card.Language == LanguageJapanese {
 		return true
 	}
 	return false
@@ -718,9 +716,9 @@ func guildgateVariant(inCard *InputCard, card *Card) bool {
 
 // Due to the WPN lands
 func wpnCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isWPNGateway() && !card.HasPromoType(mtgjson.PromoTypeWPN) {
+	if inCard.isWPNGateway() && !card.HasPromoType(PromoTypeWPN) {
 		return true
-	} else if !inCard.isWPNGateway() && card.HasPromoType(mtgjson.PromoTypeWPN) {
+	} else if !inCard.isWPNGateway() && card.HasPromoType(PromoTypeWPN) {
 		return true
 	}
 	return false
@@ -744,19 +742,19 @@ func attractionVariant(inCard *InputCard, card *Card) bool {
 	case "Space Beleren",
 		"Comet, Stellar Pup":
 		if inCard.isBorderless() && !inCard.isGalaxyFoil() {
-			if card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
+			if card.HasPromoType(PromoTypeGalaxyFoil) {
 				return true
 			}
 		} else if inCard.isGalaxyFoil() && !inCard.isBorderless() {
-			if card.BorderColor == mtgjson.BorderColorBorderless {
+			if card.BorderColor == BorderColorBorderless {
 				return true
 			}
 		}
 	default:
 		if !inCard.isBorderless() && !inCard.isGalaxyFoil() &&
 			slices.Contains(card.Types, "Land") &&
-			card.BorderColor == mtgjson.BorderColorBorderless &&
-			card.HasPromoType(mtgjson.PromoTypeGalaxyFoil) {
+			card.BorderColor == BorderColorBorderless &&
+			card.HasPromoType(PromoTypeGalaxyFoil) {
 			return true
 		}
 	}
@@ -765,9 +763,9 @@ func attractionVariant(inCard *InputCard, card *Card) bool {
 
 func shatteredCheck(inCard *InputCard, card *Card) bool {
 	isShattered := inCard.Contains("Shattered") || inCard.Contains("Borderless")
-	if isShattered && !card.HasFrameEffect(mtgjson.FrameEffectShattered) {
+	if isShattered && !card.HasFrameEffect(FrameEffectShattered) {
 		return true
-	} else if !isShattered && card.HasFrameEffect(mtgjson.FrameEffectShattered) {
+	} else if !isShattered && card.HasFrameEffect(FrameEffectShattered) {
 		return true
 	}
 	return false
@@ -807,9 +805,9 @@ func animeCheck(inCard *InputCard, card *Card) bool {
 }
 
 func serialCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isSerialized() && !card.HasPromoType(mtgjson.PromoTypeSerialized) {
+	if inCard.isSerialized() && !card.HasPromoType(PromoTypeSerialized) {
 		return true
-	} else if !inCard.isSerialized() && card.HasPromoType(mtgjson.PromoTypeSerialized) {
+	} else if !inCard.isSerialized() && card.HasPromoType(PromoTypeSerialized) {
 		return true
 	}
 	return false
@@ -841,7 +839,7 @@ func releaseRetroCheck(inCard *InputCard, card *Card) bool {
 // Foil cards which exist *only* as misprints
 func foilMisprint(inCard *InputCard, card *Card) bool {
 	if !inCard.Foil {
-		return strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+		return strings.HasSuffix(card.Number, SuffixSpecial)
 	}
 
 	// Get number in case there is no EA information available
@@ -850,16 +848,16 @@ func foilMisprint(inCard *InputCard, card *Card) bool {
 	switch card.Name {
 	case "Temple of Abandon":
 		if inCard.isExtendedArt() || strings.HasPrefix(maybeNumber, "347") {
-			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+			return !strings.HasSuffix(card.Number, SuffixSpecial)
 		}
 	case "Strict Proctor":
 		if !inCard.isExtendedArt() || strings.HasPrefix(maybeNumber, "33") {
-			return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+			return !strings.HasSuffix(card.Number, SuffixSpecial)
 		}
 	case "Reflecting Pool":
-		return !strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+		return !strings.HasSuffix(card.Number, SuffixSpecial)
 	}
-	return strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+	return strings.HasSuffix(card.Number, SuffixSpecial)
 }
 
 func nodateMisprint(inCard *InputCard, card *Card) bool {
@@ -872,10 +870,10 @@ func nodateMisprint(inCard *InputCard, card *Card) bool {
 			inCard.Contains("No Date") ||
 			inCard.Contains("No Stamp") ||
 			inCard.Contains("No Symbol") {
-			return !strings.HasSuffix(card.Number, mtgjson.SuffixVariant)
+			return !strings.HasSuffix(card.Number, SuffixVariant)
 		}
 	}
-	return strings.HasSuffix(card.Number, mtgjson.SuffixVariant)
+	return strings.HasSuffix(card.Number, SuffixVariant)
 }
 
 func laquatusMisprint(inCard *InputCard, card *Card) bool {
@@ -903,7 +901,7 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 		"Razaketh, the Foulblooded":
 		num, _ := strconv.Atoi(ExtractNumericalValue(card.Number))
 		if num < 200 {
-			result := strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+			result := strings.HasSuffix(card.Number, SuffixSpecial)
 			if inCard.isEtched() {
 				result = !result
 			}
@@ -913,7 +911,7 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 		"Shadowborn Apostle",
 		"Toxin Sliver",
 		"Virulent Sliver":
-		result := strings.HasSuffix(card.Number, mtgjson.SuffixPhiLow)
+		result := strings.HasSuffix(card.Number, SuffixPhiLow)
 		if inCard.isStepAndCompleat() {
 			result = !result
 		}
@@ -922,14 +920,14 @@ func sldVariant(inCard *InputCard, card *Card) bool {
 		if card.Number == "322" {
 			return foilCheck(inCard, card)
 		}
-		result := strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+		result := strings.HasSuffix(card.Number, SuffixSpecial)
 		if inCard.Foil {
 			result = !result
 		}
 		return result
 	case "Okaun, Eye of Chaos",
 		"Zndrsplt, Eye of Wisdom":
-		result := strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+		result := strings.HasSuffix(card.Number, SuffixSpecial)
 		if inCard.isThickDisplay() {
 			result = !result
 		}
@@ -1015,28 +1013,28 @@ func lubuPrereleaseVariant(inCard *InputCard, card *Card) bool {
 }
 
 func borderlessCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isBorderless() && card.BorderColor != mtgjson.BorderColorBorderless {
+	if inCard.isBorderless() && card.BorderColor != BorderColorBorderless {
 		return true
-	} else if !inCard.isBorderless() && card.BorderColor == mtgjson.BorderColorBorderless && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+	} else if !inCard.isBorderless() && card.BorderColor == BorderColorBorderless && !card.HasFrameEffect(FrameEffectShowcase) {
 		return true
 	}
 	return false
 }
 
 func showcaseCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isShowcase() && !card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+	if inCard.isShowcase() && !card.HasFrameEffect(FrameEffectShowcase) {
 		return true
-	} else if !inCard.isShowcase() && card.HasFrameEffect(mtgjson.FrameEffectShowcase) {
+	} else if !inCard.isShowcase() && card.HasFrameEffect(FrameEffectShowcase) {
 		return true
 	}
 	return false
 }
 
 func extendedartCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isExtendedArt() && !card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) {
+	if inCard.isExtendedArt() && !card.HasFrameEffect(FrameEffectExtendedArt) {
 		return true
 		// BaB are allowed to have extendedart
-	} else if !inCard.isExtendedArt() && card.HasFrameEffect(mtgjson.FrameEffectExtendedArt) && !card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+	} else if !inCard.isExtendedArt() && card.HasFrameEffect(FrameEffectExtendedArt) && !card.HasPromoType(PromoTypeBuyABox) {
 		return true
 	}
 	return false
@@ -1045,18 +1043,18 @@ func extendedartCheck(inCard *InputCard, card *Card) bool {
 // IKO-Style cards with different names
 func reskinGodzillaCheck(inCard *InputCard, card *Card) bool {
 	// Also some providers do not tag Japanese-only Godzilla cards as such
-	if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+	if inCard.isReskin() && !card.HasPromoType(PromoTypeGodzilla) {
 		return true
-	} else if !inCard.isReskin() && !inCard.beyondBaseSet && card.HasPromoType(mtgjson.PromoTypeGodzilla) {
+	} else if !inCard.isReskin() && !inCard.beyondBaseSet && card.HasPromoType(PromoTypeGodzilla) {
 		return true
 	}
 	return false
 }
 
 func reskinDraculaCheck(inCard *InputCard, card *Card) bool {
-	if inCard.isReskin() && !card.HasPromoType(mtgjson.PromoTypeDracula) {
+	if inCard.isReskin() && !card.HasPromoType(PromoTypeDracula) {
 		return true
-	} else if !inCard.isReskin() && !inCard.beyondBaseSet && card.HasPromoType(mtgjson.PromoTypeDracula) {
+	} else if !inCard.isReskin() && !inCard.beyondBaseSet && card.HasPromoType(PromoTypeDracula) {
 		return true
 	}
 	return false
@@ -1081,7 +1079,7 @@ func misprintCheck(inCard *InputCard, card *Card) bool {
 		return false
 	}
 
-	hasSuffix := strings.HasSuffix(card.Number, mtgjson.SuffixVariant) || strings.HasSuffix(card.Number, mtgjson.SuffixSpecial)
+	hasSuffix := strings.HasSuffix(card.Number, SuffixVariant) || strings.HasSuffix(card.Number, SuffixSpecial)
 	if inCard.Contains("Misprint") && !hasSuffix {
 		return true
 	} else if !inCard.Contains("Misprint") && hasSuffix {
@@ -1092,9 +1090,9 @@ func misprintCheck(inCard *InputCard, card *Card) bool {
 
 func draftweekendCheck(inCard *InputCard, card *Card) bool {
 	releaseOrDraft := inCard.Contains("Draft Weekend") || (inCard.Contains("Release") && !inCard.isPrerelease())
-	if releaseOrDraft && !card.HasPromoType(mtgjson.PromoTypeDraftWeekend) {
+	if releaseOrDraft && !card.HasPromoType(PromoTypeDraftWeekend) {
 		return true
-	} else if !releaseOrDraft && card.HasPromoType(mtgjson.PromoTypeDraftWeekend) {
+	} else if !releaseOrDraft && card.HasPromoType(PromoTypeDraftWeekend) {
 		return true
 	}
 	return false
@@ -1138,14 +1136,14 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 
 func duplicateEveryFoil(inCard *InputCard) []string {
 	if inCard.Foil {
-		return []string{mtgjson.SuffixSpecial}
+		return []string{SuffixSpecial}
 	}
 	return nil
 }
 
 func duplicateSomeFoil(inCard *InputCard) []string {
 	if inCard.Foil {
-		return []string{mtgjson.SuffixSpecial, ""}
+		return []string{SuffixSpecial, ""}
 	}
 	return nil
 }
@@ -1159,18 +1157,18 @@ func duplicateBasicLands(inCard *InputCard) []string {
 
 func duplicateJPNPlaneswalkers(inCard *InputCard) []string {
 	if inCard.isJPN() {
-		return []string{mtgjson.SuffixSpecial, "s" + mtgjson.SuffixSpecial}
+		return []string{SuffixSpecial, "s" + SuffixSpecial}
 	}
 	return nil
 }
 
 func duplicateSLD(inCard *InputCard) []string {
 	if inCard.isStepAndCompleat() {
-		return []string{mtgjson.SuffixPhiLow, ""}
+		return []string{SuffixPhiLow, ""}
 	}
 
 	if inCard.isEtched() || inCard.isThickDisplay() || inCard.Foil {
-		return []string{mtgjson.SuffixSpecial, ""}
+		return []string{SuffixSpecial, ""}
 	}
 
 	return nil

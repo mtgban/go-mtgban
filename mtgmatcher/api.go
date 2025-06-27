@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/mroth/weightedrand/v2"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 func GetUUIDs() []string {
@@ -212,31 +211,31 @@ func Printings4Card(name string) ([]string, error) {
 }
 
 func HasExtendedArtPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectExtendedArt, editions...)
+	return hasPrinting(name, "frame_effect", FrameEffectExtendedArt, editions...)
 }
 
 func HasBorderlessPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "border_color", mtgjson.BorderColorBorderless, editions...)
+	return hasPrinting(name, "border_color", BorderColorBorderless, editions...)
 }
 
 func HasShowcasePrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "frame_effect", mtgjson.FrameEffectShowcase, editions...)
+	return hasPrinting(name, "frame_effect", FrameEffectShowcase, editions...)
 }
 
 func HasReskinPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", mtgjson.PromoTypeGodzilla, editions...)
+	return hasPrinting(name, "promo_type", PromoTypeGodzilla, editions...)
 }
 
 func HasPromoPackPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", mtgjson.PromoTypePromoPack, editions...)
+	return hasPrinting(name, "promo_type", PromoTypePromoPack, editions...)
 }
 
 func HasPrereleasePrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", mtgjson.PromoTypePrerelease, editions...)
+	return hasPrinting(name, "promo_type", PromoTypePrerelease, editions...)
 }
 
 func HasSerializedPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", mtgjson.PromoTypeSerialized, editions...)
+	return hasPrinting(name, "promo_type", PromoTypeSerialized, editions...)
 }
 
 func HasRetroFramePrinting(name string, editions ...string) bool {
@@ -244,15 +243,15 @@ func HasRetroFramePrinting(name string, editions ...string) bool {
 }
 
 func HasNonfoilPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "finish", mtgjson.FinishNonfoil, editions...)
+	return hasPrinting(name, "finish", FinishNonfoil, editions...)
 }
 
 func HasFoilPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "finish", mtgjson.FinishFoil, editions...)
+	return hasPrinting(name, "finish", FinishFoil, editions...)
 }
 
 func HasEtchedPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "finish", mtgjson.FinishEtched, editions...)
+	return hasPrinting(name, "finish", FinishEtched, editions...)
 }
 
 func hasPrinting(name, field, value string, editions ...string) bool {

@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 // Remove any unrelated edition from the input array.
@@ -42,7 +40,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				skip := true
 				foundCards := MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
-					if card.HasPromoType(mtgjson.PromoTypePrerelease) {
+					if card.HasPromoType(PromoTypePrerelease) {
 						skip = false
 						break
 					}
@@ -79,7 +77,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 					skip := true
 					foundCards := MatchInSet(inCard.Name, setCode)
 					for _, card := range foundCards {
-						if card.HasPromoType(mtgjson.PromoTypePromoPack) || card.HasPromoType(mtgjson.PromoTypePlayPromo) {
+						if card.HasPromoType(PromoTypePromoPack) || card.HasPromoType(PromoTypePlayPromo) {
 							skip = false
 							break
 						}
@@ -96,9 +94,9 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			skip := true
 			foundCards := MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
-				if card.HasPromoType(mtgjson.PromoTypeRelease) ||
-					card.HasPromoType(mtgjson.PromoTypeDraftWeekend) ||
-					card.HasPromoType(mtgjson.PromoTypeWPN) {
+				if card.HasPromoType(PromoTypeRelease) ||
+					card.HasPromoType(PromoTypeDraftWeekend) ||
+					card.HasPromoType(PromoTypeWPN) {
 					skip = false
 					break
 				}
@@ -111,7 +109,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			skip := true
 			foundCards := MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
-				if card.HasPromoType(mtgjson.PromoTypeBuyABox) {
+				if card.HasPromoType(PromoTypeBuyABox) {
 					skip = false
 					break
 				}
@@ -124,7 +122,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			skip := true
 			foundCards := MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
-				if card.HasPromoType(mtgjson.PromoTypeBundle) {
+				if card.HasPromoType(PromoTypeBundle) {
 					skip = false
 					break
 				}
@@ -141,7 +139,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				skip := true
 				foundCards := MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
-					if card.HasPromoType(mtgjson.PromoTypeFNM) {
+					if card.HasPromoType(PromoTypeFNM) {
 						inCard.Variation = "FNM Promo"
 						skip = false
 						break
@@ -284,7 +282,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				skip := true
 				foundCards := MatchInSet(inCard.Name, set.Code)
 				for _, card := range foundCards {
-					if card.HasPromoType(mtgjson.PromoTypeWPN) {
+					if card.HasPromoType(PromoTypeWPN) {
 						skip = false
 						break
 					}
@@ -321,7 +319,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 					skip := false
 					foundCards := MatchInSet(inCard.Name, set.Code)
 					for _, card := range foundCards {
-						if card.HasPromoType(mtgjson.PromoTypeFNM) {
+						if card.HasPromoType(PromoTypeFNM) {
 							skip = true
 							break
 						}
@@ -409,8 +407,8 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				case strings.HasSuffix(set.Name, "Promos"):
 					foundCards := MatchInSet(inCard.Name, set.Code)
 					for _, card := range foundCards {
-						if card.HasPromoType(mtgjson.PromoTypeStoreChampionship) ||
-							card.HasPromoType(mtgjson.PromoTypeGameDay) {
+						if card.HasPromoType(PromoTypeStoreChampionship) ||
+							card.HasPromoType(PromoTypeGameDay) {
 							skip = false
 							break
 						}
@@ -705,7 +703,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				// It is required to set a proper tag to parse non-English
 				// cards or well-known promos
 				for _, card := range foundCards {
-					if card.Language == mtgjson.LanguageJapanese {
+					if card.Language == LanguageJapanese {
 						skip = true
 						break
 					}
@@ -723,7 +721,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				foundCards := MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
 					// Skip boosterfun because they are inherently non-promo
-					if card.IsPromo && !card.HasPromoType(mtgjson.PromoTypeBoosterfun) {
+					if card.IsPromo && !card.HasPromoType(PromoTypeBoosterfun) {
 						skip = false
 						break
 					}
@@ -826,11 +824,11 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 				case inCard.isPromoPack():
 					possibleSuffixes = append(possibleSuffixes, "p")
 				case inCard.isChineseAltArt():
-					possibleSuffixes = append(possibleSuffixes, "s", mtgjson.SuffixSpecial+"s", mtgjson.SuffixVariant+"s")
+					possibleSuffixes = append(possibleSuffixes, "s", SuffixSpecial+"s", SuffixVariant+"s")
 				case inCard.isSerialized():
 					possibleSuffixes = append(possibleSuffixes, "z")
 				case inCard.isJudge() || inCard.isResale():
-					possibleSuffixes = append(possibleSuffixes, mtgjson.SuffixSpecial)
+					possibleSuffixes = append(possibleSuffixes, SuffixSpecial)
 				case inCard.isJPN():
 					possibleSuffixes = append(possibleSuffixes, "jpn")
 				}
@@ -866,11 +864,11 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 			switch set.Type {
 			case "expansion", "core", "masters", "draft_innovation":
 				if inCard.promoWildcard &&
-					!card.HasPromoType(mtgjson.PromoTypeBoosterfun) &&
-					!card.HasPromoType(mtgjson.PromoTypePromoPack) &&
-					!card.HasPromoType(mtgjson.PromoTypeStarterDeck) &&
-					!card.HasPromoType(mtgjson.PromoTypeIntroPack) &&
-					!strings.HasSuffix(card.Number, mtgjson.SuffixSpecial) &&
+					!card.HasPromoType(PromoTypeBoosterfun) &&
+					!card.HasPromoType(PromoTypePromoPack) &&
+					!card.HasPromoType(PromoTypeStarterDeck) &&
+					!card.HasPromoType(PromoTypeIntroPack) &&
+					!strings.HasSuffix(card.Number, SuffixSpecial) &&
 					!card.IsPromo {
 					continue
 				}

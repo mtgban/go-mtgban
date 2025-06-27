@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type ArbitOpts struct {
@@ -619,7 +618,7 @@ func Pennystock(seller Seller, full bool, thresholds ...float64) (result []Penny
 		case "gold", "silver", "white":
 			continue
 		}
-		if co.IsFunny || co.HasPromoType(mtgjson.PromoTypeThickDisplay) {
+		if co.IsFunny || co.HasPromoType(mtgmatcher.PromoTypeThickDisplay) {
 			continue
 		}
 

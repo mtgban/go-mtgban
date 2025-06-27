@@ -10,7 +10,6 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
@@ -24,7 +23,7 @@ type TCGPlayerMarket struct {
 	MaxConcurrency int
 
 	// The cache data defining SKU data, if not set it will be loaded
-	// from the default location on mtgjson website.
+	// from the default location on MTGJSON website.
 	SKUsData map[string][]TCGSku
 
 	inventory mtgban.InventoryRecord
@@ -50,8 +49,8 @@ type responseChan struct {
 }
 
 const (
-	allSkusURL       = "https://mtgjson.com/api/v5/TcgplayerSkus.json.bz2"
-	allSkusBackupURL = "https://mtgjson.com/api/v5_backup/TcgplayerSkus.json.bz2"
+	allSkusURL       = "https://mtgmatcher.com/api/v5/TcgplayerSkus.json.bz2"
+	allSkusBackupURL = "https://mtgmatcher.com/api/v5_backup/TcgplayerSkus.json.bz2"
 )
 
 var availableMarketNames = []string{
@@ -254,7 +253,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 			i++
 
 			for _, card := range set.Cards {
-				uuid := card.Identifiers["mtgjsonId"]
+				uuid := card.Identifiers["mtgmatcher.d"]
 				skus, found := skusMap[uuid]
 				if !found {
 					continue
@@ -302,9 +301,9 @@ func (tcg *TCGPlayerMarket) scrape() error {
 					}
 				}
 
-				hasNonfoil := card.HasFinish(mtgjson.FinishNonfoil)
-				hasFoil := card.HasFinish(mtgjson.FinishFoil)
-				hasEtched := card.HasFinish(mtgjson.FinishEtched)
+				hasNonfoil := card.HasFinish(mtgmatcher.FinishNonfoil)
+				hasFoil := card.HasFinish(mtgmatcher.FinishFoil)
+				hasEtched := card.HasFinish(mtgmatcher.FinishEtched)
 
 				for _, sku := range skus {
 					// Skip sealed products
