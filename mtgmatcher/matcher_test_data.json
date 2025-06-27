@@ -267,6 +267,14 @@
         }
     },
     {
+        "uuid": "6912d3c4-7f91-5d77-b3a8-707cc4722c3f_f",
+        "description": "id_lookup_lots_of_variants",
+        "input": {
+            "id": "6912d3c4-7f91-5d77-b3a8-707cc4722c3f",
+            "foil": true
+        }
+    },
+    {
         "uuid": "fb083deb-30ea-5ff4-8aa8-cee8531cd7ec",
         "description": "number_dupes_fullart_land",
         "input": {
