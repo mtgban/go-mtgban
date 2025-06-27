@@ -32,7 +32,6 @@ import (
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/coolstuffinc"
 	"github.com/mtgban/go-mtgban/hareruya"
-	"github.com/mtgban/go-mtgban/jupitergames"
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/manapool"
 	"github.com/mtgban/go-mtgban/mintcard"
@@ -178,14 +177,6 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"jupitergames": {
-		OnlySeller: true,
-		Init: func() (mtgban.Scraper, error) {
-			scraper := jupitergames.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
