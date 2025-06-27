@@ -107,13 +107,24 @@ func GetBuylist(game string) ([]CSIPriceEntry, error) {
 		return nil, err
 	}
 
-	var entries []CSIPriceEntry
+	// Remove a spurious __DEV__ entry that is an array for some reason
+	var entries map[string]json.RawMessage
 	err = json.Unmarshal(data, &entries)
 	if err != nil {
 		return nil, err
 	}
 
-	return entries, nil
+	var csiEntries []CSIPriceEntry
+	for _, entry := range entries {
+		var csiEntry CSIPriceEntry
+		err = json.Unmarshal(entry, &csiEntry)
+		if err != nil {
+			continue
+		}
+		csiEntries = append(csiEntries, csiEntry)
+	}
+
+	return csiEntries, nil
 }
 
 // Load the list of editions to id used to build links
