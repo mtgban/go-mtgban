@@ -283,6 +283,7 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist() error {
 	defer resp.Body.Close()
 
 	csvReader := csv.NewReader(resp.Body)
+	csvReader.ReuseRecord = true
 
 	// Drop header
 	_, err = csvReader.Read()

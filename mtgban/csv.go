@@ -96,6 +96,8 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 		strict = flags[0]
 	}
 	csvReader := csv.NewReader(r)
+	csvReader.ReuseRecord = true
+
 	first, err := csvReader.Read()
 	if err == io.EOF {
 		return InventoryRecord{}, nil
@@ -160,6 +162,8 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		strict = flags[0]
 	}
 	csvReader := csv.NewReader(r)
+	csvReader.ReuseRecord = true
+
 	first, err := csvReader.Read()
 	if err == io.EOF {
 		return BuylistRecord{}, nil

@@ -108,6 +108,7 @@ func LoadSyp(auth string) ([]TCGSYP, error) {
 	defer resp.Body.Close()
 
 	csvReader := csv.NewReader(resp.Body)
+	csvReader.ReuseRecord = true
 
 	var result []TCGSYP
 	for {
