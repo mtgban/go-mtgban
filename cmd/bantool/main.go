@@ -39,7 +39,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/mtgstocks"
 	"github.com/mtgban/go-mtgban/ninetyfive"
-	"github.com/mtgban/go-mtgban/purplemana"
 	"github.com/mtgban/go-mtgban/sealedev"
 	"github.com/mtgban/go-mtgban/starcitygames"
 	"github.com/mtgban/go-mtgban/strikezone"
@@ -271,13 +270,6 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"purplemana": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := purplemana.NewScraper(purplemana.GameMagic)
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
