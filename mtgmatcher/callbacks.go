@@ -1,13 +1,13 @@
 package mtgmatcher
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-	"golang.org/x/exp/slices"
 )
 
 type cardFilterCallback func(inCard *InputCard, card *Card) bool

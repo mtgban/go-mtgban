@@ -2,8 +2,7 @@ package mtgban
 
 import (
 	"fmt"
-
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 // Return the inventory for any given seller present in the market.

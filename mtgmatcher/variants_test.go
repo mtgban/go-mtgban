@@ -1,10 +1,9 @@
 package mtgmatcher
 
 import (
+	"slices"
 	"strings"
 	"testing"
-
-	"golang.org/x/exp/slices"
 )
 
 func TestVariants(t *testing.T) {

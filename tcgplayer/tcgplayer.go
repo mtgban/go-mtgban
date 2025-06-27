@@ -2,17 +2,17 @@ package tcgplayer
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
-	"golang.org/x/exp/slices"
-
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
+
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
 

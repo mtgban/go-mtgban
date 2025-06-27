@@ -1,12 +1,12 @@
 package mtgmatcher
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-	"golang.org/x/exp/slices"
 
 	"github.com/google/uuid"
 )

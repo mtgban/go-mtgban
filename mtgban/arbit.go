@@ -3,12 +3,12 @@ package mtgban
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-	"golang.org/x/exp/slices"
 )
 
 type ArbitOpts struct {

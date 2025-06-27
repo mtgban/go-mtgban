@@ -3,11 +3,10 @@ package abugames
 import (
 	"errors"
 	"net/url"
+	"slices"
 	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"

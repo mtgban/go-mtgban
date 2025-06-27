@@ -6,12 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-	"golang.org/x/exp/slices"
 )
 
 func getListForBooster(setCode, boosterType string) ([]string, error) {

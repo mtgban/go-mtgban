@@ -2,15 +2,15 @@ package tcgplayer
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"sync"
-
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+
 	tcgplayer "github.com/mtgban/go-tcgplayer"
-	"golang.org/x/exp/slices"
 )
 
 type TCGPlayerIndex struct {

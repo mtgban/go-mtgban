@@ -3,10 +3,10 @@ package mtgban
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"golang.org/x/exp/slices"
 )
 
 var ErrInvalidCondition = errors.New("invalid condition")

@@ -3,15 +3,14 @@ package tcgplayer
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
-
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
-	"golang.org/x/exp/slices"
 )
 
 type TCGLorcana struct {

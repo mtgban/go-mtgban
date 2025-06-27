@@ -2,10 +2,9 @@ package tcgplayer
 
 import (
 	"fmt"
+	"slices"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"math/rand"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/mroth/weightedrand/v2"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-	"golang.org/x/exp/slices"
 )
 
 func GetUUIDs() []string {

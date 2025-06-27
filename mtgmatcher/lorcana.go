@@ -5,11 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 type LorcanaJSON struct {

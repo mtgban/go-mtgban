@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"runtime/debug"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +22,6 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
 	"github.com/ulikunitz/xz"
-	"golang.org/x/exp/maps"
 	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -605,8 +605,7 @@ func run() int {
 	}
 
 	if *listOpt {
-		keys := maps.Keys(options)
-		sort.Strings(keys)
+		keys := slices.Sorted(maps.Keys(options))
 		for _, key := range keys {
 			var list []string
 			if options[key].OnlyVendor {

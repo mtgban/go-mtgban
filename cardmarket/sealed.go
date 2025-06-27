@@ -3,10 +3,9 @@ package cardmarket
 import (
 	"fmt"
 	"net/url"
+	"slices"
 	"sync"
 	"time"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"

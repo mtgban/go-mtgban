@@ -3,6 +3,7 @@ package sealedev
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -13,7 +14,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"github.com/mtgban/go-mtgban/tcgplayer"
-	"golang.org/x/exp/slices"
 )
 
 const (

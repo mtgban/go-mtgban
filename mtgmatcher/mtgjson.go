@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 type Sheet struct {

@@ -2,14 +2,13 @@ package ninetyfive
 
 import (
 	"errors"
+	"maps"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-
-	"golang.org/x/exp/maps"
 )
 
 const (

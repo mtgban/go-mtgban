@@ -3,14 +3,13 @@ package tcgplayer
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
-
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
-	"golang.org/x/exp/slices"
 )
 
 type TCGPlayerGeneric struct {

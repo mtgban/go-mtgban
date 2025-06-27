@@ -2,11 +2,11 @@ package mtgmatcher
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-	"golang.org/x/exp/slices"
 )
 
 // Card is a generic card representation using fields defined by the MTGJSON project.

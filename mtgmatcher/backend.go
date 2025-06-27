@@ -6,13 +6,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
-	"golang.org/x/exp/slices"
 )
 
 type DataStore interface {
