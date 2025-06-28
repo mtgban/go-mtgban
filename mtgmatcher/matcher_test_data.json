@@ -4820,5 +4820,15 @@
             "variant": "Borderless Poster",
             "edition": "The Lord of the Rings"
         }
+    },
+    {
+        "uuid": "785e3397-f5a1-5024-b12c-b6c6c398472c_f",
+        "description": "fic_surge_foil_with_nonfoil",
+        "input": {
+            "name": "Secret Rendezvous",
+            "variant": "253 0253 - Surge Foil",
+            "edition": "Final Fantasy Commander Deck",
+            "foil": true
+        }
     }
 ]

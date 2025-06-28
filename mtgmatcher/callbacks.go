@@ -296,6 +296,7 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
 	"M3C": {foilCheck, thickDisplayCheck},
+	"FIC": {foilCheck},
 
 	"PWAR": {japaneseCheck, draftweekendCheck},
 
@@ -1115,6 +1116,7 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 	"STX": duplicateSomeFoil,
 	"SHM": duplicateSomeFoil,
 	"M3C": duplicateSomeFoil,
+	"FIC": duplicateSomeFoil,
 	"DKM": duplicateSomeFoil,
 
 	// Intro lands from these sets when non-fullart always have this

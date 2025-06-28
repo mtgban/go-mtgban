@@ -845,6 +845,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 					}
 
 					if number == strings.ToLower(card.Number) {
+						logger.Println("Found match with card number", card.Number)
 						outCards = append(outCards, card)
 
 						// Card was found, skip any other suffix
