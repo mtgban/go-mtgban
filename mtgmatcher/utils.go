@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"errors"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -126,6 +127,14 @@ var months = []string{
 // an empty string is returned, to prevent confusing a number with a date or day.
 // If a rational number is provided, only the numerator part is considered.
 func ExtractNumber(str string) string {
+	return extractNumber(str, 1993)
+}
+
+func ExtractNumberAny(str string) string {
+	return extractNumber(str, math.MaxInt32)
+}
+
+func extractNumber(str string, threshold int) string {
 	fields := strings.Fields(str)
 	for _, field := range fields {
 		for _, month := range months {
@@ -164,7 +173,7 @@ func ExtractNumber(str string) string {
 
 		num := strings.TrimLeft(field, "0")
 		val, err := strconv.Atoi(num)
-		if err == nil && val < 1993 {
+		if err == nil && val < threshold {
 			return num
 		}
 		if len(num) > 1 {
@@ -185,13 +194,13 @@ func ExtractNumber(str string) string {
 
 				// Try converting to an integer number
 				val, err = strconv.Atoi(trimmed)
-				if err == nil && val < 1993 {
+				if err == nil && val < threshold {
 					return strings.ToLower(num)
 				}
 			}
 			if !unicode.IsDigit(rune(num[0])) && num[0] != 'M' {
 				val, err = strconv.Atoi(strings.TrimLeft(num[1:], "0"))
-				if err == nil && val < 1993 {
+				if err == nil && val < threshold {
 					return strings.ToLower(num)
 				}
 			}

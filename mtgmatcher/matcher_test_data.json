@@ -513,6 +513,15 @@
         }
     },
     {
+        "uuid": "7b18dbc4-ab53-57b4-b0cb-08ee6c7aae12",
+        "description": "number_goes_beyond_first_year",
+        "input": {
+            "name": "Forest",
+            "variant": "2080",
+            "edition": "SLD"
+        }
+    },
+    {
         "uuid": "bf0aa055-3635-5efd-930d-4f0a7caaa411",
         "description": "names_transform_card",
         "input": {

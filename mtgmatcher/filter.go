@@ -789,6 +789,10 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 			checkNum := true
 			// Lucky case, variation is just the collector number
 			num = ExtractNumber(inCard.Variation)
+			// Special case for SLD, finally breaking the check against years
+			if num == "" && card.SetCode == "SLD" {
+				num = ExtractNumberAny(inCard.Variation)
+			}
 			if inCard.Contains("Misprint") ||
 				inCard.isWorldChamp() ||
 				(inCard.isMysteryList() && !inCard.Contains("Unfinity")) || // this is better handled in thelistCheck()
