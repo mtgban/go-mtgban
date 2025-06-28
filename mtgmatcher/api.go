@@ -100,8 +100,8 @@ func AllPromoTypes() []string {
 	return backend.AllPromoTypes
 }
 
-// Return a slice of all names loaded up, in three different fashion
-// normalized, lowercase, or canonical
+// Return a slice of all names loaded up, in different formats
+// normalized, lowercase, canonical, or alternate (normalized)
 func AllNames(variant string, sealed bool) []string {
 	switch variant {
 	case "normalized":
@@ -119,6 +119,11 @@ func AllNames(variant string, sealed bool) []string {
 			return backend.AllLowerSealed
 		}
 		return backend.AllLowerNames
+	case "alternate":
+		if sealed {
+			return nil
+		}
+		return backend.AlternateNames
 	}
 	return nil
 }
