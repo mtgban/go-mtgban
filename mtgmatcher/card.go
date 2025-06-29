@@ -863,7 +863,7 @@ func ParseCommanderEdition(edition, variant string) string {
 		}
 	}
 	for key, ed := range backend.CommanderKeywordMap {
-		if strings.Contains(edition, key) {
+		if strings.Contains(strings.ToLower(edition), strings.ToLower(key)) {
 			if strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo") {
 				ed += " Promos"
 			}
