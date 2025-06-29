@@ -448,7 +448,8 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				edition = "PURL"
 				variant = "9"
 			}
-		case "The First Sliver", "Serra the Benevolent", "Ponder":
+		case "The First Sliver", "Serra the Benevolent", "Ponder",
+			"Ugin, the Spirit Dragon", "Sliver Hive":
 			if variant == "3" || variant == "2" || variant == "1" {
 				edition = "PF25"
 			}
