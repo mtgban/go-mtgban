@@ -383,7 +383,8 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 	}
 
 	switch inCard.Name {
-	case "Phantom Centaur":
+	case "Phantom Centaur",
+		"Arcane Teachings":
 		return misprintCheck(inCard, card)
 	// Cards with same numeric part need special treatment because the chunk below trips the later check
 	case "Laboratory Maniac",
