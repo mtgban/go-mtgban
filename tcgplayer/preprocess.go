@@ -345,15 +345,27 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			}
 		}
 	case "Standard Showdown Promos":
-		edition = "PSS1"
-		if variant == "Rebecca Guay" {
+		switch variant {
+		case "Rebecca Guay":
 			edition = "PSS2"
-		} else if variant == "Alayna Danner" {
+		case "Alayna Danner", "Alayna Danner 2018":
 			edition = "PSS3"
-		} else if variant == "Year of the Dragon 2024" {
+		case "Samuele Bandini", "Piotr Dura", "Alayna Danner 2024", "Lucas Graciano", "Alexander Forssberg":
+			edition = "PSS4"
+		case "Year of the Dragon 2024":
 			edition = "PL24"
-		} else if len(mtgmatcher.MatchInSet(cardName, "PCBB")) > 0 {
-			edition = "PCBB"
+		case "Year of the Snake 2025":
+			edition = "PL25"
+		default:
+			edition = "PSS1"
+
+			for _, tag := range []string{
+				"PCBB", "PSS5",
+			} {
+				if len(mtgmatcher.MatchInSet(cardName, tag)) > 0 {
+					edition = tag
+				}
+			}
 		}
 	case "World Championship Decks":
 		// Typo
