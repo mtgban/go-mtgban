@@ -793,14 +793,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 			if num == "" && card.SetCode == "SLD" {
 				num = ExtractNumberAny(inCard.Variation)
 			}
-			if inCard.Contains("Misprint") ||
-				inCard.isWorldChamp() ||
-				(inCard.isMysteryList() && !inCard.Contains("Unfinity")) || // this is better handled in thelistCheck()
-				(card.AttractionLights != nil && (strings.Contains(inCard.Variation, "/") || strings.Contains(inCard.Variation, "-"))) ||
-				// If the number is the same as in the edition, it might be a
-				// variation pollutin, so it is unreliable - ignore sets with years
-				// as it may trigger false postives
-				(num != "" && ExtractYear(set.Name) == "" && strings.Contains(set.Name, num)) {
+			if inCard.shouldIgnoreNumber(set.Name, num) {
 				checkNum = false
 				logger.Println("Skipping number check")
 			}

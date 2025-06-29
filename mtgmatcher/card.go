@@ -906,3 +906,30 @@ func ParseCommanderEdition(edition, variant string) string {
 
 	return ""
 }
+
+// Check if the card number (if present) is reliable
+func (c *InputCard) shouldIgnoreNumber(setName, num string) bool {
+	// No misprints or WCD
+	if c.Contains("Misprint") || c.isWorldChamp() {
+		return true
+	}
+
+	// This is better handled in thelistCheck()
+	if c.isMysteryList() && !c.Contains("Unfinity") {
+		return true
+	}
+
+	// Unfinity numbers could refer to Attractions
+	if Contains(c.Edition, "unf") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
+		return true
+	}
+
+	// If the number is the same as in the edition, there might be
+	// variation pollution, therefore unreliable (unless they are years)
+	if num != "" && strings.Contains(setName, num) && ExtractYear(setName) == "" {
+		return true
+	}
+
+	return false
+
+}
