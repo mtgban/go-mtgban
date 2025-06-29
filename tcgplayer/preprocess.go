@@ -499,6 +499,11 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		if variant == "50 Full Art" {
 			variant = "Game Day"
 		}
+	case "Kaldheim":
+		if cardName == "Harald, King of Skemfar" && variant == "JP Exclusive" {
+			edition = "PMEI"
+			variant = ""
+		}
 	case "Fourth Edition",
 		"Revised Edition",
 		"Mirage",
