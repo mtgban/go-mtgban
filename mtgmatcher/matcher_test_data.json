@@ -2098,6 +2098,16 @@
         }
     },
     {
+        "uuid": "eed6da3e-91f8-58e4-ae7e-cb16a2c9fbed",
+        "description": "magicfest_could_alias_slp",
+        "input": {
+            "name": "Swords to Plowshares",
+            "variant": "Borderless",
+            "edition": "MagicFest Cards",
+            "foil": true
+        }
+    },
+    {
         "uuid": "a95b64f0-9976-592f-b7ad-aa09158aa63c",
         "description": "bfz_std_with_wrong_info",
         "input": {

@@ -459,7 +459,10 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case set.Code == "PLG21":
 			case set.Code == "PEWK":
 			case set.Code == "SLP":
-				if len(MatchInSet(inCard.Name, "PF19")) > 0 && !inCard.Contains("Secret") {
+				// If the 'Secret' tag is missing, confirm that this could not be found in other
+				// MagicFest sets
+				if (len(MatchInSet(inCard.Name, "PF19")) > 0 ||
+					len(MatchInSet(inCard.Name, "PF25")) > 0) && !inCard.Contains("Secret") {
 					continue
 				}
 			default:
