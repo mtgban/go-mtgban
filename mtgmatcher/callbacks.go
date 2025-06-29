@@ -295,7 +295,7 @@ var complexFilterCallbacks = map[string][]cardFilterCallback{
 	"VOW": {wpnCheck, reskinDraculaCheck},
 	"SLD": {sldVariant, etchedCheck, thickDisplayCheck, phyrexianCheck, reskinRenameCheck},
 	"CMR": {variantInCommanderDeck, etchedCheck, thickDisplayCheck},
-	"M3C": {foilCheck, thickDisplayCheck},
+	"M3C": {foilCheckM3C, thickDisplayCheck},
 	"FIC": {foilCheck},
 
 	"PWAR": {japaneseCheck, draftweekendCheck},
@@ -566,6 +566,22 @@ func altArtCheck(inCard *InputCard, card *Card) bool {
 // Foil-only-booster cards, non-special version only have non-foil
 // (only works if card has no other duplicates within the same edition)
 func foilCheck(inCard *InputCard, card *Card) bool {
+	if inCard.Foil && card.HasFinish(FinishNonfoil) {
+		return true
+	} else if !inCard.Foil && card.HasFinish(FinishFoil) {
+		return true
+	}
+	return false
+}
+
+// This is a terrible hack because the number check is disabled
+// (Modern Horizons THREE Commander contains the same number of this card)
+// and there are several variants of this card (Satya), so we cannot
+// enable the etched check for *all* of them
+func foilCheckM3C(inCard *InputCard, card *Card) bool {
+	if card.Number == "3" || card.Number == "23" {
+		return etchedCheck(inCard, card)
+	}
 	if inCard.Foil && card.HasFinish(FinishNonfoil) {
 		return true
 	} else if !inCard.Foil && card.HasFinish(FinishFoil) {

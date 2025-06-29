@@ -4839,5 +4839,15 @@
             "edition": "Final Fantasy Commander Deck",
             "foil": true
         }
+    },
+    {
+        "uuid": "91824013-3dc1-597a-ab68-f1d439964fc0_f",
+        "description": "m3c_satya_hack",
+        "input": {
+            "name": "Satya, Aetherflux Genius",
+            "variant": "3",
+            "edition": "Modern Horizons 3 Commander",
+            "foil": true
+        }
     }
 ]
