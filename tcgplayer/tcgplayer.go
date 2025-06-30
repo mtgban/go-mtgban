@@ -49,8 +49,8 @@ type responseChan struct {
 }
 
 const (
-	allSkusURL       = "https://mtgmatcher.com/api/v5/TcgplayerSkus.json.bz2"
-	allSkusBackupURL = "https://mtgmatcher.com/api/v5_backup/TcgplayerSkus.json.bz2"
+	allSkusURL       = "https://mtgjson.com/api/v5/TcgplayerSkus.json.bz2"
+	allSkusBackupURL = "https://mtgjson.com/api/v5_backup/TcgplayerSkus.json.bz2"
 )
 
 var availableMarketNames = []string{
