@@ -486,7 +486,7 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Save the original uuid
-			co.Identifiers["d"] = card.UUID
+			co.Identifiers["mtgjsonId"] = card.UUID
 
 			// Append "_f" and "_e" to uuids, unless etched is the only printing.
 			// If it's not etched, append "_f", unless foil is the only printing.
@@ -614,7 +614,7 @@ func (ap AllPrintings) Load() cardBackend {
 			if product.Identifiers == nil {
 				product.Identifiers = map[string]string{}
 			}
-			product.Identifiers["d"] = product.UUID
+			product.Identifiers["mtgjsonId"] = product.UUID
 
 			card := Card{
 				UUID:        product.UUID,
