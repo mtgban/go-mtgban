@@ -253,7 +253,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 			i++
 
 			for _, card := range set.Cards {
-				uuid := card.Identifiers["mtgmatcher.d"]
+				uuid := card.Identifiers["mtgjsonId"]
 				skus, found := skusMap[uuid]
 				if !found {
 					continue
