@@ -123,10 +123,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			return err
 		}
 
-		cardIdFoil, err = mtgmatcher.MatchId(cardId, true)
-		if err != nil {
-			return err
-		}
+		cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
 	case GameIdLorcana:
 		cardName := product.Name
 		number := product.Number
