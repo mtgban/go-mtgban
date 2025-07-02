@@ -38,6 +38,14 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 
 	isEtched := len(finishes) > 1 && finishes[1]
 	isFoil := len(finishes) > 0 && finishes[0] && !isEtched
+
+	// If the loaded card already matches the requested finishes
+	// return the found id straight away
+	if (co.Foil && isFoil) || (co.Etched && isEtched) ||
+		(!co.Foil && !co.Etched && !isFoil && !isEtched) {
+		return co.UUID, nil
+	}
+
 	outId := output(co.Card, finishes...)
 
 	// Validate that what we found is correct
