@@ -2,6 +2,7 @@ package cardmarket
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 	"sync"
@@ -211,6 +212,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 					Quantity:   product.CountArticles - product.CountFoils,
 					URL:        link.String(),
 					SellerName: availableIndexNames[i],
+					OriginalId: fmt.Sprint(product.IdProduct),
 				},
 			}
 
@@ -236,6 +238,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 							Quantity:   product.CountFoils,
 							URL:        link.String(),
 							SellerName: availableIndexNames[i],
+							OriginalId: fmt.Sprint(product.IdProduct),
 						},
 					}
 
@@ -260,6 +263,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 					Quantity:   product.CountFoils,
 					URL:        link.String(),
 					SellerName: availableIndexNames[i],
+					OriginalId: fmt.Sprint(product.IdProduct),
 				},
 			}
 
