@@ -29,6 +29,9 @@ type CardMarketIndex struct {
 	MaxConcurrency int
 	exchangeRate   float64
 
+	// Optional field to select a single edition to go through
+	TargetEdition string
+
 	inventory mtgban.InventoryRecord
 
 	client *MKMClient
@@ -308,6 +311,9 @@ func (mkm *CardMarketIndex) scrape() error {
 
 	go func() {
 		for i := range list {
+			if mkm.TargetEdition != "" && mkm.TargetEdition != list[i].Name {
+				continue
+			}
 			mkm.printf("Processing %s (%d) %d/%d", list[i].Name, list[i].IdExpansion, i+1, len(list))
 			expansions <- i
 		}
