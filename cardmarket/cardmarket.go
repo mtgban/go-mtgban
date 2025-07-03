@@ -34,6 +34,8 @@ type CardMarketIndex struct {
 
 	inventory mtgban.InventoryRecord
 
+	priceGuide []PriceGuide
+
 	client *MKMClient
 	gameId int
 }
@@ -67,14 +69,14 @@ func NewScraperIndex(gameId int, appToken, appSecret string) (*CardMarketIndex, 
 	return &mkm, nil
 }
 
-func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, idExpansion int, priceGuide []PriceGuide) error {
+func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, idExpansion int) error {
 	products, err := mkm.client.MKMProductsInExpansion(idExpansion)
 	if err != nil {
 		return err
 	}
 
 	for _, product := range products {
-		err := mkm.processProduct(channel, &product, priceGuide)
+		err := mkm.processProduct(channel, &product)
 		if err != nil {
 			mkm.printf("product id %d returned %s", product.IdProduct, err)
 		}
@@ -82,7 +84,7 @@ func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, idExpans
 	return nil
 }
 
-func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct, priceGuide []PriceGuide) error {
+func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct) error {
 	var cardId string
 	var cardIdFoil string
 	var err error
@@ -173,18 +175,18 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	v.Set("language", "1")
 
 	var index int
-	for index = range priceGuide {
-		if priceGuide[index].IdProduct == product.IdProduct {
+	for index = range mkm.priceGuide {
+		if mkm.priceGuide[index].IdProduct == product.IdProduct {
 			break
 		}
 	}
 
 	// Sorted as availableIndexNames
 	prices := []float64{
-		priceGuide[index].LowPrice, priceGuide[index].TrendPrice,
+		mkm.priceGuide[index].LowPrice, mkm.priceGuide[index].TrendPrice,
 	}
 	foilprices := []float64{
-		priceGuide[index].FoilLowPrice, priceGuide[index].FoilTrendPrice,
+		mkm.priceGuide[index].FoilLowPrice, mkm.priceGuide[index].FoilTrendPrice,
 	}
 
 	co, err := mtgmatcher.GetUUID(cardId)
@@ -279,6 +281,7 @@ func (mkm *CardMarketIndex) scrape() error {
 	if err != nil {
 		return err
 	}
+	mkm.priceGuide = priceGuide
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
@@ -297,7 +300,7 @@ func (mkm *CardMarketIndex) scrape() error {
 		wg.Add(1)
 		go func() {
 			for i := range expansions {
-				err := mkm.processEdition(channel, list[i].IdExpansion, priceGuide)
+				err := mkm.processEdition(channel, list[i].IdExpansion)
 				if err != nil {
 					mkm.printf("expansion %s (id %d) returned %s", list[i].Name, list[i].IdExpansion, err.Error())
 				}
