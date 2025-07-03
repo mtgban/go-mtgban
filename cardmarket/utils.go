@@ -21,6 +21,7 @@ var filteredExpansionsTags = []string{
 	"SAWATARIX",
 	"Starcity Games: Creature Collection",
 	"Starcity",
+	"Street Clans",
 	"Three for One",
 	"Token",
 	"TokyoMTG Products",
