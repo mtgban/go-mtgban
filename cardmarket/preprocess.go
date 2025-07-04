@@ -769,6 +769,18 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			variant = number
 		}
 
+	case "Shadows over Innistrad":
+		if cardName == "Tamiyo's Journal" {
+			switch variant {
+			case "V.1", "V.2", "V.3", "V.4", "V.5", "V.6":
+				// Sorted out later in variants.go
+			default:
+				// Other languages have other numbers, but Scryfall only tracks
+				// the English ones
+				return nil, mtgmatcher.ErrUnsupported
+			}
+		}
+
 	case "Guilds of Ravanica: Extras",
 		"Ravnica Allegiance: Extras",
 		"War of the Spark: Extras":
