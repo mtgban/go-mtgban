@@ -891,6 +891,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		}
 
 	case "Secret Lair Drop Series: October Superdrop 2021",
+		"Secret Lair Drop Series: October Superdrop 2023",
 		"Secret Lair Drop Series: June Superdrop 2022",
 		"Secret Lair Drop Series: August Superdrop 2022":
 		variant = number
@@ -1003,6 +1004,17 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			variant = "Foil Etched"
 		}
 
+	case "Commander: Modern Horizons 3: Extras":
+		edition = "M3C"
+		switch variant {
+		case "V.2":
+			for _, card := range mtgmatcher.MatchInSetNumber(cardName, "M3C", number) {
+				if card.HasPromoType(mtgmatcher.PromoTypeRippleFoil) {
+					variant += " ripplefoil"
+				}
+			}
+		}
+
 	case "Mystical Archive":
 		switch variant {
 		case "V.1":
@@ -1090,7 +1102,11 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			}
 		} else if len(mtgmatcher.MatchInSet(cardName, "LTR")) > 0 {
 			edition = "LTR"
-			if ogVariant == "V.5" {
+			switch ogVariant {
+			case "V.2":
+				variant += " silverfoil"
+				// The other V.2 being extendedart are only for LTC
+			case "V.5":
 				variant += " serial"
 			}
 		}
