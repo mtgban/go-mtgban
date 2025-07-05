@@ -494,7 +494,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				found := false
 				// Look if the variation or the edition contain part of set name
 				for _, location := range []string{inCard.Variation, inCard.Edition} {
-					if !strings.Contains(location, "vs") {
+					if !strings.Contains(strings.ToLower(location), "vs") {
 						continue
 					}
 					fields := strings.Fields(location)
