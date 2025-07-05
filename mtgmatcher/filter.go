@@ -391,6 +391,10 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 		case inCard.Contains("Premier Play") || inCard.Contains("Regional Championship Qualifiers"):
 			switch {
 			case set.Name == "Pro Tour Promos":
+				// Special case for a card that could be in PR23
+				if inCard.Name == "Snapcaster Mage" && !inCard.Contains("Pro Tour") {
+					continue
+				}
 			case strings.HasPrefix(set.Name, "Regional Championship Qualifiers "+maybeYear):
 			default:
 				continue

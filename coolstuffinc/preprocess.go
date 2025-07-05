@@ -288,12 +288,16 @@ func card2promo(cardName, variant string) (string, string) {
 		edition = "PURL"
 		variant = "1"
 	case "Llanowar Elves":
-		if variant == "Friday Night Magic Promo" {
+		switch variant {
+		case "Friday Night Magic Promo":
 			edition = "FNM"
 			variant = "11"
-		} else if variant == "Open House Promo" {
+		case "Open House Promo":
 			edition = "PDOM"
 			variant = "168"
+		case "Retro Frame Tin Promo":
+			edition = "PDMU"
+			variant = "Retro Frame"
 		}
 	case "Masked Vandal":
 		edition = "KHM"
@@ -316,6 +320,40 @@ func card2promo(cardName, variant string) (string, string) {
 			edition = "PPRO"
 		} else if variant == "Regional Championship Qualifier 2023" {
 			edition = "PRCQ"
+		}
+	case "Avacyn's Pilgrim":
+		if variant == "2025 Festival Promo" {
+			edition = "PF25"
+		}
+	case "Counterspell":
+		if variant == "Festival # 0001" {
+			edition = "PF24"
+		}
+
+	case "Dig Through Time":
+		if variant == "Love Your Local Game Store Promo" {
+			edition = "PLG21"
+		}
+	case "Nicol Bolas",
+		"Earthquake":
+		if variant == "Japanese Magic x Duel Masters Promo" {
+			edition = "PDMA"
+		}
+	case "Sol Ring":
+		if variant == "Commander Promo" {
+			edition = "PF19"
+		}
+	case "Sword of Forge and Frontier":
+		if variant == "Magic Spotlight: Dragons" {
+			edition = "PSPL"
+		}
+	case "Sakura-Tribe Elder":
+		if variant == "Textless Victor Adame Minguez art" {
+			edition = "PLG24"
+		}
+	case "Terror of the Peaks":
+		if variant == "Magic Spotlight Series Atlanta 2025" {
+			edition = "PSPL"
 		}
 	}
 	return edition, variant
