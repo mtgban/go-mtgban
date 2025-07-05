@@ -95,6 +95,10 @@ var skuFixupTable = map[string]string{
 
 	// Glimpse, the Unthinkable
 	"MB2-0355": "MB2-594",
+
+	// Rograkh, Son of Rohgahh
+	"PPRO25-0002":  "PF25-11",
+	"FPPRO25-0002": "PF25-11",
 }
 
 // List of tags that need to be preserved in one way or another
