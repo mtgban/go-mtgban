@@ -278,9 +278,10 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 			}
 		case "Counterspell":
 			switch variant {
-			case "Festival Full Art",
-				"Marvel NYCC 2024 Borderless":
+			case "Festival Full Art":
 				edition = "PF24"
+			case "Marvel NYCC 2024 Borderless":
+				edition = "PURL"
 			}
 		case "Pyromancer's Gauntlet":
 			switch variant {
