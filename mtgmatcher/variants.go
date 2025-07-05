@@ -3772,6 +3772,7 @@ var lciVariants = map[string]map[string]string{
 		"borderless neon ink green":              "410f",
 		"borderless neon ink red":                "410e",
 		"neon yellow":                            "410b",
+		"bundle":                                 "410b",
 	},
 }
 
