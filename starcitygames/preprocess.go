@@ -278,7 +278,8 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 			}
 		case "Counterspell":
 			switch variant {
-			case "Festival Full Art":
+			case "Festival Full Art",
+				"Marvel NYCC 2024 Borderless":
 				edition = "PF24"
 			}
 		case "Pyromancer's Gauntlet":
@@ -293,6 +294,22 @@ func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, c
 		case "Commander's Sphere":
 			if variant == "Play Draft" {
 				edition = "PW24"
+			}
+		case "Sakura-Tribe Elder":
+			if variant == "Love Your LGS Textless" {
+				edition = "PLG24"
+			}
+		case "Wastes":
+			if variant == "Magic Academy Full Art" {
+				edition = "PLG25"
+			}
+		case "Avacyn's Pilgrim":
+			if variant == "Festival Full Art" {
+				edition = "PF25"
+			}
+		case "Ponder", "The First Sliver":
+			if variant == "Festival" {
+				edition = "PLG25"
 			}
 		}
 	case "Unfinity":
