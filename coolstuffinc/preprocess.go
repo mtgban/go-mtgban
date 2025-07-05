@@ -39,6 +39,10 @@ var nameTable = map[string]string{
 	"Yennet, Cryptic Sovereign":              "Yennett, Cryptic Sovereign",
 	"Invasion of Moag // Bloomweaver Dryads": "Invasion of Moag // Bloomwielder Dryads",
 	"Bene Supremo":                           "Greater Good",
+	"Ambitious Farmhand // Seasoned Cather":  "Ambitious Farmhand // Seasoned Cathar",
+	"Maalfield Twins":                        "Maalfeld Twins",
+	"Environmental Studies":                  "Environmental Sciences",
+	"Proficient Pryodancer":                  "Proficient Pyrodancer",
 }
 
 func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
