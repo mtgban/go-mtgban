@@ -227,6 +227,10 @@ func (c *InputCard) isSpecificUnsupported() bool {
 	// Erraneous release information
 	case "Zombify":
 		return c.Contains("Game Night")
+	default:
+		if Contains(c.Name, "Sticker Sheet") {
+			return true
+		}
 	}
 	return false
 }
