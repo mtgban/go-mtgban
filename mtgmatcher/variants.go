@@ -4517,6 +4517,10 @@ var multiPromosVariants = map[string]map[string]string{
 		"eldritch": "171",
 		"crimson":  "221",
 	},
+	"Leyline of the Void": {
+		"duskmourn": "106",
+		"2020":      "107",
+	},
 	// not listed here: all the temples
 }
 
@@ -4528,6 +4532,7 @@ var multiPromosTable = map[string]map[string]map[string]string{
 	"Core Set 2020 Promos":               multiPromosVariants,
 	"Core Set 2021 Promos":               multiPromosVariants,
 	"Dominaria Promos":                   multiPromosVariants,
+	"Duskmourn: House of Horror Promos":  multiPromosVariants,
 	"Eldritch Moon Promos":               multiPromosVariants,
 	"Fate Reforged Promos":               multiPromosVariants,
 	"Foundations":                        multiPromosVariants,
