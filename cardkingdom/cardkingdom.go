@@ -73,22 +73,26 @@ func (ck *Cardkingdom) scrape() error {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
-			if skipErrors {
+			ogErr := err
+			cardId, err = mtgmatcher.MatchId(card.ScryfallId, theCard.Foil, strings.Contains(card.Variation, "Etched"))
+			if err != nil {
+				if skipErrors {
+					continue
+				}
+				ck.printf("%v", ogErr)
+				ck.printf("%q", theCard)
+				ck.printf("%q", card)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						ck.printf("- %s", card)
+					}
+				}
 				continue
 			}
-			ck.printf("%v", err)
-			ck.printf("%q", theCard)
-			ck.printf("%q", card)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					ck.printf("- %s", card)
-				}
-			}
-			continue
 		}
 
 		var sellPrice float64
