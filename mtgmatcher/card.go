@@ -920,8 +920,10 @@ func (c *InputCard) shouldIgnoreNumber(setName, num string) bool {
 	}
 
 	// Unfinity numbers could refer to Attractions
-	if Contains(c.Edition, "unf") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
-		return true
+	if Contains(c.Edition, "unf") {
+		if hasPrinting(c.Name, "field", "attractionLights", "UNF") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
+			return true
+		}
 	}
 
 	// If the number is the same as in the edition, there might be
