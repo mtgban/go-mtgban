@@ -783,6 +783,9 @@ func adjustEdition(inCard *InputCard) {
 			edition = backend.Sets["TSR"].Name
 		}
 	default:
+		edition = strings.TrimPrefix(edition, "Magic: The Gathering - ")
+		edition = strings.TrimPrefix(edition, "Magic: the Gathering - ")
+
 		// Cut the edition at the first dash, but avoid Prerelease and PromoPack and MB1/List cards
 		// since they are often separated with a dash, but are processed elsewhere
 		// Test for "- " and " -" to avoid catching dashes in the name of the edition
