@@ -2039,6 +2039,17 @@ var ed5Variants = map[string]map[string]string{
 	},
 }
 
+var finVariants = map[string]map[string]string{
+	"Traveling Chocobo": {
+		"borderless":      "406",
+		"neon ink black":  "551",
+		"neon ink yellow": "551a",
+		"neon ink pink":   "551b",
+		"neon ink blue":   "551c",
+		"neon ink green":  "551d",
+	},
+}
+
 var ed4Variants = map[string]map[string]string{
 	"Forest": {
 		"a":                       "376",
@@ -4322,6 +4333,7 @@ var VariantsTable = map[string]map[string]map[string]string{
 	"European Land Program":               pelpVariants,
 	"Fallen Empires":                      femVariants,
 	"Fifth Edition":                       ed5Variants,
+	"Final Fantasy":                       finVariants,
 	"Foreign Black Border":                ed3Variants,
 	"Fourth Edition Foreign Black Border": ed4Variants,
 	"Fourth Edition":                      ed4Variants,
