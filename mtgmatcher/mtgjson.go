@@ -179,12 +179,11 @@ func (c *Card) HasPromoType(pt string) bool {
 
 // Check if a dual-faced card has the same for both faces
 func (c *Card) IsDFCSameName() bool {
-	idx := strings.Index(c.Name, " // ")
-	if idx < 0 {
+	if !strings.Contains(c.Name, " // ") {
 		return false
 	}
-	left := c.Name[:idx]
-	right := c.Name[idx+4:]
+	left := c.Name[:len(c.Name)/2-2]
+	right := c.Name[len(c.Name)/2+2:]
 	return left == right
 }
 
