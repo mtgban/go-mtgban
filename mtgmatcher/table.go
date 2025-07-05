@@ -102,6 +102,7 @@ var setAllowedForTokens = []string{
 	"ARB",
 	"BFZ",
 	"BNG",
+	"CLB",
 	"DKA",
 	"DMU",
 	"DOM",
