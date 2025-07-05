@@ -44,6 +44,7 @@ var EditionTable = map[string]string{
 
 	"FINAL FANTASY: Through the Ages": "Final Fantasy: Through the Ages",
 	"FINAL FANTASY":                   "Final Fantasy",
+	"FINAL FANTASY: Promos":           "Final Fantasy Promos",
 
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
 	"Outlaws of Thunder Junction The Big Score":  "The Big Score",
