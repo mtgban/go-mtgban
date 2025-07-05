@@ -17,6 +17,8 @@ type Cardkingdom struct {
 	Partner     string
 	PreserveOOS bool
 
+	client *CKClient
+
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -24,10 +26,19 @@ type Cardkingdom struct {
 	buylist   mtgban.BuylistRecord
 }
 
+func NewScraperLocal(localPath string) *Cardkingdom {
+	ck := Cardkingdom{}
+	ck.inventory = mtgban.InventoryRecord{}
+	ck.buylist = mtgban.BuylistRecord{}
+	ck.client = NewClientLocal(localPath)
+	return &ck
+}
+
 func NewScraper() *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
+	ck.client = NewCKClient()
 	return &ck
 }
 
@@ -38,8 +49,7 @@ func (ck *Cardkingdom) printf(format string, a ...interface{}) {
 }
 
 func (ck *Cardkingdom) scrape() error {
-	ckClient := NewCKClient()
-	pricelist, err := ckClient.GetPriceList()
+	pricelist, err := ck.client.GetPriceList()
 	if err != nil {
 		return err
 	}

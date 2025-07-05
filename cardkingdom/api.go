@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
@@ -50,7 +52,8 @@ const (
 )
 
 type CKClient struct {
-	client *http.Client
+	client    *http.Client
+	localPath string
 }
 
 func NewCKClient() *CKClient {
@@ -59,8 +62,18 @@ func NewCKClient() *CKClient {
 	return &ck
 }
 
+func NewClientLocal(localPath string) *CKClient {
+	ck := CKClient{}
+	ck.localPath = localPath
+	return &ck
+}
+
 func (ck *CKClient) GetPriceList() ([]CKCard, error) {
-	return ck.getList(ckPricelistURL)
+	link := ckPricelistURL
+	if ck.localPath != "" {
+		link = ck.localPath
+	}
+	return ck.getList(link)
 }
 
 func (ck *CKClient) GetSealedList() ([]CKCard, error) {
@@ -68,23 +81,36 @@ func (ck *CKClient) GetSealedList() ([]CKCard, error) {
 }
 
 func (ck *CKClient) getList(link string) ([]CKCard, error) {
-	req, err := http.NewRequest("GET", link, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("User-Agent", ckUserAgent)
+	var reader io.Reader
+	if strings.HasPrefix(link, "http") {
+		req, err := http.NewRequest("GET", link, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Add("User-Agent", ckUserAgent)
 
-	resp, err := ck.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+		resp, err := ck.client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode == 429 {
-		return ck.getList(ckBackupURL)
+		if resp.StatusCode == 429 {
+			return ck.getList(ckBackupURL)
+		}
+
+		reader = resp.Body
+	} else {
+		file, err := os.Open(link)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+
+		reader = file
 	}
 
-	data, err := io.ReadAll(resp.Body)
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
