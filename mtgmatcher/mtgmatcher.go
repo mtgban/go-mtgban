@@ -1257,23 +1257,6 @@ func adjustEdition(inCard *InputCard) {
 			if inCard.isBaB() {
 				variation = "Launch"
 			}
-		case "Arcane Signet":
-			switch {
-			case inCard.Contains("Festival"),
-				inCard.Contains("MagicFest"),
-				inCard.Contains("30th"),
-				inCard.Contains("Magic 30"),
-				inCard.Contains("Play") && inCard.Contains("Draft"):
-				edition = "30th Anniversary Misc Promos"
-
-				if inCard.isEtched() {
-					variation = "1F★"
-				} else if inCard.isRetro() || inCard.Contains("Play") || Contains(variation, "1P") {
-					variation = "1P"
-				} else {
-					variation = "1F"
-				}
-			}
 		case "Hangarback Walker":
 			if inCard.isReskin() || inCard.isGenericPromo() || strings.Contains(inCard.Edition, "LGS") {
 				edition = "Love Your LGS 2020"
