@@ -193,6 +193,9 @@ func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
 			}
 		case strings.Contains(variation, "Ugin's Fate"):
 			edition = "UGIN"
+		case strings.Contains(setCode, "DFT") && strings.Contains(card.Name, "Raceway"):
+			edition = "DFT"
+			variation += " Bundle"
 		}
 	case "Mystery Booster/The List":
 		edition = card.Edition
