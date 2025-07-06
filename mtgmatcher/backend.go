@@ -343,7 +343,7 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Rename DFCs into a single name
-			dfcSameName := card.IsDFCSameName()
+			dfcSameName := IsDFCSameName(card.Name)
 			if dfcSameName {
 				card.Name = strings.Split(card.Name, " // ")[0]
 			}

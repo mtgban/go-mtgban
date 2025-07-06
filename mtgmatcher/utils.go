@@ -369,3 +369,13 @@ func CardReleaseDate(cardId string) (time.Time, error) {
 
 	return time.Parse("2006-01-02", releaseDate)
 }
+
+// Check if a dual-faced card has the same for both faces
+func IsDFCSameName(name string) bool {
+	if !strings.Contains(name, " // ") {
+		return false
+	}
+	left := name[:len(name)/2-2]
+	right := name[len(name)/2+2:]
+	return left == right
+}

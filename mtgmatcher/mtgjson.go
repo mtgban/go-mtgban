@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"strings"
 )
 
 type Sheet struct {
@@ -175,16 +174,6 @@ func (c *Card) HasFrameEffect(fe string) bool {
 
 func (c *Card) HasPromoType(pt string) bool {
 	return slices.Contains(c.PromoTypes, pt)
-}
-
-// Check if a dual-faced card has the same for both faces
-func (c *Card) IsDFCSameName() bool {
-	if !strings.Contains(c.Name, " // ") {
-		return false
-	}
-	left := c.Name[:len(c.Name)/2-2]
-	right := c.Name[len(c.Name)/2+2:]
-	return left == right
 }
 
 const (
