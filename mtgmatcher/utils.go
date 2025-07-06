@@ -350,3 +350,22 @@ func GCD(a, b int) int {
 func LCM(a, b int) int {
 	return a * b / GCD(a, b)
 }
+
+// Retrieve the card release date
+func CardReleaseDate(cardId string) (time.Time, error) {
+	co, err := GetUUID(cardId)
+	if err != nil {
+		return time.Time{}, err
+	}
+	releaseDate := co.OriginalReleaseDate
+
+	if releaseDate == "" {
+		set, err := GetSet(co.SetCode)
+		if err != nil {
+			return time.Time{}, err
+		}
+		releaseDate = set.ReleaseDate
+	}
+
+	return time.Parse("2006-01-02", releaseDate)
+}

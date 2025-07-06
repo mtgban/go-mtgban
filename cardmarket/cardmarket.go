@@ -121,7 +121,6 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			} else if cardId == "" {
 				cardId = cardIdFoil
 			}
-			foundWithNewSystem = true
 			break
 		}
 
