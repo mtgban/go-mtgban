@@ -79,6 +79,31 @@ var gameday2editionTable = map[string]string{
 	"Supplant Form":            "PFRF",
 }
 
+func checkLoadedId(cardName string, productId int) []string {
+	cardName = mtgmatcher.SplitVariants(cardName)[0]
+	cardName = strings.TrimSuffix(cardName, " Token")
+	testProductId := fmt.Sprint(productId)
+
+	possibleIds, err := mtgmatcher.SearchContains(cardName)
+	if err != nil {
+		return nil
+	}
+
+	var ids []string
+	for _, possibleId := range possibleIds {
+		co, err := mtgmatcher.GetUUID(possibleId)
+		if err != nil {
+			continue
+		}
+
+		if co.Identifiers["mcmId"] == testProductId {
+			ids = append(ids, co.UUID)
+		}
+	}
+
+	return ids
+}
+
 func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error) {
 	var foil bool
 
