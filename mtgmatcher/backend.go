@@ -343,9 +343,13 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Rename DFCs into a single name
+			// All names need to be redacted
 			dfcSameName := IsDFCSameName(card.Name)
 			if dfcSameName {
 				card.Name = strings.Split(card.Name, " // ")[0]
+				card.FlavorName = strings.Split(card.FlavorName, " // ")[0]
+				card.FaceName = strings.Split(card.FaceName, " // ")[0]
+				card.FaceFlavorName = strings.Split(card.FaceFlavorName, " // ")[0]
 			}
 
 			for i, name := range []string{card.FaceName, card.FlavorName, card.FaceFlavorName} {
@@ -365,10 +369,6 @@ func (ap AllPrintings) Load() cardBackend {
 				// Skip faces of DFCs with same names that aren't reskin version of other cars
 				if dfcSameName && card.FlavorName == "" {
 					continue
-				}
-				// Rename the sub-name of a DFC card
-				if dfcSameName {
-					name = strings.Split(name, " // ")[0]
 				}
 
 				// If the name is unique, keep track of the numbers so that they
