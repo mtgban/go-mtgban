@@ -1031,15 +1031,25 @@ func BuildSealedProductMap(idName string) map[int][]string {
 		// Some products do not carry an id because they are already assigned
 		// For specific cases, look for them since we have the canonical number
 		if id == "" && co.SetCode == "SLD" && strings.HasSuffix(co.Name, " Foil") {
-			uuids, err := SearchSealedEquals(strings.TrimSuffix(co.Name, " Foil"))
-			if err != nil {
-				continue
+			name := co.Name
+
+			// This list of tags represents products with separate entries, but
+			// with the same listing. For example, there is no Textured because
+			// there isn't any drop containing non-Texured foil versions of the cards
+			for _, tag := range []string{"Foil", "Rainbow", "Galaxy"} {
+				name = strings.TrimSuffix(name, tag)
+				name = strings.TrimSpace(name)
+
+				uuids, err := SearchSealedEquals(name)
+				if err != nil {
+					continue
+				}
+				subco, found := backend.UUIDs[uuids[0]]
+				if !found {
+					continue
+				}
+				id = subco.Identifiers[idName]
 			}
-			subco, found := backend.UUIDs[uuids[0]]
-			if !found {
-				continue
-			}
-			id = subco.Identifiers[idName]
 		}
 
 		idNum, err := strconv.Atoi(id)
