@@ -91,8 +91,6 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 		} else if bp.Id == 29053 {
 			variant = "11"
 		}
-	case "Secret Lair Drop Series":
-		variant = number
 	case "Champs and States":
 		if cardName == "Crucible of Worlds" {
 			edition = "World Championship Promos"
@@ -144,13 +142,10 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 				variant += "s"
 			}
 		}
-	case "Secret Lair Showdown":
-		switch cardName {
-		case "Relentless Rats":
-			variant = number
-		}
 	default:
-		if strings.HasSuffix(edition, "Collectors") {
+		if strings.HasPrefix(edition, "Secret Lair") {
+			variant = number
+		} else if strings.HasSuffix(edition, "Collectors") {
 			variant = number
 		} else if strings.HasPrefix(edition, "WCD") ||
 			strings.HasPrefix(edition, "Pro Tour 1996") {
