@@ -235,6 +235,14 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			if strings.Contains(strings.ToLower(product.User.Name), "day ready") {
 				sellerName = availableMarketNames[2]
 			}
+		} else {
+			// Skip non-professional users with excessive shipping options due to geo
+			if product.User.UserType == "normal" {
+				switch product.User.CountryCode {
+				case "GB", "ES", "CH":
+					continue
+				}
+			}
 		}
 
 		channel <- resultChan{

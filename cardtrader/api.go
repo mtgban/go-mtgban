@@ -141,6 +141,8 @@ type Product struct {
 		Name        string `json:"username"`
 		SinglesZero bool   `json:"can_sell_via_hub"`
 		SealedZero  bool   `json:"can_sell_sealed_with_ct_zero"`
+		CountryCode string `json:"country_code"`
+		UserType    string `json:"user_type"`
 	} `json:"user"`
 	Price CTPrice `json:"price"`
 
