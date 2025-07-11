@@ -1017,6 +1017,8 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag string, numbers []string) {
 	var duplicates []Card
 
+	var extraNums, extraIds []string
+
 	for i := range sets[code].Cards {
 		// Skip unneeded
 		if !slices.Contains(numbers, sets[code].Cards[i].Number) {
@@ -1024,6 +1026,7 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 		}
 
 		mainUUID := sets[code].Cards[i].UUID
+		ogNum := sets[code].Cards[i].Number
 
 		// Update with new info
 		dupeCard := sets[code].Cards[i]
@@ -1056,9 +1059,20 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 				Foil:    co.Foil,
 			}
 		}
+
+		// Keep track of duplicates that *also* need a foil spinoff
+		idx := slices.Index(foilDupes[code], ogNum)
+		if idx != -1 {
+			extraNums = append(extraNums, dupeCard.Number)
+			extraIds = append(extraIds, tcgIds[code][idx])
+		}
 	}
 
 	sets[code].Cards = append(sets[code].Cards, duplicates...)
+
+	if len(extraNums) > 0 {
+		spinoffFoils(sets, uuids, code, extraNums, extraIds)
+	}
 }
 
 func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string, numbers []string, tcgIds []string) {
@@ -1113,7 +1127,11 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 			// Signal that the TCG SKUs from MTGJSON are not reliable
 			dupeCard.Identifiers["needsNewTCGSKUs"] = "true"
 		}
-		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
+		// In case we are duplicating a card that was *already* duplicated
+		_, found = dupeCard.Identifiers["originalScryfallNumber"]
+		if !found {
+			dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
+		}
 		dupeCard.Number += SuffixSpecial
 		dupeCard.Finishes = []string{"foil"}
 		dupeCard.Variations = []string{ogUUID}
