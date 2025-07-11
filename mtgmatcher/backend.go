@@ -637,6 +637,8 @@ func (ap AllPrintings) Load() cardBackend {
 				Card:    card,
 				Sealed:  true,
 				Edition: set.Name,
+				Foil:    strings.Contains(product.Name, "Foil") && !strings.Contains(product.Name, "Non"),
+				Etched:  strings.Contains(product.Name, "Etched"),
 			}
 		}
 	}
