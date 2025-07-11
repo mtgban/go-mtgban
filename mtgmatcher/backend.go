@@ -627,6 +627,8 @@ func (ap AllPrintings) Load() cardBackend {
 				// Will be filled later
 				SourceProducts: map[string][]string{},
 				Images:         map[string]string{},
+
+				OriginalReleaseDate: product.ReleaseDate,
 			}
 
 			card.Images["full"] = generateImageURL(card, "normal")

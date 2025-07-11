@@ -76,6 +76,7 @@ type Set struct {
 		Identifiers map[string]string          `json:"identifiers"`
 		Name        string                     `json:"name"`
 		CardCount   int                        `json:"cardCount"`
+		ReleaseDate string                     `json:"releaseDate"`
 		Subtype     string                     `json:"subtype"`
 		UUID        string                     `json:"uuid"`
 	} `json:"sealedProduct"`
