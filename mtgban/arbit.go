@@ -277,7 +277,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			if slices.Contains(filterConditions, invEntry.Conditions) {
 				continue
 			}
-			if filterSellers != nil && !slices.Contains(filterSellers, invEntry.SellerName) {
+			if filterSellers != nil && !slices.Contains(filterSellers, invEntry.SellerName) && !slices.Contains(filterSellers, invEntry.CustomFields["SubSellerName"]) {
 				continue
 			}
 			if filterBundle && !invEntry.Bundle {
