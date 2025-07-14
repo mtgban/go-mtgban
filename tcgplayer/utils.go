@@ -53,9 +53,7 @@ func GenerateProductURL(productId int, printing, affiliate, condition, language 
 	} else {
 		v.Set("Language", "all")
 	}
-
-	// Set this filter only if true, there is a bug on tcgp where it switches
-	// to true if direct has any value set
+	v.Set("direct", "false")
 	if isDirect {
 		v.Set("direct", "true")
 	}
