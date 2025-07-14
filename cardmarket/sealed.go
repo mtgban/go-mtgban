@@ -75,7 +75,7 @@ var notSealedComments = []string{
 }
 
 func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuids []string) error {
-	u, err := url.Parse("https://www.cardmarket.com/en/Magic/Products/Search")
+	u, err := url.Parse("https://www.cardmarket.com/en/Magic/Products")
 	if err != nil {
 		return err
 	}
@@ -117,13 +117,16 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 			}
 
 			v := url.Values{}
-			v.Set("searchString", article.Product.Name)
 			if mkm.Affiliate != "" {
 				v.Set("utm_source", mkm.Affiliate)
 				v.Set("utm_medium", "text")
 				v.Set("utm_campaign", "card_prices")
 			}
 			v.Set("language", "1")
+			v.Set("idProduct", fmt.Sprint(idProduct))
+			if article.IsFoil {
+				v.Set("isFoil", "Y")
+			}
 			u.RawQuery = v.Encode()
 
 			out := responseChan{
