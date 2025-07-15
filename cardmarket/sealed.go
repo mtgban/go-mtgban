@@ -2,7 +2,6 @@ package cardmarket
 
 import (
 	"fmt"
-	"net/url"
 	"slices"
 	"sync"
 	"time"
@@ -75,11 +74,6 @@ var notSealedComments = []string{
 }
 
 func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuids []string) error {
-	u, err := url.Parse("https://www.cardmarket.com/en/Magic/Products")
-	if err != nil {
-		return err
-	}
-
 	var done bool
 	var i int
 	for !done {
@@ -116,19 +110,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 				continue
 			}
 
-			v := url.Values{}
-			if mkm.Affiliate != "" {
-				v.Set("utm_source", mkm.Affiliate)
-				v.Set("utm_medium", "text")
-				v.Set("utm_campaign", "card_prices")
-			}
-			v.Set("language", "1")
-			v.Set("idProduct", fmt.Sprint(idProduct))
-			if article.IsFoil {
-				v.Set("isFoil", "Y")
-			}
-			u.RawQuery = v.Encode()
-
+			link := BuildURL(article.IdProduct, mkm.Affiliate, article.IsFoil)
 			out := responseChan{
 				cardId: uuid,
 				entry: mtgban.InventoryEntry{
@@ -136,7 +118,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 					Price:      article.Price * mkm.exchangeRate,
 					Quantity:   article.Count,
 					SellerName: article.Seller.Username,
-					URL:        u.String(),
+					URL:        link,
 					OriginalId: fmt.Sprint(article.IdProduct),
 					InstanceId: fmt.Sprint(article.IdArticle),
 				},

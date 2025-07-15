@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -182,4 +183,32 @@ func SanitizeProductList(productList []ProductList) {
 			}
 		}
 	}
+}
+
+func BuildURL(idProduct int, affiliate string, foil bool) string {
+	u, err := url.Parse("https://www.cardmarket.com/en/Products")
+	if err != nil {
+		return ""
+	}
+
+	v := url.Values{}
+
+	v.Set("idProduct", fmt.Sprint(idProduct))
+
+	// Set English as preferred language, it switches to the default one
+	// automatically in case the card has is non-English only
+	v.Set("language", "1")
+
+	if foil {
+		v.Set("isFoil", "Y")
+	}
+
+	if affiliate != "" {
+		v.Set("utm_source", affiliate)
+		v.Set("utm_medium", "text")
+		v.Set("utm_campaign", "card_prices")
+	}
+
+	u.RawQuery = v.Encode()
+	return u.String()
 }

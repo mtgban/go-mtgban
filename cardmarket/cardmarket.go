@@ -3,7 +3,6 @@ package cardmarket
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -193,20 +192,6 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		return errors.New("unsupported game")
 	}
 
-	link, err := url.Parse("https://www.cardmarket.com" + product.Website)
-	if err != nil {
-		return err
-	}
-	v := url.Values{}
-	if mkm.Affiliate != "" {
-		v.Set("utm_source", mkm.Affiliate)
-		v.Set("utm_medium", "text")
-		v.Set("utm_campaign", "card_prices")
-	}
-	// Set English as preferred language, switches to the default one
-	// in case the card has a foreign-only printing available
-	v.Set("language", "1")
-
 	var index int
 	for index = range mkm.priceGuide {
 		if mkm.priceGuide[index].IdProduct == product.IdProduct {
@@ -231,7 +216,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	// if there is a foil printing, and add prices from the foilprices array.
 	// If a card is foil-only or is etched, then we just use foilprices data.
 	if !co.Foil && !co.Etched {
-		link.RawQuery = v.Encode()
+		link := BuildURL(product.IdProduct, mkm.Affiliate, false)
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
@@ -245,7 +230,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 					Conditions: "NM",
 					Price:      prices[i] * mkm.exchangeRate,
 					Quantity:   product.CountArticles - product.CountFoils,
-					URL:        link.String(),
+					URL:        link,
 					SellerName: availableIndexNames[i],
 					OriginalId: fmt.Sprint(product.IdProduct),
 				},
@@ -255,8 +240,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 
 		if foilprices[0] != 0 || foilprices[1] != 0 {
-			v.Set("isFoil", "Y")
-			link.RawQuery = v.Encode()
+			link := BuildURL(product.IdProduct, mkm.Affiliate, true)
 
 			// If the id is the same it means that the card was really nonfoil-only
 			if cardId != cardIdFoil {
@@ -271,7 +255,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 							Conditions: "NM",
 							Price:      foilprices[i] * mkm.exchangeRate,
 							Quantity:   product.CountFoils,
-							URL:        link.String(),
+							URL:        link,
 							SellerName: availableIndexNames[i],
 							OriginalId: fmt.Sprint(product.IdProduct),
 						},
@@ -282,8 +266,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			}
 		}
 	} else {
-		v.Set("isFoil", "Y")
-		link.RawQuery = v.Encode()
+		link := BuildURL(product.IdProduct, mkm.Affiliate, true)
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 || product.CountFoils == 0 {
@@ -296,7 +279,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 					Conditions: "NM",
 					Price:      foilprices[i] * mkm.exchangeRate,
 					Quantity:   product.CountFoils,
-					URL:        link.String(),
+					URL:        link,
 					SellerName: availableIndexNames[i],
 					OriginalId: fmt.Sprint(product.IdProduct),
 				},
