@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -275,6 +274,29 @@ func (tcg *TCGPlayerMarket) scrape() error {
 
 					skus = skus[:0]
 					for _, sku := range altSkus {
+						lang, found := map[int]string{
+							1:  "ENGLISH",
+							2:  "CHINESE SIMPLIFIED",
+							3:  "CHINESE TRADITIONAL",
+							4:  "FRENCH",
+							5:  "GERMAN",
+							6:  "ITALIAN",
+							7:  "JAPANESE",
+							8:  "KOREAN",
+							9:  "PORTUGUESE BRAZIL",
+							10: "RUSSIAN",
+							11: "SPANISH",
+						}[sku.LanguageId]
+						if !found {
+							continue
+						}
+
+						// Check for language early because we cannot have
+						// duplicated sku ids, while the card may very well do
+						if !mtgmatcher.Equals(lang, card.Language) {
+							continue
+						}
+
 						printing := "NORMAL"
 						if sku.PrintingId == 2 {
 							printing = "FOIL"
@@ -293,7 +315,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 
 						skus = append(skus, TCGSku{
 							Condition: cond,
-							Language:  strings.ToUpper(card.Language),
+							Language:  lang,
 							Printing:  printing,
 							ProductId: id,
 							SkuId:     sku.SkuId,
