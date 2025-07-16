@@ -188,6 +188,7 @@ var sldJPNLangDupes = []string{
 	"1114", "1115", "1116", "1117",
 	// Miku Sakura Superstar
 	"1587", "1594", "1596", "1597", "805", "808",
+	"1587★", "1594★", "1596★", "1597★",
 	// Miku Digital Sensation
 	"1592", "1595", "1599", "1603", "1604", "1607", "806",
 	// Miku Electric Entourage
