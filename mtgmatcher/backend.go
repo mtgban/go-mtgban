@@ -1072,8 +1072,14 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 		dupeCard := sets[code].Cards[i]
 		ogUUID := dupeCard.UUID
 
+		// Load the original number if available, or use the main one
+		ogNum, found := dupeCard.Identifiers["originalScryfallNumber"]
+		if !found {
+			ogNum = dupeCard.Number
+		}
+
 		// Skip unneeded (just preserve the card as-is)
-		if !slices.Contains(numbers, sets[code].Cards[i].Number) {
+		if !slices.Contains(numbers, ogNum) {
 			newCardsArray = append(newCardsArray, dupeCard)
 			continue
 		}
@@ -1109,11 +1115,17 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 			}
 
 			dupeCard.Identifiers = newIdentifiers
-			dupeCard.Identifiers["tcgplayerProductId"] = tcgIds[slices.Index(numbers, sets[code].Cards[i].Number)]
+			dupeCard.Identifiers["tcgplayerProductId"] = tcgIds[slices.Index(numbers, ogNum)]
 			// Signal that the TCG SKUs from MTGJSON are not reliable
 			dupeCard.Identifiers["needsNewTCGSKUs"] = "true"
 		}
-		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
+
+		// In case we are duplicating a card that was *already* duplicated
+		_, found = dupeCard.Identifiers["originalScryfallNumber"]
+		if !found {
+			dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
+		}
+
 		dupeCard.Number += SuffixSpecial
 		dupeCard.Finishes = []string{"foil"}
 		dupeCard.Variations = []string{ogUUID}
