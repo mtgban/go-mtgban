@@ -350,6 +350,7 @@ func (ap AllPrintings) Load() cardBackend {
 				card.FlavorName = strings.Split(card.FlavorName, " // ")[0]
 				card.FaceName = strings.Split(card.FaceName, " // ")[0]
 				card.FaceFlavorName = strings.Split(card.FaceFlavorName, " // ")[0]
+				card.Identifiers["isDFCSameName"] = "true"
 			}
 
 			for i, name := range []string{card.FaceName, card.FlavorName, card.FaceFlavorName} {
