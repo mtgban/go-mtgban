@@ -116,6 +116,7 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 					InstanceId: fmt.Sprint(product.Id),
 					CustomFields: map[string]string{
 						"SubSellerName": product.User.Name,
+						"SubSellerGeo":  product.User.CountryCode,
 					},
 				},
 			}
