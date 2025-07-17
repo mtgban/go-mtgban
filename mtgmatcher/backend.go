@@ -663,20 +663,30 @@ func (ap AllPrintings) Load() cardBackend {
 	var names, fullNames, lowerNames []string
 	var sealed, fullSealed, lowerSealed []string
 	for uuid, card := range uuids {
-		norm := Normalize(card.Name)
-		_, found := hashes[norm]
-		if !found {
-			if card.Sealed {
-				sealed = append(sealed, norm)
-				fullSealed = append(fullSealed, card.Name)
-				lowerSealed = append(lowerSealed, strings.ToLower(card.Name))
-			} else {
-				names = append(names, norm)
-				fullNames = append(fullNames, card.Name)
-				lowerNames = append(lowerNames, strings.ToLower(card.Name))
+		namesToAdd := []string{card.Name}
+		if card.Identifiers["isDFCSameName"] == "true" {
+			namesToAdd = append(namesToAdd, card.Name+" // "+card.Name)
+			if card.FlavorName != "" {
+				namesToAdd = append(namesToAdd, card.FlavorName+" // "+card.FlavorName)
 			}
 		}
-		hashes[norm] = append(hashes[norm], uuid)
+
+		for _, nameToAdd := range namesToAdd {
+			norm := Normalize(nameToAdd)
+			_, found := hashes[norm]
+			if !found {
+				if card.Sealed {
+					sealed = append(sealed, norm)
+					fullSealed = append(fullSealed, card.Name)
+					lowerSealed = append(lowerSealed, strings.ToLower(card.Name))
+				} else {
+					names = append(names, norm)
+					fullNames = append(fullNames, nameToAdd)
+					lowerNames = append(lowerNames, strings.ToLower(nameToAdd))
+				}
+			}
+			hashes[norm] = append(hashes[norm], uuid)
+		}
 	}
 	// Add all alternative names too
 	var altNames []string
