@@ -110,7 +110,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 				continue
 			}
 
-			link := BuildURL(article.IdProduct, mkm.Affiliate, article.IsFoil)
+			link := BuildURL(article.IdProduct, GameIdMagic, mkm.Affiliate, article.IsFoil)
 			out := responseChan{
 				cardId: uuid,
 				entry: mtgban.InventoryEntry{

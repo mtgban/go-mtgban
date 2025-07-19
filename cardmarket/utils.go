@@ -185,8 +185,18 @@ func SanitizeProductList(productList []ProductList) {
 	}
 }
 
-func BuildURL(idProduct int, affiliate string, foil bool) string {
-	u, err := url.Parse("https://www.cardmarket.com/en/Products")
+func BuildURL(idProduct, idGame int, affiliate string, foil bool) string {
+	game := ""
+	switch idGame {
+	case GameIdMagic:
+		game = "Magic"
+	case GameIdLorcana:
+		game = "Lorcana"
+	default:
+		return ""
+	}
+
+	u, err := url.Parse(fmt.Sprintf("https://www.cardmarket.com/en/%s/Products", game))
 	if err != nil {
 		return ""
 	}

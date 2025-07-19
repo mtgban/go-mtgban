@@ -216,7 +216,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	// if there is a foil printing, and add prices from the foilprices array.
 	// If a card is foil-only or is etched, then we just use foilprices data.
 	if !co.Foil && !co.Etched {
-		link := BuildURL(product.IdProduct, mkm.Affiliate, false)
+		link := BuildURL(product.IdProduct, mkm.gameId, mkm.Affiliate, false)
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
@@ -240,7 +240,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 
 		if foilprices[0] != 0 || foilprices[1] != 0 {
-			link := BuildURL(product.IdProduct, mkm.Affiliate, true)
+			link := BuildURL(product.IdProduct, mkm.gameId, mkm.Affiliate, true)
 
 			// If the id is the same it means that the card was really nonfoil-only
 			if cardId != cardIdFoil {
@@ -266,7 +266,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			}
 		}
 	} else {
-		link := BuildURL(product.IdProduct, mkm.Affiliate, true)
+		link := BuildURL(product.IdProduct, mkm.gameId, mkm.Affiliate, true)
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 || product.CountFoils == 0 {
