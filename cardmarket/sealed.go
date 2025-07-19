@@ -78,7 +78,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 	var i int
 	for !done {
 		// We process a tenth of the typical request because we only need the first few results
-		articles, err := mkm.client.MKMSimpleArticles(idProduct, true, i, mkmMaxEntities/10)
+		articles, err := mkm.client.MKMSimpleArticles(idProduct, true, i, MaxEntities/10)
 		if err != nil {
 			return err
 		}
