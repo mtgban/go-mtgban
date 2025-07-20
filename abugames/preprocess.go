@@ -251,8 +251,13 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		if len(mtgmatcher.MatchInSetNumber(cardName, "SLC", card.Number)) > 0 {
 			edition = "SLC"
 			variation = card.Number
-		} else if card.Number != "" {
-			variation += " " + card.Number
+		} else {
+			// Check if variation contains a number as it's usually more
+			// accurate. If not, check the card.Number property (yolo)
+			num := mtgmatcher.ExtractNumber(variation)
+			if num == "" && card.Number != "" {
+				variation += " " + card.Number
+			}
 		}
 	case "Anthologies":
 		if cardName == "Mountain" {
