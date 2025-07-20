@@ -70,8 +70,8 @@ func processCards(channel chan<- responseChan, page int) error {
 				continue
 			}
 
-			fmt.Fprintln(os.Stderr, err)
-			fmt.Fprintln(os.Stderr, page, theCard)
+			fmt.Fprintln(os.Stderr, "error on page", page, "-", err)
+			fmt.Fprintln(os.Stderr, theCard)
 			fmt.Fprintln(os.Stderr, product)
 			var alias *mtgmatcher.AliasingError
 			if errors.As(err, &alias) {
