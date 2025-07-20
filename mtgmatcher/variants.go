@@ -2,15 +2,18 @@ package mtgmatcher
 
 var p30mVariants = map[string]map[string]string{
 	"Arcane Signet": {
+		"etched":                             "1F★",
 		"festival foil etched":               "1F★",
 		"foil etched":                        "1F★",
 		"magic 30 foil-etched":               "1F★",
+		"":                                   "1F",
 		"festival":                           "1F",
 		"festival foil":                      "1F",
 		"festival non-foil":                  "1F",
 		"play booster draft foil":            "1P",
 		"play draft retro frame":             "1P",
 		"retro frame 30th anniversary promo": "1P",
+		"retro frame":                        "1P",
 	},
 }
 
