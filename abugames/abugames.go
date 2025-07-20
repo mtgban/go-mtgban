@@ -123,9 +123,9 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 				continue
 			}
 
-			// Sanity check, a bunch of EA cards are market as foil when they
+			// Sanity check, a bunch of cards are market as foil when they
 			// actually don't have a foil printing, just skip them
-			if strings.Contains(doc.DisplayTitle, "(Extended Art) - FOIL") {
+			if strings.Contains(doc.DisplayTitle, "FOIL") {
 				co, err := mtgmatcher.GetUUID(cardId)
 				if err != nil {
 					continue
