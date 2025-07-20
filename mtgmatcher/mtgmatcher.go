@@ -1314,6 +1314,16 @@ func adjustEdition(inCard *InputCard) {
 					}
 				}
 			}
+		case "Voltaic Key":
+			if inCard.isIDWMagazineBook() {
+				edition = "Media and Collaboration Promos"
+
+				if strings.Contains(variation, "35") || inCard.isJPN() || inCard.Language == "Japanese" {
+					variation = "2020-1"
+				} else {
+					variation = "2024-6"
+				}
+			}
 		case "Arcbound Ravager":
 			if inCard.Contains("Qualifiers") || inCard.Contains("WMCQ") {
 				edition = "Pro Tour Promos"
