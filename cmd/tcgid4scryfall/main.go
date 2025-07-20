@@ -89,6 +89,7 @@ func processCards(channel chan<- responseChan, page int) error {
 			"number":  tcgplayer.GetProductNumber(&product),
 			"variant": variant,
 			"theCard": theCard.String(),
+			"page":    fmt.Sprint(page),
 		}
 
 		out := responseChan{
