@@ -302,6 +302,11 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				edition = "pjsc"
 				variant = ""
 			}
+		case "Ultimecia, Temporal Threat", "Lightning, Security Sergeant",
+			"Cloud, Planet's Champion", "Sephiroth, Planet's Heir":
+			if variant == "Costco Bundle" {
+				edition = "FIN"
+			}
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
