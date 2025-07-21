@@ -700,6 +700,9 @@ func (tcg *CookieClient) GetUserData() (*UserData, error) {
 	if len(response.Results) == 0 {
 		return nil, fmt.Errorf("emtpy results in user request")
 	}
+	if response.Results[0].UserName == "" {
+		return nil, fmt.Errorf("emtpy username from user request")
+	}
 
 	return &response.Results[0], nil
 }
