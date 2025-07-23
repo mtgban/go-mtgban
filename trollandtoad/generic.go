@@ -379,6 +379,8 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist() error {
 		}
 	}
 
+	tnt.buylistDate = time.Now()
+
 	return nil
 }
 
@@ -391,8 +393,6 @@ func (tnt *TrollAndToadGeneric) Buylist() (mtgban.BuylistRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	tnt.buylistDate = time.Now()
 
 	return tnt.buylist, nil
 }
