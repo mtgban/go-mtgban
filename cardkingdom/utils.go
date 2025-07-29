@@ -181,7 +181,7 @@ func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (*CartResponse
 	var cartResponse CartResponse
 	err = json.Unmarshal(data, &cartResponse)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error, got: %s", string(data))
+		return nil, fmt.Errorf("unmarshal error: %v, got: %s", err, string(data))
 	}
 
 	return &cartResponse, nil
