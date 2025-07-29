@@ -252,7 +252,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		// If renamed, reload metadata in case of duplicate names
 		switch {
-		case inCard.Name == "Unquenchable Fury Token":
+		case inCard.Name == "Unquenchable Fury Token" || inCard.Name == "Shapeshifter Token":
 			fallthrough
 		case strings.Contains(inCard.Name, "Playtest") &&
 			slices.Contains(duplicatedCardNames, strings.Replace(inCard.Name, " Playtest", "", 1)):
@@ -953,6 +953,8 @@ func adjustEdition(inCard *InputCard) {
 				inCard.Name = "Plains"
 				inCard.Variation = "670"
 			}
+		case inCard.Name == "Shapeshifter":
+			inCard.Name += " Token"
 		}
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
