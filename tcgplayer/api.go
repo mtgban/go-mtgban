@@ -266,8 +266,14 @@ func SellerName2ID(sellerName string) (string, error) {
 		return "", err
 	}
 
-	link, ok := doc.Find(`div.scTitle a`).Attr("href")
-	if !ok {
+	var link string
+	doc.Find(`div.scTitle a`).Each(func(i int, s *goquery.Selection) {
+		if s.Text() != sellerName {
+			return
+		}
+		link, _ = s.Attr("href")
+	})
+	if link == "" {
 		return "", errors.New("not found")
 	}
 
