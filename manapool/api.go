@@ -27,6 +27,7 @@ type Card struct {
 }
 
 type Product struct {
+	URL                string `json:"url"`
 	ProductType        string `json:"product_type"`
 	ProductID          string `json:"product_id"`
 	SetCode            string `json:"set_code"`

@@ -38,13 +38,6 @@ func (mp *ManapoolSealed) scrape() error {
 
 	mp.printf("Found %d prices", len(pricelist))
 
-	u, _ := url.Parse("https://manapool.com/browse_sealed")
-	v := url.Values{}
-	if mp.Partner != "" {
-		v.Set("ref", mp.Partner)
-	}
-	u.RawQuery = v.Encode()
-
 	var foundProduct int
 
 	sets := mtgmatcher.GetAllSets()
@@ -74,6 +67,18 @@ func (mp *ManapoolSealed) scrape() error {
 				}
 
 				foundProduct++
+
+				// Build URL
+				u, err := url.Parse(sealed.URL)
+				if err != nil {
+					mp.printf("%v", err)
+					continue
+				}
+				v := url.Values{}
+				if mp.Partner != "" {
+					v.Set("ref", mp.Partner)
+				}
+				u.RawQuery = v.Encode()
 
 				out := &mtgban.InventoryEntry{
 					Price:    float64(sealed.LowPrice) / 100.0,
