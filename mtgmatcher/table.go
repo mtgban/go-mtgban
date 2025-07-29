@@ -88,6 +88,9 @@ var setAllowedForTokens = []string{
 	"GK1",
 	"GK2",
 
+	// Global series
+	"GS1",
+
 	// Token sets
 	"PHEL",
 	"PL21",
