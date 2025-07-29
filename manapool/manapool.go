@@ -2,6 +2,7 @@ package manapool
 
 import (
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -38,47 +39,65 @@ func (mp *Manapool) scrape() error {
 	mp.printf("Found %d prices", len(pricelist))
 
 	for _, card := range pricelist {
-		cardId, err := mtgmatcher.MatchId(card.ScryfallID)
+		cardId, err := mtgmatcher.MatchId(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
+		if err != nil {
+			// Skip errors for unsupported cards (tokens, art cards, front cards)
+			if !mtgmatcher.IsToken(card.Name) &&
+				!strings.HasPrefix(card.SetCode, "T") &&
+				!strings.HasPrefix(card.SetCode, "A") &&
+				!strings.HasPrefix(card.SetCode, "F") {
+				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
+			}
+			continue
+		}
+
+		// Validate language
+		co, err := mtgmatcher.GetUUID(cardId)
+		if err != nil {
+			continue
+		}
+		if mtgmatcher.LanguageTag2LanguageCode[co.Language] != strings.ToLower(card.LanguageID) {
+			continue
+		}
+
+		// Build URL
+		u, err := url.Parse(card.URL)
 		if err != nil {
 			mp.printf("%v", err)
 			continue
 		}
-		cardIdFoil, _ := mtgmatcher.MatchId(card.ScryfallID, true)
-
-		u, _ := url.Parse("https://www.manapool.com")
-		u.Path, _ = url.PathUnescape(card.URL)
 		v := url.Values{}
 		if mp.Partner != "" {
 			v.Set("ref", mp.Partner)
 		}
-
-		conds := []string{"NM", "SP", "NM", "SP"}
-		ids := []string{cardId, cardId, cardIdFoil, cardIdFoil}
-		prices := []int{card.PriceCentsNm, card.PriceCentsLpPlus, card.PriceCentsNmFoil, card.PriceCentsLpPlusFoil}
-		linkConds := []string{"NM", "LP", "NM", "LP"}
-		linkFinishes := []string{"nonfoil", "nonfoil", "foil", "foil"}
-
-		for i, price := range prices {
-			if price == 0 || ids[i] == "" {
-				continue
-			}
-			// Sometimes LP+ is the same as NM, but there is no real difference,
-			// so just skip those prices
-			if (i == 1 || i == 3) && prices[i] == prices[i-1] {
-				continue
-			}
-			v.Set("conditions", linkConds[i])
-			v.Set("finish", linkFinishes[i])
-			u.RawQuery = v.Encode()
-			link := u.String()
-
-			out := &mtgban.InventoryEntry{
-				Conditions: conds[i],
-				Price:      float64(price) / 100.0,
-				URL:        link,
-			}
-			err = mp.inventory.AddUnique(ids[i], out)
+		v.Set("conditions", card.ConditionID)
+		if card.FinishID != "NF" {
+			v.Set("finish", "foil")
 		}
+		u.RawQuery = v.Encode()
+		link := u.String()
+
+		// Match conditions
+		conds := card.ConditionID
+		switch card.ConditionID {
+		case "NM", "MP", "HP":
+		case "LP":
+			conds = "SP"
+		case "DMG":
+			conds = "PO"
+		default:
+			mp.printf("Unknown %s condition for %s (%s)", conds, card.Name, card.SetCode)
+			continue
+		}
+
+		// Got there!
+		out := &mtgban.InventoryEntry{
+			Conditions: conds,
+			Price:      float64(card.LowPrice) / 100.0,
+			Quantity:   card.AvailableQuantity,
+			URL:        link,
+		}
+		err = mp.inventory.AddUnique(cardId, out)
 	}
 
 	mp.inventoryDate = time.Now()
