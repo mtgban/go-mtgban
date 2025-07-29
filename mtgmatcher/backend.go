@@ -134,6 +134,7 @@ func skipSet(set *Set) bool {
 	switch set.Code {
 	case "PRED", // a single foreign card
 		"PSAL", "PS11", "PHUK", // salvat05, salvat11, hachette
+		"OAFR", "OCLB", // oversized dungeons
 		"OLGC", "OLEP", "OVNT", "O90P": // oversize
 		return true
 	}
