@@ -87,7 +87,7 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 	}
 
 	var sellPrice float64
-	if card.Price != "" {
+	if card.Price != "" && card.Quantity > 0 {
 		sellPrice, err = strconv.ParseFloat(card.Price, 64)
 		if err != nil {
 			mint.printf("%v", err)
