@@ -106,22 +106,7 @@ func (mkm *MKMClient) Expansions(gameId int) ([]MKMExpansion, error) {
 		return nil, errors.New(string(data))
 	}
 
-	var out []MKMExpansion
-	for _, exp := range response.Expansions {
-		var skip bool
-		for _, tag := range filteredExpansionsTags {
-			if strings.Contains(exp.Name, tag) {
-				skip = true
-				break
-			}
-		}
-		if skip {
-			continue
-		}
-		out = append(out, exp)
-	}
-
-	return out, nil
+	return response.Expansions, nil
 }
 
 type MKMProduct struct {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -27,6 +28,27 @@ var filteredExpansionsTags = []string{
 	"Three for One",
 	"Token",
 	"TokyoMTG Products",
+}
+
+func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
+	var out []MKMExpansion
+	for _, exp := range expansions {
+		var skip bool
+		for _, tag := range filteredExpansionsTags {
+			if strings.Contains(exp.Name, tag) {
+				skip = true
+				break
+			}
+		}
+		if skip {
+			continue
+		}
+		out = append(out, exp)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].Name < out[j].Name
+	})
+	return out
 }
 
 const (

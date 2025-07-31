@@ -305,6 +305,7 @@ func (mkm *CardMarketIndex) scrape() error {
 	if err != nil {
 		return err
 	}
+	list = FilterAndSortExpansions(list)
 
 	mkm.printf("Parsing %d expansion ids", len(list))
 
