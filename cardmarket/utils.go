@@ -12,22 +12,25 @@ import (
 )
 
 var filteredExpansionsTags = []string{
+	"Boomer Tokns",
 	"Filler Cards",
+	"For Science!",
 	"Gatherers' Tavern",
 	"GnD Cards",
 	"Heroes of the Realm",
+	"Mana ZenZero",
 	"MKM Series",
 	"Oversized",
 	"Player Cards",
 	"Revista Serra Promos",
 	"Rk post Products",
 	"SAWATARIX",
-	"Starcity Games: Creature Collection",
 	"Starcity",
 	"Street Clans",
 	"Three for One",
 	"Token",
 	"TokyoMTG Products",
+	"Vanlubow",
 }
 
 func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
