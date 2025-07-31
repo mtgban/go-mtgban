@@ -15,6 +15,11 @@ type CardMarketSealed struct {
 	MaxConcurrency int
 	Affiliate      string
 
+	// Optional field to select a single edition to go through
+	TargetEdition string
+	// Optional field to select a single product name to go through
+	TargetProduct string
+
 	inventoryDate time.Time
 	exchangeRate  float64
 
@@ -150,6 +155,9 @@ func (mkm *CardMarketSealed) scrape() error {
 		if !found {
 			continue
 		}
+		if mkm.TargetProduct != "" && mkm.TargetProduct != product.Name {
+			continue
+		}
 		productIds = append(productIds, product.IdProduct)
 	}
 	mkm.printf("Mapped %d mkm products to sealed products", len(productIds))
@@ -163,7 +171,14 @@ func (mkm *CardMarketSealed) scrape() error {
 		go func() {
 			for idProduct := range products {
 				uuids := productMap[idProduct]
-				co, _ := mtgmatcher.GetUUID(uuids[0])
+				co, err := mtgmatcher.GetUUID(uuids[0])
+				if err != nil {
+					continue
+				}
+				if mkm.TargetEdition != "" && mkm.TargetEdition != co.Edition && mkm.TargetEdition != co.SetCode {
+					continue
+				}
+
 				mkm.printf("Processing %s (%d/%d)...", co, slices.Index(productIds, idProduct)+1, len(productIds))
 
 				err = mkm.processProduct(channel, idProduct, uuids)
