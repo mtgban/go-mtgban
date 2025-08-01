@@ -80,14 +80,23 @@ var notSealedComments = []string{
 
 func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuids []string) error {
 	var done bool
-	var i int
-	for !done {
+	var page int
+	var foundNF, foundF bool
+
+	// Query max 5 pages (500 articles) if prices aren't found
+	for !done && page < 5 {
 		// We process a tenth of the typical request because we only need the first few results
-		articles, err := mkm.client.MKMSimpleArticles(idProduct, true, i, MaxEntities/10)
+		// But if there are multiple ids for the same product (ie foil SLDs), then we query more
+		entities := MaxEntities / 10
+		if len(uuids) > 1 {
+			entities = MaxEntities
+		}
+
+		articles, err := mkm.client.MKMSimpleArticles(idProduct, true, page, entities)
 		if err != nil {
 			return err
 		}
-		i++
+		page++
 
 		if len(articles) == 0 {
 			break
@@ -101,6 +110,11 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 			uuid := uuids[0]
 			if article.IsFoil && len(uuids) > 1 {
 				uuid = uuids[1]
+			}
+
+			// Skip if we already found the related price
+			if len(uuids) > 1 && ((foundNF && !article.IsFoil) || (foundF && article.IsFoil)) {
+				continue
 			}
 
 			// Skip all the silly non-really-sealed listings
@@ -131,8 +145,15 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 			channel <- out
 
 			// Only keep the first price found
-			done = true
-			break
+			// or update what we have found
+			if len(uuids) == 1 || (foundNF && foundF) {
+				done = true
+				break
+			} else if article.IsFoil {
+				foundF = true
+			} else if !article.IsFoil {
+				foundNF = true
+			}
 		}
 	}
 
