@@ -4524,6 +4524,26 @@ var multiPromosVariants = map[string]map[string]string{
 		"duskmourn": "106",
 		"2020":      "107",
 	},
+	"Breeding Pool": {
+		"edge":   "251",
+		"throne": "246",
+	},
+	"Godless Shrine": {
+		"edge":   "254",
+		"throne": "248",
+	},
+	"Sacred Foundry": {
+		"edge":   "256",
+		"throne": "254",
+	},
+	"Stomping Ground": {
+		"edge":   "258",
+		"throne": "259",
+	},
+	"Watery Grave": {
+		"edge":   "261",
+		"throne": "259",
+	},
 	// not listed here: all the temples
 }
 
@@ -4536,6 +4556,7 @@ var multiPromosTable = map[string]map[string]map[string]string{
 	"Core Set 2021 Promos":               multiPromosVariants,
 	"Dominaria Promos":                   multiPromosVariants,
 	"Duskmourn: House of Horror Promos":  multiPromosVariants,
+	"Edge of Eternities Promos":          multiPromosVariants,
 	"Eldritch Moon Promos":               multiPromosVariants,
 	"Fate Reforged Promos":               multiPromosVariants,
 	"Foundations":                        multiPromosVariants,
