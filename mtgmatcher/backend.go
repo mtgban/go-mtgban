@@ -738,6 +738,7 @@ func (ap AllPrintings) Load() cardBackend {
 		if !card.Foil && !card.Etched {
 			for _, promoType := range []string{
 				PromoTypeDoubleExposure,
+				PromoTypeGalaxyFoil,
 				PromoTypeSilverFoil,
 				PromoTypeRainbowFoil,
 				PromoTypeRippleFoil,
