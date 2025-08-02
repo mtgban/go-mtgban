@@ -91,7 +91,7 @@ func (mp *Manapool) scrape() error {
 		}
 
 		// Convert price to float and add the 4.2% fee
-		price := float64(card.LowPrice) / 100.0 * 0.042
+		price := float64(card.LowPrice) / 100.0 * 1.042
 
 		// Got there!
 		out := &mtgban.InventoryEntry{
