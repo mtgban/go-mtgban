@@ -729,13 +729,7 @@ func run() int {
 	}
 
 	// Load static data
-	if *mtgjsonOpt != "" {
-		log.Println("Loading MTGJSON from", *mtgjsonOpt)
-		err = mtgmatcher.LoadDatastoreFile(*mtgjsonOpt)
-	} else {
-		log.Println("Loading MTGJSON from net")
-		err = loadMTGJSONfromNet()
-	}
+	err = loadMTGJSON(*mtgjsonOpt)
 	if err != nil {
 		log.Println("Couldn't load MTGJSON...")
 		log.Println(err)
@@ -768,16 +762,31 @@ func main() {
 
 const AllPrintingsURL = "https://mtgjson.com/api/v5/AllPrintings.json.xz"
 
-func loadMTGJSONfromNet() error {
-	resp, err := cleanhttp.DefaultClient().Get(AllPrintingsURL)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func loadMTGJSON(pathOpt string) error {
+	var reader io.Reader
 
-	reader, err := xz.NewReader(resp.Body)
-	if err != nil {
-		return err
+	if pathOpt != "" {
+		log.Println("Loading MTGJSON from", pathOpt)
+
+		file, err := os.Open(pathOpt)
+		if err != nil {
+			return err
+		}
+		reader = file
+	} else {
+		log.Println("Loading MTGJSON from network")
+
+		resp, err := cleanhttp.DefaultClient().Get(AllPrintingsURL)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		xzReader, err := xz.NewReader(resp.Body)
+		if err != nil {
+			return err
+		}
+		reader = xzReader
 	}
 
 	return mtgmatcher.LoadDatastore(reader)
