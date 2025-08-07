@@ -627,6 +627,11 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 					for i := 0; i < content.Count; i++ {
 						sealedPicks, err := GetPicksForSealed(content.Set, content.UUID)
 						if err != nil {
+							// Ignore errors from this type of product as it doesn't
+							// change ev much, and hides relevant results
+							if strings.Contains(content.Name, "Sample Pack") {
+								continue
+							}
 							return nil, err
 						}
 						picks = append(picks, sealedPicks...)
@@ -915,6 +920,11 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 				case "sealed":
 					sealedProbabilities, err := GetProbabilitiesForSealed(content.Set, content.UUID)
 					if err != nil {
+						// Ignore errors from this type of product as it doesn't
+						// change ev much, and hides relevant results
+						if strings.Contains(content.Name, "Sample Pack") {
+							continue
+						}
 						return nil, err
 					}
 					for i := range sealedProbabilities {
