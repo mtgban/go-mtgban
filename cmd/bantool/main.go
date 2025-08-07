@@ -578,12 +578,14 @@ func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	return nil
 }
 
+var MtgjsonOpt string
+
 func run() int {
 	for key, val := range options {
 		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
 	}
 
-	mtgjsonOpt := flag.String("mtgjson", "", "Path to AllPrintings file")
+	flag.StringVar(&MtgjsonOpt, "mtgjson", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
 	serviceAccOpt := flag.String("svc-acc", "", "Service account with write permission on the bucket")
 
@@ -729,7 +731,7 @@ func run() int {
 	}
 
 	// Load static data
-	err = loadMTGJSON(*mtgjsonOpt)
+	err = loadMTGJSON(MtgjsonOpt)
 	if err != nil {
 		log.Println("Couldn't load MTGJSON...")
 		log.Println(err)
