@@ -596,7 +596,6 @@ func run() int {
 	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv/ndjson)")
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
-	devOpt := flag.Bool("dev", false, "Enable dev operations (debugging)")
 	versionOpt := flag.Bool("v", false, "Print version information")
 	listOpt := flag.Bool("l", false, "List all scrapers available")
 	flag.Parse()
@@ -625,9 +624,7 @@ func run() int {
 		return 0
 	}
 
-	if *devOpt {
-		GlobalLogCallback = log.Printf
-	}
+	GlobalLogCallback = log.Printf
 
 	switch *fileFormatOpt {
 	case "json", "csv", "ndjson":
