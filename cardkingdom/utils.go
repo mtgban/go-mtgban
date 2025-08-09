@@ -29,6 +29,13 @@ func NewCookieClient(session string) *CookieClient {
 	return &ck
 }
 
+func NewCookieJarClient(jar http.CookieJar) *CookieClient {
+	ck := CookieClient{}
+	ck.client = cleanhttp.DefaultClient()
+	ck.client.Jar = jar
+	return &ck
+}
+
 type CartRequest struct {
 	ProductID string `json:"product_id"`
 	Style     string `json:"style"`
@@ -192,7 +199,9 @@ func (ck *CookieClient) Get(link string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+	if ck.session != "" {
+		req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+	}
 	req.Header.Add("User-Agent", "curl/8.6.0")
 
 	return ck.client.Do(req)
@@ -203,7 +212,9 @@ func (ck *CookieClient) Post(url, contentType string, reader io.Reader) (*http.R
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+	if ck.session != "" {
+		req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+	}
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("User-Agent", "curl/8.6.0")
 
