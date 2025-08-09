@@ -608,6 +608,15 @@ func NewCookieSetClient(cookies map[string]string) *CookieClient {
 	return &tcg
 }
 
+func NewCookieJarClient(jar http.CookieJar) *CookieClient {
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	tcg := CookieClient{}
+	tcg.client = client.StandardClient()
+	tcg.client.Jar = jar
+	return &tcg
+}
+
 type UserData struct {
 	UserName                string `json:"userName"`
 	UserID                  int    `json:"userId"`
