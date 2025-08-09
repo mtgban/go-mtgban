@@ -391,6 +391,11 @@ func (ss *SealedEVScraper) scrape() error {
 				continue
 			}
 
+			// Skip unsupported languages
+			if strings.Contains(product.Name, "Japanese") {
+				continue
+			}
+
 			// Skip filtered products if set
 			if ss.TargetProduct != "" && product.Name != ss.TargetProduct && product.UUID != ss.TargetProduct {
 				continue
