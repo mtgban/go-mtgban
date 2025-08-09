@@ -410,6 +410,9 @@ func (ss *SealedEVScraper) scrape() error {
 		}
 	}
 	ss.printf("Found %d products over %d sets", len(uuids), len(sets))
+	if len(uuids) == 0 {
+		return errors.New("no product loaded")
+	}
 
 	ss.printf("Loading BAN prices")
 	prices, err := loadPrices(ss.banpriceKey, selected)
