@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -209,7 +207,7 @@ func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, erro
 }
 
 const (
-	SellersPageURL     = "https://shop.tcgplayer.com/sellers"
+	SellersPageURL     = "https://mpapi.tcgplayer.com/v2/ShopBySeller/GetSellerSearchResults"
 	SellerInventoryURL = "https://mp-search-api.tcgplayer.com/v1/search/request?q=&isList=true&mpfev=1953"
 	SellerListingURL   = "https://mp-search-api.tcgplayer.com/v1/product/%d/listings"
 
@@ -235,25 +233,50 @@ func SellerKeyExists(sellerKey string) bool {
 	return resp.StatusCode == 200
 }
 
+type SellerSearchResponse struct {
+	Errors  []any `json:"errors"`
+	Results []struct {
+		StartRecordIndex int `json:"startRecordIndex"`
+		EndRecordIndex   int `json:"endRecordIndex"`
+		TotalItemCount   int `json:"totalItemCount"`
+		SearchResults    []struct {
+			SellerID             int      `json:"sellerId"`
+			DisplayName          string   `json:"displayName"`
+			SellerKey            string   `json:"sellerKey"`
+			IsLive               bool     `json:"isLive"`
+			IsDirect             bool     `json:"isDirect"`
+			IsGoldStar           bool     `json:"isGoldStar"`
+			IsCertifiedHobbyShop bool     `json:"isCertifiedHobbyShop"`
+			Rating               float64  `json:"rating"`
+			CompletedSalesRank   string   `json:"completedSalesRank"`
+			Location             string   `json:"location"`
+			ProductLines         []string `json:"productLines"`
+		} `json:"searchResults"`
+	} `json:"results"`
+}
+
 func SellerName2ID(sellerName string) (string, error) {
 	if sellerName == "" {
 		return "", errors.New("missing seller name")
 	}
 
-	v := url.Values{}
-	v.Set("name", "foo")
-	v.Set("SellerName", sellerName)
-	v.Set("isDirect", "false")
-	v.Set("isCertified", "false")
-	v.Set("isGoldStar", "false")
-	v.Set("categoryId", "1") // 1 = mtg
-	v.Set("returnUrl", "")
-
-	req, err := http.NewRequest(http.MethodPost, SellersPageURL, strings.NewReader(v.Encode()))
+	requestPayload := struct {
+		SellerName string `json:"sellerName"`
+		Page       int    `json:"page"`
+	}{
+		SellerName: sellerName,
+		Page:       1,
+	}
+	payload, err := json.Marshal(requestPayload)
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	req, err := http.NewRequest(http.MethodPost, SellersPageURL, bytes.NewReader(payload))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
@@ -261,23 +284,36 @@ func SellerName2ID(sellerName string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
 
-	var link string
-	doc.Find(`div.scTitle a`).Each(func(i int, s *goquery.Selection) {
-		if s.Text() != sellerName {
-			return
-		}
-		link, _ = s.Attr("href")
-	})
-	if link == "" {
-		return "", errors.New("not found")
+	var response SellerSearchResponse
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return "", fmt.Errorf("%s: %s", err.Error(), string(data))
 	}
 
-	return strings.TrimPrefix(link, "/sellerfeedback/"), nil
+	if len(response.Errors) != 0 {
+		return "", fmt.Errorf("errors in response: %v", response.Errors)
+	}
+
+	var sellerKey string
+	for _, results := range response.Results {
+		for _, result := range results.SearchResults {
+			if sellerName != result.DisplayName {
+				continue
+			}
+			sellerKey = result.SellerKey
+			break
+		}
+	}
+	if sellerKey == "" {
+		return "", fmt.Errorf("seller not found in", string(data))
+	}
+
+	return sellerKey, nil
 }
 
 type sellerInventoryRequest struct {
