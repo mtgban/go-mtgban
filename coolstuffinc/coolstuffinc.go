@@ -74,6 +74,7 @@ type responseChan struct {
 	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
+	relaxed  bool
 }
 
 func (csi *Coolstuffinc) printf(format string, a ...interface{}) {
@@ -134,7 +135,9 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 			}
 
 			s.Find(`div[itemprop="offers"]`).Each(func(i int, se *goquery.Selection) {
+				var relaxed bool
 				fullRow := strings.TrimSpace(se.Text())
+
 				switch {
 				case strings.Contains(fullRow, "Out of Stock"),
 					strings.Contains(fullRow, "not currently available"):
@@ -167,18 +170,19 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 
 				isFoil := strings.HasPrefix(conditions, "Foil")
 
+				if strings.Contains(conditions, "BGS") ||
+					strings.Contains(conditions, "Non-Foil") ||
+					strings.Contains(conditions, "Unique") {
+					conditions = "Near Mint"
+					relaxed = true
+				}
 				switch conditions {
 				case "Near Mint", "Foil Near Mint":
 					conditions = "NM"
 				case "Played", "Foil Played":
 					conditions = "MP"
 				default:
-					switch {
-					case strings.Contains(conditions, "BGS"),
-						strings.Contains(conditions, "Unique"):
-					default:
-						csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
-					}
+					csi.printf("Unsupported '%s' condition for %s", conditions, cardName)
 					return
 				}
 				if strings.Contains(cardName, "Signed by") {
@@ -276,6 +280,7 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 						URL:        link,
 						OriginalId: pid,
 					},
+					relaxed: relaxed,
 				}
 
 				results <- out
@@ -360,7 +365,12 @@ func (csi *Coolstuffinc) scrape() error {
 	}()
 
 	for record := range results {
-		err := csi.inventory.Add(record.cardId, record.invEntry)
+		var err error
+		if record.relaxed {
+			err = csi.inventory.AddRelaxed(record.cardId, record.invEntry)
+		} else {
+			err = csi.inventory.Add(record.cardId, record.invEntry)
+		}
 		if err != nil {
 			csi.printf("%s", err.Error())
 		}
