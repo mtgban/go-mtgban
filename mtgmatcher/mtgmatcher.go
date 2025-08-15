@@ -1330,6 +1330,10 @@ func adjustEdition(inCard *InputCard) {
 			if inCard.Contains("Qualifiers") || inCard.Contains("WMCQ") {
 				edition = "Pro Tour Promos"
 			}
+		case "Hornet Queen":
+			if inCard.Contains("Specimen") {
+				variation = strings.Replace(variation, "73", "", -1)
+			}
 		default:
 			// Attempt a best effor match for known promotional tags if card or edition
 			// wasn't found in previous steps
