@@ -83,7 +83,12 @@ func (csi *Coolstuffinc) printf(format string, a ...interface{}) {
 }
 
 func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName string) error {
-	result, err := Search(csi.game, itemName, !csi.IncludeOOS)
+	skipOOS := !csi.IncludeOOS
+	switch itemName {
+	case "Alpha", "Beta", "Unlimited Edition":
+		skipOOS = false
+	}
+	result, err := Search(csi.game, itemName, skipOOS)
 	if err != nil {
 		return err
 	}
