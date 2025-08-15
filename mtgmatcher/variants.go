@@ -3753,6 +3753,7 @@ var plstVariants = map[string]map[string]string{
 	"Imperious Perfect": {
 		"extended art":                       "PCMP-9",
 		"champs full art":                    "PCMP-9",
+		"c9 champs":                          "PCMP-9",
 		"state champs promo":                 "PCMP-9",
 		"the list extended art champs promo": "PCMP-9",
 	},

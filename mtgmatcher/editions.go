@@ -198,6 +198,7 @@ var EditionTable = map[string]string{
 	"Illus.Alayna Danner":                      "M19 Standard Showdown",
 	"Illus.Rebecca Guay":                       "XLN Standard Showdown",
 	"Standard Showdown 2024 Full Art":          "MKM Standard Showdown",
+	"MKM Standard Showdown Promo":              "MKM Standard Showdown",
 
 	// Modern Masters
 	"Modern Masters 2013":            "Modern Masters",

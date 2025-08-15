@@ -10,15 +10,25 @@ import (
 )
 
 var numFixes = map[string]string{
-	"GolgariSignetCM2":            "CM2191",
-	"GolgariSignetCM2v2":          "CM2192",
-	"TempleoftheFalse_God271":     "CM2271",
-	"TempleoftheFalseGod":         "CM2272",
-	"Aura_Shards":                 "PLSTCMD-182",
-	"aurashardslist2":             "PLSTINV-233",
-	"NissaWhoShakestheWorld518v2": "SLD518",
-	"SorcerousSpyglassv2":         "UPPXLN248",
-	"253486Signed_gold":           "WC97JK1",
+	"GolgariSignetCM2":                "CM2191",
+	"GolgariSignetCM2v2":              "CM2192",
+	"TempleoftheFalse_God271":         "CM2271",
+	"TempleoftheFalseGod":             "CM2272",
+	"SolemnSimulacrum":                "CM2218",
+	"SolemnSimulacrum__219v2":         "CM2219",
+	"Aura_Shards":                     "PLSTCMD-182",
+	"aurashardslist2":                 "PLSTINV-233",
+	"NissaWhoShakestheWorld518v2":     "SLD518",
+	"SorcerousSpyglassv2":             "PXLN248p",
+	"253486Signed_gold":               "WC97JK1",
+	"one420eleshnornmotherofmachines": "ONE420",
+	"295044":                          "SLD51",
+	"wild0042":                        "SLD42",
+	"Sol381656":                       "SLD1512",
+	"TDM0300a":                        "TDM300",
+	"LTR0425":                         "LTR425",
+	"LeylineoftheVoidv2":              "PM20107p",
+	"386443":                          "POTJ149p",
 }
 
 var variantTable = map[string]string{
@@ -43,6 +53,8 @@ var nameTable = map[string]string{
 	"Maalfield Twins":                        "Maalfeld Twins",
 	"Environmental Studies":                  "Environmental Sciences",
 	"Proficient Pryodancer":                  "Proficient Pyrodancer",
+	"Leotau Grizalho":                        "Grizzled Leotau",
+	"____ ____ ____ Trespasser":              "_____ _____ _____ Trespasser",
 }
 
 func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
@@ -94,7 +106,6 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 		return nil, mtgmatcher.ErrUnsupported
 	}
 
-	// todo fix Barad-dûr LTR
 	if len(imgName) > 4 {
 		for i := 0; i < 2; i++ {
 			maybeSet := strings.ToUpper(imgName[:i+3])
@@ -196,11 +207,21 @@ var preserveTags = []string{
 }
 
 func card2promo(cardName, variant string) (string, string) {
-	if strings.Contains(variant, "30th Anniversary") && !strings.Contains(variant, "History Promos") {
+	var edition string
+
+	switch {
+	case strings.Contains(variant, "30th Anniversary") && !strings.Contains(variant, "History Promos"):
 		return "P30A", ""
+	case strings.Contains(variant, "Cowboy Bebop"):
+		return "PCBB", ""
+	case strings.Contains(variant, "PWCS"):
+		return "PWCS", ""
+	case strings.Contains(variant, "Magic Spotlight"):
+		return "PSPL", ""
+	case strings.Contains(variant, "Friday Night Magic Promo"):
+		edition = "FNM"
 	}
 
-	var edition string
 	switch cardName {
 	case "Demonic Tutor":
 		if variant == "Daarken Judge Rewards Promo" {
@@ -266,9 +287,6 @@ func card2promo(cardName, variant string) (string, string) {
 	case "Conjurer's Closet":
 		edition = "PW21"
 		variant = "6"
-	case "Bolas's Citadel":
-		edition = "PWAR"
-		variant = "79"
 	case "Cryptic Command":
 		if variant == "Qualifier Promo" {
 			edition = "PPRO"
@@ -291,7 +309,6 @@ func card2promo(cardName, variant string) (string, string) {
 	case "Llanowar Elves":
 		switch variant {
 		case "Friday Night Magic Promo":
-			edition = "FNM"
 			variant = "11"
 		case "Open House Promo":
 			edition = "PDOM"
@@ -331,30 +348,38 @@ func card2promo(cardName, variant string) (string, string) {
 			edition = "PF24"
 		}
 
-	case "Dig Through Time":
+	case "Aven Mindcensor", "Dig Through Time", "Goblin Guide", "Scavenging Ooze":
 		if variant == "Love Your Local Game Store Promo" {
+			return "PLG21", ""
+		}
+	case "Bolas's Citadel":
+		if variant == "Draft Weekend Promo" {
+			edition = "PWAR"
+			variant = "79"
+		} else if variant == "Love Your Local Game Store Promo" {
 			edition = "PLG21"
 		}
 	case "Nicol Bolas",
-		"Earthquake":
+		"Earthquake",
+		"Serra Angel":
 		if variant == "Japanese Magic x Duel Masters Promo" {
-			edition = "PDMA"
+			return "PMDA", ""
 		}
 	case "Sol Ring":
 		if variant == "Commander Promo" {
 			edition = "PF19"
 		}
-	case "Sword of Forge and Frontier":
-		if variant == "Magic Spotlight: Dragons" {
-			edition = "PSPL"
-		}
 	case "Sakura-Tribe Elder":
 		if variant == "Textless Victor Adame Minguez art" {
 			edition = "PLG24"
 		}
-	case "Terror of the Peaks":
-		if variant == "Magic Spotlight Series Atlanta 2025" {
-			edition = "PSPL"
+	case "Ephemerate":
+		if variant == "Japanese Summer Vacation 2022 Promo" {
+			edition = "PSVC"
+		}
+	case "Dragon's Hoard":
+		if variant == "Tarkir: Dragonstorm Magic Academy Promo" {
+			edition = "PW25"
 		}
 	}
 	return edition, variant
@@ -386,6 +411,11 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		variant = vars
 		cleanVar = vars
 	}
+	vars, found = variantTable[cleanVar]
+	if found {
+		variant = vars
+		cleanVar = vars
+	}
 
 	switch edition {
 	case "Coldsnap Theme Deck":
@@ -399,7 +429,8 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		}
 	case "Unstable":
 		variant = cleanVar
-	case "Mystery Booster - The List",
+	case "Mystery Booster Reprint",
+		"Mystery Booster - The List",
 		"Secret Lair":
 		variant = cleanVar
 
@@ -416,6 +447,9 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		if cardName == "Kaya, Ghost Assassin" && variant == "Alternate Art Foil" {
 			variant = "222"
 		}
+	case "D&D Ampersand":
+		edition = "PAFR"
+		variant = "Ampersand"
 	case "Promo":
 		variant = cleanVar
 		switch variant {
@@ -443,7 +477,10 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 	// Add previously removed/ignored tags
 	for _, tag := range preserveTags {
 		if strings.Contains(strings.ToLower(cleanVar), tag) && !strings.Contains(strings.ToLower(variant), tag) {
-			variant += " " + tag
+			if variant != "" {
+				variant += " "
+			}
+			variant += tag
 		}
 	}
 
