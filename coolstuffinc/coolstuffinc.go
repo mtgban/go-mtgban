@@ -50,6 +50,8 @@ type Coolstuffinc struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
+	TargetEdition string
+
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
@@ -341,6 +343,9 @@ func (csi *Coolstuffinc) scrape() error {
 	}
 	go func() {
 		for _, item := range itemNames {
+			if csi.TargetEdition != "" && item != csi.TargetEdition {
+				continue
+			}
 			items <- item
 		}
 		close(items)
