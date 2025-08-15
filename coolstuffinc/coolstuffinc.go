@@ -42,9 +42,9 @@ type Coolstuffinc struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
-	// If set to true scrape will skip all entries without a nonfoil NM price
-	// but will be almost twice as fast
-	FastMode bool
+	// If set to true scrape will include all entries without a nonfoil NM price
+	// but will be almost twice as slow
+	IncludeOOS bool
 
 	inventoryDate  time.Time
 	buylistDate    time.Time
@@ -83,7 +83,7 @@ func (csi *Coolstuffinc) printf(format string, a ...interface{}) {
 }
 
 func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName string) error {
-	result, err := Search(csi.game, itemName, csi.FastMode)
+	result, err := Search(csi.game, itemName, !csi.IncludeOOS)
 	if err != nil {
 		return err
 	}

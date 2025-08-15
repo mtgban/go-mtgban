@@ -187,7 +187,7 @@ func Search(game, itemName string, skipOOS bool) (*SearchResult, error) {
 	v.Set("f[Loyalty][]", "")
 	v.Set("signprice", "<")
 	v.Set("price", "")
-	if !skipOOS {
+	if skipOOS {
 		// This excludes all cards that lack a NM copy
 		v.Set("options[instock]", "1")
 	}
