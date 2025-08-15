@@ -706,8 +706,9 @@ func (c *InputCard) duelDecksVariant() string {
 }
 
 func (c *InputCard) isMysteryList() bool {
-	return c.Contains("Mystery") || c.Contains("The List") ||
-		c.Contains("Planeswalker Symbol Reprints")
+	return c.Contains("Mystery") || c.Contains("Planeswalker Symbol Reprints") ||
+		// Cannot use c.Contains because it trips with "The Little"
+		strings.Contains(c.Edition, "The List") || strings.Contains(c.Variation, "The List")
 }
 
 func (c *InputCard) isSecretLair() bool {
