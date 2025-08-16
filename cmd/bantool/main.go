@@ -22,7 +22,7 @@ import (
 	"github.com/Backblaze/blazer/b2"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
-	"github.com/ulikunitz/xz"
+	"github.com/xi2/xz"
 	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -833,6 +833,7 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 	case "b2":
 		src := strings.TrimPrefix(u.Path, "/")
 		obj := B2Bucket.Object(src).NewReader(context.TODO())
+		obj.ConcurrentDownloads = 20
 
 		reader = obj
 	default:
@@ -845,7 +846,7 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 	}
 
 	if strings.HasSuffix(pathOpt, "xz") {
-		xzReader, err := xz.NewReader(reader)
+		xzReader, err := xz.NewReader(reader, 0)
 		if err != nil {
 			return nil, err
 		}
