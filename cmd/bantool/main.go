@@ -548,6 +548,42 @@ func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	return nil
 }
 
+// TODO: potentially this function could initialize more than one client
+func initializeBucket(outputPath string) error {
+	u, err := url.Parse(outputPath)
+	if err != nil {
+		return err
+	}
+
+	switch u.Scheme {
+	case "http", "https":
+		// nothing to do here
+	case "gs":
+		if GCSBucket != nil {
+			return nil
+		}
+
+		serviceAcc := os.Getenv("GCS_SVC_ACC")
+		if serviceAcc == "" {
+			return errors.New("missing GCS_SVC_ACC for GCS access")
+		}
+
+		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(serviceAcc))
+		if err != nil {
+			return fmt.Errorf("error creating the GCS client %w", err)
+		}
+
+		GCSBucket = client.Bucket(u.Host)
+	default:
+		_, err := os.Stat(u.Path)
+		if os.IsNotExist(err) {
+			return errors.New("path does not exist")
+		}
+	}
+
+	return nil
+}
+
 func run() int {
 	for key, val := range options {
 		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
@@ -610,27 +646,10 @@ func run() int {
 	}
 	u.Path = filepath.Dir(u.Path)
 
-	switch u.Scheme {
-	case "gs":
-		serviceAcc := os.Getenv("GCS_SVC_ACC")
-		if serviceAcc == "" {
-			log.Println("missing GCS_SVC_ACC for GCS access")
-			return 1
-		}
-
-		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(serviceAcc))
-		if err != nil {
-			log.Println("error creating the GCS client", err)
-			return 1
-		}
-
-		GCSBucket = client.Bucket(u.Host)
-	default:
-		_, err := os.Stat(u.Path)
-		if os.IsNotExist(err) {
-			log.Println("output-path does not exist")
-			return 1
-		}
+	err = initializeBucket(u.String())
+	if err != nil {
+		log.Println("cannot initilize buckets:", err)
+		return 1
 	}
 
 	// Enable Scrapers or Sellers/Vendors
@@ -693,6 +712,14 @@ func run() int {
 		log.Println("No AllPrintings specified, loading from network...")
 		*mtgjsonOpt = AllPrintingsURL
 	}
+
+	// Sanity check in case things are on different providers
+	err = initializeBucket(*mtgjsonOpt)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+
 	mtgjsonReader, err := loadData(*mtgjsonOpt)
 	if err != nil {
 		log.Println("Couldn't load MTGJSON/Allprintings")
