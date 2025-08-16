@@ -141,8 +141,8 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
 					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						scg.printf("- %s", card)
+						co, _ := mtgmatcher.GetUUID(probe)
+						scg.printf("%s", co)
 					}
 				}
 				continue
@@ -158,10 +158,9 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
-					scg.printf("%s got ids: %s", cardName, probes)
 					for _, probe := range probes {
 						co, _ := mtgmatcher.GetUUID(probe)
-						scg.printf("%s: %s", probe, co)
+						scg.printf("%s", co)
 					}
 				}
 				continue
@@ -376,14 +375,14 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int, r
 			} else if err != nil {
 				scg.printf("%v", err)
 				scg.printf("%+v", result)
+				scg.printf("-> %s", link)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
-					scg.printf("%s got ids: %s", result.Name, probes)
 					for _, probe := range probes {
 						co, _ := mtgmatcher.GetUUID(probe)
-						scg.printf("%s: %s", probe, co)
+						scg.printf("%s", co)
 					}
 				}
 				break
