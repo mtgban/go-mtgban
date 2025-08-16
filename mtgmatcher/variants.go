@@ -4444,8 +4444,8 @@ var multiPromosVariants = map[string]map[string]string{
 		"outlaws":  "270",
 	},
 	"Vivien Reid": {
-		"2019":        "234",
-		"foundations": "208",
+		"2019":        "208",
+		"foundations": "234",
 	},
 	"Muldrotha, the Gravetide": {
 		"dominaria":   "199",
@@ -4526,24 +4526,29 @@ var multiPromosVariants = map[string]map[string]string{
 		"2020":      "107",
 	},
 	"Breeding Pool": {
-		"edge":   "251",
-		"throne": "246",
+		"edge":       "251",
+		"throne":     "246",
+		"allegiance": "246",
 	},
 	"Godless Shrine": {
-		"edge":   "254",
-		"throne": "248",
+		"edge":       "254",
+		"throne":     "248",
+		"allegiance": "248",
 	},
 	"Sacred Foundry": {
 		"edge":   "256",
 		"throne": "254",
+		"guilds": "254",
 	},
 	"Stomping Ground": {
-		"edge":   "258",
-		"throne": "259",
+		"edge":       "258",
+		"throne":     "259",
+		"allegiance": "259",
 	},
 	"Watery Grave": {
 		"edge":   "261",
 		"throne": "259",
+		"guilds": "259",
 	},
 	// not listed here: all the temples
 }
@@ -4571,6 +4576,7 @@ var multiPromosTable = map[string]map[string]map[string]string{
 	"Outlaws of Thunder Junction Promos": multiPromosVariants,
 	"Phyrexia: All Will Be One":          multiPromosVariants,
 	"Phyrexia: All Will Be One Promos":   multiPromosVariants,
+	"Ravnica Allegiance Promos":          multiPromosVariants,
 	"Rivals of Ixalan Promos":            multiPromosVariants,
 	"Streets of New Capenna Promos":      multiPromosVariants,
 	"The Brothers' War Promos":           multiPromosVariants,
