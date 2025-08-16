@@ -54,7 +54,7 @@ import (
 var date = time.Now().Format("2006-01-02")
 var GCSBucket *storage.BucketHandle
 
-var GlobalLogCallback mtgban.LogCallbackFunc
+var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
 
 var MaxConcurrency = os.Getenv("MAX_CONCURRENCY")
 
@@ -626,8 +626,6 @@ func run() int {
 		}
 		return 0
 	}
-
-	GlobalLogCallback = log.Printf
 
 	switch *fileFormatOpt {
 	case "json", "csv", "ndjson":
