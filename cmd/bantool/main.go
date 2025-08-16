@@ -9,7 +9,6 @@ import (
 	"io"
 	"log"
 	"maps"
-	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -352,7 +351,7 @@ var options = map[string]*scraperOption{
 			var reader io.ReadCloser
 			var err error
 			if strings.HasPrefix(mtgjsonTCGSKUPath, "http") {
-				resp, err := http.Get(mtgjsonTCGSKUPath)
+				resp, err := cleanhttp.DefaultClient().Get(mtgjsonTCGSKUPath)
 				if err != nil {
 					return nil, err
 				}
