@@ -706,31 +706,6 @@ func run() int {
 		}
 	}
 
-	bc := mtgban.NewClient()
-
-	// Initialize the enabled scrapers
-	for _, opt := range options {
-		if opt.Enabled {
-			scraper, err := opt.Init()
-			if err != nil {
-				log.Println(err)
-				return 1
-			}
-			if opt.OnlySeller {
-				bc.RegisterSeller(scraper)
-			} else if opt.OnlyVendor {
-				bc.RegisterVendor(scraper)
-			} else {
-				bc.Register(scraper)
-			}
-		}
-	}
-
-	if len(bc.Scrapers()) == 0 {
-		log.Println("No scraper configured, run with -h for a list of commands")
-		return 1
-	}
-
 	// Load static data
 	if *mtgjsonOpt == "" {
 		log.Println("No AllPrintings specified, loading from network...")
@@ -761,6 +736,31 @@ func run() int {
 		return 1
 	}
 	log.Println("loading mtgjson took:", time.Since(now))
+
+	bc := mtgban.NewClient()
+
+	// Initialize the enabled scrapers
+	for _, opt := range options {
+		if opt.Enabled {
+			scraper, err := opt.Init()
+			if err != nil {
+				log.Println(err)
+				return 1
+			}
+			if opt.OnlySeller {
+				bc.RegisterSeller(scraper)
+			} else if opt.OnlyVendor {
+				bc.RegisterVendor(scraper)
+			} else {
+				bc.Register(scraper)
+			}
+		}
+	}
+
+	if len(bc.Scrapers()) == 0 {
+		log.Println("No scraper configured, run with -h for a list of commands")
+		return 1
+	}
 
 	now = time.Now()
 	// Load the data
