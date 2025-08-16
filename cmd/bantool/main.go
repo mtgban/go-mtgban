@@ -762,7 +762,7 @@ func main() {
 const AllPrintingsURL = "https://mtgjson.com/api/v5/AllPrintings.json.xz"
 
 func loadMTGJSON(pathOpt string) error {
-	var reader io.Reader
+	var reader io.ReadCloser
 
 	if pathOpt != "" {
 		log.Println("Loading MTGJSON from", pathOpt)
@@ -780,8 +780,8 @@ func loadMTGJSON(pathOpt string) error {
 			return err
 		}
 		reader = resp.Body
-		defer resp.Body.Close()
 	}
+	defer reader.Close()
 
 	var apReader io.Reader = reader
 	if strings.HasSuffix(pathOpt, "xz") {
