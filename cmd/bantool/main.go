@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime/debug"
 	"slices"
 	"strconv"
@@ -501,20 +502,26 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	filePath := path.Join(outputPath, fname)
 
 	var writer io.WriteCloser
-	if GCSBucket == nil {
+	u, err := url.Parse(filePath)
+	if err != nil {
+		return err
+	}
+	switch u.Scheme {
+	case "gs":
+		log.Println("Uploading seller", seller.Info().Shorthand)
+
+		writer = GCSBucket.Object(filePath).NewWriter(context.Background())
+	default:
 		log.Println("Dumping seller", seller.Info().Shorthand)
+
 		file, err := os.Create(filePath)
 		if err != nil {
 			return err
 		}
 		writer = file
-	} else {
-		log.Println("Uploading seller", seller.Info().Shorthand)
-		writer = GCSBucket.Object(filePath).NewWriter(context.Background())
 	}
 	defer writer.Close()
 
-	var err error
 	switch format {
 	case "json":
 		err = mtgban.WriteSellerToJSON(seller, writer)
@@ -532,20 +539,26 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 	filePath := path.Join(outputPath, fname)
 
 	var writer io.WriteCloser
-	if GCSBucket == nil {
+	u, err := url.Parse(filePath)
+	if err != nil {
+		return err
+	}
+	switch u.Scheme {
+	case "gs":
+		log.Println("Uploading vendor to GCS", vendor.Info().Shorthand)
+
+		writer = GCSBucket.Object(u.Path).NewWriter(context.Background())
+	default:
 		log.Println("Dumping vendor", vendor.Info().Shorthand)
+
 		file, err := os.Create(filePath)
 		if err != nil {
 			return err
 		}
 		writer = file
-	} else {
-		log.Println("Uploading vendor", vendor.Info().Shorthand)
-		writer = GCSBucket.Object(filePath).NewWriter(context.Background())
 	}
 	defer writer.Close()
 
-	var err error
 	switch format {
 	case "json":
 		err = mtgban.WriteVendorToJSON(vendor, writer)
@@ -601,7 +614,6 @@ func run() int {
 
 	flag.StringVar(&MtgjsonOpt, "mtgjson", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
-	serviceAccOpt := flag.String("svc-acc", "", "Service account with write permission on the bucket")
 
 	scrapersOpt := flag.String("scrapers", "", "Comma-separated list of scrapers to enable")
 	sellersOpt := flag.String("sellers", "", "Comma-separated list of sellers to enable")
@@ -657,29 +669,25 @@ func run() int {
 		log.Println("cannot parse output-path", err)
 		return 1
 	}
+	u.Path = filepath.Dir(u.Path)
 
-	// If a service account file is passed in, create a bucket object and update the output path
-	if *serviceAccOpt != "" {
-		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(*serviceAccOpt))
+	switch u.Scheme {
+	case "gs":
+		serviceAcc := os.Getenv("GCS_SVC_ACC")
+		if serviceAcc == "" {
+			log.Println("missing GCS_SVC_ACC for GCS access")
+			return 1
+		}
+
+		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(serviceAcc))
 		if err != nil {
 			log.Println("error creating the GCS client", err)
 			return 1
 		}
 
-		if u.Scheme != "gs" {
-			log.Println("unsupported scheme in output-path")
-			return 1
-		}
-
 		GCSBucket = client.Bucket(u.Host)
-
-		// Trim to avoid creating an empty directory in the bucket
-		*outputPathOpt = strings.TrimPrefix(u.Path, "/")
-	} else if u.Scheme != "" {
-		log.Println("missing svc-acc file for cloud access")
-		return 1
-	} else {
-		_, err := os.Stat(*outputPathOpt)
+	default:
+		_, err := os.Stat(u.Path)
 		if os.IsNotExist(err) {
 			log.Println("output-path does not exist")
 			return 1
