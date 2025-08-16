@@ -11,7 +11,6 @@ import (
 	"maps"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime/debug"
 	"slices"
@@ -51,7 +50,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 )
 
-var date = time.Now().Format("2006-01-02")
 var GCSBucket *storage.BucketHandle
 
 var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
@@ -477,27 +475,9 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 }
 
 func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
-	fname := fmt.Sprintf("%s_%s_Inventory.%s", date, seller.Info().Shorthand, format)
-	filePath := path.Join(outputPath, fname)
-
-	var writer io.WriteCloser
-	u, err := url.Parse(filePath)
+	writer, err := putData(seller.Info().Shorthand+"_Retail."+format, outputPath)
 	if err != nil {
 		return err
-	}
-	switch u.Scheme {
-	case "gs":
-		log.Println("Uploading seller", seller.Info().Shorthand)
-
-		writer = GCSBucket.Object(filePath).NewWriter(context.Background())
-	default:
-		log.Println("Dumping seller", seller.Info().Shorthand)
-
-		file, err := os.Create(filePath)
-		if err != nil {
-			return err
-		}
-		writer = file
 	}
 	defer writer.Close()
 
@@ -514,27 +494,9 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 }
 
 func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
-	fname := fmt.Sprintf("%s_%s_Buylist.%s", date, vendor.Info().Shorthand, format)
-	filePath := path.Join(outputPath, fname)
-
-	var writer io.WriteCloser
-	u, err := url.Parse(filePath)
+	writer, err := putData(vendor.Info().Shorthand+"_Buylist."+format, outputPath)
 	if err != nil {
 		return err
-	}
-	switch u.Scheme {
-	case "gs":
-		log.Println("Uploading vendor to GCS", vendor.Info().Shorthand)
-
-		writer = GCSBucket.Object(u.Path).NewWriter(context.Background())
-	default:
-		log.Println("Dumping vendor", vendor.Info().Shorthand)
-
-		file, err := os.Create(filePath)
-		if err != nil {
-			return err
-		}
-		writer = file
 	}
 	defer writer.Close()
 
@@ -551,6 +513,8 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 }
 
 func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
+	log.Println("Writing results to", outputPath)
+
 	for _, seller := range bc.Sellers() {
 		err := dumpSeller(seller, outputPath, format)
 		if err != nil {
@@ -766,6 +730,28 @@ func run() int {
 
 func main() {
 	os.Exit(run())
+}
+
+func putData(suffix, outputPath string) (io.WriteCloser, error) {
+	today := time.Now().Format("2006-01-02")
+	filePath := fmt.Sprintf("%s/%s_%s", outputPath, today, suffix)
+
+	var writer io.WriteCloser
+	u, err := url.Parse(filePath)
+	if err != nil {
+		return nil, err
+	}
+	switch u.Scheme {
+	case "gs":
+		writer = GCSBucket.Object(u.Path).NewWriter(context.Background())
+	default:
+		file, err := os.Create(filePath)
+		if err != nil {
+			return nil, err
+		}
+		writer = file
+	}
+	return writer, nil
 }
 
 func loadData(pathOpt string) (io.ReadCloser, error) {
