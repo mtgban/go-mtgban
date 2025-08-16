@@ -1,7 +1,6 @@
 package tcgplayer
 
 import (
-	"compress/bzip2"
 	"fmt"
 	"slices"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/ulikunitz/xz"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
@@ -49,8 +49,8 @@ type responseChan struct {
 }
 
 const (
-	allSkusURL       = "https://mtgjson.com/api/v5/TcgplayerSkus.json.bz2"
-	allSkusBackupURL = "https://mtgjson.com/api/v5_backup/TcgplayerSkus.json.bz2"
+	allSkusURL       = "https://mtgjson.com/api/v5/TcgplayerSkus.json.xz"
+	allSkusBackupURL = "https://mtgjson.com/api/v5_backup/TcgplayerSkus.json.xz"
 )
 
 var availableMarketNames = []string{
@@ -464,7 +464,12 @@ func getAllSKUs() (map[string][]TCGSku, error) {
 	}
 	defer resp.Body.Close()
 
-	skus, err := LoadTCGSKUs(bzip2.NewReader(resp.Body))
+	xzReader, err := xz.NewReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	skus, err := LoadTCGSKUs(xzReader)
 	if err != nil {
 		return nil, err
 	}
