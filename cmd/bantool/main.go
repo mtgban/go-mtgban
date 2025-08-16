@@ -585,6 +585,8 @@ func initializeBucket(outputPath string) error {
 }
 
 func run() int {
+	start := time.Now()
+
 	for key, val := range options {
 		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
 	}
@@ -720,6 +722,7 @@ func run() int {
 		return 1
 	}
 
+	now := time.Now()
 	mtgjsonReader, err := loadData(*mtgjsonOpt)
 	if err != nil {
 		log.Println("Couldn't load MTGJSON/Allprintings")
@@ -728,13 +731,16 @@ func run() int {
 	}
 	defer mtgjsonReader.Close()
 
+	now = time.Now()
 	err = mtgmatcher.LoadDatastore(mtgjsonReader)
 	if err != nil {
 		log.Println("Couldn't parse MTGJSON/AllPrintings")
 		log.Println(err)
 		return 1
 	}
+	log.Println("loading mtgjson took:", time.Since(now))
 
+	now = time.Now()
 	// Load the data
 	err = bc.Load()
 	if err != nil {
@@ -742,15 +748,18 @@ func run() int {
 		log.Println(err)
 		return 1
 	}
+	log.Println("loading scraper data took:", time.Since(now))
 
+	now = time.Now()
 	// Dump the results
 	err = dump(bc, *outputPathOpt, *fileFormatOpt, *metaOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
 	}
+	log.Println("uploading data took:", time.Since(now))
 
-	log.Println("Completed")
+	log.Println("Completed in", time.Since(start))
 
 	return 0
 }
