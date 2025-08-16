@@ -350,14 +350,19 @@ var options = map[string]*scraperOption{
 			}
 
 			var reader io.ReadCloser
-			var err error
-			if strings.HasPrefix(mtgjsonTCGSKUPath, "http") {
+			u, err := url.Parse(mtgjsonTCGSKUPath)
+			if err != nil {
+				return nil, err
+			}
+
+			switch u.Scheme {
+			case "http", "https":
 				resp, err := cleanhttp.DefaultClient().Get(mtgjsonTCGSKUPath)
 				if err != nil {
 					return nil, err
 				}
 				reader = resp.Body
-			} else {
+			default:
 				reader, err = os.Open(mtgjsonTCGSKUPath)
 				if err != nil {
 					return nil, err
@@ -786,22 +791,33 @@ const AllPrintingsURL = "https://mtgjson.com/api/v5/AllPrintings.json.xz"
 func loadMTGJSON(pathOpt string) error {
 	var reader io.ReadCloser
 
-	if pathOpt != "" {
+	if pathOpt == "" {
+		pathOpt = AllPrintingsURL
+	}
+
+	u, err := url.Parse(pathOpt)
+	if err != nil {
+		return err
+	}
+	switch u.Scheme {
+	case "http", "https":
+		log.Println("Loading MTGJSON from network")
+
+		resp, err := cleanhttp.DefaultClient().Get(pathOpt)
+		if err != nil {
+			return err
+		}
+
+		reader = resp.Body
+	default:
 		log.Println("Loading MTGJSON from", pathOpt)
 
 		file, err := os.Open(pathOpt)
 		if err != nil {
 			return err
 		}
-		reader = file
-	} else {
-		log.Println("Loading MTGJSON from network")
 
-		resp, err := cleanhttp.DefaultClient().Get(AllPrintingsURL)
-		if err != nil {
-			return err
-		}
-		reader = resp.Body
+		reader = file
 	}
 	defer reader.Close()
 
