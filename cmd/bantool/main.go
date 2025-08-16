@@ -336,9 +336,9 @@ var options = map[string]*scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
 			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
-			mtgjsonTCGSKUFilepathBZ2 := os.Getenv("MTGJSON_TCGSKU_FILEPATH_BZ2")
-			if tcgPublicId == "" || tcgPrivateId == "" || mtgjsonTCGSKUFilepathBZ2 == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_FILEPATH_BZ2 env vars")
+			mtgjsonTCGSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
+			if tcgPublicId == "" || tcgPrivateId == "" || mtgjsonTCGSKUPath == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_PATH env vars")
 			}
 
 			scraper := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
@@ -351,21 +351,31 @@ var options = map[string]*scraperOption{
 
 			var reader io.ReadCloser
 			var err error
-			if strings.HasPrefix(mtgjsonTCGSKUFilepathBZ2, "http") {
-				resp, err := http.Get(mtgjsonTCGSKUFilepathBZ2)
+			if strings.HasPrefix(mtgjsonTCGSKUPath, "http") {
+				resp, err := http.Get(mtgjsonTCGSKUPath)
 				if err != nil {
 					return nil, err
 				}
 				reader = resp.Body
 			} else {
-				reader, err = os.Open(mtgjsonTCGSKUFilepathBZ2)
+				reader, err = os.Open(mtgjsonTCGSKUPath)
 				if err != nil {
 					return nil, err
 				}
 			}
 			defer reader.Close()
 
-			skuReader := bzip2.NewReader(reader)
+			var skuReader io.Reader
+			skuReader = reader
+			if strings.HasSuffix(mtgjsonTCGSKUPath, "xz") {
+				xzReader, err := xz.NewReader(reader)
+				if err != nil {
+					return nil, err
+				}
+				skuReader = xzReader
+			} else if strings.HasSuffix(mtgjsonTCGSKUPath, "bz2") {
+				skuReader = bzip2.NewReader(reader)
+			}
 
 			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
 			if err != nil {
