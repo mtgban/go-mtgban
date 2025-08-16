@@ -126,16 +126,22 @@ func (bc *BanClient) Load() error {
 	for _, scraper := range bc.scrapers {
 		seller, ok := scraper.(Seller)
 		if ok && !bc.sellerDisabled[scraper.Info().Shorthand] {
-			_, err := seller.Inventory()
+			inv, err := seller.Inventory()
 			if err != nil {
 				return err
+			}
+			if len(inv) == 0 {
+				return errors.New("empty inventory")
 			}
 		}
 		vendor, ok := scraper.(Vendor)
 		if ok && !bc.vendorDisabled[scraper.Info().Shorthand] {
-			_, err := vendor.Buylist()
+			bl, err := vendor.Buylist()
 			if err != nil {
 				return err
+			}
+			if len(bl) == 0 {
+				return errors.New("empty buylist")
 			}
 		}
 	}
