@@ -761,6 +761,7 @@ func run() int {
 		log.Println("No scraper configured, run with -h for a list of commands")
 		return 1
 	}
+	log.Println("BAN client configured with", len(bc.Sellers()), "sellers and", len(bc.Vendors()), "vendors")
 
 	now = time.Now()
 	// Load the data
