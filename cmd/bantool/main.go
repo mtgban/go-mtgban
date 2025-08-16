@@ -36,6 +36,7 @@ import (
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/manapool"
 	"github.com/mtgban/go-mtgban/mintcard"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/mtgstocks"
 	"github.com/mtgban/go-mtgban/ninetyfive"
@@ -48,7 +49,6 @@ import (
 	"github.com/mtgban/go-mtgban/wizardscupboard"
 
 	"github.com/mtgban/go-mtgban/mtgban"
-	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 var date = time.Now().Format("2006-01-02")
@@ -57,6 +57,8 @@ var GCSBucket *storage.BucketHandle
 var GlobalLogCallback mtgban.LogCallbackFunc
 
 var MaxConcurrency = os.Getenv("MAX_CONCURRENCY")
+
+const AllPrintingsURL = "https://mtgjson.com/api/v5/AllPrintings.json.xz"
 
 var Commit = func() string {
 	if info, ok := debug.ReadBuildInfo(); ok {
@@ -349,40 +351,12 @@ var options = map[string]*scraperOption{
 				scraper.MaxConcurrency = num
 			}
 
-			var reader io.ReadCloser
-			u, err := url.Parse(mtgjsonTCGSKUPath)
+			mtgjsonReader, err := loadData(mtgjsonTCGSKUPath)
 			if err != nil {
 				return nil, err
 			}
-
-			switch u.Scheme {
-			case "http", "https":
-				resp, err := cleanhttp.DefaultClient().Get(mtgjsonTCGSKUPath)
-				if err != nil {
-					return nil, err
-				}
-				reader = resp.Body
-			default:
-				reader, err = os.Open(mtgjsonTCGSKUPath)
-				if err != nil {
-					return nil, err
-				}
-			}
-			defer reader.Close()
-
-			var skuReader io.Reader
-			skuReader = reader
-			if strings.HasSuffix(mtgjsonTCGSKUPath, "xz") {
-				xzReader, err := xz.NewReader(reader)
-				if err != nil {
-					return nil, err
-				}
-				skuReader = xzReader
-			} else if strings.HasSuffix(mtgjsonTCGSKUPath, "bz2") {
-				skuReader = bzip2.NewReader(reader)
-			}
-
-			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
+			defer mtgjsonReader.Close()
+			skus, err := tcgplayer.LoadTCGSKUs(mtgjsonReader)
 			if err != nil {
 				return nil, err
 			}
@@ -610,14 +584,12 @@ func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	return nil
 }
 
-var MtgjsonOpt string
-
 func run() int {
 	for key, val := range options {
 		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
 	}
 
-	flag.StringVar(&MtgjsonOpt, "mtgjson", "", "Path to AllPrintings file")
+	mtgjsonOpt := flag.String("mtgjson", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
 
 	scrapersOpt := flag.String("scrapers", "", "Comma-separated list of scrapers to enable")
@@ -755,9 +727,21 @@ func run() int {
 	}
 
 	// Load static data
-	err = loadMTGJSON(MtgjsonOpt)
+	if *mtgjsonOpt == "" {
+		log.Println("No AllPrintings specified, loading from network...")
+		*mtgjsonOpt = AllPrintingsURL
+	}
+	mtgjsonReader, err := loadData(*mtgjsonOpt)
 	if err != nil {
-		log.Println("Couldn't load MTGJSON...")
+		log.Println("Couldn't load MTGJSON/Allprintings")
+		log.Println(err)
+		return 1
+	}
+	defer mtgjsonReader.Close()
+
+	err = mtgmatcher.LoadDatastore(mtgjsonReader)
+	if err != nil {
+		log.Println("Couldn't parse MTGJSON/AllPrintings")
 		log.Println(err)
 		return 1
 	}
@@ -786,49 +770,39 @@ func main() {
 	os.Exit(run())
 }
 
-const AllPrintingsURL = "https://mtgjson.com/api/v5/AllPrintings.json.xz"
-
-func loadMTGJSON(pathOpt string) error {
+func loadData(pathOpt string) (io.ReadCloser, error) {
 	var reader io.ReadCloser
-
-	if pathOpt == "" {
-		pathOpt = AllPrintingsURL
-	}
 
 	u, err := url.Parse(pathOpt)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	switch u.Scheme {
 	case "http", "https":
-		log.Println("Loading MTGJSON from network")
-
 		resp, err := cleanhttp.DefaultClient().Get(pathOpt)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		reader = resp.Body
 	default:
-		log.Println("Loading MTGJSON from", pathOpt)
-
 		file, err := os.Open(pathOpt)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		reader = file
 	}
-	defer reader.Close()
 
-	var apReader io.Reader = reader
 	if strings.HasSuffix(pathOpt, "xz") {
 		xzReader, err := xz.NewReader(reader)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		apReader = xzReader
+		reader = io.NopCloser(xzReader)
+	} else if strings.HasSuffix(pathOpt, "bz2") {
+		reader = io.NopCloser(bzip2.NewReader(reader))
 	}
 
-	return mtgmatcher.LoadDatastore(apReader)
+	return reader, err
 }
