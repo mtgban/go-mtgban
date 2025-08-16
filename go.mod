@@ -1,6 +1,6 @@
 module github.com/mtgban/go-mtgban
 
-go 1.23.10
+go 1.24
 
 toolchain go1.24.5
 
@@ -22,13 +22,13 @@ require (
 )
 
 require (
+	github.com/Backblaze/blazer v0.7.2
 	github.com/corpix/uarand v0.2.0
 	github.com/montanaflynn/stats v0.7.1
 	github.com/mroth/weightedrand/v2 v2.1.0
 	github.com/mtgban/go-tcgplayer v0.0.0-20250314170048-a37ce47d0d4a
 	github.com/ulikunitz/xz v0.5.11
 	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a
-	golang.org/x/sync v0.16.0
 )
 
 require (
@@ -55,6 +55,7 @@ require (
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/appengine v1.6.8 // indirect

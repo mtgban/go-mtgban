@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/Backblaze/blazer/b2"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
 	"github.com/ulikunitz/xz"
@@ -51,6 +52,7 @@ import (
 )
 
 var GCSBucket *storage.BucketHandle
+var B2Bucket *b2.Bucket
 
 var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
 
@@ -574,6 +576,26 @@ func initializeBucket(outputPath string) error {
 		}
 
 		GCSBucket = client.Bucket(u.Host)
+	case "b2":
+		if B2Bucket != nil {
+			return nil
+		}
+
+		accessKey := os.Getenv("B2_KEY_ID")
+		secretKey := os.Getenv("B2_APP_KEY")
+		if accessKey == "" || secretKey == "" {
+			return errors.New("missing required B2 environment variables")
+		}
+
+		client, err := b2.NewClient(context.TODO(), accessKey, secretKey)
+		if err != nil {
+			return err
+		}
+
+		B2Bucket, err = client.Bucket(context.TODO(), u.Host)
+		if err != nil {
+			return err
+		}
 	default:
 		_, err := os.Stat(u.Path)
 		if os.IsNotExist(err) {
@@ -780,6 +802,9 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 	switch u.Scheme {
 	case "gs":
 		writer = GCSBucket.Object(u.Path).NewWriter(context.Background())
+	case "b2":
+		dst := strings.TrimPrefix(u.Path, "/")
+		writer = B2Bucket.Object(dst).NewWriter(context.Background())
 	default:
 		file, err := os.Create(filePath)
 		if err != nil {
@@ -805,6 +830,11 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 		}
 
 		reader = resp.Body
+	case "b2":
+		src := strings.TrimPrefix(u.Path, "/")
+		obj := B2Bucket.Object(src).NewReader(context.TODO())
+
+		reader = obj
 	default:
 		file, err := os.Open(pathOpt)
 		if err != nil {
