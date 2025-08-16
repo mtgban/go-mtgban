@@ -29,24 +29,19 @@ import (
 	"github.com/mtgban/go-mtgban/abugames"
 	"github.com/mtgban/go-mtgban/cardkingdom"
 	"github.com/mtgban/go-mtgban/cardmarket"
-	"github.com/mtgban/go-mtgban/cardsphere"
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/coolstuffinc"
-	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/manapool"
+	"github.com/mtgban/go-mtgban/miniaturemarket"
 	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgseattle"
-	"github.com/mtgban/go-mtgban/mtgstocks"
-	"github.com/mtgban/go-mtgban/ninetyfive"
 	"github.com/mtgban/go-mtgban/sealedev"
 	"github.com/mtgban/go-mtgban/starcitygames"
 	"github.com/mtgban/go-mtgban/strikezone"
 	"github.com/mtgban/go-mtgban/tcgplayer"
-	"github.com/mtgban/go-mtgban/toamagic"
 	"github.com/mtgban/go-mtgban/trollandtoad"
-	"github.com/mtgban/go-mtgban/wizardscupboard"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 )
@@ -86,6 +81,13 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"abugames_sealed": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := abugames.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
 	"cardkingdom": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := cardkingdom.NewScraper()
@@ -99,17 +101,6 @@ var options = map[string]*scraperOption{
 			scraper := cardkingdom.NewScraperSealed()
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CK_PARTNER")
-			return scraper, nil
-		},
-	},
-	"cardsphere": {
-		Init: func() (mtgban.Scraper, error) {
-			csphereToken := os.Getenv("CARDSPHERE_TOKEN")
-			if csphereToken == "" {
-				return nil, errors.New("missing CARDSPHERE_TOKEN env var")
-			}
-			scraper := cardsphere.NewScraper(csphereToken)
-			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -144,7 +135,6 @@ var options = map[string]*scraperOption{
 		},
 	},
 	"coolstuffinc": {
-		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper(coolstuffinc.GameMagic)
 			scraper.LogCallback = GlobalLogCallback
@@ -152,35 +142,11 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_official": {
-		Init: func() (mtgban.Scraper, error) {
-			csiKey := os.Getenv("CSI_KEY")
-			if csiKey == "" {
-				return nil, errors.New("missing CSI_KEY env var")
-			}
-
-			scraper := coolstuffinc.NewScraperOfficial(csiKey)
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Partner = os.Getenv("CSI_PARTNER")
-			return scraper, nil
-		},
-	},
 	"coolstuffinc_sealed": {
-		OnlyVendor: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed()
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CSI_PARTNER")
-			return scraper, nil
-		},
-	},
-	"hareruya": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper, err := hareruya.NewScraper()
-			if err != nil {
-				return nil, err
-			}
-			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
@@ -197,6 +163,22 @@ var options = map[string]*scraperOption{
 	"manapool": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := manapool.NewScraper()
+			scraper.Partner = os.Getenv("MP_AFFILIATE")
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"manapool_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := manapool.NewScraperSealed()
+			scraper.Partner = os.Getenv("MP_AFFILIATE")
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
+	"miniaturemarket_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := miniaturemarket.NewScraperSealed()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -204,7 +186,6 @@ var options = map[string]*scraperOption{
 	"mintcard": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mintcard.NewScraper()
-			scraper.Partner = os.Getenv("MP_AFFILIATE")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -247,23 +228,6 @@ var options = map[string]*scraperOption{
 	"mtgseattle": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgseattle.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"mtgstocks": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := mtgstocks.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"ninetyfive": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper, err := ninetyfive.NewScraper(ninetyfive.GameMagic)
-			if err != nil {
-				return nil, err
-			}
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -389,13 +353,6 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"toamagic": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := toamagic.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
 	"trollandtoad": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := trollandtoad.NewScraper()
@@ -407,10 +364,11 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"wizardscupboard": {
+	"trollandtoad_sealed": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			scraper := wizardscupboard.NewScraper()
+			scraper := trollandtoad.NewScraperSealed()
 			scraper.LogCallback = GlobalLogCallback
+			scraper.MaxConcurrency = 6
 			return scraper, nil
 		},
 	},
