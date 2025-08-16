@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"compress/bzip2"
 	"fmt"
 	"slices"
 	"strconv"
@@ -463,7 +464,7 @@ func getAllSKUs() (map[string][]TCGSku, error) {
 	}
 	defer resp.Body.Close()
 
-	skus, err := LoadTCGSKUs(resp.Body)
+	skus, err := LoadTCGSKUs(bzip2.NewReader(resp.Body))
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,6 @@
 package tcgplayer
 
 import (
-	"compress/bzip2"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -95,9 +94,10 @@ type AllTCGSkus struct {
 	} `json:"meta"`
 }
 
+// Load TCGSKU data from the reader
 func LoadTCGSKUs(reader io.Reader) (AllTCGSkus, error) {
 	var payload AllTCGSkus
-	err := json.NewDecoder(bzip2.NewReader(reader)).Decode(&payload)
+	err := json.NewDecoder(reader).Decode(&payload)
 	if err != nil {
 		return payload, err
 	}

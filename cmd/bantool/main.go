@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/bzip2"
 	"context"
 	"errors"
 	"flag"
@@ -347,6 +348,7 @@ var options = map[string]*scraperOption{
 			if num != 0 {
 				scraper.MaxConcurrency = num
 			}
+
 			var reader io.ReadCloser
 			var err error
 			if strings.HasPrefix(mtgjsonTCGSKUFilepathBZ2, "http") {
@@ -362,7 +364,10 @@ var options = map[string]*scraperOption{
 				}
 			}
 			defer reader.Close()
-			skus, err := tcgplayer.LoadTCGSKUs(reader)
+
+			skuReader := bzip2.NewReader(reader)
+
+			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
 			if err != nil {
 				return nil, err
 			}
