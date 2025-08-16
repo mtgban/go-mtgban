@@ -779,14 +779,18 @@ func loadMTGJSON(pathOpt string) error {
 		if err != nil {
 			return err
 		}
+		reader = resp.Body
 		defer resp.Body.Close()
+	}
 
-		xzReader, err := xz.NewReader(resp.Body)
+	var apReader io.Reader = reader
+	if strings.HasSuffix(pathOpt, "xz") {
+		xzReader, err := xz.NewReader(reader)
 		if err != nil {
 			return err
 		}
-		reader = xzReader
+		apReader = xzReader
 	}
 
-	return mtgmatcher.LoadDatastore(reader)
+	return mtgmatcher.LoadDatastore(apReader)
 }
