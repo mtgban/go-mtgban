@@ -1,0 +1,43 @@
+name: Deploy bantool runner
+
+on:
+  push:
+    branches:
+      - 'master'
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [cardkingdom]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install golang
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Show Go version
+        run: go version
+
+      - name: Build bantool
+        run: |
+          cd cmd/bantool
+          go build -o bantool
+
+      - name: Run bantool
+        env:
+          B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"
+          B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
+        run: |
+          cd cmd/bantool
+          ./bantool -mtgjson b2://mtgjsondata/AllPrintings.json.xz \
+                    -output-path b2://mtgjsondata/${{ matrix.target }} \
+                    -${{ matrix.target }}
