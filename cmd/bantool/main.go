@@ -624,7 +624,8 @@ func run() int {
 		sells := strings.Split(*sellersOpt, ",")
 		for _, name := range sells {
 			if options[name] == nil {
-				log.Fatalln("Seller", name, "not found")
+				log.Println("Seller", name, "not found")
+				return 1
 			}
 			options[name].Enabled = true
 			options[name].OnlySeller = true
@@ -635,7 +636,8 @@ func run() int {
 		vends := strings.Split(*vendorsOpt, ",")
 		for _, name := range vends {
 			if options[name] == nil {
-				log.Fatalln("Vendor", name, "not found")
+				log.Println("Vendor", name, "not found")
+				return 1
 			}
 			options[name].Enabled = true
 			options[name].OnlySeller = false
