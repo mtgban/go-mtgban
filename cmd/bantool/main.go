@@ -226,6 +226,7 @@ var options = map[string]*scraperOption{
 		},
 	},
 	"mtgseattle": {
+		OnlySeller: true,
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mtgseattle.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
@@ -361,14 +362,6 @@ var options = map[string]*scraperOption{
 			if num != 0 {
 				scraper.MaxConcurrency = num
 			}
-			return scraper, nil
-		},
-	},
-	"trollandtoad_sealed": &scraperOption{
-		Init: func() (mtgban.Scraper, error) {
-			scraper := trollandtoad.NewScraperSealed()
-			scraper.LogCallback = GlobalLogCallback
-			scraper.MaxConcurrency = 6
 			return scraper, nil
 		},
 	},
