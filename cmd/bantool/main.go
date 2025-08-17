@@ -8,12 +8,10 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"maps"
 	"net/url"
 	"os"
 	"path/filepath"
 	"runtime/debug"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -582,30 +580,10 @@ func run() int {
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
 	versionOpt := flag.Bool("v", false, "Print version information")
-	listOpt := flag.Bool("l", false, "List all scrapers available")
 	flag.Parse()
 
 	log.Println("bantool version", Commit)
 	if *versionOpt {
-		return 0
-	}
-
-	if *listOpt {
-		keys := slices.Sorted(maps.Keys(options))
-		for _, key := range keys {
-			var list []string
-			if options[key].OnlyVendor {
-				list = append(list, "❌")
-			} else {
-				list = append(list, "✅")
-			}
-			if options[key].OnlySeller {
-				list = append(list, "❌")
-			} else {
-				list = append(list, "✅")
-			}
-			fmt.Println(list, key)
-		}
 		return 0
 	}
 
