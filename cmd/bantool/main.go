@@ -1,7 +1,6 @@
 package main
 
 import (
-	"compress/bzip2"
 	"context"
 	"errors"
 	"flag"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dsnet/compress/bzip2"
 
 	"cloud.google.com/go/storage"
 	"github.com/Backblaze/blazer/b2"
@@ -436,11 +437,11 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	defer writer.Close()
 
 	switch format {
-	case "json", "json.xz":
+	case "json", "json.xz", "json.bz2":
 		err = mtgban.WriteSellerToJSON(seller, writer)
-	case "csv", "csv.xz":
+	case "csv", "csv.xz", "csv.bz2":
 		err = mtgban.WriteSellerToCSV(seller, writer)
-	case "ndjson", "ndjson.xz":
+	case "ndjson", "ndjson.xz", "ndjson.bz2":
 		err = writeSellerToNDJSON(seller, writer)
 	}
 
@@ -455,11 +456,11 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 	defer writer.Close()
 
 	switch format {
-	case "json", "json.xz":
+	case "json", "json.xz", "json.bz2":
 		err = mtgban.WriteVendorToJSON(vendor, writer)
-	case "csv", "csv.xz":
+	case "csv", "csv.xz", "csv.bz2":
 		err = mtgban.WriteVendorToCSV(vendor, writer)
-	case "ndjson", "ndjson.xz":
+	case "ndjson", "ndjson.xz", "ndjson.bz2":
 		err = writeVendorToNDJSON(vendor, writer)
 	}
 
@@ -583,7 +584,7 @@ func run() int {
 		return 0
 	}
 
-	switch strings.TrimSuffix(*fileFormatOpt, ".xz") {
+	switch strings.TrimSuffix(strings.TrimSuffix(*fileFormatOpt, ".bz2"), ".xz") {
 	case "json", "csv", "ndjson":
 	default:
 		log.Println("Invalid -format option, see -h for supported values")
@@ -751,6 +752,12 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 			return nil, err
 		}
 		writer = xzWriter
+	} else if strings.HasSuffix(filePath, ".bz2") {
+		bz2Writer, err := bzip2.NewWriter(writer, nil)
+		if err != nil {
+			return nil, err
+		}
+		writer = bz2Writer
 	}
 
 	return writer, nil
@@ -793,7 +800,11 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 		}
 		reader = io.NopCloser(xzReader)
 	} else if strings.HasSuffix(pathOpt, "bz2") {
-		reader = io.NopCloser(bzip2.NewReader(reader))
+		bz2Reader, err := bzip2.NewReader(reader, nil)
+		if err != nil {
+			return nil, err
+		}
+		reader = bz2Reader
 	}
 
 	return reader, err
