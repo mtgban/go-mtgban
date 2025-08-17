@@ -27,6 +27,13 @@ jobs:
       - name: Show Go version
         run: go version
 
+      - name: Cache Go module downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod/cache
+          key: go-mod-cache-${{ hashFiles('**/go.sum') }}
+          restore-keys: go-mod-cache-
+
       - name: Build bantool
         run: |
           cd cmd/bantool
