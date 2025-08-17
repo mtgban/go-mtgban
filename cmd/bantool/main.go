@@ -443,6 +443,8 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 		err = mtgban.WriteSellerToCSV(seller, writer)
 	case "ndjson", "ndjson.xz", "ndjson.bz2":
 		err = writeSellerToNDJSON(seller, writer)
+	default:
+		err = errors.New("invalid format")
 	}
 
 	return err
@@ -462,6 +464,8 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 		err = mtgban.WriteVendorToCSV(vendor, writer)
 	case "ndjson", "ndjson.xz", "ndjson.bz2":
 		err = writeVendorToNDJSON(vendor, writer)
+	default:
+		err = errors.New("invalid format")
 	}
 
 	return err
