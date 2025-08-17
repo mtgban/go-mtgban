@@ -433,23 +433,14 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	if err != nil {
 		return err
 	}
-
-	if strings.HasSuffix(format, ".xz") {
-		xzWriter, err := xz.NewWriter(writer)
-		if err != nil {
-			return err
-		}
-		writer = xzWriter
-		format = strings.TrimSuffix(format, ".xz")
-	}
 	defer writer.Close()
 
 	switch format {
-	case "json":
+	case "json", "json.xz":
 		err = mtgban.WriteSellerToJSON(seller, writer)
-	case "csv":
+	case "csv", "csv.xz":
 		err = mtgban.WriteSellerToCSV(seller, writer)
-	case "ndjson":
+	case "ndjson", "ndjson.xz":
 		err = writeSellerToNDJSON(seller, writer)
 	}
 
@@ -461,23 +452,14 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 	if err != nil {
 		return err
 	}
-
-	if strings.HasSuffix(format, ".xz") {
-		xzWriter, err := xz.NewWriter(writer)
-		if err != nil {
-			return err
-		}
-		writer = xzWriter
-		format = strings.TrimSuffix(format, ".xz")
-	}
 	defer writer.Close()
 
 	switch format {
-	case "json":
+	case "json", "json.xz":
 		err = mtgban.WriteVendorToJSON(vendor, writer)
-	case "csv":
+	case "csv", "csv.xz":
 		err = mtgban.WriteVendorToCSV(vendor, writer)
-	case "ndjson":
+	case "ndjson", "ndjson.xz":
 		err = writeVendorToNDJSON(vendor, writer)
 	}
 
@@ -762,6 +744,15 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 		}
 		writer = file
 	}
+
+	if strings.HasSuffix(filePath, ".xz") {
+		xzWriter, err := xz.NewWriter(writer)
+		if err != nil {
+			return nil, err
+		}
+		writer = xzWriter
+	}
+
 	return writer, nil
 }
 
