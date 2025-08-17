@@ -136,5 +136,4 @@ jobs:
           cd cmd/bantool
           ./bantool -mtgjson ../../downloads/AllPrintings.json.xz \
                     -output-path b2://mtgban-dumps/magic/${{ matrix.target }} \
-                    -format json.xz \
                     -${{ matrix.target }}
