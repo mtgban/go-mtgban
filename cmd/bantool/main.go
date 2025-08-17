@@ -20,7 +20,8 @@ import (
 	"github.com/Backblaze/blazer/b2"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
-	"github.com/xi2/xz"
+	"github.com/ulikunitz/xz"
+	xzReader "github.com/xi2/xz"
 	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -432,6 +433,15 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	if err != nil {
 		return err
 	}
+
+	if strings.HasSuffix(format, ".xz") {
+		xzWriter, err := xz.NewWriter(writer)
+		if err != nil {
+			return err
+		}
+		writer = xzWriter
+		format = strings.TrimSuffix(format, ".xz")
+	}
 	defer writer.Close()
 
 	switch format {
@@ -450,6 +460,15 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 	writer, err := putData(vendor.Info().Shorthand+"_Buylist."+format, outputPath)
 	if err != nil {
 		return err
+	}
+
+	if strings.HasSuffix(format, ".xz") {
+		xzWriter, err := xz.NewWriter(writer)
+		if err != nil {
+			return err
+		}
+		writer = xzWriter
+		format = strings.TrimSuffix(format, ".xz")
 	}
 	defer writer.Close()
 
@@ -582,7 +601,7 @@ func run() int {
 		return 0
 	}
 
-	switch *fileFormatOpt {
+	switch strings.TrimSuffix(*fileFormatOpt, ".xz") {
 	case "json", "csv", "ndjson":
 	default:
 		log.Println("Invalid -format option, see -h for supported values")
@@ -777,7 +796,7 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 	}
 
 	if strings.HasSuffix(pathOpt, "xz") {
-		xzReader, err := xz.NewReader(reader, 0)
+		xzReader, err := xzReader.NewReader(reader, 0)
 		if err != nil {
 			return nil, err
 		}
