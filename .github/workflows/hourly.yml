@@ -11,7 +11,12 @@ jobs:
     strategy:
       fail-fast: false # keep the other jobs alive if one fails
       matrix:
-        target: [cardkingdom, cardkingdom_sealed, tcg_index, tcg_market, tcg_sealed]
+        target:
+          - cardkingdom
+          - cardkingdom_sealed
+          - tcg_index
+          - tcg_market
+          - tcg_sealed
     
     steps:
       - name: Checkout repository
