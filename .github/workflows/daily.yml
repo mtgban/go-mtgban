@@ -1,0 +1,140 @@
+name: Bantool Runner (daily)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - sealed_ev
+          - abugames
+          - abugames_sealed
+          - cardtrader
+          - cardtrader_sealed
+          - mintcard
+          - mkm_index
+          - mkm_sealed
+          - mtgseattle
+          - magiccorner
+          - miniaturemarket_sealed
+          - tcg_syplist
+  schedule:
+    - cron: "30 19 * * *" # just after the advertised mtgjson release
+
+jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - id: set
+        run: |
+          ALL_TARGETS='[
+            "sealed_ev",
+            "abugames",
+            "abugames_sealed",
+            "cardtrader",
+            "cardtrader_sealed",
+            "mintcard",
+            "mkm_index",
+            "mkm_sealed",
+            "mtgseattle",
+            "magiccorner",
+            "miniaturemarket_sealed",
+            "tcg_syplist"
+          ]'
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.target }}" != "all" ];
+          then
+            TARGET_JSON="{\"target\":[\"${{ github.event.inputs.target }}\"]}"
+          else
+            TARGET_JSON="{\"target\":$ALL_TARGETS}"
+          fi
+
+          # Escape for $GITHUB_OUTPUT
+          ESCAPED_JSON=$(echo "$TARGET_JSON" | jq -c .)
+          echo "matrix=$ESCAPED_JSON" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy ${{ matrix.target }}
+    needs: prepare-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
+
+    steps:
+      - run: echo "Deploying target ${{ matrix.target }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install golang
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Show Go version
+        run: go version
+
+      - name: Cache Go module downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod/cache
+          key: go-mod-cache-${{ hashFiles('**/go.sum') }}
+          restore-keys: go-mod-cache-
+
+      # Fetch etag for MTGJSON/AllPrintings
+      - name: Fetch MTGJSON/AllPrintings file checksum
+        id: get_mtgjson_hash
+        run: |
+          AP_URL="https://www.mtgjson.com/api/v5/AllPrintings.json.xz"
+          etag=$(curl -sI "$AP_URL" | grep -i ETag | tr -d '\r"'| cut -f 2 -d " ")
+          echo "etag=$etag" >> $GITHUB_OUTPUT
+          echo "Cache key: mtgjson-$etag"
+
+      # Cache MTGJSON/AllPrintings file
+      - name: Cache MTGJSON/AllPrintings file
+        uses: actions/cache@v4
+        with:
+          path: downloads/
+          key: mtgjson-${{ steps.get_mtgjson_hash.outputs.etag }}
+
+      # Download AllPrintings if not cached
+      - name: Download MTGJSON/AllPrintings if needed
+        run: |
+          mkdir -p downloads
+          if [ ! -f downloads/AllPrintings.json.xz ]; then
+            echo "Downloading MTGJSON/AllPrintings..."
+            curl -L https://www.mtgjson.com/api/v5/AllPrintings.json.xz -o downloads/AllPrintings.json.xz
+            curl -L https://www.mtgjson.com/api/v5/TcgplayerSkus.json.xz -o downloads/TcgplayerSkus.json.xz
+          else
+            echo "Using cached MTGJSON/AllPrintings"
+          fi
+
+      - name: Build bantool
+        run: |
+          cd cmd/bantool
+          go build -o bantool
+
+      - name: Run bantool
+        env:
+          B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"
+          B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
+          CK_PARTNER: "${{ vars.CK_PARTNER }}"
+          CT_PARTNER: "${{ vars.CT_PARTNER }}"
+          TCG_PARTNER: "${{ vars.TCG_PARTNER }}"
+          BAN_API_KEY: "${{ secrets.BAN_API_KEY }}"
+          CARDTRADER_TOKEN_BEARER: "${{ secrets.CARDTRADER_TOKEN_BEARER }}"
+          MKM_APP_TOKEN: "${{ secrets.MKM_APP_TOKEN }}"
+          MKM_APP_SECRET: "${{ secrets.MKM_APP_SECRET }}"
+          TCGPLAYER_AUTH: "${{ secrets.TCGPLAYER_AUTH }}"
+        run: |
+          cd cmd/bantool
+          ./bantool -mtgjson ../../downloads/AllPrintings.json.xz \
+                    -output-path b2://mtgban-dumps/magic/${{ matrix.target }} \
+                    -format json.xz \
+                    -${{ matrix.target }}
