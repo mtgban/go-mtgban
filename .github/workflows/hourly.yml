@@ -2,23 +2,59 @@ name: Bantool Runner (hourly)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 * * * *"  
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false # keep the other jobs alive if one fails
-      matrix:
-        target:
+    inputs:
+      target:
+        description: 'Target to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
           - cardkingdom
           - cardkingdom_sealed
           - tcg_index
           - tcg_market
           - tcg_sealed
-    
+  schedule:
+    - cron: "0 * * * *"  
+
+jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
     steps:
+      - id: set
+        run: |
+          ALL_TARGETS='[
+            "cardkingdom",
+            "cardkingdom_sealed",
+            "tcg_index",
+            "tcg_market",
+            "tcg_sealed"
+          ]'
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.target }}" != "all" ];
+          then
+            TARGET_JSON="{\"target\":[\"${{ github.event.inputs.target }}\"]}"
+          else
+            TARGET_JSON="{\"target\":$ALL_TARGETS}"
+          fi
+
+          # Escape for $GITHUB_OUTPUT
+          ESCAPED_JSON=$(echo "$TARGET_JSON" | jq -c .)
+          echo "matrix=$ESCAPED_JSON" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy ${{ matrix.target }}
+    needs: prepare-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
+
+    steps:
+      - run: echo "Deploying target ${{ matrix.target }}"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
