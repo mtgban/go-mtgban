@@ -77,5 +77,5 @@ jobs:
         run: |
           cd cmd/bantool
           ./bantool -mtgjson ../../downloads/AllPrintings.json.xz \
-                    -output-path b2://mtgjsondata/${{ matrix.target }} \
+                    -output-path b2://mtgban-dumps/${{ matrix.target }} \
                     -${{ matrix.target }}
