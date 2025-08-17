@@ -730,8 +730,7 @@ func main() {
 }
 
 func putData(suffix, outputPath string) (io.WriteCloser, error) {
-	today := time.Now().Format("2006-01-02")
-	filePath := fmt.Sprintf("%s/%s_%s", outputPath, today, suffix)
+	filePath := fmt.Sprintf("%s/%s", outputPath, suffix)
 
 	var writer io.WriteCloser
 	u, err := url.Parse(filePath)
