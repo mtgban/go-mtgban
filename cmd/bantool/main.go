@@ -113,6 +113,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
+			scraper.ShareCode = os.Getenv("CT_PARTNER")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -128,6 +129,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
+			scraper.ShareCode = os.Getenv("CT_PARTNER")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -161,7 +163,7 @@ var options = map[string]*scraperOption{
 	"manapool": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := manapool.NewScraper()
-			scraper.Partner = os.Getenv("MP_AFFILIATE")
+			scraper.Partner = os.Getenv("MP_PARTNER")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -169,7 +171,7 @@ var options = map[string]*scraperOption{
 	"manapool_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := manapool.NewScraperSealed()
-			scraper.Partner = os.Getenv("MP_AFFILIATE")
+			scraper.Partner = os.Getenv("MP_PARTNER")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
@@ -202,7 +204,7 @@ var options = map[string]*scraperOption{
 			}
 			scraper.Affiliate = "mtgban"
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
 			return scraper, nil
 		},
 	},
@@ -219,7 +221,7 @@ var options = map[string]*scraperOption{
 				return nil, err
 			}
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("MKM_AFFILIATE")
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
 			return scraper, nil
 		},
 	},
@@ -237,7 +239,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing BAN_API_KEY env var")
 			}
 			scraper := sealedev.NewScraper(banKey)
-			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 			scraper.BuylistAffiliate = os.Getenv("CK_PARTNER")
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
@@ -253,7 +255,7 @@ var options = map[string]*scraperOption{
 
 			scraper := starcitygames.NewScraper(starcitygames.GameMagic, scgGUID, scgBearer)
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("SCG_AFFILIATE")
+			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			return scraper, nil
 		},
 	},
@@ -267,7 +269,7 @@ var options = map[string]*scraperOption{
 
 			scraper := starcitygames.NewScraperSealed(scgGUID, scgBearer)
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("SCG_AFFILIATE")
+			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			return scraper, nil
 		},
 	},
@@ -288,7 +290,7 @@ var options = map[string]*scraperOption{
 
 			scraper := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 			num, _ := strconv.Atoi(MaxConcurrency)
 			if num != 0 {
 				scraper.MaxConcurrency = num
@@ -307,7 +309,7 @@ var options = map[string]*scraperOption{
 
 			scraper := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 			num, _ := strconv.Atoi(MaxConcurrency)
 			if num != 0 {
 				scraper.MaxConcurrency = num
@@ -336,7 +338,7 @@ var options = map[string]*scraperOption{
 
 			scraper := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("TCG_AFFILIATE")
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 			return scraper, nil
 		},
 	},
