@@ -53,8 +53,6 @@ var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
 
 var MaxConcurrency = os.Getenv("MAX_CONCURRENCY")
 
-const AllPrintingsURL = "https://mtgjson.com/api/v5/AllPrintings.json.xz"
-
 var Commit = func() string {
 	if info, ok := debug.ReadBuildInfo(); ok {
 		for _, setting := range info.Settings {
@@ -570,7 +568,7 @@ func run() int {
 		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
 	}
 
-	mtgjsonOpt := flag.String("mtgjson", "", "Path to AllPrintings file")
+	datastoreOpt := flag.String("datastore", "", "Path to AllPrintings file")
 	outputPathOpt := flag.String("output-path", "", "Path where to dump results")
 
 	scrapersOpt := flag.String("scrapers", "", "Comma-separated list of scrapers to enable")
@@ -613,6 +611,17 @@ func run() int {
 		return 1
 	}
 
+	if *datastoreOpt == "" {
+		log.Println("Missing datatore argument")
+		return 1
+	}
+	// Sanity check in case things are on different providers
+	err = initializeBucket(*datastoreOpt)
+	if err != nil {
+		log.Println(err)
+		return 1
+	}
+
 	// Enable Scrapers or Sellers/Vendors
 	scraps := strings.Split(*scrapersOpt, ",")
 	for _, name := range scraps {
@@ -645,36 +654,21 @@ func run() int {
 		}
 	}
 
-	// Load static data
-	if *mtgjsonOpt == "" {
-		log.Println("No AllPrintings specified, loading from network...")
-		*mtgjsonOpt = AllPrintingsURL
-	}
-
-	// Sanity check in case things are on different providers
-	err = initializeBucket(*mtgjsonOpt)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
-
 	now := time.Now()
-	mtgjsonReader, err := loadData(*mtgjsonOpt)
+	datastoreReader, err := loadData(*datastoreOpt)
 	if err != nil {
-		log.Println("Couldn't load MTGJSON/Allprintings")
 		log.Println(err)
 		return 1
 	}
-	defer mtgjsonReader.Close()
+	defer datastoreReader.Close()
 
 	now = time.Now()
-	err = mtgmatcher.LoadDatastore(mtgjsonReader)
+	err = mtgmatcher.LoadDatastore(datastoreReader)
 	if err != nil {
-		log.Println("Couldn't parse MTGJSON/AllPrintings")
 		log.Println(err)
 		return 1
 	}
-	log.Println("loading mtgjson took:", time.Since(now))
+	log.Println("loading datastore took:", time.Since(now))
 
 	bc := mtgban.NewClient()
 
