@@ -1,0 +1,98 @@
+name: Run bantool
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      game:
+        required: true
+        type: string
+
+jobs:
+  run-bantool:
+    name: Run bantool for ${{ inputs.target }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "Deploying target ${{ inputs.target }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install golang
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Show Go version
+        run: go version
+
+      - name: Cache Go module downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod/cache
+          key: go-mod-cache-${{ hashFiles('**/go.sum') }}
+          restore-keys: go-mod-cache-
+
+      # Fetch etag for MTGJSON/AllPrintings
+      - name: Fetch MTGJSON/AllPrintings file checksum
+        id: get_mtgjson_hash
+        run: |
+          AP_URL="https://www.mtgjson.com/api/v5/AllPrintings.json.xz"
+          etag=$(curl -sI "$AP_URL" | grep -i ETag | tr -d '\r"'| cut -f 2 -d " ")
+          echo "etag=$etag" >> $GITHUB_OUTPUT
+          echo "Cache key: mtgjson-$etag"
+
+      # Cache MTGJSON/AllPrintings file
+      - name: Cache MTGJSON/AllPrintings file
+        uses: actions/cache@v4
+        with:
+          path: downloads/
+          key: mtgjson-${{ steps.get_mtgjson_hash.outputs.etag }}
+
+      # Download AllPrintings if not cached
+      - name: Download MTGJSON/AllPrintings if needed
+        run: |
+          mkdir -p downloads
+          if [ ! -f downloads/AllPrintings.json.xz ]; then
+            echo "Downloading MTGJSON/AllPrintings..."
+            curl -L https://www.mtgjson.com/api/v5/AllPrintings.json.xz -o downloads/AllPrintings.json.xz
+            curl -L https://www.mtgjson.com/api/v5/TcgplayerSkus.json.xz -o downloads/TcgplayerSkus.json.xz
+          else
+            echo "Using cached MTGJSON/AllPrintings"
+          fi
+
+      - name: Build bantool
+        run: |
+          cd cmd/bantool
+          go build -o bantool
+
+      - name: Run bantool
+        env:
+          CK_PARTNER: "${{ vars.CK_PARTNER }}"
+          CSI_PARTNER: "${{ vars.CSI_PARTNER }}"
+          CT_PARTNER: "${{ vars.CT_PARTNER }}"
+          MP_PARTNER: "${{ vars.MP_PARTNER }}"
+          SCG_PARTNER: "${{ vars.SCG_PARTNER }}"
+          TCG_PARTNER: "${{ vars.TCG_PARTNER }}"
+
+          MTGJSON_TCGSKU_PATH: "../../downloads/TcgplayerSkus.json.xz"
+
+          B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
+          B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"
+          BAN_API_KEY: "${{ secrets.BAN_API_KEY }}"
+          CARDTRADER_TOKEN_BEARER: "${{ secrets.CARDTRADER_TOKEN_BEARER }}"
+          MKM_APP_SECRET: "${{ secrets.MKM_APP_SECRET }}"
+          MKM_APP_TOKEN: "${{ secrets.MKM_APP_TOKEN }}"
+          SCG_BEARER: "${{ secrets.SCG_BEARER }}"
+          SCG_GUID: "${{ secrets.SCG_GUID }}"
+          TCGPLAYER_AUTH: "${{ secrets.TCGPLAYER_AUTH }}"
+          TCGPLAYER_PRIVATE_ID: "${{ secrets.TCGPLAYER_PRIVATE_ID }}"
+          TCGPLAYER_PUBLIC_ID: "${{ secrets.TCGPLAYER_PUBLIC_ID }}"
+        run: |
+          cd cmd/bantool
+          ./bantool -mtgjson ../../downloads/AllPrintings.json.xz \
+                    -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
+                    -${{ inputs.target }}
