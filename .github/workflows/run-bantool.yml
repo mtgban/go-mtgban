@@ -67,7 +67,7 @@ jobs:
       - name: Build bantool
         run: |
           cd cmd/bantool
-          go build -o bantool
+          go install
 
       - name: Run bantool
         env:
@@ -78,7 +78,7 @@ jobs:
           SCG_PARTNER: "${{ vars.SCG_PARTNER }}"
           TCG_PARTNER: "${{ vars.TCG_PARTNER }}"
 
-          MTGJSON_TCGSKU_PATH: "../../downloads/TcgplayerSkus.json.xz"
+          MTGJSON_TCGSKU_PATH: "downloads/TcgplayerSkus.json.xz"
 
           B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
           B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"
@@ -92,7 +92,6 @@ jobs:
           TCGPLAYER_PRIVATE_ID: "${{ secrets.TCGPLAYER_PRIVATE_ID }}"
           TCGPLAYER_PUBLIC_ID: "${{ secrets.TCGPLAYER_PUBLIC_ID }}"
         run: |
-          cd cmd/bantool
-          ./bantool -mtgjson ../../downloads/AllPrintings.json.xz \
-                    -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
-                    -${{ inputs.target }}
+          bantool -mtgjson downloads/AllPrintings.json.xz \
+                  -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
+                  -${{ inputs.target }}
