@@ -135,6 +135,12 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			setCode = "PF23"
 			number = strings.TrimLeft(fields[2], "0")
 		}
+	case "MB13":
+		setCode = "MB2"
+		cards := mtgmatcher.MatchInSet(cardName, setCode)
+		if len(cards) == 1 {
+			number = cards[0].Number
+		}
 	default:
 		if strings.Contains(cardName, "//") {
 			number = strings.TrimSuffix(number, "a")
