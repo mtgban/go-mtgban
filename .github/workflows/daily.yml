@@ -13,11 +13,11 @@ on:
           - sealed_ev
           - abugames
           - abugames_sealed
+          - cardmarket
+          - cardmarket_sealed
           - cardtrader
           - cardtrader_sealed
           - mintcard
-          - mkm_index
-          - mkm_sealed
           - mtgseattle
           - magiccorner
           - miniaturemarket_sealed
@@ -37,11 +37,11 @@ jobs:
             "sealed_ev",
             "abugames",
             "abugames_sealed",
+            "cardmarket",
+            "cardmarket_sealed",
             "cardtrader",
             "cardtrader_sealed",
             "mintcard",
-            "mkm_index",
-            "mkm_sealed",
             "mtgseattle",
             "magiccorner",
             "miniaturemarket_sealed",

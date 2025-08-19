@@ -192,7 +192,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mkm_index": {
+	"cardmarket": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -210,7 +210,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"mkm_sealed": {
+	"cardmarket_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
