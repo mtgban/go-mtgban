@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"context"
 	"errors"
 	"flag"
@@ -920,6 +921,12 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 			return nil, err
 		}
 		reader = bz2Reader
+	} else if strings.HasSuffix(pathOpt, "gz") {
+		zipReader, err := gzip.NewReader(reader)
+		if err != nil {
+			return nil, err
+		}
+		reader = zipReader
 	}
 
 	return reader, err
