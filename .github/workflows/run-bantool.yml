@@ -26,8 +26,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "Deploying target ${{ inputs.target }}"
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
