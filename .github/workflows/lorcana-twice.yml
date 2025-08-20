@@ -61,7 +61,7 @@ jobs:
               TARGET_JSON="{\"target\":[\"$PAYLOAD_TARGET\"]}"
             else
               echo "Error: Invalid target '$PAYLOAD_TARGET'. Must be one of: $(echo $ALL_TARGETS | jq -r '.[]' | tr '\n' ' ')" >&2
-              exit 0
+              TARGET_JSON="{\"target\":[]}"
             fi
           fi
 
@@ -81,6 +81,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
+    if: ${{ fromJSON(needs.prepare-matrix.outputs.matrix).target[0] != '' }}
     uses: ./.github/workflows/run-bantool.yml
     with:
       target: ${{ matrix.target }}
