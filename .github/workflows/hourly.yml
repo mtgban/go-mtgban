@@ -17,6 +17,8 @@ on:
           - tcg_index
           - tcg_market
           - tcg_sealed
+  repository_dispatch:
+    types: [bantool_magic]
   schedule:
     - cron: "10 * * * *"
 
@@ -37,11 +39,29 @@ jobs:
             "tcg_market",
             "tcg_sealed"
           ]'
+
+          TARGET_JSON="{\"target\":$ALL_TARGETS}"
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.target }}" != "all" ];
           then
             TARGET_JSON="{\"target\":[\"${{ github.event.inputs.target }}\"]}"
-          else
-            TARGET_JSON="{\"target\":$ALL_TARGETS}"
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ];
+          then
+            # Check payload
+            PAYLOAD_TARGET="${{ github.event.client_payload.target }}"
+            if [ -z "$PAYLOAD_TARGET" ]; then
+              echo "Error: repository_dispatch event must include client_payload.target" >&2
+              exit 0
+            fi
+
+            # Validate against ALL_TARGETS
+            if echo "$ALL_TARGETS" | jq -e --arg t "$PAYLOAD_TARGET" '.[] | select(. == $t)' > /dev/null;
+            then
+              TARGET_JSON="{\"target\":[\"$PAYLOAD_TARGET\"]}"
+            else
+              echo "Error: Invalid target '$PAYLOAD_TARGET'. Must be one of: $(echo $ALL_TARGETS | jq -r '.[]' | tr '\n' ' ')" >&2
+              exit 0
+            fi
           fi
 
           # Escape for $GITHUB_OUTPUT
