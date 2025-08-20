@@ -1,0 +1,49 @@
+name: Download and cache a file
+
+on:
+  workflow_call:
+    inputs:
+      url:
+        required: true
+        type: string
+      path:
+        required: true
+        type: string
+    outputs:
+      key:
+        description: "Key of the cache to retrieve"
+        value: ${{ jobs.cache-file.outputs.key }}
+      filepath:
+        description: "Where the file will be availble at"
+        value: ${{ jobs.cache-file.outputs.filepath }}
+
+jobs:
+  cache-file:
+    name: Caching ${{ inputs.path }}
+    runs-on: ubuntu-latest
+    outputs:
+      key: ${{ steps.get_etag.outputs.key }}
+      filepath: ${{ steps.get_etag.outputs.filepath }}
+    steps:
+      - name: Fetch file checksum
+        id: get_etag
+        run: |
+          etag=$(curl -sI "${{ inputs.url }}" | grep -i etag | tr -d '\r"' | cut -f 2 -d " ")
+          base=$(basename "${{ inputs.url }}" | cut -d? -f1)
+          key=$base-$etag
+          filepath=${{ inputs.path }}$base
+          echo "key=$key" >> $GITHUB_OUTPUT
+          echo "filepath=$filepath" >> $GITHUB_OUTPUT
+
+      - name: Cache path
+        id: cache-file
+        uses: actions/cache@v4
+        with:
+          path: ${{ inputs.path }}
+          key: ${{ steps.get_etag.outputs.key }}
+
+      - if: steps.cache-file.outputs.cache-hit != 'true'
+        name: Download file
+        run: |
+          mkdir -p "${{ inputs.path }}"
+          curl -L "${{ inputs.url }}" -o "${{ steps.get_etag.outputs.filepath }}"

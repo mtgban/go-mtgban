@@ -9,6 +9,16 @@ on:
       game:
         required: true
         type: string
+      datastore-filepath:
+        required: true
+        type: string
+      datastore-cache-key:
+        required: true
+        type: string
+      skus-filepath:
+        type: string
+      skus-cache-key:
+        type: string
 
 jobs:
   run-bantool:
@@ -36,33 +46,20 @@ jobs:
           key: go-mod-cache-${{ hashFiles('**/go.sum') }}
           restore-keys: go-mod-cache-
 
-      # Fetch etag for MTGJSON/AllPrintings
-      - name: Fetch MTGJSON/AllPrintings file checksum
-        id: get_mtgjson_hash
-        run: |
-          AP_URL="https://www.mtgjson.com/api/v5/AllPrintings.json.xz"
-          etag=$(curl -sI "$AP_URL" | grep -i ETag | tr -d '\r"'| cut -f 2 -d " ")
-          echo "etag=$etag" >> $GITHUB_OUTPUT
-          echo "Cache key: mtgjson-$etag"
-
-      # Cache MTGJSON/AllPrintings file
-      - name: Cache MTGJSON/AllPrintings file
-        uses: actions/cache@v4
+      - name: Cache Datastore
+        uses: actions/cache/restore@v4
         with:
-          path: downloads/
-          key: mtgjson-${{ steps.get_mtgjson_hash.outputs.etag }}
+          path: "datastore/"
+          key: ${{ inputs.datastore-cache-key }}
+          fail-on-cache-miss: true
 
-      # Download AllPrintings if not cached
-      - name: Download MTGJSON/AllPrintings if needed
-        run: |
-          mkdir -p downloads
-          if [ ! -f downloads/AllPrintings.json.xz ]; then
-            echo "Downloading MTGJSON/AllPrintings..."
-            curl -L https://www.mtgjson.com/api/v5/AllPrintings.json.xz -o downloads/AllPrintings.json.xz
-            curl -L https://www.mtgjson.com/api/v5/TcgplayerSkus.json.xz -o downloads/TcgplayerSkus.json.xz
-          else
-            echo "Using cached MTGJSON/AllPrintings"
-          fi
+      - if: ${{ inputs.skus-cache-key }}
+        name: Cache Skus
+        uses: actions/cache/restore@v4
+        with:
+          path: "datastore/"
+          key: ${{ inputs.skus-cache-key }}
+          fail-on-cache-miss: true
 
       - name: Build bantool
         run: |
@@ -78,7 +75,7 @@ jobs:
           SCG_PARTNER: "${{ vars.SCG_PARTNER }}"
           TCG_PARTNER: "${{ vars.TCG_PARTNER }}"
 
-          MTGJSON_TCGSKU_PATH: "downloads/TcgplayerSkus.json.xz"
+          MTGJSON_TCGSKU_PATH: "${{ inputs.skus-filepath }}"
 
           B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
           B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"
@@ -92,7 +89,7 @@ jobs:
           TCGPLAYER_PRIVATE_ID: "${{ secrets.TCGPLAYER_PRIVATE_ID }}"
           TCGPLAYER_PUBLIC_ID: "${{ secrets.TCGPLAYER_PUBLIC_ID }}"
         run: |
-          bantool -datastore downloads/AllPrintings.json.xz \
+          bantool -datastore ${{ inputs.datastore-filepath }} \
                   -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
                   -format json.xz \
                   -${{ inputs.target }}

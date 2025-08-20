@@ -48,9 +48,21 @@ jobs:
           ESCAPED_JSON=$(echo "$TARGET_JSON" | jq -c .)
           echo "matrix=$ESCAPED_JSON" >> $GITHUB_OUTPUT
 
+  cache-allprintings:
+    uses: ./.github/workflows/cache-file.yml
+    with:
+      url: "https://www.mtgjson.com/api/v5/AllPrintings.json.xz"
+      path: "datastore/"
+
+  cache-skus:
+    uses: ./.github/workflows/cache-file.yml
+    with:
+      url: "https://www.mtgjson.com/api/v5/TcgplayerSkus.json.xz"
+      path: "datastore/"
+
   deploy:
     name: Deploy ${{ matrix.target }}
-    needs: prepare-matrix
+    needs: [prepare-matrix, cache-allprintings, cache-skus]
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare-matrix.outputs.matrix) }}
@@ -58,4 +70,8 @@ jobs:
     with:
       target: ${{ matrix.target }}
       game: "magic"
+      datastore-filepath: ${{ needs.cache-allprintings.outputs.filepath }}
+      datastore-cache-key: ${{ needs.cache-allprintings.outputs.key }}
+      skus-filepath: ${{ needs.cache-skus.outputs.filepath }}
+      skus-cache-key: ${{ needs.cache-skus.outputs.key }}
     secrets: inherit
