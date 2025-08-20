@@ -52,7 +52,7 @@ var B2Bucket *b2.Bucket
 
 var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
 
-var MaxConcurrency = os.Getenv("MAX_CONCURRENCY")
+var MaxConcurrency int
 
 var Commit = func() string {
 	if info, ok := debug.ReadBuildInfo(); ok {
@@ -70,6 +70,10 @@ type scraperOption struct {
 	OnlySeller bool
 	OnlyVendor bool
 	Init       func() (mtgban.Scraper, error)
+}
+
+func init() {
+	MaxConcurrency, _ = strconv.Atoi(os.Getenv("MAX_CONCURRENCY"))
 }
 
 var options = map[string]*scraperOption{
@@ -293,9 +297,8 @@ var options = map[string]*scraperOption{
 			scraper := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
-			num, _ := strconv.Atoi(MaxConcurrency)
-			if num != 0 {
-				scraper.MaxConcurrency = num
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
 			}
 			return scraper, nil
 		},
@@ -312,9 +315,8 @@ var options = map[string]*scraperOption{
 			scraper := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
-			num, _ := strconv.Atoi(MaxConcurrency)
-			if num != 0 {
-				scraper.MaxConcurrency = num
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
 			}
 
 			mtgjsonReader, err := loadData(mtgjsonTCGSKUPath)
@@ -359,9 +361,8 @@ var options = map[string]*scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			scraper := trollandtoad.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
-			num, _ := strconv.Atoi(MaxConcurrency)
-			if num != 0 {
-				scraper.MaxConcurrency = num
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
 			}
 			return scraper, nil
 		},
