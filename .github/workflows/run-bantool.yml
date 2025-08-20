@@ -22,7 +22,6 @@ on:
 
 jobs:
   run-bantool:
-    name: Run bantool for ${{ inputs.target }}
     runs-on: ubuntu-latest
 
     steps:

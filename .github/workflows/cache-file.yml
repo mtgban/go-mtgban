@@ -19,7 +19,6 @@ on:
 
 jobs:
   cache-file:
-    name: Caching ${{ inputs.path }}
     runs-on: ubuntu-latest
     outputs:
       key: ${{ steps.get_etag.outputs.key }}
