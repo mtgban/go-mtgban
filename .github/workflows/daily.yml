@@ -1,4 +1,5 @@
 name: Bantool Runner (daily)
+run-name: Bantool (${{ github.event.client_payload.target || github.event.inputs.target || 'all' }})
 
 on:
   workflow_dispatch:
