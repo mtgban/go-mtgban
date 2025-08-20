@@ -16,12 +16,12 @@ import (
 	"time"
 
 	"github.com/dsnet/compress/bzip2"
+	"github.com/ulikunitz/xz"
 
 	"cloud.google.com/go/storage"
 	"github.com/Backblaze/blazer/b2"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
-	"github.com/ulikunitz/xz"
 	xzReader "github.com/xi2/xz"
 	"google.golang.org/api/option"
 
@@ -434,6 +434,22 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	}
 	defer writer.Close()
 
+	if strings.HasSuffix(format, ".xz") {
+		xzWriter, err := xz.NewWriter(writer)
+		if err != nil {
+			return err
+		}
+		defer xzWriter.Close()
+		writer = xzWriter
+	} else if strings.HasSuffix(format, ".bz2") {
+		bz2Writer, err := bzip2.NewWriter(writer, nil)
+		if err != nil {
+			return err
+		}
+		defer bz2Writer.Close()
+		writer = bz2Writer
+	}
+
 	switch format {
 	case "json", "json.xz", "json.bz2":
 		err = mtgban.WriteSellerToJSON(seller, writer)
@@ -454,6 +470,22 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 		return err
 	}
 	defer writer.Close()
+
+	if strings.HasSuffix(format, ".xz") {
+		xzWriter, err := xz.NewWriter(writer)
+		if err != nil {
+			return err
+		}
+		defer xzWriter.Close()
+		writer = xzWriter
+	} else if strings.HasSuffix(format, ".bz2") {
+		bz2Writer, err := bzip2.NewWriter(writer, nil)
+		if err != nil {
+			return err
+		}
+		defer bz2Writer.Close()
+		writer = bz2Writer
+	}
 
 	switch format {
 	case "json", "json.xz", "json.bz2":
@@ -734,30 +766,18 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 	}
 	switch u.Scheme {
 	case "gs":
-		writer = GCSBucket.Object(u.Path).NewWriter(context.Background())
+		writer = GCSBucket.Object(u.Path).NewWriter(context.TODO())
 	case "b2":
 		dst := strings.TrimPrefix(u.Path, "/")
-		writer = B2Bucket.Object(dst).NewWriter(context.Background())
+		obj := B2Bucket.Object(dst).NewWriter(context.TODO())
+
+		writer = obj
 	default:
 		file, err := os.Create(filePath)
 		if err != nil {
 			return nil, err
 		}
 		writer = file
-	}
-
-	if strings.HasSuffix(filePath, ".xz") {
-		xzWriter, err := xz.NewWriter(writer)
-		if err != nil {
-			return nil, err
-		}
-		writer = xzWriter
-	} else if strings.HasSuffix(filePath, ".bz2") {
-		bz2Writer, err := bzip2.NewWriter(writer, nil)
-		if err != nil {
-			return nil, err
-		}
-		writer = bz2Writer
 	}
 
 	return writer, nil
