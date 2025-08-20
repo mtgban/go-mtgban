@@ -20,8 +20,7 @@ const (
 
 	EVMaxRepickCount = 10
 
-	DefaultRepeatConcurrency = 8
-	DefaultSetConcurrency    = 32
+	defaultConcurrency = 8
 
 	ckBuylistLink = "https://www.cardkingdom.com/purchasing/mtg_singles"
 )
@@ -33,6 +32,7 @@ type SealedEVScraper struct {
 	BuylistAffiliate string
 	TargetEdition    string
 	TargetProduct    string
+	MaxConcurrency   int
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -137,6 +137,7 @@ func NewScraper(sig string) *SealedEVScraper {
 	ss.inventory = mtgban.InventoryRecord{}
 	ss.buylist = mtgban.BuylistRecord{}
 	ss.banpriceKey = sig
+	ss.MaxConcurrency = defaultConcurrency
 	return &ss
 }
 
@@ -182,7 +183,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 	channel := make(chan resultChan)
 	repeatsChannel := make(chan int)
 
-	for j := 0; j < DefaultRepeatConcurrency; j++ {
+	for j := 0; j < ss.MaxConcurrency; j++ {
 		wg.Add(2)
 
 		// Simulations
