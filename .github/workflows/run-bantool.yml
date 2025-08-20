@@ -94,4 +94,5 @@ jobs:
         run: |
           bantool -datastore downloads/AllPrintings.json.xz \
                   -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
+                  -format json.xz \
                   -${{ inputs.target }}
