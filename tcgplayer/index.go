@@ -40,12 +40,16 @@ func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperIndex(publicId, privateId string) *TCGPlayerIndex {
+func NewScraperIndex(publicId, privateId string) (*TCGPlayerIndex, error) {
+	if publicId == "" || privateId == "" {
+		return nil, fmt.Errorf("missing authentication data")
+	}
+
 	tcg := TCGPlayerIndex{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
-	return &tcg
+	return &tcg, nil
 }
 
 func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []indexChan) error {

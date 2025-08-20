@@ -339,7 +339,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
 			}
 
-			scraper := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
+			if err != nil {
+				return nil, err
+			}
+
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 			if MaxConcurrency != 0 {
@@ -357,7 +361,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_PATH env vars")
 			}
 
-			scraper := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
+			if err != nil {
+				return nil, err
+			}
+
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 			if MaxConcurrency != 0 {
@@ -385,7 +393,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
 			}
 
-			scraper := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
+			if err != nil {
+				return nil, err
+			}
+
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 			if MaxConcurrency != 0 {

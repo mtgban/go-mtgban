@@ -29,12 +29,16 @@ func (tcg *TCGPlayerSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperSealed(publicId, privateId string) *TCGPlayerSealed {
+func NewScraperSealed(publicId, privateId string) (*TCGPlayerSealed, error) {
+	if publicId == "" || privateId == "" {
+		return nil, fmt.Errorf("missing authentication data")
+	}
+
 	tcg := TCGPlayerSealed{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
-	return &tcg
+	return &tcg, nil
 }
 
 func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []marketChan) error {

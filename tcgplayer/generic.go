@@ -42,6 +42,9 @@ func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 }
 
 func NewScraperGeneric(publicId, privateId string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
+	if publicId == "" || privateId == "" {
+		return nil, fmt.Errorf("missing authentication data")
+	}
 	tcg := TCGPlayerGeneric{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = tcgplayer.NewClient(publicId, privateId)

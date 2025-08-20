@@ -83,13 +83,17 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperMarket(publicId, privateId string) *TCGPlayerMarket {
+func NewScraperMarket(publicId, privateId string) (*TCGPlayerMarket, error) {
+	if publicId == "" || privateId == "" {
+		return nil, fmt.Errorf("missing authentication data")
+	}
+
 	tcg := TCGPlayerMarket{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.client = tcgplayer.NewClient(publicId, privateId)
 	tcg.MaxConcurrency = defaultConcurrency
-	return &tcg
+	return &tcg, nil
 }
 
 func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []marketChan) error {

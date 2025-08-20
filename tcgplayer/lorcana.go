@@ -45,6 +45,10 @@ func (tcg *TCGLorcana) printf(format string, a ...interface{}) {
 }
 
 func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
+	if publicId == "" || privateId == "" {
+		return nil, fmt.Errorf("missing authentication data")
+	}
+
 	tcg := TCGLorcana{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = tcgplayer.NewClient(publicId, privateId)
