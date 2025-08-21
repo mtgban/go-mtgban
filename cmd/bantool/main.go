@@ -356,8 +356,8 @@ var options = map[string]*scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
 			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
-			mtgjsonTCGSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
-			if tcgPublicId == "" || tcgPrivateId == "" || mtgjsonTCGSKUPath == "" {
+			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
+			if tcgPublicId == "" || tcgPrivateId == "" || tcgSKUPath == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_PATH env vars")
 			}
 
@@ -372,16 +372,16 @@ var options = map[string]*scraperOption{
 				scraper.MaxConcurrency = MaxConcurrency
 			}
 
-			mtgjsonReader, err := loadData(mtgjsonTCGSKUPath)
+			skuReader, err := loadData(tcgSKUPath)
 			if err != nil {
 				return nil, err
 			}
-			defer mtgjsonReader.Close()
-			skus, err := tcgplayer.LoadTCGSKUs(mtgjsonReader)
+			defer skuReader.Close()
+			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
 			if err != nil {
 				return nil, err
 			}
-			scraper.SKUsData = skus.Data
+			scraper.SKUsData = skus
 			return scraper, nil
 		},
 	},
@@ -389,8 +389,9 @@ var options = map[string]*scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
 			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
-			if tcgPublicId == "" || tcgPrivateId == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
+			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
+			if tcgPublicId == "" || tcgPrivateId == "" || tcgSKUPath == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_PATH env vars")
 			}
 
 			scraper, err := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
@@ -403,17 +404,40 @@ var options = map[string]*scraperOption{
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
+
+			skuReader, err := loadData(tcgSKUPath)
+			if err != nil {
+				return nil, err
+			}
+			defer skuReader.Close()
+			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
+			if err != nil {
+				return nil, err
+			}
+			scraper.SKUsData = skus
 			return scraper, nil
 		},
 	},
 	"tcg_syplist": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgAuth := os.Getenv("TCGPLAYER_AUTH")
-			if tcgAuth == "" {
-				return nil, errors.New("missing TCGPLAYER_AUTH env var")
+			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
+			if tcgAuth == "" || tcgSKUPath == "" {
+				return nil, errors.New("missing TCGPLAYER_AUTH or MTGJSON_TCGSKU_PATH env var")
 			}
 			scraper := tcgplayer.NewScraperSYP(tcgAuth)
 			scraper.LogCallback = GlobalLogCallback
+
+			skuReader, err := loadData(tcgSKUPath)
+			if err != nil {
+				return nil, err
+			}
+			defer skuReader.Close()
+			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
+			if err != nil {
+				return nil, err
+			}
+			scraper.SKUsData = skus
 			return scraper, nil
 		},
 	},

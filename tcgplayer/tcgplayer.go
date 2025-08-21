@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -9,9 +10,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/ulikunitz/xz"
 
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
 
@@ -21,10 +20,7 @@ type TCGPlayerMarket struct {
 	buylistDate    time.Time
 	Affiliate      string
 	MaxConcurrency int
-
-	// The cache data defining SKU data, if not set it will be loaded
-	// from the default location on MTGJSON website.
-	SKUsData map[string][]TCGSku
+	SKUsData       SKUMap
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -193,14 +189,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 func (tcg *TCGPlayerMarket) scrape() error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
-		var err error
-		tcg.printf("Retrieving skus")
-		skusMap, err = getAllSKUs()
-		if err != nil {
-			return err
-
-		}
-		tcg.SKUsData = skusMap
+		return errors.New("sku map not loaded")
 	}
 	tcg.printf("Found skus for %d entries", len(skusMap))
 
@@ -456,26 +445,4 @@ func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.BuylistTimestamp = &tcg.buylistDate
 	info.NoQuantityInventory = true
 	return
-}
-
-func getAllSKUs() (map[string][]TCGSku, error) {
-	resp, err := cleanhttp.DefaultClient().Get(allSkusURL)
-	if err != nil {
-		resp, err = cleanhttp.DefaultClient().Get(allSkusBackupURL)
-		if err != nil {
-			return nil, err
-		}
-	}
-	defer resp.Body.Close()
-
-	xzReader, err := xz.NewReader(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	skus, err := LoadTCGSKUs(xzReader)
-	if err != nil {
-		return nil, err
-	}
-	return skus.Data, nil
 }

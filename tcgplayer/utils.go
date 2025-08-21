@@ -86,25 +86,20 @@ type TCGSku struct {
 	SkuId     int    `json:"skuId"`
 }
 
-type AllTCGSkus struct {
-	Data map[string][]TCGSku `json:"data"`
-	Meta struct {
-		Date    string `json:"date"`
-		Version string `json:"version"`
-	} `json:"meta"`
-}
+type SKUMap map[string][]TCGSku
 
-// Load TCGSKU data from the reader
-func LoadTCGSKUs(reader io.Reader) (AllTCGSkus, error) {
-	var payload AllTCGSkus
+func LoadTCGSKUs(reader io.Reader) (SKUMap, error) {
+	var payload struct {
+		Data map[string][]TCGSku `json:"data"`
+	}
 	err := json.NewDecoder(reader).Decode(&payload)
 	if err != nil {
-		return payload, err
+		return nil, err
 	}
 	if len(payload.Data) == 0 {
-		return payload, errors.New("empty AllTCGSkus file")
+		return nil, errors.New("empty SKU file")
 	}
-	return payload, nil
+	return payload.Data, nil
 }
 
 const (

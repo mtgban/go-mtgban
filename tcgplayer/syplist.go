@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"errors"
 	"fmt"
 
 	"time"
@@ -12,6 +13,7 @@ import (
 type TCGSYPList struct {
 	LogCallback mtgban.LogCallbackFunc
 	Affiliate   string
+	SKUsData    SKUMap
 
 	auth        string
 	buylistDate time.Time
@@ -33,9 +35,9 @@ func NewScraperSYP(auth string) *TCGSYPList {
 
 func (tcg *TCGSYPList) scrape() error {
 	tcg.printf("Retrieving skus")
-	uuid2skusMap, err := getAllSKUs()
-	if err != nil {
-		return err
+	uuid2skusMap := tcg.SKUsData
+	if uuid2skusMap == nil {
+		return errors.New("sku map not loaded")
 	}
 	tcg.printf("Found skus for %d entries", len(uuid2skusMap))
 

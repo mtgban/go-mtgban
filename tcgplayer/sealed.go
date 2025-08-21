@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"sync"
@@ -15,8 +16,7 @@ type TCGPlayerSealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	Affiliate      string
 	MaxConcurrency int
-
-	SKUsData map[string][]TCGSku
+	SKUsData       SKUMap
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
@@ -90,13 +90,7 @@ func (tcg *TCGPlayerSealed) processEntries(channel chan<- responseChan, reqs []m
 func (tcg *TCGPlayerSealed) scrape() error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
-		var err error
-		tcg.printf("Retrieving skus")
-		skusMap, err = getAllSKUs()
-		if err != nil {
-			return err
-
-		}
+		return errors.New("sku map not loaded")
 	}
 	tcg.printf("Found skus for %d entries", len(skusMap))
 
