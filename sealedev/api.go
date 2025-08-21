@@ -122,7 +122,7 @@ func (r *BANPriceResponse) setBuylist(destination, uuid string, price float64) {
 
 func getCT0fees(price float64) float64 {
 	if price <= 0.25 {
-		return 0.9
+		return 0.09
 	} else if price <= 3 {
 		return 0.10
 	} else if price <= 5 {
