@@ -113,7 +113,7 @@ func (mp *ManapoolSealed) Inventory() (mtgban.InventoryRecord, error) {
 
 func (mp *ManapoolSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Manapool"
-	info.Shorthand = "MPSaled"
+	info.Shorthand = "MPSealed"
 	info.InventoryTimestamp = &mp.inventoryDate
 	info.SealedMode = true
 	return
