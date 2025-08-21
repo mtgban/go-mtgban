@@ -607,10 +607,10 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			}
 
 		case inCard.Contains("Grand Prix"):
-			switch set.Name {
-			case "Grand Prix Promos":
+			switch {
+			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
 			default:
-				if !strings.HasPrefix(set.Name, "MagicFest") {
+				if set.Name != "Grand Prix Promos" {
 					continue
 				}
 			}

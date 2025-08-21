@@ -867,7 +867,7 @@
         "description": "incorrect_edition_not_grand_prix_but_magic_fest",
         "input": {
             "name": "Lightning Bolt",
-            "variant": "Grand Prix",
+            "variant": "Grand Prix 2019",
             "edition": "ignored"
         }
     },
