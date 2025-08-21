@@ -641,12 +641,23 @@ func (ap AllPrintings) Load() cardBackend {
 			card.Images["thumbnail"] = generateImageURL(card, "small")
 			card.Images["crop"] = generateImageURL(card, "normal")
 
+			isEtched := strings.Contains(product.Name, "Etched")
+			isFoil := !isEtched
+			switch {
+			case strings.Contains(product.Name, "Foil") && !strings.Contains(product.Name, "Non"):
+			case strings.Contains(product.Name, "Premium"):
+			case strings.Contains(product.Name, "VIP Edition"):
+			case strings.Contains(product.Name, "Commander Deck") && strings.Contains(product.Name, "Collector Edition"):
+			default:
+				isFoil = false
+			}
+
 			uuids[product.UUID] = CardObject{
 				Card:    card,
 				Sealed:  true,
 				Edition: set.Name,
-				Foil:    strings.Contains(product.Name, "Foil") && !strings.Contains(product.Name, "Non"),
-				Etched:  strings.Contains(product.Name, "Etched"),
+				Foil:    isFoil,
+				Etched:  isEtched,
 			}
 		}
 	}
