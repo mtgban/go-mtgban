@@ -494,3 +494,26 @@ var tcgIds = map[string][]string{
 		"636805", "636806",
 	},
 }
+
+var productsWithOnlyFoils = []string{
+	"Secret Lair Drop Seeing Visions",
+	"Secret Lair Drop OMG KITTIES",
+	"Secret Lair Drop Kaleidoscope Killers",
+	"Secret Lair Drop Eldraine Wonderland",
+	"Secret Lair Drop Year of the Rat",
+	"Secret Lair Drop Theros Stargazing Vol I Heliod",
+	"Secret Lair Drop Theros Stargazing Vol II Thassa",
+	"Secret Lair Drop Theros Stargazing Vol III Erebos",
+	"Secret Lair Drop Theros Stargazing Vol IV Purphoros",
+	"Secret Lair Drop Theros Stargazing Vol V Nylea",
+	"Secret Lair Bundle Theros Stargazing Vol I-V",
+	"Secret Lair Drop International Womens Day 2020",
+	"Secret Lair Drop Thalia Beyond the Helvault",
+	"Secret Lair Drop April Fools",
+	"Secret Lair Drop The Godzilla Lands",
+	"Secret Lair Drop Can You Feel with a Heart of Steel",
+	"Secret Lair Drop Mountain Go",
+	"Secret Lair Drop The Path Not Traveled",
+	"Secret Lair Drop Extra Life 2020",
+	"Secret Lair Drop We Hope You Like Squirrels",
+}

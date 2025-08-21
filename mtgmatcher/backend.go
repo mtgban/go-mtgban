@@ -648,6 +648,7 @@ func (ap AllPrintings) Load() cardBackend {
 			case strings.Contains(product.Name, "Premium"):
 			case strings.Contains(product.Name, "VIP Edition"):
 			case strings.Contains(product.Name, "Commander Deck") && strings.Contains(product.Name, "Collector Edition"):
+			case slices.Contains(productsWithOnlyFoils, product.Name):
 			default:
 				isFoil = false
 			}
