@@ -15,7 +15,7 @@ jobs:
       path: "datastore/"
 
   deploy:
-    name: Deploy ${{ github.workflow }}
+    name: ${{ github.workflow }}
     needs: [cache-datastore]
     uses: ./.github/workflows/run-bantool.yml
     with:
