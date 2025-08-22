@@ -630,7 +630,7 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 }
 
 func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
-	writer, err := putData(seller.Info().Shorthand+"_Retail."+format, outputPath)
+	writer, err := putData("retail/"+seller.Info().Shorthand+"."+format, outputPath)
 	if err != nil {
 		return err
 	}
@@ -667,7 +667,7 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 }
 
 func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
-	writer, err := putData(vendor.Info().Shorthand+"_Buylist."+format, outputPath)
+	writer, err := putData("buylist/"+vendor.Info().Shorthand+"."+format, outputPath)
 	if err != nil {
 		return err
 	}
