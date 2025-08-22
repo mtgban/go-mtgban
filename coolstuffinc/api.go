@@ -102,6 +102,10 @@ func GetBuylist(game string) ([]CSIPriceEntry, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode/100 != 2 {
+		return nil, fmt.Errorf("unexpected %d status code", resp.StatusCode)
+	}
+
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
