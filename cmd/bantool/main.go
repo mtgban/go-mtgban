@@ -74,6 +74,8 @@ type scraperOption struct {
 
 func init() {
 	MaxConcurrency, _ = strconv.Atoi(os.Getenv("MAX_CONCURRENCY"))
+
+	log.Println("Workers running with", MaxConcurrency, "parallel threads")
 }
 
 var options = map[string]*scraperOption{
