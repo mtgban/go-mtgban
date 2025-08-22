@@ -100,6 +100,8 @@ func (csi *CoolstuffincSealed) numOfPages() (int, error) {
 }
 
 func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, page int) error {
+	csi.printf("Processing page %d", page)
+
 	u, err := url.Parse(sealedURL)
 	if err != nil {
 		return err
@@ -170,7 +172,7 @@ func (csi *CoolstuffincSealed) scrape() error {
 	if err != nil {
 		return err
 	}
-	csi.printf("Processing %d pages", totalPages)
+	csi.printf("Found %d pages", totalPages)
 
 	pages := make(chan int)
 	results := make(chan responseChan)
