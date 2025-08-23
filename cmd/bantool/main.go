@@ -818,6 +818,7 @@ func run() int {
 	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv/ndjson)")
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
+	listOpt := flag.Bool("list", false, "List all items present in the specified bucket path")
 	signOpt := flag.String("sign", "", "Sign input")
 	versionOpt := flag.Bool("v", false, "Print version information")
 	flag.Parse()
@@ -860,6 +861,16 @@ func run() int {
 	if err != nil {
 		log.Println("cannot initilize buckets:", err)
 		return 1
+	}
+
+	if *listOpt {
+		if u.Scheme == "b2" {
+			iterator := B2Bucket.List(context.TODO())
+			for iterator.Next() {
+				fmt.Println(iterator.Object().Name())
+			}
+		}
+		return 0
 	}
 
 	if *datastoreOpt == "" {
