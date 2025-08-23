@@ -14,16 +14,10 @@ import (
 )
 
 func GetUUIDs() []string {
-	if len(backend.AllUUIDs) == 0 {
-		panic("GetUUIDs() called without a loaded Datastore")
-	}
 	return backend.AllUUIDs
 }
 
 func GetSealedUUIDs() []string {
-	if len(backend.AllSealedUUIDs) == 0 {
-		panic("GetSealedUUIDs() called without a loaded Datastore")
-	}
 	return backend.AllSealedUUIDs
 }
 
