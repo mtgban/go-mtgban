@@ -3,6 +3,9 @@ package main
 import (
 	"compress/gzip"
 	"context"
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/base64"
 	"errors"
 	"flag"
 	"fmt"
@@ -10,6 +13,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime/debug"
 	"strconv"
@@ -814,11 +818,22 @@ func run() int {
 	fileFormatOpt := flag.String("format", "json", "File format of the output files (json/csv/ndjson)")
 	metaOpt := flag.Bool("meta", false, "When format is not json, output a second file for scraper metadata")
 
+	signOpt := flag.String("sign", "", "Sign input")
 	versionOpt := flag.Bool("v", false, "Print version information")
 	flag.Parse()
 
 	log.Println("bantool version", Commit)
 	if *versionOpt {
+		return 0
+	}
+
+	if *signOpt != "" {
+		sig, err := signAPI(*signOpt)
+		if err != nil {
+			log.Println(err)
+			return 1
+		}
+		fmt.Fprintln(os.Stdout, *signOpt+"?sig="+sig)
 		return 0
 	}
 
@@ -1038,4 +1053,33 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 	}
 
 	return reader, err
+}
+
+func signAPI(link string) (string, error) {
+	u, err := url.Parse(link)
+	if err != nil {
+		return "", err
+	}
+
+	v := url.Values{}
+	v.Set("API", path.Base(u.Path))
+	v.Set("APImode", "load")
+
+	expires := time.Now().Add(1 * time.Minute)
+	v.Set("Expires", fmt.Sprintf("%d", expires.Unix()))
+	data := fmt.Sprintf("GET%d%s%s", expires.Unix(), u.Scheme+"://"+u.Host, v.Encode())
+	key := os.Getenv("BAN_SECRET")
+	if key == "" {
+		return "", errors.New("missing BAN_SECRET")
+	}
+
+	// signHMACSHA1Base64
+	h := hmac.New(sha1.New, []byte(key))
+	h.Write([]byte(data))
+	sig := base64.StdEncoding.EncodeToString(h.Sum(nil))
+
+	v.Set("Signature", sig)
+	str := base64.StdEncoding.EncodeToString([]byte(v.Encode()))
+
+	return str, nil
 }
