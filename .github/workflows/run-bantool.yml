@@ -74,6 +74,7 @@ jobs:
           MP_PARTNER: "${{ vars.MP_PARTNER }}"
           SCG_PARTNER: "${{ vars.SCG_PARTNER }}"
           TCG_PARTNER: "${{ vars.TCG_PARTNER }}"
+          MAX_CONCURRENCY: "${{ vars.MAX_CONCURRENCY }}"
 
           MTGJSON_TCGSKU_PATH: "${{ inputs.skus-filepath }}"
 
