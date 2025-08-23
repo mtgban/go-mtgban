@@ -94,3 +94,10 @@ jobs:
                   -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
                   -format json.xz \
                   -${{ inputs.target }}
+
+      - name: Ping server
+        env:
+          BAN_SECRET: "${{ secrets.BAN_SECRET }}"
+        run: |
+          SIGNED_URL=$(bantool -sign http://${{ inputs.game }}.mtgban.com/api/load/${{ inputs.target }} 2> /dev/null)
+          test "$(curl -L $SIGNED_URL 2> /dev/null | jq -r '.status')" = "ok"
