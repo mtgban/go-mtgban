@@ -44,11 +44,6 @@ type responseChan struct {
 	bl     *mtgban.BuylistEntry
 }
 
-const (
-	allSkusURL       = "https://mtgjson.com/api/v5/TcgplayerSkus.json.xz"
-	allSkusBackupURL = "https://mtgjson.com/api/v5_backup/TcgplayerSkus.json.xz"
-)
-
 var availableMarketNames = []string{
 	"TCG Player", "TCG Direct",
 }
