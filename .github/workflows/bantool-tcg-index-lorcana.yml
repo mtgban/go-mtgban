@@ -7,6 +7,10 @@ on:
   schedule:
     - cron: "15 */12 * * *"
 
+concurrency:
+  group: bantool-tcgplayer
+  cancel-in-progress: false
+
 jobs:
   cache-datastore:
     uses: ./.github/workflows/cache-file.yml
