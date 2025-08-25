@@ -1078,7 +1078,13 @@ func signAPI(link string) (string, error) {
 
 	expires := time.Now().Add(1 * time.Minute)
 	v.Set("Expires", fmt.Sprintf("%d", expires.Unix()))
-	data := fmt.Sprintf("GET%d%s%s", expires.Unix(), u.Scheme+"://"+u.Host, v.Encode())
+
+	path := u.Scheme + "://" + u.Host
+	if !strings.Contains(u.Host, "localhost") {
+		path = "http://www.mtgban.com"
+	}
+
+	data := fmt.Sprintf("GET%d%s%s", expires.Unix(), path, v.Encode())
 	key := os.Getenv("BAN_SECRET")
 	if key == "" {
 		return "", errors.New("missing BAN_SECRET")
