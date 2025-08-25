@@ -378,6 +378,7 @@ var options = map[string]*scraperOption{
 				scraper.MaxConcurrency = MaxConcurrency
 			}
 
+			start := time.Now()
 			skuReader, err := loadData(tcgSKUPath)
 			if err != nil {
 				return nil, err
@@ -388,6 +389,8 @@ var options = map[string]*scraperOption{
 				return nil, err
 			}
 			scraper.SKUsData = skus
+			log.Println("loading skus took:", time.Since(start))
+
 			return scraper, nil
 		},
 	},
@@ -411,6 +414,7 @@ var options = map[string]*scraperOption{
 				scraper.MaxConcurrency = MaxConcurrency
 			}
 
+			start := time.Now()
 			skuReader, err := loadData(tcgSKUPath)
 			if err != nil {
 				return nil, err
@@ -421,6 +425,8 @@ var options = map[string]*scraperOption{
 				return nil, err
 			}
 			scraper.SKUsData = skus
+			log.Println("loading skus took:", time.Since(start))
+
 			return scraper, nil
 		},
 	},
@@ -434,6 +440,7 @@ var options = map[string]*scraperOption{
 			scraper := tcgplayer.NewScraperSYP(tcgAuth)
 			scraper.LogCallback = GlobalLogCallback
 
+			start := time.Now()
 			skuReader, err := loadData(tcgSKUPath)
 			if err != nil {
 				return nil, err
@@ -444,6 +451,8 @@ var options = map[string]*scraperOption{
 				return nil, err
 			}
 			scraper.SKUsData = skus
+			log.Println("loading skus took:", time.Since(start))
+
 			return scraper, nil
 		},
 	},
