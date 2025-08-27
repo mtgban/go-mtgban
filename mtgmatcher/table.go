@@ -516,4 +516,8 @@ var productsWithOnlyFoils = []string{
 	"Secret Lair Drop The Path Not Traveled",
 	"Secret Lair Drop Extra Life 2020",
 	"Secret Lair Drop We Hope You Like Squirrels",
+	"Secret Lair Drop Here Be Dragons",
+	"Secret Lair Drop LOOK AT THE KITTIES",
+	"Secret Lair Drop Animar and Friends",
+	"Secret Lair Drop MagicCon The Gathering",
 }
