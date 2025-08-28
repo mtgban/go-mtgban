@@ -108,6 +108,7 @@ var options = map[string]*scraperOption{
 			scraper := cardkingdom.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CK_PARTNER")
+			scraper.PreserveOOS = true
 			return scraper, nil
 		},
 	},
@@ -116,6 +117,7 @@ var options = map[string]*scraperOption{
 			scraper := cardkingdom.NewScraperSealed()
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CK_PARTNER")
+			scraper.PreserveOOS = true
 			return scraper, nil
 		},
 	},
