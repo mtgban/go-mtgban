@@ -3,6 +3,7 @@ package cardkingdom
 import (
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -81,7 +82,21 @@ func (ck *CardkingdomSealed) scrape() error {
 					ck.printf("%v", err)
 				}
 
-				u.Path = sealed.URL
+				// Rebuild the URL to have the same format as non-sealed
+				basename := strings.TrimPrefix(sealed.URL, "mtg-sealed/")
+
+				// Slugify the edition
+				edition := strings.ToLower(sealed.Edition)
+				edition = strings.Replace(edition, "'", "", -1)
+				edition = strings.Replace(edition, ":", "", -1)
+				edition = strings.Replace(edition, ".", "", -1)
+				edition = strings.Replace(edition, ",", "", -1)
+				edition = strings.Replace(edition, " -", "", -1)
+				edition = strings.Replace(edition, "&", "and", -1)
+				edition = strings.Replace(edition, " ", "-", -1)
+
+				u.Path = "mtg" + "/" + edition + "/" + basename
+
 				if ck.Partner != "" {
 					q := u.Query()
 					q.Set("partner", ck.Partner)
