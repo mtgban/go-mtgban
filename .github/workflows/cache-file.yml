@@ -1,6 +1,18 @@
 name: Download and cache a file
 
 on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Where to download from"
+        required: true
+        type: string
+      path:
+        description: "Where to download to"
+        required: true
+        type: string
+        default: "datastore/"
+
   workflow_call:
     inputs:
       url:
