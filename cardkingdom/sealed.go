@@ -16,6 +16,7 @@ const (
 type CardkingdomSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
+	PreserveOOS bool
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -79,27 +80,35 @@ func (ck *CardkingdomSealed) scrape() error {
 				if err != nil {
 					ck.printf("%v", err)
 				}
-				if sealed.SellQuantity > 0 && sellPrice > 0 {
-					u.Path = sealed.URL
-					if ck.Partner != "" {
-						q := u.Query()
-						q.Set("partner", ck.Partner)
-						q.Set("utm_source", ck.Partner)
-						q.Set("utm_medium", "affiliate")
-						q.Set("utm_campaign", ck.Partner)
-						u.RawQuery = q.Encode()
-					}
 
+				u.Path = sealed.URL
+				if ck.Partner != "" {
+					q := u.Query()
+					q.Set("partner", ck.Partner)
+					q.Set("utm_source", ck.Partner)
+					q.Set("utm_medium", "affiliate")
+					q.Set("utm_campaign", ck.Partner)
+					u.RawQuery = q.Encode()
+				}
+				link := u.String()
+
+				if sealed.SellQuantity > 0 && sellPrice > 0 {
 					out := &mtgban.InventoryEntry{
 						Conditions: "NM",
 						Price:      sellPrice,
 						Quantity:   sealed.SellQuantity,
-						URL:        u.String(),
+						URL:        link,
 					}
 					err = ck.inventory.Add(product.UUID, out)
 					if err != nil {
 						ck.printf("%v", err)
 					}
+				} else if ck.PreserveOOS {
+					// Only save URL information
+					out := &mtgban.InventoryEntry{
+						URL: link,
+					}
+					err = ck.inventory.AddUnique(product.UUID, out)
 				}
 
 				buyPrice, err := strconv.ParseFloat(sealed.BuyPrice, 64)
