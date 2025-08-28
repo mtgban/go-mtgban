@@ -17,12 +17,14 @@ jobs:
     with:
       url: ${{ vars.DATASTORE_MAGIC }}
       path: "datastore/"
+    secrets: inherit
 
   cache-skus:
     uses: ./.github/workflows/cache-file.yml
     with:
       url: ${{ vars.SKUS_MAGIC }}
       path: "datastore/"
+    secrets: inherit
 
   deploy:
     name: ${{ github.workflow }}
