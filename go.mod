@@ -28,7 +28,7 @@ require (
 	github.com/montanaflynn/stats v0.7.1
 	github.com/mroth/weightedrand/v2 v2.1.0
 	github.com/mtgban/go-tcgplayer v0.0.0-20250314170048-a37ce47d0d4a
-	github.com/ulikunitz/xz v0.5.11
+	github.com/ulikunitz/xz v0.5.14
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a
 )
