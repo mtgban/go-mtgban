@@ -29,6 +29,7 @@ var numFixes = map[string]string{
 	"LTR0425":                         "LTR425",
 	"LeylineoftheVoidv2":              "PM20107p",
 	"386443":                          "POTJ149p",
+	"Ugin001":                         "M211",
 }
 
 var variantTable = map[string]string{
