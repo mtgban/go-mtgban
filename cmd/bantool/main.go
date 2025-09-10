@@ -669,12 +669,12 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 		writer = bz2Writer
 	}
 
-	switch format {
-	case "json", "json.xz", "json.bz2":
+	switch strings.Split(format, ".")[0] {
+	case "json":
 		err = mtgban.WriteSellerToJSON(seller, writer)
-	case "csv", "csv.xz", "csv.bz2":
+	case "csv":
 		err = mtgban.WriteSellerToCSV(seller, writer)
-	case "ndjson", "ndjson.xz", "ndjson.bz2":
+	case "ndjson":
 		err = writeSellerToNDJSON(seller, writer)
 	default:
 		err = errors.New("invalid format")
@@ -706,12 +706,12 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 		writer = bz2Writer
 	}
 
-	switch format {
-	case "json", "json.xz", "json.bz2":
+	switch strings.Split(format, ".")[0] {
+	case "json":
 		err = mtgban.WriteVendorToJSON(vendor, writer)
-	case "csv", "csv.xz", "csv.bz2":
+	case "csv":
 		err = mtgban.WriteVendorToCSV(vendor, writer)
-	case "ndjson", "ndjson.xz", "ndjson.bz2":
+	case "ndjson":
 		err = writeVendorToNDJSON(vendor, writer)
 	default:
 		err = errors.New("invalid format")
@@ -849,7 +849,7 @@ func run() int {
 		return 0
 	}
 
-	switch strings.TrimSuffix(strings.TrimSuffix(*fileFormatOpt, ".bz2"), ".xz") {
+	switch strings.Split(*fileFormatOpt, ".")[0] {
 	case "json", "csv", "ndjson":
 	default:
 		log.Println("Invalid -format option, see -h for supported values")
