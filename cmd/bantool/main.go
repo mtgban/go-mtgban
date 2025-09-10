@@ -653,22 +653,6 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	}
 	defer writer.Close()
 
-	if strings.HasSuffix(format, ".xz") {
-		xzWriter, err := xz.NewWriter(writer)
-		if err != nil {
-			return err
-		}
-		defer xzWriter.Close()
-		writer = xzWriter
-	} else if strings.HasSuffix(format, ".bz2") {
-		bz2Writer, err := bzip2.NewWriter(writer, nil)
-		if err != nil {
-			return err
-		}
-		defer bz2Writer.Close()
-		writer = bz2Writer
-	}
-
 	switch strings.Split(format, ".")[0] {
 	case "json":
 		err = mtgban.WriteSellerToJSON(seller, writer)
@@ -689,22 +673,6 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 		return err
 	}
 	defer writer.Close()
-
-	if strings.HasSuffix(format, ".xz") {
-		xzWriter, err := xz.NewWriter(writer)
-		if err != nil {
-			return err
-		}
-		defer xzWriter.Close()
-		writer = xzWriter
-	} else if strings.HasSuffix(format, ".bz2") {
-		bz2Writer, err := bzip2.NewWriter(writer, nil)
-		if err != nil {
-			return err
-		}
-		defer bz2Writer.Close()
-		writer = bz2Writer
-	}
 
 	switch strings.Split(format, ".")[0] {
 	case "json":
@@ -997,6 +965,23 @@ func main() {
 	os.Exit(run())
 }
 
+type multiCloser struct {
+	io.Reader
+	io.Writer
+	closers []io.Closer
+}
+
+func (m *multiCloser) Close() error {
+	var first error
+	for _, closer := range m.closers {
+		err := closer.Close()
+		if err != nil && first == nil {
+			first = err
+		}
+	}
+	return first
+}
+
 func putData(suffix, outputPath string) (io.WriteCloser, error) {
 	filePath := fmt.Sprintf("%s/%s", outputPath, suffix)
 
@@ -1021,7 +1006,31 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 		writer = file
 	}
 
-	return writer, nil
+	var encoder io.WriteCloser
+	if strings.HasSuffix(filePath, ".xz") {
+		xzWriter, err := xz.NewWriter(writer)
+		if err != nil {
+			writer.Close()
+			return nil, err
+		}
+		encoder = xzWriter
+	} else if strings.HasSuffix(filePath, ".bz2") {
+		bz2Writer, err := bzip2.NewWriter(writer, nil)
+		if err != nil {
+			writer.Close()
+			return nil, err
+		}
+		encoder = bz2Writer
+	}
+
+	if encoder == nil {
+		return writer, nil
+	}
+
+	return &multiCloser{
+		Writer:  encoder,
+		closers: []io.Closer{encoder, writer},
+	}, nil
 }
 
 func loadData(pathOpt string) (io.ReadCloser, error) {
@@ -1054,27 +1063,38 @@ func loadData(pathOpt string) (io.ReadCloser, error) {
 		reader = file
 	}
 
+	var decoder io.ReadCloser
 	if strings.HasSuffix(pathOpt, "xz") {
 		xzReader, err := xzReader.NewReader(reader, 0)
 		if err != nil {
+			reader.Close()
 			return nil, err
 		}
-		reader = io.NopCloser(xzReader)
+		decoder = io.NopCloser(xzReader)
 	} else if strings.HasSuffix(pathOpt, "bz2") {
 		bz2Reader, err := bzip2.NewReader(reader, nil)
 		if err != nil {
+			reader.Close()
 			return nil, err
 		}
-		reader = bz2Reader
+		decoder = bz2Reader
 	} else if strings.HasSuffix(pathOpt, "gz") {
 		zipReader, err := gzip.NewReader(reader)
 		if err != nil {
+			reader.Close()
 			return nil, err
 		}
-		reader = zipReader
+		decoder = zipReader
 	}
 
-	return reader, err
+	if decoder == nil {
+		return reader, nil
+	}
+
+	return &multiCloser{
+		Reader:  decoder,
+		closers: []io.Closer{decoder, reader},
+	}, nil
 }
 
 func signAPI(link string) (string, error) {
