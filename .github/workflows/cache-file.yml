@@ -12,6 +12,9 @@ on:
         required: true
         type: string
         default: "datastore/"
+      game:
+        description: "If set, where to save the result and ping to"
+        type: string
 
   workflow_call:
     inputs:
@@ -20,6 +23,8 @@ on:
         type: string
       path:
         required: true
+        type: string
+      game:
         type: string
     outputs:
       key:
@@ -59,7 +64,7 @@ jobs:
           mkdir -p "${{ inputs.path }}"
           curl -L "${{ inputs.url }}" -o "${{ steps.get_etag.outputs.filepath }}"
 
-      - if: steps.cache-file.outputs.cache-hit != 'true'
+      - if: steps.cache-file.outputs.cache-hit != 'true' && inputs.game != ''
         name: Upload to B2
         env:
           B2KEY: "${{ secrets.B2_KEY_ID_DATASTORE }}"
@@ -69,3 +74,18 @@ jobs:
           b2 account authorize $B2KEY $B2SECRET
           b2 sync --skip-newer "${{ inputs.path }}" "b2://mtgban-datastore/${{ inputs.game }}"
           b2 account clear
+
+      - if: steps.cache-file.outputs.cache-hit != 'true' && inputs.game != ''
+        name: Ping server
+        env:
+          BAN_SECRET: "${{ secrets.BAN_SECRET }}"
+        run: |
+          ts=$(date -u +%s)
+          body=$(jq -n --arg ts "$ts" '{ts:($ts|tonumber)}')
+          sig=$(printf '%s' "$body" | openssl dgst -sha256 -hmac "$BAN_SECRET" -binary | base64)
+          curl -L -X POST \
+              -H 'Content-Type: application/json' \
+              -H "X-Signature: $sig" \
+              -H "X-Timestamp: $ts" \
+              --data-raw "$body" \
+              "https://${{ inputs.game }}.mtgban.com/api/load/datastore" 2> /dev/null | tee /dev/stderr | jq -e 'select(.status=="ok")'

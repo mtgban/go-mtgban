@@ -13,6 +13,7 @@ jobs:
     with:
       url: ${{ vars.DATASTORE_LORCANA }}
       path: "datastore/"
+      game: "lorcana"
     secrets: inherit
 
   deploy:
