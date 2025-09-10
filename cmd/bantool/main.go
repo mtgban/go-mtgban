@@ -1,7 +1,6 @@
 package main
 
 import (
-	"compress/gzip"
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
@@ -11,24 +10,17 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/dsnet/compress/bzip2"
-	"github.com/ulikunitz/xz"
-
-	"cloud.google.com/go/storage"
-	"github.com/Backblaze/blazer/b2"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
-	xzReader "github.com/xi2/xz"
-	"google.golang.org/api/option"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/mtgban/go-mtgban/abugames"
@@ -49,10 +41,8 @@ import (
 	"github.com/mtgban/go-mtgban/trollandtoad"
 
 	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/simplecloud"
 )
-
-var GCSBucket *storage.BucketHandle
-var B2Bucket *b2.Bucket
 
 var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
 
@@ -381,7 +371,11 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuReader, err := loadReader(tcgSKUPath)
+			skuBucket, err := initializeBucket(tcgSKUPath)
+			if err != nil {
+				return nil, err
+			}
+			skuReader, err := simplecloud.InitReader(context.Background(), skuBucket, tcgSKUPath)
 			if err != nil {
 				return nil, err
 			}
@@ -417,7 +411,11 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuReader, err := loadReader(tcgSKUPath)
+			skuBucket, err := initializeBucket(tcgSKUPath)
+			if err != nil {
+				return nil, err
+			}
+			skuReader, err := simplecloud.InitReader(context.Background(), skuBucket, tcgSKUPath)
 			if err != nil {
 				return nil, err
 			}
@@ -443,7 +441,11 @@ var options = map[string]*scraperOption{
 			scraper.LogCallback = GlobalLogCallback
 
 			start := time.Now()
-			skuReader, err := loadReader(tcgSKUPath)
+			skuBucket, err := initializeBucket(tcgSKUPath)
+			if err != nil {
+				return nil, err
+			}
+			skuReader, err := simplecloud.InitReader(context.Background(), skuBucket, tcgSKUPath)
 			if err != nil {
 				return nil, err
 			}
@@ -646,9 +648,9 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 	return err
 }
 
-func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
+func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) error {
 	target := fmt.Sprintf("%s/retail/%s.%s", outputPath, seller.Info().Shorthand, format)
-	writer, err := loadWriter(target)
+	writer, err := simplecloud.InitWriter(context.Background(), dataBucket, target)
 	if err != nil {
 		return err
 	}
@@ -668,9 +670,9 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 	return err
 }
 
-func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
+func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) error {
 	target := fmt.Sprintf("%s/buylist/%s.%s", outputPath, vendor.Info().Shorthand, format)
-	writer, err := loadWriter(target)
+	writer, err := simplecloud.InitWriter(context.Background(), dataBucket, target)
 	if err != nil {
 		return err
 	}
@@ -690,18 +692,18 @@ func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
 	return err
 }
 
-func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
+func dump(dataBucket simplecloud.Writer, bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	log.Println("Writing results to", outputPath)
 
 	for _, seller := range bc.Sellers() {
-		err := dumpSeller(seller, outputPath, format)
+		err := dumpSeller(dataBucket, seller, outputPath, format)
 		if err != nil {
 			return err
 		}
 
 		if meta && format != "json" {
 			sellerMeta := mtgban.NewSellerFromInventory(nil, seller.Info())
-			err := dumpSeller(sellerMeta, outputPath, "json")
+			err := dumpSeller(dataBucket, sellerMeta, outputPath, "json")
 			if err != nil {
 				return err
 			}
@@ -709,14 +711,14 @@ func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	}
 
 	for _, vendor := range bc.Vendors() {
-		err := dumpVendor(vendor, outputPath, format)
+		err := dumpVendor(dataBucket, vendor, outputPath, format)
 		if err != nil {
 			return err
 		}
 
 		if meta && format != "json" {
 			vendorMeta := mtgban.NewVendorFromBuylist(nil, vendor.Info())
-			err := dumpVendor(vendorMeta, outputPath, "json")
+			err := dumpVendor(dataBucket, vendorMeta, outputPath, "json")
 			if err != nil {
 				return err
 			}
@@ -726,60 +728,99 @@ func dump(bc *mtgban.BanClient, outputPath, format string, meta bool) error {
 	return nil
 }
 
-// TODO: potentially this function could initialize more than one client
-func initializeBucket(outputPath string) error {
-	u, err := url.Parse(outputPath)
+type HTTPBucket struct {
+	Client *http.Client
+	URL    *url.URL
+}
+
+func NewHTTPBucket(client *http.Client, path string) (*HTTPBucket, error) {
+	u, err := url.Parse(path)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	return &HTTPBucket{
+		Client: client,
+		URL:    u,
+	}, nil
+}
+
+func (h *HTTPBucket) NewReader(ctx context.Context, path string) (io.ReadCloser, error) {
+	u := new(url.URL)
+	*u = *h.URL
+	if h.URL.User != nil {
+		u.User = new(url.Userinfo)
+		*u.User = *h.URL.User
 	}
 
-	switch u.Scheme {
-	case "http", "https":
-		// nothing to do here
-	case "gs":
-		if GCSBucket != nil {
-			return nil
-		}
+	u.Path = path
 
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := h.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Body, nil
+}
+
+func (h *HTTPBucket) NewWriter(ctx context.Context, path string) (io.WriteCloser, error) {
+	panic("not possible")
+	return nil, nil
+}
+
+// TODO: this function does not support different buckets from the same provider
+func initializeBucket(outputPath string) (simplecloud.ReadWriter, error) {
+	u, err := url.Parse(outputPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var bucket simplecloud.ReadWriter
+
+	switch u.Scheme {
+	case "":
+		_, err := os.Stat(u.Path)
+		if os.IsNotExist(err) {
+			return nil, errors.New("path does not exist")
+		}
+		bucket = &simplecloud.FileBucket{}
+	case "http", "https":
+		bucket, err = NewHTTPBucket(cleanhttp.DefaultClient(), outputPath)
+		if err != nil {
+			return nil, err
+		}
+	case "gs":
 		serviceAcc := os.Getenv("GCS_SVC_ACC")
 		if serviceAcc == "" {
-			return errors.New("missing GCS_SVC_ACC for GCS access")
+			return nil, errors.New("missing GCS_SVC_ACC for GCS access")
 		}
 
-		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(serviceAcc))
+		bucket, err = simplecloud.NewGCSClient(context.Background(), serviceAcc, u.Host)
 		if err != nil {
-			return fmt.Errorf("error creating the GCS client %w", err)
+			return nil, err
 		}
-
-		GCSBucket = client.Bucket(u.Host)
 	case "b2":
-		if B2Bucket != nil {
-			return nil
-		}
-
 		accessKey := os.Getenv("B2_KEY_ID")
 		secretKey := os.Getenv("B2_APP_KEY")
 		if accessKey == "" || secretKey == "" {
-			return errors.New("missing required B2 environment variables")
+			return nil, errors.New("missing required B2 environment variables")
 		}
 
-		client, err := b2.NewClient(context.TODO(), accessKey, secretKey)
+		b2Bucket, err := simplecloud.NewB2Client(context.Background(), accessKey, secretKey, u.Host)
 		if err != nil {
-			return err
+			return nil, err
 		}
-
-		B2Bucket, err = client.Bucket(context.TODO(), u.Host)
-		if err != nil {
-			return err
-		}
+		b2Bucket.ConcurrentDownloads = 20
+		bucket = b2Bucket
 	default:
-		_, err := os.Stat(u.Path)
-		if os.IsNotExist(err) {
-			return errors.New("path does not exist")
-		}
+		return nil, fmt.Errorf("unsupported path scheme %s", u.Scheme)
 	}
 
-	return nil
+	return bucket, nil
 }
 
 func run() int {
@@ -830,14 +871,7 @@ func run() int {
 		return 1
 	}
 
-	u, err := url.Parse(*outputPathOpt)
-	if err != nil {
-		log.Println("cannot parse output-path", err)
-		return 1
-	}
-	u.Path = filepath.Dir(u.Path)
-
-	err = initializeBucket(u.String())
+	dataBucket, err := initializeBucket(*outputPathOpt)
 	if err != nil {
 		log.Println("cannot initilize buckets:", err)
 		return 1
@@ -847,8 +881,8 @@ func run() int {
 		log.Println("Missing datatore argument")
 		return 1
 	}
-	// Sanity check in case things are on different providers
-	err = initializeBucket(*datastoreOpt)
+
+	datastoreBucket, err := initializeBucket(*datastoreOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
@@ -887,7 +921,7 @@ func run() int {
 	}
 
 	now := time.Now()
-	datastoreReader, err := loadReader(*datastoreOpt)
+	datastoreReader, err := simplecloud.InitReader(context.Background(), datastoreBucket, *datastoreOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
@@ -940,7 +974,7 @@ func run() int {
 
 	now = time.Now()
 	// Dump the results
-	err = dump(bc, *outputPathOpt, *fileFormatOpt, *metaOpt)
+	err = dump(dataBucket, bc, *outputPathOpt, *fileFormatOpt, *metaOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
@@ -954,137 +988,6 @@ func run() int {
 
 func main() {
 	os.Exit(run())
-}
-
-type multiCloser struct {
-	io.Reader
-	io.Writer
-	closers []io.Closer
-}
-
-func (m *multiCloser) Close() error {
-	var first error
-	for _, closer := range m.closers {
-		err := closer.Close()
-		if err != nil && first == nil {
-			first = err
-		}
-	}
-	return first
-}
-
-func loadWriter(outputPath string) (io.WriteCloser, error) {
-	var writer io.WriteCloser
-
-	u, err := url.Parse(outputPath)
-	if err != nil {
-		return nil, err
-	}
-	switch u.Scheme {
-	case "gs":
-		writer = GCSBucket.Object(u.Path).NewWriter(context.TODO())
-	case "b2":
-		dst := strings.TrimPrefix(u.Path, "/")
-		obj := B2Bucket.Object(dst).NewWriter(context.TODO())
-
-		writer = obj
-	default:
-		file, err := os.Create(outputPath)
-		if err != nil {
-			return nil, err
-		}
-		writer = file
-	}
-
-	var encoder io.WriteCloser
-	if strings.HasSuffix(outputPath, ".xz") {
-		xzWriter, err := xz.NewWriter(writer)
-		if err != nil {
-			writer.Close()
-			return nil, err
-		}
-		encoder = xzWriter
-	} else if strings.HasSuffix(outputPath, ".bz2") {
-		bz2Writer, err := bzip2.NewWriter(writer, nil)
-		if err != nil {
-			writer.Close()
-			return nil, err
-		}
-		encoder = bz2Writer
-	}
-
-	if encoder == nil {
-		return writer, nil
-	}
-
-	return &multiCloser{
-		Writer:  encoder,
-		closers: []io.Closer{encoder, writer},
-	}, nil
-}
-
-func loadReader(pathOpt string) (io.ReadCloser, error) {
-	var reader io.ReadCloser
-
-	u, err := url.Parse(pathOpt)
-	if err != nil {
-		return nil, err
-	}
-	switch u.Scheme {
-	case "http", "https":
-		resp, err := cleanhttp.DefaultClient().Get(pathOpt)
-		if err != nil {
-			return nil, err
-		}
-
-		reader = resp.Body
-	case "b2":
-		src := strings.TrimPrefix(u.Path, "/")
-		obj := B2Bucket.Object(src).NewReader(context.TODO())
-		obj.ConcurrentDownloads = 20
-
-		reader = obj
-	default:
-		file, err := os.Open(pathOpt)
-		if err != nil {
-			return nil, err
-		}
-
-		reader = file
-	}
-
-	var decoder io.ReadCloser
-	if strings.HasSuffix(pathOpt, "xz") {
-		xzReader, err := xzReader.NewReader(reader, 0)
-		if err != nil {
-			reader.Close()
-			return nil, err
-		}
-		decoder = io.NopCloser(xzReader)
-	} else if strings.HasSuffix(pathOpt, "bz2") {
-		bz2Reader, err := bzip2.NewReader(reader, nil)
-		if err != nil {
-			reader.Close()
-			return nil, err
-		}
-		decoder = bz2Reader
-	} else if strings.HasSuffix(pathOpt, "gz") {
-		zipReader, err := gzip.NewReader(reader)
-		if err != nil {
-			reader.Close()
-			return nil, err
-		}
-		decoder = zipReader
-	}
-
-	if decoder == nil {
-		return reader, nil
-	}
-
-	return &multiCloser{
-		Reader:  decoder,
-		closers: []io.Closer{decoder, reader},
-	}, nil
 }
 
 func signAPI(link string) (string, error) {
