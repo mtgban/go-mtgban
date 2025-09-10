@@ -351,10 +351,13 @@ func (ap AllPrintings) Load() cardBackend {
 				card.FlavorName = strings.Split(card.FlavorName, " // ")[0]
 				card.FaceName = strings.Split(card.FaceName, " // ")[0]
 				card.FaceFlavorName = strings.Split(card.FaceFlavorName, " // ")[0]
+				card.PrintedName = strings.Split(card.PrintedName, " // ")[0]
 				card.Identifiers["isDFCSameName"] = "true"
 			}
 
-			for i, name := range []string{card.FaceName, card.FlavorName, card.FaceFlavorName} {
+			for i, name := range []string{
+				card.FaceName, card.FlavorName, card.FaceFlavorName, card.PrintedName,
+			} {
 				// Skip empty entries
 				if name == "" {
 					continue
@@ -686,6 +689,9 @@ func (ap AllPrintings) Load() cardBackend {
 			if card.FlavorName != "" {
 				namesToAdd = append(namesToAdd, card.FlavorName+" // "+card.FlavorName)
 			}
+			if card.PrintedName != "" {
+				namesToAdd = append(namesToAdd, card.PrintedName+" // "+card.PrintedName)
+			}
 		}
 
 		for _, nameToAdd := range namesToAdd {
@@ -720,6 +726,9 @@ func (ap AllPrintings) Load() cardBackend {
 			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
 			for _, uuid := range allAltUUIDs {
 				if uuids[uuid].FlavorName != "" {
+					hashes[altNorm] = append(hashes[altNorm], uuid)
+				}
+				if uuids[uuid].PrintedName != "" {
 					hashes[altNorm] = append(hashes[altNorm], uuid)
 				}
 			}

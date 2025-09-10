@@ -118,6 +118,8 @@ type Card struct {
 	Name                string              `json:"name"`
 	Number              string              `json:"number"`
 	OriginalReleaseDate string              `json:"originalReleaseDate"`
+	PrintedName         string              `json:"printedName"`
+	PrintedType         string              `json:"printedType"`
 	Printings           []string            `json:"printings"`
 	PromoTypes          []string            `json:"promoTypes"`
 	Rarity              string              `json:"rarity"`
