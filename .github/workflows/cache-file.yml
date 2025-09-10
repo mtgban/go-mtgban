@@ -52,19 +52,19 @@ jobs:
           echo "filepath=$filepath" >> $GITHUB_OUTPUT
 
       - name: Cache path
-        id: cache-file
+        id: cache_file
         uses: actions/cache@v4
         with:
           path: ${{ inputs.path }}
           key: ${{ steps.get_etag.outputs.key }}
 
-      - if: steps.cache-file.outputs.cache-hit != 'true'
+      - if: steps.cache_file.outputs.cache-hit != 'true'
         name: Download file
         run: |
           mkdir -p "${{ inputs.path }}"
           curl -L "${{ inputs.url }}" -o "${{ steps.get_etag.outputs.filepath }}"
 
-      - if: steps.cache-file.outputs.cache-hit != 'true' && inputs.game != ''
+      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != ''
         name: Upload to B2
         env:
           B2KEY: "${{ secrets.B2_KEY_ID_DATASTORE }}"
@@ -75,7 +75,7 @@ jobs:
           b2 sync --skip-newer "${{ inputs.path }}" "b2://mtgban-datastore/${{ inputs.game }}"
           b2 account clear
 
-      - if: steps.cache-file.outputs.cache-hit != 'true' && inputs.game != ''
+      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != ''
         name: Ping server
         env:
           BAN_SECRET: "${{ secrets.BAN_SECRET }}"
