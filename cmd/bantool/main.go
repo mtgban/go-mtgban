@@ -381,7 +381,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuReader, err := loadData(tcgSKUPath)
+			skuReader, err := loadReader(tcgSKUPath)
 			if err != nil {
 				return nil, err
 			}
@@ -417,7 +417,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuReader, err := loadData(tcgSKUPath)
+			skuReader, err := loadReader(tcgSKUPath)
 			if err != nil {
 				return nil, err
 			}
@@ -443,7 +443,7 @@ var options = map[string]*scraperOption{
 			scraper.LogCallback = GlobalLogCallback
 
 			start := time.Now()
-			skuReader, err := loadData(tcgSKUPath)
+			skuReader, err := loadReader(tcgSKUPath)
 			if err != nil {
 				return nil, err
 			}
@@ -647,7 +647,8 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 }
 
 func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
-	writer, err := putData("retail/"+seller.Info().Shorthand+"."+format, outputPath)
+	target := fmt.Sprintf("%s/retail/%s.%s", outputPath, seller.Info().Shorthand, format)
+	writer, err := loadWriter(target)
 	if err != nil {
 		return err
 	}
@@ -668,7 +669,8 @@ func dumpSeller(seller mtgban.Seller, outputPath, format string) error {
 }
 
 func dumpVendor(vendor mtgban.Vendor, outputPath, format string) error {
-	writer, err := putData("buylist/"+vendor.Info().Shorthand+"."+format, outputPath)
+	target := fmt.Sprintf("%s/buylist/%s.%s", outputPath, vendor.Info().Shorthand, format)
+	writer, err := loadWriter(target)
 	if err != nil {
 		return err
 	}
@@ -896,7 +898,7 @@ func run() int {
 	}
 
 	now := time.Now()
-	datastoreReader, err := loadData(*datastoreOpt)
+	datastoreReader, err := loadReader(*datastoreOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
@@ -982,11 +984,10 @@ func (m *multiCloser) Close() error {
 	return first
 }
 
-func putData(suffix, outputPath string) (io.WriteCloser, error) {
-	filePath := fmt.Sprintf("%s/%s", outputPath, suffix)
-
+func loadWriter(outputPath string) (io.WriteCloser, error) {
 	var writer io.WriteCloser
-	u, err := url.Parse(filePath)
+
+	u, err := url.Parse(outputPath)
 	if err != nil {
 		return nil, err
 	}
@@ -999,7 +1000,7 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 
 		writer = obj
 	default:
-		file, err := os.Create(filePath)
+		file, err := os.Create(outputPath)
 		if err != nil {
 			return nil, err
 		}
@@ -1007,14 +1008,14 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 	}
 
 	var encoder io.WriteCloser
-	if strings.HasSuffix(filePath, ".xz") {
+	if strings.HasSuffix(outputPath, ".xz") {
 		xzWriter, err := xz.NewWriter(writer)
 		if err != nil {
 			writer.Close()
 			return nil, err
 		}
 		encoder = xzWriter
-	} else if strings.HasSuffix(filePath, ".bz2") {
+	} else if strings.HasSuffix(outputPath, ".bz2") {
 		bz2Writer, err := bzip2.NewWriter(writer, nil)
 		if err != nil {
 			writer.Close()
@@ -1033,7 +1034,7 @@ func putData(suffix, outputPath string) (io.WriteCloser, error) {
 	}, nil
 }
 
-func loadData(pathOpt string) (io.ReadCloser, error) {
+func loadReader(pathOpt string) (io.ReadCloser, error) {
 	var reader io.ReadCloser
 
 	u, err := url.Parse(pathOpt)
