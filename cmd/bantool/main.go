@@ -371,7 +371,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath)
+			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -411,7 +411,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath)
+			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -441,7 +441,7 @@ var options = map[string]*scraperOption{
 			scraper.LogCallback = GlobalLogCallback
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath)
+			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -772,8 +772,7 @@ func (h *HTTPBucket) NewWriter(ctx context.Context, path string) (io.WriteCloser
 	return nil, nil
 }
 
-// TODO: this function does not support different buckets from the same provider
-func initializeBucket(outputPath string) (simplecloud.ReadWriter, error) {
+func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter, error) {
 	u, err := url.Parse(outputPath)
 	if err != nil {
 		return nil, err
@@ -794,21 +793,21 @@ func initializeBucket(outputPath string) (simplecloud.ReadWriter, error) {
 			return nil, err
 		}
 	case "gs":
-		serviceAcc := os.Getenv("GCS_SVC_ACC")
-		if serviceAcc == "" {
-			return nil, errors.New("missing GCS_SVC_ACC for GCS access")
+		if len(env) < 1 {
+			return nil, errors.New("missing required environment variable")
 		}
+		serviceAcc := env[0]
 
 		bucket, err = simplecloud.NewGCSClient(context.Background(), serviceAcc, u.Host)
 		if err != nil {
 			return nil, err
 		}
 	case "b2":
-		accessKey := os.Getenv("B2_KEY_ID")
-		secretKey := os.Getenv("B2_APP_KEY")
-		if accessKey == "" || secretKey == "" {
-			return nil, errors.New("missing required B2 environment variables")
+		if len(env) < 2 {
+			return nil, errors.New("missing required environment variables")
 		}
+		accessKey := env[0]
+		secretKey := env[1]
 
 		b2Bucket, err := simplecloud.NewB2Client(context.Background(), accessKey, secretKey, u.Host)
 		if err != nil {
@@ -871,7 +870,7 @@ func run() int {
 		return 1
 	}
 
-	dataBucket, err := initializeBucket(*outputPathOpt)
+	dataBucket, err := initializeBucket(*outputPathOpt, os.Getenv("B2_KEY_ID"), os.Getenv("B2_APP_KEY"))
 	if err != nil {
 		log.Println("cannot initilize buckets:", err)
 		return 1
@@ -882,7 +881,14 @@ func run() int {
 		return 1
 	}
 
-	datastoreBucket, err := initializeBucket(*datastoreOpt)
+	if os.Getenv("B2_KEY_ID_DATASTORE") == "" {
+		os.Setenv("B2_KEY_ID_DATASTORE", os.Getenv("B2_KEY_ID"))
+	}
+	if os.Getenv("B2_APP_KEY_DATASTORE") == "" {
+		os.Setenv("B2_APP_KEY_DATASTORE", os.Getenv("B2_APP_KEY"))
+	}
+
+	datastoreBucket, err := initializeBucket(*datastoreOpt, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 	if err != nil {
 		log.Println(err)
 		return 1
