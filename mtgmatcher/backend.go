@@ -686,10 +686,10 @@ func (ap AllPrintings) Load() cardBackend {
 		namesToAdd := []string{card.Name}
 		if card.Identifiers["isDFCSameName"] == "true" {
 			namesToAdd = append(namesToAdd, card.Name+" // "+card.Name)
-			if card.FlavorName != "" {
+			if card.FlavorName != "" && !slices.Contains(namesToAdd, card.FlavorName+" // "+card.FlavorName) {
 				namesToAdd = append(namesToAdd, card.FlavorName+" // "+card.FlavorName)
 			}
-			if card.PrintedName != "" {
+			if card.PrintedName != "" && !slices.Contains(namesToAdd, card.PrintedName+" // "+card.PrintedName) {
 				namesToAdd = append(namesToAdd, card.PrintedName+" // "+card.PrintedName)
 			}
 		}
@@ -725,10 +725,10 @@ func (ap AllPrintings) Load() cardBackend {
 			// Retrieve all the uuids with a FlavorName attached
 			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
 			for _, uuid := range allAltUUIDs {
-				if uuids[uuid].FlavorName != "" {
+				if uuids[uuid].FlavorName != "" && !slices.Contains(hashes[altNorm], uuid) {
 					hashes[altNorm] = append(hashes[altNorm], uuid)
 				}
-				if uuids[uuid].PrintedName != "" {
+				if uuids[uuid].PrintedName != "" && !slices.Contains(hashes[altNorm], uuid) {
 					hashes[altNorm] = append(hashes[altNorm], uuid)
 				}
 			}
