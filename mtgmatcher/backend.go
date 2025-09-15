@@ -677,8 +677,8 @@ func (ap AllPrintings) Load() cardBackend {
 	purlDupes := duplicateCards(ap.Data, uuids, "PURL", "JPN", []string{"1"})
 	ap.Data["PURL"].Cards = append(ap.Data["PURL"].Cards, purlDupes...)
 
-	for setCode, numbers := range foilDupes {
-		spinoffFoils(ap.Data, uuids, setCode, numbers, tcgIds[setCode])
+	for setCode := range foilDupes {
+		spinoffFoils(ap.Data, uuids, setCode)
 	}
 
 	// Add all names and associated uuids to the global names and hashes arrays
@@ -1107,12 +1107,10 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 }
 
 // Duplicate certain cards by creating foil versions of them
-func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string, numbers []string, tcgIds []string) {
-	if tcgIds != nil && len(numbers) != len(tcgIds) {
-		panic("different length of duped numbers and duped ids")
-	}
-
+func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string) {
 	var newCardsArray []Card
+
+	var dupes = foilDupes[code]
 
 	for i := range sets[code].Cards {
 		dupeCard := sets[code].Cards[i]
@@ -1124,8 +1122,11 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 			ogNum = dupeCard.Number
 		}
 
+		// Load the new id
+		tcgId, found := dupes[ogNum]
+
 		// Skip unneeded (just preserve the card as-is)
-		if !slices.Contains(numbers, ogNum) {
+		if !found {
 			newCardsArray = append(newCardsArray, dupeCard)
 			continue
 		}
@@ -1153,18 +1154,17 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 
 		// Change properties
 		dupeCard.UUID += suffixFoil
-		if tcgIds != nil {
-			// Clone the map and replace it, overriding the id
-			newIdentifiers := map[string]string{}
-			for k, v := range dupeCard.Identifiers {
-				newIdentifiers[k] = v
-			}
 
-			dupeCard.Identifiers = newIdentifiers
-			dupeCard.Identifiers["tcgplayerProductId"] = tcgIds[slices.Index(numbers, ogNum)]
-			// Signal that the TCG SKUs from MTGJSON are not reliable
-			dupeCard.Identifiers["needsNewTCGSKUs"] = "true"
+		// Clone the map and replace it, overriding the id
+		newIdentifiers := map[string]string{}
+		for k, v := range dupeCard.Identifiers {
+			newIdentifiers[k] = v
 		}
+
+		dupeCard.Identifiers = newIdentifiers
+		dupeCard.Identifiers["tcgplayerProductId"] = tcgId
+		// Signal that the TCG SKUs from MTGJSON are not reliable
+		dupeCard.Identifiers["needsNewTCGSKUs"] = "true"
 
 		// In case we are duplicating a card that was *already* duplicated
 		_, found = dupeCard.Identifiers["originalScryfallNumber"]
