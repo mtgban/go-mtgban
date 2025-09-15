@@ -82,9 +82,11 @@ type Set struct {
 	} `json:"sealedProduct"`
 	Decks []struct {
 		Code               string     `json:"code"`
-		Bonus              []DeckCard `json:"bonus"`
 		Commander          []DeckCard `json:"commander"`
 		MainBoard          []DeckCard `json:"mainBoard"`
+		DisplayCommander   []DeckCard `json:"displayCommander"`
+		Planes             []DeckCard `json:"planes"`
+		Schemes            []DeckCard `json:"schemes"`
 		SideBoard          []DeckCard `json:"sideBoard"`
 		Name               string     `json:"name"`
 		SealedProductUUIDs []string   `json:"sealedProductUuids"`

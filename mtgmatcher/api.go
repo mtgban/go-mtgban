@@ -519,7 +519,7 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 		isEtched := strings.HasSuffix(deckName, "etched")
 
 		for _, board := range [][]DeckCard{
-			deck.Bonus, deck.Commander, deck.MainBoard, deck.SideBoard,
+			deck.Commander, deck.DisplayCommander, deck.MainBoard, deck.Planes, deck.Schemes, deck.SideBoard,
 		} {
 			for _, card := range board {
 				uuid, err := MatchId(card.UUID, card.IsFoil, isEtched)
