@@ -1074,6 +1074,15 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 		dupeCard.Images["thumbnail"] = generateImageURL(dupeCard, "small")
 		dupeCard.Images["crop"] = generateImageURL(dupeCard, "art_crop")
 
+		// Retrieve Printed data if available
+		for _, foreignData := range sets[code].Cards[i].ForeignData {
+			if foreignData.Language != dupeCard.Language {
+				continue
+			}
+			dupeCard.PrintedName = foreignData.Name
+			dupeCard.PrintedType = foreignData.Type
+		}
+
 		duplicates = append(duplicates, dupeCard)
 
 		// Add the new uuid to the UUID map

@@ -134,6 +134,13 @@ type Card struct {
 	Variations          []string            `json:"variations"`
 	Watermark           string              `json:"watermark"`
 
+	ForeignData []struct {
+		Name        string            `json:"name"`
+		Language    string            `json:"language"`
+		Identifiers map[string]string `json:"identifiers"`
+		Type        string            `json:"type"`
+	} `json:"foreignData"`
+
 	// A list of URLs containing the image of the card
 	// At a minimum "full" and "thumbnail" versions should be provided
 	Images map[string]string
