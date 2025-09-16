@@ -903,10 +903,13 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		variant = number
 		switch cardName {
 		case "Plague Sliver",
-			"Shadowborn Apostle",
 			"Toxin Sliver",
 			"Virulent Sliver":
 			if ogVariant == "V.2" {
+				variant += " step-and-compleat"
+			}
+		case "Shadowborn Apostle":
+			if ogVariant == "V.8" {
 				variant += " step-and-compleat"
 			}
 		case "Fellwar Stone":
