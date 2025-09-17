@@ -104,6 +104,45 @@ func checkLoadedId(cardName string, productId int) []string {
 	return ids
 }
 
+func fallback(product *MKMProduct) (string, string) {
+	var cardId, cardIdFoil string
+
+	// First check if the product id is known
+	ids := checkLoadedId(product.Name, product.IdProduct)
+	// These editions contain English ids, so we can't use this system
+	switch product.ExpansionName {
+	case "The Dark Italian", "Legends Italian":
+		ids = nil
+	}
+	for _, id := range ids {
+		co, _ := mtgmatcher.GetUUID(id)
+		if co.Etched {
+			switch co.SetCode {
+			// These set codes cannot be represented
+			case "STA", "MH2", "H1R":
+				ids = nil
+			}
+			cardIdFoil = co.UUID
+		} else if co.Foil {
+			cardIdFoil = co.UUID
+		} else {
+			cardId = co.UUID
+		}
+	}
+	// If we found any known ids, we trust them and skip the rest of the preprocessing
+	if ids != nil {
+		// Make sure both ids are set to something
+		if cardIdFoil == "" {
+			cardIdFoil = cardId
+		} else if cardId == "" {
+			cardId = cardIdFoil
+		}
+
+		return cardId, cardIdFoil
+	}
+	return "", ""
+}
+
 func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error) {
 	var foil bool
 

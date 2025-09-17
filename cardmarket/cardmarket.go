@@ -90,38 +90,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 
 	switch mkm.gameId {
 	case GameIdMagic:
-		// First check if the product id is known
-		ids := checkLoadedId(product.Name, product.IdProduct)
-		// These editions contain English ids, so we can't use this system
-		switch product.ExpansionName {
-		case "The Dark Italian", "Legends Italian":
-			ids = nil
-		}
-		for _, id := range ids {
-			co, _ := mtgmatcher.GetUUID(id)
-			if co.Etched {
-				switch co.SetCode {
-				// These set codes cannot be represented
-				case "STA", "MH2", "H1R":
-					ids = nil
-				}
-				cardIdFoil = co.UUID
-			} else if co.Foil {
-				cardIdFoil = co.UUID
-			} else {
-				cardId = co.UUID
-			}
-		}
-		// If we found any known ids, we trust them and skip the rest of the preprocessing
-		if ids != nil {
-			// Make sure both ids are set to something
-			if cardIdFoil == "" {
-				cardIdFoil = cardId
-			} else if cardId == "" {
-				cardId = cardIdFoil
-			}
-			break
-		}
+		backupCardId, backupFoilCardId := fallback(product)
 
 		theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
 		if err != nil {
@@ -129,7 +98,17 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			if ok {
 				return err
 			}
-			return nil
+			if backupCardId == "" && backupFoilCardId == "" {
+				return nil
+			}
+
+			theCard = &mtgmatcher.InputCard{
+				Id: backupCardId,
+			}
+			if backupCardId == "" {
+				theCard.Id = backupFoilCardId
+				theCard.Foil = true
+			}
 		}
 
 		cardId, err = mtgmatcher.Match(theCard)
@@ -140,6 +119,12 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 				theCard.Edition == "Pro Tour Collector Set" ||
 				strings.HasPrefix(theCard.Edition, "World Championship Decks") {
 				return nil
+			}
+
+			if backupCardId != "" || backupFoilCardId != "" {
+				cardId = backupCardId
+				cardIdFoil = backupFoilCardId
+				break
 			}
 
 			mkm.printf("%v", err)
