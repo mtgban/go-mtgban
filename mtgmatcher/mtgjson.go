@@ -106,6 +106,7 @@ type Card struct {
 	FlavorText          string              `json:"flavorText"`
 	FrameEffects        []string            `json:"frameEffects"`
 	FrameVersion        string              `json:"frameVersion"`
+	HasContentWarning   bool                `json:"hasContentWarning"`
 	Identifiers         map[string]string   `json:"identifiers"`
 	IsAlternative       bool                `json:"isAlternative"`
 	IsGameChanger       bool                `json:"isGameChanger"`
