@@ -285,7 +285,7 @@ func (ct *CTAuthClient) Blueprints(expansionId int) ([]Blueprint, error) {
 		var blueprintError BlueprintError
 		bpErr := json.Unmarshal(data, &blueprintError)
 		if bpErr == nil {
-			return nil, fmt.Errorf(blueprintError.Extra.Message)
+			return nil, fmt.Errorf("%s", blueprintError.Extra.Message)
 		}
 		return nil, fmt.Errorf("unmarshal error for blueprints (from edition id %d), got: %s", expansionId, string(data))
 	}

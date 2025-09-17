@@ -310,7 +310,7 @@ func SellerName2ID(sellerName string) (string, error) {
 		}
 	}
 	if sellerKey == "" {
-		return "", fmt.Errorf("seller not found in", string(data))
+		return "", fmt.Errorf("seller not found in %s", string(data))
 	}
 
 	return sellerKey, nil

@@ -322,7 +322,7 @@ func (scg *SCGClient) SearchAll(game, offset, limit int, rarity string) (*SCGSea
 	}
 
 	if search.Message != "" {
-		return nil, fmt.Errorf(search.Message)
+		return nil, fmt.Errorf("%s", search.Message)
 	}
 
 	return &search, nil
