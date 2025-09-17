@@ -101,6 +101,7 @@ type Card struct {
 	ColorIdentity       []string            `json:"colorIdentity"`
 	FaceName            string              `json:"faceName"`
 	FaceFlavorName      string              `json:"faceFlavorName"`
+	FacePrintedName     string              `json:"facePrintedName"`
 	Finishes            []string            `json:"finishes"`
 	FlavorName          string              `json:"flavorName"`
 	FlavorText          string              `json:"flavorText"`
