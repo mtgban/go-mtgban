@@ -96,7 +96,15 @@ type CSIPriceEntry struct {
 }
 
 func GetBuylist(game string) ([]CSIPriceEntry, error) {
-	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(csiBuylistURL, game))
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(csiBuylistURL, game), http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	// Disable gzip compression
+	req.Header.Set("Accept-Encoding", "identity")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
