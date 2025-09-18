@@ -8,49 +8,9 @@ import (
 	"os"
 	"slices"
 	"sort"
-	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
-
-func getListForBooster(setCode, boosterType string) ([]string, error) {
-	var list []string
-
-	set, err := mtgmatcher.GetSet(setCode)
-	if err != nil {
-		return nil, err
-	}
-	if set.Booster == nil {
-		return nil, mtgmatcher.ErrEditionNoSealed
-	}
-	_, found := set.Booster[boosterType]
-	if !found {
-		return nil, mtgmatcher.ErrEditionNoBoosterSheet
-	}
-
-	// Pick a rarity distribution as defined in Contents at random using their weight
-	sheets := map[string]int{}
-	for _, booster := range set.Booster[boosterType].Boosters {
-		for key := range booster.Contents {
-			sheets[key]++
-		}
-	}
-
-	// For each sheet, pick a card at random using the weight
-	for sheetName := range sheets {
-		// Grab the sheet
-		sheet := set.Booster[boosterType].Sheets[sheetName]
-		for cardId := range sheet.Cards {
-			uuid, err := mtgmatcher.MatchId(cardId, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
-			if err != nil {
-				continue
-			}
-			list = append(list, uuid)
-		}
-	}
-
-	return list, nil
-}
 
 func getListForDeck(setCode, deckName string) ([]string, error) {
 	var list []string
@@ -104,7 +64,7 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 					list = append(list, uuid)
 
 				case "pack":
-					boosterList, err := getListForBooster(content.Set, content.Code)
+					boosterList, err := mtgmatcher.BoosterGen(content.Set, content.Code)
 					if err != nil {
 						return nil, err
 					}
@@ -134,7 +94,7 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 							list = append(list, uuid)
 						}
 						for _, pack := range config["pack"] {
-							boosterList, err := getListForBooster(pack.Set, pack.Code)
+							boosterList, err := mtgmatcher.BoosterGen(pack.Set, pack.Code)
 							if err != nil {
 								return nil, err
 							}

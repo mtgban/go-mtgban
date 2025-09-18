@@ -56,25 +56,12 @@ func run() int {
 		return 1
 	}
 
-	numOfBoosters := *NumberOfBoosters
-	if numOfBoosters == 0 {
-		for _, product := range set.SealedProduct {
-			if product.Category == "booster_box" && product.Subtype == *BoosterTypeOpt {
-				numOfBoosters = product.ProductSize
-				break
-			}
-		}
-		if numOfBoosters == 0 {
-			numOfBoosters = 1
-		}
-	}
-
 	if *CSVOutput {
 		CSVWriter = csv.NewWriter(os.Stderr)
 		CSVWriter.Write([]string{"setCode", "number", "name", "isFoil"})
 	}
 
-	for i := 0; i < numOfBoosters; i++ {
+	for i := 0; i < *NumberOfBoosters; i++ {
 		// Pick a rarity distribution as defined in Contents at random using their weight
 		var choices []randutil.Choice
 		for _, booster := range set.Booster[*BoosterTypeOpt].Boosters {
@@ -217,7 +204,7 @@ func run() int {
 
 func main() {
 	SetCodeOpt = flag.String("s", "", "Set code to choose")
-	NumberOfBoosters = flag.Int("n", 0, "Number of boosters to generate")
+	NumberOfBoosters = flag.Int("n", 1, "Number of boosters to generate")
 	BoosterTypeOpt = flag.String("t", "default", "Type of booster to pick (default/set/collector/theme/jumpstart)")
 	AllPrintingsOpt = flag.String("a", "allprintings5.json", "Load AllPrintings file path")
 	ColorOpt = flag.String("c", "", "One letter color of the theme booster")
