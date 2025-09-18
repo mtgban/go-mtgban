@@ -22,8 +22,6 @@ const (
 	mkmArticlesBaseURL   = "https://api.cardmarket.com/ws/v2.0/output.json/articles/"
 	mkmExpansionsBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/expansions/"
 
-	mkmUserArticlesFormatURL = "https://api.cardmarket.com/ws/v2.0/output.json/users/%s/articles"
-
 	mkmPriceGuideURL  = "https://api.cardmarket.com/ws/v2.0/output.json/priceguide"
 	mkmProductListURL = "https://api.cardmarket.com/ws/v2.0/output.json/productlist"
 	mkmExpansionsURL  = "https://api.cardmarket.com/ws/v2.0/output.json/games/%d/expansions"
