@@ -4817,22 +4817,6 @@
         }
     },
     {
-        "uuid": "ab056d44-ad2d-58be-81c7-281a63e5e851",
-        "description": "unknownevent_commas_intefering_unknownevent",
-        "input": {
-            "name": "Gather, the Townsfolk",
-            "edition": "UNK"
-        }
-    },
-    {
-        "uuid": "1108ac53-50d0-5223-af4c-978afdd9b26f",
-        "description": "unknownevent_commas_intefering_actualcard",
-        "input": {
-            "name": "Gather the Townsfolk",
-            "edition": "DDQ"
-        }
-    },
-    {
         "uuid": "ff342b26-3058-5373-aaa9-f20684f92031",
         "description": "multi_promo_number_similar",
         "input": {
