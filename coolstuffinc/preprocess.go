@@ -382,7 +382,15 @@ func card2promo(cardName, variant string) (string, string) {
 		}
 	case "Dragon's Hoard":
 		if variant == "Tarkir: Dragonstorm Magic Academy Promo" {
-			edition = "PW25"
+			return "PW25", "1p"
+		}
+	case "Lightning Bolt":
+		if variant == "MagicFest Promo textless" {
+			return "PF19", "1"
+		}
+	case "Ugin, the Spirit Dragon":
+		if variant == "Retro Frame 2025 MagicCon Las Vegas Promo" {
+			return "PF25", "6"
 		}
 	}
 	return edition, variant
