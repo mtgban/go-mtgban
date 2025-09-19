@@ -79,6 +79,8 @@ var allVariants = map[string]map[string]string{
 		"man being attacked":                 "23b",
 		"wizard facing presence":             "23a",
 		"wizard and presence facing forward": "23b",
+		"monster screaming":                  "23a",
+		"person running from monster":        "23b",
 		"v.1":                                "23a",
 		"v.2":                                "23b",
 	},
