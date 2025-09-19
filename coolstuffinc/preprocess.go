@@ -209,6 +209,7 @@ var preserveTags = []string{
 
 func card2promo(cardName, variant string) (string, string) {
 	var edition string
+	ogVariant := variant
 
 	switch {
 	case strings.Contains(variant, "30th Anniversary") && !strings.Contains(variant, "History Promos"):
@@ -220,7 +221,7 @@ func card2promo(cardName, variant string) (string, string) {
 	case strings.Contains(variant, "Magic Spotlight"):
 		return "PSPL", ""
 	case strings.Contains(variant, "Friday Night Magic Promo"):
-		edition = "FNM"
+		variant = "FNM"
 	}
 
 	switch cardName {
@@ -258,10 +259,10 @@ func card2promo(cardName, variant string) (string, string) {
 			variant = "WPN"
 		}
 	case "Goblin Warchief":
-		if variant == "Friday Night Magic Promo Old Border" {
-			variant = "FNM 2006"
-		} else if variant == "Friday Night Magic Promo New Border" {
-			variant = "FNM 2016"
+		if ogVariant == "Friday Night Magic Promo Old Border" {
+			return "F06", "5"
+		} else if ogVariant == "Friday Night Magic Promo New Border" {
+			return "F16", "5"
 		}
 	case "Cabal Therapy":
 		if strings.HasPrefix(variant, "Gold-bordered") {
@@ -308,8 +309,9 @@ func card2promo(cardName, variant string) (string, string) {
 		edition = "PURL"
 		variant = "1"
 	case "Llanowar Elves":
-		switch variant {
+		switch ogVariant {
 		case "Friday Night Magic Promo":
+			edition = "FNM"
 			variant = "11"
 		case "Open House Promo":
 			edition = "PDOM"
