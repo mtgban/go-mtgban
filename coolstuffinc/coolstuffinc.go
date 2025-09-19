@@ -176,6 +176,13 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 					conditions = "Near Mint"
 					relaxed = true
 				}
+
+				// Sometimes etched cards have a Near Mint and Near Mint Foil condition
+				// for the same card
+				if strings.Contains(cardName, "Foil-etched") {
+					relaxed = true
+				}
+
 				switch conditions {
 				case "Near Mint", "Foil Near Mint":
 					conditions = "NM"
