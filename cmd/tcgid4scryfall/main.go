@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -20,8 +19,6 @@ const (
 	defaultConcurrency = 8
 )
 
-var Client *api.Client
-
 var Editions map[int]string
 
 var VerboseOpt *bool
@@ -35,8 +32,8 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
-func processCards(channel chan<- responseChan, page int) error {
-	products, err := Client.ListAllProducts(api.CategoryMagic, []string{"Cards"}, false, page)
+func processCards(client *api.Client, channel chan<- responseChan, page int) error {
+	products, err := client.ListAllProducts(ctx, api.CategoryMagic, []string{"Cards"}, false, page)
 	if err != nil {
 		return err
 	}
@@ -122,19 +119,28 @@ type Properties struct {
 }
 
 func run() int {
+	pubKey := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+	priKey := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+
+	client, err := api.NewClient(pubKey, priKey)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+
 	allprintingsPath := *AllPrintingsOpt
 	envAllprintings := os.Getenv("ALLPRINTINGS5_PATH")
 	if envAllprintings != "" {
 		allprintingsPath = envAllprintings
 	}
 	// Load static data once
-	err := mtgmatcher.LoadDatastoreFile(allprintingsPath)
+	err = mtgmatcher.LoadDatastoreFile(allprintingsPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
 
-	editions, err := tcgplayer.EditionMap(Client, api.CategoryMagic)
+	editions, err := tcgplayer.EditionMap(client, api.CategoryMagic)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -147,7 +153,7 @@ func run() int {
 	start := *StepStartOpt + *StepSizeOpt*(*StepOpt-1)
 	end := *StepStartOpt + *StepSizeOpt*(*StepOpt)
 	if *StepOpt == 0 {
-		totals, err := Client.TotalProducts(api.CategoryMagic, []string{"Cards"})
+		totals, err := client.TotalProducts(api.CategoryMagic, []string{"Cards"})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
@@ -165,7 +171,7 @@ func run() int {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				err := processCards(channel, page)
+				err := processCards(client, channel, page)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}
@@ -272,23 +278,7 @@ func main() {
 	StepSizeOpt = flag.Int("step-size", 1000, "Size of the range")
 	StepStartOpt = flag.Int("step-start", 0, "Start offset of the range")
 	AllPrintingsOpt = flag.String("i", "allprintings5.json", "AllPrintings file path")
-	tcgPublicKeyOpt := flag.String("pub", "", "TCGplayer public key")
-	tcgPrivateKeyOpt := flag.String("pri", "", "TCGplayer private key")
 	flag.Parse()
 
-	pubEnv := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-	if pubEnv != "" {
-		tcgPublicKeyOpt = &pubEnv
-	}
-	priEnv := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-	if priEnv != "" {
-		tcgPrivateKeyOpt = &priEnv
-	}
-
-	if *tcgPublicKeyOpt == "" || *tcgPrivateKeyOpt == "" {
-		log.Fatalln("Missing TCGplayer keys")
-	}
-
-	Client = api.NewClient(*tcgPublicKeyOpt, *tcgPrivateKeyOpt)
 	os.Exit(run())
 }
