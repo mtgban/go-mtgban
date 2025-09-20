@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -42,15 +43,16 @@ func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 }
 
 func NewScraperGeneric(publicId, privateId string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
-	if publicId == "" || privateId == "" {
-		return nil, fmt.Errorf("missing authentication data")
+	client, err := tcgplayer.NewClient(publicId, privateId)
+	if err != nil {
+		return nil, err
 	}
 	tcg := TCGPlayerGeneric{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = tcgplayer.NewClient(publicId, privateId)
+	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 
-	check, err := tcg.client.GetCategoriesDetails([]int{category})
+	check, err := tcg.client.GetCategoriesDetails(context.TODO(), []int{category})
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +77,8 @@ type genericChan struct {
 	entry mtgban.InventoryEntry
 }
 
-func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page)
+func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
+	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, false, page)
 	if err != nil {
 		return err
 	}
@@ -88,7 +90,7 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 		prodMap[product.ProductId] = product
 	}
 
-	results, err := tcg.client.GetMarketPricesByProducts(ids)
+	results, err := tcg.client.GetMarketPricesByProducts(ctx, ids)
 	if err != nil {
 		return err
 	}
@@ -140,15 +142,15 @@ func (tcg *TCGPlayerGeneric) processPage(channel chan<- genericChan, page int) e
 	return nil
 }
 
-func (tcg *TCGPlayerGeneric) scrape() error {
-	editions, err := EditionMap(tcg.client, tcg.category)
+func (tcg *TCGPlayerGeneric) scrape(ctx context.Context) error {
+	editions, err := EditionMap(ctx, tcg.client, tcg.category)
 	if err != nil {
 		return err
 	}
 	tcg.editions = editions
 	tcg.printf("Found %d editions", len(editions))
 
-	totals, err := tcg.client.TotalProducts(tcg.category, tcg.productTypes)
+	totals, err := tcg.client.TotalProducts(ctx, tcg.category, tcg.productTypes)
 	if err != nil {
 		return err
 	}
@@ -163,7 +165,7 @@ func (tcg *TCGPlayerGeneric) scrape() error {
 		go func() {
 
 			for page := range pages {
-				err := tcg.processPage(channel, page)
+				err := tcg.processPage(ctx, channel, page)
 				if err != nil {
 					tcg.printf("%s", err.Error())
 				}
@@ -200,7 +202,7 @@ func (tcg *TCGPlayerGeneric) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

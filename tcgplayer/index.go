@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strconv"
@@ -41,18 +42,19 @@ func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
 }
 
 func NewScraperIndex(publicId, privateId string) (*TCGPlayerIndex, error) {
-	if publicId == "" || privateId == "" {
-		return nil, fmt.Errorf("missing authentication data")
+	client, err := tcgplayer.NewClient(publicId, privateId)
+	if err != nil {
+		return nil, err
 	}
 
 	tcg := TCGPlayerIndex{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = tcgplayer.NewClient(publicId, privateId)
+	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg, nil
 }
 
-func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []indexChan) error {
+func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- responseChan, reqs []indexChan) error {
 	var ids []int
 	for i := range reqs {
 		id, err := strconv.Atoi(reqs[i].TCGProductId)
@@ -62,7 +64,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 		ids = append(ids, id)
 	}
 
-	results, err := tcg.client.GetMarketPricesByProducts(ids)
+	results, err := tcg.client.GetMarketPricesByProducts(ctx, ids)
 	if err != nil {
 		return err
 	}
@@ -133,7 +135,7 @@ func (tcg *TCGPlayerIndex) processEntry(channel chan<- responseChan, reqs []inde
 	return nil
 }
 
-func (tcg *TCGPlayerIndex) scrape() error {
+func (tcg *TCGPlayerIndex) scrape(ctx context.Context) error {
 	pages := make(chan indexChan)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -156,7 +158,7 @@ func (tcg *TCGPlayerIndex) scrape() error {
 
 				// When buffer is full, process its contents and empty it
 				if len(buffer) == cap(buffer) {
-					err := tcg.processEntry(channel, buffer)
+					err := tcg.processEntry(ctx, channel, buffer)
 					if err != nil {
 						tcg.printf("%s", err.Error())
 					}
@@ -165,7 +167,7 @@ func (tcg *TCGPlayerIndex) scrape() error {
 			}
 			// Process any spillover
 			if len(buffer) != 0 {
-				err := tcg.processEntry(channel, buffer)
+				err := tcg.processEntry(ctx, channel, buffer)
 				if err != nil {
 					tcg.printf("%s", err.Error())
 				}
@@ -229,7 +231,7 @@ func (tcg *TCGPlayerIndex) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

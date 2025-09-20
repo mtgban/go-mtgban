@@ -9,7 +9,7 @@ require (
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
-	github.com/hashicorp/go-retryablehttp v0.7.7
+	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff
 	github.com/joho/godotenv v1.5.1
 	github.com/scizorman/go-ndjson v0.0.0-20200902005011-1d92486df71e
@@ -24,7 +24,7 @@ require (
 	github.com/corpix/uarand v0.2.0
 	github.com/montanaflynn/stats v0.7.1
 	github.com/mroth/weightedrand/v2 v2.1.0
-	github.com/mtgban/go-tcgplayer v0.0.0-20250314170048-a37ce47d0d4a
+	github.com/mtgban/go-tcgplayer v0.0.1
 	github.com/mtgban/simplecloud v0.0.4
 	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a
 )

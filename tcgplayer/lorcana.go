@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -45,18 +46,19 @@ func (tcg *TCGLorcana) printf(format string, a ...interface{}) {
 }
 
 func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
-	if publicId == "" || privateId == "" {
-		return nil, fmt.Errorf("missing authentication data")
+	client, err := tcgplayer.NewClient(publicId, privateId)
+	if err != nil {
+		return nil, err
 	}
 
 	tcg := TCGLorcana{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = tcgplayer.NewClient(publicId, privateId)
+	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 
 	tcg.category = tcgplayer.CategoryLorcana
 
-	check, err := tcg.client.GetCategoriesDetails([]int{tcg.category})
+	check, err := tcg.client.GetCategoriesDetails(context.TODO(), []int{tcg.category})
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +75,8 @@ func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
 	return &tcg, nil
 }
 
-func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, true, page)
+func (tcg *TCGLorcana) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
+	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, true, page)
 	if err != nil {
 		return err
 	}
@@ -107,7 +109,7 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 			end = len(skuIds)
 		}
 
-		results, err := tcg.client.GetMarketPricesBySKUs(skuIds[start:end])
+		results, err := tcg.client.GetMarketPricesBySKUs(ctx, skuIds[start:end])
 		if err != nil {
 			return err
 		}
@@ -168,8 +170,8 @@ func (tcg *TCGLorcana) processPage(channel chan<- genericChan, page int) error {
 	return nil
 }
 
-func (tcg *TCGLorcana) scrape() error {
-	printings, err := tcg.client.ListCategoryPrintings(tcg.category)
+func (tcg *TCGLorcana) scrape(ctx context.Context) error {
+	printings, err := tcg.client.ListCategoryPrintings(ctx, tcg.category)
 	if err != nil {
 		return err
 	}
@@ -179,14 +181,14 @@ func (tcg *TCGLorcana) scrape() error {
 		tcg.printings[printing.PrintingId] = printing.Name
 	}
 
-	editions, err := EditionMap(tcg.client, tcg.category)
+	editions, err := EditionMap(ctx, tcg.client, tcg.category)
 	if err != nil {
 		return err
 	}
 	tcg.editions = editions
 	tcg.printf("Found %d editions", len(editions))
 
-	totals, err := tcg.client.TotalProducts(tcg.category, []string{"Cards"})
+	totals, err := tcg.client.TotalProducts(ctx, tcg.category, []string{"Cards"})
 	if err != nil {
 		return err
 	}
@@ -201,7 +203,7 @@ func (tcg *TCGLorcana) scrape() error {
 		go func() {
 
 			for page := range pages {
-				err := tcg.processPage(channel, page)
+				err := tcg.processPage(ctx, channel, page)
 				if err != nil {
 					tcg.printf("%s", err.Error())
 				}
@@ -238,7 +240,7 @@ func (tcg *TCGLorcana) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

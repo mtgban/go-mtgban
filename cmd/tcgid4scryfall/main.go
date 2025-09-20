@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/csv"
 	"errors"
 	"flag"
@@ -32,7 +33,7 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
-func processCards(client *api.Client, channel chan<- responseChan, page int) error {
+func processCards(ctx context.Context, client *api.Client, channel chan<- responseChan, page int) error {
 	products, err := client.ListAllProducts(ctx, api.CategoryMagic, []string{"Cards"}, false, page)
 	if err != nil {
 		return err
@@ -140,7 +141,8 @@ func run() int {
 		return 1
 	}
 
-	editions, err := tcgplayer.EditionMap(client, api.CategoryMagic)
+	ctx := context.Background()
+	editions, err := tcgplayer.EditionMap(ctx, client, api.CategoryMagic)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -153,7 +155,7 @@ func run() int {
 	start := *StepStartOpt + *StepSizeOpt*(*StepOpt-1)
 	end := *StepStartOpt + *StepSizeOpt*(*StepOpt)
 	if *StepOpt == 0 {
-		totals, err := client.TotalProducts(api.CategoryMagic, []string{"Cards"})
+		totals, err := client.TotalProducts(ctx, api.CategoryMagic, []string{"Cards"})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
@@ -171,7 +173,7 @@ func run() int {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				err := processCards(client, channel, page)
+				err := processCards(ctx, client, channel, page)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}

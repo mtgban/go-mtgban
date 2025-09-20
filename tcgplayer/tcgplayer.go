@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -75,26 +76,27 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
 }
 
 func NewScraperMarket(publicId, privateId string) (*TCGPlayerMarket, error) {
-	if publicId == "" || privateId == "" {
-		return nil, fmt.Errorf("missing authentication data")
+	client, err := tcgplayer.NewClient(publicId, privateId)
+	if err != nil {
+		return nil, err
 	}
 
 	tcg := TCGPlayerMarket{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.buylist = mtgban.BuylistRecord{}
-	tcg.client = tcgplayer.NewClient(publicId, privateId)
+	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg, nil
 }
 
-func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []marketChan) error {
+func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- responseChan, reqs []marketChan) error {
 	ids := make([]int, len(reqs))
 	for i := range reqs {
 		ids[i] = reqs[i].SkuId
 	}
 
 	// Retrieve a list of skus with their prices
-	results, err := tcg.client.GetMarketPricesBySKUs(ids)
+	results, err := tcg.client.GetMarketPricesBySKUs(ctx, ids)
 	if err != nil {
 		return err
 	}
@@ -181,7 +183,7 @@ func (tcg *TCGPlayerMarket) processEntry(channel chan<- responseChan, reqs []mar
 	return nil
 }
 
-func (tcg *TCGPlayerMarket) scrape() error {
+func (tcg *TCGPlayerMarket) scrape(ctx context.Context) error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
 		return errors.New("sku map not loaded")
@@ -205,7 +207,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 
 				// When buffer is full, process its contents and empty it
 				if len(buffer) == cap(buffer) {
-					err := tcg.processEntry(channel, buffer)
+					err := tcg.processEntry(ctx, channel, buffer)
 					if err != nil {
 						tcg.printf("%s", err.Error())
 					}
@@ -214,7 +216,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 			}
 			// Process any spillover
 			if len(buffer) != 0 {
-				err := tcg.processEntry(channel, buffer)
+				err := tcg.processEntry(ctx, channel, buffer)
 				if err != nil {
 					tcg.printf("%s", err.Error())
 				}
@@ -255,7 +257,7 @@ func (tcg *TCGPlayerMarket) scrape() error {
 						continue
 					}
 
-					altSkus, err := tcg.client.ListProductSKUs(id)
+					altSkus, err := tcg.client.ListProductSKUs(ctx, id)
 					if err != nil {
 						tcg.printf("Error retrieving alternative SKUs: %s", err.Error())
 						continue
@@ -397,7 +399,7 @@ func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -410,7 +412,7 @@ func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
 		return tcg.buylist, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

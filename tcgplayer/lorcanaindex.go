@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -44,17 +45,18 @@ func (tcg *TCGLorcanaIndex) printf(format string, a ...interface{}) {
 }
 
 func NewLorcanaIndex(publicId, privateId string) (*TCGLorcanaIndex, error) {
-	if publicId == "" || privateId == "" {
-		return nil, fmt.Errorf("missing authentication data")
+	client, err := tcgplayer.NewClient(publicId, privateId)
+	if err != nil {
+		return nil, err
 	}
 
 	tcg := TCGLorcanaIndex{}
 	tcg.inventory = mtgban.InventoryRecord{}
-	tcg.client = tcgplayer.NewClient(publicId, privateId)
+	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 	tcg.category = tcgplayer.CategoryLorcana
 
-	check, err := tcg.client.GetCategoriesDetails([]int{tcg.category})
+	check, err := tcg.client.GetCategoriesDetails(context.TODO(), []int{tcg.category})
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +71,8 @@ func NewLorcanaIndex(publicId, privateId string) (*TCGLorcanaIndex, error) {
 	return &tcg, nil
 }
 
-func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) error {
-	products, err := tcg.client.ListAllProducts(tcg.category, tcg.productTypes, false, page)
+func (tcg *TCGLorcanaIndex) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
+	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, false, page)
 	if err != nil {
 		return err
 	}
@@ -82,7 +84,7 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 		productMap[product.ProductId] = product
 	}
 
-	results, err := tcg.client.GetMarketPricesByProducts(ids)
+	results, err := tcg.client.GetMarketPricesByProducts(ctx, ids)
 	if err != nil {
 		return err
 	}
@@ -149,15 +151,15 @@ func (tcg *TCGLorcanaIndex) processPage(channel chan<- genericChan, page int) er
 	return nil
 }
 
-func (tcg *TCGLorcanaIndex) scrape() error {
-	editions, err := EditionMap(tcg.client, tcg.category)
+func (tcg *TCGLorcanaIndex) scrape(ctx context.Context) error {
+	editions, err := EditionMap(ctx, tcg.client, tcg.category)
 	if err != nil {
 		return err
 	}
 	tcg.editions = editions
 	tcg.printf("Found %d editions", len(editions))
 
-	totals, err := tcg.client.TotalProducts(tcg.category, []string{"Cards"})
+	totals, err := tcg.client.TotalProducts(ctx, tcg.category, []string{"Cards"})
 	if err != nil {
 		return err
 	}
@@ -172,7 +174,7 @@ func (tcg *TCGLorcanaIndex) scrape() error {
 		go func() {
 
 			for page := range pages {
-				err := tcg.processPage(channel, page)
+				err := tcg.processPage(ctx, channel, page)
 				if err != nil {
 					tcg.printf("%s", err.Error())
 				}
@@ -209,7 +211,7 @@ func (tcg *TCGLorcanaIndex) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

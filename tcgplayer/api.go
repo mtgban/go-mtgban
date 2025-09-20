@@ -2,6 +2,7 @@ package tcgplayer
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -88,15 +89,15 @@ func isToken(tcgp *tcgplayer.Product) bool {
 	return false
 }
 
-func EditionMap(tcg *tcgplayer.Client, category int) (map[int]tcgplayer.Group, error) {
-	totals, err := tcg.TotalGroups(category)
+func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[int]tcgplayer.Group, error) {
+	totals, err := tcg.TotalGroups(ctx, category)
 	if err != nil {
 		return nil, err
 	}
 
 	results := map[int]tcgplayer.Group{}
 	for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
-		groups, err := tcg.ListAllCategoryGroups(category, i)
+		groups, err := tcg.ListAllCategoryGroups(ctx, category, i)
 		if err != nil {
 			return nil, err
 		}
