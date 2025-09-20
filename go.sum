@@ -173,6 +173,8 @@ github.com/montanaflynn/stats v0.7.1 h1:etflOAAHORrCC44V+aR6Ftzort912ZU+YLiSTuV8
 github.com/montanaflynn/stats v0.7.1/go.mod h1:etXPPgVO6n31NxCd9KQUMvCM+ve0ruNzt6R8Bnaayow=
 github.com/mroth/weightedrand/v2 v2.1.0 h1:o1ascnB1CIVzsqlfArQQjeMy1U0NcIbBO5rfd5E/OeU=
 github.com/mroth/weightedrand/v2 v2.1.0/go.mod h1:f2faGsfOGOwc1p94wzHKKZyTpcJUW7OJ/9U4yfiNAOU=
+github.com/mtgban/go-cardkingdom v0.0.2 h1:E4zoGzTtcaP3c1KgFWQlo9hKhHH8Ggucwb2a3DJXzDE=
+github.com/mtgban/go-cardkingdom v0.0.2/go.mod h1:UA4RarizaENfxPkH5bm0c+zqUMu8SxZIpSPtM4XtlS4=
 github.com/mtgban/go-tcgplayer v0.0.1 h1:0IJvApKMKyDqbMqjRtjFMzCKI3MZQEKuDIkA43zoPdo=
 github.com/mtgban/go-tcgplayer v0.0.1/go.mod h1:l0BmeIiHMkZXkdNSAcAyu9yZLEn6ryOKoOzn8e2xtn0=
 github.com/mtgban/simplecloud v0.0.4 h1:Bj7pWc+EguWc6vJpke4vpgvcs3Y6QE5tqSKeydftSMc=
@@ -233,8 +235,6 @@ golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5y
 golang.org/x/crypto v0.42.0 h1:chiH31gIWm57EkTXpwnqf8qeuMUi0yekh6mT2AvFlqI=
 golang.org/x/crypto v0.42.0/go.mod h1:4+rDnOTJhQCx2q7/j6rAN5XDw8kPjeaXEUR2eL94ix8=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
-golang.org/x/exp v0.0.0-20250808145144-a408d31f581a h1:Y+7uR/b1Mw2iSXZ3G//1haIiSElDQZ8KWh0h+sZPG90=
-golang.org/x/exp v0.0.0-20250808145144-a408d31f581a/go.mod h1:rT6SFzZ7oxADUDx58pcaKFTcZ+inxAa9fTrYx/uVYwg=
 golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3/go.mod h1:UVdnD1Gm6xHRNCYTkRU2/jEulfH38KcIWyp/GAMgvoE=
 golang.org/x/lint v0.0.0-20190227174305-5b3e6a55c961/go.mod h1:wehouNa3lNwaWXcvxsM5YxQ5yQlVC4a0KAMCusXpPoU=
 golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=

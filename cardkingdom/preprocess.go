@@ -2,9 +2,9 @@ package cardkingdom
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 
+	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -114,14 +114,13 @@ func setCodeExists(code string) bool {
 	return err == nil
 }
 
-func Preprocess(card CKCard) (*mtgmatcher.InputCard, error) {
-	foilFlag, _ := strconv.ParseBool(card.IsFoil)
+func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	foilVariant := strings.Contains(card.Variation, "Foil") && !strings.Contains(card.Variation, "Non")
-	isFoil := foilFlag || foilVariant
+	isFoil := card.IsFoil || foilVariant
 	isEtched := strings.Contains(card.Variation, "Etched")
 
 	// Retrieve setCode and number
-	sku := card.SKU
+	sku := card.Sku
 	fields := strings.Split(sku, "-")
 	if len(fields) < 2 {
 		return nil, errors.New("unsupported SKU format")

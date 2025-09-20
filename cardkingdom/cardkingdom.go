@@ -1,6 +1,7 @@
 package cardkingdom
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -17,8 +19,7 @@ type Cardkingdom struct {
 	Partner     string
 	PreserveOOS bool
 
-	client *CKClient
-
+	localPath     string
 	inventoryDate time.Time
 	buylistDate   time.Time
 
@@ -30,7 +31,7 @@ func NewScraperLocal(localPath string) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
-	ck.client = NewClientLocal(localPath)
+	ck.localPath = localPath
 	return &ck
 }
 
@@ -38,7 +39,6 @@ func NewScraper() *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.buylist = mtgban.BuylistRecord{}
-	ck.client = NewCKClient()
 	return &ck
 }
 
@@ -48,8 +48,12 @@ func (ck *Cardkingdom) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ck *Cardkingdom) scrape() error {
-	pricelist, err := ck.client.GetPriceList()
+func (ck *Cardkingdom) scrape(ctx context.Context) error {
+	link := ck.localPath
+	if link == "" {
+		link = cardkingdom.PricelistURL
+	}
+	pricelist, _, err := cardkingdom.Pricelist(ctx, nil, link)
 	if err != nil {
 		return err
 	}
@@ -74,7 +78,7 @@ func (ck *Cardkingdom) scrape() error {
 			continue
 		} else if err != nil {
 			ogErr := err
-			cardId, err = mtgmatcher.MatchId(card.ScryfallId, theCard.Foil, strings.Contains(card.Variation, "Etched"))
+			cardId, err = mtgmatcher.MatchId(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
 			if err != nil {
 				if skipErrors {
 					continue
@@ -95,13 +99,7 @@ func (ck *Cardkingdom) scrape() error {
 			}
 		}
 
-		var sellPrice float64
 		u, _ := url.Parse("https://www.cardkingdom.com/")
-
-		sellPrice, err = strconv.ParseFloat(card.SellPrice, 64)
-		if err != nil {
-			ck.printf("%v", err)
-		}
 
 		u.Path = card.URL
 		if ck.Partner != "" {
@@ -114,12 +112,12 @@ func (ck *Cardkingdom) scrape() error {
 		}
 		link := u.String()
 
-		if card.SellQuantity > 0 && sellPrice > 0 {
-			prices := []string{
-				card.ConditionValues.NMPrice, card.ConditionValues.EXPrice, card.ConditionValues.VGPrice, card.ConditionValues.GOPrice,
+		if card.QtyRetail > 0 && card.PriceRetail > 0 {
+			prices := []float64{
+				card.ConditionValues.NmPrice, card.ConditionValues.ExPrice, card.ConditionValues.VgPrice, card.ConditionValues.GPrice,
 			}
 			qtys := []int{
-				card.ConditionValues.NMQty, card.ConditionValues.EXQty, card.ConditionValues.VGQty, card.ConditionValues.GOQty,
+				card.ConditionValues.NmQty, card.ConditionValues.ExQty, card.ConditionValues.VgQty, card.ConditionValues.GQty,
 			}
 
 			for i, cond := range mtgban.DefaultGradeTags {
@@ -127,23 +125,22 @@ func (ck *Cardkingdom) scrape() error {
 					continue
 				}
 
-				price, _ := strconv.ParseFloat(prices[i], 64)
-				if price == 0 {
+				if prices[i] == 0 {
 					// For newly added cards the nmPrice may not be initialized,
 					// so we the root price value that is known to be valid
 					if i > 0 {
 						continue
 					}
-					price = sellPrice
+					prices[i] = card.PriceRetail
 				}
 
 				out := &mtgban.InventoryEntry{
 					Conditions: cond,
-					Price:      price,
+					Price:      prices[i],
 					Quantity:   qtys[i],
 					URL:        link,
-					OriginalId: fmt.Sprint(card.Id),
-					InstanceId: card.SKU,
+					OriginalId: strconv.Itoa(card.ID),
+					InstanceId: card.Sku,
 				}
 				err = ck.inventory.AddUnique(cardId, out)
 			}
@@ -159,12 +156,7 @@ func (ck *Cardkingdom) scrape() error {
 		}
 
 		u, _ = url.Parse("https://www.cardkingdom.com/purchasing/mtg_singles")
-		if card.BuyQuantity > 0 {
-			price, err := strconv.ParseFloat(card.BuyPrice, 64)
-			if err != nil {
-				ck.printf("%v", err)
-			}
-
+		if card.QtyBuying > 0 {
 			q := u.Query()
 			q.Set("filter[search]", "mtg_advanced")
 
@@ -193,32 +185,32 @@ func (ck *Cardkingdom) scrape() error {
 			}
 			u.RawQuery = q.Encode()
 
-			gradeMap := grading(card.Edition, card.IsFoil, price)
+			gradeMap := grading(card.Edition, card.IsFoil, card.PriceBuy)
 			for _, grade := range mtgban.DefaultGradeTags {
 				factor := gradeMap[grade]
 				var priceRatio float64
 
-				if sellPrice > 0 {
-					priceRatio = price / sellPrice * 100
+				if card.PriceRetail > 0 {
+					priceRatio = card.PriceBuy / card.PriceRetail * 100
 				}
 
 				out := &mtgban.BuylistEntry{
 					Conditions: grade,
-					BuyPrice:   price * factor,
-					Quantity:   card.BuyQuantity,
+					BuyPrice:   card.PriceBuy * factor,
+					Quantity:   card.QtyBuying,
 					PriceRatio: priceRatio,
 					URL:        u.String(),
-					OriginalId: fmt.Sprint(card.Id),
-					InstanceId: card.SKU,
+					OriginalId: strconv.Itoa(card.ID),
+					InstanceId: card.Sku,
 				}
 				// Add the line entry as needed by the csv import
 				if grade == "NM" {
 					out.CustomFields = map[string]string{
 						"CKTitle":   cardName,
 						"CKEdition": card.Edition,
-						"CKFoil":    card.IsFoil,
-						"CKSKU":     card.SKU,
-						"CKID":      fmt.Sprint(card.Id),
+						"CKFoil":    strconv.FormatBool(card.IsFoil),
+						"CKSKU":     card.Sku,
+						"CKID":      strconv.Itoa(card.ID),
 					}
 				}
 				err = ck.buylist.Add(cardId, out)
@@ -242,7 +234,7 @@ func (ck *Cardkingdom) Inventory() (mtgban.InventoryRecord, error) {
 		return ck.inventory, nil
 	}
 
-	err := ck.scrape()
+	err := ck.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +248,7 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 		return ck.buylist, nil
 	}
 
-	err := ck.scrape()
+	err := ck.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -264,9 +256,9 @@ func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
 	return ck.buylist, nil
 }
 
-func grading(edition, isFoil string, price float64) (grade map[string]float64) {
+func grading(edition string, isFoil bool, price float64) (grade map[string]float64) {
 	switch {
-	case isFoil == "true":
+	case isFoil:
 		grade = map[string]float64{
 			"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
 		}

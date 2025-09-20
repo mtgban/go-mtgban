@@ -1,11 +1,13 @@
 package cardkingdom
 
 import (
+	"context"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -39,9 +41,8 @@ func (ck *CardkingdomSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ck *CardkingdomSealed) scrape() error {
-	ckClient := NewCKClient()
-	pricelist, err := ckClient.GetSealedList()
+func (ck *CardkingdomSealed) scrape(ctx context.Context) error {
+	pricelist, err := cardkingdom.SealedPricelist(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -70,17 +71,13 @@ func (ck *CardkingdomSealed) scrape() error {
 			}
 
 			for _, sealed := range pricelist {
-				if ckId != sealed.Id {
+				if ckId != sealed.ID {
 					continue
 				}
 
 				foundProduct++
 
 				u, _ := url.Parse("https://www.cardkingdom.com/")
-				sellPrice, err := strconv.ParseFloat(sealed.SellPrice, 64)
-				if err != nil {
-					ck.printf("%v", err)
-				}
 
 				// Rebuild the URL to have the same format as non-sealed
 				basename := strings.TrimPrefix(sealed.URL, "mtg-sealed/")
@@ -107,11 +104,11 @@ func (ck *CardkingdomSealed) scrape() error {
 				}
 				link := u.String()
 
-				if sealed.SellQuantity > 0 && sellPrice > 0 {
+				if sealed.QtyRetail > 0 && sealed.PriceRetail > 0 {
 					out := &mtgban.InventoryEntry{
 						Conditions: "NM",
-						Price:      sellPrice,
-						Quantity:   sealed.SellQuantity,
+						Price:      sealed.PriceRetail,
+						Quantity:   sealed.QtyRetail,
 						URL:        link,
 					}
 					err = ck.inventory.Add(product.UUID, out)
@@ -126,15 +123,11 @@ func (ck *CardkingdomSealed) scrape() error {
 					err = ck.inventory.AddUnique(product.UUID, out)
 				}
 
-				buyPrice, err := strconv.ParseFloat(sealed.BuyPrice, 64)
-				if err != nil {
-					ck.printf("%v", err)
-				}
-				if sealed.BuyQuantity > 0 && buyPrice > 0 {
+				if sealed.QtyBuying > 0 && sealed.PriceBuy > 0 {
 					var priceRatio float64
 
-					if sellPrice > 0 {
-						priceRatio = buyPrice / sellPrice * 100
+					if sealed.PriceRetail > 0 {
+						priceRatio = sealed.PriceBuy / sealed.PriceRetail * 100
 					}
 
 					u, _ = url.Parse(ckBuylistLink)
@@ -153,8 +146,8 @@ func (ck *CardkingdomSealed) scrape() error {
 					u.RawQuery = q.Encode()
 
 					out := &mtgban.BuylistEntry{
-						BuyPrice:   buyPrice,
-						Quantity:   sealed.BuyQuantity,
+						BuyPrice:   sealed.PriceBuy,
+						Quantity:   sealed.QtyBuying,
 						PriceRatio: priceRatio,
 						URL:        u.String(),
 					}
@@ -181,7 +174,7 @@ func (ck *CardkingdomSealed) Inventory() (mtgban.InventoryRecord, error) {
 		return ck.inventory, nil
 	}
 
-	err := ck.scrape()
+	err := ck.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +188,7 @@ func (ck *CardkingdomSealed) Buylist() (mtgban.BuylistRecord, error) {
 		return ck.buylist, nil
 	}
 
-	err := ck.scrape()
+	err := ck.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
