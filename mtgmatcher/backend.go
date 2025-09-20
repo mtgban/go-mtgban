@@ -297,6 +297,13 @@ func (ap AllPrintings) Load() cardBackend {
 				card.FrameEffects = nil
 				card.BorderColor = "black"
 
+			// Missing promo type for this series
+			case "DFT":
+				num, _ := strconv.Atoi(card.Number)
+				if num >= 333 && num <= 346 || num >= 532 && num <= 545 {
+					card.PromoTypes = append(card.PromoTypes, "rudedrivers")
+				}
+
 			// Upstream cannot properly represent foil cards
 			case "SLC":
 				_, found := card.SourceProducts["foil"]
