@@ -319,6 +319,18 @@ func (ap AllPrintings) Load() cardBackend {
 				// Source is "technically correct" but it gets too messy to track
 				case "589":
 					card.Finishes = []string{"nonfoil", "etched"}
+
+				// A series of bonus cards that are not tagged as such
+				case "59":
+					card.IsPromo = true
+				case "721":
+					card.PromoTypes = append(card.PromoTypes, "convention")
+				case "797":
+					card.PromoTypes = append(card.PromoTypes, "convention")
+				case "8001":
+					card.PromoTypes = append(card.PromoTypes, "tourney")
+					card.IsPromo = true
+
 				default:
 					num, _ := strconv.Atoi(card.Number)
 					// Override the frame type for the Braindead drops
