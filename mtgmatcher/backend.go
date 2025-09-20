@@ -296,6 +296,14 @@ func (ap AllPrintings) Load() cardBackend {
 				card.PromoTypes = nil
 				card.FrameEffects = nil
 				card.BorderColor = "black"
+
+			// Upstream cannot properly represent foil cards
+			case "SLC":
+				_, found := card.SourceProducts["foil"]
+				if !found && card.SourceProducts != nil {
+					card.SourceProducts["foil"] = card.SourceProducts["nonfoil"]
+				}
+
 			case "SLD":
 				switch card.Number {
 				// One of the tokens is a DFC but burns a card number, skip it
