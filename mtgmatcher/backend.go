@@ -326,6 +326,14 @@ func (ap AllPrintings) Load() cardBackend {
 						card.FrameVersion = "2015"
 					}
 				}
+
+			case "SLX":
+				num, _ := strconv.Atoi(card.Number)
+				// These cards have been distributed by stores and not found in products
+				if num >= 24 && num <= 30 {
+					card.PromoTypes = append(card.PromoTypes, "wizardsplaynetwork")
+				}
+
 			// Only keep dungeons, and fix their layout to make sure they are tokens
 			case "AFR":
 				if card.SetCode == "TAFR" {
