@@ -20,7 +20,7 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 	}
 
 	for _, seller := range sellers {
-		sellerName := seller.(Scraper).Info().Name
+		sellerName := seller.Info().Name
 		root.Names = append(root.Names, sellerName)
 
 		inv, err := seller.Inventory()
@@ -65,7 +65,7 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 	}
 
 	for _, vendor := range vendors {
-		vendorName := vendor.(Scraper).Info().Name
+		vendorName := vendor.Info().Name
 		root.Names = append(root.Names, vendorName)
 
 		bl, err := vendor.Buylist()
