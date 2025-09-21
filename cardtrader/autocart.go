@@ -3,7 +3,6 @@ package cardtrader
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -95,15 +94,10 @@ func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
 	var response struct {
 		DeltaChangedQuantity int `json:"delta_changed_quantity"`
 	}
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return err
 	}
@@ -136,15 +130,10 @@ func (ct *CTLoggedClient) GetItemsForOrder(orderId int) ([]OrderItem, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var purchase struct {
 		OrderItems []OrderItem `json:"order_items"`
 	}
-	err = json.Unmarshal(data, &purchase)
+	err = json.NewDecoder(resp.Body).Decode(&purchase)
 	if err != nil {
 		return nil, err
 	}

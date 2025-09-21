@@ -2,9 +2,7 @@ package cardsphere
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -106,21 +104,9 @@ func (cs *CardSphereClient) GetOfferList(offset int) ([]CardSphereOfferList, err
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var pricelist []CardSphereOfferList
-	err = json.Unmarshal(data, &pricelist)
+	err = json.NewDecoder(resp.Body).Decode(&pricelist)
 	if err != nil {
-		var msg csError
-		errSub := json.Unmarshal(data, &msg)
-		if errSub != nil {
-			err = errors.New(err.Error() + "->" + errSub.Error())
-		} else {
-			err = errors.New(msg.Message)
-		}
 		return nil, err
 	}
 

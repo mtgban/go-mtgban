@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 
 	http "github.com/hashicorp/go-retryablehttp"
 )
@@ -96,13 +95,8 @@ func (mc *MCClient) GetEditionList(addPromoEd bool) ([]MCEdition, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var blob mcBlob
-	err = json.Unmarshal(data, &blob)
+	err = json.NewDecoder(resp.Body).Decode(&blob)
 	if err != nil {
 		return nil, err
 	}
@@ -165,13 +159,8 @@ func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) 
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, err)
-	}
-
 	var response mcResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, err)
 	}
@@ -199,13 +188,8 @@ func (mc *MCClient) GetBuylistEditions() ([]MCExpansion, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
-	}
-
 	var response MCBuylistEditionResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
 	}
@@ -265,13 +249,8 @@ func (mc *MCClient) GetHotBuylistPage(page int) ([]MCProduct, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
-	}
-
 	var response MCBuylistResult
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
 	}
@@ -301,13 +280,8 @@ func (mc *MCClient) GetBuylistForEdition(edition, page int) (*MCBuylistResult, e
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
-	}
-
 	var response MCBuylistResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
 	}

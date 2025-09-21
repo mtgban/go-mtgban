@@ -117,13 +117,8 @@ func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var product ABUProduct
-	err = json.Unmarshal(data, &product)
+	err = json.NewDecoder(resp.Body).Decode(&product)
 	if err != nil {
 		return nil, err
 	}
@@ -138,18 +133,13 @@ func (abu *ABUClient) sendSealedRequest(url string) (*ABUResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	var response ABUResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, err
 	}
 
-	var reponse ABUResponse
-	err = json.Unmarshal(data, &reponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &reponse, nil
+	return &response, nil
 }
 
 // Use the URL as is, with just one row requested to fetch the number of items
@@ -252,13 +242,8 @@ func (abu *ABUClient) setCart(link, abuId string, qty int) (*CartResponse, error
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response CartResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, err
 	}

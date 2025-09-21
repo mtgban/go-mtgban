@@ -3,7 +3,6 @@ package trollandtoad
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/url"
 
 	http "github.com/hashicorp/go-retryablehttp"
@@ -65,13 +64,8 @@ func (tnt *TNTClient) GetProductOptions(productId string) ([]TNTBuyingOption, er
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var options []TNTBuyingOption
-	err = json.Unmarshal(data, &options)
+	err = json.NewDecoder(resp.Body).Decode(&options)
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +98,8 @@ func (tnt *TNTClient) listEditions(code string) ([]TNTEdition, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var editions []TNTEdition
-	err = json.Unmarshal(data, &editions)
+	err = json.NewDecoder(resp.Body).Decode(&editions)
 	if err != nil {
 		return nil, err
 	}
@@ -132,13 +121,8 @@ func (tnt *TNTClient) ProductsForId(id string, code string) (*TNTProduct, error)
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var products TNTProduct
-	err = json.Unmarshal(data, &products)
+	err = json.NewDecoder(resp.Body).Decode(&products)
 	if err != nil {
 		return nil, err
 	}

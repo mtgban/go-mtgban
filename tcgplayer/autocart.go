@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
@@ -67,15 +66,10 @@ func (tcg *TCGAutoClient) AddProductToCart(sellerKey string, skuId, qty int, isD
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response TCGAutocartResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 	if len(response.Errors) > 0 {
 		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)

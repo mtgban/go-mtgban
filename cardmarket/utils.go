@@ -3,7 +3,6 @@ package cardmarket
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/url"
 	"sort"
 	"strings"
@@ -107,17 +106,12 @@ func GetPriceGuide(gameId int) ([]PriceGuide, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response struct {
 		Version     int          `json:"version"`
 		CreatedAt   string       `json:"createdAt"`
 		PriceGuides []PriceGuide `json:"priceGuides"`
 	}
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, err
 	}
@@ -150,17 +144,12 @@ func getProductList(gameId int, link string) ([]ProductList, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response struct {
 		Version   int           `json:"version"`
 		CreatedAt string        `json:"createdAt"`
 		Products  []ProductList `json:"products"`
 	}
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, err
 	}

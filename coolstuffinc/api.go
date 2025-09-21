@@ -114,13 +114,8 @@ func GetBuylist(game string) ([]CSIPriceEntry, error) {
 		return nil, fmt.Errorf("unexpected %d status code", resp.StatusCode)
 	}
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var entries []CSIPriceEntry
-	err = json.Unmarshal(data, &entries)
+	err = json.NewDecoder(resp.Body).Decode(&entries)
 	if err != nil {
 		return nil, err
 	}

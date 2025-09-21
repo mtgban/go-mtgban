@@ -209,15 +209,10 @@ func (ct *CTAuthClient) Expansions() ([]Expansion, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var out []Expansion
-	err = json.Unmarshal(data, &out)
+	err = json.NewDecoder(resp.Body).Decode(&out)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for expansions, got: %s", string(data))
+		return nil, fmt.Errorf("unmarshal error for expansions, got: %w", err)
 	}
 
 	return out, nil
@@ -231,15 +226,10 @@ func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) 
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var out map[int][]Product
-	err = json.Unmarshal(data, &out)
+	err = json.NewDecoder(resp.Body).Decode(&out)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for expansion %d, got: %s", id, string(data))
+		return nil, fmt.Errorf("unmarshal error for expansion %d, got: %w", id, err)
 	}
 
 	return out, nil
@@ -253,15 +243,10 @@ func (ct *CTAuthClient) ProductsForBlueprint(id int) ([]Product, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var out map[int][]Product
-	err = json.Unmarshal(data, &out)
+	err = json.NewDecoder(resp.Body).Decode(&out)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %s", id, string(data))
+		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %w", id, err)
 	}
 
 	return out[id], nil
@@ -333,15 +318,10 @@ func (ct *CTAuthClient) ProductsExport() ([]Product, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var products []Product
-	err = json.Unmarshal(data, &products)
+	err = json.NewDecoder(resp.Body).Decode(&products)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error %s, got: %s", err.Error(), string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 
 	return products, nil
@@ -391,18 +371,12 @@ func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]st
 			return nil, err
 		}
 
-		data, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			return nil, err
-		}
-
 		var jobResp struct {
 			Job string `json:"job"`
 		}
-		err = json.Unmarshal(data, &jobResp)
+		err = json.NewDecoder(resp.Body).Decode(&jobResp)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshal error for chunk %d, got: %s", i, string(data))
+			return nil, fmt.Errorf("unmarshal error for chunk %d, got: %w", i, err)
 		}
 
 		jobs = append(jobs, jobResp.Job)
@@ -487,15 +461,10 @@ func (ct *CTAuthClient) addremoveCart(product ctProductCart, link string) (*CTCa
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var products CTCartResponse
-	err = json.Unmarshal(data, &products)
+	err = json.NewDecoder(resp.Body).Decode(&products)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error %s, got: %s", err.Error(), string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 
 	if products.ErrorCode != "" {
@@ -519,15 +488,10 @@ func (ct *CTClient) ProductsForBlueprint(id int) (*BlueprintFilter, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var bf BlueprintFilter
-	err = json.Unmarshal(data, &bf)
+	err = json.NewDecoder(resp.Body).Decode(&bf)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %s", id, string(data))
+		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %w", id, err)
 	}
 
 	if bf.Blueprint.Id == 0 {

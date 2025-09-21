@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -155,13 +154,8 @@ func (scg *SCGClient) sendRetailRequest(game, page int) (*scgRetailResponse, err
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var search scgRetailResponse
-	err = json.Unmarshal(data, &search)
+	err = json.NewDecoder(resp.Body).Decode(&search)
 	if err != nil {
 		return nil, err
 	}
@@ -259,13 +253,8 @@ func SearchSettings() (*Settings, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var search Settings
-	err = json.Unmarshal(data, &search)
+	err = json.NewDecoder(resp.Body).Decode(&search)
 	if err != nil {
 		return nil, err
 	}
@@ -310,13 +299,8 @@ func (scg *SCGClient) SearchAll(game, offset, limit int, rarity string) (*SCGSea
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var search SCGSearchResponse
-	err = json.Unmarshal(data, &search)
+	err = json.NewDecoder(resp.Body).Decode(&search)
 	if err != nil {
 		return nil, err
 	}

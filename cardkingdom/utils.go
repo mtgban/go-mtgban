@@ -180,15 +180,10 @@ func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (*CartResponse
 		return nil, errors.New("cart not ok")
 	}
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var cartResponse CartResponse
-	err = json.Unmarshal(data, &cartResponse)
+	err = json.NewDecoder(resp.Body).Decode(&cartResponse)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error: %v, got: %s", err, string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 
 	return &cartResponse, nil

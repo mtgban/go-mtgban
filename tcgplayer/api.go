@@ -193,15 +193,10 @@ func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, erro
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response latestSalesResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+		return nil, fmt.Errorf("unmarshal error %w:", err)
 	}
 
 	return &response, nil
@@ -285,15 +280,10 @@ func SellerName2ID(sellerName string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
 	var response SellerSearchResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return "", fmt.Errorf("%s: %s", err.Error(), string(data))
+		return "", fmt.Errorf("unmarshal error: %w", err)
 	}
 
 	if len(response.Errors) != 0 {
@@ -311,7 +301,7 @@ func SellerName2ID(sellerName string) (string, error) {
 		}
 	}
 	if sellerKey == "" {
-		return "", fmt.Errorf("seller not found in %s", string(data))
+		return "", fmt.Errorf("seller not found in %v", response)
 	}
 
 	return sellerKey, nil
@@ -503,15 +493,10 @@ func (tcg *SellerClient) InventoryForSeller(sellerKeys []string, size, page int,
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response sellerInventoryResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 
 	if response.Title != "" {
@@ -600,15 +585,10 @@ func (tcg *SellerClient) InventoryListing(productId, size, page int, useDirect b
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response sellerInventoryListingResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 	if len(response.Errors) > 0 {
 		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
@@ -736,15 +716,10 @@ func (tcg *CookieClient) GetUserData() (*UserData, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var response UserResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %s", err.Error(), string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 	if len(response.Errors) > 0 {
 		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
@@ -784,15 +759,10 @@ func CreateCartKey(userId string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
 	var response UserResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return "", fmt.Errorf("%s: %s", err.Error(), string(data))
+		return "", fmt.Errorf("unmarshal error: %w", err)
 	}
 	if len(response.Errors) > 0 {
 		return "", fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)

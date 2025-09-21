@@ -3,7 +3,6 @@ package manapool
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -65,20 +64,15 @@ func (mp *Client) GetPriceList() ([]Card, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var pricelist struct {
 		Meta struct {
 			AsOf time.Time `json:"as_of"`
 		} `json:"meta"`
 		Data []Card `json:"data"`
 	}
-	err = json.Unmarshal(data, &pricelist)
+	err = json.NewDecoder(resp.Body).Decode(&pricelist)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for list, got: %s", string(data))
+		return nil, fmt.Errorf("unmarshal error for list, got: %w", err)
 	}
 
 	return pricelist.Data, nil
@@ -96,20 +90,15 @@ func (mp *Client) GetSealedList() ([]Product, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var pricelist struct {
 		Meta struct {
 			AsOf time.Time `json:"as_of"`
 		} `json:"meta"`
 		Data []Product `json:"data"`
 	}
-	err = json.Unmarshal(data, &pricelist)
+	err = json.NewDecoder(resp.Body).Decode(&pricelist)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for list, got: %s", string(data))
+		return nil, fmt.Errorf("unmarshal error for list, got: %w", err)
 	}
 
 	return pricelist.Data, nil

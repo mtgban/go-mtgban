@@ -3,7 +3,6 @@ package mintcard
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -60,18 +59,13 @@ func NewMintClient() (*MintClient, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var authData map[string]string
-	err = json.Unmarshal(data, &authData)
+	err = json.NewDecoder(resp.Body).Decode(&authData)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error: %s", string(data))
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 	if authData["Ack"] != "Success" {
-		return nil, fmt.Errorf("invalid request: %s", string(data))
+		return nil, fmt.Errorf("invalid request: %w", err)
 	}
 	mint.token = authData["Token"]
 
@@ -93,13 +87,8 @@ func (mint *MintClient) GetProductList() (MintData, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var productlist MintProductList
-	err = json.Unmarshal(data, &productlist)
+	err = json.NewDecoder(resp.Body).Decode(&productlist)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}

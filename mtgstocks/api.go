@@ -142,13 +142,8 @@ func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) 
 	}
 	defer gzipReader.Close()
 
-	data, err := io.ReadAll(gzipReader)
-	if err != nil {
-		return nil, err
-	}
-
 	var interests MTGStocksInterests
-	err = json.Unmarshal(data, &interests)
+	err = json.NewDecoder(gzipReader).Decode(&interests)
 	if err != nil {
 		return nil, err
 	}

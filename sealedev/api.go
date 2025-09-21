@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -151,15 +150,10 @@ func loadPrices(sig, selected string) (*BANPriceResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%s\n%s", err.Error(), string(data))
-	}
-
 	var response BANPriceResponse
-	err = json.Unmarshal(data, &response)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("%s\n%s", err.Error(), string(data))
+		return nil, err
 	}
 
 	if response.Error != "" {
