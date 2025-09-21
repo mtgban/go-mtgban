@@ -488,8 +488,8 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		}
 		cnRange, found := filterSelectedCNRange[co.Edition]
 		if found {
-			cn, _ := strconv.Atoi(co.Number)
-			if err != nil && (cn < cnRange[0] || cn > cnRange[1]) {
+			cn, err := strconv.Atoi(co.Number)
+			if err == nil && (cn < cnRange[0] || cn > cnRange[1]) {
 				continue
 			}
 		}
