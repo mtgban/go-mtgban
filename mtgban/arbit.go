@@ -244,10 +244,10 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		if filterOnlyFoil && !co.Foil && !co.Etched {
 			continue
 		}
-		if filterRLOnly && !co.IsReserved {
+		if filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
 			continue
 		}
-		if filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
+		if filterRLOnly && !co.IsReserved {
 			continue
 		}
 		if slices.Contains(filterEditions, co.Edition) || slices.Contains(filterEditions, co.SetCode) {
@@ -504,10 +504,10 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		}
 
 		for _, refEntry := range refEntries {
-			if refEntry.Price == 0 {
+			if slices.Contains(filterConditions, refEntry.Conditions) {
 				continue
 			}
-			if slices.Contains(filterConditions, refEntry.Conditions) {
+			if refEntry.Price < minPrice {
 				continue
 			}
 
