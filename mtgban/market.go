@@ -92,7 +92,7 @@ type BaseTrader struct {
 
 func (m *BaseTrader) Buylist() (BuylistRecord, error) {
 	if m.buylist == nil {
-		// Retrieve inventory from the original scraper
+		// Retrieve buylist from the original scraper
 		buylist, err := BuylistForVendor(m.scraper, m.info.Name)
 		if err != nil {
 			return nil, err

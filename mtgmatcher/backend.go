@@ -220,7 +220,7 @@ func (ap AllPrintings) Load() cardBackend {
 	var allSets []string
 
 	for code, set := range ap.Data {
-		// Filer out unneeded data
+		// Filter out unneeded data
 		if skipSet(set) {
 			delete(ap.Data, code)
 			continue

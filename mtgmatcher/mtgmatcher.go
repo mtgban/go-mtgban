@@ -124,7 +124,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 
 	// Look up by uuid
 	if inCard.Id != "" {
-		logger.Printf("Perforing id lookup")
+		logger.Printf("Performing id lookup")
 		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
 		if err == nil {
 			co := backend.UUIDs[outId]

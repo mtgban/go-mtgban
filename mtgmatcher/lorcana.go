@@ -181,7 +181,7 @@ func (lj LorcanaJSON) Load() cardBackend {
 		}
 	}
 
-	// Update any reamining details on Sets after Cards loading
+	// Update any remaining details on Sets after Cards loading
 	for code := range backend.Sets {
 		var rarities, colors []string
 		backend.Sets[code].IsFoilOnly = true

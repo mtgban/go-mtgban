@@ -246,7 +246,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 					skip = true
 				}
 
-				// Check that the card reporte is not coming from a SLD Deck
+				// Check that the card reported is not coming from a SLD Deck
 				// or if it does, make sure it is actually from SLD
 				if len(MatchInSetNumber(inCard.Name, "SLD", ExtractNumber(inCard.Variation))) == 0 && len(MatchInSet(inCard.Name, "PLST")) > 0 {
 					for _, name := range backend.SLDDeckNames {

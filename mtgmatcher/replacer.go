@@ -6,7 +6,7 @@ import (
 
 var replacerStrings = []string{
 	// Remove a very common field, sometimes added with no reason
-	// Needs the dashes to work with will-o'-the-wisp, whish is why
+	// Needs the dashes to work with will-o'-the-wisp, which is why
 	// it needs to be before removing the dash step
 	" the ", "",
 	"-the-", "",
