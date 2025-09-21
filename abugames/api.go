@@ -93,7 +93,7 @@ func (abu *ABUClient) Get(url string) (*http.Response, error) {
 	}
 
 	if abu.authorization != "" {
-		req.Header.Add("Authorization", "Bearer "+abu.authorization)
+		req.Header.Set("Authorization", "Bearer "+abu.authorization)
 	}
 
 	return abu.client.Do(req)
@@ -105,9 +105,9 @@ func (abu *ABUClient) Post(url, contentType string, reader io.Reader) (*http.Res
 		return nil, err
 	}
 
-	req.Header.Add("Content-Type", contentType)
+	req.Header.Set("Content-Type", contentType)
 	if abu.authorization != "" {
-		req.Header.Add("Authorization", "Bearer "+abu.authorization)
+		req.Header.Set("Authorization", "Bearer "+abu.authorization)
 	}
 
 	return abu.client.Do(req)

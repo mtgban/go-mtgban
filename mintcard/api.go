@@ -49,9 +49,9 @@ func NewMintClient() (*MintClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("User-Agent", mintUserAgent)
-	req.Header.Add("API-CALL-NAME", "FetchToken")
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("User-Agent", mintUserAgent)
+	req.Header.Set("API-CALL-NAME", "FetchToken")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := mint.client.Do(req)
 	if err != nil {
@@ -77,9 +77,9 @@ func (mint *MintClient) GetProductList() (MintData, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("User-Agent", mintUserAgent)
-	req.Header.Add("API-CALL-NAME", "GetProducts")
-	req.Header.Add("API-TOKEN", mint.token)
+	req.Header.Set("User-Agent", mintUserAgent)
+	req.Header.Set("API-CALL-NAME", "GetProducts")
+	req.Header.Set("API-TOKEN", mint.token)
 
 	resp, err := mint.client.Do(req)
 	if err != nil {

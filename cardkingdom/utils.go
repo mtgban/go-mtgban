@@ -195,9 +195,9 @@ func (ck *CookieClient) Get(link string) (*http.Response, error) {
 		return nil, err
 	}
 	if ck.session != "" {
-		req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+		req.Header.Set("Cookie", "laravel_session="+ck.session+";")
 	}
-	req.Header.Add("User-Agent", "curl/8.6.0")
+	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	return ck.client.Do(req)
 }
@@ -208,10 +208,10 @@ func (ck *CookieClient) Post(url, contentType string, reader io.Reader) (*http.R
 		return nil, err
 	}
 	if ck.session != "" {
-		req.Header.Add("Cookie", "laravel_session="+ck.session+";")
+		req.Header.Set("Cookie", "laravel_session="+ck.session+";")
 	}
-	req.Header.Add("Content-Type", contentType)
-	req.Header.Add("User-Agent", "curl/8.6.0")
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	return ck.client.Do(req)
 }

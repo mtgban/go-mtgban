@@ -184,8 +184,8 @@ func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, erro
 		return nil, err
 	}
 
-	req.Header.Add("User-Agent", staticUA)
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("User-Agent", staticUA)
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
@@ -272,7 +272,7 @@ func SellerName2ID(sellerName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
@@ -680,8 +680,8 @@ func (tcg *CookieClient) Get(link string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Cookie", tcg.cookieLine)
-	req.Header.Add("User-Agent", "curl/8.6.0")
+	req.Header.Set("Cookie", tcg.cookieLine)
+	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	return tcg.client.Do(req)
 }
@@ -691,9 +691,9 @@ func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.R
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Cookie", tcg.cookieLine)
-	req.Header.Add("Content-Type", contentType)
-	req.Header.Add("User-Agent", "curl/8.6.0")
+	req.Header.Set("Cookie", tcg.cookieLine)
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	return tcg.client.Do(req)
 }
@@ -703,8 +703,8 @@ func (tcg *CookieClient) Delete(link string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Cookie", tcg.cookieLine)
-	req.Header.Add("User-Agent", "curl/8.6.0")
+	req.Header.Set("Cookie", tcg.cookieLine)
+	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	return tcg.client.Do(req)
 }
@@ -751,7 +751,7 @@ func CreateCartKey(userId string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {

@@ -205,8 +205,8 @@ func Search(game, itemName string, skipOOS bool) (*SearchResult, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Add("User-Agent", "curl/8.6.0")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {

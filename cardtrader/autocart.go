@@ -86,7 +86,7 @@ func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Add("X-CSRF-Token", token)
+	req.Header.Set("X-CSRF-Token", token)
 
 	resp, err := ct.client.Do(req)
 	if err != nil {

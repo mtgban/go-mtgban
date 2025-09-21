@@ -153,7 +153,7 @@ func (nf *NFClient) getFile(name, separator string) ([]byte, error) {
 		return nil, err
 	}
 
-	req.Header.Add("User-Agent", staticUA)
+	req.Header.Set("User-Agent", staticUA)
 
 	resp, err := nf.client.StandardClient().Do(req)
 	if err != nil {

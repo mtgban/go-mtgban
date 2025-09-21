@@ -96,7 +96,7 @@ func (cs *CardSphereClient) GetOfferList(offset int) ([]CardSphereOfferList, err
 		return nil, err
 	}
 
-	req.Header.Add("User-Agent", "curl/8.6.0")
+	req.Header.Set("User-Agent", "curl/8.6.0")
 
 	resp, err := cs.client.Do(req)
 	if err != nil {

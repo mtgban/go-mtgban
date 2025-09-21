@@ -145,8 +145,8 @@ func (scg *SCGClient) sendRetailRequest(game, page int) (*scgRetailResponse, err
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("X-HawkSearch-IgnoreTracking", "true")
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("X-HawkSearch-IgnoreTracking", "true")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := scg.client.Do(req)
 	if err != nil {
@@ -290,8 +290,8 @@ func (scg *SCGClient) SearchAll(game, offset, limit int, rarity string) (*SCGSea
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", "Bearer "+scg.bearer)
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+scg.bearer)
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := scg.client.Do(req)
 	if err != nil {
