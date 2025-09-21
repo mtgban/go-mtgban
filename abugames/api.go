@@ -61,6 +61,9 @@ const (
 
 	abuBaseUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.ngroups=true&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20-magic_features%3A(%22Actual%20Picture%20Card%22)`
 
+	// This URL will include pics, but queries will be slower
+	abuBaseUrlFull = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.ngroups=true&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20`
+
 	abuBaseSealedUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
 )
 
@@ -144,7 +147,7 @@ func (abu *ABUClient) sendSealedRequest(url string) (*ABUResponse, error) {
 
 // Use the URL as is, with just one row requested to fetch the number of items
 func (abu *ABUClient) GetTotalItems() (int, error) {
-	product, err := abu.sendRequest(abuBaseUrl)
+	product, err := abu.sendRequest(abuBaseUrlFull)
 	if err != nil {
 		return 0, err
 	}
@@ -160,7 +163,7 @@ func (abu *ABUClient) GetTotalSealedItems() (int, error) {
 }
 
 func (abu *ABUClient) GetProduct(pageStart int) (*ABUProduct, error) {
-	u, err := url.Parse(abuBaseUrl)
+	u, err := url.Parse(abuBaseUrlFull)
 	if err != nil {
 		return nil, err
 	}
