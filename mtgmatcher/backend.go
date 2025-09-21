@@ -297,6 +297,10 @@ func (ap AllPrintings) Load() cardBackend {
 				card.FrameEffects = nil
 				card.BorderColor = "black"
 
+			// Promo-only sets
+			case "PPC1", "PMIC":
+				card.IsPromo = true
+
 			// Missing promo type for this series
 			case "DFT":
 				num, _ := strconv.Atoi(card.Number)
