@@ -1,6 +1,7 @@
 package abugames
 
 import (
+	"context"
 	"net/url"
 	"sync"
 	"time"
@@ -51,8 +52,8 @@ func (abu *ABUGamesSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func (abu *ABUGamesSealed) processEntry(channel chan<- resultChan, page int) error {
-	response, err := abu.client.GetSealedProduct(page)
+func (abu *ABUGamesSealed) processEntry(ctx context.Context, channel chan<- resultChan, page int) error {
+	response, err := abu.client.GetSealedProduct(ctx, page)
 	if err != nil {
 		return err
 	}
@@ -131,8 +132,8 @@ func (abu *ABUGamesSealed) processEntry(channel chan<- resultChan, page int) err
 	return nil
 }
 
-func (abu *ABUGamesSealed) scrape() error {
-	count, err := abu.client.GetTotalSealedItems()
+func (abu *ABUGamesSealed) scrape(ctx context.Context) error {
+	count, err := abu.client.GetTotalSealedItems(ctx)
 	if err != nil {
 		return err
 	}
@@ -146,7 +147,7 @@ func (abu *ABUGamesSealed) scrape() error {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				err := abu.processEntry(results, page)
+				err := abu.processEntry(ctx, results, page)
 				if err != nil {
 					abu.printf("%v", err)
 				}
@@ -200,7 +201,7 @@ func (abu *ABUGamesSealed) Inventory() (mtgban.InventoryRecord, error) {
 		return abu.inventory, nil
 	}
 
-	err := abu.scrape()
+	err := abu.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +214,7 @@ func (abu *ABUGamesSealed) Buylist() (mtgban.BuylistRecord, error) {
 		return abu.buylist, nil
 	}
 
-	err := abu.scrape()
+	err := abu.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package abugames
 
 import (
+	"context"
 	"errors"
 	"net/url"
 	"slices"
@@ -51,8 +52,8 @@ func (abu *ABUGames) printf(format string, a ...interface{}) {
 	}
 }
 
-func (abu *ABUGames) processEntry(query string, channel chan<- resultChan, page int) error {
-	product, err := abu.client.GetProduct(query, page)
+func (abu *ABUGames) processEntry(ctx context.Context, query string, channel chan<- resultChan, page int) error {
+	product, err := abu.client.GetProduct(ctx, query, page)
 	if err != nil {
 		return err
 	}
@@ -233,7 +234,7 @@ func (abu *ABUGames) processEntry(query string, channel chan<- resultChan, page 
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
-func (abu *ABUGames) scrape() error {
+func (abu *ABUGames) scrape(ctx context.Context) error {
 	extraSets := []string{
 		`"Alpha"`, `"Beta"`, `"Unlimited"`, `"Arabian Nights"`, `"Antiquities"`, `"Legends"`, `"The Dark"`,
 	}
@@ -243,13 +244,13 @@ func (abu *ABUGames) scrape() error {
 	// (the +magic_features, means only report cards with pics, we need both)
 	extraQuery := ` magic_features:("Actual Picture Card") +magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
 
-	count, err := abu.client.GetTotalItems(normalQuery)
+	count, err := abu.client.GetTotalItems(ctx, normalQuery)
 	if err != nil {
 		return err
 	}
 	abu.printf("Parsing %d entries", count)
 
-	secondCount, err := abu.client.GetTotalItems(extraQuery)
+	secondCount, err := abu.client.GetTotalItems(ctx, extraQuery)
 	if err != nil {
 		return err
 	}
@@ -264,7 +265,7 @@ func (abu *ABUGames) scrape() error {
 		go func() {
 			for page := range pages {
 				abu.printf("Processing page %d/%d", page/maxEntryPerRequest, count/maxEntryPerRequest)
-				err := abu.processEntry(normalQuery, results, page)
+				err := abu.processEntry(ctx, normalQuery, results, page)
 				if err != nil {
 					abu.printf("%v", err)
 				}
@@ -272,7 +273,7 @@ func (abu *ABUGames) scrape() error {
 				// the loop and query more in detail when needed
 				if page <= secondCount {
 					abu.printf("Processing second page %d/%d", page/maxEntryPerRequest, secondCount/maxEntryPerRequest)
-					err := abu.processEntry(extraQuery, results, page)
+					err := abu.processEntry(ctx, extraQuery, results, page)
 					if err != nil {
 						abu.printf("%v", err)
 					}
@@ -328,7 +329,7 @@ func (abu *ABUGames) Inventory() (mtgban.InventoryRecord, error) {
 		return abu.inventory, nil
 	}
 
-	err := abu.scrape()
+	err := abu.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +342,7 @@ func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
 		return abu.buylist, nil
 	}
 
-	err := abu.scrape()
+	err := abu.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package abugames
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -86,8 +87,8 @@ func NewABUClientWithBearer(token string) *ABUClient {
 	return abu
 }
 
-func (abu *ABUClient) Get(url string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func (abu *ABUClient) Get(ctx context.Context, url string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +100,8 @@ func (abu *ABUClient) Get(url string) (*http.Response, error) {
 	return abu.client.Do(req)
 }
 
-func (abu *ABUClient) Post(url, contentType string, reader io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, url, reader)
+func (abu *ABUClient) Post(ctx context.Context, url, contentType string, reader io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, reader)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +114,8 @@ func (abu *ABUClient) Post(url, contentType string, reader io.Reader) (*http.Res
 	return abu.client.Do(req)
 }
 
-func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
-	resp, err := abu.Get(url)
+func (abu *ABUClient) sendRequest(ctx context.Context, url string) (*ABUProduct, error) {
+	resp, err := abu.Get(ctx, url)
 	if err != nil {
 		return nil, err
 	}
@@ -129,8 +130,8 @@ func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 	return &product, nil
 }
 
-func (abu *ABUClient) sendSealedRequest(url string) (*ABUResponse, error) {
-	resp, err := abu.Get(url)
+func (abu *ABUClient) sendSealedRequest(ctx context.Context, url string) (*ABUResponse, error) {
+	resp, err := abu.Get(ctx, url)
 	if err != nil {
 		return nil, err
 	}
@@ -146,27 +147,27 @@ func (abu *ABUClient) sendSealedRequest(url string) (*ABUResponse, error) {
 }
 
 // Use the URL as is, with just one row requested to fetch the number of items
-func (abu *ABUClient) GetTotalItems(extra string) (int, error) {
+func (abu *ABUClient) GetTotalItems(ctx context.Context, extra string) (int, error) {
 	link := abuBaseUrl
 	if extra != "" {
 		link = abuBaseUrlFull + url.QueryEscape(extra)
 	}
-	product, err := abu.sendRequest(link)
+	product, err := abu.sendRequest(ctx, link)
 	if err != nil {
 		return 0, err
 	}
 	return product.Grouped.ProductId.Count, nil
 }
 
-func (abu *ABUClient) GetTotalSealedItems() (int, error) {
-	response, err := abu.sendSealedRequest(abuBaseSealedUrl)
+func (abu *ABUClient) GetTotalSealedItems(ctx context.Context) (int, error) {
+	response, err := abu.sendSealedRequest(ctx, abuBaseSealedUrl)
 	if err != nil {
 		return 0, err
 	}
 	return response.Response.NumFound, nil
 }
 
-func (abu *ABUClient) GetProduct(extra string, pageStart int) (*ABUProduct, error) {
+func (abu *ABUClient) GetProduct(ctx context.Context, extra string, pageStart int) (*ABUProduct, error) {
 	link := abuBaseUrl
 	if extra != "" {
 		link = abuBaseUrlFull + url.QueryEscape(extra)
@@ -181,10 +182,10 @@ func (abu *ABUClient) GetProduct(extra string, pageStart int) (*ABUProduct, erro
 	q.Set("start", fmt.Sprintf("%d", pageStart))
 	u.RawQuery = q.Encode()
 
-	return abu.sendRequest(u.String())
+	return abu.sendRequest(ctx, u.String())
 }
 
-func (abu *ABUClient) GetSealedProduct(pageStart int) (*ABUResponse, error) {
+func (abu *ABUClient) GetSealedProduct(ctx context.Context, pageStart int) (*ABUResponse, error) {
 	u, err := url.Parse(abuBaseSealedUrl)
 	if err != nil {
 		return nil, err
@@ -195,7 +196,7 @@ func (abu *ABUClient) GetSealedProduct(pageStart int) (*ABUResponse, error) {
 	q.Set("start", fmt.Sprintf("%d", pageStart))
 	u.RawQuery = q.Encode()
 
-	return abu.sendSealedRequest(u.String())
+	return abu.sendSealedRequest(ctx, u.String())
 }
 
 type CartRequest struct {
@@ -227,15 +228,15 @@ const (
 	abuBuylistAddURL   = "https://api.abugames.com/buy-list-cart/item"
 )
 
-func (abu *ABUClient) SetCartInventory(abuId string, qty int) (*CartResponse, error) {
-	return abu.setCart(abuInventoryAddURL, abuId, qty)
+func (abu *ABUClient) SetCartInventory(ctx context.Context, abuId string, qty int) (*CartResponse, error) {
+	return abu.setCart(ctx, abuInventoryAddURL, abuId, qty)
 }
 
-func (abu *ABUClient) SetCartBuylist(abuId string, qty int) (*CartResponse, error) {
-	return abu.setCart(abuBuylistAddURL, abuId, qty)
+func (abu *ABUClient) SetCartBuylist(ctx context.Context, abuId string, qty int) (*CartResponse, error) {
+	return abu.setCart(ctx, abuBuylistAddURL, abuId, qty)
 }
 
-func (abu *ABUClient) setCart(link, abuId string, qty int) (*CartResponse, error) {
+func (abu *ABUClient) setCart(ctx context.Context, link, abuId string, qty int) (*CartResponse, error) {
 	payload := CartRequest{
 		ItemId:   abuId,
 		Quantity: qty,
@@ -247,7 +248,7 @@ func (abu *ABUClient) setCart(link, abuId string, qty int) (*CartResponse, error
 		return nil, err
 	}
 
-	resp, err := abu.Post(link, "application/json", bytes.NewReader(reqBody))
+	resp, err := abu.Post(ctx, link, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, err
 	}
