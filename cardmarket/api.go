@@ -3,6 +3,7 @@ package cardmarket
 import (
 	"context"
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
@@ -14,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
@@ -281,10 +281,19 @@ type authTransport struct {
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Generate nonce
+	rawID := make([]byte, 16)
+	_, err := rand.Read(rawID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to generate nonce: %w", err)
+	}
+
+	nonce := base64.RawStdEncoding.EncodeToString(rawID)
+
 	// Items we need
 	q := url.Values{}
 	q.Set("oauth_consumer_key", t.AppToken)
-	q.Set("oauth_nonce", uuid.New().String())
+	q.Set("oauth_nonce", nonce)
 	q.Set("oauth_signature_method", "HMAC-SHA1")
 	q.Set("oauth_timestamp", fmt.Sprintf("%d", time.Now().Unix()))
 	q.Set("oauth_token", t.AccessToken)
