@@ -54,10 +54,11 @@ func NewTNTClient() *TNTClient {
 }
 
 func (tnt *TNTClient) GetProductOptions(productId string) ([]TNTBuyingOption, error) {
-	resp, err := tnt.client.PostForm(tntInventoryURL, url.Values{
+	payload := url.Values{
 		"productid": {productId},
 		"action":    {"getBuyingOptions"},
-	})
+	}
+	resp, err := tnt.client.PostForm(tntInventoryURL, payload)
 	if err != nil {
 		return nil, err
 

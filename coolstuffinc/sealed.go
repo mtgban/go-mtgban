@@ -70,7 +70,6 @@ func (csi *CoolstuffincSealed) numOfPages() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)

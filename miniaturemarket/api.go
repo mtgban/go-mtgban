@@ -45,11 +45,11 @@ func NewMMClient() *MMClient {
 }
 
 func (mm *MMClient) NumberOfProducts() (int, error) {
-	resp, err := mm.query(0, 0)
+	response, err := mm.query(0, 0)
 	if err != nil {
 		return 0, err
 	}
-	return resp.Response.NumberOfProducts, nil
+	return response.Response.NumberOfProducts, nil
 }
 
 func (mm *MMClient) GetInventory(start int) (*MMSearchResponse, error) {

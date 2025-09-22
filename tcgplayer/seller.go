@@ -72,20 +72,20 @@ type setCountPair struct {
 }
 
 func (tcg *TCGSellerInventory) totalItems() (*itemsRecap, error) {
-	resp, err := tcg.client.InventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect, nil)
+	response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(resp.Results) == 0 {
+	if len(response.Results) == 0 {
 		return nil, errors.New("empty response")
 	}
 
 	var ret itemsRecap
 
-	ret.TotalResults = resp.Results[0].TotalResults
+	ret.TotalResults = response.Results[0].TotalResults
 
-	for _, aggregation := range resp.Results[0].Aggregations.SetName {
+	for _, aggregation := range response.Results[0].Aggregations.SetName {
 		ret.Pair = append(ret.Pair, setCountPair{
 			Name:  aggregation.URLValue,
 			Count: int(aggregation.Count),
@@ -105,9 +105,9 @@ var conditionMap = map[string]string{
 
 func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page int) error {
 	for _, finish := range []string{"Normal", "Foil"} {
-		resp, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
+		response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
 		if err == nil {
-			err = tcg.processInventory(channel, resp.Results[0].Results)
+			err = tcg.processInventory(channel, response.Results[0].Results)
 			if err != nil {
 				tcg.printf("%s %s", finish, err.Error())
 			}
@@ -119,9 +119,9 @@ func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page in
 func (tcg *TCGSellerInventory) processEdition(channel chan<- responseChan, setName string, count int) error {
 	for i := 0; i <= count/tcg.requestSize; i++ {
 		for _, finish := range []string{"Normal", "Foil"} {
-			resp, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
+			response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
 			if err == nil {
-				err = tcg.processInventory(channel, resp.Results[0].Results)
+				err = tcg.processInventory(channel, response.Results[0].Results)
 				if err != nil {
 					tcg.printf("%s", err.Error())
 				}
