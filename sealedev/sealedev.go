@@ -180,7 +180,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 	repeatsChannel := make(chan int)
 
 	for j := 0; j < ss.MaxConcurrency; j++ {
-		wg.Add(2)
+		wg.Add(1)
 
 		// Simulations
 		go func() {
@@ -223,55 +223,56 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 			}
 			wg.Done()
 		}()
+	}
 
-		// Probability EV
-		go func() {
-			probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
-			if len(probs) == 0 {
-				if err == nil {
-					err = errors.New("no probabilities found")
-				}
-				channel <- resultChan{
-					err: err,
-				}
-				wg.Done()
-				return
+	// Probability EV
+	wg.Add(1)
+	go func() {
+		probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
+		if len(probs) == 0 {
+			if err == nil {
+				err = errors.New("no probabilities found")
 			}
-
-			// Split probabilities in two simpler arrays for later reuse
-			picks := make([]string, len(probs))
-			probabilities := make([]float64, len(probs))
-			for i := range probs {
-				picks[i] = probs[i].UUID
-
-				// Delete any serialized card
-				co, err := mtgmatcher.GetUUID(probs[i].UUID)
-				if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
-					continue
-				}
-				probabilities[i] = probs[i].Probability
-			}
-
-			for i := range evParameters {
-				if evParameters[i].Simulation {
-					continue
-				}
-
-				priceSource := ss.prices.Retail
-				if evParameters[i].FoundInBuylist {
-					priceSource = ss.prices.Buylist
-				}
-
-				ev := valueInBooster(picks, priceSource, evParameters[i].SourceName, probabilities)
-
-				channel <- resultChan{
-					i:  i,
-					ev: ev,
-				}
+			channel <- resultChan{
+				err: err,
 			}
 			wg.Done()
-		}()
-	}
+			return
+		}
+
+		// Split probabilities in two simpler arrays for later reuse
+		picks := make([]string, len(probs))
+		probabilities := make([]float64, len(probs))
+		for i := range probs {
+			picks[i] = probs[i].UUID
+
+			// Delete any serialized card
+			co, err := mtgmatcher.GetUUID(probs[i].UUID)
+			if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
+				continue
+			}
+			probabilities[i] = probs[i].Probability
+		}
+
+		for i := range evParameters {
+			if evParameters[i].Simulation {
+				continue
+			}
+
+			priceSource := ss.prices.Retail
+			if evParameters[i].FoundInBuylist {
+				priceSource = ss.prices.Buylist
+			}
+
+			ev := valueInBooster(picks, priceSource, evParameters[i].SourceName, probabilities)
+
+			channel <- resultChan{
+				i:  i,
+				ev: ev,
+			}
+		}
+		wg.Done()
+	}()
 
 	go func(repeatsChannel chan int, channel chan resultChan) {
 		for j := 0; j < repeats; j++ {
