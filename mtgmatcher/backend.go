@@ -1081,6 +1081,10 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 		numbers = append(numbers, sets[code].Cards[i].Number)
 	}
 
+	// Add duplicated set (with no cards) to the root
+	sets[dup.Code] = &dup
+
+	// Duplicate cards
 	dup.Cards = duplicateCards(sets, uuids, code, tag, numbers)
 
 	// Remove store references to avoid duplicates
@@ -1095,8 +1099,6 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 		}
 		dup.Cards[i].Identifiers = altIdentifiers
 	}
-
-	sets[dup.Code] = &dup
 }
 
 // Duplicate certain cards within the same set according to the language tag
@@ -1117,6 +1119,14 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 		dupeCard.Language = langs[tag]
 		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		dupeCard.Number += strings.ToLower(tag)
+
+		// Set a new code and edition name if we're duplicating a whole set
+		_, found := sets[code+tag]
+		edition := sets[code].Name
+		if found {
+			dupeCard.SetCode = code + tag
+			edition = sets[dupeCard.SetCode].Name
+		}
 
 		// Update images
 		dupeCard.Images = map[string]string{}
@@ -1146,7 +1156,7 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 			dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag) + suffixTag
 			uuids[dupeCard.UUID] = CardObject{
 				Card:    dupeCard,
-				Edition: sets[code].Name,
+				Edition: edition,
 				Etched:  co.Etched,
 				Foil:    co.Foil,
 			}
