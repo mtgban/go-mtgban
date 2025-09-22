@@ -31,7 +31,7 @@ const (
 	GameIdMagic             = 1
 	GameIdYuGiOh            = 4
 	GameIdPokemon           = 5
-	GameIdFleshAndBlood     = 5
+	GameIdFleshAndBlood     = 6
 	GameIdDigimon           = 8
 	GameIdDragonBallSuper   = 9
 	GameIdVanguard          = 10
@@ -39,6 +39,9 @@ const (
 	GameIdOnePiece          = 15
 	GameIdLorcana           = 18
 	GameIdStarWarsUnlimited = 20
+	GameIdUnionArena        = 21
+	GameIdRiftbound         = 22
+	GameIdGundam            = 23
 )
 
 const (
