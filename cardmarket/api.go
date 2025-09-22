@@ -255,14 +255,12 @@ type authTransport struct {
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
-
 	// Items we need
 	q := url.Values{}
 	q.Set("oauth_consumer_key", t.AppToken)
 	q.Set("oauth_nonce", uuid.New().String())
 	q.Set("oauth_signature_method", "HMAC-SHA1")
-	q.Set("oauth_timestamp", fmt.Sprintf("%d", timestamp))
+	q.Set("oauth_timestamp", fmt.Sprintf("%d", time.Now().Unix()))
 	q.Set("oauth_token", t.AccessToken)
 	q.Set("oauth_version", "1.0")
 
