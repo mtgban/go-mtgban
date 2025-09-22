@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -30,29 +30,30 @@ const (
 )
 
 type MKMClient struct {
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewMKMClient(appToken, appSecret string) *MKMClient {
 	mkm := MKMClient{}
-	mkm.client = retryablehttp.NewClient()
-	mkm.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
 	// The api is very sensitive to multiple concurrent requests,
 	// This backoff strategy lets the system chill out a bit before retrying
-	mkm.client.Backoff = retryablehttp.LinearJitterBackoff
-	mkm.client.RetryWaitMin = 2 * time.Second
-	mkm.client.RetryWaitMax = 10 * time.Second
-	mkm.client.RetryMax = 20
-	mkm.client.HTTPClient.Transport = &authTransport{
-		Parent:    mkm.client.HTTPClient.Transport,
+	client.Backoff = retryablehttp.LinearJitterBackoff
+	client.RetryWaitMin = 2 * time.Second
+	client.RetryWaitMax = 10 * time.Second
+	client.RetryMax = 20
+	client.HTTPClient.Transport = &authTransport{
+		Parent:    client.HTTPClient.Transport,
 		AppToken:  appToken,
 		AppSecret: appSecret,
 	}
+	mkm.client = client.StandardClient()
 	return &mkm
 }
 
 func (mkm *MKMClient) RequestNo() int {
-	return mkm.client.HTTPClient.Transport.(*authTransport).RequestNo
+	return mkm.client.Transport.(*authTransport).RequestNo
 }
 
 type MKMExpansion struct {
