@@ -1,6 +1,7 @@
 package cardtrader
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -8,8 +9,8 @@ import (
 )
 
 // Use the Simple API Token to convert your own inventory to a standard InventoryRecord
-func (ct *CTAuthClient) ExportStock(blueprints map[int]*Blueprint) (mtgban.InventoryRecord, error) {
-	products, err := ct.ProductsExport()
+func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blueprint) (mtgban.InventoryRecord, error) {
+	products, err := ct.ProductsExport(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package cardtrader
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -206,8 +207,13 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.Parent.RoundTrip(req)
 }
 
-func (ct *CTAuthClient) Expansions() ([]Expansion, error) {
-	resp, err := ct.client.Get(ctExpansionsURL)
+func (ct *CTAuthClient) Expansions(ctx context.Context) ([]Expansion, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ctExpansionsURL, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -223,8 +229,14 @@ func (ct *CTAuthClient) Expansions() ([]Expansion, error) {
 }
 
 // Returns all products from an Expansion, with the 25 cheapest listings per product
-func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) {
-	resp, err := ct.client.Get(fmt.Sprintf("%s?expansion_id=%d", ctMarketplaceURL, id))
+func (ct *CTAuthClient) ProductsForExpansion(ctx context.Context, id int) (map[int][]Product, error) {
+	link := fmt.Sprintf("%s?expansion_id=%d", ctMarketplaceURL, id)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -240,8 +252,14 @@ func (ct *CTAuthClient) ProductsForExpansion(id int) (map[int][]Product, error) 
 }
 
 // Returns all products from a given blueprint id, with the 25 cheapest listings
-func (ct *CTAuthClient) ProductsForBlueprint(id int) ([]Product, error) {
-	resp, err := ct.client.Get(fmt.Sprintf("%s?blueprint_id=%d", ctMarketplaceURL, id))
+func (ct *CTAuthClient) ProductsForBlueprint(ctx context.Context, id int) ([]Product, error) {
+	link := fmt.Sprintf("%s?blueprint_id=%d", ctMarketplaceURL, id)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -256,8 +274,14 @@ func (ct *CTAuthClient) ProductsForBlueprint(id int) ([]Product, error) {
 	return out[id], nil
 }
 
-func (ct *CTAuthClient) Blueprints(expansionId int) ([]Blueprint, error) {
-	resp, err := ct.client.Get(ctBlueprintsURL + fmt.Sprint(expansionId))
+func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionId int) ([]Blueprint, error) {
+	link := ctBlueprintsURL + fmt.Sprint(expansionId)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -315,8 +339,13 @@ type BulkProduct struct {
 	} `json:"properties,omitempty"`
 }
 
-func (ct *CTAuthClient) ProductsExport() ([]Product, error) {
-	resp, err := ct.client.Get(ctProductsExport)
+func (ct *CTAuthClient) ProductsExport(ctx context.Context) ([]Product, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ctProductsExport, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -334,25 +363,25 @@ func (ct *CTAuthClient) ProductsExport() ([]Product, error) {
 // Create new listings using the products slice, separating into multiple
 // requests if there are more than MaxBulkUploadItems elements. A list of
 // job ids is returned to monitor the execution status.
-func (ct *CTAuthClient) BulkCreate(products []BulkProduct) ([]string, error) {
-	return ct.bulkOperation(ctBulkCreateURL, products)
+func (ct *CTAuthClient) BulkCreate(ctx context.Context, products []BulkProduct) ([]string, error) {
+	return ct.bulkOperation(ctx, ctBulkCreateURL, products)
 }
 
 // Update existing listings using the products slice, separating into multiple
 // requests if there are more than MaxBulkUploadItems elements. A list of
 // job ids is returned to monitor the execution status.
-func (ct *CTAuthClient) BulkUpdate(products []BulkProduct) ([]string, error) {
-	return ct.bulkOperation(ctBulkUpdateURL, products)
+func (ct *CTAuthClient) BulkUpdate(ctx context.Context, products []BulkProduct) ([]string, error) {
+	return ct.bulkOperation(ctx, ctBulkUpdateURL, products)
 }
 
 // Delete existing listings using the products slice, separating into multiple
 // requests if there are more than MaxBulkUploadItems elements. A list of
 // job ids is returned to monitor the execution status.
-func (ct *CTAuthClient) BulkDelete(products []BulkProduct) ([]string, error) {
-	return ct.bulkOperation(ctBulkDeleteURL, products)
+func (ct *CTAuthClient) BulkDelete(ctx context.Context, products []BulkProduct) ([]string, error) {
+	return ct.bulkOperation(ctx, ctBulkDeleteURL, products)
 }
 
-func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]string, error) {
+func (ct *CTAuthClient) bulkOperation(ctx context.Context, link string, products []BulkProduct) ([]string, error) {
 	var jobs []string
 	var bulkUpload struct {
 		Products []BulkProduct `json:"products"`
@@ -370,7 +399,13 @@ func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]st
 			return nil, err
 		}
 
-		resp, err := ct.client.Post(link, "application/json", bytes.NewReader(bodyBytes))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(bodyBytes))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := ct.client.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -437,30 +472,36 @@ type CTCartResponse struct {
 	RequestID string `json:"request_id"`
 }
 
-func (ct *CTAuthClient) AddProductToCart(productId, quantity int, zero bool) (*CTCartResponse, error) {
+func (ct *CTAuthClient) AddProductToCart(ctx context.Context, productId, quantity int, zero bool) (*CTCartResponse, error) {
 	product := ctProductCart{
 		ProductId: productId,
 		Quantity:  quantity,
 		ViaZero:   zero,
 	}
-	return ct.addremoveCart(product, ctAddProductCart)
+	return ct.addremoveCart(ctx, product, ctAddProductCart)
 }
 
-func (ct *CTAuthClient) RemoveProductFromCart(productId, quantity int) (*CTCartResponse, error) {
+func (ct *CTAuthClient) RemoveProductFromCart(ctx context.Context, productId, quantity int) (*CTCartResponse, error) {
 	product := ctProductCart{
 		ProductId: productId,
 		Quantity:  quantity,
 	}
-	return ct.addremoveCart(product, ctRemoveProductCart)
+	return ct.addremoveCart(ctx, product, ctRemoveProductCart)
 }
 
-func (ct *CTAuthClient) addremoveCart(product ctProductCart, link string) (*CTCartResponse, error) {
+func (ct *CTAuthClient) addremoveCart(ctx context.Context, product ctProductCart, link string) (*CTCartResponse, error) {
 	bodyBytes, err := json.Marshal(&product)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := ct.client.Post(link, "application/json", bytes.NewReader(bodyBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -487,8 +528,15 @@ func NewCTClient() *CTClient {
 	return &ct
 }
 
-func (ct *CTClient) ProductsForBlueprint(id int) (*BlueprintFilter, error) {
-	resp, err := ct.client.Post(fmt.Sprintf(ctFilterURL, id), "application/json", nil)
+func (ct *CTClient) ProductsForBlueprint(ctx context.Context, id int) (*BlueprintFilter, error) {
+	link := fmt.Sprintf(ctFilterURL, id)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

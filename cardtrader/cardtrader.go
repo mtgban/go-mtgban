@@ -1,6 +1,7 @@
 package cardtrader
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -267,8 +268,8 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 	return
 }
 
-func (ct *CardtraderMarket) processExpansion(channel chan<- resultChan, expansionId int) error {
-	allProducts, err := ct.client.ProductsForExpansion(expansionId)
+func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<- resultChan, expansionId int) error {
+	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionId)
 	if err != nil {
 		return err
 	}
@@ -280,8 +281,8 @@ func (ct *CardtraderMarket) processExpansion(channel chan<- resultChan, expansio
 	return nil
 }
 
-func (ct *CardtraderMarket) scrape() error {
-	expansionsRaw, err := ct.client.Expansions()
+func (ct *CardtraderMarket) scrape(ctx context.Context) error {
+	expansionsRaw, err := ct.client.Expansions(ctx)
 	if err != nil {
 		return err
 	}
@@ -300,7 +301,7 @@ func (ct *CardtraderMarket) scrape() error {
 			continue
 		}
 
-		bp, err := ct.client.Blueprints(exp.Id)
+		bp, err := ct.client.Blueprints(ctx, exp.Id)
 		if err != nil {
 			ct.printf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
 			continue
@@ -321,7 +322,7 @@ func (ct *CardtraderMarket) scrape() error {
 		wg.Add(1)
 		go func() {
 			for expansionId := range expansionIds {
-				err := ct.processExpansion(results, expansionId)
+				err := ct.processExpansion(ctx, results, expansionId)
 				if err != nil {
 					ct.printf("%v", err)
 				}
@@ -379,7 +380,7 @@ func (ct *CardtraderMarket) Inventory() (mtgban.InventoryRecord, error) {
 		return ct.inventory, nil
 	}
 
-	err := ct.scrape()
+	err := ct.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package cardtrader
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -49,8 +50,8 @@ func (ct *CardtraderSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId int, expansionName string, productMap map[int][]string) error {
-	allProducts, err := ct.client.ProductsForExpansion(expansionId)
+func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- resultChan, expansionId int, expansionName string, productMap map[int][]string) error {
+	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionId)
 	if err != nil {
 		return err
 	}
@@ -126,11 +127,11 @@ func (ct *CardtraderSealed) processEntry(channel chan<- resultChan, expansionId 
 	return nil
 }
 
-func (ct *CardtraderSealed) scrape() error {
+func (ct *CardtraderSealed) scrape(ctx context.Context) error {
 	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
 	ct.printf("Loaded %d sealed products", len(productMap))
 
-	expansionsRaw, err := ct.client.Expansions()
+	expansionsRaw, err := ct.client.Expansions(ctx)
 	if err != nil {
 		return err
 	}
@@ -149,7 +150,7 @@ func (ct *CardtraderSealed) scrape() error {
 			continue
 		}
 
-		bp, err := ct.client.Blueprints(exp.Id)
+		bp, err := ct.client.Blueprints(ctx, exp.Id)
 		if err != nil {
 			ct.printf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
 			continue
@@ -169,7 +170,7 @@ func (ct *CardtraderSealed) scrape() error {
 		wg.Add(1)
 		go func() {
 			for expansionId := range expansionIds {
-				err := ct.processEntry(results, expansionId, expansions[expansionId], productMap)
+				err := ct.processEntry(ctx, results, expansionId, expansions[expansionId], productMap)
 				if err != nil {
 					ct.printf("%v", err)
 				}
@@ -223,7 +224,7 @@ func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
 		return ct.inventory, nil
 	}
 
-	err := ct.scrape()
+	err := ct.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
