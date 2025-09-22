@@ -54,14 +54,16 @@ type evConfig struct {
 	Simulation     bool
 }
 
+func passthroughFirst(values []float64) (float64, error) {
+	return values[0], nil
+}
+
 var evParameters = []evConfig{
 	// CK Buylist
 	{
-		Name:      "CK Buylist EV for Singles",
-		Shorthand: "SS",
-		StatsFunc: func(values []float64) (float64, error) {
-			return values[0], nil
-		},
+		Name:           "CK Buylist EV for Singles",
+		Shorthand:      "SS",
+		StatsFunc:      passthroughFirst,
 		SourceName:     "CK",
 		FoundInBuylist: true,
 		TargetsBuylist: true,
@@ -69,11 +71,9 @@ var evParameters = []evConfig{
 
 	// TCG Low
 	{
-		Name:      "TCG Low EV",
-		Shorthand: "TCGLowEV",
-		StatsFunc: func(values []float64) (float64, error) {
-			return values[0], nil
-		},
+		Name:       "TCG Low EV",
+		Shorthand:  "TCGLowEV",
+		StatsFunc:  passthroughFirst,
 		SourceName: "TCGLow",
 	},
 	{
@@ -88,11 +88,9 @@ var evParameters = []evConfig{
 
 	// TCG Direct (net)
 	{
-		Name:      "TCG Direct (net) EV",
-		Shorthand: "TCGDirectNetEV",
-		StatsFunc: func(values []float64) (float64, error) {
-			return values[0], nil
-		},
+		Name:           "TCG Direct (net) EV",
+		Shorthand:      "TCGDirectNetEV",
+		StatsFunc:      passthroughFirst,
 		SourceName:     "TCGDirectNet",
 		FoundInBuylist: true,
 	},
@@ -109,11 +107,9 @@ var evParameters = []evConfig{
 
 	// Card Trader Zero
 	{
-		Name:      "CT Zero EV",
-		Shorthand: "CTZeroEV",
-		StatsFunc: func(values []float64) (float64, error) {
-			return values[0], nil
-		},
+		Name:       "CT Zero EV",
+		Shorthand:  "CTZeroEV",
+		StatsFunc:  passthroughFirst,
 		SourceName: "CT0",
 	},
 	{
