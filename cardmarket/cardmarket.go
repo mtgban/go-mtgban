@@ -177,11 +177,17 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		return errors.New("unsupported game")
 	}
 
+	// Look for the price presence
 	var index int
+	var found bool
 	for index = range mkm.priceGuide {
 		if mkm.priceGuide[index].IdProduct == product.IdProduct {
+			found = true
 			break
 		}
+	}
+	if !found {
+		return fmt.Errorf("IdProduct %d not found in PriceGuide", product.IdProduct)
 	}
 
 	// Sorted as availableIndexNames
