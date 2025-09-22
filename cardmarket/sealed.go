@@ -230,7 +230,7 @@ func (mkm *CardMarketSealed) scrape() error {
 				mkm.printf("%s - %s: %s", result.entry.OriginalId, cerr.Error(), result.cardId)
 				continue
 			}
-			mkm.printf("%s - %s", result.ogId, err.Error())
+			mkm.printf("%d - %s", result.ogId, err.Error())
 			continue
 		}
 	}
