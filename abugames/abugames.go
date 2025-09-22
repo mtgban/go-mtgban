@@ -61,21 +61,34 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 	for _, group := range product.Grouped.ProductId.Groups {
 		for i, doc := range group.Doclist.Docs {
-			// Deprecated value
-			if doc.Condition == "SP" {
-				continue
-			}
+			isUnique := strings.HasPrefix(doc.Title, "ID#")
 
 			cond := doc.Condition
 			switch cond {
 			case "MINT":
-				continue
+				if isUnique {
+					cond = "NM"
+				} else {
+					continue
+				}
 			case "NM":
 				cond = "NM"
+				if isUnique {
+					cond = "SP"
+				}
 			case "PLD":
 				cond = "SP"
+				if isUnique {
+					cond = "MP"
+				}
 			case "HP":
 				cond = "MP"
+				if isUnique {
+					cond = "HP"
+				}
+			case "SP":
+				abu.printf("skipping '%s' condition", cond)
+				continue
 			default:
 				abu.printf("Unknown '%s' condition", cond)
 				continue

@@ -77,10 +77,6 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		"Mountain (6th Edition 343 - Mark Le Pine - 1999)":
 		return nil, errors.New("untracked card")
 	}
-	// Unique cards
-	if strings.HasPrefix(card.Title, "ID#") {
-		return nil, errors.New("unique card")
-	}
 	switch card.Id {
 	case "1604919", "1604921", "1604922", // Living Twister
 		"1604802", "1604801", "1604799": // Commence the Endgame
