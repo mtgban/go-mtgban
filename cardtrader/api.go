@@ -378,6 +378,7 @@ func (ct *CTAuthClient) bulkOperation(link string, products []BulkProduct) ([]st
 			Job string `json:"job"`
 		}
 		err = json.NewDecoder(resp.Body).Decode(&jobResp)
+		resp.Body.Close()
 		if err != nil {
 			return nil, fmt.Errorf("unmarshal error for chunk %d, got: %w", i, err)
 		}
