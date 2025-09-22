@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -177,11 +177,11 @@ type Expansion struct {
 }
 
 type CTClient struct {
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 type CTAuthClient struct {
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 type authTransport struct {
@@ -191,12 +191,13 @@ type authTransport struct {
 
 func NewCTAuthClient(token string) *CTAuthClient {
 	ct := CTAuthClient{}
-	ct.client = retryablehttp.NewClient()
-	ct.client.Logger = nil
-	ct.client.HTTPClient.Transport = &authTransport{
-		Parent: ct.client.HTTPClient.Transport,
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	client.HTTPClient.Transport = &authTransport{
+		Parent: client.HTTPClient.Transport,
 		Token:  token,
 	}
+	ct.client = client.StandardClient()
 	return &ct
 }
 
@@ -480,8 +481,9 @@ func (ct *CTAuthClient) addremoveCart(product ctProductCart, link string) (*CTCa
 
 func NewCTClient() *CTClient {
 	ct := CTClient{}
-	ct.client = retryablehttp.NewClient()
-	ct.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	ct.client = client.StandardClient()
 	return &ct
 }
 
