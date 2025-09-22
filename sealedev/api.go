@@ -91,7 +91,7 @@ func (r *BANPriceResponse) setRetail(destination, uuid string, price float64) {
 	}
 
 	// Rebuild the price entry
-	r.Buylist[uuid][destination] = &BanPrice{
+	r.Retail[uuid][destination] = &BanPrice{
 		Conditions: map[string]float64{
 			"NM" + tag: price,
 		},
