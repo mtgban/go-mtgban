@@ -503,7 +503,7 @@ func (tcg *SellerClient) InventoryForSeller(sellerKeys []string, size, page int,
 		return nil, fmt.Errorf("error: %s (%d)", response.Title, response.Status)
 	}
 	if len(response.Results) == 0 {
-		return nil, fmt.Errorf("emtpy results in response at page %d", page)
+		return nil, fmt.Errorf("empty results in response at page %d", page)
 	}
 
 	return &response, nil
@@ -594,7 +594,7 @@ func (tcg *SellerClient) InventoryListing(productId, size, page int, useDirect b
 		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
 	}
 	if len(response.Results) == 0 {
-		return nil, fmt.Errorf("emtpy results in response at page %d", page)
+		return nil, fmt.Errorf("empty results in response at page %d", page)
 	}
 
 	return response.Results[0].Results, nil
@@ -725,10 +725,10 @@ func (tcg *CookieClient) GetUserData() (*UserData, error) {
 		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
 	}
 	if len(response.Results) == 0 {
-		return nil, fmt.Errorf("emtpy results in user request")
+		return nil, fmt.Errorf("empty results in user request")
 	}
 	if response.Results[0].UserName == "" {
-		return nil, fmt.Errorf("emtpy username from user request")
+		return nil, fmt.Errorf("empty username from user request")
 	}
 
 	return &response.Results[0], nil
@@ -768,7 +768,7 @@ func CreateCartKey(userId string) (string, error) {
 		return "", fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
 	}
 	if len(response.Results) == 0 {
-		return "", fmt.Errorf("emtpy results in user request")
+		return "", fmt.Errorf("empty results in user request")
 	}
 
 	return response.Results[0].CartKey, nil
