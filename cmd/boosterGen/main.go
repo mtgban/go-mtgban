@@ -57,7 +57,7 @@ func run() int {
 	}
 
 	if *CSVOutput {
-		CSVWriter = csv.NewWriter(os.Stderr)
+		CSVWriter = csv.NewWriter(os.Stdout)
 		CSVWriter.Write([]string{"setCode", "number", "name", "isFoil"})
 	}
 
@@ -75,7 +75,7 @@ func run() int {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Fprintf(os.Stdout, "%v\n", choice.Item)
+		fmt.Fprintf(os.Stderr, "%v\n", choice.Item)
 
 		contents := choice.Item.(map[string]int)
 
@@ -184,7 +184,12 @@ func run() int {
 			return picks[i].Sheet < picks[j].Sheet
 		})
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+		// Don't clobber CSV output if used
+		out := os.Stdout
+		if *CSVOutput {
+			out = os.Stderr
+		}
+		w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 		for _, pick := range picks {
 			id, _ := mtgmatcher.MatchId(pick.CardId, pick.Finish == "foil", pick.Finish == "etched")
 			co, _ := mtgmatcher.GetUUID(id)
