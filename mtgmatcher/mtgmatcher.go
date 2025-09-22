@@ -101,7 +101,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 
 	// Set up language
 	if inCard.Language != "" {
-		lang, found := languageCode2LanguageTag[strings.ToLower(inCard.Language)]
+		lang, found := LanguageCode2LanguageTag[strings.ToLower(inCard.Language)]
 		if found {
 			inCard.Language = lang
 		} else {

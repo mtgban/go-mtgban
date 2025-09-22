@@ -1,6 +1,6 @@
 package mtgmatcher
 
-var languageCode2LanguageTag = map[string]string{
+var LanguageCode2LanguageTag = map[string]string{
 	"en":    "",
 	"fr":    "French",
 	"de":    "German",
@@ -18,6 +18,8 @@ var languageCode2LanguageTag = map[string]string{
 	"zt":    "Chinese Traditional",
 	"zhs":   "Chinese Simplified",
 	"zht":   "Chinese Traditional",
+	"phi":   "Phyrexian",
+	"qya":   "Quenya",
 }
 
 var LanguageTag2LanguageCode = map[string]string{
@@ -33,8 +35,11 @@ var LanguageTag2LanguageCode = map[string]string{
 	"Portuguese":          "pt",
 	"Chinese Simplified":  "zhs",
 	"Chinese Traditional": "zht",
+	"Phyrexian":           "phi",
+	"Quenya":              "qya",
 }
 
+// This set skips any fictional language
 var allLanguageTags = []string{
 	"French",
 	"German",
