@@ -114,7 +114,7 @@ func (abu *ABUClient) Post(url, contentType string, reader io.Reader) (*http.Res
 }
 
 func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
-	resp, err := abu.client.Get(url)
+	resp, err := abu.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (abu *ABUClient) sendRequest(url string) (*ABUProduct, error) {
 }
 
 func (abu *ABUClient) sendSealedRequest(url string) (*ABUResponse, error) {
-	resp, err := abu.client.Get(url)
+	resp, err := abu.Get(url)
 	if err != nil {
 		return nil, err
 	}
