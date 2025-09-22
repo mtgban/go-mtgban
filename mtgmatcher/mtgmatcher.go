@@ -5,8 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func MatchId(inputId string, finishes ...bool) (string, error) {
@@ -14,8 +12,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 	id := strings.Split(inputId, "_")[0]
 
 	// Validate it's an actual uuid or a plain number for tcg id
-	_, err := uuid.Parse(id)
-	if err != nil {
+	if !maybeUUID(id) {
 		_, err := strconv.Atoi(id)
 		if err != nil {
 			return "", ErrCardUnknownId

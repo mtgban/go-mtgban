@@ -379,3 +379,14 @@ func IsDFCSameName(name string) bool {
 	right := name[len(name)/2+2:]
 	return left == right
 }
+
+// Check if the string could pass as a uuid
+func maybeUUID(s string) bool {
+	if len(s) != 36 {
+		return false
+	}
+	if s[8] != '-' || s[13] != '-' || s[18] != '-' || s[23] != '-' {
+		return false
+	}
+	return true
+}
