@@ -42,7 +42,7 @@ func GenerateProductURL(productId int, printing, affiliate, condition, language 
 		language = mtgmatcher.Title(language)
 		switch language {
 		case "Portuguese (Brazil)":
-			language = "Portugese"
+			language = "Portuguese"
 		case "Chinese Simplified":
 			language = "Chinese (S)"
 		case "Chinese Traditional":
