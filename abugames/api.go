@@ -146,8 +146,12 @@ func (abu *ABUClient) sendSealedRequest(url string) (*ABUResponse, error) {
 }
 
 // Use the URL as is, with just one row requested to fetch the number of items
-func (abu *ABUClient) GetTotalItems() (int, error) {
-	product, err := abu.sendRequest(abuBaseUrlFull)
+func (abu *ABUClient) GetTotalItems(extra string) (int, error) {
+	link := abuBaseUrl
+	if extra != "" {
+		link = abuBaseUrlFull + url.QueryEscape(extra)
+	}
+	product, err := abu.sendRequest(link)
 	if err != nil {
 		return 0, err
 	}
@@ -162,8 +166,12 @@ func (abu *ABUClient) GetTotalSealedItems() (int, error) {
 	return response.Response.NumFound, nil
 }
 
-func (abu *ABUClient) GetProduct(pageStart int) (*ABUProduct, error) {
-	u, err := url.Parse(abuBaseUrlFull)
+func (abu *ABUClient) GetProduct(extra string, pageStart int) (*ABUProduct, error) {
+	link := abuBaseUrl
+	if extra != "" {
+		link = abuBaseUrlFull + url.QueryEscape(extra)
+	}
+	u, err := url.Parse(link)
 	if err != nil {
 		return nil, err
 	}

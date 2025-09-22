@@ -51,8 +51,8 @@ func (abu *ABUGames) printf(format string, a ...interface{}) {
 	}
 }
 
-func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
-	product, err := abu.client.GetProduct(page)
+func (abu *ABUGames) processEntry(query string, channel chan<- resultChan, page int) error {
+	product, err := abu.client.GetProduct(query, page)
 	if err != nil {
 		return err
 	}
@@ -234,11 +234,26 @@ func (abu *ABUGames) processEntry(channel chan<- resultChan, page int) error {
 
 // Scrape returns an array of Entry, containing pricing and card information
 func (abu *ABUGames) scrape() error {
-	count, err := abu.client.GetTotalItems()
+	extraSets := []string{
+		`"Alpha"`, `"Beta"`, `"Unlimited"`, `"Arabian Nights"`, `"Antiquities"`, `"Legends"`, `"The Dark"`,
+	}
+	// Remove all cards with pictures and the editions above
+	normalQuery := ` -magic_features:("Actual Picture Card") -magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
+	// Enable card with pictures for the editions aboves
+	// (the +magic_features, means only report cards with pics, we need both)
+	extraQuery := ` magic_features:("Actual Picture Card") +magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
+
+	count, err := abu.client.GetTotalItems(normalQuery)
 	if err != nil {
 		return err
 	}
 	abu.printf("Parsing %d entries", count)
+
+	secondCount, err := abu.client.GetTotalItems(extraQuery)
+	if err != nil {
+		return err
+	}
+	abu.printf("Adding %d entries for pictures", secondCount)
 
 	pages := make(chan int)
 	results := make(chan resultChan)
@@ -249,11 +264,21 @@ func (abu *ABUGames) scrape() error {
 		go func() {
 			for page := range pages {
 				abu.printf("Processing page %d/%d", page/maxEntryPerRequest, count/maxEntryPerRequest)
-				err := abu.processEntry(results, page)
+				err := abu.processEntry(normalQuery, results, page)
 				if err != nil {
 					abu.printf("%v", err)
 				}
+				// secondCount will always be less than count so we can hijack
+				// the loop and query more in detail when needed
+				if page <= secondCount {
+					abu.printf("Processing second page %d/%d", page/maxEntryPerRequest, secondCount/maxEntryPerRequest)
+					err := abu.processEntry(extraQuery, results, page)
+					if err != nil {
+						abu.printf("%v", err)
+					}
+				}
 			}
+
 			wg.Done()
 		}()
 	}
