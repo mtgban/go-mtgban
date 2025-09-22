@@ -16,16 +16,13 @@ import (
 	api "github.com/mtgban/go-tcgplayer"
 )
 
-const (
-	defaultConcurrency = 8
-)
-
 var Editions map[int]string
 
 var VerboseOpt *bool
 var StepOpt *int
 var StepSizeOpt *int
 var StepStartOpt *int
+var ConcurrencyOpt *int
 var AllPrintingsOpt *string
 
 type responseChan struct {
@@ -169,7 +166,7 @@ func run() int {
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	for i := 0; i < defaultConcurrency; i++ {
+	for i := 0; i < *ConcurrencyOpt; i++ {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
@@ -279,6 +276,7 @@ func main() {
 	StepOpt = flag.Int("step", 0, "How many ranges should be processed")
 	StepSizeOpt = flag.Int("step-size", 1000, "Size of the range")
 	StepStartOpt = flag.Int("step-start", 0, "Start offset of the range")
+	ConcurrencyOpt = flag.Int("threads", 8, "How many threads to use")
 	AllPrintingsOpt = flag.String("i", "allprintings5.json", "AllPrintings file path")
 	flag.Parse()
 
