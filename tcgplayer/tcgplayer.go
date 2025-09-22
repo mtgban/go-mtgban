@@ -128,7 +128,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 
 		cond, found := skuConditions[req.Condition]
 		if !found {
-			tcg.printf("unknown condition %d for %d", req.Condition, req.SkuId)
+			tcg.printf("unknown condition %s for %d", req.Condition, req.SkuId)
 			continue
 		}
 
