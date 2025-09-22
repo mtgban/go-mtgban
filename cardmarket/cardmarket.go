@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -68,8 +69,8 @@ func NewScraperIndex(gameId int, appToken, appSecret string) (*CardMarketIndex, 
 	return &mkm, nil
 }
 
-func (mkm *CardMarketIndex) processEdition(channel chan<- responseChan, idExpansion int) error {
-	products, err := mkm.client.MKMProductsInExpansion(idExpansion)
+func (mkm *CardMarketIndex) processEdition(ctx context.Context, channel chan<- responseChan, idExpansion int) error {
+	products, err := mkm.client.MKMProductsInExpansion(ctx, idExpansion)
 	if err != nil {
 		return err
 	}
@@ -283,8 +284,8 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	return nil
 }
 
-func (mkm *CardMarketIndex) scrape() error {
-	priceGuide, err := GetPriceGuide(mkm.gameId)
+func (mkm *CardMarketIndex) scrape(ctx context.Context) error {
+	priceGuide, err := GetPriceGuide(ctx, mkm.gameId)
 	if err != nil {
 		return err
 	}
@@ -292,7 +293,7 @@ func (mkm *CardMarketIndex) scrape() error {
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	list, err := mkm.client.Expansions(mkm.gameId)
+	list, err := mkm.client.Expansions(ctx, mkm.gameId)
 	if err != nil {
 		return err
 	}
@@ -308,7 +309,7 @@ func (mkm *CardMarketIndex) scrape() error {
 		wg.Add(1)
 		go func() {
 			for i := range expansions {
-				err := mkm.processEdition(channel, list[i].IdExpansion)
+				err := mkm.processEdition(ctx, channel, list[i].IdExpansion)
 				if err != nil {
 					mkm.printf("expansion %s (id %d) returned %s", list[i].Name, list[i].IdExpansion, err.Error())
 				}
@@ -360,7 +361,7 @@ func (mkm *CardMarketIndex) Inventory() (mtgban.InventoryRecord, error) {
 		return mkm.inventory, nil
 	}
 
-	err := mkm.scrape()
+	err := mkm.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

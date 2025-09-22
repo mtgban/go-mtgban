@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"sync"
@@ -78,7 +79,7 @@ var notSealedComments = []string{
 	"without",
 }
 
-func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProduct int, uuids []string) error {
+func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- responseChan, idProduct int, uuids []string) error {
 	var done bool
 	var page int
 	var foundNF, foundF bool
@@ -92,7 +93,7 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 			entities = MaxEntities
 		}
 
-		articles, err := mkm.client.MKMSimpleArticles(idProduct, true, page, entities)
+		articles, err := mkm.client.MKMSimpleArticles(ctx, idProduct, true, page, entities)
 		if err != nil {
 			return err
 		}
@@ -160,11 +161,11 @@ func (mkm *CardMarketSealed) processProduct(channel chan<- responseChan, idProdu
 	return nil
 }
 
-func (mkm *CardMarketSealed) scrape() error {
+func (mkm *CardMarketSealed) scrape(ctx context.Context) error {
 	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 
-	productList, err := GetProductListSealed(mkm.gameId)
+	productList, err := GetProductListSealed(ctx, mkm.gameId)
 	if err != nil {
 		return err
 	}
@@ -202,7 +203,7 @@ func (mkm *CardMarketSealed) scrape() error {
 
 				mkm.printf("Processing %s (%d/%d)...", co, slices.Index(productIds, idProduct)+1, len(productIds))
 
-				err = mkm.processProduct(channel, idProduct, uuids)
+				err = mkm.processProduct(ctx, channel, idProduct, uuids)
 				if err != nil {
 					mkm.printf("%s (%d) %s", co, idProduct, err.Error())
 					continue
@@ -246,7 +247,7 @@ func (mkm *CardMarketSealed) Inventory() (mtgban.InventoryRecord, error) {
 		return mkm.inventory, nil
 	}
 
-	err := mkm.scrape()
+	err := mkm.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

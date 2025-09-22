@@ -1,8 +1,10 @@
 package cardmarket
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"sort"
 	"strings"
@@ -99,8 +101,14 @@ type PriceGuide struct {
 	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
-func GetPriceGuide(gameId int) ([]PriceGuide, error) {
-	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(priceGuideURL, gameId))
+func GetPriceGuide(ctx context.Context, gameId int) ([]PriceGuide, error) {
+	link := fmt.Sprintf(priceGuideURL, gameId)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -129,16 +137,21 @@ type ProductList struct {
 	DateAdded    string `json:"dateAdded"`
 }
 
-func GetProductListSingles(gameId int) ([]ProductList, error) {
-	return getProductList(gameId, productListSinglesURL)
+func GetProductListSingles(ctx context.Context, gameId int) ([]ProductList, error) {
+	return getProductList(ctx, fmt.Sprintf(productListSinglesURL, gameId))
 }
 
-func GetProductListSealed(gameId int) ([]ProductList, error) {
-	return getProductList(gameId, productListSealedURL)
+func GetProductListSealed(ctx context.Context, gameId int) ([]ProductList, error) {
+	return getProductList(ctx, fmt.Sprintf(productListSealedURL, gameId))
 }
 
-func getProductList(gameId int, link string) ([]ProductList, error) {
-	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(link, gameId))
+func getProductList(ctx context.Context, link string) ([]ProductList, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

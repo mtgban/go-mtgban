@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
@@ -65,8 +66,14 @@ type MKMExpansion struct {
 	IsReleased  bool   `json:"isReleased"`
 }
 
-func (mkm *MKMClient) Expansions(gameId int) ([]MKMExpansion, error) {
-	resp, err := mkm.client.Get(fmt.Sprintf(mkmExpansionsURL, gameId))
+func (mkm *MKMClient) Expansions(ctx context.Context, gameId int) ([]MKMExpansion, error) {
+	link := fmt.Sprintf(mkmExpansionsURL, gameId)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := mkm.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +111,14 @@ type MKMProduct struct {
 	CountFoils    int                `json:"countFoils"`
 }
 
-func (mkm *MKMClient) MKMProduct(id int) (*MKMProduct, error) {
-	resp, err := mkm.client.Get(mkmProductsBaseURL + fmt.Sprint(id))
+func (mkm *MKMClient) MKMProduct(ctx context.Context, id int) (*MKMProduct, error) {
+	link := mkmProductsBaseURL + fmt.Sprint(id)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := mkm.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +140,14 @@ func (mkm *MKMClient) MKMProduct(id int) (*MKMProduct, error) {
 	return &response.Product, nil
 }
 
-func (mkm *MKMClient) MKMProductsInExpansion(id int) ([]MKMProduct, error) {
-	resp, err := mkm.client.Get(mkmExpansionsBaseURL + fmt.Sprint(id) + "/singles")
+func (mkm *MKMClient) MKMProductsInExpansion(ctx context.Context, id int) ([]MKMProduct, error) {
+	link := mkmExpansionsBaseURL + fmt.Sprint(id) + "/singles"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := mkm.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +202,7 @@ type MKMArticle struct {
 	IsAltered bool `json:"isAltered"`
 }
 
-func (mkm *MKMClient) MKMSimpleArticles(id int, onlyEnglish bool, page, maxResults int) ([]MKMArticle, error) {
+func (mkm *MKMClient) MKMSimpleArticles(ctx context.Context, id int, onlyEnglish bool, page, maxResults int) ([]MKMArticle, error) {
 	options := map[string]string{
 		"minCondition": "GD",
 		"minUserScore": "3",
@@ -194,11 +213,11 @@ func (mkm *MKMClient) MKMSimpleArticles(id int, onlyEnglish bool, page, maxResul
 		options["idLanguage"] = "1"
 	}
 
-	return mkm.MKMArticles(id, options, page, maxResults)
+	return mkm.MKMArticles(ctx, id, options, page, maxResults)
 }
 
 // Note that page should start from 0
-func (mkm *MKMClient) MKMArticles(id int, options map[string]string, page, maxResults int) ([]MKMArticle, error) {
+func (mkm *MKMClient) MKMArticles(ctx context.Context, id int, options map[string]string, page, maxResults int) ([]MKMArticle, error) {
 	u, err := url.Parse(mkmArticlesBaseURL + fmt.Sprint(id))
 	if err != nil {
 		return nil, err
@@ -211,7 +230,13 @@ func (mkm *MKMClient) MKMArticles(id int, options map[string]string, page, maxRe
 	params.Set("maxResults", fmt.Sprint(maxResults))
 	u.RawQuery = params.Encode()
 
-	resp, err := mkm.client.Get(u.String())
+	link := u.String()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := mkm.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -18,13 +19,14 @@ func run() int {
 	var output interface{}
 	var err error
 
+	ctx := context.Background()
 	switch *mode {
 	default:
-		output, err = cardmarket.GetPriceGuide(*game)
+		output, err = cardmarket.GetPriceGuide(ctx, *game)
 	case "singles":
-		output, err = cardmarket.GetProductListSingles(*game)
+		output, err = cardmarket.GetProductListSingles(ctx, *game)
 	case "sealed":
-		output, err = cardmarket.GetProductListSealed(*game)
+		output, err = cardmarket.GetProductListSealed(ctx, *game)
 	}
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
