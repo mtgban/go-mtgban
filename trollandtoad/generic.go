@@ -22,7 +22,7 @@ const (
 	buylistURL     = "https://www2.trollandtoad.com/buylist/ajax_scripts/csv-download.php?deptCode="
 	buylistLinkURL = "https://www2.trollandtoad.com/buylist/#!/search/All/"
 
-	GameLorcana = 6
+	GameLorcana = "6"
 )
 
 type TrollAndToadGeneric struct {
@@ -35,10 +35,10 @@ type TrollAndToadGeneric struct {
 	inventoryDate time.Time
 	buylistDate   time.Time
 
-	game int
+	game string
 }
 
-func NewGenericScraper(game int) *TrollAndToadGeneric {
+func NewGenericScraper(game string) *TrollAndToadGeneric {
 	tnt := TrollAndToadGeneric{}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
@@ -274,7 +274,7 @@ func (tnt *TrollAndToadGeneric) Inventory() (mtgban.InventoryRecord, error) {
 }
 
 func (tnt *TrollAndToadGeneric) scrapeBuylist() error {
-	resp, err := cleanhttp.DefaultClient().Get(buylistURL + fmt.Sprint(tnt.game))
+	resp, err := cleanhttp.DefaultClient().Get(buylistURL + tnt.game)
 	if err != nil {
 		return err
 	}
@@ -401,7 +401,7 @@ func (tnt *TrollAndToadGeneric) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &tnt.inventoryDate
 	info.BuylistTimestamp = &tnt.buylistDate
 	switch tnt.game {
-	case 6:
+	case "6":
 		info.Game = mtgban.GameLorcana
 	}
 	return
