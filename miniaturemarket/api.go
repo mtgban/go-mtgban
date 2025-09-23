@@ -77,7 +77,6 @@ func (mm *MMClient) query(start, maxResults int) (*MMSearchResponse, error) {
 	q.Set("p", `categoryPath:"Trading Card Games"`)
 	q.Set("filter", `categoryPath1_fq:"Trading Card Games"`)
 	q.Set("filter", `categoryPath2_fq:"Trading Card Games>Magic the Gathering"`)
-	q.Set("filter", `stock_status_uFilter:"In Stock"`)
 	q.Set("filter", `manufacturer_uFilter:"Wizards of the Coast"`)
 	u.RawQuery = q.Encode()
 

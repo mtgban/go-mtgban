@@ -51,7 +51,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 	resp = resp
 
 	for _, product := range resp.Response.Products {
-		if product.Quantity == 0 {
+		if product.Quantity <= 0 {
 			continue
 		}
 
