@@ -220,8 +220,8 @@ type Seller interface {
 	// scraping the seller gathering the necessary data.
 	Inventory() (InventoryRecord, error)
 
-	// Return some information about the seller
-	Info() ScraperInfo
+	// Seller implements the Scraper interface
+	Scraper
 }
 
 // The base map for Vendor containing a uuid pointing to an array of BuylistEntry
@@ -233,6 +233,6 @@ type Vendor interface {
 	// scraping the vendor gathering the necessary data.
 	Buylist() (BuylistRecord, error)
 
-	// Return some information about the vendor
-	Info() ScraperInfo
+	// Vendor implements the Scraper interface
+	Scraper
 }
