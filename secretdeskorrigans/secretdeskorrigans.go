@@ -231,7 +231,7 @@ func (sdk *SecretDesKorrigans) scrape() error {
 
 	var links []string
 	var titles []string
-	xpath := `ul[class="parent-category list small-12 column across-4  "] li`
+	xpath := `ul.parent-category li`
 	doc.Find(xpath).Each(func(_ int, s *goquery.Selection) {
 		href, _ := s.Find("a").Attr("href")
 		links = append(links, href)
