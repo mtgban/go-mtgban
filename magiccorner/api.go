@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -105,7 +106,7 @@ func (mc *MCClient) GetEditionList(addPromoEd bool) ([]MCEdition, error) {
 
 	var editionList []MCEdition
 	// There is json in this json!
-	err = json.Unmarshal([]byte(blob.Data), &editionList)
+	err = json.NewDecoder(strings.NewReader(blob.Data)).Decode(&editionList)
 	if err != nil {
 		return nil, err
 	}

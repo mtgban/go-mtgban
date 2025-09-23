@@ -3,7 +3,6 @@ package miniaturemarket
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -88,13 +87,8 @@ func (mm *MMClient) query(start, maxResults int) (*MMSearchResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	var search MMSearchResponse
-	err = json.Unmarshal(data, &search)
+	err = json.NewDecoder(resp.Body).Decode(&search)
 	if err != nil {
 		return nil, err
 	}
