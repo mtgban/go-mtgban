@@ -79,13 +79,27 @@ func NewClient() *STKSClient {
 
 // Implement our own retry policy to leverage the internal retry mechanism
 func customCheckRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	data, _ := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	defer resp.Body.Close()
+
+	var reader io.Reader = resp.Body
+	if strings.ToLower(resp.Header.Get("Content-Encoding")) == "gzip" {
+		gzipReader, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return false, err
+		}
+		defer gzipReader.Close()
+		reader = gzipReader
+	}
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return false, err
+	}
+
 	resp.Body = io.NopCloser(bytes.NewBuffer(data))
 	if strings.Contains(string(data), "HTML") || strings.Contains(string(data), "ERROR") {
 		return true, errors.New(string(data))
 	}
-	return false, err
+	return false, nil
 }
 
 // Change user agent before another retry
