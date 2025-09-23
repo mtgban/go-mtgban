@@ -1,6 +1,7 @@
 package manapool
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -42,23 +43,13 @@ const (
 	sealedURL   = "https://manapool.com/api/v1/prices/sealed"
 )
 
-type Client struct {
-	client *http.Client
-}
-
-func NewClient() *Client {
-	mp := Client{}
-	mp.client = cleanhttp.DefaultClient()
-	return &mp
-}
-
-func (mp *Client) GetPriceList() ([]Card, error) {
-	req, err := http.NewRequest("GET", manapoolURL, nil)
+func GetPriceList(ctx context.Context) ([]Card, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, manapoolURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := mp.client.Do(req)
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -78,13 +69,13 @@ func (mp *Client) GetPriceList() ([]Card, error) {
 	return pricelist.Data, nil
 }
 
-func (mp *Client) GetSealedList() ([]Product, error) {
-	req, err := http.NewRequest("GET", sealedURL, nil)
+func GetSealedList(ctx context.Context) ([]Product, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, sealedURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := mp.client.Do(req)
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

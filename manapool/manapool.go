@@ -1,6 +1,7 @@
 package manapool
 
 import (
+	"context"
 	"net/url"
 	"strings"
 	"time"
@@ -29,9 +30,8 @@ func (mp *Manapool) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mp *Manapool) scrape() error {
-	mpClient := NewClient()
-	pricelist, err := mpClient.GetPriceList()
+func (mp *Manapool) scrape(ctx context.Context) error {
+	pricelist, err := GetPriceList(ctx)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (mp *Manapool) Inventory() (mtgban.InventoryRecord, error) {
 		return mp.inventory, nil
 	}
 
-	err := mp.scrape()
+	err := mp.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
