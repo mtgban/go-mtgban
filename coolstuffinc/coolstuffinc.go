@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -103,7 +102,7 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 		if page > 1 {
 			link := "https://www.coolstuffinc.com/sq/" + result.PageId + "?page=" + fmt.Sprint(page)
 
-			resp, err := cleanhttp.DefaultClient().Get(link)
+			resp, err := csi.client.Get(link)
 			if err != nil {
 				continue
 			}
