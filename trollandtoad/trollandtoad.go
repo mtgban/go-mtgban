@@ -28,14 +28,11 @@ type Trollandtoad struct {
 	MaxConcurrency int
 
 	inventory mtgban.InventoryRecord
-
-	client *TNTClient
 }
 
 func NewScraper() *Trollandtoad {
 	tnt := Trollandtoad{}
 	tnt.inventory = mtgban.InventoryRecord{}
-	tnt.client = NewTNTClient()
 	tnt.MaxConcurrency = defaultConcurrency
 	return &tnt
 }

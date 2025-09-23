@@ -35,15 +35,13 @@ type TrollAndToadGeneric struct {
 	inventoryDate time.Time
 	buylistDate   time.Time
 
-	client *TNTClient
-	game   int
+	game int
 }
 
 func NewGenericScraper(game int) *TrollAndToadGeneric {
 	tnt := TrollAndToadGeneric{}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
-	tnt.client = NewTNTClient()
 	tnt.game = game
 
 	tnt.MaxConcurrency = defaultConcurrency
