@@ -2,6 +2,7 @@ package coolstuffinc
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -47,8 +48,13 @@ func NewCSIClient(key string) *CSIClient {
 	return &csi
 }
 
-func (csi *CSIClient) GetPriceList() ([]CSICard, error) {
-	resp, err := csi.client.Get(csiPricelistURL + csi.key)
+func (csi *CSIClient) GetPriceList(ctx context.Context) ([]CSICard, error) {
+	link := csiPricelistURL + csi.key
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := csi.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +101,9 @@ type CSIPriceEntry struct {
 	CreditPrice string `json:"CreditPrice"`
 }
 
-func GetBuylist(game string) ([]CSIPriceEntry, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf(csiBuylistURL, game), http.NoBody)
+func GetBuylist(ctx context.Context, game string) ([]CSIPriceEntry, error) {
+	link := fmt.Sprintf(csiBuylistURL, game)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +131,13 @@ func GetBuylist(game string) ([]CSIPriceEntry, error) {
 }
 
 // Load the list of editions to id used to build links
-func LoadBuylistEditions(game string) (map[string]string, error) {
-	resp, err := cleanhttp.DefaultClient().Get(csiBuylistLink + game)
+func LoadBuylistEditions(ctx context.Context, game string) (map[string]string, error) {
+	link := csiBuylistLink + game
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +176,7 @@ type SearchResult struct {
 }
 
 // Convert the item name to the id and the first page of results
-func Search(game, itemName string, skipOOS bool) (*SearchResult, error) {
+func Search(ctx context.Context, game, itemName string, skipOOS bool) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", "")
 	v.Set("f[Artist][]", "")
@@ -200,7 +212,8 @@ func Search(game, itemName string, skipOOS bool) (*SearchResult, error) {
 	v.Set("resultsPerPage", "50")
 	v.Set("submit", "Search")
 
-	req, err := http.NewRequest(http.MethodPost, "https://www.coolstuffinc.com/sq/", strings.NewReader(v.Encode()))
+	link := "https://www.coolstuffinc.com/sq/"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, strings.NewReader(v.Encode()))
 	if err != nil {
 		return nil, err
 	}

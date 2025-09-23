@@ -2,6 +2,7 @@ package coolstuffinc
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -82,13 +83,13 @@ func (csi *Coolstuffinc) printf(format string, a ...interface{}) {
 	}
 }
 
-func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName string) error {
+func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- responseChan, itemName string) error {
 	skipOOS := !csi.IncludeOOS
 	switch itemName {
 	case "Alpha", "Beta", "Unlimited Edition":
 		skipOOS = false
 	}
-	result, err := Search(csi.game, itemName, skipOOS)
+	result, err := Search(ctx, csi.game, itemName, skipOOS)
 	if err != nil {
 		return err
 	}
@@ -99,8 +100,11 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 
 		if page > 1 {
 			link := "https://www.coolstuffinc.com/sq/" + result.PageId + "?page=" + fmt.Sprint(page)
-
-			resp, err := csi.client.Get(link)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+			if err != nil {
+				continue
+			}
+			resp, err := csi.client.Do(req)
 			if err != nil {
 				continue
 			}
@@ -302,8 +306,13 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 	return nil
 }
 
-func (csi *Coolstuffinc) scrape() error {
-	resp, err := csi.client.Get(csiInventoryURL + csi.game)
+func (csi *Coolstuffinc) scrape(ctx context.Context) error {
+	link := csiInventoryURL + csi.game
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := csi.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -349,7 +358,7 @@ func (csi *Coolstuffinc) scrape() error {
 		go func() {
 			for itemName := range items {
 				csi.printf("Processing %s", itemName)
-				err := csi.processSearch(results, itemName)
+				err := csi.processSearch(ctx, results, itemName)
 				if err != nil {
 					csi.printf("%v for %s", err, itemName)
 				}
@@ -394,7 +403,7 @@ func (csi *Coolstuffinc) Inventory() (mtgban.InventoryRecord, error) {
 		return csi.inventory, nil
 	}
 
-	err := csi.scrape()
+	err := csi.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -403,14 +412,14 @@ func (csi *Coolstuffinc) Inventory() (mtgban.InventoryRecord, error) {
 
 }
 
-func (csi *Coolstuffinc) parseBL() error {
-	edition2id, err := LoadBuylistEditions(csi.game)
+func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
+	edition2id, err := LoadBuylistEditions(ctx, csi.game)
 	if err != nil {
 		return err
 	}
 	csi.printf("Loaded %d editions", len(edition2id))
 
-	products, err := GetBuylist(csi.game)
+	products, err := GetBuylist(ctx, csi.game)
 	if err != nil {
 		return err
 	}
@@ -531,7 +540,7 @@ func (csi *Coolstuffinc) Buylist() (mtgban.BuylistRecord, error) {
 		return csi.buylist, nil
 	}
 
-	err := csi.parseBL()
+	err := csi.parseBL(context.TODO())
 	if err != nil {
 		return nil, err
 	}

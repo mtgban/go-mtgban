@@ -1,6 +1,7 @@
 package coolstuffinc
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -67,8 +68,13 @@ func (csi *CoolstuffincSealed) printf(format string, a ...interface{}) {
 
 const sealedURL = "https://www.coolstuffinc.com/sq/2293832?page=1&sb=price|desc"
 
-func (csi *CoolstuffincSealed) numOfPages() (int, error) {
-	resp, err := csi.client.Get(sealedURL)
+func (csi *CoolstuffincSealed) numOfPages(ctx context.Context) (int, error) {
+	link := sealedURL
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := csi.client.Do(req)
 	if err != nil {
 		return 0, err
 	}
@@ -100,7 +106,7 @@ func (csi *CoolstuffincSealed) numOfPages() (int, error) {
 	return resultsTotal/resultsPerPage + 1, nil
 }
 
-func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, page int) error {
+func (csi *CoolstuffincSealed) processSealedPage(ctx context.Context, channel chan<- responseChan, page int) error {
 	csi.printf("Processing page %d", page)
 
 	u, err := url.Parse(sealedURL)
@@ -112,7 +118,12 @@ func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, pa
 	v.Set("page", fmt.Sprint(page))
 	u.RawQuery = v.Encode()
 
-	resp, err := csi.client.Get(u.String())
+	link := u.String()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := csi.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -168,8 +179,8 @@ func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, pa
 	return nil
 }
 
-func (csi *CoolstuffincSealed) scrape() error {
-	totalPages, err := csi.numOfPages()
+func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
+	totalPages, err := csi.numOfPages(ctx)
 	if err != nil {
 		return err
 	}
@@ -183,7 +194,7 @@ func (csi *CoolstuffincSealed) scrape() error {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				err := csi.processSealedPage(results, page)
+				err := csi.processSealedPage(ctx, results, page)
 				if err != nil {
 					csi.printf("page %d: %s", page, err.Error())
 				}
@@ -220,7 +231,7 @@ func (csi *CoolstuffincSealed) Inventory() (mtgban.InventoryRecord, error) {
 		return csi.inventory, nil
 	}
 
-	err := csi.scrape()
+	err := csi.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -228,8 +239,8 @@ func (csi *CoolstuffincSealed) Inventory() (mtgban.InventoryRecord, error) {
 	return csi.inventory, nil
 }
 
-func (csi *CoolstuffincSealed) parseBL() error {
-	products, err := GetBuylist(csi.game)
+func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
+	products, err := GetBuylist(ctx, csi.game)
 	if err != nil {
 		return err
 	}
@@ -297,7 +308,7 @@ func (csi *CoolstuffincSealed) Buylist() (mtgban.BuylistRecord, error) {
 		return csi.buylist, nil
 	}
 
-	err := csi.parseBL()
+	err := csi.parseBL(context.TODO())
 	if err != nil {
 		return nil, err
 	}
