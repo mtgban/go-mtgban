@@ -75,9 +75,9 @@ func (mm *MMClient) query(start, maxResults int) (*MMSearchResponse, error) {
 	q.Set("selectedfacet", "true")
 	q.Set("pagetype", "boolean")
 	q.Set("p", `categoryPath:"Trading Card Games"`)
-	q.Set("filter", `categoryPath1_fq:"Trading Card Games"`)
-	q.Set("filter", `categoryPath2_fq:"Trading Card Games>Magic the Gathering"`)
-	q.Set("filter", `manufacturer_uFilter:"Wizards of the Coast"`)
+	q.Add("filter", `categoryPath1_fq:"Trading Card Games"`)
+	q.Add("filter", `categoryPath2_fq:"Trading Card Games>Magic the Gathering"`)
+	q.Add("filter", `manufacturer_uFilter:"Wizards of the Coast"`)
 	u.RawQuery = q.Encode()
 
 	resp, err := mm.client.Get(u.String())
