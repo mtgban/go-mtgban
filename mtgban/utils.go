@@ -2,7 +2,8 @@ package mtgban
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -10,8 +11,9 @@ import (
 
 type LogCallbackFunc func(format string, a ...interface{})
 
-const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json"
+const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
 
+// Retrieve the USD exchange rate (you need to multiply this value to obtain USD)
 func GetExchangeRate(currency string) (float64, error) {
 	resp, err := cleanhttp.DefaultClient().Get(exchangeRateURL)
 	if err != nil {
@@ -20,19 +22,19 @@ func GetExchangeRate(currency string) (float64, error) {
 	defer resp.Body.Close()
 
 	var response struct {
-		EUR map[string]float64 `json:"eur"`
+		USD map[string]float64 `json:"usd"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return 0, err
 	}
 
-	rate, found := response.EUR["usd"]
+	rate, found := response.USD[strings.ToLower(currency)]
 	if !found {
-		return 0, errors.New("usd not found")
+		return 0, fmt.Errorf("%s not found in response", strings.ToLower(currency))
 	}
 
-	return rate, nil
+	return 1 / rate, nil
 }
 
 func DateEqual(date1, date2 time.Time) bool {
