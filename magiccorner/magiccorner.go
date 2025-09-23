@@ -378,6 +378,5 @@ func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mc.inventoryDate
 	info.BuylistTimestamp = &mc.buylistDate
-	info.CreditMultiplier = 1.07145
 	return
 }
