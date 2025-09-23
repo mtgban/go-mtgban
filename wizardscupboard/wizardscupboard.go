@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gocolly/colly"
+	"github.com/gocolly/colly/v2"
+
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -93,7 +94,8 @@ func (wc *Wizardscupboard) scrape() error {
 
 			err := c.Visit(e.Request.AbsoluteURL(link))
 			if err != nil {
-				if err != colly.ErrAlreadyVisited {
+				var ave *colly.AlreadyVisitedError
+				if !errors.As(err, &ave) {
 					wc.printf("error while linking: %s", err.Error())
 				}
 			}
