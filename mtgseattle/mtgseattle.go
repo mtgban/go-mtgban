@@ -1,6 +1,7 @@
 package mtgseattle
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -61,8 +62,13 @@ func (ms *MTGSeattle) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode string) error {
-	resp, err := ms.client.Get("https://www.mtgseattle.com" + product + "?layout=false")
+func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- responseChan, product, mode string) error {
+	link := "https://www.mtgseattle.com" + product + "?layout=false"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := ms.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -91,7 +97,7 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 		})
 
 		for _, link := range links {
-			err := ms.processProduct(channel, link, mode)
+			err := ms.processProduct(ctx, channel, link, mode)
 			if err != nil {
 				ms.printf("%s", err.Error())
 			}
@@ -276,15 +282,20 @@ func (ms *MTGSeattle) processProduct(channel chan<- responseChan, product, mode 
 		return nil
 	}
 
-	return ms.processProduct(channel, next, mode)
+	return ms.processProduct(ctx, channel, next, mode)
 }
 
-func (ms *MTGSeattle) scrape(mode string) error {
+func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 	link := inventoryURL
 	if mode == modeBuylist {
 		link = buylistURL
 	}
-	resp, err := ms.client.Get(link)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := ms.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -317,7 +328,7 @@ func (ms *MTGSeattle) scrape(mode string) error {
 		wg.Add(1)
 		go func() {
 			for product := range products {
-				err := ms.processProduct(results, product, mode)
+				err := ms.processProduct(ctx, results, product, mode)
 				if err != nil {
 					ms.printf("%v", err)
 				}
@@ -363,7 +374,7 @@ func (ms *MTGSeattle) Inventory() (mtgban.InventoryRecord, error) {
 		return ms.inventory, nil
 	}
 
-	err := ms.scrape(modeInventory)
+	err := ms.scrape(context.TODO(), modeInventory)
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +387,7 @@ func (ms *MTGSeattle) Buylist() (mtgban.BuylistRecord, error) {
 		return ms.buylist, nil
 	}
 
-	err := ms.scrape(modeBuylist)
+	err := ms.scrape(context.TODO(), modeBuylist)
 	if err != nil {
 		return nil, err
 	}
