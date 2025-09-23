@@ -1,9 +1,11 @@
 package sealedev
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
@@ -142,9 +144,13 @@ func getCT0fees(price float64) float64 {
 	return 0.64
 }
 
-func loadPrices(sig, selected string) (*BANPriceResponse, error) {
+func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, error) {
 	link := fmt.Sprintf(banAPIURL, selected, sig)
-	resp, err := cleanhttp.DefaultClient().Get(link)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}

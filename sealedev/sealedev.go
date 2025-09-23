@@ -1,6 +1,7 @@
 package sealedev
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -363,7 +364,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 	return out, allTheErrors
 }
 
-func (ss *SealedEVScraper) scrape() error {
+func (ss *SealedEVScraper) scrape(ctx context.Context) error {
 	var selected string
 
 	ss.printf("Loading products")
@@ -413,7 +414,7 @@ func (ss *SealedEVScraper) scrape() error {
 	}
 
 	ss.printf("Loading BAN prices")
-	prices, err := loadPrices(ss.banpriceKey, selected)
+	prices, err := loadPrices(ctx, ss.banpriceKey, selected)
 	if err != nil {
 		return err
 	}
@@ -462,7 +463,7 @@ func (ss *SealedEVScraper) Inventory() (mtgban.InventoryRecord, error) {
 		return ss.inventory, nil
 	}
 
-	err := ss.scrape()
+	err := ss.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -475,7 +476,7 @@ func (ss *SealedEVScraper) Buylist() (mtgban.BuylistRecord, error) {
 		return ss.buylist, nil
 	}
 
-	err := ss.scrape()
+	err := ss.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
