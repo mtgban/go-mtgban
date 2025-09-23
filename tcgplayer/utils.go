@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -112,8 +113,8 @@ type TCGSYP struct {
 	MaxQty      int
 }
 
-func LoadSyp(auth string) ([]TCGSYP, error) {
-	req, err := http.NewRequest(http.MethodGet, SYPCSVURL, nil)
+func LoadSyp(ctx context.Context, auth string) ([]TCGSYP, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, SYPCSVURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}

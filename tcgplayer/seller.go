@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -86,7 +87,7 @@ var conditionMap = map[string]string{
 	"Damaged":           "PO",
 }
 
-func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page int) error {
+func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- responseChan, page int) error {
 	for _, finish := range []string{"Normal", "Foil"} {
 		response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
 		if err == nil {
@@ -99,7 +100,7 @@ func (tcg *TCGSellerInventory) processEntry(channel chan<- responseChan, page in
 	return nil
 }
 
-func (tcg *TCGSellerInventory) processEdition(channel chan<- responseChan, setName string, count int) error {
+func (tcg *TCGSellerInventory) processEdition(ctx context.Context, channel chan<- responseChan, setName string, count int) error {
 	for i := 0; i <= count/tcg.requestSize; i++ {
 		for _, finish := range []string{"Normal", "Foil"} {
 			response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
@@ -183,7 +184,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 	return nil
 }
 
-func (tcg *TCGSellerInventory) scrape() error {
+func (tcg *TCGSellerInventory) scrape(ctx context.Context) error {
 	ret, err := tcg.totalItems()
 	if err != nil {
 		return err
@@ -203,7 +204,7 @@ func (tcg *TCGSellerInventory) scrape() error {
 			go func() {
 				for page := range pages {
 					tcg.printf("processing page %d/%d", page, ret.TotalResults/tcg.requestSize)
-					err := tcg.processEntry(results, page)
+					err := tcg.processEntry(ctx, results, page)
 					if err != nil {
 						tcg.printf("%v", err)
 					}
@@ -229,7 +230,7 @@ func (tcg *TCGSellerInventory) scrape() error {
 			go func() {
 				for pair := range pairs {
 					tcg.printf("processing edition %s", pair.Name)
-					err := tcg.processEdition(results, pair.Name, pair.Count)
+					err := tcg.processEdition(ctx, results, pair.Name, pair.Count)
 					if err != nil {
 						tcg.printf("%v", err)
 					}
@@ -268,7 +269,7 @@ func (tcg *TCGSellerInventory) Inventory() (mtgban.InventoryRecord, error) {
 		return tcg.inventory, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

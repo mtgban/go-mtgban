@@ -2,6 +2,7 @@ package tcgplayer
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -46,7 +47,7 @@ type TCGAutocartResponse struct {
 	}
 }
 
-func (tcg *TCGAutoClient) AddProductToCart(sellerKey string, skuId, qty int, isDirect bool) (*TCGAutocartResponse, error) {
+func (tcg *TCGAutoClient) AddProductToCart(ctx context.Context, sellerKey string, skuId, qty int, isDirect bool) (*TCGAutocartResponse, error) {
 	var params TCGAutocartRequest
 	params.SKU = skuId
 	params.SellerKey = sellerKey
@@ -60,7 +61,13 @@ func (tcg *TCGAutoClient) AddProductToCart(sellerKey string, skuId, qty int, isD
 
 	link := fmt.Sprintf(tcgAdd2CartURL, tcg.cartId)
 
-	resp, err := tcg.client.Post(link, "application/json", bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := tcg.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

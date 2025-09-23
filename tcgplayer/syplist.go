@@ -1,6 +1,7 @@
 package tcgplayer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -33,7 +34,7 @@ func NewScraperSYP(auth string) *TCGSYPList {
 	return &tcg
 }
 
-func (tcg *TCGSYPList) scrape() error {
+func (tcg *TCGSYPList) scrape(ctx context.Context) error {
 	tcg.printf("Retrieving skus")
 	uuid2skusMap := tcg.SKUsData
 	if uuid2skusMap == nil {
@@ -49,7 +50,7 @@ func (tcg *TCGSYPList) scrape() error {
 		}
 	}
 
-	sypList, err := LoadSyp(tcg.auth)
+	sypList, err := LoadSyp(ctx, tcg.auth)
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func (tcg *TCGSYPList) Buylist() (mtgban.BuylistRecord, error) {
 		return tcg.buylist, nil
 	}
 
-	err := tcg.scrape()
+	err := tcg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

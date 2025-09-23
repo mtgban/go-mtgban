@@ -163,7 +163,7 @@ const (
 	defaultLimitLastestSales      = 25
 )
 
-func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, error) {
+func LatestSales(ctx context.Context, tcgProductId string, flags ...bool) (*latestSalesResponse, error) {
 	link := fmt.Sprintf(tcgLatestSalesURL, tcgProductId)
 
 	var params latestSalesRequest
@@ -190,7 +190,7 @@ func LatestSales(tcgProductId string, flags ...bool) (*latestSalesResponse, erro
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, link, bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +223,7 @@ const (
 	MaxGlobalScrapingValue = 8000
 )
 
-func SellerKeyExists(sellerKey string) bool {
+func SellerKeyExists(ctx context.Context, sellerKey string) bool {
 	client := cleanhttp.DefaultClient()
 
 	// Do not follow redirects
@@ -231,7 +231,13 @@ func SellerKeyExists(sellerKey string) bool {
 		return http.ErrUseLastResponse
 	}
 
-	resp, err := client.Get("https://shop.tcgplayer.com/sellerfeedback/" + sellerKey)
+	link := "https://shop.tcgplayer.com/sellerfeedback/" + sellerKey
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return false
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return false
 	}
@@ -262,7 +268,7 @@ type SellerSearchResponse struct {
 	} `json:"results"`
 }
 
-func SellerName2ID(sellerName string) (string, error) {
+func SellerName2ID(ctx context.Context, sellerName string) (string, error) {
 	if sellerName == "" {
 		return "", errors.New("missing seller name")
 	}
@@ -279,7 +285,7 @@ func SellerName2ID(sellerName string) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, SellersPageURL, bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, SellersPageURL, bytes.NewReader(payload))
 	if err != nil {
 		return "", err
 	}
@@ -687,8 +693,8 @@ type UserResponse struct {
 
 const tcgUserDataURL = "https://mpapi.tcgplayer.com/v2/user?isGuest=false"
 
-func (tcg *CookieClient) Get(link string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, link, nil)
+func (tcg *CookieClient) Get(ctx context.Context, link string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -698,8 +704,8 @@ func (tcg *CookieClient) Get(link string) (*http.Response, error) {
 	return tcg.client.Do(req)
 }
 
-func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, link, body)
+func (tcg *CookieClient) Post(ctx context.Context, link, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, body)
 	if err != nil {
 		return nil, err
 	}
@@ -710,8 +716,8 @@ func (tcg *CookieClient) Post(link, contentType string, body io.Reader) (*http.R
 	return tcg.client.Do(req)
 }
 
-func (tcg *CookieClient) Delete(link string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodDelete, link, nil)
+func (tcg *CookieClient) Delete(ctx context.Context, link string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -721,8 +727,8 @@ func (tcg *CookieClient) Delete(link string) (*http.Response, error) {
 	return tcg.client.Do(req)
 }
 
-func (tcg *CookieClient) GetUserData() (*UserData, error) {
-	resp, err := tcg.Get(tcgUserDataURL)
+func (tcg *CookieClient) GetUserData(ctx context.Context) (*UserData, error) {
+	resp, err := tcg.Get(ctx, tcgUserDataURL)
 	if err != nil {
 		return nil, err
 	}
@@ -748,7 +754,7 @@ func (tcg *CookieClient) GetUserData() (*UserData, error) {
 
 const tcgCreateCartURL = "https://mpgateway.tcgplayer.com/v1/cart/create/usercart"
 
-func CreateCartKey(userId string) (string, error) {
+func CreateCartKey(ctx context.Context, userId string) (string, error) {
 	var params struct {
 		ExternalUserId string `json:"externalUserId"`
 	}
@@ -759,7 +765,7 @@ func CreateCartKey(userId string) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, tcgCreateCartURL, bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tcgCreateCartURL, bytes.NewReader(payload))
 	if err != nil {
 		return "", err
 	}
@@ -786,10 +792,10 @@ func CreateCartKey(userId string) (string, error) {
 	return response.Results[0].CartKey, nil
 }
 
-func (tcg *CookieClient) EmptyCart(cartKey string) error {
+func (tcg *CookieClient) EmptyCart(ctx context.Context, cartKey string) error {
 	link := fmt.Sprintf("https://mpgateway.tcgplayer.com/v1/cart/%s/items/all", cartKey)
 
-	resp, err := tcg.Delete(link)
+	resp, err := tcg.Delete(ctx, link)
 	if err != nil {
 		return err
 	}
@@ -822,13 +828,13 @@ const (
 	addressUpdateURL = "https://mpgateway.tcgplayer.com/v2/useraddressbooks/update"
 )
 
-func (tcg *CookieClient) SetAddress(address AddressConfig) error {
+func (tcg *CookieClient) SetAddress(ctx context.Context, address AddressConfig) error {
 	payload, err := json.Marshal(&address)
 	if err != nil {
 		return err
 	}
 
-	resp, err := tcg.Post(addressUpdateURL, "application/json", bytes.NewReader(payload))
+	resp, err := tcg.Post(ctx, addressUpdateURL, "application/json", bytes.NewReader(payload))
 	if err != nil {
 		return err
 	}
