@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
-	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"github.com/mtgban/go-tcgplayer"
 )
 
 type TCGPlayerGeneric struct {

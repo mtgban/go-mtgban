@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"github.com/mtgban/go-tcgplayer"
 )
 
 var tokenIds = map[int]string{

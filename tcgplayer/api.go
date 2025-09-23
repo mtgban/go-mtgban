@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"github.com/mtgban/go-tcgplayer"
 )
 
 const (

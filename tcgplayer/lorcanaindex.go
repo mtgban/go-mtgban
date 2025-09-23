@@ -12,7 +12,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
-	tcgplayer "github.com/mtgban/go-tcgplayer"
+	"github.com/mtgban/go-tcgplayer"
 )
 
 type TCGLorcanaIndex struct {
