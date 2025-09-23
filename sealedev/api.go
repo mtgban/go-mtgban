@@ -37,7 +37,7 @@ const (
 	MaxSinglePrice = 10000.0
 )
 
-func getPrice(price *BanPrice, uuid string) float64 {
+func getPrice(uuid string, price *BanPrice) float64 {
 	if price == nil {
 		return 0
 	}
@@ -71,15 +71,15 @@ func getPrice(price *BanPrice, uuid string) float64 {
 	return result
 }
 
-func (r *BANPriceResponse) getRetail(source, uuid string) float64 {
-	return getPrice(r.Retail[uuid][source], uuid)
+func (r *BANPriceResponse) getRetail(uuid, source string) float64 {
+	return getPrice(uuid, r.Retail[uuid][source])
 }
 
-func (r *BANPriceResponse) getBuylist(source, uuid string) float64 {
-	return getPrice(r.Buylist[uuid][source], uuid)
+func (r *BANPriceResponse) getBuylist(uuid, source string) float64 {
+	return getPrice(uuid, r.Buylist[uuid][source])
 }
 
-func (r *BANPriceResponse) setRetail(destination, uuid string, price float64) {
+func (r *BANPriceResponse) setRetail(uuid, store string, price float64) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
 		return
@@ -93,14 +93,14 @@ func (r *BANPriceResponse) setRetail(destination, uuid string, price float64) {
 	}
 
 	// Rebuild the price entry
-	r.Retail[uuid][destination] = &BanPrice{
+	r.Retail[uuid][store] = &BanPrice{
 		Conditions: map[string]float64{
 			"NM" + tag: price,
 		},
 	}
 }
 
-func (r *BANPriceResponse) setBuylist(destination, uuid string, price float64) {
+func (r *BANPriceResponse) setBuylist(uuid, store string, price float64) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
 		return
@@ -114,7 +114,7 @@ func (r *BANPriceResponse) setBuylist(destination, uuid string, price float64) {
 	}
 
 	// Rebuild the price entry
-	r.Buylist[uuid][destination] = &BanPrice{
+	r.Buylist[uuid][store] = &BanPrice{
 		Conditions: map[string]float64{
 			"NM" + tag: price,
 		},
@@ -169,9 +169,9 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 	// Remove outliers from Direct
 	uuids := mtgmatcher.GetUUIDs()
 	for _, uuid := range uuids {
-		tcgLow := response.getRetail("TCGLow", uuid)
-		tcgMarket := response.getRetail("TCGMarket", uuid)
-		directNet := response.getBuylist("TCGDirectNet", uuid)
+		tcgLow := response.getRetail(uuid, "TCGLow")
+		tcgMarket := response.getRetail(uuid, "TCGMarket")
+		directNet := response.getBuylist(uuid, "TCGDirectNet")
 
 		// If TCG Direct (net) is fully missing, try assigning Market and fallback to Low
 		if directNet == 0 {
@@ -211,10 +211,10 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 			}
 		}
 
-		ct0 := response.getRetail("CT0", uuid)
+		ct0 := response.getRetail(uuid, "CT0")
 		ct0 -= getCT0fees(ct0)
 		if ct0 > 0 {
-			response.setRetail("CT0", uuid, ct0)
+			response.setRetail(uuid, "CT0", ct0)
 		}
 	}
 
@@ -222,7 +222,7 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 	for _, uuid := range uuids {
 		for _, category := range []map[string]map[string]*BanPrice{response.Retail, response.Buylist} {
 			for store := range category[uuid] {
-				if getPrice(category[uuid][store], uuid) < BulkThreshold {
+				if getPrice(uuid, category[uuid][store]) < BulkThreshold {
 					delete(category[uuid], store)
 				}
 			}
@@ -242,7 +242,7 @@ func valueInBooster(uuids []string, prices map[string]map[string]*BanPrice, sour
 		}
 
 		// Add to the final value
-		total += getPrice(prices[uuid][source], uuid) * probability
+		total += getPrice(uuid, prices[uuid][source]) * probability
 	}
 	return total
 }
