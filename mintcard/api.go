@@ -1,6 +1,7 @@
 package mintcard
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -41,11 +42,11 @@ type MintClient struct {
 	token  string
 }
 
-func NewMintClient() (*MintClient, error) {
+func NewMintClient(ctx context.Context) (*MintClient, error) {
 	mint := MintClient{}
 	mint.client = cleanhttp.DefaultClient()
 
-	req, err := http.NewRequest("POST", mintPricelistURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "POST", mintPricelistURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +73,8 @@ func NewMintClient() (*MintClient, error) {
 	return &mint, nil
 }
 
-func (mint *MintClient) GetProductList() (MintData, error) {
-	req, err := http.NewRequest("POST", mintPricelistURL, nil)
+func (mint *MintClient) GetProductList(ctx context.Context) (MintData, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, mintPricelistURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}

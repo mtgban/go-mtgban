@@ -1,6 +1,7 @@
 package mintcard
 
 import (
+	"context"
 	"errors"
 	"net/url"
 	"strconv"
@@ -141,12 +142,12 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, language, ed
 	}
 }
 
-func (mint *MTGMintCard) scrape() error {
-	mintClient, err := NewMintClient()
+func (mint *MTGMintCard) scrape(ctx context.Context) error {
+	mintClient, err := NewMintClient(ctx)
 	if err != nil {
 		return err
 	}
-	productList, err := mintClient.GetProductList()
+	productList, err := mintClient.GetProductList(ctx)
 	if err != nil {
 		return err
 	}
@@ -178,7 +179,7 @@ func (mint *MTGMintCard) Inventory() (mtgban.InventoryRecord, error) {
 		return mint.inventory, nil
 	}
 
-	err := mint.scrape()
+	err := mint.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +193,7 @@ func (mint *MTGMintCard) Buylist() (mtgban.BuylistRecord, error) {
 		return mint.buylist, nil
 	}
 
-	err := mint.scrape()
+	err := mint.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
