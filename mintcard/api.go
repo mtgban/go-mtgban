@@ -65,7 +65,7 @@ func NewMintClient() (*MintClient, error) {
 		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 	if authData["Ack"] != "Success" {
-		return nil, fmt.Errorf("invalid request: %w", err)
+		return nil, fmt.Errorf("invalid request: %v", authData)
 	}
 	mint.token = authData["Token"]
 
@@ -93,7 +93,7 @@ func (mint *MintClient) GetProductList() (MintData, error) {
 		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 	if productlist.Ack != "Success" {
-		return nil, fmt.Errorf("invalid request")
+		return nil, fmt.Errorf("invalid request: %v", productlist)
 	}
 
 	return productlist.Products, nil

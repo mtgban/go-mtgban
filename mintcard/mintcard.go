@@ -42,7 +42,7 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 		"Used": "MP",
 	}[condition]
 	if cond == "" {
-		mint.printf("Unknown condition tag", condition)
+		mint.printf("Unknown condition tag %s", condition)
 		return
 	}
 	if strings.Contains(card.Name, "(HP)") {
