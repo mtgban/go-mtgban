@@ -90,11 +90,13 @@ var conditionMap = map[string]string{
 func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- responseChan, page int) error {
 	for _, finish := range []string{"Normal", "Foil"} {
 		response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
-		if err == nil {
-			err = tcg.processInventory(channel, response.Results[0].Results)
-			if err != nil {
-				tcg.printf("%s %s", finish, err.Error())
-			}
+		if err != nil {
+			tcg.printf("InventoryForSeller %s %s", finish, err.Error())
+			continue
+		}
+		err = tcg.processInventory(channel, response.Results[0].Results)
+		if err != nil {
+			tcg.printf("processInventory %s %s", finish, err.Error())
 		}
 	}
 	return nil
@@ -104,11 +106,13 @@ func (tcg *TCGSellerInventory) processEdition(ctx context.Context, channel chan<
 	for i := 0; i <= count/tcg.requestSize; i++ {
 		for _, finish := range []string{"Normal", "Foil"} {
 			response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
-			if err == nil {
-				err = tcg.processInventory(channel, response.Results[0].Results)
-				if err != nil {
-					tcg.printf("%s", err.Error())
-				}
+			if err != nil {
+				tcg.printf("InventoryForSeller %s %s", finish, err.Error())
+				continue
+			}
+			err = tcg.processInventory(channel, response.Results[0].Results)
+			if err != nil {
+				tcg.printf("processInventory %s %s", finish, err.Error())
 			}
 		}
 	}
