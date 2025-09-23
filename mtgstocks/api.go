@@ -126,7 +126,7 @@ func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) 
 	req.Header.Set("Referer", "https://www.mtgstocks.com/")
 	req.Header.Set("Origin", "https://www.mtgstocks.com")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
-	req.Header.Set("Accept-Encoding", "gzip, deflate, br, zstd")
+	req.Header.Set("Accept-Encoding", "gzip, identity")
 	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("DNT", "1")
 
@@ -136,14 +136,18 @@ func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) 
 	}
 	defer resp.Body.Close()
 
-	gzipReader, err := gzip.NewReader(resp.Body)
-	if err != nil {
-		return nil, err
+	var reader io.Reader = resp.Body
+	if strings.ToLower(resp.Header.Get("Content-Encoding")) == "gzip" {
+		gzipReader, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		defer gzipReader.Close()
+		reader = gzipReader
 	}
-	defer gzipReader.Close()
 
 	var interests MTGStocksInterests
-	err = json.NewDecoder(gzipReader).Decode(&interests)
+	err = json.NewDecoder(reader).Decode(&interests)
 	if err != nil {
 		return nil, err
 	}
