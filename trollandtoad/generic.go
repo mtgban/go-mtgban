@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	colly "github.com/gocolly/colly/v2"
-	queue "github.com/gocolly/colly/v2/queue"
+	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/queue"
 	"github.com/hashicorp/go-cleanhttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"

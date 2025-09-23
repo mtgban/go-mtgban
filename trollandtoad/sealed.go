@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	colly "github.com/gocolly/colly/v2"
-	queue "github.com/gocolly/colly/v2/queue"
+	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/queue"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
 
@@ -173,8 +173,13 @@ const (
 )
 
 func (tnt *TrollandtoadSealed) scrape(ctx context.Context) error {
-	//todo ctx
-	resp, err := cleanhttp.DefaultClient().Get(categorySealedPage + tntOptions)
+	link := categorySealedPage + tntOptions
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return err
 	}
