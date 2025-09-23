@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/go-cleanhttp"
 )
 
 const tcgAdd2CartURL = "https://mpgateway.tcgplayer.com/v1/cart/%s/item/add"

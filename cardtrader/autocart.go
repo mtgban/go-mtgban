@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )

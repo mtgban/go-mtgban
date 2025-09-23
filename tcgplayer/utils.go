@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strconv"
 
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
