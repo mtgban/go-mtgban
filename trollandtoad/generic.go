@@ -1,10 +1,12 @@
 package trollandtoad
 
 import (
+	"context"
 	"encoding/csv"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -54,7 +56,7 @@ func (tnt *TrollAndToadGeneric) printf(format string, a ...interface{}) {
 	}
 }
 
-func (tnt *TrollAndToadGeneric) parsePages(link string, lastPage int) error {
+func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, lastPage int) error {
 	channel := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -63,6 +65,8 @@ func (tnt *TrollAndToadGeneric) parsePages(link string, lastPage int) error {
 		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
 
 		colly.Async(true),
+
+		colly.StdlibContext(ctx),
 	)
 
 	c.SetClient(cleanhttp.DefaultClient())
@@ -199,8 +203,13 @@ func (tnt *TrollAndToadGeneric) parsePages(link string, lastPage int) error {
 	return nil
 }
 
-func (tnt *TrollAndToadGeneric) scrapePages(link string) error {
-	resp, err := cleanhttp.DefaultClient().Get(link)
+func (tnt *TrollAndToadGeneric) scrapePages(ctx context.Context, link string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return err
 	}
@@ -224,15 +233,20 @@ func (tnt *TrollAndToadGeneric) scrapePages(link string) error {
 		lastPage = 1
 	}
 	tnt.printf("Parsing %d pages from %s", lastPage, link)
-	return tnt.parsePages(link, lastPage)
+	return tnt.parsePages(ctx, link, lastPage)
 }
 
-func (tnt *TrollAndToadGeneric) scrape() error {
+func (tnt *TrollAndToadGeneric) scrape(ctx context.Context) error {
 	var link string
 	if tnt.game == GameLorcana {
 		link = "https://www.trollandtoad.com/disney-lorcana/19773"
 	}
-	resp, err := cleanhttp.DefaultClient().Get(link)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return err
 	}
@@ -252,7 +266,7 @@ func (tnt *TrollAndToadGeneric) scrape() error {
 	})
 
 	for _, page := range pages {
-		err := tnt.scrapePages("https://www.trollandtoad.com" + page + tntOptions)
+		err := tnt.scrapePages(ctx, "https://www.trollandtoad.com"+page+tntOptions)
 		if err != nil {
 			return err
 		}
@@ -265,7 +279,7 @@ func (tnt *TrollAndToadGeneric) Inventory() (mtgban.InventoryRecord, error) {
 		return tnt.inventory, nil
 	}
 
-	err := tnt.scrape()
+	err := tnt.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -273,8 +287,15 @@ func (tnt *TrollAndToadGeneric) Inventory() (mtgban.InventoryRecord, error) {
 	return tnt.inventory, nil
 }
 
-func (tnt *TrollAndToadGeneric) scrapeBuylist() error {
-	resp, err := cleanhttp.DefaultClient().Get(buylistURL + tnt.game)
+func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
+	link := buylistURL + tnt.game
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return err
 	}
@@ -387,7 +408,7 @@ func (tnt *TrollAndToadGeneric) Buylist() (mtgban.BuylistRecord, error) {
 		return tnt.buylist, nil
 	}
 
-	err := tnt.scrapeBuylist()
+	err := tnt.scrapeBuylist(context.TODO())
 	if err != nil {
 		return nil, err
 	}

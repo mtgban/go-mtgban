@@ -1,6 +1,7 @@
 package trollandtoad
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -63,7 +64,7 @@ func (tnt *TrollandtoadSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func (tnt *TrollandtoadSealed) parsePages(link string, lastPage int) error {
+func (tnt *TrollandtoadSealed) parsePages(ctx context.Context, link string, lastPage int) error {
 	channel := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -72,6 +73,8 @@ func (tnt *TrollandtoadSealed) parsePages(link string, lastPage int) error {
 		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
 
 		colly.Async(true),
+
+		colly.StdlibContext(ctx),
 	)
 
 	c.SetClient(cleanhttp.DefaultClient())
@@ -169,7 +172,8 @@ const (
 	categorySealedPage = "https://www.trollandtoad.com/magic-the-gathering/magic-the-gathering-sealed-product/909"
 )
 
-func (tnt *TrollandtoadSealed) scrape() error {
+func (tnt *TrollandtoadSealed) scrape(ctx context.Context) error {
+	//todo ctx
 	resp, err := cleanhttp.DefaultClient().Get(categorySealedPage + tntOptions)
 	if err != nil {
 		return err
@@ -194,7 +198,7 @@ func (tnt *TrollandtoadSealed) scrape() error {
 		lastPage = 1
 	}
 	tnt.printf("Parsing %d pages from sealed", lastPage)
-	return tnt.parsePages(categorySealedPage, lastPage)
+	return tnt.parsePages(ctx, categorySealedPage, lastPage)
 }
 
 func (tnt *TrollandtoadSealed) Inventory() (mtgban.InventoryRecord, error) {
@@ -202,7 +206,7 @@ func (tnt *TrollandtoadSealed) Inventory() (mtgban.InventoryRecord, error) {
 		return tnt.inventory, nil
 	}
 
-	err := tnt.scrape()
+	err := tnt.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

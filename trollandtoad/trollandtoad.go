@@ -1,8 +1,10 @@
 package trollandtoad
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -49,7 +51,7 @@ func (tnt *Trollandtoad) printf(format string, a ...interface{}) {
 	}
 }
 
-func (tnt *Trollandtoad) parsePages(link string, lastPage int) error {
+func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage int) error {
 	channel := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -58,6 +60,8 @@ func (tnt *Trollandtoad) parsePages(link string, lastPage int) error {
 		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
 
 		colly.Async(true),
+
+		colly.StdlibContext(ctx),
 	)
 
 	c.SetClient(cleanhttp.DefaultClient())
@@ -191,8 +195,13 @@ func (tnt *Trollandtoad) parsePages(link string, lastPage int) error {
 	return nil
 }
 
-func (tnt *Trollandtoad) scrapePages(link, edition string) error {
-	resp, err := cleanhttp.DefaultClient().Get(link)
+func (tnt *Trollandtoad) scrapePages(ctx context.Context, link, edition string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return err
 	}
@@ -216,15 +225,21 @@ func (tnt *Trollandtoad) scrapePages(link, edition string) error {
 		lastPage = 1
 	}
 	tnt.printf("Parsing %d pages from %s", lastPage, edition)
-	return tnt.parsePages(link, lastPage)
+	return tnt.parsePages(ctx, link, lastPage)
 }
 
 const (
 	categoryPage = "https://www.trollandtoad.com/magic-the-gathering/1041"
 )
 
-func (tnt *Trollandtoad) scrape() error {
-	resp, err := cleanhttp.DefaultClient().Get(categoryPage)
+func (tnt *Trollandtoad) scrape(ctx context.Context) error {
+	link := categoryPage
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return err
 	}
@@ -271,7 +286,7 @@ func (tnt *Trollandtoad) scrape() error {
 	})
 
 	for i, page := range pages {
-		err := tnt.scrapePages("https://www.trollandtoad.com"+page+tntOptions, titles[i])
+		err := tnt.scrapePages(ctx, "https://www.trollandtoad.com"+page+tntOptions, titles[i])
 		if err != nil {
 			tnt.printf("%s error: %s", titles[i], err.Error())
 		}
@@ -287,7 +302,7 @@ func (tnt *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
 		return tnt.inventory, nil
 	}
 
-	err := tnt.scrape()
+	err := tnt.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
