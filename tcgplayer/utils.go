@@ -137,7 +137,7 @@ func LoadSyp(auth string) ([]TCGSYP, error) {
 			continue
 		}
 
-		if len(record) < 8 {
+		if len(record) < 9 {
 			continue
 		}
 
