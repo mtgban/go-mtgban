@@ -1,6 +1,7 @@
 package wizardscupboard
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -47,7 +48,7 @@ type respChan struct {
 	entry  *mtgban.InventoryEntry
 }
 
-func (wc *Wizardscupboard) scrape() error {
+func (wc *Wizardscupboard) scrape(ctx context.Context) error {
 	channel := make(chan respChan)
 
 	c := colly.NewCollector(
@@ -63,6 +64,7 @@ func (wc *Wizardscupboard) scrape() error {
 		),
 
 		colly.Async(true),
+		colly.StdlibContext(ctx),
 	)
 
 	// Callback for links on scraped pages (edition names)
@@ -226,7 +228,7 @@ func (wc *Wizardscupboard) Inventory() (mtgban.InventoryRecord, error) {
 		return wc.inventory, nil
 	}
 
-	err := wc.scrape()
+	err := wc.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
