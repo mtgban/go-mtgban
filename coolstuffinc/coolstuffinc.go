@@ -25,8 +25,6 @@ const (
 
 	csiInventoryURL = "https://www.coolstuffinc.com/sq/?s="
 
-	defaultBuylistPage = "https://www.coolstuffinc.com/main_buylist_display.php"
-
 	GameMagic             = "mtg"
 	GameLorcana           = "lorcana"
 	GameYugioh            = "yugioh"
