@@ -32,7 +32,7 @@ const (
 	csiPricelistURL = "https://www.coolstuffinc.com/gateway_json.php?k="
 
 	csiBuylistURL  = "https://www.coolstuffinc.com/GeneratedFiles/SellList/Section-%s.json"
-	csiBuylistLink = "https://www.coolstuffinc.com/main_selllist.php?s=%s"
+	csiBuylistLink = "https://www.coolstuffinc.com/main_selllist.php?s="
 )
 
 type CSIClient struct {
@@ -125,7 +125,7 @@ func GetBuylist(game string) ([]CSIPriceEntry, error) {
 
 // Load the list of editions to id used to build links
 func LoadBuylistEditions(game string) (map[string]string, error) {
-	resp, err := cleanhttp.DefaultClient().Get(fmt.Sprintf(csiBuylistLink, game))
+	resp, err := cleanhttp.DefaultClient().Get(csiBuylistLink + game)
 	if err != nil {
 		return nil, err
 	}

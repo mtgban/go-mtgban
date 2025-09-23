@@ -422,7 +422,7 @@ func (csi *Coolstuffinc) parseBL() error {
 		}
 
 		// Build link early to help debug
-		u, _ := url.Parse(fmt.Sprintf(csiBuylistLink, csi.game))
+		u, _ := url.Parse(csiBuylistLink)
 		v := url.Values{}
 		v.Set("s", csi.game)
 		v.Set("a", "1")
