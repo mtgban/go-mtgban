@@ -18,8 +18,7 @@ import (
 
 const (
 	EVAverageRepetition = 5000
-
-	EVMaxRepickCount = 10
+	EVFastRepetition    = 10
 
 	defaultConcurrency = 8
 
@@ -168,7 +167,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 
 	repeats := EVAverageRepetition
 	if ss.FastMode {
-		repeats = 10
+		repeats = EVFastRepetition
 	}
 	if !mtgmatcher.SealedIsRandom(setCode, productUUID) {
 		repeats = 1
