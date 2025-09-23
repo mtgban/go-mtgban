@@ -273,6 +273,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			customFactor = factor
 		}
 
+		initialFactor := customFactor
 		for _, invEntry := range invEntries {
 			if slices.Contains(filterConditions, invEntry.Conditions) {
 				continue
@@ -296,10 +297,11 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 					continue
 				}
 
-				rate *= factor
+				customFactor = initialFactor * factor
 			}
 
-			price := invEntry.Price * rate
+			// Apply the optional previously established factor
+			price := invEntry.Price * customFactor * rate
 
 			// When invEntry is not NM, we need to account for conditions
 			if invEntry.Conditions != "NM" {
@@ -321,9 +323,6 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 			if useTrades {
 				blPrice *= vendor.Info().CreditMultiplier
 			}
-
-			// Apply the optional previously established factor
-			blPrice *= customFactor
 
 			if price == 0 || blPrice == 0 {
 				continue
@@ -503,6 +502,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 			customFactor = factor
 		}
 
+		initialFactor := customFactor
 		for _, refEntry := range refEntries {
 			if slices.Contains(filterConditions, refEntry.Conditions) {
 				continue
@@ -516,7 +516,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 				if skip {
 					continue
 				}
-				customFactor *= factor
+				customFactor = initialFactor * factor
 			}
 
 			for _, invEntry := range invEntries {
@@ -530,6 +530,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 					continue
 				}
 
+				// Apply the optional previously established factor
 				refPrice := refEntry.Price * customFactor
 				price := invEntry.Price
 
