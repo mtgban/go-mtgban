@@ -2,6 +2,7 @@ package cardkingdom
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -120,27 +121,27 @@ const (
 	ckBuylistEmptyURL   = "https://www.cardkingdom.com/sellcart/empty_cart"
 )
 
-func (ck *CookieClient) SetCartInventory(ckId, cond string, qty int) (*CartResponse, error) {
-	return ck.setCart(ckInventoryAddURL, ckId, cond, qty)
+func (ck *CookieClient) SetCartInventory(ctx context.Context, ckId, cond string, qty int) (*CartResponse, error) {
+	return ck.setCart(ctx, ckInventoryAddURL, ckId, cond, qty)
 }
 
-func (ck *CookieClient) SetCartBuylist(ckId string, qty int) (*CartResponse, error) {
-	return ck.setCart(ckBuylistAddURL, ckId, "NM", qty)
+func (ck *CookieClient) SetCartBuylist(ctx context.Context, ckId string, qty int) (*CartResponse, error) {
+	return ck.setCart(ctx, ckBuylistAddURL, ckId, "NM", qty)
 }
 
-func (ck *CookieClient) EmptyCartInventory(cartToken string) error {
-	return ck.emptyCart(ckInventoryEmptyURL, cartToken)
+func (ck *CookieClient) EmptyCartInventory(ctx context.Context, cartToken string) error {
+	return ck.emptyCart(ctx, ckInventoryEmptyURL, cartToken)
 }
 
-func (ck *CookieClient) EmptyCartBuylist(cartToken string) error {
-	return ck.emptyCart(ckBuylistEmptyURL, cartToken)
+func (ck *CookieClient) EmptyCartBuylist(ctx context.Context, cartToken string) error {
+	return ck.emptyCart(ctx, ckBuylistEmptyURL, cartToken)
 }
 
-func (ck *CookieClient) emptyCart(link, cartToken string) error {
+func (ck *CookieClient) emptyCart(ctx context.Context, link, cartToken string) error {
 	v := url.Values{}
 	v.Set("_token", cartToken)
 
-	resp, err := ck.Post(link, "application/x-www-form-urlencoded", strings.NewReader(v.Encode()))
+	resp, err := ck.Post(ctx, link, "application/x-www-form-urlencoded", strings.NewReader(v.Encode()))
 	if err != nil {
 		return err
 	}
@@ -153,7 +154,7 @@ func (ck *CookieClient) emptyCart(link, cartToken string) error {
 	return nil
 }
 
-func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (*CartResponse, error) {
+func (ck *CookieClient) setCart(ctx context.Context, link, ckId, cond string, qty int) (*CartResponse, error) {
 	style, found := condMap[cond]
 	if found {
 		cond = style
@@ -170,7 +171,7 @@ func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (*CartResponse
 		return nil, err
 	}
 
-	resp, err := ck.Post(link, "application/json", bytes.NewReader(reqBody))
+	resp, err := ck.Post(ctx, link, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, err
 	}
@@ -189,8 +190,8 @@ func (ck *CookieClient) setCart(link, ckId, cond string, qty int) (*CartResponse
 	return &cartResponse, nil
 }
 
-func (ck *CookieClient) Get(link string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, link, nil)
+func (ck *CookieClient) Get(ctx context.Context, link string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +203,8 @@ func (ck *CookieClient) Get(link string) (*http.Response, error) {
 	return ck.client.Do(req)
 }
 
-func (ck *CookieClient) Post(url, contentType string, reader io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, url, reader)
+func (ck *CookieClient) Post(ctx context.Context, link, contentType string, reader io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, reader)
 	if err != nil {
 		return nil, err
 	}
