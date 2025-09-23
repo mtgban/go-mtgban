@@ -1,6 +1,7 @@
 package mtgstocks
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"time"
@@ -105,20 +106,20 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	return nil
 }
 
-func (stks *MTGStocks) scrape() error {
-	averagesRegular, err := stks.client.AverageInterests(false)
+func (stks *MTGStocks) scrape(ctx context.Context) error {
+	averagesRegular, err := stks.client.AverageInterests(ctx, false)
 	if err != nil {
 		stks.printf("averages regular " + err.Error())
 	}
-	averagesFoil, err := stks.client.AverageInterests(true)
+	averagesFoil, err := stks.client.AverageInterests(ctx, true)
 	if err != nil {
 		stks.printf("averages foil " + err.Error())
 	}
-	marketsRegular, err := stks.client.MarketInterests(false)
+	marketsRegular, err := stks.client.MarketInterests(ctx, false)
 	if err != nil {
 		stks.printf("market regular " + err.Error())
 	}
-	marketsFoil, err := stks.client.MarketInterests(true)
+	marketsFoil, err := stks.client.MarketInterests(ctx, true)
 	if err != nil {
 		stks.printf("market foil" + err.Error())
 	}
@@ -193,7 +194,7 @@ func (stks *MTGStocks) Inventory() (mtgban.InventoryRecord, error) {
 		return stks.inventory, nil
 	}
 
-	err := stks.scrape()
+	err := stks.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

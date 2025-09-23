@@ -94,23 +94,23 @@ func customPrepareRetry(req *http.Request) error {
 	return nil
 }
 
-func (s *STKSClient) AverageInterests(foil bool) ([]StocksInterest, error) {
-	out, err := s.query(stksAverageURL, foil)
+func (s *STKSClient) AverageInterests(ctx context.Context, foil bool) ([]StocksInterest, error) {
+	out, err := s.query(ctx, stksAverageURL, foil)
 	if err != nil {
 		return nil, err
 	}
 	return out.Interests, nil
 }
 
-func (s *STKSClient) MarketInterests(foil bool) ([]StocksInterest, error) {
-	out, err := s.query(stksMarketURL, foil)
+func (s *STKSClient) MarketInterests(ctx context.Context, foil bool) ([]StocksInterest, error) {
+	out, err := s.query(ctx, stksMarketURL, foil)
 	if err != nil {
 		return nil, err
 	}
 	return out.Interests, nil
 }
 
-func (s *STKSClient) query(link string, foil bool) (*MTGStocksInterests, error) {
+func (s *STKSClient) query(ctx context.Context, link string, foil bool) (*MTGStocksInterests, error) {
 	extra := "/regular"
 	if foil {
 		extra = "/foil"
