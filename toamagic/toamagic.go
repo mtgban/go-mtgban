@@ -1,6 +1,7 @@
 package toamagic
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -52,8 +53,13 @@ func (toa *TOAMagic) printf(format string, a ...interface{}) {
 	}
 }
 
-func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath string) error {
-	resp, err := toa.client.Get("https://www.toamagic.com" + productPath + "?layout=false&filter_by_stock=in-stock")
+func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- responseChan, productPath string) error {
+	link := "https://www.toamagic.com" + productPath + "?layout=false&filter_by_stock=in-stock"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := toa.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -83,7 +89,7 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath str
 		})
 
 		for _, link := range links {
-			err := toa.processProduct(channel, link)
+			err := toa.processProduct(ctx, channel, link)
 			if err != nil {
 				toa.printf("%s", err.Error())
 			}
@@ -201,12 +207,16 @@ func (toa *TOAMagic) processProduct(channel chan<- responseChan, productPath str
 		return nil
 	}
 
-	return toa.processProduct(channel, next)
+	return toa.processProduct(ctx, channel, next)
 }
 
-func (toa *TOAMagic) scrape() error {
+func (toa *TOAMagic) scrape(ctx context.Context) error {
 	link := inventoryURL
-	resp, err := toa.client.Get(link)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := toa.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -237,7 +247,7 @@ func (toa *TOAMagic) scrape() error {
 		wg.Add(1)
 		go func() {
 			for productPath := range products {
-				err := toa.processProduct(results, productPath)
+				err := toa.processProduct(ctx, results, productPath)
 				if err != nil {
 					toa.printf("%v", err)
 				}
@@ -277,7 +287,7 @@ func (toa *TOAMagic) Inventory() (mtgban.InventoryRecord, error) {
 		return toa.inventory, nil
 	}
 
-	err := toa.scrape()
+	err := toa.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
