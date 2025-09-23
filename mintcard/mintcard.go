@@ -35,7 +35,7 @@ func (mint *MTGMintCard) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, edition, setCode, editionId string) {
+func (mint *MTGMintCard) processEntry(card Card, condition, finish, language, edition, setCode, editionId string) {
 	cond := map[string]string{
 		"Mint": "NM",
 		"SP":   "SP",
@@ -54,7 +54,7 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 
 	link := "https://www.mtgmintcard.com/index.php?main_page=product_info&products_id=" + card.ID
 
-	theCard, err := preprocess(card.Name, card.Number, finish, langauge, edition, setCode)
+	theCard, err := preprocess(card.Name, card.Number, finish, language, edition, setCode)
 	if err != nil {
 		if !errors.Is(err, mtgmatcher.ErrUnsupported) {
 			mint.printf("%v", err)
@@ -72,7 +72,7 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, langauge, ed
 		}
 		mint.printf("%v", err)
 		mint.printf("%q", theCard)
-		mint.printf("%s|%s|%s|%s|%s|%s", card.Name, card.Number, finish, langauge, edition, setCode)
+		mint.printf("%s|%s|%s|%s|%s|%s", card.Name, card.Number, finish, language, edition, setCode)
 		mint.printf("%s", link)
 
 		var alias *mtgmatcher.AliasingError
@@ -154,12 +154,12 @@ func (mint *MTGMintCard) scrape() error {
 	mint.printf("Found %d editions", len(productList))
 
 	for edition, product := range productList {
-		for langauge, finishes := range product.Cards {
+		for language, finishes := range product.Cards {
 			for finish, conditions := range finishes {
 				for cond, rarities := range conditions {
 					for _, cards := range rarities {
 						for _, card := range cards {
-							mint.processEntry(card, cond, finish, langauge, edition, product.Abbreviation, product.EditionId)
+							mint.processEntry(card, cond, finish, language, edition, product.Abbreviation, product.EditionId)
 						}
 					}
 				}
