@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"sort"
 	"strconv"
@@ -13,8 +14,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -55,16 +56,17 @@ type Coolstuffinc struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	httpclient *http.Client
-	game       string
+	client *http.Client
+	game   string
 }
 
 func NewScraper(game string) *Coolstuffinc {
 	csi := Coolstuffinc{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	csi.httpclient = http.NewClient()
-	csi.httpclient.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	csi.client = client.StandardClient()
 	csi.MaxConcurrency = defaultConcurrency
 	csi.game = game
 	return &csi
@@ -304,7 +306,7 @@ func (csi *Coolstuffinc) processSearch(results chan<- responseChan, itemName str
 }
 
 func (csi *Coolstuffinc) scrape() error {
-	resp, err := csi.httpclient.Get(csiInventoryURL + csi.game)
+	resp, err := csi.client.Get(csiInventoryURL + csi.game)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package toamagic
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -11,7 +12,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/PuerkitoBio/goquery"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -27,15 +28,16 @@ type TOAMagic struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewScraper() *TOAMagic {
 	toa := TOAMagic{}
 	toa.inventory = mtgban.InventoryRecord{}
 	toa.MaxConcurrency = defaultConcurrency
-	toa.client = retryablehttp.NewClient()
-	toa.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	toa.client = client.StandardClient()
 	return &toa
 }
 

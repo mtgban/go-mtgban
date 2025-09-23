@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (

@@ -2,6 +2,7 @@ package secretdeskorrigans
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -11,7 +12,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/PuerkitoBio/goquery"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -29,7 +30,7 @@ type SecretDesKorrigans struct {
 
 	exchangeRate float64
 
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewScraper() (*SecretDesKorrigans, error) {
@@ -41,8 +42,9 @@ func NewScraper() (*SecretDesKorrigans, error) {
 		return nil, err
 	}
 	sdk.exchangeRate = rate
-	sdk.client = retryablehttp.NewClient()
-	sdk.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	sdk.client = client.StandardClient()
 	return &sdk, nil
 }
 

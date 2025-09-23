@@ -3,6 +3,7 @@ package hareruya
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -12,7 +13,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/PuerkitoBio/goquery"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -37,7 +38,7 @@ type Hareruya struct {
 	buylist     mtgban.BuylistRecord
 	buylistDate time.Time
 
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewScraper() (*Hareruya, error) {
@@ -45,8 +46,9 @@ func NewScraper() (*Hareruya, error) {
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	ha.MaxConcurrency = defaultConcurrency
-	ha.client = retryablehttp.NewClient()
-	ha.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	ha.client = client.StandardClient()
 	rate, err := mtgban.GetExchangeRate("JPY")
 	if err != nil {
 		return nil, err

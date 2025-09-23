@@ -12,19 +12,20 @@ import (
 )
 
 type CardSphereClient struct {
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewCardSphereClient(token string) *CardSphereClient {
 	cs := CardSphereClient{}
-	cs.client = retryablehttp.NewClient()
-	cs.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
 	// The api is very sensitive to multiple concurrent requests,
 	// This backoff strategy lets the system chill out a bit before retrying
-	cs.client.Backoff = retryablehttp.LinearJitterBackoff
-	cs.client.RetryWaitMin = 2 * time.Second
-	cs.client.RetryWaitMax = 10 * time.Second
-	cs.client.RetryMax = 20
+	client.Backoff = retryablehttp.LinearJitterBackoff
+	client.RetryWaitMin = 2 * time.Second
+	client.RetryWaitMax = 10 * time.Second
+	client.RetryMax = 20
+	cs.client = client.StandardClient()
 
 	jar, _ := cookiejar.New(nil)
 
@@ -41,7 +42,7 @@ func NewCardSphereClient(token string) *CardSphereClient {
 	u.RawQuery = ""
 	jar.SetCookies(u, cookies)
 
-	cs.client.HTTPClient.Jar = jar
+	cs.client.Jar = jar
 	return &cs
 }
 
@@ -91,7 +92,7 @@ func (cs *CardSphereClient) GetOfferList(offset int) ([]CardSphereOfferList, err
 	v.Set("offset", fmt.Sprint(offset))
 	u.RawQuery = v.Encode()
 
-	req, err := retryablehttp.NewRequest(http.MethodGet, u.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return nil, err
 	}

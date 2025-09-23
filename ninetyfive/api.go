@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -50,13 +50,14 @@ type NFPrice map[string]map[string]struct {
 }
 
 type NFClient struct {
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewNFClient() *NFClient {
 	nf := NFClient{}
-	nf.client = retryablehttp.NewClient()
-	nf.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	nf.client = client.StandardClient()
 	return &nf
 }
 
@@ -155,7 +156,7 @@ func (nf *NFClient) getFile(name, separator string) ([]byte, error) {
 
 	req.Header.Set("User-Agent", staticUA)
 
-	resp, err := nf.client.StandardClient().Do(req)
+	resp, err := nf.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

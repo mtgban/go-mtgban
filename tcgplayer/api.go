@@ -12,7 +12,7 @@ import (
 	"time"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	tcgplayer "github.com/mtgban/go-tcgplayer"
 )
@@ -450,13 +450,14 @@ type SellerInventoryResult struct {
 }
 
 type SellerClient struct {
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewSellerClient() *SellerClient {
 	tcg := SellerClient{}
-	tcg.client = retryablehttp.NewClient()
-	tcg.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	tcg.client = client.StandardClient()
 	return &tcg
 }
 

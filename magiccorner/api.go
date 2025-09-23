@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type MCEdition struct {
@@ -74,8 +75,9 @@ type MCClient struct {
 
 func NewMCClient() *MCClient {
 	mc := MCClient{}
-	mc.client = http.NewClient()
-	mc.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	mc.client = client.StandardClient()
 	return &mc
 }
 

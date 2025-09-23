@@ -3,6 +3,7 @@ package coolstuffinc
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -29,16 +30,17 @@ type CoolstuffincSealed struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	httpclient *http.Client
-	game       string
+	client *http.Client
+	game   string
 }
 
 func NewScraperSealed() *CoolstuffincSealed {
 	csi := CoolstuffincSealed{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
-	csi.httpclient = http.NewClient()
-	csi.httpclient.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	csi.client = client.StandardClient()
 	csi.MaxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
@@ -66,7 +68,7 @@ func (csi *CoolstuffincSealed) printf(format string, a ...interface{}) {
 const sealedURL = "https://www.coolstuffinc.com/sq/2293832?page=1&sb=price|desc"
 
 func (csi *CoolstuffincSealed) numOfPages() (int, error) {
-	resp, err := csi.httpclient.Get(sealedURL)
+	resp, err := csi.client.Get(sealedURL)
 	if err != nil {
 		return 0, err
 	}
@@ -110,7 +112,7 @@ func (csi *CoolstuffincSealed) processSealedPage(channel chan<- responseChan, pa
 	v.Set("page", fmt.Sprint(page))
 	u.RawQuery = v.Encode()
 
-	resp, err := csi.httpclient.Get(u.String())
+	resp, err := csi.client.Get(u.String())
 	if err != nil {
 		return err
 	}

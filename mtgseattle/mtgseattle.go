@@ -2,6 +2,7 @@ package mtgseattle
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -11,7 +12,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	"github.com/PuerkitoBio/goquery"
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -34,7 +35,7 @@ type MTGSeattle struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	client *retryablehttp.Client
+	client *http.Client
 }
 
 func NewScraper() *MTGSeattle {
@@ -42,8 +43,9 @@ func NewScraper() *MTGSeattle {
 	ms.inventory = mtgban.InventoryRecord{}
 	ms.buylist = mtgban.BuylistRecord{}
 	ms.MaxConcurrency = defaultConcurrency
-	ms.client = retryablehttp.NewClient()
-	ms.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	ms.client = client.StandardClient()
 	return &ms
 }
 

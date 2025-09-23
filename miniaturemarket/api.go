@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type MMProduct struct {
@@ -39,8 +40,9 @@ const (
 
 func NewMMClient() *MMClient {
 	mm := MMClient{}
-	mm.client = http.NewClient()
-	mm.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	mm.client = client.StandardClient()
 	return &mm
 }
 

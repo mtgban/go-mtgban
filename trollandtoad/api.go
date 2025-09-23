@@ -3,9 +3,10 @@ package trollandtoad
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 	"net/url"
 
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type tntParam struct {
@@ -48,8 +49,9 @@ const (
 
 func NewTNTClient() *TNTClient {
 	tnt := TNTClient{}
-	tnt.client = http.NewClient()
-	tnt.client.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	tnt.client = client.StandardClient()
 	return &tnt
 }
 

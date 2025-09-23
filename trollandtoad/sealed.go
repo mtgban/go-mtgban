@@ -2,6 +2,7 @@ package trollandtoad
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -10,7 +11,7 @@ import (
 	colly "github.com/gocolly/colly/v2"
 	queue "github.com/gocolly/colly/v2/queue"
 	"github.com/hashicorp/go-cleanhttp"
-	http "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -29,15 +30,16 @@ type TrollandtoadSealed struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
-	httpclient *http.Client
+	client *http.Client
 }
 
 func NewScraperSealed() *TrollandtoadSealed {
 	tnt := TrollandtoadSealed{}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
-	tnt.httpclient = http.NewClient()
-	tnt.httpclient.Logger = nil
+	client := retryablehttp.NewClient()
+	client.Logger = nil
+	tnt.client = client.StandardClient()
 	tnt.MaxConcurrency = defaultConcurrency
 
 	tnt.productMap = map[string]string{}
