@@ -1,6 +1,7 @@
 package ninetyfive
 
 import (
+	"context"
 	"errors"
 	"maps"
 	"strings"
@@ -182,8 +183,8 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 	return nil
 }
 
-func (nf *Ninetyfive) getAllCards() (NFCard, error) {
-	list, err := nf.client.getIndexList()
+func (nf *Ninetyfive) getAllCards(ctx context.Context) (NFCard, error) {
+	list, err := nf.client.getIndexList(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +197,7 @@ func (nf *Ninetyfive) getAllCards() (NFCard, error) {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				cards, err := nf.client.getCards(page)
+				cards, err := nf.client.getCards(ctx, page)
 				if err != nil {
 					nf.printf("%s: %s", page, err.Error())
 					continue
@@ -225,8 +226,8 @@ func (nf *Ninetyfive) getAllCards() (NFCard, error) {
 	return allCards, nil
 }
 
-func (nf *Ninetyfive) scrape(mode string) error {
-	allCards, err := nf.getAllCards()
+func (nf *Ninetyfive) scrape(ctx context.Context, mode string) error {
+	allCards, err := nf.getAllCards(ctx)
 	if err != nil {
 		return err
 	}
@@ -234,9 +235,9 @@ func (nf *Ninetyfive) scrape(mode string) error {
 
 	var allPrices NFPrice
 	if mode == "retail" {
-		allPrices, err = nf.client.getPrices()
+		allPrices, err = nf.client.getPrices(ctx)
 	} else {
-		allPrices, err = nf.client.getBuyPrices()
+		allPrices, err = nf.client.getBuyPrices(ctx)
 	}
 	if err != nil {
 		return err
@@ -251,7 +252,7 @@ func (nf *Ninetyfive) Inventory() (mtgban.InventoryRecord, error) {
 		return nf.inventory, nil
 	}
 
-	err := nf.scrape("retail")
+	err := nf.scrape(context.TODO(), "retail")
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +265,7 @@ func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
 		return nf.buylist, nil
 	}
 
-	err := nf.scrape("buylist")
+	err := nf.scrape(context.TODO(), "buylist")
 	if err != nil {
 		return nil, err
 	}

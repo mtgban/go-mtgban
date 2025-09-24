@@ -1,6 +1,7 @@
 package ninetyfive
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -61,8 +62,8 @@ func NewNFClient() *NFClient {
 	return &nf
 }
 
-func (nf *NFClient) getIndexList() ([]string, error) {
-	data, err := nf.getFile("card_index", "[")
+func (nf *NFClient) getIndexList(ctx context.Context) ([]string, error) {
+	data, err := nf.getFile(ctx, "card_index", "[")
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +77,8 @@ func (nf *NFClient) getIndexList() ([]string, error) {
 	return list, nil
 }
 
-func (nf *NFClient) getPrices() (NFPrice, error) {
-	data, err := nf.getFile("sku_index", "[")
+func (nf *NFClient) getPrices(ctx context.Context) (NFPrice, error) {
+	data, err := nf.getFile(ctx, "sku_index", "[")
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func (nf *NFClient) getPrices() (NFPrice, error) {
 		return nil, err
 	}
 
-	data, err = nf.getFile(list[0], "{")
+	data, err = nf.getFile(ctx, list[0], "{")
 	if err != nil {
 		return nil, err
 	}
@@ -102,8 +103,8 @@ func (nf *NFClient) getPrices() (NFPrice, error) {
 	return prices, nil
 }
 
-func (nf *NFClient) getBuyPrices() (NFPrice, error) {
-	data, err := nf.getFile("price_index", "[")
+func (nf *NFClient) getBuyPrices(ctx context.Context) (NFPrice, error) {
+	data, err := nf.getFile(ctx, "price_index", "[")
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +115,7 @@ func (nf *NFClient) getBuyPrices() (NFPrice, error) {
 		return nil, err
 	}
 
-	data, err = nf.getFile(list[0], "{")
+	data, err = nf.getFile(ctx, list[0], "{")
 	if err != nil {
 		return nil, err
 	}
@@ -128,8 +129,8 @@ func (nf *NFClient) getBuyPrices() (NFPrice, error) {
 	return prices, nil
 }
 
-func (nf *NFClient) getCards(name string) (NFCard, error) {
-	data, err := nf.getFile(name, "{")
+func (nf *NFClient) getCards(ctx context.Context, name string) (NFCard, error) {
+	data, err := nf.getFile(ctx, name, "{")
 	if err != nil {
 		return nil, err
 	}
@@ -143,13 +144,13 @@ func (nf *NFClient) getCards(name string) (NFCard, error) {
 	return card, nil
 }
 
-func (nf *NFClient) getFile(name, separator string) ([]byte, error) {
+func (nf *NFClient) getFile(ctx context.Context, name, separator string) ([]byte, error) {
 	u, err := url.Parse(baseURL + "/" + name + ".js")
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return nil, err
 	}
