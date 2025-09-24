@@ -1,6 +1,7 @@
 package secretdeskorrigans
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -59,8 +60,13 @@ func (sdk *SecretDesKorrigans) printf(format string, a ...interface{}) {
 	}
 }
 
-func (sdk *SecretDesKorrigans) processProduct(channel chan<- responseChan, productPath string) error {
-	resp, err := sdk.client.Get("https://www.lesecretdeskorrigans.com" + productPath + "?layout=false&filter_by_stock=in-stock")
+func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<- responseChan, productPath string) error {
+	link := "https://www.lesecretdeskorrigans.com" + productPath + "?layout=false&filter_by_stock=in-stock"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := sdk.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -92,7 +98,7 @@ func (sdk *SecretDesKorrigans) processProduct(channel chan<- responseChan, produ
 		})
 
 		for _, link := range links {
-			err := sdk.processProduct(channel, link)
+			err := sdk.processProduct(ctx, channel, link)
 			if err != nil {
 				sdk.printf("%s", err.Error())
 			}
@@ -213,12 +219,16 @@ func (sdk *SecretDesKorrigans) processProduct(channel chan<- responseChan, produ
 		return nil
 	}
 
-	return sdk.processProduct(channel, next)
+	return sdk.processProduct(ctx, channel, next)
 }
 
-func (sdk *SecretDesKorrigans) scrape() error {
+func (sdk *SecretDesKorrigans) scrape(ctx context.Context) error {
 	link := inventoryURL
-	resp, err := sdk.client.Get(link)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := sdk.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -249,7 +259,7 @@ func (sdk *SecretDesKorrigans) scrape() error {
 		wg.Add(1)
 		go func() {
 			for productPath := range products {
-				err := sdk.processProduct(results, productPath)
+				err := sdk.processProduct(ctx, results, productPath)
 				if err != nil {
 					sdk.printf("%v", err)
 				}
@@ -286,7 +296,7 @@ func (sdk *SecretDesKorrigans) Inventory() (mtgban.InventoryRecord, error) {
 		return sdk.inventory, nil
 	}
 
-	err := sdk.scrape()
+	err := sdk.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
