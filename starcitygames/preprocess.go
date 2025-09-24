@@ -85,7 +85,7 @@ func fixupSetCode(setCode string) string {
 // * SGL-MTG-PWSB-PCA_115-ENN1
 func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	fields := strings.Split(SKU, "-")
-	if len(fields) < 4 {
+	if len(fields) < 5 || len(fields[4]) < 3 {
 		return nil, fmt.Errorf("Malformed SKU: %s", SKU)
 	}
 
