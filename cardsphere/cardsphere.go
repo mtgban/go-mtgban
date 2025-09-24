@@ -1,6 +1,7 @@
 package cardsphere
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -51,8 +52,8 @@ type responseChan struct {
 	blEntry *mtgban.BuylistEntry
 }
 
-func (cs *Cardsphere) processPage(results chan<- responseChan, offset int) error {
-	offers, err := cs.client.GetOfferList(offset)
+func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseChan, offset int) error {
+	offers, err := cs.client.GetOfferList(ctx, offset)
 	if err != nil {
 		return err
 	}
@@ -136,7 +137,7 @@ func (cs *Cardsphere) processPage(results chan<- responseChan, offset int) error
 	return nil
 }
 
-func (cs *Cardsphere) parseBL() error {
+func (cs *Cardsphere) parseBL(ctx context.Context) error {
 	results := make(chan responseChan)
 	offsets := make(chan int)
 	var wg sync.WaitGroup
@@ -145,7 +146,7 @@ func (cs *Cardsphere) parseBL() error {
 		wg.Add(1)
 		go func() {
 			for offset := range offsets {
-				err := cs.processPage(results, offset)
+				err := cs.processPage(ctx, results, offset)
 				if err != nil {
 					cs.printf("offset %d: %s", offset, err.Error())
 				}
@@ -204,7 +205,7 @@ func (cs *Cardsphere) Buylist() (mtgban.BuylistRecord, error) {
 		return cs.buylist, nil
 	}
 
-	err := cs.parseBL()
+	err := cs.parseBL(context.TODO())
 	if err != nil {
 		return nil, err
 	}

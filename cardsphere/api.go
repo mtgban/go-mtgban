@@ -1,6 +1,7 @@
 package cardsphere
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -83,7 +84,7 @@ type csError struct {
 
 const csURL = "https://www.cardsphere.com/rest/v1/offers?offset=0&order=minrel&absge=50&country=USMIL,UM,US,CA&kind=S&language=EN"
 
-func (cs *CardSphereClient) GetOfferList(offset int) ([]CardSphereOfferList, error) {
+func (cs *CardSphereClient) GetOfferList(ctx context.Context, offset int) ([]CardSphereOfferList, error) {
 	u, err := url.Parse(csURL)
 	if err != nil {
 		return nil, err
@@ -92,7 +93,7 @@ func (cs *CardSphereClient) GetOfferList(offset int) ([]CardSphereOfferList, err
 	v.Set("offset", fmt.Sprint(offset))
 	u.RawQuery = v.Encode()
 
-	req, err := http.NewRequest(http.MethodGet, u.String(), http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return nil, err
 	}
