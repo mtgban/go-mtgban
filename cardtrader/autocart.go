@@ -1,12 +1,14 @@
 package cardtrader
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-cleanhttp"
@@ -18,25 +20,35 @@ type CTLoggedClient struct {
 	client *http.Client
 }
 
-func NewCTLoggedClient(user, pass string) (*CTLoggedClient, error) {
+func NewCTLoggedClient(ctx context.Context, user, pass string) (*CTLoggedClient, error) {
 	ct := CTLoggedClient{}
 	ct.client = cleanhttp.DefaultClient()
 
 	jar, _ := cookiejar.New(nil)
 	ct.client.Jar = jar
 
-	token, err := ct.NewToken()
+	token, err := ct.NewToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := ct.client.PostForm("https://www.cardtrader.com/users/sign_in?locale=en", url.Values{
+	q := url.Values{
 		"utf8":               {"✓"},
 		"authenticity_token": {token},
 		"user[email]":        {user},
 		"user[password]":     {pass},
 		"user[remember_me]":  {"true"},
-	})
+	}
+	payload := strings.NewReader(q.Encode())
+
+	link := "https://www.cardtrader.com/users/sign_in?locale=en"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, payload)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +57,14 @@ func NewCTLoggedClient(user, pass string) (*CTLoggedClient, error) {
 	return &ct, nil
 }
 
-func (ct *CTLoggedClient) NewToken() (string, error) {
-	resp, err := ct.client.Get("https://www.cardtrader.com/")
+func (ct *CTLoggedClient) NewToken(ctx context.Context) (string, error) {
+	link := "https://www.cardtrader.com/"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := ct.client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -65,7 +83,7 @@ func (ct *CTLoggedClient) NewToken() (string, error) {
 	return token, nil
 }
 
-func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
+func (ct *CTLoggedClient) Add2Cart(ctx context.Context, productId int, qty int, bundle bool) error {
 	u, err := url.Parse(fmt.Sprintf("https://www.cardtrader.com/cart/add/%d.json", productId))
 	if err != nil {
 		return err
@@ -77,12 +95,12 @@ func (ct *CTLoggedClient) Add2Cart(productId int, qty int, bundle bool) error {
 	}
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("POST", u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), http.NoBody)
 	if err != nil {
 		return err
 	}
 
-	token, err := ct.NewToken()
+	token, err := ct.NewToken(ctx)
 	if err != nil {
 		return err
 	}
@@ -141,8 +159,8 @@ func (ct *CTLoggedClient) GetItemsForOrder(orderId int) ([]OrderItem, error) {
 	return purchase.OrderItems, nil
 }
 
-func (ct *CardtraderMarket) Activate(user, pass string) error {
-	client, err := NewCTLoggedClient(user, pass)
+func (ct *CardtraderMarket) Activate(ctx context.Context, user, pass string) error {
+	client, err := NewCTLoggedClient(ctx, user, pass)
 	if err != nil {
 		return err
 	}
@@ -152,13 +170,13 @@ func (ct *CardtraderMarket) Activate(user, pass string) error {
 	return nil
 }
 
-func (ct *CardtraderMarket) Add(entry mtgban.InventoryEntry) error {
+func (ct *CardtraderMarket) Add(ctx context.Context, entry mtgban.InventoryEntry) error {
 	id, err := strconv.Atoi(entry.InstanceId)
 	if err != nil {
 		return err
 	}
 
-	return ct.loggedClient.Add2Cart(id, entry.Quantity, entry.Bundle)
+	return ct.loggedClient.Add2Cart(ctx, id, entry.Quantity, entry.Bundle)
 }
 
 func ConvertItems(blueprints map[int]*Blueprint, products []OrderItem, rates ...float64) mtgban.InventoryRecord {

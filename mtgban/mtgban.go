@@ -183,10 +183,10 @@ type MultiScraper interface {
 // add entries to the online cart of the provider.
 type Carter interface {
 	// Enable the cart interface (loading the existing cart for example).
-	Activate(user, pass string) error
+	Activate(ctx context.Context, cuser, pass string) error
 
 	// Add an InventoryEntry to the online cart.
-	Add(entry InventoryEntry) error
+	Add(ctx context.Context, entry InventoryEntry) error
 }
 
 // The base map for Seller containing a uuid pointing to an array of InventoryEntry
