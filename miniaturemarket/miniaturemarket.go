@@ -1,6 +1,7 @@
 package miniaturemarket
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -43,8 +44,8 @@ func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error {
-	resp, err := mm.client.GetInventory(start)
+func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respChan, start int) error {
+	resp, err := mm.client.GetInventory(ctx, start)
 	if err != nil {
 		return nil
 	}
@@ -78,7 +79,7 @@ func (mm *Miniaturemarket) processPage(channel chan<- respChan, start int) error
 	return nil
 }
 
-func (mm *Miniaturemarket) scrape() error {
+func (mm *Miniaturemarket) scrape(ctx context.Context) error {
 	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
 		co, err := mtgmatcher.GetUUID(uuid)
 		if err != nil || co.Identifiers["miniaturemarketId"] == "" {
@@ -92,7 +93,7 @@ func (mm *Miniaturemarket) scrape() error {
 	channel := make(chan respChan)
 	var wg sync.WaitGroup
 
-	totalProducts, err := mm.client.NumberOfProducts()
+	totalProducts, err := mm.client.NumberOfProducts(ctx)
 	if err != nil {
 		return err
 	}
@@ -102,7 +103,7 @@ func (mm *Miniaturemarket) scrape() error {
 		wg.Add(1)
 		go func() {
 			for start := range pages {
-				err = mm.processPage(channel, start)
+				err = mm.processPage(ctx, channel, start)
 				if err != nil {
 					mm.printf("%s", err.Error())
 				}
@@ -139,7 +140,7 @@ func (mm *Miniaturemarket) Inventory() (mtgban.InventoryRecord, error) {
 		return mm.inventory, nil
 	}
 
-	err := mm.scrape()
+	err := mm.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}

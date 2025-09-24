@@ -1,6 +1,7 @@
 package miniaturemarket
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -45,19 +46,19 @@ func NewMMClient() *MMClient {
 	return &mm
 }
 
-func (mm *MMClient) NumberOfProducts() (int, error) {
-	response, err := mm.query(0, 0)
+func (mm *MMClient) NumberOfProducts(ctx context.Context) (int, error) {
+	response, err := mm.query(ctx, 0, 0)
 	if err != nil {
 		return 0, err
 	}
 	return response.Response.NumberOfProducts, nil
 }
 
-func (mm *MMClient) GetInventory(start int) (*MMSearchResponse, error) {
-	return mm.query(start, MMDefaultResultsPerPage)
+func (mm *MMClient) GetInventory(ctx context.Context, start int) (*MMSearchResponse, error) {
+	return mm.query(ctx, start, MMDefaultResultsPerPage)
 }
 
-func (mm *MMClient) query(start, maxResults int) (*MMSearchResponse, error) {
+func (mm *MMClient) query(ctx context.Context, start, maxResults int) (*MMSearchResponse, error) {
 	u, err := url.Parse(mmSearchURL)
 	if err != nil {
 		return nil, err
@@ -80,7 +81,12 @@ func (mm *MMClient) query(start, maxResults int) (*MMSearchResponse, error) {
 	q.Add("filter", `manufacturer_uFilter:"Wizards of the Coast"`)
 	u.RawQuery = q.Encode()
 
-	resp, err := mm.client.Get(u.String())
+	link := u.String()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := mm.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
