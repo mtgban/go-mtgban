@@ -269,7 +269,7 @@ func (ha *Hareruya) totalPages(ctx context.Context, mode string) (int, error) {
 }
 
 func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
-	rate, err := mtgban.GetExchangeRate("JPY")
+	rate, err := mtgban.GetExchangeRate(ctx, "JPY")
 	if err != nil {
 		return err
 	}

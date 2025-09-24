@@ -15,7 +15,7 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 		return nil, err
 	}
 
-	currencyRate, err := mtgban.GetExchangeRate("EUR")
+	currencyRate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return nil, err
 	}

@@ -121,7 +121,7 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 }
 
 func (ct *CardtraderSealed) scrape(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate("EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
 	}

@@ -170,7 +170,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 
 // Scrape returns an array of Entry, containing pricing and card information
 func (mc *Magiccorner) scrape(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate("EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
 	}

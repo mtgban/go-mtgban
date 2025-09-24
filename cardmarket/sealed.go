@@ -157,7 +157,7 @@ func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- 
 }
 
 func (mkm *CardMarketSealed) scrape(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate("EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
 	}

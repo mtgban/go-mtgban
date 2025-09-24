@@ -275,7 +275,7 @@ func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<-
 }
 
 func (ct *CardtraderMarket) scrape(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate("EUR")
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
 	}

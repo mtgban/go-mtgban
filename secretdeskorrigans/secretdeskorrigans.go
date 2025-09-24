@@ -218,7 +218,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 }
 
 func (sdk *SecretDesKorrigans) scrape(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate("CAD")
+	rate, err := mtgban.GetExchangeRate(ctx, "CAD")
 	if err != nil {
 		return err
 	}

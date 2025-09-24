@@ -1,8 +1,10 @@
 package mtgban
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -14,8 +16,13 @@ type LogCallbackFunc func(format string, a ...interface{})
 const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
 
 // Retrieve the USD exchange rate (you need to multiply this value to obtain USD)
-func GetExchangeRate(currency string) (float64, error) {
-	resp, err := cleanhttp.DefaultClient().Get(exchangeRateURL)
+func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, exchangeRateURL, http.NoBody)
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return 0, err
 	}
