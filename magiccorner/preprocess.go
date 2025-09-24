@@ -444,7 +444,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			}
 		// These are the editions that need table lookup
 		case "Antiquities", "Fallen Empires", "Chronicles",
-			"Alliances", "Reinassance", "Rinascimento", "Homelands":
+			"Alliances", "Renaissance", "Rinascimento", "Homelands":
 			variation = extra
 		// Same for this one, except the specifier is elsewhere
 		case "Core 2020: Extras":

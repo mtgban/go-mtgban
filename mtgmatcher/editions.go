@@ -520,7 +520,7 @@ var EditionTable = map[string]string{
 	"LE": "Legends",
 	"DK": "The Dark",
 	"FE": "Fallen Empires",
-	"RE": "Reinassance",
+	"RE": "Renaissance",
 	"RI": "Rinascimento",
 	"AT": "Anthologies",
 	"DM": "Deckmasters",
