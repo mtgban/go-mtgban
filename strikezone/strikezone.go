@@ -138,7 +138,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		}
 	}
 
-	cardPrice, err := strconv.ParseFloat(price, 64)
+	cardPrice, err := mtgmatcher.ParsePrice(price)
 	if err != nil || cardPrice <= 0 {
 		return err
 	}
