@@ -63,7 +63,8 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 	cardName = el.ChildText("td:nth-child(1)")
 	if cardName == "" || cardName == "Name" {
-		return
+		// No error as empty page may not have anything to process
+		return nil
 	}
 
 	pathURL = el.ChildAttr("a", "href")
@@ -86,19 +87,18 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 		theCard, err := preprocess(cardName, edition, notes)
 		if err != nil {
-			return
+			return nil
 		}
 
 		cardId, err = mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			return
+			return nil
 		} else if err != nil {
 			// Skip errors from these sets, there is not enough information
 			switch edition {
 			case "Secret Lair", "The List", "Mystery Booster":
-				return
+				return nil
 			}
-			sz.printf("%v", err)
 			sz.printf("%q", theCard)
 			sz.printf("%s|%s|%s", cardName, edition, notes)
 
@@ -110,7 +110,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 					sz.printf("- %s", card)
 				}
 			}
-			return
+			return err
 		}
 	case GameLorcana:
 		notes = el.ChildText("td:nth-child(2)")
@@ -122,9 +122,8 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 		cardId, err = mtgmatcher.SimpleSearch(cardName, notes, foil)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			return
+			return nil
 		} else if err != nil {
-			sz.printf("%v", err)
 			sz.printf("%s|%s|%s", cardName, edition, notes)
 
 			var alias *mtgmatcher.AliasingError
@@ -135,18 +134,18 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 					sz.printf("- %s", card)
 				}
 			}
-			return
+			return err
 		}
 	}
 
-	cardPrice, _ := strconv.ParseFloat(price, 64)
-	if cardPrice <= 0 {
-		return
+	cardPrice, err := strconv.ParseFloat(price, 64)
+	if err != nil || cardPrice <= 0 {
+		return err
 	}
 
-	quantity, _ := strconv.Atoi(qty)
-	if quantity <= 0 {
-		return
+	quantity, err := strconv.Atoi(qty)
+	if err != nil || quantity <= 0 {
+		return err
 	}
 
 	switch {
@@ -159,8 +158,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	case strings.Contains(cond, "Heavy"):
 		cond = "HP"
 	default:
-		sz.printf("Unsupported %s condition", cond)
-		return
+		return fmt.Errorf("Unsupported %s condition", cond)
 	}
 
 	if mode == "inventory" {
@@ -266,7 +264,11 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		}
 
 		e.ForEach(tableRowName, func(_ int, el *colly.HTMLElement) {
-			sz.processRow(mode, channel, el, edition)
+			err := sz.processRow(mode, channel, el, edition)
+			if err != nil {
+				sz.printf("cannot process %s %s: %s", mode, edition, err.Error())
+				sz.printf("-> %s", e.Request.URL)
+			}
 		})
 	})
 
