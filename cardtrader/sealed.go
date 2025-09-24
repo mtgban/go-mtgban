@@ -33,13 +33,6 @@ func NewScraperSealed(token string) (*CardtraderSealed, error) {
 	// API is strongly rated limited, hardcode a lower amount
 	ct.MaxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
-
-	rate, err := mtgban.GetExchangeRate("EUR")
-	if err != nil {
-		return nil, err
-	}
-	ct.exchangeRate = rate
-
 	ct.gameId = GameIdMagic
 	return &ct, nil
 }
@@ -128,6 +121,12 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 }
 
 func (ct *CardtraderSealed) scrape(ctx context.Context) error {
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return err
+	}
+	ct.exchangeRate = rate
+
 	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
 	ct.printf("Loaded %d sealed products", len(productMap))
 

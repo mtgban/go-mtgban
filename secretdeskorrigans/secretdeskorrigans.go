@@ -38,11 +38,6 @@ func NewScraper() (*SecretDesKorrigans, error) {
 	sdk := SecretDesKorrigans{}
 	sdk.inventory = mtgban.InventoryRecord{}
 	sdk.MaxConcurrency = defaultConcurrency
-	rate, err := mtgban.GetExchangeRate("CAD")
-	if err != nil {
-		return nil, err
-	}
-	sdk.exchangeRate = rate
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	sdk.client = client.StandardClient()
@@ -223,6 +218,12 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 }
 
 func (sdk *SecretDesKorrigans) scrape(ctx context.Context) error {
+	rate, err := mtgban.GetExchangeRate("CAD")
+	if err != nil {
+		return err
+	}
+	sdk.exchangeRate = rate
+
 	link := inventoryURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {

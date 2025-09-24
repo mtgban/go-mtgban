@@ -36,11 +36,6 @@ func NewScraper() (*Magiccorner, error) {
 	mc := Magiccorner{}
 	mc.inventory = mtgban.InventoryRecord{}
 	mc.buylist = mtgban.BuylistRecord{}
-	rate, err := mtgban.GetExchangeRate("EUR")
-	if err != nil {
-		return nil, err
-	}
-	mc.exchangeRate = rate
 	mc.client = NewMCClient()
 	mc.MaxConcurrency = defaultConcurrency
 	return &mc, nil
@@ -175,6 +170,12 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 
 // Scrape returns an array of Entry, containing pricing and card information
 func (mc *Magiccorner) scrape(ctx context.Context) error {
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return err
+	}
+	mc.exchangeRate = rate
+
 	editionList, err := mc.client.GetEditionList(ctx, true)
 	if err != nil {
 		return err

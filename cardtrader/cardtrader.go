@@ -54,13 +54,6 @@ func NewScraperMarket(gameId int, token string) (*CardtraderMarket, error) {
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
-
-	rate, err := mtgban.GetExchangeRate("EUR")
-	if err != nil {
-		return nil, err
-	}
-	ct.exchangeRate = rate
-
 	ct.gameId = gameId
 	return &ct, nil
 }
@@ -282,6 +275,12 @@ func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<-
 }
 
 func (ct *CardtraderMarket) scrape(ctx context.Context) error {
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return err
+	}
+	ct.exchangeRate = rate
+
 	expansionsRaw, err := ct.client.Expansions(ctx)
 	if err != nil {
 		return err

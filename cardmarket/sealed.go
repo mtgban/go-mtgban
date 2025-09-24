@@ -41,11 +41,6 @@ func NewScraperSealed(appToken, appSecret string) (*CardMarketSealed, error) {
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
-	rate, err := mtgban.GetExchangeRate("EUR")
-	if err != nil {
-		return nil, err
-	}
-	mkm.exchangeRate = rate
 	mkm.gameId = GameIdMagic
 	return &mkm, nil
 }
@@ -162,6 +157,12 @@ func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- 
 }
 
 func (mkm *CardMarketSealed) scrape(ctx context.Context) error {
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return err
+	}
+	mkm.exchangeRate = rate
+
 	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 

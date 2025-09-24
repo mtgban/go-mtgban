@@ -50,11 +50,6 @@ func NewScraper() (*Hareruya, error) {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	ha.client = client.StandardClient()
-	rate, err := mtgban.GetExchangeRate("JPY")
-	if err != nil {
-		return nil, err
-	}
-	ha.exchangeRate = rate
 	return &ha, nil
 }
 
@@ -274,6 +269,12 @@ func (ha *Hareruya) totalPages(ctx context.Context, mode string) (int, error) {
 }
 
 func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
+	rate, err := mtgban.GetExchangeRate("JPY")
+	if err != nil {
+		return err
+	}
+	ha.exchangeRate = rate
+
 	total, err := ha.totalPages(ctx, mode)
 	if err != nil {
 		return err

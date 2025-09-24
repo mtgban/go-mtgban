@@ -60,11 +60,6 @@ func NewScraperIndex(gameId int, appToken, appSecret string) (*CardMarketIndex, 
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
-	rate, err := mtgban.GetExchangeRate("EUR")
-	if err != nil {
-		return nil, err
-	}
-	mkm.exchangeRate = rate
 	mkm.gameId = gameId
 	return &mkm, nil
 }
@@ -285,6 +280,12 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 }
 
 func (mkm *CardMarketIndex) scrape(ctx context.Context) error {
+	rate, err := mtgban.GetExchangeRate("EUR")
+	if err != nil {
+		return err
+	}
+	mkm.exchangeRate = rate
+
 	priceGuide, err := GetPriceGuide(ctx, mkm.gameId)
 	if err != nil {
 		return err
