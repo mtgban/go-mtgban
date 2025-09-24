@@ -2,6 +2,7 @@ package starcitygames
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -101,7 +102,7 @@ type scgRetailResult struct {
 	IsVisible bool `json:"IsVisible"`
 }
 
-func (scg *SCGClient) sendRetailRequest(game, page int) (*scgRetailResponse, error) {
+func (scg *SCGClient) sendRetailRequest(ctx context.Context, game, page int) (*scgRetailResponse, error) {
 	gameStr := "Magic: The Gathering"
 	switch game {
 	case GameFleshAndBlood:
@@ -141,7 +142,7 @@ func (scg *SCGClient) sendRetailRequest(game, page int) (*scgRetailResponse, err
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, scgInventoryURL, bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, scgInventoryURL, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -163,16 +164,16 @@ func (scg *SCGClient) sendRetailRequest(game, page int) (*scgRetailResponse, err
 	return &search, nil
 }
 
-func (scg *SCGClient) NumberOfPages(game int) (int, error) {
-	response, err := scg.sendRetailRequest(game, 0)
+func (scg *SCGClient) NumberOfPages(ctx context.Context, game int) (int, error) {
+	response, err := scg.sendRetailRequest(ctx, game, 0)
 	if err != nil {
 		return 0, err
 	}
 	return response.Pagination.NofPages, nil
 }
 
-func (scg *SCGClient) GetPage(game, page int) ([]scgRetailResult, error) {
-	response, err := scg.sendRetailRequest(game, page)
+func (scg *SCGClient) GetPage(ctx context.Context, game, page int) ([]scgRetailResult, error) {
+	response, err := scg.sendRetailRequest(ctx, game, page)
 	if err != nil {
 		return nil, err
 	}
@@ -246,8 +247,13 @@ type Settings struct {
 	} `json:"cardRarities"`
 }
 
-func SearchSettings() (*Settings, error) {
-	resp, err := cleanhttp.DefaultClient().Get(scgSettingsURL)
+func SearchSettings(ctx context.Context) (*Settings, error) {
+	link := scgSettingsURL
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +268,7 @@ func SearchSettings() (*Settings, error) {
 	return &search, nil
 }
 
-func (scg *SCGClient) SearchAll(game, offset, limit int, rarity string) (*SCGSearchResponse, error) {
+func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit int, rarity string) (*SCGSearchResponse, error) {
 	filter := `game_id = %d AND price_category_id = %s AND is_buying = 1 AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
 	mode := "1"
 	if scg.SealedMode {
@@ -286,7 +292,7 @@ func (scg *SCGClient) SearchAll(game, offset, limit int, rarity string) (*SCGSea
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, scgBuylistURL, bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, scgBuylistURL, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}

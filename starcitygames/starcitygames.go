@@ -1,6 +1,7 @@
 package starcitygames
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -58,8 +59,8 @@ func (scg *Starcitygames) printf(format string, a ...interface{}) {
 	}
 }
 
-func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) error {
-	results, err := scg.client.GetPage(scg.game, page)
+func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- responseChan, page int) error {
+	results, err := scg.client.GetPage(ctx, scg.game, page)
 	if err != nil {
 		return err
 	}
@@ -244,8 +245,8 @@ func (scg *Starcitygames) processPage(channel chan<- responseChan, page int) err
 	return nil
 }
 
-func (scg *Starcitygames) scrape() error {
-	totalPages, err := scg.client.NumberOfPages(scg.game)
+func (scg *Starcitygames) scrape(ctx context.Context) error {
+	totalPages, err := scg.client.NumberOfPages(ctx, scg.game)
 	if err != nil {
 		return err
 	}
@@ -260,7 +261,7 @@ func (scg *Starcitygames) scrape() error {
 		go func() {
 			for page := range pages {
 				scg.printf("Processing page %d", page)
-				err := scg.processPage(results, page)
+				err := scg.processPage(ctx, results, page)
 				if err != nil {
 					scg.printf("%v", err)
 				}
@@ -296,7 +297,7 @@ func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
 		return scg.inventory, nil
 	}
 
-	err := scg.scrape()
+	err := scg.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -305,8 +306,8 @@ func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
 
 }
 
-func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int, rarity string) error {
-	search, err := scg.client.SearchAll(scg.game, page, defaultRequestLimit, rarity)
+func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- responseChan, page int, rarity string) error {
+	search, err := scg.client.SearchAll(ctx, scg.game, page, defaultRequestLimit, rarity)
 	if err != nil {
 		return err
 	}
@@ -435,8 +436,8 @@ func (scg *Starcitygames) processBLPage(channel chan<- responseChan, page int, r
 	return nil
 }
 
-func (scg *Starcitygames) parseBL(rarity string) error {
-	search, err := scg.client.SearchAll(scg.game, 0, 1, rarity)
+func (scg *Starcitygames) parseBL(ctx context.Context, rarity string) error {
+	search, err := scg.client.SearchAll(ctx, scg.game, 0, 1, rarity)
 	if err != nil {
 		return err
 	}
@@ -452,7 +453,7 @@ func (scg *Starcitygames) parseBL(rarity string) error {
 		go func() {
 			for page := range pages {
 				scg.printf("Processing page %d", page)
-				err := scg.processBLPage(results, page, rarity)
+				err := scg.processBLPage(ctx, results, page, rarity)
 				if err != nil {
 					scg.printf("%v", err)
 				}
@@ -481,8 +482,8 @@ func (scg *Starcitygames) parseBL(rarity string) error {
 	return nil
 }
 
-func (scg *Starcitygames) scrapeBL() error {
-	settings, err := SearchSettings()
+func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
+	settings, err := SearchSettings(ctx)
 	if err != nil {
 		return err
 	}
@@ -491,7 +492,7 @@ func (scg *Starcitygames) scrapeBL() error {
 		if setting.GameID != scg.game {
 			continue
 		}
-		err := scg.parseBL(setting.Abbr)
+		err := scg.parseBL(ctx, setting.Abbr)
 		if err != nil {
 			return err
 		}
@@ -507,7 +508,7 @@ func (scg *Starcitygames) Buylist() (mtgban.BuylistRecord, error) {
 		return scg.buylist, nil
 	}
 
-	err := scg.scrapeBL()
+	err := scg.scrapeBL(context.TODO())
 	if err != nil {
 		return nil, err
 	}
