@@ -32,23 +32,6 @@ func (tcg *TCGSellerInventory) printf(format string, a ...interface{}) {
 
 const defaultSellerInventoryConcurrency = 8
 
-func NewScraperForSeller(sellerName string, onlyDirect bool) (*TCGSellerInventory, error) {
-	var sellerKeys []string
-
-	if sellerName != "" {
-		sellerKey, err := SellerName2ID(sellerName)
-		if err != nil {
-			if !SellerKeyExists(sellerName) {
-				return nil, err
-			}
-			sellerKey = sellerName
-		}
-		sellerKeys = append(sellerKeys, sellerKey)
-	}
-
-	return NewScraperForSellerIds(sellerKeys, onlyDirect), nil
-}
-
 func NewScraperForSellerIds(sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
 	tcg.inventory = mtgban.InventoryRecord{}
