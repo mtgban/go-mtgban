@@ -180,7 +180,7 @@ func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEditio
 	var response mcResponse
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, err)
+		return nil, fmt.Errorf("%s: %v", edition.Name, err)
 	}
 	if response.Error != "" {
 		return nil, fmt.Errorf("%s - %d: %v", edition.Name, resp.StatusCode, response.Error)
