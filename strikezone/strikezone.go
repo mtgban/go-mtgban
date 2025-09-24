@@ -1,6 +1,7 @@
 package strikezone
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -8,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gocolly/colly"
+	"github.com/gocolly/colly/v2"
+
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -56,7 +58,7 @@ type respChan struct {
 	bl     *mtgban.BuylistEntry
 }
 
-func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly.HTMLElement, edition string) {
+func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly.HTMLElement, edition string) error {
 	var cardName, pathURL, notes, cond, qty, price string
 
 	cardName = el.ChildText("td:nth-child(1)")
@@ -201,9 +203,10 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 			},
 		}
 	}
+	return nil
 }
 
-func (sz *Strikezone) scrape(mode string) error {
+func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	channel := make(chan respChan)
 
 	c := colly.NewCollector(
@@ -214,6 +217,8 @@ func (sz *Strikezone) scrape(mode string) error {
 		colly.CacheDir(fmt.Sprintf(".cache/%d", time.Now().YearDay())),
 
 		colly.Async(true),
+
+		colly.StdlibContext(ctx),
 	)
 
 	c.Limit(&colly.LimitRule{
@@ -308,7 +313,7 @@ func (sz *Strikezone) Inventory() (mtgban.InventoryRecord, error) {
 		return sz.inventory, nil
 	}
 
-	err := sz.scrape("inventory")
+	err := sz.scrape(context.TODO(), "inventory")
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +326,7 @@ func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
 		return sz.buylist, nil
 	}
 
-	err := sz.scrape("buylist")
+	err := sz.scrape(context.TODO(), "buylist")
 	if err != nil {
 		return nil, err
 	}
