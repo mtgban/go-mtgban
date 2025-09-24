@@ -57,17 +57,6 @@ func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
 	tcg.MaxConcurrency = defaultConcurrency
 
 	tcg.category = tcgplayer.CategoryLorcana
-
-	check, err := tcg.client.GetCategoriesDetails(context.TODO(), []int{tcg.category})
-	if err != nil {
-		return nil, err
-	}
-	if len(check) == 0 {
-		return nil, errors.New("empty categories response")
-	}
-
-	tcg.categoryName = check[0].Name
-	tcg.categoryDisplayName = check[0].DisplayName
 	tcg.productTypes = tcgplayer.ProductTypesSingles
 
 	tcg.printings = map[int]string{}
@@ -171,6 +160,13 @@ func (tcg *TCGLorcana) processPage(ctx context.Context, channel chan<- genericCh
 }
 
 func (tcg *TCGLorcana) scrape(ctx context.Context) error {
+	// Initialize data for debug logs
+	var err error
+	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
+	if err != nil {
+		return err
+	}
+
 	printings, err := tcg.client.ListCategoryPrintings(ctx, tcg.category)
 	if err != nil {
 		return err

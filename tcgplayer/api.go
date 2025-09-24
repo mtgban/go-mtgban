@@ -89,6 +89,17 @@ func isToken(tcgp *tcgplayer.Product) bool {
 	return false
 }
 
+func GetCategoryNames(ctx context.Context, tcg *tcgplayer.Client, category int) (string, string, error) {
+	check, err := tcg.GetCategoriesDetails(ctx, []int{category})
+	if err != nil {
+		return "", "", err
+	}
+	if len(check) == 0 {
+		return "", "", errors.New("empty categories response")
+	}
+	return check[0].Name, check[0].DisplayName, nil
+}
+
 func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[int]tcgplayer.Group, error) {
 	totals, err := tcg.TotalGroups(ctx, category)
 	if err != nil {

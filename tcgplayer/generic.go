@@ -2,7 +2,6 @@ package tcgplayer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -51,18 +50,7 @@ func NewScraperGeneric(publicId, privateId string, category int, productTypes ..
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
-
-	check, err := tcg.client.GetCategoriesDetails(context.TODO(), []int{category})
-	if err != nil {
-		return nil, err
-	}
-	if len(check) == 0 {
-		return nil, errors.New("empty categories response")
-	}
-
 	tcg.category = category
-	tcg.categoryName = check[0].Name
-	tcg.categoryDisplayName = check[0].DisplayName
 
 	tcg.productTypes = productTypes
 	if len(tcg.productTypes) == 0 {
@@ -143,6 +131,13 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 }
 
 func (tcg *TCGPlayerGeneric) scrape(ctx context.Context) error {
+	// Initialize data for debug logs
+	var err error
+	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
+	if err != nil {
+		return err
+	}
+
 	editions, err := EditionMap(ctx, tcg.client, tcg.category)
 	if err != nil {
 		return err

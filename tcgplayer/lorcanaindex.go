@@ -54,18 +54,8 @@ func NewLorcanaIndex(publicId, privateId string) (*TCGLorcanaIndex, error) {
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
+
 	tcg.category = tcgplayer.CategoryLorcana
-
-	check, err := tcg.client.GetCategoriesDetails(context.TODO(), []int{tcg.category})
-	if err != nil {
-		return nil, err
-	}
-	if len(check) == 0 {
-		return nil, errors.New("empty categories response")
-	}
-
-	tcg.categoryName = check[0].Name
-	tcg.categoryDisplayName = check[0].DisplayName
 	tcg.productTypes = tcgplayer.ProductTypesSingles
 
 	return &tcg, nil
@@ -152,6 +142,13 @@ func (tcg *TCGLorcanaIndex) processPage(ctx context.Context, channel chan<- gene
 }
 
 func (tcg *TCGLorcanaIndex) scrape(ctx context.Context) error {
+	// Initialize data for debug logs
+	var err error
+	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
+	if err != nil {
+		return err
+	}
+
 	editions, err := EditionMap(ctx, tcg.client, tcg.category)
 	if err != nil {
 		return err
