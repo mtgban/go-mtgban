@@ -1,6 +1,7 @@
 package hareruya
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -69,12 +70,18 @@ func (ha *Hareruya) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode string) error {
+func (ha *Hareruya) processPage(ctx context.Context, channel chan<- responseChan, page int, mode string) error {
 	link := inventoryURL
 	if mode == modeBuylist {
 		link = buylistURL
 	}
-	resp, err := ha.client.Get(link + fmt.Sprint(page))
+
+	link += fmt.Sprint(page)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := ha.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -235,12 +242,16 @@ func (ha *Hareruya) processPage(channel chan<- responseChan, page int, mode stri
 	return nil
 }
 
-func (ha *Hareruya) totalPages(mode string) (int, error) {
+func (ha *Hareruya) totalPages(ctx context.Context, mode string) (int, error) {
 	link := inventoryURL
 	if mode == modeBuylist {
 		link = buylistURL
 	}
-	resp, err := ha.client.Get(link)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := ha.client.Do(req)
 	if err != nil {
 		return 0, err
 	}
@@ -262,8 +273,8 @@ func (ha *Hareruya) totalPages(mode string) (int, error) {
 	return strconv.Atoi(pagenum)
 }
 
-func (ha *Hareruya) scrape(mode string) error {
-	total, err := ha.totalPages(mode)
+func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
+	total, err := ha.totalPages(ctx, mode)
 	if err != nil {
 		return err
 	}
@@ -278,7 +289,7 @@ func (ha *Hareruya) scrape(mode string) error {
 		wg.Add(1)
 		go func() {
 			for i := range pages {
-				err := ha.processPage(results, i, mode)
+				err := ha.processPage(ctx, results, i, mode)
 				if err != nil {
 					ha.printf("%v", err)
 				}
@@ -324,7 +335,7 @@ func (ha *Hareruya) Inventory() (mtgban.InventoryRecord, error) {
 		return ha.inventory, nil
 	}
 
-	err := ha.scrape(modeInventory)
+	err := ha.scrape(context.TODO(), modeInventory)
 	if err != nil {
 		return nil, err
 	}
@@ -337,7 +348,7 @@ func (ha *Hareruya) Buylist() (mtgban.BuylistRecord, error) {
 		return ha.buylist, nil
 	}
 
-	err := ha.scrape(modeBuylist)
+	err := ha.scrape(context.TODO(), modeBuylist)
 	if err != nil {
 		return nil, err
 	}
