@@ -231,6 +231,20 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 
 	return mc.inventory, nil
 }
+
+func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
+	if len(mc.buylist) > 0 {
+		return mc.buylist, nil
+	}
+
+	err := mc.scrapeBL()
+	if err != nil {
+		return nil, err
+	}
+
+	return mc.buylist, nil
+}
+
 func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) error {
 	i := 1
 	totals := 0
@@ -321,14 +335,10 @@ func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) e
 	return nil
 }
 
-func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
-	if len(mc.buylist) > 0 {
-		return mc.buylist, nil
-	}
-
+func (mc *Magiccorner) scrapeBL() error {
 	editions, err := mc.client.GetBuylistEditions()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	mc.printf("Found %d editions", len(editions))
 
@@ -369,7 +379,7 @@ func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
 
 	mc.buylistDate = time.Now()
 
-	return mc.buylist, nil
+	return nil
 }
 
 func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
