@@ -245,22 +245,6 @@ type MCProduct struct {
 	SerialNumber int     `json:"SerialNumber"`
 }
 
-func (mc *MCClient) GetHotBuylistPage(page int) ([]MCProduct, error) {
-	resp, err := mc.client.Get(mcHotBuylistURL + "?p=" + fmt.Sprint(page))
-	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
-	}
-	defer resp.Body.Close()
-
-	var response MCBuylistResult
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
-	}
-
-	return response.Products, nil
-}
-
 func (mc *MCClient) GetBuylistForEdition(edition, page int) (*MCBuylistResult, error) {
 	payload, err := json.Marshal(&MCBuylistRequest{
 		IsBuyList: true,
