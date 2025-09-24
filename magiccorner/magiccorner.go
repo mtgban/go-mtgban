@@ -1,6 +1,7 @@
 package magiccorner
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -57,8 +58,8 @@ func (mc *Magiccorner) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition) error {
-	cards, err := mc.client.GetInventoryForEdition(edition)
+func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultChan, edition MCEdition) error {
+	cards, err := mc.client.GetInventoryForEdition(ctx, edition)
 	if err != nil {
 		return err
 	}
@@ -173,8 +174,8 @@ func (mc *Magiccorner) processEntry(channel chan<- resultChan, edition MCEdition
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
-func (mc *Magiccorner) scrape() error {
-	editionList, err := mc.client.GetEditionList(true)
+func (mc *Magiccorner) scrape(ctx context.Context) error {
+	editionList, err := mc.client.GetEditionList(ctx, true)
 	if err != nil {
 		return err
 	}
@@ -187,7 +188,7 @@ func (mc *Magiccorner) scrape() error {
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				err := mc.processEntry(results, page)
+				err := mc.processEntry(ctx, results, page)
 				if err != nil {
 					mc.printf("%v", err)
 				}
@@ -224,7 +225,7 @@ func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
 		return mc.inventory, nil
 	}
 
-	err := mc.scrape()
+	err := mc.scrape(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +238,7 @@ func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
 		return mc.buylist, nil
 	}
 
-	err := mc.scrapeBL()
+	err := mc.scrapeBL(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -245,12 +246,12 @@ func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
 	return mc.buylist, nil
 }
 
-func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) error {
+func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, edition MCExpansion) error {
 	i := 1
 	totals := 0
 	for {
 		mc.printf("Querying %s page %d", edition.Name, i)
-		result, err := mc.client.GetBuylistForEdition(edition.Id, i)
+		result, err := mc.client.GetBuylistForEdition(ctx, edition.Id, i)
 		if err != nil {
 			return err
 		}
@@ -335,8 +336,8 @@ func (mc *Magiccorner) parseBL(channel chan<- resultChan, edition MCExpansion) e
 	return nil
 }
 
-func (mc *Magiccorner) scrapeBL() error {
-	editions, err := mc.client.GetBuylistEditions()
+func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
+	editions, err := mc.client.GetBuylistEditions(ctx)
 	if err != nil {
 		return err
 	}
@@ -350,7 +351,7 @@ func (mc *Magiccorner) scrapeBL() error {
 		wg.Add(1)
 		go func() {
 			for edition := range editionsChan {
-				err := mc.parseBL(results, edition)
+				err := mc.parseBL(ctx, results, edition)
 				if err != nil {
 					mc.printf("%v", err)
 				}

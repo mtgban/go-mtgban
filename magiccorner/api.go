@@ -2,6 +2,7 @@ package magiccorner
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -83,7 +84,7 @@ func NewMCClient() *MCClient {
 }
 
 // Retrieve the available edition ids and names
-func (mc *MCClient) GetEditionList(addPromoEd bool) ([]MCEdition, error) {
+func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEdition, error) {
 	param := mcEditionParam{
 		UIc: "it",
 	}
@@ -92,7 +93,14 @@ func (mc *MCClient) GetEditionList(addPromoEd bool) ([]MCEdition, error) {
 		return nil, err
 	}
 
-	resp, err := mc.client.Post(mcBaseURL+mcEditionsEndpt, "application/json", bytes.NewReader(reqBody))
+	link := mcBaseURL + mcEditionsEndpt
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := mc.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +130,7 @@ func (mc *MCClient) GetEditionList(addPromoEd bool) ([]MCEdition, error) {
 	return editionList, nil
 }
 
-func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) {
+func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEdition) ([]MCCard, error) {
 	// This breaks on the main website too, just skip it
 	if edition.Id == mcMerfolksVsGoblinsId {
 		return nil, nil
@@ -156,7 +164,14 @@ func (mc *MCClient) GetInventoryForEdition(edition MCEdition) ([]MCCard, error) 
 		return nil, err
 	}
 
-	resp, err := mc.client.Post(mcBaseURL+mcCardsEndpt, "application/json", bytes.NewReader(reqBody))
+	link := mcBaseURL + mcCardsEndpt
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := mc.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("%s - %v", edition.Name, err)
 	}
@@ -184,8 +199,14 @@ type MCBuylistEditionResponse struct {
 	Expansions []MCExpansion `json:"Expansions"`
 }
 
-func (mc *MCClient) GetBuylistEditions() ([]MCExpansion, error) {
-	resp, err := mc.client.Get(mcEditionBuylistURL)
+func (mc *MCClient) GetBuylistEditions(ctx context.Context) ([]MCExpansion, error) {
+	link := mcEditionBuylistURL
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := mc.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
 	}
@@ -245,7 +266,7 @@ type MCProduct struct {
 	SerialNumber int     `json:"SerialNumber"`
 }
 
-func (mc *MCClient) GetBuylistForEdition(edition, page int) (*MCBuylistResult, error) {
+func (mc *MCClient) GetBuylistForEdition(ctx context.Context, edition, page int) (*MCBuylistResult, error) {
 	payload, err := json.Marshal(&MCBuylistRequest{
 		IsBuyList: true,
 		Game:      "magic",
@@ -261,7 +282,13 @@ func (mc *MCClient) GetBuylistForEdition(edition, page int) (*MCBuylistResult, e
 	if page > 1 {
 		link = fmt.Sprintf("%s?p=%d", mcAdvancedBuylistURL, page)
 	}
-	resp, err := mc.client.Post(link, "application/json", bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := mc.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
 	}
