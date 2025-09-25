@@ -187,3 +187,85 @@ func NewVendorFromBuylist(buylist BuylistRecord, info ScraperInfo) Vendor {
 	vendor.info = info
 	return &vendor
 }
+
+// Return how many independent components are present in the slice.
+// This function can be safely called before Load().
+func CountScrapers(scrapers []Scraper) (int, int) {
+	var sellers, vendors int
+	for _, scraper := range scrapers {
+		market, isMarket := scraper.(Market)
+		if isMarket {
+			sellers += len(market.MarketNames())
+		}
+		trader, isTrader := scraper.(Trader)
+		if isTrader {
+			vendors += len(trader.TraderNames())
+		}
+		_, isSeller := scraper.(Seller)
+		if isSeller && !isMarket {
+			sellers++
+		}
+		_, isVendor := scraper.(Vendor)
+		if isVendor && !isTrader {
+			vendors++
+		}
+	}
+	return sellers, vendors
+}
+
+// Commodity function to unfold a Scraper into their independent Seller and
+// Vendor parts, unpacking Market and Trader into the various enabled sub-scrapers.
+// Since it processes this kind of scrapers it needs to be called *after*
+// the Load() call, otherwise the full scraper may be skipped.
+// If there is no inventory or buylist data, either due to confirguration or error,
+// the related seller or vendor is skipped.
+func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
+	var sellers []Seller
+	var vendors []Vendor
+
+	for _, scraper := range scrapers {
+		market, isMarket := scraper.(Market)
+		if isMarket && scraper.Info().InventoryTimestamp != nil {
+			for _, name := range market.MarketNames() {
+				inv, _ := InventoryForSeller(market, name)
+				if len(inv) == 0 {
+					continue
+				}
+				seller := NewSellerFromInventory(inv, market.InfoForScraper(name))
+				sellers = append(sellers, seller)
+			}
+		}
+
+		trader, isTrader := scraper.(Trader)
+		if isTrader && scraper.Info().BuylistTimestamp != nil {
+			for _, name := range trader.TraderNames() {
+				bl, _ := BuylistForVendor(trader, name)
+				if len(bl) == 0 {
+					continue
+				}
+				vendor := NewVendorFromBuylist(bl, trader.InfoForScraper(name))
+				vendors = append(vendors, vendor)
+			}
+		}
+
+		seller, isSeller := scraper.(Seller)
+		if isSeller && !isMarket && scraper.Info().InventoryTimestamp != nil {
+			inv, _ := seller.Inventory()
+			if len(inv) > 0 {
+				seller := NewSellerFromInventory(inv, seller.Info())
+				sellers = append(sellers, seller)
+			}
+		}
+
+		vendor, isVendor := scraper.(Vendor)
+		if isVendor && !isTrader && scraper.Info().BuylistTimestamp != nil {
+			bl, _ := vendor.Buylist()
+			if len(bl) > 0 {
+				vendor := NewVendorFromBuylist(bl, vendor.Info())
+				vendors = append(vendors, vendor)
+			}
+		}
+	}
+
+	return sellers, vendors
+}
