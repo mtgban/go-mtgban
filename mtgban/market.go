@@ -64,7 +64,9 @@ type BaseMarket struct {
 }
 
 func (m *BaseMarket) Load(ctx context.Context) error {
-	return nil
+	// Reset internal state
+	m.inventory = nil
+	return m.scraper.Load(ctx)
 }
 
 func (m *BaseMarket) Inventory() (InventoryRecord, error) {
@@ -75,9 +77,6 @@ func (m *BaseMarket) Inventory() (InventoryRecord, error) {
 			return nil, err
 		}
 		m.inventory = inventory
-
-		// Original scraper is not useful any more here
-		m.scraper = nil
 	}
 	return m.inventory, nil
 }
@@ -96,7 +95,9 @@ type BaseTrader struct {
 }
 
 func (m *BaseTrader) Load(ctx context.Context) error {
-	return nil
+	// Reset internal state
+	m.buylist = nil
+	return m.scraper.Load(ctx)
 }
 
 func (m *BaseTrader) Buylist() (BuylistRecord, error) {
@@ -107,9 +108,6 @@ func (m *BaseTrader) Buylist() (BuylistRecord, error) {
 			return nil, err
 		}
 		m.buylist = buylist
-
-		// Original scraper is not useful any more here
-		m.scraper = nil
 	}
 	return m.buylist, nil
 }
