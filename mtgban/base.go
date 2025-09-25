@@ -187,33 +187,3 @@ func NewVendorFromBuylist(buylist BuylistRecord, info ScraperInfo) Vendor {
 	vendor.info = info
 	return &vendor
 }
-
-type BaseScraper struct {
-	inventory InventoryRecord
-	buylist   BuylistRecord
-	info      ScraperInfo
-}
-
-func (scraper *BaseScraper) Load(ctx context.Context) error {
-	return nil
-}
-
-func (scraper *BaseScraper) Inventory() (InventoryRecord, error) {
-	return scraper.inventory, nil
-}
-
-func (scraper *BaseScraper) Buylist() (BuylistRecord, error) {
-	return scraper.buylist, nil
-}
-
-func (scraper *BaseScraper) Info() (info ScraperInfo) {
-	return scraper.info
-}
-
-func NewScraperFromData(inventory InventoryRecord, buylist BuylistRecord, info ScraperInfo) Scraper {
-	scraper := BaseScraper{}
-	scraper.inventory = inventory
-	scraper.buylist = buylist
-	scraper.info = info
-	return &scraper
-}
