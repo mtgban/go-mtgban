@@ -30,7 +30,7 @@ func (mp *ManapoolSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mp *ManapoolSealed) scrape(ctx context.Context) error {
+func (mp *ManapoolSealed) Load(ctx context.Context) error {
 	pricelist, err := GetSealedList(ctx)
 	if err != nil {
 		return err
@@ -99,15 +99,6 @@ func (mp *ManapoolSealed) scrape(ctx context.Context) error {
 }
 
 func (mp *ManapoolSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(mp.inventory) > 0 {
-		return mp.inventory, nil
-	}
-
-	err := mp.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mp.inventory, nil
 }
 

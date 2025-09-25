@@ -363,7 +363,7 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 	return out, allTheErrors
 }
 
-func (ss *SealedEVScraper) scrape(ctx context.Context) error {
+func (ss *SealedEVScraper) Load(ctx context.Context) error {
 	var selected string
 
 	ss.printf("Loading products")
@@ -458,28 +458,10 @@ func (ss *SealedEVScraper) scrape(ctx context.Context) error {
 }
 
 func (ss *SealedEVScraper) Inventory() (mtgban.InventoryRecord, error) {
-	if len(ss.inventory) > 0 {
-		return ss.inventory, nil
-	}
-
-	err := ss.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return ss.inventory, nil
 }
 
 func (ss *SealedEVScraper) Buylist() (mtgban.BuylistRecord, error) {
-	if len(ss.buylist) > 0 {
-		return ss.buylist, nil
-	}
-
-	err := ss.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return ss.buylist, nil
 }
 

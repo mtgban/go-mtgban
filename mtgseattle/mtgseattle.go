@@ -3,6 +3,7 @@ package mtgseattle
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -35,6 +36,9 @@ type MTGSeattle struct {
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
+
+	DisableRetail  bool
+	DisableBuylist bool
 
 	client *http.Client
 }
@@ -369,29 +373,31 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+func (ms *MTGSeattle) Load(ctx context.Context) error {
+	var errs []error
+
+	if !ms.DisableRetail {
+		err := ms.scrape(ctx, modeInventory)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !ms.DisableBuylist {
+		err := ms.scrape(ctx, modeBuylist)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
 func (ms *MTGSeattle) Inventory() (mtgban.InventoryRecord, error) {
-	if len(ms.inventory) > 0 {
-		return ms.inventory, nil
-	}
-
-	err := ms.scrape(context.TODO(), modeInventory)
-	if err != nil {
-		return nil, err
-	}
-
 	return ms.inventory, nil
 }
 
 func (ms *MTGSeattle) Buylist() (mtgban.BuylistRecord, error) {
-	if len(ms.buylist) > 0 {
-		return ms.buylist, nil
-	}
-
-	err := ms.scrape(context.TODO(), modeBuylist)
-	if err != nil {
-		return nil, err
-	}
-
 	return ms.buylist, nil
 }
 

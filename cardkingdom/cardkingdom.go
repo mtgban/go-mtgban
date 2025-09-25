@@ -48,7 +48,7 @@ func (ck *Cardkingdom) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ck *Cardkingdom) scrape(ctx context.Context) error {
+func (ck *Cardkingdom) Load(ctx context.Context) error {
 	link := ck.localPath
 	if link == "" {
 		link = cardkingdom.PricelistURL
@@ -230,29 +230,10 @@ func (ck *Cardkingdom) scrape(ctx context.Context) error {
 }
 
 func (ck *Cardkingdom) Inventory() (mtgban.InventoryRecord, error) {
-	if len(ck.inventory) > 0 {
-		return ck.inventory, nil
-	}
-
-	err := ck.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return ck.inventory, nil
-
 }
 
 func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
-	if len(ck.buylist) > 0 {
-		return ck.buylist, nil
-	}
-
-	err := ck.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return ck.buylist, nil
 }
 

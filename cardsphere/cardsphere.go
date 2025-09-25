@@ -137,7 +137,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 	return nil
 }
 
-func (cs *Cardsphere) parseBL(ctx context.Context) error {
+func (cs *Cardsphere) Load(ctx context.Context) error {
 	results := make(chan responseChan)
 	offsets := make(chan int)
 	var wg sync.WaitGroup
@@ -201,15 +201,6 @@ func (cs *Cardsphere) parseBL(ctx context.Context) error {
 }
 
 func (cs *Cardsphere) Buylist() (mtgban.BuylistRecord, error) {
-	if len(cs.buylist) > 0 {
-		return cs.buylist, nil
-	}
-
-	err := cs.parseBL(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return cs.buylist, nil
 }
 

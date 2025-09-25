@@ -234,7 +234,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 }
 
 // Scrape returns an array of Entry, containing pricing and card information
-func (abu *ABUGames) scrape(ctx context.Context) error {
+func (abu *ABUGames) Load(ctx context.Context) error {
 	extraSets := []string{
 		`"Alpha"`, `"Beta"`, `"Unlimited"`, `"Arabian Nights"`, `"Antiquities"`, `"Legends"`, `"The Dark"`,
 	}
@@ -325,28 +325,10 @@ func (abu *ABUGames) scrape(ctx context.Context) error {
 }
 
 func (abu *ABUGames) Inventory() (mtgban.InventoryRecord, error) {
-	if len(abu.inventory) > 0 {
-		return abu.inventory, nil
-	}
-
-	err := abu.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return abu.inventory, nil
 }
 
 func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
-	if len(abu.buylist) > 0 {
-		return abu.buylist, nil
-	}
-
-	err := abu.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return abu.buylist, nil
 }
 

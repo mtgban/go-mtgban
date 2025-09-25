@@ -279,7 +279,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	return nil
 }
 
-func (mkm *CardMarketIndex) scrape(ctx context.Context) error {
+func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
@@ -358,15 +358,6 @@ func (mkm *CardMarketIndex) scrape(ctx context.Context) error {
 }
 
 func (mkm *CardMarketIndex) Inventory() (mtgban.InventoryRecord, error) {
-	if len(mkm.inventory) > 0 {
-		return mkm.inventory, nil
-	}
-
-	err := mkm.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mkm.inventory, nil
 }
 

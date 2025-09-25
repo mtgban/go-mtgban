@@ -34,7 +34,7 @@ func NewScraperSYP(auth string) *TCGSYPList {
 	return &tcg
 }
 
-func (tcg *TCGSYPList) scrape(ctx context.Context) error {
+func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	tcg.printf("Retrieving skus")
 	uuid2skusMap := tcg.SKUsData
 	if uuid2skusMap == nil {
@@ -98,15 +98,6 @@ func (tcg *TCGSYPList) scrape(ctx context.Context) error {
 }
 
 func (tcg *TCGSYPList) Buylist() (mtgban.BuylistRecord, error) {
-	if len(tcg.buylist) > 0 {
-		return tcg.buylist, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.buylist, nil
 }
 

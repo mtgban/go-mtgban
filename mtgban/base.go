@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -144,6 +145,10 @@ type BaseSeller struct {
 	info      ScraperInfo
 }
 
+func (seller *BaseSeller) Load(ctx context.Context) error {
+	return nil
+}
+
 func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
 	return seller.inventory, nil
 }
@@ -162,6 +167,10 @@ func NewSellerFromInventory(inventory InventoryRecord, info ScraperInfo) Seller 
 type BaseVendor struct {
 	buylist BuylistRecord
 	info    ScraperInfo
+}
+
+func (vendor *BaseVendor) Load(ctx context.Context) error {
+	return nil
 }
 
 func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
@@ -183,6 +192,10 @@ type BaseScraper struct {
 	inventory InventoryRecord
 	buylist   BuylistRecord
 	info      ScraperInfo
+}
+
+func (scraper *BaseScraper) Load(ctx context.Context) error {
+	return nil
 }
 
 func (scraper *BaseScraper) Inventory() (InventoryRecord, error) {

@@ -25,6 +25,9 @@ type Magiccorner struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
+	DisableRetail  bool
+	DisableBuylist bool
+
 	exchangeRate float64
 
 	inventory mtgban.InventoryRecord
@@ -221,29 +224,31 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 	return nil
 }
 
+func (mc *Magiccorner) Load(ctx context.Context) error {
+	var errs []error
+
+	if !mc.DisableRetail {
+		err := mc.scrape(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !mc.DisableBuylist {
+		err := mc.scrapeBL(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
 func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
-	if len(mc.inventory) > 0 {
-		return mc.inventory, nil
-	}
-
-	err := mc.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mc.inventory, nil
 }
 
 func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
-	if len(mc.buylist) > 0 {
-		return mc.buylist, nil
-	}
-
-	err := mc.scrapeBL(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mc.buylist, nil
 }
 

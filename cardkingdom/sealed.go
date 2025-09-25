@@ -41,7 +41,7 @@ func (ck *CardkingdomSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ck *CardkingdomSealed) scrape(ctx context.Context) error {
+func (ck *CardkingdomSealed) Load(ctx context.Context) error {
 	pricelist, err := cardkingdom.SealedPricelist(ctx, nil)
 	if err != nil {
 		return err
@@ -170,29 +170,10 @@ func (ck *CardkingdomSealed) scrape(ctx context.Context) error {
 }
 
 func (ck *CardkingdomSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(ck.inventory) > 0 {
-		return ck.inventory, nil
-	}
-
-	err := ck.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return ck.inventory, nil
-
 }
 
 func (ck *CardkingdomSealed) Buylist() (mtgban.BuylistRecord, error) {
-	if len(ck.buylist) > 0 {
-		return ck.buylist, nil
-	}
-
-	err := ck.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return ck.buylist, nil
 }
 

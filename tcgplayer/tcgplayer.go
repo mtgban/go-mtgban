@@ -183,7 +183,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 	return nil
 }
 
-func (tcg *TCGPlayerMarket) scrape(ctx context.Context) error {
+func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
 		return errors.New("sku map not loaded")
@@ -395,28 +395,10 @@ func (tcg *TCGPlayerMarket) scrape(ctx context.Context) error {
 }
 
 func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) > 0 {
-		return tcg.inventory, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.inventory, nil
 }
 
 func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
-	if len(tcg.buylist) > 0 {
-		return tcg.buylist, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.buylist, nil
 }
 

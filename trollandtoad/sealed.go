@@ -172,7 +172,7 @@ const (
 	categorySealedPage = "https://www.trollandtoad.com/magic-the-gathering/magic-the-gathering-sealed-product/909"
 )
 
-func (tnt *TrollandtoadSealed) scrape(ctx context.Context) error {
+func (tnt *TrollandtoadSealed) Load(ctx context.Context) error {
 	link := categorySealedPage + tntOptions
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -207,15 +207,6 @@ func (tnt *TrollandtoadSealed) scrape(ctx context.Context) error {
 }
 
 func (tnt *TrollandtoadSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tnt.inventory) > 0 {
-		return tnt.inventory, nil
-	}
-
-	err := tnt.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tnt.inventory, nil
 }
 

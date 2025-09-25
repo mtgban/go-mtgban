@@ -188,7 +188,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 	return nil
 }
 
-func (tcg *TCGSellerInventory) scrape(ctx context.Context) error {
+func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	ret, err := tcg.totalItems()
 	if err != nil {
 		return err
@@ -269,15 +269,6 @@ func (tcg *TCGSellerInventory) scrape(ctx context.Context) error {
 }
 
 func (tcg *TCGSellerInventory) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) > 0 {
-		return tcg.inventory, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.inventory, nil
 }
 

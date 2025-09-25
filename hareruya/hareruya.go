@@ -35,9 +35,11 @@ type Hareruya struct {
 
 	inventory     mtgban.InventoryRecord
 	inventoryDate time.Time
+	DisableRetail bool
 
-	buylist     mtgban.BuylistRecord
-	buylistDate time.Time
+	buylist        mtgban.BuylistRecord
+	buylistDate    time.Time
+	DisableBuylist bool
 
 	client *http.Client
 }
@@ -331,29 +333,31 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+func (ha *Hareruya) Load(ctx context.Context) error {
+	var errs []error
+
+	if !ha.DisableRetail {
+		err := ha.scrape(ctx, modeInventory)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !ha.DisableBuylist {
+		err := ha.scrape(ctx, modeBuylist)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
 func (ha *Hareruya) Inventory() (mtgban.InventoryRecord, error) {
-	if len(ha.inventory) > 0 {
-		return ha.inventory, nil
-	}
-
-	err := ha.scrape(context.TODO(), modeInventory)
-	if err != nil {
-		return nil, err
-	}
-
 	return ha.inventory, nil
 }
 
 func (ha *Hareruya) Buylist() (mtgban.BuylistRecord, error) {
-	if len(ha.buylist) > 0 {
-		return ha.buylist, nil
-	}
-
-	err := ha.scrape(context.TODO(), modeBuylist)
-	if err != nil {
-		return nil, err
-	}
-
 	return ha.buylist, nil
 }
 

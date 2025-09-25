@@ -132,7 +132,7 @@ func (abu *ABUGamesSealed) processEntry(ctx context.Context, channel chan<- resu
 	return nil
 }
 
-func (abu *ABUGamesSealed) scrape(ctx context.Context) error {
+func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 	count, err := abu.client.GetTotalSealedItems(ctx)
 	if err != nil {
 		return err
@@ -197,28 +197,10 @@ func (abu *ABUGamesSealed) scrape(ctx context.Context) error {
 }
 
 func (abu *ABUGamesSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(abu.inventory) > 0 {
-		return abu.inventory, nil
-	}
-
-	err := abu.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return abu.inventory, nil
 }
 
 func (abu *ABUGamesSealed) Buylist() (mtgban.BuylistRecord, error) {
-	if len(abu.buylist) > 0 {
-		return abu.buylist, nil
-	}
-
-	err := abu.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return abu.buylist, nil
 }
 

@@ -37,6 +37,9 @@ type TrollAndToadGeneric struct {
 	inventoryDate time.Time
 	buylistDate   time.Time
 
+	DisableRetail  bool
+	DisableBuylist bool
+
 	game string
 }
 
@@ -274,19 +277,6 @@ func (tnt *TrollAndToadGeneric) scrape(ctx context.Context) error {
 	return nil
 }
 
-func (tnt *TrollAndToadGeneric) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tnt.inventory) > 0 {
-		return tnt.inventory, nil
-	}
-
-	err := tnt.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
-	return tnt.inventory, nil
-}
-
 func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 	link := buylistURL + tnt.game
 
@@ -403,16 +393,31 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 	return nil
 }
 
+func (tnt *TrollAndToadGeneric) Load(ctx context.Context) error {
+	var errs []error
+
+	if !tnt.DisableRetail {
+		err := tnt.scrape(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !tnt.DisableBuylist {
+		err := tnt.scrapeBuylist(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (tnt *TrollAndToadGeneric) Inventory() (mtgban.InventoryRecord, error) {
+	return tnt.inventory, nil
+}
+
 func (tnt *TrollAndToadGeneric) Buylist() (mtgban.BuylistRecord, error) {
-	if len(tnt.buylist) > 0 {
-		return tnt.buylist, nil
-	}
-
-	err := tnt.scrapeBuylist(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tnt.buylist, nil
 }
 

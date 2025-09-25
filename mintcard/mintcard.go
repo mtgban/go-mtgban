@@ -142,7 +142,7 @@ func (mint *MTGMintCard) processEntry(card Card, condition, finish, language, ed
 	}
 }
 
-func (mint *MTGMintCard) scrape(ctx context.Context) error {
+func (mint *MTGMintCard) Load(ctx context.Context) error {
 	mintClient, err := NewMintClient(ctx)
 	if err != nil {
 		return err
@@ -175,29 +175,10 @@ func (mint *MTGMintCard) scrape(ctx context.Context) error {
 }
 
 func (mint *MTGMintCard) Inventory() (mtgban.InventoryRecord, error) {
-	if len(mint.inventory) > 0 {
-		return mint.inventory, nil
-	}
-
-	err := mint.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mint.inventory, nil
-
 }
 
 func (mint *MTGMintCard) Buylist() (mtgban.BuylistRecord, error) {
-	if len(mint.buylist) > 0 {
-		return mint.buylist, nil
-	}
-
-	err := mint.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mint.buylist, nil
 }
 

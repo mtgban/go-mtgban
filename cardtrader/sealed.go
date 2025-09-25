@@ -120,7 +120,7 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 	return nil
 }
 
-func (ct *CardtraderSealed) scrape(ctx context.Context) error {
+func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
@@ -219,15 +219,6 @@ func (ct *CardtraderSealed) scrape(ctx context.Context) error {
 }
 
 func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(ct.inventory) > 0 {
-		return ct.inventory, nil
-	}
-
-	err := ct.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return ct.inventory, nil
 }
 

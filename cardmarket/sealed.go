@@ -156,7 +156,7 @@ func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- 
 	return nil
 }
 
-func (mkm *CardMarketSealed) scrape(ctx context.Context) error {
+func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
@@ -244,15 +244,6 @@ func (mkm *CardMarketSealed) scrape(ctx context.Context) error {
 }
 
 func (mkm *CardMarketSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(mkm.inventory) > 0 {
-		return mkm.inventory, nil
-	}
-
-	err := mkm.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mkm.inventory, nil
 }
 

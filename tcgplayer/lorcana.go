@@ -159,7 +159,7 @@ func (tcg *TCGLorcana) processPage(ctx context.Context, channel chan<- genericCh
 	return nil
 }
 
-func (tcg *TCGLorcana) scrape(ctx context.Context) error {
+func (tcg *TCGLorcana) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
 	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
@@ -232,15 +232,6 @@ func (tcg *TCGLorcana) scrape(ctx context.Context) error {
 }
 
 func (tcg *TCGLorcana) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) > 0 {
-		return tcg.inventory, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.inventory, nil
 }
 

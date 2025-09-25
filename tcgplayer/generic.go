@@ -130,7 +130,7 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 	return nil
 }
 
-func (tcg *TCGPlayerGeneric) scrape(ctx context.Context) error {
+func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
 	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
@@ -193,15 +193,6 @@ func (tcg *TCGPlayerGeneric) scrape(ctx context.Context) error {
 }
 
 func (tcg *TCGPlayerGeneric) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) > 0 {
-		return tcg.inventory, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.inventory, nil
 }
 

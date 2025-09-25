@@ -232,7 +232,7 @@ const (
 	categoryPage = "https://www.trollandtoad.com/magic-the-gathering/1041"
 )
 
-func (tnt *Trollandtoad) scrape(ctx context.Context) error {
+func (tnt *Trollandtoad) Load(ctx context.Context) error {
 	link := categoryPage
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -298,15 +298,6 @@ func (tnt *Trollandtoad) scrape(ctx context.Context) error {
 }
 
 func (tnt *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tnt.inventory) > 0 {
-		return tnt.inventory, nil
-	}
-
-	err := tnt.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tnt.inventory, nil
 }
 

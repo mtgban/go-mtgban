@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"context"
 	"fmt"
 	"slices"
 )
@@ -62,6 +63,10 @@ type BaseMarket struct {
 	scraper   Market
 }
 
+func (m *BaseMarket) Load(ctx context.Context) error {
+	return nil
+}
+
 func (m *BaseMarket) Inventory() (InventoryRecord, error) {
 	if m.inventory == nil {
 		// Retrieve inventory from the original scraper
@@ -88,6 +93,10 @@ type BaseTrader struct {
 	buylist BuylistRecord
 	info    ScraperInfo
 	scraper Trader
+}
+
+func (m *BaseTrader) Load(ctx context.Context) error {
+	return nil
 }
 
 func (m *BaseTrader) Buylist() (BuylistRecord, error) {

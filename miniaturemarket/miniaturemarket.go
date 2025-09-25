@@ -79,7 +79,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 	return nil
 }
 
-func (mm *Miniaturemarket) scrape(ctx context.Context) error {
+func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
 		co, err := mtgmatcher.GetUUID(uuid)
 		if err != nil || co.Identifiers["miniaturemarketId"] == "" {
@@ -136,15 +136,6 @@ func (mm *Miniaturemarket) scrape(ctx context.Context) error {
 }
 
 func (mm *Miniaturemarket) Inventory() (mtgban.InventoryRecord, error) {
-	if len(mm.inventory) > 0 {
-		return mm.inventory, nil
-	}
-
-	err := mm.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mm.inventory, nil
 }
 

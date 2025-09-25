@@ -89,7 +89,7 @@ func (tcg *TCGPlayerSealed) processEntries(ctx context.Context, channel chan<- r
 	return nil
 }
 
-func (tcg *TCGPlayerSealed) scrape(ctx context.Context) error {
+func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
 		return errors.New("sku map not loaded")
@@ -187,15 +187,6 @@ func (tcg *TCGPlayerSealed) scrape(ctx context.Context) error {
 }
 
 func (tcg *TCGPlayerSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) > 0 {
-		return tcg.inventory, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.inventory, nil
 }
 

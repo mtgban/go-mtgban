@@ -30,7 +30,7 @@ func (mp *Manapool) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mp *Manapool) scrape(ctx context.Context) error {
+func (mp *Manapool) Load(ctx context.Context) error {
 	pricelist, err := GetPriceList(ctx)
 	if err != nil {
 		return err
@@ -109,17 +109,7 @@ func (mp *Manapool) scrape(ctx context.Context) error {
 }
 
 func (mp *Manapool) Inventory() (mtgban.InventoryRecord, error) {
-	if len(mp.inventory) > 0 {
-		return mp.inventory, nil
-	}
-
-	err := mp.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return mp.inventory, nil
-
 }
 
 func (mp *Manapool) Info() (info mtgban.ScraperInfo) {

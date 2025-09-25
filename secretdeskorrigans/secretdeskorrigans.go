@@ -217,7 +217,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 	return sdk.processProduct(ctx, channel, next)
 }
 
-func (sdk *SecretDesKorrigans) scrape(ctx context.Context) error {
+func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "CAD")
 	if err != nil {
 		return err
@@ -293,15 +293,6 @@ func (sdk *SecretDesKorrigans) scrape(ctx context.Context) error {
 }
 
 func (sdk *SecretDesKorrigans) Inventory() (mtgban.InventoryRecord, error) {
-	if len(sdk.inventory) > 0 {
-		return sdk.inventory, nil
-	}
-
-	err := sdk.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return sdk.inventory, nil
 }
 

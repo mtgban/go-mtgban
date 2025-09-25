@@ -23,6 +23,9 @@ const (
 
 	GameMagic   = "Magic_the_Gathering"
 	GameLorcana = "Lorcana"
+
+	modeRetail  = "retail"
+	modeBuylist = "buylist"
 )
 
 type Strikezone struct {
@@ -33,6 +36,9 @@ type Strikezone struct {
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
+
+	DisableRetail  bool
+	DisableBuylist bool
 
 	game string
 }
@@ -310,29 +316,31 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+func (sz *Strikezone) Load(ctx context.Context) error {
+	var errs []error
+
+	if !sz.DisableRetail {
+		err := sz.scrape(ctx, modeRetail)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !sz.DisableBuylist {
+		err := sz.scrape(ctx, modeBuylist)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
 func (sz *Strikezone) Inventory() (mtgban.InventoryRecord, error) {
-	if len(sz.inventory) > 0 {
-		return sz.inventory, nil
-	}
-
-	err := sz.scrape(context.TODO(), "inventory")
-	if err != nil {
-		return nil, err
-	}
-
 	return sz.inventory, nil
 }
 
 func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
-	if len(sz.buylist) > 0 {
-		return sz.buylist, nil
-	}
-
-	err := sz.scrape(context.TODO(), "buylist")
-	if err != nil {
-		return nil, err
-	}
-
 	return sz.buylist, nil
 }
 

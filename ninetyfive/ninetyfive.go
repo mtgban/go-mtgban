@@ -3,6 +3,7 @@ package ninetyfive
 import (
 	"context"
 	"errors"
+	"fmt"
 	"maps"
 	"strings"
 	"sync"
@@ -17,6 +18,9 @@ const (
 
 	GameMagic   = "MTG"
 	GameLorcana = "LRC"
+
+	modeRetail  = "retail"
+	modeBuylist = "buylist"
 )
 
 type Ninetyfive struct {
@@ -26,10 +30,12 @@ type Ninetyfive struct {
 	client *NFClient
 	game   string
 
-	inventoryDate time.Time
-	inventory     mtgban.InventoryRecord
-	buylistDate   time.Time
-	buylist       mtgban.BuylistRecord
+	inventoryDate  time.Time
+	inventory      mtgban.InventoryRecord
+	DisableRetail  bool
+	buylistDate    time.Time
+	buylist        mtgban.BuylistRecord
+	DisableBuylist bool
 }
 
 func NewScraper(game string) (*Ninetyfive, error) {
@@ -57,14 +63,14 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 			var quantity int
 			var priceStr string
 			var lang string
-			if mode == "retail" {
+			if mode == modeRetail {
 				priceStr = priceSet.Price
 				quantity = priceSet.Quan
 				fields := strings.Split(sku, "_")
 				if len(fields) > 3 {
 					lang = fields[3]
 				}
-			} else if mode == "buylist" {
+			} else if mode == modeBuylist {
 				priceStr = priceSet.BuyPrice
 				quantity = priceSet.QuantityBuy
 				lang = sku
@@ -247,29 +253,31 @@ func (nf *Ninetyfive) scrape(ctx context.Context, mode string) error {
 	return nf.processPrices(allCards, allPrices, mode)
 }
 
+func (nf *Ninetyfive) Load(ctx context.Context) error {
+	var errs []error
+
+	if !nf.DisableRetail {
+		err := nf.scrape(ctx, modeRetail)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !nf.DisableBuylist {
+		err := nf.scrape(ctx, modeBuylist)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
 func (nf *Ninetyfive) Inventory() (mtgban.InventoryRecord, error) {
-	if len(nf.inventory) > 0 {
-		return nf.inventory, nil
-	}
-
-	err := nf.scrape(context.TODO(), "retail")
-	if err != nil {
-		return nil, err
-	}
-
 	return nf.inventory, nil
 }
 
 func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
-	if len(nf.buylist) > 0 {
-		return nf.buylist, nil
-	}
-
-	err := nf.scrape(context.TODO(), "buylist")
-	if err != nil {
-		return nil, err
-	}
-
 	return nf.buylist, nil
 }
 

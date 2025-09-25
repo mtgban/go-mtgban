@@ -31,6 +31,9 @@ type CoolstuffincSealed struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
+	DisableRetail  bool
+	DisableBuylist bool
+
 	client *http.Client
 	game   string
 }
@@ -226,19 +229,6 @@ func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
 	return nil
 }
 
-func (csi *CoolstuffincSealed) Inventory() (mtgban.InventoryRecord, error) {
-	if len(csi.inventory) > 0 {
-		return csi.inventory, nil
-	}
-
-	err := csi.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
-	return csi.inventory, nil
-}
-
 func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
 	products, err := GetBuylist(ctx, csi.game)
 	if err != nil {
@@ -303,16 +293,31 @@ func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
 	return nil
 }
 
+func (csi *CoolstuffincSealed) Load(ctx context.Context) error {
+	var errs []error
+
+	if !csi.DisableRetail {
+		err := csi.scrape(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !csi.DisableBuylist {
+		err := csi.parseBL(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (csi *CoolstuffincSealed) Inventory() (mtgban.InventoryRecord, error) {
+	return csi.inventory, nil
+}
+
 func (csi *CoolstuffincSealed) Buylist() (mtgban.BuylistRecord, error) {
-	if len(csi.buylist) > 0 {
-		return csi.buylist, nil
-	}
-
-	err := csi.parseBL(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return csi.buylist, nil
 }
 

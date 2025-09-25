@@ -48,7 +48,7 @@ type respChan struct {
 	entry  *mtgban.InventoryEntry
 }
 
-func (wc *Wizardscupboard) scrape(ctx context.Context) error {
+func (wc *Wizardscupboard) Load(ctx context.Context) error {
 	channel := make(chan respChan)
 
 	c := colly.NewCollector(
@@ -224,15 +224,6 @@ func (wc *Wizardscupboard) scrape(ctx context.Context) error {
 }
 
 func (wc *Wizardscupboard) Inventory() (mtgban.InventoryRecord, error) {
-	if len(wc.inventory) > 0 {
-		return wc.inventory, nil
-	}
-
-	err := wc.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return wc.inventory, nil
 }
 

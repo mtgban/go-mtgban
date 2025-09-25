@@ -106,7 +106,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	return nil
 }
 
-func (stks *MTGStocks) scrape(ctx context.Context) error {
+func (stks *MTGStocks) Load(ctx context.Context) error {
 	averagesRegular, err := stks.client.AverageInterests(ctx, false)
 	if err != nil {
 		stks.printf("averages regular " + err.Error())
@@ -190,15 +190,6 @@ func (stks *MTGStocks) scrape(ctx context.Context) error {
 }
 
 func (stks *MTGStocks) Inventory() (mtgban.InventoryRecord, error) {
-	if len(stks.inventory) > 0 {
-		return stks.inventory, nil
-	}
-
-	err := stks.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return stks.inventory, nil
 }
 

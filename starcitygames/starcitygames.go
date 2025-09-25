@@ -28,6 +28,9 @@ type Starcitygames struct {
 
 	Affiliate string
 
+	DisableRetail  bool
+	DisableBuylist bool
+
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
@@ -292,20 +295,6 @@ func (scg *Starcitygames) scrape(ctx context.Context) error {
 	return nil
 }
 
-func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
-	if len(scg.inventory) > 0 {
-		return scg.inventory, nil
-	}
-
-	err := scg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
-	return scg.inventory, nil
-
-}
-
 func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- responseChan, page int, rarity string) error {
 	search, err := scg.client.SearchAll(ctx, scg.game, page, defaultRequestLimit, rarity)
 	if err != nil {
@@ -503,16 +492,31 @@ func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
 	return nil
 }
 
+func (scg *Starcitygames) Load(ctx context.Context) error {
+	var errs []error
+
+	if !scg.DisableRetail {
+		err := scg.scrape(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+		}
+	}
+
+	if !scg.DisableBuylist {
+		err := scg.scrapeBL(ctx)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (scg *Starcitygames) Inventory() (mtgban.InventoryRecord, error) {
+	return scg.inventory, nil
+}
+
 func (scg *Starcitygames) Buylist() (mtgban.BuylistRecord, error) {
-	if len(scg.buylist) > 0 {
-		return scg.buylist, nil
-	}
-
-	err := scg.scrapeBL(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return scg.buylist, nil
 }
 

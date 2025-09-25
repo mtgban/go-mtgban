@@ -210,7 +210,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 	return toa.processProduct(ctx, channel, next)
 }
 
-func (toa *TOAMagic) scrape(ctx context.Context) error {
+func (toa *TOAMagic) Load(ctx context.Context) error {
 	link := inventoryURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -283,15 +283,6 @@ func (toa *TOAMagic) scrape(ctx context.Context) error {
 }
 
 func (toa *TOAMagic) Inventory() (mtgban.InventoryRecord, error) {
-	if len(toa.inventory) > 0 {
-		return toa.inventory, nil
-	}
-
-	err := toa.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return toa.inventory, nil
 }
 

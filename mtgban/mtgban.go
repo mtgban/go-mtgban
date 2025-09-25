@@ -3,6 +3,7 @@
 package mtgban
 
 import (
+	"context"
 	"time"
 )
 
@@ -162,6 +163,9 @@ var FullGradeTags = []string{
 
 // Scraper is the interface both Sellers and Vendors need to implement
 type Scraper interface {
+	// Load the scraper with data according to the configuration
+	Load(ctx context.Context) error
+
 	// Retrieve the ScraperInfo associated with the scraper
 	Info() ScraperInfo
 }

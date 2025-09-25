@@ -135,7 +135,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 	return nil
 }
 
-func (tcg *TCGPlayerIndex) scrape(ctx context.Context) error {
+func (tcg *TCGPlayerIndex) Load(ctx context.Context) error {
 	pages := make(chan indexChan)
 	channel := make(chan responseChan)
 	var wg sync.WaitGroup
@@ -227,15 +227,6 @@ func (tcg *TCGPlayerIndex) scrape(ctx context.Context) error {
 }
 
 func (tcg *TCGPlayerIndex) Inventory() (mtgban.InventoryRecord, error) {
-	if len(tcg.inventory) > 0 {
-		return tcg.inventory, nil
-	}
-
-	err := tcg.scrape(context.TODO())
-	if err != nil {
-		return nil, err
-	}
-
 	return tcg.inventory, nil
 }
 
