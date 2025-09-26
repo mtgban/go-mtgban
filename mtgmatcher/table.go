@@ -1270,4 +1270,5 @@ var productsWithOnlyFoils = []string{
 	"Secret Lair Drop LOOK AT THE KITTIES",
 	"Secret Lair Drop Animar and Friends",
 	"Secret Lair Drop MagicCon The Gathering",
+	"Secret Lair Drop Calling All Hydra Heads",
 }
