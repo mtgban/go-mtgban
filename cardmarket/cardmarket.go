@@ -357,8 +357,8 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	return nil
 }
 
-func (mkm *CardMarketIndex) Inventory() (mtgban.InventoryRecord, error) {
-	return mkm.inventory, nil
+func (mkm *CardMarketIndex) Inventory() mtgban.InventoryRecord {
+	return mkm.inventory
 }
 
 func (mkm *CardMarketIndex) MarketNames() []string {

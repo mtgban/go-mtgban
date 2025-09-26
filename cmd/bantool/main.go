@@ -599,10 +599,7 @@ type buylistElement struct {
 }
 
 func writeSellerToNDJSON(seller mtgban.Seller, w io.Writer) error {
-	inventory, err := seller.Inventory()
-	if err != nil {
-		return err
-	}
+	inventory := seller.Inventory()
 
 	var inventoryFlat []inventoryElement
 	for uuid, entries := range inventory {
@@ -624,10 +621,7 @@ func writeSellerToNDJSON(seller mtgban.Seller, w io.Writer) error {
 }
 
 func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
-	buylist, err := vendor.Buylist()
-	if err != nil {
-		return err
-	}
+	buylist := vendor.Buylist()
 
 	var buylistFlat []buylistElement
 	for uuid, entries := range buylist {

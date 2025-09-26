@@ -282,8 +282,8 @@ func (toa *TOAMagic) Load(ctx context.Context) error {
 	return nil
 }
 
-func (toa *TOAMagic) Inventory() (mtgban.InventoryRecord, error) {
-	return toa.inventory, nil
+func (toa *TOAMagic) Inventory() mtgban.InventoryRecord {
+	return toa.inventory
 }
 
 func (toa *TOAMagic) Info() (info mtgban.ScraperInfo) {

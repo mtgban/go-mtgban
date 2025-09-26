@@ -249,12 +249,12 @@ func (mc *Magiccorner) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (mc *Magiccorner) Inventory() (mtgban.InventoryRecord, error) {
-	return mc.inventory, nil
+func (mc *Magiccorner) Inventory() mtgban.InventoryRecord {
+	return mc.inventory
 }
 
-func (mc *Magiccorner) Buylist() (mtgban.BuylistRecord, error) {
-	return mc.buylist, nil
+func (mc *Magiccorner) Buylist() mtgban.BuylistRecord {
+	return mc.buylist
 }
 
 func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, edition MCExpansion) error {

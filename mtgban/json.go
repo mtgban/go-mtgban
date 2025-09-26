@@ -14,12 +14,7 @@ type scraperJSON struct {
 func WriteSellerToJSON(seller Seller, w io.Writer) error {
 	var data scraperJSON
 
-	inventory, err := seller.Inventory()
-	if err != nil {
-		return err
-	}
-
-	data.Inventory = inventory
+	data.Inventory = seller.Inventory()
 	data.Info = seller.Info()
 	data.Info.BuylistTimestamp = nil
 
@@ -29,12 +24,7 @@ func WriteSellerToJSON(seller Seller, w io.Writer) error {
 func WriteVendorToJSON(vendor Vendor, w io.Writer) error {
 	var data scraperJSON
 
-	buylist, err := vendor.Buylist()
-	if err != nil {
-		return err
-	}
-
-	data.Buylist = buylist
+	data.Buylist = vendor.Buylist()
 	data.Info = vendor.Info()
 	data.Info.InventoryTimestamp = nil
 

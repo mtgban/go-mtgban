@@ -13,7 +13,7 @@ type CombineEntry struct {
 	URL         string
 }
 
-func CombineInventories(sellers []Seller) (*CombineRoot, error) {
+func CombineInventories(sellers []Seller) *CombineRoot {
 	root := &CombineRoot{
 		Names:   []string{},
 		Entries: map[string]map[string]CombineEntry{},
@@ -23,12 +23,7 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 		sellerName := seller.Info().Name
 		root.Names = append(root.Names, sellerName)
 
-		inv, err := seller.Inventory()
-		if err != nil {
-			return nil, err
-		}
-
-		for card, entries := range inv {
+		for card, entries := range seller.Inventory() {
 			for _, entry := range entries {
 				if entry.Conditions != "NM" {
 					continue
@@ -55,10 +50,10 @@ func CombineInventories(sellers []Seller) (*CombineRoot, error) {
 		}
 	}
 
-	return root, nil
+	return root
 }
 
-func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
+func CombineBuylists(vendors []Vendor, useCredit bool) *CombineRoot {
 	root := &CombineRoot{
 		Names:   []string{},
 		Entries: map[string]map[string]CombineEntry{},
@@ -68,12 +63,7 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 		vendorName := vendor.Info().Name
 		root.Names = append(root.Names, vendorName)
 
-		bl, err := vendor.Buylist()
-		if err != nil {
-			return nil, err
-		}
-
-		for card, entries := range bl {
+		for card, entries := range vendor.Buylist() {
 			_, found := root.Entries[card]
 			if !found {
 				root.Entries[card] = map[string]CombineEntry{}
@@ -99,5 +89,5 @@ func CombineBuylists(vendors []Vendor, useCredit bool) (*CombineRoot, error) {
 		}
 	}
 
-	return root, nil
+	return root
 }

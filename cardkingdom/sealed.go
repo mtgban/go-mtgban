@@ -169,12 +169,12 @@ func (ck *CardkingdomSealed) Load(ctx context.Context) error {
 	return nil
 }
 
-func (ck *CardkingdomSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return ck.inventory, nil
+func (ck *CardkingdomSealed) Inventory() mtgban.InventoryRecord {
+	return ck.inventory
 }
 
-func (ck *CardkingdomSealed) Buylist() (mtgban.BuylistRecord, error) {
-	return ck.buylist, nil
+func (ck *CardkingdomSealed) Buylist() mtgban.BuylistRecord {
+	return ck.buylist
 }
 
 func (ck *CardkingdomSealed) Info() (info mtgban.ScraperInfo) {

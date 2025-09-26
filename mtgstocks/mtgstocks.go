@@ -189,8 +189,8 @@ func (stks *MTGStocks) Load(ctx context.Context) error {
 	return nil
 }
 
-func (stks *MTGStocks) Inventory() (mtgban.InventoryRecord, error) {
-	return stks.inventory, nil
+func (stks *MTGStocks) Inventory() mtgban.InventoryRecord {
+	return stks.inventory
 }
 
 func (stks *MTGStocks) Info() (info mtgban.ScraperInfo) {

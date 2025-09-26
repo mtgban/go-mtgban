@@ -200,8 +200,8 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 	return nil
 }
 
-func (cs *Cardsphere) Buylist() (mtgban.BuylistRecord, error) {
-	return cs.buylist, nil
+func (cs *Cardsphere) Buylist() mtgban.BuylistRecord {
+	return cs.buylist
 }
 
 func (cs *Cardsphere) Info() (info mtgban.ScraperInfo) {

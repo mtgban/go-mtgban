@@ -97,8 +97,8 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGSYPList) Buylist() (mtgban.BuylistRecord, error) {
-	return tcg.buylist, nil
+func (tcg *TCGSYPList) Buylist() mtgban.BuylistRecord {
+	return tcg.buylist
 }
 
 func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {

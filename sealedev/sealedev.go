@@ -457,12 +457,12 @@ func (ss *SealedEVScraper) Load(ctx context.Context) error {
 	return nil
 }
 
-func (ss *SealedEVScraper) Inventory() (mtgban.InventoryRecord, error) {
-	return ss.inventory, nil
+func (ss *SealedEVScraper) Inventory() mtgban.InventoryRecord {
+	return ss.inventory
 }
 
-func (ss *SealedEVScraper) Buylist() (mtgban.BuylistRecord, error) {
-	return ss.buylist, nil
+func (ss *SealedEVScraper) Buylist() mtgban.BuylistRecord {
+	return ss.buylist
 }
 
 func (tcg *SealedEVScraper) MarketNames() []string {

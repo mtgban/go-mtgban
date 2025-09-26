@@ -231,8 +231,8 @@ func (tcg *TCGLorcana) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGLorcana) Inventory() (mtgban.InventoryRecord, error) {
-	return tcg.inventory, nil
+func (tcg *TCGLorcana) Inventory() mtgban.InventoryRecord {
+	return tcg.inventory
 }
 
 func (tcg *TCGLorcana) Info() (info mtgban.ScraperInfo) {

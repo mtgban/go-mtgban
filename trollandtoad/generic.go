@@ -418,12 +418,12 @@ func (tnt *TrollAndToadGeneric) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (tnt *TrollAndToadGeneric) Inventory() (mtgban.InventoryRecord, error) {
-	return tnt.inventory, nil
+func (tnt *TrollAndToadGeneric) Inventory() mtgban.InventoryRecord {
+	return tnt.inventory
 }
 
-func (tnt *TrollAndToadGeneric) Buylist() (mtgban.BuylistRecord, error) {
-	return tnt.buylist, nil
+func (tnt *TrollAndToadGeneric) Buylist() mtgban.BuylistRecord {
+	return tnt.buylist
 }
 
 func (tnt *TrollAndToadGeneric) Info() (info mtgban.ScraperInfo) {

@@ -398,12 +398,12 @@ func (ms *MTGSeattle) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (ms *MTGSeattle) Inventory() (mtgban.InventoryRecord, error) {
-	return ms.inventory, nil
+func (ms *MTGSeattle) Inventory() mtgban.InventoryRecord {
+	return ms.inventory
 }
 
-func (ms *MTGSeattle) Buylist() (mtgban.BuylistRecord, error) {
-	return ms.buylist, nil
+func (ms *MTGSeattle) Buylist() mtgban.BuylistRecord {
+	return ms.buylist
 }
 
 func grading(cardId string, price float64) map[string]float64 {

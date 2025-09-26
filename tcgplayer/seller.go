@@ -268,8 +268,8 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGSellerInventory) Inventory() (mtgban.InventoryRecord, error) {
-	return tcg.inventory, nil
+func (tcg *TCGSellerInventory) Inventory() mtgban.InventoryRecord {
+	return tcg.inventory
 }
 
 func (tcg *TCGSellerInventory) Info() (info mtgban.ScraperInfo) {

@@ -98,8 +98,8 @@ func (mp *ManapoolSealed) Load(ctx context.Context) error {
 	return nil
 }
 
-func (mp *ManapoolSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return mp.inventory, nil
+func (mp *ManapoolSealed) Inventory() mtgban.InventoryRecord {
+	return mp.inventory
 }
 
 func (mp *ManapoolSealed) Info() (info mtgban.ScraperInfo) {

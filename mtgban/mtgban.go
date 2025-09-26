@@ -222,7 +222,7 @@ type Trader interface {
 type Seller interface {
 	// Return the inventory for a Seller. If not already loaded, it will start
 	// scraping the seller gathering the necessary data.
-	Inventory() (InventoryRecord, error)
+	Inventory() InventoryRecord
 
 	// Seller implements the Scraper interface
 	Scraper
@@ -235,7 +235,7 @@ type BuylistRecord map[string][]BuylistEntry
 type Vendor interface {
 	// Return the buylist for a Vendor. If not already loaded, it will start
 	// scraping the vendor gathering the necessary data.
-	Buylist() (BuylistRecord, error)
+	Buylist() BuylistRecord
 
 	// Vendor implements the Scraper interface
 	Scraper

@@ -186,8 +186,8 @@ func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGPlayerSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return tcg.inventory, nil
+func (tcg *TCGPlayerSealed) Inventory() mtgban.InventoryRecord {
+	return tcg.inventory
 }
 
 func (tcg *TCGPlayerSealed) Info() (info mtgban.ScraperInfo) {

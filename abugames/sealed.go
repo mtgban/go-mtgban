@@ -196,12 +196,12 @@ func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 	return nil
 }
 
-func (abu *ABUGamesSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return abu.inventory, nil
+func (abu *ABUGamesSealed) Inventory() mtgban.InventoryRecord {
+	return abu.inventory
 }
 
-func (abu *ABUGamesSealed) Buylist() (mtgban.BuylistRecord, error) {
-	return abu.buylist, nil
+func (abu *ABUGamesSealed) Buylist() mtgban.BuylistRecord {
+	return abu.buylist
 }
 
 func (abu *ABUGamesSealed) TraderNames() []string {

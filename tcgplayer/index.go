@@ -226,8 +226,8 @@ func (tcg *TCGPlayerIndex) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGPlayerIndex) Inventory() (mtgban.InventoryRecord, error) {
-	return tcg.inventory, nil
+func (tcg *TCGPlayerIndex) Inventory() mtgban.InventoryRecord {
+	return tcg.inventory
 }
 
 func (tcg *TCGPlayerIndex) MarketNames() []string {

@@ -324,12 +324,12 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 	return nil
 }
 
-func (abu *ABUGames) Inventory() (mtgban.InventoryRecord, error) {
-	return abu.inventory, nil
+func (abu *ABUGames) Inventory() mtgban.InventoryRecord {
+	return abu.inventory
 }
 
-func (abu *ABUGames) Buylist() (mtgban.BuylistRecord, error) {
-	return abu.buylist, nil
+func (abu *ABUGames) Buylist() mtgban.BuylistRecord {
+	return abu.buylist
 }
 
 var availableTraderNames = []string{

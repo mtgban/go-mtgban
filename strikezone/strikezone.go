@@ -341,12 +341,12 @@ func (sz *Strikezone) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (sz *Strikezone) Inventory() (mtgban.InventoryRecord, error) {
-	return sz.inventory, nil
+func (sz *Strikezone) Inventory() mtgban.InventoryRecord {
+	return sz.inventory
 }
 
-func (sz *Strikezone) Buylist() (mtgban.BuylistRecord, error) {
-	return sz.buylist, nil
+func (sz *Strikezone) Buylist() mtgban.BuylistRecord {
+	return sz.buylist
 }
 
 func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {

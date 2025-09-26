@@ -297,8 +297,8 @@ func (tnt *Trollandtoad) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tnt *Trollandtoad) Inventory() (mtgban.InventoryRecord, error) {
-	return tnt.inventory, nil
+func (tnt *Trollandtoad) Inventory() mtgban.InventoryRecord {
+	return tnt.inventory
 }
 
 func (tnt *Trollandtoad) Info() (info mtgban.ScraperInfo) {

@@ -149,8 +149,8 @@ func (seller *BaseSeller) Load(ctx context.Context) error {
 	return nil
 }
 
-func (seller *BaseSeller) Inventory() (InventoryRecord, error) {
-	return seller.inventory, nil
+func (seller *BaseSeller) Inventory() InventoryRecord {
+	return seller.inventory
 }
 
 func (seller *BaseSeller) Info() ScraperInfo {
@@ -173,8 +173,8 @@ func (vendor *BaseVendor) Load(ctx context.Context) error {
 	return nil
 }
 
-func (vendor *BaseVendor) Buylist() (BuylistRecord, error) {
-	return vendor.buylist, nil
+func (vendor *BaseVendor) Buylist() BuylistRecord {
+	return vendor.buylist
 }
 
 func (vendor *BaseVendor) Info() (info ScraperInfo) {
@@ -250,7 +250,7 @@ func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 
 		seller, isSeller := scraper.(Seller)
 		if isSeller && !isMarket && scraper.Info().InventoryTimestamp != nil {
-			inv, _ := seller.Inventory()
+			inv := seller.Inventory()
 			if len(inv) > 0 {
 				seller := NewSellerFromInventory(inv, seller.Info())
 				sellers = append(sellers, seller)
@@ -259,7 +259,7 @@ func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 
 		vendor, isVendor := scraper.(Vendor)
 		if isVendor && !isTrader && scraper.Info().BuylistTimestamp != nil {
-			bl, _ := vendor.Buylist()
+			bl := vendor.Buylist()
 			if len(bl) > 0 {
 				vendor := NewVendorFromBuylist(bl, vendor.Info())
 				vendors = append(vendors, vendor)
@@ -273,10 +273,7 @@ func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 // Return the inventory for any given seller present in the market.
 // If possible, it will use the Inventory() call to populate data.
 func InventoryForSeller(seller Market, sellerName string) (InventoryRecord, error) {
-	inventory, err := seller.Inventory()
-	if err != nil {
-		return nil, err
-	}
+	inventory := seller.Inventory()
 
 	if !slices.Contains(seller.MarketNames(), sellerName) {
 		return nil, fmt.Errorf("%s is not present in %s", sellerName, seller.Info().Name)
@@ -297,10 +294,7 @@ func InventoryForSeller(seller Market, sellerName string) (InventoryRecord, erro
 // Return the buylsit for any given vendor present in the Trader.
 // If possible, it will use the Buylist() call to populate data.
 func BuylistForVendor(vendor Trader, vendorName string) (BuylistRecord, error) {
-	buylist, err := vendor.Buylist()
-	if err != nil {
-		return nil, err
-	}
+	buylist := vendor.Buylist()
 
 	if !slices.Contains(vendor.TraderNames(), vendorName) {
 		return nil, fmt.Errorf("%s is not present in %s", vendorName, vendor.Info().Name)

@@ -206,8 +206,8 @@ func (tnt *TrollandtoadSealed) Load(ctx context.Context) error {
 	return tnt.parsePages(ctx, categorySealedPage, lastPage)
 }
 
-func (tnt *TrollandtoadSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return tnt.inventory, nil
+func (tnt *TrollandtoadSealed) Inventory() mtgban.InventoryRecord {
+	return tnt.inventory
 }
 
 func (tnt *TrollandtoadSealed) Info() (info mtgban.ScraperInfo) {

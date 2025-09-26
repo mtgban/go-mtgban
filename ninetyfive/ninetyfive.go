@@ -278,12 +278,12 @@ func (nf *Ninetyfive) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (nf *Ninetyfive) Inventory() (mtgban.InventoryRecord, error) {
-	return nf.inventory, nil
+func (nf *Ninetyfive) Inventory() mtgban.InventoryRecord {
+	return nf.inventory
 }
 
-func (nf *Ninetyfive) Buylist() (mtgban.BuylistRecord, error) {
-	return nf.buylist, nil
+func (nf *Ninetyfive) Buylist() mtgban.BuylistRecord {
+	return nf.buylist
 }
 
 func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {

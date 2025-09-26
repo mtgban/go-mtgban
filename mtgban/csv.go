@@ -309,10 +309,7 @@ func cardId2record(cardId string) ([]string, error) {
 }
 
 func WriteSellerToCSV(seller Seller, w io.Writer) error {
-	inventory, err := seller.Inventory()
-	if err != nil {
-		return err
-	}
+	inventory := seller.Inventory()
 	if len(inventory) == 0 {
 		return nil
 	}
@@ -331,7 +328,7 @@ func WriteSellerToCSV(seller Seller, w io.Writer) error {
 		break
 	}
 
-	err = csvWriter.Write(header)
+	err := csvWriter.Write(header)
 	if err != nil {
 		return err
 	}
@@ -374,10 +371,7 @@ func WriteSellerToCSV(seller Seller, w io.Writer) error {
 }
 
 func WriteVendorToCSV(vendor Vendor, w io.Writer) error {
-	buylist, err := vendor.Buylist()
-	if err != nil {
-		return err
-	}
+	buylist := vendor.Buylist()
 	if len(buylist) == 0 {
 		return nil
 	}
@@ -385,7 +379,7 @@ func WriteVendorToCSV(vendor Vendor, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
-	err = csvWriter.Write(BuylistHeader)
+	err := csvWriter.Write(BuylistHeader)
 	if err != nil {
 		return err
 	}

@@ -394,12 +394,12 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGPlayerMarket) Inventory() (mtgban.InventoryRecord, error) {
-	return tcg.inventory, nil
+func (tcg *TCGPlayerMarket) Inventory() mtgban.InventoryRecord {
+	return tcg.inventory
 }
 
-func (tcg *TCGPlayerMarket) Buylist() (mtgban.BuylistRecord, error) {
-	return tcg.buylist, nil
+func (tcg *TCGPlayerMarket) Buylist() mtgban.BuylistRecord {
+	return tcg.buylist
 }
 
 func (tcg *TCGPlayerMarket) MarketNames() []string {

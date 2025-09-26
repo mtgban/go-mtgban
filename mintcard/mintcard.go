@@ -174,12 +174,12 @@ func (mint *MTGMintCard) Load(ctx context.Context) error {
 	return nil
 }
 
-func (mint *MTGMintCard) Inventory() (mtgban.InventoryRecord, error) {
-	return mint.inventory, nil
+func (mint *MTGMintCard) Inventory() mtgban.InventoryRecord {
+	return mint.inventory
 }
 
-func (mint *MTGMintCard) Buylist() (mtgban.BuylistRecord, error) {
-	return mint.buylist, nil
+func (mint *MTGMintCard) Buylist() mtgban.BuylistRecord {
+	return mint.buylist
 }
 
 func grading(cardId string, price float64) map[string]float64 {

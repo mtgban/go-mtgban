@@ -358,12 +358,12 @@ func (ha *Hareruya) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (ha *Hareruya) Inventory() (mtgban.InventoryRecord, error) {
-	return ha.inventory, nil
+func (ha *Hareruya) Inventory() mtgban.InventoryRecord {
+	return ha.inventory
 }
 
-func (ha *Hareruya) Buylist() (mtgban.BuylistRecord, error) {
-	return ha.buylist, nil
+func (ha *Hareruya) Buylist() mtgban.BuylistRecord {
+	return ha.buylist
 }
 
 func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {

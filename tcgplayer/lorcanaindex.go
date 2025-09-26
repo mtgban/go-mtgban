@@ -203,8 +203,8 @@ func (tcg *TCGLorcanaIndex) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGLorcanaIndex) Inventory() (mtgban.InventoryRecord, error) {
-	return tcg.inventory, nil
+func (tcg *TCGLorcanaIndex) Inventory() mtgban.InventoryRecord {
+	return tcg.inventory
 }
 
 func (tcg *TCGLorcanaIndex) MarketNames() []string {

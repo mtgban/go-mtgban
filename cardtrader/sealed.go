@@ -218,8 +218,8 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	return nil
 }
 
-func (ct *CardtraderSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return ct.inventory, nil
+func (ct *CardtraderSealed) Inventory() mtgban.InventoryRecord {
+	return ct.inventory
 }
 
 func (tcg *CardtraderSealed) MarketNames() []string {

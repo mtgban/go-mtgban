@@ -229,12 +229,12 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 	return nil
 }
 
-func (ck *Cardkingdom) Inventory() (mtgban.InventoryRecord, error) {
-	return ck.inventory, nil
+func (ck *Cardkingdom) Inventory() mtgban.InventoryRecord {
+	return ck.inventory
 }
 
-func (ck *Cardkingdom) Buylist() (mtgban.BuylistRecord, error) {
-	return ck.buylist, nil
+func (ck *Cardkingdom) Buylist() mtgban.BuylistRecord {
+	return ck.buylist
 }
 
 func grading(edition string, isFoil bool, price float64) (grade map[string]float64) {

@@ -192,8 +192,8 @@ func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGPlayerGeneric) Inventory() (mtgban.InventoryRecord, error) {
-	return tcg.inventory, nil
+func (tcg *TCGPlayerGeneric) Inventory() mtgban.InventoryRecord {
+	return tcg.inventory
 }
 
 func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {

@@ -129,7 +129,9 @@ func (ae ArbitEntry) String() string {
 	return fmt.Sprintf("%s (%d): %0.2f ~ %0.2f", co, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
 }
 
-func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, err error) {
+func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
+	var result []ArbitEntry
+
 	minDiff := 0.0
 	minSpread := 0.0
 	useTrades := false
@@ -205,17 +207,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 	}
 
-	buylist, err := vendor.Buylist()
-	if err != nil {
-		return nil, err
-	}
-	inventory, err := seller.Inventory()
-	if err != nil {
-		return nil, err
-	}
-
-	for cardId, blEntries := range buylist {
-		invEntries, found := inventory[cardId]
+	for cardId, blEntries := range vendor.Buylist() {
+		invEntries, found := seller.Inventory()[cardId]
 		if !found {
 			continue
 		}
@@ -378,7 +371,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) (result []ArbitEntry, 
 		}
 	}
 
-	return
+	return result
 }
 
 // A generic grading map that estimates common deductions
@@ -386,7 +379,9 @@ var defaultGradeMap = map[string]float64{
 	"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
 }
 
-func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEntry, err error) {
+func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
+	var result []ArbitEntry
+
 	minDiff := 0.0
 	minSpread := 0.0
 	maxSpread := 0.0
@@ -445,17 +440,8 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		}
 	}
 
-	referenceInv, err := reference.Inventory()
-	if err != nil {
-		return nil, err
-	}
-	probeInv, err := probe.Inventory()
-	if err != nil {
-		return nil, err
-	}
-
-	for cardId, refEntries := range referenceInv {
-		invEntries, found := probeInv[cardId]
+	for cardId, refEntries := range reference.Inventory() {
+		invEntries, found := probe.Inventory()[cardId]
 		if !found {
 			continue
 		}
@@ -586,7 +572,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) (result []ArbitEn
 		}
 	}
 
-	return
+	return result
 }
 
 type PennystockEntry struct {
@@ -594,13 +580,10 @@ type PennystockEntry struct {
 	InventoryEntry
 }
 
-func Pennystock(seller Seller, full bool, thresholds ...float64) (result []PennystockEntry, err error) {
-	inventory, err := seller.Inventory()
-	if err != nil {
-		return nil, err
-	}
+func Pennystock(seller Seller, full bool, thresholds ...float64) []PennystockEntry {
+	var result []PennystockEntry
 
-	for cardId, entries := range inventory {
+	for cardId, entries := range seller.Inventory() {
 		co, err := mtgmatcher.GetUUID(cardId)
 		if err != nil {
 			continue
@@ -658,5 +641,6 @@ func Pennystock(seller Seller, full bool, thresholds ...float64) (result []Penny
 			}
 		}
 	}
-	return
+
+	return result
 }

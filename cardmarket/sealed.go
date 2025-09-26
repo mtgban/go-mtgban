@@ -243,8 +243,8 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	return nil
 }
 
-func (mkm *CardMarketSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return mkm.inventory, nil
+func (mkm *CardMarketSealed) Inventory() mtgban.InventoryRecord {
+	return mkm.inventory
 }
 
 func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {

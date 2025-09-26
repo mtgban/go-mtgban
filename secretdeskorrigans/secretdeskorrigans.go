@@ -292,8 +292,8 @@ func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 	return nil
 }
 
-func (sdk *SecretDesKorrigans) Inventory() (mtgban.InventoryRecord, error) {
-	return sdk.inventory, nil
+func (sdk *SecretDesKorrigans) Inventory() mtgban.InventoryRecord {
+	return sdk.inventory
 }
 
 func (sdk *SecretDesKorrigans) Info() (info mtgban.ScraperInfo) {

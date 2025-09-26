@@ -135,8 +135,8 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	return nil
 }
 
-func (mm *Miniaturemarket) Inventory() (mtgban.InventoryRecord, error) {
-	return mm.inventory, nil
+func (mm *Miniaturemarket) Inventory() mtgban.InventoryRecord {
+	return mm.inventory
 }
 
 func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {

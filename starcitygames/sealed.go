@@ -316,12 +316,12 @@ func (scg *StarcitygamesSealed) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (scg *StarcitygamesSealed) Inventory() (mtgban.InventoryRecord, error) {
-	return scg.inventory, nil
+func (scg *StarcitygamesSealed) Inventory() mtgban.InventoryRecord {
+	return scg.inventory
 }
 
-func (scg *StarcitygamesSealed) Buylist() (mtgban.BuylistRecord, error) {
-	return scg.buylist, nil
+func (scg *StarcitygamesSealed) Buylist() mtgban.BuylistRecord {
+	return scg.buylist
 }
 
 func (scg *StarcitygamesSealed) Info() (info mtgban.ScraperInfo) {

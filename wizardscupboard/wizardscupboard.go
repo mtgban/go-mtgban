@@ -223,8 +223,8 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 	return nil
 }
 
-func (wc *Wizardscupboard) Inventory() (mtgban.InventoryRecord, error) {
-	return wc.inventory, nil
+func (wc *Wizardscupboard) Inventory() mtgban.InventoryRecord {
+	return wc.inventory
 }
 
 func (wc *Wizardscupboard) Info() (info mtgban.ScraperInfo) {

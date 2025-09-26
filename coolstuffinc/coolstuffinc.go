@@ -549,12 +549,12 @@ func (csi *Coolstuffinc) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (csi *Coolstuffinc) Inventory() (mtgban.InventoryRecord, error) {
-	return csi.inventory, nil
+func (csi *Coolstuffinc) Inventory() mtgban.InventoryRecord {
+	return csi.inventory
 }
 
-func (csi *Coolstuffinc) Buylist() (mtgban.BuylistRecord, error) {
-	return csi.buylist, nil
+func (csi *Coolstuffinc) Buylist() mtgban.BuylistRecord {
+	return csi.buylist
 }
 
 func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
