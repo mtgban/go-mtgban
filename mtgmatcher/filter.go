@@ -835,6 +835,8 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 					possibleSuffixes = append(possibleSuffixes, SuffixSpecial)
 				case inCard.isJPN():
 					possibleSuffixes = append(possibleSuffixes, "jpn")
+				case inCard.Edition == "Alternate Fourth Edition":
+					possibleSuffixes = append(possibleSuffixes, "alt")
 				}
 
 				for _, numSuffix := range possibleSuffixes {

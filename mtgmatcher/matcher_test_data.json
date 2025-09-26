@@ -1790,6 +1790,15 @@
         }
     },
     {
+        "uuid": "1b3a28ad-41ca-587a-9feb-5f40154976da_alt",
+        "description": "variant_number_fourth_alt",
+        "input": {
+            "name": "Swamp",
+            "variant": "370",
+            "edition": "Fourth Edition Alternate"
+        }
+    },
+    {
         "uuid": "0b5151a5-ada5-5045-a7a9-ecbe69593f69",
         "description": "fnm_normal",
         "input": {

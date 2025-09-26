@@ -563,6 +563,7 @@ var EditionTable = map[string]string{
 	"Alternate 4th":              "Alternate Fourth Edition",
 	"Fourth (Alternate Edition)": "Alternate Fourth Edition",
 	"Fourth Edition (Alt)":       "Alternate Fourth Edition",
+	"Fourth Edition Alternate":   "Alternate Fourth Edition",
 	"Fourth Edition: Alternate":  "Alternate Fourth Edition",
 	"FEALT":                      "Alternate Fourth Edition",
 
