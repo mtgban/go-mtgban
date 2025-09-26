@@ -32,6 +32,7 @@ const (
 
 type MKMClient struct {
 	client *http.Client
+	auth   *authTransport
 }
 
 func NewMKMClient(appToken, appSecret string) *MKMClient {
@@ -44,17 +45,21 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 	client.RetryWaitMin = 2 * time.Second
 	client.RetryWaitMax = 10 * time.Second
 	client.RetryMax = 20
-	client.HTTPClient.Transport = &authTransport{
+
+	auth := &authTransport{
 		Parent:    client.HTTPClient.Transport,
 		AppToken:  appToken,
 		AppSecret: appSecret,
 	}
+
+	client.HTTPClient.Transport = auth
+	mkm.auth = auth
 	mkm.client = client.StandardClient()
 	return &mkm
 }
 
 func (mkm *MKMClient) RequestNo() int {
-	return mkm.client.Transport.(*authTransport).RequestNo
+	return mkm.auth.RequestNo
 }
 
 type MKMExpansion struct {
