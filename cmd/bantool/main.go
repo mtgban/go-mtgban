@@ -692,10 +692,12 @@ func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath,
 	return err
 }
 
-func dump(dataBucket simplecloud.Writer, bc *mtgban.BanClient, outputPath, format string, meta bool) error {
+func dump(dataBucket simplecloud.Writer, scrapers []mtgban.Scraper, outputPath, format string, meta bool) error {
 	log.Println("Writing results to", outputPath)
 
-	for _, seller := range bc.Sellers() {
+	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
+
+	for _, seller := range sellers {
 		err := dumpSeller(dataBucket, seller, outputPath, format)
 		if err != nil {
 			return err
@@ -710,7 +712,7 @@ func dump(dataBucket simplecloud.Writer, bc *mtgban.BanClient, outputPath, forma
 		}
 	}
 
-	for _, vendor := range bc.Vendors() {
+	for _, vendor := range vendors {
 		err := dumpVendor(dataBucket, vendor, outputPath, format)
 		if err != nil {
 			return err
@@ -942,45 +944,53 @@ func run() int {
 	}
 	log.Println("loading datastore took:", time.Since(now))
 
-	bc := mtgban.NewClient()
+	var scrapers []mtgban.Scraper
 
 	// Initialize the enabled scrapers
 	for _, opt := range options {
-		if opt.Enabled {
-			scraper, err := opt.Init()
-			if err != nil {
-				log.Println(err)
-				return 1
-			}
-			if opt.OnlySeller {
-				bc.RegisterSeller(scraper)
-			} else if opt.OnlyVendor {
-				bc.RegisterVendor(scraper)
-			} else {
-				bc.Register(scraper)
-			}
+		if !opt.Enabled {
+			continue
 		}
+
+		scraper, err := opt.Init()
+		if err != nil {
+			log.Println(err)
+			return 1
+		}
+
+		// Check if any sub data source needs to be disabled
+		config, ok := scraper.(mtgban.ScraperConfig)
+		if ok {
+			config.SetConfig(mtgban.ScraperOptions{
+				DisableRetail:  opt.OnlyVendor,
+				DisableBuylist: opt.OnlySeller,
+			})
+		}
+
+		scrapers = append(scrapers, scraper)
 	}
 
-	if len(bc.Scrapers()) == 0 {
+	if len(scrapers) == 0 {
 		log.Println("No scraper configured, run with -h for a list of commands")
 		return 1
 	}
-	log.Println("BAN client configured with", len(bc.Sellers()), "sellers and", len(bc.Vendors()), "vendors")
+	countSellers, countVendors := mtgban.CountScrapers(scrapers)
+	log.Println("Configured with", countSellers, "sellers and", countVendors, "vendors")
 
 	now = time.Now()
 	// Load the data
-	err = bc.Load()
-	if err != nil {
-		log.Println("Something didn't work while scraping...")
-		log.Println(err)
-		return 1
+	for _, scraper := range scrapers {
+		err := scraper.Load(context.Background())
+		if err != nil {
+			log.Println(err)
+		}
 	}
+
 	log.Println("loading scraper data took:", time.Since(now))
 
 	now = time.Now()
 	// Dump the results
-	err = dump(dataBucket, bc, *outputPathOpt, *fileFormatOpt, *metaOpt)
+	err = dump(dataBucket, scrapers, *outputPathOpt, *fileFormatOpt, *metaOpt)
 	if err != nil {
 		log.Println(err)
 		return 1
