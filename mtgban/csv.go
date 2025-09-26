@@ -548,7 +548,7 @@ func WriteCombineToCSV(root *CombineRoot, w io.Writer) error {
 	return nil
 }
 
-func WritePennyToCSV(penny []PennystockEntry, w io.Writer) error {
+func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 

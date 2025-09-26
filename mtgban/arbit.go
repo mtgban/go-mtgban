@@ -575,13 +575,8 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 	return result
 }
 
-type PennystockEntry struct {
-	CardId string
-	InventoryEntry
-}
-
-func Pennystock(seller Seller, full bool, thresholds ...float64) []PennystockEntry {
-	var result []PennystockEntry
+func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
+	var result []ArbitEntry
 
 	for cardId, entries := range seller.Inventory() {
 		co, err := mtgmatcher.GetUUID(cardId)
@@ -634,7 +629,7 @@ func Pennystock(seller Seller, full bool, thresholds ...float64) []PennystockEnt
 			}
 
 			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
-				result = append(result, PennystockEntry{
+				result = append(result, ArbitEntry{
 					CardId:         cardId,
 					InventoryEntry: entry,
 				})
