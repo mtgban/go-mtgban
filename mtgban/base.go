@@ -227,7 +227,7 @@ func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 		market, isMarket := scraper.(Market)
 		if isMarket && scraper.Info().InventoryTimestamp != nil {
 			for _, name := range market.MarketNames() {
-				inv, _ := InventoryForSeller(market, name)
+				inv := InventoryForSeller(market, name)
 				if len(inv) == 0 {
 					continue
 				}
@@ -239,7 +239,7 @@ func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 		trader, isTrader := scraper.(Trader)
 		if isTrader && scraper.Info().BuylistTimestamp != nil {
 			for _, name := range trader.TraderNames() {
-				bl, _ := BuylistForVendor(trader, name)
+				bl := BuylistForVendor(trader, name)
 				if len(bl) == 0 {
 					continue
 				}
@@ -272,12 +272,8 @@ func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 
 // Return the inventory for any given seller present in the market.
 // If possible, it will use the Inventory() call to populate data.
-func InventoryForSeller(seller Market, sellerName string) (InventoryRecord, error) {
+func InventoryForSeller(seller Market, sellerName string) InventoryRecord {
 	inventory := seller.Inventory()
-
-	if !slices.Contains(seller.MarketNames(), sellerName) {
-		return nil, fmt.Errorf("%s is not present in %s", sellerName, seller.Info().Name)
-	}
 
 	marketplace := InventoryRecord{}
 	for uuid := range inventory {
@@ -288,17 +284,13 @@ func InventoryForSeller(seller Market, sellerName string) (InventoryRecord, erro
 		}
 	}
 
-	return marketplace, nil
+	return marketplace
 }
 
 // Return the buylsit for any given vendor present in the Trader.
 // If possible, it will use the Buylist() call to populate data.
-func BuylistForVendor(vendor Trader, vendorName string) (BuylistRecord, error) {
+func BuylistForVendor(vendor Trader, vendorName string) BuylistRecord {
 	buylist := vendor.Buylist()
-
-	if !slices.Contains(vendor.TraderNames(), vendorName) {
-		return nil, fmt.Errorf("%s is not present in %s", vendorName, vendor.Info().Name)
-	}
 
 	traderpost := BuylistRecord{}
 	for uuid := range buylist {
@@ -309,5 +301,5 @@ func BuylistForVendor(vendor Trader, vendorName string) (BuylistRecord, error) {
 		}
 	}
 
-	return traderpost, nil
+	return traderpost
 }
