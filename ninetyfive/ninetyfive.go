@@ -118,7 +118,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 			}
 
 			link := "https://shop.95gamecenter.com/app.php"
-			if mode == "retail" {
+			if mode == modeRetail {
 				var cond string
 				switch {
 				// _MT_ case is skipped
@@ -147,7 +147,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 					OriginalId: key,
 					InstanceId: sku,
 				})
-			} else if mode == "buylist" {
+			} else if mode == modeBuylist {
 				idsToAdd := []string{cardId}
 				// Buylist for the foil version of the card is the same
 				cardFoilId, err := mtgmatcher.MatchId(cardId, true)
@@ -240,7 +240,7 @@ func (nf *Ninetyfive) scrape(ctx context.Context, mode string) error {
 	nf.printf("Loaded %d cards", len(allCards))
 
 	var allPrices NFPrice
-	if mode == "retail" {
+	if mode == modeRetail {
 		allPrices, err = nf.client.getPrices(ctx)
 	} else {
 		allPrices, err = nf.client.getBuyPrices(ctx)

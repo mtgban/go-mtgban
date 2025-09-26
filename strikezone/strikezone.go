@@ -79,12 +79,12 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	var err error
 	switch sz.game {
 	case GameMagic:
-		if mode == "inventory" {
+		if mode == modeRetail {
 			notes = el.ChildText("td:nth-child(4)")
 			cond = el.ChildText("td:nth-child(5)")
 			qty = el.ChildText("td:nth-child(6)")
 			price = el.ChildText("td:nth-child(7)")
-		} else if mode == "buylist" {
+		} else if mode == modeBuylist {
 			notes = el.ChildText("td:nth-child(4)")
 			cond = notes
 			qty = el.ChildText("td:nth-child(5)")
@@ -167,7 +167,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		return fmt.Errorf("Unsupported %s condition", cond)
 	}
 
-	if mode == "inventory" {
+	if mode == modeRetail {
 		channel <- respChan{
 			cardId: cardId,
 			inv: &mtgban.InventoryEntry{
@@ -177,7 +177,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 				URL:        "http://shop.strikezoneonline.com" + pathURL,
 			},
 		}
-	} else if mode == "buylist" {
+	} else if mode == modeBuylist {
 		var sellPrice, priceRatio float64
 
 		invCards := sz.inventory[cardId]
@@ -240,7 +240,7 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		link := e.Attr("href")
 
 		basePath := "/Category/"
-		if mode == "buylist" {
+		if mode == modeBuylist {
 			basePath = "/BuyList/"
 		}
 
@@ -265,7 +265,7 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		sz.printf("Parsing %s", edition)
 
 		tableRowName := "table.rtti tr"
-		if mode == "buylist" || sz.game == GameLorcana {
+		if mode == modeBuylist || sz.game == GameLorcana {
 			tableRowName = "table.ItemTable tr"
 		}
 
@@ -279,9 +279,9 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	})
 
 	var link string
-	if mode == "inventory" {
+	if mode == modeRetail {
 		link = fmt.Sprintf(szInventoryURL, sz.game)
-	} else if mode == "buylist" {
+	} else if mode == modeBuylist {
 		link = fmt.Sprintf(szBuylistURL, sz.game)
 	}
 	sz.printf("Visiting %s", link)
@@ -307,9 +307,9 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		}
 	}
 
-	if mode == "inventory" {
+	if mode == modeRetail {
 		sz.inventoryDate = time.Now()
-	} else if mode == "buylist" {
+	} else if mode == modeBuylist {
 		sz.buylistDate = time.Now()
 	}
 
