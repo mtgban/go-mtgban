@@ -696,6 +696,9 @@ func dump(dataBucket simplecloud.Writer, scrapers []mtgban.Scraper, outputPath, 
 	log.Println("Writing results to", outputPath)
 
 	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
+	if len(sellers) == 0 && len(vendors) == 0 {
+		return errors.New("no data retrieved")
+	}
 
 	for _, seller := range sellers {
 		err := dumpSeller(dataBucket, seller, outputPath, format)
