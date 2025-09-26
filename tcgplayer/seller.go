@@ -55,8 +55,8 @@ type setCountPair struct {
 	Count int
 }
 
-func (tcg *TCGSellerInventory) totalItems() (*itemsRecap, error) {
-	response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, 0, 0, tcg.onlyDirect, nil)
+func (tcg *TCGSellerInventory) totalItems(ctx context.Context) (*itemsRecap, error) {
+	response, err := tcg.client.InventoryForSeller(ctx, tcg.sellerKeys, 0, 0, tcg.onlyDirect, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ var conditionMap = map[string]string{
 
 func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- responseChan, page int) error {
 	for _, finish := range []string{"Normal", "Foil"} {
-		response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
+		response, err := tcg.client.InventoryForSeller(ctx, tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
 		if err != nil {
 			tcg.printf("InventoryForSeller %s %s", finish, err.Error())
 			continue
@@ -105,7 +105,7 @@ func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- 
 func (tcg *TCGSellerInventory) processEdition(ctx context.Context, channel chan<- responseChan, setName string, count int) error {
 	for i := 0; i <= count/tcg.requestSize; i++ {
 		for _, finish := range []string{"Normal", "Foil"} {
-			response, err := tcg.client.InventoryForSeller(tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
+			response, err := tcg.client.InventoryForSeller(ctx, tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
 			if err != nil {
 				tcg.printf("InventoryForSeller %s %s", finish, err.Error())
 				continue
@@ -189,7 +189,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 }
 
 func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
-	ret, err := tcg.totalItems()
+	ret, err := tcg.totalItems(ctx)
 	if err != nil {
 		return err
 	}

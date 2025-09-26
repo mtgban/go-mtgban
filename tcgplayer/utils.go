@@ -204,12 +204,12 @@ type ListingData struct {
 	Foil            bool    `json:"foil"`
 }
 
-func GetDirectQtysForProductId(productId int, onlyDirect bool) []ListingData {
+func GetDirectQtysForProductId(ctx context.Context, productId int, onlyDirect bool) []ListingData {
 	client := NewSellerClient()
 
 	var result []ListingData
 	for i := 0; ; i++ {
-		listings, err := client.InventoryListing(productId, defaultListingSize, i, onlyDirect)
+		listings, err := client.InventoryListing(ctx, productId, defaultListingSize, i, onlyDirect)
 		if err != nil || len(listings) == 0 {
 			break
 		}

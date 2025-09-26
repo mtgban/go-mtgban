@@ -478,7 +478,7 @@ func NewSellerClient() *SellerClient {
 	return &tcg
 }
 
-func (tcg *SellerClient) InventoryForSeller(sellerKeys []string, size, page int, useDirect bool, finishes []string, sets ...string) (*sellerInventoryResponse, error) {
+func (tcg *SellerClient) InventoryForSeller(ctx context.Context, sellerKeys []string, size, page int, useDirect bool, finishes []string, sets ...string) (*sellerInventoryResponse, error) {
 	var params sellerInventoryRequest
 	params.Algorithm = "revenue_synonym_v2"
 	params.From = size * page
@@ -505,7 +505,14 @@ func (tcg *SellerClient) InventoryForSeller(sellerKeys []string, size, page int,
 		return nil, err
 	}
 
-	resp, err := tcg.client.Post(SellerInventoryURL, "application/json", bytes.NewReader(payload))
+	link := SellerInventoryURL
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := tcg.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -573,7 +580,7 @@ type sellerInventoryListingResponse struct {
 	} `json:"results"`
 }
 
-func (tcg *SellerClient) InventoryListing(productId, size, page int, useDirect bool) ([]SellerListing, error) {
+func (tcg *SellerClient) InventoryListing(ctx context.Context, productId, size, page int, useDirect bool) ([]SellerListing, error) {
 	var params sellerInventoryListingRequest
 	params.Filters.Term.SellerStatus = "Live"
 	if useDirect {
@@ -597,7 +604,13 @@ func (tcg *SellerClient) InventoryListing(productId, size, page int, useDirect b
 	}
 
 	link := fmt.Sprintf(SellerListingURL, productId)
-	resp, err := tcg.client.Post(link, "application/json", bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := tcg.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
