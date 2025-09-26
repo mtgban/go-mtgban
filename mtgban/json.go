@@ -11,6 +11,29 @@ type scraperJSON struct {
 	Buylist   BuylistRecord   `json:"buylist,omitempty"`
 }
 
+func WriteScraperToJSON(scraper Scraper, w io.Writer) error {
+	var data scraperJSON
+
+	seller, isSeller := scraper.(Seller)
+	vendor, isVendor := scraper.(Vendor)
+	if isSeller {
+		data.Inventory = seller.Inventory()
+	}
+	if isVendor {
+		data.Buylist = vendor.Buylist()
+	}
+	data.Info = scraper.Info()
+
+	if len(data.Inventory) == 0 {
+		data.Info.InventoryTimestamp = nil
+	}
+	if len(data.Buylist) == 0 {
+		data.Info.BuylistTimestamp = nil
+	}
+
+	return json.NewEncoder(w).Encode(&data)
+}
+
 func WriteSellerToJSON(seller Seller, w io.Writer) error {
 	var data scraperJSON
 
