@@ -393,6 +393,11 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 	return nil
 }
 
+func (tnt *TrollAndToadGeneric) SetConfig(opt mtgban.ScraperOptions) {
+	tnt.DisableRetail = opt.DisableRetail
+	tnt.DisableBuylist = opt.DisableBuylist
+}
+
 func (tnt *TrollAndToadGeneric) Load(ctx context.Context) error {
 	var errs []error
 

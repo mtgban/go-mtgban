@@ -240,3 +240,15 @@ type Vendor interface {
 	// Vendor implements the Scraper interface
 	Scraper
 }
+
+// Set of options for the ScraperConfig interface
+type ScraperOptions struct {
+	DisableRetail  bool
+	DisableBuylist bool
+}
+
+// ConfigOptions is the interface to apply options set in ConfigOptions after
+// the scraper has been initialized.
+type ScraperConfig interface {
+	SetConfig(ScraperOptions)
+}

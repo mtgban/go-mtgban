@@ -492,6 +492,11 @@ func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
 	return nil
 }
 
+func (scg *Starcitygames) SetConfig(opt mtgban.ScraperOptions) {
+	scg.DisableRetail = opt.DisableRetail
+	scg.DisableBuylist = opt.DisableBuylist
+}
+
 func (scg *Starcitygames) Load(ctx context.Context) error {
 	var errs []error
 

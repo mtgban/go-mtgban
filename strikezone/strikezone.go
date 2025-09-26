@@ -316,6 +316,11 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+func (sz *Strikezone) SetConfig(opt mtgban.ScraperOptions) {
+	sz.DisableRetail = opt.DisableRetail
+	sz.DisableBuylist = opt.DisableBuylist
+}
+
 func (sz *Strikezone) Load(ctx context.Context) error {
 	var errs []error
 

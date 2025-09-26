@@ -373,6 +373,11 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+func (ms *MTGSeattle) SetConfig(opt mtgban.ScraperOptions) {
+	ms.DisableRetail = opt.DisableRetail
+	ms.DisableBuylist = opt.DisableBuylist
+}
+
 func (ms *MTGSeattle) Load(ctx context.Context) error {
 	var errs []error
 

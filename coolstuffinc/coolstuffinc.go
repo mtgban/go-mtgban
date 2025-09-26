@@ -524,6 +524,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 	return nil
 }
 
+func (csi *Coolstuffinc) SetConfig(opt mtgban.ScraperOptions) {
+	csi.DisableRetail = opt.DisableRetail
+	csi.DisableBuylist = opt.DisableBuylist
+}
+
 func (csi *Coolstuffinc) Load(ctx context.Context) error {
 	var errs []error
 

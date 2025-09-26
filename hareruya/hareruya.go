@@ -333,6 +333,11 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+func (ha *Hareruya) SetConfig(opt mtgban.ScraperOptions) {
+	ha.DisableRetail = opt.DisableRetail
+	ha.DisableBuylist = opt.DisableBuylist
+}
+
 func (ha *Hareruya) Load(ctx context.Context) error {
 	var errs []error
 

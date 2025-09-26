@@ -253,6 +253,11 @@ func (nf *Ninetyfive) scrape(ctx context.Context, mode string) error {
 	return nf.processPrices(allCards, allPrices, mode)
 }
 
+func (nf *Ninetyfive) SetConfig(opt mtgban.ScraperOptions) {
+	nf.DisableRetail = opt.DisableRetail
+	nf.DisableBuylist = opt.DisableBuylist
+}
+
 func (nf *Ninetyfive) Load(ctx context.Context) error {
 	var errs []error
 

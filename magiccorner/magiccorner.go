@@ -224,6 +224,11 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 	return nil
 }
 
+func (mc *Magiccorner) SetConfig(opt mtgban.ScraperOptions) {
+	mc.DisableRetail = opt.DisableRetail
+	mc.DisableBuylist = opt.DisableBuylist
+}
+
 func (mc *Magiccorner) Load(ctx context.Context) error {
 	var errs []error
 
