@@ -71,8 +71,13 @@ func (mp *Manapool) Load(ctx context.Context) error {
 			v.Set("ref", mp.Partner)
 		}
 		v.Set("conditions", card.ConditionID)
-		if card.FinishID != "NF" {
+		switch card.FinishID {
+		case "EF":
+			v.Set("finish", "etched")
+		case "FO":
 			v.Set("finish", "foil")
+		case "NF":
+			v.Set("finish", "nonfoil")
 		}
 		u.RawQuery = v.Encode()
 		link := u.String()
