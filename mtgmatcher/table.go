@@ -180,8 +180,6 @@ var missingPALPtags = map[string]string{
 // in various editions. We change their name appending "Playtest" to treat them
 // differently and tell them apart their main counterpart
 var duplicatedCardNames = []string{
-	"Clear, the Mind",
-	"Glimpse, the Unthinkable",
 	"Pick Your Poison",
 	"Red Herring",
 	"______",

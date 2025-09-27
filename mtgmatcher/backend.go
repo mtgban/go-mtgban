@@ -480,8 +480,7 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 
 			// Deduplicate clashing names
-			if slices.Contains(duplicatedCardNames, name) &&
-				(strings.Contains(set.Name, "Playtest") || strings.Contains(set.Name, "Unknown")) {
+			if slices.Contains(duplicatedCardNames, name) && strings.Contains(set.Name, "Playtest") {
 				name += " Playtest"
 			}
 

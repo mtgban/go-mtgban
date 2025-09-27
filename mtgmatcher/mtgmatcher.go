@@ -213,7 +213,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Pre-adjust special cards with duplicated names
-	if (inCard.isMysteryList() || strings.Contains(inCard.Edition, "Playtest") || strings.Contains(inCard.Edition, "Unknown")) && slices.Contains(duplicatedCardNames, inCard.Name) {
+	if slices.Contains(duplicatedCardNames, inCard.Name) && (inCard.isMysteryList() || strings.Contains(inCard.Edition, "Playtest")) {
 		inCard.Name += " Playtest"
 	}
 
@@ -1089,7 +1089,7 @@ func adjustEdition(inCard *InputCard) {
 
 	// Adjust the name of clashing cards
 	case slices.Contains(duplicatedCardNames, inCard.Name) &&
-		(inCard.isMysteryList() || strings.Contains(edition, "Playtest") || strings.Contains(edition, "Unknown")):
+		(inCard.isMysteryList() || strings.Contains(edition, "Playtest")):
 		inCard.Name += " Playtest"
 
 	// Single card mismatches
