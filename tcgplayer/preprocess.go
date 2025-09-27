@@ -303,10 +303,12 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				variant = ""
 			}
 		case "Ultimecia, Temporal Threat", "Lightning, Security Sergeant",
-			"Cloud, Planet's Champion", "Sephiroth, Planet's Heir":
+			"Cloud, Planet's Champion", "Sephiroth, Planet's Heir", "Kaalia of the Vast":
 			if variant == "Costco Bundle" {
 				edition = "PMEI"
 			}
+		case "J. Jonah Jameson":
+			edition = "PSPM"
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
@@ -480,7 +482,8 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			variant = "J" + number
 		}
 	case "Game Day & Store Championship Promos":
-		if variant == "Winner" || variant == "Top 8" {
+		// Using Contains since reskinned cards might have the original card name there
+		if strings.Contains(variant, "Winner") || strings.Contains(variant, "Top 8") {
 			return nil, errors.New("untracked")
 		}
 	case "Special Occasion":
@@ -512,6 +515,17 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = "PMEI"
 			variant = ""
 		}
+	case "MagicFest Cards":
+		switch cardName {
+		case "Lightning Bolt":
+			edition = "PF19"
+		case "Arcane Signet":
+			vars, found := mtgmatcher.VariantsTable["30th Anniversary Misc Promos"]["Arcane Signet"][strings.ToLower(variant)]
+			if found {
+				variant = vars
+				edition = "P30M"
+			}
+		}
 	case "Fourth Edition",
 		"Revised Edition",
 		"Mirage",
@@ -533,7 +547,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		"Universes Beyond: Warhammer 40,000",
 		"The Brothers' War: Retro Frame Artifacts",
 		"Mystery Booster Cards",
-		"MagicFest Cards",
 		"Planeshift",
 		"": // cosmetic
 		// Variants are fine as is
@@ -600,10 +613,12 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 
 	isFoil := strings.Contains(ogVariant, "Foil")
 
-	return &mtgmatcher.InputCard{
+	card := mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
 		Foil:      isFoil,
-	}, nil
+	}
+
+	return &card, nil
 }
