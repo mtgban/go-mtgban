@@ -456,10 +456,11 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		case "The First Sliver", "Serra the Benevolent", "Ponder",
 			"Ugin, the Spirit Dragon", "Sliver Hive", "Lightning Bolt",
 			"The Ur-Dragon", "Scourge of Valkas":
-			if variant == "3" || variant == "2" || variant == "1" {
+			cards := mtgmatcher.MatchInSet(cardName, "PF25")
+			if len(cards) > 0 && (variant == "3" || variant == "2" || variant == "1") {
 				edition = "PF25"
+				variant = cards[0].Number
 			}
-			variant = ""
 		default:
 			// Preserve all etched/galaxy/rainbow foil properties
 			if strings.Contains(ogVariant, "Foil") {
