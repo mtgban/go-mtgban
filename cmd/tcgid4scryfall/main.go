@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -199,6 +200,7 @@ func run() int {
 	}
 
 	fmt.Fprintln(os.Stderr, "Found", len(inventory), "mtgjson hashes")
+	firstPage := 0
 
 	// Reduce the map to the needed ids
 	output := map[string]*Properties{}
@@ -245,6 +247,12 @@ func run() int {
 			} else {
 				output[identifier].NewTcgId = newTcgId
 			}
+
+			// Set the first page for validation
+			page, _ := strconv.Atoi(cards[0].InstanceId)
+			if firstPage == 0 || firstPage > page {
+				firstPage = page
+			}
 		}
 	}
 
@@ -267,7 +275,9 @@ func run() int {
 		csvWriter.Flush()
 	}
 	fmt.Fprintln(os.Stderr, "Fixed", fixes, "ids")
-
+	if firstPage != 0 {
+		fmt.Fprintln(os.Stderr, "The first page with problematic ids is:", firstPage)
+	}
 	return 0
 }
 
