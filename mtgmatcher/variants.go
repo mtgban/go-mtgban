@@ -2809,43 +2809,43 @@ var mirVariants = map[string]map[string]string{
 var mkmVariants = map[string]map[string]string{
 	"Case File Auditor": {
 		"a": "7",
-		"b": "7★",
+		"b": "7†",
 	},
 	"Wojek Investigator": {
 		"a": "36",
-		"b": "36★",
+		"b": "36†",
 	},
 	"Sudden Setback": {
 		"a": "72",
-		"b": "72★",
+		"b": "72†",
 	},
 	"Surveillance Monitor": {
 		"a": "73",
-		"b": "73★",
+		"b": "73†",
 	},
 	"Case of the Gorgon's Kiss": {
 		"a": "79",
-		"b": "79★",
+		"b": "79†",
 	},
 	"Clandestine Meddler": {
 		"a": "82",
-		"b": "82★",
+		"b": "82†",
 	},
 	"Torch the Witness": {
 		"a": "146",
-		"b": "146★",
+		"b": "146†",
 	},
 	"Break Out": {
 		"a": "190",
-		"b": "190★",
+		"b": "190†",
 	},
 	"Kraul Whipcracker": {
 		"a": "213",
-		"b": "213★",
+		"b": "213†",
 	},
 	"Undercover Crocodelf": {
 		"a": "239",
-		"b": "239★",
+		"b": "239†",
 	},
 }
 
