@@ -88,7 +88,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					cond = "HP"
 				}
 			case "SP":
-				abu.printf("skipping '%s' condition", cond)
+				// There is nothing available on the website under this condition
 				continue
 			default:
 				abu.printf("Unknown '%s' condition", cond)
