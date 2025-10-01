@@ -511,6 +511,7 @@ var EditionTable = map[string]string{
 	"MED2": "Mythic Edition",
 	"MED3": "Mythic Edition",
 	"RMB1": "The List",
+	"PO2":  "Portal Second Age",
 
 	// Two-letter set codes
 	"1E": "Limited Edition Alpha",
