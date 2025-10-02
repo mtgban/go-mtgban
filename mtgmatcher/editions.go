@@ -46,6 +46,7 @@ var EditionTable = map[string]string{
 	"FINAL FANTASY":                   "Final Fantasy",
 	"FINAL FANTASY: Promos":           "Final Fantasy Promos",
 
+	"Marvel Legends Foil":           "Marvel Legends Series Inserts",
 	"Marvel Universe Eternal-Legal": "Marvel Universe",
 
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
