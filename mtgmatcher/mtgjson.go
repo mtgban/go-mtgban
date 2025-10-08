@@ -45,9 +45,10 @@ type SealedContent struct {
 }
 
 type DeckCard struct {
-	Count  int    `json:"count"`
-	IsFoil bool   `json:"isFoil"`
-	UUID   string `json:"uuid"`
+	Count    int    `json:"count"`
+	IsEtched bool   `json:"isEtched"`
+	IsFoil   bool   `json:"isFoil"`
+	UUID     string `json:"uuid"`
 }
 
 type Set struct {
