@@ -19,7 +19,7 @@ const (
 
 	scgSettingsURL = "https://sellyourcards.starcitygames.com/api/settings"
 
-	maxResultsPerPage = 96
+	maxResultsPerPage = 300
 
 	GameMagic         = 1
 	GameFleshAndBlood = 2
@@ -48,11 +48,12 @@ func NewSCGClient(guid, bearer string) *SCGClient {
 
 // https://bridgeline.atlassian.net/wiki/spaces/HSKB/pages/3462479664/Hawksearch+v4.0+-+Search+API
 type scgRetailRequest struct {
-	Keyword         string              `json:"Keyword"`
-	FacetSelections map[string][]string `json:"FacetSelections"`
-	PageNo          int                 `json:"PageNo"`
-	MaxPerPage      int                 `json:"MaxPerPage"`
-	ClientGUID      string              `json:"clientguid"`
+	Keyword           string              `json:"Keyword"`
+	FacetSelections   map[string][]string `json:"FacetSelections"`
+	PageNo            int                 `json:"PageNo"`
+	MaxPerPage        int                 `json:"MaxPerPage"`
+	PaginationSetCode string              `json:"PaginationSetCode"`
+	ClientGUID        string              `json:"clientguid"`
 }
 
 type scgSealedFacetSelection struct {
@@ -62,11 +63,12 @@ type scgSealedFacetSelection struct {
 }
 
 type scgRetailSealedRequest struct {
-	Keyword         string                  `json:"Keyword"`
-	FacetSelections scgSealedFacetSelection `json:"FacetSelections"`
-	PageNo          int                     `json:"PageNo"`
-	MaxPerPage      int                     `json:"MaxPerPage"`
-	ClientGUID      string                  `json:"clientguid"`
+	Keyword           string                  `json:"Keyword"`
+	FacetSelections   scgSealedFacetSelection `json:"FacetSelections"`
+	PageNo            int                     `json:"PageNo"`
+	PaginationSetCode string                  `json:"PaginationSetCode"`
+	MaxPerPage        int                     `json:"MaxPerPage"`
+	ClientGUID        string                  `json:"clientguid"`
 }
 
 type scgRetailResponse struct {
@@ -123,6 +125,7 @@ func (scg *SCGClient) sendRetailRequest(ctx context.Context, game, page int) (*s
 				ProductType:        []string{"Sealed"},
 				Game:               gameStr,
 			},
+			PaginationSetCode: "previews",
 		}
 		payload, err = json.Marshal(&q)
 	} else {
@@ -135,6 +138,7 @@ func (scg *SCGClient) sendRetailRequest(ctx context.Context, game, page int) (*s
 				"product_type":        {"Singles"},
 				"game":                {gameStr},
 			},
+			PaginationSetCode: "previews",
 		}
 		payload, err = json.Marshal(&q)
 	}
