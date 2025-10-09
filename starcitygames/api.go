@@ -322,14 +322,17 @@ func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit int, ra
 	return &search, nil
 }
 
-const baseURL = "https://starcitygames.com"
+const (
+	BaseProductURL    = "https://starcitygames.com"
+	PartnerProductURL = "https://goto.starcitygames.com/c/%s/3052179/37198"
+)
 
 func SCGProductURL(URLDetail, variantSKU []string, affiliate string) string {
 	if len(URLDetail) == 0 {
 		return ""
 	}
 
-	link := baseURL + URLDetail[0]
+	link := BaseProductURL + URLDetail[0]
 	u, err := url.Parse(link)
 	if err != nil {
 		return ""
@@ -339,10 +342,21 @@ func SCGProductURL(URLDetail, variantSKU []string, affiliate string) string {
 	if len(variantSKU) > 0 {
 		v.Set("sku", variantSKU[0])
 	}
-	if affiliate != "" {
-		v.Set("aff", affiliate)
-	}
 	u.RawQuery = v.Encode()
+
+	if affiliate == "" {
+		return u.String()
+	}
+
+	q := url.Values{}
+	q.Set("u", u.String())
+
+	link = fmt.Sprintf(PartnerProductURL, affiliate)
+	u, err = url.Parse(link)
+	if err != nil {
+		return ""
+	}
+	u.RawQuery = q.Encode()
 
 	return u.String()
 }
