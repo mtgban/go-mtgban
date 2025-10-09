@@ -192,7 +192,7 @@ func (scg *StarcitygamesSealed) scrape(ctx context.Context) error {
 }
 
 func (scg *StarcitygamesSealed) processBLPage(ctx context.Context, channel chan<- responseChan, page int) error {
-	search, err := scg.client.SearchAll(ctx, scg.game, page, defaultRequestLimit, "")
+	search, err := scg.client.SearchAll(ctx, scg.game, page, buylistRequestLimit, "")
 	if err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func (scg *StarcitygamesSealed) parseBL(ctx context.Context) error {
 	}
 
 	go func() {
-		for j := 0; j < search.EstimatedTotalHits; j += defaultRequestLimit {
+		for j := 0; j < search.EstimatedTotalHits; j += buylistRequestLimit {
 			pages <- j
 		}
 		close(pages)

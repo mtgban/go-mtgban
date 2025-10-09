@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	defaultConcurrency  = 3
-	defaultRequestLimit = 200
+	defaultConcurrency = 3
 
 	buylistBookmark = "https://sellyourcards.starcitygames.com/"
 )
@@ -306,7 +305,7 @@ func (scg *Starcitygames) scrape(ctx context.Context) error {
 }
 
 func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- responseChan, page int, rarity string) error {
-	search, err := scg.client.SearchAll(ctx, scg.game, page, defaultRequestLimit, rarity)
+	search, err := scg.client.SearchAll(ctx, scg.game, page, buylistRequestLimit, rarity)
 	if err != nil {
 		return err
 	}
@@ -462,7 +461,7 @@ func (scg *Starcitygames) parseBL(ctx context.Context, rarity string) error {
 	}
 
 	go func() {
-		for j := 0; j < totals; j += defaultRequestLimit {
+		for j := 0; j < totals; j += buylistRequestLimit {
 			pages <- j
 		}
 		close(pages)
