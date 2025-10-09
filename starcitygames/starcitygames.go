@@ -52,6 +52,7 @@ type responseChan struct {
 	cardId   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
+	pageURL  string
 
 	ignoreErr bool
 }
@@ -112,6 +113,11 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 			sku = result.Document.HawkChildAttributes[0].VariantSKU[0]
 		}
 
+		link := ""
+		if len(result.Document.URLDetail) > 0 {
+			link = BaseProductURL + result.Document.URLDetail[0]
+		}
+
 		var cardId string
 		var err error
 		switch scg.game {
@@ -140,6 +146,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
 				scg.printf("%v ~ %s ~ %s ~ %s", cc, edition, finish, number)
+				scg.printf("-> %s", link)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
@@ -158,6 +165,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 			} else if err != nil {
 				scg.printf("%v", err)
 				scg.printf("%+v", result)
+				scg.printf("-> %s", link)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
@@ -237,6 +245,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 					URL:        SCGProductURL(result.Document.URLDetail, attribute.VariantSKU, scg.Affiliate),
 				},
 				ignoreErr: strings.Contains(edition, "World Championship"),
+				pageURL:   link,
 			}
 			if condition == "NM" {
 				out.invEntry.CustomFields = customFields
@@ -287,6 +296,7 @@ func (scg *Starcitygames) scrape(ctx context.Context) error {
 		err := scg.inventory.AddStrict(record.cardId, record.invEntry)
 		if err != nil && !record.ignoreErr {
 			scg.printf("%s", err.Error())
+			scg.printf("-> %s", record.pageURL)
 		}
 	}
 
