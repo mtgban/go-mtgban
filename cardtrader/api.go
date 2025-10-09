@@ -306,6 +306,29 @@ func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionId int) ([]Blue
 	return blueprints, nil
 }
 
+func (ct *CTAuthClient) GetOrderProducts(ctx context.Context, orderId int) ([]Product, error) {
+	link := fmt.Sprintf("https://api.cardtrader.com/api/v2/orders/%d", orderId)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ct.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var order struct {
+		OrderItems []Product `json:"order_items"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&order)
+	if err != nil {
+		return nil, err
+	}
+
+	return order.OrderItems, nil
+}
+
 // This is slightly different from the main Product type
 type BulkProduct struct {
 	// The id of the Product to edit
