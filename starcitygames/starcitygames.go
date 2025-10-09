@@ -243,7 +243,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 					OriginalId: id,
 					URL:        SCGProductURL(result.Document.URLDetail, attribute.VariantSKU, scg.Affiliate),
 				},
-				ignoreErr: strings.Contains(edition, "World Championship"),
+				ignoreErr: strings.Contains(edition, "World Championship") || strings.Contains(cardName, "Token"),
 				pageURL:   link,
 			}
 			if condition == "NM" {
