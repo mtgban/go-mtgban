@@ -308,12 +308,7 @@ func cardId2record(cardId string) ([]string, error) {
 	return record, nil
 }
 
-func WriteSellerToCSV(seller Seller, w io.Writer) error {
-	inventory := seller.Inventory()
-	if len(inventory) == 0 {
-		return nil
-	}
-
+func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -370,12 +365,7 @@ func WriteSellerToCSV(seller Seller, w io.Writer) error {
 	return nil
 }
 
-func WriteVendorToCSV(vendor Vendor, w io.Writer) error {
-	buylist := vendor.Buylist()
-	if len(buylist) == 0 {
-		return nil
-	}
-
+func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
 
@@ -394,7 +384,7 @@ func WriteVendorToCSV(vendor Vendor, w io.Writer) error {
 			record = append(record,
 				entry.Conditions,
 				fmt.Sprintf("%0.2f", entry.BuyPrice),
-				fmt.Sprintf("%0.2f", entry.BuyPrice*vendor.Info().CreditMultiplier),
+				fmt.Sprintf("%0.2f", entry.BuyPrice*creditMuliplier),
 				fmt.Sprint(entry.Quantity),
 				fmt.Sprintf("%0.2f", entry.PriceRatio),
 				entry.URL,

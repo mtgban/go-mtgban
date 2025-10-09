@@ -654,7 +654,7 @@ func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath,
 	case "json":
 		err = mtgban.WriteSellerToJSON(seller, writer)
 	case "csv":
-		err = mtgban.WriteSellerToCSV(seller, writer)
+		err = mtgban.WriteInventoryToCSV(seller.Inventory(), writer)
 	case "ndjson":
 		err = writeSellerToNDJSON(seller, writer)
 	default:
@@ -676,7 +676,7 @@ func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath,
 	case "json":
 		err = mtgban.WriteVendorToJSON(vendor, writer)
 	case "csv":
-		err = mtgban.WriteVendorToCSV(vendor, writer)
+		err = mtgban.WriteBuylistToCSV(vendor.Buylist(), vendor.Info().CreditMultiplier, writer)
 	case "ndjson":
 		err = writeVendorToNDJSON(vendor, writer)
 	default:
