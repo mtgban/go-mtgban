@@ -78,9 +78,18 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 			continue
 		}
 
-		price := float64(product.PriceCents) / 100.0
-
+		priceCents := product.PriceCents
 		currency := product.PriceCurrency
+		if priceCents == 0 {
+			priceCents = product.Price.Cents
+			currency = product.Price.Currency
+		}
+		if priceCents == 0 {
+			priceCents = product.BuyerPrice.Cents
+			currency = product.BuyerPrice.Currency
+		}
+
+		price := float64(priceCents) / 100.0
 		if currency == "EUR" && len(rates) > 0 && rates[0] != 0 {
 			price *= rates[0]
 		}

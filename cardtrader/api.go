@@ -148,12 +148,15 @@ type Product struct {
 		CountryCode string `json:"country_code"`
 		UserType    string `json:"user_type"`
 	} `json:"user"`
-	Price CTPrice `json:"price"`
 
 	UserDataField string `json:"user_data_field"`
 	Tag           string `json:"tag"`
-	PriceCents    int    `json:"price_cents"`
-	PriceCurrency string `json:"price_currency"`
+
+	// There are 3 difference places the price can be found
+	PriceCents    int     `json:"price_cents"`
+	PriceCurrency string  `json:"price_currency"`
+	Price         CTPrice `json:"price"`
+	BuyerPrice    CTPrice `json:"buyer_price,omitempty"`
 }
 
 type BlueprintError struct {
