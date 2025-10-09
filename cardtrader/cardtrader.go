@@ -30,7 +30,6 @@ type CardtraderMarket struct {
 
 	exchangeRate float64
 	client       *CTAuthClient
-	loggedClient *CTLoggedClient
 
 	inventory mtgban.InventoryRecord
 
