@@ -13,8 +13,6 @@ import (
 )
 
 const (
-	ctFilterURL = "https://www.cardtrader.com/cards/%d/filter.json"
-
 	ctBlueprintsURL  = "https://api.cardtrader.com/api/v2/blueprints/export?expansion_id="
 	ctExpansionsURL  = "https://api.cardtrader.com/api/v2/expansions"
 	ctMarketplaceURL = "https://api.cardtrader.com/api/v2/marketplace/products"
@@ -168,20 +166,11 @@ type BlueprintError struct {
 	RequestId string `json:"request_id"`
 }
 
-type BlueprintFilter struct {
-	Blueprint Blueprint `json:"blueprint"`
-	Products  []Product `json:"products"`
-}
-
 type Expansion struct {
 	Id     int    `json:"id"`
 	GameId int    `json:"game_id"`
 	Code   string `json:"code"`
 	Name   string `json:"name"`
-}
-
-type CTClient struct {
-	client *http.Client
 }
 
 type CTAuthClient struct {
@@ -544,39 +533,4 @@ func (ct *CTAuthClient) addremoveCart(ctx context.Context, product ctProductCart
 	}
 
 	return &products, nil
-}
-
-func NewCTClient() *CTClient {
-	ct := CTClient{}
-	client := retryablehttp.NewClient()
-	client.Logger = nil
-	ct.client = client.StandardClient()
-	return &ct
-}
-
-func (ct *CTClient) ProductsForBlueprint(ctx context.Context, id int) (*BlueprintFilter, error) {
-	link := fmt.Sprintf(ctFilterURL, id)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := ct.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var bf BlueprintFilter
-	err = json.NewDecoder(resp.Body).Decode(&bf)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for blueprint %d, got: %w", id, err)
-	}
-
-	if bf.Blueprint.Id == 0 {
-		return nil, fmt.Errorf("empty blueprint for id %d", id)
-	}
-
-	return &bf, nil
 }
