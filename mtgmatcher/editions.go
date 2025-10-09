@@ -42,9 +42,10 @@ var EditionTable = map[string]string{
 	"Warhammer 40k Commander":         "Warhammer 40,000 Commander",
 	"Warhammer 40k Commander (Surge)": "Warhammer 40,000 Commander",
 
-	"FINAL FANTASY: Through the Ages": "Final Fantasy: Through the Ages",
-	"FINAL FANTASY":                   "Final Fantasy",
-	"FINAL FANTASY: Promos":           "Final Fantasy Promos",
+	"FINAL FANTASY: Through the Ages":            "Final Fantasy: Through the Ages",
+	"FINAL FANTASY":                              "Final Fantasy",
+	"FINAL FANTASY: Promos":                      "Final Fantasy Promos",
+	"FINAL FANTASY Standard Showdown Borderless": "FIN Standard Showdown",
 
 	"Marvel Legends Foil":           "Marvel Legends Series Inserts",
 	"Marvel Universe Eternal-Legal": "Marvel Universe",
