@@ -241,6 +241,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 					Conditions: condition,
 					Quantity:   qty,
 					OriginalId: id,
+					InstanceId: sku,
 					URL:        SCGProductURL(result.Document.URLDetail, attribute.VariantSKU, scg.Affiliate),
 				},
 				ignoreErr: strings.Contains(edition, "World Championship") || strings.Contains(cardName, "Token"),
@@ -426,6 +427,7 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 					PriceRatio:   priceRatio,
 					URL:          link,
 					CustomFields: customFields,
+					OriginalId:   result.Sku,
 				},
 				ignoreErr: strings.Contains(hit.Name, "Token"),
 			}
