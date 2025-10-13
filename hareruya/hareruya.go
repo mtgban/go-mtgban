@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
+	"net/url"
+	"path"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -23,8 +25,7 @@ const (
 	modeInventory = "inventory"
 	modeBuylist   = "buylist"
 
-	inventoryURL = "https://www.hareruyamtg.com/en/products/search?language[0]=2&stock=1&page="
-	buylistURL   = "https://www.hareruyamtg.com/ja/purchase/search?language[0]=2&stock=1&page="
+	buylistURL = "https://www.hareruyamtg.com/ja/purchase/search?"
 )
 
 type Hareruya struct {
@@ -44,7 +45,7 @@ type Hareruya struct {
 	client *http.Client
 }
 
-func NewScraper() (*Hareruya, error) {
+func NewScraper() *Hareruya {
 	ha := Hareruya{}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
@@ -52,7 +53,7 @@ func NewScraper() (*Hareruya, error) {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	ha.client = client.StandardClient()
-	return &ha, nil
+	return &ha
 }
 
 type responseChan struct {
@@ -67,88 +68,114 @@ func (ha *Hareruya) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ha *Hareruya) processPage(ctx context.Context, channel chan<- responseChan, page int, mode string) error {
-	link := inventoryURL
-	if mode == modeBuylist {
-		link = buylistURL
-	}
+func (ha *Hareruya) processBuylistSet(ctx context.Context, channel chan<- responseChan, cardSet string) error {
+	var i int
+	for {
+		i++
+		results, canExit, err := ha.processBuylistPage(ctx, channel, cardSet, i)
+		if err != nil {
+			return err
+		}
 
-	link += fmt.Sprint(page)
+		if len(results) == 0 {
+			return nil
+		}
+
+		ha.printf("cardSet %s page %d found %d results", cardSet, i, len(results))
+
+		for _, result := range results {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case channel <- result:
+				// done
+			}
+		}
+
+		if canExit {
+			return nil
+		}
+	}
+}
+
+func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- responseChan, cardSet string, page int) ([]responseChan, bool, error) {
+	var canExit bool
+
+	v := url.Values{}
+	v.Set("sort", "price")
+	v.Set("order", "DESC")
+	v.Set("cardId", "")
+	v.Set("product", "")
+	v.Set("category", "")
+	v.Set("cardset", cardSet)
+	v.Set("colorsType", "0")
+	v.Add("rarity[]", "1")
+	v.Add("rarity[]", "2")
+	v.Add("rarity[]", "3")
+	v.Add("rarity[]", "4")
+	v.Set("cardtypesType", "0")
+	v.Set("subtype", "")
+	v.Set("format", "")
+	v.Set("illustrator", "")
+	v.Add("foilFlg[]", "0")
+	v.Add("foilFlg[]", "1")
+	v.Set("language[]", "2") // English only
+	v.Set("page", fmt.Sprint(page))
+
+	link := buylistURL + v.Encode()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
-		return err
+		return nil, canExit, err
 	}
 	resp, err := ha.client.Do(req)
 	if err != nil {
-		return err
+		return nil, canExit, err
 	}
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return err
+		return nil, canExit, err
 	}
 
-	doc.Find(`div[class="autopagerize_page_element"] ul li`).Each(func(i int, s *goquery.Selection) {
-		link, _ := s.Find(`div[class="itemData"] a`).Attr("href")
+	var results []responseChan
+	doc.Find(`.itemList`).EachWithBreak(func(i int, s *goquery.Selection) bool {
+		link, _ := s.Find(`div.itemData a`).Attr("href")
 		link = strings.TrimSpace(link)
+		id := strings.Split(path.Base(link), "?")[0]
 
-		title := s.Find(`div[class="itemData"] a`).Text()
+		title := s.Find(`div.itemData a`).Text()
 		title = strings.TrimSpace(title)
 
-		priceStr := s.Find(`p[class="itemDetail__price"]`).Text()
+		priceStr := s.Find(`p.itemDetail__price`).Text()
 		priceStr = strings.TrimPrefix(priceStr, "¥ ")
 		price, err := mtgmatcher.ParsePrice(priceStr)
 		if err != nil {
 			ha.printf("page %d entry %d: %s", page, i, err.Error())
-			return
+			return false
 		}
 
-		var cond string
-		var qty int
-		if mode == modeInventory {
-			stock := s.Find(`p[class="itemDetail__stock"]`).Text()
-			switch {
-			case strings.Contains(stock, "Signed"),
-				strings.Contains(stock, "Sighned"),
-				strings.Contains(stock, "Inked"):
-				return
-			}
-
-			fields := strings.Fields(stock)
-			if len(fields) != 2 {
-				ha.printf("page %d entry %d: unsupported %s", page, i, stock)
-				return
-			}
-
-			cond = strings.TrimPrefix(fields[0], "【")
-			qtyStr := strings.TrimPrefix(fields[1], "Stock:")
-			qtyStr = strings.TrimSuffix(qtyStr, "】")
-			qty, err = strconv.Atoi(qtyStr)
-			if err != nil {
-				ha.printf("page %d entry %d: %s", page, i, err.Error())
-				return
-			}
-		} else if mode == modeBuylist {
-			stock := s.Find(`span[class="itemUserAct__number__title"]`).Text()
-			if stock != "個数" {
-				return
-			}
+		// Since we're sorting by price, as soon as we found an item that is not
+		// being bought we can assume there are no more items in this set
+		stock := s.Find(`span.itemUserAct__number__title`).Text()
+		if stock != "個数" {
+			canExit = true
+			return false
 		}
 
 		theCard, err := preprocess(title)
 		if err != nil {
-			return
+			return true
 		}
 
 		cardId, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			return
+			return true
 		} else if err != nil {
 			if theCard.IsBasicLand() {
-				return
+				return true
 			}
-			ha.printf("%v at page %d", err, page)
+			ha.printf("%v in cardSet %s at page %d", err, cardSet, page)
 			ha.printf("%q", theCard)
 			ha.printf("%s", title)
 
@@ -160,114 +187,161 @@ func (ha *Hareruya) processPage(ctx context.Context, channel chan<- responseChan
 					ha.printf("- %s", card)
 				}
 			}
-			return
+			return true
 		}
 
-		if mode == modeInventory {
-			if price != 0 && qty != 0 {
-				out := responseChan{
-					cardId: cardId,
-					invEntry: &mtgban.InventoryEntry{
-						Price:      price * ha.exchangeRate,
-						Conditions: cond,
-						Quantity:   qty,
-						URL:        "https://www.hareruyamtg.com" + link,
-					},
-				}
-				channel <- out
-			}
-		} else if mode == modeBuylist {
-			var priceRatio, sellPrice float64
+		var priceRatio, sellPrice float64
 
-			invCards := ha.inventory[cardId]
-			for _, invCard := range invCards {
-				sellPrice = invCard.Price
-				break
-			}
-			if sellPrice > 0 {
-				priceRatio = price / sellPrice * 100
-			}
-
-			deductions := []float64{1, 0.8, 0.6, 0.4}
-			for i, deduction := range deductions {
-				out := responseChan{
-					cardId: cardId,
-					buyEntry: &mtgban.BuylistEntry{
-						Conditions: mtgban.DefaultGradeTags[i],
-						BuyPrice:   price * deduction * ha.exchangeRate,
-						PriceRatio: priceRatio,
-						URL:        "https://www.hareruyamtg.com" + link,
-					},
-				}
-				channel <- out
-			}
-
-			return
+		invCards := ha.inventory[cardId]
+		for _, invCard := range invCards {
+			sellPrice = invCard.Price
+			break
+		}
+		if sellPrice > 0 {
+			priceRatio = price / sellPrice * 100
 		}
 
-		s.Find(`div[class="tableHere product"] div[class="row not-first ng-star-inserted"]`).Each(func(i int, sub *goquery.Selection) {
-			qtyStr := sub.Find(`div:nth-child(3)`).Text()
-			qty, err := strconv.Atoi(qtyStr)
-			if err != nil {
-				return
-			}
-			priceStr := sub.Find(`div:nth-child(2)`).Text()
-			priceStr = strings.TrimPrefix(priceStr, "¥ ")
-			price, err := mtgmatcher.ParsePrice(priceStr)
-			if err != nil {
-				ha.printf("%s", err.Error())
-				return
+		deductions := []float64{1, 0.8, 0.5}
+		for i, deduction := range deductions {
+			out := responseChan{
+				cardId: cardId,
+				buyEntry: &mtgban.BuylistEntry{
+					Conditions: mtgban.DefaultGradeTags[i],
+					BuyPrice:   price * deduction * ha.exchangeRate,
+					PriceRatio: priceRatio,
+					URL:        "https://www.hareruyamtg.com" + link,
+					OriginalId: id,
+				},
 			}
 
-			cond := sub.Find(`strong`).Text()
+			results = append(results, out)
+		}
 
-			if price != 0 && qty != 0 {
-				out := responseChan{
-					cardId: cardId,
-					invEntry: &mtgban.InventoryEntry{
-						Price:      price * ha.exchangeRate,
-						Conditions: cond,
-						Quantity:   qty,
-						URL:        "https://www.hareruyamtg.com" + link,
-					},
-				}
-				channel <- out
-			}
-		})
+		// Continue to next element
+		return true
 	})
 
-	return nil
+	return results, canExit, nil
 }
 
-func (ha *Hareruya) totalPages(ctx context.Context, mode string) (int, error) {
-	link := inventoryURL
-	if mode == modeBuylist {
-		link = buylistURL
+var condMap = map[string]string{
+	"1": "NM",
+	"2": "SP",
+	"3": "MP",
+	"4": "HP",
+	"5": "PO",
+}
+
+func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan, cardSet string) error {
+	var i int
+	for {
+		i++
+		products, err := SearchCardSet(ctx, ha.client, cardSet, i)
+		if err != nil {
+			return err
+		}
+
+		if len(products) == 0 {
+			return nil
+		}
+
+		for _, product := range products {
+			theCard, err := Preprocess(product)
+			if err != nil {
+				continue
+			}
+
+			cardId, err := mtgmatcher.Match(theCard)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				// Skip errors from lands, "misc" promos, and tokens
+				if theCard.IsBasicLand() ||
+					strings.Contains(theCard.Edition, "The List") || // lots at set 280
+					strings.Contains(theCard.Edition, "Mystery Booster") || // lots at set 280
+					strings.Contains(product.ProductName, "Token") {
+					continue
+				}
+				ha.printf("%v at set %s (page %d)", err, cardSet, i)
+				ha.printf("%q", theCard)
+				ha.printf("%v", product)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					probes := alias.Probe()
+					for _, probe := range probes {
+						card, _ := mtgmatcher.GetUUID(probe)
+						ha.printf("- %s", card)
+					}
+				}
+				continue
+			}
+
+			cond, found := condMap[product.CardCondition]
+			if !found {
+				ha.printf("%v condition '%s' not found", product, product.CardCondition)
+				continue
+			}
+
+			link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
+			out := responseChan{
+				cardId: cardId,
+				invEntry: &mtgban.InventoryEntry{
+					Price:      product.Price * ha.exchangeRate,
+					Conditions: cond,
+					URL:        link,
+					OriginalId: product.Product,
+				},
+			}
+
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case channel <- out:
+				// done
+			}
+		}
 	}
+}
+
+func (ha *Hareruya) getCardSets(ctx context.Context) ([]string, error) {
+	link := "https://www.hareruyamtg.com/en/products/search"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	resp, err := ha.client.Do(req)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	pagination := doc.Find(`div[class="result_pagenum"]`).Text()
-	fields := strings.Fields(strings.TrimSpace(pagination))
-	if len(fields) == 0 {
-		ha.printf("unsupported structure %v", fields)
-		return 0, errors.New("malformed pagination")
-	}
+	var results []string
+	doc.Find("select#front_product_search_cardset option").Each(func(i int, s *goquery.Selection) {
+		value, _ := s.Attr("value")
+		if value == "" {
+			return
+		}
+		results = append(results, value)
+	})
 
-	pagenum := strings.TrimSuffix(strings.TrimPrefix(fields[0], "Page1/"), "ページ中1ページ目")
-	return strconv.Atoi(pagenum)
+	// Sort to keep results predictable and find min/max
+	slices.SortFunc(results, func(a, b string) int {
+		if len(a) > len(b) {
+			return 1
+		}
+		if len(a) < len(b) {
+			return -1
+		}
+		return strings.Compare(a, b)
+	})
+
+	return results, nil
 }
 
 func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
@@ -277,22 +351,25 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	}
 	ha.exchangeRate = rate
 
-	total, err := ha.totalPages(ctx, mode)
+	cardSets, err := ha.getCardSets(ctx)
 	if err != nil {
 		return err
 	}
+	ha.printf("Found %d card sets", len(cardSets))
 
-	ha.printf("Found %d pages", total)
-
-	pages := make(chan int)
+	sets := make(chan string)
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
 	for i := 0; i < ha.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			for i := range pages {
-				err := ha.processPage(ctx, results, i, mode)
+			for cardSet := range sets {
+				if mode == modeInventory {
+					err = ha.processSet(ctx, results, cardSet)
+				} else if mode == modeBuylist {
+					err = ha.processBuylistSet(ctx, results, cardSet)
+				}
 				if err != nil {
 					ha.printf("%v", err)
 				}
@@ -302,31 +379,39 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	}
 
 	go func() {
-		for i := 1; i <= total; i++ {
-			ha.printf("Processing page %d", i)
-			pages <- i
+		for i, cardSet := range cardSets {
+			ha.printf("Processing card set %s (%d/%d)", cardSet, i+1, len(cardSets))
+			sets <- cardSet
 		}
-		close(pages)
+		close(sets)
 
 		wg.Wait()
 		close(results)
 	}()
 
-	for record := range results {
-		var err error
-		if record.invEntry != nil {
-			err = ha.inventory.Add(record.cardId, record.invEntry)
-		} else if record.buyEntry != nil {
-			err = ha.buylist.Add(record.cardId, record.buyEntry)
-		}
-		if err != nil {
-			ha.printf("%s", err.Error())
-		}
-	}
-
 	if mode == modeInventory {
+		for record := range results {
+			err := ha.inventory.Add(record.cardId, record.invEntry)
+			if err != nil {
+				ha.printf("%s", err.Error())
+			}
+		}
+
 		ha.inventoryDate = time.Now()
 	} else if mode == modeBuylist {
+		for record := range results {
+			co, _ := mtgmatcher.GetUUID(record.cardId)
+			// This store tracks the two different EU/US printings as separate entries
+			if co.SetCode == "MPS" {
+				err = ha.buylist.AddRelaxed(record.cardId, record.buyEntry)
+			} else {
+				err = ha.buylist.Add(record.cardId, record.buyEntry)
+			}
+			if err != nil {
+				ha.printf("%s", err.Error())
+			}
+		}
+
 		ha.buylistDate = time.Now()
 	}
 
@@ -370,6 +455,7 @@ func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Hareruya"
 	info.Shorthand = "HA"
 	info.CountryFlag = "JP"
+	info.NoQuantityInventory = true
 	info.InventoryTimestamp = &ha.inventoryDate
 	info.BuylistTimestamp = &ha.buylistDate
 	return

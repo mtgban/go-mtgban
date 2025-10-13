@@ -258,6 +258,31 @@ var EditionTable = map[string]string{
 	"Duel Decks: Kiora vs Elspeth":   "Duel Decks: Elspeth vs. Kiora",
 	"DD: Anthology":                  "Duel Decks Anthology",
 
+	"DD3・EvG": "Duel Decks Anthology: Elves vs. Goblins",
+	"DD3・DvD": "Duel Decks Anthology: Divine vs. Demonic",
+	"DD3・GvL": "Duel Decks Anthology: Garruk vs. Liliana",
+	"DD3・JvC": "Duel Decks Anthology: Jace vs. Chandra",
+
+	"PvC":     "Duel Decks: Phyrexia vs. the Coalition",
+	"EvT":     "Duel Decks: Elspeth vs. Tezzeret",
+	"KvD":     "Duel Decks: Knights vs. Dragons",
+	"AvN":     "Duel Decks: Ajani vs. Nicol Bolas",
+	"VvK":     "Duel Decks: Venser vs. Koth",
+	"IvG":     "Duel Decks: Izzet vs. Golgari",
+	"SvT":     "Duel Decks: Sorin vs. Tibalt",
+	"HvM":     "Duel Decks: Heroes vs. Monsters",
+	"JvV":     "Duel Decks: Jace vs. Vraska",
+	"EvI":     "Duel Decks: Elves vs. Inventors",
+	"DvD":     "Duel Decks: Divine vs. Demonic",
+	"SvC/DDN": "Duel Decks: Speed vs. Cunning",
+	"EvK/DDO": "Duel Decks: Elspeth vs. Kiora",
+	"ZvE/DDP": "Duel Decks: Zendikar vs. Eldrazi",
+	"BvC/DDQ": "Duel Decks: Blessed vs. Cursed",
+	"NvO/DDR": "Duel Decks: Nissa vs. Ob Nixilis",
+	"MvM/DDS": "Duel Decks: Mind vs. Might",
+	"MvG/DDT": "Duel Decks: Merfolk vs. Goblins",
+	"EvI/DDU": "Duel Decks: Elves vs. Inventors",
+
 	// Global Series
 	"Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
 
@@ -281,6 +306,8 @@ var EditionTable = map[string]string{
 	"PDS: Slivers":                          "Premium Deck Series: Slivers",
 	"Premium Deck Slivers":                  "Premium Deck Series: Slivers",
 	"Premium Deck: Slivers":                 "Premium Deck Series: Slivers",
+	"FAL":                                   "Premium Deck Series: Fire and Lightning",
+	"GRB":                                   "Premium Deck Series: Graveborn",
 
 	// Planechase
 	"Planechase":                        "Planechase",
@@ -388,6 +415,7 @@ var EditionTable = map[string]string{
 	"WRL":                     "World Championship Promos",
 	"Worlds":                  "World Championship Promos",
 	"World Championship Foil": "World Championship Promos",
+	"World Championship":      "World Championship Promos",
 
 	// WMCQ
 	"2015 World Magic Cup Qualifier":      "World Magic Cup Qualifiers",
@@ -467,6 +495,7 @@ var EditionTable = map[string]string{
 	"DCI Promos":               "DCI Promos",
 	"Introductory 4th Edition": "Introductory Two-Player Set",
 	"PS3 Promo":                "Duels of the Planeswalkers 2012 Promos",
+	"DoP":                      "Duels of the Planeswalkers",
 	"Starter":                  "Starter 1999",
 	"Starter 2000":             "Starter 2000",
 	"Vanguard":                 "Vanguard Series",
@@ -503,17 +532,36 @@ var EditionTable = map[string]string{
 	"Coldsnap Reprints":            "Coldsnap Theme Decks",
 	"Coldsnap Theme Deck Reprints": "Coldsnap Theme Decks",
 	"Coldsnap Theme-Deck Reprints": "Coldsnap Theme Decks",
+	"CSP Theme Deck":               "Coldsnap Theme Decks",
 
 	// Modern Event Deck
 	"Magic Modern Event Deck":                     "Modern Event Deck 2014",
 	"Modern Event Deck":                           "Modern Event Deck 2014",
 	"Modern Event Deck - March of the Multitudes": "Modern Event Deck 2014",
 
+	// FtV sets
+	"FtV:Dragons":      "From the Vault: Dragons",
+	"FtV:Exiled":       "From the Vault: Exiled",
+	"FtV:Relics":       "From the Vault: Relics",
+	"FtV:Legends":      "From the Vault: Legends",
+	"FtV:Realms":       "From the Vault: Realms",
+	"FtV:Twenty":       "From the Vault: Twenty",
+	"FtV:Annihilation": "From the Vault: Annihilation",
+	"FtV:Angels":       "From the Vault: Angels",
+	"FtV:Lore":         "From the Vault: Lore",
+	"FtV:Transform":    "From the Vault: Transform",
+
 	// Custom set codes
-	"MED2": "Mythic Edition",
-	"MED3": "Mythic Edition",
-	"RMB1": "The List",
-	"PO2":  "Portal Second Age",
+	"MED2":  "Mythic Edition",
+	"MED3":  "Mythic Edition",
+	"RMB1":  "The List",
+	"PO2":   "Portal Second Age",
+	"10ED":  "Tenth Edition",
+	"MED14": "Modern Event Deck 2014",
+	"CMA17": "Commander Anthology",
+	"MPS2":  "Amonkhet Invocations",
+	"UBT":   "Ultimate Box Topper",
+	"PT96":  "Pro Tour Collector Set",
 
 	// Two-letter set codes
 	"1E": "Limited Edition Alpha",
@@ -543,7 +591,7 @@ var EditionTable = map[string]string{
 	"ST": "Stronghold",
 	"EX": "Exodus",
 	"UG": "Unglued",
-	"UZ": "Urza's saga",
+	"UZ": "Urza's Saga",
 	"UL": "Urza's Legacy",
 	"6E": "Sixth Edition",
 	"PK": "Portal Three Kingdoms",
@@ -560,6 +608,8 @@ var EditionTable = map[string]string{
 	"7E": "Seventh Edition",
 	"AP": "Apocalypse",
 	"OD": "Odyssey",
+	"IE": "Intl. Collectors' Edition",
+	"CE": "Collectors' Edition",
 
 	// Alt Fourth
 	"4th Edition - Alternate":    "Alternate Fourth Edition",

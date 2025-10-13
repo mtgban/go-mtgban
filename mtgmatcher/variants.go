@@ -934,7 +934,11 @@ var atqVariants = map[string]map[string]string{
 
 		"rock in pot": "84d",
 
+		"a pillar": "84b",
+		"b bug":    "84c",
 		"c sphere": "84a",
+		"c vat":    "84d",
+
 		"b pillar": "84b",
 		"a bug":    "84c",
 		"d vat":    "84d",
@@ -972,6 +976,10 @@ var atqVariants = map[string]map[string]string{
 		"d seashore": "85b",
 		"c plains":   "85c",
 		"b mountain": "85d",
+
+		"c shore":    "85b",
+		"b plains":   "85c",
+		"d mountain": "85d",
 
 		"fall leaves":                 "85a",
 		"sun and water in background": "85b",
@@ -1428,6 +1436,7 @@ var chrVariants = map[string]map[string]string{
 		"version 3": "114c",
 		"version 4": "114d",
 
+		"a pulley":     "114c",
 		"c bathyscape": "114b",
 
 		"bathyscape": "114b",
@@ -1453,6 +1462,10 @@ var chrVariants = map[string]map[string]string{
 		"b pillar": "115b",
 		"a bug":    "115c",
 		"c sphere": "115d",
+
+		"a pillar": "115b",
+		"c vat":    "115a",
+		"d sphere": "115d",
 
 		"red pillars":  "115b",
 		"electric fly": "115c",
@@ -1491,6 +1504,7 @@ var chrVariants = map[string]map[string]string{
 		"a forest":   "116a",
 		"c plains":   "116b",
 		"b mountain": "116c",
+		"d mountain": "116c",
 		"d seashore": "116d",
 
 		"fall leaves":                 "116a",
@@ -1695,24 +1709,26 @@ var femVariants = map[string]map[string]string{
 		"p. foglio": "34b",
 	},
 	"Brassclaw Orcs": {
-		"fe100":                       "49a",
-		"fe101":                       "49b",
-		"fe102":                       "49c",
-		"fe103":                       "49d",
-		"alexander pike":              "49a",
-		"alexander claw":              "49c",
-		"rob alexander, spear":        "49a",
-		"rob alexander, no spear":     "49c",
-		"rob alexander, gloved fist":  "49c",
-		"rob alexander spear":         "49a",
-		"rob alexander winged helmet": "49c",
-		"rob alexander claw":          "49c",
-		"rob alexander a":             "49a",
-		"rob alexander b":             "49c",
-		"pike":                        "49a",
-		"map":                         "49b",
-		"horned helm":                 "49c",
-		"claws":                       "49d",
+		"fe100":                              "49a",
+		"fe101":                              "49b",
+		"fe102":                              "49c",
+		"fe103":                              "49d",
+		"alexander pike":                     "49a",
+		"alexander claw":                     "49c",
+		"rob alexander, spear":               "49a",
+		"rob alexander, no spear":            "49c",
+		"rob alexander, gloved fist":         "49c",
+		"illust.rob alexanderfacing right":   "49a",
+		"illust.rob alexanderfacing forward": "49c",
+		"rob alexander spear":                "49a",
+		"rob alexander winged helmet":        "49c",
+		"rob alexander claw":                 "49c",
+		"rob alexander a":                    "49a",
+		"rob alexander b":                    "49c",
+		"pike":                               "49a",
+		"map":                                "49b",
+		"horned helm":                        "49c",
+		"claws":                              "49d",
 	},
 	"Combat Medic": {
 		"fe133": "1a",
@@ -1727,10 +1743,11 @@ var femVariants = map[string]map[string]string{
 		"douglas schuler": "53c",
 	},
 	"Elven Fortress": {
-		"fe067": "65a",
-		"fe068": "65b",
-		"fe069": "65c",
-		"fe070": "65d",
+		"fe067":                   "65a",
+		"fe068":                   "65b",
+		"fe069":                   "65c",
+		"fe070":                   "65d",
+		"illust.tom wiinerstrand": "65d",
 	},
 	"Elvish Hunter": {
 		"fe072": "67a",
@@ -1934,6 +1951,8 @@ var femVariants = map[string]map[string]string{
 		"rob alexander sun":                "27b",
 		"rob alexander lake":               "27a",
 		"rob alexander sunset":             "27b",
+		"illust.rob alexanderlake":         "27a",
+		"illust.rob alexandersunset":       "27b",
 		"sky":                              "27b",
 		"earth":                            "27c",
 	},
@@ -3784,8 +3803,10 @@ var lciVariants = map[string]map[string]string{
 
 var ulgVariants = map[string]map[string]string{
 	"B.F.M. (Big Furry Monster)": {
-		"left":  "28",
-		"right": "29",
+		"left":                    "28",
+		"right":                   "29",
+		"big furry monster left":  "28",
+		"big furry monster right": "29",
 	},
 }
 
@@ -3879,6 +3900,13 @@ var ustVariants = map[string]map[string]string{
 		"v.6": "147f",
 
 		"scry 2 f": "147f",
+
+		"2.3.4": "147a",
+		"2.8.4": "147b",
+		"1.3.x": "147c",
+		"t.1.8": "147d",
+		"0.0.2": "147e",
+		"1.1.7": "147f",
 	},
 	"Extremely Slow Zombie": {
 		"summer":    "54a",
@@ -3913,6 +3941,11 @@ var ustVariants = map[string]map[string]string{
 		"cascade":                 "82d",
 		"unleash":                 "82e",
 		"last strike":             "82f",
+
+		"2": "82a",
+		"3": "82c",
+		"4": "82e",
+		"6": "82f",
 
 		"v.1": "82a",
 		"v.4": "82b",
@@ -3972,6 +4005,9 @@ var ustVariants = map[string]map[string]string{
 		"protection from even numbers":             "12b",
 		"protection from odd numbers":              "12d",
 		"protection from watermark":                "12f",
+
+		"odd collector":  "12d",
+		"even collector": "12b",
 
 		"v.1": "12a",
 		"v.2": "12b",
@@ -4034,8 +4070,12 @@ var ustVariants = map[string]map[string]string{
 		"reveals the top card of his or her library": "67e",
 		"roll a six-sided die":                       "67f",
 		"die":                                        "67f",
+		"roll":                                       "67f",
 		"hand":                                       "67a",
 		"finger":                                     "67c",
+		"left":                                       "67b",
+		"right":                                      "67d",
+		"life":                                       "67e",
 
 		"v.1": "67a",
 		"v.2": "67b",

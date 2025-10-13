@@ -505,8 +505,10 @@ func variantInArtistOrFlavor(inCard *InputCard, card *Card) bool {
 	if inCard.Variation == "" {
 		return true
 	}
+	variant := inCard.Variation
+	variant = strings.Replace(variant, "Illust.", "", 1)
 
-	fields := strings.Fields(inCard.Variation)
+	fields := strings.Fields(variant)
 	found := false
 
 	// Keep flavor text author only
