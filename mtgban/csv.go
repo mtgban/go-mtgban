@@ -28,7 +28,7 @@ var (
 	// The canonical header that will be present in all buylist files
 	BuylistHeader = append(CardHeader, "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Vendor")
 
-	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Difference", "Spread", "Abs Difference", "Profitability")
+	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Difference", "Spread", "Abs Difference", "Profitability", "Buy Link", "Sell Link")
 
 	MismatchHeader = append(CardHeader, "Conditions", "Price", "Reference", "Difference", "Spread")
 )
@@ -436,6 +436,8 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 			fmt.Sprintf("%0.2f", entry.Spread),
 			fmt.Sprintf("%0.2f", entry.AbsoluteDifference),
 			fmt.Sprintf("%0.2f", entry.Profitability),
+			inv.URL,
+			bl.URL,
 		)
 		if hasExtraSeller {
 			record = append(record, inv.SellerName)
