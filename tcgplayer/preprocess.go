@@ -199,6 +199,9 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = "PDMU"
 		case "Sleight of Hand", "Lay Down Arms", "Cut Down":
 			edition = "PLG24"
+		case "Anti-Venom, Horrifying Healer", "Spectacular Spider-Man",
+			"Colonel John Jameson", "Iron Spider, Stark Upgrade":
+			edition = "LMAR"
 		default:
 			if strings.Contains(variant, "SDCC") {
 				edition = "SDCC"
