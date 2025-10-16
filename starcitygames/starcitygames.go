@@ -110,6 +110,10 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 		if len(result.Document.HawkChildAttributes) > 0 &&
 			len(result.Document.HawkChildAttributes[0].VariantSKU) > 0 {
 			sku = result.Document.HawkChildAttributes[0].VariantSKU[0]
+			// Strip the last number that points to the condition
+			if sku != "" {
+				sku = sku[:len(sku)-1]
+			}
 		}
 
 		link := ""
@@ -234,15 +238,23 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 				continue
 			}
 
+			skuCond := ""
+			if len(attribute.VariantSKU) > 0 {
+				skuCond = attribute.VariantSKU[0]
+			}
+
 			out := responseChan{
 				cardId: cardId,
 				invEntry: &mtgban.InventoryEntry{
 					Price:      price,
 					Conditions: condition,
 					Quantity:   qty,
-					OriginalId: id,
-					InstanceId: sku,
+					OriginalId: sku,
+					InstanceId: skuCond,
 					URL:        SCGProductURL(result.Document.URLDetail, attribute.VariantSKU, scg.Affiliate),
+					CustomFields: map[string]string{
+						"SCGID": id,
+					},
 				},
 				ignoreErr: strings.Contains(edition, "World Championship") || strings.Contains(cardName, "Token"),
 				pageURL:   link,
