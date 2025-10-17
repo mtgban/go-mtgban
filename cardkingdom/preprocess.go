@@ -99,6 +99,10 @@ var skuFixupTable = map[string]string{
 	// Rograkh, Son of Rohgahh
 	"PPRO25-0002":  "PF25-11",
 	"FPPRO25-0002": "PF25-11",
+
+	// Ultimate Green Goblin
+	"PPSPM-0005":  "PW25-12",
+	"FPPSPM-0005": "PW25-12",
 }
 
 // List of tags that need to be preserved in one way or another
