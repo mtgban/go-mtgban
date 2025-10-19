@@ -89,6 +89,7 @@ type Set struct {
 		Planes             []DeckCard `json:"planes"`
 		Schemes            []DeckCard `json:"schemes"`
 		SideBoard          []DeckCard `json:"sideBoard"`
+		Tokens             []DeckCard `json:"tokens"`
 		Name               string     `json:"name"`
 		SealedProductUUIDs []string   `json:"sealedProductUuids"`
 	} `json:"decks"`

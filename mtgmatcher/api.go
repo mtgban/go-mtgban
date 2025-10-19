@@ -517,7 +517,13 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 		}
 
 		for _, board := range [][]DeckCard{
-			deck.Commander, deck.DisplayCommander, deck.MainBoard, deck.Planes, deck.Schemes, deck.SideBoard,
+			deck.Commander,
+			deck.DisplayCommander,
+			deck.MainBoard,
+			deck.Planes,
+			deck.Schemes,
+			deck.SideBoard,
+			deck.Tokens,
 		} {
 			for _, card := range board {
 				uuid, err := MatchId(card.UUID, card.IsFoil, card.IsEtched)
