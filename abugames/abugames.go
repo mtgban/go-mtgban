@@ -193,14 +193,10 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					VendorName: availableTraderNames[0],
 				}
 
-				if doc.SellPrice > 0 {
-					priceRatio = doc.TradePrice / doc.SellPrice * 100
-				}
 				tradeEntry = &mtgban.BuylistEntry{
 					Conditions: cond,
 					BuyPrice:   doc.TradePrice,
 					Quantity:   doc.BuyQuantity,
-					PriceRatio: priceRatio,
 					URL:        u.String() + searchQuery,
 					OriginalId: group.GroupValue,
 					InstanceId: doc.Id,
