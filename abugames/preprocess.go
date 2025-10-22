@@ -27,6 +27,7 @@ var cardTable = map[string]string{
 	"Makindi Siderunner":                  "Makindi Sliderunner",
 
 	"Godzilla, King of the Monsters / Zilortha, Strength Incarnate": "Zilortha, Strength Incarnate",
+	"The Emperor of Palamecia /The Lord Master of Hell":             "The Emperor of Palamecia // The Lord Master of Hell",
 
 	// Funny cards
 	"No Name":                         "_____",
@@ -307,6 +308,15 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		variations := strings.Fields(variation)
 		if len(variations) > 1 && len(variations[0]) == 1 {
 			variation = strings.Join(variations[1:], " ")
+		}
+	case "Modern Horizons 2 Timeshifts":
+		edition = "MH2"
+	// This set has some non standard way to tag foil, but luckily variations are all on different CNs
+	case "Edge of Eternities: Stellar Sights":
+		variation = card.Number
+	case "Aetherdrift":
+		if variation == "Borderless" {
+			variation += " " + card.Number
 		}
 	}
 
