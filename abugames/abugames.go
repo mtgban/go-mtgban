@@ -58,37 +58,21 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 	}
 
 	for _, group := range product.Grouped.ProductId.Groups {
-		for i, doc := range group.Doclist.Docs {
-			isUnique := strings.HasPrefix(doc.Title, "ID#")
+		// When MINT is found, handle conditions as a standard 4-grade
+		// Otherwise use the same approach used for starcitygames (stricter grading for foils)
+		var hasMintGrade4Retail, hasMintGrade4Buylist bool
+		for _, doc := range group.Doclist.Docs {
+			if doc.Condition == "MINT" && doc.SellQuantity > 0 && doc.SellPrice > 0 {
+				hasMintGrade4Retail = true
+			}
+			if doc.Condition == "MINT" && doc.BuyQuantity > 0 && doc.BuyPrice > 0 {
+				hasMintGrade4Buylist = true
+			}
+		}
 
-			cond := doc.Condition
-			switch cond {
-			case "MINT":
-				if isUnique {
-					cond = "NM"
-				} else {
-					continue
-				}
-			case "NM":
-				cond = "NM"
-				if isUnique {
-					cond = "SP"
-				}
-			case "PLD":
-				cond = "SP"
-				if isUnique {
-					cond = "MP"
-				}
-			case "HP":
-				cond = "MP"
-				if isUnique {
-					cond = "HP"
-				}
-			case "SP":
+		for i, doc := range group.Doclist.Docs {
+			if doc.Condition == "SP" {
 				// There is nothing available on the website under this condition
-				continue
-			default:
-				abu.printf("Unknown '%s' condition", cond)
 				continue
 			}
 
@@ -162,6 +146,30 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			u.RawQuery = v.Encode()
 
 			if doc.SellQuantity > 0 && doc.SellPrice > 0 {
+				var cond string
+				switch doc.Condition {
+				case "MINT":
+					cond = "NM"
+				case "NM":
+					cond = "SP"
+					if !hasMintGrade4Retail {
+						cond = "NM"
+					}
+				case "PLD":
+					cond = "MP"
+					if !hasMintGrade4Retail && !theCard.Foil {
+						cond = "SP"
+					}
+				case "HP":
+					cond = "HP"
+					if !hasMintGrade4Retail && !theCard.Foil {
+						cond = "MP"
+					}
+				default:
+					abu.printf("Unknown '%s' condition", doc.Condition)
+					continue
+				}
+
 				u.Path = "/magic-the-gathering/singles"
 
 				invEntry = &mtgban.InventoryEntry{
@@ -175,6 +183,30 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			}
 
 			if doc.BuyQuantity > 0 && doc.BuyPrice > 0 {
+				var cond string
+				switch doc.Condition {
+				case "MINT":
+					cond = "NM"
+				case "NM":
+					cond = "SP"
+					if !hasMintGrade4Buylist {
+						cond = "NM"
+					}
+				case "PLD":
+					cond = "MP"
+					if !hasMintGrade4Buylist && !theCard.Foil {
+						cond = "SP"
+					}
+				case "HP":
+					cond = "HP"
+					if !hasMintGrade4Buylist && !theCard.Foil {
+						cond = "MP"
+					}
+				default:
+					abu.printf("Unknown '%s' condition", doc.Condition)
+					continue
+				}
+
 				var priceRatio float64
 				if doc.SellPrice > 0 {
 					priceRatio = doc.BuyPrice / doc.SellPrice * 100
