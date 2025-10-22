@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/url"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -58,8 +57,6 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 		return err
 	}
 
-	var duplicates []string
-
 	for _, group := range product.Grouped.ProductId.Groups {
 		for i, doc := range group.Doclist.Docs {
 			isUnique := strings.HasPrefix(doc.Title, "ID#")
@@ -92,11 +89,6 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 				continue
 			default:
 				abu.printf("Unknown '%s' condition", cond)
-				continue
-			}
-
-			if slices.Contains(duplicates, doc.Id) {
-				abu.printf("Skipping duplicate card: %s (%s)", doc.DisplayTitle, doc.Edition)
 				continue
 			}
 
@@ -225,8 +217,6 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					tradeEntry: tradeEntry,
 				}
 			}
-
-			duplicates = append(duplicates, doc.Id)
 		}
 	}
 
