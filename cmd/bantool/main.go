@@ -28,6 +28,7 @@ import (
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/coolstuffinc"
+	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/manapool"
 	"github.com/mtgban/go-mtgban/miniaturemarket"
@@ -209,6 +210,13 @@ var options = map[string]*scraperOption{
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
+			return scraper, nil
+		},
+	},
+	"hareruya": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := hareruya.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
