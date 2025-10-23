@@ -293,7 +293,7 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 				// secondCount will always be less than count so we can hijack
 				// the loop and query more in detail when needed
 				if page <= secondCount {
-					abu.printf("Processing second page %d/%d", page/maxEntryPerRequest, secondCount/maxEntryPerRequest)
+					abu.printf("Processing detailed page %d/%d", page/maxEntryPerRequest, secondCount/maxEntryPerRequest)
 					err := abu.processEntry(ctx, extraQuery, results, page)
 					if err != nil {
 						abu.printf("%v", err)
