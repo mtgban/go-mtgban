@@ -110,6 +110,7 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 		}
 
 		variant = strings.Replace(variant, "RetroF ", "Retro Frame ", 1)
+		variant = strings.Replace(variant, "No Emblem", "No Symbol", 1)
 		cardName = strings.TrimPrefix(cardName, "【Gold Frame】")
 	}
 
@@ -151,6 +152,7 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	title = strings.Replace(title, "(Bottom)", "", -1)
 	title = strings.Replace(title, "(Big Furry Monster)", "", -1)
 	title = strings.Replace(title, "SDCC", "SDCC ", -1)
+	title = strings.Replace(title, "No Emblem", "No Symbol", -1)
 
 	// /Weapons Manufacturing
 	matches := reCardName.FindStringSubmatch(title)
