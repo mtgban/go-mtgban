@@ -143,6 +143,9 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			if theCard.Foil {
 				v.Set("card_style", "[\"Foil\"]")
 			}
+			if len(doc.Language) > 0 {
+				v.Set("language", "[\""+doc.Language[0]+"\"]")
+			}
 			u.RawQuery = v.Encode()
 
 			if doc.SellQuantity > 0 && doc.SellPrice > 0 {
