@@ -318,6 +318,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		if variation == "Borderless" {
 			variation += " " + card.Number
 		}
+	case "Final Fantasy Commander":
+		variation += " " + card.Number
 	}
 
 	// Either Promo or "European Land Program"
