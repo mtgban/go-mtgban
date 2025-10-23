@@ -258,6 +258,20 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						}
 						return
 					}
+
+					// Sanity check, skip cards that do not have the right finish
+					if strings.Contains(cardName, "Foil-etched") {
+						co, err := mtgmatcher.GetUUID(cardId)
+						if err != nil || !co.Etched {
+							return
+						}
+					}
+					if isFoil {
+						co, err := mtgmatcher.GetUUID(cardId)
+						if err != nil || (!co.Etched && !co.Foil) {
+							return
+						}
+					}
 				case GameLorcana:
 					number := mtgmatcher.ExtractNumber(strings.Split(notes, "/")[0])
 
