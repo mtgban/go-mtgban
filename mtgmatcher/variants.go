@@ -1410,7 +1410,7 @@ var chrVariants = map[string]map[string]string{
 
 		"b mouth":      "114a",
 		"a bathyscape": "114b",
-		"c pully":      "114c",
+		"c pully":      "114c", // yes, typo from ABU
 		"d tower":      "114d",
 
 		"mine's face":          "114a",
