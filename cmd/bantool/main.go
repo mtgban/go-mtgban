@@ -111,6 +111,47 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardmarket": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdMagic, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.Affiliate = "mtgban"
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardmarket_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperSealed(mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"cardtrader": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
@@ -214,47 +255,6 @@ var options = map[string]*scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			scraper := mintcard.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"cardmarket": {
-		Init: func() (mtgban.Scraper, error) {
-			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
-			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
-			if mkmAppToken == "" || mkmAppSecret == "" {
-				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
-			}
-
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdMagic, mkmAppToken, mkmAppSecret)
-			if err != nil {
-				return nil, err
-			}
-			scraper.Affiliate = "mtgban"
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("MKM_PARTNER")
-			if MaxConcurrency != 0 {
-				scraper.MaxConcurrency = MaxConcurrency
-			}
-			return scraper, nil
-		},
-	},
-	"cardmarket_sealed": {
-		Init: func() (mtgban.Scraper, error) {
-			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
-			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
-			if mkmAppToken == "" || mkmAppSecret == "" {
-				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
-			}
-
-			scraper, err := cardmarket.NewScraperSealed(mkmAppToken, mkmAppSecret)
-			if err != nil {
-				return nil, err
-			}
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("MKM_PARTNER")
-			if MaxConcurrency != 0 {
-				scraper.MaxConcurrency = MaxConcurrency
-			}
 			return scraper, nil
 		},
 	},
