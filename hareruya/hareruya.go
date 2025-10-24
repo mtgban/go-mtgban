@@ -302,6 +302,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 							Quantity:   qty,
 							URL:        link,
 							OriginalId: product.Product,
+							InstanceId: product.ProductClass,
 						},
 					}
 
