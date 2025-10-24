@@ -272,6 +272,15 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		variant += " Prerelease"
 	} else if strings.Contains(title, "シリアル入り") {
 		variant += " Serialized"
+	} else if edition == "4ED" && variant == "Alternate" {
+		edition = "4EDALT"
+	}
+
+	if strings.Contains(title, "(FNM)") ||
+		strings.Contains(title, "(CardZ") ||
+		strings.Contains(title, "SDCC") {
+		// Wipes "[6ED-P]" tags which confuse the matcher
+		edition = ""
 	}
 
 	return &mtgmatcher.InputCard{
@@ -298,6 +307,7 @@ var editionTable = map[string]string{
 	"30周年記念":              "30th Anniversary",
 	"BOOKプロモ":             "Book Promo",
 	"BOXプロモ":              "Box Promo",
+	"CardZプロモ":            "CardZ Promo",
 	"CSP構築済み":             "CST",
 	"DCIマーク":              "DCI Promo",
 	"Etched Foil 30周年プロモ": "P30M etched frame",
@@ -311,6 +321,7 @@ var editionTable = map[string]string{
 	"その他プロモ":              "Other Promos",
 	"アリーナ":                "Arena",
 	"アルターネイト版":            "Alternate",
+	"アンパサンド":              "Ampersand",
 	"ウギンの運命":              "Ugin's Fate",
 	"エッチング・Foil":          "Etched Foil",
 	"エラーカード":              "Misprint",
@@ -348,6 +359,7 @@ var editionTable = map[string]string{
 	"巳年プロモ":                 "Year of the Snake 2023",
 	"拡張アート MagicConプロモ":     "Extended Art MagicCon Promo",
 	"拡張アート その他プロモ":          "Extended Art Other Promos",
+	"拡張アート":                 "Extended Art",
 	"新枠 2008年版ジャッジ褒賞":       "Mordern Frame 2008 Judge Rewards",
 	"旧枠 2000年版ジャッジ褒賞":       "Retro Frame 2000 Judge Rewards",
 	"旧枠 その他プロモ":             "Retro Frame Other Promos",
@@ -356,12 +368,20 @@ var editionTable = map[string]string{
 	"旧枠":                    "Retro Frame",
 	"褒賞プログラム":               "Rewards Program",
 	"辰年プロモ":                 "Year of the Dragon 2024",
+	"サージ・Foil":              "Surge Foil",
 
+	"S&C・Foil":             "Step-and-Compleat Foil",
 	"Secret Lair Showdown": "SLP",
 	"Retro Frame Promos":   "PLG21",
 	"30th Promo":           "P30A",
 	"POS Reward Promo":     "PW24",
 	"CMA":                  "CM1",
+	"WMC":                  "World Magic Cup Qualifiers",
+
+	"DvD": "Duel Decks: Divine vs. Demonic",
+	"EvG": "Duel Decks: Elves vs. Goblins",
+	"GvL": "Duel Decks: Garruk vs. Liliana",
+	"JvC": "Duel Decks: Jace vs. Chandra",
 
 	"FNM": "Friday Night Magic",
 }
