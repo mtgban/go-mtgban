@@ -579,12 +579,20 @@ var promoMap = map[string]map[string]map[string]struct {
 			},
 		},
 		"Vindicate": {
+			"2007年版ジャッジ褒賞": {
+				Edition: "G07",
+				Variant: "4",
+			},
 			"2013年版ジャッジ褒賞": {
 				Edition: "G13",
 				Variant: "7",
 			},
 		},
 		"Wasteland": {
+			"2010Ver. 2010年版ジャッジ褒賞": {
+				Edition: "G10",
+				Variant: "8",
+			},
 			"2015Ver. 2015年版ジャッジ褒賞": {
 				Edition: "J15",
 				Variant: "8",
