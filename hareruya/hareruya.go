@@ -43,6 +43,8 @@ type Hareruya struct {
 	buylistDate    time.Time
 	DisableBuylist bool
 
+	TargetEdition string
+
 	client *http.Client
 }
 
@@ -528,6 +530,9 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 
 	go func() {
 		for i, cardSet := range cardSets {
+			if ha.TargetEdition != "" && ha.TargetEdition != cardSet {
+				continue
+			}
 			ha.printf("Processing card set %s (%d/%d)", cardSet, i+1, len(cardSets))
 			sets <- cardSet
 		}
