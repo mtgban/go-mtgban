@@ -270,6 +270,8 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		edition = variant
 	} else if strings.Contains(title, "プレリリース") {
 		variant += " Prerelease"
+	} else if strings.Contains(title, "シリアル入り") {
+		variant += " Serialized"
 	}
 
 	return &mtgmatcher.InputCard{
@@ -317,6 +319,7 @@ var editionTable = map[string]string{
 	"コマンドフェスト":            "Command Fest",
 	"ジャッジ褒賞":              "Judge Rewards",
 	"スポットライトシリーズプロモ":      "Spotlight Series Promo",
+	"ダブルレインボウ・Foil":       "Double Rainbow Foil",
 	"テキストボックスレス ゲームデー":    "PCMP",
 	"テキストレス Magic Fest":   "Textless Magic Fest",
 	"テキストレス 褒賞プログラム":      "Textless Player Rewards",
