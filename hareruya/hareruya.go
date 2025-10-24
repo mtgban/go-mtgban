@@ -157,6 +157,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			ha.printf("page %d entry %d: %s", page, i, err.Error())
 			return false
 		}
+		price *= ha.exchangeRate
 
 		// Since we're sorting by price, as soon as we found an item that is not
 		// being bought we can assume there are no more items in this set
@@ -210,7 +211,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 				cardId: cardId,
 				buyEntry: &mtgban.BuylistEntry{
 					Conditions: mtgban.DefaultGradeTags[i],
-					BuyPrice:   price * deduction * ha.exchangeRate,
+					BuyPrice:   price * deduction,
 					PriceRatio: priceRatio,
 					URL:        "https://www.hareruyamtg.com" + link,
 					OriginalId: id,
@@ -500,6 +501,7 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 		return err
 	}
 	ha.exchangeRate = rate
+	ha.printf("Received JPY rate of %f", rate)
 
 	cardSets, err := ha.getCardSets(ctx)
 	if err != nil {
