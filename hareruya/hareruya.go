@@ -250,7 +250,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 			return fmt.Errorf("products %d vs lazyData %d", len(products), len(lazyData))
 		}
 
-		for i, product := range products {
+		for _, product := range products {
 			theCard, err := Preprocess(product)
 			if err != nil {
 				continue
@@ -282,28 +282,35 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				continue
 			}
 
-			for _, row := range lazyData[i].Rows {
-				cond := row.Condition
-				price := row.Price * ha.exchangeRate
-				qty := row.Quantity
-
-				link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
-				out := responseChan{
-					cardId: cardId,
-					invEntry: &mtgban.InventoryEntry{
-						Price:      price,
-						Conditions: cond,
-						Quantity:   qty,
-						URL:        link,
-						OriginalId: product.Product,
-					},
+			// Look for the product in lazyData (they can be in different order)
+			for _, lazy := range lazyData {
+				if lazy.ProductId != product.Product {
+					continue
 				}
 
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case channel <- out:
-					// done
+				for _, row := range lazy.Rows {
+					cond := row.Condition
+					price := row.Price * ha.exchangeRate
+					qty := row.Quantity
+
+					link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
+					out := responseChan{
+						cardId: cardId,
+						invEntry: &mtgban.InventoryEntry{
+							Price:      price,
+							Conditions: cond,
+							Quantity:   qty,
+							URL:        link,
+							OriginalId: product.Product,
+						},
+					}
+
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case channel <- out:
+						// done
+					}
 				}
 			}
 		}
