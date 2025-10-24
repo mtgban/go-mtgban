@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -224,14 +225,6 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 	return results, canExit, nil
 }
 
-var condMap = map[string]string{
-	"1": "NM",
-	"2": "SP",
-	"3": "MP",
-	"4": "HP",
-	"5": "PO",
-}
-
 func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan, cardSet string) error {
 	var i int
 	for {
@@ -245,7 +238,16 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 			return nil
 		}
 
-		for _, product := range products {
+		lazyData, err := ha.getLazy(ctx, products, 0)
+		if err != nil {
+			return err
+		}
+
+		if len(lazyData) != len(products) {
+			return fmt.Errorf("products %d vs lazyData %d", len(products), len(lazyData))
+		}
+
+		for i, product := range products {
 			theCard, err := Preprocess(product)
 			if err != nil {
 				continue
@@ -277,31 +279,177 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				continue
 			}
 
-			cond, found := condMap[product.CardCondition]
-			if !found {
-				ha.printf("%v condition '%s' not found", product, product.CardCondition)
-				continue
-			}
+			for _, row := range lazyData[i].Rows {
+				cond := row.Condition
+				price := row.Price * ha.exchangeRate
+				qty := row.Quantity
 
-			link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
-			out := responseChan{
-				cardId: cardId,
-				invEntry: &mtgban.InventoryEntry{
-					Price:      product.Price * ha.exchangeRate,
-					Conditions: cond,
-					URL:        link,
-					OriginalId: product.Product,
-				},
-			}
+				link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
+				out := responseChan{
+					cardId: cardId,
+					invEntry: &mtgban.InventoryEntry{
+						Price:      price,
+						Conditions: cond,
+						Quantity:   qty,
+						URL:        link,
+						OriginalId: product.Product,
+					},
+				}
 
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case channel <- out:
-				// done
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case channel <- out:
+					// done
+				}
 			}
 		}
 	}
+}
+
+type Row struct {
+	Quantity  int
+	Condition string
+	Price     float64
+}
+
+type LazyResult struct {
+	ProductId   string
+	ProductName string
+	Rows        []Row
+}
+
+func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int) ([]LazyResult, error) {
+	attempt++
+	link := "https://www.hareruyamtg.com/en/products/search/unisearch/lazy"
+
+	v := url.Values{}
+	for i, product := range products {
+		prefix := "docs[" + fmt.Sprint(i) + "]"
+		v.Set(prefix+"[product]", product.Product)
+		v.Set(prefix+"[product_name]", product.ProductName)
+		v.Set(prefix+"[product_name_en]", product.ProductNameEN)
+		v.Set(prefix+"[card_name]", product.CardName)
+		v.Set(prefix+"[language]", product.Language)
+		v.Set(prefix+"[price]", product.Price)
+		v.Set(prefix+"[image_url]", product.ImageURL)
+		v.Set(prefix+"[foil_flg]", product.FoilFlag)
+		v.Set(prefix+"[stock]", product.Stock)
+		v.Set(prefix+"[weekly_sales]", product.WeeklySales)
+		v.Set(prefix+"[product_class]", product.ProductClass)
+		v.Set(prefix+"[card_condition]", product.CardCondition)
+		v.Set(prefix+"[sale_flg]", product.SaleFlag)
+		v.Set(prefix+"[high_price_code]", product.HighPriceCode)
+	}
+	v.Set("css", "itemList")
+	payload := v.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, strings.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := ha.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// The system stops returning results after querying ~60 consecutive results
+	// So sleep for 5 minutes, and try again for 5 times
+	if resp.StatusCode == 403 {
+		if attempt > 5 {
+			return nil, errors.New("timeout exceeded")
+		}
+		ha.printf("lazy request returned forbidden, trying again in a bit (%d)", attempt)
+		time.Sleep(5 * 60 * time.Second)
+		return ha.getLazy(ctx, products, attempt)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []LazyResult
+
+	doc.Find(".itemList").Each(func(i int, s *goquery.Selection) {
+		name := strings.TrimSpace(s.Find(".itemDataWrapper .itemData a.itemName").Text())
+		link, _ := s.Find(".itemDataWrapper .itemData a.itemName").Attr("href")
+		id := strings.Split(path.Base(link), "?")[0]
+
+		var result LazyResult
+		result.ProductId = id
+		result.ProductName = name
+
+		for {
+			priceStr := strings.TrimSpace(s.Find(".itemDataWrapper .itemDetail__price").Text())
+			price, err := mtgmatcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
+			if err != nil {
+				break
+			}
+
+			line := strings.TrimSpace(s.Find(".itemDataWrapper .itemDetail__stock").Text())
+			fields := strings.Split(strings.Trim(line, "【】"), ":")
+			if len(fields) != 2 {
+				break
+			}
+
+			condition := strings.TrimRight(strings.TrimSuffix(fields[0], " Stock"), "-+")
+			if strings.Contains(condition, "PSA") ||
+				strings.Contains(condition, "CGC") ||
+				strings.Contains(condition, "BGS") {
+				condition = "NM"
+			}
+			if condition == "Poor" {
+				condition = "PO"
+			}
+			if strings.Contains(condition, "Singed") ||
+				strings.Contains(condition, "Signed") ||
+				strings.Contains(condition, "Inked") {
+				break
+			}
+
+			qty, err := strconv.Atoi(fields[1])
+			if err != nil || qty == 0 {
+				break
+			}
+
+			result.Rows = append(result.Rows, Row{
+				Price:     price,
+				Condition: condition,
+				Quantity:  qty,
+			})
+			break
+		}
+
+		s.Find(".row.not-first.ng-star-inserted").Each(func(j int, se *goquery.Selection) {
+			qtyStr := strings.TrimSpace(se.Find(`div[class="col-xs-2"]`).Text())
+			qty, err := strconv.Atoi(qtyStr)
+			if err != nil || qty == 0 {
+				return
+			}
+
+			priceStr := strings.TrimSpace(se.Find(".col-xs-4").Text())
+			price, err := mtgmatcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
+			if err != nil {
+				return
+			}
+
+			condition := strings.TrimSpace(se.Find("strong").Text())
+
+			result.Rows = append(result.Rows, Row{
+				Price:     price,
+				Condition: condition,
+				Quantity:  qty,
+			})
+		})
+
+		out = append(out, result)
+	})
+
+	return out, nil
 }
 
 func (ha *Hareruya) getCardSets(ctx context.Context) ([]string, error) {
@@ -455,7 +603,6 @@ func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Hareruya"
 	info.Shorthand = "HA"
 	info.CountryFlag = "JP"
-	info.NoQuantityInventory = true
 	info.InventoryTimestamp = &ha.inventoryDate
 	info.BuylistTimestamp = &ha.buylistDate
 	return

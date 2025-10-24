@@ -21,19 +21,20 @@ type Response struct {
 }
 
 type Product struct {
-	Product       string  `json:"product"`
-	ProductName   string  `json:"product_name"`
-	ProductNameEN string  `json:"product_name_en"`
-	CardName      string  `json:"card_name"`
-	Language      string  `json:"language"`
-	Price         float64 `json:"price,string"`
-	ImageURL      string  `json:"image_url"`
-	FoilFlag      string  `json:"foil_flg"`
-	Stock         int     `json:"stock,string"` // Stock of the card across printings
-	WeeklySales   string  `json:"weekly_sales"`
-	ProductClass  string  `json:"product_class"`
-	CardCondition string  `json:"card_condition"`
-	SaleFlg       string  `json:"sale_flg"`
+	Product       string `json:"product"`
+	ProductName   string `json:"product_name"`
+	ProductNameEN string `json:"product_name_en"`
+	CardName      string `json:"card_name"`
+	Language      string `json:"language"`
+	Price         string `json:"price"`
+	ImageURL      string `json:"image_url"`
+	FoilFlag      string `json:"foil_flg"`
+	Stock         string `json:"stock"` // Stock of the card across printings
+	WeeklySales   string `json:"weekly_sales"`
+	ProductClass  string `json:"product_class"`
+	CardCondition string `json:"card_condition"`
+	SaleFlag      string `json:"sale_flg"`
+	HighPriceCode string `json:"high_price_code"`
 }
 
 func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
