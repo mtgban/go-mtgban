@@ -1005,8 +1005,9 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 				set := backend.Sets[card.SetCode]
 				// The year is necessary to decouple PM20 and PM21 cards
 				year := ExtractYear(set.Name)
-				// Check if the parent set code is present in the variation
+				// Check if the parent set code is present in the variation or edition
 				if strings.Contains(inCard.Variation, set.ParentCode) ||
+					strings.Contains(inCard.Edition, set.ParentCode) ||
 					(year != "" && inCard.Contains(year)) {
 					filteredOutCards = append(filteredOutCards, card)
 				} else {
