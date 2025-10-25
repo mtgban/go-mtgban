@@ -110,7 +110,6 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 		}
 
 		variant = strings.Replace(variant, "RetroF ", "Retro Frame ", 1)
-		variant = strings.Replace(variant, "No Emblem", "No Symbol", 1)
 		cardName = strings.TrimPrefix(cardName, "【Gold Frame】")
 	}
 
@@ -123,6 +122,10 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	language := ""
 	if product.Language == "1" {
 		language = "Japanese"
+	}
+
+	if strings.Contains(product.ProductNameEN, "【No Emblem】") {
+		variant += " No Symbol"
 	}
 
 	return &mtgmatcher.InputCard{
@@ -325,6 +328,8 @@ var editionTable = map[string]string{
 	"ウギンの運命":              "Ugin's Fate",
 	"エッチング・Foil":          "Etched Foil",
 	"エラーカード":              "Misprint",
+	"エンブレムあり":             "With Symbol",
+	"エンブレムなし":             "No Symbol",
 	"ゲートウェイ":              "Gateway",
 	"ゲームデー":               "Game Day",
 	"コマンドフェスト":            "Command Fest",
