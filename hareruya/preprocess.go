@@ -237,6 +237,7 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 
 	if strings.Contains(edition, "Pスタンプ_") ||
 		strings.Contains(edition, "P Stamped_") ||
+		strings.Contains(variant, "Promo Stamped") ||
 		strings.Contains(variant, "プロモスタンプ付") {
 		edition = "Promo Pack"
 		fields := strings.Split(edition, "_")
@@ -277,6 +278,8 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		variant += " Serialized"
 	} else if edition == "4ED" && variant == "Alternate" {
 		edition = "4EDALT"
+	} else if variant == "Double Rainbow Foil" && cardName != "Sol Ring" {
+		variant += " Serialized"
 	}
 
 	if strings.Contains(title, "(FNM)") ||
@@ -325,6 +328,8 @@ var editionTable = map[string]string{
 	"アリーナ":                "Arena",
 	"アルターネイト版":            "Alternate",
 	"アンパサンド":              "Ampersand",
+	"アンパサンド・カード":          "Ampersand Promo",
+	"イラスト違い":              "Alternate",
 	"ウギンの運命":              "Ugin's Fate",
 	"エッチング・Foil":          "Etched Foil",
 	"エラーカード":              "Misprint",
@@ -333,6 +338,8 @@ var editionTable = map[string]string{
 	"ゲートウェイ":              "Gateway",
 	"ゲームデー":               "Game Day",
 	"コマンドフェスト":            "Command Fest",
+	"サージ・Foil":            "Surge Foil",
+	"ショーダウン":              "Showdown",
 	"ジャッジ褒賞":              "Judge Rewards",
 	"スポットライトシリーズプロモ":      "Spotlight Series Promo",
 	"ダブルレインボウ・Foil":       "Double Rainbow Foil",
@@ -356,6 +363,7 @@ var editionTable = map[string]string{
 	"ボーダーレス マーベル・レジェンドプロモ":  "LMAR",
 	"ボーダーレス 褒賞プロモ":          "Borderless Player Rewards",
 	"ボーダーレス":                "Borderless",
+	"ボーダーレスショーダウン":          "Borderless Showdown",
 	"マジックリーグ":               "Year of the Tiger 2022",
 	"メディア系プロモ":              "Media Promo",
 	"リセールプロモ":               "Resale Promo",
@@ -371,9 +379,9 @@ var editionTable = map[string]string{
 	"旧枠 ヒストリープロモ":           "Retro Frame 30th Anniversary",
 	"旧枠 褒賞プログラム":            "Old Frame Rewards Program",
 	"旧枠":                    "Retro Frame",
+	"絵違いVer.":               "Alternate Art",
 	"褒賞プログラム":               "Rewards Program",
 	"辰年プロモ":                 "Year of the Dragon 2024",
-	"サージ・Foil":              "Surge Foil",
 
 	"S&C・Foil":             "Step-and-Compleat Foil",
 	"Secret Lair Showdown": "SLP",
