@@ -1323,6 +1323,16 @@ func adjustEdition(inCard *InputCard) {
 					variation = "2024-6"
 				}
 			}
+		case "Dark Ritual":
+			if inCard.isIDWMagazineBook() {
+				edition = "Media and Collaboration Promos"
+
+				if strings.Contains(variation, "38") || inCard.isJPN() || inCard.Language == "Japanese" {
+					variation = "2020-4"
+				} else {
+					variation = "2025-8"
+				}
+			}
 		case "Arcbound Ravager":
 			if inCard.Contains("Qualifiers") || inCard.Contains("WMCQ") {
 				edition = "Pro Tour Promos"
