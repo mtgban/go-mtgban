@@ -202,10 +202,19 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		case "Anti-Venom, Horrifying Healer", "Spectacular Spider-Man",
 			"Colonel John Jameson", "Iron Spider, Stark Upgrade":
 			edition = "LMAR"
+		case "Sokka, Bold Boomeranger":
+			edition = "PF25"
 		default:
 			if strings.Contains(variant, "SDCC") {
 				edition = "SDCC"
 			}
+		}
+	case "Play Promos":
+		switch cardName {
+		case "Spider-Ham, Peter Porker", "Carnage, Crimson Chaos", "Mary Jane Watson":
+			edition = "PW25"
+		case "Spectacular Spider-Man":
+			edition = "PSPL"
 		}
 	case "Prerelease Cards":
 		switch cardName {
@@ -310,8 +319,10 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			if variant == "Costco Bundle" {
 				edition = "PMEI"
 			}
+		case "Peter Parker":
+			edition = "PMEI"
 		case "J. Jonah Jameson":
-			edition = "PSPM"
+			edition = "PF25"
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
