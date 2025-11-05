@@ -516,7 +516,7 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			continue
 		}
 
-		for _, board := range [][]DeckCard{
+		for i, board := range [][]DeckCard{
 			deck.Commander,
 			deck.DisplayCommander,
 			deck.MainBoard,
@@ -528,6 +528,10 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			for _, card := range board {
 				uuid, err := MatchId(card.UUID, card.IsFoil, card.IsEtched)
 				if err != nil {
+					// XXX: Tokens are not fully loaded so don't error out if one is missing
+					if i == 6 {
+						continue
+					}
 					return nil, err
 				}
 
