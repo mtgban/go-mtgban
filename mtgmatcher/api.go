@@ -1066,7 +1066,7 @@ func BuildSealedProductMap(idName string) map[int][]string {
 			// This list of tags represents products with separate entries, but
 			// with the same listing. For example, there is no Textured because
 			// there isn't any drop containing non-Texured foil versions of the cards
-			for _, tag := range []string{"Foil", "Rainbow", "Galaxy"} {
+			for _, tag := range []string{"Foil", "Rainbow", "Galaxy", "Confetti"} {
 				name = strings.TrimSuffix(name, tag)
 				name = strings.TrimSpace(name)
 
