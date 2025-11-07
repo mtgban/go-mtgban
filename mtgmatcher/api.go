@@ -589,7 +589,11 @@ func GetDecklist(setCode, sealedUUID string) ([]string, error) {
 						for i := 0; i < len(deckPicks)-1; i++ {
 							n := rand.Intn(10)
 							if n < 3 {
-								deckPicks[i] += suffixFoil
+								uuidFoil, err := MatchId(deckPicks[i], true)
+								if err != nil {
+									continue
+								}
+								deckPicks[i] = uuidFoil
 							}
 						}
 					}
@@ -656,7 +660,11 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 						for i := 0; i < len(deckPicks)-1; i++ {
 							n := rand.Intn(10)
 							if n < 3 {
-								deckPicks[i] += suffixFoil
+								uuidFoil, err := MatchId(deckPicks[i], true)
+								if err != nil {
+									continue
+								}
+								deckPicks[i] = uuidFoil
 							}
 						}
 					}
@@ -954,8 +962,12 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 							}
 							probs = append(probs, probNF)
 
+							uuidFoil, err := MatchId(uuid, true)
+							if err != nil {
+								continue
+							}
 							probF := ProductProbabilities{
-								UUID:        uuid + suffixFoil,
+								UUID:        uuidFoil,
 								Probability: 0.3,
 							}
 							probs = append(probs, probF)
