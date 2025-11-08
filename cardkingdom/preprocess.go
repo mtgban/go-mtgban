@@ -17,9 +17,6 @@ var skuFixupTable = map[string]string{
 	"PAL96-003": "PARL-003",
 	"PAL96-004": "PARL-004",
 
-	// Mind Stone
-	"PLG21-001": "PW21-005",
-
 	// Lightning Bolt
 	"F19-001": "PF19-001",
 
@@ -61,9 +58,8 @@ var skuFixupTable = map[string]string{
 	"FMUST-113C": "ULST-37",
 
 	// Wrong PLST codes
-	"MF19-001":  "MPF19-1",
-	"MZNR-091":  "MKHC-91",
-	"MMOC-0219": "MMOC-249",
+	"MF19-001": "MPF19-1",
+	"MZNR-091": "MKHC-91",
 
 	// Naya Sojourners
 	"PM10-028": "DCI-29",
@@ -85,20 +81,12 @@ var skuFixupTable = map[string]string{
 	// Crucible of Words promo
 	"PWOR19-001": "PWOR-2019",
 
-	// Greater Good
-	"SLD-1693-IT":  "SLD-1693",
-	"FSLD-1693-IT": "SLD-1693★",
-
 	// Flusterstorm BaB
 	"MH1-255P":  "MH1-255",
 	"PMH3-0496": "MH3-496",
 
 	// Glimpse, the Unthinkable
 	"MB2-0355": "MB2-594",
-
-	// Rograkh, Son of Rohgahh
-	"PPRO25-0002":  "PF25-11",
-	"FPPRO25-0002": "PF25-11",
 
 	// Ultimate Green Goblin
 	"PPSPM-0005":  "PW25-12",
@@ -161,6 +149,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	number := strings.Join(fields[1:], "")
 	number = strings.TrimLeft(number, "0")
 	number = strings.TrimRight(number, "JP")
+	number = strings.TrimRight(number, "IT")
 
 	edition := setCode
 	variation := strings.ToLower(number)
