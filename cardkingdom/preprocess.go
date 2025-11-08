@@ -103,6 +103,10 @@ var skuFixupTable = map[string]string{
 	// Ultimate Green Goblin
 	"PPSPM-0005":  "PW25-12",
 	"FPPSPM-0005": "PW25-12",
+
+	// Carnage, Crimson Chaos
+	"PPSPM-0003B":  "PW25-13",
+	"FPPSPM-0003B": "PW25-13",
 }
 
 // List of tags that need to be preserved in one way or another
