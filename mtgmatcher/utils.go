@@ -88,6 +88,10 @@ func SplitVariants(str string) []string {
 			fields[0] = fmt.Sprintf("%s (%s)", fields[0], fields[1])
 			fields = append(fields[:1], fields[2:]...)
 		}
+		if strings.HasPrefix(str, "Dwight, Assistant (to the)") {
+			fields[0] = fmt.Sprintf("%s (%s) King", fields[0], fields[1])
+			fields = append(fields[:1], fields[2:]...)
+		}
 	}
 
 	// This might have been lost in the split if it was after the ()
