@@ -469,14 +469,6 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				edition = "PURL"
 				variant = "9"
 			}
-		case "The First Sliver", "Serra the Benevolent", "Ponder",
-			"Ugin, the Spirit Dragon", "Sliver Hive", "Lightning Bolt",
-			"The Ur-Dragon", "Scourge of Valkas":
-			cards := mtgmatcher.MatchInSet(cardName, "PF25")
-			if len(cards) > 0 && (variant == "3" || variant == "2" || variant == "1") {
-				edition = "PF25"
-				variant = cards[0].Number
-			}
 		default:
 			// Preserve all etched/galaxy/rainbow foil properties
 			if strings.Contains(ogVariant, "Foil") {
@@ -533,11 +525,22 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		switch cardName {
 		case "Lightning Bolt":
 			edition = "PF19"
+			if variant == "Future Sight" {
+				edition = "PF25"
+			}
 		case "Arcane Signet":
 			vars, found := mtgmatcher.VariantsTable["30th Anniversary Misc Promos"]["Arcane Signet"][strings.ToLower(variant)]
 			if found {
 				variant = vars
 				edition = "P30M"
+			}
+		case "The First Sliver", "Serra the Benevolent", "Ponder",
+			"Ugin, the Spirit Dragon", "Sliver Hive",
+			"The Ur-Dragon", "Scourge of Valkas":
+			cards := mtgmatcher.MatchInSet(cardName, "PF25")
+			if len(cards) > 0 && (number == "3" || number == "2" || number == "1") {
+				edition = "PF25"
+				variant = cards[0].Number
 			}
 		}
 	case "Fourth Edition",
