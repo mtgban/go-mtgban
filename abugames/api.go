@@ -27,11 +27,12 @@ type ABUCard struct {
 	Title    string   `json:"title"`
 	Number   string   `json:"card_number"`
 
-	SellPrice    float64 `json:"price"`
-	SellQuantity int     `json:"quantity"`
-	BuyQuantity  int     `json:"buy_list_quantity"`
-	BuyPrice     float64 `json:"buy_price"`
-	TradePrice   float64 `json:"trade_price"`
+	SellPrice       float64 `json:"price"`
+	SellQuantity    int     `json:"quantity"`
+	SubSellQuantity int     `json:"sub_qty"`
+	BuyQuantity     int     `json:"buy_list_quantity"`
+	BuyPrice        float64 `json:"buy_price"`
+	TradePrice      float64 `json:"trade_price"`
 }
 
 type ABUProduct struct {

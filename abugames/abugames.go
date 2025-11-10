@@ -62,7 +62,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 		// Otherwise use the same approach used for starcitygames (stricter grading for foils)
 		var hasMintGrade4Retail, hasMintGrade4Buylist bool
 		for _, doc := range group.Doclist.Docs {
-			if doc.Condition == "MINT" && doc.SellQuantity > 0 && doc.SellPrice > 0 {
+			if doc.Condition == "MINT" && (doc.SellQuantity > 0 || doc.SubSellQuantity > 0) && doc.SellPrice > 0 {
 				hasMintGrade4Retail = true
 			}
 			if doc.Condition == "MINT" && doc.BuyQuantity > 0 && doc.BuyPrice > 0 {
