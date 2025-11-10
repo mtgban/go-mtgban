@@ -165,7 +165,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			if card.Variation != "" {
 				cardName = fmt.Sprintf("%s (%s)", card.Name, card.Variation)
 			}
-			q.Set("filter[name]", cardName)
+			q.Set("filter[name]", strings.ReplaceAll(cardName, "\"", ""))
 
 			// Always show both non-foil and foil cards, the filtering
 			// on the website accurate enough (ie for Prerelease)
