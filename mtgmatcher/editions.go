@@ -50,6 +50,8 @@ var EditionTable = map[string]string{
 	"Marvel Legends Foil":           "Marvel Legends Series Inserts",
 	"Marvel Universe Eternal-Legal": "Marvel Universe",
 
+	"Avatar: The Last Airbender: Eternal-Legal": "Avatar: The Last Airbender Eternal",
+
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
 	"Outlaws of Thunder Junction The Big Score":  "The Big Score",
 	"Outlaws of Thunder Junction: Breaking News": "Breaking News",
