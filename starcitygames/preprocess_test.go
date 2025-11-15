@@ -61,7 +61,7 @@ var SKUTests = []SKUTest{
 	},
 }
 
-func TestSKU(t *testing.T) {
+func TestSCGSKU(t *testing.T) {
 	for _, probe := range SKUTests {
 		test := probe
 		t.Run(test.In, func(t *testing.T) {
