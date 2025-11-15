@@ -64,6 +64,8 @@ func fixupSetCode(setCode string) string {
 			setCode = "4EDALT"
 		case "MPS3":
 			setCode = "MP2"
+		case "CM12":
+			setCode = "OCM1"
 		case "UMA2":
 			setCode = "PUMA"
 		default:
