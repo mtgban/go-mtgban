@@ -54,6 +54,11 @@ var SKUTests = []SKUTest{
 		In:  "SGL-MTG-MPS3-001-ENF1",
 		Out: "cb4a260d-8f98-5e81-b881-6727d5323917",
 	},
+	{
+		Name: "Cavern of Souls",
+		In:   "SGL-MTG-UMA2-32-ENF",
+		Out:  "2b0cfd28-e73e-5519-8aea-608854b0ef43",
+	},
 }
 
 func TestSKU(t *testing.T) {

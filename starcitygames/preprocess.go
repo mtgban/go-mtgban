@@ -64,6 +64,8 @@ func fixupSetCode(setCode string) string {
 			setCode = "4EDALT"
 		case "MPS3":
 			setCode = "MP2"
+		case "UMA2":
+			setCode = "PUMA"
 		default:
 			setCode = setCode[:len(setCode)-1]
 		}
@@ -137,6 +139,11 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		}
 	case "MB13":
 		setCode = "MB2"
+		cards := mtgmatcher.MatchInSet(cardName, setCode)
+		if len(cards) == 1 {
+			number = cards[0].Number
+		}
+	case "PUMA":
 		cards := mtgmatcher.MatchInSet(cardName, setCode)
 		if len(cards) == 1 {
 			number = cards[0].Number
