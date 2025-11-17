@@ -17,16 +17,18 @@ import (
 )
 
 type CookieClient struct {
-	client  *http.Client
-	session string
+	client    *http.Client
+	session   string
+	clearance string
 }
 
-func NewCookieClient(session string) *CookieClient {
+func NewCookieClient(session, clearance string) *CookieClient {
 	ck := CookieClient{}
 	ck.client = cleanhttp.DefaultClient()
 	jar, _ := cookiejar.New(nil)
 	ck.client.Jar = jar
 	ck.session = session
+	ck.clearance = clearance
 	return &ck
 }
 
@@ -119,6 +121,8 @@ const (
 
 	ckInventoryEmptyURL = "https://www.cardkingdom.com/cart/empty"
 	ckBuylistEmptyURL   = "https://www.cardkingdom.com/sellcart/empty_cart"
+
+	staticUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0"
 )
 
 func (ck *CookieClient) SetCartInventory(ctx context.Context, ckId, cond string, qty int) (*CartResponse, error) {
@@ -195,10 +199,10 @@ func (ck *CookieClient) Get(ctx context.Context, link string) (*http.Response, e
 	if err != nil {
 		return nil, err
 	}
-	if ck.session != "" {
-		req.Header.Set("Cookie", "laravel_session="+ck.session+";")
+	if ck.session != "" && ck.clearance != "" {
+		req.Header.Set("Cookie", "cf_clearance="+ck.clearance+"; laravel_session="+ck.session+";")
 	}
-	req.Header.Set("User-Agent", "curl/8.6.0")
+	req.Header.Set("User-Agent", staticUA)
 
 	return ck.client.Do(req)
 }
@@ -208,11 +212,11 @@ func (ck *CookieClient) Post(ctx context.Context, link, contentType string, read
 	if err != nil {
 		return nil, err
 	}
-	if ck.session != "" {
-		req.Header.Set("Cookie", "laravel_session="+ck.session+";")
+	if ck.session != "" && ck.clearance != "" {
+		req.Header.Set("Cookie", "cf_clearance="+ck.clearance+"; laravel_session="+ck.session+";")
 	}
 	req.Header.Set("Content-Type", contentType)
-	req.Header.Set("User-Agent", "curl/8.6.0")
+	req.Header.Set("User-Agent", staticUA)
 
 	return ck.client.Do(req)
 }
