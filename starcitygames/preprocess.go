@@ -68,6 +68,8 @@ func fixupSetCode(setCode string) string {
 			setCode = "O" + setCode[:3]
 		case "UMA2":
 			setCode = "PUMA"
+		case "MH12", "MH13":
+			setCode = "H1R"
 		default:
 			setCode = setCode[:len(setCode)-1]
 		}
