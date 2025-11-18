@@ -88,11 +88,11 @@ var skuFixupTable = map[string]string{
 	// Glimpse, the Unthinkable
 	"MB2-0355": "MB2-594",
 
-	// Ultimate Green Goblin
-	"PPSPM-0005":  "PW25-12",
-	"FPPSPM-0005": "PW25-12",
-
-	// Carnage, Crimson Chaos
+	// Spider-man Play Promos
+	"PPSPM-0002B":  "PW25-10",
+	"FPPSPM-0002B": "PW25-10",
+	"PPSPM-0005":   "PW25-12",
+	"FPPSPM-0005":  "PW25-12",
 	"PPSPM-0003B":  "PW25-13",
 	"FPPSPM-0003B": "PW25-13",
 }
