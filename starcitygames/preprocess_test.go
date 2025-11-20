@@ -63,6 +63,11 @@ var SKUTests = []SKUTest{
 		In:  "SGL-MTG-WCHP-97SG_VIS_123s-ENN1",
 		Out: "a6d53759-0830-5380-b7fe-a0d51858ec1b",
 	},
+	{
+		Name: "Ponder",
+		In:   "SGL-MTG-PRM-FEST_2025_002-ENF1",
+		Out:  "0d239a5a-c6ad-54b5-b899-50ca15fdc6c9",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {

@@ -166,6 +166,12 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
+		case len(fields) > 2 && len(fields[1]) == 4 && strings.HasPrefix(number, "FEST_"):
+			setCode = "PF" + fields[1][2:]
+			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			if len(cards) == 1 {
+				number = cards[0].Number
+			}
 		}
 	case "MB13":
 		setCode = "MB2"
