@@ -81,7 +81,7 @@ func fixupSetCode(setCode string) string {
 // * for singles:
 // SGL-[Brand]-[Set]-[Collector Number]-[Language][Foiling][Condition]
 // * for world champtionship:
-// SGL-[Brand]-WCPH-[Year][Player Initials][Set][Collector Number][Sideboard]-[Language][Foiling][Condition]
+// SGL-[Brand]-WCHP-[Year][Player Initials]_[Set]_[Collector Number][Sideboard]-[Language][Foiling][Condition]
 // * for promotional cards:
 // SGL-[Brand]-PRM-[Promo][Set][Collector Number]-[Language][Foiling][Condition]
 //
@@ -101,6 +101,26 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	foil := fields[4][2] != 'N'
 
 	switch setCode {
+	case "WCHP":
+		year := number[:2]
+		setCode = "WC" + year
+		if year == "96" {
+			setCode = "PTC"
+		}
+
+		fields := strings.Split(number, "_")
+		cards := mtgmatcher.MatchInSet(cardName, setCode)
+		if len(cards) == 1 {
+			number = cards[0].Number
+		} else if len(fields) == 3 {
+			initials := strings.ToLower(fields[0][2:])
+			subNumber := strings.TrimLeft(fields[2], "0")
+			number = initials + subNumber
+			// rebuild "sideboard"
+			if strings.HasSuffix(number, "s") {
+				number += "b"
+			}
+		}
 	case "PWSB":
 		setCode = "PLST"
 		fields := strings.Split(number, "_")
