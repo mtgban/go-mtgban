@@ -609,6 +609,7 @@ func (tcg *SellerClient) InventoryListing(ctx context.Context, productId, size, 
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", staticUA)
 
 	resp, err := tcg.client.Do(req)
 	if err != nil {

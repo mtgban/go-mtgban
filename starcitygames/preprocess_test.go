@@ -59,6 +59,15 @@ var SKUTests = []SKUTest{
 		In:   "SGL-MTG-UMA2-32-ENF",
 		Out:  "2b0cfd28-e73e-5519-8aea-608854b0ef43",
 	},
+	{
+		In:  "SGL-MTG-WCHP-97SG_VIS_123s-ENN1",
+		Out: "a6d53759-0830-5380-b7fe-a0d51858ec1b",
+	},
+	{
+		Name: "Ponder",
+		In:   "SGL-MTG-PRM-FEST_2025_002-ENF1",
+		Out:  "0d239a5a-c6ad-54b5-b899-50ca15fdc6c9",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {
@@ -82,7 +91,8 @@ func TestSCGSKU(t *testing.T) {
 				}
 			}
 			if out.Id != test.Out {
-				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.In, test.Out, out.Id, out)
+				co, _ := mtgmatcher.GetUUID(out.Id)
+				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.In, test.Out, out.Id, co)
 				return
 			}
 			t.Log("PASS:", test.In)
