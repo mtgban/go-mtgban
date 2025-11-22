@@ -210,10 +210,13 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					continue
 				}
 
+				// priceRatio is between buy and sell
 				var priceRatio float64
 				if doc.SellPrice > 0 {
 					priceRatio = doc.BuyPrice / doc.SellPrice * 100
 				}
+				// While priceRatioTrade is between trade and buy
+				priceRatioTrade := doc.TradePrice / doc.BuyPrice * 100
 
 				u.Path = "/buylist/magic-the-gathering/singles"
 
@@ -232,6 +235,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					Conditions: cond,
 					BuyPrice:   doc.TradePrice,
 					Quantity:   doc.BuyQuantity,
+					PriceRatio: priceRatioTrade,
 					URL:        u.String() + searchQuery,
 					OriginalId: group.GroupValue,
 					InstanceId: doc.Id,
