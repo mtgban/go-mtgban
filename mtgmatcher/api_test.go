@@ -1,6 +1,9 @@
 package mtgmatcher
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func BenchmarkSearchEquals(b *testing.B) {
 	if NameToBeFound == "" {
@@ -80,4 +83,32 @@ func TestSearchRegexp(t *testing.T) {
 		t.Error("FAIL: Not found")
 	}
 	t.Log("PASS: regexp")
+}
+
+func TestSearchFlavor(t *testing.T) {
+	if NameToBeFound == "" {
+		setupBenchmark()
+	}
+
+	hashes, err := SearchEquals("Stay with Me")
+	if err != nil {
+		t.Error("FAIL: Unexpected", err)
+		return
+	}
+
+	var count int
+	for _, hash := range hashes {
+		co, err := GetUUID(hash)
+		if err != nil {
+			t.Error("FAIL: Unexpected", err)
+			return
+		}
+		if co.SetCode == "FCA" {
+			count++
+		}
+	}
+	if count != 2 {
+		t.Error("FAIL: Search should return exactly 2 results, got " + fmt.Sprint(count))
+	}
+	t.Log("PASS: flavor")
 }
