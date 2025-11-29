@@ -55,6 +55,7 @@ type itemsRecap struct {
 }
 
 type setCountPair struct {
+	Idx   int
 	Name  string
 	Count int
 }
@@ -73,8 +74,9 @@ func (tcg *TCGSellerInventory) totalItems(ctx context.Context) (*itemsRecap, err
 
 	ret.TotalResults = response.Results[0].TotalResults
 
-	for _, aggregation := range response.Results[0].Aggregations.SetName {
+	for i, aggregation := range response.Results[0].Aggregations.SetName {
 		ret.Pair = append(ret.Pair, setCountPair{
+			Idx:   i,
 			Name:  aggregation.URLValue,
 			Count: int(aggregation.Count),
 		})
@@ -95,7 +97,7 @@ func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- 
 	for _, finish := range []string{"Normal", "Foil"} {
 		response, err := tcg.client.InventoryForSeller(ctx, tcg.sellerKeys, tcg.requestSize, page, tcg.onlyDirect, []string{finish})
 		if err != nil {
-			tcg.printf("InventoryForSeller %s %s", finish, err.Error())
+			tcg.printf("InventoryForSeller (entry) %s %s", finish, err.Error())
 			continue
 		}
 		err = tcg.processInventory(channel, response.Results[0].Results)
@@ -111,7 +113,7 @@ func (tcg *TCGSellerInventory) processEdition(ctx context.Context, channel chan<
 		for _, finish := range []string{"Normal", "Foil"} {
 			response, err := tcg.client.InventoryForSeller(ctx, tcg.sellerKeys, tcg.requestSize, i, tcg.onlyDirect, []string{finish}, setName)
 			if err != nil {
-				tcg.printf("InventoryForSeller %s %s", finish, err.Error())
+				tcg.printf("InventoryForSeller (edition) %s %s", finish, err.Error())
 				continue
 			}
 			err = tcg.processInventory(channel, response.Results[0].Results)
@@ -237,7 +239,7 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 			wg.Add(1)
 			go func() {
 				for pair := range pairs {
-					tcg.printf("processing edition %s", pair.Name)
+					tcg.printf("processing edition %d/%d (%s)", pair.Idx+1, len(ret.Pair), pair.Name)
 					err := tcg.processEdition(ctx, results, pair.Name, pair.Count)
 					if err != nil {
 						tcg.printf("%v", err)
