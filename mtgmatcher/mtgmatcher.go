@@ -1330,7 +1330,7 @@ func adjustEdition(inCard *InputCard) {
 				if strings.Contains(variation, "35") || inCard.isJPN() || inCard.Language == "Japanese" {
 					variation = "2020-1"
 				} else {
-					variation = "2024-6"
+					variation = "2025-4"
 				}
 			}
 		case "Dark Ritual":
