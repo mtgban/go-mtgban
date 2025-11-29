@@ -31,7 +31,11 @@ func (tcg *TCGSellerInventory) printf(format string, a ...interface{}) {
 	}
 }
 
-const defaultSellerInventoryConcurrency = 8
+const (
+	defaultSellerInventoryConcurrency = 8
+
+	MaxPagesGlobalScrapingValue = 200
+)
 
 func NewScraperForSellerIds(sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
@@ -200,7 +204,7 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
-	if ret.TotalResults < MaxGlobalScrapingValue {
+	if ret.TotalResults/tcg.requestSize < MaxPagesGlobalScrapingValue {
 		tcg.printf("Using global scraping")
 		pages := make(chan int)
 		for i := 0; i < tcg.MaxConcurrency; i++ {

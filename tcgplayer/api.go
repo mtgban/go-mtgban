@@ -219,8 +219,6 @@ const (
 	SellerListingURL   = "https://mp-search-api.tcgplayer.com/v1/product/%d/listings"
 
 	DefaultSellerRequestSize = 50
-
-	MaxGlobalScrapingValue = 8000
 )
 
 func SellerKeyExists(ctx context.Context, sellerKey string) bool {
