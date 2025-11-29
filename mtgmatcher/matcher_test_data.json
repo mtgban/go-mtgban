@@ -1564,10 +1564,10 @@
         }
     },
     {
-        "uuid": "ff9fd322-ceac-5456-8012-f927248a3ce0",
+        "uuid": "7beb2d19-5f06-5d83-a9bb-312627934e55",
         "description": "dfc_reprint_reskin",
         "input": {
-            "name": "Darksteel Colossus",
+            "name": "Blightsteel Colossus",
             "variant": "Megatron Secret Lair Transformers Reversible Borderless",
             "edition": "Secret Lair Transformers"
         }

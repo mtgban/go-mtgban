@@ -954,6 +954,14 @@ func adjustEdition(inCard *InputCard) {
 			}
 		case inCard.Name == "Shapeshifter":
 			inCard.Name += " Token"
+		case Contains(inCard.Name, "Blightsteel Colossus"), Contains(inCard.Name, "Megatron"), Contains(inCard.Name, "FAS-BOR7 Horus"),
+			inCard.Contains("Blightsteel Colossus"), inCard.Contains("Megatron"), inCard.Contains("FAS-BOR7 Horus"):
+			if Contains(inCard.Name, "Megatron") || inCard.Contains("Megatron") {
+				variation = "1079"
+			} else if Contains(inCard.Name, "FAS-BOR7 Horus") || inCard.Contains("FAS-BOR7 Horus") {
+				variation = "2223"
+
+			}
 		}
 
 	// Untagged Planeshift Alternate Art - these could be solved with the
