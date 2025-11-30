@@ -75,6 +75,8 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		if variant == "JP Exclusive" {
 			variant = ""
 		}
+	case "Scrounging Deathclaw":
+		cardName = "Tarmogoyf"
 	default:
 		if strings.Contains(variant, "JP Amazon Exclusive") ||
 			strings.Contains(variant, "SEA Exclusive") ||
