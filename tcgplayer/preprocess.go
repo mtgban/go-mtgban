@@ -352,8 +352,10 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			variant = "299"
 		default:
 			for _, code := range []string{"PR23", "SLP"} {
-				if len(mtgmatcher.MatchInSet(cardName, code)) > 0 {
-					edition = code
+				cards := mtgmatcher.MatchInSet(cardName, code)
+				if len(cards) > 0 {
+					edition = cards[0].SetCode
+					variant = cards[0].Number
 					break
 				}
 			}
