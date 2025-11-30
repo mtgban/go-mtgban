@@ -13,6 +13,9 @@ var replacerStrings = []string{
 	// Hopefully "of the" is specific enough
 	"of the", "of the",
 
+	// I can't even
+	"jeong, the", "jeongthe",
+
 	// Wrong escaping or conversion
 	"&quot;", "",
 
@@ -67,6 +70,7 @@ var replacerStrings = []string{
 	"í", "i",
 	"ï", "i",
 	"ö", "o",
+	"ō", "o",
 	"ó", "o",
 	"ú", "u",
 	"û", "u",

@@ -100,6 +100,14 @@ var NormalizeTests = []NormalizeTest{
 		In:  "Henzie &quot;Toolbox&quot; Torre",
 		Out: "henzietoolboxtorre",
 	},
+	{
+		In:  "Jeong Jeong, the Deserter",
+		Out: "jeongjeongthedeerter",
+	},
+	{
+		In:  "Jeong Jeong's Deserters",
+		Out: "jeongjeongdeerter",
+	},
 }
 
 func TestNormalize(t *testing.T) {
