@@ -236,8 +236,14 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = "PJJT"
 		} else {
 			switch cardName {
-			case "Royal Assassin",
-				"Sakura-Tribe Elder":
+			case "Sakura-Tribe Elder":
+				switch variant {
+				case "Super Series":
+					edition = "PSUS"
+				case "Junior Super Series":
+					edition = "PJSE"
+				}
+			case "Royal Assassin":
 			default:
 				if len(mtgmatcher.MatchInSet(cardName, "PSUS")) == 1 {
 					edition = "PSUS"
