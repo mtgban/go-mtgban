@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -725,8 +726,9 @@ func (c *InputCard) hasSecretLairTag(code string) bool {
 		// SLX only has plain cards, if they are reskinned, they are from SLD
 		tag = !c.isReskin() || c.Contains("Within") || c.Contains("SLX")
 	case "SLC":
-		// These cards are numbered after the year they represent
-		tag = c.Contains("30th") || c.Contains("Countdown") || ExtractYear(c.Variation) != ""
+		// Some of these cards are numbered after the year they represent
+		maybeYear, _ := strconv.Atoi(ExtractYear(c.Variation))
+		tag = c.Contains("30th") || c.Contains("Countdown") || (maybeYear >= 1993 && maybeYear <= 2023)
 	case "SLP":
 		// Simple check the variations
 		tag = c.Contains("Showdown") || c.Contains("Prize") || c.Contains("Finish") || c.Contains("Play")
