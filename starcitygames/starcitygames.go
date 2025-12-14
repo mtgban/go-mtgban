@@ -317,7 +317,7 @@ func (scg *Starcitygames) scrape(ctx context.Context) error {
 	return nil
 }
 
-func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- responseChan, page int, rarity string) error {
+func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- responseChan, page, rarity int) error {
 	search, err := scg.client.SearchAll(ctx, scg.game, page, buylistRequestLimit, rarity)
 	if err != nil {
 		return err
@@ -337,9 +337,9 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 			"0/1/0/0", // various faucets (bulk, hotlist, etc)
 			fmt.Sprint(hit.SetID),
 			hit.Language,
-			",",           // rarity
-			"0/999999.99", // min/max price range
-			hit.Finish,    // N F or N,F
+			",",                                 // rarity
+			"0/999999.99",                       // min/max price range
+			fmt.Sprint(hit.FinishPricingTypeID), // 0 = any, 1 = nf, 2 = f
 			"default",
 		)
 
@@ -351,13 +351,13 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 			case "PL":
 				conditions = "SP"
 				// Stricter grading for foils
-				if hit.Finish == "F" {
+				if hit.FinishPricingTypeID == 2 {
 					conditions = "MP"
 				}
 			case "HP":
 				conditions = "MP"
 				// Stricter grading for foils
-				if hit.Finish == "F" {
+				if hit.FinishPricingTypeID == 2 {
 					conditions = "HP"
 				}
 			default:
@@ -369,7 +369,7 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 			var err error
 			if scg.game == GameMagic {
 				var theCard *mtgmatcher.InputCard
-				theCard, err = preprocess(&result, hit.SetName, hit.Language, hit.Finish == "F", hit.CollectorNumber)
+				theCard, err = preprocess(&result, hit.SetName, hit.Language, hit.FinishPricingTypeID == 2, hit.CollectorNumber)
 				if err != nil {
 					break
 				}
@@ -378,7 +378,7 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 			} else if scg.game == GameLorcana {
 				cardName := result.Name
 				number := hit.CollectorNumber
-				cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.Finish != "N")
+				cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.FinishPricingTypeID == 2)
 			} else {
 				return errors.New("unsupported game")
 			}
@@ -422,7 +422,7 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 					"SCGName":     hit.Name,
 					"SCGEdition":  hit.SetName,
 					"SCGLanguage": hit.Language,
-					"SCGFinish":   hit.Finish,
+					"SCGFinish":   fmt.Sprint(hit.FinishPricingTypeID),
 					// custom, helps debugging
 					"scgSubtitle": hit.Subtitle,
 					"scgNumber":   hit.CollectorNumber,
@@ -448,13 +448,13 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 	return nil
 }
 
-func (scg *Starcitygames) parseBL(ctx context.Context, rarity string) error {
+func (scg *Starcitygames) parseBL(ctx context.Context, rarityLetter string, rarity int) error {
 	search, err := scg.client.SearchAll(ctx, scg.game, 0, 1, rarity)
 	if err != nil {
 		return err
 	}
 	totals := search.EstimatedTotalHits
-	scg.printf("Parsing %d cards for rarity %s", totals, rarity)
+	scg.printf("Parsing %d cards for rarity %s", totals, rarityLetter)
 
 	pages := make(chan int)
 	results := make(chan responseChan)
@@ -504,7 +504,7 @@ func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
 		if setting.GameID != scg.game {
 			continue
 		}
-		err := scg.parseBL(ctx, setting.Abbr)
+		err := scg.parseBL(ctx, setting.Abbr, setting.ID)
 		if err != nil {
 			return err
 		}

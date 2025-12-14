@@ -208,22 +208,22 @@ type SCGSearchResponse struct {
 }
 
 type SCGCard struct {
-	Name            string           `json:"name"`
-	ID              int              `json:"id"`
-	Subtitle        string           `json:"subtitle"`
-	ProductType     string           `json:"product_type"`
-	Finish          string           `json:"finish"`
-	Language        string           `json:"language"`
-	Rarity          string           `json:"rarity"`
-	IsBuying        int              `json:"is_buying"`
-	Hotlist         int              `json:"hotlist"`
-	BorderColor     string           `json:"border_color"`
-	CollectorNumber string           `json:"collector_number"`
-	SetID           int              `json:"set_id"`
-	SetName         string           `json:"set_name"`
-	SetReleaseDate  int              `json:"set_release_date"`
-	SetSymbol       string           `json:"set_symbol"`
-	Variants        []SCGCardVariant `json:"variants"`
+	Name                string           `json:"name"`
+	ID                  int              `json:"id"`
+	Subtitle            string           `json:"subtitle"`
+	ProductType         string           `json:"product_type"`
+	FinishPricingTypeID int              `json:"finish_pricing_type_id"`
+	Language            string           `json:"language"`
+	Rarity              any              `json:"rarity"`
+	IsBuying            int              `json:"is_buying"`
+	Hotlist             int              `json:"hotlist"`
+	BorderColor         string           `json:"border_color"`
+	CollectorNumber     string           `json:"collector_number"`
+	SetID               int              `json:"set_id"`
+	SetName             string           `json:"set_name"`
+	SetReleaseDate      int              `json:"set_release_date"`
+	SetSymbol           string           `json:"set_symbol"`
+	Variants            []SCGCardVariant `json:"variants"`
 }
 
 type SCGCardVariant struct {
@@ -273,16 +273,16 @@ func SearchSettings(ctx context.Context) (*Settings, error) {
 	return &search, nil
 }
 
-func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit int, rarity string) (*SCGSearchResponse, error) {
-	filter := `game_id = %d AND price_category_id = %s AND is_buying = 1 AND NOT primary_status IN ["do_not_show", "buying_in_bulk"]`
+func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit, rarity int) (*SCGSearchResponse, error) {
+	filter := `game_id = %d AND price_category_id = %s AND primary_status IN ["hotlist", "buying_at_cost"]`
 	mode := "1"
 	if scg.SealedMode {
 		mode = "2"
 	}
 	query := fmt.Sprintf(filter, game, mode)
 
-	if rarity != "" {
-		query += ` AND rarity = "` + rarity + `"`
+	if rarity > 0 {
+		query = fmt.Sprintf("%s AND rarity = %d", query, rarity)
 	}
 
 	q := SCGSearchRequest{
