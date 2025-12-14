@@ -316,9 +316,15 @@ func (ap AllPrintings) Load() cardBackend {
 
 			// Upstream cannot properly represent foil cards
 			case "SLC":
-				_, found := card.SourceProducts["foil"]
-				if !found && card.SourceProducts != nil {
+				if card.SourceProducts == nil {
+					card.SourceProducts = map[string][]string{}
+				}
+
+				num, _ := strconv.Atoi(card.Number)
+				if (num >= 1993 && num <= 2023) || (num >= 1 && num <= 27) {
 					card.SourceProducts["foil"] = card.SourceProducts["nonfoil"]
+				} else if num >= 28 && num <= 53 {
+					card.SourceProducts["foil"] = allCards[0].SourceProducts["nonfoil"]
 				}
 
 			case "SLD":
