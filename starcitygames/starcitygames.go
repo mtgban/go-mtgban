@@ -125,7 +125,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 		var err error
 		switch scg.game {
 		case GameMagic:
-			cc := SCGCardVariant{
+			cc := Variant{
 				Name:     cardName,
 				Subtitle: variant,
 				Sku:      sku,

@@ -217,7 +217,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	return nil, errors.New("not found")
 }
 
-func preprocess(card *SCGCardVariant, cardEdition, language string, foil bool, cn string) (*mtgmatcher.InputCard, error) {
+func preprocess(card *Variant, cardEdition, language string, foil bool, cn string) (*mtgmatcher.InputCard, error) {
 	// Processing variant first because it gets added on later
 	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
 	variant = strings.Replace(variant, "(", "", -1)

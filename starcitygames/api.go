@@ -185,7 +185,7 @@ func (scg *SCGClient) GetPage(ctx context.Context, game, page int) ([]scgRetailR
 	return response.Results, nil
 }
 
-type SCGSearchRequest struct {
+type BuylistRequest struct {
 	Q                string   `json:"q"`
 	Filter           string   `json:"filter"`
 	MatchingStrategy string   `json:"matchingStrategy"`
@@ -194,39 +194,40 @@ type SCGSearchRequest struct {
 	Sort             []string `json:"sort"`
 }
 
-type SCGSearchResponse struct {
-	Message            string    `json:"message,omitempty"`
-	Code               string    `json:"code,omitempty"`
-	Type               string    `json:"type,omitempty"`
-	Link               string    `json:"link,omitempty"`
-	Hits               []SCGCard `json:"hits"`
-	Query              string    `json:"query"`
-	ProcessingTimeMs   int       `json:"processingTimeMs"`
-	Limit              int       `json:"limit"`
-	Offset             int       `json:"offset"`
-	EstimatedTotalHits int       `json:"estimatedTotalHits"`
+type BuylistResponse struct {
+	Message            string `json:"message,omitempty"`
+	Code               string `json:"code,omitempty"`
+	Type               string `json:"type,omitempty"`
+	Link               string `json:"link,omitempty"`
+	Hits               []Hit  `json:"hits"`
+	Query              string `json:"query"`
+	ProcessingTimeMs   int    `json:"processingTimeMs"`
+	Limit              int    `json:"limit"`
+	Offset             int    `json:"offset"`
+	EstimatedTotalHits int    `json:"estimatedTotalHits"`
 }
 
-type SCGCard struct {
-	Name                string           `json:"name"`
-	ID                  int              `json:"id"`
-	Subtitle            string           `json:"subtitle"`
-	ProductType         string           `json:"product_type"`
-	FinishPricingTypeID int              `json:"finish_pricing_type_id"`
-	Language            string           `json:"language"`
-	Rarity              any              `json:"rarity"`
-	IsBuying            int              `json:"is_buying"`
-	Hotlist             int              `json:"hotlist"`
-	BorderColor         string           `json:"border_color"`
-	CollectorNumber     string           `json:"collector_number"`
-	SetID               int              `json:"set_id"`
-	SetName             string           `json:"set_name"`
-	SetReleaseDate      int              `json:"set_release_date"`
-	SetSymbol           string           `json:"set_symbol"`
-	Variants            []SCGCardVariant `json:"variants"`
+type Hit struct {
+	Name                string    `json:"name"`
+	ID                  int       `json:"id"`
+	Subtitle            string    `json:"subtitle"`
+	ProductType         string    `json:"product_type"`
+	FinishPricingTypeID int       `json:"finish_pricing_type_id"`
+	Language            string    `json:"language"`
+	Rarity              any       `json:"rarity"`
+	IsBuying            int       `json:"is_buying"`
+	Hotlist             int       `json:"hotlist"`
+	BorderColor         string    `json:"border_color"`
+	CollectorNumber     string    `json:"collector_number"`
+	GameID              int       `json:"game_id"`
+	SetID               int       `json:"set_id"`
+	SetName             string    `json:"set_name"`
+	SetReleaseDate      int       `json:"set_release_date"`
+	SetSymbol           string    `json:"set_symbol"`
+	Variants            []Variant `json:"variants"`
 }
 
-type SCGCardVariant struct {
+type Variant struct {
 	ID           int     `json:"id"`
 	Name         string  `json:"name"`
 	Subtitle     string  `json:"subtitle"`
@@ -239,7 +240,7 @@ type SCGCardVariant struct {
 	TradePrice   float64 `json:"trade_price"`
 }
 
-type Settings struct {
+type BuylistSettings struct {
 	CardRarities []struct {
 		ID               int       `json:"id"`
 		Name             string    `json:"name"`
@@ -252,7 +253,7 @@ type Settings struct {
 	} `json:"cardRarities"`
 }
 
-func SearchSettings(ctx context.Context) (*Settings, error) {
+func SearchSettings(ctx context.Context) (*BuylistSettings, error) {
 	link := scgSettingsURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -264,7 +265,7 @@ func SearchSettings(ctx context.Context) (*Settings, error) {
 	}
 	defer resp.Body.Close()
 
-	var search Settings
+	var search BuylistSettings
 	err = json.NewDecoder(resp.Body).Decode(&search)
 	if err != nil {
 		return nil, err
@@ -285,7 +286,7 @@ func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit, rarity
 		query = fmt.Sprintf("%s AND rarity = %d", query, rarity)
 	}
 
-	q := SCGSearchRequest{
+	q := BuylistRequest{
 		Filter:           query,
 		MatchingStrategy: "all",
 		Limit:            limit,
@@ -310,7 +311,7 @@ func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit, rarity
 	}
 	defer resp.Body.Close()
 
-	var search SCGSearchResponse
+	var search BuylistResponse
 	err = json.NewDecoder(resp.Body).Decode(&search)
 	if err != nil {
 		return nil, err
