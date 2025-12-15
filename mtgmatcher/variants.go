@@ -3616,6 +3616,9 @@ var sldVariants = map[string]map[string]string{
 	"Rin and Seri, Inseparable": {
 		"raining cats and dogs": "1508",
 	},
+	"Thespian's Stage": {
+		"hatsune miku borderless": "1607★",
+	},
 }
 
 var soiVariants = map[string]map[string]string{
@@ -3784,6 +3787,12 @@ var plstVariants = map[string]map[string]string{
 	},
 	"Plains": {
 		"": "UGL-84",
+	},
+	"Abrade": {
+		"game day full art": "2XM-114",
+	},
+	"Tourach, Dread Cantor": {
+		"retro": "MH2-402",
 	},
 }
 

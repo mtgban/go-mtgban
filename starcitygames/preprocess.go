@@ -173,11 +173,15 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 				number = cards[0].Number
 			}
 		}
+	// This set mixes together any playtest without the pw symbol
 	case "MB13":
-		setCode = "MB2"
-		cards := mtgmatcher.MatchInSet(cardName, setCode)
-		if len(cards) == 1 {
-			number = cards[0].Number
+		for _, code := range []string{"CMB2", "MB2"} {
+			cards := mtgmatcher.MatchInSet(cardName, code)
+			if len(cards) == 1 {
+				setCode = cards[0].SetCode
+				number = cards[0].Number
+				break
+			}
 		}
 	case "PUMA":
 		cards := mtgmatcher.MatchInSet(cardName, setCode)
@@ -365,6 +369,17 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 		case "Ponder", "The First Sliver":
 			if variant == "Festival" {
 				edition = "PLG25"
+			}
+		case "Fabled Passage":
+			if variant == "Love Your LGS Retro" {
+				edition = "PW21"
+			}
+		case "Lightning Bolt":
+			if variant == "MagicFest" {
+				edition = "PF19"
+				if strings.Contains(card.Sku, "2025") {
+					edition = "PF25"
+				}
 			}
 		}
 	case "Unfinity":
