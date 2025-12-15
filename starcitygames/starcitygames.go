@@ -27,6 +27,8 @@ type Starcitygames struct {
 
 	Affiliate string
 
+	TargetEdition string
+
 	DisableRetail  bool
 	DisableBuylist bool
 
@@ -317,18 +319,39 @@ func (scg *Starcitygames) scrape(ctx context.Context) error {
 	return nil
 }
 
-func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- responseChan, page, rarity int) error {
-	search, err := scg.client.SearchAll(ctx, scg.game, page, buylistRequestLimit, rarity)
-	if err != nil {
-		return err
+func (scg *Starcitygames) processBuylistEdition(ctx context.Context, channel chan<- responseChan, setID int) error {
+	i := 0
+
+	for {
+		search, err := scg.client.SearchAll(ctx, scg.game, i, buylistRequestLimit, setID)
+		if err != nil {
+			return err
+		}
+
+		scg.processBuylistEditionHits(channel, search.Hits)
+
+		if len(search.Hits) < buylistRequestLimit {
+			break
+		}
+
+		i++
 	}
 
-	gamePath := "mtg"
-	if scg.game == GameLorcana {
+	return nil
+}
+
+func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan, hits []Hit) {
+	var gamePath string
+	switch scg.game {
+	case GameLorcana:
 		gamePath = "lorcana"
+	case GameMagic:
+		gamePath = "mtg"
+	default:
+		panic("unsupported game")
 	}
 
-	for _, hit := range search.Hits {
+	for _, hit := range hits {
 		link, _ := url.JoinPath(
 			buylistBookmark,
 			gamePath,
@@ -379,8 +402,6 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 				cardName := result.Name
 				number := hit.CollectorNumber
 				cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.FinishPricingTypeID == 2)
-			} else {
-				return errors.New("unsupported game")
 			}
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				break
@@ -445,18 +466,35 @@ func (scg *Starcitygames) processBLPage(ctx context.Context, channel chan<- resp
 			}
 		}
 	}
-	return nil
 }
 
-func (scg *Starcitygames) parseBL(ctx context.Context, rarityLetter string, rarity int) error {
-	search, err := scg.client.SearchAll(ctx, scg.game, 0, 1, rarity)
+type setData struct {
+	Name  string
+	SetID int
+	Index int
+}
+
+func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
+	search, err := scg.client.SearchBuylistEditions(ctx)
 	if err != nil {
 		return err
 	}
-	totals := search.EstimatedTotalHits
-	scg.printf("Parsing %d cards for rarity %s", totals, rarityLetter)
 
-	pages := make(chan int)
+	editions := make([]setData, 0, len(search.Hits))
+	for _, hit := range search.Hits {
+		if hit.GameID != scg.game {
+			continue
+		}
+
+		editions = append(editions, setData{
+			Name:  hit.Name,
+			SetID: hit.SetID,
+		})
+	}
+
+	scg.printf("Found %d editions", len(editions))
+
+	pages := make(chan setData)
 	results := make(chan responseChan)
 	var wg sync.WaitGroup
 
@@ -464,8 +502,12 @@ func (scg *Starcitygames) parseBL(ctx context.Context, rarityLetter string, rari
 		wg.Add(1)
 		go func() {
 			for page := range pages {
-				scg.printf("Processing page %d", page)
-				err := scg.processBLPage(ctx, results, page, rarity)
+				if scg.TargetEdition != "" && scg.TargetEdition != page.Name {
+					continue
+				}
+
+				scg.printf("Processing edition %s (%d/%d)", page.Name, page.Index, len(editions))
+				err := scg.processBuylistEdition(ctx, results, page.SetID)
 				if err != nil {
 					scg.printf("%v", err)
 				}
@@ -475,8 +517,9 @@ func (scg *Starcitygames) parseBL(ctx context.Context, rarityLetter string, rari
 	}
 
 	go func() {
-		for j := 0; j < totals; j += buylistRequestLimit {
-			pages <- j
+		for i, page := range editions {
+			page.Index = i + 1
+			pages <- page
 		}
 		close(pages)
 
@@ -488,25 +531,6 @@ func (scg *Starcitygames) parseBL(ctx context.Context, rarityLetter string, rari
 		err := scg.buylist.Add(record.cardId, record.buyEntry)
 		if err != nil && !record.ignoreErr {
 			scg.printf("%s", err.Error())
-		}
-	}
-
-	return nil
-}
-
-func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
-	settings, err := SearchSettings(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, setting := range settings.CardRarities {
-		if setting.GameID != scg.game {
-			continue
-		}
-		err := scg.parseBL(ctx, setting.Abbr, setting.ID)
-		if err != nil {
-			return err
 		}
 	}
 

@@ -269,7 +269,7 @@ func (scg *StarcitygamesSealed) parseBL(ctx context.Context) error {
 	}
 
 	go func() {
-		for j := 0; j < search.EstimatedTotalHits; j += buylistRequestLimit {
+		for j := 0; j <= search.EstimatedTotalHits/buylistRequestLimit; j++ {
 			pages <- j
 		}
 		close(pages)

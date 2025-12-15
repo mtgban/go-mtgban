@@ -16,6 +16,7 @@ import (
 const (
 	scgInventoryURL = "https://essearchapi-na.hawksearch.com/api/v2/search"
 	scgBuylistURL   = "https://search.starcitygames.com/indexes/sell_list_products_v2/search"
+	scgBuylistSets  = "https://search.starcitygames.com/indexes/sets_v2/search"
 
 	scgSettingsURL = "https://sellyourcards.starcitygames.com/api/settings"
 
@@ -188,10 +189,10 @@ func (scg *SCGClient) GetPage(ctx context.Context, game, page int) ([]scgRetailR
 type BuylistRequest struct {
 	Q                string   `json:"q"`
 	Filter           string   `json:"filter"`
-	MatchingStrategy string   `json:"matchingStrategy"`
+	MatchingStrategy string   `json:"matchingStrategy,omitempty"`
 	Limit            int      `json:"limit"`
-	Offset           int      `json:"offset"`
-	Sort             []string `json:"sort"`
+	Offset           int      `json:"offset,omitempty"`
+	Sort             []string `json:"sort,omitempty"`
 }
 
 type BuylistResponse struct {
@@ -274,7 +275,46 @@ func SearchSettings(ctx context.Context) (*BuylistSettings, error) {
 	return &search, nil
 }
 
-func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit, rarity int) (*SCGSearchResponse, error) {
+func (scg *SCGClient) SearchBuylistEditions(ctx context.Context) (*BuylistResponse, error) {
+	filter := "source_type = set"
+	limit := 1000
+
+	q := BuylistRequest{
+		Filter: filter,
+		Limit:  limit,
+	}
+	payload, err := json.Marshal(&q)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, scgBuylistSets, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+scg.bearer)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := scg.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var search BuylistResponse
+	err = json.NewDecoder(resp.Body).Decode(&search)
+	if err != nil {
+		return nil, err
+	}
+
+	if search.Message != "" {
+		return nil, fmt.Errorf("%s", search.Message)
+	}
+
+	return &search, nil
+}
+
+func (scg *SCGClient) SearchAll(ctx context.Context, game, page, limit, setID int) (*BuylistResponse, error) {
 	filter := `game_id = %d AND price_category_id = %s AND primary_status IN ["hotlist", "buying_at_cost"]`
 	mode := "1"
 	if scg.SealedMode {
@@ -282,15 +322,15 @@ func (scg *SCGClient) SearchAll(ctx context.Context, game, offset, limit, rarity
 	}
 	query := fmt.Sprintf(filter, game, mode)
 
-	if rarity > 0 {
-		query = fmt.Sprintf("%s AND rarity = %d", query, rarity)
+	if setID != 0 {
+		query = fmt.Sprintf("%s AND set_id = %d", query, setID)
 	}
 
 	q := BuylistRequest{
 		Filter:           query,
 		MatchingStrategy: "all",
 		Limit:            limit,
-		Offset:           offset,
+		Offset:           page * limit,
 		Sort:             []string{"name:asc", "set_name:asc", "finish:desc"},
 	}
 	payload, err := json.Marshal(&q)
