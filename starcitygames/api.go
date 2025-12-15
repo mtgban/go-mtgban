@@ -213,7 +213,9 @@ type Hit struct {
 	ID                  int       `json:"id"`
 	Subtitle            string    `json:"subtitle"`
 	ProductType         string    `json:"product_type"`
+	Finish              int       `json:"finish"`
 	FinishPricingTypeID int       `json:"finish_pricing_type_id"`
+	CardStyleID         int       `json:"card_style_id"`
 	Language            string    `json:"language"`
 	Rarity              any       `json:"rarity"`
 	IsBuying            int       `json:"is_buying"`
@@ -252,6 +254,24 @@ type BuylistSettings struct {
 		CreatedAt        time.Time `json:"created_at"`
 		UpdatedAt        time.Time `json:"updated_at"`
 	} `json:"cardRarities"`
+	CardFinishes []struct {
+		ID               int       `json:"id"`
+		Name             string    `json:"name"`
+		GameID           int       `json:"game_id"`
+		SkuCode          string    `json:"sku_code"`
+		ExternalFinishID int       `json:"external_finish_id"`
+		SortOrder        int       `json:"sort_order"`
+		CreatedAt        time.Time `json:"created_at"`
+		UpdatedAt        time.Time `json:"updated_at"`
+	} `json:"cardFinishes"`
+	CardStyles []struct {
+		ID                  int       `json:"id"`
+		Name                string    `json:"name"`
+		GameID              int       `json:"game_id"`
+		ExternalCardStyleID int       `json:"external_card_style_id"`
+		CreatedAt           time.Time `json:"created_at"`
+		UpdatedAt           time.Time `json:"updated_at"`
+	} `json:"cardStyles"`
 }
 
 func SearchSettings(ctx context.Context) (*BuylistSettings, error) {

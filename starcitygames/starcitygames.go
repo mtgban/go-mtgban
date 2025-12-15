@@ -37,6 +37,9 @@ type Starcitygames struct {
 
 	client *SCGClient
 	game   int
+
+	styleMap  map[int]string
+	finishMap map[int]string
 }
 
 func NewScraper(game int, guid, bearer string) *Starcitygames {
@@ -127,13 +130,22 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 		var err error
 		switch scg.game {
 		case GameMagic:
-			cc := Variant{
-				Name:     cardName,
-				Subtitle: variant,
-				Sku:      sku,
+			hit := Hit{
+				Name:            cardName,
+				SetName:         edition,
+				Language:        language,
+				CollectorNumber: number,
+				Variants: []Variant{{
+					Subtitle: strings.TrimSpace(variant),
+					Sku:      sku,
+				}},
+				FinishPricingTypeID: 1,
+			}
+			if finish == "Foil" {
+				hit.FinishPricingTypeID = 2
 			}
 			var theCard *mtgmatcher.InputCard
-			theCard, err = preprocess(&cc, edition, language, finish == "Foil", number)
+			theCard, err = preprocess(hit)
 			if err != nil {
 				continue
 			}
@@ -150,7 +162,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 				}
 				scg.printf("%v", err)
 				scg.printf("%q", theCard)
-				scg.printf("%v ~ %s ~ %s ~ %s", cc, edition, finish, number)
+				scg.printf("%v", hit)
 				scg.printf("-> %s", link)
 
 				var alias *mtgmatcher.AliasingError
@@ -352,6 +364,7 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 	}
 
 	for _, hit := range hits {
+		// Generate URL
 		link, _ := url.JoinPath(
 			buylistBookmark,
 			gamePath,
@@ -366,8 +379,54 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 			"default",
 		)
 
-		for _, result := range hit.Variants {
-			conditions := result.VariantValue
+		// Convert ids into human readable tags
+		cardStyle := scg.styleMap[hit.CardStyleID]
+		cardFinish := scg.finishMap[hit.Finish]
+
+		var cardId string
+		var err error
+		var theCard *mtgmatcher.InputCard
+		if scg.game == GameMagic {
+			// Add back tags into subtitle, but skip the default foil/nonfoil to
+			// keep variants simple and compatible with the existing ones
+			if cardFinish == "Foil" || cardFinish == "Non-foil" {
+				cardFinish = ""
+			}
+			hit.Variants[0].Subtitle += " " + cardStyle + " " + cardFinish
+			hit.Variants[0].Subtitle = strings.Replace(hit.Variants[0].Subtitle, "  ", " ", -1)
+			hit.Variants[0].Subtitle = strings.TrimSpace(hit.Variants[0].Subtitle)
+
+			theCard, err = preprocess(hit)
+			if err != nil {
+				break
+			}
+
+			cardId, err = mtgmatcher.Match(theCard)
+		} else if scg.game == GameLorcana {
+			cardName := hit.Name
+			number := hit.CollectorNumber
+			cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.FinishPricingTypeID == 2)
+		}
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			break
+		} else if err != nil {
+			scg.printf("%v for %+v", err, theCard)
+			scg.printf("%+v", hit)
+			scg.printf("-> %s", link)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					co, _ := mtgmatcher.GetUUID(probe)
+					scg.printf("%s", co)
+				}
+			}
+			break
+		}
+
+		for _, variant := range hit.Variants {
+			conditions := variant.VariantValue
 			switch conditions {
 			case "NM", "NM/M":
 				conditions = "NM"
@@ -384,45 +443,12 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 					conditions = "HP"
 				}
 			default:
-				scg.printf("unknown condition %s for %v", conditions, result)
+				scg.printf("unknown condition %s for %v", conditions, variant)
 				continue
 			}
 
-			var cardId string
-			var err error
-			if scg.game == GameMagic {
-				var theCard *mtgmatcher.InputCard
-				theCard, err = preprocess(&result, hit.SetName, hit.Language, hit.FinishPricingTypeID == 2, hit.CollectorNumber)
-				if err != nil {
-					break
-				}
-
-				cardId, err = mtgmatcher.Match(theCard)
-			} else if scg.game == GameLorcana {
-				cardName := result.Name
-				number := hit.CollectorNumber
-				cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.FinishPricingTypeID == 2)
-			}
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				break
-			} else if err != nil {
-				scg.printf("%v", err)
-				scg.printf("%+v", result)
-				scg.printf("-> %s", link)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						co, _ := mtgmatcher.GetUUID(probe)
-						scg.printf("%s", co)
-					}
-				}
-				break
-			}
-
 			var priceRatio, sellPrice float64
-			price := result.BuyPrice
+			price := variant.BuyPrice
 			if price == 0 {
 				continue
 			}
@@ -447,7 +473,8 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 					// custom, helps debugging
 					"scgSubtitle": hit.Subtitle,
 					"scgNumber":   hit.CollectorNumber,
-					"scgSKU":      result.Sku,
+					"scgSKU":      variant.Sku,
+					"scgCard":     fmt.Sprint(theCard),
 				}
 			}
 
@@ -460,7 +487,7 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 					PriceRatio:   priceRatio,
 					URL:          link,
 					CustomFields: customFields,
-					OriginalId:   result.Sku,
+					OriginalId:   variant.Sku,
 				},
 				ignoreErr: strings.Contains(hit.Name, "Token"),
 			}
@@ -475,6 +502,30 @@ type setData struct {
 }
 
 func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
+	settings, err := SearchSettings(ctx)
+	if err != nil {
+		return err
+	}
+
+	scg.styleMap = make(map[int]string)
+	scg.finishMap = make(map[int]string)
+	for _, style := range settings.CardStyles {
+		if style.GameID != scg.game {
+			continue
+		}
+
+		scg.styleMap[style.ID] = style.Name
+	}
+	for _, finish := range settings.CardFinishes {
+		if finish.GameID != scg.game {
+			continue
+		}
+
+		scg.finishMap[finish.ID] = finish.Name
+	}
+
+	scg.printf("Found %d styles and %d finishes", len(scg.styleMap), len(scg.finishMap))
+
 	search, err := scg.client.SearchBuylistEditions(ctx)
 	if err != nil {
 		return err

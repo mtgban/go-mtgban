@@ -217,13 +217,19 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	return nil, errors.New("not found")
 }
 
-func preprocess(card *Variant, cardEdition, language string, foil bool, cn string) (*mtgmatcher.InputCard, error) {
+func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
+	card := hit.Variants[0]
+	edition := hit.SetName
+	language := hit.Language
+	foil := hit.FinishPricingTypeID == 2
+	cn := hit.CollectorNumber
+
 	// Processing variant first because it gets added on later
-	variant := strings.Replace(card.Subtitle, "&amp;", "&", -1)
+	variant := card.Subtitle
 	variant = strings.Replace(variant, "(", "", -1)
 	variant = strings.Replace(variant, ")", "", -1)
 
-	cardName := strings.Replace(card.Name, "&amp;", "&", -1)
+	cardName := hit.Name
 	cardName = strings.Replace(cardName, "{", "", -1)
 	cardName = strings.Replace(cardName, "}", "", -1)
 
@@ -242,12 +248,11 @@ func preprocess(card *Variant, cardEdition, language string, foil bool, cn strin
 	}
 
 	// Check tokens with the same name as certain cards
-	isToken := strings.HasPrefix(card.Name, "{") && strings.Contains(card.Name, "}")
+	isToken := strings.HasPrefix(hit.Name, "{") && strings.Contains(hit.Name, "}")
 	if isToken && !strings.Contains(cardName, "Token") {
 		cardName += " Token"
 	}
 
-	edition := strings.Replace(cardEdition, "&amp;", "&", -1)
 	if strings.HasSuffix(edition, "(Foil)") {
 		edition = strings.TrimSuffix(edition, " (Foil)")
 		foil = true
@@ -310,12 +315,12 @@ func preprocess(card *Variant, cardEdition, language string, foil bool, cn strin
 				variant = ""
 			}
 		case "Scavenging Ooze":
-			if variant == "Love Your LGS Retro Frame" {
+			if variant == "Love Your LGS" || variant == "Love Your LGS Retro" {
 				edition = "PLG21"
 			}
 		case "Arcane Signet":
 			switch variant {
-			case "Play Draft Retro Frame":
+			case "Play Draft Retro":
 				edition = "P30M"
 				variant = "1P"
 			case "Festival":
@@ -334,7 +339,7 @@ func preprocess(card *Variant, cardEdition, language string, foil bool, cn strin
 			}
 		case "Pyromancer's Gauntlet":
 			switch variant {
-			case "Hasbro Retro Frame":
+			case "Hasbro Retro":
 				edition = "PMEI"
 			}
 		case "Rampant Growth":
