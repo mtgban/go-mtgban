@@ -228,6 +228,8 @@ type Hit struct {
 	SetReleaseDate      int       `json:"set_release_date"`
 	SetSymbol           string    `json:"set_symbol"`
 	Variants            []Variant `json:"variants"`
+	Image               string    `json:"image"`
+	WizardsCode         string    `json:"wizards_code"`
 }
 
 type Variant struct {

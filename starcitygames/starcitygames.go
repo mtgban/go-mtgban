@@ -40,6 +40,7 @@ type Starcitygames struct {
 
 	styleMap  map[int]string
 	finishMap map[int]string
+	setMap    map[int]string
 }
 
 func NewScraper(game int, guid, bearer string) *Starcitygames {
@@ -383,6 +384,29 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 		cardStyle := scg.styleMap[hit.CardStyleID]
 		cardFinish := scg.finishMap[hit.Finish]
 
+		// Workaround for missing double styles
+		isSerial := strings.HasSuffix(hit.Image, "z.jpg") ||
+			strings.HasSuffix(hit.Image, "-vs.jpg") ||
+			strings.Contains(hit.Image, "serial")
+
+		// Unfortunately there are ~200 cards with no such tags, get creative
+		if !isSerial {
+			code := scg.setMap[hit.SetID]
+			if len(mtgmatcher.MatchInSetNumber(hit.Name, code, hit.CollectorNumber)) == 1 &&
+				mtgmatcher.HasSerializedPrinting(hit.Name, code) &&
+				len(hit.Variants) > 0 &&
+				hit.Variants[0].BuyPrice >= 50 {
+				isSerial = true
+			}
+		}
+
+		if isSerial {
+			if cardFinish != "" {
+				cardFinish += " "
+			}
+			cardFinish += "Serialized"
+		}
+
 		var cardId string
 		var err error
 		var theCard *mtgmatcher.InputCard
@@ -531,6 +555,7 @@ func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
 		return err
 	}
 
+	scg.setMap = make(map[int]string)
 	editions := make([]setData, 0, len(search.Hits))
 	for _, hit := range search.Hits {
 		if hit.GameID != scg.game {
@@ -541,6 +566,7 @@ func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
 			Name:  hit.Name,
 			SetID: hit.SetID,
 		})
+		scg.setMap[hit.SetID] = hit.WizardsCode
 	}
 
 	scg.printf("Found %d editions", len(editions))
