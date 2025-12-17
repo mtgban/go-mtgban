@@ -381,8 +381,17 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 		)
 
 		// Convert ids into human readable tags
+		var finish int
+		switch v := hit.Finish.(type) {
+		case int:
+			finish = v
+		case float64:
+			finish = int(v)
+		default:
+		}
+
 		cardStyle := scg.styleMap[hit.CardStyleID]
-		cardFinish := scg.finishMap[hit.Finish]
+		cardFinish := scg.finishMap[finish]
 
 		// Workaround for missing double styles
 		isSerial := strings.HasSuffix(hit.Image, "z.jpg") ||

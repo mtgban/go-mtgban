@@ -213,7 +213,7 @@ type Hit struct {
 	ID                  int       `json:"id"`
 	Subtitle            string    `json:"subtitle"`
 	ProductType         string    `json:"product_type"`
-	Finish              int       `json:"finish"`
+	Finish              any       `json:"finish"`
 	FinishPricingTypeID int       `json:"finish_pricing_type_id"`
 	CardStyleID         int       `json:"card_style_id"`
 	Language            string    `json:"language"`
