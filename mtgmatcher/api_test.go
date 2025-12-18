@@ -57,10 +57,6 @@ func BenchmarkSearchRegexp(b *testing.B) {
 }
 
 func TestSearchRegexp(t *testing.T) {
-	if NameToBeFound == "" {
-		setupBenchmark()
-	}
-
 	hashes, err := SearchRegexp("Lotus$")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
@@ -81,15 +77,12 @@ func TestSearchRegexp(t *testing.T) {
 	}
 	if !found {
 		t.Error("FAIL: Not found")
+	} else {
+		t.Log("PASS: regexp")
 	}
-	t.Log("PASS: regexp")
 }
 
 func TestSearchFlavor(t *testing.T) {
-	if NameToBeFound == "" {
-		setupBenchmark()
-	}
-
 	hashes, err := SearchEquals("Stay with Me")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
@@ -109,8 +102,9 @@ func TestSearchFlavor(t *testing.T) {
 	}
 	if count != 2 {
 		t.Error("FAIL: Search should return exactly 2 results, got " + fmt.Sprint(count))
+	} else {
+		t.Log("PASS: flavor")
 	}
-	t.Log("PASS: flavor")
 }
 
 func TestSearchHalfName(t *testing.T) {
