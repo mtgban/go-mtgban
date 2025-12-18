@@ -321,9 +321,9 @@ func (ap AllPrintings) Load() cardBackend {
 				}
 
 				num, _ := strconv.Atoi(card.Number)
-				if (num >= 1993 && num <= 2023) || (num >= 1 && num <= 27) {
+				if (num >= 1993 && num <= 2023) || (num >= 1 && num <= 26) {
 					card.SourceProducts["foil"] = card.SourceProducts["nonfoil"]
-				} else if num >= 28 && num <= 53 {
+				} else if num == 27 || num >= 28 && num <= 53 {
 					card.SourceProducts["foil"] = allCards[0].SourceProducts["nonfoil"]
 				}
 
