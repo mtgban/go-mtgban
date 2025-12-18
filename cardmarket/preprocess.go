@@ -336,6 +336,17 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			variant = vars[1]
 		}
 
+		switch cardName {
+		case "Swords to Plowshares":
+			if ogVariant == "V.1" {
+				edition = "SLP"
+				variant = "20"
+			} else if ogVariant == "V.2" {
+				edition = "PF25"
+				variant = "12"
+			}
+		}
+
 	case "Prerelease Promos":
 		switch cardName {
 		case "Dirtcowl Wurm":
