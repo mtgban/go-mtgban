@@ -331,6 +331,8 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			edition = "PMEI"
 		case "J. Jonah Jameson":
 			edition = "PF25"
+		case "Iroh, Grand Lotus":
+			edition = "PMEI"
 		default:
 			if variant == "JP Exclusive Summer Vacation" && len(mtgmatcher.MatchInSet(cardName, "PL21")) == 0 {
 				edition = "PSVC"
