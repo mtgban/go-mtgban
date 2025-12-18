@@ -112,3 +112,28 @@ func TestSearchFlavor(t *testing.T) {
 	}
 	t.Log("PASS: flavor")
 }
+
+func TestSearchHalfName(t *testing.T) {
+	hashes, err := SearchEquals("Jonathan Harker")
+	if err != nil {
+		t.Error("FAIL: Unexpected", err)
+		return
+	}
+
+	var count int
+	for _, hash := range hashes {
+		co, err := GetUUID(hash)
+		if err != nil {
+			t.Error("FAIL: Unexpected", err)
+			return
+		}
+		if co.HasPromoType(PromoTypeDracula) {
+			count++
+		}
+	}
+	if count != 2 {
+		t.Error("FAIL: Search should return exactly 2 results, got " + fmt.Sprint(count))
+	} else {
+		t.Log("PASS: half name")
+	}
+}

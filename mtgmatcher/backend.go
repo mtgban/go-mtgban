@@ -780,7 +780,7 @@ func (ap AllPrintings) Load() cardBackend {
 					if name == "" || slices.Contains(hashes[altNorm], uuid) {
 						continue
 					}
-					if Normalize(name) == altNorm {
+					if Normalize(name) == altNorm || Normalize(strings.Split(name, " // ")[0]) == altNorm {
 						hashes[altNorm] = append(hashes[altNorm], uuid)
 					}
 				}
