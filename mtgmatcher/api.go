@@ -132,25 +132,26 @@ func SearchEquals(name string) ([]string, error) {
 	if name == "" {
 		return backend.AllUUIDs, nil
 	}
-	results, err := searchEquals(name, backend.AllNames)
-	if err != nil {
-		return searchEquals(name, backend.AlternateNames)
+
+	results, found := backend.Hashes[Normalize(name)]
+	if !found {
+		return nil, ErrCardDoesNotExist
 	}
+
 	return results, nil
 }
 
 func SearchSealedEquals(name string) ([]string, error) {
-	return searchEquals(name, backend.AllSealed)
-}
-
-func searchEquals(name string, slice []string) ([]string, error) {
-	name = Normalize(name)
-	for i := range slice {
-		if slice[i] == name {
-			return backend.Hashes[slice[i]], nil
-		}
+	if name == "" {
+		return backend.AllSealedUUIDs, nil
 	}
-	return nil, ErrCardDoesNotExist
+
+	results, found := backend.Hashes[Normalize(name)]
+	if !found {
+		return nil, ErrCardDoesNotExist
+	}
+
+	return results, nil
 }
 
 func searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
