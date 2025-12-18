@@ -774,14 +774,15 @@ func (ap AllPrintings) Load() cardBackend {
 			// Retrieve all the uuids with a FlavorName attached
 			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
 			for _, uuid := range allAltUUIDs {
-				if uuids[uuid].FlavorName != "" && Normalize(uuids[uuid].FlavorName) == altNorm && !slices.Contains(hashes[altNorm], uuid) {
-					hashes[altNorm] = append(hashes[altNorm], uuid)
-				}
-				if uuids[uuid].PrintedName != "" && Normalize(uuids[uuid].PrintedName) == altNorm && !slices.Contains(hashes[altNorm], uuid) {
-					hashes[altNorm] = append(hashes[altNorm], uuid)
-				}
-				if uuids[uuid].FacePrintedName != "" && Normalize(uuids[uuid].FacePrintedName) == altNorm && !slices.Contains(hashes[altNorm], uuid) {
-					hashes[altNorm] = append(hashes[altNorm], uuid)
+				for _, name := range []string{
+					uuids[uuid].FlavorName, uuids[uuid].PrintedName, uuids[uuid].FacePrintedName,
+				} {
+					if name == "" || slices.Contains(hashes[altNorm], uuid) {
+						continue
+					}
+					if Normalize(name) == altNorm {
+						hashes[altNorm] = append(hashes[altNorm], uuid)
+					}
 				}
 			}
 		} else {
