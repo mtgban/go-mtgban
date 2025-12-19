@@ -70,46 +70,45 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			}
 		}
 
-		for i, doc := range group.Doclist.Docs {
+		if len(group.Doclist.Docs) == 0 {
+			continue
+		}
+
+		theCard, err := preprocess(&group.Doclist.Docs[0])
+		if err != nil {
+			continue
+		}
+
+		cardId, err := mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
+			// There are a bunch of non-existing prerelease cards from mh2
+			// and promo pack DFC from lci (among others)
+			if strings.Contains(theCard.Variation, "Prerelease") ||
+				strings.Contains(theCard.Variation, "The List") ||
+				strings.Contains(theCard.Variation, "Mystery Booster") ||
+				strings.Contains(theCard.Variation, "Promo Pack") {
+				continue
+			}
+			abu.printf("%v", theCard)
+			abu.printf("%v", group.Doclist.Docs[0])
+			abu.printf("%v", err)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				probes := alias.Probe()
+				for _, probe := range probes {
+					card, _ := mtgmatcher.GetUUID(probe)
+					abu.printf("- %s", card)
+				}
+			}
+			continue
+		}
+
+		for _, doc := range group.Doclist.Docs {
 			if doc.Condition == "SP" {
 				// There is nothing available on the website under this condition
-				continue
-			}
-
-			theCard, err := preprocess(&doc)
-			if err != nil {
-				continue
-			}
-
-			cardId, err := mtgmatcher.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				continue
-			} else if err != nil {
-				// Reduce error reporting for repeated conditions
-				if i > 0 {
-					continue
-				}
-
-				// There are a bunch of non-existing prerelease cards from mh2
-				// and promo pack DFC from lci (among others)
-				if strings.Contains(theCard.Variation, "Prerelease") ||
-					strings.Contains(theCard.Variation, "The List") ||
-					strings.Contains(theCard.Variation, "Mystery Booster") ||
-					strings.Contains(theCard.Variation, "Promo Pack") {
-					continue
-				}
-				abu.printf("%v", theCard)
-				abu.printf("%v", doc)
-				abu.printf("%v", err)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						abu.printf("- %s", card)
-					}
-				}
 				continue
 			}
 
