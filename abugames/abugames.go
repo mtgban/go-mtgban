@@ -124,6 +124,14 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 				}
 			}
 
+			// Older sets tend to be rougher, so grade stricter
+			// 2003 is picked as the modern frame introduction
+			var lowerGrade bool
+			date, err := mtgmatcher.CardReleaseDate(cardId)
+			if err == nil && date.Year() <= 2003 {
+				lowerGrade = true
+			}
+
 			var invEntry *mtgban.InventoryEntry
 			var buyEntry *mtgban.BuylistEntry
 			var tradeEntry *mtgban.BuylistEntry
@@ -159,12 +167,12 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					}
 				case "PLD":
 					cond = "MP"
-					if !hasMintGrade4Retail && !theCard.Foil {
+					if !lowerGrade && !hasMintGrade4Retail && !theCard.Foil {
 						cond = "SP"
 					}
 				case "HP":
 					cond = "HP"
-					if !hasMintGrade4Retail && !theCard.Foil {
+					if !lowerGrade && !hasMintGrade4Retail && !theCard.Foil {
 						cond = "MP"
 					}
 				default:
@@ -196,12 +204,12 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					}
 				case "PLD":
 					cond = "MP"
-					if !hasMintGrade4Buylist && !theCard.Foil {
+					if !lowerGrade && !hasMintGrade4Buylist && !theCard.Foil {
 						cond = "SP"
 					}
 				case "HP":
 					cond = "HP"
-					if !hasMintGrade4Buylist && !theCard.Foil {
+					if !lowerGrade && !hasMintGrade4Buylist && !theCard.Foil {
 						cond = "MP"
 					}
 				default:
