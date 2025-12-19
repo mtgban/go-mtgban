@@ -447,6 +447,7 @@ var options = map[string]*scraperOption{
 			}
 			scraper := tcgplayer.NewScraperSYP(tcgAuth)
 			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 
 			start := time.Now()
 			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
