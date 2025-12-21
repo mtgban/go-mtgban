@@ -528,6 +528,9 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				BuyPrice:   buyPrice * deduction,
 				PriceRatio: priceRatio,
 				URL:        link,
+				CustomFields: map[string]string{
+					"originalProduct": fmt.Sprintf("%q", product),
+				},
 			}
 
 			err := csi.buylist.Add(cardId, &buyEntry)

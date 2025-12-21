@@ -4085,6 +4085,12 @@ var ustVariants = map[string]map[string]string{
 		"left":                                       "67b",
 		"right":                                      "67d",
 		"life":                                       "67e",
+		"serious nonstop espionage and kidnapping":   "67a",
+		"silent ninjas evading any kapture":          "67b",
+		"sinister nerds eliminating all knowledge":   "67c",
+		"skilled notably efficient assassin-kickers": "67d",
+		"spies nimbly eluding adversaries' knives":   "67e",
+		"subpar notoriously evil agent killers.":     "67f",
 
 		"v.1": "67a",
 		"v.2": "67b",

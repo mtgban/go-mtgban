@@ -56,6 +56,10 @@ var nameTable = map[string]string{
 	"Proficient Pryodancer":                  "Proficient Pyrodancer",
 	"Leotau Grizalho":                        "Grizzled Leotau",
 	"____ ____ ____ Trespasser":              "_____ _____ _____ Trespasser",
+	"Garravoraz":                             "Vorstclaw",
+	"Gepanzerter Wasserwanderer":             "Plated Seastrider",
+	"Camminatore di Phyrexia":                "Phyrexian Walker",
+	"Odric, Lunarch Marshall":                "Odric, Lunarch Marshal",
 }
 
 func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCard, error) {
@@ -192,7 +196,7 @@ func cleanVariant(variant string) string {
 	variant = strings.Replace(variant, ")", "", -1)
 	variant = strings.Replace(variant, ",", "", -1)
 	variant = strings.Replace(variant, ".", "", -1)
-	variant = strings.Replace(variant, "- ", "", 1)
+	variant = strings.Replace(variant, "- ", "", -1)
 	variant = strings.Replace(variant, "  ", " ", -1)
 	variant = strings.Replace(variant, "\r\n", " ", -1)
 	variant = strings.Replace(variant, "\n", " ", -1)
@@ -213,6 +217,9 @@ func card2promo(cardName, variant string) (string, string) {
 
 	switch {
 	case strings.Contains(variant, "30th Anniversary") && !strings.Contains(variant, "History Promos"):
+		if strings.Contains(variant, "Japanese 30th Anniversary Celebration Tokyo Promo") {
+			return "P30T", ""
+		}
 		return "P30A", ""
 	case strings.Contains(variant, "Cowboy Bebop"):
 		return "PCBB", ""
@@ -222,6 +229,10 @@ func card2promo(cardName, variant string) (string, string) {
 		return "PSPL", ""
 	case strings.Contains(variant, "Friday Night Magic Promo"):
 		variant = "FNM"
+	case strings.Contains(variant, "Japan Standard Cup 2025 Promo"):
+		return "PJSC", ""
+	case strings.Contains(variant, "MKM Standard Showdown"):
+		return "MKM Standard Showdown", ""
 	}
 
 	switch cardName {
@@ -361,6 +372,7 @@ func card2promo(cardName, variant string) (string, string) {
 			variant = "79"
 		} else if variant == "Love Your Local Game Store Promo" {
 			edition = "PLG21"
+			variant = "3"
 		}
 	case "Nicol Bolas",
 		"Earthquake",
@@ -385,13 +397,31 @@ func card2promo(cardName, variant string) (string, string) {
 			return "PW25", "1p"
 		}
 	case "Lightning Bolt":
-		if variant == "MagicFest Promo textless" {
+		switch variant {
+		case "MagicFest Promo textless":
 			return "PF19", "1"
+		case "Future Sight Frame 2025 MagicCon Atlanta Promo":
+			return "PF25", "13"
 		}
 	case "Ugin, the Spirit Dragon":
 		if variant == "Retro Frame 2025 MagicCon Las Vegas Promo" {
 			return "PF25", "6"
 		}
+	case "Cloud, Midgar Mercenary":
+		switch variant {
+		case "0001 FFVII Commander Deck Game Edition Promo":
+			return "PMEI", "2025-21"
+		case "English Language Pro Tour Final Fantasy Promo":
+			return "PPRO", "2025-1"
+		case "Japanese Language Magic Spotlight: Final Fantasy Promo":
+			return "PSPL", "4"
+		}
+	case "Ultimate Green Goblin":
+		return "PW25", "12"
+	case "J. Jonah Jameson":
+		return "PF25", "17"
+	case "Katara, the Fearless":
+		return "PURL", "2025-3"
 	}
 	return edition, variant
 }
@@ -412,6 +442,17 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		variant = cleanVar
 	}
 
+	fixName := mtgmatcher.SplitVariants(cardName)
+	var altVariant string
+	if len(fixName) > 1 {
+		altVariant = strings.Join(fixName[1:], " ")
+		if variant != "" {
+			variant += " "
+		}
+		variant += altVariant
+	}
+	cardName = fixName[0]
+
 	fixup, found := nameTable[cardName]
 	if found {
 		cardName = fixup
@@ -428,6 +469,11 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		cleanVar = vars
 	}
 
+	// Skip tokens with the same names as cards
+	if strings.Contains(variant, "Emblem") && !mtgmatcher.IsToken(cardName) {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	switch edition {
 	case "Coldsnap Theme Deck":
 		if mtgmatcher.IsBasicLand(cardName) {
@@ -440,12 +486,24 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 		}
 	case "Unstable":
 		variant = cleanVar
-	case "Mystery Booster Reprint",
-		"Mystery Booster - The List",
-		"Secret Lair":
+	case "Mystery Booster Reprints":
+		// Keep the cards that strictly need extra information
+		switch cardName {
+		case "Aerial Responder",
+			"Command Tower",
+			"Laboratory Maniac",
+			"Everythingamajig",
+			"Ineffable Blessing":
+			variant = cleanVar
+		case "Forest":
+			if variant == "291" {
+				variant = "292"
+			}
+		}
+	case "Secret Lair":
 		variant = cleanVar
 
-		if num != "" && cardName != "Everythingamajig" && cardName != "Ineffable Blessing" {
+		if num != "" {
 			variant = num + " " + cleanVar
 		}
 	case "Deckmasters":
@@ -482,6 +540,10 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 			if possibleEd != "" {
 				edition = possibleEd
 			}
+		}
+	case "Unfinity":
+		if strings.Contains(variant, ",") {
+			variant = strings.Replace(altVariant, ",", "/", -1)
 		}
 	}
 
