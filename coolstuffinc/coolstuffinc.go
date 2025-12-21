@@ -433,6 +433,11 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			continue
 		}
 
+		// Filter by set if needed
+		if csi.TargetEdition != "" && product.ItemSet != csi.TargetEdition {
+			continue
+		}
+
 		// Build link early to help debug
 		u, _ := url.Parse(csiBuylistLink)
 		v := url.Values{}
