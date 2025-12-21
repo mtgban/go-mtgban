@@ -67,6 +67,7 @@ jobs:
           go install
 
       - name: Run bantool
+        id: run_bantool
         env:
           CK_PARTNER: "${{ vars.CK_PARTNER }}"
           CSI_PARTNER: "${{ vars.CSI_PARTNER }}"
@@ -90,10 +91,20 @@ jobs:
           TCGPLAYER_PRIVATE_ID: "${{ secrets.TCGPLAYER_PRIVATE_ID }}"
           TCGPLAYER_PUBLIC_ID: "${{ secrets.TCGPLAYER_PUBLIC_ID }}"
         run: |
+          set +e
           bantool -datastore ${{ inputs.datastore-filepath }} \
                   -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
                   -format json.xz \
                   -${{ inputs.target }}
+          EXIT=$?
+          echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
+          set -e
+
+          # delay failure so we can still load what succeeded
+          if [[ $EXIT -eq 2 ]]; then
+              exit 0
+          fi
+          exit $EXIT
 
       - name: Ping server
         env:
@@ -101,3 +112,9 @@ jobs:
         run: |
           SIGNED_URL=$(bantool -sign http://${{ inputs.game }}.mtgban.com/api/load/${{ inputs.target }} 2> /dev/null)
           curl -L "$SIGNED_URL" 2> /dev/null | tee /dev/stderr | jq -e 'select(.status=="ok")'
+
+      - name: Check bantool status
+        if: ${{ steps.run_bantool.outputs.exit_code == '2' }}
+        run: |
+          echo "bantool returned exit code 2"
+          exit 1
