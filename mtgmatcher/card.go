@@ -483,27 +483,27 @@ func (c *InputCard) playerRewardsYear(maybeYear string) string {
 	if maybeYear == "" {
 		switch c.Name {
 		case "Bear":
-			if c.Variation == "Odyssey" {
+			if Contains(c.Variation, "Odyssey") {
 				maybeYear = "2001"
-			} else if c.Variation == "Onslaught" {
+			} else if Contains(c.Variation, "Onslaught") {
 				maybeYear = "2003"
 			}
 		case "Beast":
-			if c.Variation == "Odyssey" {
+			if Contains(c.Variation, "Odyssey") {
 				maybeYear = "2001"
-			} else if c.Variation == "Darksteel" {
+			} else if Contains(c.Variation, "Darksteel") {
 				maybeYear = "2004"
 			}
 		case "Elephant":
-			if c.Variation == "Invasion" {
+			if Contains(c.Variation, "Invasion") {
 				maybeYear = "2001"
-			} else if c.Variation == "Odyssey" {
+			} else if Contains(c.Variation, "Odyssey") {
 				maybeYear = "2002"
 			}
 		case "Spirit":
-			if c.Variation == "Planeshift" {
+			if Contains(c.Variation, "Planeshift") {
 				maybeYear = "2001"
-			} else if c.Variation == "Champions" {
+			} else if Contains(c.Variation, "Champions") {
 				maybeYear = "2004"
 			}
 		case "Lightning Bolt":
