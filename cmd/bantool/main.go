@@ -653,6 +653,12 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 
 func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) error {
 	target := fmt.Sprintf("%s/retail/%s.%s", outputPath, seller.Info().Shorthand, format)
+	log.Println("Writing", target)
+
+	if len(seller.Inventory()) == 0 {
+		return fmt.Errorf("seller %s has no data", seller.Info().Shorthand)
+	}
+
 	writer, err := simplecloud.InitWriter(context.Background(), dataBucket, target)
 	if err != nil {
 		return err
@@ -675,6 +681,12 @@ func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath,
 
 func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) error {
 	target := fmt.Sprintf("%s/buylist/%s.%s", outputPath, vendor.Info().Shorthand, format)
+	log.Println("Writing", target)
+
+	if len(vendor.Buylist()) == 0 {
+		return fmt.Errorf("vendor %s has no data", vendor.Info().Shorthand)
+	}
+
 	writer, err := simplecloud.InitWriter(context.Background(), dataBucket, target)
 	if err != nil {
 		return err
@@ -695,45 +707,53 @@ func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath,
 	return err
 }
 
-func dump(dataBucket simplecloud.Writer, scrapers []mtgban.Scraper, outputPath, format string, meta bool) error {
+func dump(dataBucket simplecloud.Writer, scrapers []mtgban.Scraper, outputPath, format string, meta bool) []error {
 	log.Println("Writing results to", outputPath)
 
 	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
 	if len(sellers) == 0 && len(vendors) == 0 {
-		return errors.New("no data retrieved")
+		return []error{errors.New("no data retrieved")}
 	}
 
+	var sellerErrs []error
 	for _, seller := range sellers {
 		err := dumpSeller(dataBucket, seller, outputPath, format)
 		if err != nil {
-			return err
+			log.Println(err)
+			sellerErrs = append(sellerErrs, err)
+			continue
 		}
 
 		if meta && format != "json" {
 			sellerMeta := mtgban.NewSellerFromInventory(nil, seller.Info())
 			err := dumpSeller(dataBucket, sellerMeta, outputPath, "json")
 			if err != nil {
-				return err
+				sellerErrs = append(sellerErrs, err)
+				continue
 			}
 		}
 	}
 
+	var vendorErrs []error
 	for _, vendor := range vendors {
 		err := dumpVendor(dataBucket, vendor, outputPath, format)
 		if err != nil {
-			return err
+			log.Println(err)
+			vendorErrs = append(vendorErrs, err)
+			continue
 		}
 
 		if meta && format != "json" {
 			vendorMeta := mtgban.NewVendorFromBuylist(nil, vendor.Info())
 			err := dumpVendor(dataBucket, vendorMeta, outputPath, "json")
 			if err != nil {
-				return err
+				vendorErrs = append(vendorErrs, err)
+				continue
 			}
 		}
 	}
 
-	return nil
+	return append(sellerErrs, vendorErrs...)
 }
 
 type HTTPBucket struct {
@@ -984,11 +1004,15 @@ func run() int {
 	log.Println("Configured with", countSellers, "sellers and", countVendors, "vendors")
 
 	now = time.Now()
+
+	var nonFatalErrors []error
+
 	// Load the data
 	for _, scraper := range scrapers {
 		err := scraper.Load(context.Background())
 		if err != nil {
 			log.Println(err)
+			nonFatalErrors = append(nonFatalErrors, err)
 		}
 	}
 
@@ -996,14 +1020,21 @@ func run() int {
 
 	now = time.Now()
 	// Dump the results
-	err = dump(dataBucket, scrapers, *outputPathOpt, *fileFormatOpt, *metaOpt)
-	if err != nil {
-		log.Println(err)
-		return 1
-	}
+	dumpErrors := dump(dataBucket, scrapers, *outputPathOpt, *fileFormatOpt, *metaOpt)
+	nonFatalErrors = append(nonFatalErrors, dumpErrors...)
+
 	log.Println("uploading data took:", time.Since(now))
 
 	log.Println("Completed in", time.Since(start))
+
+	// Check for non-fatal errors and exit accordingly
+	if nonFatalErrors != nil {
+		log.Println("There were non-fatal errors:")
+		for _, err := range nonFatalErrors {
+			log.Println("-", err)
+		}
+		return 2
+	}
 
 	return 0
 }
