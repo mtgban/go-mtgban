@@ -815,7 +815,7 @@ func (ap AllPrintings) Load() cardBackend {
 
 	// Remove promo tags that apply to a single finish only
 	for uuid, card := range uuids {
-		if !card.Foil && !card.Etched {
+		if !card.Foil && !card.Etched && !card.Sealed {
 			for _, promoType := range []string{
 				PromoTypeDoubleExposure,
 				PromoTypeGalaxyFoil,
