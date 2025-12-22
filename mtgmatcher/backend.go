@@ -825,14 +825,25 @@ func (ap AllPrintings) Load() cardBackend {
 				PromoTypeSurgeFoil,
 			} {
 				if card.HasPromoType(promoType) {
+					// Filter
 					var filtered []string
 					for _, pt := range card.PromoTypes {
 						if pt != promoType {
 							filtered = append(filtered, pt)
 						}
 					}
+
+					// Update UUID map
 					card.PromoTypes = filtered
 					uuids[uuid] = card
+
+					// Also update data in the original slice
+					for i, c := range ap.Data[card.SetCode].Cards {
+						if c.UUID != uuid {
+							continue
+						}
+						ap.Data[card.SetCode].Cards[i].PromoTypes = filtered
+					}
 				}
 			}
 		}

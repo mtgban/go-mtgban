@@ -4826,6 +4826,15 @@
         }
     },
     {
+        "uuid": "48363234-28b0-5b70-98f7-21aca6f6e0c1",
+        "description": "m3c_ripple_separate",
+        "input": {
+            "name": "Aether Refinery",
+            "variant": "Extended Art",
+            "edition": "Modern Horizons 3 Commander"
+        }
+    },
+    {
         "uuid": "ff342b26-3058-5373-aaa9-f20684f92031",
         "description": "multi_promo_number_similar",
         "input": {
