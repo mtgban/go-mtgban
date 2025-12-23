@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_market]
   schedule:
-    - cron: "25 * * * *"
+    - cron: "*/30 * * * *"
 
 concurrency:
   group: bantool-tcgplayer
