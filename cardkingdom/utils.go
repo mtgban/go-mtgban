@@ -8,35 +8,33 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/go-cleanhttp"
+	"github.com/RomainMichau/cloudscraper_go/cloudscraper"
 )
 
 type CookieClient struct {
-	client    *http.Client
-	session   string
-	clearance string
+	client  *cloudscraper.CloudScrapper
+	session string
 }
 
-func NewCookieClient(session, clearance string) *CookieClient {
+func NewCookieClient(session string) (*CookieClient, error) {
+	if session == "" {
+		return nil, errors.New("no session was input")
+	}
+
+	client, err := cloudscraper.Init(false, false)
+	if err != nil {
+		return nil, err
+	}
+
 	ck := CookieClient{}
-	ck.client = cleanhttp.DefaultClient()
-	jar, _ := cookiejar.New(nil)
-	ck.client.Jar = jar
+	ck.client = client
 	ck.session = session
-	ck.clearance = clearance
-	return &ck
-}
-
-func NewCookieJarClient(jar http.CookieJar) *CookieClient {
-	ck := CookieClient{}
-	ck.client = cleanhttp.DefaultClient()
-	ck.client.Jar = jar
-	return &ck
+	return &ck, nil
 }
 
 type CartRequest struct {
@@ -121,8 +119,6 @@ const (
 
 	ckInventoryEmptyURL = "https://www.cardkingdom.com/cart/empty"
 	ckBuylistEmptyURL   = "https://www.cardkingdom.com/sellcart/empty_cart"
-
-	staticUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:145.0) Gecko/20100101 Firefox/145.0"
 )
 
 func (ck *CookieClient) SetCartInventory(ctx context.Context, ckId, cond string, qty int) (*CartResponse, error) {
@@ -194,29 +190,73 @@ func (ck *CookieClient) setCart(ctx context.Context, link, ckId, cond string, qt
 	return &cartResponse, nil
 }
 
+// This function Response is mostly fake, data is already present in the body and
+// all read operations are performed here
 func (ck *CookieClient) Get(ctx context.Context, link string) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+	res, err := ck.client.Get(link, map[string]string{"Cookie": "laravel_session=" + ck.session + ";"}, "")
 	if err != nil {
 		return nil, err
 	}
-	if ck.session != "" && ck.clearance != "" {
-		req.Header.Set("Cookie", "cf_clearance="+ck.clearance+"; laravel_session="+ck.session+";")
-	}
-	req.Header.Set("User-Agent", staticUA)
 
-	return ck.client.Do(req)
+	headers := make(http.Header, len(res.Headers))
+	for k, v := range res.Headers {
+		headers.Set(http.CanonicalHeaderKey(k), v)
+	}
+
+	code := res.Status
+	statusText := http.StatusText(code)
+	status := strconv.Itoa(code)
+	if statusText != "" {
+		status += " " + statusText
+	}
+
+	return &http.Response{
+		Status:        status,
+		StatusCode:    code,
+		Header:        headers,
+		Body:          io.NopCloser(strings.NewReader(res.Body)),
+		ContentLength: int64(len(res.Body)),
+		Proto:         "HTTP/1.1",
+		ProtoMajor:    1,
+		ProtoMinor:    1,
+	}, nil
 }
 
 func (ck *CookieClient) Post(ctx context.Context, link, contentType string, reader io.Reader) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, reader)
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
-	if ck.session != "" && ck.clearance != "" {
-		req.Header.Set("Cookie", "cf_clearance="+ck.clearance+"; laravel_session="+ck.session+";")
-	}
-	req.Header.Set("Content-Type", contentType)
-	req.Header.Set("User-Agent", staticUA)
+	payload := string(data)
 
-	return ck.client.Do(req)
+	res, err := ck.client.Post(link, map[string]string{
+		"Content-Type": contentType,
+		"Cookie":       "laravel_session=" + ck.session + ";",
+	}, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	headers := make(http.Header, len(res.Headers))
+	for k, v := range res.Headers {
+		headers.Set(http.CanonicalHeaderKey(k), v)
+	}
+
+	code := res.Status
+	statusText := http.StatusText(code)
+	status := strconv.Itoa(code)
+	if statusText != "" {
+		status += " " + statusText
+	}
+
+	return &http.Response{
+		Status:        status,
+		StatusCode:    code,
+		Header:        headers,
+		Body:          io.NopCloser(strings.NewReader(res.Body)),
+		ContentLength: int64(len(res.Body)),
+		Proto:         "HTTP/1.1",
+		ProtoMajor:    1,
+		ProtoMinor:    1,
+	}, nil
 }
