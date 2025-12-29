@@ -1134,9 +1134,11 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 	"THB": duplicateSomeFoil,
 	"STX": duplicateSomeFoil,
 	"SHM": duplicateSomeFoil,
-	"M3C": duplicateSomeFoil,
-	"FIC": duplicateSomeFoil,
 	"DKM": duplicateSomeFoil,
+
+	// These edition duplicate some foils only but we track which they are
+	"M3C": duplicateDuplicatedFoil,
+	"FIC": duplicateDuplicatedFoil,
 
 	// Intro lands from these sets when non-fullart always have this
 	"ZEN": duplicateBasicLands,
@@ -1158,6 +1160,32 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 func duplicateEveryFoil(inCard *InputCard) []string {
 	if inCard.Foil {
 		return []string{SuffixSpecial}
+	}
+	return nil
+}
+
+func duplicateDuplicatedFoil(inCard *InputCard) []string {
+	setCode := ""
+	switch {
+	case inCard.Contains("Final Fantasy") && inCard.Contains("Commander"):
+		setCode = "FIC"
+	case inCard.Contains("Horizons 3") && inCard.Contains("Commander"):
+		setCode = "M3C"
+	default:
+		return duplicateSomeFoil(inCard)
+	}
+
+	if inCard.Foil {
+		num := ExtractNumber(inCard.Variation)
+		if num != "" {
+			_, found := foilDupes[setCode][num]
+			if found {
+				return []string{SuffixSpecial}
+			} else {
+				return []string{""}
+			}
+		}
+		return []string{SuffixSpecial, ""}
 	}
 	return nil
 }
