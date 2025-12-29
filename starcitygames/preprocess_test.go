@@ -68,6 +68,10 @@ var SKUTests = []SKUTest{
 		In:   "SGL-MTG-PRM-FEST_2025_002-ENF1",
 		Out:  "0d239a5a-c6ad-54b5-b899-50ca15fdc6c9",
 	},
+	{
+		In:  "SGL-MTG-PWSB-PRM_DRFT_UST_108-ENF1",
+		Out: "0d239a5a-c6ad-54b5-b899-50ca15fdc6c9",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {

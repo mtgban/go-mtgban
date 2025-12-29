@@ -136,6 +136,12 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 					fields[2] = "P" + fields[2]
 				}
 				number = fields[2] + "-" + strings.TrimLeft(fields[3], "0")
+
+				// Single promo from Unfinity
+				if fields[2] == "UST" {
+					setCode = "ULST"
+					number = strings.TrimLeft(fields[3], "0")
+				}
 			}
 		}
 	case "PRM", "PRM3":
