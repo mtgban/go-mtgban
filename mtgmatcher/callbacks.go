@@ -1151,7 +1151,7 @@ var numberFilterCallbacks = map[string]numberFilterCallback{
 	"DD2":  duplicateJPNPlaneswalkers,
 
 	// 40K could have numbers reported alongside the surge tag
-	"40K": duplicateSomeFoil,
+	"40K": duplicateDuplicatedFoil,
 
 	// This is a mess
 	"SLD": duplicateSLD,
@@ -1165,8 +1165,26 @@ func duplicateEveryFoil(inCard *InputCard) []string {
 }
 
 func duplicateDuplicatedFoil(inCard *InputCard) []string {
+	// If card is non-foil then the default suffix(es) are fine as-is
+	if !inCard.Foil {
+		return nil
+	}
+
+	num := ExtractNumber(inCard.Variation)
+
 	setCode := ""
 	switch {
+	case inCard.Contains("Warhammer") && inCard.Contains("Commander"):
+		// This chunk is different because upstream used to pre-duplicate foil cards
+		// so we don't have this data in the usual table, but we can still derive it
+		number, err := strconv.Atoi(num)
+		if err == nil {
+			if (number > 8 && number < 169) || number > 181 {
+				return []string{SuffixSpecial}
+			} else {
+				return []string{""}
+			}
+		}
 	case inCard.Contains("Final Fantasy") && inCard.Contains("Commander"):
 		setCode = "FIC"
 	case inCard.Contains("Horizons 3") && inCard.Contains("Commander"):
@@ -1175,19 +1193,16 @@ func duplicateDuplicatedFoil(inCard *InputCard) []string {
 		return duplicateSomeFoil(inCard)
 	}
 
-	if inCard.Foil {
-		num := ExtractNumber(inCard.Variation)
-		if num != "" {
-			_, found := foilDupes[setCode][num]
-			if found {
-				return []string{SuffixSpecial}
-			} else {
-				return []string{""}
-			}
+	if num != "" {
+		_, found := foilDupes[setCode][num]
+		if found {
+			return []string{SuffixSpecial}
+		} else {
+			return []string{""}
 		}
-		return []string{SuffixSpecial, ""}
 	}
-	return nil
+
+	return []string{SuffixSpecial, ""}
 }
 
 func duplicateSomeFoil(inCard *InputCard) []string {
