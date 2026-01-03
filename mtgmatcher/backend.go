@@ -673,6 +673,12 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 			product.Identifiers["mtgjsonId"] = product.UUID
 
+			// Save TCGplayer id into our conversion table
+			tcgplayerId, found := product.Identifiers["tcgplayerProductId"]
+			if found {
+				tcgplayer[tcgplayerId] = product.UUID
+			}
+
 			card := Card{
 				UUID:        product.UUID,
 				Name:        product.Name,
