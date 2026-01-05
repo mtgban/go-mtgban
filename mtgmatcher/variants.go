@@ -4509,8 +4509,8 @@ var multiPromosVariants = map[string]map[string]string{
 		"foundations": "243",
 	},
 	"Authority of the Consuls": {
-		"kaladesh":    "137",
-		"foundations": "5",
+		"kaladesh":    "5",
+		"foundations": "137",
 	},
 	"Giada, Font of Hope": {
 		"streets":     "14",
