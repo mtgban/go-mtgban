@@ -652,12 +652,12 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 }
 
 func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) error {
-	target := fmt.Sprintf("%s/retail/%s.%s", outputPath, seller.Info().Shorthand, format)
-	log.Println("Writing", target)
-
 	if len(seller.Inventory()) == 0 {
 		return fmt.Errorf("seller %s has no data", seller.Info().Shorthand)
 	}
+
+	target := fmt.Sprintf("%s/retail/%s.%s", outputPath, seller.Info().Shorthand, format)
+	log.Println("Writing", target)
 
 	writer, err := simplecloud.InitWriter(context.Background(), dataBucket, target)
 	if err != nil {
@@ -680,12 +680,12 @@ func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath,
 }
 
 func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) error {
-	target := fmt.Sprintf("%s/buylist/%s.%s", outputPath, vendor.Info().Shorthand, format)
-	log.Println("Writing", target)
-
 	if len(vendor.Buylist()) == 0 {
 		return fmt.Errorf("vendor %s has no data", vendor.Info().Shorthand)
 	}
+
+	target := fmt.Sprintf("%s/buylist/%s.%s", outputPath, vendor.Info().Shorthand, format)
+	log.Println("Writing", target)
 
 	writer, err := simplecloud.InitWriter(context.Background(), dataBucket, target)
 	if err != nil {
