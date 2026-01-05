@@ -18,6 +18,7 @@ require (
 )
 
 require (
+	github.com/RomainMichau/cloudscraper_go v0.4.2
 	github.com/alxjsn/kooky v0.2.1
 	github.com/browserutils/kooky v0.2.4
 	github.com/corpix/uarand v0.2.0
@@ -42,7 +43,6 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.54.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.54.0 // indirect
 	github.com/RomainMichau/CycleTLS/cycletls v1.0.30-compatible // indirect
-	github.com/RomainMichau/cloudscraper_go v0.4.2 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/antchfx/htmlquery v1.3.4 // indirect
