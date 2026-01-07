@@ -19,6 +19,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/scizorman/go-ndjson"
 
@@ -797,7 +800,133 @@ func (h *HTTPBucket) NewReader(ctx context.Context, path string) (io.ReadCloser,
 
 func (h *HTTPBucket) NewWriter(ctx context.Context, path string) (io.WriteCloser, error) {
 	panic("not possible")
-	return nil, nil
+}
+
+type S3Bucket struct {
+	Client *s3.Client
+	Bucket string
+}
+
+func NewS3Bucket(ctx context.Context, bucketName string) (*S3Bucket, error) {
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = "auto"
+	}
+
+	endpoint := os.Getenv("S3_ENDPOINT")
+
+	var endpointURL *url.URL
+	if endpoint != "" {
+		tmp := endpoint
+		if !strings.Contains(tmp, "://") {
+			tmp = "https://" + tmp
+		}
+		u, parseErr := url.Parse(tmp)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid S3_ENDPOINT %w", parseErr)
+		}
+		if u.Host == "" {
+			return nil, fmt.Errorf("invalid S3_ENDPOINT: missing host")
+		}
+		endpointURL = u
+	}
+
+	var cfg aws.Config
+	var err error
+	if endpointURL != nil {
+		cfg, err = config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	} else {
+		cfg, err = config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		if endpointURL != nil {
+			o.UsePathStyle = true
+
+			o.BaseEndpoint = aws.String(endpointURL.String())
+		}
+	})
+
+	log.Printf("cmd/bantool/main.go: NewS3Bucket initialized (bucket=%s endpoint=%s region=%s)", bucketName, endpoint, region)
+
+	return &S3Bucket{
+		Client: client,
+		Bucket: bucketName,
+	}, nil
+}
+
+func (b *S3Bucket) NewReader(ctx context.Context, path string) (io.ReadCloser, error) {
+	key := strings.TrimLeft(path, "/")
+	log.Printf("cmd/bantool/main.go: S3Bucket.NewReader (bucket=%s key=%s)", b.Bucket, key)
+
+	resp, err := b.Client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: &b.Bucket,
+		Key:    &key,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Body, nil
+}
+
+type s3TempFileWriter struct {
+	ctx    context.Context
+	client *s3.Client
+	bucket string
+	key    string
+	f      *os.File
+}
+
+func (w *s3TempFileWriter) Write(p []byte) (int, error) {
+	return w.f.Write(p)
+}
+
+func (w *s3TempFileWriter) Close() error {
+	defer func() {
+		_ = w.f.Close()
+		_ = os.Remove(w.f.Name())
+	}()
+
+	info, err := w.f.Stat()
+	if err != nil {
+		return err
+	}
+	if _, err := w.f.Seek(0, 0); err != nil {
+		return err
+	}
+
+	size := info.Size()
+	log.Printf("cmd/bantool/main.go: S3Bucket uploading (bucket=%s key=%s size=%d)", w.bucket, w.key, size)
+
+	_, err = w.client.PutObject(w.ctx, &s3.PutObjectInput{
+		Bucket:        &w.bucket,
+		Key:           &w.key,
+		Body:          w.f,
+		ContentLength: &size,
+	})
+	return err
+}
+
+func (b *S3Bucket) NewWriter(ctx context.Context, path string) (io.WriteCloser, error) {
+	key := strings.TrimLeft(path, "/")
+	log.Printf("cmd/bantool/main.go: S3Bucket.NewWriter (bucket=%s key=%s)", b.Bucket, key)
+
+	tmp, err := os.CreateTemp("", "bantool-s3-*")
+	if err != nil {
+		return nil, err
+	}
+
+	return &s3TempFileWriter{
+		ctx:    ctx,
+		client: b.Client,
+		bucket: b.Bucket,
+		key:    key,
+		f:      tmp,
+	}, nil
 }
 
 func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter, error) {
@@ -843,6 +972,14 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 		}
 		b2Bucket.ConcurrentDownloads = 20
 		bucket = b2Bucket
+	case "s3":
+
+		log.Printf("cmd/bantool/main.go: initializeBucket using S3-compatible bucket (bucket=%s path=%s)", u.Host, u.Path)
+		s3Bucket, err := NewS3Bucket(context.Background(), u.Host)
+		if err != nil {
+			return nil, err
+		}
+		bucket = s3Bucket
 	default:
 		return nil, fmt.Errorf("unsupported path scheme %s", u.Scheme)
 	}
@@ -897,6 +1034,8 @@ func run() int {
 		log.Println("Missing output-path argument")
 		return 1
 	}
+
+	*outputPathOpt = strings.TrimRight(*outputPathOpt, "/")
 
 	dataBucket, err := initializeBucket(*outputPathOpt, os.Getenv("B2_KEY_ID"), os.Getenv("B2_APP_KEY"))
 	if err != nil {
