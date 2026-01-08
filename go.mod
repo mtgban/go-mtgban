@@ -115,4 +115,3 @@ require (
 	h12.io/socks v1.0.3 // indirect
 )
 
-replace github.com/mtgban/simplecloud => ../simplecloud
