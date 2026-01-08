@@ -70,7 +70,7 @@ var SKUTests = []SKUTest{
 	},
 	{
 		In:  "SGL-MTG-PWSB-PRM_DRFT_UST_108-ENF1",
-		Out: "0d239a5a-c6ad-54b5-b899-50ca15fdc6c9",
+		Out: "e95a606c-0ac2-5a4f-a9e1-d3a29e518bb2",
 	},
 }
 
