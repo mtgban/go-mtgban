@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+const (
+	unisearchURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.cardset=%s&fq.price=1~*&fq.language=2&fq.stock=1~*&rows=60&page=%d"
+)
+
 type Response struct {
 	ResponseHeader struct {
 		Status int    `json:"status"`
@@ -38,7 +42,7 @@ type Product struct {
 }
 
 func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
-	link := fmt.Sprintf("https://unisearchprd-c2.ukw.jp/p1/v1/hareruyamtg/?fq.cardset=%s&fq.price=1~*&fq.language=2&fq.stock=1~*&rows=60&page=%d", cardSet, page)
+	link := fmt.Sprintf(unisearchURL, cardSet, page)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
