@@ -40,6 +40,7 @@ import (
 	"github.com/mtgban/go-mtgban/strikezone"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 	"github.com/mtgban/go-mtgban/trollandtoad"
+	"github.com/mtgban/go-mtgban/vegassingles"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/simplecloud"
@@ -472,6 +473,16 @@ var options = map[string]*scraperOption{
 	"trollandtoad": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := trollandtoad.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"vegassingles": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := vegassingles.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
