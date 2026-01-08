@@ -843,6 +843,15 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 		}
 		b2Bucket.ConcurrentDownloads = 20
 		bucket = b2Bucket
+	case "s3":
+		accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+		secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+		endpoint := os.Getenv("AWS_ENDPOINT")
+
+		bucket, err = simplecloud.NewS3Client(context.Background(), accessKey, secretKey, u.Host, endpoint, "")
+		if err != nil {
+			return nil, err
+		}
 	default:
 		return nil, fmt.Errorf("unsupported path scheme %s", u.Scheme)
 	}
