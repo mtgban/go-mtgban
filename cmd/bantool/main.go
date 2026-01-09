@@ -855,12 +855,11 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 		b2Bucket.ConcurrentDownloads = 20
 		bucket = b2Bucket
 	case "s3":
-		endpoint := os.Getenv("S3_ENDPOINT")
-		region := os.Getenv("AWS_REGION")
-		if region == "" {
-			region = "auto"
-		}
-		bucket, err = simplecloud.NewS3Client(context.Background(), u.Host, endpoint, region)
+		accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+		secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+		endpoint := os.Getenv("AWS_ENDPOINT")
+
+		bucket, err = simplecloud.NewS3Client(context.Background(), accessKey, secretKey, u.Host, endpoint, "")
 		if err != nil {
 			return nil, err
 		}
