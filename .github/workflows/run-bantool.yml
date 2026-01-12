@@ -69,6 +69,8 @@ jobs:
       - name: Run bantool
         id: run_bantool
         env:
+          OUTPUT_BASE: "${{ vars.OUTPUT_BASE }}"
+
           CK_PARTNER: "${{ vars.CK_PARTNER }}"
           CSI_PARTNER: "${{ vars.CSI_PARTNER }}"
           CT_PARTNER: "${{ vars.CT_PARTNER }}"
@@ -78,6 +80,10 @@ jobs:
           MAX_CONCURRENCY: "${{ vars.MAX_CONCURRENCY }}"
 
           MTGJSON_TCGSKU_PATH: "${{ inputs.skus-filepath }}"
+
+          AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          AWS_ENDPOINT: "${{ secrets.AWS_ENDPOINT }}"
 
           B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
           B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"
@@ -93,8 +99,8 @@ jobs:
         run: |
           set +e
           bantool -datastore ${{ inputs.datastore-filepath }} \
-                  -output-path b2://mtgban-dumps/${{ inputs.game }}/${{ inputs.target }} \
-                  -format json.xz \
+                  -output-path "${OUTPUT_BASE}/${{ inputs.game }}/${{ inputs.target }}" \
+                  -format ndjson \
                   -${{ inputs.target }}
           EXIT=$?
           echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
@@ -105,13 +111,6 @@ jobs:
               exit 0
           fi
           exit $EXIT
-
-      - name: Ping server
-        env:
-          BAN_SECRET: "${{ secrets.BAN_SECRET }}"
-        run: |
-          SIGNED_URL=$(bantool -sign http://${{ inputs.game }}.mtgban.com/api/load/${{ inputs.target }} 2> /dev/null)
-          curl -L "$SIGNED_URL" 2> /dev/null | tee /dev/stderr | jq -e 'select(.status=="ok")'
 
       - name: Check bantool status
         if: ${{ steps.run_bantool.outputs.exit_code == '2' }}
