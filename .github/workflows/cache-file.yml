@@ -63,14 +63,3 @@ jobs:
         run: |
           mkdir -p "${{ inputs.path }}"
           curl -L "${{ inputs.url }}" -o "${{ steps.get_etag.outputs.filepath }}"
-
-      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != ''
-        name: Upload to B2
-        env:
-          B2KEY: "${{ secrets.B2_KEY_ID_DATASTORE }}"
-          B2SECRET: "${{ secrets.B2_APP_KEY_DATASTORE }}"
-        run: |
-          pip install --quiet --no-cache-dir b2
-          b2 account authorize $B2KEY $B2SECRET
-          b2 sync --skip-newer "${{ inputs.path }}" "b2://mtgban-datastore/${{ inputs.game }}"
-          b2 account clear
