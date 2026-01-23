@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -169,19 +170,23 @@ func LoadSyp(ctx context.Context, auth string) ([]TCGSYP, error) {
 	return result, nil
 }
 
+// Accurate for non-Pro Direct offers, up to 24 cards, with no taxes applied
+// Source: https://mktg-assets.tcgplayer.com/web/seller/guides/TCGplayer-Direct-Shipping-Replacement-Costs.pdf
 func DirectPriceAfterFees(price float64) float64 {
-	directCost := 0.3 + price*(0.0895+0.025)
+	tax := 1.0
+	feeCap := 75.0
+	directCost := 0.3 + price*tax*0.025 + math.Min(feeCap, price*0.0895)
 
 	var replacementFees float64
 	if price < 3 {
 		replacementFees = price / 2
 		directCost = 0
 	} else if price < 20 {
-		replacementFees = 1.12
+		replacementFees = 1.26
 	} else if price < 250 {
-		replacementFees = 3.97
+		replacementFees = 5.47
 	} else {
-		replacementFees = 6.85
+		replacementFees = 9.05
 	}
 
 	return price - directCost - replacementFees
