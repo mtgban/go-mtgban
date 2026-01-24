@@ -529,12 +529,6 @@ func (ap AllPrintings) Load() cardBackend {
 			if found {
 				scryfall[scryfallId] = card.UUID
 			}
-			for _, tag := range []string{"tcgplayerProductId", "tcgplayerEtchedProductId"} {
-				tcgplayerId, found := card.Identifiers[tag]
-				if found {
-					tcgplayer[tcgplayerId] = card.UUID
-				}
-			}
 
 			// Shared card object
 			co := CardObject{
@@ -673,12 +667,6 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 			product.Identifiers["mtgjsonId"] = product.UUID
 
-			// Save TCGplayer id into our conversion table
-			tcgplayerId, found := product.Identifiers["tcgplayerProductId"]
-			if found {
-				tcgplayer[tcgplayerId] = product.UUID
-			}
-
 			card := Card{
 				UUID:        product.UUID,
 				Name:        product.Name,
@@ -744,6 +732,14 @@ func (ap AllPrintings) Load() cardBackend {
 	var names, fullNames, lowerNames []string
 	var sealed, fullSealed, lowerSealed []string
 	for uuid, card := range uuids {
+		// Load up the ids, both the ones in mtgjson and the ones loaded manually
+		for _, tag := range []string{"tcgplayerProductId", "tcgplayerEtchedProductId"} {
+			tcgplayerId, found := card.Identifiers[tag]
+			if found {
+				tcgplayer[tcgplayerId] = card.Identifiers["mtgjsonId"]
+			}
+		}
+
 		namesToAdd := []string{card.Name}
 		if card.Identifiers["isDFCSameName"] == "true" {
 			namesToAdd = append(namesToAdd, card.Name+" // "+card.Name)
