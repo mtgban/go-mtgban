@@ -2,9 +2,15 @@ package miniaturemarket
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -15,14 +21,12 @@ type Miniaturemarket struct {
 	Affiliate      string
 
 	inventoryDate time.Time
-	client        *MMClient
 	inventory     mtgban.InventoryRecord
 	productMap    map[string]string
 }
 
 func NewScraperSealed() *Miniaturemarket {
 	mm := Miniaturemarket{}
-	mm.client = NewMMClient()
 	mm.inventory = mtgban.InventoryRecord{}
 	mm.MaxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
@@ -31,6 +35,8 @@ func NewScraperSealed() *Miniaturemarket {
 
 const (
 	defaultConcurrency = 6
+
+	mainURL = "https://www.miniaturemarket.com/widgets/cms/navigation/be53d253d6bc3258a8160556dda3e9b2?filter-inStock=1&no-aggregations=1&order=name-asc&p=1"
 )
 
 type respChan struct {
@@ -44,39 +50,81 @@ func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respChan, start int) error {
-	resp, err := mm.client.GetInventory(ctx, start)
+func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respChan, page int) error {
+	u, err := url.Parse(mainURL)
 	if err != nil {
-		return nil
+		return err
 	}
-	resp = resp
+	v := u.Query()
+	v.Set("p", fmt.Sprint(page))
+	u.RawQuery = v.Encode()
 
-	for _, product := range resp.Response.Products {
-		if product.Quantity <= 0 {
-			continue
-		}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
+	if err != nil {
+		return err
+	}
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
-		uuid, found := mm.productMap[product.EntityId]
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		mm.printf("newDoc - %s", err.Error())
+		return err
+	}
+
+	doc.Find(`div[class="product-info"]`).Each(func(i int, s *goquery.Selection) {
+		id, _ := s.Find(`input[name="product-id"]`).Attr("value")
+		uuid, found := mm.productMap[id]
 		if !found {
-			continue
+			return
 		}
 
-		link := product.URL
+		link, _ := s.Find(`a.product-name`).Attr("href")
 		if mm.Affiliate != "" {
 			link += "?utm_source=" + mm.Affiliate + "&utm_medium=feed&utm_campaign=mtg_singles"
+		}
+
+		priceStr := s.Find(`.product-price`).Text()
+		price, err := mtgmatcher.ParsePrice(priceStr)
+		if err != nil {
+			mm.printf("uuid %s - %s", uuid, err.Error())
+			return
 		}
 
 		channel <- respChan{
 			cardId: uuid,
 			invEntry: &mtgban.InventoryEntry{
-				Price:    product.Price,
-				Quantity: product.Quantity,
-				URL:      link,
+				Price: price,
+				URL:   link,
 			},
 		}
-	}
+	})
 
 	return nil
+}
+
+func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mainURL, http.NoBody)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		mm.printf("newDoc - %s", err.Error())
+		return 0, err
+	}
+
+	num, _ := doc.Find(`input[id="p-last-bottom"]`).Attr("value")
+	return strconv.Atoi(num)
 }
 
 func (mm *Miniaturemarket) Load(ctx context.Context) error {
@@ -93,7 +141,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	channel := make(chan respChan)
 	var wg sync.WaitGroup
 
-	totalProducts, err := mm.client.NumberOfProducts(ctx)
+	totalProducts, err := mm.NumberOfProducts(ctx)
 	if err != nil {
 		return err
 	}
@@ -113,7 +161,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	}
 
 	go func() {
-		for i := 0; i < totalProducts; i += MMDefaultResultsPerPage {
+		for i := 0; i < totalProducts; i++ {
 			pages <- i
 		}
 		close(pages)
@@ -144,5 +192,6 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "MMSealed"
 	info.InventoryTimestamp = &mm.inventoryDate
 	info.SealedMode = true
+	info.NoQuantityInventory = true
 	return
 }
