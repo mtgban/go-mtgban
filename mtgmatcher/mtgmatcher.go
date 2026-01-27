@@ -491,13 +491,15 @@ func Match(inCard *InputCard) (cardId string, err error) {
 
 // Return an array of Card containing all the cards with the exact
 // same name as the input name in the Set identified by setCode.
+// In case of combined card names (with '//' in their name), only the
+// first chunk is considered
 func MatchInSet(cardName string, setCode string) (outCards []Card) {
 	set, found := backend.Sets[setCode]
 	if !found {
 		return
 	}
 	for _, card := range set.Cards {
-		if cardName == card.Name {
+		if cardName == card.Name || cardName == strings.Split(card.Name, " // ")[0] {
 			outCards = append(outCards, card)
 		}
 	}
