@@ -72,6 +72,21 @@ var SKUTests = []SKUTest{
 		In:  "SGL-MTG-PWSB-PRM_DRFT_UST_108-ENF1",
 		Out: "e95a606c-0ac2-5a4f-a9e1-d3a29e518bb2",
 	},
+	{
+		Name: "Counterspell",
+		In:   "SGL-MTG-PRM-NYCC24_002-ENF1",
+		Out:  "406b39be-799b-5da8-bc24-e1a8fa056680",
+	},
+	{
+		Name: "Cloud, Midgar Mercenary",
+		In:   "SGL-MTG-PRM-PT_2025_001-ENF1",
+		Out:  "1830749f-55f4-52ba-8b3c-3e8d1a3805e6",
+	},
+	{
+		Name: "Rograkh, Son of Rohgahh",
+		In:   "SGL-MTG-PRM-CF_2025_002-ENF1",
+		Out:  "7618d60e-3790-5e8f-bd44-3154001bf975",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {
