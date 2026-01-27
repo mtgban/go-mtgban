@@ -196,6 +196,8 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		case strings.Contains(setCode, "DFT") && strings.Contains(card.Name, "Raceway"):
 			edition = "DFT"
 			variation += " Bundle"
+		case variation == "Commander's Bundle Promo":
+			edition = strings.TrimPrefix(setCode, "P")
 		}
 	case "Mystery Booster/The List":
 		edition = card.Edition
