@@ -178,6 +178,18 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
+		case strings.HasPrefix(number, "NYCC24_"):
+			setCode = "PURL"
+			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			if len(cards) == 1 {
+				number = cards[0].Number
+			}
+		case strings.HasPrefix(number, "PT_"):
+			setCode = "PPRO"
+			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			if len(cards) == 1 {
+				number = cards[0].Number
+			}
 		}
 	// This set mixes together any playtest without the pw symbol
 	case "MB13":
