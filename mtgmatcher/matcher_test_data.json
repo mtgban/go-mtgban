@@ -766,6 +766,24 @@
         }
     },
     {
+        "uuid": "b30a3061-ce20-54eb-b25c-7520aa76f8b7",
+        "description": "names_split_cards",
+        "input": {
+            "name": "Scavenger Regent",
+            "variant": "90",
+            "edition": "TDM"
+        }
+    },
+    {
+        "uuid": "b30a3061-ce20-54eb-b25c-7520aa76f8b7",
+        "description": "names_split_cards_full",
+        "input": {
+            "name": "Scavenger Regent // Exude Toxin",
+            "variant": "90",
+            "edition": "TDM"
+        }
+    },
+    {
         "uuid": "e452b3bc-4618-538f-80a1-403b65eed48e",
         "description": "incorrect_edition_but_card_has_a_single_printing",
         "input": {
