@@ -131,3 +131,12 @@ func TestSearchHalfName(t *testing.T) {
 		t.Log("PASS: half name")
 	}
 }
+
+func TestPrintings(t *testing.T) {
+	setCodes, _ := Printings4Card("Black Lotus")
+	if len(setCodes) != 6 {
+		t.Error("FAIL: Printings should be exactly 6 results, got " + fmt.Sprint(setCodes))
+	} else {
+		t.Log("PASS: Printings4Card")
+	}
+}

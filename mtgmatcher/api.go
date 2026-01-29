@@ -202,7 +202,14 @@ func SearchSealedContains(name string) ([]string, error) {
 }
 
 func Printings4Card(name string) ([]string, error) {
-	entry, found := backend.CardInfo[Normalize(name)]
+	if backend.Hashes == nil {
+		return nil, ErrDatastoreEmpty
+	}
+	uuids, found := backend.Hashes[Normalize(name)]
+	if !found {
+		return nil, ErrCardDoesNotExist
+	}
+	entry, found := backend.UUIDs[uuids[0]]
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
@@ -293,33 +300,34 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 		return false
 	}
 
-	card, found := backend.CardInfo[Normalize(name)]
-	if !found {
+	printings, err := Printings4Card(name)
+	if err != nil {
 		cc := &InputCard{
 			Name: name,
 		}
 		adjustName(cc)
-		card, found = backend.CardInfo[Normalize(cc.Name)]
-		if !found {
+		name = cc.Name
+		printings, err = Printings4Card(name)
+		if err != nil {
 			return false
 		}
 	}
-	for _, code := range card.Printings {
+	for _, code := range printings {
 		var set *Set
 		if len(editions) > 0 {
-			set, found = backend.Sets[editions[0]]
-			if !found {
+			set = backend.Sets[editions[0]]
+			if set == nil {
 				set, _ = GetSetByName(editions[0])
 			}
 		}
 		if set == nil {
-			set, found = backend.Sets[code]
-			if !found {
+			set = backend.Sets[code]
+			if set == nil {
 				continue
 			}
 		}
 		for _, in := range set.Cards {
-			if (card.Name == in.Name) && checkFunc(in, value) {
+			if Equals(name, in.Name) && checkFunc(in, value) {
 				return true
 			}
 		}
