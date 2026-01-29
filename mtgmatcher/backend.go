@@ -155,16 +155,16 @@ func skipSet(set *Set) bool {
 	return false
 }
 
-func sortPrintings(ap AllPrintings, printings []string) {
+func sortPrintings(sets map[string]*Set, printings []string) {
 	sort.Slice(printings, func(i, j int) bool {
-		setDateI, errI := time.Parse("2006-01-02", ap.Data[printings[i]].ReleaseDate)
-		setDateJ, errJ := time.Parse("2006-01-02", ap.Data[printings[j]].ReleaseDate)
+		setDateI, errI := time.Parse("2006-01-02", sets[printings[i]].ReleaseDate)
+		setDateJ, errJ := time.Parse("2006-01-02", sets[printings[j]].ReleaseDate)
 		if errI != nil || errJ != nil {
 			return false
 		}
 
 		if setDateI.Equal(setDateJ) {
-			return ap.Data[printings[i]].Name < ap.Data[printings[j]].Name
+			return sets[printings[i]].Name < sets[printings[j]].Name
 		}
 
 		return setDateI.After(setDateJ)
@@ -496,7 +496,7 @@ func (ap AllPrintings) Load() cardBackend {
 				printings = append(printings, card.Printings[i])
 			}
 			// Sort printings by most recent sets first
-			sortPrintings(ap, printings)
+			sortPrintings(ap.Data, printings)
 
 			card.Printings = printings
 
