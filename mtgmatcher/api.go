@@ -119,11 +119,6 @@ func AllNames(variant string, sealed bool) []string {
 			return backend.AllLowerSealed
 		}
 		return backend.AllLowerNames
-	case "alternate":
-		if sealed {
-			return nil
-		}
-		return backend.AlternateNames
 	}
 	return nil
 }
