@@ -207,6 +207,76 @@ func generateImageURL(card Card, version string) string {
 	return fmt.Sprintf("https://api.scryfall.com/cards/%s/%s?format=image&version=%s", code, number, version)
 }
 
+// Make sure Printings array is filled, and make token properties uniform
+func adjustTokens(sets map[string]*Set) {
+	printings := make(map[string][]string)
+
+	// Adjust input data, filtering out unneeded sets, and making sure layout is set
+	for code, set := range sets {
+		// Remove undesired tokens
+		if !okForTokens(set) {
+			sets[code].Tokens = nil
+			continue
+		}
+
+		for _, cardSet := range [][]Card{set.Cards, set.Tokens} {
+			for i := range cardSet {
+				switch set.Code {
+				// Only keep dungeons, and fix their layout to make sure they are tokens
+				case "AFR":
+					if cardSet[i].SetCode != "TAFR" {
+						continue
+					}
+					switch cardSet[i].Number {
+					case "20", "21", "22":
+						cardSet[i].Layout = "token"
+					default:
+						continue
+					}
+				// Override all cards to tokens so that duplicates get named differently
+				case "TFTH", "TBTH", "TDAG":
+					cardSet[i].Layout = "token"
+				}
+
+				// Make sure any odd token type stays token
+				switch cardSet[i].Layout {
+				case "token", "double_faced_token", "emblem":
+					cardSet[i].Layout = "token"
+					cardSet[i].Rarity = "token"
+				}
+			}
+		}
+	}
+
+	// Load up all the printings found among tokens
+	for _, set := range sets {
+		for _, cardSet := range [][]Card{set.Cards, set.Tokens} {
+			for i := range cardSet {
+				if cardSet[i].Layout != "token" {
+					continue
+				}
+				if slices.Contains(printings[cardSet[i].Name], set.Code) {
+					continue
+				}
+				printings[cardSet[i].Name] = append(printings[cardSet[i].Name], set.Code)
+			}
+		}
+	}
+
+	// Assign printings to tokens
+	// Sorting will happen later
+	for _, set := range sets {
+		for _, cardSet := range [][]Card{set.Cards, set.Tokens} {
+			for i := range cardSet {
+				if cardSet[i].Layout != "token" {
+					continue
+				}
+				cardSet[i].Printings = printings[cardSet[i].Name]
+			}
+		}
+	}
+}
+
 func (ap AllPrintings) Load() cardBackend {
 	uuids := map[string]CardObject{}
 	cardInfo := map[string]cardinfo{}
@@ -241,6 +311,8 @@ func (ap AllPrintings) Load() cardBackend {
 		}
 	}
 
+	adjustTokens(ap.Data)
+
 	for code, set := range ap.Data {
 		var filteredCards []Card
 		var rarities, colors []string
@@ -249,17 +321,12 @@ func (ap AllPrintings) Load() cardBackend {
 
 		allCards := set.Cards
 
-		if okForTokens(set) {
-			// Append tokens to the list of considered cards
-			// if they are not named in the same way of a real card
-			for _, token := range set.Tokens {
-				if !slices.Contains(allCardNames, token.Name) {
-					allCards = append(allCards, token)
-				}
+		// Append tokens to the list of considered cards
+		// if they are not named in the same way of a real card
+		for _, token := range set.Tokens {
+			if !slices.Contains(allCardNames, token.Name) {
+				allCards = append(allCards, token)
 			}
-		} else {
-			// Clean a bit of memory
-			set.Tokens = nil
 		}
 
 		switch set.Code {
@@ -355,25 +422,6 @@ func (ap AllPrintings) Load() cardBackend {
 				if num >= 24 && num <= 30 {
 					card.PromoTypes = append(card.PromoTypes, "wizardsplaynetwork")
 				}
-
-			// Only keep dungeons, and fix their layout to make sure they are tokens
-			case "AFR":
-				if card.SetCode == "TAFR" {
-					switch card.Number {
-					case "20", "21", "22":
-						card.Layout = "token"
-					default:
-						continue
-					}
-				}
-			// Override all to tokens so that duplicates get named differently
-			case "TFTH", "TBTH", "TDAG":
-				card.Layout = "token"
-			}
-
-			// Override any "double_faced_token" entries and emblems
-			if strings.Contains(card.Layout, "token") || card.Layout == "emblem" {
-				card.Layout = "token"
 			}
 
 			// Make sure this property is correctly initialized
@@ -452,12 +500,6 @@ func (ap AllPrintings) Load() cardBackend {
 
 			card.Printings = printings
 
-			// Tokens do not come with a printing array, add it
-			// It'll be updated later with the sets discovered so far
-			if card.Layout == "token" {
-				card.Printings = []string{set.Code}
-			}
-
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
 
@@ -484,28 +526,9 @@ func (ap AllPrintings) Load() cardBackend {
 					Printings: card.Printings,
 					Layout:    card.Layout,
 				}
-			} else if card.Layout == "token" {
-				// If already present, check if this set is already contained
-				// in the current array, otherwise add it
-				// Note the setCode will be from the parent
-				if !slices.Contains(cardInfo[norm].Printings, code) {
-					printings := append(cardInfo[norm].Printings, set.Code)
-					sortPrintings(ap, printings)
-
-					ci := cardinfo{
-						Name:      card.Name,
-						Printings: printings,
-						Layout:    card.Layout,
-					}
-					cardInfo[norm] = ci
-				}
 			}
 
 			// Custom properties for tokens
-			if card.Layout == "token" {
-				card.Printings = cardInfo[Normalize(card.Name+" Token")].Printings
-				card.Rarity = "token"
-			}
 			if card.IsOversized {
 				card.Rarity = "oversize"
 			}
