@@ -308,12 +308,6 @@ func (ap AllPrintings) Load() cardBackend {
 					card.PromoTypes = append(card.PromoTypes, "rudedrivers")
 				}
 
-			// The yellow neon ink promo
-			case "LCI":
-				if card.Number == "17b" {
-					card.PromoTypes = append(card.PromoTypes, "wizardsplaynetwork")
-				}
-
 			// Upstream cannot properly represent foil cards
 			case "SLC":
 				if card.SourceProducts == nil {
