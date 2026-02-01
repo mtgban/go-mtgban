@@ -172,7 +172,8 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
-		case len(fields) > 2 && len(fields[1]) == 4 && strings.HasPrefix(number, "FEST_"):
+		case len(fields) > 2 && len(fields[1]) == 4 &&
+			(strings.HasPrefix(number, "FEST_") || strings.HasPrefix(number, "CF_")):
 			setCode = "PF" + fields[1][2:]
 			cards := mtgmatcher.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
@@ -180,7 +181,12 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			}
 		case strings.HasPrefix(number, "NYCC24_"):
 			setCode = "PURL"
-			number = strings.TrimLeft(fields[1], "0")
+			cards := mtgmatcher.MatchInSet(cardName, setCode)
+			if len(cards) == 1 {
+				number = cards[0].Number
+			}
+		case strings.HasPrefix(number, "PT_"):
+			setCode = "PPRO"
 			cards := mtgmatcher.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number

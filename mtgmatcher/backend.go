@@ -308,12 +308,6 @@ func (ap AllPrintings) Load() cardBackend {
 					card.PromoTypes = append(card.PromoTypes, "rudedrivers")
 				}
 
-			// The yellow neon ink promo
-			case "LCI":
-				if card.Number == "17b" {
-					card.PromoTypes = append(card.PromoTypes, "wizardsplaynetwork")
-				}
-
 			// Upstream cannot properly represent foil cards
 			case "SLC":
 				if card.SourceProducts == nil {
@@ -375,14 +369,6 @@ func (ap AllPrintings) Load() cardBackend {
 			// Override all to tokens so that duplicates get named differently
 			case "TFTH", "TBTH", "TDAG":
 				card.Layout = "token"
-			// Modify the Normalize string replacer to ignore replacing card names with commas
-			// that conflict with another card name
-			case "MB2", "DA1", "UNK":
-				if strings.Contains(card.Name, ",") && slices.Contains(allCardNames, strings.Replace(card.Name, ",", "", 1)) {
-					lower := strings.ToLower(card.Name)
-					replacerStrings = append([]string{lower, lower}, replacerStrings...)
-					replacer = strings.NewReplacer(replacerStrings...)
-				}
 			}
 
 			// Override any "double_faced_token" entries and emblems
