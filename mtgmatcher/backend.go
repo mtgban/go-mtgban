@@ -221,6 +221,51 @@ func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
 	}
 }
 
+func generateSealedUUIDs(product SealedProduct, uuids map[string]CardObject, edition string) {
+	card := Card{
+		UUID:        product.UUID,
+		Name:        product.Name,
+		SetCode:     product.SetCode,
+		Identifiers: product.Identifiers,
+		Rarity:      "product",
+		Layout:      product.Category,
+		Side:        product.Subtype,
+		// Will be filled later
+		SourceProducts: map[string][]string{},
+		Images:         map[string]string{},
+	}
+
+	// Preserve ReleaseDate information only for SLD, the other sets
+	// will derive it from the set date itself
+	if product.SetCode == "SLD" {
+		card.OriginalReleaseDate = product.ReleaseDate
+	}
+
+	card.Images["full"] = generateImageURL(card, "normal")
+	card.Images["thumbnail"] = generateImageURL(card, "small")
+	card.Images["crop"] = generateImageURL(card, "normal")
+
+	isEtched := strings.Contains(product.Name, "Etched")
+	isFoil := !isEtched
+	switch {
+	case strings.Contains(product.Name, "Foil") && !strings.Contains(product.Name, "Non"):
+	case strings.Contains(product.Name, "Premium"):
+	case strings.Contains(product.Name, "VIP Edition"):
+	case strings.Contains(product.Name, "Commander Deck") && strings.Contains(product.Name, "Collector Edition"):
+	case slices.Contains(productsWithOnlyFoils, product.Name):
+	default:
+		isFoil = false
+	}
+
+	uuids[product.UUID] = CardObject{
+		Card:    card,
+		Sealed:  true,
+		Edition: edition,
+		Foil:    isFoil,
+		Etched:  isEtched,
+	}
+}
+
 func sortPrintings(sets map[string]*Set, printings []string) {
 	sort.Slice(printings, func(i, j int) bool {
 		setDateI, errI := time.Parse("2006-01-02", sets[printings[i]].ReleaseDate)
@@ -676,48 +721,7 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 			product.Identifiers["mtgjsonId"] = product.UUID
 
-			card := Card{
-				UUID:        product.UUID,
-				Name:        product.Name,
-				SetCode:     product.SetCode,
-				Identifiers: product.Identifiers,
-				Rarity:      "product",
-				Layout:      product.Category,
-				Side:        product.Subtype,
-				// Will be filled later
-				SourceProducts: map[string][]string{},
-				Images:         map[string]string{},
-			}
-
-			// Preserve ReleaseDate information only for SLD, the other sets
-			// will derive it from the set date itself
-			if product.SetCode == "SLD" {
-				card.OriginalReleaseDate = product.ReleaseDate
-			}
-
-			card.Images["full"] = generateImageURL(card, "normal")
-			card.Images["thumbnail"] = generateImageURL(card, "small")
-			card.Images["crop"] = generateImageURL(card, "normal")
-
-			isEtched := strings.Contains(product.Name, "Etched")
-			isFoil := !isEtched
-			switch {
-			case strings.Contains(product.Name, "Foil") && !strings.Contains(product.Name, "Non"):
-			case strings.Contains(product.Name, "Premium"):
-			case strings.Contains(product.Name, "VIP Edition"):
-			case strings.Contains(product.Name, "Commander Deck") && strings.Contains(product.Name, "Collector Edition"):
-			case slices.Contains(productsWithOnlyFoils, product.Name):
-			default:
-				isFoil = false
-			}
-
-			uuids[product.UUID] = CardObject{
-				Card:    card,
-				Sealed:  true,
-				Edition: set.Name,
-				Foil:    isFoil,
-				Etched:  isEtched,
-			}
+			generateSealedUUIDs(product, uuids, set.Name)
 		}
 	}
 
