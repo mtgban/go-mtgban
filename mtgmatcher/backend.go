@@ -679,7 +679,7 @@ func (ap AllPrintings) Load() cardBackend {
 			card := Card{
 				UUID:        product.UUID,
 				Name:        product.Name,
-				SetCode:     code,
+				SetCode:     product.SetCode,
 				Identifiers: product.Identifiers,
 				Rarity:      "product",
 				Layout:      product.Category,
@@ -691,7 +691,7 @@ func (ap AllPrintings) Load() cardBackend {
 
 			// Preserve ReleaseDate information only for SLD, the other sets
 			// will derive it from the set date itself
-			if code == "SLD" {
+			if product.SetCode == "SLD" {
 				card.OriginalReleaseDate = product.ReleaseDate
 			}
 

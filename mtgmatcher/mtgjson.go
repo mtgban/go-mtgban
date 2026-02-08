@@ -56,6 +56,7 @@ type SealedProduct struct {
 	Contents    map[string][]SealedContent `json:"contents"`
 	Identifiers map[string]string          `json:"identifiers"`
 	Name        string                     `json:"name"`
+	SetCode     string                     `json:"setCode"`
 	CardCount   int                        `json:"cardCount"`
 	ReleaseDate string                     `json:"releaseDate"`
 	Subtype     string                     `json:"subtype"`
