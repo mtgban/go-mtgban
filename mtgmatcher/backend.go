@@ -224,15 +224,10 @@ func adjustTokens(sets map[string]*Set) {
 				switch set.Code {
 				// Only keep dungeons, and fix their layout to make sure they are tokens
 				case "AFR":
-					if cardSet[i].SetCode != "TAFR" {
-						continue
-					}
-					switch cardSet[i].Number {
-					case "20", "21", "22":
+					if slices.Contains(cardSet[i].Types, "Dungeon") {
 						cardSet[i].Layout = "token"
-					default:
-						continue
 					}
+
 				// Override all cards to tokens so that duplicates get named differently
 				case "TFTH", "TBTH", "TDAG":
 					cardSet[i].Layout = "token"
