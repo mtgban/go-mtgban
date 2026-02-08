@@ -155,6 +155,72 @@ func skipSet(set *Set) bool {
 	return false
 }
 
+// Append "_f" and "_e" to uuids, unless etched is the only printing.
+// If it's not etched, append "_f", unless foil is the only printing.
+// Leave uuids unchanged, if there is a single printing of any kind.
+func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
+	// Shared card object
+	co := CardObject{
+		Card:    card,
+		Edition: edition,
+	}
+
+	if card.HasFinish(FinishEtched) {
+		uuid := card.UUID
+
+		// Etched + Nonfoil [+ Foil]
+		if card.HasFinish(FinishNonfoil) {
+			// Save the card object
+			uuids[uuid] = co
+		}
+
+		// Etched + Foil
+		if card.HasFinish(FinishFoil) {
+			// Set the main property
+			co.Foil = true
+			// Make sure "_f" is appended if a different version exists
+			if card.HasFinish(FinishNonfoil) {
+				uuid = card.UUID + suffixFoil
+				co.UUID = uuid
+			}
+			// Save the card object
+			uuids[uuid] = co
+		}
+
+		// Etched
+		// Set the main properties
+		co.Foil = false
+		co.Etched = true
+		// If there are alternative finishes, always append the suffix
+		if card.HasFinish(FinishNonfoil) || card.HasFinish(FinishFoil) {
+			uuid = card.UUID + suffixEtched
+			co.UUID = uuid
+		}
+		// Save the card object
+		uuids[uuid] = co
+	} else if card.HasFinish(FinishFoil) {
+		uuid := card.UUID
+
+		// Foil [+ Nonfoil]
+		if card.HasFinish(FinishNonfoil) {
+			// Save the card object
+			uuids[uuid] = co
+
+			// Update the uuid for the *next* finish type
+			uuid = card.UUID + suffixFoil
+			co.UUID = uuid
+		}
+
+		// Foil
+		co.Foil = true
+		// Save the card object
+		uuids[uuid] = co
+	} else {
+		// Single printing, use as-is
+		uuids[card.UUID] = co
+	}
+}
+
 func sortPrintings(sets map[string]*Set, printings []string) {
 	sort.Slice(printings, func(i, j int) bool {
 		setDateI, errI := time.Parse("2006-01-02", sets[printings[i]].ReleaseDate)
@@ -534,72 +600,11 @@ func (ap AllPrintings) Load() cardBackend {
 				scryfall[scryfallId] = card.UUID
 			}
 
-			// Shared card object
-			co := CardObject{
-				Card:    card,
-				Edition: set.Name,
-			}
-
 			// Save the original uuid
-			co.Identifiers["mtgjsonId"] = card.UUID
+			card.Identifiers["mtgjsonId"] = card.UUID
 
-			// Append "_f" and "_e" to uuids, unless etched is the only printing.
-			// If it's not etched, append "_f", unless foil is the only printing.
-			// Leave uuids unchanged, if there is a single printing of any kind.
-			if card.HasFinish(FinishEtched) {
-				uuid := card.UUID
-
-				// Etched + Nonfoil [+ Foil]
-				if card.HasFinish(FinishNonfoil) {
-					// Save the card object
-					uuids[uuid] = co
-				}
-
-				// Etched + Foil
-				if card.HasFinish(FinishFoil) {
-					// Set the main property
-					co.Foil = true
-					// Make sure "_f" is appended if a different version exists
-					if card.HasFinish(FinishNonfoil) {
-						uuid = card.UUID + suffixFoil
-						co.UUID = uuid
-					}
-					// Save the card object
-					uuids[uuid] = co
-				}
-
-				// Etched
-				// Set the main properties
-				co.Foil = false
-				co.Etched = true
-				// If there are alternative finishes, always append the suffix
-				if card.HasFinish(FinishNonfoil) || card.HasFinish(FinishFoil) {
-					uuid = card.UUID + suffixEtched
-					co.UUID = uuid
-				}
-				// Save the card object
-				uuids[uuid] = co
-			} else if card.HasFinish(FinishFoil) {
-				uuid := card.UUID
-
-				// Foil [+ Nonfoil]
-				if card.HasFinish(FinishNonfoil) {
-					// Save the card object
-					uuids[uuid] = co
-
-					// Update the uuid for the *next* finish type
-					uuid = card.UUID + suffixFoil
-					co.UUID = uuid
-				}
-
-				// Foil
-				co.Foil = true
-				// Save the card object
-				uuids[uuid] = co
-			} else {
-				// Single printing, use as-is
-				uuids[card.UUID] = co
-			}
+			// Store the card in the UUID map and generate variants as needed
+			generateCardUUIDs(card, uuids, set.Name)
 
 			// Add to the ever growing list of promo types
 			for _, promoType := range card.PromoTypes {
