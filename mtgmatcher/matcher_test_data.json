@@ -4390,6 +4390,22 @@
         }
     },
     {
+        "uuid": "6cf6586d-f193-5686-9e69-388d187e7e7c",
+        "description": "tok_commas_no",
+        "input": {
+            "name": "Glimpse the Unthinkable",
+            "edition": "Iconic Masters"
+        }
+    },
+    {
+        "uuid": "cacb0e73-a5cd-5b03-98d9-3195a7be6ffe",
+        "description": "tok_commas",
+        "input": {
+            "name": "Glimpse, the Unthinkable",
+            "edition": "Mystery Booster"
+        }
+    },
+    {
         "uuid": "841679dc-4fad-59e6-a1f6-f736a3be4b2f",
         "description": "neo_separate_etched_variant_normal",
         "input": {

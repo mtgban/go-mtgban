@@ -59,6 +59,7 @@ var replacerStrings = []string{
 	" to ", "",
 	" & ", "",
 	"reverse the polarity", "reverse the polarity",
+	"glimpse, the unthinkable", "glimpse, the unthinkable",
 
 	// Accented characters
 	"â", "a",
