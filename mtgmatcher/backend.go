@@ -538,12 +538,23 @@ func (ap AllPrintings) Load() cardBackend {
 					card.PromoTypes = append(card.PromoTypes, "tourney")
 					card.IsPromo = true
 
+				// The Shapeshift token with clashing name
+				// SDL is the only set enabled for this case
+				case "1906", "1907", "1908", "1909":
+					card.Name += " Token"
+
 				default:
 					num, _ := strconv.Atoi(card.Number)
 					// Override the frame type for the Braindead drops
 					if (num >= 821 && num <= 824) || (num >= 1652 && num <= 1666) {
 						card.FrameVersion = "2015"
 					}
+				}
+
+			// Clashing printing
+			case "TBTH":
+				if card.Name == "Unquenchable Fury" {
+					card.Name += " Token"
 				}
 
 			case "SLX":
@@ -647,7 +658,7 @@ func (ap AllPrintings) Load() cardBackend {
 			// Due to several cards having the same name of a token we hardcode
 			// this value to tell them apart in the future -- checks and names
 			// are still using the official Scryfall name (without the extra Token)
-			if card.Layout == "token" {
+			if card.Layout == "token" && !strings.Contains(name, "Token") {
 				name += " Token"
 			}
 

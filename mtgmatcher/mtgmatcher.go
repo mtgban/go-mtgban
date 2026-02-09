@@ -214,6 +214,18 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		if inCard.isMysteryList() || inCard.Contains("Playtest") {
 			inCard.Name += " Playtest"
 		}
+	case "Unquenchable Fury":
+		if inCard.Contains("Battle the Horde") || inCard.Contains("Hero's Path") {
+			inCard.Name += " Token"
+		}
+	case "Shapeshifter":
+		if !(inCard.Contains("Edition") ||
+			inCard.Contains("Foreign") ||
+			inCard.Contains("Antiquities") ||
+			inCard.Contains("Reinassance") ||
+			inCard.Contains("Rinascimento")) {
+			inCard.Name += " Token"
+		}
 	}
 
 	// Get the card basic info to retrieve the Printings array
@@ -246,13 +258,6 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	adjustEdition(inCard)
 	if ogName != inCard.Name {
 		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
-		// If renamed, reload metadata in case of duplicate names
-		switch {
-		case inCard.Name == "Unquenchable Fury Token" || inCard.Name == "Shapeshifter Token":
-			entry = backend.CardInfo[Normalize(inCard.Name)]
-			inCard.Name = entry.Name
-			logger.Printf("Clashing name adjusted to '%s'", inCard.Name)
-		}
 	}
 	if ogEdition != inCard.Edition {
 		logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
@@ -950,8 +955,6 @@ func adjustEdition(inCard *InputCard) {
 				inCard.Name = "Plains"
 				inCard.Variation = "670"
 			}
-		case inCard.Name == "Shapeshifter":
-			inCard.Name += " Token"
 		case Contains(inCard.Name, "Blightsteel Colossus"), Contains(inCard.Name, "Megatron"), Contains(inCard.Name, "FAS-BOR7 Horus"),
 			inCard.Contains("Blightsteel Colossus"), inCard.Contains("Megatron"), inCard.Contains("FAS-BOR7 Horus"):
 			if Contains(inCard.Name, "Megatron") || inCard.Contains("Megatron") {
@@ -1199,10 +1202,6 @@ func adjustEdition(inCard *InputCard) {
 		case "Evolving Wilds":
 			if inCard.isGenericPromo() {
 				edition = "Rivals of Ixalan Promos"
-			}
-		case "Unquenchable Fury":
-			if inCard.Edition == "Battle the Horde" || inCard.Contains("Hero's Path") {
-				inCard.Name += " Token"
 			}
 		case "Teferi, Master of Time":
 			num := ExtractNumber(variation)
