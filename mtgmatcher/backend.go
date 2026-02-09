@@ -155,6 +155,20 @@ func skipSet(set *Set) bool {
 	return false
 }
 
+func generateUUIDsMap(sets map[string]*Set) map[string]CardObject {
+	uuids := map[string]CardObject{}
+	for _, set := range sets {
+		for _, card := range set.Cards {
+			generateCardUUIDs(card, uuids, set.Name)
+		}
+		for _, product := range set.SealedProduct {
+			generateSealedUUIDs(product, uuids, set.Name)
+		}
+	}
+	fillinSealedContents(sets, uuids)
+	return uuids
+}
+
 // Append "_f" and "_e" to uuids, unless etched is the only printing.
 // If it's not etched, append "_f", unless foil is the only printing.
 // Leave uuids unchanged, if there is a single printing of any kind.
@@ -384,7 +398,6 @@ func adjustTokens(sets map[string]*Set) {
 }
 
 func (ap AllPrintings) Load() cardBackend {
-	uuids := map[string]CardObject{}
 	cardInfo := map[string]cardinfo{}
 	scryfall := map[string]string{}
 	tcgplayer := map[string]string{}
@@ -648,9 +661,6 @@ func (ap AllPrintings) Load() cardBackend {
 			// Save the original uuid
 			card.Identifiers["mtgjsonId"] = card.UUID
 
-			// Store the card in the UUID map and generate variants as needed
-			generateCardUUIDs(card, uuids, set.Name)
-
 			// Add to the ever growing list of promo types
 			for _, promoType := range card.PromoTypes {
 				if !slices.Contains(promoTypes, promoType) {
@@ -720,25 +730,26 @@ func (ap AllPrintings) Load() cardBackend {
 				product.Identifiers = map[string]string{}
 			}
 			product.Identifiers["mtgjsonId"] = product.UUID
-
-			generateSealedUUIDs(product, uuids, set.Name)
 		}
 	}
 
-	duplicate(ap.Data, cardInfo, uuids, "Legends Italian", "LEG", "ITA", "1995-09-01")
-	duplicate(ap.Data, cardInfo, uuids, "The Dark Italian", "DRK", "ITA", "1995-08-01")
-	duplicate(ap.Data, cardInfo, uuids, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
+	duplicate(ap.Data, cardInfo, "Legends Italian", "LEG", "ITA", "1995-09-01")
+	duplicate(ap.Data, cardInfo, "The Dark Italian", "DRK", "ITA", "1995-08-01")
+	duplicate(ap.Data, cardInfo, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
 	allSets = append(allSets, "LEGITA", "DRKITA", "4EDALT")
 
-	sldDupes := duplicateCards(ap.Data, uuids, "SLD", "JPN", sldJPNLangDupes)
+	sldDupes := duplicateCards(ap.Data, "SLD", "JPN", sldJPNLangDupes)
 	ap.Data["SLD"].Cards = append(ap.Data["SLD"].Cards, sldDupes...)
 
-	purlDupes := duplicateCards(ap.Data, uuids, "PURL", "JPN", []string{"1"})
+	purlDupes := duplicateCards(ap.Data, "PURL", "JPN", []string{"1"})
 	ap.Data["PURL"].Cards = append(ap.Data["PURL"].Cards, purlDupes...)
 
 	for setCode := range foilDupes {
-		spinoffFoils(ap.Data, uuids, setCode)
+		spinoffFoils(ap.Data, setCode)
 	}
+
+	// Generate the unique identifiers for singles and products
+	uuids := generateUUIDsMap(ap.Data)
 
 	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}
@@ -873,8 +884,6 @@ func (ap AllPrintings) Load() cardBackend {
 	sort.Strings(sealed)
 	sort.Strings(fullSealed)
 	sort.Strings(lowerSealed)
-
-	fillinSealedContents(ap.Data, uuids)
 
 	var backend cardBackend
 
@@ -1057,7 +1066,7 @@ var langs = map[string]string{
 }
 
 // Duplicate an entire set of cards, using a custom code and a different language
-func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[string]CardObject, name, code, tag, date string) {
+func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, name, code, tag, date string) {
 	// Copy base set information
 	dup := *sets[code]
 
@@ -1117,7 +1126,7 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 	sets[dup.Code] = &dup
 
 	// Duplicate cards
-	dup.Cards = duplicateCards(sets, uuids, code, tag, numbers)
+	dup.Cards = duplicateCards(sets, code, tag, numbers)
 
 	// Remove store references to avoid duplicates
 	for i := range dup.Cards {
@@ -1134,7 +1143,7 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 }
 
 // Duplicate certain cards within the same set according to the language tag
-func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag string, numbers []string) []Card {
+func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []Card {
 	var duplicates []Card
 
 	for i := range sets[code].Cards {
@@ -1154,10 +1163,8 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 
 		// Set a new code and edition name if we're duplicating a whole set
 		_, found := sets[code+tag]
-		edition := sets[code].Name
 		if found {
 			dupeCard.SetCode = code + tag
-			edition = sets[dupeCard.SetCode].Name
 		}
 
 		// Update images
@@ -1176,30 +1183,13 @@ func duplicateCards(sets map[string]*Set, uuids map[string]CardObject, code, tag
 		}
 
 		duplicates = append(duplicates, dupeCard)
-
-		// Add the new uuid to the UUID map
-		for _, suffixTag := range []string{suffixEtched, suffixFoil, ""} {
-			uuid := mainUUID + suffixTag
-			co, found := uuids[uuid]
-			if !found {
-				continue
-			}
-
-			dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag) + suffixTag
-			uuids[dupeCard.UUID] = CardObject{
-				Card:    dupeCard,
-				Edition: edition,
-				Etched:  co.Etched,
-				Foil:    co.Foil,
-			}
-		}
 	}
 
 	return duplicates
 }
 
 // Duplicate certain cards by creating foil versions of them
-func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string) {
+func spinoffFoils(sets map[string]*Set, code string) {
 	var newCardsArray []Card
 
 	var dupes = foilDupes[code]
@@ -1223,29 +1213,20 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 			continue
 		}
 
-		// Retrieve the main card object
-		co, found := uuids[dupeCard.UUID]
-		if !found {
-			continue
-		}
-
 		// Change properties
 		dupeCard.Finishes = []string{"nonfoil"}
 		dupeCard.Variations = []string{ogUUID + suffixFoil}
 
 		// Propagate changes across the board
-		co.Card = dupeCard
-		uuids[dupeCard.UUID] = co
 		newCardsArray = append(newCardsArray, dupeCard)
 
 		// Move to the foil version
-		co, found = uuids[dupeCard.UUID+suffixFoil]
-		if !found {
-			continue
-		}
 
 		// Change properties
 		dupeCard.UUID += suffixFoil
+		dupeCard.Number += SuffixSpecial
+		dupeCard.Finishes = []string{"foil"}
+		dupeCard.Variations = []string{ogUUID}
 
 		// Clone the map and replace it, overriding the id
 		newIdentifiers := map[string]string{}
@@ -1264,19 +1245,9 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 			dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		}
 
-		dupeCard.Number += SuffixSpecial
-		dupeCard.Finishes = []string{"foil"}
-		dupeCard.Variations = []string{ogUUID}
+		// The image map is fine as-is, since it's the same image
 
-		// Update images
-		dupeCard.Images = map[string]string{}
-		dupeCard.Images["full"] = generateImageURL(dupeCard, "normal")
-		dupeCard.Images["thumbnail"] = generateImageURL(dupeCard, "small")
-		dupeCard.Images["crop"] = generateImageURL(dupeCard, "art_crop")
-
-		// Update or create the new card object, add the new card to the list
-		co.Card = dupeCard
-		uuids[dupeCard.UUID] = co
+		// Add the new card to the list
 		newCardsArray = append(newCardsArray, dupeCard)
 	}
 
