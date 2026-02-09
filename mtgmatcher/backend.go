@@ -155,7 +155,7 @@ func skipSet(set *Set) bool {
 	return false
 }
 
-func generateUUIDsMap(sets map[string]*Set) map[string]CardObject {
+func generateUUIDsMap(sets map[string]*Set) (map[string]CardObject, []string, []string) {
 	uuids := map[string]CardObject{}
 	for _, set := range sets {
 		for _, card := range set.Cards {
@@ -166,7 +166,19 @@ func generateUUIDsMap(sets map[string]*Set) map[string]CardObject {
 		}
 	}
 	fillinSealedContents(sets, uuids)
-	return uuids
+
+	// Separate all the uuids generated
+	var allUUIDs []string
+	var allSealedUUIDs []string
+	for uuid, co := range uuids {
+		if co.Sealed {
+			allSealedUUIDs = append(allSealedUUIDs, uuid)
+			continue
+		}
+		allUUIDs = append(allUUIDs, uuid)
+	}
+
+	return uuids, allUUIDs, allSealedUUIDs
 }
 
 // Append "_f" and "_e" to uuids, unless etched is the only printing.
@@ -749,7 +761,7 @@ func (ap AllPrintings) Load() cardBackend {
 	}
 
 	// Generate the unique identifiers for singles and products
-	uuids := generateUUIDsMap(ap.Data)
+	uuids, allUUIDs, allSealedUUIDs := generateUUIDsMap(ap.Data)
 
 	// Remove promo tags that apply to a single finish only
 	filterInvalidPromoTypes(ap.Data, uuids)
@@ -829,17 +841,6 @@ func (ap AllPrintings) Load() cardBackend {
 				hashes[altNorm] = append(hashes[altNorm], hash)
 			}
 		}
-	}
-
-	// Finally save all the  uuids generated
-	var allUUIDs []string
-	var allSealedUUIDs []string
-	for uuid, co := range uuids {
-		if co.Sealed {
-			allSealedUUIDs = append(allSealedUUIDs, uuid)
-			continue
-		}
-		allUUIDs = append(allUUIDs, uuid)
 	}
 
 	sort.Strings(promoTypes)
