@@ -17,7 +17,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	variant := ""
 
 	// Some, but not all, have a proper id we can reuse right away
-	id := mtgmatcher.Scryfall2UUID(bp.ScryfallId)
+	id := mtgmatcher.ExternalUUID(bp.ScryfallId)
 	if id != "" {
 		return &mtgmatcher.InputCard{
 			Id: id,

@@ -22,12 +22,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 	// Look up in one of the possible maps
 	co, found := backend.UUIDs[inputId]
 	if !found {
-		// Second chance, lookup by scryfall id
-		co, found = backend.UUIDs[backend.Scryfall[inputId]]
-		if !found {
-			// Last chance, lookup by tcg id
-			co, found = backend.UUIDs[backend.Tcgplayer[inputId]]
-		}
+		co, found = backend.UUIDs[backend.ExternalIdentifiers[inputId]]
 	}
 	if !found {
 		return "", ErrCardUnknownId

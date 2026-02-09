@@ -102,10 +102,8 @@ type cardBackend struct {
 	// Slice with every possible sealed uuid
 	AllSealedUUIDs []string
 
-	// Scryfall UUID to MTGJSON UUID
-	Scryfall map[string]string
-	// TCG player Product ID to MTGJSON UUID
-	Tcgplayer map[string]string
+	// Non-MTGBAN UUID to a card (or product) UUID
+	ExternalIdentifiers map[string]string
 
 	// A list of keywords mapped to the full Commander set name
 	CommanderKeywordMap map[string]string
@@ -411,8 +409,6 @@ func adjustTokens(sets map[string]*Set) {
 
 func (ap AllPrintings) Load() cardBackend {
 	cardInfo := map[string]cardinfo{}
-	scryfall := map[string]string{}
-	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
 	var allCardNames []string
@@ -663,12 +659,6 @@ func (ap AllPrintings) Load() cardBackend {
 				card.Rarity = "oversize"
 			}
 
-			// Initialize custom lookup tables
-			scryfallId, found := card.Identifiers["scryfallId"]
-			if found {
-				scryfall[scryfallId] = card.UUID
-			}
-
 			// Save the original uuid
 			card.Identifiers["mtgjsonId"] = card.UUID
 
@@ -763,13 +753,25 @@ func (ap AllPrintings) Load() cardBackend {
 	var names, fullNames, lowerNames []string
 	var sealed, fullSealed, lowerSealed []string
 	var promoTypes []string
+	externalIds := map[string]string{}
 	for uuid, card := range uuids {
-		// Load up the ids, both the ones in mtgjson and the ones loaded manually
-		for _, tag := range []string{"tcgplayerProductId", "tcgplayerEtchedProductId"} {
-			tcgplayerId, found := card.Identifiers[tag]
-			if found {
-				tcgplayer[tcgplayerId] = card.Identifiers["mtgjsonId"]
+		// Load up the any external id
+		for _, tag := range []string{
+			"mtgjsonId",
+			"scryfallId",
+			"tcgplayerProductId",
+			"tcgplayerEtchedProductId",
+		} {
+			id, found := card.Identifiers[tag]
+			if !found {
+				continue
 			}
+			// Skip if already loaded
+			_, found = externalIds[id]
+			if found {
+				continue
+			}
+			externalIds[id] = card.UUID
 		}
 
 		// Add to the ever growing list of promo types
@@ -872,8 +874,7 @@ func (ap AllPrintings) Load() cardBackend {
 	backend.CardInfo = cardInfo
 	backend.Tokens = tokens
 	backend.UUIDs = uuids
-	backend.Scryfall = scryfall
-	backend.Tcgplayer = tcgplayer
+	backend.ExternalIdentifiers = externalIds
 	backend.AlternateProps = alternates
 	backend.AlternateNames = altNames
 	backend.AllPromoTypes = promoTypes

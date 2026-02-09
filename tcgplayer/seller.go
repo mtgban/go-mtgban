@@ -132,7 +132,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 		}
 
 		tcgProductID := fmt.Sprint(int(result.ProductID))
-		uuid := mtgmatcher.Tcg2UUID(tcgProductID)
+		uuid := mtgmatcher.ExternalUUID(tcgProductID)
 		if uuid == "" {
 			continue
 		}

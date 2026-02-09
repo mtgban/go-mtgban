@@ -88,12 +88,8 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	return nil, ErrCardNotInEdition
 }
 
-func Scryfall2UUID(id string) string {
-	return backend.Scryfall[id]
-}
-
-func Tcg2UUID(id string) string {
-	return backend.Tcgplayer[id]
+func ExternalUUID(id string) string {
+	return backend.ExternalIdentifiers[id]
 }
 
 func AllPromoTypes() []string {
