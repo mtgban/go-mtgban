@@ -415,7 +415,6 @@ func (ap AllPrintings) Load() cardBackend {
 	tcgplayer := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
-	var promoTypes []string
 	var allCardNames []string
 	var tokens []string
 	var allSets []string
@@ -673,13 +672,6 @@ func (ap AllPrintings) Load() cardBackend {
 			// Save the original uuid
 			card.Identifiers["mtgjsonId"] = card.UUID
 
-			// Add to the ever growing list of promo types
-			for _, promoType := range card.PromoTypes {
-				if !slices.Contains(promoTypes, promoType) {
-					promoTypes = append(promoTypes, promoType)
-				}
-			}
-
 			// Add possible rarities and colors
 			if !slices.Contains(rarities, card.Rarity) {
 				rarities = append(rarities, card.Rarity)
@@ -770,12 +762,20 @@ func (ap AllPrintings) Load() cardBackend {
 	hashes := map[string][]string{}
 	var names, fullNames, lowerNames []string
 	var sealed, fullSealed, lowerSealed []string
+	var promoTypes []string
 	for uuid, card := range uuids {
 		// Load up the ids, both the ones in mtgjson and the ones loaded manually
 		for _, tag := range []string{"tcgplayerProductId", "tcgplayerEtchedProductId"} {
 			tcgplayerId, found := card.Identifiers[tag]
 			if found {
 				tcgplayer[tcgplayerId] = card.Identifiers["mtgjsonId"]
+			}
+		}
+
+		// Add to the ever growing list of promo types
+		for _, promoType := range card.PromoTypes {
+			if !slices.Contains(promoTypes, promoType) {
+				promoTypes = append(promoTypes, promoType)
 			}
 		}
 
