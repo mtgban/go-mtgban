@@ -282,14 +282,18 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		return "", ErrUnsupported
 	}
 
-	logger.Println("Processing", inCard, entry.Printings)
+	printings, err := Printings4Card(inCard.Name)
+	if err != nil {
+		logger.Println("Printings error:", err)
+		return "", err
+	}
 
 	// If there are multiple printings of the card, filter out to the
 	// minimum common elements, using the rules defined.
 	// Given that many tokens are not supported, make sure to filter
 	// out unrelated editions.
-	printings := entry.Printings
-	if len(printings) > 1 || backend.CardInfo[Normalize(ogName)].Layout == "token" {
+	logger.Println("Processing", inCard, printings)
+	if len(printings) > 1 || strings.HasSuffix(ogName, "Token") {
 		printings = filterPrintings(inCard, printings)
 		logger.Println("Filtered printings:", printings)
 
