@@ -176,6 +176,10 @@ func generateUUIDsMap(sets map[string]*Set) (map[string]CardObject, []string, []
 		allUUIDs = append(allUUIDs, uuid)
 	}
 
+	// Keep slices sorted for more reproducible results
+	sort.Strings(allUUIDs)
+	sort.Strings(allSealedUUIDs)
+
 	return uuids, allUUIDs, allSealedUUIDs
 }
 
@@ -754,7 +758,9 @@ func (ap AllPrintings) Load() cardBackend {
 	var sealed, fullSealed, lowerSealed []string
 	var promoTypes []string
 	externalIds := map[string]string{}
-	for uuid, card := range uuids {
+	for _, uuid := range append(allUUIDs, allSealedUUIDs...) {
+		card := uuids[uuid]
+
 		// Load up the any external id
 		for _, tag := range []string{
 			"mtgjsonId",
