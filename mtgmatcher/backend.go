@@ -751,6 +751,9 @@ func (ap AllPrintings) Load() cardBackend {
 	// Generate the unique identifiers for singles and products
 	uuids := generateUUIDsMap(ap.Data)
 
+	// Remove promo tags that apply to a single finish only
+	filterInvalidPromoTypes(ap.Data, uuids)
+
 	// Add all names and associated uuids to the global names and hashes arrays
 	hashes := map[string][]string{}
 	var names, fullNames, lowerNames []string
@@ -837,42 +840,6 @@ func (ap AllPrintings) Load() cardBackend {
 			continue
 		}
 		allUUIDs = append(allUUIDs, uuid)
-	}
-
-	// Remove promo tags that apply to a single finish only
-	for uuid, card := range uuids {
-		if !card.Foil && !card.Etched && !card.Sealed {
-			for _, promoType := range []string{
-				PromoTypeDoubleExposure,
-				PromoTypeGalaxyFoil,
-				PromoTypeSilverFoil,
-				PromoTypeRainbowFoil,
-				PromoTypeRippleFoil,
-				PromoTypeSurgeFoil,
-			} {
-				if card.HasPromoType(promoType) {
-					// Filter
-					var filtered []string
-					for _, pt := range card.PromoTypes {
-						if pt != promoType {
-							filtered = append(filtered, pt)
-						}
-					}
-
-					// Update UUID map
-					card.PromoTypes = filtered
-					uuids[uuid] = card
-
-					// Also update data in the original slice
-					for i, c := range ap.Data[card.SetCode].Cards {
-						if c.UUID != uuid {
-							continue
-						}
-						ap.Data[card.SetCode].Cards[i].PromoTypes = filtered
-					}
-				}
-			}
-		}
 	}
 
 	sort.Strings(promoTypes)
@@ -998,6 +965,44 @@ func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 		}
 
 		uuids[uuid].SourceProducts["sealed"] = res
+	}
+}
+
+// Remove promo tags that apply to a single finish only
+func filterInvalidPromoTypes(sets map[string]*Set, uuids map[string]CardObject) {
+	for uuid, card := range uuids {
+		if !card.Foil && !card.Etched && !card.Sealed {
+			for _, promoType := range []string{
+				PromoTypeDoubleExposure,
+				PromoTypeGalaxyFoil,
+				PromoTypeSilverFoil,
+				PromoTypeRainbowFoil,
+				PromoTypeRippleFoil,
+				PromoTypeSurgeFoil,
+			} {
+				if card.HasPromoType(promoType) {
+					// Filter
+					var filtered []string
+					for _, pt := range card.PromoTypes {
+						if pt != promoType {
+							filtered = append(filtered, pt)
+						}
+					}
+
+					// Update UUID map
+					card.PromoTypes = filtered
+					uuids[uuid] = card
+
+					// Also update data in the original slice
+					for i, c := range sets[card.SetCode].Cards {
+						if c.UUID != uuid {
+							continue
+						}
+						sets[card.SetCode].Cards[i].PromoTypes = filtered
+					}
+				}
+			}
+		}
 	}
 }
 
