@@ -94,9 +94,6 @@ type cardBackend struct {
 	// Neither key nor values are normalized
 	AlternateProps map[string]alternateProps
 
-	// Slice with every uniquely normalized alternative name
-	AlternateNames []string
-
 	// Slice with every possible non-sealed uuid
 	AllUUIDs []string
 	// Slice with every possible sealed uuid
@@ -810,6 +807,15 @@ func (ap AllPrintings) Load() cardBackend {
 			if card.PrintedName != "" && !slices.Contains(namesToAdd, card.PrintedName+" // "+card.PrintedName) {
 				namesToAdd = append(namesToAdd, card.PrintedName+" // "+card.PrintedName)
 			}
+		} else {
+			for _, name := range []string{
+				card.FaceName, card.FlavorName, card.FaceFlavorName, card.PrintedName, card.FacePrintedName,
+			} {
+				if name == "" {
+					continue
+				}
+				namesToAdd = append(namesToAdd, name)
+			}
 		}
 
 		for _, nameToAdd := range namesToAdd {
@@ -826,42 +832,10 @@ func (ap AllPrintings) Load() cardBackend {
 					lowerNames = append(lowerNames, strings.ToLower(nameToAdd))
 				}
 			}
+			if slices.Contains(hashes[norm], uuid) {
+				continue
+			}
 			hashes[norm] = append(hashes[norm], uuid)
-		}
-	}
-	// Add all alternative names too
-	var altNames []string
-	for altName, altProps := range alternates {
-		altNorm := Normalize(altName)
-		_, found := hashes[altNorm]
-		if !found {
-			altNames = append(altNames, altNorm)
-			fullNames = append(fullNames, altName)
-			lowerNames = append(lowerNames, strings.ToLower(altName))
-		}
-		if altProps.IsFlavor {
-			// Retrieve all the uuids with a FlavorName attached
-			allAltUUIDs := hashes[Normalize(altProps.OriginalName)]
-			for _, uuid := range allAltUUIDs {
-				for _, name := range []string{
-					uuids[uuid].FlavorName, uuids[uuid].PrintedName, uuids[uuid].FacePrintedName,
-				} {
-					if name == "" || slices.Contains(hashes[altNorm], uuid) {
-						continue
-					}
-					if Normalize(name) == altNorm || Normalize(strings.Split(name, " // ")[0]) == altNorm {
-						hashes[altNorm] = append(hashes[altNorm], uuid)
-					}
-				}
-			}
-		} else {
-			// Copy the original uuids, avoiding duplicates for the cards already added
-			for _, hash := range hashes[Normalize(altProps.OriginalName)] {
-				if slices.Contains(hashes[altNorm], hash) {
-					continue
-				}
-				hashes[altNorm] = append(hashes[altNorm], hash)
-			}
 		}
 	}
 
@@ -896,7 +870,6 @@ func (ap AllPrintings) Load() cardBackend {
 	backend.UUIDs = uuids
 	backend.ExternalIdentifiers = externalIds
 	backend.AlternateProps = alternates
-	backend.AlternateNames = altNames
 	backend.AllPromoTypes = promoTypes
 
 	backend.CommanderKeywordMap = commanderKeywordMap

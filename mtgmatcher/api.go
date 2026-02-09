@@ -156,19 +156,11 @@ func SearchHasPrefix(name string) ([]string, error) {
 	if name == "" {
 		return backend.AllUUIDs, nil
 	}
-	results, err := searchFunc(name, backend.AllNames, strings.HasPrefix)
-	if err != nil {
-		return searchFunc(name, backend.AlternateNames, strings.HasPrefix)
-	}
-	return results, nil
+	return searchFunc(name, backend.AllNames, strings.HasPrefix)
 }
 
 func SearchContains(name string) ([]string, error) {
-	results, err := searchFunc(name, backend.AllNames, strings.Contains)
-	if err != nil {
-		return searchFunc(name, backend.AlternateNames, strings.Contains)
-	}
-	return results, nil
+	return searchFunc(name, backend.AllNames, strings.Contains)
 }
 
 func SearchRegexp(name string) ([]string, error) {
