@@ -207,9 +207,13 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		return "", ErrUnsupported
 	}
 
-	// Pre-adjust special cards with duplicated names
-	if slices.Contains(duplicatedCardNames, inCard.Name) && (inCard.isMysteryList() || strings.Contains(inCard.Edition, "Playtest")) {
-		inCard.Name += " Playtest"
+	// Prefilter
+	switch inCard.Name {
+	case "Red Herring",
+		"Pick Your Poison":
+		if inCard.isMysteryList() || inCard.Contains("Playtest") {
+			inCard.Name += " Playtest"
+		}
 	}
 
 	// Get the card basic info to retrieve the Printings array
@@ -245,9 +249,6 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		// If renamed, reload metadata in case of duplicate names
 		switch {
 		case inCard.Name == "Unquenchable Fury Token" || inCard.Name == "Shapeshifter Token":
-			fallthrough
-		case strings.Contains(inCard.Name, "Playtest") &&
-			slices.Contains(duplicatedCardNames, strings.Replace(inCard.Name, " Playtest", "", 1)):
 			entry = backend.CardInfo[Normalize(inCard.Name)]
 			inCard.Name = entry.Name
 			logger.Printf("Clashing name adjusted to '%s'", inCard.Name)
@@ -1093,11 +1094,6 @@ func adjustEdition(inCard *InputCard) {
 	case inCard.isRelease() && len(MatchInSet(inCard.Name, "PBBD")) == 1:
 		edition = backend.Sets["PBBD"].Name
 		variation = "Prerelease"
-
-	// Adjust the name of clashing cards
-	case slices.Contains(duplicatedCardNames, inCard.Name) &&
-		(inCard.isMysteryList() || strings.Contains(edition, "Playtest")):
-		inCard.Name += " Playtest"
 
 	// Single card mismatches
 	default:

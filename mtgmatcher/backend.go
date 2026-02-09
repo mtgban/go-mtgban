@@ -552,6 +552,14 @@ func (ap AllPrintings) Load() cardBackend {
 				if num >= 24 && num <= 30 {
 					card.PromoTypes = append(card.PromoTypes, "wizardsplaynetwork")
 				}
+
+			case "CMB1", "CMB2":
+				// Rename cards that have names clashing with real cards
+				switch card.Name {
+				case "Pick Your Poison",
+					"Red Herring":
+					card.Name += " Playtest"
+				}
 			}
 
 			// Make sure this property is correctly initialized
@@ -641,11 +649,6 @@ func (ap AllPrintings) Load() cardBackend {
 			// are still using the official Scryfall name (without the extra Token)
 			if card.Layout == "token" {
 				name += " Token"
-			}
-
-			// Deduplicate clashing names
-			if slices.Contains(duplicatedCardNames, name) && strings.Contains(set.Name, "Playtest") {
-				name += " Playtest"
 			}
 
 			norm := Normalize(name)

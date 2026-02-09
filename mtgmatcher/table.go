@@ -176,16 +176,6 @@ var missingPALPtags = map[string]string{
 	"15": "Indonesia",
 }
 
-// List of playtest or unknown cards which have a similar name to actual cards
-// in various editions. We change their name appending "Playtest" to treat them
-// differently and tell them apart their main counterpart
-var duplicatedCardNames = []string{
-	"Pick Your Poison",
-	"Red Herring",
-	"______",
-	"Fast", "Furious", "Fast // Furious",
-}
-
 // List of numbers in SLD that need to be decoupled
 var sldJPNLangDupes = []string{
 	// Special Guests Yoji Shinkawa
