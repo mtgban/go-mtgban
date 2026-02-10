@@ -70,6 +70,8 @@ func fixupSetCode(setCode string) string {
 			setCode = "PUMA"
 		case "MH12", "MH13":
 			setCode = "H1R"
+		case "MH22", "MH23":
+			setCode = "MH2"
 		default:
 			setCode = setCode[:len(setCode)-1]
 		}
@@ -245,7 +247,7 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 	edition := hit.SetName
 	language := hit.Language
 	foil := hit.FinishPricingTypeID == 2
-	cn := hit.CollectorNumber
+	cn := strings.TrimLeft(hit.CollectorNumber, "0")
 
 	// Processing variant first because it gets added on later
 	variant := card.Subtitle
@@ -409,6 +411,10 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 		"Promo: Planeswalker Stamped":
 		if cardName == "Mirror Room" {
 			variant = strings.Replace(variant, "Fractured Room", "", 1)
+		}
+	case "Modern Horizons 2":
+		if len(mtgmatcher.MatchWithNumber(cardName, "H2R", cn)) == 1 {
+			edition = "H2R"
 		}
 	}
 
