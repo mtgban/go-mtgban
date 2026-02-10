@@ -20,8 +20,9 @@ const (
 
 	scgSettingsURL = "https://sellyourcards.starcitygames.com/api/settings"
 
-	maxResultsPerPage   = 300
-	buylistRequestLimit = 200
+	maxResultsPerPage = 300
+	// Anything above this limit will be ignored and capped at 50
+	buylistRequestLimit = 50
 
 	GameMagic         = 1
 	GameFleshAndBlood = 2
