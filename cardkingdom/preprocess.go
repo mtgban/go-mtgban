@@ -95,6 +95,30 @@ var skuFixupTable = map[string]string{
 	"FPPSPM-0005":  "PW25-12",
 	"PPSPM-0003B":  "PW25-13",
 	"FPPSPM-0003B": "PW25-13",
+
+	// Some Avatar Eternal cards got merged in foil/nonfoil,
+	// but they actually have different numbers
+	"TLE-0210": "TLE-265",
+	"TLE-0211": "TLE-266",
+	"TLE-0212": "TLE-267",
+	"TLE-0214": "TLE-268",
+	"TLE-0215": "TLE-269",
+	"TLE-0217": "TLE-270",
+	"TLE-0218": "TLE-273",
+	"TLE-0219": "TLE-274",
+	"TLE-0220": "TLE-275",
+	"TLE-0221": "TLE-276",
+	"TLE-0234": "TLE-277",
+	"TLE-0235": "TLE-278",
+	"TLE-0236": "TLE-279",
+	"TLE-0238": "TLE-280",
+	"TLE-0239": "TLE-281",
+	"TLE-0240": "TLE-282",
+	"TLE-0241": "TLE-283",
+	"TLE-0244": "TLE-285",
+	"TLE-0245": "TLE-286",
+	"TLE-0246": "TLE-287",
+	"TLE-0247": "TLE-288",
 }
 
 // List of tags that need to be preserved in one way or another
@@ -217,6 +241,13 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		}
 	case "Ultimate Box Topper":
 		edition = "PUMA"
+	case "Avatar: The Last Airbender Eternal-Legal":
+		// Look up the sku again, and restore the original one if foil
+		_, found := skuFixupTable[strings.TrimPrefix(card.Sku, "F")]
+		if found && isFoil {
+			fields = strings.Split(card.Sku, "-")
+			variation = strings.TrimLeft(fields[1], "0")
+		}
 	}
 
 	// Preserve any remaining tag
