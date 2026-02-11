@@ -431,7 +431,7 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 
 			theCard, err = preprocess(hit)
 			if err != nil {
-				break
+				continue
 			}
 
 			cardId, err = mtgmatcher.Match(theCard)
@@ -441,7 +441,7 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 			cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.FinishPricingTypeID == 2)
 		}
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			break
+			continue
 		} else if err != nil {
 			scg.printf("%v for %+v", err, theCard)
 			scg.printf("%+v", hit)
@@ -455,7 +455,7 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 					scg.printf("%s", co)
 				}
 			}
-			break
+			continue
 		}
 
 		for _, variant := range hit.Variants {
