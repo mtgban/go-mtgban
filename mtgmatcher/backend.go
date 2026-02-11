@@ -18,9 +18,8 @@ type DataStore interface {
 }
 
 type cardinfo struct {
-	Name      string
-	Printings []string
-	Layout    string
+	Name   string
+	Layout string
 }
 
 // CardObject is an extension of Card, containing fields that cannot
@@ -663,9 +662,8 @@ func (ap AllPrintings) Load() cardBackend {
 			_, found := cardInfo[norm]
 			if !found {
 				cardInfo[norm] = cardinfo{
-					Name:      card.Name,
-					Printings: card.Printings,
-					Layout:    card.Layout,
+					Name:   card.Name,
+					Layout: card.Layout,
 				}
 			}
 
@@ -742,9 +740,9 @@ func (ap AllPrintings) Load() cardBackend {
 		}
 	}
 
-	duplicate(ap.Data, cardInfo, "Legends Italian", "LEG", "ITA", "1995-09-01")
-	duplicate(ap.Data, cardInfo, "The Dark Italian", "DRK", "ITA", "1995-08-01")
-	duplicate(ap.Data, cardInfo, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
+	duplicate(ap.Data, "Legends Italian", "LEG", "ITA", "1995-09-01")
+	duplicate(ap.Data, "The Dark Italian", "DRK", "ITA", "1995-08-01")
+	duplicate(ap.Data, "Alternate Fourth Edition", "4ED", "ALT", "1995-04-01")
 	allSets = append(allSets, "LEGITA", "DRKITA", "4EDALT")
 
 	sldDupes := duplicateCards(ap.Data, "SLD", "JPN", sldJPNLangDupes)
@@ -1066,7 +1064,7 @@ var langs = map[string]string{
 }
 
 // Duplicate an entire set of cards, using a custom code and a different language
-func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, name, code, tag, date string) {
+func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	// Copy base set information
 	dup := *sets[code]
 
@@ -1079,7 +1077,7 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, name, code, t
 	// Target slice for later use
 	var numbers []string
 
-	// Rework printings information and update cardInfo
+	// Rework printings information
 	for i := range sets[code].Cards {
 		// Skip misprints from main sets
 		if strings.HasSuffix(sets[code].Cards[i].Number, SuffixVariant) {
@@ -1113,11 +1111,6 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, name, code, t
 				}
 			}
 		}
-
-		// Update printings for the CardInfo map
-		ci := cardInfo[Normalize(sets[code].Cards[i].Name)]
-		ci.Printings = printings
-		cardInfo[Normalize(sets[code].Cards[i].Name)] = ci
 
 		numbers = append(numbers, sets[code].Cards[i].Number)
 	}
