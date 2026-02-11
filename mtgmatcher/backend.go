@@ -57,7 +57,8 @@ type cardBackend struct {
 	Sets map[string]*Set
 
 	// Map of normalized name : canonical name
-	CardInfo map[string]string
+	// This is slightly different for tokens, as they are tagged as such
+	CanonicalNames map[string]string
 
 	// Map of uuid : CardObject
 	UUIDs map[string]CardObject
@@ -402,7 +403,7 @@ func adjustTokens(sets map[string]*Set) {
 }
 
 func (ap AllPrintings) Load() cardBackend {
-	cardInfo := map[string]string{}
+	canonicalNames := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
 	var allCardNames []string
@@ -642,22 +643,6 @@ func (ap AllPrintings) Load() cardBackend {
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
 
-			// Quick dictionary of valid card names and their printings
-			name := card.Name
-
-			// Due to several cards having the same name of a token we hardcode
-			// this value to tell them apart in the future -- checks and names
-			// are still using the official Scryfall name (without the extra Token)
-			if card.Layout == "token" && !strings.Contains(name, "Token") {
-				name += " Token"
-			}
-
-			norm := Normalize(name)
-			_, found := cardInfo[norm]
-			if !found {
-				cardInfo[norm] = card.Name
-			}
-
 			// Custom properties for tokens
 			if card.IsOversized {
 				card.Rarity = "oversize"
@@ -826,6 +811,16 @@ func (ap AllPrintings) Load() cardBackend {
 			}
 			hashes[norm] = append(hashes[norm], uuid)
 		}
+
+		// Due to several cards having the same name of a token we hardcode
+		// this value to tell them apart in the future -- checks and names
+		// are still using the official Scryfall name (without the extra Token)
+		norm := Normalize(card.Name)
+		if card.Layout == "token" && !strings.Contains(card.Name, "Token") {
+			norm += "token"
+		}
+
+		canonicalNames[norm] = card.Name
 	}
 
 	sort.Strings(promoTypes)
@@ -854,7 +849,7 @@ func (ap AllPrintings) Load() cardBackend {
 	backend.AllLowerSealed = lowerSealed
 
 	backend.Sets = ap.Data
-	backend.CardInfo = cardInfo
+	backend.CanonicalNames = canonicalNames
 	backend.Tokens = tokens
 	backend.UUIDs = uuids
 	backend.ExternalIdentifiers = externalIds

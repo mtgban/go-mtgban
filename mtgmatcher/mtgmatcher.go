@@ -229,7 +229,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Get the card basic info to retrieve the Printings array
-	canonicalName, found := backend.CardInfo[Normalize(inCard.Name)]
+	canonicalName, found := backend.CanonicalNames[Normalize(inCard.Name)]
 	if !found {
 		ogName := inCard.Name
 		// Fixup up the name and try again
@@ -239,7 +239,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		}
 
-		canonicalName, found = backend.CardInfo[Normalize(inCard.Name)]
+		canonicalName, found = backend.CanonicalNames[Normalize(inCard.Name)]
 		if !found {
 			// Return a safe error if it's a token
 			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
@@ -557,7 +557,7 @@ func adjustName(inCard *InputCard) {
 	if strings.Contains(strings.ToLower(inCard.Name), "token") {
 		return
 	}
-	_, found := backend.CardInfo[Normalize(inCard.Name+" Token")]
+	_, found := backend.CanonicalNames[Normalize(inCard.Name+" Token")]
 	if found {
 		inCard.Name += " Token"
 		return
@@ -578,7 +578,7 @@ func adjustName(inCard *InputCard) {
 		}
 		// Check card exists before updating the name
 		tmpName := strings.Join(fields, " ")
-		_, found := backend.CardInfo[Normalize(tmpName)]
+		_, found := backend.CanonicalNames[Normalize(tmpName)]
 		if found {
 			inCard.Name = tmpName
 			inCard.addToVariant(num)

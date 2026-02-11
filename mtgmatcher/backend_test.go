@@ -23,9 +23,9 @@ func setupBenchmark() {
 		break
 	}
 
-	sliceOfObj := make([]string, 0, len(backend.CardInfo))
-	sliceOfStr := make([]string, 0, len(backend.CardInfo))
-	for normName, canonicalName := range backend.CardInfo {
+	sliceOfObj := make([]string, 0, len(backend.CanonicalNames))
+	sliceOfStr := make([]string, 0, len(backend.CanonicalNames))
+	for normName, canonicalName := range backend.CanonicalNames {
 		sliceOfObj = append(sliceOfObj, canonicalName)
 		sliceOfStr = append(sliceOfStr, normName)
 	}
@@ -65,7 +65,7 @@ func BenchmarkSearchWithUUIDs(b *testing.B) {
 
 func backendInfo(name string, doneWhenFound bool) (printings []string) {
 	name = Normalize(name)
-	for key := range backend.CardInfo {
+	for key := range backend.CanonicalNames {
 		if key == name {
 			printings, _ = Printings4Card(name)
 			if doneWhenFound {
