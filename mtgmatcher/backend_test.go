@@ -67,7 +67,7 @@ func backendInfo(name string, doneWhenFound bool) (printings []string) {
 	name = Normalize(name)
 	for key := range backend.CardInfo {
 		if key == name {
-			printings = backend.CardInfo[key].Printings
+			printings, _ = Printings4Card(name)
 			if doneWhenFound {
 				return
 			}
@@ -91,7 +91,7 @@ func backendSlice(name string, doneWhenFound bool) (printings []string) {
 	name = Normalize(name)
 	for i := range SliceOfObj {
 		if Normalize(SliceOfObj[i].Name) == name {
-			printings = SliceOfObj[i].Printings
+			printings, _ = Printings4Card(name)
 			if doneWhenFound {
 				return
 			}
@@ -115,7 +115,7 @@ func backendHybrid(name string, doneWhenFound bool) (printings []string) {
 	name = Normalize(name)
 	for i := range SliceOfStr {
 		if SliceOfStr[i] == name {
-			printings = backend.CardInfo[name].Printings
+			printings, _ = Printings4Card(name)
 			if doneWhenFound {
 				return
 			}
