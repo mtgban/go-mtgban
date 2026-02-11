@@ -722,9 +722,11 @@ func adjustName(inCard *InputCard) {
 			}
 		}
 	}
-	for cardName, props := range backend.CardInfo {
-		if props.Layout != "normal" && props.Layout != "token" && HasPrefix(cardName, inCard.Name) {
-			inCard.Name = props.Name
+	uuids, _ := SearchHasPrefix(inCard.Name)
+	for _, uuid := range uuids {
+		co, _ := GetUUID(uuid)
+		if co.Layout != "normal" && co.Layout != "token" {
+			inCard.Name = co.Name
 			return
 		}
 	}

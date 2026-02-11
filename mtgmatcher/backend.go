@@ -18,8 +18,7 @@ type DataStore interface {
 }
 
 type cardinfo struct {
-	Name   string
-	Layout string
+	Name string
 }
 
 // CardObject is an extension of Card, containing fields that cannot
@@ -662,8 +661,7 @@ func (ap AllPrintings) Load() cardBackend {
 			_, found := cardInfo[norm]
 			if !found {
 				cardInfo[norm] = cardinfo{
-					Name:   card.Name,
-					Layout: card.Layout,
+					Name: card.Name,
 				}
 			}
 

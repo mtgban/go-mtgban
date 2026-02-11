@@ -762,9 +762,9 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 
 		// Tokens need correct set names or special handling earlier
 		case (strings.HasSuffix(inCard.Name, "Token") &&
-			backend.CardInfo[Normalize(inCard.Name)].Layout == "token") ||
+			backend.UUIDs[backend.Hashes[Normalize(inCard.Name)][0]].Layout == "token") ||
 			(!strings.HasSuffix(inCard.Name, "Token") &&
-				backend.CardInfo[Normalize(inCard.Name+" Token")].Layout == "token"):
+				backend.UUIDs[backend.Hashes[Normalize(inCard.Name)][0]].Layout == "token"):
 			if !Equals(inCard.Edition, set.Name) {
 				continue
 			}
