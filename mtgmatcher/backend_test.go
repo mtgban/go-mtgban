@@ -9,7 +9,7 @@ import (
 var NameToBeFound string
 var ReturnWhenFound bool
 
-var SliceOfObj []cardinfo
+var SliceOfObj []string
 var SliceOfStr []string
 
 func setupBenchmark() {
@@ -23,14 +23,14 @@ func setupBenchmark() {
 		break
 	}
 
-	sliceOfObj := make([]cardinfo, 0, len(backend.CardInfo))
+	sliceOfObj := make([]string, 0, len(backend.CardInfo))
 	sliceOfStr := make([]string, 0, len(backend.CardInfo))
-	for _, card := range backend.CardInfo {
-		sliceOfObj = append(sliceOfObj, card)
-		sliceOfStr = append(sliceOfStr, Normalize(card.Name))
+	for normName, canonicalName := range backend.CardInfo {
+		sliceOfObj = append(sliceOfObj, canonicalName)
+		sliceOfStr = append(sliceOfStr, normName)
 	}
 	sort.Slice(sliceOfObj, func(i, j int) bool {
-		return sliceOfObj[i].Name > sliceOfObj[j].Name
+		return sliceOfObj[i] > sliceOfObj[j]
 	})
 	sort.Slice(sliceOfStr, func(i, j int) bool {
 		return sliceOfStr[i] > sliceOfStr[j]
@@ -90,7 +90,7 @@ func BenchmarkSearchWithInfo(b *testing.B) {
 func backendSlice(name string, doneWhenFound bool) (printings []string) {
 	name = Normalize(name)
 	for i := range SliceOfObj {
-		if Normalize(SliceOfObj[i].Name) == name {
+		if Normalize(SliceOfObj[i]) == name {
 			printings, _ = Printings4Card(name)
 			if doneWhenFound {
 				return

@@ -229,7 +229,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Get the card basic info to retrieve the Printings array
-	entry, found := backend.CardInfo[Normalize(inCard.Name)]
+	canonicalName, found := backend.CardInfo[Normalize(inCard.Name)]
 	if !found {
 		ogName := inCard.Name
 		// Fixup up the name and try again
@@ -239,7 +239,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		}
 
-		entry, found = backend.CardInfo[Normalize(inCard.Name)]
+		canonicalName, found = backend.CardInfo[Normalize(inCard.Name)]
 		if !found {
 			// Return a safe error if it's a token
 			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
@@ -251,7 +251,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 
 	// Restore the card to the canonical MTGJSON name
 	ogName = inCard.Name
-	inCard.Name = entry.Name
+	inCard.Name = canonicalName
 
 	// Fix up edition
 	ogEdition := inCard.Edition
@@ -693,11 +693,10 @@ func adjustName(inCard *InputCard) {
 			return
 		}
 
-		for cardName, props := range backend.CardInfo {
-			if HasPrefix(cardName, inCard.Name) {
-				inCard.Name = props.Name
-				return
-			}
+		uuids, err := SearchHasPrefix(inCard.Name)
+		if err == nil {
+			inCard.Name = backend.UUIDs[uuids[0]].Name
+			return
 		}
 	}
 

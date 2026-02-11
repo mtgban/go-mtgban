@@ -17,10 +17,6 @@ type DataStore interface {
 	Load() cardBackend
 }
 
-type cardinfo struct {
-	Name string
-}
-
 // CardObject is an extension of Card, containing fields that cannot
 // be easily represented in the original object.
 type CardObject struct {
@@ -60,9 +56,8 @@ type cardBackend struct {
 	// Map of set code : Set
 	Sets map[string]*Set
 
-	// Map of normalized name : cardinfo
-	// Only the main canonical name is stored here
-	CardInfo map[string]cardinfo
+	// Map of normalized name : canonical name
+	CardInfo map[string]string
 
 	// Map of uuid : CardObject
 	UUIDs map[string]CardObject
@@ -407,7 +402,7 @@ func adjustTokens(sets map[string]*Set) {
 }
 
 func (ap AllPrintings) Load() cardBackend {
-	cardInfo := map[string]cardinfo{}
+	cardInfo := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
 	var allCardNames []string
@@ -660,9 +655,7 @@ func (ap AllPrintings) Load() cardBackend {
 			norm := Normalize(name)
 			_, found := cardInfo[norm]
 			if !found {
-				cardInfo[norm] = cardinfo{
-					Name: card.Name,
-				}
+				cardInfo[norm] = card.Name
 			}
 
 			// Custom properties for tokens
