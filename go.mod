@@ -19,8 +19,6 @@ require (
 
 require (
 	github.com/RomainMichau/cloudscraper_go v0.4.2
-	github.com/alxjsn/kooky v0.2.1
-	github.com/browserutils/kooky v0.2.4
 	github.com/corpix/uarand v0.2.0
 	github.com/montanaflynn/stats v0.7.1
 	github.com/mroth/weightedrand/v2 v2.1.0
@@ -75,15 +73,12 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.36.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-sqlite/sqlite3 v0.0.0-20180313105335-53dd8e640ee7 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/gonuts/binary v0.2.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.9 // indirect
 	github.com/googleapis/gax-go/v2 v2.16.0 // indirect
@@ -92,7 +87,7 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/nlnwa/whatwg-url v0.6.2 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
-	github.com/refraction-networking/utls v1.8.0 // indirect
+	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/spiffe/go-spiffe/v2 v2.6.0 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
