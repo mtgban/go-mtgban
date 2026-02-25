@@ -2,6 +2,7 @@ package mtgmatcher
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -1284,10 +1285,22 @@ func LoadDatastore(reader io.Reader) error {
 
 	datastore, err := LoadAllPrintings(tee)
 	if err != nil {
-		datastore, err = LoadLorcana(&buf)
-		if err != nil {
+		// Do not fall back to Lorcana when the file is clearly AllPrintings but empty;
+		// otherwise we decode the same buffer as Lorcana and get "empty LorcanaJSON file",
+		// which masks the real error (e.g. empty or bad datastore in CI).
+		if errors.Is(err, ErrEmptyAllPrintings) {
 			return err
 		}
+		// Try Lorcana format (e.g. when file is actually Lorcana JSON).
+		var lorcanaErr error
+		datastore, lorcanaErr = LoadLorcana(&buf)
+		if lorcanaErr != nil {
+			// Log the original error so CI/debugging shows the real cause (e.g. AllPrintings decode failure).
+			log.Println("mtgmatcher/backend.go: LoadAllPrintings failed (Lorcana fallback also failed):", err)
+			// Return the original error so callers see the real cause.
+			return err
+		}
+		err = nil
 	}
 
 	backend = datastore.Load()

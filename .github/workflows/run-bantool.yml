@@ -53,6 +53,26 @@ jobs:
           key: ${{ inputs.datastore-cache-key }}
           fail-on-cache-miss: true
 
+      # Fail fast if AllPrintings datastore is empty or invalid (avoids masked "empty LorcanaJSON" error)
+      - name: Validate datastore (AllPrintings)
+        if: ${{ inputs.datastore-filepath != '' }}
+        run: |
+          FP="${{ inputs.datastore-filepath }}"
+          if [[ -f "$FP" ]]; then
+            if [[ "$FP" == *AllPrintings* ]]; then
+              COUNT=$(jq -r '.data | keys | length' "$FP" 2>/dev/null || echo "0")
+              if [[ "$COUNT" =~ ^[0-9]+$ ]] && [[ "$COUNT" -gt 0 ]]; then
+                echo "Datastore valid: $COUNT sets in $FP"
+              else
+                echo "::error::AllPrintings datastore has no sets (data empty or invalid JSON). File: $FP"
+                exit 1
+              fi
+            fi
+          else
+            echo "::error::Datastore file not found: $FP"
+            exit 1
+          fi
+
       - if: ${{ inputs.skus-cache-key }}
         name: Cache Skus
         uses: actions/cache/restore@v4

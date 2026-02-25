@@ -168,6 +168,10 @@ type AllPrintings struct {
 	} `json:"meta"`
 }
 
+// ErrEmptyAllPrintings is returned when the AllPrintings JSON has no set data.
+// Used by LoadDatastore to avoid masking this error with a Lorcana fallback.
+var ErrEmptyAllPrintings = errors.New("empty AllPrintings file")
+
 func LoadAllPrintings(r io.Reader) (DataStore, error) {
 	var payload AllPrintings
 	err := json.NewDecoder(r).Decode(&payload)
@@ -175,7 +179,7 @@ func LoadAllPrintings(r io.Reader) (DataStore, error) {
 		return nil, err
 	}
 	if len(payload.Data) == 0 {
-		return nil, errors.New("empty AllPrintings file")
+		return nil, ErrEmptyAllPrintings
 	}
 	return payload, nil
 }
