@@ -676,7 +676,7 @@ func (ap AllPrintings) Load() cardBackend {
 				UUID:        product.UUID,
 				Name:        product.Name,
 				SetCode:     code,
-				Identifiers: product.Identifiers,
+				Identifiers: IdentifiersMap(product.Identifiers),
 				Rarity:      "product",
 				Layout:      product.Category,
 				Side:        product.Subtype,
@@ -1121,7 +1121,7 @@ func duplicate(sets map[string]*Set, cardInfo map[string]cardinfo, uuids map[str
 			}
 			altIdentifiers[k] = v
 		}
-		dup.Cards[i].Identifiers = altIdentifiers
+		dup.Cards[i].Identifiers = IdentifiersMap(altIdentifiers)
 	}
 }
 
@@ -1245,7 +1245,7 @@ func spinoffFoils(sets map[string]*Set, uuids map[string]CardObject, code string
 			newIdentifiers[k] = v
 		}
 
-		dupeCard.Identifiers = newIdentifiers
+		dupeCard.Identifiers = IdentifiersMap(newIdentifiers)
 		dupeCard.Identifiers["tcgplayerProductId"] = tcgId
 		// Signal that the TCG SKUs from MTGJSON are not reliable
 		dupeCard.Identifiers["needsNewTCGSKUs"] = "true"

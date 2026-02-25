@@ -8,6 +8,28 @@ import (
 	"slices"
 )
 
+// IdentifiersMap decodes MTGJSON identifiers where some keys are strings and
+// others are objects (e.g. cardKingdomAlternativeFoilIds, tcgplayerAlternativeFoilIds in v5).
+// Object values are skipped so existing string lookups keep working.
+type IdentifiersMap map[string]string
+
+// UnmarshalJSON accepts both string and object values per key; only string values are stored.
+func (m *IdentifiersMap) UnmarshalJSON(data []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	out := make(map[string]string, len(raw))
+	for k, v := range raw {
+		if s, ok := v.(string); ok {
+			out[k] = s
+		}
+		// Skip object values (e.g. cardKingdomAlternativeFoilIds, tcgplayerAlternativeFoilIds)
+	}
+	*m = out
+	return nil
+}
+
 type Sheet struct {
 	AllowDuplicates bool           `json:"allowDuplicates"`
 	BalanceColors   bool           `json:"balanceColors"`
@@ -110,7 +132,7 @@ type Card struct {
 	FrameEffects        []string            `json:"frameEffects"`
 	FrameVersion        string              `json:"frameVersion"`
 	HasContentWarning   bool                `json:"hasContentWarning"`
-	Identifiers         map[string]string   `json:"identifiers"`
+	Identifiers         IdentifiersMap      `json:"identifiers"`
 	IsAlternative       bool                `json:"isAlternative"`
 	IsGameChanger       bool                `json:"isGameChanger"`
 	IsFullArt           bool                `json:"isFullArt"`
