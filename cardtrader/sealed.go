@@ -74,6 +74,8 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 			case mtgmatcher.Contains(product.Description, "ita"),
 				mtgmatcher.Contains(product.Description, "empty booster"),
 				mtgmatcher.Contains(product.Description, "empty box"),
+				mtgmatcher.Contains(product.Description, "opened"),
+				mtgmatcher.Contains(product.Description, "missing"),
 				mtgmatcher.Contains(product.Description, "deck box only"):
 				continue
 			}
