@@ -640,9 +640,6 @@ func (ap AllPrintings) Load() cardBackend {
 
 			card.Printings = printings
 
-			// Now assign the card to the list of cards to be saved
-			filteredCards = append(filteredCards, card)
-
 			// Custom properties for tokens
 			if card.IsOversized {
 				card.Rarity = "oversize"
@@ -650,6 +647,9 @@ func (ap AllPrintings) Load() cardBackend {
 
 			// Save the original uuid
 			card.Identifiers["mtgjsonId"] = card.UUID
+
+			// Now assign the card to the list of cards to be saved
+			filteredCards = append(filteredCards, card)
 
 			// Add possible rarities and colors
 			if !slices.Contains(rarities, card.Rarity) {
