@@ -349,55 +349,45 @@ func adjustTokens(sets map[string]*Set) {
 			continue
 		}
 
-		for _, cardSet := range [][]Card{set.Cards, set.Tokens} {
-			for i := range cardSet {
-				switch set.Code {
-				// Only keep dungeons, and fix their layout to make sure they are tokens
-				case "AFR":
-					if slices.Contains(cardSet[i].Types, "Dungeon") {
-						cardSet[i].Layout = "token"
-					}
-
-				// Override all cards to tokens so that duplicates get named differently
-				case "TFTH", "TBTH", "TDAG":
-					cardSet[i].Layout = "token"
+		for i := range set.Tokens {
+			switch set.Code {
+			// Only keep dungeons, and fix their layout to make sure they are tokens
+			case "AFR":
+				if slices.Contains(set.Tokens[i].Types, "Dungeon") {
+					set.Tokens[i].Layout = "token"
 				}
+			}
 
-				// Make sure any odd token type stays token
-				switch cardSet[i].Layout {
-				case "token", "double_faced_token", "emblem":
-					cardSet[i].Layout = "token"
-					cardSet[i].Rarity = "token"
-				}
+			// Make sure any odd token type stays token
+			switch set.Tokens[i].Layout {
+			case "token", "double_faced_token", "emblem":
+				set.Tokens[i].Layout = "token"
+				set.Tokens[i].Rarity = "token"
 			}
 		}
 	}
 
 	// Load up all the printings found among tokens
 	for _, set := range sets {
-		for _, cardSet := range [][]Card{set.Cards, set.Tokens} {
-			for i := range cardSet {
-				if cardSet[i].Layout != "token" {
-					continue
-				}
-				if slices.Contains(printings[cardSet[i].Name], set.Code) {
-					continue
-				}
-				printings[cardSet[i].Name] = append(printings[cardSet[i].Name], set.Code)
+		for i := range set.Tokens {
+			if set.Tokens[i].Layout != "token" {
+				continue
 			}
+			if slices.Contains(printings[set.Tokens[i].Name], set.Code) {
+				continue
+			}
+			printings[set.Tokens[i].Name] = append(printings[set.Tokens[i].Name], set.Code)
 		}
 	}
 
 	// Assign printings to tokens
 	// Sorting will happen later
 	for _, set := range sets {
-		for _, cardSet := range [][]Card{set.Cards, set.Tokens} {
-			for i := range cardSet {
-				if cardSet[i].Layout != "token" {
-					continue
-				}
-				cardSet[i].Printings = printings[cardSet[i].Name]
+		for i := range set.Tokens {
+			if set.Tokens[i].Layout != "token" {
+				continue
 			}
+			set.Tokens[i].Printings = printings[set.Tokens[i].Name]
 		}
 	}
 }
