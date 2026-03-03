@@ -651,6 +651,39 @@ func (ap AllPrintings) Load() cardBackend {
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
 
+			alternativeId, found := card.Identifiers["tcgplayerAlternativeFoilProductId"]
+			if found {
+				// Change properties of the current card
+				filteredCards[len(filteredCards)-1].Finishes = []string{"nonfoil"}
+				filteredCards[len(filteredCards)-1].Variations = []string{card.UUID + suffixFoil}
+
+				// Create new card
+				card.Variations = []string{card.UUID}
+				card.UUID += suffixFoil
+				card.Number += SuffixSpecial
+				card.Finishes = []string{"foil"}
+
+				// Clone the map and replace it, overriding the id
+				newIdentifiers := map[string]string{}
+				for k, v := range card.Identifiers {
+					newIdentifiers[k] = v
+				}
+
+				card.Identifiers = newIdentifiers
+				card.Identifiers["tcgplayerProductId"] = alternativeId
+				// Signal that the TCG SKUs from MTGJSON need to be refreshed
+				card.Identifiers["needsNewTCGSKUs"] = "true"
+
+				// In case we are duplicating a card that was *already* duplicated
+				_, found = card.Identifiers["originalScryfallNumber"]
+				if !found {
+					card.Identifiers["originalScryfallNumber"] = card.Number
+				}
+
+				// Append the new card
+				filteredCards = append(filteredCards, card)
+			}
+
 			// Add possible rarities and colors
 			if !slices.Contains(rarities, card.Rarity) {
 				rarities = append(rarities, card.Rarity)
@@ -726,10 +759,6 @@ func (ap AllPrintings) Load() cardBackend {
 
 	purlDupes := duplicateCards(ap.Data, "PURL", "JPN", []string{"1"})
 	ap.Data["PURL"].Cards = append(ap.Data["PURL"].Cards, purlDupes...)
-
-	for setCode := range foilDupes {
-		spinoffFoils(ap.Data, setCode)
-	}
 
 	// Generate the unique identifiers for singles and products
 	uuids, allUUIDs, allSealedUUIDs := generateUUIDsMap(ap.Data)
@@ -1165,72 +1194,6 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 	}
 
 	return duplicates
-}
-
-// Duplicate certain cards by creating foil versions of them
-func spinoffFoils(sets map[string]*Set, code string) {
-	var newCardsArray []Card
-
-	var dupes = foilDupes[code]
-
-	for i := range sets[code].Cards {
-		dupeCard := sets[code].Cards[i]
-		ogUUID := dupeCard.UUID
-
-		// Load the original number if available, or use the main one
-		ogNum, found := dupeCard.Identifiers["originalScryfallNumber"]
-		if !found {
-			ogNum = dupeCard.Number
-		}
-
-		// Load the new id
-		tcgId, found := dupes[ogNum]
-
-		// Skip unneeded (just preserve the card as-is)
-		if !found {
-			newCardsArray = append(newCardsArray, dupeCard)
-			continue
-		}
-
-		// Change properties
-		dupeCard.Finishes = []string{"nonfoil"}
-		dupeCard.Variations = []string{ogUUID + suffixFoil}
-
-		// Propagate changes across the board
-		newCardsArray = append(newCardsArray, dupeCard)
-
-		// Move to the foil version
-
-		// Change properties
-		dupeCard.UUID += suffixFoil
-		dupeCard.Number += SuffixSpecial
-		dupeCard.Finishes = []string{"foil"}
-		dupeCard.Variations = []string{ogUUID}
-
-		// Clone the map and replace it, overriding the id
-		newIdentifiers := map[string]string{}
-		for k, v := range dupeCard.Identifiers {
-			newIdentifiers[k] = v
-		}
-
-		dupeCard.Identifiers = newIdentifiers
-		dupeCard.Identifiers["tcgplayerProductId"] = tcgId
-		// Signal that the TCG SKUs from MTGJSON are not reliable
-		dupeCard.Identifiers["needsNewTCGSKUs"] = "true"
-
-		// In case we are duplicating a card that was *already* duplicated
-		_, found = dupeCard.Identifiers["originalScryfallNumber"]
-		if !found {
-			dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
-		}
-
-		// The image map is fine as-is, since it's the same image
-
-		// Add the new card to the list
-		newCardsArray = append(newCardsArray, dupeCard)
-	}
-
-	sets[code].Cards = newCardsArray
 }
 
 func SetGlobalDatastore(datastore cardBackend) {

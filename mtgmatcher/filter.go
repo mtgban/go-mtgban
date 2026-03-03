@@ -819,6 +819,13 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 					if overrides != nil {
 						possibleSuffixes = overrides
 					}
+				} else if card.Identifiers["tcgplayerAlternativeFoilProductId"] != "" {
+					// Special case when we deal with duplicated entries
+					if inCard.Foil || inCard.isFoil() {
+						possibleSuffixes = []string{SuffixSpecial}
+					} else {
+						possibleSuffixes = []string{""}
+					}
 				}
 
 				// Add any possible extra suffixes if we know what we're dealing with
