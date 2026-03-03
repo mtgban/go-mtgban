@@ -561,6 +561,10 @@ func (ap AllPrintings) Load() cardBackend {
 				case "Pick Your Poison",
 					"Red Herring":
 					card.Name += " Playtest"
+				// This could mess up Bind (INV)
+				case "Bind // Liberate":
+					card.Name = "Bind // Liberate Playtest"
+					card.FaceName = "Bind Playtest"
 				}
 			}
 

@@ -210,6 +210,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	// Prefilter
 	switch inCard.Name {
 	case "Red Herring",
+		"Bind // Liberate",
 		"Pick Your Poison":
 		if inCard.isMysteryList() || inCard.Contains("Playtest") {
 			inCard.Name += " Playtest"
