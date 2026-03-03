@@ -329,6 +329,12 @@ func generateImageURL(card Card, version string) string {
 	code = strings.TrimSuffix(code, "jpn")
 	code = strings.TrimSuffix(code, "alt")
 
+	// Override Token sets
+	tokenSetCode, found := card.Identifiers["tokenSetCode"]
+	if found {
+		code = tokenSetCode
+	}
+
 	// Pick the right language for duplicated cards
 	if strings.Contains(card.Number, "ita") || strings.Contains(card.Number, "jpn") {
 		number += "/" + LanguageTag2LanguageCode[card.Language]
@@ -363,6 +369,10 @@ func adjustTokens(sets map[string]*Set) {
 			case "token", "double_faced_token", "emblem":
 				set.Tokens[i].Layout = "token"
 				set.Tokens[i].Rarity = "token"
+
+				if set.TokenSetCode != "" {
+					set.Tokens[i].Identifiers["tokenSetCode"] = set.TokenSetCode
+				}
 			}
 		}
 	}
