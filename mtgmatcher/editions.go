@@ -53,6 +53,8 @@ var EditionTable = map[string]string{
 	"Avatar: The Last Airbender: Eternal-Legal":      "Avatar: The Last Airbender Eternal",
 	"Avatar: The Last Airbender Eternal Legal Cards": "Avatar: The Last Airbender Eternal",
 
+	"Teenage Mutant Ninja Turtles: Source Material Cards": "Teenage Mutant Ninja Turtles Source Material",
+
 	"Outlaws of Thunder Junction Breaking News":  "Breaking News",
 	"Outlaws of Thunder Junction The Big Score":  "The Big Score",
 	"Outlaws of Thunder Junction: Breaking News": "Breaking News",
