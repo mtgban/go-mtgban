@@ -272,7 +272,8 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 		e.ForEach(tableRowName, func(_ int, el *colly.HTMLElement) {
 			err := sz.processRow(mode, channel, el, edition)
 			if err != nil {
-				sz.printf("cannot process %s %s: %s", mode, edition, err.Error())
+				cardName := el.ChildText("td:nth-child(1)")
+				sz.printf("cannot process %s %s (%s): %s", mode, cardName, edition, err.Error())
 				sz.printf("-> %s", e.Request.URL)
 			}
 		})
