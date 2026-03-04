@@ -68,6 +68,10 @@ type LorcanaJSON struct {
 		MoveCost         int               `json:"moveCost,omitempty"`
 		NonPromoID       int               `json:"nonPromoId,omitempty"`
 		IsExternalReveal bool              `json:"isExternalReveal,omitempty"`
+
+		ExternalLinks struct {
+			TcgPlayerId int `json:"tcgPlayerId"`
+		} `json:"externalLinks"`
 	} `json:"cards"`
 }
 
@@ -88,6 +92,7 @@ func (lj LorcanaJSON) Load() cardBackend {
 
 	backend.UUIDs = map[string]CardObject{}
 	backend.Hashes = map[string][]string{}
+	backend.ExternalIdentifiers = map[string]string{}
 
 	// Load all sets first
 	backend.Sets = map[string]*Set{}
@@ -152,8 +157,14 @@ func (lj LorcanaJSON) Load() cardBackend {
 
 			Printings: []string{card.SetCode},
 			IsPromo:   card.NonPromoID != 0,
+
+			Identifiers: map[string]string{
+				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerId),
+			},
 		}
 		backend.Sets[card.SetCode].Cards = append(backend.Sets[card.SetCode].Cards, convertedCard)
+
+		backend.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
 
 		// Split cards per finish
 		for i, finish := range finishes {
