@@ -50,7 +50,10 @@ var EditionTable = map[string]string{
 	"Marvel Legends Foil":           "Marvel Legends Series Inserts",
 	"Marvel Universe Eternal-Legal": "Marvel Universe",
 
+	"Marvel's Spider-Man: Eternal-Legal": "Marvel's Spider-Man Eternal",
+
 	"Avatar: The Last Airbender: Eternal-Legal":      "Avatar: The Last Airbender Eternal",
+	"Avatar: The Last Airbender: Eternal Legal":      "Avatar: The Last Airbender Eternal",
 	"Avatar: The Last Airbender Eternal Legal Cards": "Avatar: The Last Airbender Eternal",
 
 	"Teenage Mutant Ninja Turtles: Source Material Cards": "Teenage Mutant Ninja Turtles Source Material",
