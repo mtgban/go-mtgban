@@ -241,3 +241,10 @@ func GetDirectQtysForProductId(ctx context.Context, productId int, onlyDirect bo
 
 	return result
 }
+
+func getDirectPrice(price float64) float64 {
+	if price == 0 {
+		return 0
+	}
+	return math.Max(price, minimumDirectPrice)
+}

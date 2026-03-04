@@ -134,7 +134,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 
 		// Sorted as in availableMarketNames
 		prices := []float64{
-			result.LowestListingPrice, result.DirectLowPrice,
+			result.LowestListingPrice, getDirectPrice(result.DirectLowPrice),
 		}
 		printing := "Normal"
 		if req.Printing == "FOIL" {

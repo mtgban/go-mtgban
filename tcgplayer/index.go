@@ -105,7 +105,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 
 		// These are sorted as in availableIndexNames
 		prices := []float64{
-			result.LowPrice, result.MarketPrice, result.MidPrice, result.DirectLowPrice,
+			result.LowPrice, result.MarketPrice, result.MidPrice, getDirectPrice(result.DirectLowPrice),
 		}
 
 		for i := range availableIndexNames {
