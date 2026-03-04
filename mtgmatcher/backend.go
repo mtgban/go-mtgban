@@ -566,6 +566,9 @@ func (ap AllPrintings) Load() cardBackend {
 					card.Name = "Bind // Liberate Playtest"
 					card.FaceName = "Bind Playtest"
 				}
+
+			case "TMC":
+				set.Name = "Teenage Mutant Ninja Turtles Commander"
 			}
 
 			// Make sure this property is correctly initialized
