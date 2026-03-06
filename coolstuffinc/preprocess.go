@@ -422,6 +422,8 @@ func card2promo(cardName, variant string) (string, string) {
 		return "PF25", "17"
 	case "Katara, the Fearless":
 		return "PURL", "2025-3"
+	case "Portable Hole":
+		return "AFR", "398"
 	}
 	return edition, variant
 }
