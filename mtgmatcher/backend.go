@@ -356,17 +356,11 @@ func adjustTokens(sets map[string]*Set) {
 		}
 
 		for i := range set.Tokens {
-			switch set.Code {
-			// Only keep dungeons, and fix their layout to make sure they are tokens
-			case "AFR":
-				if slices.Contains(set.Tokens[i].Types, "Dungeon") {
-					set.Tokens[i].Layout = "token"
-				}
-			}
-
-			// Make sure any odd token type stays token
-			switch set.Tokens[i].Layout {
-			case "token", "double_faced_token", "emblem":
+			// Reset various token types to correct properties
+			if slices.Contains(set.Tokens[i].Types, "Card") ||
+				slices.Contains(set.Tokens[i].Types, "Dungeon") ||
+				slices.Contains(set.Tokens[i].Types, "Emblem") ||
+				slices.Contains(set.Tokens[i].Types, "Token") {
 				set.Tokens[i].Layout = "token"
 				set.Tokens[i].Rarity = "token"
 
