@@ -12,6 +12,8 @@ import (
 
 var cardTable = map[string]string{
 	"Who / What / When / Where / Why": "Who // What // When // Where // Why",
+
+	"Doric, Nature's Warden // Doric, Owlbear Avenger": "Casal, Lurkwood Pathfinder // Casal, Pathbreaker Owlbear",
 }
 
 func languageTags(language, edition, variant, number string) (string, string, error) {
@@ -185,6 +187,11 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		case len(fields) > 2 && len(fields[1]) == 4 &&
 			(strings.HasPrefix(number, "FEST_") || strings.HasPrefix(number, "CF_")):
 			setCode = "PF" + fields[1][2:]
+
+			if cardName == "Counterspell" && setCode == "PF23" {
+				setCode = "PF24"
+			}
+
 			cards := mtgmatcher.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number
@@ -203,6 +210,9 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			}
 		case strings.HasPrefix(number, "LYLGS_"):
 			setCode = "PLG" + fields[1][2:]
+			if strings.HasPrefix(number, "LYLGS_2021b") {
+				setCode = "PLG21"
+			}
 			cards := mtgmatcher.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number
