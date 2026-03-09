@@ -92,6 +92,11 @@ var SKUTests = []SKUTest{
 		In:   "SGL-MTG-PRM-SECRET_SLD_019-ENF1",
 		Out:  "d25135dd-3a0b-5b7f-b23b-79b483324759",
 	},
+	{
+		Name: "Ephemerate",
+		In:   "SGL-MTG-PRM-SECRET_SLD_1990-ENF1",
+		Out:  "5c67ed18-02b5-597a-a78f-fe7cb154b819_f",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {

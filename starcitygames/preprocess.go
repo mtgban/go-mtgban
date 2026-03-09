@@ -251,7 +251,20 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		if len(card.Finishes) == 1 &&
 			(((card.HasFinish(mtgmatcher.FinishFoil) || card.HasFinish(mtgmatcher.FinishEtched)) && !foil) ||
 				(card.HasFinish(mtgmatcher.FinishNonfoil) && foil)) {
-			return &backup, errors.New("invalid number/foil combination")
+
+			// Let's check if there is a duplicated card somewhere, and repeat the check
+			out := mtgmatcher.MatchWithNumber(cardName, setCode, number+"★")
+			if len(out) == 1 {
+				card = out[0]
+
+				if len(card.Finishes) == 1 &&
+					(((card.HasFinish(mtgmatcher.FinishFoil) || card.HasFinish(mtgmatcher.FinishEtched)) && !foil) ||
+						(card.HasFinish(mtgmatcher.FinishNonfoil) && foil)) {
+					return &backup, errors.New("invalid number/foil combination")
+				}
+			} else {
+				return &backup, errors.New("invalid number/foil combination")
+			}
 		}
 		return &mtgmatcher.InputCard{
 			Id:       out[0].UUID,
