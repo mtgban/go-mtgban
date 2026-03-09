@@ -110,7 +110,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 		}
 
 		isFoil := req.Printing == "FOIL"
-		isEtched := req.Finish == "FOIL ETCHED"
+		isEtched := req.Finish == "ETCHED"
 		cardId, err := mtgmatcher.MatchId(req.UUID, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductId, req.UUID)
@@ -339,15 +339,15 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 					if !hasNonfoil && sku.Printing == "NON FOIL" {
 						continue
 					}
-					if !hasFoil && !hasEtched && (sku.Printing == "FOIL" || sku.Finish == "FOIL ETCHED") {
+					if !hasFoil && !hasEtched && (sku.Printing == "FOIL" || sku.Finish == "ETCHED") {
 						continue
 					}
-					if !hasEtched && sku.Finish == "FOIL ETCHED" {
+					if !hasEtched && sku.Finish == "ETCHED" {
 						continue
 					}
 					// Make sure the right id is parsed
 					// Check for tcgplayerProductId due to non-English cards from duplicated sets
-					if sku.Finish != "FOIL ETCHED" && card.Identifiers["tcgplayerProductId"] != "" && fmt.Sprint(sku.ProductId) != card.Identifiers["tcgplayerProductId"] {
+					if sku.Finish != "ETCHED" && card.Identifiers["tcgplayerProductId"] != "" && fmt.Sprint(sku.ProductId) != card.Identifiers["tcgplayerProductId"] {
 						continue
 					}
 					// Skip dupes
