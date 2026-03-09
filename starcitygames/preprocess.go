@@ -217,6 +217,14 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			if len(cards) == 1 {
 				number = cards[0].Number
 			}
+		case strings.HasPrefix(number, "BAB_MH"):
+			if number == "BAB_MH3_496" {
+				setCode = "MH3"
+				number = "496"
+			} else if number == "BAB_MH1_255" {
+				setCode = "MH1"
+				number = "255"
+			}
 		}
 	case "PUMA":
 		cards := mtgmatcher.MatchInSet(cardName, setCode)
