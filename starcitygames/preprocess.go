@@ -274,10 +274,26 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 				return &backup, errors.New("invalid number/foil combination")
 			}
 		}
+
+		// Force Etched for specific sets that need extra decoupling
+		variant := ""
+		if strings.Contains(SKU, "-STA-") || strings.Contains(SKU, "-STA2-") ||
+			strings.Contains(SKU, "-MH2-") || strings.Contains(SKU, "-MH22-") || strings.Contains(SKU, "-MH23-") ||
+			strings.Contains(SKU, "-MH1-") || strings.Contains(SKU, "-MH12-") || strings.Contains(SKU, "-MH13-") {
+			isEtched := foil && (strings.Contains(SKU, "-STA2-") || strings.Contains(SKU, "-MH23-") || strings.Contains(SKU, "-MH13-"))
+
+			card.UUID, _ = mtgmatcher.MatchId(card.UUID, foil, isEtched)
+
+			if isEtched {
+				variant = "etched"
+			}
+		}
+
 		return &mtgmatcher.InputCard{
-			Id:       out[0].UUID,
-			Foil:     foil,
-			Language: language,
+			Id:        card.UUID,
+			Variation: variant,
+			Foil:      foil,
+			Language:  language,
 		}, nil
 	}
 	if len(out) > 1 {
@@ -345,7 +361,7 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 		return nil, err
 	}
 
-	canProcessSKU := language == "en" || language == "English"
+	canProcessSKU := true
 	// We can't use the numbers reported because they match the plain version
 	// and the Match search doesn't upgrade these custom tags
 	switch {
@@ -358,9 +374,6 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 	if canProcessSKU {
 		out, err := ProcessSKU(cardName, card.Sku)
 		if err == nil {
-			// We need to attach this field to take into account promotions
-			// like STA (nonfoil/foil/etched) with the same collector number
-			out.Variation = variant
 			return out, nil
 		}
 

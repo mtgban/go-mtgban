@@ -97,6 +97,11 @@ var SKUTests = []SKUTest{
 		In:   "SGL-MTG-PRM-SECRET_SLD_1990-ENF1",
 		Out:  "5c67ed18-02b5-597a-a78f-fe7cb154b819_f",
 	},
+	{
+		Name: "Agonizing Remorse",
+		In:   "SGL-MTG-STA2-087-JAF1",
+		Out:  "d50b8669-352c-58d9-8cb4-6352e1f0a5ee_e",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {
