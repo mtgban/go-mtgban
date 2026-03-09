@@ -223,6 +223,12 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		if len(cards) == 1 {
 			number = cards[0].Number
 		}
+	case "MH2":
+		cards := mtgmatcher.MatchWithNumber(cardName, "H2R", number)
+		if len(cards) == 1 {
+			setCode = "H2R"
+			number = cards[0].Number
+		}
 	default:
 		if strings.Contains(cardName, "//") {
 			number = strings.TrimSuffix(number, "a")
