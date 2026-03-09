@@ -72,6 +72,10 @@ func fixupSetCode(setCode string) string {
 			setCode = "H1R"
 		case "MH22", "MH23":
 			setCode = "MH2"
+		case "MB12":
+			setCode = "CMB1"
+		case "MB13":
+			setCode = "CMB2"
 		default:
 			setCode = setCode[:len(setCode)-1]
 		}
@@ -196,16 +200,6 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			cards := mtgmatcher.MatchInSet(cardName, setCode)
 			if len(cards) == 1 {
 				number = cards[0].Number
-			}
-		}
-	// This set mixes together any playtest without the pw symbol
-	case "MB13":
-		for _, code := range []string{"CMB2", "MB2"} {
-			cards := mtgmatcher.MatchInSet(cardName, code)
-			if len(cards) == 1 {
-				setCode = cards[0].SetCode
-				number = cards[0].Number
-				break
 			}
 		}
 	case "PUMA":
