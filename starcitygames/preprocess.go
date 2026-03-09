@@ -235,6 +235,13 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	backup := mtgmatcher.InputCard{
+		Edition:   setCode,
+		Variation: number,
+		Foil:      foil,
+		Language:  language,
+	}
+
 	// Check if we found it and return the id
 	out := mtgmatcher.MatchWithNumber(cardName, setCode, number)
 	if len(out) == 1 {
@@ -244,7 +251,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		if len(card.Finishes) == 1 &&
 			(((card.HasFinish(mtgmatcher.FinishFoil) || card.HasFinish(mtgmatcher.FinishEtched)) && !foil) ||
 				(card.HasFinish(mtgmatcher.FinishNonfoil) && foil)) {
-			return nil, errors.New("invalid number/foil combination")
+			return &backup, errors.New("invalid number/foil combination")
 		}
 		return &mtgmatcher.InputCard{
 			Id:       out[0].UUID,
@@ -257,9 +264,9 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		for _, id := range out {
 			alias.Dupes = append(alias.Dupes, id.UUID)
 		}
-		return nil, alias
+		return &backup, alias
 	}
-	return nil, errors.New("not found")
+	return &backup, errors.New("not found")
 }
 
 func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
@@ -335,6 +342,18 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 			out.Variation = variant
 			return out, nil
 		}
+
+		// In case SKU processing failed, gather valid info as much as possible
+		_, err = mtgmatcher.GetSet(out.Edition)
+		if err == nil {
+			edition = out.Edition
+		}
+		_, err = strconv.Atoi(out.Variation)
+		if err == nil {
+			variant = out.Variation
+		}
+		foil = out.Foil
+		language = out.Language
 	}
 
 	switch edition {
