@@ -87,6 +87,11 @@ var SKUTests = []SKUTest{
 		In:   "SGL-MTG-PRM-CF_2025_002-ENF1",
 		Out:  "7618d60e-3790-5e8f-bd44-3154001bf975",
 	},
+	{
+		Name: "Ponder",
+		In:   "SGL-MTG-PRM-SECRET_SLD_019-ENF1",
+		Out:  "d25135dd-3a0b-5b7f-b23b-79b483324759",
+	},
 }
 
 func TestSCGSKU(t *testing.T) {

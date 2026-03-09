@@ -154,6 +154,10 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		case len(fields) > 2 && fields[0] == "SECRET":
 			setCode = fields[1]
 			number = strings.TrimLeft(fields[2], "0")
+			if len(mtgmatcher.MatchWithNumber(cardName, setCode, number)) == 0 &&
+				len(mtgmatcher.MatchWithNumber(cardName, "SLP", number)) > 0 {
+				setCode = "SLP"
+			}
 		// Separate the multiple LTR Prerelease cards
 		case strings.HasPrefix(number, "PRE_LTR_"):
 			number = strings.TrimPrefix(number, "PRE_LTR_")
