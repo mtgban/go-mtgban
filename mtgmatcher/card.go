@@ -109,11 +109,17 @@ func output(card Card, flags ...bool) string {
 	id := card.UUID
 	// Append suffixes to the Id to distinguish cards among finishes
 	if etched && (hasNonfoil || hasFoil) {
+		// Retrieve the base id if it's already tagged (only for this and the case below)
+		if strings.HasSuffix(id, suffixFoil) || strings.HasSuffix(id, suffixEtched) {
+			id = id[:len(id)-2]
+		}
 		id += suffixEtched
 	} else if foil && hasNonfoil {
+		if strings.HasSuffix(id, suffixFoil) || strings.HasSuffix(id, suffixEtched) {
+			id = id[:len(id)-2]
+		}
 		id += suffixFoil
 	}
-
 	return id
 }
 

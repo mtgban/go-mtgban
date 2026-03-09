@@ -283,6 +283,15 @@
         }
     },
     {
+        "uuid": "ea235ab0-fb4c-592b-ab41-29152e12a95d_f",
+        "description": "id_lookup_from_etched_to_foil",
+        "input": {
+            "id": "ea235ab0-fb4c-592b-ab41-29152e12a95d_e",
+            "edition": "Strixhaven Mystical Archive",
+            "foil": true
+        }
+    },
+    {
         "uuid": "fb083deb-30ea-5ff4-8aa8-cee8531cd7ec",
         "description": "number_dupes_fullart_land",
         "input": {
