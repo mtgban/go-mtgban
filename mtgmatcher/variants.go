@@ -4597,6 +4597,10 @@ var multiPromosVariants = map[string]map[string]string{
 		"throne": "254",
 		"guilds": "254",
 	},
+	"Steam Vents": {
+		"guilds": "257",
+		"lorwyn": "267",
+	},
 	"Stomping Ground": {
 		"edge":       "258",
 		"throne":     "259",
@@ -4629,6 +4633,7 @@ var multiPromosTable = map[string]map[string]map[string]string{
 	"Innistrad: Crimson Vow Promos":      multiPromosVariants,
 	"Ixalan Promos":                      multiPromosVariants,
 	"Kaladesh Promos":                    multiPromosVariants,
+	"Lorwyn Eclipsed Promos":             multiPromosVariants,
 	"Murders at Karlov Manor Promos":     multiPromosVariants,
 	"Outlaws of Thunder Junction Promos": multiPromosVariants,
 	"Phyrexia: All Will Be One":          multiPromosVariants,
