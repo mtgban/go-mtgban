@@ -142,6 +142,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 
 			s.Find(`div[itemprop="offers"]`).Each(func(i int, se *goquery.Selection) {
 				var relaxed bool
+				var graded bool
 				fullRow := strings.TrimSpace(se.Text())
 
 				switch {
@@ -180,7 +181,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					strings.Contains(conditions, "Non-Foil") ||
 					strings.Contains(conditions, "Unique") {
 					conditions = "Near Mint"
-					relaxed = true
+					graded = true
 				}
 
 				// Sometimes etched cards have a Near Mint and Near Mint Foil condition
@@ -307,7 +308,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						URL:        link,
 						OriginalId: pid,
 					},
-					relaxed: relaxed,
+					relaxed: relaxed || graded,
+				}
+
+				if graded {
+					out.invEntry.CustomFields = map[string]string{
+						"BANGraded": "true",
+					}
 				}
 
 				results <- out
