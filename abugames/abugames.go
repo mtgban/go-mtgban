@@ -190,6 +190,12 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					OriginalId: group.GroupValue,
 					InstanceId: doc.Id,
 				}
+
+				if strings.Contains(doc.CompleteDescription, "picture of the actual card") {
+					invEntry.CustomFields = map[string]string{
+						"BANGraded": "true",
+					}
+				}
 			}
 
 			if doc.BuyQuantity > 0 && doc.BuyPrice > 0 {

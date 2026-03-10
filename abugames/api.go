@@ -18,6 +18,8 @@ type ABUCard struct {
 	DisplayTitle string `json:"display_title"`
 	SimpleTitle  string `json:"simple_title"`
 
+	CompleteDescription string `json:"complete_description"`
+
 	Edition   string `json:"magic_edition_sort"`
 	Condition string `json:"condition"`
 	Layout    string `json:"layout"`
