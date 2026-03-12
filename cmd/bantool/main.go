@@ -113,6 +113,17 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardkingdom_graded": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper, err := cardkingdom.NewScraperGraded()
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CK_PARTNER")
+			return scraper, nil
+		},
+	},
 	"cardmarket": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
