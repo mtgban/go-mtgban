@@ -37,6 +37,15 @@ const (
 
 var deductions = []float64{1, 1, 0.75}
 
+var availableMarketNames = []string{
+	"Cool Stuff Inc", "Cool Stuff Inc (unique)",
+}
+
+var name2shorthand = map[string]string{
+	"Cool Stuff Inc":          "CSI",
+	"Cool Stuff Inc (unique)": "CSIUnique",
+}
+
 type Coolstuffinc struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -307,16 +316,14 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						Quantity:   qty,
 						URL:        link,
 						OriginalId: pid,
+						SellerName: availableMarketNames[0],
 					},
 					relaxed: relaxed || graded,
 				}
 
 				if graded {
-					out.invEntry.CustomFields = map[string]string{
-						"BANGraded": "true",
-					}
+					out.invEntry.SellerName = availableMarketNames[1]
 				}
-
 				results <- out
 			})
 		})
@@ -584,6 +591,17 @@ func (csi *Coolstuffinc) Inventory() mtgban.InventoryRecord {
 
 func (csi *Coolstuffinc) Buylist() mtgban.BuylistRecord {
 	return csi.buylist
+}
+
+func (csi *Coolstuffinc) MarketNames() []string {
+	return availableMarketNames
+}
+
+func (csi *Coolstuffinc) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := csi.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
 }
 
 func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
