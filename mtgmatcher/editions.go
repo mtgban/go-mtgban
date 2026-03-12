@@ -55,6 +55,7 @@ var EditionTable = map[string]string{
 	"Avatar: The Last Airbender: Eternal-Legal":      "Avatar: The Last Airbender Eternal",
 	"Avatar: The Last Airbender: Eternal Legal":      "Avatar: The Last Airbender Eternal",
 	"Avatar: The Last Airbender Eternal Legal Cards": "Avatar: The Last Airbender Eternal",
+	"Avatar: The Last Airbender Eternal-Legal":       "Avatar: The Last Airbender Eternal",
 
 	"Teenage Mutant Ninja Turtles: Source Material Cards": "Teenage Mutant Ninja Turtles Source Material",
 
@@ -89,6 +90,7 @@ var EditionTable = map[string]string{
 
 	// Strixhaven Mystical Archive alts
 	"Japanese Mystical Archive":                 "Strixhaven Mystical Archive",
+	"Japanese Strixhaven Mystical Archive":      "Strixhaven Mystical Archive",
 	"Mystical Archive":                          "Strixhaven Mystical Archive",
 	"Mystical Archive: Japanese alternate-art":  "Strixhaven Mystical Archive",
 	"Strixhaven Mystical Archive - Foil Etched": "Strixhaven Mystical Archive",
@@ -148,6 +150,7 @@ var EditionTable = map[string]string{
 	"Guru Lands":         "Guru",
 	"Guru":               "Guru",
 	"Promos: Guru Lands": "Guru",
+	"Promotional Guru":   "Guru",
 	"Euro Land Promos":   "European Land Program",
 	"Euro Lands":         "European Land Program",
 	"European Lands":     "European Land Program",
@@ -235,6 +238,7 @@ var EditionTable = map[string]string{
 	"CEDI":                                "Intl. Collectors' Edition",
 	"Collector's Edition - International": "Intl. Collectors' Edition",
 	"Collectors Ed Intl":                  "Intl. Collectors' Edition",
+	"Collectors' Ed Intl":                 "Intl. Collectors' Edition",
 	"Collectors' Edition - International": "Intl. Collectors' Edition",
 	"International Collector's Edition":   "Intl. Collectors' Edition",
 	"International Collectors Edition":    "Intl. Collectors' Edition",
@@ -618,6 +622,7 @@ var EditionTable = map[string]string{
 	"CE": "Collectors' Edition",
 
 	// Alt Fourth
+	"4th Edition Alternate":      "Alternate Fourth Edition",
 	"4th Edition - Alternate":    "Alternate Fourth Edition",
 	"4th Edition (Alternate)":    "Alternate Fourth Edition",
 	"Alternate 4th Edition":      "Alternate Fourth Edition",

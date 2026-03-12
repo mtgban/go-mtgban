@@ -281,3 +281,155 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		Foil:      isFoil,
 	}, nil
 }
+
+func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
+	if strings.Contains(title, "Multiverse Mystery Slab") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
+	vars := mtgmatcher.SplitVariants(title)
+	if len(vars) != 2 {
+		return nil, errors.New("unsupported format")
+	}
+
+	cardName := vars[0]
+	edition := strings.Replace(vars[1], "- ", "", -1)
+	variant := ""
+
+	// Remove serialized number tags
+	if strings.Contains(cardName, "/") {
+		fields := strings.Fields(cardName)
+		for i := range fields {
+			if strings.Contains(fields[i], "/") {
+				fields[i] = ""
+			}
+		}
+		cardName = strings.Join(fields, " ")
+		cardName = strings.Replace(cardName, "  ", " ", -1)
+	}
+
+	for _, score := range supportedScores {
+		before, after, found := strings.Cut(edition, score)
+		if !found {
+			continue
+		}
+		edition = strings.TrimSpace(before)
+		variant = strings.TrimSpace(after)
+		break
+	}
+
+	isFoil := strings.Contains(variant, "Foil") || strings.Contains(edition, "Foil")
+	edition = strings.TrimSuffix(edition, " Foil")
+	variant = strings.TrimSuffix(variant, " Foil")
+
+	// Hack to remove 9.5-style scores
+	variant = strings.Replace(variant, ".", "", -1)
+	num := mtgmatcher.ExtractNumber(variant)
+	if num != "" {
+		variant = strings.Replace(variant, num, "", -1)
+	}
+	variant = strings.TrimSpace(variant)
+
+	if strings.Contains(edition, "Final Fantasy") {
+		if variant != "" {
+			variant += " "
+		}
+		variant += edition
+		if strings.HasPrefix(edition, "Final Fantasy Through the Ages") {
+			edition = "FCA"
+		}
+	}
+
+	// Move tags to the appropriate field to help edition matching
+	for _, tag := range []string{
+		"Borderless", "Extended Art", "Serialized", "Textured", "Japan Showcase", "Raised", "Halo",
+		"Breaking News Showcase", "Breaking New", "Showcase Magnified", "Godzilla Series",
+		"Showcase", // needs to be last
+	} {
+		if strings.HasSuffix(edition, tag) {
+			edition = strings.TrimSuffix(edition, " "+tag)
+			if variant != "" {
+				variant += " "
+			}
+			variant += tag
+		}
+	}
+
+	return &mtgmatcher.InputCard{
+		Name:      cardName,
+		Edition:   edition,
+		Variation: variant,
+		Foil:      isFoil,
+	}, nil
+}
+
+var supportedScores = []string{
+	"PSA", "BGS", "CGC",
+}
+
+var gradeMap = map[string]map[string]string{
+	"PSA": {
+		"10": "NM",
+		"9":  "NM",
+		"8":  "NM",
+		"7":  "NM",
+		"6":  "SP",
+		"5":  "SP",
+		"4":  "MP",
+		"3":  "MP",
+		"2":  "HP",
+		"1":  "HP",
+	},
+	"BGS": {
+		"10": "NM",
+		"9":  "NM",
+		"8":  "SP",
+		"7":  "SP",
+		"6":  "MP",
+		"5":  "MP",
+		"4":  "MP",
+		"3":  "HP",
+		"2":  "HP",
+		"1":  "PO",
+	},
+	"CGC": {
+		"Pristine":          "NM",
+		"Pristine 10":       "NM",
+		"10":                "NM",
+		"9":                 "NM",
+		"8":                 "NM",
+		"7":                 "SP",
+		"6":                 "SP",
+		"5":                 "MP",
+		"4":                 "MP",
+		"3":                 "HP",
+		"2":                 "HP",
+		"1":                 "PO",
+		"Authentic Altered": "PO",
+	},
+}
+
+func parseGradedCondition(title string) string {
+	var grade string
+	var score string
+	for _, score = range supportedScores {
+		_, after, found := strings.Cut(title, score+" ")
+		if !found {
+			continue
+		}
+		grade = after
+		break
+	}
+
+	if grade == "" {
+		panic(title)
+		return ""
+	}
+
+	grade = strings.Split(grade, ")")[0]
+	grade = strings.Split(grade, ".")[0]
+	grade = strings.TrimSuffix(grade, " Quad ++")
+	grade = strings.TrimSuffix(grade, " Quad++")
+
+	return gradeMap[score][grade]
+}
