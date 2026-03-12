@@ -189,12 +189,11 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					URL:        u.String() + searchQuery,
 					OriginalId: group.GroupValue,
 					InstanceId: doc.Id,
+					SellerName: availableMarketNames[0],
 				}
 
 				if strings.Contains(doc.CompleteDescription, "picture of the actual card") {
-					invEntry.CustomFields = map[string]string{
-						"BANGraded": "true",
-					}
+					invEntry.SellerName = availableMarketNames[1]
 				}
 			}
 
@@ -370,14 +369,24 @@ func (abu *ABUGames) Buylist() mtgban.BuylistRecord {
 	return abu.buylist
 }
 
+var availableMarketNames = []string{
+	"ABU Games",
+	"ABU Games (with pictures)",
+}
+
 var availableTraderNames = []string{
 	"ABU Games",
 	"ABU Games (credit)",
 }
 
 var name2shorthand = map[string]string{
-	"ABU Games":          "ABUGames",
-	"ABU Games (credit)": "ABUCredit",
+	"ABU Games":                 "ABUGames",
+	"ABU Games (with pictures)": "ABUPictures",
+	"ABU Games (credit)":        "ABUCredit",
+}
+
+func (abu *ABUGames) MarketNames() []string {
+	return availableMarketNames
 }
 
 func (abu *ABUGames) TraderNames() []string {
