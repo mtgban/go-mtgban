@@ -487,7 +487,7 @@ func (ap AllPrintings) Load() cardBackend {
 			case "DFT":
 				num, _ := strconv.Atoi(card.Number)
 				if num >= 333 && num <= 346 || num >= 532 && num <= 545 {
-					card.PromoTypes = append(card.PromoTypes, "rudedrivers")
+					card.PromoTypes = append(card.PromoTypes, "ruderiders")
 				}
 
 			// Upstream cannot properly represent foil cards
