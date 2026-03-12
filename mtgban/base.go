@@ -13,8 +13,12 @@ import (
 var ErrInvalidCondition = errors.New("invalid condition")
 
 func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
+	// Safe defaults
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
+	}
+	if entry.Quantity == 0 {
+		entry.Quantity = 1
 	}
 
 	if !slices.Contains(FullGradeTags, entry.Conditions) {
