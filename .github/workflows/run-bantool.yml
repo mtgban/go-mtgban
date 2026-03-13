@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check IP
         run: echo "Runner IP - $(curl https://api.ipify.org 2> /dev/null)"
@@ -40,7 +40,7 @@ jobs:
         run: go version
 
       - name: Cache Datastore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: "datastore/"
           key: ${{ inputs.datastore-cache-key }}
@@ -48,7 +48,7 @@ jobs:
 
       - if: ${{ inputs.skus-cache-key }}
         name: Cache Skus
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: "datastore/"
           key: ${{ inputs.skus-cache-key }}
