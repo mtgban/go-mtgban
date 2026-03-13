@@ -25,22 +25,15 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install golang
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
-      - name: Cache Go module downloads
-        uses: actions/cache@v4
-        with:
-          path: ~/go/pkg/mod/cache
-          key: go-mod-cache-${{ hashFiles('**/go.sum') }}
-          restore-keys: go-mod-cache-
-
       - name: Cache Datastore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: "datastore/"
           key: ${{ needs.cache-datastore.outputs.key }}
