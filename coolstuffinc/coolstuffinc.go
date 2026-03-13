@@ -594,6 +594,9 @@ func (csi *Coolstuffinc) Buylist() mtgban.BuylistRecord {
 }
 
 func (csi *Coolstuffinc) MarketNames() []string {
+	if csi.Info().Game != mtgban.GameMagic {
+		return availableMarketNames[:1]
+	}
 	return availableMarketNames
 }
 
