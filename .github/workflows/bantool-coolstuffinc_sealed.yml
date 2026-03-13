@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: "5 */4 * * *"
 
+permissions:
+  contents: read
+
 jobs:
   cache-datastore:
     uses: ./.github/workflows/cache-file.yml

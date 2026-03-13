@@ -20,6 +20,9 @@ on:
       skus-cache-key:
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   run-bantool:
     runs-on: ubuntu-latest

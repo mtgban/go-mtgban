@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: "50 * * * *"
 
+permissions:
+  contents: read
+
 concurrency:
   group: bantool-tcgplayer
   cancel-in-progress: false
