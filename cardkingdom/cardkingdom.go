@@ -142,6 +142,11 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					OriginalId: strconv.Itoa(card.ID),
 					InstanceId: card.Sku,
 				}
+				if cond != "NM" {
+					out.CustomFields = map[string]string{
+						"RetailPrice": fmt.Sprint(card.PriceRetail),
+					}
+				}
 				err = ck.inventory.AddUnique(cardId, out)
 			}
 		} else if ck.PreserveOOS {
