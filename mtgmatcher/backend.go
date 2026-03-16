@@ -301,6 +301,23 @@ func sortPrintings(sets map[string]*Set, printings []string) {
 	})
 }
 
+// Sort sealed products within a single set in alphabetical order
+func sortSourceProducts(sets map[string]*Set, setCode string, sources []string) {
+	set, found := sets[setCode]
+	if !found {
+		return
+	}
+
+	nameByUUID := make(map[string]string, len(set.SealedProduct))
+	for _, product := range set.SealedProduct {
+		nameByUUID[product.UUID] = product.Name
+	}
+
+	sort.Slice(sources, func(i, j int) bool {
+		return nameByUUID[sources[i]] < nameByUUID[sources[j]]
+	})
+}
+
 func generateImageURL(card Card, version string) string {
 	_, found := card.Identifiers["scryfallId"]
 	if !found {
@@ -651,6 +668,7 @@ func (ap AllPrintings) Load() cardBackend {
 						filtered = append(filtered, source)
 					}
 				}
+				sortSourceProducts(ap.Data, set.Code, filtered)
 				card.SourceProducts[finish] = filtered
 			}
 
@@ -987,6 +1005,8 @@ func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 		if !found {
 			continue
 		}
+
+		sortSourceProducts(sets, co.SetCode, res)
 
 		uuids[uuid].SourceProducts["sealed"] = res
 	}
