@@ -940,10 +940,11 @@ func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 	result := map[string][]string{}
 	tmp := map[string][]string{}
 
+	// Figure out which sealed products contain a given sealed item
 	for _, set := range sets {
 		for _, product := range set.SealedProduct {
 			dedup := map[string]int{}
-			list := SealedWithinSealed(set.Code, product.UUID)
+			list := sealedWithinSealed(sets, set.Code, product.UUID)
 			for _, item := range list {
 				dedup[item]++
 			}
@@ -953,7 +954,7 @@ func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 		}
 	}
 
-	// Reverse to be compatible with SourceProducts model
+	// Reverse to be compatible with SourceProducts model (child->parent map)
 	for _, list := range tmp {
 		for _, item := range list {
 			for key, sublist := range tmp {
@@ -965,6 +966,7 @@ func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 		}
 	}
 
+	// Write back the result
 	for uuid, co := range uuids {
 		if !co.Sealed {
 			continue
@@ -1038,10 +1040,10 @@ func findDeck(setCode, deckName string) []string {
 
 // Return a list of sealed products contained by the input product
 // Decks and Packs and Card cannot contain other sealed product, so they are ignored here
-func SealedWithinSealed(setCode, sealedUUID string) []string {
+func sealedWithinSealed(sets map[string]*Set, setCode, sealedUUID string) []string {
 	var list []string
 
-	set, found := backend.Sets[setCode]
+	set, found := sets[setCode]
 	if !found {
 		return nil
 	}
@@ -1061,10 +1063,6 @@ func SealedWithinSealed(setCode, sealedUUID string) []string {
 					for _, config := range content.Configs {
 						for _, sealed := range config["sealed"] {
 							list = append(list, sealed.UUID)
-						}
-						for _, deck := range config["deck"] {
-							decklist := findDeck(deck.Set, deck.Name)
-							list = append(list, decklist...)
 						}
 					}
 				}
