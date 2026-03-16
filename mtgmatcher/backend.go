@@ -643,6 +643,17 @@ func (ap AllPrintings) Load() cardBackend {
 
 			card.Printings = printings
 
+			// Filter out unneeded sources and sort them alphabetically
+			for finish, sources := range card.SourceProducts {
+				var filtered []string
+				for _, source := range sources {
+					if isBaseSealed(ap.Data, set.Code, source) {
+						filtered = append(filtered, source)
+					}
+				}
+				card.SourceProducts[finish] = filtered
+			}
+
 			// Custom properties for tokens
 			if card.IsOversized {
 				card.Rarity = "oversize"
@@ -1060,6 +1071,41 @@ func sealedWithinSealed(product SealedProduct) []string {
 	}
 
 	return list
+}
+
+// Check if the sealed product contains a base product, i.e. if there is at least
+// one component that doesn't need additional extraction
+func isBaseSealed(sets map[string]*Set, setCode, sealedUUID string) bool {
+	set, found := sets[setCode]
+	if !found {
+		return false
+	}
+
+	for _, product := range set.SealedProduct {
+		if sealedUUID != product.UUID {
+			continue
+		}
+
+		for key, contents := range product.Contents {
+			for _, content := range contents {
+				switch key {
+				case "card", "deck", "pack":
+					return true
+
+				case "variable":
+					for _, config := range content.Configs {
+						if config["card"] != nil ||
+							config["deck"] != nil ||
+							config["pack"] != nil {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 var langs = map[string]string{
