@@ -129,7 +129,6 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 
 func main() {
 	SetCodeOpt = flag.String("s", "", "Set code to choose")
-	SealedMode = flag.Bool("b", false, "List sealed without unpacking it")
 	Reverse = flag.Bool("r", false, "Reverse results tree")
 	allprintingsPath := flag.String("a", "allprintings5.json", "Load AllPrintings file path")
 
@@ -170,11 +169,7 @@ func run() int {
 	for _, product := range set.SealedProduct {
 		var list []string
 		var err error
-		if *SealedMode {
-			list = mtgmatcher.SealedWithinSealed(set.Code, product.UUID)
-		} else {
-			list, err = getListForSealed(set.Code, product.UUID)
-		}
+		list, err = getListForSealed(set.Code, product.UUID)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, product.Name, err)
 			continue
@@ -227,5 +222,4 @@ func run() int {
 }
 
 var SetCodeOpt *string
-var SealedMode *bool
 var Reverse *bool
