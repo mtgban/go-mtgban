@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -97,6 +98,28 @@ func loadTestSet(datastoreProp DatastoreProperty) TestProperty {
 	return tp
 }
 
+func runMatch(test MatchTest) (string, error) {
+	card := test.In
+	card.promoWildcard = test.Wildcard
+
+	cardId, err := Match(&card)
+	if err == nil && test.Err != "" {
+		return cardId, fmt.Errorf("expected error: %s", test.Err)
+	}
+	if err != nil {
+		if test.Err == "" {
+			return cardId, fmt.Errorf("unexpected error: %s", err.Error())
+		}
+		if test.Err != err.Error() {
+			return cardId, fmt.Errorf("mismatched error: expected '%s', got '%s'", test.Err, err.Error())
+		}
+	} else if cardId != test.Id {
+		return cardId, fmt.Errorf("id mismatch: expected '%s', got '%s'", test.Id, cardId)
+	}
+
+	return cardId, nil
+}
+
 func TestMatch(t *testing.T) {
 	for _, testSet := range MatchTestSet {
 		testMatch(t, testSet)
@@ -115,31 +138,22 @@ func testMatch(t *testing.T, testSet TestProperty) {
 			if !*UpdateTests {
 				t.Parallel()
 			}
-			card := test.In
-			card.promoWildcard = test.Wildcard
-			cardId, err := Match(&card)
-			if err == nil && test.Err != "" {
-				t.Errorf("FAIL: Expected error: %s", test.Err)
-				return
-			}
+			cardId, err := runMatch(test)
 			if err != nil {
 				if test.Err == "" {
-					t.Errorf("FAIL: Unexpected error: %s", err.Error())
+					if *UpdateTests {
+						t.Logf("NOTE: Updating test result from '%s' to '%s'", test.Id, cardId)
+						testSet.MatchTests[i].Id = cardId
+						shouldUpdateTests = true
+						return
+					}
+
+					co, _ := GetUUID(cardId)
+					t.Errorf("FAIL: %s (%v)", err.Error(), co)
 					return
 				}
-				if test.Err != err.Error() {
-					t.Errorf("FAIL: Mismatched error: expected '%s', got '%s'", test.Err, err.Error())
-					return
-				}
-			} else if cardId != test.Id {
-				if *UpdateTests {
-					t.Logf("NOTE: Updating test result from '%s' to '%s'", test.Id, cardId)
-					testSet.MatchTests[i].Id = cardId
-					shouldUpdateTests = true
-					return
-				}
-				co, _ := GetUUID(cardId)
-				t.Errorf("FAIL: Id mismatch: expected '%s', got '%s' (%v)", test.Id, cardId, co)
+
+				t.Errorf("FAIL: %s", err.Error())
 				return
 			}
 
@@ -166,30 +180,17 @@ func testMatch(t *testing.T, testSet TestProperty) {
 // This benchmark function just runs the Match tests b.N times
 func BenchmarkMatch(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		for _, test := range MatchTestSet[0].MatchTests {
-			card := test.In
-			card.promoWildcard = test.Wildcard
-			cardId, err := Match(&card)
-			if err == nil && test.Err != "" {
-				b.Errorf("FAIL: Expected error: %s", test.Err)
-				return
-			}
-			if err != nil {
-				if test.Err == "" {
-					b.Errorf("FAIL: Unexpected error: %s", err.Error())
-					return
-				}
-				if test.Err != err.Error() {
-					b.Errorf("FAIL: Mismatched error: expected '%s', got '%s'", test.Err, err.Error())
-					return
-				}
-			} else if cardId != test.Id {
-				b.Errorf("FAIL: Id mismatch: expected '%s', got '%s'", test.Id, cardId)
-				return
-			}
+		for _, testSet := range MatchTestSet {
+			SetGlobalDatastore(testSet.Backend)
 
-			b.Log("PASS:", test.Desc)
+			for _, test := range testSet.MatchTests {
+				_, err := runMatch(test)
+				if err != nil {
+					b.Errorf("FAIL: %s", err.Error())
+				} else {
+					b.Log("PASS:", test.Desc)
+				}
+			}
 		}
-
 	}
 }
