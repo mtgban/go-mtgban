@@ -43,18 +43,18 @@ func TestMain(m *testing.M) {
 
 	backend = allprints.Load()
 
-	// Close the file right away so that it can be modified later
 	testDataReader, err := os.Open(TestDataFile)
 	if err != nil {
-		testDataReader.Close()
 		log.Fatalln(err)
 	}
 
 	err = json.NewDecoder(testDataReader).Decode(&MatchTests)
-	testDataReader.Close()
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	// Close the file right away so that it can be modified later
+	testDataReader.Close()
 
 	SetGlobalLogger(log.New(os.Stderr, "", 0))
 
