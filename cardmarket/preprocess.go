@@ -295,7 +295,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			}
 		}
 
-	case "Visions":
+	case "Mirage", "Visions":
 		if variant == "V.2" {
 			return nil, mtgmatcher.ErrUnsupported
 		}
