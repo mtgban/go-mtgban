@@ -67,7 +67,10 @@ jobs:
           mkdir -p "${{ inputs.path }}"
           curl -L "${{ inputs.url }}" -o "${{ steps.get_etag.outputs.filepath }}"
 
-      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != ''
+      # Only the canonical repo should set repository variable MTGBAN_PUBLISH_DATASTORE=true.
+      # Callers still pass game=; forks have no variable (and usually no B2/BAN secrets), so we
+      # skip upload/ping instead of running b2 with empty credentials (EOFError).
+      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != '' && vars.MTGBAN_PUBLISH_DATASTORE == 'true'
         name: Upload to B2
         env:
           B2KEY: "${{ secrets.B2_KEY_ID_DATASTORE }}"
@@ -78,7 +81,7 @@ jobs:
           b2 sync --skip-newer "${{ inputs.path }}" "b2://mtgban-datastore/${{ inputs.game }}"
           b2 account clear
 
-      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != ''
+      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != '' && vars.MTGBAN_PUBLISH_DATASTORE == 'true'
         name: Ping server
         env:
           BAN_SECRET: "${{ secrets.BAN_SECRET }}"
