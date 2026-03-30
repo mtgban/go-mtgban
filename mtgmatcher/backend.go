@@ -287,17 +287,14 @@ func generateSealedUUIDs(product SealedProduct, uuids map[string]CardObject, edi
 
 func sortPrintings(sets map[string]*Set, printings []string) {
 	sort.Slice(printings, func(i, j int) bool {
-		setDateI, errI := time.Parse("2006-01-02", sets[printings[i]].ReleaseDate)
-		setDateJ, errJ := time.Parse("2006-01-02", sets[printings[j]].ReleaseDate)
-		if errI != nil || errJ != nil {
-			return false
+		setI := sets[printings[i]]
+		setJ := sets[printings[j]]
+
+		if setI.ReleaseDateTime.Equal(setJ.ReleaseDateTime) {
+			return setI.Name < setJ.Name
 		}
 
-		if setDateI.Equal(setDateJ) {
-			return sets[printings[i]].Name < sets[printings[j]].Name
-		}
-
-		return setDateI.After(setDateJ)
+		return setI.ReleaseDateTime.After(setJ.ReleaseDateTime)
 	})
 }
 
@@ -444,6 +441,11 @@ func (ap AllPrintings) Load() cardBackend {
 	}
 
 	adjustTokens(ap.Data)
+
+	// Precompute ReleaseDateTime for all sets to avoid repeated time.Parse calls
+	for _, set := range ap.Data {
+		set.ReleaseDateTime, _ = time.Parse("2006-01-02", set.ReleaseDate)
+	}
 
 	for code, set := range ap.Data {
 		var filteredCards []Card
@@ -750,11 +752,7 @@ func (ap AllPrintings) Load() cardBackend {
 		// Adjust the setBaseSize to take into account the cards with
 		// the same name in the same set (also make sure that it is
 		// correctly initialized)
-		setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
-		if err != nil {
-			continue
-		}
-		if setDate.After(PromosForEverybodyYay) {
+		if set.ReleaseDateTime.After(PromosForEverybodyYay) {
 			for _, card := range set.Cards {
 				if card.HasPromoType(PromoTypeBoosterfun) {
 					// Usually boosterfun cards have real numbers
@@ -1144,6 +1142,7 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	dup.Code = code + tag
 	dup.ParentCode = code
 	dup.ReleaseDate = date
+	dup.ReleaseDateTime, _ = time.Parse("2006-01-02", date)
 
 	// Target slice for later use
 	var numbers []string

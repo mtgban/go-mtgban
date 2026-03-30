@@ -4,7 +4,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func MatchId(inputId string, finishes ...bool) (string, error) {
@@ -331,17 +330,13 @@ func Match(inCard *InputCard) (cardId string, err error) {
 				cardSet[setCode] = MatchInSet(inCard.Name, setCode)
 
 				set := backend.Sets[setCode]
-				setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
-				if err != nil {
-					continue
-				}
 
 				// In case it's a well known promo, consider the promo sets (or vice
 				// versa for promo sets) in order to let filtering take care of them
 				// JPN cards are skipped because they are well set usually
 				if !inCard.isJPN() && (inCard.isPrerelease() || inCard.isPromoPack() ||
-					(inCard.isBundle() && setDate.After(PromosForEverybodyYay)) ||
-					(inCard.isBaB() && setDate.After(BuyABoxInExpansionSetsDate))) {
+					(inCard.isBundle() && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
+					(inCard.isBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
 					setName := backend.Sets[setCode].Name
 					if !strings.HasSuffix(setName, "Promos") {
 						setCode = "P" + setCode
@@ -368,10 +363,6 @@ func Match(inCard *InputCard) (cardId string, err error) {
 			logger.Println("No perfect match found, trying with heuristics")
 			for _, setCode := range printings {
 				set := backend.Sets[setCode]
-				setDate, err := time.Parse("2006-01-02", set.ReleaseDate)
-				if err != nil {
-					continue
-				}
 
 				// Skip heuristics for WCD as short version would catch a lot
 				if inCard.isWorldChamp() {
@@ -382,8 +373,8 @@ func Match(inCard *InputCard) (cardId string, err error) {
 					// If a card is promotional, only consider promotional sets
 					(inCard.isGenericPromo() && strings.HasSuffix(set.Name, "Promos")) ||
 					// If it is Bundle or BaB, also consider base sets if recent enough
-					(inCard.isBundle() && !strings.HasSuffix(set.Name, "Promos") && setDate.After(PromosForEverybodyYay)) ||
-					(inCard.isBaB() && !strings.HasSuffix(set.Name, "Promos") && setDate.After(BuyABoxInExpansionSetsDate)) {
+					(inCard.isBundle() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
+					(inCard.isBaB() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {
 					logger.Println("Found a possible match with", inCard.Edition, setCode)
 					cardSet[setCode] = MatchInSet(inCard.Name, setCode)
 				}

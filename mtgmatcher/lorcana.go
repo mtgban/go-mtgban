@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type LorcanaJSON struct {
@@ -100,11 +101,13 @@ func (lj LorcanaJSON) Load() cardBackend {
 	for code, set := range lj.Sets {
 		backend.AllSets = append(backend.AllSets, code)
 
+		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
 		backend.Sets[code] = &Set{
-			Name:        set.Name,
-			Code:        code,
-			ReleaseDate: set.ReleaseDate,
-			Type:        set.Type,
+			Name:            set.Name,
+			Code:            code,
+			ReleaseDate:     set.ReleaseDate,
+			ReleaseDateTime: releaseDateTime,
+			Type:            set.Type,
 		}
 	}
 
