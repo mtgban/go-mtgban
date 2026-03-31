@@ -240,6 +240,19 @@ func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
 	}
 }
 
+// Generate product URL using TCGplayer
+func generateSealedImageURL(card Card, version string) string {
+	tcgId, found := card.Identifiers["tcgplayerProductId"]
+	if !found {
+		return ""
+	}
+	if version == "small" {
+		// This size is the default "small" format
+		tcgId = "fit-in/146x204/" + tcgId
+	}
+	return "https://product-images.tcgplayer.com/" + tcgId + ".jpg"
+}
+
 func generateSealedUUIDs(product SealedProduct, uuids map[string]CardObject, edition string) {
 	card := Card{
 		UUID:        product.UUID,
@@ -260,9 +273,9 @@ func generateSealedUUIDs(product SealedProduct, uuids map[string]CardObject, edi
 		card.OriginalReleaseDate = product.ReleaseDate
 	}
 
-	card.Images["full"] = generateImageURL(card, "normal")
-	card.Images["thumbnail"] = generateImageURL(card, "small")
-	card.Images["crop"] = generateImageURL(card, "normal")
+	card.Images["full"] = generateSealedImageURL(card, "normal")
+	card.Images["thumbnail"] = generateSealedImageURL(card, "small")
+	card.Images["crop"] = generateSealedImageURL(card, "normal")
 
 	isEtched := strings.Contains(product.Name, "Etched")
 	isFoil := !isEtched
@@ -315,18 +328,11 @@ func sortSourceProducts(sets map[string]*Set, setCode string, sources []string) 
 	})
 }
 
+// Generate image URL using Scryfall - we assume that every card has such id
 func generateImageURL(card Card, version string) string {
 	id, found := card.Identifiers["scryfallId"]
 	if !found {
-		tcgId, found := card.Identifiers["tcgplayerProductId"]
-		if !found {
-			return ""
-		}
-		if version == "small" {
-			// This size is the default "small" format
-			tcgId = "fit-in/146x204/" + tcgId
-		}
-		return "https://product-images.tcgplayer.com/" + tcgId + ".jpg"
+		return ""
 	}
 
 	altId, found := card.Identifiers["originalScryfallId"]
