@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -380,47 +379,34 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 
 	start := time.Now()
 
-	items := make(chan string)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < csi.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for itemName := range items {
-				csi.printf("Processing %s", itemName)
-				err := csi.processSearch(ctx, results, itemName)
-				if err != nil {
-					csi.printf("%v for %s", err, itemName)
-				}
-			}
-			wg.Done()
-		}()
-	}
-	go func() {
+	if csi.TargetEdition != "" {
+		filtered := itemNames[:0]
 		for _, item := range itemNames {
-			if csi.TargetEdition != "" && item != csi.TargetEdition {
-				continue
+			if item == csi.TargetEdition {
+				filtered = append(filtered, item)
 			}
-			items <- item
 		}
-		close(items)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		var err error
-		if record.relaxed {
-			err = csi.inventory.AddRelaxed(record.cardId, record.invEntry)
-		} else {
-			err = csi.inventory.Add(record.cardId, record.invEntry)
-		}
-		if err != nil {
-			csi.printf("%s", err.Error())
-		}
+		itemNames = filtered
 	}
+
+	mtgban.WorkerPool(ctx, csi.MaxConcurrency, itemNames,
+		func(ctx context.Context, itemName string, results chan<- responseChan) error {
+			csi.printf("Processing %s", itemName)
+			return csi.processSearch(ctx, results, itemName)
+		},
+		func(record responseChan) {
+			var err error
+			if record.relaxed {
+				err = csi.inventory.AddRelaxed(record.cardId, record.invEntry)
+			} else {
+				err = csi.inventory.Add(record.cardId, record.invEntry)
+			}
+			if err != nil {
+				csi.printf("%s", err.Error())
+			}
+		},
+		csi.printf,
+	)
 
 	csi.printf("This operation took %v", time.Since(start))
 

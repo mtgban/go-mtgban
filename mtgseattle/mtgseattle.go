@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -324,45 +323,33 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 
 	ms.printf("Found %d categories", len(links))
 
-	products := make(chan string)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
+	type item struct {
+		link  string
+		title string
+	}
+	items := make([]item, len(links))
+	for i := range links {
+		items[i] = item{links[i], titles[i]}
+	}
 
-	for i := 0; i < ms.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for product := range products {
-				err := ms.processProduct(ctx, results, product, mode)
-				if err != nil {
-					ms.printf("%v", err)
-				}
+	mtgban.WorkerPool(ctx, ms.MaxConcurrency, items,
+		func(ctx context.Context, it item, results chan<- responseChan) error {
+			ms.printf("Processing %s", it.title)
+			return ms.processProduct(ctx, results, it.link, mode)
+		},
+		func(record responseChan) {
+			var err error
+			if record.invEntry != nil {
+				err = ms.inventory.Add(record.cardId, record.invEntry)
+			} else if record.buyEntry != nil {
+				err = ms.buylist.Add(record.cardId, record.buyEntry)
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i, link := range links {
-			ms.printf("Processing %s", titles[i])
-			products <- link
-		}
-		close(products)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		var err error
-		if record.invEntry != nil {
-			err = ms.inventory.Add(record.cardId, record.invEntry)
-		} else if record.buyEntry != nil {
-			err = ms.buylist.Add(record.cardId, record.buyEntry)
-		}
-		if err != nil {
-			ms.printf("%s", err.Error())
-		}
-	}
+			if err != nil {
+				ms.printf("%s", err.Error())
+			}
+		},
+		ms.printf,
+	)
 
 	if mode == modeInventory {
 		ms.inventoryDate = time.Now()

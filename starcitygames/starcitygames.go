@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -291,41 +290,25 @@ func (scg *Starcitygames) scrape(ctx context.Context) error {
 	}
 	scg.printf("Found %d pages", totalPages)
 
-	pages := make(chan int)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
+	pages := make([]int, 0, totalPages)
+	for i := 1; i <= totalPages; i++ {
+		pages = append(pages, i)
+	}
 
-	for i := 0; i < scg.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for page := range pages {
-				scg.printf("Processing page %d", page)
-				err := scg.processPage(ctx, results, page)
-				if err != nil {
-					scg.printf("%v", err)
-				}
+	mtgban.WorkerPool(ctx, scg.MaxConcurrency, pages,
+		func(ctx context.Context, page int, results chan<- responseChan) error {
+			scg.printf("Processing page %d", page)
+			return scg.processPage(ctx, results, page)
+		},
+		func(record responseChan) {
+			err := scg.inventory.AddStrict(record.cardId, record.invEntry)
+			if err != nil && !record.ignoreErr {
+				scg.printf("%s", err.Error())
+				scg.printf("-> %s", record.pageURL)
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i := 1; i <= totalPages; i++ {
-			pages <- i
-		}
-		close(pages)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		err := scg.inventory.AddStrict(record.cardId, record.invEntry)
-		if err != nil && !record.ignoreErr {
-			scg.printf("%s", err.Error())
-			scg.printf("-> %s", record.pageURL)
-		}
-	}
+		},
+		scg.printf,
+	)
 
 	scg.inventoryDate = time.Now()
 
@@ -580,45 +563,27 @@ func (scg *Starcitygames) scrapeBL(ctx context.Context) error {
 
 	scg.printf("Found %d editions", len(editions))
 
-	pages := make(chan setData)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
+	for i := range editions {
+		editions[i].Index = i + 1
+	}
 
-	for i := 0; i < scg.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for page := range pages {
-				if scg.TargetEdition != "" && scg.TargetEdition != page.Name {
-					continue
-				}
-
-				scg.printf("Processing edition %s (%d/%d)", page.Name, page.Index, len(editions))
-				err := scg.processBuylistEdition(ctx, results, page.SetID)
-				if err != nil {
-					scg.printf("%v", err)
-				}
+	mtgban.WorkerPool(ctx, scg.MaxConcurrency, editions,
+		func(ctx context.Context, page setData, results chan<- responseChan) error {
+			if scg.TargetEdition != "" && scg.TargetEdition != page.Name {
+				return nil
 			}
-			wg.Done()
-		}()
-	}
 
-	go func() {
-		for i, page := range editions {
-			page.Index = i + 1
-			pages <- page
-		}
-		close(pages)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		err := scg.buylist.Add(record.cardId, record.buyEntry)
-		if err != nil && !record.ignoreErr {
-			scg.printf("%s", err.Error())
-		}
-	}
+			scg.printf("Processing edition %s (%d/%d)", page.Name, page.Index, len(editions))
+			return scg.processBuylistEdition(ctx, results, page.SetID)
+		},
+		func(record responseChan) {
+			err := scg.buylist.Add(record.cardId, record.buyEntry)
+			if err != nil && !record.ignoreErr {
+				scg.printf("%s", err.Error())
+			}
+		},
+		scg.printf,
+	)
 
 	scg.buylistDate = time.Now()
 

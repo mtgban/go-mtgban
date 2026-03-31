@@ -4,7 +4,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // Remove any unrelated edition from the input array.
@@ -20,7 +19,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			continue
 		}
 
-		setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+		setDate := set.ReleaseDateTime
 
 		switch {
 		// If the edition matches, use it as is
@@ -900,7 +899,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 			if !found {
 				continue
 			}
-			setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+			setDate := set.ReleaseDateTime
 
 			var shouldContinue bool
 			for _, promoElement := range promoTypeElements {
@@ -1042,7 +1041,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 				if !found {
 					continue
 				}
-				setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+				setDate := set.ReleaseDateTime
 				if setDate.After(SeparateFinishCollectorNumberDate) && etchedCheck(inCard, &card) {
 					continue
 				}
@@ -1083,7 +1082,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 				if !found {
 					continue
 				}
-				setDate, _ := time.Parse("2006-01-02", set.ReleaseDate)
+				setDate := set.ReleaseDateTime
 				if setDate.After(PromosForEverybodyYay) && extendedartCheck(inCard, &card) {
 					continue
 				}

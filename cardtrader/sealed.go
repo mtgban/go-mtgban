@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -163,57 +162,41 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	_, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, true)
 	ct.printf("Parsing %d expansions", len(expansions))
 
-	expansionIds := make(chan int)
-	results := make(chan resultChan)
-	var wg sync.WaitGroup
+	type expItem struct {
+		id   int
+		name string
+	}
+	expItems := make([]expItem, 0, len(expansions))
+	for id, name := range expansions {
+		expItems = append(expItems, expItem{id, name})
+	}
 
-	for i := 0; i < ct.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for expansionId := range expansionIds {
-				err := ct.processEntry(ctx, results, expansionId, expansions[expansionId], productMap)
-				if err != nil {
-					ct.printf("%v", err)
+	mtgban.WorkerPool(ctx, ct.MaxConcurrency, expItems,
+		func(ctx context.Context, item expItem, results chan<- resultChan) error {
+			ct.printf("Processing %s [%d]", item.name, item.id)
+			return ct.processEntry(ctx, results, item.id, item.name, productMap)
+		},
+		func(result resultChan) {
+			// Only keep one offer per condition
+			skip := false
+			entries := ct.inventory[result.cardId]
+			for _, entry := range entries {
+				if entry.Conditions == result.invEntry.Conditions && entry.Bundle == result.invEntry.Bundle {
+					skip = true
+					break
 				}
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		num := 1
-		for id, expName := range expansions {
-			ct.printf("Processing %s (%d/%d) [%d]", expName, num, len(expansions), id)
-			expansionIds <- id
-			num++
-		}
-		close(expansionIds)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for result := range results {
-		// Only keep one offer per condition
-		skip := false
-		entries := ct.inventory[result.cardId]
-		for _, entry := range entries {
-			if entry.Conditions == result.invEntry.Conditions && entry.Bundle == result.invEntry.Bundle {
-				skip = true
-				break
+			if skip {
+				return
 			}
-		}
-		if skip {
-			continue
-		}
 
-		var err error
-		err = ct.inventory.Add(result.cardId, result.invEntry)
-		if err != nil {
-			ct.printf("%s", err.Error())
-			continue
-		}
-	}
+			err := ct.inventory.Add(result.cardId, result.invEntry)
+			if err != nil {
+				ct.printf("%s", err.Error())
+			}
+		},
+		ct.printf,
+	)
 
 	ct.inventoryDate = time.Now()
 

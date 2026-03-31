@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"time"
 )
 
 type Sheet struct {
@@ -82,6 +83,8 @@ type Set struct {
 	Rarities []string
 	// List of card colors present in the set
 	Colors []string
+	// Precomputed ReleaseDate value
+	ReleaseDateTime time.Time
 
 	Booster       map[string]Booster `json:"booster"`
 	SealedProduct []SealedProduct    `json:"sealedProduct"`

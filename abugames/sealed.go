@@ -3,7 +3,6 @@ package abugames
 import (
 	"context"
 	"net/url"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -139,56 +138,40 @@ func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 	}
 	abu.printf("Parsing %d entries", count)
 
-	pages := make(chan int)
-	results := make(chan resultChan)
-	var wg sync.WaitGroup
+	pageNums := make([]int, 0, count/maxEntryPerRequest+1)
+	for i := 0; i < count; i += maxEntryPerRequest {
+		pageNums = append(pageNums, i)
+	}
 
-	for i := 0; i < abu.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for page := range pages {
-				err := abu.processEntry(ctx, results, page)
+	mtgban.WorkerPool(ctx, abu.MaxConcurrency, pageNums,
+		func(ctx context.Context, page int, results chan<- resultChan) error {
+			return abu.processEntry(ctx, results, page)
+		},
+		func(result resultChan) {
+			if result.invEntry != nil {
+				err := abu.inventory.AddRelaxed(result.cardId, result.invEntry)
 				if err != nil {
-					abu.printf("%v", err)
+					abu.printf("%s", &result.theCard)
+					abu.printf("%s", err.Error())
 				}
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i := 0; i < count; i += maxEntryPerRequest {
-			pages <- i
-		}
-		close(pages)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for result := range results {
-		if result.invEntry != nil {
-			err = abu.inventory.AddRelaxed(result.cardId, result.invEntry)
-			if err != nil {
-				abu.printf("%s", &result.theCard)
-				abu.printf("%s", err.Error())
+			if result.buyEntry != nil {
+				err := abu.buylist.AddRelaxed(result.cardId, result.buyEntry)
+				if err != nil {
+					abu.printf("%s", &result.theCard)
+					abu.printf("%s", err.Error())
+				}
 			}
-		}
-		if result.buyEntry != nil {
-			err = abu.buylist.AddRelaxed(result.cardId, result.buyEntry)
-			if err != nil {
-				abu.printf("%s", &result.theCard)
-				abu.printf("%s", err.Error())
+			if result.tradeEntry != nil {
+				err := abu.buylist.AddRelaxed(result.cardId, result.tradeEntry)
+				if err != nil {
+					abu.printf("%s", &result.theCard)
+					abu.printf("%s", err.Error())
+				}
 			}
-		}
-		if result.tradeEntry != nil {
-			err = abu.buylist.AddRelaxed(result.cardId, result.tradeEntry)
-			if err != nil {
-				abu.printf("%s", &result.theCard)
-				abu.printf("%s", err.Error())
-			}
-		}
-	}
+		},
+		abu.printf,
+	)
 
 	abu.inventoryDate = time.Now()
 	abu.buylistDate = time.Now()

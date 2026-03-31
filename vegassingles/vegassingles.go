@@ -3,10 +3,10 @@ package vegassingles
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -156,45 +156,32 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 	}
 	vs.printf("Total pages: %d", totalPages)
 
-	pages := make(chan int)
-	results := make(chan []VSProduct)
-	var wg sync.WaitGroup
-
-	for i := 0; i < vs.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for page := range pages {
-				products, err := vs.client.getPage(ctx, page)
-				if err != nil {
-					vs.printf("page %d: %s", page, err.Error())
-					continue
-				}
-				results <- products
-			}
-		}()
+	pageNums := make([]int, totalPages)
+	for i := range pageNums {
+		pageNums[i] = i + 1
 	}
-
-	go func() {
-		for page := 1; page <= totalPages; page++ {
-			pages <- page
-		}
-		close(pages)
-
-		wg.Wait()
-		close(results)
-	}()
 
 	var productCount int
-	for products := range results {
-		for _, product := range products {
-			err := vs.processProduct(product)
+	mtgban.WorkerPool(ctx, vs.MaxConcurrency, pageNums,
+		func(ctx context.Context, page int, results chan<- []VSProduct) error {
+			products, err := vs.client.getPage(ctx, page)
 			if err != nil {
-				vs.printf("process error: %s", err.Error())
+				return fmt.Errorf("page %d: %s", page, err.Error())
 			}
-			productCount++
-		}
-	}
+			results <- products
+			return nil
+		},
+		func(products []VSProduct) {
+			for _, product := range products {
+				err := vs.processProduct(product)
+				if err != nil {
+					vs.printf("process error: %s", err.Error())
+				}
+				productCount++
+			}
+		},
+		vs.printf,
+	)
 
 	vs.printf("Processed %d products", productCount)
 	vs.inventoryDate = time.Now()

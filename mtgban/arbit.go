@@ -129,83 +129,131 @@ func (ae ArbitEntry) String() string {
 	return fmt.Sprintf("%s (%d): %0.2f ~ %0.2f", co, ae.Quantity, ae.InventoryEntry.Price, ae.ReferenceEntry.Price)
 }
 
+// resolvedOpts holds the resolved filter and threshold values from ArbitOpts,
+// with defaults applied for nil opts.
+type resolvedOpts struct {
+	minDiff               float64
+	minSpread             float64
+	maxSpread             float64
+	minPrice              float64
+	minBuyPrice           float64
+	minQty                int
+	minProfitability      float64
+	maxPriceRatio         float64
+	rate                  float64
+	profitabilityConstant float64
+	useTrades             bool
+	filterFoil            bool
+	filterOnlyFoil        bool
+	filterRLOnly          bool
+	filterDecksOnly       bool
+	filterBundle          bool
+	filterConditions      []string
+	filterRarities        []string
+	filterEditions        []string
+	filterSelectedEditions []string
+	filterSelectedCNRange map[string][2]int
+	filterSellers         []string
+	filterFunc            func(co *mtgmatcher.CardObject) (float64, bool)
+	filterPriceFunc       func(string, InventoryEntry) (float64, bool)
+}
+
+func resolveOpts(opts *ArbitOpts) resolvedOpts {
+	r := resolvedOpts{
+		rate: 1.0,
+	}
+	if opts == nil {
+		return r
+	}
+
+	if opts.MinDiff != 0 {
+		r.minDiff = opts.MinDiff
+	}
+	if opts.MinSpread != 0 {
+		r.minSpread = opts.MinSpread
+	}
+	if opts.Rate != 0 {
+		r.rate = opts.Rate
+	}
+	if opts.ProfitabilityConstant > 0 {
+		r.profitabilityConstant = opts.ProfitabilityConstant
+	}
+	r.useTrades = opts.UseTrades
+	r.minPrice = opts.MinPrice
+	r.minBuyPrice = opts.MinBuyPrice
+	r.minQty = opts.MinQuantity
+	r.maxPriceRatio = opts.MaxPriceRatio
+	r.maxSpread = opts.MaxSpread
+	r.minProfitability = opts.MinProfitability
+	r.filterFoil = opts.NoFoil
+	r.filterOnlyFoil = opts.OnlyFoil
+	r.filterRLOnly = opts.OnlyReserveList
+	r.filterDecksOnly = opts.SealedDecklist
+	r.filterBundle = opts.OnlyBundles
+	r.filterFunc = opts.CustomCardFilter
+	r.filterPriceFunc = opts.CustomPriceFilter
+	r.filterConditions = opts.Conditions
+	r.filterRarities = opts.Rarities
+	r.filterEditions = opts.Editions
+	r.filterSelectedEditions = opts.OnlyEditions
+	r.filterSelectedCNRange = opts.OnlyCollectorNumberRanges
+	r.filterSellers = opts.Sellers
+
+	return r
+}
+
+// filterCard checks whether a card should be skipped based on the resolved
+// options. Returns the custom factor and true if the card should be kept.
+func (r *resolvedOpts) filterCard(cardId string) (*mtgmatcher.CardObject, float64, bool) {
+	co, err := mtgmatcher.GetUUID(cardId)
+	if err != nil {
+		return nil, 0, false
+	}
+	if slices.Contains(r.filterRarities, co.Rarity) {
+		return nil, 0, false
+	}
+	if r.filterFoil && (co.Foil || co.Etched) {
+		return nil, 0, false
+	}
+	if r.filterOnlyFoil && !co.Foil && !co.Etched {
+		return nil, 0, false
+	}
+	if r.filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
+		return nil, 0, false
+	}
+	if r.filterRLOnly && !co.IsReserved {
+		return nil, 0, false
+	}
+	if slices.Contains(r.filterEditions, co.Edition) || slices.Contains(r.filterEditions, co.SetCode) {
+		return nil, 0, false
+	}
+	if r.filterSelectedEditions != nil && !slices.Contains(r.filterSelectedEditions, co.Edition) && !slices.Contains(r.filterSelectedEditions, co.SetCode) {
+		return nil, 0, false
+	}
+	cnRange, found := r.filterSelectedCNRange[co.Edition]
+	if found {
+		cn, err := strconv.Atoi(co.Number)
+		if err == nil && (cn < cnRange[0] || cn > cnRange[1]) {
+			return nil, 0, false
+		}
+	}
+
+	customFactor := 1.0
+	if r.filterFunc != nil {
+		factor, skip := r.filterFunc(co)
+		if skip {
+			return nil, 0, false
+		}
+		customFactor = factor
+	}
+
+	return co, customFactor, true
+}
+
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 	var result []ArbitEntry
 
-	minDiff := 0.0
-	minSpread := 0.0
-	useTrades := false
-	rate := 1.0
-	profitabilityConstant := 0.0
-
-	minPrice := 0.0
-	minBuyPrice := 0.0
-	minQty := 0
-	maxSpread := 0.0
-	maxPriceRatio := 0.0
-	minProfitability := 0.0
-	filterFoil := false
-	filterOnlyFoil := false
-	filterRLOnly := false
-	filterDecksOnly := false
-	filterBundle := false
-	var filterConditions []string
-	var filterRarities []string
-	var filterEditions []string
-	var filterSelectedEditions []string
-	var filterSelectedCNRange map[string][2]int
-	var filterSellers []string
-	var filterFunc func(co *mtgmatcher.CardObject) (float64, bool)
-	var filterPriceFunc func(string, InventoryEntry) (float64, bool)
-
-	if opts != nil {
-		if opts.MinDiff != 0 {
-			minDiff = opts.MinDiff
-		}
-		if opts.MinSpread != 0 {
-			minSpread = opts.MinSpread
-		}
-		if opts.Rate != 0 {
-			rate = opts.Rate
-		}
-		if opts.ProfitabilityConstant > 0 {
-			profitabilityConstant = opts.ProfitabilityConstant
-		}
-		useTrades = opts.UseTrades
-
-		minPrice = opts.MinPrice
-		minBuyPrice = opts.MinBuyPrice
-		minQty = opts.MinQuantity
-		maxPriceRatio = opts.MaxPriceRatio
-		maxSpread = opts.MaxSpread
-		minProfitability = opts.MinProfitability
-		filterFoil = opts.NoFoil
-		filterOnlyFoil = opts.OnlyFoil
-		filterRLOnly = opts.OnlyReserveList
-		filterDecksOnly = opts.SealedDecklist
-		filterBundle = opts.OnlyBundles
-		filterFunc = opts.CustomCardFilter
-		filterPriceFunc = opts.CustomPriceFilter
-
-		if len(opts.Conditions) != 0 {
-			filterConditions = opts.Conditions
-		}
-		if len(opts.Rarities) != 0 {
-			filterRarities = opts.Rarities
-		}
-		if len(opts.Editions) != 0 {
-			filterEditions = opts.Editions
-		}
-		if len(opts.OnlyEditions) != 0 {
-			filterSelectedEditions = opts.OnlyEditions
-		}
-		if len(opts.OnlyCollectorNumberRanges) != 0 {
-			filterSelectedCNRange = opts.OnlyCollectorNumberRanges
-		}
-		if len(opts.Sellers) != 0 {
-			filterSellers = opts.Sellers
-		}
-	}
+	r := resolveOpts(opts)
 
 	for cardId, blEntries := range vendor.Buylist() {
 		invEntries, found := seller.Inventory()[cardId]
@@ -216,76 +264,39 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 		// The first entry is always NM
 		blEntry := blEntries[0]
 
-		if maxPriceRatio != 0 && blEntry.PriceRatio > maxPriceRatio {
+		if r.maxPriceRatio != 0 && blEntry.PriceRatio > r.maxPriceRatio {
 			continue
 		}
 
-		if blEntry.BuyPrice < minBuyPrice {
+		if blEntry.BuyPrice < r.minBuyPrice {
 			continue
 		}
 
-		co, err := mtgmatcher.GetUUID(cardId)
-		if err != nil {
+		_, customFactor, ok := r.filterCard(cardId)
+		if !ok {
 			continue
-		}
-		if slices.Contains(filterRarities, co.Rarity) {
-			continue
-		}
-		if filterFoil && (co.Foil || co.Etched) {
-			continue
-		}
-		if filterOnlyFoil && !co.Foil && !co.Etched {
-			continue
-		}
-		if filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
-			continue
-		}
-		if filterRLOnly && !co.IsReserved {
-			continue
-		}
-		if slices.Contains(filterEditions, co.Edition) || slices.Contains(filterEditions, co.SetCode) {
-			continue
-		}
-		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) && !slices.Contains(filterSelectedEditions, co.SetCode) {
-			continue
-		}
-		cnRange, found := filterSelectedCNRange[co.Edition]
-		if found {
-			cn, err := strconv.Atoi(co.Number)
-			if err == nil && (cn < cnRange[0] || cn > cnRange[1]) {
-				continue
-			}
-		}
-
-		customFactor := 1.0
-		if filterFunc != nil {
-			factor, skip := filterFunc(co)
-			if skip {
-				continue
-			}
-			customFactor = factor
 		}
 
 		initialFactor := customFactor
 		for _, invEntry := range invEntries {
-			if slices.Contains(filterConditions, invEntry.Conditions) {
+			if slices.Contains(r.filterConditions, invEntry.Conditions) {
 				continue
 			}
-			if filterSellers != nil && !slices.Contains(filterSellers, invEntry.SellerName) && !slices.Contains(filterSellers, invEntry.CustomFields["SubSellerName"]) {
+			if r.filterSellers != nil && !slices.Contains(r.filterSellers, invEntry.SellerName) && !slices.Contains(r.filterSellers, invEntry.CustomFields["SubSellerName"]) {
 				continue
 			}
-			if filterBundle && !invEntry.Bundle {
+			if r.filterBundle && !invEntry.Bundle {
 				continue
 			}
-			if !seller.Info().NoQuantityInventory && invEntry.Quantity < minQty {
+			if !seller.Info().NoQuantityInventory && invEntry.Quantity < r.minQty {
 				continue
 			}
-			if invEntry.Price < minPrice {
+			if invEntry.Price < r.minPrice {
 				continue
 			}
 
-			if filterPriceFunc != nil {
-				factor, skip := filterPriceFunc(cardId, invEntry)
+			if r.filterPriceFunc != nil {
+				factor, skip := r.filterPriceFunc(cardId, invEntry)
 				if skip {
 					continue
 				}
@@ -294,7 +305,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			}
 
 			// Apply the optional previously established factor
-			price := invEntry.Price * customFactor * rate
+			price := invEntry.Price * customFactor * r.rate
 
 			// When invEntry is not NM, we need to account for conditions
 			if invEntry.Conditions != "NM" {
@@ -313,7 +324,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			}
 
 			blPrice := blEntry.BuyPrice
-			if useTrades {
+			if r.useTrades {
 				blPrice *= vendor.Info().CreditMultiplier
 			}
 
@@ -322,20 +333,20 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			}
 
 			// Check again to account for conditions
-			if blPrice < minBuyPrice {
+			if blPrice < r.minBuyPrice {
 				continue
 			}
 
 			spread := 100 * (blPrice - price) / price
 			difference := blPrice - price
 
-			if maxSpread != 0 && spread > maxSpread {
+			if r.maxSpread != 0 && spread > r.maxSpread {
 				continue
 			}
-			if difference < minDiff {
+			if difference < r.minDiff {
 				continue
 			}
-			if spread < minSpread {
+			if spread < r.minSpread {
 				continue
 			}
 
@@ -348,12 +359,12 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 				}
 			}
 
-			profitability := (difference / (price + profitabilityConstant)) * math.Log(1+spread)
+			profitability := (difference / (price + r.profitabilityConstant)) * math.Log(1+spread)
 			if qty > 1 {
 				profitability *= math.Pow(float64(qty), 0.25)
 			}
 
-			if profitability < minProfitability {
+			if profitability < r.minProfitability {
 				continue
 			}
 
@@ -382,63 +393,7 @@ var defaultGradeMap = map[string]float64{
 func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 	var result []ArbitEntry
 
-	minDiff := 0.0
-	minSpread := 0.0
-	maxSpread := 0.0
-	minPrice := 0.0
-	minQty := 0
-	minProfitability := 0.0
-	profitabilityConstant := 0.0
-	filterFoil := false
-	filterOnlyFoil := false
-	filterRLOnly := false
-	filterDecksOnly := false
-	var filterConditions []string
-	var filterRarities []string
-	var filterEditions []string
-	var filterSelectedEditions []string
-	var filterSelectedCNRange map[string][2]int
-	var filterFunc func(co *mtgmatcher.CardObject) (float64, bool)
-	var filterPriceFunc func(string, InventoryEntry) (float64, bool)
-
-	if opts != nil {
-		if opts.MinDiff != 0 {
-			minDiff = opts.MinDiff
-		}
-		if opts.MinSpread != 0 {
-			minSpread = opts.MinSpread
-		}
-		if opts.ProfitabilityConstant > 0 {
-			profitabilityConstant = opts.ProfitabilityConstant
-		}
-
-		minPrice = opts.MinPrice
-		maxSpread = opts.MaxSpread
-		minQty = opts.MinQuantity
-		minProfitability = opts.MinProfitability
-		filterFoil = opts.NoFoil
-		filterOnlyFoil = opts.OnlyFoil
-		filterRLOnly = opts.OnlyReserveList
-		filterDecksOnly = opts.SealedDecklist
-		filterFunc = opts.CustomCardFilter
-		filterPriceFunc = opts.CustomPriceFilter
-
-		if len(opts.Conditions) != 0 {
-			filterConditions = opts.Conditions
-		}
-		if len(opts.Rarities) != 0 {
-			filterRarities = opts.Rarities
-		}
-		if len(opts.Editions) != 0 {
-			filterEditions = opts.Editions
-		}
-		if len(opts.OnlyEditions) != 0 {
-			filterSelectedEditions = opts.OnlyEditions
-		}
-		if len(opts.OnlyCollectorNumberRanges) != 0 {
-			filterSelectedCNRange = opts.OnlyCollectorNumberRanges
-		}
-	}
+	r := resolveOpts(opts)
 
 	for cardId, refEntries := range reference.Inventory() {
 		invEntries, found := probe.Inventory()[cardId]
@@ -446,59 +401,22 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 			continue
 		}
 
-		co, err := mtgmatcher.GetUUID(cardId)
-		if err != nil {
+		_, customFactor, ok := r.filterCard(cardId)
+		if !ok {
 			continue
-		}
-		if slices.Contains(filterRarities, co.Rarity) {
-			continue
-		}
-		if filterFoil && (co.Foil || co.Etched) {
-			continue
-		}
-		if filterOnlyFoil && !co.Foil && !co.Etched {
-			continue
-		}
-		if filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
-			continue
-		}
-		if filterRLOnly && !co.IsReserved {
-			continue
-		}
-		if slices.Contains(filterEditions, co.Edition) || slices.Contains(filterEditions, co.SetCode) {
-			continue
-		}
-		if filterSelectedEditions != nil && !slices.Contains(filterSelectedEditions, co.Edition) && !slices.Contains(filterSelectedEditions, co.SetCode) {
-			continue
-		}
-		cnRange, found := filterSelectedCNRange[co.Edition]
-		if found {
-			cn, err := strconv.Atoi(co.Number)
-			if err == nil && (cn < cnRange[0] || cn > cnRange[1]) {
-				continue
-			}
-		}
-
-		customFactor := 1.0
-		if filterFunc != nil {
-			factor, skip := filterFunc(co)
-			if skip {
-				continue
-			}
-			customFactor = factor
 		}
 
 		initialFactor := customFactor
 		for _, refEntry := range refEntries {
-			if slices.Contains(filterConditions, refEntry.Conditions) {
+			if slices.Contains(r.filterConditions, refEntry.Conditions) {
 				continue
 			}
-			if refEntry.Price < minPrice {
+			if refEntry.Price < r.minPrice {
 				continue
 			}
 
-			if filterPriceFunc != nil {
-				factor, skip := filterPriceFunc(cardId, refEntry)
+			if r.filterPriceFunc != nil {
+				factor, skip := r.filterPriceFunc(cardId, refEntry)
 				if skip {
 					continue
 				}
@@ -506,13 +424,13 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 			}
 
 			for _, invEntry := range invEntries {
-				if slices.Contains(filterConditions, invEntry.Conditions) {
+				if slices.Contains(r.filterConditions, invEntry.Conditions) {
 					continue
 				}
-				if !probe.Info().NoQuantityInventory && invEntry.Quantity < minQty {
+				if !probe.Info().NoQuantityInventory && invEntry.Quantity < r.minQty {
 					continue
 				}
-				if invEntry.Price < minPrice {
+				if invEntry.Price < r.minPrice {
 					continue
 				}
 
@@ -530,13 +448,13 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 				spread := 100 * (refPrice - price) / price
 				difference := refPrice - price
 
-				if maxSpread != 0 && spread > maxSpread {
+				if r.maxSpread != 0 && spread > r.maxSpread {
 					continue
 				}
-				if difference < minDiff {
+				if difference < r.minDiff {
 					continue
 				}
-				if spread < minSpread {
+				if spread < r.minSpread {
 					continue
 				}
 
@@ -549,12 +467,12 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 					}
 				}
 
-				profitability := (difference / (price + profitabilityConstant)) * math.Log(1+spread)
+				profitability := (difference / (price + r.profitabilityConstant)) * math.Log(1+spread)
 				if qty > 1 {
 					profitability *= math.Pow(float64(qty), 0.25)
 				}
 
-				if profitability < minProfitability {
+				if profitability < r.minProfitability {
 					continue
 				}
 

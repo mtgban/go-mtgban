@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -138,62 +137,45 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 }
 
 func (cs *Cardsphere) Load(ctx context.Context) error {
-	results := make(chan responseChan)
-	offsets := make(chan int)
-	var wg sync.WaitGroup
-
-	for i := 0; i < cs.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for offset := range offsets {
-				err := cs.processPage(ctx, results, offset)
-				if err != nil {
-					cs.printf("offset %d: %s", offset, err.Error())
-				}
-				time.Sleep(3 * time.Second)
-			}
-			wg.Done()
-		}()
+	offsets := make([]int, 0, csMaxOffset/100)
+	for i := 0; i < csMaxOffset; i += 100 {
+		offsets = append(offsets, i)
 	}
-
-	go func() {
-		for i := 0; i < csMaxOffset; i += 100 {
-			offsets <- i
-		}
-		close(offsets)
-
-		wg.Wait()
-		close(results)
-	}()
 
 	lastTime := time.Now()
-	for result := range results {
-		// Only keep one offer per condition
-		var skip bool
-		entries := cs.buylist[result.cardId]
-		for _, entry := range entries {
-			if entry.Conditions == result.blEntry.Conditions {
-				skip = true
-				break
+	mtgban.WorkerPool(ctx, cs.MaxConcurrency, offsets,
+		func(ctx context.Context, offset int, results chan<- responseChan) error {
+			err := cs.processPage(ctx, results, offset)
+			if err != nil {
+				return fmt.Errorf("offset %d: %s", offset, err.Error())
 			}
-		}
-		if skip {
-			continue
-		}
+			time.Sleep(3 * time.Second)
+			return nil
+		},
+		func(result responseChan) {
+			// Only keep one offer per condition
+			entries := cs.buylist[result.cardId]
+			for _, entry := range entries {
+				if entry.Conditions == result.blEntry.Conditions {
+					return
+				}
+			}
 
-		err := cs.buylist.AddRelaxed(result.cardId, result.blEntry)
-		if err != nil {
-			cs.printf("%v", err)
-			continue
-		}
-		// This would be better with a select, but for now just print a message
-		// that we're still alive every minute
-		if time.Now().After(lastTime.Add(60 * time.Second)) {
-			card, _ := mtgmatcher.GetUUID(result.cardId)
-			cs.printf("Still going, last processed card: %s", card)
-			lastTime = time.Now()
-		}
-	}
+			err := cs.buylist.AddRelaxed(result.cardId, result.blEntry)
+			if err != nil {
+				cs.printf("%v", err)
+				return
+			}
+			// This would be better with a select, but for now just print a message
+			// that we're still alive every minute
+			if time.Now().After(lastTime.Add(60 * time.Second)) {
+				card, _ := mtgmatcher.GetUUID(result.cardId)
+				cs.printf("Still going, last processed card: %s", card)
+				lastTime = time.Now()
+			}
+		},
+		cs.printf,
+	)
 
 	cs.buylistDate = time.Now()
 

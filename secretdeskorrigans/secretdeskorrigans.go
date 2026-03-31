@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -252,40 +251,28 @@ func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 
 	sdk.printf("Found %d categories", len(links))
 
-	products := make(chan string)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
+	type item struct {
+		link  string
+		title string
+	}
+	items := make([]item, len(links))
+	for i := range links {
+		items[i] = item{links[i], titles[i]}
+	}
 
-	for i := 0; i < sdk.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for productPath := range products {
-				err := sdk.processProduct(ctx, results, productPath)
-				if err != nil {
-					sdk.printf("%v", err)
-				}
+	mtgban.WorkerPool(ctx, sdk.MaxConcurrency, items,
+		func(ctx context.Context, it item, results chan<- responseChan) error {
+			sdk.printf("Processing %s", it.title)
+			return sdk.processProduct(ctx, results, it.link)
+		},
+		func(record responseChan) {
+			err := sdk.inventory.AddRelaxed(record.cardId, record.invEntry)
+			if err != nil {
+				sdk.printf("%s", err.Error())
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i, link := range links {
-			sdk.printf("Processing %s", titles[i])
-			products <- link
-		}
-		close(products)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		err := sdk.inventory.AddRelaxed(record.cardId, record.invEntry)
-		if err != nil {
-			sdk.printf("%s", err.Error())
-		}
-	}
+		},
+		sdk.printf,
+	)
 
 	sdk.inventoryDate = time.Now()
 

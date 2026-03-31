@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -302,55 +301,45 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 
 	mkm.printf("Parsing %d expansion ids", len(list))
 
-	expansions := make(chan int)
-	channel := make(chan responseChan)
-	var wg sync.WaitGroup
+	// Pre-filter items if a target edition is set
+	items := list
+	if mkm.TargetEdition != "" {
+		items = nil
+		for _, exp := range list {
+			if exp.Name == mkm.TargetEdition {
+				items = append(items, exp)
+			}
+		}
+	}
 
-	for i := 0; i < mkm.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for i := range expansions {
-				err := mkm.processEdition(ctx, channel, list[i].IdExpansion)
-				if err != nil {
-					mkm.printf("expansion %s (id %d) returned %s", list[i].Name, list[i].IdExpansion, err.Error())
+	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items,
+		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
+			mkm.printf("Processing %s (%d)", exp.Name, exp.IdExpansion)
+			err := mkm.processEdition(ctx, channel, exp.IdExpansion)
+			if err != nil {
+				return fmt.Errorf("expansion %s (id %d) returned %s", exp.Name, exp.IdExpansion, err.Error())
+			}
+			return nil
+		},
+		func(result responseChan) {
+			err := mkm.inventory.AddStrict(result.cardId, &result.entry)
+			if err != nil {
+				card, cerr := mtgmatcher.GetUUID(result.cardId)
+				if cerr != nil {
+					mkm.printf("%d - %s: %s", result.ogId, cerr.Error(), result.cardId)
+					return
 				}
+				// Skip too many errors
+				if mtgmatcher.IsToken(card.Name) ||
+					card.Edition == "Pro Tour Collector Set" ||
+					strings.HasPrefix(card.Edition, "World Championship Decks") {
+					return
+				}
+				mkm.printf("%d - %s", result.ogId, err.Error())
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i := range list {
-			if mkm.TargetEdition != "" && mkm.TargetEdition != list[i].Name {
-				continue
-			}
-			mkm.printf("Processing %s (%d) %d/%d", list[i].Name, list[i].IdExpansion, i+1, len(list))
-			expansions <- i
-		}
-		close(expansions)
-
-		wg.Wait()
-		close(channel)
-	}()
-
-	for result := range channel {
-		err := mkm.inventory.AddStrict(result.cardId, &result.entry)
-		if err != nil {
-			card, cerr := mtgmatcher.GetUUID(result.cardId)
-			if cerr != nil {
-				mkm.printf("%d - %s: %s", result.ogId, cerr.Error(), result.cardId)
-				continue
-			}
-			// Skip too many errors
-			if mtgmatcher.IsToken(card.Name) ||
-				card.Edition == "Pro Tour Collector Set" ||
-				strings.HasPrefix(card.Edition, "World Championship Decks") {
-				continue
-			}
-			mkm.printf("%d - %s", result.ogId, err.Error())
-			continue
-		}
-	}
+		},
+		mkm.printf,
+	)
 
 	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.inventoryDate = time.Now()

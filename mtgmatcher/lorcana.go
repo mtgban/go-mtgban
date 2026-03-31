@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type LorcanaJSON struct {
@@ -36,6 +37,7 @@ type LorcanaJSON struct {
 		ArtistsText      string            `json:"artistsText"`
 		Code             string            `json:"code"`
 		Color            string            `json:"color"`
+		Colors           []string          `json:"colors"`
 		Cost             int               `json:"cost"`
 		FlavorText       string            `json:"flavorText,omitempty"`
 		FoilTypes        []string          `json:"foilTypes,omitempty"`
@@ -99,11 +101,13 @@ func (lj LorcanaJSON) Load() cardBackend {
 	for code, set := range lj.Sets {
 		backend.AllSets = append(backend.AllSets, code)
 
+		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
 		backend.Sets[code] = &Set{
-			Name:        set.Name,
-			Code:        code,
-			ReleaseDate: set.ReleaseDate,
-			Type:        set.Type,
+			Name:            set.Name,
+			Code:            code,
+			ReleaseDate:     set.ReleaseDate,
+			ReleaseDateTime: releaseDateTime,
+			Type:            set.Type,
 		}
 	}
 
@@ -137,6 +141,16 @@ func (lj LorcanaJSON) Load() cardBackend {
 		// Ensure no spaces are present for ease of future comparisons
 		rarity := strings.Replace(strings.ToLower(card.Rarity), " ", "", -1)
 
+		// Collapse multi and single color info to the same slice, lower case color names
+		ogColors := card.Colors
+		if len(ogColors) == 0 {
+			ogColors = []string{card.Color}
+		}
+		var colors []string
+		for _, color := range ogColors {
+			colors = append(colors, strings.ToLower(color))
+		}
+
 		// Prepare the card and add it to the main array
 		// Since cards are already sorted (by number/id), the order here is preserved
 		convertedCard := Card{
@@ -148,7 +162,7 @@ func (lj LorcanaJSON) Load() cardBackend {
 			Number:   fmt.Sprintf("%d%s", card.Number, card.Variant),
 			Images:   card.Images,
 
-			Colors: []string{strings.ToLower(card.Color)},
+			Colors: colors,
 			Rarity: rarity,
 
 			Subtypes:   card.Subtypes,
@@ -212,8 +226,17 @@ func (lj LorcanaJSON) Load() cardBackend {
 			if !slices.Contains(rarities, card.Rarity) {
 				rarities = append(rarities, card.Rarity)
 			}
-			if len(card.Colors) > 0 && !slices.Contains(colors, card.Colors[0]) {
-				colors = append(colors, card.Colors[0])
+
+			for _, color := range card.Colors {
+				if !slices.Contains(colors, mtgColorNameMap[color]) {
+					colors = append(colors, mtgColorNameMap[color])
+				}
+			}
+			if len(card.Colors) == 0 && !slices.Contains(colors, "colorless") {
+				colors = append(colors, "colorless")
+			}
+			if len(card.Colors) > 1 && !slices.Contains(colors, "multicolor") {
+				colors = append(colors, "multicolor")
 			}
 		}
 

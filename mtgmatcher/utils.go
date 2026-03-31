@@ -368,7 +368,7 @@ func CardReleaseDate(cardId string) (time.Time, error) {
 		if err != nil {
 			return time.Time{}, err
 		}
-		releaseDate = set.ReleaseDate
+		return set.ReleaseDateTime, nil
 	}
 
 	return time.Parse("2006-01-02", releaseDate)

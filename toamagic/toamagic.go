@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -239,43 +238,30 @@ func (toa *TOAMagic) Load(ctx context.Context) error {
 
 	toa.printf("Found %d categories", len(links))
 
-	products := make(chan string)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
+	type item struct {
+		link  string
+		title string
+	}
+	items := make([]item, len(links))
+	for i := range links {
+		items[i] = item{links[i], titles[i]}
+	}
 
-	for i := 0; i < toa.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for productPath := range products {
-				err := toa.processProduct(ctx, results, productPath)
+	mtgban.WorkerPool(ctx, toa.MaxConcurrency, items,
+		func(ctx context.Context, it item, results chan<- responseChan) error {
+			toa.printf("Processing %s", it.title)
+			return toa.processProduct(ctx, results, it.link)
+		},
+		func(record responseChan) {
+			if record.invEntry != nil {
+				err := toa.inventory.AddRelaxed(record.cardId, record.invEntry)
 				if err != nil {
-					toa.printf("%v", err)
+					toa.printf("%s", err.Error())
 				}
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i, link := range links {
-			toa.printf("Processing %s", titles[i])
-			products <- link
-		}
-		close(products)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		var err error
-		if record.invEntry != nil {
-			err = toa.inventory.AddRelaxed(record.cardId, record.invEntry)
-		}
-		if err != nil {
-			toa.printf("%s", err.Error())
-		}
-	}
+		},
+		toa.printf,
+	)
 
 	toa.inventoryDate = time.Now()
 

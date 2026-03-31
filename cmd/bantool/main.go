@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"path"
 	"runtime/debug"
 	"strconv"
@@ -1036,11 +1037,14 @@ func run() int {
 
 	now = time.Now()
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	var nonFatalErrors []error
 
 	// Load the data
 	for _, scraper := range scrapers {
-		err := scraper.Load(context.Background())
+		err := scraper.Load(ctx)
 		if err != nil {
 			log.Println(err)
 			nonFatalErrors = append(nonFatalErrors, err)

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -190,41 +189,23 @@ func (tcg *TCGLorcana) Load(ctx context.Context) error {
 	}
 	tcg.printf("Found %d products", totals)
 
-	pages := make(chan int)
-	channel := make(chan genericChan)
-	var wg sync.WaitGroup
+	pageNums := make([]int, 0, totals/tcgplayer.MaxItemsInResponse+1)
+	for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
+		pageNums = append(pageNums, i)
+	}
 
-	for i := 0; i < tcg.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-
-			for page := range pages {
-				err := tcg.processPage(ctx, channel, page)
-				if err != nil {
-					tcg.printf("%s", err.Error())
-				}
+	mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+		func(ctx context.Context, page int, channel chan<- genericChan) error {
+			return tcg.processPage(ctx, channel, page)
+		},
+		func(result genericChan) {
+			err := tcg.inventory.Add(result.key, &result.entry)
+			if err != nil {
+				tcg.printf("%s", err.Error())
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
-			pages <- i
-		}
-		close(pages)
-
-		wg.Wait()
-		close(channel)
-	}()
-
-	for result := range channel {
-		err := tcg.inventory.Add(result.key, &result.entry)
-		if err != nil {
-			tcg.printf("%s", err.Error())
-			continue
-		}
-	}
+		},
+		tcg.printf,
+	)
 
 	tcg.inventoryDate = time.Now()
 
