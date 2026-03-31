@@ -8,6 +8,8 @@ import (
 // WorkerPool runs worker on each item from items with bounded concurrency.
 // Each worker receives a channel to push results incrementally.
 // Results are consumed on the calling goroutine via the consume callback.
+// When ctx is cancelled, no new items are dispatched and in-flight workers
+// are allowed to finish so that partial results are still consumed.
 func WorkerPool[T any, R any](
 	ctx context.Context,
 	concurrency int,
@@ -38,9 +40,11 @@ func WorkerPool[T any, R any](
 			select {
 			case work <- item:
 			case <-ctx.Done():
-				break
+				// Stop dispatching new work
+				goto done
 			}
 		}
+	done:
 		close(work)
 		wg.Wait()
 		close(results)
