@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -184,40 +183,18 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 		return err
 	}
 
-	pages := make(chan MCEdition)
-	results := make(chan resultChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < mc.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for page := range pages {
-				err := mc.processEntry(ctx, results, page)
-				if err != nil {
-					mc.printf("%v", err)
-				}
+	mtgban.WorkerPool(ctx, mc.MaxConcurrency, editionList,
+		func(ctx context.Context, edition MCEdition, results chan<- resultChan) error {
+			return mc.processEntry(ctx, results, edition)
+		},
+		func(result resultChan) {
+			err := mc.inventory.AddRelaxed(result.cardId, result.invEntry)
+			if err != nil {
+				mc.printf("%s", err.Error())
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for _, edition := range editionList {
-			pages <- edition
-		}
-		close(pages)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for result := range results {
-		err = mc.inventory.AddRelaxed(result.cardId, result.invEntry)
-		if err != nil {
-			mc.printf("%s", err.Error())
-			continue
-		}
-	}
+		},
+		mc.printf,
+	)
 
 	mc.inventoryDate = time.Now()
 
@@ -354,40 +331,18 @@ func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
 	}
 	mc.printf("Found %d editions", len(editions))
 
-	editionsChan := make(chan MCExpansion)
-	results := make(chan resultChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < mc.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for edition := range editionsChan {
-				err := mc.parseBL(ctx, results, edition)
-				if err != nil {
-					mc.printf("%v", err)
-				}
+	mtgban.WorkerPool(ctx, mc.MaxConcurrency, editions,
+		func(ctx context.Context, edition MCExpansion, results chan<- resultChan) error {
+			return mc.parseBL(ctx, results, edition)
+		},
+		func(record resultChan) {
+			err := mc.buylist.AddRelaxed(record.cardId, record.buyEntry)
+			if err != nil {
+				mc.printf("%s", err.Error())
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for _, edition := range editions {
-			editionsChan <- edition
-		}
-		close(editionsChan)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		err := mc.buylist.AddRelaxed(record.cardId, record.buyEntry)
-		if err != nil {
-			mc.printf("%s", err.Error())
-			continue
-		}
-	}
+		},
+		mc.printf,
+	)
 
 	mc.buylistDate = time.Now()
 

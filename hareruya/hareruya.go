@@ -10,7 +10,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -517,54 +516,30 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	}
 	ha.printf("Found %d card sets", len(cardSets))
 
-	sets := make(chan string)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < ha.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for cardSet := range sets {
-				if mode == modeInventory {
-					err = ha.processSet(ctx, results, cardSet)
-				} else if mode == modeBuylist {
-					err = ha.processBuylistSet(ctx, results, cardSet)
-				}
-				if err != nil {
-					ha.printf("%v", err)
-				}
+	// Pre-filter items if a target edition is set
+	items := cardSets
+	if ha.TargetEdition != "" {
+		items = nil
+		for _, cs := range cardSets {
+			if cs == ha.TargetEdition {
+				items = append(items, cs)
 			}
-			wg.Done()
-		}()
+		}
 	}
 
-	go func() {
-		for i, cardSet := range cardSets {
-			if ha.TargetEdition != "" && ha.TargetEdition != cardSet {
-				continue
-			}
-			ha.printf("Processing card set %s (%d/%d)", cardSet, i+1, len(cardSets))
-			sets <- cardSet
-		}
-		close(sets)
-
-		wg.Wait()
-		close(results)
-	}()
-
+	var consume func(responseChan)
 	if mode == modeInventory {
-		for record := range results {
+		consume = func(record responseChan) {
 			err := ha.inventory.Add(record.cardId, record.invEntry)
 			if err != nil {
 				ha.printf("%s", err.Error())
 			}
 		}
-
-		ha.inventoryDate = time.Now()
 	} else if mode == modeBuylist {
-		for record := range results {
+		consume = func(record responseChan) {
 			co, _ := mtgmatcher.GetUUID(record.cardId)
 			// This store tracks the two different EU/US printings as separate entries
+			var err error
 			if co.SetCode == "MPS" {
 				err = ha.buylist.AddRelaxed(record.cardId, record.buyEntry)
 			} else {
@@ -574,7 +549,25 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 				ha.printf("%s", err.Error())
 			}
 		}
+	}
 
+	mtgban.WorkerPool(ctx, ha.MaxConcurrency, items,
+		func(ctx context.Context, cardSet string, results chan<- responseChan) error {
+			ha.printf("Processing card set %s", cardSet)
+			if mode == modeInventory {
+				return ha.processSet(ctx, results, cardSet)
+			} else if mode == modeBuylist {
+				return ha.processBuylistSet(ctx, results, cardSet)
+			}
+			return nil
+		},
+		consume,
+		ha.printf,
+	)
+
+	if mode == modeInventory {
+		ha.inventoryDate = time.Now()
+	} else if mode == modeBuylist {
 		ha.buylistDate = time.Now()
 	}
 

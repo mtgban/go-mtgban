@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -203,70 +202,40 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	tcg.requestSize = DefaultSellerRequestSize
 	tcg.printf("Found %d results for seller id %s", ret.TotalResults, tcg.Info().Shorthand)
 
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	if ret.TotalResults/tcg.requestSize < MaxPagesGlobalScrapingValue {
-		tcg.printf("Using global scraping")
-		pages := make(chan int)
-		for i := 0; i < tcg.MaxConcurrency; i++ {
-			wg.Add(1)
-			go func() {
-				for page := range pages {
-					tcg.printf("processing page %d/%d", page, ret.TotalResults/tcg.requestSize)
-					err := tcg.processEntry(ctx, results, page)
-					if err != nil {
-						tcg.printf("%v", err)
-					}
-				}
-				wg.Done()
-			}()
-		}
-
-		go func() {
-			for i := 0; i <= ret.TotalResults/tcg.requestSize; i++ {
-				pages <- i
-			}
-			close(pages)
-
-			wg.Wait()
-			close(results)
-		}()
-	} else {
-		tcg.printf("Using per-edition scraping, this might take a while")
-		pairs := make(chan setCountPair)
-		for i := 0; i < tcg.MaxConcurrency; i++ {
-			wg.Add(1)
-			go func() {
-				for pair := range pairs {
-					tcg.printf("processing edition %d/%d (%s)", pair.Idx+1, len(ret.Pair), pair.Name)
-					err := tcg.processEdition(ctx, results, pair.Name, pair.Count)
-					if err != nil {
-						tcg.printf("%v", err)
-					}
-				}
-				wg.Done()
-			}()
-		}
-
-		go func() {
-			for _, pair := range ret.Pair {
-				pairs <- pair
-			}
-			close(pairs)
-
-			wg.Wait()
-			close(results)
-		}()
-
-	}
-
-	for result := range results {
+	consume := func(result responseChan) {
 		err := tcg.inventory.AddRelaxed(result.cardId, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
-			continue
 		}
+	}
+
+	if ret.TotalResults/tcg.requestSize < MaxPagesGlobalScrapingValue {
+		tcg.printf("Using global scraping")
+
+		pageNums := make([]int, 0, ret.TotalResults/tcg.requestSize+1)
+		for i := 0; i <= ret.TotalResults/tcg.requestSize; i++ {
+			pageNums = append(pageNums, i)
+		}
+
+		mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+			func(ctx context.Context, page int, results chan<- responseChan) error {
+				tcg.printf("processing page %d/%d", page, ret.TotalResults/tcg.requestSize)
+				return tcg.processEntry(ctx, results, page)
+			},
+			consume,
+			tcg.printf,
+		)
+	} else {
+		tcg.printf("Using per-edition scraping, this might take a while")
+
+		mtgban.WorkerPool(ctx, tcg.MaxConcurrency, ret.Pair,
+			func(ctx context.Context, pair setCountPair, results chan<- responseChan) error {
+				tcg.printf("processing edition %d/%d (%s)", pair.Idx+1, len(ret.Pair), pair.Name)
+				return tcg.processEdition(ctx, results, pair.Name, pair.Count)
+			},
+			consume,
+			tcg.printf,
+		)
 	}
 
 	tcg.inventoryDate = time.Now()

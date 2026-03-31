@@ -3,7 +3,6 @@ package mtgstocks
 import (
 	"context"
 	"errors"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -128,61 +127,32 @@ func (stks *MTGStocks) Load(ctx context.Context) error {
 		return errors.New("nothing was loaded from mtgstocks")
 	}
 
-	pages := make(chan requestChan)
-	channel := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < stks.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for page := range pages {
-				err := stks.processEntry(channel, page)
-				if err != nil {
-					stks.printf("%s", err)
-				}
-			}
-			wg.Done()
-		}()
+	var items []requestChan
+	for _, interest := range averagesFoil {
+		items = append(items, requestChan{name: "Average", interest: interest})
+	}
+	for _, interest := range averagesRegular {
+		items = append(items, requestChan{name: "Average", interest: interest})
+	}
+	for _, interest := range marketsFoil {
+		items = append(items, requestChan{name: "Market", interest: interest})
+	}
+	for _, interest := range marketsRegular {
+		items = append(items, requestChan{name: "Market", interest: interest})
 	}
 
-	go func() {
-		for _, interest := range averagesFoil {
-			pages <- requestChan{
-				name:     "Average",
-				interest: interest,
+	mtgban.WorkerPool(ctx, stks.MaxConcurrency, items,
+		func(_ context.Context, page requestChan, channel chan<- responseChan) error {
+			return stks.processEntry(channel, page)
+		},
+		func(result responseChan) {
+			err := stks.inventory.Add(result.cardId, &result.entry)
+			if err != nil {
+				stks.printf("%s", err.Error())
 			}
-		}
-		for _, interest := range averagesRegular {
-			pages <- requestChan{
-				name:     "Average",
-				interest: interest,
-			}
-		}
-		for _, interest := range marketsFoil {
-			pages <- requestChan{
-				name:     "Market",
-				interest: interest,
-			}
-		}
-		for _, interest := range marketsRegular {
-			pages <- requestChan{
-				name:     "Market",
-				interest: interest,
-			}
-		}
-		close(pages)
-
-		wg.Wait()
-		close(channel)
-	}()
-
-	for result := range channel {
-		err := stks.inventory.Add(result.cardId, &result.entry)
-		if err != nil {
-			stks.printf("%s", err.Error())
-			continue
-		}
-	}
+		},
+		stks.printf,
+	)
 
 	stks.inventoryDate = time.Now()
 

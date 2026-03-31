@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -185,57 +184,38 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	}
 	mkm.printf("Mapped %d mkm products to sealed products", len(productIds))
 
-	products := make(chan int)
-	channel := make(chan responseChan)
-	var wg sync.WaitGroup
-
-	for i := 0; i < mkm.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for idProduct := range products {
-				uuids := productMap[idProduct]
-				co, err := mtgmatcher.GetUUID(uuids[0])
-				if err != nil {
-					continue
-				}
-				if mkm.TargetEdition != "" && mkm.TargetEdition != co.Edition && mkm.TargetEdition != co.SetCode {
-					continue
-				}
-
-				mkm.printf("Processing %s (%d/%d)...", co, slices.Index(productIds, idProduct)+1, len(productIds))
-
-				err = mkm.processProduct(ctx, channel, idProduct, uuids)
-				if err != nil {
-					mkm.printf("%s (%d) %s", co, idProduct, err.Error())
-					continue
-				}
+	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, productIds,
+		func(ctx context.Context, idProduct int, channel chan<- responseChan) error {
+			uuids := productMap[idProduct]
+			co, err := mtgmatcher.GetUUID(uuids[0])
+			if err != nil {
+				return nil
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for _, id := range productIds {
-			products <- id
-		}
-		close(products)
-
-		wg.Wait()
-		close(channel)
-	}()
-
-	for result := range channel {
-		err := mkm.inventory.AddStrict(result.cardId, &result.entry)
-		if err != nil {
-			_, cerr := mtgmatcher.GetUUID(result.cardId)
-			if cerr != nil {
-				mkm.printf("%s - %s: %s", result.entry.OriginalId, cerr.Error(), result.cardId)
-				continue
+			if mkm.TargetEdition != "" && mkm.TargetEdition != co.Edition && mkm.TargetEdition != co.SetCode {
+				return nil
 			}
-			mkm.printf("%d - %s", result.ogId, err.Error())
-			continue
-		}
-	}
+
+			mkm.printf("Processing %s (%d/%d)...", co, slices.Index(productIds, idProduct)+1, len(productIds))
+
+			err = mkm.processProduct(ctx, channel, idProduct, uuids)
+			if err != nil {
+				mkm.printf("%s (%d) %s", co, idProduct, err.Error())
+			}
+			return nil
+		},
+		func(result responseChan) {
+			err := mkm.inventory.AddStrict(result.cardId, &result.entry)
+			if err != nil {
+				_, cerr := mtgmatcher.GetUUID(result.cardId)
+				if cerr != nil {
+					mkm.printf("%s - %s: %s", result.entry.OriginalId, cerr.Error(), result.cardId)
+					return
+				}
+				mkm.printf("%d - %s", result.ogId, err.Error())
+			}
+		},
+		mkm.printf,
+	)
 
 	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.printf("Total number of products found: %d", len(mkm.inventory))

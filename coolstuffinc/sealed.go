@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -189,40 +188,23 @@ func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
 	}
 	csi.printf("Found %d pages", totalPages)
 
-	pages := make(chan int)
-	results := make(chan responseChan)
-	var wg sync.WaitGroup
+	pageNums := make([]int, totalPages)
+	for i := range pageNums {
+		pageNums[i] = i + 1
+	}
 
-	for i := 0; i < csi.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for page := range pages {
-				err := csi.processSealedPage(ctx, results, page)
-				if err != nil {
-					csi.printf("page %d: %s", page, err.Error())
-				}
+	mtgban.WorkerPool(ctx, csi.MaxConcurrency, pageNums,
+		func(ctx context.Context, page int, results chan<- responseChan) error {
+			return csi.processSealedPage(ctx, results, page)
+		},
+		func(record responseChan) {
+			err := csi.inventory.Add(record.cardId, record.invEntry)
+			if err != nil {
+				csi.printf("%s", err.Error())
 			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for i := 1; i <= totalPages; i++ {
-			pages <- i
-		}
-		close(pages)
-
-		wg.Wait()
-		close(results)
-	}()
-
-	for record := range results {
-		err := csi.inventory.Add(record.cardId, record.invEntry)
-		if err != nil {
-			csi.printf("%s", err.Error())
-			continue
-		}
-	}
+		},
+		csi.printf,
+	)
 
 	csi.inventoryDate = time.Now()
 

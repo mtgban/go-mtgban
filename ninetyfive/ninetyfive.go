@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"maps"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -195,39 +194,21 @@ func (nf *Ninetyfive) getAllCards(ctx context.Context) (NFCard, error) {
 		return nil, err
 	}
 
-	pages := make(chan string)
-	channel := make(chan NFCard)
-	var wg sync.WaitGroup
-
-	for i := 0; i < nf.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
-			for page := range pages {
-				cards, err := nf.client.getCards(ctx, page)
-				if err != nil {
-					nf.printf("%s: %s", page, err.Error())
-					continue
-				}
-				channel <- cards
-			}
-			wg.Done()
-		}()
-	}
-
-	go func() {
-		for _, page := range list[1:] {
-			pages <- page
-		}
-		close(pages)
-
-		wg.Wait()
-		close(channel)
-	}()
-
 	allCards := NFCard{}
-	for record := range channel {
-		maps.Copy(allCards, record)
-	}
+	mtgban.WorkerPool(ctx, nf.MaxConcurrency, list[1:],
+		func(ctx context.Context, page string, results chan<- NFCard) error {
+			cards, err := nf.client.getCards(ctx, page)
+			if err != nil {
+				return fmt.Errorf("%s: %s", page, err.Error())
+			}
+			results <- cards
+			return nil
+		},
+		func(record NFCard) {
+			maps.Copy(allCards, record)
+		},
+		nf.printf,
+	)
 
 	return allCards, nil
 }
