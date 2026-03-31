@@ -316,7 +316,7 @@ func sortSourceProducts(sets map[string]*Set, setCode string, sources []string) 
 }
 
 func generateImageURL(card Card, version string) string {
-	_, found := card.Identifiers["scryfallId"]
+	id, found := card.Identifiers["scryfallId"]
 	if !found {
 		tcgId, found := card.Identifiers["tcgplayerProductId"]
 		if !found {
@@ -329,32 +329,12 @@ func generateImageURL(card Card, version string) string {
 		return "https://product-images.tcgplayer.com/" + tcgId + ".jpg"
 	}
 
-	number := card.Number
-
-	// Retrieve the original number if present
-	dupe, found := card.Identifiers["originalScryfallNumber"]
+	altId, found := card.Identifiers["originalScryfallId"]
 	if found {
-		number = dupe
+		id = altId
 	}
 
-	// Support BAN's custom sets
-	code := strings.ToLower(card.SetCode)
-	code = strings.TrimSuffix(code, "ita")
-	code = strings.TrimSuffix(code, "jpn")
-	code = strings.TrimSuffix(code, "alt")
-
-	// Override Token sets
-	tokenSetCode, found := card.Identifiers["tokenSetCode"]
-	if found {
-		code = tokenSetCode
-	}
-
-	// Pick the right language for duplicated cards
-	if strings.Contains(card.Number, "ita") || strings.Contains(card.Number, "jpn") {
-		number += "/" + LanguageTag2LanguageCode[card.Language]
-	}
-
-	return fmt.Sprintf("https://api.scryfall.com/cards/%s/%s?format=image&version=%s", code, number, version)
+	return fmt.Sprintf("https://cards.scryfall.io/%s/front/%c/%c/%s.jpg", version, id[0], id[1], id)
 }
 
 // Make sure Printings array is filled, and make token properties uniform
@@ -707,12 +687,6 @@ func (ap AllPrintings) Load() cardBackend {
 				card.Identifiers["tcgplayerProductId"] = alternativeId
 				// Signal that the TCG SKUs from MTGJSON need to be refreshed
 				card.Identifiers["needsNewTCGSKUs"] = "true"
-
-				// In case we are duplicating a card that was *already* duplicated
-				_, found = card.Identifiers["originalScryfallNumber"]
-				if !found {
-					card.Identifiers["originalScryfallNumber"] = card.Number
-				}
 
 				// Append the new card
 				filteredCards = append(filteredCards, card)
@@ -1221,7 +1195,6 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 		dupeCard := sets[code].Cards[i]
 		dupeCard.UUID = mainUUID + "_" + strings.ToLower(tag)
 		dupeCard.Language = langs[tag]
-		dupeCard.Identifiers["originalScryfallNumber"] = dupeCard.Number
 		dupeCard.Number += strings.ToLower(tag)
 
 		// Set a new code and edition name if we're duplicating a whole set
@@ -1230,12 +1203,6 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 			dupeCard.SetCode = code + tag
 		}
 
-		// Update images
-		dupeCard.Images = map[string]string{}
-		dupeCard.Images["full"] = generateImageURL(dupeCard, "normal")
-		dupeCard.Images["thumbnail"] = generateImageURL(dupeCard, "small")
-		dupeCard.Images["crop"] = generateImageURL(dupeCard, "art_crop")
-
 		// Retrieve Printed data if available
 		for _, foreignData := range sets[code].Cards[i].ForeignData {
 			if foreignData.Language != dupeCard.Language {
@@ -1243,7 +1210,14 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 			}
 			dupeCard.PrintedName = foreignData.Name
 			dupeCard.PrintedType = foreignData.Type
+			dupeCard.Identifiers["originalScryfallId"] = foreignData.Identifiers["scryfallId"]
 		}
+
+		// Update images
+		dupeCard.Images = map[string]string{}
+		dupeCard.Images["full"] = generateImageURL(dupeCard, "normal")
+		dupeCard.Images["thumbnail"] = generateImageURL(dupeCard, "small")
+		dupeCard.Images["crop"] = generateImageURL(dupeCard, "art_crop")
 
 		duplicates = append(duplicates, dupeCard)
 	}
