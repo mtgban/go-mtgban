@@ -190,7 +190,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			}
 			u.RawQuery = q.Encode()
 
-			gradeMap := grading(card.Edition, card.Variation, card.IsFoil, card.PriceBuy)
+			gradeMap := grading(card.Edition, card.Variation, card.Sku, card.IsFoil, card.PriceBuy)
 			for _, grade := range mtgban.DefaultGradeTags {
 				factor := gradeMap[grade]
 				var priceRatio float64
@@ -242,14 +242,16 @@ func (ck *Cardkingdom) Buylist() mtgban.BuylistRecord {
 	return ck.buylist
 }
 
-func grading(edition, variation string, isFoil bool, price float64) (grade map[string]float64) {
+func grading(edition, variation, sku string, isFoil bool, price float64) (grade map[string]float64) {
 	// There are a class of cards (usually foils that don't have corresponding nonfoils)
 	// where CK downgrades price differently, as if they were nonfoil
 	switch edition {
 	case "Promotional":
-		if strings.Contains(variation, "Judge Foil") {
+		if strings.Contains(variation, "Judge Foil") ||
+			strings.HasPrefix(sku, "PCMP") {
 			isFoil = false
 		}
+
 	case "Masterpiece Series: Expeditions",
 		"Masterpiece Series: Inventions",
 		"Masterpiece Series: Invocations":
