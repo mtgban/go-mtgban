@@ -157,7 +157,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 			return mm.processPage(ctx, results, page)
 		},
 		func(record respChan) {
-			err := mm.inventory.Add(record.cardId, record.invEntry)
+			err := mm.inventory.AddRelaxed(record.cardId, record.invEntry)
 			if err != nil {
 				mm.printf("%v", err)
 			}
