@@ -122,7 +122,12 @@ func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
 		return 0, err
 	}
 
-	num, _ := doc.Find(`input[id="p-last-bottom"]`).Attr("value")
+	href, _ := doc.Find("a.page-link").Last().Attr("href")
+	u, err := url.Parse(href)
+	if err != nil {
+		return 0, err
+	}
+	num := u.Query().Get("p")
 	return strconv.Atoi(num)
 }
 
