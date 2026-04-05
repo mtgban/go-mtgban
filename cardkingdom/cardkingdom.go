@@ -112,10 +112,20 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 		}
 		link := u.String()
 
+		retailPrices := []float64{
+			card.ConditionValues.NmPrice, card.ConditionValues.ExPrice, card.ConditionValues.VgPrice, card.ConditionValues.GPrice,
+		}
+		// For newly added cards the nmPrice may not be initialized, so we the
+		// root price value that is known to be valid (and skip card if data is
+		// missing, since it gets used in the buylist step).
+		if retailPrices[0] == 0 {
+			retailPrices[0] = card.PriceRetail
+		}
+		if retailPrices[0] == 0 {
+			continue
+		}
+
 		if card.QtyRetail > 0 && card.PriceRetail > 0 {
-			prices := []float64{
-				card.ConditionValues.NmPrice, card.ConditionValues.ExPrice, card.ConditionValues.VgPrice, card.ConditionValues.GPrice,
-			}
 			qtys := []int{
 				card.ConditionValues.NmQty, card.ConditionValues.ExQty, card.ConditionValues.VgQty, card.ConditionValues.GQty,
 			}
@@ -125,18 +135,9 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					continue
 				}
 
-				if prices[i] == 0 {
-					// For newly added cards the nmPrice may not be initialized,
-					// so we the root price value that is known to be valid
-					if i > 0 {
-						continue
-					}
-					prices[i] = card.PriceRetail
-				}
-
 				out := &mtgban.InventoryEntry{
 					Conditions: cond,
-					Price:      prices[i],
+					Price:      retailPrices[i],
 					Quantity:   qtys[i],
 					URL:        link,
 					OriginalId: strconv.Itoa(card.ID),
@@ -190,9 +191,12 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			}
 			u.RawQuery = q.Encode()
 
-			gradeMap := grading(card.Edition, card.Variation, card.Sku, card.IsFoil, card.PriceBuy)
-			for _, grade := range mtgban.DefaultGradeTags {
-				factor := gradeMap[grade]
+			for i, grade := range mtgban.DefaultGradeTags {
+				// Apply the same downgrade present in the retail prices since
+				// there are a class of cards where CK downgrades price differently,
+				// as if they were nonfoil
+				buyPrice := card.PriceBuy * retailPrices[i] / retailPrices[0]
+
 				var priceRatio float64
 
 				if card.PriceRetail > 0 {
@@ -201,7 +205,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 
 				out := &mtgban.BuylistEntry{
 					Conditions: grade,
-					BuyPrice:   card.PriceBuy * factor,
+					BuyPrice:   buyPrice,
 					Quantity:   card.QtyBuying,
 					PriceRatio: priceRatio,
 					URL:        u.String(),
@@ -240,57 +244,6 @@ func (ck *Cardkingdom) Inventory() mtgban.InventoryRecord {
 
 func (ck *Cardkingdom) Buylist() mtgban.BuylistRecord {
 	return ck.buylist
-}
-
-func grading(edition, variation, sku string, isFoil bool, price float64) (grade map[string]float64) {
-	// There are a class of cards (usually foils that don't have corresponding nonfoils)
-	// where CK downgrades price differently, as if they were nonfoil
-	switch edition {
-	case "Promotional":
-		if strings.Contains(variation, "Judge Foil") ||
-			strings.HasPrefix(sku, "PCMP") {
-			isFoil = false
-		}
-
-	case "Masterpiece Series: Expeditions",
-		"Masterpiece Series: Inventions",
-		"Masterpiece Series: Invocations":
-		isFoil = false
-	}
-
-	switch {
-	case isFoil:
-		grade = map[string]float64{
-			"NM": 1, "SP": 0.75, "MP": 0.5, "HP": 0.3,
-		}
-	case price < 15:
-		grade = map[string]float64{
-			"NM": 1, "SP": 0.8, "MP": 0.7, "HP": 0.5,
-		}
-	case price >= 15 && price < 25:
-		grade = map[string]float64{
-			"NM": 1, "SP": 0.85, "MP": 0.7, "HP": 0.5,
-		}
-	case price >= 25 && price < 100:
-		grade = map[string]float64{
-			"NM": 1, "SP": 0.85, "MP": 0.75, "HP": 0.65,
-		}
-	case price >= 100:
-		grade = map[string]float64{
-			"NM": 1, "SP": 0.9, "MP": 0.8, "HP": 0.7,
-		}
-	}
-
-	switch edition {
-	case "Alpha",
-		"Beta",
-		"Unlimited":
-		grade = map[string]float64{
-			"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
-		}
-	}
-
-	return
 }
 
 func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
