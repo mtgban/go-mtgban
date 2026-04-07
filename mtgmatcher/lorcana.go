@@ -232,8 +232,8 @@ func (lj LorcanaJSON) Load() Backend {
 			}
 
 			for _, color := range card.Colors {
-				if !slices.Contains(colors, mtgColorNameMap[color]) {
-					colors = append(colors, mtgColorNameMap[color])
+				if !slices.Contains(colors, lorcanaColorNameMap[color]) {
+					colors = append(colors, lorcanaColorNameMap[color])
 				}
 			}
 			if len(card.Colors) == 0 && !slices.Contains(colors, "colorless") {
