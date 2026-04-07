@@ -14,7 +14,7 @@ import (
 )
 
 type DataStore interface {
-	Load() Backend
+	NewBackend() Backend
 }
 
 // CardObject is an extension of Card, containing fields that cannot
@@ -379,7 +379,7 @@ func adjustTokens(sets map[string]*Set) {
 	}
 }
 
-func (ap AllPrintings) Load() Backend {
+func (ap AllPrintings) NewBackend() Backend {
 	canonicalNames := map[string]string{}
 	sealedNames := map[string]string{}
 	alternates := map[string]alternateProps{}
@@ -1314,7 +1314,7 @@ func (b *Backend) LoadDatastore(reader io.Reader) error {
 		}
 	}
 
-	*b = datastore.Load()
+	*b = datastore.NewBackend()
 	return nil
 }
 

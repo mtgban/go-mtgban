@@ -89,7 +89,7 @@ func LoadLorcana(r io.Reader) (DataStore, error) {
 	return payload, nil
 }
 
-func (lj LorcanaJSON) Load() Backend {
+func (lj LorcanaJSON) NewBackend() Backend {
 	var b Backend
 
 	b.UUIDs = map[string]CardObject{}
