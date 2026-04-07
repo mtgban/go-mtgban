@@ -25,7 +25,7 @@ type DatastoreProperty struct {
 }
 
 type TestProperty struct {
-	Backend      cardBackend
+	Backend      Backend
 	MatchTests   []MatchTest
 	TestDataFile string
 }

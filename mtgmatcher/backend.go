@@ -14,7 +14,7 @@ import (
 )
 
 type DataStore interface {
-	Load() cardBackend
+	Load() Backend
 }
 
 // CardObject is an extension of Card, containing fields that cannot
@@ -47,9 +47,9 @@ type alternateProps struct {
 	IsFlavor       bool
 }
 
-var defaultBackend cardBackend
+var defaultBackend Backend
 
-type cardBackend struct {
+type Backend struct {
 	// Slice of all set codes loaded
 	AllSets []string
 
@@ -406,7 +406,7 @@ func adjustTokens(sets map[string]*Set) {
 	}
 }
 
-func (ap AllPrintings) Load() cardBackend {
+func (ap AllPrintings) Load() Backend {
 	canonicalNames := map[string]string{}
 	sealedNames := map[string]string{}
 	sealedProducts := map[string]*SealedProduct{}
@@ -935,7 +935,7 @@ func (ap AllPrintings) Load() cardBackend {
 	sort.Strings(fullSealed)
 	sort.Strings(lowerSealed)
 
-	var b cardBackend
+	var b Backend
 
 	b.Hashes = hashes
 	b.AllSets = allSets
@@ -1391,7 +1391,7 @@ func buildNormalizedSetIndex(sets map[string]*Set) map[string]*Set {
 	return index
 }
 
-func SetGlobalDatastore(datastore cardBackend) {
+func SetGlobalDatastore(datastore Backend) {
 	defaultBackend = datastore
 }
 
