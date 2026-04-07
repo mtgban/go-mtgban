@@ -224,7 +224,6 @@ func SearchContains(name string) ([]string, error) {
 	return defaultBackend.SearchContains(name)
 }
 
-
 func (b *Backend) SearchRegexp(name string) ([]string, error) {
 	var hashes []string
 	re, err := regexp.Compile(name)
@@ -1247,4 +1246,56 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 
 func BuildSealedProductMap(idName string) map[int][]string {
 	return defaultBackend.BuildSealedProductMap(idName)
+}
+
+func (b *Backend) SimpleSearch(cardName, number string, foil bool) (string, error) {
+	number = strings.TrimLeft(number, "0")
+	number = strings.Split(number, "/")[0]
+
+	cardName = SplitVariants(cardName)[0]
+
+	uuids, err := b.SearchEquals(cardName)
+	if err != nil {
+		uuids, err = b.SearchHasPrefix(cardName)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if len(uuids) == 1 {
+		return uuids[0], nil
+	}
+
+	var cardIds []string
+	for _, uuid := range uuids {
+		co, err := b.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+
+		if foil && !co.Foil {
+			continue
+		} else if !foil && co.Foil {
+			continue
+		}
+
+		if number != "" && number != co.Number {
+			continue
+		}
+		cardIds = append(cardIds, uuid)
+	}
+
+	if len(cardIds) < 1 {
+		return "", ErrCardWrongVariant
+	}
+
+	if len(cardIds) > 1 {
+		return "", NewAliasingError(uuids...)
+	}
+
+	return cardIds[0], nil
+}
+
+func SimpleSearch(cardName, number string, foil bool) (string, error) {
+	return defaultBackend.SimpleSearch(cardName, number, foil)
 }
