@@ -262,15 +262,15 @@ var lorcanaRarityMap = map[string]int{
 	"special":   7,
 }
 
-func SimpleSearch(cardName, number string, foil bool) (string, error) {
+func (b *Backend) SimpleSearch(cardName, number string, foil bool) (string, error) {
 	number = strings.TrimLeft(number, "0")
 	number = strings.Split(number, "/")[0]
 
 	cardName = SplitVariants(cardName)[0]
 
-	uuids, err := SearchEquals(cardName)
+	uuids, err := b.SearchEquals(cardName)
 	if err != nil {
-		uuids, err = SearchHasPrefix(cardName)
+		uuids, err = b.SearchHasPrefix(cardName)
 		if err != nil {
 			return "", err
 		}
@@ -282,7 +282,7 @@ func SimpleSearch(cardName, number string, foil bool) (string, error) {
 
 	var cardIds []string
 	for _, uuid := range uuids {
-		co, err := GetUUID(uuid)
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -308,4 +308,8 @@ func SimpleSearch(cardName, number string, foil bool) (string, error) {
 	}
 
 	return cardIds[0], nil
+}
+
+func SimpleSearch(cardName, number string, foil bool) (string, error) {
+	return defaultBackend.SimpleSearch(cardName, number, foil)
 }
