@@ -77,7 +77,7 @@ func loadTestSet(datastoreProp DatastoreProperty) TestProperty {
 		log.Fatalln(err)
 	}
 
-	b := datastore.Load()
+	b := datastore.NewBackend()
 	tp.Backend = &b
 	tp.TestDataFile = datastoreProp.TestDataFile
 
