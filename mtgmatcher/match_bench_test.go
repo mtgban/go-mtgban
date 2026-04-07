@@ -17,9 +17,9 @@ func BenchmarkMatchQuiet(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
 		for _, testSet := range MatchTestSet {
-			SetGlobalDatastore(testSet.Backend)
+			backend := testSet.Backend
 			for _, test := range testSet.MatchTests {
-				runMatch(test)
+				runMatch(backend, test)
 			}
 		}
 	}
