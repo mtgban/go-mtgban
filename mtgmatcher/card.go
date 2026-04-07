@@ -73,53 +73,7 @@ func (c *InputCard) String() string {
 }
 
 func output(card Card, flags ...bool) string {
-	hasNonfoil := card.HasFinish(FinishNonfoil)
-	hasFoil := card.HasFinish(FinishFoil)
-	hasEtched := card.HasFinish(FinishEtched)
-
-	etched := len(flags) > 1 && flags[1]
-	foil := len(flags) > 0 && flags[0] && !etched
-
-	// In case the foiling information is incorrect
-	if !foil && !hasNonfoil && !hasEtched {
-		foil = true
-	} else if foil && !hasFoil {
-		foil = false
-	}
-	if hasFoil && !hasNonfoil && !hasEtched {
-		foil = true
-	} else if !hasFoil && (hasNonfoil || hasEtched) {
-		foil = false
-	}
-
-	// In case the etching information is incorrect
-	if !etched && !hasNonfoil && !hasFoil {
-		etched = true
-	} else if etched && !hasEtched {
-		etched = false
-	}
-	if hasEtched && !hasNonfoil && !hasFoil {
-		etched = true
-	} else if !hasEtched && (hasNonfoil || hasFoil) {
-		etched = false
-	}
-
-	// Prepare the output card
-	id := card.UUID
-	// Append suffixes to the Id to distinguish cards among finishes
-	if etched && (hasNonfoil || hasFoil) {
-		// Retrieve the base id if it's already tagged (only for this and the case below)
-		if strings.HasSuffix(id, suffixFoil) || strings.HasSuffix(id, suffixEtched) {
-			id = id[:len(id)-2]
-		}
-		id += suffixEtched
-	} else if foil && hasNonfoil {
-		if strings.HasSuffix(id, suffixFoil) || strings.HasSuffix(id, suffixEtched) {
-			id = id[:len(id)-2]
-		}
-		id += suffixFoil
-	}
-	return id
+	return defaultBackend.output(card, flags...)
 }
 
 func (c *InputCard) addToVariant(tag string) {
@@ -131,67 +85,7 @@ func (c *InputCard) addToVariant(tag string) {
 
 // Returns whether the input string may represent a token
 func IsToken(name string) bool {
-	// Check main table first
-	if slices.Contains(defaultBackend.Tokens, name) {
-		return true
-	}
-	switch name {
-	// Custom token names
-	case "A Threat to Alara: Nicol Bolas",
-		"Fun Format: Pack Wars",
-		"On An Adventure",
-		"Pyromantic Pixels",
-		"Theme: The Gold Standard",
-		"Theme: WUBRG Cards":
-		return true
-	// WCD extra cards
-	case "Biography",
-		"Blank",
-		"Overview":
-		return true
-	}
-	switch {
-	// Avoid confusion with Monarch and Emblem below
-	case HasPrefix(name, "Emblem of the Warmind"),
-		HasPrefix(name, "Kavu Monarch"),
-		HasPrefix(name, "Leering Emblem"),
-		// and with the `card` wildcard
-		HasPrefix(name, "Our Market Research"):
-		return false
-	// Anything token
-	case strings.Contains(name, " Card"),
-		strings.Contains(name, "Card "),
-		strings.HasPrefix(name, "Bounty"),
-		Contains(name, "Arena Code"),
-		Contains(name, "Art Series"),
-		Contains(name, "Charlie Brown"),
-		Contains(name, "Checklist"),
-		Contains(name, "Copy"),
-		Contains(name, "Decklist"),
-		Contains(name, "DFC Helper"),
-		Contains(name, "Dungeon of the Mad Mage"),
-		Contains(name, "Emblem"),
-		Contains(name, "Experience C"),
-		Contains(name, "Giant Teddy Bear"),
-		Contains(name, "Guild Symbol"),
-		Contains(name, "Magic Minigame"),
-		Contains(name, "The Monarch"),
-		strings.Contains(name, "The Initiative"),
-		Contains(name, "Morph Overlay"),
-		Contains(name, "On Your Turn"),
-		Contains(name, "Online Code"),
-		Contains(name, "Oversize"),
-		Contains(name, "Punch Out"),
-		Contains(name, "Token"),
-		Contains(name, "Rules Tip"):
-		return true
-	// Alternative rules tip card names found on mkm
-	case strings.HasPrefix(name, "Build a Deck: "),
-		strings.HasPrefix(name, "Tip: "):
-		return true
-	}
-
-	return false
+	return defaultBackend.IsToken(name)
 }
 
 func (c *InputCard) isUnsupported() bool {
@@ -845,6 +739,104 @@ func (c *InputCard) Equals(prop string) bool {
 }
 
 func ParseCommanderEdition(edition, variant string) string {
+	return defaultBackend.ParseCommanderEdition(edition, variant)
+}
+
+// Check if the card number (if present) is reliable
+func (c *InputCard) shouldIgnoreNumber(setName, num string) bool {
+	// No misprints or WCD
+	if c.Contains("Misprint") || c.isWorldChamp() {
+		return true
+	}
+
+	// This is better handled in thelistCheck()
+	if c.isMysteryList() && !c.Contains("Unfinity") {
+		return true
+	}
+
+	// Unfinity numbers could refer to Attractions
+	if Contains(c.Edition, "unf") {
+		if hasPrinting(c.Name, "field", "attractionLights", "UNF") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
+			return true
+		}
+	}
+
+	// If the number is the same as in the edition, there might be
+	// variation pollution, therefore unreliable (unless they are years)
+	if num != "" && strings.Contains(setName, num) && ExtractYear(setName) == "" {
+		return true
+	}
+
+	return false
+
+}
+
+
+func (b *Backend) IsToken(name string) bool {
+	// Check main table first
+	if slices.Contains(b.Tokens, name) {
+		return true
+	}
+	switch name {
+	// Custom token names
+	case "A Threat to Alara: Nicol Bolas",
+		"Fun Format: Pack Wars",
+		"On An Adventure",
+		"Pyromantic Pixels",
+		"Theme: The Gold Standard",
+		"Theme: WUBRG Cards":
+		return true
+	// WCD extra cards
+	case "Biography",
+		"Blank",
+		"Overview":
+		return true
+	}
+	switch {
+	// Avoid confusion with Monarch and Emblem below
+	case HasPrefix(name, "Emblem of the Warmind"),
+		HasPrefix(name, "Kavu Monarch"),
+		HasPrefix(name, "Leering Emblem"),
+		// and with the `card` wildcard
+		HasPrefix(name, "Our Market Research"):
+		return false
+	// Anything token
+	case strings.Contains(name, " Card"),
+		strings.Contains(name, "Card "),
+		strings.HasPrefix(name, "Bounty"),
+		Contains(name, "Arena Code"),
+		Contains(name, "Art Series"),
+		Contains(name, "Charlie Brown"),
+		Contains(name, "Checklist"),
+		Contains(name, "Copy"),
+		Contains(name, "Decklist"),
+		Contains(name, "DFC Helper"),
+		Contains(name, "Dungeon of the Mad Mage"),
+		Contains(name, "Emblem"),
+		Contains(name, "Experience C"),
+		Contains(name, "Giant Teddy Bear"),
+		Contains(name, "Guild Symbol"),
+		Contains(name, "Magic Minigame"),
+		Contains(name, "The Monarch"),
+		strings.Contains(name, "The Initiative"),
+		Contains(name, "Morph Overlay"),
+		Contains(name, "On Your Turn"),
+		Contains(name, "Online Code"),
+		Contains(name, "Oversize"),
+		Contains(name, "Punch Out"),
+		Contains(name, "Token"),
+		Contains(name, "Rules Tip"):
+		return true
+	// Alternative rules tip card names found on mkm
+	case strings.HasPrefix(name, "Build a Deck: "),
+		strings.HasPrefix(name, "Tip: "):
+		return true
+	}
+
+	return false
+}
+
+func (b *Backend) ParseCommanderEdition(edition, variant string) string {
 	if !strings.Contains(edition, "Commander") {
 		return ""
 	}
@@ -885,7 +877,7 @@ func ParseCommanderEdition(edition, variant string) string {
 			return ed
 		}
 	}
-	for key, ed := range defaultBackend.CommanderKeywordMap {
+	for key, ed := range b.CommanderKeywordMap {
 		if strings.Contains(strings.ToLower(edition), strings.ToLower(key)) {
 			if strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo") {
 				ed += " Promos"
@@ -930,31 +922,52 @@ func ParseCommanderEdition(edition, variant string) string {
 	return ""
 }
 
-// Check if the card number (if present) is reliable
-func (c *InputCard) shouldIgnoreNumber(setName, num string) bool {
-	// No misprints or WCD
-	if c.Contains("Misprint") || c.isWorldChamp() {
-		return true
+func (b *Backend) output(card Card, flags ...bool) string {
+	hasNonfoil := card.HasFinish(FinishNonfoil)
+	hasFoil := card.HasFinish(FinishFoil)
+	hasEtched := card.HasFinish(FinishEtched)
+
+	etched := len(flags) > 1 && flags[1]
+	foil := len(flags) > 0 && flags[0] && !etched
+
+	// In case the foiling information is incorrect
+	if !foil && !hasNonfoil && !hasEtched {
+		foil = true
+	} else if foil && !hasFoil {
+		foil = false
+	}
+	if hasFoil && !hasNonfoil && !hasEtched {
+		foil = true
+	} else if !hasFoil && (hasNonfoil || hasEtched) {
+		foil = false
 	}
 
-	// This is better handled in thelistCheck()
-	if c.isMysteryList() && !c.Contains("Unfinity") {
-		return true
+	// In case the etching information is incorrect
+	if !etched && !hasNonfoil && !hasFoil {
+		etched = true
+	} else if etched && !hasEtched {
+		etched = false
+	}
+	if hasEtched && !hasNonfoil && !hasFoil {
+		etched = true
+	} else if !hasEtched && (hasNonfoil || hasFoil) {
+		etched = false
 	}
 
-	// Unfinity numbers could refer to Attractions
-	if Contains(c.Edition, "unf") {
-		if hasPrinting(c.Name, "field", "attractionLights", "UNF") && (strings.Contains(c.Variation, "/") || strings.Contains(c.Variation, "-")) {
-			return true
+	// Prepare the output card
+	id := card.UUID
+	// Append suffixes to the Id to distinguish cards among finishes
+	if etched && (hasNonfoil || hasFoil) {
+		// Retrieve the base id if it's already tagged (only for this and the case below)
+		if strings.HasSuffix(id, suffixFoil) || strings.HasSuffix(id, suffixEtched) {
+			id = id[:len(id)-2]
 		}
+		id += suffixEtched
+	} else if foil && hasNonfoil {
+		if strings.HasSuffix(id, suffixFoil) || strings.HasSuffix(id, suffixEtched) {
+			id = id[:len(id)-2]
+		}
+		id += suffixFoil
 	}
-
-	// If the number is the same as in the edition, there might be
-	// variation pollution, therefore unreliable (unless they are years)
-	if num != "" && strings.Contains(setName, num) && ExtractYear(setName) == "" {
-		return true
-	}
-
-	return false
-
+	return id
 }
