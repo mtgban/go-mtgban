@@ -1399,11 +1399,16 @@ func buildNormalizedSetIndex(sets map[string]*Set) map[string]*Set {
 	return index
 }
 
+// NewBackend creates a new empty Backend instance.
+func NewBackend() *Backend {
+	return &Backend{}
+}
+
 func SetGlobalDatastore(datastore Backend) {
 	defaultBackend = datastore
 }
 
-func LoadDatastore(reader io.Reader) error {
+func (b *Backend) LoadDatastore(reader io.Reader) error {
 	var buf bytes.Buffer
 	tee := io.TeeReader(reader, &buf)
 
@@ -1415,17 +1420,25 @@ func LoadDatastore(reader io.Reader) error {
 		}
 	}
 
-	defaultBackend = datastore.Load()
+	*b = datastore.Load()
 	return nil
 }
 
-func LoadDatastoreFile(filename string) error {
+func LoadDatastore(reader io.Reader) error {
+	return defaultBackend.LoadDatastore(reader)
+}
+
+func (b *Backend) LoadDatastoreFile(filename string) error {
 	reader, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
-	return LoadDatastore(reader)
+	return b.LoadDatastore(reader)
+}
+
+func LoadDatastoreFile(filename string) error {
+	return defaultBackend.LoadDatastoreFile(filename)
 }
 
 func SetGlobalLogger(userLogger *log.Logger) {
