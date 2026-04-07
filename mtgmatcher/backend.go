@@ -936,6 +936,14 @@ var mtgColorNameMap = map[string]string{
 	"G": "green",
 }
 
+var lorcanaColorNameMap = map[string]string{
+	"W": "white",
+	"U": "blue",
+	"B": "black",
+	"R": "red",
+	"G": "green",
+}
+
 var mtgColorMap = map[string]int{
 	"white":      7,
 	"blue":       6,
