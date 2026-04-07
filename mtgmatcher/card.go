@@ -133,7 +133,7 @@ func (c *InputCard) addToVariant(tag string) {
 // Returns whether the input string may represent a token
 func IsToken(name string) bool {
 	// Check main table first
-	if slices.Contains(backend.Tokens, name) {
+	if slices.Contains(defaultBackend.Tokens, name) {
 		return true
 	}
 	switch name {
@@ -875,7 +875,7 @@ func ParseCommanderEdition(edition, variant string) string {
 			return ed
 		}
 	}
-	for key, ed := range backend.CommanderKeywordMap {
+	for key, ed := range defaultBackend.CommanderKeywordMap {
 		if strings.Contains(strings.ToLower(edition), strings.ToLower(key)) {
 			if strings.Contains(edition, "Promo") || strings.Contains(variant, "Promo") {
 				ed += " Promos"

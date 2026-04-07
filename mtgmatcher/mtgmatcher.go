@@ -19,9 +19,9 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 	}
 
 	// Look up in one of the possible maps
-	co, found := backend.UUIDs[inputId]
+	co, found := defaultBackend.UUIDs[inputId]
 	if !found {
-		co, found = backend.UUIDs[backend.ExternalIdentifiers[inputId]]
+		co, found = defaultBackend.UUIDs[defaultBackend.ExternalIdentifiers[inputId]]
 	}
 	if !found {
 		return "", ErrCardUnknownId
@@ -40,7 +40,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 	outId := output(co.Card, finishes...)
 
 	// Validate that what we found is correct
-	co, found = backend.UUIDs[outId]
+	co, found = defaultBackend.UUIDs[outId]
 	if !found {
 		return "", ErrCardUnknownId
 	}
@@ -51,12 +51,12 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 		// So we iterate over the Variations array and try outputing ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
-			altCo := backend.UUIDs[variation]
+			altCo := defaultBackend.UUIDs[variation]
 			// We assume that the collector number between the two version
 			// stays the same, with a different suffix
 			if ExtractNumericalValue(co.Number) == ExtractNumericalValue(altCo.Number) {
 				maybeId := output(altCo.Card, isFoil, isEtched)
-				altCo = backend.UUIDs[maybeId]
+				altCo = defaultBackend.UUIDs[maybeId]
 
 				// Make sure we're dealing with the same card
 				// (this helps with promos that have similar numbers)
@@ -81,7 +81,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 }
 
 func Match(inCard *InputCard) (cardId string, err error) {
-	if backend.Sets == nil {
+	if defaultBackend.Sets == nil {
 		return "", ErrDatastoreEmpty
 	}
 
@@ -118,7 +118,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		logger.Printf("Performing id lookup")
 		outId, err := MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
 		if err == nil {
-			co := backend.UUIDs[outId]
+			co := defaultBackend.UUIDs[outId]
 			logger.Printf("Id found")
 
 			// Validation step
@@ -229,7 +229,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Get the card basic info to retrieve the Printings array
-	canonicalName, found := backend.CanonicalNames[Normalize(inCard.Name)]
+	canonicalName, found := defaultBackend.CanonicalNames[Normalize(inCard.Name)]
 	if !found {
 		ogName := inCard.Name
 		// Fixup up the name and try again
@@ -239,7 +239,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		}
 
-		canonicalName, found = backend.CanonicalNames[Normalize(inCard.Name)]
+		canonicalName, found = defaultBackend.CanonicalNames[Normalize(inCard.Name)]
 		if !found {
 			// Return a safe error if it's a token
 			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
@@ -325,11 +325,11 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		// First loop, search for a perfect match
 		for _, setCode := range printings {
 			// Perfect match, the card *has* to be present in the set
-			if Equals(backend.Sets[setCode].Name, inCard.Edition) {
+			if Equals(defaultBackend.Sets[setCode].Name, inCard.Edition) {
 				logger.Println("Found a perfect match with", inCard.Edition, setCode)
 				cardSet[setCode] = MatchInSet(inCard.Name, setCode)
 
-				set := backend.Sets[setCode]
+				set := defaultBackend.Sets[setCode]
 
 				// In case it's a well known promo, consider the promo sets (or vice
 				// versa for promo sets) in order to let filtering take care of them
@@ -337,17 +337,17 @@ func Match(inCard *InputCard) (cardId string, err error) {
 				if !inCard.isJPN() && (inCard.isPrerelease() || inCard.isPromoPack() ||
 					(inCard.isBundle() && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
 					(inCard.isBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
-					setName := backend.Sets[setCode].Name
+					setName := defaultBackend.Sets[setCode].Name
 					if !strings.HasSuffix(setName, "Promos") {
 						setCode = "P" + setCode
-						set, found := backend.Sets[setCode]
+						set, found := defaultBackend.Sets[setCode]
 						if found {
 							logger.Println("Detected possible promo, adding edition", set.Name, setCode)
 							cardSet[setCode] = MatchInSet(inCard.Name, setCode)
 						}
 					} else {
 						setCode = strings.TrimPrefix(setCode, "P")
-						set, found := backend.Sets[setCode]
+						set, found := defaultBackend.Sets[setCode]
 						if found {
 							logger.Println("Detected possible non-promo, adding edition", set.Name, setCode)
 							cardSet[setCode] = MatchInSet(inCard.Name, setCode)
@@ -362,7 +362,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 		if len(cardSet) == 0 {
 			logger.Println("No perfect match found, trying with heuristics")
 			for _, setCode := range printings {
-				set := backend.Sets[setCode]
+				set := defaultBackend.Sets[setCode]
 
 				// Skip heuristics for WCD as short version would catch a lot
 				if inCard.isWorldChamp() {
@@ -461,7 +461,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 
 		cardId = output(outCards[0], inCard.Foil, inCard.isEtched())
 
-		co := backend.UUIDs[cardId]
+		co := defaultBackend.UUIDs[cardId]
 		logger.Println(inCard, "->", co)
 
 		// Validation step
@@ -491,7 +491,7 @@ func Match(inCard *InputCard) (cardId string, err error) {
 // In case of combined card names (with '//' in their name), only the
 // first chunk is considered
 func MatchInSet(cardName string, setCode string) (outCards []Card) {
-	set, found := backend.Sets[setCode]
+	set, found := defaultBackend.Sets[setCode]
 	if !found {
 		return
 	}
@@ -507,7 +507,7 @@ func MatchInSet(cardName string, setCode string) (outCards []Card) {
 // same name as the input name in the Set identified by setCode with the
 // specified collector number.
 func MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
-	set, found := backend.Sets[setCode]
+	set, found := defaultBackend.Sets[setCode]
 	if !found {
 		return
 	}
@@ -522,7 +522,7 @@ func MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
 // Return an array of Card containing all the cards with the exact
 // set code and collector number, using the name as hint (can be empty)
 func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
-	set, found := backend.Sets[setCode]
+	set, found := defaultBackend.Sets[setCode]
 	if !found {
 		return
 	}
@@ -549,7 +549,7 @@ func adjustName(inCard *InputCard) {
 	if strings.Contains(strings.ToLower(inCard.Name), "token") {
 		return
 	}
-	_, found := backend.CanonicalNames[Normalize(inCard.Name+" Token")]
+	_, found := defaultBackend.CanonicalNames[Normalize(inCard.Name+" Token")]
 	if found {
 		inCard.Name += " Token"
 		return
@@ -570,7 +570,7 @@ func adjustName(inCard *InputCard) {
 		}
 		// Check card exists before updating the name
 		tmpName := strings.Join(fields, " ")
-		_, found := backend.CanonicalNames[Normalize(tmpName)]
+		_, found := defaultBackend.CanonicalNames[Normalize(tmpName)]
 		if found {
 			inCard.Name = tmpName
 			inCard.addToVariant(num)
@@ -626,7 +626,7 @@ func adjustName(inCard *InputCard) {
 		}
 	}
 	// Check if this card may be known as something else
-	for altName, altProps := range backend.AlternateProps {
+	for altName, altProps := range defaultBackend.AlternateProps {
 		if !Equals(altName, inCard.Name) {
 			continue
 		}
@@ -687,7 +687,7 @@ func adjustName(inCard *InputCard) {
 
 		uuids, err := SearchHasPrefix(inCard.Name)
 		if err == nil {
-			inCard.Name = backend.UUIDs[uuids[0]].Name
+			inCard.Name = defaultBackend.UUIDs[uuids[0]].Name
 			return
 		}
 	}
@@ -703,7 +703,7 @@ func adjustName(inCard *InputCard) {
 	// sided card, for some particular cases, like meld cards, or Treasure Chest
 	// Attempt first to check cards in the same edition if possible
 	// Skip for tokens
-	for _, set := range backend.Sets {
+	for _, set := range defaultBackend.Sets {
 		if Equals(set.Name, inCard.Edition) {
 			for _, card := range set.Cards {
 				if card.Layout != "normal" && card.Layout != "token" && HasPrefix(card.Name, inCard.Name) {
@@ -730,7 +730,7 @@ func adjustEdition(inCard *InputCard) {
 	edition := inCard.Edition
 	variation := inCard.Variation
 
-	set, found := backend.Sets[strings.ToUpper(edition)]
+	set, found := defaultBackend.Sets[strings.ToUpper(edition)]
 	if found {
 		edition = set.Name
 	}
@@ -738,7 +738,7 @@ func adjustEdition(inCard *InputCard) {
 	if found {
 		edition = ed
 	}
-	set, found = backend.Sets[strings.ToUpper(variation)]
+	set, found = defaultBackend.Sets[strings.ToUpper(variation)]
 	if found && (inCard.isJudge() || inCard.isDuelDecks() || inCard.isDuelDecksAnthology()) {
 		edition = set.Name
 	}
@@ -775,9 +775,9 @@ func adjustEdition(inCard *InputCard) {
 		edition = "Zendikar Rising Expeditions"
 	case inCard.Contains("Timeshift") && inCard.Contains("Spiral") && !inCard.isMysteryList():
 		if len(MatchInSet(inCard.Name, "TSB")) != 0 {
-			edition = backend.Sets["TSB"].Name
+			edition = defaultBackend.Sets["TSB"].Name
 		} else if len(MatchInSet(inCard.Name, "TSR")) != 0 {
-			edition = backend.Sets["TSR"].Name
+			edition = defaultBackend.Sets["TSR"].Name
 		}
 	default:
 		edition = strings.TrimPrefix(edition, "Magic: The Gathering - ")
@@ -904,27 +904,27 @@ func adjustEdition(inCard *InputCard) {
 			// Decouple wrong SLX cards bundled in PLST, as long as they are not reprinted in PLST
 			// In that case we trust the source has been properly tagged and will be decoupled later
 			if !inCard.isReskin() && len(MatchInSet(inCard.Name, "SLX")) != 0 && len(MatchInSet(inCard.Name, "PLST")) == 0 {
-				edition = backend.Sets["SLX"].Name
+				edition = defaultBackend.Sets["SLX"].Name
 			}
 		}
 
 	// XLN Treasure Chest
 	case inCard.isBaB() && len(MatchInSet(inCard.Name, "PXTC")) != 0:
-		edition = backend.Sets["PXTC"].Name
+		edition = defaultBackend.Sets["PXTC"].Name
 
 	// BFZ Standard Series
 	case inCard.isGenericAltArt() && len(MatchInSet(inCard.Name, "PSS1")) != 0:
-		edition = backend.Sets["PSS1"].Name
+		edition = defaultBackend.Sets["PSS1"].Name
 
 	// Champs and States
 	case inCard.isGenericExtendedArt() && len(MatchInSet(inCard.Name, "PCMP")) != 0:
-		edition = backend.Sets["PCMP"].Name
+		edition = defaultBackend.Sets["PCMP"].Name
 
 	// Secret Lair {Ultimate,Drop}
 	case inCard.isSecretLair():
 		// Check if there are also FlavorNames associated to this card
 		// It might happen that a non-FlavorName is requested, so check number too
-		altProps, found := backend.AlternateProps[inCard.Name]
+		altProps, found := defaultBackend.AlternateProps[inCard.Name]
 		if found && len(MatchInSet(altProps.OriginalName, "SLD")) != 0 {
 			var shouldRename bool
 			cards := MatchInSet(altProps.OriginalName, "SLD")
@@ -974,18 +974,18 @@ func adjustEdition(inCard *InputCard) {
 
 	// Planechase deduplication
 	case inCard.Contains("Planechase") && len(MatchInSet(inCard.Name, "DCI")) != 0 && (inCard.isRelease() || inCard.isDCIPromo() || inCard.isWPNGateway()):
-		edition = backend.Sets["DCI"].Name
+		edition = defaultBackend.Sets["DCI"].Name
 	case inCard.Equals("Planechase") && len(MatchInSet(inCard.Name, "OHOP")) != 0:
-		edition = backend.Sets["OHOP"].Name
+		edition = defaultBackend.Sets["OHOP"].Name
 	case inCard.Equals("Planechase 2012") && len(MatchInSet(inCard.Name, "OPC2")) != 0:
-		edition = backend.Sets["OPC2"].Name
+		edition = defaultBackend.Sets["OPC2"].Name
 	case inCard.Equals("Planechase Anthology") && len(MatchInSet(inCard.Name, "OPCA")) != 0:
-		edition = backend.Sets["OPCA"].Name
+		edition = defaultBackend.Sets["OPCA"].Name
 
 	// The first Gift Pack often get folded in the main Core Set 2019 or in the
 	// related Promos set, so use a lax way to dected the original expansion
 	case ((Contains(inCard.Edition, "Core") && Contains(inCard.Edition, "2019")) || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "G18")) == 1:
-		edition = backend.Sets["G18"].Name
+		edition = defaultBackend.Sets["G18"].Name
 
 	// Adjust edition for non-English sets
 	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && Contains(inCard.Variation, "Italian"):
@@ -1015,26 +1015,26 @@ func adjustEdition(inCard *InputCard) {
 		(inCard.Contains("Retro Frame") || inCard.Contains("Timeshift")) &&
 		(len(MatchInSet(inCard.Name, "H1R")) != 0 || len(MatchInSet(inCard.Name, "H2R")) != 0):
 		if len(MatchInSet(inCard.Name, "H1R")) != 0 {
-			edition = backend.Sets["H1R"].Name
+			edition = defaultBackend.Sets["H1R"].Name
 		} else if len(MatchInSet(inCard.Name, "H2R")) != 0 {
-			edition = backend.Sets["H2R"].Name
+			edition = defaultBackend.Sets["H2R"].Name
 		}
 
 	// Clash pack promos
 	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "CP1")) == 1:
-		edition = backend.Sets["CP1"].Name
+		edition = defaultBackend.Sets["CP1"].Name
 	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "CP2")) == 1:
-		edition = backend.Sets["CP2"].Name
+		edition = defaultBackend.Sets["CP2"].Name
 	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "CP3")) == 1:
-		edition = backend.Sets["CP3"].Name
+		edition = defaultBackend.Sets["CP3"].Name
 
 	// Challenger decks promos
 	case (inCard.Contains("Challenger Decks") || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "Q06")) != 0:
-		edition = backend.Sets["Q06"].Name
+		edition = defaultBackend.Sets["Q06"].Name
 
 	// Open the Helvault oversized cards
 	case (inCard.Contains("Oversize") || inCard.Contains("Helvault Promo") || inCard.isPrerelease()) && len(MatchInSet(inCard.Name, "PHEL")) == 1:
-		edition = backend.Sets["PHEL"].Name
+		edition = defaultBackend.Sets["PHEL"].Name
 		variation = ""
 
 	// All the oversized commander cards
@@ -1043,33 +1043,33 @@ func adjustEdition(inCard *InputCard) {
 			"OCM1", "PCMD", "OCMD", "OC13", "OC14", "OC15", "OC16", "OC17", "OC18", "OC19", "OC20",
 		} {
 			if inCard.Name == "Mayael the Anima" && !inCard.Contains("Arsenal") {
-				edition = backend.Sets["OC13"].Name
+				edition = defaultBackend.Sets["OC13"].Name
 				break
 			} else if len(MatchInSet(inCard.Name, tag)) == 1 {
-				edition = backend.Sets[tag].Name
+				edition = defaultBackend.Sets[tag].Name
 				break
 			}
 		}
 
 	// Lunar Year Promos
 	case (inCard.isGenericPromo() || inCard.Contains("Lunar")) && len(MatchInSet(inCard.Name, "PL21")) == 1:
-		edition = backend.Sets["PL21"].Name
+		edition = defaultBackend.Sets["PL21"].Name
 
 	// Love Your LGS 2021, often confused with WPN
 	case (inCard.isWPNGateway() || inCard.isGenericPromo()) && inCard.Contains("Retro Frame") && len(MatchInSet(inCard.Name, "PLG21")) == 1:
-		edition = backend.Sets["PLG21"].Name
+		edition = defaultBackend.Sets["PLG21"].Name
 
 	// WPN 2021
 	case inCard.Name != "Mind Stone" && inCard.isGenericPromo() && len(MatchInSet(inCard.Name, "PW21")) == 1:
-		edition = backend.Sets["PW21"].Name
+		edition = defaultBackend.Sets["PW21"].Name
 
 	// Unfinity Sticker Sheets
 	case inCard.Edition == "Unfinity" && len(MatchInSet(inCard.Name, "SUNF")) == 1:
-		edition = backend.Sets["SUNF"].Name
+		edition = defaultBackend.Sets["SUNF"].Name
 
 	// Move Release to Prerelease for Battlebond
 	case inCard.isRelease() && strings.Contains(edition, "Battlebond") && len(MatchInSet(inCard.Name, "PBBD")) == 1:
-		edition = backend.Sets["PBBD"].Name
+		edition = defaultBackend.Sets["PBBD"].Name
 
 	// Remove edition since the cards are either in ONE or in another set, but single printed
 	case inCard.Contains("Phyrexia: All") && inCard.Contains("Concept"):
@@ -1080,9 +1080,9 @@ func adjustEdition(inCard *InputCard) {
 
 	// Decouple P30A from P30H and P30T
 	case inCard.Contains("30th Anniversary") && !inCard.Contains("Edition") && !inCard.Contains("Tokyo") && !inCard.Contains("Misc") && len(MatchInSet(inCard.Name, "P30H")) > 0:
-		maybeEdition := backend.Sets["P30H"].Name
+		maybeEdition := defaultBackend.Sets["P30H"].Name
 		if inCard.Name == "Serra Angel" && (!inCard.Contains("History") || ExtractYear(inCard.Variation) != "") {
-			maybeEdition = backend.Sets["P30A"].Name
+			maybeEdition = defaultBackend.Sets["P30A"].Name
 		}
 		edition = maybeEdition
 
@@ -1092,7 +1092,7 @@ func adjustEdition(inCard *InputCard) {
 
 	// Many providers don't tag these promos correctly
 	case inCard.isRelease() && len(MatchInSet(inCard.Name, "PBBD")) == 1:
-		edition = backend.Sets["PBBD"].Name
+		edition = defaultBackend.Sets["PBBD"].Name
 		variation = "Prerelease"
 
 	// Single card mismatches

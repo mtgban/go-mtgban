@@ -14,19 +14,19 @@ import (
 )
 
 func GetUUIDs() []string {
-	return backend.AllUUIDs
+	return defaultBackend.AllUUIDs
 }
 
 func GetSealedUUIDs() []string {
-	return backend.AllSealedUUIDs
+	return defaultBackend.AllSealedUUIDs
 }
 
 func GetUUID(uuid string) (*CardObject, error) {
-	if backend.UUIDs == nil {
+	if defaultBackend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
-	co, found := backend.UUIDs[uuid]
+	co, found := defaultBackend.UUIDs[uuid]
 	if !found {
 		return nil, ErrCardUnknownId
 	}
@@ -35,15 +35,15 @@ func GetUUID(uuid string) (*CardObject, error) {
 }
 
 func GetAllSets() []string {
-	return backend.AllSets
+	return defaultBackend.AllSets
 }
 
 func GetSet(code string) (*Set, error) {
-	if backend.Sets == nil {
+	if defaultBackend.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
-	set, found := backend.Sets[strings.ToUpper(code)]
+	set, found := defaultBackend.Sets[strings.ToUpper(code)]
 	if !found {
 		return nil, ErrCardNotInEdition
 	}
@@ -52,7 +52,7 @@ func GetSet(code string) (*Set, error) {
 }
 
 func GetSetByName(edition string, flags ...bool) (*Set, error) {
-	if backend.Sets == nil {
+	if defaultBackend.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
@@ -63,7 +63,7 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	}
 
 	// 2. Check if input is the full name of the set
-	for _, set := range backend.Sets {
+	for _, set := range defaultBackend.Sets {
 		if Equals(set.Name, edition) {
 			return set, nil
 		}
@@ -78,7 +78,7 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	}
 	adjustEdition(card)
 
-	for _, set := range backend.Sets {
+	for _, set := range defaultBackend.Sets {
 		if Equals(set.Name, card.Edition) {
 			return set, nil
 		}
@@ -89,11 +89,11 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 }
 
 func ExternalUUID(id string) string {
-	return backend.ExternalIdentifiers[id]
+	return defaultBackend.ExternalIdentifiers[id]
 }
 
 func AllPromoTypes() []string {
-	return backend.AllPromoTypes
+	return defaultBackend.AllPromoTypes
 }
 
 // Return a slice of all names loaded up, in different formats
@@ -102,29 +102,29 @@ func AllNames(variant string, sealed bool) []string {
 	switch variant {
 	case "normalized":
 		if sealed {
-			return backend.AllSealed
+			return defaultBackend.AllSealed
 		}
-		return backend.AllNames
+		return defaultBackend.AllNames
 	case "canonical":
 		if sealed {
-			return backend.AllCanonicalSealed
+			return defaultBackend.AllCanonicalSealed
 		}
-		return backend.AllCanonicalNames
+		return defaultBackend.AllCanonicalNames
 	case "lowercase":
 		if sealed {
-			return backend.AllLowerSealed
+			return defaultBackend.AllLowerSealed
 		}
-		return backend.AllLowerNames
+		return defaultBackend.AllLowerNames
 	}
 	return nil
 }
 
 func SearchEquals(name string) ([]string, error) {
 	if name == "" {
-		return backend.AllUUIDs, nil
+		return defaultBackend.AllUUIDs, nil
 	}
 
-	results, found := backend.Hashes[Normalize(name)]
+	results, found := defaultBackend.Hashes[Normalize(name)]
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
@@ -133,7 +133,7 @@ func SearchEquals(name string) ([]string, error) {
 }
 
 func SearchSealedEquals(name string) ([]string, error) {
-	return searchFunc(name, backend.AllSealed, func(a, b string) bool {
+	return searchFunc(name, defaultBackend.AllSealed, func(a, b string) bool {
 		return a == b
 	})
 }
@@ -143,7 +143,7 @@ func searchFunc(name string, slice []string, f func(string, string) bool) ([]str
 	name = Normalize(name)
 	for i := range slice {
 		if f(slice[i], name) {
-			hashes = append(hashes, backend.Hashes[slice[i]]...)
+			hashes = append(hashes, defaultBackend.Hashes[slice[i]]...)
 		}
 	}
 	if hashes == nil {
@@ -154,13 +154,13 @@ func searchFunc(name string, slice []string, f func(string, string) bool) ([]str
 
 func SearchHasPrefix(name string) ([]string, error) {
 	if name == "" {
-		return backend.AllUUIDs, nil
+		return defaultBackend.AllUUIDs, nil
 	}
-	return searchFunc(name, backend.AllNames, strings.HasPrefix)
+	return searchFunc(name, defaultBackend.AllNames, strings.HasPrefix)
 }
 
 func SearchContains(name string) ([]string, error) {
-	return searchFunc(name, backend.AllNames, strings.Contains)
+	return searchFunc(name, defaultBackend.AllNames, strings.Contains)
 }
 
 func SearchRegexp(name string) ([]string, error) {
@@ -169,9 +169,9 @@ func SearchRegexp(name string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	for i := range backend.AllUUIDs {
-		if re.MatchString(backend.UUIDs[backend.AllUUIDs[i]].Name) {
-			hashes = append(hashes, backend.AllUUIDs[i])
+	for i := range defaultBackend.AllUUIDs {
+		if re.MatchString(defaultBackend.UUIDs[defaultBackend.AllUUIDs[i]].Name) {
+			hashes = append(hashes, defaultBackend.AllUUIDs[i])
 		}
 	}
 	if hashes == nil {
@@ -181,18 +181,18 @@ func SearchRegexp(name string) ([]string, error) {
 }
 
 func SearchSealedContains(name string) ([]string, error) {
-	return searchFunc(name, backend.AllSealed, strings.Contains)
+	return searchFunc(name, defaultBackend.AllSealed, strings.Contains)
 }
 
 func Printings4Card(name string) ([]string, error) {
-	if backend.Hashes == nil {
+	if defaultBackend.Hashes == nil {
 		return nil, ErrDatastoreEmpty
 	}
-	uuids, found := backend.Hashes[Normalize(name)]
+	uuids, found := defaultBackend.Hashes[Normalize(name)]
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
-	entry, found := backend.UUIDs[uuids[0]]
+	entry, found := defaultBackend.UUIDs[uuids[0]]
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
@@ -244,7 +244,7 @@ func HasEtchedPrinting(name string, editions ...string) bool {
 }
 
 func hasPrinting(name, field, value string, editions ...string) bool {
-	if backend.Sets == nil {
+	if defaultBackend.Sets == nil {
 		return false
 	}
 
@@ -298,13 +298,13 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 	for _, code := range printings {
 		var set *Set
 		if len(editions) > 0 {
-			set = backend.Sets[editions[0]]
+			set = defaultBackend.Sets[editions[0]]
 			if set == nil {
 				set, _ = GetSetByName(editions[0])
 			}
 		}
 		if set == nil {
-			set = backend.Sets[code]
+			set = defaultBackend.Sets[code]
 			if set == nil {
 				continue
 			}
@@ -390,7 +390,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				// Create subsheets for each color (multi color gets included
 				// multiple times)
 				for cardId, weight := range sheet.Cards {
-					co, found := backend.UUIDs[cardId]
+					co, found := defaultBackend.UUIDs[cardId]
 					if !found {
 						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardId)
 					}
@@ -453,7 +453,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 					item := cardChooser.Pick()
 
 					// Validate card exists (ie in case of online-only printing)
-					_, found := backend.UUIDs[item]
+					_, found := defaultBackend.UUIDs[item]
 					if !found {
 						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, item)
 					}
@@ -1036,7 +1036,7 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 // a second uuid representing the foil version of the product
 func BuildSealedProductMap(idName string) map[int][]string {
 	productMap := map[int][]string{}
-	for _, uuid := range backend.AllSealedUUIDs {
+	for _, uuid := range defaultBackend.AllSealedUUIDs {
 		co, err := GetUUID(uuid)
 		if err != nil {
 			continue
@@ -1059,7 +1059,7 @@ func BuildSealedProductMap(idName string) map[int][]string {
 				if err != nil {
 					continue
 				}
-				subco, found := backend.UUIDs[uuids[0]]
+				subco, found := defaultBackend.UUIDs[uuids[0]]
 				if !found {
 					continue
 				}
@@ -1075,8 +1075,8 @@ func BuildSealedProductMap(idName string) map[int][]string {
 
 		// Preserve Foil variant at the end of the slice
 		sort.Slice(productMap[idNum], func(i, j int) bool {
-			coI := backend.UUIDs[productMap[idNum][i]]
-			coJ := backend.UUIDs[productMap[idNum][j]]
+			coI := defaultBackend.UUIDs[productMap[idNum][i]]
+			coJ := defaultBackend.UUIDs[productMap[idNum][j]]
 			return coI.Name < coJ.Name
 		})
 	}

@@ -47,7 +47,7 @@ type alternateProps struct {
 	IsFlavor       bool
 }
 
-var backend cardBackend
+var defaultBackend cardBackend
 
 type cardBackend struct {
 	// Slice of all set codes loaded
@@ -872,33 +872,33 @@ func (ap AllPrintings) Load() cardBackend {
 	sort.Strings(fullSealed)
 	sort.Strings(lowerSealed)
 
-	var backend cardBackend
+	var b cardBackend
 
-	backend.Hashes = hashes
-	backend.AllSets = allSets
-	backend.AllUUIDs = allUUIDs
-	backend.AllSealedUUIDs = allSealedUUIDs
+	b.Hashes = hashes
+	b.AllSets = allSets
+	b.AllUUIDs = allUUIDs
+	b.AllSealedUUIDs = allSealedUUIDs
 
-	backend.AllNames = names
-	backend.AllCanonicalNames = fullNames
-	backend.AllLowerNames = lowerNames
+	b.AllNames = names
+	b.AllCanonicalNames = fullNames
+	b.AllLowerNames = lowerNames
 
-	backend.AllSealed = sealed
-	backend.AllCanonicalSealed = fullSealed
-	backend.AllLowerSealed = lowerSealed
+	b.AllSealed = sealed
+	b.AllCanonicalSealed = fullSealed
+	b.AllLowerSealed = lowerSealed
 
-	backend.Sets = ap.Data
-	backend.CanonicalNames = canonicalNames
-	backend.Tokens = tokens
-	backend.UUIDs = uuids
-	backend.ExternalIdentifiers = externalIds
-	backend.AlternateProps = alternates
-	backend.AllPromoTypes = promoTypes
+	b.Sets = ap.Data
+	b.CanonicalNames = canonicalNames
+	b.Tokens = tokens
+	b.UUIDs = uuids
+	b.ExternalIdentifiers = externalIds
+	b.AlternateProps = alternates
+	b.AllPromoTypes = promoTypes
 
-	backend.CommanderKeywordMap = commanderKeywordMap
-	backend.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
+	b.CommanderKeywordMap = commanderKeywordMap
+	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 
-	return backend
+	return b
 }
 
 var mtgRarityMap = map[string]int{
@@ -1032,7 +1032,7 @@ func filterInvalidPromoTypes(sets map[string]*Set, uuids map[string]CardObject) 
 func findDeck(setCode, deckName string) []string {
 	var list []string
 
-	set, found := backend.Sets[setCode]
+	set, found := defaultBackend.Sets[setCode]
 	if !found {
 		return nil
 	}
@@ -1232,7 +1232,7 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 }
 
 func SetGlobalDatastore(datastore cardBackend) {
-	backend = datastore
+	defaultBackend = datastore
 }
 
 func LoadDatastore(reader io.Reader) error {
@@ -1247,7 +1247,7 @@ func LoadDatastore(reader io.Reader) error {
 		}
 	}
 
-	backend = datastore.Load()
+	defaultBackend = datastore.Load()
 	return nil
 }
 

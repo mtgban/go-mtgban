@@ -401,7 +401,7 @@ func listEditionCheck(inCard *InputCard, card *Card) bool {
 		case inCard.Contains("Game Day"):
 			ids, _ := SearchEquals(card.Name)
 			for _, id := range ids {
-				co := backend.UUIDs[id]
+				co := defaultBackend.UUIDs[id]
 				if co.SetCode == code && co.HasPromoType(PromoTypeGameDay) {
 					return false
 				}
@@ -674,7 +674,7 @@ func variantInCommanderDeck(inCard *InputCard, card *Card) bool {
 	// Filter only cards that may have the flag set
 	hasAlternate := card.IsAlternative
 	for _, id := range card.Variations {
-		alt := backend.UUIDs[id]
+		alt := defaultBackend.UUIDs[id]
 		if alt.IsAlternative {
 			hasAlternate = true
 			break
