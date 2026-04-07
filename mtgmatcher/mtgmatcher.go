@@ -81,7 +81,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 		return co.UUID, nil
 	}
 
-	outId := output(co.Card, finishes...)
+	outId := b.output(co.Card, finishes...)
 
 	// Validate that what we found is correct
 	co, found = b.UUIDs[outId]
@@ -99,7 +99,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 			// We assume that the collector number between the two version
 			// stays the same, with a different suffix
 			if ExtractNumericalValue(co.Number) == ExtractNumericalValue(altCo.Number) {
-				maybeId := output(altCo.Card, isFoil, isEtched)
+				maybeId := b.output(altCo.Card, isFoil, isEtched)
 				altCo = b.UUIDs[maybeId]
 
 				// Make sure we're dealing with the same card
@@ -286,7 +286,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		canonicalName, found = b.CanonicalNames[Normalize(inCard.Name)]
 		if !found {
 			// Return a safe error if it's a token
-			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
+			if b.IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
 				return "", ErrUnsupported
 			}
 			return "", ErrCardDoesNotExist
@@ -338,14 +338,14 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	// out unrelated editions.
 	logger.Println("Processing", inCard, printings)
 	if len(printings) > 1 || strings.HasSuffix(ogName, "Token") {
-		printings = filterPrintings(inCard, printings)
+		printings = b.filterPrintings(inCard, printings)
 		logger.Println("Filtered printings:", printings)
 
 		// Filtering was too aggressive or wrong data fed,
 		// in either case, nothing else to be done here.
 		if len(printings) == 0 {
 			// Return a safe error if it's a token
-			if IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
+			if b.IsToken(ogName) || Contains(inCard.Variation, "Oversize") {
 				return "", ErrUnsupported
 			}
 			return "", ErrCardNotInEdition
@@ -455,7 +455,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	} else {
 		// Otherwise do a second pass filter, using all inCard details
 		logger.Println("Now filtering...")
-		outCards = filterCards(inCard, cardSet)
+		outCards = b.filterCards(inCard, cardSet)
 
 		logger.Println("Post filtering status...")
 		for _, card := range outCards {
@@ -503,7 +503,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	case 1:
 		logger.Println("Found it!")
 
-		cardId = output(outCards[0], inCard.Foil, inCard.isEtched())
+		cardId = b.output(outCards[0], inCard.Foil, inCard.isEtched())
 
 		co := b.UUIDs[cardId]
 		logger.Println(inCard, "->", co)
@@ -522,7 +522,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		logger.Println("Aliasing...")
 		alias := NewAliasingError()
 		for i := range outCards {
-			alias.Dupes = append(alias.Dupes, output(outCards[i], inCard.Foil, inCard.isEtched()))
+			alias.Dupes = append(alias.Dupes, b.output(outCards[i], inCard.Foil, inCard.isEtched()))
 		}
 		err = alias
 	}
@@ -586,7 +586,7 @@ func (b *Backend) adjustName(inCard *InputCard) {
 		inCard.Name += " Token"
 		return
 	}
-	if IsToken(inCard.Name) {
+	if b.IsToken(inCard.Name) {
 		return
 	}
 
@@ -674,7 +674,7 @@ func (b *Backend) adjustName(inCard *InputCard) {
 		}
 
 		// Adjust the token name in case it's a reskin
-		if IsToken(inCard.Name) {
+		if b.IsToken(inCard.Name) {
 			inCard.Name += " Token"
 			return
 		}
@@ -883,7 +883,7 @@ func (b *Backend) adjustEdition(inCard *InputCard) {
 	case strings.Contains(edition, "Commander") &&
 		(!inCard.Contains("Oversize") || inCard.Contains("Plane") || inCard.Contains("Phenomenon")) &&
 		!inCard.Contains("Party"):
-		ed := ParseCommanderEdition(edition, variation)
+		ed := b.ParseCommanderEdition(edition, variation)
 		if ed != "" {
 			edition = ed
 		}
