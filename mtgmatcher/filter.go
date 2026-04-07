@@ -8,13 +8,22 @@ import (
 
 // Remove any unrelated edition from the input array.
 func filterPrintings(inCard *InputCard, editions []string) (printings []string) {
+	return defaultBackend.filterPrintings(inCard, editions)
+}
+
+// Deduplicate cards with the same name.
+func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card) {
+	return defaultBackend.filterCards(inCard, cardSet)
+}
+
+func (b *Backend) filterPrintings(inCard *InputCard, editions []string) (printings []string) {
 	maybeYear := ExtractYear(inCard.Variation)
 	if maybeYear == "" {
 		maybeYear = ExtractYear(inCard.Edition)
 	}
 
 	for _, setCode := range editions {
-		set, found := defaultBackend.Sets[setCode]
+		set, found := b.Sets[setCode]
 		if !found {
 			continue
 		}
@@ -37,7 +46,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				"March of the Machine Commander",
 				"The Lord of the Rings: Tales of Middle-earth":
 				skip := true
-				foundCards := MatchInSet(inCard.Name, setCode)
+				foundCards := b.MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
 					if card.HasPromoType(PromoTypePrerelease) {
 						skip = false
@@ -74,7 +83,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				case strings.HasSuffix(set.Name, "Promos"):
 				case setDate.After(PromosForEverybodyYay) && (set.Type == "expansion" || set.Type == "core"):
 					skip := true
-					foundCards := MatchInSet(inCard.Name, setCode)
+					foundCards := b.MatchInSet(inCard.Name, setCode)
 					for _, card := range foundCards {
 						if card.HasPromoType(PromoTypePromoPack) || card.HasPromoType(PromoTypePlayPromo) {
 							skip = false
@@ -91,7 +100,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 
 		case inCard.isRelease():
 			skip := true
-			foundCards := MatchInSet(inCard.Name, setCode)
+			foundCards := b.MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
 				if card.HasPromoType(PromoTypeRelease) ||
 					card.HasPromoType(PromoTypeDraftWeekend) ||
@@ -106,7 +115,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 
 		case inCard.isBaB():
 			skip := true
-			foundCards := MatchInSet(inCard.Name, setCode)
+			foundCards := b.MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
 				if card.HasPromoType(PromoTypeBuyABox) {
 					skip = false
@@ -119,7 +128,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 
 		case inCard.isBundle():
 			skip := true
-			foundCards := MatchInSet(inCard.Name, setCode)
+			foundCards := b.MatchInSet(inCard.Name, setCode)
 			for _, card := range foundCards {
 				if card.HasPromoType(PromoTypeBundle) {
 					skip = false
@@ -136,7 +145,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case set.Name == "Magic × Duel Masters Promos":
 			case strings.HasSuffix(set.Name, "Promos"):
 				skip := true
-				foundCards := MatchInSet(inCard.Name, setCode)
+				foundCards := b.MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
 					if card.HasPromoType(PromoTypeFNM) {
 						inCard.Variation = "FNM Promo"
@@ -188,10 +197,10 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case "PLST":
 				// Check if there is an exact match in plain SLD
 				num := ExtractNumber(inCard.Variation)
-				if len(MatchInSetNumber(inCard.Name, "SLD", num)) != 0 {
+				if len(b.MatchInSetNumber(inCard.Name, "SLD", num)) != 0 {
 					// If there is a match, make sure there are no other cards in PLST with the same number
 					shouldNotContinue := false
-					cardsWithSameName := MatchInSet(inCard.Name, "PLST")
+					cardsWithSameName := b.MatchInSet(inCard.Name, "PLST")
 					for _, altCard := range cardsWithSameName {
 						var altNum string
 						altNums := strings.Split(altCard.Number, "-")
@@ -209,7 +218,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				}
 				if inCard.isSecretLair() {
 					skip := true
-					for _, name := range defaultBackend.SLDDeckNames {
+					for _, name := range b.SLDDeckNames {
 						if Contains(inCard.Edition, name) || Contains(inCard.Variation, name) {
 							skip = false
 						}
@@ -221,7 +230,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case "ULST":
 			case "SLX", "SLU", "SLC", "SLP":
 				// If these have no strict matches AND are not properly tagged, skip them
-				if len(MatchInSetNumber(inCard.Name, set.Code, ExtractNumber(inCard.Variation))) == 0 && !inCard.hasSecretLairTag(set.Code) {
+				if len(b.MatchInSetNumber(inCard.Name, set.Code, ExtractNumber(inCard.Variation))) == 0 && !inCard.hasSecretLairTag(set.Code) {
 					continue
 				}
 			case "SLD":
@@ -234,7 +243,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 					if code == "SLX" && inCard.Name == "Themberchaud" {
 						continue
 					}
-					if len(MatchInSet(inCard.Name, code)) > 0 && inCard.hasSecretLairTag(code) {
+					if len(b.MatchInSet(inCard.Name, code)) > 0 && inCard.hasSecretLairTag(code) {
 						skip = true
 						break
 					}
@@ -250,8 +259,8 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				// ExtractNumberAny so Secret Lair collector numbers above the
 				// year cap (e.g. 2406) aren't dropped and misrouted to PLST,
 				// mirroring the SLD number check further below.
-				if len(MatchInSetNumber(inCard.Name, "SLD", ExtractNumberAny(inCard.Variation))) == 0 && len(MatchInSet(inCard.Name, "PLST")) > 0 {
-					for _, name := range defaultBackend.SLDDeckNames {
+				if len(b.MatchInSetNumber(inCard.Name, "SLD", ExtractNumberAny(inCard.Variation))) == 0 && len(b.MatchInSet(inCard.Name, "PLST")) > 0 {
+					for _, name := range b.SLDDeckNames {
 						deckNameInCard := Contains(inCard.Edition, name) || Contains(inCard.Variation, name)
 						if deckNameInCard {
 							skip = true
@@ -282,7 +291,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case "Innistrad: Crimson Vow",
 				"The Lost Caverns of Ixalan":
 				skip := true
-				foundCards := MatchInSet(inCard.Name, set.Code)
+				foundCards := b.MatchInSet(inCard.Name, set.Code)
 				for _, card := range foundCards {
 					if card.HasPromoType(PromoTypeWPN) {
 						skip = false
@@ -319,7 +328,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				case "PDOM":
 					// This set contains both FNM and Media cards
 					skip := false
-					foundCards := MatchInSet(inCard.Name, set.Code)
+					foundCards := b.MatchInSet(inCard.Name, set.Code)
 					for _, card := range foundCards {
 						if card.HasPromoType(PromoTypeFNM) {
 							skip = true
@@ -411,7 +420,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				skip := true
 				switch {
 				case strings.HasSuffix(set.Name, "Promos"):
-					foundCards := MatchInSet(inCard.Name, set.Code)
+					foundCards := b.MatchInSet(inCard.Name, set.Code)
 					for _, card := range foundCards {
 						if card.HasPromoType(PromoTypeStoreChampionship) ||
 							card.HasPromoType(PromoTypeGameDay) {
@@ -434,7 +443,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case maybeYear == "" && strings.HasPrefix(set.Name, "World Championship Decks"):
 				skip := true
 				num, _ := parseWorldChampPrefix(inCard.Variation)
-				foundCards := MatchInSet(inCard.Name, set.Code)
+				foundCards := b.MatchInSet(inCard.Name, set.Code)
 				if num == "" || len(foundCards) == 1 {
 					skip = false
 				} else {
@@ -459,7 +468,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			}
 			switch {
 			case strings.HasPrefix(set.Name, "MagicFest "+maybeYear):
-				if len(MatchInSet(inCard.Name, "SLP")) > 0 && !inCard.Contains("Fest") {
+				if len(b.MatchInSet(inCard.Name, "SLP")) > 0 && !inCard.Contains("Fest") {
 					continue
 				}
 			case set.Code == "PLG21":
@@ -467,8 +476,8 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			case set.Code == "SLP":
 				// If the 'Secret' tag is missing, confirm that this could not be found in other
 				// MagicFest sets
-				if (len(MatchInSet(inCard.Name, "PF19")) > 0 ||
-					len(MatchInSet(inCard.Name, "PF25")) > 0) && !inCard.Contains("Secret") {
+				if (len(b.MatchInSet(inCard.Name, "PF19")) > 0 ||
+					len(b.MatchInSet(inCard.Name, "PF25")) > 0) && !inCard.Contains("Secret") {
 					continue
 				}
 			default:
@@ -517,7 +526,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				if !found && !wellKnownTags {
 					num := ExtractNumber(inCard.Variation)
 					if num != "" {
-						foundCards := MatchInSet(inCard.Name, setCode)
+						foundCards := b.MatchInSet(inCard.Name, setCode)
 						for _, card := range foundCards {
 							if card.Number == num {
 								found = true
@@ -708,7 +717,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 					continue
 				}
 				skip := false
-				foundCards := MatchInSet(inCard.Name, setCode)
+				foundCards := b.MatchInSet(inCard.Name, setCode)
 				// It is required to set a proper tag to parse non-English
 				// cards or well-known promos
 				for _, card := range foundCards {
@@ -727,7 +736,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				}
 			case "expansion", "core", "masters", "draft_innovation":
 				skip := true
-				foundCards := MatchInSet(inCard.Name, setCode)
+				foundCards := b.MatchInSet(inCard.Name, setCode)
 				for _, card := range foundCards {
 					// Skip boosterfun because they are inherently non-promo
 					if card.IsPromo && !card.HasPromoType(PromoTypeBoosterfun) {
@@ -743,7 +752,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 				switch setCode {
 				// Only keep the planeswalkers from SLD for this category
 				case "SLD":
-					foundCards := MatchInSet(inCard.Name, setCode)
+					foundCards := b.MatchInSet(inCard.Name, setCode)
 					for _, card := range foundCards {
 						if slices.Contains(card.Types, "Planeswalker") {
 							skip = false
@@ -763,7 +772,7 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 			}
 
 		// Tokens need correct set names or special handling earlier
-		case nameIsToken(inCard.Name):
+		case b.nameIsToken(inCard.Name):
 			if !Equals(inCard.Edition, set.Name) {
 				continue
 			}
@@ -775,10 +784,9 @@ func filterPrintings(inCard *InputCard, editions []string) (printings []string) 
 	return
 }
 
-// Deduplicate cards with the same name.
-func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card) {
+func (b *Backend) filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card) {
 	for setCode, inCards := range cardSet {
-		set := defaultBackend.Sets[setCode]
+		set := b.Sets[setCode]
 
 		for _, card := range inCards {
 			// Super lucky case, we were expecting the card
@@ -895,7 +903,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 	if len(outCards) > 1 {
 		var filteredOutCards []Card
 		for _, card := range outCards {
-			set, found := defaultBackend.Sets[card.SetCode]
+			set, found := b.Sets[card.SetCode]
 			if !found {
 				continue
 			}
@@ -1008,7 +1016,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 			logger.Println("allSameEdition pass needed")
 			var filteredOutCards []Card
 			for _, card := range outCards {
-				set := defaultBackend.Sets[card.SetCode]
+				set := b.Sets[card.SetCode]
 				// The year is necessary to decouple PM20 and PM21 cards
 				year := ExtractYear(set.Name)
 				// Check if the parent set code is present in the variation or edition
@@ -1037,7 +1045,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 		if len(outCards) > 1 {
 			var filteredOutCards []Card
 			for _, card := range outCards {
-				set, found := defaultBackend.Sets[card.SetCode]
+				set, found := b.Sets[card.SetCode]
 				if !found {
 					continue
 				}
@@ -1078,7 +1086,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 			for _, card := range outCards {
 				// This needs date check because some old full art promos are marked
 				// as extended art, in a different way of what modern Extended Art is
-				set, found := defaultBackend.Sets[card.SetCode]
+				set, found := b.Sets[card.SetCode]
 				if !found {
 					continue
 				}
