@@ -19,13 +19,13 @@ import (
 )
 
 const (
-	mkmProductsBaseURL   = "https://api.cardmarket.com/ws/v2.0/output.json/products/"
-	mkmArticlesBaseURL   = "https://api.cardmarket.com/ws/v2.0/output.json/articles/"
-	mkmExpansionsBaseURL = "https://api.cardmarket.com/ws/v2.0/output.json/expansions/"
+	mkmProductsBaseURL   = "https://apiv2.cardmarket.com/ws/v2.0/output.json/products/"
+	mkmArticlesBaseURL   = "https://apiv2.cardmarket.com/ws/v2.0/output.json/articles/"
+	mkmExpansionsBaseURL = "https://apiv2.cardmarket.com/ws/v2.0/output.json/expansions/"
 
-	mkmPriceGuideURL  = "https://api.cardmarket.com/ws/v2.0/output.json/priceguide"
-	mkmProductListURL = "https://api.cardmarket.com/ws/v2.0/output.json/productlist"
-	mkmExpansionsURL  = "https://api.cardmarket.com/ws/v2.0/output.json/games/%d/expansions"
+	mkmPriceGuideURL  = "https://apiv2.cardmarket.com/ws/v2.0/output.json/priceguide"
+	mkmProductListURL = "https://apiv2.cardmarket.com/ws/v2.0/output.json/productlist"
+	mkmExpansionsURL  = "https://apiv2.cardmarket.com/ws/v2.0/output.json/games/%d/expansions"
 
 	MaxEntities = 100
 )
