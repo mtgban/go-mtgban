@@ -145,7 +145,7 @@ func run() int {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
+	mtgmatcher.SetGlobalDatastore(ds)
 
 	ctx := context.Background()
 	editions, err := tcgplayer.EditionMap(ctx, client, api.CategoryMagic)

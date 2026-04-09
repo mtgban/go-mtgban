@@ -355,8 +355,11 @@ func NewBackend() *Backend {
 	return &Backend{}
 }
 
-func SetGlobalDatastore(datastore Backend) {
-	defaultBackend = datastore
+// NewBackend returns itself, satisfying the DataStore interface.
+func (b Backend) NewBackend() Backend { return b }
+
+func SetGlobalDatastore(ds DataStore) {
+	defaultBackend = ds.NewBackend()
 }
 
 // LoadDatastore applies the given DataStore to the backend.
