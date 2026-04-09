@@ -156,7 +156,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
+	mtgmatcher.SetGlobalDatastore(ds)
 
 	os.Exit(run())
 }

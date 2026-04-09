@@ -47,7 +47,7 @@ func run() int {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
+	mtgmatcher.SetGlobalDatastore(ds)
 
 	set, err := mtgmatcher.GetSet(*SetCodeOpt)
 	if err != nil {
