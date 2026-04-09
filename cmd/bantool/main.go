@@ -1025,7 +1025,7 @@ func run() int {
 		log.Println(err)
 		return 1
 	}
-	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
+	mtgmatcher.SetGlobalDatastore(ds)
 	log.Println("loading datastore took:", time.Since(now))
 
 	var scrapers []mtgban.Scraper
