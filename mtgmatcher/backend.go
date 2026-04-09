@@ -345,14 +345,6 @@ const (
 	suffixEtched = "_e"
 )
 
-var lorcanaColorNameMap = map[string]string{
-	"W": "white",
-	"U": "blue",
-	"B": "black",
-	"R": "red",
-	"G": "green",
-}
-
 // NewBackend creates a new empty Backend instance.
 func NewBackend() *Backend {
 	return &Backend{}

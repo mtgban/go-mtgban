@@ -1,4 +1,4 @@
-package mtgmatcher
+package lorcana
 
 import (
 	"encoding/json"
@@ -10,8 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// LorcanaJSON is the top-level structure of the Lorcana JSON data file.
 type LorcanaJSON struct {
 	Metadata struct {
 		FormatVersion string `json:"formatVersion"`
@@ -77,7 +80,9 @@ type LorcanaJSON struct {
 	} `json:"cards"`
 }
 
-func LoadLorcana(r io.Reader) (DataStore, error) {
+// Load reads a LorcanaJSON data file from r and returns the parsed
+// structure or an error.
+func Load(r io.Reader) (*LorcanaJSON, error) {
 	var payload LorcanaJSON
 	err := json.NewDecoder(r).Decode(&payload)
 	if err != nil {
@@ -86,23 +91,23 @@ func LoadLorcana(r io.Reader) (DataStore, error) {
 	if len(payload.Cards) == 0 || len(payload.Sets) == 0 {
 		return nil, errors.New("empty LorcanaJSON file")
 	}
-	return payload, nil
+	return &payload, nil
 }
 
-func (lj LorcanaJSON) NewBackend() Backend {
-	var b Backend
+func (lj *LorcanaJSON) NewBackend() mtgmatcher.Backend {
+	var b mtgmatcher.Backend
 
-	b.UUIDs = map[string]CardObject{}
+	b.UUIDs = map[string]mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
 	b.ExternalIdentifiers = map[string]string{}
 
 	// Load all sets first
-	b.Sets = map[string]*Set{}
+	b.Sets = map[string]*mtgmatcher.Set{}
 	for code, set := range lj.Sets {
 		b.AllSets = append(b.AllSets, code)
 
 		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
-		b.Sets[code] = &Set{
+		b.Sets[code] = &mtgmatcher.Set{
 			Name:            set.Name,
 			Code:            code,
 			ReleaseDate:     set.ReleaseDate,
@@ -116,7 +121,7 @@ func (lj LorcanaJSON) NewBackend() Backend {
 		if slices.Contains(b.AllCanonicalNames, card.FullName) {
 			continue
 		}
-		b.AllNames = append(b.AllNames, Normalize(card.FullName))
+		b.AllNames = append(b.AllNames, mtgmatcher.Normalize(card.FullName))
 		b.AllCanonicalNames = append(b.AllCanonicalNames, card.FullName)
 		b.AllLowerNames = append(b.AllLowerNames, card.FullName)
 	}
@@ -153,7 +158,7 @@ func (lj LorcanaJSON) NewBackend() Backend {
 
 		// Prepare the card and add it to the main array
 		// Since cards are already sorted (by number/id), the order here is preserved
-		convertedCard := Card{
+		convertedCard := mtgmatcher.Card{
 			UUID: fmt.Sprint(card.ID),
 
 			Name:     card.FullName,
@@ -182,7 +187,7 @@ func (lj LorcanaJSON) NewBackend() Backend {
 
 		// Split cards per finish
 		for i, finish := range finishes {
-			co := CardObject{
+			co := mtgmatcher.CardObject{
 				Card:    convertedCard,
 				Edition: b.Sets[card.SetCode].Name,
 			}
@@ -202,7 +207,7 @@ func (lj LorcanaJSON) NewBackend() Backend {
 
 			// Save uuid in the array of uuids and
 			b.AllUUIDs = append(b.AllUUIDs, uuid)
-			b.Hashes[Normalize(card.FullName)] = append(b.Hashes[Normalize(card.FullName)], uuid)
+			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], uuid)
 		}
 	}
 
@@ -260,4 +265,14 @@ var lorcanaRarityMap = map[string]int{
 	"legendary": 5,
 	"enchanted": 6,
 	"special":   7,
+}
+
+const suffixFoil = "_f"
+
+var lorcanaColorNameMap = map[string]string{
+	"W": "white",
+	"U": "blue",
+	"B": "black",
+	"R": "red",
+	"G": "green",
 }
