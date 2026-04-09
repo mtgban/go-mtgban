@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
+	mtgmatcher.SetGlobalDatastore(ds)
 
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 
