@@ -245,10 +245,6 @@ const (
 	SuffixPhiLow  = "φ"
 )
 
-type DataStore interface {
-	NewBackend() Backend
-}
-
 // CardObject is an extension of Card, containing fields that cannot
 // be easily represented in the original object.
 type CardObject struct {
@@ -345,21 +341,8 @@ const (
 	suffixEtched = "_e"
 )
 
-// NewBackend creates a new empty Backend instance.
-func NewBackend() *Backend {
-	return &Backend{}
-}
-
-// NewBackend returns itself, satisfying the DataStore interface.
-func (b Backend) NewBackend() Backend { return b }
-
-func SetGlobalDatastore(ds DataStore) {
-	defaultBackend = ds.NewBackend()
-}
-
-// LoadDatastore applies the given DataStore to the backend.
-func (b *Backend) LoadDatastore(ds DataStore) {
-	*b = ds.NewBackend()
+func SetGlobalDatastore(b *Backend) {
+	defaultBackend = *b
 }
 
 func SetGlobalLogger(userLogger *log.Logger) {
