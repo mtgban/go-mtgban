@@ -262,7 +262,7 @@ type AllPrintings struct {
 
 // Load reads an AllPrintings JSON file from r and returns the
 // parsed structure or an error.
-func Load(r io.Reader) (*AllPrintings, error) {
+func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	var payload AllPrintings
 	err := json.NewDecoder(r).Decode(&payload)
 	if err != nil {
@@ -271,7 +271,7 @@ func Load(r io.Reader) (*AllPrintings, error) {
 	if len(payload.Data) == 0 {
 		return nil, errors.New("empty AllPrintings file")
 	}
-	return &payload, nil
+	return payload.newBackend(), nil
 }
 
 func okForTokens(set *Set) bool {
@@ -553,7 +553,7 @@ func adjustTokens(sets map[string]*Set) {
 	}
 }
 
-func (ap *AllPrintings) NewBackend() mtgmatcher.Backend {
+func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	canonicalNames := map[string]string{}
 	sealedNames := map[string]string{}
 	alternates := map[string]mtgmatcher.AlternateProps{}
@@ -1072,7 +1072,7 @@ func (ap *AllPrintings) NewBackend() mtgmatcher.Backend {
 	b.CommanderKeywordMap = commanderKeywordMap
 	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 
-	return b
+	return &b
 }
 
 var mtgRarityMap = map[string]int{

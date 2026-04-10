@@ -82,7 +82,7 @@ type LorcanaJSON struct {
 
 // Load reads a LorcanaJSON data file from r and returns the parsed
 // structure or an error.
-func Load(r io.Reader) (*LorcanaJSON, error) {
+func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	var payload LorcanaJSON
 	err := json.NewDecoder(r).Decode(&payload)
 	if err != nil {
@@ -91,10 +91,10 @@ func Load(r io.Reader) (*LorcanaJSON, error) {
 	if len(payload.Cards) == 0 || len(payload.Sets) == 0 {
 		return nil, errors.New("empty LorcanaJSON file")
 	}
-	return &payload, nil
+	return payload.newBackend(), nil
 }
 
-func (lj *LorcanaJSON) NewBackend() mtgmatcher.Backend {
+func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
 	b.UUIDs = map[string]mtgmatcher.CardObject{}
@@ -254,7 +254,7 @@ func (lj *LorcanaJSON) NewBackend() mtgmatcher.Backend {
 		b.Sets[code].Colors = colors
 	}
 
-	return b
+	return &b
 }
 
 var lorcanaRarityMap = map[string]int{

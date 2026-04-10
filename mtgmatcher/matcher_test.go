@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln("No tests configured")
 	}
 
-	mtgmatcher.SetGlobalDatastore(*MatchTestSet[0].Backend)
+	mtgmatcher.SetGlobalDatastore(MatchTestSet[0].Backend)
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 
 	os.Exit(m.Run())
@@ -80,8 +80,7 @@ func loadTestSet(datastoreProp DatastoreProperty) TestProperty {
 		log.Fatalln(err)
 	}
 
-	b := datastore.NewBackend()
-	tp.Backend = &b
+	tp.Backend = datastore
 	tp.TestDataFile = datastoreProp.TestDataFile
 
 	testDataReader, err := os.Open(tp.TestDataFile)
