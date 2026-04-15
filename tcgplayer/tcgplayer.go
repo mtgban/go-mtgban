@@ -141,10 +141,6 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 			printing = "Foil"
 		}
 		for i := range availableMarketNames {
-			if prices[i] == 0 {
-				continue
-			}
-
 			isDirect := i == 1
 			link := GenerateProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
 
