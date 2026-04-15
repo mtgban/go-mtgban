@@ -538,7 +538,8 @@ func (ap AllPrintings) Load() cardBackend {
 					// Override the frame type for the Braindead drops
 					if (num >= 821 && num <= 824) ||
 						(num >= 1652 && num <= 1666) ||
-						(num >= 2514 && num <= 2523) || num == 7108 {
+						(num >= 2514 && num <= 2523) ||
+						(num >= 7105 && num <= 7108) {
 						card.FrameVersion = "2015"
 					}
 				}
