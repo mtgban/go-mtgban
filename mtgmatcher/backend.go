@@ -1090,10 +1090,14 @@ func isBaseSealed(sets map[string]*Set, setCode, sealedUUID string) bool {
 				case "card", "deck", "pack":
 					return true
 
+				case "sealed":
+					return isBaseSealed(sets, content.Set, content.UUID)
+
 				case "variable":
 					for _, config := range content.Configs {
 						if config["card"] != nil ||
 							config["deck"] != nil ||
+							config["sealed"] != nil ||
 							config["pack"] != nil {
 							return true
 						}
