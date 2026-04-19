@@ -343,7 +343,7 @@ func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
 	// Move tags to the appropriate field to help edition matching
 	for _, tag := range []string{
 		"Borderless", "Extended Art", "Serialized", "Textured", "Japan Showcase", "Raised", "Halo",
-		"Breaking News Showcase", "Breaking New", "Showcase Magnified", "Godzilla Series",
+		"Breaking News Showcase", "Breaking New", "Showcase Magnified", "Godzilla Series", "Etched",
 		"Showcase", // needs to be last
 	} {
 		if strings.HasSuffix(edition, tag) {
