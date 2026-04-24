@@ -653,7 +653,7 @@ func (ap AllPrintings) Load() cardBackend {
 			for finish, sources := range card.SourceProducts {
 				var filtered []string
 				for _, source := range sources {
-					if isBaseSealed(ap.Data, set.Code, source) {
+					if isBaseSealed(ap.Data, source) {
 						filtered = append(filtered, source)
 					}
 				}
@@ -1074,33 +1074,30 @@ func sealedWithinSealed(product SealedProduct) []string {
 
 // Check if the sealed product contains a base product, i.e. if there is at least
 // one component that doesn't need additional extraction
-func isBaseSealed(sets map[string]*Set, setCode, sealedUUID string) bool {
-	set, found := sets[setCode]
-	if !found {
-		return false
-	}
+func isBaseSealed(sets map[string]*Set, sealedUUID string) bool {
+	for _, set := range sets {
+		for _, product := range set.SealedProduct {
+			if sealedUUID != product.UUID {
+				continue
+			}
 
-	for _, product := range set.SealedProduct {
-		if sealedUUID != product.UUID {
-			continue
-		}
+			for key, contents := range product.Contents {
+				for _, content := range contents {
+					switch key {
+					case "card", "deck", "pack":
+						return true
 
-		for key, contents := range product.Contents {
-			for _, content := range contents {
-				switch key {
-				case "card", "deck", "pack":
-					return true
+					case "sealed":
+						return isBaseSealed(sets, content.UUID)
 
-				case "sealed":
-					return isBaseSealed(sets, content.Set, content.UUID)
-
-				case "variable":
-					for _, config := range content.Configs {
-						if config["card"] != nil ||
-							config["deck"] != nil ||
-							config["sealed"] != nil ||
-							config["pack"] != nil {
-							return true
+					case "variable":
+						for _, config := range content.Configs {
+							if config["card"] != nil ||
+								config["deck"] != nil ||
+								config["sealed"] != nil ||
+								config["pack"] != nil {
+								return true
+							}
 						}
 					}
 				}
