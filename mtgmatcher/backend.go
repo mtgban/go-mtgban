@@ -311,23 +311,6 @@ func sortPrintings(sets map[string]*Set, printings []string) {
 	})
 }
 
-// Sort sealed products within a single set in alphabetical order
-func sortSourceProducts(sets map[string]*Set, setCode string, sources []string) {
-	set, found := sets[setCode]
-	if !found {
-		return
-	}
-
-	nameByUUID := make(map[string]string, len(set.SealedProduct))
-	for _, product := range set.SealedProduct {
-		nameByUUID[product.UUID] = product.Name
-	}
-
-	sort.Slice(sources, func(i, j int) bool {
-		return nameByUUID[sources[i]] < nameByUUID[sources[j]]
-	})
-}
-
 // Generate image URL using Scryfall - we assume that every card has such id
 func generateImageURL(card Card, version string) string {
 	id, found := card.Identifiers["scryfallId"]
@@ -398,6 +381,7 @@ func adjustTokens(sets map[string]*Set) {
 
 func (ap AllPrintings) Load() cardBackend {
 	canonicalNames := map[string]string{}
+	sealedNames := map[string]string{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
 	var allCardNames []string
@@ -423,6 +407,11 @@ func (ap AllPrintings) Load() cardBackend {
 			if !slices.Contains(tokens, token.Name) && !slices.Contains(allCardNames, token.Name) {
 				tokens = append(tokens, token.Name)
 			}
+		}
+
+		// Save the names of sealed products for later sorting
+		for _, product := range set.SealedProduct {
+			sealedNames[product.UUID] = product.Name
 		}
 	}
 
@@ -657,7 +646,9 @@ func (ap AllPrintings) Load() cardBackend {
 						filtered = append(filtered, source)
 					}
 				}
-				sortSourceProducts(ap.Data, set.Code, filtered)
+				sort.Slice(filtered, func(i, j int) bool {
+					return sealedNames[filtered[i]] < sealedNames[filtered[j]]
+				})
 				card.SourceProducts[finish] = filtered
 			}
 
@@ -985,7 +976,9 @@ func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 			continue
 		}
 
-		sortSourceProducts(sets, co.SetCode, res)
+		sort.Slice(res, func(i, j int) bool {
+			return uuids[res[i]].Name < uuids[res[j]].Name
+		})
 
 		uuids[uuid].SourceProducts["sealed"] = res
 	}
