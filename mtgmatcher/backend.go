@@ -640,6 +640,14 @@ func (ap AllPrintings) Load() cardBackend {
 
 			// Filter out unneeded sources and sort them alphabetically
 			for finish, sources := range card.SourceProducts {
+				// Drop buckets whose finish the card doesn't actually have.
+				// Upstream's H1R/MH2/STA pack hack can land non-etched-capable
+				// cards in the "etched" bucket; this is the cheap way to catch
+				// the obvious wrong ones.
+				if !slices.Contains(card.Finishes, finish) {
+					delete(card.SourceProducts, finish)
+					continue
+				}
 				var filtered []string
 				for _, source := range sources {
 					if isBaseSealed(ap.Data, source, card.UUID) {
