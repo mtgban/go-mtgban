@@ -327,7 +327,7 @@ func Title(str string) string {
 	return cases.Title(language.English).String(str)
 }
 
-// Find the keyword in an edition name, ignoring punctuation
+// longestWordInEditionName finds the longest keyword in an edition name, ignoring punctuation.
 func longestWordInEditionName(str string) string {
 	fields := strings.Fields(str)
 	longest := ""

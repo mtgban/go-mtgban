@@ -1,4 +1,4 @@
-package mtgmatcher
+package mtgmatcher_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,9 @@ import (
 	"log"
 	"os"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 type MatchTest struct {
@@ -14,7 +17,7 @@ type MatchTest struct {
 	Err  string `json:"error,omitempty"`
 	Desc string `json:"description"`
 
-	In InputCard `json:"input"`
+	In mtgmatcher.InputCard `json:"input"`
 
 	Wildcard bool `json:"wildcard,omitempty"`
 }
@@ -25,7 +28,7 @@ type DatastoreProperty struct {
 }
 
 type TestProperty struct {
-	Backend      *Backend
+	Backend      *mtgmatcher.Backend
 	MatchTests   []MatchTest
 	TestDataFile string
 }
@@ -55,8 +58,8 @@ func TestMain(m *testing.M) {
 		log.Fatalln("No tests configured")
 	}
 
-	SetGlobalDatastore(*MatchTestSet[0].Backend)
-	SetGlobalLogger(log.New(os.Stderr, "", 0))
+	mtgmatcher.SetGlobalDatastore(*MatchTestSet[0].Backend)
+	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 
 	os.Exit(m.Run())
 }
@@ -72,7 +75,7 @@ func loadTestSet(datastoreProp DatastoreProperty) TestProperty {
 	}
 	defer datastoreReader.Close()
 
-	datastore, err := LoadAllPrintings(datastoreReader)
+	datastore, err := mtgjson.Load(datastoreReader)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -97,9 +100,9 @@ func loadTestSet(datastoreProp DatastoreProperty) TestProperty {
 	return tp
 }
 
-func runMatch(b *Backend, test MatchTest) (string, error) {
+func runMatch(b *mtgmatcher.Backend, test MatchTest) (string, error) {
 	card := test.In
-	card.promoWildcard = test.Wildcard
+	card.PromoWildcard = test.Wildcard
 
 	cardId, err := b.Match(&card)
 	if err == nil && test.Err != "" {

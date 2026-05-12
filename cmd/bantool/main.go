@@ -35,6 +35,7 @@ import (
 	"github.com/mtgban/go-mtgban/miniaturemarket"
 	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/sealedev"
 	"github.com/mtgban/go-mtgban/starcitygames"
@@ -1019,11 +1020,12 @@ func run() int {
 	defer datastoreReader.Close()
 
 	now = time.Now()
-	err = mtgmatcher.LoadDatastore(datastoreReader)
+	ds, err := mtgjson.Load(datastoreReader)
 	if err != nil {
 		log.Println(err)
 		return 1
 	}
+	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
 	log.Println("loading datastore took:", time.Since(now))
 
 	var scrapers []mtgban.Scraper

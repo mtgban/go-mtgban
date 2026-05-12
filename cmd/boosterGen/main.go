@@ -11,6 +11,7 @@ import (
 
 	"github.com/jmcvetta/randutil"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 var SetCodeOpt *string
@@ -35,11 +36,18 @@ func run() int {
 		allprintingsPath = envAllprintings
 	}
 
-	err := mtgmatcher.LoadDatastoreFile(allprintingsPath)
+	allPrintingsReader, err := os.Open(allprintingsPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
+	defer allPrintingsReader.Close()
+	ds, err := mtgjson.Load(allPrintingsReader)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
 
 	set, err := mtgmatcher.GetSet(*SetCodeOpt)
 	if err != nil {

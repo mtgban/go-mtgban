@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/mtgjson"
 )
 
 func TestMain(m *testing.M) {
@@ -20,10 +21,11 @@ func TestMain(m *testing.M) {
 	}
 	defer allPrintingsReader.Close()
 
-	err = mtgmatcher.LoadDatastore(allPrintingsReader)
+	ds, err := mtgjson.Load(allPrintingsReader)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
 
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 

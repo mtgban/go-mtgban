@@ -16,7 +16,6 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 	return defaultBackend.filterCards(inCard, cardSet)
 }
 
-
 func (b *Backend) filterPrintings(inCard *InputCard, editions []string) (printings []string) {
 	maybeYear := ExtractYear(inCard.Variation)
 	if maybeYear == "" {
@@ -706,7 +705,7 @@ func (b *Backend) filterPrintings(inCard *InputCard, editions []string) (printin
 
 		// Last resort, if this is set on the input card, and there were
 		// no better descriptors earlier, try looking at the set type
-		case inCard.promoWildcard:
+		case inCard.PromoWildcard:
 			switch set.Type {
 			case "promo":
 				// Skip common promos, they are usually correctly listed
@@ -885,7 +884,7 @@ func (b *Backend) filterCards(inCard *InputCard, cardSet map[string][]Card) (out
 			// deduplicate all the various prerelease and promo packs
 			switch set.Type {
 			case "expansion", "core", "masters", "draft_innovation":
-				if inCard.promoWildcard &&
+				if inCard.PromoWildcard &&
 					!card.HasPromoType(PromoTypeBoosterfun) &&
 					!card.HasPromoType(PromoTypePromoPack) &&
 					!card.HasPromoType(PromoTypeStarterDeck) &&
@@ -915,7 +914,7 @@ func (b *Backend) filterCards(inCard *InputCard, cardSet map[string][]Card) (out
 				if setDate.Before(promoElement.ValidDate) {
 					continue
 				}
-				if promoElement.CanBeWild && inCard.promoWildcard {
+				if promoElement.CanBeWild && inCard.PromoWildcard {
 					continue
 				}
 
