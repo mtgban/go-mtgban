@@ -33,7 +33,7 @@ type InputCard struct {
 	// In case edition information is not accurate, use this flag to
 	// perform a best-effort search, which will try to isolate promo
 	// printings from the others
-	promoWildcard bool
+	PromoWildcard bool
 
 	// In case card got renamed in some way, this contains the original
 	// card name, instead of the sanitized version
