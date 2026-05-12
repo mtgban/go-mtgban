@@ -1,8 +1,10 @@
-package mtgmatcher
+package mtgmatcher_test
 
 import (
 	"math/rand"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 var NameToBeFound string
@@ -30,9 +32,9 @@ func setupBenchmark() {
 
 func backendUUIDs(name string, doneWhenFound bool) (printings []string) {
 	b := MatchTestSet[0].Backend
-	name = Normalize(name)
+	name = mtgmatcher.Normalize(name)
 	for key := range b.UUIDs {
-		if Normalize(b.UUIDs[key].Name) == name {
+		if mtgmatcher.Normalize(b.UUIDs[key].Name) == name {
 			printings = b.UUIDs[key].Printings
 			if doneWhenFound {
 				return
@@ -55,9 +57,9 @@ func BenchmarkSearchWithUUIDs(b *testing.B) {
 
 func backendSlice(name string, doneWhenFound bool) (printings []string) {
 	b := MatchTestSet[0].Backend
-	name = Normalize(name)
+	name = mtgmatcher.Normalize(name)
 	for i := range SliceOfObj {
-		if Normalize(SliceOfObj[i]) == name {
+		if mtgmatcher.Normalize(SliceOfObj[i]) == name {
 			printings, _ = b.Printings4Card(name)
 			if doneWhenFound {
 				return
@@ -80,7 +82,7 @@ func BenchmarkSearchWithSlice(b *testing.B) {
 
 func backendHybrid(name string, doneWhenFound bool) (printings []string) {
 	b := MatchTestSet[0].Backend
-	name = Normalize(name)
+	name = mtgmatcher.Normalize(name)
 	for i := range SliceOfStr {
 		if SliceOfStr[i] == name {
 			printings, _ = b.Printings4Card(name)

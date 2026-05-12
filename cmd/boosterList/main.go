@@ -10,6 +10,7 @@ import (
 	"sort"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func getListForDeck(setCode, deckName string) ([]string, error) {
@@ -144,11 +145,18 @@ func main() {
 		allprintingsPath = &envAllprintings
 	}
 
-	err := mtgmatcher.LoadDatastoreFile(*allprintingsPath)
+	allPrintingsReader, err := os.Open(*allprintingsPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	defer allPrintingsReader.Close()
+	ds, err := magic.Load(allPrintingsReader)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	mtgmatcher.SetGlobalDatastore(ds.NewBackend())
 
 	os.Exit(run())
 }
