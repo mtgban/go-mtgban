@@ -113,8 +113,16 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 				continue
 			}
 
+			// Certain sets are marked as English on the site despite not being as such
+			// Override here, so that links don't point at filters that provide no results
+			lang := co.Language
+			switch co.SetCode {
+			case "STA", "SOA":
+				lang = "English"
+			}
+
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", co.Language, isDirect)
+			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", lang, isDirect)
 
 			out := responseChan{
 				cardId: cardId,
