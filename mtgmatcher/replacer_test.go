@@ -108,6 +108,14 @@ var NormalizeTests = []NormalizeTest{
 		In:  "Jeong Jeong's Deserters",
 		Out: "jeongjeongdeerter",
 	},
+	{
+		In:  "Sword of War and Peace",
+		Out: "swordofwarpeace",
+	},
+	{
+		In:  "Word of War",
+		Out: "wordofwar",
+	},
 }
 
 func TestNormalize(t *testing.T) {
