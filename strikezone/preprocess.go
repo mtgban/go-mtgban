@@ -301,7 +301,9 @@ func preprocess(cardName, edition, notes, cond string) (*mtgmatcher.InputCard, e
 
 	var language string
 	for lang := range mtgmatcher.LanguageTag2LanguageCode {
-		if strings.Contains(cond, lang) {
+		// Skip empty (or it would match everything) and skip English as sometimes
+		// non-English cards are mistakenly tagged as such
+		if lang != "" && lang != "English" && strings.Contains(cond, lang) {
 			language = lang
 			break
 		}
