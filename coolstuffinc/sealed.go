@@ -254,19 +254,16 @@ func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
 			priceRatio = buyPrice / sellPrice * 100
 		}
 
-		for i, deduction := range deductions {
-			buyEntry := mtgban.BuylistEntry{
-				Conditions: mtgban.DefaultGradeTags[i],
-				BuyPrice:   buyPrice * deduction,
-				PriceRatio: priceRatio,
-				URL:        link,
-			}
+		buyEntry := mtgban.BuylistEntry{
+			BuyPrice:   buyPrice,
+			PriceRatio: priceRatio,
+			URL:        link,
+		}
 
-			err := csi.buylist.Add(uuid, &buyEntry)
-			if err != nil {
-				csi.printf("%s", err.Error())
-				continue
-			}
+		err = csi.buylist.Add(uuid, &buyEntry)
+		if err != nil {
+			csi.printf("%s", err.Error())
+			continue
 		}
 	}
 
