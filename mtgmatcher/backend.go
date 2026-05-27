@@ -642,7 +642,7 @@ func (ap AllPrintings) Load() cardBackend {
 			for finish, sources := range card.SourceProducts {
 				var filtered []string
 				for _, source := range sources {
-					if isBaseSealed(ap.Data, source, card.UUID) {
+					if isBaseSealed(ap.Data, source, card.UUID, finish) {
 						filtered = append(filtered, source)
 					}
 				}
@@ -1065,29 +1065,41 @@ func sealedWithinSealed(product SealedProduct) []string {
 	return list
 }
 
-// Check whether the sealed product directly contains the given card. "Directly"
-// means via a card/deck/pack entry at the top level (or inside a variable
-// config) — not reachable only through a nested sealed sub-product. Finish is
-// not checked here; we trust MTGJSON's per-finish SourceProducts bucketing.
-func isBaseSealed(sets map[string]*Set, productUUID, cardUUID string) bool {
+// Check whether the sealed product directly contains the given card with
+// the requested finish. "Directly" means via a card/deck/pack entry at the
+// top level (or inside a variable config) — not reachable only through a
+// nested sealed sub-product.
+func isBaseSealed(sets map[string]*Set, productUUID, cardUUID, finish string) bool {
 	for _, set := range sets {
 		for _, product := range set.SealedProduct {
 			if product.UUID != productUUID {
 				continue
 			}
-			return contentsContainCard(sets, product.Contents, cardUUID)
+			return contentsContainCard(sets, product.Contents, cardUUID, finish)
 		}
 	}
 	return false
 }
 
-func contentsContainCard(sets map[string]*Set, contents map[string][]SealedContent, cardUUID string) bool {
+func contentsContainCard(sets map[string]*Set, contents map[string][]SealedContent, cardUUID, finish string) bool {
+	wantFoil := finish == "foil"
+	wantEtched := finish == "etched"
+
 	for key, items := range contents {
 		for _, item := range items {
 			switch key {
 			case "card":
 				if item.UUID == cardUUID {
-					return true
+					if finish == "" {
+						return true
+					}
+					if wantFoil || wantEtched {
+						if item.Foil {
+							return true
+						}
+					} else if !item.Foil {
+						return true
+					}
 				}
 			case "deck":
 				if set, ok := sets[strings.ToUpper(item.Set)]; ok {
@@ -1101,7 +1113,19 @@ func contentsContainCard(sets map[string]*Set, contents map[string][]SealedConte
 							d.Planes, d.Schemes, d.Tokens,
 						} {
 							for _, dc := range list {
-								if dc.UUID == cardUUID {
+								if dc.UUID != cardUUID {
+									continue
+								}
+								if finish == "" {
+									return true
+								}
+								if wantEtched && dc.IsEtched {
+									return true
+								}
+								if wantFoil && dc.IsFoil {
+									return true
+								}
+								if !wantFoil && !wantEtched && !dc.IsFoil && !dc.IsEtched {
 									return true
 								}
 							}
@@ -1112,7 +1136,16 @@ func contentsContainCard(sets map[string]*Set, contents map[string][]SealedConte
 				if set, ok := sets[strings.ToUpper(item.Set)]; ok {
 					if booster, ok := set.Booster[item.Code]; ok {
 						for _, sheet := range booster.Sheets {
-							if _, ok := sheet.Cards[cardUUID]; ok {
+							if _, ok := sheet.Cards[cardUUID]; !ok {
+								continue
+							}
+							if finish == "" {
+								return true
+							}
+							if (wantFoil || wantEtched) && sheet.Foil {
+								return true
+							}
+							if !wantFoil && !wantEtched && !sheet.Foil {
 								return true
 							}
 						}
@@ -1120,7 +1153,7 @@ func contentsContainCard(sets map[string]*Set, contents map[string][]SealedConte
 				}
 			case "variable":
 				for _, config := range item.Configs {
-					if contentsContainCard(sets, config, cardUUID) {
+					if contentsContainCard(sets, config, cardUUID, finish) {
 						return true
 					}
 				}
