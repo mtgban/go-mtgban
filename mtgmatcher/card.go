@@ -861,14 +861,21 @@ func ParseCommanderEdition(edition, variant string) string {
 			return edition
 		}
 	}
+	// Double Strixhaven
+	if strings.Contains(edition, "Strixhaven") {
+		if strings.Contains(edition, "Secret") {
+			return "Secrets of Strixhaven Commander"
+		} else {
+			return "Commander 2021"
+		}
+	}
 
 	// Well-known extra tags
 	perSetCommander := map[string]string{
-		"Launch":     "Commander 2011 Launch Party",
-		"Arsenal":    "Commander's Arsenal",
-		"Ikoria":     "Commander 2020",
-		"Strixhaven": "Commander 2021",
-		"Starter":    "Starter Commander Decks",
+		"Launch":  "Commander 2011 Launch Party",
+		"Arsenal": "Commander's Arsenal",
+		"Ikoria":  "Commander 2020",
+		"Starter": "Starter Commander Decks",
 	}
 	for key, ed := range perSetCommander {
 		if strings.Contains(edition, key) {
