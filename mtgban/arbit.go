@@ -132,30 +132,30 @@ func (ae ArbitEntry) String() string {
 // resolvedOpts holds the resolved filter and threshold values from ArbitOpts,
 // with defaults applied for nil opts.
 type resolvedOpts struct {
-	minDiff               float64
-	minSpread             float64
-	maxSpread             float64
-	minPrice              float64
-	minBuyPrice           float64
-	minQty                int
-	minProfitability      float64
-	maxPriceRatio         float64
-	rate                  float64
-	profitabilityConstant float64
-	useTrades             bool
-	filterFoil            bool
-	filterOnlyFoil        bool
-	filterRLOnly          bool
-	filterDecksOnly       bool
-	filterBundle          bool
-	filterConditions      []string
-	filterRarities        []string
-	filterEditions        []string
+	minDiff                float64
+	minSpread              float64
+	maxSpread              float64
+	minPrice               float64
+	minBuyPrice            float64
+	minQty                 int
+	minProfitability       float64
+	maxPriceRatio          float64
+	rate                   float64
+	profitabilityConstant  float64
+	useTrades              bool
+	filterFoil             bool
+	filterOnlyFoil         bool
+	filterRLOnly           bool
+	filterDecksOnly        bool
+	filterBundle           bool
+	filterConditions       []string
+	filterRarities         []string
+	filterEditions         []string
 	filterSelectedEditions []string
-	filterSelectedCNRange map[string][2]int
-	filterSellers         []string
-	filterFunc            func(co *mtgmatcher.CardObject) (float64, bool)
-	filterPriceFunc       func(string, InventoryEntry) (float64, bool)
+	filterSelectedCNRange  map[string][2]int
+	filterSellers          []string
+	filterFunc             func(co *mtgmatcher.CardObject) (float64, bool)
+	filterPriceFunc        func(string, InventoryEntry) (float64, bool)
 }
 
 func resolveOpts(opts *ArbitOpts) resolvedOpts {
