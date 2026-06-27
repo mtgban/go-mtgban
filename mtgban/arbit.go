@@ -113,7 +113,12 @@ type ArbitEntry struct {
 	Quantity int
 
 	// The higher the number the better the arbit is. Using this formula
-	// Profitability Index (PI) = (Difference / (Sell Price + 10)) * log(1 + Spread) * sqrt(Units)
+	// Profitability Index (PI) =
+	//   (Difference / (Sell Price + k)) * log10(1 + Spread) * sqrt(Units)
+	// where k is ProfitabilityConstant, a denominator-stabilizing constant
+	// that keeps cheap cards from dominating (reference value 10; configurable
+	// via ArbitOpts, defaults to 0). The sqrt(Units) term is applied only when
+	// Units > 1.
 	Profitability float64
 }
 
@@ -359,9 +364,9 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 				}
 			}
 
-			profitability := (difference / (price + r.profitabilityConstant)) * math.Log(1+spread)
+			profitability := (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
 			if qty > 1 {
-				profitability *= math.Pow(float64(qty), 0.25)
+				profitability *= math.Sqrt(float64(qty))
 			}
 
 			if profitability < r.minProfitability {
@@ -467,9 +472,9 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 					}
 				}
 
-				profitability := (difference / (price + r.profitabilityConstant)) * math.Log(1+spread)
+				profitability := (difference / (price + r.profitabilityConstant)) * math.Log10(1+spread)
 				if qty > 1 {
-					profitability *= math.Pow(float64(qty), 0.25)
+					profitability *= math.Sqrt(float64(qty))
 				}
 
 				if profitability < r.minProfitability {
