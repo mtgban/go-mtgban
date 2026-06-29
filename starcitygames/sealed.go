@@ -309,6 +309,5 @@ func (scg *StarcitygamesSealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.SealedMode = true
-	info.CreditMultiplier = 1.3
 	return
 }
