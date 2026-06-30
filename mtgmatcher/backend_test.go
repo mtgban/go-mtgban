@@ -14,7 +14,7 @@ var SliceOfObj []string
 var SliceOfStr []string
 
 func setupBenchmark() {
-	b := MatchTestSet[0].Backend
+	b := testBackend
 
 	for _, code := range b.AllSets {
 		set, _ := b.GetSet(code)
@@ -31,7 +31,7 @@ func setupBenchmark() {
 }
 
 func backendUUIDs(name string, doneWhenFound bool) (printings []string) {
-	b := MatchTestSet[0].Backend
+	b := testBackend
 	name = mtgmatcher.Normalize(name)
 	for key := range b.UUIDs {
 		if mtgmatcher.Normalize(b.UUIDs[key].Name) == name {
@@ -56,7 +56,7 @@ func BenchmarkSearchWithUUIDs(b *testing.B) {
 }
 
 func backendSlice(name string, doneWhenFound bool) (printings []string) {
-	b := MatchTestSet[0].Backend
+	b := testBackend
 	name = mtgmatcher.Normalize(name)
 	for i := range SliceOfObj {
 		if mtgmatcher.Normalize(SliceOfObj[i]) == name {
@@ -81,7 +81,7 @@ func BenchmarkSearchWithSlice(b *testing.B) {
 }
 
 func backendHybrid(name string, doneWhenFound bool) (printings []string) {
-	b := MatchTestSet[0].Backend
+	b := testBackend
 	name = mtgmatcher.Normalize(name)
 	for i := range SliceOfStr {
 		if SliceOfStr[i] == name {

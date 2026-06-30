@@ -46,8 +46,8 @@ type SealedContent struct {
 
 type DeckCard struct {
 	Count    int    `json:"count"`
-	IsEtched bool   `json:"isEtched"`
-	IsFoil   bool   `json:"isFoil"`
+	IsEtched bool   `json:"IsEtched"`
+	IsFoil   bool   `json:"IsFoil"`
 	UUID     string `json:"uuid"`
 }
 
@@ -185,66 +185,6 @@ const (
 	FinishNonfoil = "nonfoil"
 	FinishFoil    = "foil"
 	FinishEtched  = "etched"
-
-	FrameEffectExtendedArt = "extendedart"
-	FrameEffectInverted    = "inverted"
-	FrameEffectShowcase    = "showcase"
-	FrameEffectShattered   = "shatteredglass"
-
-	PromoTypeArenaLeague       = "arenaleague"
-	PromoTypeBoosterfun        = "boosterfun"
-	PromoTypeBundle            = "bundle"
-	PromoTypeBuyABox           = "buyabox"
-	PromoTypeConcept           = "concept"
-	PromoTypeConfettiFoil      = "confettifoil"
-	PromoTypeDoubleExposure    = "doubleexposure"
-	PromoTypeDoubleRainbow     = "doublerainbow"
-	PromoTypeDracula           = "draculaseries"
-	PromoTypeDraftWeekend      = "draftweekend"
-	PromoTypeEmbossed          = "embossed"
-	PromoTypeFNM               = "fnm"
-	PromoTypeFractureFoil      = "fracturefoil"
-	PromoTypeGalaxyFoil        = "galaxyfoil"
-	PromoTypeGameDay           = "gameday"
-	PromoTypeGilded            = "gilded"
-	PromoTypeGlossy            = "glossy"
-	PromoTypeGodzilla          = "godzillaseries"
-	PromoTypeHaloFoil          = "halofoil"
-	PromoTypeIntroPack         = "intropack"
-	PromoTypeInvisibleInk      = "invisibleink"
-	PromoTypeJudgeGift         = "judgegift"
-	PromoTypeManaFoil          = "manafoil"
-	PromoTypeNeonInk           = "neonink"
-	PromoTypeOilSlick          = "oilslick"
-	PromoTypePlayPromo         = "playpromo"
-	PromoTypePlayerRewards     = "playerrewards"
-	PromoTypePoster            = "poster"
-	PromoTypePrerelease        = "prerelease"
-	PromoTypePromoPack         = "promopack"
-	PromoTypeRainbowFoil       = "rainbowfoil"
-	PromoTypeRaisedFoil        = "raisedfoil"
-	PromoTypeRelease           = "release"
-	PromoTypeRippleFoil        = "ripplefoil"
-	PromoTypeSChineseAltArt    = "schinesealtart"
-	PromoTypeScroll            = "scroll"
-	PromoTypeSerialized        = "serialized"
-	PromoTypeSilverFoil        = "silverfoil"
-	PromoTypeStarterDeck       = "starterdeck"
-	PromoTypeStepAndCompleat   = "stepandcompleat"
-	PromoTypeStoreChampionship = "storechampionship"
-	PromoTypeSurgeFoil         = "surgefoil"
-	PromoTypeTextured          = "textured"
-	PromoTypeThickDisplay      = "thick"
-	PromoTypeWPN               = "wizardsplaynetwork"
-
-	BorderColorBorderless = "borderless"
-
-	LanguageJapanese  = "Japanese"
-	LanguagePhyrexian = "Phyrexian"
-
-	SuffixSpecial = "★"
-	SuffixVariant = "†"
-	SuffixPhiLow  = "φ"
 )
 
 // CardObject is an extension of Card, containing fields that cannot
@@ -349,7 +289,7 @@ type Backend struct {
 	rules GameRules
 }
 
-var logger = log.New(io.Discard, "", log.LstdFlags)
+var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 const (
 	suffixFoil   = "_f"
@@ -385,5 +325,5 @@ func SetGlobalDatastore(b *Backend) {
 }
 
 func SetGlobalLogger(userLogger *log.Logger) {
-	logger = userLogger
+	Logger = userLogger
 }

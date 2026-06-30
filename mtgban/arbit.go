@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 type ArbitOpts struct {
@@ -529,7 +530,7 @@ func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 		case "gold", "silver", "white":
 			continue
 		}
-		if co.IsFunny || co.HasPromoType(mtgmatcher.PromoTypeThickDisplay) {
+		if co.IsFunny || co.HasPromoType(magic.PromoTypeThickDisplay) {
 			continue
 		}
 

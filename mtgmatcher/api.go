@@ -110,7 +110,7 @@ func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 	if len(flags) > 0 {
 		card.Foil = flags[0]
 	}
-	adjustEdition(card)
+	b.rules.AdjustEdition(b, card)
 
 	set, found = b.NormalizedSets[Normalize(card.Edition)]
 	if found {
@@ -293,14 +293,11 @@ func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 	return entry, found
 }
 
-// nameIsToken reports whether the card actually named this way is a token.
-func (b *Backend) nameIsToken(name string) bool {
+// NameIsToken reports whether the card actually named this way is a token.
+// Exported because the only caller now lives in the per-game rules packages.
+func (b *Backend) NameIsToken(name string) bool {
 	entry, found := b.entry4Name(name)
 	return found && entry.Layout == "token"
-}
-
-func nameIsToken(name string) bool {
-	return defaultBackend.nameIsToken(name)
 }
 
 func (b *Backend) Printings4Card(name string) ([]string, error) {
@@ -316,70 +313,6 @@ func (b *Backend) Printings4Card(name string) ([]string, error) {
 
 func Printings4Card(name string) ([]string, error) {
 	return defaultBackend.Printings4Card(name)
-}
-
-func (b *Backend) HasExtendedArtPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "frame_effect", FrameEffectExtendedArt, editions...)
-}
-
-func HasExtendedArtPrinting(name string, editions ...string) bool {
-	return defaultBackend.HasExtendedArtPrinting(name, editions...)
-}
-
-func (b *Backend) HasBorderlessPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "border_color", BorderColorBorderless, editions...)
-}
-
-func HasBorderlessPrinting(name string, editions ...string) bool {
-	return defaultBackend.HasBorderlessPrinting(name, editions...)
-}
-
-func (b *Backend) HasShowcasePrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "frame_effect", FrameEffectShowcase, editions...)
-}
-
-func HasShowcasePrinting(name string, editions ...string) bool {
-	return defaultBackend.HasShowcasePrinting(name, editions...)
-}
-
-func (b *Backend) HasReskinPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "promo_type", PromoTypeGodzilla, editions...)
-}
-
-func HasReskinPrinting(name string, editions ...string) bool {
-	return defaultBackend.HasReskinPrinting(name, editions...)
-}
-
-func (b *Backend) HasPromoPackPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "promo_type", PromoTypePromoPack, editions...)
-}
-
-func HasPromoPackPrinting(name string, editions ...string) bool {
-	return defaultBackend.HasPromoPackPrinting(name, editions...)
-}
-
-func (b *Backend) HasPrereleasePrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "promo_type", PromoTypePrerelease, editions...)
-}
-
-func HasPrereleasePrinting(name string, editions ...string) bool {
-	return defaultBackend.HasPrereleasePrinting(name, editions...)
-}
-
-func (b *Backend) HasSerializedPrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "promo_type", PromoTypeSerialized, editions...)
-}
-
-func HasSerializedPrinting(name string, editions ...string) bool {
-	return defaultBackend.HasSerializedPrinting(name, editions...)
-}
-
-func (b *Backend) HasRetroFramePrinting(name string, editions ...string) bool {
-	return b.hasPrinting(name, "frame_version", "1997", editions...)
-}
-
-func HasRetroFramePrinting(name string, editions ...string) bool {
-	return defaultBackend.HasRetroFramePrinting(name, editions...)
 }
 
 func (b *Backend) HasNonfoilPrinting(name string, editions ...string) bool {
@@ -452,7 +385,7 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 		cc := &InputCard{
 			Name: name,
 		}
-		adjustName(cc)
+		b.rules.AdjustName(b, cc)
 		nameNorm = Normalize(cc.Name)
 		uuids, found = b.Hashes[nameNorm]
 		if !found {
@@ -496,7 +429,7 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 	return false
 }
 
-func hasPrinting(name, field, value string, editions ...string) bool {
+func HasPrinting(name, field, value string, editions ...string) bool {
 	return defaultBackend.hasPrinting(name, field, value, editions...)
 }
 
@@ -1082,11 +1015,11 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 		return nil, fmt.Errorf("sheet '%s' not found", sheetName)
 	}
 
-	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
+	IsEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 	var probs []ProductProbabilities
 
 	for cardId, count := range sheet.Cards {
-		uuid, err := MatchId(cardId, sheet.Foil, isEtched)
+		uuid, err := MatchId(cardId, sheet.Foil, IsEtched)
 		if err != nil {
 			return nil, err
 		}
