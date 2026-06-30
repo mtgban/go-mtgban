@@ -44,10 +44,10 @@ func TestPrintings4CardExactName(t *testing.T) {
 	if !slices.Contains(printings, "LEG") || slices.Contains(printings, "DMU") {
 		t.Errorf("Cat Warriors printings = %v, expected LEG without DMU", printings)
 	}
-	if !nameIsToken("Cat Warrior") {
+	if !defaultBackend.NameIsToken("Cat Warrior") {
 		t.Errorf("the card named exactly Cat Warrior is the DMU token")
 	}
-	if nameIsToken("Cat Warriors") {
+	if defaultBackend.NameIsToken("Cat Warriors") {
 		t.Errorf("Cat Warriors is a regular card, not a token")
 	}
 }
@@ -114,7 +114,7 @@ func oldHasPrinting(name, field, value string, editions ...string) bool {
 		cc := &InputCard{
 			Name: name,
 		}
-		adjustName(cc)
+		defaultBackend.rules.AdjustName(&defaultBackend, cc)
 		name = cc.Name
 		printings, err = Printings4Card(name)
 		if err != nil {
@@ -161,11 +161,11 @@ func TestHasPrintingEquivalence(t *testing.T) {
 		{"finish", FinishNonfoil},
 		{"finish", FinishFoil},
 		{"finish", FinishEtched},
-		{"frame_effect", FrameEffectExtendedArt},
-		{"frame_effect", FrameEffectShowcase},
-		{"border_color", BorderColorBorderless},
+		{"frame_effect", "extendedart"},
+		{"frame_effect", "showcase"},
+		{"border_color", "borderless"},
 		{"frame_version", "1997"},
-		{"promo_type", PromoTypeBundle},
+		{"promo_type", "bundle"},
 		{"field", "attractionLights"},
 		{"bogus", "value"},
 	}
@@ -187,7 +187,7 @@ func TestHasPrintingEquivalence(t *testing.T) {
 			}
 			for _, editions := range editionArgs {
 				oldRes := oldHasPrinting(co.Name, check.field, check.value, editions...)
-				newRes := hasPrinting(co.Name, check.field, check.value, editions...)
+				newRes := HasPrinting(co.Name, check.field, check.value, editions...)
 				if oldRes != newRes {
 					t.Errorf("divergence: name=%q field=%s value=%s editions=%v old=%v new=%v",
 						co.Name, check.field, check.value, editions, oldRes, newRes)
@@ -207,7 +207,7 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 	}
 	b.Run("new", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			hasPrinting("Island", "finish", FinishFoil)
+			HasPrinting("Island", "finish", FinishFoil)
 		}
 	})
 	b.Run("old", func(b *testing.B) {

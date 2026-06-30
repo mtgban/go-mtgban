@@ -1,4 +1,4 @@
-package mtgmatcher
+package magic
 
 var p30mVariants = map[string]map[string]string{
 	"Arcane Signet": {
@@ -4615,7 +4615,7 @@ var multiPromosVariants = map[string]map[string]string{
 }
 
 // This list is for editions with conflicting promotional cards
-var multiPromosTable = map[string]map[string]map[string]string{
+var MultiPromosTable = map[string]map[string]map[string]string{
 	"Aether Revolt Promos":               multiPromosVariants,
 	"Bloomburrow Promos":                 multiPromosVariants,
 	"Core Set 2019 Promos":               multiPromosVariants,

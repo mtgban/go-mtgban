@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func BenchmarkSearchEquals(b *testing.B) {
@@ -123,7 +124,7 @@ func TestSearchHalfName(t *testing.T) {
 			t.Error("FAIL: Unexpected", err)
 			return
 		}
-		if co.HasPromoType(mtgmatcher.PromoTypeDracula) {
+		if co.HasPromoType(magic.PromoTypeDracula) {
 			count++
 		}
 	}

@@ -187,6 +187,77 @@ func (c *Card) HasPromoType(pt string) bool {
 	return slices.Contains(c.PromoTypes, pt)
 }
 
+const (
+	FrameEffectExtendedArt = "extendedart"
+	FrameEffectInverted    = "inverted"
+	FrameEffectShowcase    = "showcase"
+	FrameEffectShattered   = "shatteredglass"
+
+	PromoTypeArenaLeague       = "arenaleague"
+	PromoTypeBoosterfun        = "boosterfun"
+	PromoTypeBundle            = "bundle"
+	PromoTypeBuyABox           = "buyabox"
+	PromoTypeConcept           = "concept"
+	PromoTypeConfettiFoil      = "confettifoil"
+	PromoTypeDoubleExposure    = "doubleexposure"
+	PromoTypeDoubleRainbow     = "doublerainbow"
+	PromoTypeDracula           = "draculaseries"
+	PromoTypeDraftWeekend      = "draftweekend"
+	PromoTypeEmbossed          = "embossed"
+	PromoTypeFNM               = "fnm"
+	PromoTypeFractureFoil      = "fracturefoil"
+	PromoTypeGalaxyFoil        = "galaxyfoil"
+	PromoTypeGameDay           = "gameday"
+	PromoTypeGilded            = "gilded"
+	PromoTypeGlossy            = "glossy"
+	PromoTypeGodzilla          = "godzillaseries"
+	PromoTypeHaloFoil          = "halofoil"
+	PromoTypeIntroPack         = "intropack"
+	PromoTypeInvisibleInk      = "invisibleink"
+	PromoTypeJudgeGift         = "judgegift"
+	PromoTypeManaFoil          = "manafoil"
+	PromoTypeNeonInk           = "neonink"
+	PromoTypeOilSlick          = "oilslick"
+	PromoTypePlayPromo         = "playpromo"
+	PromoTypePlayerRewards     = "playerrewards"
+	PromoTypePoster            = "poster"
+	PromoTypePrerelease        = "prerelease"
+	PromoTypePromoPack         = "promopack"
+	PromoTypeRainbowFoil       = "rainbowfoil"
+	PromoTypeRaisedFoil        = "raisedfoil"
+	PromoTypeRelease           = "release"
+	PromoTypeRippleFoil        = "ripplefoil"
+	PromoTypeSChineseAltArt    = "schinesealtart"
+	PromoTypeScroll            = "scroll"
+	PromoTypeSerialized        = "serialized"
+	PromoTypeSilverFoil        = "silverfoil"
+	PromoTypeStarterDeck       = "starterdeck"
+	PromoTypeStepAndCompleat   = "stepandcompleat"
+	PromoTypeStoreChampionship = "storechampionship"
+	PromoTypeSurgeFoil         = "surgefoil"
+	PromoTypeTextured          = "textured"
+	PromoTypeThickDisplay      = "thick"
+	PromoTypeWPN               = "wizardsplaynetwork"
+
+	BorderColorBorderless = "borderless"
+
+	LanguageJapanese  = "Japanese"
+	LanguagePhyrexian = "Phyrexian"
+
+	SuffixSpecial = "★"
+	SuffixVariant = "†"
+	SuffixPhiLow  = "φ"
+)
+
+// Date since any card could be Prerelease Promo
+var NewPrereleaseDate = time.Date(2014, time.September, 1, 0, 0, 0, 0, time.UTC)
+
+// Date since BuyABox cards are not unique any more
+var BuyABoxNotUniqueDate = time.Date(2020, time.September, 1, 0, 0, 0, 0, time.UTC)
+
+// Date since different finishes (etched, gilded, thick) get separate collector numbers
+var SeparateFinishCollectorNumberDate = time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)
+
 // AllPrintings is the top-level structure of the MTGJSON AllPrintings file.
 type AllPrintings struct {
 	Data map[string]*Set `json:"data"`
@@ -673,8 +744,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			}
 
 			// Make sure this property is correctly initialized
-			if strings.HasSuffix(card.Number, "p") && !slices.Contains(card.PromoTypes, mtgmatcher.PromoTypePromoPack) {
-				card.PromoTypes = append(card.PromoTypes, mtgmatcher.PromoTypePromoPack)
+			if strings.HasSuffix(card.Number, "p") && !slices.Contains(card.PromoTypes, PromoTypePromoPack) {
+				card.PromoTypes = append(card.PromoTypes, PromoTypePromoPack)
 			}
 
 			// Rename DFCs into a single name
@@ -808,7 +879,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			card.Identifiers["mtgjsonId"] = card.UUID
 
 			// Save the collector number stripped of its ★/†/φ decorations
-			card.OriginalNumber = strings.TrimRight(card.Number, mtgmatcher.SuffixSpecial+mtgmatcher.SuffixVariant+mtgmatcher.SuffixPhiLow+"*")
+			card.OriginalNumber = strings.TrimRight(card.Number, SuffixSpecial+SuffixVariant+SuffixPhiLow+"*")
 
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
@@ -822,7 +893,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				// Create new card
 				card.Variations = []string{card.UUID}
 				card.UUID += suffixFoil
-				card.Number += mtgmatcher.SuffixSpecial
+				card.Number += SuffixSpecial
 				card.Finishes = []string{"foil"}
 
 				// Clone the map and replace it, overriding the id
@@ -876,7 +947,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		// correctly initialized)
 		if set.ReleaseDateTime.After(mtgmatcher.PromosForEverybodyYay) {
 			for _, card := range set.Cards {
-				if card.HasPromoType(mtgmatcher.PromoTypeBoosterfun) {
+				if card.HasPromoType(PromoTypeBoosterfun) {
 					// Usually boosterfun cards have real numbers
 					cn, err := strconv.Atoi(card.Number)
 					if err == nil {
@@ -1049,7 +1120,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.CommanderKeywordMap = commanderKeywordMap
 	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 
-	b.SetRules(mtgmatcher.MagicRules)
+	b.SetRules(Rules{})
 
 	return &b
 }
@@ -1142,12 +1213,12 @@ func filterInvalidPromoTypes(sets map[string]*Set, uuids map[string]*mtgmatcher.
 	for uuid, card := range uuids {
 		if !card.Foil && !card.Etched && !card.Sealed {
 			for _, promoType := range []string{
-				mtgmatcher.PromoTypeDoubleExposure,
-				mtgmatcher.PromoTypeGalaxyFoil,
-				mtgmatcher.PromoTypeSilverFoil,
-				mtgmatcher.PromoTypeRainbowFoil,
-				mtgmatcher.PromoTypeRippleFoil,
-				mtgmatcher.PromoTypeSurgeFoil,
+				PromoTypeDoubleExposure,
+				PromoTypeGalaxyFoil,
+				PromoTypeSilverFoil,
+				PromoTypeRainbowFoil,
+				PromoTypeRippleFoil,
+				PromoTypeSurgeFoil,
 			} {
 				if card.HasPromoType(promoType) {
 					// Filter
@@ -1336,7 +1407,7 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	// Rework printings information
 	for i := range sets[code].Cards {
 		// Skip misprints from main sets
-		if strings.HasSuffix(sets[code].Cards[i].Number, mtgmatcher.SuffixVariant) {
+		if strings.HasSuffix(sets[code].Cards[i].Number, SuffixVariant) {
 			continue
 		}
 

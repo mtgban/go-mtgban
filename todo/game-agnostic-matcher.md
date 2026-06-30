@@ -281,13 +281,13 @@ usages: `GetUUID` (67), `CardObject` (47), `GetSet` (26), `Title` (16),
 `PromoTypePromoPack`, `PromoTypeBuyABox`, `PromoTypePrerelease`,
 `PromoTypeThickDisplay`). It does **not** use `SimpleSearch`. Hard constraints:
 
-- [ ] **Keep every one of those symbols at `mtgmatcher.` package level**, bar
+- [x] **Keep every one of those symbols at `mtgmatcher.` package level**, bar
       one deliberate exception: the `PromoType*` constants. The instance
       refactor (§1) keeps thin global wrappers, but those constants are Magic
       data belonging in `magic/`, and core cannot import `magic` without
       cycling — so re-exporting them means a duplicated literal, which drifts
       silently where a build error names the symbol.
-      `mtgmatcher.PromoTypeBoosterfun` stops resolving, by design.
+      `mtgmatcher.PromoTypeBoosterfun` no longer resolves, by design.
 - [ ] **`LoadDatastore(io.Reader) error` keeps its exact signature** — the
       website's `/api/load/datastore` reload path depends on it.
 - [ ] The required website changes: add the blank import(s)

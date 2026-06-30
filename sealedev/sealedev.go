@@ -13,6 +13,7 @@ import (
 	"github.com/montanaflynn/stats"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
@@ -218,7 +219,7 @@ func (ss *SealedEVScraper) runEV(ctx context.Context, uuid string) ([]result, []
 
 		// Serialized (and unresolvable) cards never count towards the EV.
 		co, err := mtgmatcher.GetUUID(probs[i].UUID)
-		if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
+		if err != nil || co.HasPromoType(magic.PromoTypeSerialized) {
 			skipped[probs[i].UUID] = true
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
@@ -265,7 +266,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 				} else if version == "2" {
 					variant = "Prerelease"
 				} else {
-					if mtgmatcher.HasPromoPackPrinting(cardName) {
+					if magic.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
 						if cardName == "Sorcerous Spyglass" {
 							edition = "PXLN"
@@ -295,7 +296,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 						notPromoPack = num > parentSet.BaseSetSize
 					}
 
-					if mtgmatcher.HasPromoPackPrinting(cardName) && !notPromoPack {
+					if magic.HasPromoPackPrinting(cardName) && !notPromoPack {
 						variant = "Promo Pack"
 					} else {
 						edition = strings.TrimSuffix(edition, " Promos")

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 var cardTable = map[string]string{
@@ -247,7 +248,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			case "V.2":
 				variation = "Prerelease"
 			default:
-				if mtgmatcher.HasPromoPackPrinting(cardName) {
+				if magic.HasPromoPackPrinting(cardName) {
 					variation = "Promo Pack 2020"
 					edition = "Promos"
 					if cardName == "Sorcerous Spyglass" {
@@ -263,7 +264,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		case "V.2":
 			variation = "Promo Pack"
 		default:
-			if mtgmatcher.HasPromoPackPrinting(cardName) {
+			if magic.HasPromoPackPrinting(cardName) {
 				variation = "Promo Pack ELD"
 				edition = "Promos"
 			}
@@ -284,7 +285,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		}
 	case "Modern Horizons 2: Extras":
 		// Note: order of these printing checks matters
-		if mtgmatcher.HasExtendedArtPrinting(cardName) {
+		if magic.HasExtendedArtPrinting(cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Retro Frame"
@@ -293,19 +294,19 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			case "V.3":
 				variation = "Extended Art"
 			}
-		} else if mtgmatcher.HasBorderlessPrinting(cardName) {
+		} else if magic.HasBorderlessPrinting(cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Borderless"
 			case "V.2":
 				variation = "Retro Frame"
-				if mtgmatcher.HasShowcasePrinting(cardName) {
+				if magic.HasShowcasePrinting(cardName) {
 					variation = "Showcase"
 				}
 			case "V.3":
 				variation = "Retro Frame Foil Etched"
 			}
-		} else if mtgmatcher.HasShowcasePrinting(cardName) {
+		} else if magic.HasShowcasePrinting(cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Showcase"
@@ -314,7 +315,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			case "V.3":
 				variation = "Retro Frame Foil Etched"
 			}
-		} else if mtgmatcher.HasRetroFramePrinting(cardName) {
+		} else if magic.HasRetroFramePrinting(cardName) {
 			switch variation {
 			case "V.1":
 				variation = "Retro Frame"
@@ -378,7 +379,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 	case "Commander Legends: Extras":
 		if mtgmatcher.HasEtchedPrinting(cardName, "CMR") {
 			variation = "etched"
-		} else if mtgmatcher.HasExtendedArtPrinting(cardName, "CMR") {
+		} else if magic.HasExtendedArtPrinting(cardName, "CMR") {
 			variation = "extended art"
 		}
 	case "Secret Lair Drop Series":
@@ -397,7 +398,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 				variation = "Bundle"
 				edition = strings.TrimSuffix(edition, ": Promos")
 			default:
-				if mtgmatcher.HasPromoPackPrinting(cardName) {
+				if magic.HasPromoPackPrinting(cardName) {
 					variation = "Promo Pack"
 				}
 			}

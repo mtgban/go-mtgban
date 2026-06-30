@@ -15,28 +15,11 @@ type GameRules interface {
 	FilterPrintings(b *Backend, inCard *InputCard, editions []string) []string
 	// FilterCards narrows the candidate cards for the input card.
 	FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card
-}
-
-// MagicRules is the GameRules implementation for Magic: the Gathering. The
-// mtgjson loader attaches it to every Backend it builds via SetRules. Every
-// method delegates to the existing Magic logic in core mtgmatcher, so the seam
-// leaves behavior unchanged.
-var MagicRules GameRules = magicRules{}
-
-type magicRules struct{}
-
-func (magicRules) Prefilter(b *Backend, inCard *InputCard) { b.prefilter(inCard) }
-
-func (magicRules) AdjustName(b *Backend, inCard *InputCard) { b.adjustName(inCard) }
-
-func (magicRules) AdjustEdition(b *Backend, inCard *InputCard) { b.adjustEdition(inCard) }
-
-func (magicRules) FilterPrintings(b *Backend, inCard *InputCard, editions []string) []string {
-	return b.filterPrintings(inCard, editions)
-}
-
-func (magicRules) FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card {
-	return b.filterCards(inCard, cardSet)
+	// MissingPromoTag reports whether the input claims a promo treatment the
+	// resolved card does not carry; a claimed-but-absent tag means the card
+	// is unsupported rather than mismatched. Games without tagged promos
+	// return false.
+	MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
 }
 
 // SetRules attaches the game-specific identification hooks used by Match. A

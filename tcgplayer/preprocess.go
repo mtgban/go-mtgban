@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	"github.com/mtgban/go-tcgplayer"
 )
 
@@ -66,7 +67,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 		}
 	case "Tamiyo's Journal":
 		if edition == "Shadows over Innistrad" {
-			_, found := mtgmatcher.VariantsTable[edition][variant]
+			_, found := magic.VariantsTable[edition][variant]
 			if !found {
 				return nil, errors.New("non english")
 			}
@@ -426,7 +427,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				if vars != "" {
 					set, _ := mtgmatcher.GetSet(code)
 
-					tag := mtgmatcher.VariantsTable[set.Name][cardName][vars]
+					tag := magic.VariantsTable[set.Name][cardName][vars]
 					if tag != "" {
 						variant += " " + tag
 					}
@@ -543,7 +544,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 				edition = "PF25"
 			}
 		case "Arcane Signet":
-			vars, found := mtgmatcher.VariantsTable["30th Anniversary Misc Promos"]["Arcane Signet"][strings.ToLower(variant)]
+			vars, found := magic.VariantsTable["30th Anniversary Misc Promos"]["Arcane Signet"][strings.ToLower(variant)]
 			if found {
 				variant = vars
 				edition = "P30M"
