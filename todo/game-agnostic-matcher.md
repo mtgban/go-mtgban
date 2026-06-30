@@ -281,10 +281,11 @@ usages: `GetUUID` (67), `CardObject` (47), `GetSet` (26), `Title` (16),
 `PromoTypePromoPack`, `PromoTypeBuyABox`, `PromoTypePrerelease`,
 `PromoTypeThickDisplay`). It does **not** use `SimpleSearch`. Hard constraints:
 
-- [ ] **Keep every one of those symbols at `mtgmatcher.` package level.** The
+- [x] **Keep every one of those symbols at `mtgmatcher.` package level.** The
       instance refactor (§1) keeps thin global wrappers; the `PromoType*`
-      constants are Magic data that moves to `magic/`, so **re-export them from
-      core** (alias) — `mtgmatcher.PromoTypeBoosterfun` must still resolve.
+      constants are Magic data that moved to `magic/`, with the five
+      website-visible ones re-declared in `mtgmatcher/deprecated.go` —
+      `mtgmatcher.PromoTypeBoosterfun` still resolves.
 - [ ] **`LoadDatastore(io.Reader) error` keeps its exact signature** — the
       website's `/api/load/datastore` reload path depends on it.
 - [ ] The **only** required website change: add the blank import(s)

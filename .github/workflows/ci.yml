@@ -53,7 +53,7 @@ jobs:
 
       - name: Build CI
         env:
-          ALLPRINTINGS5_PATH: "../datastore/allprintings5.json"
+          ALLPRINTINGS5_PATH: "${{ github.workspace }}/datastore/allprintings5.json"
         run: |
           xz -dc ${{ needs.cache-datastore.outputs.filepath }} > datastore/allprintings5.json
           go test ./... -v
