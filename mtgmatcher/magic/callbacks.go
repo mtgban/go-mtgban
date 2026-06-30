@@ -835,10 +835,10 @@ func serialCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool {
 	return false
 }
 
-func retroCheckInternal(IsRetro bool, cardFrameVersion string) bool {
-	if IsRetro && cardFrameVersion != "1997" {
+func retroCheckInternal(isRetro bool, cardFrameVersion string) bool {
+	if isRetro && cardFrameVersion != "1997" {
 		return true
-	} else if !IsRetro && cardFrameVersion == "1997" {
+	} else if !isRetro && cardFrameVersion == "1997" {
 		return true
 	}
 	return false

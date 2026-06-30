@@ -126,7 +126,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
 
-		cardId, err = mtgmatcher.SimpleSearch(cardName, notes, foil)
+		cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: notes, Foil: foil})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return nil
 		} else if err != nil {

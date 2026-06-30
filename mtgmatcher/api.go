@@ -103,13 +103,16 @@ func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 	}
 
 	// 3. Attempt adjusting the edition with a fake card object
+	// (skipped when no GameRules are attached, e.g. a hand-built Backend)
 	card := &InputCard{
 		Edition: edition,
 	}
 	if len(flags) > 0 {
 		card.Foil = flags[0]
 	}
-	b.rules.AdjustEdition(b, card)
+	if b.rules != nil {
+		b.rules.AdjustEdition(b, card)
+	}
 
 	for _, set := range b.Sets {
 		if Equals(set.Name, card.Edition) {
@@ -402,6 +405,9 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 
 	printings, err := b.Printings4Card(name)
 	if err != nil {
+		if b.rules == nil {
+			return false
+		}
 		cc := &InputCard{
 			Name: name,
 		}
@@ -1022,11 +1028,11 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 		return nil, fmt.Errorf("sheet '%s' not found", sheetName)
 	}
 
-	IsEtched := strings.Contains(strings.ToLower(sheetName), "etched")
+	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 	var probs []ProductProbabilities
 
 	for cardId, count := range sheet.Cards {
-		uuid, err := MatchId(cardId, sheet.Foil, IsEtched)
+		uuid, err := MatchId(cardId, sheet.Foil, isEtched)
 		if err != nil {
 			return nil, err
 		}
@@ -1246,56 +1252,4 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 
 func BuildSealedProductMap(idName string) map[int][]string {
 	return defaultBackend.BuildSealedProductMap(idName)
-}
-
-func (b *Backend) SimpleSearch(cardName, number string, foil bool) (string, error) {
-	number = strings.TrimLeft(number, "0")
-	number = strings.Split(number, "/")[0]
-
-	cardName = SplitVariants(cardName)[0]
-
-	uuids, err := b.SearchEquals(cardName)
-	if err != nil {
-		uuids, err = b.SearchHasPrefix(cardName)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	if len(uuids) == 1 {
-		return uuids[0], nil
-	}
-
-	var cardIds []string
-	for _, uuid := range uuids {
-		co, err := b.GetUUID(uuid)
-		if err != nil {
-			continue
-		}
-
-		if foil && !co.Foil {
-			continue
-		} else if !foil && co.Foil {
-			continue
-		}
-
-		if number != "" && number != co.Number {
-			continue
-		}
-		cardIds = append(cardIds, uuid)
-	}
-
-	if len(cardIds) < 1 {
-		return "", ErrCardWrongVariant
-	}
-
-	if len(cardIds) > 1 {
-		return "", NewAliasingError(uuids...)
-	}
-
-	return cardIds[0], nil
-}
-
-func SimpleSearch(cardName, number string, foil bool) (string, error) {
-	return defaultBackend.SimpleSearch(cardName, number, foil)
 }

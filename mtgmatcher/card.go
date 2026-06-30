@@ -28,16 +28,18 @@ type InputCard struct {
 	// The card belongs to the extended side of the set, usually containing
 	// variants with the same name of existing cards in the same set, but with
 	// different frames or border effects
-	BeyondBaseSet bool
+	// Internal matcher state, not part of the serialized input.
+	BeyondBaseSet bool `json:"-"`
 
 	// In case edition information is not accurate, use this flag to
 	// perform a best-effor search, which will try to isolate promo
 	// printings from the others
-	PromoWildcard bool
+	PromoWildcard bool `json:"PromoWildcard,omitempty"`
 
 	// In case card got renamed in some way, this contains the original
 	// card name, instead of the sanitized version
-	OriginalName string
+	// Internal matcher state, not part of the serialized input.
+	OriginalName string `json:"-"`
 
 	// The language as parsed
 	Language string `json:"language,omitempty"`
@@ -88,7 +90,7 @@ func IsToken(name string) bool {
 	return defaultBackend.IsToken(name)
 }
 
-func (c *InputCard) isUnsupported() bool {
+func (c *InputCard) IsUnsupported() bool {
 	return c.Contains("Art Series") ||
 		strings.HasSuffix(c.Edition, "Art Variants") || // toa
 		(c.Contains("Art Card") && !c.Contains("Chinese")) || // Art Series, except a well-known edition
@@ -112,7 +114,7 @@ func (c *InputCard) isUnsupported() bool {
 		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
 }
 
-func (c *InputCard) isSpecificUnsupported() bool {
+func (c *InputCard) IsSpecificUnsupported() bool {
 	switch c.Name {
 	case "Spined Wurm":
 		return Contains(c.Edition, "Starter 2000")

@@ -95,7 +95,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 
 				cardId, err = mtgmatcher.Match(theCard)
 			} else if nf.game == GameLorcana {
-				cardId, err = mtgmatcher.SimpleSearch(allCards[key].CardName, allCards[key].CardNum, foil)
+				cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: allCards[key].CardName, Variation: allCards[key].CardNum, Foil: foil})
 			} else {
 				err = errors.New("unsupported game")
 			}

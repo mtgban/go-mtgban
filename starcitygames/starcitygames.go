@@ -176,7 +176,7 @@ func (scg *Starcitygames) processPage(ctx context.Context, channel chan<- respon
 				continue
 			}
 		case GameLorcana:
-			cardId, err = mtgmatcher.SimpleSearch(cardName, number, finish != "Non-foil")
+			cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: finish != "Non-foil"})
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -421,7 +421,7 @@ func (scg *Starcitygames) processBuylistEditionHits(channel chan<- responseChan,
 		} else if scg.game == GameLorcana {
 			cardName := hit.Name
 			number := hit.CollectorNumber
-			cardId, err = mtgmatcher.SimpleSearch(cardName, number, hit.FinishPricingTypeID == 2)
+			cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: hit.FinishPricingTypeID == 2})
 		}
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue

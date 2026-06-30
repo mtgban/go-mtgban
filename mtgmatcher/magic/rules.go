@@ -13,6 +13,14 @@ import (
 // time; hooks whose body has not moved yet delegate to the core method.
 type Rules struct{}
 
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	return inCard.IsUnsupported()
+}
+
+func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	return inCard.IsSpecificUnsupported()
+}
+
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := inCard.Edition
 	variation := inCard.Variation
@@ -641,7 +649,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 	// Adjust incorrect numbers sometimes used for Etched
 	num := mtgmatcher.ExtractNumber(inCard.Variation)
-	if num != "" && strings.HasSuffix(num, "e") && mtgmatcher.HasEtchedPrinting(inCard.Name, inCard.Edition) {
+	if num != "" && strings.HasSuffix(num, "e") && b.HasEtchedPrinting(inCard.Name, inCard.Edition) {
 		fixedNum := strings.TrimSuffix(num, "e")
 		variation = strings.Replace(variation, num, fixedNum, -1)
 		if !mtgmatcher.Contains(variation, "Etched") {
@@ -1420,6 +1428,18 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 }
 
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) (outCards []mtgmatcher.Card) {
+	// Use the result as-is if it comes from a single card in a single set,
+	// preserving the historical Magic behavior of the pre-GameRules pipeline:
+	// a lone candidate matches even when the variation carries junk the
+	// filters below would reject. Other games (Lorcana) validate strictly.
+	if len(cardSet) == 1 {
+		for _, inCards := range cardSet {
+			if len(inCards) == 1 {
+				return inCards
+			}
+		}
+	}
+
 	for setCode, inCards := range cardSet {
 		set := b.Sets[setCode]
 

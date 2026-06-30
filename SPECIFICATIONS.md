@@ -542,7 +542,8 @@ helper (`x.LogCallback("[TAG] "+format, a...)`). File convention:
 scraper struct with its own `SealedMode` `Info`).
 
 **The preprocess → Match() contract** (per listing): build an `InputCard` →
-`Match()` (or `MatchId(scryfallID,...)` / `SimpleSearch(name,number,foil)`)
+`Match()` (or `MatchId(scryfallID,...)`; Lorcana scrapers pass
+`InputCard{Name, Variation: number, Foil}` through the same `Match()`)
 → on `ErrUnsupported` silently `continue`; on `AliasingError` log + `Probe()`;
 on other errors log with context (many scrapers suppress known-noisy editions
 first) → insert with `Add*`. `PriceRatio` is computed by reading back

@@ -19,8 +19,18 @@ jobs:
       game: "magic"
     secrets: inherit
 
+  cache-lorcana:
+    uses: ./.github/workflows/cache-file.yml
+    with:
+      # Must serve plain (uncompressed) JSON, e.g. the LorcanaJSON allCards
+      # file: the test step consumes the cached download verbatim
+      url: ${{ vars.DATASTORE_LORCANA }}
+      path: "datastore/"
+      game: "lorcana"
+    secrets: inherit
+
   mtgban-ci:
-    needs: [cache-datastore]
+    needs: [cache-datastore, cache-lorcana]
     runs-on: ubuntu-latest
 
     steps:
@@ -39,9 +49,17 @@ jobs:
           key: ${{ needs.cache-datastore.outputs.key }}
           fail-on-cache-miss: true
 
+      - name: Cache Lorcana Datastore
+        uses: actions/cache/restore@v5
+        with:
+          path: "datastore/"
+          key: ${{ needs.cache-lorcana.outputs.key }}
+          fail-on-cache-miss: true
+
       - name: Build CI
         env:
           ALLPRINTINGS5_PATH: "../datastore/allprintings5.json"
+          LORCANA_PATH: "${{ github.workspace }}/${{ needs.cache-lorcana.outputs.filepath }}"
         run: |
           xz -dc ${{ needs.cache-datastore.outputs.filepath }} > datastore/allprintings5.json
           go test ./... -v
