@@ -46,8 +46,8 @@ type SealedContent struct {
 
 type DeckCard struct {
 	Count    int    `json:"count"`
-	IsEtched bool   `json:"isEtched"`
-	IsFoil   bool   `json:"isFoil"`
+	IsEtched bool   `json:"IsEtched"`
+	IsFoil   bool   `json:"IsFoil"`
 	UUID     string `json:"uuid"`
 }
 
@@ -343,7 +343,7 @@ type Backend struct {
 	rules GameRules
 }
 
-var logger = log.New(io.Discard, "", log.LstdFlags)
+var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 const (
 	suffixFoil   = "_f"
@@ -355,5 +355,5 @@ func SetGlobalDatastore(b *Backend) {
 }
 
 func SetGlobalLogger(userLogger *log.Logger) {
-	logger = userLogger
+	Logger = userLogger
 }

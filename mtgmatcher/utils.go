@@ -231,7 +231,7 @@ func ExtractNumberValue(str string) string {
 }
 
 // Specialized version of ExtractNumber, suited for parsing WCD numbers
-func extractWCDNumber(str, prefix string, sideboard bool) string {
+func ExtractWCDNumber(str, prefix string, sideboard bool) string {
 	fields := strings.Fields(str)
 	for _, field := range fields {
 		field = strings.Replace(field, "(", "", -1)

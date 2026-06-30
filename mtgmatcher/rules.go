@@ -17,28 +17,6 @@ type GameRules interface {
 	FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card
 }
 
-// MagicRules is the GameRules implementation for Magic: the Gathering. The
-// mtgjson loader attaches it to every Backend it builds via SetRules. Every
-// method delegates to the existing Magic logic in core mtgmatcher, so the seam
-// leaves behavior unchanged.
-var MagicRules GameRules = magicRules{}
-
-type magicRules struct{}
-
-func (magicRules) Prefilter(b *Backend, inCard *InputCard) { b.prefilter(inCard) }
-
-func (magicRules) AdjustName(b *Backend, inCard *InputCard) { b.adjustName(inCard) }
-
-func (magicRules) AdjustEdition(b *Backend, inCard *InputCard) { b.adjustEdition(inCard) }
-
-func (magicRules) FilterPrintings(b *Backend, inCard *InputCard, editions []string) []string {
-	return b.filterPrintings(inCard, editions)
-}
-
-func (magicRules) FilterCards(b *Backend, inCard *InputCard, cardSet map[string][]Card) []Card {
-	return b.filterCards(inCard, cardSet)
-}
-
 // SetRules attaches the game-specific identification hooks used by Match. A
 // game's datastore loader calls this when it builds a Backend.
 func (b *Backend) SetRules(r GameRules) {

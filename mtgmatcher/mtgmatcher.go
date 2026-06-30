@@ -35,20 +35,6 @@ func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 	return defaultBackend.MatchWithNumber(cardName, setCode, number)
 }
 
-// Try to fixup the name of the card or move extra varitions to the
-// variant attribute. This should only be used in case the card name
-// was not found.
-func adjustName(inCard *InputCard) {
-	defaultBackend.adjustName(inCard)
-}
-
-// Try to fixup the edition and variant of the card, using well-known variantions,
-// or use edition/variant attributes to determine the correct edition/variant combo,
-// or look up known cards in small sets.
-func adjustEdition(inCard *InputCard) {
-	defaultBackend.adjustEdition(inCard)
-}
-
 func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 	// Remove any extras after the underscore
 	id := strings.Split(inputId, "_")[0]
@@ -70,13 +56,13 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 		return "", ErrCardUnknownId
 	}
 
-	isEtched := len(finishes) > 1 && finishes[1]
-	isFoil := len(finishes) > 0 && finishes[0] && !isEtched
+	IsEtched := len(finishes) > 1 && finishes[1]
+	IsFoil := len(finishes) > 0 && finishes[0] && !IsEtched
 
 	// If the loaded card already matches the requested finishes
 	// return the found id straight away
-	if (co.Foil && isFoil) || (co.Etched && isEtched) ||
-		(!co.Foil && !co.Etched && !isFoil && !isEtched) {
+	if (co.Foil && IsFoil) || (co.Etched && IsEtched) ||
+		(!co.Foil && !co.Etched && !IsFoil && !IsEtched) {
 		return co.UUID, nil
 	}
 
@@ -90,7 +76,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 
 	// If the input card was requested as foil, we should double check
 	// if the original card has a foil under a separate id
-	if co.Foil != isFoil || co.Etched != isEtched {
+	if co.Foil != IsFoil || co.Etched != IsEtched {
 		// So we iterate over the Variations array and try outputing ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
@@ -98,7 +84,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 			// We assume that the collector number between the two version
 			// stays the same, with a different suffix
 			if ExtractNumberValue(co.Number) == ExtractNumberValue(altCo.Number) {
-				maybeId := b.output(altCo.Card, isFoil, isEtched)
+				maybeId := b.output(altCo.Card, IsFoil, IsEtched)
 				altCo = b.UUIDs[maybeId]
 
 				// Make sure we're dealing with the same card
@@ -113,7 +99,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 
 				// If the alt card finish matches the expected one
 				// then replace the final output uuid
-				if altCo.Foil == isFoil && altCo.Etched == isEtched {
+				if altCo.Foil == IsFoil && altCo.Etched == IsEtched {
 					outId = maybeId
 					break
 				}
@@ -129,7 +115,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Adjust flag as needed
-	if inCard.isFoil() {
+	if inCard.IsFoil() {
 		inCard.Foil = true
 	}
 
@@ -158,39 +144,39 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 
 	// Look up by uuid
 	if inCard.Id != "" {
-		logger.Printf("Performing id lookup")
-		outId, err := b.MatchId(inCard.Id, inCard.Foil, inCard.isEtched())
+		Logger.Printf("Performing id lookup")
+		outId, err := b.MatchId(inCard.Id, inCard.Foil, inCard.IsEtched())
 		if err == nil {
 			co := b.UUIDs[outId]
-			logger.Printf("Id found")
+			Logger.Printf("Id found")
 
 			// Validation step
 			switch {
 			// Only the default language is supported by id
 			case inCard.Language != "" && !strings.Contains(co.Language, inCard.Language):
-				logger.Printf("Language validation failed, resetting card")
+				Logger.Printf("Language validation failed, resetting card")
 				inCard.Name = co.Name
 				inCard.Edition = co.Edition
 				inCard.Variation = co.Number
 				inCard.Foil = co.Foil
 				if co.Etched {
-					inCard.addToVariant("etched")
+					inCard.AddToVariant("etched")
 				}
 			// Tokens are unsupported for broken ids in different languages
 			case inCard.Language != "" && co.Layout == "token":
 				return "", ErrUnsupported
 			// These promo types take the longest to appear upstream
-			case inCard.isPrerelease() && !co.HasPromoType(PromoTypePrerelease),
-				inCard.isPromoPack() && !co.HasPromoType(PromoTypePromoPack),
-				inCard.isSerialized() && !co.HasPromoType(PromoTypeSerialized):
-				logger.Println("Missing necessary tag")
+			case inCard.IsPrerelease() && !co.HasPromoType(PromoTypePrerelease),
+				inCard.IsPromoPack() && !co.HasPromoType(PromoTypePromoPack),
+				inCard.IsSerialized() && !co.HasPromoType(PromoTypeSerialized):
+				Logger.Println("Missing necessary tag")
 				return "", ErrUnsupported
 			// Actually found id
 			default:
 				return outId, nil
 			}
 		}
-		logger.Printf("Id lookup failed, attempting full match")
+		Logger.Printf("Id lookup failed, attempting full match")
 	}
 
 	// In case id lookup failed, an no more data is present
@@ -225,22 +211,22 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		vars := SplitVariants(inCard.Name)
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
-			inCard.addToVariant(strings.Join(vars[1:], " "))
+			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
 	if strings.Contains(inCard.Name, " - ") {
 		vars := strings.Split(inCard.Name, " - ")
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
-			inCard.addToVariant(strings.Join(vars[1:], " "))
+			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
 	if ogName != inCard.Name {
-		logger.Printf("Pre-adjusted name from '%s' to '%s' '%s'", ogName, inCard.Name, inCard.Variation)
+		Logger.Printf("Pre-adjusted name from '%s' to '%s' '%s'", ogName, inCard.Name, inCard.Variation)
 	}
 
 	// Repeat the check in case the card was renamed above
-	if inCard.isFoil() {
+	if inCard.IsFoil() {
 		inCard.Foil = true
 	}
 
@@ -261,8 +247,8 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		// Fixup up the name and try again
 		rules.AdjustName(b, inCard)
 		if ogName != inCard.Name {
-			inCard.originalName = ogName
-			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
+			inCard.OriginalName = ogName
+			Logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
 		}
 
 		canonicalName, found = b.CanonicalNames[Normalize(inCard.Name)]
@@ -283,10 +269,10 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	ogEdition := inCard.Edition
 	rules.AdjustEdition(b, inCard)
 	if ogName != inCard.Name {
-		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
+		Logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 	}
 	if ogEdition != inCard.Edition {
-		logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
+		Logger.Printf("Adjusted edition from '%s' to '%s'", ogEdition, inCard.Edition)
 	}
 
 	// Extra check, after any possible edition adjustment has been done
@@ -310,7 +296,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 
 	printings, err := b.Printings4Card(inCard.Name)
 	if err != nil {
-		logger.Println("Printings error:", err)
+		Logger.Println("Printings error:", err)
 		return "", err
 	}
 
@@ -318,10 +304,10 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	// minimum common elements, using the rules defined.
 	// Given that many tokens are not supported, make sure to filter
 	// out unrelated editions.
-	logger.Println("Processing", inCard, printings)
+	Logger.Println("Processing", inCard, printings)
 	if len(printings) > 1 || strings.HasSuffix(ogName, "Token") {
 		printings = rules.FilterPrintings(b, inCard, printings)
-		logger.Println("Filtered printings:", printings)
+		Logger.Println("Filtered printings:", printings)
 
 		// Filtering was too aggressive or wrong data fed,
 		// in either case, nothing else to be done here.
@@ -341,18 +327,18 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	// Only one printing, it *has* to be it
 	if len(printings) == 1 {
 		cardSet[printings[0]] = b.MatchInSet(inCard.Name, printings[0])
-	} else if !inCard.PromoWildcard && !inCard.isSecretLair() {
+	} else if !inCard.PromoWildcard && !inCard.IsSecretLair() {
 		// If multiple printing, try filtering to the closest name
 		// described by the inCard.Edition.
 		// This is skipped if we're in the wildcard Promo mode, as we
 		// need as many editions as possible.
-		logger.Println("Several printings found, iterating over edition name")
+		Logger.Println("Several printings found, iterating over edition name")
 
 		// First loop, search for a perfect match
 		for _, setCode := range printings {
 			// Perfect match, the card *has* to be present in the set
 			if Equals(b.Sets[setCode].Name, inCard.Edition) {
-				logger.Println("Found a perfect match with", inCard.Edition, setCode)
+				Logger.Println("Found a perfect match with", inCard.Edition, setCode)
 				cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
 
 				set := b.Sets[setCode]
@@ -360,22 +346,22 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 				// In case it's a well known promo, consider the promo sets (or vice
 				// versa for promo sets) in order to let filtering take care of them
 				// JPN cards are skipped because they are well set usually
-				if !inCard.isJPN() && (inCard.isPrerelease() || inCard.isPromoPack() ||
-					(inCard.isBundle() && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
-					(inCard.isBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
+				if !inCard.IsJPN() && (inCard.IsPrerelease() || inCard.IsPromoPack() ||
+					(inCard.IsBundle() && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
+					(inCard.IsBaB() && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate))) {
 					setName := b.Sets[setCode].Name
 					if !strings.HasSuffix(setName, "Promos") {
 						setCode = "P" + setCode
 						set, found := b.Sets[setCode]
 						if found {
-							logger.Println("Detected possible promo, adding edition", set.Name, setCode)
+							Logger.Println("Detected possible promo, adding edition", set.Name, setCode)
 							cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
 						}
 					} else {
 						setCode = strings.TrimPrefix(setCode, "P")
 						set, found := b.Sets[setCode]
 						if found {
-							logger.Println("Detected possible non-promo, adding edition", set.Name, setCode)
+							Logger.Println("Detected possible non-promo, adding edition", set.Name, setCode)
 							cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
 						}
 					}
@@ -386,22 +372,22 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		// Second loop, hope that a portion of the edition is in the set Name
 		// This may result in false positives under certain circumstances.
 		if len(cardSet) == 0 {
-			logger.Println("No perfect match found, trying with heuristics")
+			Logger.Println("No perfect match found, trying with heuristics")
 			for _, setCode := range printings {
 				set := b.Sets[setCode]
 
 				// Skip heuristics for WCD as short version would catch a lot
-				if inCard.isWorldChamp() {
+				if inCard.IsWorldChamp() {
 					break
 				}
 
 				if Contains(set.Name, inCard.Edition) ||
 					// If a card is promotional, only consider promotional sets
-					(inCard.isGenericPromo() && strings.HasSuffix(set.Name, "Promos")) ||
+					(inCard.IsGenericPromo() && strings.HasSuffix(set.Name, "Promos")) ||
 					// If it is Bundle or BaB, also consider base sets if recent enough
-					(inCard.isBundle() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
-					(inCard.isBaB() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {
-					logger.Println("Found a possible match with", inCard.Edition, setCode)
+					(inCard.IsBundle() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(PromosForEverybodyYay)) ||
+					(inCard.IsBaB() && !strings.HasSuffix(set.Name, "Promos") && set.ReleaseDateTime.After(BuyABoxInExpansionSetsDate)) {
+					Logger.Println("Found a possible match with", inCard.Edition, setCode)
 					cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
 				}
 			}
@@ -412,44 +398,44 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	// Let's consider every edition and hope the second pass will filter
 	// duplicates out. This may result in false positives of course.
 	if len(cardSet) == 0 {
-		logger.Println("No loose match found, trying all")
+		Logger.Println("No loose match found, trying all")
 		for _, setCode := range printings {
 			cardSet[setCode] = b.MatchInSet(inCard.Name, setCode)
 		}
 	}
 
 	// Determine if any deduplication needs to be performed
-	logger.Println("Found these possible matches")
+	Logger.Println("Found these possible matches")
 	single := len(cardSet) == 1
 	for _, dupCards := range cardSet {
 		single = single && len(dupCards) == 1
 		for _, card := range dupCards {
-			logger.Println(card.SetCode, card.Name, card.Number)
+			Logger.Println(card.SetCode, card.Name, card.Number)
 		}
 	}
 
 	// Use the result as-is if it comes from a single card in a single set
 	var outCards []Card
 	if single {
-		logger.Println("Single printing, using it right away")
+		Logger.Println("Single printing, using it right away")
 		for _, outCards = range cardSet {
 		}
 	} else {
 		// Otherwise do a second pass filter, using all inCard details
-		logger.Println("Now filtering...")
+		Logger.Println("Now filtering...")
 		outCards = rules.FilterCards(b, inCard, cardSet)
 
-		logger.Println("Post filtering status...")
+		Logger.Println("Post filtering status...")
 		for _, card := range outCards {
-			logger.Println(card.SetCode, card.Name, card.Number)
+			Logger.Println(card.SetCode, card.Name, card.Number)
 		}
 	}
 
 	// Just keep the first card found for gold-bordered sets
 	if len(outCards) > 1 {
-		if inCard.isWorldChamp() {
-			logger.Println("Dropping a few extra entries...")
-			logger.Println(outCards[1:])
+		if inCard.IsWorldChamp() {
+			Logger.Println("Dropping a few extra entries...")
+			Logger.Println(outCards[1:])
 			outCards = []Card{outCards[0]}
 		}
 	}
@@ -460,8 +446,8 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		for _, card := range outCards {
 			if (inCard.Language == "" && card.Language != "English") ||
 				!strings.Contains(card.Language, inCard.Language) {
-				logger.Println("Dropping different language prints...")
-				logger.Println(card.SetCode, card.Name, card.Number, card.Language)
+				Logger.Println("Dropping different language prints...")
+				Logger.Println(card.SetCode, card.Name, card.Number, card.Language)
 				continue
 			}
 			filteredOutCards = append(filteredOutCards, card)
@@ -473,7 +459,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	switch len(outCards) {
 	// Not found, rip
 	case 0:
-		logger.Println("No matches...")
+		Logger.Println("No matches...")
 		err = ErrCardWrongVariant
 		if inCard.Variation == "" {
 			err = ErrCardMissingVariant
@@ -483,28 +469,28 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		}
 	// Victory
 	case 1:
-		logger.Println("Found it!")
+		Logger.Println("Found it!")
 
-		cardId = b.output(outCards[0], inCard.Foil, inCard.isEtched())
+		cardId = b.output(outCards[0], inCard.Foil, inCard.IsEtched())
 
 		co := b.UUIDs[cardId]
-		logger.Println(inCard, "->", co)
+		Logger.Println(inCard, "->", co)
 
 		// Validation step
 		switch {
 		// These promo types take the longest to appear upstream
-		case inCard.isPrerelease() && !co.HasPromoType(PromoTypePrerelease),
-			inCard.isPromoPack() && !co.HasPromoType(PromoTypePromoPack),
-			inCard.isSerialized() && !co.HasPromoType(PromoTypeSerialized):
-			logger.Println("...but it's invalid")
+		case inCard.IsPrerelease() && !co.HasPromoType(PromoTypePrerelease),
+			inCard.IsPromoPack() && !co.HasPromoType(PromoTypePromoPack),
+			inCard.IsSerialized() && !co.HasPromoType(PromoTypeSerialized):
+			Logger.Println("...but it's invalid")
 			return "", ErrUnsupported
 		}
 	// FOR SHAME
 	default:
-		logger.Println("Aliasing...")
+		Logger.Println("Aliasing...")
 		alias := NewAliasingError()
 		for i := range outCards {
-			alias.Dupes = append(alias.Dupes, b.output(outCards[i], inCard.Foil, inCard.isEtched()))
+			alias.Dupes = append(alias.Dupes, b.output(outCards[i], inCard.Foil, inCard.IsEtched()))
 		}
 		err = alias
 	}
@@ -549,851 +535,4 @@ func (b *Backend) MatchWithNumber(cardName, setCode, number string) (outCards []
 		}
 	}
 	return
-}
-
-func (b *Backend) prefilter(inCard *InputCard) {
-	switch inCard.Name {
-	case "Red Herring",
-		"Bind // Liberate",
-		"Pick Your Poison":
-		if inCard.isMysteryList() || inCard.Contains("Playtest") {
-			inCard.Name += " Playtest"
-		}
-	case "Unquenchable Fury":
-		if inCard.Contains("Battle the Horde") || inCard.Contains("Hero's Path") {
-			inCard.Name += " Token"
-		}
-	case "Shapeshifter":
-		if !(inCard.Contains("Edition") ||
-			inCard.Contains("Foreign") ||
-			inCard.Contains("Antiquities") ||
-			inCard.Contains("Reinassance") ||
-			inCard.Contains("Rinascimento")) {
-			inCard.Name += " Token"
-		}
-	}
-}
-
-func (b *Backend) adjustName(inCard *InputCard) {
-	// Sticker sheet adjustments
-	if strings.Contains(inCard.Name, "Sticker") {
-		inCard.Name = strings.Replace(inCard.Name, "Sticker", "", 1)
-		inCard.Name = strings.Replace(inCard.Name, "Sheet", "", 1)
-		inCard.Name = strings.TrimSpace(inCard.Name)
-	}
-
-	// Skip for tokens, we need them to be exact or the prefix search interferes
-	if strings.Contains(strings.ToLower(inCard.Name), "token") {
-		return
-	}
-	_, found := b.CanonicalNames[Normalize(inCard.Name+" Token")]
-	if found {
-		inCard.Name += " Token"
-		return
-	}
-	if b.IsToken(inCard.Name) {
-		return
-	}
-
-	// Move the card number from name to variation
-	num := ExtractNumber(inCard.Name)
-	if num != "" {
-		fields := strings.Fields(inCard.Name)
-		for i, field := range fields {
-			if strings.Contains(field, num) {
-				fields = append(fields[:i], fields[i+1:]...)
-				break
-			}
-		}
-		// Check card exists before updating the name
-		tmpName := strings.Join(fields, " ")
-		_, found := b.CanonicalNames[Normalize(tmpName)]
-		if found {
-			inCard.Name = tmpName
-			inCard.addToVariant(num)
-			return
-		}
-	}
-
-	// Move any single letter variation from name to beginning variation
-	if inCard.IsBasicLand() {
-		fields := strings.Fields(inCard.Name)
-		if len(fields) > 1 {
-			_, err := strconv.Atoi(strings.TrimPrefix(fields[1], "0"))
-			isNum := err == nil
-			isLetter := len(fields[1]) == 1
-
-			if isNum || isLetter {
-				oldVariation := inCard.Variation
-				cuts := Cut(inCard.Name, " "+fields[1])
-
-				inCard.Name = cuts[0]
-				inCard.Variation = cuts[1]
-				if oldVariation != "" {
-					inCard.Variation += " " + oldVariation
-				}
-				return
-			}
-		}
-	}
-
-	// Rename cards that were translated differently
-	if strings.Contains(inCard.Edition, "Ikoria") {
-		if strings.Contains(inCard.Name, "Mothra's") && strings.Contains(inCard.Name, "Cocoon") {
-			inCard.Name = "Mothra's Great Cocoon"
-		} else if strings.Contains(inCard.Name, "Battra") {
-			inCard.Name = "Battra, Dark Destroyer"
-		} else if strings.Contains(inCard.Name, "Mechagodzilla") {
-			inCard.Name = "Mechagodzilla, the Weapon"
-		}
-	}
-	// Rename reskinned dual faced cards, only keep one side and keep the
-	// flavor name, to make the following lookup in AlternateProps work
-	if inCard.isSecretLair() {
-		if strings.Contains(inCard.Name, "Hawkins National") {
-			inCard.Name = "Hawkins National Laboratory"
-		} else if strings.Contains(inCard.Name, "Plains") && strings.Contains(inCard.Name, "Battlefield Forge") {
-			if inCard.Contains("Unpeeled") || inCard.Contains("669") {
-				inCard.Name = "Battlefield Forge"
-				inCard.Variation = "669"
-			} else if inCard.Contains("Peeled") || inCard.Contains("670") {
-				inCard.Name = "Plains"
-				inCard.Variation = "670"
-			}
-		}
-	}
-	// Check if this card may be known as something else
-	for altName, altProps := range b.AlternateProps {
-		if !Equals(altName, inCard.Name) {
-			continue
-		}
-
-		// Stash the number for later decoupling if available
-		if altProps.OriginalNumber != "" {
-			inCard.addToVariant(altProps.OriginalNumber)
-		}
-
-		inCard.Name = altProps.OriginalName
-		if altProps.IsFlavor {
-			inCard.addToVariant("Reskin")
-		}
-
-		// Adjust the token name in case it's a reskin
-		if b.IsToken(inCard.Name) {
-			inCard.Name += " Token"
-			return
-		}
-
-		return
-	}
-
-	// Special case for Un-sets that sometimes drop the parenthesis
-	if strings.Contains(inCard.Edition, "The List") ||
-		strings.Contains(inCard.Edition, "Unglued") || inCard.Edition == "UGL" ||
-		strings.Contains(inCard.Edition, "Unhinged") || inCard.Edition == "UNH" ||
-		strings.Contains(inCard.Edition, "Unstable") || inCard.Edition == "UST" ||
-		strings.Contains(inCard.Edition, "Unsanctioned") || inCard.Edition == "UND" {
-		if HasPrefix(inCard.Name, "B.F.M.") || HasPrefix(inCard.Name, "BFM") {
-			cardName := inCard.Name
-			inCard.Name = "B.F.M. (Big Furry Monster)"
-			if Contains(cardName, "Left") || Contains(inCard.Variation, "Left") {
-				inCard.Variation = "28"
-			} else if Contains(cardName, "Right") || Contains(inCard.Variation, "Right") {
-				inCard.Variation = "29"
-			}
-			return
-		}
-		if HasPrefix(inCard.Name, "Our Market Research") {
-			inCard.Name = LongestCardEver
-			return
-		}
-		if HasPrefix(inCard.Name, "The Ultimate Nightmare") {
-			inCard.Name = NightmareCard
-			return
-		}
-		if Contains(inCard.Name, "Surgeon") && Contains(inCard.Name, "Commander") {
-			inCard.Name = "Surgeon ~General~ Commander"
-			return
-		}
-		if Contains(inCard.Name, "Who") && Contains(inCard.Name, "What") &&
-			Contains(inCard.Name, "When") && Contains(inCard.Name, "Where") &&
-			Contains(inCard.Name, "Why") {
-			inCard.Name = "Who // What // When // Where // Why"
-			return
-		}
-
-		uuids, err := b.SearchHasPrefix(inCard.Name)
-		if err == nil {
-			inCard.Name = b.UUIDs[uuids[0]].Name
-			return
-		}
-	}
-
-	// Rename a DFC with same name
-	splits := strings.Split(inCard.Name, "//")
-	if len(splits) == 2 && strings.TrimSpace(splits[0]) == strings.TrimSpace(splits[1]) {
-		inCard.Name = strings.TrimSpace(splits[0])
-		return
-	}
-
-	// Altenatively try checking across any prefix, as long as it's a double
-	// sided card, for some particular cases, like meld cards, or Treasure Chest
-	// Attempt first to check cards in the same edition if possible
-	// Skip for tokens
-	for _, set := range b.Sets {
-		if Equals(set.Name, inCard.Edition) {
-			for _, card := range set.Cards {
-				if card.Layout != "normal" && card.Layout != "token" && HasPrefix(card.Name, inCard.Name) {
-					inCard.Name = card.Name
-					return
-				}
-			}
-		}
-	}
-	uuids, _ := b.SearchHasPrefix(inCard.Name)
-	for _, uuid := range uuids {
-		co, _ := b.GetUUID(uuid)
-		if co.Layout != "normal" && co.Layout != "token" {
-			inCard.Name = co.Name
-			return
-		}
-	}
-}
-
-func (b *Backend) adjustEdition(inCard *InputCard) {
-	edition := inCard.Edition
-	variation := inCard.Variation
-
-	set, found := b.Sets[strings.ToUpper(edition)]
-	if found {
-		edition = set.Name
-	}
-	ed, found := EditionTable[edition]
-	if found {
-		edition = ed
-	}
-	set, found = b.Sets[strings.ToUpper(variation)]
-	if found && (inCard.isJudge() || inCard.isDuelDecks() || inCard.isDuelDecksAnthology()) {
-		edition = set.Name
-	}
-	ed, found = EditionTable[variation]
-	// The Anthologies set has one land with a variant named as an expansion,
-	// so what is found should not overwrite the edition in this case
-	// As for The List, ignore any further variation
-	if found && edition != "Anthologies" && !inCard.isMysteryList() {
-		edition = ed
-
-		// If edition was found through the variation tag, drop it
-		variation = ""
-		// Only keep this information if needed
-		if inCard.isEtched() {
-			variation = "Etched"
-		}
-	}
-	inCard.Edition = edition
-	inCard.Variation = variation
-
-	// Adjust box set
-	switch {
-	case inCard.Contains("Mythic Edition"):
-		edition = "Mythic Edition"
-	case strings.Contains(edition, "Invocation") ||
-		((edition == "Hour of Devastation" || edition == "Amonkhet") &&
-			strings.Contains(inCard.Variation, "Invocation")):
-		edition = "Amonkhet Invocations"
-	case strings.Contains(edition, "Inventions"):
-		edition = "Kaladesh Inventions"
-	case strings.Contains(edition, "Expeditions") && !strings.Contains(edition, "Rising"):
-		edition = "Zendikar Expeditions"
-	case strings.Contains(edition, "Expeditions") && strings.Contains(edition, "Rising"):
-		edition = "Zendikar Rising Expeditions"
-	case inCard.Contains("Timeshift") && inCard.Contains("Spiral") && !inCard.isMysteryList():
-		if len(b.MatchInSet(inCard.Name, "TSB")) != 0 {
-			edition = b.Sets["TSB"].Name
-		} else if len(b.MatchInSet(inCard.Name, "TSR")) != 0 {
-			edition = b.Sets["TSR"].Name
-		}
-	default:
-		edition = strings.TrimPrefix(edition, "Magic: The Gathering - ")
-		edition = strings.TrimPrefix(edition, "Magic: the Gathering - ")
-		edition = strings.TrimPrefix(edition, "Magic: The Gathering | ")
-		edition = strings.TrimPrefix(edition, "Magic: the Gathering | ")
-
-		// Cut the edition at the first dash, but avoid Prerelease and PromoPack and MB1/List cards
-		// since they are often separated with a dash, but are processed elsewhere
-		// Test for "- " and " -" to avoid catching dashes in the name of the edition
-		if !inCard.isPrerelease() && !inCard.isPromoPack() && !inCard.isMysteryList() &&
-			(strings.Contains(edition, "- ") || strings.Contains(edition, " -")) {
-			edition = strings.Split(edition, "-")[0]
-			edition = strings.TrimSpace(edition)
-
-			// Check if the edition name needs further processing
-			ed, found = EditionTable[edition]
-			if found {
-				edition = ed
-			}
-
-			if variation == "" {
-				inCard.beyondBaseSet = true
-			}
-		}
-		// Loop through known editions tags
-		for _, tag := range []string{
-			"Box Toppers",
-			"(Collector Edition)",
-			"Collectors",
-			"Collector Booster",
-			"Extras",
-			"Variants",
-			"Etched",
-			"Serialized",
-			"Surge Foil",
-			"Holiday Release",
-			"Alternate Foil",
-			"Retro Frame",
-		} {
-			// Strip away any extra tags
-			if strings.HasSuffix(edition, tag) {
-				edition = strings.TrimSuffix(edition, tag)
-				edition = strings.TrimSpace(edition)
-				edition = strings.TrimSuffix(edition, ":")
-				edition = strings.TrimSuffix(edition, "-")
-				edition = strings.TrimSpace(edition)
-
-				// Check if the edition name needs further processing
-				ed, found = EditionTable[edition]
-				if found {
-					edition = ed
-				}
-
-				// If no other variation, set this flag to do a best effort search
-				if variation == "" {
-					inCard.beyondBaseSet = true
-				}
-			}
-		}
-	}
-
-	switch {
-	case strings.HasPrefix(edition, "Universes Beyond"),
-		strings.HasPrefix(edition, "UB:"):
-		edition = strings.TrimPrefix(edition, "Universes Beyond")
-		edition = strings.TrimPrefix(edition, "UB")
-		edition = strings.TrimLeft(edition, ":- ")
-
-		ed, found = EditionTable[edition]
-		if found {
-			edition = ed
-		}
-	case strings.Contains(edition, "Commander") &&
-		(!inCard.Contains("Oversize") || inCard.Contains("Plane") || inCard.Contains("Phenomenon")) &&
-		!inCard.Contains("Party"):
-		ed := b.ParseCommanderEdition(edition, variation)
-		if ed != "" {
-			edition = ed
-		}
-	case inCard.Contains("Ravnica Weekend"):
-		edition, variation = inCard.ravnicaWeekend()
-	case inCard.Contains("Guild Kit"):
-		edition = inCard.ravnicaGuidKit()
-	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
-		num := ExtractNumber(variation)
-		if num != "" {
-			variation = strings.Replace(variation, num+" ", "", 1)
-		}
-	case strings.HasPrefix(variation, "Junior") && strings.Contains(variation, "APAC"),
-		strings.HasPrefix(variation, "Junior APAC Series") && strings.Contains(variation, "U"):
-		edition = "Junior APAC Series"
-	case strings.HasPrefix(variation, "Junior Super Series"),
-		strings.HasPrefix(variation, "MSS Foil"),
-		strings.HasPrefix(variation, "MSS #J"),
-		strings.HasPrefix(variation, "MSS Promo J"),
-		strings.HasPrefix(variation, "JSS #J"),
-		strings.Contains(variation, "JSS Foil") && !Contains(variation, "euro"):
-		edition = "Junior Super Series"
-	case strings.HasPrefix(variation, "Junior Series Europe"),
-		strings.HasPrefix(variation, "Junior Series E"),
-		strings.HasPrefix(variation, "Junior Series #E"),
-		strings.HasPrefix(variation, "Junior Series Promo E"),
-		strings.HasPrefix(variation, "Junior Series Promo Foil E"),
-		strings.HasPrefix(variation, "ESS Foil E"),
-		strings.HasPrefix(variation, "European JrS E"),
-		strings.HasPrefix(variation, "European JSS Foil E"):
-		edition = "Junior Series Europe"
-	case Contains(variation, "Boosterfun"):
-		inCard.beyondBaseSet = true
-	}
-	inCard.Edition = edition
-	inCard.Variation = variation
-
-	// Special handling since so many providers get this wrong
-	switch {
-	// Prevent tags from being mixed up, only take care of edition changes
-	case inCard.isMysteryList():
-		switch inCard.Name {
-		case "Rafiq of the Many":
-			edition = "Shards of Alara"
-			variation = "250"
-		default:
-			// Decouple wrong SLX cards bundled in PLST, as long as they are not reprinted in PLST
-			// In that case we trust the source has been properly tagged and will be decoupled later
-			if !inCard.isReskin() && len(b.MatchInSet(inCard.Name, "SLX")) != 0 && len(b.MatchInSet(inCard.Name, "PLST")) == 0 {
-				edition = b.Sets["SLX"].Name
-			}
-		}
-
-	// XLN Treasure Chest
-	case inCard.isBaB() && len(b.MatchInSet(inCard.Name, "PXTC")) != 0:
-		edition = b.Sets["PXTC"].Name
-
-	// BFZ Standard Series
-	case inCard.isGenericAltArt() && len(b.MatchInSet(inCard.Name, "PSS1")) != 0:
-		edition = b.Sets["PSS1"].Name
-
-	// Champs and States
-	case inCard.isGenericExtendedArt() && len(b.MatchInSet(inCard.Name, "PCMP")) != 0:
-		edition = b.Sets["PCMP"].Name
-
-	// Secret Lair {Ultimate,Drop}
-	case inCard.isSecretLair():
-		// Check if there are also FlavorNames associated to this card
-		// It might happen that a non-FlavorName is requested, so check number too
-		altProps, found := b.AlternateProps[inCard.Name]
-		if found && len(b.MatchInSet(altProps.OriginalName, "SLD")) != 0 {
-			var shouldRename bool
-			cards := b.MatchInSet(altProps.OriginalName, "SLD")
-			num := ExtractNumber(inCard.Variation)
-			for _, card := range cards {
-				if card.Number == num || (card.FaceFlavorName != "" && Contains(inCard.Variation, card.FaceFlavorName)) {
-					shouldRename = true
-					break
-				}
-			}
-
-			if shouldRename {
-				inCard.Name = altProps.OriginalName
-			}
-		}
-
-		// This needs to be repeated because this could be skipped if the
-		// actual name is used instead
-		switch {
-		case inCard.Contains("Plains") || inCard.Contains("Battlefield Forge"):
-			if inCard.Contains("Unpeeled") || inCard.Contains("669") {
-				inCard.Name = "Battlefield Forge"
-				inCard.Variation = "669"
-			} else if inCard.Contains("Peeled") || inCard.Contains("670") {
-				inCard.Name = "Plains"
-				inCard.Variation = "670"
-			}
-		case Contains(inCard.Name, "Blightsteel Colossus"), Contains(inCard.Name, "Megatron"), Contains(inCard.Name, "FAS-BOR7 Horus"),
-			inCard.Contains("Blightsteel Colossus"), inCard.Contains("Megatron"), inCard.Contains("FAS-BOR7 Horus"):
-			if Contains(inCard.Name, "Megatron") || inCard.Contains("Megatron") {
-				variation = "1079"
-			} else if Contains(inCard.Name, "FAS-BOR7 Horus") || inCard.Contains("FAS-BOR7 Horus") {
-				variation = "2223"
-
-			}
-		}
-
-	// Untagged Planeshift Alternate Art - these could be solved with the
-	// Promo handling, but they are not set as such in scryfall
-	case (inCard.isGenericPromo() || inCard.isGenericAltArt()) && len(b.MatchInSet(inCard.Name, "PLS")) == 2:
-		edition = "PLS"
-		variation = "Alternate Art"
-
-	// Rename the official name to the the more commonly used name
-	case inCard.Edition == "Commander Legends" && inCard.isShowcase():
-		variation = "Etched"
-
-	// Planechase deduplication
-	case inCard.Contains("Planechase") && len(b.MatchInSet(inCard.Name, "DCI")) != 0 && (inCard.isRelease() || inCard.isDCIPromo() || inCard.isWPNGateway()):
-		edition = b.Sets["DCI"].Name
-	case inCard.Equals("Planechase") && len(b.MatchInSet(inCard.Name, "OHOP")) != 0:
-		edition = b.Sets["OHOP"].Name
-	case inCard.Equals("Planechase 2012") && len(b.MatchInSet(inCard.Name, "OPC2")) != 0:
-		edition = b.Sets["OPC2"].Name
-	case inCard.Equals("Planechase Anthology") && len(b.MatchInSet(inCard.Name, "OPCA")) != 0:
-		edition = b.Sets["OPCA"].Name
-
-	// The first Gift Pack often get folded in the main Core Set 2019 or in the
-	// related Promos set, so use a lax way to dected the original expansion
-	case ((Contains(inCard.Edition, "Core") && Contains(inCard.Edition, "2019")) || inCard.isGenericPromo()) && len(b.MatchInSet(inCard.Name, "G18")) == 1:
-		edition = b.Sets["G18"].Name
-
-	// Adjust edition for non-English sets
-	case (inCard.Edition == "Legends" || inCard.Edition == "The Dark") && Contains(inCard.Variation, "Italian"):
-		edition += " Italian"
-	case inCard.Edition == "Renaissance" && Contains(inCard.Variation, "Italian"):
-		edition = "Rinascimento"
-		// This set has lots of variants, strip away any excess data
-		variation = strings.ToLower(inCard.Variation)
-		variation = strings.Replace(variation, "italian", "", 1)
-		variation = strings.TrimSpace(variation)
-	case strings.Contains(inCard.Edition, "Chronicles") && (inCard.Contains("Japanese") || inCard.Contains("FBB")):
-		edition = "Chronicles Foreign Black Border"
-		// This set has lots of variants, strip away any excess data
-		variation = strings.ToLower(inCard.Variation)
-		variation = strings.Replace(variation, "japanese", "", 1)
-		variation = strings.TrimSpace(variation)
-	case inCard.Edition == "Fourth Edition" && Contains(inCard.Variation, "Japanese"):
-		edition = "Fourth Edition Foreign Black Border"
-		// Helps with land variants
-		variation = strings.ToLower(inCard.Variation)
-		variation = strings.Replace(variation, "japanese", "", 1)
-		variation = strings.Replace(variation, "bb", "", 1)
-		variation = strings.TrimSpace(variation)
-
-	// Separate timeshifted cards
-	case inCard.Contains("Modern Horizons") &&
-		(inCard.Contains("Retro Frame") || inCard.Contains("Timeshift")) &&
-		(len(b.MatchInSet(inCard.Name, "H1R")) != 0 || len(b.MatchInSet(inCard.Name, "H2R")) != 0):
-		if len(b.MatchInSet(inCard.Name, "H1R")) != 0 {
-			edition = b.Sets["H1R"].Name
-		} else if len(b.MatchInSet(inCard.Name, "H2R")) != 0 {
-			edition = b.Sets["H2R"].Name
-		}
-
-	// Clash pack promos
-	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(b.MatchInSet(inCard.Name, "CP1")) == 1:
-		edition = b.Sets["CP1"].Name
-	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(b.MatchInSet(inCard.Name, "CP2")) == 1:
-		edition = b.Sets["CP2"].Name
-	case (inCard.Contains("Clash") || inCard.isGenericPromo()) && len(b.MatchInSet(inCard.Name, "CP3")) == 1:
-		edition = b.Sets["CP3"].Name
-
-	// Challenger decks promos
-	case (inCard.Contains("Challenger Decks") || inCard.isGenericPromo()) && len(b.MatchInSet(inCard.Name, "Q06")) != 0:
-		edition = b.Sets["Q06"].Name
-
-	// Open the Helvault oversized cards
-	case (inCard.Contains("Oversize") || inCard.Contains("Helvault Promo") || inCard.isPrerelease()) && len(b.MatchInSet(inCard.Name, "PHEL")) == 1:
-		edition = b.Sets["PHEL"].Name
-		variation = ""
-
-	// All the oversized commander cards
-	case inCard.Contains("Oversize") && !inCard.Contains("Plane") && !inCard.Contains("Phenomenon"):
-		for _, tag := range []string{
-			"OCM1", "PCMD", "OCMD", "OC13", "OC14", "OC15", "OC16", "OC17", "OC18", "OC19", "OC20",
-		} {
-			if inCard.Name == "Mayael the Anima" && !inCard.Contains("Arsenal") {
-				edition = b.Sets["OC13"].Name
-				break
-			} else if len(b.MatchInSet(inCard.Name, tag)) == 1 {
-				edition = b.Sets[tag].Name
-				break
-			}
-		}
-
-	// Lunar Year Promos
-	case (inCard.isGenericPromo() || inCard.Contains("Lunar")) && len(b.MatchInSet(inCard.Name, "PL21")) == 1:
-		edition = b.Sets["PL21"].Name
-
-	// Love Your LGS 2021, often confused with WPN
-	case (inCard.isWPNGateway() || inCard.isGenericPromo()) && inCard.Contains("Retro Frame") && len(b.MatchInSet(inCard.Name, "PLG21")) == 1:
-		edition = b.Sets["PLG21"].Name
-
-	// WPN 2021
-	case inCard.Name != "Mind Stone" && inCard.isGenericPromo() && len(b.MatchInSet(inCard.Name, "PW21")) == 1:
-		edition = b.Sets["PW21"].Name
-
-	// Unfinity Sticker Sheets
-	case inCard.Edition == "Unfinity" && len(b.MatchInSet(inCard.Name, "SUNF")) == 1:
-		edition = b.Sets["SUNF"].Name
-
-	// Move Release to Prerelease for Battlebond
-	case inCard.isRelease() && strings.Contains(edition, "Battlebond") && len(b.MatchInSet(inCard.Name, "PBBD")) == 1:
-		edition = b.Sets["PBBD"].Name
-
-	// Remove edition since the cards are either in ONE or in another set, but single printed
-	case inCard.Contains("Phyrexia: All") && inCard.Contains("Concept"):
-		switch inCard.Name {
-		default:
-			edition = "ignored"
-		}
-
-	// Decouple P30A from P30H and P30T
-	case inCard.Contains("30th Anniversary") && !inCard.Contains("Edition") && !inCard.Contains("Tokyo") && !inCard.Contains("Misc") && len(b.MatchInSet(inCard.Name, "P30H")) > 0:
-		maybeEdition := b.Sets["P30H"].Name
-		if inCard.Name == "Serra Angel" && (!inCard.Contains("History") || ExtractYear(inCard.Variation) != "") {
-			maybeEdition = b.Sets["P30A"].Name
-		}
-		edition = maybeEdition
-
-	// Oilslick lands may not have the bundle tag attached to them
-	case inCard.isBasicLand() && inCard.isOilSlick() && !inCard.isBundle():
-		variation += " Bundle"
-
-	// Many providers don't tag these promos correctly
-	case inCard.isRelease() && len(b.MatchInSet(inCard.Name, "PBBD")) == 1:
-		edition = b.Sets["PBBD"].Name
-		variation = "Prerelease"
-
-	// Single card mismatches
-	default:
-		switch inCard.Name {
-		case "Rhox":
-			if inCard.isGenericAltArt() || inCard.isGenericPromo() {
-				edition = "Starter 2000"
-			}
-		case "Balduvian Horde":
-			if inCard.isJudge() || inCard.isGenericPromo() || inCard.isDCIPromo() {
-				edition = "World Championship Promos"
-			}
-		case "Disenchant":
-			if inCard.isArena() && inCard.Foil {
-				edition = "Friday Night Magic 2003"
-			}
-		case "Nalathni Dragon":
-			edition = "Dragon Con"
-			variation = ""
-		case "Ass Whuppin'",
-			"Rukh Egg",
-			"Scholar of the Lost Trove":
-			if inCard.isPrerelease() {
-				variation = "Release"
-				edition = "Release Events"
-			}
-		case "Reya Dawnbringer":
-			if inCard.isRelease() {
-				edition = "Tenth Edition Promos"
-			}
-		case "Ajani Vengeant":
-			if inCard.isRelease() {
-				variation = "Prerelease"
-			}
-		case "Tamiyo's Journal":
-			if (inCard.Variation == "" || ExtractNumber(inCard.Variation) == "265") && inCard.Foil {
-				variation = "Foil"
-			}
-		case "Underworld Dreams":
-			if inCard.isDCIPromo() || inCard.isArena() || inCard.Contains("2HG") || inCard.Contains("Two-Headed Giant") {
-				edition = "Two-Headed Giant Tournament"
-			}
-		case "Jace Beleren":
-			if inCard.isDCIPromo() {
-				edition = "Miscellaneous Book Promos"
-			}
-		case "Serra Angel":
-			if inCard.isDCIPromo() || inCard.isBaB() {
-				edition = "Wizards of the Coast Online Store"
-			}
-		case "Incinerate", "Counterspell":
-			if inCard.isDCIPromo() || (inCard.Contains("Legend") && (inCard.Contains("Promo") || inCard.Contains("Member"))) {
-				edition = "DCI Legend Membership"
-			}
-		case "Faerie Conclave", "Treetop Village":
-			if inCard.isWPNGateway() || inCard.Contains("Summer") {
-				edition = "Tenth Edition Promos"
-			}
-		case "Kamahl, Pit Fighter", "Char":
-			if inCard.isDCIPromo() || inCard.Contains("15th Anniversary") || inCard.isGenericPromo() {
-				edition = "15th Anniversary Cards"
-			}
-		case "Fling":
-			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
-				edition = "DCI Promos"
-				if inCard.isDCIPromo() {
-					variation = "50"
-				} else if inCard.isWPNGateway() {
-					variation = "69"
-				}
-			}
-		case "Sylvan Ranger":
-			if (inCard.isDCIPromo() || inCard.isWPNGateway()) && ExtractNumber(inCard.Variation) == "" {
-				edition = "DCI Promos"
-				if inCard.isDCIPromo() {
-					variation = "51"
-				} else if inCard.isWPNGateway() {
-					variation = "70"
-				}
-			}
-		case "Naya Sojourners":
-			if inCard.isGenericPromo() {
-				edition = "DCI Promos"
-			}
-		case "Hall of Triumph":
-			if inCard.isGenericPromo() {
-				edition = "Journey into Nyx Promos"
-			}
-		case "Reliquary Tower":
-			if inCard.Contains("League") {
-				edition = "Core Set 2019 Promos"
-			} else if inCard.Contains("Bring a Friend") {
-				edition = "Love Your LGS 2020"
-			}
-		case "Bolas's Citadel":
-			if inCard.isGenericPromo() {
-				edition = "War of the Spark Promos"
-			}
-		case "Llanowar Elves":
-			if inCard.isGenericPromo() {
-				edition = "Dominaria Promos"
-			}
-		case "Evolving Wilds":
-			if inCard.isGenericPromo() {
-				edition = "Rivals of Ixalan Promos"
-			}
-		case "Teferi, Master of Time":
-			num := ExtractNumber(variation)
-			_, err := strconv.Atoi(num)
-			if err == nil {
-				if inCard.isPrerelease() {
-					variation = num + "s"
-				} else if inCard.isPromoPack() {
-					variation = num + "p"
-				}
-			}
-			if num == "" {
-				if inCard.isPrerelease() {
-					variation = "75s"
-				} else if inCard.isPromoPack() {
-					variation = "75p"
-				} else if inCard.isBorderless() {
-					variation = "281"
-				} else if inCard.isShowcase() {
-					variation = "290"
-				} else {
-					variation = "75"
-				}
-			}
-			if strings.HasSuffix(variation, "s") || strings.HasSuffix(variation, "p") {
-				edition = "Core Set 2021 Promos"
-			}
-		case "Mind Stone":
-			switch edition {
-			// Skip the check if this card already has the right edition
-			case "DCI Promos",
-				"Wizards Play Network 2021":
-			default:
-				if inCard.isWPNGateway() || inCard.Contains("Bring a Friend") {
-					edition = "Wizards Play Network 2021"
-					if inCard.Contains("Gateway") {
-						edition = "DCI Promos"
-					}
-				}
-			}
-		case "Runo Stromkirk", "Runo Stromkirk // Krothuss, Lord of the Deep":
-			if inCard.isShowcase() || Contains(inCard.Variation, "Eternal") {
-				num := ExtractNumber(inCard.Variation)
-				if num == "" {
-					if Contains(inCard.Variation, "Eternal") {
-						variation = "327"
-					} else if inCard.isShowcase() {
-						variation = "316"
-					}
-				}
-			}
-		case "Diabolic Tutor":
-			if inCard.isIDWMagazineBook() {
-				edition = "Secret Lair Drop"
-			}
-		case "Magister of Worth":
-			if inCard.isBaB() {
-				variation = "Launch"
-			}
-		case "Hangarback Walker":
-			if inCard.isReskin() || inCard.isGenericPromo() || strings.Contains(inCard.Edition, "LGS") {
-				edition = "Love Your LGS 2020"
-			}
-		// Sometimes these cards are not marked as prerelease because they are showcase
-		case "Goro-Goro and Satoru", "Katilda and Lier", "Slimefoot and Squee":
-			if inCard.isShowcase() && !inCard.isPrerelease() {
-				variation += " Prerelease"
-			}
-		// There are three Prerelease editions across two editions
-		case "Delighted Halfling",
-			"Lobelia Sackville-Baggins",
-			"Frodo Baggins",
-			"Bilbo, Retired Burglar",
-			"Gandalf, Friend of the Shire",
-			"Wizard's Rockets":
-			if inCard.isBorderless() && !inCard.isPrerelease() {
-				variation += " Prerelease"
-			}
-		case "Diabolic Edict":
-			if inCard.isIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "31") || inCard.isJPN() || inCard.Language == "Japanese" {
-					variation = "2019-2"
-				} else {
-					variation = "2024-5"
-				}
-			}
-		case "Shock":
-			if inCard.isIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "32") || inCard.isJPN() || inCard.Language == "Japanese" {
-					variation = "2019-3"
-				} else {
-					variation = "2025-1"
-				}
-			}
-		case "Duress":
-			if inCard.isIDWMagazineBook() {
-				if inCard.Contains("IDW") {
-					edition = "IDW Comics Inserts"
-					variation = "17"
-				} else {
-					edition = "Media and Collaboration Promos"
-
-					if strings.Contains(variation, "34") || inCard.isJPN() || inCard.Language == "Japanese" {
-						variation = "2019-6"
-					} else {
-						variation = "2025-7"
-					}
-				}
-			}
-		case "Voltaic Key":
-			if inCard.isIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "35") || inCard.isJPN() || inCard.Language == "Japanese" {
-					variation = "2020-1"
-				} else {
-					variation = "2025-4"
-				}
-			}
-		case "Dark Ritual":
-			if inCard.isIDWMagazineBook() {
-				edition = "Media and Collaboration Promos"
-
-				if strings.Contains(variation, "38") || inCard.isJPN() || inCard.Language == "Japanese" {
-					variation = "2020-4"
-				} else {
-					variation = "2025-8"
-				}
-			}
-		case "Arcbound Ravager":
-			if inCard.Contains("Qualifiers") || inCard.Contains("WMCQ") {
-				edition = "Pro Tour Promos"
-			}
-		case "Hornet Queen":
-			if inCard.Contains("Specimen") {
-				variation = strings.Replace(variation, "73", "", -1)
-			}
-		default:
-			// Attempt a best effor match for known promotional tags if card or edition
-			// wasn't found in previous steps
-			if inCard.isGenericPromo() {
-				logger.Printf("Precise matching for promo failed, attempting best effort")
-				inCard.PromoWildcard = true
-			}
-		}
-	}
-	inCard.Edition = edition
-	inCard.Variation = variation
-
-	// Adjust incorrect numbers sometimes used for Etched
-	num := ExtractNumber(inCard.Variation)
-	if num != "" && strings.HasSuffix(num, "e") && HasEtchedPrinting(inCard.Name, inCard.Edition) {
-		fixedNum := strings.TrimSuffix(num, "e")
-		variation = strings.Replace(variation, num, fixedNum, -1)
-		if !Contains(variation, "Etched") {
-			variation += " Etched"
-		}
-	}
-	inCard.Variation = variation
 }

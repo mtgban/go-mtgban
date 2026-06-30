@@ -1072,7 +1072,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.CommanderKeywordMap = commanderKeywordMap
 	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])
 
-	b.SetRules(mtgmatcher.MagicRules)
+	b.SetRules(Rules{})
 
 	return &b
 }

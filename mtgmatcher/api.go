@@ -109,7 +109,7 @@ func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 	if len(flags) > 0 {
 		card.Foil = flags[0]
 	}
-	adjustEdition(card)
+	b.rules.AdjustEdition(b, card)
 
 	for _, set := range b.Sets {
 		if Equals(set.Name, card.Edition) {
@@ -405,7 +405,7 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 		cc := &InputCard{
 			Name: name,
 		}
-		adjustName(cc)
+		b.rules.AdjustName(b, cc)
 		name = cc.Name
 		printings, err = b.Printings4Card(name)
 		if err != nil {
@@ -436,7 +436,7 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 	return false
 }
 
-func hasPrinting(name, field, value string, editions ...string) bool {
+func HasPrinting(name, field, value string, editions ...string) bool {
 	return defaultBackend.hasPrinting(name, field, value, editions...)
 }
 
@@ -1022,11 +1022,11 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 		return nil, fmt.Errorf("sheet '%s' not found", sheetName)
 	}
 
-	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
+	IsEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 	var probs []ProductProbabilities
 
 	for cardId, count := range sheet.Cards {
-		uuid, err := MatchId(cardId, sheet.Foil, isEtched)
+		uuid, err := MatchId(cardId, sheet.Foil, IsEtched)
 		if err != nil {
 			return nil, err
 		}
