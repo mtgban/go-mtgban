@@ -337,6 +337,10 @@ type Backend struct {
 
 	// A list of deck names of Secret Lair Commander cards
 	SLDDeckNames []string
+
+	// Game-specific identification hooks used by Match, attached by the
+	// game's datastore loader via SetRules.
+	rules GameRules
 }
 
 var logger = log.New(io.Discard, "", log.LstdFlags)

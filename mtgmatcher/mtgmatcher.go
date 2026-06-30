@@ -249,34 +249,17 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		return "", ErrUnsupported
 	}
 
+	rules := b.rules
+
 	// Prefilter
-	switch inCard.Name {
-	case "Red Herring",
-		"Bind // Liberate",
-		"Pick Your Poison":
-		if inCard.isMysteryList() || inCard.Contains("Playtest") {
-			inCard.Name += " Playtest"
-		}
-	case "Unquenchable Fury":
-		if inCard.Contains("Battle the Horde") || inCard.Contains("Hero's Path") {
-			inCard.Name += " Token"
-		}
-	case "Shapeshifter":
-		if !(inCard.Contains("Edition") ||
-			inCard.Contains("Foreign") ||
-			inCard.Contains("Antiquities") ||
-			inCard.Contains("Reinassance") ||
-			inCard.Contains("Rinascimento")) {
-			inCard.Name += " Token"
-		}
-	}
+	rules.Prefilter(b, inCard)
 
 	// Get the card basic info to retrieve the Printings array
 	canonicalName, found := b.CanonicalNames[Normalize(inCard.Name)]
 	if !found {
 		ogName := inCard.Name
 		// Fixup up the name and try again
-		b.adjustName(inCard)
+		rules.AdjustName(b, inCard)
 		if ogName != inCard.Name {
 			inCard.originalName = ogName
 			logger.Printf("Adjusted name from '%s' to '%s'", ogName, inCard.Name)
@@ -298,7 +281,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 
 	// Fix up edition
 	ogEdition := inCard.Edition
-	b.adjustEdition(inCard)
+	rules.AdjustEdition(b, inCard)
 	if ogName != inCard.Name {
 		logger.Printf("Re-adjusted name from '%s' to '%s'", ogName, inCard.Name)
 	}
@@ -337,7 +320,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	// out unrelated editions.
 	logger.Println("Processing", inCard, printings)
 	if len(printings) > 1 || strings.HasSuffix(ogName, "Token") {
-		printings = b.filterPrintings(inCard, printings)
+		printings = rules.FilterPrintings(b, inCard, printings)
 		logger.Println("Filtered printings:", printings)
 
 		// Filtering was too aggressive or wrong data fed,
@@ -454,7 +437,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	} else {
 		// Otherwise do a second pass filter, using all inCard details
 		logger.Println("Now filtering...")
-		outCards = b.filterCards(inCard, cardSet)
+		outCards = rules.FilterCards(b, inCard, cardSet)
 
 		logger.Println("Post filtering status...")
 		for _, card := range outCards {
@@ -566,6 +549,29 @@ func (b *Backend) MatchWithNumber(cardName, setCode, number string) (outCards []
 		}
 	}
 	return
+}
+
+func (b *Backend) prefilter(inCard *InputCard) {
+	switch inCard.Name {
+	case "Red Herring",
+		"Bind // Liberate",
+		"Pick Your Poison":
+		if inCard.isMysteryList() || inCard.Contains("Playtest") {
+			inCard.Name += " Playtest"
+		}
+	case "Unquenchable Fury":
+		if inCard.Contains("Battle the Horde") || inCard.Contains("Hero's Path") {
+			inCard.Name += " Token"
+		}
+	case "Shapeshifter":
+		if !(inCard.Contains("Edition") ||
+			inCard.Contains("Foreign") ||
+			inCard.Contains("Antiquities") ||
+			inCard.Contains("Reinassance") ||
+			inCard.Contains("Rinascimento")) {
+			inCard.Name += " Token"
+		}
+	}
 }
 
 func (b *Backend) adjustName(inCard *InputCard) {
