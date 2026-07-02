@@ -233,6 +233,13 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"hareruya_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := hareruya.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
 	"magiccorner": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper, err := magiccorner.NewScraper()

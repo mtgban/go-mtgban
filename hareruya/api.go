@@ -9,6 +9,11 @@ import (
 
 const (
 	unisearchURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.cardset=%s&fq.price=1~*&fq.language=2&fq.stock=1~*&rows=60&page=%d"
+
+	// Sealed products are grouped under the "Product Category > Sealed Product"
+	// node, which the site addresses with the category_id 177:505 (parent:child).
+	// The stock filter keeps only the items currently in stock.
+	sealedURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.category_id=177:505&fq.price=1~*&fq.stock=1~*&rows=60&page=%d"
 )
 
 type Response struct {
@@ -41,8 +46,7 @@ type Product struct {
 	HighPriceCode string `json:"high_price_code"`
 }
 
-func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
-	link := fmt.Sprintf(unisearchURL, cardSet, page)
+func search(ctx context.Context, client *http.Client, link string) ([]Product, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -60,4 +64,12 @@ func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, pag
 	}
 
 	return response.Response.Docs, nil
+}
+
+func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
+	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, page))
+}
+
+func SearchSealed(ctx context.Context, client *http.Client, page int) ([]Product, error) {
+	return search(ctx, client, fmt.Sprintf(sealedURL, page))
 }
