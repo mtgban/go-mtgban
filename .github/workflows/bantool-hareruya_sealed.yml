@@ -1,11 +1,11 @@
-name: hareruya
+name: hareruya_sealed
 
 on:
   workflow_dispatch: {}
   repository_dispatch:
-    types: [hareruya]
+    types: [hareruya_sealed]
   schedule:
-    - cron: "12 */12 * * *"
+    - cron: "42 9 * * *"
 
 permissions:
   contents: read
