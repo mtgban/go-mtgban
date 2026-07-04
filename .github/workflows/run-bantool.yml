@@ -85,8 +85,8 @@ jobs:
           SCG_BEARER: "${{ secrets.SCG_BEARER }}"
           SCG_GUID: "${{ secrets.SCG_GUID }}"
           TCGPLAYER_AUTH: "${{ secrets.TCGPLAYER_AUTH }}"
-          TCGPLAYER_PRIVATE_ID: "${{ secrets.TCGPLAYER_PRIVATE_ID }}"
-          TCGPLAYER_PUBLIC_ID: "${{ secrets.TCGPLAYER_PUBLIC_ID }}"
+          TCGPLAYER_PRIVATE_KEY: "${{ secrets.TCGPLAYER_PRIVATE_KEY }}"
+          TCGPLAYER_PUBLIC_KEY: "${{ secrets.TCGPLAYER_PUBLIC_KEY }}"
         run: |
           set +e
           bantool -datastore ${{ inputs.datastore-filepath }} \

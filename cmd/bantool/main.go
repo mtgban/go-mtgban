@@ -383,10 +383,10 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_index": {
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 			if tcgPublicId == "" || tcgPrivateId == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
 
 			scraper, err := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
@@ -404,11 +404,11 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_market": {
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
 			if tcgPublicId == "" || tcgPrivateId == "" || tcgSKUPath == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_PATH env vars")
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
 			}
 
 			scraper, err := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
@@ -444,11 +444,11 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
 			if tcgPublicId == "" || tcgPrivateId == "" || tcgSKUPath == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID or MTGJSON_TCGSKU_PATH env vars")
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
 			}
 
 			scraper, err := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
@@ -613,10 +613,10 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_index_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 			if tcgPublicId == "" || tcgPrivateId == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
 			scraper, err := tcgplayer.NewLorcanaIndex(tcgPublicId, tcgPrivateId)
 			if err != nil {
@@ -632,10 +632,10 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_market_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_ID")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_ID")
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 			if tcgPublicId == "" || tcgPrivateId == "" {
-				return nil, errors.New("missing TCGPLAYER_PUBLIC_ID or TCGPLAYER_PRIVATE_ID env vars")
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
 			scraper, err := tcgplayer.NewLorcanaScraper(tcgPublicId, tcgPrivateId)
 			if err != nil {
