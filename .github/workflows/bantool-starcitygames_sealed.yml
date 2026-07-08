@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [starcitygames_sealed]
   schedule:
-    - cron: "15 */4 * * *"
+    - cron: "45 1-23/4 * * *"
 
 permissions:
   contents: read
