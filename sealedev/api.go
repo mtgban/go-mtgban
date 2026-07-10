@@ -26,8 +26,9 @@ type BANPriceResponse struct {
 	} `json:"meta"`
 
 	// uuid > store > price {regular/foil/etched}
-	Retail  map[string]map[string]*BanPrice `json:"retail,omitempty"`
-	Buylist map[string]map[string]*BanPrice `json:"buylist,omitempty"`
+	// No omitempty: always emit the keys so decoders never see a nil map.
+	Retail  map[string]map[string]*BanPrice `json:"retail"`
+	Buylist map[string]map[string]*BanPrice `json:"buylist"`
 }
 
 const (
