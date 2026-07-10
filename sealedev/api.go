@@ -195,11 +195,10 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 			directNet = tcgplayer.DirectPriceAfterFees(directNet)
 
 			// Set the price
-			response.setBuylist("TCGDirectNet", uuid, directNet)
-		}
-
-		// If Direct looks unreliable, cap maximum price (estimate) or delete it
-		if directNet/2 > tcgMarket {
+			response.setBuylist(uuid, "TCGDirectNet", directNet)
+		} else if directNet/2 > tcgMarket {
+			// Direct exists but looks unreliable: cap it, or delete it.
+			// (else-if: an estimate from the branch above must not be re-judged here)
 			// If no low or twice as tcglow is within 10% of net, then delete this entry
 			if tcgLow == 0 || tcgLow*2 > directNet*0.9 {
 				delete(response.Buylist[uuid], "TCGDirectNet")
@@ -207,7 +206,7 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 				directNet = tcgLow * 2
 				directNet = tcgplayer.DirectPriceAfterFees(directNet)
 
-				response.setBuylist("TCGDirectNet", uuid, directNet)
+				response.setBuylist(uuid, "TCGDirectNet", directNet)
 			}
 		}
 
