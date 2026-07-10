@@ -141,12 +141,6 @@ func (ss *SealedEVScraper) printf(format string, a ...interface{}) {
 	}
 }
 
-type resultChan struct {
-	i   int
-	ev  float64
-	err error
-}
-
 type result struct {
 	productId string
 	invEntry  *mtgban.InventoryEntry
@@ -154,7 +148,22 @@ type result struct {
 	err       error
 }
 
-func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
+// valueFromCache sums the pre-resolved unit prices for a list of picks. When
+// probabilities is nil every pick is counted once (used for a single simulated
+// draw); otherwise each pick is weighted by its probability.
+func valueFromCache(picks []string, unit map[string]float64, probabilities []float64) float64 {
+	var total float64
+	for i, pick := range picks {
+		probability := 1.0
+		if probabilities != nil {
+			probability = probabilities[i]
+		}
+		total += unit[pick] * probability
+	}
+	return total
+}
+
+func (ss *SealedEVScraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
 		return nil, []string{err.Error()}
@@ -163,138 +172,128 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 	productUUID := co.UUID
 	setCode := co.SetCode
 
-	repeats := EVAverageRepetition
-	if ss.FastMode {
-		repeats = EVFastRepetition
-	}
-	if !mtgmatcher.SealedIsRandom(setCode, productUUID) {
-		repeats = 1
+	var allTheErrors []string
+
+	// Enumerate the full universe of possible cards and their probabilities.
+	probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
+	if len(probs) == 0 {
+		if err == nil {
+			err = errors.New("no probabilities found")
+		}
+		return nil, []string{err.Error()}
 	}
 
-	var wg sync.WaitGroup
+	picks := make([]string, len(probs))
+	probabilities := make([]float64, len(probs))
+	skipped := make(map[string]bool)
+	for i := range probs {
+		picks[i] = probs[i].UUID
+		probabilities[i] = probs[i].Probability
+
+		// Serialized (and unresolvable) cards never count towards the EV.
+		co, err := mtgmatcher.GetUUID(probs[i].UUID)
+		if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
+			skipped[probs[i].UUID] = true
+		}
+	}
+
+	// Resolve each card's price a single time per parameter (skipped cards
+	// resolve to 0). This keeps the price lookups out of the simulation loop,
+	// which can run up to EVAverageRepetition times.
+	unitPrices := make([]map[string]float64, len(evParameters))
+	for i := range evParameters {
+		priceSource := ss.prices.Retail
+		if evParameters[i].FoundInBuylist {
+			priceSource = ss.prices.Buylist
+		}
+
+		cache := make(map[string]float64, len(picks))
+		for _, pick := range picks {
+			if skipped[pick] {
+				continue
+			}
+			cache[pick] = maxStorePrice(pick, priceSource, evParameters[i].SourceStores)
+		}
+		unitPrices[i] = cache
+	}
 
 	datasets := make([][]float64, len(evParameters))
-	channel := make(chan resultChan)
-	repeatsChannel := make(chan int)
 
-	for j := 0; j < ss.MaxConcurrency; j++ {
-		wg.Add(1)
-
-		// Simulations
-		go func() {
-			for _ = range repeatsChannel {
-				picks, err := mtgmatcher.GetPicksForSealed(setCode, productUUID)
-				if err != nil {
-					channel <- resultChan{
-						err: err,
-					}
-					continue
-				}
-
-				// Delete any serialized card
-				probabilities := make([]float64, len(picks))
-				for i := range picks {
-					co, err := mtgmatcher.GetUUID(picks[i])
-					if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
-						continue
-					}
-					probabilities[i] = 1
-				}
-
-				for i := range evParameters {
-					if !evParameters[i].Simulation {
-						continue
-					}
-
-					priceSource := ss.prices.Retail
-					if evParameters[i].FoundInBuylist {
-						priceSource = ss.prices.Buylist
-					}
-
-					ev := valueInBooster(picks, priceSource, evParameters[i].SourceStores, probabilities)
-
-					channel <- resultChan{
-						i:  i,
-						ev: ev,
-					}
-				}
-			}
-			wg.Done()
-		}()
-	}
-
-	// Probability EV
-	wg.Add(1)
-	go func() {
-		probs, err := mtgmatcher.GetProbabilitiesForSealed(setCode, productUUID)
-		if len(probs) == 0 {
-			if err == nil {
-				err = errors.New("no probabilities found")
-			}
-			channel <- resultChan{
-				err: err,
-			}
-			wg.Done()
-			return
-		}
-
-		// Split probabilities in two simpler arrays for later reuse
-		picks := make([]string, len(probs))
-		probabilities := make([]float64, len(probs))
-		for i := range probs {
-			picks[i] = probs[i].UUID
-
-			// Delete any serialized card
-			co, err := mtgmatcher.GetUUID(probs[i].UUID)
-			if err != nil || co.HasPromoType(mtgmatcher.PromoTypeSerialized) {
-				continue
-			}
-			probabilities[i] = probs[i].Probability
-		}
-
-		for i := range evParameters {
-			if evParameters[i].Simulation {
-				continue
-			}
-
-			priceSource := ss.prices.Retail
-			if evParameters[i].FoundInBuylist {
-				priceSource = ss.prices.Buylist
-			}
-
-			ev := valueInBooster(picks, priceSource, evParameters[i].SourceStores, probabilities)
-
-			channel <- resultChan{
-				i:  i,
-				ev: ev,
-			}
-		}
-		wg.Done()
-	}()
-
-	go func(repeatsChannel chan int, channel chan resultChan) {
-		for j := 0; j < repeats; j++ {
-			repeatsChannel <- j
-		}
-		close(repeatsChannel)
-
-		wg.Wait()
-		close(channel)
-	}(repeatsChannel, channel)
-
-	var allTheErrors []string
-	for resp := range channel {
-		// Collect all the errors from this product. Every error result must be
-		// skipped: falling through on a *duplicate* error would append a spurious
-		// zero to datasets[0] (resp.i/ev default to 0), polluting the buylist EV.
-		if resp.err != nil {
-			if !slices.Contains(allTheErrors, resp.err.Error()) {
-				allTheErrors = append(allTheErrors, resp.err.Error())
-			}
+	// Deterministic probability-based EV for the non-simulation parameters.
+	for i := range evParameters {
+		if evParameters[i].Simulation {
 			continue
 		}
+		datasets[i] = append(datasets[i], valueFromCache(picks, unitPrices[i], probabilities))
+	}
 
-		datasets[resp.i] = append(datasets[resp.i], resp.ev)
+	if !mtgmatcher.SealedIsRandom(setCode, productUUID) {
+		// Fixed contents: a simulation would always draw the same cards, so its
+		// value equals the deterministic probability EV. Copy it instead of
+		// running a pointless Monte Carlo.
+		for i := range evParameters {
+			if !evParameters[i].Simulation {
+				continue
+			}
+			datasets[i] = append(datasets[i], valueFromCache(picks, unitPrices[i], probabilities))
+		}
+	} else {
+		// Random contents: Monte Carlo the simulation parameters.
+		repeats := EVAverageRepetition
+		if ss.FastMode {
+			repeats = EVFastRepetition
+		}
+
+		var mu sync.Mutex
+		var wg sync.WaitGroup
+		repeatsChannel := make(chan int)
+		locals := make([][][]float64, ss.MaxConcurrency)
+
+		for w := 0; w < ss.MaxConcurrency; w++ {
+			wg.Add(1)
+			go func(w int) {
+				defer wg.Done()
+
+				local := make([][]float64, len(evParameters))
+				for range repeatsChannel {
+					simPicks, err := mtgmatcher.GetPicksForSealed(setCode, productUUID)
+					if err != nil {
+						mu.Lock()
+						if !slices.Contains(allTheErrors, err.Error()) {
+							allTheErrors = append(allTheErrors, err.Error())
+						}
+						mu.Unlock()
+						continue
+					}
+
+					for i := range evParameters {
+						if !evParameters[i].Simulation {
+							continue
+						}
+						local[i] = append(local[i], valueFromCache(simPicks, unitPrices[i], nil))
+					}
+				}
+				locals[w] = local
+			}(w)
+		}
+
+	feed:
+		for j := 0; j < repeats; j++ {
+			select {
+			case <-ctx.Done():
+				break feed
+			case repeatsChannel <- j:
+			}
+		}
+		close(repeatsChannel)
+		wg.Wait()
+
+		// Merge the per-worker datasets.
+		for _, local := range locals {
+			for i := range local {
+				datasets[i] = append(datasets[i], local[i]...)
+			}
+		}
 	}
 
 	var out []result
@@ -426,6 +425,10 @@ func (ss *SealedEVScraper) Load(ctx context.Context) error {
 	start := time.Now()
 
 	for i, uuid := range uuids {
+		if ctx.Err() != nil {
+			break
+		}
+
 		co, err := mtgmatcher.GetUUID(uuid)
 		if err != nil {
 			continue
@@ -435,7 +438,7 @@ func (ss *SealedEVScraper) Load(ctx context.Context) error {
 			ss.printf("Running EV on [%s] %s (%d/%d)", co.SetCode, co.Name, i+1, len(uuids))
 		}
 
-		results, messages := ss.runEV(uuid)
+		results, messages := ss.runEV(ctx, uuid)
 
 		// Print errors if necessary
 		if len(messages) > 0 {
