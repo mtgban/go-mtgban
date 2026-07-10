@@ -167,59 +167,52 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 		return nil, errors.New(response.Error)
 	}
 
-	// Remove outliers from Direct
+	// Adjust Direct/CT0 estimates and prune bulk in a single pass over the catalog.
 	uuids := mtgmatcher.GetUUIDs()
 	for _, uuid := range uuids {
 		tcgLow := response.getRetail(uuid, "TCGLow")
 		tcgMarket := response.getRetail(uuid, "TCGMarket")
 		directNet := response.getBuylist(uuid, "TCGDirectNet")
 
-		// If TCG Direct (net) is fully missing, try assigning Market and fallback to Low
 		if directNet == 0 {
-			// If both fallbacks are missing, then just skip the entry entirely
-			if tcgMarket == 0 && tcgLow == 0 {
-				continue
-			}
+			// TCG Direct (net) is missing: estimate it from Market, falling back
+			// to Low. Skip entirely if neither is available.
+			if tcgMarket != 0 || tcgLow != 0 {
+				// Allocate memory
+				if response.Buylist[uuid] == nil {
+					response.Buylist[uuid] = map[string]*BanPrice{}
+				}
 
-			// Allocate memory
-			if response.Buylist[uuid] == nil {
-				response.Buylist[uuid] = map[string]*BanPrice{}
-			}
+				// Use Market as base estimate, or Low as fallback
+				directNet = tcgMarket
+				if directNet == 0 {
+					directNet = tcgLow
+				}
 
-			// Use Market as base estimate, or Low as fallback
-			directNet = tcgMarket
-			if directNet == 0 {
-				directNet = tcgLow
-			}
-
-			// Adjust estimate for fees
-			directNet = tcgplayer.DirectPriceAfterFees(directNet)
-
-			// Set the price
-			response.setBuylist(uuid, "TCGDirectNet", directNet)
-		} else if directNet/2 > tcgMarket {
-			// Direct exists but looks unreliable: cap it, or delete it.
-			// (else-if: an estimate from the branch above must not be re-judged here)
-			// If no low or twice as tcglow is within 10% of net, then delete this entry
-			if tcgLow == 0 || tcgLow*2 > directNet*0.9 {
-				delete(response.Buylist[uuid], "TCGDirectNet")
-			} else {
-				directNet = tcgLow * 2
+				// Adjust estimate for fees
 				directNet = tcgplayer.DirectPriceAfterFees(directNet)
 
 				response.setBuylist(uuid, "TCGDirectNet", directNet)
 			}
+		} else if directNet/2 > tcgMarket {
+			// Direct exists but looks unreliable: cap it at twice Low, or drop it.
+			// (else-if: an estimate from the branch above must not be re-judged here)
+			if tcgLow == 0 || tcgLow*2 > directNet*0.9 {
+				delete(response.Buylist[uuid], "TCGDirectNet")
+			} else {
+				directNet = tcgplayer.DirectPriceAfterFees(tcgLow * 2)
+				response.setBuylist(uuid, "TCGDirectNet", directNet)
+			}
 		}
 
+		// CardTrader Zero: subtract its flat fee.
 		ct0 := response.getRetail(uuid, "CT0")
 		ct0 -= getCT0fees(ct0)
 		if ct0 > 0 {
 			response.setRetail(uuid, "CT0", ct0)
 		}
-	}
 
-	// Remove prices that are too low
-	for _, uuid := range uuids {
+		// Prune prices too low to matter, after the adjustments above.
 		for _, category := range []map[string]map[string]*BanPrice{response.Retail, response.Buylist} {
 			for store := range category[uuid] {
 				if getPrice(uuid, category[uuid][store]) < BulkThreshold {
