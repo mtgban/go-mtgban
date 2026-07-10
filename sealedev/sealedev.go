@@ -284,9 +284,13 @@ func (ss *SealedEVScraper) runEV(uuid string) ([]result, []string) {
 
 	var allTheErrors []string
 	for resp := range channel {
-		// Collect all the errors from this product
-		if resp.err != nil && !slices.Contains(allTheErrors, resp.err.Error()) {
-			allTheErrors = append(allTheErrors, resp.err.Error())
+		// Collect all the errors from this product. Every error result must be
+		// skipped: falling through on a *duplicate* error would append a spurious
+		// zero to datasets[0] (resp.i/ev default to 0), polluting the buylist EV.
+		if resp.err != nil {
+			if !slices.Contains(allTheErrors, resp.err.Error()) {
+				allTheErrors = append(allTheErrors, resp.err.Error())
+			}
 			continue
 		}
 
