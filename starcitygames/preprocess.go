@@ -386,17 +386,18 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 			return out, nil
 		}
 
-		// In case SKU processing failed, gather valid info as much as possible
-		_, err = mtgmatcher.GetSet(out.Edition)
-		if err == nil {
-			edition = out.Edition
+		// In case SKU processing failed, gather valid info as much as possible.
+		// A malformed SKU yields a nil card, so guard before touching it.
+		if out != nil {
+			if _, err := mtgmatcher.GetSet(out.Edition); err == nil {
+				edition = out.Edition
+			}
+			if _, err := strconv.Atoi(out.Variation); err == nil {
+				variant = out.Variation
+			}
+			foil = out.Foil
+			language = out.Language
 		}
-		_, err = strconv.Atoi(out.Variation)
-		if err == nil {
-			variant = out.Variation
-		}
-		foil = out.Foil
-		language = out.Language
 	}
 
 	switch edition {
