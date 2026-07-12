@@ -340,29 +340,26 @@ var options = map[string]*scraperOption{
 	"starcitygames": {
 		Init: func() (mtgban.Scraper, error) {
 			scgGUID := os.Getenv("SCG_GUID")
-			scgBearer := os.Getenv("SCG_BEARER")
-			if scgGUID == "" || scgBearer == "" {
-				return nil, errors.New("missing SCG_GUID or SCG_BEARER env var")
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgGUID == "" || scgAPIKey == "" {
+				return nil, errors.New("missing SCG_GUID or SCG_API_KEY env var")
 			}
 
-			scraper := starcitygames.NewScraper(starcitygames.GameMagic, scgGUID, scgBearer)
+			scraper := starcitygames.NewScraper(starcitygames.GameMagic, scgGUID, scgAPIKey)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_PARTNER")
-			if MaxConcurrency != 0 {
-				scraper.MaxConcurrency = MaxConcurrency
-			}
 			return scraper, nil
 		},
 	},
 	"starcitygames_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			scgGUID := os.Getenv("SCG_GUID")
-			scgBearer := os.Getenv("SCG_BEARER")
-			if scgGUID == "" || scgBearer == "" {
-				return nil, errors.New("missing SCG_GUID or SCG_BEARER env var")
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgGUID == "" || scgAPIKey == "" {
+				return nil, errors.New("missing SCG_GUID or SCG_API_KEY env var")
 			}
 
-			scraper := starcitygames.NewScraperSealed(scgGUID, scgBearer)
+			scraper := starcitygames.NewScraperSealed(scgGUID, scgAPIKey)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			if MaxConcurrency != 0 {
@@ -587,17 +584,14 @@ var options = map[string]*scraperOption{
 	"starcitygames_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			scgGUID := os.Getenv("SCG_GUID")
-			scgBearer := os.Getenv("SCG_BEARER")
-			if scgGUID == "" || scgBearer == "" {
-				return nil, errors.New("missing SCG_GUID or SCG_BEARER env var")
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgGUID == "" || scgAPIKey == "" {
+				return nil, errors.New("missing SCG_GUID or SCG_API_KEY env var")
 			}
 
-			scraper := starcitygames.NewScraper(starcitygames.GameLorcana, scgGUID, scgBearer)
+			scraper := starcitygames.NewScraper(starcitygames.GameLorcana, scgGUID, scgAPIKey)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_PARTNER")
-			if MaxConcurrency != 0 {
-				scraper.MaxConcurrency = MaxConcurrency
-			}
 			return scraper, nil
 		},
 	},

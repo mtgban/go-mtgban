@@ -32,12 +32,12 @@ const (
 type SCGClient struct {
 	client *http.Client
 	guid   string
-	bearer string
+	apiKey string
 
 	SealedMode bool
 }
 
-func NewSCGClient(guid, bearer string) *SCGClient {
+func NewSCGClient(guid, apiKey string) *SCGClient {
 	scg := SCGClient{}
 	cli := retryablehttp.NewClient()
 	cli.Logger = nil
@@ -45,7 +45,7 @@ func NewSCGClient(guid, bearer string) *SCGClient {
 	cli.RetryWaitMin = 2 * time.Second
 	scg.client = cli.StandardClient()
 	scg.guid = guid
-	scg.bearer = bearer
+	scg.apiKey = apiKey
 	return &scg
 }
 
@@ -315,7 +315,7 @@ func (scg *SCGClient) SearchBuylistEditions(ctx context.Context) (*BuylistRespon
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+scg.bearer)
+	req.Header.Set("Authorization", "Bearer "+scg.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := scg.client.Do(req)
@@ -365,7 +365,7 @@ func (scg *SCGClient) SearchAll(ctx context.Context, game, page, limit, setID in
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+scg.bearer)
+	req.Header.Set("Authorization", "Bearer "+scg.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := scg.client.Do(req)
