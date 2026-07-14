@@ -254,10 +254,11 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		} else {
 			// Check if variation contains a number as it's usually more
 			// accurate. If not, check the card.Number property (yolo).
-			// ExtractNumericalValue (not the year-capped ExtractNumber) so a
-			// Secret Lair collector number >= 1993 (e.g. 7010) is recognized
-			// and not clobbered by a stale card.Number.
-			num := mtgmatcher.ExtractNumericalValue(variation)
+			// ExtractNumberAny (not the year-capped ExtractNumber) so a Secret
+			// Lair collector number >= 1993 (e.g. 7010) is recognized and not
+			// clobbered by a stale card.Number, while still ignoring dates and
+			// ordinals.
+			num := mtgmatcher.ExtractNumberAny(variation)
 			if num == "" && card.Number != "" {
 				variation += " " + card.Number
 			}
@@ -336,7 +337,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	}
 
 	// Use collector number data when the variation carries has none, unless for a couple of editions
-	if card.Number != "" && mtgmatcher.ExtractNumericalValue(variation) == "" {
+	if card.Number != "" && mtgmatcher.ExtractNumberAny(variation) == "" {
 		switch edition {
 		case "Unfinity", "Promo":
 		default:
