@@ -211,6 +211,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					URL:        u.String(),
 					OriginalId: strconv.Itoa(card.ID),
 					InstanceId: card.Sku,
+					VendorName: availableTraderNames[0],
 				}
 				// Add the line entry as needed by the csv import
 				if grade == "NM" {
@@ -221,6 +222,21 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 						"CKSKU":     card.Sku,
 						"CKID":      strconv.Itoa(card.ID),
 					}
+				}
+				err = ck.buylist.Add(cardId, out)
+				if err != nil && !skipErrors {
+					ck.printf("%v", err)
+				}
+			}
+		} else if ck.PreserveOOS {
+			for i, grade := range mtgban.DefaultGradeTags {
+				buyPrice := card.PriceBuy * retailPrices[i] / retailPrices[0]
+
+				// Only save URL information
+				out := &mtgban.BuylistEntry{
+					BuyPrice:   buyPrice,
+					Conditions: grade,
+					VendorName: availableTraderNames[1],
 				}
 				err = ck.buylist.Add(cardId, out)
 				if err != nil && !skipErrors {
@@ -244,6 +260,30 @@ func (ck *Cardkingdom) Inventory() mtgban.InventoryRecord {
 
 func (ck *Cardkingdom) Buylist() mtgban.BuylistRecord {
 	return ck.buylist
+}
+
+var availableTraderNames = []string{
+	"Card Kingdom",
+	"Card Kingdom (last known)",
+}
+
+var name2shorthand = map[string]string{
+	"Card Kingdom":              "CK",
+	"Card Kingdom (last known)": "CKBLLast",
+}
+
+func (ck *Cardkingdom) TraderNames() []string {
+	if !ck.PreserveOOS {
+		return availableTraderNames[:1]
+	}
+	return availableTraderNames
+}
+
+func (ck *Cardkingdom) InfoForScraper(name string) mtgban.ScraperInfo {
+	info := ck.Info()
+	info.Name = name
+	info.Shorthand = name2shorthand[name]
+	return info
 }
 
 func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
