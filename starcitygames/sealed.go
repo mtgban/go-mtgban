@@ -31,11 +31,11 @@ type StarcitygamesSealed struct {
 	game       int
 }
 
-func NewScraperSealed(guid, bearer string) *StarcitygamesSealed {
+func NewScraperSealed(guid, apiKey string) *StarcitygamesSealed {
 	scg := StarcitygamesSealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient(guid, bearer)
+	scg.client = NewSCGClient(guid, apiKey)
 	scg.client.SealedMode = true
 	scg.MaxConcurrency = defaultConcurrency
 	scg.game = GameMagic
