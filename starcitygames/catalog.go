@@ -21,6 +21,7 @@ type CatalogProduct struct {
 	ID              int              `json:"id"`
 	SKU             string           `json:"sku"`
 	ScryfallID      string           `json:"scryfall_id"`
+	TCGPlayerID     string           `json:"tcgplayer_id"`
 	URL             string           `json:"url"`
 	Name            string           `json:"name"`
 	Game            string           `json:"game"`
@@ -145,9 +146,42 @@ func resolveProduct(game int, p CatalogProduct) (string, error) {
 			}
 		}
 
+		// The TCGplayer id is the next authoritative identifier: MatchId resolves
+		// a bare product id through the external-id index and applies the finish,
+		// exactly like the scryfall path. Use it whenever the scryfall id is
+		// absent or didn't resolve. (SCG sends null today; this future-proofs it.)
+		if p.TCGPlayerID != "" {
+			if id, err := mtgmatcher.MatchId(p.TCGPlayerID, foil, etched); err == nil {
+				return id, nil
+			}
+		}
+
+		// SCG's "-WAR2-" is the War of the Spark Japanese planeswalker
+		// (jpwalker), whose Japanese-language Scryfall id isn't in the index and
+		// which preprocess rejects as non-english. It maps to WAR #NNN★.
+		if strings.Contains(p.SKU, "-WAR2-") {
+			num := strings.TrimLeft(p.CollectorNumber, "0") + "★"
+			if out := mtgmatcher.MatchWithNumber(p.Name, "WAR", num); len(out) == 1 {
+				if id, err := mtgmatcher.MatchId(out[0].UUID, foil, false); err == nil {
+					return id, nil
+				}
+			}
+		}
+
 		card, err := preprocess(catalogHit(p, foil))
 		if err != nil {
 			return "", err
+		}
+		// Inherently foreign sets (Foreign Black Border, Rinascimento, ...)
+		// store the foreign printing as their canonical card, so a resolved id
+		// whose primary language isn't English is the right match. Match's
+		// English-only language validation would reject it, so use it directly.
+		// English-primary cards fall through so a foreign single isn't wrongly
+		// collapsed onto the English printing.
+		if card.Id != "" {
+			if co, e := mtgmatcher.GetUUID(card.Id); e == nil && co.Language != "" && co.Language != "English" {
+				return mtgmatcher.MatchId(card.Id, foil, etched)
+			}
 		}
 		return mtgmatcher.Match(card)
 	case GameLorcana:
