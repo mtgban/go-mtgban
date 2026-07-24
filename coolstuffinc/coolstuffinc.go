@@ -284,7 +284,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				case GameLorcana:
 					number := mtgmatcher.ExtractNumber(strings.Split(notes, "/")[0])
 
-					cardId, err = mtgmatcher.SimpleSearch(cardName, number, isFoil)
+					cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: isFoil})
 					if errors.Is(err, mtgmatcher.ErrUnsupported) {
 						return
 					} else if err != nil {
@@ -483,7 +483,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			number := strings.Split(strings.TrimLeft(product.Number, "0"), "/")[0]
 			cardName := product.Name
 
-			cardId, err = mtgmatcher.SimpleSearch(cardName, number, product.IsFoil == 1)
+			cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: product.IsFoil == 1})
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {

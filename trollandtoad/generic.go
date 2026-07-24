@@ -110,7 +110,7 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 		number := chunks[len(chunks)-2]
 		foil := strings.Contains(strings.ToLower(chunks[len(chunks)-1]), "foil")
 
-		cardId, err := mtgmatcher.SimpleSearch(cardName, number, foil)
+		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -334,7 +334,7 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 		foil := strings.Contains(strings.ToLower(chunks[len(chunks)-1]), "foil")
 		link := buylistLinkURL + cardName
 
-		cardId, err := mtgmatcher.SimpleSearch(cardName, number, foil)
+		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {

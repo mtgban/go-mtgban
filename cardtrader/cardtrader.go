@@ -182,7 +182,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			cardName := blueprint.Name
 			collectorNumber := product.Properties.Number
 
-			cardId, err = mtgmatcher.SimpleSearch(cardName, collectorNumber, product.Properties.LorcanaFoil)
+			cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: collectorNumber, Foil: product.Properties.LorcanaFoil})
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {

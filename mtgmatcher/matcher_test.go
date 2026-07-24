@@ -1,4 +1,4 @@
-package mtgmatcher
+package mtgmatcher_test
 
 import (
 	"encoding/json"
@@ -7,6 +7,9 @@ import (
 	"log"
 	"os"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 type MatchTest struct {
@@ -14,7 +17,7 @@ type MatchTest struct {
 	Err  string `json:"error,omitempty"`
 	Desc string `json:"description"`
 
-	In InputCard `json:"input"`
+	In mtgmatcher.InputCard `json:"input"`
 
 	Wildcard bool `json:"wildcard,omitempty"`
 }
@@ -25,7 +28,7 @@ type DatastoreProperty struct {
 }
 
 type TestProperty struct {
-	Backend      cardBackend
+	Backend      *mtgmatcher.Backend
 	MatchTests   []MatchTest
 	TestDataFile string
 }
@@ -55,10 +58,8 @@ func TestMain(m *testing.M) {
 		log.Fatalln("No tests configured")
 	}
 
-	// Keep one set for compatibility with other tests
-	SetGlobalDatastore(MatchTestSet[0].Backend)
-
-	SetGlobalLogger(log.New(os.Stderr, "", 0))
+	mtgmatcher.SetGlobalDatastore(MatchTestSet[0].Backend)
+	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 
 	os.Exit(m.Run())
 }
@@ -74,12 +75,12 @@ func loadTestSet(datastoreProp DatastoreProperty) TestProperty {
 	}
 	defer datastoreReader.Close()
 
-	datastore, err := LoadAllPrintings(datastoreReader)
+	datastore, err := magic.Load(datastoreReader)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	tp.Backend = datastore.Load()
+	tp.Backend = datastore
 	tp.TestDataFile = datastoreProp.TestDataFile
 
 	testDataReader, err := os.Open(tp.TestDataFile)
@@ -98,11 +99,11 @@ func loadTestSet(datastoreProp DatastoreProperty) TestProperty {
 	return tp
 }
 
-func runMatch(test MatchTest) (string, error) {
+func runMatch(b *mtgmatcher.Backend, test MatchTest) (string, error) {
 	card := test.In
-	card.promoWildcard = test.Wildcard
+	card.PromoWildcard = test.Wildcard
 
-	cardId, err := Match(&card)
+	cardId, err := b.Match(&card)
 	if err == nil && test.Err != "" {
 		return cardId, fmt.Errorf("expected error: %s", test.Err)
 	}
@@ -127,7 +128,7 @@ func TestMatch(t *testing.T) {
 }
 
 func testMatch(t *testing.T, testSet TestProperty) {
-	SetGlobalDatastore(testSet.Backend)
+	b := testSet.Backend
 
 	var shouldUpdateTests bool
 
@@ -138,7 +139,7 @@ func testMatch(t *testing.T, testSet TestProperty) {
 			if !*UpdateTests {
 				t.Parallel()
 			}
-			cardId, err := runMatch(test)
+			cardId, err := runMatch(b, test)
 			if err != nil {
 				if test.Err == "" {
 					if *UpdateTests {
@@ -148,7 +149,7 @@ func testMatch(t *testing.T, testSet TestProperty) {
 						return
 					}
 
-					co, _ := GetUUID(cardId)
+					co, _ := b.GetUUID(cardId)
 					t.Errorf("FAIL: %s (%v)", err.Error(), co)
 					return
 				}
@@ -181,10 +182,9 @@ func testMatch(t *testing.T, testSet TestProperty) {
 func BenchmarkMatch(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		for _, testSet := range MatchTestSet {
-			SetGlobalDatastore(testSet.Backend)
-
+			backend := testSet.Backend
 			for _, test := range testSet.MatchTests {
-				_, err := runMatch(test)
+				_, err := runMatch(backend, test)
 				if err != nil {
 					b.Errorf("FAIL: %s", err.Error())
 				} else {

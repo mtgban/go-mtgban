@@ -10,6 +10,7 @@ import (
 
 	"github.com/mtgban/go-cardkingdom"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func TestMain(m *testing.M) {
@@ -24,10 +25,11 @@ func TestMain(m *testing.M) {
 	}
 	defer allPrintingsReader.Close()
 
-	err = mtgmatcher.LoadDatastore(allPrintingsReader)
+	ds, err := magic.Load(allPrintingsReader)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	mtgmatcher.SetGlobalDatastore(ds)
 
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
 

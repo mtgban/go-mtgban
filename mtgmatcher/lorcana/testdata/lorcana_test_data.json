@@ -1,0 +1,5894 @@
+[
+    {
+        "description": "99 Puppies #24",
+        "input": {
+            "name": "99 Puppies",
+            "variant": "24"
+        },
+        "uuid": "460"
+    },
+    {
+        "description": "A Whole New World #10 foil",
+        "input": {
+            "name": "A Whole New World",
+            "variant": "10",
+            "foil": true
+        },
+        "uuid": "1199"
+    },
+    {
+        "description": "Abu - Mischievous Monkey #103",
+        "input": {
+            "name": "Abu - Mischievous Monkey",
+            "variant": "103"
+        },
+        "uuid": "103"
+    },
+    {
+        "description": "Agrabah - Marketplace #134",
+        "input": {
+            "name": "Agrabah - Marketplace",
+            "variant": "134"
+        },
+        "uuid": "570"
+    },
+    {
+        "description": "Airfoil #97",
+        "input": {
+            "name": "Airfoil",
+            "variant": "97"
+        },
+        "uuid": "533"
+    },
+    {
+        "description": "Aladdin - Barreling Through #123",
+        "input": {
+            "name": "Aladdin - Barreling Through",
+            "variant": "123"
+        },
+        "uuid": "2312"
+    },
+    {
+        "description": "Aladdin - Fearless Navigator #112 foil",
+        "input": {
+            "name": "Aladdin - Fearless Navigator",
+            "variant": "112",
+            "foil": true
+        },
+        "uuid": "1311_f"
+    },
+    {
+        "description": "Aladdin - On the Edge of Adventure #211 foil",
+        "input": {
+            "name": "Aladdin - On the Edge of Adventure",
+            "variant": "211",
+            "foil": true
+        },
+        "uuid": "2674"
+    },
+    {
+        "description": "Aladdin - Research Assistant #197 foil",
+        "input": {
+            "name": "Aladdin - Research Assistant",
+            "variant": "197",
+            "foil": true
+        },
+        "uuid": "1630_f"
+    },
+    {
+        "description": "Alan-a-Dale - Loyal Bard #7",
+        "input": {
+            "name": "Alan-a-Dale - Loyal Bard",
+            "variant": "7"
+        },
+        "uuid": "2722"
+    },
+    {
+        "description": "Alice - Clumsy as Can Be #104",
+        "input": {
+            "name": "Alice - Clumsy as Can Be",
+            "variant": "104"
+        },
+        "uuid": "1768"
+    },
+    {
+        "description": "Alice - Growing Girl #213 foil",
+        "input": {
+            "name": "Alice - Growing Girl",
+            "variant": "213",
+            "foil": true
+        },
+        "uuid": "429"
+    },
+    {
+        "description": "Alien - True Believer #83",
+        "input": {
+            "name": "Alien - True Believer",
+            "variant": "83"
+        },
+        "uuid": "2798"
+    },
+    {
+        "description": "All Is Found #220 foil",
+        "input": {
+            "name": "All Is Found",
+            "variant": "220",
+            "foil": true
+        },
+        "uuid": "1653"
+    },
+    {
+        "description": "Alma Madrigal - Keeper of the Flame #58 foil",
+        "input": {
+            "name": "Alma Madrigal - Keeper of the Flame",
+            "variant": "58",
+            "foil": true
+        },
+        "uuid": "2773_f"
+    },
+    {
+        "description": "Amber Coil #41 foil",
+        "input": {
+            "name": "Amber Coil",
+            "variant": "41",
+            "foil": true
+        },
+        "uuid": "1474_f"
+    },
+    {
+        "description": "Amos Slade - Tenacious Tracker #180 foil",
+        "input": {
+            "name": "Amos Slade - Tenacious Tracker",
+            "variant": "180",
+            "foil": true
+        },
+        "uuid": "2643_f"
+    },
+    {
+        "description": "Angel - Experiment 624 #191",
+        "input": {
+            "name": "Angel - Experiment 624",
+            "variant": "191"
+        },
+        "uuid": "2654"
+    },
+    {
+        "description": "Angus - Mighty Horse #174 foil",
+        "input": {
+            "name": "Angus - Mighty Horse",
+            "variant": "174",
+            "foil": true
+        },
+        "uuid": "2889_f"
+    },
+    {
+        "description": "Anna - Diplomatic Queen #85",
+        "input": {
+            "name": "Anna - Diplomatic Queen",
+            "variant": "85"
+        },
+        "uuid": "1041"
+    },
+    {
+        "description": "Anna - Ice Breaker #72",
+        "input": {
+            "name": "Anna - Ice Breaker",
+            "variant": "72"
+        },
+        "uuid": "1505"
+    },
+    {
+        "description": "Anna - Making Snow Plans #139 foil",
+        "input": {
+            "name": "Anna - Making Snow Plans",
+            "variant": "139",
+            "foil": true
+        },
+        "uuid": "2328_f"
+    },
+    {
+        "description": "Anna - True-Hearted #138",
+        "input": {
+            "name": "Anna - True-Hearted",
+            "variant": "138"
+        },
+        "uuid": "829"
+    },
+    {
+        "description": "Antonio Madrigal - Friend to All #5 foil",
+        "input": {
+            "name": "Antonio Madrigal - Friend to All",
+            "variant": "5",
+            "foil": true
+        },
+        "uuid": "1669_f"
+    },
+    {
+        "description": "Archimedes - Exasperated Owl #39 foil",
+        "input": {
+            "name": "Archimedes - Exasperated Owl",
+            "variant": "39",
+            "foil": true
+        },
+        "uuid": "995_f"
+    },
+    {
+        "description": "Ares - God of War #104",
+        "input": {
+            "name": "Ares - God of War",
+            "variant": "104"
+        },
+        "uuid": "2293"
+    },
+    {
+        "description": "Ariel - Adventurous Collector #107",
+        "input": {
+            "name": "Ariel - Adventurous Collector",
+            "variant": "107"
+        },
+        "uuid": "2043"
+    },
+    {
+        "description": "Ariel - Determined Mermaid #196",
+        "input": {
+            "name": "Ariel - Determined Mermaid",
+            "variant": "196"
+        },
+        "uuid": "2132"
+    },
+    {
+        "description": "Ariel - Singing Mermaid #3",
+        "input": {
+            "name": "Ariel - Singing Mermaid",
+            "variant": "3"
+        },
+        "uuid": "694"
+    },
+    {
+        "description": "Ariel - Spectacular Singer #2 foil",
+        "input": {
+            "name": "Ariel - Spectacular Singer",
+            "variant": "2",
+            "foil": true
+        },
+        "uuid": "2_f"
+    },
+    {
+        "description": "Arthur - Determined Squire #168",
+        "input": {
+            "name": "Arthur - Determined Squire",
+            "variant": "168"
+        },
+        "uuid": "1832"
+    },
+    {
+        "description": "Arthur - Trained Swordsman #69 foil",
+        "input": {
+            "name": "Arthur - Trained Swordsman",
+            "variant": "69",
+            "foil": true
+        },
+        "uuid": "285_f"
+    },
+    {
+        "description": "Atlantean Crystal #180",
+        "input": {
+            "name": "Atlantean Crystal",
+            "variant": "180"
+        },
+        "uuid": "1844"
+    },
+    {
+        "description": "Audrey Ramirez - The Engineer #137",
+        "input": {
+            "name": "Audrey Ramirez - The Engineer",
+            "variant": "137"
+        },
+        "uuid": "573"
+    },
+    {
+        "description": "Aurora - Briar Rose #138",
+        "input": {
+            "name": "Aurora - Briar Rose",
+            "variant": "138"
+        },
+        "uuid": "138"
+    },
+    {
+        "description": "Aurora - Holding Court #6",
+        "input": {
+            "name": "Aurora - Holding Court",
+            "variant": "6"
+        },
+        "uuid": "1942"
+    },
+    {
+        "description": "Aurora - Tranquil Princess #141",
+        "input": {
+            "name": "Aurora - Tranquil Princess",
+            "variant": "141"
+        },
+        "uuid": "832"
+    },
+    {
+        "description": "Avalanche #195 foil",
+        "input": {
+            "name": "Avalanche",
+            "variant": "195",
+            "foil": true
+        },
+        "uuid": "886_f"
+    },
+    {
+        "description": "Bad-Anon - Villain Support Center #203 foil",
+        "input": {
+            "name": "Bad-Anon - Villain Support Center",
+            "variant": "203",
+            "foil": true
+        },
+        "uuid": "1159_f"
+    },
+    {
+        "description": "Baloo - Carefree Bear #85 foil",
+        "input": {
+            "name": "Baloo - Carefree Bear",
+            "variant": "85",
+            "foil": true
+        },
+        "uuid": "2274_f"
+    },
+    {
+        "description": "Baloo - Ol' Iron Paws #142 foil",
+        "input": {
+            "name": "Baloo - Ol' Iron Paws",
+            "variant": "142",
+            "foil": true
+        },
+        "uuid": "1575_f"
+    },
+    {
+        "description": "Bambi - Prince of the Forest #57",
+        "input": {
+            "name": "Bambi - Prince of the Forest",
+            "variant": "57"
+        },
+        "uuid": "1721"
+    },
+    {
+        "description": "Bashful - Hopeless Romantic #1",
+        "input": {
+            "name": "Bashful - Hopeless Romantic",
+            "variant": "1"
+        },
+        "uuid": "217"
+    },
+    {
+        "description": "Basil - Great Mouse Detective #138 foil",
+        "input": {
+            "name": "Basil - Great Mouse Detective",
+            "variant": "138",
+            "foil": true
+        },
+        "uuid": "354_f"
+    },
+    {
+        "description": "Basil - Practiced Detective #153 foil",
+        "input": {
+            "name": "Basil - Practiced Detective",
+            "variant": "153",
+            "foil": true
+        },
+        "uuid": "1109_f"
+    },
+    {
+        "description": "Basil's Magnifying Glass #166",
+        "input": {
+            "name": "Basil's Magnifying Glass",
+            "variant": "166"
+        },
+        "uuid": "1122"
+    },
+    {
+        "description": "Baymax - Giant Robot #104 foil",
+        "input": {
+            "name": "Baymax - Giant Robot",
+            "variant": "104",
+            "foil": true
+        },
+        "uuid": "1537_f"
+    },
+    {
+        "description": "Baymax's Charging Station #180",
+        "input": {
+            "name": "Baymax's Charging Station",
+            "variant": "180"
+        },
+        "uuid": "1613"
+    },
+    {
+        "description": "Be King Undisputed #216 foil",
+        "input": {
+            "name": "Be King Undisputed",
+            "variant": "216",
+            "foil": true
+        },
+        "uuid": "2170"
+    },
+    {
+        "description": "Beagle Boys - Small-Time Crooks #132 foil",
+        "input": {
+            "name": "Beagle Boys - Small-Time Crooks",
+            "variant": "132",
+            "foil": true
+        },
+        "uuid": "1565_f"
+    },
+    {
+        "description": "Beast - Gracious Prince #4",
+        "input": {
+            "name": "Beast - Gracious Prince",
+            "variant": "4"
+        },
+        "uuid": "1940"
+    },
+    {
+        "description": "Beast - Selfless Protector #172",
+        "input": {
+            "name": "Beast - Selfless Protector",
+            "variant": "172"
+        },
+        "uuid": "388"
+    },
+    {
+        "description": "Beast - Tragic Hero #173 foil",
+        "input": {
+            "name": "Beast - Tragic Hero",
+            "variant": "173",
+            "foil": true
+        },
+        "uuid": "389_f"
+    },
+    {
+        "description": "Beast's Mirror #201 foil",
+        "input": {
+            "name": "Beast's Mirror",
+            "variant": "201",
+            "foil": true
+        },
+        "uuid": "201_f"
+    },
+    {
+        "description": "Belle - Accomplished Mystic #36",
+        "input": {
+            "name": "Belle - Accomplished Mystic",
+            "variant": "36"
+        },
+        "uuid": "727"
+    },
+    {
+        "description": "Belle - Bookworm #71",
+        "input": {
+            "name": "Belle - Bookworm",
+            "variant": "71"
+        },
+        "uuid": "287"
+    },
+    {
+        "description": "Belle - Mechanic Extraordinaire #126",
+        "input": {
+            "name": "Belle - Mechanic Extraordinaire",
+            "variant": "126"
+        },
+        "uuid": "1559"
+    },
+    {
+        "description": "Belle - Strange but Special #142",
+        "input": {
+            "name": "Belle - Strange but Special",
+            "variant": "142"
+        },
+        "uuid": "142"
+    },
+    {
+        "description": "Belle's Favorite Book #179 foil",
+        "input": {
+            "name": "Belle's Favorite Book",
+            "variant": "179",
+            "foil": true
+        },
+        "uuid": "1843_f"
+    },
+    {
+        "description": "Bend to My Will #93",
+        "input": {
+            "name": "Bend to My Will",
+            "variant": "93"
+        },
+        "uuid": "1292"
+    },
+    {
+        "description": "Berlioz - Mischievous Kitten #99",
+        "input": {
+            "name": "Berlioz - Mischievous Kitten",
+            "variant": "99"
+        },
+        "uuid": "1532"
+    },
+    {
+        "description": "Beyond the Horizon #202",
+        "input": {
+            "name": "Beyond the Horizon",
+            "variant": "202"
+        },
+        "uuid": "1866"
+    },
+    {
+        "description": "Bill the Lizard - Chimney Sweep #90",
+        "input": {
+            "name": "Bill the Lizard - Chimney Sweep",
+            "variant": "90"
+        },
+        "uuid": "1754"
+    },
+    {
+        "description": "Black Heron - Real Bad Egg #182",
+        "input": {
+            "name": "Black Heron - Real Bad Egg",
+            "variant": "182"
+        },
+        "uuid": "2371"
+    },
+    {
+        "description": "Blue Fairy - Rewarding Good Deeds #36",
+        "input": {
+            "name": "Blue Fairy - Rewarding Good Deeds",
+            "variant": "36"
+        },
+        "uuid": "252"
+    },
+    {
+        "description": "Bobby Zimuruski - Spray Cheese Kid #78",
+        "input": {
+            "name": "Bobby Zimuruski - Spray Cheese Kid",
+            "variant": "78"
+        },
+        "uuid": "2014"
+    },
+    {
+        "description": "Bolt - Superdog #207 foil",
+        "input": {
+            "name": "Bolt - Superdog",
+            "variant": "207",
+            "foil": true
+        },
+        "uuid": "1640"
+    },
+    {
+        "description": "Boun - Precocious Entrepreneur #104",
+        "input": {
+            "name": "Boun - Precocious Entrepreneur",
+            "variant": "104"
+        },
+        "uuid": "320"
+    },
+    {
+        "description": "Break #196",
+        "input": {
+            "name": "Break",
+            "variant": "196"
+        },
+        "uuid": "196"
+    },
+    {
+        "description": "Bronx - Ferocious Beast #114",
+        "input": {
+            "name": "Bronx - Ferocious Beast",
+            "variant": "114"
+        },
+        "uuid": "2303"
+    },
+    {
+        "description": "Bruno Madrigal - Oasis Oracle #218 foil",
+        "input": {
+            "name": "Bruno Madrigal - Oasis Oracle",
+            "variant": "218",
+            "foil": true
+        },
+        "uuid": "2933"
+    },
+    {
+        "description": "Bruno Madrigal - Single-Minded #51 foil",
+        "input": {
+            "name": "Bruno Madrigal - Single-Minded",
+            "variant": "51",
+            "foil": true
+        },
+        "uuid": "1715_f"
+    },
+    {
+        "description": "Bruno's Return #26 foil",
+        "input": {
+            "name": "Bruno's Return",
+            "variant": "26",
+            "foil": true
+        },
+        "uuid": "717_f"
+    },
+    {
+        "description": "Bucky - Squirrel Squeak Tutor #73",
+        "input": {
+            "name": "Bucky - Squirrel Squeak Tutor",
+            "variant": "73"
+        },
+        "uuid": "289"
+    },
+    {
+        "description": "Buzz Lightyear - Jungle Ranger #91 foil",
+        "input": {
+            "name": "Buzz Lightyear - Jungle Ranger",
+            "variant": "91",
+            "foil": true
+        },
+        "uuid": "2806_f"
+    },
+    {
+        "description": "Calhoun - Battle-Tested #36 foil",
+        "input": {
+            "name": "Calhoun - Battle-Tested",
+            "variant": "36",
+            "foil": true
+        },
+        "uuid": "1469_f"
+    },
+    {
+        "description": "Camilo Madrigal - Center Stage #75 foil",
+        "input": {
+            "name": "Camilo Madrigal - Center Stage",
+            "variant": "75",
+            "foil": true
+        },
+        "uuid": "1739_f"
+    },
+    {
+        "description": "Candlehead - Dedicated Racer #17",
+        "input": {
+            "name": "Candlehead - Dedicated Racer",
+            "variant": "17"
+        },
+        "uuid": "1450"
+    },
+    {
+        "description": "Captain Amelia - Commander of the Legacy #192 foil",
+        "input": {
+            "name": "Captain Amelia - Commander of the Legacy",
+            "variant": "192",
+            "foil": true
+        },
+        "uuid": "1391_f"
+    },
+    {
+        "description": "Captain Hook - Devious Duelist #3",
+        "input": {
+            "name": "Captain Hook - Devious Duelist",
+            "variant": "3"
+        },
+        "uuid": "916"
+    },
+    {
+        "description": "Captain Hook - Master Swordsman #214 foil",
+        "input": {
+            "name": "Captain Hook - Master Swordsman",
+            "variant": "214",
+            "foil": true
+        },
+        "uuid": "650"
+    },
+    {
+        "description": "Captain Hook - Underhanded #71",
+        "input": {
+            "name": "Captain Hook - Underhanded",
+            "variant": "71"
+        },
+        "uuid": "1270"
+    },
+    {
+        "description": "Card Soldiers - Full Deck #105",
+        "input": {
+            "name": "Card Soldiers - Full Deck",
+            "variant": "105"
+        },
+        "uuid": "321"
+    },
+    {
+        "description": "Casa Madrigal - Casita #68",
+        "input": {
+            "name": "Casa Madrigal - Casita",
+            "variant": "68"
+        },
+        "uuid": "2004"
+    },
+    {
+        "description": "Cataclysmic Cyclone #23",
+        "input": {
+            "name": "Cataclysmic Cyclone",
+            "variant": "23"
+        },
+        "uuid": "1918"
+    },
+    {
+        "description": "Chaca - Impressive Daughter #138 foil",
+        "input": {
+            "name": "Chaca - Impressive Daughter",
+            "variant": "138",
+            "foil": true
+        },
+        "uuid": "1094_f"
+    },
+    {
+        "description": "Chef Louis - In Over His Head #140 foil",
+        "input": {
+            "name": "Chef Louis - In Over His Head",
+            "variant": "140",
+            "foil": true
+        },
+        "uuid": "2329_f"
+    },
+    {
+        "description": "Chernabog - Unnatural Force #77",
+        "input": {
+            "name": "Chernabog - Unnatural Force",
+            "variant": "77"
+        },
+        "uuid": "2540"
+    },
+    {
+        "description": "Cheshire Cat - Inexplicable #60",
+        "input": {
+            "name": "Cheshire Cat - Inexplicable",
+            "variant": "60"
+        },
+        "uuid": "2249"
+    },
+    {
+        "description": "Chicha - Dedicated Mother #146",
+        "input": {
+            "name": "Chicha - Dedicated Mother",
+            "variant": "146"
+        },
+        "uuid": "1102"
+    },
+    {
+        "description": "Chief Bogo - Commanding Officer #18 foil",
+        "input": {
+            "name": "Chief Bogo - Commanding Officer",
+            "variant": "18",
+            "foil": true
+        },
+        "uuid": "1682_f"
+    },
+    {
+        "description": "Chief Tui - Proud of Motunui #171 foil",
+        "input": {
+            "name": "Chief Tui - Proud of Motunui",
+            "variant": "171",
+            "foil": true
+        },
+        "uuid": "607_f"
+    },
+    {
+        "description": "Chien-Po - Snow Warrior #74 foil",
+        "input": {
+            "name": "Chien-Po - Snow Warrior",
+            "variant": "74",
+            "foil": true
+        },
+        "uuid": "2537_f"
+    },
+    {
+        "description": "Chip - Ranger Leader #12",
+        "input": {
+            "name": "Chip - Ranger Leader",
+            "variant": "12"
+        },
+        "uuid": "1211"
+    },
+    {
+        "description": "Chomp! #96",
+        "input": {
+            "name": "Chomp!",
+            "variant": "96"
+        },
+        "uuid": "2285"
+    },
+    {
+        "description": "Cinderella - Ballroom Sensation #3",
+        "input": {
+            "name": "Cinderella - Ballroom Sensation",
+            "variant": "3"
+        },
+        "uuid": "219"
+    },
+    {
+        "description": "Cinderella - Gentle and Kind #3 foil",
+        "input": {
+            "name": "Cinderella - Gentle and Kind",
+            "variant": "3",
+            "foil": true
+        },
+        "uuid": "3_f"
+    },
+    {
+        "description": "Cinderella - Resourceful Traveler #155 foil",
+        "input": {
+            "name": "Cinderella - Resourceful Traveler",
+            "variant": "155",
+            "foil": true
+        },
+        "uuid": "2870_f"
+    },
+    {
+        "description": "Circle of Life #225 foil",
+        "input": {
+            "name": "Circle of Life",
+            "variant": "225",
+            "foil": true
+        },
+        "uuid": "2143"
+    },
+    {
+        "description": "Clarabelle - Light on Her Hooves #84",
+        "input": {
+            "name": "Clarabelle - Light on Her Hooves",
+            "variant": "84"
+        },
+        "uuid": "1040"
+    },
+    {
+        "description": "Cleansing Rainwater #29",
+        "input": {
+            "name": "Cleansing Rainwater",
+            "variant": "29"
+        },
+        "uuid": "465"
+    },
+    {
+        "description": "Cobra Bubbles - Former CIA #188 foil",
+        "input": {
+            "name": "Cobra Bubbles - Former CIA",
+            "variant": "188",
+            "foil": true
+        },
+        "uuid": "1387_f"
+    },
+    {
+        "description": "Cogsworth - Climbing Clock #130",
+        "input": {
+            "name": "Cogsworth - Climbing Clock",
+            "variant": "130"
+        },
+        "uuid": "1563"
+    },
+    {
+        "description": "Cogsworth - Talking Clock #143",
+        "input": {
+            "name": "Cogsworth - Talking Clock",
+            "variant": "143"
+        },
+        "uuid": "359"
+    },
+    {
+        "description": "Come Out and Fight! #62 foil",
+        "input": {
+            "name": "Come Out and Fight!",
+            "variant": "62",
+            "foil": true
+        },
+        "uuid": "2525_f"
+    },
+    {
+        "description": "Copper - Champion of the Forest #84 foil",
+        "input": {
+            "name": "Copper - Champion of the Forest",
+            "variant": "84",
+            "foil": true
+        },
+        "uuid": "2547_f"
+    },
+    {
+        "description": "Cri-Kee - Good Luck Charm #142 foil",
+        "input": {
+            "name": "Cri-Kee - Good Luck Charm",
+            "variant": "142",
+            "foil": true
+        },
+        "uuid": "2331_f"
+    },
+    {
+        "description": "Cruella De Vil - Fashionable Cruiser #144 foil",
+        "input": {
+            "name": "Cruella De Vil - Fashionable Cruiser",
+            "variant": "144",
+            "foil": true
+        },
+        "uuid": "360_f"
+    },
+    {
+        "description": "Cruella De Vil - Perfectly Wretched #145 foil",
+        "input": {
+            "name": "Cruella De Vil - Perfectly Wretched",
+            "variant": "145",
+            "foil": true
+        },
+        "uuid": "361_f"
+    },
+    {
+        "description": "Cursed Merfolk - Ursula's Handiwork #7 foil",
+        "input": {
+            "name": "Cursed Merfolk - Ursula's Handiwork",
+            "variant": "7",
+            "foil": true
+        },
+        "uuid": "2185"
+    },
+    {
+        "description": "Cy-Bug - Invasive Enemy #127 foil",
+        "input": {
+            "name": "Cy-Bug - Invasive Enemy",
+            "variant": "127",
+            "foil": true
+        },
+        "uuid": "1560_f"
+    },
+    {
+        "description": "Daisy Duck - Lovely Lady #6",
+        "input": {
+            "name": "Daisy Duck - Lovely Lady",
+            "variant": "6"
+        },
+        "uuid": "697"
+    },
+    {
+        "description": "Daisy Duck - Paranormal Investigator #154",
+        "input": {
+            "name": "Daisy Duck - Paranormal Investigator",
+            "variant": "154"
+        },
+        "uuid": "2343"
+    },
+    {
+        "description": "Daisy Duck - Sapphire Champion #158",
+        "input": {
+            "name": "Daisy Duck - Sapphire Champion",
+            "variant": "158"
+        },
+        "uuid": "2347"
+    },
+    {
+        "description": "Daisy Duck - Trendy Traveler #115",
+        "input": {
+            "name": "Daisy Duck - Trendy Traveler",
+            "variant": "115"
+        },
+        "uuid": "2830"
+    },
+    {
+        "description": "Dale - Friend in Need #7 foil",
+        "input": {
+            "name": "Dale - Friend in Need",
+            "variant": "7",
+            "foil": true
+        },
+        "uuid": "1206_f"
+    },
+    {
+        "description": "Dalmatian Puppy - Tail Wagger #4a foil",
+        "input": {
+            "name": "Dalmatian Puppy - Tail Wagger",
+            "variant": "4a",
+            "foil": true
+        },
+        "uuid": "436_f"
+    },
+    {
+        "description": "Dalmatian Puppy - Tail Wagger #4e foil",
+        "input": {
+            "name": "Dalmatian Puppy - Tail Wagger",
+            "variant": "4e",
+            "foil": true
+        },
+        "uuid": "440_f"
+    },
+    {
+        "description": "Darkwing Duck - Crime Fighter #174",
+        "input": {
+            "name": "Darkwing Duck - Crime Fighter",
+            "variant": "174"
+        },
+        "uuid": "2637"
+    },
+    {
+        "description": "Darkwing Duck - Drake Mallard #145",
+        "input": {
+            "name": "Darkwing Duck - Drake Mallard",
+            "variant": "145"
+        },
+        "uuid": "2608"
+    },
+    {
+        "description": "Darling Dear - Beloved Wife #16",
+        "input": {
+            "name": "Darling Dear - Beloved Wife",
+            "variant": "16"
+        },
+        "uuid": "1680"
+    },
+    {
+        "description": "David - Impressive Surfer #8 foil",
+        "input": {
+            "name": "David - Impressive Surfer",
+            "variant": "8",
+            "foil": true
+        },
+        "uuid": "1207_f"
+    },
+    {
+        "description": "Dawson - Basil's Assistant #77 foil",
+        "input": {
+            "name": "Dawson - Basil's Assistant",
+            "variant": "77",
+            "foil": true
+        },
+        "uuid": "1276_f"
+    },
+    {
+        "description": "Della Duck - Unstoppable Mom #106",
+        "input": {
+            "name": "Della Duck - Unstoppable Mom",
+            "variant": "106"
+        },
+        "uuid": "542"
+    },
+    {
+        "description": "Demona - Scourge of the Wyvern Clan #55 foil",
+        "input": {
+            "name": "Demona - Scourge of the Wyvern Clan",
+            "variant": "55",
+            "foil": true
+        },
+        "uuid": "2244_f"
+    },
+    {
+        "description": "Destructive Misstep #19",
+        "input": {
+            "name": "Destructive Misstep",
+            "variant": "19"
+        },
+        "uuid": "1914"
+    },
+    {
+        "description": "Devil's Eye Diamond #152 foil",
+        "input": {
+            "name": "Devil's Eye Diamond",
+            "variant": "152",
+            "foil": true
+        },
+        "uuid": "1585_f"
+    },
+    {
+        "description": "Diablo - Devoted Herald #70 foil",
+        "input": {
+            "name": "Diablo - Devoted Herald",
+            "variant": "70",
+            "foil": true
+        },
+        "uuid": "761_f"
+    },
+    {
+        "description": "Diablo - Spiteful Raven #66 foil",
+        "input": {
+            "name": "Diablo - Spiteful Raven",
+            "variant": "66",
+            "foil": true
+        },
+        "uuid": "1499_f"
+    },
+    {
+        "description": "Dig a Little Deeper #166 foil",
+        "input": {
+            "name": "Dig a Little Deeper",
+            "variant": "166",
+            "foil": true
+        },
+        "uuid": "2102_f"
+    },
+    {
+        "description": "Dinner Bell #135 foil",
+        "input": {
+            "name": "Dinner Bell",
+            "variant": "135",
+            "foil": true
+        },
+        "uuid": "2071_f"
+    },
+    {
+        "description": "Do It Again! #94",
+        "input": {
+            "name": "Do It Again!",
+            "variant": "94"
+        },
+        "uuid": "94"
+    },
+    {
+        "description": "Doc - Taking Notes #210 foil",
+        "input": {
+            "name": "Doc - Taking Notes",
+            "variant": "210",
+            "foil": true
+        },
+        "uuid": "2925"
+    },
+    {
+        "description": "Dolores Madrigal - Easy Listener #51 foil",
+        "input": {
+            "name": "Dolores Madrigal - Easy Listener",
+            "variant": "51",
+            "foil": true
+        },
+        "uuid": "1987_f"
+    },
+    {
+        "description": "Don Karnage - Prince of Pirates #71 foil",
+        "input": {
+            "name": "Don Karnage - Prince of Pirates",
+            "variant": "71",
+            "foil": true
+        },
+        "uuid": "507_f"
+    },
+    {
+        "description": "Donald Duck - Boisterous Fowl #108",
+        "input": {
+            "name": "Donald Duck - Boisterous Fowl",
+            "variant": "108"
+        },
+        "uuid": "108"
+    },
+    {
+        "description": "Donald Duck - Daisy's Date #122 foil",
+        "input": {
+            "name": "Donald Duck - Daisy's Date",
+            "variant": "122",
+            "foil": true
+        },
+        "uuid": "1078_f"
+    },
+    {
+        "description": "Donald Duck - Flustered Sorcerer #209 foil",
+        "input": {
+            "name": "Donald Duck - Flustered Sorcerer",
+            "variant": "209",
+            "foil": true
+        },
+        "uuid": "1642"
+    },
+    {
+        "description": "Donald Duck - Ghost Hunter #172 foil",
+        "input": {
+            "name": "Donald Duck - Ghost Hunter",
+            "variant": "172",
+            "foil": true
+        },
+        "uuid": "2361_f"
+    },
+    {
+        "description": "Donald Duck - Nephew Fred #105",
+        "input": {
+            "name": "Donald Duck - Nephew Fred",
+            "variant": "105"
+        },
+        "uuid": "2568"
+    },
+    {
+        "description": "Donald Duck - Pie Slinger #107",
+        "input": {
+            "name": "Donald Duck - Pie Slinger",
+            "variant": "107"
+        },
+        "uuid": "1063"
+    },
+    {
+        "description": "Donald Duck - Sleepwalker #83 foil",
+        "input": {
+            "name": "Donald Duck - Sleepwalker",
+            "variant": "83",
+            "foil": true
+        },
+        "uuid": "2019_f"
+    },
+    {
+        "description": "Dopey - Knight Apprentice #181 foil",
+        "input": {
+            "name": "Dopey - Knight Apprentice",
+            "variant": "181",
+            "foil": true
+        },
+        "uuid": "1137_f"
+    },
+    {
+        "description": "Dr. Calico - Green-Eyed Man #181 foil",
+        "input": {
+            "name": "Dr. Calico - Green-Eyed Man",
+            "variant": "181",
+            "foil": true
+        },
+        "uuid": "1614_f"
+    },
+    {
+        "description": "Dr. Facilier - Fortune Teller #79 foil",
+        "input": {
+            "name": "Dr. Facilier - Fortune Teller",
+            "variant": "79",
+            "foil": true
+        },
+        "uuid": "295_f"
+    },
+    {
+        "description": "Dr. Hamsterviel - Infamous Scientist #186 foil",
+        "input": {
+            "name": "Dr. Hamsterviel - Infamous Scientist",
+            "variant": "186",
+            "foil": true
+        },
+        "uuid": "2649_f"
+    },
+    {
+        "description": "Dragon Gem #33",
+        "input": {
+            "name": "Dragon Gem",
+            "variant": "33"
+        },
+        "uuid": "249"
+    },
+    {
+        "description": "Duck for Cover! #198",
+        "input": {
+            "name": "Duck for Cover!",
+            "variant": "198"
+        },
+        "uuid": "1154"
+    },
+    {
+        "description": "Duke Weaselton - Surly Crook #182",
+        "input": {
+            "name": "Duke Weaselton - Surly Crook",
+            "variant": "182"
+        },
+        "uuid": "2645"
+    },
+    {
+        "description": "Dumbo - The Flying Elephant #46",
+        "input": {
+            "name": "Dumbo - The Flying Elephant",
+            "variant": "46"
+        },
+        "uuid": "1982"
+    },
+    {
+        "description": "Earth Giant - Living Mountain #41 foil",
+        "input": {
+            "name": "Earth Giant - Living Mountain",
+            "variant": "41",
+            "foil": true
+        },
+        "uuid": "997_f"
+    },
+    {
+        "description": "Edna Mode - Fashion Designer #54",
+        "input": {
+            "name": "Edna Mode - Fashion Designer",
+            "variant": "54"
+        },
+        "uuid": "2769"
+    },
+    {
+        "description": "Eeyore - In the Way #45 foil",
+        "input": {
+            "name": "Eeyore - In the Way",
+            "variant": "45",
+            "foil": true
+        },
+        "uuid": "2508_f"
+    },
+    {
+        "description": "Eli La Bouff - Big Daddy #179 foil",
+        "input": {
+            "name": "Eli La Bouff - Big Daddy",
+            "variant": "179",
+            "foil": true
+        },
+        "uuid": "395_f"
+    },
+    {
+        "description": "Elisa Maza - Transformed Gargoyle #112 foil",
+        "input": {
+            "name": "Elisa Maza - Transformed Gargoyle",
+            "variant": "112",
+            "foil": true
+        },
+        "uuid": "2575_f"
+    },
+    {
+        "description": "Elsa - Exploring the Unknown #45 foil",
+        "input": {
+            "name": "Elsa - Exploring the Unknown",
+            "variant": "45",
+            "foil": true
+        },
+        "uuid": "2234_f"
+    },
+    {
+        "description": "Elsa - Ice Artisan #123",
+        "input": {
+            "name": "Elsa - Ice Artisan",
+            "variant": "123"
+        },
+        "uuid": "2586"
+    },
+    {
+        "description": "Elsa - Ice Surfer #109",
+        "input": {
+            "name": "Elsa - Ice Surfer",
+            "variant": "109"
+        },
+        "uuid": "109"
+    },
+    {
+        "description": "Elsa - Snow Queen #53",
+        "input": {
+            "name": "Elsa - Snow Queen",
+            "variant": "53"
+        },
+        "uuid": "1989"
+    },
+    {
+        "description": "Elsa - Storm Chaser #42 foil",
+        "input": {
+            "name": "Elsa - Storm Chaser",
+            "variant": "42",
+            "foil": true
+        },
+        "uuid": "733_f"
+    },
+    {
+        "description": "Elsa's Ice Palace - Place of Solitude #7 foil",
+        "input": {
+            "name": "Elsa's Ice Palace - Place of Solitude",
+            "variant": "7",
+            "foil": true
+        },
+        "uuid": "1197"
+    },
+    {
+        "description": "Enchantress - Unexpected Judge #80 foil",
+        "input": {
+            "name": "Enchantress - Unexpected Judge",
+            "variant": "80",
+            "foil": true
+        },
+        "uuid": "296_f"
+    },
+    {
+        "description": "Entangling Magic #20",
+        "input": {
+            "name": "Entangling Magic",
+            "variant": "20"
+        },
+        "uuid": "933"
+    },
+    {
+        "description": "Everybody's Got a Weakness #82 foil",
+        "input": {
+            "name": "Everybody's Got a Weakness",
+            "variant": "82",
+            "foil": true
+        },
+        "uuid": "1746_f"
+    },
+    {
+        "description": "Fa Zhou - Honorable Warrior #110 foil",
+        "input": {
+            "name": "Fa Zhou - Honorable Warrior",
+            "variant": "110",
+            "foil": true
+        },
+        "uuid": "2573_f"
+    },
+    {
+        "description": "Fairy Godmother - Magical Benefactor #192 foil",
+        "input": {
+            "name": "Fairy Godmother - Magical Benefactor",
+            "variant": "192",
+            "foil": true
+        },
+        "uuid": "2381_f"
+    },
+    {
+        "description": "Fairy Ship - Royal Vessel #68 foil",
+        "input": {
+            "name": "Fairy Ship - Royal Vessel",
+            "variant": "68",
+            "foil": true
+        },
+        "uuid": "1267_f"
+    },
+    {
+        "description": "Fan the Flames #131 foil",
+        "input": {
+            "name": "Fan the Flames",
+            "variant": "131",
+            "foil": true
+        },
+        "uuid": "131_f"
+    },
+    {
+        "description": "Fantastical and Magical #79",
+        "input": {
+            "name": "Fantastical and Magical",
+            "variant": "79"
+        },
+        "uuid": "1743"
+    },
+    {
+        "description": "Fauna - Good Fairy #78",
+        "input": {
+            "name": "Fauna - Good Fairy",
+            "variant": "78"
+        },
+        "uuid": "1034"
+    },
+    {
+        "description": "Fergus - Outpost Builder #194",
+        "input": {
+            "name": "Fergus - Outpost Builder",
+            "variant": "194"
+        },
+        "uuid": "2909"
+    },
+    {
+        "description": "Field of Ice #166",
+        "input": {
+            "name": "Field of Ice",
+            "variant": "166"
+        },
+        "uuid": "857"
+    },
+    {
+        "description": "Finders Keepers #60 foil",
+        "input": {
+            "name": "Finders Keepers",
+            "variant": "60",
+            "foil": true
+        },
+        "uuid": "1016_f"
+    },
+    {
+        "description": "Firefly Swarm #130 foil",
+        "input": {
+            "name": "Firefly Swarm",
+            "variant": "130",
+            "foil": true
+        },
+        "uuid": "2845_f"
+    },
+    {
+        "description": "Fix-It Felix, Jr. - Niceland Steward #12 foil",
+        "input": {
+            "name": "Fix-It Felix, Jr. - Niceland Steward",
+            "variant": "12",
+            "foil": true
+        },
+        "uuid": "968_f"
+    },
+    {
+        "description": "Flintheart Glomgold - Lone Cheater #140 foil",
+        "input": {
+            "name": "Flintheart Glomgold - Lone Cheater",
+            "variant": "140",
+            "foil": true
+        },
+        "uuid": "576_f"
+    },
+    {
+        "description": "Flora - Strong-Willed Fairy #141 foil",
+        "input": {
+            "name": "Flora - Strong-Willed Fairy",
+            "variant": "141",
+            "foil": true
+        },
+        "uuid": "2856_f"
+    },
+    {
+        "description": "Flotsam - Slippery as an Eel #71",
+        "input": {
+            "name": "Flotsam - Slippery as an Eel",
+            "variant": "71"
+        },
+        "uuid": "2260"
+    },
+    {
+        "description": "Flounder - Collector's Companion #144 foil",
+        "input": {
+            "name": "Flounder - Collector's Companion",
+            "variant": "144",
+            "foil": true
+        },
+        "uuid": "835_f"
+    },
+    {
+        "description": "Flynn Rider - Breaking and Entering #102 foil",
+        "input": {
+            "name": "Flynn Rider - Breaking and Entering",
+            "variant": "102",
+            "foil": true
+        },
+        "uuid": "1766_f"
+    },
+    {
+        "description": "Flynn Rider - His Own Biggest Fan #82 foil",
+        "input": {
+            "name": "Flynn Rider - His Own Biggest Fan",
+            "variant": "82",
+            "foil": true
+        },
+        "uuid": "298_f"
+    },
+    {
+        "description": "Force of a Great Typhoon #128 foil",
+        "input": {
+            "name": "Force of a Great Typhoon",
+            "variant": "128",
+            "foil": true
+        },
+        "uuid": "2591_f"
+    },
+    {
+        "description": "Four Dozen Eggs #164",
+        "input": {
+            "name": "Four Dozen Eggs",
+            "variant": "164"
+        },
+        "uuid": "2100"
+    },
+    {
+        "description": "Freckles - Good Boy #168 foil",
+        "input": {
+            "name": "Freckles - Good Boy",
+            "variant": "168",
+            "foil": true
+        },
+        "uuid": "1601_f"
+    },
+    {
+        "description": "Freeze #63 foil",
+        "input": {
+            "name": "Freeze",
+            "variant": "63",
+            "foil": true
+        },
+        "uuid": "63_f"
+    },
+    {
+        "description": "Friend Owl - Cantankerous Neighbor #144",
+        "input": {
+            "name": "Friend Owl - Cantankerous Neighbor",
+            "variant": "144"
+        },
+        "uuid": "1808"
+    },
+    {
+        "description": "Frozone - Super Slick #46 foil",
+        "input": {
+            "name": "Frozone - Super Slick",
+            "variant": "46",
+            "foil": true
+        },
+        "uuid": "2761_f"
+    },
+    {
+        "description": "Gadget Hackwrench - Creative Thinker #139",
+        "input": {
+            "name": "Gadget Hackwrench - Creative Thinker",
+            "variant": "139"
+        },
+        "uuid": "1338"
+    },
+    {
+        "description": "Gadget Hackwrench - Resourceful Mechanic #145",
+        "input": {
+            "name": "Gadget Hackwrench - Resourceful Mechanic",
+            "variant": "145"
+        },
+        "uuid": "2860"
+    },
+    {
+        "description": "Galactic Communicator #99",
+        "input": {
+            "name": "Galactic Communicator",
+            "variant": "99"
+        },
+        "uuid": "1298"
+    },
+    {
+        "description": "Gantu - Captain Crankyhead #189",
+        "input": {
+            "name": "Gantu - Captain Crankyhead",
+            "variant": "189"
+        },
+        "uuid": "1388"
+    },
+    {
+        "description": "Gargantuan Cobra - Slithering Statue #13",
+        "input": {
+            "name": "Gargantuan Cobra - Slithering Statue",
+            "variant": "13"
+        },
+        "uuid": "1908"
+    },
+    {
+        "description": "Gaston - Baritone Bully #8",
+        "input": {
+            "name": "Gaston - Baritone Bully",
+            "variant": "8"
+        },
+        "uuid": "224"
+    },
+    {
+        "description": "Gaston - Intellectual Powerhouse #147",
+        "input": {
+            "name": "Gaston - Intellectual Powerhouse",
+            "variant": "147"
+        },
+        "uuid": "363"
+    },
+    {
+        "description": "Gazeem - Ruthless Ruffian #10",
+        "input": {
+            "name": "Gazeem - Ruthless Ruffian",
+            "variant": "10"
+        },
+        "uuid": "1905"
+    },
+    {
+        "description": "Gene - Niceland Resident #13 foil",
+        "input": {
+            "name": "Gene - Niceland Resident",
+            "variant": "13",
+            "foil": true
+        },
+        "uuid": "1677_f"
+    },
+    {
+        "description": "Genie - Investigative Mind #146 foil",
+        "input": {
+            "name": "Genie - Investigative Mind",
+            "variant": "146",
+            "foil": true
+        },
+        "uuid": "2335_f"
+    },
+    {
+        "description": "Genie - Of the Lamp #76 foil",
+        "input": {
+            "name": "Genie - Of the Lamp",
+            "variant": "76",
+            "foil": true
+        },
+        "uuid": "2012_f"
+    },
+    {
+        "description": "Genie - Satisfied Dragon #189 foil",
+        "input": {
+            "name": "Genie - Satisfied Dragon",
+            "variant": "189",
+            "foil": true
+        },
+        "uuid": "1853_f"
+    },
+    {
+        "description": "Genie - Wish Fulfilled #53",
+        "input": {
+            "name": "Genie - Wish Fulfilled",
+            "variant": "53"
+        },
+        "uuid": "1252"
+    },
+    {
+        "description": "Get to Safety! #130",
+        "input": {
+            "name": "Get to Safety!",
+            "variant": "130"
+        },
+        "uuid": "2319"
+    },
+    {
+        "description": "Gigi - Best in Snow #189 foil",
+        "input": {
+            "name": "Gigi - Best in Snow",
+            "variant": "189",
+            "foil": true
+        },
+        "uuid": "2652_f"
+    },
+    {
+        "description": "Glean #163 foil",
+        "input": {
+            "name": "Glean",
+            "variant": "163",
+            "foil": true
+        },
+        "uuid": "854_f"
+    },
+    {
+        "description": "Go Go Tomago - Darting Dynamo #73 foil",
+        "input": {
+            "name": "Go Go Tomago - Darting Dynamo",
+            "variant": "73",
+            "foil": true
+        },
+        "uuid": "1272_f"
+    },
+    {
+        "description": "Golden Harp - Enchanter of the Land #11 foil",
+        "input": {
+            "name": "Golden Harp - Enchanter of the Land",
+            "variant": "11",
+            "foil": true
+        },
+        "uuid": "702_f"
+    },
+    {
+        "description": "Good Job! #27",
+        "input": {
+            "name": "Good Job!",
+            "variant": "27"
+        },
+        "uuid": "1226"
+    },
+    {
+        "description": "Goofy - Emerald Champion #91 foil",
+        "input": {
+            "name": "Goofy - Emerald Champion",
+            "variant": "91",
+            "foil": true
+        },
+        "uuid": "2280_f"
+    },
+    {
+        "description": "Goofy - Galumphing Gumshoe #223 foil",
+        "input": {
+            "name": "Goofy - Galumphing Gumshoe",
+            "variant": "223",
+            "foil": true
+        },
+        "uuid": "2412"
+    },
+    {
+        "description": "Goofy - Groundbreaking Chef #223 foil",
+        "input": {
+            "name": "Goofy - Groundbreaking Chef",
+            "variant": "223",
+            "foil": true
+        },
+        "uuid": "1933"
+    },
+    {
+        "description": "Goofy - Marley's Clumsy Spirit #120",
+        "input": {
+            "name": "Goofy - Marley's Clumsy Spirit",
+            "variant": "120"
+        },
+        "uuid": "2583"
+    },
+    {
+        "description": "Goofy - Set for Adventure #39 foil",
+        "input": {
+            "name": "Goofy - Set for Adventure",
+            "variant": "39",
+            "foil": true
+        },
+        "uuid": "2450"
+    },
+    {
+        "description": "Gopher - Ship's Carpenter #4",
+        "input": {
+            "name": "Gopher - Ship's Carpenter",
+            "variant": "4"
+        },
+        "uuid": "1203"
+    },
+    {
+        "description": "Grab Your Sword #198",
+        "input": {
+            "name": "Grab Your Sword",
+            "variant": "198"
+        },
+        "uuid": "198"
+    },
+    {
+        "description": "Gramma Tala - Spirit of the Ocean #143 foil",
+        "input": {
+            "name": "Gramma Tala - Spirit of the Ocean",
+            "variant": "143",
+            "foil": true
+        },
+        "uuid": "579_f"
+    },
+    {
+        "description": "Grand Duke - Advisor to the King #9",
+        "input": {
+            "name": "Grand Duke - Advisor to the King",
+            "variant": "9"
+        },
+        "uuid": "225"
+    },
+    {
+        "description": "Grandmother Willow - Ancient Advisor #13",
+        "input": {
+            "name": "Grandmother Willow - Ancient Advisor",
+            "variant": "13"
+        },
+        "uuid": "2476"
+    },
+    {
+        "description": "Grewnge - Cannon Expert #86 foil",
+        "input": {
+            "name": "Grewnge - Cannon Expert",
+            "variant": "86",
+            "foil": true
+        },
+        "uuid": "1519_f"
+    },
+    {
+        "description": "Grumpy - Skeptical Knight #186 foil",
+        "input": {
+            "name": "Grumpy - Skeptical Knight",
+            "variant": "186",
+            "foil": true
+        },
+        "uuid": "1142_f"
+    },
+    {
+        "description": "Gurgi - Apple Lover #10 foil",
+        "input": {
+            "name": "Gurgi - Apple Lover",
+            "variant": "10",
+            "foil": true
+        },
+        "uuid": "2199_f"
+    },
+    {
+        "description": "Gyro Gearloose - Eccentric Inventor #123 foil",
+        "input": {
+            "name": "Gyro Gearloose - Eccentric Inventor",
+            "variant": "123",
+            "foil": true
+        },
+        "uuid": "1787_f"
+    },
+    {
+        "description": "Hades - Fast Talker #52 foil",
+        "input": {
+            "name": "Hades - Fast Talker",
+            "variant": "52",
+            "foil": true
+        },
+        "uuid": "1485_f"
+    },
+    {
+        "description": "Hades - King of Olympus #205 foil",
+        "input": {
+            "name": "Hades - King of Olympus",
+            "variant": "205",
+            "foil": true
+        },
+        "uuid": "205"
+    },
+    {
+        "description": "Hades - Lord of the Underworld #6",
+        "input": {
+            "name": "Hades - Lord of the Underworld",
+            "variant": "6"
+        },
+        "uuid": "6"
+    },
+    {
+        "description": "Hakuna Matata #27",
+        "input": {
+            "name": "Hakuna Matata",
+            "variant": "27"
+        },
+        "uuid": "27"
+    },
+    {
+        "description": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets #70",
+        "input": {
+            "name": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets",
+            "variant": "70"
+        },
+        "uuid": "2785"
+    },
+    {
+        "description": "Hans - Brazen Manipulator #117",
+        "input": {
+            "name": "Hans - Brazen Manipulator",
+            "variant": "117"
+        },
+        "uuid": "2306"
+    },
+    {
+        "description": "Hans - Thirteenth in Line #180",
+        "input": {
+            "name": "Hans - Thirteenth in Line",
+            "variant": "180"
+        },
+        "uuid": "180"
+    },
+    {
+        "description": "Has Set My Heaaaaaaart... #94",
+        "input": {
+            "name": "Has Set My Heaaaaaaart...",
+            "variant": "94"
+        },
+        "uuid": "530"
+    },
+    {
+        "description": "He's Got a Sword! #132 foil",
+        "input": {
+            "name": "He's Got a Sword!",
+            "variant": "132",
+            "foil": true
+        },
+        "uuid": "132_f"
+    },
+    {
+        "description": "Heal What Has Been Hurt #26 foil",
+        "input": {
+            "name": "Heal What Has Been Hurt",
+            "variant": "26",
+            "foil": true
+        },
+        "uuid": "462_f"
+    },
+    {
+        "description": "Healing Touch #26 foil",
+        "input": {
+            "name": "Healing Touch",
+            "variant": "26",
+            "foil": true
+        },
+        "uuid": "982_f"
+    },
+    {
+        "description": "Heathcliff - Stoic Butler #78 foil",
+        "input": {
+            "name": "Heathcliff - Stoic Butler",
+            "variant": "78",
+            "foil": true
+        },
+        "uuid": "1277_f"
+    },
+    {
+        "description": "HeiHei - Bumbling Rooster #75",
+        "input": {
+            "name": "HeiHei - Bumbling Rooster",
+            "variant": "75"
+        },
+        "uuid": "766"
+    },
+    {
+        "description": "HeiHei - Peckish Pal #6",
+        "input": {
+            "name": "HeiHei - Peckish Pal",
+            "variant": "6"
+        },
+        "uuid": "919"
+    },
+    {
+        "description": "HeiHei - Rambling Rooster #185 foil",
+        "input": {
+            "name": "HeiHei - Rambling Rooster",
+            "variant": "185",
+            "foil": true
+        },
+        "uuid": "1618_f"
+    },
+    {
+        "description": "Helga Sinclair - Right-Hand Woman #175 foil",
+        "input": {
+            "name": "Helga Sinclair - Right-Hand Woman",
+            "variant": "175",
+            "foil": true
+        },
+        "uuid": "611_f"
+    },
+    {
+        "description": "Hen Wen - Prophetic Pig #138 foil",
+        "input": {
+            "name": "Hen Wen - Prophetic Pig",
+            "variant": "138",
+            "foil": true
+        },
+        "uuid": "2327_f"
+    },
+    {
+        "description": "Hercules - Beloved Hero #180 foil",
+        "input": {
+            "name": "Hercules - Beloved Hero",
+            "variant": "180",
+            "foil": true
+        },
+        "uuid": "871_f"
+    },
+    {
+        "description": "Hercules - Divine Hero #181 foil",
+        "input": {
+            "name": "Hercules - Divine Hero",
+            "variant": "181",
+            "foil": true
+        },
+        "uuid": "397_f"
+    },
+    {
+        "description": "Hercules - Spectral Demigod #117 foil",
+        "input": {
+            "name": "Hercules - Spectral Demigod",
+            "variant": "117",
+            "foil": true
+        },
+        "uuid": "2580_f"
+    },
+    {
+        "description": "Hercules - Young Rescuer #123",
+        "input": {
+            "name": "Hercules - Young Rescuer",
+            "variant": "123"
+        },
+        "uuid": "2838"
+    },
+    {
+        "description": "Hidden Cove - Tranquil Haven #102",
+        "input": {
+            "name": "Hidden Cove - Tranquil Haven",
+            "variant": "102"
+        },
+        "uuid": "2038"
+    },
+    {
+        "description": "Hide Away #163 foil",
+        "input": {
+            "name": "Hide Away",
+            "variant": "163",
+            "foil": true
+        },
+        "uuid": "1119_f"
+    },
+    {
+        "description": "Hiro Hamada - Armor Designer #24A",
+        "input": {
+            "name": "Hiro Hamada - Armor Designer",
+            "variant": "24A"
+        },
+        "uuid": "1661"
+    },
+    {
+        "description": "Hiro Hamada - Robotics Prodigy #145",
+        "input": {
+            "name": "Hiro Hamada - Robotics Prodigy",
+            "variant": "145"
+        },
+        "uuid": "1344"
+    },
+    {
+        "description": "Honest John - Shameless Schemer #122",
+        "input": {
+            "name": "Honest John - Shameless Schemer",
+            "variant": "122"
+        },
+        "uuid": "1786"
+    },
+    {
+        "description": "Honey Lemon - Costumed Catalyst #111 foil",
+        "input": {
+            "name": "Honey Lemon - Costumed Catalyst",
+            "variant": "111",
+            "foil": true
+        },
+        "uuid": "1775_f"
+    },
+    {
+        "description": "Horace - No-Good Scoundrel #79 foil",
+        "input": {
+            "name": "Horace - No-Good Scoundrel",
+            "variant": "79",
+            "foil": true
+        },
+        "uuid": "79_f"
+    },
+    {
+        "description": "Huey - Reliable Leader #3",
+        "input": {
+            "name": "Huey - Reliable Leader",
+            "variant": "3"
+        },
+        "uuid": "1667"
+    },
+    {
+        "description": "Hydra - Deadly Serpent #108",
+        "input": {
+            "name": "Hydra - Deadly Serpent",
+            "variant": "108"
+        },
+        "uuid": "544"
+    },
+    {
+        "description": "Hypnotize #98",
+        "input": {
+            "name": "Hypnotize",
+            "variant": "98"
+        },
+        "uuid": "314"
+    },
+    {
+        "description": "I Won't Give In #28",
+        "input": {
+            "name": "I Won't Give In",
+            "variant": "28"
+        },
+        "uuid": "1227"
+    },
+    {
+        "description": "I2I #130",
+        "input": {
+            "name": "I2I",
+            "variant": "130"
+        },
+        "uuid": "2066"
+    },
+    {
+        "description": "Iago - Loud-Mouthed Parrot #80",
+        "input": {
+            "name": "Iago - Loud-Mouthed Parrot",
+            "variant": "80"
+        },
+        "uuid": "80"
+    },
+    {
+        "description": "Iago - Reappearing Parrot #45",
+        "input": {
+            "name": "Iago - Reappearing Parrot",
+            "variant": "45"
+        },
+        "uuid": "1244"
+    },
+    {
+        "description": "Ichabod Crane - Bookish Schoolmaster #148",
+        "input": {
+            "name": "Ichabod Crane - Bookish Schoolmaster",
+            "variant": "148"
+        },
+        "uuid": "2337"
+    },
+    {
+        "description": "If It's Not Baroque #162",
+        "input": {
+            "name": "If It's Not Baroque",
+            "variant": "162"
+        },
+        "uuid": "162"
+    },
+    {
+        "description": "Improvise #96",
+        "input": {
+            "name": "Improvise",
+            "variant": "96"
+        },
+        "uuid": "2032"
+    },
+    {
+        "description": "Infra-Pink Ultra Scan Specs #201 foil",
+        "input": {
+            "name": "Infra-Pink Ultra Scan Specs",
+            "variant": "201",
+            "foil": true
+        },
+        "uuid": "2664_f"
+    },
+    {
+        "description": "Inkrunner #169",
+        "input": {
+            "name": "Inkrunner",
+            "variant": "169"
+        },
+        "uuid": "2358"
+    },
+    {
+        "description": "Institute of Technology - Prestigious University #170",
+        "input": {
+            "name": "Institute of Technology - Prestigious University",
+            "variant": "170"
+        },
+        "uuid": "1369"
+    },
+    {
+        "description": "Isabela Madrigal - Caring Cultivator #19",
+        "input": {
+            "name": "Isabela Madrigal - Caring Cultivator",
+            "variant": "19"
+        },
+        "uuid": "2734"
+    },
+    {
+        "description": "Isabela Madrigal - Perfectly in Control #153 foil",
+        "input": {
+            "name": "Isabela Madrigal - Perfectly in Control",
+            "variant": "153",
+            "foil": true
+        },
+        "uuid": "2868_f"
+    },
+    {
+        "description": "It Means No Worries #208 foil",
+        "input": {
+            "name": "It Means No Worries",
+            "variant": "208",
+            "foil": true
+        },
+        "uuid": "1872"
+    },
+    {
+        "description": "Jafar - Dreadnought #183",
+        "input": {
+            "name": "Jafar - Dreadnought",
+            "variant": "183"
+        },
+        "uuid": "399"
+    },
+    {
+        "description": "Jafar - Keeper of Secrets #44",
+        "input": {
+            "name": "Jafar - Keeper of Secrets",
+            "variant": "44"
+        },
+        "uuid": "44"
+    },
+    {
+        "description": "Jafar - Newly Crowned #51 foil",
+        "input": {
+            "name": "Jafar - Newly Crowned",
+            "variant": "51",
+            "foil": true
+        },
+        "uuid": "1484_f"
+    },
+    {
+        "description": "Jafar - Striking Illusionist #208 foil",
+        "input": {
+            "name": "Jafar - Striking Illusionist",
+            "variant": "208",
+            "foil": true
+        },
+        "uuid": "644"
+    },
+    {
+        "description": "James - Role Model #150 foil",
+        "input": {
+            "name": "James - Role Model",
+            "variant": "150",
+            "foil": true
+        },
+        "uuid": "366_f"
+    },
+    {
+        "description": "Jasmine - Ephemeral Princess #9",
+        "input": {
+            "name": "Jasmine - Ephemeral Princess",
+            "variant": "9"
+        },
+        "uuid": "1904"
+    },
+    {
+        "description": "Jasmine - Inspired Researcher #173",
+        "input": {
+            "name": "Jasmine - Inspired Researcher",
+            "variant": "173"
+        },
+        "uuid": "1606"
+    },
+    {
+        "description": "Jasmine - Royal Commodore #84",
+        "input": {
+            "name": "Jasmine - Royal Commodore",
+            "variant": "84"
+        },
+        "uuid": "1283"
+    },
+    {
+        "description": "Jasmine - Steady Strategist #171 foil",
+        "input": {
+            "name": "Jasmine - Steady Strategist",
+            "variant": "171",
+            "foil": true
+        },
+        "uuid": "1835_f"
+    },
+    {
+        "description": "Jessie - Lively Cowgirl #20",
+        "input": {
+            "name": "Jessie - Lively Cowgirl",
+            "variant": "20"
+        },
+        "uuid": "2735"
+    },
+    {
+        "description": "Jetsam - Ursula's Spy #46",
+        "input": {
+            "name": "Jetsam - Ursula's Spy",
+            "variant": "46"
+        },
+        "uuid": "46"
+    },
+    {
+        "description": "Jim Hawkins - Honorable Pirate #25 foil",
+        "input": {
+            "name": "Jim Hawkins - Honorable Pirate",
+            "variant": "25",
+            "foil": true
+        },
+        "uuid": "1224_f"
+    },
+    {
+        "description": "Jim Hawkins - Thrill Seeker #110 foil",
+        "input": {
+            "name": "Jim Hawkins - Thrill Seeker",
+            "variant": "110",
+            "foil": true
+        },
+        "uuid": "546_f"
+    },
+    {
+        "description": "Jingle Joe - Sid's Toy #111",
+        "input": {
+            "name": "Jingle Joe - Sid's Toy",
+            "variant": "111"
+        },
+        "uuid": "2826"
+    },
+    {
+        "description": "John Silver - Alien Pirate #82",
+        "input": {
+            "name": "John Silver - Alien Pirate",
+            "variant": "82"
+        },
+        "uuid": "82"
+    },
+    {
+        "description": "John Silver - Greedy Treasure Seeker #192",
+        "input": {
+            "name": "John Silver - Greedy Treasure Seeker",
+            "variant": "192"
+        },
+        "uuid": "2128"
+    },
+    {
+        "description": "John Silver - Terror of the Realm #148 foil",
+        "input": {
+            "name": "John Silver - Terror of the Realm",
+            "variant": "148",
+            "foil": true
+        },
+        "uuid": "839_f"
+    },
+    {
+        "description": "John Smith - Undaunted Protector #193 foil",
+        "input": {
+            "name": "John Smith - Undaunted Protector",
+            "variant": "193",
+            "foil": true
+        },
+        "uuid": "2656_f"
+    },
+    {
+        "description": "Joshua Sweet - The Doctor #5",
+        "input": {
+            "name": "Joshua Sweet - The Doctor",
+            "variant": "5"
+        },
+        "uuid": "441"
+    },
+    {
+        "description": "Judy Hopps - Optimistic Officer #152 foil",
+        "input": {
+            "name": "Judy Hopps - Optimistic Officer",
+            "variant": "152",
+            "foil": true
+        },
+        "uuid": "368_f"
+    },
+    {
+        "description": "Judy Hopps - Uncovering Clues #156",
+        "input": {
+            "name": "Judy Hopps - Uncovering Clues",
+            "variant": "156"
+        },
+        "uuid": "2345"
+    },
+    {
+        "description": "Julieta Madrigal - Excellent Cook #18 foil",
+        "input": {
+            "name": "Julieta Madrigal - Excellent Cook",
+            "variant": "18",
+            "foil": true
+        },
+        "uuid": "1954_f"
+    },
+    {
+        "description": "Jumba Jookiba - Renegade Scientist #83 foil",
+        "input": {
+            "name": "Jumba Jookiba - Renegade Scientist",
+            "variant": "83",
+            "foil": true
+        },
+        "uuid": "83_f"
+    },
+    {
+        "description": "Kaa - Hypnotizing Python #21 foil",
+        "input": {
+            "name": "Kaa - Hypnotizing Python",
+            "variant": "21",
+            "foil": true
+        },
+        "uuid": "1685_f"
+    },
+    {
+        "description": "Kakamora - Boarding Party #104",
+        "input": {
+            "name": "Kakamora - Boarding Party",
+            "variant": "104"
+        },
+        "uuid": "1303"
+    },
+    {
+        "description": "Kakamora - Pirate Pitcher #105",
+        "input": {
+            "name": "Kakamora - Pirate Pitcher",
+            "variant": "105"
+        },
+        "uuid": "1304"
+    },
+    {
+        "description": "Kashekim - Ancient Ruler #77",
+        "input": {
+            "name": "Kashekim - Ancient Ruler",
+            "variant": "77"
+        },
+        "uuid": "1510"
+    },
+    {
+        "description": "Kenai - Big Brother #5",
+        "input": {
+            "name": "Kenai - Big Brother",
+            "variant": "5"
+        },
+        "uuid": "961"
+    },
+    {
+        "description": "Khan - War Horse #193",
+        "input": {
+            "name": "Khan - War Horse",
+            "variant": "193"
+        },
+        "uuid": "1857"
+    },
+    {
+        "description": "Kida - Crystal Scion #236 foil",
+        "input": {
+            "name": "Kida - Crystal Scion",
+            "variant": "236",
+            "foil": true
+        },
+        "uuid": "2951"
+    },
+    {
+        "description": "Kida - Protector of Atlantis #7 foil",
+        "input": {
+            "name": "Kida - Protector of Atlantis",
+            "variant": "7",
+            "foil": true
+        },
+        "uuid": "443_f"
+    },
+    {
+        "description": "King Candy - Sugar Rush Nightmare #23 foil",
+        "input": {
+            "name": "King Candy - Sugar Rush Nightmare",
+            "variant": "23",
+            "foil": true
+        },
+        "uuid": "1687_f"
+    },
+    {
+        "description": "King Louie - Jungle VIP #12",
+        "input": {
+            "name": "King Louie - Jungle VIP",
+            "variant": "12"
+        },
+        "uuid": "228"
+    },
+    {
+        "description": "King's Sensor Core #200",
+        "input": {
+            "name": "King's Sensor Core",
+            "variant": "200"
+        },
+        "uuid": "1399"
+    },
+    {
+        "description": "Kit Cloudkicker - Tough Guy #77 foil",
+        "input": {
+            "name": "Kit Cloudkicker - Tough Guy",
+            "variant": "77",
+            "foil": true
+        },
+        "uuid": "513_f"
+    },
+    {
+        "description": "Kristoff - Icy Explorer #51 foil",
+        "input": {
+            "name": "Kristoff - Icy Explorer",
+            "variant": "51",
+            "foil": true
+        },
+        "uuid": "2514_f"
+    },
+    {
+        "description": "Kristoff - Reindeer Keeper #2 foil",
+        "input": {
+            "name": "Kristoff - Reindeer Keeper",
+            "variant": "2",
+            "foil": true
+        },
+        "uuid": "1181"
+    },
+    {
+        "description": "Kronk - Laid Back #63",
+        "input": {
+            "name": "Kronk - Laid Back",
+            "variant": "63"
+        },
+        "uuid": "1496"
+    },
+    {
+        "description": "Kuzco - Impulsive Llama #210 foil",
+        "input": {
+            "name": "Kuzco - Impulsive Llama",
+            "variant": "210",
+            "foil": true
+        },
+        "uuid": "1874"
+    },
+    {
+        "description": "Kuzco - Temperamental Emperor #69 foil",
+        "input": {
+            "name": "Kuzco - Temperamental Emperor",
+            "variant": "69",
+            "foil": true
+        },
+        "uuid": "2005_f"
+    },
+    {
+        "description": "Kuzco - Wanted Llama #45 foil",
+        "input": {
+            "name": "Kuzco - Wanted Llama",
+            "variant": "45",
+            "foil": true
+        },
+        "uuid": "261_f"
+    },
+    {
+        "description": "Lady - Decisive Dog #33",
+        "input": {
+            "name": "Lady - Decisive Dog",
+            "variant": "33"
+        },
+        "uuid": "1697"
+    },
+    {
+        "description": "Lady Kluck - Protective Confidant #172",
+        "input": {
+            "name": "Lady Kluck - Protective Confidant",
+            "variant": "172"
+        },
+        "uuid": "1605"
+    },
+    {
+        "description": "Lady Tremaine - Overbearing Matriarch #111 foil",
+        "input": {
+            "name": "Lady Tremaine - Overbearing Matriarch",
+            "variant": "111",
+            "foil": true
+        },
+        "uuid": "327_f"
+    },
+    {
+        "description": "Lantern #32",
+        "input": {
+            "name": "Lantern",
+            "variant": "32"
+        },
+        "uuid": "1968"
+    },
+    {
+        "description": "Last Stand #29 foil",
+        "input": {
+            "name": "Last Stand",
+            "variant": "29",
+            "foil": true
+        },
+        "uuid": "245_f"
+    },
+    {
+        "description": "Launchpad - Hideout Defender #172 foil",
+        "input": {
+            "name": "Launchpad - Hideout Defender",
+            "variant": "172",
+            "foil": true
+        },
+        "uuid": "2635_f"
+    },
+    {
+        "description": "LeFou - Bumbler #8 foil",
+        "input": {
+            "name": "LeFou - Bumbler",
+            "variant": "8",
+            "foil": true
+        },
+        "uuid": "8_f"
+    },
+    {
+        "description": "LeFou - Opportunistic Flunky #181 foil",
+        "input": {
+            "name": "LeFou - Opportunistic Flunky",
+            "variant": "181",
+            "foil": true
+        },
+        "uuid": "872_f"
+    },
+    {
+        "description": "Lena Sabrewing - Pure Energy #49 foil",
+        "input": {
+            "name": "Lena Sabrewing - Pure Energy",
+            "variant": "49",
+            "foil": true
+        },
+        "uuid": "1713_f"
+    },
+    {
+        "description": "Let It Go #2 foil",
+        "input": {
+            "name": "Let It Go",
+            "variant": "2",
+            "foil": true
+        },
+        "uuid": "1188"
+    },
+    {
+        "description": "Lexington - Small in Stature #183",
+        "input": {
+            "name": "Lexington - Small in Stature",
+            "variant": "183"
+        },
+        "uuid": "2372"
+    },
+    {
+        "description": "Li Shang - Imperial Captain #193",
+        "input": {
+            "name": "Li Shang - Imperial Captain",
+            "variant": "193"
+        },
+        "uuid": "2129"
+    },
+    {
+        "description": "Li Shang - Solemn Son #175 foil",
+        "input": {
+            "name": "Li Shang - Solemn Son",
+            "variant": "175",
+            "foil": true
+        },
+        "uuid": "2638_f"
+    },
+    {
+        "description": "Like a Bird in the Sky #131",
+        "input": {
+            "name": "Like a Bird in the Sky",
+            "variant": "131"
+        },
+        "uuid": "2846"
+    },
+    {
+        "description": "Lilo - Causing an Uproar #137 foil",
+        "input": {
+            "name": "Lilo - Causing an Uproar",
+            "variant": "137",
+            "foil": true
+        },
+        "uuid": "1801_f"
+    },
+    {
+        "description": "Lilo - Junior Cake Decorator #8 foil",
+        "input": {
+            "name": "Lilo - Junior Cake Decorator",
+            "variant": "8",
+            "foil": true
+        },
+        "uuid": "964_f"
+    },
+    {
+        "description": "Ling - Imperial Soldier #183",
+        "input": {
+            "name": "Ling - Imperial Soldier",
+            "variant": "183"
+        },
+        "uuid": "874"
+    },
+    {
+        "description": "Little John - Impermanent Outlaw #92",
+        "input": {
+            "name": "Little John - Impermanent Outlaw",
+            "variant": "92"
+        },
+        "uuid": "2281"
+    },
+    {
+        "description": "Little John - Sir Reginald #176",
+        "input": {
+            "name": "Little John - Sir Reginald",
+            "variant": "176"
+        },
+        "uuid": "2112"
+    },
+    {
+        "description": "Look at This Family #207 foil",
+        "input": {
+            "name": "Look at This Family",
+            "variant": "207",
+            "foil": true
+        },
+        "uuid": "898"
+    },
+    {
+        "description": "Lord MacGuffin - Clever Swordsman #78 foil",
+        "input": {
+            "name": "Lord MacGuffin - Clever Swordsman",
+            "variant": "78",
+            "foil": true
+        },
+        "uuid": "2793_f"
+    },
+    {
+        "description": "Lost in the Woods #29 foil",
+        "input": {
+            "name": "Lost in the Woods",
+            "variant": "29",
+            "foil": true
+        },
+        "uuid": "720_f"
+    },
+    {
+        "description": "Louis - Endearing Alligator #95 foil",
+        "input": {
+            "name": "Louis - Endearing Alligator",
+            "variant": "95",
+            "foil": true
+        },
+        "uuid": "1759_f"
+    },
+    {
+        "description": "Lucky Dime #165 foil",
+        "input": {
+            "name": "Lucky Dime",
+            "variant": "165",
+            "foil": true
+        },
+        "uuid": "601_f"
+    },
+    {
+        "description": "Luisa Madrigal - Entertaining Muscle #45",
+        "input": {
+            "name": "Luisa Madrigal - Entertaining Muscle",
+            "variant": "45"
+        },
+        "uuid": "1001"
+    },
+    {
+        "description": "Luisa Madrigal - Pushing Through #62",
+        "input": {
+            "name": "Luisa Madrigal - Pushing Through",
+            "variant": "62"
+        },
+        "uuid": "2777"
+    },
+    {
+        "description": "Lumiere - Fired Up #139",
+        "input": {
+            "name": "Lumiere - Fired Up",
+            "variant": "139"
+        },
+        "uuid": "1803"
+    },
+    {
+        "description": "Lyle Tiberius Rourke - Adventurer for Hire #87",
+        "input": {
+            "name": "Lyle Tiberius Rourke - Adventurer for Hire",
+            "variant": "87"
+        },
+        "uuid": "2802"
+    },
+    {
+        "description": "Lyle Tiberius Rourke - Cunning Mercenary #78 foil",
+        "input": {
+            "name": "Lyle Tiberius Rourke - Cunning Mercenary",
+            "variant": "78",
+            "foil": true
+        },
+        "uuid": "514_f"
+    },
+    {
+        "description": "Mad Hatter - Eccentric Host #59 foil",
+        "input": {
+            "name": "Mad Hatter - Eccentric Host",
+            "variant": "59",
+            "foil": true
+        },
+        "uuid": "1258_f"
+    },
+    {
+        "description": "Mad Hatter's Teapot #66",
+        "input": {
+            "name": "Mad Hatter's Teapot",
+            "variant": "66"
+        },
+        "uuid": "1265"
+    },
+    {
+        "description": "Madam Mim - Purple Dragon #208 foil",
+        "input": {
+            "name": "Madam Mim - Purple Dragon",
+            "variant": "208",
+            "foil": true
+        },
+        "uuid": "424"
+    },
+    {
+        "description": "Madam Mim - Snake #49 foil",
+        "input": {
+            "name": "Madam Mim - Snake",
+            "variant": "49",
+            "foil": true
+        },
+        "uuid": "265_f"
+    },
+    {
+        "description": "Madame Medusa - Deceiving Partner #47 foil",
+        "input": {
+            "name": "Madame Medusa - Deceiving Partner",
+            "variant": "47",
+            "foil": true
+        },
+        "uuid": "1711_f"
+    },
+    {
+        "description": "Magic Broom - Brigade Commander #186 foil",
+        "input": {
+            "name": "Magic Broom - Brigade Commander",
+            "variant": "186",
+            "foil": true
+        },
+        "uuid": "877_f"
+    },
+    {
+        "description": "Magic Broom - Industrial Model #188 foil",
+        "input": {
+            "name": "Magic Broom - Industrial Model",
+            "variant": "188",
+            "foil": true
+        },
+        "uuid": "404_f"
+    },
+    {
+        "description": "Magic Carpet - Amazing Flier #51 foil",
+        "input": {
+            "name": "Magic Carpet - Amazing Flier",
+            "variant": "51",
+            "foil": true
+        },
+        "uuid": "1250_f"
+    },
+    {
+        "description": "Magic Mirror #65 foil",
+        "input": {
+            "name": "Magic Mirror",
+            "variant": "65",
+            "foil": true
+        },
+        "uuid": "2001_f"
+    },
+    {
+        "description": "Magica De Spell - Cruel Sorceress #53 foil",
+        "input": {
+            "name": "Magica De Spell - Cruel Sorceress",
+            "variant": "53",
+            "foil": true
+        },
+        "uuid": "1009_f"
+    },
+    {
+        "description": "Magica De Spell - The Midas Touch #49",
+        "input": {
+            "name": "Magica De Spell - The Midas Touch",
+            "variant": "49"
+        },
+        "uuid": "485"
+    },
+    {
+        "description": "Magical Maneuvers #80",
+        "input": {
+            "name": "Magical Maneuvers",
+            "variant": "80"
+        },
+        "uuid": "1513"
+    },
+    {
+        "description": "Maid Marian - Lady of the Lists #22",
+        "input": {
+            "name": "Maid Marian - Lady of the Lists",
+            "variant": "22"
+        },
+        "uuid": "978"
+    },
+    {
+        "description": "Maleficent - Biding Her Time #48",
+        "input": {
+            "name": "Maleficent - Biding Her Time",
+            "variant": "48"
+        },
+        "uuid": "48"
+    },
+    {
+        "description": "Maleficent - Mistress of All Evil #51",
+        "input": {
+            "name": "Maleficent - Mistress of All Evil",
+            "variant": "51"
+        },
+        "uuid": "487"
+    },
+    {
+        "description": "Maleficent - Sinister Visitor #150",
+        "input": {
+            "name": "Maleficent - Sinister Visitor",
+            "variant": "150"
+        },
+        "uuid": "150"
+    },
+    {
+        "description": "Maleficent - Vengeful Sorceress #54 foil",
+        "input": {
+            "name": "Maleficent - Vengeful Sorceress",
+            "variant": "54",
+            "foil": true
+        },
+        "uuid": "1010_f"
+    },
+    {
+        "description": "Malicious, Mean, and Scary #97 foil",
+        "input": {
+            "name": "Malicious, Mean, and Scary",
+            "variant": "97",
+            "foil": true
+        },
+        "uuid": "2286_f"
+    },
+    {
+        "description": "Mama Odie - Voice of Wisdom #52 foil",
+        "input": {
+            "name": "Mama Odie - Voice of Wisdom",
+            "variant": "52",
+            "foil": true
+        },
+        "uuid": "488_f"
+    },
+    {
+        "description": "March Hare - Hare-Brained Eccentric #91 foil",
+        "input": {
+            "name": "March Hare - Hare-Brained Eccentric",
+            "variant": "91",
+            "foil": true
+        },
+        "uuid": "1755_f"
+    },
+    {
+        "description": "Markowski - Space Trooper #113 foil",
+        "input": {
+            "name": "Markowski - Space Trooper",
+            "variant": "113",
+            "foil": true
+        },
+        "uuid": "1312_f"
+    },
+    {
+        "description": "Mattias - Arendelle General #155 foil",
+        "input": {
+            "name": "Mattias - Arendelle General",
+            "variant": "155",
+            "foil": true
+        },
+        "uuid": "1588_f"
+    },
+    {
+        "description": "Maui - Hero to All #114",
+        "input": {
+            "name": "Maui - Hero to All",
+            "variant": "114"
+        },
+        "uuid": "114"
+    },
+    {
+        "description": "Maui - Stubborn Trickster #110 foil",
+        "input": {
+            "name": "Maui - Stubborn Trickster",
+            "variant": "110",
+            "foil": true
+        },
+        "uuid": "1774_f"
+    },
+    {
+        "description": "Maui's Place of Exile - Hidden Island #202 foil",
+        "input": {
+            "name": "Maui's Place of Exile - Hidden Island",
+            "variant": "202",
+            "foil": true
+        },
+        "uuid": "638_f"
+    },
+    {
+        "description": "Maurice's Machine #151 foil",
+        "input": {
+            "name": "Maurice's Machine",
+            "variant": "151",
+            "foil": true
+        },
+        "uuid": "1584_f"
+    },
+    {
+        "description": "Max Goof - Rebellious Teen #75",
+        "input": {
+            "name": "Max Goof - Rebellious Teen",
+            "variant": "75"
+        },
+        "uuid": "2011"
+    },
+    {
+        "description": "Maximus - Team Champion #105",
+        "input": {
+            "name": "Maximus - Team Champion",
+            "variant": "105"
+        },
+        "uuid": "1061"
+    },
+    {
+        "description": "Mechanical Snake #25",
+        "input": {
+            "name": "Mechanical Snake",
+            "variant": "25"
+        },
+        "uuid": "1920"
+    },
+    {
+        "description": "Meeko - Skittish Scrounger #46 foil",
+        "input": {
+            "name": "Meeko - Skittish Scrounger",
+            "variant": "46",
+            "foil": true
+        },
+        "uuid": "2509_f"
+    },
+    {
+        "description": "Megara - Part of the Plan #54 foil",
+        "input": {
+            "name": "Megara - Part of the Plan",
+            "variant": "54",
+            "foil": true
+        },
+        "uuid": "1718_f"
+    },
+    {
+        "description": "Merida - Defiant Daughter #69 foil",
+        "input": {
+            "name": "Merida - Defiant Daughter",
+            "variant": "69",
+            "foil": true
+        },
+        "uuid": "2784_f"
+    },
+    {
+        "description": "Merida's Bow #101 foil",
+        "input": {
+            "name": "Merida's Bow",
+            "variant": "101",
+            "foil": true
+        },
+        "uuid": "2816_f"
+    },
+    {
+        "description": "Merlin - Crab #50",
+        "input": {
+            "name": "Merlin - Crab",
+            "variant": "50"
+        },
+        "uuid": "266"
+    },
+    {
+        "description": "Merlin - Self-Appointed Mentor #153",
+        "input": {
+            "name": "Merlin - Self-Appointed Mentor",
+            "variant": "153"
+        },
+        "uuid": "153"
+    },
+    {
+        "description": "Merlin's Carpetbag #167",
+        "input": {
+            "name": "Merlin's Carpetbag",
+            "variant": "167"
+        },
+        "uuid": "1123"
+    },
+    {
+        "description": "Mertle Edmonds - Lilo's Rival #82",
+        "input": {
+            "name": "Mertle Edmonds - Lilo's Rival",
+            "variant": "82"
+        },
+        "uuid": "1281"
+    },
+    {
+        "description": "Mickey Mouse - Amber Champion #23 foil",
+        "input": {
+            "name": "Mickey Mouse - Amber Champion",
+            "variant": "23",
+            "foil": true
+        },
+        "uuid": "2212_f"
+    },
+    {
+        "description": "Mickey Mouse - Brave Little Prince #111 foil",
+        "input": {
+            "name": "Mickey Mouse - Brave Little Prince",
+            "variant": "111",
+            "foil": true
+        },
+        "uuid": "2047_f"
+    },
+    {
+        "description": "Mickey Mouse - Detective #160",
+        "input": {
+            "name": "Mickey Mouse - Detective",
+            "variant": "160"
+        },
+        "uuid": "2349"
+    },
+    {
+        "description": "Mickey Mouse - Experienced Traveler #52 foil",
+        "input": {
+            "name": "Mickey Mouse - Experienced Traveler",
+            "variant": "52",
+            "foil": true
+        },
+        "uuid": "2767_f"
+    },
+    {
+        "description": "Mickey Mouse - Inspirational Warrior #200",
+        "input": {
+            "name": "Mickey Mouse - Inspirational Warrior",
+            "variant": "200"
+        },
+        "uuid": "1633"
+    },
+    {
+        "description": "Mickey Mouse - Musketeer #186 foil",
+        "input": {
+            "name": "Mickey Mouse - Musketeer",
+            "variant": "186",
+            "foil": true
+        },
+        "uuid": "186_f"
+    },
+    {
+        "description": "Mickey Mouse - Pirate Captain #18 foil",
+        "input": {
+            "name": "Mickey Mouse - Pirate Captain",
+            "variant": "18",
+            "foil": true
+        },
+        "uuid": "1430"
+    },
+    {
+        "description": "Mickey Mouse - Stalwart Explorer #181 foil",
+        "input": {
+            "name": "Mickey Mouse - Stalwart Explorer",
+            "variant": "181",
+            "foil": true
+        },
+        "uuid": "617_f"
+    },
+    {
+        "description": "Mickey Mouse - Steamboat Pilot #80 foil",
+        "input": {
+            "name": "Mickey Mouse - Steamboat Pilot",
+            "variant": "80",
+            "foil": true
+        },
+        "uuid": "2016_f"
+    },
+    {
+        "description": "Mickey Mouse - True Friend #13",
+        "input": {
+            "name": "Mickey Mouse - True Friend",
+            "variant": "13"
+        },
+        "uuid": "1949"
+    },
+    {
+        "description": "Mickey Mouse - Wayward Sorcerer #51",
+        "input": {
+            "name": "Mickey Mouse - Wayward Sorcerer",
+            "variant": "51"
+        },
+        "uuid": "51"
+    },
+    {
+        "description": "Milo Thatch - Courageous Explorer #108",
+        "input": {
+            "name": "Milo Thatch - Courageous Explorer",
+            "variant": "108"
+        },
+        "uuid": "2823"
+    },
+    {
+        "description": "Milo Thatch - Spirited Scholar #115 foil",
+        "input": {
+            "name": "Milo Thatch - Spirited Scholar",
+            "variant": "115",
+            "foil": true
+        },
+        "uuid": "551_f"
+    },
+    {
+        "description": "Minnie Mouse - Beloved Princess #13 foil",
+        "input": {
+            "name": "Minnie Mouse - Beloved Princess",
+            "variant": "13",
+            "foil": true
+        },
+        "uuid": "13_f"
+    },
+    {
+        "description": "Minnie Mouse - Drum Major #15",
+        "input": {
+            "name": "Minnie Mouse - Drum Major",
+            "variant": "15"
+        },
+        "uuid": "971"
+    },
+    {
+        "description": "Minnie Mouse - Mrs. Cratchit #88",
+        "input": {
+            "name": "Minnie Mouse - Mrs. Cratchit",
+            "variant": "88"
+        },
+        "uuid": "2551"
+    },
+    {
+        "description": "Minnie Mouse - Pirate Lookout #120",
+        "input": {
+            "name": "Minnie Mouse - Pirate Lookout",
+            "variant": "120"
+        },
+        "uuid": "1319"
+    },
+    {
+        "description": "Minnie Mouse - Spinning Skater #72",
+        "input": {
+            "name": "Minnie Mouse - Spinning Skater",
+            "variant": "72"
+        },
+        "uuid": "2535"
+    },
+    {
+        "description": "Minnie Mouse - Sweetheart Princess #5 foil",
+        "input": {
+            "name": "Minnie Mouse - Sweetheart Princess",
+            "variant": "5",
+            "foil": true
+        },
+        "uuid": "1941_f"
+    },
+    {
+        "description": "Minnie Mouse - Zipping Around #115 foil",
+        "input": {
+            "name": "Minnie Mouse - Zipping Around",
+            "variant": "115",
+            "foil": true
+        },
+        "uuid": "331_f"
+    },
+    {
+        "description": "Mirabel Madrigal - Hopeful Dreamer #13",
+        "input": {
+            "name": "Mirabel Madrigal - Hopeful Dreamer",
+            "variant": "13"
+        },
+        "uuid": "1446"
+    },
+    {
+        "description": "Mirabel Madrigal - Resourceful Daughter #142 foil",
+        "input": {
+            "name": "Mirabel Madrigal - Resourceful Daughter",
+            "variant": "142",
+            "foil": true
+        },
+        "uuid": "2857_f"
+    },
+    {
+        "description": "Miss Bianca - Unwavering Agent #195",
+        "input": {
+            "name": "Miss Bianca - Unwavering Agent",
+            "variant": "195"
+        },
+        "uuid": "1628"
+    },
+    {
+        "description": "Moana - Born Leader #116 foil",
+        "input": {
+            "name": "Moana - Born Leader",
+            "variant": "116",
+            "foil": true
+        },
+        "uuid": "552_f"
+    },
+    {
+        "description": "Moana - Island Explorer #134",
+        "input": {
+            "name": "Moana - Island Explorer",
+            "variant": "134"
+        },
+        "uuid": "1567"
+    },
+    {
+        "description": "Moana - Self-Taught Sailor #117",
+        "input": {
+            "name": "Moana - Self-Taught Sailor",
+            "variant": "117"
+        },
+        "uuid": "1316"
+    },
+    {
+        "description": "Monstro - Infamous Whale #64",
+        "input": {
+            "name": "Monstro - Infamous Whale",
+            "variant": "64"
+        },
+        "uuid": "1728"
+    },
+    {
+        "description": "Monterey Jack - Hypnotized by Cheese #12",
+        "input": {
+            "name": "Monterey Jack - Hypnotized by Cheese",
+            "variant": "12"
+        },
+        "uuid": "2727"
+    },
+    {
+        "description": "Mor'du - Wicked with Pride #35 foil",
+        "input": {
+            "name": "Mor'du - Wicked with Pride",
+            "variant": "35",
+            "foil": true
+        },
+        "uuid": "2750_f"
+    },
+    {
+        "description": "Morty Fieldmouse - Tiny Tim #157",
+        "input": {
+            "name": "Morty Fieldmouse - Tiny Tim",
+            "variant": "157"
+        },
+        "uuid": "2620"
+    },
+    {
+        "description": "Mother Gothel - Knows What's Best #211 foil",
+        "input": {
+            "name": "Mother Gothel - Knows What's Best",
+            "variant": "211",
+            "foil": true
+        },
+        "uuid": "1875"
+    },
+    {
+        "description": "Mother Gothel - Unwavering Schemer #92 foil",
+        "input": {
+            "name": "Mother Gothel - Unwavering Schemer",
+            "variant": "92",
+            "foil": true
+        },
+        "uuid": "1048_f"
+    },
+    {
+        "description": "Mother Knows Best #99 foil",
+        "input": {
+            "name": "Mother Knows Best",
+            "variant": "99",
+            "foil": true
+        },
+        "uuid": "2035_f"
+    },
+    {
+        "description": "Mouse Armor #203 foil",
+        "input": {
+            "name": "Mouse Armor",
+            "variant": "203",
+            "foil": true
+        },
+        "uuid": "419_f"
+    },
+    {
+        "description": "Mr. Incredible - Bob Parr #104 foil",
+        "input": {
+            "name": "Mr. Incredible - Bob Parr",
+            "variant": "104",
+            "foil": true
+        },
+        "uuid": "2819_f"
+    },
+    {
+        "description": "Mr. Litwak - Arcade Owner #24 foil",
+        "input": {
+            "name": "Mr. Litwak - Arcade Owner",
+            "variant": "24",
+            "foil": true
+        },
+        "uuid": "1223_f"
+    },
+    {
+        "description": "Mr. Smee - Loyal First Mate #15 foil",
+        "input": {
+            "name": "Mr. Smee - Loyal First Mate",
+            "variant": "15",
+            "foil": true
+        },
+        "uuid": "15_f"
+    },
+    {
+        "description": "Mrs. Beakley - Former S.H.U.S.H. Agent #11 foil",
+        "input": {
+            "name": "Mrs. Beakley - Former S.H.U.S.H. Agent",
+            "variant": "11",
+            "foil": true
+        },
+        "uuid": "2200_f"
+    },
+    {
+        "description": "Mrs. Judson - Housekeeper #153 foil",
+        "input": {
+            "name": "Mrs. Judson - Housekeeper",
+            "variant": "153",
+            "foil": true
+        },
+        "uuid": "369_f"
+    },
+    {
+        "description": "Mufasa - Betrayed Leader #14 foil",
+        "input": {
+            "name": "Mufasa - Betrayed Leader",
+            "variant": "14",
+            "foil": true
+        },
+        "uuid": "230_f"
+    },
+    {
+        "description": "Mufasa - Respected King #196 foil",
+        "input": {
+            "name": "Mufasa - Respected King",
+            "variant": "196",
+            "foil": true
+        },
+        "uuid": "1629_f"
+    },
+    {
+        "description": "Mulan - Charging Ahead #3 foil",
+        "input": {
+            "name": "Mulan - Charging Ahead",
+            "variant": "3",
+            "foil": true
+        },
+        "uuid": "2453"
+    },
+    {
+        "description": "Mulan - Elite Archer #114 foil",
+        "input": {
+            "name": "Mulan - Elite Archer",
+            "variant": "114",
+            "foil": true
+        },
+        "uuid": "805_f"
+    },
+    {
+        "description": "Mulan - Free Spirit #10 foil",
+        "input": {
+            "name": "Mulan - Free Spirit",
+            "variant": "10",
+            "foil": true
+        },
+        "uuid": "1946_f"
+    },
+    {
+        "description": "Mulan - Injured Soldier #116 foil",
+        "input": {
+            "name": "Mulan - Injured Soldier",
+            "variant": "116",
+            "foil": true
+        },
+        "uuid": "807_f"
+    },
+    {
+        "description": "Mulan - Resourceful Recruit #69",
+        "input": {
+            "name": "Mulan - Resourceful Recruit",
+            "variant": "69"
+        },
+        "uuid": "2532"
+    },
+    {
+        "description": "Mullins - Seasoned Shipmate #177 foil",
+        "input": {
+            "name": "Mullins - Seasoned Shipmate",
+            "variant": "177",
+            "foil": true
+        },
+        "uuid": "1376_f"
+    },
+    {
+        "description": "Mushu - Majestic Dragon #137 foil",
+        "input": {
+            "name": "Mushu - Majestic Dragon",
+            "variant": "137",
+            "foil": true
+        },
+        "uuid": "1570_f"
+    },
+    {
+        "description": "Mushu's Rocket #134 foil",
+        "input": {
+            "name": "Mushu's Rocket",
+            "variant": "134",
+            "foil": true
+        },
+        "uuid": "2323_f"
+    },
+    {
+        "description": "Mystical Tree - Mama Odie's Home #69 foil",
+        "input": {
+            "name": "Mystical Tree - Mama Odie's Home",
+            "variant": "69",
+            "foil": true
+        },
+        "uuid": "1268_f"
+    },
+    {
+        "description": "Nala - Romping in the Snow #35",
+        "input": {
+            "name": "Nala - Romping in the Snow",
+            "variant": "35"
+        },
+        "uuid": "2498"
+    },
+    {
+        "description": "Namaari - Morning Mist #216 foil",
+        "input": {
+            "name": "Namaari - Morning Mist",
+            "variant": "216",
+            "foil": true
+        },
+        "uuid": "432"
+    },
+    {
+        "description": "Nana - Canine Caregiver #53 foil",
+        "input": {
+            "name": "Nana - Canine Caregiver",
+            "variant": "53",
+            "foil": true
+        },
+        "uuid": "2242_f"
+    },
+    {
+        "description": "Nani - No Worries #184 foil",
+        "input": {
+            "name": "Nani - No Worries",
+            "variant": "184",
+            "foil": true
+        },
+        "uuid": "2647_f"
+    },
+    {
+        "description": "Nani's Payback #127 foil",
+        "input": {
+            "name": "Nani's Payback",
+            "variant": "127",
+            "foil": true
+        },
+        "uuid": "2590_f"
+    },
+    {
+        "description": "Nearly Indestructible #200 foil",
+        "input": {
+            "name": "Nearly Indestructible",
+            "variant": "200",
+            "foil": true
+        },
+        "uuid": "2663_f"
+    },
+    {
+        "description": "Nessus - River Guardian #118",
+        "input": {
+            "name": "Nessus - River Guardian",
+            "variant": "118"
+        },
+        "uuid": "809"
+    },
+    {
+        "description": "Nibs - Lost Boy #48 foil",
+        "input": {
+            "name": "Nibs - Lost Boy",
+            "variant": "48",
+            "foil": true
+        },
+        "uuid": "2237_f"
+    },
+    {
+        "description": "Nick Wilde - Soggy Fox #148",
+        "input": {
+            "name": "Nick Wilde - Soggy Fox",
+            "variant": "148"
+        },
+        "uuid": "1347"
+    },
+    {
+        "description": "Noi - Orphaned Thief #155",
+        "input": {
+            "name": "Noi - Orphaned Thief",
+            "variant": "155"
+        },
+        "uuid": "371"
+    },
+    {
+        "description": "Nottingham - Prince John's Castle #203",
+        "input": {
+            "name": "Nottingham - Prince John's Castle",
+            "variant": "203"
+        },
+        "uuid": "639"
+    },
+    {
+        "description": "Ohana Means Family #32 foil",
+        "input": {
+            "name": "Ohana Means Family",
+            "variant": "32",
+            "foil": true
+        },
+        "uuid": "2495_f"
+    },
+    {
+        "description": "Olaf - Happy Passenger #50",
+        "input": {
+            "name": "Olaf - Happy Passenger",
+            "variant": "50"
+        },
+        "uuid": "1006"
+    },
+    {
+        "description": "Olaf - Trusting Companion #150",
+        "input": {
+            "name": "Olaf - Trusting Companion",
+            "variant": "150"
+        },
+        "uuid": "841"
+    },
+    {
+        "description": "Omnidroid - V.8 #173",
+        "input": {
+            "name": "Omnidroid - V.8",
+            "variant": "173"
+        },
+        "uuid": "2888"
+    },
+    {
+        "description": "One Jump Ahead #165",
+        "input": {
+            "name": "One Jump Ahead",
+            "variant": "165"
+        },
+        "uuid": "2101"
+    },
+    {
+        "description": "Or Rewrite History! #27 foil",
+        "input": {
+            "name": "Or Rewrite History!",
+            "variant": "27",
+            "foil": true
+        },
+        "uuid": "2216_f"
+    },
+    {
+        "description": "Out of Order #148",
+        "input": {
+            "name": "Out of Order",
+            "variant": "148"
+        },
+        "uuid": "1581"
+    },
+    {
+        "description": "P.J. Pete - Caught Up in the Music #114",
+        "input": {
+            "name": "P.J. Pete - Caught Up in the Music",
+            "variant": "114"
+        },
+        "uuid": "2050"
+    },
+    {
+        "description": "Pack Tactics #100",
+        "input": {
+            "name": "Pack Tactics",
+            "variant": "100"
+        },
+        "uuid": "316"
+    },
+    {
+        "description": "Painting the Roses Red #30",
+        "input": {
+            "name": "Painting the Roses Red",
+            "variant": "30"
+        },
+        "uuid": "246"
+    },
+    {
+        "description": "Panic - Immortal Sidekick #82 foil",
+        "input": {
+            "name": "Panic - Immortal Sidekick",
+            "variant": "82",
+            "foil": true
+        },
+        "uuid": "773_f"
+    },
+    {
+        "description": "Pascal - Inquisitive Pet #151 foil",
+        "input": {
+            "name": "Pascal - Inquisitive Pet",
+            "variant": "151",
+            "foil": true
+        },
+        "uuid": "842_f"
+    },
+    {
+        "description": "Pawpsicle #169",
+        "input": {
+            "name": "Pawpsicle",
+            "variant": "169"
+        },
+        "uuid": "385"
+    },
+    {
+        "description": "Pegasus - Flying Steed #120",
+        "input": {
+            "name": "Pegasus - Flying Steed",
+            "variant": "120"
+        },
+        "uuid": "811"
+    },
+    {
+        "description": "Pegasus - Searching High and Low #106 foil",
+        "input": {
+            "name": "Pegasus - Searching High and Low",
+            "variant": "106",
+            "foil": true
+        },
+        "uuid": "2821_f"
+    },
+    {
+        "description": "Pepa Madrigal - Calm Before the Storm #56 foil",
+        "input": {
+            "name": "Pepa Madrigal - Calm Before the Storm",
+            "variant": "56",
+            "foil": true
+        },
+        "uuid": "2771_f"
+    },
+    {
+        "description": "Percy - Pupsicle #27 foil",
+        "input": {
+            "name": "Percy - Pupsicle",
+            "variant": "27",
+            "foil": true
+        },
+        "uuid": "2490_f"
+    },
+    {
+        "description": "Perdita - Playful Mother #2",
+        "input": {
+            "name": "Perdita - Playful Mother",
+            "variant": "2"
+        },
+        "uuid": "1435"
+    },
+    {
+        "description": "Perla - Nimble Seamstress #32 foil",
+        "input": {
+            "name": "Perla - Nimble Seamstress",
+            "variant": "32",
+            "foil": true
+        },
+        "uuid": "1465_f"
+    },
+    {
+        "description": "Pete - Freebooter #122",
+        "input": {
+            "name": "Pete - Freebooter",
+            "variant": "122"
+        },
+        "uuid": "1321"
+    },
+    {
+        "description": "Pete - Pirate Scoundrel #89",
+        "input": {
+            "name": "Pete - Pirate Scoundrel",
+            "variant": "89"
+        },
+        "uuid": "1522"
+    },
+    {
+        "description": "Pete - Wrestling Champ #187",
+        "input": {
+            "name": "Pete - Wrestling Champ",
+            "variant": "187"
+        },
+        "uuid": "1143"
+    },
+    {
+        "description": "Peter Pan - Never Land Hero #119",
+        "input": {
+            "name": "Peter Pan - Never Land Hero",
+            "variant": "119"
+        },
+        "uuid": "555"
+    },
+    {
+        "description": "Peter Pan - Pirate's Bane #215 foil",
+        "input": {
+            "name": "Peter Pan - Pirate's Bane",
+            "variant": "215",
+            "foil": true
+        },
+        "uuid": "651"
+    },
+    {
+        "description": "Peter Pan's Dagger #135 foil",
+        "input": {
+            "name": "Peter Pan's Dagger",
+            "variant": "135",
+            "foil": true
+        },
+        "uuid": "351_f"
+    },
+    {
+        "description": "Philoctetes - No-Nonsense Instructor #190 foil",
+        "input": {
+            "name": "Philoctetes - No-Nonsense Instructor",
+            "variant": "190",
+            "foil": true
+        },
+        "uuid": "881_f"
+    },
+    {
+        "description": "Piglet - Cocoa Maker #147 foil",
+        "input": {
+            "name": "Piglet - Cocoa Maker",
+            "variant": "147",
+            "foil": true
+        },
+        "uuid": "2610_f"
+    },
+    {
+        "description": "Piglet - Sturdy Swordsman #221 foil",
+        "input": {
+            "name": "Piglet - Sturdy Swordsman",
+            "variant": "221",
+            "foil": true
+        },
+        "uuid": "912"
+    },
+    {
+        "description": "Pinocchio - Strings Attached #61",
+        "input": {
+            "name": "Pinocchio - Strings Attached",
+            "variant": "61"
+        },
+        "uuid": "1725"
+    },
+    {
+        "description": "Pizza Planet - Spaceport #102 foil",
+        "input": {
+            "name": "Pizza Planet - Spaceport",
+            "variant": "102",
+            "foil": true
+        },
+        "uuid": "2817_f"
+    },
+    {
+        "description": "Pleakley - Scientific Expert #144 foil",
+        "input": {
+            "name": "Pleakley - Scientific Expert",
+            "variant": "144",
+            "foil": true
+        },
+        "uuid": "1343_f"
+    },
+    {
+        "description": "Pluto - Determined Defender #17 foil",
+        "input": {
+            "name": "Pluto - Determined Defender",
+            "variant": "17",
+            "foil": true
+        },
+        "uuid": "453_f"
+    },
+    {
+        "description": "Pluto - Mickey's Clever Friend #152 foil",
+        "input": {
+            "name": "Pluto - Mickey's Clever Friend",
+            "variant": "152",
+            "foil": true
+        },
+        "uuid": "588_f"
+    },
+    {
+        "description": "Pluto - Tried and True #28",
+        "input": {
+            "name": "Pluto - Tried and True",
+            "variant": "28"
+        },
+        "uuid": "1692"
+    },
+    {
+        "description": "Pocahontas - Peacekeeper #22",
+        "input": {
+            "name": "Pocahontas - Peacekeeper",
+            "variant": "22"
+        },
+        "uuid": "2485"
+    },
+    {
+        "description": "Poe De Spell - Magica's Brother #58 foil",
+        "input": {
+            "name": "Poe De Spell - Magica's Brother",
+            "variant": "58",
+            "foil": true
+        },
+        "uuid": "1722_f"
+    },
+    {
+        "description": "Pongo - Determined Father #2 foil",
+        "input": {
+            "name": "Pongo - Determined Father",
+            "variant": "2",
+            "foil": true
+        },
+        "uuid": "1938_f"
+    },
+    {
+        "description": "Poor Unfortunate Souls #61",
+        "input": {
+            "name": "Poor Unfortunate Souls",
+            "variant": "61"
+        },
+        "uuid": "1997"
+    },
+    {
+        "description": "Pouncing Practice #176",
+        "input": {
+            "name": "Pouncing Practice",
+            "variant": "176"
+        },
+        "uuid": "1840"
+    },
+    {
+        "description": "Powerline - World's Greatest Rock Star #233 foil",
+        "input": {
+            "name": "Powerline - World's Greatest Rock Star",
+            "variant": "233",
+            "foil": true
+        },
+        "uuid": "2151"
+    },
+    {
+        "description": "Pride Lands - Jungle Oasis #34 foil",
+        "input": {
+            "name": "Pride Lands - Jungle Oasis",
+            "variant": "34",
+            "foil": true
+        },
+        "uuid": "990_f"
+    },
+    {
+        "description": "Prince Charming - Protector of the Realm #189",
+        "input": {
+            "name": "Prince Charming - Protector of the Realm",
+            "variant": "189"
+        },
+        "uuid": "2378"
+    },
+    {
+        "description": "Prince Eric - Expert Helmsman #121",
+        "input": {
+            "name": "Prince Eric - Expert Helmsman",
+            "variant": "121"
+        },
+        "uuid": "557"
+    },
+    {
+        "description": "Prince Eric - Ursula's Groom #22 foil",
+        "input": {
+            "name": "Prince Eric - Ursula's Groom",
+            "variant": "22",
+            "foil": true
+        },
+        "uuid": "713_f"
+    },
+    {
+        "description": "Prince John - Opportunistic Briber #141",
+        "input": {
+            "name": "Prince John - Opportunistic Briber",
+            "variant": "141"
+        },
+        "uuid": "1097"
+    },
+    {
+        "description": "Prince Naveen - Carefree Explorer #10",
+        "input": {
+            "name": "Prince Naveen - Carefree Explorer",
+            "variant": "10"
+        },
+        "uuid": "1209"
+    },
+    {
+        "description": "Prince Naveen - Ukulele Player #3 foil",
+        "input": {
+            "name": "Prince Naveen - Ukulele Player",
+            "variant": "3",
+            "foil": true
+        },
+        "uuid": "959_f"
+    },
+    {
+        "description": "Prince Phillip - Royal Explorer #83 foil",
+        "input": {
+            "name": "Prince Phillip - Royal Explorer",
+            "variant": "83",
+            "foil": true
+        },
+        "uuid": "1282_f"
+    },
+    {
+        "description": "Prince Phillip - Warden of the Woods #72 foil",
+        "input": {
+            "name": "Prince Phillip - Warden of the Woods",
+            "variant": "72",
+            "foil": true
+        },
+        "uuid": "2008_f"
+    },
+    {
+        "description": "Pua - Disgruntled Pig #59 foil",
+        "input": {
+            "name": "Pua - Disgruntled Pig",
+            "variant": "59",
+            "foil": true
+        },
+        "uuid": "2522_f"
+    },
+    {
+        "description": "Pull the Lever! #80",
+        "input": {
+            "name": "Pull the Lever!",
+            "variant": "80"
+        },
+        "uuid": "1744"
+    },
+    {
+        "description": "Putting It All Together #27 foil",
+        "input": {
+            "name": "Putting It All Together",
+            "variant": "27",
+            "foil": true
+        },
+        "uuid": "2463"
+    },
+    {
+        "description": "Queen of Hearts - Impatient Traveler #122 foil",
+        "input": {
+            "name": "Queen of Hearts - Impatient Traveler",
+            "variant": "122",
+            "foil": true
+        },
+        "uuid": "2837_f"
+    },
+    {
+        "description": "Queen of Hearts - Quick-Tempered #90",
+        "input": {
+            "name": "Queen of Hearts - Quick-Tempered",
+            "variant": "90"
+        },
+        "uuid": "306"
+    },
+    {
+        "description": "Queen of Hearts - Wonderland Empress #23",
+        "input": {
+            "name": "Queen of Hearts - Wonderland Empress",
+            "variant": "23"
+        },
+        "uuid": "1959"
+    },
+    {
+        "description": "RC - Remote-Controlled Car #77",
+        "input": {
+            "name": "RC - Remote-Controlled Car",
+            "variant": "77"
+        },
+        "uuid": "2792"
+    },
+    {
+        "description": "Rabbit - Fed Up #41 foil",
+        "input": {
+            "name": "Rabbit - Fed Up",
+            "variant": "41",
+            "foil": true
+        },
+        "uuid": "2504_f"
+    },
+    {
+        "description": "Rafiki - Mysterious Sage #54",
+        "input": {
+            "name": "Rafiki - Mysterious Sage",
+            "variant": "54"
+        },
+        "uuid": "54"
+    },
+    {
+        "description": "Rafiki - Shaman of the Savanna #42",
+        "input": {
+            "name": "Rafiki - Shaman of the Savanna",
+            "variant": "42"
+        },
+        "uuid": "1241"
+    },
+    {
+        "description": "Rajah - Devoted Protector #6 foil",
+        "input": {
+            "name": "Rajah - Devoted Protector",
+            "variant": "6",
+            "foil": true
+        },
+        "uuid": "2195_f"
+    },
+    {
+        "description": "Rama - Vigilant Father #109 foil",
+        "input": {
+            "name": "Rama - Vigilant Father",
+            "variant": "109",
+            "foil": true
+        },
+        "uuid": "2298_f"
+    },
+    {
+        "description": "Ransack #199 foil",
+        "input": {
+            "name": "Ransack",
+            "variant": "199",
+            "foil": true
+        },
+        "uuid": "199_f"
+    },
+    {
+        "description": "Rapunzel - Gifted Artist #19",
+        "input": {
+            "name": "Rapunzel - Gifted Artist",
+            "variant": "19"
+        },
+        "uuid": "235"
+    },
+    {
+        "description": "Rapunzel - High Climber #214 foil",
+        "input": {
+            "name": "Rapunzel - High Climber",
+            "variant": "214",
+            "foil": true
+        },
+        "uuid": "1878"
+    },
+    {
+        "description": "Rapunzel - Sunshine #20 foil",
+        "input": {
+            "name": "Rapunzel - Sunshine",
+            "variant": "20",
+            "foil": true
+        },
+        "uuid": "236_f"
+    },
+    {
+        "description": "Ratigan - Criminal Mastermind #91 foil",
+        "input": {
+            "name": "Ratigan - Criminal Mastermind",
+            "variant": "91",
+            "foil": true
+        },
+        "uuid": "307_f"
+    },
+    {
+        "description": "Ratigan - Raging Rat #113",
+        "input": {
+            "name": "Ratigan - Raging Rat",
+            "variant": "113"
+        },
+        "uuid": "1069"
+    },
+    {
+        "description": "Ratigan's Party - Seedy Back Room #216 foil",
+        "input": {
+            "name": "Ratigan's Party - Seedy Back Room",
+            "variant": "216",
+            "foil": true
+        },
+        "uuid": "1172"
+    },
+    {
+        "description": "Raya - Guidance Seeker #186 foil",
+        "input": {
+            "name": "Raya - Guidance Seeker",
+            "variant": "186",
+            "foil": true
+        },
+        "uuid": "1619_f"
+    },
+    {
+        "description": "Raya - Kumandran Rider #107 foil",
+        "input": {
+            "name": "Raya - Kumandran Rider",
+            "variant": "107",
+            "foil": true
+        },
+        "uuid": "1306_f"
+    },
+    {
+        "description": "Razoul - Menacing Guard #189",
+        "input": {
+            "name": "Razoul - Menacing Guard",
+            "variant": "189"
+        },
+        "uuid": "1622"
+    },
+    {
+        "description": "Recovered Page #30 foil",
+        "input": {
+            "name": "Recovered Page",
+            "variant": "30",
+            "foil": true
+        },
+        "uuid": "2219_f"
+    },
+    {
+        "description": "Repair #162 foil",
+        "input": {
+            "name": "Repair",
+            "variant": "162",
+            "foil": true
+        },
+        "uuid": "598_f"
+    },
+    {
+        "description": "Restoring Atlantis #222 foil",
+        "input": {
+            "name": "Restoring Atlantis",
+            "variant": "222",
+            "foil": true
+        },
+        "uuid": "1655"
+    },
+    {
+        "description": "Retrosphere #64 foil",
+        "input": {
+            "name": "Retrosphere",
+            "variant": "64",
+            "foil": true
+        },
+        "uuid": "1020_f"
+    },
+    {
+        "description": "Rex - Protective Dinosaur #206 foil",
+        "input": {
+            "name": "Rex - Protective Dinosaur",
+            "variant": "206",
+            "foil": true
+        },
+        "uuid": "2921"
+    },
+    {
+        "description": "Right Behind You #64 foil",
+        "input": {
+            "name": "Right Behind You",
+            "variant": "64",
+            "foil": true
+        },
+        "uuid": "2779_f"
+    },
+    {
+        "description": "Robin Hood - Archery Contestant #77",
+        "input": {
+            "name": "Robin Hood - Archery Contestant",
+            "variant": "77"
+        },
+        "uuid": "1033"
+    },
+    {
+        "description": "Robin Hood - Capable Fighter #193 foil",
+        "input": {
+            "name": "Robin Hood - Capable Fighter",
+            "variant": "193",
+            "foil": true
+        },
+        "uuid": "409_f"
+    },
+    {
+        "description": "Robin Hood - Daydreamer #70 foil",
+        "input": {
+            "name": "Robin Hood - Daydreamer",
+            "variant": "70",
+            "foil": true
+        },
+        "uuid": "2006_f"
+    },
+    {
+        "description": "Robin Hood - Eye for Detail #170 foil",
+        "input": {
+            "name": "Robin Hood - Eye for Detail",
+            "variant": "170",
+            "foil": true
+        },
+        "uuid": "1603_f"
+    },
+    {
+        "description": "Robin Hood - Unrivaled Archer #157",
+        "input": {
+            "name": "Robin Hood - Unrivaled Archer",
+            "variant": "157"
+        },
+        "uuid": "157"
+    },
+    {
+        "description": "Roger Radcliffe - Dog Lover #5 foil",
+        "input": {
+            "name": "Roger Radcliffe - Dog Lover",
+            "variant": "5",
+            "foil": true
+        },
+        "uuid": "1438_f"
+    },
+    {
+        "description": "Roo - Little Helper #137 foil",
+        "input": {
+            "name": "Roo - Little Helper",
+            "variant": "137",
+            "foil": true
+        },
+        "uuid": "2600_f"
+    },
+    {
+        "description": "Rose Lantern #67 foil",
+        "input": {
+            "name": "Rose Lantern",
+            "variant": "67",
+            "foil": true
+        },
+        "uuid": "2003_f"
+    },
+    {
+        "description": "Royal Tantrum #161",
+        "input": {
+            "name": "Royal Tantrum",
+            "variant": "161"
+        },
+        "uuid": "1117"
+    },
+    {
+        "description": "Rudy - Groove Disrupter #174 foil",
+        "input": {
+            "name": "Rudy - Groove Disrupter",
+            "variant": "174",
+            "foil": true
+        },
+        "uuid": "1130_f"
+    },
+    {
+        "description": "Sabotage #96 foil",
+        "input": {
+            "name": "Sabotage",
+            "variant": "96",
+            "foil": true
+        },
+        "uuid": "2811_f"
+    },
+    {
+        "description": "Salvage Operation #165 foil",
+        "input": {
+            "name": "Salvage Operation",
+            "variant": "165",
+            "foil": true
+        },
+        "uuid": "2880_f"
+    },
+    {
+        "description": "Sarabi - Protecting the Pride #12 foil",
+        "input": {
+            "name": "Sarabi - Protecting the Pride",
+            "variant": "12",
+            "foil": true
+        },
+        "uuid": "2475_f"
+    },
+    {
+        "description": "Scar - Fiery Usurper #122",
+        "input": {
+            "name": "Scar - Fiery Usurper",
+            "variant": "122"
+        },
+        "uuid": "122"
+    },
+    {
+        "description": "Scar - Mastermind #158",
+        "input": {
+            "name": "Scar - Mastermind",
+            "variant": "158"
+        },
+        "uuid": "158"
+    },
+    {
+        "description": "Scar - Vengeful Lion #93 foil",
+        "input": {
+            "name": "Scar - Vengeful Lion",
+            "variant": "93",
+            "foil": true
+        },
+        "uuid": "1049_f"
+    },
+    {
+        "description": "Scrooge McDuck - Afficionado of Antiquities #140 foil",
+        "input": {
+            "name": "Scrooge McDuck - Afficionado of Antiquities",
+            "variant": "140",
+            "foil": true
+        },
+        "uuid": "1096_f"
+    },
+    {
+        "description": "Scrooge McDuck - Miserly Ebenezer #160 foil",
+        "input": {
+            "name": "Scrooge McDuck - Miserly Ebenezer",
+            "variant": "160",
+            "foil": true
+        },
+        "uuid": "2623_f"
+    },
+    {
+        "description": "Scrooge McDuck - Richest Duck in the World #154",
+        "input": {
+            "name": "Scrooge McDuck - Richest Duck in the World",
+            "variant": "154"
+        },
+        "uuid": "590"
+    },
+    {
+        "description": "Scrooge McDuck - Uncle Moneybags #39 foil",
+        "input": {
+            "name": "Scrooge McDuck - Uncle Moneybags",
+            "variant": "39",
+            "foil": true
+        },
+        "uuid": "955"
+    },
+    {
+        "description": "Scroop - Odious Mutineer #82 foil",
+        "input": {
+            "name": "Scroop - Odious Mutineer",
+            "variant": "82",
+            "foil": true
+        },
+        "uuid": "1038_f"
+    },
+    {
+        "description": "Search for Clues #26 foil",
+        "input": {
+            "name": "Search for Clues",
+            "variant": "26",
+            "foil": true
+        },
+        "uuid": "2215_f"
+    },
+    {
+        "description": "Second Star to the Right #61",
+        "input": {
+            "name": "Second Star to the Right",
+            "variant": "61"
+        },
+        "uuid": "752"
+    },
+    {
+        "description": "Sergeant Tibbs - Courageous Cat #128",
+        "input": {
+            "name": "Sergeant Tibbs - Courageous Cat",
+            "variant": "128"
+        },
+        "uuid": "2064"
+    },
+    {
+        "description": "She's Your Person #40 foil",
+        "input": {
+            "name": "She's Your Person",
+            "variant": "40",
+            "foil": true
+        },
+        "uuid": "1704_f"
+    },
+    {
+        "description": "Shenzi - Scar's Accomplice #70 foil",
+        "input": {
+            "name": "Shenzi - Scar's Accomplice",
+            "variant": "70",
+            "foil": true
+        },
+        "uuid": "1026_f"
+    },
+    {
+        "description": "Shere Khan - Infamous Tiger #92 foil",
+        "input": {
+            "name": "Shere Khan - Infamous Tiger",
+            "variant": "92",
+            "foil": true
+        },
+        "uuid": "1525_f"
+    },
+    {
+        "description": "Sheriff of Nottingham - Bushel Britches #145",
+        "input": {
+            "name": "Sheriff of Nottingham - Bushel Britches",
+            "variant": "145"
+        },
+        "uuid": "1101"
+    },
+    {
+        "description": "Shield of Virtue #135",
+        "input": {
+            "name": "Shield of Virtue",
+            "variant": "135"
+        },
+        "uuid": "135"
+    },
+    {
+        "description": "Sign the Scroll #30 foil",
+        "input": {
+            "name": "Sign the Scroll",
+            "variant": "30",
+            "foil": true
+        },
+        "uuid": "721_f"
+    },
+    {
+        "description": "Simba - Fighting Prince #192 foil",
+        "input": {
+            "name": "Simba - Fighting Prince",
+            "variant": "192",
+            "foil": true
+        },
+        "uuid": "628_f"
+    },
+    {
+        "description": "Simba - Lost Prince #173 foil",
+        "input": {
+            "name": "Simba - Lost Prince",
+            "variant": "173",
+            "foil": true
+        },
+        "uuid": "1129_f"
+    },
+    {
+        "description": "Simba - Protective Cub #20 foil",
+        "input": {
+            "name": "Simba - Protective Cub",
+            "variant": "20",
+            "foil": true
+        },
+        "uuid": "20_f"
+    },
+    {
+        "description": "Simba - Scrappy Cub #105",
+        "input": {
+            "name": "Simba - Scrappy Cub",
+            "variant": "105"
+        },
+        "uuid": "2041"
+    },
+    {
+        "description": "Sir Ector - Castle Lord #188",
+        "input": {
+            "name": "Sir Ector - Castle Lord",
+            "variant": "188"
+        },
+        "uuid": "1144"
+    },
+    {
+        "description": "Sisu - Daring Visitor #119",
+        "input": {
+            "name": "Sisu - Daring Visitor",
+            "variant": "119"
+        },
+        "uuid": "2055"
+    },
+    {
+        "description": "Sisu - Emboldened Warrior #118",
+        "input": {
+            "name": "Sisu - Emboldened Warrior",
+            "variant": "118"
+        },
+        "uuid": "2054"
+    },
+    {
+        "description": "Sisu - In Her Element #39 foil",
+        "input": {
+            "name": "Sisu - In Her Element",
+            "variant": "39",
+            "foil": true
+        },
+        "uuid": "1238_f"
+    },
+    {
+        "description": "Skull Rock - Isolated Fortress #136 foil",
+        "input": {
+            "name": "Skull Rock - Isolated Fortress",
+            "variant": "136",
+            "foil": true
+        },
+        "uuid": "1335_f"
+    },
+    {
+        "description": "Sleepy Hollow - The Bridge #136 foil",
+        "input": {
+            "name": "Sleepy Hollow - The Bridge",
+            "variant": "136",
+            "foil": true
+        },
+        "uuid": "2325_f"
+    },
+    {
+        "description": "Smash #198 foil",
+        "input": {
+            "name": "Smash",
+            "variant": "198",
+            "foil": true
+        },
+        "uuid": "2134_f"
+    },
+    {
+        "description": "Sneezy - Very Allergic #22 foil",
+        "input": {
+            "name": "Sneezy - Very Allergic",
+            "variant": "22",
+            "foil": true
+        },
+        "uuid": "238_f"
+    },
+    {
+        "description": "Snow White - Fairest in the Land #33 foil",
+        "input": {
+            "name": "Snow White - Fairest in the Land",
+            "variant": "33",
+            "foil": true
+        },
+        "uuid": "1466_f"
+    },
+    {
+        "description": "Snow White - Well Wisher #25",
+        "input": {
+            "name": "Snow White - Well Wisher",
+            "variant": "25"
+        },
+        "uuid": "241"
+    },
+    {
+        "description": "Snuggly Duckling - Disreputable Pub #216 foil",
+        "input": {
+            "name": "Snuggly Duckling - Disreputable Pub",
+            "variant": "216",
+            "foil": true
+        },
+        "uuid": "907"
+    },
+    {
+        "description": "Sour Bill - Surly Henchman #147 foil",
+        "input": {
+            "name": "Sour Bill - Surly Henchman",
+            "variant": "147",
+            "foil": true
+        },
+        "uuid": "1346_f"
+    },
+    {
+        "description": "Spooky Sight #165 foil",
+        "input": {
+            "name": "Spooky Sight",
+            "variant": "165",
+            "foil": true
+        },
+        "uuid": "2354_f"
+    },
+    {
+        "description": "Stampede #96",
+        "input": {
+            "name": "Stampede",
+            "variant": "96"
+        },
+        "uuid": "96"
+    },
+    {
+        "description": "Starkey - Hook's Henchman #191 foil",
+        "input": {
+            "name": "Starkey - Hook's Henchman",
+            "variant": "191",
+            "foil": true
+        },
+        "uuid": "191_f"
+    },
+    {
+        "description": "Steel Coil #203 foil",
+        "input": {
+            "name": "Steel Coil",
+            "variant": "203",
+            "foil": true
+        },
+        "uuid": "1636_f"
+    },
+    {
+        "description": "Stitch - Alien Buccaneer #8 foil",
+        "input": {
+            "name": "Stitch - Alien Buccaneer",
+            "variant": "8",
+            "foil": true
+        },
+        "uuid": "1423"
+    },
+    {
+        "description": "Stitch - Carefree Snowboarder #207 foil",
+        "input": {
+            "name": "Stitch - Carefree Snowboarder",
+            "variant": "207",
+            "foil": true
+        },
+        "uuid": "2670"
+    },
+    {
+        "description": "Stitch - Carefree Surfer #24 foil",
+        "input": {
+            "name": "Stitch - Carefree Surfer",
+            "variant": "24",
+            "foil": true
+        },
+        "uuid": "1960_f"
+    },
+    {
+        "description": "Stitch - High Badness Level #35 foil",
+        "input": {
+            "name": "Stitch - High Badness Level",
+            "variant": "35",
+            "foil": true
+        },
+        "uuid": "2713"
+    },
+    {
+        "description": "Stitch - New Dog #22 foil",
+        "input": {
+            "name": "Stitch - New Dog",
+            "variant": "22",
+            "foil": true
+        },
+        "uuid": "22_f"
+    },
+    {
+        "description": "Stitch - Team Underdog #171 foil",
+        "input": {
+            "name": "Stitch - Team Underdog",
+            "variant": "171",
+            "foil": true
+        },
+        "uuid": "1127_f"
+    },
+    {
+        "description": "Stratos - Tornado Titan #55",
+        "input": {
+            "name": "Stratos - Tornado Titan",
+            "variant": "55"
+        },
+        "uuid": "491"
+    },
+    {
+        "description": "Strike a Good Match #96 foil",
+        "input": {
+            "name": "Strike a Good Match",
+            "variant": "96",
+            "foil": true
+        },
+        "uuid": "532_f"
+    },
+    {
+        "description": "Sudden Scare #219 foil",
+        "input": {
+            "name": "Sudden Scare",
+            "variant": "219",
+            "foil": true
+        },
+        "uuid": "2408"
+    },
+    {
+        "description": "Sunglasses #202",
+        "input": {
+            "name": "Sunglasses",
+            "variant": "202"
+        },
+        "uuid": "1401"
+    },
+    {
+        "description": "Sven - Keen-Eyed Reindeer #65",
+        "input": {
+            "name": "Sven - Keen-Eyed Reindeer",
+            "variant": "65"
+        },
+        "uuid": "1498"
+    },
+    {
+        "description": "Sven - Reindeer Steed #23",
+        "input": {
+            "name": "Sven - Reindeer Steed",
+            "variant": "23"
+        },
+        "uuid": "979"
+    },
+    {
+        "description": "Sword of Truth #136",
+        "input": {
+            "name": "Sword of Truth",
+            "variant": "136"
+        },
+        "uuid": "136"
+    },
+    {
+        "description": "Syndrome - Out for Revenge #238 foil",
+        "input": {
+            "name": "Syndrome - Out for Revenge",
+            "variant": "238",
+            "foil": true
+        },
+        "uuid": "2953"
+    },
+    {
+        "description": "Taffyta Muttonfudge - Crowd Favorite #114 foil",
+        "input": {
+            "name": "Taffyta Muttonfudge - Crowd Favorite",
+            "variant": "114",
+            "foil": true
+        },
+        "uuid": "1070_f"
+    },
+    {
+        "description": "Tamatoa - Happy as a Clam #162",
+        "input": {
+            "name": "Tamatoa - Happy as a Clam",
+            "variant": "162"
+        },
+        "uuid": "1595"
+    },
+    {
+        "description": "Tanana - Tribal Elder #46",
+        "input": {
+            "name": "Tanana - Tribal Elder",
+            "variant": "46"
+        },
+        "uuid": "1479"
+    },
+    {
+        "description": "Taran - Pig Keeper #15",
+        "input": {
+            "name": "Taran - Pig Keeper",
+            "variant": "15"
+        },
+        "uuid": "2204"
+    },
+    {
+        "description": "Te Kā - Lava Monster #58",
+        "input": {
+            "name": "Te Kā - Lava Monster",
+            "variant": "58"
+        },
+        "uuid": "1491"
+    },
+    {
+        "description": "Tentacle Swipe #25",
+        "input": {
+            "name": "Tentacle Swipe",
+            "variant": "25"
+        },
+        "uuid": "938"
+    },
+    {
+        "description": "The Beast is Mine! #99 foil",
+        "input": {
+            "name": "The Beast is Mine!",
+            "variant": "99",
+            "foil": true
+        },
+        "uuid": "99_f"
+    },
+    {
+        "description": "The Carpenter - Dinner Companion #44",
+        "input": {
+            "name": "The Carpenter - Dinner Companion",
+            "variant": "44"
+        },
+        "uuid": "1243"
+    },
+    {
+        "description": "The Cold Never Bothered Me #234 foil",
+        "input": {
+            "name": "The Cold Never Bothered Me",
+            "variant": "234",
+            "foil": true
+        },
+        "uuid": "2697"
+    },
+    {
+        "description": "The Family Scattered #97",
+        "input": {
+            "name": "The Family Scattered",
+            "variant": "97"
+        },
+        "uuid": "2812"
+    },
+    {
+        "description": "The Game's Afoot! #198",
+        "input": {
+            "name": "The Game's Afoot!",
+            "variant": "198"
+        },
+        "uuid": "2387"
+    },
+    {
+        "description": "The Great Illuminary - Radiant Ballroom #169",
+        "input": {
+            "name": "The Great Illuminary - Radiant Ballroom",
+            "variant": "169"
+        },
+        "uuid": "1125"
+    },
+    {
+        "description": "The Headless Horseman - Terror of Sleepy Hollow #232 foil",
+        "input": {
+            "name": "The Headless Horseman - Terror of Sleepy Hollow",
+            "variant": "232",
+            "foil": true
+        },
+        "uuid": "2421"
+    },
+    {
+        "description": "The Horned King - Wicked Ruler #36",
+        "input": {
+            "name": "The Horned King - Wicked Ruler",
+            "variant": "36"
+        },
+        "uuid": "2225"
+    },
+    {
+        "description": "The Huntsman - Reluctant Enforcer #194",
+        "input": {
+            "name": "The Huntsman - Reluctant Enforcer",
+            "variant": "194"
+        },
+        "uuid": "410"
+    },
+    {
+        "description": "The Leviathan - Guardian of Atlantis #125 foil",
+        "input": {
+            "name": "The Leviathan - Guardian of Atlantis",
+            "variant": "125",
+            "foil": true
+        },
+        "uuid": "2840_f"
+    },
+    {
+        "description": "The Mob Song #198",
+        "input": {
+            "name": "The Mob Song",
+            "variant": "198"
+        },
+        "uuid": "889"
+    },
+    {
+        "description": "The Muses - Proclaimers of Heroes #90",
+        "input": {
+            "name": "The Muses - Proclaimers of Heroes",
+            "variant": "90"
+        },
+        "uuid": "781"
+    },
+    {
+        "description": "The Phantom Blot - Shadowy Figure #135",
+        "input": {
+            "name": "The Phantom Blot - Shadowy Figure",
+            "variant": "135"
+        },
+        "uuid": "1568"
+    },
+    {
+        "description": "The Prince - Vigilant Suitor #24",
+        "input": {
+            "name": "The Prince - Vigilant Suitor",
+            "variant": "24"
+        },
+        "uuid": "1457"
+    },
+    {
+        "description": "The Queen - Crown of the Council #148",
+        "input": {
+            "name": "The Queen - Crown of the Council",
+            "variant": "148"
+        },
+        "uuid": "1104"
+    },
+    {
+        "description": "The Queen - Diviner #156",
+        "input": {
+            "name": "The Queen - Diviner",
+            "variant": "156"
+        },
+        "uuid": "847"
+    },
+    {
+        "description": "The Queen - Hateful Rival #57 foil",
+        "input": {
+            "name": "The Queen - Hateful Rival",
+            "variant": "57",
+            "foil": true
+        },
+        "uuid": "493_f"
+    },
+    {
+        "description": "The Queen - Mirror Seeker #219 foil",
+        "input": {
+            "name": "The Queen - Mirror Seeker",
+            "variant": "219",
+            "foil": true
+        },
+        "uuid": "2173"
+    },
+    {
+        "description": "The Queen - Wicked and Vain #56 foil",
+        "input": {
+            "name": "The Queen - Wicked and Vain",
+            "variant": "56",
+            "foil": true
+        },
+        "uuid": "56_f"
+    },
+    {
+        "description": "The Sorcerer's Hat #210 foil",
+        "input": {
+            "name": "The Sorcerer's Hat",
+            "variant": "210",
+            "foil": true
+        },
+        "uuid": "646"
+    },
+    {
+        "description": "The Sultan - Playful Monarch #151 foil",
+        "input": {
+            "name": "The Sultan - Playful Monarch",
+            "variant": "151",
+            "foil": true
+        },
+        "uuid": "2340_f"
+    },
+    {
+        "description": "The Sword of Hercules #240 foil",
+        "input": {
+            "name": "The Sword of Hercules",
+            "variant": "240",
+            "foil": true
+        },
+        "uuid": "2429"
+    },
+    {
+        "description": "The Troubadour - Musical Narrator #11",
+        "input": {
+            "name": "The Troubadour - Musical Narrator",
+            "variant": "11"
+        },
+        "uuid": "1444"
+    },
+    {
+        "description": "The Wall - Border Fortress #222 foil",
+        "input": {
+            "name": "The Wall - Border Fortress",
+            "variant": "222",
+            "foil": true
+        },
+        "uuid": "913"
+    },
+    {
+        "description": "The White Rose - Jewel of the Garden #40 foil",
+        "input": {
+            "name": "The White Rose - Jewel of the Garden",
+            "variant": "40",
+            "foil": true
+        },
+        "uuid": "1239_f"
+    },
+    {
+        "description": "Thievery #128 foil",
+        "input": {
+            "name": "Thievery",
+            "variant": "128",
+            "foil": true
+        },
+        "uuid": "1327_f"
+    },
+    {
+        "description": "Thomas O'Malley - Feline Charmer #88 foil",
+        "input": {
+            "name": "Thomas O'Malley - Feline Charmer",
+            "variant": "88",
+            "foil": true
+        },
+        "uuid": "1521_f"
+    },
+    {
+        "description": "Tiana - Celebrating Princess #196",
+        "input": {
+            "name": "Tiana - Celebrating Princess",
+            "variant": "196"
+        },
+        "uuid": "412"
+    },
+    {
+        "description": "Tiana - Restaurant Owner #16",
+        "input": {
+            "name": "Tiana - Restaurant Owner",
+            "variant": "16"
+        },
+        "uuid": "1215"
+    },
+    {
+        "description": "Tiana's Palace - Jazz Restaurant #34",
+        "input": {
+            "name": "Tiana's Palace - Jazz Restaurant",
+            "variant": "34"
+        },
+        "uuid": "470"
+    },
+    {
+        "description": "Tiger Behemoth - Hulking Statue #14",
+        "input": {
+            "name": "Tiger Behemoth - Hulking Statue",
+            "variant": "14"
+        },
+        "uuid": "1909"
+    },
+    {
+        "description": "Tigger - One of a Kind #127 foil",
+        "input": {
+            "name": "Tigger - One of a Kind",
+            "variant": "127",
+            "foil": true
+        },
+        "uuid": "343_f"
+    },
+    {
+        "description": "Timon - Snowball Swiper #16 foil",
+        "input": {
+            "name": "Timon - Snowball Swiper",
+            "variant": "16",
+            "foil": true
+        },
+        "uuid": "2479_f"
+    },
+    {
+        "description": "Tinker Bell - Fast Flier #43 foil",
+        "input": {
+            "name": "Tinker Bell - Fast Flier",
+            "variant": "43",
+            "foil": true
+        },
+        "uuid": "1242_f"
+    },
+    {
+        "description": "Tinker Bell - Giant Fairy #193",
+        "input": {
+            "name": "Tinker Bell - Giant Fairy",
+            "variant": "193"
+        },
+        "uuid": "193"
+    },
+    {
+        "description": "Tinker Bell - Most Helpful #93 foil",
+        "input": {
+            "name": "Tinker Bell - Most Helpful",
+            "variant": "93",
+            "foil": true
+        },
+        "uuid": "93_f"
+    },
+    {
+        "description": "Tinker Bell - Snowflake Collector #48 foil",
+        "input": {
+            "name": "Tinker Bell - Snowflake Collector",
+            "variant": "48",
+            "foil": true
+        },
+        "uuid": "2511_f"
+    },
+    {
+        "description": "Tinker Bell - Very Clever Fairy #157 foil",
+        "input": {
+            "name": "Tinker Bell - Very Clever Fairy",
+            "variant": "157",
+            "foil": true
+        },
+        "uuid": "593_f"
+    },
+    {
+        "description": "Toby - Dogged Companion #131 foil",
+        "input": {
+            "name": "Toby - Dogged Companion",
+            "variant": "131",
+            "foil": true
+        },
+        "uuid": "1564_f"
+    },
+    {
+        "description": "Tod - Nimble Fox #72",
+        "input": {
+            "name": "Tod - Nimble Fox",
+            "variant": "72"
+        },
+        "uuid": "2787"
+    },
+    {
+        "description": "Tor - Florist #91",
+        "input": {
+            "name": "Tor - Florist",
+            "variant": "91"
+        },
+        "uuid": "782"
+    },
+    {
+        "description": "Training Dummy #201 foil",
+        "input": {
+            "name": "Training Dummy",
+            "variant": "201",
+            "foil": true
+        },
+        "uuid": "1400_f"
+    },
+    {
+        "description": "Tramp - Enterprising Dog #110 foil",
+        "input": {
+            "name": "Tramp - Enterprising Dog",
+            "variant": "110",
+            "foil": true
+        },
+        "uuid": "1543_f"
+    },
+    {
+        "description": "Transport Pod #100",
+        "input": {
+            "name": "Transport Pod",
+            "variant": "100"
+        },
+        "uuid": "1299"
+    },
+    {
+        "description": "Treasure Mountain - Azurite Sea Island #203 foil",
+        "input": {
+            "name": "Treasure Mountain - Azurite Sea Island",
+            "variant": "203",
+            "foil": true
+        },
+        "uuid": "1402_f"
+    },
+    {
+        "description": "Triton - Champion of Atlantica #158",
+        "input": {
+            "name": "Triton - Champion of Atlantica",
+            "variant": "158"
+        },
+        "uuid": "849"
+    },
+    {
+        "description": "Triton's Daughters - Discordant Chorus #16",
+        "input": {
+            "name": "Triton's Daughters - Discordant Chorus",
+            "variant": "16"
+        },
+        "uuid": "929"
+    },
+    {
+        "description": "Trust In Me #95 foil",
+        "input": {
+            "name": "Trust In Me",
+            "variant": "95",
+            "foil": true
+        },
+        "uuid": "2284_f"
+    },
+    {
+        "description": "Tuk Tuk - Big Buddy #184",
+        "input": {
+            "name": "Tuk Tuk - Big Buddy",
+            "variant": "184"
+        },
+        "uuid": "1383"
+    },
+    {
+        "description": "Tuk Tuk - Lively Partner #129",
+        "input": {
+            "name": "Tuk Tuk - Lively Partner",
+            "variant": "129"
+        },
+        "uuid": "2065"
+    },
+    {
+        "description": "Tweedledee \u0026 Tweedledum - Strange Storytellers #103",
+        "input": {
+            "name": "Tweedledee \u0026 Tweedledum - Strange Storytellers",
+            "variant": "103"
+        },
+        "uuid": "1536"
+    },
+    {
+        "description": "Ulf - Mime #73 foil",
+        "input": {
+            "name": "Ulf - Mime",
+            "variant": "73",
+            "foil": true
+        },
+        "uuid": "1029_f"
+    },
+    {
+        "description": "Undermine #117 foil",
+        "input": {
+            "name": "Undermine",
+            "variant": "117",
+            "foil": true
+        },
+        "uuid": "1781_f"
+    },
+    {
+        "description": "Ursula - Deceiver of All #212 foil",
+        "input": {
+            "name": "Ursula - Deceiver of All",
+            "variant": "212",
+            "foil": true
+        },
+        "uuid": "648"
+    },
+    {
+        "description": "Ursula - Power Hungry #59 foil",
+        "input": {
+            "name": "Ursula - Power Hungry",
+            "variant": "59",
+            "foil": true
+        },
+        "uuid": "59_f"
+    },
+    {
+        "description": "Ursula - Sea Witch Queen #58",
+        "input": {
+            "name": "Ursula - Sea Witch Queen",
+            "variant": "58"
+        },
+        "uuid": "749"
+    },
+    {
+        "description": "Ursula - Whisper of Vanessa #59",
+        "input": {
+            "name": "Ursula - Whisper of Vanessa",
+            "variant": "59"
+        },
+        "uuid": "2248"
+    },
+    {
+        "description": "Ursula's Lair - Eye of the Storm #68",
+        "input": {
+            "name": "Ursula's Lair - Eye of the Storm",
+            "variant": "68"
+        },
+        "uuid": "759"
+    },
+    {
+        "description": "Ursula's Stolen Trident #31",
+        "input": {
+            "name": "Ursula's Stolen Trident",
+            "variant": "31"
+        },
+        "uuid": "944"
+    },
+    {
+        "description": "Vanellope von Schweetz - Random Roster Racer #124",
+        "input": {
+            "name": "Vanellope von Schweetz - Random Roster Racer",
+            "variant": "124"
+        },
+        "uuid": "1080"
+    },
+    {
+        "description": "Vanellope von Schweetz - Sugar Rush Princess #206 foil",
+        "input": {
+            "name": "Vanellope von Schweetz - Sugar Rush Princess",
+            "variant": "206",
+            "foil": true
+        },
+        "uuid": "1162"
+    },
+    {
+        "description": "Vincenzo Santorini - The Explosives Expert #197",
+        "input": {
+            "name": "Vincenzo Santorini - The Explosives Expert",
+            "variant": "197"
+        },
+        "uuid": "1861"
+    },
+    {
+        "description": "Violet Parr - Learning New Powers #55 foil",
+        "input": {
+            "name": "Violet Parr - Learning New Powers",
+            "variant": "55",
+            "foil": true
+        },
+        "uuid": "2970"
+    },
+    {
+        "description": "Vision Slab #100 foil",
+        "input": {
+            "name": "Vision Slab",
+            "variant": "100",
+            "foil": true
+        },
+        "uuid": "791_f"
+    },
+    {
+        "description": "Vixey - Forest Friend #86 foil",
+        "input": {
+            "name": "Vixey - Forest Friend",
+            "variant": "86",
+            "foil": true
+        },
+        "uuid": "2549_f"
+    },
+    {
+        "description": "Walk the Plank! #118 foil",
+        "input": {
+            "name": "Walk the Plank!",
+            "variant": "118",
+            "foil": true
+        },
+        "uuid": "1782_f"
+    },
+    {
+        "description": "We Could Be Immortals #162",
+        "input": {
+            "name": "We Could Be Immortals",
+            "variant": "162"
+        },
+        "uuid": "1361"
+    },
+    {
+        "description": "We've Got Company! #147",
+        "input": {
+            "name": "We've Got Company!",
+            "variant": "147"
+        },
+        "uuid": "1580"
+    },
+    {
+        "description": "Webby Vanderquack - Knowledge Seeker #9 foil",
+        "input": {
+            "name": "Webby Vanderquack - Knowledge Seeker",
+            "variant": "9",
+            "foil": true
+        },
+        "uuid": "2198_f"
+    },
+    {
+        "description": "Weight Set #204",
+        "input": {
+            "name": "Weight Set",
+            "variant": "204"
+        },
+        "uuid": "420"
+    },
+    {
+        "description": "Wendy Darling - Talented Sailor #23",
+        "input": {
+            "name": "Wendy Darling - Talented Sailor",
+            "variant": "23"
+        },
+        "uuid": "459"
+    },
+    {
+        "description": "When Will My Life Begin? #197 foil",
+        "input": {
+            "name": "When Will My Life Begin?",
+            "variant": "197",
+            "foil": true
+        },
+        "uuid": "1153_f"
+    },
+    {
+        "description": "White Rabbit - Late Again #89 foil",
+        "input": {
+            "name": "White Rabbit - Late Again",
+            "variant": "89",
+            "foil": true
+        },
+        "uuid": "2552_f"
+    },
+    {
+        "description": "Who's With Me? #131 foil",
+        "input": {
+            "name": "Who's With Me?",
+            "variant": "131",
+            "foil": true
+        },
+        "uuid": "1087_f"
+    },
+    {
+        "description": "Wildcat's Wrench #31 foil",
+        "input": {
+            "name": "Wildcat's Wrench",
+            "variant": "31",
+            "foil": true
+        },
+        "uuid": "467_f"
+    },
+    {
+        "description": "Wind-Up Frog - Sid's Toy #112",
+        "input": {
+            "name": "Wind-Up Frog - Sid's Toy",
+            "variant": "112"
+        },
+        "uuid": "2827"
+    },
+    {
+        "description": "Winnie the Pooh - Hungry Bear #217 foil",
+        "input": {
+            "name": "Winnie the Pooh - Hungry Bear",
+            "variant": "217",
+            "foil": true
+        },
+        "uuid": "2680"
+    },
+    {
+        "description": "Winter Camp - Medical Tent #170",
+        "input": {
+            "name": "Winter Camp - Medical Tent",
+            "variant": "170"
+        },
+        "uuid": "861"
+    },
+    {
+        "description": "Witches of Morva - Orddu, Orwen, and Orgoch #57",
+        "input": {
+            "name": "Witches of Morva - Orddu, Orwen, and Orgoch",
+            "variant": "57"
+        },
+        "uuid": "2520"
+    },
+    {
+        "description": "Woody - Waiting for a Friend #205 foil",
+        "input": {
+            "name": "Woody - Waiting for a Friend",
+            "variant": "205",
+            "foil": true
+        },
+        "uuid": "2920"
+    },
+    {
+        "description": "World's Greatest Criminal Mind #31 foil",
+        "input": {
+            "name": "World's Greatest Criminal Mind",
+            "variant": "31",
+            "foil": true
+        },
+        "uuid": "247_f"
+    },
+    {
+        "description": "Wreck-It Ralph - Demolition Dude #104",
+        "input": {
+            "name": "Wreck-It Ralph - Demolition Dude",
+            "variant": "104"
+        },
+        "uuid": "1060"
+    },
+    {
+        "description": "Wreck-It Ralph - Raging Wrecker #103 foil",
+        "input": {
+            "name": "Wreck-It Ralph - Raging Wrecker",
+            "variant": "103",
+            "foil": true
+        },
+        "uuid": "2566_f"
+    },
+    {
+        "description": "Yelana - Northuldra Leader #55",
+        "input": {
+            "name": "Yelana - Northuldra Leader",
+            "variant": "55"
+        },
+        "uuid": "1719"
+    },
+    {
+        "description": "Yokai - Intellectual Schemer #97",
+        "input": {
+            "name": "Yokai - Intellectual Schemer",
+            "variant": "97"
+        },
+        "uuid": "1530"
+    },
+    {
+        "description": "You Came Back #97 foil",
+        "input": {
+            "name": "You Came Back",
+            "variant": "97",
+            "foil": true
+        },
+        "uuid": "1296_f"
+    },
+    {
+        "description": "You're Welcome #96",
+        "input": {
+            "name": "You're Welcome",
+            "variant": "96"
+        },
+        "uuid": "1052"
+    },
+    {
+        "description": "Young Macintosh - Proud Son #180 foil",
+        "input": {
+            "name": "Young Macintosh - Proud Son",
+            "variant": "180",
+            "foil": true
+        },
+        "uuid": "2895_f"
+    },
+    {
+        "description": "Yzma - Conniving Chemist #56 foil",
+        "input": {
+            "name": "Yzma - Conniving Chemist",
+            "variant": "56",
+            "foil": true
+        },
+        "uuid": "1255_f"
+    },
+    {
+        "description": "Yzma - Transformed Kitten #59 foil",
+        "input": {
+            "name": "Yzma - Transformed Kitten",
+            "variant": "59",
+            "foil": true
+        },
+        "uuid": "1492_f"
+    },
+    {
+        "description": "Zazu - Steward of the Pride Lands #93 foil",
+        "input": {
+            "name": "Zazu - Steward of the Pride Lands",
+            "variant": "93",
+            "foil": true
+        },
+        "uuid": "529_f"
+    },
+    {
+        "description": "Zeus - Missing His Spark #193",
+        "input": {
+            "name": "Zeus - Missing His Spark",
+            "variant": "193"
+        },
+        "uuid": "2382"
+    },
+    {
+        "description": "Zipper - Big Helper #235 foil",
+        "input": {
+            "name": "Zipper - Big Helper",
+            "variant": "235",
+            "foil": true
+        },
+        "uuid": "2950"
+    },
+    {
+        "description": "Zootopia - Tundratown #34",
+        "input": {
+            "name": "Zootopia - Tundratown",
+            "variant": "34"
+        },
+        "uuid": "2497"
+    },
+    {
+        "description": "case variant: base spelling reaches the enchanted printing",
+        "input": {
+            "name": "Cruella De Vil - Miserable as Usual",
+            "variant": "4",
+            "foil": true
+        },
+        "uuid": "662"
+    },
+    {
+        "description": "case variant: base spelling with its own number",
+        "input": {
+            "name": "Cruella De Vil - Miserable as Usual",
+            "variant": "72"
+        },
+        "uuid": "72"
+    },
+    {
+        "description": "case variant: enchanted spelling with its own number",
+        "input": {
+            "name": "Cruella De Vil - Miserable As Usual",
+            "variant": "4",
+            "foil": true
+        },
+        "uuid": "662"
+    },
+    {
+        "description": "case variant: song spelling with its own number",
+        "input": {
+            "name": "The Islands I Pulled from the Sea",
+            "variant": "130"
+        },
+        "uuid": "1329"
+    },
+    {
+        "description": "negative: foil-only printing requested as nonfoil",
+        "input": {
+            "name": "Hades - King of Olympus",
+            "variant": "205"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: known name with wrong collector number",
+        "input": {
+            "name": "Ariel - On Human Legs",
+            "variant": "99999"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: nonfoil-only printing requested as foil",
+        "input": {
+            "name": "Anna - Ensnared Sister",
+            "variant": "1",
+            "foil": true
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: prefix without a number stays ambiguous",
+        "input": {
+            "name": "Dalmatian Puppy"
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: same name and number across sets aliases",
+        "input": {
+            "name": "Let It Go",
+            "variant": "163"
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: single-printing name with wrong collector number",
+        "input": {
+            "name": "Anna - Ensnared Sister",
+            "variant": "77777"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: unknown card name",
+        "input": {
+            "name": "Nonexistent Imaginary Hero",
+            "variant": "1"
+        },
+        "error": "unknown card name"
+    },
+    {
+        "description": "negative: wrong number zero does not disable the filter",
+        "input": {
+            "name": "99 Puppies",
+            "variant": "0"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "parenthetical suffix does not poison the collector number",
+        "input": {
+            "name": "Hades - King of Olympus (Enchanted)",
+            "variant": "205",
+            "foil": true
+        },
+        "uuid": "205"
+    },
+    {
+        "description": "prefix name resolves among lettered variants",
+        "input": {
+            "name": "Dalmatian Puppy",
+            "variant": "4c"
+        },
+        "uuid": "438"
+    },
+    {
+        "description": "prefix name resolves via collector number",
+        "input": {
+            "name": "Stitch",
+            "variant": "22"
+        },
+        "uuid": "22"
+    },
+    {
+        "description": "zero collector number is a real number",
+        "input": {
+            "name": "Bruno Madrigal - Undetected Uncle",
+            "variant": "0/204"
+        },
+        "uuid": "1936"
+    },
+    {
+        "description": "zero-padded collector number",
+        "input": {
+            "name": "99 Puppies",
+            "variant": "024"
+        },
+        "uuid": "460"
+    }
+]

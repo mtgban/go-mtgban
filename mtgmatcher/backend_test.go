@@ -1,8 +1,10 @@
-package mtgmatcher
+package mtgmatcher_test
 
 import (
 	"math/rand"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
 var NameToBeFound string
@@ -12,8 +14,10 @@ var SliceOfObj []string
 var SliceOfStr []string
 
 func setupBenchmark() {
-	for _, code := range GetAllSets() {
-		set, _ := GetSet(code)
+	b := MatchTestSet[0].Backend
+
+	for _, code := range b.AllSets {
+		set, _ := b.GetSet(code)
 		if len(set.Cards) == 0 {
 			continue
 		}
@@ -22,15 +26,16 @@ func setupBenchmark() {
 		break
 	}
 
-	SliceOfObj = defaultBackend.AllCanonicalNames
-	SliceOfStr = defaultBackend.AllNames
+	SliceOfObj = b.AllCanonicalNames
+	SliceOfStr = b.AllNames
 }
 
 func backendUUIDs(name string, doneWhenFound bool) (printings []string) {
-	name = Normalize(name)
-	for key := range defaultBackend.UUIDs {
-		if Normalize(defaultBackend.UUIDs[key].Name) == name {
-			printings = defaultBackend.UUIDs[key].Printings
+	b := MatchTestSet[0].Backend
+	name = mtgmatcher.Normalize(name)
+	for key := range b.UUIDs {
+		if mtgmatcher.Normalize(b.UUIDs[key].Name) == name {
+			printings = b.UUIDs[key].Printings
 			if doneWhenFound {
 				return
 			}
@@ -51,10 +56,11 @@ func BenchmarkSearchWithUUIDs(b *testing.B) {
 }
 
 func backendSlice(name string, doneWhenFound bool) (printings []string) {
-	name = Normalize(name)
+	b := MatchTestSet[0].Backend
+	name = mtgmatcher.Normalize(name)
 	for i := range SliceOfObj {
-		if Normalize(SliceOfObj[i]) == name {
-			printings, _ = Printings4Card(name)
+		if mtgmatcher.Normalize(SliceOfObj[i]) == name {
+			printings, _ = b.Printings4Card(name)
 			if doneWhenFound {
 				return
 			}
@@ -75,10 +81,11 @@ func BenchmarkSearchWithSlice(b *testing.B) {
 }
 
 func backendHybrid(name string, doneWhenFound bool) (printings []string) {
-	name = Normalize(name)
+	b := MatchTestSet[0].Backend
+	name = mtgmatcher.Normalize(name)
 	for i := range SliceOfStr {
 		if SliceOfStr[i] == name {
-			printings, _ = Printings4Card(name)
+			printings, _ = b.Printings4Card(name)
 			if doneWhenFound {
 				return
 			}

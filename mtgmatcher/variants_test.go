@@ -55,7 +55,7 @@ func TestMultiPromoVariants(t *testing.T) {
 	}
 
 	var baseKeys []string
-	for key := range multiPromosTable {
+	for key := range MultiPromosTable {
 		baseKeys = append(baseKeys, strings.ToLower(key))
 	}
 
@@ -68,7 +68,7 @@ func TestMultiPromoVariants(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Errorf("FAIL: [%s] is not found in multiPromosTable", key)
+			t.Errorf("FAIL: [%s] is not found in MultiPromosTable", key)
 		}
 	}
 }

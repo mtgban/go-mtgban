@@ -142,10 +142,10 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		cardName := strings.Split(product.Name, " (V.")[0]
 		number := product.Number
 
-		cardId, err = mtgmatcher.SimpleSearch(cardName, number, false)
+		cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return nil
-		} else if err != nil {
+		} else if err != nil && !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
 			mkm.printf("%v", err)
 			mkm.printf("%+v", product)
 
@@ -160,13 +160,23 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			}
 			return err
 		}
-		cardIdFoil, _ = mtgmatcher.SimpleSearch(cardName, number, true)
+		// A wrong-variant miss above may just mean the card has no nonfoil
+		// printing (Match validates the finish); adopt the foil id then.
+		var errFoil error
+		cardIdFoil, errFoil = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: true})
 		if cardId == "" {
 			cardId = cardIdFoil
 		}
 
 		if cardId == "" {
-			return nil
+			// Neither finish matched, so the miss was genuine; the foil
+			// probe's error may carry the more informative verdict
+			if errFoil != nil {
+				err = errFoil
+			}
+			mkm.printf("%v", err)
+			mkm.printf("%+v", product)
+			return err
 		}
 	default:
 		return errors.New("unsupported game")
@@ -228,8 +238,10 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		if foilprices[0] != 0 || foilprices[1] != 0 {
 			link := BuildURL(product.IdProduct, mkm.gameId, mkm.Affiliate, true)
 
-			// If the id is the same it means that the card was really nonfoil-only
-			if cardId != cardIdFoil {
+			// An empty foil id means the card has no foil printing (Match
+			// errored on the foil probe), so residual foil prices in the
+			// guide have nothing to attach to
+			if cardIdFoil != "" && cardId != cardIdFoil {
 				for i := range availableIndexNames {
 					if foilprices[i] == 0 {
 						continue
