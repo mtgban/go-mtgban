@@ -536,6 +536,14 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			variant = ""
 		}
 	case "MagicFest Cards":
+		// A card can be a MagicFest promo across several years (e.g. Counterspell
+		// is PF24 #1 and PF26 #5). Thread the collector number through so the
+		// matcher can tell them apart; the specific cases below still override it
+		// where the product name already carries a variant or the numbering
+		// differs from mtgjson's.
+		if variant == "" {
+			variant = number
+		}
 		switch cardName {
 		case "Lightning Bolt":
 			edition = "PF19"
