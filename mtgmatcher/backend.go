@@ -701,6 +701,9 @@ func (ap AllPrintings) Load() cardBackend {
 			// Save the original uuid
 			card.Identifiers["mtgjsonId"] = card.UUID
 
+			// Save the collector number stripped of its ★/†/φ decorations
+			card.OriginalNumber = strings.TrimRight(card.Number, SuffixSpecial+SuffixVariant+SuffixPhiLow+"*")
+
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
 
