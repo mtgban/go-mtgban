@@ -2,9 +2,7 @@ package starcitygames
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
@@ -13,15 +11,11 @@ import (
 )
 
 type StarcitygamesSealed struct {
-	LogCallback    mtgban.LogCallbackFunc
-	inventoryDate  time.Time
-	buylistDate    time.Time
-	MaxConcurrency int
+	LogCallback   mtgban.LogCallbackFunc
+	inventoryDate time.Time
+	buylistDate   time.Time
 
 	Affiliate string
-
-	DisableRetail  bool
-	DisableBuylist bool
 
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
@@ -31,13 +25,11 @@ type StarcitygamesSealed struct {
 	game       int
 }
 
-func NewScraperSealed(guid, apiKey string) *StarcitygamesSealed {
+func NewScraperSealed(apiKey string) *StarcitygamesSealed {
 	scg := StarcitygamesSealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient(guid, apiKey)
-	scg.client.SealedMode = true
-	scg.MaxConcurrency = defaultConcurrency
+	scg.client = NewSCGClient("", apiKey)
 	scg.game = GameMagic
 	return &scg
 }
@@ -48,6 +40,8 @@ func (scg *StarcitygamesSealed) printf(format string, a ...interface{}) {
 	}
 }
 
+// buildProductMap indexes the sealed products by their SCG id (the catalog SKU)
+// so a catalog product can be resolved to its mtgban uuid directly.
 func buildProductMap() map[string]string {
 	out := map[string]string{}
 	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
@@ -55,244 +49,104 @@ func buildProductMap() map[string]string {
 		if err != nil {
 			continue
 		}
-		scgId := co.Identifiers["scgId"]
+		scgId, found := co.Identifiers["scgId"]
+		if !found {
+			continue
+		}
 		out[scgId] = uuid
 	}
 	return out
 }
 
-func (scg *StarcitygamesSealed) processPage(ctx context.Context, channel chan<- responseChan, page int) error {
-	results, err := scg.client.GetPage(ctx, scg.game, page)
-	if err != nil {
-		return err
+func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
+	// A single malformed product must never abort the whole catalog stream;
+	// recover, log, and skip it.
+	defer func() {
+		if r := recover(); r != nil {
+			scg.printf("recovered from panic on %q (sku=%s): %v", p.Name, p.SKU, r)
+		}
+	}()
+
+	// This scraper handles sealed only; singles have their own scraper.
+	if !strings.HasPrefix(p.SKU, "SLD-") {
+		return
+	}
+	if gameFromCatalog(p.Game) != scg.game {
+		return
 	}
 
-	for _, result := range results {
-		if len(result.Document.ProductType) == 0 {
-			return errors.New("malformed product_type")
-		}
-		if result.Document.ProductType[0] == "Singles" {
-			scg.printf("Skipping product_type %s", result.Document.ProductType[0])
-			continue
-		}
-
-		if len(result.Document.ItemDisplayName) == 0 {
-			return errors.New("malformed item_display_name")
-		}
-		if len(result.Document.UniqueID) == 0 {
-			return errors.New("malformed unique_id")
-		}
-
-		if len(result.Document.URLDetail) == 0 {
-			return errors.New("malformed url_detail")
-		}
-		urlPath := result.Document.URLDetail[0]
-
-		if !strings.Contains(urlPath, "-mtg-") {
-			continue
-		}
-
-		for _, attribute := range result.Document.HawkChildAttributes {
-			if len(attribute.VariantSKU) == 0 {
-				return errors.New("malformed sku")
-			}
-			sku := attribute.VariantSKU[0]
-
-			uuid, found := scg.productMap[sku]
-			if !found {
-				continue
-			}
-
-			if len(attribute.Price) == 0 {
-				return errors.New("malformed price")
-			}
-			if len(attribute.Qty) == 0 {
-				return errors.New("malformed qty")
-			}
-			priceStr := attribute.Price[0]
-			qty := attribute.Qty[0]
-
-			price, err := mtgmatcher.ParsePrice(priceStr)
-			if err != nil {
-				co, _ := mtgmatcher.GetUUID(uuid)
-				scg.printf("invalid price for %s: %s", co, err.Error())
-				continue
-			}
-
-			if qty == 0 || price == 0 {
-				continue
-			}
-
-			link := SCGProductURL(result.Document.URLDetail, attribute.VariantSKU, scg.Affiliate)
-
-			out := responseChan{
-				cardId: uuid,
-				invEntry: &mtgban.InventoryEntry{
-					Price:      price,
-					Quantity:   qty,
-					OriginalId: sku,
-					URL:        link,
-				},
-			}
-			channel <- out
-		}
+	// Sealed products are keyed by their SKU, which mtgban stores as the scgId.
+	uuid, found := scg.productMap[p.SKU]
+	if !found {
+		return
 	}
 
-	return nil
-}
+	link := SCGProductURL([]string{p.URL}, nil, scg.Affiliate)
 
-func (scg *StarcitygamesSealed) scrape(ctx context.Context) error {
-	scg.productMap = buildProductMap()
+	for _, v := range p.Variants {
+		retailPrice, _ := mtgmatcher.ParsePrice(v.Price)
 
-	totalPages, err := scg.client.NumberOfPages(ctx, scg.game)
-	if err != nil {
-		return err
-	}
-	scg.printf("Found %d pages", totalPages)
-
-	pageNums := make([]int, totalPages)
-	for i := range pageNums {
-		pageNums[i] = i + 1
-	}
-
-	mtgban.WorkerPool(ctx, scg.MaxConcurrency, pageNums,
-		func(ctx context.Context, page int, results chan<- responseChan) error {
-			scg.printf("Processing page %d", page)
-			return scg.processPage(ctx, results, page)
-		},
-		func(record responseChan) {
-			err := scg.inventory.Add(record.cardId, record.invEntry)
-			if err != nil && !record.ignoreErr {
+		if retailPrice > 0 && v.Qty > 0 {
+			entry := &mtgban.InventoryEntry{
+				Price:      retailPrice,
+				Quantity:   v.Qty,
+				OriginalId: p.SKU,
+				InstanceId: v.SKU,
+				URL:        SCGProductURL([]string{p.URL}, []string{v.SKU}, scg.Affiliate),
+			}
+			if err := scg.inventory.Add(uuid, entry); err != nil {
 				scg.printf("%s", err.Error())
 			}
-		},
-		scg.printf,
-	)
+		}
 
-	scg.inventoryDate = time.Now()
-
-	return nil
-}
-
-func (scg *StarcitygamesSealed) processBLPage(ctx context.Context, channel chan<- responseChan, page int) error {
-	search, err := scg.client.SearchAll(ctx, scg.game, page, buylistRequestLimit, 0)
-	if err != nil {
-		return err
-	}
-
-	var gamePath string
-	switch {
-	case false:
-		gamePath = "lorcana"
-	case true:
-		gamePath = "mtg"
-	default:
-		panic("unsupported game")
-	}
-
-	for _, hit := range search.Hits {
-		link, _ := url.JoinPath(
-			buylistBookmark,
-			gamePath,
-			"bookmark",
-			url.QueryEscape(hit.Name),
-			",/0/0/0", // various faucets (hot list, rarity, bulk etc)
-			fmt.Sprint(hit.SetID),
-			",",           // unclear
-			hit.Language,  // language ofc<D-x>
-			"0/999999.99", // min/max price range
-			",",           // finish
-			"default",
-		)
-
-		for _, result := range hit.Variants {
-			uuid, found := scg.productMap[result.Sku]
-			if !found {
-				continue
+		if buyPrice, err := mtgmatcher.ParsePrice(v.SellListPrice); err == nil && buyPrice > 0 {
+			var priceRatio float64
+			if retailPrice > 0 {
+				priceRatio = buyPrice / retailPrice * 100
 			}
 
-			var priceRatio, sellPrice float64
-			price := result.BuyPrice
-
-			invCards := scg.inventory[uuid]
-			for _, invCard := range invCards {
-				sellPrice = invCard.Price
-				break
+			entry := &mtgban.BuylistEntry{
+				BuyPrice:   buyPrice,
+				PriceRatio: priceRatio,
+				URL:        link,
+				OriginalId: v.SKU,
 			}
-			if sellPrice > 0 {
-				priceRatio = price / sellPrice * 100
-			}
-
-			channel <- responseChan{
-				cardId: uuid,
-				buyEntry: &mtgban.BuylistEntry{
-					BuyPrice:   price,
-					PriceRatio: priceRatio,
-					URL:        link,
-				},
+			if err := scg.buylist.Add(uuid, entry); err != nil {
+				scg.printf("%s", err.Error())
 			}
 		}
 	}
-	return nil
 }
 
-func (scg *StarcitygamesSealed) parseBL(ctx context.Context) error {
-	scg.productMap = buildProductMap()
-
-	search, err := scg.client.SearchAll(ctx, scg.game, 0, 1, 0)
-	if err != nil {
-		return err
-	}
-	scg.printf("Parsing %d products", search.EstimatedTotalHits)
-
-	totalBLPages := search.EstimatedTotalHits/buylistRequestLimit + 1
-	blPageNums := make([]int, totalBLPages)
-	for i := range blPageNums {
-		blPageNums[i] = i
-	}
-
-	mtgban.WorkerPool(ctx, scg.MaxConcurrency, blPageNums,
-		func(ctx context.Context, page int, results chan<- responseChan) error {
-			scg.printf("Processing page %d", page)
-			return scg.processBLPage(ctx, results, page)
-		},
-		func(record responseChan) {
-			err := scg.buylist.Add(record.cardId, record.buyEntry)
-			if err != nil {
-				scg.printf("%s", err.Error())
-			}
-		},
-		scg.printf,
-	)
-
-	scg.buylistDate = time.Now()
-
-	return nil
-}
-
-func (scg *StarcitygamesSealed) SetConfig(opt mtgban.ScraperOptions) {
-	scg.DisableRetail = opt.DisableRetail
-	scg.DisableBuylist = opt.DisableBuylist
-}
-
+// Load streams the single catalog export (authenticated with the API key) and
+// fills the sealed inventory and buylist in one pass.
 func (scg *StarcitygamesSealed) Load(ctx context.Context) error {
-	var errs []error
+	scg.productMap = buildProductMap()
 
-	if !scg.DisableRetail {
-		err := scg.scrape(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
-		}
+	body, err := scg.client.DownloadCatalog(ctx)
+	if err != nil {
+		return fmt.Errorf("catalog load failed: %w", err)
 	}
+	defer body.Close()
 
-	if !scg.DisableBuylist {
-		err := scg.parseBL(ctx)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+	count := 0
+	err = decodeCatalog(body, func(p CatalogProduct) error {
+		scg.processProduct(p)
+		count++
+		if count%5000 == 0 {
+			scg.printf("Processed %d products", count)
 		}
+		return nil
+	})
+	if err != nil {
+		return err
 	}
+	scg.printf("Processed %d products total", count)
 
-	return errors.Join(errs...)
+	now := time.Now()
+	scg.inventoryDate = now
+	scg.buylistDate = now
+	return nil
 }
 
 func (scg *StarcitygamesSealed) Inventory() mtgban.InventoryRecord {
