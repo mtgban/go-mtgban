@@ -21,6 +21,7 @@ type StarcitygamesSealed struct {
 	buylist   mtgban.BuylistRecord
 
 	productMap map[string]string
+	setIDs     map[string]int
 	client     *SCGClient
 	game       int
 }
@@ -83,6 +84,15 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 
 	link := SCGProductURL(p.URL, "", scg.Affiliate)
 
+	// The buylist link points at the sell-your-cards page for this product.
+	// Sealed products carry no catalog set, so match the set off the product
+	// name; fall back to retail if nothing matches.
+	buyURL := link
+	ids := setIDsForProduct(scg.setIDs, p.Name, p.SKU)
+	if len(ids) > 0 {
+		buyURL = SCGBuylistURL(scg.game, p.Name, p.Language, ids)
+	}
+
 	for _, v := range p.Variants {
 		retailPrice, _ := mtgmatcher.ParsePrice(v.Price)
 
@@ -108,7 +118,7 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 			entry := &mtgban.BuylistEntry{
 				BuyPrice:   buyPrice,
 				PriceRatio: priceRatio,
-				URL:        link,
+				URL:        buyURL,
 				OriginalId: v.SKU,
 			}
 			if err := scg.buylist.Add(uuid, entry); err != nil {
@@ -122,6 +132,12 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 // fills the sealed inventory and buylist in one pass.
 func (scg *StarcitygamesSealed) Load(ctx context.Context) error {
 	scg.productMap = buildProductMap()
+
+	setIDs, err := scg.client.SetIDs(ctx, scg.game)
+	if err != nil {
+		scg.printf("could not load set ids for buylist links: %v", err)
+	}
+	scg.setIDs = setIDs
 
 	body, err := scg.client.DownloadCatalog(ctx)
 	if err != nil {
