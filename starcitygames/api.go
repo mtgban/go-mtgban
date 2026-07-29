@@ -75,20 +75,20 @@ const (
 	PartnerProductURL = "https://goto.starcitygames.com/c/%s/3052179/37198"
 )
 
-func SCGProductURL(URLDetail, variantSKU []string, affiliate string) string {
-	if len(URLDetail) == 0 {
+func SCGProductURL(urlDetail, variantSKU, affiliate string) string {
+	if urlDetail == "" {
 		return ""
 	}
 
-	link := BaseProductURL + URLDetail[0]
+	link := BaseProductURL + urlDetail
 	u, err := url.Parse(link)
 	if err != nil {
 		return ""
 	}
 
 	v := u.Query()
-	if len(variantSKU) > 0 {
-		v.Set("sku", variantSKU[0])
+	if variantSKU != "" {
+		v.Set("sku", variantSKU)
 	}
 	u.RawQuery = v.Encode()
 
