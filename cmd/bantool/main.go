@@ -339,13 +339,12 @@ var options = map[string]*scraperOption{
 	},
 	"starcitygames": {
 		Init: func() (mtgban.Scraper, error) {
-			scgGUID := os.Getenv("SCG_GUID")
 			scgAPIKey := os.Getenv("SCG_API_KEY")
-			if scgGUID == "" || scgAPIKey == "" {
-				return nil, errors.New("missing SCG_GUID or SCG_API_KEY env var")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
 			}
 
-			scraper := starcitygames.NewScraper(starcitygames.GameMagic, scgGUID, scgAPIKey)
+			scraper := starcitygames.NewScraper(starcitygames.GameMagic, scgAPIKey)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			return scraper, nil
@@ -579,13 +578,12 @@ var options = map[string]*scraperOption{
 	},
 	"starcitygames_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			scgGUID := os.Getenv("SCG_GUID")
 			scgAPIKey := os.Getenv("SCG_API_KEY")
-			if scgGUID == "" || scgAPIKey == "" {
-				return nil, errors.New("missing SCG_GUID or SCG_API_KEY env var")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
 			}
 
-			scraper := starcitygames.NewScraper(starcitygames.GameLorcana, scgGUID, scgAPIKey)
+			scraper := starcitygames.NewScraper(starcitygames.GameLorcana, scgAPIKey)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			return scraper, nil

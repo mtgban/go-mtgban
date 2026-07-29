@@ -11,12 +11,6 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-const (
-	defaultConcurrency = 3
-
-	buylistBookmark = "https://sellyourcards.starcitygames.com/"
-)
-
 type Starcitygames struct {
 	LogCallback   mtgban.LogCallbackFunc
 	inventoryDate time.Time
@@ -33,22 +27,13 @@ type Starcitygames struct {
 	game   int
 }
 
-func NewScraper(game int, guid, apiKey string) *Starcitygames {
+func NewScraper(game int, apiKey string) *Starcitygames {
 	scg := Starcitygames{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient(guid, apiKey)
+	scg.client = NewSCGClient(apiKey)
 	scg.game = game
 	return &scg
-}
-
-type responseChan struct {
-	cardId   string
-	invEntry *mtgban.InventoryEntry
-	buyEntry *mtgban.BuylistEntry
-	pageURL  string
-
-	ignoreErr bool
 }
 
 func (scg *Starcitygames) printf(format string, a ...interface{}) {

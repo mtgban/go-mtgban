@@ -29,7 +29,7 @@ func NewScraperSealed(apiKey string) *StarcitygamesSealed {
 	scg := StarcitygamesSealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
-	scg.client = NewSCGClient("", apiKey)
+	scg.client = NewSCGClient(apiKey)
 	scg.game = GameMagic
 	return &scg
 }
