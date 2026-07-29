@@ -119,6 +119,23 @@ var evParameters = []evConfig{
 		SourceStores: []string{"CT0"},
 		Simulation:   true,
 	},
+
+	// Mana Pool
+	{
+		Name:         "Mana Pool EV",
+		Shorthand:    "MPEV",
+		StatsFunc:    passthroughFirst,
+		SourceStores: []string{"MP"},
+	},
+	{
+		Name:      "Mana Pool Sim",
+		Shorthand: "MPSim",
+		StatsFunc: func(values []float64) (float64, error) {
+			return stats.Median(values)
+		},
+		SourceStores: []string{"MP"},
+		Simulation:   true,
+	},
 }
 
 type evOutputStash struct {
