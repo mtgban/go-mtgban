@@ -353,18 +353,14 @@ var options = map[string]*scraperOption{
 	},
 	"starcitygames_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			scgGUID := os.Getenv("SCG_GUID")
 			scgAPIKey := os.Getenv("SCG_API_KEY")
-			if scgGUID == "" || scgAPIKey == "" {
-				return nil, errors.New("missing SCG_GUID or SCG_API_KEY env var")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
 			}
 
-			scraper := starcitygames.NewScraperSealed(scgGUID, scgAPIKey)
+			scraper := starcitygames.NewScraperSealed(scgAPIKey)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_PARTNER")
-			if MaxConcurrency != 0 {
-				scraper.MaxConcurrency = MaxConcurrency
-			}
 			return scraper, nil
 		},
 	},
