@@ -81,7 +81,7 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 		return
 	}
 
-	link := SCGProductURL([]string{p.URL}, nil, scg.Affiliate)
+	link := SCGProductURL(p.URL, "", scg.Affiliate)
 
 	for _, v := range p.Variants {
 		retailPrice, _ := mtgmatcher.ParsePrice(v.Price)
@@ -92,7 +92,7 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 				Quantity:   v.Qty,
 				OriginalId: p.SKU,
 				InstanceId: v.SKU,
-				URL:        SCGProductURL([]string{p.URL}, []string{v.SKU}, scg.Affiliate),
+				URL:        SCGProductURL(p.URL, v.SKU, scg.Affiliate),
 			}
 			if err := scg.inventory.Add(uuid, entry); err != nil {
 				scg.printf("%s", err.Error())

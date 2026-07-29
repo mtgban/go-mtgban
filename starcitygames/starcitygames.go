@@ -83,7 +83,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		return
 	}
 
-	link := SCGProductURL([]string{p.URL}, nil, scg.Affiliate)
+	link := SCGProductURL(p.URL, "", scg.Affiliate)
 
 	customFields := map[string]string{
 		"SCGName":     p.Name,
@@ -115,7 +115,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				Quantity:   v.Qty,
 				OriginalId: p.SKU,
 				InstanceId: v.SKU,
-				URL:        SCGProductURL([]string{p.URL}, []string{v.SKU}, scg.Affiliate),
+				URL:        SCGProductURL(p.URL, v.SKU, scg.Affiliate),
 				CustomFields: map[string]string{
 					"SCGID": fmt.Sprint(p.ID),
 				},
