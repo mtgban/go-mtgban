@@ -135,6 +135,12 @@ func catalogHit(p CatalogProduct, foil bool) Hit {
 // alt-foil (surge/rainbow/cold) resolves to the plain foil. When the id is
 // missing or unresolved, it falls back to the SKU-driven preprocess path.
 func resolveProduct(game int, p CatalogProduct) (string, error) {
+	// Duel Masters crossover promos are catalogued under Magic but aren't Magic
+	// cards, so there's nothing to match; discard them.
+	if strings.Contains(p.Name, "(Duel Masters)") {
+		return "", mtgmatcher.ErrUnsupported
+	}
+
 	foil := catalogFoil(p)
 
 	switch game {
