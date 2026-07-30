@@ -25,6 +25,7 @@ import (
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/mtgban/go-mtgban/abugames"
+	"github.com/mtgban/go-mtgban/arcanafrisia"
 	"github.com/mtgban/go-mtgban/cardkingdom"
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
@@ -93,6 +94,13 @@ var options = map[string]*scraperOption{
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
+			return scraper, nil
+		},
+	},
+	"arcanafrisia": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := arcanafrisia.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
