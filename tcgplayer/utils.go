@@ -187,6 +187,16 @@ func DirectPriceAfterFees(price float64) float64 {
 	return price - fee
 }
 
+func DirectSYPPriceAfterFees(price float64) float64 {
+	var fee float64
+	if price < 2 {
+		fee = price * 0.50
+	} else {
+		fee = 0.6 + math.Min(75.0, price*0.0895) + price*0.025
+	}
+	return price - fee
+}
+
 const (
 	defaultListingSize = 20
 )

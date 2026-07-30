@@ -211,6 +211,11 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 			}
 		}
 
+		// Create a custom price
+		direct := response.getRetail(uuid, "TCGDirect")
+		directSyp := tcgplayer.DirectSYPPriceAfterFees(direct)
+		response.setBuylist(uuid, "TCGDirectSYPNet", directSyp)
+
 		// CardTrader Zero: subtract its flat fee.
 		ct0 := response.getRetail(uuid, "CT0")
 		ct0 -= getCT0fees(ct0)

@@ -136,6 +136,15 @@ var evParameters = []evConfig{
 		SourceStores: []string{"MP"},
 		Simulation:   true,
 	},
+
+	// Custom buylist
+	{
+		Name:           "TCG Direct SYP (net) EV",
+		Shorthand:      "TCGDirectSYPNetEV",
+		StatsFunc:      passthroughFirst,
+		SourceStores:   []string{"TCGDirectSYPNet"},
+		FoundInBuylist: true,
+	},
 }
 
 type evOutputStash struct {
