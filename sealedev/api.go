@@ -94,6 +94,9 @@ func (r *BANPriceResponse) setRetail(uuid, store string, price float64) {
 	}
 
 	// Rebuild the price entry
+	if r.Retail[uuid] == nil {
+		r.Retail[uuid] = map[string]*BanPrice{}
+	}
 	r.Retail[uuid][store] = &BanPrice{
 		Conditions: map[string]float64{
 			"NM" + tag: price,
@@ -115,6 +118,9 @@ func (r *BANPriceResponse) setBuylist(uuid, store string, price float64) {
 	}
 
 	// Rebuild the price entry
+	if r.Buylist[uuid] == nil {
+		r.Buylist[uuid] = map[string]*BanPrice{}
+	}
 	r.Buylist[uuid][store] = &BanPrice{
 		Conditions: map[string]float64{
 			"NM" + tag: price,
