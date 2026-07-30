@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
@@ -29,7 +30,9 @@ type Card struct {
 }
 
 func GetBuylist(ctx context.Context) ([]Card, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, buylistURL, http.NoBody)
+	// Bust any cache in front of the feed so the daily scrape gets a fresh copy
+	url := buylistURL + "?v=" + strconv.FormatInt(time.Now().Unix(), 10)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
