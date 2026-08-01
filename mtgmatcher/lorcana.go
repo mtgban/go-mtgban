@@ -172,6 +172,8 @@ func (lj LorcanaJSON) Load() cardBackend {
 			Printings: []string{card.SetCode},
 			IsPromo:   card.NonPromoID != 0,
 
+			OriginalNumber: fmt.Sprintf("%d", card.Number),
+
 			Identifiers: map[string]string{
 				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerId),
 			},
