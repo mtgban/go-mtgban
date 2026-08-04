@@ -48,33 +48,33 @@ const (
 )
 
 func GetPriceList(ctx context.Context) ([]Card, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, manapoolURL, http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := cleanhttp.DefaultClient().Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var pricelist struct {
-		Meta struct {
-			AsOf time.Time `json:"as_of"`
-		} `json:"meta"`
-		Data []Card `json:"data"`
-	}
-	err = json.NewDecoder(resp.Body).Decode(&pricelist)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal error for list, got: %w", err)
-	}
-
-	return pricelist.Data, nil
+	return getList[Card](ctx, manapoolURL)
 }
 
 func GetSealedList(ctx context.Context) ([]Product, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, sealedURL, http.NoBody)
+	return getList[Product](ctx, sealedURL)
+}
+
+// getList fetches and decodes one of the price lists. The lists are large
+// downloads whose connection occasionally resets mid-stream, so retry the
+// whole fetch a few times.
+func getList[T any](ctx context.Context, link string) ([]T, error) {
+	const attempts = 3
+	var err error
+	for attempt := 1; attempt <= attempts; attempt++ {
+		var data []T
+		data, err = fetchList[T](ctx, link)
+		if err == nil {
+			return data, nil
+		}
+		time.Sleep(time.Duration(attempt) * time.Second)
+	}
+
+	return nil, err
+}
+
+func fetchList[T any](ctx context.Context, link string) ([]T, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func GetSealedList(ctx context.Context) ([]Product, error) {
 		Meta struct {
 			AsOf time.Time `json:"as_of"`
 		} `json:"meta"`
-		Data []Product `json:"data"`
+		Data []T `json:"data"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&pricelist)
 	if err != nil {
