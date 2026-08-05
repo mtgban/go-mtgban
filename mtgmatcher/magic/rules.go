@@ -13,6 +13,14 @@ import (
 // time; hooks whose body has not moved yet delegate to the core method.
 type Rules struct{}
 
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	return inCard.IsUnsupported()
+}
+
+func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	return inCard.IsSpecificUnsupported()
+}
+
 // ravnicaWeekend resolves a Ravnica Weekend printing to its edition and
 // collector number, by number when the input carries one and by guild name
 // through the variant tables otherwise.
@@ -665,7 +673,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 
 	// Adjust incorrect numbers sometimes used for Etched
 	num := mtgmatcher.ExtractNumber(inCard.Variation)
-	if num != "" && strings.HasSuffix(num, "e") && mtgmatcher.HasEtchedPrinting(inCard.Name, inCard.Edition) {
+	if num != "" && strings.HasSuffix(num, "e") && b.HasEtchedPrinting(inCard.Name, inCard.Edition) {
 		fixedNum := strings.TrimSuffix(num, "e")
 		variation = strings.Replace(variation, num, fixedNum, -1)
 		if !mtgmatcher.Contains(variation, "Etched") {
@@ -1452,6 +1460,18 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 }
 
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) (outCards []mtgmatcher.Card) {
+	// Use the result as-is if it comes from a single card in a single set,
+	// preserving the historical Magic behavior of the pre-GameRules pipeline:
+	// a lone candidate matches even when the variation carries junk the
+	// filters below would reject. Other games (Lorcana) validate strictly.
+	if len(cardSet) == 1 {
+		for _, inCards := range cardSet {
+			if len(inCards) == 1 {
+				return inCards
+			}
+		}
+	}
+
 	for setCode, inCards := range cardSet {
 		set := b.Sets[setCode]
 
@@ -1790,7 +1810,49 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	return
 }
 
+// Prefilter runs the Magic name preprocessing before the canonical-name
+// lookup: the edition may be embedded in the name in a few scraper syntaxes,
+// and a trailing variant may be parenthesized or dashed. It then applies the
+// handful of name-specific token/playtest fixups.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	// Binderpos weird syntax, with the edition embedded in the name
+	if strings.Contains(inCard.Name, "[") {
+		vars := strings.Split(inCard.Name, "[")
+		inCard.Name = strings.TrimSpace(vars[0])
+		if len(vars) > 1 {
+			maybeEdition := strings.Join(vars[1:], " ")
+			maybeEdition = strings.Replace(maybeEdition, "]", "", -1)
+			maybeEdition = strings.TrimSpace(maybeEdition)
+
+			set, err := b.GetSetByName(maybeEdition)
+			if err != nil {
+				inCard.Variation = maybeEdition
+				// TCG Promo Pack prepends a second P to the edition
+				if strings.HasPrefix(maybeEdition, "PP") {
+					inCard.Variation = "Promo Pack"
+				}
+			} else {
+				inCard.Edition = set.Name
+			}
+		}
+	}
+	// Simple case in which there is a variant embedded in the name
+	if strings.Contains(inCard.Name, "(") {
+		vars := mtgmatcher.SplitVariants(inCard.Name)
+		if len(vars) > 1 {
+			inCard.Name = vars[0]
+			inCard.AddToVariant(strings.Join(vars[1:], " "))
+		}
+	}
+	// Split a trailing " - <variant>" off the name
+	if strings.Contains(inCard.Name, " - ") {
+		vars := strings.Split(inCard.Name, " - ")
+		if len(vars) > 1 {
+			inCard.Name = vars[0]
+			inCard.AddToVariant(strings.Join(vars[1:], " "))
+		}
+	}
+
 	switch inCard.Name {
 	case "Red Herring",
 		"Bind // Liberate",
