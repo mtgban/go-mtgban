@@ -100,7 +100,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 
 		cardName := productMap[result.ProductId].Name
 		number := GetProductNumber(&product)
-		cardId, err := mtgmatcher.SimpleSearch(cardName, number, result.SubTypeName != "Normal")
+		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: result.SubTypeName != "Normal"})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
