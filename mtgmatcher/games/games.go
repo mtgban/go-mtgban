@@ -1,0 +1,17 @@
+// Package games activates every built-in mtgmatcher game by registering their
+// datastore loaders through their init functions. Blank-import it to make all
+// games available with a single import instead of one per game:
+//
+//	import _ "github.com/mtgban/go-mtgban/mtgmatcher/games"
+//
+// This links every game (and its transitive dependencies) into the binary and
+// puts every loader into mtgmatcher.LoadDatastore's auto-detection. For a
+// leaner build, or to control which loaders auto-detection considers,
+// blank-import only the specific mtgmatcher/<game> packages you need. When the
+// game is known, load it explicitly with mtgmatcher.Open.
+package games
+
+import (
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+)
