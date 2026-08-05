@@ -104,13 +104,16 @@ func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 	}
 
 	// 3. Attempt adjusting the edition with a fake card object
+	// (skipped when no GameRules are attached, e.g. a hand-built Backend)
 	card := &InputCard{
 		Edition: edition,
 	}
 	if len(flags) > 0 {
 		card.Foil = flags[0]
 	}
-	b.rules.AdjustEdition(b, card)
+	if b.rules != nil {
+		b.rules.AdjustEdition(b, card)
+	}
 
 	set, found = b.NormalizedSets[Normalize(card.Edition)]
 	if found {
@@ -382,6 +385,9 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 	nameNorm := Normalize(name)
 	uuids, found := b.Hashes[nameNorm]
 	if !found {
+		if b.rules == nil {
+			return false
+		}
 		cc := &InputCard{
 			Name: name,
 		}
@@ -1015,11 +1021,11 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 		return nil, fmt.Errorf("sheet '%s' not found", sheetName)
 	}
 
-	IsEtched := strings.Contains(strings.ToLower(sheetName), "etched")
+	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 	var probs []ProductProbabilities
 
 	for cardId, count := range sheet.Cards {
-		uuid, err := MatchId(cardId, sheet.Foil, IsEtched)
+		uuid, err := MatchId(cardId, sheet.Foil, isEtched)
 		if err != nil {
 			return nil, err
 		}

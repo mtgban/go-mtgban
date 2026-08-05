@@ -56,13 +56,13 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 		return "", ErrCardUnknownId
 	}
 
-	IsEtched := len(finishes) > 1 && finishes[1]
-	IsFoil := len(finishes) > 0 && finishes[0] && !IsEtched
+	isEtched := len(finishes) > 1 && finishes[1]
+	isFoil := len(finishes) > 0 && finishes[0] && !isEtched
 
 	// If the loaded card already matches the requested finishes
 	// return the found id straight away
-	if (co.Foil && IsFoil) || (co.Etched && IsEtched) ||
-		(!co.Foil && !co.Etched && !IsFoil && !IsEtched) {
+	if (co.Foil && isFoil) || (co.Etched && isEtched) ||
+		(!co.Foil && !co.Etched && !isFoil && !isEtched) {
 		return co.UUID, nil
 	}
 
@@ -76,7 +76,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 
 	// If the input card was requested as foil, we should double check
 	// if the original card has a foil under a separate id
-	if co.Foil != IsFoil || co.Etched != IsEtched {
+	if co.Foil != isFoil || co.Etched != isEtched {
 		// So we iterate over the Variations array and try outputting ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
@@ -89,7 +89,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 			// We assume that the collector number between the two version
 			// stays the same, with a different suffix
 			if ExtractNumberValue(co.Number) == ExtractNumberValue(altCo.Number) {
-				maybeId := b.output(altCo.Card, IsFoil, IsEtched)
+				maybeId := b.output(altCo.Card, isFoil, isEtched)
 				altCo, found = b.UUIDs[maybeId]
 				if !found {
 					continue
@@ -107,7 +107,7 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 
 				// If the alt card finish matches the expected one
 				// then replace the final output uuid
-				if altCo.Foil == IsFoil && altCo.Etched == IsEtched {
+				if altCo.Foil == isFoil && altCo.Etched == isEtched {
 					outId = maybeId
 					break
 				}
@@ -191,60 +191,31 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	}
 	ogName := inCard.Name
 
-	// Binderpos weird syntax, with the edition embedded in the name
-	if strings.Contains(inCard.Name, "[") {
-		vars := strings.Split(inCard.Name, "[")
-		inCard.Name = strings.TrimSpace(vars[0])
-		if len(vars) > 1 {
-			maybeEdition := strings.Join(vars[1:], " ")
-			maybeEdition = strings.Replace(maybeEdition, "]", "", -1)
-			maybeEdition = strings.TrimSpace(maybeEdition)
+	// A Backend without attached GameRules cannot match anything; check before
+	// the prefilter below, which runs the game's name preprocessing.
+	rules := b.rules
+	if rules == nil {
+		return "", ErrDatastoreEmpty
+	}
 
-			set, err := b.GetSetByName(maybeEdition)
-			if err != nil {
-				inCard.Variation = maybeEdition
-				// TCG Promo Pack prepends a second P to the edition
-				if strings.HasPrefix(maybeEdition, "PP") {
-					inCard.Variation = "Promo Pack"
-				}
-			} else {
-				inCard.Edition = set.Name
-			}
-		}
-	}
-	// Simple case in which there is a variant embedded in the name
-	if strings.Contains(inCard.Name, "(") {
-		vars := SplitVariants(inCard.Name)
-		if len(vars) > 1 {
-			inCard.Name = vars[0]
-			inCard.AddToVariant(strings.Join(vars[1:], " "))
-		}
-	}
-	if strings.Contains(inCard.Name, " - ") {
-		vars := strings.Split(inCard.Name, " - ")
-		if len(vars) > 1 {
-			inCard.Name = vars[0]
-			inCard.AddToVariant(strings.Join(vars[1:], " "))
-		}
+	// Prefilter runs the game-specific name/variant preprocessing before the
+	// canonical-name lookup: Magic splits bracketed editions and parenthesized
+	// or dashed variants off the name, Lorcana only the parenthetical (its
+	// names are "Character - Title"), plus each game's token/name fixups.
+	rules.Prefilter(b, inCard)
+
+	// Re-check foil in case prefilter moved a finish hint into the variant.
+	if inCard.IsFoil() {
+		inCard.Foil = true
 	}
 	if ogName != inCard.Name {
 		Logger.Printf("Pre-adjusted name from '%s' to '%s' '%s'", ogName, inCard.Name, inCard.Variation)
 	}
 
-	// Repeat the check in case the card was renamed above
-	if inCard.IsFoil() {
-		inCard.Foil = true
-	}
-
 	// Skip unsupported sets
-	if inCard.isUnsupported() {
+	if rules.IsUnsupported(b, inCard) {
 		return "", ErrUnsupported
 	}
-
-	rules := b.rules
-
-	// Prefilter
-	rules.Prefilter(b, inCard)
 
 	// Get the card basic info to retrieve the Printings array
 	canonicalName, found := b.CanonicalNames[Normalize(inCard.Name)]
@@ -296,7 +267,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 			inCard.Contains("Player Rewards")):
 		return "", ErrUnsupported
 	// For any specific missing card
-	case inCard.isSpecificUnsupported():
+	case rules.IsSpecificUnsupported(b, inCard):
 		return "", ErrUnsupported
 	}
 
@@ -410,31 +381,24 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 		}
 	}
 
-	// Determine if any deduplication needs to be performed
+	// Log the candidate matches
 	Logger.Println("Found these possible matches")
-	single := len(cardSet) == 1
 	for _, dupCards := range cardSet {
-		single = single && len(dupCards) == 1
 		for _, card := range dupCards {
 			Logger.Println(card.SetCode, card.Name, card.Number)
 		}
 	}
 
-	// Use the result as-is if it comes from a single card in a single set
-	var outCards []Card
-	if single {
-		Logger.Println("Single printing, using it right away")
-		for _, outCards = range cardSet {
-		}
-	} else {
-		// Otherwise do a second pass filter, using all inCard details
-		Logger.Println("Now filtering...")
-		outCards = rules.FilterCards(b, inCard, cardSet)
+	// Filter the candidates using all the input card details. The game's rules
+	// own this step, so even a single candidate is validated rather than used
+	// blindly (Lorcana enforces the collector number here, which the old
+	// single-card shortcut skipped, returning a wrong-numbered card).
+	Logger.Println("Now filtering...")
+	outCards := rules.FilterCards(b, inCard, cardSet)
 
-		Logger.Println("Post filtering status...")
-		for _, card := range outCards {
-			Logger.Println(card.SetCode, card.Name, card.Number)
-		}
+	Logger.Println("Post filtering status...")
+	for _, card := range outCards {
+		Logger.Println(card.SetCode, card.Name, card.Number)
 	}
 
 	// Just keep the first card found for gold-bordered sets
