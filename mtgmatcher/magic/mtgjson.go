@@ -364,9 +364,42 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 	save := func(uuid string, co mtgmatcher.CardObject) {
 		uuids[uuid] = &co
 	}
+	// Register the uuid each finish resolves to, mirroring the suffix rules
+	// applied below, so output() can pull it instead of re-deriving the suffix.
+	finishUUIDs := map[string]string{}
+	switch {
+	case card.HasFinish(mtgmatcher.FinishEtched):
+		if card.HasFinish(mtgmatcher.FinishNonfoil) {
+			finishUUIDs[mtgmatcher.FinishNonfoil] = card.UUID
+		}
+		if card.HasFinish(mtgmatcher.FinishFoil) {
+			if card.HasFinish(mtgmatcher.FinishNonfoil) {
+				finishUUIDs[mtgmatcher.FinishFoil] = card.UUID + suffixFoil
+			} else {
+				finishUUIDs[mtgmatcher.FinishFoil] = card.UUID
+			}
+		}
+		if card.HasFinish(mtgmatcher.FinishNonfoil) || card.HasFinish(mtgmatcher.FinishFoil) {
+			finishUUIDs[mtgmatcher.FinishEtched] = card.UUID + suffixEtched
+		} else {
+			finishUUIDs[mtgmatcher.FinishEtched] = card.UUID
+		}
+	case card.HasFinish(mtgmatcher.FinishFoil):
+		if card.HasFinish(mtgmatcher.FinishNonfoil) {
+			finishUUIDs[mtgmatcher.FinishNonfoil] = card.UUID
+			finishUUIDs[mtgmatcher.FinishFoil] = card.UUID + suffixFoil
+		} else {
+			finishUUIDs[mtgmatcher.FinishFoil] = card.UUID
+		}
+	default:
+		finishUUIDs[mtgmatcher.FinishNonfoil] = card.UUID
+	}
+
 	// Shared card object
+	base := toMtgCard(card)
+	base.FoilUUIDs = finishUUIDs
 	co := mtgmatcher.CardObject{
-		Card:    toMtgCard(card),
+		Card:    base,
 		Edition: edition,
 	}
 

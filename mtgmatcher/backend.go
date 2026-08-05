@@ -156,6 +156,14 @@ type Card struct {
 
 	OriginalNumber string
 
+	// FoilUUIDs maps a finish (or, for Lorcana, a specific foil sub-type such
+	// as "rainbowpillars") to the uuid that carries it, so a card with several
+	// finishes registers each one explicitly instead of encoding it in the uuid
+	// string. output() pulls the resolved finish's uuid from here; the standard
+	// foil stays under FinishFoil ("_f") for compatibility. Loaders populate it;
+	// a Card without it falls back to the suffix rules.
+	FoilUUIDs map[string]string
+
 	// A list of URLs containing the image of the card
 	// At a minimum "full" and "thumbnail" versions should be provided
 	Images map[string]string
