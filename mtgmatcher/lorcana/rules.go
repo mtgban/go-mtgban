@@ -98,9 +98,13 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	var out []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		// Foil printings are stored under an extra suffixed uuid; fold them
-		// back onto the base card so each candidate appears exactly once.
-		uuid = strings.TrimSuffix(uuid, suffixFoil)
+		// Foil printings (the primary "_f" and every foil sub-type suffix) are
+		// stored under a suffixed uuid; fold them back onto the base card so
+		// each candidate appears exactly once. Base uuids are numeric, so the
+		// first underscore marks the start of any finish suffix.
+		if idx := strings.IndexByte(uuid, '_'); idx >= 0 {
+			uuid = uuid[:idx]
+		}
 		if seen[uuid] {
 			continue
 		}
