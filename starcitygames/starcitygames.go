@@ -101,7 +101,6 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		"SCGFinish":   p.Finish,
 		"scgNumber":   p.CollectorNumber,
 		"scgSKU":      p.SKU,
-		"SCGID":       fmt.Sprint(p.ID),
 	}
 
 	ignore := strings.Contains(p.Set, "World Championship") || strings.Contains(p.Name, "Token")
@@ -125,9 +124,6 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				OriginalId: p.SKU,
 				InstanceId: v.SKU,
 				URL:        SCGProductURL(p.URL, v.SKU, scg.Affiliate),
-				CustomFields: map[string]string{
-					"SCGID": fmt.Sprint(p.ID),
-				},
 			}
 			if condition == "NM" {
 				entry.CustomFields = customFields
@@ -154,7 +150,8 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				BuyPrice:     buyPrice,
 				PriceRatio:   priceRatio,
 				URL:          buyURL,
-				OriginalId:   v.SKU,
+				OriginalId:   p.SKU,
+				InstanceId:   v.SKU,
 				CustomFields: blFields,
 			}
 			if err := scg.buylist.Add(cardId, entry); err != nil && !ignore {
