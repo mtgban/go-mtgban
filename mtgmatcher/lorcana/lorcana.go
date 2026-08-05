@@ -99,6 +99,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
+	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
 
 	// Load all sets first
@@ -117,8 +118,28 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	}
 	b.IndexSets()
 
+	// Gather the full reprint list for each name (keyed by normalized name, so
+	// case-variant spellings share one list), in first-appearance order. Every
+	// card of a name carries the same complete list, mirroring how Magic
+	// populates Printings, so Printings4Card works unmodified for Lorcana.
+	// All cards of a name share the same backing array; Printings is
+	// read-only by contract, as it always has been for Magic.
+	printingsByName := map[string][]string{}
+	for _, card := range lj.Cards {
+		n := mtgmatcher.Normalize(card.FullName)
+		if !slices.Contains(printingsByName[n], card.SetCode) {
+			printingsByName[n] = append(printingsByName[n], card.SetCode)
+		}
+	}
+
 	// Load all card names
 	for _, card := range lj.Cards {
+		// First-seen wins: two Lorcana cards whose names differ only in case
+		// ("as"/"As") normalize equal, so last-wins would let a query for one
+		// resolve to the other. Keep the first to make the mapping stable.
+		if n := mtgmatcher.Normalize(card.FullName); b.CanonicalNames[n] == "" {
+			b.CanonicalNames[n] = card.FullName
+		}
 		if slices.Contains(b.AllCanonicalNames, card.FullName) {
 			continue
 		}
@@ -132,12 +153,15 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 
 	// Load all cards and store them in their relative sets
 	for _, card := range lj.Cards {
-		// Make finishes lowercase, and assume that if missing it's nonfoil
-		finishes := card.FoilTypes
-		for i := range finishes {
-			finishes[i] = strings.ToLower(finishes[i])
-			if finishes[i] == "none" {
+		// Normalize Lorcana's many foil-type names (Silver, Satin, Magma, …) to
+		// the matcher's finish constants: "None" is nonfoil, everything else is
+		// foil, so output() can select the right (foil) uuid downstream.
+		finishes := make([]string, len(card.FoilTypes))
+		for i, finish := range card.FoilTypes {
+			if strings.EqualFold(finish, "none") {
 				finishes[i] = "nonfoil"
+			} else {
+				finishes[i] = "foil"
 			}
 		}
 		if len(finishes) == 0 {
@@ -168,6 +192,13 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 			Number:   fmt.Sprintf("%d%s", card.Number, card.Variant),
 			Images:   card.Images,
 
+			// The datastore is English-only. Core Match's language filter
+			// drops any candidate whose Language differs from English when
+			// several survive filtering, so leaving this empty would turn
+			// every legitimate multi-candidate result (aliasing) into a
+			// bogus wrong-variant error.
+			Language: "English",
+
 			Colors: colors,
 			Rarity: rarity,
 
@@ -175,7 +206,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 			Types:      []string{card.Type},
 			Supertypes: []string{card.Story},
 
-			Printings: []string{card.SetCode},
+			Printings: printingsByName[mtgmatcher.Normalize(card.FullName)],
 			IsPromo:   card.NonPromoID != 0,
 
 			OriginalNumber: fmt.Sprintf("%d", card.Number),
@@ -188,14 +219,15 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 
 		b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
 
-		// Split cards per finish
+		// Split cards per finish: the nonfoil keeps the base uuid and the foil
+		// takes the "_f" suffix. A card with several foil sub-types currently
+		// collapses onto that single foil uuid.
 		for i, finish := range finishes {
 			co := mtgmatcher.CardObject{
 				Card:    convertedCard,
 				Edition: b.Sets[card.SetCode].Name,
 			}
 
-			// The main/first version keeps the same uuid of the card in the Cards array
 			uuid := convertedCard.UUID
 			if finish != "nonfoil" {
 				co.Foil = true
@@ -204,12 +236,14 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 				}
 			}
 
-			// Update uuid and store (co is fresh on every iteration, so the
-			// stored pointer is not aliased by later finishes)
+			if _, found := b.UUIDs[uuid]; found {
+				continue
+			}
+			// co is fresh on every iteration, so the stored pointer is not
+			// aliased by later finishes
 			co.UUID = uuid
 			b.UUIDs[uuid] = &co
 
-			// Save uuid in the array of uuids and
 			b.AllUUIDs = append(b.AllUUIDs, uuid)
 			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], uuid)
 		}
@@ -257,6 +291,8 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 		sort.Strings(colors)
 		b.Sets[code].Colors = colors
 	}
+
+	b.SetRules(Rules{})
 
 	return &b
 }
