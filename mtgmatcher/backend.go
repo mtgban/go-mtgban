@@ -164,6 +164,14 @@ type Card struct {
 	// a Card without it falls back to the suffix rules.
 	FoilUUIDs map[string]string
 
+	// Finish is the name of the finish this specific entry carries — the
+	// verbatim (lowercased) name exported by the source data for foils, e.g.
+	// Lorcana's foil types "silver" or "rainbowpillars", or FinishNonfoil —
+	// so entries whose Foil flag alone cannot tell them apart remain
+	// distinguishable. It is set per stored uuid, not on the set-level card,
+	// which represents every finish.
+	Finish string
+
 	// A list of URLs containing the image of the card
 	// At a minimum "full" and "thumbnail" versions should be provided
 	Images map[string]string
