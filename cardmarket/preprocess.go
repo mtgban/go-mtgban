@@ -104,7 +104,10 @@ func checkLoadedId(cardName string, productId int) []string {
 	return ids
 }
 
-func fallback(product *MKMProduct) (string, string) {
+// Fallback returns the nonfoil and foil ids of the loaded printings whose
+// mcmId identifier matches the product id, or two empty strings when no
+// loaded card carries it. When only one finish exists both ids point to it.
+func Fallback(product *MKMProduct) (string, string) {
 	var cardId, cardIdFoil string
 
 	// First check if the product id is known
