@@ -85,7 +85,14 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 
 	switch mkm.gameId {
 	case GameIdMagic:
-		backupCardId, backupFoilCardId := fallback(product)
+		// An exact mcmId match ties the product to its printings more
+		// reliably than name/number matching, which cannot tell apart
+		// products sharing a collector number (e.g. RVR 312 vs 312z,
+		// both "312" upstream); preprocess only when no id is known.
+		cardId, cardIdFoil = Fallback(product)
+		if cardId != "" {
+			break
+		}
 
 		theCard, err := Preprocess(product.Name, product.Number, product.ExpansionName)
 		if err != nil {
@@ -93,17 +100,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			if ok {
 				return err
 			}
-			if backupCardId == "" && backupFoilCardId == "" {
-				return nil
-			}
-
-			theCard = &mtgmatcher.InputCard{
-				Id: backupCardId,
-			}
-			if backupCardId == "" {
-				theCard.Id = backupFoilCardId
-				theCard.Foil = true
-			}
+			return nil
 		}
 
 		cardId, err = mtgmatcher.Match(theCard)
@@ -114,12 +111,6 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 				theCard.Edition == "Pro Tour Collector Set" ||
 				strings.HasPrefix(theCard.Edition, "World Championship Decks") {
 				return nil
-			}
-
-			if backupCardId != "" || backupFoilCardId != "" {
-				cardId = backupCardId
-				cardIdFoil = backupFoilCardId
-				break
 			}
 
 			mkm.printf("%v", err)
