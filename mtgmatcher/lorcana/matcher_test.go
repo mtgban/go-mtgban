@@ -239,3 +239,45 @@ func regenerateLorcanaTestData(t *testing.T, b *mtgmatcher.Backend, tests []matc
 	}
 	t.Logf("wrote %d Lorcana test cases to %s", len(tests), lorcanaTestData)
 }
+
+// TestLorcanaFinishNames checks the invariants of the per-uuid Finish field:
+// foil entries carry their exported foil-type name, nonfoil entries carry
+// "nonfoil", and a sub-type suffixed uuid agrees with the name that derived
+// it.
+func TestLorcanaFinishNames(t *testing.T) {
+	path := os.Getenv("LORCANA_PATH")
+	if path == "" {
+		t.Skip("LORCANA_PATH not set; skipping Lorcana matcher suite")
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	b, err := Load(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	subTypes := map[string]int{}
+	for uuid, co := range b.UUIDs {
+		if co.Foil {
+			if co.Finish == "" || co.Finish == "none" || co.Finish == mtgmatcher.FinishNonfoil {
+				t.Errorf("%s: foil entry with finish %q", uuid, co.Finish)
+			}
+		} else if co.Finish != mtgmatcher.FinishNonfoil {
+			t.Errorf("%s: nonfoil entry with finish %q", uuid, co.Finish)
+		}
+		// A sub-type uuid's suffix is derived from the same exported name.
+		if idx := strings.IndexByte(uuid, '_'); idx >= 0 && uuid[idx:] != suffixFoil {
+			if got := foilSuffix(co.Finish); got != uuid[idx+1:] {
+				t.Errorf("%s: finish %q does not derive suffix %q", uuid, co.Finish, uuid[idx+1:])
+			}
+			subTypes[co.Finish]++
+		}
+	}
+	if len(subTypes) == 0 {
+		t.Fatal("no foil sub-type entries found in the datastore")
+	}
+	t.Logf("sub-type finishes: %v", subTypes)
+}

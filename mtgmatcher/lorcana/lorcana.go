@@ -225,15 +225,21 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 		type perFinish struct {
 			uuid string
 			foil bool
+			name string
 		}
 		var stored []perFinish
 		foilSeen := false
 		for i, finish := range finishes {
 			if finish != "foil" {
 				finishUUIDs[mtgmatcher.FinishNonfoil] = convertedCard.UUID
-				stored = append(stored, perFinish{convertedCard.UUID, false})
+				stored = append(stored, perFinish{convertedCard.UUID, false, mtgmatcher.FinishNonfoil})
 				continue
 			}
+
+			// The verbatim exported finish name, lowercased ("silver",
+			// "rainbowpillars", …). Nonfoil above uses the matcher's own
+			// constant instead of the export's "None" placeholder.
+			finishName := strings.ToLower(card.FoilTypes[i])
 
 			uuid := convertedCard.UUID
 			key := mtgmatcher.FinishFoil
@@ -251,7 +257,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 				uuid += "_" + key
 			}
 			finishUUIDs[key] = uuid
-			stored = append(stored, perFinish{uuid, true})
+			stored = append(stored, perFinish{uuid, true, finishName})
 		}
 		convertedCard.FoilUUIDs = finishUUIDs
 
@@ -274,6 +280,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 			// co is fresh on every iteration, so the stored pointer is not
 			// aliased by later finishes
 			co.UUID = s.uuid
+			co.Finish = s.name
 			b.UUIDs[s.uuid] = &co
 			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
 			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], s.uuid)
