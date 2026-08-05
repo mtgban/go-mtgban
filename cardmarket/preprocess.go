@@ -107,6 +107,9 @@ func checkLoadedId(cardName string, productId int) []string {
 // Fallback returns the nonfoil and foil ids of the loaded printings whose
 // mcmId identifier matches the product id, or two empty strings when no
 // loaded card carries it. When only one finish exists both ids point to it.
+// mtgjson occasionally stamps the same mcmId on sibling variants (30A frame
+// pairs for example), so printings whose number agrees with the product's
+// take precedence over the arbitrary last one found.
 func Fallback(product *MKMProduct) (string, string) {
 	var cardId, cardIdFoil string
 
@@ -117,19 +120,32 @@ func Fallback(product *MKMProduct) (string, string) {
 	case "The Dark Italian", "Legends Italian":
 		ids = nil
 	}
+	var numberMatched, numberMatchedFoil bool
 	for _, id := range ids {
 		co, _ := mtgmatcher.GetUUID(id)
+		// OriginalNumber is Number stripped of the ★/†-style decorations
+		// that MKM numbers never carry
+		sameNumber := strings.EqualFold(co.OriginalNumber, product.Number)
 		if co.Etched {
 			switch co.SetCode {
 			// These set codes cannot be represented
 			case "STA", "MH2", "H1R":
 				ids = nil
 			}
-			cardIdFoil = co.UUID
+			if !numberMatchedFoil {
+				cardIdFoil = co.UUID
+				numberMatchedFoil = sameNumber
+			}
 		} else if co.Foil {
-			cardIdFoil = co.UUID
+			if !numberMatchedFoil {
+				cardIdFoil = co.UUID
+				numberMatchedFoil = sameNumber
+			}
 		} else {
-			cardId = co.UUID
+			if !numberMatched {
+				cardId = co.UUID
+				numberMatched = sameNumber
+			}
 		}
 	}
 	// If we found any known ids, we trust them and skip the rest of the preprocessing
