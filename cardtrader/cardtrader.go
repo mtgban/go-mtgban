@@ -134,10 +134,11 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			continue
 		}
 
-		var cardId string
-		var err error
-
-		if ct.gameId == GameIdMagic {
+		// Build the per-game input card; the match and error handling below are
+		// shared. Magic reuses the blueprint-derived theCard (applying the
+		// product language), Lorcana builds one from the product's number.
+		switch ct.gameId {
+		case GameIdMagic:
 			lang := product.Properties.MTGLanguage
 			if lang != "" {
 				lang, found = langMap[strings.ToLower(lang)]
@@ -148,61 +149,44 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 				}
 				theCard.Language = lang
 			}
-
-			cardId, err = mtgmatcher.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				continue
-			} else if err != nil {
-				ct.printf("%v", err)
-				ct.printf("%q", theCard)
-				ct.printf("%d %q", bpId, blueprint)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						ct.printf("- %s", card)
-					}
-				}
-				break
-			}
-
-			if product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-				cardIdFoil, err := mtgmatcher.MatchId(cardId, true)
-				if err == nil {
-					cardId = cardIdFoil
-				}
-			}
-		} else if ct.gameId == GameIdLorcana {
+		case GameIdLorcana:
 			if product.Properties.LorcanaLanguage != "en" {
 				continue
 			}
-
-			cardName := blueprint.Name
-			collectorNumber := product.Properties.Number
-
-			cardId, err = mtgmatcher.SimpleSearch(cardName, collectorNumber, product.Properties.LorcanaFoil)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				continue
-			} else if err != nil {
-				ct.printf("%v", err)
-				ct.printf("%+v", blueprint)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					ct.printf("%s got ids: %s", cardName, probes)
-					for _, probe := range probes {
-						co, _ := mtgmatcher.GetUUID(probe)
-						ct.printf("%s: %s", probe, co)
-					}
-				}
-				continue
+			theCard = &mtgmatcher.InputCard{
+				Name:      blueprint.Name,
+				Variation: product.Properties.Number,
+				Foil:      product.Properties.LorcanaFoil,
 			}
-		} else {
+		default:
 			ct.printf("unsupported game %d", ct.gameId)
 			return
+		}
+
+		cardId, err := mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
+			ct.printf("%v", err)
+			ct.printf("%q", theCard)
+			ct.printf("%d %q", bpId, blueprint)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				for _, probe := range alias.Probe() {
+					co, _ := mtgmatcher.GetUUID(probe)
+					ct.printf("- %s", co)
+				}
+			}
+			continue
+		}
+
+		// Foil listings share the plain id; adopt the foil id when one exists
+		// (Magic only: Lorcana's finish is already carried on the input).
+		if ct.gameId == GameIdMagic && product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
+			if cardIdFoil, e := mtgmatcher.MatchId(cardId, true); e == nil {
+				cardId = cardIdFoil
+			}
 		}
 
 		qty := product.Quantity

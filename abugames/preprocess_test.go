@@ -6,7 +6,8 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	// Register the Magic datastore loader so LoadDatastoreFile can find it
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func TestMain(m *testing.M) {
@@ -14,19 +15,9 @@ func TestMain(m *testing.M) {
 	if path == "" {
 		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
 	}
-
-	allPrintingsReader, err := os.Open(path)
-	if err != nil {
+	if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
 		log.Fatalln(err)
 	}
-	defer allPrintingsReader.Close()
-
-	ds, err := magic.Load(allPrintingsReader)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	mtgmatcher.SetGlobalDatastore(ds)
-
 	os.Exit(m.Run())
 }
 
