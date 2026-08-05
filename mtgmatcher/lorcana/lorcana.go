@@ -215,37 +215,68 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerId),
 			},
 		}
+		// Register the uuid each finish resolves to. Nonfoil keeps the base
+		// uuid and the primary foil keeps "_f", so output()/Match resolve to
+		// them; Lorcana's extra foil sub-types (RainbowPillars, …) each get
+		// their own uuid keyed by sub-type name so none are dropped. The uuid
+		// derives from the sub-type name, not its position, so it is stable
+		// across data updates that reorder or add foil types.
+		finishUUIDs := map[string]string{}
+		type perFinish struct {
+			uuid string
+			foil bool
+		}
+		var stored []perFinish
+		foilSeen := false
+		for i, finish := range finishes {
+			if finish != "foil" {
+				finishUUIDs[mtgmatcher.FinishNonfoil] = convertedCard.UUID
+				stored = append(stored, perFinish{convertedCard.UUID, false})
+				continue
+			}
+
+			uuid := convertedCard.UUID
+			key := mtgmatcher.FinishFoil
+			if !foilSeen {
+				// Primary foil: "_f", or the base uuid when a foil is the very
+				// first finish (a foil-only card).
+				foilSeen = true
+				if i > 0 {
+					uuid += suffixFoil
+				}
+			} else {
+				// Additional sub-types get a name-derived uuid, keyed by their
+				// sub-type name in the map.
+				key = foilSuffix(card.FoilTypes[i])
+				uuid += "_" + key
+			}
+			finishUUIDs[key] = uuid
+			stored = append(stored, perFinish{uuid, true})
+		}
+		convertedCard.FoilUUIDs = finishUUIDs
+
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
 		b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
 
-		// Split cards per finish: the nonfoil keeps the base uuid and the foil
-		// takes the "_f" suffix. A card with several foil sub-types currently
-		// collapses onto that single foil uuid.
-		for i, finish := range finishes {
+		// Store a CardObject per finish uuid.
+		for _, s := range stored {
+			// A genuinely duplicated finish (the same sub-type listed twice)
+			// would collide; store each uuid at most once.
+			if _, found := b.UUIDs[s.uuid]; found {
+				continue
+			}
 			co := mtgmatcher.CardObject{
 				Card:    convertedCard,
 				Edition: b.Sets[card.SetCode].Name,
-			}
-
-			uuid := convertedCard.UUID
-			if finish != "nonfoil" {
-				co.Foil = true
-				if i > 0 {
-					uuid += suffixFoil
-				}
-			}
-
-			if _, found := b.UUIDs[uuid]; found {
-				continue
+				Foil:    s.foil,
 			}
 			// co is fresh on every iteration, so the stored pointer is not
 			// aliased by later finishes
-			co.UUID = uuid
-			b.UUIDs[uuid] = &co
-
-			b.AllUUIDs = append(b.AllUUIDs, uuid)
-			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], uuid)
+			co.UUID = s.uuid
+			b.UUIDs[s.uuid] = &co
+			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
+			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], s.uuid)
 		}
 	}
 
@@ -308,6 +339,13 @@ var lorcanaRarityMap = map[string]int{
 }
 
 const suffixFoil = "_f"
+
+// foilSuffix turns a LorcanaJSON foil-type name (Silver, Satin, RainbowPillars,
+// …) into a compact, uuid-safe suffix used to give each foil sub-type past the
+// primary its own uuid.
+func foilSuffix(foilType string) string {
+	return strings.ToLower(strings.ReplaceAll(foilType, " ", ""))
+}
 
 var lorcanaColorNameMap = map[string]string{
 	"W": "white",

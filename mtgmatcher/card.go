@@ -934,7 +934,20 @@ func (b *Backend) output(card Card, flags ...bool) string {
 		etched = false
 	}
 
-	// Prepare the output card
+	// Resolve to the finish the caller is asking for and pull the uuid the
+	// loader registered for it. Loaders register every finish a card carries
+	// (and, for Lorcana, every foil sub-type), so this is the common path.
+	finish := FinishNonfoil
+	if etched {
+		finish = FinishEtched
+	} else if foil {
+		finish = FinishFoil
+	}
+	if id, ok := card.FoilUUIDs[finish]; ok {
+		return id
+	}
+
+	// Fall back to the suffix rules for cards without a registered map.
 	id := card.UUID
 	// Append suffixes to the Id to distinguish cards among finishes
 	if etched && (hasNonfoil || hasFoil) {
