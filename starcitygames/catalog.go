@@ -142,26 +142,26 @@ func resolveProduct(game int, p CatalogProduct) (string, error) {
 	}
 
 	foil := catalogFoil(p)
+	etched := strings.Contains(strings.ToLower(p.Finish), "etched")
 
-	switch game {
-	case GameMagic:
-		etched := strings.Contains(strings.ToLower(p.Finish), "etched")
-		if p.ScryfallID != "" {
-			if id, err := mtgmatcher.MatchId(p.ScryfallID, foil, etched); err == nil {
-				return id, nil
-			}
+	// The authoritative identifiers resolve directly through the identifier
+	// index, regardless of game: Scryfall id first, then the TCGplayer id
+	// (MatchId resolves a bare product id through the external-id index and
+	// applies the finish exactly like the scryfall path). Etched is the only
+	// alt-foil that changes the printing; every other alt-foil shares the plain
+	// foil's id. (SCG sends null ids today, so in practice this fires only once
+	// they start populating them.)
+	for _, id := range []string{p.ScryfallID, p.TCGPlayerID} {
+		if id == "" {
+			continue
 		}
-
-		// The TCGplayer id is the next authoritative identifier: MatchId resolves
-		// a bare product id through the external-id index and applies the finish,
-		// exactly like the scryfall path. Use it whenever the scryfall id is
-		// absent or didn't resolve. (SCG sends null today; this future-proofs it.)
-		if p.TCGPlayerID != "" {
-			if id, err := mtgmatcher.MatchId(p.TCGPlayerID, foil, etched); err == nil {
-				return id, nil
-			}
+		if out, err := mtgmatcher.MatchId(id, foil, etched); err == nil {
+			return out, nil
 		}
+	}
 
+	// Magic needs catalog-specific fixups before the generic matcher.
+	if game == GameMagic {
 		// SCG's "-WAR2-" is the War of the Spark Japanese planeswalker
 		// (jpwalker), whose Japanese-language Scryfall id isn't in the index and
 		// which preprocess rejects as non-english. It maps to WAR #NNN★.
@@ -190,11 +190,14 @@ func resolveProduct(game int, p CatalogProduct) (string, error) {
 			}
 		}
 		return mtgmatcher.Match(card)
-	case GameLorcana:
-		return mtgmatcher.SimpleSearch(p.Name, strings.TrimLeft(p.CollectorNumber, "0"), foil)
-	default:
-		return "", mtgmatcher.ErrUnsupported
 	}
+
+	// Lorcana identifies a card by name + collector number + finish.
+	return mtgmatcher.Match(&mtgmatcher.InputCard{
+		Name:      p.Name,
+		Variation: strings.TrimLeft(p.CollectorNumber, "0"),
+		Foil:      foil,
+	})
 }
 
 // catalogCondition maps a catalog condition string to an mtgban grade.
