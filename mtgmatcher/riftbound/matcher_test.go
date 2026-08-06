@@ -136,6 +136,12 @@ var riftboundSeeds = []matchTest{
 		Desc: "base printing wins over its promos by default",
 		In:   mtgmatcher.InputCard{Name: "Viktor - Leader", Variation: "246"},
 	},
+	// The riftbounddatastore command stamps every printing with its
+	// TCGplayer product id (652842 is Ahri, Alluring OGN-066).
+	{
+		Desc: "tcgplayer product id resolves through the identifier index",
+		In:   mtgmatcher.InputCard{Id: "652842", Foil: true},
+	},
 	// Error contract.
 	{
 		Desc: "negative: unknown card name",
@@ -282,6 +288,41 @@ func regenerateRiftboundTestData(t *testing.T, b *mtgmatcher.Backend, tests []ma
 		t.Fatal(err)
 	}
 	t.Logf("wrote %d Riftbound test cases to %s", len(tests), riftboundTestData)
+}
+
+// TestRiftboundIdentifiers checks the TCGplayer identifier index the
+// riftbounddatastore command stamps into the datastore: the external map and
+// the per-card identifier round-trip to each other, and the id lookup path
+// resolves finishes.
+func TestRiftboundIdentifiers(t *testing.T) {
+	b := loadBackend(t)
+
+	var n int
+	for uuid, co := range b.UUIDs {
+		pid := co.Identifiers["tcgplayerProductId"]
+		if pid == "" {
+			continue
+		}
+		if strings.HasSuffix(uuid, "_"+mtgmatcher.FinishFoil) {
+			continue
+		}
+		n++
+		if got := b.ExternalIdentifiers[pid]; got != uuid {
+			t.Errorf("%s: external identifier %s resolves to %q", uuid, pid, got)
+			continue
+		}
+		if id, err := b.MatchId(pid, true); err != nil || id != co.FoilUUIDs[mtgmatcher.FinishFoil] {
+			t.Errorf("%s: MatchId(%s, foil) = (%q, %v)", uuid, pid, id, err)
+		}
+	}
+	if n == 0 {
+		t.Fatal("no tcgplayer identifiers loaded; regenerate the datastore with riftbounddatastore")
+	}
+	if len(b.ExternalIdentifiers) != n {
+		t.Errorf("external identifiers (%d) do not mirror the identified cards (%d)",
+			len(b.ExternalIdentifiers), n)
+	}
+	t.Logf("%d cards carry a tcgplayer product id", n)
 }
 
 // TestRiftboundFinishUUIDs checks the datastore invariants of the two-finish

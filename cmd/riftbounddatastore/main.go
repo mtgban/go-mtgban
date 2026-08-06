@@ -18,6 +18,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
 )
 
 const (
@@ -81,6 +83,16 @@ func isPromoGroup(g tcgGroup) bool {
 	return strings.Contains(g.Name, "Promotional") || strings.Contains(g.Name, "Bundle")
 }
 
+// numberOf reduces a collector number or public code to the loader's
+// canonical form: what follows any set prefix, without the "/total" tail.
+func numberOf(code string) string {
+	if idx := strings.IndexByte(code, '-'); idx >= 0 {
+		code = code[idx+1:]
+	}
+	code = strings.Split(code, "/")[0]
+	return strings.ToLower(riftbound.CanonicalNumber(code))
+}
+
 func main() {
 	output := flag.String("o", "", "output file (default stdout)")
 	flag.Parse()
@@ -121,6 +133,18 @@ func main() {
 	setItems := sets["items"].([]any)
 	cardItems := cards["items"].([]any)
 
+	// Index the gallery printings by set and canonical collector number, the
+	// identity TCGplayer products are mapped back onto.
+	galleryByNumber := map[string]map[string]map[string]any{}
+	for _, c := range cardItems {
+		item := c.(map[string]any)
+		setID := item["set"].(map[string]any)["value"].(map[string]any)["id"].(string)
+		if galleryByNumber[setID] == nil {
+			galleryByNumber[setID] = map[string]map[string]any{}
+		}
+		galleryByNumber[setID][numberOf(item["publicCode"].(string))] = item
+	}
+
 	var groupsResp struct {
 		Results []tcgGroup `json:"results"`
 	}
@@ -133,7 +157,11 @@ func main() {
 	}
 
 	for _, group := range groupsResp.Results {
-		if !isPromoGroup(group) {
+		byNumber := galleryByNumber[group.Abbreviation]
+		if !isPromoGroup(group) && byNumber == nil {
+			// Neither a promo group nor a set the gallery knows: a set the
+			// gallery has not published yet, or storefront-only content.
+			log.Printf("%s (%s): not in the gallery, skipped", group.Name, group.Abbreviation)
 			continue
 		}
 
@@ -146,6 +174,31 @@ func main() {
 		}
 		if err := json.Unmarshal(productsData, &productsResp); err != nil {
 			log.Fatalln(group.Name, ":", err)
+		}
+
+		// A main set: stamp the gallery printings with the TCGplayer product
+		// id resolving to them, keyed by collector number.
+		if byNumber != nil {
+			var stamped int
+			var missed []string
+			for _, product := range productsResp.Results {
+				number := product.extended("Number")
+				if number == "" {
+					continue
+				}
+				item, found := byNumber[numberOf(number)]
+				if !found {
+					// Printings TCGplayer carries but the gallery does not
+					// (rune variants, dual-faced tokens).
+					missed = append(missed, fmt.Sprintf("%s %q", number, product.Name))
+					continue
+				}
+				item["tcgplayerProductId"] = product.ProductID
+				stamped++
+			}
+			log.Printf("%s (%s): %d printings stamped, %d unknown to the gallery %v",
+				group.Name, group.Abbreviation, stamped, len(missed), missed)
+			continue
 		}
 
 		var added, maxNum int
@@ -165,11 +218,12 @@ func main() {
 			cardItems = append(cardItems, map[string]any{
 				// The TCGplayer product id is the stable identity of a
 				// promo printing; group-prefixed for readability.
-				"id":              fmt.Sprintf("%s-%d", strings.ToLower(group.Abbreviation), product.ProductID),
-				"collectorNumber": collector,
-				"name":            product.Name,
-				"publicCode":      fmt.Sprintf("%s-%s", group.Abbreviation, number),
-				"orientation":     "portrait",
+				"id":                 fmt.Sprintf("%s-%d", strings.ToLower(group.Abbreviation), product.ProductID),
+				"collectorNumber":    collector,
+				"name":               product.Name,
+				"publicCode":         fmt.Sprintf("%s-%s", group.Abbreviation, number),
+				"orientation":        "portrait",
+				"tcgplayerProductId": product.ProductID,
 				"set": map[string]any{
 					"value": map[string]any{
 						"id":    group.Abbreviation,

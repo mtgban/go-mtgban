@@ -292,5 +292,5 @@ func extractNumber(variation string) string {
 		number = number[idx+1:]
 	}
 	number = strings.Split(number, "/")[0]
-	return canonicalNumber(number)
+	return CanonicalNumber(number)
 }

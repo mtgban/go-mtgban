@@ -83,6 +83,11 @@ type GalleryCard struct {
 	Tags struct {
 		Tags []string `json:"tags"`
 	} `json:"tags"`
+
+	// TCGplayerProductID is not part of the official payload; the
+	// riftbounddatastore command stamps each card with the TCGplayer product
+	// id it maps to, feeding the external identifier index.
+	TCGplayerProductID int `json:"tcgplayerProductId,omitempty"`
 }
 
 // Load reads an official card-gallery payload from r and returns a Backend
@@ -213,6 +218,14 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			mtgmatcher.FinishFoil:    card.ID + "_" + mtgmatcher.FinishFoil,
 		}
 
+		if card.TCGplayerProductID != 0 {
+			pid := fmt.Sprint(card.TCGplayerProductID)
+			convertedCard.Identifiers = map[string]string{
+				"tcgplayerProductId": pid,
+			}
+			b.ExternalIdentifiers[pid] = convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]
+		}
+
 		b.Sets[setCode].Cards = append(b.Sets[setCode].Cards, convertedCard)
 
 		// Store a CardObject per finish uuid.
@@ -292,14 +305,14 @@ func numberFromPublicCode(publicCode string) string {
 		code = code[idx+1:]
 	}
 	code = strings.Split(code, "/")[0]
-	return canonicalNumber(code)
+	return CanonicalNumber(code)
 }
 
-// canonicalNumber strips leading zeros from the digit run of a collector
+// CanonicalNumber strips leading zeros from the digit run of a collector
 // number, preserving any letter prefix ("T01" -> "T1") and any suffix
 // ("066a" -> "66a"). An all-zero run stays "0" so a genuine zero input
 // errors instead of silently disabling the number filter.
-func canonicalNumber(number string) string {
+func CanonicalNumber(number string) string {
 	i := 0
 	for i < len(number) && (number[i] < '0' || number[i] > '9') {
 		i++
