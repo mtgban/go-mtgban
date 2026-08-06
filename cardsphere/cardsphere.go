@@ -110,8 +110,11 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 					continue
 				}
 
-				price *= gradingMap[conditions]
-				if int(price*100) > offer.Balance {
+				// Derive from the offer price rather than updating it in
+				// place: the offer covers every condition it lists, so a
+				// deduction applied here would carry into the next one
+				condPrice := price * gradingMap[conditions]
+				if int(condPrice*100) > offer.Balance {
 					continue
 				}
 
@@ -119,7 +122,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 					cardId: cardId,
 					blEntry: &mtgban.BuylistEntry{
 						// Account for processing fees and cash out fee
-						BuyPrice:   price * 0.87,
+						BuyPrice:   condPrice * 0.87,
 						Conditions: conditions,
 						Quantity:   offer.Quantity,
 						PriceRatio: priceRatio,
