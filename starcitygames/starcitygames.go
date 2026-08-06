@@ -223,6 +223,8 @@ func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameMagic
 	case GameLorcana:
 		info.Game = mtgban.GameLorcana
+	case GameRiftbound:
+		info.Game = mtgban.GameRiftbound
 	}
 	return
 }

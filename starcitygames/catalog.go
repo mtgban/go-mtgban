@@ -91,12 +91,16 @@ func decodeCatalog(r io.Reader, fn func(CatalogProduct) error) error {
 }
 
 // gameFromCatalog maps the catalog game string to the internal game constant.
+// An unknown string maps to 0, which matches no configured scraper, so those
+// products are skipped.
 func gameFromCatalog(game string) int {
 	switch game {
 	case "Magic: The Gathering":
 		return GameMagic
 	case "Lorcana":
 		return GameLorcana
+	case "Riftbound":
+		return GameRiftbound
 	default:
 		return 0
 	}
@@ -192,8 +196,9 @@ func resolveProduct(game int, p CatalogProduct) (string, error) {
 		return mtgmatcher.Match(card)
 	}
 
-	// Lorcana identifies a card by name + collector number + finish; the
-	// catalog set narrows same-name-and-number collisions across sets.
+	// The other games (Lorcana, Riftbound) identify a card by name +
+	// collector number + finish; the catalog set narrows
+	// same-name-and-number collisions across sets.
 	return mtgmatcher.Match(&mtgmatcher.InputCard{
 		Name:      p.Name,
 		Edition:   p.Set,
