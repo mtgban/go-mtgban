@@ -136,8 +136,8 @@ var riftboundSeeds = []matchTest{
 		Desc: "base printing wins over its promos by default",
 		In:   mtgmatcher.InputCard{Name: "Viktor - Leader", Variation: "246"},
 	},
-	// The riftbounddatastore command stamps every printing with its
-	// TCGplayer product id (652842 is Ahri, Alluring OGN-066).
+	// The datastore builder stamps every printing with its TCGplayer
+	// product id (652842 is Ahri, Alluring OGN-066).
 	{
 		Desc: "tcgplayer product id resolves through the identifier index",
 		In:   mtgmatcher.InputCard{Id: "652842", Foil: true},
@@ -291,8 +291,8 @@ func regenerateRiftboundTestData(t *testing.T, b *mtgmatcher.Backend, tests []ma
 }
 
 // TestRiftboundIdentifiers checks the TCGplayer identifier index the
-// riftbounddatastore command stamps into the datastore: the external map and
-// the per-card identifier round-trip to each other, and the id lookup path
+// datastore builder stamps into the datastore: the external map and the
+// per-card identifier round-trip to each other, and the id lookup path
 // resolves finishes.
 func TestRiftboundIdentifiers(t *testing.T) {
 	b := loadBackend(t)
@@ -316,7 +316,7 @@ func TestRiftboundIdentifiers(t *testing.T) {
 		}
 	}
 	if n == 0 {
-		t.Fatal("no tcgplayer identifiers loaded; regenerate the datastore with riftbounddatastore")
+		t.Fatal("no tcgplayer identifiers loaded; rebuild the datastore with github.com/mtgban/riftbound-datastore")
 	}
 	if len(b.ExternalIdentifiers) != n {
 		t.Errorf("external identifiers (%d) do not mirror the identified cards (%d)",
