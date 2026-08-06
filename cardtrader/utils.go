@@ -8,6 +8,21 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// priceToUSD converts a CardTrader price to dollars. Listings are quoted in
+// whichever currency the seller chose, but only the euro rate is ever
+// retrieved, so any other currency is reported instead of being silently
+// multiplied by the wrong rate.
+func priceToUSD(cents int, currency string, euroRate float64) (float64, error) {
+	price := float64(cents) / 100
+	switch currency {
+	case "USD":
+		return price, nil
+	case "EUR":
+		return price * euroRate, nil
+	}
+	return 0, fmt.Errorf("unsupported currency %q", currency)
+}
+
 // Use the Simple API Token to convert your own inventory to a standard InventoryRecord
 func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blueprint) (mtgban.InventoryRecord, error) {
 	products, err := ct.ProductsExport(ctx)
@@ -38,7 +53,10 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 			continue
 		}
 
-		price := currencyRate * float64(product.PriceCents) / 100.0
+		price, err := priceToUSD(product.PriceCents, product.PriceCurrency, currencyRate)
+		if err != nil {
+			continue
+		}
 
 		quantity := product.Quantity
 
