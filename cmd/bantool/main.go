@@ -299,7 +299,7 @@ var options = map[string]*scraperOption{
 			scraper.Partner = os.Getenv("MINT_PARTNER")
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
+			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -423,7 +423,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
+			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -463,7 +463,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
+			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -494,7 +494,7 @@ var options = map[string]*scraperOption{
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_KEY_ID_DATASTORE"))
+			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
