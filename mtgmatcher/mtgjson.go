@@ -187,6 +187,7 @@ func LoadAllPrintings(r io.Reader) (DataStore, error) {
 	if len(payload.Data) == 0 {
 		return nil, errors.New("empty AllPrintings file")
 	}
+	internAllPrintings(&payload)
 	return payload, nil
 }
 
