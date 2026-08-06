@@ -15,8 +15,8 @@ import (
 
 // TCGGame is the retail scraper for any single-game TCGplayer category whose
 // cards the matcher identifies by name + collector number + finish (Lorcana,
-// Riftbound, ...); Magic has its own SKU-driven scrapers. Per-game
-// constructors below pick the category and the mtgban game tag.
+// Riftbound, ...); Magic has its own SKU-driven scrapers. SupportedGames
+// below maps each game tag to the category it is served from.
 type TCGGame struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -54,7 +54,8 @@ func (tcg *TCGGame) printf(format string, a ...interface{}) {
 // is identified by SKU and has its own scrapers. Supporting one more game is
 // one entry here, provided the matcher has a datastore for it.
 var SupportedGames = map[string]int{
-	mtgban.GameLorcana: tcgplayer.CategoryLorcana,
+	mtgban.GameLorcana:   tcgplayer.CategoryLorcana,
+	mtgban.GameRiftbound: tcgplayer.CategoryRiftbound,
 }
 
 func NewScraperGame(game, publicId, privateId string) (*TCGGame, error) {
