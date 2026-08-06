@@ -32,6 +32,18 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "these files are not gofmt-ed:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
       - name: Cache Datastore
         uses: actions/cache/restore@v5
         with:
