@@ -846,8 +846,7 @@ func (h *HTTPBucket) NewReader(ctx context.Context, path string) (io.ReadCloser,
 }
 
 func (h *HTTPBucket) NewWriter(ctx context.Context, path string) (io.WriteCloser, error) {
-	panic("not possible")
-	return nil, nil
+	return nil, errors.New("an http bucket cannot be written to")
 }
 
 func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter, error) {
