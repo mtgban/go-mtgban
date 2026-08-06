@@ -439,7 +439,6 @@ func parseGradedCondition(title string) string {
 	}
 
 	if grade == "" {
-		panic(title)
 		return ""
 	}
 
