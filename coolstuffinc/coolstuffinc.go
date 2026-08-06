@@ -241,8 +241,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					c.Foil = c.Foil || isFoil
 					theCard = c
 				case GameLorcana:
-					number := mtgmatcher.ExtractNumber(strings.Split(notes, "/")[0])
-					theCard = &mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
 					csi.printf("unsupported game")
 					return
@@ -446,8 +445,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			}
 			theCard = c
 		case GameLorcana:
-			number := strings.Split(strings.TrimLeft(product.Number, "0"), "/")[0]
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Variation: number, Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
 			return errors.New("unsupported game")
 		}

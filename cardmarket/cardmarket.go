@@ -133,7 +133,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		cardName := strings.Split(product.Name, " (V.")[0]
 		number := product.Number
 
-		cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: false})
+		cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return nil
 		} else if err != nil && !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
@@ -154,7 +154,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		// A wrong-variant miss above may just mean the card has no nonfoil
 		// printing (Match validates the finish); adopt the foil id then.
 		var errFoil error
-		cardIdFoil, errFoil = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: true})
+		cardIdFoil, errFoil = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: true})
 		if cardId == "" {
 			cardId = cardIdFoil
 		}

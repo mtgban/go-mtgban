@@ -192,10 +192,12 @@ func resolveProduct(game int, p CatalogProduct) (string, error) {
 		return mtgmatcher.Match(card)
 	}
 
-	// Lorcana identifies a card by name + collector number + finish.
+	// Lorcana identifies a card by name + collector number + finish; the
+	// catalog set narrows same-name-and-number collisions across sets.
 	return mtgmatcher.Match(&mtgmatcher.InputCard{
 		Name:      p.Name,
-		Variation: strings.TrimLeft(p.CollectorNumber, "0"),
+		Edition:   p.Set,
+		Variation: p.CollectorNumber,
 		Foil:      foil,
 	})
 }
