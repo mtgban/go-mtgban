@@ -110,6 +110,7 @@ func (lj LorcanaJSON) Load() cardBackend {
 			Type:            set.Type,
 		}
 	}
+	b.NormalizedSets = buildNormalizedSetIndex(b.Sets)
 
 	// Load all card names
 	for _, card := range lj.Cards {

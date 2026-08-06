@@ -78,10 +78,9 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	}
 
 	// 2. Check if input is the full name of the set
-	for _, set := range defaultBackend.Sets {
-		if Equals(set.Name, edition) {
-			return set, nil
-		}
+	set, found := defaultBackend.NormalizedSets[Normalize(edition)]
+	if found {
+		return set, nil
 	}
 
 	// 3. Attempt adjusting the edition with a fake card object
@@ -93,10 +92,9 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	}
 	adjustEdition(card)
 
-	for _, set := range defaultBackend.Sets {
-		if Equals(set.Name, card.Edition) {
-			return set, nil
-		}
+	set, found = defaultBackend.NormalizedSets[Normalize(card.Edition)]
+	if found {
+		return set, nil
 	}
 
 	// 4. We tried
