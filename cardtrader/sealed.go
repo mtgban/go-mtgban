@@ -85,9 +85,10 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 				link += "?share_code=" + ct.ShareCode
 			}
 
-			price := float64(product.Price.Cents) / 100
-			if product.Price.Currency != "USD" {
-				price *= ct.exchangeRate
+			price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRate)
+			if err != nil {
+				ct.printf("%v for blueprint %d", err, product.BlueprintId)
+				continue
 			}
 
 			// Assign a seller name as required by Market
