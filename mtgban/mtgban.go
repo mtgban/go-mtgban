@@ -111,8 +111,9 @@ func (be BuylistEntry) Qty() int {
 }
 
 const (
-	GameMagic   = ""
-	GameLorcana = "Lorcana"
+	GameMagic     = ""
+	GameLorcana   = "Lorcana"
+	GameRiftbound = "Riftbound"
 )
 
 // ScraperInfo contains
