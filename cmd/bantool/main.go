@@ -646,6 +646,70 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+
+	"cardmarket_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdRiftbound, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardtrader_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+			if ctTokenBearer == "" {
+				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+			}
+
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdRiftbound, ctTokenBearer)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.ShareCode = os.Getenv("CT_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"coolstuffinc_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraper(coolstuffinc.GameRiftbound)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"starcitygames_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
+			}
+
+			scraper := starcitygames.NewScraper(starcitygames.GameRiftbound, scgAPIKey)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("SCG_PARTNER")
+			return scraper, nil
+		},
+	},
 }
 
 type inventoryElement struct {
