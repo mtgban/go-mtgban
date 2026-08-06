@@ -129,7 +129,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 
 		cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
-	case GameIdLorcana:
+	case GameIdLorcana, GameIdRiftbound:
 		cardName := strings.Split(product.Name, " (V.")[0]
 		number := product.Number
 
@@ -376,6 +376,8 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameMagic
 	case GameIdLorcana:
 		info.Game = mtgban.GameLorcana
+	case GameIdRiftbound:
+		info.Game = mtgban.GameRiftbound
 	}
 	return
 }

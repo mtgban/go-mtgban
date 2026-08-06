@@ -152,8 +152,11 @@ func leadingWordMatch(a, b []string) int {
 }
 
 func gamePath(game int) string {
-	if game == GameLorcana {
+	switch game {
+	case GameLorcana:
 		return "lorcana"
+	case GameRiftbound:
+		return "riftbound"
 	}
 	return "mtg"
 }

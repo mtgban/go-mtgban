@@ -77,6 +77,7 @@ const (
 	GameIdLorcana
 	GameIdBattleSpiritsSaga
 	GameIdStarWarsUnlimited
+	GameIdRiftbound
 )
 
 const (

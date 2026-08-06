@@ -141,6 +141,9 @@ type Product struct {
 
 		LorcanaLanguage string `json:"lorcana_language,omitempty"`
 		LorcanaFoil     bool   `json:"lorcana_foil,omitempty"`
+
+		RiftboundLanguage string `json:"riftbound_language,omitempty"`
+		RiftboundFoil     bool   `json:"riftbound_foil,omitempty"`
 	} `json:"properties_hash"`
 	User struct {
 		Name        string `json:"username"`

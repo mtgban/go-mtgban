@@ -159,6 +159,16 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 				Variation: product.Properties.Number,
 				Foil:      product.Properties.LorcanaFoil,
 			}
+		case GameIdRiftbound:
+			if product.Properties.RiftboundLanguage != "en" {
+				continue
+			}
+			theCard = &mtgmatcher.InputCard{
+				Name:      blueprint.Name,
+				Edition:   blueprint.Expansion.Name,
+				Variation: product.Properties.Number,
+				Foil:      product.Properties.RiftboundFoil,
+			}
 		default:
 			ct.printf("unsupported game %d", ct.gameId)
 			return
@@ -369,6 +379,8 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameMagic
 	case GameIdLorcana:
 		info.Game = mtgban.GameLorcana
+	case GameIdRiftbound:
+		info.Game = mtgban.GameRiftbound
 	}
 	return
 }
