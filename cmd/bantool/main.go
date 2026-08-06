@@ -710,6 +710,44 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"tcg_index_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicId == "" || tcgPrivateId == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameRiftbound, tcgPublicId, tcgPrivateId)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"tcg_market_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicId == "" || tcgPrivateId == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGame(mtgban.GameRiftbound, tcgPublicId, tcgPrivateId)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 }
 
 type inventoryElement struct {
