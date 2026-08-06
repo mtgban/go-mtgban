@@ -36,7 +36,6 @@ import (
 	"github.com/mtgban/go-mtgban/miniaturemarket"
 	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	"github.com/mtgban/go-mtgban/mtgseattle"
 	"github.com/mtgban/go-mtgban/sealedev"
 	"github.com/mtgban/go-mtgban/starcitygames"
@@ -47,6 +46,8 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/simplecloud"
+
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
 var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
@@ -1138,12 +1139,11 @@ func run() int {
 	defer datastoreReader.Close()
 
 	now = time.Now()
-	ds, err := magic.Load(datastoreReader)
+	err = mtgmatcher.LoadDatastore(datastoreReader)
 	if err != nil {
 		log.Println(err)
 		return 1
 	}
-	mtgmatcher.SetGlobalDatastore(ds)
 	log.Println("loading datastore took:", time.Since(now))
 
 	var scrapers []mtgban.Scraper
