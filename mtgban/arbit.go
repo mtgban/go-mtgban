@@ -266,14 +266,14 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			continue
 		}
 
-		// The first entry is always NM
-		blEntry := blEntries[0]
+		// The first entry is always NM, and gates the whole card
+		nmEntry := blEntries[0]
 
-		if r.maxPriceRatio != 0 && blEntry.PriceRatio > r.maxPriceRatio {
+		if r.maxPriceRatio != 0 && nmEntry.PriceRatio > r.maxPriceRatio {
 			continue
 		}
 
-		if blEntry.BuyPrice < r.minBuyPrice {
+		if nmEntry.BuyPrice < r.minBuyPrice {
 			continue
 		}
 
@@ -284,6 +284,12 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 
 		initialFactor := customFactor
 		for _, invEntry := range invEntries {
+			// Re-anchor on NM for every inventory entry: the condition
+			// matching below only rebinds this when the entry is not NM,
+			// so a value carried over from a previous iteration would
+			// price this entry against another entry's grade
+			blEntry := nmEntry
+
 			if slices.Contains(r.filterConditions, invEntry.Conditions) {
 				continue
 			}
