@@ -113,6 +113,29 @@ var lorcanaSeeds = []matchTest{
 		Desc: "negative: same name and number across sets aliases",
 		In:   mtgmatcher.InputCard{Name: "Let It Go", Variation: "163"},
 	},
+	// Edition narrowing: the Match skeleton restricts candidates to the sets
+	// matching a supplied edition; without one (or with one that resolves to
+	// no set name) the number-driven contract above is unchanged.
+	{
+		Desc: "edition disambiguates a name and number shared across sets",
+		In:   mtgmatcher.InputCard{Name: "Let It Go", Variation: "163", Edition: "The First Chapter"},
+	},
+	{
+		Desc: "edition disambiguates toward the later printing",
+		In:   mtgmatcher.InputCard{Name: "Let It Go", Variation: "163", Edition: "Winterspell"},
+	},
+	{
+		Desc: "storefront-prefixed edition still narrows",
+		In:   mtgmatcher.InputCard{Name: "Let It Go", Variation: "163", Edition: "Disney Lorcana: Winterspell"},
+	},
+	{
+		Desc: "unrecognized edition does not block a unique number",
+		In:   mtgmatcher.InputCard{Name: "99 Puppies", Variation: "024", Edition: "Not A Real Set"},
+	},
+	{
+		Desc: "negative: edition excludes the printing carrying the number",
+		In:   mtgmatcher.InputCard{Name: "Let It Go", Variation: "10", Edition: "Winterspell"},
+	},
 	{
 		Desc: "negative: prefix without a number stays ambiguous",
 		In:   mtgmatcher.InputCard{Name: "Dalmatian Puppy"},

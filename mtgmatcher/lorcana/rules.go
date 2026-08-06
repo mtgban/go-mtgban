@@ -67,7 +67,22 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {}
+// AdjustEdition normalizes scraper edition strings toward LorcanaJSON set
+// names: storefronts commonly prefix the game name ("Disney Lorcana: Rise of
+// the Floodborn") or append catalog suffixes ("... Singles"). An edition that
+// still matches no set name simply does not narrow the candidates (the Match
+// skeleton falls back to every printing), so trimming can only help.
+func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	edition := strings.TrimSpace(inCard.Edition)
+	for _, prefix := range []string{"Disney Lorcana", "Lorcana"} {
+		if strings.HasPrefix(edition, prefix) {
+			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
+			break
+		}
+	}
+	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
+	inCard.Edition = edition
+}
 
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
 	return editions
@@ -85,13 +100,15 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	return false
 }
 
-// FilterCards narrows candidates by collector number and finish: candidates
-// come from the name hash rather than the edition-keyed cardSet, so
-// case-variant spellings that normalize to the same canonical name stay
-// reachable (three real pairs exist in the data) and iteration follows stable
-// load order instead of random map order. Lorcana
-// identifies a card by name + collector number + finish; the edition is not
-// part of the contract, so the cardSet narrowing is deliberately ignored.
+// FilterCards narrows candidates by edition, collector number, and finish:
+// candidates come from the name hash rather than the edition-keyed cardSet
+// values, so case-variant spellings that normalize to the same canonical name
+// stay reachable (three real pairs exist in the data) and iteration follows
+// stable load order instead of random map order. The cardSet keys still
+// matter: the Match skeleton fills them with the sets matching the input
+// edition when one was supplied and resolves — falling back to every printing
+// otherwise — so honoring them disambiguates a name+number shared across sets
+// ("Let It Go" #163) while a missing or unrecognized edition changes nothing.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 
@@ -116,6 +133,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 		card := co.Card
 
+		if _, found := cardSet[card.SetCode]; !found {
+			continue
+		}
 		if number != "" && number != card.Number {
 			continue
 		}

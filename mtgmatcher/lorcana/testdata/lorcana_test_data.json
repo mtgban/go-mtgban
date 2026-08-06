@@ -5787,6 +5787,33 @@
         "uuid": "1329"
     },
     {
+        "description": "edition disambiguates a name and number shared across sets",
+        "input": {
+            "name": "Let It Go",
+            "variant": "163",
+            "edition": "The First Chapter"
+        },
+        "uuid": "163"
+    },
+    {
+        "description": "edition disambiguates toward the later printing",
+        "input": {
+            "name": "Let It Go",
+            "variant": "163",
+            "edition": "Winterspell"
+        },
+        "uuid": "2626"
+    },
+    {
+        "description": "negative: edition excludes the printing carrying the number",
+        "input": {
+            "name": "Let It Go",
+            "variant": "10",
+            "edition": "Winterspell"
+        },
+        "error": "unknown variant"
+    },
+    {
         "description": "negative: foil-only printing requested as nonfoil",
         "input": {
             "name": "Hades - King of Olympus",
@@ -5874,6 +5901,24 @@
             "variant": "22"
         },
         "uuid": "22"
+    },
+    {
+        "description": "storefront-prefixed edition still narrows",
+        "input": {
+            "name": "Let It Go",
+            "variant": "163",
+            "edition": "Disney Lorcana: Winterspell"
+        },
+        "uuid": "2626"
+    },
+    {
+        "description": "unrecognized edition does not block a unique number",
+        "input": {
+            "name": "99 Puppies",
+            "variant": "024",
+            "edition": "Not A Real Set"
+        },
+        "uuid": "460"
     },
     {
         "description": "zero collector number is a real number",
