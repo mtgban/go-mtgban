@@ -447,5 +447,13 @@ func parseGradedCondition(title string) string {
 	grade = strings.TrimSuffix(grade, " Quad ++")
 	grade = strings.TrimSuffix(grade, " Quad++")
 
-	return gradeMap[score][grade]
+	// A grade the table does not cover has no condition, and must not fall
+	// through to the zero value: an empty condition is silently promoted to
+	// NM when the entry is added
+	condition, found := gradeMap[score][grade]
+	if !found {
+		return ""
+	}
+
+	return condition
 }

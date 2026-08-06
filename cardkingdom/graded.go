@@ -158,8 +158,14 @@ func (ck *CardkingdomGraded) scrapePage(session string, page int) error {
 		// Product ID from hidden input
 		id, _ := s.Find("input.product_id").Attr("value")
 
+		conditions := parseGradedCondition(title)
+		if conditions == "" {
+			ck.printf("unmapped grade in %q", title)
+			return
+		}
+
 		out := &mtgban.InventoryEntry{
-			Conditions: parseGradedCondition(title),
+			Conditions: conditions,
 			Price:      price,
 			URL:        link,
 			OriginalId: id,
