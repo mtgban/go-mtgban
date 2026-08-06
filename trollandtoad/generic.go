@@ -136,7 +136,13 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 				conditions = "NM"
 			case strings.Contains(conditions, "Lightly Played"):
 				conditions = "SP"
-			case strings.Contains(conditions, "Played"): // includes Moderately
+			case strings.Contains(conditions, "Heavily Played"):
+				conditions = "HP"
+			case strings.Contains(conditions, "Damaged"):
+				conditions = "PO"
+			// Keep last: the other grades end in "Played" as well, so this
+			// arm only catches what the ones above did not (Moderately)
+			case strings.Contains(conditions, "Played"):
 				conditions = "MP"
 			case strings.Contains(conditions, "See Image for Condition"):
 				return
