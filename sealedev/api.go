@@ -173,6 +173,15 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 		return nil, errors.New(response.Error)
 	}
 
+	// A response that omits one of the two sides leaves its map nil, and the
+	// setters below assign into it
+	if response.Retail == nil {
+		response.Retail = map[string]map[string]*BanPrice{}
+	}
+	if response.Buylist == nil {
+		response.Buylist = map[string]map[string]*BanPrice{}
+	}
+
 	// Adjust Direct/CT0 estimates and prune bulk in a single pass over the catalog.
 	uuids := mtgmatcher.GetUUIDs()
 	for _, uuid := range uuids {

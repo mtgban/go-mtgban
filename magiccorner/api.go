@@ -208,7 +208,7 @@ func (mc *MCClient) GetBuylistEditions(ctx context.Context) ([]MCExpansion, erro
 
 	resp, err := mc.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -290,7 +290,7 @@ func (mc *MCClient) GetBuylistForEdition(ctx context.Context, edition, page int)
 
 	resp, err := mc.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%d: %v", resp.StatusCode, err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 

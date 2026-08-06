@@ -127,9 +127,9 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 
 		priceStr := s.Find(`div[class="product-price"] span[class="regular price"]`).Text()
 		priceStr = strings.TrimPrefix(priceStr, "CAD")
-		price, _ := mtgmatcher.ParsePrice(priceStr)
+		price, perr := mtgmatcher.ParsePrice(priceStr)
 		if price == 0 {
-			sdk.printf("price error '%s': %s", priceStr, err.Error())
+			sdk.printf("price error '%s': %v", priceStr, perr)
 			return
 		}
 
