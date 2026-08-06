@@ -204,6 +204,14 @@
         "uuid": "sfd-227-221_nonfoil"
     },
     {
+        "description": "tcgplayer product id resolves through the identifier index",
+        "input": {
+            "id": "652842",
+            "foil": true
+        },
+        "uuid": "ogn-066-298_foil"
+    },
+    {
         "description": "token number with zero-padded letter prefix",
         "input": {
             "name": "Gold",
