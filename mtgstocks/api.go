@@ -79,6 +79,12 @@ func NewClient() *STKSClient {
 
 // Implement our own retry policy to leverage the internal retry mechanism
 func customCheckRetry(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	// A transport error leaves no response to inspect, so let the default
+	// policy decide before reaching for the body
+	if err != nil || resp == nil {
+		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+	}
+
 	defer resp.Body.Close()
 
 	var reader io.Reader = resp.Body
