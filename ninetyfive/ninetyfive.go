@@ -94,7 +94,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 					continue
 				}
 			case GameLorcana:
-				theCard = &mtgmatcher.InputCard{Name: allCards[key].CardName, Variation: allCards[key].CardNum, Foil: foil}
+				theCard = &mtgmatcher.InputCard{Name: allCards[key].CardName, Edition: allCards[key].SetName, Variation: allCards[key].CardNum, Foil: foil}
 			default:
 				nf.printf("unsupported game")
 				continue

@@ -155,6 +155,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			}
 			theCard = &mtgmatcher.InputCard{
 				Name:      blueprint.Name,
+				Edition:   blueprint.Expansion.Name,
 				Variation: product.Properties.Number,
 				Foil:      product.Properties.LorcanaFoil,
 			}
