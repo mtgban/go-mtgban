@@ -12,7 +12,7 @@ require (
 	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff
 	github.com/joho/godotenv v1.5.1
 	github.com/scizorman/go-ndjson v0.0.0-20200902005011-1d92486df71e
-	golang.org/x/text v0.38.0
+	golang.org/x/text v0.39.0
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/api v0.276.0 // indirect
 )
