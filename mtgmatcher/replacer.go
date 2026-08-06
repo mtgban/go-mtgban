@@ -2,6 +2,8 @@ package mtgmatcher
 
 import (
 	"strings"
+	"sync"
+	"sync/atomic"
 )
 
 var replacerStrings = []string{
@@ -106,13 +108,40 @@ var replacerStrings = []string{
 
 var replacer = strings.NewReplacer(replacerStrings...)
 
+// Normalize is called millions of times over an effectively bounded input
+// universe (card, edition, and token names), and the generic Replacer
+// allocates on every call even when nothing matches, so results are
+// memoized. The cache stops growing at the cap instead of evicting:
+// the datastore names fill it first and unbounded user input past the
+// cap just pays the uncached cost.
+const normalizeCacheCap = 1 << 17
+
+var (
+	normalizeCache     sync.Map // string -> string
+	normalizeCacheSize atomic.Int64
+)
+
 // Normalize uses the rules defined in Replacer to replace uncommon elements of
 // card names, dropping all the spaces and producing a lowercase string.
 func Normalize(str string) string {
-	str = strings.TrimSpace(str)
-	str = strings.ToLower(str)
-	str = replacer.Replace(str)
-	return str
+	cached, found := normalizeCache.Load(str)
+	if found {
+		return cached.(string)
+	}
+
+	out := strings.TrimSpace(str)
+	out = strings.ToLower(out)
+	out = replacer.Replace(out)
+
+	if normalizeCacheSize.Load() < normalizeCacheCap {
+		// Clone the key so the cache cannot pin a larger buffer the
+		// input may be slicing (the output is always freshly built)
+		_, loaded := normalizeCache.LoadOrStore(strings.Clone(str), out)
+		if !loaded {
+			normalizeCacheSize.Add(1)
+		}
+	}
+	return out
 }
 
 // Compare strings after both are Normalize-d.
