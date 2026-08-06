@@ -34,6 +34,8 @@ func GetSealedUUIDsInSet(code string) []string {
 	return defaultBackend.SetSealedUUIDs[strings.ToUpper(code)]
 }
 
+// GetUUID returns the card object stored for the given uuid. The object
+// is shared across all callers and must not be modified.
 func GetUUID(uuid string) (*CardObject, error) {
 	if defaultBackend.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
@@ -44,7 +46,7 @@ func GetUUID(uuid string) (*CardObject, error) {
 		return nil, ErrCardUnknownId
 	}
 
-	return &co, nil
+	return co, nil
 }
 
 func GetAllSets() []string {
@@ -207,14 +209,13 @@ func SearchSealedContains(name string) ([]string, error) {
 // normalization folds plurals, so "Cat Warrior" and "Cat Warriors" are
 // distinct cards sharing a bucket), and falling back to the first entry
 // for alias-only buckets (e.g. flavor names).
-func entry4Name(name string) (CardObject, bool) {
+func entry4Name(name string) (*CardObject, bool) {
 	norm := Normalize(name)
 	uuids, found := defaultBackend.Hashes[norm]
 	if !found {
-		return CardObject{}, false
+		return nil, false
 	}
-	normalized := CardObject{}
-	foundNormalized := false
+	var normalized *CardObject
 	for _, uuid := range uuids {
 		entry, found := defaultBackend.UUIDs[uuid]
 		if !found {
@@ -223,12 +224,11 @@ func entry4Name(name string) (CardObject, bool) {
 		if strings.EqualFold(entry.Name, name) {
 			return entry, true
 		}
-		if !foundNormalized && Normalize(entry.Name) == norm {
+		if normalized == nil && Normalize(entry.Name) == norm {
 			normalized = entry
-			foundNormalized = true
 		}
 	}
-	if foundNormalized {
+	if normalized != nil {
 		return normalized, true
 	}
 	entry, found := defaultBackend.UUIDs[uuids[0]]

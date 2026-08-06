@@ -60,8 +60,9 @@ type cardBackend struct {
 	// This is slightly different for tokens, as they are tagged as such
 	CanonicalNames map[string]string
 
-	// Map of uuid : CardObject
-	UUIDs map[string]CardObject
+	// Map of uuid : CardObject. Values are shared with every caller
+	// of GetUUID and must never be modified after the load completes.
+	UUIDs map[string]*CardObject
 
 	// Slice with token names (not normalized and without any "Token" tags)
 	Tokens []string
@@ -149,8 +150,8 @@ func skipSet(set *Set) bool {
 	return false
 }
 
-func generateUUIDsMap(sets map[string]*Set) (map[string]CardObject, []string, []string, map[string][]string, map[string][]string) {
-	uuids := map[string]CardObject{}
+func generateUUIDsMap(sets map[string]*Set) (map[string]*CardObject, []string, []string, map[string][]string, map[string][]string) {
+	uuids := map[string]*CardObject{}
 	for _, set := range sets {
 		for _, card := range set.Cards {
 			generateCardUUIDs(card, uuids, set.Name)
@@ -195,7 +196,12 @@ func generateUUIDsMap(sets map[string]*Set) (map[string]CardObject, []string, []
 // Append "_f" and "_e" to uuids, unless etched is the only printing.
 // If it's not etched, append "_f", unless foil is the only printing.
 // Leave uuids unchanged, if there is a single printing of any kind.
-func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
+func generateCardUUIDs(card Card, uuids map[string]*CardObject, edition string) {
+	// The co value below is reused and tweaked between insertions, so each
+	// map entry gets its own copy (save's parameter) to point at
+	save := func(uuid string, co CardObject) {
+		uuids[uuid] = &co
+	}
 	// Shared card object
 	co := CardObject{
 		Card:    card,
@@ -208,7 +214,7 @@ func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
 		// Etched + Nonfoil [+ Foil]
 		if card.HasFinish(FinishNonfoil) {
 			// Save the card object
-			uuids[uuid] = co
+			save(uuid, co)
 		}
 
 		// Etched + Foil
@@ -221,7 +227,7 @@ func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
 				co.UUID = uuid
 			}
 			// Save the card object
-			uuids[uuid] = co
+			save(uuid, co)
 		}
 
 		// Etched
@@ -234,14 +240,14 @@ func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
 			co.UUID = uuid
 		}
 		// Save the card object
-		uuids[uuid] = co
+		save(uuid, co)
 	} else if card.HasFinish(FinishFoil) {
 		uuid := card.UUID
 
 		// Foil [+ Nonfoil]
 		if card.HasFinish(FinishNonfoil) {
 			// Save the card object
-			uuids[uuid] = co
+			save(uuid, co)
 
 			// Update the uuid for the *next* finish type
 			uuid = card.UUID + suffixFoil
@@ -251,10 +257,10 @@ func generateCardUUIDs(card Card, uuids map[string]CardObject, edition string) {
 		// Foil
 		co.Foil = true
 		// Save the card object
-		uuids[uuid] = co
+		save(uuid, co)
 	} else {
 		// Single printing, use as-is
-		uuids[card.UUID] = co
+		save(card.UUID, co)
 	}
 }
 
@@ -271,7 +277,7 @@ func generateSealedImageURL(card Card, version string) string {
 	return "https://product-images.tcgplayer.com/" + tcgId + ".jpg"
 }
 
-func generateSealedUUIDs(product SealedProduct, uuids map[string]CardObject, edition string) {
+func generateSealedUUIDs(product SealedProduct, uuids map[string]*CardObject, edition string) {
 	card := Card{
 		UUID:        product.UUID,
 		Name:        product.Name,
@@ -307,7 +313,7 @@ func generateSealedUUIDs(product SealedProduct, uuids map[string]CardObject, edi
 		isFoil = false
 	}
 
-	uuids[product.UUID] = CardObject{
+	uuids[product.UUID] = &CardObject{
 		Card:    card,
 		Sealed:  true,
 		Edition: edition,
@@ -989,7 +995,7 @@ func fillinSLDdecks(set *Set) []string {
 }
 
 // Add a map of which kind of products sealed contains
-func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
+func fillinSealedContents(sets map[string]*Set, uuids map[string]*CardObject) {
 	result := map[string][]string{}
 	tmp := map[string][]string{}
 
@@ -1036,7 +1042,7 @@ func fillinSealedContents(sets map[string]*Set, uuids map[string]CardObject) {
 }
 
 // Remove promo tags that apply to a single finish only
-func filterInvalidPromoTypes(sets map[string]*Set, uuids map[string]CardObject) {
+func filterInvalidPromoTypes(sets map[string]*Set, uuids map[string]*CardObject) {
 	for uuid, card := range uuids {
 		if !card.Foil && !card.Etched && !card.Sealed {
 			for _, promoType := range []string{
@@ -1056,9 +1062,8 @@ func filterInvalidPromoTypes(sets map[string]*Set, uuids map[string]CardObject) 
 						}
 					}
 
-					// Update UUID map
+					// Update UUID map (through the shared pointer)
 					card.PromoTypes = filtered
-					uuids[uuid] = card
 
 					// Also update data in the original slice
 					for i, c := range sets[card.SetCode].Cards {
