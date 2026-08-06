@@ -78,6 +78,10 @@ jobs:
 
           B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
           B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"
+          # Reading a datastore straight from its bucket (b2:// filepath)
+          # needs the datastore key; the output key above cannot read it.
+          B2_APP_KEY_DATASTORE: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+          B2_KEY_ID_DATASTORE: "${{ secrets.B2_KEY_ID_DATASTORE }}"
           BAN_API_KEY: "${{ secrets.BAN_API_KEY }}"
           CARDTRADER_TOKEN_BEARER: "${{ secrets.CARDTRADER_TOKEN_BEARER }}"
           MKM_APP_SECRET: "${{ secrets.MKM_APP_SECRET }}"
