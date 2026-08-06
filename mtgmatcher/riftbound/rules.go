@@ -30,16 +30,54 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// AdjustName provides a prefix fallback: scraper feeds sometimes truncate a
-// "Champion, Title" name. When the exact name is unknown, scan for cards
-// whose name has the input as a prefix and let the collector number and
-// finish narrow them; adopt the name only when exactly one survives. If
-// several distinct names survive, the input stays unresolved and Match
-// reports an unknown name.
+// AdjustName reconciles storefront name shapes with the gallery's. Legend
+// cards are exported title-only ("Daughter of the Void") while storefronts
+// list them champion-first ("Kai'Sa - Daughter of the Void"), so an unknown
+// name containing " - " retries as its title segment; the collector number
+// and finish still validate the outcome downstream. Failing that, a prefix
+// fallback covers feeds that truncate a "Champion, Title" name: scan for
+// cards whose name has the input as a prefix and let the number and finish
+// narrow them, adopting the name only when exactly one survives.
 func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
+
+	if champion, title, found := strings.Cut(inCard.Name, " - "); found {
+		if _, known := b.CanonicalNames[mtgmatcher.Normalize(title)]; known {
+			inCard.Name = title
+			return
+		}
+		// The gallery may also shorten the champion ("Master Yi - Meditative"
+		// is exported as "Yi, Meditative"), and starter legends are exported
+		// title-first ("Lux - Lady of Luminosity (Starter)" is "Lady of
+		// Luminosity - Starter"). Accept a "Champion, Title" name whose title
+		// matches and whose champion ends the input's champion, or a dashed
+		// name led by the input's title — as long as exactly one candidate
+		// does overall.
+		var match string
+		for _, name := range b.AllCanonicalNames {
+			c, t, ok := strings.Cut(name, ", ")
+			matches := ok && mtgmatcher.Equals(t, title) &&
+				strings.HasSuffix(mtgmatcher.Normalize(champion), mtgmatcher.Normalize(c))
+			if !matches {
+				t2, _, ok2 := strings.Cut(name, " - ")
+				matches = ok2 && mtgmatcher.Equals(t2, title)
+			}
+			if !matches {
+				continue
+			}
+			if match != "" && match != name {
+				return
+			}
+			match = name
+		}
+		if match != "" {
+			inCard.Name = match
+			return
+		}
+	}
+
 	uuids, err := b.SearchHasPrefix(inCard.Name)
 	if err != nil {
 		return
