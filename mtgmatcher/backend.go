@@ -56,6 +56,9 @@ type cardBackend struct {
 	// Map of set code : Set
 	Sets map[string]*Set
 
+	// Map of Normalize(set name) : Set, for name-based lookups
+	NormalizedSets map[string]*Set
+
 	// Map of normalized name : canonical name
 	// This is slightly different for tokens, as they are tagged as such
 	CanonicalNames map[string]string
@@ -937,6 +940,7 @@ func (ap AllPrintings) Load() cardBackend {
 	b.AllLowerSealed = lowerSealed
 
 	b.Sets = ap.Data
+	b.NormalizedSets = buildNormalizedSetIndex(b.Sets)
 	b.CanonicalNames = canonicalNames
 	b.Tokens = tokens
 	b.UUIDs = uuids
@@ -1343,6 +1347,29 @@ func duplicateCards(sets map[string]*Set, code, tag string, numbers []string) []
 	}
 
 	return duplicates
+}
+
+// buildNormalizedSetIndex indexes sets by their normalized name, so name
+// lookups need one map access instead of rescanning and renormalizing the
+// whole set list. Codes are visited in sorted order so that two sets
+// normalizing to the same name resolve deterministically (lowest code
+// wins - the linear scan this replaces followed random map order).
+func buildNormalizedSetIndex(sets map[string]*Set) map[string]*Set {
+	codes := make([]string, 0, len(sets))
+	for code := range sets {
+		codes = append(codes, code)
+	}
+	sort.Strings(codes)
+
+	index := map[string]*Set{}
+	for _, code := range codes {
+		name := Normalize(sets[code].Name)
+		_, found := index[name]
+		if !found {
+			index[name] = sets[code]
+		}
+	}
+	return index
 }
 
 func SetGlobalDatastore(datastore cardBackend) {
