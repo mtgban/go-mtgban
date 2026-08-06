@@ -104,7 +104,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		price = el.ChildText("td:nth-child(6)")
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
-		theCard = &mtgmatcher.InputCard{Name: cardName, Variation: notes, Foil: foil}
+		theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: foil}
 	default:
 		return nil
 	}
