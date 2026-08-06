@@ -92,7 +92,7 @@ func LoadLorcana(r io.Reader) (DataStore, error) {
 func (lj LorcanaJSON) Load() cardBackend {
 	var b cardBackend
 
-	b.UUIDs = map[string]CardObject{}
+	b.UUIDs = map[string]*CardObject{}
 	b.Hashes = map[string][]string{}
 	b.ExternalIdentifiers = map[string]string{}
 
@@ -198,9 +198,10 @@ func (lj LorcanaJSON) Load() cardBackend {
 				}
 			}
 
-			// Update uuid and store
+			// Update uuid and store (co is fresh on every iteration, so the
+			// stored pointer is not aliased by later finishes)
 			co.UUID = uuid
-			b.UUIDs[uuid] = co
+			b.UUIDs[uuid] = &co
 
 			// Save uuid in the array of uuids and
 			b.AllUUIDs = append(b.AllUUIDs, uuid)
