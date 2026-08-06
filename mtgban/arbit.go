@@ -392,7 +392,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 
 // A generic grading map that estimates common deductions
 var defaultGradeMap = map[string]float64{
-	"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4,
+	"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4, "PO": 0,
 }
 
 func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
@@ -443,8 +443,19 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 				refPrice := refEntry.Price * customFactor
 				price := invEntry.Price
 
-				// We need to account for conditions, using a default ladder
-				refPrice *= defaultGradeMap[invEntry.Conditions]
+				// Undo the reference's own grade before applying the probe's,
+				// otherwise a non-NM reference is compared against a rescaled
+				// copy of itself. A zero factor cannot be divided by, so skip
+				// the pair rather than report an infinite spread.
+				refGrade, found := defaultGradeMap[refEntry.Conditions]
+				if !found || refGrade <= 0 {
+					continue
+				}
+				invGrade, found := defaultGradeMap[invEntry.Conditions]
+				if !found || invGrade <= 0 {
+					continue
+				}
+				refPrice *= invGrade / refGrade
 
 				if price == 0 {
 					continue
