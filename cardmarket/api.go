@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -59,7 +60,7 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 }
 
 func (mkm *MKMClient) RequestNo() int {
-	return mkm.auth.RequestNo
+	return int(mkm.auth.RequestNo.Load())
 }
 
 type MKMExpansion struct {
@@ -282,7 +283,7 @@ type authTransport struct {
 	AccessToken       string
 	AccessTokenSecret string
 
-	RequestNo int
+	RequestNo atomic.Int64
 }
 
 func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -339,6 +340,6 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	req.Header.Set("Authorization", auth)
 
-	t.RequestNo++
+	t.RequestNo.Add(1)
 	return t.Parent.RoundTrip(req)
 }
