@@ -172,12 +172,6 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 
 // Scrape returns an array of Entry, containing pricing and card information
 func (mc *Magiccorner) scrape(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
-	if err != nil {
-		return err
-	}
-	mc.exchangeRate = rate
-
 	editionList, err := mc.client.GetEditionList(ctx, true)
 	if err != nil {
 		return err
@@ -208,6 +202,15 @@ func (mc *Magiccorner) SetConfig(opt mtgban.ScraperOptions) {
 
 func (mc *Magiccorner) Load(ctx context.Context) error {
 	var errs []error
+
+	// Both sides price in euro, so the rate has to be in place before either
+	// runs: fetched from the retail path alone it stayed zero whenever retail
+	// was disabled, and every buy price came out at zero with it
+	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	if err != nil {
+		return err
+	}
+	mc.exchangeRate = rate
 
 	if !mc.DisableRetail {
 		err := mc.scrape(ctx)
