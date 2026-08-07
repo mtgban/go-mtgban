@@ -674,7 +674,10 @@ func variantInCommanderDeck(inCard *InputCard, card *Card) bool {
 	// Filter only cards that may have the flag set
 	hasAlternate := card.IsAlternative
 	for _, id := range card.Variations {
-		alt := defaultBackend.UUIDs[id]
+		alt, found := defaultBackend.UUIDs[id]
+		if !found {
+			continue
+		}
 		if alt.IsAlternative {
 			hasAlternate = true
 			break

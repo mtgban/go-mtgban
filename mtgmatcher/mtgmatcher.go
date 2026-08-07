@@ -51,12 +51,20 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 		// So we iterate over the Variations array and try outputing ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
-			altCo := defaultBackend.UUIDs[variation]
+			// A missing key yields a nil pointer, not an empty card, so
+			// every read of this map has to be checked before use
+			altCo, found := defaultBackend.UUIDs[variation]
+			if !found {
+				continue
+			}
 			// We assume that the collector number between the two version
 			// stays the same, with a different suffix
 			if ExtractNumberValue(co.Number) == ExtractNumberValue(altCo.Number) {
 				maybeId := output(altCo.Card, isFoil, isEtched)
-				altCo = defaultBackend.UUIDs[maybeId]
+				altCo, found = defaultBackend.UUIDs[maybeId]
+				if !found {
+					continue
+				}
 
 				// Make sure we're dealing with the same card
 				// (this helps with promos that have similar numbers)
