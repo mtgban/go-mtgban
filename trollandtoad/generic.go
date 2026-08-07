@@ -72,7 +72,7 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 		colly.StdlibContext(ctx),
 	)
 
-	c.SetClient(cleanhttp.DefaultClient())
+	c.SetClient(mtgban.SetTimeouts(cleanhttp.DefaultClient()))
 
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
@@ -218,7 +218,7 @@ func (tnt *TrollAndToadGeneric) scrapePages(ctx context.Context, link string) er
 		return err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return err
 	}
@@ -255,7 +255,7 @@ func (tnt *TrollAndToadGeneric) scrape(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return err
 	}
@@ -291,7 +291,7 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 		return err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return err
 	}

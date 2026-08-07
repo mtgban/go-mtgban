@@ -62,7 +62,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 	if err != nil {
 		return err
 	}
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return 0, err
 	}

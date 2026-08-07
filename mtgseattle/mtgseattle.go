@@ -49,6 +49,7 @@ func NewScraper() *MTGSeattle {
 	ms.MaxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	ms.client = client.StandardClient()
 	return &ms
 }

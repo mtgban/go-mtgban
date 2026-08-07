@@ -13,6 +13,7 @@ import (
 
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-tcgplayer"
 )
@@ -200,7 +201,7 @@ func LatestSales(ctx context.Context, tcgProductId string, flags ...bool) (*late
 	req.Header.Set("User-Agent", staticUA)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +225,7 @@ const (
 )
 
 func SellerKeyExists(ctx context.Context, sellerKey string) bool {
-	client := cleanhttp.DefaultClient()
+	client := mtgban.SetTimeouts(cleanhttp.DefaultClient())
 
 	// Do not follow redirects
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -291,7 +292,7 @@ func SellerName2ID(ctx context.Context, sellerName string) (string, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -474,6 +475,7 @@ func NewSellerClient() *SellerClient {
 	tcg := SellerClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	tcg.client = client.StandardClient()
 	return &tcg
 }
@@ -640,6 +642,7 @@ type CookieClient struct {
 func NewCookieClient(authKey string) *CookieClient {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	tcg := CookieClient{}
 	tcg.cookieLine = "TCGAuthTicket_Production=" + authKey + ";"
 	tcg.client = client.StandardClient()
@@ -649,6 +652,7 @@ func NewCookieClient(authKey string) *CookieClient {
 func NewCookieSetClient(cookies map[string]string) *CookieClient {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	tcg := CookieClient{}
 	for name, value := range cookies {
 		tcg.cookieLine += fmt.Sprintf("%s=%s; ", name, value)
@@ -776,7 +780,7 @@ func CreateCartKey(ctx context.Context, userId string) (string, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return "", err
 	}

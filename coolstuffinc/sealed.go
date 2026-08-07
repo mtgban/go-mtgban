@@ -43,6 +43,7 @@ func NewScraperSealed() *CoolstuffincSealed {
 	csi.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	csi.client = client.StandardClient()
 	csi.MaxConcurrency = defaultConcurrency
 

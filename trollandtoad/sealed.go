@@ -40,6 +40,7 @@ func NewScraperSealed() *TrollandtoadSealed {
 	tnt.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	tnt.client = client.StandardClient()
 	tnt.MaxConcurrency = defaultConcurrency
 
@@ -77,7 +78,7 @@ func (tnt *TrollandtoadSealed) parsePages(ctx context.Context, link string, last
 		colly.StdlibContext(ctx),
 	)
 
-	c.SetClient(cleanhttp.DefaultClient())
+	c.SetClient(mtgban.SetTimeouts(cleanhttp.DefaultClient()))
 
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
@@ -179,7 +180,7 @@ func (tnt *TrollandtoadSealed) Load(ctx context.Context) error {
 		return err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return err
 	}

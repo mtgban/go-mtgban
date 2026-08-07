@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -189,6 +190,7 @@ func NewCTAuthClient(token string) *CTAuthClient {
 	ct := CTAuthClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	client.HTTPClient.Transport = &authTransport{
 		Parent: client.HTTPClient.Transport,
 		Token:  token,

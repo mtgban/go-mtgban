@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -153,6 +155,7 @@ type client struct {
 func newClient(email, token string) *client {
 	rc := retryablehttp.NewClient()
 	rc.Logger = nil
+	mtgban.SetTimeouts(rc.HTTPClient)
 	rc.RetryMax = 5
 	rc.RetryWaitMin = 2 * time.Second
 	rc.RetryWaitMax = 30 * time.Second

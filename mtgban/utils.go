@@ -22,7 +22,7 @@ func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
 		return 0, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return 0, err
 	}

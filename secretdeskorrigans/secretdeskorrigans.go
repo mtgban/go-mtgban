@@ -39,6 +39,7 @@ func NewScraper() (*SecretDesKorrigans, error) {
 	sdk.MaxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	sdk.client = client.StandardClient()
 	return &sdk, nil
 }

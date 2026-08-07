@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 var filteredExpansionsTags = []string{
@@ -108,7 +109,7 @@ func GetPriceGuide(ctx context.Context, gameId int) ([]PriceGuide, error) {
 		return nil, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +152,7 @@ func getProductList(ctx context.Context, link string) ([]ProductList, error) {
 		return nil, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return nil, err
 	}

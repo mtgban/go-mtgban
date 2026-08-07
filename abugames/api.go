@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 type ABUCard struct {
@@ -88,6 +89,7 @@ func NewABUClient() *ABUClient {
 	abu := ABUClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	abu.client = client.StandardClient()
 	return &abu
 }

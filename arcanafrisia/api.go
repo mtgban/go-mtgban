@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const buylistURL = "https://buylist.arcanafrisia.com/buylist.csv"
@@ -37,7 +38,7 @@ func GetBuylist(ctx context.Context) ([]Card, error) {
 		return nil, err
 	}
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 type MCEdition struct {
@@ -79,6 +80,7 @@ func NewMCClient() *MCClient {
 	mc := MCClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	mc.client = client.StandardClient()
 	return &mc
 }

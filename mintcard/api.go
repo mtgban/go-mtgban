@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 type Card struct {
@@ -47,7 +48,7 @@ type MintClient struct {
 
 func NewMintClient(ctx context.Context) (*MintClient, error) {
 	mint := MintClient{}
-	mint.client = cleanhttp.DefaultClient()
+	mint.client = mtgban.SetTimeouts(cleanhttp.DefaultClient())
 
 	req, err := http.NewRequestWithContext(ctx, "POST", mintPricelistURL, http.NoBody)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 type CSICard struct {
@@ -44,7 +45,7 @@ type CSIClient struct {
 
 func NewCSIClient(key string) *CSIClient {
 	csi := CSIClient{}
-	csi.client = cleanhttp.DefaultClient()
+	csi.client = mtgban.SetTimeouts(cleanhttp.DefaultClient())
 	csi.key = key
 	return &csi
 }
@@ -139,7 +140,7 @@ func fetchBuylist(ctx context.Context, link string) ([]CSIPriceEntry, error) {
 	// Disable gzip compression
 	req.Header.Set("Accept-Encoding", "identity")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +166,7 @@ func LoadBuylistEditions(ctx context.Context, game string) (map[string]string, e
 	if err != nil {
 		return nil, err
 	}
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +250,7 @@ func Search(ctx context.Context, game, itemName string, skipOOS bool) (*SearchRe
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	req.Header.Set("User-Agent", "curl/8.6.0")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := mtgban.SetTimeouts(cleanhttp.DefaultClient()).Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -36,6 +36,7 @@ func NewScraperSealed() *HareruyaSealed {
 	ha.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	ha.client = client.StandardClient()
 	return &ha
 }

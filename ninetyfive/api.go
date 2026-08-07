@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -58,6 +59,7 @@ func NewNFClient() *NFClient {
 	nf := NFClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	nf.client = client.StandardClient()
 	return &nf
 }

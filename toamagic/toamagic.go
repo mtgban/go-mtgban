@@ -37,6 +37,7 @@ func NewScraper() *TOAMagic {
 	toa.MaxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	toa.client = client.StandardClient()
 	return &toa
 }

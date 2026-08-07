@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -24,6 +25,7 @@ func NewSCGClient(apiKey string) *SCGClient {
 	scg := SCGClient{}
 	cli := retryablehttp.NewClient()
 	cli.Logger = nil
+	mtgban.SetTimeouts(cli.HTTPClient)
 	cli.RetryMax = 10
 	cli.RetryWaitMin = 2 * time.Second
 	scg.client = cli.StandardClient()

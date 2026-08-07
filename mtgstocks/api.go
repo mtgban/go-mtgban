@@ -13,6 +13,7 @@ import (
 
 	"github.com/corpix/uarand"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 type StocksInterest struct {
@@ -67,6 +68,7 @@ type STKSClient struct {
 func NewClient() *STKSClient {
 	stks := STKSClient{}
 	stks.client = retryablehttp.NewClient()
+	mtgban.SetTimeouts(stks.client.HTTPClient)
 	stks.client.Backoff = retryablehttp.LinearJitterBackoff
 	stks.client.RetryWaitMin = 2 * time.Second
 	stks.client.RetryWaitMax = 10 * time.Second

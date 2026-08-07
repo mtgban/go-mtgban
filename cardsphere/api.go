@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 type CardSphereClient struct {
@@ -20,6 +21,7 @@ func NewCardSphereClient(token string) *CardSphereClient {
 	cs := CardSphereClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	// The api is very sensitive to multiple concurrent requests,
 	// This backoff strategy lets the system chill out a bit before retrying
 	client.Backoff = retryablehttp.LinearJitterBackoff

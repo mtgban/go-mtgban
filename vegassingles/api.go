@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -66,6 +67,7 @@ func NewVSClient() *VSClient {
 	vs := VSClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	vs.client = client.StandardClient()
 	return &vs
 }

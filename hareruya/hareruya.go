@@ -54,6 +54,7 @@ func NewScraper() *Hareruya {
 	ha.MaxConcurrency = defaultConcurrency
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	ha.client = client.StandardClient()
 	return &ha
 }

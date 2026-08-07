@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/go-cleanhttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const tcgAdd2CartURL = "https://mpgateway.tcgplayer.com/v1/cart/%s/item/add"
@@ -19,7 +20,7 @@ type TCGAutoClient struct {
 
 func NewTCGAutoClient(cartId string) *TCGAutoClient {
 	tcg := TCGAutoClient{}
-	tcg.client = cleanhttp.DefaultClient()
+	tcg.client = mtgban.SetTimeouts(cleanhttp.DefaultClient())
 	tcg.cartId = cartId
 	return &tcg
 }

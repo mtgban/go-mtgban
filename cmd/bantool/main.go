@@ -866,7 +866,7 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 		}
 		bucket = &simplecloud.FileBucket{}
 	case "http", "https":
-		bucket, err = NewHTTPBucket(cleanhttp.DefaultClient(), outputPath)
+		bucket, err = NewHTTPBucket(mtgban.SetTimeouts(cleanhttp.DefaultClient()), outputPath)
 		if err != nil {
 			return nil, err
 		}

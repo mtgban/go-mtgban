@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/mtgban/go-mtgban/mtgban"
 )
 
 const (
@@ -39,6 +40,7 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 	mkm := MKMClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	mtgban.SetTimeouts(client.HTTPClient)
 	// The api is very sensitive to multiple concurrent requests,
 	// This backoff strategy lets the system chill out a bit before retrying
 	client.Backoff = retryablehttp.LinearJitterBackoff
