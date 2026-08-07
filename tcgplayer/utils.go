@@ -136,7 +136,14 @@ func LoadSyp(ctx context.Context, auth string) ([]TCGSYP, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			continue
+			// A malformed record is worth skipping, but this reader wraps a
+			// live response body: a truncated download or a reset connection
+			// is returned again on every call, and skipping it never ends
+			var parseErr *csv.ParseError
+			if errors.As(err, &parseErr) {
+				continue
+			}
+			return nil, err
 		}
 
 		if len(record) < 9 {
