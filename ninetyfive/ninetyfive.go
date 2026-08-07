@@ -195,7 +195,7 @@ func (nf *Ninetyfive) getAllCards(ctx context.Context) (NFCard, error) {
 	}
 
 	allCards := NFCard{}
-	mtgban.WorkerPool(ctx, nf.MaxConcurrency, list[1:],
+	failed := mtgban.WorkerPool(ctx, nf.MaxConcurrency, list[1:],
 		func(ctx context.Context, page string, results chan<- NFCard) error {
 			cards, err := nf.client.getCards(ctx, page)
 			if err != nil {
@@ -209,6 +209,10 @@ func (nf *Ninetyfive) getAllCards(ctx context.Context) (NFCard, error) {
 		},
 		nf.printf,
 	)
+
+	if failed > 0 {
+		return allCards, fmt.Errorf("%d items did not complete", failed)
+	}
 
 	return allCards, nil
 }

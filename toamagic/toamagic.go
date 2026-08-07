@@ -3,6 +3,7 @@ package toamagic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -247,7 +248,7 @@ func (toa *TOAMagic) Load(ctx context.Context) error {
 		items[i] = item{links[i], titles[i]}
 	}
 
-	mtgban.WorkerPool(ctx, toa.MaxConcurrency, items,
+	failed := mtgban.WorkerPool(ctx, toa.MaxConcurrency, items,
 		func(ctx context.Context, it item, results chan<- responseChan) error {
 			toa.printf("Processing %s", it.title)
 			return toa.processProduct(ctx, results, it.link)
@@ -265,6 +266,9 @@ func (toa *TOAMagic) Load(ctx context.Context) error {
 
 	toa.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

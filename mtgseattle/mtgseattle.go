@@ -332,7 +332,7 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 		items[i] = item{links[i], titles[i]}
 	}
 
-	mtgban.WorkerPool(ctx, ms.MaxConcurrency, items,
+	failed := mtgban.WorkerPool(ctx, ms.MaxConcurrency, items,
 		func(ctx context.Context, it item, results chan<- responseChan) error {
 			ms.printf("Processing %s", it.title)
 			return ms.processProduct(ctx, results, it.link, mode)
@@ -357,6 +357,9 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 		ms.buylistDate = time.Now()
 	}
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

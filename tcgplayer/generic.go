@@ -155,7 +155,7 @@ func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
 		pageNums = append(pageNums, i)
 	}
 
-	mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+	failed := mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
 		func(ctx context.Context, page int, channel chan<- genericChan) error {
 			return tcg.processPage(ctx, channel, page)
 		},
@@ -170,6 +170,9 @@ func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
 
 	tcg.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

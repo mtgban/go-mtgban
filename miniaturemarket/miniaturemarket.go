@@ -152,7 +152,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		pageNums[i] = i
 	}
 
-	mtgban.WorkerPool(ctx, mm.MaxConcurrency, pageNums,
+	failed := mtgban.WorkerPool(ctx, mm.MaxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- respChan) error {
 			return mm.processPage(ctx, results, page)
 		},
@@ -167,6 +167,9 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 
 	mm.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

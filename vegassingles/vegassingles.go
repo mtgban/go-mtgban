@@ -162,7 +162,7 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 	}
 
 	var productCount int
-	mtgban.WorkerPool(ctx, vs.MaxConcurrency, pageNums,
+	failed := mtgban.WorkerPool(ctx, vs.MaxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- []VSProduct) error {
 			products, err := vs.client.getPage(ctx, page)
 			if err != nil {
@@ -187,6 +187,9 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 	vs.inventoryDate = time.Now()
 	vs.buylistDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

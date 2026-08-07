@@ -551,7 +551,7 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 		}
 	}
 
-	mtgban.WorkerPool(ctx, ha.MaxConcurrency, items,
+	failed := mtgban.WorkerPool(ctx, ha.MaxConcurrency, items,
 		func(ctx context.Context, cardSet string, results chan<- responseChan) error {
 			ha.printf("Processing card set %s", cardSet)
 			if mode == modeInventory {
@@ -571,6 +571,9 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 		ha.buylistDate = time.Now()
 	}
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

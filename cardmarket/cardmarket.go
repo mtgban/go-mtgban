@@ -303,7 +303,7 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 		}
 	}
 
-	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items,
+	failed := mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items,
 		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
 			mkm.printf("Processing %s (%d)", exp.Name, exp.IdExpansion)
 			err := mkm.processEdition(ctx, channel, exp.IdExpansion)
@@ -334,6 +334,10 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 
 	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.inventoryDate = time.Now()
+
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

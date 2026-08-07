@@ -2,6 +2,7 @@ package abugames
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -143,7 +144,7 @@ func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 		pageNums = append(pageNums, i)
 	}
 
-	mtgban.WorkerPool(ctx, abu.MaxConcurrency, pageNums,
+	failed := mtgban.WorkerPool(ctx, abu.MaxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- resultChan) error {
 			return abu.processEntry(ctx, results, page)
 		},
@@ -176,6 +177,9 @@ func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 	abu.inventoryDate = time.Now()
 	abu.buylistDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 
