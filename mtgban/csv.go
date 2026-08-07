@@ -362,7 +362,9 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 		csvWriter.Flush()
 	}
 
-	return nil
+	// Every record above was flushed as it was written, so this reports
+	// what the last write to w returned rather than nil
+	return csvWriter.Error()
 }
 
 func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writer) error {
@@ -399,7 +401,7 @@ func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writ
 		}
 	}
 
-	return nil
+	return csvWriter.Error()
 }
 
 func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
@@ -455,7 +457,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 		csvWriter.Flush()
 	}
 
-	return nil
+	return csvWriter.Error()
 }
 
 func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
@@ -507,7 +509,7 @@ func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 		csvWriter.Flush()
 	}
 
-	return nil
+	return csvWriter.Error()
 }
 
 func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
@@ -556,5 +558,5 @@ func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
 		csvWriter.Flush()
 	}
 
-	return nil
+	return csvWriter.Error()
 }
