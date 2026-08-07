@@ -82,7 +82,14 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 				continue
 			}
 
-			cardId, err := mtgmatcher.MatchId(foundId, finish == "F", strings.Contains(offer.Sets[0].Name, "Etched"))
+			// Sets is decoded straight from the API and an offer may carry
+			// none, so the finish cannot be read from it unconditionally
+			var etched bool
+			if len(offer.Sets) > 0 {
+				etched = strings.Contains(offer.Sets[0].Name, "Etched")
+			}
+
+			cardId, err := mtgmatcher.MatchId(foundId, finish == "F", etched)
 			if err != nil {
 				continue
 			}
