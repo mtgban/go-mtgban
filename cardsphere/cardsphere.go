@@ -146,7 +146,7 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 	}
 
 	lastTime := time.Now()
-	mtgban.WorkerPool(ctx, cs.MaxConcurrency, offsets,
+	failed := mtgban.WorkerPool(ctx, cs.MaxConcurrency, offsets,
 		func(ctx context.Context, offset int, results chan<- responseChan) error {
 			err := cs.processPage(ctx, results, offset)
 			if err != nil {
@@ -182,6 +182,9 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 
 	cs.buylistDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

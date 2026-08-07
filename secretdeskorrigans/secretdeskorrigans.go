@@ -3,6 +3,7 @@ package secretdeskorrigans
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -260,7 +261,7 @@ func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 		items[i] = item{links[i], titles[i]}
 	}
 
-	mtgban.WorkerPool(ctx, sdk.MaxConcurrency, items,
+	failed := mtgban.WorkerPool(ctx, sdk.MaxConcurrency, items,
 		func(ctx context.Context, it item, results chan<- responseChan) error {
 			sdk.printf("Processing %s", it.title)
 			return sdk.processProduct(ctx, results, it.link)
@@ -276,6 +277,9 @@ func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 
 	sdk.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

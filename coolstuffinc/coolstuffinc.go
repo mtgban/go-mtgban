@@ -389,7 +389,7 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 		itemNames = filtered
 	}
 
-	mtgban.WorkerPool(ctx, csi.MaxConcurrency, itemNames,
+	failed := mtgban.WorkerPool(ctx, csi.MaxConcurrency, itemNames,
 		func(ctx context.Context, itemName string, results chan<- responseChan) error {
 			csi.printf("Processing %s", itemName)
 			return csi.processSearch(ctx, results, itemName)
@@ -412,6 +412,9 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 
 	csi.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

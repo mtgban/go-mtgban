@@ -183,7 +183,7 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 		return err
 	}
 
-	mtgban.WorkerPool(ctx, mc.MaxConcurrency, editionList,
+	failed := mtgban.WorkerPool(ctx, mc.MaxConcurrency, editionList,
 		func(ctx context.Context, edition MCEdition, results chan<- resultChan) error {
 			return mc.processEntry(ctx, results, edition)
 		},
@@ -198,6 +198,9 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 
 	mc.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 
@@ -331,7 +334,7 @@ func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
 	}
 	mc.printf("Found %d editions", len(editions))
 
-	mtgban.WorkerPool(ctx, mc.MaxConcurrency, editions,
+	failed := mtgban.WorkerPool(ctx, mc.MaxConcurrency, editions,
 		func(ctx context.Context, edition MCExpansion, results chan<- resultChan) error {
 			return mc.parseBL(ctx, results, edition)
 		},
@@ -346,6 +349,9 @@ func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
 
 	mc.buylistDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

@@ -209,6 +209,8 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 		}
 	}
 
+	var failed int
+
 	if ret.TotalResults/tcg.requestSize < MaxPagesGlobalScrapingValue {
 		tcg.printf("Using global scraping")
 
@@ -217,7 +219,7 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 			pageNums = append(pageNums, i)
 		}
 
-		mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
+		failed = mtgban.WorkerPool(ctx, tcg.MaxConcurrency, pageNums,
 			func(ctx context.Context, page int, results chan<- responseChan) error {
 				tcg.printf("processing page %d/%d", page, ret.TotalResults/tcg.requestSize)
 				return tcg.processEntry(ctx, results, page)
@@ -228,7 +230,7 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	} else {
 		tcg.printf("Using per-edition scraping, this might take a while")
 
-		mtgban.WorkerPool(ctx, tcg.MaxConcurrency, ret.Pair,
+		failed = mtgban.WorkerPool(ctx, tcg.MaxConcurrency, ret.Pair,
 			func(ctx context.Context, pair setCountPair, results chan<- responseChan) error {
 				tcg.printf("processing edition %d/%d (%s)", pair.Idx+1, len(ret.Pair), pair.Name)
 				return tcg.processEdition(ctx, results, pair.Name, pair.Count)
@@ -240,6 +242,9 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 
 	tcg.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

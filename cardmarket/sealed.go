@@ -184,7 +184,7 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	}
 	mkm.printf("Mapped %d mkm products to sealed products", len(productIds))
 
-	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, productIds,
+	failed := mtgban.WorkerPool(ctx, mkm.MaxConcurrency, productIds,
 		func(ctx context.Context, idProduct int, channel chan<- responseChan) error {
 			uuids := productMap[idProduct]
 			co, err := mtgmatcher.GetUUID(uuids[0])
@@ -220,6 +220,10 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.printf("Total number of products found: %d", len(mkm.inventory))
 	mkm.inventoryDate = time.Now()
+
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

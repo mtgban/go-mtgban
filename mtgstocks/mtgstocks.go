@@ -3,6 +3,7 @@ package mtgstocks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -141,7 +142,7 @@ func (stks *MTGStocks) Load(ctx context.Context) error {
 		items = append(items, requestChan{name: "Market", interest: interest})
 	}
 
-	mtgban.WorkerPool(ctx, stks.MaxConcurrency, items,
+	failed := mtgban.WorkerPool(ctx, stks.MaxConcurrency, items,
 		func(_ context.Context, page requestChan, channel chan<- responseChan) error {
 			return stks.processEntry(channel, page)
 		},
@@ -156,6 +157,9 @@ func (stks *MTGStocks) Load(ctx context.Context) error {
 
 	stks.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

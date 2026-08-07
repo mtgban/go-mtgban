@@ -321,7 +321,7 @@ func (ct *CardtraderMarket) Load(ctx context.Context) error {
 		expItems = append(expItems, expItem{id, name})
 	}
 
-	mtgban.WorkerPool(ctx, ct.MaxConcurrency, expItems,
+	failed := mtgban.WorkerPool(ctx, ct.MaxConcurrency, expItems,
 		func(ctx context.Context, item expItem, results chan<- resultChan) error {
 			ct.printf("Processing %s [%d]", item.name, item.id)
 			return ct.processExpansion(ctx, results, item.id)
@@ -355,6 +355,9 @@ func (ct *CardtraderMarket) Load(ctx context.Context) error {
 
 	ct.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 

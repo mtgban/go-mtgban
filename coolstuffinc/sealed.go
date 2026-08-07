@@ -193,7 +193,7 @@ func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
 		pageNums[i] = i + 1
 	}
 
-	mtgban.WorkerPool(ctx, csi.MaxConcurrency, pageNums,
+	failed := mtgban.WorkerPool(ctx, csi.MaxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- responseChan) error {
 			return csi.processSealedPage(ctx, results, page)
 		},
@@ -208,6 +208,9 @@ func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
 
 	csi.inventoryDate = time.Now()
 
+	if failed > 0 {
+		return fmt.Errorf("%d items did not complete", failed)
+	}
 	return nil
 }
 
