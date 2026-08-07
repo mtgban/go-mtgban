@@ -148,6 +148,17 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if !inCard.Foil && !card.HasFinish(mtgmatcher.FinishNonfoil) {
 			continue
 		}
+		// A variation naming a foil sub-type re-keys the copy's FoilUUIDs so
+		// the flag-driven resolution downstream lands on that sub-type's uuid
+		// instead of the primary foil's.
+		if finish := selectFinish(inCard, &card); finish != "" {
+			foilUUIDs := make(map[string]string, len(card.FoilUUIDs))
+			for k, v := range card.FoilUUIDs {
+				foilUUIDs[k] = v
+			}
+			foilUUIDs[mtgmatcher.FinishFoil] = card.FoilUUIDs[finish]
+			card.FoilUUIDs = foilUUIDs
+		}
 		out = append(out, card)
 	}
 	return out
@@ -174,4 +185,31 @@ func extractNumber(variation string) string {
 		trimmed = "0"
 	}
 	return trimmed
+}
+
+// selectFinish maps a storefront's foil sub-type wording onto one of the
+// card's stored finishes, so sub-typed printings resolve to their own uuid
+// instead of folding onto the primary foil. A direct mention of the exported
+// sub-type name wins; TCGplayer instead calls every sub-type past the primary
+// cold foil "Holofoil", so when the card stores exactly one such sub-type,
+// that is the one. Anything else keeps the flag-driven resolution.
+func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
+	variation := strings.ToLower(strings.ReplaceAll(inCard.Variation, " ", ""))
+
+	var extra string
+	extras := 0
+	for finish := range card.FoilUUIDs {
+		if finish == mtgmatcher.FinishNonfoil || finish == mtgmatcher.FinishFoil {
+			continue
+		}
+		if strings.Contains(variation, finish) {
+			return finish
+		}
+		extra = finish
+		extras++
+	}
+	if extras == 1 && strings.Contains(variation, "holofoil") {
+		return extra
+	}
+	return ""
 }

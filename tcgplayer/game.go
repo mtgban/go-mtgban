@@ -136,11 +136,14 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 
 			cardName := product.Name
 			number := RawProductNumber(&product)
+			// The printing name rides along in the variation so the game
+			// rules can tell foil sub-types apart (SelectFinish).
+			printing := tcg.printings[sku.PrintingId]
 			cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 				Name:      cardName,
 				Edition:   tcg.editions[product.GroupId].Name,
-				Variation: number,
-				Foil:      tcg.printings[sku.PrintingId] != "Normal",
+				Variation: strings.TrimSpace(number + " " + printing),
+				Foil:      printing != "Normal",
 			})
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
@@ -162,7 +165,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 
 			condition := SKUConditionMap[sku.ConditionId]
 
-			link := GenerateProductURL(sku.ProductId, tcg.printings[sku.PrintingId], tcg.Affiliate, condition, "", false)
+			link := GenerateProductURL(sku.ProductId, printing, tcg.Affiliate, condition, "", false)
 
 			out := genericChan{
 				key: cardId,
