@@ -409,6 +409,7 @@ func adjustTokens(sets map[string]*Set) {
 func (ap AllPrintings) Load() cardBackend {
 	canonicalNames := map[string]string{}
 	sealedNames := map[string]string{}
+	sealedProducts := map[string]*SealedProduct{}
 	alternates := map[string]alternateProps{}
 	commanderKeywordMap := map[string]string{}
 	allCardNames := map[string]struct{}{}
@@ -428,9 +429,12 @@ func (ap AllPrintings) Load() cardBackend {
 			allCardNames[card.Name] = struct{}{}
 		}
 
-		// Save the names of sealed products for later sorting
-		for _, product := range set.SealedProduct {
+		// Save the names of sealed products for later sorting, and index them
+		// by uuid so that the source check below is a lookup rather than a
+		// scan of every product in every set
+		for i, product := range set.SealedProduct {
 			sealedNames[product.UUID] = product.Name
+			sealedProducts[product.UUID] = &set.SealedProduct[i]
 		}
 	}
 
@@ -664,7 +668,7 @@ func (ap AllPrintings) Load() cardBackend {
 			for finish, sources := range card.SourceProducts {
 				var filtered []string
 				for _, source := range sources {
-					if isBaseSealed(ap.Data, source, card.UUID, finish) {
+					if isBaseSealed(ap.Data, sealedProducts, source, card.UUID, finish) {
 						filtered = append(filtered, source)
 					}
 				}
@@ -1129,16 +1133,12 @@ func sealedWithinSealed(product SealedProduct) []string {
 // the requested finish. "Directly" means via a card/deck/pack entry at the
 // top level (or inside a variable config) — not reachable only through a
 // nested sealed sub-product.
-func isBaseSealed(sets map[string]*Set, productUUID, cardUUID, finish string) bool {
-	for _, set := range sets {
-		for _, product := range set.SealedProduct {
-			if product.UUID != productUUID {
-				continue
-			}
-			return contentsContainCard(sets, product.Contents, cardUUID, finish)
-		}
+func isBaseSealed(sets map[string]*Set, products map[string]*SealedProduct, productUUID, cardUUID, finish string) bool {
+	product, found := products[productUUID]
+	if !found {
+		return false
 	}
-	return false
+	return contentsContainCard(sets, product.Contents, cardUUID, finish)
 }
 
 func contentsContainCard(sets map[string]*Set, contents map[string][]SealedContent, cardUUID, finish string) bool {
