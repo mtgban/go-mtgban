@@ -3,6 +3,7 @@ package toamagic
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -87,11 +88,16 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 			links = append(links, link)
 		})
 
+		var failed int
 		for _, link := range links {
 			err := toa.processProduct(ctx, channel, link)
 			if err != nil {
+				failed++
 				toa.printf("%s", err.Error())
 			}
+		}
+		if failed > 0 {
+			return fmt.Errorf("%d of %d subcategories of %q failed", failed, len(links), edition)
 		}
 		return nil
 	}

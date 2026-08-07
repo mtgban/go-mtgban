@@ -99,11 +99,16 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			links = append(links, link)
 		})
 
+		var failed int
 		for _, link := range links {
 			err := ms.processProduct(ctx, channel, link, mode)
 			if err != nil {
+				failed++
 				ms.printf("%s", err.Error())
 			}
+		}
+		if failed > 0 {
+			return fmt.Errorf("%d of %d subcategories of %q failed", failed, len(links), edition)
 		}
 		return nil
 	}
