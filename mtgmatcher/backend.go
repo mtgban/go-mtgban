@@ -1289,6 +1289,15 @@ func duplicate(sets map[string]*Set, name, code, tag, date string) {
 	// Duplicate cards
 	dup.Cards = duplicateCards(sets, code, tag, numbers)
 
+	// dup is a shallow copy, so everything not replaced above still points at
+	// the source set's slices. Sealed products, tokens and decks belong to the
+	// printing that actually shipped them; shared, their uuids are counted
+	// under both sets and the edition recorded for one flips between runs.
+	dup.SealedProduct = nil
+	dup.Tokens = nil
+	dup.Decks = nil
+	dup.Booster = nil
+
 	// Remove store references to avoid duplicates
 	for i := range dup.Cards {
 		altIdentifiers := map[string]string{}
