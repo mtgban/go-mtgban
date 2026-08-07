@@ -636,8 +636,18 @@ func (ap AllPrintings) Load() cardBackend {
 					OriginalNumber: card.Number,
 					IsFlavor:       i > 0,
 				}
-				_, found := alternates[name]
+				// Two different cards can claim the same alternate name. The
+				// number can no longer identify one of them, and the winner
+				// has to be chosen by something other than the order the sets
+				// happened to be walked in, or the same listing resolves to a
+				// different card between runs.
+				existing, found := alternates[name]
 				if found {
+					if existing.OriginalName <= props.OriginalName {
+						existing.OriginalNumber = ""
+						alternates[name] = existing
+						continue
+					}
 					props.OriginalNumber = ""
 				}
 				alternates[name] = props
