@@ -56,6 +56,15 @@
         "uuid": "ogn-066-298_foil"
     },
     {
+        "description": "foil with the printing name in the variation",
+        "input": {
+            "name": "Ahri, Alluring",
+            "variant": "66/298 Foil",
+            "foil": true
+        },
+        "uuid": "ogn-066-298_foil"
+    },
+    {
         "description": "full public code works as a number",
         "input": {
             "name": "Ahri, Alluring",

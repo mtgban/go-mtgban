@@ -245,6 +245,33 @@
         "uuid": "694"
     },
     {
+        "description": "Ariel - Singing Mermaid #15 cold foil printing name",
+        "input": {
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204 Cold Foil",
+            "foil": true
+        },
+        "uuid": "1951_f"
+    },
+    {
+        "description": "Ariel - Singing Mermaid #15 holofoil selects the sub-type",
+        "input": {
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204 Holofoil",
+            "foil": true
+        },
+        "uuid": "1951_rainbowpillars"
+    },
+    {
+        "description": "Ariel - Singing Mermaid #15 sub-type named outright",
+        "input": {
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15 Rainbow Pillars",
+            "foil": true
+        },
+        "uuid": "1951_rainbowpillars"
+    },
+    {
         "description": "Ariel - Spectacular Singer #2 foil",
         "input": {
             "name": "Ariel - Spectacular Singer",
@@ -1910,9 +1937,9 @@
         "uuid": "27"
     },
     {
-        "description": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets #70",
+        "description": "Hamish, Hubert & Harris - Troublemaking Triplets #70",
         "input": {
-            "name": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets",
+            "name": "Hamish, Hubert & Harris - Troublemaking Triplets",
             "variant": "70"
         },
         "uuid": "2785"
@@ -4936,9 +4963,9 @@
         "uuid": "2204"
     },
     {
-        "description": "Te Kā - Lava Monster #58",
+        "description": "Te K\u0101 - Lava Monster #58",
         "input": {
-            "name": "Te Kā - Lava Monster",
+            "name": "Te K\u0101 - Lava Monster",
             "variant": "58"
         },
         "uuid": "1491"
@@ -5377,9 +5404,9 @@
         "uuid": "2065"
     },
     {
-        "description": "Tweedledee \u0026 Tweedledum - Strange Storytellers #103",
+        "description": "Tweedledee & Tweedledum - Strange Storytellers #103",
         "input": {
-            "name": "Tweedledee \u0026 Tweedledum - Strange Storytellers",
+            "name": "Tweedledee & Tweedledum - Strange Storytellers",
             "variant": "103"
         },
         "uuid": "1536"
