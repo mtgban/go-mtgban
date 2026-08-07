@@ -614,7 +614,7 @@ var options = map[string]*scraperOption{
 			if tcgPublicId == "" || tcgPrivateId == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewLorcanaIndex(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameLorcana, tcgPublicId, tcgPrivateId)
 			if err != nil {
 				return nil, err
 			}
@@ -633,7 +633,7 @@ var options = map[string]*scraperOption{
 			if tcgPublicId == "" || tcgPrivateId == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewLorcanaScraper(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGame(mtgban.GameLorcana, tcgPublicId, tcgPrivateId)
 			if err != nil {
 				return nil, err
 			}

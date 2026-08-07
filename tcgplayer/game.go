@@ -13,7 +13,11 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-type TCGLorcana struct {
+// TCGGame is the retail scraper for any single-game TCGplayer category whose
+// cards the matcher identifies by name + collector number + finish (Lorcana,
+// Riftbound, ...); Magic has its own SKU-driven scrapers. Per-game
+// constructors below pick the category and the mtgban game tag.
+type TCGGame struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	Affiliate      string
@@ -28,13 +32,14 @@ type TCGLorcana struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
+	game                string
 
 	productTypes []string
 
 	client *tcgplayer.Client
 }
 
-func (tcg *TCGLorcana) printf(format string, a ...interface{}) {
+func (tcg *TCGGame) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
@@ -44,18 +49,32 @@ func (tcg *TCGLorcana) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
+// SupportedGames maps every game tag TCGGame and TCGGameIndex can be built
+// for to the TCGplayer category carrying it. Magic is deliberately absent: it
+// is identified by SKU and has its own scrapers. Supporting one more game is
+// one entry here, provided the matcher has a datastore for it.
+var SupportedGames = map[string]int{
+	mtgban.GameLorcana: tcgplayer.CategoryLorcana,
+}
+
+func NewScraperGame(game, publicId, privateId string) (*TCGGame, error) {
+	category, found := SupportedGames[game]
+	if !found {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
+
 	client, err := tcgplayer.NewClient(publicId, privateId)
 	if err != nil {
 		return nil, err
 	}
 
-	tcg := TCGLorcana{}
+	tcg := TCGGame{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 
-	tcg.category = tcgplayer.CategoryLorcana
+	tcg.category = category
+	tcg.game = game
 	tcg.productTypes = tcgplayer.ProductTypesSingles
 
 	tcg.printings = map[int]string{}
@@ -63,7 +82,7 @@ func NewLorcanaScraper(publicId, privateId string) (*TCGLorcana, error) {
 	return &tcg, nil
 }
 
-func (tcg *TCGLorcana) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
+func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
 	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, true, page)
 	if err != nil {
 		return err
@@ -158,7 +177,7 @@ func (tcg *TCGLorcana) processPage(ctx context.Context, channel chan<- genericCh
 	return nil
 }
 
-func (tcg *TCGLorcana) Load(ctx context.Context) error {
+func (tcg *TCGGame) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
 	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
@@ -212,15 +231,15 @@ func (tcg *TCGLorcana) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGLorcana) Inventory() mtgban.InventoryRecord {
+func (tcg *TCGGame) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
-func (tcg *TCGLorcana) Info() (info mtgban.ScraperInfo) {
+func (tcg *TCGGame) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCGplayer"
 	info.Shorthand = "TCGPlayer"
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.NoQuantityInventory = true
-	info.Game = mtgban.GameLorcana
+	info.Game = tcg.game
 	return
 }

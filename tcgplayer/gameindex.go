@@ -14,7 +14,10 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-type TCGLorcanaIndex struct {
+// TCGGameIndex is the market-price index counterpart of TCGGame, serving the
+// same single-game categories through the matcher's name + collector number +
+// finish identification.
+type TCGGameIndex struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	Affiliate      string
@@ -27,13 +30,14 @@ type TCGLorcanaIndex struct {
 	category            int
 	categoryName        string
 	categoryDisplayName string
+	game                string
 
 	productTypes []string
 
 	client *tcgplayer.Client
 }
 
-func (tcg *TCGLorcanaIndex) printf(format string, a ...interface{}) {
+func (tcg *TCGGameIndex) printf(format string, a ...interface{}) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
@@ -43,24 +47,30 @@ func (tcg *TCGLorcanaIndex) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewLorcanaIndex(publicId, privateId string) (*TCGLorcanaIndex, error) {
+func NewScraperGameIndex(game, publicId, privateId string) (*TCGGameIndex, error) {
+	category, found := SupportedGames[game]
+	if !found {
+		return nil, fmt.Errorf("unsupported game %q", game)
+	}
+
 	client, err := tcgplayer.NewClient(publicId, privateId)
 	if err != nil {
 		return nil, err
 	}
 
-	tcg := TCGLorcanaIndex{}
+	tcg := TCGGameIndex{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 
-	tcg.category = tcgplayer.CategoryLorcana
+	tcg.category = category
+	tcg.game = game
 	tcg.productTypes = tcgplayer.ProductTypesSingles
 
 	return &tcg, nil
 }
 
-func (tcg *TCGLorcanaIndex) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
+func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
 	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, false, page)
 	if err != nil {
 		return err
@@ -140,7 +150,7 @@ func (tcg *TCGLorcanaIndex) processPage(ctx context.Context, channel chan<- gene
 	return nil
 }
 
-func (tcg *TCGLorcanaIndex) Load(ctx context.Context) error {
+func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
 	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
@@ -184,27 +194,27 @@ func (tcg *TCGLorcanaIndex) Load(ctx context.Context) error {
 	return nil
 }
 
-func (tcg *TCGLorcanaIndex) Inventory() mtgban.InventoryRecord {
+func (tcg *TCGGameIndex) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
-func (tcg *TCGLorcanaIndex) MarketNames() []string {
+func (tcg *TCGGameIndex) MarketNames() []string {
 	return availableIndexNames[:len(availableIndexNames)-1]
 }
 
-func (tcg *TCGLorcanaIndex) InfoForScraper(name string) mtgban.ScraperInfo {
+func (tcg *TCGGameIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := tcg.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
 	return info
 }
 
-func (tcg *TCGLorcanaIndex) Info() (info mtgban.ScraperInfo) {
+func (tcg *TCGGameIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Index"
 	info.Shorthand = "TCGIndex"
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
-	info.Game = mtgban.GameLorcana
+	info.Game = tcg.game
 	return
 }
