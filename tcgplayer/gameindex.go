@@ -103,7 +103,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 			Name:      cardName,
 			Edition:   tcg.editions[product.GroupId].Name,
-			Variation: number,
+			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
 			Foil:      result.SubTypeName != "Normal",
 		})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
