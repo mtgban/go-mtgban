@@ -96,6 +96,7 @@ var replacerStrings = []string{
 	"kess", "kess",
 	"kediss", "kediss",
 	"vs", "vs",
+	"pest", "pest",
 	"š", "",
 	"s", "",
 
