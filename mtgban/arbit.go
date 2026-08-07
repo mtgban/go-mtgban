@@ -535,7 +535,9 @@ func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 
 		priceThreshold := []float64{0.12, 0.02, 0.05, 0.02, 0.01, 0.02}
 		for i := range thresholds {
-			if i > len(priceThreshold) {
+			// The last index this slice holds is len-1, so the equal case
+			// is one past the end rather than the final entry
+			if i >= len(priceThreshold) {
 				break
 			}
 			if thresholds[i] == 0 {
