@@ -163,6 +163,14 @@ func loadPrices(ctx context.Context, sig, selected string) (*BANPriceResponse, e
 	}
 	defer resp.Body.Close()
 
+	// An authentication or server failure still carries a JSON body, which
+	// decodes into an empty response without error and leaves every estimate
+	// at zero. Without this the run reports missing data instead of the
+	// reason for it.
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("BAN API returned HTTP %d", resp.StatusCode)
+	}
+
 	var response BANPriceResponse
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
