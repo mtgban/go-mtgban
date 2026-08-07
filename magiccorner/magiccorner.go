@@ -319,6 +319,13 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 		if totals >= result.Total {
 			break
 		}
+
+		// The exit above is a fixpoint: a successful page carrying no products
+		// leaves totals where it was while Total stays positive, so the same
+		// request repeats forever
+		if len(result.Products) == 0 {
+			return fmt.Errorf("%s: page %d was empty after %d of %d products", edition.Name, i, totals, result.Total)
+		}
 	}
 
 	return nil
