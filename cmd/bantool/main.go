@@ -701,7 +701,7 @@ func writeVendorToNDJSON(vendor mtgban.Vendor, w io.Writer) error {
 	return err
 }
 
-func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) error {
+func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath, format string) (err error) {
 	if len(seller.Inventory()) == 0 {
 		return fmt.Errorf("seller %s has no data", seller.Info().Shorthand)
 	}
@@ -713,7 +713,14 @@ func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath,
 	if err != nil {
 		return err
 	}
-	defer writer.Close()
+	// Close is where a buffered cloud writer commits the upload, so it
+	// reports whether anything was durably written at all
+	defer func() {
+		cerr := writer.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
 
 	switch strings.Split(format, ".")[0] {
 	case "json":
@@ -729,7 +736,7 @@ func dumpSeller(dataBucket simplecloud.Writer, seller mtgban.Seller, outputPath,
 	return err
 }
 
-func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) error {
+func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath, format string) (err error) {
 	if len(vendor.Buylist()) == 0 {
 		return fmt.Errorf("vendor %s has no data", vendor.Info().Shorthand)
 	}
@@ -741,7 +748,14 @@ func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath,
 	if err != nil {
 		return err
 	}
-	defer writer.Close()
+	// Close is where a buffered cloud writer commits the upload, so it
+	// reports whether anything was durably written at all
+	defer func() {
+		cerr := writer.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
 
 	switch strings.Split(format, ".")[0] {
 	case "json":
