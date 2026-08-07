@@ -35,9 +35,6 @@ type ArbitOpts struct {
 	// Maximum price ratio of Inventory
 	MaxPriceRatio float64
 
-	// Use credit for Buylist prices
-	UseTrades bool
-
 	// Whether to consider foils
 	NoFoil   bool
 	OnlyFoil bool
@@ -147,7 +144,6 @@ type resolvedOpts struct {
 	maxPriceRatio          float64
 	rate                   float64
 	profitabilityConstant  float64
-	useTrades              bool
 	filterFoil             bool
 	filterOnlyFoil         bool
 	filterRLOnly           bool
@@ -183,7 +179,6 @@ func resolveOpts(opts *ArbitOpts) resolvedOpts {
 	if opts.ProfitabilityConstant > 0 {
 		r.profitabilityConstant = opts.ProfitabilityConstant
 	}
-	r.useTrades = opts.UseTrades
 	r.minPrice = opts.MinPrice
 	r.minBuyPrice = opts.MinBuyPrice
 	r.minQty = opts.MinQuantity
@@ -335,9 +330,6 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			}
 
 			blPrice := blEntry.BuyPrice
-			if r.useTrades {
-				blPrice *= vendor.Info().CreditMultiplier
-			}
 
 			if price == 0 || blPrice == 0 {
 				continue
