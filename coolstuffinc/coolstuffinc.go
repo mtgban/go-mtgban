@@ -113,23 +113,22 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 			link := "https://www.coolstuffinc.com/sq/" + result.PageId + "?page=" + fmt.Sprint(page)
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 			if err != nil {
-				continue
+				return err
 			}
 			resp, err := csi.client.Do(req)
 			if err != nil {
-				continue
+				return err
 			}
 			data, err = io.ReadAll(resp.Body)
 			resp.Body.Close()
 			if err != nil {
-				continue
+				return err
 			}
 		}
 
 		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
 		if err != nil {
-			csi.printf("newDoc - %s", err.Error())
-			continue
+			return fmt.Errorf("page %d: %w", page, err)
 		}
 
 		doc.Find(`div[class="row product-search-row main-container"]`).Each(func(i int, s *goquery.Selection) {
