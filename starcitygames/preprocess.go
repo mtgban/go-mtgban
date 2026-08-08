@@ -542,10 +542,17 @@ func preprocess(hit Hit) (*mtgmatcher.InputCard, error) {
 		cardName = lutName
 	}
 
-	// Check tokens with the same name as certain cards
+	// Braces mark everything that is not a normal card. A creature token
+	// carries the creature's own name, so the suffix is what tells it
+	// apart from the card of the same name. The rest of what SCG braces
+	// is named after what it is - sticker sheets, emblems, counters -
+	// and suffixing those invents a name nothing carries, so only add it
+	// when the suffixed form is one the datastore knows.
 	isToken := strings.HasPrefix(hit.Name, "{") && strings.Contains(hit.Name, "}")
 	if isToken && !strings.Contains(cardName, "Token") {
-		cardName += " Token"
+		if _, err := mtgmatcher.SearchEquals(cardName + " Token"); err == nil {
+			cardName += " Token"
+		}
 	}
 
 	if strings.HasSuffix(edition, "(Foil)") {
