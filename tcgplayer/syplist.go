@@ -106,5 +106,6 @@ func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "SYP"
 	info.BuylistTimestamp = &tcg.buylistDate
 	info.MetadataOnly = true
+	info.QuantityPriority = true
 	return
 }

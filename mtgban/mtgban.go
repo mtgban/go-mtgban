@@ -141,6 +141,9 @@ type ScraperInfo struct {
 	// Inventory quantities are not available
 	NoQuantityInventory bool `json:"no_qty_inventory,omitempty"`
 
+	// Quantity is more important than prices for this scraper
+	QuantityPriority bool `json:"quantity_priority,omitempty"`
+
 	// Scraper contains sealed information instead of singles
 	SealedMode bool `json:"sealed,omitempty"`
 
