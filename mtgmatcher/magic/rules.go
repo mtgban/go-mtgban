@@ -1,6 +1,7 @@
 package magic
 
 import (
+	"cmp"
 	"slices"
 	"strconv"
 	"strings"
@@ -1806,6 +1807,19 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			}
 		}
 	}
+
+	// The candidates were gathered by ranging a map, so the order they
+	// come out in changes from one call to the next. Callers that keep
+	// the first of several - Match does for gold-bordered sets, where
+	// every printing is an equally good answer - would otherwise name a
+	// different physical card each time they are asked about the same
+	// listing. Settle on one.
+	slices.SortStableFunc(outCards, func(a, b mtgmatcher.Card) int {
+		if a.SetCode != b.SetCode {
+			return cmp.Compare(a.SetCode, b.SetCode)
+		}
+		return cmp.Compare(a.Number, b.Number)
+	})
 
 	return
 }
