@@ -504,7 +504,11 @@ func MatchInSet(cardName string, setCode string) (outCards []Card) {
 		return
 	}
 	for _, card := range set.Cards {
-		if cardName == card.Name || cardName == strings.Split(card.Name, " // ")[0] {
+		// Cut rather than Split: only the front half is ever read, and
+		// Split allocates a slice for every card in the set to hand it
+		// over, whether or not the name has two halves at all
+		front, _, _ := strings.Cut(card.Name, " // ")
+		if cardName == card.Name || cardName == front {
 			outCards = append(outCards, card)
 		}
 	}
