@@ -219,6 +219,16 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		}
 	}
 
+	// Duel Decks: Anthology reprints four earlier duel decks, and mtgjson
+	// keeps them under their original codes. The product's set name says
+	// only "Anthology", so the deck it belongs to is read from the sku.
+	if game == GameMagic && p.Set == "Duel Decks: Anthology" {
+		number := strings.TrimLeft(p.CollectorNumber, "0")
+		if out := mtgmatcher.MatchWithNumber(p.Name, skuSetCode(p.SKU), number); len(out) == 1 {
+			return mtgmatcher.MatchId(out[0].UUID, foil, etched)
+		}
+	}
+
 	// The authoritative identifiers resolve directly through the identifier
 	// index, regardless of game: Scryfall id first, then the TCGplayer id
 	// (MatchId resolves a bare product id through the external-id index and
