@@ -177,6 +177,26 @@ func languageMatches(catalogLanguage, cardLanguage string) bool {
 	return strings.EqualFold(strings.ReplaceAll(catalogLanguage, " - ", " "), cardLanguage)
 }
 
+// skuSetCode returns the set segment of a catalog sku, which carries
+// detail the product's own set name has lost.
+func skuSetCode(sku string) string {
+	fields := strings.Split(sku, "-")
+	if len(fields) < 3 {
+		return ""
+	}
+	return fields[2]
+}
+
+// skuNumber returns the collector number segment of a catalog sku,
+// which keeps the variant letter the product's number field drops.
+func skuNumber(sku string) string {
+	fields := strings.Split(sku, "-")
+	if len(fields) < 4 {
+		return ""
+	}
+	return fields[3]
+}
+
 func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// Duel Masters crossover promos are catalogued under Magic but aren't Magic
 	// cards, so there's nothing to match; discard them.
@@ -186,6 +206,18 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 
 	foil := catalogFoil(p)
 	etched := strings.Contains(strings.ToLower(p.Finish), "etched")
+
+	// Portal printed two versions of six cards. SCG marks them a and b in
+	// the sku while mtgjson numbers the second with a d suffix, and sends
+	// the same collector number and the same scryfall id for both - an id
+	// that names the first version - so the b product has to be steered by
+	// its number before the identifiers get a say.
+	if game == GameMagic && p.Set == "Portal" && strings.HasSuffix(skuNumber(p.SKU), "b") {
+		number := strings.TrimSuffix(skuNumber(p.SKU), "b") + "d"
+		if out := mtgmatcher.MatchWithNumber(p.Name, "POR", number); len(out) == 1 {
+			return mtgmatcher.MatchId(out[0].UUID, foil, etched)
+		}
+	}
 
 	// The authoritative identifiers resolve directly through the identifier
 	// index, regardless of game: Scryfall id first, then the TCGplayer id
