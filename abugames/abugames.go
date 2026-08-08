@@ -133,7 +133,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			var buyEntry *mtgban.BuylistEntry
 			var tradeEntry *mtgban.BuylistEntry
 
-			// For URL genration searchQuery needs to be in plaintext, not URL-encoded
+			// For URL generation searchQuery needs to be in plaintext, not URL-encoded
 			searchQuery := "&search=" + doc.SimpleTitle
 
 			u, err := url.Parse("https://abugames.com")
@@ -271,7 +271,7 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 	}
 	// Remove all cards with pictures and the editions above
 	normalQuery := ` -magic_features:("Actual Picture Card") -magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
-	// Enable card with pictures for the editions aboves
+	// Enable card with pictures for the editions above
 	// (the +magic_features, means only report cards with pics, we need both)
 	extraQuery := ` magic_features:("Actual Picture Card") +magic_edition:("` + strings.Join(extraSets, " OR ") + `")`
 

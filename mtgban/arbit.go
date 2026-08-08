@@ -63,7 +63,7 @@ type ArbitOpts struct {
 	// Only select entries which are part of a bundle
 	OnlyBundles bool
 
-	// List of seller name that wil be considered
+	// List of seller name that will be considered
 	Sellers []string
 
 	// Custom function to be run on the card object
@@ -77,7 +77,7 @@ type ArbitOpts struct {
 	CustomPriceFilter func(string, InventoryEntry) (float64, bool)
 
 	// Constant used to offset prices (the higher the value, the less impactful
-	// lower prices will be, and viceversa)
+	// lower prices will be, and vice versa)
 	ProfitabilityConstant float64
 
 	// Minimum profitability value

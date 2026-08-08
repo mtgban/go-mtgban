@@ -47,7 +47,7 @@ type InventoryEntry struct {
 	// Any additional custom fields set by the scraper
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
 
-	// Any addiitonal extra floating point values
+	// Any additional extra floating point values
 	ExtraValues map[string]float64 `json:"extra_values,omitempty"`
 }
 
@@ -76,7 +76,7 @@ type BuylistEntry struct {
 	// The price at which this entry is bought, in USD
 	BuyPrice float64 `json:"buy_price"`
 
-	// The ratio between the sale and buy prices, indicating desiderability
+	// The ratio between the sale and buy prices, indicating desirability
 	// of the entry by the provider
 	PriceRatio float64 `json:"price_ratio,omitempty"`
 
@@ -182,7 +182,7 @@ type MultiScraper interface {
 	Scraper
 }
 
-// Carter is the inteface used to identify Seller scrapers that can
+// Carter is the interface used to identify Seller scrapers that can
 // add entries to the online cart of the provider.
 type Carter interface {
 	// Enable the cart interface (loading the existing cart for example).

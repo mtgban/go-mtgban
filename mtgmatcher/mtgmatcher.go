@@ -48,7 +48,7 @@ func MatchId(inputId string, finishes ...bool) (string, error) {
 	// If the input card was requested as foil, we should double check
 	// if the original card has a foil under a separate id
 	if co.Foil != isFoil || co.Etched != isEtched {
-		// So we iterate over the Variations array and try outputing ids
+		// So we iterate over the Variations array and try outputting ids
 		// until we find a perfect match in foiling status
 		for _, variation := range co.Variations {
 			// A missing key yields a nil pointer, not an empty card, so
@@ -546,7 +546,7 @@ func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 	return
 }
 
-// Try to fixup the name of the card or move extra varitions to the
+// Try to fixup the name of the card or move extra variations to the
 // variant attribute. This should only be used in case the card name
 // was not found.
 func adjustName(inCard *InputCard) {
@@ -711,7 +711,7 @@ func adjustName(inCard *InputCard) {
 		return
 	}
 
-	// Altenatively try checking across any prefix, as long as it's a double
+	// Alternatively try checking across any prefix, as long as it's a double
 	// sided card, for some particular cases, like meld cards, or Treasure Chest
 	// Attempt first to check cards in the same edition if possible
 	// Skip for tokens
@@ -735,7 +735,7 @@ func adjustName(inCard *InputCard) {
 	}
 }
 
-// Try to fixup the edition and variant of the card, using well-known variantions,
+// Try to fixup the edition and variant of the card, using well-known variations,
 // or use edition/variant attributes to determine the correct edition/variant combo,
 // or look up known cards in small sets.
 func adjustEdition(inCard *InputCard) {
@@ -995,7 +995,7 @@ func adjustEdition(inCard *InputCard) {
 		edition = defaultBackend.Sets["OPCA"].Name
 
 	// The first Gift Pack often get folded in the main Core Set 2019 or in the
-	// related Promos set, so use a lax way to dected the original expansion
+	// related Promos set, so use a lax way to detected the original expansion
 	case ((Contains(inCard.Edition, "Core") && Contains(inCard.Edition, "2019")) || inCard.isGenericPromo()) && len(MatchInSet(inCard.Name, "G18")) == 1:
 		edition = defaultBackend.Sets["G18"].Name
 
@@ -1353,7 +1353,7 @@ func adjustEdition(inCard *InputCard) {
 				variation = strings.Replace(variation, "73", "", -1)
 			}
 		default:
-			// Attempt a best effor match for known promotional tags if card or edition
+			// Attempt a best effort match for known promotional tags if card or edition
 			// wasn't found in previous steps
 			if inCard.isGenericPromo() {
 				logger.Printf("Precise matching for promo failed, attempting best effort")

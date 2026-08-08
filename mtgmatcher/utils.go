@@ -123,7 +123,7 @@ var months = []string{
 // The input string may have a single character as prefix or up to two characters
 // as suffix (one letter and one special character), but not both.
 // Any extra letters will be ignored while determining the number portion, but
-// preserved in the ouput, and returned as lowercase.
+// preserved in the output, and returned as lowercase.
 // Any leading # characters, zeroes or parenthesis are stripped away.
 // Numbers starting with M are ignored because they could be confused
 // with core set names.

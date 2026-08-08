@@ -1054,7 +1054,7 @@ func filterCards(inCard *InputCard, cardSet map[string][]Card) (outCards []Card)
 			}
 		}
 
-		// If above filters were not enough, check the boder, but dont skip card if it's showcase
+		// If above filters were not enough, check the border, but don't skip card if it's showcase
 		// ExtendedArt is fine as there cannot be a borderless one
 		if len(outCards) > 1 {
 			var filteredOutCards []Card

@@ -172,7 +172,7 @@ func playPromoPrinting(cardName string) (code, number string, ok bool) {
 // SKU documented as
 // * for singles:
 // SGL-[Brand]-[Set]-[Collector Number]-[Language][Foiling][Condition]
-// * for world champtionship:
+// * for world championship:
 // SGL-[Brand]-WCHP-[Year][Player Initials]_[Set]_[Collector Number][Sideboard]-[Language][Foiling][Condition]
 // * for promotional cards:
 // SGL-[Brand]-PRM-[Promo][Set][Collector Number]-[Language][Foiling][Condition]

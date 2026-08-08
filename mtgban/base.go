@@ -279,7 +279,7 @@ func InventoryForSeller(seller Market, sellerName string) InventoryRecord {
 	return marketplace
 }
 
-// Return the buylsit for any given vendor present in the Trader.
+// Return the buylist for any given vendor present in the Trader.
 // If possible, it will use the Buylist() call to populate data.
 func BuylistForVendor(vendor Trader, vendorName string) BuylistRecord {
 	buylist := vendor.Buylist()

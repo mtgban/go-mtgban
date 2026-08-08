@@ -31,7 +31,7 @@ type InputCard struct {
 	beyondBaseSet bool
 
 	// In case edition information is not accurate, use this flag to
-	// perform a best-effor search, which will try to isolate promo
+	// perform a best-effort search, which will try to isolate promo
 	// printings from the others
 	promoWildcard bool
 
@@ -230,7 +230,7 @@ func (c *InputCard) isSpecificUnsupported() bool {
 		"Time Elemental",
 		"Winged Sliver":
 		return c.Contains("Misprint")
-	// Erraneous release information
+	// Erroneous release information
 	case "Zombify":
 		return c.Contains("Game Night")
 	default:
@@ -345,7 +345,7 @@ func (c *InputCard) isReskin() bool {
 	return (Contains(c.Variation, "Reskin") ||
 		Contains(c.Variation, "Dracula") ||
 		Contains(c.Variation, "Godzilla")) &&
-		// Needed to distinguish the SLD godizlla lands
+		// Needed to distinguish the SLD godzilla lands
 		!c.isBasicLand()
 }
 

@@ -94,7 +94,7 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 			return
 		}
 
-		// Workaound certain cards not being formatted correctly
+		// Workaround certain cards not being formatted correctly
 		if strings.Contains(title, ")") && !strings.Contains(title, ") - ") {
 			title = strings.Replace(title, ")", ") -", 1)
 			pos := strings.Index(title, ") -")
@@ -330,7 +330,7 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 		}
 
 		title := record[2]
-		// Workaound certain cards not being formatted correctly
+		// Workaround certain cards not being formatted correctly
 		if strings.Contains(title, ")") && !strings.Contains(title, ") - ") {
 			title = strings.Replace(title, ")", ") -", 1)
 			pos := strings.Index(title, ") -")

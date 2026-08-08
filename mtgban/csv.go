@@ -22,7 +22,7 @@ var (
 	// The canonical header that will be present in all market files
 	MarketHeader = append(InventoryHeader, "Seller", "Bundle")
 
-	// Additional fields for Markets neecessary for Carters
+	// Additional fields for Markets necessary for Carters
 	CartHeader = append(MarketHeader, "Original Id", "Instance Id")
 
 	// The canonical header that will be present in all buylist files

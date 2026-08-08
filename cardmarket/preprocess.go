@@ -176,7 +176,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		return nil, mtgmatcher.ErrUnsupported
 	default:
 		// Strip extra letters that may interfere later on
-		// (ie IDW Promos P4 becomeing Starter 2000)
+		// (ie IDW Promos P4 becoming Starter 2000)
 		number = strings.TrimLeft(number, "P")
 	}
 	number = strings.TrimLeft(number, "0")

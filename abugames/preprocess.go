@@ -292,7 +292,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		}
 	case "Mystery Booster":
 		if cardName == "Trial and Error" {
-			// Hack to prevent aliasing wiith the real "Trial // Error"
+			// Hack to prevent aliasing with the real "Trial // Error"
 			cardName = "Trial and Error "
 		}
 	case "Summer Magic / Edgar":

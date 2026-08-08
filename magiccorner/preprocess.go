@@ -386,7 +386,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 			variation = strings.TrimLeft(extra[3:], "0")
 		}
 	default:
-		// All the prelease/promopack versions >= THB
+		// All the prerelease/promopack versions >= THB
 		if strings.HasSuffix(edition, ": Promos") {
 			switch variation {
 			case "V.1":

@@ -433,13 +433,13 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 			var duplicated map[string]bool
 			var balancedSheets map[string][]weightedrand.Choice[string, int]
 
-			// Prepare maps to keep track of duplicates and balaced colors if necessary
+			// Prepare maps to keep track of duplicates and balanced colors if necessary
 			if !sheet.AllowDuplicates {
 				duplicated = map[string]bool{}
 			}
 
 			// This is an approximation of the actual algorithm since we don't
-			// have precise print sheet information availabe.
+			// have precise print sheet information available.
 			// The first N cards (where N is the number of colors) get picked
 			// from these special sheets.
 			// See https://github.com/taw/magic-search-engine/blob/master/search-engine/lib/color_balanced_card_sheet.rb
@@ -1115,7 +1115,7 @@ func BuildSealedProductMap(idName string) map[int][]string {
 
 			// This list of tags represents products with separate entries, but
 			// with the same listing. For example, there is no Textured because
-			// there isn't any drop containing non-Texured foil versions of the cards
+			// there isn't any drop containing non-Textured foil versions of the cards
 			for _, tag := range []string{"Foil", "Rainbow", "Galaxy", "Confetti"} {
 				name = strings.TrimSuffix(name, tag)
 				name = strings.TrimSpace(name)

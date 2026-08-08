@@ -109,7 +109,7 @@ func run() int {
 				var duplicated map[string]bool
 				var balanced map[string]bool
 
-				// Prepare maps to keep track of duplicates and balaced colors if necessary
+				// Prepare maps to keep track of duplicates and balanced colors if necessary
 				if !sheet.AllowDuplicates {
 					duplicated = map[string]bool{}
 				}
