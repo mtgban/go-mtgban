@@ -13,6 +13,7 @@ const (
 	GameMagic         = 1
 	GameFleshAndBlood = 2
 	GameLorcana       = 3
+	GameRiftbound     = 5
 )
 
 type SCGClient struct {

@@ -99,8 +99,13 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 		}
 
 		cardName := productMap[result.ProductId].Name
-		number := GetProductNumber(&product)
-		cardId, err := mtgmatcher.SimpleSearch(cardName, number, result.SubTypeName != "Normal")
+		number := RawProductNumber(&product)
+		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+			Name:      cardName,
+			Edition:   tcg.editions[product.GroupId].Name,
+			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
+			Foil:      result.SubTypeName != "Normal",
+		})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {

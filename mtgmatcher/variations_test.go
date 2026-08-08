@@ -39,9 +39,6 @@ func TestMatchIdOverAbsentVariations(t *testing.T) {
 		for _, finishes := range [][]bool{{false, false}, {true, false}, {false, true}} {
 			MatchId(uuid, finishes...)
 		}
-		if variantInCommanderDeck(&InputCard{Name: co.Name}, &co.Card) {
-			continue
-		}
 	}
 
 	if withAbsent == 0 {

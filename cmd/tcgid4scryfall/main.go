@@ -13,6 +13,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	"github.com/mtgban/go-mtgban/tcgplayer"
 	api "github.com/mtgban/go-tcgplayer"
 )
@@ -133,11 +134,18 @@ func run() int {
 		allprintingsPath = envAllprintings
 	}
 	// Load static data once
-	err = mtgmatcher.LoadDatastoreFile(allprintingsPath)
+	allPrintingsReader, err := os.Open(allprintingsPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
+	defer allPrintingsReader.Close()
+	ds, err := magic.Load(allPrintingsReader)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	mtgmatcher.SetGlobalDatastore(ds)
 
 	ctx := context.Background()
 	editions, err := tcgplayer.EditionMap(ctx, client, api.CategoryMagic)

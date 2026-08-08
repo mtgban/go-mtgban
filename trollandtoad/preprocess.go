@@ -7,6 +7,7 @@ import (
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 var cardTable = map[string]string{
@@ -422,7 +423,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		"Champions of Kamigawa",
 		"Fallen Empires",
 		"Homelands":
-		for subCardName, subMap := range mtgmatcher.VariantsTable[edition] {
+		for subCardName, subMap := range magic.VariantsTable[edition] {
 			if !mtgmatcher.Equals(subCardName, cardName) {
 				continue
 			}
@@ -453,7 +454,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 			} else if edition == "5th Edition" {
 				edition = "Fifth Edition"
 			}
-			for key, num := range mtgmatcher.VariantsTable[edition][cardName] {
+			for key, num := range magic.VariantsTable[edition][cardName] {
 				if (variant == "1" && key == "a") ||
 					(variant == "2" && key == "b") ||
 					(variant == "3" && key == "c") ||

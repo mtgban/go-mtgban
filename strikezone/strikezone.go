@@ -75,8 +75,9 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 	pathURL = el.ChildAttr("a", "href")
 
-	var cardId string
-	var err error
+	// The columns and card construction differ per game; the match and error
+	// handling below are shared.
+	var theCard *mtgmatcher.InputCard
 	switch sz.game {
 	case GameMagic:
 		if mode == modeRetail {
@@ -91,33 +92,11 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 			price = el.ChildText("td:nth-child(6)")
 		}
 
-		theCard, err := preprocess(cardName, edition, notes)
+		c, err := preprocess(cardName, edition, notes)
 		if err != nil {
 			return nil
 		}
-
-		cardId, err = mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			return nil
-		} else if err != nil {
-			// Skip errors from these sets, there is not enough information
-			switch edition {
-			case "Secret Lair", "The List", "Mystery Booster":
-				return nil
-			}
-			sz.printf("%q", theCard)
-			sz.printf("%s|%s|%s", cardName, edition, notes)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					sz.printf("- %s", card)
-				}
-			}
-			return err
-		}
+		theCard = c
 	case GameLorcana:
 		notes = el.ChildText("td:nth-child(2)")
 		cond = el.ChildText("td:nth-child(4)")
@@ -125,23 +104,31 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		price = el.ChildText("td:nth-child(6)")
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
+		theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: foil}
+	default:
+		return nil
+	}
 
-		cardId, err = mtgmatcher.SimpleSearch(cardName, notes, foil)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+	cardId, err := mtgmatcher.Match(theCard)
+	if errors.Is(err, mtgmatcher.ErrUnsupported) {
+		return nil
+	} else if err != nil {
+		// Skip errors from these sets, there is not enough information
+		switch edition {
+		case "Secret Lair", "The List", "Mystery Booster":
 			return nil
-		} else if err != nil {
-			sz.printf("%s|%s|%s", cardName, edition, notes)
-
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				probes := alias.Probe()
-				for _, probe := range probes {
-					card, _ := mtgmatcher.GetUUID(probe)
-					sz.printf("- %s", card)
-				}
-			}
-			return err
 		}
+		sz.printf("%q", theCard)
+		sz.printf("%s|%s|%s", cardName, edition, notes)
+
+		var alias *mtgmatcher.AliasingError
+		if errors.As(err, &alias) {
+			for _, probe := range alias.Probe() {
+				card, _ := mtgmatcher.GetUUID(probe)
+				sz.printf("- %s", card)
+			}
+		}
+		return err
 	}
 
 	cardPrice, err := mtgmatcher.ParsePrice(price)

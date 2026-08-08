@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	// Register the Magic datastore loader so LoadDatastoreFile can find it
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func TestMain(m *testing.M) {

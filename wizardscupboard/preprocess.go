@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 var cardTable = map[string]string{
@@ -284,7 +285,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		}
 	case "Alliances":
 		cardName = strings.Replace(cardName, "Lim-Dûl", "Lim-Dul", 1)
-		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
+		for _, num := range magic.VariantsTable[edition][cardName] {
 			if (variant == "" && strings.HasSuffix(num, "a")) ||
 				(variant == "v. 2" && strings.HasSuffix(num, "b")) {
 				variant = num

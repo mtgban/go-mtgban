@@ -86,29 +86,30 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 
 			foil := strings.HasSuffix(sku, "_true") || allCards[key].DedFoil == "yes"
 
-			var cardId string
-			if nf.game == GameMagic {
-				theCard, err := preprocess(allCards, key, lang, foil)
+			var theCard *mtgmatcher.InputCard
+			switch nf.game {
+			case GameMagic:
+				theCard, err = preprocess(allCards, key, lang, foil)
 				if err != nil {
 					continue
 				}
-
-				cardId, err = mtgmatcher.Match(theCard)
-			} else if nf.game == GameLorcana {
-				cardId, err = mtgmatcher.SimpleSearch(allCards[key].CardName, allCards[key].CardNum, foil)
-			} else {
-				err = errors.New("unsupported game")
+			case GameLorcana:
+				theCard = &mtgmatcher.InputCard{Name: allCards[key].CardName, Edition: allCards[key].SetName, Variation: allCards[key].CardNum, Foil: foil}
+			default:
+				nf.printf("unsupported game")
+				continue
 			}
+
+			cardId, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
-				var alias *mtgmatcher.AliasingError
-
 				nf.printf("%v", err)
 				nf.printf("%s: %q", key, allCards[key])
-				if alias != nil {
-					probes := alias.Probe()
-					for _, probe := range probes {
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					for _, probe := range alias.Probe() {
 						card, _ := mtgmatcher.GetUUID(probe)
 						nf.printf("- %s", card)
 					}

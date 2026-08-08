@@ -1,8 +1,11 @@
-package mtgmatcher
+package mtgmatcher_test
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 func BenchmarkSearchEquals(b *testing.B) {
@@ -12,7 +15,7 @@ func BenchmarkSearchEquals(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		SearchEquals(NameToBeFound)
+		mtgmatcher.SearchEquals(NameToBeFound)
 	}
 }
 
@@ -26,7 +29,7 @@ func BenchmarkSearchHasPrefix(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		SearchHasPrefix(name)
+		mtgmatcher.SearchHasPrefix(name)
 	}
 }
 
@@ -39,7 +42,7 @@ func BenchmarkSearchContains(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		SearchContains(name)
+		mtgmatcher.SearchContains(name)
 	}
 }
 
@@ -52,12 +55,12 @@ func BenchmarkSearchRegexp(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		SearchRegexp(name)
+		mtgmatcher.SearchRegexp(name)
 	}
 }
 
 func TestSearchRegexp(t *testing.T) {
-	hashes, err := SearchRegexp("Lotus$")
+	hashes, err := mtgmatcher.SearchRegexp("Lotus$")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
 		return
@@ -65,7 +68,7 @@ func TestSearchRegexp(t *testing.T) {
 
 	var found bool
 	for _, hash := range hashes {
-		co, err := GetUUID(hash)
+		co, err := mtgmatcher.GetUUID(hash)
 		if err != nil {
 			t.Error("FAIL: Unexpected", err)
 			return
@@ -83,7 +86,7 @@ func TestSearchRegexp(t *testing.T) {
 }
 
 func TestSearchFlavor(t *testing.T) {
-	hashes, err := SearchEquals("Stay with Me")
+	hashes, err := mtgmatcher.SearchEquals("Stay with Me")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
 		return
@@ -91,7 +94,7 @@ func TestSearchFlavor(t *testing.T) {
 
 	var count int
 	for _, hash := range hashes {
-		co, err := GetUUID(hash)
+		co, err := mtgmatcher.GetUUID(hash)
 		if err != nil {
 			t.Error("FAIL: Unexpected", err)
 			return
@@ -108,7 +111,7 @@ func TestSearchFlavor(t *testing.T) {
 }
 
 func TestSearchHalfName(t *testing.T) {
-	hashes, err := SearchEquals("Jonathan Harker")
+	hashes, err := mtgmatcher.SearchEquals("Jonathan Harker")
 	if err != nil {
 		t.Error("FAIL: Unexpected", err)
 		return
@@ -116,12 +119,12 @@ func TestSearchHalfName(t *testing.T) {
 
 	var count int
 	for _, hash := range hashes {
-		co, err := GetUUID(hash)
+		co, err := mtgmatcher.GetUUID(hash)
 		if err != nil {
 			t.Error("FAIL: Unexpected", err)
 			return
 		}
-		if co.HasPromoType(PromoTypeDracula) {
+		if co.HasPromoType(magic.PromoTypeDracula) {
 			count++
 		}
 	}
@@ -133,7 +136,7 @@ func TestSearchHalfName(t *testing.T) {
 }
 
 func TestPrintings(t *testing.T) {
-	setCodes, _ := Printings4Card("Black Lotus")
+	setCodes, _ := mtgmatcher.Printings4Card("Black Lotus")
 	if len(setCodes) != 6 {
 		t.Error("FAIL: Printings should be exactly 6 results, got " + fmt.Sprint(setCodes))
 	} else {

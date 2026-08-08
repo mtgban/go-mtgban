@@ -27,6 +27,7 @@ const (
 
 	GameMagic             = "mtg"
 	GameLorcana           = "lorcana"
+	GameRiftbound         = "riftbound"
 	GameYugioh            = "yugioh"
 	GameDragonBallSuper   = "dbs"
 	GameOnePiece          = "optcg"
@@ -229,45 +230,53 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					link += "?utm_referrer=" + csi.Partner
 				}
 
-				var cardId string
+				var theCard *mtgmatcher.InputCard
 				switch csi.game {
 				case GameMagic:
-					theCard, err := preprocess(cardName, edition, notes, imgURL)
+					c, err := preprocess(cardName, edition, notes, imgURL)
 					if err != nil {
 						return
 					}
 					// preprocess() might return something that derived foil status
 					// from one of the fields (cardName in particular)
-					theCard.Foil = theCard.Foil || isFoil
+					c.Foil = c.Foil || isFoil
+					theCard = c
+				case GameLorcana, GameRiftbound:
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
+				default:
+					csi.printf("unsupported game")
+					return
+				}
 
-					cardId, err = mtgmatcher.Match(theCard)
-					if errors.Is(err, mtgmatcher.ErrUnsupported) {
-						return
-					} else if err != nil {
-						switch {
-						// Ignore errors
-						case theCard.IsBasicLand(),
-							notes == "" && strings.Contains(edition, "The List"),
-							strings.Contains(notes, "Preorder"):
-						default:
-							csi.printf("%v", err)
-							csi.printf("%v", theCard)
-							csi.printf("'%s' '%s' '%s'", cardName, edition, notes)
-							csi.printf("- %s", link)
+				cardId, err := mtgmatcher.Match(theCard)
+				if errors.Is(err, mtgmatcher.ErrUnsupported) {
+					return
+				} else if err != nil {
+					switch {
+					// Ignore expected misses
+					case theCard.IsBasicLand(),
+						notes == "" && strings.Contains(edition, "The List"),
+						strings.Contains(notes, "Preorder"):
+					default:
+						csi.printf("%v", err)
+						csi.printf("%v", theCard)
+						csi.printf("'%s' '%s' '%s'", cardName, edition, notes)
+						csi.printf("- %s", link)
 
-							var alias *mtgmatcher.AliasingError
-							if errors.As(err, &alias) {
-								probes := alias.Probe()
-								for _, probe := range probes {
-									card, _ := mtgmatcher.GetUUID(probe)
-									csi.printf("- %s", card)
-								}
+						var alias *mtgmatcher.AliasingError
+						if errors.As(err, &alias) {
+							for _, probe := range alias.Probe() {
+								card, _ := mtgmatcher.GetUUID(probe)
+								csi.printf("- %s", card)
 							}
 						}
-						return
 					}
+					return
+				}
 
-					// Sanity check, skip cards that do not have the right finish
+				// Magic-only finish sanity check: skip cards that do not have the
+				// requested finish.
+				if csi.game == GameMagic {
 					if strings.Contains(cardName, "Foil-etched") {
 						co, err := mtgmatcher.GetUUID(cardId)
 						if err != nil || !co.Etched {
@@ -280,30 +289,6 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 							return
 						}
 					}
-				case GameLorcana:
-					number := mtgmatcher.ExtractNumber(strings.Split(notes, "/")[0])
-
-					cardId, err = mtgmatcher.SimpleSearch(cardName, number, isFoil)
-					if errors.Is(err, mtgmatcher.ErrUnsupported) {
-						return
-					} else if err != nil {
-						csi.printf("%v", err)
-						csi.printf("%s %s %v", cardName, number, isFoil)
-
-						var alias *mtgmatcher.AliasingError
-						if errors.As(err, &alias) {
-							probes := alias.Probe()
-							csi.printf("%s got ids: %s", cardName, probes)
-							for _, probe := range probes {
-								co, _ := mtgmatcher.GetUUID(probe)
-								csi.printf("%s: %s", probe, co)
-							}
-						}
-						return
-					}
-				default:
-					csi.printf("unsupported game")
-					return
 				}
 
 				out := responseChan{
@@ -452,56 +437,36 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		u.RawQuery = v.Encode()
 		link := u.String()
 
-		var cardId string
-		if csi.game == GameMagic {
-			theCard, err := PreprocessBuylist(product)
+		var theCard *mtgmatcher.InputCard
+		switch csi.game {
+		case GameMagic:
+			c, err := PreprocessBuylist(product)
 			if err != nil {
 				continue
 			}
-
-			cardId, err = mtgmatcher.Match(theCard)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				continue
-			} else if err != nil {
-				csi.printf("error: %v", err)
-				csi.printf("original: %q", product)
-				csi.printf("preprocessed: %q", theCard)
-				csi.printf("link: %q", link)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					for _, probe := range probes {
-						card, _ := mtgmatcher.GetUUID(probe)
-						csi.printf("- %s", card)
-					}
-				}
-				continue
-			}
-		} else if csi.game == GameLorcana {
-			number := strings.Split(strings.TrimLeft(product.Number, "0"), "/")[0]
-			cardName := product.Name
-
-			cardId, err = mtgmatcher.SimpleSearch(cardName, number, product.IsFoil == 1)
-			if errors.Is(err, mtgmatcher.ErrUnsupported) {
-				continue
-			} else if err != nil {
-				csi.printf("%v", err)
-				csi.printf("%+v", product)
-
-				var alias *mtgmatcher.AliasingError
-				if errors.As(err, &alias) {
-					probes := alias.Probe()
-					csi.printf("%s got ids: %s", cardName, probes)
-					for _, probe := range probes {
-						co, _ := mtgmatcher.GetUUID(probe)
-						csi.printf("%s: %s", probe, co)
-					}
-				}
-				continue
-			}
-		} else {
+			theCard = c
+		case GameLorcana, GameRiftbound:
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
+		default:
 			return errors.New("unsupported game")
+		}
+
+		cardId, err := mtgmatcher.Match(theCard)
+		if errors.Is(err, mtgmatcher.ErrUnsupported) {
+			continue
+		} else if err != nil {
+			csi.printf("error: %v", err)
+			csi.printf("original: %q", product)
+			csi.printf("preprocessed: %q", theCard)
+
+			var alias *mtgmatcher.AliasingError
+			if errors.As(err, &alias) {
+				for _, probe := range alias.Probe() {
+					co, _ := mtgmatcher.GetUUID(probe)
+					csi.printf("- %s", co)
+				}
+			}
+			continue
 		}
 
 		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
@@ -603,6 +568,8 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameMagic
 	case GameLorcana:
 		info.Game = mtgban.GameLorcana
+	case GameRiftbound:
+		info.Game = mtgban.GameRiftbound
 	}
 	return
 }

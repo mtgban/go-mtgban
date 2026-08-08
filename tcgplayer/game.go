@@ -15,8 +15,8 @@ import (
 
 // TCGGame is the retail scraper for any single-game TCGplayer category whose
 // cards the matcher identifies by name + collector number + finish (Lorcana,
-// Riftbound, ...); Magic has its own SKU-driven scrapers. Per-game
-// constructors below pick the category and the mtgban game tag.
+// Riftbound, ...); Magic has its own SKU-driven scrapers. SupportedGames
+// below maps each game tag to the category it is served from.
 type TCGGame struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -54,7 +54,8 @@ func (tcg *TCGGame) printf(format string, a ...interface{}) {
 // is identified by SKU and has its own scrapers. Supporting one more game is
 // one entry here, provided the matcher has a datastore for it.
 var SupportedGames = map[string]int{
-	mtgban.GameLorcana: tcgplayer.CategoryLorcana,
+	mtgban.GameLorcana:   tcgplayer.CategoryLorcana,
+	mtgban.GameRiftbound: tcgplayer.CategoryRiftbound,
 }
 
 func NewScraperGame(game, publicId, privateId string) (*TCGGame, error) {
@@ -134,8 +135,16 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			}
 
 			cardName := product.Name
-			number := GetProductNumber(&product)
-			cardId, err := mtgmatcher.SimpleSearch(cardName, number, tcg.printings[sku.PrintingId] != "Normal")
+			number := RawProductNumber(&product)
+			// The printing name rides along in the variation so the game
+			// rules can tell foil sub-types apart (SelectFinish).
+			printing := tcg.printings[sku.PrintingId]
+			cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+				Name:      cardName,
+				Edition:   tcg.editions[product.GroupId].Name,
+				Variation: strings.TrimSpace(number + " " + printing),
+				Foil:      printing != "Normal",
+			})
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -156,7 +165,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 
 			condition := SKUConditionMap[sku.ConditionId]
 
-			link := GenerateProductURL(sku.ProductId, tcg.printings[sku.PrintingId], tcg.Affiliate, condition, "", false)
+			link := GenerateProductURL(sku.ProductId, printing, tcg.Affiliate, condition, "", false)
 
 			out := genericChan{
 				key: cardId,

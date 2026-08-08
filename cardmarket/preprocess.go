@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 type PreprocessError struct {
@@ -287,7 +288,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 	case "Fallen Empires",
 		"Homelands":
-		for _, num := range mtgmatcher.VariantsTable[edition][cardName] {
+		for _, num := range magic.VariantsTable[edition][cardName] {
 			if (variant == "V.1" && strings.HasSuffix(num, "a")) ||
 				(variant == "V.2" && strings.HasSuffix(num, "b")) ||
 				(variant == "V.3" && strings.HasSuffix(num, "c")) ||
@@ -925,7 +926,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				variant = "Promo Pack"
 			} else if variant == "V.2" {
 				variant = "Prerelease"
-			} else if mtgmatcher.HasPromoPackPrinting(cardName) { // Needs to be after V.2 check
+			} else if magic.HasPromoPackPrinting(cardName) { // Needs to be after V.2 check
 				variant = "Promo Pack"
 			} else {
 				variant = ""
@@ -1047,7 +1048,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			case "V.2", "V.4":
 				variant = number + " Etched"
 			}
-		} else if mtgmatcher.HasExtendedArtPrinting(cardName, "MH2") {
+		} else if magic.HasExtendedArtPrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -1056,19 +1057,19 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			case "V.3":
 				variant = "Extended Art"
 			}
-		} else if mtgmatcher.HasBorderlessPrinting(cardName, "MH2") {
+		} else if magic.HasBorderlessPrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Borderless"
 			case "V.2":
 				variant = "Retro Frame"
-				if mtgmatcher.HasShowcasePrinting(cardName, "MH2") {
+				if magic.HasShowcasePrinting(cardName, "MH2") {
 					variant = "Showcase"
 				}
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if mtgmatcher.HasShowcasePrinting(cardName, "MH2") {
+		} else if magic.HasShowcasePrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Showcase"
@@ -1077,7 +1078,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 			case "V.3":
 				variant = "Retro Frame Foil Etched"
 			}
-		} else if mtgmatcher.HasRetroFramePrinting(cardName, "MH2") {
+		} else if magic.HasRetroFramePrinting(cardName, "MH2") {
 			switch variant {
 			case "V.1":
 				variant = "Retro Frame"
@@ -1106,7 +1107,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		switch variant {
 		case "V.2":
 			for _, card := range mtgmatcher.MatchInSetNumber(cardName, "M3C", number) {
-				if card.HasPromoType(mtgmatcher.PromoTypeRippleFoil) {
+				if card.HasPromoType(magic.PromoTypeRippleFoil) {
 					variant += " ripplefoil"
 				}
 			}
@@ -1194,7 +1195,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 		variant = number
 		if len(mtgmatcher.MatchInSet(cardName, "LTC")) > 0 {
 			edition = "LTC"
-			if mtgmatcher.HasSerializedPrinting(cardName, "LTC") {
+			if magic.HasSerializedPrinting(cardName, "LTC") {
 				variant = "serial"
 			}
 		} else if len(mtgmatcher.MatchInSet(cardName, "LTR")) > 0 {
@@ -1267,7 +1268,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 	default:
 		switch {
 		// Try to derive the serialized status from the various Extras sets
-		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && mtgmatcher.HasSerializedPrinting(cardName, strings.TrimSuffix(edition, ": Extras")):
+		case strings.HasSuffix(edition, ": Extras") && variant == "V.3" && magic.HasSerializedPrinting(cardName, strings.TrimSuffix(edition, ": Extras")):
 			variant = "serial"
 
 		// Pre-search the card, if not found it's likely a sideboard variant
@@ -1307,7 +1308,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 
 			// These sets are always Prerelease, except for a couple of intro packs
 			// that are marked in an unpredictable way
-			if setDate.After(mtgmatcher.NewPrereleaseDate) &&
+			if setDate.After(magic.NewPrereleaseDate) &&
 				setDate.Before(mtgmatcher.PromosForEverybodyYay) {
 
 				variant = "Prerelease"
@@ -1365,7 +1366,7 @@ func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error)
 				default:
 					if strings.Contains(cardName, "//") {
 						variant = number
-					} else if mtgmatcher.HasPromoPackPrinting(cardName) {
+					} else if magic.HasPromoPackPrinting(cardName) {
 						variant = "Promo Pack"
 					}
 				}

@@ -13,12 +13,20 @@ import (
 	"github.com/mroth/weightedrand/v2"
 )
 
+func (b *Backend) GetUUIDs() []string {
+	return b.AllUUIDs
+}
+
 func GetUUIDs() []string {
-	return defaultBackend.AllUUIDs
+	return defaultBackend.GetUUIDs()
+}
+
+func (b *Backend) GetSealedUUIDs() []string {
+	return b.AllSealedUUIDs
 }
 
 func GetSealedUUIDs() []string {
-	return defaultBackend.AllSealedUUIDs
+	return defaultBackend.GetSealedUUIDs()
 }
 
 // GetUUIDsInSet returns every non-sealed uuid printed in the given set,
@@ -36,12 +44,12 @@ func GetSealedUUIDsInSet(code string) []string {
 
 // GetUUID returns the card object stored for the given uuid. The object
 // is shared across all callers and must not be modified.
-func GetUUID(uuid string) (*CardObject, error) {
-	if defaultBackend.UUIDs == nil {
+func (b *Backend) GetUUID(uuid string) (*CardObject, error) {
+	if b.UUIDs == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
-	co, found := defaultBackend.UUIDs[uuid]
+	co, found := b.UUIDs[uuid]
 	if !found {
 		return nil, ErrCardUnknownId
 	}
@@ -49,16 +57,24 @@ func GetUUID(uuid string) (*CardObject, error) {
 	return co, nil
 }
 
-func GetAllSets() []string {
-	return defaultBackend.AllSets
+func GetUUID(uuid string) (*CardObject, error) {
+	return defaultBackend.GetUUID(uuid)
 }
 
-func GetSet(code string) (*Set, error) {
-	if defaultBackend.Sets == nil {
+func (b *Backend) GetAllSets() []string {
+	return b.AllSets
+}
+
+func GetAllSets() []string {
+	return defaultBackend.GetAllSets()
+}
+
+func (b *Backend) GetSet(code string) (*Set, error) {
+	if b.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
-	set, found := defaultBackend.Sets[strings.ToUpper(code)]
+	set, found := b.Sets[strings.ToUpper(code)]
 	if !found {
 		return nil, ErrCardNotInEdition
 	}
@@ -66,33 +82,40 @@ func GetSet(code string) (*Set, error) {
 	return set, nil
 }
 
-func GetSetByName(edition string, flags ...bool) (*Set, error) {
-	if defaultBackend.Sets == nil {
+func GetSet(code string) (*Set, error) {
+	return defaultBackend.GetSet(code)
+}
+
+func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
+	if b.Sets == nil {
 		return nil, ErrDatastoreEmpty
 	}
 
 	// 1. Check if input is just the set code
-	set, err := GetSet(edition)
+	set, err := b.GetSet(edition)
 	if err == nil {
 		return set, nil
 	}
 
 	// 2. Check if input is the full name of the set
-	set, found := defaultBackend.NormalizedSets[Normalize(edition)]
+	set, found := b.NormalizedSets[Normalize(edition)]
 	if found {
 		return set, nil
 	}
 
 	// 3. Attempt adjusting the edition with a fake card object
+	// (skipped when no GameRules are attached, e.g. a hand-built Backend)
 	card := &InputCard{
 		Edition: edition,
 	}
 	if len(flags) > 0 {
 		card.Foil = flags[0]
 	}
-	adjustEdition(card)
+	if b.rules != nil {
+		b.rules.AdjustEdition(b, card)
+	}
 
-	set, found = defaultBackend.NormalizedSets[Normalize(card.Edition)]
+	set, found = b.NormalizedSets[Normalize(card.Edition)]
 	if found {
 		return set, nil
 	}
@@ -101,8 +124,16 @@ func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	return nil, ErrCardNotInEdition
 }
 
+func GetSetByName(edition string, flags ...bool) (*Set, error) {
+	return defaultBackend.GetSetByName(edition, flags...)
+}
+
+func (b *Backend) ExternalUUID(id string) string {
+	return b.ExternalIdentifiers[id]
+}
+
 func ExternalUUID(id string) string {
-	return defaultBackend.ExternalIdentifiers[id]
+	return defaultBackend.ExternalUUID(id)
 }
 
 func AllPromoTypes() []string {
@@ -132,12 +163,12 @@ func AllNames(variant string, sealed bool) []string {
 	return nil
 }
 
-func SearchEquals(name string) ([]string, error) {
+func (b *Backend) SearchEquals(name string) ([]string, error) {
 	if name == "" {
-		return defaultBackend.AllUUIDs, nil
+		return b.AllUUIDs, nil
 	}
 
-	results, found := defaultBackend.Hashes[Normalize(name)]
+	results, found := b.Hashes[Normalize(name)]
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
@@ -145,18 +176,26 @@ func SearchEquals(name string) ([]string, error) {
 	return results, nil
 }
 
-func SearchSealedEquals(name string) ([]string, error) {
-	return searchFunc(name, defaultBackend.AllSealed, func(a, b string) bool {
-		return a == b
+func SearchEquals(name string) ([]string, error) {
+	return defaultBackend.SearchEquals(name)
+}
+
+func (b *Backend) SearchSealedEquals(name string) ([]string, error) {
+	return b.searchFunc(name, b.AllSealed, func(a, c string) bool {
+		return a == c
 	})
 }
 
-func searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
+func SearchSealedEquals(name string) ([]string, error) {
+	return defaultBackend.SearchSealedEquals(name)
+}
+
+func (b *Backend) searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
 	var hashes []string
 	name = Normalize(name)
 	for i := range slice {
 		if f(slice[i], name) {
-			hashes = append(hashes, defaultBackend.Hashes[slice[i]]...)
+			hashes = append(hashes, b.Hashes[slice[i]]...)
 		}
 	}
 	if hashes == nil {
@@ -165,26 +204,38 @@ func searchFunc(name string, slice []string, f func(string, string) bool) ([]str
 	return hashes, nil
 }
 
-func SearchHasPrefix(name string) ([]string, error) {
+func searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
+	return defaultBackend.searchFunc(name, slice, f)
+}
+
+func (b *Backend) SearchHasPrefix(name string) ([]string, error) {
 	if name == "" {
-		return defaultBackend.AllUUIDs, nil
+		return b.AllUUIDs, nil
 	}
-	return searchFunc(name, defaultBackend.AllNames, strings.HasPrefix)
+	return b.searchFunc(name, b.AllNames, strings.HasPrefix)
+}
+
+func SearchHasPrefix(name string) ([]string, error) {
+	return defaultBackend.SearchHasPrefix(name)
+}
+
+func (b *Backend) SearchContains(name string) ([]string, error) {
+	return b.searchFunc(name, b.AllNames, strings.Contains)
 }
 
 func SearchContains(name string) ([]string, error) {
-	return searchFunc(name, defaultBackend.AllNames, strings.Contains)
+	return defaultBackend.SearchContains(name)
 }
 
-func SearchRegexp(name string) ([]string, error) {
+func (b *Backend) SearchRegexp(name string) ([]string, error) {
 	var hashes []string
 	re, err := regexp.Compile(name)
 	if err != nil {
 		return nil, err
 	}
-	for i := range defaultBackend.AllUUIDs {
-		if re.MatchString(defaultBackend.UUIDs[defaultBackend.AllUUIDs[i]].Name) {
-			hashes = append(hashes, defaultBackend.AllUUIDs[i])
+	for i := range b.AllUUIDs {
+		if re.MatchString(b.UUIDs[b.AllUUIDs[i]].Name) {
+			hashes = append(hashes, b.AllUUIDs[i])
 		}
 	}
 	if hashes == nil {
@@ -193,8 +244,16 @@ func SearchRegexp(name string) ([]string, error) {
 	return hashes, nil
 }
 
+func SearchRegexp(name string) ([]string, error) {
+	return defaultBackend.SearchRegexp(name)
+}
+
+func (b *Backend) SearchSealedContains(name string) ([]string, error) {
+	return b.searchFunc(name, b.AllSealed, strings.Contains)
+}
+
 func SearchSealedContains(name string) ([]string, error) {
-	return searchFunc(name, defaultBackend.AllSealed, strings.Contains)
+	return defaultBackend.SearchSealedContains(name)
 }
 
 // entry4Name returns the bucket entry actually named this way.
@@ -211,15 +270,15 @@ func SearchSealedContains(name string) ([]string, error) {
 // such as a flavor name. The middle case exists because normalization
 // folds plurals, leaving "Cat Warrior" and "Cat Warriors" as distinct
 // cards that share a bucket.
-func entry4Name(name string) (*CardObject, bool) {
+func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 	norm := Normalize(name)
-	uuids, found := defaultBackend.Hashes[norm]
+	uuids, found := b.Hashes[norm]
 	if !found {
 		return nil, false
 	}
 	var normalized *CardObject
 	for _, uuid := range uuids {
-		entry, found := defaultBackend.UUIDs[uuid]
+		entry, found := b.UUIDs[uuid]
 		if !found {
 			continue
 		}
@@ -233,73 +292,58 @@ func entry4Name(name string) (*CardObject, bool) {
 	if normalized != nil {
 		return normalized, true
 	}
-	entry, found := defaultBackend.UUIDs[uuids[0]]
+	entry, found := b.UUIDs[uuids[0]]
 	return entry, found
 }
 
-// nameIsToken reports whether the card actually named this way is a token.
-func nameIsToken(name string) bool {
-	entry, found := entry4Name(name)
+// NameIsToken reports whether the card actually named this way is a token.
+// Exported because the only caller now lives in the per-game rules packages.
+func (b *Backend) NameIsToken(name string) bool {
+	entry, found := b.entry4Name(name)
 	return found && entry.Layout == "token"
 }
 
-func Printings4Card(name string) ([]string, error) {
-	if defaultBackend.Hashes == nil {
+func (b *Backend) Printings4Card(name string) ([]string, error) {
+	if b.Hashes == nil {
 		return nil, ErrDatastoreEmpty
 	}
-	entry, found := entry4Name(name)
+	entry, found := b.entry4Name(name)
 	if !found {
 		return nil, ErrCardDoesNotExist
 	}
 	return entry.Printings, nil
 }
 
-func HasExtendedArtPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "frame_effect", FrameEffectExtendedArt, editions...)
+func Printings4Card(name string) ([]string, error) {
+	return defaultBackend.Printings4Card(name)
 }
 
-func HasBorderlessPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "border_color", BorderColorBorderless, editions...)
-}
-
-func HasShowcasePrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "frame_effect", FrameEffectShowcase, editions...)
-}
-
-func HasReskinPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", PromoTypeGodzilla, editions...)
-}
-
-func HasPromoPackPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", PromoTypePromoPack, editions...)
-}
-
-func HasPrereleasePrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", PromoTypePrerelease, editions...)
-}
-
-func HasSerializedPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "promo_type", PromoTypeSerialized, editions...)
-}
-
-func HasRetroFramePrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "frame_version", "1997", editions...)
+func (b *Backend) HasNonfoilPrinting(name string, editions ...string) bool {
+	return b.hasPrinting(name, "finish", FinishNonfoil, editions...)
 }
 
 func HasNonfoilPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "finish", FinishNonfoil, editions...)
+	return defaultBackend.HasNonfoilPrinting(name, editions...)
+}
+
+func (b *Backend) HasFoilPrinting(name string, editions ...string) bool {
+	return b.hasPrinting(name, "finish", FinishFoil, editions...)
 }
 
 func HasFoilPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "finish", FinishFoil, editions...)
+	return defaultBackend.HasFoilPrinting(name, editions...)
+}
+
+func (b *Backend) HasEtchedPrinting(name string, editions ...string) bool {
+	return b.hasPrinting(name, "finish", FinishEtched, editions...)
 }
 
 func HasEtchedPrinting(name string, editions ...string) bool {
-	return hasPrinting(name, "finish", FinishEtched, editions...)
+	return defaultBackend.HasEtchedPrinting(name, editions...)
 }
 
-func hasPrinting(name, field, value string, editions ...string) bool {
-	if defaultBackend.Sets == nil {
+func (b *Backend) hasPrinting(name, field, value string, editions ...string) bool {
+	if b.Sets == nil {
 		return false
 	}
 
@@ -339,14 +383,17 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 	}
 
 	nameNorm := Normalize(name)
-	uuids, found := defaultBackend.Hashes[nameNorm]
+	uuids, found := b.Hashes[nameNorm]
 	if !found {
+		if b.rules == nil {
+			return false
+		}
 		cc := &InputCard{
 			Name: name,
 		}
-		adjustName(cc)
+		b.rules.AdjustName(b, cc)
 		nameNorm = Normalize(cc.Name)
-		uuids, found = defaultBackend.Hashes[nameNorm]
+		uuids, found = b.Hashes[nameNorm]
 		if !found {
 			return false
 		}
@@ -356,9 +403,9 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 	// be resolved, every printing is checked, like the set loop used to.
 	var pinnedCode string
 	if len(editions) > 0 {
-		set := defaultBackend.Sets[editions[0]]
+		set := b.Sets[editions[0]]
 		if set == nil {
-			set, _ = GetSetByName(editions[0])
+			set, _ = b.GetSetByName(editions[0])
 		}
 		if set != nil {
 			pinnedCode = set.Code
@@ -373,7 +420,7 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 	// hash into the same bucket but never matched the scans' Equals against
 	// the real card name.
 	for _, uuid := range uuids {
-		co, found := defaultBackend.UUIDs[uuid]
+		co, found := b.UUIDs[uuid]
 		if !found {
 			continue
 		}
@@ -388,10 +435,14 @@ func hasPrinting(name, field, value string, editions ...string) bool {
 	return false
 }
 
+func HasPrinting(name, field, value string, editions ...string) bool {
+	return defaultBackend.hasPrinting(name, field, value, editions...)
+}
+
 const maxRerollThreshold = 50
 
-func BoosterGen(setCode, boosterType string) ([]string, error) {
-	set, err := GetSet(setCode)
+func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -459,7 +510,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 				// Create subsheets for each color (multi color gets included
 				// multiple times)
 				for cardId, weight := range sheet.Cards {
-					co, found := defaultBackend.UUIDs[cardId]
+					co, found := b.UUIDs[cardId]
 					if !found {
 						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardId)
 					}
@@ -522,7 +573,7 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 					item := cardChooser.Pick()
 
 					// Validate card exists (ie in case of online-only printing)
-					_, found := defaultBackend.UUIDs[item]
+					_, found := b.UUIDs[item]
 					if !found {
 						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, item)
 					}
@@ -557,10 +608,14 @@ func BoosterGen(setCode, boosterType string) ([]string, error) {
 	return picks, nil
 }
 
-func GetPicksForDeck(setCode, deckName string) ([]string, error) {
+func BoosterGen(setCode, boosterType string) ([]string, error) {
+	return defaultBackend.BoosterGen(setCode, boosterType)
+}
+
+func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	var picks []string
 
-	set, err := GetSet(setCode)
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -599,14 +654,18 @@ func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	return picks, nil
 }
 
-func GetDecklist(setCode, sealedUUID string) ([]string, error) {
+func GetPicksForDeck(setCode, deckName string) ([]string, error) {
+	return defaultBackend.GetPicksForDeck(setCode, deckName)
+}
+
+func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 	var picks []string
 
-	if !SealedHasDecklist(setCode, sealedUUID) {
+	if !b.SealedHasDecklist(setCode, sealedUUID) {
 		return nil, errors.New("product does not have a decklist")
 	}
 
-	set, err := GetSet(setCode)
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -628,11 +687,11 @@ func GetDecklist(setCode, sealedUUID string) ([]string, error) {
 				case "sealed":
 					for i := 0; i < content.Count; i++ {
 						// Content of sealed is unpredictable, so ignore errors
-						sealedPicks, _ := GetDecklist(content.Set, content.UUID)
+						sealedPicks, _ := b.GetDecklist(content.Set, content.UUID)
 						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
-					deckPicks, err := GetPicksForDeck(content.Set, content.Name)
+					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name)
 					if err != nil {
 						return nil, err
 					}
@@ -661,10 +720,14 @@ func GetDecklist(setCode, sealedUUID string) ([]string, error) {
 	return picks, nil
 }
 
-func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
+func GetDecklist(setCode, sealedUUID string) ([]string, error) {
+	return defaultBackend.GetDecklist(setCode, sealedUUID)
+}
+
+func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 	var picks []string
 
-	set, err := GetSet(setCode)
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -684,14 +747,14 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 					}
 					picks = append(picks, uuid)
 				case "pack":
-					boosterPicks, err := BoosterGen(content.Set, content.Code)
+					boosterPicks, err := b.BoosterGen(content.Set, content.Code)
 					if err != nil {
 						return nil, err
 					}
 					picks = append(picks, boosterPicks...)
 				case "sealed":
 					for i := 0; i < content.Count; i++ {
-						sealedPicks, err := GetPicksForSealed(content.Set, content.UUID)
+						sealedPicks, err := b.GetPicksForSealed(content.Set, content.UUID)
 						if err != nil {
 							// Ignore errors from this type of product as it doesn't
 							// change ev much, and hides relevant results
@@ -703,7 +766,7 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 						picks = append(picks, sealedPicks...)
 					}
 				case "deck":
-					deckPicks, err := GetPicksForDeck(content.Set, content.Name)
+					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name)
 					if err != nil {
 						return nil, err
 					}
@@ -752,7 +815,7 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 						picks = append(picks, uuid)
 					}
 					for _, booster := range config["pack"] {
-						boosterPicks, err := BoosterGen(booster.Set, booster.Code)
+						boosterPicks, err := b.BoosterGen(booster.Set, booster.Code)
 						if err != nil {
 							return nil, err
 						}
@@ -760,7 +823,7 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 					}
 					for _, sealed := range config["sealed"] {
 						for i := 0; i < sealed.Count; i++ {
-							sealedPicks, err := GetPicksForSealed(sealed.Set, sealed.UUID)
+							sealedPicks, err := b.GetPicksForSealed(sealed.Set, sealed.UUID)
 							if err != nil {
 								return nil, err
 							}
@@ -768,7 +831,7 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 						}
 					}
 					for _, deck := range config["deck"] {
-						deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
+						deckPicks, err := b.GetPicksForDeck(deck.Set, deck.Name)
 						if err != nil {
 							return nil, err
 						}
@@ -782,8 +845,12 @@ func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 	return picks, nil
 }
 
-func SealedIsRandom(setCode, sealedUUID string) bool {
-	set, err := GetSet(setCode)
+func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
+	return defaultBackend.GetPicksForSealed(setCode, sealedUUID)
+}
+
+func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return false
 	}
@@ -804,7 +871,7 @@ func SealedIsRandom(setCode, sealedUUID string) bool {
 				case "pack":
 					return true
 				case "sealed":
-					if SealedIsRandom(content.Set, content.UUID) {
+					if b.SealedIsRandom(content.Set, content.UUID) {
 						return true
 					}
 				case "deck":
@@ -824,10 +891,14 @@ func SealedIsRandom(setCode, sealedUUID string) bool {
 	return false
 }
 
-func SealedCardUnit(setCode, sealedUUID string) int {
+func SealedIsRandom(setCode, sealedUUID string) bool {
+	return defaultBackend.SealedIsRandom(setCode, sealedUUID)
+}
+
+func (b *Backend) SealedCardUnit(setCode, sealedUUID string) int {
 	var result int
 
-	set, err := GetSet(setCode)
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return 0
 	}
@@ -846,7 +917,7 @@ func SealedCardUnit(setCode, sealedUUID string) int {
 					"deck":
 					result += product.CardCount
 				case "sealed":
-					result += SealedCardUnit(content.Set, content.UUID) * content.Count
+					result += b.SealedCardUnit(content.Set, content.UUID) * content.Count
 				case "variable":
 				}
 			}
@@ -856,8 +927,12 @@ func SealedCardUnit(setCode, sealedUUID string) int {
 	return result
 }
 
-func SealedHasDecklist(setCode, sealedUUID string) bool {
-	set, err := GetSet(setCode)
+func SealedCardUnit(setCode, sealedUUID string) int {
+	return defaultBackend.SealedCardUnit(setCode, sealedUUID)
+}
+
+func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return false
 	}
@@ -871,7 +946,7 @@ func SealedHasDecklist(setCode, sealedUUID string) bool {
 			for _, content := range contents {
 				switch key {
 				case "sealed":
-					if SealedHasDecklist(content.Set, content.UUID) {
+					if b.SealedHasDecklist(content.Set, content.UUID) {
 						return true
 					}
 				case "deck":
@@ -884,13 +959,17 @@ func SealedHasDecklist(setCode, sealedUUID string) bool {
 	return false
 }
 
+func SealedHasDecklist(setCode, sealedUUID string) bool {
+	return defaultBackend.SealedHasDecklist(setCode, sealedUUID)
+}
+
 type ProductProbabilities struct {
 	UUID        string
 	Probability float64
 }
 
-func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabilities, error) {
-	set, err := GetSet(setCode)
+func (b *Backend) SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabilities, error) {
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -903,7 +982,7 @@ func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabili
 	tmp := map[string]float64{}
 	for _, booster := range boosterConfig.Boosters {
 		for sheetName, count := range booster.Contents {
-			probs, err := SealedSheetProbabilities(setCode, boosterType, sheetName)
+			probs, err := b.SealedSheetProbabilities(setCode, boosterType, sheetName)
 			if err != nil {
 				return nil, err
 			}
@@ -927,8 +1006,12 @@ func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabili
 	return probabilities, nil
 }
 
-func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
-	set, err := GetSet(setCode)
+func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabilities, error) {
+	return defaultBackend.SealedBoosterProbabilities(setCode, boosterType)
+}
+
+func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -956,8 +1039,12 @@ func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]Product
 	return probs, nil
 }
 
-func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabilities, error) {
-	set, err := GetSet(setCode)
+func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
+	return defaultBackend.SealedSheetProbabilities(setCode, boosterType, sheetName)
+}
+
+func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabilities, error) {
+	set, err := b.GetSet(setCode)
 	if err != nil {
 		return nil, err
 	}
@@ -982,13 +1069,13 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 						Probability: 1,
 					})
 				case "pack":
-					boosterProbabilities, err := SealedBoosterProbabilities(content.Set, content.Code)
+					boosterProbabilities, err := b.SealedBoosterProbabilities(content.Set, content.Code)
 					if err != nil {
 						return nil, err
 					}
 					probs = append(probs, boosterProbabilities...)
 				case "sealed":
-					sealedProbabilities, err := GetProbabilitiesForSealed(content.Set, content.UUID)
+					sealedProbabilities, err := b.GetProbabilitiesForSealed(content.Set, content.UUID)
 					if err != nil {
 						// Ignore errors from this type of product as it doesn't
 						// change ev much, and hides relevant results
@@ -1002,7 +1089,7 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 					}
 					probs = append(probs, sealedProbabilities...)
 				case "deck":
-					deckPicks, err := GetPicksForDeck(content.Set, content.Name)
+					deckPicks, err := b.GetPicksForDeck(content.Set, content.Name)
 					if err != nil {
 						return nil, err
 					}
@@ -1056,14 +1143,14 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 							})
 						}
 						for _, booster := range config["pack"] {
-							boosterProbabilities, err := SealedBoosterProbabilities(booster.Set, booster.Code)
+							boosterProbabilities, err := b.SealedBoosterProbabilities(booster.Set, booster.Code)
 							if err != nil {
 								return nil, err
 							}
 							variableProbs = append(variableProbs, boosterProbabilities...)
 						}
 						for _, sealed := range config["sealed"] {
-							sealedProbabilities, err := GetProbabilitiesForSealed(sealed.Set, sealed.UUID)
+							sealedProbabilities, err := b.GetProbabilitiesForSealed(sealed.Set, sealed.UUID)
 							if err != nil {
 								return nil, err
 							}
@@ -1073,7 +1160,7 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 							variableProbs = append(variableProbs, sealedProbabilities...)
 						}
 						for _, deck := range config["deck"] {
-							deckPicks, err := GetPicksForDeck(deck.Set, deck.Name)
+							deckPicks, err := b.GetPicksForDeck(deck.Set, deck.Name)
 							if err != nil {
 								return nil, err
 							}
@@ -1100,13 +1187,17 @@ func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabiliti
 	return probs, nil
 }
 
+func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabilities, error) {
+	return defaultBackend.GetProbabilitiesForSealed(setCode, sealedUUID)
+}
+
 // Provide a map of ids with a slice of uuids
 // For most cases the slice will be of size one, but some ids may hold
 // a second uuid representing the foil version of the product
-func BuildSealedProductMap(idName string) map[int][]string {
+func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 	productMap := map[int][]string{}
-	for _, uuid := range defaultBackend.AllSealedUUIDs {
-		co, err := GetUUID(uuid)
+	for _, uuid := range b.AllSealedUUIDs {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
@@ -1124,11 +1215,11 @@ func BuildSealedProductMap(idName string) map[int][]string {
 				name = strings.TrimSuffix(name, tag)
 				name = strings.TrimSpace(name)
 
-				uuids, err := SearchSealedEquals(name)
+				uuids, err := b.SearchSealedEquals(name)
 				if err != nil {
 					continue
 				}
-				subco, found := defaultBackend.UUIDs[uuids[0]]
+				subco, found := b.UUIDs[uuids[0]]
 				if !found {
 					continue
 				}
@@ -1144,10 +1235,14 @@ func BuildSealedProductMap(idName string) map[int][]string {
 
 		// Preserve Foil variant at the end of the slice
 		sort.Slice(productMap[idNum], func(i, j int) bool {
-			coI := defaultBackend.UUIDs[productMap[idNum][i]]
-			coJ := defaultBackend.UUIDs[productMap[idNum][j]]
+			coI := b.UUIDs[productMap[idNum][i]]
+			coJ := b.UUIDs[productMap[idNum][j]]
 			return coI.Name < coJ.Name
 		})
 	}
 	return productMap
+}
+
+func BuildSealedProductMap(idName string) map[int][]string {
+	return defaultBackend.BuildSealedProductMap(idName)
 }

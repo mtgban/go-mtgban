@@ -46,20 +46,11 @@ func (err *AliasingError) Probe() []string {
 const LongestCardEver = "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
 const NightmareCard = "The Ultimate Nightmare of Wizards of the Coast® Customer Service"
 
-// Date since any card could be Prerelease Promo
-var NewPrereleaseDate = time.Date(2014, time.September, 1, 0, 0, 0, 0, time.UTC)
-
 // Date since BuyABox cards are found in the expansion set instead of Promos
 var BuyABoxInExpansionSetsDate = time.Date(2018, time.April, 1, 0, 0, 0, 0, time.UTC)
 
 // Date in which random promos can be in the expansion set
 var PromosForEverybodyYay = time.Date(2019, time.October, 1, 0, 0, 0, 0, time.UTC)
-
-// Date since BuyABox cards are not unique any more
-var BuyABoxNotUniqueDate = time.Date(2020, time.September, 1, 0, 0, 0, 0, time.UTC)
-
-// Date since different finishes (etched, gilded, thick) get separate collector numbers
-var SeparateFinishCollectorNumberDate = time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)
 
 // Guilds found in GRN
 var GRNGuilds = []string{"Boros", "Dimir", "Golgari", "Izzet", "Selesnya"}
@@ -233,7 +224,7 @@ func ExtractNumberValue(str string) string {
 }
 
 // Specialized version of ExtractNumber, suited for parsing WCD numbers
-func extractWCDNumber(str, prefix string, sideboard bool) string {
+func ExtractWCDNumber(str, prefix string, sideboard bool) string {
 	fields := strings.Fields(str)
 	for _, field := range fields {
 		field = strings.Replace(field, "(", "", -1)
@@ -329,7 +320,7 @@ func Title(str string) string {
 	return cases.Title(language.English).String(str)
 }
 
-// Find the keyword in an edition name, ignoring punctuation
+// longestWordInEditionName finds the longest keyword in an edition name, ignoring punctuation.
 func longestWordInEditionName(str string) string {
 	fields := strings.Fields(str)
 	longest := ""
@@ -358,15 +349,15 @@ func LCM(a, b int) int {
 }
 
 // Retrieve the card release date
-func CardReleaseDate(cardId string) (time.Time, error) {
-	co, err := GetUUID(cardId)
+func (b *Backend) CardReleaseDate(cardId string) (time.Time, error) {
+	co, err := b.GetUUID(cardId)
 	if err != nil {
 		return time.Time{}, err
 	}
 	releaseDate := co.OriginalReleaseDate
 
 	if releaseDate == "" {
-		set, err := GetSet(co.SetCode)
+		set, err := b.GetSet(co.SetCode)
 		if err != nil {
 			return time.Time{}, err
 		}
@@ -374,6 +365,10 @@ func CardReleaseDate(cardId string) (time.Time, error) {
 	}
 
 	return time.Parse("2006-01-02", releaseDate)
+}
+
+func CardReleaseDate(cardId string) (time.Time, error) {
+	return defaultBackend.CardReleaseDate(cardId)
 }
 
 // Check if a dual-faced card has the same for both faces

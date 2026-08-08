@@ -1,0 +1,239 @@
+[
+    {
+        "description": "base printing wins over its promos by default",
+        "input": {
+            "name": "Viktor - Leader",
+            "variant": "246"
+        },
+        "uuid": "ogn-246-298_nonfoil"
+    },
+    {
+        "description": "champion-prefixed legend resolves to its title",
+        "input": {
+            "name": "Kai'Sa - Daughter of the Void",
+            "variant": "247"
+        },
+        "uuid": "ogn-247-298_nonfoil"
+    },
+    {
+        "description": "champion-prefixed overnumbered legend",
+        "input": {
+            "name": "Kai'Sa - Daughter of the Void",
+            "variant": "299"
+        },
+        "uuid": "ogn-299-298_nonfoil"
+    },
+    {
+        "description": "champion-prefixed signature legend",
+        "input": {
+            "name": "Ahri - Nine-Tailed Fox (Signature)",
+            "variant": "303*"
+        },
+        "uuid": "ogn-303-star-298_nonfoil"
+    },
+    {
+        "description": "dashed name stays intact",
+        "input": {
+            "name": "Dark Child - Starter"
+        },
+        "uuid": "ogs-017-024_nonfoil"
+    },
+    {
+        "description": "edition narrows a name printed in two sets",
+        "input": {
+            "name": "Recruit (NX)",
+            "edition": "Vendetta"
+        },
+        "uuid": "ven-t04_nonfoil"
+    },
+    {
+        "description": "foil resolves to its own uuid",
+        "input": {
+            "name": "Ahri, Alluring",
+            "variant": "66",
+            "foil": true
+        },
+        "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "foil with the printing name in the variation",
+        "input": {
+            "name": "Ahri, Alluring",
+            "variant": "66/298 Foil",
+            "foil": true
+        },
+        "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "full public code works as a number",
+        "input": {
+            "name": "Ahri, Alluring",
+            "variant": "OGN-066/298"
+        },
+        "uuid": "ogn-066-298_nonfoil"
+    },
+    {
+        "description": "name and number resolve the base printing",
+        "input": {
+            "name": "Ahri, Alluring",
+            "variant": "66"
+        },
+        "uuid": "ogn-066-298_nonfoil"
+    },
+    {
+        "description": "negative: edition excludes the printing carrying the number",
+        "input": {
+            "name": "Ahri, Inquisitive",
+            "variant": "227",
+            "edition": "Vendetta"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: known name with wrong collector number",
+        "input": {
+            "name": "Ahri, Alluring",
+            "variant": "99999"
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: name printed in two sets stays ambiguous without a number",
+        "input": {
+            "name": "Recruit (NX)"
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: unknown card name",
+        "input": {
+            "name": "Nonexistent Imaginary Champion",
+            "variant": "1"
+        },
+        "error": "unknown card name"
+    },
+    {
+        "description": "parenthetical is part of the real name",
+        "input": {
+            "name": "Recruit (NX)",
+            "variant": "272"
+        },
+        "uuid": "ogn-272-298_nonfoil"
+    },
+    {
+        "description": "parenthetical name resolves without a number",
+        "input": {
+            "name": "Recruit (DE)"
+        },
+        "uuid": "ogn-271-298_nonfoil"
+    },
+    {
+        "description": "promo edition disambiguates a number shared across promo sets",
+        "input": {
+            "name": "Jinx - Rebel",
+            "variant": "202",
+            "edition": "Riftbound Promotional Cards"
+        },
+        "uuid": "pr-678052_nonfoil"
+    },
+    {
+        "description": "promo qualifier name resolves inside its promo set",
+        "input": {
+            "name": "Sett - The Boss (Metal) (Best Of)",
+            "variant": "269",
+            "edition": "Riftbound Organized Play Promotional Cards"
+        },
+        "uuid": "opp-669263_nonfoil"
+    },
+    {
+        "description": "promo-shaped legend name still reaches the main set",
+        "input": {
+            "name": "Teemo - Swift Scout",
+            "variant": "263",
+            "edition": "Origins"
+        },
+        "uuid": "ogn-263-298_nonfoil"
+    },
+    {
+        "description": "promos never match without their edition",
+        "input": {
+            "name": "Teemo - Swift Scout",
+            "variant": "263"
+        },
+        "uuid": "ogn-263-298_nonfoil"
+    },
+    {
+        "description": "same promo number under the other promo set",
+        "input": {
+            "name": "Jinx - Rebel",
+            "variant": "202",
+            "edition": "Riftbound Organized Play Promotional Cards"
+        },
+        "uuid": "opp-662882_nonfoil"
+    },
+    {
+        "description": "shortened gallery champion resolves",
+        "input": {
+            "name": "Master Yi - Meditative",
+            "variant": "4"
+        },
+        "uuid": "ogs-004-024_nonfoil"
+    },
+    {
+        "description": "special prefixed number",
+        "input": {
+            "name": "Ahri, Inquisitive",
+            "variant": "SP3"
+        },
+        "uuid": "ven-sp3-006_nonfoil"
+    },
+    {
+        "description": "starred variant number",
+        "input": {
+            "name": "Ahri, Inquisitive",
+            "variant": "227*"
+        },
+        "uuid": "sfd-227-star-221_nonfoil"
+    },
+    {
+        "description": "starter legend resolves through its storefront name",
+        "input": {
+            "name": "Lux - Lady of Luminosity (Starter)",
+            "variant": "21"
+        },
+        "uuid": "ogs-021-024_nonfoil"
+    },
+    {
+        "description": "storefront-prefixed edition still narrows",
+        "input": {
+            "name": "Ahri, Inquisitive",
+            "variant": "227",
+            "edition": "Riftbound: Spiritforged"
+        },
+        "uuid": "sfd-227-221_nonfoil"
+    },
+    {
+        "description": "tcgplayer product id resolves through the identifier index",
+        "input": {
+            "id": "652842",
+            "foil": true
+        },
+        "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "token number with zero-padded letter prefix",
+        "input": {
+            "name": "Gold",
+            "variant": "T05"
+        },
+        "uuid": "unl-t05_nonfoil"
+    },
+    {
+        "description": "zero-padded letter variant has its own number",
+        "input": {
+            "name": "Ahri, Alluring",
+            "variant": "066a"
+        },
+        "uuid": "ogn-066a-298_nonfoil"
+    }
+]
