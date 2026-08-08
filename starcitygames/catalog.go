@@ -147,6 +147,37 @@ func catalogHit(p CatalogProduct, foil bool) Hit {
 // alt-foil (surge/rainbow/cold) resolves to the plain foil. When the id is
 // missing or unresolved, it falls back to the SKU-driven preprocess path.
 func resolveProduct(game int, p CatalogProduct) (string, error) {
+	id, err := resolveProductID(game, p)
+	if err != nil {
+		return "", err
+	}
+
+	// The inherently foreign sets hold a single printing each - FBB is
+	// Italian and 4BB Japanese - while SCG sells them in six or seven
+	// languages. Every language other than the one the printing actually
+	// is collapses onto that uuid, and the products then fight over the
+	// same key. Keep only the language that matches.
+	co, cerr := mtgmatcher.GetUUID(id)
+	if cerr == nil && !languageMatches(p.Language, co.Language) {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	return id, nil
+}
+
+// languageMatches reports whether the language a product is sold in is
+// the language of the printing it resolved to. The catalog spells the
+// two-part languages with a dash that mtgjson does not use.
+func languageMatches(catalogLanguage, cardLanguage string) bool {
+	if catalogLanguage == "" {
+		catalogLanguage = "English"
+	}
+	if cardLanguage == "" {
+		cardLanguage = "English"
+	}
+	return strings.EqualFold(strings.ReplaceAll(catalogLanguage, " - ", " "), cardLanguage)
+}
+
+func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// Duel Masters crossover promos are catalogued under Magic but aren't Magic
 	// cards, so there's nothing to match; discard them.
 	if strings.Contains(p.Name, "(Duel Masters)") {
