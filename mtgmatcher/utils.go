@@ -118,18 +118,20 @@ var months = []string{
 	"december",
 }
 
-// ExtractNumber returns as lower case string with the _first_ collector number
-// below 1993 found in a given string, or an empty string if none could be found.
-// The input string may have a single character as prefix or up to two characters
-// as suffix (one letter and one special character), but not both.
-// Any extra letters will be ignored while determining the number portion, but
-// preserved in the output, and returned as lowercase.
-// Any leading # characters, zeroes or parenthesis are stripped away.
-// Numbers starting with M are ignored because they could be confused
-// with core set names.
-// If a month name is detected anywhere as a single word in the input string,
-// an empty string is returned, to prevent confusing a number with a date or day.
-// If a rational number is provided, only the numerator part is considered.
+// ExtractNumber returns the _first_ collector number below 1993 found in
+// the given string, lowercased, or an empty string if there is none.
+//
+// The number may carry a single character as prefix, or up to two as
+// suffix (one letter and one special character), but not both. The rules
+// for what is read and what is dropped:
+//   - extra letters are ignored while locating the number, but kept in the
+//     result
+//   - leading # characters, zeroes and parenthesis are stripped away
+//   - numbers starting with M are ignored, as they could be confused with
+//     core set names
+//   - a month name appearing anywhere as a single word returns an empty
+//     string, so a date or a day is never read as a number
+//   - for a rational number, only the numerator is considered
 func ExtractNumber(str string) string {
 	return extractNumber(str, 1993)
 }

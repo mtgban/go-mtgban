@@ -197,16 +197,20 @@ func SearchSealedContains(name string) ([]string, error) {
 	return searchFunc(name, defaultBackend.AllSealed, strings.Contains)
 }
 
-// entry4Name returns the bucket entry actually named this way. Cards are
-// deliberately hashed under their face, flavor, and printed names too, so
-// that queries naming a single face still find the card: a bucket may
-// therefore hold several distinct cards, each carrying the properties of
-// its own card ("Servo" hashes both the Servo token and "Servo //
-// Thopter"). Name lookups disambiguate here, preferring the card whose
-// name matches verbatim, then any whose name normalizes the same (the
-// normalization folds plurals, so "Cat Warrior" and "Cat Warriors" are
-// distinct cards sharing a bucket), and falling back to the first entry
-// for alias-only buckets (e.g. flavor names).
+// entry4Name returns the bucket entry actually named this way.
+//
+// Cards are deliberately hashed under their face, flavor and printed
+// names as well, so that a query naming a single face still finds the
+// card. One bucket therefore holds several distinct cards, each carrying
+// the properties of its own card: "Servo" hashes both the Servo token and
+// "Servo // Thopter".
+//
+// Lookups pick between them in this order: the card whose name matches
+// verbatim, then any whose name normalizes the same, then the first entry
+// in the bucket. That last case covers buckets reached only by an alias,
+// such as a flavor name. The middle case exists because normalization
+// folds plurals, leaving "Cat Warrior" and "Cat Warriors" as distinct
+// cards that share a bucket.
 func entry4Name(name string) (*CardObject, bool) {
 	norm := Normalize(name)
 	uuids, found := defaultBackend.Hashes[norm]
