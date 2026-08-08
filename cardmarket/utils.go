@@ -213,14 +213,54 @@ func SanitizeProductList(productList []ProductList) {
 	}
 }
 
-func BuildURL(idProduct, idGame int, affiliate string, foil bool) string {
-	game := ""
+// GameName returns the game as Cardmarket spells it out in its URL paths
+// (/en/Magic/..., /en/Lorcana/...), or "" for a game whose catalog is not
+// covered. Cardmarket has no game-agnostic product path, so every URL builder
+// here goes through this.
+func GameName(idGame int) string {
 	switch idGame {
 	case GameIdMagic:
-		game = "Magic"
+		return "Magic"
 	case GameIdLorcana:
-		game = "Lorcana"
-	default:
+		return "Lorcana"
+	}
+	return ""
+}
+
+// SearchURL returns the catalog search for a product name, the fallback for a
+// card whose Cardmarket product id is not known. Empty for an uncovered game,
+// like BuildURL.
+func SearchURL(name string, idGame int, affiliate string) string {
+	game := GameName(idGame)
+	if game == "" {
+		return ""
+	}
+
+	u, err := url.Parse(fmt.Sprintf("https://www.cardmarket.com/en/%s/Products/Search", game))
+	if err != nil {
+		return ""
+	}
+
+	v := url.Values{}
+	v.Set("searchString", name)
+	setAffiliate(v, affiliate)
+
+	u.RawQuery = v.Encode()
+	return u.String()
+}
+
+func setAffiliate(v url.Values, affiliate string) {
+	if affiliate == "" {
+		return
+	}
+	v.Set("utm_source", affiliate)
+	v.Set("utm_medium", "text")
+	v.Set("utm_campaign", "card_prices")
+}
+
+func BuildURL(idProduct, idGame int, affiliate string, foil bool) string {
+	game := GameName(idGame)
+	if game == "" {
 		return ""
 	}
 
@@ -241,11 +281,7 @@ func BuildURL(idProduct, idGame int, affiliate string, foil bool) string {
 		v.Set("isFoil", "Y")
 	}
 
-	if affiliate != "" {
-		v.Set("utm_source", affiliate)
-		v.Set("utm_medium", "text")
-		v.Set("utm_campaign", "card_prices")
-	}
+	setAffiliate(v, affiliate)
 
 	u.RawQuery = v.Encode()
 	return u.String()
