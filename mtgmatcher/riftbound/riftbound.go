@@ -43,6 +43,11 @@ type GallerySet struct {
 	ID                 string `json:"id"`
 	Name               string `json:"name"`
 	CollectorNumberMax int    `json:"collectorNumberMax"`
+
+	// Type is not part of the official payload; the riftbounddatastore
+	// command marks the promotional sets it appends with "promo", which
+	// gates how their printings match (see rules.go).
+	Type string `json:"type,omitempty"`
 }
 
 type GalleryCard struct {
@@ -117,6 +122,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			Name:        set.Name,
 			Code:        set.ID,
 			BaseSetSize: set.CollectorNumberMax,
+			Type:        set.Type,
 		}
 	}
 	sort.Strings(b.AllSets)

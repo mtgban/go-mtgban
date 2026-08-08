@@ -77,6 +77,27 @@ var riftboundSeeds = []matchTest{
 		Desc: "dashed name stays intact",
 		In:   mtgmatcher.InputCard{Name: "Dark Child - Starter"},
 	},
+	// Legends are exported title-only; storefronts prepend the champion.
+	{
+		Desc: "champion-prefixed legend resolves to its title",
+		In:   mtgmatcher.InputCard{Name: "Kai'Sa - Daughter of the Void", Variation: "247"},
+	},
+	{
+		Desc: "champion-prefixed signature legend",
+		In:   mtgmatcher.InputCard{Name: "Ahri - Nine-Tailed Fox (Signature)", Variation: "303*"},
+	},
+	{
+		Desc: "champion-prefixed overnumbered legend",
+		In:   mtgmatcher.InputCard{Name: "Kai'Sa - Daughter of the Void", Variation: "299"},
+	},
+	{
+		Desc: "shortened gallery champion resolves",
+		In:   mtgmatcher.InputCard{Name: "Master Yi - Meditative", Variation: "4"},
+	},
+	{
+		Desc: "starter legend resolves through its storefront name",
+		In:   mtgmatcher.InputCard{Name: "Lux - Lady of Luminosity (Starter)", Variation: "21"},
+	},
 	// Edition narrowing: the Match skeleton restricts candidates to the sets
 	// matching a supplied edition; without one (or with one that resolves to
 	// no set name) the number-driven contract is unchanged.
@@ -87,6 +108,33 @@ var riftboundSeeds = []matchTest{
 	{
 		Desc: "storefront-prefixed edition still narrows",
 		In:   mtgmatcher.InputCard{Name: "Ahri, Inquisitive", Variation: "227", Edition: "Riftbound: Spiritforged"},
+	},
+	// Promotional printings live in their own promo-typed sets and only
+	// match when the edition names one; every other input keeps resolving
+	// to the main printings, storefront promo name shapes included.
+	{
+		Desc: "promo qualifier name resolves inside its promo set",
+		In:   mtgmatcher.InputCard{Name: "Sett - The Boss (Metal) (Best Of)", Variation: "269", Edition: "Riftbound Organized Play Promotional Cards"},
+	},
+	{
+		Desc: "promo edition disambiguates a number shared across promo sets",
+		In:   mtgmatcher.InputCard{Name: "Jinx - Rebel", Variation: "202", Edition: "Riftbound Promotional Cards"},
+	},
+	{
+		Desc: "same promo number under the other promo set",
+		In:   mtgmatcher.InputCard{Name: "Jinx - Rebel", Variation: "202", Edition: "Riftbound Organized Play Promotional Cards"},
+	},
+	{
+		Desc: "promo-shaped legend name still reaches the main set",
+		In:   mtgmatcher.InputCard{Name: "Teemo - Swift Scout", Variation: "263", Edition: "Origins"},
+	},
+	{
+		Desc: "promos never match without their edition",
+		In:   mtgmatcher.InputCard{Name: "Teemo - Swift Scout", Variation: "263"},
+	},
+	{
+		Desc: "base printing wins over its promos by default",
+		In:   mtgmatcher.InputCard{Name: "Viktor - Leader", Variation: "246"},
 	},
 	// Error contract.
 	{
