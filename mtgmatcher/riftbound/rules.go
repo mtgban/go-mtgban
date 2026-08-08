@@ -15,11 +15,20 @@ type Rules struct{}
 
 // Prefilter splits a trailing parenthetical variant off the name before the
 // canonical-name lookup — unless the full name is itself a known card: a few
-// real names carry a parenthetical ("Recruit (DE)"). Dashes stay intact,
-// since they occur in real names too ("Dark Child - Starter").
+// real names carry a parenthetical ("Recruit (DE)"), and the promotional
+// printings keep their storefront names verbatim, qualifiers included.
+// Dashes stay intact, since they occur in real names too ("Dark Child -
+// Starter").
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	// Names that only promotional printings carry act as unknown unless the
+	// input targets a promo set: promos keep their storefront names verbatim
+	// (qualifiers included), and those shapes must keep resolving to the
+	// main printings for everyone else.
+	targetsPromo := editionIsPromo(b, inCard.Edition)
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
-		return
+		if !promoOnlyName(b, inCard.Name) || targetsPromo {
+			return
+		}
 	}
 	if strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
@@ -28,6 +37,50 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
+	// A promo printing can still share the storefront shape of a main-set
+	// legend name ("Teemo - Swift Scout" is a promo entry while the Origins
+	// card is "Swift Scout"): re-aim at the gallery name here, or the
+	// canonical lookup would stop at the promo, whose printings the promo
+	// gate in FilterCards then rightly refuses.
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found &&
+		promoOnlyName(b, inCard.Name) && !targetsPromo {
+		if fixed := legendName(b, inCard.Name); fixed != "" {
+			inCard.Name = fixed
+		}
+	}
+}
+
+// editionIsPromo reports whether the input edition resolves to one of the
+// promotional sets.
+func editionIsPromo(b *mtgmatcher.Backend, edition string) bool {
+	if edition == "" {
+		return false
+	}
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return false
+	}
+	return set.Type == "promo"
+}
+
+// promoOnlyName reports whether every printing hashed under the name lives
+// in a promotional set.
+func promoOnlyName(b *mtgmatcher.Backend, name string) bool {
+	uuids := b.Hashes[mtgmatcher.Normalize(name)]
+	if len(uuids) == 0 {
+		return false
+	}
+	for _, uuid := range uuids {
+		co, found := b.UUIDs[uuid]
+		if !found {
+			continue
+		}
+		set, found := b.Sets[co.SetCode]
+		if !found || set.Type != "promo" {
+			return false
+		}
+	}
+	return true
 }
 
 // AdjustName reconciles storefront name shapes with the gallery's. Legend
@@ -43,39 +96,9 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 
-	if champion, title, found := strings.Cut(inCard.Name, " - "); found {
-		if _, known := b.CanonicalNames[mtgmatcher.Normalize(title)]; known {
-			inCard.Name = title
-			return
-		}
-		// The gallery may also shorten the champion ("Master Yi - Meditative"
-		// is exported as "Yi, Meditative"), and starter legends are exported
-		// title-first ("Lux - Lady of Luminosity (Starter)" is "Lady of
-		// Luminosity - Starter"). Accept a "Champion, Title" name whose title
-		// matches and whose champion ends the input's champion, or a dashed
-		// name led by the input's title — as long as exactly one candidate
-		// does overall.
-		var match string
-		for _, name := range b.AllCanonicalNames {
-			c, t, ok := strings.Cut(name, ", ")
-			matches := ok && mtgmatcher.Equals(t, title) &&
-				strings.HasSuffix(mtgmatcher.Normalize(champion), mtgmatcher.Normalize(c))
-			if !matches {
-				t2, _, ok2 := strings.Cut(name, " - ")
-				matches = ok2 && mtgmatcher.Equals(t2, title)
-			}
-			if !matches {
-				continue
-			}
-			if match != "" && match != name {
-				return
-			}
-			match = name
-		}
-		if match != "" {
-			inCard.Name = match
-			return
-		}
+	if fixed := legendName(b, inCard.Name); fixed != "" {
+		inCard.Name = fixed
+		return
 	}
 
 	uuids, err := b.SearchHasPrefix(inCard.Name)
@@ -117,6 +140,15 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // falls back to every printing), so trimming can only help.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
+	// An edition already naming a set verbatim needs no normalization — and
+	// must not be trimmed out of matching: the promotional sets themselves
+	// are named "Riftbound ... Promotional Cards".
+	for _, set := range b.Sets {
+		if mtgmatcher.Equals(set.Name, edition) {
+			inCard.Edition = edition
+			return
+		}
+	}
 	for _, prefix := range []string{"Riftbound: League of Legends", "Riftbound", "League of Legends"} {
 		if strings.HasPrefix(edition, prefix) {
 			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
@@ -125,6 +157,43 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	}
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 	inCard.Edition = edition
+}
+
+// legendName maps a storefront "Champion - Title" name onto the gallery name
+// it stands for, or returns "" when no unambiguous mapping exists. The
+// gallery exports Legend cards title-only ("Daughter of the Void"), may
+// shorten the champion ("Master Yi - Meditative" is "Yi, Meditative"), and
+// names starter legends title-first ("Lux - Lady of Luminosity (Starter)" is
+// "Lady of Luminosity - Starter"): accept the bare title, a "Champion,
+// Title" name whose title matches and whose champion ends the input's
+// champion, or a dashed name led by the title — as long as exactly one
+// candidate does overall.
+func legendName(b *mtgmatcher.Backend, name string) string {
+	champion, title, found := strings.Cut(name, " - ")
+	if !found {
+		return ""
+	}
+	if _, known := b.CanonicalNames[mtgmatcher.Normalize(title)]; known {
+		return title
+	}
+	var match string
+	for _, canonical := range b.AllCanonicalNames {
+		c, t, ok := strings.Cut(canonical, ", ")
+		matches := ok && mtgmatcher.Equals(t, title) &&
+			strings.HasSuffix(mtgmatcher.Normalize(champion), mtgmatcher.Normalize(c))
+		if !matches {
+			t2, _, ok2 := strings.Cut(canonical, " - ")
+			matches = ok2 && mtgmatcher.Equals(t2, title)
+		}
+		if !matches {
+			continue
+		}
+		if match != "" && match != canonical {
+			return ""
+		}
+		match = canonical
+	}
+	return match
 }
 
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
@@ -152,6 +221,11 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 
+	// Promotional printings reuse the main sets' collector numbers, so they
+	// never match implicitly: only an edition that resolves to a promo set
+	// reaches them, and everything else keeps matching the main printings.
+	allowPromo := editionIsPromo(b, inCard.Edition)
+
 	var out []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
@@ -176,6 +250,11 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
+		}
+		if !allowPromo {
+			if set, found := b.Sets[card.SetCode]; found && set.Type == "promo" {
+				continue
+			}
 		}
 		if number != "" && !strings.EqualFold(number, card.Number) {
 			continue
