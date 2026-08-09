@@ -34,7 +34,18 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
-			inCard.AddToVariant(strings.Join(vars[1:], " "))
+			qualifier := strings.Join(vars[1:], " ")
+			inCard.AddToVariant(qualifier)
+			// The gallery qualifies a promo in the name itself, and the
+			// storefront wording is close but rarely equal ("Champion Stamp"
+			// against "(Champion)"). Sibling promos share the base name and
+			// the number, so only the qualifier tells them apart.
+			if targetsPromo {
+				if fixed := qualifiedPromoName(b, inCard.Name, qualifier); fixed != "" {
+					inCard.Name = fixed
+					return
+				}
+			}
 		}
 	}
 	// A promo printing can still share the storefront shape of a main-set
@@ -50,17 +61,97 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// editionIsPromo reports whether the input edition resolves to one of the
-// promotional sets.
+// editionIsPromo reports whether the input edition targets the promotional
+// sets, either by naming one or by saying only that the card is a promo.
+// Storefronts file every promotional printing under a single heading rather
+// than under the set that issued it - CoolStuffInc calls the lot "Promo",
+// mixing judge, release event and championship cards - and that heading names
+// no set. Reading it as an ordinary edition leaves the gate shut, and the
+// promo-only names then resolve to the main printing: the champion-stamped
+// Edge of Night comes back as the Spiritforged card of the same number, a
+// promo sold at many times its price.
 func editionIsPromo(b *mtgmatcher.Backend, edition string) bool {
 	if edition == "" {
 		return false
+	}
+	if promoEditions[mtgmatcher.Normalize(edition)] {
+		return true
 	}
 	set, err := b.GetSetByName(edition)
 	if err != nil {
 		return false
 	}
 	return set.Type == "promo"
+}
+
+// promoEditions are the headings storefronts use for promotional printings
+// without saying which set issued them. They deliberately resolve to no set:
+// the heading spans several promotional sets, so it can gate the promo names
+// but must not narrow the candidates to one of them.
+var promoEditions = map[string]bool{
+	mtgmatcher.Normalize("Promo"):             true,
+	mtgmatcher.Normalize("Promos"):            true,
+	mtgmatcher.Normalize("Promo Cards"):       true,
+	mtgmatcher.Normalize("Promotional"):       true,
+	mtgmatcher.Normalize("Promotionals"):      true,
+	mtgmatcher.Normalize("Promotional Cards"): true,
+}
+
+// qualifiedPromoName returns the promotional printing named "<base>
+// (<qualifier>)" that the storefront's own qualifier describes, or "" when
+// none does or several might. Siblings share the base name and the collector
+// number - Edge of Night is 139 in the gallery both as (Champion) and as
+// (Top 8) - so the qualifier is the only thing that separates them.
+//
+// The gallery's qualifier has to be contained in the storefront's, word for
+// word, rather than merely overlap it: storefronts qualify these more fully
+// than the gallery does ("Champion Stamp" for "(Champion)"), while the
+// reverse would let "(Top 8)" answer for a plain "Top" and let one sibling
+// stand in for another.
+func qualifiedPromoName(b *mtgmatcher.Backend, base, qualifier string) string {
+	if qualifier == "" {
+		return ""
+	}
+	uuids, err := b.SearchHasPrefix(base)
+	if err != nil {
+		return ""
+	}
+
+	// Compared word by word in lower case rather than through Normalize,
+	// which folds a whole string into one token and would collapse
+	// "Champion Stamp" into a single word matching nothing.
+	said := map[string]bool{}
+	for _, word := range strings.Fields(strings.ToLower(qualifier)) {
+		said[word] = true
+	}
+
+	var match string
+	for _, uuid := range uuids {
+		co, err := b.GetUUID(uuid)
+		if err != nil || co.Name == base || !promoOnlyName(b, co.Name) {
+			continue
+		}
+		vars := mtgmatcher.SplitVariants(co.Name)
+		if len(vars) < 2 || vars[0] != base {
+			continue
+		}
+		describes := true
+		for _, word := range strings.Fields(strings.ToLower(strings.Join(vars[1:], " "))) {
+			if !said[word] {
+				describes = false
+				break
+			}
+		}
+		if !describes {
+			continue
+		}
+		if match != "" && match != co.Name {
+			// Two qualifiers both fit: let the ordinary path decide.
+			return ""
+		}
+		match = co.Name
+	}
+	return match
 }
 
 // promoOnlyName reports whether every printing hashed under the name lives

@@ -1,5 +1,32 @@
 [
     {
+        "description": "a fuller storefront qualifier picks the promo it describes",
+        "input": {
+            "name": "Edge of Night (Champion Stamp)",
+            "variant": "139",
+            "edition": "Promo"
+        },
+        "uuid": "opp-684999_nonfoil"
+    },
+    {
+        "description": "a promo heading naming no set still reaches the promo printing",
+        "input": {
+            "name": "Jinx - Loose Cannon",
+            "variant": "251",
+            "edition": "Promo"
+        },
+        "uuid": "opp-662894_nonfoil"
+    },
+    {
+        "description": "a promo qualifier no printing carries falls back to the main printing",
+        "input": {
+            "name": "Edge of Night (Winner Stamp)",
+            "variant": "139",
+            "edition": "Promo"
+        },
+        "uuid": "sfd-139-221_nonfoil"
+    },
+    {
         "description": "base printing wins over its promos by default",
         "input": {
             "name": "Viktor - Leader",
@@ -245,6 +272,24 @@
             "edition": "Spiritforged"
         },
         "uuid": "sfd-116-221_nonfoil"
+    },
+    {
+        "description": "the same number stays in the main set for its own edition",
+        "input": {
+            "name": "Loose Cannon",
+            "variant": "251",
+            "edition": "Origins"
+        },
+        "uuid": "ogn-251-298_nonfoil"
+    },
+    {
+        "description": "the unqualified name keeps the main printing of that number",
+        "input": {
+            "name": "Edge of Night",
+            "variant": "139",
+            "edition": "Spiritforged"
+        },
+        "uuid": "sfd-139-221_nonfoil"
     },
     {
         "description": "token number with zero-padded letter prefix",

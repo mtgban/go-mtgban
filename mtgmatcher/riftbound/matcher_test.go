@@ -145,6 +145,34 @@ var riftboundSeeds = []matchTest{
 		Desc: "same promo number under the other promo set",
 		In:   mtgmatcher.InputCard{Name: "Jinx - Rebel", Variation: "202", Edition: "Riftbound Organized Play Promotional Cards"},
 	},
+	// Storefronts file promos under one heading that names no set, and
+	// qualify them more fully than the gallery does. The pairs below are
+	// seeded together: the promo heading has to reach the promotional
+	// printing, and the set's own name has to keep reaching the main one,
+	// since both carry the number.
+	{
+		Desc: "a promo heading naming no set still reaches the promo printing",
+		In:   mtgmatcher.InputCard{Name: "Jinx - Loose Cannon", Variation: "251", Edition: "Promo"},
+	},
+	{
+		Desc: "the same number stays in the main set for its own edition",
+		In:   mtgmatcher.InputCard{Name: "Loose Cannon", Variation: "251", Edition: "Origins"},
+	},
+	{
+		Desc: "a fuller storefront qualifier picks the promo it describes",
+		In:   mtgmatcher.InputCard{Name: "Edge of Night (Champion Stamp)", Variation: "139", Edition: "Promo"},
+	},
+	{
+		Desc: "the unqualified name keeps the main printing of that number",
+		In:   mtgmatcher.InputCard{Name: "Edge of Night", Variation: "139", Edition: "Spiritforged"},
+	},
+	{
+		// Not an error: an unknown qualifier is one the gallery does not
+		// describe, so the main printing of that number is still the best
+		// answer available.
+		Desc: "a promo qualifier no printing carries falls back to the main printing",
+		In:   mtgmatcher.InputCard{Name: "Edge of Night (Winner Stamp)", Variation: "139", Edition: "Promo"},
+	},
 	{
 		Desc: "promo-shaped legend name still reaches the main set",
 		In:   mtgmatcher.InputCard{Name: "Teemo - Swift Scout", Variation: "263", Edition: "Origins"},
