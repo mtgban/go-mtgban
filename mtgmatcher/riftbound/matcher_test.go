@@ -118,6 +118,18 @@ var riftboundSeeds = []matchTest{
 		Desc: "storefront-prefixed edition still narrows",
 		In:   mtgmatcher.InputCard{Name: "Ahri, Inquisitive", Variation: "227", Edition: "Riftbound: Spiritforged"},
 	},
+	// A storefront edition the gallery names differently still has to narrow,
+	// or the number alone answers with the base-set printing. The pair is
+	// seeded together: the same name and number has to reach the promotional
+	// set from one edition and the base set from the other.
+	{
+		Desc: "storefront-named promo edition reaches the promotional set",
+		In:   mtgmatcher.InputCard{Name: "Yone - Blademaster", Variation: "116", Edition: "Organized Play"},
+	},
+	{
+		Desc: "the same number stays in the base set for its own edition",
+		In:   mtgmatcher.InputCard{Name: "Yone - Blademaster", Variation: "116", Edition: "Spiritforged"},
+	},
 	// Promotional printings live in their own promo-typed sets and only
 	// match when the edition names one; every other input keeps resolving
 	// to the main printings, storefront promo name shapes included.

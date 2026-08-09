@@ -156,7 +156,26 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 	}
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
+	if name, found := storefrontEditions[mtgmatcher.Normalize(edition)]; found {
+		edition = name
+	}
 	inCard.Edition = edition
+}
+
+// storefrontEditions renames the editions storefronts carry that the gallery
+// names differently. Without them the edition narrows nothing and the number
+// alone decides, which quietly answers with the base-set printing: a listing
+// of the Top 8 Guardian Angel, numbered 51 in the promotional set, comes back
+// as the Spiritforged card of the same number.
+//
+// Only the renames the data agrees on are here. Every product id that
+// resolves in these three lands in one set apiece - 31, 58 and 24 of them -
+// whereas CardTrader's plain "Promos" splits across two promotional sets, so
+// there is no single answer to give it and it is deliberately absent.
+var storefrontEditions = map[string]string{
+	mtgmatcher.Normalize("Organized Play"):          "Riftbound Organized Play Promotional Cards",
+	mtgmatcher.Normalize("Nexus Night Promos"):      "Riftbound Organized Play Promotional Cards",
+	mtgmatcher.Normalize("Origins Proving Grounds"): "Proving Grounds",
 }
 
 // legendName maps a storefront "Champion - Title" name onto the gallery name

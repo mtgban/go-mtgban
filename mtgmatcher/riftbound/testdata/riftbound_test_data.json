@@ -212,6 +212,15 @@
         "uuid": "ogs-021-024_nonfoil"
     },
     {
+        "description": "storefront-named promo edition reaches the promotional set",
+        "input": {
+            "name": "Yone - Blademaster",
+            "variant": "116",
+            "edition": "Organized Play"
+        },
+        "uuid": "opp-678194_nonfoil"
+    },
+    {
         "description": "storefront-prefixed edition still narrows",
         "input": {
             "name": "Ahri, Inquisitive",
@@ -227,6 +236,15 @@
             "foil": true
         },
         "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "the same number stays in the base set for its own edition",
+        "input": {
+            "name": "Yone - Blademaster",
+            "variant": "116",
+            "edition": "Spiritforged"
+        },
+        "uuid": "sfd-116-221_nonfoil"
     },
     {
         "description": "token number with zero-padded letter prefix",
