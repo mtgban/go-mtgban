@@ -213,18 +213,37 @@ func SanitizeProductList(productList []ProductList) {
 	}
 }
 
-// GameName returns the game as Cardmarket spells it out in its URL paths
-// (/en/Magic/..., /en/Lorcana/...), or "" for a game whose catalog is not
-// covered. Cardmarket has no game-agnostic product path, so every URL builder
-// here goes through this.
+// gameNames is how Cardmarket spells each covered catalog in its URL paths
+// (/en/Magic/..., /en/Lorcana/...). Cardmarket has no game-agnostic product
+// path, so every URL builder here goes through it, and both directions of the
+// lookup read this one table rather than keeping their own list.
+var gameNames = map[int]string{
+	GameIdMagic:     "Magic",
+	GameIdLorcana:   "Lorcana",
+	GameIdRiftbound: "Riftbound",
+}
+
+// GameName returns the game as Cardmarket spells it, or "" for a game whose
+// catalog is not covered.
 func GameName(idGame int) string {
-	switch idGame {
-	case GameIdMagic:
-		return "Magic"
-	case GameIdLorcana:
-		return "Lorcana"
+	return gameNames[idGame]
+}
+
+// GameIdFromName is the inverse, matching case-insensitively so a caller can
+// hand over the name it already knows a game by ("lorcana") instead of
+// translating to an id first; an unnamed game is Magic. Unknown games answer
+// 0, which the URL builders reject: a game Cardmarket does not carry yields no
+// link at all rather than one pointing at a path it does not serve.
+func GameIdFromName(name string) int {
+	if name == "" {
+		return GameIdMagic
 	}
-	return ""
+	for idGame, gameName := range gameNames {
+		if strings.EqualFold(gameName, name) {
+			return idGame
+		}
+	}
+	return 0
 }
 
 // SearchURL returns the catalog search for a product name, the fallback for a
