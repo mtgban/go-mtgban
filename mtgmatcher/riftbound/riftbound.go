@@ -97,6 +97,12 @@ type GalleryCard struct {
 	// the TCGplayer product id it maps to, feeding the external identifier
 	// index.
 	TCGplayerProductID int `json:"tcgplayerProductId,omitempty"`
+
+	// Finishes is likewise stamped by the builder, from the printings the
+	// TCGplayer catalog lists for that product. The gallery says nothing
+	// about finish, so a datastore built before this was recorded leaves it
+	// empty and every card falls back to being sold in both.
+	Finishes []string `json:"finishes,omitempty"`
 }
 
 // Load reads an official card-gallery payload from r and returns a Backend
@@ -191,12 +197,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		convertedCard := mtgmatcher.Card{
 			UUID: card.ID,
 
-			Name:    card.Name,
-			SetCode: setCode,
-			// The gallery exports no finish information; every card is
-			// treated as available in both finishes, like TCGplayer lists
-			// Riftbound singles (Normal and Foil).
-			Finishes: []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil},
+			Name:     card.Name,
+			SetCode:  setCode,
+			Finishes: cardFinishes(card),
 			Number:   numberFromPublicCode(card.PublicCode),
 			Images: map[string]string{
 				"full":      card.CardImage.URL,
@@ -222,9 +225,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		}
 		// Register the uuid each finish resolves to, spelling the finish out
 		// in the uuid itself, so output()/Match resolve to them.
-		convertedCard.FoilUUIDs = map[string]string{
-			mtgmatcher.FinishNonfoil: card.ID + "_" + mtgmatcher.FinishNonfoil,
-			mtgmatcher.FinishFoil:    card.ID + "_" + mtgmatcher.FinishFoil,
+		convertedCard.FoilUUIDs = map[string]string{}
+		for _, finish := range convertedCard.Finishes {
+			convertedCard.FoilUUIDs[finish] = card.ID + "_" + finish
 		}
 
 		if card.TCGplayerProductID != 0 {
@@ -232,7 +235,15 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			convertedCard.Identifiers = map[string]string{
 				"tcgplayerProductId": pid,
 			}
-			b.ExternalIdentifiers[pid] = convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]
+			// The product id names the printing, not one of its finishes, so
+			// it points at the plain one where that exists and at the foil
+			// when the card is only sold foil. MatchId re-resolves the finish
+			// from the caller's own flag either way.
+			uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]
+			if !found {
+				uuid = convertedCard.FoilUUIDs[mtgmatcher.FinishFoil]
+			}
+			b.ExternalIdentifiers[pid] = uuid
 		}
 
 		b.Sets[setCode].Cards = append(b.Sets[setCode].Cards, convertedCard)
@@ -301,6 +312,28 @@ var riftboundRarityMap = map[string]int{
 	"rare":     3,
 	"epic":     4,
 	"showcase": 5,
+}
+
+// cardFinishes returns the finishes a printing is sold in. The gallery says
+// nothing about finish, so the builder stamps what the TCGplayer catalog
+// lists for the product it maps to; most of the game is sold in one finish
+// only, promotional printings being foil and starter cards plain.
+//
+// A datastore built before that was recorded says nothing, and the honest
+// answer there is both: it is the assumption the whole game was loaded under
+// until now, and narrowing on no evidence would strand real printings.
+func cardFinishes(card GalleryCard) []string {
+	var out []string
+	for _, finish := range card.Finishes {
+		switch finish {
+		case mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil:
+			out = append(out, finish)
+		}
+	}
+	if len(out) == 0 {
+		return []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil}
+	}
+	return out
 }
 
 // numberFromPublicCode extracts the collector number from a card's public
