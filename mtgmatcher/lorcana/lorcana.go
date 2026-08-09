@@ -263,7 +263,13 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
-		b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
+		// A card LorcanaJSON has no TCGplayer link for carries a zero id, and
+		// registering that would file every one of them under "0" for the
+		// next to overwrite, leaving a key that resolves to whichever card
+		// happened to load last.
+		if card.ExternalLinks.TcgPlayerId != 0 {
+			b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
+		}
 
 		// Store a CardObject per finish uuid.
 		for _, s := range stored {
