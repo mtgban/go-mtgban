@@ -180,6 +180,14 @@
         "uuid": "ogs-004-024_nonfoil"
     },
     {
+        "description": "signed showcase number resolves to the starred printing",
+        "input": {
+            "name": "Darius - Hand of Noxus",
+            "variant": "302s"
+        },
+        "uuid": "ogn-302-star-298_nonfoil"
+    },
+    {
         "description": "special prefixed number",
         "input": {
             "name": "Ahri, Inquisitive",
@@ -227,6 +235,14 @@
             "variant": "T05"
         },
         "uuid": "unl-t05_nonfoil"
+    },
+    {
+        "description": "unstarred number keeps the plain showcase printing",
+        "input": {
+            "name": "Darius - Hand of Noxus",
+            "variant": "302"
+        },
+        "uuid": "ogn-302-298_nonfoil"
     },
     {
         "description": "zero-padded letter variant has its own number",
