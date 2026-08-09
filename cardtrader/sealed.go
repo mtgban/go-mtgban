@@ -18,8 +18,8 @@ type CardtraderSealed struct {
 	// Only retrieve data from a single edition
 	TargetEdition string
 
-	exchangeRate float64
-	client       *CTAuthClient
+	exchangeRates map[string]float64
+	client        *CTAuthClient
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
@@ -85,7 +85,7 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 				link += "?share_code=" + ct.ShareCode
 			}
 
-			price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRate)
+			price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRates)
 			if err != nil {
 				ct.printf("%v for blueprint %d", err, product.BlueprintId)
 				continue
@@ -124,11 +124,11 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 }
 
 func (ct *CardtraderSealed) Load(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rates, err := exchangeRates(ctx)
 	if err != nil {
 		return err
 	}
-	ct.exchangeRate = rate
+	ct.exchangeRates = rates
 
 	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
 	ct.printf("Loaded %d sealed products", len(productMap))

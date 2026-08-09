@@ -27,8 +27,8 @@ type CardtraderMarket struct {
 	// Keep same-conditions entries
 	KeepDuplicates bool
 
-	exchangeRate float64
-	client       *CTAuthClient
+	exchangeRates map[string]float64
+	client        *CTAuthClient
 
 	inventory mtgban.InventoryRecord
 
@@ -218,7 +218,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			link += "?share_code=" + ct.ShareCode
 		}
 
-		price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRate)
+		price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRates)
 		if err != nil {
 			ct.printf("%v for blueprint %d", err, product.BlueprintId)
 			continue
@@ -277,11 +277,11 @@ func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<-
 }
 
 func (ct *CardtraderMarket) Load(ctx context.Context) error {
-	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rates, err := exchangeRates(ctx)
 	if err != nil {
 		return err
 	}
-	ct.exchangeRate = rate
+	ct.exchangeRates = rates
 
 	expansionsRaw, err := ct.client.Expansions(ctx)
 	if err != nil {

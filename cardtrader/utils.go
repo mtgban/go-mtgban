@@ -8,19 +8,38 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// priceToUSD converts a CardTrader price to dollars. Listings are quoted in
-// whichever currency the seller chose, but only the euro rate is ever
-// retrieved, so any other currency is reported instead of being silently
-// multiplied by the wrong rate.
-func priceToUSD(cents int, currency string, euroRate float64) (float64, error) {
-	price := float64(cents) / 100
-	switch currency {
-	case "USD":
-		return price, nil
-	case "EUR":
-		return price * euroRate, nil
+// nonUSDCurrencies are the currencies listings are quoted in besides dollars.
+// The quoting currency follows the expansion rather than the seller - the same
+// seller lists Origins in dollars and Vendetta in pounds - so a missing rate
+// costs the whole expansion, not a handful of listings.
+var nonUSDCurrencies = []string{"EUR", "GBP"}
+
+// exchangeRates retrieves one rate per non-dollar currency, up front, so that
+// converting a listing needs no request of its own.
+func exchangeRates(ctx context.Context) (map[string]float64, error) {
+	rates := make(map[string]float64, len(nonUSDCurrencies))
+	for _, currency := range nonUSDCurrencies {
+		rate, err := mtgban.GetExchangeRate(ctx, currency)
+		if err != nil {
+			return nil, err
+		}
+		rates[currency] = rate
 	}
-	return 0, fmt.Errorf("unsupported currency %q", currency)
+	return rates, nil
+}
+
+// priceToUSD converts a CardTrader price to dollars. A currency with no rate
+// is reported rather than being silently multiplied by the wrong one.
+func priceToUSD(cents int, currency string, rates map[string]float64) (float64, error) {
+	price := float64(cents) / 100
+	if currency == "USD" {
+		return price, nil
+	}
+	rate, found := rates[currency]
+	if !found {
+		return 0, fmt.Errorf("unsupported currency %q", currency)
+	}
+	return price * rate, nil
 }
 
 // Use the Simple API Token to convert your own inventory to a standard InventoryRecord
@@ -30,7 +49,7 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 		return nil, err
 	}
 
-	currencyRate, err := mtgban.GetExchangeRate(ctx, "EUR")
+	rates, err := exchangeRates(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +72,7 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 			continue
 		}
 
-		price, err := priceToUSD(product.PriceCents, product.PriceCurrency, currencyRate)
+		price, err := priceToUSD(product.PriceCents, product.PriceCurrency, rates)
 		if err != nil {
 			continue
 		}
