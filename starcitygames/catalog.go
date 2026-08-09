@@ -107,7 +107,7 @@ func gameFromCatalog(game string) int {
 		return GameMagic
 	case "Lorcana":
 		return GameLorcana
-	case "Riftbound":
+	case "Riftbound: League of Legends TCG":
 		return GameRiftbound
 	default:
 		return 0
