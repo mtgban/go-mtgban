@@ -95,6 +95,36 @@ const (
 	CategoryLorcanaCompleteSets
 )
 
+const (
+	CategoryRiftboundSingles = iota + 258
+	CategoryRiftboundBoosterBoxes
+	CategoryRiftboundBoosters
+	CategoryRiftboundBundles
+	CategoryRiftboundStarterDecks
+	CategoryRiftboundBoxDisplays
+	CategoryRiftboundPlaymats
+	CategoryRiftboundAlbums
+	CategoryRiftboundSleeves
+	CategoryRiftboundDeckBoxes
+	CategoryRiftboundMemorabilia
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	_
+	CategoryRiftboundCompleteSets
+	CategoryRiftboundOversized
+)
+
 type Blueprint struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`
