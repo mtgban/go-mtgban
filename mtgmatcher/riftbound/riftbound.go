@@ -248,15 +248,16 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[setCode].Cards = append(b.Sets[setCode].Cards, convertedCard)
 
-		// Store a CardObject per finish uuid.
-		for _, s := range []struct {
-			uuid string
-			foil bool
-			name string
-		}{
-			{convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil], false, mtgmatcher.FinishNonfoil},
-			{convertedCard.FoilUUIDs[mtgmatcher.FinishFoil], true, mtgmatcher.FinishFoil},
-		} {
+		// Store a CardObject per finish uuid, over the finishes the printing
+		// is actually sold in rather than both: a card sold in one finish
+		// has no uuid for the other, and reaching for it would file a
+		// CardObject under the empty string.
+		for _, finish := range convertedCard.Finishes {
+			s := struct {
+				uuid string
+				foil bool
+				name string
+			}{convertedCard.FoilUUIDs[finish], finish == mtgmatcher.FinishFoil, finish}
 			if _, found := b.UUIDs[s.uuid]; found {
 				continue
 			}

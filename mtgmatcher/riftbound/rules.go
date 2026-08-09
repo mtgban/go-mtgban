@@ -369,15 +369,13 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if number != "" && !strings.EqualFold(number, card.Number) {
 			continue
 		}
-		// Every card carries both finishes today, so this never drops a
-		// candidate; it stays for symmetry with Lorcana should finish data
-		// ever appear in the gallery.
-		if inCard.Foil && !card.HasFinish(mtgmatcher.FinishFoil) {
-			continue
-		}
-		if !inCard.Foil && !card.HasFinish(mtgmatcher.FinishNonfoil) {
-			continue
-		}
+		// The finish deliberately does not filter here. Riftbound gives each
+		// printing its own collector number, so it never tells two cards
+		// apart - it only chooses between the uuids of one card, which
+		// output() does, clamping to the finishes the printing is actually
+		// sold in. Dropping candidates on it would lose the roughly half of
+		// the game sold in a single finish to any storefront that reports
+		// the flag wrongly, or does not report it at all.
 		out = append(out, card)
 	}
 	return out

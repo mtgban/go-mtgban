@@ -346,32 +346,37 @@ func regenerateRiftboundTestData(t *testing.T, b *mtgmatcher.Backend, tests []ma
 func TestRiftboundIdentifiers(t *testing.T) {
 	b := loadBackend(t)
 
+	// Walk the identifiers rather than the cards: the uuid a product id
+	// points at is the plain printing where one is sold and the foil
+	// otherwise, so there is no single finish to filter the cards by.
 	var n int
-	for uuid, co := range b.UUIDs {
-		pid := co.Identifiers["tcgplayerProductId"]
-		if pid == "" {
-			continue
-		}
-		if strings.HasSuffix(uuid, "_"+mtgmatcher.FinishFoil) {
+	for pid, uuid := range b.ExternalIdentifiers {
+		co, found := b.UUIDs[uuid]
+		if !found {
+			t.Errorf("external identifier %s resolves to %q, which is not a card", pid, uuid)
 			continue
 		}
 		n++
-		if got := b.ExternalIdentifiers[pid]; got != uuid {
-			t.Errorf("%s: external identifier %s resolves to %q", uuid, pid, got)
+		if got := co.Identifiers["tcgplayerProductId"]; got != pid {
+			t.Errorf("%s: reached through %s but carries %q", uuid, pid, got)
 			continue
 		}
-		if id, err := b.MatchId(pid, true); err != nil || id != co.FoilUUIDs[mtgmatcher.FinishFoil] {
-			t.Errorf("%s: MatchId(%s, foil) = (%q, %v)", uuid, pid, id, err)
+		// Asking for foil yields the foil printing where one is sold, and
+		// otherwise the printing that is: the product id names the printing
+		// rather than a finish, and output() clamps to what exists instead
+		// of inventing a uuid for a finish nobody prints.
+		want := co.FoilUUIDs[mtgmatcher.FinishFoil]
+		if want == "" {
+			want = uuid
+		}
+		if id, err := b.MatchId(pid, true); err != nil || id != want {
+			t.Errorf("%s: MatchId(%s, foil) = (%q, %v), want %q", uuid, pid, id, err, want)
 		}
 	}
 	if n == 0 {
 		t.Fatal("no tcgplayer identifiers loaded; rebuild the datastore with github.com/mtgban/riftbound-datastore")
 	}
-	if len(b.ExternalIdentifiers) != n {
-		t.Errorf("external identifiers (%d) do not mirror the identified cards (%d)",
-			len(b.ExternalIdentifiers), n)
-	}
-	t.Logf("%d cards carry a tcgplayer product id", n)
+	t.Logf("%d printings are reachable by tcgplayer product id", n)
 }
 
 // TestRiftboundFinishUUIDs checks the datastore invariants of the two-finish
@@ -397,15 +402,22 @@ func TestRiftboundFinishUUIDs(t *testing.T) {
 		if co.Foil || co.Finish != mtgmatcher.FinishNonfoil {
 			t.Errorf("%s: nonfoil entry with foil=%v finish=%q", uuid, co.Foil, co.Finish)
 		}
+		// A foil sibling is no longer guaranteed: the datastore records the
+		// finishes each printing is sold in, and about half of Riftbound is
+		// sold in one. What must hold is that a uuid exists for exactly the
+		// recorded finishes, and that each round-trips through FoilUUIDs.
+		if co.FoilUUIDs[mtgmatcher.FinishNonfoil] != uuid {
+			t.Errorf("%s: FoilUUIDs do not round-trip: %v", uuid, co.FoilUUIDs)
+		}
 		sibling := strings.TrimSuffix(uuid, "_"+mtgmatcher.FinishNonfoil) + "_" + mtgmatcher.FinishFoil
 		foil, found := b.UUIDs[sibling]
-		if !found {
-			t.Errorf("%s: missing foil sibling", uuid)
+		if found != co.HasFinish(mtgmatcher.FinishFoil) {
+			t.Errorf("%s: foil uuid present=%v but HasFinish(foil)=%v",
+				uuid, found, co.HasFinish(mtgmatcher.FinishFoil))
 			continue
 		}
-		if co.FoilUUIDs[mtgmatcher.FinishNonfoil] != uuid ||
-			co.FoilUUIDs[mtgmatcher.FinishFoil] != foil.UUID {
-			t.Errorf("%s: FoilUUIDs do not round-trip: %v", uuid, co.FoilUUIDs)
+		if found && co.FoilUUIDs[mtgmatcher.FinishFoil] != foil.UUID {
+			t.Errorf("%s: foil sibling does not round-trip: %v", uuid, co.FoilUUIDs)
 		}
 	}
 	if bases == 0 {

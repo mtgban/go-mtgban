@@ -6,7 +6,7 @@
             "variant": "139",
             "edition": "Promo"
         },
-        "uuid": "opp-684999_nonfoil"
+        "uuid": "opp-684999_foil"
     },
     {
         "description": "a promo heading naming no set still reaches the promo printing",
@@ -15,7 +15,7 @@
             "variant": "251",
             "edition": "Promo"
         },
-        "uuid": "opp-662894_nonfoil"
+        "uuid": "opp-662894_foil"
     },
     {
         "description": "a promo qualifier no printing carries falls back to the main printing",
@@ -24,7 +24,7 @@
             "variant": "139",
             "edition": "Promo"
         },
-        "uuid": "sfd-139-221_nonfoil"
+        "uuid": "sfd-139-221_foil"
     },
     {
         "description": "base printing wins over its promos by default",
@@ -32,7 +32,7 @@
             "name": "Viktor - Leader",
             "variant": "246"
         },
-        "uuid": "ogn-246-298_nonfoil"
+        "uuid": "ogn-246-298_foil"
     },
     {
         "description": "champion-prefixed legend resolves to its title",
@@ -40,7 +40,7 @@
             "name": "Kai'Sa - Daughter of the Void",
             "variant": "247"
         },
-        "uuid": "ogn-247-298_nonfoil"
+        "uuid": "ogn-247-298_foil"
     },
     {
         "description": "champion-prefixed overnumbered legend",
@@ -48,7 +48,7 @@
             "name": "Kai'Sa - Daughter of the Void",
             "variant": "299"
         },
-        "uuid": "ogn-299-298_nonfoil"
+        "uuid": "ogn-299-298_foil"
     },
     {
         "description": "champion-prefixed signature legend",
@@ -56,7 +56,7 @@
             "name": "Ahri - Nine-Tailed Fox (Signature)",
             "variant": "303*"
         },
-        "uuid": "ogn-303-star-298_nonfoil"
+        "uuid": "ogn-303-star-298_foil"
     },
     {
         "description": "dashed name stays intact",
@@ -97,7 +97,7 @@
             "name": "Ahri, Alluring",
             "variant": "OGN-066/298"
         },
-        "uuid": "ogn-066-298_nonfoil"
+        "uuid": "ogn-066-298_foil"
     },
     {
         "description": "name and number resolve the base printing",
@@ -105,7 +105,7 @@
             "name": "Ahri, Alluring",
             "variant": "66"
         },
-        "uuid": "ogn-066-298_nonfoil"
+        "uuid": "ogn-066-298_foil"
     },
     {
         "description": "negative: edition excludes the printing carrying the number",
@@ -161,7 +161,7 @@
             "variant": "202",
             "edition": "Riftbound Promotional Cards"
         },
-        "uuid": "pr-678052_nonfoil"
+        "uuid": "pr-678052_foil"
     },
     {
         "description": "promo qualifier name resolves inside its promo set",
@@ -170,7 +170,7 @@
             "variant": "269",
             "edition": "Riftbound Organized Play Promotional Cards"
         },
-        "uuid": "opp-669263_nonfoil"
+        "uuid": "opp-669263_foil"
     },
     {
         "description": "promo-shaped legend name still reaches the main set",
@@ -179,7 +179,7 @@
             "variant": "263",
             "edition": "Origins"
         },
-        "uuid": "ogn-263-298_nonfoil"
+        "uuid": "ogn-263-298_foil"
     },
     {
         "description": "promos never match without their edition",
@@ -187,7 +187,7 @@
             "name": "Teemo - Swift Scout",
             "variant": "263"
         },
-        "uuid": "ogn-263-298_nonfoil"
+        "uuid": "ogn-263-298_foil"
     },
     {
         "description": "same promo number under the other promo set",
@@ -196,7 +196,7 @@
             "variant": "202",
             "edition": "Riftbound Organized Play Promotional Cards"
         },
-        "uuid": "opp-662882_nonfoil"
+        "uuid": "opp-662882_foil"
     },
     {
         "description": "shortened gallery champion resolves",
@@ -212,7 +212,7 @@
             "name": "Darius - Hand of Noxus",
             "variant": "302s"
         },
-        "uuid": "ogn-302-star-298_nonfoil"
+        "uuid": "ogn-302-star-298_foil"
     },
     {
         "description": "special prefixed number",
@@ -220,7 +220,7 @@
             "name": "Ahri, Inquisitive",
             "variant": "SP3"
         },
-        "uuid": "ven-sp3-006_nonfoil"
+        "uuid": "ven-sp3-006_foil"
     },
     {
         "description": "starred variant number",
@@ -228,7 +228,7 @@
             "name": "Ahri, Inquisitive",
             "variant": "227*"
         },
-        "uuid": "sfd-227-star-221_nonfoil"
+        "uuid": "sfd-227-star-221_foil"
     },
     {
         "description": "starter legend resolves through its storefront name",
@@ -254,7 +254,7 @@
             "variant": "227",
             "edition": "Riftbound: Spiritforged"
         },
-        "uuid": "sfd-227-221_nonfoil"
+        "uuid": "sfd-227-221_foil"
     },
     {
         "description": "tcgplayer product id resolves through the identifier index",
@@ -271,7 +271,7 @@
             "variant": "116",
             "edition": "Spiritforged"
         },
-        "uuid": "sfd-116-221_nonfoil"
+        "uuid": "sfd-116-221_foil"
     },
     {
         "description": "the same number stays in the main set for its own edition",
@@ -280,7 +280,7 @@
             "variant": "251",
             "edition": "Origins"
         },
-        "uuid": "ogn-251-298_nonfoil"
+        "uuid": "ogn-251-298_foil"
     },
     {
         "description": "the unqualified name keeps the main printing of that number",
@@ -289,7 +289,7 @@
             "variant": "139",
             "edition": "Spiritforged"
         },
-        "uuid": "sfd-139-221_nonfoil"
+        "uuid": "sfd-139-221_foil"
     },
     {
         "description": "token number with zero-padded letter prefix",
@@ -305,7 +305,7 @@
             "name": "Darius - Hand of Noxus",
             "variant": "302"
         },
-        "uuid": "ogn-302-298_nonfoil"
+        "uuid": "ogn-302-298_foil"
     },
     {
         "description": "zero-padded letter variant has its own number",
@@ -313,6 +313,6 @@
             "name": "Ahri, Alluring",
             "variant": "066a"
         },
-        "uuid": "ogn-066a-298_nonfoil"
+        "uuid": "ogn-066a-298_foil"
     }
 ]
