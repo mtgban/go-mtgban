@@ -90,3 +90,40 @@ func parseChecked(t *testing.T, raw string) (*url.URL, error) {
 	}
 	return url.Parse(raw)
 }
+
+// GameIdFromName lets a caller pass the name it already knows a game by, so
+// the two directions have to agree for every covered catalog - they read the
+// same table precisely so adding a game cannot extend one and not the other.
+func TestGameIdFromName(t *testing.T) {
+	for idGame, name := range gameNames {
+		if got := GameIdFromName(name); got != idGame {
+			t.Errorf("GameIdFromName(%q) = %d, want %d", name, got, idGame)
+		}
+		// Callers spell games in their own case ("lorcana", "Magic").
+		if got := GameIdFromName(strings.ToLower(name)); got != idGame {
+			t.Errorf("GameIdFromName(%q) = %d, want %d", strings.ToLower(name), got, idGame)
+		}
+		if got := GameIdFromName(strings.ToUpper(name)); got != idGame {
+			t.Errorf("GameIdFromName(%q) = %d, want %d", strings.ToUpper(name), got, idGame)
+		}
+	}
+
+	// An unnamed game is the default one rather than an unknown one.
+	if got := GameIdFromName(""); got != GameIdMagic {
+		t.Errorf("GameIdFromName(\"\") = %d, want Magic (%d)", got, GameIdMagic)
+	}
+
+	// A game Cardmarket does not carry has no id, and the URL builders turn
+	// that into no link rather than a wrong one.
+	for _, name := range []string{"pokemon", "yugioh", "Magic: The Gathering"} {
+		if got := GameIdFromName(name); got != 0 {
+			t.Errorf("GameIdFromName(%q) = %d, want 0", name, got)
+		}
+	}
+	if got := SearchURL("Pikachu", GameIdFromName("pokemon"), "mtgban"); got != "" {
+		t.Errorf("uncovered game produced %q, want no link", got)
+	}
+	if got := BuildURL(1, GameIdFromName("pokemon"), "mtgban", false); got != "" {
+		t.Errorf("uncovered game produced %q, want no link", got)
+	}
+}
