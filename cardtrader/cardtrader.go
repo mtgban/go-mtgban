@@ -182,22 +182,36 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			return
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
-		if errors.Is(err, mtgmatcher.ErrUnsupported) {
-			continue
-		} else if err != nil {
-			ct.printf("%v", err)
-			ct.printf("%q", theCard)
-			ct.printf("%d %q", bpId, blueprint)
+		// The blueprint carries the TCGplayer product id, which names the
+		// printing outright instead of inferring it. It is worth trying
+		// first: for Lorcana it resolves cards the name and number cannot,
+		// and for the Riftbound promos it lands on the promo printing where
+		// the edition alone leaves the base one. Magic keeps its own
+		// preprocessing, and a blueprint without an id falls through.
+		var cardId string
+		if ct.gameId != GameIdMagic && blueprint.TCGplayerId != 0 {
+			cardId, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
+		}
 
-			var alias *mtgmatcher.AliasingError
-			if errors.As(err, &alias) {
-				for _, probe := range alias.Probe() {
-					co, _ := mtgmatcher.GetUUID(probe)
-					ct.printf("- %s", co)
+		if cardId == "" {
+			var err error
+			cardId, err = mtgmatcher.Match(theCard)
+			if errors.Is(err, mtgmatcher.ErrUnsupported) {
+				continue
+			} else if err != nil {
+				ct.printf("%v", err)
+				ct.printf("%q", theCard)
+				ct.printf("%d %q", bpId, blueprint)
+
+				var alias *mtgmatcher.AliasingError
+				if errors.As(err, &alias) {
+					for _, probe := range alias.Probe() {
+						co, _ := mtgmatcher.GetUUID(probe)
+						ct.printf("- %s", co)
+					}
 				}
+				continue
 			}
-			continue
 		}
 
 		// Foil listings share the plain id; adopt the foil id when one exists
