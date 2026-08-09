@@ -163,10 +163,18 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			if product.Properties.RiftboundLanguage != "en" {
 				continue
 			}
+			// A listing copies the collector number when it is created and
+			// never refreshes it, so a blueprint corrected later leaves its
+			// older listings quoting a number that now belongs to a
+			// different card. The blueprint is the authoritative one.
+			number := blueprint.Properties.Number
+			if number == "" {
+				number = product.Properties.Number
+			}
 			theCard = &mtgmatcher.InputCard{
 				Name:      blueprint.Name,
 				Edition:   blueprint.Expansion.Name,
-				Variation: product.Properties.Number,
+				Variation: number,
 				Foil:      product.Properties.RiftboundFoil,
 			}
 		default:
