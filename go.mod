@@ -115,3 +115,5 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	h12.io/socks v1.0.3 // indirect
 )
+
+retract v0.7.1 // broken riftbound finish
