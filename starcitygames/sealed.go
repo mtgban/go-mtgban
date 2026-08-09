@@ -3,7 +3,6 @@ package starcitygames
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -68,8 +67,10 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 		}
 	}()
 
-	// This scraper handles sealed only; singles have their own scraper.
-	if !strings.HasPrefix(p.SKU, "SLD-") {
+	// This scraper handles sealed only; singles have their own scraper,
+	// and the catalog also carries supplies and bulk lots. product_type
+	// states it outright, where the sku prefix only implied it.
+	if p.ProductType != ProductTypeSealed {
 		return
 	}
 	if gameFromCatalog(p.Game) != scg.game {

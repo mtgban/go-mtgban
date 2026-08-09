@@ -52,7 +52,13 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		}
 	}()
 
-	// This scraper handles singles only; sealed has its own scraper.
+	// This scraper handles singles only; sealed has its own scraper, and
+	// the catalog also carries supplies and bulk lots that are not cards
+	// at all. product_type says which is which, so nothing else has to
+	// infer it from the name or the sku.
+	if p.ProductType != ProductTypeSingles {
+		return
+	}
 	if !strings.HasPrefix(p.SKU, "SGL-") {
 		return
 	}
