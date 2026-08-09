@@ -280,6 +280,10 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 // ("227*"). A full public code ("OGN-066a/298") reduces to its number, and
 // the result is canonicalized exactly like the loader's numbers so
 // zero-padded feeds compare equal.
+//
+// A trailing "s" becomes the star: storefronts number the signed showcase
+// printings "302s" where the gallery numbers them "302*". The two never
+// collide, since no published number ends in a letter other than a, b or c.
 func extractNumber(variation string) string {
 	number := ""
 	for _, field := range strings.Fields(variation) {
@@ -292,5 +296,11 @@ func extractNumber(variation string) string {
 		number = number[idx+1:]
 	}
 	number = strings.Split(number, "/")[0]
-	return CanonicalNumber(number)
+	number = CanonicalNumber(number)
+	if len(number) > 1 && (number[len(number)-1] == 's' || number[len(number)-1] == 'S') {
+		if last := number[len(number)-2]; last >= '0' && last <= '9' {
+			number = number[:len(number)-1] + "*"
+		}
+	}
+	return number
 }

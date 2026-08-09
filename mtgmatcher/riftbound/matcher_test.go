@@ -58,6 +58,15 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ahri, Inquisitive", Variation: "227*"},
 	},
 	{
+		// Storefronts spell the star as a trailing "s"
+		Desc: "signed showcase number resolves to the starred printing",
+		In:   mtgmatcher.InputCard{Name: "Darius - Hand of Noxus", Variation: "302s"},
+	},
+	{
+		Desc: "unstarred number keeps the plain showcase printing",
+		In:   mtgmatcher.InputCard{Name: "Darius - Hand of Noxus", Variation: "302"},
+	},
+	{
 		Desc: "special prefixed number",
 		In:   mtgmatcher.InputCard{Name: "Ahri, Inquisitive", Variation: "SP3"},
 	},
