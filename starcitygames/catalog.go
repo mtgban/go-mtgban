@@ -16,10 +16,18 @@ import (
 // single JSON array, authenticated with an x-api-key header.
 const scgCatalogURL = "https://api.starcitygames.com/hawksearch/catalog/download/json"
 
+// Product types the catalog reports. Everything SCG sells shares one
+// export, so this is what separates cards from boxes from playmats.
+const (
+	ProductTypeSingles = "Singles"
+	ProductTypeSealed  = "Sealed"
+)
+
 // CatalogProduct is a single card printing in the catalog export.
 type CatalogProduct struct {
 	ID              int              `json:"id"`
 	SKU             string           `json:"sku"`
+	ProductType     string           `json:"product_type"`
 	ScryfallID      string           `json:"scryfall_id"`
 	TCGPlayerID     string           `json:"tcgplayer_id"`
 	URL             string           `json:"url"`
