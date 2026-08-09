@@ -154,7 +154,8 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 	for i := range blueprints {
 		switch blueprints[i].CategoryId {
 		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized,
-			CategoryLorcanaSingles, CategoryLorcanaOversized:
+			CategoryLorcanaSingles, CategoryLorcanaOversized,
+			CategoryRiftboundSingles, CategoryRiftboundOversized:
 			if sealed {
 				continue
 			}
