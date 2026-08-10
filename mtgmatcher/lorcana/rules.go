@@ -131,6 +131,12 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if !found {
 			continue
 		}
+		// Sealed products share the name buckets but never match as
+		// cards; without this a sealed product named like a card would
+		// read as an aliased printing of it
+		if co.Sealed {
+			continue
+		}
 		card := co.Card
 
 		if _, found := cardSet[card.SetCode]; !found {
