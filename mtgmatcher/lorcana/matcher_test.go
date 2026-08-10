@@ -284,6 +284,11 @@ func TestLorcanaFinishNames(t *testing.T) {
 
 	subTypes := map[string]int{}
 	for uuid, co := range b.UUIDs {
+		// Sealed products live outside the finish machinery: no finish,
+		// no finish-suffixed uuid, nothing to derive
+		if co.Sealed {
+			continue
+		}
 		if co.Foil {
 			if co.Finish == "" || co.Finish == "none" || co.Finish == mtgmatcher.FinishNonfoil {
 				t.Errorf("%s: foil entry with finish %q", uuid, co.Finish)

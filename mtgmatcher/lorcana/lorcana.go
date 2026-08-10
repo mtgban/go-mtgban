@@ -81,11 +81,27 @@ type LorcanaJSON struct {
 			// to this same printing, which upstream does not carry: TCGplayer
 			// sometimes sells a card's foil under its own product id, and a
 			// feed keyed on that id has nothing to match against otherwise.
-			// Populated by cmd/lorcanadatastore; absent from the upstream
+			// Populated by lorcana-datastore; absent from the upstream
 			// file, where it simply stays empty.
 			TcgPlayerExtraIds []int `json:"tcgPlayerExtraIds,omitempty"`
 		} `json:"externalLinks"`
 	} `json:"cards"`
+
+	// Sealed is not part of the upstream file; lorcana-datastore appends
+	// every sealed product the TCGplayer catalog files outside the singles
+	// type, minting a set entry for the groups upstream has no set for. A
+	// datastore built from the plain upstream file simply loads without
+	// sealed products.
+	Sealed []struct {
+		ID            string `json:"id"`
+		Name          string `json:"name"`
+		SetCode       string `json:"setCode"`
+		ReleaseDate   string `json:"releaseDate"`
+		Image         string `json:"image"`
+		ExternalLinks struct {
+			TcgPlayerId int `json:"tcgPlayerId"`
+		} `json:"externalLinks"`
+	} `json:"sealed,omitempty"`
 }
 
 // Load reads a LorcanaJSON data file from r and returns the parsed
@@ -109,6 +125,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
+	b.SetSealedUUIDs = map[string][]string{}
 
 	// Load all sets first
 	b.Sets = map[string]*mtgmatcher.Set{}
@@ -355,6 +372,85 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 
 		sort.Strings(colors)
 		b.Sets[code].Colors = colors
+	}
+
+	// Load sealed products. They live in the sealed namespace throughout:
+	// their uuids join AllSealedUUIDs and their names the sealed name
+	// index, and the product id is carried as an identifier for
+	// BuildSealedProductMap rather than entering the external identifier
+	// index, mirroring how Magic and Riftbound keep sealed products out
+	// of MatchId's reach.
+	var mintedSets bool
+	for _, product := range lj.Sealed {
+		// The builder mints a set entry for every group it emits sealed
+		// from, so an unknown code is a hand-made file; give the product
+		// a set to hang off all the same
+		if b.Sets[product.SetCode] == nil {
+			mintedSets = true
+			b.AllSets = append(b.AllSets, product.SetCode)
+			releaseDateTime, _ := time.Parse("2006-01-02", product.ReleaseDate)
+			b.Sets[product.SetCode] = &mtgmatcher.Set{
+				Name:            product.SetCode,
+				Code:            product.SetCode,
+				ReleaseDate:     product.ReleaseDate,
+				ReleaseDateTime: releaseDateTime,
+			}
+		}
+
+		card := mtgmatcher.Card{
+			UUID:    product.ID,
+			Name:    product.Name,
+			SetCode: product.SetCode,
+			Rarity:  "product",
+			Identifiers: map[string]string{
+				"tcgplayerProductId": fmt.Sprint(product.ExternalLinks.TcgPlayerId),
+			},
+			Images: map[string]string{
+				"full":      product.Image,
+				"thumbnail": product.Image,
+			},
+			Language: "English",
+		}
+
+		b.Sets[product.SetCode].SealedProduct = append(b.Sets[product.SetCode].SealedProduct, mtgmatcher.SealedProduct{
+			UUID:        product.ID,
+			Name:        product.Name,
+			SetCode:     product.SetCode,
+			Identifiers: card.Identifiers,
+		})
+
+		if _, found := b.UUIDs[product.ID]; found {
+			continue
+		}
+		// The name lists are gated on their own contents rather than on
+		// bucket existence: a card can already own the bucket, and the
+		// sealed name must still be searchable
+		n := mtgmatcher.Normalize(product.Name)
+		if !slices.Contains(b.AllSealed, n) {
+			b.AllSealed = append(b.AllSealed, n)
+			b.AllCanonicalSealed = append(b.AllCanonicalSealed, product.Name)
+			b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(product.Name))
+		}
+		b.Hashes[n] = append(b.Hashes[n], product.ID)
+
+		b.UUIDs[product.ID] = &mtgmatcher.CardObject{
+			Card:    card,
+			Edition: b.Sets[product.SetCode].Name,
+			Sealed:  true,
+		}
+		b.AllSealedUUIDs = append(b.AllSealedUUIDs, product.ID)
+		b.SetSealedUUIDs[product.SetCode] = append(b.SetSealedUUIDs[product.SetCode], product.ID)
+	}
+	sort.Strings(b.AllSealedUUIDs)
+	for code := range b.SetSealedUUIDs {
+		sort.Strings(b.SetSealedUUIDs[code])
+	}
+	sort.Strings(b.AllSealed)
+	sort.Strings(b.AllCanonicalSealed)
+	sort.Strings(b.AllLowerSealed)
+	if mintedSets {
+		sort.Strings(b.AllSets)
+		b.IndexSets()
 	}
 
 	b.SetRules(Rules{})
