@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -164,6 +165,37 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 	}
 
 	return inventory
+}
+
+// BlueprintsForGame fetches every blueprint of a game, one expansion at a
+// time, skipping the expansions that fail to fetch rather than aborting
+// the lot. A non-empty targetEdition narrows the fetch to that expansion
+// by name or code; logf, when given, reports the skips. The expansions
+// are returned too, since callers key edition names off them.
+func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameId int, targetEdition string, logf func(string, ...interface{})) ([]Blueprint, []Expansion, error) {
+	expansions, err := client.Expansions(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var blueprints []Blueprint
+	for _, exp := range expansions {
+		if exp.GameId != gameId {
+			continue
+		}
+		if targetEdition != "" && exp.Name != targetEdition && exp.Code != strings.ToLower(targetEdition) {
+			continue
+		}
+		bp, err := client.Blueprints(ctx, exp.Id)
+		if err != nil {
+			if logf != nil {
+				logf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
+			}
+			continue
+		}
+		blueprints = append(blueprints, bp...)
+	}
+	return blueprints, expansions, nil
 }
 
 // gameLanguage and gameFoil read a listing's language and foil flag for the
