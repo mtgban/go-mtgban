@@ -205,7 +205,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 
 	number := extractNumber(inCard.Variation)
-	var match string
+	var match, matchNorm string
 	for _, uuid := range uuids {
 		co, err := b.GetUUID(uuid)
 		if err != nil {
@@ -214,17 +214,20 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if number != "" && !strings.EqualFold(number, co.Number) {
 			continue
 		}
-		if inCard.Foil && !co.HasFinish(mtgmatcher.FinishFoil) {
-			continue
-		}
-		if !inCard.Foil && !co.HasFinish(mtgmatcher.FinishNonfoil) {
-			continue
-		}
-		if match != "" && match != co.Name {
+		// The finish deliberately does not narrow here, for the same reason
+		// FilterCards does not gate on it: half the game is sold in a single
+		// finish, so a wrong or missing flag would drop the true candidate.
+		//
+		// Names compare normalized because the promo sets spell the epithet
+		// with a dash where the main sets use a comma ("Annie - Fiery" for
+		// OGS's "Annie, Fiery"). Match already resolves both spellings to one
+		// card, so meeting both is not the ambiguity it looks like.
+		norm := mtgmatcher.Normalize(co.Name)
+		if match != "" && matchNorm != norm {
 			// Different names survive the filters: genuinely ambiguous.
 			return
 		}
-		match = co.Name
+		match, matchNorm = co.Name, norm
 	}
 	if match != "" {
 		inCard.Name = match

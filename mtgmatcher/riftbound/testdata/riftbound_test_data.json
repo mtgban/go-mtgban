@@ -318,6 +318,22 @@
         "uuid": "unl-t05_nonfoil"
     },
     {
+        "description": "truncated name colliding with a promo of the same number",
+        "input": {
+            "name": "Annie, F",
+            "variant": "1"
+        },
+        "uuid": "ogs-001-024_nonfoil"
+    },
+    {
+        "description": "truncated name of a foil-only printing without the flag",
+        "input": {
+            "name": "Ahri, Inquis",
+            "variant": "227*"
+        },
+        "uuid": "sfd-227-star-221_foil"
+    },
+    {
         "description": "unstarred number keeps the plain showcase printing",
         "input": {
             "name": "Darius - Hand of Noxus",
