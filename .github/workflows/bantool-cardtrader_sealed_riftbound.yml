@@ -1,0 +1,26 @@
+name: cardtrader_sealed_riftbound
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [cardtrader_sealed_riftbound]
+  schedule:
+    - cron: "15 */12 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-cardtrader
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: ${{ github.workflow }}
+      game: "riftbound"
+      datastore-filepath: b2://mtgban-datastore/riftbound/riftbound.json.xz
+    secrets: inherit
