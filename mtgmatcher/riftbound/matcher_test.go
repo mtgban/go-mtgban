@@ -167,11 +167,24 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Edge of Night", Variation: "139", Edition: "Spiritforged"},
 	},
 	{
-		// Not an error: an unknown qualifier is one the gallery does not
-		// describe, so the main printing of that number is still the best
-		// answer available.
-		Desc: "a promo qualifier no printing carries falls back to the main printing",
+		// An unknown qualifier under a promo heading refuses to pick: the
+		// old fallback to the main printing was the same mispricing shape
+		// CoolStuffInc showed for champion-stamped cards. Relabeled when
+		// promo types reached the published datastore.
+		Desc: "negative: a promo qualifier no printing carries refuses to pick one",
 		In:   mtgmatcher.InputCard{Name: "Edge of Night (Winner Stamp)", Variation: "139", Edition: "Promo"},
+	},
+	{
+		Desc: "a per-set promo heading reaches the promo printing",
+		In:   mtgmatcher.InputCard{Name: "Stacked Deck", Edition: "Origins: Promos", Variation: "183", Foil: true},
+	},
+	{
+		Desc: "the storefront wording picks the promo variant it describes",
+		In:   mtgmatcher.InputCard{Name: "Jinx - Loose Cannon (Metal) (Best Of)", Edition: "Promo"},
+	},
+	{
+		Desc: "without a qualifier the plain promo answers, not a variant",
+		In:   mtgmatcher.InputCard{Name: "Jinx - Loose Cannon", Edition: "Promo", Variation: "251"},
 	},
 	{
 		Desc: "promo-shaped legend name still reaches the main set",
