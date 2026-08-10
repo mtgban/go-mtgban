@@ -159,6 +159,12 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	if len(productMap) == 0 {
 		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
 		for id, bp := range blueprints {
+			// An unlinked blueprint carries a zero id; the singles path
+			// skips those, and looking one up would funnel every such
+			// listing onto whatever product shares the missing link.
+			if bp.TCGplayerId == 0 {
+				continue
+			}
 			uuids, found := tcgMap[bp.TCGplayerId]
 			if !found {
 				continue
