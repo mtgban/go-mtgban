@@ -189,3 +189,28 @@ func TestSealedAbsentSectionLoads(t *testing.T) {
 		t.Errorf("AllSealedUUIDs = %v, want empty", b.AllSealedUUIDs)
 	}
 }
+
+func TestSealedZeroProductId(t *testing.T) {
+	// A product the builder could not link to TCGplayer ships without an
+	// id. Stamping the zero value would give BuildSealedProductMap a
+	// shared key 0 for every unlinked storefront listing to funnel onto.
+	fixture := strings.Replace(sealedFixture,
+		`"externalLinks": {"tcgPlayerId": 600002}`, `"externalLinks": {"tcgPlayerId": 0}`, 1)
+	b, err := Load(strings.NewReader(fixture))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	co, err := b.GetUUID("d23-600002")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, found := co.Identifiers["tcgplayerProductId"]; found {
+		t.Errorf("tcgplayerProductId = %q, want absent", got)
+	}
+
+	productMap := b.BuildSealedProductMap("tcgplayerProductId")
+	if got, found := productMap[0]; found {
+		t.Errorf("productMap[0] = %v, want absent", got)
+	}
+}

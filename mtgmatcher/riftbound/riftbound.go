@@ -375,14 +375,19 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			Name:    product.Name,
 			SetCode: setCode,
 			Rarity:  "product",
-			Identifiers: map[string]string{
-				"tcgplayerProductId": fmt.Sprint(product.TCGplayerProductID),
-			},
 			Images: map[string]string{
 				"full":      product.CardImage.URL,
 				"thumbnail": product.CardImage.URL,
 			},
 			Language: "English",
+		}
+		// A product the builder could not link carries no identifier at
+		// all: stamping the zero value would give BuildSealedProductMap a
+		// shared key 0 for every unlinked storefront listing to funnel onto.
+		if product.TCGplayerProductID != 0 {
+			card.Identifiers = map[string]string{
+				"tcgplayerProductId": fmt.Sprint(product.TCGplayerProductID),
+			}
 		}
 
 		b.Sets[setCode].SealedProduct = append(b.Sets[setCode].SealedProduct, mtgmatcher.SealedProduct{

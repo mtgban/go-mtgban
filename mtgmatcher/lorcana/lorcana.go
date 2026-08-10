@@ -235,10 +235,6 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 			IsPromo:   card.NonPromoID != 0,
 
 			OriginalNumber: fmt.Sprintf("%d", card.Number),
-
-			Identifiers: map[string]string{
-				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerId),
-			},
 		}
 		// Register the uuid each finish resolves to. Nonfoil keeps the base
 		// uuid and the primary foil keeps "_f", so output()/Match resolve to
@@ -286,15 +282,19 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 		}
 		convertedCard.FoilUUIDs = finishUUIDs
 
-		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
-
-		// A card LorcanaJSON has no TCGplayer link for carries a zero id, and
+		// A card LorcanaJSON has no TCGplayer link for carries a zero id:
 		// registering that would file every one of them under "0" for the
 		// next to overwrite, leaving a key that resolves to whichever card
-		// happened to load last.
+		// happened to load last, and stamping it as an identifier would
+		// advertise a product id no product carries.
 		if card.ExternalLinks.TcgPlayerId != 0 {
+			convertedCard.Identifiers = map[string]string{
+				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerId),
+			}
 			b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
 		}
+
+		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 		// Alternate products for the same printing resolve to the same base
 		// uuid; MatchId applies the requested finish to it through output(),
 		// so pointing them at the base card is enough to reach the foil. Only
@@ -402,14 +402,16 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 			Name:    product.Name,
 			SetCode: product.SetCode,
 			Rarity:  "product",
-			Identifiers: map[string]string{
-				"tcgplayerProductId": fmt.Sprint(product.ExternalLinks.TcgPlayerId),
-			},
 			Images: map[string]string{
 				"full":      product.Image,
 				"thumbnail": product.Image,
 			},
 			Language: "English",
+		}
+		if product.ExternalLinks.TcgPlayerId != 0 {
+			card.Identifiers = map[string]string{
+				"tcgplayerProductId": fmt.Sprint(product.ExternalLinks.TcgPlayerId),
+			}
 		}
 
 		b.Sets[product.SetCode].SealedProduct = append(b.Sets[product.SetCode].SealedProduct, mtgmatcher.SealedProduct{
