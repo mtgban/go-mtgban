@@ -145,6 +145,17 @@ jobs:
           key: ${{ needs.cache-riftbound.outputs.key }}
           fail-on-cache-miss: true
 
+      # Any red run states exactly which datastore bytes it tested
+      # against, diffable against the bucket or a local build; a golden
+      # failure is diagnosed by fingerprint instead of by guessing which
+      # version of a datastore the run happened to hold.
+      - name: Datastore fingerprints
+        run: |
+          sha256sum ${{ needs.cache-datastore.outputs.filepath }} \
+            ${{ needs.cache-lorcana.outputs.filepath }} \
+            ${{ needs.cache-riftbound.outputs.filepath }}
+          ls -l datastore/
+
       - name: Build CI
         env:
           ALLPRINTINGS5_PATH: "${{ github.workspace }}/datastore/allprintings5.json"
