@@ -1,0 +1,26 @@
+name: miniaturemarket_sealed_lorcana
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [miniaturemarket_sealed_lorcana]
+  schedule:
+    - cron: "10 */12 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-miniaturemarket
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: ${{ github.workflow }}
+      game: "lorcana"
+      datastore-filepath: b2://mtgban-datastore/lorcana/lorcana.json.xz
+    secrets: inherit

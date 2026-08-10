@@ -257,7 +257,7 @@ var options = map[string]*scraperOption{
 	},
 	"coolstuffinc_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := coolstuffinc.NewScraperSealed()
+			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameMagic)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CSI_PARTNER")
 			if MaxConcurrency != 0 {
@@ -309,9 +309,31 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"miniaturemarket_sealed_lorcana": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameLorcana)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"miniaturemarket_sealed_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameRiftbound)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"miniaturemarket_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := miniaturemarket.NewScraperSealed()
+			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameMagic)
 			scraper.LogCallback = GlobalLogCallback
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
@@ -648,6 +670,17 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"coolstuffinc_sealed_lorcana": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameLorcana)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"coolstuffinc_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper(coolstuffinc.GameLorcana)
@@ -828,6 +861,17 @@ var options = map[string]*scraperOption{
 			}
 			scraper.ShareCode = os.Getenv("CT_PARTNER")
 			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"coolstuffinc_sealed_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameRiftbound)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
