@@ -72,6 +72,47 @@ type scraperOption struct {
 	Init       func() (mtgban.Scraper, error)
 }
 
+// cardtraderSealedBridge maps every Cardmarket product id to the TCGplayer
+// id of the same sealed product, read off cardtrader's blueprints - the one
+// source linking the two marketplaces' ids. The cardmarket sealed scraper
+// receives it as plain data, so the composition of the two vendors happens
+// here and nowhere else.
+func cardtraderSealedBridge(gameId int) (map[int]int, error) {
+	ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+	if ctTokenBearer == "" {
+		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+	}
+	client := cardtrader.NewCTAuthClient(ctTokenBearer)
+
+	ctx := context.Background()
+	expansions, err := client.Expansions(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	bridge := map[int]int{}
+	for _, exp := range expansions {
+		if exp.GameId != gameId {
+			continue
+		}
+		blueprints, err := client.Blueprints(ctx, exp.Id)
+		if err != nil {
+			log.Printf("bridge: skipping %d %s: %s", exp.Id, exp.Name, err.Error())
+			continue
+		}
+		for _, bp := range blueprints {
+			if bp.TCGplayerId == 0 {
+				continue
+			}
+			for _, mkmId := range bp.CardMarketIds {
+				bridge[mkmId] = bp.TCGplayerId
+			}
+		}
+	}
+	log.Printf("bridge: %d cardmarket ids linked to a tcgplayer id", len(bridge))
+	return bridge, nil
+}
+
 func init() {
 	MaxConcurrency, _ = strconv.Atoi(os.Getenv("MAX_CONCURRENCY"))
 
@@ -575,6 +616,30 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardmarket_sealed_lorcana": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdLorcana, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.TCGBridge, err = cardtraderSealedBridge(cardtrader.GameIdLorcana)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"cardtrader_sealed_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
@@ -602,6 +667,18 @@ var options = map[string]*scraperOption{
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
+			return scraper, nil
+		},
+	},
+	"starcitygames_sealed_lorcana": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
+			}
+			scraper := starcitygames.NewScraperSealed(starcitygames.GameLorcana, scgAPIKey)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			return scraper, nil
 		},
 	},
@@ -725,6 +802,30 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardmarket_sealed_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdRiftbound, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.TCGBridge, err = cardtraderSealedBridge(cardtrader.GameIdRiftbound)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"cardtrader_sealed_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
@@ -752,6 +853,18 @@ var options = map[string]*scraperOption{
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
+			return scraper, nil
+		},
+	},
+	"starcitygames_sealed_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
+			}
+			scraper := starcitygames.NewScraperSealed(starcitygames.GameRiftbound, scgAPIKey)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			return scraper, nil
 		},
 	},
