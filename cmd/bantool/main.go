@@ -367,7 +367,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing SCG_API_KEY env var")
 			}
 
-			scraper := starcitygames.NewScraperSealed(scgAPIKey)
+			scraper := starcitygames.NewScraperSealed(starcitygames.GameMagic, scgAPIKey)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("SCG_PARTNER")
 			return scraper, nil
