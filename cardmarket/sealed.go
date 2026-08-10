@@ -20,6 +20,13 @@ type CardMarketSealed struct {
 	// Optional field to select a single product name to go through
 	TargetProduct string
 
+	// TCGBridge maps a Cardmarket product id to the TCGplayer id of the
+	// same sealed product, for datastores that do not catalog cardmarket's
+	// own ids (riftbound, lorcana). bantool builds it from cardtrader's
+	// blueprints, the one source linking the two marketplaces; the scraper
+	// itself stays vendor-pure and receives it as plain data.
+	TCGBridge map[int]int
+
 	inventoryDate time.Time
 	exchangeRate  float64
 
@@ -35,12 +42,17 @@ func (mkm *CardMarketSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperSealed(appToken, appSecret string) (*CardMarketSealed, error) {
+func NewScraperSealed(gameId int, appToken, appSecret string) (*CardMarketSealed, error) {
+	switch gameId {
+	case GameIdMagic, GameIdLorcana, GameIdRiftbound:
+	default:
+		return nil, fmt.Errorf("unsupported game %d", gameId)
+	}
 	mkm := CardMarketSealed{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
-	mkm.gameId = GameIdMagic
+	mkm.gameId = gameId
 	return &mkm, nil
 }
 
@@ -165,22 +177,58 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 
+	// A datastore that does not catalog cardmarket's own ids resolves over
+	// the TCGplayer bridge instead, with the sealed-name resolver catching
+	// what the bridge does not link yet.
+	nameFallback := false
+	if len(productMap) == 0 && len(mkm.TCGBridge) > 0 {
+		nameFallback = true
+		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+		for mkmId, tcgId := range mkm.TCGBridge {
+			uuids, found := tcgMap[tcgId]
+			if !found {
+				continue
+			}
+			productMap[mkmId] = uuids
+		}
+		mkm.printf("Bridged %d sealed products through the TCGplayer id", len(productMap))
+	}
+
 	productList, err := GetProductListSealed(ctx, mkm.gameId)
 	if err != nil {
 		return err
 	}
 	mkm.printf("Loaded %d mkm products", len(productList))
 
+	var resolved int
 	var productIds []int
 	for _, product := range productList {
-		_, found := productMap[product.IdProduct]
-		if !found {
-			continue
-		}
 		if mkm.TargetProduct != "" && mkm.TargetProduct != product.Name {
 			continue
 		}
+		_, found := productMap[product.IdProduct]
+		if !found && nameFallback {
+			// The English-only datastores never carry the language
+			// variants, whose prices must not land on the English
+			// product's uuid.
+			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
+				continue
+			}
+			uuid, err := mtgmatcher.ResolveSealed(product.Name)
+			if err != nil {
+				continue
+			}
+			productMap[product.IdProduct] = []string{uuid}
+			resolved++
+			found = true
+		}
+		if !found {
+			continue
+		}
 		productIds = append(productIds, product.IdProduct)
+	}
+	if resolved > 0 {
+		mkm.printf("Resolved %d more sealed products by name", resolved)
 	}
 	mkm.printf("Mapped %d mkm products to sealed products", len(productIds))
 
@@ -233,5 +281,13 @@ func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.SealedMode = true
+	switch mkm.gameId {
+	case GameIdMagic:
+		info.Game = mtgban.GameMagic
+	case GameIdLorcana:
+		info.Game = mtgban.GameLorcana
+	case GameIdRiftbound:
+		info.Game = mtgban.GameRiftbound
+	}
 	return
 }
