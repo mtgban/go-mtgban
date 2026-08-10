@@ -9,6 +9,16 @@
         "uuid": "opp-684999_foil"
     },
     {
+        "description": "a per-set promo heading reaches the promo printing",
+        "input": {
+            "name": "Stacked Deck",
+            "variant": "183",
+            "edition": "Origins: Promos",
+            "foil": true
+        },
+        "uuid": "opp-662906_foil"
+    },
+    {
         "description": "a promo heading naming no set still reaches the promo printing",
         "input": {
             "name": "Jinx - Loose Cannon",
@@ -16,15 +26,6 @@
             "edition": "Promo"
         },
         "uuid": "opp-662894_foil"
-    },
-    {
-        "description": "a promo qualifier no printing carries falls back to the main printing",
-        "input": {
-            "name": "Edge of Night (Winner Stamp)",
-            "variant": "139",
-            "edition": "Promo"
-        },
-        "uuid": "sfd-139-221_foil"
     },
     {
         "description": "base printing wins over its promos by default",
@@ -106,6 +107,15 @@
             "variant": "66"
         },
         "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "negative: a promo qualifier no printing carries refuses to pick one",
+        "input": {
+            "name": "Edge of Night (Winner Stamp)",
+            "variant": "139",
+            "edition": "Promo"
+        },
+        "error": "aliasing detected"
     },
     {
         "description": "negative: edition excludes the printing carrying the number",
@@ -283,6 +293,14 @@
         "uuid": "ogn-251-298_foil"
     },
     {
+        "description": "the storefront wording picks the promo variant it describes",
+        "input": {
+            "name": "Jinx - Loose Cannon (Metal) (Best Of)",
+            "edition": "Promo"
+        },
+        "uuid": "opp-669252_foil"
+    },
+    {
         "description": "the unqualified name keeps the main printing of that number",
         "input": {
             "name": "Edge of Night",
@@ -306,6 +324,15 @@
             "variant": "302"
         },
         "uuid": "ogn-302-298_foil"
+    },
+    {
+        "description": "without a qualifier the plain promo answers, not a variant",
+        "input": {
+            "name": "Jinx - Loose Cannon",
+            "variant": "251",
+            "edition": "Promo"
+        },
+        "uuid": "opp-662894_foil"
     },
     {
         "description": "zero-padded letter variant has its own number",
