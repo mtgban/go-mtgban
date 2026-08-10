@@ -460,14 +460,22 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	return &b
 }
 
+// lorcanaRarityMap ranks the rarities so a set can list them in a stable
+// order. The tiers past the base set are ranked by the collector numbers
+// LorcanaJSON gives them: from Fabled on, a set runs epic, then enchanted,
+// then the two iconic cards that close it out. A rarity absent from here
+// ranks 0 and would sort below common, so every printed rarity belongs in
+// the table; "special" keeps the top slot it has always held.
 var lorcanaRarityMap = map[string]int{
 	"common":    1,
 	"uncommon":  2,
 	"rare":      3,
 	"superrare": 4,
 	"legendary": 5,
-	"enchanted": 6,
-	"special":   7,
+	"epic":      6,
+	"enchanted": 7,
+	"iconic":    8,
+	"special":   9,
 }
 
 const suffixFoil = "_f"
