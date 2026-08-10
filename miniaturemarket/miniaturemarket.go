@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -22,21 +23,38 @@ type Miniaturemarket struct {
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
 	productMap    map[string]string
+	game          string
 }
 
-func NewScraperSealed() *Miniaturemarket {
+const (
+	GameMagic     = "magic"
+	GameLorcana   = "lorcana"
+	GameRiftbound = "riftbound"
+)
+
+// gameWidgets are the CMS navigation ids behind each game's storefront
+// category, read off the category pages; the widget serves the paginated
+// product listing the scraper walks.
+var gameWidgets = map[string]string{
+	GameMagic:     "be53d253d6bc3258a8160556dda3e9b2",
+	GameLorcana:   "4e0223a87610176ef0d24ef6d2dcde3a",
+	GameRiftbound: "019be122ca9779e5af00a663d064f775",
+}
+
+func NewScraperSealed(game string) *Miniaturemarket {
 	mm := Miniaturemarket{}
 	mm.inventory = mtgban.InventoryRecord{}
 	mm.MaxConcurrency = defaultConcurrency
 	mm.productMap = map[string]string{}
+	mm.game = game
 	return &mm
 }
 
-const (
-	defaultConcurrency = 6
+const defaultConcurrency = 6
 
-	mainURL = "https://www.miniaturemarket.com/widgets/cms/navigation/be53d253d6bc3258a8160556dda3e9b2?filter-inStock=1&no-aggregations=1&order=name-asc&p=1"
-)
+func (mm *Miniaturemarket) mainURL() string {
+	return "https://www.miniaturemarket.com/widgets/cms/navigation/" + gameWidgets[mm.game] + "?filter-inStock=1&no-aggregations=1&order=name-asc&p=1"
+}
 
 type respChan struct {
 	cardId   string
@@ -50,7 +68,7 @@ func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
 }
 
 func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respChan, page int) error {
-	u, err := url.Parse(mainURL)
+	u, err := url.Parse(mm.mainURL())
 	if err != nil {
 		return err
 	}
@@ -78,7 +96,28 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 		id, _ := s.Find(`input[name="product-id"]`).Attr("value")
 		uuid, found := mm.productMap[id]
 		if !found {
-			return
+			if mm.game == GameMagic {
+				return
+			}
+			// The other games' datastores carry no miniaturemarket ids:
+			// resolve the product by its listed name, English only,
+			// unique or nothing. A failing name retries without its
+			// trailing decoration ("(New Arrival)"), which resolution
+			// rightly refuses to see past on its own.
+			name := strings.TrimSpace(s.Find(`a.product-name`).Text())
+			if name == "" || mtgmatcher.SealedIsLanguageVariant(name) {
+				return
+			}
+			resolved, err := mtgmatcher.ResolveSealed(name)
+			if err != nil {
+				if idx := strings.LastIndexByte(name, '('); idx > 0 {
+					resolved, err = mtgmatcher.ResolveSealed(name[:idx])
+				}
+				if err != nil {
+					return
+				}
+			}
+			uuid = resolved
 		}
 
 		link, _ := s.Find(`a.product-name`).Attr("href")
@@ -106,7 +145,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 }
 
 func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mainURL, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mm.mainURL(), http.NoBody)
 	if err != nil {
 		return 0, err
 	}
@@ -122,12 +161,19 @@ func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
 		return 0, err
 	}
 
+	// A catalog that fits one page renders no pagination at all
 	href, _ := doc.Find("a.page-link").Last().Attr("href")
+	if href == "" {
+		return 1, nil
+	}
 	u, err := url.Parse(href)
 	if err != nil {
 		return 0, err
 	}
 	num := u.Query().Get("p")
+	if num == "" {
+		return 1, nil
+	}
 	return strconv.Atoi(num)
 }
 
@@ -140,6 +186,9 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		mm.productMap[co.Identifiers["miniaturemarketId"]] = uuid
 	}
 	mm.printf("Loaded %d sealed products", len(mm.productMap))
+	if mm.game != GameMagic {
+		mm.printf("Resolving %s products by name", mm.game)
+	}
 
 	totalProducts, err := mm.NumberOfProducts(ctx)
 	if err != nil {
@@ -180,5 +229,13 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mm.inventoryDate
 	info.SealedMode = true
 	info.NoQuantityInventory = true
+	switch mm.game {
+	case GameMagic:
+		info.Game = mtgban.GameMagic
+	case GameLorcana:
+		info.Game = mtgban.GameLorcana
+	case GameRiftbound:
+		info.Game = mtgban.GameRiftbound
+	}
 	return
 }
