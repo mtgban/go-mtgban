@@ -44,6 +44,8 @@ func sealedTokens(name string) []string {
 			tok = "pack"
 		case "decks":
 			tok = "deck"
+		case "versus":
+			tok = "vs"
 		}
 		set[tok] = true
 	}
