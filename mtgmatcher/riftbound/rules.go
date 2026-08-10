@@ -78,10 +78,14 @@ func editionIsPromo(b *mtgmatcher.Backend, edition string) bool {
 		return true
 	}
 	set, err := b.GetSetByName(edition)
-	if err != nil {
-		return false
+	if err == nil {
+		return set.Type == "promo"
 	}
-	return set.Type == "promo"
+	// Storefronts also file promos under the set whose printing they
+	// reprint - Cardmarket's "Origins: Promos" holds organized-play
+	// cards - which names no set of ours but still says promo. The
+	// needle is normalized too: Normalize folds the plural away.
+	return strings.HasSuffix(mtgmatcher.Normalize(edition), mtgmatcher.Normalize("Promos"))
 }
 
 // promoEditions are the headings storefronts use for promotional printings
@@ -253,6 +257,17 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if name, found := storefrontEditions[mtgmatcher.Normalize(edition)]; found {
 		edition = name
 	}
+	// Every promo heading collapses onto one canonical heading - editions
+	// naming a real set returned at the top, and no set name ends in
+	// "Promos". "Promos" also occurs in no set name, so the core name
+	// heuristics cannot narrow the candidates on it: the heading spans
+	// several promotional sets, and the promo tiers in FilterCards choose
+	// instead of whichever set name happens to contain the heading's
+	// words. Checked without GetSetByName, which runs this very hook.
+	if promoEditions[mtgmatcher.Normalize(edition)] ||
+		strings.HasSuffix(mtgmatcher.Normalize(edition), mtgmatcher.Normalize("Promos")) {
+		edition = "Promos"
+	}
 	inCard.Edition = edition
 }
 
@@ -388,7 +403,90 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// the flag wrongly, or does not report it at all.
 		out = append(out, card)
 	}
+
+	// Sibling promos share one clean name - and, for the organized-play
+	// cards, even the main set's collector number - so the number alone
+	// can leave several candidates. They rank in tiers:
+	//
+	//  1. A variant whose promo types are all said by the storefront's own
+	//     wording. The containment direction qualified names used, so
+	//     "(Top 8)" cannot answer for a plain "Top".
+	//  2. A promotional printing without promo types: the input targeted a
+	//     promo, so under equal numbers the promo outranks the main-set
+	//     sibling, and its plain variant outranks the decorated ones.
+	//  3. A typed variant the wording never described, but only when it
+	//     said nothing at all beyond the number and the finish: the number
+	//     alone reaches a variant a storefront lists by number, while a
+	//     qualifier that matched no variant must not pick one anyway.
+	//  4. The cards without promo types - the whole candidate list of a
+	//     datastore from before the types were recorded, and the main-set
+	//     fallback for a qualifier no printing carries.
+	var described, promoPlain, promoTyped, untyped []mtgmatcher.Card
+	for _, card := range out {
+		promo := false
+		if set, found := b.Sets[card.SetCode]; found && set.Type == "promo" {
+			promo = true
+		}
+		switch {
+		case len(card.PromoTypes) > 0 && wordsDescribe(inCard.Variation, card.PromoTypes):
+			described = append(described, card)
+		case promo && len(card.PromoTypes) == 0:
+			promoPlain = append(promoPlain, card)
+		case promo:
+			promoTyped = append(promoTyped, card)
+		default:
+			untyped = append(untyped, card)
+		}
+	}
+	if len(described) > 0 {
+		return described
+	}
+	if len(promoPlain) > 0 {
+		return promoPlain
+	}
+	if len(promoTyped) > 0 && len(qualifierWords(inCard.Variation)) == 0 {
+		return promoTyped
+	}
+	if len(untyped) > 0 {
+		return untyped
+	}
 	return out
+}
+
+// qualifierWords are the storefront's qualifying words: what the variation
+// says beyond the collector number and the finish vocabulary that rides
+// along with it.
+func qualifierWords(variation string) []string {
+	var out []string
+	for _, field := range strings.Fields(strings.ToLower(variation)) {
+		if strings.ContainsAny(field, "0123456789") {
+			continue
+		}
+		switch field {
+		case "foil", "nonfoil", "non-foil", "normal":
+			continue
+		}
+		out = append(out, field)
+	}
+	return out
+}
+
+// wordsDescribe reports whether every word of every promo type is said in
+// the storefront wording, compared word by word in lower case like
+// qualifiedPromoName does.
+func wordsDescribe(wording string, promoTypes []string) bool {
+	said := map[string]bool{}
+	for _, word := range strings.Fields(strings.ToLower(wording)) {
+		said[word] = true
+	}
+	for _, promoType := range promoTypes {
+		for _, word := range strings.Fields(strings.ToLower(promoType)) {
+			if !said[word] {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // extractNumber pulls the collector number out of the scraper-supplied
