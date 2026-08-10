@@ -26,6 +26,8 @@ func sealedResolveBackend() *Backend {
 		"sfd-pack":       "Spiritforged - Booster Pack",
 		"sfd-nexus":      "Spiritforged - Nexus Night Promo Pack",
 		"ven-pack":       "Vendetta - Booster Pack",
+		"ven-showdown":   "Showdown Decks: Zed vs Shen",
+		"ven-showdown-d": "Showdown Decks: Zed vs Shen Display",
 		"tfc-pack":       "Disney Lorcana: The First Chapter Booster Pack",
 		"tfc-display":    "Disney Lorcana: The First Chapter Booster Box",
 		"tfc-case":       "Disney Lorcana: The First Chapter Booster Box Case",
@@ -61,6 +63,11 @@ func TestResolveSealed(t *testing.T) {
 			desc: "bare booster is the pack",
 			name: "Vendetta Booster",
 			want: "ven-pack",
+		},
+		{
+			desc: "versus folds onto vs, display variant stays apart",
+			name: "Riftbound: League of Legends TCG - Vendetta Showdown Decks - Zed versus Shen",
+			want: "ven-showdown",
 		},
 		{
 			desc: "box folds onto display",
