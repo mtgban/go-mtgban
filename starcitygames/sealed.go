@@ -25,12 +25,12 @@ type StarcitygamesSealed struct {
 	game       int
 }
 
-func NewScraperSealed(apiKey string) *StarcitygamesSealed {
+func NewScraperSealed(game int, apiKey string) *StarcitygamesSealed {
 	scg := StarcitygamesSealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient(apiKey)
-	scg.game = GameMagic
+	scg.game = game
 	return &scg
 }
 
@@ -77,10 +77,25 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 		return
 	}
 
-	// Sealed products are keyed by their SKU, which mtgban stores as the scgId.
+	// Sealed products are keyed by their SKU, which mtgban stores as the
+	// scgId; the games whose datastore does not catalog it (riftbound,
+	// lorcana) resolve by name instead, English only, unique or nothing.
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
-		return
+		if scg.game == GameMagic {
+			return
+		}
+		if p.Language != "" && p.Language != "English" {
+			return
+		}
+		if mtgmatcher.SealedIsLanguageVariant(p.Name) {
+			return
+		}
+		resolved, err := mtgmatcher.ResolveSealed(p.Name)
+		if err != nil {
+			return
+		}
+		uuid = resolved
 	}
 
 	link := SCGProductURL(p.URL, "", scg.Affiliate)
@@ -180,5 +195,13 @@ func (scg *StarcitygamesSealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &scg.inventoryDate
 	info.BuylistTimestamp = &scg.buylistDate
 	info.SealedMode = true
+	switch scg.game {
+	case GameMagic:
+		info.Game = mtgban.GameMagic
+	case GameLorcana:
+		info.Game = mtgban.GameLorcana
+	case GameRiftbound:
+		info.Game = mtgban.GameRiftbound
+	}
 	return
 }
