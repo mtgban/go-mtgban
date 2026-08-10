@@ -44,6 +44,32 @@ type GalleryBlade struct {
 	Cards struct {
 		Items []GalleryCard `json:"items"`
 	} `json:"cards"`
+
+	// Sealed is not part of the official payload; the datastore builder
+	// appends the sealed products the TCGplayer catalog files outside the
+	// singles type, in the card items' own vocabulary. A datastore built
+	// before this was recorded simply loads without sealed products.
+	Sealed struct {
+		Items []GallerySealed `json:"items"`
+	} `json:"sealed,omitempty"`
+}
+
+// GallerySealed is a sealed product: a booster box, a display, a starter
+// bundle. It has no collector number, no finish and no gallery entry - the
+// TCGplayer product id is its whole identity.
+type GallerySealed struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Set  struct {
+		Value struct {
+			ID    string `json:"id"`
+			Label string `json:"label"`
+		} `json:"value"`
+	} `json:"set"`
+	CardImage struct {
+		URL string `json:"url"`
+	} `json:"cardImage"`
+	TCGplayerProductID int `json:"tcgplayerProductId"`
 }
 
 type GallerySet struct {
@@ -133,6 +159,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	b.Hashes = map[string][]string{}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
+	b.SetSealedUUIDs = map[string][]string{}
 
 	// Load all sets first
 	b.Sets = map[string]*mtgmatcher.Set{}
@@ -143,6 +170,19 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			Code:        set.ID,
 			BaseSetSize: set.CollectorNumberMax,
 			Type:        set.Type,
+		}
+	}
+	// A sealed product can belong to a group the gallery has no set for
+	// (an accessories-only group, a set sold before its cards are
+	// published); give it a set to hang off
+	for _, product := range gallery.Sealed.Items {
+		if b.Sets[product.Set.Value.ID] != nil {
+			continue
+		}
+		b.AllSets = append(b.AllSets, product.Set.Value.ID)
+		b.Sets[product.Set.Value.ID] = &mtgmatcher.Set{
+			Name: product.Set.Value.Label,
+			Code: product.Set.Value.ID,
 		}
 	}
 	sort.Strings(b.AllSets)
@@ -301,6 +341,66 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		sort.Strings(colors)
 		b.Sets[code].Colors = colors
 	}
+
+	// Load sealed products. They live in the sealed namespace throughout:
+	// their uuids join AllSealedUUIDs and their names the sealed name
+	// index, and the product id is carried as an identifier for
+	// BuildSealedProductMap rather than entering the external identifier
+	// index, mirroring how Magic keeps sealed out of MatchId's reach.
+	for _, product := range gallery.Sealed.Items {
+		setCode := product.Set.Value.ID
+
+		card := mtgmatcher.Card{
+			UUID:    product.ID,
+			Name:    product.Name,
+			SetCode: setCode,
+			Rarity:  "product",
+			Identifiers: map[string]string{
+				"tcgplayerProductId": fmt.Sprint(product.TCGplayerProductID),
+			},
+			Images: map[string]string{
+				"full":      product.CardImage.URL,
+				"thumbnail": product.CardImage.URL,
+			},
+			Language: "English",
+		}
+
+		b.Sets[setCode].SealedProduct = append(b.Sets[setCode].SealedProduct, mtgmatcher.SealedProduct{
+			UUID:        product.ID,
+			Name:        product.Name,
+			SetCode:     setCode,
+			Identifiers: card.Identifiers,
+		})
+
+		if _, found := b.UUIDs[product.ID]; found {
+			continue
+		}
+		// The name lists are gated on their own contents rather than on
+		// bucket existence: a card can already own the bucket, and the
+		// sealed name must still be searchable
+		n := mtgmatcher.Normalize(product.Name)
+		if !slices.Contains(b.AllSealed, n) {
+			b.AllSealed = append(b.AllSealed, n)
+			b.AllCanonicalSealed = append(b.AllCanonicalSealed, product.Name)
+			b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(product.Name))
+		}
+		b.Hashes[n] = append(b.Hashes[n], product.ID)
+
+		b.UUIDs[product.ID] = &mtgmatcher.CardObject{
+			Card:    card,
+			Edition: b.Sets[setCode].Name,
+			Sealed:  true,
+		}
+		b.AllSealedUUIDs = append(b.AllSealedUUIDs, product.ID)
+		b.SetSealedUUIDs[setCode] = append(b.SetSealedUUIDs[setCode], product.ID)
+	}
+	sort.Strings(b.AllSealedUUIDs)
+	for code := range b.SetSealedUUIDs {
+		sort.Strings(b.SetSealedUUIDs[code])
+	}
+	sort.Strings(b.AllSealed)
+	sort.Strings(b.AllCanonicalSealed)
+	sort.Strings(b.AllLowerSealed)
 
 	b.SetRules(Rules{})
 

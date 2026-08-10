@@ -166,6 +166,9 @@ func promoOnlyName(b *mtgmatcher.Backend, name string) bool {
 		if !found {
 			continue
 		}
+		if co.Sealed {
+			continue
+		}
 		set, found := b.Sets[co.SetCode]
 		if !found || set.Type != "promo" {
 			return false
@@ -339,6 +342,17 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	var out []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found {
+			continue
+		}
+		// Sealed products share the name buckets but never match as
+		// cards; without this a sealed product named like a card would
+		// read as an aliased printing of it
+		if co.Sealed {
+			continue
+		}
+
 		// Foil printings are stored under a "_f"-suffixed uuid; fold them
 		// back onto the base card so each candidate appears exactly once.
 		// Base uuids never contain underscores, so the first underscore
@@ -352,10 +366,6 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 		seen[base] = true
 
-		co, found := b.UUIDs[uuid]
-		if !found {
-			continue
-		}
 		card := co.Card
 
 		if _, found := cardSet[card.SetCode]; !found {

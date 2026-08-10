@@ -388,6 +388,11 @@ func TestRiftboundFinishUUIDs(t *testing.T) {
 
 	var bases int
 	for uuid, co := range b.UUIDs {
+		// Sealed products live outside the finish machinery: no finish,
+		// no finish-suffixed uuid, nothing to round-trip
+		if co.Sealed {
+			continue
+		}
 		if strings.HasSuffix(uuid, "_"+mtgmatcher.FinishFoil) {
 			if !co.Foil || co.Finish != mtgmatcher.FinishFoil {
 				t.Errorf("%s: foil entry with foil=%v finish=%q", uuid, co.Foil, co.Finish)
