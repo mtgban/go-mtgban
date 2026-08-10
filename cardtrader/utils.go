@@ -166,25 +166,50 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 	return inventory
 }
 
+// gameLanguage and gameFoil read a listing's language and foil flag for the
+// given game: cardtrader keys the properties per game, the Magic fields
+// decoding empty for every other one.
+func gameLanguage(gameId int, product Product) string {
+	switch gameId {
+	case GameIdMagic:
+		return product.Properties.MTGLanguage
+	case GameIdLorcana:
+		return product.Properties.LorcanaLanguage
+	case GameIdRiftbound:
+		return product.Properties.RiftboundLanguage
+	}
+	return ""
+}
+
+func gameFoil(gameId int, product Product) bool {
+	switch gameId {
+	case GameIdMagic:
+		return product.Properties.MTGFoil
+	case GameIdLorcana:
+		return product.Properties.LorcanaFoil
+	case GameIdRiftbound:
+		return product.Properties.RiftboundFoil
+	}
+	return false
+}
+
 func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed bool) (map[int]*Blueprint, map[int]string) {
 	// Create a map to be able to retrieve edition name in the blueprint
 	formatted := map[int]*Blueprint{}
 	expansions := map[int]string{}
 	for i := range blueprints {
+		// Sealed is selected by exclusion, so a category cardtrader adds
+		// later lands on the sealed side rather than silently vanishing;
+		// accessories arrive with it and are dropped downstream by the
+		// product-map resolution, which only names real sealed products.
+		singles := false
 		switch blueprints[i].CategoryId {
 		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized,
 			CategoryLorcanaSingles, CategoryLorcanaOversized,
 			CategoryRiftboundSingles, CategoryRiftboundOversized:
-			if sealed {
-				continue
-			}
-		case CategoryMagicBoosterBoxes, CategoryMagicBoosters, CategoryMagicStarterDecks,
-			CategoryMagicBoxDisplays, CategoryMagicBoxedSet, CategoryMagicPreconstructedDecks,
-			CategoryMagicBundles, CategoryMagicTournamentPrereleasePacks:
-			if !sealed {
-				continue
-			}
-		default:
+			singles = true
+		}
+		if singles == sealed {
 			continue
 		}
 
