@@ -15,6 +15,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -69,7 +70,8 @@ type GallerySealed struct {
 	CardImage struct {
 		URL string `json:"url"`
 	} `json:"cardImage"`
-	TCGplayerProductID int `json:"tcgplayerProductId"`
+	TCGplayerProductID int    `json:"tcgplayerProductId"`
+	ReleaseDate        string `json:"releaseDate,omitempty"`
 }
 
 type GallerySet struct {
@@ -82,6 +84,10 @@ type GallerySet struct {
 	// appends with "promo", which gates how their printings match (see
 	// rules.go).
 	Type string `json:"type,omitempty"`
+
+	// ReleaseDate is likewise stamped by the builder, from the day the
+	// TCGplayer group went on sale ("2006-01-02").
+	ReleaseDate string `json:"releaseDate,omitempty"`
 }
 
 type GalleryCard struct {
@@ -129,6 +135,13 @@ type GalleryCard struct {
 	// about finish, so a datastore built before this was recorded leaves it
 	// empty and every card falls back to being sold in both.
 	Finishes []string `json:"finishes,omitempty"`
+
+	// PromoTypes carries the parenthetical qualifiers the builder strips
+	// from a promotional printing's TCGplayer name ("Sett - The Boss
+	// (Metal) (Best Of)" becomes "Sett - The Boss" with promo types
+	// "metal" and "best of"), so sibling promos share one clean name and
+	// are told apart by number or by the storefront's own wording.
+	PromoTypes []string `json:"promoTypes,omitempty"`
 }
 
 // Load reads an official card-gallery payload from r and returns a Backend
@@ -165,11 +178,14 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	b.Sets = map[string]*mtgmatcher.Set{}
 	for _, set := range gallery.Sets.Items {
 		b.AllSets = append(b.AllSets, set.ID)
+		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
 		b.Sets[set.ID] = &mtgmatcher.Set{
-			Name:        set.Name,
-			Code:        set.ID,
-			BaseSetSize: set.CollectorNumberMax,
-			Type:        set.Type,
+			Name:            set.Name,
+			Code:            set.ID,
+			BaseSetSize:     set.CollectorNumberMax,
+			Type:            set.Type,
+			ReleaseDate:     set.ReleaseDate,
+			ReleaseDateTime: releaseDateTime,
 		}
 	}
 	// A sealed product can belong to a group the gallery has no set for
@@ -180,9 +196,12 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 		b.AllSets = append(b.AllSets, product.Set.Value.ID)
+		releaseDateTime, _ := time.Parse("2006-01-02", product.ReleaseDate)
 		b.Sets[product.Set.Value.ID] = &mtgmatcher.Set{
-			Name: product.Set.Value.Label,
-			Code: product.Set.Value.ID,
+			Name:            product.Set.Value.Label,
+			Code:            product.Set.Value.ID,
+			ReleaseDate:     product.ReleaseDate,
+			ReleaseDateTime: releaseDateTime,
 		}
 	}
 	sort.Strings(b.AllSets)
@@ -256,8 +275,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			Colors: colors,
 			Rarity: card.Rarity.Value.ID,
 
-			Types:    types,
-			Subtypes: card.Tags.Tags,
+			Types:      types,
+			Subtypes:   card.Tags.Tags,
+			PromoTypes: card.PromoTypes,
 
 			Printings: printingsByName[mtgmatcher.Normalize(card.Name)],
 
