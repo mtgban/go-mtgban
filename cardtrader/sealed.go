@@ -140,32 +140,14 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
 	ct.printf("Loaded %d sealed products", len(productMap))
 
-	expansionsRaw, err := ct.client.Expansions(ctx)
+	if ct.TargetEdition != "" {
+		ct.printf("-> only targeting edition %s", ct.TargetEdition)
+	}
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGame(ctx, ct.client, ct.gameId, ct.TargetEdition, ct.printf)
 	if err != nil {
 		return err
 	}
 	ct.printf("Retrieved %d global sets", len(expansionsRaw))
-
-	if ct.TargetEdition != "" {
-		ct.printf("-> only targeting edition %s", ct.TargetEdition)
-	}
-
-	var blueprintsRaw []Blueprint
-	for _, exp := range expansionsRaw {
-		if exp.GameId != ct.gameId {
-			continue
-		}
-		if ct.TargetEdition != "" && exp.Name != ct.TargetEdition && exp.Code != strings.ToLower(ct.TargetEdition) {
-			continue
-		}
-
-		bp, err := ct.client.Blueprints(ctx, exp.Id)
-		if err != nil {
-			ct.printf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
-			continue
-		}
-		blueprintsRaw = append(blueprintsRaw, bp...)
-	}
 	ct.printf("Found %d blueprints", len(blueprintsRaw))
 
 	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, true)

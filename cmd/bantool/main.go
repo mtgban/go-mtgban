@@ -84,29 +84,18 @@ func cardtraderSealedBridge(gameId int) (map[int]int, error) {
 	}
 	client := cardtrader.NewCTAuthClient(ctTokenBearer)
 
-	ctx := context.Background()
-	expansions, err := client.Expansions(ctx)
+	blueprints, _, err := cardtrader.BlueprintsForGame(context.Background(), client, gameId, "", log.Printf)
 	if err != nil {
 		return nil, err
 	}
 
 	bridge := map[int]int{}
-	for _, exp := range expansions {
-		if exp.GameId != gameId {
+	for _, bp := range blueprints {
+		if bp.TCGplayerId == 0 {
 			continue
 		}
-		blueprints, err := client.Blueprints(ctx, exp.Id)
-		if err != nil {
-			log.Printf("bridge: skipping %d %s: %s", exp.Id, exp.Name, err.Error())
-			continue
-		}
-		for _, bp := range blueprints {
-			if bp.TCGplayerId == 0 {
-				continue
-			}
-			for _, mkmId := range bp.CardMarketIds {
-				bridge[mkmId] = bp.TCGplayerId
-			}
+		for _, mkmId := range bp.CardMarketIds {
+			bridge[mkmId] = bp.TCGplayerId
 		}
 	}
 	log.Printf("bridge: %d cardmarket ids linked to a tcgplayer id", len(bridge))
