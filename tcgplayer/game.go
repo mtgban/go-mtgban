@@ -36,6 +36,12 @@ type TCGGame struct {
 
 	productTypes []string
 
+	// sealed selects the sealed mode: products are resolved through the
+	// sealed product map by their product id instead of the matcher, and
+	// only Unopened skus are priced.
+	sealed    bool
+	sealedMap map[int][]string
+
 	client *tcgplayer.Client
 }
 
@@ -83,6 +89,21 @@ func NewScraperGame(game, publicId, privateId string) (*TCGGame, error) {
 	return &tcg, nil
 }
 
+// NewScraperGameSealed prices a game's sealed products: everything the
+// category files outside the singles type, so a product type TCGplayer
+// adds later is picked up rather than silently skipped. Products resolve
+// through the sealed product map by their product id, the identity the
+// datastore stamps on every sealed entry.
+func NewScraperGameSealed(game, publicId, privateId string) (*TCGGame, error) {
+	tcg, err := NewScraperGame(game, publicId, privateId)
+	if err != nil {
+		return nil, err
+	}
+	tcg.sealed = true
+	tcg.productTypes = tcgplayer.ProductTypesSealed
+	return tcg, nil
+}
+
 func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
 	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, true, page)
 	if err != nil {
@@ -96,9 +117,15 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 		productMap[product.ProductId] = product
 
 		for _, sku := range product.Skus {
-			_, found := SKUConditionMap[sku.ConditionId]
-			if !found {
-				continue
+			if tcg.sealed {
+				if sku.ConditionId != SKUConditionUnopened {
+					continue
+				}
+			} else {
+				_, found := SKUConditionMap[sku.ConditionId]
+				if !found {
+					continue
+				}
 			}
 			// Only English
 			if sku.LanguageId != 1 {
@@ -131,6 +158,28 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			sku := skuMap[result.SkuId]
 			product, found := productMap[sku.ProductId]
 			if !found {
+				continue
+			}
+
+			if tcg.sealed {
+				// The product id is the sealed entry's whole identity;
+				// anything the map does not name is a product the
+				// datastore does not carry
+				uuids := tcg.sealedMap[sku.ProductId]
+				if len(uuids) != 1 {
+					continue
+				}
+				channel <- genericChan{
+					key: uuids[0],
+					entry: mtgban.InventoryEntry{
+						Conditions: "NM",
+						Price:      price,
+						Quantity:   1,
+						URL:        GenerateProductURL(sku.ProductId, "", tcg.Affiliate, "", "", false),
+						OriginalId: fmt.Sprint(sku.ProductId),
+						InstanceId: fmt.Sprint(sku.SkuId),
+					},
+				}
 				continue
 			}
 
@@ -211,11 +260,18 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 	tcg.editions = editions
 	tcg.printf("Found %d editions", len(editions))
 
-	totals, err := tcg.client.TotalProducts(ctx, tcg.category, []string{"Cards"})
+	// The totals must count the same product types the pages list, or the
+	// page offsets walk a different result set than the count promised
+	totals, err := tcg.client.TotalProducts(ctx, tcg.category, tcg.productTypes)
 	if err != nil {
 		return err
 	}
 	tcg.printf("Found %d products", totals)
+
+	if tcg.sealed {
+		tcg.sealedMap = mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+		tcg.printf("Loaded %d sealed products", len(tcg.sealedMap))
+	}
 
 	pageNums := make([]int, 0, totals/tcgplayer.MaxItemsInResponse+1)
 	for i := 0; i < totals; i += tcgplayer.MaxItemsInResponse {
@@ -250,5 +306,9 @@ func (tcg *TCGGame) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &tcg.inventoryDate
 	info.NoQuantityInventory = true
 	info.Game = tcg.game
+	if tcg.sealed {
+		info.Shorthand = "TCGSealed"
+		info.SealedMode = true
+	}
 	return
 }

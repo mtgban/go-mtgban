@@ -131,6 +131,10 @@ var SKUConditionMap = map[int]string{
 	5: "PO",
 }
 
+// The condition sealed products are sold under, deliberately absent from
+// the map above since it never applies to a single.
+const SKUConditionUnopened = 6
+
 type latestSalesRequest struct {
 	Variants    []int  `json:"variants"`
 	Conditions  []int  `json:"conditions"`
