@@ -1,0 +1,75 @@
+name: lorcana datastore
+
+# Manual only, deliberately. The build itself is read-only, but the publish
+# step writes into the shared datastore bucket, and nothing consumes the
+# object yet: vars.DATASTORE_LORCANA still points at the upstream LorcanaJSON
+# download, and stays there until this has run green a few times. Add a
+# schedule at the same time as that cutover, not before.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "upload the result to b2://mtgban-datastore/lorcana/"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install golang
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install b2
+        run: |
+          pipx install b2
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch the TCGplayer catalog
+        env:
+          B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
+          B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+        run: |
+          # The dump tcgdumper writes nightly, published beside the datastore
+          # this run builds.
+          b2 file download --no-progress \
+            b2://mtgban-datastore/lorcana/tcgplayer-catalog.json.xz \
+            tcgplayer-catalog.json.xz
+          xz -d tcgplayer-catalog.json.xz
+
+      - name: Build the datastore
+        run: |
+          # The same URL the CI suite reads the upstream file from, so there
+          # is one place to change if LorcanaJSON moves.
+          go run ./cmd/lorcanadatastore \
+            -tcg-catalog tcgplayer-catalog.json \
+            -lorcana "${{ vars.DATASTORE_LORCANA }}" \
+            -o lorcana.json
+          # Consumers decompress by suffix (simplecloud.InitReader), so the
+          # published object keeps the .xz extension.
+          xz -9 lorcana.json
+          ls -l lorcana.json.xz
+
+      - name: Keep a copy on the run
+        uses: actions/upload-artifact@v4
+        with:
+          name: lorcana.json.xz
+          path: lorcana.json.xz
+          retention-days: 7
+
+      - name: Publish to B2
+        if: inputs.publish
+        env:
+          B2_APPLICATION_KEY_ID: "${{ secrets.B2_KEY_ID_DATASTORE }}"
+          B2_APPLICATION_KEY: "${{ secrets.B2_APP_KEY_DATASTORE }}"
+        run: |
+          b2 file upload --no-progress mtgban-datastore lorcana.json.xz lorcana/lorcana.json.xz
