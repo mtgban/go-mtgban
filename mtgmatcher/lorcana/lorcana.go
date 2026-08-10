@@ -76,6 +76,14 @@ type LorcanaJSON struct {
 
 		ExternalLinks struct {
 			TcgPlayerId int `json:"tcgPlayerId"`
+
+			// TcgPlayerExtraIds lists further TCGplayer products that resolve
+			// to this same printing, which upstream does not carry: TCGplayer
+			// sometimes sells a card's foil under its own product id, and a
+			// feed keyed on that id has nothing to match against otherwise.
+			// Populated by cmd/lorcanadatastore; absent from the upstream
+			// file, where it simply stays empty.
+			TcgPlayerExtraIds []int `json:"tcgPlayerExtraIds,omitempty"`
 		} `json:"externalLinks"`
 	} `json:"cards"`
 }
@@ -269,6 +277,19 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 		// happened to load last.
 		if card.ExternalLinks.TcgPlayerId != 0 {
 			b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
+		}
+		// Alternate products for the same printing resolve to the same base
+		// uuid; MatchId applies the requested finish to it through output(),
+		// so pointing them at the base card is enough to reach the foil. Only
+		// the id map grows: no CardObject and no uuid is created here.
+		for _, extra := range card.ExternalLinks.TcgPlayerExtraIds {
+			if extra == 0 {
+				continue
+			}
+			if _, found := b.ExternalIdentifiers[fmt.Sprint(extra)]; found {
+				continue
+			}
+			b.ExternalIdentifiers[fmt.Sprint(extra)] = convertedCard.UUID
 		}
 
 		// Store a CardObject per finish uuid.
