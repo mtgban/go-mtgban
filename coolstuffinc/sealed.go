@@ -1,9 +1,11 @@
 package coolstuffinc
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,6 +13,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -37,7 +40,7 @@ type CoolstuffincSealed struct {
 	game   string
 }
 
-func NewScraperSealed() *CoolstuffincSealed {
+func NewScraperSealed(game string) *CoolstuffincSealed {
 	csi := CoolstuffincSealed{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
@@ -47,18 +50,20 @@ func NewScraperSealed() *CoolstuffincSealed {
 	csi.MaxConcurrency = defaultConcurrency
 
 	csi.productMap = map[string]string{}
-	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
-		co, err := mtgmatcher.GetUUID(uuid)
-		if err != nil {
-			continue
+	if game == GameMagic {
+		for _, uuid := range mtgmatcher.GetSealedUUIDs() {
+			co, err := mtgmatcher.GetUUID(uuid)
+			if err != nil {
+				continue
+			}
+			id, found := co.Identifiers["csiId"]
+			if !found {
+				continue
+			}
+			csi.productMap[id] = co.UUID
 		}
-		id, found := co.Identifiers["csiId"]
-		if !found {
-			continue
-		}
-		csi.productMap[id] = co.UUID
 	}
-	csi.game = GameMagic
+	csi.game = game
 	return &csi
 }
 
@@ -278,6 +283,14 @@ func (csi *CoolstuffincSealed) SetConfig(opt mtgban.ScraperOptions) {
 }
 
 func (csi *CoolstuffincSealed) Load(ctx context.Context) error {
+	// The saved-query page and the buylist exist for Magic alone; the
+	// other games ride the same set-facet search the singles use, with
+	// the sealed-name resolver telling the sealed rows apart from the
+	// card ones.
+	if csi.game != GameMagic {
+		return csi.scrapeBysets(ctx)
+	}
+
 	var errs []error
 
 	if !csi.DisableRetail {
@@ -297,6 +310,225 @@ func (csi *CoolstuffincSealed) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// scrapeBysets walks every set of the game through the same search the
+// singles scraper uses; the sealed rows resolve through the sealed-name
+// resolver, the card rows resolve to nothing and drop out.
+func (csi *CoolstuffincSealed) scrapeBysets(ctx context.Context) error {
+	// One search per sealed-product word: the store's own names carry
+	// them ("Booster Box", "Illumineer's Trove"), and a handful of
+	// searches covers the whole sealed catalog where the set facets do
+	// not - lorcana sealed carries no ItemSet at all
+	queries := []string{
+		"booster", "deck", "trove", "gift", "bundle",
+		"case", "box", "kit", "vault", "collection",
+	}
+
+	// The queries overlap ("Booster Box" answers booster and box both);
+	// the first sighting of a product wins
+	seen := map[string]bool{}
+	mtgban.WorkerPool(ctx, csi.MaxConcurrency, queries,
+		func(ctx context.Context, query string, channel chan<- responseChan) error {
+			err := csi.processSealedSearch(ctx, channel, query)
+			if err != nil {
+				csi.printf("%s: %s", query, err.Error())
+			}
+			return nil
+		},
+		func(record responseChan) {
+			key := record.cardId + "|" + record.invEntry.OriginalId
+			if seen[key] {
+				return
+			}
+			seen[key] = true
+			err := csi.inventory.Add(record.cardId, record.invEntry)
+			if err != nil {
+				csi.printf("%v", err)
+			}
+		},
+		csi.printf,
+	)
+
+	csi.inventoryDate = time.Now()
+
+	return nil
+}
+
+// searchSealed runs a product-name search without the singles' rarity
+// facets, which sealed products have none of and would be filtered out
+// by. The name route rather than the set facet: lorcana sealed carries
+// no ItemSet at all, where riftbound's does.
+func searchSealed(ctx context.Context, game, query string) (*SearchResult, error) {
+	v := url.Values{}
+	v.Set("name", query)
+	v.Set("f[Artist][]", "")
+	v.Add("f[Cost][]", "")
+	v.Add("f[Cost][]", "")
+	v.Set("f[Number][]", "")
+	v.Set("f[Type][]", "")
+	v.Set("f[Card+Text][]", "")
+	v.Set("notes", "")
+	v.Set("sign-Cost", "<")
+	v.Set("sign-Power", "<")
+	v.Set("f[Power][]", "")
+	v.Set("sign-Toughness", "<")
+	v.Set("f[Toughness][]", "")
+	v.Set("sign-Loyalty", "<")
+	v.Set("f[Loyalty][]", "")
+	v.Set("signprice", "<")
+	v.Set("price", "")
+	// No instock option either: combined with a name search it returns
+	// nothing at all, and the offer rows carry their own stock state
+	// No rarity facets: sealed products carry no rarity, and any rarity
+	// constraint excludes them outright
+	v.Set("f[Rarity][]", "")
+	v.Set("f[ItemSet][]", "")
+	v.Set("s", game)
+	v.Set("page", "1")
+	v.Set("resultsPerPage", "50")
+	v.Set("submit", "Search")
+
+	link := "https://www.coolstuffinc.com/sq/"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, strings.NewReader(v.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Set("User-Agent", "curl/8.6.0")
+
+	resp, err := cleanhttp.DefaultClient().Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	nextLink, _ := doc.Find(`span[id="nextLink"]`).Find("a").Attr("href")
+	u, err := url.Parse(nextLink)
+	if err != nil {
+		return nil, err
+	}
+	clean := strings.Split(strings.TrimPrefix(u.Path, "/sq/"), "&")[0]
+
+	return &SearchResult{
+		PageId: clean,
+		Data:   data,
+	}, nil
+}
+
+// processSealedSearch pages through one query's results, pricing every
+// row the sealed-name resolver recognizes. English only: language-variant
+// names are skipped before resolution.
+func (csi *CoolstuffincSealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) error {
+	result, err := searchSealed(ctx, csi.game, query)
+	if err != nil {
+		return err
+	}
+
+	for page := 1; ; page++ {
+		data := result.Data
+
+		if page > 1 {
+			link := "https://www.coolstuffinc.com/sq/" + result.PageId + "?page=" + fmt.Sprint(page)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
+			if err != nil {
+				return err
+			}
+			resp, err := csi.client.Do(req)
+			if err != nil {
+				return err
+			}
+			data, err = io.ReadAll(resp.Body)
+			resp.Body.Close()
+			if err != nil {
+				return err
+			}
+		}
+
+		doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
+		if err != nil {
+			return fmt.Errorf("page %d: %w", page, err)
+		}
+
+		rows := doc.Find(`div[class="row product-search-row main-container"]`)
+		rows.Each(func(i int, s *goquery.Selection) {
+			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
+			if productName == "" || mtgmatcher.SealedIsLanguageVariant(productName) {
+				return
+			}
+			uuid, err := mtgmatcher.ResolveSealed(productName)
+			if err != nil {
+				// A card row, or a product the datastore does not carry
+				return
+			}
+
+			pid, _ := s.Find(`span[class="rating-display "]`).Attr("data-pid")
+			link := "https://www.coolstuffinc.com/p/" + pid
+			if csi.Partner != "" {
+				link += "?utm_referrer=" + csi.Partner
+			}
+
+			// The stock state is schema markup on the row; the row's
+			// visible text mentions being out of stock even on in-stock
+			// rows, through template markup, and must not be trusted
+			availability, _ := s.Find(`[itemprop="availability"]`).Attr("content")
+			if !strings.Contains(availability, "InStock") {
+				return
+			}
+
+			// Sealed rows carry no quantity span; an in-stock row
+			// without one sells at least a single copy
+			qty := 1
+			qtyStr := s.Find(`span[class="card-qty"]`).Text()
+			qtyStr = strings.TrimSpace(strings.TrimSuffix(qtyStr, "+"))
+			if qtyStr != "" {
+				var err error
+				qty, err = strconv.Atoi(qtyStr)
+				if err != nil || qty == 0 {
+					return
+				}
+			}
+
+			// The price rides in the content attribute, the visible text
+			// being nothing but a formatting placeholder
+			priceStr, _ := s.Find(`[itemprop="price"]`).Attr("content")
+			if priceStr == "" {
+				priceStr = strings.TrimSpace(s.Find(`b[itemprop="price"]`).Text())
+			}
+			price, err := strconv.ParseFloat(priceStr, 64)
+			if err != nil || price == 0 {
+				return
+			}
+
+			channel <- responseChan{
+				cardId: uuid,
+				invEntry: &mtgban.InventoryEntry{
+					Conditions: "NM",
+					Price:      price,
+					Quantity:   qty,
+					URL:        link,
+					OriginalId: pid,
+				},
+			}
+		})
+
+		// A short page is the last one; asking past it returns the same
+		// page over again rather than an empty one
+		if rows.Length() < 25 || result.PageId == "" {
+			break
+		}
+	}
+
+	return nil
+}
+
 func (csi *CoolstuffincSealed) Inventory() mtgban.InventoryRecord {
 	return csi.inventory
 }
@@ -308,6 +540,14 @@ func (csi *CoolstuffincSealed) Buylist() mtgban.BuylistRecord {
 func (csi *CoolstuffincSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSISealed"
+	switch csi.game {
+	case GameMagic:
+		info.Game = mtgban.GameMagic
+	case GameLorcana:
+		info.Game = mtgban.GameLorcana
+	case GameRiftbound:
+		info.Game = mtgban.GameRiftbound
+	}
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
 	info.SealedMode = true
