@@ -26,13 +26,20 @@ type CardtraderSealed struct {
 	gameId        int
 }
 
-func NewScraperSealed(token string) (*CardtraderSealed, error) {
+func NewScraperSealed(gameId int, token string) (*CardtraderSealed, error) {
+	// An unknown game would not error anywhere later: its listings would
+	// simply all fail the language read and the scraper would run empty.
+	switch gameId {
+	case GameIdMagic, GameIdLorcana, GameIdRiftbound:
+	default:
+		return nil, fmt.Errorf("unsupported game %d", gameId)
+	}
 	ct := CardtraderSealed{}
 	ct.inventory = mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
 	ct.MaxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
-	ct.gameId = GameIdMagic
+	ct.gameId = gameId
 	return &ct, nil
 }
 
@@ -55,12 +62,12 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 				continue
 			}
 
-			if product.Properties.MTGLanguage != "en" {
+			if gameLanguage(ct.gameId, product) != "en" {
 				continue
 			}
 
 			uuid := uuids[0]
-			if product.Properties.MTGFoil && len(uuids) > 1 {
+			if gameFoil(ct.gameId, product) && len(uuids) > 1 {
 				uuid = uuids[1]
 			}
 
@@ -161,8 +168,23 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	}
 	ct.printf("Found %d blueprints", len(blueprintsRaw))
 
-	_, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, true)
+	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, true)
 	ct.printf("Parsing %d expansions", len(expansions))
+
+	// A datastore that does not catalog cardtrader's own ids (riftbound)
+	// still names every sealed product by its TCGplayer id; route the
+	// blueprints through that to the same blueprintId-to-uuids shape.
+	if len(productMap) == 0 {
+		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+		for id, bp := range blueprints {
+			uuids, found := tcgMap[bp.TCGplayerId]
+			if !found {
+				continue
+			}
+			productMap[id] = uuids
+		}
+		ct.printf("Mapped %d sealed products through the TCGplayer id", len(productMap))
+	}
 
 	type expItem struct {
 		id   int
@@ -232,5 +254,13 @@ func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.SealedMode = true
+	switch ct.gameId {
+	case GameIdMagic:
+		info.Game = mtgban.GameMagic
+	case GameIdLorcana:
+		info.Game = mtgban.GameLorcana
+	case GameIdRiftbound:
+		info.Game = mtgban.GameRiftbound
+	}
 	return
 }
