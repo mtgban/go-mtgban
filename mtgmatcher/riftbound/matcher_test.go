@@ -58,6 +58,21 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ahri, Inquisitive", Variation: "227*"},
 	},
 	{
+		// The prefix fallback must not narrow on the finish flag: this
+		// printing is only sold foil and the input does not say so.
+		Desc: "truncated name of a foil-only printing without the flag",
+		In:   mtgmatcher.InputCard{Name: "Ahri, Inquis", Variation: "227*"},
+	},
+	{
+		// The other half of that trade. Low numbers repeat across sets:
+		// the OGS starter's nonfoil "Annie, Fiery" and the OPP promo's
+		// foil "Annie - Fiery" both answer to number 1 and normalize to
+		// the same name, so a pass that cannot fall back on the finish
+		// sees two names and adopts neither.
+		Desc: "truncated name colliding with a promo of the same number",
+		In:   mtgmatcher.InputCard{Name: "Annie, F", Variation: "1"},
+	},
+	{
 		// Storefronts spell the star as a trailing "s"
 		Desc: "signed showcase number resolves to the starred printing",
 		In:   mtgmatcher.InputCard{Name: "Darius - Hand of Noxus", Variation: "302s"},
