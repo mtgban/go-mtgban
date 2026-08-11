@@ -61,6 +61,14 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Id: "454615"},
 	},
 	{
+		Desc: "coolstuffinc edition wears the set code before a dash",
+		In:   mtgmatcher.InputCard{Name: "Brannew", Edition: "OP03 - Pillars of Strength", Variation: "OP03-089"},
+	},
+	{
+		Desc: "dash-number promo name resolves through its qualifier",
+		In:   mtgmatcher.InputCard{Name: "Monkey.D.Luffy - P-043 (Convention Promo 2024)", Edition: "Promo"},
+	},
+	{
 		Desc: "negative: unknown card name",
 		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Pirate", Variation: "OP01-001"},
 	},
