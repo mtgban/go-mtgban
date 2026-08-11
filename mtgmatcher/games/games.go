@@ -14,5 +14,6 @@ package games
 import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
 )
