@@ -971,6 +971,17 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"coolstuffinc_onepiece": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraper(coolstuffinc.GameOnePiece)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"coolstuffinc_sealed_onepiece": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameOnePiece)
