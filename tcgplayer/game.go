@@ -62,6 +62,7 @@ func (tcg *TCGGame) printf(format string, a ...interface{}) {
 var SupportedGames = map[string]int{
 	mtgban.GameLorcana:   tcgplayer.CategoryLorcana,
 	mtgban.GameRiftbound: tcgplayer.CategoryRiftbound,
+	mtgban.GameOnePiece:  tcgplayer.CategoryOnePiece,
 }
 
 func NewScraperGame(game, publicId, privateId string) (*TCGGame, error) {
