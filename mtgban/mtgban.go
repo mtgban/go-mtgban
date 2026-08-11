@@ -111,10 +111,12 @@ func (be BuylistEntry) Qty() int {
 }
 
 const (
-	GameMagic     = ""
-	GameLorcana   = "Lorcana"
-	GameRiftbound = "Riftbound"
-	GameOnePiece  = "OnePiece"
+	GameMagic         = ""
+	GameLorcana       = "Lorcana"
+	GameRiftbound     = "Riftbound"
+	GameOnePiece      = "OnePiece"
+	GameYuGiOh        = "YuGiOh"
+	GameFleshAndBlood = "FleshAndBlood"
 )
 
 // ScraperInfo contains
