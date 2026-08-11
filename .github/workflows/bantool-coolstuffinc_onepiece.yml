@@ -1,0 +1,21 @@
+name: coolstuffinc_onepiece
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [coolstuffinc_onepiece]
+  schedule:
+    - cron: "0 */12 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: ${{ github.workflow }}
+      game: "lorcana"
+      datastore-filepath: b2://mtgban-datastore/onepiece/onepiece.json.xz
+    secrets: inherit
