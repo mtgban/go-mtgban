@@ -1,0 +1,197 @@
+[
+    {
+        "description": "a bare treatment reaches the print run the product sold it in",
+        "input": {
+            "id": "225015",
+            "finish": "Cold Foil"
+        },
+        "uuid": "wtr005_225015_1ecold"
+    },
+    {
+        "description": "alpha print run rides the 1st edition entry",
+        "input": {
+            "name": "Barraging Beatdown (Yellow)",
+            "variant": "18",
+            "edition": "Welcome to Rathe - Alpha Print Run"
+        },
+        "uuid": "wtr018_225035_1e"
+    },
+    {
+        "description": "bare number with the marvel tail still demands the variant",
+        "input": {
+            "name": "Enigma, New Moon",
+            "variant": "238m"
+        },
+        "uuid": "mst238_552791_cold"
+    },
+    {
+        "description": "bare truncated name adopts the pitch parenthetical carrying the number",
+        "input": {
+            "name": "Breakneck Battery",
+            "variant": "WTR011"
+        },
+        "uuid": "wtr011_225027_unl"
+    },
+    {
+        "description": "canonical pitch name with the full collector number",
+        "input": {
+            "name": "Sink Below (Red)",
+            "variant": "WTR215"
+        },
+        "uuid": "wtr215_225309_unl"
+    },
+    {
+        "description": "cardtrader marvel letter tail demands the variant",
+        "input": {
+            "name": "Enigma, New Moon",
+            "variant": "MST238m"
+        },
+        "uuid": "mst238_552791_cold"
+    },
+    {
+        "description": "cardtrader print-run suffix strips off the edition",
+        "input": {
+            "name": "Barraging Beatdown (Yellow)",
+            "variant": "18",
+            "edition": "Welcome to Rathe - 1st Edition"
+        },
+        "uuid": "wtr018_225035_1e"
+    },
+    {
+        "description": "cold foil wording picks the cold entry over the rainbow default",
+        "input": {
+            "name": "Frost Hex",
+            "variant": "UPR126 Cold Foil",
+            "foil": true
+        },
+        "uuid": "upr126_270490_cold"
+    },
+    {
+        "description": "dashed pitch color normalizes onto the parenthetical name",
+        "input": {
+            "name": "Sink Below - Red",
+            "variant": "WTR215"
+        },
+        "uuid": "wtr215_225309_unl"
+    },
+    {
+        "description": "front half of a pair number still matches",
+        "input": {
+            "name": "Anothos // Bravo",
+            "variant": "WTR040"
+        },
+        "uuid": "wtr040 // wtr039_225011_unl"
+    },
+    {
+        "description": "letter label beside the treatment wording picks its product",
+        "input": {
+            "name": "Lightning Flow (A)",
+            "variant": "OMN203 Cold Foil",
+            "foil": true
+        },
+        "uuid": "omn203_682884_cold"
+    },
+    {
+        "description": "negative: a name reprinted across sets stays ambiguous unaided",
+        "input": {
+            "name": "Brutal Assault"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a treatment the product was never priced in refuses the sibling",
+        "input": {
+            "id": "225501",
+            "name": "Fyendal's Spring Tunic",
+            "variant": "FAB001",
+            "finish": "Rainbow Foil"
+        },
+        "uuid": "",
+        "error": "unknown finish"
+    },
+    {
+        "description": "negative: known name with wrong collector number",
+        "input": {
+            "name": "Sink Below (Red)",
+            "variant": "WTR999"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: pitch variants without a base alias on a bare number",
+        "input": {
+            "name": "Dig In",
+            "variant": "FAB384"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: unknown card name",
+        "input": {
+            "name": "Nonexistent Imaginary Hero",
+            "variant": "WTR001"
+        },
+        "uuid": "",
+        "error": "unknown card name"
+    },
+    {
+        "description": "pair collector number resolves the fused card",
+        "input": {
+            "name": "Anothos // Bravo",
+            "variant": "WTR040 // WTR039"
+        },
+        "uuid": "wtr040 // wtr039_225011_unl"
+    },
+    {
+        "description": "rainbow wording routes to its plainest print run",
+        "input": {
+            "name": "Sink Below (Red)",
+            "variant": "WTR215 Rainbow Foil",
+            "edition": "Flesh & Blood: Welcome to Rathe Singles"
+        },
+        "uuid": "wtr215_225309_unlrainbow"
+    },
+    {
+        "description": "storefront wording picks the variant it describes",
+        "input": {
+            "name": "Enigma, New Moon (Marvel)"
+        },
+        "uuid": "mst238_552791_cold"
+    },
+    {
+        "description": "tcgplayer printing name routes both finish axes",
+        "input": {
+            "name": "Sink Below (Red)",
+            "variant": "WTR215 1st Edition Rainbow Foil",
+            "foil": true
+        },
+        "uuid": "wtr215_225309_1erainbow"
+    },
+    {
+        "description": "tcgplayer product id resolves through the identifier index",
+        "input": {
+            "id": "225309"
+        },
+        "uuid": "wtr215_225309_unl"
+    },
+    {
+        "description": "the printing named beside the id prices that printing's entry",
+        "input": {
+            "id": "225015",
+            "finish": "Unlimited Edition Normal"
+        },
+        "uuid": "wtr005_225015_unl"
+    },
+    {
+        "description": "treatment wording spelling a label defers to the named variant",
+        "input": {
+            "name": "Ash // Aether Ashwing (Marvel)",
+            "variant": "UPR043 Cold Foil",
+            "foil": true
+        },
+        "uuid": "upr043_275749_cold"
+    }
+]
