@@ -1,0 +1,90 @@
+[
+    {
+        "description": "bare tail number narrows within the edition",
+        "input": {
+            "name": "Mr.2.Bon.Kurei (Bentham)",
+            "variant": "084",
+            "edition": "Romance Dawn"
+        },
+        "uuid": "op01-084_454615"
+    },
+    {
+        "description": "cardmarket V.1 keeps the base printing",
+        "input": {
+            "name": "Mr.2.Bon.Kurei (Bentham) (OP01-084) (V.1)"
+        },
+        "uuid": "op01-084_454615"
+    },
+    {
+        "description": "cardmarket V.2 demands the variant",
+        "input": {
+            "name": "Mr.2.Bon.Kurei (Bentham) (OP01-084) (V.2)"
+        },
+        "uuid": "op01-084_510707"
+    },
+    {
+        "description": "cardtrader letter tail demands a variant",
+        "input": {
+            "name": "Mr.2.Bon.Kurei (Bentham)",
+            "variant": "OP01-084a"
+        },
+        "uuid": "op01-084_510707"
+    },
+    {
+        "description": "clean name with the full collector number",
+        "input": {
+            "name": "Roronoa Zoro",
+            "variant": "OP01-025"
+        },
+        "uuid": "op01-025_453510"
+    },
+    {
+        "description": "epithet parenthetical is part of the name",
+        "input": {
+            "name": "Mr.2.Bon.Kurei (Bentham)",
+            "variant": "OP01-084"
+        },
+        "uuid": "op01-084_454615"
+    },
+    {
+        "description": "negative: known name with wrong collector number",
+        "input": {
+            "name": "Roronoa Zoro",
+            "variant": "OP01-999"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: reprinted base printings stay ambiguous on a bare input",
+        "input": {
+            "name": "Nami",
+            "variant": "OP01-016"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: unknown card name",
+        "input": {
+            "name": "Nonexistent Imaginary Pirate",
+            "variant": "OP01-001"
+        },
+        "uuid": "",
+        "error": "unknown card name"
+    },
+    {
+        "description": "storefront wording picks the variant it describes",
+        "input": {
+            "name": "Nami (OP01-016) (Manga)"
+        },
+        "uuid": "op01-016_587966"
+    },
+    {
+        "description": "tcgplayer product id resolves through the identifier index",
+        "input": {
+            "id": "454615"
+        },
+        "uuid": "op01-084_454615"
+    }
+]
