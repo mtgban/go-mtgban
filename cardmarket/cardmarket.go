@@ -33,6 +33,15 @@ type CardMarketIndex struct {
 	// Optional field to select a single edition to go through
 	TargetEdition string
 
+	// TCGBridge maps a Cardmarket product id to the TCGplayer id of the
+	// same single, for the keyless catalogs (yugioh, flesh and blood)
+	// whose products carry no collector number and no version index, so
+	// same-name products are told apart only by an exact id. bantool
+	// builds it from cardtrader's blueprints, the one source linking the
+	// two marketplaces; the scraper itself stays vendor-pure and receives
+	// it as plain data.
+	TCGBridge map[int]int
+
 	inventory mtgban.InventoryRecord
 
 	priceGuide []PriceGuide
@@ -180,6 +189,27 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			mkm.printf("%v", err)
 			mkm.printf("%+v", product)
 			return err
+		}
+	case GameIdYugioh, GameIdFleshAndBlood:
+		// These catalogs carry no collector number and no version index,
+		// and same-name products abound, so a product resolves through the
+		// TCGplayer id the cardtrader bridge knows it by or not at all -
+		// name matching has nothing to distinguish on. Yu-Gi-Oh prices a
+		// single uuid per product (the rarity is the finish and the print
+		// run is not foilness), so its foil column has no separate printing
+		// to attach to; Flesh and Blood's attaches to the product's
+		// rainbow-first foil default.
+		tcgID, found := mkm.TCGBridge[product.IdProduct]
+		if !found {
+			return nil
+		}
+		cardID, err = mtgmatcher.MatchId(fmt.Sprint(tcgID), false)
+		if err != nil {
+			return nil
+		}
+		cardIDFoil = cardID
+		if mkm.gameID == GameIdFleshAndBlood {
+			cardIDFoil, _ = mtgmatcher.MatchId(fmt.Sprint(tcgID), true)
 		}
 	default:
 		return errors.New("unsupported game")
@@ -341,6 +371,18 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 		}
 	}
 
+	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
+	// one, and a cardtrader blueprint names every Cardmarket product it
+	// sells as, so nothing stops two products from resolving to one
+	// printing. An index wants a single price per name per uuid, and a
+	// second one is worth the log line the callback already prints rather
+	// than a second row no consumer can choose between.
+	add := mkm.inventory.AddStrict
+	switch mkm.gameID {
+	case GameIdYugioh, GameIdFleshAndBlood:
+		add = mkm.inventory.AddUnique
+	}
+
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items,
 		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
 			mkm.printf("Processing %s (%d)", exp.Name, exp.IdExpansion)
@@ -351,7 +393,7 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 			return nil
 		},
 		func(result responseChan) {
-			err := mkm.inventory.AddStrict(result.cardID, &result.entry)
+			err := add(result.cardID, &result.entry)
 			if err != nil {
 				card, cerr := mtgmatcher.GetUUID(result.cardID)
 				if cerr != nil {
@@ -406,6 +448,10 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameRiftbound
 	case GameIdOnePiece:
 		info.Game = mtgban.GameOnePiece
+	case GameIdYugioh:
+		info.Game = mtgban.GameYuGiOh
+	case GameIdFleshAndBlood:
+		info.Game = mtgban.GameFleshAndBlood
 	}
 	return
 }

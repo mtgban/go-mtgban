@@ -198,6 +198,8 @@ func (scg *StarcitygamesSealed) Info() (info mtgban.ScraperInfo) {
 	switch scg.game {
 	case GameMagic:
 		info.Game = mtgban.GameMagic
+	case GameFleshAndBlood:
+		info.Game = mtgban.GameFleshAndBlood
 	case GameLorcana:
 		info.Game = mtgban.GameLorcana
 	case GameRiftbound:

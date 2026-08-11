@@ -60,9 +60,11 @@ func (tcg *TCGGame) printf(format string, a ...interface{}) {
 // is identified by SKU and has its own scrapers. Supporting one more game is
 // one entry here, provided the matcher has a datastore for it.
 var SupportedGames = map[string]int{
-	mtgban.GameLorcana:   tcgplayer.CategoryLorcana,
-	mtgban.GameRiftbound: tcgplayer.CategoryRiftbound,
-	mtgban.GameOnePiece:  tcgplayer.CategoryOnePiece,
+	mtgban.GameLorcana:       tcgplayer.CategoryLorcana,
+	mtgban.GameRiftbound:     tcgplayer.CategoryRiftbound,
+	mtgban.GameOnePiece:      tcgplayer.CategoryOnePiece,
+	mtgban.GameYuGiOh:        tcgplayer.CategoryYuGiOh,
+	mtgban.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
 }
 
 func NewScraperGame(game, publicID, privateID string) (*TCGGame, error) {

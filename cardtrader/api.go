@@ -147,6 +147,42 @@ const (
 	CategoryOnePieceMemorabilia     = 257
 )
 
+const (
+	CategoryYuGiOhSingles               = 44
+	CategoryYuGiOhSleeves               = 45
+	CategoryYuGiOhPlaymats              = 46
+	CategoryYuGiOhStarterDecks          = 47
+	CategoryYuGiOhDeckBoxes             = 49
+	CategoryYuGiOhAlbums                = 50
+	CategoryYuGiOhBooks                 = 51
+	CategoryYuGiOhMemorabilia           = 52
+	CategoryYuGiOhBoosters              = 53
+	CategoryYuGiOhBoosterBoxes          = 54
+	CategoryYuGiOhTins                  = 55
+	CategoryYuGiOhEmptyTinsStorage      = 56
+	CategoryYuGiOhDividers              = 57
+	CategoryYuGiOhPreconstructedDecks   = 70
+	CategoryYuGiOhBundles               = 72
+	CategoryYuGiOhDice                  = 75
+	CategoryYuGiOhOversized             = 76
+	CategoryYuGiOhSpecialDeluxeEditions = 117
+)
+
+const (
+	CategoryFleshAndBloodSingles             = 80
+	CategoryFleshAndBloodBoosterBoxes        = 81
+	CategoryFleshAndBloodBoosters            = 82
+	CategoryFleshAndBloodPreconstructedDecks = 83
+	CategoryFleshAndBloodDecksDisplays       = 84
+	CategoryFleshAndBloodPlaymats            = 85
+	CategoryFleshAndBloodBooksGuides         = 177
+	CategoryFleshAndBloodBoxSets             = 179
+	CategoryFleshAndBloodSleeves             = 183
+	CategoryFleshAndBloodDice                = 212
+	CategoryFleshAndBloodArtCardTokens       = 285
+	CategoryFleshAndBloodCompleteSets        = 286
+)
+
 type Blueprint struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`
@@ -203,6 +239,14 @@ type Product struct {
 
 		OnePieceLanguage string `json:"onepiece_language,omitempty"`
 		OnePieceFoil     bool   `json:"onepiece_foil,omitempty"`
+
+		// Yu-Gi-Oh carries no foil property: the rarity is the finish.
+		YuGiOhLanguage string `json:"yugioh_language,omitempty"`
+
+		// The Flesh and Blood finish is a named treatment ("Regular",
+		// "Rainbow Foil", "Cold Foil") rather than a boolean.
+		FabLanguage string `json:"fab_language,omitempty"`
+		FabFoilNew  string `json:"fab_foil_new,omitempty"`
 	} `json:"properties_hash"`
 	User struct {
 		Name        string `json:"username"`

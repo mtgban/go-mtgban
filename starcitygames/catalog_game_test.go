@@ -16,13 +16,14 @@ func TestGameFromCatalog(t *testing.T) {
 		want    int
 	}{
 		{"Magic: The Gathering", GameMagic},
+		{"Flesh and Blood", GameFleshAndBlood},
 		{"Lorcana", GameLorcana},
 		{"Riftbound: League of Legends TCG", GameRiftbound},
 		// Shapes the catalog does not use, kept to show the mapping is exact
 		// rather than prefix- or substring-based.
 		{"Riftbound", 0},
 		{"Magic", 0},
-		{"Flesh and Blood", 0},
+		{"Flesh And Blood", 0},
 		{"", 0},
 	}
 	for _, test := range tests {

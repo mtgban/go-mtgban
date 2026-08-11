@@ -1,0 +1,26 @@
+name: cardmarket_sealed_fleshandblood
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [cardmarket_sealed_fleshandblood]
+  schedule:
+    - cron: "35 */12 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-cardmarket
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: ${{ github.workflow }}
+      game: "fleshandblood"
+      datastore-filepath: b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz
+    secrets: inherit
