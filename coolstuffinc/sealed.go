@@ -231,15 +231,28 @@ func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
 		// Build link early to help debug
 		u, _ := url.Parse(csiBuylistLink)
 		v := url.Values{}
-		v.Set("s", "mtg")
+		v.Set("s", csi.game)
 		v.Set("a", "1")
 		v.Set("name", product.Name)
 		u.RawQuery = v.Encode()
 		link := u.String()
 
+		// Magic products carry the catalog id the datastore knows; the
+		// other games resolve the offer by name, unique or nothing,
+		// skipping the language variants the datastores never carry.
 		uuid, found := csi.productMap[product.PID]
 		if !found {
-			continue
+			if csi.game == GameMagic {
+				continue
+			}
+			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
+				continue
+			}
+			resolved, err := mtgmatcher.ResolveSealed(product.Name)
+			if err != nil {
+				continue
+			}
+			uuid = resolved
 		}
 
 		buyPrice, err := mtgmatcher.ParsePrice(product.Price)
@@ -288,7 +301,18 @@ func (csi *CoolstuffincSealed) Load(ctx context.Context) error {
 	// the sealed-name resolver telling the sealed rows apart from the
 	// card ones.
 	if csi.game != GameMagic {
-		return csi.scrapeBysets(ctx)
+		var errs []error
+		if !csi.DisableRetail {
+			if err := csi.scrapeBysets(ctx); err != nil {
+				errs = append(errs, fmt.Errorf("inventory load failed: %w", err))
+			}
+		}
+		if !csi.DisableBuylist {
+			if err := csi.parseBL(ctx); err != nil {
+				errs = append(errs, fmt.Errorf("buylist load failed: %w", err))
+			}
+		}
+		return errors.Join(errs...)
 	}
 
 	var errs []error
