@@ -30,6 +30,7 @@ const (
 	GameMagic     = "magic"
 	GameLorcana   = "lorcana"
 	GameRiftbound = "riftbound"
+	GameOnePiece  = "onepiece"
 )
 
 // gameWidgets are the CMS navigation ids behind each game's storefront
@@ -39,6 +40,7 @@ var gameWidgets = map[string]string{
 	GameMagic:     "be53d253d6bc3258a8160556dda3e9b2",
 	GameLorcana:   "4e0223a87610176ef0d24ef6d2dcde3a",
 	GameRiftbound: "019be122ca9779e5af00a663d064f775",
+	GameOnePiece:  "f7ac67a9aa8d255282de7d11391e1b69",
 }
 
 func NewScraperSealed(game string) *Miniaturemarket {
@@ -236,6 +238,8 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameLorcana
 	case GameRiftbound:
 		info.Game = mtgban.GameRiftbound
+	case GameOnePiece:
+		info.Game = mtgban.GameOnePiece
 	}
 	return
 }
