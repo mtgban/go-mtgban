@@ -153,6 +153,8 @@ func leadingWordMatch(a, b []string) int {
 
 func gamePath(game int) string {
 	switch game {
+	case GameFleshAndBlood:
+		return "fab"
 	case GameLorcana:
 		return "lorcana"
 	case GameRiftbound:

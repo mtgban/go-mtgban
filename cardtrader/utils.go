@@ -184,6 +184,12 @@ func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, ta
 		if exp.GameId != gameID {
 			continue
 		}
+		// The OCG expansions are whole separate Japanese catalogs (bach-jp
+		// beside bach) whose prices must not land on the TCG printings the
+		// datastore carries.
+		if gameID == GameIdYuGiOh && (strings.HasSuffix(exp.Code, "-jp") || strings.Contains(exp.Name, "OCG")) {
+			continue
+		}
 		if targetEdition != "" && exp.Name != targetEdition && exp.Code != strings.ToLower(targetEdition) {
 			continue
 		}
@@ -212,6 +218,10 @@ func gameLanguage(gameID int, product Product) string {
 		return product.Properties.RiftboundLanguage
 	case GameIdOnePiece:
 		return product.Properties.OnePieceLanguage
+	case GameIdYuGiOh:
+		return product.Properties.YuGiOhLanguage
+	case GameIdFleshAndBlood:
+		return product.Properties.FabLanguage
 	}
 	return ""
 }
@@ -262,8 +272,35 @@ func gameFoil(gameID int, product Product) bool {
 		return product.Properties.RiftboundFoil
 	case GameIdOnePiece:
 		return product.Properties.OnePieceFoil
+	case GameIdFleshAndBlood:
+		// Anything beyond the plain treatment is a foil; the empty and
+		// stringly-false values old listings carry are plain too. Yu-Gi-Oh
+		// deliberately has no arm: the rarity is the finish, so every
+		// listing reads nonfoil through the default below.
+		switch product.Properties.FabFoilNew {
+		case "", "Regular", "false":
+			return false
+		}
+		return true
 	}
 	return false
+}
+
+// coldFoilID hops a resolved Flesh and Blood id onto its product's Cold
+// Foil entry, preferring the plainest print run exactly as the loader's
+// foil defaults do; a product without a cold entry keeps the resolved id.
+func coldFoilID(cardID string) string {
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil {
+		return cardID
+	}
+	for _, key := range []string{"coldfoil", "unlimitededitioncoldfoil", "1steditioncoldfoil"} {
+		id, found := co.FoilUUIDs[key]
+		if found {
+			return id
+		}
+	}
+	return cardID
 }
 
 func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed bool) (map[int]*Blueprint, map[int]string) {
@@ -280,7 +317,9 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized,
 			CategoryLorcanaSingles, CategoryLorcanaOversized,
 			CategoryRiftboundSingles, CategoryRiftboundOversized,
-			CategoryOnePieceSingles:
+			CategoryOnePieceSingles,
+			CategoryYuGiOhSingles,
+			CategoryFleshAndBloodSingles:
 			singles = true
 		}
 		if singles == sealed {

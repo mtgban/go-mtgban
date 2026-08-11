@@ -115,7 +115,7 @@ func TestGameIdFromName(t *testing.T) {
 
 	// A game Cardmarket does not carry has no id, and the URL builders turn
 	// that into no link rather than a wrong one.
-	for _, name := range []string{"pokemon", "yugioh", "Magic: The Gathering"} {
+	for _, name := range []string{"pokemon", "digimon", "Magic: The Gathering"} {
 		if got := GameIdFromName(name); got != 0 {
 			t.Errorf("GameIdFromName(%q) = %d, want 0", name, got)
 		}

@@ -218,10 +218,12 @@ func SanitizeProductList(productList []ProductList) {
 // path, so every URL builder here goes through it, and both directions of the
 // lookup read this one table rather than keeping their own list.
 var gameNames = map[int]string{
-	GameIdMagic:     "Magic",
-	GameIdLorcana:   "Lorcana",
-	GameIdRiftbound: "Riftbound",
-	GameIdOnePiece:  "OnePiece",
+	GameIdMagic:         "Magic",
+	GameIdLorcana:       "Lorcana",
+	GameIdRiftbound:     "Riftbound",
+	GameIdOnePiece:      "OnePiece",
+	GameIdYugioh:        "YuGiOh",
+	GameIdFleshAndBlood: "FleshAndBlood",
 }
 
 // GameName returns the game as Cardmarket spells it, or "" for a game whose
