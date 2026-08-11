@@ -105,6 +105,8 @@ func gameFromCatalog(game string) int {
 	switch game {
 	case "Magic: The Gathering":
 		return GameMagic
+	case "Flesh and Blood":
+		return GameFleshAndBlood
 	case "Lorcana":
 		return GameLorcana
 	case "Riftbound: League of Legends TCG":
@@ -275,6 +277,22 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 			}
 		}
 		return mtgmatcher.Match(card)
+	}
+
+	// Flesh and Blood reads its number off the sku instead: the segment
+	// keeps the fused-card pair ("077_112"), the promo-pack prefix
+	// ("JDG_001") and the variant letter ("155b") that the product's bare
+	// number field drops. The underscores become spaces so the matcher's
+	// number extraction reads the leading code and the rest stays wording.
+	// The finish is inert there - one product is one printing - but the
+	// flag rides along like everywhere else.
+	if game == GameFleshAndBlood {
+		return mtgmatcher.Match(&mtgmatcher.InputCard{
+			Name:      p.Name,
+			Edition:   p.Set,
+			Variation: strings.ReplaceAll(skuNumber(p.SKU), "_", " "),
+			Foil:      foil,
+		})
 	}
 
 	// The other games (Lorcana, Riftbound) identify a card by name +

@@ -151,7 +151,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 				}
 				theCard.Language = lang
 			}
-		case GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
+		case GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYuGiOh, GameIdFleshAndBlood:
 			if gameLanguage(ct.gameID, product) != "en" {
 				continue
 			}
@@ -163,10 +163,17 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 			if number == "" {
 				number = product.Properties.Number
 			}
+			variation := gameVariation(ct.gameID, blueprint, number)
+			// The named Flesh and Blood treatment rides beside the number so
+			// selectFinish can route Rainbow against Cold; the boolean below
+			// keeps carrying the plain foilness like everywhere else.
+			if ct.gameID == GameIdFleshAndBlood && gameFoil(ct.gameID, product) {
+				variation = strings.TrimSpace(variation + " " + product.Properties.FabFoilNew)
+			}
 			theCard = &mtgmatcher.InputCard{
 				Name:      blueprint.Name,
 				Edition:   blueprint.Expansion.Name,
-				Variation: gameVariation(ct.gameID, blueprint, number),
+				Variation: variation,
 				Foil:      gameFoil(ct.gameID, product),
 			}
 		default:
@@ -183,6 +190,13 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 		var cardID string
 		if ct.gameID != GameIdMagic && blueprint.TCGplayerId != 0 {
 			cardID, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
+			// The id lookup expresses the finish as one boolean, which lands
+			// on the rainbow-first foil default; a Cold Foil listing names
+			// the one treatment the boolean cannot reach, so hop to the cold
+			// sibling of the product the id already resolved exactly.
+			if cardID != "" && ct.gameID == GameIdFleshAndBlood && product.Properties.FabFoilNew == "Cold Foil" {
+				cardID = coldFoilID(cardID)
+			}
 		}
 
 		if cardID == "" {
@@ -379,6 +393,10 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameRiftbound
 	case GameIdOnePiece:
 		info.Game = mtgban.GameOnePiece
+	case GameIdYuGiOh:
+		info.Game = mtgban.GameYuGiOh
+	case GameIdFleshAndBlood:
+		info.Game = mtgban.GameFleshAndBlood
 	}
 	return
 }

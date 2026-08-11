@@ -75,12 +75,13 @@ type scraperOption struct {
 	Init       func() (mtgban.Scraper, error)
 }
 
-// cardtraderSealedBridge maps every Cardmarket product id to the TCGplayer
-// id of the same sealed product, read off cardtrader's blueprints - the one
-// source linking the two marketplaces' ids. The cardmarket sealed scraper
-// receives it as plain data, so the composition of the two vendors happens
+// cardtraderBridge maps every Cardmarket product id to the TCGplayer id of
+// the same product, read off cardtrader's blueprints - the one source
+// linking the two marketplaces' ids. The blueprints cover singles and
+// sealed alike, so the same bridge serves both cardmarket scrapers; they
+// receive it as plain data, and the composition of the two vendors happens
 // here and nowhere else.
-func cardtraderSealedBridge(gameID int) (map[int]int, error) {
+func cardtraderBridge(gameID int) (map[int]int, error) {
 	ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 	if ctTokenBearer == "" {
 		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
@@ -653,7 +654,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderSealedBridge(cardtrader.GameIdLorcana)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdLorcana)
 			if err != nil {
 				return nil, err
 			}
@@ -839,6 +840,54 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardmarket_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdYugioh, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdYuGiOh)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardmarket_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdFleshAndBlood, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdFleshAndBlood)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"cardtrader_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
@@ -877,6 +926,44 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardtrader_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+			if ctTokenBearer == "" {
+				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+			}
+
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdYuGiOh, ctTokenBearer)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.ShareCode = os.Getenv("CT_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardtrader_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+			if ctTokenBearer == "" {
+				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+			}
+
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdFleshAndBlood, ctTokenBearer)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.ShareCode = os.Getenv("CT_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"cardmarket_sealed_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
@@ -889,7 +976,7 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderSealedBridge(cardtrader.GameIdRiftbound)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdRiftbound)
 			if err != nil {
 				return nil, err
 			}
@@ -913,7 +1000,55 @@ var options = map[string]*scraperOption{
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderSealedBridge(cardtrader.GameIdOnePiece)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdOnePiece)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardmarket_sealed_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdYugioh, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdYuGiOh)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MKM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardmarket_sealed_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
+			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
+			if mkmAppToken == "" || mkmAppSecret == "" {
+				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+			}
+
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdFleshAndBlood, mkmAppToken, mkmAppSecret)
+			if err != nil {
+				return nil, err
+			}
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdFleshAndBlood)
 			if err != nil {
 				return nil, err
 			}
@@ -952,6 +1087,44 @@ var options = map[string]*scraperOption{
 			}
 
 			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdOnePiece, ctTokenBearer)
+			if err != nil {
+				return nil, err
+			}
+			scraper.ShareCode = os.Getenv("CT_PARTNER")
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardtrader_sealed_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+			if ctTokenBearer == "" {
+				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+			}
+
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdYuGiOh, ctTokenBearer)
+			if err != nil {
+				return nil, err
+			}
+			scraper.ShareCode = os.Getenv("CT_PARTNER")
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"cardtrader_sealed_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
+			if ctTokenBearer == "" {
+				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+			}
+
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdFleshAndBlood, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -1039,6 +1212,31 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"starcitygames_sealed_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
+			}
+			scraper := starcitygames.NewScraperSealed(starcitygames.GameFleshAndBlood, scgAPIKey)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("SCG_PARTNER")
+			return scraper, nil
+		},
+	},
+	"starcitygames_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			scgAPIKey := os.Getenv("SCG_API_KEY")
+			if scgAPIKey == "" {
+				return nil, errors.New("missing SCG_API_KEY env var")
+			}
+
+			scraper := starcitygames.NewScraper(starcitygames.GameFleshAndBlood, scgAPIKey)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("SCG_PARTNER")
+			return scraper, nil
+		},
+	},
 	"tcg_index_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
@@ -1066,6 +1264,44 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
 			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameOnePiece, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"tcg_index_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameYuGiOh, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"tcg_index_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameFleshAndBlood, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -1115,6 +1351,44 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"tcg_market_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGame(mtgban.GameYuGiOh, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"tcg_market_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGame(mtgban.GameFleshAndBlood, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"tcg_sealed_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
@@ -1142,6 +1416,44 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
 			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameOnePiece, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"tcg_sealed_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameYuGiOh, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"tcg_sealed_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameFleshAndBlood, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
