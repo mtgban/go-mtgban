@@ -39,6 +39,23 @@
         "uuid": "op01-025_453510"
     },
     {
+        "description": "coolstuffinc edition wears the set code before a dash",
+        "input": {
+            "name": "Brannew",
+            "variant": "OP03-089",
+            "edition": "OP03 - Pillars of Strength"
+        },
+        "uuid": "op03-089_500037"
+    },
+    {
+        "description": "dash-number promo name resolves through its qualifier",
+        "input": {
+            "name": "Monkey.D.Luffy - P-043 (Convention Promo 2024)",
+            "edition": "Promo"
+        },
+        "uuid": "p-043_552131"
+    },
+    {
         "description": "epithet parenthetical is part of the name",
         "input": {
             "name": "Mr.2.Bon.Kurei (Bentham)",

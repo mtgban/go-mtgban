@@ -19,14 +19,22 @@ type Rules struct{}
 // (cardtrader suffixes alternate arts "OP01-001a").
 var fullNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
 
+// dashNumberRe matches the collector number hung inside a name after a
+// dash ("Monkey.D.Luffy - P-043").
+var dashNumberRe = regexp.MustCompile(`\s+-\s+([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\b`)
+
 // Prefilter splits the parenthetical decorations off the name before the
-// canonical-name lookup: storefronts write "Roronoa Zoro (OP01-001) (V.2)"
-// and "Shanks (001) (Parallel)". A full name that is itself canonical stays
-// as it is — the epithet parentheticals ("Mr.2.Bon.Kurei (Bentham)") are
-// part of the name.
+// canonical-name lookup: storefronts write "Roronoa Zoro (OP01-001) (V.2)",
+// "Shanks (001) (Parallel)" and "Monkey.D.Luffy - P-043 (Convention Promo
+// 2024)". A full name that is itself canonical stays as it is — the epithet
+// parentheticals ("Mr.2.Bon.Kurei (Bentham)") are part of the name.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
+	}
+	if m := dashNumberRe.FindStringSubmatch(inCard.Name); m != nil {
+		inCard.Name = strings.Replace(inCard.Name, m[0], "", 1)
+		inCard.AddToVariant(m[1])
 	}
 	if strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
@@ -72,8 +80,10 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 }
 
 // setCodePrefixRe matches a set code worn as an edition prefix: cardtrader
-// spells its expansions "OP-01: Romance Dawn".
-var setCodePrefixRe = regexp.MustCompile(`^[A-Za-z]+-?[0-9]+\s*:\s*`)
+// spells its expansions "OP-01: Romance Dawn", coolstuffinc "OP03 - Pillars
+// of Strength", with the compound codes ("OP15-EB04 - ...") in the same
+// shape.
+var setCodePrefixRe = regexp.MustCompile(`^[A-Za-z]+-?[0-9]+(?:-[A-Za-z]+[0-9]+)?\s*[-:]\s*`)
 
 // AdjustEdition trims the game-name and set-code prefixes storefronts
 // decorate set names with. An edition that still matches no set simply does
