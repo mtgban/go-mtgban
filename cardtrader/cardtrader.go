@@ -149,18 +149,8 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 				}
 				theCard.Language = lang
 			}
-		case GameIdLorcana:
-			if product.Properties.LorcanaLanguage != "en" {
-				continue
-			}
-			theCard = &mtgmatcher.InputCard{
-				Name:      blueprint.Name,
-				Edition:   blueprint.Expansion.Name,
-				Variation: product.Properties.Number,
-				Foil:      product.Properties.LorcanaFoil,
-			}
-		case GameIdRiftbound:
-			if product.Properties.RiftboundLanguage != "en" {
+		case GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
+			if gameLanguage(ct.gameId, product) != "en" {
 				continue
 			}
 			// A listing copies the collector number when it is created and
@@ -175,7 +165,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 				Name:      blueprint.Name,
 				Edition:   blueprint.Expansion.Name,
 				Variation: number,
-				Foil:      product.Properties.RiftboundFoil,
+				Foil:      gameFoil(ct.gameId, product),
 			}
 		default:
 			ct.printf("unsupported game %d", ct.gameId)
@@ -385,6 +375,8 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameLorcana
 	case GameIdRiftbound:
 		info.Game = mtgban.GameRiftbound
+	case GameIdOnePiece:
+		info.Game = mtgban.GameOnePiece
 	}
 	return
 }

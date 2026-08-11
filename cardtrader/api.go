@@ -125,6 +125,28 @@ const (
 	CategoryRiftboundOversized
 )
 
+// The One Piece category ids are not contiguous with any other game's, so
+// they are spelled out rather than derived from an iota base. Singles is
+// the only one the scrapers test for; everything else lands on the sealed
+// side by exclusion, DON!! cards included, where the product-map
+// resolution drops what is not a real sealed product.
+const (
+	CategoryOnePieceSingles         = 192
+	CategoryOnePieceBoosterBoxes    = 193
+	CategoryOnePieceBoosters        = 194
+	CategoryOnePieceStarterDecks    = 195
+	CategoryOnePiecePlaymats        = 196
+	CategoryOnePieceSleeves         = 197
+	CategoryOnePieceDeckBoxes       = 198
+	CategoryOnePieceAlbums          = 199
+	CategoryOnePieceBundles         = 200
+	CategoryOnePieceBoxSetsDisplays = 201
+	CategoryOnePieceUncutSheets     = 253
+	CategoryOnePieceDon             = 255
+	CategoryOnePieceTins            = 256
+	CategoryOnePieceMemorabilia     = 257
+)
+
 type Blueprint struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`
@@ -178,6 +200,9 @@ type Product struct {
 
 		RiftboundLanguage string `json:"riftbound_language,omitempty"`
 		RiftboundFoil     bool   `json:"riftbound_foil,omitempty"`
+
+		OnePieceLanguage string `json:"onepiece_language,omitempty"`
+		OnePieceFoil     bool   `json:"onepiece_foil,omitempty"`
 	} `json:"properties_hash"`
 	User struct {
 		Name        string `json:"username"`
