@@ -338,6 +338,10 @@ func HasNonfoilPrinting(name string, editions ...string) bool {
 	return defaultBackend.HasNonfoilPrinting(name, editions...)
 }
 
+// HasFoilPrinting reports whether the named card carries the foil slot. A
+// game whose finish is not foilness answers yes throughout: Yu-Gi-Oh's
+// treatment is the rarity, so every printing points both flag slots at its
+// default print run and none of them is a foil anybody sells.
 func (b *Backend) HasFoilPrinting(name string, editions ...string) bool {
 	return b.hasPrinting(name, "finish", FinishFoil, editions...)
 }
