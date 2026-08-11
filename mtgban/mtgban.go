@@ -114,6 +114,7 @@ const (
 	GameMagic     = ""
 	GameLorcana   = "Lorcana"
 	GameRiftbound = "Riftbound"
+	GameOnePiece  = "OnePiece"
 )
 
 // ScraperInfo contains
