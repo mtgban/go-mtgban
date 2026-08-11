@@ -220,6 +220,11 @@ func (ct *CardtraderSealed) Inventory() mtgban.InventoryRecord {
 }
 
 func (tcg *CardtraderSealed) MarketNames() []string {
+	// Riftbound has no sealed 1DR listings, and an always-empty seller
+	// reads as a broken scrape downstream, failing the run.
+	if tcg.gameId == GameIdRiftbound {
+		return availableMarketNames[:2]
+	}
 	return availableMarketNames
 }
 
