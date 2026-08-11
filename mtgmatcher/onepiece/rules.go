@@ -71,9 +71,13 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// AdjustEdition trims the game-name prefixes storefronts decorate set names
-// with. An edition that still matches no set simply does not narrow the
-// candidates.
+// setCodePrefixRe matches a set code worn as an edition prefix: cardtrader
+// spells its expansions "OP-01: Romance Dawn".
+var setCodePrefixRe = regexp.MustCompile(`^[A-Za-z]+-?[0-9]+\s*:\s*`)
+
+// AdjustEdition trims the game-name and set-code prefixes storefronts
+// decorate set names with. An edition that still matches no set simply does
+// not narrow the candidates.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
 	for _, prefix := range []string{"One Piece Card Game", "One Piece TCG", "One Piece"} {
@@ -82,6 +86,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			break
 		}
 	}
+	edition = setCodePrefixRe.ReplaceAllString(edition, "")
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 	inCard.Edition = edition
 }
