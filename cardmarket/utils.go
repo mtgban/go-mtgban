@@ -221,6 +221,7 @@ var gameNames = map[int]string{
 	GameIdMagic:     "Magic",
 	GameIdLorcana:   "Lorcana",
 	GameIdRiftbound: "Riftbound",
+	GameIdOnePiece:  "OnePiece",
 }
 
 // GameName returns the game as Cardmarket spells it, or "" for a game whose
