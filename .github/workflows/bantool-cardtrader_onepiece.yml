@@ -1,0 +1,26 @@
+name: cardtrader_onepiece
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [cardtrader_onepiece]
+  schedule:
+    - cron: "45 */12 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-cardtrader
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: ${{ github.workflow }}
+      game: "onepiece"
+      datastore-filepath: b2://mtgban-datastore/onepiece/onepiece.json.xz
+    secrets: inherit
