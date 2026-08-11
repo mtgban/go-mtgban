@@ -382,8 +382,12 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 		return false
 	}
 
-	nameNorm := Normalize(name)
-	uuids, found := b.Hashes[nameNorm]
+	// Resolve which real card name the query means, the way Printings4Card
+	// does: the case-exact entry when one exists, the first normalized
+	// match otherwise. The hash bucket conflates normalize-equal but
+	// distinct names ("Cat Warrior" the token beside "Cat Warriors" the
+	// card), and the printings of one must never answer for the other.
+	entry, found := b.entry4Name(name)
 	if !found {
 		if b.rules == nil {
 			return false
@@ -392,12 +396,13 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 			Name: name,
 		}
 		b.rules.AdjustName(b, cc)
-		nameNorm = Normalize(cc.Name)
-		uuids, found = b.Hashes[nameNorm]
+		entry, found = b.entry4Name(cc.Name)
 		if !found {
 			return false
 		}
 	}
+	canonicalName := entry.Name
+	uuids := b.Hashes[Normalize(canonicalName)]
 
 	// A pinned edition narrows the check to that set alone; when it cannot
 	// be resolved, every printing is checked, like the set loop used to.
@@ -427,7 +432,7 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 		if pinnedCode != "" && co.SetCode != pinnedCode {
 			continue
 		}
-		if Normalize(co.Name) == nameNorm && checkFunc(co.Card, value) {
+		if strings.EqualFold(co.Name, canonicalName) && checkFunc(co.Card, value) {
 			return true
 		}
 	}
