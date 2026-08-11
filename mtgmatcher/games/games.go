@@ -14,8 +14,10 @@ package games
 import (
 	// Each blank import runs a game's init, which registers its loader; see
 	// the package comment above for why they are gathered here.
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/yugioh"
 )
