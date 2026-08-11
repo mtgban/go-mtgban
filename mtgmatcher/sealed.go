@@ -24,7 +24,8 @@ var sealedFiller = map[string]bool{
 	"the": true, "a": true, "an": true, "of": true, "and": true,
 	"disney": true, "lorcana": true, "riftbound": true, "league": true,
 	"legends": true, "tcg": true, "trading": true, "game": true,
-	"card": true, "cards": true,
+	"card": true, "cards": true, "one": true, "piece": true,
+	"bandai": true,
 }
 
 // sealedTokens reduces a product name to its canonical identity tokens:
