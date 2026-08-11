@@ -1,0 +1,208 @@
+[
+    {
+        "description": "1st edition wording routes to its print run's entry",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LOB-001 1st Edition"
+        },
+        "uuid": "lob-001_21792_1e"
+    },
+    {
+        "description": "a foil flag names no run, and the wording answers instead",
+        "input": {
+            "id": "22708",
+            "name": "Giant Flea",
+            "variant": "TP1-017",
+            "finish": "Foil"
+        },
+        "uuid": "tp1-017_22708_unl"
+    },
+    {
+        "description": "a second run reaches its own sibling of the same product",
+        "input": {
+            "id": "69074",
+            "finish": "Limited"
+        },
+        "uuid": "ys13-env03_69074_lim"
+    },
+    {
+        "description": "cardtrader alternate-art tail drops the base art",
+        "input": {
+            "name": "Eldlich the Golden Lord",
+            "variant": "019ua",
+            "edition": "25th Anniversary Rarity Collection"
+        },
+        "uuid": "ra01-en019_525017_1e"
+    },
+    {
+        "description": "cardtrader rarity suffix picks the rarity",
+        "input": {
+            "name": "Eldlich the Golden Lord",
+            "variant": "019qsec",
+            "edition": "25th Anniversary Rarity Collection"
+        },
+        "uuid": "ra01-en019_525011_1e"
+    },
+    {
+        "description": "cardtrader suffix keeps the base art",
+        "input": {
+            "name": "Eldlich the Golden Lord",
+            "variant": "019u",
+            "edition": "25th Anniversary Rarity Collection"
+        },
+        "uuid": "ra01-en019_525008_1e"
+    },
+    {
+        "description": "clean name with the full collector number",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LOB-001"
+        },
+        "uuid": "lob-001_21792_unl"
+    },
+    {
+        "description": "language infix on the input number is ignored within the edition",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LOB-EN001",
+            "edition": "The Legend of Blue Eyes White Dragon"
+        },
+        "uuid": "lob-001_21792_unl"
+    },
+    {
+        "description": "letter label beside the rarity wording picks its product",
+        "input": {
+            "name": "Dark Magician Girl (A) (Quarter Century Secret Rare)",
+            "edition": "Quarter Century Bonanza"
+        },
+        "uuid": "ra03-en123_592813_1e"
+    },
+    {
+        "description": "limited wording routes to the limited print run",
+        "input": {
+            "name": "Blizzed, Defender of the Ice Barrier",
+            "variant": "HA01-EN001 Limited"
+        },
+        "uuid": "ha01-en001_33740_lim"
+    },
+    {
+        "description": "negative: a run the product was never priced in refuses the sibling",
+        "input": {
+            "id": "22708",
+            "name": "Giant Flea",
+            "variant": "TP1-017",
+            "finish": "1st Edition"
+        },
+        "uuid": "",
+        "error": "unknown finish"
+    },
+    {
+        "description": "negative: known name with wrong collector number",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LOB-999"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: multi-rarity number stays ambiguous without a rarity signal",
+        "input": {
+            "name": "Diabellstar the Black Witch",
+            "variant": "25LP-EN001"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: rarity suffix cannot pick among the lettered artworks",
+        "input": {
+            "name": "Dark Magician Girl",
+            "variant": "RA03-EN123qsec"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: sibling sets sharing the exact number alias without an edition",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "LOB-EN001"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: unknown card name",
+        "input": {
+            "name": "Nonexistent Imaginary Duelist",
+            "variant": "LOB-001"
+        },
+        "uuid": "",
+        "error": "unknown card name"
+    },
+    {
+        "description": "nested rarity wording reads as the most specific rarity",
+        "input": {
+            "name": "Eldlich the Golden Lord (Quarter Century Secret Rare)",
+            "edition": "25th Anniversary Rarity Collection"
+        },
+        "uuid": "ra01-en019_525011_1e"
+    },
+    {
+        "description": "single product for the number needs no rarity signal",
+        "input": {
+            "name": "Dark Hole",
+            "variant": "LOB-052"
+        },
+        "uuid": "lob-052_21873_unl"
+    },
+    {
+        "description": "storefront edition decorations strip away",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "1st Edition",
+            "edition": "Yu-Gi-Oh! The Legend of Blue Eyes White Dragon Singles"
+        },
+        "uuid": "lob-001_21792_1e"
+    },
+    {
+        "description": "tcgplayer artwork parenthetical picks the variant",
+        "input": {
+            "name": "Harpie Lady (Original Artwork)",
+            "variant": "MRD-008"
+        },
+        "uuid": "mrd-008_22062_unl"
+    },
+    {
+        "description": "tcgplayer product id resolves through the identifier index",
+        "input": {
+            "id": "525011"
+        },
+        "uuid": "ra01-en019_525011_1e"
+    },
+    {
+        "description": "tcgplayer rarity parenthetical picks the rarity",
+        "input": {
+            "name": "Eldlich the Golden Lord (Secret Rare)",
+            "edition": "25th Anniversary Rarity Collection"
+        },
+        "uuid": "ra01-en019_525009_1e"
+    },
+    {
+        "description": "the run named beside the id prices that run's entry",
+        "input": {
+            "id": "69074",
+            "finish": "1st Edition"
+        },
+        "uuid": "ys13-env03_69074_1e"
+    },
+    {
+        "description": "unlimited wording is not read as limited",
+        "input": {
+            "name": "Blizzed, Defender of the Ice Barrier",
+            "variant": "HA01-EN001 Unlimited"
+        },
+        "uuid": "ha01-en001_33740_unl"
+    }
+]
