@@ -44,7 +44,7 @@ func (mkm *CardMarketSealed) printf(format string, a ...interface{}) {
 
 func NewScraperSealed(gameId int, appToken, appSecret string) (*CardMarketSealed, error) {
 	switch gameId {
-	case GameIdMagic, GameIdLorcana, GameIdRiftbound:
+	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameId)
 	}
@@ -288,6 +288,8 @@ func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameLorcana
 	case GameIdRiftbound:
 		info.Game = mtgban.GameRiftbound
+	case GameIdOnePiece:
+		info.Game = mtgban.GameOnePiece
 	}
 	return
 }

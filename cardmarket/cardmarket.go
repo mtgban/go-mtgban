@@ -129,9 +129,19 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 
 		cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
-	case GameIdLorcana, GameIdRiftbound:
-		cardName := strings.Split(product.Name, " (V.")[0]
+	case GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
+		fields := strings.SplitN(product.Name, " (V.", 2)
+		cardName := fields[0]
 		number := product.Number
+		// The V-index cardmarket synthesizes for same-number siblings is
+		// how One Piece tells a base art from its variants (V.1 the base,
+		// the rest its alternates), and says nothing for the finish-driven
+		// games; hand it to the matcher's own rules either way. The foil
+		// probes are inert for One Piece too - both flags resolve to the
+		// same printing.
+		if len(fields) > 1 {
+			number = strings.TrimSpace(number + " V." + strings.TrimSuffix(fields[1], ")"))
+		}
 
 		cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
@@ -302,6 +312,20 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	}
 	list = FilterAndSortExpansions(list)
 
+	// The Japanese-program expansions are whole separate catalogs (OP01-JP
+	// beside OP01) whose prices must not land on the English printings the
+	// datastore carries.
+	if mkm.gameId == GameIdOnePiece {
+		kept := list[:0]
+		for _, exp := range list {
+			if strings.HasSuffix(exp.SetCode, "-JP") || strings.Contains(exp.Name, "(Japanese)") {
+				continue
+			}
+			kept = append(kept, exp)
+		}
+		list = kept
+	}
+
 	mkm.printf("Parsing %d expansion ids", len(list))
 
 	// Pre-filter items if a target edition is set
@@ -378,6 +402,8 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameLorcana
 	case GameIdRiftbound:
 		info.Game = mtgban.GameRiftbound
+	case GameIdOnePiece:
+		info.Game = mtgban.GameOnePiece
 	}
 	return
 }
