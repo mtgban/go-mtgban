@@ -209,6 +209,8 @@ func gameLanguage(gameId int, product Product) string {
 		return product.Properties.LorcanaLanguage
 	case GameIdRiftbound:
 		return product.Properties.RiftboundLanguage
+	case GameIdOnePiece:
+		return product.Properties.OnePieceLanguage
 	}
 	return ""
 }
@@ -221,6 +223,8 @@ func gameFoil(gameId int, product Product) bool {
 		return product.Properties.LorcanaFoil
 	case GameIdRiftbound:
 		return product.Properties.RiftboundFoil
+	case GameIdOnePiece:
+		return product.Properties.OnePieceFoil
 	}
 	return false
 }
@@ -238,7 +242,8 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 		switch blueprints[i].CategoryId {
 		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized,
 			CategoryLorcanaSingles, CategoryLorcanaOversized,
-			CategoryRiftboundSingles, CategoryRiftboundOversized:
+			CategoryRiftboundSingles, CategoryRiftboundOversized,
+			CategoryOnePieceSingles:
 			singles = true
 		}
 		if singles == sealed {
