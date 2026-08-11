@@ -1,0 +1,277 @@
+package yugioh
+
+import (
+	"encoding/json"
+	"flag"
+	"os"
+	"sort"
+	"strings"
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
+
+var updateYugioh = flag.Bool("update-yugioh", false, "regenerate the Yu-Gi-Oh golden test data")
+
+const yugiohTestData = "testdata/yugioh_test_data.json"
+
+type matchTest struct {
+	Desc string               `json:"description"`
+	In   mtgmatcher.InputCard `json:"input"`
+	Id   string               `json:"uuid"`
+	Err  string               `json:"error,omitempty"`
+}
+
+// The seeds cover the storefront shapes the scrapers feed: cardtrader's
+// clean name beside a bare collector number with its lowercase rarity tail
+// (and the further "a" its alternate arts carry), TCGplayer's rarity and
+// artwork parentheticals, the print-run wording that routes to its run's
+// entry without ever gating, the identifier index the TCGplayer feed
+// resolves through, and the run named beside that id.
+var yugiohSeeds = []matchTest{
+	{
+		Desc: "clean name with the full collector number",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-001"},
+	},
+	{
+		Desc: "language infix on the input number is ignored within the edition",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-EN001", Edition: "The Legend of Blue Eyes White Dragon"},
+	},
+	{
+		Desc: "negative: sibling sets sharing the exact number alias without an edition",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-EN001"},
+	},
+	{
+		Desc: "1st edition wording routes to its print run's entry",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-001 1st Edition"},
+	},
+	{
+		Desc: "limited wording routes to the limited print run",
+		In:   mtgmatcher.InputCard{Name: "Blizzed, Defender of the Ice Barrier", Variation: "HA01-EN001 Limited"},
+	},
+	{
+		Desc: "unlimited wording is not read as limited",
+		In:   mtgmatcher.InputCard{Name: "Blizzed, Defender of the Ice Barrier", Variation: "HA01-EN001 Unlimited"},
+	},
+	{
+		Desc: "single product for the number needs no rarity signal",
+		In:   mtgmatcher.InputCard{Name: "Dark Hole", Variation: "LOB-052"},
+	},
+	{
+		Desc: "cardtrader rarity suffix picks the rarity",
+		In:   mtgmatcher.InputCard{Name: "Eldlich the Golden Lord", Variation: "019qsec", Edition: "25th Anniversary Rarity Collection"},
+	},
+	{
+		Desc: "cardtrader suffix keeps the base art",
+		In:   mtgmatcher.InputCard{Name: "Eldlich the Golden Lord", Variation: "019u", Edition: "25th Anniversary Rarity Collection"},
+	},
+	{
+		Desc: "cardtrader alternate-art tail drops the base art",
+		In:   mtgmatcher.InputCard{Name: "Eldlich the Golden Lord", Variation: "019ua", Edition: "25th Anniversary Rarity Collection"},
+	},
+	{
+		Desc: "tcgplayer rarity parenthetical picks the rarity",
+		In:   mtgmatcher.InputCard{Name: "Eldlich the Golden Lord (Secret Rare)", Edition: "25th Anniversary Rarity Collection"},
+	},
+	{
+		Desc: "nested rarity wording reads as the most specific rarity",
+		In:   mtgmatcher.InputCard{Name: "Eldlich the Golden Lord (Quarter Century Secret Rare)", Edition: "25th Anniversary Rarity Collection"},
+	},
+	{
+		Desc: "tcgplayer artwork parenthetical picks the variant",
+		In:   mtgmatcher.InputCard{Name: "Harpie Lady (Original Artwork)", Variation: "MRD-008"},
+	},
+	{
+		Desc: "storefront edition decorations strip away",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Edition: "Yu-Gi-Oh! The Legend of Blue Eyes White Dragon Singles", Variation: "1st Edition"},
+	},
+	{
+		Desc: "letter label beside the rarity wording picks its product",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl (A) (Quarter Century Secret Rare)", Edition: "Quarter Century Bonanza"},
+	},
+	{
+		Desc: "tcgplayer product id resolves through the identifier index",
+		In:   mtgmatcher.InputCard{Id: "525011"},
+	},
+	{
+		Desc: "the run named beside the id prices that run's entry",
+		In:   mtgmatcher.InputCard{Id: "69074", Finish: "1st Edition"},
+	},
+	{
+		Desc: "a second run reaches its own sibling of the same product",
+		In:   mtgmatcher.InputCard{Id: "69074", Finish: "Limited"},
+	},
+	{
+		Desc: "a foil flag names no run, and the wording answers instead",
+		In:   mtgmatcher.InputCard{Id: "22708", Name: "Giant Flea", Variation: "TP1-017", Finish: "Foil"},
+	},
+	{
+		Desc: "negative: a run the product was never priced in refuses the sibling",
+		In:   mtgmatcher.InputCard{Id: "22708", Name: "Giant Flea", Variation: "TP1-017", Finish: "1st Edition"},
+	},
+	{
+		Desc: "negative: rarity suffix cannot pick among the lettered artworks",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl", Variation: "RA03-EN123qsec"},
+	},
+	{
+		Desc: "negative: unknown card name",
+		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Duelist", Variation: "LOB-001"},
+	},
+	{
+		Desc: "negative: known name with wrong collector number",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-999"},
+	},
+	{
+		Desc: "negative: multi-rarity number stays ambiguous without a rarity signal",
+		In:   mtgmatcher.InputCard{Name: "Diabellstar the Black Witch", Variation: "25LP-EN001"},
+	},
+}
+
+func loadBackend(t *testing.T) *mtgmatcher.Backend {
+	t.Helper()
+	path := os.Getenv("YUGIOH_PATH")
+	if path == "" {
+		t.Skip("YUGIOH_PATH not set; skipping Yu-Gi-Oh matcher suite")
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	b, err := Load(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
+}
+
+func TestYugiohMatch(t *testing.T) {
+	b := loadBackend(t)
+
+	data, err := os.ReadFile(yugiohTestData)
+	if err != nil {
+		if *updateYugioh && os.IsNotExist(err) {
+			data = []byte("[]")
+		} else {
+			t.Fatal(err)
+		}
+	}
+	var tests []matchTest
+	if err := json.Unmarshal(data, &tests); err != nil {
+		t.Fatal(err)
+	}
+
+	if *updateYugioh {
+		regenerateYugiohTestData(t, b, tests)
+		return
+	}
+
+	if len(tests) == 0 {
+		t.Fatal("no Yu-Gi-Oh test cases")
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.Desc, func(t *testing.T) {
+			t.Parallel()
+			in := tt.In
+			id, err := b.Match(&in)
+			gotErr := ""
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if id != tt.Id || gotErr != tt.Err {
+				t.Errorf("Match(%q num=%q) = (%q, %q), want (%q, %q)",
+					tt.In.Name, tt.In.Variation, id, gotErr, tt.Id, tt.Err)
+			}
+		})
+	}
+}
+
+// regenerateYugiohTestData re-runs Match over every committed input plus
+// the hand-authored seeds, bakes the resulting uuid/error, and rewrites the
+// golden file sorted by description. Flipping a case between success and
+// error aborts the rewrite unless its description owns the error with a
+// "negative:" prefix: acknowledging a change of that magnitude requires
+// editing the entry by hand.
+func regenerateYugiohTestData(t *testing.T, b *mtgmatcher.Backend, tests []matchTest) {
+	isSeed := map[string]bool{}
+	for _, seed := range yugiohSeeds {
+		isSeed[seed.Desc] = true
+	}
+	kept := tests[:0]
+	for _, tt := range tests {
+		if !isSeed[tt.Desc] {
+			kept = append(kept, tt)
+		}
+	}
+	tests = append(kept, yugiohSeeds...)
+
+	for i := range tests {
+		in := tests[i].In
+		id, err := b.Match(&in)
+		gotErr := ""
+		if err != nil {
+			gotErr = err.Error()
+		}
+		wasError := tests[i].Err != ""
+		isError := gotErr != ""
+		if (tests[i].Id != "" || tests[i].Err != "") && wasError != isError &&
+			!strings.HasPrefix(tests[i].Desc, "negative:") {
+			t.Fatalf("%s: flipped between success and error (%q/%q -> %q/%q); edit the entry by hand",
+				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+		}
+		if tests[i].Id != id || tests[i].Err != gotErr {
+			t.Logf("%s: (%q, %q) -> (%q, %q)", tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+		}
+		tests[i].Id = id
+		tests[i].Err = gotErr
+	}
+
+	sort.Slice(tests, func(i, j int) bool {
+		return tests[i].Desc < tests[j].Desc
+	})
+	data, err := json.MarshalIndent(tests, "", "    ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(yugiohTestData, append(data, '\n'), 0644); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("rewrote %s with %d cases", yugiohTestData, len(tests))
+}
+
+// TestYugiohSealed pins the sealed namespace: products load, resolve by
+// name, and never shadow the card index.
+func TestYugiohSealed(t *testing.T) {
+	b := loadBackend(t)
+
+	if len(b.AllSealedUUIDs) == 0 {
+		t.Fatal("no sealed products loaded")
+	}
+	productMap := b.BuildSealedProductMap("tcgplayerProductId")
+	if len(productMap) == 0 {
+		t.Fatal("no sealed product ids")
+	}
+	for id, uuids := range productMap {
+		if len(uuids) != 1 {
+			t.Errorf("tcgplayer id %d shared by %d sealed products", id, len(uuids))
+		}
+	}
+
+	uuid, err := b.ResolveSealed("Force of the Breaker - Booster Box [1st Edition]")
+	if err != nil {
+		t.Fatalf("booster box did not resolve: %s", err)
+	}
+	co, err := b.GetUUID(uuid)
+	if err != nil || !co.Sealed {
+		t.Fatalf("resolved uuid %s is not a sealed product", uuid)
+	}
+
+	// The booster box is a real product per print run (1st Edition and
+	// Unlimited); a wording naming neither must stay unresolved rather
+	// than pick one.
+	if uuid, err := b.ResolveSealed("Force of the Breaker - Booster Box"); err == nil {
+		t.Fatalf("edition-ambiguous booster box resolved to %s", uuid)
+	}
+}
