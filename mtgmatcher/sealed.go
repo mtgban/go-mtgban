@@ -128,6 +128,7 @@ func (b *Backend) ResolveSealed(name string) (string, error) {
 	vendor := sealedTokens(name)
 	var exact, contained []string
 	containedLen := map[string]int{}
+	unexplained := map[string]int{}
 	for _, uuid := range b.AllSealedUUIDs {
 		co, found := b.UUIDs[uuid]
 		if !found {
@@ -141,6 +142,7 @@ func (b *Backend) ResolveSealed(name string) (string, error) {
 		if tokensSubset(candidate, vendor) && sealedExtrasSafe(vendor, candidate, setTokens) {
 			contained = append(contained, uuid)
 			containedLen[uuid] = len(candidate)
+			unexplained[uuid] = unexplainedTokens(vendor, candidate, b.setNameTokens(co.SetCode))
 		}
 	}
 
@@ -151,19 +153,67 @@ func (b *Backend) ResolveSealed(name string) (string, error) {
 		return "", ErrCardDoesNotExist
 	}
 	if len(contained) > 0 {
-		// The most specific candidate fully described by the vendor's
-		// wording wins; a tie stays unresolved.
+		// The candidate that accounts for most of what the vendor said
+		// wins: first by how many vendor words neither it nor its own set
+		// explains, then by specificity. Counting tokens alone reads a
+		// product's own identity as filler when its words happen to be a
+		// rearrangement of another's - "Paramount War Box Promotion
+		// Booster" names the Box Promotion Pack, but has every word of the
+		// Paramount War Booster Box too, and that one is longer. A tie on
+		// both stays unresolved.
 		sort.Slice(contained, func(i, j int) bool {
+			if unexplained[contained[i]] != unexplained[contained[j]] {
+				return unexplained[contained[i]] < unexplained[contained[j]]
+			}
 			if containedLen[contained[i]] != containedLen[contained[j]] {
 				return containedLen[contained[i]] > containedLen[contained[j]]
 			}
 			return contained[i] < contained[j]
 		})
-		if len(contained) == 1 || containedLen[contained[0]] > containedLen[contained[1]] {
+		if len(contained) == 1 ||
+			unexplained[contained[0]] < unexplained[contained[1]] ||
+			containedLen[contained[0]] > containedLen[contained[1]] {
 			return contained[0], nil
 		}
 	}
 	return "", ErrCardDoesNotExist
+}
+
+// setNameTokens returns the identity tokens of a set's name, which a
+// storefront may prepend to any product filed under it.
+func (b *Backend) setNameTokens(setCode string) map[string]bool {
+	out := map[string]bool{}
+	set, found := b.Sets[setCode]
+	if !found {
+		return out
+	}
+	for _, tok := range sealedTokens(set.Name) {
+		out[tok] = true
+	}
+	return out
+}
+
+// unexplainedTokens counts the vendor words that neither the candidate's
+// own name nor the set it is filed under accounts for. Counts and the
+// language noise sealedExtrasSafe tolerates are not identity, so they do
+// not count against a candidate.
+func unexplainedTokens(vendor, candidate []string, setTokens map[string]bool) int {
+	candSet := map[string]bool{}
+	for _, tok := range candidate {
+		candSet[tok] = true
+	}
+	var n int
+	for _, tok := range vendor {
+		if candSet[tok] || setTokens[tok] || sealedCountRe.MatchString(tok) {
+			continue
+		}
+		switch tok {
+		case "s", "en", "english":
+			continue
+		}
+		n++
+	}
+	return n
 }
 
 func ResolveSealed(name string) (string, error) {
