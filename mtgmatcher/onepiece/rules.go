@@ -88,6 +88,15 @@ var setCodePrefixRe = regexp.MustCompile(`^[A-Za-z]+-?[0-9]+(?:-[A-Za-z]+[0-9]+)
 // AdjustEdition trims the game-name and set-code prefixes storefronts
 // decorate set names with. An edition that still matches no set simply does
 // not narrow the candidates.
+//
+// When the rest of the wording asks for a variant printing, the edition
+// stops narrowing them: a variant usually shares its collector number with
+// the base card while being filed in another set - the alternate arts in
+// PRB-01, the event printings in OP-PR - and storefronts name the base
+// card's set for all of them. Narrowing on it would delete the printing
+// being asked for before FilterCards ever tiers the candidates, pricing a
+// promo as the base common. The edition still reaches the tiering as
+// wording, so it goes on describing a variant rather than selecting one.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
 	for _, prefix := range []string{"One Piece Card Game", "One Piece TCG", "One Piece"} {
@@ -99,6 +108,37 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	edition = setCodePrefixRe.ReplaceAllString(edition, "")
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 	inCard.Edition = edition
+
+	// PromoWildcard is the flag Match already reads to skip edition
+	// selection entirely, both the exact match and the looser one: a
+	// storefront's "EB01 - Memorial Collection" does not equal the set's
+	// "Extra Booster: Memorial Collection" but is contained in it, and
+	// that alone was enough to delete the promo printing.
+	if variantPointedAt(b, inCard) {
+		inCard.PromoWildcard = true
+	}
+}
+
+// variantPointedAt reports whether the input's own wording asks for a
+// variant printing: a letter tail or "(V.n)" index, or words naming the
+// variant label of some printing of this card. Only the variation is read,
+// never the edition - the edition is what this decides whether to trust.
+func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	number := extractNumber(inCard.Variation)
+	if wantsVariant(inCard, number) {
+		return true
+	}
+	wording := strings.ToLower(inCard.Variation)
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || len(co.PromoTypes) == 0 {
+			continue
+		}
+		if variantDescribed(wording, co.PromoTypes[0], number) {
+			return true
+		}
+	}
+	return false
 }
 
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
@@ -163,18 +203,54 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// Either demand drops the base printing from consideration.
 	described, base, variants := tierByVariant(inCard, candidates, number)
 	if len(described) > 0 {
-		return described
+		return editionTiebreak(b, inCard, described)
 	}
 	if wantsVariant(inCard, number) {
 		if len(variants) > 0 {
-			return variants
+			return editionTiebreak(b, inCard, variants)
 		}
 		return candidates
 	}
 	if len(base) > 0 {
-		return base
+		return editionTiebreak(b, inCard, base)
 	}
-	return candidates
+	return editionTiebreak(b, inCard, candidates)
+}
+
+// editionTiebreak narrows a tier still holding several printings to the
+// ones filed in the set the edition describes, with the exact name match
+// preferred over the contained-in one, mirroring how Match itself selects
+// editions. PromoWildcard trades the edition's pre-filtering for a wider
+// pool so a cross-set variant survives to the tiering; this hands the
+// edition back its say once the wording has done its work, so the same
+// label printed in several sets - the starter-deck and Premium Booster
+// Reprints share one number and one label - resolves instead of aliasing.
+// An edition matching none of the tier keeps the whole tier: storefronts
+// name the base card's set for printings filed elsewhere, and failing safe
+// on genuine ambiguity is the point of the tiering.
+func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) <= 1 || inCard.Edition == "" {
+		return cards
+	}
+	var equal, contained []mtgmatcher.Card
+	for _, card := range cards {
+		set, found := b.Sets[card.SetCode]
+		if !found {
+			continue
+		}
+		if mtgmatcher.Equals(set.Name, inCard.Edition) {
+			equal = append(equal, card)
+		} else if mtgmatcher.Contains(set.Name, inCard.Edition) {
+			contained = append(contained, card)
+		}
+	}
+	if len(equal) > 0 {
+		return equal
+	}
+	if len(contained) > 0 {
+		return contained
+	}
+	return cards
 }
 
 // tierByVariant splits the candidates into the ones whose variant label the
