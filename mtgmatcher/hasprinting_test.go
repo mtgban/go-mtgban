@@ -3,6 +3,7 @@ package mtgmatcher
 import (
 	"math/rand"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -215,4 +216,99 @@ func BenchmarkHasPrintingWide(b *testing.B) {
 			oldHasPrinting("Island", "finish", FinishFoil)
 		}
 	})
+}
+
+// TestHasPrintingAnswersForTheNamedCard pins what the bucket rewrite of
+// hasPrinting broke and e2bdcb9e fixed: a hash bucket holds names that
+// normalize the same but belong to different cards - the DMU token "Cat
+// Warrior" beside the Legends card "Cat Warriors", since normalization
+// folds plurals - and the printings of one must never answer for the
+// other.
+//
+// The expectation is computed by scanning every card object for the exact
+// name, independently of the hash index and of entry4Name, so the test
+// keeps its meaning if either is rewritten again. It is data-driven
+// rather than pinned to named cards, so an AllPrintings refresh that
+// retires one collision and introduces another still exercises the
+// invariant - unlike TestHasPrintingEquivalence, whose seeded sample
+// reaches a given collision only by luck.
+func TestHasPrintingAnswersForTheNamedCard(t *testing.T) {
+	uuids := GetUUIDs()
+	if len(uuids) == 0 {
+		t.Skip("datastore not loaded")
+	}
+
+	// Group the real card names by the bucket they hash into, keeping
+	// only the buckets that hold more than one distinct name.
+	namesByBucket := map[string]map[string]bool{}
+	for _, uuid := range uuids {
+		co, err := GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		norm := Normalize(co.Name)
+		if namesByBucket[norm] == nil {
+			namesByBucket[norm] = map[string]bool{}
+		}
+		namesByBucket[norm][co.Name] = true
+	}
+
+	checks := []struct{ field, value string }{
+		{"finish", FinishNonfoil},
+		{"finish", FinishFoil},
+		{"finish", FinishEtched},
+		// Literal values: the Magic vocabulary lives in the magic
+		// package, which this one cannot import.
+		{"frame_effect", "extendedart"},
+		{"border_color", "borderless"},
+	}
+
+	var collisions, compared int
+	for _, names := range namesByBucket {
+		if len(names) < 2 {
+			continue
+		}
+		collisions++
+		for name := range names {
+			for _, check := range checks {
+				// The oracle: does any card actually named this way carry
+				// the property? Full scan, no index involved.
+				var want bool
+				for _, uuid := range uuids {
+					co, err := GetUUID(uuid)
+					if err != nil || !strings.EqualFold(co.Name, name) {
+						continue
+					}
+					if cardHasProperty(co.Card, check.field, check.value) {
+						want = true
+						break
+					}
+				}
+				got := HasPrinting(name, check.field, check.value)
+				compared++
+				if got != want {
+					t.Errorf("HasPrinting(%q, %s, %s) = %v, want %v: answered for a card not named that way",
+						name, check.field, check.value, got, want)
+				}
+			}
+		}
+	}
+	if collisions == 0 {
+		t.Fatal("no normalize-equal name collisions in the datastore; the invariant is untested")
+	}
+	t.Logf("%d colliding buckets, %d combinations compared", collisions, compared)
+}
+
+// cardHasProperty answers a hasPrinting check for one card, without the
+// name resolution the test is there to exercise.
+func cardHasProperty(card Card, field, value string) bool {
+	switch field {
+	case "finish":
+		return card.HasFinish(value)
+	case "frame_effect":
+		return card.HasFrameEffect(value)
+	case "border_color":
+		return card.BorderColor == value
+	}
+	return false
 }
