@@ -16,6 +16,12 @@ func sealedResolveBackend() *Backend {
 			"1":   {Name: "The First Chapter", Code: "1"},
 			"6":   {Name: "Azurite Sea", Code: "6"},
 			"9":   {Name: "Fabled", Code: "9"},
+			// One Piece: two sets each have a Box Promotion Pack, and a
+			// third is named for the promos, donating "promotion" to the
+			// pooled set vocabulary.
+			"OP01":  {Name: "Romance Dawn", Code: "OP01"},
+			"OP02":  {Name: "Paramount War", Code: "OP02"},
+			"OP-PR": {Name: "One Piece Promotion Cards", Code: "OP-PR"},
 		},
 	}
 	for uuid, name := range map[string]string{
@@ -39,6 +45,23 @@ func sealedResolveBackend() *Backend {
 	} {
 		b.UUIDs[uuid] = &CardObject{
 			Card:   Card{UUID: uuid, Name: name},
+			Sealed: true,
+		}
+		b.AllSealedUUIDs = append(b.AllSealedUUIDs, uuid)
+	}
+	// Products filed under a set: the set a product belongs to is what
+	// makes the set words in a vendor's name its own rather than noise.
+	for uuid, product := range map[string]struct{ name, setCode string }{
+		"op01-display":  {"Romance Dawn - Booster Box", "OP01"},
+		"op01-boxpromo": {"Box Promotion Pack", "OP01"},
+		"op02-pack":     {"Paramount War - Booster Pack", "OP02"},
+		"op02-display":  {"Paramount War - Booster Box", "OP02"},
+		"op02-case":     {"Paramount War - Booster Box Case", "OP02"},
+		"op02-boxpromo": {"Box Promotion Pack", "OP02"},
+		"oppr-winner-1": {"Winner Pack Vol. 1", "OP-PR"},
+	} {
+		b.UUIDs[uuid] = &CardObject{
+			Card:   Card{UUID: uuid, Name: product.name, SetCode: product.setCode},
 			Sealed: true,
 		}
 		b.AllSealedUUIDs = append(b.AllSealedUUIDs, uuid)
@@ -128,6 +151,32 @@ func TestResolveSealed(t *testing.T) {
 			desc: "negative: a case without a case product stays unresolved",
 			name: "Riftbound: League of Legends TCG - Vendetta Booster Case",
 			want: "",
+		},
+		{
+			// The promo handed out with a box purchase. Its words are a
+			// rearrangement of the box's own, so counting tokens made the
+			// box look like the better answer - and "promotion" passed as
+			// filing noise because another set is named for the promos.
+			desc: "box promotion booster is the promo, not the box",
+			name: "Paramount War Box Promotion Booster",
+			want: "op02-boxpromo",
+		},
+		{
+			// Same product name in two sets: the set the vendor names is
+			// the one that owns it.
+			desc: "box promotion booster picks the set it is filed under",
+			name: "Romance Dawn Box Promotion Booster",
+			want: "op01-boxpromo",
+		},
+		{
+			desc: "the plain box still resolves to the box",
+			name: "Paramount War Booster Box",
+			want: "op02-display",
+		},
+		{
+			desc: "the case still outranks the box it contains",
+			name: "Paramount War Booster Box Case (12x Booster Box)",
+			want: "op02-case",
 		},
 	}
 	for _, test := range tests {
