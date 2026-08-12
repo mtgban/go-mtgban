@@ -16,6 +16,6 @@ jobs:
     uses: ./.github/workflows/run-bantool.yml
     with:
       target: ${{ github.workflow }}
-      game: "lorcana"
+      game: "onepiece"
       datastore-filepath: b2://mtgban-datastore/onepiece/onepiece.json.xz
     secrets: inherit
