@@ -141,8 +141,11 @@ func (lj *LorcanaJSON) englishCards() []int {
 			keep = append(keep, i)
 			continue
 		}
-		identity := fmt.Sprintf("%d|%d|%d|%s|%d",
-			el.TcgPlayerId, el.CardmarketId, el.CardTraderId, card.SetCode, card.Number)
+		// The collector number as printed, letter included: that letter is
+		// all that separates the same-numbered art siblings ("4a" to "4e"),
+		// and the number alone would file them under one identity.
+		identity := fmt.Sprintf("%d|%d|%d|%s|%d%s",
+			el.TcgPlayerId, el.CardmarketId, el.CardTraderId, card.SetCode, card.Number, card.Variant)
 		if seen[identity] {
 			continue
 		}
