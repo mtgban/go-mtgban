@@ -5941,6 +5941,14 @@
         "error": "unknown variant"
     },
     {
+        "description": "negative: the restored zero is a number, not a wildcard",
+        "input": {
+            "name": "A Whole New World",
+            "variant": "000B"
+        },
+        "error": "unknown variant"
+    },
+    {
         "description": "negative: unknown card name",
         "input": {
             "name": "Nonexistent Imaginary Hero",
@@ -6047,6 +6055,14 @@
             "edition": "Not A Real Set"
         },
         "uuid": "460"
+    },
+    {
+        "description": "zero collector number carrying a storefront letter",
+        "input": {
+            "name": "Bruno Madrigal - Undetected Uncle",
+            "variant": "000B"
+        },
+        "uuid": "1936"
     },
     {
         "description": "zero collector number is a real number",
