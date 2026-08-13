@@ -5832,6 +5832,23 @@
         "uuid": "2626"
     },
     {
+        "description": "foil-only promo listed without the flag",
+        "input": {
+            "name": "A Whole New World",
+            "variant": "010B",
+            "edition": "Disney Lorcana Promo Cards"
+        },
+        "uuid": "1199"
+    },
+    {
+        "description": "the letter the data gives a sibling still selects it",
+        "input": {
+            "name": "Dalmatian Puppy - Tail Wagger",
+            "variant": "4c"
+        },
+        "uuid": "438"
+    },
+    {
         "description": "name typeset with a hyphen character instead of a dash",
         "input": {
             "name": "Fix‐It Felix, Jr. - Delighted Sightseer",
@@ -5850,12 +5867,12 @@
         "error": "unknown variant"
     },
     {
-        "description": "negative: foil-only printing requested as nonfoil",
+        "description": "foil-only printing listed without the flag",
         "input": {
             "name": "Hades - King of Olympus",
             "variant": "205"
         },
-        "error": "unknown variant"
+        "uuid": "205"
     },
     {
         "description": "negative: known name with wrong collector number",
