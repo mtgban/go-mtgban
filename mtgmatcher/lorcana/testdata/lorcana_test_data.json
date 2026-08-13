@@ -5952,6 +5952,28 @@
         "uuid": "2432"
     },
     {
+        "description": "product id still lets the wording pick the foil sub-type",
+        "input": {
+                "id": "647652",
+                "name": "Ariel - Singing Mermaid",
+                "variant": "15/204 Holofoil",
+                "edition": "Fabled",
+                "foil": true
+        },
+        "uuid": "1951_rainbowpillars"
+    },
+    {
+        "description": "product id two cards claim falls back to the name",
+        "input": {
+                "id": "544501",
+                "name": "Let It Go (Disney Lorcana Challenge Top 128)",
+                "variant": "2 Holofoil",
+                "edition": "Disney Lorcana Promo Cards",
+                "foil": true
+        },
+        "uuid": "1188"
+    },
+    {
         "description": "negative: unknown card name",
         "input": {
             "name": "Nonexistent Imaginary Hero",
