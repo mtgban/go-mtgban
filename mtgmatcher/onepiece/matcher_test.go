@@ -85,6 +85,30 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ain (OP07-002)", Variation: "002", Edition: "500 Years into the Future"},
 	},
 	{
+		Desc: "the set code picks the volume its family shares a name with",
+		In:   mtgmatcher.InputCard{Name: "Roronoa Zoro", Variation: "OP06-118", Edition: "PRB-02: Premium Booster"},
+	},
+	{
+		Desc: "negative: a family name without its volume stays ambiguous",
+		In:   mtgmatcher.InputCard{Name: "Roronoa Zoro", Variation: "OP06-118", Edition: "Premium Booster"},
+	},
+	{
+		Desc: "the set code outranks a wording naming the other volume",
+		In:   mtgmatcher.InputCard{Name: "Roronoa Zoro", Variation: "OP06-118", Edition: "PRB-02: Premium Booster -The Best-"},
+	},
+	{
+		Desc: "an event set spelled a word off selects the event printing",
+		In:   mtgmatcher.InputCard{Name: "Sterry", Variation: "OP07-006", Edition: "500 Years into the Future Pre-Release Cards"},
+	},
+	{
+		Desc: "an event set missing its deck ordinal still selects it",
+		In:   mtgmatcher.InputCard{Name: "Usopp", Variation: "ST01-002", Edition: "Super Pre-Release Starter Deck: Straw Hat Crew"},
+	},
+	{
+		Desc: "a wording spelling no event marker keeps the base set",
+		In:   mtgmatcher.InputCard{Name: "Blast Breath", Variation: "ST04-016", Edition: "Animal Kingdom Pirates: Starter Deck 4"},
+	},
+	{
 		Desc: "storefront drops the deck ordinal out of the set name",
 		In:   mtgmatcher.InputCard{Name: "Blast Breath (ST04-016)", Variation: "016", Edition: "Starter Deck: Animal Kingdom Pirates"},
 	},

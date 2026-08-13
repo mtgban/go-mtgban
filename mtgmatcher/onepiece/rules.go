@@ -115,6 +115,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			break
 		}
 	}
+	// The code the prefix spells is the storefront saying which set it
+	// means, and it survives the trim: it is the only thing telling the
+	// members of a set family apart once the shared name is all that is
+	// left of the wording.
+	code := strings.Trim(setCodePrefixRe.FindString(edition), " -:")
 	edition = setCodePrefixRe.ReplaceAllString(edition, "")
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 
@@ -126,7 +131,8 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	// describes it better than every other, keeping any promo line in
 	// front so the event printings are still the ones being named.
 	prefix := promoLineRe.FindString(edition)
-	if canon := canonicalEdition(b, edition[len(prefix):]); canon != "" {
+	canon := canonicalEdition(b, edition[len(prefix):], code)
+	if canon != "" {
 		edition = prefix + canon
 	}
 	inCard.Edition = edition
@@ -331,25 +337,39 @@ var promoLineRe = regexp.MustCompile(`(?i)^promos?\s*[:-]\s*`)
 
 // canonicalEdition returns the name of the one set an edition describes
 // better than every other, or "" when the wording picks no clear winner.
-// A set already naming itself needs no rewriting.
 //
 // The wording has to leave nothing of the set name unaccounted for, or
 // share three words with it when it does: two words in common is the
 // coincidence a vendor bucket like "One Piece Products" lands on, and
 // answering that with a set would price a whole shelf as one card.
-func canonicalEdition(b *mtgmatcher.Backend, edition string) string {
+//
+// The set code the storefront wore in front of the name overrides the
+// wording: a family shares its name across volumes ("Premium Booster -The
+// Best-" and its Vol. 2), so the code is the only thing that says which
+// one the listing is filed in.
+func canonicalEdition(b *mtgmatcher.Backend, edition, code string) string {
 	want := editionTokens(edition)
 	if len(want) == 0 {
 		return ""
 	}
-	var best, runner editionScore
-	for _, set := range b.Sets {
-		if mtgmatcher.Equals(set.Name, edition) {
+	wantCode := foldSetCode(code)
+	var best, runner, coded editionScore
+	for setCode, set := range b.Sets {
+		// A set already naming itself needs no rewriting - unless the code
+		// names another one, which is the storefront saying which member of
+		// a family it means where the wording no longer can: PRB-02's name
+		// begins with the whole of PRB-01's, so a truncating storefront
+		// spells one name and the other code.
+		if mtgmatcher.Equals(set.Name, edition) && (wantCode == "" || foldSetCode(setCode) == wantCode) {
 			return ""
 		}
 		cur := scoreEdition(want, set.Name)
+		cur.event = isEventSet(setCode)
 		if cur.shared < 2 || cur.missing > 1 || (cur.missing > 0 && cur.shared < 3) {
 			continue
+		}
+		if wantCode != "" && foldSetCode(setCode) == wantCode {
+			coded = cur
 		}
 		if best.name == "" || cur.beats(best) {
 			runner, best = best, cur
@@ -357,18 +377,39 @@ func canonicalEdition(b *mtgmatcher.Backend, edition string) string {
 			runner = cur
 		}
 	}
-	if best.name == "" || (runner.name != "" && !best.beats(runner)) {
+	if coded.name != "" {
+		return coded.name
+	}
+	if best.name == "" || !best.beats(runner) {
 		return ""
 	}
 	return best.name
 }
 
-// editionScore counts how much of a set name an edition accounts for:
-// the words the two share, the ones the edition spells that the set name
-// does not, and the ones the set name carries that the edition left out.
+// foldSetCode drops the punctuation a storefront spells a set code with:
+// cardtrader writes "OP-01" for the datastore's "OP01", coolstuffinc
+// "EB01" for its "EB-01". The event sets keep their marker ("OP03 PRE"
+// folds to OP03PRE), which no storefront prefix spells.
+func foldSetCode(code string) string {
+	return strings.Map(func(r rune) rune {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
+			return -1
+		}
+		return unicode.ToUpper(r)
+	}, code)
+}
+
+// editionScore counts how much of a set name an edition accounts for: the
+// words the two share and the ones the set name carries that the edition
+// left out, with the event sets flagged for the tie those two cannot
+// break. Nothing else orders two sets - the words a set name spells beyond
+// the wording say nothing about which one was meant, and answering a
+// family's shared name with its shortest member invents a volume the
+// storefront never wrote.
 type editionScore struct {
-	name                   string
-	shared, missing, extra int
+	name            string
+	shared, missing int
+	event           bool
 }
 
 func scoreEdition(want map[string]bool, name string) editionScore {
@@ -381,11 +422,6 @@ func scoreEdition(want map[string]bool, name string) editionScore {
 			cur.missing++
 		}
 	}
-	for token := range have {
-		if !want[token] {
-			cur.extra++
-		}
-	}
 	return cur
 }
 
@@ -396,7 +432,12 @@ func (s editionScore) beats(other editionScore) bool {
 	if s.missing != other.missing {
 		return s.missing < other.missing
 	}
-	return s.extra < other.extra
+	// An event set wears its base set's whole name with a marker appended,
+	// so a wording spelling the base name alone accounts for both exactly
+	// as well and they would tie forever. A wording that spells the marker
+	// too wins the event set the counts above, so a tie left here is the
+	// marker gone unspelled, and the base set is the one being named.
+	return !s.event && other.event
 }
 
 // editionTokens splits a set name into the words that carry its identity.
