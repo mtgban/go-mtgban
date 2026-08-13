@@ -5915,6 +5915,43 @@
         "error": "unknown variant"
     },
     {
+        "description": "negative: multi-card promo lot is not a card",
+        "input": {
+                "name": "Disney Cruise Promos (Set of 5)",
+                "variant": "Normal",
+                "edition": "Disney Lorcana Promo Cards"
+        },
+        "error": "unsupported"
+    },
+    {
+        "description": "negative: puzzle insert lot named after a card is not a card",
+        "input": {
+                "name": "Mickey Mouse - Brave Little Tailor Puzzle Insert (Set of 4)",
+                "variant": "Normal",
+                "edition": "The First Chapter"
+        },
+        "error": "unsupported"
+    },
+    {
+        "description": "negative: puzzle insert piece is not a card",
+        "input": {
+                "name": "Azurite Sea Puzzle Insert (Top Left)",
+                "variant": "Normal",
+                "edition": "Azurite Sea"
+        },
+        "error": "unsupported"
+    },
+    {
+        "description": "the promotion behind the lot still names a real card",
+        "input": {
+                "name": "Mickey Mouse - True Friend (Disney Cruise Promo)",
+                "variant": "10 Holofoil",
+                "edition": "Disney Lorcana Promo Cards",
+                "foil": true
+        },
+        "uuid": "2432"
+    },
+    {
         "description": "negative: unknown card name",
         "input": {
             "name": "Nonexistent Imaginary Hero",

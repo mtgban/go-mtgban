@@ -155,6 +155,26 @@ var lorcanaSeeds = []matchTest{
 		Desc: "negative: prefix without a number stays ambiguous",
 		In:   mtgmatcher.InputCard{Name: "Dalmatian Puppy"},
 	},
+	// Non-card products TCGplayer files under its "Cards" type, verbatim from
+	// the live catalog. The lot spellings carry a real card's name or a real
+	// card's promotion, so the last case pins that neither is dragged down
+	// with them.
+	{
+		Desc: "negative: puzzle insert piece is not a card",
+		In:   mtgmatcher.InputCard{Name: "Azurite Sea Puzzle Insert (Top Left)", Variation: "Normal", Edition: "Azurite Sea"},
+	},
+	{
+		Desc: "negative: puzzle insert lot named after a card is not a card",
+		In:   mtgmatcher.InputCard{Name: "Mickey Mouse - Brave Little Tailor Puzzle Insert (Set of 4)", Variation: "Normal", Edition: "The First Chapter"},
+	},
+	{
+		Desc: "negative: multi-card promo lot is not a card",
+		In:   mtgmatcher.InputCard{Name: "Disney Cruise Promos (Set of 5)", Variation: "Normal", Edition: "Disney Lorcana Promo Cards"},
+	},
+	{
+		Desc: "the promotion behind the lot still names a real card",
+		In:   mtgmatcher.InputCard{Name: "Mickey Mouse - True Friend (Disney Cruise Promo)", Variation: "10 Holofoil", Edition: "Disney Lorcana Promo Cards", Foil: true},
+	},
 }
 
 func TestLorcanaMatch(t *testing.T) {
