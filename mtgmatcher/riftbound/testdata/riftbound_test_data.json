@@ -119,6 +119,22 @@
         "uuid": "ogn-303-star-298_foil"
     },
     {
+        "description": "name alone keeps the base art over its lettered sibling",
+        "input": {
+            "name": "Ahri, Alluring",
+            "edition": "Origins"
+        },
+        "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "name alone keeps the base art over the numbers past the set",
+        "input": {
+            "name": "Aphelios, Exalted",
+            "edition": "Spiritforged"
+        },
+        "uuid": "sfd-049-221_foil"
+    },
+    {
         "description": "name and number resolve the base printing",
         "input": {
             "name": "Ahri, Alluring",

@@ -447,17 +447,62 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			untyped = append(untyped, card)
 		}
 	}
-	if len(described) > 0 {
-		return described
+	tier := out
+	switch {
+	case len(described) > 0:
+		tier = described
+	case len(promoPlain) > 0:
+		tier = promoPlain
+	case len(promoTyped) > 0 && len(qualifierWords(inCard.Variation)) == 0:
+		tier = promoTyped
+	case len(untyped) > 0:
+		tier = untyped
 	}
-	if len(promoPlain) > 0 {
-		return promoPlain
+	return preferBasePrinting(b, inCard, number, tier)
+}
+
+// preferBasePrinting keeps the base printings when the input said nothing
+// that could choose among a card's alternate arts. Riftbound files those
+// under a number of their own rather than under a variant label, so nothing
+// tiers them: a feed that lists a card by name alone, as CoolStuffInc's
+// does, aliases every art against the base card and prices none of them.
+//
+// Two things mark an art as an alternate. It carries a letter or star on the
+// number the base printing owns plainly - 66a beside 66, 303* beside 303 -
+// or it is numbered past the end of the set, the gallery's own public code
+// spelling the boundary out ("SFD-224/221" against "SFD-049/221"). An input
+// carrying a number, or a word that might name an art, has already chosen
+// and is left alone.
+func preferBasePrinting(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) <= 1 || number != "" || len(qualifierWords(inCard.Variation)) > 0 {
+		return cards
 	}
-	if len(promoTyped) > 0 && len(qualifierWords(inCard.Variation)) == 0 {
-		return promoTyped
+	var base []mtgmatcher.Card
+	for _, card := range cards {
+		if card.Number == "" {
+			continue
+		}
+		if last := card.Number[len(card.Number)-1]; last < '0' || last > '9' {
+			continue
+		}
+		set, found := b.Sets[card.SetCode]
+		if found && set.BaseSetSize > 0 && leadingNumber(card.Number) > set.BaseSetSize {
+			continue
+		}
+		base = append(base, card)
 	}
-	if len(untyped) > 0 {
-		return untyped
+	if len(base) > 0 {
+		return base
+	}
+	return cards
+}
+
+// leadingNumber reads the number a collector number opens with, 0 when it
+// opens with a letter as the token and rune numbers do.
+func leadingNumber(number string) int {
+	out := 0
+	for i := 0; i < len(number) && number[i] >= '0' && number[i] <= '9'; i++ {
+		out = out*10 + int(number[i]-'0')
 	}
 	return out
 }
