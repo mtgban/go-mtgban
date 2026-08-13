@@ -98,9 +98,9 @@ func (tnt *TrollandtoadSealed) parsePages(ctx context.Context, link string, last
 		}
 
 		links := strings.Split(link, "/")
-		tntId := links[len(links)-1]
+		tntID := links[len(links)-1]
 
-		uuid, found := tnt.productMap[tntId]
+		uuid, found := tnt.productMap[tntID]
 		if !found {
 			return
 		}
@@ -127,7 +127,7 @@ func (tnt *TrollandtoadSealed) parsePages(ctx context.Context, link string, last
 			}
 
 			out := responseChan{
-				cardId: uuid,
+				cardID: uuid,
 				invEntry: &mtgban.InventoryEntry{
 					Price:    price,
 					Quantity: qty,
@@ -156,7 +156,7 @@ func (tnt *TrollandtoadSealed) parsePages(ctx context.Context, link string, last
 	}()
 
 	for res := range channel {
-		err := tnt.inventory.Add(res.cardId, res.invEntry)
+		err := tnt.inventory.Add(res.cardID, res.invEntry)
 		if err != nil {
 			// Too many false positives
 			//tnt.printf("%v", err)

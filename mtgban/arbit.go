@@ -205,8 +205,8 @@ func resolveOpts(opts *ArbitOpts) resolvedOpts {
 
 // filterCard checks whether a card should be skipped based on the resolved
 // options. Returns the custom factor and true if the card should be kept.
-func (r *resolvedOpts) filterCard(cardId string) (*mtgmatcher.CardObject, float64, bool) {
-	co, err := mtgmatcher.GetUUID(cardId)
+func (r *resolvedOpts) filterCard(cardID string) (*mtgmatcher.CardObject, float64, bool) {
+	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
 		return nil, 0, false
 	}
@@ -219,7 +219,7 @@ func (r *resolvedOpts) filterCard(cardId string) (*mtgmatcher.CardObject, float6
 	if r.filterOnlyFoil && !co.Foil && !co.Etched {
 		return nil, 0, false
 	}
-	if r.filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardId) {
+	if r.filterDecksOnly && co.Sealed && !mtgmatcher.SealedHasDecklist(co.SetCode, cardID) {
 		return nil, 0, false
 	}
 	if r.filterRLOnly && !co.IsReserved {
@@ -256,8 +256,8 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 
 	r := resolveOpts(opts)
 
-	for cardId, blEntries := range vendor.Buylist() {
-		invEntries, found := seller.Inventory()[cardId]
+	for cardID, blEntries := range vendor.Buylist() {
+		invEntries, found := seller.Inventory()[cardID]
 		if !found {
 			continue
 		}
@@ -273,7 +273,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			continue
 		}
 
-		_, customFactor, ok := r.filterCard(cardId)
+		_, customFactor, ok := r.filterCard(cardID)
 		if !ok {
 			continue
 		}
@@ -303,7 +303,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			}
 
 			if r.filterPriceFunc != nil {
-				factor, skip := r.filterPriceFunc(cardId, invEntry)
+				factor, skip := r.filterPriceFunc(cardID, invEntry)
 				if skip {
 					continue
 				}
@@ -373,7 +373,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			}
 
 			res := ArbitEntry{
-				CardId:             cardId,
+				CardId:             cardID,
 				BuylistEntry:       blEntry,
 				InventoryEntry:     invEntry,
 				Difference:         difference,
@@ -399,13 +399,13 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 
 	r := resolveOpts(opts)
 
-	for cardId, refEntries := range reference.Inventory() {
-		invEntries, found := probe.Inventory()[cardId]
+	for cardID, refEntries := range reference.Inventory() {
+		invEntries, found := probe.Inventory()[cardID]
 		if !found {
 			continue
 		}
 
-		_, customFactor, ok := r.filterCard(cardId)
+		_, customFactor, ok := r.filterCard(cardID)
 		if !ok {
 			continue
 		}
@@ -420,7 +420,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 			}
 
 			if r.filterPriceFunc != nil {
-				factor, skip := r.filterPriceFunc(cardId, refEntry)
+				factor, skip := r.filterPriceFunc(cardID, refEntry)
 				if skip {
 					continue
 				}
@@ -492,7 +492,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 				}
 
 				res := ArbitEntry{
-					CardId:         cardId,
+					CardId:         cardID,
 					InventoryEntry: invEntry,
 					ReferenceEntry: refEntry,
 					Difference:     difference,
@@ -511,8 +511,8 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 	var result []ArbitEntry
 
-	for cardId, entries := range seller.Inventory() {
-		co, err := mtgmatcher.GetUUID(cardId)
+	for cardID, entries := range seller.Inventory() {
+		co, err := mtgmatcher.GetUUID(cardID)
 		if err != nil {
 			continue
 		}
@@ -565,7 +565,7 @@ func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 
 			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
 				result = append(result, ArbitEntry{
-					CardId:         cardId,
+					CardId:         cardID,
 					InventoryEntry: entry,
 				})
 			}

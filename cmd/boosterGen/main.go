@@ -104,10 +104,10 @@ func run() int {
 
 			if sheet.Fixed {
 				// Fixed means there is no randomness, just pick the cards as listed
-				for cardId, frequency := range sheet.Cards {
+				for cardID, frequency := range sheet.Cards {
 					for j := 0; j < frequency; j++ {
 						picks = append(picks, Pick{
-							CardId: cardId,
+							CardId: cardID,
 							Sheet:  sheetName,
 							Finish: finish,
 						})
@@ -127,10 +127,10 @@ func run() int {
 
 				// Move sheet data into randutil data type
 				var cardChoices []randutil.Choice
-				for cardId, weight := range sheet.Cards {
+				for cardID, weight := range sheet.Cards {
 					cardChoices = append(cardChoices, randutil.Choice{
 						Weight: weight,
-						Item:   cardId,
+						Item:   cardID,
 					})
 				}
 

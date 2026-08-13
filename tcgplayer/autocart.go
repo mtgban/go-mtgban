@@ -14,13 +14,13 @@ const tcgAdd2CartURL = "https://mpgateway.tcgplayer.com/v1/cart/%s/item/add"
 
 type TCGAutoClient struct {
 	client *http.Client
-	cartId string
+	cartID string
 }
 
-func NewTCGAutoClient(cartId string) *TCGAutoClient {
+func NewTCGAutoClient(cartID string) *TCGAutoClient {
 	tcg := TCGAutoClient{}
 	tcg.client = cleanhttp.DefaultClient()
-	tcg.cartId = cartId
+	tcg.cartID = cartID
 	return &tcg
 }
 
@@ -47,9 +47,9 @@ type TCGAutocartResponse struct {
 	}
 }
 
-func (tcg *TCGAutoClient) AddProductToCart(ctx context.Context, sellerKey string, skuId, qty int, isDirect bool) (*TCGAutocartResponse, error) {
+func (tcg *TCGAutoClient) AddProductToCart(ctx context.Context, sellerKey string, skuID, qty int, isDirect bool) (*TCGAutocartResponse, error) {
 	var params TCGAutocartRequest
-	params.SKU = skuId
+	params.SKU = skuID
 	params.SellerKey = sellerKey
 	params.RequestedQuantity = qty
 	params.IsDirect = isDirect
@@ -59,7 +59,7 @@ func (tcg *TCGAutoClient) AddProductToCart(ctx context.Context, sellerKey string
 		return nil, err
 	}
 
-	link := fmt.Sprintf(tcgAdd2CartURL, tcg.cartId)
+	link := fmt.Sprintf(tcgAdd2CartURL, tcg.cartID)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
 	if err != nil {

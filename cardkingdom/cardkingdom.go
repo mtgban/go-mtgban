@@ -73,12 +73,12 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			continue
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
 			ogErr := err
-			cardId, err = mtgmatcher.MatchId(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
+			cardID, err = mtgmatcher.MatchId(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
 			if err != nil {
 				if skipErrors {
 					continue
@@ -148,14 +148,14 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 						"RetailPrice": fmt.Sprint(card.PriceRetail),
 					}
 				}
-				err = ck.inventory.AddUnique(cardId, out)
+				err = ck.inventory.AddUnique(cardID, out)
 			}
 		} else if ck.PreserveOOS {
 			// Only save URL information
 			out := &mtgban.InventoryEntry{
 				URL: link,
 			}
-			err = ck.inventory.AddUnique(cardId, out)
+			err = ck.inventory.AddUnique(cardID, out)
 		}
 		if err != nil && !skipErrors {
 			ck.printf("%v", err)
@@ -223,7 +223,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 						"CKID":      strconv.Itoa(card.ID),
 					}
 				}
-				err = ck.buylist.Add(cardId, out)
+				err = ck.buylist.Add(cardID, out)
 				if err != nil && !skipErrors {
 					ck.printf("%v", err)
 				}
@@ -238,7 +238,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					Conditions: grade,
 					VendorName: availableTraderNames[1],
 				}
-				err = ck.buylist.Add(cardId, out)
+				err = ck.buylist.Add(cardID, out)
 				if err != nil && !skipErrors {
 					ck.printf("%v", err)
 				}

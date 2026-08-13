@@ -169,8 +169,8 @@ const (
 	defaultLimitLastestSales      = 25
 )
 
-func LatestSales(ctx context.Context, tcgProductId string, flags ...bool) (*latestSalesResponse, error) {
-	link := fmt.Sprintf(tcgLatestSalesURL, tcgProductId)
+func LatestSales(ctx context.Context, tcgProductID string, flags ...bool) (*latestSalesResponse, error) {
+	link := fmt.Sprintf(tcgLatestSalesURL, tcgProductID)
 
 	var params latestSalesRequest
 	params.ListingType = defaultListingTypeLatestSales
@@ -584,7 +584,7 @@ type sellerInventoryListingResponse struct {
 	} `json:"results"`
 }
 
-func (tcg *SellerClient) InventoryListing(ctx context.Context, productId, size, page int, useDirect bool) ([]SellerListing, error) {
+func (tcg *SellerClient) InventoryListing(ctx context.Context, productID, size, page int, useDirect bool) ([]SellerListing, error) {
 	var params sellerInventoryListingRequest
 	params.Filters.Term.SellerStatus = "Live"
 	if useDirect {
@@ -607,7 +607,7 @@ func (tcg *SellerClient) InventoryListing(ctx context.Context, productId, size, 
 		return nil, err
 	}
 
-	link := fmt.Sprintf(SellerListingURL, productId)
+	link := fmt.Sprintf(SellerListingURL, productID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
@@ -763,11 +763,11 @@ func (tcg *CookieClient) GetUserData(ctx context.Context) (*UserData, error) {
 
 const tcgCreateCartURL = "https://mpgateway.tcgplayer.com/v1/cart/create/usercart"
 
-func CreateCartKey(ctx context.Context, userId string) (string, error) {
+func CreateCartKey(ctx context.Context, userID string) (string, error) {
 	var params struct {
 		ExternalUserId string `json:"externalUserId"`
 	}
-	params.ExternalUserId = userId
+	params.ExternalUserId = userID
 
 	payload, err := json.Marshal(&params)
 	if err != nil {

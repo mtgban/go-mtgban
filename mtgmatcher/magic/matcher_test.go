@@ -69,22 +69,22 @@ func runMatch(b *mtgmatcher.Backend, test MatchTest) (string, error) {
 	card := test.In
 	card.PromoWildcard = test.Wildcard
 
-	cardId, err := b.Match(&card)
+	cardID, err := b.Match(&card)
 	if err == nil && test.Err != "" {
-		return cardId, fmt.Errorf("expected error: %s", test.Err)
+		return cardID, fmt.Errorf("expected error: %s", test.Err)
 	}
 	if err != nil {
 		if test.Err == "" {
-			return cardId, fmt.Errorf("unexpected error: %s", err.Error())
+			return cardID, fmt.Errorf("unexpected error: %s", err.Error())
 		}
 		if test.Err != err.Error() {
-			return cardId, fmt.Errorf("mismatched error: expected '%s', got '%s'", test.Err, err.Error())
+			return cardID, fmt.Errorf("mismatched error: expected '%s', got '%s'", test.Err, err.Error())
 		}
-	} else if cardId != test.Id {
-		return cardId, fmt.Errorf("id mismatch: expected '%s', got '%s'", test.Id, cardId)
+	} else if cardID != test.Id {
+		return cardID, fmt.Errorf("id mismatch: expected '%s', got '%s'", test.Id, cardID)
 	}
 
-	return cardId, nil
+	return cardID, nil
 }
 
 func TestMatch(t *testing.T) {
@@ -97,17 +97,17 @@ func TestMatch(t *testing.T) {
 			if !*UpdateTests {
 				t.Parallel()
 			}
-			cardId, err := runMatch(testBackend, test)
+			cardID, err := runMatch(testBackend, test)
 			if err != nil {
 				if test.Err == "" {
 					if *UpdateTests {
-						t.Logf("NOTE: Updating test result from '%s' to '%s'", test.Id, cardId)
-						matchTests[i].Id = cardId
+						t.Logf("NOTE: Updating test result from '%s' to '%s'", test.Id, cardID)
+						matchTests[i].Id = cardID
 						shouldUpdateTests = true
 						return
 					}
 
-					co, _ := testBackend.GetUUID(cardId)
+					co, _ := testBackend.GetUUID(cardID)
 					t.Errorf("FAIL: %s (%v)", err.Error(), co)
 					return
 				}

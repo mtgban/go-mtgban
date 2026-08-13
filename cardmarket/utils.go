@@ -102,8 +102,8 @@ type PriceGuide struct {
 	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
-func GetPriceGuide(ctx context.Context, gameId int) ([]PriceGuide, error) {
-	link := fmt.Sprintf(priceGuideURL, gameId)
+func GetPriceGuide(ctx context.Context, gameID int) ([]PriceGuide, error) {
+	link := fmt.Sprintf(priceGuideURL, gameID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -138,12 +138,12 @@ type ProductList struct {
 	DateAdded    string `json:"dateAdded"`
 }
 
-func GetProductListSingles(ctx context.Context, gameId int) ([]ProductList, error) {
-	return getProductList(ctx, fmt.Sprintf(productListSinglesURL, gameId))
+func GetProductListSingles(ctx context.Context, gameID int) ([]ProductList, error) {
+	return getProductList(ctx, fmt.Sprintf(productListSinglesURL, gameID))
 }
 
-func GetProductListSealed(ctx context.Context, gameId int) ([]ProductList, error) {
-	return getProductList(ctx, fmt.Sprintf(productListSealedURL, gameId))
+func GetProductListSealed(ctx context.Context, gameID int) ([]ProductList, error) {
+	return getProductList(ctx, fmt.Sprintf(productListSealedURL, gameID))
 }
 
 func getProductList(ctx context.Context, link string) ([]ProductList, error) {

@@ -349,8 +349,8 @@ func LCM(a, b int) int {
 }
 
 // Retrieve the card release date
-func (b *Backend) CardReleaseDate(cardId string) (time.Time, error) {
-	co, err := b.GetUUID(cardId)
+func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
+	co, err := b.GetUUID(cardID)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -367,8 +367,8 @@ func (b *Backend) CardReleaseDate(cardId string) (time.Time, error) {
 	return time.Parse("2006-01-02", releaseDate)
 }
 
-func CardReleaseDate(cardId string) (time.Time, error) {
-	return defaultBackend.CardReleaseDate(cardId)
+func CardReleaseDate(cardID string) (time.Time, error) {
+	return defaultBackend.CardReleaseDate(cardID)
 }
 
 // Check if a dual-faced card has the same for both faces

@@ -69,7 +69,7 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 		}
 		theCard.Foil = product.Properties.MTGFoil
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			continue
 		}
@@ -86,7 +86,7 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 			continue
 		}
 
-		inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
+		inventory.AddRelaxed(cardID, &mtgban.InventoryEntry{
 			Price:      price,
 			Quantity:   quantity,
 			Conditions: condition,
@@ -112,7 +112,7 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 		}
 		theCard.Foil = product.Properties.MTGFoil
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if err != nil {
 			continue
 		}
@@ -154,7 +154,7 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 			}
 		}
 
-		inventory.AddRelaxed(cardId, &mtgban.InventoryEntry{
+		inventory.AddRelaxed(cardID, &mtgban.InventoryEntry{
 			Price:        price,
 			Quantity:     quantity,
 			Conditions:   conds,
@@ -173,7 +173,7 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 // the lot. A non-empty targetEdition narrows the fetch to that expansion
 // by name or code; logf, when given, reports the skips. The expansions
 // are returned too, since callers key edition names off them.
-func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameId int, targetEdition string, logf func(string, ...interface{})) ([]Blueprint, []Expansion, error) {
+func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, targetEdition string, logf func(string, ...interface{})) ([]Blueprint, []Expansion, error) {
 	expansions, err := client.Expansions(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -181,7 +181,7 @@ func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameId int, ta
 
 	var blueprints []Blueprint
 	for _, exp := range expansions {
-		if exp.GameId != gameId {
+		if exp.GameId != gameID {
 			continue
 		}
 		if targetEdition != "" && exp.Name != targetEdition && exp.Code != strings.ToLower(targetEdition) {
@@ -202,8 +202,8 @@ func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameId int, ta
 // gameLanguage and gameFoil read a listing's language and foil flag for the
 // given game: cardtrader keys the properties per game, the Magic fields
 // decoding empty for every other one.
-func gameLanguage(gameId int, product Product) string {
-	switch gameId {
+func gameLanguage(gameID int, product Product) string {
+	switch gameID {
 	case GameIdMagic:
 		return product.Properties.MTGLanguage
 	case GameIdLorcana:
@@ -233,15 +233,15 @@ var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
 // the matcher cannot read - "P-L", "OP07-047P2", the alpha-suffixed
 // pre-errata codes - one of those would answer as the collector number in
 // its place and select nothing at all.
-func gameVariation(gameId int, bp *Blueprint, number string) string {
-	if gameId != GameIdOnePiece || bp.Version == "" || !collectorNumberRe.MatchString(number) {
+func gameVariation(gameID int, bp *Blueprint, number string) string {
+	if gameID != GameIdOnePiece || bp.Version == "" || !collectorNumberRe.MatchString(number) {
 		return number
 	}
 	return number + " " + bp.Version
 }
 
-func gameFoil(gameId int, product Product) bool {
-	switch gameId {
+func gameFoil(gameID int, product Product) bool {
+	switch gameID {
 	case GameIdMagic:
 		return product.Properties.MTGFoil
 	case GameIdLorcana:

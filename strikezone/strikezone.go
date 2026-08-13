@@ -59,7 +59,7 @@ func (sz *Strikezone) printf(format string, a ...interface{}) {
 }
 
 type respChan struct {
-	cardId string
+	cardID string
 	inv    *mtgban.InventoryEntry
 	bl     *mtgban.BuylistEntry
 }
@@ -109,7 +109,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		return nil
 	}
 
-	cardId, err := mtgmatcher.Match(theCard)
+	cardID, err := mtgmatcher.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -156,7 +156,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 	if mode == modeRetail {
 		channel <- respChan{
-			cardId: cardId,
+			cardID: cardID,
 			inv: &mtgban.InventoryEntry{
 				Conditions: cond,
 				Price:      cardPrice,
@@ -167,7 +167,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	} else if mode == modeBuylist {
 		var sellPrice, priceRatio float64
 
-		invCards := sz.inventory[cardId]
+		invCards := sz.inventory[cardID]
 		for _, invCard := range invCards {
 			if invCard.Conditions == "NM" {
 				sellPrice = invCard.Price
@@ -184,7 +184,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 		link := "http://shop.strikezoneonline.com/TUser?MC=CUSTS&MF=B&BUID=637&ST=D&M=B&CMD=Search&T=" + cardName
 
 		channel <- respChan{
-			cardId: cardId,
+			cardID: cardID,
 			bl: &mtgban.BuylistEntry{
 				Conditions: cond,
 				BuyPrice:   cardPrice,
@@ -282,13 +282,13 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 
 	for resp := range channel {
 		if resp.inv != nil {
-			err := sz.inventory.Add(resp.cardId, resp.inv)
+			err := sz.inventory.Add(resp.cardID, resp.inv)
 			if err != nil {
 				sz.printf("%v", err)
 			}
 		}
 		if resp.bl != nil {
-			err := sz.buylist.Add(resp.cardId, resp.bl)
+			err := sz.buylist.Add(resp.cardID, resp.bl)
 			if err != nil {
 				sz.printf("%v", err)
 			}

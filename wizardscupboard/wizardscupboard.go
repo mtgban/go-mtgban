@@ -44,7 +44,7 @@ func (wc *Wizardscupboard) printf(format string, a ...interface{}) {
 }
 
 type respChan struct {
-	cardId string
+	cardID string
 	entry  *mtgban.InventoryEntry
 }
 
@@ -161,7 +161,7 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 				return
 			}
 
-			cardId, err := mtgmatcher.Match(theCard)
+			cardID, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				return
 			} else if err != nil {
@@ -184,7 +184,7 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 			}
 
 			channel <- respChan{
-				cardId: cardId,
+				cardID: cardID,
 				entry: &mtgban.InventoryEntry{
 					Price:      price,
 					Conditions: conditions,
@@ -205,13 +205,13 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 	dupes := map[string]bool{}
 
 	for resp := range channel {
-		key := resp.cardId + resp.entry.Conditions
+		key := resp.cardID + resp.entry.Conditions
 		if dupes[key] {
 			continue
 		}
 		dupes[key] = true
 
-		err := wc.inventory.Add(resp.cardId, resp.entry)
+		err := wc.inventory.Add(resp.cardID, resp.entry)
 		if err != nil {
 			wc.printf("%v", err)
 			continue

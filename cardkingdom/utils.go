@@ -121,12 +121,12 @@ const (
 	ckBuylistEmptyURL   = "https://www.cardkingdom.com/sellcart/empty_cart"
 )
 
-func (ck *CookieClient) SetCartInventory(ctx context.Context, ckId, cond string, qty int) (*CartResponse, error) {
-	return ck.setCart(ctx, ckInventoryAddURL, ckId, cond, qty)
+func (ck *CookieClient) SetCartInventory(ctx context.Context, ckID, cond string, qty int) (*CartResponse, error) {
+	return ck.setCart(ctx, ckInventoryAddURL, ckID, cond, qty)
 }
 
-func (ck *CookieClient) SetCartBuylist(ctx context.Context, ckId string, qty int) (*CartResponse, error) {
-	return ck.setCart(ctx, ckBuylistAddURL, ckId, "NM", qty)
+func (ck *CookieClient) SetCartBuylist(ctx context.Context, ckID string, qty int) (*CartResponse, error) {
+	return ck.setCart(ctx, ckBuylistAddURL, ckID, "NM", qty)
 }
 
 func (ck *CookieClient) EmptyCartInventory(ctx context.Context, cartToken string) error {
@@ -154,14 +154,14 @@ func (ck *CookieClient) emptyCart(ctx context.Context, link, cartToken string) e
 	return nil
 }
 
-func (ck *CookieClient) setCart(ctx context.Context, link, ckId, cond string, qty int) (*CartResponse, error) {
+func (ck *CookieClient) setCart(ctx context.Context, link, ckID, cond string, qty int) (*CartResponse, error) {
 	style, found := condMap[cond]
 	if found {
 		cond = style
 	}
 
 	payload := CartRequest{
-		ProductID: ckId,
+		ProductID: ckID,
 		Style:     cond,
 		Quantity:  qty,
 	}

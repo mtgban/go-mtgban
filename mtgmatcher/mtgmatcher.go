@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-func MatchId(inputId string, finishes ...bool) (string, error) {
-	return defaultBackend.MatchId(inputId, finishes...)
+func MatchId(inputID string, finishes ...bool) (string, error) {
+	return defaultBackend.MatchId(inputID, finishes...)
 }
 
-func Match(inCard *InputCard) (cardId string, err error) {
+func Match(inCard *InputCard) (cardID string, err error) {
 	return defaultBackend.Match(inCard)
 }
 
@@ -35,9 +35,9 @@ func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 	return defaultBackend.MatchWithNumber(cardName, setCode, number)
 }
 
-func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
+func (b *Backend) MatchId(inputID string, finishes ...bool) (string, error) {
 	// Remove any extras after the underscore
-	id := strings.Split(inputId, "_")[0]
+	id := strings.Split(inputID, "_")[0]
 
 	// Validate it's an actual uuid or a plain number for tcg id
 	if !maybeUUID(id) {
@@ -48,9 +48,9 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 	}
 
 	// Look up in one of the possible maps
-	co, found := b.UUIDs[inputId]
+	co, found := b.UUIDs[inputID]
 	if !found {
-		co, found = b.UUIDs[b.ExternalIdentifiers[inputId]]
+		co, found = b.UUIDs[b.ExternalIdentifiers[inputID]]
 	}
 	if !found {
 		return "", ErrCardUnknownId
@@ -66,10 +66,10 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 		return co.UUID, nil
 	}
 
-	outId := b.output(co.Card, finishes...)
+	outID := b.output(co.Card, finishes...)
 
 	// Validate that what we found is correct
-	co, found = b.UUIDs[outId]
+	co, found = b.UUIDs[outID]
 	if !found {
 		return "", ErrCardUnknownId
 	}
@@ -89,8 +89,8 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 			// We assume that the collector number between the two version
 			// stays the same, with a different suffix
 			if ExtractNumberValue(co.Number) == ExtractNumberValue(altCo.Number) {
-				maybeId := b.output(altCo.Card, isFoil, isEtched)
-				altCo, found = b.UUIDs[maybeId]
+				maybeID := b.output(altCo.Card, isFoil, isEtched)
+				altCo, found = b.UUIDs[maybeID]
 				if !found {
 					continue
 				}
@@ -108,13 +108,13 @@ func (b *Backend) MatchId(inputId string, finishes ...bool) (string, error) {
 				// If the alt card finish matches the expected one
 				// then replace the final output uuid
 				if altCo.Foil == isFoil && altCo.Etched == isEtched {
-					outId = maybeId
+					outID = maybeID
 					break
 				}
 			}
 		}
 	}
-	return outId, nil
+	return outID, nil
 }
 
 // hasFoilSubtype reports whether a printing registers a finish the caller's
@@ -131,7 +131,7 @@ func hasFoilSubtype(co *CardObject) bool {
 	return false
 }
 
-func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
+func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	if b.Sets == nil {
 		return "", ErrDatastoreEmpty
 	}
@@ -167,9 +167,9 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	// Look up by uuid
 	if inCard.Id != "" {
 		Logger.Printf("Performing id lookup")
-		outId, err := b.MatchId(inCard.Id, inCard.Foil, inCard.IsEtched())
+		outID, err := b.MatchId(inCard.Id, inCard.Foil, inCard.IsEtched())
 		if err == nil {
-			co := b.UUIDs[outId]
+			co := b.UUIDs[outID]
 			Logger.Printf("Id found")
 
 			// Validation step
@@ -203,7 +203,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 				Logger.Println("Printing carries a foil sub-type, letting the wording pick")
 			// Actually found id
 			default:
-				return outId, nil
+				return outID, nil
 			}
 		}
 		Logger.Printf("Id lookup failed, attempting full match")
@@ -465,9 +465,9 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	case 1:
 		Logger.Println("Found it!")
 
-		cardId = b.output(outCards[0], inCard.Foil, inCard.IsEtched())
+		cardID = b.output(outCards[0], inCard.Foil, inCard.IsEtched())
 
-		co := b.UUIDs[cardId]
+		co := b.UUIDs[cardID]
 		Logger.Println(inCard, "->", co)
 
 		// Validation step

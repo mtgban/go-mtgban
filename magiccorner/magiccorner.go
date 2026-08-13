@@ -44,7 +44,7 @@ func NewScraper() (*Magiccorner, error) {
 }
 
 type resultChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -126,7 +126,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 				continue
 			}
 
-			cardId, err := mtgmatcher.Match(theCard)
+			cardID, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -152,7 +152,7 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 			}
 
 			channel <- resultChan{
-				cardId: cardId,
+				cardID: cardID,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      v.Price * mc.exchangeRate,
@@ -182,7 +182,7 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 			return mc.processEntry(ctx, results, edition)
 		},
 		func(result resultChan) {
-			err := mc.inventory.AddRelaxed(result.cardId, result.invEntry)
+			err := mc.inventory.AddRelaxed(result.cardID, result.invEntry)
 			if err != nil {
 				mc.printf("%s", err.Error())
 			}
@@ -270,7 +270,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 				continue
 			}
 
-			cardId, err := mtgmatcher.Match(theCard)
+			cardID, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -305,7 +305,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 				}
 
 				channel <- resultChan{
-					cardId: cardId,
+					cardID: cardID,
 					buyEntry: &mtgban.BuylistEntry{
 						Quantity:   quantity,
 						Conditions: grade,
@@ -346,7 +346,7 @@ func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
 			return mc.parseBL(ctx, results, edition)
 		},
 		func(record resultChan) {
-			err := mc.buylist.AddRelaxed(record.cardId, record.buyEntry)
+			err := mc.buylist.AddRelaxed(record.cardID, record.buyEntry)
 			if err != nil {
 				mc.printf("%s", err.Error())
 			}

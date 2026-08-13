@@ -43,7 +43,7 @@ func NewScraper() *TOAMagic {
 }
 
 type responseChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 }
 
@@ -160,7 +160,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 			return
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -195,7 +195,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 		}
 
 		out := responseChan{
-			cardId: cardId,
+			cardID: cardID,
 			invEntry: &mtgban.InventoryEntry{
 				Price:      price,
 				Conditions: conditions,
@@ -260,7 +260,7 @@ func (toa *TOAMagic) Load(ctx context.Context) error {
 		},
 		func(record responseChan) {
 			if record.invEntry != nil {
-				err := toa.inventory.AddRelaxed(record.cardId, record.invEntry)
+				err := toa.inventory.AddRelaxed(record.cardID, record.invEntry)
 				if err != nil {
 					toa.printf("%s", err.Error())
 				}

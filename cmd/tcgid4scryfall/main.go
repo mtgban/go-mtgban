@@ -28,7 +28,7 @@ var ConcurrencyOpt *int
 var AllPrintingsOpt *string
 
 type responseChan struct {
-	cardId string
+	cardID string
 	entry  mtgban.InventoryEntry
 }
 
@@ -44,7 +44,7 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 			continue
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		}
@@ -82,7 +82,7 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 		}
 
 		_, variant := tcgplayer.GetProductNameAndVariant(&product)
-		custom_fields := map[string]string{
+		customFields := map[string]string{
 			"number":  tcgplayer.GetProductNumber(&product),
 			"variant": variant,
 			"theCard": theCard.String(),
@@ -90,7 +90,7 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 		}
 
 		out := responseChan{
-			cardId: cardId,
+			cardID: cardID,
 			entry: mtgban.InventoryEntry{
 				Conditions:   "NM",
 				Price:        1,
@@ -98,7 +98,7 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 				SellerName:   "tcg",
 				OriginalId:   fmt.Sprint(product.ProductID),
 				InstanceId:   fmt.Sprint(page),
-				CustomFields: custom_fields,
+				CustomFields: customFields,
 			},
 		}
 
@@ -154,8 +154,8 @@ func run() int {
 		return 1
 	}
 	Editions = map[int]string{}
-	for groupId, group := range editions {
-		Editions[groupId] = group.Name
+	for groupID, group := range editions {
+		Editions[groupID] = group.Name
 	}
 
 	start := *StepStartOpt + *StepSizeOpt*(*StepOpt-1)
@@ -200,7 +200,7 @@ func run() int {
 
 	inventory := mtgban.InventoryRecord{}
 	for result := range channel {
-		err := inventory.AddStrict(result.cardId, &result.entry)
+		err := inventory.AddStrict(result.cardID, &result.entry)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			continue
@@ -225,21 +225,21 @@ func run() int {
 			}
 		}
 
-		newTcgId := cards[0].OriginalId
-		newEtchedTcgId := ""
-		oldTcgId := co.Identifiers["tcgplayerProductId"]
+		newTcgID := cards[0].OriginalId
+		newEtchedTcgID := ""
+		oldTcgID := co.Identifiers["tcgplayerProductId"]
 
 		// If etched, there is always going to be a separate id,
 		// but the same is not guaranteed for every foil card
 		if co.Etched {
-			newEtchedTcgId = newTcgId
-			newTcgId = ""
-			oldTcgId = co.Identifiers["tcgplayerEtchedProductId"]
+			newEtchedTcgID = newTcgID
+			newTcgID = ""
+			oldTcgID = co.Identifiers["tcgplayerEtchedProductId"]
 		}
 
 		identifier := co.Identifiers["scryfallId"]
-		if (newTcgId != "" && oldTcgId != newTcgId) ||
-			(newEtchedTcgId != "" && oldTcgId != newEtchedTcgId) {
+		if (newTcgID != "" && oldTcgID != newTcgID) ||
+			(newEtchedTcgID != "" && oldTcgID != newEtchedTcgID) {
 			_, found := output[identifier]
 			if !found {
 				output[identifier] = &Properties{}
@@ -249,11 +249,11 @@ func run() int {
 			output[identifier].Number = co.Number
 			output[identifier].ScryfallId = identifier
 
-			output[identifier].OldTcgId = oldTcgId
+			output[identifier].OldTcgId = oldTcgID
 			if co.Etched {
-				output[identifier].NewEtchedTcgId = newEtchedTcgId
+				output[identifier].NewEtchedTcgId = newEtchedTcgID
 			} else {
-				output[identifier].NewTcgId = newTcgId
+				output[identifier].NewTcgId = newTcgID
 			}
 
 			// Set the first page for validation

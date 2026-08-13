@@ -110,7 +110,7 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 		number := chunks[len(chunks)-2]
 		foil := strings.Contains(strings.ToLower(chunks[len(chunks)-1]), "foil")
 
-		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
+		cardID, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -171,7 +171,7 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 			}
 
 			out := responseChan{
-				cardId: cardId,
+				cardID: cardID,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: conditions,
 					Price:      price,
@@ -201,7 +201,7 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 	}()
 
 	for res := range channel {
-		err := tnt.inventory.Add(res.cardId, res.invEntry)
+		err := tnt.inventory.Add(res.cardID, res.invEntry)
 		if err != nil {
 			tnt.printf("%v", err)
 		}
@@ -347,7 +347,7 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 		foil := strings.Contains(strings.ToLower(chunks[len(chunks)-1]), "foil")
 		link := buylistLinkURL + cardName
 
-		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
+		cardID, err := mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Variation: number, Foil: foil})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -378,7 +378,7 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 
 		var priceRatio, sellPrice float64
 
-		invCards := tnt.inventory[cardId]
+		invCards := tnt.inventory[cardID]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -395,7 +395,7 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 			OriginalId: record[0],
 		}
 
-		err = tnt.buylist.Add(cardId, entry)
+		err = tnt.buylist.Add(cardID, entry)
 		if err != nil {
 			tnt.printf("%s", err.Error())
 		}

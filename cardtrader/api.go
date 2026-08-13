@@ -331,8 +331,8 @@ func (ct *CTAuthClient) ProductsForBlueprint(ctx context.Context, id int) ([]Pro
 	return out[id], nil
 }
 
-func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionId int) ([]Blueprint, error) {
-	link := ctBlueprintsURL + fmt.Sprint(expansionId)
+func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionID int) ([]Blueprint, error) {
+	link := ctBlueprintsURL + fmt.Sprint(expansionID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -357,14 +357,14 @@ func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionId int) ([]Blue
 		if bpErr == nil {
 			return nil, fmt.Errorf("%s", blueprintError.Extra.Message)
 		}
-		return nil, fmt.Errorf("unmarshal error for blueprints (from edition id %d), got: %s", expansionId, string(data))
+		return nil, fmt.Errorf("unmarshal error for blueprints (from edition id %d), got: %s", expansionID, string(data))
 	}
 
 	return blueprints, nil
 }
 
-func (ct *CTAuthClient) GetOrderProducts(ctx context.Context, orderId int) ([]Product, error) {
-	link := fmt.Sprintf("https://api.cardtrader.com/api/v2/orders/%d", orderId)
+func (ct *CTAuthClient) GetOrderProducts(ctx context.Context, orderID int) ([]Product, error) {
+	link := fmt.Sprintf("https://api.cardtrader.com/api/v2/orders/%d", orderID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -552,18 +552,18 @@ type CTCartResponse struct {
 	RequestID string `json:"request_id"`
 }
 
-func (ct *CTAuthClient) AddProductToCart(ctx context.Context, productId, quantity int, zero bool) (*CTCartResponse, error) {
+func (ct *CTAuthClient) AddProductToCart(ctx context.Context, productID, quantity int, zero bool) (*CTCartResponse, error) {
 	product := ctProductCart{
-		ProductId: productId,
+		ProductId: productID,
 		Quantity:  quantity,
 		ViaZero:   zero,
 	}
 	return ct.addremoveCart(ctx, product, ctAddProductCart)
 }
 
-func (ct *CTAuthClient) RemoveProductFromCart(ctx context.Context, productId, quantity int) (*CTCartResponse, error) {
+func (ct *CTAuthClient) RemoveProductFromCart(ctx context.Context, productID, quantity int) (*CTCartResponse, error) {
 	product := ctProductCart{
-		ProductId: productId,
+		ProductId: productID,
 		Quantity:  quantity,
 	}
 	return ct.addremoveCart(ctx, product, ctRemoveProductCart)

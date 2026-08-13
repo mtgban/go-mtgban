@@ -59,7 +59,7 @@ func NewScraper() *Hareruya {
 }
 
 type responseChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -171,7 +171,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			return true
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return true
 		} else if err != nil {
@@ -195,7 +195,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 
 		var priceRatio, sellPrice float64
 
-		invCards := ha.inventory[cardId]
+		invCards := ha.inventory[cardID]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -207,7 +207,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 		deductions := []float64{1, 0.8, 0.5}
 		for i, deduction := range deductions {
 			out := responseChan{
-				cardId: cardId,
+				cardID: cardID,
 				buyEntry: &mtgban.BuylistEntry{
 					Conditions: mtgban.DefaultGradeTags[i],
 					BuyPrice:   price * deduction,
@@ -255,7 +255,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				continue
 			}
 
-			cardId, err := mtgmatcher.Match(theCard)
+			cardID, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -294,7 +294,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 
 					link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
 					out := responseChan{
-						cardId: cardId,
+						cardID: cardID,
 						invEntry: &mtgban.InventoryEntry{
 							Price:      price,
 							Conditions: cond,
@@ -530,20 +530,20 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	var consume func(responseChan)
 	if mode == modeInventory {
 		consume = func(record responseChan) {
-			err := ha.inventory.Add(record.cardId, record.invEntry)
+			err := ha.inventory.Add(record.cardID, record.invEntry)
 			if err != nil {
 				ha.printf("%s", err.Error())
 			}
 		}
 	} else if mode == modeBuylist {
 		consume = func(record responseChan) {
-			co, _ := mtgmatcher.GetUUID(record.cardId)
+			co, _ := mtgmatcher.GetUUID(record.cardID)
 			// This store tracks the two different EU/US printings as separate entries
 			var err error
 			if co.SetCode == "MPS" {
-				err = ha.buylist.AddRelaxed(record.cardId, record.buyEntry)
+				err = ha.buylist.AddRelaxed(record.cardID, record.buyEntry)
 			} else {
-				err = ha.buylist.Add(record.cardId, record.buyEntry)
+				err = ha.buylist.Add(record.cardID, record.buyEntry)
 			}
 			if err != nil {
 				ha.printf("%s", err.Error())

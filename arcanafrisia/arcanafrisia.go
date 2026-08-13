@@ -40,7 +40,7 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 	af.printf("Found %d buylist entries", len(cards))
 
 	for _, card := range cards {
-		cardId, err := mtgmatcher.MatchId(card.ScryfallID, card.Finish == "foil")
+		cardID, err := mtgmatcher.MatchId(card.ScryfallID, card.Finish == "foil")
 		if err != nil {
 			if !mtgmatcher.IsToken(card.Name) {
 				af.printf("%v: %s %s (%s)", err, card.ScryfallID, card.Name, card.SetCode)
@@ -65,7 +65,7 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 			Quantity:   card.BuyLimit,
 			URL:        card.URL,
 		}
-		err = af.buylist.AddRelaxed(cardId, out)
+		err = af.buylist.AddRelaxed(cardID, out)
 		if err != nil {
 			af.printf("%v", err)
 		}

@@ -39,7 +39,7 @@ type marketChan struct {
 }
 
 type responseChan struct {
-	cardId string
+	cardID string
 	entry  mtgban.InventoryEntry
 	bl     *mtgban.BuylistEntry
 }
@@ -74,8 +74,8 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperMarket(publicId, privateId string) (*TCGPlayerMarket, error) {
-	client, err := tcgplayer.NewClient(publicId, privateId)
+func NewScraperMarket(publicID, privateID string) (*TCGPlayerMarket, error) {
+	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 
 		isFoil := req.Printing == "FOIL"
 		isEtched := req.Finish == "ETCHED"
-		cardId, err := mtgmatcher.MatchId(req.UUID, isFoil, isEtched)
+		cardID, err := mtgmatcher.MatchId(req.UUID, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductId, req.UUID)
 			continue
@@ -118,7 +118,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 
 		// Skip impossible entries, such as listing mistakes that list a foil
 		// price for a foil-only card
-		co, _ := mtgmatcher.GetUUID(cardId)
+		co, _ := mtgmatcher.GetUUID(cardID)
 		if !co.Etched &&
 			((co.Foil && req.Printing != "FOIL") ||
 				(!co.Foil && req.Printing != "NON FOIL")) {
@@ -144,7 +144,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 			link := GenerateProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
 
 			out := responseChan{
-				cardId: cardId,
+				cardID: cardID,
 				entry: mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      prices[i],
@@ -246,8 +246,8 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 
 				_, found = card.Identifiers["needsNewTCGSKUs"]
 				if found {
-					tcgId := card.Identifiers["tcgplayerProductId"]
-					id, err := strconv.Atoi(tcgId)
+					tcgID := card.Identifiers["tcgplayerProductId"]
+					id, err := strconv.Atoi(tcgID)
 					if err != nil {
 						continue
 					}
@@ -371,12 +371,12 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 	}()
 
 	for result := range channel {
-		err := tcg.inventory.AddStrict(result.cardId, &result.entry)
+		err := tcg.inventory.AddStrict(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 		}
 		if result.bl != nil {
-			err := tcg.buylist.Add(result.cardId, result.bl)
+			err := tcg.buylist.Add(result.cardID, result.bl)
 			if err != nil {
 				tcg.printf("%s", err.Error())
 			}

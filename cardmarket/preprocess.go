@@ -80,10 +80,10 @@ var gameday2editionTable = map[string]string{
 	"Supplant Form":            "PFRF",
 }
 
-func checkLoadedId(cardName string, productId int) []string {
+func checkLoadedID(cardName string, productID int) []string {
 	cardName = mtgmatcher.SplitVariants(cardName)[0]
 	cardName = strings.TrimSuffix(cardName, " Token")
-	testProductId := fmt.Sprint(productId)
+	testProductID := fmt.Sprint(productID)
 
 	possibleIds, err := mtgmatcher.SearchContains(cardName)
 	if err != nil {
@@ -91,13 +91,13 @@ func checkLoadedId(cardName string, productId int) []string {
 	}
 
 	var ids []string
-	for _, possibleId := range possibleIds {
-		co, err := mtgmatcher.GetUUID(possibleId)
+	for _, possibleID := range possibleIds {
+		co, err := mtgmatcher.GetUUID(possibleID)
 		if err != nil {
 			continue
 		}
 
-		if co.Identifiers["mcmId"] == testProductId {
+		if co.Identifiers["mcmId"] == testProductID {
 			ids = append(ids, co.UUID)
 		}
 	}
@@ -112,10 +112,10 @@ func checkLoadedId(cardName string, productId int) []string {
 // pairs for example), so printings whose number agrees with the product's
 // take precedence over the arbitrary last one found.
 func Fallback(product *MKMProduct) (string, string) {
-	var cardId, cardIdFoil string
+	var cardID, cardIDFoil string
 
 	// First check if the product id is known
-	ids := checkLoadedId(product.Name, product.IdProduct)
+	ids := checkLoadedID(product.Name, product.IdProduct)
 	// These editions contain English ids, so we can't use this system
 	switch product.ExpansionName {
 	case "The Dark Italian", "Legends Italian":
@@ -134,17 +134,17 @@ func Fallback(product *MKMProduct) (string, string) {
 				ids = nil
 			}
 			if !numberMatchedFoil {
-				cardIdFoil = co.UUID
+				cardIDFoil = co.UUID
 				numberMatchedFoil = sameNumber
 			}
 		} else if co.Foil {
 			if !numberMatchedFoil {
-				cardIdFoil = co.UUID
+				cardIDFoil = co.UUID
 				numberMatchedFoil = sameNumber
 			}
 		} else {
 			if !numberMatched {
-				cardId = co.UUID
+				cardID = co.UUID
 				numberMatched = sameNumber
 			}
 		}
@@ -152,13 +152,13 @@ func Fallback(product *MKMProduct) (string, string) {
 	// If we found any known ids, we trust them and skip the rest of the preprocessing
 	if ids != nil {
 		// Make sure both ids are set to something
-		if cardIdFoil == "" {
-			cardIdFoil = cardId
-		} else if cardId == "" {
-			cardId = cardIdFoil
+		if cardIDFoil == "" {
+			cardIDFoil = cardID
+		} else if cardID == "" {
+			cardID = cardIDFoil
 		}
 
-		return cardId, cardIdFoil
+		return cardID, cardIDFoil
 	}
 	return "", ""
 }

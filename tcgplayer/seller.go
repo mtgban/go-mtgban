@@ -139,13 +139,13 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 		for _, listing := range result.Listings {
 			isFoil := listing.Printing == "Foil"
 			isEtched := strings.Contains(result.ProductName, "Foil Etched")
-			cardId, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
+			cardID, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
 			if err != nil {
 				continue
 			}
 
 			if listing.Language != "English" {
-				co, _ := mtgmatcher.GetUUID(cardId)
+				co, _ := mtgmatcher.GetUUID(cardID)
 				if listing.Language != co.Language {
 					continue
 				}
@@ -172,7 +172,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 			link := GenerateProductURL(int(result.ProductID), listing.Printing, tcg.Affiliate, listing.Condition, listing.Language, isDirect)
 
 			out := responseChan{
-				cardId: cardId,
+				cardID: cardID,
 				entry: mtgban.InventoryEntry{
 					Price:        listing.Price,
 					Quantity:     int(listing.Quantity),
@@ -203,7 +203,7 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	tcg.printf("Found %d results for seller id %s", ret.TotalResults, tcg.Info().Shorthand)
 
 	consume := func(result responseChan) {
-		err := tcg.inventory.AddRelaxed(result.cardId, &result.entry)
+		err := tcg.inventory.AddRelaxed(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 		}

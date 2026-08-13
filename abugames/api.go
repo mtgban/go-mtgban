@@ -71,12 +71,12 @@ const (
 		"card_number,price,quantity,sub_qty,buy_list_quantity," +
 		"buy_price,trade_price"
 
-	abuBaseUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20-magic_features%3A(%22Actual%20Picture%20Card%22)`
+	abuBaseURL = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20-magic_features%3A(%22Actual%20Picture%20Card%22)`
 
 	// This URL will include pics, but queries will be slower
-	abuBaseUrlFull = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20`
+	abuBaseURLFull = `https://data.abugames.com/solr/nodes/select?q=*:*&group=true&group.field=product_id&group.limit=10&start=0&rows=0&wt=json&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Singles%22%20%2Blanguage%3A(%22English%22%20OR%20%22Italian%22%20OR%20%22Japanese%22%20OR%20%22Phyrexian%22)%20-offline_item%3Atrue%20`
 
-	abuBaseSealedUrl = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
+	abuBaseSealedURL = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
 )
 
 type ABUClient struct {
@@ -162,9 +162,9 @@ func (abu *ABUClient) sendSealedRequest(ctx context.Context, url string) (*ABURe
 // ~213k groups — so it is requested only here, not baked into the base URL used
 // for page fetches.
 func (abu *ABUClient) GetTotalItems(ctx context.Context, extra string) (int, error) {
-	link := abuBaseUrl
+	link := abuBaseURL
 	if extra != "" {
-		link = abuBaseUrlFull + url.QueryEscape(extra)
+		link = abuBaseURLFull + url.QueryEscape(extra)
 	}
 	u, err := url.Parse(link)
 	if err != nil {
@@ -182,7 +182,7 @@ func (abu *ABUClient) GetTotalItems(ctx context.Context, extra string) (int, err
 }
 
 func (abu *ABUClient) GetTotalSealedItems(ctx context.Context) (int, error) {
-	response, err := abu.sendSealedRequest(ctx, abuBaseSealedUrl)
+	response, err := abu.sendSealedRequest(ctx, abuBaseSealedURL)
 	if err != nil {
 		return 0, err
 	}
@@ -190,9 +190,9 @@ func (abu *ABUClient) GetTotalSealedItems(ctx context.Context) (int, error) {
 }
 
 func (abu *ABUClient) GetProduct(ctx context.Context, extra string, pageStart int) (*ABUProduct, error) {
-	link := abuBaseUrl
+	link := abuBaseURL
 	if extra != "" {
-		link = abuBaseUrlFull + url.QueryEscape(extra)
+		link = abuBaseURLFull + url.QueryEscape(extra)
 	}
 	u, err := url.Parse(link)
 	if err != nil {
@@ -213,7 +213,7 @@ func (abu *ABUClient) GetProduct(ctx context.Context, extra string, pageStart in
 }
 
 func (abu *ABUClient) GetSealedProduct(ctx context.Context, pageStart int) (*ABUResponse, error) {
-	u, err := url.Parse(abuBaseSealedUrl)
+	u, err := url.Parse(abuBaseSealedURL)
 	if err != nil {
 		return nil, err
 	}
@@ -255,17 +255,17 @@ const (
 	abuBuylistAddURL   = "https://api.abugames.com/buy-list-cart/item"
 )
 
-func (abu *ABUClient) SetCartInventory(ctx context.Context, abuId string, qty int) (*CartResponse, error) {
-	return abu.setCart(ctx, abuInventoryAddURL, abuId, qty)
+func (abu *ABUClient) SetCartInventory(ctx context.Context, abuID string, qty int) (*CartResponse, error) {
+	return abu.setCart(ctx, abuInventoryAddURL, abuID, qty)
 }
 
-func (abu *ABUClient) SetCartBuylist(ctx context.Context, abuId string, qty int) (*CartResponse, error) {
-	return abu.setCart(ctx, abuBuylistAddURL, abuId, qty)
+func (abu *ABUClient) SetCartBuylist(ctx context.Context, abuID string, qty int) (*CartResponse, error) {
+	return abu.setCart(ctx, abuBuylistAddURL, abuID, qty)
 }
 
-func (abu *ABUClient) setCart(ctx context.Context, link, abuId string, qty int) (*CartResponse, error) {
+func (abu *ABUClient) setCart(ctx context.Context, link, abuID string, qty int) (*CartResponse, error) {
 	payload := CartRequest{
-		ItemId:   abuId,
+		ItemId:   abuID,
 		Quantity: qty,
 		Call:     "add",
 	}

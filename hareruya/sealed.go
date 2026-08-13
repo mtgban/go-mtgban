@@ -160,7 +160,7 @@ func (ha *HareruyaSealed) Load(ctx context.Context) error {
 		set, _ := mtgmatcher.GetSet(code)
 
 		for _, sealedProduct := range set.SealedProduct {
-			haId, found := sealedProduct.Identifiers["hareruyaId"]
+			haID, found := sealedProduct.Identifiers["hareruyaId"]
 			if !found {
 				continue
 			}
@@ -168,7 +168,7 @@ func (ha *HareruyaSealed) Load(ctx context.Context) error {
 			// The retail price is also used as the buylist reference price
 			var retailPrice float64
 
-			if product, found := inventory[haId]; found {
+			if product, found := inventory[haID]; found {
 				// The category query is already restricted to in-stock items,
 				// but guard against a missing or zeroed price just in case.
 				// The API stock field is an unreliable aggregate across
@@ -200,7 +200,7 @@ func (ha *HareruyaSealed) Load(ctx context.Context) error {
 				}
 			}
 
-			if buyPrice, found := buylist[haId]; found {
+			if buyPrice, found := buylist[haID]; found {
 				foundBuylist++
 
 				var priceRatio float64
@@ -212,8 +212,8 @@ func (ha *HareruyaSealed) Load(ctx context.Context) error {
 					Conditions: "NM",
 					BuyPrice:   buyPrice * ha.exchangeRate,
 					PriceRatio: priceRatio,
-					URL:        "https://www.hareruyamtg.com/ja/purchase/detail/" + haId,
-					OriginalId: haId,
+					URL:        "https://www.hareruyamtg.com/ja/purchase/detail/" + haID,
+					OriginalId: haID,
 				}
 				err = ha.buylist.Add(sealedProduct.UUID, out)
 				if err != nil {
