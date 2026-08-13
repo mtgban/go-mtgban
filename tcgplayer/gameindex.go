@@ -100,16 +100,19 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 
 		cardName := productMap[result.ProductId].Name
 		number := RawProductNumber(&product)
-		cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+		theCard := &mtgmatcher.InputCard{
 			Name:      cardName,
 			Edition:   tcg.editions[product.GroupId].Name,
 			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
 			Foil:      result.SubTypeName != "Normal",
-		})
+		}
+		cardId, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
-			tcg.printf("%v", err)
+			// Name the card, not just the price row: a product id alone
+			// says nothing about which product failed to match.
+			tcg.printf("%v for %q (product %d)", err, theCard, result.ProductId)
 			tcg.printf("%+v", result)
 
 			var alias *mtgmatcher.AliasingError

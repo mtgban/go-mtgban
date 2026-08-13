@@ -189,16 +189,19 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			// The printing name rides along in the variation so the game
 			// rules can tell foil sub-types apart (SelectFinish).
 			printing := tcg.printings[sku.PrintingId]
-			cardId, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+			theCard := &mtgmatcher.InputCard{
 				Name:      cardName,
 				Edition:   tcg.editions[product.GroupId].Name,
 				Variation: strings.TrimSpace(number + " " + printing),
 				Foil:      printing != "Normal",
-			})
+			}
+			cardId, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
-				tcg.printf("%v", err)
+				// Name the card, not just the price row: a sku id alone
+				// says nothing about which product failed to match.
+				tcg.printf("%v for %q (product %d)", err, theCard, sku.ProductId)
 				tcg.printf("%+v", result)
 
 				var alias *mtgmatcher.AliasingError
