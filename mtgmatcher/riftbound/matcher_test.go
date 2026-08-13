@@ -58,6 +58,14 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ahri, Inquisitive", Variation: "227*"},
 	},
 	{
+		Desc: "name alone keeps the base art over its lettered sibling",
+		In:   mtgmatcher.InputCard{Name: "Ahri, Alluring", Edition: "Origins"},
+	},
+	{
+		Desc: "name alone keeps the base art over the numbers past the set",
+		In:   mtgmatcher.InputCard{Name: "Aphelios, Exalted", Edition: "Spiritforged"},
+	},
+	{
 		Desc: "legend named off a comma instead of a dash",
 		In:   mtgmatcher.InputCard{Name: "Ahri, Nine-Tailed Fox", Variation: "255 V.1 - Rare", Edition: "Origins"},
 	},
