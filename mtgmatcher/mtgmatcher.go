@@ -148,6 +148,30 @@ func isFoilSubtype(co *CardObject) bool {
 	return false
 }
 
+// soleFinishOf returns the one id among the candidates that is a finish of
+// the given printing, and an empty string when none or several are - only a
+// single candidate identifies the printing the caller meant.
+func soleFinishOf(co *CardObject, ids []string) string {
+	var match string
+	for _, id := range ids {
+		isFinish := false
+		for _, uuid := range co.FoilUUIDs {
+			if uuid == id {
+				isFinish = true
+				break
+			}
+		}
+		if !isFinish {
+			continue
+		}
+		if match != "" && match != id {
+			return ""
+		}
+		match = id
+	}
+	return match
+}
+
 func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	if b.Sets == nil {
 		return "", ErrDatastoreEmpty
@@ -182,6 +206,11 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Look up by uuid
+	//
+	// subtypeCo holds the printing the id resolved to where the sub-type case
+	// below hands the finish to the wording, so the aliasing arm at the end of
+	// the function can tell the wording's candidates apart.
+	var subtypeCo *CardObject
 	if inCard.Id != "" {
 		Logger.Printf("Performing id lookup")
 		outId, err := b.MatchId(inCard.Id, inCard.Foil, inCard.IsEtched())
@@ -219,6 +248,7 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 			// made the choice, so in both cases the id's answer stands.
 			case inCard.Name != "" && hasFoilSubtype(co) && !isFoilSubtype(co):
 				Logger.Println("Printing carries a foil sub-type, letting the wording pick")
+				subtypeCo = co
 			// Actually found id
 			default:
 				return outId, nil
@@ -501,6 +531,18 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 			alias.Dupes = append(alias.Dupes, b.output(outCards[i], inCard.Foil, inCard.IsEtched()))
 		}
 		err = alias
+
+		// The candidates carry the sub-type the wording picked but sit on
+		// several printings, and the id named a printing but no sub-type:
+		// when one of them is a finish of that printing, the two halves
+		// answer together what neither did alone.
+		if subtypeCo != nil {
+			cardId = soleFinishOf(subtypeCo, alias.Dupes)
+			if cardId != "" {
+				Logger.Println("Aliasing resolved by the id's printing:", cardId)
+				err = nil
+			}
+		}
 	}
 
 	return
