@@ -5832,6 +5832,15 @@
         "uuid": "2626"
     },
     {
+        "description": "name typeset with a hyphen character instead of a dash",
+        "input": {
+            "name": "Fix‐It Felix, Jr. - Delighted Sightseer",
+            "variant": "17",
+            "edition": "Shimmering Skies"
+        },
+        "uuid": "973"
+    },
+    {
         "description": "negative: edition excludes the printing carrying the number",
         "input": {
             "name": "Let It Go",

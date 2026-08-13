@@ -40,6 +40,10 @@ var updateLorcana = flag.Bool("update-lorcana", false,
 // the outcome class does not match it. Concrete cards referenced here exist
 // in the real datastore (checked against LorcanaJSON at authoring time).
 var lorcanaSeeds = []matchTest{
+	{
+		Desc: "name typeset with a hyphen character instead of a dash",
+		In:   mtgmatcher.InputCard{Name: "Fix‐It Felix, Jr. - Delighted Sightseer", Variation: "17", Edition: "Shimmering Skies"},
+	},
 	// Case-variant spellings: pairs of distinct cards whose names differ only
 	// in letter case, reachable from either spelling via the shared name hash.
 	{
