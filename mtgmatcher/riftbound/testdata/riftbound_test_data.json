@@ -101,6 +101,24 @@
         "uuid": "ogn-066-298_foil"
     },
     {
+        "description": "legend named off a comma instead of a dash",
+        "input": {
+            "name": "Ahri, Nine-Tailed Fox",
+            "variant": "255 V.1 - Rare",
+            "edition": "Origins"
+        },
+        "uuid": "ogn-255-298_foil"
+    },
+    {
+        "description": "legend named off a comma keeps its own showcase number",
+        "input": {
+            "name": "Ahri, Nine-Tailed Fox",
+            "variant": "303* V.3 - Signed Showcase",
+            "edition": "Origins"
+        },
+        "uuid": "ogn-303-star-298_foil"
+    },
+    {
         "description": "name and number resolve the base printing",
         "input": {
             "name": "Ahri, Alluring",

@@ -58,6 +58,14 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ahri, Inquisitive", Variation: "227*"},
 	},
 	{
+		Desc: "legend named off a comma instead of a dash",
+		In:   mtgmatcher.InputCard{Name: "Ahri, Nine-Tailed Fox", Variation: "255 V.1 - Rare", Edition: "Origins"},
+	},
+	{
+		Desc: "legend named off a comma keeps its own showcase number",
+		In:   mtgmatcher.InputCard{Name: "Ahri, Nine-Tailed Fox", Variation: "303* V.3 - Signed Showcase", Edition: "Origins"},
+	},
+	{
 		// The prefix fallback must not narrow on the finish flag: this
 		// printing is only sold foil and the input does not say so.
 		Desc: "truncated name of a foil-only printing without the flag",
