@@ -229,9 +229,34 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 // name the base card's set for printings filed elsewhere, and failing safe
 // on genuine ambiguity is the point of the tiering.
 func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
-	if len(cards) <= 1 || inCard.Edition == "" {
+	if len(cards) <= 1 {
 		return cards
 	}
+	if inCard.Edition == "" {
+		return cards
+	}
+
+	// A storefront files a set's event printings under that set's promo
+	// line: cardmarket's "Promos: Pillars of Strength" is the set the
+	// datastore calls "Pillars of Strength Pre-Release Cards". Neither name
+	// contains the other, so the marker has to be read as the selection it
+	// is or the whole promo line prices as the base commons.
+	if base := promoLineRe.ReplaceAllString(inCard.Edition, ""); base != inCard.Edition {
+		var event []mtgmatcher.Card
+		for _, card := range cards {
+			set, found := b.Sets[card.SetCode]
+			if !found || !isEventSet(card.SetCode) {
+				continue
+			}
+			if mtgmatcher.Contains(set.Name, base) {
+				event = append(event, card)
+			}
+		}
+		if len(event) > 0 {
+			return event
+		}
+	}
+
 	var equal, contained []mtgmatcher.Card
 	for _, card := range cards {
 		set, found := b.Sets[card.SetCode]
@@ -250,7 +275,45 @@ func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards 
 	if len(contained) > 0 {
 		return contained
 	}
+
+	// The event printings a set's cards receive are filed in a set of their
+	// own instead of wearing a variant label, so they share a name, a
+	// number and an empty label with the card they reprint and nothing but
+	// the set name tells them apart. A storefront names an event printing
+	// when it stocks one, so an edition matching neither set is still a
+	// claim that excludes them - unlike no edition at all, which claims
+	// nothing and is left to alias.
+	var regular []mtgmatcher.Card
+	for _, card := range cards {
+		if !isEventSet(card.SetCode) {
+			regular = append(regular, card)
+		}
+	}
+	if len(regular) > 0 {
+		return regular
+	}
 	return cards
+}
+
+// promoLineRe matches the promo-line prefix a storefront hangs a set name
+// off to name that set's event printings.
+var promoLineRe = regexp.MustCompile(`(?i)^promos?\s*[:-]\s*`)
+
+// isEventSet reports whether a set code files the event printings of
+// another set's cards. The datastore spells them as the base code with a
+// marker appended - "OP03 PRE" for the pre-release cards, "OP10 RE" for the
+// release event ones, "OP05 ANN" for the anniversary tournament ones - and
+// those are the only set codes carrying a space.
+func isEventSet(code string) bool {
+	fields := strings.Fields(code)
+	if len(fields) < 2 {
+		return false
+	}
+	switch fields[len(fields)-1] {
+	case "PRE", "RE", "ANN":
+		return true
+	}
+	return false
 }
 
 // tierByVariant splits the candidates into the ones whose variant label the
