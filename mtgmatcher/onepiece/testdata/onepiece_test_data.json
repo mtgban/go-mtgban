@@ -20,7 +20,7 @@
         "input": {
             "name": "Mr.2.Bon.Kurei (Bentham) (OP01-084) (V.2)"
         },
-        "uuid": "op01-084_510707"
+        "uuid": "op01-084_510707_foil"
     },
     {
         "description": "cardtrader letter tail demands a variant",
@@ -28,7 +28,7 @@
             "name": "Mr.2.Bon.Kurei (Bentham)",
             "variant": "OP01-084a"
         },
-        "uuid": "op01-084_510707"
+        "uuid": "op01-084_510707_foil"
     },
     {
         "description": "clean name with the full collector number",
@@ -36,7 +36,7 @@
             "name": "Roronoa Zoro",
             "variant": "OP01-025"
         },
-        "uuid": "op01-025_453510"
+        "uuid": "op01-025_453510_foil"
     },
     {
         "description": "coolstuffinc edition wears the set code before a dash",
@@ -45,7 +45,7 @@
             "variant": "OP03-089",
             "edition": "OP03 - Pillars of Strength"
         },
-        "uuid": "op03-089_500037"
+        "uuid": "op03-089_500037_foil"
     },
     {
         "description": "dash-number promo name resolves through its qualifier",
@@ -95,7 +95,7 @@
         "input": {
             "name": "Nami (OP01-016) (Manga)"
         },
-        "uuid": "op01-016_587966"
+        "uuid": "op01-016_587966_foil"
     },
     {
         "description": "tcgplayer product id resolves through the identifier index",

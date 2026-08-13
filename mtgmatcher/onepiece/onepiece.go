@@ -3,10 +3,13 @@
 // The datastore is built by github.com/mtgban/datastore-gen's cmd/onepiece
 // from the TCGplayer catalog dump for category 68, annotated with
 // punk-records' mirror of the official Bandai card list. Identity is the
-// catalog's: every English single product is one printing, so every uuid
-// is priced by construction. Alternate arts, parallels and event printings
-// share their base card's collector number and are told apart by the
-// variant label the builder distills from the product name.
+// catalog's: every entry is one priced printing of an English single
+// product, so every uuid is priced by construction. Most products sell in
+// a single finish, but the few sold both plain and foil carry one entry
+// per finish, the foil one's id suffixed "_foil". Alternate arts,
+// parallels and event printings share their base card's collector number
+// and are told apart by the variant label the builder distills from the
+// product name.
 package onepiece
 
 import (
@@ -23,8 +26,9 @@ import (
 )
 
 // Datastore is the cmd/onepiece output: sets keyed by code, one card entry
-// per printing, and the sealed products.
+// per priced finish, and the sealed products.
 type Datastore struct {
+	Game string `json:"game"`
 	Sets map[string]struct {
 		Name        string `json:"name"`
 		ReleaseDate string `json:"releaseDate"`
@@ -46,6 +50,11 @@ type DatastoreCard struct {
 	// empty for the base printing, "Alternate Art", "Parallel", "Manga",
 	// "SP" or an event name for the others.
 	Variant string `json:"variant,omitempty"`
+
+	// Finish is the TCGplayer printing this entry prices, "Normal" or
+	// "Foil". Entries sharing everything but the finish are the same
+	// product sold both ways.
+	Finish string `json:"finish"`
 
 	// BandaiID is the official card list's _pN printing id, annotated where
 	// the builder could align the two sources unambiguously.
@@ -70,19 +79,19 @@ type DatastoreSealed struct {
 
 // Load reads a One Piece datastore from r and returns a Backend for it, or
 // an error when r holds something else (so LoadDatastore's auto-detection
-// can move on to the next registered game). The card ids are strings and
-// every card carries a collector number, which no other game's datastore
-// shape satisfies.
+// can move on to the next registered game). The datastore names its game at
+// the root, and every card carries the identity fields the backend is built
+// from.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	var payload Datastore
 	if err := json.NewDecoder(r).Decode(&payload); err != nil {
 		return nil, err
 	}
-	if len(payload.Sets) == 0 || len(payload.Cards) == 0 {
+	if payload.Game != "onepiece" || len(payload.Sets) == 0 || len(payload.Cards) == 0 {
 		return nil, errors.New("not a One Piece datastore")
 	}
 	for _, card := range payload.Cards {
-		if card.ID == "" || card.Name == "" || card.Number == "" {
+		if card.ID == "" || card.Name == "" || card.Number == "" || card.Finish == "" {
 			return nil, errors.New("not a One Piece datastore")
 		}
 	}
@@ -135,7 +144,38 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	sort.Strings(b.AllCanonicalNames)
 	sort.Strings(b.AllLowerNames)
 
-	for _, card := range payload.Cards {
+	// Group sibling entries back into their product: a dual-printing
+	// product's Normal and Foil entries are the same card twice, and the
+	// matcher wants it once, with FoilUUIDs naming the uuid each finish
+	// prices. The foil sibling's id is the bare id plus "_foil".
+	type product struct {
+		normal *DatastoreCard
+		foil   *DatastoreCard
+	}
+	var productOrder []string
+	products := map[string]*product{}
+	for i := range payload.Cards {
+		card := &payload.Cards[i]
+		key := strings.TrimSuffix(card.ID, "_foil")
+		entry, found := products[key]
+		if !found {
+			entry = &product{}
+			products[key] = entry
+			productOrder = append(productOrder, key)
+		}
+		if card.Finish == "Foil" {
+			entry.foil = card
+		} else {
+			entry.normal = card
+		}
+	}
+
+	for _, key := range productOrder {
+		entry := products[key]
+		card := entry.normal
+		if card == nil {
+			card = entry.foil
+		}
 		if b.Sets[card.SetCode] == nil {
 			continue
 		}
@@ -145,14 +185,26 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			promoTypes = []string{card.Variant}
 		}
 
+		// Only the finishes a product is actually sold in are registered:
+		// output() folds a storefront's unreliable foil flag onto the sold
+		// finish when there is one, and routes it to the right sibling when
+		// there are two.
+		var finishes []string
+		foilUUIDs := map[string]string{}
+		if entry.normal != nil {
+			finishes = append(finishes, mtgmatcher.FinishNonfoil)
+			foilUUIDs[mtgmatcher.FinishNonfoil] = entry.normal.ID
+		}
+		if entry.foil != nil {
+			finishes = append(finishes, mtgmatcher.FinishFoil)
+			foilUUIDs[mtgmatcher.FinishFoil] = entry.foil.ID
+		}
+
 		convertedCard := mtgmatcher.Card{
-			UUID:    card.ID,
-			Name:    card.Name,
-			SetCode: card.SetCode,
-			// One product is one printing regardless of foil stamping, so
-			// both flag values resolve to the same uuid and a storefront's
-			// unreliable foil flag can never strand a match.
-			Finishes: []string{mtgmatcher.FinishNonfoil, mtgmatcher.FinishFoil},
+			UUID:     card.ID,
+			Name:     card.Name,
+			SetCode:  card.SetCode,
+			Finishes: finishes,
 			Number:   card.Number,
 			Images: map[string]string{
 				"full":      card.Image,
@@ -167,10 +219,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 			OriginalNumber: card.Number,
 		}
-		convertedCard.FoilUUIDs = map[string]string{
-			mtgmatcher.FinishNonfoil: card.ID,
-			mtgmatcher.FinishFoil:    card.ID,
-		}
+		convertedCard.FoilUUIDs = foilUUIDs
 
 		if card.ExternalLinks.TcgPlayerID != 0 {
 			pid := fmt.Sprint(card.ExternalLinks.TcgPlayerID)
@@ -180,18 +229,29 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			if card.BandaiID != "" {
 				convertedCard.Identifiers["bandaiId"] = card.BandaiID
 			}
+			// The product id names the product, not one of its finishes, so
+			// it points at the plain entry where that exists and at the foil
+			// one when the card is only sold foil. MatchId re-resolves the
+			// finish from the caller's own flag either way.
 			b.ExternalIdentifiers[pid] = card.ID
 		}
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 
-		co := mtgmatcher.CardObject{
-			Card:    convertedCard,
-			Edition: b.Sets[card.SetCode].Name,
+		for _, finish := range finishes {
+			co := mtgmatcher.CardObject{
+				Card:    convertedCard,
+				Edition: b.Sets[card.SetCode].Name,
+				Foil:    finish == mtgmatcher.FinishFoil,
+			}
+			// co is fresh on every iteration, so the stored pointer is not
+			// aliased by the other finish
+			co.UUID = foilUUIDs[finish]
+			co.Finish = finish
+			b.UUIDs[co.UUID] = &co
+			b.AllUUIDs = append(b.AllUUIDs, co.UUID)
+			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], co.UUID)
 		}
-		b.UUIDs[card.ID] = &co
-		b.AllUUIDs = append(b.AllUUIDs, card.ID)
-		b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], card.ID)
 	}
 
 	for code := range b.Sets {
