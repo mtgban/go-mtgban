@@ -47,7 +47,9 @@ const variantFixture = `{
 		{"id": "st04-016_rp", "name": "Blast Breath", "number": "ST04-016", "setCode": "OP-RP", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op07-031_base", "name": "Bartolomeo", "number": "OP07-031", "setCode": "OP07", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op07-031_st", "name": "Bartolomeo", "number": "OP07-031", "setCode": "ST-24", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
-		{"id": "op07-031_prb", "name": "Bartolomeo", "number": "OP07-031", "setCode": "PRB-02", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"}
+		{"id": "op07-031_prb", "name": "Bartolomeo", "number": "OP07-031", "setCode": "PRB-02", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
+		{"id": "momo_base", "name": "Kouzuki Momonosuke", "number": "OP01-031", "setCode": "OP01", "rarity": "C", "finish": "Normal", "image": "x"},
+		{"id": "momo_prb", "name": "Kouzuki Momonosuke", "number": "PRB01-031", "setCode": "PRB-01", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"}
 	]
 }`
 
@@ -245,6 +247,26 @@ func TestEditionKeepsVariantPrintings(t *testing.T) {
 			desc: "negative: a shared label with a foreign edition stays ambiguous",
 			in:   mtgmatcher.InputCard{Name: "Bartolomeo (Reprint)", Variation: "OP07-031", Edition: "OP07 - 500 Years in the Future"},
 			err:  true,
+		},
+		{
+			// The reprint is filed under a number of its own, so the label it
+			// wears says nothing about the number being asked for: reading it
+			// as a demand for a variant would unpin an edition that was
+			// answering the listing perfectly, and the widened pool hands back
+			// the base printing - a promo priced as the base common.
+			desc: "negative: a label at another number cannot unpin the edition",
+			in:   mtgmatcher.InputCard{Name: "Kouzuki Momonosuke", Variation: "OP01-031 Reprint", Edition: "PRB-01: Premium Booster -The Best-"},
+			err:  true,
+		},
+		{
+			desc: "the same label at its own number still reaches the reprint",
+			in:   mtgmatcher.InputCard{Name: "Kouzuki Momonosuke", Variation: "PRB01-031 Reprint", Edition: "OP01 - Romance Dawn"},
+			want: "momo_prb",
+		},
+		{
+			desc: "the base printing of that number is unchanged",
+			in:   mtgmatcher.InputCard{Name: "Kouzuki Momonosuke", Variation: "OP01-031", Edition: "OP01 - Romance Dawn"},
+			want: "momo_base",
 		},
 	}
 

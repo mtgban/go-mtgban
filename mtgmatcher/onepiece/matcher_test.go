@@ -145,6 +145,10 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Arlong (OP06-023)", Variation: "023", Edition: "One Piece Products"},
 	},
 	{
+		Desc: "negative: a foreign set code refuses another set's tail",
+		In:   mtgmatcher.InputCard{Name: "Dogura", Variation: "ST05-010", Edition: "OP02 - Paramount War"},
+	},
+	{
 		Desc: "negative: unknown card name",
 		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Pirate", Variation: "OP01-001"},
 	},

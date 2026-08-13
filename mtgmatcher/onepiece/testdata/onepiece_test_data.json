@@ -162,6 +162,16 @@
         "error": "aliasing detected"
     },
     {
+        "description": "negative: a foreign set code refuses another set's tail",
+        "input": {
+            "name": "Dogura",
+            "variant": "ST05-010",
+            "edition": "OP02 - Paramount War"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
         "description": "negative: a vendor bucket edition selects no set",
         "input": {
             "name": "Arlong (OP06-023)",
