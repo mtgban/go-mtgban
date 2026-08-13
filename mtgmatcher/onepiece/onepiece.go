@@ -129,16 +129,36 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	// Each list holds distinct values of its own kind. Two spellings can
+	// normalize to one string - "Teemo, Scout" and "Teemo - Scout" both
+	// become "teemocout" - and AllNames holds the normalized form, so
+	// appending once per distinct spelling put one entry in twice.
+	// searchFunc adds a matching entry's whole hash bucket, so every card
+	// of that name came back from a search once per spelling.
+	// AllNames holds the normalized name and AllLowerNames the lowercased
+	// one, and either can fold two spellings into one string - the epithets
+	// differ in punctuation and in case. Appending once per distinct
+	// spelling put that entry in twice, and searchFunc adds a matching
+	// entry's whole hash bucket, so a search returned every printing of
+	// such a name once per spelling.
+	seenNormalized := map[string]bool{}
+	seenLower := map[string]bool{}
 	for _, card := range payload.Cards {
-		if n := mtgmatcher.Normalize(card.Name); b.CanonicalNames[n] == "" {
+		n := mtgmatcher.Normalize(card.Name)
+		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		if slices.Contains(b.AllCanonicalNames, card.Name) {
-			continue
+		if !seenNormalized[n] {
+			seenNormalized[n] = true
+			b.AllNames = append(b.AllNames, n)
 		}
-		b.AllNames = append(b.AllNames, mtgmatcher.Normalize(card.Name))
-		b.AllCanonicalNames = append(b.AllCanonicalNames, card.Name)
-		b.AllLowerNames = append(b.AllLowerNames, strings.ToLower(card.Name))
+		if lower := strings.ToLower(card.Name); !seenLower[lower] {
+			seenLower[lower] = true
+			b.AllLowerNames = append(b.AllLowerNames, lower)
+		}
+		if !slices.Contains(b.AllCanonicalNames, card.Name) {
+			b.AllCanonicalNames = append(b.AllCanonicalNames, card.Name)
+		}
 	}
 	sort.Strings(b.AllNames)
 	sort.Strings(b.AllCanonicalNames)

@@ -194,19 +194,34 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
-	// Load all card names
+	// Each list holds distinct values of its own kind. Two spellings can
+	// normalize to one string - "Teemo, Scout" and "Teemo - Scout" both
+	// become "teemocout" - and AllNames holds the normalized form, so
+	// appending once per distinct spelling put one entry in twice.
+	// searchFunc adds a matching entry's whole hash bucket, so every card
+	// of that name came back from a search once per spelling.
+	// Load all card names. AllNames holds the normalized name, and the
+	// case-variant pairs below normalize to one string, so appending once
+	// per distinct spelling put that entry in the list twice. searchFunc
+	// adds a matching entry's whole hash bucket, so a search returned every
+	// printing of such a name once per spelling.
+	seenNormalized := map[string]bool{}
 	for _, i := range cards {
 		card := lj.Cards[i]
 		// First-seen wins: two Lorcana cards whose names differ only in case
 		// ("as"/"As") normalize equal, so last-wins would let a query for one
 		// resolve to the other. Keep the first to make the mapping stable.
-		if n := mtgmatcher.Normalize(card.FullName); b.CanonicalNames[n] == "" {
+		n := mtgmatcher.Normalize(card.FullName)
+		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.FullName
+		}
+		if !seenNormalized[n] {
+			seenNormalized[n] = true
+			b.AllNames = append(b.AllNames, n)
 		}
 		if slices.Contains(b.AllCanonicalNames, card.FullName) {
 			continue
 		}
-		b.AllNames = append(b.AllNames, mtgmatcher.Normalize(card.FullName))
 		b.AllCanonicalNames = append(b.AllCanonicalNames, card.FullName)
 		b.AllLowerNames = append(b.AllLowerNames, card.FullName)
 	}
