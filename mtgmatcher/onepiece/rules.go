@@ -596,7 +596,8 @@ func numberMatches(input, full string) bool {
 // splitNumber cuts a collector number into its set code and numeric tail,
 // a number without a code being all tail.
 func splitNumber(number string) (set, tail string) {
-	if idx := strings.LastIndexByte(number, '-'); idx >= 0 {
+	idx := strings.LastIndexByte(number, '-')
+	if idx >= 0 {
 		return number[:idx], number[idx+1:]
 	}
 	return "", number
