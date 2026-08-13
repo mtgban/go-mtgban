@@ -152,7 +152,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	isEtched := strings.Contains(card.Variation, "Etched")
 
 	// Retrieve setCode and number
-	sku := card.Sku
+	sku := card.SKU
 	fields := strings.Split(sku, "-")
 	if len(fields) < 2 {
 		return nil, errors.New("unsupported SKU format")
@@ -255,9 +255,9 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		edition = "PUMA"
 	case "Avatar: The Last Airbender Eternal-Legal":
 		// Look up the sku again, and restore the original one if foil
-		_, found := skuFixupTable[strings.TrimPrefix(card.Sku, "F")]
+		_, found := skuFixupTable[strings.TrimPrefix(card.SKU, "F")]
 		if found && isFoil {
-			fields = strings.Split(card.Sku, "-")
+			fields = strings.Split(card.SKU, "-")
 			variation = strings.TrimLeft(fields[1], "0")
 		}
 	case "Secret Lair":
