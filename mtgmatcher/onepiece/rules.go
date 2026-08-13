@@ -39,13 +39,7 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
-	if m := dashNumberRe.FindStringSubmatch(inCard.Name); m != nil {
-		inCard.Name = strings.Replace(inCard.Name, m[0], "", 1)
-		inCard.AddToVariant(m[1])
-	} else if m := dashTailRe.FindStringSubmatch(inCard.Name); m != nil {
-		inCard.Name = strings.TrimSuffix(inCard.Name, m[0])
-		inCard.AddToVariant(m[1])
-	}
+	split := splitDashNumber(inCard)
 	if strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
 		if len(vars) > 1 {
@@ -53,6 +47,39 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
+	// The same feed writes its qualifiers behind the number ("Trafalgar Law
+	// - 008 (Parallel)"), where the bare tail is no longer at the end of the
+	// name to be read; the parentheticals are off by now, so try again, on
+	// the same terms - a name that is itself canonical is left alone.
+	if split {
+		return
+	}
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
+		return
+	}
+	splitDashNumber(inCard)
+}
+
+// splitDashNumber moves the collector number a storefront hangs off a name
+// after a dash into the variation, reporting whether it found one. The
+// number goes in front of whatever the variation already holds: the retry
+// runs with the parenthetical qualifiers moved there, and those carry
+// ordinals of their own ("Judge Pack Vol. 5", "1st Anniversary Set") that
+// extractNumber's digit-leading fallback would read as the number instead.
+func splitDashNumber(inCard *mtgmatcher.InputCard) bool {
+	m := dashNumberRe.FindStringSubmatch(inCard.Name)
+	if m != nil {
+		inCard.Name = strings.Replace(inCard.Name, m[0], "", 1)
+		inCard.Variation = strings.TrimSpace(m[1] + " " + inCard.Variation)
+		return true
+	}
+	m = dashTailRe.FindStringSubmatch(inCard.Name)
+	if m != nil {
+		inCard.Name = strings.TrimSuffix(inCard.Name, m[0])
+		inCard.Variation = strings.TrimSpace(m[1] + " " + inCard.Variation)
+		return true
+	}
+	return false
 }
 
 // AdjustName provides a prefix fallback for truncated feeds, adopting the
