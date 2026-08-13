@@ -22,7 +22,7 @@ require (
 	github.com/corpix/uarand v0.2.0
 	github.com/montanaflynn/stats v0.7.1
 	github.com/mroth/weightedrand/v2 v2.1.0
-	github.com/mtgban/go-cardkingdom v0.0.3
+	github.com/mtgban/go-cardkingdom v0.1.0
 	github.com/mtgban/go-tcgplayer v0.1.0
 	github.com/mtgban/simplecloud v0.0.11
 )

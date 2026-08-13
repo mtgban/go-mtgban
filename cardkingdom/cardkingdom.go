@@ -113,7 +113,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 		link := u.String()
 
 		retailPrices := []float64{
-			card.ConditionValues.NmPrice, card.ConditionValues.ExPrice, card.ConditionValues.VgPrice, card.ConditionValues.GPrice,
+			card.ConditionValues.NMPrice, card.ConditionValues.EXPrice, card.ConditionValues.VGPrice, card.ConditionValues.GPrice,
 		}
 		// For newly added cards the nmPrice may not be initialized, so we the
 		// root price value that is known to be valid (and skip card if data is
@@ -127,7 +127,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 
 		if card.QtyRetail > 0 && card.PriceRetail > 0 {
 			qtys := []int{
-				card.ConditionValues.NmQty, card.ConditionValues.ExQty, card.ConditionValues.VgQty, card.ConditionValues.GQty,
+				card.ConditionValues.NMQty, card.ConditionValues.EXQty, card.ConditionValues.VGQty, card.ConditionValues.GQty,
 			}
 
 			for i, cond := range mtgban.DefaultGradeTags {
@@ -141,7 +141,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					Quantity:   qtys[i],
 					URL:        link,
 					OriginalId: strconv.Itoa(card.ID),
-					InstanceId: card.Sku,
+					InstanceId: card.SKU,
 				}
 				if cond != "NM" {
 					out.CustomFields = map[string]string{
@@ -210,7 +210,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					PriceRatio: priceRatio,
 					URL:        u.String(),
 					OriginalId: strconv.Itoa(card.ID),
-					InstanceId: card.Sku,
+					InstanceId: card.SKU,
 					VendorName: availableTraderNames[0],
 				}
 				// Add the line entry as needed by the csv import
@@ -219,7 +219,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 						"CKTitle":   cardName,
 						"CKEdition": card.Edition,
 						"CKFoil":    strconv.FormatBool(card.IsFoil),
-						"CKSKU":     card.Sku,
+						"CKSKU":     card.SKU,
 						"CKID":      strconv.Itoa(card.ID),
 					}
 				}
