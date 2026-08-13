@@ -96,7 +96,7 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 				Price:        1,
 				Quantity:     1,
 				SellerName:   "tcg",
-				OriginalId:   fmt.Sprint(product.ProductId),
+				OriginalId:   fmt.Sprint(product.ProductID),
 				InstanceId:   fmt.Sprint(page),
 				CustomFields: custom_fields,
 			},

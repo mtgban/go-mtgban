@@ -103,7 +103,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 	for _, result := range results {
 		var req marketChan
 		for _, req = range reqs {
-			if result.SkuId == req.SkuId {
+			if result.SKUID == req.SkuId {
 				break
 			}
 		}
@@ -153,7 +153,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 					SellerName: availableMarketNames[i],
 					Bundle:     isDirect,
 					OriginalId: fmt.Sprint(req.ProductId),
-					InstanceId: fmt.Sprint(result.SkuId),
+					InstanceId: fmt.Sprint(result.SKUID),
 				},
 			}
 
@@ -166,7 +166,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 						URL:        link,
 						VendorName: "TCG Direct (net)",
 						OriginalId: fmt.Sprint(req.ProductId),
-						InstanceId: fmt.Sprint(result.SkuId),
+						InstanceId: fmt.Sprint(result.SKUID),
 					}
 				}
 			}
@@ -194,7 +194,7 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 	for i := 0; i < tcg.MaxConcurrency; i++ {
 		wg.Add(1)
 		go func() {
-			buffer := make([]marketChan, 0, tcgplayer.MaxIdsInRequest)
+			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)
 
 			for page := range pages {
 				// Add our data to the buffer
@@ -272,7 +272,7 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 							9:  "PORTUGUESE BRAZIL",
 							10: "RUSSIAN",
 							11: "SPANISH",
-						}[sku.LanguageId]
+						}[sku.LanguageID]
 						if !found {
 							continue
 						}
@@ -284,7 +284,7 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 						}
 
 						printing := "NORMAL"
-						if sku.PrintingId == 2 {
+						if sku.PrintingID == 2 {
 							printing = "FOIL"
 						}
 
@@ -294,7 +294,7 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 							3: "MODERATELY PLAYED",
 							4: "HEAVILY PLAYED",
 							5: "DAMAGED",
-						}[sku.ConditionId]
+						}[sku.ConditionID]
 						if !found {
 							continue
 						}
@@ -304,7 +304,7 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 							Language:  lang,
 							Printing:  printing,
 							ProductId: id,
-							SkuId:     sku.SkuId,
+							SkuId:     sku.SKUID,
 						})
 					}
 				}

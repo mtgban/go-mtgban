@@ -73,8 +73,8 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 	prodMap := map[int]tcgplayer.Product{}
 	ids := make([]int, len(products))
 	for i, product := range products {
-		ids[i] = product.ProductId
-		prodMap[product.ProductId] = product
+		ids[i] = product.ProductID
+		prodMap[product.ProductID] = product
 	}
 
 	results, err := tcg.client.GetMarketPricesByProducts(ctx, ids)
@@ -95,9 +95,9 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 		}
 
 		keys := []string{
-			fmt.Sprint(result.ProductId),
-			prodMap[result.ProductId].Name,
-			tcg.editions[prodMap[result.ProductId].GroupId].Name,
+			fmt.Sprint(result.ProductID),
+			prodMap[result.ProductID].Name,
+			tcg.editions[prodMap[result.ProductID].GroupID].Name,
 			result.SubTypeName,
 		}
 
@@ -107,7 +107,7 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 			}
 
 			isDirect := names[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
+			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
 
 			out := genericChan{
 				key: strings.Join(keys, "|"),
@@ -118,7 +118,7 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 					URL:        link,
 					SellerName: names[i],
 					Bundle:     isDirect,
-					OriginalId: fmt.Sprint(result.ProductId),
+					OriginalId: fmt.Sprint(result.ProductID),
 				},
 			}
 

@@ -79,8 +79,8 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 	productMap := map[int]tcgplayer.Product{}
 	ids := make([]int, len(products))
 	for i, product := range products {
-		ids[i] = product.ProductId
-		productMap[product.ProductId] = product
+		ids[i] = product.ProductID
+		productMap[product.ProductID] = product
 	}
 
 	results, err := tcg.client.GetMarketPricesByProducts(ctx, ids)
@@ -93,19 +93,19 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 			continue
 		}
 
-		product, found := productMap[result.ProductId]
+		product, found := productMap[result.ProductID]
 		if !found {
 			continue
 		}
 
-		cardName := productMap[result.ProductId].Name
+		cardName := productMap[result.ProductID].Name
 		number := RawProductNumber(&product)
 		theCard := &mtgmatcher.InputCard{
 			// See TCGGame.processPage: the product id identifies the
 			// printing, the text fields are the fallback.
-			Id:        fmt.Sprint(result.ProductId),
+			Id:        fmt.Sprint(result.ProductID),
 			Name:      cardName,
-			Edition:   tcg.editions[product.GroupId].Name,
+			Edition:   tcg.editions[product.GroupID].Name,
 			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
 			Foil:      result.SubTypeName != "Normal",
 		}
@@ -115,13 +115,13 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 		} else if err != nil {
 			// Name the card, not just the price row: a product id alone
 			// says nothing about which product failed to match.
-			tcg.printf("%v for %q (product %d)", err, theCard, result.ProductId)
+			tcg.printf("%v for %q (product %d)", err, theCard, result.ProductID)
 			tcg.printf("%+v", result)
 
 			var alias *mtgmatcher.AliasingError
 			if errors.As(err, &alias) {
 				probes := alias.Probe()
-				tcg.printf("%d %s got ids: %s", product.ProductId, cardName, probes)
+				tcg.printf("%d %s got ids: %s", product.ProductID, cardName, probes)
 				for _, probe := range probes {
 					co, _ := mtgmatcher.GetUUID(probe)
 					tcg.printf("%s: %s", probe, co)
@@ -140,7 +140,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 			}
 
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
+			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
 
 			out := genericChan{
 				key: cardId,
@@ -150,7 +150,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 					URL:        link,
 					SellerName: availableIndexNames[i],
 					Bundle:     isDirect,
-					OriginalId: fmt.Sprint(result.ProductId),
+					OriginalId: fmt.Sprint(result.ProductID),
 				},
 			}
 
