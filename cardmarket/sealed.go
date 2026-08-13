@@ -33,7 +33,7 @@ type CardMarketSealed struct {
 	inventory mtgban.InventoryRecord
 
 	client *MKMClient
-	gameId int
+	gameID int
 }
 
 func (mkm *CardMarketSealed) printf(format string, a ...interface{}) {
@@ -42,17 +42,17 @@ func (mkm *CardMarketSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperSealed(gameId int, appToken, appSecret string) (*CardMarketSealed, error) {
-	switch gameId {
+func NewScraperSealed(gameID int, appToken, appSecret string) (*CardMarketSealed, error) {
+	switch gameID {
 	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
 	default:
-		return nil, fmt.Errorf("unsupported game %d", gameId)
+		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
 	mkm := CardMarketSealed{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
-	mkm.gameId = gameId
+	mkm.gameID = gameID
 	return &mkm, nil
 }
 
@@ -138,7 +138,7 @@ func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- 
 
 			link := BuildURL(article.IdProduct, GameIdMagic, mkm.Affiliate, article.IsFoil)
 			out := responseChan{
-				cardId: uuid,
+				cardID: uuid,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      article.Price * mkm.exchangeRate,
@@ -184,17 +184,17 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	if len(productMap) == 0 && len(mkm.TCGBridge) > 0 {
 		nameFallback = true
 		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
-		for mkmId, tcgId := range mkm.TCGBridge {
-			uuids, found := tcgMap[tcgId]
+		for mkmID, tcgID := range mkm.TCGBridge {
+			uuids, found := tcgMap[tcgID]
 			if !found {
 				continue
 			}
-			productMap[mkmId] = uuids
+			productMap[mkmID] = uuids
 		}
 		mkm.printf("Bridged %d sealed products through the TCGplayer id", len(productMap))
 	}
 
-	productList, err := GetProductListSealed(ctx, mkm.gameId)
+	productList, err := GetProductListSealed(ctx, mkm.gameID)
 	if err != nil {
 		return err
 	}
@@ -252,14 +252,14 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 			return nil
 		},
 		func(result responseChan) {
-			err := mkm.inventory.AddStrict(result.cardId, &result.entry)
+			err := mkm.inventory.AddStrict(result.cardID, &result.entry)
 			if err != nil {
-				_, cerr := mtgmatcher.GetUUID(result.cardId)
+				_, cerr := mtgmatcher.GetUUID(result.cardID)
 				if cerr != nil {
-					mkm.printf("%s - %s: %s", result.entry.OriginalId, cerr.Error(), result.cardId)
+					mkm.printf("%s - %s: %s", result.entry.OriginalId, cerr.Error(), result.cardID)
 					return
 				}
-				mkm.printf("%d - %s", result.ogId, err.Error())
+				mkm.printf("%d - %s", result.ogID, err.Error())
 			}
 		},
 		mkm.printf,
@@ -281,7 +281,7 @@ func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.SealedMode = true
-	switch mkm.gameId {
+	switch mkm.gameID {
 	case GameIdMagic:
 		info.Game = mtgban.GameMagic
 	case GameIdLorcana:

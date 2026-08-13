@@ -54,7 +54,7 @@ func NewScraper() *MTGSeattle {
 }
 
 type responseChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -190,7 +190,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 			return
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -232,7 +232,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 		// Sanity check, a bunch of EA cards are market as foil when they
 		// actually don't have a foil printing, just skip them
 		if strings.Contains(title, "Foil - Extended Art") {
-			co, err := mtgmatcher.GetUUID(cardId)
+			co, err := mtgmatcher.GetUUID(cardID)
 			if err != nil || !co.Foil {
 				return
 			}
@@ -240,7 +240,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 
 		if mode == modeInventory {
 			out := responseChan{
-				cardId: cardId,
+				cardID: cardID,
 				invEntry: &mtgban.InventoryEntry{
 					Price:      price,
 					Conditions: conditions,
@@ -252,7 +252,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 		} else if mode == modeBuylist {
 			var priceRatio, sellPrice float64
 
-			invCards := ms.inventory[cardId]
+			invCards := ms.inventory[cardID]
 			for _, invCard := range invCards {
 				sellPrice = invCard.Price
 				break
@@ -261,7 +261,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 				priceRatio = price / sellPrice * 100
 			}
 
-			gradeMap := grading(cardId, price)
+			gradeMap := grading(cardID, price)
 			for _, grade := range mtgban.DefaultGradeTags {
 				var quantity int
 				if grade == "NM" {
@@ -270,7 +270,7 @@ func (ms *MTGSeattle) processProduct(ctx context.Context, channel chan<- respons
 
 				factor := gradeMap[grade]
 				out := responseChan{
-					cardId: cardId,
+					cardID: cardID,
 					buyEntry: &mtgban.BuylistEntry{
 						Conditions: grade,
 						BuyPrice:   price * factor,
@@ -345,9 +345,9 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 		func(record responseChan) {
 			var err error
 			if record.invEntry != nil {
-				err = ms.inventory.Add(record.cardId, record.invEntry)
+				err = ms.inventory.Add(record.cardID, record.invEntry)
 			} else if record.buyEntry != nil {
-				err = ms.buylist.Add(record.cardId, record.buyEntry)
+				err = ms.buylist.Add(record.cardID, record.buyEntry)
 			}
 			if err != nil {
 				ms.printf("%s", err.Error())
@@ -398,8 +398,8 @@ func (ms *MTGSeattle) Buylist() mtgban.BuylistRecord {
 	return ms.buylist
 }
 
-func grading(cardId string, price float64) map[string]float64 {
-	co, err := mtgmatcher.GetUUID(cardId)
+func grading(cardID string, price float64) map[string]float64 {
+	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
 		return nil
 	}

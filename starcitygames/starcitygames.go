@@ -69,7 +69,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 		return
 	}
 
-	cardId, err := resolveProduct(scg.game, p)
+	cardID, err := resolveProduct(scg.game, p)
 	if err != nil {
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
@@ -134,7 +134,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 			if condition == "NM" {
 				entry.CustomFields = customFields
 			}
-			if err := scg.inventory.AddStrict(cardId, entry); err != nil && !ignore {
+			if err := scg.inventory.AddStrict(cardID, entry); err != nil && !ignore {
 				scg.printf("%s", err.Error())
 				scg.printf("-> %s", link)
 			}
@@ -160,7 +160,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				InstanceId:   v.SKU,
 				CustomFields: blFields,
 			}
-			if err := scg.buylist.Add(cardId, entry); err != nil && !ignore {
+			if err := scg.buylist.Add(cardID, entry); err != nil && !ignore {
 				scg.printf("%s", err.Error())
 			}
 		}

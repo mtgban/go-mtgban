@@ -59,7 +59,7 @@ func (mm *Miniaturemarket) mainURL() string {
 }
 
 type respChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 }
 
@@ -135,7 +135,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 		}
 
 		channel <- respChan{
-			cardId: uuid,
+			cardID: uuid,
 			invEntry: &mtgban.InventoryEntry{
 				Price: price,
 				URL:   link,
@@ -208,7 +208,7 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 			return mm.processPage(ctx, results, page)
 		},
 		func(record respChan) {
-			err := mm.inventory.AddRelaxed(record.cardId, record.invEntry)
+			err := mm.inventory.AddRelaxed(record.cardID, record.invEntry)
 			if err != nil {
 				mm.printf("%v", err)
 			}

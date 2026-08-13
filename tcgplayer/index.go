@@ -40,8 +40,8 @@ func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperIndex(publicId, privateId string) (*TCGPlayerIndex, error) {
-	client, err := tcgplayer.NewClient(publicId, privateId)
+func NewScraperIndex(publicID, privateID string) (*TCGPlayerIndex, error) {
+	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,20 +74,20 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 			continue
 		}
 
-		productId := fmt.Sprint(result.ProductID)
+		productID := fmt.Sprint(result.ProductID)
 
 		uuid := ""
 		isFoil := result.SubTypeName == "Foil"
 		isEtched := false
 		for _, req := range reqs {
-			if req.TCGProductId == productId {
+			if req.TCGProductId == productID {
 				uuid = req.UUID
 				isEtched = req.Etched
 				break
 			}
 		}
 
-		cardId, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
+		cardID, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("(%d / %s) - %s", result.ProductID, uuid, err)
 			continue
@@ -95,7 +95,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 
 		// Skip impossible entries, such as listing mistakes that list a foil
 		// price for a foil-only card
-		co, _ := mtgmatcher.GetUUID(cardId)
+		co, _ := mtgmatcher.GetUUID(cardID)
 		if !co.Etched &&
 			((co.Foil && result.SubTypeName != "Foil") ||
 				(!co.Foil && result.SubTypeName != "Normal")) {
@@ -124,7 +124,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", lang, isDirect)
 
 			out := responseChan{
-				cardId: cardId,
+				cardID: cardID,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      prices[i],
@@ -194,19 +194,19 @@ func (tcg *TCGPlayerIndex) Load(ctx context.Context) error {
 			i++
 
 			for _, card := range set.Cards {
-				tcgId, found := card.Identifiers["tcgplayerProductId"]
+				tcgID, found := card.Identifiers["tcgplayerProductId"]
 				if found {
 					pages <- indexChan{
-						TCGProductId: tcgId,
+						TCGProductId: tcgID,
 						UUID:         card.UUID,
 					}
 				}
 
 				// Sometimes etched-only cards have two tcgIds by mistake, skip one
-				tcgEtchedId, found := card.Identifiers["tcgplayerEtchedProductId"]
-				if found && tcgEtchedId != tcgId {
+				tcgEtchedID, found := card.Identifiers["tcgplayerEtchedProductId"]
+				if found && tcgEtchedID != tcgID {
 					pages <- indexChan{
-						TCGProductId: tcgEtchedId,
+						TCGProductId: tcgEtchedID,
 						UUID:         card.UUID,
 						Etched:       true,
 					}
@@ -222,7 +222,7 @@ func (tcg *TCGPlayerIndex) Load(ctx context.Context) error {
 	for result := range channel {
 		// Relaxed because sometimes we get duplicates due to how the ids
 		// get buffered, but there is really no harm
-		err := tcg.inventory.AddRelaxed(result.cardId, &result.entry)
+		err := tcg.inventory.AddRelaxed(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 			continue

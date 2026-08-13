@@ -76,15 +76,15 @@ func TestPreprocess(t *testing.T) {
 				return
 			}
 
-			cardId, err := mtgmatcher.Match(theCard)
+			cardID, err := mtgmatcher.Match(theCard)
 			if err != nil {
 				t.Errorf("FAIL: unxpected Match error: %s", err)
 				return
 			}
 
-			if cardId != priceListResults[idx] {
-				co, _ := mtgmatcher.GetUUID(cardId)
-				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.Name, priceListResults[idx], cardId, co)
+			if cardID != priceListResults[idx] {
+				co, _ := mtgmatcher.GetUUID(cardID)
+				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.Name, priceListResults[idx], cardID, co)
 				return
 			}
 			t.Log("PASS:", product.Name)

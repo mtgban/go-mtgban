@@ -60,18 +60,18 @@ func (ck *CardkingdomSealed) Load(ctx context.Context) error {
 		}
 
 		for _, product := range set.SealedProduct {
-			ckIdStr, found := product.Identifiers["cardKingdomId"]
+			ckIDStr, found := product.Identifiers["cardKingdomId"]
 			if !found {
 				continue
 			}
 
-			ckId, err := strconv.Atoi(ckIdStr)
+			ckID, err := strconv.Atoi(ckIDStr)
 			if err != nil {
 				continue
 			}
 
 			for _, sealed := range pricelist {
-				if ckId != sealed.ID {
+				if ckID != sealed.ID {
 					continue
 				}
 

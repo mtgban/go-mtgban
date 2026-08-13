@@ -169,7 +169,7 @@ func (ss *SealedEVScraper) printf(format string, a ...interface{}) {
 }
 
 type result struct {
-	productId string
+	productID string
 	invEntry  *mtgban.InventoryEntry
 	buyEntry  *mtgban.BuylistEntry
 	err       error
@@ -339,7 +339,7 @@ func (ss *SealedEVScraper) runEV(ctx context.Context, uuid string) ([]result, []
 		}
 
 		res := result{
-			productId: productUUID,
+			productID: productUUID,
 		}
 
 		if evParameters[i].TargetsBuylist {
@@ -474,10 +474,10 @@ func (ss *SealedEVScraper) Load(ctx context.Context) error {
 
 		for _, result := range results {
 			if result.invEntry != nil {
-				ss.inventory.Add(result.productId, result.invEntry)
+				ss.inventory.Add(result.productID, result.invEntry)
 			}
 			if result.buyEntry != nil {
-				ss.buylist.Add(result.productId, result.buyEntry)
+				ss.buylist.Add(result.productID, result.buyEntry)
 			}
 		}
 	}

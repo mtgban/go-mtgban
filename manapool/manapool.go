@@ -63,7 +63,7 @@ func (mp *Manapool) Load(ctx context.Context) error {
 	mp.printf("Found %d prices", len(pricelist))
 
 	for _, card := range pricelist {
-		cardId, err := mtgmatcher.MatchId(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
+		cardID, err := mtgmatcher.MatchId(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
 		if err != nil {
 			if !isUnindexed(card) {
 				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
@@ -72,7 +72,7 @@ func (mp *Manapool) Load(ctx context.Context) error {
 		}
 
 		// Validate language
-		co, err := mtgmatcher.GetUUID(cardId)
+		co, err := mtgmatcher.GetUUID(cardID)
 		if err != nil {
 			continue
 		}
@@ -124,7 +124,7 @@ func (mp *Manapool) Load(ctx context.Context) error {
 			Price:      price,
 			URL:        link,
 		}
-		err = mp.inventory.AddUnique(cardId, out)
+		err = mp.inventory.AddUnique(cardID, out)
 	}
 
 	mp.inventoryDate = time.Now()

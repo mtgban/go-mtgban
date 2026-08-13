@@ -28,7 +28,7 @@ type requestChan struct {
 }
 
 type responseChan struct {
-	cardId string
+	cardID string
 	entry  mtgban.InventoryEntry
 }
 
@@ -56,7 +56,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		return nil
 	}
 
-	cardId, err := mtgmatcher.Match(theCard)
+	cardID, err := mtgmatcher.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -91,7 +91,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 		stks.printf("invalid data type used for %s", req.interest.Print.Name)
 	}
 	out := responseChan{
-		cardId: cardId,
+		cardID: cardID,
 		entry: mtgban.InventoryEntry{
 			Price:      req.interest.PresentPrice,
 			Quantity:   1,
@@ -146,7 +146,7 @@ func (stks *MTGStocks) Load(ctx context.Context) error {
 			return stks.processEntry(channel, page)
 		},
 		func(result responseChan) {
-			err := stks.inventory.Add(result.cardId, &result.entry)
+			err := stks.inventory.Add(result.cardID, &result.entry)
 			if err != nil {
 				stks.printf("%s", err.Error())
 			}

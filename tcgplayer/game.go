@@ -65,13 +65,13 @@ var SupportedGames = map[string]int{
 	mtgban.GameOnePiece:  tcgplayer.CategoryOnePiece,
 }
 
-func NewScraperGame(game, publicId, privateId string) (*TCGGame, error) {
+func NewScraperGame(game, publicID, privateID string) (*TCGGame, error) {
 	category, found := SupportedGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
 
-	client, err := tcgplayer.NewClient(publicId, privateId)
+	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
@@ -95,8 +95,8 @@ func NewScraperGame(game, publicId, privateId string) (*TCGGame, error) {
 // adds later is picked up rather than silently skipped. Products resolve
 // through the sealed product map by their product id, the identity the
 // datastore stamps on every sealed entry.
-func NewScraperGameSealed(game, publicId, privateId string) (*TCGGame, error) {
-	tcg, err := NewScraperGame(game, publicId, privateId)
+func NewScraperGameSealed(game, publicID, privateID string) (*TCGGame, error) {
+	tcg, err := NewScraperGame(game, publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				Variation: strings.TrimSpace(number + " " + printing),
 				Foil:      printing != "Normal",
 			}
-			cardId, err := mtgmatcher.Match(theCard)
+			cardID, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -226,7 +226,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			link := GenerateProductURL(sku.ProductID, printing, tcg.Affiliate, condition, "", false)
 
 			out := genericChan{
-				key: cardId,
+				key: cardID,
 				entry: mtgban.InventoryEntry{
 					Conditions: condition,
 					Price:      price,

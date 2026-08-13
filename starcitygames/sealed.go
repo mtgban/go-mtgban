@@ -49,11 +49,11 @@ func buildProductMap() map[string]string {
 		if err != nil {
 			continue
 		}
-		scgId, found := co.Identifiers["scgId"]
+		scgID, found := co.Identifiers["scgId"]
 		if !found {
 			continue
 		}
-		out[scgId] = uuid
+		out[scgID] = uuid
 	}
 	return out
 }

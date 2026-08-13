@@ -12,7 +12,7 @@ import (
 
 const (
 	defaultConcurrency = 2
-	baseUrl            = "https://www.cardsphere.com/cards/"
+	baseURL            = "https://www.cardsphere.com/cards/"
 	csMaxOffset        = 10000
 )
 
@@ -47,7 +47,7 @@ func (cs *Cardsphere) printf(format string, a ...interface{}) {
 }
 
 type responseChan struct {
-	cardId  string
+	cardID  string
 	blEntry *mtgban.BuylistEntry
 }
 
@@ -59,26 +59,26 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 
 	for _, offer := range offers {
 		// Look for the right Id
-		masterId := fmt.Sprint(offer.MasterId)
+		masterID := fmt.Sprint(offer.MasterId)
 		ids, _ := mtgmatcher.SearchEquals(offer.CardName)
 		if len(ids) == 0 {
 			continue
 		}
 
 		for _, finish := range offer.Finishes {
-			var foundId string
+			var foundID string
 			for _, id := range ids {
 				co, err := mtgmatcher.GetUUID(id)
 				if err != nil {
 					continue
 				}
-				if (co.Identifiers["cardsphereId"] == masterId && finish != "F") ||
-					(co.Identifiers["cardsphereFoilId"] == masterId && finish == "F") {
-					foundId = id
+				if (co.Identifiers["cardsphereId"] == masterID && finish != "F") ||
+					(co.Identifiers["cardsphereFoilId"] == masterID && finish == "F") {
+					foundID = id
 					break
 				}
 			}
-			if foundId == "" {
+			if foundID == "" {
 				continue
 			}
 
@@ -89,7 +89,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 				etched = strings.Contains(offer.Sets[0].Name, "Etched")
 			}
 
-			cardId, err := mtgmatcher.MatchId(foundId, finish == "F", etched)
+			cardID, err := mtgmatcher.MatchId(foundID, finish == "F", etched)
 			if err != nil {
 				continue
 			}
@@ -113,7 +113,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 				case 10:
 					conditions = "HP"
 				default:
-					cs.printf("Unsupported %s condition for %s", cond, foundId)
+					cs.printf("Unsupported %s condition for %s", cond, foundID)
 					continue
 				}
 
@@ -126,14 +126,14 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 				}
 
 				out := responseChan{
-					cardId: cardId,
+					cardID: cardID,
 					blEntry: &mtgban.BuylistEntry{
 						// Account for processing fees and cash out fee
 						BuyPrice:   condPrice * 0.87,
 						Conditions: conditions,
 						Quantity:   offer.Quantity,
 						PriceRatio: priceRatio,
-						URL:        fmt.Sprintf("%s%d", baseUrl, offer.MasterId),
+						URL:        fmt.Sprintf("%s%d", baseURL, offer.MasterId),
 						VendorName: offer.UserDisplay,
 					},
 				}
@@ -164,14 +164,14 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 		},
 		func(result responseChan) {
 			// Only keep one offer per condition
-			entries := cs.buylist[result.cardId]
+			entries := cs.buylist[result.cardID]
 			for _, entry := range entries {
 				if entry.Conditions == result.blEntry.Conditions {
 					return
 				}
 			}
 
-			err := cs.buylist.AddRelaxed(result.cardId, result.blEntry)
+			err := cs.buylist.AddRelaxed(result.cardID, result.blEntry)
 			if err != nil {
 				cs.printf("%v", err)
 				return
@@ -179,7 +179,7 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 			// This would be better with a select, but for now just print a message
 			// that we're still alive every minute
 			if time.Now().After(lastTime.Add(60 * time.Second)) {
-				card, _ := mtgmatcher.GetUUID(result.cardId)
+				card, _ := mtgmatcher.GetUUID(result.cardID)
 				cs.printf("Still going, last processed card: %s", card)
 				lastTime = time.Now()
 			}

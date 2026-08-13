@@ -479,9 +479,9 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 
 		if sheet.Fixed {
 			// Fixed means there is no randomness, just pick the cards as listed
-			for cardId, subcount := range sheet.Cards {
+			for cardID, subcount := range sheet.Cards {
 				// Convert to custom IDs
-				uuid, err := MatchId(cardId, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
+				uuid, err := MatchId(cardID, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 				if err != nil {
 					return nil, err
 				}
@@ -514,13 +514,13 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 
 				// Create subsheets for each color (multi color gets included
 				// multiple times)
-				for cardId, weight := range sheet.Cards {
-					co, found := b.UUIDs[cardId]
+				for cardID, weight := range sheet.Cards {
+					co, found := b.UUIDs[cardID]
 					if !found {
-						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardId)
+						return nil, fmt.Errorf("sheet '%s' contains an unknown id (%s)", sheetName, cardID)
 					}
 
-					choice := weightedrand.NewChoice(cardId, weight*mult)
+					choice := weightedrand.NewChoice(cardID, weight*mult)
 					for _, color := range co.ColorIdentity {
 						balancedSheets[color] = append(balancedSheets[color], choice)
 					}
@@ -558,8 +558,8 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 
 			// Move sheet data into randutil data type
 			var cardChoices []weightedrand.Choice[string, int]
-			for cardId, weight := range sheet.Cards {
-				cardChoices = append(cardChoices, weightedrand.NewChoice(cardId, weight))
+			for cardID, weight := range sheet.Cards {
+				cardChoices = append(cardChoices, weightedrand.NewChoice(cardID, weight))
 			}
 
 			cardChooser, err := weightedrand.NewChooser(cardChoices...)
@@ -1029,8 +1029,8 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 	isEtched := strings.Contains(strings.ToLower(sheetName), "etched")
 	var probs []ProductProbabilities
 
-	for cardId, count := range sheet.Cards {
-		uuid, err := MatchId(cardId, sheet.Foil, isEtched)
+	for cardID, count := range sheet.Cards {
+		uuid, err := MatchId(cardID, sheet.Foil, isEtched)
 		if err != nil {
 			return nil, err
 		}

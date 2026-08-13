@@ -83,7 +83,7 @@ func NewScraper(game string) *Coolstuffinc {
 }
 
 type responseChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 	relaxed  bool
@@ -248,7 +248,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					return
 				}
 
-				cardId, err := mtgmatcher.Match(theCard)
+				cardID, err := mtgmatcher.Match(theCard)
 				if errors.Is(err, mtgmatcher.ErrUnsupported) {
 					return
 				} else if err != nil {
@@ -278,13 +278,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				// requested finish.
 				if csi.game == GameMagic {
 					if strings.Contains(cardName, "Foil-etched") {
-						co, err := mtgmatcher.GetUUID(cardId)
+						co, err := mtgmatcher.GetUUID(cardID)
 						if err != nil || !co.Etched {
 							return
 						}
 					}
 					if isFoil {
-						co, err := mtgmatcher.GetUUID(cardId)
+						co, err := mtgmatcher.GetUUID(cardID)
 						if err != nil || (!co.Etched && !co.Foil) {
 							return
 						}
@@ -292,7 +292,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				}
 
 				out := responseChan{
-					cardId: cardId,
+					cardID: cardID,
 					invEntry: &mtgban.InventoryEntry{
 						Conditions: conditions,
 						Price:      price,
@@ -381,9 +381,9 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 		func(record responseChan) {
 			var err error
 			if record.relaxed {
-				err = csi.inventory.AddRelaxed(record.cardId, record.invEntry)
+				err = csi.inventory.AddRelaxed(record.cardID, record.invEntry)
 			} else {
-				err = csi.inventory.Add(record.cardId, record.invEntry)
+				err = csi.inventory.Add(record.cardID, record.invEntry)
 			}
 			if err != nil {
 				csi.printf("%s", err.Error())
@@ -451,7 +451,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			return errors.New("unsupported game")
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -477,7 +477,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 
 		var priceRatio, sellPrice float64
 
-		invCards := csi.inventory[cardId]
+		invCards := csi.inventory[cardID]
 		for _, invCard := range invCards {
 			sellPrice = invCard.Price
 			break
@@ -497,7 +497,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				},
 			}
 
-			err := csi.buylist.Add(cardId, &buyEntry)
+			err := csi.buylist.Add(cardID, &buyEntry)
 			if err != nil {
 				csi.printf("%s", err.Error())
 				continue

@@ -45,7 +45,7 @@ func NewScraper() (*SecretDesKorrigans, error) {
 }
 
 type responseChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 }
 
@@ -167,7 +167,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 			return
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -202,7 +202,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 		}
 
 		out := responseChan{
-			cardId: cardId,
+			cardID: cardID,
 			invEntry: &mtgban.InventoryEntry{
 				Price:      price * sdk.exchangeRate,
 				Conditions: conditions,
@@ -272,7 +272,7 @@ func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 			return sdk.processProduct(ctx, results, it.link)
 		},
 		func(record responseChan) {
-			err := sdk.inventory.AddRelaxed(record.cardId, record.invEntry)
+			err := sdk.inventory.AddRelaxed(record.cardID, record.invEntry)
 			if err != nil {
 				sdk.printf("%s", err.Error())
 			}

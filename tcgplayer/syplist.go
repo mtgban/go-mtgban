@@ -64,7 +64,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 
 		isFoil := sku.Printing == "FOIL"
 		isEtched := sku.Finish == "FOIL ETCHED"
-		cardId, err := mtgmatcher.MatchId(fmt.Sprint(sku.ProductId), isFoil, isEtched)
+		cardID, err := mtgmatcher.MatchId(fmt.Sprint(sku.ProductId), isFoil, isEtched)
 		if err != nil {
 			continue
 		}
@@ -85,7 +85,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 			URL:      link,
 		}
 
-		err = tcg.buylist.Add(cardId, &entry)
+		err = tcg.buylist.Add(cardID, &entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 			continue

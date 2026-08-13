@@ -461,15 +461,15 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 
 // Generate product URL using TCGplayer
 func generateSealedImageURL(card Card, version string) string {
-	tcgId, found := card.Identifiers["tcgplayerProductId"]
+	tcgID, found := card.Identifiers["tcgplayerProductId"]
 	if !found {
 		return ""
 	}
 	if version == "small" {
 		// This size is the default "small" format
-		tcgId = "fit-in/146x204/" + tcgId
+		tcgID = "fit-in/146x204/" + tcgID
 	}
-	return "https://product-images.tcgplayer.com/" + tcgId + ".jpg"
+	return "https://product-images.tcgplayer.com/" + tcgID + ".jpg"
 }
 
 func generateSealedUUIDs(product SealedProduct, uuids map[string]*mtgmatcher.CardObject, edition string) {
@@ -537,9 +537,9 @@ func generateImageURL(card Card, version string) string {
 		return ""
 	}
 
-	altId, found := card.Identifiers["originalScryfallId"]
+	altID, found := card.Identifiers["originalScryfallId"]
 	if found {
-		id = altId
+		id = altID
 	}
 
 	return fmt.Sprintf("https://cards.scryfall.io/%s/front/%c/%c/%s.jpg", version, id[0], id[1], id)
@@ -917,7 +917,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			// Now assign the card to the list of cards to be saved
 			filteredCards = append(filteredCards, card)
 
-			alternativeId, found := card.Identifiers["tcgplayerAlternativeFoilProductId"]
+			alternativeID, found := card.Identifiers["tcgplayerAlternativeFoilProductId"]
 			if found {
 				// Change properties of the current card
 				filteredCards[len(filteredCards)-1].Finishes = []string{"nonfoil"}
@@ -936,7 +936,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				}
 
 				card.Identifiers = newIdentifiers
-				card.Identifiers["tcgplayerProductId"] = alternativeId
+				card.Identifiers["tcgplayerProductId"] = alternativeID
 				// Signal that the TCG SKUs from MTGJSON need to be refreshed
 				card.Identifiers["needsNewTCGSKUs"] = "true"
 

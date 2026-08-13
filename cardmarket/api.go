@@ -72,8 +72,8 @@ type MKMExpansion struct {
 	IsReleased  bool   `json:"isReleased"`
 }
 
-func (mkm *MKMClient) Expansions(ctx context.Context, gameId int) ([]MKMExpansion, error) {
-	link := fmt.Sprintf(mkmExpansionsURL, gameId)
+func (mkm *MKMClient) Expansions(ctx context.Context, gameID int) ([]MKMExpansion, error) {
+	link := fmt.Sprintf(mkmExpansionsURL, gameID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return nil, err
@@ -313,12 +313,12 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	queries := strings.Replace(q.Encode(), "+", "%20", -1)
 
 	// Duplicate request url and drop query parameters
-	authUrl := &url.URL{}
-	*authUrl = *req.URL
-	authUrl.RawQuery = ""
+	authURL := &url.URL{}
+	*authURL = *req.URL
+	authURL.RawQuery = ""
 
 	// Message and key
-	msg := fmt.Sprintf("%s&%s&%s", req.Method, url.QueryEscape(authUrl.String()), url.QueryEscape(queries))
+	msg := fmt.Sprintf("%s&%s&%s", req.Method, url.QueryEscape(authURL.String()), url.QueryEscape(queries))
 
 	signkey := fmt.Sprintf("%s&%s", url.QueryEscape(t.AppSecret), url.QueryEscape(t.AccessTokenSecret))
 
@@ -328,7 +328,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	signature := base64.StdEncoding.EncodeToString(msgHash)
 
 	// Build the header
-	auth := "OAuth realm=\"" + authUrl.String() + "\", "
+	auth := "OAuth realm=\"" + authURL.String() + "\", "
 	for key, val := range q {
 		// Only keep oauth parameters here
 		if !strings.HasPrefix(key, "oauth") {

@@ -38,7 +38,7 @@ func NewScraper() *ABUGames {
 
 type resultChan struct {
 	theCard    mtgmatcher.InputCard
-	cardId     string
+	cardID     string
 	invEntry   *mtgban.InventoryEntry
 	buyEntry   *mtgban.BuylistEntry
 	tradeEntry *mtgban.BuylistEntry
@@ -76,7 +76,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			continue
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -112,7 +112,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			// Sanity check, a bunch of cards are market as foil when they
 			// actually don't have a foil printing, just skip them
 			if strings.Contains(doc.DisplayTitle, "FOIL") {
-				co, err := mtgmatcher.GetUUID(cardId)
+				co, err := mtgmatcher.GetUUID(cardID)
 				if err != nil {
 					continue
 				}
@@ -124,7 +124,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			// Older sets tend to be rougher, so grade stricter
 			// 2003 is picked as the modern frame introduction
 			var lowerGrade bool
-			date, err := mtgmatcher.CardReleaseDate(cardId)
+			date, err := mtgmatcher.CardReleaseDate(cardID)
 			if err == nil && date.Year() <= 2003 {
 				lowerGrade = true
 			}
@@ -252,7 +252,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 			if invEntry != nil || buyEntry != nil {
 				channel <- resultChan{
 					theCard:    *theCard,
-					cardId:     cardId,
+					cardID:     cardID,
 					invEntry:   invEntry,
 					buyEntry:   buyEntry,
 					tradeEntry: tradeEntry,
@@ -312,21 +312,21 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 		},
 		func(result resultChan) {
 			if result.invEntry != nil {
-				err := abu.inventory.AddRelaxed(result.cardId, result.invEntry)
+				err := abu.inventory.AddRelaxed(result.cardID, result.invEntry)
 				if err != nil {
 					abu.printf("%s", &result.theCard)
 					abu.printf("%s", err.Error())
 				}
 			}
 			if result.buyEntry != nil {
-				err := abu.buylist.AddRelaxed(result.cardId, result.buyEntry)
+				err := abu.buylist.AddRelaxed(result.cardID, result.buyEntry)
 				if err != nil {
 					abu.printf("%s", &result.theCard)
 					abu.printf("%s", err.Error())
 				}
 			}
 			if result.tradeEntry != nil {
-				err := abu.buylist.AddRelaxed(result.cardId, result.tradeEntry)
+				err := abu.buylist.AddRelaxed(result.cardID, result.tradeEntry)
 				if err != nil {
 					abu.printf("%s", &result.theCard)
 					abu.printf("%s", err.Error())

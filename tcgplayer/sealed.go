@@ -29,8 +29,8 @@ func (tcg *TCGPlayerSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperSealed(publicId, privateId string) (*TCGPlayerSealed, error) {
-	client, err := tcgplayer.NewClient(publicId, privateId)
+func NewScraperSealed(publicID, privateID string) (*TCGPlayerSealed, error) {
+	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,25 +59,25 @@ func (tcg *TCGPlayerSealed) processEntries(ctx context.Context, channel chan<- r
 		}
 
 		uuid := ""
-		productId := 0
+		productID := 0
 		for _, req := range reqs {
 			if result.SKUID == req.SkuId {
 				uuid = req.UUID
-				productId = req.ProductId
+				productID = req.ProductId
 				break
 			}
 		}
 
-		link := GenerateProductURL(productId, "", tcg.Affiliate, "", "", false)
+		link := GenerateProductURL(productID, "", tcg.Affiliate, "", "", false)
 
 		out := responseChan{
-			cardId: uuid,
+			cardID: uuid,
 			entry: mtgban.InventoryEntry{
 				Conditions: "NM",
 				Price:      result.LowestListingPrice,
 				Quantity:   1,
 				URL:        link,
-				OriginalId: fmt.Sprint(productId),
+				OriginalId: fmt.Sprint(productID),
 				InstanceId: fmt.Sprint(result.SKUID),
 			},
 		}
@@ -174,7 +174,7 @@ func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
 	for result := range channel {
 		// Relaxed because sometimes we get duplicates due to how the ids
 		// get buffered, but there is really no harm
-		err := tcg.inventory.AddRelaxed(result.cardId, &result.entry)
+		err := tcg.inventory.AddRelaxed(result.cardID, &result.entry)
 		if err != nil {
 			tcg.printf("%s", err.Error())
 			continue

@@ -145,9 +145,9 @@ func (csi *CoolstuffincSealed) processSealedPage(ctx context.Context, channel ch
 		productName := s.Find(`span[itemprop="name"]`).Text()
 		path, _ := s.Find(`a[class="productLink"]`).Attr("href")
 
-		csiId := strings.TrimPrefix(path, "/p/")
+		csiID := strings.TrimPrefix(path, "/p/")
 
-		uuid, found := csi.productMap[csiId]
+		uuid, found := csi.productMap[csiID]
 		if !found {
 			return
 		}
@@ -172,7 +172,7 @@ func (csi *CoolstuffincSealed) processSealedPage(ctx context.Context, channel ch
 		}
 
 		out := responseChan{
-			cardId: uuid,
+			cardID: uuid,
 			invEntry: &mtgban.InventoryEntry{
 				Price:    price,
 				Quantity: qty,
@@ -203,7 +203,7 @@ func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
 			return csi.processSealedPage(ctx, results, page)
 		},
 		func(record responseChan) {
-			err := csi.inventory.Add(record.cardId, record.invEntry)
+			err := csi.inventory.Add(record.cardID, record.invEntry)
 			if err != nil {
 				csi.printf("%s", err.Error())
 			}
@@ -359,12 +359,12 @@ func (csi *CoolstuffincSealed) scrapeBysets(ctx context.Context) error {
 			return nil
 		},
 		func(record responseChan) {
-			key := record.cardId + "|" + record.invEntry.OriginalId
+			key := record.cardID + "|" + record.invEntry.OriginalId
 			if seen[key] {
 				return
 			}
 			seen[key] = true
-			err := csi.inventory.Add(record.cardId, record.invEntry)
+			err := csi.inventory.Add(record.cardID, record.invEntry)
 			if err != nil {
 				csi.printf("%v", err)
 			}
@@ -532,7 +532,7 @@ func (csi *CoolstuffincSealed) processSealedSearch(ctx context.Context, channel 
 			}
 
 			channel <- responseChan{
-				cardId: uuid,
+				cardID: uuid,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      price,

@@ -12,7 +12,7 @@ import (
 
 var ErrInvalidCondition = errors.New("invalid condition")
 
-func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int) error {
+func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int) error {
 	// Safe defaults
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
@@ -25,45 +25,45 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 		return ErrInvalidCondition
 	}
 
-	entries, found := inv[cardId]
+	entries, found := inv[cardID]
 	if found {
 		for i := range entries {
 			if strict > 2 && entry.Conditions == entries[i].Conditions && entry.SellerName == entries[i].SellerName {
-				card, _ := mtgmatcher.GetUUID(cardId)
-				return fmt.Errorf("duplicate inventory key, same conditions:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
+				card, _ := mtgmatcher.GetUUID(cardID)
+				return fmt.Errorf("duplicate inventory key, same conditions:\n-key: %s %s\n-new: %v\n-old: %v", cardID, card, *entry, entries[i])
 			}
 
 			if entry.Conditions == entries[i].Conditions && entry.Price == entries[i].Price && entry.SellerName == entries[i].SellerName {
 				if strict > 1 {
-					card, _ := mtgmatcher.GetUUID(cardId)
-					return fmt.Errorf("duplicate inventory key, same conditions and price:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
+					card, _ := mtgmatcher.GetUUID(cardID)
+					return fmt.Errorf("duplicate inventory key, same conditions and price:\n-key: %s %s\n-new: %v\n-old: %v", cardID, card, *entry, entries[i])
 				}
 
 				if strict > 0 && entry.URL == entries[i].URL && entry.Quantity == entries[i].Quantity && entry.Bundle == entries[i].Bundle {
-					card, _ := mtgmatcher.GetUUID(cardId)
-					return fmt.Errorf("duplicate inventory key, same url, and qty:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, entries[i])
+					card, _ := mtgmatcher.GetUUID(cardID)
+					return fmt.Errorf("duplicate inventory key, same url, and qty:\n-key: %s %s\n-new: %v\n-old: %v", cardID, card, *entry, entries[i])
 				}
 
-				inv[cardId][i].Quantity += entry.Quantity
+				inv[cardID][i].Quantity += entry.Quantity
 				return nil
 			}
 		}
 	}
 
-	inv[cardId] = append(inv[cardId], *entry)
+	inv[cardID] = append(inv[cardID], *entry)
 
 	// Keep array sorted
-	sort.Slice(inv[cardId], func(i, j int) bool {
-		iIdx := slices.Index(FullGradeTags, inv[cardId][i].Conditions)
-		jIdx := slices.Index(FullGradeTags, inv[cardId][j].Conditions)
+	sort.Slice(inv[cardID], func(i, j int) bool {
+		iIdx := slices.Index(FullGradeTags, inv[cardID][i].Conditions)
+		jIdx := slices.Index(FullGradeTags, inv[cardID][j].Conditions)
 
 		if iIdx == jIdx {
-			if inv[cardId][i].Price == inv[cardId][j].Price {
+			if inv[cardID][i].Price == inv[cardID][j].Price {
 				// Prioritize higher quantity for same price and same condition
-				return inv[cardId][i].Quantity > inv[cardId][j].Quantity
+				return inv[cardID][i].Quantity > inv[cardID][j].Quantity
 			}
 			// Prioritize lower prices first for the same condition
-			return inv[cardId][i].Price < inv[cardId][j].Price
+			return inv[cardID][i].Price < inv[cardID][j].Price
 		}
 
 		return iIdx < jIdx
@@ -73,34 +73,34 @@ func (inv InventoryRecord) add(cardId string, entry *InventoryEntry, strict int)
 }
 
 // Add a new record to the inventory, existing entries are always merged
-func (inv InventoryRecord) AddRelaxed(cardId string, entry *InventoryEntry) error {
-	return inv.add(cardId, entry, 0)
+func (inv InventoryRecord) AddRelaxed(cardID string, entry *InventoryEntry) error {
+	return inv.add(cardID, entry, 0)
 }
 
 // Add a new record to the inventory, similar existing entries are merged
-func (inv InventoryRecord) Add(cardId string, entry *InventoryEntry) error {
-	return inv.add(cardId, entry, 1)
+func (inv InventoryRecord) Add(cardID string, entry *InventoryEntry) error {
+	return inv.add(cardID, entry, 1)
 }
 
 // Add new record to the inventory, similar existing entries are not merged
-func (inv InventoryRecord) AddStrict(cardId string, entry *InventoryEntry) error {
-	return inv.add(cardId, entry, 2)
+func (inv InventoryRecord) AddStrict(cardID string, entry *InventoryEntry) error {
+	return inv.add(cardID, entry, 2)
 }
 
 // Add new record to the inventory, if same card and condition exist, error out
-func (inv InventoryRecord) AddUnique(cardId string, entry *InventoryEntry) error {
-	return inv.add(cardId, entry, 3)
+func (inv InventoryRecord) AddUnique(cardID string, entry *InventoryEntry) error {
+	return inv.add(cardID, entry, 3)
 }
 
-func (bl BuylistRecord) AddRelaxed(cardId string, entry *BuylistEntry) error {
-	return bl.add(cardId, entry, false)
+func (bl BuylistRecord) AddRelaxed(cardID string, entry *BuylistEntry) error {
+	return bl.add(cardID, entry, false)
 }
 
-func (bl BuylistRecord) Add(cardId string, entry *BuylistEntry) error {
-	return bl.add(cardId, entry, true)
+func (bl BuylistRecord) Add(cardID string, entry *BuylistEntry) error {
+	return bl.add(cardID, entry, true)
 }
 
-func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict bool) error {
+func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict bool) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
 	}
@@ -109,33 +109,33 @@ func (bl BuylistRecord) add(cardId string, entry *BuylistEntry, strict bool) err
 		return ErrInvalidCondition
 	}
 
-	entries, found := bl[cardId]
+	entries, found := bl[cardID]
 	if found {
 		for i := range entries {
 			if entry.Quantity == entries[i].Quantity && entry.Conditions == entries[i].Conditions && entry.BuyPrice == entries[i].BuyPrice && entry.VendorName == entries[i].VendorName {
 				if strict {
-					card, _ := mtgmatcher.GetUUID(cardId)
-					return fmt.Errorf("attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardId, card, *entry, bl[cardId])
+					card, _ := mtgmatcher.GetUUID(cardID)
+					return fmt.Errorf("attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", cardID, card, *entry, bl[cardID])
 				}
-				bl[cardId][i].Quantity += entry.Quantity
+				bl[cardID][i].Quantity += entry.Quantity
 				return nil
 			}
 		}
 	}
 
-	bl[cardId] = append(bl[cardId], *entry)
+	bl[cardID] = append(bl[cardID], *entry)
 
-	sort.Slice(bl[cardId], func(i, j int) bool {
-		iIdx := slices.Index(FullGradeTags, bl[cardId][i].Conditions)
-		jIdx := slices.Index(FullGradeTags, bl[cardId][j].Conditions)
+	sort.Slice(bl[cardID], func(i, j int) bool {
+		iIdx := slices.Index(FullGradeTags, bl[cardID][i].Conditions)
+		jIdx := slices.Index(FullGradeTags, bl[cardID][j].Conditions)
 
 		if iIdx == jIdx {
-			if bl[cardId][i].BuyPrice == bl[cardId][j].BuyPrice {
+			if bl[cardID][i].BuyPrice == bl[cardID][j].BuyPrice {
 				// Prioritize higher quantity for same price and same condition
-				return bl[cardId][i].Quantity > bl[cardId][j].Quantity
+				return bl[cardID][i].Quantity > bl[cardID][j].Quantity
 			}
 			// Prioritize higher prices first for the same condition
-			return bl[cardId][i].BuyPrice > bl[cardId][j].BuyPrice
+			return bl[cardID][i].BuyPrice > bl[cardID][j].BuyPrice
 		}
 
 		return iIdx < jIdx

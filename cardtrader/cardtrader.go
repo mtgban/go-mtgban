@@ -34,7 +34,7 @@ type CardtraderMarket struct {
 
 	blueprints map[int]*Blueprint
 
-	gameId int
+	gameID int
 }
 
 var availableMarketNames = []string{
@@ -47,12 +47,12 @@ var name2shorthand = map[string]string{
 	"Card Trader 1DR":  "CT1DR",
 }
 
-func NewScraperMarket(gameId int, token string) (*CardtraderMarket, error) {
+func NewScraperMarket(gameID int, token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
-	ct.gameId = gameId
+	ct.gameID = gameID
 	return &ct, nil
 }
 
@@ -63,7 +63,7 @@ func (ct *CardtraderMarket) printf(format string, a ...interface{}) {
 }
 
 type resultChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 }
 
@@ -92,14 +92,14 @@ var langMap = map[string]string{
 	"zh-tw": "Chinese",
 }
 
-func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int, products []Product) {
-	blueprint, found := ct.blueprints[bpId]
+func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int, products []Product) {
+	blueprint, found := ct.blueprints[bpID]
 	if !found {
 		return
 	}
 
 	var theCard *mtgmatcher.InputCard
-	if ct.gameId == GameIdMagic {
+	if ct.gameID == GameIdMagic {
 		var err error
 		theCard, err = Preprocess(blueprint)
 		if err != nil {
@@ -137,7 +137,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 		// Build the per-game input card; the match and error handling below are
 		// shared. Magic reuses the blueprint-derived theCard (applying the
 		// product language), Lorcana builds one from the product's number.
-		switch ct.gameId {
+		switch ct.gameID {
 		case GameIdMagic:
 			lang := product.Properties.MTGLanguage
 			if lang != "" {
@@ -150,7 +150,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 				theCard.Language = lang
 			}
 		case GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
-			if gameLanguage(ct.gameId, product) != "en" {
+			if gameLanguage(ct.gameID, product) != "en" {
 				continue
 			}
 			// A listing copies the collector number when it is created and
@@ -164,11 +164,11 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			theCard = &mtgmatcher.InputCard{
 				Name:      blueprint.Name,
 				Edition:   blueprint.Expansion.Name,
-				Variation: gameVariation(ct.gameId, blueprint, number),
-				Foil:      gameFoil(ct.gameId, product),
+				Variation: gameVariation(ct.gameID, blueprint, number),
+				Foil:      gameFoil(ct.gameID, product),
 			}
 		default:
-			ct.printf("unsupported game %d", ct.gameId)
+			ct.printf("unsupported game %d", ct.gameID)
 			return
 		}
 
@@ -178,20 +178,20 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 		// and for the Riftbound promos it lands on the promo printing where
 		// the edition alone leaves the base one. Magic keeps its own
 		// preprocessing, and a blueprint without an id falls through.
-		var cardId string
-		if ct.gameId != GameIdMagic && blueprint.TCGplayerId != 0 {
-			cardId, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
+		var cardID string
+		if ct.gameID != GameIdMagic && blueprint.TCGplayerId != 0 {
+			cardID, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
 		}
 
-		if cardId == "" {
+		if cardID == "" {
 			var err error
-			cardId, err = mtgmatcher.Match(theCard)
+			cardID, err = mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
 				ct.printf("%v", err)
 				ct.printf("%q", theCard)
-				ct.printf("%d %q", bpId, blueprint)
+				ct.printf("%d %q", bpID, blueprint)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
@@ -206,9 +206,9 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 
 		// Foil listings share the plain id; adopt the foil id when one exists
 		// (Magic only: Lorcana's finish is already carried on the input).
-		if ct.gameId == GameIdMagic && product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			if cardIdFoil, e := mtgmatcher.MatchId(cardId, true); e == nil {
-				cardId = cardIdFoil
+		if ct.gameID == GameIdMagic && product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
+			if cardIDFoil, e := mtgmatcher.MatchId(cardID, true); e == nil {
+				cardID = cardIDFoil
 			}
 		}
 
@@ -246,7 +246,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 		}
 
 		channel <- resultChan{
-			cardId: cardId,
+			cardID: cardID,
 			invEntry: &mtgban.InventoryEntry{
 				Conditions: conditions,
 				Price:      price,
@@ -267,8 +267,8 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 	return
 }
 
-func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<- resultChan, expansionId int) error {
-	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionId)
+func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<- resultChan, expansionID int) error {
+	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionID)
 	if err != nil {
 		return err
 	}
@@ -290,7 +290,7 @@ func (ct *CardtraderMarket) Load(ctx context.Context) error {
 	if ct.TargetEdition != "" {
 		ct.printf("-> only targeting edition %s", ct.TargetEdition)
 	}
-	blueprintsRaw, expansionsRaw, err := BlueprintsForGame(ctx, ct.client, ct.gameId, ct.TargetEdition, ct.printf)
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGame(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
 	if err != nil {
 		return err
 	}
@@ -318,7 +318,7 @@ func (ct *CardtraderMarket) Load(ctx context.Context) error {
 		func(result resultChan) {
 			// Only keep one offer per condition
 			skip := false
-			entries := ct.inventory[result.cardId]
+			entries := ct.inventory[result.cardID]
 			for _, entry := range entries {
 				if entry.Conditions == result.invEntry.Conditions && entry.SellerName == result.invEntry.SellerName {
 					skip = true
@@ -331,9 +331,9 @@ func (ct *CardtraderMarket) Load(ctx context.Context) error {
 
 			var err error
 			if ct.KeepDuplicates {
-				err = ct.inventory.AddRelaxed(result.cardId, result.invEntry)
+				err = ct.inventory.AddRelaxed(result.cardID, result.invEntry)
 			} else {
-				err = ct.inventory.Add(result.cardId, result.invEntry)
+				err = ct.inventory.Add(result.cardID, result.invEntry)
 			}
 			if err != nil {
 				ct.printf("%s", err.Error())
@@ -368,7 +368,7 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.Family = "CT"
-	switch ct.gameId {
+	switch ct.gameID {
 	case GameIdMagic:
 		info.Game = mtgban.GameMagic
 	case GameIdLorcana:

@@ -35,9 +35,9 @@ var (
 
 func record2entry(record []string) (*InventoryEntry, error) {
 	index := len(CardHeader)
-	cardId := record[0]
-	_, err := mtgmatcher.GetUUID(cardId)
-	if err != nil && !strings.Contains(cardId, "|") {
+	cardID := record[0]
+	_, err := mtgmatcher.GetUUID(cardID)
+	if err != nil && !strings.Contains(cardID, "|") {
 		return nil, fmt.Errorf("error reading record: %v (%v)", err, record)
 	}
 
@@ -67,14 +67,14 @@ func record2entry(record []string) (*InventoryEntry, error) {
 		bundle = record[index] == "Y"
 		index++
 	}
-	ogId := ""
+	ogID := ""
 	if len(record) > index {
-		ogId = record[index]
+		ogID = record[index]
 		index++
 	}
-	instanceId := ""
+	instanceID := ""
 	if len(record) > index {
-		instanceId = record[index]
+		instanceID = record[index]
 		index++
 	}
 
@@ -85,8 +85,8 @@ func record2entry(record []string) (*InventoryEntry, error) {
 		URL:        URL,
 		SellerName: sellerName,
 		Bundle:     bundle,
-		OriginalId: ogId,
-		InstanceId: instanceId,
+		OriginalId: ogID,
+		InstanceId: instanceID,
 	}, nil
 }
 
@@ -201,8 +201,8 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		}
 
 		index := len(CardHeader)
-		cardId := record[0]
-		_, err = mtgmatcher.GetUUID(cardId)
+		cardID := record[0]
+		_, err = mtgmatcher.GetUUID(cardID)
 		if err != nil {
 			if strict {
 				return nil, fmt.Errorf("error reading record: %v (%v)", err, record)
@@ -260,20 +260,20 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 			VendorName: vendorName,
 		}
 
-		buylist.Add(cardId, entry)
+		buylist.Add(cardID, entry)
 	}
 
 	return buylist, nil
 }
 
-func cardId2record(cardId string) ([]string, error) {
-	if strings.Contains(cardId, "|") {
-		fields := strings.Split(cardId, "|")
+func cardID2record(cardID string) ([]string, error) {
+	if strings.Contains(cardID, "|") {
+		fields := strings.Split(cardID, "|")
 		if len(fields) != 4 {
-			return nil, fmt.Errorf("unsupported id format %s", cardId)
+			return nil, fmt.Errorf("unsupported id format %s", cardID)
 		}
 		record := []string{
-			cardId,
+			cardID,
 			fields[1],
 			fields[2],
 			fields[3],
@@ -283,7 +283,7 @@ func cardId2record(cardId string) ([]string, error) {
 		return record, nil
 	}
 
-	co, err := mtgmatcher.GetUUID(cardId)
+	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +298,7 @@ func cardId2record(cardId string) ([]string, error) {
 	}
 
 	record := []string{
-		cardId,
+		cardID,
 		co.Card.Name,
 		co.Edition,
 		finish,
@@ -328,8 +328,8 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 		return err
 	}
 
-	for cardId, entries := range inventory {
-		cardHeader, err := cardId2record(cardId)
+	for cardID, entries := range inventory {
+		cardHeader, err := cardID2record(cardID)
 		if err != nil {
 			continue
 		}
@@ -376,9 +376,9 @@ func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writ
 		return err
 	}
 
-	for cardId, entries := range buylist {
+	for cardID, entries := range buylist {
 		for _, entry := range entries {
-			record, err := cardId2record(cardId)
+			record, err := cardID2record(cardID)
 			if err != nil {
 				continue
 			}
@@ -424,7 +424,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 		bl := entry.BuylistEntry
 		inv := entry.InventoryEntry
 
-		record, err := cardId2record(entry.CardId)
+		record, err := cardID2record(entry.CardId)
 		if err != nil {
 			continue
 		}
@@ -481,7 +481,7 @@ func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 		inv := entry.InventoryEntry
 		ref := entry.ReferenceEntry
 
-		record, err := cardId2record(entry.CardId)
+		record, err := cardID2record(entry.CardId)
 		if err != nil {
 			continue
 		}
@@ -531,7 +531,7 @@ func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
 	for _, entry := range penny {
 		inv := entry.InventoryEntry
 
-		record, err := cardId2record(entry.CardId)
+		record, err := cardID2record(entry.CardId)
 		if err != nil {
 			continue
 		}

@@ -47,13 +47,13 @@ func (tcg *TCGGameIndex) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperGameIndex(game, publicId, privateId string) (*TCGGameIndex, error) {
+func NewScraperGameIndex(game, publicID, privateID string) (*TCGGameIndex, error) {
 	category, found := SupportedGames[game]
 	if !found {
 		return nil, fmt.Errorf("unsupported game %q", game)
 	}
 
-	client, err := tcgplayer.NewClient(publicId, privateId)
+	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
 			Foil:      result.SubTypeName != "Normal",
 		}
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			continue
 		} else if err != nil {
@@ -143,7 +143,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", "", isDirect)
 
 			out := genericChan{
-				key: cardId,
+				key: cardID,
 				entry: mtgban.InventoryEntry{
 					Price:      prices[i],
 					Quantity:   1,

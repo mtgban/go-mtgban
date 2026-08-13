@@ -67,8 +67,8 @@ const (
 	mcEditionBuylistURL  = "https://www.cardgamecorner.com/webapi/mclistboxes/magic/it"
 	mcAdvancedBuylistURL = "https://www.cardgamecorner.com/webapi/mcadvsearch"
 
-	mcPromoEditionId      = 1113
-	mcMerfolksVsGoblinsId = 1116
+	mcPromoEditionID      = 1113
+	mcMerfolksVsGoblinsID = 1116
 )
 
 type MCClient struct {
@@ -122,7 +122,7 @@ func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEd
 	if addPromoEd {
 		// This edition is not present in the normal callback
 		editionList = append(editionList, MCEdition{
-			Id:   mcPromoEditionId,
+			Id:   mcPromoEditionID,
 			Name: "Promo",
 		})
 	}
@@ -132,14 +132,14 @@ func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEd
 
 func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEdition) ([]MCCard, error) {
 	// This breaks on the main website too, just skip it
-	if edition.Id == mcMerfolksVsGoblinsId {
+	if edition.Id == mcMerfolksVsGoblinsID {
 		return nil, nil
 	}
 
 	// The last field before || is the language
 	// 0 - any language, 72 - english only
 	langCode := 0
-	if edition.Id == mcPromoEditionId {
+	if edition.Id == mcPromoEditionID {
 		langCode = 72
 	}
 	param := mcParam{

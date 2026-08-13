@@ -77,14 +77,14 @@ type scraperOption struct {
 // source linking the two marketplaces' ids. The cardmarket sealed scraper
 // receives it as plain data, so the composition of the two vendors happens
 // here and nowhere else.
-func cardtraderSealedBridge(gameId int) (map[int]int, error) {
+func cardtraderSealedBridge(gameID int) (map[int]int, error) {
 	ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 	if ctTokenBearer == "" {
 		return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 	}
 	client := cardtrader.NewCTAuthClient(ctTokenBearer)
 
-	blueprints, _, err := cardtrader.BlueprintsForGame(context.Background(), client, gameId, "", log.Printf)
+	blueprints, _, err := cardtrader.BlueprintsForGame(context.Background(), client, gameID, "", log.Printf)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +94,8 @@ func cardtraderSealedBridge(gameId int) (map[int]int, error) {
 		if bp.TCGplayerId == 0 {
 			continue
 		}
-		for _, mkmId := range bp.CardMarketIds {
-			bridge[mkmId] = bp.TCGplayerId
+		for _, mkmID := range bp.CardMarketIds {
+			bridge[mkmID] = bp.TCGplayerId
 		}
 	}
 	log.Printf("bridge: %d cardmarket ids linked to a tcgplayer id", len(bridge))
@@ -448,13 +448,13 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_index": {
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
 
-			scraper, err := tcgplayer.NewScraperIndex(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperIndex(tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -469,14 +469,14 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_market": {
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
-			if tcgPublicId == "" || tcgPrivateId == "" || tcgSKUPath == "" {
+			if tcgPublicID == "" || tcgPrivateID == "" || tcgSKUPath == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
 			}
 
-			scraper, err := tcgplayer.NewScraperMarket(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperMarket(tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -509,14 +509,14 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_sealed": {
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
 			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
-			if tcgPublicId == "" || tcgPrivateId == "" || tcgSKUPath == "" {
+			if tcgPublicID == "" || tcgPrivateID == "" || tcgSKUPath == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY or MTGJSON_TCGSKU_PATH env vars")
 			}
 
-			scraper, err := tcgplayer.NewScraperSealed(tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperSealed(tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -740,12 +740,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_index_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameLorcana, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameLorcana, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -759,12 +759,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_market_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGame(mtgban.GameLorcana, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGame(mtgban.GameLorcana, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -778,12 +778,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_sealed_lorcana": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameLorcana, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameLorcana, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -1031,12 +1031,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_index_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameRiftbound, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameRiftbound, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -1050,12 +1050,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_index_onepiece": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameOnePiece, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGameIndex(mtgban.GameOnePiece, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -1069,12 +1069,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_market_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGame(mtgban.GameRiftbound, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGame(mtgban.GameRiftbound, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -1088,12 +1088,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_market_onepiece": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGame(mtgban.GameOnePiece, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGame(mtgban.GameOnePiece, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -1107,12 +1107,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_sealed_riftbound": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameRiftbound, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameRiftbound, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}
@@ -1126,12 +1126,12 @@ var options = map[string]*scraperOption{
 	},
 	"tcg_sealed_onepiece": &scraperOption{
 		Init: func() (mtgban.Scraper, error) {
-			tcgPublicId := os.Getenv("TCGPLAYER_PUBLIC_KEY")
-			tcgPrivateId := os.Getenv("TCGPLAYER_PRIVATE_KEY")
-			if tcgPublicId == "" || tcgPrivateId == "" {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
 				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
 			}
-			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameOnePiece, tcgPublicId, tcgPrivateId)
+			scraper, err := tcgplayer.NewScraperGameSealed(mtgban.GameOnePiece, tcgPublicID, tcgPrivateID)
 			if err != nil {
 				return nil, err
 			}

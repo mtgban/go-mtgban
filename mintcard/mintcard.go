@@ -39,7 +39,7 @@ func (mint *MTGMintCard) printf(format string, a ...interface{}) {
 	}
 }
 
-func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionId string) {
+func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condition, finish, language, edition, setCode, editionID string) {
 	cond := map[string]string{
 		"Mint": "NM",
 		"SP":   "SP",
@@ -61,7 +61,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 		link += "&utm_source=" + url.QueryEscape(mint.Partner) + "&utm_medium=referral&utm_campaign=" + url.QueryEscape(mint.Partner)
 	}
 
-	cardId, found := sku2uuid[card.TCGplayerID]
+	cardID, found := sku2uuid[card.TCGplayerID]
 	if !found {
 		theCard, err := preprocess(card.Name, card.Number, finish, language, edition, setCode)
 		if err != nil {
@@ -71,7 +71,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			return
 		}
 
-		cardId, err = mtgmatcher.Match(theCard)
+		cardID, err = mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -112,7 +112,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 				URL:        link,
 				OriginalId: card.ID,
 			}
-			err = mint.inventory.Add(cardId, out)
+			err = mint.inventory.Add(cardID, out)
 			if err != nil {
 				mint.printf("%v", err)
 			}
@@ -130,12 +130,12 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 			priceRatio = buyPrice / sellPrice * 100
 		}
 
-		link := "https://www.mtgmintcard.com/buylist?action=advanced_search&ed=" + editionId + "&mo_1=1&mo_2=1&card_name=" + url.QueryEscape(card.Name)
+		link := "https://www.mtgmintcard.com/buylist?action=advanced_search&ed=" + editionID + "&mo_1=1&mo_2=1&card_name=" + url.QueryEscape(card.Name)
 		if mint.Partner != "" {
 			link += "&utm_source=" + url.QueryEscape(mint.Partner) + "&utm_medium=referral&utm_campaign=" + url.QueryEscape(mint.Partner)
 		}
 
-		gradeMap := grading(cardId, buyPrice)
+		gradeMap := grading(cardID, buyPrice)
 		for _, grade := range mtgban.DefaultGradeTags {
 			price := buyPrice * gradeMap[grade]
 			if price > 0 {
@@ -146,7 +146,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 					URL:        link,
 					OriginalId: card.ID,
 				}
-				err = mint.buylist.Add(cardId, out)
+				err = mint.buylist.Add(cardID, out)
 				if err != nil {
 					mint.printf("%v", err)
 				}
@@ -214,8 +214,8 @@ func (mint *MTGMintCard) Buylist() mtgban.BuylistRecord {
 	return mint.buylist
 }
 
-func grading(cardId string, price float64) map[string]float64 {
-	co, err := mtgmatcher.GetUUID(cardId)
+func grading(cardID string, price float64) map[string]float64 {
+	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
 		return nil
 	}

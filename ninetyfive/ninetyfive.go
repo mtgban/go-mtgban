@@ -100,7 +100,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 				continue
 			}
 
-			cardId, err := mtgmatcher.Match(theCard)
+			cardID, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
 				continue
 			} else if err != nil {
@@ -139,7 +139,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 					continue
 				}
 
-				err = nf.inventory.Add(cardId, &mtgban.InventoryEntry{
+				err = nf.inventory.Add(cardID, &mtgban.InventoryEntry{
 					Conditions: cond,
 					Price:      price,
 					Quantity:   quantity,
@@ -148,11 +148,11 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 					InstanceId: sku,
 				})
 			} else if mode == modeBuylist {
-				idsToAdd := []string{cardId}
+				idsToAdd := []string{cardID}
 				// Buylist for the foil version of the card is the same
-				cardFoilId, err := mtgmatcher.MatchId(cardId, true)
-				if err != nil && cardFoilId != "" && cardFoilId != cardId {
-					idsToAdd = append(idsToAdd, cardFoilId)
+				cardFoilID, err := mtgmatcher.MatchId(cardID, true)
+				if err != nil && cardFoilID != "" && cardFoilID != cardID {
+					idsToAdd = append(idsToAdd, cardFoilID)
 				}
 
 				for _, id := range idsToAdd {

@@ -51,18 +51,18 @@ func (mp *ManapoolSealed) Load(ctx context.Context) error {
 		}
 
 		for _, product := range set.SealedProduct {
-			tcgIdStr, found := product.Identifiers["tcgplayerProductId"]
+			tcgIDStr, found := product.Identifiers["tcgplayerProductId"]
 			if !found {
 				continue
 			}
 
-			tcgId, err := strconv.Atoi(tcgIdStr)
+			tcgID, err := strconv.Atoi(tcgIDStr)
 			if err != nil {
 				continue
 			}
 
 			for _, sealed := range pricelist {
-				if tcgId != sealed.TcgplayerProductID {
+				if tcgID != sealed.TcgplayerProductID {
 					continue
 				}
 

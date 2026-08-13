@@ -123,7 +123,7 @@ func (ck *CardkingdomGraded) scrapePage(session string, page int) error {
 			return
 		}
 
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -170,7 +170,7 @@ func (ck *CardkingdomGraded) scrapePage(session string, page int) error {
 			URL:        link,
 			OriginalId: id,
 		}
-		err = ck.inventory.Add(cardId, out)
+		err = ck.inventory.Add(cardID, out)
 		if err != nil {
 			ck.printf("page %d: %s", page, err.Error())
 			return

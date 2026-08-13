@@ -40,7 +40,7 @@ func NewScraper() *Trollandtoad {
 }
 
 type responseChan struct {
-	cardId   string
+	cardID   string
 	invEntry *mtgban.InventoryEntry
 	buyEntry *mtgban.BuylistEntry
 }
@@ -90,7 +90,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 		if err != nil {
 			return
 		}
-		cardId, err := mtgmatcher.Match(theCard)
+		cardID, err := mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return
 		} else if err != nil {
@@ -161,7 +161,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 			}
 
 			out := responseChan{
-				cardId: cardId,
+				cardID: cardID,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: conditions,
 					Price:      price,
@@ -191,7 +191,7 @@ func (tnt *Trollandtoad) parsePages(ctx context.Context, link string, lastPage i
 	}()
 
 	for res := range channel {
-		err := tnt.inventory.Add(res.cardId, res.invEntry)
+		err := tnt.inventory.Add(res.cardID, res.invEntry)
 		if err != nil {
 			// Too many false positives
 			//tnt.printf("%v", err)

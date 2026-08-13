@@ -71,7 +71,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 		return err
 	}
 
-	cardId, err := mtgmatcher.Match(theCard)
+	cardID, err := mtgmatcher.Match(theCard)
 	if errors.Is(err, mtgmatcher.ErrUnsupported) {
 		return nil
 	} else if err != nil {
@@ -109,7 +109,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 			priceRatio = variant.OfferPrice / product.Price * 100
 		}
 
-		err = vs.buylist.Add(cardId, &mtgban.BuylistEntry{
+		err = vs.buylist.Add(cardID, &mtgban.BuylistEntry{
 			Conditions: cond,
 			BuyPrice:   variant.OfferPrice,
 			PriceRatio: priceRatio,
@@ -133,7 +133,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 			continue
 		}
 
-		err = vs.inventory.Add(cardId, &mtgban.InventoryEntry{
+		err = vs.inventory.Add(cardID, &mtgban.InventoryEntry{
 			Conditions: cond,
 			Price:      variant.Price,
 			Quantity:   variant.InventoryQuantity,

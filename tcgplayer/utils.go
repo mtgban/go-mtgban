@@ -21,8 +21,8 @@ const (
 	PartnerProductURL = "https://partner.tcgplayer.com/c/%s/1830156/21018"
 )
 
-func GenerateProductURL(productId int, printing, affiliate, condition, language string, isDirect bool) string {
-	u, err := url.Parse(BaseProductURL + fmt.Sprint(productId))
+func GenerateProductURL(productID int, printing, affiliate, condition, language string, isDirect bool) string {
+	u, err := url.Parse(BaseProductURL + fmt.Sprint(productID))
 	if err != nil {
 		return ""
 	}
@@ -221,12 +221,12 @@ type ListingData struct {
 	Foil            bool    `json:"foil"`
 }
 
-func GetDirectQtysForProductId(ctx context.Context, productId int, onlyDirect bool) []ListingData {
+func GetDirectQtysForProductId(ctx context.Context, productID int, onlyDirect bool) []ListingData {
 	client := NewSellerClient()
 
 	var result []ListingData
 	for i := 0; ; i++ {
-		listings, err := client.InventoryListing(ctx, productId, defaultListingSize, i, onlyDirect)
+		listings, err := client.InventoryListing(ctx, productID, defaultListingSize, i, onlyDirect)
 		if err != nil || len(listings) == 0 {
 			break
 		}
@@ -237,7 +237,7 @@ func GetDirectQtysForProductId(ctx context.Context, productId int, onlyDirect bo
 			}
 
 			result = append(result, ListingData{
-				ProductId:       productId,
+				ProductId:       productID,
 				SkuId:           int(listing.ProductConditionID),
 				Quantity:        int(listing.Quantity),
 				SellerKey:       listing.SellerKey,

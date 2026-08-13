@@ -23,23 +23,23 @@ type CardtraderSealed struct {
 
 	inventoryDate time.Time
 	inventory     mtgban.InventoryRecord
-	gameId        int
+	gameID        int
 }
 
-func NewScraperSealed(gameId int, token string) (*CardtraderSealed, error) {
+func NewScraperSealed(gameID int, token string) (*CardtraderSealed, error) {
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
-	switch gameId {
+	switch gameID {
 	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
 	default:
-		return nil, fmt.Errorf("unsupported game %d", gameId)
+		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
 	ct := CardtraderSealed{}
 	ct.inventory = mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
 	ct.MaxConcurrency = 2
 	ct.client = NewCTAuthClient(token)
-	ct.gameId = gameId
+	ct.gameID = gameID
 	return &ct, nil
 }
 
@@ -49,8 +49,8 @@ func (ct *CardtraderSealed) printf(format string, a ...interface{}) {
 	}
 }
 
-func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- resultChan, expansionId int, expansionName string, productMap map[int][]string) error {
-	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionId)
+func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- resultChan, expansionID int, expansionName string, productMap map[int][]string) error {
+	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionID)
 	if err != nil {
 		return err
 	}
@@ -62,12 +62,12 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 				continue
 			}
 
-			if gameLanguage(ct.gameId, product) != "en" {
+			if gameLanguage(ct.gameID, product) != "en" {
 				continue
 			}
 
 			uuid := uuids[0]
-			if gameFoil(ct.gameId, product) && len(uuids) > 1 {
+			if gameFoil(ct.gameID, product) && len(uuids) > 1 {
 				uuid = uuids[1]
 			}
 
@@ -108,7 +108,7 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 			}
 
 			channel <- resultChan{
-				cardId: uuid,
+				cardID: uuid,
 				invEntry: &mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      price,
@@ -143,7 +143,7 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	if ct.TargetEdition != "" {
 		ct.printf("-> only targeting edition %s", ct.TargetEdition)
 	}
-	blueprintsRaw, expansionsRaw, err := BlueprintsForGame(ctx, ct.client, ct.gameId, ct.TargetEdition, ct.printf)
+	blueprintsRaw, expansionsRaw, err := BlueprintsForGame(ctx, ct.client, ct.gameID, ct.TargetEdition, ct.printf)
 	if err != nil {
 		return err
 	}
@@ -191,7 +191,7 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 		func(result resultChan) {
 			// Only keep one offer per condition
 			skip := false
-			entries := ct.inventory[result.cardId]
+			entries := ct.inventory[result.cardID]
 			for _, entry := range entries {
 				if entry.Conditions == result.invEntry.Conditions && entry.Bundle == result.invEntry.Bundle {
 					skip = true
@@ -202,7 +202,7 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 				return
 			}
 
-			err := ct.inventory.Add(result.cardId, result.invEntry)
+			err := ct.inventory.Add(result.cardID, result.invEntry)
 			if err != nil {
 				ct.printf("%s", err.Error())
 			}
@@ -222,7 +222,7 @@ func (ct *CardtraderSealed) Inventory() mtgban.InventoryRecord {
 func (tcg *CardtraderSealed) MarketNames() []string {
 	// Riftbound has no sealed 1DR listings, and an always-empty seller
 	// reads as a broken scrape downstream, failing the run.
-	if tcg.gameId == GameIdRiftbound {
+	if tcg.gameID == GameIdRiftbound {
 		return availableMarketNames[:2]
 	}
 	return availableMarketNames
@@ -247,7 +247,7 @@ func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &ct.inventoryDate
 	info.CountryFlag = "EU"
 	info.SealedMode = true
-	switch ct.gameId {
+	switch ct.gameID {
 	case GameIdMagic:
 		info.Game = mtgban.GameMagic
 	case GameIdLorcana:

@@ -32,8 +32,8 @@ func TestBackendWithoutRules(t *testing.T) {
 	// rules the promo-tag check is skipped (not a panic) and the id
 	// resolves as-is.
 	b.UUIDs = map[string]*CardObject{"12345": {Card: Card{UUID: "12345", Name: "Anything"}}}
-	cardId, err := b.Match(&InputCard{Id: "12345", Variation: "Prerelease"})
-	if err != nil || cardId != "12345" {
-		t.Errorf("Match by id = %q, %v, want 12345, nil", cardId, err)
+	cardID, err := b.Match(&InputCard{Id: "12345", Variation: "Prerelease"})
+	if err != nil || cardID != "12345" {
+		t.Errorf("Match by id = %q, %v, want 12345, nil", cardID, err)
 	}
 }

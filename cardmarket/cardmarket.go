@@ -16,8 +16,8 @@ const (
 )
 
 type responseChan struct {
-	ogId   int
-	cardId string
+	ogID   int
+	cardID string
 	entry  mtgban.InventoryEntry
 }
 
@@ -36,7 +36,7 @@ type CardMarketIndex struct {
 	priceGuide []PriceGuide
 
 	client *MKMClient
-	gameId int
+	gameID int
 }
 
 var availableIndexNames = []string{
@@ -54,12 +54,12 @@ func (mkm *CardMarketIndex) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperIndex(gameId int, appToken, appSecret string) (*CardMarketIndex, error) {
+func NewScraperIndex(gameID int, appToken, appSecret string) (*CardMarketIndex, error) {
 	mkm := CardMarketIndex{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
-	mkm.gameId = gameId
+	mkm.gameID = gameID
 	return &mkm, nil
 }
 
@@ -79,18 +79,18 @@ func (mkm *CardMarketIndex) processEdition(ctx context.Context, channel chan<- r
 }
 
 func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct) error {
-	var cardId string
-	var cardIdFoil string
+	var cardID string
+	var cardIDFoil string
 	var err error
 
-	switch mkm.gameId {
+	switch mkm.gameID {
 	case GameIdMagic:
 		// An exact mcmId match ties the product to its printings more
 		// reliably than name/number matching, which cannot tell apart
 		// products sharing a collector number (e.g. RVR 312 vs 312z,
 		// both "312" upstream); preprocess only when no id is known.
-		cardId, cardIdFoil = Fallback(product)
-		if cardId != "" {
+		cardID, cardIDFoil = Fallback(product)
+		if cardID != "" {
 			break
 		}
 
@@ -103,7 +103,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			return nil
 		}
 
-		cardId, err = mtgmatcher.Match(theCard)
+		cardID, err = mtgmatcher.Match(theCard)
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return nil
 		} else if err != nil {
@@ -128,7 +128,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			return err
 		}
 
-		cardIdFoil, _ = mtgmatcher.MatchId(cardId, true)
+		cardIDFoil, _ = mtgmatcher.MatchId(cardID, true)
 	case GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
@@ -143,7 +143,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			number = strings.TrimSpace(number + " V." + strings.TrimSuffix(fields[1], ")"))
 		}
 
-		cardId, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
+		cardID, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: false})
 		if errors.Is(err, mtgmatcher.ErrUnsupported) {
 			return nil
 		} else if err != nil && !errors.Is(err, mtgmatcher.ErrCardWrongVariant) {
@@ -164,12 +164,12 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		// A wrong-variant miss above may just mean the card has no nonfoil
 		// printing (Match validates the finish); adopt the foil id then.
 		var errFoil error
-		cardIdFoil, errFoil = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: true})
-		if cardId == "" {
-			cardId = cardIdFoil
+		cardIDFoil, errFoil = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName, Edition: product.ExpansionName, Variation: number, Foil: true})
+		if cardID == "" {
+			cardID = cardIDFoil
 		}
 
-		if cardId == "" {
+		if cardID == "" {
 			// Neither finish matched, so the miss was genuine; the foil
 			// probe's error may carry the more informative verdict
 			if errFoil != nil {
@@ -204,7 +204,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		mkm.priceGuide[index].FoilLowPrice, mkm.priceGuide[index].FoilTrendPrice,
 	}
 
-	co, err := mtgmatcher.GetUUID(cardId)
+	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
 		return err
 	}
@@ -213,7 +213,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	// if there is a foil printing, and add prices from the foilprices array.
 	// If a card is foil-only or is etched, then we just use foilprices data.
 	if !co.Foil && !co.Etched {
-		link := BuildURL(product.IdProduct, mkm.gameId, mkm.Affiliate, false)
+		link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, false)
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
@@ -221,8 +221,8 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			}
 
 			out := responseChan{
-				ogId:   product.IdProduct,
-				cardId: cardId,
+				ogID:   product.IdProduct,
+				cardID: cardID,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      prices[i] * mkm.exchangeRate,
@@ -237,19 +237,19 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 
 		if foilprices[0] != 0 || foilprices[1] != 0 {
-			link := BuildURL(product.IdProduct, mkm.gameId, mkm.Affiliate, true)
+			link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, true)
 
 			// An empty foil id means the card has no foil printing (Match
 			// errored on the foil probe), so residual foil prices in the
 			// guide have nothing to attach to
-			if cardIdFoil != "" && cardId != cardIdFoil {
+			if cardIDFoil != "" && cardID != cardIDFoil {
 				for i := range availableIndexNames {
 					if foilprices[i] == 0 {
 						continue
 					}
 					out := responseChan{
-						ogId:   product.IdProduct,
-						cardId: cardIdFoil,
+						ogID:   product.IdProduct,
+						cardID: cardIDFoil,
 						entry: mtgban.InventoryEntry{
 							Conditions: "NM",
 							Price:      foilprices[i] * mkm.exchangeRate,
@@ -265,15 +265,15 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			}
 		}
 	} else {
-		link := BuildURL(product.IdProduct, mkm.gameId, mkm.Affiliate, true)
+		link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, true)
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 || product.CountFoils == 0 {
 				continue
 			}
 			out := responseChan{
-				ogId:   product.IdProduct,
-				cardId: cardId,
+				ogID:   product.IdProduct,
+				cardID: cardID,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      foilprices[i] * mkm.exchangeRate,
@@ -298,7 +298,7 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	}
 	mkm.exchangeRate = rate
 
-	priceGuide, err := GetPriceGuide(ctx, mkm.gameId)
+	priceGuide, err := GetPriceGuide(ctx, mkm.gameID)
 	if err != nil {
 		return err
 	}
@@ -306,7 +306,7 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
-	list, err := mkm.client.Expansions(ctx, mkm.gameId)
+	list, err := mkm.client.Expansions(ctx, mkm.gameID)
 	if err != nil {
 		return err
 	}
@@ -315,7 +315,7 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	// The Japanese-program expansions are whole separate catalogs (OP01-JP
 	// beside OP01) whose prices must not land on the English printings the
 	// datastore carries.
-	if mkm.gameId == GameIdOnePiece {
+	if mkm.gameID == GameIdOnePiece {
 		kept := list[:0]
 		for _, exp := range list {
 			if strings.HasSuffix(exp.SetCode, "-JP") || strings.Contains(exp.Name, "(Japanese)") {
@@ -349,11 +349,11 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 			return nil
 		},
 		func(result responseChan) {
-			err := mkm.inventory.AddStrict(result.cardId, &result.entry)
+			err := mkm.inventory.AddStrict(result.cardID, &result.entry)
 			if err != nil {
-				card, cerr := mtgmatcher.GetUUID(result.cardId)
+				card, cerr := mtgmatcher.GetUUID(result.cardID)
 				if cerr != nil {
-					mkm.printf("%d - %s: %s", result.ogId, cerr.Error(), result.cardId)
+					mkm.printf("%d - %s: %s", result.ogID, cerr.Error(), result.cardID)
 					return
 				}
 				// Skip too many errors
@@ -362,7 +362,7 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 					strings.HasPrefix(card.Edition, "World Championship Decks") {
 					return
 				}
-				mkm.printf("%d - %s", result.ogId, err.Error())
+				mkm.printf("%d - %s", result.ogID, err.Error())
 			}
 		},
 		mkm.printf,
@@ -395,7 +395,7 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.MetadataOnly = true
 	info.Family = "MKM"
-	switch mkm.gameId {
+	switch mkm.gameID {
 	case GameIdMagic:
 		info.Game = mtgban.GameMagic
 	case GameIdLorcana:

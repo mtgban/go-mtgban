@@ -40,8 +40,8 @@ func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 	}
 }
 
-func NewScraperGeneric(publicId, privateId string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
-	client, err := tcgplayer.NewClient(publicId, privateId)
+func NewScraperGeneric(publicID, privateID string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
+	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}

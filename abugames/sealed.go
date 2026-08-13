@@ -58,7 +58,7 @@ func (abu *ABUGamesSealed) processEntry(ctx context.Context, channel chan<- resu
 	}
 
 	for _, doc := range response.Response.Docs {
-		productId, found := abu.productMap[doc.Id]
+		productID, found := abu.productMap[doc.Id]
 		if !found {
 			continue
 		}
@@ -120,7 +120,7 @@ func (abu *ABUGamesSealed) processEntry(ctx context.Context, channel chan<- resu
 
 		if invEntry != nil || buyEntry != nil {
 			channel <- resultChan{
-				cardId:     productId,
+				cardID:     productID,
 				invEntry:   invEntry,
 				buyEntry:   buyEntry,
 				tradeEntry: tradeEntry,
@@ -149,21 +149,21 @@ func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 		},
 		func(result resultChan) {
 			if result.invEntry != nil {
-				err := abu.inventory.AddRelaxed(result.cardId, result.invEntry)
+				err := abu.inventory.AddRelaxed(result.cardID, result.invEntry)
 				if err != nil {
 					abu.printf("%s", &result.theCard)
 					abu.printf("%s", err.Error())
 				}
 			}
 			if result.buyEntry != nil {
-				err := abu.buylist.AddRelaxed(result.cardId, result.buyEntry)
+				err := abu.buylist.AddRelaxed(result.cardID, result.buyEntry)
 				if err != nil {
 					abu.printf("%s", &result.theCard)
 					abu.printf("%s", err.Error())
 				}
 			}
 			if result.tradeEntry != nil {
-				err := abu.buylist.AddRelaxed(result.cardId, result.tradeEntry)
+				err := abu.buylist.AddRelaxed(result.cardID, result.tradeEntry)
 				if err != nil {
 					abu.printf("%s", &result.theCard)
 					abu.printf("%s", err.Error())
