@@ -127,12 +127,24 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	number := extractNumber(inCard.Variation)
 
 	var candidates []mtgmatcher.Card
+	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
 		if !found || co.Sealed {
 			continue
 		}
 		card := co.Card
+
+		// A dual-printing product files both its finish uuids under the
+		// name bucket; fold the foil one back onto the bare id so each
+		// candidate appears exactly once, and output() picks the finish
+		// afterwards. The base id's own underscores rule out the first-
+		// underscore cut riftbound uses, but the foil suffix is fixed.
+		base := strings.TrimSuffix(uuid, "_foil")
+		if seen[base] {
+			continue
+		}
+		seen[base] = true
 
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
