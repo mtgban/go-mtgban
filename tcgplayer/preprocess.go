@@ -47,7 +47,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 	cardName, variant := GetProductNameAndVariant(product)
 
 	number := GetProductNumber(product)
-	edition := editions[product.GroupId]
+	edition := editions[product.GroupID]
 
 	// Unsupported cards depending on their variant
 	switch cardName {
@@ -596,7 +596,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 	}
 
 	// Override any complex cases
-	ed, found := cardIds[product.ProductId]
+	ed, found := cardIds[product.ProductID]
 	if found {
 		edition = ed
 	}
@@ -612,15 +612,15 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			variant = num
 		}
 		// Decouple
-		ed, found := tokenIds[product.ProductId]
+		ed, found := tokenIds[product.ProductID]
 		if found {
 			edition = ed
 		}
 
 		if edition == "L13" {
-			if product.ProductId == 82612 {
+			if product.ProductID == 82612 {
 				variant = "4"
-			} else if product.ProductId == 78444 {
+			} else if product.ProductID == 78444 {
 				variant = "1"
 			}
 		}

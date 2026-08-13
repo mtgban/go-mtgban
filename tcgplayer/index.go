@@ -74,7 +74,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 			continue
 		}
 
-		productId := fmt.Sprint(result.ProductId)
+		productId := fmt.Sprint(result.ProductID)
 
 		uuid := ""
 		isFoil := result.SubTypeName == "Foil"
@@ -89,7 +89,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 
 		cardId, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
 		if err != nil {
-			tcg.printf("(%d / %s) - %s", result.ProductId, uuid, err)
+			tcg.printf("(%d / %s) - %s", result.ProductID, uuid, err)
 			continue
 		}
 
@@ -121,7 +121,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 			}
 
 			isDirect := availableIndexNames[i] == "TCG Direct Low"
-			link := GenerateProductURL(result.ProductId, result.SubTypeName, tcg.Affiliate, "", lang, isDirect)
+			link := GenerateProductURL(result.ProductID, result.SubTypeName, tcg.Affiliate, "", lang, isDirect)
 
 			out := responseChan{
 				cardId: cardId,
@@ -151,7 +151,7 @@ func (tcg *TCGPlayerIndex) Load(ctx context.Context) error {
 		wg.Add(1)
 		go func() {
 			dupes := map[string]struct{}{}
-			buffer := make([]indexChan, 0, tcgplayer.MaxIdsInRequest)
+			buffer := make([]indexChan, 0, tcgplayer.MaxIDsInRequest)
 
 			for page := range pages {
 				// Skip dupes

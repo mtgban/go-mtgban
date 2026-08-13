@@ -115,32 +115,32 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 	skuMap := map[int]tcgplayer.SKU{}
 	var skuIds []int
 	for _, product := range products {
-		productMap[product.ProductId] = product
+		productMap[product.ProductID] = product
 
 		for _, sku := range product.Skus {
 			if tcg.sealed {
-				if sku.ConditionId != SKUConditionUnopened {
+				if sku.ConditionID != SKUConditionUnopened {
 					continue
 				}
 			} else {
-				_, found := SKUConditionMap[sku.ConditionId]
+				_, found := SKUConditionMap[sku.ConditionID]
 				if !found {
 					continue
 				}
 			}
 			// Only English
-			if sku.LanguageId != 1 {
+			if sku.LanguageID != 1 {
 				continue
 			}
 
-			skuIds = append(skuIds, sku.SkuId)
-			skuMap[sku.SkuId] = sku
+			skuIds = append(skuIds, sku.SKUID)
+			skuMap[sku.SKUID] = sku
 		}
 	}
 
-	for i := 0; i < len(skuIds); i += tcgplayer.MaxIdsInRequest {
+	for i := 0; i < len(skuIds); i += tcgplayer.MaxIDsInRequest {
 		start := i
-		end := i + tcgplayer.MaxIdsInRequest
+		end := i + tcgplayer.MaxIDsInRequest
 		if end > len(skuIds) {
 			end = len(skuIds)
 		}
@@ -156,8 +156,8 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				continue
 			}
 
-			sku := skuMap[result.SkuId]
-			product, found := productMap[sku.ProductId]
+			sku := skuMap[result.SKUID]
+			product, found := productMap[sku.ProductID]
 			if !found {
 				continue
 			}
@@ -166,7 +166,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				// The product id is the sealed entry's whole identity;
 				// anything the map does not name is a product the
 				// datastore does not carry
-				uuids := tcg.sealedMap[sku.ProductId]
+				uuids := tcg.sealedMap[sku.ProductID]
 				if len(uuids) != 1 {
 					continue
 				}
@@ -176,9 +176,9 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 						Conditions: "NM",
 						Price:      price,
 						Quantity:   1,
-						URL:        GenerateProductURL(sku.ProductId, "", tcg.Affiliate, "", "", false),
-						OriginalId: fmt.Sprint(sku.ProductId),
-						InstanceId: fmt.Sprint(sku.SkuId),
+						URL:        GenerateProductURL(sku.ProductID, "", tcg.Affiliate, "", "", false),
+						OriginalId: fmt.Sprint(sku.ProductID),
+						InstanceId: fmt.Sprint(sku.SKUID),
 					},
 				}
 				continue
@@ -188,15 +188,15 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			number := RawProductNumber(&product)
 			// The printing name rides along in the variation so the game
 			// rules can tell foil sub-types apart (SelectFinish).
-			printing := tcg.printings[sku.PrintingId]
+			printing := tcg.printings[sku.PrintingID]
 			theCard := &mtgmatcher.InputCard{
 				// Every game datastore stamps the TCGplayer product id on
 				// the printing it names, so the id identifies the card
 				// outright; Match tries it first and falls back to the
 				// fields below whenever the datastore does not carry it.
-				Id:        fmt.Sprint(sku.ProductId),
+				Id:        fmt.Sprint(sku.ProductID),
 				Name:      cardName,
-				Edition:   tcg.editions[product.GroupId].Name,
+				Edition:   tcg.editions[product.GroupID].Name,
 				Variation: strings.TrimSpace(number + " " + printing),
 				Foil:      printing != "Normal",
 			}
@@ -206,13 +206,13 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			} else if err != nil {
 				// Name the card, not just the price row: a sku id alone
 				// says nothing about which product failed to match.
-				tcg.printf("%v for %q (product %d)", err, theCard, sku.ProductId)
+				tcg.printf("%v for %q (product %d)", err, theCard, sku.ProductID)
 				tcg.printf("%+v", result)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
 					probes := alias.Probe()
-					tcg.printf("%d %s got ids: %s", sku.ProductId, cardName, probes)
+					tcg.printf("%d %s got ids: %s", sku.ProductID, cardName, probes)
 					for _, probe := range probes {
 						co, _ := mtgmatcher.GetUUID(probe)
 						tcg.printf("%s: %s", probe, co)
@@ -221,9 +221,9 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				continue
 			}
 
-			condition := SKUConditionMap[sku.ConditionId]
+			condition := SKUConditionMap[sku.ConditionID]
 
-			link := GenerateProductURL(sku.ProductId, printing, tcg.Affiliate, condition, "", false)
+			link := GenerateProductURL(sku.ProductID, printing, tcg.Affiliate, condition, "", false)
 
 			out := genericChan{
 				key: cardId,
@@ -232,8 +232,8 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 					Price:      price,
 					Quantity:   1,
 					URL:        link,
-					OriginalId: fmt.Sprint(sku.ProductId),
-					InstanceId: fmt.Sprint(sku.SkuId),
+					OriginalId: fmt.Sprint(sku.ProductID),
+					InstanceId: fmt.Sprint(sku.SKUID),
 				},
 			}
 
@@ -258,8 +258,8 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 	}
 	tcg.printf("Found %d printings for category %d", len(printings), tcg.category)
 	for _, printing := range printings {
-		tcg.printf("%d - %s", printing.PrintingId, printing.Name)
-		tcg.printings[printing.PrintingId] = printing.Name
+		tcg.printf("%d - %s", printing.PrintingID, printing.Name)
+		tcg.printings[printing.PrintingID] = printing.Name
 	}
 
 	editions, err := EditionMap(ctx, tcg.client, tcg.category)

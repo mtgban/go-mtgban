@@ -61,7 +61,7 @@ func (tcg *TCGPlayerSealed) processEntries(ctx context.Context, channel chan<- r
 		uuid := ""
 		productId := 0
 		for _, req := range reqs {
-			if result.SkuId == req.SkuId {
+			if result.SKUID == req.SkuId {
 				uuid = req.UUID
 				productId = req.ProductId
 				break
@@ -78,7 +78,7 @@ func (tcg *TCGPlayerSealed) processEntries(ctx context.Context, channel chan<- r
 				Quantity:   1,
 				URL:        link,
 				OriginalId: fmt.Sprint(productId),
-				InstanceId: fmt.Sprint(result.SkuId),
+				InstanceId: fmt.Sprint(result.SKUID),
 			},
 		}
 
@@ -103,7 +103,7 @@ func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
 		wg.Add(1)
 		go func() {
 			idsFound := map[int]struct{}{}
-			buffer := make([]marketChan, 0, tcgplayer.MaxIdsInRequest)
+			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)
 
 			for page := range pages {
 				// Skip dupes
