@@ -30,6 +30,12 @@ var replacerStrings = []string{
 	"'", "",
 	"-", "",
 	"—", "",
+	// Storefronts typeset the hyphen a card is printed with: cardmarket
+	// sends Lorcana's "Fix-It Felix, Jr." spelled with U+2010, and its
+	// dashes with an en dash. Left standing they are one more letter, and
+	// the name matches nothing.
+	"‐", "",
+	"–", "",
 	"’", "",
 	",", "",
 	"®", "",
