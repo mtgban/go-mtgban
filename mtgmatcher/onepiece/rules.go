@@ -384,17 +384,17 @@ func canonicalEdition(b *mtgmatcher.Backend, edition, code string) string {
 	if len(want) == 0 {
 		return ""
 	}
+	// A set already naming itself needs no rewriting, and the set index
+	// answers that without scoring a single name. The code still has its
+	// say: it names the set outright when it disagrees with the wording.
 	wantCode := foldSetCode(code)
+	named, found := b.NormalizedSets[mtgmatcher.Normalize(edition)]
+	if found && (wantCode == "" || foldSetCode(named.Code) == wantCode) {
+		return ""
+	}
+
 	var best, runner, coded editionScore
 	for setCode, set := range b.Sets {
-		// A set already naming itself needs no rewriting - unless the code
-		// names another one, which is the storefront saying which member of
-		// a family it means where the wording no longer can: PRB-02's name
-		// begins with the whole of PRB-01's, so a truncating storefront
-		// spells one name and the other code.
-		if mtgmatcher.Equals(set.Name, edition) && (wantCode == "" || foldSetCode(setCode) == wantCode) {
-			return ""
-		}
 		cur := scoreEdition(want, set.Name)
 		cur.event = isEventSet(setCode)
 		if cur.shared < 2 || cur.missing > 1 || (cur.missing > 0 && cur.shared < 3) {
