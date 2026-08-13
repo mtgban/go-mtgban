@@ -156,6 +156,14 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool 
 		if !found || co.Sealed || len(co.PromoTypes) == 0 {
 			continue
 		}
+		// Only a printing of the number being asked about can say that this
+		// input wants a variant. A label another number wears - the card
+		// reprinted elsewhere under its own - would otherwise unpin the
+		// edition for an input the edition was answering perfectly, and the
+		// widened pool then hands back the base printing.
+		if number != "" && !numberMatches(number, co.Number) {
+			continue
+		}
 		if variantDescribed(wording, co.PromoTypes[0], number) {
 			return true
 		}
