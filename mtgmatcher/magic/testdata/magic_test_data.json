@@ -4951,5 +4951,22 @@
             "edition": "Secret Lair",
             "foil": true
         }
+    },
+    {
+        "uuid": "1acc5cf4-6e6f-5116-8e56-448f4e15ace8",
+        "description": "plain_listing_skips_the_foil_only_treatment_of_the_same_set",
+        "input": {
+            "name": "Valor's Flagship",
+            "edition": "Aetherdrift"
+        }
+    },
+    {
+        "error": "aliasing detected",
+        "description": "foil_listing_still_aliases_the_treatments_it_could_be",
+        "input": {
+            "name": "Valor's Flagship",
+            "edition": "Aetherdrift",
+            "foil": true
+        }
     }
 ]
