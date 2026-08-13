@@ -111,8 +111,17 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 // ("Let It Go" #163) while a missing or unrecognized edition changes nothing.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
+	// A letter hung off the end of the number may be the storefront's own
+	// promo-series marker - Strikezone numbers its promos "010B", "003C" -
+	// or the letter the data itself gives a same-numbered sibling ("4a"
+	// through "4e"). Only the number as written can tell which, so the
+	// stripped form is kept as a fallback and never as a substitute.
+	bare := strings.TrimRight(number, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	if bare == number {
+		bare = ""
+	}
 
-	var out []mtgmatcher.Card
+	var out, wrongFinish, bareOut, bareWrongFinish []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		// Foil printings (the primary "_f" and every foil sub-type suffix) are
@@ -142,17 +151,20 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
 		}
-		if number != "" && number != card.Number {
+		exact := number == "" || number == card.Number
+		if !exact && (bare == "" || bare != card.Number) {
 			continue
 		}
-		// Drop candidates that cannot satisfy the requested finish, filtering
-		// uuids by foil status. A card that has both finishes passes either
-		// way; output() picks the uuid.
-		if inCard.Foil && !card.HasFinish(mtgmatcher.FinishFoil) {
-			continue
-		}
-		if !inCard.Foil && !card.HasFinish(mtgmatcher.FinishNonfoil) {
-			continue
+		// Set aside the candidates sold in no plain finish. A card with both
+		// passes either way; output() picks the uuid.
+		finishFits := card.HasFinish(mtgmatcher.FinishNonfoil)
+		if inCard.Foil {
+			// A foil claim is a claim, and a printing sold in no foil
+			// cannot answer it: the flag stands.
+			if !card.HasFinish(mtgmatcher.FinishFoil) {
+				continue
+			}
+			finishFits = true
 		}
 		// A variation naming a foil sub-type re-keys the copy's FoilUUIDs so
 		// the flag-driven resolution downstream lands on that sub-type's uuid
@@ -165,9 +177,30 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			foilUUIDs[mtgmatcher.FinishFoil] = card.FoilUUIDs[finish]
 			card.FoilUUIDs = foilUUIDs
 		}
-		out = append(out, card)
+		switch {
+		case exact && finishFits:
+			out = append(out, card)
+		case exact:
+			wrongFinish = append(wrongFinish, card)
+		case finishFits:
+			bareOut = append(bareOut, card)
+		default:
+			bareWrongFinish = append(bareWrongFinish, card)
+		}
 	}
-	return out
+	// A feed that never says "foil" must not lose a foil-only card outright:
+	// the promotional printings are sold foil only, and a storefront listing
+	// them plain had every one of them deleted here. Saying nothing is not
+	// the same claim as saying nonfoil, which is why only this direction
+	// falls back. The number as written and the plain finish both still
+	// decide whenever they have candidates to choose between, so each
+	// fallback only ever answers where the alternative was answering nothing.
+	for _, tier := range [][]mtgmatcher.Card{out, wrongFinish, bareOut, bareWrongFinish} {
+		if len(tier) > 0 {
+			return tier
+		}
+	}
+	return nil
 }
 
 // extractNumber pulls the collector number out of the scraper-supplied

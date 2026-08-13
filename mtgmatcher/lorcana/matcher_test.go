@@ -41,6 +41,14 @@ var updateLorcana = flag.Bool("update-lorcana", false,
 // in the real datastore (checked against LorcanaJSON at authoring time).
 var lorcanaSeeds = []matchTest{
 	{
+		Desc: "foil-only promo listed without the flag",
+		In:   mtgmatcher.InputCard{Name: "A Whole New World", Variation: "010B", Edition: "Disney Lorcana Promo Cards"},
+	},
+	{
+		Desc: "the letter the data gives a sibling still selects it",
+		In:   mtgmatcher.InputCard{Name: "Dalmatian Puppy - Tail Wagger", Variation: "4c"},
+	},
+	{
 		Desc: "name typeset with a hyphen character instead of a dash",
 		In:   mtgmatcher.InputCard{Name: "Fix‐It Felix, Jr. - Delighted Sightseer", Variation: "17", Edition: "Shimmering Skies"},
 	},
@@ -96,7 +104,10 @@ var lorcanaSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ariel - On Human Legs", Variation: "99999"},
 	},
 	{
-		Desc: "negative: foil-only printing requested as nonfoil",
+		// A feed that never says "foil" is not claiming nonfoil, so a
+		// foil-only printing still answers it; the opposite direction
+		// below is a claim, and still refused.
+		Desc: "foil-only printing listed without the flag",
 		In:   mtgmatcher.InputCard{Name: "Hades - King of Olympus", Variation: "205"},
 	},
 	{
