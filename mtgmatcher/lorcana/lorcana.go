@@ -77,6 +77,11 @@ type LorcanaJSON struct {
 		ExternalLinks struct {
 			TcgPlayerId int `json:"tcgPlayerId"`
 
+			// CardmarketId and CardTraderId are read only to tell a
+			// regionally renamed repeat of a card from a card of its own.
+			CardmarketId int `json:"cardmarketId"`
+			CardTraderId int `json:"cardTraderId"`
+
 			// TcgPlayerExtraIds lists further TCGplayer products that resolve
 			// to this same printing, which upstream does not carry: TCGplayer
 			// sometimes sells a card's foil under its own product id, and a
@@ -118,6 +123,35 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	return payload.newBackend(), nil
 }
 
+// englishCards drops the entries that repeat a card already listed under
+// another name. Upstream files the regionally renamed printings twice -
+// "Vaiana - Adventurer of Land and Sea" beside "Moana - Adventurer of Land
+// and Sea" - and the two carry one set, one number and one id at every
+// storefront, so keeping both splits a single product's prices across two
+// uuids and leaves its product id claimed by two cards. Identity is the
+// storefront ids rather than the name, so a card renamed in some other
+// language folds away too; the datastore is the English program, and the
+// English name is the one upstream lists first.
+func (lj *LorcanaJSON) englishCards() []int {
+	seen := map[string]bool{}
+	var keep []int
+	for i, card := range lj.Cards {
+		el := card.ExternalLinks
+		if el.TcgPlayerId == 0 && el.CardmarketId == 0 && el.CardTraderId == 0 {
+			keep = append(keep, i)
+			continue
+		}
+		identity := fmt.Sprintf("%d|%d|%d|%s|%d",
+			el.TcgPlayerId, el.CardmarketId, el.CardTraderId, card.SetCode, card.Number)
+		if seen[identity] {
+			continue
+		}
+		seen[identity] = true
+		keep = append(keep, i)
+	}
+	return keep
+}
+
 func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
@@ -126,6 +160,8 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
 	b.SetSealedUUIDs = map[string][]string{}
+
+	cards := lj.englishCards()
 
 	// Load all sets first
 	b.Sets = map[string]*mtgmatcher.Set{}
@@ -150,7 +186,8 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	// All cards of a name share the same backing array; Printings is
 	// read-only by contract, as it always has been for Magic.
 	printingsByName := map[string][]string{}
-	for _, card := range lj.Cards {
+	for _, i := range cards {
+		card := lj.Cards[i]
 		n := mtgmatcher.Normalize(card.FullName)
 		if !slices.Contains(printingsByName[n], card.SetCode) {
 			printingsByName[n] = append(printingsByName[n], card.SetCode)
@@ -158,7 +195,8 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	}
 
 	// Load all card names
-	for _, card := range lj.Cards {
+	for _, i := range cards {
+		card := lj.Cards[i]
 		// First-seen wins: two Lorcana cards whose names differ only in case
 		// ("as"/"As") normalize equal, so last-wins would let a query for one
 		// resolve to the other. Keep the first to make the mapping stable.
@@ -191,7 +229,8 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 		}
 		claimants[pid][cardID] = true
 	}
-	for _, card := range lj.Cards {
+	for _, i := range cards {
+		card := lj.Cards[i]
 		claim(card.ExternalLinks.TcgPlayerId, card.ID)
 		for _, extra := range card.ExternalLinks.TcgPlayerExtraIds {
 			claim(extra, card.ID)
@@ -199,7 +238,8 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	}
 
 	// Load all cards and store them in their relative sets
-	for _, card := range lj.Cards {
+	for _, i := range cards {
+		card := lj.Cards[i]
 		// Normalize Lorcana's many foil-type names (Silver, Satin, Magma, …) to
 		// the matcher's finish constants: "None" is nonfoil, everything else is
 		// foil, so output() can select the right (foil) uuid downstream.
