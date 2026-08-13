@@ -302,6 +302,12 @@ var storefrontEditions = map[string]string{
 func legendName(b *mtgmatcher.Backend, name string) string {
 	champion, title, found := strings.Cut(name, " - ")
 	if !found {
+		// Cardmarket writes the champion off a comma where the rest of the
+		// feeds use a dash ("Ahri, Nine-Tailed Fox"). Only an unknown name
+		// gets here, so this cannot cut a gallery name that owns its comma.
+		champion, title, found = strings.Cut(name, ", ")
+	}
+	if !found {
 		return ""
 	}
 	if _, known := b.CanonicalNames[mtgmatcher.Normalize(title)]; known {
