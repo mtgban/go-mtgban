@@ -27,6 +27,15 @@
         "uuid": "op07-002_545780_foil"
     },
     {
+        "description": "bare number hung off the name after a dash",
+        "input": {
+            "name": "\"Buddha\" Sengoku - 077",
+            "variant": "OP16-077",
+            "edition": "OP16 - The Time Of Battle"
+        },
+        "uuid": "op16-077_696064_foil"
+    },
+    {
         "description": "bare tail number narrows within the edition",
         "input": {
             "name": "Mr.2.Bon.Kurei (Bentham)",
