@@ -9,6 +9,15 @@
         "uuid": "op07-020_552062"
     },
     {
+        "description": "a promo marker naming no set keeps the regular printing",
+        "input": {
+            "name": "Dogura",
+            "variant": "OP02-010",
+            "edition": "Promos:"
+        },
+        "uuid": "op02-010_483093"
+    },
+    {
         "description": "a set name spelled a word off still selects its set",
         "input": {
             "name": "Basil Hawkins (OP07-029)",
