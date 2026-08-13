@@ -91,6 +91,14 @@
         "error": "unknown card name"
     },
     {
+        "description": "set-qualified number refuses another set's same tail",
+        "input": {
+            "name": "Ain",
+            "variant": "OP07-002"
+        },
+        "uuid": "op07-002_545780_foil"
+    },
+    {
         "description": "storefront wording picks the variant it describes",
         "input": {
             "name": "Nami (OP01-016) (Manga)"

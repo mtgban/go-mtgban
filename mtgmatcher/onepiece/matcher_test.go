@@ -69,6 +69,10 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Monkey.D.Luffy - P-043 (Convention Promo 2024)", Edition: "Promo"},
 	},
 	{
+		Desc: "set-qualified number refuses another set's same tail",
+		In:   mtgmatcher.InputCard{Name: "Ain", Variation: "OP07-002"},
+	},
+	{
 		Desc: "negative: unknown card name",
 		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Pirate", Variation: "OP01-001"},
 	},
