@@ -129,6 +129,18 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: `"Buddha" Sengoku - 077`, Variation: "OP16-077", Edition: "OP16 - The Time Of Battle"},
 	},
 	{
+		Desc: "bare number hung off the name before a qualifier",
+		In:   mtgmatcher.InputCard{Name: "Trafalgar Law - 047 (Parallel)", Edition: "OP01 - Romance Dawn"},
+	},
+	{
+		Desc: "a qualifier carrying an ordinal does not become the number",
+		In:   mtgmatcher.InputCard{Name: "Killer - 106 (Judge Pack Vol. 5)", Edition: "One Piece Promotion Cards"},
+	},
+	{
+		Desc: "the ordinal a promo label opens with is not the number either",
+		In:   mtgmatcher.InputCard{Name: "Sanji - 013 (English Version 1st Anniversary Set)", Edition: "One Piece Promotion Cards"},
+	},
+	{
 		Desc: "negative: a vendor bucket edition selects no set",
 		In:   mtgmatcher.InputCard{Name: "Arlong (OP06-023)", Variation: "023", Edition: "One Piece Products"},
 	},
@@ -258,6 +270,22 @@ func regenerateOnepieceTestData(t *testing.T, b *mtgmatcher.Backend, tests []mat
 		t.Fatal(err)
 	}
 	t.Logf("rewrote %s with %d cases", onepieceTestData, len(tests))
+}
+
+// TestOnepieceDashTailNames pins the datastore invariant the bare-tail
+// rule rests on: no card is named with a dash and a number at the end, so
+// a tail found there is always the collector number a storefront hung off
+// the name. Two names do carry a full code of their own ("Monkey.D.Luffy
+// - OP14-34"), which is why Prefilter leaves a name that is canonical as
+// it stands alone, both before the parentheticals are split off and after.
+func TestOnepieceDashTailNames(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, name := range b.AllCanonicalNames {
+		if dashTailRe.MatchString(name) {
+			t.Errorf("card name ends in a dash number: %q", name)
+		}
+	}
 }
 
 // TestOnepieceSealed pins the sealed namespace: products load, resolve by
