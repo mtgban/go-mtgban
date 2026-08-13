@@ -97,6 +97,10 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Aladine (OP07-020)", Variation: "020", Edition: "Promos: 500 Years into the Future"},
 	},
 	{
+		Desc: "bare number hung off the name after a dash",
+		In:   mtgmatcher.InputCard{Name: `"Buddha" Sengoku - 077`, Variation: "OP16-077", Edition: "OP16 - The Time Of Battle"},
+	},
+	{
 		Desc: "negative: a vendor bucket edition selects no set",
 		In:   mtgmatcher.InputCard{Name: "Arlong (OP06-023)", Variation: "023", Edition: "One Piece Products"},
 	},

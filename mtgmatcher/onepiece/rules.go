@@ -24,6 +24,12 @@ var fullNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
 // dash ("Monkey.D.Luffy - P-043").
 var dashNumberRe = regexp.MustCompile(`\s+-\s+([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\b`)
 
+// dashTailRe matches the bare number coolstuffinc hangs off a name in
+// place of the full code ("Trafalgar Law - 008"). It only matches at the
+// end: two cards are named with a dash of their own, and no card name ends
+// in one followed by a number.
+var dashTailRe = regexp.MustCompile(`\s+-\s+([0-9]+[a-zA-Z]?)$`)
+
 // Prefilter splits the parenthetical decorations off the name before the
 // canonical-name lookup: storefronts write "Roronoa Zoro (OP01-001) (V.2)",
 // "Shanks (001) (Parallel)" and "Monkey.D.Luffy - P-043 (Convention Promo
@@ -35,6 +41,9 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 	if m := dashNumberRe.FindStringSubmatch(inCard.Name); m != nil {
 		inCard.Name = strings.Replace(inCard.Name, m[0], "", 1)
+		inCard.AddToVariant(m[1])
+	} else if m := dashTailRe.FindStringSubmatch(inCard.Name); m != nil {
+		inCard.Name = strings.TrimSuffix(inCard.Name, m[0])
 		inCard.AddToVariant(m[1])
 	}
 	if strings.Contains(inCard.Name, "(") {
