@@ -5858,6 +5858,13 @@
         "uuid": "973"
     },
     {
+        "description": "negative: a foil-only sibling does not settle an ambiguous prefix",
+        "input": {
+            "name": "Bolt"
+        },
+        "error": "unknown card name"
+    },
+    {
         "description": "negative: edition excludes the printing carrying the number",
         "input": {
             "name": "Let It Go",
@@ -6022,6 +6029,15 @@
             "foil": true
         },
         "uuid": "2432"
+    },
+    {
+        "description": "truncated name reaches a foil-only card listed without the flag",
+        "input": {
+            "name": "Hades - King of",
+            "variant": "205",
+            "edition": "The First Chapter"
+        },
+        "uuid": "205"
     },
     {
         "description": "unrecognized edition does not block a unique number",

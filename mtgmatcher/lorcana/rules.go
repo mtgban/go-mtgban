@@ -1,6 +1,7 @@
 package lorcana
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -41,29 +42,49 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 
 	number := extractNumber(inCard.Variation)
-	var match string
+	var fits, wrongFinish []string
 	for _, uuid := range uuids {
 		co, err := b.GetUUID(uuid)
 		if err != nil {
 			continue
 		}
+		// A sealed product shares the name buckets but is never the card
+		// the truncated name is reaching for.
+		if co.Sealed {
+			continue
+		}
 		if number != "" && number != co.Number {
 			continue
 		}
+		// A foil claim is a claim, and a printing sold in no foil cannot
+		// answer it: the flag stands. Saying nothing is not the same claim,
+		// so an unflagged input only sets a foil-only name aside.
 		if inCard.Foil && !co.HasFinish(mtgmatcher.FinishFoil) {
 			continue
 		}
 		if !inCard.Foil && !co.HasFinish(mtgmatcher.FinishNonfoil) {
+			if !slices.Contains(wrongFinish, co.Name) {
+				wrongFinish = append(wrongFinish, co.Name)
+			}
 			continue
 		}
-		if match != "" && match != co.Name {
-			// Different names survive the filters: genuinely ambiguous.
-			return
+		if !slices.Contains(fits, co.Name) {
+			fits = append(fits, co.Name)
 		}
-		match = co.Name
 	}
-	if match != "" {
-		inCard.Name = match
+	// The first tier holding anything decides, the shape FilterCards uses:
+	// the names set aside only ever answer where the plain finish had
+	// nothing to offer. Several names in that tier are genuinely ambiguous
+	// and stay unresolved rather than falling through to a tie broken by
+	// finish, which would answer with a name the tier itself often holds.
+	for _, tier := range [][]string{fits, wrongFinish} {
+		if len(tier) == 0 {
+			continue
+		}
+		if len(tier) == 1 {
+			inCard.Name = tier[0]
+		}
+		return
 	}
 }
 

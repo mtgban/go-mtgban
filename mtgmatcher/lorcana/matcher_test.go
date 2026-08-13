@@ -59,6 +59,20 @@ var lorcanaSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Dalmatian Puppy - Tail Wagger", Variation: "4c"},
 	},
 	{
+		// The truncated name and the missing flag at once: an enchanted
+		// printing is sold foil only, so requiring a plain finish deleted
+		// every candidate before the name could be adopted.
+		Desc: "truncated name reaches a foil-only card listed without the flag",
+		In:   mtgmatcher.InputCard{Name: "Hades - King of", Variation: "205", Edition: "The First Chapter"},
+	},
+	{
+		// "Bolt" prefixes four distinct names, one of which also has two
+		// foil-only printings: the tier set aside must not break the tie
+		// the first tier could not.
+		Desc: "negative: a foil-only sibling does not settle an ambiguous prefix",
+		In:   mtgmatcher.InputCard{Name: "Bolt"},
+	},
+	{
 		Desc: "name typeset with a hyphen character instead of a dash",
 		In:   mtgmatcher.InputCard{Name: "Fix‐It Felix, Jr. - Delighted Sightseer", Variation: "17", Edition: "Shimmering Skies"},
 	},
