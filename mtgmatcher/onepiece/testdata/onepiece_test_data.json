@@ -18,6 +18,15 @@
         "uuid": "op07-029_545812_foil"
     },
     {
+        "description": "a wording spelling no event marker keeps the base set",
+        "input": {
+            "name": "Blast Breath",
+            "variant": "ST04-016",
+            "edition": "Animal Kingdom Pirates: Starter Deck 4"
+        },
+        "uuid": "st04-016_288298"
+    },
+    {
         "description": "an edition naming neither set keeps the regular printing",
         "input": {
             "name": "Ain (OP07-002)",
@@ -25,6 +34,24 @@
             "edition": "500 Years into the Future"
         },
         "uuid": "op07-002_545780_foil"
+    },
+    {
+        "description": "an event set missing its deck ordinal still selects it",
+        "input": {
+            "name": "Usopp",
+            "variant": "ST01-002",
+            "edition": "Super Pre-Release Starter Deck: Straw Hat Crew"
+        },
+        "uuid": "st01-002_412744"
+    },
+    {
+        "description": "an event set spelled a word off selects the event printing",
+        "input": {
+            "name": "Sterry",
+            "variant": "OP07-006",
+            "edition": "500 Years into the Future Pre-Release Cards"
+        },
+        "uuid": "op07-006_552056"
     },
     {
         "description": "bare number hung off the name after a dash",
@@ -98,6 +125,16 @@
             "variant": "OP01-084"
         },
         "uuid": "op01-084_454615"
+    },
+    {
+        "description": "negative: a family name without its volume stays ambiguous",
+        "input": {
+            "name": "Roronoa Zoro",
+            "variant": "OP06-118",
+            "edition": "Premium Booster"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
     },
     {
         "description": "negative: a vendor bucket edition selects no set",
@@ -175,6 +212,24 @@
             "id": "454615"
         },
         "uuid": "op01-084_454615"
+    },
+    {
+        "description": "the set code outranks a wording naming the other volume",
+        "input": {
+            "name": "Roronoa Zoro",
+            "variant": "OP06-118",
+            "edition": "PRB-02: Premium Booster -The Best-"
+        },
+        "uuid": "op06-118_656164"
+    },
+    {
+        "description": "the set code picks the volume its family shares a name with",
+        "input": {
+            "name": "Roronoa Zoro",
+            "variant": "OP06-118",
+            "edition": "PRB-02: Premium Booster"
+        },
+        "uuid": "op06-118_656164"
     },
     {
         "description": "the set itself keeps the regular printing",

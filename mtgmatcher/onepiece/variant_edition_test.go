@@ -13,29 +13,38 @@ import (
 // alternate arts in PRB-01, the event printings in OP-PR - while
 // storefronts file all of them under the base card's set. Brannew is the
 // other half of the contract: two plain printings of one number in
-// different sets, which only the edition can tell apart.
+// different sets, which only the edition can tell apart. Blast Breath is
+// the same shape around an event set, whose name is its base set's with a
+// marker in it and whose printings wear no label at all.
 const variantFixture = `{
 	"game": "onepiece",
 	"sets": {
-		"OP01":   {"name": "Romance Dawn", "releaseDate": "2022-12-02"},
-		"OP03":   {"name": "Pillars of Strength", "releaseDate": "2023-06-30"},
-		"ST-19":  {"name": "Smoker", "releaseDate": "2024-03-08"},
-		"OP-PR":  {"name": "One Piece Promotion Cards", "releaseDate": "2022-12-02"},
-		"PRB-01": {"name": "Premium Booster -The Best-", "releaseDate": "2024-08-30"},
-		"EB-01":  {"name": "Extra Booster: Memorial Collection", "releaseDate": "2024-05-31"},
-		"OP07":   {"name": "500 Years in the Future", "releaseDate": "2024-06-28"},
-		"ST-24":  {"name": "Starter Deck 24: GREEN Jewelry Bonney", "releaseDate": "2024-11-01"},
-		"PRB-02": {"name": "Premium Booster -The Best- Vol. 2", "releaseDate": "2025-08-01"}
+		"OP01":      {"name": "Romance Dawn", "releaseDate": "2022-12-02"},
+		"OP03":      {"name": "Pillars of Strength", "releaseDate": "2023-06-30"},
+		"ST-19":     {"name": "Smoker", "releaseDate": "2024-03-08"},
+		"OP-PR":     {"name": "One Piece Promotion Cards", "releaseDate": "2022-12-02"},
+		"PRB-01":    {"name": "Premium Booster -The Best-", "releaseDate": "2024-08-30"},
+		"EB-01":     {"name": "Extra Booster: Memorial Collection", "releaseDate": "2024-05-31"},
+		"OP07":      {"name": "500 Years in the Future", "releaseDate": "2024-06-28"},
+		"ST-24":     {"name": "Starter Deck 24: GREEN Jewelry Bonney", "releaseDate": "2024-11-01"},
+		"PRB-02":    {"name": "Premium Booster -The Best- Vol. 2", "releaseDate": "2025-08-01"},
+		"ST-04":     {"name": "Starter Deck 4: Animal Kingdom Pirates", "releaseDate": "2023-02-24"},
+		"ST-04 PRE": {"name": "Super Pre-Release Starter Deck 4: Animal Kingdom Pirates", "releaseDate": "2023-02-10"},
+		"OP-RP":     {"name": "Revision Pack Cards", "releaseDate": "2024-09-13"}
 	},
 	"cards": [
 		{"id": "op01-016_base", "name": "Nami", "number": "OP01-016", "setCode": "OP01", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op01-016_manga", "name": "Nami", "number": "OP01-016", "setCode": "PRB-01", "rarity": "C", "finish": "Normal", "variant": "Manga", "image": "x"},
+		{"id": "op01-016_prb2", "name": "Nami", "number": "OP01-016", "setCode": "PRB-02", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
 		{"id": "op01-084_base", "name": "Mr.2.Bon.Kurei (Bentham)", "number": "OP01-084", "setCode": "OP01", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op01-084_promo", "name": "Mr.2.Bon.Kurei (Bentham)", "number": "OP01-084", "setCode": "OP-PR", "rarity": "P", "finish": "Normal", "variant": "Store Championship Participation Pack Vol. 2", "image": "x"},
 		{"id": "op03-089_base", "name": "Brannew", "number": "OP03-089", "setCode": "OP03", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op03-089_deck", "name": "Brannew", "number": "OP03-089", "setCode": "ST-19", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "eb01-012_base", "name": "Cavendish", "number": "EB01-012", "setCode": "EB-01", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "eb01-012_promo", "name": "Cavendish", "number": "EB01-012", "setCode": "OP-PR", "rarity": "P", "finish": "Normal", "variant": "Treasure Cup 2024", "image": "x"},
+		{"id": "st04-016_base", "name": "Blast Breath", "number": "ST04-016", "setCode": "ST-04", "rarity": "C", "finish": "Normal", "image": "x"},
+		{"id": "st04-016_pre", "name": "Blast Breath", "number": "ST04-016", "setCode": "ST-04 PRE", "rarity": "C", "finish": "Normal", "image": "x"},
+		{"id": "st04-016_rp", "name": "Blast Breath", "number": "ST04-016", "setCode": "OP-RP", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op07-031_base", "name": "Bartolomeo", "number": "OP07-031", "setCode": "OP07", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "op07-031_st", "name": "Bartolomeo", "number": "OP07-031", "setCode": "ST-24", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
 		{"id": "op07-031_prb", "name": "Bartolomeo", "number": "OP07-031", "setCode": "PRB-02", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"}
@@ -49,6 +58,97 @@ func variantBackend(t *testing.T) *mtgmatcher.Backend {
 		t.Fatal(err)
 	}
 	return b
+}
+
+// TestEditionNamesOneSet pins the snapping of a storefront's spelling onto
+// a set name: a family whose members share their wording is told apart by
+// the set code the storefront wore in front of it, and by nothing else.
+func TestEditionNamesOneSet(t *testing.T) {
+	b := variantBackend(t)
+
+	tests := []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+		err  bool
+	}{
+		{
+			desc: "the set code picks the family member the wording shares",
+			in:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016", Edition: "PRB-02: Premium Booster"},
+			want: "op01-016_prb2",
+		},
+		{
+			desc: "the other volume resolves through its own set code",
+			in:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016", Edition: "PRB-01: Premium Booster"},
+			want: "op01-016_manga",
+		},
+		{
+			// A wording that lands on a set name exactly needs no rewriting
+			// and gets none - unless the code names a different one, which a
+			// storefront truncating "Premium Booster -The Best- Vol. 2" down
+			// to the name of PRB-01 does on every listing it files.
+			desc: "the set code outranks a wording naming the other volume",
+			in:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016", Edition: "PRB-02: Premium Booster -The Best-"},
+			want: "op01-016_prb2",
+		},
+		{
+			// Both volumes account for the wording in full, so the shortest
+			// name is not an answer: without the code the listing says
+			// nothing about which volume it is filed in.
+			desc: "negative: a family name without a volume stays ambiguous",
+			in:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016", Edition: "Premium Booster"},
+			err:  true,
+		},
+		{
+			desc: "a set name spelled a word off still selects its set",
+			in:   mtgmatcher.InputCard{Name: "Bartolomeo", Variation: "OP07-031", Edition: "500 Years into the Future"},
+			want: "op07-031_base",
+		},
+		{
+			// Two words in common is what a vendor bucket lands on by
+			// coincidence, one word from each of two sets, and answering it
+			// with either would price a whole shelf as one card.
+			desc: "negative: a two-word vendor bucket selects no set",
+			in:   mtgmatcher.InputCard{Name: "Brannew", Variation: "OP03-089", Edition: "Premium Cards"},
+			err:  true,
+		},
+		{
+			// The event set spells its base set's whole name plus a marker,
+			// so a wording spelling the marker too accounts for it in full
+			// while leaving the base set three words short.
+			desc: "an event set spelled a word off selects the event printing",
+			in:   mtgmatcher.InputCard{Name: "Blast Breath", Variation: "ST04-016", Edition: "Super Pre-Release Starter Deck: Animal Kingdom Pirates"},
+			want: "st04-016_pre",
+		},
+		{
+			// Spell the base set's words alone and the two are described
+			// exactly as well: the marker went unwritten, which is the
+			// storefront saying it stocks the ordinary printing.
+			desc: "a wording spelling no marker keeps the base set",
+			in:   mtgmatcher.InputCard{Name: "Blast Breath", Variation: "ST04-016", Edition: "Animal Kingdom Pirates: Starter Deck 4"},
+			want: "st04-016_base",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			in := test.in
+			uuid, err := b.Match(&in)
+			if test.err {
+				if err == nil {
+					t.Fatalf("Match = %q, want an error", uuid)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Match = %v, want %q", err, test.want)
+			}
+			if uuid != test.want {
+				co, _ := b.GetUUID(uuid)
+				t.Errorf("Match = %q (%v), want %q", uuid, co, test.want)
+			}
+		})
+	}
 }
 
 // TestEditionKeepsVariantPrintings pins the interaction between the
