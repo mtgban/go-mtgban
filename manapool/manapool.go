@@ -30,6 +30,30 @@ func (mp *Manapool) printf(format string, a ...interface{}) {
 	}
 }
 
+// isUnindexed reports whether the backend was never meant to know this card,
+// so that failing to match its id is expected and not worth reporting. Whole
+// editions are dropped when the datastore is built (oversize, minigames,
+// front cards, playtest, token-only sets), and tokens are never indexed even
+// in the editions that are kept.
+func isUnindexed(card Product) bool {
+	_, err := mtgmatcher.GetSet(card.SetCode)
+	if err != nil || mtgmatcher.IsToken(card.Name) {
+		return true
+	}
+
+	// Double-faced tokens are named after both of their faces
+	faces := strings.Split(card.Name, " // ")
+	if len(faces) < 2 {
+		return false
+	}
+	for _, face := range faces {
+		if !mtgmatcher.IsToken(face) {
+			return false
+		}
+	}
+	return true
+}
+
 func (mp *Manapool) Load(ctx context.Context) error {
 	pricelist, err := GetPriceList(ctx)
 	if err != nil {
@@ -41,11 +65,7 @@ func (mp *Manapool) Load(ctx context.Context) error {
 	for _, card := range pricelist {
 		cardId, err := mtgmatcher.MatchId(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
 		if err != nil {
-			// Skip errors for unsupported cards (tokens, art cards, front cards)
-			if !mtgmatcher.IsToken(card.Name) &&
-				!strings.HasPrefix(card.SetCode, "T") &&
-				!strings.HasPrefix(card.SetCode, "A") &&
-				!strings.HasPrefix(card.SetCode, "F") {
+			if !isUnindexed(card) {
 				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)
 			}
 			continue
