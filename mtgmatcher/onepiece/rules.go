@@ -330,14 +330,27 @@ func numberMatches(input, full string) bool {
 	if strings.EqualFold(input, full) {
 		return true
 	}
-	tail := full
-	if idx := strings.LastIndexByte(full, '-'); idx >= 0 {
-		tail = full[idx+1:]
+	inSet, inTail := splitNumber(input)
+	fullSet, fullTail := splitNumber(full)
+	// An input spelling its own set code has already named which printing's
+	// number it is, and only that code may answer it: dropping to the tail
+	// alone would let "OP07-002" take every card numbered -002 in the game,
+	// aliasing a set's card against its every same-numbered reprint. A bare
+	// input carries no code to disagree with, so it still matches on the
+	// tail: that is the whole identification cardmarket's number field has.
+	if inSet != "" && !strings.EqualFold(inSet, fullSet) {
+		return false
 	}
-	if idx := strings.LastIndexByte(input, '-'); idx >= 0 {
-		input = input[idx+1:]
+	return inTail != "" && canonicalTail(inTail) == canonicalTail(fullTail)
+}
+
+// splitNumber cuts a collector number into its set code and numeric tail,
+// a number without a code being all tail.
+func splitNumber(number string) (set, tail string) {
+	if idx := strings.LastIndexByte(number, '-'); idx >= 0 {
+		return number[:idx], number[idx+1:]
 	}
-	return input != "" && canonicalTail(input) == canonicalTail(tail)
+	return "", number
 }
 
 // canonicalTail strips leading zeros from a bare number, an all-zero run
