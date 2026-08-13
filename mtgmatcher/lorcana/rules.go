@@ -88,8 +88,22 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	return editions
 }
 
+// IsUnsupported drops the non-card products TCGplayer files under its "Cards"
+// product type, so they are skipped instead of reported as unknown names: the
+// puzzle-piece inserts bundled with booster displays (sold per piece and as
+// whole sets) and the multi-card promo lots. No Lorcana card carries either
+// wording and none ever will, since neither is a card.
+//
+// Both tests are literal and read the name alone. Normalize erases every "s",
+// which turns the lots' "Set of" into "etof" — a substring of "The Queen -
+// Cruelest of All" and four more real names — so the normalized Contains is
+// too lossy here. And the promotion behind the lot also names a real card's
+// variant, "Mickey Mouse - True Friend (Disney Cruise Promo)", which the
+// prefilter leaves in the variation: anchoring at the start of the name keeps
+// the rule off every listing that merely mentions the promotion.
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
+	return strings.Contains(inCard.Name, "Puzzle Insert") ||
+		strings.HasPrefix(inCard.Name, "Disney Cruise Promos")
 }
 
 func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
