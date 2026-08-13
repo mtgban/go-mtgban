@@ -277,7 +277,12 @@ func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards 
 	// datastore calls "Pillars of Strength Pre-Release Cards". Neither name
 	// contains the other, so the marker has to be read as the selection it
 	// is or the whole promo line prices as the base commons.
-	if base := promoLineRe.ReplaceAllString(inCard.Edition, ""); base != inCard.Edition {
+	// A marker with nothing behind it - a bare "Promos:" bucket - names no
+	// set, and every set name contains the empty string: reading it as a
+	// selection would hand back the event printing of whatever card it
+	// decorated. Only a line naming a set selects one.
+	base := promoLineRe.ReplaceAllString(inCard.Edition, "")
+	if base != "" && base != inCard.Edition {
 		var event []mtgmatcher.Card
 		for _, card := range cards {
 			set, found := b.Sets[card.SetCode]

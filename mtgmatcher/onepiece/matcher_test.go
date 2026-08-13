@@ -77,6 +77,10 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Adio (OP03-002)", Variation: "002", Edition: "Promos: Pillars of Strength"},
 	},
 	{
+		Desc: "a promo marker naming no set keeps the regular printing",
+		In:   mtgmatcher.InputCard{Name: "Dogura", Variation: "OP02-010", Edition: "Promos:"},
+	},
+	{
 		Desc: "the set itself keeps the regular printing",
 		In:   mtgmatcher.InputCard{Name: "Adio (OP03-002)", Variation: "002", Edition: "Pillars of Strength"},
 	},
