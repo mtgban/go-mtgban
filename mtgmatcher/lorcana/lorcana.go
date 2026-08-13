@@ -176,6 +176,28 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	sort.Strings(b.AllCanonicalNames)
 	sort.Strings(b.AllLowerNames)
 
+	// A product id two different cards both claim names neither of them, so
+	// it goes unregistered and a caller sending it falls back to the name it
+	// also sent. Mains and extras are counted in one pass: an extra is
+	// registered first-wins while a main overwrites, so a main equal to
+	// another card's extra would otherwise take it silently.
+	claimants := map[int]map[int]bool{}
+	claim := func(pid, cardID int) {
+		if pid == 0 {
+			return
+		}
+		if claimants[pid] == nil {
+			claimants[pid] = map[int]bool{}
+		}
+		claimants[pid][cardID] = true
+	}
+	for _, card := range lj.Cards {
+		claim(card.ExternalLinks.TcgPlayerId, card.ID)
+		for _, extra := range card.ExternalLinks.TcgPlayerExtraIds {
+			claim(extra, card.ID)
+		}
+	}
+
 	// Load all cards and store them in their relative sets
 	for _, card := range lj.Cards {
 		// Normalize Lorcana's many foil-type names (Silver, Satin, Magma, …) to
@@ -291,7 +313,9 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 			convertedCard.Identifiers = map[string]string{
 				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerId),
 			}
-			b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
+			if len(claimants[card.ExternalLinks.TcgPlayerId]) == 1 {
+				b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
+			}
 		}
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
@@ -304,6 +328,9 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 				continue
 			}
 			if _, found := b.ExternalIdentifiers[fmt.Sprint(extra)]; found {
+				continue
+			}
+			if len(claimants[extra]) != 1 {
 				continue
 			}
 			b.ExternalIdentifiers[fmt.Sprint(extra)] = convertedCard.UUID

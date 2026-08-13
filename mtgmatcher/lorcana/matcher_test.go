@@ -41,6 +41,16 @@ var updateLorcana = flag.Bool("update-lorcana", false,
 // in the real datastore (checked against LorcanaJSON at authoring time).
 var lorcanaSeeds = []matchTest{
 	{
+		// TCGplayer prices this printing as three skus; the product id
+		// names the printing, so the sub-type has to come from the wording.
+		Desc: "product id still lets the wording pick the foil sub-type",
+		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
+	},
+	{
+		Desc: "product id two cards claim falls back to the name",
+		In:   mtgmatcher.InputCard{Id: "544501", Name: "Let It Go (Disney Lorcana Challenge Top 128)", Edition: "Disney Lorcana Promo Cards", Variation: "2 Holofoil", Foil: true},
+	},
+	{
 		Desc: "foil-only promo listed without the flag",
 		In:   mtgmatcher.InputCard{Name: "A Whole New World", Variation: "010B", Edition: "Disney Lorcana Promo Cards"},
 	},
