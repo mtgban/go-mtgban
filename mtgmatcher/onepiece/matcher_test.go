@@ -73,6 +73,18 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ain", Variation: "OP07-002"},
 	},
 	{
+		Desc: "promo line names the set's event printings",
+		In:   mtgmatcher.InputCard{Name: "Adio (OP03-002)", Variation: "002", Edition: "Promos: Pillars of Strength"},
+	},
+	{
+		Desc: "the set itself keeps the regular printing",
+		In:   mtgmatcher.InputCard{Name: "Adio (OP03-002)", Variation: "002", Edition: "Pillars of Strength"},
+	},
+	{
+		Desc: "an edition naming neither set keeps the regular printing",
+		In:   mtgmatcher.InputCard{Name: "Ain (OP07-002)", Variation: "002", Edition: "500 Years into the Future"},
+	},
+	{
 		Desc: "negative: unknown card name",
 		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Pirate", Variation: "OP01-001"},
 	},

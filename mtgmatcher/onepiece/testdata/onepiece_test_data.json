@@ -1,5 +1,14 @@
 [
     {
+        "description": "an edition naming neither set keeps the regular printing",
+        "input": {
+            "name": "Ain (OP07-002)",
+            "variant": "002",
+            "edition": "500 Years into the Future"
+        },
+        "uuid": "op07-002_545780_foil"
+    },
+    {
         "description": "bare tail number narrows within the edition",
         "input": {
             "name": "Mr.2.Bon.Kurei (Bentham)",
@@ -91,6 +100,15 @@
         "error": "unknown card name"
     },
     {
+        "description": "promo line names the set's event printings",
+        "input": {
+            "name": "Adio (OP03-002)",
+            "variant": "002",
+            "edition": "Promos: Pillars of Strength"
+        },
+        "uuid": "op03-002_501695"
+    },
+    {
         "description": "set-qualified number refuses another set's same tail",
         "input": {
             "name": "Ain",
@@ -111,5 +129,14 @@
             "id": "454615"
         },
         "uuid": "op01-084_454615"
+    },
+    {
+        "description": "the set itself keeps the regular printing",
+        "input": {
+            "name": "Adio (OP03-002)",
+            "variant": "002",
+            "edition": "Pillars of Strength"
+        },
+        "uuid": "op03-002_499880"
     }
 ]
