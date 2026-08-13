@@ -85,6 +85,22 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ain (OP07-002)", Variation: "002", Edition: "500 Years into the Future"},
 	},
 	{
+		Desc: "storefront drops the deck ordinal out of the set name",
+		In:   mtgmatcher.InputCard{Name: "Blast Breath (ST04-016)", Variation: "016", Edition: "Starter Deck: Animal Kingdom Pirates"},
+	},
+	{
+		Desc: "a set name spelled a word off still selects its set",
+		In:   mtgmatcher.InputCard{Name: "Basil Hawkins (OP07-029)", Variation: "029", Edition: "500 Years into the Future"},
+	},
+	{
+		Desc: "a promo line spelled a word off still selects the event set",
+		In:   mtgmatcher.InputCard{Name: "Aladine (OP07-020)", Variation: "020", Edition: "Promos: 500 Years into the Future"},
+	},
+	{
+		Desc: "negative: a vendor bucket edition selects no set",
+		In:   mtgmatcher.InputCard{Name: "Arlong (OP06-023)", Variation: "023", Edition: "One Piece Products"},
+	},
+	{
 		Desc: "negative: unknown card name",
 		In:   mtgmatcher.InputCard{Name: "Nonexistent Imaginary Pirate", Variation: "OP01-001"},
 	},

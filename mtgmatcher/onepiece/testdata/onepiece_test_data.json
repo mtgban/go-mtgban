@@ -1,5 +1,23 @@
 [
     {
+        "description": "a promo line spelled a word off still selects the event set",
+        "input": {
+            "name": "Aladine (OP07-020)",
+            "variant": "020",
+            "edition": "Promos: 500 Years into the Future"
+        },
+        "uuid": "op07-020_552062"
+    },
+    {
+        "description": "a set name spelled a word off still selects its set",
+        "input": {
+            "name": "Basil Hawkins (OP07-029)",
+            "variant": "029",
+            "edition": "500 Years into the Future"
+        },
+        "uuid": "op07-029_545812_foil"
+    },
+    {
         "description": "an edition naming neither set keeps the regular printing",
         "input": {
             "name": "Ain (OP07-002)",
@@ -73,6 +91,16 @@
         "uuid": "op01-084_454615"
     },
     {
+        "description": "negative: a vendor bucket edition selects no set",
+        "input": {
+            "name": "Arlong (OP06-023)",
+            "variant": "023",
+            "edition": "One Piece Products"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
+    },
+    {
         "description": "negative: known name with wrong collector number",
         "input": {
             "name": "Roronoa Zoro",
@@ -115,6 +143,15 @@
             "variant": "OP07-002"
         },
         "uuid": "op07-002_545780_foil"
+    },
+    {
+        "description": "storefront drops the deck ordinal out of the set name",
+        "input": {
+            "name": "Blast Breath (ST04-016)",
+            "variant": "016",
+            "edition": "Starter Deck: Animal Kingdom Pirates"
+        },
+        "uuid": "st04-016_288298"
     },
     {
         "description": "storefront wording picks the variant it describes",

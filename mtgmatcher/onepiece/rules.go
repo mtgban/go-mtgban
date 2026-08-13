@@ -3,6 +3,7 @@ package onepiece
 import (
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -107,6 +108,18 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	}
 	edition = setCodePrefixRe.ReplaceAllString(edition, "")
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
+
+	// Storefronts spell a set's name their own way - dropping the ordinal
+	// out of "Starter Deck 1: Straw Hat Crew", writing "500 Years into the
+	// Future" for the set called "500 Years in the Future" - and a name
+	// that is neither equal to nor contained in the datastore's selects
+	// nothing at all. Snap it back to the set it describes when one set
+	// describes it better than every other, keeping any promo line in
+	// front so the event printings are still the ones being named.
+	prefix := promoLineRe.FindString(edition)
+	if canon := canonicalEdition(b, edition[len(prefix):]); canon != "" {
+		edition = prefix + canon
+	}
 	inCard.Edition = edition
 
 	// PromoWildcard is the flag Match already reads to skip edition
@@ -298,6 +311,89 @@ func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards 
 // promoLineRe matches the promo-line prefix a storefront hangs a set name
 // off to name that set's event printings.
 var promoLineRe = regexp.MustCompile(`(?i)^promos?\s*[:-]\s*`)
+
+// canonicalEdition returns the name of the one set an edition describes
+// better than every other, or "" when the wording picks no clear winner.
+// A set already naming itself needs no rewriting.
+//
+// The wording has to leave nothing of the set name unaccounted for, or
+// share three words with it when it does: two words in common is the
+// coincidence a vendor bucket like "One Piece Products" lands on, and
+// answering that with a set would price a whole shelf as one card.
+func canonicalEdition(b *mtgmatcher.Backend, edition string) string {
+	want := editionTokens(edition)
+	if len(want) == 0 {
+		return ""
+	}
+	var best, runner editionScore
+	for _, set := range b.Sets {
+		if mtgmatcher.Equals(set.Name, edition) {
+			return ""
+		}
+		cur := scoreEdition(want, set.Name)
+		if cur.shared < 2 || cur.missing > 1 || (cur.missing > 0 && cur.shared < 3) {
+			continue
+		}
+		if best.name == "" || cur.beats(best) {
+			runner, best = best, cur
+		} else if runner.name == "" || cur.beats(runner) {
+			runner = cur
+		}
+	}
+	if best.name == "" || (runner.name != "" && !best.beats(runner)) {
+		return ""
+	}
+	return best.name
+}
+
+// editionScore counts how much of a set name an edition accounts for:
+// the words the two share, the ones the edition spells that the set name
+// does not, and the ones the set name carries that the edition left out.
+type editionScore struct {
+	name                   string
+	shared, missing, extra int
+}
+
+func scoreEdition(want map[string]bool, name string) editionScore {
+	have := editionTokens(name)
+	cur := editionScore{name: name}
+	for token := range want {
+		if have[token] {
+			cur.shared++
+		} else {
+			cur.missing++
+		}
+	}
+	for token := range have {
+		if !want[token] {
+			cur.extra++
+		}
+	}
+	return cur
+}
+
+func (s editionScore) beats(other editionScore) bool {
+	if s.shared != other.shared {
+		return s.shared > other.shared
+	}
+	if s.missing != other.missing {
+		return s.missing < other.missing
+	}
+	return s.extra < other.extra
+}
+
+// editionTokens splits a set name into the words that carry its identity.
+// Normalize is no help here: it drops the spaces the words are counted by.
+func editionTokens(edition string) map[string]bool {
+	out := map[string]bool{}
+	fields := strings.FieldsFunc(strings.ToLower(edition), func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+	for _, field := range fields {
+		out[field] = true
+	}
+	return out
+}
 
 // isEventSet reports whether a set code files the event printings of
 // another set's cards. The datastore spells them as the base code with a
