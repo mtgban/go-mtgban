@@ -237,14 +237,6 @@
         "uuid": "2132"
     },
     {
-        "description": "Ariel - Singing Mermaid #3",
-        "input": {
-            "name": "Ariel - Singing Mermaid",
-            "variant": "3"
-        },
-        "uuid": "694"
-    },
-    {
         "description": "Ariel - Singing Mermaid #15 cold foil printing name",
         "input": {
             "name": "Ariel - Singing Mermaid",
@@ -270,6 +262,14 @@
             "foil": true
         },
         "uuid": "1951_rainbowpillars"
+    },
+    {
+        "description": "Ariel - Singing Mermaid #3",
+        "input": {
+            "name": "Ariel - Singing Mermaid",
+            "variant": "3"
+        },
+        "uuid": "694"
     },
     {
         "description": "Ariel - Spectacular Singer #2 foil",
@@ -1937,9 +1937,9 @@
         "uuid": "27"
     },
     {
-        "description": "Hamish, Hubert & Harris - Troublemaking Triplets #70",
+        "description": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets #70",
         "input": {
-            "name": "Hamish, Hubert & Harris - Troublemaking Triplets",
+            "name": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets",
             "variant": "70"
         },
         "uuid": "2785"
@@ -4963,9 +4963,9 @@
         "uuid": "2204"
     },
     {
-        "description": "Te K\u0101 - Lava Monster #58",
+        "description": "Te Kā - Lava Monster #58",
         "input": {
-            "name": "Te K\u0101 - Lava Monster",
+            "name": "Te Kā - Lava Monster",
             "variant": "58"
         },
         "uuid": "1491"
@@ -5404,9 +5404,9 @@
         "uuid": "2065"
     },
     {
-        "description": "Tweedledee & Tweedledum - Strange Storytellers #103",
+        "description": "Tweedledee \u0026 Tweedledum - Strange Storytellers #103",
         "input": {
-            "name": "Tweedledee & Tweedledum - Strange Storytellers",
+            "name": "Tweedledee \u0026 Tweedledum - Strange Storytellers",
             "variant": "103"
         },
         "uuid": "1536"
@@ -5832,6 +5832,14 @@
         "uuid": "2626"
     },
     {
+        "description": "foil-only printing listed without the flag",
+        "input": {
+            "name": "Hades - King of Olympus",
+            "variant": "205"
+        },
+        "uuid": "205"
+    },
+    {
         "description": "foil-only promo listed without the flag",
         "input": {
             "name": "A Whole New World",
@@ -5839,14 +5847,6 @@
             "edition": "Disney Lorcana Promo Cards"
         },
         "uuid": "1199"
-    },
-    {
-        "description": "the letter the data gives a sibling still selects it",
-        "input": {
-            "name": "Dalmatian Puppy - Tail Wagger",
-            "variant": "4c"
-        },
-        "uuid": "438"
     },
     {
         "description": "name typeset with a hyphen character instead of a dash",
@@ -5867,20 +5867,21 @@
         "error": "unknown variant"
     },
     {
-        "description": "foil-only printing listed without the flag",
-        "input": {
-            "name": "Hades - King of Olympus",
-            "variant": "205"
-        },
-        "uuid": "205"
-    },
-    {
         "description": "negative: known name with wrong collector number",
         "input": {
             "name": "Ariel - On Human Legs",
             "variant": "99999"
         },
         "error": "unknown variant"
+    },
+    {
+        "description": "negative: multi-card promo lot is not a card",
+        "input": {
+            "name": "Disney Cruise Promos (Set of 5)",
+            "variant": "Normal",
+            "edition": "Disney Lorcana Promo Cards"
+        },
+        "error": "unsupported"
     },
     {
         "description": "negative: nonfoil-only printing requested as foil",
@@ -5899,6 +5900,24 @@
         "error": "aliasing detected"
     },
     {
+        "description": "negative: puzzle insert lot named after a card is not a card",
+        "input": {
+            "name": "Mickey Mouse - Brave Little Tailor Puzzle Insert (Set of 4)",
+            "variant": "Normal",
+            "edition": "The First Chapter"
+        },
+        "error": "unsupported"
+    },
+    {
+        "description": "negative: puzzle insert piece is not a card",
+        "input": {
+            "name": "Azurite Sea Puzzle Insert (Top Left)",
+            "variant": "Normal",
+            "edition": "Azurite Sea"
+        },
+        "error": "unsupported"
+    },
+    {
         "description": "negative: same name and number across sets aliases",
         "input": {
             "name": "Let It Go",
@@ -5913,65 +5932,6 @@
             "variant": "77777"
         },
         "error": "unknown variant"
-    },
-    {
-        "description": "negative: multi-card promo lot is not a card",
-        "input": {
-                "name": "Disney Cruise Promos (Set of 5)",
-                "variant": "Normal",
-                "edition": "Disney Lorcana Promo Cards"
-        },
-        "error": "unsupported"
-    },
-    {
-        "description": "negative: puzzle insert lot named after a card is not a card",
-        "input": {
-                "name": "Mickey Mouse - Brave Little Tailor Puzzle Insert (Set of 4)",
-                "variant": "Normal",
-                "edition": "The First Chapter"
-        },
-        "error": "unsupported"
-    },
-    {
-        "description": "negative: puzzle insert piece is not a card",
-        "input": {
-                "name": "Azurite Sea Puzzle Insert (Top Left)",
-                "variant": "Normal",
-                "edition": "Azurite Sea"
-        },
-        "error": "unsupported"
-    },
-    {
-        "description": "the promotion behind the lot still names a real card",
-        "input": {
-                "name": "Mickey Mouse - True Friend (Disney Cruise Promo)",
-                "variant": "10 Holofoil",
-                "edition": "Disney Lorcana Promo Cards",
-                "foil": true
-        },
-        "uuid": "2432"
-    },
-    {
-        "description": "product id still lets the wording pick the foil sub-type",
-        "input": {
-                "id": "647652",
-                "name": "Ariel - Singing Mermaid",
-                "variant": "15/204 Holofoil",
-                "edition": "Fabled",
-                "foil": true
-        },
-        "uuid": "1951_rainbowpillars"
-    },
-    {
-        "description": "product id two cards claim falls back to the name",
-        "input": {
-                "id": "544501",
-                "name": "Let It Go (Disney Lorcana Challenge Top 128)",
-                "variant": "2 Holofoil",
-                "edition": "Disney Lorcana Promo Cards",
-                "foil": true
-        },
-        "uuid": "1188"
     },
     {
         "description": "negative: unknown card name",
@@ -6015,6 +5975,28 @@
         "uuid": "22"
     },
     {
+        "description": "product id still lets the wording pick the foil sub-type",
+        "input": {
+            "id": "647652",
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204 Holofoil",
+            "edition": "Fabled",
+            "foil": true
+        },
+        "uuid": "1951_rainbowpillars"
+    },
+    {
+        "description": "product id two cards claim falls back to the name",
+        "input": {
+            "id": "544501",
+            "name": "Let It Go (Disney Lorcana Challenge Top 128)",
+            "variant": "2 Holofoil",
+            "edition": "Disney Lorcana Promo Cards",
+            "foil": true
+        },
+        "uuid": "1188"
+    },
+    {
         "description": "storefront-prefixed edition still narrows",
         "input": {
             "name": "Let It Go",
@@ -6022,6 +6004,24 @@
             "edition": "Disney Lorcana: Winterspell"
         },
         "uuid": "2626"
+    },
+    {
+        "description": "the letter the data gives a sibling still selects it",
+        "input": {
+            "name": "Dalmatian Puppy - Tail Wagger",
+            "variant": "4c"
+        },
+        "uuid": "438"
+    },
+    {
+        "description": "the promotion behind the lot still names a real card",
+        "input": {
+            "name": "Mickey Mouse - True Friend (Disney Cruise Promo)",
+            "variant": "10 Holofoil",
+            "edition": "Disney Lorcana Promo Cards",
+            "foil": true
+        },
+        "uuid": "2432"
     },
     {
         "description": "unrecognized edition does not block a unique number",
