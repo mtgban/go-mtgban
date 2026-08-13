@@ -164,7 +164,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpId int,
 			theCard = &mtgmatcher.InputCard{
 				Name:      blueprint.Name,
 				Edition:   blueprint.Expansion.Name,
-				Variation: number,
+				Variation: gameVariation(ct.gameId, blueprint, number),
 				Foil:      gameFoil(ct.gameId, product),
 			}
 		default:
