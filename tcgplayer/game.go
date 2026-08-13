@@ -190,6 +190,11 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			// rules can tell foil sub-types apart (SelectFinish).
 			printing := tcg.printings[sku.PrintingId]
 			theCard := &mtgmatcher.InputCard{
+				// Every game datastore stamps the TCGplayer product id on
+				// the printing it names, so the id identifies the card
+				// outright; Match tries it first and falls back to the
+				// fields below whenever the datastore does not carry it.
+				Id:        fmt.Sprint(sku.ProductId),
 				Name:      cardName,
 				Edition:   tcg.editions[product.GroupId].Name,
 				Variation: strings.TrimSpace(number + " " + printing),
