@@ -131,6 +131,23 @@ func hasFoilSubtype(co *CardObject) bool {
 	return false
 }
 
+// isFoilSubtype reports whether this entry is one of those sub-types itself,
+// rather than a sibling that merely has one. The Finish field cannot answer
+// it: a loader records the source's own foil name there for the primary foil
+// too ("silver"), so only the key the uuid is filed under tells them apart.
+func isFoilSubtype(co *CardObject) bool {
+	for finish, uuid := range co.FoilUUIDs {
+		switch finish {
+		case FinishNonfoil, FinishFoil, FinishEtched:
+		default:
+			if uuid == co.UUID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	if b.Sets == nil {
 		return "", ErrDatastoreEmpty
@@ -198,8 +215,9 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 			// foil would file two of its sku prices under one id; the text
 			// path below reads the sub-type out of the wording the caller
 			// sent alongside. Without a name there is no text path to fall
-			// to, so the id's answer stands.
-			case inCard.Name != "" && hasFoilSubtype(co):
+			// to, and an id that named the sub-type outright has already
+			// made the choice, so in both cases the id's answer stands.
+			case inCard.Name != "" && hasFoilSubtype(co) && !isFoilSubtype(co):
 				Logger.Println("Printing carries a foil sub-type, letting the wording pick")
 			// Actually found id
 			default:
