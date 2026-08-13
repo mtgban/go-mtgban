@@ -3,6 +3,7 @@ package cardtrader
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -213,6 +214,30 @@ func gameLanguage(gameId int, product Product) string {
 		return product.Properties.OnePieceLanguage
 	}
 	return ""
+}
+
+// collectorNumberRe matches the collector number shapes One Piece's matcher
+// reads out of a variation before it falls back to the first digit-leading
+// word. A number of this shape wins that read whatever else the variation
+// carries.
+var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
+
+// gameVariation spells the printing a blueprint names. One Piece files the
+// event and parallel printings under the base card's collector number, so
+// the number alone aliases them; the blueprint's Version carries the very
+// wording the datastore labels them with ("OP16 Release Event", "Winner
+// Pack 2026 Vol.3"), which is what tells them apart.
+//
+// The Version rides behind a number the matcher can parse, and only then:
+// its wording is full of years and volume numbers, and against a number
+// the matcher cannot read - "P-L", "OP07-047P2", the alpha-suffixed
+// pre-errata codes - one of those would answer as the collector number in
+// its place and select nothing at all.
+func gameVariation(gameId int, bp *Blueprint, number string) string {
+	if gameId != GameIdOnePiece || bp.Version == "" || !collectorNumberRe.MatchString(number) {
+		return number
+	}
+	return number + " " + bp.Version
 }
 
 func gameFoil(gameId int, product Product) bool {
