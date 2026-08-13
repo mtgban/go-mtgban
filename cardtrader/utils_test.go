@@ -2,6 +2,64 @@ package cardtrader
 
 import "testing"
 
+// numberShapes are the collector numbers One Piece writes, and whether the
+// game's matcher reads one as a number. mtgmatcher/onepiece owns the shape
+// - its fullNumberRe decides the same table, in TestFullNumberShapes -
+// and collectorNumberRe below only has to agree with it: a shape the
+// matcher gains and this gate does not would send the blueprint's Version
+// riding along on a number nothing can parse.
+var numberShapes = map[string]bool{
+	"OP01-001":   true,
+	"P-043":      true,
+	"OP01-001a":  true,
+	"OP07-047P2": false,
+	"P-L":        false,
+	"2024":       false,
+	"":           false,
+}
+
+func TestCollectorNumberShapes(t *testing.T) {
+	for number, want := range numberShapes {
+		if got := collectorNumberRe.MatchString(number); got != want {
+			t.Errorf("collectorNumberRe.MatchString(%q) = %v, want %v", number, got, want)
+		}
+	}
+}
+
+// TestGameVariation pins the gate: the Version names the printing only for
+// One Piece, and only behind a number the matcher can read, since its
+// wording is full of the years and volume numbers that would answer as a
+// collector number in its place.
+func TestGameVariation(t *testing.T) {
+	tests := []struct {
+		name    string
+		gameId  int
+		version string
+		number  string
+		want    string
+	}{
+		{"one piece appends the version", GameIdOnePiece, "OP16 Release Event", "P-135", "P-135 OP16 Release Event"},
+		{"a letter-tailed number takes it too", GameIdOnePiece, "Winner Pack 2026 Vol.3", "OP01-001a", "OP01-001a Winner Pack 2026 Vol.3"},
+		{"an unreadable number keeps the version out", GameIdOnePiece, "Winner Pack 2026 Vol.3", "OP07-047P2", "OP07-047P2"},
+		{"so does a number with no digits to read", GameIdOnePiece, "Premium Card Collection", "P-L", "P-L"},
+		{"an empty version leaves the number alone", GameIdOnePiece, "", "OP01-001", "OP01-001"},
+		{"lorcana keeps its own number", GameIdLorcana, "Enchanted", "OP01-001", "OP01-001"},
+		{"riftbound keeps its own number", GameIdRiftbound, "Foil", "OP01-001", "OP01-001"},
+		{"magic keeps its own number", GameIdMagic, "Retro Frame", "OP01-001", "OP01-001"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			bp := Blueprint{Version: test.version}
+			got := gameVariation(test.gameId, &bp, test.number)
+			if got != test.want {
+				t.Errorf("gameVariation(%d, %q, %q) = %q, want %q",
+					test.gameId, test.version, test.number, got, test.want)
+			}
+		})
+	}
+}
+
 func TestPriceToUSD(t *testing.T) {
 	rates := map[string]float64{"EUR": 1.10, "GBP": 1.25}
 
