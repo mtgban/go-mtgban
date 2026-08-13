@@ -118,6 +118,16 @@ var lorcanaSeeds = []matchTest{
 		Desc: "zero-padded collector number",
 		In:   mtgmatcher.InputCard{Name: "99 Puppies", Variation: "024"},
 	},
+	{
+		// Stripping the leading zeros must not take the digit with them
+		// when a letter follows it.
+		Desc: "zero collector number carrying a storefront letter",
+		In:   mtgmatcher.InputCard{Name: "Bruno Madrigal - Undetected Uncle", Variation: "000B"},
+	},
+	{
+		Desc: "negative: the restored zero is a number, not a wildcard",
+		In:   mtgmatcher.InputCard{Name: "A Whole New World", Variation: "000B"},
+	},
 	// Error contract.
 	{
 		Desc: "negative: unknown card name",

@@ -242,9 +242,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 // Variation. Core Match may append parenthetical chunks split off the input
 // name ("205 Enchanted", or just "Enchanted" when no number was supplied),
 // so only the first digit-leading field counts. The number is the part
-// before '/' with leading zeros stripped — except an all-zero number stays
-// "0", so the genuine 0-numbered promo is reachable and a wrong '0' input
-// errors instead of silently disabling the filter.
+// before '/' with leading zeros stripped — except a number the zeros are
+// the whole of stays "0", with any letter it carries, so the genuine
+// 0-numbered promo stays reachable.
 func extractNumber(variation string) string {
 	number := ""
 	for _, field := range strings.Fields(variation) {
@@ -255,8 +255,13 @@ func extractNumber(variation string) string {
 	}
 	number = strings.Split(number, "/")[0]
 	trimmed := strings.TrimLeft(number, "0")
-	if trimmed == "" && number != "" {
-		trimmed = "0"
+	// TrimLeft stops at the first non-zero character of any kind, so a result
+	// that is empty or no longer leads with a digit means the zeros were the
+	// whole numeric part and one has to come back: "000B" is the 0-numbered
+	// card written the way a storefront hangs its promo-series marker off a
+	// number, not a number named "B".
+	if number != "" && (trimmed == "" || trimmed[0] < '0' || trimmed[0] > '9') {
+		trimmed = "0" + trimmed
 	}
 	return trimmed
 }
