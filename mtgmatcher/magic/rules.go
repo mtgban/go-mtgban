@@ -1460,6 +1460,16 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		(inCard.IsSerialized() && !co.HasPromoType(PromoTypeSerialized))
 }
 
+// sameSet reports whether every candidate is filed in one and the same set.
+func sameSet(cards []mtgmatcher.Card) bool {
+	for _, card := range cards[1:] {
+		if card.SetCode != cards[0].SetCode {
+			return false
+		}
+	}
+	return true
+}
+
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) (outCards []mtgmatcher.Card) {
 	// Use the result as-is if it comes from a single card in a single set,
 	// preserving the historical Magic behavior of the pre-GameRules pipeline:
@@ -1805,6 +1815,30 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			if len(filteredOutCards) > 0 {
 				outCards = filteredOutCards
 			}
+		}
+	}
+
+	// Within one set, a plain listing cannot be a printing sold in no plain
+	// finish: the modern sets number their foil-only treatments apart from
+	// the card they decorate - Aetherdrift's #434 beside #35 - so a feed
+	// that gives no collector number aliases the two until the finish is
+	// read. Only this direction, since a listing that says foil is making a
+	// claim the filters above already weigh while saying nothing about the
+	// finish is what half the feeds do; and only within one set, because a
+	// foil-only printing in a set of its own is a product in its own right
+	// - the premium reprint sets are the whole of it - and answering with
+	// another set's plain card instead is a worse mistake than aliasing.
+	if len(outCards) > 1 && !inCard.Foil && !inCard.IsEtched() && sameSet(outCards) {
+		var filteredOutCards []mtgmatcher.Card
+		for _, card := range outCards {
+			if !card.HasFinish(mtgmatcher.FinishNonfoil) {
+				continue
+			}
+			filteredOutCards = append(filteredOutCards, card)
+		}
+		// Don't throw away what was found if filtering checks are too aggressive
+		if len(filteredOutCards) > 0 {
+			outCards = filteredOutCards
 		}
 	}
 
