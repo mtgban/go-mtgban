@@ -217,6 +217,31 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	return nil
 }
 
+// ResolveFinish answers the foil sub-type question Match raises when an id
+// lands on a printing sold in one: which uuid the caller's wording asks for.
+// Match asks it before the pipeline runs Prefilter, so the wording may still
+// be sitting in the parenthetical that would have been split off the name; a
+// copy of the input goes through it first, and through the foil re-check that
+// follows it, leaving the caller's own card untouched. The flag still decides
+// foil against plain the way output() does downstream - the wording only ever
+// picks which foil.
+func (r Rules) ResolveFinish(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) string {
+	probe := *inCard
+	r.Prefilter(b, &probe)
+	if probe.IsFoil() {
+		probe.Foil = true
+	}
+	if !probe.Foil {
+		return ""
+	}
+
+	finish := selectFinish(&probe, &co.Card)
+	if finish == "" {
+		return ""
+	}
+	return co.FoilUUIDs[finish]
+}
+
 // extractNumber pulls the collector number out of the scraper-supplied
 // Variation. Core Match may append parenthetical chunks split off the input
 // name ("205 Enchanted", or just "Enchanted" when no number was supplied),

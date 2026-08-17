@@ -131,47 +131,6 @@ func hasFoilSubtype(co *CardObject) bool {
 	return false
 }
 
-// isFoilSubtype reports whether this entry is one of those sub-types itself,
-// rather than a sibling that merely has one. The Finish field cannot answer
-// it: a loader records the source's own foil name there for the primary foil
-// too ("silver"), so only the key the uuid is filed under tells them apart.
-func isFoilSubtype(co *CardObject) bool {
-	for finish, uuid := range co.FoilUUIDs {
-		switch finish {
-		case FinishNonfoil, FinishFoil, FinishEtched:
-		default:
-			if uuid == co.UUID {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// soleFinishOf returns the one id among the candidates that is a finish of
-// the given printing, and an empty string when none or several are - only a
-// single candidate identifies the printing the caller meant.
-func soleFinishOf(co *CardObject, ids []string) string {
-	var match string
-	for _, id := range ids {
-		isFinish := false
-		for _, uuid := range co.FoilUUIDs {
-			if uuid == id {
-				isFinish = true
-				break
-			}
-		}
-		if !isFinish {
-			continue
-		}
-		if match != "" && match != id {
-			return ""
-		}
-		match = id
-	}
-	return match
-}
-
 func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	if b.Sets == nil {
 		return "", ErrDatastoreEmpty
@@ -206,11 +165,6 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 	}
 
 	// Look up by uuid
-	//
-	// subtypeCo holds the printing the id resolved to where the sub-type case
-	// below hands the finish to the wording, so the aliasing arm at the end of
-	// the function can tell the wording's candidates apart.
-	var subtypeCo *CardObject
 	if inCard.Id != "" {
 		Logger.Printf("Performing id lookup")
 		outId, err := b.MatchId(inCard.Id, inCard.Foil, inCard.IsEtched())
@@ -241,14 +195,21 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 			// name the three finishes a flag has a bit for and no more. A
 			// printing sold in a named foil sub-type beyond them has a
 			// choice the flags cannot make, and answering with the plain
-			// foil would file two of its sku prices under one id; the text
-			// path below reads the sub-type out of the wording the caller
-			// sent alongside. Without a name there is no text path to fall
-			// to, and an id that named the sub-type outright has already
-			// made the choice, so in both cases the id's answer stands.
-			case inCard.Name != "" && hasFoilSubtype(co) && !isFoilSubtype(co):
-				Logger.Println("Printing carries a foil sub-type, letting the wording pick")
-				subtypeCo = co
+			// foil would file two of its sku prices under one id; the game
+			// reads the sub-type out of the wording the caller sent
+			// alongside. Where the wording names none the id's answer
+			// stands, the way it does for a printing without sub-types.
+			case inCard.Name != "" && hasFoilSubtype(co):
+				resolver, ok := b.rules.(finishResolver)
+				if ok {
+					subtypeId := resolver.ResolveFinish(b, inCard, co)
+					if subtypeId != "" {
+						Logger.Println("Foil sub-type picked by the wording:", subtypeId)
+						return subtypeId, nil
+					}
+				}
+				Logger.Println("Printing carries a foil sub-type the wording does not name")
+				return outId, nil
 			// Actually found id
 			default:
 				return outId, nil
@@ -531,18 +492,6 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 			alias.Dupes = append(alias.Dupes, b.output(outCards[i], inCard.Foil, inCard.IsEtched()))
 		}
 		err = alias
-
-		// The candidates carry the sub-type the wording picked but sit on
-		// several printings, and the id named a printing but no sub-type:
-		// when one of them is a finish of that printing, the two halves
-		// answer together what neither did alone.
-		if subtypeCo != nil {
-			cardId = soleFinishOf(subtypeCo, alias.Dupes)
-			if cardId != "" {
-				Logger.Println("Aliasing resolved by the id's printing:", cardId)
-				err = nil
-			}
-		}
 	}
 
 	return

@@ -45,6 +45,20 @@ type GameRules interface {
 	MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
 }
 
+// finishResolver is an optional extension of GameRules, for a game whose
+// printings are sold in named foil sub-types beyond the three finishes the
+// caller's flags have a bit for. Match type-asserts it off the attached rules,
+// so a game that registers no sub-type is untouched by it - and by
+// construction never reaches the question either, since only a sub-type key in
+// FoilUUIDs raises it.
+type finishResolver interface {
+	// ResolveFinish returns the uuid of the sub-type the input's wording names
+	// for the given printing, or an empty string when it names none. Match
+	// asks before the pipeline's name preprocessing has run, so an
+	// implementation has to expect the wording wherever the caller put it.
+	ResolveFinish(b *Backend, inCard *InputCard, co *CardObject) string
+}
+
 // SetRules attaches the game-specific identification hooks used by Match. A
 // game's datastore loader calls this when it builds a Backend.
 func (b *Backend) SetRules(r GameRules) {
