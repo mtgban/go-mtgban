@@ -33,6 +33,7 @@ import (
 	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/manapool"
+	"github.com/mtgban/go-mtgban/merlion"
 	"github.com/mtgban/go-mtgban/miniaturemarket"
 	"github.com/mtgban/go-mtgban/mintcard"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -1001,6 +1002,13 @@ var options = map[string]*scraperOption{
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
+			return scraper, nil
+		},
+	},
+	"merlion_riftbound": &scraperOption{
+		Init: func() (mtgban.Scraper, error) {
+			scraper := merlion.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
