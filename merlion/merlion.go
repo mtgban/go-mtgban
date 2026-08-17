@@ -1,0 +1,115 @@
+package merlion
+
+import (
+	"context"
+	"strings"
+	"time"
+
+	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
+
+type Merlion struct {
+	LogCallback mtgban.LogCallbackFunc
+
+	buylistDate time.Time
+	buylist     mtgban.BuylistRecord
+}
+
+func NewScraper() *Merlion {
+	mg := Merlion{}
+	mg.buylist = mtgban.BuylistRecord{}
+	return &mg
+}
+
+func (mg *Merlion) printf(format string, a ...interface{}) {
+	if mg.LogCallback != nil {
+		mg.LogCallback("[MG] "+format, a...)
+	}
+}
+
+// Merlion quotes one price per printing and buys played copies at a set
+// discount off it, so the feed's price is the Near Mint one and the rest of
+// the ladder comes from these factors. A grade left out is one they do not
+// buy at all.
+var gradeFactors = map[string]float64{
+	"NM": 1,
+	"SP": 0.8,
+}
+
+// Played copies are only worth quoting on the expensive printings; below this
+// the discount lands within rounding of the Near Mint price and would just
+// double the entries for nothing.
+const playedPriceFloor = 100
+
+func (mg *Merlion) Load(ctx context.Context) error {
+	cards, err := DownloadBuylistCSV(ctx)
+	if err != nil {
+		return err
+	}
+	mg.printf("Found %d buylist entries", len(cards))
+
+	for _, card := range cards {
+		// The feed names a printing by its TCGplayer id, and MatchId takes
+		// one directly: it falls back to the datastore's external index when
+		// the id is not a uuid, and applies the finish itself. So neither the
+		// name nor the edition has to survive the round trip.
+		cardID, err := mtgmatcher.MatchId(card.TCGplayerID, card.Foil)
+		if err != nil {
+			mg.printf("%v: %s %s (%s)", err, card.TCGplayerID, card.Name, card.Edition)
+			continue
+		}
+
+		// The quoted price belongs to a Near Mint copy; any other grade would
+		// be priced as though it were one.
+		if !strings.Contains(card.Condition, nearMint) {
+			mg.printf("skipping %s (%s): grade %q is not %s",
+				card.Name, card.Edition, card.Condition, nearMint)
+			continue
+		}
+
+		for _, grade := range mtgban.DefaultGradeTags {
+			factor, found := gradeFactors[grade]
+			if !found {
+				continue
+			}
+			if grade != "NM" && card.BuyPrice <= playedPriceFloor {
+				continue
+			}
+
+			// The feed counts how many copies they want, not how many per
+			// grade, so only the quoted grade carries the number.
+			var quantity int
+			if grade == "NM" {
+				quantity = card.Quantity
+			}
+
+			out := &mtgban.BuylistEntry{
+				Conditions: grade,
+				BuyPrice:   card.BuyPrice * factor,
+				Quantity:   quantity,
+				URL:        card.URL,
+			}
+			err = mg.buylist.AddRelaxed(cardID, out)
+			if err != nil {
+				mg.printf("%v", err)
+			}
+		}
+	}
+
+	mg.buylistDate = time.Now()
+
+	return nil
+}
+
+func (mg *Merlion) Buylist() mtgban.BuylistRecord {
+	return mg.buylist
+}
+
+func (mg *Merlion) Info() (info mtgban.ScraperInfo) {
+	info.Name = "Merlion Games"
+	info.Shorthand = "MG"
+	info.Game = mtgban.GameRiftbound
+	info.BuylistTimestamp = &mg.buylistDate
+	return
+}
