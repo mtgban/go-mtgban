@@ -351,7 +351,7 @@ func (ct *CardtraderMarket) Inventory() mtgban.InventoryRecord {
 	return ct.inventory
 }
 
-func (tcg *CardtraderMarket) MarketNames() []string {
+func (ct *CardtraderMarket) MarketNames() []string {
 	return availableMarketNames
 }
 
