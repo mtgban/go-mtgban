@@ -27,9 +27,9 @@ func TestCollectorNumberShapes(t *testing.T) {
 }
 
 // TestGameVariation pins the gate: the Version names the printing only for
-// One Piece, and only behind a number the matcher can read, since its
-// wording is full of the years and volume numbers that would answer as a
-// collector number in its place.
+// One Piece and Riftbound, and only behind a number - a readable one for One
+// Piece - since its wording is full of the years and volume numbers that
+// would answer as a collector number in its place.
 func TestGameVariation(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -44,7 +44,8 @@ func TestGameVariation(t *testing.T) {
 		{"so does a number with no digits to read", GameIdOnePiece, "Premium Card Collection", "P-L", "P-L"},
 		{"an empty version leaves the number alone", GameIdOnePiece, "", "OP01-001", "OP01-001"},
 		{"lorcana keeps its own number", GameIdLorcana, "Enchanted", "OP01-001", "OP01-001"},
-		{"riftbound keeps its own number", GameIdRiftbound, "Foil", "OP01-001", "OP01-001"},
+		{"riftbound appends the version too", GameIdRiftbound, "Summoner Skirmish | Champion", "058c", "058c Summoner Skirmish | Champion"},
+		{"a numberless riftbound blueprint keeps the version out", GameIdRiftbound, "6 Card Set", "", ""},
 		{"magic keeps its own number", GameIdMagic, "Retro Frame", "OP01-001", "OP01-001"},
 	}
 

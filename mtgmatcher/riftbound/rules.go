@@ -383,6 +383,95 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// reaches them, and everything else keeps matching the main printings.
 	allowPromo := editionIsPromo(b, inCard.Edition)
 
+	out := collectPrintings(b, inCard, cardSet, allowPromo, number)
+
+	// A storefront may letter a number the gallery does not: CardTrader files
+	// the champion-stamped Lillia as 058c where the gallery keeps 58 and says
+	// "champion" in the promo types. Retry on the base number, but keep only
+	// the printings the storefront's own wording describes - the letter marks
+	// a variant, so answering with a plain sibling would misprice it, and the
+	// champion Poppy the gallery does not carry has to stay a miss rather
+	// than land on the plain 178.
+	if len(out) == 0 {
+		if stripped := stripNumberLetter(number); stripped != "" {
+			for _, card := range collectPrintings(b, inCard, cardSet, allowPromo, stripped) {
+				if len(card.PromoTypes) > 0 && wordsDescribe(inCard.Variation, card.PromoTypes) {
+					out = append(out, card)
+				}
+			}
+		}
+	}
+
+	// Sibling promos share one clean name - and, for the organized-play
+	// cards, even the main set's collector number - so the number alone
+	// can leave several candidates. They rank in tiers:
+	//
+	//  1. A variant whose promo types are all said by the storefront's own
+	//     wording. The containment direction qualified names used, so
+	//     "(Top 8)" cannot answer for a plain "Top".
+	//  2. A promotional printing without promo types: the input targeted a
+	//     promo, so under equal numbers the promo outranks the main-set
+	//     sibling, and its plain variant outranks the decorated ones.
+	//  3. A typed variant the wording never described, but only when it
+	//     said nothing at all beyond the number and the finish: the number
+	//     alone reaches a variant a storefront lists by number, while a
+	//     qualifier that matched no variant must not pick one anyway.
+	//  4. The cards without promo types - the whole candidate list of a
+	//     datastore from before the types were recorded, and the main-set
+	//     fallback for a qualifier no printing carries.
+	var described, promoPlain, promoTyped, untyped []mtgmatcher.Card
+	for _, card := range out {
+		promo := false
+		if set, found := b.Sets[card.SetCode]; found && set.Type == "promo" {
+			promo = true
+		}
+		switch {
+		case len(card.PromoTypes) > 0 && wordsDescribe(inCard.Variation, card.PromoTypes):
+			described = append(described, card)
+		case promo && len(card.PromoTypes) == 0:
+			promoPlain = append(promoPlain, card)
+		case promo:
+			promoTyped = append(promoTyped, card)
+		default:
+			untyped = append(untyped, card)
+		}
+	}
+	tier := out
+	switch {
+	case len(described) > 0:
+		tier = described
+	case len(promoPlain) > 0:
+		tier = promoPlain
+	case len(promoTyped) > 0 && len(qualifierWords(inCard.Variation)) == 0:
+		tier = promoTyped
+	case len(untyped) > 0:
+		tier = untyped
+	}
+	return preferBasePrinting(b, inCard, number, tier)
+}
+
+// stripNumberLetter drops the letters a collector number trails off its
+// digits ("058c" -> "058"), and returns "" when there are none to drop or
+// nothing but letters ahead of them, leaving the letter-led token and rune
+// numbers ("T05", "R01") to answer for themselves.
+func stripNumberLetter(number string) string {
+	i := len(number)
+	for i > 0 && isLetter(number[i-1]) {
+		i--
+	}
+	if i == len(number) || i == 0 || number[i-1] < '0' || number[i-1] > '9' {
+		return ""
+	}
+	return number[:i]
+}
+
+func isLetter(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+}
+
+// collectPrintings gathers the printings hashed under the input name that the
+// edition, the promo gate and the given collector number all admit.
+func collectPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card, allowPromo bool, number string) []mtgmatcher.Card {
 	var out []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
@@ -432,53 +521,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// the flag wrongly, or does not report it at all.
 		out = append(out, card)
 	}
-
-	// Sibling promos share one clean name - and, for the organized-play
-	// cards, even the main set's collector number - so the number alone
-	// can leave several candidates. They rank in tiers:
-	//
-	//  1. A variant whose promo types are all said by the storefront's own
-	//     wording. The containment direction qualified names used, so
-	//     "(Top 8)" cannot answer for a plain "Top".
-	//  2. A promotional printing without promo types: the input targeted a
-	//     promo, so under equal numbers the promo outranks the main-set
-	//     sibling, and its plain variant outranks the decorated ones.
-	//  3. A typed variant the wording never described, but only when it
-	//     said nothing at all beyond the number and the finish: the number
-	//     alone reaches a variant a storefront lists by number, while a
-	//     qualifier that matched no variant must not pick one anyway.
-	//  4. The cards without promo types - the whole candidate list of a
-	//     datastore from before the types were recorded, and the main-set
-	//     fallback for a qualifier no printing carries.
-	var described, promoPlain, promoTyped, untyped []mtgmatcher.Card
-	for _, card := range out {
-		promo := false
-		if set, found := b.Sets[card.SetCode]; found && set.Type == "promo" {
-			promo = true
-		}
-		switch {
-		case len(card.PromoTypes) > 0 && wordsDescribe(inCard.Variation, card.PromoTypes):
-			described = append(described, card)
-		case promo && len(card.PromoTypes) == 0:
-			promoPlain = append(promoPlain, card)
-		case promo:
-			promoTyped = append(promoTyped, card)
-		default:
-			untyped = append(untyped, card)
-		}
-	}
-	tier := out
-	switch {
-	case len(described) > 0:
-		tier = described
-	case len(promoPlain) > 0:
-		tier = promoPlain
-	case len(promoTyped) > 0 && len(qualifierWords(inCard.Variation)) == 0:
-		tier = promoTyped
-	case len(untyped) > 0:
-		tier = untyped
-	}
-	return preferBasePrinting(b, inCard, number, tier)
+	return out
 }
 
 // preferBasePrinting keeps the base printings when the input said nothing

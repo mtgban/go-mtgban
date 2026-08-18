@@ -222,19 +222,31 @@ func gameLanguage(gameID int, product Product) string {
 // carries.
 var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
 
-// gameVariation spells the printing a blueprint names. One Piece files the
-// event and parallel printings under the base card's collector number, so
-// the number alone aliases them; the blueprint's Version carries the very
-// wording the datastore labels them with ("OP16 Release Event", "Winner
-// Pack 2026 Vol.3"), which is what tells them apart.
+// gameVariation spells the printing a blueprint names. One Piece and
+// Riftbound both file their event and parallel printings under the base
+// card's collector number, so the number alone aliases them; the blueprint's
+// Version carries the very wording the datastore labels them with ("OP16
+// Release Event", "Summoner Skirmish | Champion"), which is what tells them
+// apart.
 //
-// The Version rides behind a number the matcher can parse, and only then:
-// its wording is full of years and volume numbers, and against a number
-// the matcher cannot read - "P-L", "OP07-047P2", the alpha-suffixed
-// pre-errata codes - one of those would answer as the collector number in
-// its place and select nothing at all.
+// The Version rides behind a number, and only then: its wording is full of
+// years and volume numbers, and with nothing ahead of them one of those would
+// answer as the collector number and select nothing at all.
 func gameVariation(gameID int, bp *Blueprint, number string) string {
-	if gameID != GameIdOnePiece || bp.Version == "" || !collectorNumberRe.MatchString(number) {
+	if bp.Version == "" || number == "" {
+		return number
+	}
+	switch gameID {
+	case GameIdOnePiece:
+		// One Piece numbers come in shapes the matcher cannot read - "P-L",
+		// "OP07-047P2", the alpha-suffixed pre-errata codes - and behind one
+		// of those the version's own digits answer in their place.
+		if !collectorNumberRe.MatchString(number) {
+			return number
+		}
+	case GameIdRiftbound:
+		// Riftbound numbers are bare ("202", "058c", "T05"), always readable.
+	default:
 		return number
 	}
 	return number + " " + bp.Version
