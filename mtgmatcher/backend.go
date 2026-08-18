@@ -310,7 +310,8 @@ type Backend struct {
 
 	// Game-specific identification hooks used by Match, attached by the
 	// game's datastore loader via SetRules.
-	rules GameRules
+	rules         GameRules
+	knownFinishes map[string]bool
 }
 
 var Logger = log.New(io.Discard, "", log.LstdFlags)

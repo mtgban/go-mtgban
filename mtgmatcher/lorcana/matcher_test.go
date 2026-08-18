@@ -75,8 +75,17 @@ var lorcanaSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
 	},
 	{
+		// Satin is a finish this game sells and this printing does not, so
+		// the contradiction stands rather than answering with a sibling.
 		Desc: "negative: a finish the printing is not sold in",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Reverse Holofoil", Foil: true},
+		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Satin", Foil: true},
+	},
+	{
+		// A name the game cannot place at all is a vendor spelling nobody
+		// has taught it yet, which says nothing about the printing: the
+		// wording answers, exactly as it did before an id could name one.
+		Desc: "a finish name the game does not know falls through to the wording",
+		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Finish: "Reverse Holofoil", Foil: true},
 	},
 	{
 		Desc: "product id two cards claim falls back to the name",

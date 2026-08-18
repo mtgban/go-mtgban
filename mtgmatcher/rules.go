@@ -60,4 +60,20 @@ type GameRules interface {
 // game's datastore loader calls this when it builds a Backend.
 func (b *Backend) SetRules(r GameRules) {
 	b.rules = r
+
+	// The finishes this datastore actually sells, which is what tells a
+	// vendor spelling nobody has taught the game yet from a name that names
+	// a real finish this one printing is not sold in. A game whose rules
+	// place any name (Lorcana's foil types are data and a new one arrives
+	// every set) has no other way to say "I have never heard of this".
+	b.knownFinishes = map[string]bool{}
+	for _, co := range b.UUIDs {
+		for key := range co.FoilUUIDs {
+			b.knownFinishes[key] = true
+		}
+		for name, key := range co.FinishAliases {
+			b.knownFinishes[name] = true
+			b.knownFinishes[key] = true
+		}
+	}
 }

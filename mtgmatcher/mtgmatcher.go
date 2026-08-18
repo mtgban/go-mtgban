@@ -106,15 +106,25 @@ func (b *Backend) MatchIdFinish(inputID, finish string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// A sealed product is one product in no finish at all, so a caller
+	// naming one is describing the singles it holds, not the box.
+	if co.Sealed {
+		return co.UUID, nil
+	}
 	if b.rules == nil {
 		return "", ErrDatastoreEmpty
 	}
 	if b.rules.CanonicalFinish(finish) == "" {
 		Logger.Printf("Finish %q is not one this game names", finish)
-		return "", ErrCardWrongFinish
+		return "", ErrCardUnnamedFinish
 	}
 	outID := b.FinishUUID(&co.Card, finish)
 	if outID == "" {
+		canonical := b.rules.CanonicalFinish(finish)
+		if !b.knownFinishes[canonical] {
+			Logger.Printf("Finish %q is not one this datastore sells", finish)
+			return "", ErrCardUnnamedFinish
+		}
 		Logger.Printf("Printing %s is not sold in finish %q", co.UUID, finish)
 		return "", ErrCardWrongFinish
 	}
@@ -243,7 +253,8 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		outID, err := b.matchIdFor(inCard)
 		// The wording cannot improve on a finish the printing does not
 		// carry: it would answer from the same printing, and the only
-		// answer it has is another finish's uuid.
+		// answer it has is another finish's uuid. A name the game could not
+		// place says nothing about the printing, so that one falls through.
 		if errors.Is(err, ErrCardWrongFinish) {
 			return "", err
 		}
