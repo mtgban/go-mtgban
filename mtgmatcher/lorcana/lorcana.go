@@ -375,19 +375,25 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 			// TCGplayer prices a Lorcana printing in up to four printings:
 			// Normal, Foil and Cold Foil for the silver foil almost every
-			// card is foiled in, and Holofoil for a treatment past it. Which
-			// uuid that names is the printing's own business - the sub-type
-			// where there is one (the foil types are visited in exported
-			// order, so it wins over the standard foil), the sole special
-			// foil where that is all the printing is sold in, and nothing at
-			// all for a plain silver foil, whose Holofoil sku would be a
-			// treatment the datastore does not carry rather than a second
-			// name for the foil it does.
+			// card is foiled in, and Holofoil for the treatment past it.
+			// Which uuid that names is the printing's own business: the
+			// sub-type where there is one, since the foil types are visited
+			// in exported order and it wins over the standard foil.
 			if finishName != standardFoil {
 				finishAliases[tcgSpecialFoil] = key
 			}
 		}
 		convertedCard.FoilUUIDs = finishUUIDs
+		// A printing foiled one way only answers Holofoil with that foil
+		// whatever LorcanaJSON calls it: 418 products in the catalog carry a
+		// single sku TCGplayer names Holofoil, and 15 of them are foiled in
+		// plain silver, so reading the name as "a treatment past the silver"
+		// refuses the only sku those products have.
+		if _, found := finishAliases[tcgSpecialFoil]; !found {
+			if _, sold := finishUUIDs[mtgmatcher.FinishFoil]; sold {
+				finishAliases[tcgSpecialFoil] = mtgmatcher.FinishFoil
+			}
+		}
 		if len(finishAliases) > 0 {
 			convertedCard.FinishAliases = finishAliases
 		}
