@@ -199,8 +199,8 @@ func (b *Backend) Match(inCard *InputCard) (cardId string, err error) {
 			// reads the sub-type out of the wording the caller sent
 			// alongside. Where the wording names none the id's answer
 			// stands, the way it does for a printing without sub-types.
-			case inCard.Name != "" && hasFoilSubtype(co):
-				resolver, ok := b.rules.(finishResolver)
+			case hasFoilSubtype(co):
+				resolver, ok := b.rules.(FinishResolver)
 				if ok {
 					subtypeId := resolver.ResolveFinish(b, inCard, co)
 					if subtypeId != "" {

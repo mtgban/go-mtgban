@@ -45,13 +45,13 @@ type GameRules interface {
 	MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
 }
 
-// finishResolver is an optional extension of GameRules, for a game whose
+// FinishResolver is an optional extension of GameRules, for a game whose
 // printings are sold in named foil sub-types beyond the three finishes the
 // caller's flags have a bit for. Match type-asserts it off the attached rules,
 // so a game that registers no sub-type is untouched by it - and by
 // construction never reaches the question either, since only a sub-type key in
 // FoilUUIDs raises it.
-type finishResolver interface {
+type FinishResolver interface {
 	// ResolveFinish returns the uuid of the sub-type the input's wording names
 	// for the given printing, or an empty string when it names none. Match
 	// asks before the pipeline's name preprocessing has run, so an

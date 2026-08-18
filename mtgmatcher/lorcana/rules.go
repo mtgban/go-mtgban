@@ -6,6 +6,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Lorcana is the one game whose printings carry foil sub-types, so it answers
+// the optional question core Match raises for them.
+var _ mtgmatcher.FinishResolver = Rules{}
+
 // Rules implements mtgmatcher.GameRules for Lorcana. Lorcana has no edition
 // aliases, variant tables, or promo types: a card is identified by name +
 // collector number + foil. So most hooks are no-ops and the real work is the
