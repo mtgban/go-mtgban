@@ -169,7 +169,10 @@ const (
 	defaultLimitLastestSales      = 25
 )
 
-func LatestSales(ctx context.Context, tcgProductID string, flags ...bool) (*latestSalesResponse, error) {
+// LatestSales returns the recent sales recorded for a product. The paging
+// envelope the endpoint wraps them in carries nothing a caller has asked for,
+// so it stays inside.
+func LatestSales(ctx context.Context, tcgProductID string, flags ...bool) ([]LatestSalesData, error) {
 	link := fmt.Sprintf(tcgLatestSalesURL, tcgProductID)
 
 	var params latestSalesRequest
@@ -216,7 +219,7 @@ func LatestSales(ctx context.Context, tcgProductID string, flags ...bool) (*late
 		return nil, fmt.Errorf("unmarshal error %w:", err)
 	}
 
-	return &response, nil
+	return response.Data, nil
 }
 
 const (
