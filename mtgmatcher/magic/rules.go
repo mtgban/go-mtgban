@@ -1460,11 +1460,14 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		(inCard.IsSerialized() && !co.HasPromoType(PromoTypeSerialized))
 }
 
-// CanonicalFinish adds nothing to the shared vocabulary: mtgjson names
-// Magic's three finishes with the matcher's own constants, and the frames
-// and treatments past them (showcase, textured, surge) are promo types a
-// card carries, not finishes it is sold in.
+// CanonicalFinish adds the etched foil to the shared vocabulary. Only
+// mtgjson prints one, and the spellings are the ones the Magic feeds write
+// it with, so the name is Magic's to place rather than every game's.
 func (Rules) CanonicalFinish(name string) string {
+	switch mtgmatcher.NormalizeFinish(name) {
+	case "etched", "foiletched", "etchedfoil":
+		return mtgmatcher.FinishEtched
+	}
 	return mtgmatcher.CanonicalFinish(name)
 }
 

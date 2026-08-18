@@ -33,8 +33,11 @@ func TestCanonicalFinish(t *testing.T) {
 		{"Normal", FinishNonfoil},
 		{"non-foil", FinishNonfoil},
 		{"Foil", FinishFoil},
-		{"Foil Etched", FinishEtched},
-		{"etched", FinishEtched},
+		// Etched is Magic's own, placed by mtgmatcher/magic's rules, so the
+		// shared vocabulary answers for it the way it does for any name a
+		// single game names
+		{"Foil Etched", ""},
+		{"etched", ""},
 		{"Holofoil", ""},
 		{"Cold Foil", ""},
 		{"", ""},
