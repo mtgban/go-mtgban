@@ -1,3 +1,5 @@
+// Package cardsphere scrapes Cardsphere, whose prices come from standing
+// offers rather than listings.
 package cardsphere
 
 import (

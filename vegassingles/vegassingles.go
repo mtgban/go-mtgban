@@ -1,3 +1,4 @@
+// Package vegassingles scrapes Vegas Singles.
 package vegassingles
 
 import (

@@ -1,3 +1,6 @@
+// Package tcgplayer scrapes TCGplayer through both their partner API and
+// their storefront: market and index pricing, sealed product, per-seller
+// inventory, and the SKU catalog the other scrapers resolve against.
 package tcgplayer
 
 import (

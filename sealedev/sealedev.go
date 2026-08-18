@@ -1,3 +1,6 @@
+// Package sealedev prices sealed product by the expected value of its
+// contents, simulating openings against singles prices instead of reading
+// a storefront.
 package sealedev
 
 import (

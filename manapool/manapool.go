@@ -1,3 +1,4 @@
+// Package manapool scrapes Manapool, for singles and sealed product.
 package manapool
 
 import (

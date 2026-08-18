@@ -1,3 +1,5 @@
+// Command mkmPriceGuide downloads Cardmarket's price guide for a game, for
+// singles or for sealed product.
 package main
 
 import (

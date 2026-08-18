@@ -1,3 +1,5 @@
+// Package starcitygames scrapes Star City Games, for singles and sealed
+// product, across every game they carry.
 package starcitygames
 
 import (

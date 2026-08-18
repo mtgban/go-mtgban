@@ -1,3 +1,5 @@
+// Package cardkingdom scrapes Card Kingdom, covering singles, sealed
+// product and their separately graded listings.
 package cardkingdom
 
 import (

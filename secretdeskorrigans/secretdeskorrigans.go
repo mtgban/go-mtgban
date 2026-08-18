@@ -1,3 +1,4 @@
+// Package secretdeskorrigans scrapes Le Secret des Korrigans.
 package secretdeskorrigans
 
 import (

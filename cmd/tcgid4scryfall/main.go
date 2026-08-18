@@ -1,3 +1,5 @@
+// Command tcgid4scryfall walks Scryfall's catalog and reports where its
+// TCGplayer ids disagree with the ones mtgmatcher resolves.
 package main
 
 import (

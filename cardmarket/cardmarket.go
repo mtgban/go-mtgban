@@ -1,3 +1,5 @@
+// Package cardmarket scrapes Cardmarket, both the price-guide index and
+// sealed product, across every game they carry.
 package cardmarket
 
 import (

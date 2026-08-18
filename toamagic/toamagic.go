@@ -1,3 +1,4 @@
+// Package toamagic scrapes Tales of Adventure.
 package toamagic
 
 import (

@@ -1,3 +1,4 @@
+// Package strikezone scrapes Strike Zone.
 package strikezone
 
 import (

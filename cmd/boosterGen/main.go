@@ -1,3 +1,5 @@
+// Command boosterGen opens boosters, drawing from a set's sheets the way
+// the real product does, and prints what came out.
 package main
 
 import (

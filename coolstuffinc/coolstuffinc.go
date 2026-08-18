@@ -1,3 +1,5 @@
+// Package coolstuffinc scrapes Cool Stuff Inc, for singles and sealed
+// product.
 package coolstuffinc
 
 import (

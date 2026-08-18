@@ -1,3 +1,4 @@
+// Package magiccorner scrapes Magic Corner.
 package magiccorner
 
 import (
