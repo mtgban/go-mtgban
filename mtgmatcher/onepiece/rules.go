@@ -307,9 +307,12 @@ func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards 
 	// A marker with nothing behind it - a bare "Promos:" bucket - names no
 	// set, and every set name contains the empty string: reading it as a
 	// selection would hand back the event printing of whatever card it
-	// decorated. Only a line naming a set selects one.
+	// decorated. Only a line naming a set selects one, and the emptiness to
+	// refuse is the one Contains sees: a remainder of pure punctuation
+	// ("Promos: -", "Promo: 's") normalizes away as thoroughly as an absent
+	// one, and reads as the same empty needle.
 	base := promoLineRe.ReplaceAllString(inCard.Edition, "")
-	if base != "" && base != inCard.Edition {
+	if mtgmatcher.Normalize(base) != "" && base != inCard.Edition {
 		var event []mtgmatcher.Card
 		for _, card := range cards {
 			set, found := b.Sets[card.SetCode]

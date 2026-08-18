@@ -36,6 +36,24 @@
         "uuid": "op02-010_483093"
     },
     {
+        "description": "a promo marker trailing a possessive names no set either",
+        "input": {
+            "name": "Dogura",
+            "variant": "OP02-010",
+            "edition": "Promo: 's"
+        },
+        "uuid": "op02-010_483093"
+    },
+    {
+        "description": "a promo marker trailing punctuation names no set either",
+        "input": {
+            "name": "Dogura",
+            "variant": "OP02-010",
+            "edition": "Promos: -"
+        },
+        "uuid": "op02-010_483093"
+    },
+    {
         "description": "a qualifier carrying an ordinal does not become the number",
         "input": {
             "name": "Killer - 106 (Judge Pack Vol. 5)",
