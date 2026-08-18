@@ -125,6 +125,22 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Kouzuki Oden", Variation: "EB01-001", Edition: "EB-02 - Extra Booster: Memorial Collection"},
 	},
 	{
+		Desc: "a word appended behind the coded name keeps the coded set",
+		In:   mtgmatcher.InputCard{Name: "Adio", Variation: "OP03-002", Edition: "OP03 - Pillars of Strength Cards"},
+	},
+	{
+		Desc: "the same set reached by spelling its marker in order",
+		In:   mtgmatcher.InputCard{Name: "Adio", Variation: "OP03-002", Edition: "OP03 - Pillars of Strength Pre-Release"},
+	},
+	{
+		Desc: "a word appended past a family name keeps the coded volume",
+		In:   mtgmatcher.InputCard{Name: "Monkey.D.Luffy", Variation: "OP01-024", Edition: "PRB-01 - Premium Booster -The Best- Promo"},
+	},
+	{
+		Desc: "a family name cut short still resolves through its code",
+		In:   mtgmatcher.InputCard{Name: "Lucky.Roux", Variation: "PRB02-003", Edition: "PRB-02: Premium Booster"},
+	},
+	{
 		Desc: "an event set missing its deck ordinal still selects it",
 		In:   mtgmatcher.InputCard{Name: "Usopp", Variation: "ST01-002", Edition: "Super Pre-Release Starter Deck: Straw Hat Crew"},
 	},
