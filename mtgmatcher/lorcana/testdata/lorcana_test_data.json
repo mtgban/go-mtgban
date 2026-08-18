@@ -5990,17 +5990,6 @@
         "uuid": "22"
     },
     {
-        "description": "product id still lets the wording pick the foil sub-type",
-        "input": {
-            "id": "647652",
-            "name": "Ariel - Singing Mermaid",
-            "variant": "15/204 Holofoil",
-            "edition": "Fabled",
-            "foil": true
-        },
-        "uuid": "1951_rainbowpillars"
-    },
-    {
         "description": "product id two cards claim falls back to the name",
         "input": {
             "id": "544501",
@@ -6037,6 +6026,16 @@
             "foil": true
         },
         "uuid": "2432"
+    },
+    {
+        "description": "the wording picks the foil sub-type the id cannot name",
+        "input": {
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204 Holofoil",
+            "edition": "Fabled",
+            "foil": true
+        },
+        "uuid": "1951_rainbowpillars"
     },
     {
         "description": "truncated name reaches a foil-only card listed without the flag",

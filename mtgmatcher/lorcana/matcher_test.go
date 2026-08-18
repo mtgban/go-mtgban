@@ -41,10 +41,11 @@ var updateLorcana = flag.Bool("update-lorcana", false,
 // in the real datastore (checked against LorcanaJSON at authoring time).
 var lorcanaSeeds = []matchTest{
 	{
-		// TCGplayer prices this printing as three skus; the product id
-		// names the printing, so the sub-type has to come from the wording.
-		Desc: "product id still lets the wording pick the foil sub-type",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
+		// TCGplayer prices this printing as three skus and the scraper
+		// withholds the product id for the sub-typed one, since neither the
+		// id nor the foil flag can name it; the wording answers alone.
+		Desc: "the wording picks the foil sub-type the id cannot name",
+		In:   mtgmatcher.InputCard{Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
 	},
 	{
 		Desc: "product id two cards claim falls back to the name",

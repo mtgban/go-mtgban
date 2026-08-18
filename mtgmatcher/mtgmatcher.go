@@ -123,20 +123,6 @@ func (b *Backend) MatchId(inputID string, finishes ...bool) (string, error) {
 	return outID, nil
 }
 
-// hasFoilSubtype reports whether a printing registers a finish the caller's
-// foil and etched flags cannot name - Lorcana's cold foil, rainbow pillars
-// and the rest, which TCGplayer prices as skus of their own.
-func hasFoilSubtype(co *CardObject) bool {
-	for finish := range co.FoilUUIDs {
-		switch finish {
-		case FinishNonfoil, FinishFoil, FinishEtched:
-		default:
-			return true
-		}
-	}
-	return false
-}
-
 func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	if b.Sets == nil {
 		return "", ErrDatastoreEmpty
@@ -197,16 +183,6 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 			case b.rules != nil && b.rules.MissingPromoTag(b, inCard, co):
 				Logger.Println("Missing necessary tag")
 				return "", ErrUnsupported
-			// MatchId resolves the finish from the caller's flags, which can
-			// name the three finishes a flag has a bit for and no more. A
-			// printing sold in a named foil sub-type beyond them has a
-			// choice the flags cannot make, and answering with the plain
-			// foil would file two of its sku prices under one id; the text
-			// path below reads the sub-type out of the wording the caller
-			// sent alongside. Without a name there is no text path to fall
-			// to, so the id's answer stands.
-			case inCard.Name != "" && hasFoilSubtype(co):
-				Logger.Println("Printing carries a foil sub-type, letting the wording pick")
 			// Actually found id
 			default:
 				return outID, nil
