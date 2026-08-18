@@ -161,6 +161,11 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Lint
+        run: |
+          go run github.com/mgechev/revive@v1.13.0 \
+            -set_exit_status -config .revive.toml ./...
+
       - name: Cache Datastore
         uses: actions/cache/restore@v5
         with:
