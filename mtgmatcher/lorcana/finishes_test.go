@@ -1,0 +1,156 @@
+package lorcana
+
+import (
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
+
+// loadDatastore opens the datastore the finish suites run against, or skips.
+func loadDatastore(t *testing.T) *mtgmatcher.Backend {
+	t.Helper()
+	path := os.Getenv("LORCANA_PATH")
+	if path == "" {
+		t.Skip("LORCANA_PATH not set; skipping Lorcana finish suite")
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	b, err := Load(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
+}
+
+// TestFinishPromotion walks every printing in the datastore and asks every
+// one of its uuids for every finish it is sold in: plain to holofoil,
+// holofoil to plain, and between two foils. Each answer has to be the uuid
+// carrying that finish, which is also the check that no two finishes of a
+// printing answer with one uuid.
+func TestFinishPromotion(t *testing.T) {
+	b := loadDatastore(t)
+
+	var entries, promotions int
+	for uuid, co := range b.UUIDs {
+		if co.Sealed {
+			continue
+		}
+		entries++
+
+		seen := map[string]string{}
+		for key, target := range co.FoilUUIDs {
+			if other, found := seen[target]; found {
+				t.Errorf("%s: finishes %q and %q share uuid %s", uuid, other, key, target)
+			}
+			seen[target] = key
+
+			targetCo, err := b.GetUUID(target)
+			if err != nil {
+				t.Errorf("%s: finish %q names unknown uuid %s", uuid, key, target)
+				continue
+			}
+			got, err := b.MatchIdFinish(uuid, targetCo.Finish)
+			if err != nil || got != target {
+				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q",
+					uuid, targetCo.Finish, got, err, target)
+			}
+			promotions++
+		}
+	}
+	t.Logf("%d entries, %d promotions", entries, promotions)
+}
+
+// TestVendorFinishNames pins the alias table the loader registers, which is
+// what lets a TCGplayer sku name the finish it prices: Normal and Cold Foil
+// are the plain printing and the standard foil, Holofoil is the treatment
+// past it, and a printing sold in no such treatment answers Holofoil with an
+// error rather than with the standard foil's uuid - the merge that would
+// file two sku prices under one uuid.
+func TestVendorFinishNames(t *testing.T) {
+	b := loadDatastore(t)
+
+	var withSubType, specialOnly, plainFoil int
+	counted := map[string]bool{}
+	for uuid, co := range b.UUIDs {
+		if co.Sealed {
+			continue
+		}
+
+		nonfoil := co.FoilUUIDs[mtgmatcher.FinishNonfoil]
+		foil := co.FoilUUIDs[mtgmatcher.FinishFoil]
+		var subType, foilFinish string
+		for key := range co.FoilUUIDs {
+			if key != mtgmatcher.FinishNonfoil && key != mtgmatcher.FinishFoil {
+				subType = key
+			}
+		}
+		if foil != "" {
+			foilCo, err := b.GetUUID(foil)
+			if err != nil {
+				t.Fatalf("%s: foil sibling %s is not in the datastore", uuid, foil)
+			}
+			foilFinish = foilCo.Finish
+		}
+
+		// Every sibling answers the same, whichever one the caller sends
+		for _, name := range []string{"Normal", "Cold Foil", "Foil"} {
+			want := foil
+			if name == "Normal" {
+				want = nonfoil
+			}
+			got, err := b.MatchIdFinish(uuid, name)
+			if want == "" {
+				if !errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
+					t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want the finish refused", uuid, name, got, err)
+				}
+				continue
+			}
+			if err != nil || got != want {
+				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q", uuid, name, got, err, want)
+			}
+		}
+
+		got, err := b.MatchIdFinish(uuid, "Holofoil")
+		kind := ""
+		switch {
+		case subType != "":
+			kind = "subtype"
+			if err != nil || got != co.FoilUUIDs[subType] {
+				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q",
+					uuid, "Holofoil", got, err, co.FoilUUIDs[subType])
+			}
+		case foilFinish != "" && foilFinish != standardFoil:
+			kind = "special"
+			if err != nil || got != foil {
+				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q", uuid, "Holofoil", got, err, foil)
+			}
+		default:
+			kind = "plain"
+			if !errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
+				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want the finish refused", uuid, "Holofoil", got, err)
+			}
+		}
+		if counted[nonfoil+"|"+foil] {
+			continue
+		}
+		counted[nonfoil+"|"+foil] = true
+		switch kind {
+		case "subtype":
+			withSubType++
+		case "special":
+			specialOnly++
+		default:
+			plainFoil++
+		}
+	}
+	if withSubType == 0 || specialOnly == 0 || plainFoil == 0 {
+		t.Fatalf("datastore covers only part of the table: %d sub-typed, %d special-only, %d plain",
+			withSubType, specialOnly, plainFoil)
+	}
+	t.Logf("%d sub-typed, %d special-foil-only, %d plain-foil printings", withSubType, specialOnly, plainFoil)
+}

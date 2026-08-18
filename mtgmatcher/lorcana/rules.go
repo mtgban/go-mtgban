@@ -1,6 +1,7 @@
 package lorcana
 
 import (
+	"maps"
 	"slices"
 	"strings"
 
@@ -230,15 +231,12 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			}
 			finishFits = true
 		}
-		// A variation naming a foil sub-type re-keys the copy's FoilUUIDs so
+		// A listing naming a foil sub-type re-keys the copy's FoilUUIDs so
 		// the flag-driven resolution downstream lands on that sub-type's uuid
 		// instead of the primary foil's.
-		if finish := selectFinish(inCard, &card); finish != "" {
-			foilUUIDs := make(map[string]string, len(card.FoilUUIDs))
-			for k, v := range card.FoilUUIDs {
-				foilUUIDs[k] = v
-			}
-			foilUUIDs[mtgmatcher.FinishFoil] = card.FoilUUIDs[finish]
+		if uuid := selectFinish(b, inCard, &card); uuid != "" {
+			foilUUIDs := maps.Clone(card.FoilUUIDs)
+			foilUUIDs[mtgmatcher.FinishFoil] = uuid
 			card.FoilUUIDs = foilUUIDs
 		}
 		switch {
@@ -295,29 +293,38 @@ func extractNumber(variation string) string {
 	return trimmed
 }
 
-// selectFinish maps a storefront's foil sub-type wording onto one of the
-// card's stored finishes, so sub-typed printings resolve to their own uuid
-// instead of folding onto the primary foil. A direct mention of the exported
-// sub-type name wins; TCGplayer instead calls every sub-type past the primary
-// cold foil "Holofoil", so when the card stores exactly one such sub-type,
-// that is the one. Anything else keeps the flag-driven resolution.
-func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
-	variation := strings.ToLower(strings.ReplaceAll(inCard.Variation, " ", ""))
+// selectFinish maps the foil a listing names onto the uuid of the printing
+// sold in it, so a sub-typed printing resolves to its own uuid instead of
+// folding onto the primary foil. The caller's own finish answers first; a
+// storefront that sends none still spells the sub-type in its wording, and
+// the names to look for there are the ones the printing carries - its stored
+// finishes and the vendor spellings the loader registered beside them, which
+// is where "Holofoil means this printing's special treatment" lives. Anything
+// else, a nonfoil included, keeps the flag-driven resolution.
+func selectFinish(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
+	if inCard.Finish != "" {
+		uuid := b.FinishUUID(card, inCard.Finish)
+		if uuid != "" && uuid != card.FoilUUIDs[mtgmatcher.FinishNonfoil] {
+			return uuid
+		}
+	}
 
-	var extra string
-	extras := 0
-	for finish := range card.FoilUUIDs {
+	// One wording can hold two of the names and map iteration is random, so
+	// both sets are visited in sorted order, the printing's own finishes
+	// before the spellings that only reach them.
+	variation := mtgmatcher.NormalizeFinish(inCard.Variation)
+	for _, finish := range slices.Sorted(maps.Keys(card.FoilUUIDs)) {
 		if finish == mtgmatcher.FinishNonfoil || finish == mtgmatcher.FinishFoil {
 			continue
 		}
 		if strings.Contains(variation, finish) {
-			return finish
+			return card.FoilUUIDs[finish]
 		}
-		extra = finish
-		extras++
 	}
-	if extras == 1 && strings.Contains(variation, "holofoil") {
-		return extra
+	for _, alias := range slices.Sorted(maps.Keys(card.FinishAliases)) {
+		if strings.Contains(variation, alias) {
+			return card.FoilUUIDs[card.FinishAliases[alias]]
+		}
 	}
 	return ""
 }

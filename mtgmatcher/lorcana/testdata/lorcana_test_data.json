@@ -5780,6 +5780,25 @@
         "uuid": "2497"
     },
     {
+        "description": "a sub-type uuid plus a finish reaches its plain sibling",
+        "input": {
+            "id": "1951_rainbowpillars",
+            "finish": "Normal"
+        },
+        "uuid": "1951"
+    },
+    {
+        "description": "an id sent without a finish answers with the flag's foil",
+        "input": {
+            "id": "647652",
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204 Holofoil",
+            "edition": "Fabled",
+            "foil": true
+        },
+        "uuid": "1951_f"
+    },
+    {
         "description": "case variant: base spelling reaches the enchanted printing",
         "input": {
             "name": "Cruella De Vil - Miserable as Usual",
@@ -5856,6 +5875,18 @@
             "edition": "Shimmering Skies"
         },
         "uuid": "973"
+    },
+    {
+        "description": "negative: a finish the printing is not sold in",
+        "input": {
+            "id": "647652",
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204",
+            "edition": "Fabled",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "error": "unknown finish"
     },
     {
         "description": "negative: a foil-only sibling does not settle an ambiguous prefix",
@@ -5990,15 +6021,39 @@
         "uuid": "22"
     },
     {
-        "description": "product id still lets the wording pick the foil sub-type",
+        "description": "product id plus the plain sku's finish",
         "input": {
             "id": "647652",
             "name": "Ariel - Singing Mermaid",
-            "variant": "15/204 Holofoil",
+            "variant": "15/204",
             "edition": "Fabled",
-            "foil": true
+            "finish": "Normal"
+        },
+        "uuid": "1951"
+    },
+    {
+        "description": "product id plus the sku's finish reaches the foil sub-type",
+        "input": {
+            "id": "647652",
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204",
+            "edition": "Fabled",
+            "foil": true,
+            "finish": "Holofoil"
         },
         "uuid": "1951_rainbowpillars"
+    },
+    {
+        "description": "product id plus the standard foil sku's finish",
+        "input": {
+            "id": "647652",
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204",
+            "edition": "Fabled",
+            "foil": true,
+            "finish": "Cold Foil"
+        },
+        "uuid": "1951_f"
     },
     {
         "description": "product id two cards claim falls back to the name",
@@ -6055,6 +6110,16 @@
             "edition": "Not A Real Set"
         },
         "uuid": "460"
+    },
+    {
+        "description": "wording alone still picks the foil sub-type",
+        "input": {
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204 Holofoil",
+            "edition": "Fabled",
+            "foil": true
+        },
+        "uuid": "1951_rainbowpillars"
     },
     {
         "description": "zero collector number carrying a storefront letter",

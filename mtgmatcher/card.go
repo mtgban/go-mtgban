@@ -25,6 +25,14 @@ type InputCard struct {
 	// Whether the card is foil or not
 	Foil bool `json:"foil,omitempty"`
 
+	// The finish being priced, spelled the way the source spells it
+	// ("Normal", "Cold Foil", "Holofoil", …): the game's rules place the
+	// name (GameRules.CanonicalFinish), so a caller pricing one printing in
+	// one finish can name the finish instead of choosing between the two the
+	// Foil flag has a bit for. It refines the flag rather than replacing it,
+	// and saying nothing leaves the flag to answer alone.
+	Finish string `json:"finish,omitempty"`
+
 	// The card belongs to the extended side of the set, usually containing
 	// variants with the same name of existing cards in the same set, but with
 	// different frames or border effects

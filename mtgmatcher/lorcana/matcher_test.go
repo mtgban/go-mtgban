@@ -41,10 +41,42 @@ var updateLorcana = flag.Bool("update-lorcana", false,
 // in the real datastore (checked against LorcanaJSON at authoring time).
 var lorcanaSeeds = []matchTest{
 	{
-		// TCGplayer prices this printing as three skus; the product id
-		// names the printing, so the sub-type has to come from the wording.
-		Desc: "product id still lets the wording pick the foil sub-type",
+		// TCGplayer prices this printing as three skus; the id names the
+		// printing and the finish beside it names which sku.
+		Desc: "product id plus the sku's finish reaches the foil sub-type",
+		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Holofoil", Foil: true},
+	},
+	{
+		// The same product id, each of the other skus TCGplayer prices it
+		// as, so no two of them can answer with one uuid.
+		Desc: "product id plus the plain sku's finish",
+		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Normal"},
+	},
+	{
+		Desc: "product id plus the standard foil sku's finish",
+		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Cold Foil", Foil: true},
+	},
+	{
+		// Promotion runs from any sibling: a sub-type's own uuid demotes
+		// to the plain printing when the caller prices that sku.
+		Desc: "a sub-type uuid plus a finish reaches its plain sibling",
+		In:   mtgmatcher.InputCard{Id: "1951_rainbowpillars", Finish: "Normal"},
+	},
+	{
+		// An id with no finish beside it is still the flag's question, so
+		// the wording no longer overrides the printing the id names.
+		Desc: "an id sent without a finish answers with the flag's foil",
 		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
+	},
+	{
+		// A storefront that sends no id still spells the sub-type, and
+		// that path is untouched.
+		Desc: "wording alone still picks the foil sub-type",
+		In:   mtgmatcher.InputCard{Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
+	},
+	{
+		Desc: "negative: a finish the printing is not sold in",
+		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Reverse Holofoil", Foil: true},
 	},
 	{
 		Desc: "product id two cards claim falls back to the name",
