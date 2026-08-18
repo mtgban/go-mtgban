@@ -917,7 +917,7 @@ func (b *Backend) SealedCardUnit(setCode, sealedUUID string) int {
 			for _, content := range contents {
 				switch key {
 				case "card":
-					result += 1
+					result++
 				case "pack",
 					"deck":
 					result += product.CardCount
