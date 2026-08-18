@@ -362,6 +362,13 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	return false
 }
 
+// CanonicalFinish adds nothing to the shared vocabulary: Riftbound sells a
+// printing plain or foil and the datastore already records those with the
+// matcher's constants.
+func (Rules) CanonicalFinish(name string) string {
+	return mtgmatcher.CanonicalFinish(name)
+}
+
 // FilterCards narrows candidates by edition, collector number, and finish,
 // mirroring the Lorcana rules: candidates come from the name hash (stable
 // load order), the cardSet keys carry the sets matching the input edition

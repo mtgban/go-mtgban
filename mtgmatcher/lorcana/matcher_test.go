@@ -359,16 +359,17 @@ func TestLorcanaFinishNames(t *testing.T) {
 			continue
 		}
 		if co.Foil {
-			if co.Finish == "" || co.Finish == "none" || co.Finish == mtgmatcher.FinishNonfoil {
+			if co.Finish == "" || co.Finish == mtgmatcher.FinishNonfoil {
 				t.Errorf("%s: foil entry with finish %q", uuid, co.Finish)
 			}
 		} else if co.Finish != mtgmatcher.FinishNonfoil {
 			t.Errorf("%s: nonfoil entry with finish %q", uuid, co.Finish)
 		}
-		// A sub-type uuid's suffix is derived from the same exported name.
+		// A sub-type uuid is suffixed with the finish's canonical name, so
+		// the entry's own finish spells the suffix outright.
 		if idx := strings.IndexByte(uuid, '_'); idx >= 0 && uuid[idx:] != suffixFoil {
-			if got := foilSuffix(co.Finish); got != uuid[idx+1:] {
-				t.Errorf("%s: finish %q does not derive suffix %q", uuid, co.Finish, uuid[idx+1:])
+			if co.Finish != uuid[idx+1:] {
+				t.Errorf("%s: finish %q does not spell suffix %q", uuid, co.Finish, uuid[idx+1:])
 			}
 			subTypes[co.Finish]++
 		}

@@ -396,9 +396,12 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 		finishUUIDs[mtgmatcher.FinishNonfoil] = card.UUID
 	}
 
-	// Shared card object
+	// Shared card object. Every uuid saved below names the finish it carries;
+	// the plain one is the finish each branch starts from, and the branches
+	// that move on to a foil or an etched uuid rename it as they go.
 	base := toMtgCard(card)
 	base.FoilUUIDs = finishUUIDs
+	base.Finish = mtgmatcher.FinishNonfoil
 	co := mtgmatcher.CardObject{
 		Card:    base,
 		Edition: edition,
@@ -417,6 +420,7 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 		if card.HasFinish(mtgmatcher.FinishFoil) {
 			// Set the main property
 			co.Foil = true
+			co.Finish = mtgmatcher.FinishFoil
 			// Make sure "_f" is appended if a different version exists
 			if card.HasFinish(mtgmatcher.FinishNonfoil) {
 				uuid = card.UUID + suffixFoil
@@ -430,6 +434,7 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 		// Set the main properties
 		co.Foil = false
 		co.Etched = true
+		co.Finish = mtgmatcher.FinishEtched
 		// If there are alternative finishes, always append the suffix
 		if card.HasFinish(mtgmatcher.FinishNonfoil) || card.HasFinish(mtgmatcher.FinishFoil) {
 			uuid = card.UUID + suffixEtched
@@ -452,6 +457,7 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 
 		// Foil
 		co.Foil = true
+		co.Finish = mtgmatcher.FinishFoil
 		// Save the card object
 		save(uuid, co)
 	} else {

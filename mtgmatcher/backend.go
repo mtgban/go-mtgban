@@ -156,20 +156,34 @@ type Card struct {
 
 	OriginalNumber string
 
-	// FoilUUIDs maps a finish (or, for Lorcana, a specific foil sub-type such
-	// as "rainbowpillars") to the uuid that carries it, so a card with several
-	// finishes registers each one explicitly instead of encoding it in the uuid
-	// string. output() pulls the resolved finish's uuid from here; the standard
-	// foil stays under FinishFoil ("_f") for compatibility. Loaders populate it;
-	// a Card without it falls back to the suffix rules.
+	// FoilUUIDs holds one entry per finish the printing is sold in, mapping
+	// it to the uuid that carries it: every finish has a uuid of its own and
+	// no uuid answers for two. The three shared finishes are keyed by their
+	// constant, since output() resolves the caller's flags to one of them
+	// and pulls the uuid from here (the standard foil stays under FinishFoil,
+	// "_f", for compatibility); a finish past them - Lorcana's
+	// "rainbowpillars" - is keyed by the game's canonical name for it, the
+	// same name CardObject.Finish carries. Loaders populate it; a Card
+	// without it falls back to the suffix rules.
 	FoilUUIDs map[string]string
 
-	// Finish is the name of the finish this specific entry carries — the
-	// verbatim (lowercased) name exported by the source data for foils, e.g.
-	// Lorcana's foil types "silver" or "rainbowpillars", or FinishNonfoil —
-	// so entries whose Foil flag alone cannot tell them apart remain
-	// distinguishable. It is set per stored uuid, not on the set-level card,
-	// which represents every finish.
+	// FinishAliases maps a finish name onto the FoilUUIDs key answering for
+	// it on this printing, for the names whose meaning is the printing's own
+	// business rather than the game's: Lorcana keys a printing's standard
+	// foil under FinishFoil whatever its foil type is called, so the loader
+	// registers that type's own name here, along with the name TCGplayer
+	// prices the printing's special treatment under. Aliases are spellings,
+	// never finishes - they add no uuid and hide none.
+	FinishAliases map[string]string
+
+	// Finish is the canonical name of the finish this specific entry
+	// carries, as the game's rules spell it (GameRules.CanonicalFinish):
+	// FinishNonfoil, FinishFoil and FinishEtched where the game has no name
+	// of its own, and the game's own name where it has one - Lorcana's
+	// "silver" or "rainbowpillars". It is set per stored uuid, not on the
+	// set-level card, which represents every finish, and it is what makes
+	// two entries the Foil flag cannot tell apart distinguishable. Sealed
+	// entries carry no finish.
 	Finish string
 
 	// A list of URLs containing the image of the card
@@ -196,12 +210,6 @@ func (c *Card) HasFrameEffect(fe string) bool {
 func (c *Card) HasPromoType(pt string) bool {
 	return slices.Contains(c.PromoTypes, pt)
 }
-
-const (
-	FinishNonfoil = "nonfoil"
-	FinishFoil    = "foil"
-	FinishEtched  = "etched"
-)
 
 // CardObject is an extension of Card, containing fields that cannot
 // be easily represented in the original object.

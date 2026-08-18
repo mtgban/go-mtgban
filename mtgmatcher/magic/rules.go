@@ -1460,6 +1460,14 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		(inCard.IsSerialized() && !co.HasPromoType(PromoTypeSerialized))
 }
 
+// CanonicalFinish adds nothing to the shared vocabulary: mtgjson names
+// Magic's three finishes with the matcher's own constants, and the frames
+// and treatments past them (showcase, textured, surge) are promo types a
+// card carries, not finishes it is sold in.
+func (Rules) CanonicalFinish(name string) string {
+	return mtgmatcher.CanonicalFinish(name)
+}
+
 // sameSet reports whether every candidate is filed in one and the same set.
 func sameSet(cards []mtgmatcher.Card) bool {
 	for _, card := range cards[1:] {

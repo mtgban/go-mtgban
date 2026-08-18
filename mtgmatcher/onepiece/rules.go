@@ -220,6 +220,15 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	return false
 }
 
+// CanonicalFinish adds nothing to the shared vocabulary: a One Piece product
+// is sold plain or foil, spelled "Normal" and "Foil" by the catalog the
+// datastore is built from, and both are names every game shares. The parallel
+// and manga treatments are variants of a printing, each priced as a product
+// of its own, not finishes of one.
+func (Rules) CanonicalFinish(name string) string {
+	return mtgmatcher.CanonicalFinish(name)
+}
+
 // FilterCards narrows candidates by edition, collector number and variant.
 // The variant tiering mirrors the number sharing in the data: when the
 // input's wording describes a variant label, the printings it describes
