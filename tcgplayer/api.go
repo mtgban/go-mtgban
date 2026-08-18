@@ -216,7 +216,7 @@ func LatestSales(ctx context.Context, tcgProductID string, flags ...bool) ([]Lat
 	var response latestSalesResponse
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal error %w:", err)
+		return nil, fmt.Errorf("unmarshal error: %w", err)
 	}
 
 	return response.Data, nil
