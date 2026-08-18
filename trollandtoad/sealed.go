@@ -156,11 +156,9 @@ func (tnt *TrollandtoadSealed) parsePages(ctx context.Context, link string, last
 	}()
 
 	for res := range channel {
-		err := tnt.inventory.Add(res.cardID, res.invEntry)
-		if err != nil {
-			// Too many false positives
-			//tnt.printf("%v", err)
-		}
+		// Discarded deliberately: too many false positives to be worth
+		// reporting one per entry.
+		_ = tnt.inventory.Add(res.cardID, res.invEntry)
 	}
 
 	tnt.inventoryDate = time.Now()
