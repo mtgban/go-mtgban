@@ -18,6 +18,10 @@ import (
 // marker in it and whose printings wear no label at all. Bepo is that pair
 // again with the marker appended instead, so the two set codes share the
 // field a storefront prefix spells and only the wording tells them apart.
+// Adio is that pair once more with a two-word marker, so the event name's
+// last word sits behind it and no truncation of that name ever reaches the
+// base name with it - which is the word a storefront decorating the base
+// name reaches for first.
 const variantFixture = `{
 	"game": "onepiece",
 	"sets": {
@@ -34,7 +38,8 @@ const variantFixture = `{
 		"ST-04 PRE": {"name": "Super Pre-Release Starter Deck 4: Animal Kingdom Pirates", "releaseDate": "2023-02-10"},
 		"OP-RP":     {"name": "Revision Pack Cards", "releaseDate": "2024-09-13"},
 		"OP14":      {"name": "The Azure Sea's Seven", "releaseDate": "2026-01-16"},
-		"OP14 RE":   {"name": "The Azure Sea's Seven Release Event Cards", "releaseDate": "2026-01-09"}
+		"OP14 RE":   {"name": "The Azure Sea's Seven Release Event Cards", "releaseDate": "2026-01-09"},
+		"OP03 PRE":  {"name": "Pillars of Strength Pre-Release Cards", "releaseDate": "2023-06-16"}
 	},
 	"cards": [
 		{"id": "op01-016_base", "name": "Nami", "number": "OP01-016", "setCode": "OP01", "rarity": "C", "finish": "Normal", "image": "x"},
@@ -55,7 +60,9 @@ const variantFixture = `{
 		{"id": "momo_base", "name": "Kouzuki Momonosuke", "number": "OP01-031", "setCode": "OP01", "rarity": "C", "finish": "Normal", "image": "x"},
 		{"id": "momo_prb", "name": "Kouzuki Momonosuke", "number": "PRB01-031", "setCode": "PRB-01", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
 		{"id": "op14-012_base", "name": "Bepo", "number": "OP14-012", "setCode": "OP14", "rarity": "C", "finish": "Normal", "image": "x"},
-		{"id": "op14-012_re", "name": "Bepo", "number": "OP14-012", "setCode": "OP14 RE", "rarity": "C", "finish": "Normal", "image": "x"}
+		{"id": "op14-012_re", "name": "Bepo", "number": "OP14-012", "setCode": "OP14 RE", "rarity": "C", "finish": "Normal", "image": "x"},
+		{"id": "op03-002_base", "name": "Adio", "number": "OP03-002", "setCode": "OP03", "rarity": "C", "finish": "Normal", "image": "x"},
+		{"id": "op03-002_pre", "name": "Adio", "number": "OP03-002", "setCode": "OP03 PRE", "rarity": "C", "finish": "Normal", "image": "x"}
 	]
 }`
 
@@ -150,6 +157,35 @@ func TestEditionNamesOneSet(t *testing.T) {
 			desc: "the same code with no marker spelled keeps the base set",
 			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "OP14 - The Azure Sea's Seven"},
 			want: "op14-012_base",
+		},
+		{
+			// The event set carries every word this wording spells, so the
+			// counts alone would hand it the listing. It does not spell them
+			// in that set's order: a truncation loses a name's tail, so a
+			// wording reading as one opens with the name it cut. This one
+			// opens with the coded set's name and hangs a word off the end,
+			// which is a storefront decorating the name it wrote.
+			desc: "a word appended behind the coded name is not a truncation",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "OP14 - The Azure Sea's Seven Cards"},
+			want: "op14-012_base",
+		},
+		{
+			desc: "a word the event set spells inside its name decorates the coded one",
+			in:   mtgmatcher.InputCard{Name: "Adio", Variation: "OP03-002", Edition: "OP03 - Pillars of Strength Cards"},
+			want: "op03-002_base",
+		},
+		{
+			desc: "the same pair reached in order still selects the event set",
+			in:   mtgmatcher.InputCard{Name: "Adio", Variation: "OP03-002", Edition: "OP03 - Pillars of Strength Pre-Release"},
+			want: "op03-002_pre",
+		},
+		{
+			// The volumes share every word of the shorter name, so a word
+			// hung off it leaves both a word short and neither can outrank
+			// the other: the code is the only thing left saying which.
+			desc: "a word appended past a family name keeps the coded volume",
+			in:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016", Edition: "PRB-01 - Premium Booster -The Best- Promo"},
+			want: "op01-016_manga",
 		},
 	}
 

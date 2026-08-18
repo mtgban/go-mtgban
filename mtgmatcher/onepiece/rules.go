@@ -381,11 +381,19 @@ var promoLineRe = regexp.MustCompile(`(?i)^promos?\s*[:-]\s*`)
 // The set code the storefront wore in front of the name overrides the
 // wording: a family shares its name across volumes ("Premium Booster -The
 // Best-" and its Vol. 2), so the code is the only thing that says which
-// one the listing is filed in. Only a coded set accounting for the wording
-// in full may do so, the case where the storefront truncated the name it
-// wrote: an event set's code shares its first field with the base set's,
-// so a coded set the wording leaves words short is the storefront naming
-// one of the pair and the code merely resembling the other.
+// one the listing is filed in. An event set's code opens with its base
+// set's - "OP14 RE" against "OP14" - and that opening field is the whole
+// of what a storefront prefix spells, so the code cannot tell the pair
+// apart and the wording has to. Only the wording being a name the
+// storefront cut short unseats the code, and which words it holds does
+// not say that: the markers the event sets append come out of one
+// vocabulary, so a wording sharing every word with one of them is as
+// likely a storefront hanging a decoration off the base name. A
+// truncation loses a name's tail, so the wording that is one spells the
+// winner's leading words in the winner's order - "The Azure Sea's Seven
+// Release" against "The Azure Sea's Seven Release Event Cards", where
+// "Pillars of Strength Cards" reaches past the marker of "Pillars of
+// Strength Pre-Release Cards" and is decoration on the coded set instead.
 func canonicalEdition(b *mtgmatcher.Backend, edition, code string) string {
 	want := editionTokens(edition)
 	if len(want) == 0 {
@@ -416,8 +424,14 @@ func canonicalEdition(b *mtgmatcher.Backend, edition, code string) string {
 			runner = cur
 		}
 	}
-	if coded.name != "" && coded.missing == 0 {
-		return coded.name
+	// The coded set answers unless the winner both accounts for more of the
+	// wording than it does and spells that wording as its own leading
+	// words: only then is the wording a name the storefront cut short.
+	if coded.name != "" {
+		cut := best.missing < coded.missing && truncates(edition, best.name)
+		if !cut {
+			return coded.name
+		}
 	}
 	if best.name == "" || !best.beats(runner) {
 		return ""
@@ -479,17 +493,38 @@ func (s editionScore) beats(other editionScore) bool {
 	return !s.event && other.event
 }
 
-// editionTokens splits a set name into the words that carry its identity.
-// Normalize is no help here: it drops the spaces the words are counted by.
-func editionTokens(edition string) map[string]bool {
-	out := map[string]bool{}
-	fields := strings.FieldsFunc(strings.ToLower(edition), func(r rune) bool {
+// editionFields splits a set name into the words that carry its identity,
+// in the order it spells them. Normalize is no help here: it drops the
+// spaces the words are counted by.
+func editionFields(edition string) []string {
+	return strings.FieldsFunc(strings.ToLower(edition), func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
 	})
-	for _, field := range fields {
+}
+
+func editionTokens(edition string) map[string]bool {
+	out := map[string]bool{}
+	for _, field := range editionFields(edition) {
 		out[field] = true
 	}
 	return out
+}
+
+// truncates reports whether the wording is the set name with a tail cut
+// off: its words are that name's leading ones, in the order the name
+// spells them.
+func truncates(edition, name string) bool {
+	want := editionFields(edition)
+	have := editionFields(name)
+	if len(want) == 0 || len(want) > len(have) {
+		return false
+	}
+	for i, field := range want {
+		if field != have[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // isEventSet reports whether a set code files the event printings of

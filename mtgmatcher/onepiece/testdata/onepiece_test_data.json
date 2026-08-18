@@ -18,6 +18,15 @@
         "uuid": "op14-012_671811"
     },
     {
+        "description": "a family name cut short still resolves through its code",
+        "input": {
+            "name": "Lucky.Roux",
+            "variant": "PRB02-003",
+            "edition": "PRB-02: Premium Booster"
+        },
+        "uuid": "prb02-003_653261_foil"
+    },
+    {
         "description": "a promo line spelled a word off still selects the event set",
         "input": {
             "name": "Aladine (OP07-020)",
@@ -69,6 +78,24 @@
             "edition": "500 Years into the Future"
         },
         "uuid": "op07-029_545812_foil"
+    },
+    {
+        "description": "a word appended behind the coded name keeps the coded set",
+        "input": {
+            "name": "Adio",
+            "variant": "OP03-002",
+            "edition": "OP03 - Pillars of Strength Cards"
+        },
+        "uuid": "op03-002_499880"
+    },
+    {
+        "description": "a word appended past a family name keeps the coded volume",
+        "input": {
+            "name": "Monkey.D.Luffy",
+            "variant": "OP01-024",
+            "edition": "PRB-01 - Premium Booster -The Best- Promo"
+        },
+        "uuid": "op01-024_586178_foil"
     },
     {
         "description": "a wording spelling no event marker keeps the base set",
@@ -300,6 +327,15 @@
             "edition": "OP14 - The Azure Sea's Seven"
         },
         "uuid": "op14-012_671358"
+    },
+    {
+        "description": "the same set reached by spelling its marker in order",
+        "input": {
+            "name": "Adio",
+            "variant": "OP03-002",
+            "edition": "OP03 - Pillars of Strength Pre-Release"
+        },
+        "uuid": "op03-002_501695"
     },
     {
         "description": "the set code outranks a wording naming the other volume",
