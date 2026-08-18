@@ -273,34 +273,30 @@ func gameFoil(gameID int, product Product) bool {
 	case GameIdOnePiece:
 		return product.Properties.OnePieceFoil
 	case GameIdFleshAndBlood:
-		// Anything beyond the plain treatment is a foil; the empty and
-		// stringly-false values old listings carry are plain too. Yu-Gi-Oh
-		// deliberately has no arm: the rarity is the finish, so every
-		// listing reads nonfoil through the default below.
-		switch product.Properties.FabFoilNew {
-		case "", "Regular", "false":
-			return false
-		}
-		return true
+		// Every treatment the listing names is a foil, so the named finish
+		// answers the flag too. Yu-Gi-Oh deliberately has no arm: the rarity
+		// is its treatment, so every listing reads nonfoil through the
+		// default below.
+		return gameFinish(gameID, product) != ""
 	}
 	return false
 }
 
-// coldFoilID hops a resolved Flesh and Blood id onto its product's Cold
-// Foil entry, preferring the plainest print run exactly as the loader's
-// foil defaults do; a product without a cold entry keeps the resolved id.
-func coldFoilID(cardID string) string {
-	co, err := mtgmatcher.GetUUID(cardID)
-	if err != nil {
-		return cardID
+// gameFinish names the finish a listing prices, for the games whose
+// properties name one rather than flagging it. Flesh and Blood is the only
+// one so far: its treatment is a string, and the name reaches the printing's
+// own Cold Foil sibling, which the boolean cannot - it has one bit for a
+// game selling three treatments. The plain values name no treatment and are
+// left to the flag; the stringly-false is what old listings carry.
+func gameFinish(gameID int, product Product) string {
+	if gameID != GameIdFleshAndBlood {
+		return ""
 	}
-	for _, key := range []string{"coldfoil", "unlimitededitioncoldfoil", "1steditioncoldfoil"} {
-		id, found := co.FoilUUIDs[key]
-		if found {
-			return id
-		}
+	switch product.Properties.FabFoilNew {
+	case "", "Regular", "false":
+		return ""
 	}
-	return cardID
+	return product.Properties.FabFoilNew
 }
 
 func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed bool) (map[int]*Blueprint, map[int]string) {

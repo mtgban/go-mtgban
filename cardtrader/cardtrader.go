@@ -163,18 +163,15 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 			if number == "" {
 				number = product.Properties.Number
 			}
-			variation := gameVariation(ct.gameID, blueprint, number)
-			// The named Flesh and Blood treatment rides beside the number so
-			// selectFinish can route Rainbow against Cold; the boolean below
-			// keeps carrying the plain foilness like everywhere else.
-			if ct.gameID == GameIdFleshAndBlood && gameFoil(ct.gameID, product) {
-				variation = strings.TrimSpace(variation + " " + product.Properties.FabFoilNew)
-			}
 			theCard = &mtgmatcher.InputCard{
 				Name:      blueprint.Name,
 				Edition:   blueprint.Expansion.Name,
-				Variation: variation,
-				Foil:      gameFoil(ct.gameID, product),
+				Variation: gameVariation(ct.gameID, blueprint, number),
+				// A listing is one printing in one finish, and the games
+				// whose properties name it say which; the flag beside it
+				// keeps carrying the plain foilness like everywhere else.
+				Finish: gameFinish(ct.gameID, product),
+				Foil:   gameFoil(ct.gameID, product),
 			}
 		default:
 			ct.printf("unsupported game %d", ct.gameID)
@@ -189,13 +186,13 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 		// preprocessing, and a blueprint without an id falls through.
 		var cardID string
 		if ct.gameID != GameIdMagic && blueprint.TCGplayerId != 0 {
-			cardID, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
-			// The id lookup expresses the finish as one boolean, which lands
-			// on the rainbow-first foil default; a Cold Foil listing names
-			// the one treatment the boolean cannot reach, so hop to the cold
-			// sibling of the product the id already resolved exactly.
-			if cardID != "" && ct.gameID == GameIdFleshAndBlood && product.Properties.FabFoilNew == "Cold Foil" {
-				cardID = coldFoilID(cardID)
+			// A named finish reaches the sibling the flag cannot: the flag
+			// has one bit and lands on the product's foil default, where the
+			// name says which of its treatments the listing prices.
+			if theCard.Finish != "" {
+				cardID, _ = mtgmatcher.MatchIdFinish(fmt.Sprint(blueprint.TCGplayerId), theCard.Finish)
+			} else {
+				cardID, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
 			}
 		}
 

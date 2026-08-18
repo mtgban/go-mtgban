@@ -284,13 +284,14 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// ("JDG_001") and the variant letter ("155b") that the product's bare
 	// number field drops. The underscores become spaces so the matcher's
 	// number extraction reads the leading code and the rest stays wording.
-	// The finish is inert there - one product is one printing - but the
-	// flag rides along like everywhere else.
+	// The catalog's own finish name rides beside the flag: a product is one
+	// printing in one treatment, and only the name says which.
 	if game == GameFleshAndBlood {
 		return mtgmatcher.Match(&mtgmatcher.InputCard{
 			Name:      p.Name,
 			Edition:   p.Set,
 			Variation: strings.ReplaceAll(skuNumber(p.SKU), "_", " "),
+			Finish:    p.Finish,
 			Foil:      foil,
 		})
 	}
