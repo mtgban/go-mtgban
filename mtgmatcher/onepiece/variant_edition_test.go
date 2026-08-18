@@ -311,3 +311,64 @@ func TestEditionKeepsVariantPrintings(t *testing.T) {
 		})
 	}
 }
+
+// TestPromoMarkerNamesNoSet pins what counts as a promo line naming a set.
+// The remainder is handed to a normalized comparison, so a marker trailing
+// nothing a set name could be matched against selects nothing: whatever a
+// storefront left after its marker, the event printing is reached only by
+// wording that survives the normalizing.
+func TestPromoMarkerNamesNoSet(t *testing.T) {
+	b := variantBackend(t)
+
+	tests := []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{
+			desc: "a promo line naming the set reaches the event printing",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "Promos: The Azure Sea's Seven"},
+			want: "op14-012_re",
+		},
+		{
+			desc: "a bare marker keeps the regular printing",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "Promos:"},
+			want: "op14-012_base",
+		},
+		{
+			// Punctuation is what the normalizing drops first, so each of
+			// these remainders reaches the comparison as the empty needle
+			// every set name contains - the bare marker again, spelled with
+			// something in it.
+			desc: "a marker trailing a dash keeps the regular printing",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "Promos: -"},
+			want: "op14-012_base",
+		},
+		{
+			desc: "a marker trailing a stop keeps the regular printing",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "Promo - ."},
+			want: "op14-012_base",
+		},
+		{
+			// The normalizing drops a bare "s" along with the apostrophe, so
+			// a guard counting words would still call this a set name.
+			desc: "a marker trailing a possessive keeps the regular printing",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "Promo: 's"},
+			want: "op14-012_base",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			in := test.in
+			uuid, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match = %v, want %q", err, test.want)
+			}
+			if uuid != test.want {
+				co, _ := b.GetUUID(uuid)
+				t.Errorf("Match = %q (%v), want %q", uuid, co, test.want)
+			}
+		})
+	}
+}

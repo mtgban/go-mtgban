@@ -81,6 +81,14 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Dogura", Variation: "OP02-010", Edition: "Promos:"},
 	},
 	{
+		Desc: "a promo marker trailing punctuation names no set either",
+		In:   mtgmatcher.InputCard{Name: "Dogura", Variation: "OP02-010", Edition: "Promos: -"},
+	},
+	{
+		Desc: "a promo marker trailing a possessive names no set either",
+		In:   mtgmatcher.InputCard{Name: "Dogura", Variation: "OP02-010", Edition: "Promo: 's"},
+	},
+	{
 		Desc: "the set itself keeps the regular printing",
 		In:   mtgmatcher.InputCard{Name: "Adio (OP03-002)", Variation: "002", Edition: "Pillars of Strength"},
 	},
