@@ -38,6 +38,16 @@
         "uuid": "opp-662894_foil"
     },
     {
+        "description": "an alternate-art rune resolves to its own printing",
+        "input": {
+            "name": "Fury Rune",
+            "variant": "R01a Alternate Art",
+            "edition": "Vendetta",
+            "foil": true
+        },
+        "uuid": "ven-709312_foil"
+    },
+    {
         "description": "base printing wins over its promos by default",
         "input": {
             "name": "Viktor - Leader",
@@ -172,16 +182,6 @@
         "error": "unknown variant"
     },
     {
-        "description": "negative: a missing alternate art does not fall back on its base number",
-        "input": {
-            "name": "Fury Rune",
-            "variant": "R01a Alternate Art",
-            "edition": "Vendetta",
-            "foil": true
-        },
-        "error": "unknown variant"
-    },
-    {
         "description": "negative: a promo qualifier no printing carries refuses to pick one",
         "input": {
             "name": "Edge of Night (Winner Stamp)",
@@ -196,6 +196,16 @@
             "name": "Poppy - Defender of the Meek",
             "variant": "178b Summoner Skirmish | Champion",
             "edition": "Promos",
+            "foil": true
+        },
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: an absent alternate art does not fall back on its base number",
+        "input": {
+            "name": "Fury Rune",
+            "variant": "R01d Alternate Art",
+            "edition": "Vendetta",
             "foil": true
         },
         "error": "unknown variant"

@@ -261,10 +261,17 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Poppy - Defender of the Meek", Variation: "178b Summoner Skirmish | Champion", Edition: "Promos", Foil: true},
 	},
 	{
-		// The rune alternate arts are missing rows, and R01 is a real plain
-		// printing of the same name: stripping the letter must not reach it.
-		Desc: "negative: a missing alternate art does not fall back on its base number",
+		// The datastore carries the rune alternate arts since 2026-08-18;
+		// before that this input was the negative below, because no R01a row
+		// existed to answer it.
+		Desc: "an alternate-art rune resolves to its own printing",
 		In:   mtgmatcher.InputCard{Name: "Fury Rune", Variation: "R01a Alternate Art", Edition: "Vendetta", Foil: true},
+	},
+	{
+		// R01 is a real plain printing of the same name, so stripping the
+		// letter off an art that does not exist must not reach it.
+		Desc: "negative: an absent alternate art does not fall back on its base number",
+		In:   mtgmatcher.InputCard{Name: "Fury Rune", Variation: "R01d Alternate Art", Edition: "Vendetta", Foil: true},
 	},
 	{
 		Desc: "the storefront wording picks the promo variant it describes",
