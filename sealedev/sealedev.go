@@ -498,7 +498,7 @@ func (ss *SealedEVScraper) Buylist() mtgban.BuylistRecord {
 	return ss.buylist
 }
 
-func (tcg *SealedEVScraper) MarketNames() []string {
+func (ss *SealedEVScraper) MarketNames() []string {
 	var names []string
 	for _, param := range evParameters {
 		if param.TargetsBuylist {
