@@ -199,6 +199,7 @@ const (
 	PromoTypeBuyABox           = "buyabox"
 	PromoTypeConcept           = "concept"
 	PromoTypeConfettiFoil      = "confettifoil"
+	PromoTypeCosmicFoil        = "cosmicfoil"
 	PromoTypeDoubleExposure    = "doubleexposure"
 	PromoTypeDoubleRainbow     = "doublerainbow"
 	PromoTypeDracula           = "draculaseries"
