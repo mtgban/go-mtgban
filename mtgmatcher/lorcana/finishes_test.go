@@ -67,10 +67,12 @@ func TestFinishPromotion(t *testing.T) {
 
 // TestVendorFinishNames pins the alias table the loader registers, which is
 // what lets a TCGplayer sku name the finish it prices: Normal and Cold Foil
-// are the plain printing and the standard foil, Holofoil is the treatment
-// past it, and a printing sold in no such treatment answers Holofoil with an
-// error rather than with the standard foil's uuid - the merge that would
-// file two sku prices under one uuid.
+// are the plain printing and the standard foil, and Holofoil is the treatment
+// past the plain foil where the printing has one and its only foil where it
+// does not. The catalog is what says so: of the 418 products whose single sku
+// TCGplayer names Holofoil, 15 are foiled in plain silver, so refusing the
+// name on those refuses the only sku they have. A printing sold in no foil at
+// all still refuses it, which is the merge worth preventing.
 func TestVendorFinishNames(t *testing.T) {
 	b := loadDatastore(t)
 
@@ -124,13 +126,16 @@ func TestVendorFinishNames(t *testing.T) {
 				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q",
 					uuid, "Holofoil", got, err, co.FoilUUIDs[subType])
 			}
-		case foilFinish != "" && foilFinish != standardFoil:
+		case foil != "":
 			kind = "special"
+			if foilFinish == standardFoil {
+				kind = "plain"
+			}
 			if err != nil || got != foil {
 				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q", uuid, "Holofoil", got, err, foil)
 			}
 		default:
-			kind = "plain"
+			kind = "nofoil"
 			if !errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
 				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want the finish refused", uuid, "Holofoil", got, err)
 			}
