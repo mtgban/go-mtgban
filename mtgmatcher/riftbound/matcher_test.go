@@ -216,6 +216,35 @@ var riftboundSeeds = []matchTest{
 		Desc: "a per-set promo heading reaches the promo printing",
 		In:   mtgmatcher.InputCard{Name: "Stacked Deck", Edition: "Origins: Promos", Variation: "183", Foil: true},
 	},
+	// CardTrader files the prerelease and launch cards under a heading of
+	// its own. It ends in "Promos" like the generic one, so it used to
+	// collapse onto it, but it names a set outright - every listing under it
+	// has an organized-play printing at its number - and the generic heading
+	// cannot answer for it: this is one of the few numbers two promotional
+	// sets both carry.
+	{
+		Desc: "the release-event heading narrows to the set that issued it",
+		In:   mtgmatcher.InputCard{Name: "Jinx - Rebel", Variation: "202", Edition: "Release Event Promos", Foil: true},
+	},
+	{
+		Desc: "the release-event heading tolerates the storefront qualifier",
+		In:   mtgmatcher.InputCard{Name: "Jinx - Rebel", Variation: "202 Prerelease Stamped", Edition: "Release Event Promos", Foil: true},
+	},
+	{
+		// The other half of the narrowing: 169 is a main-set number too.
+		Desc: "the release-event heading reaches the promo of a main-set number",
+		In:   mtgmatcher.InputCard{Name: "Ashe - Focused", Variation: "169", Edition: "Release Event Promos", Foil: true},
+	},
+	{
+		// CardTrader spells the champion stamp as a letter on the number
+		// ("058c" against the gallery's plain 58) and says the word only in
+		// the blueprint version, which the scraper does not pass on. The
+		// number alone cannot choose between the plain promotional printing
+		// and the champion one, and either answer misprices the other, so
+		// this deliberately stays a miss.
+		Desc: "negative: a champion-suffixed number picks neither promo sibling",
+		In:   mtgmatcher.InputCard{Name: "Lillia - Protector of Dreams", Variation: "058c", Edition: "Promos", Foil: true},
+	},
 	{
 		Desc: "the storefront wording picks the promo variant it describes",
 		In:   mtgmatcher.InputCard{Name: "Jinx - Loose Cannon (Metal) (Best Of)", Edition: "Promo"},
