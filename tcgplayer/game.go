@@ -190,15 +190,20 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 			// rules can tell foil sub-types apart (SelectFinish).
 			printing := tcg.printings[sku.PrintingID]
 			theCard := &mtgmatcher.InputCard{
-				// Every game datastore stamps the TCGplayer product id on
-				// the printing it names, so the id identifies the card
-				// outright; Match tries it first and falls back to the
-				// fields below whenever the datastore does not carry it.
-				Id:        fmt.Sprint(sku.ProductID),
 				Name:      cardName,
 				Edition:   tcg.editions[product.GroupID].Name,
 				Variation: strings.TrimSpace(number + " " + printing),
 				Foil:      printing != "Normal",
+			}
+			// Every game datastore stamps the TCGplayer product id on the
+			// printing it names, so the id identifies the card outright and
+			// Match tries it before the fields above. It names a product
+			// though, and the foil flag beside it names one of two
+			// finishes: a sku printed in anything else is a choice neither
+			// can express, so the wording answers for those alone rather
+			// than the id resolving them to the plain foil.
+			if printing == "Normal" || printing == "Foil" {
+				theCard.Id = fmt.Sprint(sku.ProductID)
 			}
 			cardID, err := mtgmatcher.Match(theCard)
 			if errors.Is(err, mtgmatcher.ErrUnsupported) {
