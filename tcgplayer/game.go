@@ -186,18 +186,22 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 
 			cardName := product.Name
 			number := RawProductNumber(&product)
-			// The printing name rides along in the variation so the game
-			// rules can tell foil sub-types apart (SelectFinish).
+			// A sku is a printing in one finish, and the printing name is
+			// what TCGplayer calls that finish. It rides in Finish for the
+			// id path and in the variation for the wording path, which is
+			// all a datastore without the product id leaves to answer with.
 			printing := tcg.printings[sku.PrintingID]
 			theCard := &mtgmatcher.InputCard{
 				// Every game datastore stamps the TCGplayer product id on
-				// the printing it names, so the id identifies the card
-				// outright; Match tries it first and falls back to the
-				// fields below whenever the datastore does not carry it.
+				// the printing it names, so the id plus the finish beside it
+				// identify the sku outright; Match tries them first and falls
+				// back to the fields below whenever the datastore does not
+				// carry the id.
 				Id:        fmt.Sprint(sku.ProductID),
 				Name:      cardName,
 				Edition:   tcg.editions[product.GroupID].Name,
 				Variation: strings.TrimSpace(number + " " + printing),
+				Finish:    printing,
 				Foil:      printing != "Normal",
 			}
 			cardID, err := mtgmatcher.Match(theCard)
