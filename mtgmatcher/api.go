@@ -193,9 +193,21 @@ func SearchSealedEquals(name string) ([]string, error) {
 func (b *Backend) searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
 	var hashes []string
 	name = Normalize(name)
+	// One printing can answer to several entries - a game may index a card
+	// under a qualified spelling as well as its bare name, and a prefix
+	// match reaches both - so the buckets overlap and a caller would be
+	// handed the same card twice.
+	seen := map[string]bool{}
 	for i := range slice {
-		if f(slice[i], name) {
-			hashes = append(hashes, b.Hashes[slice[i]]...)
+		if !f(slice[i], name) {
+			continue
+		}
+		for _, uuid := range b.Hashes[slice[i]] {
+			if seen[uuid] {
+				continue
+			}
+			seen[uuid] = true
+			hashes = append(hashes, uuid)
 		}
 	}
 	if hashes == nil {
