@@ -1,5 +1,15 @@
 [
     {
+        "description": "a champion-suffixed number reaches the stamp its wording names",
+        "input": {
+            "name": "Lillia - Protector of Dreams",
+            "variant": "058c Summoner Skirmish | Champion",
+            "edition": "Promos",
+            "foil": true
+        },
+        "uuid": "opp-705531_foil"
+    },
+    {
         "description": "a fuller storefront qualifier picks the promo it describes",
         "input": {
             "name": "Edge of Night (Champion Stamp)",
@@ -162,6 +172,16 @@
         "error": "unknown variant"
     },
     {
+        "description": "negative: a missing alternate art does not fall back on its base number",
+        "input": {
+            "name": "Fury Rune",
+            "variant": "R01a Alternate Art",
+            "edition": "Vendetta",
+            "foil": true
+        },
+        "error": "unknown variant"
+    },
+    {
         "description": "negative: a promo qualifier no printing carries refuses to pick one",
         "input": {
             "name": "Edge of Night (Winner Stamp)",
@@ -169,6 +189,16 @@
             "edition": "Promo"
         },
         "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a stamp the gallery does not carry keeps its miss",
+        "input": {
+            "name": "Poppy - Defender of the Meek",
+            "variant": "178b Summoner Skirmish | Champion",
+            "edition": "Promos",
+            "foil": true
+        },
+        "error": "unknown variant"
     },
     {
         "description": "negative: edition excludes the printing carrying the number",
@@ -382,6 +412,16 @@
             "edition": "Promo"
         },
         "uuid": "opp-669252_foil"
+    },
+    {
+        "description": "the unlettered sibling still answers for the plain promo",
+        "input": {
+            "name": "Lillia - Protector of Dreams",
+            "variant": "058 Summoner Skirmish | Top Cut",
+            "edition": "Promos",
+            "foil": true
+        },
+        "uuid": "opp-705530_foil"
     },
     {
         "description": "the unqualified name keeps the main printing of that number",

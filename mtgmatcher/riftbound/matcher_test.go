@@ -235,15 +235,36 @@ var riftboundSeeds = []matchTest{
 		Desc: "the release-event heading reaches the promo of a main-set number",
 		In:   mtgmatcher.InputCard{Name: "Ashe - Focused", Variation: "169", Edition: "Release Event Promos", Foil: true},
 	},
+	// CardTrader spells the champion stamp as a letter on the number ("058c"
+	// against the gallery's plain 58) and says the word itself in the
+	// blueprint version. The letter is no code - Poppy's champion is 178b,
+	// because 178a was already an alternate art - so it is the wording that
+	// decides, and the retry on the base number only accepts a printing that
+	// wording describes.
 	{
-		// CardTrader spells the champion stamp as a letter on the number
-		// ("058c" against the gallery's plain 58) and says the word only in
-		// the blueprint version, which the scraper does not pass on. The
-		// number alone cannot choose between the plain promotional printing
-		// and the champion one, and either answer misprices the other, so
-		// this deliberately stays a miss.
+		Desc: "a champion-suffixed number reaches the stamp its wording names",
+		In:   mtgmatcher.InputCard{Name: "Lillia - Protector of Dreams", Variation: "058c Summoner Skirmish | Champion", Edition: "Promos", Foil: true},
+	},
+	{
+		Desc: "the unlettered sibling still answers for the plain promo",
+		In:   mtgmatcher.InputCard{Name: "Lillia - Protector of Dreams", Variation: "058 Summoner Skirmish | Top Cut", Edition: "Promos", Foil: true},
+	},
+	{
+		// The bare number describes nothing, so it still picks neither.
 		Desc: "negative: a champion-suffixed number picks neither promo sibling",
 		In:   mtgmatcher.InputCard{Name: "Lillia - Protector of Dreams", Variation: "058c", Edition: "Promos", Foil: true},
+	},
+	{
+		// Poppy's champion stamp is not in the gallery at all: the retry
+		// must leave the listing unmatched rather than hand it the plain 178.
+		Desc: "negative: a stamp the gallery does not carry keeps its miss",
+		In:   mtgmatcher.InputCard{Name: "Poppy - Defender of the Meek", Variation: "178b Summoner Skirmish | Champion", Edition: "Promos", Foil: true},
+	},
+	{
+		// The rune alternate arts are missing rows, and R01 is a real plain
+		// printing of the same name: stripping the letter must not reach it.
+		Desc: "negative: a missing alternate art does not fall back on its base number",
+		In:   mtgmatcher.InputCard{Name: "Fury Rune", Variation: "R01a Alternate Art", Edition: "Vendetta", Foil: true},
 	},
 	{
 		Desc: "the storefront wording picks the promo variant it describes",
