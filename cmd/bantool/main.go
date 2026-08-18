@@ -1,3 +1,5 @@
+// Command bantool runs the scrapers and writes what they return, either to
+// disk or to a cloud bucket, one file per scraper and price kind.
 package main
 
 import (

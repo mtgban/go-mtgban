@@ -1,3 +1,5 @@
+// Command boosterList prints the sheets a set's boosters draw from, and
+// what each one can produce.
 package main
 
 import (

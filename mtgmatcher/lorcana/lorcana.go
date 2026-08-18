@@ -1,3 +1,8 @@
+// Package lorcana loads a Lorcana datastore.
+//
+// The datastore is LorcanaJSON's allCards payload, enriched by
+// github.com/mtgban/lorcana-datastore with sealed product and the
+// TCGplayer product ids the plain payload does not carry.
 package lorcana
 
 import (

@@ -1,3 +1,9 @@
+// Package mtgmatcher resolves the loose card descriptions storefronts
+// publish, a name and whatever qualifiers they chose, to the one printing
+// they meant, and gives every printing a stable uuid to price against.
+//
+// Each game registers its own datastore loader and matching rules; see the
+// mtgmatcher/<game> packages, or mtgmatcher/games to link them all in.
 package mtgmatcher
 
 import (

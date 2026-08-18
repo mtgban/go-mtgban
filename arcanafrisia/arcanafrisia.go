@@ -1,3 +1,4 @@
+// Package arcanafrisia scrapes Arcana Frisia.
 package arcanafrisia
 
 import (

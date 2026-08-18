@@ -1,3 +1,4 @@
+// Package mtgseattle scrapes MTGSeattle.
 package mtgseattle
 
 import (

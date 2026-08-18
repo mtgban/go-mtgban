@@ -1,3 +1,4 @@
+// Package merlion scrapes Merlion Games.
 package merlion
 
 import (

@@ -1,3 +1,4 @@
+// Package hareruya scrapes Hareruya, for singles and sealed product.
 package hareruya
 
 import (

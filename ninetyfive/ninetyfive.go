@@ -1,3 +1,4 @@
+// Package ninetyfive scrapes 95mtg.
 package ninetyfive
 
 import (

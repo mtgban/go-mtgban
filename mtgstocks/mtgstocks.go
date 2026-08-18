@@ -1,3 +1,5 @@
+// Package mtgstocks reads MTGStocks, which publishes interests and price
+// movement rather than a storefront's inventory.
 package mtgstocks
 
 import (

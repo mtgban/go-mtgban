@@ -1,3 +1,4 @@
+// Package wizardscupboard scrapes Wizard's Cupboard.
 package wizardscupboard
 
 import (

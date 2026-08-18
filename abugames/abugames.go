@@ -1,3 +1,4 @@
+// Package abugames scrapes ABU Games, for both singles and sealed product.
 package abugames
 
 import (

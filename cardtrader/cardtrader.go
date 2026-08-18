@@ -1,3 +1,5 @@
+// Package cardtrader scrapes Card Trader, both the marketplace and sealed
+// product, across every game they carry.
 package cardtrader
 
 import (

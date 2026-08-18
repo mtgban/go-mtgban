@@ -1,3 +1,5 @@
+// Package miniaturemarket scrapes Miniature Market, which stocks sealed
+// product only.
 package miniaturemarket
 
 import (

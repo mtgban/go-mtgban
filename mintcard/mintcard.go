@@ -1,3 +1,4 @@
+// Package mintcard scrapes MTG Mint Card.
 package mintcard
 
 import (
