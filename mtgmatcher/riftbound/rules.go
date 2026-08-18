@@ -281,12 +281,15 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 // as the Spiritforged card of the same number.
 //
 // Only the renames the data agrees on are here. Every product id that
-// resolves in these three lands in one set apiece - 31, 58 and 24 of them -
-// whereas CardTrader's plain "Promos" splits across two promotional sets, so
-// there is no single answer to give it and it is deliberately absent.
+// resolves under these headings lands in one set apiece - 31, 58, 2 and 24 of
+// them - and the release-event heading, thin on ids, has an organized-play
+// printing at the number of all 17 of its listings. CardTrader's plain
+// "Promos" splits across two promotional sets, so there is no single answer
+// to give it and it is deliberately absent.
 var storefrontEditions = map[string]string{
 	mtgmatcher.Normalize("Organized Play"):          "Riftbound Organized Play Promotional Cards",
 	mtgmatcher.Normalize("Nexus Night Promos"):      "Riftbound Organized Play Promotional Cards",
+	mtgmatcher.Normalize("Release Event Promos"):    "Riftbound Organized Play Promotional Cards",
 	mtgmatcher.Normalize("Origins Proving Grounds"): "Proving Grounds",
 }
 

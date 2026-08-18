@@ -152,6 +152,16 @@
         "uuid": "ogn-066-298_foil"
     },
     {
+        "description": "negative: a champion-suffixed number picks neither promo sibling",
+        "input": {
+            "name": "Lillia - Protector of Dreams",
+            "variant": "058c",
+            "edition": "Promos",
+            "foil": true
+        },
+        "error": "unknown variant"
+    },
+    {
         "description": "negative: a promo qualifier no printing carries refuses to pick one",
         "input": {
             "name": "Edge of Night (Winner Stamp)",
@@ -316,6 +326,36 @@
             "foil": true
         },
         "uuid": "ogn-066-298_foil"
+    },
+    {
+        "description": "the release-event heading narrows to the set that issued it",
+        "input": {
+            "name": "Jinx - Rebel",
+            "variant": "202",
+            "edition": "Release Event Promos",
+            "foil": true
+        },
+        "uuid": "opp-662882_foil"
+    },
+    {
+        "description": "the release-event heading reaches the promo of a main-set number",
+        "input": {
+            "name": "Ashe - Focused",
+            "variant": "169",
+            "edition": "Release Event Promos",
+            "foil": true
+        },
+        "uuid": "opp-692931_foil"
+    },
+    {
+        "description": "the release-event heading tolerates the storefront qualifier",
+        "input": {
+            "name": "Jinx - Rebel",
+            "variant": "202 Prerelease Stamped",
+            "edition": "Release Event Promos",
+            "foil": true
+        },
+        "uuid": "opp-662882_foil"
     },
     {
         "description": "the same number stays in the base set for its own edition",
