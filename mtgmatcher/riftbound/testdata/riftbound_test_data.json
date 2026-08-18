@@ -36,6 +36,15 @@
         "uuid": "ogn-246-298_foil"
     },
     {
+        "description": "champion-first name reaches the promo when the edition says so",
+        "input": {
+            "name": "Master Yi - Meditative",
+            "variant": "4",
+            "edition": "Promos"
+        },
+        "uuid": "opp-680323_foil"
+    },
+    {
         "description": "champion-prefixed legend resolves to its title",
         "input": {
             "name": "Kai'Sa - Daughter of the Void",
