@@ -266,17 +266,17 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		card := ac.Cards[i]
 		// Normalize Lorcana's many foil-type names (Silver, Satin, Magma, …) to
 		// the matcher's finish constants: "None" is nonfoil, everything else is
-		// foil, so output() can select the right (foil) uuid downstream.
+		// foil, so output() can select the right (foil) uuid downstream. Which
+		// foil each of them is stays on the uuid carrying it, below.
 		finishes := make([]string, len(card.FoilTypes))
 		for i, finish := range card.FoilTypes {
-			if strings.EqualFold(finish, "none") {
-				finishes[i] = "nonfoil"
-			} else {
-				finishes[i] = "foil"
+			finishes[i] = mtgmatcher.FinishFoil
+			if canonicalFinish(finish) == mtgmatcher.FinishNonfoil {
+				finishes[i] = mtgmatcher.FinishNonfoil
 			}
 		}
 		if len(finishes) == 0 {
-			finishes = append(finishes, "nonfoil")
+			finishes = append(finishes, mtgmatcher.FinishNonfoil)
 		}
 
 		// Ensure no spaces are present for ease of future comparisons
@@ -329,6 +329,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// derives from the sub-type name, not its position, so it is stable
 		// across data updates that reorder or add foil types.
 		finishUUIDs := map[string]string{}
+		finishAliases := map[string]string{}
 		type perFinish struct {
 			uuid string
 			foil bool
@@ -337,16 +338,16 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		var stored []perFinish
 		foilSeen := false
 		for i, finish := range finishes {
-			if finish != "foil" {
+			if finish != mtgmatcher.FinishFoil {
 				finishUUIDs[mtgmatcher.FinishNonfoil] = convertedCard.UUID
 				stored = append(stored, perFinish{convertedCard.UUID, false, mtgmatcher.FinishNonfoil})
 				continue
 			}
 
-			// The verbatim exported finish name, lowercased ("silver",
+			// The exported foil type as the vocabulary spells it ("silver",
 			// "rainbowpillars", …). Nonfoil above uses the matcher's own
 			// constant instead of the export's "None" placeholder.
-			finishName := strings.ToLower(card.FoilTypes[i])
+			finishName := canonicalFinish(card.FoilTypes[i])
 
 			uuid := convertedCard.UUID
 			key := mtgmatcher.FinishFoil
@@ -360,13 +361,36 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			} else {
 				// Additional sub-types get a name-derived uuid, keyed by their
 				// sub-type name in the map.
-				key = foilSuffix(card.FoilTypes[i])
+				key = finishName
 				uuid += "_" + key
 			}
 			finishUUIDs[key] = uuid
 			stored = append(stored, perFinish{uuid, true, finishName})
+
+			// The standard foil is keyed under the shared constant whatever
+			// the printing's foil type is called, so its own name is
+			// registered as a spelling that reaches it.
+			if finishName != key {
+				finishAliases[finishName] = key
+			}
+			// TCGplayer prices a Lorcana printing in up to four printings:
+			// Normal, Foil and Cold Foil for the silver foil almost every
+			// card is foiled in, and Holofoil for a treatment past it. Which
+			// uuid that names is the printing's own business - the sub-type
+			// where there is one (the foil types are visited in exported
+			// order, so it wins over the standard foil), the sole special
+			// foil where that is all the printing is sold in, and nothing at
+			// all for a plain silver foil, whose Holofoil sku would be a
+			// treatment the datastore does not carry rather than a second
+			// name for the foil it does.
+			if finishName != standardFoil {
+				finishAliases[tcgSpecialFoil] = key
+			}
 		}
 		convertedCard.FoilUUIDs = finishUUIDs
+		if len(finishAliases) > 0 {
+			convertedCard.FinishAliases = finishAliases
+		}
 
 		// A card LorcanaJSON has no TCGplayer link for carries a zero id:
 		// registering that would file every one of them under "0" for the
@@ -571,12 +595,13 @@ var lorcanaRarityMap = map[string]int{
 
 const suffixFoil = "_f"
 
-// foilSuffix turns a LorcanaJSON foil-type name (Silver, Satin, RainbowPillars,
-// …) into a compact, uuid-safe suffix used to give each foil sub-type past the
-// primary its own uuid.
-func foilSuffix(foilType string) string {
-	return strings.ToLower(strings.ReplaceAll(foilType, " ", ""))
-}
+// standardFoil is LorcanaJSON's name for the cold foil almost every Lorcana
+// card is foiled in (2717 of the 3242 printings in the datastore at the time
+// of writing); every other foil type is a treatment on top of it.
+const standardFoil = "silver"
+
+// tcgSpecialFoil is the one name TCGplayer prices any such treatment under.
+const tcgSpecialFoil = "holofoil"
 
 var lorcanaColorNameMap = map[string]string{
 	"W": "white",

@@ -135,6 +135,35 @@ func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	return false
 }
 
+// CanonicalFinish owns Lorcana's finish vocabulary. Lorcana's finish names
+// are data rather than a fixed list - LorcanaJSON gives every printing the
+// foil types it is sold in, and new ones keep arriving (Silver, Satin, Magma,
+// FreeForm1, RainbowPillars, …) - so an unrecognized name is normalized and
+// handed back rather than refused, and the lookup against the printing's own
+// finishes is what decides. The named cases are the spellings that are not a
+// foil type: LorcanaJSON's placeholder for a plain printing, and the name
+// TCGplayer prices the standard foil under.
+func (Rules) CanonicalFinish(name string) string {
+	return canonicalFinish(name)
+}
+
+func canonicalFinish(name string) string {
+	normalized := mtgmatcher.NormalizeFinish(name)
+	switch normalized {
+	case "none":
+		return mtgmatcher.FinishNonfoil
+	// Every Lorcana foil is a cold foil, whichever foil type the printing
+	// is sold in, so the name names the printing's standard foil rather
+	// than a type of its own
+	case "coldfoil":
+		return mtgmatcher.FinishFoil
+	}
+	if finish := mtgmatcher.CanonicalFinish(name); finish != "" {
+		return finish
+	}
+	return normalized
+}
+
 // FilterCards narrows candidates by edition, collector number, and finish:
 // candidates come from the name hash rather than the edition-keyed cardSet
 // values, so case-variant spellings that normalize to the same canonical name

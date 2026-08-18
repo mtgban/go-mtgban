@@ -43,6 +43,17 @@ type GameRules interface {
 	// is unsupported rather than mismatched. Games without tagged promos
 	// return false.
 	MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
+	// CanonicalFinish spells a finish name the way this game names it: its
+	// own name for every finish it has, the vendor aliases that reach them,
+	// and CanonicalFinish (the package function) for the finishes every game
+	// shares. The game owns this vocabulary - it is the one place a source's
+	// spelling turns into the name the loaders key Card.FoilUUIDs and stamp
+	// CardObject.Finish with, and the one place a new vendor spelling is
+	// added. A name the game cannot place yields "", so a caller pricing it
+	// is told rather than handed another finish's uuid; a game whose finish
+	// names are data rather than a fixed list may instead hand back the
+	// normalized name and let the lookup fail.
+	CanonicalFinish(name string) string
 }
 
 // SetRules attaches the game-specific identification hooks used by Match. A
