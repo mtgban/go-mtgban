@@ -98,6 +98,20 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	return payload.newBackend(), nil
 }
 
+// qualifiedName spells a printing the way TCGplayer names the product, the
+// character name followed by the qualifier that tells it from its siblings
+// ("Nami (Premium Card Collection -Best Selection Vol. 6-)"). Every One Piece
+// card is named after a character, so the bare name reaches a hundred
+// printings and the qualifier is the only thing that says which one; the
+// catalog spells it out, so it is worth being able to search for. Empty for
+// a base printing, which the bare name already describes.
+func qualifiedName(card *DatastoreCard) string {
+	if card.Variant == "" {
+		return ""
+	}
+	return card.Name + " (" + card.Variant + ")"
+}
+
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
@@ -158,6 +172,26 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		}
 		if !slices.Contains(b.AllCanonicalNames, card.Name) {
 			b.AllCanonicalNames = append(b.AllCanonicalNames, card.Name)
+		}
+		// The qualified spelling is searchable but never canonical: it names
+		// one printing where the bare name names the character, and Match
+		// reads CanonicalNames to decide whether a name needs its
+		// parentheticals split off. Leaving it out of that map keeps the
+		// matcher reading them exactly as it does today.
+		qualified := qualifiedName(&card)
+		if qualified == "" {
+			continue
+		}
+		if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
+			seenNormalized[qn] = true
+			b.AllNames = append(b.AllNames, qn)
+		}
+		if lower := strings.ToLower(qualified); !seenLower[lower] {
+			seenLower[lower] = true
+			b.AllLowerNames = append(b.AllLowerNames, lower)
+		}
+		if !slices.Contains(b.AllCanonicalNames, qualified) {
+			b.AllCanonicalNames = append(b.AllCanonicalNames, qualified)
 		}
 	}
 	sort.Strings(b.AllNames)
@@ -273,6 +307,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			b.UUIDs[co.UUID] = &co
 			b.AllUUIDs = append(b.AllUUIDs, co.UUID)
 			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], co.UUID)
+			if qualified := qualifiedName(card); qualified != "" {
+				qn := mtgmatcher.Normalize(qualified)
+				b.Hashes[qn] = append(b.Hashes[qn], co.UUID)
+			}
 		}
 	}
 
