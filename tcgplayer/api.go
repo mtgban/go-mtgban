@@ -391,21 +391,25 @@ type sellerInventoryResponse struct {
 	Title  string `json:"title"`
 	Status int    `json:"status"`
 
-	Results []struct {
-		Aggregations struct {
-			SetName []struct {
-				URLValue string  `json:"urlValue"`
-				IsActive bool    `json:"isActive"`
-				Value    string  `json:"value"`
-				Count    float64 `json:"count"`
-			} `json:"setName"`
-		} `json:"aggregations"`
-		TotalResults int                     `json:"totalResults"`
-		ResultID     string                  `json:"resultId"`
-		Algorithm    string                  `json:"algorithm"`
-		SearchType   string                  `json:"searchType"`
-		Results      []SellerInventoryResult `json:"results"`
-	} `json:"results"`
+	Results []SellerInventoryPage `json:"results"`
+}
+
+// SellerInventoryPage is one page of a seller's inventory, as the endpoint
+// returns it: alongside the aggregations describing the whole query.
+type SellerInventoryPage struct {
+	Aggregations struct {
+		SetName []struct {
+			URLValue string  `json:"urlValue"`
+			IsActive bool    `json:"isActive"`
+			Value    string  `json:"value"`
+			Count    float64 `json:"count"`
+		} `json:"setName"`
+	} `json:"aggregations"`
+	TotalResults int                     `json:"totalResults"`
+	ResultID     string                  `json:"resultId"`
+	Algorithm    string                  `json:"algorithm"`
+	SearchType   string                  `json:"searchType"`
+	Results      []SellerInventoryResult `json:"results"`
 }
 
 type SellerListing struct {
@@ -485,7 +489,10 @@ func NewSellerClient() *SellerClient {
 	return &tcg
 }
 
-func (tcg *SellerClient) InventoryForSeller(ctx context.Context, sellerKeys []string, size, page int, useDirect bool, finishes []string, sets ...string) (*sellerInventoryResponse, error) {
+// InventoryForSeller returns the pages the endpoint answered with. It only
+// ever fills one, but the shape is its own, so callers index it rather than
+// have the choice made for them; the slice is never empty on a nil error.
+func (tcg *SellerClient) InventoryForSeller(ctx context.Context, sellerKeys []string, size, page int, useDirect bool, finishes []string, sets ...string) ([]SellerInventoryPage, error) {
 	var params sellerInventoryRequest
 	params.Algorithm = "revenue_synonym_v2"
 	params.From = size * page
@@ -538,7 +545,7 @@ func (tcg *SellerClient) InventoryForSeller(ctx context.Context, sellerKeys []st
 		return nil, fmt.Errorf("empty results in response at page %d", page)
 	}
 
-	return &response, nil
+	return response.Results, nil
 }
 
 type sellerInventoryListingRequest struct {

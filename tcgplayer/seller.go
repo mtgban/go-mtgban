@@ -65,15 +65,15 @@ func (tcg *TCGSellerInventory) totalItems(ctx context.Context) (*itemsRecap, err
 		return nil, err
 	}
 
-	if len(response.Results) == 0 {
+	if len(response) == 0 {
 		return nil, errors.New("empty response")
 	}
 
 	var ret itemsRecap
 
-	ret.TotalResults = response.Results[0].TotalResults
+	ret.TotalResults = response[0].TotalResults
 
-	for i, aggregation := range response.Results[0].Aggregations.SetName {
+	for i, aggregation := range response[0].Aggregations.SetName {
 		ret.Pair = append(ret.Pair, setCountPair{
 			Idx:   i,
 			Name:  aggregation.URLValue,
@@ -99,7 +99,7 @@ func (tcg *TCGSellerInventory) processEntry(ctx context.Context, channel chan<- 
 			tcg.printf("InventoryForSeller (entry) %s %s", finish, err.Error())
 			continue
 		}
-		err = tcg.processInventory(channel, response.Results[0].Results)
+		err = tcg.processInventory(channel, response[0].Results)
 		if err != nil {
 			tcg.printf("processInventory %s %s", finish, err.Error())
 		}
@@ -115,7 +115,7 @@ func (tcg *TCGSellerInventory) processEdition(ctx context.Context, channel chan<
 				tcg.printf("InventoryForSeller (edition) %s %s", finish, err.Error())
 				continue
 			}
-			err = tcg.processInventory(channel, response.Results[0].Results)
+			err = tcg.processInventory(channel, response[0].Results)
 			if err != nil {
 				tcg.printf("processInventory %s %s", finish, err.Error())
 			}
