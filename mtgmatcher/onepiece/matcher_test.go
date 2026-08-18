@@ -105,6 +105,18 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Sterry", Variation: "OP07-006", Edition: "500 Years into the Future Pre-Release Cards"},
 	},
 	{
+		Desc: "a code short of the wording does not outrank it",
+		In:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "OP14 - The Azure Sea's Seven Release"},
+	},
+	{
+		Desc: "the same code with no marker spelled keeps the base set",
+		In:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "OP14 - The Azure Sea's Seven"},
+	},
+	{
+		Desc: "a code naming another set yields to a wording naming one",
+		In:   mtgmatcher.InputCard{Name: "Kouzuki Oden", Variation: "EB01-001", Edition: "EB-02 - Extra Booster: Memorial Collection"},
+	},
+	{
 		Desc: "an event set missing its deck ordinal still selects it",
 		In:   mtgmatcher.InputCard{Name: "Usopp", Variation: "ST01-002", Edition: "Super Pre-Release Starter Deck: Straw Hat Crew"},
 	},
