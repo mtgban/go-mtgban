@@ -36,7 +36,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-var PriceListTest string = `
+var PriceListTest = `
 [
     {
       "id": 320768,
