@@ -14,8 +14,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// LorcanaJSON is the top-level structure of the Lorcana JSON data file.
-type LorcanaJSON struct {
+// AllCards is the top-level structure of the Lorcana data file, named for
+// what LorcanaJSON calls it, the way magic names its payload AllPrintings.
+type AllCards struct {
 	Metadata struct {
 		FormatVersion string `json:"formatVersion"`
 		GeneratedOn   string `json:"generatedOn"`
@@ -112,7 +113,7 @@ type LorcanaJSON struct {
 // Load reads a LorcanaJSON data file from r and returns the parsed
 // structure or an error.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
-	var payload LorcanaJSON
+	var payload AllCards
 	err := json.NewDecoder(r).Decode(&payload)
 	if err != nil {
 		return nil, err
@@ -132,10 +133,10 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 // storefront ids rather than the name, so a card renamed in some other
 // language folds away too; the datastore is the English program, and the
 // English name is the one upstream lists first.
-func (lj *LorcanaJSON) englishCards() []int {
+func (ac *AllCards) englishCards() []int {
 	seen := map[string]bool{}
 	var keep []int
-	for i, card := range lj.Cards {
+	for i, card := range ac.Cards {
 		el := card.ExternalLinks
 		if el.TcgPlayerId == 0 && el.CardmarketId == 0 && el.CardTraderId == 0 {
 			keep = append(keep, i)
@@ -152,7 +153,7 @@ func (lj *LorcanaJSON) englishCards() []int {
 	return keep
 }
 
-func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
+func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
@@ -161,11 +162,11 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	b.ExternalIdentifiers = map[string]string{}
 	b.SetSealedUUIDs = map[string][]string{}
 
-	cards := lj.englishCards()
+	cards := ac.englishCards()
 
 	// Load all sets first
 	b.Sets = map[string]*mtgmatcher.Set{}
-	for code, set := range lj.Sets {
+	for code, set := range ac.Sets {
 		b.AllSets = append(b.AllSets, code)
 
 		releaseDateTime, _ := time.Parse("2006-01-02", set.ReleaseDate)
@@ -187,7 +188,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	// read-only by contract, as it always has been for Magic.
 	printingsByName := map[string][]string{}
 	for _, i := range cards {
-		card := lj.Cards[i]
+		card := ac.Cards[i]
 		n := mtgmatcher.Normalize(card.FullName)
 		if !slices.Contains(printingsByName[n], card.SetCode) {
 			printingsByName[n] = append(printingsByName[n], card.SetCode)
@@ -207,7 +208,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	// printing of such a name once per spelling.
 	seenNormalized := map[string]bool{}
 	for _, i := range cards {
-		card := lj.Cards[i]
+		card := ac.Cards[i]
 		// First-seen wins: two Lorcana cards whose names differ only in case
 		// ("as"/"As") normalize equal, so last-wins would let a query for one
 		// resolve to the other. Keep the first to make the mapping stable.
@@ -245,7 +246,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 		claimants[pid][cardID] = true
 	}
 	for _, i := range cards {
-		card := lj.Cards[i]
+		card := ac.Cards[i]
 		claim(card.ExternalLinks.TcgPlayerId, card.ID)
 		for _, extra := range card.ExternalLinks.TcgPlayerExtraIds {
 			claim(extra, card.ID)
@@ -254,7 +255,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 
 	// Load all cards and store them in their relative sets
 	for _, i := range cards {
-		card := lj.Cards[i]
+		card := ac.Cards[i]
 		// Normalize Lorcana's many foil-type names (Silver, Satin, Magma, …) to
 		// the matcher's finish constants: "None" is nonfoil, everything else is
 		// foil, so output() can select the right (foil) uuid downstream.
@@ -463,7 +464,7 @@ func (lj *LorcanaJSON) newBackend() *mtgmatcher.Backend {
 	// index, mirroring how Magic and Riftbound keep sealed products out
 	// of MatchId's reach.
 	var mintedSets bool
-	for _, product := range lj.Sealed {
+	for _, product := range ac.Sealed {
 		// The builder mints a set entry for every group it emits sealed
 		// from, so an unknown code is a hand-made file; give the product
 		// a set to hang off all the same
