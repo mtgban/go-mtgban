@@ -9,7 +9,6 @@ package mtgmatcher
 import (
 	"errors"
 	"slices"
-	"strconv"
 	"strings"
 )
 
@@ -51,16 +50,12 @@ func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 
 // cardObject4Id resolves whatever identifier a caller sends - one of the
 // matcher's own uuids, or an external product id - to the entry it names.
+// The maps decide what an id is: only Magic spells its uuids the way mtgjson
+// does and only some games number their products, so an id is looked up as
+// it was sent rather than measured against either shape first.
 func (b *Backend) cardObject4Id(inputID string) (*CardObject, error) {
-	// Remove any extras after the underscore
-	id := strings.Split(inputID, "_")[0]
-
-	// Validate it's an actual uuid or a plain number for tcg id
-	if !maybeUUID(id) {
-		_, err := strconv.Atoi(id)
-		if err != nil {
-			return nil, ErrCardUnknownId
-		}
+	if inputID == "" {
+		return nil, ErrCardUnknownId
 	}
 
 	// Look up in one of the possible maps
