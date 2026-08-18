@@ -21,6 +21,13 @@ var ErrCardNotInEdition = errors.New("unknown edition")
 var ErrCardWrongVariant = errors.New("unknown variant")
 var ErrCardMissingVariant = errors.New("missing necessary variant")
 var ErrCardWrongFinish = errors.New("unknown finish")
+
+// ErrCardUnnamedFinish is a finish name the game cannot place at all, as
+// opposed to one it placed onto a finish the printing is not sold in. It is
+// not evidence of anything - a vendor spelling nobody has taught the game
+// yet reads the same as a typo - so Match falls through to the wording,
+// which is what answered before an id could name a finish.
+var ErrCardUnnamedFinish = errors.New("unrecognized finish")
 var ErrUnsupported = errors.New("unsupported")
 var ErrAliasing = NewAliasingError()
 

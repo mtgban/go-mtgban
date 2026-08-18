@@ -5780,6 +5780,18 @@
         "uuid": "2497"
     },
     {
+        "description": "a finish name the game does not know falls through to the wording",
+        "input": {
+            "id": "647652",
+            "name": "Ariel - Singing Mermaid",
+            "variant": "15/204 Holofoil",
+            "edition": "Fabled",
+            "foil": true,
+            "finish": "Reverse Holofoil"
+        },
+        "uuid": "1951_rainbowpillars"
+    },
+    {
         "description": "a sub-type uuid plus a finish reaches its plain sibling",
         "input": {
             "id": "1951_rainbowpillars",
@@ -5884,7 +5896,7 @@
             "variant": "15/204",
             "edition": "Fabled",
             "foil": true,
-            "finish": "Reverse Holofoil"
+            "finish": "Satin"
         },
         "error": "unknown finish"
     },
