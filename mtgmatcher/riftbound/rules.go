@@ -55,7 +55,7 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// gate in FilterCards then rightly refuses.
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found &&
 		promoOnlyName(b, inCard.Name) && !targetsPromo {
-		if fixed := legendName(b, inCard.Name); fixed != "" {
+		if fixed := legendName(b, inCard.Name, targetsPromo); fixed != "" {
 			inCard.Name = fixed
 		}
 	}
@@ -194,7 +194,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 
-	if fixed := legendName(b, inCard.Name); fixed != "" {
+	if fixed := legendName(b, inCard.Name, editionIsPromo(b, inCard.Edition)); fixed != "" {
 		inCard.Name = fixed
 		return
 	}
@@ -299,7 +299,7 @@ var storefrontEditions = map[string]string{
 // Title" name whose title matches and whose champion ends the input's
 // champion, or a dashed name led by the title — as long as exactly one
 // candidate does overall.
-func legendName(b *mtgmatcher.Backend, name string) string {
+func legendName(b *mtgmatcher.Backend, name string, targetsPromo bool) string {
 	champion, title, found := strings.Cut(name, " - ")
 	if !found {
 		// Cardmarket writes the champion off a comma where the rest of the
@@ -323,6 +323,16 @@ func legendName(b *mtgmatcher.Backend, name string) string {
 			matches = ok2 && mtgmatcher.Equals(t2, title)
 		}
 		if !matches {
+			continue
+		}
+		// The promotional sets carry the champion-first spelling too - "Lux,
+		// Lady of Luminosity" sits beside the Proving Grounds "Lady of
+		// Luminosity - Starter" - so one storefront name describes two
+		// gallery names at once. Calling that ambiguous loses the card
+		// altogether, and the promo gate in FilterCards would refuse the
+		// promo for an input naming no promo edition anyway, so the same
+		// line decides here.
+		if promoOnlyName(b, canonical) != targetsPromo {
 			continue
 		}
 		if match != "" && match != canonical {

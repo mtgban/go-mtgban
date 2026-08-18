@@ -131,6 +131,13 @@ var riftboundSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Kai'Sa - Daughter of the Void", Variation: "299"},
 	},
 	{
+		// The other side of the same line: the promo sets carry the
+		// champion-first spelling, so an input that names a promo edition
+		// must reach the promo rather than the main-set legend.
+		Desc: "champion-first name reaches the promo when the edition says so",
+		In:   mtgmatcher.InputCard{Name: "Master Yi - Meditative", Variation: "4", Edition: "Promos"},
+	},
+	{
 		Desc: "shortened gallery champion resolves",
 		In:   mtgmatcher.InputCard{Name: "Master Yi - Meditative", Variation: "4"},
 	},
