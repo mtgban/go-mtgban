@@ -15,7 +15,9 @@ import (
 // other half of the contract: two plain printings of one number in
 // different sets, which only the edition can tell apart. Blast Breath is
 // the same shape around an event set, whose name is its base set's with a
-// marker in it and whose printings wear no label at all.
+// marker in it and whose printings wear no label at all. Bepo is that pair
+// again with the marker appended instead, so the two set codes share the
+// field a storefront prefix spells and only the wording tells them apart.
 const variantFixture = `{
 	"game": "onepiece",
 	"sets": {
@@ -30,7 +32,9 @@ const variantFixture = `{
 		"PRB-02":    {"name": "Premium Booster -The Best- Vol. 2", "releaseDate": "2025-08-01"},
 		"ST-04":     {"name": "Starter Deck 4: Animal Kingdom Pirates", "releaseDate": "2023-02-24"},
 		"ST-04 PRE": {"name": "Super Pre-Release Starter Deck 4: Animal Kingdom Pirates", "releaseDate": "2023-02-10"},
-		"OP-RP":     {"name": "Revision Pack Cards", "releaseDate": "2024-09-13"}
+		"OP-RP":     {"name": "Revision Pack Cards", "releaseDate": "2024-09-13"},
+		"OP14":      {"name": "The Azure Sea's Seven", "releaseDate": "2026-01-16"},
+		"OP14 RE":   {"name": "The Azure Sea's Seven Release Event Cards", "releaseDate": "2026-01-09"}
 	},
 	"cards": [
 		{"id": "op01-016_base", "name": "Nami", "number": "OP01-016", "setCode": "OP01", "rarity": "C", "finish": "Normal", "image": "x"},
@@ -49,7 +53,9 @@ const variantFixture = `{
 		{"id": "op07-031_st", "name": "Bartolomeo", "number": "OP07-031", "setCode": "ST-24", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
 		{"id": "op07-031_prb", "name": "Bartolomeo", "number": "OP07-031", "setCode": "PRB-02", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
 		{"id": "momo_base", "name": "Kouzuki Momonosuke", "number": "OP01-031", "setCode": "OP01", "rarity": "C", "finish": "Normal", "image": "x"},
-		{"id": "momo_prb", "name": "Kouzuki Momonosuke", "number": "PRB01-031", "setCode": "PRB-01", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"}
+		{"id": "momo_prb", "name": "Kouzuki Momonosuke", "number": "PRB01-031", "setCode": "PRB-01", "rarity": "C", "finish": "Normal", "variant": "Reprint", "image": "x"},
+		{"id": "op14-012_base", "name": "Bepo", "number": "OP14-012", "setCode": "OP14", "rarity": "C", "finish": "Normal", "image": "x"},
+		{"id": "op14-012_re", "name": "Bepo", "number": "OP14-012", "setCode": "OP14 RE", "rarity": "C", "finish": "Normal", "image": "x"}
 	]
 }`
 
@@ -129,6 +135,21 @@ func TestEditionNamesOneSet(t *testing.T) {
 			desc: "a wording spelling no marker keeps the base set",
 			in:   mtgmatcher.InputCard{Name: "Blast Breath", Variation: "ST04-016", Edition: "Animal Kingdom Pirates: Starter Deck 4"},
 			want: "st04-016_base",
+		},
+		{
+			// An event set's code opens with its base set's, so the prefix
+			// spells the base code for both. The wording is what says which
+			// of the pair is meant, and here it spells the marker: a code
+			// leaving that word unaccounted for names the other set of the
+			// pair, not a truncation of this one.
+			desc: "a code short of the wording does not outrank it",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "OP14 - The Azure Sea's Seven Release"},
+			want: "op14-012_re",
+		},
+		{
+			desc: "the same code with no marker spelled keeps the base set",
+			in:   mtgmatcher.InputCard{Name: "Bepo", Variation: "OP14-012", Edition: "OP14 - The Azure Sea's Seven"},
+			want: "op14-012_base",
 		},
 	}
 

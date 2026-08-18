@@ -378,7 +378,11 @@ var promoLineRe = regexp.MustCompile(`(?i)^promos?\s*[:-]\s*`)
 // The set code the storefront wore in front of the name overrides the
 // wording: a family shares its name across volumes ("Premium Booster -The
 // Best-" and its Vol. 2), so the code is the only thing that says which
-// one the listing is filed in.
+// one the listing is filed in. Only a coded set accounting for the wording
+// in full may do so, the case where the storefront truncated the name it
+// wrote: an event set's code shares its first field with the base set's,
+// so a coded set the wording leaves words short is the storefront naming
+// one of the pair and the code merely resembling the other.
 func canonicalEdition(b *mtgmatcher.Backend, edition, code string) string {
 	want := editionTokens(edition)
 	if len(want) == 0 {
@@ -409,7 +413,7 @@ func canonicalEdition(b *mtgmatcher.Backend, edition, code string) string {
 			runner = cur
 		}
 	}
-	if coded.name != "" {
+	if coded.name != "" && coded.missing == 0 {
 		return coded.name
 	}
 	if best.name == "" || !best.beats(runner) {

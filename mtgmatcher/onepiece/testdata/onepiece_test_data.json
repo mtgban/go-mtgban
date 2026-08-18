@@ -1,5 +1,23 @@
 [
     {
+        "description": "a code naming another set yields to a wording naming one",
+        "input": {
+            "name": "Kouzuki Oden",
+            "variant": "EB01-001",
+            "edition": "EB-02 - Extra Booster: Memorial Collection"
+        },
+        "uuid": "eb01-001_544523"
+    },
+    {
+        "description": "a code short of the wording does not outrank it",
+        "input": {
+            "name": "Bepo",
+            "variant": "OP14-012",
+            "edition": "OP14 - The Azure Sea's Seven Release"
+        },
+        "uuid": "op14-012_671811"
+    },
+    {
         "description": "a promo line spelled a word off still selects the event set",
         "input": {
             "name": "Aladine (OP07-020)",
@@ -255,6 +273,15 @@
             "edition": "One Piece Promotion Cards"
         },
         "uuid": "op01-013_557285_foil"
+    },
+    {
+        "description": "the same code with no marker spelled keeps the base set",
+        "input": {
+            "name": "Bepo",
+            "variant": "OP14-012",
+            "edition": "OP14 - The Azure Sea's Seven"
+        },
+        "uuid": "op14-012_671358"
     },
     {
         "description": "the set code outranks a wording naming the other volume",
