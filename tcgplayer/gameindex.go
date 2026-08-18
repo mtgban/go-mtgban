@@ -101,12 +101,13 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 		cardName := productMap[result.ProductID].Name
 		number := RawProductNumber(&product)
 		theCard := &mtgmatcher.InputCard{
-			// See TCGGame.processPage: the product id identifies the
-			// printing, the text fields are the fallback.
+			// See TCGGame.processPage: the product id and the finish beside
+			// it identify the sku, the text fields are the fallback.
 			Id:        fmt.Sprint(result.ProductID),
 			Name:      cardName,
 			Edition:   tcg.editions[product.GroupID].Name,
 			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
+			Finish:    result.SubTypeName,
 			Foil:      result.SubTypeName != "Normal",
 		}
 		cardID, err := mtgmatcher.Match(theCard)
