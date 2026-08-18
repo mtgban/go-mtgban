@@ -83,6 +83,12 @@ type ArbitOpts struct {
 
 	// Minimum profitability value
 	MinProfitability float64
+
+	// List of languages to ignore
+	Languages []string
+
+	// List of languages to select
+	OnlyLanguages []string
 }
 
 type ArbitEntry struct {
@@ -158,6 +164,9 @@ type resolvedOpts struct {
 	filterSellers          []string
 	filterFunc             func(co *mtgmatcher.CardObject) (float64, bool)
 	filterPriceFunc        func(string, InventoryEntry) (float64, bool)
+
+	filterLanguages         []string
+	filterSelectedLanguages []string
 }
 
 func resolveOpts(opts *ArbitOpts) resolvedOpts {
@@ -197,6 +206,8 @@ func resolveOpts(opts *ArbitOpts) resolvedOpts {
 	r.filterRarities = opts.Rarities
 	r.filterEditions = opts.Editions
 	r.filterSelectedEditions = opts.OnlyEditions
+	r.filterLanguages = opts.Languages
+	r.filterSelectedLanguages = opts.OnlyLanguages
 	r.filterSelectedCNRange = opts.OnlyCollectorNumberRanges
 	r.filterSellers = opts.Sellers
 
@@ -229,6 +240,12 @@ func (r *resolvedOpts) filterCard(cardID string) (*mtgmatcher.CardObject, float6
 		return nil, 0, false
 	}
 	if r.filterSelectedEditions != nil && !slices.Contains(r.filterSelectedEditions, co.Edition) && !slices.Contains(r.filterSelectedEditions, co.SetCode) {
+		return nil, 0, false
+	}
+	if slices.Contains(r.filterLanguages, co.Language) {
+		return nil, 0, false
+	}
+	if r.filterSelectedLanguages != nil && !slices.Contains(r.filterSelectedLanguages, co.Language) {
 		return nil, 0, false
 	}
 	cnRange, found := r.filterSelectedCNRange[co.Edition]
