@@ -47,6 +47,9 @@ type Datastore struct {
 	Sets map[string]struct {
 		Name        string `json:"name"`
 		ReleaseDate string `json:"releaseDate"`
+		// Type is "promo" on the sets that hand their cards out rather
+		// than sell them in packs, and empty on every other.
+		Type string `json:"type,omitempty"`
 	} `json:"sets"`
 	Cards  []DatastoreCard   `json:"cards"`
 	Sealed []DatastoreSealed `json:"sealed"`
@@ -70,6 +73,12 @@ type DatastoreCard struct {
 	// empty for the base printing, "Extended Art", "Marvel", "Golden" or
 	// the like for the alternate printings that share its number.
 	Variant string `json:"variant,omitempty"`
+
+	// PromoTypes is the same residue as the labels it is made of, which
+	// the joined Variant cannot be read back into: "Cold Foil Extended
+	// Art" is two labels, and a query naming either has to reach the
+	// printing.
+	PromoTypes []string `json:"promoTypes,omitempty"`
 
 	// FabID is the official Legend Story Studios card identifier,
 	// annotated where the builder could align the two sources.
@@ -160,6 +169,40 @@ func foldNumber(number string) string {
 		}
 	}
 	return out.String()
+}
+
+// setTypePromo is what the builder types a set that hands its cards out.
+const setTypePromo = "promo"
+
+// promoTypesOf reads a printing's labels, preferring the list the builder
+// distills them into. A datastore built before that list was recorded
+// carries only the joined spelling, which stays one label rather than being
+// split on spaces: several are two words long ("Extended Art"), and
+// splitting would leave halves that name nothing.
+func promoTypesOf(card *DatastoreCard) []string {
+	if len(card.PromoTypes) > 0 {
+		return card.PromoTypes
+	}
+	if card.Variant == "" {
+		return nil
+	}
+	return []string{card.Variant}
+}
+
+// describingPromoTypes keeps the labels worth declaring as tags: the ones
+// the printing's own finish or number does not already say. The card keeps
+// the full list either way, which the matcher still reads to tell sibling
+// printings apart; only the declaration is filtered, the same terms
+// Riftbound carries its number-restating labels on.
+func describingPromoTypes(card *DatastoreCard) []string {
+	var out []string
+	for _, promoType := range promoTypesOf(card) {
+		if describingVariant(promoType, card.Finish, card.Number) == "" {
+			continue
+		}
+		out = append(out, promoType)
+	}
+	return out
 }
 
 // describingVariant drops the labels a printing's finish already says - the
@@ -277,9 +320,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		variant := describingVariant(card.Variant, card.Finish, card.Number)
-		if variant != "" && !slices.Contains(b.AllPromoTypes, variant) {
-			b.AllPromoTypes = append(b.AllPromoTypes, variant)
+		for _, promoType := range describingPromoTypes(&card) {
+			if !slices.Contains(b.AllPromoTypes, promoType) {
+				b.AllPromoTypes = append(b.AllPromoTypes, promoType)
+			}
 		}
 		// Searchable but never canonical: the qualified spelling names one
 		// printing where the bare name names the card, and Match reads
@@ -339,10 +383,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		var promoTypes []string
-		if card.Variant != "" {
-			promoTypes = []string{card.Variant}
-		}
+		promoTypes := promoTypesOf(card)
 
 		// Only the foilness classes the product is actually sold in are
 		// registered: output() folds a storefront's unreliable foil flag
@@ -394,6 +435,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Language:   "English",
 			Rarity:     card.Rarity,
 			PromoTypes: promoTypes,
+			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
 			OriginalNumber: card.Number,

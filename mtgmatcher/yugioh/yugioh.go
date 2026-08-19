@@ -39,6 +39,11 @@ type Datastore struct {
 	Sets map[string]struct {
 		Name        string `json:"name"`
 		ReleaseDate string `json:"releaseDate"`
+		// Type is "promo" on the sets that hand their cards out rather
+		// than sell them in packs, and empty on every other. Yu-Gi-Oh
+		// rarities name the foil treatment and never the promotion, so
+		// this is the only thing that says so.
+		Type string `json:"type,omitempty"`
 	} `json:"sets"`
 	Cards  []DatastoreCard   `json:"cards"`
 	Sealed []DatastoreSealed `json:"sealed"`
@@ -57,6 +62,11 @@ type DatastoreCard struct {
 	// product name: empty for most printings, "Alternate Art", a color
 	// ("Red") or an event label for the others.
 	Variant string `json:"variant,omitempty"`
+
+	// PromoTypes is the same residue as the labels it is made of, which
+	// the joined Variant cannot be read back into: "OTS Stamp Blue" is two
+	// tags, and a query naming either has to reach the printing.
+	PromoTypes []string `json:"promoTypes,omitempty"`
 
 	// Finish is the TCGplayer printing this entry prices, "1st Edition",
 	// "Unlimited" or "Limited". Entries sharing everything but the finish
@@ -101,6 +111,24 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 		}
 	}
 	return payload.newBackend(), nil
+}
+
+// setTypePromo is what the builder types a set that hands its cards out.
+const setTypePromo = "promo"
+
+// promoTypesOf reads a printing's labels, preferring the list the builder
+// distills them into. A datastore built before that list was recorded
+// carries only the joined spelling, which stays one tag rather than being
+// split on spaces: several labels are two words long ("Duel Terminal"), and
+// splitting would declare halves of them that name nothing.
+func promoTypesOf(card *DatastoreCard) []string {
+	if len(card.PromoTypes) > 0 {
+		return card.PromoTypes
+	}
+	if card.Variant == "" {
+		return nil
+	}
+	return []string{card.Variant}
 }
 
 // qualifiedName spells a printing the way TCGplayer names the product, the
@@ -189,8 +217,10 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		if card.Variant != "" && !slices.Contains(b.AllPromoTypes, card.Variant) {
-			b.AllPromoTypes = append(b.AllPromoTypes, card.Variant)
+		for _, promoType := range promoTypesOf(&card) {
+			if !slices.Contains(b.AllPromoTypes, promoType) {
+				b.AllPromoTypes = append(b.AllPromoTypes, promoType)
+			}
 		}
 		// Searchable but never canonical: the qualified spelling names one
 		// printing where the bare name names the card, and Match reads
@@ -234,10 +264,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		var promoTypes []string
-		if card.Variant != "" {
-			promoTypes = []string{card.Variant}
-		}
+		promoTypes := promoTypesOf(card)
 
 		var colors []string
 		if card.Attribute != "" {
@@ -262,6 +289,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Rarity:     card.Rarity,
 			Types:      []string{card.Type},
 			PromoTypes: promoTypes,
+			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
 			OriginalNumber: card.Number,
