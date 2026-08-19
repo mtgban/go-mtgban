@@ -1263,3 +1263,43 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 func BuildSealedProductMap(idName string) map[int][]string {
 	return defaultBackend.BuildSealedProductMap(idName)
 }
+
+// PromoTypeSlug renders a promo type as the token a search query can carry:
+// lower case, with everything that is not a letter or a digit dropped.
+//
+// A query is split on whitespace before a filter ever sees it, and an "is:"
+// value is split again on commas, so a tag only survives the trip if it is
+// one word. Magic's types already are ("boosterfun" for Booster Fun), which
+// is why "is:" has always worked there; the other games spell theirs the way
+// the storefront wrote them - "best of", "Disney Parks & Stores", "Premium
+// Card Collection -Best Selection Vol. 6-" - and none of those can be asked
+// for as they stand. This gives them the same shape Magic's already have.
+//
+// The promo type itself is left alone, because the matchers read it word by
+// word to decide whether a storefront's wording describes the printing.
+func PromoTypeSlug(promoType string) string {
+	var out strings.Builder
+	for _, r := range strings.ToLower(promoType) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
+}
+
+// PromoTypeFromSlug names the promo type a slug asks for, and reports
+// whether any is declared.
+func (b *Backend) PromoTypeFromSlug(slug string) (string, bool) {
+	for _, promoType := range b.AllPromoTypes {
+		if PromoTypeSlug(promoType) == slug {
+			return promoType, true
+		}
+	}
+	return "", false
+}
+
+// PromoTypeFromSlug names the promo type a slug asks for in the default
+// backend.
+func PromoTypeFromSlug(slug string) (string, bool) {
+	return defaultBackend.PromoTypeFromSlug(slug)
+}
