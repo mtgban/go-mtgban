@@ -84,7 +84,9 @@ type DatastoreSealed struct {
 // an error when r holds something else (so LoadDatastore's auto-detection
 // can move on to the next registered game). The datastore names its game at
 // the root, and every card carries the identity fields the backend is built
-// from.
+// from. The collector number is not among them: the game never numbered the
+// Yugi's Legendary Decks reprints, and a card the catalog sells under no
+// number still has to be sold.
 func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	var payload Datastore
 	if err := json.NewDecoder(r).Decode(&payload); err != nil {
@@ -94,7 +96,7 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 		return nil, errors.New("not a Yu-Gi-Oh datastore")
 	}
 	for _, card := range payload.Cards {
-		if card.ID == "" || card.Name == "" || card.Number == "" || card.Finish == "" {
+		if card.ID == "" || card.Name == "" || card.Finish == "" {
 			return nil, errors.New("not a Yu-Gi-Oh datastore")
 		}
 	}
