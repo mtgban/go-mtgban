@@ -388,6 +388,11 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			name string
 		}
 		var stored []perFinish
+		// A foil-only printing has no nonfoil to hold the base uuid, so its
+		// primary foil takes it. Read that off the finishes rather than
+		// their order: a printing that lists a foil first would otherwise
+		// hand both of its finishes the one uuid.
+		hasNonfoil := slices.Contains(finishes, mtgmatcher.FinishNonfoil)
 		foilSeen := false
 		for i, finish := range finishes {
 			if finish != mtgmatcher.FinishFoil {
@@ -404,10 +409,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			uuid := convertedCard.UUID
 			key := mtgmatcher.FinishFoil
 			if !foilSeen {
-				// Primary foil: "_f", or the base uuid when a foil is the very
-				// first finish (a foil-only card).
+				// Primary foil: "_f", or the base uuid on a foil-only
+				// printing.
 				foilSeen = true
-				if i > 0 {
+				if hasNonfoil {
 					uuid += suffixFoil
 				}
 			} else {
