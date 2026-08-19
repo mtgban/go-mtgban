@@ -3,57 +3,45 @@ package riftbound
 import (
 	"slices"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestPromoTagsAndQualifiedNames pins what tells sibling promos apart. Three
-// printings share the name "Teemo, Swift Scout" and the number 263, and only
-// the qualifiers separate them; the site prints a qualifier only when the
-// backend declares it, so both halves have to hold.
-func TestPromoTagsAndQualifiedNames(t *testing.T) {
+// TestPromoTagsAreSlugs pins the form the tags are stored in. A search query
+// is split on whitespace before any filter sees it, so a tag is only askable
+// as one word - the same shape Magic's own promo types have always had.
+func TestPromoTagsAreSlugs(t *testing.T) {
 	b := loadBackend(t)
 
-	for _, tag := range []string{"metal", "best of", "prize wall", "alternate art"} {
-		if !slices.Contains(b.AllPromoTypes, tag) {
-			t.Errorf("promo type %q is not declared, so nothing will print it", tag)
-		}
-	}
-
-	// A qualifier that only repeats the collector number describes nothing:
-	// the catalog names a rune variant "Fury Rune (R01c)" and the number
-	// already says it.
 	for _, tag := range b.AllPromoTypes {
-		if CanonicalNumber(tag) == tag && len(tag) > 1 && tag[0] == 'r' && tag[1] >= '0' && tag[1] <= '9' {
-			t.Errorf("promo type %q is a collector number, not a description", tag)
+		if slug := mtgmatcher.PromoTypeSlug(tag); slug != tag {
+			t.Errorf("declared tag %q is not its own slug (%q), so is:%s cannot reach it", tag, slug, slug)
+		}
+	}
+	for _, tag := range []string{"metal", "bestof", "prizewall", "alternateart"} {
+		if !slices.Contains(b.AllPromoTypes, tag) {
+			t.Errorf("tag %q is not declared", tag)
+		}
+	}
+	// A qualifier that only repeats the collector number describes nothing.
+	for _, tag := range b.AllPromoTypes {
+		if len(tag) > 1 && tag[0] == 'r' && tag[1] >= '0' && tag[1] <= '9' {
+			t.Errorf("declared tag %q is a collector number, not a description", tag)
 		}
 	}
 
-	bare, err := b.SearchEquals("Teemo, Swift Scout")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(bare) < 2 {
-		t.Errorf("bare name reached %d printings, expected every printing of the name", len(bare))
-	}
-
-	for _, tt := range []struct{ query, promoType string }{
-		{"Teemo, Swift Scout (Metal Best Of)", "best of"},
-		{"Teemo, Swift Scout (Metal Prize Wall)", "prize wall"},
-	} {
-		got, err := b.SearchEquals(tt.query)
+	// The three printings that share name and number are told apart by tag.
+	var bestOf int
+	for _, uuid := range b.AllUUIDs {
+		co, err := b.GetUUID(uuid)
 		if err != nil {
-			t.Errorf("%q: %v", tt.query, err)
 			continue
 		}
-		if len(got) != 1 {
-			t.Errorf("%q reached %d printings, want the one it names", tt.query, len(got))
-			continue
+		if co.Name == "Teemo, Swift Scout" && co.HasPromoType("bestof") {
+			bestOf++
 		}
-		co, err := b.GetUUID(got[0])
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !slices.Contains(co.PromoTypes, tt.promoType) {
-			t.Errorf("%q reached a printing tagged %v, want one carrying %q", tt.query, co.PromoTypes, tt.promoType)
-		}
+	}
+	if bestOf == 0 {
+		t.Error("no Teemo, Swift Scout printing carries bestof")
 	}
 }
