@@ -336,6 +336,11 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			// bogus wrong-variant error.
 			Language: "English",
 
+			// The promotional sets are typed as such by the builder, and
+			// that is the whole of what makes a Riftbound printing a promo:
+			// the gallery sets carry no such printings at all.
+			IsPromo: b.Sets[setCode].Type == "promo",
+
 			Colors: colors,
 			Rarity: card.Rarity.Value.ID,
 

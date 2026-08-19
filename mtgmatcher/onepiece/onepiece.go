@@ -98,6 +98,17 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	return payload.newBackend(), nil
 }
 
+// setIsPromotional reports whether a set hands out promotional printings.
+// The datastore types no set, so the name carries it: the promo set names
+// itself "One Piece Promotion Cards", and the pre-release sets hand out
+// stamped copies ahead of a release, which are promos by every other name.
+// Matching on the name rather than the code keeps the Premium Booster sets
+// out, whose codes begin "PRB" but which are an ordinary product.
+func setIsPromotional(name string) bool {
+	lower := strings.ToLower(name)
+	return strings.Contains(lower, "promotion cards") || strings.Contains(lower, "pre-release")
+}
+
 // qualifiedName spells a printing the way TCGplayer names the product, the
 // character name followed by the qualifier that tells it from its siblings
 // ("Nami (Premium Card Collection -Best Selection Vol. 6-)"). Every One Piece
@@ -275,6 +286,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			Rarity:     card.Rarity,
 			Types:      []string{card.Type},
 			PromoTypes: promoTypes,
+			IsPromo:    setIsPromotional(b.Sets[card.SetCode].Name),
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
 			OriginalNumber: card.Number,
