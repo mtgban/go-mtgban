@@ -171,11 +171,28 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 // share one name and one collector number, and those qualifiers are the only
 // thing between them. Empty when a printing carries none, which the bare
 // name already describes.
-func qualifiedName(name string, promoTypes []string) string {
+// productName rebuilds the name the catalog sells a printing under. The
+// builder splits a promotional product's name into the base name and the
+// qualifiers behind it, and putting them back gives the storefront's own
+// spelling: "Teemo, Swift Scout" and [metal, best of] is "Teemo, Swift Scout
+// (Metal) (Best Of)". Normalize drops the parentheses and the case, so the
+// rebuilt name answers to the catalog's spelling exactly, and the qualifiers
+// are taken before they are slugged because it is the words that spell it.
+func productName(name string, promoTypes []string) string {
 	if len(promoTypes) == 0 {
 		return ""
 	}
 	return name + " (" + strings.Join(promoTypes, " ") + ")"
+}
+
+// slugPromoTypes renders every qualifier as the token that identifies it, so
+// one word names it wherever it is read.
+func slugPromoTypes(promoTypes []string) []string {
+	var out []string
+	for _, promoType := range promoTypes {
+		out = append(out, mtgmatcher.PromoTypeSlug(promoType))
+	}
+	return out
 }
 
 // describingPromoTypes drops the qualifiers that only repeat the collector
@@ -271,23 +288,24 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			seenNormalized[n] = true
 			b.AllNames = append(b.AllNames, n)
 		}
-		describing := describingPromoTypes(card.PromoTypes, numberFromPublicCode(card.PublicCode))
-		for _, promoType := range describing {
-			if !slices.Contains(b.AllPromoTypes, promoType) {
-				b.AllPromoTypes = append(b.AllPromoTypes, promoType)
+		for _, promoType := range describingPromoTypes(card.PromoTypes, numberFromPublicCode(card.PublicCode)) {
+			slug := mtgmatcher.PromoTypeSlug(promoType)
+			if !slices.Contains(b.AllPromoTypes, slug) {
+				b.AllPromoTypes = append(b.AllPromoTypes, slug)
 			}
 		}
-		// Searchable but never canonical: the qualified spelling names one
-		// printing where the bare name names the card, and Match reads
-		// CanonicalNames to decide whether a name keeps its parentheticals.
-		if qualified := qualifiedName(card.Name, describing); qualified != "" {
-			if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
-				seenNormalized[qn] = true
-				b.AllNames = append(b.AllNames, qn)
+		// The catalog's own spelling is searchable but never canonical: it
+		// names one printing where the bare name names the card, and Match
+		// reads CanonicalNames to decide whether a name keeps its
+		// parentheticals.
+		if product := productName(card.Name, card.PromoTypes); product != "" {
+			if pn := mtgmatcher.Normalize(product); !seenNormalized[pn] {
+				seenNormalized[pn] = true
+				b.AllNames = append(b.AllNames, pn)
 			}
-			if !slices.Contains(b.AllCanonicalNames, qualified) {
-				b.AllCanonicalNames = append(b.AllCanonicalNames, qualified)
-				b.AllLowerNames = append(b.AllLowerNames, qualified)
+			if !slices.Contains(b.AllCanonicalNames, product) {
+				b.AllCanonicalNames = append(b.AllCanonicalNames, product)
+				b.AllLowerNames = append(b.AllLowerNames, product)
 			}
 		}
 		if slices.Contains(b.AllCanonicalNames, card.Name) {
@@ -346,7 +364,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			Types:      types,
 			Subtypes:   card.Tags.Tags,
-			PromoTypes: card.PromoTypes,
+			PromoTypes: slugPromoTypes(card.PromoTypes),
 
 			Printings: printingsByName[mtgmatcher.Normalize(card.Name)],
 
@@ -402,9 +420,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			b.UUIDs[s.uuid] = &co
 			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
 			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], s.uuid)
-			if qualified := qualifiedName(card.Name, describingPromoTypes(card.PromoTypes, numberFromPublicCode(card.PublicCode))); qualified != "" {
-				qn := mtgmatcher.Normalize(qualified)
-				b.Hashes[qn] = append(b.Hashes[qn], s.uuid)
+			if product := productName(card.Name, card.PromoTypes); product != "" {
+				pn := mtgmatcher.Normalize(product)
+				b.Hashes[pn] = append(b.Hashes[pn], s.uuid)
 			}
 		}
 	}

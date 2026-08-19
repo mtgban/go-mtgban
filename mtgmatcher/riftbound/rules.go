@@ -592,15 +592,9 @@ func qualifierWords(variation string) []string {
 // the storefront wording, compared word by word in lower case like
 // qualifiedPromoName does.
 func wordsDescribe(wording string, promoTypes []string) bool {
-	said := map[string]bool{}
-	for _, word := range strings.Fields(strings.ToLower(wording)) {
-		said[word] = true
-	}
 	for _, promoType := range promoTypes {
-		for _, word := range strings.Fields(strings.ToLower(promoType)) {
-			if !said[word] {
-				return false
-			}
+		if !mtgmatcher.SlugDescribes(wording, promoType) {
+			return false
 		}
 	}
 	return true

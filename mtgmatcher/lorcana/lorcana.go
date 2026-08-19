@@ -174,22 +174,12 @@ func (ac *AllCards) englishCards() []int {
 func promoTags(sourceCategory, varnishType string) []string {
 	var tags []string
 	if sourceCategory != "" {
-		tags = append(tags, sourceCategory)
+		tags = append(tags, mtgmatcher.PromoTypeSlug(sourceCategory))
 	}
 	if varnishType != "" {
-		tags = append(tags, varnishType)
+		tags = append(tags, mtgmatcher.PromoTypeSlug(varnishType))
 	}
 	return tags
-}
-
-// qualifiedName spells a printing as its name followed by those tags
-// ("Mickey Mouse - Brave Little Tailor (Disney Parks & Stores HighGloss)"),
-// so a reader can ask for the one printing rather than the whole name.
-func qualifiedName(name string, tags []string) string {
-	if len(tags) == 0 {
-		return ""
-	}
-	return name + " (" + strings.Join(tags, " ") + ")"
 }
 
 func (ac *AllCards) newBackend() *mtgmatcher.Backend {
@@ -259,23 +249,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			seenNormalized[n] = true
 			b.AllNames = append(b.AllNames, n)
 		}
-		tags := promoTags(card.PromoSourceCategory, card.VarnishType)
-		for _, tag := range tags {
+		for _, tag := range promoTags(card.PromoSourceCategory, card.VarnishType) {
 			if !slices.Contains(b.AllPromoTypes, tag) {
 				b.AllPromoTypes = append(b.AllPromoTypes, tag)
-			}
-		}
-		// Searchable but never canonical: the qualified spelling names one
-		// printing where the bare name names the card, and Match reads
-		// CanonicalNames to resolve a name outright.
-		if qualified := qualifiedName(card.FullName, tags); qualified != "" {
-			if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
-				seenNormalized[qn] = true
-				b.AllNames = append(b.AllNames, qn)
-			}
-			if !slices.Contains(b.AllCanonicalNames, qualified) {
-				b.AllCanonicalNames = append(b.AllCanonicalNames, qualified)
-				b.AllLowerNames = append(b.AllLowerNames, qualified)
 			}
 		}
 		if slices.Contains(b.AllCanonicalNames, card.FullName) {
@@ -506,10 +482,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			b.UUIDs[s.uuid] = &co
 			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
 			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], s.uuid)
-			if qualified := qualifiedName(card.FullName, promoTags(card.PromoSourceCategory, card.VarnishType)); qualified != "" {
-				qn := mtgmatcher.Normalize(qualified)
-				b.Hashes[qn] = append(b.Hashes[qn], s.uuid)
-			}
 		}
 	}
 

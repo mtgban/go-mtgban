@@ -193,8 +193,8 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		if !slices.Contains(b.AllPromoTypes, card.Variant) {
-			b.AllPromoTypes = append(b.AllPromoTypes, card.Variant)
+		if slug := mtgmatcher.PromoTypeSlug(card.Variant); !slices.Contains(b.AllPromoTypes, slug) {
+			b.AllPromoTypes = append(b.AllPromoTypes, slug)
 		}
 		if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
 			seenNormalized[qn] = true
@@ -253,7 +253,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		var promoTypes []string
 		if card.Variant != "" {
-			promoTypes = []string{card.Variant}
+			promoTypes = []string{mtgmatcher.PromoTypeSlug(card.Variant)}
 		}
 
 		// Only the finishes a product is actually sold in are registered:

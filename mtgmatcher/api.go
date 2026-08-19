@@ -1263,3 +1263,45 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 func BuildSealedProductMap(idName string) map[int][]string {
 	return defaultBackend.BuildSealedProductMap(idName)
 }
+
+// PromoTypeSlug renders a promo type as the single token that identifies it:
+// lower case, with everything that is not a letter or a digit dropped. This
+// is the form the games store, so that a promo type is one word wherever it
+// is read - a search query is split on whitespace, and Magic's own types
+// have always been single words for exactly that reason ("boosterfun").
+func PromoTypeSlug(promoType string) string {
+	var out strings.Builder
+	for _, r := range strings.ToLower(promoType) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
+}
+
+// SlugDescribes reports whether a storefront's wording says the words a promo
+// type's slug was made from, as a run of whole words.
+//
+// The slug has lost the spaces, so a plain comparison cannot be used and a
+// substring test would be too generous - "metal" is inside "metallic". Words
+// are joined back up a run at a time instead, which asks the question the
+// slug's own spelling asks: does this wording name this promo type.
+func SlugDescribes(wording, slug string) bool {
+	if slug == "" {
+		return false
+	}
+	words := strings.Fields(strings.ToLower(wording))
+	for i := range words {
+		var joined string
+		for j := i; j < len(words); j++ {
+			joined += PromoTypeSlug(words[j])
+			if joined == slug {
+				return true
+			}
+			if len(joined) >= len(slug) {
+				break
+			}
+		}
+	}
+	return false
+}

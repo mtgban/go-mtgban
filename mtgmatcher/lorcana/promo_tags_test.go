@@ -3,39 +3,34 @@ package lorcana
 import (
 	"slices"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestPromoTagsAndQualifiedNames pins the same contract the other games
-// carry. Lorcana writes none of this into the name - not one card name holds
-// a parenthesis - so the tags come from the datastore's own promo fields.
-func TestPromoTagsAndQualifiedNames(t *testing.T) {
+// TestPromoTagsAreSlugs pins the stored form. Lorcana writes none of this
+// into the name - not one card name carries a parenthesis - so the tags come
+// from the datastore's own promo fields, slugged like every other game's.
+func TestPromoTagsAreSlugs(t *testing.T) {
 	b := loadDatastore(t)
 
-	for _, tag := range []string{"Organized Play", "D23", "HighGloss"} {
+	for _, tag := range b.AllPromoTypes {
+		if slug := mtgmatcher.PromoTypeSlug(tag); slug != tag {
+			t.Errorf("declared tag %q is not its own slug (%q)", tag, slug)
+		}
+	}
+	for _, tag := range []string{"d23", "organizedplay", "highgloss"} {
 		if !slices.Contains(b.AllPromoTypes, tag) {
-			t.Errorf("promo type %q is not declared, so nothing will print it", tag)
+			t.Errorf("tag %q is not declared", tag)
 		}
 	}
-
-	bare, err := b.SearchEquals("Mickey Mouse - Brave Little Tailor")
-	if err != nil {
-		t.Fatal(err)
-	}
-	qualified, err := b.SearchEquals("Mickey Mouse - Brave Little Tailor (D23)")
-	if err != nil {
-		t.Fatalf("qualified spelling: %v", err)
-	}
-	if len(qualified) >= len(bare) {
-		t.Errorf("qualified spelling reached %d printings against the name's %d, expected fewer",
-			len(qualified), len(bare))
-	}
-	for _, uuid := range qualified {
+	var tagged int
+	for _, uuid := range b.AllUUIDs {
 		co, err := b.GetUUID(uuid)
-		if err != nil {
-			t.Fatal(err)
+		if err == nil && co.HasPromoType("d23") {
+			tagged++
 		}
-		if !slices.Contains(co.PromoTypes, "D23") {
-			t.Errorf("qualified spelling reached a printing tagged %v, want one carrying D23", co.PromoTypes)
-		}
+	}
+	if tagged == 0 {
+		t.Error("no printing carries d23, so is:d23 answers with nothing")
 	}
 }

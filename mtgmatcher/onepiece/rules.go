@@ -573,16 +573,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 // variantDescribed reports whether the input's wording mentions every word
 // of the printing's variant label, the number and positional tokens aside.
 func variantDescribed(wording, variant, number string) bool {
-	words := strings.Fields(strings.ToLower(variant))
-	if len(words) == 0 {
-		return false
-	}
-	for _, word := range words {
-		if !strings.Contains(wording, word) {
-			return false
-		}
-	}
-	return true
+	return mtgmatcher.SlugDescribes(wording, variant)
 }
 
 // wantsVariant reports whether the input demands some variant printing
