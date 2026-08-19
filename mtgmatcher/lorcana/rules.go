@@ -103,7 +103,26 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 	}
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
+	if promoHeadings[mtgmatcher.Normalize(edition)] {
+		edition = ""
+	}
 	inCard.Edition = edition
+}
+
+// promoHeadings are the headings storefronts file promotional printings
+// under without saying which set issued them. They resolve to no set on
+// purpose: the heading spans every promotional printing the game has, while
+// the set carrying that name holds only the products the catalog groups
+// there. Narrowing to it drops the promos upstream files in the set they
+// reprint - the Disney Cruise Mickey Mouse sits in set 1 - and the card then
+// answers no query at all.
+var promoHeadings = map[string]bool{
+	mtgmatcher.Normalize("Promo"):             true,
+	mtgmatcher.Normalize("Promos"):            true,
+	mtgmatcher.Normalize("Promo Cards"):       true,
+	mtgmatcher.Normalize("Promotional"):       true,
+	mtgmatcher.Normalize("Promotionals"):      true,
+	mtgmatcher.Normalize("Promotional Cards"): true,
 }
 
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
