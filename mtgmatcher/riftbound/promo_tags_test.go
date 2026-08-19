@@ -45,3 +45,45 @@ func TestPromoTagsAreSlugs(t *testing.T) {
 		t.Error("no Teemo, Swift Scout printing carries bestof")
 	}
 }
+
+// TestProductNameReachesOnePrinting pins the other half of the contract: the
+// catalog's own spelling names a single printing, where the bare name names
+// the card. The builder splits that spelling into a name and its qualifiers,
+// so the rebuilt one has to answer to what the storefront actually writes.
+func TestProductNameReachesOnePrinting(t *testing.T) {
+	b := loadBackend(t)
+
+	bare, err := b.SearchEquals("Teemo, Swift Scout")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(bare) < 2 {
+		t.Errorf("bare name reached %d printings, want the whole name", len(bare))
+	}
+
+	for _, tt := range []struct {
+		query    string
+		promoTag string
+	}{
+		{"Teemo, Swift Scout (Metal) (Best Of)", "bestof"},
+		{"Teemo, Swift Scout (Metal) (Prize Wall)", "prizewall"},
+		{"Edge of Night (Champion)", "champion"},
+	} {
+		got, err := b.SearchEquals(tt.query)
+		if err != nil {
+			t.Errorf("%q: %v", tt.query, err)
+			continue
+		}
+		if len(got) != 1 {
+			t.Errorf("%q reached %d printings, want the one it names", tt.query, len(got))
+			continue
+		}
+		co, err := b.GetUUID(got[0])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !co.HasPromoType(tt.promoTag) {
+			t.Errorf("%q reached a printing tagged %v, want one carrying %q", tt.query, co.PromoTypes, tt.promoTag)
+		}
+	}
+}
