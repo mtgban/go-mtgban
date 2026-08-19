@@ -182,6 +182,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
+		if !slices.Contains(b.AllPromoTypes, card.Variant) {
+			b.AllPromoTypes = append(b.AllPromoTypes, card.Variant)
+		}
 		if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
 			seenNormalized[qn] = true
 			b.AllNames = append(b.AllNames, qn)
@@ -194,6 +197,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			b.AllCanonicalNames = append(b.AllCanonicalNames, qualified)
 		}
 	}
+	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)
 	sort.Strings(b.AllCanonicalNames)
 	sort.Strings(b.AllLowerNames)

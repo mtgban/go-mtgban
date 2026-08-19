@@ -74,11 +74,17 @@ type AllCards struct {
 		Errata           []string          `json:"errata,omitempty"`
 		Clarifications   []string          `json:"clarifications,omitempty"`
 		Effects          []string          `json:"effects,omitempty"`
-		Variant          string            `json:"variant,omitempty"`
-		VariantIds       []int             `json:"variantIds,omitempty"`
-		MoveCost         int               `json:"moveCost,omitempty"`
-		NonPromoID       int               `json:"nonPromoId,omitempty"`
-		IsExternalReveal bool              `json:"isExternalReveal,omitempty"`
+		// The datastore spells a promotional printing's provenance in its
+		// own fields rather than in the name, which carries no
+		// parentheticals at all: where it was handed out, and the finish it
+		// was handed out in.
+		PromoSourceCategory string `json:"promoSourceCategory,omitempty"`
+		VarnishType         string `json:"varnishType,omitempty"`
+		Variant             string `json:"variant,omitempty"`
+		VariantIds          []int  `json:"variantIds,omitempty"`
+		MoveCost            int    `json:"moveCost,omitempty"`
+		NonPromoID          int    `json:"nonPromoId,omitempty"`
+		IsExternalReveal    bool   `json:"isExternalReveal,omitempty"`
 
 		ExternalLinks struct {
 			TcgPlayerId int `json:"tcgPlayerId"`
@@ -161,6 +167,31 @@ func (ac *AllCards) englishCards() []int {
 	return keep
 }
 
+// promoTags names what tells a promotional printing from the ordinary one of
+// the same name. Lorcana writes none of this into the name - not one of its
+// card names carries a parenthesis - so the tags come from the fields the
+// datastore keeps them in.
+func promoTags(sourceCategory, varnishType string) []string {
+	var tags []string
+	if sourceCategory != "" {
+		tags = append(tags, sourceCategory)
+	}
+	if varnishType != "" {
+		tags = append(tags, varnishType)
+	}
+	return tags
+}
+
+// qualifiedName spells a printing as its name followed by those tags
+// ("Mickey Mouse - Brave Little Tailor (Disney Parks & Stores HighGloss)"),
+// so a reader can ask for the one printing rather than the whole name.
+func qualifiedName(name string, tags []string) string {
+	if len(tags) == 0 {
+		return ""
+	}
+	return name + " (" + strings.Join(tags, " ") + ")"
+}
+
 func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
@@ -228,12 +259,32 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			seenNormalized[n] = true
 			b.AllNames = append(b.AllNames, n)
 		}
+		tags := promoTags(card.PromoSourceCategory, card.VarnishType)
+		for _, tag := range tags {
+			if !slices.Contains(b.AllPromoTypes, tag) {
+				b.AllPromoTypes = append(b.AllPromoTypes, tag)
+			}
+		}
+		// Searchable but never canonical: the qualified spelling names one
+		// printing where the bare name names the card, and Match reads
+		// CanonicalNames to resolve a name outright.
+		if qualified := qualifiedName(card.FullName, tags); qualified != "" {
+			if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
+				seenNormalized[qn] = true
+				b.AllNames = append(b.AllNames, qn)
+			}
+			if !slices.Contains(b.AllCanonicalNames, qualified) {
+				b.AllCanonicalNames = append(b.AllCanonicalNames, qualified)
+				b.AllLowerNames = append(b.AllLowerNames, qualified)
+			}
+		}
 		if slices.Contains(b.AllCanonicalNames, card.FullName) {
 			continue
 		}
 		b.AllCanonicalNames = append(b.AllCanonicalNames, card.FullName)
 		b.AllLowerNames = append(b.AllLowerNames, card.FullName)
 	}
+	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)
 	sort.Strings(b.AllCanonicalNames)
 	sort.Strings(b.AllLowerNames)
@@ -317,8 +368,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			Types:      []string{card.Type},
 			Supertypes: []string{card.Story},
 
-			Printings: printingsByName[mtgmatcher.Normalize(card.FullName)],
-			IsPromo:   card.NonPromoID != 0,
+			Printings:  printingsByName[mtgmatcher.Normalize(card.FullName)],
+			IsPromo:    card.NonPromoID != 0,
+			PromoTypes: promoTags(card.PromoSourceCategory, card.VarnishType),
 
 			OriginalNumber: fmt.Sprintf("%d", card.Number),
 		}
@@ -449,6 +501,10 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			b.UUIDs[s.uuid] = &co
 			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
 			b.Hashes[mtgmatcher.Normalize(card.FullName)] = append(b.Hashes[mtgmatcher.Normalize(card.FullName)], s.uuid)
+			if qualified := qualifiedName(card.FullName, promoTags(card.PromoSourceCategory, card.VarnishType)); qualified != "" {
+				qn := mtgmatcher.Normalize(qualified)
+				b.Hashes[qn] = append(b.Hashes[qn], s.uuid)
+			}
 		}
 	}
 

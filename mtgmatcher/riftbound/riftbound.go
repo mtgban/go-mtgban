@@ -165,6 +165,38 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	return nil, errors.New("not a Riftbound card-gallery payload")
 }
 
+// qualifiedName spells a printing the way a storefront selling it does, the
+// card name followed by the qualifiers that tell it from its siblings
+// ("Teemo, Swift Scout (Metal Best Of)"). Several promotional printings
+// share one name and one collector number, and those qualifiers are the only
+// thing between them. Empty when a printing carries none, which the bare
+// name already describes.
+func qualifiedName(name string, promoTypes []string) string {
+	if len(promoTypes) == 0 {
+		return ""
+	}
+	return name + " (" + strings.Join(promoTypes, " ") + ")"
+}
+
+// describingPromoTypes drops the qualifiers that only repeat the collector
+// number - the catalog names a rune variant "Fury Rune (R01c)", and the
+// number field already says R01c, so as a tag it describes nothing and would
+// read as one in a label. The card keeps the full list, which the matcher
+// still reads to tell such printings apart.
+func describingPromoTypes(promoTypes []string, number string) []string {
+	var out []string
+	for _, promoType := range promoTypes {
+		// Both sides go through the number canonicalization first: the
+		// qualifier keeps the catalog's zeros ("R06c") where the number has
+		// already lost them ("r6c").
+		if mtgmatcher.Normalize(CanonicalNumber(promoType)) == mtgmatcher.Normalize(number) {
+			continue
+		}
+		out = append(out, promoType)
+	}
+	return out
+}
+
 func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
@@ -239,12 +271,32 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			seenNormalized[n] = true
 			b.AllNames = append(b.AllNames, n)
 		}
+		describing := describingPromoTypes(card.PromoTypes, numberFromPublicCode(card.PublicCode))
+		for _, promoType := range describing {
+			if !slices.Contains(b.AllPromoTypes, promoType) {
+				b.AllPromoTypes = append(b.AllPromoTypes, promoType)
+			}
+		}
+		// Searchable but never canonical: the qualified spelling names one
+		// printing where the bare name names the card, and Match reads
+		// CanonicalNames to decide whether a name keeps its parentheticals.
+		if qualified := qualifiedName(card.Name, describing); qualified != "" {
+			if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
+				seenNormalized[qn] = true
+				b.AllNames = append(b.AllNames, qn)
+			}
+			if !slices.Contains(b.AllCanonicalNames, qualified) {
+				b.AllCanonicalNames = append(b.AllCanonicalNames, qualified)
+				b.AllLowerNames = append(b.AllLowerNames, qualified)
+			}
+		}
 		if slices.Contains(b.AllCanonicalNames, card.Name) {
 			continue
 		}
 		b.AllCanonicalNames = append(b.AllCanonicalNames, card.Name)
 		b.AllLowerNames = append(b.AllLowerNames, card.Name)
 	}
+	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)
 	sort.Strings(b.AllCanonicalNames)
 	sort.Strings(b.AllLowerNames)
@@ -345,6 +397,10 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			b.UUIDs[s.uuid] = &co
 			b.AllUUIDs = append(b.AllUUIDs, s.uuid)
 			b.Hashes[mtgmatcher.Normalize(card.Name)] = append(b.Hashes[mtgmatcher.Normalize(card.Name)], s.uuid)
+			if qualified := qualifiedName(card.Name, describingPromoTypes(card.PromoTypes, numberFromPublicCode(card.PublicCode))); qualified != "" {
+				qn := mtgmatcher.Normalize(qualified)
+				b.Hashes[qn] = append(b.Hashes[qn], s.uuid)
+			}
 		}
 	}
 
