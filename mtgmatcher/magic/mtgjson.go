@@ -1156,6 +1156,14 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.ExternalIdentifiers = externalIds
 	b.AlternateProps = alternates
 	b.AllPromoTypes = promoTypes
+	// Declare only the types this datastore actually carries, so the list
+	// describes the data rather than everything Magic has ever printed.
+	b.PromoTypeLabels = map[string]string{}
+	for _, promoType := range promoTypes {
+		if label := promoTypeLabels[promoType]; label != "" {
+			b.PromoTypeLabels[promoType] = label
+		}
+	}
 
 	b.CommanderKeywordMap = commanderKeywordMap
 	b.SLDDeckNames = fillinSLDdecks(ap.Data["SLD"])

@@ -17,8 +17,17 @@ func TestPromoTypeLabels(t *testing.T) {
 			t.Errorf("tag %q reads back as nothing", tag)
 		}
 	}
-	if got := b.PromoTypeLabel("alternateart"); got != "Alternate Art" {
-		t.Errorf("PromoTypeLabel(%q) = %q, want %q", "alternateart", got, "Alternate Art")
+	for _, tt := range []struct{ promoType, want string }{
+		{"alternateart", "Alternate Art"},
+		{"bestof", "Best Of"},
+		{"prizewall", "Prize Wall"},
+		// The case that says why the spelling is looked up rather than
+		// guessed: title-casing this token gives "Gg Ez".
+		{"ggez", "GG EZ"},
+	} {
+		if got := b.PromoTypeLabel(tt.promoType); got != tt.want {
+			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.promoType, got, tt.want)
+		}
 	}
 	// An unknown token still reads as something rather than empty.
 	if got := b.PromoTypeLabel("nosuchtag"); got == "" {
