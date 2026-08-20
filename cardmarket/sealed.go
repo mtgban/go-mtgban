@@ -15,6 +15,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// CardMarketSealed prices sealed product from Cardmarket's marketplace,
+// reading the listings themselves rather than a price guide.
 type CardMarketSealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -47,6 +49,8 @@ func (mkm *CardMarketSealed) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperSealed returns a sealed scraper for one game, authenticated with an
+// app token and secret.
 func NewScraperSealed(gameID int, appToken, appSecret string) (*CardMarketSealed, error) {
 	switch gameID {
 	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYugioh, GameIdFleshAndBlood:
@@ -172,6 +176,7 @@ func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- 
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
@@ -310,10 +315,12 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (mkm *CardMarketSealed) Inventory() mtgban.InventoryRecord {
 	return mkm.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardmarket"
 	info.Shorthand = "MKMSealed"

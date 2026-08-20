@@ -10,6 +10,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// PreprocessError reports a listing Preprocess could not turn into a card, and
+// carries what it was given.
 type PreprocessError struct {
 	Extra string
 	Err   error
@@ -163,6 +165,8 @@ func Fallback(product *MKMProduct) (string, string) {
 	return "", ""
 }
 
+// Preprocess turns Cardmarket's name, number and edition into the card
+// description the matcher takes.
 func Preprocess(cardName, number, edition string) (*mtgmatcher.InputCard, error) {
 	var foil bool
 

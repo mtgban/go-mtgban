@@ -34,6 +34,8 @@ var filteredExpansionsTags = []string{
 	"Vanlubow",
 }
 
+// FilterAndSortExpansions drops the expansions that hold nothing worth pricing
+// and returns the rest oldest first.
 func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
 	var out []MKMExpansion
 	for _, exp := range expansions {
@@ -55,6 +57,7 @@ func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
 	return out
 }
 
+// The games Cardmarket carries, as their API numbers them.
 const (
 	GameIdMagic = iota + 1
 	GameIdWorldOfWarcraft
@@ -86,6 +89,8 @@ const (
 	productListSealedURL  = "https://downloads.s3.cardmarket.com/productCatalog/productList/products_nonsingles_%d.json"
 )
 
+// PriceGuide is one product's published prices: the low, the trend, and the
+// averages Cardmarket derives rather than any single listing.
 type PriceGuide struct {
 	IdProduct        int     `json:"idProduct"`
 	AvgSellPrice     float64 `json:"avg"`
@@ -102,6 +107,7 @@ type PriceGuide struct {
 	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
+// GetPriceGuide downloads the published price guide for one game.
 func GetPriceGuide(ctx context.Context, gameID int) ([]PriceGuide, error) {
 	link := fmt.Sprintf(priceGuideURL, gameID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -128,6 +134,8 @@ func GetPriceGuide(ctx context.Context, gameID int) ([]PriceGuide, error) {
 	return response.PriceGuides, nil
 }
 
+// ProductList is one entry of the catalog dump, which names products without
+// pricing them.
 type ProductList struct {
 	IdProduct    int    `json:"idProduct"`
 	Name         string `json:"name"`
@@ -138,10 +146,12 @@ type ProductList struct {
 	DateAdded    string `json:"dateAdded"`
 }
 
+// GetProductListSingles downloads the catalog of one game's singles.
 func GetProductListSingles(ctx context.Context, gameID int) ([]ProductList, error) {
 	return getProductList(ctx, fmt.Sprintf(productListSinglesURL, gameID))
 }
 
+// GetProductListSealed downloads the catalog of one game's sealed product.
 func GetProductListSealed(ctx context.Context, gameID int) ([]ProductList, error) {
 	return getProductList(ctx, fmt.Sprintf(productListSealedURL, gameID))
 }
@@ -171,7 +181,8 @@ func getProductList(ctx context.Context, link string) ([]ProductList, error) {
 	return response.Products, nil
 }
 
-// Make sure there are no duplicate names within the same edition
+// SanitizeProductList drops the duplicate names an edition can carry, which
+// would otherwise resolve to whichever entry was seen last.
 func SanitizeProductList(productList []ProductList) {
 	// Lower product id means lower version number
 	for i := range productList {
@@ -280,6 +291,8 @@ func setAffiliate(v url.Values, affiliate string) {
 	v.Set("utm_campaign", "card_prices")
 }
 
+// BuildURL builds the storefront link for a product, carrying an affiliate tag
+// when one is given.
 func BuildURL(idProduct, idGame int, affiliate string, foil bool) string {
 	game := GameName(idGame)
 	if game == "" {
