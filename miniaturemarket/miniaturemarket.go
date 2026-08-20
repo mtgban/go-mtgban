@@ -17,6 +17,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Miniaturemarket prices Miniature Market's sealed product; they carry no
+// singles.
 type Miniaturemarket struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -28,6 +30,7 @@ type Miniaturemarket struct {
 	game          string
 }
 
+// The games this scraper covers, as their storefront widget names them.
 const (
 	GameMagic     = "magic"
 	GameLorcana   = "lorcana"
@@ -45,6 +48,7 @@ var gameWidgets = map[string]string{
 	GameOnePiece:  "f7ac67a9aa8d255282de7d11391e1b69",
 }
 
+// NewScraperSealed returns a sealed scraper for one game.
 func NewScraperSealed(game string) *Miniaturemarket {
 	mm := Miniaturemarket{}
 	mm.inventory = mtgban.InventoryRecord{}
@@ -148,6 +152,8 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 	return nil
 }
 
+// NumberOfProducts returns how many products the widget holds, which is what
+// the page walk is sized against.
 func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mm.mainURL(), http.NoBody)
 	if err != nil {
@@ -181,6 +187,7 @@ func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
 	return strconv.Atoi(num)
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
 		co, err := mtgmatcher.GetUUID(uuid)
@@ -223,10 +230,12 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (mm *Miniaturemarket) Inventory() mtgban.InventoryRecord {
 	return mm.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Miniature Market"
 	info.Shorthand = "MMSealed"
