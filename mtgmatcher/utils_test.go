@@ -452,6 +452,43 @@ var TitleTests = []ExtractTest{
 		In:  "ABC ABC",
 		Out: "Abc Abc",
 	},
+	// An ordinal keeps its letters down. A title-caser capitalises them
+	// because they follow a digit, which is the one thing that says they are
+	// an ordinal at all.
+	{
+		In:  "1st place",
+		Out: "1st Place",
+	},
+	{
+		In:  "2nd place",
+		Out: "2nd Place",
+	},
+	{
+		In:  "3rd place",
+		Out: "3rd Place",
+	},
+	{
+		In:  "10th anniversary",
+		Out: "10th Anniversary",
+	},
+	{
+		In:  "25th anniversary edition",
+		Out: "25th Anniversary Edition",
+	},
+	// A capital after a digit is otherwise the one wanted, and stays.
+	{
+		In:  "3d text",
+		Out: "3D Text",
+	},
+	// The letters alone are not an ordinal, so they keep their capital.
+	{
+		In:  "nd",
+		Out: "Nd",
+	},
+	{
+		In:  "the stars",
+		Out: "The Stars",
+	},
 }
 
 func TestTitle(t *testing.T) {

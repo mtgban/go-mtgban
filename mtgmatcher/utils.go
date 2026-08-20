@@ -324,8 +324,18 @@ func ParsePrice(priceStr string) (float64, error) {
 // Wrapper for the deprecated strings.Title
 // abc -> Abc
 // ABC -> Abc
+// ordinalSuffix matches an English ordinal's letters where a title-caser has
+// capitalised them. The digit in front is what makes them wrong: nothing else
+// about "St" or "Th" says it should be lower case.
+var ordinalSuffix = regexp.MustCompile(`([0-9])(St|Nd|Rd|Th)\b`)
+
 func Title(str string) string {
-	return cases.Title(language.English).String(str)
+	titled := cases.Title(language.English).String(str)
+	// A title-caser capitalises the letter after a digit, so "1st place"
+	// comes back "1St Place" and "10th anniversary" "10Th Anniversary".
+	// Only an ordinal is put back down: "3d text" keeps its "3D Text",
+	// where the capital is the one wanted.
+	return ordinalSuffix.ReplaceAllStringFunc(titled, strings.ToLower)
 }
 
 // longestWordInEditionName finds the longest keyword in an edition name, ignoring punctuation.
