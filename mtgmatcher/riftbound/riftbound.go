@@ -37,6 +37,8 @@ type CardGallery struct {
 // page's other content blocks (navigation, masthead, ...).
 const galleryBladeType = "riftboundCardGallery"
 
+// GalleryBlade is the payload Riot's card gallery serves, named for the page
+// section it arrives in.
 type GalleryBlade struct {
 	Type string `json:"type"`
 	Sets struct {
@@ -74,6 +76,7 @@ type GallerySealed struct {
 	ReleaseDate        string `json:"releaseDate,omitempty"`
 }
 
+// GallerySet is one set as the gallery publishes it.
 type GallerySet struct {
 	ID                 string `json:"id"`
 	Name               string `json:"name"`
@@ -90,6 +93,7 @@ type GallerySet struct {
 	ReleaseDate string `json:"releaseDate,omitempty"`
 }
 
+// GalleryCard is one printing as the gallery publishes it.
 type GalleryCard struct {
 	ID              string `json:"id"`
 	CollectorNumber int    `json:"collectorNumber"`
