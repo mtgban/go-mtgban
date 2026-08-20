@@ -167,24 +167,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// spelling put that entry in twice, and searchFunc adds a matching
 	// entry's whole hash bucket, so a search returned every printing of
 	// such a name once per spelling.
-	seenNormalized := map[string]bool{}
-	seenLower := map[string]bool{}
 	for _, card := range payload.Cards {
 		n := mtgmatcher.Normalize(card.Name)
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		if !seenNormalized[n] {
-			seenNormalized[n] = true
-			b.AllNames = append(b.AllNames, n)
-		}
-		if lower := strings.ToLower(card.Name); !seenLower[lower] {
-			seenLower[lower] = true
-			b.AllLowerNames = append(b.AllLowerNames, lower)
-		}
-		if !slices.Contains(b.AllCanonicalNames, card.Name) {
-			b.AllCanonicalNames = append(b.AllCanonicalNames, card.Name)
-		}
+		b.AddName(card.Name)
 		// The qualified spelling is searchable but never canonical: it names
 		// one printing where the bare name names the character, and Match
 		// reads CanonicalNames to decide whether a name needs its
@@ -203,17 +191,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if b.PromoTypeLabels[slug] == "" {
 			b.PromoTypeLabels[slug] = card.Variant
 		}
-		if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
-			seenNormalized[qn] = true
-			b.AllNames = append(b.AllNames, qn)
-		}
-		if lower := strings.ToLower(qualified); !seenLower[lower] {
-			seenLower[lower] = true
-			b.AllLowerNames = append(b.AllLowerNames, lower)
-		}
-		if !slices.Contains(b.AllCanonicalNames, qualified) {
-			b.AllCanonicalNames = append(b.AllCanonicalNames, qualified)
-		}
+		b.AddName(qualified)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)

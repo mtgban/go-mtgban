@@ -279,15 +279,10 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	// put that entry in the list twice, and searchFunc adds a matching
 	// entry's whole hash bucket, so a search returned every printing of
 	// such a name once per spelling.
-	seenNormalized := map[string]bool{}
 	for _, card := range gallery.Cards.Items {
 		n := mtgmatcher.Normalize(card.Name)
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
-		}
-		if !seenNormalized[n] {
-			seenNormalized[n] = true
-			b.AllNames = append(b.AllNames, n)
 		}
 		for _, promoType := range describingPromoTypes(card.PromoTypes, numberFromPublicCode(card.PublicCode)) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
@@ -306,20 +301,9 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		// reads CanonicalNames to decide whether a name keeps its
 		// parentheticals.
 		if product := productName(card.Name, card.PromoTypes); product != "" {
-			if pn := mtgmatcher.Normalize(product); !seenNormalized[pn] {
-				seenNormalized[pn] = true
-				b.AllNames = append(b.AllNames, pn)
-			}
-			if !slices.Contains(b.AllCanonicalNames, product) {
-				b.AllCanonicalNames = append(b.AllCanonicalNames, product)
-				b.AllLowerNames = append(b.AllLowerNames, product)
-			}
+			b.AddName(product)
 		}
-		if slices.Contains(b.AllCanonicalNames, card.Name) {
-			continue
-		}
-		b.AllCanonicalNames = append(b.AllCanonicalNames, card.Name)
-		b.AllLowerNames = append(b.AllLowerNames, card.Name)
+		b.AddName(card.Name)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)
