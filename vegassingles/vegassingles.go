@@ -39,6 +39,7 @@ func buildProductSlug(displayName string) string {
 	return slug
 }
 
+// Vegassingles prices Vegas Singles' stock.
 type Vegassingles struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -51,6 +52,7 @@ type Vegassingles struct {
 	buylist       mtgban.BuylistRecord
 }
 
+// NewScraper returns a scraper.
 func NewScraper() *Vegassingles {
 	vs := Vegassingles{}
 	vs.inventory = mtgban.InventoryRecord{}
@@ -191,18 +193,22 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (vs *Vegassingles) Load(ctx context.Context) error {
 	return vs.scrape(ctx)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (vs *Vegassingles) Inventory() mtgban.InventoryRecord {
 	return vs.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (vs *Vegassingles) Buylist() mtgban.BuylistRecord {
 	return vs.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (vs *Vegassingles) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Vegas Singles"
 	info.Shorthand = "VS"
