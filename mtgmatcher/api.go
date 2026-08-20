@@ -1310,6 +1310,57 @@ func SlugDescribes(wording, slug string) bool {
 	return false
 }
 
+// SlugDescribesAny reports whether a wording names any of the promo types a
+// printing wears. Every one is asked rather than the first alone: a printing
+// carrying two tags is named by either of them.
+func SlugDescribesAny(wording string, slugs []string) bool {
+	for _, slug := range slugs {
+		if SlugDescribes(wording, slug) {
+			return true
+		}
+	}
+	return false
+}
+
+// DescribedVariants keeps the printings a wording names best, and nothing
+// when it names none of them.
+//
+// A printing is asked about every promo type it wears rather than its first,
+// which is what makes the rest of them reachable: the three alternate arts
+// of one Yu-Gi-Oh number are told apart by the colour they wear beside the
+// shared "Alternate Art", and the only extended art of a Flesh and Blood
+// number wears those words behind a colour.
+//
+// Best is the most tags named, and among those the printing wearing the
+// fewest the wording said nothing about. The count is what lets a fuller
+// wording win - "Alternate Art Blue" names the printing wearing both over
+// the ones wearing either - and the tie-break is what keeps a narrow wording
+// narrow, so "Blue" still names the plain blue printing rather than the
+// alternate-art one that merely contains the word.
+func DescribedVariants(wording string, cards []Card) []Card {
+	var best []Card
+	var most, unnamed int
+	for _, card := range cards {
+		var named int
+		for _, promoType := range card.PromoTypes {
+			if SlugDescribes(wording, promoType) {
+				named++
+			}
+		}
+		if named == 0 {
+			continue
+		}
+		rest := len(card.PromoTypes) - named
+		if named > most || (named == most && rest < unnamed) {
+			best, most, unnamed = nil, named, rest
+		}
+		if named == most && rest == unnamed {
+			best = append(best, card)
+		}
+	}
+	return best
+}
+
 // PromoTypeLabel spells a promo type the way it was written before it became
 // a token, falling back on the token itself where no fuller spelling was
 // kept. Callers displaying a promo type should ask for this rather than

@@ -267,19 +267,17 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 // printings. Only the variation is consulted: set names carry the color
 // words the labels use ("Blue" against "Legend of Blue Eyes White Dragon").
 func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string) []mtgmatcher.Card {
-	var described, base, variants []mtgmatcher.Card
+	var base, variants []mtgmatcher.Card
 	for _, card := range candidates {
 		if len(card.PromoTypes) == 0 {
 			base = append(base, card)
 			continue
 		}
 		variants = append(variants, card)
-		// The tag is a token now, so the wording's words are joined back
-		// up a run at a time to ask whether they name it.
-		if mtgmatcher.SlugDescribes(inCard.Variation, card.PromoTypes[0]) {
-			described = append(described, card)
-		}
 	}
+	// The tags are tokens now, so the wording's words are joined back up a
+	// run at a time to ask whether they name them.
+	described := mtgmatcher.DescribedVariants(inCard.Variation, variants)
 	if len(described) > 0 {
 		return described
 	}

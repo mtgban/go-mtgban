@@ -51,3 +51,66 @@ func TestSlugDescribes(t *testing.T) {
 		}
 	}
 }
+
+func TestSlugDescribesAny(t *testing.T) {
+	for _, tt := range []struct {
+		wording string
+		slugs   []string
+		want    bool
+	}{
+		// The tag the wording names is the second one, which is the whole
+		// point: asking only the first would answer no.
+		{"OMN133 Extended Art", []string{"blue", "extendedart"}, true},
+		{"OMN133 Blue", []string{"blue", "extendedart"}, true},
+		{"OMN133 Cold Foil", []string{"blue", "extendedart"}, false},
+		{"anything", nil, false},
+	} {
+		if got := SlugDescribesAny(tt.wording, tt.slugs); got != tt.want {
+			t.Errorf("SlugDescribesAny(%q, %v) = %v, want %v", tt.wording, tt.slugs, got, tt.want)
+		}
+	}
+}
+
+// TestDescribedVariants pins the two halves of the ranking on the shape that
+// forced it: one Yu-Gi-Oh number printed as a colour, an alternate art, and
+// the two together.
+func TestDescribedVariants(t *testing.T) {
+	blue := Card{UUID: "blue", PromoTypes: []string{"blue"}}
+	green := Card{UUID: "green", PromoTypes: []string{"green"}}
+	art := Card{UUID: "art", PromoTypes: []string{"alternateart"}}
+	artBlue := Card{UUID: "artblue", PromoTypes: []string{"alternateart", "blue"}}
+	artGreen := Card{UUID: "artgreen", PromoTypes: []string{"alternateart", "green"}}
+	cards := []Card{blue, green, art, artBlue, artGreen}
+
+	for _, tt := range []struct {
+		wording string
+		want    []string
+	}{
+		// Naming both beats naming either, so the siblings sharing one tag
+		// stand aside rather than aliasing the answer away.
+		{"Alternate Art Blue", []string{"artblue"}},
+		{"Alternate Art Green", []string{"artgreen"}},
+		// Naming one keeps the printing wearing only that: the wording said
+		// nothing about an alternate art and must not be read as asking for
+		// one.
+		{"Blue", []string{"blue"}},
+		{"Alternate Art", []string{"art"}},
+		// A tag named by nothing leaves the caller to its other tiers.
+		{"Cold Foil", nil},
+	} {
+		var got []string
+		for _, card := range DescribedVariants(tt.wording, cards) {
+			got = append(got, card.UUID)
+		}
+		if len(got) != len(tt.want) {
+			t.Errorf("DescribedVariants(%q) = %v, want %v", tt.wording, got, tt.want)
+			continue
+		}
+		for i := range got {
+			if got[i] != tt.want[i] {
+				t.Errorf("DescribedVariants(%q) = %v, want %v", tt.wording, got, tt.want)
+				break
+			}
+		}
+	}
+}
