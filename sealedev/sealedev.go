@@ -20,6 +20,8 @@ import (
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
+// How many openings are simulated before an average settles, in full and in
+// fast mode.
 const (
 	EVAverageRepetition = 5000
 	EVFastRepetition    = 10
@@ -27,6 +29,8 @@ const (
 	defaultConcurrency = 8
 )
 
+// SealedEVScraper prices sealed product by what opening it is worth, drawing
+// its contents against singles prices rather than reading any storefront.
 type SealedEVScraper struct {
 	LogCallback      mtgban.LogCallbackFunc
 	FastMode         bool
@@ -156,6 +160,7 @@ type evOutputStash struct {
 	Dataset []float64
 }
 
+// NewScraper returns an EV scraper, signing its price lookups with sig.
 func NewScraper(sig string) *SealedEVScraper {
 	ss := SealedEVScraper{}
 	ss.inventory = mtgban.InventoryRecord{}
@@ -395,6 +400,7 @@ func (ss *SealedEVScraper) runEV(ctx context.Context, uuid string) ([]result, []
 	return out, allTheErrors
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ss *SealedEVScraper) Load(ctx context.Context) error {
 	var selected string
 
@@ -493,14 +499,18 @@ func (ss *SealedEVScraper) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ss *SealedEVScraper) Inventory() mtgban.InventoryRecord {
 	return ss.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (ss *SealedEVScraper) Buylist() mtgban.BuylistRecord {
 	return ss.buylist
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (ss *SealedEVScraper) MarketNames() []string {
 	var names []string
 	for _, param := range evParameters {
@@ -512,6 +522,7 @@ func (ss *SealedEVScraper) MarketNames() []string {
 	return names
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (ss *SealedEVScraper) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ss.Info()
 	info.Name = name
@@ -527,6 +538,7 @@ func (ss *SealedEVScraper) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ss *SealedEVScraper) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Sealed EV Scraper"
 	info.Shorthand = "SS"
