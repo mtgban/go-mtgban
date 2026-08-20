@@ -26,7 +26,10 @@ const (
 	defaultConcurrency = 8
 
 	csiInventoryURL = "https://www.coolstuffinc.com/sq/?s="
+)
 
+// The games this scraper covers, as the storefront names them.
+const (
 	GameMagic             = "mtg"
 	GameLorcana           = "lorcana"
 	GameRiftbound         = "riftbound"
@@ -48,6 +51,8 @@ var name2shorthand = map[string]string{
 	"Cool Stuff Inc (unique)": "CSIUnique",
 }
 
+// Coolstuffinc prices Cool Stuff Inc's singles, both what they sell and what
+// they buy.
 type Coolstuffinc struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -72,6 +77,7 @@ type Coolstuffinc struct {
 	game   string
 }
 
+// NewScraper returns a singles scraper for one game.
 func NewScraper(game string) *Coolstuffinc {
 	csi := Coolstuffinc{}
 	csi.inventory = mtgban.InventoryRecord{}
@@ -512,11 +518,14 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 	return nil
 }
 
+// SetConfig applies options after the scraper was built. See
+// mtgban.ScraperConfig.
 func (csi *Coolstuffinc) SetConfig(opt mtgban.ScraperOptions) {
 	csi.DisableRetail = opt.DisableRetail
 	csi.DisableBuylist = opt.DisableBuylist
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (csi *Coolstuffinc) Load(ctx context.Context) error {
 	var errs []error
 
@@ -537,14 +546,18 @@ func (csi *Coolstuffinc) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (csi *Coolstuffinc) Inventory() mtgban.InventoryRecord {
 	return csi.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (csi *Coolstuffinc) Buylist() mtgban.BuylistRecord {
 	return csi.buylist
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (csi *Coolstuffinc) MarketNames() []string {
 	if csi.Info().Game != mtgban.GameMagic {
 		return availableMarketNames[:1]
@@ -552,6 +565,7 @@ func (csi *Coolstuffinc) MarketNames() []string {
 	return availableMarketNames
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (csi *Coolstuffinc) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := csi.Info()
 	info.Name = name
@@ -559,6 +573,7 @@ func (csi *Coolstuffinc) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSI"

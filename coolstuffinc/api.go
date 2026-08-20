@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 )
 
+// CSICard is one card in the price list.
 type CSICard struct {
 	Id             int     `json:"id,string"`
 	URL            string  `json:"url"`
@@ -37,11 +38,13 @@ const (
 	csiBuylistLink = "https://www.coolstuffinc.com/main_selllist.php?s="
 )
 
+// CSIClient reads Cool Stuff Inc's price list, which needs a key.
 type CSIClient struct {
 	client *http.Client
 	key    string
 }
 
+// NewCSIClient returns a client using the given key.
 func NewCSIClient(key string) *CSIClient {
 	csi := CSIClient{}
 	csi.client = cleanhttp.DefaultClient()
@@ -49,6 +52,7 @@ func NewCSIClient(key string) *CSIClient {
 	return &csi
 }
 
+// GetPriceList returns the whole price list in one call.
 func (csi *CSIClient) GetPriceList(ctx context.Context) ([]CSICard, error) {
 	link := csiPricelistURL + csi.key
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -80,6 +84,7 @@ func (csi *CSIClient) GetPriceList(ctx context.Context) ([]CSICard, error) {
 	return pricelist.Data, nil
 }
 
+// CSIPriceEntry is one card in the buylist feed.
 type CSIPriceEntry struct {
 	PID string `json:"PID"`
 	// Ppqid         string `json:"PPQID"`
@@ -102,6 +107,7 @@ type CSIPriceEntry struct {
 	CreditPrice string `json:"CreditPrice"`
 }
 
+// GetBuylist returns what Cool Stuff Inc is buying for one game.
 func GetBuylist(ctx context.Context, game string) ([]CSIPriceEntry, error) {
 	link := fmt.Sprintf(csiBuylistURL, game)
 
@@ -158,7 +164,8 @@ func fetchBuylist(ctx context.Context, link string) ([]CSIPriceEntry, error) {
 	return entries, nil
 }
 
-// Load the list of editions to id used to build links
+// LoadBuylistEditions returns the edition-to-id map the storefront links are
+// built from.
 func LoadBuylistEditions(ctx context.Context, game string) (map[string]string, error) {
 	link := csiBuylistLink + game
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -198,12 +205,14 @@ func LoadBuylistEditions(ctx context.Context, game string) (map[string]string, e
 	return edition2id, nil
 }
 
+// SearchResult is one hit from the storefront's search.
 type SearchResult struct {
 	PageId string
 	Data   []byte
 }
 
-// Convert the item name to the id and the first page of results
+// Search resolves an item name to its id and returns the first page of
+// results.
 func Search(ctx context.Context, game, itemName string, skipOOS bool) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", "")
