@@ -232,10 +232,18 @@ var sealedLanguageWords = map[string]bool{
 // a non-English printing ("Origins Booster Box (Chinese, Slim)", "The First
 // Chapter Japanese Booster Box").
 func SealedIsLanguageVariant(name string) bool {
+	var sawNon bool
 	for _, tok := range sealedTokenRe.FindAllString(strings.ToLower(name), -1) {
 		if sealedLanguageWords[tok] {
 			return true
 		}
+		// Cardmarket marks the ones it does not name a language for as
+		// "(Non-English)", which says the same thing: not the printing the
+		// datastore carries.
+		if sawNon && tok == "english" {
+			return true
+		}
+		sawNon = tok == "non"
 	}
 	return false
 }

@@ -3,8 +3,13 @@ package cardmarket
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"slices"
+	"sort"
+	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -200,20 +205,54 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 	}
 	mkm.printf("Loaded %d mkm products", len(productList))
 
+	// The products Cardmarket marks as an earlier print run, keyed by what
+	// the name says apart from that mark, so a plain name can be recognised
+	// as the run its marked sibling is not.
+	earlyRunSiblings := map[string]bool{}
+	var printRuns printRunIndex
+	if nameFallback {
+		printRuns = newPrintRunIndex()
+		for _, product := range productList {
+			if namesEarlyPrintRun(product.Name) {
+				earlyRunSiblings[sealedBaseKey(product.Name)] = true
+			}
+		}
+	}
+
 	var resolved int
 	var productIds []int
 	for _, product := range productList {
 		if mkm.TargetProduct != "" && mkm.TargetProduct != product.Name {
 			continue
 		}
-		_, found := productMap[product.IdProduct]
-		if !found && nameFallback {
+		if nameFallback {
 			// The English-only datastores never carry the language
 			// variants, whose prices must not land on the English
-			// product's uuid.
+			// product's uuid - and the bridge links them there, since a
+			// blueprint lists an English and a non-English id together.
 			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
 				continue
 			}
+			// A product Cardmarket keeps in two print runs beats the
+			// bridge, which speaks through blueprints that lump them: the
+			// "(Pre-Errata)" boxes and the reboxed ones share a single
+			// blueprint, and a single TCGplayer id between them, so the
+			// bridge can only put both on one run and leave the other
+			// unpriced.
+			//
+			// Which run a name means is not in the name - "Romance Dawn
+			// Booster Box" says nothing - but it is in the catalogue: a
+			// plain name is the later boxing exactly when Cardmarket also
+			// lists the same product marked as the earlier one.
+			early := namesEarlyPrintRun(product.Name)
+			if early || earlyRunSiblings[sealedBaseKey(product.Name)] {
+				if uuid, named := printRuns.resolve(product.Name, early); named {
+					productMap[product.IdProduct] = []string{uuid}
+				}
+			}
+		}
+		_, found := productMap[product.IdProduct]
+		if !found && nameFallback {
 			uuid, err := mtgmatcher.ResolveSealed(product.Name)
 			if err != nil {
 				continue
@@ -297,3 +336,121 @@ func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
 	}
 	return
 }
+
+// printRunRe matches the qualifier a datastore adds to a product it holds in
+// more than one print run: "Romance Dawn - Booster Box (Wave 1 - Blue)".
+//
+// The wording is the datastore's, and only One Piece writes it so far, which
+// is why this lives beside the scraper that has to read it rather than in the
+// matcher: a run is not a thing the matcher knows about, and a marketplace
+// calling one "(Pre-Errata)" is not a thing any datastore knows about.
+var printRunRe = regexp.MustCompile(`\(\s*wave\s+([0-9]+)[^)]*\)`)
+
+// earlyPrintRunWords are how a storefront says it means the first boxing of a
+// product that was later reboxed. Cardmarket files the original Romance Dawn
+// boxes as "(Pre-Errata)" and leaves the reboxed ones plain.
+//
+// An ordinal is deliberately not one of these. A storefront writes plenty of
+// them for other reasons - "1st Anniversary Tournament Pack" - and a run is
+// named for the errata that caused the reboxing wherever one is named at all.
+var earlyPrintRunWords = map[string]bool{
+	"errata": true,
+}
+
+// namesEarlyPrintRun reads the words as written, not as sealedNameTokens
+// leaves them: that one drops the run mark, which is the very word being
+// looked for here.
+func namesEarlyPrintRun(name string) bool {
+	for _, tok := range splitWords(name) {
+		if earlyPrintRunWords[tok] {
+			return true
+		}
+	}
+	return false
+}
+
+func splitWords(name string) []string {
+	return strings.FieldsFunc(strings.ToLower(name), func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+}
+
+// sealedNameTokens reduces a name to the words that carry it, dropping the
+// print-run marks, the counts, and any word said twice: "Booster Box Case
+// (12x Booster Box) (Pre-Errata)" and "Booster Box Case (Wave 1 - Blue)" both
+// come down to the same words, which is what lets one be recognised as the
+// other - and the first says "Booster Box" twice.
+func sealedNameTokens(name string) []string {
+	seen := map[string]bool{}
+	var out []string
+	for _, tok := range splitWords(name) {
+		switch tok {
+		case "pre", "errata", "wave":
+			continue
+		}
+		if sealedCountRe.MatchString(tok) || seen[tok] {
+			continue
+		}
+		seen[tok] = true
+		out = append(out, tok)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// printRunIndex holds the sealed products a datastore keeps in more than one
+// print run, keyed by what their names say apart from the run.
+type printRunIndex map[string][]printRunEntry
+
+type printRunEntry struct {
+	uuid string
+	wave int
+}
+
+func newPrintRunIndex() printRunIndex {
+	index := printRunIndex{}
+	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		match := printRunRe.FindStringSubmatch(strings.ToLower(co.Name))
+		if match == nil {
+			continue
+		}
+		wave, err := strconv.Atoi(match[1])
+		if err != nil {
+			continue
+		}
+		key := strings.Join(sealedNameTokens(printRunRe.ReplaceAllString(strings.ToLower(co.Name), "")), " ")
+		index[key] = append(index[key], printRunEntry{uuid: uuid, wave: wave})
+	}
+	return index
+}
+
+// resolve names the run a vendor's product is, with the caller saying whether
+// it holds the earliest: a name never says which run it is, and only a reader
+// of a whole catalogue can tell, having seen the sibling that names the run
+// this one is not.
+func (index printRunIndex) resolve(name string, early bool) (string, bool) {
+	entries := index[strings.Join(sealedNameTokens(name), " ")]
+	if len(entries) < 2 {
+		return "", false
+	}
+	best := entries[0]
+	for _, entry := range entries[1:] {
+		if (early && entry.wave < best.wave) || (!early && entry.wave > best.wave) {
+			best = entry
+		}
+	}
+	return best.uuid, true
+}
+
+// sealedBaseKey reduces a product name to what it says apart from the print
+// run and how many the box holds, so the two runs of one product answer to
+// one key.
+func sealedBaseKey(name string) string {
+	return strings.Join(sealedNameTokens(name), " ")
+}
+
+var sealedCountRe = regexp.MustCompile(`^\d+x?$`)
