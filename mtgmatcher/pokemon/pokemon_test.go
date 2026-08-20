@@ -225,6 +225,14 @@ func TestPromoTypeLabels(t *testing.T) {
 	for _, tt := range []struct{ tag, want string }{
 		{"fullart", "Full Art"},
 		{"pokemoncenterexclusive", "Pokemon Center Exclusive"},
+		// The artist names the World Championship decks reprint under,
+		// which title-casing spells on its own.
+		{"shintaroito", "Shintaro Ito"},
+		// The cases that say why the words are looked up rather than
+		// guessed: title-casing gives "Charizard Gx" and "Bw Black Star
+		// Promos".
+		{"charizardgx", "Charizard GX"},
+		{"bwblackstarpromos", "BW Black Star Promos"},
 	} {
 		if got := b.PromoTypeLabel(tt.tag); got != tt.want {
 			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.tag, got, tt.want)
