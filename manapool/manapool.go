@@ -11,6 +11,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Manapool prices Mana Pool's singles, both what they sell and what they buy.
 type Manapool struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -19,6 +20,7 @@ type Manapool struct {
 	inventory     mtgban.InventoryRecord
 }
 
+// NewScraper returns a singles scraper.
 func NewScraper() *Manapool {
 	mp := Manapool{}
 	mp.inventory = mtgban.InventoryRecord{}
@@ -55,6 +57,7 @@ func isUnindexed(card Product) bool {
 	return true
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *Manapool) Load(ctx context.Context) error {
 	pricelist, err := GetPriceList(ctx)
 	if err != nil {
@@ -133,10 +136,12 @@ func (mp *Manapool) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (mp *Manapool) Inventory() mtgban.InventoryRecord {
 	return mp.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mp *Manapool) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Manapool"
 	info.Shorthand = "MP"

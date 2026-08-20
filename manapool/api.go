@@ -37,10 +37,12 @@ const (
 	sealedURL   = "https://manapool.com/api/v1/prices/sealed"
 )
 
+// GetPriceList downloads the singles price list in one call.
 func GetPriceList(ctx context.Context) ([]Product, error) {
 	return getList(ctx, manapoolURL)
 }
 
+// GetSealedList downloads the sealed price list in one call.
 func GetSealedList(ctx context.Context) ([]Product, error) {
 	return getList(ctx, sealedURL)
 }

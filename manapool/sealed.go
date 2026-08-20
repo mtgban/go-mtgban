@@ -10,6 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// ManapoolSealed prices Mana Pool's sealed product.
 type ManapoolSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -18,6 +19,7 @@ type ManapoolSealed struct {
 	inventory     mtgban.InventoryRecord
 }
 
+// NewScraperSealed returns a sealed scraper.
 func NewScraperSealed() *ManapoolSealed {
 	mp := ManapoolSealed{}
 	mp.inventory = mtgban.InventoryRecord{}
@@ -30,6 +32,7 @@ func (mp *ManapoolSealed) printf(format string, a ...interface{}) {
 	}
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mp *ManapoolSealed) Load(ctx context.Context) error {
 	pricelist, err := GetSealedList(ctx)
 	if err != nil {
@@ -97,10 +100,12 @@ func (mp *ManapoolSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (mp *ManapoolSealed) Inventory() mtgban.InventoryRecord {
 	return mp.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mp *ManapoolSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Manapool"
 	info.Shorthand = "MPSealed"
