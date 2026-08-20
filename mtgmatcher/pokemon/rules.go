@@ -197,7 +197,6 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 // the variation is consulted: set names carry the label words themselves
 // ("Team Plasma" is a label and part of three set names).
 func tierByLabel(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
-	words := strings.Fields(strings.ToLower(inCard.Variation))
 	var described, base, labelled []mtgmatcher.Card
 	for _, card := range candidates {
 		if len(card.PromoTypes) == 0 {
@@ -205,8 +204,10 @@ func tierByLabel(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []m
 			continue
 		}
 		labelled = append(labelled, card)
+		// The tag is a token, so the wording's words are joined back up a
+		// run at a time to ask whether they name it.
 		for _, promoType := range card.PromoTypes {
-			if allWordsIn(words, promoType) {
+			if mtgmatcher.SlugDescribes(inCard.Variation, promoType) {
 				described = append(described, card)
 				break
 			}
@@ -397,26 +398,4 @@ func foldNumber(number string) string {
 		}
 	}
 	return out.String()
-}
-
-// allWordsIn reports whether every word of a label appears among the input's
-// words, so "Cosmos Holo" is described by "Cosmos Holo Rare" but not by
-// "Cosmos" alone.
-func allWordsIn(words []string, label string) bool {
-	if label == "" {
-		return false
-	}
-	for _, word := range strings.Fields(strings.ToLower(label)) {
-		found := false
-		for _, w := range words {
-			if w == word {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
 }
