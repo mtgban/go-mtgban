@@ -12,10 +12,12 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// CardSphereClient reads the Cardsphere API.
 type CardSphereClient struct {
 	client *http.Client
 }
 
+// NewCardSphereClient returns a client using the given token.
 func NewCardSphereClient(token string) *CardSphereClient {
 	cs := CardSphereClient{}
 	client := retryablehttp.NewClient()
@@ -47,6 +49,7 @@ func NewCardSphereClient(token string) *CardSphereClient {
 	return &cs
 }
 
+// CardSphereOfferList is one page of standing offers.
 type CardSphereOfferList struct {
 	WantId      int     `json:"wantId"`
 	MinOffer    int     `json:"minOffer"`
@@ -84,6 +87,7 @@ type csError struct {
 
 const csURL = "https://www.cardsphere.com/rest/v1/offers?offset=0&order=minrel&absge=50&country=USMIL,UM,US,CA&kind=S&language=EN"
 
+// GetOfferList returns one page of offers, starting at the given offset.
 func (cs *CardSphereClient) GetOfferList(ctx context.Context, offset int) ([]CardSphereOfferList, error) {
 	u, err := url.Parse(csURL)
 	if err != nil {

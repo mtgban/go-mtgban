@@ -25,6 +25,8 @@ var gradingMap = map[string]float64{
 	"HP": 0.6,
 }
 
+// Cardsphere prices what Cardsphere's members offer to pay, which is a set of
+// standing offers rather than a storefront's buylist.
 type Cardsphere struct {
 	LogCallback    mtgban.LogCallbackFunc
 	buylistDate    time.Time
@@ -34,6 +36,7 @@ type Cardsphere struct {
 	buylist mtgban.BuylistRecord
 }
 
+// NewScraper returns a scraper authenticated with the given token.
 func NewScraper(token string) *Cardsphere {
 	cs := Cardsphere{}
 	cs.buylist = mtgban.BuylistRecord{}
@@ -148,6 +151,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (cs *Cardsphere) Load(ctx context.Context) error {
 	offsets := make([]int, 0, csMaxOffset/100)
 	for i := 0; i < csMaxOffset; i += 100 {
@@ -194,10 +198,12 @@ func (cs *Cardsphere) Load(ctx context.Context) error {
 	return nil
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (cs *Cardsphere) Buylist() mtgban.BuylistRecord {
 	return cs.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (cs *Cardsphere) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardsphere"
 	info.Shorthand = "CS"
