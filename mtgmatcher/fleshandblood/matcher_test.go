@@ -1,6 +1,7 @@
 package fleshandblood
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"os"
@@ -227,7 +228,15 @@ func regenerateFleshandbloodTestData(t *testing.T, b *mtgmatcher.Backend, tests 
 	sort.Slice(tests, func(i, j int) bool {
 		return tests[i].Desc < tests[j].Desc
 	})
-	data, err := json.MarshalIndent(tests, "", "    ")
+	// Encoded rather than marshalled so the ampersands in a set name stay
+	// ampersands: MarshalIndent escapes them for HTML, and re-baking an
+	// otherwise unchanged golden would rewrite those lines every time.
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetIndent("", "    ")
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(tests)
+	data := bytes.TrimRight(buf.Bytes(), "\n")
 	if err != nil {
 		t.Fatal(err)
 	}
