@@ -169,6 +169,10 @@ func playPromoPrinting(cardName string) (code, number string, ok bool) {
 	return "", "", false
 }
 
+// ProcessSKU turns one of SCG's SKUs into the card description the matcher
+// takes. The SKU spells out the brand, the set, the collector number and the
+// finishing, in shapes that differ by what kind of card it is:
+//
 // SKU documented as
 // * for singles:
 // SGL-[Brand]-[Set]-[Collector Number]-[Language][Foiling][Condition]
@@ -176,7 +180,6 @@ func playPromoPrinting(cardName string) (code, number string, ok bool) {
 // SGL-[Brand]-WCHP-[Year][Player Initials]_[Set]_[Collector Number][Sideboard]-[Language][Foiling][Condition]
 // * for promotional cards:
 // SGL-[Brand]-PRM-[Promo][Set][Collector Number]-[Language][Foiling][Condition]
-//
 // examples
 // * SGL-MTG-PRM-SECRET_SLD_1095-ENN1
 // * SGL-MTG-PRM-PP_MKM_187-ENN

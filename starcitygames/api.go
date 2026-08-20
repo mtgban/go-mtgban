@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// The games this scraper covers, as SCG's API numbers them
 const (
 	GameMagic         = 1
 	GameFleshAndBlood = 2
@@ -16,11 +17,13 @@ const (
 	GameRiftbound     = 5
 )
 
+// SCGClient reads SCG's catalog API.
 type SCGClient struct {
 	client *http.Client
 	apiKey string
 }
 
+// NewSCGClient returns a client using the given API key.
 func NewSCGClient(apiKey string) *SCGClient {
 	scg := SCGClient{}
 	cli := retryablehttp.NewClient()
@@ -58,6 +61,8 @@ type Hit struct {
 	WizardsCode         string    `json:"wizards_code"`
 }
 
+// Variant is one sellable version of a card: a printing in a condition and a
+// language, which SCG identifies by SKU.
 type Variant struct {
 	ID           int     `json:"id"`
 	Name         string  `json:"name"`
@@ -71,11 +76,14 @@ type Variant struct {
 	TradePrice   float64 `json:"trade_price"`
 }
 
+// The storefront a listing links back to
 const (
 	BaseProductURL    = "https://starcitygames.com"
 	PartnerProductURL = "https://goto.starcitygames.com/c/%s/3052179/37198"
 )
 
+// SCGProductURL builds the storefront link for one SKU, carrying an affiliate
+// tag when one is given.
 func SCGProductURL(urlDetail, variantSKU, affiliate string) string {
 	if urlDetail == "" {
 		return ""
