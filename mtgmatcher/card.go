@@ -7,7 +7,9 @@ import (
 	"unicode"
 )
 
-// Card is a generic card representation using fields defined by the MTGJSON project.
+// InputCard is a card as a storefront described it: a name plus whatever
+// edition and variation text they published, which the matcher resolves to one
+// printing. Field names follow the MTGJSON project.
 type InputCard struct {
 	// The unique identifier of the card
 	// When used as input it can host or scryfall id
@@ -86,6 +88,8 @@ func output(card Card, flags ...bool) string {
 	return defaultBackend.output(card, flags...)
 }
 
+// AddToVariant appends a tag to the variation, keeping what is already there
+// and separating with a space.
 func (c *InputCard) AddToVariant(tag string) {
 	if c.Variation != "" {
 		c.Variation += " "
@@ -93,11 +97,27 @@ func (c *InputCard) AddToVariant(tag string) {
 	c.Variation += tag
 }
 
-// Returns whether the input string may represent a token
+// IsToken reports whether the name may represent a token.
 func IsToken(name string) bool {
 	return defaultBackend.IsToken(name)
 }
 
+// The Is* predicates below read the free text a storefront published, not the
+// datastore: they decide what a listing claims, and the rules then decide
+// whether a printing can honour the claim.
+//
+// Two spellings appear throughout and they differ in reach. c.Contains(x)
+// looks in both Edition and Variation, while Contains(c.Variation, x) looks
+// only at the variation, which matters when an edition name would otherwise
+// match every card in it. Both fold case and punctuation, and a few
+// predicates need the raw strings.Contains instead, and say so where they do.
+//
+// The vendor abbreviations in the clauses name the storefront whose wording
+// forced that clause: each is a real listing someone published.
+
+// IsUnsupported reports whether the listing is for something with no printing
+// at all behind it: art cards, memorabilia, misprint lots, sealed product and
+// the like.
 func (c *InputCard) IsUnsupported() bool {
 	return c.Contains("Art Series") ||
 		strings.HasSuffix(c.Edition, "Art Variants") || // toa
@@ -122,6 +142,8 @@ func (c *InputCard) IsUnsupported() bool {
 		(c.Contains("Oversize") && (c.Contains("8th") || c.Contains("9th")))
 }
 
+// IsSpecificUnsupported reports the named cards unsupported only in one
+// edition or one misprint, rather than as a whole class.
 func (c *InputCard) IsSpecificUnsupported() bool {
 	switch c.Name {
 	case "Spined Wurm":
@@ -145,7 +167,7 @@ func (c *InputCard) IsSpecificUnsupported() bool {
 	return false
 }
 
-// Returns whether the input string may represent a basic land
+// IsBasicLand reports whether the name may represent a basic land.
 func IsBasicLand(name string) bool {
 	switch {
 	case strings.Contains(name, "Bear") && !strings.Contains(name, "Beard"), // G
@@ -168,7 +190,7 @@ func IsBasicLand(name string) bool {
 	return false
 }
 
-// Returns whether the card is a basic land
+// IsBasicLand reports whether the name is a basic land.
 func (c *InputCard) IsBasicLand() bool {
 	return IsBasicLand(c.Name)
 }
@@ -182,8 +204,10 @@ func (c *InputCard) isBasicLand() bool {
 	return false
 }
 
-// Returns whether the cards is a "generic" promo, that probably needs
-// further analysis to be fully categorized. Tokens are excluded.
+// IsGenericPromo reports a promo with no more specific kind, one that
+// probably needs further analysis to categorize: it excludes every promo the
+// other predicates recognise, and tokens, then accepts the leftovers that say
+// Promo or name a store event.
 func (c *InputCard) IsGenericPromo() bool {
 	return !c.IsBaB() && !c.IsPromoPack() && !c.IsPrerelease() && !c.IsSDCC() &&
 		!c.IsRetro() &&
@@ -204,26 +228,34 @@ func (c *InputCard) IsGenericPromo() bool {
 			c.Contains("Unique")) // mtgs
 }
 
+// IsDCIPromo reports a DCI promo, excluding judge rewards, which carry the
+// same mark.
 func (c *InputCard) IsDCIPromo() bool {
 	return c.Contains("DCI") && !c.Contains("Judge")
 }
 
+// IsGenericAltArt reports alternate art, matching Alternative as well as Alt.
 func (c *InputCard) IsGenericAltArt() bool {
 	// "Alt" includes Alternative
 	return c.Contains("Alt") && c.Contains("Art")
 }
 
+// IsGenericExtendedArt reports extended or full art, from the variation only.
 func (c *InputCard) IsGenericExtendedArt() bool {
 	return Contains(c.Variation, "Art") &&
 		(Contains(c.Variation, "Extended") ||
 			Contains(c.Variation, "Full"))
 }
 
+// IsPrerelease reports a prerelease printing; SCG spells it Preview.
 func (c *InputCard) IsPrerelease() bool {
 	return c.Contains("Prerelease") ||
 		c.Contains("Preview") // scg
 }
 
+// IsPromoPack reports a promo pack printing, by name, by the stamp it carries,
+// or by a collector number ending in p, which the 30th Anniversary numbers
+// reuse for something else.
 func (c *InputCard) IsPromoPack() bool {
 	return c.Contains("Promo Pack") ||
 		c.Variation == "Dark Frame Promo" ||
@@ -232,19 +264,25 @@ func (c *InputCard) IsPromoPack() bool {
 		(strings.HasSuffix(ExtractNumber(c.Variation), "p") && !c.Contains("30th"))
 }
 
+// IsBorderless reports a borderless printing, from the variation only.
 func (c *InputCard) IsBorderless() bool {
 	return Contains(c.Variation, "Borderless")
 }
 
+// IsExtendedArt reports extended art, from the variation only.
 func (c *InputCard) IsExtendedArt() bool {
 	return Contains(c.Variation, "Extended")
 }
 
+// IsShowcase reports a showcase frame; binderpos storefronts say Sketch.
 func (c *InputCard) IsShowcase() bool {
 	return Contains(c.Variation, "Showcase") ||
 		Contains(c.Variation, "Sketch") // binderpos
 }
 
+// IsReskin reports a reskinned printing, named outright or by its Dracula or
+// Godzilla series. Basic lands are excluded so the Secret Lair Godzilla lands
+// stay ordinary lands.
 func (c *InputCard) IsReskin() bool {
 	return (Contains(c.Variation, "Reskin") ||
 		Contains(c.Variation, "Dracula") ||
@@ -253,20 +291,25 @@ func (c *InputCard) IsReskin() bool {
 		!c.isBasicLand()
 }
 
+// IsStepAndCompleat reports the step-and-compleat foiling.
 func (c *InputCard) IsStepAndCompleat() bool {
 	return Contains(c.Variation, "Compleat")
 }
 
+// IsOilSlick reports the oil slick foiling, in either field.
 func (c *InputCard) IsOilSlick() bool {
 	return strings.Contains(strings.ToLower(c.Variation), "slick") ||
 		strings.Contains(strings.ToLower(c.Edition), "slick")
 }
 
+// IsFNM reports a Friday Night Magic promo, abbreviated or spelled out.
 func (c *InputCard) IsFNM() bool {
 	return c.Contains("FNM") ||
 		c.Contains("Friday Night Magic")
 }
 
+// IsJPN reports a Japanese printing, by language or by the magazines that
+// carried them, Gotta and Dengeki.
 func (c *InputCard) IsJPN() bool {
 	return strings.Contains(c.Variation, "JPN") ||
 		strings.Contains(c.Variation, "JP") ||
@@ -275,10 +318,13 @@ func (c *InputCard) IsJPN() bool {
 		Contains(c.Variation, "Dengeki")
 }
 
+// IsChineseAltArt reports the Chinese alternate art printings.
 func (c *InputCard) IsChineseAltArt() bool {
 	return (c.Contains("Chinese") || strings.Contains(c.Variation, "CS")) && c.IsGenericAltArt()
 }
 
+// IsRelease reports a release or launch promo, and refuses a prerelease,
+// whose wording otherwise contains this one.
 func (c *InputCard) IsRelease() bool {
 	return !c.Contains("Prerelease") &&
 		(c.Contains("Release") ||
@@ -286,6 +332,8 @@ func (c *InputCard) IsRelease() bool {
 			c.Contains("Launch"))
 }
 
+// IsWPNGateway reports a Wizards Play Network or Gateway promo, including the
+// Commander Party and Moonlit Lands series that ran under it.
 func (c *InputCard) IsWPNGateway() bool {
 	return c.Contains("WPN") ||
 		c.Contains("Gateway") ||
@@ -294,6 +342,8 @@ func (c *InputCard) IsWPNGateway() bool {
 		Contains(c.Variation, "Moonlit Lands") // ck
 }
 
+// IsIDWMagazineBook reports a promo that came with print media: comics,
+// magazines, novels, and the retail tie-ins storefronts file alongside them.
 func (c *InputCard) IsIDWMagazineBook() bool {
 	return strings.HasPrefix(c.Variation, "IDW") || strings.HasPrefix(c.Edition, "IDW") ||
 		c.Contains("Magazine") ||
@@ -322,14 +372,20 @@ func (c *InputCard) IsIDWMagazineBook() bool {
 		c.Contains("Media Insert") // mm+nf
 }
 
+// IsResale reports a resale or repack promo, refusing championship cards,
+// whose wording collides.
 func (c *InputCard) IsResale() bool {
 	return !c.Contains("Championship") && (c.Contains("Repack") || c.Contains("Store") || c.Contains("Resale"))
 }
 
+// IsJudge reports a judge reward.
 func (c *InputCard) IsJudge() bool {
 	return c.Contains("Judge")
 }
 
+// IsRewards reports a player rewards promo: the textless ones, minus the
+// unrelated series that are also textless, or anything else calling itself a
+// reward that is not a judge card.
 func (c *InputCard) IsRewards() bool {
 	return (Contains(c.Variation, "Textless") &&
 		!Contains(c.Variation, "Year of") &&
@@ -338,6 +394,8 @@ func (c *InputCard) IsRewards() bool {
 		(c.Contains("Reward") && !c.IsJudge())
 }
 
+// IsMagicFest reports a MagicFest or MagicCon promo, including TCGplayer's
+// MFP code.
 func (c *InputCard) IsMagicFest() bool {
 	return c.Contains("Magic Fest") ||
 		c.Contains("MagicCon") || // scg
@@ -345,6 +403,9 @@ func (c *InputCard) IsMagicFest() bool {
 		strings.Contains(c.Variation, "MFP") // tcg collection
 }
 
+// IsBaB reports a buy-a-box promo, by name, by TCGplayer's BABP or
+// Strikezone's BIBB, or by Box Promos where it is not an Xbox tie-in or a gift
+// box.
 func (c *InputCard) IsBaB() bool {
 	return c.Contains("Buy a Box") ||
 		strings.Contains(c.Variation, "BABP") || // tcg collection
@@ -354,40 +415,54 @@ func (c *InputCard) IsBaB() bool {
 			!c.Contains("Gift")) // csi
 }
 
+// IsBundle reports a bundle promo.
 func (c *InputCard) IsBundle() bool {
 	return c.Contains("Bundle")
 }
 
+// IsFoil reports a foil printing from the variation, refusing Non-Foil and
+// leaving etched to IsEtched.
 func (c *InputCard) IsFoil() bool {
 	return Contains(c.Variation, "Foil") && !Contains(c.Variation, "Non") && !c.IsEtched()
 }
 
+// IsEtched reports etched foiling. It matches the whole word because the stem
+// would also catch Sketch.
 func (c *InputCard) IsEtched() bool {
 	// Note this can't be just "etch" because it would catch the "sketch" cards
 	return Contains(c.Variation, "Etched")
 }
 
+// IsARNLightMana reports the light mana symbol variant of Arabian Nights,
+// which some storefronts mark with a dagger instead of a word.
 func (c *InputCard) IsARNLightMana() bool {
 	return Contains(c.Variation, "light") || strings.Contains(c.Variation, "†")
 }
 
+// IsARNDarkMana reports the dark mana symbol variant of Arabian Nights.
 func (c *InputCard) IsARNDarkMana() bool {
 	return Contains(c.Variation, "dark")
 }
 
+// IsArena reports an Arena league promo.
 func (c *InputCard) IsArena() bool {
 	return c.Contains("Arena")
 }
 
+// IsSDCC reports a San Diego Comic-Con promo.
 func (c *InputCard) IsSDCC() bool {
 	return c.Contains("SDCC") ||
 		c.Contains("San Diego Comic-Con")
 }
 
+// IsRetro reports a retro frame printing.
 func (c *InputCard) IsRetro() bool {
 	return c.Contains("Retro")
 }
 
+// PlayerRewardsYear returns the year of a player rewards printing, falling
+// back to the set or artist named in the variation when the listing gives no
+// year of its own.
 func (c *InputCard) PlayerRewardsYear(maybeYear string) string {
 	if maybeYear == "" {
 		switch c.Name {
@@ -426,6 +501,8 @@ func (c *InputCard) PlayerRewardsYear(maybeYear string) string {
 	return maybeYear
 }
 
+// ArenaYear returns the year of an Arena league printing, deducing it from the
+// artist or set named in the variation when the listing gives no year.
 func (c *InputCard) ArenaYear(maybeYear string) string {
 	if maybeYear == "" {
 		switch {
@@ -469,6 +546,8 @@ func (c *InputCard) ArenaYear(maybeYear string) string {
 	return maybeYear
 }
 
+// IsWorldChamp reports a World Championship or Pro Tour deck card, from the
+// edition alone.
 func (c *InputCard) IsWorldChamp() bool {
 	return Contains(c.Edition, "Pro Tour Collect") ||
 		Contains(c.Edition, "Pro Tour 1996") ||
@@ -477,6 +556,8 @@ func (c *InputCard) IsWorldChamp() bool {
 		Contains(c.Edition, "WCD")
 }
 
+// ParseWorldChampPrefix returns the deck code for the player named in the
+// text, and whether the card was in their sideboard.
 func ParseWorldChampPrefix(variation string) (string, bool) {
 	players := map[string]string{
 		"Aeo Paquette":         "ap",
@@ -537,6 +618,8 @@ func ParseWorldChampPrefix(variation string) (string, bool) {
 	return "", false
 }
 
+// WorldChampPrefix returns the World Championship deck code for this listing,
+// looking in the variation first and falling back to the edition.
 func (c *InputCard) WorldChampPrefix() (string, bool) {
 	prefix, sideboard := ParseWorldChampPrefix(c.Variation)
 	if prefix == "" {
@@ -545,6 +628,8 @@ func (c *InputCard) WorldChampPrefix() (string, bool) {
 	return prefix, sideboard
 }
 
+// IsDuelsOfThePW reports a Duels of the Planeswalkers promo. It compares the
+// raw strings so the fold does not equate Duels with Duel Decks.
 func (c *InputCard) IsDuelsOfThePW() bool {
 	// XXX: do not use c.Contains here
 	return strings.Contains(c.Variation, "Duels") ||
@@ -552,6 +637,8 @@ func (c *InputCard) IsDuelsOfThePW() bool {
 		Contains(c.Variation, "DotP") // tat
 }
 
+// IsBasicFullArt reports a full art basic land, refusing the negations that
+// storefronts write in the same field.
 func (c *InputCard) IsBasicFullArt() bool {
 	return c.isBasicLand() &&
 		(Contains(c.Variation, "full art") ||
@@ -560,6 +647,7 @@ func (c *InputCard) IsBasicFullArt() bool {
 		!Contains(c.Variation, "not") // csi
 }
 
+// IsBasicNonFullArt reports a basic land explicitly marked as not full art.
 func (c *InputCard) IsBasicNonFullArt() bool {
 	return c.isBasicLand() &&
 		Contains(c.Variation, "non-full art") ||
@@ -567,6 +655,8 @@ func (c *InputCard) IsBasicNonFullArt() bool {
 		Contains(c.Variation, "NOT the full art") // csi
 }
 
+// IsPremiereShop reports a Magic Premiere Shop basic land. It compares the raw
+// strings because the folded form is too short to be safe.
 func (c *InputCard) IsPremiereShop() bool {
 	return c.isBasicLand() &&
 		// XXX: do not use c.Contains here
@@ -576,6 +666,8 @@ func (c *InputCard) IsPremiereShop() bool {
 			strings.Contains(c.Edition, "Premiere Shop")) // mkm
 }
 
+// IsPortalAlt reports the Portal alternates, which differ by carrying reminder
+// text or by lacking flavor text.
 func (c *InputCard) IsPortalAlt() bool {
 	return (Contains(c.Variation, "Reminder Text") &&
 		!Contains(c.Variation, "No")) ||
@@ -583,17 +675,22 @@ func (c *InputCard) IsPortalAlt() bool {
 		Contains(c.Variation, "Without Flavor Text") // csi
 }
 
+// IsDuelDecks reports a Duel Decks printing, named by the two sides it pits
+// against each other, and refuses the Anthology reprints.
 func (c *InputCard) IsDuelDecks() bool {
 	return ((c.Contains(" vs ")) ||
 		(strings.Contains(c.Variation, " v. "))) && // tcg
 		!c.Contains("Anthology")
 }
 
+// IsDuelDecksAnthology reports the Duel Decks Anthology reprints.
 func (c *InputCard) IsDuelDecksAnthology() bool {
 	return strings.Contains(c.Edition, "DDA") ||
 		(Contains(c.Edition, "Duel Decks") && Contains(c.Edition, "Anthology"))
 }
 
+// DuelDecksVariant returns which half of a Duel Decks pairing the listing
+// names, or an empty string if it is not a Duel Decks card.
 func (c *InputCard) DuelDecksVariant() string {
 	if !c.IsDuelDecks() {
 		return ""
@@ -615,16 +712,22 @@ func (c *InputCard) DuelDecksVariant() string {
 	return variant
 }
 
+// IsMysteryList reports a Mystery Booster or The List printing. The List is
+// matched raw, since folded it also matches The Little.
 func (c *InputCard) IsMysteryList() bool {
 	return c.Contains("Mystery") || c.Contains("Planeswalker Symbol Reprints") ||
 		// Cannot use c.Contains because it trips with "The Little"
 		strings.Contains(c.Edition, "The List") || strings.Contains(c.Variation, "The List")
 }
 
+// IsSecretLair reports a Secret Lair printing, by name or by set code.
 func (c *InputCard) IsSecretLair() bool {
 	return c.Contains("Secret Lair") || strings.Contains(c.Edition, "SLD")
 }
 
+// HasSecretLairTag reports whether the listing belongs to the given Secret
+// Lair set, which each need their own rule: the drops differ in what they
+// reprint and in how storefronts spell them.
 func (c *InputCard) HasSecretLairTag(code string) bool {
 	var tag bool
 	switch code {
@@ -650,28 +753,35 @@ func (c *InputCard) HasSecretLairTag(code string) bool {
 	return c.IsSecretLair() && tag
 }
 
+// IsThickDisplay reports the thick display commander cards.
 func (c *InputCard) IsThickDisplay() bool {
 	return c.Contains("Display") || c.Contains("Thick")
 }
 
+// IsPhyrexian reports a Phyrexian language printing.
 func (c *InputCard) IsPhyrexian() bool {
 	return Contains(c.Variation, "Phyrexian")
 }
 
+// IsGalaxyFoil reports the galaxy foiling.
 func (c *InputCard) IsGalaxyFoil() bool {
 	return Contains(c.Variation, "Galaxy")
 }
 
+// IsSurgeFoil reports the surge foiling, in either field.
 func (c *InputCard) IsSurgeFoil() bool {
 	return strings.Contains(strings.ToLower(c.Variation), "surge") ||
 		strings.Contains(strings.ToLower(c.Edition), "surge")
 }
 
+// IsSerialized reports a serialized printing, in either field.
 func (c *InputCard) IsSerialized() bool {
 	return strings.Contains(strings.ToLower(c.Variation), "serial") ||
 		strings.Contains(strings.ToLower(c.Edition), "serial")
 }
 
+// PossibleNumberSuffix returns a lone letter from the variation, lowercased,
+// which is how storefronts often carry the suffix of a collector number.
 func (c *InputCard) PossibleNumberSuffix() string {
 	fields := strings.Fields(c.Variation)
 	for _, field := range fields {
@@ -682,6 +792,8 @@ func (c *InputCard) PossibleNumberSuffix() string {
 	return ""
 }
 
+// RavnicaGuidKit returns which Guild Kit the listing names, by set name or set
+// code, or an empty string if it names none.
 func (c *InputCard) RavnicaGuidKit() string {
 	if !c.Contains("Guild Kit") {
 		return ""
@@ -718,19 +830,28 @@ func (c *InputCard) RavnicaGuidKit() string {
 	return ""
 }
 
+// Contains reports whether either the edition or the variation contains the
+// property, ignoring case and punctuation. Prefer Contains(c.Variation, prop)
+// where an edition name would match every card printed in it.
 func (c *InputCard) Contains(prop string) bool {
 	return Contains(c.Edition, prop) || Contains(c.Variation, prop)
 }
 
+// Equals reports whether either the edition or the variation is exactly the
+// property, ignoring case and punctuation.
 func (c *InputCard) Equals(prop string) bool {
 	return Equals(c.Edition, prop) || Equals(c.Variation, prop)
 }
 
+// ParseCommanderEdition returns the Commander edition the text names, using
+// the default datastore.
 func ParseCommanderEdition(edition, variant string) string {
 	return defaultBackend.ParseCommanderEdition(edition, variant)
 }
 
-// Check if the card number (if present) is reliable
+// ShouldIgnoreNumber reports whether the collector number, where one was
+// given, is too unreliable to narrow with: some storefronts publish a number
+// that belongs to a different printing of the same set.
 func (c *InputCard) ShouldIgnoreNumber(setName, num string) bool {
 	// No misprints or WCD
 	if c.Contains("Misprint") || c.IsWorldChamp() {
@@ -759,6 +880,8 @@ func (c *InputCard) ShouldIgnoreNumber(setName, num string) bool {
 
 }
 
+// IsToken reports whether the name is a token in this datastore, including the
+// named oddities that carry no token type of their own.
 func (b *Backend) IsToken(name string) bool {
 	// Check main table first
 	if slices.Contains(b.Tokens, name) {
@@ -823,6 +946,8 @@ func (b *Backend) IsToken(name string) bool {
 	return false
 }
 
+// ParseCommanderEdition returns the Commander edition the text names, or an
+// empty string when it names none.
 func (b *Backend) ParseCommanderEdition(edition, variant string) string {
 	if !strings.Contains(edition, "Commander") {
 		return ""

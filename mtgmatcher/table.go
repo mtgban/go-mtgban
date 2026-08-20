@@ -1,5 +1,7 @@
 package mtgmatcher
 
+// LanguageCode2LanguageTag maps a set's language code to the tag the matcher
+// uses in a printing's properties.
 var LanguageCode2LanguageTag = map[string]string{
 	"en":    "",
 	"fr":    "French",
@@ -22,6 +24,7 @@ var LanguageCode2LanguageTag = map[string]string{
 	"qya":   "Quenya",
 }
 
+// LanguageTag2LanguageCode is the reverse of LanguageCode2LanguageTag.
 var LanguageTag2LanguageCode = map[string]string{
 	"":                    "en",
 	"English":             "en",

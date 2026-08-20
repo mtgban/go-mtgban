@@ -13,18 +13,24 @@ import (
 	"github.com/mroth/weightedrand/v2"
 )
 
+// GetUUIDs returns every non-sealed uuid in the datastore. The result aliases
+// the backend index and must not be modified.
 func (b *Backend) GetUUIDs() []string {
 	return b.AllUUIDs
 }
 
+// GetUUIDs returns every non-sealed uuid in the default datastore.
 func GetUUIDs() []string {
 	return defaultBackend.GetUUIDs()
 }
 
+// GetSealedUUIDs returns every sealed uuid in the datastore. The result
+// aliases the backend index and must not be modified.
 func (b *Backend) GetSealedUUIDs() []string {
 	return b.AllSealedUUIDs
 }
 
+// GetSealedUUIDs returns every sealed uuid in the default datastore.
 func GetSealedUUIDs() []string {
 	return defaultBackend.GetSealedUUIDs()
 }
@@ -57,18 +63,24 @@ func (b *Backend) GetUUID(uuid string) (*CardObject, error) {
 	return co, nil
 }
 
+// GetUUID returns the card object for the uuid, from the default datastore.
+// The object is shared and must not be modified.
 func GetUUID(uuid string) (*CardObject, error) {
 	return defaultBackend.GetUUID(uuid)
 }
 
+// GetAllSets returns every set code in the datastore.
 func (b *Backend) GetAllSets() []string {
 	return b.AllSets
 }
 
+// GetAllSets returns every set code in the default datastore.
 func GetAllSets() []string {
 	return defaultBackend.GetAllSets()
 }
 
+// GetSet returns the set with this code, matched case-insensitively. The set
+// is shared and must not be modified.
 func (b *Backend) GetSet(code string) (*Set, error) {
 	if b.Sets == nil {
 		return nil, ErrDatastoreEmpty
@@ -82,10 +94,14 @@ func (b *Backend) GetSet(code string) (*Set, error) {
 	return set, nil
 }
 
+// GetSet returns the set with this code, from the default datastore.
 func GetSet(code string) (*Set, error) {
 	return defaultBackend.GetSet(code)
 }
 
+// GetSetByName returns the set an edition string names, trying the set code
+// first, then the full name, then the many spellings storefronts use for it.
+// The set is shared and must not be modified.
 func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 	if b.Sets == nil {
 		return nil, ErrDatastoreEmpty
@@ -124,24 +140,31 @@ func (b *Backend) GetSetByName(edition string, flags ...bool) (*Set, error) {
 	return nil, ErrCardNotInEdition
 }
 
+// GetSetByName returns the set an edition string names, from the default
+// datastore.
 func GetSetByName(edition string, flags ...bool) (*Set, error) {
 	return defaultBackend.GetSetByName(edition, flags...)
 }
 
+// ExternalUUID returns the uuid an outside identifier resolves to, for the ids
+// a game's loader indexed, and an empty string when none does.
 func (b *Backend) ExternalUUID(id string) string {
 	return b.ExternalIdentifiers[id]
 }
 
+// ExternalUUID resolves an outside identifier against the default datastore.
 func ExternalUUID(id string) string {
 	return defaultBackend.ExternalUUID(id)
 }
 
+// AllPromoTypes returns every promo type present in the default datastore.
 func AllPromoTypes() []string {
 	return defaultBackend.AllPromoTypes
 }
 
-// Return a slice of all names loaded up, in different formats
-// normalized, lowercase, canonical, or alternate (normalized)
+// AllNames returns every card or sealed name in the default datastore, in the
+// requested form: normalized, lowercase, or canonical. An unknown form returns
+// nothing.
 func AllNames(variant string, sealed bool) []string {
 	switch variant {
 	case "normalized":
@@ -163,6 +186,8 @@ func AllNames(variant string, sealed bool) []string {
 	return nil
 }
 
+// SearchEquals returns the uuids of every printing whose name matches exactly,
+// ignoring case and punctuation. An empty name returns everything.
 func (b *Backend) SearchEquals(name string) ([]string, error) {
 	if name == "" {
 		return b.AllUUIDs, nil
@@ -176,16 +201,20 @@ func (b *Backend) SearchEquals(name string) ([]string, error) {
 	return results, nil
 }
 
+// SearchEquals searches the default datastore by exact name.
 func SearchEquals(name string) ([]string, error) {
 	return defaultBackend.SearchEquals(name)
 }
 
+// SearchSealedEquals is the sealed-product counterpart of SearchEquals.
 func (b *Backend) SearchSealedEquals(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllSealed, func(a, c string) bool {
 		return a == c
 	})
 }
 
+// SearchSealedEquals searches the default datastore's sealed products by exact
+// name.
 func SearchSealedEquals(name string) ([]string, error) {
 	return defaultBackend.SearchSealedEquals(name)
 }
@@ -220,6 +249,8 @@ func searchFunc(name string, slice []string, f func(string, string) bool) ([]str
 	return defaultBackend.searchFunc(name, slice, f)
 }
 
+// SearchHasPrefix returns the uuids of every printing whose name starts with
+// the input, which is how a truncated listing is recovered.
 func (b *Backend) SearchHasPrefix(name string) ([]string, error) {
 	if name == "" {
 		return b.AllUUIDs, nil
@@ -227,18 +258,24 @@ func (b *Backend) SearchHasPrefix(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllNames, strings.HasPrefix)
 }
 
+// SearchHasPrefix searches the default datastore by name prefix.
 func SearchHasPrefix(name string) ([]string, error) {
 	return defaultBackend.SearchHasPrefix(name)
 }
 
+// SearchContains returns the uuids of every printing whose name contains the
+// input.
 func (b *Backend) SearchContains(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllNames, strings.Contains)
 }
 
+// SearchContains searches the default datastore by substring.
 func SearchContains(name string) ([]string, error) {
 	return defaultBackend.SearchContains(name)
 }
 
+// SearchRegexp returns the uuids of every printing whose name matches the
+// expression.
 func (b *Backend) SearchRegexp(name string) ([]string, error) {
 	var hashes []string
 	re, err := regexp.Compile(name)
@@ -256,14 +293,18 @@ func (b *Backend) SearchRegexp(name string) ([]string, error) {
 	return hashes, nil
 }
 
+// SearchRegexp searches the default datastore by regular expression.
 func SearchRegexp(name string) ([]string, error) {
 	return defaultBackend.SearchRegexp(name)
 }
 
+// SearchSealedContains is the sealed-product counterpart of SearchContains.
 func (b *Backend) SearchSealedContains(name string) ([]string, error) {
 	return b.searchFunc(name, b.AllSealed, strings.Contains)
 }
 
+// SearchSealedContains searches the default datastore's sealed products by
+// substring.
 func SearchSealedContains(name string) ([]string, error) {
 	return defaultBackend.SearchSealedContains(name)
 }
@@ -315,6 +356,7 @@ func (b *Backend) NameIsToken(name string) bool {
 	return found && entry.Layout == "token"
 }
 
+// Printings4Card returns the set codes a card by this name was printed in.
 func (b *Backend) Printings4Card(name string) ([]string, error) {
 	if b.Hashes == nil {
 		return nil, ErrDatastoreEmpty
@@ -326,14 +368,19 @@ func (b *Backend) Printings4Card(name string) ([]string, error) {
 	return entry.Printings, nil
 }
 
+// Printings4Card returns the sets a card was printed in, from the default
+// datastore.
 func Printings4Card(name string) ([]string, error) {
 	return defaultBackend.Printings4Card(name)
 }
 
+// HasNonfoilPrinting reports whether the card was ever sold nonfoil, narrowed
+// to the given editions when any are named.
 func (b *Backend) HasNonfoilPrinting(name string, editions ...string) bool {
 	return b.hasPrinting(name, "finish", FinishNonfoil, editions...)
 }
 
+// HasNonfoilPrinting queries the default datastore.
 func HasNonfoilPrinting(name string, editions ...string) bool {
 	return defaultBackend.HasNonfoilPrinting(name, editions...)
 }
@@ -346,14 +393,18 @@ func (b *Backend) HasFoilPrinting(name string, editions ...string) bool {
 	return b.hasPrinting(name, "finish", FinishFoil, editions...)
 }
 
+// HasFoilPrinting queries the default datastore.
 func HasFoilPrinting(name string, editions ...string) bool {
 	return defaultBackend.HasFoilPrinting(name, editions...)
 }
 
+// HasEtchedPrinting reports whether the card was ever sold etched, narrowed to
+// the given editions when any are named.
 func (b *Backend) HasEtchedPrinting(name string, editions ...string) bool {
 	return b.hasPrinting(name, "finish", FinishEtched, editions...)
 }
 
+// HasEtchedPrinting queries the default datastore.
 func HasEtchedPrinting(name string, editions ...string) bool {
 	return defaultBackend.HasEtchedPrinting(name, editions...)
 }
@@ -456,12 +507,16 @@ func (b *Backend) hasPrinting(name, field, value string, editions ...string) boo
 	return false
 }
 
+// HasPrinting reports whether any printing of the card carries this value in
+// the named field, narrowed to the given editions when any are named.
 func HasPrinting(name, field, value string, editions ...string) bool {
 	return defaultBackend.hasPrinting(name, field, value, editions...)
 }
 
 const maxRerollThreshold = 50
 
+// BoosterGen opens one booster of the given type, drawing from the set's
+// sheets with the weights the real product uses, and returns what came out.
 func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -629,10 +684,12 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 	return picks, nil
 }
 
+// BoosterGen opens a booster from the default datastore.
 func BoosterGen(setCode, boosterType string) ([]string, error) {
 	return defaultBackend.BoosterGen(setCode, boosterType)
 }
 
+// GetPicksForDeck returns the uuids a preconstructed deck contains.
 func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	var picks []string
 
@@ -675,10 +732,13 @@ func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	return picks, nil
 }
 
+// GetPicksForDeck queries the default datastore.
 func GetPicksForDeck(setCode, deckName string) ([]string, error) {
 	return defaultBackend.GetPicksForDeck(setCode, deckName)
 }
 
+// GetDecklist returns the uuids of the fixed decks a sealed product contains,
+// for the products whose contents are known rather than drawn.
 func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 	var picks []string
 
@@ -741,10 +801,13 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 	return picks, nil
 }
 
+// GetDecklist queries the default datastore.
 func GetDecklist(setCode, sealedUUID string) ([]string, error) {
 	return defaultBackend.GetDecklist(setCode, sealedUUID)
 }
 
+// GetPicksForSealed opens a sealed product once, resolving its packs and decks
+// and drawing whatever it leaves to chance.
 func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 	var picks []string
 
@@ -866,10 +929,13 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 	return picks, nil
 }
 
+// GetPicksForSealed opens a product from the default datastore.
 func GetPicksForSealed(setCode, sealedUUID string) ([]string, error) {
 	return defaultBackend.GetPicksForSealed(setCode, sealedUUID)
 }
 
+// SealedIsRandom reports whether opening the product twice can give different
+// cards, which is what separates a booster from a fixed deck.
 func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -912,10 +978,12 @@ func (b *Backend) SealedIsRandom(setCode, sealedUUID string) bool {
 	return false
 }
 
+// SealedIsRandom queries the default datastore.
 func SealedIsRandom(setCode, sealedUUID string) bool {
 	return defaultBackend.SealedIsRandom(setCode, sealedUUID)
 }
 
+// SealedCardUnit returns how many cards the product holds in total.
 func (b *Backend) SealedCardUnit(setCode, sealedUUID string) int {
 	var result int
 
@@ -948,10 +1016,13 @@ func (b *Backend) SealedCardUnit(setCode, sealedUUID string) int {
 	return result
 }
 
+// SealedCardUnit queries the default datastore.
 func SealedCardUnit(setCode, sealedUUID string) int {
 	return defaultBackend.SealedCardUnit(setCode, sealedUUID)
 }
 
+// SealedHasDecklist reports whether the product contains a fixed deck whose
+// contents are known.
 func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -980,15 +1051,20 @@ func (b *Backend) SealedHasDecklist(setCode, sealedUUID string) bool {
 	return false
 }
 
+// SealedHasDecklist queries the default datastore.
 func SealedHasDecklist(setCode, sealedUUID string) bool {
 	return defaultBackend.SealedHasDecklist(setCode, sealedUUID)
 }
 
+// ProductProbabilities is one uuid and how likely opening a product is to
+// yield it.
 type ProductProbabilities struct {
 	UUID        string
 	Probability float64
 }
 
+// SealedBoosterProbabilities returns how likely each card is to appear in one
+// booster of the given type.
 func (b *Backend) SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabilities, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -1027,10 +1103,13 @@ func (b *Backend) SealedBoosterProbabilities(setCode, boosterType string) ([]Pro
 	return probabilities, nil
 }
 
+// SealedBoosterProbabilities queries the default datastore.
 func SealedBoosterProbabilities(setCode, boosterType string) ([]ProductProbabilities, error) {
 	return defaultBackend.SealedBoosterProbabilities(setCode, boosterType)
 }
 
+// SealedSheetProbabilities returns how likely each card on one sheet is to be
+// drawn from it.
 func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -1060,10 +1139,13 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 	return probs, nil
 }
 
+// SealedSheetProbabilities queries the default datastore.
 func SealedSheetProbabilities(setCode, boosterType, sheetName string) ([]ProductProbabilities, error) {
 	return defaultBackend.SealedSheetProbabilities(setCode, boosterType, sheetName)
 }
 
+// GetProbabilitiesForSealed returns how likely each card is to appear when the
+// whole product is opened, across every pack and deck it contains.
 func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabilities, error) {
 	set, err := b.GetSet(setCode)
 	if err != nil {
@@ -1208,13 +1290,15 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 	return probs, nil
 }
 
+// GetProbabilitiesForSealed queries the default datastore.
 func GetProbabilitiesForSealed(setCode, sealedUUID string) ([]ProductProbabilities, error) {
 	return defaultBackend.GetProbabilitiesForSealed(setCode, sealedUUID)
 }
 
-// Provide a map of ids with a slice of uuids
-// For most cases the slice will be of size one, but some ids may hold
-// a second uuid representing the foil version of the product
+// BuildSealedProductMap indexes the sealed products by one of their outside
+// identifiers, skipping any product that does not carry it. A slice usually
+// holds a single uuid, but an id shared by a foil and a nonfoil product holds
+// both, foil last.
 func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 	productMap := map[int][]string{}
 	for _, uuid := range b.AllSealedUUIDs {
@@ -1264,6 +1348,8 @@ func (b *Backend) BuildSealedProductMap(idName string) map[int][]string {
 	return productMap
 }
 
+// BuildSealedProductMap indexes the default datastore's sealed products by an
+// outside identifier.
 func BuildSealedProductMap(idName string) map[int][]string {
 	return defaultBackend.BuildSealedProductMap(idName)
 }

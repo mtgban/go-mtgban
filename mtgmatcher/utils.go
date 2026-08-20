@@ -15,28 +15,37 @@ import (
 	"golang.org/x/text/language"
 )
 
-var ErrDatastoreEmpty = errors.New("datastore is empty")
-var ErrCardUnknownId = errors.New("unknown id")
-var ErrCardDoesNotExist = errors.New("unknown card name")
-var ErrCardNotInEdition = errors.New("unknown edition")
-var ErrCardWrongVariant = errors.New("unknown variant")
-var ErrCardMissingVariant = errors.New("missing necessary variant")
-var ErrCardWrongFinish = errors.New("unknown finish")
+// The errors Match and its helpers return. A caller can tell an input it
+// could not place from a datastore that was never loaded, and ErrAliasing
+// carries the candidates it could not choose between.
+var (
+	ErrDatastoreEmpty     = errors.New("datastore is empty")
+	ErrCardUnknownId      = errors.New("unknown id")
+	ErrCardDoesNotExist   = errors.New("unknown card name")
+	ErrCardNotInEdition   = errors.New("unknown edition")
+	ErrCardWrongVariant   = errors.New("unknown variant")
+	ErrCardMissingVariant = errors.New("missing necessary variant")
+	ErrCardWrongFinish    = errors.New("unknown finish")
 
-// ErrCardUnnamedFinish is a finish name the game cannot place at all, as
-// opposed to one it placed onto a finish the printing is not sold in. It is
-// not evidence of anything - a vendor spelling nobody has taught the game
-// yet reads the same as a typo - so Match falls through to the wording,
-// which is what answered before an id could name a finish.
-var ErrCardUnnamedFinish = errors.New("unrecognized finish")
-var ErrUnsupported = errors.New("unsupported")
-var ErrAliasing = NewAliasingError()
+	// ErrCardUnnamedFinish is a finish name the game cannot place at all, as
+	// opposed to one it placed onto a finish the printing is not sold in. It is
+	// not evidence of anything - a vendor spelling nobody has taught the game
+	// yet reads the same as a typo - so Match falls through to the wording,
+	// which is what answered before an id could name a finish.
+	ErrCardUnnamedFinish = errors.New("unrecognized finish")
 
+	ErrUnsupported = errors.New("unsupported")
+	ErrAliasing    = NewAliasingError()
+)
+
+// AliasingError reports that a listing matched several printings and names
+// them, so a caller can report the ambiguity rather than guess.
 type AliasingError struct {
 	Message string
 	Dupes   []string
 }
 
+// NewAliasingError builds an aliasing error over the candidate uuids.
 func NewAliasingError(duplicates ...string) *AliasingError {
 	return &AliasingError{
 		Message: "aliasing detected",
@@ -48,23 +57,30 @@ func (err *AliasingError) Error() string {
 	return err.Message
 }
 
+// Probe returns the uuids that could not be told apart.
 func (err *AliasingError) Probe() []string {
 	return err.Dupes
 }
 
-const LongestCardEver = "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
-const NightmareCard = "The Ultimate Nightmare of Wizards of the Coast® Customer Service"
+// Cards whose names are long enough or odd enough to break naive parsing, kept
+// here so tests and callers can reach for them by name.
+const (
+	LongestCardEver = "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental"
+	NightmareCard   = "The Ultimate Nightmare of Wizards of the Coast® Customer Service"
+)
 
-// Date since BuyABox cards are found in the expansion set instead of Promos
+// BuyABoxInExpansionSetsDate is when buy-a-box promos began appearing in the
+// expansion set rather than in a promos set of their own.
 var BuyABoxInExpansionSetsDate = time.Date(2018, time.April, 1, 0, 0, 0, 0, time.UTC)
 
-// Date in which random promos can be in the expansion set
+// PromosForEverybodyYay is when assorted promos began appearing in the
+// expansion set itself.
 var PromosForEverybodyYay = time.Date(2019, time.October, 1, 0, 0, 0, 0, time.UTC)
 
-// Guilds found in GRN
+// GRNGuilds are the guilds printed in Guilds of Ravnica.
 var GRNGuilds = []string{"Boros", "Dimir", "Golgari", "Izzet", "Selesnya"}
 
-// Guilds found in ARN
+// ARNGuilds are the guilds printed in Ravnica Allegiance.
 var ARNGuilds = []string{"Azorius", "Gruul", "Orzhov", "Rakdos", "Simic"}
 
 // Regexp for SplitVariants, an optional space and a parenthesis
@@ -136,6 +152,8 @@ func ExtractNumber(str string) string {
 	return extractNumber(str, 1993)
 }
 
+// ExtractNumberAny returns the first number in the input whatever its length,
+// where ExtractNumber caps how many digits it will accept.
 func ExtractNumberAny(str string) string {
 	return extractNumber(str, math.MaxInt32)
 }
@@ -227,12 +245,14 @@ func extractNumber(str string, threshold int) string {
 
 var reNumerical = regexp.MustCompile(`\d+`)
 
-// Obtain the numerical value of the input so that it can be used for strconv.Atoi()
+// ExtractNumberValue returns the first run of digits in the input with leading
+// zeroes stripped, so that it survives strconv.Atoi.
 func ExtractNumberValue(str string) string {
 	return strings.TrimLeft(reNumerical.FindString(str), "0")
 }
 
-// Specialized version of ExtractNumber, suited for parsing WCD numbers
+// ExtractWCDNumber returns a World Championship collector number, which
+// carries the player's deck code and may mark a sideboard card.
 func ExtractWCDNumber(str, prefix string, sideboard bool) string {
 	fields := strings.Fields(str)
 	for _, field := range fields {
@@ -314,7 +334,8 @@ func Cut(in, tag string) []string {
 	return splits
 }
 
-// Strip input string of dollar sign and commas, convert it to a normal float
+// ParsePrice reads a price written for people, with a dollar sign and
+// thousands separators, as a float.
 func ParsePrice(priceStr string) (float64, error) {
 	priceStr = strings.Replace(priceStr, "$", "", 1)
 	priceStr = strings.Replace(priceStr, ",", "", -1)
@@ -366,6 +387,11 @@ func opensPhrase(word string) bool {
 	return false
 }
 
+// Title capitalizes a phrase the way a title is written, replacing the
+// deprecated strings.Title: abc -> Abc, and ABC -> Abc. It also puts back
+// down what a plain title-caser gets wrong, the letter after a digit in an
+// ordinal and the small words sitting inside a phrase rather than opening
+// one.
 func Title(str string) string {
 	titled := cases.Title(language.English).String(str)
 	// A title-caser capitalises the letter after a digit, so "1st place"
@@ -401,7 +427,7 @@ func longestWordInEditionName(str string) string {
 	return longest
 }
 
-// Greatest common divisor (GCD) via Euclidean algorithm
+// GCD returns the greatest common divisor, by the Euclidean algorithm.
 func GCD(a, b int) int {
 	for b != 0 {
 		t := b
@@ -411,12 +437,12 @@ func GCD(a, b int) int {
 	return a
 }
 
-// Find Least Common Multiple (LCM) via GCD
+// LCM returns the least common multiple, by way of GCD.
 func LCM(a, b int) int {
 	return a * b / GCD(a, b)
 }
 
-// Retrieve the card release date
+// CardReleaseDate returns the date the card's set was released.
 func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 	co, err := b.GetUUID(cardID)
 	if err != nil {
@@ -435,11 +461,14 @@ func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 	return time.Parse("2006-01-02", releaseDate)
 }
 
+// CardReleaseDate returns the release date of the card's set, from the default
+// datastore.
 func CardReleaseDate(cardID string) (time.Time, error) {
 	return defaultBackend.CardReleaseDate(cardID)
 }
 
-// Check if a dual-faced card has the same for both faces
+// IsDFCSameName reports whether a double-faced card carries the same name on
+// both halves.
 func IsDFCSameName(name string) bool {
 	if !strings.Contains(name, " // ") {
 		return false
