@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 )
 
+// Card is one entry of the price list, carrying both sides of the book.
 type Card struct {
 	ID       string `json:"Id"`
 	Name     string `json:"Name"`
@@ -21,7 +22,8 @@ type Card struct {
 	TCGplayerID int `json:"TCGPlayerId,omitempty,string"`
 }
 
-// Map with Edition as keys
+// MintData is the price list keyed by edition, then by the card entries
+// inside it.
 type MintData map[string]struct {
 	Abbreviation string `json:"Abbreviation"`
 	EditionId    string `json:"Edition Id"`
@@ -29,6 +31,7 @@ type MintData map[string]struct {
 	Cards map[string]map[string]map[string]map[string][]Card `json:"Cards"`
 }
 
+// MintProductList is what the price-list endpoint answers with.
 type MintProductList struct {
 	Ack       string   `json:"Ack"`
 	Products  MintData `json:"Products"`
@@ -40,11 +43,13 @@ const (
 	mintUserAgent    = "MTGBAN"
 )
 
+// MintClient reads MTG Mint Card's price list.
 type MintClient struct {
 	client *http.Client
 	token  string
 }
 
+// NewMintClient returns a client, failing if the session cannot be opened.
 func NewMintClient(ctx context.Context) (*MintClient, error) {
 	mint := MintClient{}
 	mint.client = cleanhttp.DefaultClient()
@@ -76,6 +81,7 @@ func NewMintClient(ctx context.Context) (*MintClient, error) {
 	return &mint, nil
 }
 
+// GetProductList downloads the whole price list in one call.
 func (mint *MintClient) GetProductList(ctx context.Context) (MintData, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, mintPricelistURL, http.NoBody)
 	if err != nil {
