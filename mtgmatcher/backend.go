@@ -272,12 +272,15 @@ type Backend struct {
 	// Slice with every unique name, lower case
 	AllLowerNames []string
 
-	// What AddName has filed already, one set per list: two spellings can
-	// normalize or lowercase to one string, so each list is deduped on what
-	// it holds rather than on one of the others.
-	seenNames          map[string]bool
-	seenLowerNames     map[string]bool
-	seenCanonicalNames map[string]bool
+	// What AddName and AddSealed have filed already, one set per list: two
+	// spellings can normalize or lowercase to one string, so each list is
+	// deduped on what it holds rather than on one of the others.
+	seenNames           map[string]bool
+	seenLowerNames      map[string]bool
+	seenCanonicalNames  map[string]bool
+	seenSealed          map[string]bool
+	seenLowerSealed     map[string]bool
+	seenCanonicalSealed map[string]bool
 
 	// Slice with every uniquely normalized product name
 	AllSealed []string
