@@ -489,6 +489,32 @@ var TitleTests = []ExtractTest{
 		In:  "the stars",
 		Out: "The Stars",
 	},
+	{
+		In:  "duel of destiny",
+		Out: "Duel of Destiny",
+	},
+	{
+		In:  "legacy of the duelist",
+		Out: "Legacy of the Duelist",
+	},
+	{
+		In:  "back to duel",
+		Out: "Back to Duel",
+	},
+	// A small word opening the phrase is not small: it is the first word.
+	{
+		In:  "the sacred cards",
+		Out: "The Sacred Cards",
+	},
+	{
+		In:  "a",
+		Out: "A",
+	},
+	// Nothing small in it, and the ordinal still comes back down.
+	{
+		In:  "25th anniversary edition",
+		Out: "25th Anniversary Edition",
+	},
 }
 
 func TestTitle(t *testing.T) {

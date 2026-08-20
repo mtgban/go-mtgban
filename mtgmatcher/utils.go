@@ -329,13 +329,47 @@ func ParsePrice(priceStr string) (float64, error) {
 // about "St" or "Th" says it should be lower case.
 var ordinalSuffix = regexp.MustCompile(`([0-9])(St|Nd|Rd|Th)\b`)
 
+// smallWords are the words an English title leaves in lower case when they
+// fall inside the phrase: "Legacy of the Duelist", "Back to Duel". They are
+// only small in that position - a phrase opening with one still opens with a
+// capital, so "the sacred cards" stays "The Sacred Cards".
+var smallWords = map[string]bool{
+	"a":    true,
+	"an":   true,
+	"and":  true,
+	"as":   true,
+	"at":   true,
+	"but":  true,
+	"by":   true,
+	"for":  true,
+	"in":   true,
+	"nor":  true,
+	"of":   true,
+	"on":   true,
+	"or":   true,
+	"the":  true,
+	"to":   true,
+	"with": true,
+}
+
 func Title(str string) string {
 	titled := cases.Title(language.English).String(str)
 	// A title-caser capitalises the letter after a digit, so "1st place"
 	// comes back "1St Place" and "10th anniversary" "10Th Anniversary".
 	// Only an ordinal is put back down: "3d text" keeps its "3D Text",
 	// where the capital is the one wanted.
-	return ordinalSuffix.ReplaceAllStringFunc(titled, strings.ToLower)
+	titled = ordinalSuffix.ReplaceAllStringFunc(titled, strings.ToLower)
+
+	// A title-caser capitalises every word, including the ones a title
+	// leaves down: "duel of destiny" comes back "Duel Of Destiny". The
+	// first word is never one of them, whatever it is.
+	words := strings.Split(titled, " ")
+	for i := 1; i < len(words); i++ {
+		if smallWords[strings.ToLower(words[i])] {
+			words[i] = strings.ToLower(words[i])
+		}
+	}
+	return strings.Join(words, " ")
 }
 
 // longestWordInEditionName finds the longest keyword in an edition name, ignoring punctuation.
