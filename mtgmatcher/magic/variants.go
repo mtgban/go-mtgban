@@ -4374,6 +4374,8 @@ var wc02Variants = map[string]map[string]string{
 	},
 }
 
+// VariantsTable resolves a set's qualifier wording to the collector number it
+// names, for the printings that nothing else tells apart.
 var VariantsTable = map[string]map[string]map[string]string{
 	"30th Anniversary Misc Promos":        p30mVariants,
 	"Alliances":                           allVariants,
@@ -4614,7 +4616,8 @@ var multiPromosVariants = map[string]map[string]string{
 	// not listed here: all the temples
 }
 
-// This list is for editions with conflicting promotional cards
+// MultiPromosTable lists the editions whose promotional cards conflict, where
+// one qualifier fits several printings.
 var MultiPromosTable = map[string]map[string]map[string]string{
 	"Aether Revolt Promos":               multiPromosVariants,
 	"Bloomburrow Promos":                 multiPromosVariants,

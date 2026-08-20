@@ -14,10 +14,14 @@ import (
 // time; hooks whose body has not moved yet delegate to the core method.
 type Rules struct{}
 
+// IsUnsupported reports the listings Magic has no printing for. See
+// mtgmatcher.GameRules.
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 	return inCard.IsUnsupported()
 }
 
+// IsSpecificUnsupported reports the named cards unsupported in one edition
+// rather than as a class. See mtgmatcher.GameRules.
 func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 	return inCard.IsSpecificUnsupported()
 }
@@ -46,6 +50,8 @@ func ravnicaWeekend(c *mtgmatcher.InputCard) (string, string) {
 	return "", ""
 }
 
+// AdjustEdition normalizes the edition a storefront published toward a set
+// name. See mtgmatcher.GameRules.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := inCard.Edition
 	variation := inCard.Variation
@@ -684,6 +690,8 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	inCard.Variation = variation
 }
 
+// FilterPrintings narrows the sets a card could have come from. See
+// mtgmatcher.GameRules.
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) (printings []string) {
 	maybeYear := mtgmatcher.ExtractYear(inCard.Variation)
 	if maybeYear == "" {
@@ -1452,8 +1460,9 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 	return
 }
 
-// These promo types take the longest to appear upstream, so an input tagged
-// with one is unsupported until the resolved card carries the tag too.
+// MissingPromoTag names the promo types that take the longest to appear
+// upstream. An input tagged with one is unsupported until the resolved card
+// carries the tag too.
 func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
 	return (inCard.IsPrerelease() && !co.HasPromoType(PromoTypePrerelease)) ||
 		(inCard.IsPromoPack() && !co.HasPromoType(PromoTypePromoPack)) ||
@@ -1481,6 +1490,8 @@ func sameSet(cards []mtgmatcher.Card) bool {
 	return true
 }
 
+// FilterCards narrows the printings within those sets to the one the input
+// describes. See mtgmatcher.GameRules.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) (outCards []mtgmatcher.Card) {
 	// Use the result as-is if it comes from a single card in a single set,
 	// preserving the historical Magic behavior of the pre-GameRules pipeline:
@@ -1934,6 +1945,8 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
+// AdjustName normalizes the name a storefront published toward the one the
+// datastore uses. See mtgmatcher.GameRules.
 func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// Sticker sheet adjustments
 	if strings.Contains(inCard.Name, "Sticker") {
