@@ -49,6 +49,7 @@ type Datastore struct {
 	Sealed []DatastoreSealed `json:"sealed"`
 }
 
+// DatastoreCard is one printing as the datastore publishes it.
 type DatastoreCard struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
@@ -79,6 +80,7 @@ type DatastoreCard struct {
 	} `json:"externalLinks"`
 }
 
+// DatastoreSealed is one sealed product as the datastore publishes it.
 type DatastoreSealed struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
