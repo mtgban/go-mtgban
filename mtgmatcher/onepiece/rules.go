@@ -13,7 +13,7 @@ import (
 // printings that share a number (alternate arts, parallels, event
 // printings). Foil never gates anything: a product is one printing whatever
 // its stamping, and both flag values resolve to the same uuid.
-type Rules struct{}
+type Rules struct{ mtgmatcher.DefaultRules }
 
 // fullNumberRe matches the game's collector number shapes: "OP01-001",
 // "ST01-001", "EB01-023", "P-001", with an optional letter tail
@@ -201,22 +201,6 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool 
 			return true
 		}
 	}
-	return false
-}
-
-func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
-	return editions
-}
-
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
 	return false
 }
 
