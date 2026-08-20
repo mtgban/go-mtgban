@@ -27,6 +27,8 @@ const (
 	modeBuylist   = "buylist"
 )
 
+// MTGSeattle prices MTGSeattle's singles, both what they sell and what they
+// buy.
 type MTGSeattle struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -43,6 +45,7 @@ type MTGSeattle struct {
 	client *http.Client
 }
 
+// NewScraper returns a scraper.
 func NewScraper() *MTGSeattle {
 	ms := MTGSeattle{}
 	ms.inventory = mtgban.InventoryRecord{}
@@ -366,11 +369,14 @@ func (ms *MTGSeattle) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+// SetConfig applies options after the scraper was built. See
+// mtgban.ScraperConfig.
 func (ms *MTGSeattle) SetConfig(opt mtgban.ScraperOptions) {
 	ms.DisableRetail = opt.DisableRetail
 	ms.DisableBuylist = opt.DisableBuylist
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ms *MTGSeattle) Load(ctx context.Context) error {
 	var errs []error
 
@@ -391,10 +397,12 @@ func (ms *MTGSeattle) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ms *MTGSeattle) Inventory() mtgban.InventoryRecord {
 	return ms.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (ms *MTGSeattle) Buylist() mtgban.BuylistRecord {
 	return ms.buylist
 }
@@ -453,6 +461,7 @@ func grading(cardID string, price float64) map[string]float64 {
 	}
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ms *MTGSeattle) Info() (info mtgban.ScraperInfo) {
 	info.Name = "MTGSeattle"
 	info.Shorthand = "MS"
