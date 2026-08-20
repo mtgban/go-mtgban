@@ -10,10 +10,11 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 )
 
-// Product is a single priced item from a manapool price list. It covers both
-// endpoints: the singles-only fields (Number, ScryfallID, ConditionID, FinishID)
-// are empty for sealed products, which the sealed feed doesn't provide.
-// ProductType distinguishes the two (e.g. "mtg_sealed").
+// Product is a single priced item from a manapool price list. It covers every
+// endpoint, and a field the producing feed does not quote is left zero: sealed
+// products have no Number, ScryfallID, ConditionID or FinishID, and only the
+// singles feed carries the market prices. ProductType distinguishes the feeds
+// (e.g. "mtg_sealed").
 type Product struct {
 	URL                string `json:"url"`
 	ProductType        string `json:"product_type"`
@@ -30,11 +31,20 @@ type Product struct {
 
 	// Total quantity across listings
 	AvailableQuantity int `json:"available_quantity"`
+
+	// What manapool reckons a card is worth, quoted in cents like LowPrice
+	// and only by the singles feed. That feed aggregates a card's listings
+	// rather than describing one of them, so it names the finish by which
+	// field the price sits in instead of through ConditionID and FinishID,
+	// and reports a null that decodes to zero for a finish it does not sell.
+	PriceMarket     int `json:"price_market"`
+	PriceMarketFoil int `json:"price_market_foil"`
 }
 
 const (
 	manapoolURL = "https://manapool.com/api/v1/prices/variants"
 	sealedURL   = "https://manapool.com/api/v1/prices/sealed"
+	singlesURL  = "https://manapool.com/api/v1/prices/singles"
 )
 
 // GetPriceList downloads the singles price list in one call.
@@ -45,6 +55,11 @@ func GetPriceList(ctx context.Context) ([]Product, error) {
 // GetSealedList downloads the sealed price list in one call.
 func GetSealedList(ctx context.Context) ([]Product, error) {
 	return getList(ctx, sealedURL)
+}
+
+// GetSinglesList downloads the singles price list in one call.
+func GetSinglesList(ctx context.Context) ([]Product, error) {
+	return getList(ctx, singlesURL)
 }
 
 func getList(ctx context.Context, link string) ([]Product, error) {

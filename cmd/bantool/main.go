@@ -310,6 +310,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"manapool_index": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := manapool.NewScraperIndex()
+			scraper.Partner = os.Getenv("MP_PARTNER")
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
+	},
 	"manapool_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := manapool.NewScraperSealed()
