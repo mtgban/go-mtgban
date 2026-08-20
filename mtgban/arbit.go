@@ -11,6 +11,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// ArbitOpts narrows what Arbit, Mismatch and Pennystock will report. Every
+// field is a filter whose zero value means "do not filter", so the empty
+// struct returns everything the two sides have in common.
 type ArbitOpts struct {
 	// Extra factor to modify Inventory prices
 	Rate float64
@@ -91,6 +94,10 @@ type ArbitOpts struct {
 	OnlyLanguages []string
 }
 
+// ArbitEntry is one card worth acting on, carrying both sides of the
+// comparison that produced it so a caller can show its working. Which side is
+// filled depends on the function that returned it: Arbit sets BuylistEntry
+// against InventoryEntry, Mismatch sets ReferenceEntry against InventoryEntry.
 type ArbitEntry struct {
 	// ID of the card
 	CardId string
@@ -268,6 +275,9 @@ func (r *resolvedOpts) filterCard(cardID string) (*mtgmatcher.CardObject, float6
 	return co, customFactor, true
 }
 
+// Arbit reports the cards a vendor buys for more than a seller asks, the
+// trade that pays for itself. Only cards both sides carry are considered, and
+// opts filters the rest.
 func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 	var result []ArbitEntry
 
@@ -411,6 +421,10 @@ var defaultGradeMap = map[string]float64{
 	"NM": 1, "SP": 0.8, "MP": 0.6, "HP": 0.4, "PO": 0,
 }
 
+// Mismatch compares two sellers rather than the two sides of one book,
+// reporting where probe asks less than reference for the same card. Same
+// arithmetic as Arbit, against a price the market has settled on instead of
+// against an offer to buy.
 func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 	var result []ArbitEntry
 
@@ -525,6 +539,11 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 	return result
 }
 
+// Pennystock reports cards priced near the floor that have somewhere to fall
+// from: rares, mythics, basic lands and promos, skipping the borders and promo
+// types that are cheap for reasons which will not change. thresholds overrides
+// the per-rarity ceilings in order, and a zero leaves that position at its
+// default.
 func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 	var result []ArbitEntry
 

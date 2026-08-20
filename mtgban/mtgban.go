@@ -7,7 +7,8 @@ import (
 	"time"
 )
 
-// Interface describing common operations on entries
+// GenericEntry is the part an inventory and a buylist entry have in common, so
+// that code reading prices need not know which side of the book it holds.
 type GenericEntry interface {
 	Pricing() float64
 	Condition() string
@@ -51,14 +52,18 @@ type InventoryEntry struct {
 	ExtraValues map[string]float64 `json:"extra_values,omitempty"`
 }
 
+// Pricing returns the asking price, satisfying GenericEntry so that code
+// reading prices need not know which side of the book it was handed.
 func (ie InventoryEntry) Pricing() float64 {
 	return ie.Price
 }
 
+// Condition returns the grade. See GenericEntry.
 func (ie InventoryEntry) Condition() string {
 	return ie.Conditions
 }
 
+// Qty returns the quantity on offer. See GenericEntry.
 func (ie InventoryEntry) Qty() int {
 	return ie.Quantity
 }
@@ -98,18 +103,27 @@ type BuylistEntry struct {
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
 }
 
+// Pricing returns the price paid, not the price asked: the buylist half of
+// GenericEntry, where InventoryEntry returns Price and this returns BuyPrice.
 func (be BuylistEntry) Pricing() float64 {
 	return be.BuyPrice
 }
 
+// Condition returns the grade. See GenericEntry.
 func (be BuylistEntry) Condition() string {
 	return be.Conditions
 }
 
+// Qty returns the quantity wanted. See GenericEntry.
 func (be BuylistEntry) Qty() int {
 	return be.Quantity
 }
 
+// The games a scraper can price, as carried in ScraperInfo.Game.
+//
+// Magic is the empty string rather than a name of its own, so a scraper that
+// never sets Game reads as Magic. Anything comparing games has to account for
+// that: an unset field is not an unknown game.
 const (
 	GameMagic         = ""
 	GameLorcana       = "Lorcana"
@@ -158,12 +172,13 @@ type ScraperInfo struct {
 	Game string `json:"game,omitempty"`
 }
 
-// The default list of conditions most scrapers output
+// DefaultGradeTags are the conditions most scrapers report.
 var DefaultGradeTags = []string{
 	"NM", "SP", "MP", "HP",
 }
 
-// The full list of conditions supported
+// FullGradeTags are every condition the records accept, the graded ones
+// included.
 var FullGradeTags = []string{
 	"NM", "SP", "MP", "HP", "PO",
 }
@@ -196,7 +211,8 @@ type Carter interface {
 	Add(ctx context.Context, entry InventoryEntry) error
 }
 
-// The base map for Seller containing a uuid pointing to an array of InventoryEntry
+// InventoryRecord is what a Seller offers: a uuid to the entries on sale for
+// it, one per condition and seller.
 type InventoryRecord map[string][]InventoryEntry
 
 // Market is the interface describing actions to be performed on the
@@ -235,7 +251,8 @@ type Seller interface {
 	Scraper
 }
 
-// The base map for Vendor containing a uuid pointing to an array of BuylistEntry
+// BuylistRecord is what a Vendor buys: a uuid to the entries it will pay for,
+// one per condition and vendor.
 type BuylistRecord map[string][]BuylistEntry
 
 // Vendor is the interface describing actions to be performed on a vendor buylist
@@ -248,14 +265,14 @@ type Vendor interface {
 	Scraper
 }
 
-// Set of options for the ScraperConfig interface
+// ScraperOptions are the settings a scraper accepts through ScraperConfig.
 type ScraperOptions struct {
 	DisableRetail  bool
 	DisableBuylist bool
 }
 
-// ConfigOptions is the interface to apply options set in ConfigOptions after
-// the scraper has been initialized.
+// ScraperConfig is implemented by scrapers that accept ScraperOptions after
+// they have been initialized.
 type ScraperConfig interface {
 	SetConfig(ScraperOptions)
 }

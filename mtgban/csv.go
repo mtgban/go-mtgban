@@ -11,25 +11,28 @@ import (
 )
 
 var (
-	// The base Card fields for the canonical headers
+	// CardHeader is the set of card fields every other header builds on
 	CardHeader = []string{
 		"UUID", "Name", "Edition", "Finish", "Number", "Rarity",
 	}
 
-	// The canonical header that will be present in all inventory files
+	// InventoryHeader is the header written to every inventory file
 	InventoryHeader = append(CardHeader, "Conditions", "Price", "Quantity", "URL")
 
-	// The canonical header that will be present in all market files
+	// MarketHeader is the header written to a market's per-seller files
 	MarketHeader = append(InventoryHeader, "Seller", "Bundle")
 
-	// Additional fields for Markets necessary for Carters
+	// CartHeader is MarketHeader plus the ids a carter needs to place an order
 	CartHeader = append(MarketHeader, "Original Id", "Instance Id")
 
-	// The canonical header that will be present in all buylist files
+	// BuylistHeader is the header written to every buylist file
 	BuylistHeader = append(CardHeader, "Conditions", "Buy Price", "Trade Price", "Quantity", "Price Ratio", "URL", "Vendor")
 
+	// ArbitHeader is the header for the arbitrage reports, carrying both
+	// prices and the numbers derived from them
 	ArbitHeader = append(CardHeader, "Conditions", "Available", "Sell Price", "Buy Price", "Difference", "Spread", "Abs Difference", "Profitability", "Buy Link", "Sell Link")
 
+	// MismatchHeader is the header for the mismatch reports
 	MismatchHeader = append(CardHeader, "Conditions", "Price", "Reference", "Difference", "Spread")
 )
 
@@ -90,6 +93,10 @@ func record2entry(record []string) (*InventoryEntry, error) {
 	}, nil
 }
 
+// LoadInventoryFromCSV reads what WriteInventoryToCSV produced. It stops at
+// the first unreadable row unless the optional flag is false, in which case
+// bad rows are skipped and whatever parsed is returned; use that for a file
+// from somewhere else, not for one this package wrote.
 func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 	strict := true
 	if len(flags) > 0 {
@@ -156,6 +163,8 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 	return inventory, nil
 }
 
+// LoadBuylistFromCSV reads what WriteBuylistToCSV produced, with the same
+// optional leniency as LoadInventoryFromCSV.
 func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 	strict := true
 	if len(flags) > 0 {
@@ -308,6 +317,8 @@ func cardID2record(cardID string) ([]string, error) {
 	return record, nil
 }
 
+// WriteInventoryToCSV writes an inventory under CardHeader, or under the
+// Market headers when the entries name a seller.
 func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
@@ -367,6 +378,9 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 	return csvWriter.Error()
 }
 
+// WriteBuylistToCSV writes a buylist, adding a trade-price column worth
+// creditMuliplier times the cash price, for vendors who pay more in credit.
+// Pass 1 to make the two columns agree.
 func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
@@ -404,6 +418,8 @@ func WriteBuylistToCSV(buylist BuylistRecord, creditMuliplier float64, w io.Writ
 	return csvWriter.Error()
 }
 
+// WriteArbitrageToCSV writes what Arbit returned, both prices and the spread
+// and profitability derived from them.
 func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
@@ -460,6 +476,8 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 	return csvWriter.Error()
 }
 
+// WriteMismatchToCSV writes what Mismatch returned, the probed price beside
+// the reference it was compared against.
 func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
@@ -512,6 +530,7 @@ func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 	return csvWriter.Error()
 }
 
+// WritePennyToCSV writes what Pennystock returned.
 func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 	defer csvWriter.Flush()
