@@ -365,61 +365,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// as an identifier for BuildSealedProductMap rather than the external
 	// identifier index, mirroring how Magic keeps sealed out of MatchId's
 	// reach.
+	// Sealed products live in the sealed namespace throughout; AddSealed
+	// is what files them there.
 	for _, product := range payload.Sealed {
-		if b.Sets[product.SetCode] == nil {
-			continue
-		}
-
-		card := mtgmatcher.Card{
-			UUID:    product.ID,
-			Name:    product.Name,
-			SetCode: product.SetCode,
-			Rarity:  "product",
-			Images: map[string]string{
-				"full":      product.Image,
-				"thumbnail": product.Image,
-			},
-			Language: "English",
-		}
-		if product.ExternalLinks.TcgPlayerID != 0 {
-			card.Identifiers = map[string]string{
-				"tcgplayerProductId": fmt.Sprint(product.ExternalLinks.TcgPlayerID),
-			}
-		}
-
-		b.Sets[product.SetCode].SealedProduct = append(b.Sets[product.SetCode].SealedProduct, mtgmatcher.SealedProduct{
-			UUID:        product.ID,
-			Name:        product.Name,
-			SetCode:     product.SetCode,
-			Identifiers: card.Identifiers,
-		})
-
-		if _, found := b.UUIDs[product.ID]; found {
-			continue
-		}
-		n := mtgmatcher.Normalize(product.Name)
-		if !slices.Contains(b.AllSealed, n) {
-			b.AllSealed = append(b.AllSealed, n)
-			b.AllCanonicalSealed = append(b.AllCanonicalSealed, product.Name)
-			b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(product.Name))
-		}
-		b.Hashes[n] = append(b.Hashes[n], product.ID)
-
-		b.UUIDs[product.ID] = &mtgmatcher.CardObject{
-			Card:    card,
-			Edition: b.Sets[product.SetCode].Name,
-			Sealed:  true,
-		}
-		b.AllSealedUUIDs = append(b.AllSealedUUIDs, product.ID)
-		b.SetSealedUUIDs[product.SetCode] = append(b.SetSealedUUIDs[product.SetCode], product.ID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
-	sort.Strings(b.AllSealedUUIDs)
-	for code := range b.SetSealedUUIDs {
-		sort.Strings(b.SetSealedUUIDs[code])
-	}
-	sort.Strings(b.AllSealed)
-	sort.Strings(b.AllCanonicalSealed)
-	sort.Strings(b.AllLowerSealed)
+	b.SortSealed()
 
 	b.SetRules(Rules{})
 
