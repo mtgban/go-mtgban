@@ -217,6 +217,8 @@ func unexplainedTokens(vendor, candidate []string, setTokens map[string]bool) in
 	return n
 }
 
+// ResolveSealed resolves a storefront's name for a sealed product to its uuid,
+// using the default datastore.
 func ResolveSealed(name string) (string, error) {
 	return defaultBackend.ResolveSealed(name)
 }

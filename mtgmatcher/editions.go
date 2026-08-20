@@ -1,5 +1,7 @@
 package mtgmatcher
 
+// EditionTable maps the edition names storefronts publish to the ones the
+// datastore uses, for the many spellings of a single set.
 var EditionTable = map[string]string{
 	// Main expansions
 	"10th Edition":          "Tenth Edition",

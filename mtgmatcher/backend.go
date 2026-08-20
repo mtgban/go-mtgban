@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Sheet is one pool a booster draws from, with the weight of each card in it.
 type Sheet struct {
 	AllowDuplicates bool           `json:"allowDuplicates"`
 	BalanceColors   bool           `json:"balanceColors"`
@@ -18,6 +19,8 @@ type Sheet struct {
 	TotalWeight     int            `json:"totalWeight"`
 }
 
+// Booster describes how a product's boosters are built: the sheets available
+// and the weighted configurations that draw from them.
 type Booster struct {
 	Boosters []struct {
 		Contents map[string]int `json:"contents"`
@@ -28,6 +31,8 @@ type Booster struct {
 	Name                string           `json:"name"`
 }
 
+// SealedContent is one component of a sealed product: a card, a pack, a deck,
+// or a set of alternative configurations chosen at random.
 type SealedContent struct {
 	Code  string `json:"code"`
 	Count int    `json:"count"`
@@ -45,6 +50,7 @@ type SealedContent struct {
 	Configs []map[string][]SealedContent `json:"configs"`
 }
 
+// DeckCard is one card in a preconstructed deck, with its finish.
 type DeckCard struct {
 	Count    int    `json:"count"`
 	IsEtched bool   `json:"isEtched"`
@@ -52,6 +58,8 @@ type DeckCard struct {
 	UUID     string `json:"uuid"`
 }
 
+// SealedProduct is a sealed item and, where it is known, what opening it can
+// produce.
 type SealedProduct struct {
 	Category    string                     `json:"category"`
 	Contents    map[string][]SealedContent `json:"contents"`
@@ -64,6 +72,7 @@ type SealedProduct struct {
 	UUID        string                     `json:"uuid"`
 }
 
+// Set is an edition and everything printed in it, cards and sealed alike.
 type Set struct {
 	BaseSetSize   int    `json:"baseSetSize"`
 	Code          string `json:"code"`
@@ -102,6 +111,8 @@ type Set struct {
 	} `json:"decks"`
 }
 
+// Card is one printing, with the properties that tell it apart from every
+// other printing of the same name. Fields follow the MTGJSON project.
 type Card struct {
 	Artist              string              `json:"artist"`
 	AttractionLights    []int               `json:"attractionLights"`
@@ -200,14 +211,17 @@ func (c Card) String() string {
 	return fmt.Sprintf("%s|%s|%s", c.Name, c.SetCode, c.Number)
 }
 
+// HasFinish reports whether the printing was sold in this finish.
 func (c *Card) HasFinish(fi string) bool {
 	return slices.Contains(c.Finishes, fi)
 }
 
+// HasFrameEffect reports whether the printing carries this frame effect.
 func (c *Card) HasFrameEffect(fe string) bool {
 	return slices.Contains(c.FrameEffects, fe)
 }
 
+// HasPromoType reports whether the printing carries this promo type.
 func (c *Card) HasPromoType(pt string) bool {
 	return slices.Contains(c.PromoTypes, pt)
 }
@@ -236,6 +250,8 @@ func (co CardObject) String() string {
 	return fmt.Sprintf("%s|%s", co.Card, finish)
 }
 
+// AlternateProps carries the name and number a printing is also known by, for
+// the reskins and flavor names storefronts list instead of the real one.
 type AlternateProps struct {
 	OriginalName   string
 	OriginalNumber string
@@ -244,6 +260,9 @@ type AlternateProps struct {
 
 var defaultBackend Backend
 
+// Backend is a loaded datastore: every set and printing of one game, with the
+// indexes Match needs and the game's own rules attached. Build one through a
+// game's Load, not by hand.
 type Backend struct {
 	// Slice of all set codes loaded
 	AllSets []string
@@ -333,6 +352,8 @@ type Backend struct {
 	knownFinishes map[string]bool
 }
 
+// Logger receives the matcher's diagnostics. It discards them until
+// SetGlobalLogger says otherwise.
 var Logger = log.New(io.Discard, "", log.LstdFlags)
 
 const (
@@ -364,10 +385,14 @@ func (b *Backend) IndexSets() {
 	}
 }
 
+// SetGlobalDatastore installs the datastore the package-level Match, MatchId
+// and the rest resolve against. It copies the value, so later changes to b do
+// not reach the installed one.
 func SetGlobalDatastore(b *Backend) {
 	defaultBackend = *b
 }
 
+// SetGlobalLogger points the matcher's diagnostics at a logger of your own.
 func SetGlobalLogger(userLogger *log.Logger) {
 	Logger = userLogger
 }

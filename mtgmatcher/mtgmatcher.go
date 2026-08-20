@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+// MatchId resolves an identifier a storefront already knows to the uuid of a
+// printing, using the default datastore. See the method.
 func MatchId(inputID string, finishes ...bool) (string, error) {
 	return defaultBackend.MatchId(inputID, finishes...)
 }
@@ -23,27 +25,28 @@ func MatchIdFinish(inputID, finish string) (string, error) {
 	return defaultBackend.MatchIdFinish(inputID, finish)
 }
 
+// Match resolves a storefront's description of a card to the uuid of the one
+// printing it names, using the default datastore. See the method.
 func Match(inCard *InputCard) (cardID string, err error) {
 	return defaultBackend.Match(inCard)
 }
 
-// Return an array of Card containing all the cards with the exact
-// same name as the input name in the Set identified by setCode.
-// In case of combined card names (with '//' in their name), only the
-// first chunk is considered
+// MatchInSet returns every printing in the set whose name is exactly the one
+// given, against the default datastore. A combined name is matched on its
+// first half alone.
 func MatchInSet(cardName string, setCode string) (outCards []Card) {
 	return defaultBackend.MatchInSet(cardName, setCode)
 }
 
-// Return an array of Card containing all the cards with the exact
-// same name as the input name in the Set identified by setCode with the
-// specified collector number.
+// MatchInSetNumber returns every printing in the set with exactly this name
+// and collector number, against the default datastore.
 func MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
 	return defaultBackend.MatchInSetNumber(cardName, setCode, number)
 }
 
-// Return an array of Card containing all the cards with the exact
-// set code and collector number, using the name as hint (can be empty)
+// MatchWithNumber returns every printing with this set code and collector
+// number, against the default datastore. The name only narrows the result and
+// may be empty.
 func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 	return defaultBackend.MatchWithNumber(cardName, setCode, number)
 }
@@ -147,6 +150,10 @@ func (b *Backend) matchIdFor(inCard *InputCard) (string, error) {
 	return b.MatchId(inCard.Id, inCard.Foil, inCard.IsEtched())
 }
 
+// MatchId resolves an identifier a storefront already knows, one of the
+// matcher's uuids or an external product id, to the uuid of a printing. The
+// optional flags ask for the foil or etched sibling, and are answered only
+// where the printing was sold in one.
 func (b *Backend) MatchId(inputID string, finishes ...bool) (string, error) {
 	co, err := b.cardObject4Id(inputID)
 	if err != nil {
@@ -214,6 +221,10 @@ func (b *Backend) MatchId(inputID string, finishes ...bool) (string, error) {
 	return outID, nil
 }
 
+// Match resolves a storefront's description of a card to the uuid of the one
+// printing it names, reporting ErrAliasing when the description fits more than
+// one. The input is normalized in place, so a caller can see what the matcher
+// made of it.
 func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	if b.Sets == nil {
 		return "", ErrDatastoreEmpty
@@ -568,6 +579,8 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	return
 }
 
+// MatchInSet returns every printing in the set whose name is exactly the one
+// given. A combined name is matched on its first half alone.
 func (b *Backend) MatchInSet(cardName string, setCode string) (outCards []Card) {
 	set, found := b.Sets[setCode]
 	if !found {
@@ -585,6 +598,8 @@ func (b *Backend) MatchInSet(cardName string, setCode string) (outCards []Card) 
 	return
 }
 
+// MatchInSetNumber returns every printing in the set with exactly this name
+// and collector number.
 func (b *Backend) MatchInSetNumber(cardName, setCode, number string) (outCards []Card) {
 	set, found := b.Sets[setCode]
 	if !found {
@@ -598,6 +613,8 @@ func (b *Backend) MatchInSetNumber(cardName, setCode, number string) (outCards [
 	return
 }
 
+// MatchWithNumber returns every printing with this set code and collector
+// number. The name only narrows the result and may be empty.
 func (b *Backend) MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 	set, found := b.Sets[setCode]
 	if !found {

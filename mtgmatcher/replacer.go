@@ -179,22 +179,25 @@ func Normalize(str string) string {
 	return out
 }
 
-// Compare strings after both are Normalize-d.
+// Equals reports whether the two strings are the same after both are
+// Normalize-d, which folds case and drops punctuation.
 func Equals(str1, str2 string) bool {
 	return Normalize(str1) == Normalize(str2)
 }
 
-// Check if str1 contains str2 after both are Normalize-d.
+// Contains reports whether str1 contains str2 after both are Normalize-d.
 func Contains(str1, str2 string) bool {
 	return strings.Contains(Normalize(str1), Normalize(str2))
 }
 
-// Check if str2 is the prefix of str1 after both are Normalize-d.
+// HasPrefix reports whether str2 is a prefix of str1 after both are
+// Normalize-d.
 func HasPrefix(str1, str2 string) bool {
 	return strings.HasPrefix(Normalize(str1), Normalize(str2))
 }
 
-// Check if str2 is the suffix of str1 after both are Normalize-d.
+// HasSuffix reports whether str2 is a suffix of str1 after both are
+// Normalize-d.
 func HasSuffix(str1, str2 string) bool {
 	return strings.HasSuffix(Normalize(str1), Normalize(str2))
 }
