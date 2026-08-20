@@ -89,7 +89,26 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 	return inventory, nil
 }
 
-func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ...float64) mtgban.InventoryRecord {
+// listingPrice reads whichever of the three price fields a listing carries.
+// The endpoints disagree on which one they fill - an export quotes
+// price_cents, the marketplace quotes price, and an order quotes buyer_price -
+// and each carries the currency it was quoted in, so the two travel together.
+func listingPrice(product Product) (int, string) {
+	if product.PriceCents != 0 {
+		return product.PriceCents, product.PriceCurrency
+	}
+	if product.Price.Cents != 0 {
+		return product.Price.Cents, product.Price.Currency
+	}
+	return product.BuyerPrice.Cents, product.BuyerPrice.Currency
+}
+
+// ConvertProducts turns listings into an InventoryRecord, resolving each
+// through the blueprint it was sold against and pricing it in dollars by the
+// rate table that mtgban.GetExchangeRates fills. A listing quoted in a
+// currency the table does not cover is left out rather than priced by the
+// wrong rate.
+func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates map[string]float64) mtgban.InventoryRecord {
 	inventory := mtgban.InventoryRecord{}
 	for _, product := range products {
 		bp, found := blueprints[product.BlueprintId]
@@ -107,20 +126,10 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ..
 			continue
 		}
 
-		priceCents := product.PriceCents
-		currency := product.PriceCurrency
-		if priceCents == 0 {
-			priceCents = product.Price.Cents
-			currency = product.Price.Currency
-		}
-		if priceCents == 0 {
-			priceCents = product.BuyerPrice.Cents
-			currency = product.BuyerPrice.Currency
-		}
-
-		price := float64(priceCents) / 100.0
-		if currency == "EUR" && len(rates) > 0 && rates[0] != 0 {
-			price *= rates[0]
+		cents, currency := listingPrice(product)
+		price, err := priceToUSD(cents, currency, rates)
+		if err != nil {
+			continue
 		}
 
 		quantity := product.Quantity
