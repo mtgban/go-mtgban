@@ -11,6 +11,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// TCGSellerInventory prices the inventory of named sellers, read from the
+// storefront's search API rather than from the partner API.
 type TCGSellerInventory struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -33,9 +35,13 @@ func (tcg *TCGSellerInventory) printf(format string, a ...interface{}) {
 const (
 	defaultSellerInventoryConcurrency = 8
 
+	// MaxPagesGlobalScrapingValue caps how many pages a whole-site scrape
+	// walks, since the search API keeps answering well past what is useful
 	MaxPagesGlobalScrapingValue = 200
 )
 
+// NewScraperForSellerIds returns a scraper over the given seller keys,
+// optionally restricted to their Direct listings.
 func NewScraperForSellerIds(sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
 	tcg.inventory = mtgban.InventoryRecord{}
@@ -193,6 +199,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	ret, err := tcg.totalItems(ctx)
 	if err != nil {
@@ -243,10 +250,12 @@ func (tcg *TCGSellerInventory) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGSellerInventory) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGSellerInventory) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Seller Inventory"
 	tag := strings.Join(tcg.sellerKeys, ",")

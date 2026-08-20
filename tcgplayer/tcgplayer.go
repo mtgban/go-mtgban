@@ -17,6 +17,9 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
+// TCGPlayerMarket prices singles from TCGplayer's partner API, splitting the
+// result into the sub-sellers their pricing endpoint reports and the buylist
+// they publish alongside it.
 type TCGPlayerMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -77,6 +80,8 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperMarket returns a market scraper authenticated with a partner API
+// key pair.
 func NewScraperMarket(publicID, privateID string) (*TCGPlayerMarket, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
@@ -181,6 +186,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
@@ -393,22 +399,29 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGPlayerMarket) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (tcg *TCGPlayerMarket) Buylist() mtgban.BuylistRecord {
 	return tcg.buylist
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (tcg *TCGPlayerMarket) MarketNames() []string {
 	return availableMarketNames
 }
 
+// TraderNames names the sub-vendors this trader splits into. See
+// mtgban.Trader.
 func (tcg *TCGPlayerMarket) TraderNames() []string {
 	return []string{"TCG Direct (net)"}
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (tcg *TCGPlayerMarket) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := tcg.Info()
 	info.Name = name
@@ -416,6 +429,7 @@ func (tcg *TCGPlayerMarket) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Market"
 	info.Shorthand = "TCGMkt"

@@ -27,6 +27,8 @@ const (
 	staticUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
 )
 
+// GetProductNumber returns the collector number the catalog carries for the
+// product, normalized for matching.
 func GetProductNumber(tcgp *tcgplayer.Product) string {
 	num := RawProductNumber(tcgp)
 	num = strings.TrimLeft(num, "0")
@@ -34,6 +36,8 @@ func GetProductNumber(tcgp *tcgplayer.Product) string {
 	return strings.TrimSpace(num)
 }
 
+// RawProductNumber returns the collector number exactly as the catalog spells
+// it, where GetProductNumber normalizes.
 func RawProductNumber(tcgp *tcgplayer.Product) string {
 	for _, extData := range tcgp.ExtendedData {
 		if extData.Name == "Number" {
@@ -43,6 +47,8 @@ func RawProductNumber(tcgp *tcgplayer.Product) string {
 	return ""
 }
 
+// GetProductNameAndVariant splits a catalog product into the card name and the
+// qualifiers TCGplayer appends to it.
 func GetProductNameAndVariant(tcgp *tcgplayer.Product) (string, string) {
 	cardName := tcgp.Name
 	variant := ""
@@ -91,6 +97,8 @@ func isToken(tcgp *tcgplayer.Product) bool {
 	return false
 }
 
+// GetCategoryNames returns the display name and the URL name of a catalog
+// category.
 func GetCategoryNames(ctx context.Context, tcg *tcgplayer.Client, category int) (string, string, error) {
 	check, err := tcg.GetCategoriesDetails(ctx, []int{category})
 	if err != nil {
@@ -102,6 +110,8 @@ func GetCategoryNames(ctx context.Context, tcg *tcgplayer.Client, category int) 
 	return check[0].Name, check[0].DisplayName, nil
 }
 
+// EditionMap indexes a category's groups, which is what TCGplayer calls an
+// edition, by their id.
 func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[int]tcgplayer.Group, error) {
 	totals, err := tcg.TotalGroups(ctx, category)
 	if err != nil {
@@ -123,6 +133,8 @@ func EditionMap(ctx context.Context, tcg *tcgplayer.Client, category int) (map[i
 	return results, nil
 }
 
+// SKUConditionMap maps the condition ids the APIs use to the grades the
+// records are keyed by.
 var SKUConditionMap = map[int]string{
 	1: "NM",
 	2: "SP",
@@ -151,6 +163,8 @@ type latestSalesResponse struct {
 	Data         []LatestSalesData `json:"data"`
 }
 
+// LatestSalesData is one recent sale of a product, as the storefront reports
+// it.
 type LatestSalesData struct {
 	Condition       string    `json:"condition"`
 	Variant         string    `json:"variant"`
@@ -222,6 +236,9 @@ func LatestSales(ctx context.Context, tcgProductID string, flags ...bool) ([]Lat
 	return response.Data, nil
 }
 
+// The storefront endpoints SellerClient reads. They are not part of the
+// partner API and need no credentials, but they answer only what the site
+// itself shows.
 const (
 	SellersPageURL     = "https://mpapi.tcgplayer.com/v2/ShopBySeller/GetSellerSearchResults"
 	SellerInventoryURL = "https://mp-search-api.tcgplayer.com/v1/search/request?q=&isList=true&mpfev=1953"
@@ -230,6 +247,8 @@ const (
 	DefaultSellerRequestSize = 50
 )
 
+// SellerKeyExists reports whether the storefront still serves a page for the
+// seller key.
 func SellerKeyExists(ctx context.Context, sellerKey string) bool {
 	client := cleanhttp.DefaultClient()
 
@@ -253,6 +272,7 @@ func SellerKeyExists(ctx context.Context, sellerKey string) bool {
 	return resp.StatusCode == 200
 }
 
+// SellerSearchResponse is what the shop-by-seller endpoint answers with.
 type SellerSearchResponse struct {
 	Errors  []any `json:"errors"`
 	Results []struct {
@@ -275,6 +295,8 @@ type SellerSearchResponse struct {
 	} `json:"results"`
 }
 
+// SellerName2ID resolves a seller's display name to the key the APIs index
+// them by.
 func SellerName2ID(ctx context.Context, sellerName string) (string, error) {
 	if sellerName == "" {
 		return "", errors.New("missing seller name")
@@ -412,6 +434,8 @@ type SellerInventoryPage struct {
 	Results      []SellerInventoryResult `json:"results"`
 }
 
+// SellerListing is one seller's offer on a product, with the price, condition
+// and quantity they published.
 type SellerListing struct {
 	ChannelID            float64 `json:"channelId"`
 	Condition            string  `json:"condition"`
@@ -443,6 +467,8 @@ type SellerListing struct {
 	VerifiedSeller       bool    `json:"verifiedSeller"`
 }
 
+// SellerInventoryResult is one product in a seller's inventory, carrying every
+// listing they have for it.
 type SellerInventoryResult struct {
 	FoilOnly                bool    `json:"foilOnly"`
 	ImageCount              float64 `json:"imageCount"`
@@ -477,10 +503,13 @@ type SellerInventoryResult struct {
 	Listings []SellerListing `json:"listings"`
 }
 
+// SellerClient reads the storefront's search API, which needs no partner
+// credentials but answers only what the site itself shows.
 type SellerClient struct {
 	client *http.Client
 }
 
+// NewSellerClient returns a client for the storefront's search API.
 func NewSellerClient() *SellerClient {
 	tcg := SellerClient{}
 	client := retryablehttp.NewClient()
@@ -594,6 +623,8 @@ type sellerInventoryListingResponse struct {
 	} `json:"results"`
 }
 
+// InventoryListing returns one page of the offers on a single product, across
+// every seller rather than for one of them.
 func (tcg *SellerClient) InventoryListing(ctx context.Context, productID, size, page int, useDirect bool) ([]SellerListing, error) {
 	var params sellerInventoryListingRequest
 	params.Filters.Term.SellerStatus = "Live"
@@ -646,11 +677,15 @@ func (tcg *SellerClient) InventoryListing(ctx context.Context, productID, size, 
 	return response.Results[0].Results, nil
 }
 
+// CookieClient drives the storefront as a signed-in user would, for the
+// operations the APIs do not expose: the cart, the address book, the account.
 type CookieClient struct {
 	client     *http.Client
 	cookieLine string
 }
 
+// NewCookieClient returns a client acting as the user whose auth cookie is
+// given.
 func NewCookieClient(authKey string) *CookieClient {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
@@ -660,6 +695,8 @@ func NewCookieClient(authKey string) *CookieClient {
 	return &tcg
 }
 
+// NewCookieSetClient returns a client carrying a whole cookie jar, for the
+// pages that need more than the auth cookie alone.
 func NewCookieSetClient(cookies map[string]string) *CookieClient {
 	client := retryablehttp.NewClient()
 	client.Logger = nil
@@ -671,6 +708,7 @@ func NewCookieSetClient(cookies map[string]string) *CookieClient {
 	return &tcg
 }
 
+// UserData is the signed-in account the storefront reports.
 type UserData struct {
 	UserName                string `json:"userName"`
 	UserID                  int    `json:"userId"`
@@ -702,6 +740,7 @@ type UserData struct {
 	SellerKeys []string `json:"sellerKeys"`
 }
 
+// UserResponse wraps UserData as the endpoint returns it.
 type UserResponse struct {
 	Errors []struct {
 		Code    string `json:"code"`
@@ -712,6 +751,7 @@ type UserResponse struct {
 
 const tcgUserDataURL = "https://mpapi.tcgplayer.com/v2/user?isGuest=false"
 
+// Get performs a signed-in GET.
 func (tcg *CookieClient) Get(ctx context.Context, link string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -723,6 +763,7 @@ func (tcg *CookieClient) Get(ctx context.Context, link string) (*http.Response, 
 	return tcg.client.Do(req)
 }
 
+// Post performs a signed-in POST.
 func (tcg *CookieClient) Post(ctx context.Context, link, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, body)
 	if err != nil {
@@ -735,6 +776,7 @@ func (tcg *CookieClient) Post(ctx context.Context, link, contentType string, bod
 	return tcg.client.Do(req)
 }
 
+// Delete performs a signed-in DELETE.
 func (tcg *CookieClient) Delete(ctx context.Context, link string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, link, http.NoBody)
 	if err != nil {
@@ -746,6 +788,7 @@ func (tcg *CookieClient) Delete(ctx context.Context, link string) (*http.Respons
 	return tcg.client.Do(req)
 }
 
+// GetUserData returns the account the cookie belongs to.
 func (tcg *CookieClient) GetUserData(ctx context.Context) (*UserData, error) {
 	resp, err := tcg.Get(ctx, tcgUserDataURL)
 	if err != nil {
@@ -773,6 +816,8 @@ func (tcg *CookieClient) GetUserData(ctx context.Context) (*UserData, error) {
 
 const tcgCreateCartURL = "https://mpgateway.tcgplayer.com/v1/cart/create/usercart"
 
+// CreateCartKey opens a cart for the user and returns the key that identifies
+// it.
 func CreateCartKey(ctx context.Context, userID string) (string, error) {
 	var params struct {
 		ExternalUserId string `json:"externalUserId"`
@@ -811,6 +856,7 @@ func CreateCartKey(ctx context.Context, userID string) (string, error) {
 	return response.Results[0].CartKey, nil
 }
 
+// EmptyCart removes everything from the cart.
 func (tcg *CookieClient) EmptyCart(ctx context.Context, cartKey string) error {
 	link := fmt.Sprintf("https://mpgateway.tcgplayer.com/v1/cart/%s/items/all", cartKey)
 
@@ -823,6 +869,8 @@ func (tcg *CookieClient) EmptyCart(ctx context.Context, cartKey string) error {
 	return nil
 }
 
+// AddressConfig is a shipping address, in the shape the storefront's account
+// pages expect.
 type AddressConfig struct {
 	FirstName                 string `json:"firstName"`
 	LastName                  string `json:"lastName"`
@@ -847,6 +895,7 @@ const (
 	addressUpdateURL = "https://mpgateway.tcgplayer.com/v2/useraddressbooks/update"
 )
 
+// SetAddress replaces the account's shipping address.
 func (tcg *CookieClient) SetAddress(ctx context.Context, address AddressConfig) error {
 	payload, err := json.Marshal(&address)
 	if err != nil {

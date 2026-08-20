@@ -67,6 +67,8 @@ var SupportedGames = map[string]int{
 	mtgban.GameFleshAndBlood: tcgplayer.CategoryFleshAndBlood,
 }
 
+// NewScraperGame returns a singles scraper for one game, authenticated with a
+// partner API key pair.
 func NewScraperGame(game, publicID, privateID string) (*TCGGame, error) {
 	category, found := SupportedGames[game]
 	if !found {
@@ -250,6 +252,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGGame) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
@@ -311,10 +314,12 @@ func (tcg *TCGGame) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGGame) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGGame) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCGplayer"
 	info.Shorthand = "TCGPlayer"

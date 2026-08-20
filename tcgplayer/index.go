@@ -13,6 +13,8 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
+// TCGPlayerIndex prices Magic singles from the partner API's price guide, the
+// low and market numbers rather than any one seller's listing.
 type TCGPlayerIndex struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -40,6 +42,8 @@ func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperIndex returns an index scraper authenticated with a partner API
+// key pair.
 func NewScraperIndex(publicID, privateID string) (*TCGPlayerIndex, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
@@ -142,6 +146,7 @@ func (tcg *TCGPlayerIndex) processEntry(ctx context.Context, channel chan<- resp
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGPlayerIndex) Load(ctx context.Context) error {
 	pages := make(chan indexChan)
 	channel := make(chan responseChan)
@@ -234,14 +239,18 @@ func (tcg *TCGPlayerIndex) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGPlayerIndex) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (tcg *TCGPlayerIndex) MarketNames() []string {
 	return availableIndexNames
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (tcg *TCGPlayerIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := tcg.Info()
 	info.Name = name
@@ -249,6 +258,7 @@ func (tcg *TCGPlayerIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGPlayerIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Index"
 	info.Shorthand = "TCGIndex"

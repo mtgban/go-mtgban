@@ -11,6 +11,8 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
+// TCGPlayerGeneric prices any partner API category by number, for the games
+// and product types that have no scraper of their own.
 type TCGPlayerGeneric struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -40,6 +42,8 @@ func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperGeneric returns a scraper for one category id, optionally narrowed
+// to the named product types.
 func NewScraperGeneric(publicID, privateID string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
@@ -129,6 +133,7 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
@@ -173,10 +178,12 @@ func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGPlayerGeneric) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCGplayer - " + tcg.categoryDisplayName
 	info.Shorthand = "TCG+" + tcg.categoryName
