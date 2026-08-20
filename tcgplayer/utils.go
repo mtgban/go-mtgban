@@ -16,10 +16,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// The storefront links a listing is published under. The partner form wraps a
+// product link for affiliate attribution.
 const (
-	// The storefront links a listing is published under
-	BaseProductURL = "https://www.tcgplayer.com/product/"
-	// PartnerProductURL wraps a product link for affiliate attribution
+	BaseProductURL    = "https://www.tcgplayer.com/product/"
 	PartnerProductURL = "https://partner.tcgplayer.com/c/%s/1830156/21018"
 )
 
