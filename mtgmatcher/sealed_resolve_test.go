@@ -207,6 +207,12 @@ func TestSealedIsLanguageVariant(t *testing.T) {
 		"Origins Booster Box (French)":                              true,
 		"Origins Booster Box":                                       false,
 		"The First Chapter Illumineer's Trove":                      false,
+		// Cardmarket marks the ones it names no language for this way.
+		"Romance Dawn Booster Box (Non-English)":                        true,
+		"Romance Dawn Booster Box Case (12x Booster Box) (Non-English)": true,
+		// The word alone is not the mark: this is the English product.
+		"English Booster Box":                   false,
+		"Romance Dawn Booster Box (Pre-Errata)": false,
 	} {
 		if got := SealedIsLanguageVariant(name); got != want {
 			t.Errorf("SealedIsLanguageVariant(%q) = %t, want %t", name, got, want)
