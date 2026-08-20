@@ -16,6 +16,7 @@ const (
 	sealedURL = "https://www.hareruyamtg.com/en/products/search/unisearch_api?fq.category_id=177:505&fq.price=1~*&fq.stock=1~*&rows=60&page=%d"
 )
 
+// Response is what the storefront's search endpoint answers with.
 type Response struct {
 	ResponseHeader struct {
 		Status int    `json:"status"`
@@ -29,6 +30,7 @@ type Response struct {
 	} `json:"response"`
 }
 
+// Product is one listing on the storefront.
 type Product struct {
 	Product       string `json:"product"`
 	ProductName   string `json:"product_name"`
@@ -66,10 +68,12 @@ func search(ctx context.Context, client *http.Client, link string) ([]Product, e
 	return response.Response.Docs, nil
 }
 
+// SearchCardSet returns one page of the listings in a set.
 func SearchCardSet(ctx context.Context, client *http.Client, cardSet string, page int) ([]Product, error) {
 	return search(ctx, client, fmt.Sprintf(unisearchURL, cardSet, page))
 }
 
+// SearchSealed returns one page of the sealed listings.
 func SearchSealed(ctx context.Context, client *http.Client, page int) ([]Product, error) {
 	return search(ctx, client, fmt.Sprintf(sealedURL, page))
 }
