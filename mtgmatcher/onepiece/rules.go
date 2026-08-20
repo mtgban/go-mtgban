@@ -197,7 +197,7 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool 
 		if number != "" && !numberMatches(number, co.Number) {
 			continue
 		}
-		if variantDescribed(wording, co.PromoTypes[0], number) {
+		if mtgmatcher.SlugDescribesAny(wording, co.PromoTypes) {
 			return true
 		}
 	}
@@ -257,7 +257,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// The letter tail cardtrader appends to a number ("OP01-001a") means a
 	// variant printing without saying which; the V.n index says the same.
 	// Either demand drops the base printing from consideration.
-	described, base, variants := tierByVariant(inCard, candidates, number)
+	described, base, variants := tierByVariant(inCard, candidates)
 	if len(described) > 0 {
 		return editionTiebreak(b, inCard, described)
 	}
@@ -545,7 +545,7 @@ func isEventSet(code string) bool {
 
 // tierByVariant splits the candidates into the ones whose variant label the
 // input's wording describes, the base printings, and the variant printings.
-func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string) (described, base, variants []mtgmatcher.Card) {
+func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (described, base, variants []mtgmatcher.Card) {
 	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
 	for _, card := range candidates {
 		if len(card.PromoTypes) == 0 {
@@ -553,17 +553,9 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 			continue
 		}
 		variants = append(variants, card)
-		if variantDescribed(wording, card.PromoTypes[0], number) {
-			described = append(described, card)
-		}
 	}
+	described = mtgmatcher.DescribedVariants(wording, variants)
 	return
-}
-
-// variantDescribed reports whether the input's wording mentions every word
-// of the printing's variant label, the number and positional tokens aside.
-func variantDescribed(wording, variant, number string) bool {
-	return mtgmatcher.SlugDescribes(wording, variant)
 }
 
 // wantsVariant reports whether the input demands some variant printing

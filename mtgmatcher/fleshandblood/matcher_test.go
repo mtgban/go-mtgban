@@ -122,6 +122,13 @@ var fleshandbloodSeeds = []matchTest{
 		Desc: "negative: pitch variants without a base alias on a bare number",
 		In:   mtgmatcher.InputCard{Name: "Dig In", Variation: "FAB384"},
 	},
+	// The only extended art of OMN133 wears the words behind a colour, so
+	// the storefront naming the treatment names the second tag and nothing
+	// else.
+	{
+		Desc: "a tag written behind another still names its printing",
+		In:   mtgmatcher.InputCard{Name: "Tome of Quandaries", Variation: "OMN133 Extended Art"},
+	},
 }
 
 func loadBackend(t *testing.T) *mtgmatcher.Backend {

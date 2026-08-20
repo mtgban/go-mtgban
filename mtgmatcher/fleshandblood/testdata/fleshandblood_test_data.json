@@ -8,6 +8,14 @@
         "uuid": "wtr005_225015_1ecold"
     },
     {
+        "description": "a tag written behind another still names its printing",
+        "input": {
+            "name": "Tome of Quandaries",
+            "variant": "OMN133 Extended Art"
+        },
+        "uuid": "omn133_693428_cold"
+    },
+    {
         "description": "alpha print run rides the 1st edition entry",
         "input": {
             "name": "Barraging Beatdown (Yellow)",

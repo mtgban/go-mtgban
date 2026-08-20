@@ -125,6 +125,17 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: multi-rarity number stays ambiguous without a rarity signal",
 		In:   mtgmatcher.InputCard{Name: "Diabellstar the Black Witch", Variation: "25LP-EN001"},
 	},
+	// DLCS-EN006 prints one number in eight products: a base art, three
+	// colours, and the same four again as alternate arts. Only the tag the
+	// colour is written beside tells the last four apart.
+	{
+		Desc: "a wording naming two tags reaches the printing wearing both",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl the Dragon Knight", Variation: "DLCS-EN006 Alternate Art Blue"},
+	},
+	{
+		Desc: "a wording naming one tag keeps the printing wearing only it",
+		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl the Dragon Knight", Variation: "DLCS-EN006 Blue"},
+	},
 }
 
 func loadBackend(t *testing.T) *mtgmatcher.Backend {

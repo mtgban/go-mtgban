@@ -26,6 +26,22 @@
         "uuid": "ys13-env03_69074_lim"
     },
     {
+        "description": "a wording naming one tag keeps the printing wearing only it",
+        "input": {
+            "name": "Dark Magician Girl the Dragon Knight",
+            "variant": "DLCS-EN006 Blue"
+        },
+        "uuid": "dlcs-en006_222244_1e"
+    },
+    {
+        "description": "a wording naming two tags reaches the printing wearing both",
+        "input": {
+            "name": "Dark Magician Girl the Dragon Knight",
+            "variant": "DLCS-EN006 Alternate Art Blue"
+        },
+        "uuid": "dlcs-en006_222248_1e"
+    },
+    {
         "description": "cardtrader alternate-art tail drops the base art",
         "input": {
             "name": "Eldlich the Golden Lord",

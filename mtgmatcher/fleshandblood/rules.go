@@ -220,12 +220,10 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 			continue
 		}
 		variants = append(variants, card)
-		// The tag is a token now, so the wording's words are joined back
-		// up a run at a time to ask whether they name it.
-		if mtgmatcher.SlugDescribes(inCard.Variation, card.PromoTypes[0]) {
-			described = append(described, card)
-		}
 	}
+	// The tags are tokens now, so the wording's words are joined back up a
+	// run at a time to ask whether they name them.
+	described = mtgmatcher.DescribedVariants(inCard.Variation, variants)
 	if len(described) > 1 {
 		var bare []string
 		for _, word := range words {
@@ -233,12 +231,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 				bare = append(bare, word)
 			}
 		}
-		var refined []mtgmatcher.Card
-		for _, card := range described {
-			if mtgmatcher.SlugDescribes(strings.Join(bare, " "), card.PromoTypes[0]) {
-				refined = append(refined, card)
-			}
-		}
+		refined := mtgmatcher.DescribedVariants(strings.Join(bare, " "), described)
 		if len(refined) > 0 {
 			described = refined
 		}
