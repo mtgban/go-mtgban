@@ -20,14 +20,20 @@ import (
 	api "github.com/mtgban/go-tcgplayer"
 )
 
+// Editions maps a TCGplayer group id to its name, read once and reused for
+// every card checked.
 var Editions map[int]string
 
-var VerboseOpt *bool
-var StepOpt *int
-var StepSizeOpt *int
-var StepStartOpt *int
-var ConcurrencyOpt *int
-var AllPrintingsOpt *string
+// The command's flags.
+var (
+	VerboseOpt     *bool
+	StepOpt        *int
+	StepSizeOpt    *int
+	StepStartOpt   *int
+	ConcurrencyOpt *int
+
+	AllPrintingsOpt *string
+)
 
 type responseChan struct {
 	cardID string
@@ -109,6 +115,8 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 	return nil
 }
 
+// Properties is what Scryfall publishes for a card, of which only the
+// TCGplayer ids are compared here.
 type Properties struct {
 	Name       string
 	Edition    string
