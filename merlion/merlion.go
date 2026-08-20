@@ -10,6 +10,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Merlion prices what Merlion Games buys.
 type Merlion struct {
 	LogCallback mtgban.LogCallbackFunc
 
@@ -17,6 +18,7 @@ type Merlion struct {
 	buylist     mtgban.BuylistRecord
 }
 
+// NewScraper returns a buylist scraper.
 func NewScraper() *Merlion {
 	mg := Merlion{}
 	mg.buylist = mtgban.BuylistRecord{}
@@ -43,6 +45,7 @@ var gradeFactors = map[string]float64{
 // double the entries for nothing.
 const playedPriceFloor = 100
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mg *Merlion) Load(ctx context.Context) error {
 	cards, err := DownloadBuylistCSV(ctx)
 	if err != nil {
@@ -103,10 +106,12 @@ func (mg *Merlion) Load(ctx context.Context) error {
 	return nil
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (mg *Merlion) Buylist() mtgban.BuylistRecord {
 	return mg.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mg *Merlion) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Merlion Games"
 	info.Shorthand = "MG"
