@@ -18,12 +18,14 @@ const (
 	staticUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
 )
 
+// VSResponse is what the storefront's product endpoint answers with.
 type VSResponse struct {
 	Count    int         `json:"count"`
 	Pages    int         `json:"pages"`
 	Products []VSProduct `json:"products"`
 }
 
+// VSProduct is one catalog entry.
 type VSProduct struct {
 	ID                string            `json:"id"`
 	ProductID         int64             `json:"product_id"`
@@ -36,6 +38,8 @@ type VSProduct struct {
 	RetailVariantInfo []VSRetailVariant `json:"variant_info"`
 }
 
+// VSProductData is the body of a product, apart from the envelope it arrives
+// in.
 type VSProductData struct {
 	Set                       string `json:"set"`
 	SetName                   string `json:"setName"`
@@ -43,6 +47,7 @@ type VSProductData struct {
 	CollectorNumberNormalized int    `json:"collector_number_normalized"`
 }
 
+// VSVariant is one sellable version of a product, a printing in a condition.
 type VSVariant struct {
 	ID             int64   `json:"id"`
 	Title          string  `json:"title"`
@@ -50,6 +55,7 @@ type VSVariant struct {
 	OfferPrice     float64 `json:"offer_price"`
 }
 
+// VSRetailVariant is a variant with the retail price attached.
 type VSRetailVariant struct {
 	ID                int64   `json:"id"`
 	Title             string  `json:"title"`
@@ -58,10 +64,12 @@ type VSRetailVariant struct {
 	InventoryQuantity int     `json:"inventory_quantity"`
 }
 
+// VSClient reads the Vegas Singles storefront.
 type VSClient struct {
 	client *http.Client
 }
 
+// NewVSClient returns a client.
 func NewVSClient() *VSClient {
 	vs := VSClient{}
 	client := retryablehttp.NewClient()
