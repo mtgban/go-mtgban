@@ -17,6 +17,8 @@ const (
 	defaultConcurrency = 8
 )
 
+// CardtraderMarket prices singles from Card Trader, splitting the result into
+// the storefronts they sell under: the marketplace itself, Zero, and 1DR.
 type CardtraderMarket struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -49,6 +51,8 @@ var name2shorthand = map[string]string{
 	"Card Trader 1DR":  "CT1DR",
 }
 
+// NewScraperMarket returns a market scraper for one game, authenticated with a
+// full API token.
 func NewScraperMarket(gameID int, token string) (*CardtraderMarket, error) {
 	ct := CardtraderMarket{}
 	ct.inventory = mtgban.InventoryRecord{}
@@ -293,6 +297,7 @@ func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<-
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ct *CardtraderMarket) Load(ctx context.Context) error {
 	rates, err := mtgban.GetExchangeRates(ctx)
 	if err != nil {
@@ -360,14 +365,18 @@ func (ct *CardtraderMarket) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ct *CardtraderMarket) Inventory() mtgban.InventoryRecord {
 	return ct.inventory
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (ct *CardtraderMarket) MarketNames() []string {
 	return availableMarketNames
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (ct *CardtraderMarket) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ct.Info()
 	info.Name = name
@@ -375,6 +384,7 @@ func (ct *CardtraderMarket) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader"
 	info.Shorthand = "CTMarket"

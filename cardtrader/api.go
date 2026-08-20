@@ -25,8 +25,12 @@ const (
 	ctAddProductCart    = "https://api.cardtrader.com/api/v2/cart/add"
 	ctRemoveProductCart = "https://api.cardtrader.com/api/v2/cart/remove"
 
+	// MaxBulkUploadItems is how many listings one bulk request may carry
 	MaxBulkUploadItems = 450
+)
 
+// The games Card Trader carries, as their catalog numbers them.
+const (
 	GameIdMagic             = 1
 	GameIdYuGiOh            = 4
 	GameIdPokemon           = 5
@@ -43,6 +47,8 @@ const (
 	GameIdGundam            = 23
 )
 
+// The catalog categories. Card Trader splits every game into product types of
+// its own, and a blueprint belongs to exactly one of them.
 const (
 	CategoryMagicSingles = iota + 1
 	CategoryMagicTokens
@@ -74,6 +80,7 @@ const (
 	CategoryMagicGamingStones
 )
 
+// The Lorcana categories.
 const (
 	CategoryLorcanaSingles = iota + 214
 	CategoryLorcanaBoosterBoxes
@@ -95,6 +102,7 @@ const (
 	CategoryLorcanaCompleteSets
 )
 
+// The Riftbound categories.
 const (
 	CategoryRiftboundSingles = iota + 258
 	CategoryRiftboundBoosterBoxes
@@ -147,6 +155,7 @@ const (
 	CategoryOnePieceMemorabilia     = 257
 )
 
+// The Yu-Gi-Oh categories.
 const (
 	CategoryYuGiOhSingles               = 44
 	CategoryYuGiOhSleeves               = 45
@@ -168,6 +177,7 @@ const (
 	CategoryYuGiOhSpecialDeluxeEditions = 117
 )
 
+// The Flesh and Blood categories.
 const (
 	CategoryFleshAndBloodSingles             = 80
 	CategoryFleshAndBloodBoosterBoxes        = 81
@@ -183,6 +193,8 @@ const (
 	CategoryFleshAndBloodCompleteSets        = 286
 )
 
+// Blueprint is Card Trader's catalog entry for a card or sealed product, the
+// thing listings are sold against.
 type Blueprint struct {
 	Id          int    `json:"id"`
 	Name        string `json:"name"`
@@ -215,6 +227,8 @@ type Blueprint struct {
 	Slug string `json:"slug"`
 }
 
+// Product is one listing: a blueprint offered by a seller at a price, in a
+// condition and a language.
 type Product struct {
 	Id          int    `json:"id"`
 	BlueprintId int    `json:"blueprint_id"`
@@ -266,6 +280,8 @@ type Product struct {
 	BuyerPrice    CTPrice `json:"buyer_price,omitempty"`
 }
 
+// BlueprintError is what the catalog answers with when a blueprint cannot be
+// served.
 type BlueprintError struct {
 	ErrorCode string   `json:"error_code"`
 	Errors    []string `json:"errors"`
@@ -275,6 +291,8 @@ type BlueprintError struct {
 	RequestId string `json:"request_id"`
 }
 
+// Expansion is a set as Card Trader files it, which does not always agree with
+// the game's own sets.
 type Expansion struct {
 	Id     int    `json:"id"`
 	GameId int    `json:"game_id"`
@@ -282,6 +300,8 @@ type Expansion struct {
 	Name   string `json:"name"`
 }
 
+// CTAuthClient reads the full Card Trader API, which needs a token and can see
+// your own listings as well as the public catalog.
 type CTAuthClient struct {
 	client *http.Client
 }
@@ -291,6 +311,7 @@ type authTransport struct {
 	Token  string
 }
 
+// NewCTAuthClient returns a client authenticated with the given token.
 func NewCTAuthClient(token string) *CTAuthClient {
 	ct := CTAuthClient{}
 	client := retryablehttp.NewClient()
@@ -308,6 +329,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.Parent.RoundTrip(req)
 }
 
+// Expansions returns every expansion in the catalog, across all games.
 func (ct *CTAuthClient) Expansions(ctx context.Context) ([]Expansion, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ctExpansionsURL, http.NoBody)
 	if err != nil {
@@ -329,7 +351,8 @@ func (ct *CTAuthClient) Expansions(ctx context.Context) ([]Expansion, error) {
 	return out, nil
 }
 
-// Returns all products from an Expansion, with the 25 cheapest listings per product
+// ProductsForExpansion returns every product in an expansion, each with its 25
+// cheapest listings.
 func (ct *CTAuthClient) ProductsForExpansion(ctx context.Context, id int) (map[int][]Product, error) {
 	link := fmt.Sprintf("%s?expansion_id=%d", ctMarketplaceURL, id)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -352,7 +375,8 @@ func (ct *CTAuthClient) ProductsForExpansion(ctx context.Context, id int) (map[i
 	return out, nil
 }
 
-// Returns all products from a given blueprint id, with the 25 cheapest listings
+// ProductsForBlueprint returns every product sold against one blueprint, each
+// with its 25 cheapest listings.
 func (ct *CTAuthClient) ProductsForBlueprint(ctx context.Context, id int) ([]Product, error) {
 	link := fmt.Sprintf("%s?blueprint_id=%d", ctMarketplaceURL, id)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -375,6 +399,7 @@ func (ct *CTAuthClient) ProductsForBlueprint(ctx context.Context, id int) ([]Pro
 	return out[id], nil
 }
 
+// Blueprints returns every catalog entry in one expansion.
 func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionID int) ([]Blueprint, error) {
 	link := ctBlueprintsURL + fmt.Sprint(expansionID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -407,6 +432,7 @@ func (ct *CTAuthClient) Blueprints(ctx context.Context, expansionID int) ([]Blue
 	return blueprints, nil
 }
 
+// GetOrderProducts returns what an order contained.
 func (ct *CTAuthClient) GetOrderProducts(ctx context.Context, orderID int) ([]Product, error) {
 	link := fmt.Sprintf("https://api.cardtrader.com/api/v2/orders/%d", orderID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -430,7 +456,8 @@ func (ct *CTAuthClient) GetOrderProducts(ctx context.Context, orderID int) ([]Pr
 	return order.OrderItems, nil
 }
 
-// This is slightly different from the main Product type
+// BulkProduct is a listing as the bulk endpoints take it, which differs
+// slightly from the Product they return.
 type BulkProduct struct {
 	// The id of the Product to edit
 	Id int `json:"id,omitempty"`
@@ -463,6 +490,7 @@ type BulkProduct struct {
 	} `json:"properties,omitempty"`
 }
 
+// ProductsExport returns your own listings.
 func (ct *CTAuthClient) ProductsExport(ctx context.Context) ([]Product, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ctProductsExport, http.NoBody)
 	if err != nil {
@@ -484,23 +512,20 @@ func (ct *CTAuthClient) ProductsExport(ctx context.Context) ([]Product, error) {
 	return products, nil
 }
 
-// Create new listings using the products slice, separating into multiple
-// requests if there are more than MaxBulkUploadItems elements. A list of
-// job ids is returned to monitor the execution status.
+// BulkCreate creates new listings, splitting into several requests past
+// MaxBulkUploadItems. It returns the job ids to watch for completion.
 func (ct *CTAuthClient) BulkCreate(ctx context.Context, products []BulkProduct) ([]string, error) {
 	return ct.bulkOperation(ctx, ctBulkCreateURL, products)
 }
 
-// Update existing listings using the products slice, separating into multiple
-// requests if there are more than MaxBulkUploadItems elements. A list of
-// job ids is returned to monitor the execution status.
+// BulkUpdate updates existing listings, splitting into several requests past
+// MaxBulkUploadItems. It returns the job ids to watch for completion.
 func (ct *CTAuthClient) BulkUpdate(ctx context.Context, products []BulkProduct) ([]string, error) {
 	return ct.bulkOperation(ctx, ctBulkUpdateURL, products)
 }
 
-// Delete existing listings using the products slice, separating into multiple
-// requests if there are more than MaxBulkUploadItems elements. A list of
-// job ids is returned to monitor the execution status.
+// BulkDelete removes listings, splitting into several requests past
+// MaxBulkUploadItems. It returns the job ids to watch for completion.
 func (ct *CTAuthClient) BulkDelete(ctx context.Context, products []BulkProduct) ([]string, error) {
 	return ct.bulkOperation(ctx, ctBulkDeleteURL, products)
 }
@@ -555,11 +580,14 @@ type ctProductCart struct {
 	ViaZero   bool `json:"via_cardtrader_zero"`
 }
 
+// CTPrice is an amount with the currency it was quoted in, which is not always
+// euro.
 type CTPrice struct {
 	Cents    int    `json:"cents"`
 	Currency string `json:"currency"`
 }
 
+// CTCartResponse is what the cart endpoints answer with.
 type CTCartResponse struct {
 	ID       int `json:"id"`
 	Subcarts []struct {
@@ -596,6 +624,8 @@ type CTCartResponse struct {
 	RequestID string `json:"request_id"`
 }
 
+// AddProductToCart puts a quantity of a listing into the cart, on the Zero
+// storefront when asked.
 func (ct *CTAuthClient) AddProductToCart(ctx context.Context, productID, quantity int, zero bool) (*CTCartResponse, error) {
 	product := ctProductCart{
 		ProductId: productID,
@@ -605,6 +635,7 @@ func (ct *CTAuthClient) AddProductToCart(ctx context.Context, productID, quantit
 	return ct.addremoveCart(ctx, product, ctAddProductCart)
 }
 
+// RemoveProductFromCart takes a quantity of a listing back out of the cart.
 func (ct *CTAuthClient) RemoveProductFromCart(ctx context.Context, productID, quantity int) (*CTCartResponse, error) {
 	product := ctProductCart{
 		ProductId: productID,

@@ -34,7 +34,8 @@ func priceToUSD(cents int, currency string, rates map[string]float64) (float64, 
 	return price * rate, nil
 }
 
-// Use the Simple API Token to convert your own inventory to a standard InventoryRecord
+// ExportStock returns your own listings as an InventoryRecord, using the
+// Simple API token rather than the full one.
 func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blueprint) (mtgban.InventoryRecord, error) {
 	products, err := ct.ProductsExport(ctx)
 	if err != nil {
@@ -298,6 +299,8 @@ func gameFinish(gameID int, product Product) string {
 	return product.Properties.FabFoilNew
 }
 
+// FormatBlueprints indexes blueprints by id and expansions by name, keeping
+// either the sealed products or the singles.
 func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed bool) (map[int]*Blueprint, map[int]string) {
 	// Create a map to be able to retrieve edition name in the blueprint
 	formatted := map[int]*Blueprint{}

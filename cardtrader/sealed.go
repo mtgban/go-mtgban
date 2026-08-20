@@ -10,6 +10,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// CardtraderSealed prices sealed product from Card Trader, under the same
+// storefronts as the singles.
 type CardtraderSealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -26,6 +28,8 @@ type CardtraderSealed struct {
 	gameID        int
 }
 
+// NewScraperSealed returns a sealed scraper for one game, authenticated with a
+// full API token.
 func NewScraperSealed(gameID int, token string) (*CardtraderSealed, error) {
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
@@ -130,6 +134,7 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	rates, err := mtgban.GetExchangeRates(ctx)
 	if err != nil {
@@ -215,10 +220,13 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ct *CardtraderSealed) Inventory() mtgban.InventoryRecord {
 	return ct.inventory
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (ct *CardtraderSealed) MarketNames() []string {
 	// Riftbound has no sealed 1DR listings, and an always-empty seller
 	// reads as a broken scrape downstream, failing the run.
@@ -234,6 +242,7 @@ var name2shorthandSealed = map[string]string{
 	"Card Trader 1DR":  "CT1DRSealed",
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (ct *CardtraderSealed) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ct.Info()
 	info.Name = name
@@ -241,6 +250,7 @@ func (ct *CardtraderSealed) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader Sealed"
 	info.Shorthand = "CTSealedWrapper"
