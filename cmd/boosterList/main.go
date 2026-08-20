@@ -231,5 +231,8 @@ func run() int {
 	return 0
 }
 
-var SetCodeOpt *string
-var Reverse *bool
+// The command's flags.
+var (
+	SetCodeOpt *string
+	Reverse    *bool
+)
