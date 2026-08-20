@@ -9,6 +9,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Arcanafrisia prices what Arcana Frisia buys; they publish no sale prices.
 type Arcanafrisia struct {
 	LogCallback mtgban.LogCallbackFunc
 
@@ -16,6 +17,7 @@ type Arcanafrisia struct {
 	buylist     mtgban.BuylistRecord
 }
 
+// NewScraper returns a buylist scraper.
 func NewScraper() *Arcanafrisia {
 	af := Arcanafrisia{}
 	af.buylist = mtgban.BuylistRecord{}
@@ -28,6 +30,7 @@ func (af *Arcanafrisia) printf(format string, a ...interface{}) {
 	}
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (af *Arcanafrisia) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
@@ -77,10 +80,12 @@ func (af *Arcanafrisia) Load(ctx context.Context) error {
 	return nil
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (af *Arcanafrisia) Buylist() mtgban.BuylistRecord {
 	return af.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (af *Arcanafrisia) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Arcana Frisia"
 	info.Shorthand = "AF"

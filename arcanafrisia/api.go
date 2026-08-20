@@ -15,6 +15,7 @@ import (
 
 const buylistURL = "https://buylist.arcanafrisia.com/buylist.csv"
 
+// Card is one entry of the published buylist.
 type Card struct {
 	Name            string
 	SetCode         string
@@ -29,6 +30,7 @@ type Card struct {
 	URL             string
 }
 
+// GetBuylist downloads the whole buylist in one call.
 func GetBuylist(ctx context.Context) ([]Card, error) {
 	// Bust any cache in front of the feed so the daily scrape gets a fresh copy
 	url := buylistURL + "?v=" + strconv.FormatInt(time.Now().Unix(), 10)
