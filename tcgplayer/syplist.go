@@ -11,6 +11,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// TCGSYPList reads TCGplayer's Sell Your Playset buylist, the prices they
+// themselves pay rather than any third-party vendor's.
 type TCGSYPList struct {
 	LogCallback mtgban.LogCallbackFunc
 	Affiliate   string
@@ -27,6 +29,7 @@ func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperSYP returns a SYP scraper using the given authorization token.
 func NewScraperSYP(auth string) *TCGSYPList {
 	tcg := TCGSYPList{}
 	tcg.buylist = mtgban.BuylistRecord{}
@@ -34,6 +37,7 @@ func NewScraperSYP(auth string) *TCGSYPList {
 	return &tcg
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	tcg.printf("Retrieving skus")
 	uuid2skusMap := tcg.SKUsData
@@ -97,10 +101,12 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	return nil
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (tcg *TCGSYPList) Buylist() mtgban.BuylistRecord {
 	return tcg.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCGplayer SYP"
 	info.Shorthand = "SYP"

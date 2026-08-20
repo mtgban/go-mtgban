@@ -12,11 +12,13 @@ import (
 
 const tcgAdd2CartURL = "https://mpgateway.tcgplayer.com/v1/cart/%s/item/add"
 
+// TCGAutoClient adds products to a cart on the user's behalf.
 type TCGAutoClient struct {
 	client *http.Client
 	cartID string
 }
 
+// NewTCGAutoClient returns a cart client for the cart key given.
 func NewTCGAutoClient(cartID string) *TCGAutoClient {
 	tcg := TCGAutoClient{}
 	tcg.client = cleanhttp.DefaultClient()
@@ -24,6 +26,7 @@ func NewTCGAutoClient(cartID string) *TCGAutoClient {
 	return &tcg
 }
 
+// TCGAutocartRequest is one add-to-cart call.
 type TCGAutocartRequest struct {
 	SKU               int    `json:"sku"`
 	SellerKey         string `json:"sellerKey"`
@@ -33,6 +36,7 @@ type TCGAutocartRequest struct {
 	IsDirect          bool   `json:"isDirect"`
 }
 
+// TCGAutocartResponse is what the cart endpoint answers with.
 type TCGAutocartResponse struct {
 	Errors []struct {
 		Code    string `json:"code"`
@@ -47,6 +51,7 @@ type TCGAutocartResponse struct {
 	}
 }
 
+// AddProductToCart puts a quantity of one seller's sku into the cart.
 func (tcg *TCGAutoClient) AddProductToCart(ctx context.Context, sellerKey string, skuID, qty int, isDirect bool) (*TCGAutocartResponse, error) {
 	var params TCGAutocartRequest
 	params.SKU = skuID

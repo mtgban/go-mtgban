@@ -17,10 +17,15 @@ import (
 )
 
 const (
-	BaseProductURL    = "https://www.tcgplayer.com/product/"
+	// The storefront links a listing is published under
+	BaseProductURL = "https://www.tcgplayer.com/product/"
+	// PartnerProductURL wraps a product link for affiliate attribution
 	PartnerProductURL = "https://partner.tcgplayer.com/c/%s/1830156/21018"
 )
 
+// GenerateProductURL builds the storefront link for a product, narrowed to a
+// printing, condition and language, and carrying an affiliate tag when one is
+// given.
 func GenerateProductURL(productID int, printing, affiliate, condition, language string, isDirect bool) string {
 	u, err := url.Parse(BaseProductURL + fmt.Sprint(productID))
 	if err != nil {
@@ -79,6 +84,8 @@ func GenerateProductURL(productID int, printing, affiliate, condition, language 
 	return u.String()
 }
 
+// TCGSku is one sellable variant of a product: a printing in a condition and a
+// language, which is the unit TCGplayer prices.
 type TCGSku struct {
 	Condition string `json:"condition"`
 	Language  string `json:"language"`
@@ -88,8 +95,12 @@ type TCGSku struct {
 	SkuId     int    `json:"skuId"`
 }
 
+// SKUMap indexes every sku by the uuid of the printing it belongs to, so a
+// scraper can go from a matched card to the ids the APIs want.
 type SKUMap map[string][]TCGSku
 
+// LoadTCGSKUs reads the sku catalog, which is published as a file rather than
+// served, and indexes it by uuid.
 func LoadTCGSKUs(reader io.Reader) (SKUMap, error) {
 	var payload struct {
 		Data map[string][]TCGSku `json:"data"`
@@ -105,15 +116,18 @@ func LoadTCGSKUs(reader io.Reader) (SKUMap, error) {
 }
 
 const (
+	// SYPCSVURL serves the Sell Your Playset list as a CSV
 	SYPCSVURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList?categoryid=1&setNameId=All&conditionId=All"
 )
 
+// TCGSYP is one entry of the Sell Your Playset list.
 type TCGSYP struct {
 	SkuId       int
 	MarketPrice float64
 	MaxQty      int
 }
 
+// LoadSyp downloads the Sell Your Playset list as a CSV.
 func LoadSyp(ctx context.Context, auth string) ([]TCGSYP, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, SYPCSVURL, http.NoBody)
 	if err != nil {
@@ -194,6 +208,8 @@ func DirectPriceAfterFees(price float64) float64 {
 	return price - fee
 }
 
+// DirectSYPPriceAfterFees returns what a Direct SYP sale actually pays, once
+// TCGplayer's commission and fees come out.
 func DirectSYPPriceAfterFees(price float64) float64 {
 	var fee float64
 	if price < 2 {
@@ -208,6 +224,7 @@ const (
 	defaultListingSize = 20
 )
 
+// ListingData is one live listing of a product, with the quantity behind it.
 type ListingData struct {
 	ProductId       int     `json:"product_id"`
 	SkuId           int     `json:"sku_id"`
@@ -221,6 +238,8 @@ type ListingData struct {
 	Foil            bool    `json:"foil"`
 }
 
+// GetDirectQtysForProductId returns the live listings for a product, optionally
+// only the Direct ones.
 func GetDirectQtysForProductId(ctx context.Context, productID int, onlyDirect bool) []ListingData {
 	client := NewSellerClient()
 

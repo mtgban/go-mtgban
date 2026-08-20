@@ -47,6 +47,8 @@ func (tcg *TCGGameIndex) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperGameIndex returns an index scraper for one game, authenticated
+// with a partner API key pair.
 func NewScraperGameIndex(game, publicID, privateID string) (*TCGGameIndex, error) {
 	category, found := SupportedGames[game]
 	if !found {
@@ -162,6 +164,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
@@ -206,14 +209,18 @@ func (tcg *TCGGameIndex) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGGameIndex) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (tcg *TCGGameIndex) MarketNames() []string {
 	return availableIndexNames[:len(availableIndexNames)-1]
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (tcg *TCGGameIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := tcg.Info()
 	info.Name = name
@@ -221,6 +228,7 @@ func (tcg *TCGGameIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGGameIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Index"
 	info.Shorthand = "TCGIndex"

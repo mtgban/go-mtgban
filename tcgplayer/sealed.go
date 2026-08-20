@@ -12,6 +12,7 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
+// TCGPlayerSealed prices Magic sealed product from the partner API.
 type TCGPlayerSealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	Affiliate      string
@@ -29,6 +30,8 @@ func (tcg *TCGPlayerSealed) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperSealed returns a sealed scraper authenticated with a partner API
+// key pair.
 func NewScraperSealed(publicID, privateID string) (*TCGPlayerSealed, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
@@ -88,6 +91,7 @@ func (tcg *TCGPlayerSealed) processEntries(ctx context.Context, channel chan<- r
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
@@ -186,10 +190,12 @@ func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tcg *TCGPlayerSealed) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tcg *TCGPlayerSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player"
 	info.Shorthand = "TCGSealed"

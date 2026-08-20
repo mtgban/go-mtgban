@@ -43,6 +43,10 @@ var cardIds = map[int]string{
 	284939: "P30H",
 }
 
+// Preprocess turns a catalog product into the card description the matcher
+// takes, splitting TCGplayer's name into a name and its qualifiers and
+// resolving the group id through editions. It reports an error for the
+// products that are not cards.
 func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatcher.InputCard, error) {
 	cardName, variant := GetProductNameAndVariant(product)
 
