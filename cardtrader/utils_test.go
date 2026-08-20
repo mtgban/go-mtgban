@@ -121,3 +121,56 @@ func TestPriceToUSDWithoutRates(t *testing.T) {
 		t.Error("expected an error converting euros with no rates")
 	}
 }
+
+// TestListingPrice pins which field answers, and that the currency comes
+// from the same field as the amount: reading an amount from one and a
+// currency from another is how a price gets converted by the wrong rate.
+func TestListingPrice(t *testing.T) {
+	tests := []struct {
+		name         string
+		product      Product
+		wantCents    int
+		wantCurrency string
+	}{
+		{
+			"an export quotes price_cents",
+			Product{PriceCents: 1000, PriceCurrency: "EUR"},
+			1000, "EUR",
+		},
+		{
+			"the marketplace quotes price",
+			Product{Price: CTPrice{Cents: 250, Currency: "GBP"}},
+			250, "GBP",
+		},
+		{
+			"an order quotes buyer_price",
+			Product{BuyerPrice: CTPrice{Cents: 750, Currency: "AUD"}},
+			750, "AUD",
+		},
+		{
+			"price_cents wins when more than one is filled",
+			Product{
+				PriceCents:    1000,
+				PriceCurrency: "USD",
+				Price:         CTPrice{Cents: 250, Currency: "GBP"},
+				BuyerPrice:    CTPrice{Cents: 750, Currency: "AUD"},
+			},
+			1000, "USD",
+		},
+		{
+			"a listing with no price at all reads as none",
+			Product{},
+			0, "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			cents, currency := listingPrice(test.product)
+			if cents != test.wantCents || currency != test.wantCurrency {
+				t.Errorf("listingPrice() = (%d, %q), want (%d, %q)",
+					cents, currency, test.wantCents, test.wantCurrency)
+			}
+		})
+	}
+}
