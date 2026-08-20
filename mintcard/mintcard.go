@@ -14,6 +14,8 @@ import (
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
+// MTGMintCard prices MTG Mint Card's singles, both what they sell and what
+// they buy.
 type MTGMintCard struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -27,6 +29,7 @@ type MTGMintCard struct {
 	SKUsData tcgplayer.SKUMap
 }
 
+// NewScraper returns a scraper.
 func NewScraper() *MTGMintCard {
 	mint := MTGMintCard{}
 	mint.inventory = mtgban.InventoryRecord{}
@@ -156,6 +159,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 	}
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mint *MTGMintCard) Load(ctx context.Context) error {
 	mint.printf("Loading MTGMintCard data")
 	mintClient, err := NewMintClient(ctx)
@@ -207,10 +211,12 @@ func (mint *MTGMintCard) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (mint *MTGMintCard) Inventory() mtgban.InventoryRecord {
 	return mint.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (mint *MTGMintCard) Buylist() mtgban.BuylistRecord {
 	return mint.buylist
 }
@@ -254,6 +260,7 @@ func grading(cardID string, price float64) map[string]float64 {
 	}
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mint *MTGMintCard) Info() (info mtgban.ScraperInfo) {
 	info.Name = "MTG Mint Card"
 	info.Shorthand = "MMC"
