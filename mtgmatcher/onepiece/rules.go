@@ -538,11 +538,17 @@ func truncates(edition, name string) bool {
 
 // isEventSet reports whether a set code files the event printings of
 // another set's cards. The datastore spells them as the base code with a
-// marker appended - "OP03 PRE" for the pre-release cards, "OP10 RE" for the
-// release event ones, "OP05 ANN" for the anniversary tournament ones - and
-// those are the only set codes carrying a space.
+// marker appended - "OP03-PRE" for the pre-release cards, "OP10-RE" for the
+// release event ones, "OP05-ANN" for the anniversary tournament ones.
+//
+// The marker is read off either separator: a set code cannot carry a space,
+// since a search query is split on whitespace before a filter sees it, and
+// the datastore wrote these with one until it stopped. Reading both spellings
+// is what lets this land before the datastore is rebuilt.
 func isEventSet(code string) bool {
-	fields := strings.Fields(code)
+	fields := strings.FieldsFunc(code, func(r rune) bool {
+		return r == ' ' || r == '-'
+	})
 	if len(fields) < 2 {
 		return false
 	}
