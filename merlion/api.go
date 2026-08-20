@@ -29,6 +29,7 @@ const (
 	nearMint = "Near Mint"
 )
 
+// Card is one entry of the published buylist.
 type Card struct {
 	Name    string
 	Edition string
@@ -44,6 +45,7 @@ type Card struct {
 	URL         string
 }
 
+// DownloadBuylistCSV downloads the buylist, which Merlion serves as a CSV.
 func DownloadBuylistCSV(ctx context.Context) ([]Card, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, buylistURL, http.NoBody)
 	if err != nil {
