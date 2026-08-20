@@ -13,6 +13,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Starcitygames prices SCG's singles, both what they sell and what they buy.
 type Starcitygames struct {
 	LogCallback   mtgban.LogCallbackFunc
 	inventoryDate time.Time
@@ -30,6 +31,7 @@ type Starcitygames struct {
 	game   int
 }
 
+// NewScraper returns a singles scraper for one game, using the given API key.
 func NewScraper(game int, apiKey string) *Starcitygames {
 	scg := Starcitygames{}
 	scg.inventory = mtgban.InventoryRecord{}
@@ -205,6 +207,7 @@ func (scg *Starcitygames) loadCatalog(ctx context.Context) error {
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (scg *Starcitygames) Load(ctx context.Context) error {
 	if err := scg.loadCatalog(ctx); err != nil {
 		return fmt.Errorf("catalog load failed: %w", err)
@@ -212,14 +215,17 @@ func (scg *Starcitygames) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (scg *Starcitygames) Inventory() mtgban.InventoryRecord {
 	return scg.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (scg *Starcitygames) Buylist() mtgban.BuylistRecord {
 	return scg.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (scg *Starcitygames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Star City Games"
 	info.Shorthand = "SCG"

@@ -9,6 +9,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// StarcitygamesSealed prices SCG's sealed product.
 type StarcitygamesSealed struct {
 	LogCallback   mtgban.LogCallbackFunc
 	inventoryDate time.Time
@@ -25,6 +26,8 @@ type StarcitygamesSealed struct {
 	game       int
 }
 
+// NewScraperSealed returns a sealed scraper for one game, using the given API
+// key.
 func NewScraperSealed(game int, apiKey string) *StarcitygamesSealed {
 	scg := StarcitygamesSealed{}
 	scg.inventory = mtgban.InventoryRecord{}
@@ -181,14 +184,17 @@ func (scg *StarcitygamesSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (scg *StarcitygamesSealed) Inventory() mtgban.InventoryRecord {
 	return scg.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (scg *StarcitygamesSealed) Buylist() mtgban.BuylistRecord {
 	return scg.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (scg *StarcitygamesSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Star City Games"
 	info.Shorthand = "SCGSealed"
