@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// StocksInterest is one card whose price moved, with the old and new numbers.
 type StocksInterest struct {
 	InterestType string  `json:"interest_type"`
 	Foil         bool    `json:"foil"`
@@ -47,6 +48,7 @@ type StocksInterest struct {
 	} `json:"print"`
 }
 
+// MTGStocksInterests is what the interests endpoint answers with.
 type MTGStocksInterests struct {
 	Error     string           `json:"error"`
 	Date      string           `json:"date"`
@@ -59,11 +61,13 @@ const (
 	stksSetsURL    = "https://api.mtgstocks.com/card_sets"
 )
 
+// STKSClient reads the MTGStocks API.
 type STKSClient struct {
 	client *retryablehttp.Client
 	ua     string
 }
 
+// NewClient returns a client.
 func NewClient() *STKSClient {
 	stks := STKSClient{}
 	stks.client = retryablehttp.NewClient()
@@ -114,6 +118,7 @@ func customPrepareRetry(req *http.Request) error {
 	return nil
 }
 
+// AverageInterests returns the movers measured against the average price.
 func (s *STKSClient) AverageInterests(ctx context.Context, foil bool) ([]StocksInterest, error) {
 	out, err := s.query(ctx, stksAverageURL, foil)
 	if err != nil {
@@ -122,6 +127,7 @@ func (s *STKSClient) AverageInterests(ctx context.Context, foil bool) ([]StocksI
 	return out.Interests, nil
 }
 
+// MarketInterests returns the movers measured against the market price.
 func (s *STKSClient) MarketInterests(ctx context.Context, foil bool) ([]StocksInterest, error) {
 	out, err := s.query(ctx, stksMarketURL, foil)
 	if err != nil {

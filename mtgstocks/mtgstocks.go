@@ -15,6 +15,8 @@ const (
 	defaultConcurrency = 8
 )
 
+// MTGStocks reads MTGStocks' interests, the cards whose price moved, rather
+// than a storefront's stock.
 type MTGStocks struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -40,6 +42,7 @@ func (stks *MTGStocks) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraper returns an interests scraper.
 func NewScraper() *MTGStocks {
 	stks := MTGStocks{}
 	stks.client = NewClient()
@@ -107,6 +110,7 @@ func (stks *MTGStocks) processEntry(channel chan<- responseChan, req requestChan
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (stks *MTGStocks) Load(ctx context.Context) error {
 	averagesRegular, err := stks.client.AverageInterests(ctx, false)
 	if err != nil {
@@ -161,10 +165,12 @@ func (stks *MTGStocks) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (stks *MTGStocks) Inventory() mtgban.InventoryRecord {
 	return stks.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (stks *MTGStocks) Info() (info mtgban.ScraperInfo) {
 	info.Name = "MTGStocks"
 	info.Shorthand = "STKS"
