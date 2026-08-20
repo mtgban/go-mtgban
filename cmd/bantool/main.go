@@ -53,10 +53,15 @@ import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/games"
 )
 
+// GlobalLogCallback is handed to every scraper, so one run logs in one place.
 var GlobalLogCallback mtgban.LogCallbackFunc = log.Printf
 
+// MaxConcurrency overrides each scraper's own default when set, so a whole run
+// can be slowed down at once.
 var MaxConcurrency int
 
+// Commit is the revision this binary was built from, read out of the build
+// info rather than stamped at link time.
 var Commit = func() string {
 	if info, ok := debug.ReadBuildInfo(); ok {
 		for _, setting := range info.Settings {
@@ -1640,11 +1645,14 @@ func dump(dataBucket simplecloud.Writer, scrapers []mtgban.Scraper, outputPath, 
 	return append(sellerErrs, vendorErrs...)
 }
 
+// HTTPBucket reads a datastore over plain HTTP, for the files served rather
+// than kept in a cloud bucket. It implements only the reading half.
 type HTTPBucket struct {
 	Client *http.Client
 	URL    *url.URL
 }
 
+// NewHTTPBucket returns a bucket rooted at the given URL.
 func NewHTTPBucket(client *http.Client, path string) (*HTTPBucket, error) {
 	u, err := url.Parse(path)
 	if err != nil {
@@ -1656,6 +1664,7 @@ func NewHTTPBucket(client *http.Client, path string) (*HTTPBucket, error) {
 	}, nil
 }
 
+// NewReader opens the object at path for reading.
 func (h *HTTPBucket) NewReader(ctx context.Context, path string) (io.ReadCloser, error) {
 	u := new(url.URL)
 	*u = *h.URL
@@ -1679,6 +1688,7 @@ func (h *HTTPBucket) NewReader(ctx context.Context, path string) (io.ReadCloser,
 	return resp.Body, nil
 }
 
+// NewWriter always fails: nothing can be written back over plain HTTP.
 func (h *HTTPBucket) NewWriter(ctx context.Context, path string) (io.WriteCloser, error) {
 	return nil, errors.New("an http bucket cannot be written to")
 }
