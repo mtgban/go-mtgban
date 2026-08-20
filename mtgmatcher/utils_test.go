@@ -515,6 +515,26 @@ var TitleTests = []ExtractTest{
 		In:  "25th anniversary edition",
 		Out: "25th Anniversary Edition",
 	},
+	// A mark hands what follows a phrase of its own, and a small word
+	// opening that phrase is no longer inside one.
+	{
+		In:  "tag force: the world",
+		Out: "Tag Force: The World",
+	},
+	{
+		In:  "duel of destiny - the movie",
+		Out: "Duel of Destiny - The Movie",
+	},
+	{
+		In:  "battles of legend: the crystal",
+		Out: "Battles of Legend: The Crystal",
+	},
+	// The mark has to end the word before, so a hyphen inside one says
+	// nothing about what follows.
+	{
+		In:  "yu-gi-oh the movie",
+		Out: "Yu-Gi-Oh the Movie",
+	},
 }
 
 func TestTitle(t *testing.T) {
