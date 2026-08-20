@@ -23,6 +23,7 @@ const (
 	inventoryURL = "https://www.lesecretdeskorrigans.com/catalog/magic_singles/8?layout=false"
 )
 
+// SecretDesKorrigans prices Le Secret des Korrigans' stock.
 type SecretDesKorrigans struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -35,6 +36,7 @@ type SecretDesKorrigans struct {
 	client *http.Client
 }
 
+// NewScraper returns a scraper, failing if the edition list cannot be read.
 func NewScraper() (*SecretDesKorrigans, error) {
 	sdk := SecretDesKorrigans{}
 	sdk.inventory = mtgban.InventoryRecord{}
@@ -223,6 +225,7 @@ func (sdk *SecretDesKorrigans) processProduct(ctx context.Context, channel chan<
 	return sdk.processProduct(ctx, channel, next)
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "CAD")
 	if err != nil {
@@ -286,10 +289,12 @@ func (sdk *SecretDesKorrigans) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (sdk *SecretDesKorrigans) Inventory() mtgban.InventoryRecord {
 	return sdk.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (sdk *SecretDesKorrigans) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Le Secret des Korrigans"
 	info.Shorthand = "SK"
