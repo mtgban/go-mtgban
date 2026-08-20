@@ -12,7 +12,7 @@ import (
 func TestPromoTagsAndQualifiedNames(t *testing.T) {
 	b := loadBackend(t)
 
-	for _, tag := range []string{"Marvel", "Extended Art", "Golden", "Treasure"} {
+	for _, tag := range []string{"marvel", "extendedart", "golden", "treasure"} {
 		if !slices.Contains(b.AllPromoTypes, tag) {
 			t.Errorf("promo type %q is not declared, so nothing will print it", tag)
 		}
@@ -21,7 +21,7 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 	// A label the finish already says describes nothing: the catalog prices
 	// its "(Cold Foil)" promos as Cold Foils. The card keeps the label for
 	// FilterCards to tier by, only the declaration drops it.
-	for _, tag := range []string{"Cold Foil", "Rainbow Foil", "Rainbow"} {
+	for _, tag := range []string{"coldfoil", "rainbowfoil", "rainbow"} {
 		if slices.Contains(b.AllPromoTypes, tag) {
 			t.Errorf("promo type %q repeats the finish, so a label would print it twice", tag)
 		}
@@ -36,8 +36,8 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 	}
 
 	for _, tt := range []struct{ query, promoType string }{
-		{"Enigma, New Moon (Marvel)", "Marvel"},
-		{"Gold-Baited Hook (Treasure)", "Treasure"},
+		{"Enigma, New Moon (Marvel)", "marvel"},
+		{"Gold-Baited Hook (Treasure)", "treasure"},
 	} {
 		got, err := b.SearchEquals(tt.query)
 		if err != nil {

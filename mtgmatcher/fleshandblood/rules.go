@@ -236,7 +236,9 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 			continue
 		}
 		variants = append(variants, card)
-		if allWordsIn(words, card.PromoTypes[0]) {
+		// The tag is a token now, so the wording's words are joined back
+		// up a run at a time to ask whether they name it.
+		if mtgmatcher.SlugDescribes(inCard.Variation, card.PromoTypes[0]) {
 			described = append(described, card)
 		}
 	}
@@ -249,7 +251,7 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		}
 		var refined []mtgmatcher.Card
 		for _, card := range described {
-			if allWordsIn(bare, card.PromoTypes[0]) {
+			if mtgmatcher.SlugDescribes(strings.Join(bare, " "), card.PromoTypes[0]) {
 				refined = append(refined, card)
 			}
 		}

@@ -131,6 +131,21 @@ func promoTypesOf(card *DatastoreCard) []string {
 	return []string{card.Variant}
 }
 
+// promoTypeSlugs is promoTypesOf as the tokens a query can carry, which is
+// what a card stores: a search splits its words apart before a filter sees
+// them, so a tag only survives the trip as one.
+func promoTypeSlugs(card *DatastoreCard) []string {
+	labels := promoTypesOf(card)
+	if len(labels) == 0 {
+		return nil
+	}
+	out := make([]string, 0, len(labels))
+	for _, label := range labels {
+		out = append(out, mtgmatcher.PromoTypeSlug(label))
+	}
+	return out
+}
+
 // qualifiedName spells a printing the way TCGplayer names the product, the
 // card name followed by the qualifier that tells it from the siblings
 // sharing its number ("Dark Magician (Purple)"). The rarity stays out of the
@@ -176,6 +191,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
+	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
 	b.SetSealedUUIDs = map[string][]string{}
@@ -218,8 +234,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			b.CanonicalNames[n] = card.Name
 		}
 		for _, promoType := range promoTypesOf(&card) {
-			if !slices.Contains(b.AllPromoTypes, promoType) {
-				b.AllPromoTypes = append(b.AllPromoTypes, promoType)
+			slug := mtgmatcher.PromoTypeSlug(promoType)
+			if !slices.Contains(b.AllPromoTypes, slug) {
+				b.AllPromoTypes = append(b.AllPromoTypes, slug)
+			}
+			// First spelling seen wins: the catalog writes a few of these
+			// two ways, and one token can only read back as one.
+			if b.PromoTypeLabels[slug] == "" {
+				b.PromoTypeLabels[slug] = promoType
 			}
 		}
 		// Searchable but never canonical: the qualified spelling names one
@@ -264,7 +286,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			continue
 		}
 
-		promoTypes := promoTypesOf(card)
+		promoTypes := promoTypeSlugs(card)
 
 		var colors []string
 		if card.Attribute != "" {

@@ -13,7 +13,7 @@ import (
 func TestPromoTagsAndQualifiedNames(t *testing.T) {
 	b := loadBackend(t)
 
-	for _, tag := range []string{"Purple", "Alternate Art", "Duel Terminal", "OTS Stamp"} {
+	for _, tag := range []string{"purple", "alternateart", "duelterminal", "otsstamp"} {
 		if !slices.Contains(b.AllPromoTypes, tag) {
 			t.Errorf("promo type %q is not declared, so nothing will print it", tag)
 		}
@@ -22,7 +22,7 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 	// The rarity is the axis most sibling products differ on, but it is a
 	// field of its own that the card already carries: as a tag it would
 	// declare a third of the catalog promotional.
-	for _, rarity := range []string{"Common", "Ultra Rare", "Quarter Century Secret Rare"} {
+	for _, rarity := range []string{"common", "ultrarare", "quartercenturysecretrare"} {
 		if slices.Contains(b.AllPromoTypes, rarity) {
 			t.Errorf("rarity %q is declared as a promo type", rarity)
 		}
@@ -37,8 +37,8 @@ func TestPromoTagsAndQualifiedNames(t *testing.T) {
 	}
 
 	for _, tt := range []struct{ query, promoType string }{
-		{"Dark Magician (Purple)", "Purple"},
-		{"Dark Magician (Green)", "Green"},
+		{"Dark Magician (Purple)", "purple"},
+		{"Dark Magician (Green)", "green"},
 	} {
 		got, err := b.SearchEquals(tt.query)
 		if err != nil {
