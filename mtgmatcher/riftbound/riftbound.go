@@ -219,6 +219,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
+	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
 	b.SetSealedUUIDs = map[string][]string{}
@@ -292,6 +293,11 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
+			}
+			// First spelling seen wins, so a qualifier the catalog writes
+			// two ways still reads back one way.
+			if b.PromoTypeLabels[slug] == "" {
+				b.PromoTypeLabels[slug] = mtgmatcher.Title(promoType)
 			}
 		}
 		// The catalog's own spelling is searchable but never canonical: it

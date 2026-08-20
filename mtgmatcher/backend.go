@@ -305,6 +305,14 @@ type Backend struct {
 	// A list of promo types as exported by mtgjson
 	AllPromoTypes []string
 
+	// Map of a promo type to the words it was made from, for the games that
+	// slug a qualifier the storefront wrote in full ("premiumcardcollection
+	// bestselectionvol6" was "Premium Card Collection -Best Selection Vol.
+	// 6-"). A promo type is a token so that it can be typed into a search;
+	// this is what puts the words back for a reader. Empty for Magic, whose
+	// types are tokens at the source and have no fuller spelling to keep.
+	PromoTypeLabels map[string]string
+
 	// A list of deck names of Secret Lair Commander cards
 	SLDDeckNames []string
 

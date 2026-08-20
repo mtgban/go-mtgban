@@ -128,6 +128,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
+	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
 	b.SetSealedUUIDs = map[string][]string{}
@@ -193,8 +194,14 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		if qualified == "" {
 			continue
 		}
-		if slug := mtgmatcher.PromoTypeSlug(card.Variant); !slices.Contains(b.AllPromoTypes, slug) {
+		slug := mtgmatcher.PromoTypeSlug(card.Variant)
+		if !slices.Contains(b.AllPromoTypes, slug) {
 			b.AllPromoTypes = append(b.AllPromoTypes, slug)
+		}
+		// First spelling seen wins: the catalog writes a couple of these
+		// events two ways, and one token can only read back as one.
+		if b.PromoTypeLabels[slug] == "" {
+			b.PromoTypeLabels[slug] = card.Variant
 		}
 		if qn := mtgmatcher.Normalize(qualified); !seenNormalized[qn] {
 			seenNormalized[qn] = true

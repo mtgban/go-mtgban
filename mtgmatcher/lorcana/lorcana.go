@@ -167,6 +167,16 @@ func (ac *AllCards) englishCards() []int {
 	return keep
 }
 
+// slugTags renders every tag as the token that names it, the form a search
+// query can carry.
+func slugTags(tags []string) []string {
+	var out []string
+	for _, tag := range tags {
+		out = append(out, mtgmatcher.PromoTypeSlug(tag))
+	}
+	return out
+}
+
 // promoTags names what tells a promotional printing from the ordinary one of
 // the same name. Lorcana writes none of this into the name - not one of its
 // card names carries a parenthesis - so the tags come from the fields the
@@ -174,10 +184,10 @@ func (ac *AllCards) englishCards() []int {
 func promoTags(sourceCategory, varnishType string) []string {
 	var tags []string
 	if sourceCategory != "" {
-		tags = append(tags, mtgmatcher.PromoTypeSlug(sourceCategory))
+		tags = append(tags, sourceCategory)
 	}
 	if varnishType != "" {
-		tags = append(tags, mtgmatcher.PromoTypeSlug(varnishType))
+		tags = append(tags, varnishType)
 	}
 	return tags
 }
@@ -187,6 +197,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
 	b.Hashes = map[string][]string{}
+	b.PromoTypeLabels = map[string]string{}
 	b.CanonicalNames = map[string]string{}
 	b.ExternalIdentifiers = map[string]string{}
 	b.SetSealedUUIDs = map[string][]string{}
@@ -250,8 +261,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			b.AllNames = append(b.AllNames, n)
 		}
 		for _, tag := range promoTags(card.PromoSourceCategory, card.VarnishType) {
-			if !slices.Contains(b.AllPromoTypes, tag) {
-				b.AllPromoTypes = append(b.AllPromoTypes, tag)
+			slug := mtgmatcher.PromoTypeSlug(tag)
+			if !slices.Contains(b.AllPromoTypes, slug) {
+				b.AllPromoTypes = append(b.AllPromoTypes, slug)
+			}
+			if b.PromoTypeLabels[slug] == "" {
+				b.PromoTypeLabels[slug] = tag
 			}
 		}
 		if slices.Contains(b.AllCanonicalNames, card.FullName) {
@@ -346,7 +361,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 			Printings:  printingsByName[mtgmatcher.Normalize(card.FullName)],
 			IsPromo:    card.NonPromoID != 0,
-			PromoTypes: promoTags(card.PromoSourceCategory, card.VarnishType),
+			PromoTypes: slugTags(promoTags(card.PromoSourceCategory, card.VarnishType)),
 
 			OriginalNumber: fmt.Sprintf("%d", card.Number),
 		}

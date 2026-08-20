@@ -1305,3 +1305,20 @@ func SlugDescribes(wording, slug string) bool {
 	}
 	return false
 }
+
+// PromoTypeLabel spells a promo type the way it was written before it became
+// a token, falling back on the token itself where no fuller spelling was
+// kept. Callers displaying a promo type should ask for this rather than
+// title-casing the token, which cannot put back the spaces it dropped.
+func (b *Backend) PromoTypeLabel(promoType string) string {
+	if label := b.PromoTypeLabels[promoType]; label != "" {
+		return label
+	}
+	return Title(promoType)
+}
+
+// PromoTypeLabel spells a promo type as PromoTypeLabel does, in the default
+// backend.
+func PromoTypeLabel(promoType string) string {
+	return defaultBackend.PromoTypeLabel(promoType)
+}
