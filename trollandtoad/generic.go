@@ -23,10 +23,15 @@ import (
 const (
 	buylistURL     = "https://www2.trollandtoad.com/buylist/ajax_scripts/csv-download.php?deptCode="
 	buylistLinkURL = "https://www2.trollandtoad.com/buylist/#!/search/All/"
+)
 
+// The games this scraper covers, as their storefront departments number them.
+const (
 	GameLorcana = "6"
 )
 
+// TrollAndToadGeneric prices the singles of any game Troll and Toad carries,
+// by the department number they file it under.
 type TrollAndToadGeneric struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -43,6 +48,7 @@ type TrollAndToadGeneric struct {
 	game string
 }
 
+// NewGenericScraper returns a singles scraper for one game.
 func NewGenericScraper(game string) *TrollAndToadGeneric {
 	tnt := TrollAndToadGeneric{}
 	tnt.inventory = mtgban.InventoryRecord{}
@@ -406,11 +412,14 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 	return nil
 }
 
+// SetConfig applies options after the scraper was built. See
+// mtgban.ScraperConfig.
 func (tnt *TrollAndToadGeneric) SetConfig(opt mtgban.ScraperOptions) {
 	tnt.DisableRetail = opt.DisableRetail
 	tnt.DisableBuylist = opt.DisableBuylist
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tnt *TrollAndToadGeneric) Load(ctx context.Context) error {
 	var errs []error
 
@@ -431,14 +440,17 @@ func (tnt *TrollAndToadGeneric) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tnt *TrollAndToadGeneric) Inventory() mtgban.InventoryRecord {
 	return tnt.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (tnt *TrollAndToadGeneric) Buylist() mtgban.BuylistRecord {
 	return tnt.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tnt *TrollAndToadGeneric) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TNT"
