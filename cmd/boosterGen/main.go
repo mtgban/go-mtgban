@@ -16,15 +16,19 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
-var SetCodeOpt *string
-var NumberOfBoosters *int
-var BoosterTypeOpt *string
-var AllPrintingsOpt *string
-var ColorOpt *string
+// The command's flags, and the CSV writer the -csv flag turns on.
+var (
+	SetCodeOpt       *string
+	NumberOfBoosters *int
+	BoosterTypeOpt   *string
+	AllPrintingsOpt  *string
+	ColorOpt         *string
 
-var CSVOutput *bool
-var CSVWriter *csv.Writer
+	CSVOutput *bool
+	CSVWriter *csv.Writer
+)
 
+// Pick is one card drawn from a booster, with the sheet it came off.
 type Pick struct {
 	CardId string
 	Sheet  string
