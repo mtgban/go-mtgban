@@ -22,12 +22,12 @@ type Rules struct{}
 // "1HP408", with an optional letter tail (cardtrader suffixes marvels
 // "MST238m"). The dashed numbers ("MST158-A") are left to the variant
 // wording, which carries the same tail.
-var fullNumberRe = regexp.MustCompile(`^[0-9]?[A-Za-z]+[0-9]{1,3}[a-zA-Z]?$`)
+var fullNumberRe = regexp.MustCompile(`^[0-9]?[A-Za-z]+[0-9]{1,4}[a-zA-Z]?$`)
 
 // pairNumberRe matches the fused-card numbers ("WTR040 // WTR039",
 // cardtrader's compact "UPR002//UPR165") so the pair survives extraction
 // whole instead of field splitting cutting it at the separator.
-var pairNumberRe = regexp.MustCompile(`[0-9]?[A-Za-z]+[0-9]{1,3}\s*/{1,2}\s*[0-9]?[A-Za-z]+[0-9]{1,3}`)
+var pairNumberRe = regexp.MustCompile(`[0-9]?[A-Za-z]+[0-9]{1,4}\s*/{1,2}\s*[0-9]?[A-Za-z]+[0-9]{1,4}`)
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -395,14 +395,22 @@ func canonicalNumber(number string) string {
 }
 
 // numberMatches compares an input number against a printing's collector
-// number: equal codes, a letter-tailed input matching its base number, a
-// pair matched by its front half, or a bare digit input (its own letter
-// tail aside, "238m") matching the digit tail of the front code. Leading
-// zeros never decide ("40" matches "WTR040").
+// number: equal codes, the same number written with different padding, a
+// letter-tailed input matching its base number, a pair matched by its front
+// half, or a bare digit input (its own letter tail aside, "238m") matching
+// the digit tail of the front code. Leading zeros never decide ("40"
+// matches "WTR040").
 func numberMatches(input, full string) bool {
 	ci := canonicalNumber(input)
 	cf := canonicalNumber(full)
 	if strings.EqualFold(ci, cf) {
+		return true
+	}
+	// The catalog pads a few numbers a digit wider than the printing wears
+	// them - "JDG0077" for JDG077 - and a storefront writes whichever it was
+	// given. Folding the padding away compares what the number says rather
+	// than how wide it was written; no two numbers in a set fold together.
+	if foldNumber(ci) == foldNumber(cf) {
 		return true
 	}
 	trimmed := strings.TrimRight(ci, letters)
