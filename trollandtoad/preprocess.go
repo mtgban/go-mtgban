@@ -156,6 +156,8 @@ var tagsTable = []string{
 	"Sealed", // Needs to be the very last
 }
 
+// MB1ProductHash is the Mystery Booster product whose contents price the
+// storefront's unsorted Mystery Booster lots.
 const MB1ProductHash = "48ff4766-9d88-5426-800a-1613c990011b"
 
 func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {

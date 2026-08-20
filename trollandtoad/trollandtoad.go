@@ -26,6 +26,8 @@ const (
 	tntOptions = "?Keywords=&hide-oos=on&min-price=&max-price=&items-pp=60&item-condition=&sort-order=&page-no=%d&view=list&subproduct=0&Rarity=&Ruleset=&minMana=&maxMana=&minPower=&maxPower=&minToughness=&maxToughness="
 )
 
+// Trollandtoad prices Troll and Toad's Magic singles, both what they sell and
+// what they buy.
 type Trollandtoad struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -34,6 +36,7 @@ type Trollandtoad struct {
 	inventory mtgban.InventoryRecord
 }
 
+// NewScraper returns a Magic singles scraper.
 func NewScraper() *Trollandtoad {
 	tnt := Trollandtoad{}
 	tnt.inventory = mtgban.InventoryRecord{}
@@ -238,6 +241,7 @@ const (
 	categoryPage = "https://www.trollandtoad.com/magic-the-gathering/1041"
 )
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tnt *Trollandtoad) Load(ctx context.Context) error {
 	link := categoryPage
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -303,10 +307,12 @@ func (tnt *Trollandtoad) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tnt *Trollandtoad) Inventory() mtgban.InventoryRecord {
 	return tnt.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tnt *Trollandtoad) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TNT"

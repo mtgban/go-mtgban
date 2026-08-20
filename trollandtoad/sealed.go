@@ -18,6 +18,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// TrollandtoadSealed prices Troll and Toad's sealed product.
 type TrollandtoadSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -34,6 +35,7 @@ type TrollandtoadSealed struct {
 	client *http.Client
 }
 
+// NewScraperSealed returns a sealed scraper.
 func NewScraperSealed() *TrollandtoadSealed {
 	tnt := TrollandtoadSealed{}
 	tnt.inventory = mtgban.InventoryRecord{}
@@ -170,6 +172,7 @@ const (
 	categorySealedPage = "https://www.trollandtoad.com/magic-the-gathering/magic-the-gathering-sealed-product/909"
 )
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (tnt *TrollandtoadSealed) Load(ctx context.Context) error {
 	link := categorySealedPage + tntOptions
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -204,10 +207,12 @@ func (tnt *TrollandtoadSealed) Load(ctx context.Context) error {
 	return tnt.parsePages(ctx, categorySealedPage, lastPage)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (tnt *TrollandtoadSealed) Inventory() mtgban.InventoryRecord {
 	return tnt.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (tnt *TrollandtoadSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TNTSealed"
