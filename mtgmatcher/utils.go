@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -352,6 +353,19 @@ var smallWords = map[string]bool{
 	"with": true,
 }
 
+// opensPhrase reports whether a word ends on a mark that hands what follows
+// a phrase of its own, where a small word is no longer inside one and opens
+// its phrase capitalised: "Tag Force: The World", "Duel of Destiny - The
+// Movie".
+func opensPhrase(word string) bool {
+	last, _ := utf8.DecodeLastRuneInString(word)
+	switch last {
+	case ':', ';', '.', '!', '?', '-', '\u2013', '\u2014':
+		return true
+	}
+	return false
+}
+
 func Title(str string) string {
 	titled := cases.Title(language.English).String(str)
 	// A title-caser capitalises the letter after a digit, so "1st place"
@@ -362,12 +376,14 @@ func Title(str string) string {
 
 	// A title-caser capitalises every word, including the ones a title
 	// leaves down: "duel of destiny" comes back "Duel Of Destiny". The
-	// first word is never one of them, whatever it is.
+	// first word is never one of them, whatever it is, and neither is the
+	// word a mark hands a new phrase to.
 	words := strings.Split(titled, " ")
 	for i := 1; i < len(words); i++ {
-		if smallWords[strings.ToLower(words[i])] {
-			words[i] = strings.ToLower(words[i])
+		if opensPhrase(words[i-1]) || !smallWords[strings.ToLower(words[i])] {
+			continue
 		}
+		words[i] = strings.ToLower(words[i])
 	}
 	return strings.Join(words, " ")
 }
