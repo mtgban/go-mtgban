@@ -3,6 +3,7 @@ package mtgban
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -18,17 +19,27 @@ type LogCallbackFunc func(format string, a ...interface{})
 
 const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
 
-// GetExchangeRate returns the rate that converts the given currency to USD:
-// multiply a price by it to get dollars.
-func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
+// GetExchangeRates returns the rate that converts each currency the feed
+// quotes to USD: multiply a price by its entry to get dollars. Keys are lower
+// case, as the feed writes them.
+//
+// The feed answers every currency in one response, so a caller facing more
+// than one asks once rather than once per currency - and a caller that cannot
+// know in advance which it will be handed can look the answer up instead of
+// having to have named it.
+//
+// A currency quoted at zero is left out rather than kept as an infinity: it
+// converts nothing, and a caller reading a missing entry refuses the price
+// where one read as a number would invent it.
+func GetExchangeRates(ctx context.Context) (map[string]float64, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, exchangeRateURL, http.NoBody)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	resp, err := cleanhttp.DefaultClient().Do(req)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -37,15 +48,36 @@ func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
 	}
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
+		return nil, err
+	}
+	if len(response.USD) == 0 {
+		return nil, errors.New("no exchange rates in response")
+	}
+
+	rates := make(map[string]float64, len(response.USD))
+	for currency, rate := range response.USD {
+		if rate == 0 {
+			continue
+		}
+		rates[currency] = 1 / rate
+	}
+	return rates, nil
+}
+
+// GetExchangeRate returns the rate that converts the given currency to USD:
+// multiply a price by it to get dollars.
+func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
+	rates, err := GetExchangeRates(ctx)
+	if err != nil {
 		return 0, err
 	}
 
-	rate, found := response.USD[strings.ToLower(currency)]
+	rate, found := rates[strings.ToLower(currency)]
 	if !found {
 		return 0, fmt.Errorf("%s not found in response", strings.ToLower(currency))
 	}
 
-	return 1 / rate, nil
+	return rate, nil
 }
 
 // DateEqual reports whether two times fall on the same calendar day, in

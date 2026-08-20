@@ -10,34 +10,24 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// nonUSDCurrencies are the currencies listings are quoted in besides dollars.
-// The quoting currency follows the expansion rather than the seller - the same
-// seller lists Origins in dollars and Vendetta in pounds - so a missing rate
-// costs the whole expansion, not a handful of listings.
-var nonUSDCurrencies = []string{"EUR", "GBP"}
-
-// exchangeRates retrieves one rate per non-dollar currency, up front, so that
-// converting a listing needs no request of its own.
-func exchangeRates(ctx context.Context) (map[string]float64, error) {
-	rates := make(map[string]float64, len(nonUSDCurrencies))
-	for _, currency := range nonUSDCurrencies {
-		rate, err := mtgban.GetExchangeRate(ctx, currency)
-		if err != nil {
-			return nil, err
-		}
-		rates[currency] = rate
-	}
-	return rates, nil
-}
-
-// priceToUSD converts a CardTrader price to dollars. A currency with no rate
-// is reported rather than being silently multiplied by the wrong one.
+// priceToUSD converts a CardTrader price to dollars, through a rate table
+// fetched once per run by mtgban.GetExchangeRates. A currency the feed does
+// not quote is reported rather than being silently multiplied by the wrong
+// rate.
+//
+// The whole table is held rather than a chosen few rates. The quoting currency
+// belongs to the authenticating app and not to the listing - the same
+// expansion comes back in dollars to one token and euros to another, and an
+// app's setting can change between runs - so there is no list of currencies to
+// be right about in advance, and being wrong about it costs an expansion at a
+// time: one request fetches a whole expansion and the response quotes all of
+// it in the one currency.
 func priceToUSD(cents int, currency string, rates map[string]float64) (float64, error) {
 	price := float64(cents) / 100
 	if currency == "USD" {
 		return price, nil
 	}
-	rate, found := rates[currency]
+	rate, found := rates[strings.ToLower(currency)]
 	if !found {
 		return 0, fmt.Errorf("unsupported currency %q", currency)
 	}
@@ -51,7 +41,7 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 		return nil, err
 	}
 
-	rates, err := exchangeRates(ctx)
+	rates, err := mtgban.GetExchangeRates(ctx)
 	if err != nil {
 		return nil, err
 	}

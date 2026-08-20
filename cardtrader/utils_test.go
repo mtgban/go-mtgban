@@ -62,7 +62,8 @@ func TestGameVariation(t *testing.T) {
 }
 
 func TestPriceToUSD(t *testing.T) {
-	rates := map[string]float64{"EUR": 1.10, "GBP": 1.25}
+	// Keyed as the feed writes them, which is how the table arrives.
+	rates := map[string]float64{"eur": 1.10, "gbp": 1.25, "aud": 0.70, "chf": 1.25}
 
 	tests := []struct {
 		name     string
@@ -75,7 +76,15 @@ func TestPriceToUSD(t *testing.T) {
 		{"dollars need no rate at all", 500, "USD", 5, false},
 		{"euros convert", 1000, "EUR", 11, false},
 		{"pounds convert", 1000, "GBP", 12.5, false},
-		{"a currency with no rate is refused", 1000, "CHF", 0, true},
+		// The currency an expansion went unpriced for, and the one after
+		// it: the table answers whatever the marketplace quotes, so
+		// neither had to be named in advance.
+		{"australian dollars convert", 1000, "AUD", 7, false},
+		{"francs convert", 1000, "CHF", 12.5, false},
+		// The marketplace spells a currency in capitals and the feed in
+		// lower case, so the lookup folds rather than missing.
+		{"the marketplace's spelling finds the feed's", 1000, "aud", 7, false},
+		{"a currency the feed does not quote is refused", 1000, "XYZ", 0, true},
 		{"an empty currency is refused", 1000, "", 0, true},
 	}
 

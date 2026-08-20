@@ -131,7 +131,7 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 }
 
 func (ct *CardtraderSealed) Load(ctx context.Context) error {
-	rates, err := exchangeRates(ctx)
+	rates, err := mtgban.GetExchangeRates(ctx)
 	if err != nil {
 		return err
 	}
