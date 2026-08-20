@@ -14,6 +14,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Sheet is one pool a booster draws from, as mtgjson publishes it.
 type Sheet struct {
 	AllowDuplicates bool           `json:"allowDuplicates"`
 	BalanceColors   bool           `json:"balanceColors"`
@@ -23,6 +24,8 @@ type Sheet struct {
 	TotalWeight     int            `json:"totalWeight"`
 }
 
+// Booster describes how a product's boosters are built, as mtgjson publishes
+// it.
 type Booster struct {
 	Boosters []struct {
 		Contents map[string]int `json:"contents"`
@@ -33,6 +36,7 @@ type Booster struct {
 	Name                string           `json:"name"`
 }
 
+// SealedContent is one component of a sealed product, as mtgjson publishes it.
 type SealedContent struct {
 	Code  string `json:"code"`
 	Count int    `json:"count"`
@@ -50,6 +54,7 @@ type SealedContent struct {
 	Configs []map[string][]SealedContent `json:"configs"`
 }
 
+// DeckCard is one card of a preconstructed deck, as mtgjson publishes it.
 type DeckCard struct {
 	Count    int    `json:"count"`
 	IsEtched bool   `json:"isEtched"`
@@ -57,6 +62,8 @@ type DeckCard struct {
 	UUID     string `json:"uuid"`
 }
 
+// SealedProduct is a sealed item and what opening it can produce, as mtgjson
+// publishes it.
 type SealedProduct struct {
 	Category    string                     `json:"category"`
 	Contents    map[string][]SealedContent `json:"contents"`
@@ -69,6 +76,7 @@ type SealedProduct struct {
 	UUID        string                     `json:"uuid"`
 }
 
+// Set is an edition and everything printed in it, as mtgjson publishes it.
 type Set struct {
 	BaseSetSize   int    `json:"baseSetSize"`
 	Code          string `json:"code"`
@@ -107,6 +115,8 @@ type Set struct {
 	} `json:"decks"`
 }
 
+// Card is one printing as mtgjson publishes it, before the loader turns it
+// into the matcher's own Card.
 type Card struct {
 	Artist              string              `json:"artist"`
 	AttractionLights    []int               `json:"attractionLights"`
@@ -175,18 +185,23 @@ func (c Card) String() string {
 	return fmt.Sprintf("%s|%s|%s", c.Name, c.SetCode, c.Number)
 }
 
+// HasFinish reports whether the printing was sold in this finish.
 func (c *Card) HasFinish(fi string) bool {
 	return slices.Contains(c.Finishes, fi)
 }
 
+// HasFrameEffect reports whether the printing carries this frame effect.
 func (c *Card) HasFrameEffect(fe string) bool {
 	return slices.Contains(c.FrameEffects, fe)
 }
 
+// HasPromoType reports whether the printing carries this promo type.
 func (c *Card) HasPromoType(pt string) bool {
 	return slices.Contains(c.PromoTypes, pt)
 }
 
+// The frame effects, promo types and border colors mtgjson spells out, which
+// the rules match against.
 const (
 	FrameEffectExtendedArt = "extendedart"
 	FrameEffectInverted    = "inverted"
@@ -250,13 +265,16 @@ const (
 	SuffixPhiLow  = "φ"
 )
 
-// Date since any card could be Prerelease Promo
+// NewPrereleaseDate is when any card in a set could be a prerelease promo,
+// rather than only the chosen few.
 var NewPrereleaseDate = time.Date(2014, time.September, 1, 0, 0, 0, 0, time.UTC)
 
-// Date since BuyABox cards are not unique any more
+// BuyABoxNotUniqueDate is when buy-a-box promos stopped being unique to that
+// promotion, so the tag alone no longer picks one printing.
 var BuyABoxNotUniqueDate = time.Date(2020, time.September, 1, 0, 0, 0, 0, time.UTC)
 
-// Date since different finishes (etched, gilded, thick) get separate collector numbers
+// SeparateFinishCollectorNumberDate is when a finish began carrying its own
+// collector number, so etched, gilded and thick stopped sharing one.
 var SeparateFinishCollectorNumberDate = time.Date(2022, time.February, 1, 0, 0, 0, 0, time.UTC)
 
 // AllPrintings is the top-level structure of the MTGJSON AllPrintings file.
