@@ -11,6 +11,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// Preprocess turns a blueprint into the card description the matcher takes,
+// reporting an error for the blueprints that are not cards.
 func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	cardName := bp.Name
 	edition := bp.Expansion.Name
