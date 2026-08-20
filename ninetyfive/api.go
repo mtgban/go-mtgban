@@ -17,6 +17,7 @@ const (
 	staticUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
 )
 
+// NFCard is the catalog keyed by card id.
 type NFCard map[string]struct {
 	CardName     string `json:"card_name"`
 	SetName      string `json:"set_name"`
@@ -26,6 +27,10 @@ type NFCard map[string]struct {
 	DedFoil      string `json:"ded_foil"`
 }
 
+// NFPrice is the price list keyed by card, then by the variant a price hangs
+// off. The inner key differs by side of the book, which is why both shapes are
+// spelled out below.
+//
 // example for sell prices
 //
 //	"pG07_6": {
@@ -50,10 +55,12 @@ type NFPrice map[string]map[string]struct {
 	QuantityBuy int    `json:"quantity_buy,omitempty,string"`
 }
 
+// NFClient reads the 95mtg API.
 type NFClient struct {
 	client *http.Client
 }
 
+// NewNFClient returns a client.
 func NewNFClient() *NFClient {
 	nf := NFClient{}
 	client := retryablehttp.NewClient()
