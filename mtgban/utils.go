@@ -11,11 +11,15 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 )
 
+// LogCallbackFunc receives a scraper's progress messages. Scrapers log
+// nothing until one is set, so a quiet run means no callback rather than no
+// activity.
 type LogCallbackFunc func(format string, a ...interface{})
 
 const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
 
-// Retrieve the USD exchange rate (you need to multiply this value to obtain USD)
+// GetExchangeRate returns the rate that converts the given currency to USD:
+// multiply a price by it to get dollars.
 func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, exchangeRateURL, http.NoBody)
 	if err != nil {
@@ -44,6 +48,9 @@ func GetExchangeRate(ctx context.Context, currency string) (float64, error) {
 	return 1 / rate, nil
 }
 
+// DateEqual reports whether two times fall on the same calendar day, in
+// whatever location each carries. Prices are dated by the day they were
+// collected, so the clock time is noise.
 func DateEqual(date1, date2 time.Time) bool {
 	y1, m1, d1 := date1.Date()
 	y2, m2, d2 := date2.Date()

@@ -10,6 +10,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// ErrInvalidCondition is returned when an entry carries a grade that is not
+// one of FullGradeTags. An empty grade is not invalid: it is filled in as NM
+// before the check.
 var ErrInvalidCondition = errors.New("invalid condition")
 
 func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int) error {
@@ -72,7 +75,8 @@ func (inv InventoryRecord) add(cardID string, entry *InventoryEntry, strict int)
 	return nil
 }
 
-// Add a new record to the inventory, existing entries are always merged
+// AddRelaxed adds a record to the inventory, always merging into an existing
+// entry rather than reporting one.
 func (inv InventoryRecord) AddRelaxed(cardID string, entry *InventoryEntry) error {
 	return inv.add(cardID, entry, 0)
 }
@@ -82,20 +86,27 @@ func (inv InventoryRecord) Add(cardID string, entry *InventoryEntry) error {
 	return inv.add(cardID, entry, 1)
 }
 
-// Add new record to the inventory, similar existing entries are not merged
+// AddStrict adds a record to the inventory and keeps similar existing entries
+// apart instead of merging them.
 func (inv InventoryRecord) AddStrict(cardID string, entry *InventoryEntry) error {
 	return inv.add(cardID, entry, 2)
 }
 
-// Add new record to the inventory, if same card and condition exist, error out
+// AddUnique adds a record to the inventory and reports an error if the same
+// card and condition are already present.
 func (inv InventoryRecord) AddUnique(cardID string, entry *InventoryEntry) error {
 	return inv.add(cardID, entry, 3)
 }
 
+// AddRelaxed adds an entry to the buylist, folding a duplicate into the
+// quantity of the one already there rather than reporting it.
 func (bl BuylistRecord) AddRelaxed(cardID string, entry *BuylistEntry) error {
 	return bl.add(cardID, entry, false)
 }
 
+// Add adds an entry to the buylist and reports a duplicate as an error. Two
+// entries count as duplicates when quantity, grade, price and vendor all
+// match, which is what a scraper reading the same listing twice produces.
 func (bl BuylistRecord) Add(cardID string, entry *BuylistEntry) error {
 	return bl.add(cardID, entry, true)
 }
@@ -144,23 +155,33 @@ func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict bool) err
 	return nil
 }
 
+// BaseSeller holds an inventory that has already been collected. It is what
+// a seller read back from JSON or CSV becomes: prices without the scraper
+// that fetched them.
 type BaseSeller struct {
 	inventory InventoryRecord
 	info      ScraperInfo
 }
 
+// Load does nothing. The inventory arrived with the value, so there is
+// nothing to fetch, and callers driving a Seller generically can call it
+// without checking what they hold.
 func (seller *BaseSeller) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns the record this seller was built from.
 func (seller *BaseSeller) Inventory() InventoryRecord {
 	return seller.inventory
 }
 
+// Info returns the scraper info this seller was built from.
 func (seller *BaseSeller) Info() ScraperInfo {
 	return seller.info
 }
 
+// NewSellerFromInventory wraps an already-collected inventory as a Seller,
+// for prices restored from storage rather than fetched.
 func NewSellerFromInventory(inventory InventoryRecord, info ScraperInfo) Seller {
 	seller := BaseSeller{}
 	seller.inventory = inventory
@@ -168,23 +189,30 @@ func NewSellerFromInventory(inventory InventoryRecord, info ScraperInfo) Seller 
 	return &seller
 }
 
+// BaseVendor is the buylist counterpart of BaseSeller: a buylist that has
+// already been collected, with no scraper behind it.
 type BaseVendor struct {
 	buylist BuylistRecord
 	info    ScraperInfo
 }
 
+// Load does nothing, for the same reason BaseSeller.Load does not.
 func (vendor *BaseVendor) Load(ctx context.Context) error {
 	return nil
 }
 
+// Buylist returns the record this vendor was built from.
 func (vendor *BaseVendor) Buylist() BuylistRecord {
 	return vendor.buylist
 }
 
+// Info returns the scraper info this vendor was built from.
 func (vendor *BaseVendor) Info() (info ScraperInfo) {
 	return vendor.info
 }
 
+// NewVendorFromBuylist wraps an already-collected buylist as a Vendor, for
+// prices restored from storage rather than fetched.
 func NewVendorFromBuylist(buylist BuylistRecord, info ScraperInfo) Vendor {
 	vendor := BaseVendor{}
 	vendor.buylist = buylist
@@ -192,8 +220,8 @@ func NewVendorFromBuylist(buylist BuylistRecord, info ScraperInfo) Vendor {
 	return &vendor
 }
 
-// Return how many independent components are present in the slice.
-// This function can be safely called before Load().
+// CountScrapers returns how many independent components the slice holds. It
+// is safe to call before Load.
 func CountScrapers(scrapers []Scraper) (int, int) {
 	var sellers, vendors int
 	for _, scraper := range scrapers {
@@ -217,10 +245,9 @@ func CountScrapers(scrapers []Scraper) (int, int) {
 	return sellers, vendors
 }
 
-// Commodity function to unfold a Scraper into their independent Seller and
-// Vendor parts, unpacking Market and Trader into the various enabled sub-scrapers.
-// Since it processes this kind of scrapers it needs to be called *after*
-// the Load() call, otherwise the subscrapers will contain empty data.
+// UnfoldScrapers splits scrapers into their independent Seller and Vendor
+// parts, unpacking a Market or Trader into its enabled sub-scrapers. Call it
+// after Load, or the sub-scrapers come back empty.
 func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 	var sellers []Seller
 	var vendors []Vendor
@@ -262,8 +289,8 @@ func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 	return sellers, vendors
 }
 
-// Return the inventory for any given seller present in the market.
-// If possible, it will use the Inventory() call to populate data.
+// InventoryForSeller returns one seller's inventory out of a market, using the
+// market's own Inventory call where it can.
 func InventoryForSeller(seller Market, sellerName string) InventoryRecord {
 	inventory := seller.Inventory()
 
@@ -279,8 +306,8 @@ func InventoryForSeller(seller Market, sellerName string) InventoryRecord {
 	return marketplace
 }
 
-// Return the buylist for any given vendor present in the Trader.
-// If possible, it will use the Buylist() call to populate data.
+// BuylistForVendor returns one vendor's buylist out of a trader, using the
+// trader's own Buylist call where it can.
 func BuylistForVendor(vendor Trader, vendorName string) BuylistRecord {
 	buylist := vendor.Buylist()
 
