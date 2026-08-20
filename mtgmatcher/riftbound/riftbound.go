@@ -294,10 +294,11 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
 			}
-			// First spelling seen wins, so a qualifier the catalog writes
-			// two ways still reads back one way.
-			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = mtgmatcher.Title(promoType)
+			// The builder folds a qualifier to lower case on the way in, so
+			// the spelling is looked up rather than guessed - title-casing
+			// would render "GG EZ" as "Gg Ez".
+			if label := promoTypeLabels[slug]; label != "" && b.PromoTypeLabels[slug] == "" {
+				b.PromoTypeLabels[slug] = label
 			}
 		}
 		// The catalog's own spelling is searchable but never canonical: it
