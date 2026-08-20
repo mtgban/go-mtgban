@@ -23,6 +23,8 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
+// CardMarketIndex prices singles from Cardmarket's price guide, the low and
+// trend numbers rather than any one seller's listing.
 type CardMarketIndex struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -65,6 +67,8 @@ func (mkm *CardMarketIndex) printf(format string, a ...interface{}) {
 	}
 }
 
+// NewScraperIndex returns an index scraper for one game, authenticated with an
+// app token and secret.
 func NewScraperIndex(gameID int, appToken, appSecret string) (*CardMarketIndex, error) {
 	mkm := CardMarketIndex{}
 	mkm.inventory = mtgban.InventoryRecord{}
@@ -323,6 +327,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
@@ -417,14 +422,18 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (mkm *CardMarketIndex) Inventory() mtgban.InventoryRecord {
 	return mkm.inventory
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (mkm *CardMarketIndex) MarketNames() []string {
 	return availableIndexNames
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (mkm *CardMarketIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := mkm.Info()
 	info.Name = name
@@ -432,6 +441,7 @@ func (mkm *CardMarketIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Market Index"
 	info.Shorthand = "MKMIndex"

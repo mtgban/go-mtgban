@@ -28,14 +28,18 @@ const (
 	mkmProductListURL = "https://apiv2.cardmarket.com/ws/v2.0/output.json/productlist"
 	mkmExpansionsURL  = "https://apiv2.cardmarket.com/ws/v2.0/output.json/games/%d/expansions"
 
+	// MaxEntities is how many results one request may ask for
 	MaxEntities = 100
 )
 
+// MKMClient reads Cardmarket's API, which signs every request with an app
+// token and secret.
 type MKMClient struct {
 	client *http.Client
 	auth   *authTransport
 }
 
+// NewMKMClient returns a client signing with the given app credentials.
 func NewMKMClient(appToken, appSecret string) *MKMClient {
 	mkm := MKMClient{}
 	client := retryablehttp.NewClient()
@@ -59,10 +63,13 @@ func NewMKMClient(appToken, appSecret string) *MKMClient {
 	return &mkm
 }
 
+// RequestNo returns how many requests the client has made, which matters
+// against Cardmarket's daily allowance.
 func (mkm *MKMClient) RequestNo() int {
 	return int(mkm.auth.RequestNo.Load())
 }
 
+// MKMExpansion is a set as Cardmarket files it.
 type MKMExpansion struct {
 	IdExpansion int    `json:"idExpansion"`
 	Name        string `json:"enName"`
@@ -72,6 +79,7 @@ type MKMExpansion struct {
 	IsReleased  bool   `json:"isReleased"`
 }
 
+// Expansions returns every expansion of one game.
 func (mkm *MKMClient) Expansions(ctx context.Context, gameID int) ([]MKMExpansion, error) {
 	link := fmt.Sprintf(mkmExpansionsURL, gameID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -101,6 +109,7 @@ func (mkm *MKMClient) Expansions(ctx context.Context, gameID int) ([]MKMExpansio
 	return response.Expansions, nil
 }
 
+// MKMProduct is one catalog entry, a card or a sealed item.
 type MKMProduct struct {
 	IdProduct     int    `json:"idProduct"`
 	IdMetaproduct int    `json:"idMetaproduct"`
@@ -117,6 +126,7 @@ type MKMProduct struct {
 	CountFoils    int                `json:"countFoils"`
 }
 
+// MKMProduct returns one catalog entry by id.
 func (mkm *MKMClient) MKMProduct(ctx context.Context, id int) (*MKMProduct, error) {
 	link := mkmProductsBaseURL + fmt.Sprint(id)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -146,6 +156,7 @@ func (mkm *MKMClient) MKMProduct(ctx context.Context, id int) (*MKMProduct, erro
 	return &response.Product, nil
 }
 
+// MKMProductsInExpansion returns every catalog entry in one expansion.
 func (mkm *MKMClient) MKMProductsInExpansion(ctx context.Context, id int) ([]MKMProduct, error) {
 	link := mkmExpansionsBaseURL + fmt.Sprint(id) + "/singles"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -176,6 +187,7 @@ func (mkm *MKMClient) MKMProductsInExpansion(ctx context.Context, id int) ([]MKM
 	return response.Single, nil
 }
 
+// MKMArticle is one seller's listing on a product.
 type MKMArticle struct {
 	IdArticle int `json:"idArticle"`
 	IdProduct int `json:"idProduct"`
@@ -208,6 +220,8 @@ type MKMArticle struct {
 	IsAltered bool `json:"isAltered"`
 }
 
+// MKMSimpleArticles returns the listings on a product without the seller
+// details the full call carries, which is all a price needs.
 func (mkm *MKMClient) MKMSimpleArticles(ctx context.Context, id int, onlyEnglish bool, page, maxResults int) ([]MKMArticle, error) {
 	options := map[string]string{
 		"minCondition": "GD",
@@ -222,7 +236,8 @@ func (mkm *MKMClient) MKMSimpleArticles(ctx context.Context, id int, onlyEnglish
 	return mkm.MKMArticles(ctx, id, options, page, maxResults)
 }
 
-// Note that page should start from 0
+// MKMArticles returns the listings on a product, one page at a time. Pages
+// start at zero.
 func (mkm *MKMClient) MKMArticles(ctx context.Context, id int, options map[string]string, page, maxResults int) ([]MKMArticle, error) {
 	u, err := url.Parse(mkmArticlesBaseURL + fmt.Sprint(id))
 	if err != nil {
