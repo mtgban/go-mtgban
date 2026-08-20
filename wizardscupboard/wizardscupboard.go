@@ -23,6 +23,7 @@ const (
 	wcInventoryURL = "https://www.wizardscupboard.com/singles-c-100.html"
 )
 
+// Wizardscupboard prices what Wizard's Cupboard buys.
 type Wizardscupboard struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -31,6 +32,7 @@ type Wizardscupboard struct {
 	inventory mtgban.InventoryRecord
 }
 
+// NewScraper returns a buylist scraper.
 func NewScraper() *Wizardscupboard {
 	wc := Wizardscupboard{}
 	wc.inventory = mtgban.InventoryRecord{}
@@ -49,6 +51,7 @@ type respChan struct {
 	entry  *mtgban.InventoryEntry
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (wc *Wizardscupboard) Load(ctx context.Context) error {
 	channel := make(chan respChan)
 
@@ -224,10 +227,12 @@ func (wc *Wizardscupboard) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (wc *Wizardscupboard) Inventory() mtgban.InventoryRecord {
 	return wc.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (wc *Wizardscupboard) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Wizard's Cupboard"
 	info.Shorthand = "WC"
