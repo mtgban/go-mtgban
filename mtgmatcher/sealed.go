@@ -3,7 +3,6 @@ package mtgmatcher
 import (
 	"fmt"
 	"regexp"
-	"slices"
 	"sort"
 	"strings"
 )
@@ -299,12 +298,27 @@ func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductI
 	}
 	// The name lists are gated on their own contents rather than on bucket
 	// existence: a card can already own the bucket, and the sealed name must
-	// still be searchable.
+	// still be searchable. Each list is gated on what it holds rather than
+	// on one of the others, for the reason AddName spells out: two spellings
+	// can normalize to one string while staying two spellings, and asking
+	// the wrong list drops one of them.
+	if b.seenSealed == nil {
+		b.seenSealed = map[string]bool{}
+		b.seenLowerSealed = map[string]bool{}
+		b.seenCanonicalSealed = map[string]bool{}
+	}
 	n := Normalize(name)
-	if !slices.Contains(b.AllSealed, n) {
+	if !b.seenSealed[n] {
+		b.seenSealed[n] = true
 		b.AllSealed = append(b.AllSealed, n)
+	}
+	if lower := strings.ToLower(name); !b.seenLowerSealed[lower] {
+		b.seenLowerSealed[lower] = true
+		b.AllLowerSealed = append(b.AllLowerSealed, lower)
+	}
+	if !b.seenCanonicalSealed[name] {
+		b.seenCanonicalSealed[name] = true
 		b.AllCanonicalSealed = append(b.AllCanonicalSealed, name)
-		b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(name))
 	}
 	b.Hashes[n] = append(b.Hashes[n], uuid)
 
