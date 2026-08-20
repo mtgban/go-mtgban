@@ -472,7 +472,11 @@ jobs:
       - name: Verify every suite passed
         env:
           RESULTS: "${{ join(needs.*.result, ' ') }}"
-          BROKEN: "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}"
+          # A suite that never ran is not a suite that passed. A cache job
+          # failing - a bucket outage, a rotated key, a renamed object -
+          # skips the game that needs it, and a skipped result would read as
+          # a green one and wave that game's tree through untested.
+          BROKEN: "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}"
         run: |
           echo "$RESULTS"
           if [ "$BROKEN" = "true" ]; then
