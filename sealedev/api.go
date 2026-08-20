@@ -13,10 +13,12 @@ import (
 	"github.com/mtgban/go-mtgban/tcgplayer"
 )
 
+// BanPrice is one price as the BAN API reports it.
 type BanPrice struct {
 	Conditions map[string]float64 `json:"conditions,omitempty"`
 }
 
+// BANPriceResponse is what the BAN price endpoint answers with.
 type BANPriceResponse struct {
 	Error string `json:"error,omitempty"`
 	Meta  struct {
@@ -34,7 +36,11 @@ type BANPriceResponse struct {
 const (
 	banAPIURL = "https://www.mtgban.com/api/mtgban/all%s.json?tag=tags&conds=true&sig=%s"
 
-	BulkThreshold  = 0.5
+	// BulkThreshold is the price under which a card counts as bulk and stops
+	// being worth naming in an opening
+	BulkThreshold = 0.5
+	// MaxSinglePrice caps what one card may contribute, so a mispriced
+	// outlier cannot carry a whole product
 	MaxSinglePrice = 10000.0
 )
 
