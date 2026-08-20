@@ -20,6 +20,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// CoolstuffincSealed prices Cool Stuff Inc's sealed product.
 type CoolstuffincSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -40,6 +41,7 @@ type CoolstuffincSealed struct {
 	game   string
 }
 
+// NewScraperSealed returns a sealed scraper for one game.
 func NewScraperSealed(game string) *CoolstuffincSealed {
 	csi := CoolstuffincSealed{}
 	csi.inventory = mtgban.InventoryRecord{}
@@ -290,11 +292,14 @@ func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
 	return nil
 }
 
+// SetConfig applies options after the scraper was built. See
+// mtgban.ScraperConfig.
 func (csi *CoolstuffincSealed) SetConfig(opt mtgban.ScraperOptions) {
 	csi.DisableRetail = opt.DisableRetail
 	csi.DisableBuylist = opt.DisableBuylist
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (csi *CoolstuffincSealed) Load(ctx context.Context) error {
 	// The saved-query page and the buylist exist for Magic alone; the
 	// other games ride the same set-facet search the singles use, with
@@ -553,14 +558,17 @@ func (csi *CoolstuffincSealed) processSealedSearch(ctx context.Context, channel 
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (csi *CoolstuffincSealed) Inventory() mtgban.InventoryRecord {
 	return csi.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (csi *CoolstuffincSealed) Buylist() mtgban.BuylistRecord {
 	return csi.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (csi *CoolstuffincSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSISealed"

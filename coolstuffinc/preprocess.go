@@ -428,6 +428,8 @@ func card2promo(cardName, variant string) (string, string) {
 	return edition, variant
 }
 
+// PreprocessBuylist is Preprocess for the buylist feed, which describes a card
+// differently from the sale catalog.
 func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 	num := strings.TrimLeft(card.Number, "0")
 	cleanVar := cleanVariant(card.Notes)
@@ -574,6 +576,8 @@ func PreprocessBuylist(card CSIPriceEntry) (*mtgmatcher.InputCard, error) {
 	}, nil
 }
 
+// Preprocess turns a price-list entry into the card description the matcher
+// takes.
 func Preprocess(card CSICard) (*mtgmatcher.InputCard, error) {
 	cardName := card.Name
 	variant := card.Variation
