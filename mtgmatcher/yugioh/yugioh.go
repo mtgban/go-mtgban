@@ -363,11 +363,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		b.Sets[code].Colors = colors
 	}
 
-	// Sealed products live in the sealed namespace throughout: uuids in
-	// AllSealedUUIDs, names in the sealed name index, and the product id
-	// as an identifier for BuildSealedProductMap rather than the external
-	// identifier index, mirroring how Magic keeps sealed out of MatchId's
-	// reach.
 	// Sealed products live in the sealed namespace throughout; AddSealed
 	// is what files them there.
 	for _, product := range payload.Sealed {

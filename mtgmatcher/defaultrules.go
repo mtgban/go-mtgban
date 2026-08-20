@@ -7,8 +7,9 @@ package mtgmatcher
 //	type Rules struct{ mtgmatcher.DefaultRules }
 //
 // The answers are the ones that change nothing: every candidate edition
-// survives, nothing is unsupported, and no promo tag is missing. A game that means any of those has to say so itself, which is
-// the point - a hook nobody wrote is a hook nobody has to read.
+// survives, nothing is unsupported, and no promo tag is missing. A game that
+// means any of those has to say so itself, which is the point - a hook
+// nobody wrote is a hook nobody has to read.
 //
 // Magic implements all three for real and embeds nothing.
 type DefaultRules struct{}
