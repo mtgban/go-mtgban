@@ -16,13 +16,17 @@ import (
 const (
 	defaultConcurrency = 8
 
-	GameMagic   = "MTG"
-	GameLorcana = "LRC"
-
 	modeRetail  = "retail"
 	modeBuylist = "buylist"
 )
 
+// The games this scraper covers, as the storefront names them.
+const (
+	GameMagic   = "MTG"
+	GameLorcana = "LRC"
+)
+
+// Ninetyfive prices 95mtg's stock.
 type Ninetyfive struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -38,6 +42,8 @@ type Ninetyfive struct {
 	DisableBuylist bool
 }
 
+// NewScraper returns a scraper for one game, failing if the catalog cannot be
+// read.
 func NewScraper(game string) (*Ninetyfive, error) {
 	nf := Ninetyfive{}
 	nf.inventory = mtgban.InventoryRecord{}
@@ -236,11 +242,14 @@ func (nf *Ninetyfive) scrape(ctx context.Context, mode string) error {
 	return nf.processPrices(allCards, allPrices, mode)
 }
 
+// SetConfig applies options after the scraper was built. See
+// mtgban.ScraperConfig.
 func (nf *Ninetyfive) SetConfig(opt mtgban.ScraperOptions) {
 	nf.DisableRetail = opt.DisableRetail
 	nf.DisableBuylist = opt.DisableBuylist
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (nf *Ninetyfive) Load(ctx context.Context) error {
 	var errs []error
 
@@ -261,14 +270,17 @@ func (nf *Ninetyfive) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (nf *Ninetyfive) Inventory() mtgban.InventoryRecord {
 	return nf.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (nf *Ninetyfive) Buylist() mtgban.BuylistRecord {
 	return nf.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (nf *Ninetyfive) Info() (info mtgban.ScraperInfo) {
 	info.Name = "95mtg"
 	info.Shorthand = "95"
