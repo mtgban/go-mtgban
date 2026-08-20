@@ -12,7 +12,7 @@ import (
 // aliases, variant tables, or promo types: a card is identified by name +
 // collector number + foil. So most hooks are no-ops and the real work is the
 // number disambiguation in FilterCards (foil is honored downstream by output).
-type Rules struct{}
+type Rules struct{ mtgmatcher.DefaultRules }
 
 // Prefilter splits a trailing parenthetical variant off the name before the
 // canonical-name lookup. Unlike Magic it leaves " - " intact, since Lorcana
@@ -125,10 +125,6 @@ var promoHeadings = map[string]bool{
 	mtgmatcher.Normalize("Promotional Cards"): true,
 }
 
-func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
-	return editions
-}
-
 // IsUnsupported drops the non-card products TCGplayer files under its "Cards"
 // product type, so they are skipped instead of reported as unknown names: the
 // puzzle-piece inserts bundled with booster displays (sold per piece and as
@@ -145,14 +141,6 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
 	return strings.Contains(inCard.Name, "Puzzle Insert") ||
 		strings.HasPrefix(inCard.Name, "Disney Cruise Promos")
-}
-
-func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
-	return false
 }
 
 // CanonicalFinish owns Lorcana's finish vocabulary. Lorcana's finish names

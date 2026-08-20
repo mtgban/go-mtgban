@@ -16,7 +16,7 @@ import (
 // named finish routes the match onto the entry it names, whether it arrives
 // in the finish field or as the words storefronts append ("Rainbow Foil",
 // "Cold Foil", the print-run edition suffixes).
-type Rules struct{}
+type Rules struct{ mtgmatcher.DefaultRules }
 
 // fullNumberRe matches the game's collector number shapes: "WTR215",
 // "1HP408", with an optional letter tail (cardtrader suffixes marvels
@@ -109,22 +109,6 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 	}
 	inCard.Edition = edition
-}
-
-func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
-	return editions
-}
-
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
-	return false
 }
 
 // CanonicalFinish owns Flesh and Blood's finish vocabulary, which is the

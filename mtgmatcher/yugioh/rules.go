@@ -17,7 +17,7 @@ import (
 // input naming a run - in the finish field, or in the wording for the
 // storefronts that have no such field - resolves to that run's entry
 // instead of the default one.
-type Rules struct{}
+type Rules struct{ mtgmatcher.DefaultRules }
 
 // fullNumberRe matches the game's collector number shapes: "LOB-001",
 // "RA01-EN019", "YGLD-ENA03", with an optional letter tail (cardtrader
@@ -109,22 +109,6 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	}
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 	inCard.Edition = edition
-}
-
-func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
-	return editions
-}
-
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
-	return false
 }
 
 // CanonicalFinish owns Yu-Gi-Oh's finish vocabulary, which is the print runs

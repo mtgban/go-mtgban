@@ -11,7 +11,7 @@ import (
 // ties when it resolves; there are no variant tables or promo types, so most
 // hooks are no-ops and the real work is the number disambiguation in
 // FilterCards (foil is honored downstream by output).
-type Rules struct{}
+type Rules struct{ mtgmatcher.DefaultRules }
 
 // Prefilter splits a trailing parenthetical variant off the name before the
 // canonical-name lookup — unless the full name is itself a known card: a few
@@ -344,22 +344,6 @@ func legendName(b *mtgmatcher.Backend, name string, targetsPromo bool) string {
 		match = canonical
 	}
 	return match
-}
-
-func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
-	return editions
-}
-
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
-	return false
 }
 
 // CanonicalFinish adds nothing to the shared vocabulary: Riftbound sells a
