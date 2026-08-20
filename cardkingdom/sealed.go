@@ -16,6 +16,7 @@ const (
 	ckBuylistLink = "https://www.cardkingdom.com/purchasing/mtg_sealed"
 )
 
+// CardkingdomSealed prices Card Kingdom's sealed product.
 type CardkingdomSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -28,6 +29,7 @@ type CardkingdomSealed struct {
 	buylist   mtgban.BuylistRecord
 }
 
+// NewScraperSealed returns a sealed scraper.
 func NewScraperSealed() *CardkingdomSealed {
 	ck := CardkingdomSealed{}
 	ck.inventory = mtgban.InventoryRecord{}
@@ -41,6 +43,7 @@ func (ck *CardkingdomSealed) printf(format string, a ...interface{}) {
 	}
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ck *CardkingdomSealed) Load(ctx context.Context) error {
 	pricelist, err := cardkingdom.SealedPricelist(ctx, nil)
 	if err != nil {
@@ -169,14 +172,17 @@ func (ck *CardkingdomSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ck *CardkingdomSealed) Inventory() mtgban.InventoryRecord {
 	return ck.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (ck *CardkingdomSealed) Buylist() mtgban.BuylistRecord {
 	return ck.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ck *CardkingdomSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom"
 	info.Shorthand = "CKSealed"
