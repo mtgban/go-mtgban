@@ -146,6 +146,8 @@ func setCodeExists(code string) bool {
 	return err == nil
 }
 
+// Preprocess turns a feed entry into the card description the matcher takes,
+// reporting an error for the entries that are not cards.
 func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	foilVariant := strings.Contains(card.Variation, "Foil") && !strings.Contains(card.Variation, "Non")
 	isFoil := card.IsFoil || foilVariant

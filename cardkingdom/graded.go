@@ -21,6 +21,8 @@ const (
 	gradedURL = "https://www.cardkingdom.com/mtg/graded-magic"
 )
 
+// CardkingdomGraded prices the cards Card Kingdom lists with a professional
+// grade, which they sell apart from their ungraded stock.
 type CardkingdomGraded struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -31,6 +33,7 @@ type CardkingdomGraded struct {
 	client *cloudscraper.CloudScrapper
 }
 
+// NewScraperGraded returns a graded scraper.
 func NewScraperGraded() (*CardkingdomGraded, error) {
 	client, err := cloudscraper.Init(false, false)
 	if err != nil {
@@ -180,6 +183,7 @@ func (ck *CardkingdomGraded) scrapePage(session string, page int) error {
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ck *CardkingdomGraded) Load(ctx context.Context) error {
 	session, pages, err := ck.totalPages()
 	if err != nil {
@@ -204,10 +208,12 @@ func (ck *CardkingdomGraded) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ck *CardkingdomGraded) Inventory() mtgban.InventoryRecord {
 	return ck.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ck *CardkingdomGraded) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom Graded"
 	info.Shorthand = "CKGraded"

@@ -16,6 +16,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// Cardkingdom prices Card Kingdom's singles, both what they sell and what they
+// buy.
 type Cardkingdom struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -29,6 +31,8 @@ type Cardkingdom struct {
 	buylist   mtgban.BuylistRecord
 }
 
+// NewScraperLocal returns a singles scraper reading the feed from a file
+// instead of the network.
 func NewScraperLocal(localPath string) *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
@@ -37,6 +41,7 @@ func NewScraperLocal(localPath string) *Cardkingdom {
 	return &ck
 }
 
+// NewScraper returns a singles scraper reading Card Kingdom's published feed.
 func NewScraper() *Cardkingdom {
 	ck := Cardkingdom{}
 	ck.inventory = mtgban.InventoryRecord{}
@@ -50,6 +55,7 @@ func (ck *Cardkingdom) printf(format string, a ...interface{}) {
 	}
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ck *Cardkingdom) Load(ctx context.Context) error {
 	link := ck.localPath
 	if link == "" {
@@ -256,10 +262,12 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ck *Cardkingdom) Inventory() mtgban.InventoryRecord {
 	return ck.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (ck *Cardkingdom) Buylist() mtgban.BuylistRecord {
 	return ck.buylist
 }
@@ -274,6 +282,8 @@ var name2shorthand = map[string]string{
 	"Card Kingdom (last known)": "CKBLLast",
 }
 
+// TraderNames names the sub-vendors this trader splits into. See
+// mtgban.Trader.
 func (ck *Cardkingdom) TraderNames() []string {
 	if !ck.PreserveOOS {
 		return availableTraderNames[:1]
@@ -281,6 +291,7 @@ func (ck *Cardkingdom) TraderNames() []string {
 	return availableTraderNames
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (ck *Cardkingdom) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ck.Info()
 	info.Name = name
@@ -288,6 +299,7 @@ func (ck *Cardkingdom) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ck *Cardkingdom) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom"
 	info.Shorthand = "CK"

@@ -16,11 +16,14 @@ import (
 	"github.com/RomainMichau/cloudscraper_go/cloudscraper"
 )
 
+// CookieClient drives the storefront as a signed-in user, for the cart
+// operations the price feed does not cover.
 type CookieClient struct {
 	client  *cloudscraper.CloudScrapper
 	session string
 }
 
+// NewCookieClient returns a client acting as the user whose session is given.
 func NewCookieClient(session string) (*CookieClient, error) {
 	if session == "" {
 		return nil, errors.New("no session was input")
@@ -37,12 +40,14 @@ func NewCookieClient(session string) (*CookieClient, error) {
 	return &ck, nil
 }
 
+// CartRequest is one cart call.
 type CartRequest struct {
 	ProductID string `json:"product_id"`
 	Style     string `json:"style"`
 	Quantity  int    `json:"quantity"`
 }
 
+// CartResponse is what the cart endpoints answer with.
 type CartResponse struct {
 	AutoValidateCart  bool      `json:"auto_validate_cart"`
 	ForceValidateCart bool      `json:"force_validate_cart"`
@@ -121,18 +126,23 @@ const (
 	ckBuylistEmptyURL   = "https://www.cardkingdom.com/sellcart/empty_cart"
 )
 
+// SetCartInventory sets how many of a card in one condition to buy from Card
+// Kingdom.
 func (ck *CookieClient) SetCartInventory(ctx context.Context, ckID, cond string, qty int) (*CartResponse, error) {
 	return ck.setCart(ctx, ckInventoryAddURL, ckID, cond, qty)
 }
 
+// SetCartBuylist sets how many of a card to sell to Card Kingdom.
 func (ck *CookieClient) SetCartBuylist(ctx context.Context, ckID string, qty int) (*CartResponse, error) {
 	return ck.setCart(ctx, ckBuylistAddURL, ckID, "NM", qty)
 }
 
+// EmptyCartInventory clears the buying cart.
 func (ck *CookieClient) EmptyCartInventory(ctx context.Context, cartToken string) error {
 	return ck.emptyCart(ctx, ckInventoryEmptyURL, cartToken)
 }
 
+// EmptyCartBuylist clears the selling cart.
 func (ck *CookieClient) EmptyCartBuylist(ctx context.Context, cartToken string) error {
 	return ck.emptyCart(ctx, ckBuylistEmptyURL, cartToken)
 }
@@ -190,8 +200,8 @@ func (ck *CookieClient) setCart(ctx context.Context, link, ckID, cond string, qt
 	return &cartResponse, nil
 }
 
-// This function Response is mostly fake, data is already present in the body and
-// all read operations are performed here
+// Get performs a signed-in GET. The response it returns is a stand-in: the
+// body has already been read and acted on here.
 func (ck *CookieClient) Get(ctx context.Context, link string) (*http.Response, error) {
 	res, err := ck.client.Get(link, map[string]string{"Cookie": "laravel_session=" + ck.session + ";"}, "")
 	if err != nil {
@@ -222,6 +232,7 @@ func (ck *CookieClient) Get(ctx context.Context, link string) (*http.Response, e
 	}, nil
 }
 
+// Post performs a signed-in POST.
 func (ck *CookieClient) Post(ctx context.Context, link, contentType string, reader io.Reader) (*http.Response, error) {
 	data, err := io.ReadAll(reader)
 	if err != nil {
