@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -271,6 +272,13 @@ type Backend struct {
 	// Slice with every unique name, lower case
 	AllLowerNames []string
 
+	// What AddName has filed already, one set per list: two spellings can
+	// normalize or lowercase to one string, so each list is deduped on what
+	// it holds rather than on one of the others.
+	seenNames          map[string]bool
+	seenLowerNames     map[string]bool
+	seenCanonicalNames map[string]bool
+
 	// Slice with every uniquely normalized product name
 	AllSealed []string
 	// Slice with every unique product name, as defined by mtgjson
@@ -359,4 +367,37 @@ func SetGlobalDatastore(b *Backend) {
 
 func SetGlobalLogger(userLogger *log.Logger) {
 	Logger = userLogger
+}
+
+// AddName files a card name in each search index that does not already hold
+// it: normalized in AllNames, lower case in AllLowerNames, and as written in
+// AllCanonicalNames.
+//
+// Each list is deduped on what it actually holds rather than on one of the
+// others. Two spellings can normalize or lowercase to one string, and a key
+// stored twice returns its whole hash bucket twice — so a name already
+// present in one list may still be missing from another, and asking the
+// wrong list is how a duplicate gets in.
+//
+// The lists say what they hold, and so does this: AllLowerNames is
+// documented as every unique name in lower case, and a loader that files the
+// name as written leaves it holding something else.
+func (b *Backend) AddName(name string) {
+	if b.seenNames == nil {
+		b.seenNames = map[string]bool{}
+		b.seenLowerNames = map[string]bool{}
+		b.seenCanonicalNames = map[string]bool{}
+	}
+	if n := Normalize(name); !b.seenNames[n] {
+		b.seenNames[n] = true
+		b.AllNames = append(b.AllNames, n)
+	}
+	if lower := strings.ToLower(name); !b.seenLowerNames[lower] {
+		b.seenLowerNames[lower] = true
+		b.AllLowerNames = append(b.AllLowerNames, lower)
+	}
+	if !b.seenCanonicalNames[name] {
+		b.seenCanonicalNames[name] = true
+		b.AllCanonicalNames = append(b.AllCanonicalNames, name)
+	}
 }

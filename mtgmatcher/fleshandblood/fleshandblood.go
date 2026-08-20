@@ -276,22 +276,6 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
-// addName files a spelling in each search list that does not hold it yet.
-func addName(b *mtgmatcher.Backend, name string, seenNormalized, seenLower, seenCanonical map[string]bool) {
-	if n := mtgmatcher.Normalize(name); !seenNormalized[n] {
-		seenNormalized[n] = true
-		b.AllNames = append(b.AllNames, n)
-	}
-	if lower := strings.ToLower(name); !seenLower[lower] {
-		seenLower[lower] = true
-		b.AllLowerNames = append(b.AllLowerNames, lower)
-	}
-	if !seenCanonical[name] {
-		seenCanonical[name] = true
-		b.AllCanonicalNames = append(b.AllCanonicalNames, name)
-	}
-}
-
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
@@ -328,9 +312,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// normalize or lowercase to one string, so each is deduped on what it
 	// actually holds: searchFunc adds a matching entry's whole hash bucket,
 	// and a key stored twice returns that bucket twice.
-	seenNormalized := map[string]bool{}
-	seenLower := map[string]bool{}
-	seenCanonical := map[string]bool{}
 	for _, card := range payload.Cards {
 		n := mtgmatcher.Normalize(card.Name)
 		if b.CanonicalNames[n] == "" {
@@ -353,9 +334,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		// printing where the bare name names the card, and Match reads
 		// CanonicalNames to decide whether a name keeps its parentheticals.
 		if qualified := qualifiedName(&card, printingsByName); qualified != "" {
-			addName(&b, qualified, seenNormalized, seenLower, seenCanonical)
+			b.AddName(qualified)
 		}
-		addName(&b, card.Name, seenNormalized, seenLower, seenCanonical)
+		b.AddName(card.Name)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)

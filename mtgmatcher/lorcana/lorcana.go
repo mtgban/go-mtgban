@@ -246,7 +246,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	// per distinct spelling put that entry in the list twice. searchFunc
 	// adds a matching entry's whole hash bucket, so a search returned every
 	// printing of such a name once per spelling.
-	seenNormalized := map[string]bool{}
 	for _, i := range cards {
 		card := ac.Cards[i]
 		// First-seen wins: two Lorcana cards whose names differ only in case
@@ -255,10 +254,6 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		n := mtgmatcher.Normalize(card.FullName)
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.FullName
-		}
-		if !seenNormalized[n] {
-			seenNormalized[n] = true
-			b.AllNames = append(b.AllNames, n)
 		}
 		for _, tag := range promoTags(card.PromoSourceCategory, card.VarnishType) {
 			slug := mtgmatcher.PromoTypeSlug(tag)
@@ -269,11 +264,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 				b.PromoTypeLabels[slug] = tag
 			}
 		}
-		if slices.Contains(b.AllCanonicalNames, card.FullName) {
-			continue
-		}
-		b.AllCanonicalNames = append(b.AllCanonicalNames, card.FullName)
-		b.AllLowerNames = append(b.AllLowerNames, card.FullName)
+		b.AddName(card.FullName)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)
