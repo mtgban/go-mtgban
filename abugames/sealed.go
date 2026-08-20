@@ -9,6 +9,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// ABUGamesSealed prices ABU Games' sealed product.
 type ABUGamesSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 
@@ -23,6 +24,7 @@ type ABUGamesSealed struct {
 	buylist   mtgban.BuylistRecord
 }
 
+// NewScraperSealed returns a sealed scraper.
 func NewScraperSealed() *ABUGamesSealed {
 	abu := ABUGamesSealed{}
 	abu.inventory = mtgban.InventoryRecord{}
@@ -131,6 +133,7 @@ func (abu *ABUGamesSealed) processEntry(ctx context.Context, channel chan<- resu
 	return nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 	count, err := abu.client.GetTotalSealedItems(ctx)
 	if err != nil {
@@ -179,14 +182,18 @@ func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (abu *ABUGamesSealed) Inventory() mtgban.InventoryRecord {
 	return abu.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (abu *ABUGamesSealed) Buylist() mtgban.BuylistRecord {
 	return abu.buylist
 }
 
+// TraderNames names the sub-vendors this trader splits into. See
+// mtgban.Trader.
 func (abu *ABUGamesSealed) TraderNames() []string {
 	return availableTraderNames
 }
@@ -196,6 +203,7 @@ var name2shorthandSealed = map[string]string{
 	"ABU Games (credit)": "ABUCreditSealed",
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (abu *ABUGamesSealed) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := abu.Info()
 	info.Name = name
@@ -206,6 +214,7 @@ func (abu *ABUGamesSealed) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (abu *ABUGamesSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "ABU Games"
 	info.Shorthand = "ABUSealed"

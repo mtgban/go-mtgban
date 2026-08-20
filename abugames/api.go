@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// ABUCard is one card as ABU's catalog describes it.
 type ABUCard struct {
 	Id           string `json:"id"`
 	DisplayTitle string `json:"display_title"`
@@ -37,6 +38,8 @@ type ABUCard struct {
 	TradePrice      float64 `json:"trade_price"`
 }
 
+// ABUProduct is one listing: a card in a condition, with the price ABU asks
+// and the price they pay.
 type ABUProduct struct {
 	Grouped struct {
 		ProductId struct {
@@ -51,6 +54,7 @@ type ABUProduct struct {
 	} `json:"grouped"`
 }
 
+// ABUResponse is what the catalog endpoint answers with.
 type ABUResponse struct {
 	Response struct {
 		NumFound      int       `json:"numFound"`
@@ -79,11 +83,13 @@ const (
 	abuBaseSealedURL = `https://data.abugames.com/solr/nodes/select?q=*:*&fq=%2Bcategory%3A%22Magic%20the%20Gathering%20Sealed%20Product%22%20-offline_item%3Atrue%20OR%20-title%3A%22STORE%22%20OR%20-title%3A%22AUCTION%22%20OR%20-title%3A%22OVERSTOCK%22%20%2Blanguage_magic_sealed_product%3A(%22English%22)&sort=display_title%20asc&wt=json&start=0&rows=0`
 )
 
+// ABUClient reads ABU's own catalog API.
 type ABUClient struct {
 	client        *http.Client
 	authorization string
 }
 
+// NewABUClient returns a client for the public catalog.
 func NewABUClient() *ABUClient {
 	abu := ABUClient{}
 	client := retryablehttp.NewClient()
@@ -92,12 +98,15 @@ func NewABUClient() *ABUClient {
 	return &abu
 }
 
+// NewABUClientWithBearer returns a client authenticated as a user, for the
+// cart operations the public catalog does not expose.
 func NewABUClientWithBearer(token string) *ABUClient {
 	abu := NewABUClient()
 	abu.authorization = token
 	return abu
 }
 
+// Get performs a GET carrying whatever credentials the client holds.
 func (abu *ABUClient) Get(ctx context.Context, url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
@@ -111,6 +120,7 @@ func (abu *ABUClient) Get(ctx context.Context, url string) (*http.Response, erro
 	return abu.client.Do(req)
 }
 
+// Post performs a POST carrying whatever credentials the client holds.
 func (abu *ABUClient) Post(ctx context.Context, url, contentType string, reader io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, reader)
 	if err != nil {
@@ -181,6 +191,8 @@ func (abu *ABUClient) GetTotalItems(ctx context.Context, extra string) (int, err
 	return product.Grouped.ProductId.Count, nil
 }
 
+// GetTotalSealedItems returns how many sealed items the catalog holds, which
+// is what the page walk is sized against.
 func (abu *ABUClient) GetTotalSealedItems(ctx context.Context) (int, error) {
 	response, err := abu.sendSealedRequest(ctx, abuBaseSealedURL)
 	if err != nil {
@@ -189,6 +201,7 @@ func (abu *ABUClient) GetTotalSealedItems(ctx context.Context) (int, error) {
 	return response.Response.NumFound, nil
 }
 
+// GetProduct returns one page of the singles catalog.
 func (abu *ABUClient) GetProduct(ctx context.Context, extra string, pageStart int) (*ABUProduct, error) {
 	link := abuBaseURL
 	if extra != "" {
@@ -212,6 +225,7 @@ func (abu *ABUClient) GetProduct(ctx context.Context, extra string, pageStart in
 	return abu.sendRequest(ctx, u.String())
 }
 
+// GetSealedProduct returns one page of the sealed catalog.
 func (abu *ABUClient) GetSealedProduct(ctx context.Context, pageStart int) (*ABUResponse, error) {
 	u, err := url.Parse(abuBaseSealedURL)
 	if err != nil {
@@ -226,6 +240,7 @@ func (abu *ABUClient) GetSealedProduct(ctx context.Context, pageStart int) (*ABU
 	return abu.sendSealedRequest(ctx, u.String())
 }
 
+// CartRequest is one add-to-cart call.
 type CartRequest struct {
 	ItemId   string `json:"item_id"`
 	Quantity int    `json:"quantity"`
@@ -233,6 +248,7 @@ type CartRequest struct {
 	Call string `json:"call,omitempty"`
 }
 
+// CartResponse is what the cart endpoints answer with.
 type CartResponse struct {
 	BuyList string `json:"buyList"`
 	NqData  struct {
@@ -255,10 +271,12 @@ const (
 	abuBuylistAddURL   = "https://api.abugames.com/buy-list-cart/item"
 )
 
+// SetCartInventory sets how many of a card to buy from ABU.
 func (abu *ABUClient) SetCartInventory(ctx context.Context, abuID string, qty int) (*CartResponse, error) {
 	return abu.setCart(ctx, abuInventoryAddURL, abuID, qty)
 }
 
+// SetCartBuylist sets how many of a card to sell to ABU.
 func (abu *ABUClient) SetCartBuylist(ctx context.Context, abuID string, qty int) (*CartResponse, error) {
 	return abu.setCart(ctx, abuBuylistAddURL, abuID, qty)
 }

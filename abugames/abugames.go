@@ -16,6 +16,7 @@ const (
 	defaultConcurrency = 4
 )
 
+// ABUGames prices ABU Games' singles, both what they sell and what they buy.
 type ABUGames struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
@@ -28,6 +29,7 @@ type ABUGames struct {
 	buylist   mtgban.BuylistRecord
 }
 
+// NewScraper returns a singles scraper. ABU needs no credentials for prices.
 func NewScraper() *ABUGames {
 	abu := ABUGames{}
 	abu.inventory = mtgban.InventoryRecord{}
@@ -265,7 +267,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 	return nil
 }
 
-// Scrape returns an array of Entry, containing pricing and card information
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (abu *ABUGames) Load(ctx context.Context) error {
 	extraSets := []string{
 		`"Alpha"`, `"Beta"`, `"Unlimited"`, `"Arabian Nights"`, `"Antiquities"`, `"Legends"`, `"The Dark"`,
@@ -343,10 +345,12 @@ func (abu *ABUGames) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (abu *ABUGames) Inventory() mtgban.InventoryRecord {
 	return abu.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (abu *ABUGames) Buylist() mtgban.BuylistRecord {
 	return abu.buylist
 }
@@ -367,14 +371,19 @@ var name2shorthand = map[string]string{
 	"ABU Games (credit)": "ABUCredit",
 }
 
+// MarketNames names the sub-sellers this market splits into. See
+// mtgban.Market.
 func (abu *ABUGames) MarketNames() []string {
 	return availableMarketNames
 }
 
+// TraderNames names the sub-vendors this trader splits into. See
+// mtgban.Trader.
 func (abu *ABUGames) TraderNames() []string {
 	return availableTraderNames
 }
 
+// InfoForScraper describes one of the sub-scrapers named above.
 func (abu *ABUGames) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := abu.Info()
 	info.Name = name
@@ -385,6 +394,7 @@ func (abu *ABUGames) InfoForScraper(name string) mtgban.ScraperInfo {
 	return info
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (abu *ABUGames) Info() (info mtgban.ScraperInfo) {
 	info.Name = "ABU Games"
 	info.Shorthand = "ABU"
