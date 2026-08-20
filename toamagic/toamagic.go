@@ -23,6 +23,7 @@ const (
 	inventoryURL = "https://www.toamagic.com/catalog/magic_singles/8?layout=false"
 )
 
+// TOAMagic prices Tales of Adventure's stock.
 type TOAMagic struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -33,6 +34,7 @@ type TOAMagic struct {
 	client *http.Client
 }
 
+// NewScraper returns a scraper.
 func NewScraper() *TOAMagic {
 	toa := TOAMagic{}
 	toa.inventory = mtgban.InventoryRecord{}
@@ -216,6 +218,7 @@ func (toa *TOAMagic) processProduct(ctx context.Context, channel chan<- response
 	return toa.processProduct(ctx, channel, next)
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (toa *TOAMagic) Load(ctx context.Context) error {
 	link := inventoryURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -275,10 +278,12 @@ func (toa *TOAMagic) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (toa *TOAMagic) Inventory() mtgban.InventoryRecord {
 	return toa.inventory
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (toa *TOAMagic) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Tales of Adventure"
 	info.Shorthand = "TOA"
