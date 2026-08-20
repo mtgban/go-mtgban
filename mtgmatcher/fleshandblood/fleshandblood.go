@@ -341,10 +341,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
 			}
-			// First spelling seen wins: the catalog writes a few of these
-			// two ways, and one token can only read back as one.
+			// The builder folds a qualifier to lower case on the way in,
+			// so the words are title-cased back and the acronyms looked
+			// up. First spelling seen wins: the catalog writes a few of
+			// these two ways, and one token can only read back as one.
 			if b.PromoTypeLabels[slug] == "" {
-				b.PromoTypeLabels[slug] = promoType
+				b.PromoTypeLabels[slug] = promoTypeLabel(promoType)
 			}
 		}
 		// Searchable but never canonical: the qualified spelling names one

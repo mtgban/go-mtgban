@@ -4,8 +4,10 @@ import "testing"
 
 // TestPromoTypeLabels pins that a token can be read back as the words it was
 // made from. The token is what a search query carries; the label is what a
-// reader is shown, and title-casing the token cannot put back the spaces it
-// dropped.
+// reader is shown. The builder folds the catalog's qualifier to lower case,
+// so the words survive and only their case is lost - unlike Magic and
+// Riftbound, whose tokens ran their words together and had to be written
+// down one by one.
 func TestPromoTypeLabels(t *testing.T) {
 	b := loadBackend(t)
 
@@ -17,13 +19,19 @@ func TestPromoTypeLabels(t *testing.T) {
 			t.Errorf("tag %q reads back as nothing", tag)
 		}
 	}
-	for _, tt := range []struct{ tag, want string }{
+	for _, tt := range []struct{ promoType, want string }{
+		{"alternateart", "Alternate Art"},
 		{"extendedart", "Extended Art"},
 		{"marvel", "Marvel"},
 		{"treasure", "Treasure"},
+		// The cases that say why the words are looked up rather than
+		// guessed: title-casing gives "Cc Tag" and "Fab362".
+		{"cctag", "CC Tag"},
+		{"fab362", "FAB362"},
+		{"jpnexclusive", "JPN Exclusive"},
 	} {
-		if got := b.PromoTypeLabel(tt.tag); got != tt.want {
-			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.tag, got, tt.want)
+		if got := b.PromoTypeLabel(tt.promoType); got != tt.want {
+			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.promoType, got, tt.want)
 		}
 	}
 	// An unknown token still reads as something rather than empty.
