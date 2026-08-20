@@ -1,7 +1,9 @@
 package mtgmatcher
 
 import (
+	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -246,4 +248,83 @@ func SealedIsLanguageVariant(name string) bool {
 		sawNon = tok == "non"
 	}
 	return false
+}
+
+// AddSealed files a sealed product in the sealed namespace: its uuid in
+// AllSealedUUIDs and in its set's bucket, its name in the sealed name index,
+// and the product id as an identifier for BuildSealedProductMap rather than
+// in the external identifier index — which is how Magic keeps sealed out of
+// MatchId's reach.
+//
+// A product whose set is unknown is dropped. A uuid a card already holds
+// keeps that card: the set still lists the product, because that listing is
+// what the sealed views read, but the name index and the uuid map answer for
+// what was already there.
+//
+// A zero product id carries no identifier at all rather than the zero value,
+// which would give BuildSealedProductMap one shared key for every unlinked
+// listing to funnel onto.
+func (b *Backend) AddSealed(uuid, name, setCode, image string, tcgplayerProductID int) {
+	set := b.Sets[setCode]
+	if set == nil {
+		return
+	}
+
+	card := Card{
+		UUID:    uuid,
+		Name:    name,
+		SetCode: setCode,
+		Rarity:  "product",
+		Images: map[string]string{
+			"full":      image,
+			"thumbnail": image,
+		},
+		Language: "English",
+	}
+	if tcgplayerProductID != 0 {
+		card.Identifiers = map[string]string{
+			"tcgplayerProductId": fmt.Sprint(tcgplayerProductID),
+		}
+	}
+
+	set.SealedProduct = append(set.SealedProduct, SealedProduct{
+		UUID:        uuid,
+		Name:        name,
+		SetCode:     setCode,
+		Identifiers: card.Identifiers,
+	})
+
+	if _, found := b.UUIDs[uuid]; found {
+		return
+	}
+	// The name lists are gated on their own contents rather than on bucket
+	// existence: a card can already own the bucket, and the sealed name must
+	// still be searchable.
+	n := Normalize(name)
+	if !slices.Contains(b.AllSealed, n) {
+		b.AllSealed = append(b.AllSealed, n)
+		b.AllCanonicalSealed = append(b.AllCanonicalSealed, name)
+		b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(name))
+	}
+	b.Hashes[n] = append(b.Hashes[n], uuid)
+
+	b.UUIDs[uuid] = &CardObject{
+		Card:    card,
+		Edition: set.Name,
+		Sealed:  true,
+	}
+	b.AllSealedUUIDs = append(b.AllSealedUUIDs, uuid)
+	b.SetSealedUUIDs[setCode] = append(b.SetSealedUUIDs[setCode], uuid)
+}
+
+// SortSealed puts the sealed indexes in order, once every product is filed.
+// The lists are built in the datastore's order and read as sorted ones.
+func (b *Backend) SortSealed() {
+	sort.Strings(b.AllSealedUUIDs)
+	for code := range b.SetSealedUUIDs {
+		sort.Strings(b.SetSealedUUIDs[code])
+	}
+	sort.Strings(b.AllSealed)
+	sort.Strings(b.AllCanonicalSealed)
+	sort.Strings(b.AllLowerSealed)
 }

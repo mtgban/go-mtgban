@@ -465,65 +465,12 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	// index, and the product id is carried as an identifier for
 	// BuildSealedProductMap rather than entering the external identifier
 	// index, mirroring how Magic keeps sealed out of MatchId's reach.
+	// Sealed products live in the sealed namespace throughout; AddSealed
+	// is what files them there.
 	for _, product := range gallery.Sealed.Items {
-		setCode := product.Set.Value.ID
-
-		card := mtgmatcher.Card{
-			UUID:    product.ID,
-			Name:    product.Name,
-			SetCode: setCode,
-			Rarity:  "product",
-			Images: map[string]string{
-				"full":      product.CardImage.URL,
-				"thumbnail": product.CardImage.URL,
-			},
-			Language: "English",
-		}
-		// A product the builder could not link carries no identifier at
-		// all: stamping the zero value would give BuildSealedProductMap a
-		// shared key 0 for every unlinked storefront listing to funnel onto.
-		if product.TCGplayerProductID != 0 {
-			card.Identifiers = map[string]string{
-				"tcgplayerProductId": fmt.Sprint(product.TCGplayerProductID),
-			}
-		}
-
-		b.Sets[setCode].SealedProduct = append(b.Sets[setCode].SealedProduct, mtgmatcher.SealedProduct{
-			UUID:        product.ID,
-			Name:        product.Name,
-			SetCode:     setCode,
-			Identifiers: card.Identifiers,
-		})
-
-		if _, found := b.UUIDs[product.ID]; found {
-			continue
-		}
-		// The name lists are gated on their own contents rather than on
-		// bucket existence: a card can already own the bucket, and the
-		// sealed name must still be searchable
-		n := mtgmatcher.Normalize(product.Name)
-		if !slices.Contains(b.AllSealed, n) {
-			b.AllSealed = append(b.AllSealed, n)
-			b.AllCanonicalSealed = append(b.AllCanonicalSealed, product.Name)
-			b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(product.Name))
-		}
-		b.Hashes[n] = append(b.Hashes[n], product.ID)
-
-		b.UUIDs[product.ID] = &mtgmatcher.CardObject{
-			Card:    card,
-			Edition: b.Sets[setCode].Name,
-			Sealed:  true,
-		}
-		b.AllSealedUUIDs = append(b.AllSealedUUIDs, product.ID)
-		b.SetSealedUUIDs[setCode] = append(b.SetSealedUUIDs[setCode], product.ID)
+		b.AddSealed(product.ID, product.Name, product.Set.Value.ID, product.CardImage.URL, product.TCGplayerProductID)
 	}
-	sort.Strings(b.AllSealedUUIDs)
-	for code := range b.SetSealedUUIDs {
-		sort.Strings(b.SetSealedUUIDs[code])
-	}
-	sort.Strings(b.AllSealed)
-	sort.Strings(b.AllCanonicalSealed)
-	sort.Strings(b.AllLowerSealed)
+	b.SortSealed()
 
 	b.SetRules(Rules{})
 

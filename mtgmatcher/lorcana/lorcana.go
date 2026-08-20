@@ -550,10 +550,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	// index, mirroring how Magic and Riftbound keep sealed products out
 	// of MatchId's reach.
 	var mintedSets bool
+	// Sealed products live in the sealed namespace throughout; AddSealed
+	// is what files them there.
 	for _, product := range ac.Sealed {
 		// The builder mints a set entry for every group it emits sealed
 		// from, so an unknown code is a hand-made file; give the product
-		// a set to hang off all the same
+		// a set to hang off all the same, or AddSealed would drop it.
 		if b.Sets[product.SetCode] == nil {
 			mintedSets = true
 			b.AllSets = append(b.AllSets, product.SetCode)
@@ -565,60 +567,9 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 				ReleaseDateTime: releaseDateTime,
 			}
 		}
-
-		card := mtgmatcher.Card{
-			UUID:    product.ID,
-			Name:    product.Name,
-			SetCode: product.SetCode,
-			Rarity:  "product",
-			Images: map[string]string{
-				"full":      product.Image,
-				"thumbnail": product.Image,
-			},
-			Language: "English",
-		}
-		if product.ExternalLinks.TcgPlayerId != 0 {
-			card.Identifiers = map[string]string{
-				"tcgplayerProductId": fmt.Sprint(product.ExternalLinks.TcgPlayerId),
-			}
-		}
-
-		b.Sets[product.SetCode].SealedProduct = append(b.Sets[product.SetCode].SealedProduct, mtgmatcher.SealedProduct{
-			UUID:        product.ID,
-			Name:        product.Name,
-			SetCode:     product.SetCode,
-			Identifiers: card.Identifiers,
-		})
-
-		if _, found := b.UUIDs[product.ID]; found {
-			continue
-		}
-		// The name lists are gated on their own contents rather than on
-		// bucket existence: a card can already own the bucket, and the
-		// sealed name must still be searchable
-		n := mtgmatcher.Normalize(product.Name)
-		if !slices.Contains(b.AllSealed, n) {
-			b.AllSealed = append(b.AllSealed, n)
-			b.AllCanonicalSealed = append(b.AllCanonicalSealed, product.Name)
-			b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(product.Name))
-		}
-		b.Hashes[n] = append(b.Hashes[n], product.ID)
-
-		b.UUIDs[product.ID] = &mtgmatcher.CardObject{
-			Card:    card,
-			Edition: b.Sets[product.SetCode].Name,
-			Sealed:  true,
-		}
-		b.AllSealedUUIDs = append(b.AllSealedUUIDs, product.ID)
-		b.SetSealedUUIDs[product.SetCode] = append(b.SetSealedUUIDs[product.SetCode], product.ID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerId)
 	}
-	sort.Strings(b.AllSealedUUIDs)
-	for code := range b.SetSealedUUIDs {
-		sort.Strings(b.SetSealedUUIDs[code])
-	}
-	sort.Strings(b.AllSealed)
-	sort.Strings(b.AllCanonicalSealed)
-	sort.Strings(b.AllLowerSealed)
+	b.SortSealed()
 	if mintedSets {
 		sort.Strings(b.AllSets)
 		b.IndexSets()
