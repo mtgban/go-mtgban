@@ -11,12 +11,14 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// MCEdition is a set as Magic Corner files it for selling.
 type MCEdition struct {
 	Id   int    `json:"Id"`
 	Name string `json:"Espansione"`
 	Code string `json:"ImageUrl"`
 }
 
+// MCCard is one card on sale, in a condition and a language.
 type MCCard struct {
 	Id       int    `json:"IdProduct"`
 	Name     string `json:"NomeEn"`
@@ -71,10 +73,13 @@ const (
 	mcMerfolksVsGoblinsID = 1116
 )
 
+// MCClient reads the Magic Corner storefront, which serves its catalog and
+// its buylist through different endpoints.
 type MCClient struct {
 	client *http.Client
 }
 
+// NewMCClient returns a client.
 func NewMCClient() *MCClient {
 	mc := MCClient{}
 	client := retryablehttp.NewClient()
@@ -83,7 +88,7 @@ func NewMCClient() *MCClient {
 	return &mc
 }
 
-// Retrieve the available edition ids and names
+// GetEditionList returns the editions Magic Corner sells, by id and name.
 func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEdition, error) {
 	param := mcEditionParam{
 		UIc: "it",
@@ -130,6 +135,7 @@ func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEd
 	return editionList, nil
 }
 
+// GetInventoryForEdition returns everything on sale in one edition.
 func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEdition) ([]MCCard, error) {
 	// This breaks on the main website too, just skip it
 	if edition.Id == mcMerfolksVsGoblinsID {
@@ -189,16 +195,20 @@ func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEditio
 	return response.Data, nil
 }
 
+// MCExpansion is a set as Magic Corner files it for buying, which does not
+// always agree with MCEdition.
 type MCExpansion struct {
 	Id      int    `json:"Id"`
 	Name    string `json:"Espansione"`
 	Enabled bool   `json:"Enabled"`
 }
 
+// MCBuylistEditionResponse is what the buylist edition endpoint answers with.
 type MCBuylistEditionResponse struct {
 	Expansions []MCExpansion `json:"Expansions"`
 }
 
+// GetBuylistEditions returns the editions Magic Corner is buying from.
 func (mc *MCClient) GetBuylistEditions(ctx context.Context) ([]MCExpansion, error) {
 	link := mcEditionBuylistURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -221,6 +231,7 @@ func (mc *MCClient) GetBuylistEditions(ctx context.Context) ([]MCExpansion, erro
 	return response.Expansions, nil
 }
 
+// MCBuylistRequest is one page of a buylist query.
 type MCBuylistRequest struct {
 	Q              string  `json:"q"`
 	Game           string  `json:"game"`
@@ -237,6 +248,7 @@ type MCBuylistRequest struct {
 	OnlyAvailable  bool    `json:"onlyAvailable"`
 }
 
+// MCBuylistResponse is what the buylist endpoint answers with.
 type MCBuylistResponse struct {
 	Result MCBuylistResult `json:"Result"`
 
@@ -248,11 +260,13 @@ type MCBuylistResponse struct {
 	IsFaulted       bool `json:"IsFaulted"`
 }
 
+// MCBuylistResult is one page of buylist entries.
 type MCBuylistResult struct {
 	Products []MCProduct `json:"Products"`
 	Total    int         `json:"Total"`
 }
 
+// MCProduct is one card Magic Corner is buying, with the price they pay.
 type MCProduct struct {
 	ID           string  `json:"Id"`
 	Game         string  `json:"Game"`
@@ -266,6 +280,8 @@ type MCProduct struct {
 	SerialNumber int     `json:"SerialNumber"`
 }
 
+// GetBuylistForEdition returns one page of what Magic Corner buys in an
+// edition.
 func (mc *MCClient) GetBuylistForEdition(ctx context.Context, edition, page int) (*MCBuylistResult, error) {
 	payload, err := json.Marshal(&MCBuylistRequest{
 		IsBuyList: true,

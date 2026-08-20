@@ -18,6 +18,8 @@ const (
 	buylistURL = "https://www.cardgamecorner.com/it/vendi-letue-carte"
 )
 
+// Magiccorner prices Magic Corner's singles, both what they sell and what they
+// buy.
 type Magiccorner struct {
 	VerboseLog     bool
 	LogCallback    mtgban.LogCallbackFunc
@@ -35,6 +37,7 @@ type Magiccorner struct {
 	client    *MCClient
 }
 
+// NewScraper returns a scraper, failing if the edition list cannot be read.
 func NewScraper() (*Magiccorner, error) {
 	mc := Magiccorner{}
 	mc.inventory = mtgban.InventoryRecord{}
@@ -196,11 +199,14 @@ func (mc *Magiccorner) scrape(ctx context.Context) error {
 	return nil
 }
 
+// SetConfig applies options after the scraper was built. See
+// mtgban.ScraperConfig.
 func (mc *Magiccorner) SetConfig(opt mtgban.ScraperOptions) {
 	mc.DisableRetail = opt.DisableRetail
 	mc.DisableBuylist = opt.DisableBuylist
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (mc *Magiccorner) Load(ctx context.Context) error {
 	var errs []error
 
@@ -230,10 +236,12 @@ func (mc *Magiccorner) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (mc *Magiccorner) Inventory() mtgban.InventoryRecord {
 	return mc.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (mc *Magiccorner) Buylist() mtgban.BuylistRecord {
 	return mc.buylist
 }
@@ -360,6 +368,7 @@ func (mc *Magiccorner) scrapeBL(ctx context.Context) error {
 	return nil
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (mc *Magiccorner) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Magic Corner"
 	info.Shorthand = "MC"
