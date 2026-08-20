@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// HareruyaSealed prices Hareruya's sealed product.
 type HareruyaSealed struct {
 	LogCallback mtgban.LogCallbackFunc
 
@@ -30,6 +31,7 @@ type HareruyaSealed struct {
 	client *http.Client
 }
 
+// NewScraperSealed returns a sealed scraper.
 func NewScraperSealed() *HareruyaSealed {
 	ha := HareruyaSealed{}
 	ha.inventory = mtgban.InventoryRecord{}
@@ -133,6 +135,7 @@ func (ha *HareruyaSealed) buylistPrices(ctx context.Context) (map[string]float64
 	return prices, nil
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ha *HareruyaSealed) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "JPY")
 	if err != nil {
@@ -231,14 +234,17 @@ func (ha *HareruyaSealed) Load(ctx context.Context) error {
 	return nil
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ha *HareruyaSealed) Inventory() mtgban.InventoryRecord {
 	return ha.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (ha *HareruyaSealed) Buylist() mtgban.BuylistRecord {
 	return ha.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ha *HareruyaSealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Hareruya"
 	info.Shorthand = "HASealed"

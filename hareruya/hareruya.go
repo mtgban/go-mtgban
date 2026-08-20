@@ -29,6 +29,7 @@ const (
 	buylistURL = "https://www.hareruyamtg.com/ja/purchase/search?"
 )
 
+// Hareruya prices Hareruya's singles.
 type Hareruya struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
@@ -48,6 +49,7 @@ type Hareruya struct {
 	client *http.Client
 }
 
+// NewScraper returns a singles scraper.
 func NewScraper() *Hareruya {
 	ha := Hareruya{}
 	ha.inventory = mtgban.InventoryRecord{}
@@ -318,12 +320,15 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 	}
 }
 
+// Row is one line of the storefront's table, before it becomes a listing.
 type Row struct {
 	Quantity  int
 	Condition string
 	Price     float64
 }
 
+// LazyResult carries a page of rows and the error that ended the walk, so a
+// caller sees both what arrived and why it stopped.
 type LazyResult struct {
 	ProductId   string
 	ProductName string
@@ -575,11 +580,14 @@ func (ha *Hareruya) scrape(ctx context.Context, mode string) error {
 	return nil
 }
 
+// SetConfig applies options after the scraper was built. See
+// mtgban.ScraperConfig.
 func (ha *Hareruya) SetConfig(opt mtgban.ScraperOptions) {
 	ha.DisableRetail = opt.DisableRetail
 	ha.DisableBuylist = opt.DisableBuylist
 }
 
+// Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ha *Hareruya) Load(ctx context.Context) error {
 	var errs []error
 
@@ -600,14 +608,17 @@ func (ha *Hareruya) Load(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// Inventory returns what Load collected. See mtgban.Seller.
 func (ha *Hareruya) Inventory() mtgban.InventoryRecord {
 	return ha.inventory
 }
 
+// Buylist returns what Load collected. See mtgban.Vendor.
 func (ha *Hareruya) Buylist() mtgban.BuylistRecord {
 	return ha.buylist
 }
 
+// Info describes this scraper. See mtgban.Scraper.
 func (ha *Hareruya) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Hareruya"
 	info.Shorthand = "HA"

@@ -16,6 +16,8 @@ var reJapanese = regexp.MustCompile(`[\p{Hiragana}\p{Katakana}\p{Han}]`)
 var reCardName = regexp.MustCompile(`《([^》]+)》`)
 var reThick = regexp.MustCompile(`【([^】]+)】`)
 
+// Preprocess turns a storefront product into the card description the matcher
+// takes, reporting an error for what is not a card.
 func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	if strings.Contains(product.ProductNameEN, "Wyvern back") ||
 		strings.Contains(product.ProductNameEN, "Orversized") ||
