@@ -6,8 +6,11 @@
 #                  them struct fields. Fixing them changes what consumers
 #                  compile against, so it waits for a version bump. The
 #                  unexported half is already done.
-#   use-any      - the empty interface is spelled interface{} throughout, and
-#                  the guidance is for new code.
+#   unnecessary-stmt - its 22 findings are all one-case switches on a card
+#                  name. The preprocessors hold 73 of those switches, 54 with
+#                  more than one case and the largest with 39: a one-case
+#                  block is an edition needing one exception today, not a
+#                  different construct.
 
 ignoreGeneratedHeader = false
 severity = "error"
@@ -39,5 +42,9 @@ warningCode = 1
 [rule.superfluous-else]
 [rule.time-naming]
 [rule.unexported-return]
+[rule.unnecessary-format]
+[rule.unchecked-type-assertion]
+[rule.use-any]
+[rule.use-errors-new]
 [rule.unreachable-code]
 [rule.var-declaration]
