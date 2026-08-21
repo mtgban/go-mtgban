@@ -269,6 +269,7 @@ var gameNames = map[int]string{
 	GameIdOnePiece:      "OnePiece",
 	GameIdYugioh:        "YuGiOh",
 	GameIdFleshAndBlood: "FleshAndBlood",
+	GameIdPokemon:       "Pokemon",
 }
 
 // GameName returns the game as Cardmarket spells it, or "" for a game whose
