@@ -67,6 +67,8 @@ type Datastore struct {
 	Sealed []DatastoreSealed `json:"sealed"`
 }
 
+// DatastoreCard is one printing of one product: a card as the catalog sells
+// it, in one crossing of the print run and the foil treatment.
 type DatastoreCard struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
@@ -100,6 +102,8 @@ type DatastoreCard struct {
 	} `json:"externalLinks"`
 }
 
+// DatastoreSealed is a sealed product, which carries no printing of its own
+// and hangs off the set that issued it.
 type DatastoreSealed struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
@@ -202,22 +206,6 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
-// addName files a spelling in each search list that does not hold it yet.
-func addName(b *mtgmatcher.Backend, name string, seenNormalized, seenLower, seenCanonical map[string]bool) {
-	if n := mtgmatcher.Normalize(name); !seenNormalized[n] {
-		seenNormalized[n] = true
-		b.AllNames = append(b.AllNames, n)
-	}
-	if lower := strings.ToLower(name); !seenLower[lower] {
-		seenLower[lower] = true
-		b.AllLowerNames = append(b.AllLowerNames, lower)
-	}
-	if !seenCanonical[name] {
-		seenCanonical[name] = true
-		b.AllCanonicalNames = append(b.AllCanonicalNames, name)
-	}
-}
-
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	var b mtgmatcher.Backend
 
@@ -257,9 +245,6 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// lowercase to one string, so each is deduped on what it actually
 	// holds: searchFunc adds a matching entry's whole hash bucket, and a
 	// key stored twice returns that bucket twice.
-	seenNormalized := map[string]bool{}
-	seenLower := map[string]bool{}
-	seenCanonical := map[string]bool{}
 	seenPromoType := map[string]bool{}
 	for i := range payload.Cards {
 		card := &payload.Cards[i]
@@ -286,9 +271,9 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 		// printing where the bare name names the card, and Match reads
 		// CanonicalNames to decide whether a name keeps its parentheticals.
 		if qualified := qualifiedName(card, printingsByName); qualified != "" {
-			addName(&b, qualified, seenNormalized, seenLower, seenCanonical)
+			b.AddName(qualified)
 		}
-		addName(&b, card.Name, seenNormalized, seenLower, seenCanonical)
+		b.AddName(card.Name)
 	}
 	sort.Strings(b.AllPromoTypes)
 	sort.Strings(b.AllNames)
@@ -422,61 +407,12 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	// an identifier for BuildSealedProductMap rather than the external
 	// identifier index, mirroring how Magic keeps sealed out of MatchId's
 	// reach.
+	// Sealed products live in the sealed namespace throughout; AddSealed
+	// is what files them there.
 	for _, product := range payload.Sealed {
-		if b.Sets[product.SetCode] == nil {
-			continue
-		}
-
-		card := mtgmatcher.Card{
-			UUID:    product.ID,
-			Name:    product.Name,
-			SetCode: product.SetCode,
-			Rarity:  "product",
-			Images: map[string]string{
-				"full":      product.Image,
-				"thumbnail": product.Image,
-			},
-			Language: "English",
-		}
-		if product.ExternalLinks.TcgPlayerID != 0 {
-			card.Identifiers = map[string]string{
-				"tcgplayerProductId": fmt.Sprint(product.ExternalLinks.TcgPlayerID),
-			}
-		}
-
-		b.Sets[product.SetCode].SealedProduct = append(b.Sets[product.SetCode].SealedProduct, mtgmatcher.SealedProduct{
-			UUID:        product.ID,
-			Name:        product.Name,
-			SetCode:     product.SetCode,
-			Identifiers: card.Identifiers,
-		})
-
-		if _, found := b.UUIDs[product.ID]; found {
-			continue
-		}
-		n := mtgmatcher.Normalize(product.Name)
-		if !slices.Contains(b.AllSealed, n) {
-			b.AllSealed = append(b.AllSealed, n)
-			b.AllCanonicalSealed = append(b.AllCanonicalSealed, product.Name)
-			b.AllLowerSealed = append(b.AllLowerSealed, strings.ToLower(product.Name))
-		}
-		b.Hashes[n] = append(b.Hashes[n], product.ID)
-
-		b.UUIDs[product.ID] = &mtgmatcher.CardObject{
-			Card:    card,
-			Edition: b.Sets[product.SetCode].Name,
-			Sealed:  true,
-		}
-		b.AllSealedUUIDs = append(b.AllSealedUUIDs, product.ID)
-		b.SetSealedUUIDs[product.SetCode] = append(b.SetSealedUUIDs[product.SetCode], product.ID)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
-	sort.Strings(b.AllSealedUUIDs)
-	for code := range b.SetSealedUUIDs {
-		sort.Strings(b.SetSealedUUIDs[code])
-	}
-	sort.Strings(b.AllSealed)
-	sort.Strings(b.AllCanonicalSealed)
-	sort.Strings(b.AllLowerSealed)
+	b.SortSealed()
 
 	b.SetRules(Rules{})
 
