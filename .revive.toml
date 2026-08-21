@@ -2,11 +2,10 @@
 # review time rather than found in a later sweep.
 #
 # Deliberately absent, each with a reason:
-#   exported     - 712 exported names still want a doc comment, and 21 types
-#                  stutter; both are worth doing, neither is a one-liner.
-#   var-naming   - 111 exported names still spell an initialism as Id. Fixing
-#                  them changes what consumers compile against, so it waits
-#                  for a version bump. The unexported half is already done.
+#   var-naming   - 129 exported names still spell an initialism as Id, most of
+#                  them struct fields. Fixing them changes what consumers
+#                  compile against, so it waits for a version bump. The
+#                  unexported half is already done.
 #   use-any      - the empty interface is spelled interface{} throughout, and
 #                  the guidance is for new code.
 
@@ -24,6 +23,12 @@ warningCode = 1
 [rule.error-naming]
 [rule.error-return]
 [rule.error-strings]
+# Every exported name carries a doc comment now, so the rule can hold that
+# line rather than let the next one through. Its stuttering check stays off:
+# 21 types still repeat their package name, and renaming those is a version
+# bump away.
+[rule.exported]
+  arguments = ["disableStutteringCheck"]
 [rule.errorf]
 [rule.increment-decrement]
 [rule.indent-error-flow]
