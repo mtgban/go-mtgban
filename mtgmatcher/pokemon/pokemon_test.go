@@ -243,3 +243,36 @@ func TestPromoTypeLabels(t *testing.T) {
 		t.Error("an undeclared tag reads back as nothing")
 	}
 }
+
+// TestNameCarriesNumber pins the split of the collector number storefronts
+// glue onto the name, and the reason the split has to be conditional: the
+// World Championship reprints are named for the number they reprint, so the
+// same shape is a real name there and taking it apart would lose the card.
+func TestNameCarriesNumber(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"the number glued to the name still reaches the card", mtgmatcher.InputCard{
+			Name: "Wingull - 70/100", Edition: "EX Crystal Guardians"}, "70-100_90608"},
+		{"a parenthetical beside it is split off too", mtgmatcher.InputCard{
+			Name: "Wingull - 70/100 (Reverse Foil)", Edition: "EX Crystal Guardians"}, "70-100_90608_reverse"},
+		{"a name that is really spelled that way is left whole", mtgmatcher.InputCard{
+			Name: "Torchic - 2004", Edition: "World Championship Decks", Variation: "74/109"}, "74-109_477355"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				co, _ := b.UUIDs[id]
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, co, tt.want)
+			}
+		})
+	}
+}

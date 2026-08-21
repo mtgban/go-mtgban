@@ -24,22 +24,49 @@ type Rules struct{ mtgmatcher.DefaultRules }
 // kept out of the capture.
 var fullNumberRe = regexp.MustCompile(`(?i)\b([A-Z]{0,4}\d+[a-z]?)(?:/\d+)?\b`)
 
-// Prefilter splits the parenthetical decorations off the name before the
-// canonical-name lookup: TCGplayer writes "Pikachu (Cosmos Holo)" and
-// "Charizard (Prerelease)". A full name that is itself canonical stays as it
-// is — a handful of real card names carry a parenthetical of their own.
+// numberTailRe matches a collector number standing alone, which is the shape
+// the storefronts writing one into the name leave behind once the name is
+// split off it.
+var numberTailRe = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+)?$`)
+
+// Prefilter splits off the decorations storefronts write into the name: the
+// parentheticals TCGplayer adds ("Pikachu (Cosmos Holo)", "Charizard
+// (Prerelease)"), and the collector number Cool Stuff Inc glues on after a
+// dash ("Wingull - 70/100"). A name that is itself canonical stays as it is,
+// which is what keeps the real card names carrying either decoration - a
+// parenthetical of their own, or the World Championship reprints named for
+// the number they reprint - from being taken apart. The check runs again
+// between the two splits, because removing the parenthetical is what makes
+// such a name recognisable.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
+	canonical := func() bool {
+		_, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]
+		return found
+	}
+	if canonical() {
 		return
 	}
-	if !strings.Contains(inCard.Name, "(") {
+	if strings.Contains(inCard.Name, "(") {
+		vars := mtgmatcher.SplitVariants(inCard.Name)
+		if len(vars) > 1 {
+			inCard.Name = vars[0]
+			inCard.AddToVariant(strings.Join(vars[1:], " "))
+		}
+	}
+	if canonical() {
 		return
 	}
-	vars := mtgmatcher.SplitVariants(inCard.Name)
-	if len(vars) > 1 {
-		inCard.Name = vars[0]
-		inCard.AddToVariant(strings.Join(vars[1:], " "))
+	index := strings.LastIndex(inCard.Name, " - ")
+	if index < 0 {
+		return
 	}
+	name := strings.TrimSpace(inCard.Name[:index])
+	number := strings.TrimSpace(inCard.Name[index+len(" - "):])
+	if name == "" || !numberTailRe.MatchString(number) {
+		return
+	}
+	inCard.Name = name
+	inCard.AddToVariant(number)
 }
 
 // AdjustName provides a prefix fallback for truncated feeds, adopting the
