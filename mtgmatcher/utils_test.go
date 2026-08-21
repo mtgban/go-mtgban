@@ -339,27 +339,27 @@ func TestAlias(t *testing.T) {
 
 	_, err := Match(inCard)
 	if err == nil {
-		t.Errorf("FAIL: this call is supposed to return an error")
+		t.Error("FAIL: this call is supposed to return an error")
 		return
 	}
 
 	alias, ok := err.(*AliasingError)
 	if !ok {
-		t.Errorf("FAIL: the returned error is not AliasingError")
+		t.Error("FAIL: the returned error is not AliasingError")
 		t.Errorf("%s", err.Error())
 		return
 	}
 
 	dupes := alias.Probe()
 	if len(dupes) != len(outCards) {
-		t.Errorf("FAIL: wrong number of dupes returned")
+		t.Error("FAIL: wrong number of dupes returned")
 		t.Errorf("%v", dupes)
 		return
 	}
 
 	for i := range dupes {
 		if dupes[i] != outCards[i] {
-			t.Errorf("FAIL: incorrect duplicate returned")
+			t.Error("FAIL: incorrect duplicate returned")
 			t.Errorf("%v vs %v", dupes[i], outCards[i])
 		}
 	}

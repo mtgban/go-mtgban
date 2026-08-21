@@ -46,10 +46,10 @@ func TestPrintings4CardExactName(t *testing.T) {
 		t.Errorf("Cat Warriors printings = %v, expected LEG without DMU", printings)
 	}
 	if !defaultBackend.NameIsToken("Cat Warrior") {
-		t.Errorf("the card named exactly Cat Warrior is the DMU token")
+		t.Error("the card named exactly Cat Warrior is the DMU token")
 	}
 	if defaultBackend.NameIsToken("Cat Warriors") {
-		t.Errorf("Cat Warriors is a regular card, not a token")
+		t.Error("Cat Warriors is a regular card, not a token")
 	}
 }
 
