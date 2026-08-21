@@ -15,7 +15,7 @@ func TestMatchIdOverAbsentVariations(t *testing.T) {
 		t.Skip("datastore not loaded")
 	}
 
-	var withAbsent int
+	var withAbsent, unmatched int
 	for _, uuid := range GetUUIDs() {
 		co, err := GetUUID(uuid)
 		if err != nil || co.Sealed {
@@ -37,12 +37,15 @@ func TestMatchIdOverAbsentVariations(t *testing.T) {
 		// Ask for each finish in turn: the ones the card does not carry
 		// are what send MatchId into the Variations walk
 		for _, finishes := range [][]bool{{false, false}, {true, false}, {false, true}} {
-			MatchId(uuid, finishes...)
+			_, err = MatchId(uuid, finishes...)
+			if err != nil {
+				unmatched++
+			}
 		}
 	}
 
 	if withAbsent == 0 {
 		t.Skip("no card in this datastore lists an absent variation")
 	}
-	t.Logf("exercised %d cards listing an absent variation", withAbsent)
+	t.Logf("exercised %d cards listing an absent variation, %d finish requests unmatched", withAbsent, unmatched)
 }
