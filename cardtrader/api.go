@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -316,6 +317,10 @@ func NewCTAuthClient(token string) *CTAuthClient {
 	ct := CTAuthClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
+	// A full catalog walk gets rate limited partway through; back off for
+	// longer than the default to wait a 429 out rather than fail on it.
+	client.RetryMax = 10
+	client.RetryWaitMax = 90 * time.Second
 	client.HTTPClient.Transport = &authTransport{
 		Parent: client.HTTPClient.Transport,
 		Token:  token,
