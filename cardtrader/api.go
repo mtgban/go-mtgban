@@ -256,12 +256,19 @@ type Product struct {
 		OnePieceFoil     bool   `json:"onepiece_foil,omitempty"`
 
 		// Yu-Gi-Oh carries no foil property: the rarity is the finish.
+		// Its treatment is the print run instead, which every listing
+		// names through FirstEdition below.
 		YuGiOhLanguage string `json:"yugioh_language,omitempty"`
 
 		// The Flesh and Blood finish is a named treatment ("Regular",
-		// "Rainbow Foil", "Cold Foil") rather than a boolean.
+		// "Rainbow Foil", "Cold Foil") rather than a boolean, and crosses
+		// with the print run FirstEdition names.
 		FabLanguage string `json:"fab_language,omitempty"`
 		FabFoilNew  string `json:"fab_foil_new,omitempty"`
+
+		// FirstEdition is the print run, which the games selling one
+		// carry beside whatever else names their treatment.
+		FirstEdition bool `json:"first_edition,omitempty"`
 	} `json:"properties_hash"`
 	User struct {
 		Name        string `json:"username"`

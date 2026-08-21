@@ -192,10 +192,13 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 		if ct.gameID != GameIdMagic && blueprint.TCGplayerId != 0 {
 			// A named finish reaches the sibling the flag cannot: the flag
 			// has one bit and lands on the product's foil default, where the
-			// name says which of its treatments the listing prices.
+			// name says which of its treatments the listing prices. A name
+			// the product is sold in no printing of falls back to the flag,
+			// which answers with the default rather than nothing.
 			if theCard.Finish != "" {
 				cardID, _ = mtgmatcher.MatchIdFinish(fmt.Sprint(blueprint.TCGplayerId), theCard.Finish)
-			} else {
+			}
+			if cardID == "" {
 				cardID, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
 			}
 		}

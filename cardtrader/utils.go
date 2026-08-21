@@ -273,11 +273,15 @@ func gameFoil(gameID int, product Product) bool {
 	case GameIdOnePiece:
 		return product.Properties.OnePieceFoil
 	case GameIdFleshAndBlood:
-		// Every treatment the listing names is a foil, so the named finish
-		// answers the flag too. Yu-Gi-Oh deliberately has no arm: the rarity
-		// is its treatment, so every listing reads nonfoil through the
-		// default below.
-		return gameFinish(gameID, product) != ""
+		// Every treatment the listing names is a foil, and the print run
+		// beside it is not one, so the treatment alone answers the flag.
+		// Yu-Gi-Oh deliberately has no arm: the rarity is its treatment,
+		// so every listing reads nonfoil through the default below.
+		switch product.Properties.FabFoilNew {
+		case "", "Regular", "false":
+			return false
+		}
+		return true
 	}
 	return false
 }
@@ -289,14 +293,34 @@ func gameFoil(gameID int, product Product) bool {
 // game selling three treatments. The plain values name no treatment and are
 // left to the flag; the stringly-false is what old listings carry.
 func gameFinish(gameID int, product Product) string {
-	if gameID != GameIdFleshAndBlood {
-		return ""
+	switch gameID {
+	case GameIdFleshAndBlood:
+		// The treatment and the print run cross, and the datastore gives
+		// each crossing its own printing, so a first-edition listing has
+		// to name both. Only the run is worth naming on its own: the
+		// unlimited one is what a product answers with by default.
+		treatment := product.Properties.FabFoilNew
+		switch treatment {
+		case "", "Regular", "false":
+			treatment = "Normal"
+		}
+		if product.Properties.FirstEdition {
+			return "1st Edition " + treatment
+		}
+		if treatment == "Normal" {
+			return ""
+		}
+		return treatment
+	case GameIdYuGiOh:
+		// The rarity is Yu-Gi-Oh's treatment and the print run is its
+		// finish, so the run is the whole of what a listing names. Only
+		// the first edition is worth naming: a product answers a lowered
+		// flag with its unlimited printing already.
+		if product.Properties.FirstEdition {
+			return "1st Edition"
+		}
 	}
-	switch product.Properties.FabFoilNew {
-	case "", "Regular", "false":
-		return ""
-	}
-	return product.Properties.FabFoilNew
+	return ""
 }
 
 // FormatBlueprints indexes blueprints by id and expansions by name, keeping
