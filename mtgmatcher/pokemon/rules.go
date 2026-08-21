@@ -172,7 +172,9 @@ func setTail(name string) string {
 // number within it, and the name, so what follows either prefix is what has
 // to agree. Leading words are dropped one at a time, since how much of the
 // prefix is era is not knowable in advance - "Diamond and Pearl Great
-// Encounters" spends three words on it. A tail two sets share names neither.
+// Encounters" spends three words on it, and Cardmarket spends none at all,
+// which is why the whole name is tried before any of it is dropped. A tail
+// two sets share names neither.
 func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 	cached, found := setTails.Load(b)
 	if !found {
@@ -189,7 +191,7 @@ func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 	}
 
 	fields := strings.Fields(edition)
-	for i := 1; i < len(fields); i++ {
+	for i := 0; i < len(fields); i++ {
 		names := index[mtgmatcher.Normalize(strings.Join(fields[i:], " "))]
 		if len(names) == 1 {
 			return names[0]
