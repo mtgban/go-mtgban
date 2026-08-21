@@ -54,17 +54,20 @@ const setTypePromo = "promo"
 // Datastore is the cmd/pokemon output: sets keyed by code, one card entry
 // per priced printing, and the sealed products.
 type Datastore struct {
-	Game string `json:"game"`
-	Sets map[string]struct {
-		Name         string `json:"name"`
-		ReleaseDate  string `json:"releaseDate"`
-		Abbreviation string `json:"abbreviation,omitempty"`
-		// Type is "promo" on the sets that hand their cards out rather
-		// than sell them in packs, and empty on every other.
-		Type string `json:"type,omitempty"`
-	} `json:"sets"`
-	Cards  []DatastoreCard   `json:"cards"`
-	Sealed []DatastoreSealed `json:"sealed"`
+	Game   string                  `json:"game"`
+	Sets   map[string]DatastoreSet `json:"sets"`
+	Cards  []DatastoreCard         `json:"cards"`
+	Sealed []DatastoreSealed       `json:"sealed"`
+}
+
+// DatastoreSet is one set as the catalog groups it.
+type DatastoreSet struct {
+	Name         string `json:"name"`
+	ReleaseDate  string `json:"releaseDate"`
+	Abbreviation string `json:"abbreviation,omitempty"`
+	// Type is "promo" on the sets that hand their cards out rather than
+	// sell them in packs, and empty on every other.
+	Type string `json:"type,omitempty"`
 }
 
 // DatastoreCard is one printing of one product: a card as the catalog sells
@@ -206,7 +209,28 @@ func qualifiedName(card *DatastoreCard, printingsByName map[string][]string) str
 	return qualified
 }
 
+// upperCodes spells every set code the way the rest of the library expects
+// to find one. Set codes are upper case everywhere - MTGJSON writes Magic's
+// that way and the other catalogs follow - and GetSet upper-cases what it is
+// asked for before the lookup, so a lower-cased key is one nothing can
+// reach.
+func (payload *Datastore) upperCodes() {
+	sets := make(map[string]DatastoreSet, len(payload.Sets))
+	for code, set := range payload.Sets {
+		sets[strings.ToUpper(code)] = set
+	}
+	payload.Sets = sets
+	for i := range payload.Cards {
+		payload.Cards[i].SetCode = strings.ToUpper(payload.Cards[i].SetCode)
+	}
+	for i := range payload.Sealed {
+		payload.Sealed[i].SetCode = strings.ToUpper(payload.Sealed[i].SetCode)
+	}
+}
+
 func (payload *Datastore) newBackend() *mtgmatcher.Backend {
+	payload.upperCodes()
+
 	var b mtgmatcher.Backend
 
 	b.UUIDs = map[string]*mtgmatcher.CardObject{}
