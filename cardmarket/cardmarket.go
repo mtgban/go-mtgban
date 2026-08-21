@@ -198,11 +198,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		// These catalogs carry no collector number and no version index,
 		// and same-name products abound, so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by or not at all -
-		// name matching has nothing to distinguish on. Yu-Gi-Oh prices a
-		// single uuid per product (the rarity is the finish and the print
-		// run is not foilness), so its foil column has no separate printing
-		// to attach to; Flesh and Blood's attaches to the product's
-		// rainbow-first foil default.
+		// name matching has nothing to distinguish on.
 		tcgID, found := mkm.TCGBridge[product.IdProduct]
 		if !found {
 			return nil
@@ -213,7 +209,18 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 		cardIDFoil = cardID
 		if mkm.gameID == GameIdFleshAndBlood {
+			// Flesh and Blood's second column attaches to the product's
+			// rainbow-first foil default.
 			cardIDFoil, _ = mtgmatcher.MatchId(fmt.Sprint(tcgID), true)
+		}
+		if mkm.gameID == GameIdYugioh {
+			// Yu-Gi-Oh's second column is the first edition's, which is a
+			// print run rather than a foil, so the flag cannot name it -
+			// both flags answer with the unlimited printing and the column
+			// was dropped for having nowhere to attach. Naming the run
+			// reaches it, and errors into an empty id for the products
+			// sold in no first edition, which the guard below drops.
+			cardIDFoil, _ = mtgmatcher.MatchIdFinish(fmt.Sprint(tcgID), "1st Edition")
 		}
 	default:
 		return errors.New("unsupported game")
