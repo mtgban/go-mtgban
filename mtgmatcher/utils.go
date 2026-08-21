@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -421,4 +422,36 @@ func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 // datastore.
 func CardReleaseDate(cardID string) (time.Time, error) {
 	return defaultBackend.CardReleaseDate(cardID)
+}
+
+// promoHeadings are the headings storefronts file promotional printings
+// under without saying which set issued them. They name no set in any game:
+// the heading spans every promotional printing a game has, while a set
+// carrying that name holds only the products a catalog groups there.
+//
+// Built on first use rather than at init: Normalize memoizes through a map
+// this package sets up in its own init, and a package-level initializer
+// would reach it before that runs.
+var promoHeadings = sync.OnceValue(func() map[string]bool {
+	out := map[string]bool{}
+	for _, heading := range []string{
+		"Promo", "Promos", "Promo Cards",
+		"Promotional", "Promotionals", "Promotional Cards",
+	} {
+		out[Normalize(heading)] = true
+	}
+	return out
+})
+
+// IsPromoHeading reports whether an edition is one of the headings a
+// storefront files promotional printings under rather than a set name.
+//
+// A game reading one has to decide what to do with it, and the answers
+// differ: Lorcana clears it, so the heading cannot narrow to the one set
+// wearing its name and drop the promos upstream files in the set they
+// reprint; Riftbound keeps it as a gate on the promo-only names while
+// refusing to let it choose a set. What they share is the question, which
+// is why only the question lives here.
+func IsPromoHeading(edition string) bool {
+	return promoHeadings()[Normalize(edition)]
 }

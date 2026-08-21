@@ -551,3 +551,27 @@ func TestTitle(t *testing.T) {
 		})
 	}
 }
+
+// TestIsPromoHeading pins the question two games ask of an edition, and that
+// asking it does not depend on when the package finished initializing: the
+// table is built on first use because Normalize memoizes through a map this
+// package sets up in its own init.
+func TestIsPromoHeading(t *testing.T) {
+	for _, tt := range []struct {
+		edition string
+		want    bool
+	}{
+		{"Promo", true},
+		{"Promos", true},
+		{"Promotional Cards", true},
+		{"promo cards", true},
+		{"D23 Promos", false},
+		{"Disney Lorcana Promo Cards", false},
+		{"Origins", false},
+		{"", false},
+	} {
+		if got := IsPromoHeading(tt.edition); got != tt.want {
+			t.Errorf("IsPromoHeading(%q) = %v, want %v", tt.edition, got, tt.want)
+		}
+	}
+}
