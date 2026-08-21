@@ -74,7 +74,7 @@ func editionIsPromo(b *mtgmatcher.Backend, edition string) bool {
 	if edition == "" {
 		return false
 	}
-	if promoEditions[mtgmatcher.Normalize(edition)] {
+	if mtgmatcher.IsPromoHeading(edition) {
 		return true
 	}
 	set, err := b.GetSetByName(edition)
@@ -86,19 +86,6 @@ func editionIsPromo(b *mtgmatcher.Backend, edition string) bool {
 	// cards - which names no set of ours but still says promo. The
 	// needle is normalized too: Normalize folds the plural away.
 	return strings.HasSuffix(mtgmatcher.Normalize(edition), mtgmatcher.Normalize("Promos"))
-}
-
-// promoEditions are the headings storefronts use for promotional printings
-// without saying which set issued them. They deliberately resolve to no set:
-// the heading spans several promotional sets, so it can gate the promo names
-// but must not narrow the candidates to one of them.
-var promoEditions = map[string]bool{
-	mtgmatcher.Normalize("Promo"):             true,
-	mtgmatcher.Normalize("Promos"):            true,
-	mtgmatcher.Normalize("Promo Cards"):       true,
-	mtgmatcher.Normalize("Promotional"):       true,
-	mtgmatcher.Normalize("Promotionals"):      true,
-	mtgmatcher.Normalize("Promotional Cards"): true,
 }
 
 // qualifiedPromoName returns the promotional printing named "<base>
@@ -267,7 +254,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	// several promotional sets, and the promo tiers in FilterCards choose
 	// instead of whichever set name happens to contain the heading's
 	// words. Checked without GetSetByName, which runs this very hook.
-	if promoEditions[mtgmatcher.Normalize(edition)] ||
+	if mtgmatcher.IsPromoHeading(edition) ||
 		strings.HasSuffix(mtgmatcher.Normalize(edition), mtgmatcher.Normalize("Promos")) {
 		edition = "Promos"
 	}
