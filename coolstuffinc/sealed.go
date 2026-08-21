@@ -581,6 +581,8 @@ func (csi *CoolstuffincSealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameRiftbound
 	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
+	case GamePokemon:
+		info.Game = mtgban.GamePokemon
 	}
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
