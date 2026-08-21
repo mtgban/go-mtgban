@@ -155,7 +155,8 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 				}
 				theCard.Language = lang
 			}
-		case GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYuGiOh, GameIdFleshAndBlood:
+		case GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYuGiOh, GameIdFleshAndBlood,
+			GameIdPokemon:
 			if gameLanguage(ct.gameID, product) != "en" {
 				continue
 			}
@@ -405,6 +406,8 @@ func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameYuGiOh
 	case GameIdFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
+	case GameIdPokemon:
+		info.Game = mtgban.GamePokemon
 	}
 	return
 }

@@ -269,6 +269,13 @@ type Product struct {
 		// FirstEdition is the print run, which the games selling one
 		// carry beside whatever else names their treatment.
 		FirstEdition bool `json:"first_edition,omitempty"`
+
+		// Pokemon carries no foil property here on purpose: its treatments
+		// are Holofoil, Reverse Holofoil and Normal, and a boolean has one
+		// bit for three. The datastore gives each its own printing and its
+		// own uuid, so which one a listing prices is the blueprint's to say
+		// rather than a flag's.
+		PokemonLanguage string `json:"pokemon_language,omitempty"`
 	} `json:"properties_hash"`
 	User struct {
 		Name        string `json:"username"`
