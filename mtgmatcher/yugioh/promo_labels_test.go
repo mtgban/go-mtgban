@@ -28,7 +28,7 @@ func TestPromoTypeLabels(t *testing.T) {
 		// guessed: title-casing gives "Ots Stamp" and "Gx Tag Force 2".
 		{"otsstamp", "OTS Stamp"},
 		{"gxtagforce2", "GX Tag Force 2"},
-		{"pcr", "PCR"},
+		{"scr", "SCR"},
 	} {
 		if got := b.PromoTypeLabel(tt.promoType); got != tt.want {
 			t.Errorf("PromoTypeLabel(%q) = %q, want %q", tt.promoType, got, tt.want)
