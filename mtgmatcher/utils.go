@@ -435,14 +435,3 @@ func (b *Backend) CardReleaseDate(cardID string) (time.Time, error) {
 func CardReleaseDate(cardID string) (time.Time, error) {
 	return defaultBackend.CardReleaseDate(cardID)
 }
-
-// IsDFCSameName reports whether a double-faced card carries the same name on
-// both halves.
-func IsDFCSameName(name string) bool {
-	if !strings.Contains(name, " // ") {
-		return false
-	}
-	left := name[:len(name)/2-2]
-	right := name[len(name)/2+2:]
-	return left == right
-}
