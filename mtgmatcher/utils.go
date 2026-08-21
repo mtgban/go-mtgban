@@ -383,19 +383,6 @@ func Title(str string) string {
 	return strings.Join(words, " ")
 }
 
-// longestWordInEditionName finds the longest keyword in an edition name, ignoring punctuation.
-func longestWordInEditionName(str string) string {
-	fields := strings.Fields(str)
-	longest := ""
-	for _, field := range fields {
-		field = strings.TrimRight(field, ":'")
-		if len(field) > len(longest) {
-			longest = field
-		}
-	}
-	return longest
-}
-
 // GCD returns the greatest common divisor, by the Euclidean algorithm.
 func GCD(a, b int) int {
 	for b != 0 {
