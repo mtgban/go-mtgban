@@ -17,7 +17,7 @@ import (
 // a storefront's foil flag has to reach the Holofoil printing. So the flag
 // resolves through the loader's FoilUUIDs, and only an input naming a
 // treatment outright re-keys onto the exact crossing it names.
-type Rules struct{}
+type Rules struct{ mtgmatcher.DefaultRules }
 
 // fullNumberRe matches the game's collector number shapes: "001/102",
 // "SWSH001", "TG01/TG30", "H1/H32", with the set total that follows a slash
@@ -97,25 +97,10 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	// spans every promotional set the game has - and it has more than
 	// thirty - so it can gate the promo names but must not narrow the
 	// candidates to whichever one happens to wear the name.
-	if promoHeadings[mtgmatcher.Normalize(edition)] {
+	if mtgmatcher.IsPromoHeading(edition) {
 		edition = ""
 	}
 	inCard.Edition = edition
-}
-
-// promoHeadings are the headings storefronts file promotional printings
-// under without saying which set issued them.
-var promoHeadings = map[string]bool{
-	mtgmatcher.Normalize("Promo"):             true,
-	mtgmatcher.Normalize("Promos"):            true,
-	mtgmatcher.Normalize("Promo Cards"):       true,
-	mtgmatcher.Normalize("Promotional"):       true,
-	mtgmatcher.Normalize("Promotionals"):      true,
-	mtgmatcher.Normalize("Promotional Cards"): true,
-}
-
-func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) []string {
-	return editions
 }
 
 // FilterCards narrows candidates by edition, collector number and label, in
@@ -306,23 +291,6 @@ func hasAllTokens(words, tokens []string) bool {
 		}
 	}
 	return true
-}
-
-// IsUnsupported drops the products TCGplayer files under its "Cards" product
-// type that are not cards a query can mean.
-func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return false
-}
-
-// MissingPromoTag reports an input claiming a label the resolved printing
-// does not carry, so a claimed-but-absent treatment reads as unsupported
-// rather than as a mismatch.
-func (Rules) MissingPromoTag(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, co *mtgmatcher.CardObject) bool {
-	return false
 }
 
 // CanonicalFinish places the crossings of the two axes the catalog prices.
