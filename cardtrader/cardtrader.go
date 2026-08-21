@@ -280,8 +280,6 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 			},
 		}
 	}
-
-	return
 }
 
 func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<- resultChan, expansionID int) error {
