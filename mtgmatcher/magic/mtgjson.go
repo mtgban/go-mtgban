@@ -790,7 +790,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 			// Rename DFCs into a single name
 			// All names need to be redacted
-			dfcSameName := mtgmatcher.IsDFCSameName(card.Name)
+			dfcSameName := IsDFCSameName(card.Name)
 			if dfcSameName {
 				card.Name = strings.Split(card.Name, " // ")[0]
 				card.FlavorName = strings.Split(card.FlavorName, " // ")[0]
