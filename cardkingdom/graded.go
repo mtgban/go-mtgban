@@ -80,7 +80,7 @@ func (ck *CardkingdomGraded) totalPages() (string, int, error) {
 		}
 	}
 	if session == "" {
-		return "", 0, fmt.Errorf("could not find session cookie")
+		return "", 0, errors.New("could not find session cookie")
 	}
 
 	return session, pages, nil

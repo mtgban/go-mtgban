@@ -2,6 +2,7 @@ package mtgban
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -133,7 +134,7 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 		}
 	}
 	if !okHeader {
-		return nil, fmt.Errorf("malformed inventory file")
+		return nil, errors.New("malformed inventory file")
 	}
 
 	inventory := InventoryRecord{}
@@ -193,7 +194,7 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 		}
 	}
 	if !okHeader {
-		return nil, fmt.Errorf("malformed buylist file")
+		return nil, errors.New("malformed buylist file")
 	}
 
 	buylist := BuylistRecord{}

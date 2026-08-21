@@ -805,10 +805,10 @@ func (tcg *CookieClient) GetUserData(ctx context.Context) (*UserData, error) {
 		return nil, fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
 	}
 	if len(response.Results) == 0 {
-		return nil, fmt.Errorf("empty results in user request")
+		return nil, errors.New("empty results in user request")
 	}
 	if response.Results[0].UserName == "" {
-		return nil, fmt.Errorf("empty username from user request")
+		return nil, errors.New("empty username from user request")
 	}
 
 	return &response.Results[0], nil
@@ -850,7 +850,7 @@ func CreateCartKey(ctx context.Context, userID string) (string, error) {
 		return "", fmt.Errorf("%s: %s", response.Errors[0].Code, response.Errors[0].Message)
 	}
 	if len(response.Results) == 0 {
-		return "", fmt.Errorf("empty results in user request")
+		return "", errors.New("empty results in user request")
 	}
 
 	return response.Results[0].CartKey, nil
