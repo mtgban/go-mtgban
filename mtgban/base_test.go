@@ -29,7 +29,7 @@ func TestAddRelaxed(t *testing.T) {
 		return
 	}
 	if len(inventory["A"]) == 0 {
-		t.Errorf("FAIL: inventory does not contain entries for A")
+		t.Error("FAIL: inventory does not contain entries for A")
 		return
 	}
 
@@ -55,7 +55,7 @@ func TestAddRelaxed(t *testing.T) {
 		return
 	}
 	if inventory["A"][0].Quantity != 10 {
-		t.Errorf("FAIL: inventory did not merge quantities")
+		t.Error("FAIL: inventory did not merge quantities")
 		return
 	}
 
@@ -71,7 +71,7 @@ func TestAddRelaxed(t *testing.T) {
 		return
 	}
 	if inventory["A"][0].Quantity != 10 {
-		t.Errorf("FAIL: inventory merged quantities")
+		t.Error("FAIL: inventory merged quantities")
 		return
 	}
 
@@ -87,7 +87,7 @@ func TestAddRelaxed(t *testing.T) {
 		return
 	}
 	if inventory["A"][0].Quantity != 10 {
-		t.Errorf("FAIL: inventory merged quantities")
+		t.Error("FAIL: inventory merged quantities")
 		return
 	}
 
@@ -118,7 +118,7 @@ func TestAdd(t *testing.T) {
 		return
 	}
 	if len(inventory["A"]) == 0 {
-		t.Errorf("FAIL: inventory does not contain entries for A")
+		t.Error("FAIL: inventory does not contain entries for A")
 		return
 	}
 
@@ -136,7 +136,7 @@ func TestAdd(t *testing.T) {
 	// Same entry, same id
 	err = inventory.Add("A", &entryNM)
 	if err == nil {
-		t.Errorf("FAIL: Tried to add the same entry twice")
+		t.Error("FAIL: Tried to add the same entry twice")
 		return
 	}
 	if len(inventory["A"]) != 2 {
@@ -191,7 +191,7 @@ func TestAddStrict(t *testing.T) {
 		return
 	}
 	if len(inventory["A"]) == 0 {
-		t.Errorf("FAIL: inventory does not contain entries for A")
+		t.Error("FAIL: inventory does not contain entries for A")
 		return
 	}
 
@@ -209,7 +209,7 @@ func TestAddStrict(t *testing.T) {
 	// Same entry, same id
 	err = inventory.AddStrict("A", &entryNM)
 	if err == nil {
-		t.Errorf("FAIL: Tried to add the same entry twice")
+		t.Error("FAIL: Tried to add the same entry twice")
 		return
 	}
 	if len(inventory["A"]) != 2 {
@@ -224,7 +224,7 @@ func TestAddStrict(t *testing.T) {
 	// Similar but different
 	err = inventory.AddStrict("A", &entryNM)
 	if err == nil {
-		t.Errorf("FAIL: Tried to add a similar entry twice")
+		t.Error("FAIL: Tried to add a similar entry twice")
 		return
 	}
 	if len(inventory["A"]) != 2 {

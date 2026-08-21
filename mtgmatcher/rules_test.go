@@ -25,7 +25,7 @@ func TestBackendWithoutRules(t *testing.T) {
 		t.Errorf("GetSetByName with sets = %v, want %v", err, ErrCardNotInEdition)
 	}
 	if b.hasPrinting("Anything", "promo_type", "boosterfun") {
-		t.Errorf("hasPrinting = true, want false")
+		t.Error("hasPrinting = true, want false")
 	}
 
 	// The id-lookup validation runs before the nil-rules guard: without
