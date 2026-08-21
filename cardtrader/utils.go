@@ -222,6 +222,8 @@ func gameLanguage(gameID int, product Product) string {
 		return product.Properties.YuGiOhLanguage
 	case GameIdFleshAndBlood:
 		return product.Properties.FabLanguage
+	case GameIdPokemon:
+		return product.Properties.PokemonLanguage
 	}
 	return ""
 }

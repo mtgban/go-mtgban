@@ -34,7 +34,8 @@ func NewScraperSealed(gameID int, token string) (*CardtraderSealed, error) {
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
 	switch gameID {
-	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYuGiOh, GameIdFleshAndBlood:
+	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYuGiOh, GameIdFleshAndBlood,
+		GameIdPokemon:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
@@ -296,6 +297,8 @@ func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameYuGiOh
 	case GameIdFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
+	case GameIdPokemon:
+		info.Game = mtgban.GamePokemon
 	}
 	return
 }
