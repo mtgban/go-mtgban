@@ -9,7 +9,7 @@ import (
 // promoTypeWords spells the words title-casing cannot put back. The builder
 // folds a qualifier to lower case before it reaches the datastore, which
 // leaves an acronym looking like an ordinary word: "ots stamp" title-cases to
-// "Ots Stamp", and the rarity and set codes to "Pcr" and "Dl18". Everything
+// "Ots Stamp", and the rarity and set codes to "Scr" and "Dl18". Everything
 // else the catalog writes is ordinary words, and title-casing spells those
 // itself.
 //
@@ -25,7 +25,6 @@ var promoTypeWords = map[string]string{
 	"gx":               "GX",
 	"m24-en052":        "M24-EN052",
 	"ots":              "OTS",
-	"pcr":              "PCR",
 	"pre-registration": "Pre-registration",
 	"pur":              "PUR",
 	"scr":              "SCR",
