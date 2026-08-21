@@ -46,7 +46,10 @@ type CardMarketIndex struct {
 
 	inventory mtgban.InventoryRecord
 
-	priceGuide []PriceGuide
+	// priceGuide holds one game's published prices, indexed by the product
+	// id they belong to: a run asks for one product's prices tens of
+	// thousands of times, once per product in the catalog.
+	priceGuide map[int]PriceGuide
 
 	client *MKMClient
 	gameID int
@@ -227,25 +230,14 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 	}
 
 	// Look for the price presence
-	var index int
-	var found bool
-	for index = range mkm.priceGuide {
-		if mkm.priceGuide[index].IdProduct == product.IdProduct {
-			found = true
-			break
-		}
-	}
+	guide, found := mkm.priceGuide[product.IdProduct]
 	if !found {
 		return fmt.Errorf("IdProduct %d not found in PriceGuide", product.IdProduct)
 	}
 
 	// Sorted as availableIndexNames
-	prices := []float64{
-		mkm.priceGuide[index].LowPrice, mkm.priceGuide[index].TrendPrice,
-	}
-	foilprices := []float64{
-		mkm.priceGuide[index].FoilLowPrice, mkm.priceGuide[index].FoilTrendPrice,
-	}
+	prices := []float64{guide.LowPrice, guide.TrendPrice}
+	foilprices := []float64{guide.FoilLowPrice, guide.FoilTrendPrice}
 
 	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {
@@ -346,7 +338,10 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	mkm.priceGuide = priceGuide
+	mkm.priceGuide = make(map[int]PriceGuide, len(priceGuide))
+	for _, entry := range priceGuide {
+		mkm.priceGuide[entry.IdProduct] = entry
+	}
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
 
