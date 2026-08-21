@@ -158,7 +158,10 @@ func LoadInventoryFromCSV(r io.Reader, flags ...bool) (InventoryRecord, error) {
 			continue
 		}
 
-		inventory.Add(record[0], entry)
+		err = inventory.Add(record[0], entry)
+		if err != nil && strict {
+			return nil, err
+		}
 	}
 
 	return inventory, nil
@@ -270,7 +273,10 @@ func LoadBuylistFromCSV(r io.Reader, flags ...bool) (BuylistRecord, error) {
 			VendorName: vendorName,
 		}
 
-		buylist.Add(cardID, entry)
+		err = buylist.Add(cardID, entry)
+		if err != nil && strict {
+			return nil, err
+		}
 	}
 
 	return buylist, nil

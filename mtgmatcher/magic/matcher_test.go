@@ -161,7 +161,10 @@ func BenchmarkMatchQuiet(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
 		for _, test := range matchTests {
-			runMatch(testBackend, test)
+			_, err := runMatch(testBackend, test)
+			if err != nil {
+				b.Errorf("FAIL: %s", err.Error())
+			}
 		}
 	}
 }
