@@ -178,6 +178,28 @@ const (
 	CategoryYuGiOhSpecialDeluxeEditions = 117
 )
 
+// The Pokemon categories.
+const (
+	CategoryPokemonTins             = 59
+	CategoryPokemonBoxSet           = 60
+	CategoryPokemonMemorabilia      = 61
+	CategoryPokemonSleeves          = 62
+	CategoryPokemonPlaymats         = 63
+	CategoryPokemonDeckBoxes        = 64
+	CategoryPokemonAlbums           = 65
+	CategoryPokemonBooster          = 66
+	CategoryPokemonBoosterBox       = 67
+	CategoryPokemonBundle           = 68
+	CategoryPokemonPreconstructed   = 69
+	CategoryPokemonSingles          = 73
+	CategoryPokemonDividers         = 74
+	CategoryPokemonOversized        = 78
+	CategoryPokemonDice             = 86
+	CategoryPokemonEmptyBoxsStorage = 118
+	CategoryPokemonCompleteSet      = 136
+	CategoryPokemonBlisters         = 190
+)
+
 // The Flesh and Blood categories.
 const (
 	CategoryFleshAndBloodSingles             = 80

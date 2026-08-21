@@ -343,7 +343,8 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 			CategoryRiftboundSingles, CategoryRiftboundOversized,
 			CategoryOnePieceSingles,
 			CategoryYuGiOhSingles,
-			CategoryFleshAndBloodSingles:
+			CategoryFleshAndBloodSingles,
+			CategoryPokemonSingles:
 			singles = true
 		}
 		if singles == sealed {
