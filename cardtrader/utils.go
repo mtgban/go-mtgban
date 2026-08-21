@@ -284,6 +284,13 @@ func gameFoil(gameID int, product Product) bool {
 			return false
 		}
 		return true
+	case GameIdPokemon:
+		// Only the reverse holo is a foil treatment the flag can stand for;
+		// a first-edition listing is whatever its rarity makes it, and the
+		// named finish above is what actually resolves either one. This
+		// answers the fallback that matches on text when the blueprint
+		// carries no TCGplayer id.
+		return product.Properties.PokemonReverse
 	}
 	return false
 }
@@ -318,6 +325,18 @@ func gameFinish(gameID int, product Product) string {
 		// finish, so the run is the whole of what a listing names. Only
 		// the first edition is worth naming: a product answers a lowered
 		// flag with its unlimited printing already.
+		if product.Properties.FirstEdition {
+			return "1st Edition"
+		}
+	case GameIdPokemon:
+		// Both flags name a printing the foilness cannot reach. The reverse
+		// holo sits beside a holo rare's own printing, which is foil too, so
+		// the flag lands on the wrong one of the pair; the first-edition run
+		// sits beside the unlimited one, which the flag cannot tell it from
+		// at all.
+		if product.Properties.PokemonReverse {
+			return "Reverse Holofoil"
+		}
 		if product.Properties.FirstEdition {
 			return "1st Edition"
 		}
