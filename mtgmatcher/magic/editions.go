@@ -1,4 +1,4 @@
-package mtgmatcher
+package magic
 
 // EditionTable maps the edition names storefronts publish to the ones the
 // datastore uses, for the many spellings of a single set.

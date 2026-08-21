@@ -54,7 +54,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if found {
 		edition = set.Name
 	}
-	ed, found := mtgmatcher.EditionTable[edition]
+	ed, found := EditionTable[edition]
 	if found {
 		edition = ed
 	}
@@ -62,7 +62,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if found && (inCard.IsJudge() || inCard.IsDuelDecks() || inCard.IsDuelDecksAnthology()) {
 		edition = set.Name
 	}
-	ed, found = mtgmatcher.EditionTable[variation]
+	ed, found = EditionTable[variation]
 	// The Anthologies set has one land with a variant named as an expansion,
 	// so what is found should not overwrite the edition in this case
 	// As for The List, ignore any further variation
@@ -114,7 +114,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			edition = strings.TrimSpace(edition)
 
 			// Check if the edition name needs further processing
-			ed, found = mtgmatcher.EditionTable[edition]
+			ed, found = EditionTable[edition]
 			if found {
 				edition = ed
 			}
@@ -147,7 +147,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				edition = strings.TrimSpace(edition)
 
 				// Check if the edition name needs further processing
-				ed, found = mtgmatcher.EditionTable[edition]
+				ed, found = EditionTable[edition]
 				if found {
 					edition = ed
 				}
@@ -167,7 +167,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = strings.TrimPrefix(edition, "UB")
 		edition = strings.TrimLeft(edition, ":- ")
 
-		ed, found = mtgmatcher.EditionTable[edition]
+		ed, found = EditionTable[edition]
 		if found {
 			edition = ed
 		}
