@@ -391,7 +391,7 @@ func listEditionCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 	// Cards with same numeric part need special treatment because the chunk below trips the later check
 	case "Laboratory Maniac",
 		"Bad Moon":
-		if !inCard.Contains(code) && !inCard.Contains(setName) && mtgmatcher.EditionTable[inCard.Variation] != setName {
+		if !inCard.Contains(code) && !inCard.Contains(setName) && EditionTable[inCard.Variation] != setName {
 			return true
 		}
 	default:
@@ -414,7 +414,7 @@ func listEditionCheck(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) bool 
 			setName = strings.TrimPrefix(setName, "Duel Decks: ")
 		}
 
-		if !inCard.Contains(code) && !inCard.Contains(setName) && mtgmatcher.EditionTable[inCard.Variation] != setName {
+		if !inCard.Contains(code) && !inCard.Contains(setName) && EditionTable[inCard.Variation] != setName {
 			// This chunk is needed in case there was a plain number already
 			// processed in the previous step
 			number := mtgmatcher.ExtractNumber(inCard.Variation)
