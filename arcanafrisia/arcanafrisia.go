@@ -24,7 +24,7 @@ func NewScraper() *Arcanafrisia {
 	return &af
 }
 
-func (af *Arcanafrisia) printf(format string, a ...interface{}) {
+func (af *Arcanafrisia) printf(format string, a ...any) {
 	if af.LogCallback != nil {
 		af.LogCallback("[AF] "+format, a...)
 	}

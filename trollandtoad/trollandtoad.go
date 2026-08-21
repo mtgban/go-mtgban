@@ -50,7 +50,7 @@ type responseChan struct {
 	buyEntry *mtgban.BuylistEntry
 }
 
-func (tnt *Trollandtoad) printf(format string, a ...interface{}) {
+func (tnt *Trollandtoad) printf(format string, a ...any) {
 	if tnt.LogCallback != nil {
 		tnt.LogCallback("[TNT] "+format, a...)
 	}

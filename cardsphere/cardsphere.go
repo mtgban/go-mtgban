@@ -45,7 +45,7 @@ func NewScraper(token string) *Cardsphere {
 	return &cs
 }
 
-func (cs *Cardsphere) printf(format string, a ...interface{}) {
+func (cs *Cardsphere) printf(format string, a ...any) {
 	if cs.LogCallback != nil {
 		cs.LogCallback("[CS] "+format, a...)
 	}

@@ -69,7 +69,7 @@ type respChan struct {
 	invEntry *mtgban.InventoryEntry
 }
 
-func (mm *Miniaturemarket) printf(format string, a ...interface{}) {
+func (mm *Miniaturemarket) printf(format string, a ...any) {
 	if mm.LogCallback != nil {
 		mm.LogCallback("[MMSealed] "+format, a...)
 	}

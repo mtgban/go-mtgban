@@ -74,7 +74,7 @@ var skuConditions = map[string]string{
 	"DAMAGED":           "PO",
 }
 
-func (tcg *TCGPlayerMarket) printf(format string, a ...interface{}) {
+func (tcg *TCGPlayerMarket) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGMkt] "+format, a...)
 	}

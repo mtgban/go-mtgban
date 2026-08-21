@@ -36,7 +36,7 @@ type indexChan struct {
 	Etched       bool
 }
 
-func (tcg *TCGPlayerIndex) printf(format string, a ...interface{}) {
+func (tcg *TCGPlayerIndex) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGIndex] "+format, a...)
 	}

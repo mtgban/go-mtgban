@@ -62,7 +62,7 @@ func NewScraper() *Vegassingles {
 	return &vs
 }
 
-func (vs *Vegassingles) printf(format string, a ...interface{}) {
+func (vs *Vegassingles) printf(format string, a ...any) {
 	if vs.LogCallback != nil {
 		vs.LogCallback("[VS] "+format, a...)
 	}

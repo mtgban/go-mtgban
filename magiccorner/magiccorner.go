@@ -53,7 +53,7 @@ type resultChan struct {
 	buyEntry *mtgban.BuylistEntry
 }
 
-func (mc *Magiccorner) printf(format string, a ...interface{}) {
+func (mc *Magiccorner) printf(format string, a ...any) {
 	if mc.LogCallback != nil {
 		mc.LogCallback("[MC] "+format, a...)
 	}

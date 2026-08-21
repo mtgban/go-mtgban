@@ -45,7 +45,7 @@ type TCGGame struct {
 	client *tcgplayer.Client
 }
 
-func (tcg *TCGGame) printf(format string, a ...interface{}) {
+func (tcg *TCGGame) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {

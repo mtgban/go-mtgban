@@ -18,7 +18,7 @@ func run() int {
 
 	flag.Parse()
 
-	var output interface{}
+	var output any
 	var err error
 
 	ctx := context.Background()

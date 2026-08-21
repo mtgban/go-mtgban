@@ -50,7 +50,7 @@ type responseChan struct {
 	invEntry *mtgban.InventoryEntry
 }
 
-func (toa *TOAMagic) printf(format string, a ...interface{}) {
+func (toa *TOAMagic) printf(format string, a ...any) {
 	if toa.LogCallback != nil {
 		toa.LogCallback("[TOA] "+format, a...)
 	}

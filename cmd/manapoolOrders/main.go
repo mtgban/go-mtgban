@@ -163,7 +163,7 @@ func newClient(email, token string) *client {
 	}
 }
 
-func (c *client) get(ctx context.Context, url string, out interface{}) error {
+func (c *client) get(ctx context.Context, url string, out any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return err

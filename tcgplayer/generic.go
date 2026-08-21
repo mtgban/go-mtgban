@@ -32,7 +32,7 @@ type TCGPlayerGeneric struct {
 	client *tcgplayer.Client
 }
 
-func (tcg *TCGPlayerGeneric) printf(format string, a ...interface{}) {
+func (tcg *TCGPlayerGeneric) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {

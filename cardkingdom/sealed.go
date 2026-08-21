@@ -37,7 +37,7 @@ func NewScraperSealed() *CardkingdomSealed {
 	return &ck
 }
 
-func (ck *CardkingdomSealed) printf(format string, a ...interface{}) {
+func (ck *CardkingdomSealed) printf(format string, a ...any) {
 	if ck.LogCallback != nil {
 		ck.LogCallback("[CKSealed] "+format, a...)
 	}

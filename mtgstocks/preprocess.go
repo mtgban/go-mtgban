@@ -182,7 +182,7 @@ func preprocess(fullName, edition string, foil bool) (*mtgmatcher.InputCard, err
 
 // Some slug strings are missing quotes and are plain numbers
 // use this function to parse it
-func getLink(raw interface{}) (string, error) {
+func getLink(raw any) (string, error) {
 	var slug string
 	switch v := raw.(type) {
 	case string:

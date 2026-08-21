@@ -47,7 +47,7 @@ func NewScraperGraded() (*CardkingdomGraded, error) {
 	return &ck, nil
 }
 
-func (ck *CardkingdomGraded) printf(format string, a ...interface{}) {
+func (ck *CardkingdomGraded) printf(format string, a ...any) {
 	if ck.LogCallback != nil {
 		ck.LogCallback("[CKGraded] "+format, a...)
 	}

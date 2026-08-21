@@ -97,7 +97,7 @@ type responseChan struct {
 	relaxed  bool
 }
 
-func (csi *Coolstuffinc) printf(format string, a ...interface{}) {
+func (csi *Coolstuffinc) printf(format string, a ...any) {
 	if csi.LogCallback != nil {
 		csi.LogCallback("[CSI] "+format, a...)
 	}

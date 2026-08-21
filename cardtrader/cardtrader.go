@@ -62,7 +62,7 @@ func NewScraperMarket(gameID int, token string) (*CardtraderMarket, error) {
 	return &ct, nil
 }
 
-func (ct *CardtraderMarket) printf(format string, a ...interface{}) {
+func (ct *CardtraderMarket) printf(format string, a ...any) {
 	if ct.LogCallback != nil {
 		ct.LogCallback("[CT] "+format, a...)
 	}

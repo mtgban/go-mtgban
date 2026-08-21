@@ -47,7 +47,7 @@ type resultChan struct {
 	tradeEntry *mtgban.BuylistEntry
 }
 
-func (abu *ABUGames) printf(format string, a ...interface{}) {
+func (abu *ABUGames) printf(format string, a ...any) {
 	if abu.LogCallback != nil {
 		abu.LogCallback("[ABU] "+format, a...)
 	}

@@ -24,7 +24,7 @@ type TCGPlayerSealed struct {
 	client        *tcgplayer.Client
 }
 
-func (tcg *TCGPlayerSealed) printf(format string, a ...interface{}) {
+func (tcg *TCGPlayerSealed) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGSealed] "+format, a...)
 	}

@@ -25,7 +25,7 @@ func NewScraper() *Merlion {
 	return &mg
 }
 
-func (mg *Merlion) printf(format string, a ...interface{}) {
+func (mg *Merlion) printf(format string, a ...any) {
 	if mg.LogCallback != nil {
 		mg.LogCallback("[MG] "+format, a...)
 	}

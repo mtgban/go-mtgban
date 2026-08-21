@@ -97,7 +97,7 @@ func TestWorkerPoolReportsWorkerErrors(t *testing.T) {
 			return context.DeadlineExceeded
 		},
 		func(int) {},
-		func(format string, a ...interface{}) {
+		func(format string, a ...any) {
 			mu.Lock()
 			defer mu.Unlock()
 			logged++

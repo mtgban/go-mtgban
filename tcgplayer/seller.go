@@ -26,7 +26,7 @@ type TCGSellerInventory struct {
 	inventoryDate time.Time
 }
 
-func (tcg *TCGSellerInventory) printf(format string, a ...interface{}) {
+func (tcg *TCGSellerInventory) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("["+tcg.Info().Shorthand+"] "+format, a...)
 	}

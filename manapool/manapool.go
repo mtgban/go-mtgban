@@ -27,7 +27,7 @@ func NewScraper() *Manapool {
 	return &mp
 }
 
-func (mp *Manapool) printf(format string, a ...interface{}) {
+func (mp *Manapool) printf(format string, a ...any) {
 	if mp.LogCallback != nil {
 		mp.LogCallback("[MP] "+format, a...)
 	}

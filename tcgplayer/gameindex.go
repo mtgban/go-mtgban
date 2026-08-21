@@ -37,7 +37,7 @@ type TCGGameIndex struct {
 	client *tcgplayer.Client
 }
 
-func (tcg *TCGGameIndex) printf(format string, a ...interface{}) {
+func (tcg *TCGGameIndex) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {

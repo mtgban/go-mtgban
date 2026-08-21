@@ -47,7 +47,7 @@ func NewScraperSealed() *ABUGamesSealed {
 	return &abu
 }
 
-func (abu *ABUGamesSealed) printf(format string, a ...interface{}) {
+func (abu *ABUGamesSealed) printf(format string, a ...any) {
 	if abu.LogCallback != nil {
 		abu.LogCallback("[ABUSealed] "+format, a...)
 	}

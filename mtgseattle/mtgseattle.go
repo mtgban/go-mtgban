@@ -63,7 +63,7 @@ type responseChan struct {
 	buyEntry *mtgban.BuylistEntry
 }
 
-func (ms *MTGSeattle) printf(format string, a ...interface{}) {
+func (ms *MTGSeattle) printf(format string, a ...any) {
 	if ms.LogCallback != nil {
 		ms.LogCallback("[MS] "+format, a...)
 	}
