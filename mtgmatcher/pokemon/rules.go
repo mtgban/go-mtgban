@@ -176,14 +176,17 @@ func setTail(name string) string {
 func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 	cached, found := setTails.Load(b)
 	if !found {
-		index := map[string][]string{}
+		built := map[string][]string{}
 		for _, set := range b.Sets {
 			tail := mtgmatcher.Normalize(setTail(set.Name))
-			index[tail] = append(index[tail], set.Name)
+			built[tail] = append(built[tail], set.Name)
 		}
-		cached, _ = setTails.LoadOrStore(b, index)
+		cached, _ = setTails.LoadOrStore(b, built)
 	}
-	index := cached.(map[string][]string)
+	index, ok := cached.(map[string][]string)
+	if !ok {
+		return ""
+	}
 
 	fields := strings.Fields(edition)
 	for i := 1; i < len(fields); i++ {
