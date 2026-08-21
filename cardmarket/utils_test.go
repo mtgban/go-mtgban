@@ -15,9 +15,12 @@ func TestGameName(t *testing.T) {
 	if got := GameName(GameIdLorcana); got != "Lorcana" {
 		t.Errorf("GameName(lorcana) = %q, want Lorcana", got)
 	}
+	if got := GameName(GameIdPokemon); got != "Pokemon" {
+		t.Errorf("GameName(pokemon) = %q, want Pokemon", got)
+	}
 	// A game whose catalog is not covered has no spelling to use.
-	if got := GameName(GameIdPokemon); got != "" {
-		t.Errorf("GameName(pokemon) = %q, want empty", got)
+	if got := GameName(GameIdForceOfWill); got != "" {
+		t.Errorf("GameName(forceofwill) = %q, want empty", got)
 	}
 	if got := GameName(0); got != "" {
 		t.Errorf("GameName(0) = %q, want empty", got)
@@ -50,7 +53,7 @@ func TestSearchURL(t *testing.T) {
 	}
 
 	// Same contract as BuildURL for a game that is not covered.
-	if got := SearchURL("Pikachu", GameIdPokemon, "mtgban"); got != "" {
+	if got := SearchURL("Chaos", GameIdForceOfWill, "mtgban"); got != "" {
 		t.Errorf("uncovered game = %q, want empty", got)
 	}
 }
@@ -74,7 +77,9 @@ func TestBuildURL(t *testing.T) {
 		t.Errorf("affiliate params = %v", q)
 	}
 
-	if got := BuildURL(1, GameIdPokemon, "", false); got != "" {
+	// A game the name table carries no entry for builds no link. Pokemon
+	// stood here until it gained one.
+	if got := BuildURL(1, GameIdForceOfWill, "", false); got != "" {
 		t.Errorf("uncovered game = %q, want empty", got)
 	}
 	// Non-foil omits the flag rather than sending a falsy value.
@@ -113,17 +118,19 @@ func TestGameIdFromName(t *testing.T) {
 		t.Errorf("GameIdFromName(\"\") = %d, want Magic (%d)", got, GameIdMagic)
 	}
 
-	// A game Cardmarket does not carry has no id, and the URL builders turn
-	// that into no link rather than a wrong one.
-	for _, name := range []string{"pokemon", "digimon", "Magic: The Gathering"} {
+	// A game this package does not carry has no id, and the URL builders
+	// turn that into no link rather than a wrong one. Pokemon used to stand
+	// here and now carries an id of its own, so the example is a game the
+	// table still names nothing for.
+	for _, name := range []string{"digimon", "Magic: The Gathering"} {
 		if got := GameIdFromName(name); got != 0 {
 			t.Errorf("GameIdFromName(%q) = %d, want 0", name, got)
 		}
 	}
-	if got := SearchURL("Pikachu", GameIdFromName("pokemon"), "mtgban"); got != "" {
+	if got := SearchURL("Agumon", GameIdFromName("digimon"), "mtgban"); got != "" {
 		t.Errorf("uncovered game produced %q, want no link", got)
 	}
-	if got := BuildURL(1, GameIdFromName("pokemon"), "mtgban", false); got != "" {
+	if got := BuildURL(1, GameIdFromName("digimon"), "mtgban", false); got != "" {
 		t.Errorf("uncovered game produced %q, want no link", got)
 	}
 }

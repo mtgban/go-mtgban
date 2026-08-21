@@ -268,7 +268,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			mkm.printf("%+v", product)
 			return err
 		}
-	case GameIdYugioh, GameIdFleshAndBlood:
+	case GameIdYugioh, GameIdFleshAndBlood, GameIdPokemon:
 		// These catalogs carry no collector number and no version index,
 		// and same-name products abound, so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by or not at all -
@@ -478,7 +478,7 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 	// than a second row no consumer can choose between.
 	add := mkm.inventory.AddStrict
 	switch mkm.gameID {
-	case GameIdYugioh, GameIdFleshAndBlood:
+	case GameIdYugioh, GameIdFleshAndBlood, GameIdPokemon:
 		add = mkm.inventory.AddUnique
 	}
 
@@ -556,6 +556,8 @@ func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameYuGiOh
 	case GameIdFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
+	case GameIdPokemon:
+		info.Game = mtgban.GamePokemon
 	}
 	return
 }
