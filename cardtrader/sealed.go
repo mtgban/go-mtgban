@@ -177,6 +177,32 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 			productMap[id] = uuids
 		}
 		ct.printf("Mapped %d sealed products through the TCGplayer id", len(productMap))
+
+		// Cardtrader links only some of its sealed blueprints to a
+		// TCGplayer product, and the rest carry no id to route through -
+		// most of a set's boxes and kits among them. A sealed catalog is
+		// named things, so resolve those by name, the way the cardmarket
+		// sealed scraper resolves the same leftovers. The accessories
+		// sharing the sealed side - binders, dice, sleeves, empty boxes -
+		// name no product of ours and drop out here.
+		var resolved int
+		for id, bp := range blueprints {
+			if _, found := productMap[id]; found {
+				continue
+			}
+			if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
+				continue
+			}
+			uuid, err := mtgmatcher.ResolveSealed(bp.Name)
+			if err != nil {
+				continue
+			}
+			productMap[id] = []string{uuid}
+			resolved++
+		}
+		if resolved > 0 {
+			ct.printf("Resolved %d more sealed products by name", resolved)
+		}
 	}
 
 	type expItem struct {
