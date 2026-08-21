@@ -91,7 +91,11 @@ func run() int {
 		}
 		fmt.Fprintf(os.Stderr, "%v\n", choice.Item)
 
-		contents := choice.Item.(map[string]int)
+		contents, ok := choice.Item.(map[string]int)
+		if !ok {
+			fmt.Fprintf(os.Stderr, "booster contents are %T, not a sheet table\n", choice.Item)
+			return 1
+		}
 
 		var picks []Pick
 		// For each sheet, pick a card at random using the weight
@@ -148,7 +152,11 @@ func run() int {
 						fmt.Fprintln(os.Stderr, err)
 						return 1
 					}
-					item := choice.Item.(string)
+					item, ok := choice.Item.(string)
+					if !ok {
+						fmt.Fprintf(os.Stderr, "sheet card is %T, not a uuid\n", choice.Item)
+						return 1
+					}
 					// Validate card exists (ie in case of online-only printing)
 					co, err := mtgmatcher.GetUUID(item)
 					if err != nil {

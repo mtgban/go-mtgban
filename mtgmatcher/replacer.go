@@ -146,8 +146,9 @@ func init() {
 func Normalize(str string) string {
 	cache := normalizeCache.Load()
 	cached, found := cache.Load(str)
-	if found {
-		return cached.(string)
+	normalized, isString := cached.(string)
+	if found && isString {
+		return normalized
 	}
 
 	out := strings.TrimSpace(str)
