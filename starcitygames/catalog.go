@@ -287,11 +287,12 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// The catalog's own finish name rides beside the flag: a product is one
 	// printing in one treatment, and only the name says which.
 	if game == GameFleshAndBlood {
+		edition, finish := fabPrintRun(p.Set, p.Finish)
 		return mtgmatcher.Match(&mtgmatcher.InputCard{
 			Name:      p.Name,
-			Edition:   p.Set,
+			Edition:   edition,
 			Variation: strings.ReplaceAll(skuNumber(p.SKU), "_", " "),
-			Finish:    p.Finish,
+			Finish:    finish,
 			Foil:      foil,
 		})
 	}
@@ -305,6 +306,29 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		Variation: p.CollectorNumber,
 		Foil:      foil,
 	})
+}
+
+// fabPrintRun moves the print run out of a Flesh and Blood set name and into
+// the finish. The catalog spells the run as part of the set, "Tales of Aria
+// (1st Edition)", where the datastore keeps one set and crosses the run with
+// the treatment, so the two runs of a card are two printings and the set name
+// alone reaches neither in particular. A set without a run is left as it is.
+func fabPrintRun(set, finish string) (string, string) {
+	var run string
+	switch {
+	case strings.HasSuffix(set, " (1st Edition)"):
+		set, run = strings.TrimSuffix(set, " (1st Edition)"), "1st Edition"
+	case strings.HasSuffix(set, " (Unlimited)"):
+		set, run = strings.TrimSuffix(set, " (Unlimited)"), "Unlimited Edition"
+	default:
+		return set, finish
+	}
+	// The catalog names the plain treatment for what it is not; the
+	// datastore names it for what it is.
+	if finish == "" || finish == "Non-foil" {
+		finish = "Normal"
+	}
+	return set, run + " " + finish
 }
 
 // catalogCondition maps a catalog condition string to an mtgban grade.
