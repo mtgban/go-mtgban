@@ -880,70 +880,17 @@ func (c *InputCard) ShouldIgnoreNumber(setName, num string) bool {
 
 }
 
-// IsToken reports whether the name is a token in this datastore, including the
-// named oddities that carry no token type of their own.
+// IsToken reports whether the name is a token in this datastore. The names a
+// game knows as tokens without carrying a token type of their own are its own
+// business, so the game's rules are asked as well.
 func (b *Backend) IsToken(name string) bool {
-	// Check main table first
 	if slices.Contains(b.Tokens, name) {
 		return true
 	}
-	switch name {
-	// Custom token names
-	case "A Threat to Alara: Nicol Bolas",
-		"Fun Format: Pack Wars",
-		"On An Adventure",
-		"Pyromantic Pixels",
-		"Theme: The Gold Standard",
-		"Theme: WUBRG Cards":
-		return true
-	// WCD extra cards
-	case "Biography",
-		"Blank",
-		"Overview":
-		return true
-	}
-	switch {
-	// Avoid confusion with Monarch and Emblem below
-	case HasPrefix(name, "Emblem of the Warmind"),
-		HasPrefix(name, "Kavu Monarch"),
-		HasPrefix(name, "Leering Emblem"),
-		// and with the `card` wildcard
-		HasPrefix(name, "Our Market Research"):
+	if b.rules == nil {
 		return false
-	// Anything token
-	case strings.Contains(name, " Card"),
-		strings.Contains(name, "Card "),
-		strings.HasPrefix(name, "Bounty"),
-		Contains(name, "Arena Code"),
-		Contains(name, "Art Series"),
-		Contains(name, "Charlie Brown"),
-		Contains(name, "Checklist"),
-		Contains(name, "Copy"),
-		Contains(name, "Decklist"),
-		Contains(name, "DFC Helper"),
-		Contains(name, "Dungeon of the Mad Mage"),
-		Contains(name, "Emblem"),
-		Contains(name, "Experience C"),
-		Contains(name, "Giant Teddy Bear"),
-		Contains(name, "Guild Symbol"),
-		Contains(name, "Magic Minigame"),
-		Contains(name, "The Monarch"),
-		strings.Contains(name, "The Initiative"),
-		Contains(name, "Morph Overlay"),
-		Contains(name, "On Your Turn"),
-		Contains(name, "Online Code"),
-		Contains(name, "Oversize"),
-		Contains(name, "Punch Out"),
-		Contains(name, "Token"),
-		Contains(name, "Rules Tip"):
-		return true
-	// Alternative rules tip card names found on mkm
-	case strings.HasPrefix(name, "Build a Deck: "),
-		strings.HasPrefix(name, "Tip: "):
-		return true
 	}
-
-	return false
+	return b.rules.IsToken(b, name)
 }
 
 // ParseCommanderEdition returns the Commander edition the text names, or an

@@ -43,6 +43,12 @@ type GameRules interface {
 	// is unsupported rather than mismatched. Games without tagged promos
 	// return false.
 	MissingPromoTag(b *Backend, inCard *InputCard, co *CardObject) bool
+	// IsToken reports whether a name is one this game knows as a token
+	// without its carrying a token type of its own - the rules tips, the
+	// checklists, the storefront spellings that only ever name a token. The
+	// datastore's own token list is checked before this is asked, so a game
+	// with nothing to add answers false.
+	IsToken(b *Backend, name string) bool
 	// CanonicalFinish spells a finish name the way this game names it: its
 	// own name for every finish it has, the vendor aliases that reach them,
 	// and CanonicalFinish (the package function) for the finishes every game
