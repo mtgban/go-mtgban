@@ -212,9 +212,18 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		}
 		cardIDFoil = cardID
 		if mkm.gameID == GameIdFleshAndBlood {
-			// Flesh and Blood's second column attaches to the product's
-			// rainbow-first foil default.
-			cardIDFoil, _ = mtgmatcher.MatchId(fmt.Sprint(tcgID), true)
+			// Cardmarket sells each Flesh and Blood treatment as its own
+			// product and each print run as its own expansion, so a
+			// product is one printing and says which: the run in the
+			// expansion name, the treatment in a parenthetical after the
+			// card's. The flag names neither, and answered every one of
+			// them with the unlimited plain printing.
+			if finish := fabFinish(product.ExpansionName, product.Name); finish != "" {
+				if id, ferr := mtgmatcher.MatchIdFinish(fmt.Sprint(tcgID), finish); ferr == nil {
+					cardID = id
+				}
+			}
+			cardIDFoil = cardID
 		}
 		if mkm.gameID == GameIdYugioh {
 			// Yu-Gi-Oh's second column is the first edition's, which is a
@@ -244,11 +253,23 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		return err
 	}
 
+	// A catalog that gives each treatment its own product prices one
+	// printing per product, and the product's own columns are that
+	// printing's whatever its foilness - there is no second column for
+	// them to be in. Every other catalog keeps the foil beside the plain
+	// card and splits the two across the columns.
+	perTreatment := mkm.gameID == GameIdFleshAndBlood
+
 	// If card is not foil, add prices from the prices array, then check
 	// if there is a foil printing, and add prices from the foilprices array.
 	// If a card is foil-only or is etched, then we just use foilprices data.
-	if !co.Foil && !co.Etched {
+	if perTreatment || (!co.Foil && !co.Etched) {
 		link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, false)
+
+		quantity := product.CountArticles - product.CountFoils
+		if perTreatment {
+			quantity = product.CountArticles
+		}
 
 		for i := range availableIndexNames {
 			if prices[i] == 0 {
@@ -261,7 +282,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      prices[i] * mkm.exchangeRate,
-					Quantity:   product.CountArticles - product.CountFoils,
+					Quantity:   quantity,
 					URL:        link,
 					SellerName: availableIndexNames[i],
 					OriginalId: fmt.Sprint(product.IdProduct),
@@ -271,7 +292,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			channel <- out
 		}
 
-		if foilprices[0] != 0 || foilprices[1] != 0 {
+		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
 			link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, true)
 
 			// An empty foil id means the card has no foil printing (Match

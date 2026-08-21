@@ -107,6 +107,40 @@ type PriceGuide struct {
 	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
+// fabFinish names the printing a Cardmarket Flesh and Blood product is,
+// from the two places the catalog says so: the print run in the expansion
+// name ("Tales of Aria - First"), and the treatment in a parenthetical
+// after the card's ("Go Bananas (Rainbow Foil)"). The datastore crosses the
+// two and gives each crossing its own printing, so both have to be named to
+// reach one. A product naming neither is left to the id alone.
+func fabFinish(expansion, name string) string {
+	var run string
+	switch {
+	case strings.HasSuffix(expansion, " - First"):
+		run = "1st Edition"
+	case strings.HasSuffix(expansion, " - Unlimited"):
+		run = "Unlimited Edition"
+	}
+
+	treatment := ""
+	if open := strings.LastIndex(name, " ("); open >= 0 && strings.HasSuffix(name, ")") {
+		switch tail := name[open+2 : len(name)-1]; tail {
+		case "Regular":
+			treatment = "Normal"
+		case "Rainbow Foil", "Cold Foil":
+			treatment = tail
+		}
+	}
+
+	switch {
+	case run != "" && treatment != "":
+		return run + " " + treatment
+	case treatment != "" && treatment != "Normal":
+		return treatment
+	}
+	return ""
+}
+
 // GetPriceGuide downloads the published price guide for one game.
 func GetPriceGuide(ctx context.Context, gameID int) ([]PriceGuide, error) {
 	link := fmt.Sprintf(priceGuideURL, gameID)
