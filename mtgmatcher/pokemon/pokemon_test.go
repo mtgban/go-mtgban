@@ -290,6 +290,10 @@ func TestEraPrefixedEdition(t *testing.T) {
 		{"XY Steam Siege", "XY - Steam Siege"},
 		{"BW Dark Explorers", "Dark Explorers"},
 		{"Diamond and Pearl Great Encounters", "Great Encounters"},
+		// Cardmarket spends no words on the era at all, so the whole name
+		// has to be tried before any of it is dropped.
+		{"White Flare", "SV: White Flare"},
+		{"Rebel Clash", "SWSH02: Rebel Clash"},
 		// A set named outright still answers for itself.
 		{"Base Set", "Base Set"},
 	} {
