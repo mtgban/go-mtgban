@@ -170,7 +170,7 @@ func NewScraper(sig string) *SealedEVScraper {
 	return &ss
 }
 
-func (ss *SealedEVScraper) printf(format string, a ...interface{}) {
+func (ss *SealedEVScraper) printf(format string, a ...any) {
 	if ss.LogCallback != nil {
 		ss.LogCallback("[SS] "+format, a...)
 	}

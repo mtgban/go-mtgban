@@ -15,7 +15,7 @@ import (
 // LogCallbackFunc receives a scraper's progress messages. Scrapers log
 // nothing until one is set, so a quiet run means no callback rather than no
 // activity.
-type LogCallbackFunc func(format string, a ...interface{})
+type LogCallbackFunc func(format string, a ...any)
 
 const exchangeRateURL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
 

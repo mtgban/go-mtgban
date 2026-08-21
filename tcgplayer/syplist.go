@@ -23,7 +23,7 @@ type TCGSYPList struct {
 	buylist     mtgban.BuylistRecord
 }
 
-func (tcg *TCGSYPList) printf(format string, a ...interface{}) {
+func (tcg *TCGSYPList) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGSYPList] "+format, a...)
 	}

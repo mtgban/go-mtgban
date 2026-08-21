@@ -26,7 +26,7 @@ func NewScraperSealed() *ManapoolSealed {
 	return &mp
 }
 
-func (mp *ManapoolSealed) printf(format string, a ...interface{}) {
+func (mp *ManapoolSealed) printf(format string, a ...any) {
 	if mp.LogCallback != nil {
 		mp.LogCallback("[MPSealed] "+format, a...)
 	}

@@ -43,7 +43,7 @@ type CardMarketSealed struct {
 	gameID int
 }
 
-func (mkm *CardMarketSealed) printf(format string, a ...interface{}) {
+func (mkm *CardMarketSealed) printf(format string, a ...any) {
 	if mkm.LogCallback != nil {
 		mkm.LogCallback("[MKMSealed] "+format, a...)
 	}

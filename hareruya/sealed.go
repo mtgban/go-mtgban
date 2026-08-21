@@ -42,7 +42,7 @@ func NewScraperSealed() *HareruyaSealed {
 	return &ha
 }
 
-func (ha *HareruyaSealed) printf(format string, a ...interface{}) {
+func (ha *HareruyaSealed) printf(format string, a ...any) {
 	if ha.LogCallback != nil {
 		ha.LogCallback("[HASealed] "+format, a...)
 	}

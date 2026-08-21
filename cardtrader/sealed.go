@@ -47,7 +47,7 @@ func NewScraperSealed(gameID int, token string) (*CardtraderSealed, error) {
 	return &ct, nil
 }
 
-func (ct *CardtraderSealed) printf(format string, a ...interface{}) {
+func (ct *CardtraderSealed) printf(format string, a ...any) {
 	if ct.LogCallback != nil {
 		ct.LogCallback("[CTSealed] "+format, a...)
 	}

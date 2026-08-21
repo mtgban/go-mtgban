@@ -61,7 +61,7 @@ var name2shorthand = map[string]string{
 	"MKM Trend": "MKMTrend",
 }
 
-func (mkm *CardMarketIndex) printf(format string, a ...interface{}) {
+func (mkm *CardMarketIndex) printf(format string, a ...any) {
 	if mkm.LogCallback != nil {
 		mkm.LogCallback("[MKMIndex] "+format, a...)
 	}

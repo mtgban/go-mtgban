@@ -49,7 +49,7 @@ func NewScraper() *Cardkingdom {
 	return &ck
 }
 
-func (ck *Cardkingdom) printf(format string, a ...interface{}) {
+func (ck *Cardkingdom) printf(format string, a ...any) {
 	if ck.LogCallback != nil {
 		ck.LogCallback("[CK] "+format, a...)
 	}

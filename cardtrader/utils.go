@@ -173,7 +173,7 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ma
 // the lot. A non-empty targetEdition narrows the fetch to that expansion
 // by name or code; logf, when given, reports the skips. The expansions
 // are returned too, since callers key edition names off them.
-func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, targetEdition string, logf func(string, ...interface{})) ([]Blueprint, []Expansion, error) {
+func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, targetEdition string, logf func(string, ...any)) ([]Blueprint, []Expansion, error) {
 	expansions, err := client.Expansions(ctx)
 	if err != nil {
 		return nil, nil, err

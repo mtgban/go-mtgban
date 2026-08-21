@@ -59,7 +59,7 @@ func NewScraper(game string) *Strikezone {
 	return &sz
 }
 
-func (sz *Strikezone) printf(format string, a ...interface{}) {
+func (sz *Strikezone) printf(format string, a ...any) {
 	if sz.LogCallback != nil {
 		sz.LogCallback("[SZ] "+format, a...)
 	}

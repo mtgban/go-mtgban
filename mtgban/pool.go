@@ -17,7 +17,7 @@ func WorkerPool[T any, R any](
 	items []T,
 	worker func(context.Context, T, chan<- R) error,
 	consume func(R),
-	logErr func(string, ...interface{}),
+	logErr func(string, ...any),
 ) {
 	// Without this, a caller that never set its concurrency spawns no workers
 	// at all: nothing drains work, so the dispatch loop blocks on its first

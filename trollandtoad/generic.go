@@ -59,7 +59,7 @@ func NewGenericScraper(game string) *TrollAndToadGeneric {
 	return &tnt
 }
 
-func (tnt *TrollAndToadGeneric) printf(format string, a ...interface{}) {
+func (tnt *TrollAndToadGeneric) printf(format string, a ...any) {
 	if tnt.LogCallback != nil {
 		tnt.LogCallback("[TNT] "+format, a...)
 	}

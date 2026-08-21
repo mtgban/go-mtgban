@@ -54,7 +54,7 @@ func NewScraper(game string) (*Ninetyfive, error) {
 	return &nf, nil
 }
 
-func (nf *Ninetyfive) printf(format string, a ...interface{}) {
+func (nf *Ninetyfive) printf(format string, a ...any) {
 	if nf.LogCallback != nil {
 		nf.LogCallback("[95] "+format, a...)
 	}

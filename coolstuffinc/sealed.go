@@ -69,7 +69,7 @@ func NewScraperSealed(game string) *CoolstuffincSealed {
 	return &csi
 }
 
-func (csi *CoolstuffincSealed) printf(format string, a ...interface{}) {
+func (csi *CoolstuffincSealed) printf(format string, a ...any) {
 	if csi.LogCallback != nil {
 		csi.LogCallback("[CSISealed] "+format, a...)
 	}

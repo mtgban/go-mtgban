@@ -37,7 +37,7 @@ func NewScraperSealed(game int, apiKey string) *StarcitygamesSealed {
 	return &scg
 }
 
-func (scg *StarcitygamesSealed) printf(format string, a ...interface{}) {
+func (scg *StarcitygamesSealed) printf(format string, a ...any) {
 	if scg.LogCallback != nil {
 		scg.LogCallback("[SCGSealed] "+format, a...)
 	}

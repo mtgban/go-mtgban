@@ -60,7 +60,7 @@ func NewScraperSealed() *TrollandtoadSealed {
 	return &tnt
 }
 
-func (tnt *TrollandtoadSealed) printf(format string, a ...interface{}) {
+func (tnt *TrollandtoadSealed) printf(format string, a ...any) {
 	if tnt.LogCallback != nil {
 		tnt.LogCallback("[TNTSealed] "+format, a...)
 	}

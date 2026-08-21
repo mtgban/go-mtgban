@@ -40,7 +40,7 @@ func NewScraper() *Wizardscupboard {
 	return &wc
 }
 
-func (wc *Wizardscupboard) printf(format string, a ...interface{}) {
+func (wc *Wizardscupboard) printf(format string, a ...any) {
 	if wc.LogCallback != nil {
 		wc.LogCallback("[WC] "+format, a...)
 	}

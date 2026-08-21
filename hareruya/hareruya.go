@@ -67,7 +67,7 @@ type responseChan struct {
 	buyEntry *mtgban.BuylistEntry
 }
 
-func (ha *Hareruya) printf(format string, a ...interface{}) {
+func (ha *Hareruya) printf(format string, a ...any) {
 	if ha.LogCallback != nil {
 		ha.LogCallback("[HA] "+format, a...)
 	}

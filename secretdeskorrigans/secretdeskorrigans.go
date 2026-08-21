@@ -52,7 +52,7 @@ type responseChan struct {
 	invEntry *mtgban.InventoryEntry
 }
 
-func (sdk *SecretDesKorrigans) printf(format string, a ...interface{}) {
+func (sdk *SecretDesKorrigans) printf(format string, a ...any) {
 	if sdk.LogCallback != nil {
 		sdk.LogCallback("[SDK] "+format, a...)
 	}

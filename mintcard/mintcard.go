@@ -37,7 +37,7 @@ func NewScraper() *MTGMintCard {
 	return &mint
 }
 
-func (mint *MTGMintCard) printf(format string, a ...interface{}) {
+func (mint *MTGMintCard) printf(format string, a ...any) {
 	if mint.LogCallback != nil {
 		mint.LogCallback("[MMC] "+format, a...)
 	}

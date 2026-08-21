@@ -36,7 +36,7 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
-func (stks *MTGStocks) printf(format string, a ...interface{}) {
+func (stks *MTGStocks) printf(format string, a ...any) {
 	if stks.LogCallback != nil {
 		stks.LogCallback("[STKS] "+format, a...)
 	}
