@@ -27,6 +27,12 @@ func (DefaultRules) IsUnsupported(b *Backend, inCard *InputCard) bool {
 	return false
 }
 
+// IsToken reports that the game knows no token names beyond the ones its
+// datastore already lists.
+func (DefaultRules) IsToken(b *Backend, name string) bool {
+	return false
+}
+
 // IsSpecificUnsupported reports that no single card is unsupported on its
 // own account.
 func (DefaultRules) IsSpecificUnsupported(b *Backend, inCard *InputCard) bool {
