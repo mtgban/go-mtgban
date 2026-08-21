@@ -276,3 +276,32 @@ func TestNameCarriesNumber(t *testing.T) {
 		})
 	}
 }
+
+// TestEraPrefixedEdition pins the set an era-prefixed spelling names. The
+// catalog numbers a set within its era and storefronts do not, so the two
+// spellings agree only after the prefix; without this a listing's edition
+// narrows nothing and the card aliases across every set sharing its number.
+func TestEraPrefixedEdition(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct{ edition, want string }{
+		{"SWSH Darkness Ablaze", "SWSH03: Darkness Ablaze"},
+		{"SV Paradox Rift", "SV04: Paradox Rift"},
+		{"XY Steam Siege", "XY - Steam Siege"},
+		{"BW Dark Explorers", "Dark Explorers"},
+		{"Diamond and Pearl Great Encounters", "Great Encounters"},
+		// A set named outright still answers for itself.
+		{"Base Set", "Base Set"},
+	} {
+		in := mtgmatcher.InputCard{Name: "Pikachu", Edition: tt.edition}
+		Rules{}.AdjustEdition(b, &in)
+		set, err := b.GetSetByName(in.Edition)
+		if err != nil {
+			t.Errorf("edition %q resolved to %q, which names no set", tt.edition, in.Edition)
+			continue
+		}
+		if set.Name != tt.want {
+			t.Errorf("edition %q -> %q, want %q", tt.edition, set.Name, tt.want)
+		}
+	}
+}

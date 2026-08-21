@@ -3,6 +3,7 @@ package pokemon
 import (
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -127,7 +128,74 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if mtgmatcher.IsPromoHeading(edition) {
 		edition = ""
 	}
+	// A storefront spelling the era but not the set's number within it
+	// ("SWSH Darkness Ablaze") names a set the catalog calls something
+	// longer ("SWSH03: Darkness Ablaze"); ask what the two have in common
+	// rather than leaving the edition to narrow nothing.
+	// The lookups here are the direct ones on purpose: GetSetByName asks
+	// the rules to adjust the edition, which is this function.
+	if edition != "" {
+		_, known := b.NormalizedSets[mtgmatcher.Normalize(edition)]
+		if !known {
+			_, err := b.GetSet(edition)
+			known = err == nil
+		}
+		if !known {
+			if name := setNamedByTail(b, edition); name != "" {
+				edition = name
+			}
+		}
+	}
 	inCard.Edition = edition
+}
+
+// setTails indexes each backend's sets by the name left after the catalog's
+// era-and-number prefix, built once per datastore since the sets do not
+// change after it is loaded.
+var setTails sync.Map
+
+// setTail drops the prefix the catalog decorates a set name with: both
+// "SWSH03: Darkness Ablaze" and "XY - Steam Siege" are an era, a separator,
+// and the name the set is actually known by.
+func setTail(name string) string {
+	if _, after, found := strings.Cut(name, ": "); found {
+		return after
+	}
+	if _, after, found := strings.Cut(name, " - "); found {
+		return after
+	}
+	return name
+}
+
+// setNamedByTail answers the set an era-prefixed spelling means. Storefronts
+// write the era and the name where the catalog writes the era, the set's
+// number within it, and the name, so what follows either prefix is what has
+// to agree. Leading words are dropped one at a time, since how much of the
+// prefix is era is not knowable in advance - "Diamond and Pearl Great
+// Encounters" spends three words on it. A tail two sets share names neither.
+func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
+	cached, found := setTails.Load(b)
+	if !found {
+		index := map[string][]string{}
+		for _, set := range b.Sets {
+			tail := mtgmatcher.Normalize(setTail(set.Name))
+			index[tail] = append(index[tail], set.Name)
+		}
+		cached, _ = setTails.LoadOrStore(b, index)
+	}
+	index := cached.(map[string][]string)
+
+	fields := strings.Fields(edition)
+	for i := 1; i < len(fields); i++ {
+		names := index[mtgmatcher.Normalize(strings.Join(fields[i:], " "))]
+		if len(names) == 1 {
+			return names[0]
+		}
+		if len(names) > 1 {
+			return ""
+		}
+	}
+	return ""
 }
 
 // FilterCards narrows candidates by edition, collector number and label, in
