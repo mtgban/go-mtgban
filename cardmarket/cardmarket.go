@@ -305,6 +305,13 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			// sold in no first edition, which the guard below drops.
 			cardIDFoil, _ = mtgmatcher.MatchIdFinish(cardID, "1st Edition")
 		}
+		if mkm.gameID == GameIdPokemon {
+			// Pokemon's second column is the reverse holo's, which the flag
+			// cannot name either: a holo rare's own printing is already a
+			// foil one, so both flags answer it and the reverse beside it
+			// is never reached.
+			cardIDFoil, _ = mtgmatcher.MatchIdFinish(cardID, "Reverse Holofoil")
+		}
 	default:
 		return errors.New("unsupported game")
 	}
@@ -317,7 +324,8 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 
 	// Sorted as availableIndexNames
 	prices := []float64{guide.LowPrice, guide.TrendPrice}
-	foilprices := []float64{guide.FoilLowPrice, guide.FoilTrendPrice}
+	foilLow, foilTrend := guide.SecondPrinting(mkm.gameID)
+	foilprices := []float64{foilLow, foilTrend}
 
 	co, err := mtgmatcher.GetUUID(cardID)
 	if err != nil {

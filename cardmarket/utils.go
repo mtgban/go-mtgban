@@ -99,6 +99,12 @@ type PriceGuide struct {
 	FoilAvgSellPrice float64 `json:"avg-foil"`
 	FoilLowPrice     float64 `json:"low-foil"`
 	FoilTrendPrice   float64 `json:"trend-foil"`
+	// Pokemon's guide names the second printing's prices "holo" rather
+	// than "foil", and publishes them for the cards sold in a reverse
+	// holo and for no others; see SecondPrinting.
+	HoloAvgSellPrice float64 `json:"avg-holo"`
+	HoloLowPrice     float64 `json:"low-holo"`
+	HoloTrendPrice   float64 `json:"trend-holo"`
 	AvgDay1          float64 `json:"avg1"`
 	AvgDay7          float64 `json:"avg7"`
 	AvgDay30         float64 `json:"avg30"`
@@ -139,6 +145,17 @@ func fabFinish(expansion, name string) string {
 		return treatment
 	}
 	return ""
+}
+
+// SecondPrinting names the prices of the printing sold beside the product's
+// default one, under whichever heading the game's guide publishes them. Most
+// games sell a foil beside a plain card; Pokemon sells a reverse holo, and
+// its guide says so.
+func (pg PriceGuide) SecondPrinting(gameID int) (low, trend float64) {
+	if gameID == GameIdPokemon {
+		return pg.HoloLowPrice, pg.HoloTrendPrice
+	}
+	return pg.FoilLowPrice, pg.FoilTrendPrice
 }
 
 // GetPriceGuide downloads the published price guide for one game.
