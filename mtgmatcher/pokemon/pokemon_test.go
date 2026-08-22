@@ -270,7 +270,7 @@ func TestNameCarriesNumber(t *testing.T) {
 				t.Fatalf("Match(%v) = %v", tt.in, err)
 			}
 			if id != tt.want {
-				co, _ := b.UUIDs[id]
+				co := b.UUIDs[id]
 				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, co, tt.want)
 			}
 		})

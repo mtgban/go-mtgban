@@ -348,9 +348,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		}
 	}
 	// Restore canonical name for split cards
-	if strings.Contains(cardName, " / ") {
-		cardName = strings.Replace(cardName, " / ", " // ", -1)
-	}
+	cardName = strings.ReplaceAll(cardName, " / ", " // ")
 	if strings.Contains(cardName, " // ") {
 		cardName = strings.Split(cardName, " // ")[0]
 		cardName = strings.TrimSpace(cardName)

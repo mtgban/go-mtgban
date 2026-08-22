@@ -210,7 +210,7 @@ func (ck *CookieClient) Get(ctx context.Context, link string) (*http.Response, e
 
 	headers := make(http.Header, len(res.Headers))
 	for k, v := range res.Headers {
-		headers.Set(http.CanonicalHeaderKey(k), v)
+		headers.Set(k, v)
 	}
 
 	code := res.Status
@@ -250,7 +250,7 @@ func (ck *CookieClient) Post(ctx context.Context, link, contentType string, read
 
 	headers := make(http.Header, len(res.Headers))
 	for k, v := range res.Headers {
-		headers.Set(http.CanonicalHeaderKey(k), v)
+		headers.Set(k, v)
 	}
 
 	code := res.Status

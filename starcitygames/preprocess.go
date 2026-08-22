@@ -187,7 +187,7 @@ func playPromoPrinting(cardName string) (code, number string, ok bool) {
 func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 	fields := strings.Split(SKU, "-")
 	if len(fields) < 5 || len(fields[4]) < 3 {
-		return nil, fmt.Errorf("Malformed SKU: %s", SKU)
+		return nil, fmt.Errorf("malformed SKU: %s", SKU)
 	}
 
 	setCode := fixupSetCode(fields[2])

@@ -1921,7 +1921,11 @@ func run() int {
 	start := time.Now()
 
 	for key, val := range options {
-		flag.BoolVar(&val.Enabled, key, false, "Enable "+strings.Title(key))
+		label := key
+		if label != "" {
+			label = strings.ToUpper(label[:1]) + label[1:]
+		}
+		flag.BoolVar(&val.Enabled, key, false, "Enable "+label)
 	}
 
 	datastoreOpt := flag.String("datastore", "", "Path to AllPrintings file")
