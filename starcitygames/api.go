@@ -19,8 +19,9 @@ const (
 
 // SCGClient reads SCG's catalog API.
 type SCGClient struct {
-	client *http.Client
-	apiKey string
+	client     *http.Client
+	apiKey     string
+	catalogURL string
 }
 
 // NewSCGClient returns a client using the given API key.
@@ -32,6 +33,7 @@ func NewSCGClient(apiKey string) *SCGClient {
 	cli.RetryWaitMin = 2 * time.Second
 	scg.client = cli.StandardClient()
 	scg.apiKey = apiKey
+	scg.catalogURL = scgCatalogURL
 	return &scg
 }
 

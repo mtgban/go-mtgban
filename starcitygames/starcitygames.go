@@ -181,14 +181,13 @@ func (scg *Starcitygames) loadCatalog(ctx context.Context) error {
 	}
 	scg.setIDs = setIDs
 
-	body, err := scg.client.DownloadCatalog(ctx)
-	if err != nil {
-		return err
-	}
-	defer body.Close()
-
 	count := 0
-	err = decodeCatalog(body, func(p CatalogProduct) error {
+	err = scg.client.StreamCatalog(ctx, func() {
+		scg.printf("Catalog stream broke after %d products, downloading it again", count)
+		scg.inventory = mtgban.InventoryRecord{}
+		scg.buylist = mtgban.BuylistRecord{}
+		count = 0
+	}, func(p CatalogProduct) error {
 		scg.processProduct(p)
 		count++
 		if count%5000 == 0 {
