@@ -30,9 +30,9 @@ const (
 	GameLorcana = "6"
 )
 
-// TrollAndToadGeneric prices the singles of any game Troll and Toad carries,
+// Generic prices the singles of any game Troll and Toad carries,
 // by the department number they file it under.
-type TrollAndToadGeneric struct {
+type Generic struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
@@ -49,8 +49,8 @@ type TrollAndToadGeneric struct {
 }
 
 // NewGenericScraper returns a singles scraper for one game.
-func NewGenericScraper(game string) *TrollAndToadGeneric {
-	tnt := TrollAndToadGeneric{}
+func NewGenericScraper(game string) *Generic {
+	tnt := Generic{}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
 	tnt.game = game
@@ -59,13 +59,13 @@ func NewGenericScraper(game string) *TrollAndToadGeneric {
 	return &tnt
 }
 
-func (tnt *TrollAndToadGeneric) printf(format string, a ...any) {
+func (tnt *Generic) printf(format string, a ...any) {
 	if tnt.LogCallback != nil {
 		tnt.LogCallback("[TNT] "+format, a...)
 	}
 }
 
-func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, lastPage int) error {
+func (tnt *Generic) parsePages(ctx context.Context, link string, lastPage int) error {
 	channel := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -218,7 +218,7 @@ func (tnt *TrollAndToadGeneric) parsePages(ctx context.Context, link string, las
 	return nil
 }
 
-func (tnt *TrollAndToadGeneric) scrapePages(ctx context.Context, link string) error {
+func (tnt *Generic) scrapePages(ctx context.Context, link string) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
 		return err
@@ -251,7 +251,7 @@ func (tnt *TrollAndToadGeneric) scrapePages(ctx context.Context, link string) er
 	return tnt.parsePages(ctx, link, lastPage)
 }
 
-func (tnt *TrollAndToadGeneric) scrape(ctx context.Context) error {
+func (tnt *Generic) scrape(ctx context.Context) error {
 	var link string
 	if tnt.game == GameLorcana {
 		link = "https://www.trollandtoad.com/disney-lorcana/19773"
@@ -289,7 +289,7 @@ func (tnt *TrollAndToadGeneric) scrape(ctx context.Context) error {
 	return nil
 }
 
-func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
+func (tnt *Generic) scrapeBuylist(ctx context.Context) error {
 	link := buylistURL + tnt.game
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
@@ -414,13 +414,13 @@ func (tnt *TrollAndToadGeneric) scrapeBuylist(ctx context.Context) error {
 
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
-func (tnt *TrollAndToadGeneric) SetConfig(opt mtgban.ScraperOptions) {
+func (tnt *Generic) SetConfig(opt mtgban.ScraperOptions) {
 	tnt.DisableRetail = opt.DisableRetail
 	tnt.DisableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (tnt *TrollAndToadGeneric) Load(ctx context.Context) error {
+func (tnt *Generic) Load(ctx context.Context) error {
 	var errs []error
 
 	if !tnt.DisableRetail {
@@ -441,17 +441,17 @@ func (tnt *TrollAndToadGeneric) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (tnt *TrollAndToadGeneric) Inventory() mtgban.InventoryRecord {
+func (tnt *Generic) Inventory() mtgban.InventoryRecord {
 	return tnt.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (tnt *TrollAndToadGeneric) Buylist() mtgban.BuylistRecord {
+func (tnt *Generic) Buylist() mtgban.BuylistRecord {
 	return tnt.buylist
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (tnt *TrollAndToadGeneric) Info() (info mtgban.ScraperInfo) {
+func (tnt *Generic) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TNT"
 	info.InventoryTimestamp = &tnt.inventoryDate

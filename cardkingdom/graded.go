@@ -21,9 +21,9 @@ const (
 	gradedURL = "https://www.cardkingdom.com/mtg/graded-magic"
 )
 
-// CardkingdomGraded prices the cards Card Kingdom lists with a professional
+// Graded prices the cards Card Kingdom lists with a professional
 // grade, which they sell apart from their ungraded stock.
-type CardkingdomGraded struct {
+type Graded struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
@@ -34,26 +34,26 @@ type CardkingdomGraded struct {
 }
 
 // NewScraperGraded returns a graded scraper.
-func NewScraperGraded() (*CardkingdomGraded, error) {
+func NewScraperGraded() (*Graded, error) {
 	client, err := cloudscraper.Init(false, false)
 	if err != nil {
 		return nil, err
 	}
 
-	ck := CardkingdomGraded{}
+	ck := Graded{}
 	ck.inventory = mtgban.InventoryRecord{}
 	ck.client = client
 
 	return &ck, nil
 }
 
-func (ck *CardkingdomGraded) printf(format string, a ...any) {
+func (ck *Graded) printf(format string, a ...any) {
 	if ck.LogCallback != nil {
 		ck.LogCallback("[CKGraded] "+format, a...)
 	}
 }
 
-func (ck *CardkingdomGraded) totalPages() (string, int, error) {
+func (ck *Graded) totalPages() (string, int, error) {
 	cookieMap := map[string]string{
 		"Cookie": "limit=100; sortBy=price_desc; viewType=listShowCart listShowDetails;",
 	}
@@ -86,7 +86,7 @@ func (ck *CardkingdomGraded) totalPages() (string, int, error) {
 	return session, pages, nil
 }
 
-func (ck *CardkingdomGraded) scrapePage(session string, page int) error {
+func (ck *Graded) scrapePage(session string, page int) error {
 	cookieMap := map[string]string{
 		"Cookie": "limit=100; sortBy=price_desc; viewType=listShowCart listShowDetails; laravel_session=" + session + ";",
 	}
@@ -184,7 +184,7 @@ func (ck *CardkingdomGraded) scrapePage(session string, page int) error {
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (ck *CardkingdomGraded) Load(ctx context.Context) error {
+func (ck *Graded) Load(ctx context.Context) error {
 	session, pages, err := ck.totalPages()
 	if err != nil {
 		return err
@@ -209,12 +209,12 @@ func (ck *CardkingdomGraded) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (ck *CardkingdomGraded) Inventory() mtgban.InventoryRecord {
+func (ck *Graded) Inventory() mtgban.InventoryRecord {
 	return ck.inventory
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (ck *CardkingdomGraded) Info() (info mtgban.ScraperInfo) {
+func (ck *Graded) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Kingdom Graded"
 	info.Shorthand = "CKGraded"
 	info.InventoryTimestamp = &ck.inventoryDate

@@ -9,8 +9,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// ABUGamesSealed prices ABU Games' sealed product.
-type ABUGamesSealed struct {
+// Sealed prices ABU Games' sealed product.
+type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 
 	inventoryDate  time.Time
@@ -25,8 +25,8 @@ type ABUGamesSealed struct {
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *ABUGamesSealed {
-	abu := ABUGamesSealed{}
+func NewScraperSealed() *Sealed {
+	abu := Sealed{}
 	abu.inventory = mtgban.InventoryRecord{}
 	abu.buylist = mtgban.BuylistRecord{}
 	abu.MaxConcurrency = defaultConcurrency
@@ -47,13 +47,13 @@ func NewScraperSealed() *ABUGamesSealed {
 	return &abu
 }
 
-func (abu *ABUGamesSealed) printf(format string, a ...any) {
+func (abu *Sealed) printf(format string, a ...any) {
 	if abu.LogCallback != nil {
 		abu.LogCallback("[ABUSealed] "+format, a...)
 	}
 }
 
-func (abu *ABUGamesSealed) processEntry(ctx context.Context, channel chan<- resultChan, page int) error {
+func (abu *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, page int) error {
 	response, err := abu.client.GetSealedProduct(ctx, page)
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func (abu *ABUGamesSealed) processEntry(ctx context.Context, channel chan<- resu
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (abu *ABUGamesSealed) Load(ctx context.Context) error {
+func (abu *Sealed) Load(ctx context.Context) error {
 	count, err := abu.client.GetTotalSealedItems(ctx)
 	if err != nil {
 		return err
@@ -183,18 +183,18 @@ func (abu *ABUGamesSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (abu *ABUGamesSealed) Inventory() mtgban.InventoryRecord {
+func (abu *Sealed) Inventory() mtgban.InventoryRecord {
 	return abu.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (abu *ABUGamesSealed) Buylist() mtgban.BuylistRecord {
+func (abu *Sealed) Buylist() mtgban.BuylistRecord {
 	return abu.buylist
 }
 
 // TraderNames names the sub-vendors this trader splits into. See
 // mtgban.Trader.
-func (abu *ABUGamesSealed) TraderNames() []string {
+func (abu *Sealed) TraderNames() []string {
 	return availableTraderNames
 }
 
@@ -204,7 +204,7 @@ var name2shorthandSealed = map[string]string{
 }
 
 // InfoForScraper describes one of the sub-scrapers named above.
-func (abu *ABUGamesSealed) InfoForScraper(name string) mtgban.ScraperInfo {
+func (abu *Sealed) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := abu.Info()
 	info.Name = name
 	info.Shorthand = name2shorthandSealed[name]
@@ -215,7 +215,7 @@ func (abu *ABUGamesSealed) InfoForScraper(name string) mtgban.ScraperInfo {
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (abu *ABUGamesSealed) Info() (info mtgban.ScraperInfo) {
+func (abu *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "ABU Games"
 	info.Shorthand = "ABUSealed"
 	info.InventoryTimestamp = &abu.inventoryDate

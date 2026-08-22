@@ -10,8 +10,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// ManapoolSealed prices Mana Pool's sealed product.
-type ManapoolSealed struct {
+// Sealed prices Mana Pool's sealed product.
+type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
@@ -20,20 +20,20 @@ type ManapoolSealed struct {
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *ManapoolSealed {
-	mp := ManapoolSealed{}
+func NewScraperSealed() *Sealed {
+	mp := Sealed{}
 	mp.inventory = mtgban.InventoryRecord{}
 	return &mp
 }
 
-func (mp *ManapoolSealed) printf(format string, a ...any) {
+func (mp *Sealed) printf(format string, a ...any) {
 	if mp.LogCallback != nil {
 		mp.LogCallback("[MPSealed] "+format, a...)
 	}
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (mp *ManapoolSealed) Load(ctx context.Context) error {
+func (mp *Sealed) Load(ctx context.Context) error {
 	pricelist, err := GetSealedList(ctx)
 	if err != nil {
 		return err
@@ -101,12 +101,12 @@ func (mp *ManapoolSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (mp *ManapoolSealed) Inventory() mtgban.InventoryRecord {
+func (mp *Sealed) Inventory() mtgban.InventoryRecord {
 	return mp.inventory
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (mp *ManapoolSealed) Info() (info mtgban.ScraperInfo) {
+func (mp *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Manapool"
 	info.Shorthand = "MPSealed"
 	info.InventoryTimestamp = &mp.inventoryDate

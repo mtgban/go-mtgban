@@ -12,8 +12,8 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-// TCGPlayerSealed prices Magic sealed product from the partner API.
-type TCGPlayerSealed struct {
+// Sealed prices Magic sealed product from the partner API.
+type Sealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	Affiliate      string
 	MaxConcurrency int
@@ -24,7 +24,7 @@ type TCGPlayerSealed struct {
 	client        *tcgplayer.Client
 }
 
-func (tcg *TCGPlayerSealed) printf(format string, a ...any) {
+func (tcg *Sealed) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGSealed] "+format, a...)
 	}
@@ -32,20 +32,20 @@ func (tcg *TCGPlayerSealed) printf(format string, a ...any) {
 
 // NewScraperSealed returns a sealed scraper authenticated with a partner API
 // key pair.
-func NewScraperSealed(publicID, privateID string) (*TCGPlayerSealed, error) {
+func NewScraperSealed(publicID, privateID string) (*Sealed, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
 
-	tcg := TCGPlayerSealed{}
+	tcg := Sealed{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
 	return &tcg, nil
 }
 
-func (tcg *TCGPlayerSealed) processEntries(ctx context.Context, channel chan<- responseChan, reqs []marketChan) error {
+func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseChan, reqs []marketChan) error {
 	ids := make([]int, len(reqs))
 	for i := range reqs {
 		ids[i] = reqs[i].SkuId
@@ -92,7 +92,7 @@ func (tcg *TCGPlayerSealed) processEntries(ctx context.Context, channel chan<- r
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
+func (tcg *Sealed) Load(ctx context.Context) error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
 		return errors.New("sku map not loaded")
@@ -191,12 +191,12 @@ func (tcg *TCGPlayerSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (tcg *TCGPlayerSealed) Inventory() mtgban.InventoryRecord {
+func (tcg *Sealed) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (tcg *TCGPlayerSealed) Info() (info mtgban.ScraperInfo) {
+func (tcg *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player"
 	info.Shorthand = "TCGSealed"
 	info.InventoryTimestamp = &tcg.inventoryDate

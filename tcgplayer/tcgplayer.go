@@ -17,10 +17,10 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-// TCGPlayerMarket prices singles from TCGplayer's partner API, splitting the
+// Market prices singles from TCGplayer's partner API, splitting the
 // result into the sub-sellers their pricing endpoint reports and the buylist
 // they publish alongside it.
-type TCGPlayerMarket struct {
+type Market struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	buylistDate    time.Time
@@ -74,7 +74,7 @@ var skuConditions = map[string]string{
 	"DAMAGED":           "PO",
 }
 
-func (tcg *TCGPlayerMarket) printf(format string, a ...any) {
+func (tcg *Market) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tcg.LogCallback("[TCGMkt] "+format, a...)
 	}
@@ -82,13 +82,13 @@ func (tcg *TCGPlayerMarket) printf(format string, a ...any) {
 
 // NewScraperMarket returns a market scraper authenticated with a partner API
 // key pair.
-func NewScraperMarket(publicID, privateID string) (*TCGPlayerMarket, error) {
+func NewScraperMarket(publicID, privateID string) (*Market, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
 
-	tcg := TCGPlayerMarket{}
+	tcg := Market{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.client = client
@@ -96,7 +96,7 @@ func NewScraperMarket(publicID, privateID string) (*TCGPlayerMarket, error) {
 	return &tcg, nil
 }
 
-func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- responseChan, reqs []marketChan) error {
+func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan, reqs []marketChan) error {
 	ids := make([]int, len(reqs))
 	for i := range reqs {
 		ids[i] = reqs[i].SkuId
@@ -187,7 +187,7 @@ func (tcg *TCGPlayerMarket) processEntry(ctx context.Context, channel chan<- res
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
+func (tcg *Market) Load(ctx context.Context) error {
 	skusMap := tcg.SKUsData
 	if skusMap == nil {
 		return errors.New("sku map not loaded")
@@ -400,29 +400,29 @@ func (tcg *TCGPlayerMarket) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (tcg *TCGPlayerMarket) Inventory() mtgban.InventoryRecord {
+func (tcg *Market) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (tcg *TCGPlayerMarket) Buylist() mtgban.BuylistRecord {
+func (tcg *Market) Buylist() mtgban.BuylistRecord {
 	return tcg.buylist
 }
 
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
-func (tcg *TCGPlayerMarket) MarketNames() []string {
+func (tcg *Market) MarketNames() []string {
 	return availableMarketNames
 }
 
 // TraderNames names the sub-vendors this trader splits into. See
 // mtgban.Trader.
-func (tcg *TCGPlayerMarket) TraderNames() []string {
+func (tcg *Market) TraderNames() []string {
 	return []string{"TCG Direct (net)"}
 }
 
 // InfoForScraper describes one of the sub-scrapers named above.
-func (tcg *TCGPlayerMarket) InfoForScraper(name string) mtgban.ScraperInfo {
+func (tcg *Market) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := tcg.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
@@ -430,7 +430,7 @@ func (tcg *TCGPlayerMarket) InfoForScraper(name string) mtgban.ScraperInfo {
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (tcg *TCGPlayerMarket) Info() (info mtgban.ScraperInfo) {
+func (tcg *Market) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCG Player Market"
 	info.Shorthand = "TCGMkt"
 	info.InventoryTimestamp = &tcg.inventoryDate

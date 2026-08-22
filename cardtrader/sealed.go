@@ -10,9 +10,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// CardtraderSealed prices sealed product from Card Trader, under the same
+// Sealed prices sealed product from Card Trader, under the same
 // storefronts as the singles.
-type CardtraderSealed struct {
+type Sealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 	ShareCode      string
@@ -30,7 +30,7 @@ type CardtraderSealed struct {
 
 // NewScraperSealed returns a sealed scraper for one game, authenticated with a
 // full API token.
-func NewScraperSealed(gameID int, token string) (*CardtraderSealed, error) {
+func NewScraperSealed(gameID int, token string) (*Sealed, error) {
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
 	switch gameID {
@@ -39,7 +39,7 @@ func NewScraperSealed(gameID int, token string) (*CardtraderSealed, error) {
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
-	ct := CardtraderSealed{}
+	ct := Sealed{}
 	ct.inventory = mtgban.InventoryRecord{}
 	// API is strongly rated limited, hardcode a lower amount
 	ct.MaxConcurrency = 2
@@ -48,13 +48,13 @@ func NewScraperSealed(gameID int, token string) (*CardtraderSealed, error) {
 	return &ct, nil
 }
 
-func (ct *CardtraderSealed) printf(format string, a ...any) {
+func (ct *Sealed) printf(format string, a ...any) {
 	if ct.LogCallback != nil {
 		ct.LogCallback("[CTSealed] "+format, a...)
 	}
 }
 
-func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- resultChan, expansionID int, expansionName string, productMap map[int][]string) error {
+func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, expansionID int, expansionName string, productMap map[int][]string) error {
 	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionID)
 	if err != nil {
 		return err
@@ -136,7 +136,7 @@ func (ct *CardtraderSealed) processEntry(ctx context.Context, channel chan<- res
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (ct *CardtraderSealed) Load(ctx context.Context) error {
+func (ct *Sealed) Load(ctx context.Context) error {
 	rates, err := mtgban.GetExchangeRates(ctx)
 	if err != nil {
 		return err
@@ -248,13 +248,13 @@ func (ct *CardtraderSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (ct *CardtraderSealed) Inventory() mtgban.InventoryRecord {
+func (ct *Sealed) Inventory() mtgban.InventoryRecord {
 	return ct.inventory
 }
 
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
-func (ct *CardtraderSealed) MarketNames() []string {
+func (ct *Sealed) MarketNames() []string {
 	// Riftbound has no sealed 1DR listings, and an always-empty seller
 	// reads as a broken scrape downstream, failing the run.
 	if ct.gameID == GameIdRiftbound {
@@ -270,7 +270,7 @@ var name2shorthandSealed = map[string]string{
 }
 
 // InfoForScraper describes one of the sub-scrapers named above.
-func (ct *CardtraderSealed) InfoForScraper(name string) mtgban.ScraperInfo {
+func (ct *Sealed) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ct.Info()
 	info.Name = name
 	info.Shorthand = name2shorthandSealed[name]
@@ -278,7 +278,7 @@ func (ct *CardtraderSealed) InfoForScraper(name string) mtgban.ScraperInfo {
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (ct *CardtraderSealed) Info() (info mtgban.ScraperInfo) {
+func (ct *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader Sealed"
 	info.Shorthand = "CTSealedWrapper"
 	info.InventoryTimestamp = &ct.inventoryDate

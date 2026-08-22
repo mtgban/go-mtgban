@@ -17,8 +17,8 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// HareruyaSealed prices Hareruya's sealed product.
-type HareruyaSealed struct {
+// Sealed prices Hareruya's sealed product.
+type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 
 	inventoryDate time.Time
@@ -32,8 +32,8 @@ type HareruyaSealed struct {
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *HareruyaSealed {
-	ha := HareruyaSealed{}
+func NewScraperSealed() *Sealed {
+	ha := Sealed{}
 	ha.inventory = mtgban.InventoryRecord{}
 	ha.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
@@ -42,14 +42,14 @@ func NewScraperSealed() *HareruyaSealed {
 	return &ha
 }
 
-func (ha *HareruyaSealed) printf(format string, a ...any) {
+func (ha *Sealed) printf(format string, a ...any) {
 	if ha.LogCallback != nil {
 		ha.LogCallback("[HASealed] "+format, a...)
 	}
 }
 
 // inventoryProducts returns the in-stock sealed products, indexed by Hareruya id
-func (ha *HareruyaSealed) inventoryProducts(ctx context.Context) (map[string]Product, error) {
+func (ha *Sealed) inventoryProducts(ctx context.Context) (map[string]Product, error) {
 	products := map[string]Product{}
 	for page := 1; ; page++ {
 		results, err := SearchSealed(ctx, ha.client, page)
@@ -73,7 +73,7 @@ func (ha *HareruyaSealed) inventoryProducts(ctx context.Context) (map[string]Pro
 // sealed product currently being purchased, indexed by Hareruya id. It mirrors
 // the singles buylist scraping, only swapping the per-set query for the sealed
 // product category.
-func (ha *HareruyaSealed) buylistPrices(ctx context.Context) (map[string]float64, error) {
+func (ha *Sealed) buylistPrices(ctx context.Context) (map[string]float64, error) {
 	prices := map[string]float64{}
 
 	for page := 1; ; page++ {
@@ -136,7 +136,7 @@ func (ha *HareruyaSealed) buylistPrices(ctx context.Context) (map[string]float64
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (ha *HareruyaSealed) Load(ctx context.Context) error {
+func (ha *Sealed) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "JPY")
 	if err != nil {
 		return err
@@ -235,17 +235,17 @@ func (ha *HareruyaSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (ha *HareruyaSealed) Inventory() mtgban.InventoryRecord {
+func (ha *Sealed) Inventory() mtgban.InventoryRecord {
 	return ha.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (ha *HareruyaSealed) Buylist() mtgban.BuylistRecord {
+func (ha *Sealed) Buylist() mtgban.BuylistRecord {
 	return ha.buylist
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (ha *HareruyaSealed) Info() (info mtgban.ScraperInfo) {
+func (ha *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Hareruya"
 	info.Shorthand = "HASealed"
 	info.CountryFlag = "JP"

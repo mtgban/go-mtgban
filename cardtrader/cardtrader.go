@@ -17,9 +17,9 @@ const (
 	defaultConcurrency = 8
 )
 
-// CardtraderMarket prices singles from Card Trader, splitting the result into
+// Market prices singles from Card Trader, splitting the result into
 // the storefronts they sell under: the marketplace itself, Zero, and 1DR.
-type CardtraderMarket struct {
+type Market struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	MaxConcurrency int
@@ -53,8 +53,8 @@ var name2shorthand = map[string]string{
 
 // NewScraperMarket returns a market scraper for one game, authenticated with a
 // full API token.
-func NewScraperMarket(gameID int, token string) (*CardtraderMarket, error) {
-	ct := CardtraderMarket{}
+func NewScraperMarket(gameID int, token string) (*Market, error) {
+	ct := Market{}
 	ct.inventory = mtgban.InventoryRecord{}
 	ct.MaxConcurrency = defaultConcurrency
 	ct.client = NewCTAuthClient(token)
@@ -62,7 +62,7 @@ func NewScraperMarket(gameID int, token string) (*CardtraderMarket, error) {
 	return &ct, nil
 }
 
-func (ct *CardtraderMarket) printf(format string, a ...any) {
+func (ct *Market) printf(format string, a ...any) {
 	if ct.LogCallback != nil {
 		ct.LogCallback("[CT] "+format, a...)
 	}
@@ -98,7 +98,7 @@ var langMap = map[string]string{
 	"zh-tw": "Chinese",
 }
 
-func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int, products []Product) {
+func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products []Product) {
 	blueprint, found := ct.blueprints[bpID]
 	if !found {
 		return
@@ -286,7 +286,7 @@ func (ct *CardtraderMarket) processProducts(channel chan<- resultChan, bpID int,
 	}
 }
 
-func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<- resultChan, expansionID int) error {
+func (ct *Market) processExpansion(ctx context.Context, channel chan<- resultChan, expansionID int) error {
 	allProducts, err := ct.client.ProductsForExpansion(ctx, expansionID)
 	if err != nil {
 		return err
@@ -300,7 +300,7 @@ func (ct *CardtraderMarket) processExpansion(ctx context.Context, channel chan<-
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (ct *CardtraderMarket) Load(ctx context.Context) error {
+func (ct *Market) Load(ctx context.Context) error {
 	rates, err := mtgban.GetExchangeRates(ctx)
 	if err != nil {
 		return err
@@ -368,18 +368,18 @@ func (ct *CardtraderMarket) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (ct *CardtraderMarket) Inventory() mtgban.InventoryRecord {
+func (ct *Market) Inventory() mtgban.InventoryRecord {
 	return ct.inventory
 }
 
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
-func (ct *CardtraderMarket) MarketNames() []string {
+func (ct *Market) MarketNames() []string {
 	return availableMarketNames
 }
 
 // InfoForScraper describes one of the sub-scrapers named above.
-func (ct *CardtraderMarket) InfoForScraper(name string) mtgban.ScraperInfo {
+func (ct *Market) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ct.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
@@ -387,7 +387,7 @@ func (ct *CardtraderMarket) InfoForScraper(name string) mtgban.ScraperInfo {
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (ct *CardtraderMarket) Info() (info mtgban.ScraperInfo) {
+func (ct *Market) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Trader"
 	info.Shorthand = "CTMarket"
 	info.InventoryTimestamp = &ct.inventoryDate

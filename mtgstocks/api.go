@@ -48,8 +48,8 @@ type StocksInterest struct {
 	} `json:"print"`
 }
 
-// MTGStocksInterests is what the interests endpoint answers with.
-type MTGStocksInterests struct {
+// Interests is what the interests endpoint answers with.
+type Interests struct {
 	Error     string           `json:"error"`
 	Date      string           `json:"date"`
 	Interests []StocksInterest `json:"interests"`
@@ -136,7 +136,7 @@ func (s *STKSClient) MarketInterests(ctx context.Context, foil bool) ([]StocksIn
 	return out.Interests, nil
 }
 
-func (s *STKSClient) query(ctx context.Context, link string, foil bool) (*MTGStocksInterests, error) {
+func (s *STKSClient) query(ctx context.Context, link string, foil bool) (*Interests, error) {
 	extra := "/regular"
 	if foil {
 		extra = "/foil"
@@ -172,7 +172,7 @@ func (s *STKSClient) query(ctx context.Context, link string, foil bool) (*MTGSto
 		reader = gzipReader
 	}
 
-	var interests MTGStocksInterests
+	var interests Interests
 	err = json.NewDecoder(reader).Decode(&interests)
 	if err != nil {
 		return nil, err

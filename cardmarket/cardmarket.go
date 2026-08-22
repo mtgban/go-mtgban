@@ -24,9 +24,9 @@ type responseChan struct {
 	entry  mtgban.InventoryEntry
 }
 
-// CardMarketIndex prices singles from Cardmarket's price guide, the low and
+// Index prices singles from Cardmarket's price guide, the low and
 // trend numbers rather than any one seller's listing.
-type CardMarketIndex struct {
+type Index struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	Affiliate      string
@@ -65,7 +65,7 @@ var name2shorthand = map[string]string{
 	"MKM Trend": "MKMTrend",
 }
 
-func (mkm *CardMarketIndex) printf(format string, a ...any) {
+func (mkm *Index) printf(format string, a ...any) {
 	if mkm.LogCallback != nil {
 		mkm.LogCallback("[MKMIndex] "+format, a...)
 	}
@@ -73,8 +73,8 @@ func (mkm *CardMarketIndex) printf(format string, a ...any) {
 
 // NewScraperIndex returns an index scraper for one game, authenticated with an
 // app token and secret.
-func NewScraperIndex(gameID int, appToken, appSecret string) (*CardMarketIndex, error) {
-	mkm := CardMarketIndex{}
+func NewScraperIndex(gameID int, appToken, appSecret string) (*Index, error) {
+	mkm := Index{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
@@ -82,7 +82,7 @@ func NewScraperIndex(gameID int, appToken, appSecret string) (*CardMarketIndex, 
 	return &mkm, nil
 }
 
-func (mkm *CardMarketIndex) processEdition(ctx context.Context, channel chan<- responseChan, idExpansion int) error {
+func (mkm *Index) processEdition(ctx context.Context, channel chan<- responseChan, idExpansion int) error {
 	products, err := mkm.client.MKMProductsInExpansion(ctx, idExpansion)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func productFinish(gameID int, product *MKMProduct) string {
 // do not, and Match reaches past the edition when nothing in it fits, so
 // without both an unknown set's cards land on whichever set happens to hold
 // a number like theirs.
-func (mkm *CardMarketIndex) matchProduct(product *MKMProduct) string {
+func (mkm *Index) matchProduct(product *MKMProduct) string {
 	set, err := mtgmatcher.GetSetByName(product.ExpansionName)
 	if err != nil {
 		return ""
@@ -167,7 +167,7 @@ func (mkm *CardMarketIndex) matchProduct(product *MKMProduct) string {
 	return ""
 }
 
-func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct) error {
+func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduct) error {
 	var cardID string
 	var cardIDFoil string
 	var err error
@@ -427,7 +427,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (mkm *CardMarketIndex) Load(ctx context.Context) error {
+func (mkm *Index) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
@@ -525,18 +525,18 @@ func (mkm *CardMarketIndex) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (mkm *CardMarketIndex) Inventory() mtgban.InventoryRecord {
+func (mkm *Index) Inventory() mtgban.InventoryRecord {
 	return mkm.inventory
 }
 
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
-func (mkm *CardMarketIndex) MarketNames() []string {
+func (mkm *Index) MarketNames() []string {
 	return availableIndexNames
 }
 
 // InfoForScraper describes one of the sub-scrapers named above.
-func (mkm *CardMarketIndex) InfoForScraper(name string) mtgban.ScraperInfo {
+func (mkm *Index) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := mkm.Info()
 	info.Name = name
 	info.Shorthand = name2shorthand[name]
@@ -544,7 +544,7 @@ func (mkm *CardMarketIndex) InfoForScraper(name string) mtgban.ScraperInfo {
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (mkm *CardMarketIndex) Info() (info mtgban.ScraperInfo) {
+func (mkm *Index) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Card Market Index"
 	info.Shorthand = "MKMIndex"
 	info.CountryFlag = "EU"

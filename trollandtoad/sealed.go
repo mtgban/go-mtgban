@@ -18,8 +18,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TrollandtoadSealed prices Troll and Toad's sealed product.
-type TrollandtoadSealed struct {
+// Sealed prices Troll and Toad's sealed product.
+type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
@@ -36,8 +36,8 @@ type TrollandtoadSealed struct {
 }
 
 // NewScraperSealed returns a sealed scraper.
-func NewScraperSealed() *TrollandtoadSealed {
-	tnt := TrollandtoadSealed{}
+func NewScraperSealed() *Sealed {
+	tnt := Sealed{}
 	tnt.inventory = mtgban.InventoryRecord{}
 	tnt.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
@@ -60,13 +60,13 @@ func NewScraperSealed() *TrollandtoadSealed {
 	return &tnt
 }
 
-func (tnt *TrollandtoadSealed) printf(format string, a ...any) {
+func (tnt *Sealed) printf(format string, a ...any) {
 	if tnt.LogCallback != nil {
 		tnt.LogCallback("[TNTSealed] "+format, a...)
 	}
 }
 
-func (tnt *TrollandtoadSealed) parsePages(ctx context.Context, link string, lastPage int) error {
+func (tnt *Sealed) parsePages(ctx context.Context, link string, lastPage int) error {
 	channel := make(chan responseChan)
 
 	c := colly.NewCollector(
@@ -173,7 +173,7 @@ const (
 )
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (tnt *TrollandtoadSealed) Load(ctx context.Context) error {
+func (tnt *Sealed) Load(ctx context.Context) error {
 	link := categorySealedPage + tntOptions
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -208,12 +208,12 @@ func (tnt *TrollandtoadSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (tnt *TrollandtoadSealed) Inventory() mtgban.InventoryRecord {
+func (tnt *Sealed) Inventory() mtgban.InventoryRecord {
 	return tnt.inventory
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (tnt *TrollandtoadSealed) Info() (info mtgban.ScraperInfo) {
+func (tnt *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Troll and Toad"
 	info.Shorthand = "TNTSealed"
 	info.InventoryTimestamp = &tnt.inventoryDate
