@@ -92,7 +92,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !found || co.Sealed {
 			continue
 		}
-		if !numberMatches(number, co.Number) {
+		if !numberMatchesCard(b, number, &co.Card) {
 			continue
 		}
 		if name != "" && mtgmatcher.Normalize(name) != mtgmatcher.Normalize(co.Name) {
@@ -177,7 +177,7 @@ func widenQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !found || co.Sealed || !inEdition(co) {
 			continue
 		}
-		if numberMatches(number, co.Number) {
+		if numberMatchesCard(b, number, &co.Card) {
 			return
 		}
 	}
@@ -191,7 +191,7 @@ func widenQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !found || co.Sealed || !inEdition(co) {
 			continue
 		}
-		if !numberMatches(number, co.Number) {
+		if !numberMatchesCard(b, number, &co.Card) {
 			continue
 		}
 		if name != "" && mtgmatcher.Normalize(name) != mtgmatcher.Normalize(co.Name) {
@@ -306,7 +306,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
 		}
-		if number != "" && !numberMatches(number, card.Number) {
+		if number != "" && !numberMatchesCard(b, number, &card) {
 			continue
 		}
 		// An input naming a treatment re-keys the copy's FoilUUIDs so the
@@ -515,6 +515,32 @@ func numberMatches(input, number string) bool {
 		return false
 	}
 	return foldNumber(input) == foldNumber(number)
+}
+
+// numberMatchesCard compares a storefront's collector number against one
+// card's, which is where the set the number belongs to is known.
+func numberMatchesCard(b *mtgmatcher.Backend, input string, card *mtgmatcher.Card) bool {
+	return numberMatches(input, card.Number) || numberMatchesPrefixed(b, input, card)
+}
+
+// numberMatchesPrefixed accepts the set code a storefront glues onto a
+// number the catalog writes bare: the promo sets are numbered "001".."282"
+// and the storefronts write "SVP001", "MEP003". The prefix has to be the
+// set's own code and it has to stand in front of the whole number, so this
+// can only ever admit the set the storefront already named - stripping
+// letters freely would read "XY144" as the 144 of every set there is.
+func numberMatchesPrefixed(b *mtgmatcher.Backend, input string, card *mtgmatcher.Card) bool {
+	folded := foldNumber(card.Number)
+	if folded == "" || strings.ContainsFunc(folded, func(r rune) bool { return r < '0' || r > '9' }) {
+		return false
+	}
+	in := foldNumber(input)
+	digits := strings.IndexFunc(in, func(r rune) bool { return r >= '0' && r <= '9' })
+	if digits <= 0 || in[digits:] != folded {
+		return false
+	}
+	set := b.Sets[card.SetCode]
+	return set != nil && strings.EqualFold(in[:digits], set.Code)
 }
 
 // foldNumber reduces a collector number to the letters and digits that carry
