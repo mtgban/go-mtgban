@@ -140,7 +140,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	// the id route lands on, so it is what the fallback asks for first.
 	finishes := []string{""}
 	switch mkm.gameID {
-	case GameYugioh:
+	case GameYuGiOh:
 		finishes = []string{"Unlimited", ""}
 	case GameFleshAndBlood:
 		finishes = []string{productFinish(mkm.gameID, product), ""}
@@ -268,7 +268,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			mkm.printf("%+v", product)
 			return err
 		}
-	case GameYugioh, GameFleshAndBlood, GamePokemon:
+	case GameYuGiOh, GameFleshAndBlood, GamePokemon:
 		// These catalogs carry no collector number and no version index,
 		// and same-name products abound, so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by or not at all -
@@ -296,7 +296,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			return nil
 		}
 		cardIDFoil = cardID
-		if mkm.gameID == GameYugioh {
+		if mkm.gameID == GameYuGiOh {
 			// Yu-Gi-Oh's second column is the first edition's, which is a
 			// print run rather than a foil, so the flag cannot name it -
 			// both flags answer with the unlimited printing and the column
@@ -486,7 +486,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 	// than a second row no consumer can choose between.
 	add := mkm.inventory.AddStrict
 	switch mkm.gameID {
-	case GameYugioh, GameFleshAndBlood, GamePokemon:
+	case GameYuGiOh, GameFleshAndBlood, GamePokemon:
 		add = mkm.inventory.AddUnique
 	}
 
@@ -560,7 +560,7 @@ func (mkm *Index) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameRiftbound
 	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameYugioh:
+	case GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
 	case GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood

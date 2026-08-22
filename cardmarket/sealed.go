@@ -53,7 +53,7 @@ func (mkm *Sealed) printf(format string, a ...any) {
 // app token and secret.
 func NewScraperSealed(gameID int, appToken, appSecret string) (*Sealed, error) {
 	switch gameID {
-	case GameMagic, GameLorcana, GameRiftbound, GameOnePiece, GameYugioh, GameFleshAndBlood,
+	case GameMagic, GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh, GameFleshAndBlood,
 		GamePokemon:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
@@ -337,7 +337,7 @@ func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameRiftbound
 	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameYugioh:
+	case GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
 	case GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood

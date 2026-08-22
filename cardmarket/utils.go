@@ -61,7 +61,7 @@ func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
 const (
 	GameMagic = iota + 1
 	GameWorldOfWarcraft
-	GameYugioh
+	GameYuGiOh
 	_
 	GameTheSpoils
 	GamePokemon
@@ -284,7 +284,7 @@ var gameNames = map[int]string{
 	GameLorcana:       "Lorcana",
 	GameRiftbound:     "Riftbound",
 	GameOnePiece:      "OnePiece",
-	GameYugioh:        "YuGiOh",
+	GameYuGiOh:        "YuGiOh",
 	GameFleshAndBlood: "FleshAndBlood",
 	GamePokemon:       "Pokemon",
 }
