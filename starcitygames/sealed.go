@@ -3,6 +3,8 @@ package starcitygames
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -61,6 +63,37 @@ func buildProductMap() map[string]string {
 	return out
 }
 
+// runTag matches the print run Star City Games writes into a sealed product
+// name, where the datastore writes it as a bracketed suffix.
+var runTag = regexp.MustCompile(`\s*\((1st Edition|Unlimited)\)\s*`)
+
+// sealedProductName spells a catalog product the way the datastore names the
+// same box. Star City Games prefixes every sealed name with the game it
+// belongs to, writes the print run in the middle rather than at the end, and
+// calls a case of boxes a "Booster Case" where the datastore calls it a
+// Booster Box Case. None of that is the product's identity, and the
+// name-resolution rule needs every word of the datastore's name accounted
+// for, so a word only one side writes loses the product.
+func sealedProductName(p CatalogProduct) string {
+	name := strings.TrimPrefix(p.Name, p.Game+" - ")
+
+	var run string
+	if match := runTag.FindStringSubmatch(name); match != nil {
+		run = match[1]
+		if run == "Unlimited" {
+			run = "Unlimited Edition"
+		}
+		name = runTag.ReplaceAllString(name, " ")
+	}
+
+	name = strings.TrimSpace(name)
+	name = strings.ReplaceAll(name, "Booster Case", "Booster Box Case")
+	if run != "" {
+		name += " [" + run + "]"
+	}
+	return name
+}
+
 func (scg *Sealed) processProduct(p CatalogProduct) {
 	// A single malformed product must never abort the whole catalog stream;
 	// recover, log, and skip it.
@@ -94,7 +127,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 		if mtgmatcher.SealedIsLanguageVariant(p.Name) {
 			return
 		}
-		resolved, err := mtgmatcher.ResolveSealed(p.Name)
+		resolved, err := mtgmatcher.ResolveSealed(sealedProductName(p))
 		if err != nil {
 			return
 		}
