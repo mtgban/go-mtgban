@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -199,6 +201,101 @@ func skuNumber(sku string) string {
 	return fields[3]
 }
 
+// fabPrintRunMarkers are the print-run suffixes Star City Games glues onto a
+// Flesh and Blood set code in its skus, listed longest first so the trim takes
+// the whole marker. The datastore numbers a card with the bare code and crosses
+// the run with the treatment instead, so "ARC1036" is its ARC036.
+var fabPrintRunMarkers = []string{"12", "1", "2", "U"}
+
+// fabNumbers returns the collector numbers to try for a Flesh and Blood sku,
+// most specific first.
+//
+// The sku carries the datastore's own number split across two segments:
+// "SGL-FAB-BVO-005-ENN" is BVO005, which names exactly one printing, while the
+// bare "005" is every set's fifth card. That matters because the sets Star City
+// Games sells these under are decks and blister packs whose names match no
+// datastore set, so nothing else narrows the candidates and the reprints alias.
+//
+// A number segment that opens with a code of its own ("HER_001" under the
+// catch-all PRM) already names its set, and the sku's set segment is only the
+// shelf it sits on. The fused pairs join with the separator the datastore
+// spells them with, and the letter parts ("019_CC") stay wording.
+//
+// The bare number stays last rather than being dropped: it is what resolves the
+// listings whose set segment is neither a datastore code nor a marked-up one,
+// and keeping it last costs nothing since a prefixed number that resolves is
+// always the more specific answer.
+func fabNumbers(sku string) []string {
+	number := skuNumber(sku)
+	bare := strings.ReplaceAll(number, "_", " ")
+	if number == "" {
+		return []string{bare}
+	}
+
+	code := skuSetCode(sku)
+	parts := strings.Split(number, "_")
+	if len(parts) > 1 && isAllLetters(parts[0]) {
+		code, parts = parts[0], parts[1:]
+	}
+
+	var candidates []string
+	for _, prefix := range []string{code, trimPrintRun(code)} {
+		candidate := prefixNumber(prefix, parts)
+		if candidate != "" && candidate != bare && !slices.Contains(candidates, candidate) {
+			candidates = append(candidates, candidate)
+		}
+	}
+	return append(candidates, bare)
+}
+
+// prefixNumber glues the set code onto every numeric part of a sku's number
+// segment, pairing them the way the datastore does ("MST002//MST158") and
+// leaving the non-numeric parts as the wording they are.
+func prefixNumber(code string, parts []string) string {
+	if code == "" {
+		return ""
+	}
+	var numbers, words []string
+	for _, part := range parts {
+		if part != "" && part[0] >= '0' && part[0] <= '9' {
+			numbers = append(numbers, code+part)
+			continue
+		}
+		words = append(words, part)
+	}
+	if len(numbers) == 0 {
+		return ""
+	}
+	return strings.TrimSpace(strings.Join(numbers, " // ") + " " + strings.Join(words, " "))
+}
+
+// trimPrintRun removes a print-run marker from a sku's set code. The trim is
+// only ever a second guess, and it never shortens a code past the three
+// letters every Flesh and Blood code is at least: "KSU", "NUU" and "UZU" are
+// whole codes that end in a marker letter, so the untrimmed code has to be
+// tried first and what the trim leaves has to still look like a code.
+func trimPrintRun(code string) string {
+	for _, marker := range fabPrintRunMarkers {
+		trimmed := strings.TrimSuffix(code, marker)
+		if trimmed != code && len(trimmed) >= 3 {
+			return trimmed
+		}
+	}
+	return code
+}
+
+func isAllLetters(field string) bool {
+	if field == "" {
+		return false
+	}
+	for _, r := range field {
+		if !unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
+
 func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// Duel Masters crossover promos are catalogued under Magic but aren't Magic
 	// cards, so there's nothing to match; discard them.
@@ -279,22 +376,30 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		return mtgmatcher.Match(card)
 	}
 
-	// Flesh and Blood reads its number off the sku instead: the segment
-	// keeps the fused-card pair ("077_112"), the promo-pack prefix
-	// ("JDG_001") and the variant letter ("155b") that the product's bare
-	// number field drops. The underscores become spaces so the matcher's
-	// number extraction reads the leading code and the rest stays wording.
+	// Flesh and Blood reads its number off the sku instead: the segments
+	// keep the set code, the fused-card pair ("077_112"), the promo-pack
+	// prefix ("JDG_001") and the variant letter ("155b") that the product's
+	// bare number field drops. The candidates run most specific first, so
+	// the bare number only decides what the set-prefixed one could not.
 	// The catalog's own finish name rides beside the flag: a product is one
 	// printing in one treatment, and only the name says which.
 	if game == GameFleshAndBlood {
 		edition, finish := fabPrintRun(p.Set, p.Finish)
-		return mtgmatcher.Match(&mtgmatcher.InputCard{
-			Name:      p.Name,
-			Edition:   edition,
-			Variation: strings.ReplaceAll(skuNumber(p.SKU), "_", " "),
-			Finish:    finish,
-			Foil:      foil,
-		})
+		var err error
+		for _, number := range fabNumbers(p.SKU) {
+			var id string
+			id, err = mtgmatcher.Match(&mtgmatcher.InputCard{
+				Name:      p.Name,
+				Edition:   edition,
+				Variation: number,
+				Finish:    finish,
+				Foil:      foil,
+			})
+			if err == nil {
+				return id, nil
+			}
+		}
+		return "", err
 	}
 
 	// The other games (Lorcana, Riftbound) identify a card by name +

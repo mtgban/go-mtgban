@@ -129,6 +129,49 @@ var fleshandbloodSeeds = []matchTest{
 		Desc: "a tag written behind another still names its printing",
 		In:   mtgmatcher.InputCard{Name: "Tome of Quandaries", Variation: "OMN133 Extended Art"},
 	},
+	// The datastore mirrors the storefront each set was catalogued from,
+	// and the storefronts disagree about the pitch parenthetical: the
+	// number is what says which printing was meant, in both directions.
+	{
+		Desc: "pitch qualifier drops when the numbered printing spells it without",
+		In:   mtgmatcher.InputCard{Name: "Hyper Driver (Red)", Variation: "ARC036"},
+	},
+	{
+		Desc: "pitch qualifier drops for the yellow spelling too",
+		In:   mtgmatcher.InputCard{Name: "Bittering Thorns (Yellow)", Variation: "CRU072"},
+	},
+	{
+		Desc: "pitch qualifier is adopted when the numbered printing spells it",
+		In:   mtgmatcher.InputCard{Name: "Bloodrot Trap", Variation: "OUT171"},
+	},
+	{
+		Desc: "marvel qualifier is adopted from the numbered printing",
+		In:   mtgmatcher.InputCard{Name: "Kassai", Variation: "HVY091"},
+	},
+	// The re-spelling swaps one parenthetical for another, and the same
+	// shape spells both a piece of the name and a treatment label, so what
+	// it drops has to survive as wording or the base printing wins the
+	// number.
+	{
+		Desc: "marvel label survives a respelling onto the plain name",
+		In:   mtgmatcher.InputCard{Name: "Enigma, Ledger of Ancestry (Marvel)", Variation: "MST025"},
+	},
+	{
+		Desc: "marvel label survives a respelling onto a pitch-qualified name",
+		In:   mtgmatcher.InputCard{Name: "Golden Skull (Marvel)", Variation: "OMN240"},
+	},
+	{
+		Desc: "pitch label survives when the number wears the color as a label",
+		In:   mtgmatcher.InputCard{Name: "Staunch Response (Red)", Variation: "TNP019"},
+	},
+	{
+		Desc: "negative: a bare number never licenses a pitch respelling",
+		In:   mtgmatcher.InputCard{Name: "Hyper Driver (Red)", Variation: "036"},
+	},
+	{
+		Desc: "negative: a respelling still has to name a printing at the number",
+		In:   mtgmatcher.InputCard{Name: "Hyper Driver (Red)", Variation: "ARC999"},
+	},
 }
 
 func loadBackend(t *testing.T) *mtgmatcher.Backend {

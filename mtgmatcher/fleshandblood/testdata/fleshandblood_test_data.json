@@ -100,12 +100,54 @@
         "uuid": "omn203_682884_cold"
     },
     {
+        "description": "marvel label survives a respelling onto a pitch-qualified name",
+        "input": {
+            "name": "Golden Skull (Marvel)",
+            "variant": "OMN240"
+        },
+        "uuid": "omn240_695289_cold"
+    },
+    {
+        "description": "marvel label survives a respelling onto the plain name",
+        "input": {
+            "name": "Enigma, Ledger of Ancestry (Marvel)",
+            "variant": "MST025"
+        },
+        "uuid": "mst025_543929_cold"
+    },
+    {
+        "description": "marvel qualifier is adopted from the numbered printing",
+        "input": {
+            "name": "Kassai",
+            "variant": "HVY091"
+        },
+        "uuid": "hvy091_536768_cold"
+    },
+    {
+        "description": "negative: a bare number never licenses a pitch respelling",
+        "input": {
+            "name": "Hyper Driver (Red)",
+            "variant": "036"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
         "description": "negative: a name reprinted across sets stays ambiguous unaided",
         "input": {
             "name": "Brutal Assault"
         },
         "uuid": "",
         "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a respelling still has to name a printing at the number",
+        "input": {
+            "name": "Hyper Driver (Red)",
+            "variant": "ARC999"
+        },
+        "uuid": "",
+        "error": "unknown variant"
     },
     {
         "description": "negative: a treatment the product was never priced in refuses the sibling",
@@ -152,6 +194,38 @@
             "variant": "WTR040 // WTR039"
         },
         "uuid": "wtr040-wtr039_225011_unl"
+    },
+    {
+        "description": "pitch label survives when the number wears the color as a label",
+        "input": {
+            "name": "Staunch Response (Red)",
+            "variant": "TNP019"
+        },
+        "uuid": "tnp019_692569_rainbow"
+    },
+    {
+        "description": "pitch qualifier drops for the yellow spelling too",
+        "input": {
+            "name": "Bittering Thorns (Yellow)",
+            "variant": "CRU072"
+        },
+        "uuid": "cru072_225969_unl"
+    },
+    {
+        "description": "pitch qualifier drops when the numbered printing spells it without",
+        "input": {
+            "name": "Hyper Driver (Red)",
+            "variant": "ARC036"
+        },
+        "uuid": "arc036_225629_unl"
+    },
+    {
+        "description": "pitch qualifier is adopted when the numbered printing spells it",
+        "input": {
+            "name": "Bloodrot Trap",
+            "variant": "OUT171"
+        },
+        "uuid": "out171_488416"
     },
     {
         "description": "rainbow wording routes to its plainest print run",
