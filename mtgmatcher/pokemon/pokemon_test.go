@@ -466,3 +466,43 @@ func TestSecondNumberInWording(t *testing.T) {
 		})
 	}
 }
+
+// TestDecoratedNameSplit pins the number surviving the decorations written
+// around it. A parenthetical is lifted out of the middle of the name rather
+// than truncating it, because the number written after it is often the only
+// thing telling the printing apart; and the dashed segments are read from
+// the right, so a number with wording behind it is still found.
+func TestDecoratedNameSplit(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		// Four quarter cards share this name and only the number says
+		// which; cutting at the parenthesis leaves them aliased.
+		{"the number written after a parenthetical", mtgmatcher.InputCard{
+			Name: "Greninja V-Union (Bottom Left) - SWSH157", Edition: "SWSH Promos"}, "swsh157_248889_holo"},
+		{"the number with wording behind it", mtgmatcher.InputCard{
+			Name: "Dragonite - 5/20 - Normal Holo", Edition: "Dragon Vault"}, "5-20_84915_holo"},
+		{"the wording behind it still speaks", mtgmatcher.InputCard{
+			Name: "Braixen - 9/39 - NON-HOLO", Edition: "XY Kalos Starter"}, "9-39_83949"},
+		// The catalog spells a few promos with the number inside the name,
+		// which an ordinary decorated listing collides with once its
+		// parenthetical is gone. The head is what says which was meant.
+		{"a promo spelled with its number does not capture the listing", mtgmatcher.InputCard{
+			Name: "Bouffalant (Non-Holo) - 119/142", Edition: "SV Stellar Crown", Variation: "119/142"}, "119-142_567345_holo"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}

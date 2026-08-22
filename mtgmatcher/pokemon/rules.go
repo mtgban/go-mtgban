@@ -36,38 +36,92 @@ var numberTailRe = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+
 // dash ("Wingull - 70/100"). A name that is itself canonical stays as it is,
 // which is what keeps the real card names carrying either decoration - a
 // parenthetical of their own, or the World Championship reprints named for
-// the number they reprint - from being taken apart. The check runs again
-// between the two splits, because removing the parenthetical is what makes
-// such a name recognisable.
+// the number they reprint - from being taken apart.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	canonical := func() bool {
-		_, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]
-		return found
-	}
-	if canonical() {
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
-	if strings.Contains(inCard.Name, "(") {
-		vars := mtgmatcher.SplitVariants(inCard.Name)
-		if len(vars) > 1 {
-			inCard.Name = vars[0]
-			inCard.AddToVariant(strings.Join(vars[1:], " "))
-		}
-	}
-	if canonical() {
-		return
-	}
-	index := strings.LastIndex(inCard.Name, " - ")
-	if index < 0 {
-		return
-	}
-	name := strings.TrimSpace(inCard.Name[:index])
-	number := strings.TrimSpace(inCard.Name[index+len(" - "):])
-	if name == "" || !numberTailRe.MatchString(number) {
+	name, tags := splitDecorations(b, inCard.Name)
+	if name == inCard.Name {
 		return
 	}
 	inCard.Name = name
-	inCard.AddToVariant(number)
+	for _, tag := range tags {
+		if tag != "" {
+			inCard.AddToVariant(tag)
+		}
+	}
+}
+
+// splitDecorations peels a storefront's decorations off a product name and
+// hands back the name with everything it took.
+//
+// Both halves have to keep what follows them. A parenthetical is lifted out
+// in place rather than truncating the string, because the collector number
+// is often written after it - "Greninja V-Union (Bottom Left) - SWSH157" is
+// the only thing that tells four identically named quarter cards apart, and
+// cutting at the parenthesis throws it away. The dashed segments are then
+// read from the right, so a number with wording after it is still found
+// ("Dragonite - 5/20 - Cosmos Holo") and the wording travels with it.
+//
+// A split whose head is a name the catalog knows is taken before the whole
+// string is asked about. The catalog spells a handful of promos with the
+// number inside the name ("Bouffalant -119/142"), which a decorated listing
+// of an ordinary card collides with once its parenthetical is gone; the head
+// says which of the two readings the listing meant. Names the catalog really
+// spells with a dashed tail and nothing before it to recognise - the World
+// Championship reprints, "Torchic - 2004" - are what the whole-string check
+// is still there for.
+func splitDecorations(b *mtgmatcher.Backend, raw string) (string, []string) {
+	var tags []string
+	name := raw
+	for {
+		begin := strings.Index(name, "(")
+		if begin < 0 {
+			break
+		}
+		end := strings.Index(name[begin:], ")")
+		if end < 0 {
+			break
+		}
+		tags = append(tags, strings.TrimSpace(name[begin+1:begin+end]))
+		name = strings.Join(strings.Fields(name[:begin]+" "+name[begin+end+1:]), " ")
+	}
+
+	known := func(name string) bool {
+		_, found := b.CanonicalNames[mtgmatcher.Normalize(name)]
+		return found
+	}
+	parts := strings.Split(name, " - ")
+	numbered := func(knownHead bool) (string, []string, bool) {
+		for i := len(parts) - 1; i >= 1; i-- {
+			segment := strings.TrimSpace(parts[i])
+			if !numberTailRe.MatchString(segment) {
+				continue
+			}
+			head := strings.TrimSpace(strings.Join(parts[:i], " - "))
+			if head == "" || (knownHead && !known(head)) {
+				continue
+			}
+			split := append([]string{}, tags...)
+			for _, extra := range parts[i+1:] {
+				split = append(split, strings.TrimSpace(extra))
+			}
+			return head, append(split, segment), true
+		}
+		return "", nil, false
+	}
+
+	if head, split, found := numbered(true); found {
+		return head, split
+	}
+	if known(name) {
+		return name, tags
+	}
+	if head, split, found := numbered(false); found {
+		return head, split
+	}
+	return name, tags
 }
 
 // AdjustName provides a prefix fallback for truncated feeds, adopting the
