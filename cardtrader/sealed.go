@@ -3,6 +3,8 @@ package cardtrader
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 	"time"
 
@@ -187,15 +189,22 @@ func (ct *Sealed) Load(ctx context.Context) error {
 		// sharing the sealed side - binders, dice, sleeves, empty boxes -
 		// name no product of ours and drop out here.
 		var resolved int
+		dropped := map[string]int{}
 		for id, bp := range blueprints {
 			if _, found := productMap[id]; found {
 				continue
 			}
 			if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
+				dropped["language variant"]++
 				continue
 			}
 			uuid, err := mtgmatcher.ResolveSealed(bp.Name)
+			// A name the resolver turns down is the whole reason this
+			// scraper prices a fraction of the catalog, so say which
+			// name and which refusal, the way the singles path does.
 			if err != nil {
+				ct.printf("%q (%d): %s", bp.Name, id, err)
+				dropped[err.Error()]++
 				continue
 			}
 			productMap[id] = []string{uuid}
@@ -203,6 +212,9 @@ func (ct *Sealed) Load(ctx context.Context) error {
 		}
 		if resolved > 0 {
 			ct.printf("Resolved %d more sealed products by name", resolved)
+		}
+		for _, reason := range slices.Sorted(maps.Keys(dropped)) {
+			ct.printf("Dropped %d blueprints: %s", dropped[reason], reason)
 		}
 	}
 

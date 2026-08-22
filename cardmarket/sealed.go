@@ -3,6 +3,7 @@ package cardmarket
 import (
 	"context"
 	"fmt"
+	"maps"
 	"regexp"
 	"slices"
 	"sort"
@@ -227,6 +228,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 
 	var resolved int
 	var productIDs []int
+	dropped := map[string]int{}
 	for _, product := range productList {
 		if mkm.TargetProduct != "" && mkm.TargetProduct != product.Name {
 			continue
@@ -260,7 +262,12 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 		_, found := productMap[product.IDProduct]
 		if !found && nameFallback {
 			uuid, err := mtgmatcher.ResolveSealed(product.Name)
+			// A name the resolver turns down is the whole reason this
+			// scraper prices a fraction of the catalog, so say which
+			// name and which refusal, the way the singles path does.
 			if err != nil {
+				mkm.printf("%q (%d): %s", product.Name, product.IDProduct, err)
+				dropped[err.Error()]++
 				continue
 			}
 			productMap[product.IDProduct] = []string{uuid}
@@ -268,12 +275,17 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 			found = true
 		}
 		if !found {
+			mkm.printf("%q (%d): no id links it to a product", product.Name, product.IDProduct)
+			dropped["unlinked id"]++
 			continue
 		}
 		productIDs = append(productIDs, product.IDProduct)
 	}
 	if resolved > 0 {
 		mkm.printf("Resolved %d more sealed products by name", resolved)
+	}
+	for _, reason := range slices.Sorted(maps.Keys(dropped)) {
+		mkm.printf("Dropped %d products: %s", dropped[reason], reason)
 	}
 	mkm.printf("Mapped %d mkm products to sealed products", len(productIDs))
 
