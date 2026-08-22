@@ -399,6 +399,8 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 		result.ProductID = id
 		result.ProductName = name
 
+		// A block with early exits rather than a loop: each guard below leaves
+		// the listing unpriced and carries on with the rest of the page.
 		for {
 			priceStr := strings.TrimSpace(s.Find(".itemDataWrapper .itemDetail__price").Text())
 			price, err := mtgmatcher.ParsePrice(strings.TrimPrefix(priceStr, "¥ "))
@@ -437,6 +439,7 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 				Condition: condition,
 				Quantity:  qty,
 			})
+			//lint:ignore SA4004 the single iteration is the point
 			break
 		}
 

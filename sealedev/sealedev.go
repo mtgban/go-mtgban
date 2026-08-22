@@ -410,7 +410,7 @@ func (ss *Scraper) Load(ctx context.Context) error {
 			continue
 		default:
 			// Skip filtered editions if set
-			if ss.TargetEdition != "" && strings.ToLower(set.Code) != strings.ToLower(ss.TargetEdition) && strings.ToLower(set.Name) != strings.ToLower(ss.TargetEdition) {
+			if ss.TargetEdition != "" && !strings.EqualFold(set.Code, ss.TargetEdition) && !strings.EqualFold(set.Name, ss.TargetEdition) {
 				continue
 			}
 		}

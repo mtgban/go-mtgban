@@ -158,7 +158,7 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 	case strings.Contains(cond, "Heavy"):
 		cond = "HP"
 	default:
-		return fmt.Errorf("Unsupported %s condition", cond)
+		return fmt.Errorf("unsupported %s condition", cond)
 	}
 
 	if mode == modeRetail {
