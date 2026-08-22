@@ -93,7 +93,6 @@ func NewScraper(game string) *Coolstuffinc {
 type responseChan struct {
 	cardID   string
 	invEntry *mtgban.InventoryEntry
-	buyEntry *mtgban.BuylistEntry
 	relaxed  bool
 }
 

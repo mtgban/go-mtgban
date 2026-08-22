@@ -2,7 +2,6 @@ package fleshandblood
 
 import (
 	"regexp"
-	"slices"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -237,22 +236,6 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		}
 	}
 	return
-}
-
-// allWordsIn reports whether the wording's words include every word of the
-// label. Words compare whole: the one-letter variant labels ("A") would
-// otherwise hide inside almost any wording.
-func allWordsIn(words []string, label string) bool {
-	labelWords := strings.Fields(strings.ToLower(label))
-	if len(labelWords) == 0 {
-		return false
-	}
-	for _, word := range labelWords {
-		if !slices.Contains(words, word) {
-			return false
-		}
-	}
-	return true
 }
 
 // finishToken reports whether selectFinish consumes the word.

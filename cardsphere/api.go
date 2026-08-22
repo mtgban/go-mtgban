@@ -80,11 +80,6 @@ type OfferList struct {
 	Quantity   int      `json:"quantity"`
 }
 
-// Convenience error message to simplify checking
-type csError struct {
-	Message string `json:"message"`
-}
-
 const csURL = "https://www.cardsphere.com/rest/v1/offers?offset=0&order=minrel&absge=50&country=USMIL,UM,US,CA&kind=S&language=EN"
 
 // GetOfferList returns one page of offers, starting at the given offset.

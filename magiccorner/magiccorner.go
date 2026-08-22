@@ -14,8 +14,6 @@ import (
 
 const (
 	defaultConcurrency = 8
-
-	buylistURL = "https://www.cardgamecorner.com/it/vendi-letue-carte"
 )
 
 // Magiccorner prices Magic Corner's singles, both what they sell and what they

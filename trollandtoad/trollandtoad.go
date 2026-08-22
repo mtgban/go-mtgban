@@ -47,7 +47,6 @@ func NewScraper() *Trollandtoad {
 type responseChan struct {
 	cardID   string
 	invEntry *mtgban.InventoryEntry
-	buyEntry *mtgban.BuylistEntry
 }
 
 func (tnt *Trollandtoad) printf(format string, a ...any) {
