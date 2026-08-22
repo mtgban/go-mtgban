@@ -309,3 +309,38 @@ func TestEraPrefixedEdition(t *testing.T) {
 		}
 	}
 }
+
+// TestQualifiedNameWidening pins the name the catalog bakes a disambiguator
+// into being reached from the bare spelling a storefront writes. The
+// collector number is what says which qualified spelling is meant, so the
+// guard is the last case: a bare name the set already answers for at that
+// number is never widened onto its qualified sibling.
+func TestQualifiedNameWidening(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"the set's own qualifier", mtgmatcher.InputCard{
+			Name: "Accelgor - 8/101", Edition: "BW Plasma Blast"}, "8-101_83461"},
+		{"a promo run's qualifier", mtgmatcher.InputCard{
+			Name: "Archeops - SWSH272", Edition: "SWSH Promos"}, "swsh272_451847_holo"},
+		{"a bracketed qualifier", mtgmatcher.InputCard{
+			Name: "Professor's Research - 085/086", Edition: "SV Black Bolt"}, "085-086_642533"},
+		{"the bare name answering the number keeps it", mtgmatcher.InputCard{
+			Name: "Magnezone - 47/135", Edition: "BW Plasma Storm"}, "47-135_87119"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}
