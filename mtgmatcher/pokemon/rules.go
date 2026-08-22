@@ -195,7 +195,10 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			known = err == nil
 		}
 		if !known {
-			name := setNamedByHead(b, edition)
+			name := promoSetNamed(b, edition)
+			if name == "" {
+				name = setNamedByHead(b, edition)
+			}
 			if name == "" {
 				name = setNamedByTail(b, edition)
 			}
@@ -276,6 +279,36 @@ func editionSetCode(b *mtgmatcher.Backend, edition string) string {
 		return set.Code
 	}
 	return ""
+}
+
+// promoSetNamed answers the promo set an era's heading means. The catalog
+// names them with the era, a colon and a longer title - "SV: Scarlet &
+// Violet Promo Cards", "SWSH: Sword & Shield Promo Cards" - while the
+// storefronts head them "SV Promos" and "SWSH Promos", which agree on
+// nothing after the era and so name no set at all. With no edition to narrow
+// on, the row is matched against every printing of the name and aliases
+// against the Jumbo and Deck Exclusive reprints, which carry the promo's own
+// number.
+//
+// Only a single word can be the era, and only one promo set may answer to
+// it: an era whose promos the catalog split across several sets does not say
+// which one a listing means.
+func promoSetNamed(b *mtgmatcher.Backend, edition string) string {
+	era := strings.TrimSpace(strings.TrimSuffix(strings.TrimSuffix(edition, "Promos"), "Promo"))
+	if era == "" || era == edition || strings.Contains(era, " ") {
+		return ""
+	}
+	name := ""
+	for _, set := range b.Sets {
+		if set.Type != setTypePromo || !strings.HasPrefix(set.Name, era+": ") {
+			continue
+		}
+		if name != "" {
+			return ""
+		}
+		name = set.Name
+	}
+	return name
 }
 
 // setNamedByHead answers the set a storefront decorates with a trailing

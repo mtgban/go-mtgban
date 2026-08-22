@@ -536,3 +536,42 @@ func TestSetTotalBreaksTheTie(t *testing.T) {
 		})
 	}
 }
+
+// TestPromoEraEdition pins the promo set an era's heading means. The catalog
+// spells them "<era>: <title> Promo Cards" and the storefronts "<era>
+// Promos", which agree on nothing after the era, so the row narrows to no
+// set and aliases against the Jumbo reprint carrying the same number.
+func TestPromoEraEdition(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct{ edition, want string }{
+		{"SV Promos", "SV: Scarlet & Violet Promo Cards"},
+		{"SWSH Promos", "SWSH: Sword & Shield Promo Cards"},
+		{"ME Promos", "ME: Mega Evolution Promo"},
+		// An era the catalog names outright still answers for itself.
+		{"XY Promos", "XY Promos"},
+		{"SM Promos", "SM Promos"},
+	} {
+		in := mtgmatcher.InputCard{Name: "Pikachu", Edition: tt.edition}
+		Rules{}.AdjustEdition(b, &in)
+		set, err := b.GetSetByName(in.Edition)
+		if err != nil {
+			t.Errorf("edition %q resolved to %q, which names no set", tt.edition, in.Edition)
+			continue
+		}
+		if set.Name != tt.want {
+			t.Errorf("edition %q -> %q, want %q", tt.edition, set.Name, tt.want)
+		}
+	}
+
+	// The promo set and the Jumbo reprint carry the same name and number,
+	// so the edition is the only thing that can pick between them.
+	in := mtgmatcher.InputCard{Name: "Blastoise VMAX", Edition: "SWSH Promos", Variation: "SWSH103"}
+	id, err := b.Match(&in)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", in, err)
+	}
+	if want := "swsh103_234299_holo"; id != want {
+		t.Errorf("Match(%v) = %s (%v), want %s", in, id, b.UUIDs[id], want)
+	}
+}
