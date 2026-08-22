@@ -27,9 +27,9 @@ func TestCollectorNumberShapes(t *testing.T) {
 }
 
 // TestGameVariation pins the gate: the Version names the printing only for
-// One Piece and Riftbound, and only behind a number - a readable one for One
-// Piece - since its wording is full of the years and volume numbers that
-// would answer as a collector number in its place.
+// One Piece, Riftbound and Yu-Gi-Oh, and only behind a number - a readable
+// one for One Piece - since its wording is full of the years and volume
+// numbers that would answer as a collector number in its place.
 func TestGameVariation(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -46,6 +46,12 @@ func TestGameVariation(t *testing.T) {
 		{"lorcana keeps its own number", GameLorcana, "Enchanted", "OP01-001", "OP01-001"},
 		{"riftbound appends the version too", GameRiftbound, "Summoner Skirmish | Champion", "058c", "058c Summoner Skirmish | Champion"},
 		{"a numberless riftbound blueprint keeps the version out", GameRiftbound, "6 Card Set", "", ""},
+		// Yu-Gi-Oh's Version is the rarity, and the rarity is the only
+		// thing telling the several printings of one number apart.
+		{"yugioh appends the rarity", GameYuGiOh, "Rare", "060", "060 Rare"},
+		{"a suffixed number takes it too", GameYuGiOh, "Ultimate Rare", "060ul", "060ul Ultimate Rare"},
+		{"a decorated rarity rides along whole", GameYuGiOh, "Ultra Rare | ©2020", "001", "001 Ultra Rare | ©2020"},
+		{"a token version is left behind", GameYuGiOh, "Token", "TKN", "TKN"},
 		{"magic keeps its own number", GameMagic, "Retro Frame", "OP01-001", "OP01-001"},
 	}
 
