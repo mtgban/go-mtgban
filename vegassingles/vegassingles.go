@@ -117,8 +117,8 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 			BuyPrice:   variant.OfferPrice,
 			PriceRatio: priceRatio,
 			URL:        buylistLink,
-			OriginalId: strconv.FormatInt(product.ProductID, 10),
-			InstanceId: strconv.FormatInt(variant.ID, 10),
+			OriginalID: strconv.FormatInt(product.ProductID, 10),
+			InstanceID: strconv.FormatInt(variant.ID, 10),
 		})
 		if err != nil {
 			vs.printf("%d: %s", product.ProductID, err.Error())
@@ -141,8 +141,8 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 			Price:      variant.Price,
 			Quantity:   variant.InventoryQuantity,
 			URL:        retailLink,
-			OriginalId: strconv.FormatInt(product.ProductID, 10),
-			InstanceId: variant.SKU,
+			OriginalID: strconv.FormatInt(product.ProductID, 10),
+			InstanceID: variant.SKU,
 		})
 		if err != nil {
 			vs.printf("%d: %s", product.ProductID, err.Error())

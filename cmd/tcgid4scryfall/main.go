@@ -104,8 +104,8 @@ func processCards(ctx context.Context, client *api.Client, channel chan<- respon
 				Price:        1,
 				Quantity:     1,
 				SellerName:   "tcg",
-				OriginalId:   fmt.Sprint(product.ProductID),
-				InstanceId:   fmt.Sprint(page),
+				OriginalID:   fmt.Sprint(product.ProductID),
+				InstanceID:   fmt.Sprint(page),
 				CustomFields: customFields,
 			},
 		}
@@ -121,11 +121,11 @@ type Properties struct {
 	Name       string
 	Edition    string
 	Number     string
-	ScryfallId string
+	ScryfallID string
 
-	OldTcgId       string
-	NewTcgId       string
-	NewEtchedTcgId string
+	OldTcgID       string
+	NewTcgID       string
+	NewEtchedTcgID string
 }
 
 func run() int {
@@ -235,7 +235,7 @@ func run() int {
 			}
 		}
 
-		newTcgID := cards[0].OriginalId
+		newTcgID := cards[0].OriginalID
 		newEtchedTcgID := ""
 		oldTcgID := co.Identifiers["tcgplayerProductId"]
 
@@ -257,17 +257,17 @@ func run() int {
 			output[identifier].Name = co.Name
 			output[identifier].Edition = co.Edition
 			output[identifier].Number = co.Number
-			output[identifier].ScryfallId = identifier
+			output[identifier].ScryfallID = identifier
 
-			output[identifier].OldTcgId = oldTcgID
+			output[identifier].OldTcgID = oldTcgID
 			if co.Etched {
-				output[identifier].NewEtchedTcgId = newEtchedTcgID
+				output[identifier].NewEtchedTcgID = newEtchedTcgID
 			} else {
-				output[identifier].NewTcgId = newTcgID
+				output[identifier].NewTcgID = newTcgID
 			}
 
 			// Set the first page for validation
-			page, _ := strconv.Atoi(cards[0].InstanceId)
+			page, _ := strconv.Atoi(cards[0].InstanceID)
 			if firstPage == 0 || firstPage > page {
 				firstPage = page
 			}
@@ -285,10 +285,10 @@ func run() int {
 			props.Name,
 			props.Edition,
 			props.Number,
-			props.ScryfallId,
-			props.OldTcgId,
-			props.NewTcgId,
-			props.NewEtchedTcgId,
+			props.ScryfallID,
+			props.OldTcgID,
+			props.NewTcgID,
+			props.NewEtchedTcgID,
 		})
 		csvWriter.Flush()
 	}

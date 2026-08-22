@@ -182,8 +182,8 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 						Price:      price,
 						Quantity:   1,
 						URL:        GenerateProductURL(sku.ProductID, "", tcg.Affiliate, "", "", false),
-						OriginalId: fmt.Sprint(sku.ProductID),
-						InstanceId: fmt.Sprint(sku.SKUID),
+						OriginalID: fmt.Sprint(sku.ProductID),
+						InstanceID: fmt.Sprint(sku.SKUID),
 					},
 				}
 				continue
@@ -202,7 +202,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				// identify the sku outright; Match tries them first and falls
 				// back to the fields below whenever the datastore does not
 				// carry the id.
-				Id:        fmt.Sprint(sku.ProductID),
+				ID:        fmt.Sprint(sku.ProductID),
 				Name:      cardName,
 				Edition:   tcg.editions[product.GroupID].Name,
 				Variation: strings.TrimSpace(number + " " + printing),
@@ -241,8 +241,8 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 					Price:      price,
 					Quantity:   1,
 					URL:        link,
-					OriginalId: fmt.Sprint(sku.ProductID),
-					InstanceId: fmt.Sprint(sku.SKUID),
+					OriginalID: fmt.Sprint(sku.ProductID),
+					InstanceID: fmt.Sprint(sku.SKUID),
 				},
 			}
 

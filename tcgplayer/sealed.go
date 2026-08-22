@@ -48,7 +48,7 @@ func NewScraperSealed(publicID, privateID string) (*Sealed, error) {
 func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseChan, reqs []marketChan) error {
 	ids := make([]int, len(reqs))
 	for i := range reqs {
-		ids[i] = reqs[i].SkuId
+		ids[i] = reqs[i].SkuID
 	}
 
 	results, err := tcg.client.GetMarketPricesBySKUs(ctx, ids)
@@ -64,9 +64,9 @@ func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseCh
 		uuid := ""
 		productID := 0
 		for _, req := range reqs {
-			if result.SKUID == req.SkuId {
+			if result.SKUID == req.SkuID {
 				uuid = req.UUID
-				productID = req.ProductId
+				productID = req.ProductID
 				break
 			}
 		}
@@ -80,8 +80,8 @@ func (tcg *Sealed) processEntries(ctx context.Context, channel chan<- responseCh
 				Price:      result.LowestListingPrice,
 				Quantity:   1,
 				URL:        link,
-				OriginalId: fmt.Sprint(productID),
-				InstanceId: fmt.Sprint(result.SKUID),
+				OriginalID: fmt.Sprint(productID),
+				InstanceID: fmt.Sprint(result.SKUID),
 			},
 		}
 
@@ -111,11 +111,11 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 
 			for page := range pages {
 				// Skip dupes
-				_, found := idsFound[page.SkuId]
+				_, found := idsFound[page.SkuID]
 				if found {
 					continue
 				}
-				idsFound[page.SkuId] = struct{}{}
+				idsFound[page.SkuID] = struct{}{}
 
 				// Add our pair to the buffer
 				buffer = append(buffer, page)
@@ -162,8 +162,8 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
 						Finish:    sku.Finish,
-						ProductId: sku.ProductId,
-						SkuId:     sku.SkuId,
+						ProductID: sku.ProductID,
+						SkuID:     sku.SkuID,
 						Language:  sku.Language,
 					}
 				}

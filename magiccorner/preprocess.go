@@ -146,9 +146,9 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 	extra := strings.TrimSuffix(path.Base(card.Extra), path.Ext(card.Extra))
 
 	// Circle of Protection: Red in Revised EU FWB???
-	if card.Variants[index].Id == 223958 ||
+	if card.Variants[index].ID == 223958 ||
 		// Excruciator RAV duplicate card
-		card.Variants[index].Id == 108840 ||
+		card.Variants[index].ID == 108840 ||
 		// Wrong English name for Chain Lightning
 		card.OrigName == "Crepaccio" {
 		return nil, errors.New("duplicate")
@@ -203,7 +203,7 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 	}
 
 	return &mtgmatcher.InputCard{
-		Id:        id,
+		ID:        id,
 		Name:      cardName,
 		Variation: variation,
 		Edition:   edition,

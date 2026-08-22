@@ -31,7 +31,7 @@ var availableIndexNames = []string{
 }
 
 type indexChan struct {
-	TCGProductId string
+	TCGProductID string
 	UUID         string
 	Etched       bool
 }
@@ -60,7 +60,7 @@ func NewScraperIndex(publicID, privateID string) (*Index, error) {
 func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan, reqs []indexChan) error {
 	var ids []int
 	for i := range reqs {
-		id, err := strconv.Atoi(reqs[i].TCGProductId)
+		id, err := strconv.Atoi(reqs[i].TCGProductID)
 		if err != nil {
 			continue
 		}
@@ -84,7 +84,7 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 		isFoil := result.SubTypeName == "Foil"
 		isEtched := false
 		for _, req := range reqs {
-			if req.TCGProductId == productID {
+			if req.TCGProductID == productID {
 				uuid = req.UUID
 				isEtched = req.Etched
 				break
@@ -160,11 +160,11 @@ func (tcg *Index) Load(ctx context.Context) error {
 
 			for page := range pages {
 				// Skip dupes
-				_, found := dupes[page.TCGProductId]
+				_, found := dupes[page.TCGProductID]
 				if found {
 					continue
 				}
-				dupes[page.TCGProductId] = struct{}{}
+				dupes[page.TCGProductID] = struct{}{}
 
 				// Add our pair to the buffer
 				buffer = append(buffer, page)
@@ -202,7 +202,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 				tcgID, found := card.Identifiers["tcgplayerProductId"]
 				if found {
 					pages <- indexChan{
-						TCGProductId: tcgID,
+						TCGProductID: tcgID,
 						UUID:         card.UUID,
 					}
 				}
@@ -211,7 +211,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 				tcgEtchedID, found := card.Identifiers["tcgplayerEtchedProductId"]
 				if found && tcgEtchedID != tcgID {
 					pages <- indexChan{
-						TCGProductId: tcgEtchedID,
+						TCGProductID: tcgEtchedID,
 						UUID:         card.UUID,
 						Etched:       true,
 					}

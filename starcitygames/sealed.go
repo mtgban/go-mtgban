@@ -119,8 +119,8 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 			entry := &mtgban.InventoryEntry{
 				Price:      retailPrice,
 				Quantity:   v.Qty,
-				OriginalId: p.SKU,
-				InstanceId: v.SKU,
+				OriginalID: p.SKU,
+				InstanceID: v.SKU,
 				URL:        SCGProductURL(p.URL, v.SKU, scg.Affiliate),
 			}
 			if err := scg.inventory.Add(uuid, entry); err != nil {
@@ -138,7 +138,7 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 				BuyPrice:   buyPrice,
 				PriceRatio: priceRatio,
 				URL:        buyURL,
-				OriginalId: v.SKU,
+				OriginalID: v.SKU,
 			}
 			if err := scg.buylist.Add(uuid, entry); err != nil {
 				scg.printf("%s", err.Error())

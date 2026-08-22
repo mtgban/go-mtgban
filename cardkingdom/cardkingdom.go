@@ -148,8 +148,8 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					Price:      retailPrices[i],
 					Quantity:   qtys[i],
 					URL:        link,
-					OriginalId: strconv.Itoa(card.ID),
-					InstanceId: card.SKU,
+					OriginalID: strconv.Itoa(card.ID),
+					InstanceID: card.SKU,
 				}
 				if cond != "NM" {
 					out.CustomFields = map[string]string{
@@ -217,8 +217,8 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 					Quantity:   card.QtyBuying,
 					PriceRatio: priceRatio,
 					URL:        u.String(),
-					OriginalId: strconv.Itoa(card.ID),
-					InstanceId: card.SKU,
+					OriginalID: strconv.Itoa(card.ID),
+					InstanceID: card.SKU,
 					VendorName: availableTraderNames[0],
 				}
 				// Add the line entry as needed by the csv import

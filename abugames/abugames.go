@@ -59,7 +59,7 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 		return err
 	}
 
-	for _, group := range product.Grouped.ProductId.Groups {
+	for _, group := range product.Grouped.ProductID.Groups {
 		// When MINT is found, handle conditions as a standard 4-grade
 		// Otherwise use the same approach used for starcitygames (stricter grading for foils)
 		// This only applies for Retail, the condition is skipped on buylists
@@ -187,8 +187,8 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 					Price:      doc.SellPrice,
 					Quantity:   doc.SellQuantity,
 					URL:        u.String() + searchQuery,
-					OriginalId: group.GroupValue,
-					InstanceId: doc.Id,
+					OriginalID: group.GroupValue,
+					InstanceID: doc.ID,
 					SellerName: availableMarketNames[0],
 				}
 
@@ -234,8 +234,8 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 						Quantity:   doc.BuyQuantity,
 						PriceRatio: priceRatio,
 						URL:        u.String() + searchQuery,
-						OriginalId: group.GroupValue,
-						InstanceId: doc.Id,
+						OriginalID: group.GroupValue,
+						InstanceID: doc.ID,
 						VendorName: availableTraderNames[0],
 					}
 
@@ -245,8 +245,8 @@ func (abu *ABUGames) processEntry(ctx context.Context, query string, channel cha
 						Quantity:   doc.BuyQuantity,
 						PriceRatio: priceRatioTrade,
 						URL:        u.String() + searchQuery,
-						OriginalId: group.GroupValue,
-						InstanceId: doc.Id,
+						OriginalID: group.GroupValue,
+						InstanceID: doc.ID,
 						VendorName: availableTraderNames[1],
 					}
 				}

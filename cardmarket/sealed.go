@@ -146,7 +146,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 				continue
 			}
 
-			link := BuildURL(article.IdProduct, GameMagic, mkm.Affiliate, article.IsFoil)
+			link := BuildURL(article.IDProduct, GameMagic, mkm.Affiliate, article.IsFoil)
 			out := responseChan{
 				cardID: uuid,
 				entry: mtgban.InventoryEntry{
@@ -155,8 +155,8 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 					Quantity:   article.Count,
 					SellerName: article.Seller.Username,
 					URL:        link,
-					OriginalId: fmt.Sprint(article.IdProduct),
-					InstanceId: fmt.Sprint(article.IdArticle),
+					OriginalID: fmt.Sprint(article.IDProduct),
+					InstanceID: fmt.Sprint(article.IDArticle),
 				},
 			}
 			channel <- out
@@ -253,24 +253,24 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 			early := namesEarlyPrintRun(product.Name)
 			if early || earlyRunSiblings[sealedBaseKey(product.Name)] {
 				if uuid, named := printRuns.resolve(product.Name, early); named {
-					productMap[product.IdProduct] = []string{uuid}
+					productMap[product.IDProduct] = []string{uuid}
 				}
 			}
 		}
-		_, found := productMap[product.IdProduct]
+		_, found := productMap[product.IDProduct]
 		if !found && nameFallback {
 			uuid, err := mtgmatcher.ResolveSealed(product.Name)
 			if err != nil {
 				continue
 			}
-			productMap[product.IdProduct] = []string{uuid}
+			productMap[product.IDProduct] = []string{uuid}
 			resolved++
 			found = true
 		}
 		if !found {
 			continue
 		}
-		productIds = append(productIds, product.IdProduct)
+		productIds = append(productIds, product.IDProduct)
 	}
 	if resolved > 0 {
 		mkm.printf("Resolved %d more sealed products by name", resolved)
@@ -301,7 +301,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 			if err != nil {
 				_, cerr := mtgmatcher.GetUUID(result.cardID)
 				if cerr != nil {
-					mkm.printf("%s - %s: %s", result.entry.OriginalId, cerr.Error(), result.cardID)
+					mkm.printf("%s - %s: %s", result.entry.OriginalID, cerr.Error(), result.cardID)
 					return
 				}
 				mkm.printf("%d - %s", result.ogID, err.Error())

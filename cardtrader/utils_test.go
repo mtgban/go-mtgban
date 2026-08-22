@@ -33,7 +33,7 @@ func TestCollectorNumberShapes(t *testing.T) {
 func TestGameVariation(t *testing.T) {
 	tests := []struct {
 		name    string
-		gameId  int
+		gameID  int
 		version string
 		number  string
 		want    string
@@ -52,10 +52,10 @@ func TestGameVariation(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			bp := Blueprint{Version: test.version}
-			got := gameVariation(test.gameId, &bp, test.number)
+			got := gameVariation(test.gameID, &bp, test.number)
 			if got != test.want {
 				t.Errorf("gameVariation(%d, %q, %q) = %q, want %q",
-					test.gameId, test.version, test.number, got, test.want)
+					test.gameID, test.version, test.number, got, test.want)
 			}
 		})
 	}

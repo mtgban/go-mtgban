@@ -21,7 +21,7 @@ import (
 type matchTest struct {
 	Desc string               `json:"description"`
 	In   mtgmatcher.InputCard `json:"input"`
-	Id   string               `json:"uuid,omitempty"`
+	ID   string               `json:"uuid,omitempty"`
 	Err  string               `json:"error,omitempty"`
 }
 
@@ -297,7 +297,7 @@ var riftboundSeeds = []matchTest{
 	// product id (652842 is Ahri, Alluring OGN-066).
 	{
 		Desc: "tcgplayer product id resolves through the identifier index",
-		In:   mtgmatcher.InputCard{Id: "652842", Foil: true},
+		In:   mtgmatcher.InputCard{ID: "652842", Foil: true},
 	},
 	// Error contract.
 	{
@@ -371,9 +371,9 @@ func TestRiftboundMatch(t *testing.T) {
 			if err != nil {
 				gotErr = err.Error()
 			}
-			if id != tt.Id || gotErr != tt.Err {
+			if id != tt.ID || gotErr != tt.Err {
 				t.Errorf("Match(%q num=%q foil=%v) = (%q, %q), want (%q, %q)",
-					tt.In.Name, tt.In.Variation, tt.In.Foil, id, gotErr, tt.Id, tt.Err)
+					tt.In.Name, tt.In.Variation, tt.In.Foil, id, gotErr, tt.ID, tt.Err)
 			}
 		})
 	}
@@ -415,15 +415,15 @@ func regenerateRiftboundTestData(t *testing.T, b *mtgmatcher.Backend, tests []ma
 		}
 		if wantNegative != (gotErr != "") {
 			t.Errorf("refusing to flip %q: (%q, %q) -> (%q, %q); edit the entry or seed by hand",
-				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+				tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 			continue
 		}
 
-		if tests[i].Id != id || tests[i].Err != gotErr {
+		if tests[i].ID != id || tests[i].Err != gotErr {
 			t.Logf("updating %q: (%q, %q) -> (%q, %q)",
-				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+				tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		tests[i].Id = id
+		tests[i].ID = id
 		tests[i].Err = gotErr
 	}
 	if t.Failed() {

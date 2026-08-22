@@ -131,8 +131,8 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				Price:      retailPrice,
 				Conditions: condition,
 				Quantity:   v.Qty,
-				OriginalId: p.SKU,
-				InstanceId: v.SKU,
+				OriginalID: p.SKU,
+				InstanceID: v.SKU,
 				URL:        SCGProductURL(p.URL, v.SKU, scg.Affiliate),
 			}
 			if condition == "NM" {
@@ -160,8 +160,8 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				BuyPrice:     buyPrice,
 				PriceRatio:   priceRatio,
 				URL:          buyURL,
-				OriginalId:   p.SKU,
-				InstanceId:   v.SKU,
+				OriginalID:   p.SKU,
+				InstanceID:   v.SKU,
 				CustomFields: blFields,
 			}
 			if err := scg.buylist.Add(cardID, entry); err != nil && !ignore {

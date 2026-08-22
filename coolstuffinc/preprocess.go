@@ -635,7 +635,7 @@ func Preprocess(card CSICard) (*mtgmatcher.InputCard, error) {
 	}
 
 	return &mtgmatcher.InputCard{
-		Id:        card.ScryfallId,
+		ID:        card.ScryfallID,
 		Name:      cardName,
 		Variation: variant,
 		Edition:   edition,

@@ -62,7 +62,7 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 
 	for _, products := range allProducts {
 		for _, product := range products {
-			uuids, found := productMap[product.BlueprintId]
+			uuids, found := productMap[product.BlueprintID]
 			if !found {
 				continue
 			}
@@ -92,14 +92,14 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 				continue
 			}
 
-			link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintId)
+			link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintID)
 			if ct.ShareCode != "" {
 				link += "?share_code=" + ct.ShareCode
 			}
 
 			price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRates)
 			if err != nil {
-				ct.printf("%v for blueprint %d", err, product.BlueprintId)
+				ct.printf("%v for blueprint %d", err, product.BlueprintID)
 				continue
 			}
 
@@ -121,8 +121,8 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 					URL:        link,
 					SellerName: sellerName,
 					Bundle:     product.User.SealedZero,
-					OriginalId: fmt.Sprint(product.BlueprintId),
-					InstanceId: fmt.Sprint(product.Id),
+					OriginalID: fmt.Sprint(product.BlueprintID),
+					InstanceID: fmt.Sprint(product.ID),
 					CustomFields: map[string]string{
 						"SubSellerName": product.User.Name,
 						"SubSellerGeo":  product.User.CountryCode,
@@ -168,10 +168,10 @@ func (ct *Sealed) Load(ctx context.Context) error {
 			// An unlinked blueprint carries a zero id; the singles path
 			// skips those, and looking one up would funnel every such
 			// listing onto whatever product shares the missing link.
-			if bp.TCGplayerId == 0 {
+			if bp.TCGplayerID == 0 {
 				continue
 			}
-			uuids, found := tcgMap[bp.TCGplayerId]
+			uuids, found := tcgMap[bp.TCGplayerID]
 			if !found {
 				continue
 			}

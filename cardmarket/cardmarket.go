@@ -91,7 +91,7 @@ func (mkm *Index) processEdition(ctx context.Context, channel chan<- responseCha
 	for _, product := range products {
 		err := mkm.processProduct(channel, &product)
 		if err != nil {
-			mkm.printf("product id %d returned %s", product.IdProduct, err)
+			mkm.printf("product id %d returned %s", product.IDProduct, err)
 		}
 	}
 	return nil
@@ -273,7 +273,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 		// and same-name products abound, so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by or not at all -
 		// name matching has nothing to distinguish on.
-		if tcgID, found := mkm.TCGBridge[product.IdProduct]; found {
+		if tcgID, found := mkm.TCGBridge[product.IDProduct]; found {
 			cardID, _ = mtgmatcher.MatchID(fmt.Sprint(tcgID), false)
 			// The flag lands on the product's default printing, where the
 			// catalog says which printing this product actually is:
@@ -317,9 +317,9 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 	}
 
 	// Look for the price presence
-	guide, found := mkm.priceGuide[product.IdProduct]
+	guide, found := mkm.priceGuide[product.IDProduct]
 	if !found {
-		return fmt.Errorf("IdProduct %d not found in PriceGuide", product.IdProduct)
+		return fmt.Errorf("IdProduct %d not found in PriceGuide", product.IDProduct)
 	}
 
 	// Sorted as availableIndexNames
@@ -343,7 +343,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 	// if there is a foil printing, and add prices from the foilprices array.
 	// If a card is foil-only or is etched, then we just use foilprices data.
 	if perTreatment || (!co.Foil && !co.Etched) {
-		link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, false)
+		link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, false)
 
 		quantity := product.CountArticles - product.CountFoils
 		if perTreatment {
@@ -356,7 +356,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			}
 
 			out := responseChan{
-				ogID:   product.IdProduct,
+				ogID:   product.IDProduct,
 				cardID: cardID,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
@@ -364,7 +364,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 					Quantity:   quantity,
 					URL:        link,
 					SellerName: availableIndexNames[i],
-					OriginalId: fmt.Sprint(product.IdProduct),
+					OriginalID: fmt.Sprint(product.IDProduct),
 				},
 			}
 
@@ -372,7 +372,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 		}
 
 		if !perTreatment && (foilprices[0] != 0 || foilprices[1] != 0) {
-			link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, true)
+			link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
 
 			// An empty foil id means the card has no foil printing (Match
 			// errored on the foil probe), so residual foil prices in the
@@ -383,7 +383,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 						continue
 					}
 					out := responseChan{
-						ogID:   product.IdProduct,
+						ogID:   product.IDProduct,
 						cardID: cardIDFoil,
 						entry: mtgban.InventoryEntry{
 							Conditions: "NM",
@@ -391,7 +391,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 							Quantity:   product.CountFoils,
 							URL:        link,
 							SellerName: availableIndexNames[i],
-							OriginalId: fmt.Sprint(product.IdProduct),
+							OriginalID: fmt.Sprint(product.IDProduct),
 						},
 					}
 
@@ -400,14 +400,14 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			}
 		}
 	} else {
-		link := BuildURL(product.IdProduct, mkm.gameID, mkm.Affiliate, true)
+		link := BuildURL(product.IDProduct, mkm.gameID, mkm.Affiliate, true)
 
 		for i := range availableIndexNames {
 			if foilprices[i] == 0 || product.CountFoils == 0 {
 				continue
 			}
 			out := responseChan{
-				ogID:   product.IdProduct,
+				ogID:   product.IDProduct,
 				cardID: cardID,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
@@ -415,7 +415,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 					Quantity:   product.CountFoils,
 					URL:        link,
 					SellerName: availableIndexNames[i],
-					OriginalId: fmt.Sprint(product.IdProduct),
+					OriginalID: fmt.Sprint(product.IDProduct),
 				},
 			}
 
@@ -440,7 +440,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 	}
 	mkm.priceGuide = make(map[int]PriceGuide, len(priceGuide))
 	for _, entry := range priceGuide {
-		mkm.priceGuide[entry.IdProduct] = entry
+		mkm.priceGuide[entry.IDProduct] = entry
 	}
 
 	mkm.printf("Obtained today's price guide with %d prices", len(priceGuide))
@@ -492,10 +492,10 @@ func (mkm *Index) Load(ctx context.Context) error {
 
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items,
 		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
-			mkm.printf("Processing %s (%d)", exp.Name, exp.IdExpansion)
-			err := mkm.processEdition(ctx, channel, exp.IdExpansion)
+			mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
+			err := mkm.processEdition(ctx, channel, exp.IDExpansion)
 			if err != nil {
-				return fmt.Errorf("expansion %s (id %d) returned %s", exp.Name, exp.IdExpansion, err.Error())
+				return fmt.Errorf("expansion %s (id %d) returned %s", exp.Name, exp.IDExpansion, err.Error())
 			}
 			return nil
 		},

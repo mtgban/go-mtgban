@@ -145,9 +145,9 @@ func (b *Backend) MatchIDFinish(inputID, finish string) (string, error) {
 // printing is not sold in.
 func (b *Backend) matchIDFor(inCard *InputCard) (string, error) {
 	if inCard.Finish != "" {
-		return b.MatchIDFinish(inCard.Id, inCard.Finish)
+		return b.MatchIDFinish(inCard.ID, inCard.Finish)
 	}
-	return b.MatchID(inCard.Id, inCard.Foil, inCard.IsEtched())
+	return b.MatchID(inCard.ID, inCard.Foil, inCard.IsEtched())
 }
 
 // MatchID resolves an identifier a storefront already knows, one of the
@@ -259,7 +259,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	}
 
 	// Look up by uuid
-	if inCard.Id != "" {
+	if inCard.ID != "" {
 		Logger.Printf("Performing id lookup")
 		outID, err := b.matchIDFor(inCard)
 		// The wording cannot improve on a finish the printing does not

@@ -24,7 +24,7 @@ import (
 type matchTest struct {
 	Desc string               `json:"description"`
 	In   mtgmatcher.InputCard `json:"input"`
-	Id   string               `json:"uuid,omitempty"`
+	ID   string               `json:"uuid,omitempty"`
 	Err  string               `json:"error,omitempty"`
 }
 
@@ -44,29 +44,29 @@ var lorcanaSeeds = []matchTest{
 		// TCGplayer prices this printing as three skus; the id names the
 		// printing and the finish beside it names which sku.
 		Desc: "product id plus the sku's finish reaches the foil sub-type",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Holofoil", Foil: true},
+		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Holofoil", Foil: true},
 	},
 	{
 		// The same product id, each of the other skus TCGplayer prices it
 		// as, so no two of them can answer with one uuid.
 		Desc: "product id plus the plain sku's finish",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Normal"},
+		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Normal"},
 	},
 	{
 		Desc: "product id plus the standard foil sku's finish",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Cold Foil", Foil: true},
+		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Cold Foil", Foil: true},
 	},
 	{
 		// Promotion runs from any sibling: a sub-type's own uuid demotes
 		// to the plain printing when the caller prices that sku.
 		Desc: "a sub-type uuid plus a finish reaches its plain sibling",
-		In:   mtgmatcher.InputCard{Id: "1951_rainbowpillars", Finish: "Normal"},
+		In:   mtgmatcher.InputCard{ID: "1951_rainbowpillars", Finish: "Normal"},
 	},
 	{
 		// An id with no finish beside it is still the flag's question, so
 		// the wording no longer overrides the printing the id names.
 		Desc: "an id sent without a finish answers with the flag's foil",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
+		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Foil: true},
 	},
 	{
 		// A storefront that sends no id still spells the sub-type, and
@@ -78,18 +78,18 @@ var lorcanaSeeds = []matchTest{
 		// Satin is a finish this game sells and this printing does not, so
 		// the contradiction stands rather than answering with a sibling.
 		Desc: "negative: a finish the printing is not sold in",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Satin", Foil: true},
+		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204", Finish: "Satin", Foil: true},
 	},
 	{
 		// A name the game cannot place at all is a vendor spelling nobody
 		// has taught it yet, which says nothing about the printing: the
 		// wording answers, exactly as it did before an id could name one.
 		Desc: "a finish name the game does not know falls through to the wording",
-		In:   mtgmatcher.InputCard{Id: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Finish: "Reverse Holofoil", Foil: true},
+		In:   mtgmatcher.InputCard{ID: "647652", Name: "Ariel - Singing Mermaid", Edition: "Fabled", Variation: "15/204 Holofoil", Finish: "Reverse Holofoil", Foil: true},
 	},
 	{
 		Desc: "product id two cards claim falls back to the name",
-		In:   mtgmatcher.InputCard{Id: "544501", Name: "Let It Go (Disney Lorcana Challenge Top 128)", Edition: "Disney Lorcana Promo Cards", Variation: "2 Holofoil", Foil: true},
+		In:   mtgmatcher.InputCard{ID: "544501", Name: "Let It Go (Disney Lorcana Challenge Top 128)", Edition: "Disney Lorcana Promo Cards", Variation: "2 Holofoil", Foil: true},
 	},
 	{
 		Desc: "foil-only promo listed without the flag",
@@ -295,9 +295,9 @@ func TestLorcanaMatch(t *testing.T) {
 			if err != nil {
 				gotErr = err.Error()
 			}
-			if id != tt.Id || gotErr != tt.Err {
+			if id != tt.ID || gotErr != tt.Err {
 				t.Errorf("Match(%q num=%q foil=%v) = (%q, %q), want (%q, %q)",
-					tt.In.Name, tt.In.Variation, tt.In.Foil, id, gotErr, tt.Id, tt.Err)
+					tt.In.Name, tt.In.Variation, tt.In.Foil, id, gotErr, tt.ID, tt.Err)
 			}
 		})
 	}
@@ -341,15 +341,15 @@ func regenerateLorcanaTestData(t *testing.T, b *mtgmatcher.Backend, tests []matc
 		}
 		if wantNegative != (gotErr != "") {
 			t.Errorf("refusing to flip %q: (%q, %q) -> (%q, %q); edit the entry or seed by hand",
-				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+				tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 			continue
 		}
 
-		if tests[i].Id != id || tests[i].Err != gotErr {
+		if tests[i].ID != id || tests[i].Err != gotErr {
 			t.Logf("updating %q: (%q, %q) -> (%q, %q)",
-				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+				tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		tests[i].Id = id
+		tests[i].ID = id
 		tests[i].Err = gotErr
 	}
 	if t.Failed() {

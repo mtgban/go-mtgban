@@ -20,13 +20,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	variant := ""
 
 	// Some, but not all, have a proper id we can reuse right away
-	id := mtgmatcher.ExternalUUID(bp.ScryfallId)
+	id := mtgmatcher.ExternalUUID(bp.ScryfallID)
 	if id == "" {
-		id = mtgmatcher.ExternalUUID(fmt.Sprintf("%d", bp.TCGplayerId))
+		id = mtgmatcher.ExternalUUID(fmt.Sprintf("%d", bp.TCGplayerID))
 	}
 	if id != "" {
 		return &mtgmatcher.InputCard{
-			Id: id,
+			ID: id,
 			// Not needed, but helps debugging
 			Name:    cardName,
 			Edition: edition,
@@ -88,13 +88,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 		"Arena League Promos",
 		"Friday Night Magic",
 		"Player Rewards Promos":
-		ed, found := id2edition[bp.Id]
+		ed, found := id2edition[bp.ID]
 		if found {
 			edition = ed
 		}
-		if bp.Id == 29063 {
+		if bp.ID == 29063 {
 			variant = "1"
-		} else if bp.Id == 29053 {
+		} else if bp.ID == 29053 {
 			variant = "11"
 		}
 	case "Champs and States":
@@ -160,7 +160,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 				variant = strings.Replace(variant, "sr", "shr", 1)
 			}
 
-			switch bp.Id {
+			switch bp.ID {
 			case 25481: // Scrabbling Claws
 				variant = "jn237sb"
 			case 25491: // Chrome Mox
@@ -225,14 +225,14 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 				case "Bolas's Citadel",
 					"Karn's Bastion":
 					variant = number
-					if bp.Id == 56810 || bp.Id == 56746 {
+					if bp.ID == 56810 || bp.ID == 56746 {
 						variant = "Prerelease"
-					} else if bp.Id == 60193 || bp.Id == 105989 {
+					} else if bp.ID == 60193 || bp.ID == 105989 {
 						variant = "Promo Pack"
 					}
 				case "Feather, the Redeemed":
 					variant = "Promo Pack"
-					if bp.Id == 56782 {
+					if bp.ID == 56782 {
 						variant = "Prerelease"
 					}
 				case "Desperate Lunge",
@@ -310,7 +310,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 							variant = "Prerelase"
 						}
 					case "Dominaria Promos":
-						if cardName == "Steel Leaf Champion" && bp.Id == 1833 {
+						if cardName == "Steel Leaf Champion" && bp.ID == 1833 {
 							variant = "182"
 						}
 					}
@@ -357,7 +357,7 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 			}
 		case "Magic Premiere Shop":
 			if number == "" {
-				number = fmt.Sprint(bp.Id)
+				number = fmt.Sprint(bp.ID)
 			}
 			variant = pmpsTable[number]
 		}
@@ -399,13 +399,13 @@ func Preprocess(bp *Blueprint) (*mtgmatcher.InputCard, error) {
 	}
 
 	// Make sure the token tag is always present
-	if bp.CategoryId == CategoryMagicTokens && !strings.Contains(cardName, "Token") {
+	if bp.CategoryID == CategoryMagicTokens && !strings.Contains(cardName, "Token") {
 		cardName += " Token"
 		if variant == "" {
 			variant = strings.TrimPrefix(number, "T")
 		}
 	}
-	if bp.CategoryId == CategoryMagicOversized {
+	if bp.CategoryID == CategoryMagicOversized {
 		switch {
 		// Preserve the Display Commander tag
 		case strings.Contains(bp.Version, "Display"):

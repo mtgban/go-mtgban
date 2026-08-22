@@ -92,7 +92,7 @@ const (
 // PriceGuide is one product's published prices: the low, the trend, and the
 // averages Cardmarket derives rather than any single listing.
 type PriceGuide struct {
-	IdProduct        int     `json:"idProduct"`
+	IDProduct        int     `json:"idProduct"`
 	AvgSellPrice     float64 `json:"avg"`
 	LowPrice         float64 `json:"low"`
 	TrendPrice       float64 `json:"trend"`
@@ -188,7 +188,7 @@ func GetPriceGuide(ctx context.Context, gameID int) ([]PriceGuide, error) {
 // ProductList is one entry of the catalog dump, which names products without
 // pricing them.
 type ProductList struct {
-	IdProduct    int    `json:"idProduct"`
+	IDProduct    int    `json:"idProduct"`
 	Name         string `json:"name"`
 	CategoryID   int    `json:"idCategory"`
 	CategoryName string `json:"categoryName"`

@@ -30,7 +30,7 @@ var (
 
 // Pick is one card drawn from a booster, with the sheet it came off.
 type Pick struct {
-	CardId string
+	CardID string
 	Sheet  string
 	Finish string
 }
@@ -117,7 +117,7 @@ func run() int {
 				for cardID, frequency := range sheet.Cards {
 					for j := 0; j < frequency; j++ {
 						picks = append(picks, Pick{
-							CardId: cardID,
+							CardID: cardID,
 							Sheet:  sheetName,
 							Finish: finish,
 						})
@@ -191,7 +191,7 @@ func run() int {
 					}
 
 					picks = append(picks, Pick{
-						CardId: item,
+						CardID: item,
 						Sheet:  sheetName,
 						Finish: finish,
 					})
@@ -201,7 +201,7 @@ func run() int {
 
 		sort.Slice(picks, func(i, j int) bool {
 			if picks[i].Sheet == picks[j].Sheet {
-				return picks[i].CardId < picks[j].CardId
+				return picks[i].CardID < picks[j].CardID
 			}
 			return picks[i].Sheet < picks[j].Sheet
 		})
@@ -213,7 +213,7 @@ func run() int {
 		}
 		w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 		for _, pick := range picks {
-			id, _ := mtgmatcher.MatchID(pick.CardId, pick.Finish == "foil", pick.Finish == "etched")
+			id, _ := mtgmatcher.MatchID(pick.CardID, pick.Finish == "foil", pick.Finish == "etched")
 			co, _ := mtgmatcher.GetUUID(id)
 			fmt.Fprintf(w, "%s\t%s|%s\n", pick.Sheet, co, co.Rarity)
 			if *CSVOutput {

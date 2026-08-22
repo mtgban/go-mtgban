@@ -13,7 +13,7 @@ import (
 )
 
 type MatchTest struct {
-	Id   string `json:"uuid,omitempty"`
+	ID   string `json:"uuid,omitempty"`
 	Err  string `json:"error,omitempty"`
 	Desc string `json:"description"`
 
@@ -80,8 +80,8 @@ func runMatch(b *mtgmatcher.Backend, test MatchTest) (string, error) {
 		if test.Err != err.Error() {
 			return cardID, fmt.Errorf("mismatched error: expected '%s', got '%s'", test.Err, err.Error())
 		}
-	} else if cardID != test.Id {
-		return cardID, fmt.Errorf("id mismatch: expected '%s', got '%s'", test.Id, cardID)
+	} else if cardID != test.ID {
+		return cardID, fmt.Errorf("id mismatch: expected '%s', got '%s'", test.ID, cardID)
 	}
 
 	return cardID, nil
@@ -101,8 +101,8 @@ func TestMatch(t *testing.T) {
 			if err != nil {
 				if test.Err == "" {
 					if *UpdateTests {
-						t.Logf("NOTE: Updating test result from '%s' to '%s'", test.Id, cardID)
-						matchTests[i].Id = cardID
+						t.Logf("NOTE: Updating test result from '%s' to '%s'", test.ID, cardID)
+						matchTests[i].ID = cardID
 						shouldUpdateTests = true
 						return
 					}

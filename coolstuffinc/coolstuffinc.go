@@ -119,7 +119,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 		data := result.Data
 
 		if page > 1 {
-			link := "https://www.coolstuffinc.com/sq/" + result.PageId + "?page=" + fmt.Sprint(page)
+			link := "https://www.coolstuffinc.com/sq/" + result.PageID + "?page=" + fmt.Sprint(page)
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 			if err != nil {
 				return err
@@ -306,7 +306,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 						Price:      price,
 						Quantity:   qty,
 						URL:        link,
-						OriginalId: pid,
+						OriginalID: pid,
 						SellerName: availableMarketNames[0],
 					},
 					relaxed: relaxed || graded,

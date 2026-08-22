@@ -17,10 +17,10 @@ import (
 
 // CSICard is one card in the price list.
 type CSICard struct {
-	Id             int     `json:"id,string"`
+	ID             int     `json:"id,string"`
 	URL            string  `json:"url"`
 	Name           string  `json:"name"`
-	ScryfallId     string  `json:"scryfallid"`
+	ScryfallID     string  `json:"scryfallid"`
 	Variation      string  `json:"variation"`
 	Edition        string  `json:"edition"`
 	Language       string  `json:"language"`
@@ -207,7 +207,7 @@ func LoadBuylistEditions(ctx context.Context, game string) (map[string]string, e
 
 // SearchResult is one hit from the storefront's search.
 type SearchResult struct {
-	PageId string
+	PageID string
 	Data   []byte
 }
 
@@ -283,7 +283,7 @@ func Search(ctx context.Context, game, itemName string, skipOOS bool) (*SearchRe
 	clean := strings.Split(strings.TrimPrefix(u.Path, "/sq/"), "&")[0]
 
 	return &SearchResult{
-		PageId: clean,
+		PageID: clean,
 		Data:   data,
 	}, nil
 }

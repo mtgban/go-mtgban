@@ -271,9 +271,9 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		// English-only language validation would reject it, so use it directly.
 		// English-primary cards fall through so a foreign single isn't wrongly
 		// collapsed onto the English printing.
-		if card.Id != "" {
-			if co, e := mtgmatcher.GetUUID(card.Id); e == nil && co.Language != "" && co.Language != "English" {
-				return mtgmatcher.MatchID(card.Id, foil, etched)
+		if card.ID != "" {
+			if co, e := mtgmatcher.GetUUID(card.ID); e == nil && co.Language != "" && co.Language != "English" {
+				return mtgmatcher.MatchID(card.ID, foil, etched)
 			}
 		}
 		return mtgmatcher.Match(card)

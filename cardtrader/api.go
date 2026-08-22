@@ -219,18 +219,18 @@ const (
 // Blueprint is Card Trader's catalog entry for a card or sealed product, the
 // thing listings are sold against.
 type Blueprint struct {
-	Id          int    `json:"id"`
+	ID          int    `json:"id"`
 	Name        string `json:"name"`
 	Version     string `json:"version"`
-	GameId      int    `json:"game_id"`
-	CategoryId  int    `json:"category_id"`
-	ExpansionId int    `json:"expansion_id"`
-	ScryfallId  string `json:"scryfall_id"`
-	TCGplayerId int    `json:"tcg_player_id"`
+	GameID      int    `json:"game_id"`
+	CategoryID  int    `json:"category_id"`
+	ExpansionID int    `json:"expansion_id"`
+	ScryfallID  string `json:"scryfall_id"`
+	TCGplayerID int    `json:"tcg_player_id"`
 	// Every Cardmarket product this blueprint sells as, the language
 	// variants included: cardtrader is the one source linking the two
 	// marketplaces' ids, which the sealed bridge in bantool leans on.
-	CardMarketIds []int `json:"card_market_ids"`
+	CardMarketIDs []int `json:"card_market_ids"`
 
 	Expansion struct {
 		Name string `json:"name"`
@@ -253,8 +253,8 @@ type Blueprint struct {
 // Product is one listing: a blueprint offered by a seller at a price, in a
 // condition and a language.
 type Product struct {
-	Id          int    `json:"id"`
-	BlueprintId int    `json:"blueprint_id"`
+	ID          int    `json:"id"`
+	BlueprintID int    `json:"blueprint_id"`
 	Quantity    int    `json:"quantity"`
 	Description string `json:"description"`
 	OnVacation  bool   `json:"on_vacation"`
@@ -325,14 +325,14 @@ type BlueprintError struct {
 	Extra     struct {
 		Message string `json:"message"`
 	} `json:"extra"`
-	RequestId string `json:"request_id"`
+	RequestID string `json:"request_id"`
 }
 
 // Expansion is a set as Card Trader files it, which does not always agree with
 // the game's own sets.
 type Expansion struct {
-	Id     int    `json:"id"`
-	GameId int    `json:"game_id"`
+	ID     int    `json:"id"`
+	GameID int    `json:"game_id"`
 	Code   string `json:"code"`
 	Name   string `json:"name"`
 }
@@ -501,10 +501,10 @@ func (ct *CTAuthClient) GetOrderProducts(ctx context.Context, orderID int) ([]Pr
 // slightly from the Product they return.
 type BulkProduct struct {
 	// The id of the Product to edit
-	Id int `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
 
 	// The id of the Blueprint to put on sale
-	BlueprintId int `json:"blueprint_id,omitempty"`
+	BlueprintID int `json:"blueprint_id,omitempty"`
 
 	// The price of the product, indicated in your current currency
 	Price float64 `json:"price,omitempty"`
@@ -616,7 +616,7 @@ func (ct *CTAuthClient) bulkOperation(ctx context.Context, link string, products
 }
 
 type ctProductCart struct {
-	ProductId int  `json:"product_id"`
+	ProductID int  `json:"product_id"`
 	Quantity  int  `json:"quantity"`
 	ViaZero   bool `json:"via_cardtrader_zero"`
 }
@@ -669,7 +669,7 @@ type CTCartResponse struct {
 // storefront when asked.
 func (ct *CTAuthClient) AddProductToCart(ctx context.Context, productID, quantity int, zero bool) (*CTCartResponse, error) {
 	product := ctProductCart{
-		ProductId: productID,
+		ProductID: productID,
 		Quantity:  quantity,
 		ViaZero:   zero,
 	}
@@ -679,7 +679,7 @@ func (ct *CTAuthClient) AddProductToCart(ctx context.Context, productID, quantit
 // RemoveProductFromCart takes a quantity of a listing back out of the cart.
 func (ct *CTAuthClient) RemoveProductFromCart(ctx context.Context, productID, quantity int) (*CTCartResponse, error) {
 	product := ctProductCart{
-		ProductId: productID,
+		ProductID: productID,
 		Quantity:  quantity,
 	}
 	return ct.addremoveCart(ctx, product, ctRemoveProductCart)

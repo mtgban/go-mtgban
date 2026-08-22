@@ -18,7 +18,7 @@ const yugiohTestData = "testdata/yugioh_test_data.json"
 type matchTest struct {
 	Desc string               `json:"description"`
 	In   mtgmatcher.InputCard `json:"input"`
-	Id   string               `json:"uuid"`
+	ID   string               `json:"uuid"`
 	Err  string               `json:"error,omitempty"`
 }
 
@@ -91,23 +91,23 @@ var yugiohSeeds = []matchTest{
 	},
 	{
 		Desc: "tcgplayer product id resolves through the identifier index",
-		In:   mtgmatcher.InputCard{Id: "525011"},
+		In:   mtgmatcher.InputCard{ID: "525011"},
 	},
 	{
 		Desc: "the run named beside the id prices that run's entry",
-		In:   mtgmatcher.InputCard{Id: "69074", Finish: "1st Edition"},
+		In:   mtgmatcher.InputCard{ID: "69074", Finish: "1st Edition"},
 	},
 	{
 		Desc: "a second run reaches its own sibling of the same product",
-		In:   mtgmatcher.InputCard{Id: "69074", Finish: "Limited"},
+		In:   mtgmatcher.InputCard{ID: "69074", Finish: "Limited"},
 	},
 	{
 		Desc: "a foil flag names no run, and the wording answers instead",
-		In:   mtgmatcher.InputCard{Id: "22708", Name: "Giant Flea", Variation: "TP1-017", Finish: "Foil"},
+		In:   mtgmatcher.InputCard{ID: "22708", Name: "Giant Flea", Variation: "TP1-017", Finish: "Foil"},
 	},
 	{
 		Desc: "negative: a run the product was never priced in refuses the sibling",
-		In:   mtgmatcher.InputCard{Id: "22708", Name: "Giant Flea", Variation: "TP1-017", Finish: "1st Edition"},
+		In:   mtgmatcher.InputCard{ID: "22708", Name: "Giant Flea", Variation: "TP1-017", Finish: "1st Edition"},
 	},
 	{
 		Desc: "negative: rarity suffix cannot pick among the lettered artworks",
@@ -191,9 +191,9 @@ func TestYugiohMatch(t *testing.T) {
 			if err != nil {
 				gotErr = err.Error()
 			}
-			if id != tt.Id || gotErr != tt.Err {
+			if id != tt.ID || gotErr != tt.Err {
 				t.Errorf("Match(%q num=%q) = (%q, %q), want (%q, %q)",
-					tt.In.Name, tt.In.Variation, id, gotErr, tt.Id, tt.Err)
+					tt.In.Name, tt.In.Variation, id, gotErr, tt.ID, tt.Err)
 			}
 		})
 	}
@@ -227,15 +227,15 @@ func regenerateYugiohTestData(t *testing.T, b *mtgmatcher.Backend, tests []match
 		}
 		wasError := tests[i].Err != ""
 		isError := gotErr != ""
-		if (tests[i].Id != "" || tests[i].Err != "") && wasError != isError &&
+		if (tests[i].ID != "" || tests[i].Err != "") && wasError != isError &&
 			!strings.HasPrefix(tests[i].Desc, "negative:") {
 			t.Fatalf("%s: flipped between success and error (%q/%q -> %q/%q); edit the entry by hand",
-				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+				tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		if tests[i].Id != id || tests[i].Err != gotErr {
-			t.Logf("%s: (%q, %q) -> (%q, %q)", tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+		if tests[i].ID != id || tests[i].Err != gotErr {
+			t.Logf("%s: (%q, %q) -> (%q, %q)", tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		tests[i].Id = id
+		tests[i].ID = id
 		tests[i].Err = gotErr
 	}
 

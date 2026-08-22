@@ -19,7 +19,7 @@ const fleshandbloodTestData = "testdata/fleshandblood_test_data.json"
 type matchTest struct {
 	Desc string               `json:"description"`
 	In   mtgmatcher.InputCard `json:"input"`
-	Id   string               `json:"uuid"`
+	ID   string               `json:"uuid"`
 	Err  string               `json:"error,omitempty"`
 }
 
@@ -92,19 +92,19 @@ var fleshandbloodSeeds = []matchTest{
 	},
 	{
 		Desc: "tcgplayer product id resolves through the identifier index",
-		In:   mtgmatcher.InputCard{Id: "225309"},
+		In:   mtgmatcher.InputCard{ID: "225309"},
 	},
 	{
 		Desc: "the printing named beside the id prices that printing's entry",
-		In:   mtgmatcher.InputCard{Id: "225015", Finish: "Unlimited Edition Normal"},
+		In:   mtgmatcher.InputCard{ID: "225015", Finish: "Unlimited Edition Normal"},
 	},
 	{
 		Desc: "a bare treatment reaches the print run the product sold it in",
-		In:   mtgmatcher.InputCard{Id: "225015", Finish: "Cold Foil"},
+		In:   mtgmatcher.InputCard{ID: "225015", Finish: "Cold Foil"},
 	},
 	{
 		Desc: "negative: a treatment the product was never priced in refuses the sibling",
-		In:   mtgmatcher.InputCard{Id: "225501", Name: "Fyendal's Spring Tunic", Variation: "FAB001", Finish: "Rainbow Foil"},
+		In:   mtgmatcher.InputCard{ID: "225501", Name: "Fyendal's Spring Tunic", Variation: "FAB001", Finish: "Rainbow Foil"},
 	},
 	{
 		Desc: "negative: unknown card name",
@@ -184,9 +184,9 @@ func TestFleshandbloodMatch(t *testing.T) {
 			if err != nil {
 				gotErr = err.Error()
 			}
-			if id != tt.Id || gotErr != tt.Err {
+			if id != tt.ID || gotErr != tt.Err {
 				t.Errorf("Match(%q num=%q) = (%q, %q), want (%q, %q)",
-					tt.In.Name, tt.In.Variation, id, gotErr, tt.Id, tt.Err)
+					tt.In.Name, tt.In.Variation, id, gotErr, tt.ID, tt.Err)
 			}
 		})
 	}
@@ -220,15 +220,15 @@ func regenerateFleshandbloodTestData(t *testing.T, b *mtgmatcher.Backend, tests 
 		}
 		wasError := tests[i].Err != ""
 		isError := gotErr != ""
-		if (tests[i].Id != "" || tests[i].Err != "") && wasError != isError &&
+		if (tests[i].ID != "" || tests[i].Err != "") && wasError != isError &&
 			!strings.HasPrefix(tests[i].Desc, "negative:") {
 			t.Fatalf("%s: flipped between success and error (%q/%q -> %q/%q); edit the entry by hand",
-				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+				tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		if tests[i].Id != id || tests[i].Err != gotErr {
-			t.Logf("%s: (%q, %q) -> (%q, %q)", tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+		if tests[i].ID != id || tests[i].Err != gotErr {
+			t.Logf("%s: (%q, %q) -> (%q, %q)", tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		tests[i].Id = id
+		tests[i].ID = id
 		tests[i].Err = gotErr
 	}
 

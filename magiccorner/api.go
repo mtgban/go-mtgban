@@ -13,14 +13,14 @@ import (
 
 // MCEdition is a set as Magic Corner files it for selling.
 type MCEdition struct {
-	Id   int    `json:"Id"`
+	ID   int    `json:"Id"`
 	Name string `json:"Espansione"`
 	Code string `json:"ImageUrl"`
 }
 
 // MCCard is one card on sale, in a condition and a language.
 type MCCard struct {
-	Id       int    `json:"IdProduct"`
+	ID       int    `json:"IdProduct"`
 	Name     string `json:"NomeEn"`
 	Edition  string `json:"Category"`
 	Code     string `json:"Icon"`
@@ -29,7 +29,7 @@ type MCCard struct {
 	OrigName string `json:"NomeIt"`
 	URL      string `json:"Url"`
 	Variants []struct {
-		Id        int     `json:"IdProduct"`
+		ID        int     `json:"IdProduct"`
 		Language  string  `json:"Lingua"`
 		Foil      string  `json:"Foil"`
 		Condition string  `json:"CondizioniShort"`
@@ -45,7 +45,7 @@ type mcResponse struct {
 
 type mcParam struct {
 	SearchField   string `json:"f"`
-	IdCategory    string `json:"IdCategory"`
+	IDCategory    string `json:"IdCategory"`
 	UIc           string `json:"UIc"`
 	OnlyAvailable bool   `json:"SoloDispo"`
 	ProductType   int    `json:"TipoProdotto"`
@@ -127,7 +127,7 @@ func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEd
 	if addPromoEd {
 		// This edition is not present in the normal callback
 		editionList = append(editionList, MCEdition{
-			Id:   mcPromoEditionID,
+			ID:   mcPromoEditionID,
 			Name: "Promo",
 		})
 	}
@@ -138,22 +138,22 @@ func (mc *MCClient) GetEditionList(ctx context.Context, addPromoEd bool) ([]MCEd
 // GetInventoryForEdition returns everything on sale in one edition.
 func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEdition) ([]MCCard, error) {
 	// This breaks on the main website too, just skip it
-	if edition.Id == mcMerfolksVsGoblinsID {
+	if edition.ID == mcMerfolksVsGoblinsID {
 		return nil, nil
 	}
 
 	// The last field before || is the language
 	// 0 - any language, 72 - english only
 	langCode := 0
-	if edition.Id == mcPromoEditionID {
+	if edition.ID == mcPromoEditionID {
 		langCode = 72
 	}
 	param := mcParam{
 		// Search string for Id and Language
-		SearchField: fmt.Sprintf("%d|0|0|0|0|%d||true|0|", edition.Id, langCode),
+		SearchField: fmt.Sprintf("%d|0|0|0|0|%d||true|0|", edition.ID, langCode),
 
 		// The edition/category id
-		IdCategory: fmt.Sprintf("%d", edition.Id),
+		IDCategory: fmt.Sprintf("%d", edition.ID),
 
 		// Returns entries with available quantity
 		OnlyAvailable: true,
@@ -198,7 +198,7 @@ func (mc *MCClient) GetInventoryForEdition(ctx context.Context, edition MCEditio
 // MCExpansion is a set as Magic Corner files it for buying, which does not
 // always agree with MCEdition.
 type MCExpansion struct {
-	Id      int    `json:"Id"`
+	ID      int    `json:"Id"`
 	Name    string `json:"Espansione"`
 	Enabled bool   `json:"Enabled"`
 }

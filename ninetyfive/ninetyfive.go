@@ -151,8 +151,8 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 					Price:      price,
 					Quantity:   quantity,
 					URL:        link,
-					OriginalId: key,
-					InstanceId: sku,
+					OriginalID: key,
+					InstanceID: sku,
 				})
 			} else if mode == modeBuylist {
 				idsToAdd := []string{cardID}
@@ -179,7 +179,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 						PriceRatio: priceRatio,
 						Quantity:   quantity,
 						URL:        link,
-						OriginalId: key,
+						OriginalID: key,
 					})
 				}
 			}

@@ -91,8 +91,8 @@ type TCGSku struct {
 	Language  string `json:"language"`
 	Printing  string `json:"printing"`
 	Finish    string `json:"finish"`
-	ProductId int    `json:"productId"`
-	SkuId     int    `json:"skuId"`
+	ProductID int    `json:"productId"`
+	SkuID     int    `json:"skuId"`
 }
 
 // SKUMap indexes every sku by the uuid of the printing it belongs to, so a
@@ -122,7 +122,7 @@ const (
 
 // TCGSYP is one entry of the Sell Your Playset list.
 type TCGSYP struct {
-	SkuId       int
+	SkuID       int
 	MarketPrice float64
 	MaxQty      int
 }
@@ -178,7 +178,7 @@ func LoadSyp(ctx context.Context, auth string) ([]TCGSYP, error) {
 		}
 
 		result = append(result, TCGSYP{
-			SkuId:       id,
+			SkuID:       id,
 			MarketPrice: price,
 			MaxQty:      qty,
 		})
@@ -226,8 +226,8 @@ const (
 
 // ListingData is one live listing of a product, with the quantity behind it.
 type ListingData struct {
-	ProductId       int     `json:"product_id"`
-	SkuId           int     `json:"sku_id"`
+	ProductID       int     `json:"product_id"`
+	SkuID           int     `json:"sku_id"`
 	Quantity        int     `json:"quantity"`
 	SellerKey       string  `json:"seller_key"`
 	Price           float64 `json:"price"`
@@ -256,8 +256,8 @@ func GetDirectQtysForProductID(ctx context.Context, productID int, onlyDirect bo
 			}
 
 			result = append(result, ListingData{
-				ProductId:       productID,
-				SkuId:           int(listing.ProductConditionID),
+				ProductID:       productID,
+				SkuID:           int(listing.ProductConditionID),
 				Quantity:        int(listing.Quantity),
 				SellerKey:       listing.SellerKey,
 				Price:           listing.Price,
