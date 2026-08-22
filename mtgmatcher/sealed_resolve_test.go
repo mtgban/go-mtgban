@@ -9,6 +9,13 @@ import "testing"
 func sealedResolveBackend() *Backend {
 	b := &Backend{
 		UUIDs: map[string]*CardObject{},
+		// The cards a sealed name may be decorated with; a bracket only
+		// forgives what the game itself has a card for.
+		CanonicalNames: map[string]string{
+			Normalize("Zapdos"):   "Zapdos",
+			Normalize("Articuno"): "Articuno",
+			Normalize("Pikachu"):  "Pikachu",
+		},
 		Sets: map[string]*Set{
 			"OGN": {Name: "Origins", Code: "OGN"},
 			"SFD": {Name: "Spiritforged", Code: "SFD"},
@@ -59,6 +66,15 @@ func sealedResolveBackend() *Backend {
 		"op02-case":     {"Paramount War - Booster Box Case", "OP02"},
 		"op02-boxpromo": {"Box Promotion Pack", "OP02"},
 		"oppr-winner-1": {"Winner Pack Vol. 1", "OP-PR"},
+		// A catalog decorates a theme deck with the creature printed
+		// beside it, which no storefront repeats; the two decks differ
+		// only by their own names.
+		"ogn-deck-storm": {`Origins Theme Deck - "Storm Rider" [Zapdos]`, "OGN"},
+		"ogn-deck-blast": {`Origins Theme Deck - "Aurora Blast" [Articuno]`, "OGN"},
+		// A run is not decoration: these two are different products, and
+		// nothing else answers to the name without one.
+		"ven-elite-1e":  {"Vendetta Elite Box [1st Edition]", "VEN"},
+		"ven-elite-unl": {"Vendetta Elite Box [Unlimited Edition]", "VEN"},
 	} {
 		b.UUIDs[uuid] = &CardObject{
 			Card:   Card{UUID: uuid, Name: product.name, SetCode: product.setCode},
@@ -235,5 +251,71 @@ func TestSealedTokensFoldAccents(t *testing.T) {
 		if !tokensEqual(got, want) {
 			t.Errorf("sealedTokens(%q) = %v, want the same as %q = %v", tt.accented, got, tt.plain, want)
 		}
+	}
+}
+
+// TestSealedQualifierTokens pins which words a catalog name only decorates a
+// product with. A bracket holding a card of the game's own is the creature
+// printed beside a product, which no storefront repeats; a bracket holding
+// anything else is the product's identity - the print run, the number of
+// copies, the placing a promo was handed out for - and forgiving those would
+// merge products that differ by nothing else.
+func TestSealedQualifierTokens(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		want []string
+	}{
+		// The creature on the box says nothing about which deck it is.
+		{`Origins Theme Deck - "Storm Rider" [Zapdos]`, []string{"zapdos"}},
+		{`Origins Theme Deck - "Aurora Blast" [Articuno]`, []string{"articuno"}},
+		// Only a card of the game's own is decoration. A print run, a
+		// count and a placing are the product's identity.
+		{"Fossil Booster Pack [1st Edition]", nil},
+		{"Origins Booster Pack [Set of 4]", nil},
+		{"Origins Promo [1st Place]", nil},
+		// A word the name also carries outside the brackets is doing the
+		// product's own work there, so it is not forgiven.
+		{"Pikachu Collection [Pikachu]", nil},
+		// Nothing bracketed, nothing forgiven.
+		{"XY Phantom Forces Booster Pack", nil},
+	} {
+		got := sealedResolveBackend().sealedQualifierTokens(tt.name)
+		if len(got) != len(tt.want) {
+			t.Errorf("sealedQualifierTokens(%q) = %v, want %v", tt.name, got, tt.want)
+			continue
+		}
+		for _, tok := range tt.want {
+			if !got[tok] {
+				t.Errorf("sealedQualifierTokens(%q) = %v, missing %q", tt.name, got, tok)
+			}
+		}
+	}
+}
+
+// TestResolveSealedForgivesQualifier pins the resolution the forgiveness is
+// for: a storefront names a theme deck by its set and its own name, where the
+// catalog also names the creature printed beside it. A print run is not
+// forgiven, so a name saying neither run stays ambiguous rather than
+// picking one.
+func TestResolveSealedForgivesQualifier(t *testing.T) {
+	b := sealedResolveBackend()
+
+	for _, tt := range []struct{ vendor, want string }{
+		{"Origins: Storm Rider Theme Deck", "ogn-deck-storm"},
+		{"Origins Aurora Blast Theme Deck", "ogn-deck-blast"},
+	} {
+		uuid, err := b.ResolveSealed(tt.vendor)
+		if err != nil {
+			t.Errorf("ResolveSealed(%q) = %v", tt.vendor, err)
+			continue
+		}
+		if uuid != tt.want {
+			t.Errorf("ResolveSealed(%q) = %q, want %q", tt.vendor, uuid, tt.want)
+		}
+	}
+
+	// Both runs answer to a name saying neither, so it resolves to none.
+	if _, err := b.ResolveSealed("Vendetta Elite Box"); err == nil {
+		t.Error("a name naming no print run resolved to one of the two anyway")
 	}
 }
