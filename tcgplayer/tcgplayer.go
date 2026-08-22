@@ -118,7 +118,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 
 		isFoil := req.Printing == "FOIL"
 		isEtched := req.Finish == "ETCHED"
-		cardID, err := mtgmatcher.MatchId(req.UUID, isFoil, isEtched)
+		cardID, err := mtgmatcher.MatchID(req.UUID, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductId, req.UUID)
 			continue

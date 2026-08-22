@@ -379,7 +379,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			}
 			// The product id names the printing, not one of its finishes, so
 			// it points at the plain one where that exists and at the foil
-			// when the card is only sold foil. MatchId re-resolves the finish
+			// when the card is only sold foil. MatchID re-resolves the finish
 			// from the caller's own flag either way.
 			uuid, found := convertedCard.FoilUUIDs[mtgmatcher.FinishNonfoil]
 			if !found {
@@ -452,7 +452,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 	// their uuids join AllSealedUUIDs and their names the sealed name
 	// index, and the product id is carried as an identifier for
 	// BuildSealedProductMap rather than entering the external identifier
-	// index, mirroring how Magic keeps sealed out of MatchId's reach.
+	// index, mirroring how Magic keeps sealed out of MatchID's reach.
 	// Sealed products live in the sealed namespace throughout; AddSealed
 	// is what files them there.
 	for _, product := range gallery.Sealed.Items {

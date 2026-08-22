@@ -217,7 +217,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			return err
 		}
 
-		cardIDFoil, _ = mtgmatcher.MatchId(cardID, true)
+		cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
 	case GameLorcana, GameRiftbound, GameOnePiece:
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
@@ -274,13 +274,13 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 		// TCGplayer id the cardtrader bridge knows it by or not at all -
 		// name matching has nothing to distinguish on.
 		if tcgID, found := mkm.TCGBridge[product.IdProduct]; found {
-			cardID, _ = mtgmatcher.MatchId(fmt.Sprint(tcgID), false)
+			cardID, _ = mtgmatcher.MatchID(fmt.Sprint(tcgID), false)
 			// The flag lands on the product's default printing, where the
 			// catalog says which printing this product actually is:
 			// Cardmarket sells each Flesh and Blood treatment as its own
 			// product and each print run as its own expansion.
 			if finish := productFinish(mkm.gameID, product); finish != "" {
-				if id, ferr := mtgmatcher.MatchIdFinish(fmt.Sprint(tcgID), finish); ferr == nil {
+				if id, ferr := mtgmatcher.MatchIDFinish(fmt.Sprint(tcgID), finish); ferr == nil {
 					cardID = id
 				}
 			}
@@ -303,14 +303,14 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			// was dropped for having nowhere to attach. Naming the run
 			// reaches it, and errors into an empty id for the products
 			// sold in no first edition, which the guard below drops.
-			cardIDFoil, _ = mtgmatcher.MatchIdFinish(cardID, "1st Edition")
+			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, "1st Edition")
 		}
 		if mkm.gameID == GamePokemon {
 			// Pokemon's second column is the reverse holo's, which the flag
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
 			// is never reached.
-			cardIDFoil, _ = mtgmatcher.MatchIdFinish(cardID, "Reverse Holofoil")
+			cardIDFoil, _ = mtgmatcher.MatchIDFinish(cardID, "Reverse Holofoil")
 		}
 	default:
 		return errors.New("unsupported game")

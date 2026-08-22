@@ -453,7 +453,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 		b.Sets[card.SetCode].Cards = append(b.Sets[card.SetCode].Cards, convertedCard)
 		// Alternate products for the same printing resolve to the same base
-		// uuid; MatchId applies the requested finish to it through output(),
+		// uuid; MatchID applies the requested finish to it through output(),
 		// so pointing them at the base card is enough to reach the foil. Only
 		// the id map grows: no CardObject and no uuid is created here.
 		for _, extra := range card.ExternalLinks.TcgPlayerExtraIds {
@@ -539,7 +539,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	// index, and the product id is carried as an identifier for
 	// BuildSealedProductMap rather than entering the external identifier
 	// index, mirroring how Magic and Riftbound keep sealed products out
-	// of MatchId's reach.
+	// of MatchID's reach.
 	var mintedSets bool
 	// Sealed products live in the sealed namespace throughout; AddSealed
 	// is what files them there.

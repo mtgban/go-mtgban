@@ -67,7 +67,7 @@ func (mp *Manapool) Load(ctx context.Context) error {
 	mp.printf("Found %d prices", len(pricelist))
 
 	for _, card := range pricelist {
-		cardID, err := mtgmatcher.MatchId(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
+		cardID, err := mtgmatcher.MatchID(card.ScryfallID, card.FinishID == "FO", card.FinishID == "EF")
 		if err != nil {
 			if !isUnindexed(card) {
 				mp.printf("%v %s for %s [%s]", err, card.ScryfallID, card.Name, card.SetCode)

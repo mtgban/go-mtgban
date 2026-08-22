@@ -86,7 +86,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			continue
 		} else if err != nil {
 			ogErr := err
-			cardID, err = mtgmatcher.MatchId(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
+			cardID, err = mtgmatcher.MatchID(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
 			if err != nil {
 				if skipErrors {
 					continue

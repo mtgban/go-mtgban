@@ -94,7 +94,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 				etched = strings.Contains(offer.Sets[0].Name, "Etched")
 			}
 
-			cardID, err := mtgmatcher.MatchId(foundID, finish == "F", etched)
+			cardID, err := mtgmatcher.MatchID(foundID, finish == "F", etched)
 			if err != nil {
 				continue
 			}

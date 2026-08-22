@@ -68,7 +68,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 
 		isFoil := sku.Printing == "FOIL"
 		isEtched := sku.Finish == "FOIL ETCHED"
-		cardID, err := mtgmatcher.MatchId(fmt.Sprint(sku.ProductId), isFoil, isEtched)
+		cardID, err := mtgmatcher.MatchID(fmt.Sprint(sku.ProductId), isFoil, isEtched)
 		if err != nil {
 			continue
 		}

@@ -12,17 +12,17 @@ import (
 	"strings"
 )
 
-// MatchId resolves an identifier a storefront already knows to the uuid of a
+// MatchID resolves an identifier a storefront already knows to the uuid of a
 // printing, using the default datastore. See the method.
-func MatchId(inputID string, finishes ...bool) (string, error) {
-	return defaultBackend.MatchId(inputID, finishes...)
+func MatchID(inputID string, finishes ...bool) (string, error) {
+	return defaultBackend.MatchID(inputID, finishes...)
 }
 
-// MatchIdFinish resolves an id to the uuid of the printing's sibling sold in
+// MatchIDFinish resolves an id to the uuid of the printing's sibling sold in
 // the named finish, spelled however the caller's source spells it. See the
 // method.
-func MatchIdFinish(inputID, finish string) (string, error) {
-	return defaultBackend.MatchIdFinish(inputID, finish)
+func MatchIDFinish(inputID, finish string) (string, error) {
+	return defaultBackend.MatchIDFinish(inputID, finish)
 }
 
 // Match resolves a storefront's description of a card to the uuid of the one
@@ -58,7 +58,7 @@ func MatchWithNumber(cardName, setCode, number string) (outCards []Card) {
 // it was sent rather than measured against either shape first.
 func (b *Backend) cardObject4Id(inputID string) (*CardObject, error) {
 	if inputID == "" {
-		return nil, ErrCardUnknownId
+		return nil, ErrCardUnknownID
 	}
 
 	// Look up in one of the possible maps
@@ -67,7 +67,7 @@ func (b *Backend) cardObject4Id(inputID string) (*CardObject, error) {
 		co, found = b.UUIDs[b.ExternalIdentifiers[inputID]]
 	}
 	if !found {
-		return nil, ErrCardUnknownId
+		return nil, ErrCardUnknownID
 	}
 	return co, nil
 }
@@ -91,7 +91,7 @@ func (b *Backend) FinishUUID(card *Card, finish string) string {
 	return card.FoilUUIDs[canonical]
 }
 
-// MatchIdFinish answers an id with the uuid of the printing's sibling sold in
+// MatchIDFinish answers an id with the uuid of the printing's sibling sold in
 // the named finish, whichever sibling the id itself names: it promotes and
 // demotes over the game's whole finish vocabulary the way the flags do over
 // the three finishes they can name, so a plain uuid reaches its holofoil and
@@ -104,7 +104,7 @@ func (b *Backend) FinishUUID(card *Card, finish string) string {
 // where the flag form would have quietly clamped the price onto the finish it
 // does carry. Unlike the flag form it answers with the printing's own
 // siblings only, not with a foil Magic files as a printing of its own.
-func (b *Backend) MatchIdFinish(inputID, finish string) (string, error) {
+func (b *Backend) MatchIDFinish(inputID, finish string) (string, error) {
 	co, err := b.cardObject4Id(inputID)
 	if err != nil {
 		return "", err
@@ -133,28 +133,28 @@ func (b *Backend) MatchIdFinish(inputID, finish string) (string, error) {
 	}
 	// Validate that what we found is correct
 	if _, found := b.UUIDs[outID]; !found {
-		return "", ErrCardUnknownId
+		return "", ErrCardUnknownID
 	}
 	return outID, nil
 }
 
-// matchIdFor answers an id the way the caller asked about it. The two forms
+// matchIDFor answers an id the way the caller asked about it. The two forms
 // differ in reach, not just in spelling: the flags may land on a foil Magic
 // files as a printing of its own, while a named finish stays among the
 // printing's own siblings, which is what lets it be loud about a finish the
 // printing is not sold in.
-func (b *Backend) matchIdFor(inCard *InputCard) (string, error) {
+func (b *Backend) matchIDFor(inCard *InputCard) (string, error) {
 	if inCard.Finish != "" {
-		return b.MatchIdFinish(inCard.Id, inCard.Finish)
+		return b.MatchIDFinish(inCard.Id, inCard.Finish)
 	}
-	return b.MatchId(inCard.Id, inCard.Foil, inCard.IsEtched())
+	return b.MatchID(inCard.Id, inCard.Foil, inCard.IsEtched())
 }
 
-// MatchId resolves an identifier a storefront already knows, one of the
+// MatchID resolves an identifier a storefront already knows, one of the
 // matcher's uuids or an external product id, to the uuid of a printing. The
 // optional flags ask for the foil or etched sibling, and are answered only
 // where the printing was sold in one.
-func (b *Backend) MatchId(inputID string, finishes ...bool) (string, error) {
+func (b *Backend) MatchID(inputID string, finishes ...bool) (string, error) {
 	co, err := b.cardObject4Id(inputID)
 	if err != nil {
 		return "", err
@@ -175,7 +175,7 @@ func (b *Backend) MatchId(inputID string, finishes ...bool) (string, error) {
 	// Validate that what we found is correct
 	co, found := b.UUIDs[outID]
 	if !found {
-		return "", ErrCardUnknownId
+		return "", ErrCardUnknownID
 	}
 
 	// If the input card was requested as foil, we should double check
@@ -261,7 +261,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// Look up by uuid
 	if inCard.Id != "" {
 		Logger.Printf("Performing id lookup")
-		outID, err := b.matchIdFor(inCard)
+		outID, err := b.matchIDFor(inCard)
 		// The wording cannot improve on a finish the printing does not
 		// carry: it would answer from the same printing, and the only
 		// answer it has is another finish's uuid. A name the game could not

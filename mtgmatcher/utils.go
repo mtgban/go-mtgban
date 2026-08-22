@@ -21,7 +21,7 @@ import (
 // carries the candidates it could not choose between.
 var (
 	ErrDatastoreEmpty     = errors.New("datastore is empty")
-	ErrCardUnknownId      = errors.New("unknown id")
+	ErrCardUnknownID      = errors.New("unknown id")
 	ErrCardDoesNotExist   = errors.New("unknown card name")
 	ErrCardNotInEdition   = errors.New("unknown edition")
 	ErrCardWrongVariant   = errors.New("unknown variant")

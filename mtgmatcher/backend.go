@@ -385,7 +385,7 @@ func (b *Backend) IndexSets() {
 	}
 }
 
-// SetGlobalDatastore installs the datastore the package-level Match, MatchId
+// SetGlobalDatastore installs the datastore the package-level Match, MatchID
 // and the rest resolve against. It copies the value, so later changes to b do
 // not reach the installed one.
 func SetGlobalDatastore(b *Backend) {

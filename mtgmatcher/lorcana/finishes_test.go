@@ -54,9 +54,9 @@ func TestFinishPromotion(t *testing.T) {
 				t.Errorf("%s: finish %q names unknown uuid %s", uuid, key, target)
 				continue
 			}
-			got, err := b.MatchIdFinish(uuid, targetCo.Finish)
+			got, err := b.MatchIDFinish(uuid, targetCo.Finish)
 			if err != nil || got != target {
-				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q",
+				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want %q",
 					uuid, targetCo.Finish, got, err, target)
 			}
 			promotions++
@@ -105,25 +105,25 @@ func TestVendorFinishNames(t *testing.T) {
 			if name == "Normal" {
 				want = nonfoil
 			}
-			got, err := b.MatchIdFinish(uuid, name)
+			got, err := b.MatchIDFinish(uuid, name)
 			if want == "" {
 				if !errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
-					t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want the finish refused", uuid, name, got, err)
+					t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want the finish refused", uuid, name, got, err)
 				}
 				continue
 			}
 			if err != nil || got != want {
-				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q", uuid, name, got, err, want)
+				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want %q", uuid, name, got, err, want)
 			}
 		}
 
-		got, err := b.MatchIdFinish(uuid, "Holofoil")
+		got, err := b.MatchIDFinish(uuid, "Holofoil")
 		kind := ""
 		switch {
 		case subType != "":
 			kind = "subtype"
 			if err != nil || got != co.FoilUUIDs[subType] {
-				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q",
+				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want %q",
 					uuid, "Holofoil", got, err, co.FoilUUIDs[subType])
 			}
 		case foil != "":
@@ -132,12 +132,12 @@ func TestVendorFinishNames(t *testing.T) {
 				kind = "plain"
 			}
 			if err != nil || got != foil {
-				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q", uuid, "Holofoil", got, err, foil)
+				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want %q", uuid, "Holofoil", got, err, foil)
 			}
 		default:
 			kind = "nofoil"
 			if !errors.Is(err, mtgmatcher.ErrCardWrongFinish) {
-				t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want the finish refused", uuid, "Holofoil", got, err)
+				t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want the finish refused", uuid, "Holofoil", got, err)
 			}
 		}
 		if counted[nonfoil+"|"+foil] {

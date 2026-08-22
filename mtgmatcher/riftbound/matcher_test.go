@@ -477,8 +477,8 @@ func TestRiftboundIdentifiers(t *testing.T) {
 		if want == "" {
 			want = uuid
 		}
-		if id, err := b.MatchId(pid, true); err != nil || id != want {
-			t.Errorf("%s: MatchId(%s, foil) = (%q, %v), want %q", uuid, pid, id, err, want)
+		if id, err := b.MatchID(pid, true); err != nil || id != want {
+			t.Errorf("%s: MatchID(%s, foil) = (%q, %v), want %q", uuid, pid, id, err, want)
 		}
 	}
 	if n == 0 {

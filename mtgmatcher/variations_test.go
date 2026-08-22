@@ -8,9 +8,9 @@ import (
 // belong to cards this datastore does not carry (a set filtered out at
 // load, most often). Reading one back out of the UUIDs map yields a nil
 // pointer rather than an empty card, so every consumer of that array has
-// to check before dereferencing: MatchId walks it for any card whose
+// to check before dereferencing: MatchID walks it for any card whose
 // finish does not match the request, which is an ordinary lookup.
-func TestMatchIdOverAbsentVariations(t *testing.T) {
+func TestMatchIDOverAbsentVariations(t *testing.T) {
 	if len(GetUUIDs()) == 0 {
 		t.Skip("datastore not loaded")
 	}
@@ -35,9 +35,9 @@ func TestMatchIdOverAbsentVariations(t *testing.T) {
 		withAbsent++
 
 		// Ask for each finish in turn: the ones the card does not carry
-		// are what send MatchId into the Variations walk
+		// are what send MatchID into the Variations walk
 		for _, finishes := range [][]bool{{false, false}, {true, false}, {false, true}} {
-			_, err = MatchId(uuid, finishes...)
+			_, err = MatchID(uuid, finishes...)
 			if err != nil {
 				unmatched++
 			}
