@@ -158,7 +158,7 @@ func (nf *Ninetyfive) processPrices(allCards NFCard, allPrices NFPrice, mode str
 				idsToAdd := []string{cardID}
 				// Buylist for the foil version of the card is the same
 				cardFoilID, matchErr := mtgmatcher.MatchID(cardID, true)
-				if matchErr != nil && cardFoilID != "" && cardFoilID != cardID {
+				if matchErr == nil && cardFoilID != cardID {
 					idsToAdd = append(idsToAdd, cardFoilID)
 				}
 
