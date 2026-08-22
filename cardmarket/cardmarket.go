@@ -121,7 +121,16 @@ func productFinish(gameID int, product *MKMProduct) string {
 // without both an unknown set's cards land on whichever set happens to hold
 // a number like theirs.
 func (mkm *Index) matchProduct(product *MKMProduct) string {
-	set, err := mtgmatcher.GetSetByName(product.ExpansionName)
+	edition := product.ExpansionName
+	var printRun string
+	if mkm.gameID == GameFleshAndBlood {
+		// Cardmarket sells each print run as its own expansion
+		// ("Monarch - First"), a name no set of ours carries: the run
+		// belongs to the printing, where productFinish puts it, reading
+		// the same suffix off the untouched expansion name.
+		printRun, edition = fabPrintRun(edition)
+	}
+	set, err := mtgmatcher.GetSetByName(edition)
 	if err != nil {
 		return ""
 	}
@@ -150,7 +159,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		for _, finish := range finishes {
 			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 				Name:      name,
-				Edition:   product.ExpansionName,
+				Edition:   edition,
 				Variation: number,
 				Finish:    finish,
 			})
@@ -159,6 +168,13 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 			}
 			co, cerr := mtgmatcher.GetUUID(id)
 			if cerr != nil || !strings.EqualFold(co.SetCode, set.Code) {
+				continue
+			}
+			// The run has to hold too, for the same reason the set does:
+			// a card the datastore keeps in one run only is answered with
+			// that run whichever was asked for, and the other run's
+			// expansion sells the very same card.
+			if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
 				continue
 			}
 			return id
