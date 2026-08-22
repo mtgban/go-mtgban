@@ -22,6 +22,43 @@ type responseChan struct {
 	ogID   int
 	cardID string
 	entry  mtgban.InventoryEntry
+	// byName marks a price whose printing was named rather than looked
+	// up by id, which is a guess however well guarded; see namedLast.
+	byName bool
+}
+
+// namedLast holds back the prices whose printing was named until every
+// price looked up by an id is in.
+//
+// The catalogs keep one expansion per old set where the datastore keeps a
+// printing per print run, so the set guard puts every run's product on the
+// base set's printing, and a run the bridge already priced is a run a name
+// can reach too. AddUnique keeps whichever price arrives first, so without
+// the wait the winner is whichever expansion the pool happened to walk
+// first - and half the time that hands a verified printing over to a guess
+// about a different one. Waiting decides it instead: the guess is offered
+// only where nothing verified stands.
+type namedLast struct {
+	add   func(responseChan)
+	named []responseChan
+}
+
+// collect takes one result, adding it or holding it back.
+func (n *namedLast) collect(result responseChan) {
+	if result.byName {
+		n.named = append(n.named, result)
+		return
+	}
+	n.add(result)
+}
+
+// flush adds everything held back, in the order it arrived, and reports how
+// much that was.
+func (n *namedLast) flush() int {
+	for i := range n.named {
+		n.add(n.named[i])
+	}
+	return len(n.named)
 }
 
 // Index prices singles from Cardmarket's price guide, the low and
@@ -186,6 +223,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduct) error {
 	var cardID string
 	var cardIDFoil string
+	var byName bool
 	var err error
 
 	switch mkm.gameID {
@@ -307,6 +345,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 		// named without it.
 		if cardID == "" {
 			cardID = mkm.matchProduct(product)
+			byName = cardID != ""
 		}
 		if cardID == "" {
 			return nil
@@ -374,6 +413,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			out := responseChan{
 				ogID:   product.IDProduct,
 				cardID: cardID,
+				byName: byName,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      prices[i] * mkm.exchangeRate,
@@ -401,6 +441,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 					out := responseChan{
 						ogID:   product.IDProduct,
 						cardID: cardIDFoil,
+						byName: byName,
 						entry: mtgban.InventoryEntry{
 							Conditions: "NM",
 							Price:      foilprices[i] * mkm.exchangeRate,
@@ -425,6 +466,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			out := responseChan{
 				ogID:   product.IDProduct,
 				cardID: cardID,
+				byName: byName,
 				entry: mtgban.InventoryEntry{
 					Conditions: "NM",
 					Price:      foilprices[i] * mkm.exchangeRate,
@@ -494,6 +536,27 @@ func (mkm *Index) Load(ctx context.Context) error {
 		}
 	}
 
+	mkm.collectPrices(ctx, items,
+		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
+			mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
+			err := mkm.processEdition(ctx, channel, exp.IDExpansion)
+			if err != nil {
+				return fmt.Errorf("expansion %s (id %d) returned %s", exp.Name, exp.IDExpansion, err.Error())
+			}
+			return nil
+		})
+
+	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
+	mkm.inventoryDate = time.Now()
+	return nil
+}
+
+// collectPrices runs worker over every expansion and files what it produces
+// into the inventory, prices whose printing was named last. It is where the
+// wait namedLast describes is actually taken: the pool hands its results to
+// the collector rather than to the inventory, so a named price cannot win a
+// printing merely by being walked first.
+func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) {
 	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
 	// one, and a cardtrader blueprint names every Cardmarket product it
 	// sells as, so nothing stops two products from resolving to one
@@ -506,38 +569,29 @@ func (mkm *Index) Load(ctx context.Context) error {
 		add = mkm.inventory.AddUnique
 	}
 
-	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items,
-		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
-			mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
-			err := mkm.processEdition(ctx, channel, exp.IDExpansion)
-			if err != nil {
-				return fmt.Errorf("expansion %s (id %d) returned %s", exp.Name, exp.IDExpansion, err.Error())
+	addOne := func(result responseChan) {
+		err := add(result.cardID, &result.entry)
+		if err != nil {
+			card, cerr := mtgmatcher.GetUUID(result.cardID)
+			if cerr != nil {
+				mkm.printf("%d - %s: %s", result.ogID, cerr.Error(), result.cardID)
+				return
 			}
-			return nil
-		},
-		func(result responseChan) {
-			err := add(result.cardID, &result.entry)
-			if err != nil {
-				card, cerr := mtgmatcher.GetUUID(result.cardID)
-				if cerr != nil {
-					mkm.printf("%d - %s: %s", result.ogID, cerr.Error(), result.cardID)
-					return
-				}
-				// Skip too many errors
-				if mtgmatcher.IsToken(card.Name) ||
-					card.Edition == "Pro Tour Collector Set" ||
-					strings.HasPrefix(card.Edition, "World Championship Decks") {
-					return
-				}
-				mkm.printf("%d - %s", result.ogID, err.Error())
+			// Skip too many errors
+			if mtgmatcher.IsToken(card.Name) ||
+				card.Edition == "Pro Tour Collector Set" ||
+				strings.HasPrefix(card.Edition, "World Championship Decks") {
+				return
 			}
-		},
-		mkm.printf,
-	)
+			mkm.printf("%d - %s", result.ogID, err.Error())
+		}
+	}
 
-	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
-	mkm.inventoryDate = time.Now()
-	return nil
+	collector := namedLast{add: addOne}
+
+	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
+
+	mkm.printf("Adding %d prices whose printing was named", collector.flush())
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
