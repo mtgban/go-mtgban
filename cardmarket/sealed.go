@@ -226,7 +226,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	}
 
 	var resolved int
-	var productIds []int
+	var productIDs []int
 	for _, product := range productList {
 		if mkm.TargetProduct != "" && mkm.TargetProduct != product.Name {
 			continue
@@ -270,14 +270,14 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 		if !found {
 			continue
 		}
-		productIds = append(productIds, product.IDProduct)
+		productIDs = append(productIDs, product.IDProduct)
 	}
 	if resolved > 0 {
 		mkm.printf("Resolved %d more sealed products by name", resolved)
 	}
-	mkm.printf("Mapped %d mkm products to sealed products", len(productIds))
+	mkm.printf("Mapped %d mkm products to sealed products", len(productIDs))
 
-	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, productIds,
+	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, productIDs,
 		func(ctx context.Context, idProduct int, channel chan<- responseChan) error {
 			uuids := productMap[idProduct]
 			co, err := mtgmatcher.GetUUID(uuids[0])
@@ -288,7 +288,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 				return nil
 			}
 
-			mkm.printf("Processing %s (%d/%d)...", co, slices.Index(productIds, idProduct)+1, len(productIds))
+			mkm.printf("Processing %s (%d/%d)...", co, slices.Index(productIDs, idProduct)+1, len(productIDs))
 
 			err = mkm.processProduct(ctx, channel, idProduct, uuids)
 			if err != nil {

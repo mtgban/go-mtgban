@@ -87,13 +87,13 @@ func checkLoadedID(cardName string, productID int) []string {
 	cardName = strings.TrimSuffix(cardName, " Token")
 	testProductID := fmt.Sprint(productID)
 
-	possibleIds, err := mtgmatcher.SearchContains(cardName)
+	possibleIDs, err := mtgmatcher.SearchContains(cardName)
 	if err != nil {
 		return nil
 	}
 
 	var ids []string
-	for _, possibleID := range possibleIds {
+	for _, possibleID := range possibleIDs {
 		co, err := mtgmatcher.GetUUID(possibleID)
 		if err != nil {
 			continue
