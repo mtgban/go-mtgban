@@ -12,14 +12,14 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// CardSphereClient reads the Cardsphere API.
-type CardSphereClient struct {
+// Client reads the Cardsphere API.
+type Client struct {
 	client *http.Client
 }
 
-// NewCardSphereClient returns a client using the given token.
-func NewCardSphereClient(token string) *CardSphereClient {
-	cs := CardSphereClient{}
+// NewClient returns a client using the given token.
+func NewClient(token string) *Client {
+	cs := Client{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	// The api is very sensitive to multiple concurrent requests,
@@ -49,8 +49,8 @@ func NewCardSphereClient(token string) *CardSphereClient {
 	return &cs
 }
 
-// CardSphereOfferList is one page of standing offers.
-type CardSphereOfferList struct {
+// OfferList is one page of standing offers.
+type OfferList struct {
 	WantId      int     `json:"wantId"`
 	MinOffer    int     `json:"minOffer"`
 	MaxOffer    int     `json:"maxOffer"`
@@ -88,7 +88,7 @@ type csError struct {
 const csURL = "https://www.cardsphere.com/rest/v1/offers?offset=0&order=minrel&absge=50&country=USMIL,UM,US,CA&kind=S&language=EN"
 
 // GetOfferList returns one page of offers, starting at the given offset.
-func (cs *CardSphereClient) GetOfferList(ctx context.Context, offset int) ([]CardSphereOfferList, error) {
+func (cs *Client) GetOfferList(ctx context.Context, offset int) ([]OfferList, error) {
 	u, err := url.Parse(csURL)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (cs *CardSphereClient) GetOfferList(ctx context.Context, offset int) ([]Car
 	}
 	defer resp.Body.Close()
 
-	var pricelist []CardSphereOfferList
+	var pricelist []OfferList
 	err = json.NewDecoder(resp.Body).Decode(&pricelist)
 	if err != nil {
 		return nil, err

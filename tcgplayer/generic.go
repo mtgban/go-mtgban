@@ -11,9 +11,9 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-// TCGPlayerGeneric prices any partner API category by number, for the games
+// Generic prices any partner API category by number, for the games
 // and product types that have no scraper of their own.
-type TCGPlayerGeneric struct {
+type Generic struct {
 	LogCallback    mtgban.LogCallbackFunc
 	inventoryDate  time.Time
 	Affiliate      string
@@ -32,7 +32,7 @@ type TCGPlayerGeneric struct {
 	client *tcgplayer.Client
 }
 
-func (tcg *TCGPlayerGeneric) printf(format string, a ...any) {
+func (tcg *Generic) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
 		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
@@ -44,12 +44,12 @@ func (tcg *TCGPlayerGeneric) printf(format string, a ...any) {
 
 // NewScraperGeneric returns a scraper for one category id, optionally narrowed
 // to the named product types.
-func NewScraperGeneric(publicID, privateID string, category int, productTypes ...string) (*TCGPlayerGeneric, error) {
+func NewScraperGeneric(publicID, privateID string, category int, productTypes ...string) (*Generic, error) {
 	client, err := tcgplayer.NewClient(publicID, privateID)
 	if err != nil {
 		return nil, err
 	}
-	tcg := TCGPlayerGeneric{}
+	tcg := Generic{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.client = client
 	tcg.MaxConcurrency = defaultConcurrency
@@ -68,7 +68,7 @@ type genericChan struct {
 	entry mtgban.InventoryEntry
 }
 
-func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
+func (tcg *Generic) processPage(ctx context.Context, channel chan<- genericChan, page int) error {
 	products, err := tcg.client.ListAllProducts(ctx, tcg.category, tcg.productTypes, false, page)
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func (tcg *TCGPlayerGeneric) processPage(ctx context.Context, channel chan<- gen
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
+func (tcg *Generic) Load(ctx context.Context) error {
 	// Initialize data for debug logs
 	var err error
 	tcg.categoryName, tcg.categoryDisplayName, err = GetCategoryNames(ctx, tcg.client, tcg.category)
@@ -179,12 +179,12 @@ func (tcg *TCGPlayerGeneric) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (tcg *TCGPlayerGeneric) Inventory() mtgban.InventoryRecord {
+func (tcg *Generic) Inventory() mtgban.InventoryRecord {
 	return tcg.inventory
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (tcg *TCGPlayerGeneric) Info() (info mtgban.ScraperInfo) {
+func (tcg *Generic) Info() (info mtgban.ScraperInfo) {
 	info.Name = "TCGplayer - " + tcg.categoryDisplayName
 	info.Shorthand = "TCG+" + tcg.categoryName
 	info.InventoryTimestamp = &tcg.inventoryDate

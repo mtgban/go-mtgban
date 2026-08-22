@@ -29,9 +29,9 @@ const (
 	defaultConcurrency = 8
 )
 
-// SealedEVScraper prices sealed product by what opening it is worth, drawing
+// Scraper prices sealed product by what opening it is worth, drawing
 // its contents against singles prices rather than reading any storefront.
-type SealedEVScraper struct {
+type Scraper struct {
 	LogCallback      mtgban.LogCallbackFunc
 	FastMode         bool
 	Affiliate        string
@@ -161,8 +161,8 @@ type evOutputStash struct {
 }
 
 // NewScraper returns an EV scraper, signing its price lookups with sig.
-func NewScraper(sig string) *SealedEVScraper {
-	ss := SealedEVScraper{}
+func NewScraper(sig string) *Scraper {
+	ss := Scraper{}
 	ss.inventory = mtgban.InventoryRecord{}
 	ss.buylist = mtgban.BuylistRecord{}
 	ss.banpriceKey = sig
@@ -170,7 +170,7 @@ func NewScraper(sig string) *SealedEVScraper {
 	return &ss
 }
 
-func (ss *SealedEVScraper) printf(format string, a ...any) {
+func (ss *Scraper) printf(format string, a ...any) {
 	if ss.LogCallback != nil {
 		ss.LogCallback("[SS] "+format, a...)
 	}
@@ -198,7 +198,7 @@ func valueFromCache(picks []string, unit map[string]float64, probabilities []flo
 	return total
 }
 
-func (ss *SealedEVScraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
+func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) {
 	co, err := mtgmatcher.GetUUID(uuid)
 	if err != nil {
 		return nil, []string{err.Error()}
@@ -401,7 +401,7 @@ func (ss *SealedEVScraper) runEV(ctx context.Context, uuid string) ([]result, []
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (ss *SealedEVScraper) Load(ctx context.Context) error {
+func (ss *Scraper) Load(ctx context.Context) error {
 	var selected string
 
 	ss.printf("Loading products")
@@ -500,18 +500,18 @@ func (ss *SealedEVScraper) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (ss *SealedEVScraper) Inventory() mtgban.InventoryRecord {
+func (ss *Scraper) Inventory() mtgban.InventoryRecord {
 	return ss.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (ss *SealedEVScraper) Buylist() mtgban.BuylistRecord {
+func (ss *Scraper) Buylist() mtgban.BuylistRecord {
 	return ss.buylist
 }
 
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
-func (ss *SealedEVScraper) MarketNames() []string {
+func (ss *Scraper) MarketNames() []string {
 	var names []string
 	for _, param := range evParameters {
 		if param.TargetsBuylist {
@@ -523,7 +523,7 @@ func (ss *SealedEVScraper) MarketNames() []string {
 }
 
 // InfoForScraper describes one of the sub-scrapers named above.
-func (ss *SealedEVScraper) InfoForScraper(name string) mtgban.ScraperInfo {
+func (ss *Scraper) InfoForScraper(name string) mtgban.ScraperInfo {
 	info := ss.Info()
 	info.Name = name
 	for _, param := range evParameters {
@@ -539,7 +539,7 @@ func (ss *SealedEVScraper) InfoForScraper(name string) mtgban.ScraperInfo {
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (ss *SealedEVScraper) Info() (info mtgban.ScraperInfo) {
+func (ss *Scraper) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Sealed EV Scraper"
 	info.Shorthand = "SS"
 	info.InventoryTimestamp = &ss.inventoryDate

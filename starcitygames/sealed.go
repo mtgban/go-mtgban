@@ -9,8 +9,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// StarcitygamesSealed prices SCG's sealed product.
-type StarcitygamesSealed struct {
+// Sealed prices SCG's sealed product.
+type Sealed struct {
 	LogCallback   mtgban.LogCallbackFunc
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -28,8 +28,8 @@ type StarcitygamesSealed struct {
 
 // NewScraperSealed returns a sealed scraper for one game, using the given API
 // key.
-func NewScraperSealed(game int, apiKey string) *StarcitygamesSealed {
-	scg := StarcitygamesSealed{}
+func NewScraperSealed(game int, apiKey string) *Sealed {
+	scg := Sealed{}
 	scg.inventory = mtgban.InventoryRecord{}
 	scg.buylist = mtgban.BuylistRecord{}
 	scg.client = NewSCGClient(apiKey)
@@ -37,7 +37,7 @@ func NewScraperSealed(game int, apiKey string) *StarcitygamesSealed {
 	return &scg
 }
 
-func (scg *StarcitygamesSealed) printf(format string, a ...any) {
+func (scg *Sealed) printf(format string, a ...any) {
 	if scg.LogCallback != nil {
 		scg.LogCallback("[SCGSealed] "+format, a...)
 	}
@@ -61,7 +61,7 @@ func buildProductMap() map[string]string {
 	return out
 }
 
-func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
+func (scg *Sealed) processProduct(p CatalogProduct) {
 	// A single malformed product must never abort the whole catalog stream;
 	// recover, log, and skip it.
 	defer func() {
@@ -149,7 +149,7 @@ func (scg *StarcitygamesSealed) processProduct(p CatalogProduct) {
 
 // Load streams the single catalog export (authenticated with the API key) and
 // fills the sealed inventory and buylist in one pass.
-func (scg *StarcitygamesSealed) Load(ctx context.Context) error {
+func (scg *Sealed) Load(ctx context.Context) error {
 	scg.productMap = buildProductMap()
 
 	setIDs, err := scg.client.SetIDs(ctx, scg.game)
@@ -185,17 +185,17 @@ func (scg *StarcitygamesSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (scg *StarcitygamesSealed) Inventory() mtgban.InventoryRecord {
+func (scg *Sealed) Inventory() mtgban.InventoryRecord {
 	return scg.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (scg *StarcitygamesSealed) Buylist() mtgban.BuylistRecord {
+func (scg *Sealed) Buylist() mtgban.BuylistRecord {
 	return scg.buylist
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (scg *StarcitygamesSealed) Info() (info mtgban.ScraperInfo) {
+func (scg *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Star City Games"
 	info.Shorthand = "SCGSealed"
 	info.InventoryTimestamp = &scg.inventoryDate

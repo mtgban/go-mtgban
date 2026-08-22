@@ -15,9 +15,9 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// CardMarketSealed prices sealed product from Cardmarket's marketplace,
+// Sealed prices sealed product from Cardmarket's marketplace,
 // reading the listings themselves rather than a price guide.
-type CardMarketSealed struct {
+type Sealed struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 	Affiliate      string
@@ -43,7 +43,7 @@ type CardMarketSealed struct {
 	gameID int
 }
 
-func (mkm *CardMarketSealed) printf(format string, a ...any) {
+func (mkm *Sealed) printf(format string, a ...any) {
 	if mkm.LogCallback != nil {
 		mkm.LogCallback("[MKMSealed] "+format, a...)
 	}
@@ -51,14 +51,14 @@ func (mkm *CardMarketSealed) printf(format string, a ...any) {
 
 // NewScraperSealed returns a sealed scraper for one game, authenticated with an
 // app token and secret.
-func NewScraperSealed(gameID int, appToken, appSecret string) (*CardMarketSealed, error) {
+func NewScraperSealed(gameID int, appToken, appSecret string) (*Sealed, error) {
 	switch gameID {
 	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYugioh, GameIdFleshAndBlood,
 		GameIdPokemon:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
-	mkm := CardMarketSealed{}
+	mkm := Sealed{}
 	mkm.inventory = mtgban.InventoryRecord{}
 	mkm.client = NewMKMClient(appToken, appSecret)
 	mkm.MaxConcurrency = defaultConcurrency
@@ -95,7 +95,7 @@ var notSealedComments = []string{
 	"without",
 }
 
-func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- responseChan, idProduct int, uuids []string) error {
+func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseChan, idProduct int, uuids []string) error {
 	var done bool
 	var page int
 	var foundNF, foundF bool
@@ -178,7 +178,7 @@ func (mkm *CardMarketSealed) processProduct(ctx context.Context, channel chan<- 
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (mkm *CardMarketSealed) Load(ctx context.Context) error {
+func (mkm *Sealed) Load(ctx context.Context) error {
 	rate, err := mtgban.GetExchangeRate(ctx, "EUR")
 	if err != nil {
 		return err
@@ -317,12 +317,12 @@ func (mkm *CardMarketSealed) Load(ctx context.Context) error {
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (mkm *CardMarketSealed) Inventory() mtgban.InventoryRecord {
+func (mkm *Sealed) Inventory() mtgban.InventoryRecord {
 	return mkm.inventory
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (mkm *CardMarketSealed) Info() (info mtgban.ScraperInfo) {
+func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cardmarket"
 	info.Shorthand = "MKMSealed"
 	info.CountryFlag = "EU"

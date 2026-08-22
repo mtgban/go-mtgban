@@ -20,8 +20,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// CoolstuffincSealed prices Cool Stuff Inc's sealed product.
-type CoolstuffincSealed struct {
+// Sealed prices Cool Stuff Inc's sealed product.
+type Sealed struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
 
@@ -42,8 +42,8 @@ type CoolstuffincSealed struct {
 }
 
 // NewScraperSealed returns a sealed scraper for one game.
-func NewScraperSealed(game string) *CoolstuffincSealed {
-	csi := CoolstuffincSealed{}
+func NewScraperSealed(game string) *Sealed {
+	csi := Sealed{}
 	csi.inventory = mtgban.InventoryRecord{}
 	csi.buylist = mtgban.BuylistRecord{}
 	client := retryablehttp.NewClient()
@@ -69,7 +69,7 @@ func NewScraperSealed(game string) *CoolstuffincSealed {
 	return &csi
 }
 
-func (csi *CoolstuffincSealed) printf(format string, a ...any) {
+func (csi *Sealed) printf(format string, a ...any) {
 	if csi.LogCallback != nil {
 		csi.LogCallback("[CSISealed] "+format, a...)
 	}
@@ -77,7 +77,7 @@ func (csi *CoolstuffincSealed) printf(format string, a ...any) {
 
 const sealedURL = "https://www.coolstuffinc.com/sq/2293832?page=1&sb=price|desc"
 
-func (csi *CoolstuffincSealed) numOfPages(ctx context.Context) (int, error) {
+func (csi *Sealed) numOfPages(ctx context.Context) (int, error) {
 	link := sealedURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 	if err != nil {
@@ -115,7 +115,7 @@ func (csi *CoolstuffincSealed) numOfPages(ctx context.Context) (int, error) {
 	return resultsTotal/resultsPerPage + 1, nil
 }
 
-func (csi *CoolstuffincSealed) processSealedPage(ctx context.Context, channel chan<- responseChan, page int) error {
+func (csi *Sealed) processSealedPage(ctx context.Context, channel chan<- responseChan, page int) error {
 	csi.printf("Processing page %d", page)
 
 	u, err := url.Parse(sealedURL)
@@ -188,7 +188,7 @@ func (csi *CoolstuffincSealed) processSealedPage(ctx context.Context, channel ch
 	return nil
 }
 
-func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
+func (csi *Sealed) scrape(ctx context.Context) error {
 	totalPages, err := csi.numOfPages(ctx)
 	if err != nil {
 		return err
@@ -218,7 +218,7 @@ func (csi *CoolstuffincSealed) scrape(ctx context.Context) error {
 	return nil
 }
 
-func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
+func (csi *Sealed) parseBL(ctx context.Context) error {
 	products, err := GetBuylist(ctx, csi.game)
 	if err != nil {
 		return err
@@ -294,13 +294,13 @@ func (csi *CoolstuffincSealed) parseBL(ctx context.Context) error {
 
 // SetConfig applies options after the scraper was built. See
 // mtgban.ScraperConfig.
-func (csi *CoolstuffincSealed) SetConfig(opt mtgban.ScraperOptions) {
+func (csi *Sealed) SetConfig(opt mtgban.ScraperOptions) {
 	csi.DisableRetail = opt.DisableRetail
 	csi.DisableBuylist = opt.DisableBuylist
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
-func (csi *CoolstuffincSealed) Load(ctx context.Context) error {
+func (csi *Sealed) Load(ctx context.Context) error {
 	// The saved-query page and the buylist exist for Magic alone; the
 	// other games ride the same set-facet search the singles use, with
 	// the sealed-name resolver telling the sealed rows apart from the
@@ -342,7 +342,7 @@ func (csi *CoolstuffincSealed) Load(ctx context.Context) error {
 // scrapeBysets walks every set of the game through the same search the
 // singles scraper uses; the sealed rows resolve through the sealed-name
 // resolver, the card rows resolve to nothing and drop out.
-func (csi *CoolstuffincSealed) scrapeBysets(ctx context.Context) error {
+func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 	// One search per sealed-product word: the store's own names carry
 	// them ("Booster Box", "Illumineer's Trove"), and a handful of
 	// searches covers the whole sealed catalog where the set facets do
@@ -455,7 +455,7 @@ func searchSealed(ctx context.Context, game, query string) (*SearchResult, error
 // processSealedSearch pages through one query's results, pricing every
 // row the sealed-name resolver recognizes. English only: language-variant
 // names are skipped before resolution.
-func (csi *CoolstuffincSealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) error {
+func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- responseChan, query string) error {
 	result, err := searchSealed(ctx, csi.game, query)
 	if err != nil {
 		return err
@@ -559,17 +559,17 @@ func (csi *CoolstuffincSealed) processSealedSearch(ctx context.Context, channel 
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.
-func (csi *CoolstuffincSealed) Inventory() mtgban.InventoryRecord {
+func (csi *Sealed) Inventory() mtgban.InventoryRecord {
 	return csi.inventory
 }
 
 // Buylist returns what Load collected. See mtgban.Vendor.
-func (csi *CoolstuffincSealed) Buylist() mtgban.BuylistRecord {
+func (csi *Sealed) Buylist() mtgban.BuylistRecord {
 	return csi.buylist
 }
 
 // Info describes this scraper. See mtgban.Scraper.
-func (csi *CoolstuffincSealed) Info() (info mtgban.ScraperInfo) {
+func (csi *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.Name = "Cool Stuff Inc"
 	info.Shorthand = "CSISealed"
 	switch csi.game {

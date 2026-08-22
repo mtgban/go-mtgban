@@ -32,7 +32,7 @@ type Cardsphere struct {
 	buylistDate    time.Time
 	MaxConcurrency int
 
-	client  *CardSphereClient
+	client  *Client
 	buylist mtgban.BuylistRecord
 }
 
@@ -41,7 +41,7 @@ func NewScraper(token string) *Cardsphere {
 	cs := Cardsphere{}
 	cs.buylist = mtgban.BuylistRecord{}
 	cs.MaxConcurrency = defaultConcurrency
-	cs.client = NewCardSphereClient(token)
+	cs.client = NewClient(token)
 	return &cs
 }
 
