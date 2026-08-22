@@ -13,7 +13,7 @@ import (
 type InputCard struct {
 	// The unique identifier of the card
 	// When used as input it can host or scryfall id
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// The canonical name of the card
 	Name string `json:"name,omitempty"`
@@ -61,7 +61,7 @@ func (c *InputCard) String() string {
 	edition := c.Edition
 
 	if name == "" {
-		co, err := GetUUID(c.Id)
+		co, err := GetUUID(c.ID)
 		if err == nil {
 			name = co.Name
 			edition = co.Edition

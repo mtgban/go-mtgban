@@ -117,7 +117,7 @@ func Fallback(product *MKMProduct) (string, string) {
 	var cardID, cardIDFoil string
 
 	// First check if the product id is known
-	ids := checkLoadedID(product.Name, product.IdProduct)
+	ids := checkLoadedID(product.Name, product.IDProduct)
 	// These editions contain English ids, so we can't use this system
 	switch product.ExpansionName {
 	case "The Dark Italian", "Legends Italian":

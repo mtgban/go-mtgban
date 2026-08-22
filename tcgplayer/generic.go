@@ -122,7 +122,7 @@ func (tcg *Generic) processPage(ctx context.Context, channel chan<- genericChan,
 					URL:        link,
 					SellerName: names[i],
 					Bundle:     isDirect,
-					OriginalId: fmt.Sprint(result.ProductID),
+					OriginalID: fmt.Sprint(result.ProductID),
 				},
 			}
 

@@ -364,7 +364,7 @@ func (csi *Sealed) scrapeBysets(ctx context.Context) error {
 			return nil
 		},
 		func(record responseChan) {
-			key := record.cardID + "|" + record.invEntry.OriginalId
+			key := record.cardID + "|" + record.invEntry.OriginalID
 			if seen[key] {
 				return
 			}
@@ -447,7 +447,7 @@ func searchSealed(ctx context.Context, game, query string) (*SearchResult, error
 	clean := strings.Split(strings.TrimPrefix(u.Path, "/sq/"), "&")[0]
 
 	return &SearchResult{
-		PageId: clean,
+		PageID: clean,
 		Data:   data,
 	}, nil
 }
@@ -465,7 +465,7 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		data := result.Data
 
 		if page > 1 {
-			link := "https://www.coolstuffinc.com/sq/" + result.PageId + "?page=" + fmt.Sprint(page)
+			link := "https://www.coolstuffinc.com/sq/" + result.PageID + "?page=" + fmt.Sprint(page)
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, http.NoBody)
 			if err != nil {
 				return err
@@ -543,14 +543,14 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 					Price:      price,
 					Quantity:   qty,
 					URL:        link,
-					OriginalId: pid,
+					OriginalID: pid,
 				},
 			}
 		})
 
 		// A short page is the last one; asking past it returns the same
 		// page over again rather than an empty one
-		if rows.Length() < 25 || result.PageId == "" {
+		if rows.Length() < 25 || result.PageID == "" {
 			break
 		}
 	}

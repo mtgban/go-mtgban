@@ -194,8 +194,8 @@ func (ha *Sealed) Load(ctx context.Context) error {
 					Conditions: "NM",
 					Price:      price * ha.exchangeRate,
 					URL:        link,
-					OriginalId: product.Product,
-					InstanceId: product.ProductClass,
+					OriginalID: product.Product,
+					InstanceID: product.ProductClass,
 				}
 				err = ha.inventory.Add(sealedProduct.UUID, out)
 				if err != nil {
@@ -216,7 +216,7 @@ func (ha *Sealed) Load(ctx context.Context) error {
 					BuyPrice:   buyPrice * ha.exchangeRate,
 					PriceRatio: priceRatio,
 					URL:        "https://www.hareruyamtg.com/ja/purchase/detail/" + haID,
-					OriginalId: haID,
+					OriginalID: haID,
 				}
 				err = ha.buylist.Add(sealedProduct.UUID, out)
 				if err != nil {

@@ -398,7 +398,7 @@ func (tnt *Generic) scrapeBuylist(ctx context.Context) error {
 			Quantity:   qty,
 			PriceRatio: priceRatio,
 			URL:        link,
-			OriginalId: record[0],
+			OriginalID: record[0],
 		}
 
 		err = tnt.buylist.Add(cardID, entry)

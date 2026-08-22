@@ -18,7 +18,7 @@ const onepieceTestData = "testdata/onepiece_test_data.json"
 type matchTest struct {
 	Desc string               `json:"description"`
 	In   mtgmatcher.InputCard `json:"input"`
-	Id   string               `json:"uuid"`
+	ID   string               `json:"uuid"`
 	Err  string               `json:"error,omitempty"`
 }
 
@@ -58,7 +58,7 @@ var onepieceSeeds = []matchTest{
 	},
 	{
 		Desc: "tcgplayer product id resolves through the identifier index",
-		In:   mtgmatcher.InputCard{Id: "454615"},
+		In:   mtgmatcher.InputCard{ID: "454615"},
 	},
 	{
 		Desc: "coolstuffinc edition wears the set code before a dash",
@@ -251,9 +251,9 @@ func TestOnepieceMatch(t *testing.T) {
 			if err != nil {
 				gotErr = err.Error()
 			}
-			if id != tt.Id || gotErr != tt.Err {
+			if id != tt.ID || gotErr != tt.Err {
 				t.Errorf("Match(%q num=%q) = (%q, %q), want (%q, %q)",
-					tt.In.Name, tt.In.Variation, id, gotErr, tt.Id, tt.Err)
+					tt.In.Name, tt.In.Variation, id, gotErr, tt.ID, tt.Err)
 			}
 		})
 	}
@@ -287,15 +287,15 @@ func regenerateOnepieceTestData(t *testing.T, b *mtgmatcher.Backend, tests []mat
 		}
 		wasError := tests[i].Err != ""
 		isError := gotErr != ""
-		if (tests[i].Id != "" || tests[i].Err != "") && wasError != isError &&
+		if (tests[i].ID != "" || tests[i].Err != "") && wasError != isError &&
 			!strings.HasPrefix(tests[i].Desc, "negative:") {
 			t.Fatalf("%s: flipped between success and error (%q/%q -> %q/%q); edit the entry by hand",
-				tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+				tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		if tests[i].Id != id || tests[i].Err != gotErr {
-			t.Logf("%s: (%q, %q) -> (%q, %q)", tests[i].Desc, tests[i].Id, tests[i].Err, id, gotErr)
+		if tests[i].ID != id || tests[i].Err != gotErr {
+			t.Logf("%s: (%q, %q) -> (%q, %q)", tests[i].Desc, tests[i].ID, tests[i].Err, id, gotErr)
 		}
-		tests[i].Id = id
+		tests[i].ID = id
 		tests[i].Err = gotErr
 	}
 

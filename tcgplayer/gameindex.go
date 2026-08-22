@@ -105,7 +105,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 		theCard := &mtgmatcher.InputCard{
 			// See TCGGame.processPage: the product id and the finish beside
 			// it identify the sku, the text fields are the fallback.
-			Id:        fmt.Sprint(result.ProductID),
+			ID:        fmt.Sprint(result.ProductID),
 			Name:      cardName,
 			Edition:   tcg.editions[product.GroupID].Name,
 			Variation: strings.TrimSpace(number + " " + result.SubTypeName),
@@ -153,7 +153,7 @@ func (tcg *TCGGameIndex) processPage(ctx context.Context, channel chan<- generic
 					URL:        link,
 					SellerName: availableIndexNames[i],
 					Bundle:     isDirect,
-					OriginalId: fmt.Sprint(result.ProductID),
+					OriginalID: fmt.Sprint(result.ProductID),
 				},
 			}
 

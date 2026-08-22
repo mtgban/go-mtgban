@@ -216,7 +216,7 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 					BuyPrice:   price * deduction,
 					PriceRatio: priceRatio,
 					URL:        "https://www.hareruyamtg.com" + link,
-					OriginalId: id,
+					OriginalID: id,
 				},
 			}
 
@@ -286,7 +286,7 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 
 			// Look for the product in lazyData (they can be in different order)
 			for _, lazy := range lazyData {
-				if lazy.ProductId != product.Product {
+				if lazy.ProductID != product.Product {
 					continue
 				}
 
@@ -303,8 +303,8 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 							Conditions: cond,
 							Quantity:   qty,
 							URL:        link,
-							OriginalId: product.Product,
-							InstanceId: product.ProductClass,
+							OriginalID: product.Product,
+							InstanceID: product.ProductClass,
 						},
 					}
 
@@ -330,7 +330,7 @@ type Row struct {
 // LazyResult carries a page of rows and the error that ended the walk, so a
 // caller sees both what arrived and why it stopped.
 type LazyResult struct {
-	ProductId   string
+	ProductID   string
 	ProductName string
 	Rows        []Row
 }
@@ -396,7 +396,7 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 		id := strings.Split(path.Base(link), "?")[0]
 
 		var result LazyResult
-		result.ProductId = id
+		result.ProductID = id
 		result.ProductName = name
 
 		for {

@@ -89,8 +89,8 @@ func record2entry(record []string) (*InventoryEntry, error) {
 		URL:        URL,
 		SellerName: sellerName,
 		Bundle:     bundle,
-		OriginalId: ogID,
-		InstanceId: instanceID,
+		OriginalID: ogID,
+		InstanceID: instanceID,
 	}, nil
 }
 
@@ -335,7 +335,7 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 		if entries[0].SellerName != "" {
 			header = MarketHeader
 		}
-		if entries[0].OriginalId != "" || entries[0].InstanceId != "" {
+		if entries[0].OriginalID != "" || entries[0].InstanceID != "" {
 			header = CartHeader
 		}
 		break
@@ -367,8 +367,8 @@ func WriteInventoryToCSV(inventory InventoryRecord, w io.Writer) error {
 				record = append(record, bundle)
 
 				if len(header) >= len(CartHeader) {
-					record = append(record, entry.OriginalId)
-					record = append(record, entry.InstanceId)
+					record = append(record, entry.OriginalID)
+					record = append(record, entry.InstanceID)
 				}
 			}
 

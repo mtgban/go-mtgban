@@ -100,11 +100,11 @@ func cardtraderBridge(gameID int) (map[int]int, error) {
 
 	bridge := map[int]int{}
 	for _, bp := range blueprints {
-		if bp.TCGplayerId == 0 {
+		if bp.TCGplayerID == 0 {
 			continue
 		}
-		for _, mkmID := range bp.CardMarketIds {
-			bridge[mkmID] = bp.TCGplayerId
+		for _, mkmID := range bp.CardMarketIDs {
+			bridge[mkmID] = bp.TCGplayerID
 		}
 	}
 	log.Printf("bridge: %d cardmarket ids linked to a tcgplayer id", len(bridge))

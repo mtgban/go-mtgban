@@ -171,7 +171,7 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			Conditions: conditions,
 			Price:      price,
 			URL:        link,
-			OriginalId: id,
+			OriginalID: id,
 		}
 		err = ck.inventory.Add(cardID, out)
 		if err != nil {

@@ -820,9 +820,9 @@ const tcgCreateCartURL = "https://mpgateway.tcgplayer.com/v1/cart/create/usercar
 // it.
 func CreateCartKey(ctx context.Context, userID string) (string, error) {
 	var params struct {
-		ExternalUserId string `json:"externalUserId"`
+		ExternalUserID string `json:"externalUserId"`
 	}
-	params.ExternalUserId = userID
+	params.ExternalUserID = userID
 
 	payload, err := json.Marshal(&params)
 	if err != nil {

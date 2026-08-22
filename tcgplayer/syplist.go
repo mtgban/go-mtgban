@@ -50,7 +50,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	sku2product := map[int]TCGSku{}
 	for _, skus := range uuid2skusMap {
 		for _, sku := range skus {
-			sku2product[sku.SkuId] = sku
+			sku2product[sku.SkuID] = sku
 		}
 	}
 
@@ -61,14 +61,14 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 	tcg.printf("Found syp list of %d entries", len(sypList))
 
 	for _, syp := range sypList {
-		sku, found := sku2product[syp.SkuId]
+		sku, found := sku2product[syp.SkuID]
 		if !found {
 			continue
 		}
 
 		isFoil := sku.Printing == "FOIL"
 		isEtched := sku.Finish == "FOIL ETCHED"
-		cardID, err := mtgmatcher.MatchID(fmt.Sprint(sku.ProductId), isFoil, isEtched)
+		cardID, err := mtgmatcher.MatchID(fmt.Sprint(sku.ProductID), isFoil, isEtched)
 		if err != nil {
 			continue
 		}
@@ -81,7 +81,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 		if sku.Printing == "FOIL" {
 			printing = "Foil"
 		}
-		link := GenerateProductURL(sku.ProductId, printing, tcg.Affiliate, "", "English", true)
+		link := GenerateProductURL(sku.ProductID, printing, tcg.Affiliate, "", "English", true)
 
 		entry := mtgban.BuylistEntry{
 			BuyPrice: syp.MarketPrice,

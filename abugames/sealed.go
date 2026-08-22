@@ -60,7 +60,7 @@ func (abu *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, 
 	}
 
 	for _, doc := range response.Response.Docs {
-		productID, found := abu.productMap[doc.Id]
+		productID, found := abu.productMap[doc.ID]
 		if !found {
 			continue
 		}
@@ -86,7 +86,7 @@ func (abu *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, 
 				Price:      doc.SellPrice,
 				Quantity:   doc.SellQuantity,
 				URL:        u.String(),
-				OriginalId: doc.Id,
+				OriginalID: doc.ID,
 			}
 		}
 
@@ -103,7 +103,7 @@ func (abu *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, 
 				Quantity:   doc.BuyQuantity,
 				PriceRatio: priceRatio,
 				URL:        u.String(),
-				OriginalId: doc.Id,
+				OriginalID: doc.ID,
 				VendorName: availableTraderNames[0],
 			}
 
@@ -115,7 +115,7 @@ func (abu *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, 
 				Quantity:   doc.BuyQuantity,
 				PriceRatio: priceRatio,
 				URL:        u.String(),
-				OriginalId: doc.Id,
+				OriginalID: doc.ID,
 				VendorName: availableTraderNames[1],
 			}
 		}

@@ -15,7 +15,7 @@ import (
 
 // ABUCard is one card as ABU's catalog describes it.
 type ABUCard struct {
-	Id           string `json:"id"`
+	ID           string `json:"id"`
 	DisplayTitle string `json:"display_title"`
 	SimpleTitle  string `json:"simple_title"`
 
@@ -42,7 +42,7 @@ type ABUCard struct {
 // and the price they pay.
 type ABUProduct struct {
 	Grouped struct {
-		ProductId struct {
+		ProductID struct {
 			Count  int `json:"ngroups"`
 			Groups []struct {
 				GroupValue string `json:"groupValue"`
@@ -188,7 +188,7 @@ func (abu *ABUClient) GetTotalItems(ctx context.Context, extra string) (int, err
 	if err != nil {
 		return 0, err
 	}
-	return product.Grouped.ProductId.Count, nil
+	return product.Grouped.ProductID.Count, nil
 }
 
 // GetTotalSealedItems returns how many sealed items the catalog holds, which
@@ -242,7 +242,7 @@ func (abu *ABUClient) GetSealedProduct(ctx context.Context, pageStart int) (*ABU
 
 // CartRequest is one add-to-cart call.
 type CartRequest struct {
-	ItemId   string `json:"item_id"`
+	ItemID   string `json:"item_id"`
 	Quantity int    `json:"quantity"`
 	// Ignored on buylist
 	Call string `json:"call,omitempty"`
@@ -283,7 +283,7 @@ func (abu *ABUClient) SetCartBuylist(ctx context.Context, abuID string, qty int)
 
 func (abu *ABUClient) setCart(ctx context.Context, link, abuID string, qty int) (*CartResponse, error) {
 	payload := CartRequest{
-		ItemId:   abuID,
+		ItemID:   abuID,
 		Quantity: qty,
 		Call:     "add",
 	}

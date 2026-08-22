@@ -70,7 +70,7 @@ type AllCards struct {
 		Version          string            `json:"version,omitempty"`
 		Willpower        int               `json:"willpower,omitempty"`
 		KeywordAbilities []string          `json:"keywordAbilities,omitempty"`
-		PromoIds         []int             `json:"promoIds,omitempty"`
+		PromoIDs         []int             `json:"promoIds,omitempty"`
 		Errata           []string          `json:"errata,omitempty"`
 		Clarifications   []string          `json:"clarifications,omitempty"`
 		Effects          []string          `json:"effects,omitempty"`
@@ -81,26 +81,26 @@ type AllCards struct {
 		PromoSourceCategory string `json:"promoSourceCategory,omitempty"`
 		VarnishType         string `json:"varnishType,omitempty"`
 		Variant             string `json:"variant,omitempty"`
-		VariantIds          []int  `json:"variantIds,omitempty"`
+		VariantIDs          []int  `json:"variantIds,omitempty"`
 		MoveCost            int    `json:"moveCost,omitempty"`
 		NonPromoID          int    `json:"nonPromoId,omitempty"`
 		IsExternalReveal    bool   `json:"isExternalReveal,omitempty"`
 
 		ExternalLinks struct {
-			TcgPlayerId int `json:"tcgPlayerId"`
+			TcgPlayerID int `json:"tcgPlayerId"`
 
-			// CardmarketId and CardTraderId are read only to tell a
+			// CardmarketID and CardTraderId are read only to tell a
 			// regionally renamed repeat of a card from a card of its own.
-			CardmarketId int `json:"cardmarketId"`
-			CardTraderId int `json:"cardTraderId"`
+			CardmarketID int `json:"cardmarketId"`
+			CardTraderID int `json:"cardTraderId"`
 
-			// TcgPlayerExtraIds lists further TCGplayer products that resolve
+			// TcgPlayerExtraIDs lists further TCGplayer products that resolve
 			// to this same printing, which upstream does not carry: TCGplayer
 			// sometimes sells a card's foil under its own product id, and a
 			// feed keyed on that id has nothing to match against otherwise.
 			// Populated by lorcana-datastore; absent from the upstream
 			// file, where it simply stays empty.
-			TcgPlayerExtraIds []int `json:"tcgPlayerExtraIds,omitempty"`
+			TcgPlayerExtraIDs []int `json:"tcgPlayerExtraIds,omitempty"`
 		} `json:"externalLinks"`
 	} `json:"cards"`
 
@@ -116,7 +116,7 @@ type AllCards struct {
 		ReleaseDate   string `json:"releaseDate"`
 		Image         string `json:"image"`
 		ExternalLinks struct {
-			TcgPlayerId int `json:"tcgPlayerId"`
+			TcgPlayerID int `json:"tcgPlayerId"`
 		} `json:"externalLinks"`
 	} `json:"sealed,omitempty"`
 }
@@ -149,7 +149,7 @@ func (ac *AllCards) englishCards() []int {
 	var keep []int
 	for i, card := range ac.Cards {
 		el := card.ExternalLinks
-		if el.TcgPlayerId == 0 && el.CardmarketId == 0 && el.CardTraderId == 0 {
+		if el.TcgPlayerID == 0 && el.CardmarketID == 0 && el.CardTraderID == 0 {
 			keep = append(keep, i)
 			continue
 		}
@@ -157,7 +157,7 @@ func (ac *AllCards) englishCards() []int {
 		// all that separates the same-numbered art siblings ("4a" to "4e"),
 		// and the number alone would file them under one identity.
 		identity := fmt.Sprintf("%d|%d|%d|%s|%d%s",
-			el.TcgPlayerId, el.CardmarketId, el.CardTraderId, card.SetCode, card.Number, card.Variant)
+			el.TcgPlayerID, el.CardmarketID, el.CardTraderID, card.SetCode, card.Number, card.Variant)
 		if seen[identity] {
 			continue
 		}
@@ -288,8 +288,8 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 	}
 	for _, i := range cards {
 		card := ac.Cards[i]
-		claim(card.ExternalLinks.TcgPlayerId, card.ID)
-		for _, extra := range card.ExternalLinks.TcgPlayerExtraIds {
+		claim(card.ExternalLinks.TcgPlayerID, card.ID)
+		for _, extra := range card.ExternalLinks.TcgPlayerExtraIDs {
 			claim(extra, card.ID)
 		}
 	}
@@ -442,12 +442,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// next to overwrite, leaving a key that resolves to whichever card
 		// happened to load last, and stamping it as an identifier would
 		// advertise a product id no product carries.
-		if card.ExternalLinks.TcgPlayerId != 0 {
+		if card.ExternalLinks.TcgPlayerID != 0 {
 			convertedCard.Identifiers = map[string]string{
-				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerId),
+				"tcgplayerProductId": fmt.Sprint(card.ExternalLinks.TcgPlayerID),
 			}
-			if len(claimants[card.ExternalLinks.TcgPlayerId]) == 1 {
-				b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerId)] = convertedCard.UUID
+			if len(claimants[card.ExternalLinks.TcgPlayerID]) == 1 {
+				b.ExternalIdentifiers[fmt.Sprint(card.ExternalLinks.TcgPlayerID)] = convertedCard.UUID
 			}
 		}
 
@@ -456,7 +456,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// uuid; MatchID applies the requested finish to it through output(),
 		// so pointing them at the base card is enough to reach the foil. Only
 		// the id map grows: no CardObject and no uuid is created here.
-		for _, extra := range card.ExternalLinks.TcgPlayerExtraIds {
+		for _, extra := range card.ExternalLinks.TcgPlayerExtraIDs {
 			if extra == 0 {
 				continue
 			}
@@ -558,7 +558,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 				ReleaseDateTime: releaseDateTime,
 			}
 		}
-		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerId)
+		b.AddSealed(product.ID, product.Name, product.SetCode, product.Image, product.ExternalLinks.TcgPlayerID)
 	}
 	b.SortSealed()
 	if mintedSets {

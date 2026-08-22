@@ -190,17 +190,17 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// the edition alone leaves the base one. Magic keeps its own
 		// preprocessing, and a blueprint without an id falls through.
 		var cardID string
-		if ct.gameID != GameMagic && blueprint.TCGplayerId != 0 {
+		if ct.gameID != GameMagic && blueprint.TCGplayerID != 0 {
 			// A named finish reaches the sibling the flag cannot: the flag
 			// has one bit and lands on the product's foil default, where the
 			// name says which of its treatments the listing prices. A name
 			// the product is sold in no printing of falls back to the flag,
 			// which answers with the default rather than nothing.
 			if theCard.Finish != "" {
-				cardID, _ = mtgmatcher.MatchIDFinish(fmt.Sprint(blueprint.TCGplayerId), theCard.Finish)
+				cardID, _ = mtgmatcher.MatchIDFinish(fmt.Sprint(blueprint.TCGplayerID), theCard.Finish)
 			}
 			if cardID == "" {
-				cardID, _ = mtgmatcher.MatchID(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
+				cardID, _ = mtgmatcher.MatchID(fmt.Sprint(blueprint.TCGplayerID), theCard.Foil)
 			}
 		}
 
@@ -238,14 +238,14 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			qty *= 4
 		}
 
-		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintId)
+		link := "https://www.cardtrader.com/cards/" + fmt.Sprint(product.BlueprintID)
 		if ct.ShareCode != "" {
 			link += "?share_code=" + ct.ShareCode
 		}
 
 		price, err := priceToUSD(product.Price.Cents, product.Price.Currency, ct.exchangeRates)
 		if err != nil {
-			ct.printf("%v for blueprint %d", err, product.BlueprintId)
+			ct.printf("%v for blueprint %d", err, product.BlueprintID)
 			continue
 		}
 
@@ -275,8 +275,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				URL:        link,
 				SellerName: sellerName,
 				Bundle:     product.User.SinglesZero,
-				OriginalId: fmt.Sprint(product.BlueprintId),
-				InstanceId: fmt.Sprint(product.Id),
+				OriginalID: fmt.Sprint(product.BlueprintID),
+				InstanceID: fmt.Sprint(product.ID),
 				CustomFields: map[string]string{
 					"SubSellerName": product.User.Name,
 					"SubSellerGeo":  product.User.CountryCode,

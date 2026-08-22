@@ -39,8 +39,8 @@ type marketChan struct {
 	Condition string
 	Printing  string
 	Finish    string
-	ProductId int
-	SkuId     int
+	ProductID int
+	SkuID     int
 	Language  string
 }
 
@@ -99,7 +99,7 @@ func NewScraperMarket(publicID, privateID string) (*Market, error) {
 func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan, reqs []marketChan) error {
 	ids := make([]int, len(reqs))
 	for i := range reqs {
-		ids[i] = reqs[i].SkuId
+		ids[i] = reqs[i].SkuID
 	}
 
 	// Retrieve a list of skus with their prices
@@ -111,7 +111,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 	for _, result := range results {
 		var req marketChan
 		for _, req = range reqs {
-			if result.SKUID == req.SkuId {
+			if result.SKUID == req.SkuID {
 				break
 			}
 		}
@@ -120,7 +120,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 		isEtched := req.Finish == "ETCHED"
 		cardID, err := mtgmatcher.MatchID(req.UUID, isFoil, isEtched)
 		if err != nil {
-			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductId, req.UUID)
+			tcg.printf("%s - (tcgId:%d / uuid:%s)", err.Error(), req.ProductID, req.UUID)
 			continue
 		}
 
@@ -135,7 +135,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 
 		cond, found := skuConditions[req.Condition]
 		if !found {
-			tcg.printf("unknown condition %s for %d", req.Condition, req.SkuId)
+			tcg.printf("unknown condition %s for %d", req.Condition, req.SkuID)
 			continue
 		}
 
@@ -149,7 +149,7 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 		}
 		for i := range availableMarketNames {
 			isDirect := i == 1
-			link := GenerateProductURL(req.ProductId, printing, tcg.Affiliate, cond, req.Language, isDirect)
+			link := GenerateProductURL(req.ProductID, printing, tcg.Affiliate, cond, req.Language, isDirect)
 
 			out := responseChan{
 				cardID: cardID,
@@ -160,8 +160,8 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 					URL:        link,
 					SellerName: availableMarketNames[i],
 					Bundle:     isDirect,
-					OriginalId: fmt.Sprint(req.ProductId),
-					InstanceId: fmt.Sprint(result.SKUID),
+					OriginalID: fmt.Sprint(req.ProductID),
+					InstanceID: fmt.Sprint(result.SKUID),
 				},
 			}
 
@@ -173,8 +173,8 @@ func (tcg *Market) processEntry(ctx context.Context, channel chan<- responseChan
 						BuyPrice:   price,
 						URL:        link,
 						VendorName: "TCG Direct (net)",
-						OriginalId: fmt.Sprint(req.ProductId),
-						InstanceId: fmt.Sprint(result.SKUID),
+						OriginalID: fmt.Sprint(req.ProductID),
+						InstanceID: fmt.Sprint(result.SKUID),
 					}
 				}
 			}
@@ -312,8 +312,8 @@ func (tcg *Market) Load(ctx context.Context) error {
 							Condition: cond,
 							Language:  lang,
 							Printing:  printing,
-							ProductId: id,
-							SkuId:     sku.SKUID,
+							ProductID: id,
+							SkuID:     sku.SKUID,
 						})
 					}
 				}
@@ -351,23 +351,23 @@ func (tcg *Market) Load(ctx context.Context) error {
 					}
 					// Make sure the right id is parsed
 					// Check for tcgplayerProductId due to non-English cards from duplicated sets
-					if sku.Finish != "ETCHED" && card.Identifiers["tcgplayerProductId"] != "" && fmt.Sprint(sku.ProductId) != card.Identifiers["tcgplayerProductId"] {
+					if sku.Finish != "ETCHED" && card.Identifiers["tcgplayerProductId"] != "" && fmt.Sprint(sku.ProductID) != card.Identifiers["tcgplayerProductId"] {
 						continue
 					}
 					// Skip dupes
-					_, found := idsFound[sku.SkuId]
+					_, found := idsFound[sku.SkuID]
 					if found {
 						continue
 					}
-					idsFound[sku.SkuId] = struct{}{}
+					idsFound[sku.SkuID] = struct{}{}
 
 					pages <- marketChan{
 						UUID:      card.UUID,
 						Condition: sku.Condition,
 						Printing:  sku.Printing,
 						Finish:    sku.Finish,
-						ProductId: sku.ProductId,
-						SkuId:     sku.SkuId,
+						ProductID: sku.ProductID,
+						SkuID:     sku.SkuID,
 						Language:  sku.Language,
 					}
 				}

@@ -24,11 +24,11 @@ type StocksInterest struct {
 	PresentPrice float64 `json:"present_price"`
 	Date         int64   `json:"date"`
 	Print        struct {
-		Id        int    `json:"id"`
+		ID        int    `json:"id"`
 		Slug      any    `json:"slug"` // string & int
 		Name      string `json:"name"`
 		Rarity    string `json:"rarity"`
-		SetId     int    `json:"set_id"`
+		SetID     int    `json:"set_id"`
 		SetName   string `json:"set_name"`
 		IconClass string `json:"icon_class"`
 		Reserved  bool   `json:"reserved"`

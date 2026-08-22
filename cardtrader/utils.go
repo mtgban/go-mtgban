@@ -49,7 +49,7 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 
 	inventory := mtgban.InventoryRecord{}
 	for _, product := range products {
-		blueprint, found := blueprints[product.BlueprintId]
+		blueprint, found := blueprints[product.BlueprintID]
 		if !found {
 			continue
 		}
@@ -82,8 +82,8 @@ func (ct *CTAuthClient) ExportStock(ctx context.Context, blueprints map[int]*Blu
 			Quantity:   quantity,
 			Conditions: condition,
 			SellerName: "mtgban",
-			OriginalId: fmt.Sprint(product.BlueprintId),
-			InstanceId: fmt.Sprint(product.Id),
+			OriginalID: fmt.Sprint(product.BlueprintID),
+			InstanceID: fmt.Sprint(product.ID),
 		})
 	}
 
@@ -112,7 +112,7 @@ func listingPrice(product Product) (int, string) {
 func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates map[string]float64) mtgban.InventoryRecord {
 	inventory := mtgban.InventoryRecord{}
 	for _, product := range products {
-		bp, found := blueprints[product.BlueprintId]
+		bp, found := blueprints[product.BlueprintID]
 		if !found {
 			continue
 		}
@@ -159,8 +159,8 @@ func ConvertProducts(blueprints map[int]*Blueprint, products []Product, rates ma
 			Quantity:     quantity,
 			Conditions:   conds,
 			SellerName:   "mtgban",
-			OriginalId:   fmt.Sprint(product.BlueprintId),
-			InstanceId:   fmt.Sprint(product.Id),
+			OriginalID:   fmt.Sprint(product.BlueprintID),
+			InstanceID:   fmt.Sprint(product.ID),
 			CustomFields: customFields,
 		})
 	}
@@ -181,7 +181,7 @@ func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, ta
 
 	var blueprints []Blueprint
 	for _, exp := range expansions {
-		if exp.GameId != gameID {
+		if exp.GameID != gameID {
 			continue
 		}
 		// The OCG expansions are whole separate Japanese catalogs (bach-jp
@@ -193,10 +193,10 @@ func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, ta
 		if targetEdition != "" && exp.Name != targetEdition && exp.Code != strings.ToLower(targetEdition) {
 			continue
 		}
-		bp, err := client.Blueprints(ctx, exp.Id)
+		bp, err := client.Blueprints(ctx, exp.ID)
 		if err != nil {
 			if logf != nil {
-				logf("skipping %d %s due to %s", exp.Id, exp.Name, err.Error())
+				logf("skipping %d %s due to %s", exp.ID, exp.Name, err.Error())
 			}
 			continue
 		}
@@ -356,7 +356,7 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 		// accessories arrive with it and are dropped downstream by the
 		// product-map resolution, which only names real sealed products.
 		singles := false
-		switch blueprints[i].CategoryId {
+		switch blueprints[i].CategoryID {
 		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized,
 			CategoryLorcanaSingles, CategoryLorcanaOversized,
 			CategoryRiftboundSingles, CategoryRiftboundOversized,
@@ -372,25 +372,25 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 
 		// Keep track of blueprints as they are more accurate that the
 		// information found in product
-		formatted[blueprints[i].Id] = &blueprints[i]
+		formatted[blueprints[i].ID] = &blueprints[i]
 
 		// Load expansions array
-		_, found := expansions[blueprints[i].ExpansionId]
+		_, found := expansions[blueprints[i].ExpansionID]
 		if !found {
 			for j := range inExpansions {
-				if inExpansions[j].Id == blueprints[i].ExpansionId {
-					expansions[blueprints[i].ExpansionId] = inExpansions[j].Name
+				if inExpansions[j].ID == blueprints[i].ExpansionID {
+					expansions[blueprints[i].ExpansionID] = inExpansions[j].Name
 				}
 			}
 		}
 
 		// The name is missing from the blueprints endpoint, fill it with data
 		// retrieved from the expansions endpoint
-		formatted[blueprints[i].Id].Expansion.Name = expansions[blueprints[i].ExpansionId]
+		formatted[blueprints[i].ID].Expansion.Name = expansions[blueprints[i].ExpansionID]
 
 		// Move the blueprint properties from the custom structure from blueprints
 		// to the place as expected by Preprocess()
-		formatted[blueprints[i].Id].Properties = formatted[blueprints[i].Id].FixedProperties
+		formatted[blueprints[i].ID].Properties = formatted[blueprints[i].ID].FixedProperties
 	}
 
 	return formatted, expansions

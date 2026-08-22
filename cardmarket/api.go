@@ -71,7 +71,7 @@ func (mkm *MKMClient) RequestNo() int {
 
 // MKMExpansion is a set as Cardmarket files it.
 type MKMExpansion struct {
-	IdExpansion int    `json:"idExpansion"`
+	IDExpansion int    `json:"idExpansion"`
 	Name        string `json:"enName"`
 	SetCode     string `json:"abbreviation"`
 	Icon        int    `json:"icon"`
@@ -111,14 +111,14 @@ func (mkm *MKMClient) Expansions(ctx context.Context, gameID int) ([]MKMExpansio
 
 // MKMProduct is one catalog entry, a card or a sealed item.
 type MKMProduct struct {
-	IdProduct     int    `json:"idProduct"`
-	IdMetaproduct int    `json:"idMetaproduct"`
+	IDProduct     int    `json:"idProduct"`
+	IDMetaproduct int    `json:"idMetaproduct"`
 	Name          string `json:"enName"`
 	Website       string `json:"website"`
 	Number        string `json:"number"`
 	ExpansionName string `json:"expansionName"`
 	Expansion     struct {
-		IdExpansion int    `json:"idExpansion"`
+		IDExpansion int    `json:"idExpansion"`
 		Name        string `json:"enName"`
 	} `json:"expansion"`
 	PriceGuide    map[string]float64 `json:"priceGuide"`
@@ -189,15 +189,15 @@ func (mkm *MKMClient) MKMProductsInExpansion(ctx context.Context, id int) ([]MKM
 
 // MKMArticle is one seller's listing on a product.
 type MKMArticle struct {
-	IdArticle int `json:"idArticle"`
-	IdProduct int `json:"idProduct"`
+	IDArticle int `json:"idArticle"`
+	IDProduct int `json:"idProduct"`
 	Language  struct {
-		IdLanguage   int    `json:"idLanguage"`
+		IDLanguage   int    `json:"idLanguage"`
 		LanguageName string `json:"languageName"`
 	} `json:"language"`
 	Comments       string  `json:"comments"`
 	Price          float64 `json:"price"`
-	IdCurrency     int     `json:"idCurrency"`
+	IDCurrency     int     `json:"idCurrency"`
 	CurrencyCode   string  `json:"currencyCode"`
 	Count          int     `json:"count"`
 	InShoppingCart bool    `json:"inShoppingCart"`
@@ -208,7 +208,7 @@ type MKMArticle struct {
 		Number    string `json:"nr"`
 	} `json:"product"`
 	Seller struct {
-		IdUser   int    `json:"idUser"`
+		IDUser   int    `json:"idUser"`
 		Username string `json:"username"`
 		Address  struct {
 			Country string `json:"country"`

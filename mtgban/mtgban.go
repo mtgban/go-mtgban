@@ -38,12 +38,12 @@ type InventoryEntry struct {
 
 	// Original identifier as available from the scraper
 	// This is usually the "product id".
-	OriginalId string `json:"original_id,omitempty"`
+	OriginalID string `json:"original_id,omitempty"`
 
 	// Original instance identifier as available from the scraper
 	// This is usually the "SKU", or the id of the entry taking into
 	// account different properties, such as conditions, language etc
-	InstanceId string `json:"instance_id,omitempty"`
+	InstanceID string `json:"instance_id,omitempty"`
 
 	// Any additional custom fields set by the scraper
 	CustomFields map[string]string `json:"custom_fields,omitempty"`
@@ -92,12 +92,12 @@ type BuylistEntry struct {
 	VendorName string `json:"vendor_name,omitempty"`
 
 	// Original identifier as available from the scraper
-	OriginalId string `json:"original_id,omitempty"`
+	OriginalID string `json:"original_id,omitempty"`
 
 	// Original instance identifier as available from the scraper
 	// This is usually the "SKU", or the id of the entry taking into
 	// account different properties, such as conditions, language etc
-	InstanceId string `json:"instance_id,omitempty"`
+	InstanceID string `json:"instance_id,omitempty"`
 
 	// Any additional custom fields set by the scraper
 	CustomFields map[string]string `json:"custom_fields,omitempty"`

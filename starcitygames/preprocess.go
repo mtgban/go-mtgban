@@ -382,7 +382,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 						Language:  language,
 					}
 					if id, err := mtgmatcher.Match(&arena); err == nil {
-						return &mtgmatcher.InputCard{Id: id, Foil: foil, Language: language}, nil
+						return &mtgmatcher.InputCard{ID: id, Foil: foil, Language: language}, nil
 					}
 				}
 			}
@@ -498,7 +498,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 		}
 
 		return &mtgmatcher.InputCard{
-			Id:        card.UUID,
+			ID:        card.UUID,
 			Variation: variant,
 			Foil:      foil,
 			Language:  language,

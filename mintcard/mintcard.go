@@ -114,7 +114,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 				Price:      sellPrice,
 				Quantity:   card.Quantity,
 				URL:        link,
-				OriginalId: card.ID,
+				OriginalID: card.ID,
 			}
 			err = mint.inventory.Add(cardID, out)
 			if err != nil {
@@ -148,7 +148,7 @@ func (mint *MTGMintCard) processEntry(sku2uuid map[int]string, card Card, condit
 					BuyPrice:   price,
 					PriceRatio: priceRatio,
 					URL:        link,
-					OriginalId: card.ID,
+					OriginalID: card.ID,
 				}
 				err = mint.buylist.Add(cardID, out)
 				if err != nil {
@@ -186,7 +186,7 @@ func (mint *MTGMintCard) Load(ctx context.Context) error {
 			if err != nil {
 				continue
 			}
-			sku2uuid[sku.SkuId] = id
+			sku2uuid[sku.SkuID] = id
 		}
 	}
 	mint.printf("Found %d skus", len(sku2uuid))
@@ -197,7 +197,7 @@ func (mint *MTGMintCard) Load(ctx context.Context) error {
 				for cond, rarities := range conditions {
 					for _, cards := range rarities {
 						for _, card := range cards {
-							mint.processEntry(sku2uuid, card, cond, finish, language, edition, product.Abbreviation, product.EditionId)
+							mint.processEntry(sku2uuid, card, cond, finish, language, edition, product.Abbreviation, product.EditionID)
 						}
 					}
 				}

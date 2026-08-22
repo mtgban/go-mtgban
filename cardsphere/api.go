@@ -51,7 +51,7 @@ func NewClient(token string) *Client {
 
 // OfferList is one page of standing offers.
 type OfferList struct {
-	WantId      int     `json:"wantId"`
+	WantID      int     `json:"wantId"`
 	MinOffer    int     `json:"minOffer"`
 	MaxOffer    int     `json:"maxOffer"`
 	MinIndex    int     `json:"minIndex"`
@@ -60,9 +60,9 @@ type OfferList struct {
 	MaxEff      int     `json:"maxEff"`
 	MinRelEff   float64 `json:"minRelEff"`
 	MaxRelEff   float64 `json:"maxRelEff"`
-	MasterId    int     `json:"masterId"`
+	MasterID    int     `json:"masterId"`
 	Image       string  `json:"image"`
-	UserId      int     `json:"userId"`
+	UserID      int     `json:"userId"`
 	UserDisplay string  `json:"userDisplay"`
 	Country     string  `json:"country"`
 	CountryName string  `json:"countryName"`

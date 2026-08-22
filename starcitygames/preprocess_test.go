@@ -258,9 +258,9 @@ func TestSCGSKU(t *testing.T) {
 					return
 				}
 			}
-			if out.Id != test.Out {
-				co, _ := mtgmatcher.GetUUID(out.Id)
-				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.In, test.Out, out.Id, co)
+			if out.ID != test.Out {
+				co, _ := mtgmatcher.GetUUID(out.ID)
+				t.Errorf("FAIL %s: Expected '%s' got '%s' (%s)", test.In, test.Out, out.ID, co)
 				return
 			}
 			t.Log("PASS:", test.In)

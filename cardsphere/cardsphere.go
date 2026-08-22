@@ -64,7 +64,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 
 	for _, offer := range offers {
 		// Look for the right Id
-		masterID := fmt.Sprint(offer.MasterId)
+		masterID := fmt.Sprint(offer.MasterID)
 		ids, _ := mtgmatcher.SearchEquals(offer.CardName)
 		if len(ids) == 0 {
 			continue
@@ -138,7 +138,7 @@ func (cs *Cardsphere) processPage(ctx context.Context, results chan<- responseCh
 						Conditions: conditions,
 						Quantity:   offer.Quantity,
 						PriceRatio: priceRatio,
-						URL:        fmt.Sprintf("%s%d", baseURL, offer.MasterId),
+						URL:        fmt.Sprintf("%s%d", baseURL, offer.MasterID),
 						VendorName: offer.UserDisplay,
 					},
 				}

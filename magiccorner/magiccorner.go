@@ -72,13 +72,13 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 
 	for _, card := range cards {
 		if !printed && mc.VerboseLog {
-			mc.printf("Processing id %d - %s (%s, code: %s)", edition.Id, edition.Name, card.Extra, card.Code)
+			mc.printf("Processing id %d - %s (%s, code: %s)", edition.ID, edition.Name, card.Extra, card.Code)
 			printed = true
 		}
 
 		for i, v := range card.Variants {
 			// Skip duplicate cards
-			if duplicate[v.Id] {
+			if duplicate[v.ID] {
 				if mc.VerboseLog {
 					mc.printf("Skipping duplicate card: %s (%s %s)", card.Name, card.Edition, v.Foil)
 				}
@@ -162,12 +162,12 @@ func (mc *Magiccorner) processEntry(ctx context.Context, channel chan<- resultCh
 					Price:      v.Price * mc.exchangeRate,
 					Quantity:   v.Quantity,
 					URL:        "https://www.magiccorner.it" + card.URL,
-					OriginalId: fmt.Sprint(card.Id),
-					InstanceId: fmt.Sprint(v.Id),
+					OriginalID: fmt.Sprint(card.ID),
+					InstanceID: fmt.Sprint(v.ID),
 				},
 			}
 
-			duplicate[v.Id] = true
+			duplicate[v.ID] = true
 		}
 	}
 
@@ -251,7 +251,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 	totals := 0
 	for {
 		mc.printf("Querying %s page %d", edition.Name, i)
-		result, err := mc.client.GetBuylistForEdition(ctx, edition.Id, i)
+		result, err := mc.client.GetBuylistForEdition(ctx, edition.ID, i)
 		if err != nil {
 			return err
 		}
@@ -320,7 +320,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 						Conditions: grade,
 						BuyPrice:   price * mc.exchangeRate * factor,
 						URL:        link,
-						OriginalId: product.ID,
+						OriginalID: product.ID,
 					},
 				}
 			}
