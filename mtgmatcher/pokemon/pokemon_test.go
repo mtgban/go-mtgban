@@ -575,3 +575,37 @@ func TestPromoEraEdition(t *testing.T) {
 		t.Errorf("Match(%v) = %s (%v), want %s", in, id, b.UUIDs[id], want)
 	}
 }
+
+// TestSubsetOfEdition pins the collections a set prints inside itself being
+// reachable from the parent's name, which is the only name a storefront
+// files them under. The negative is the point of the name test: a set code
+// spelled like a subset's is not one.
+func TestSubsetOfEdition(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"a Radiant Collection card", mtgmatcher.InputCard{
+			Name: "Cinccino - RC19/RC25", Edition: "BW Legendary Treasures"}, "rc19-rc25_84321_holo"},
+		{"a Trainer Gallery card", mtgmatcher.InputCard{
+			Name: "Flareon - TG01/TG30", Edition: "SWSH Brilliant Stars"}, "tg01-tg30_264210_holo"},
+		// CL-23323 is "Trading Card Game Classic", not a part of Call of
+		// Legends, and it carries a Gyarados of its own at 007/034.
+		{"an unrelated set sharing the code shape", mtgmatcher.InputCard{
+			Name: "Gyarados - 7/95", Edition: "Call of Legends", Variation: "7"}, "7-95_85999_holo"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}
