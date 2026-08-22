@@ -462,7 +462,7 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		}
 		seen[key] = true
 
-		if _, found := cardSet[card.SetCode]; !found {
+		if _, found := cardSet[card.SetCode]; !found && !subsetOf(b, cardSet, card.SetCode) {
 			continue
 		}
 		if number != "" && !numberMatchesCard(b, number, &card) {
@@ -657,6 +657,31 @@ func numberMatches(input, number string) bool {
 		return false
 	}
 	return foldNumber(input) == foldNumber(number)
+}
+
+// subsetOf reports whether a set is one the edition already admits, filed
+// under its own code. The catalog splits the collections printed inside a
+// set out into a set of their own - "Legendary Treasures: Radiant
+// Collection" beside "Legendary Treasures", the four Trainer Galleries
+// beside their parents - while the storefronts file those cards under the
+// parent, so the perfect-match loop builds the parent's code alone and the
+// RC- and TG-numbered candidates are gated out.
+//
+// The suffixed code is not enough on its own: the same shape spells 32
+// unrelated sets, from "Burger King Promos" under BKP to every POP series
+// and every promo set under PR. The subset's name opening with its parent's
+// is what tells the two apart, and it costs nothing to require - the eight
+// real subsets all spell their parent out.
+func subsetOf(b *mtgmatcher.Backend, cardSet map[string][]mtgmatcher.Card, code string) bool {
+	parent, _, found := strings.Cut(code, "-")
+	if !found {
+		return false
+	}
+	if _, admitted := cardSet[parent]; !admitted {
+		return false
+	}
+	set, subset := b.Sets[parent], b.Sets[code]
+	return set != nil && subset != nil && strings.HasPrefix(subset.Name, set.Name)
 }
 
 // fullNumberMatches compares a storefront's collector number against the
