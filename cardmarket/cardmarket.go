@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -94,6 +95,76 @@ func (mkm *CardMarketIndex) processEdition(ctx context.Context, channel chan<- r
 		}
 	}
 	return nil
+}
+
+// versionTail matches the parenthetical Cardmarket tells same-name products
+// apart with, which names its own version index and the rarity beside it.
+var versionTail = regexp.MustCompile(` \(V\.\d+.*\)$`)
+
+// numberTail matches the digits a collector number ends on, which is the part
+// two catalogs numbering the same card agree about.
+var numberTail = regexp.MustCompile(`\d+[A-Za-z]?$`)
+
+// productFinish names the printing a product is, for the catalogs that sell
+// each printing as its own product rather than as a column beside the card.
+func productFinish(gameID int, product *MKMProduct) string {
+	if gameID == GameIdFleshAndBlood {
+		return fabFinish(product.ExpansionName, product.Name)
+	}
+	return ""
+}
+
+// matchProduct resolves a product the bridge does not know, from what the
+// catalog says of it. The edition has to name a set of ours and the answer
+// has to be in it: Cardmarket carries whole Japanese catalogs the datastores
+// do not, and Match reaches past the edition when nothing in it fits, so
+// without both an unknown set's cards land on whichever set happens to hold
+// a number like theirs.
+func (mkm *CardMarketIndex) matchProduct(product *MKMProduct) string {
+	set, err := mtgmatcher.GetSetByName(product.ExpansionName)
+	if err != nil {
+		return ""
+	}
+	name := versionTail.ReplaceAllString(product.Name, "")
+
+	numbers := []string{product.Number}
+	// The oldest Yu-Gi-Oh sets are numbered by their original Asian print
+	// ("A015") where the datastore numbers them by set ("LOB-015"); the
+	// digits are what the two agree on.
+	if tail := numberTail.FindString(product.Number); tail != "" && set.Code != "" {
+		numbers = append(numbers, set.Code+"-"+tail)
+	}
+
+	// A game selling one card in several print runs needs one of them
+	// named, or the runs alias and nothing resolves. The later run is what
+	// the id route lands on, so it is what the fallback asks for first.
+	finishes := []string{""}
+	switch mkm.gameID {
+	case GameIdYugioh:
+		finishes = []string{"Unlimited", ""}
+	case GameIdFleshAndBlood:
+		finishes = []string{productFinish(mkm.gameID, product), ""}
+	}
+
+	for _, number := range numbers {
+		for _, finish := range finishes {
+			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+				Name:      name,
+				Edition:   product.ExpansionName,
+				Variation: number,
+				Finish:    finish,
+			})
+			if err != nil {
+				continue
+			}
+			co, cerr := mtgmatcher.GetUUID(id)
+			if cerr != nil || !strings.EqualFold(co.SetCode, set.Code) {
+				continue
+			}
+			return id
+		}
+	}
+	return ""
 }
 
 func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product *MKMProduct) error {
@@ -202,29 +273,29 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 		// and same-name products abound, so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by or not at all -
 		// name matching has nothing to distinguish on.
-		tcgID, found := mkm.TCGBridge[product.IdProduct]
-		if !found {
-			return nil
-		}
-		cardID, err = mtgmatcher.MatchId(fmt.Sprint(tcgID), false)
-		if err != nil {
-			return nil
-		}
-		cardIDFoil = cardID
-		if mkm.gameID == GameIdFleshAndBlood {
+		if tcgID, found := mkm.TCGBridge[product.IdProduct]; found {
+			cardID, _ = mtgmatcher.MatchId(fmt.Sprint(tcgID), false)
+			// The flag lands on the product's default printing, where the
+			// catalog says which printing this product actually is:
 			// Cardmarket sells each Flesh and Blood treatment as its own
-			// product and each print run as its own expansion, so a
-			// product is one printing and says which: the run in the
-			// expansion name, the treatment in a parenthetical after the
-			// card's. The flag names neither, and answered every one of
-			// them with the unlimited plain printing.
-			if finish := fabFinish(product.ExpansionName, product.Name); finish != "" {
+			// product and each print run as its own expansion.
+			if finish := productFinish(mkm.gameID, product); finish != "" {
 				if id, ferr := mtgmatcher.MatchIdFinish(fmt.Sprint(tcgID), finish); ferr == nil {
 					cardID = id
 				}
 			}
-			cardIDFoil = cardID
 		}
+		// The bridge speaks through cardtrader's blueprints and knows only
+		// part of the catalog - half of Yu-Gi-Oh's, a third of Flesh and
+		// Blood's - and what it leaves out is ordinary cards. They can be
+		// named without it.
+		if cardID == "" {
+			cardID = mkm.matchProduct(product)
+		}
+		if cardID == "" {
+			return nil
+		}
+		cardIDFoil = cardID
 		if mkm.gameID == GameIdYugioh {
 			// Yu-Gi-Oh's second column is the first edition's, which is a
 			// print run rather than a foil, so the flag cannot name it -
@@ -232,7 +303,7 @@ func (mkm *CardMarketIndex) processProduct(channel chan<- responseChan, product 
 			// was dropped for having nowhere to attach. Naming the run
 			// reaches it, and errors into an empty id for the products
 			// sold in no first edition, which the guard below drops.
-			cardIDFoil, _ = mtgmatcher.MatchIdFinish(fmt.Sprint(tcgID), "1st Edition")
+			cardIDFoil, _ = mtgmatcher.MatchIdFinish(cardID, "1st Edition")
 		}
 	default:
 		return errors.New("unsupported game")

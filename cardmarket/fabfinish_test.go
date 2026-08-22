@@ -25,3 +25,38 @@ func TestFabFinish(t *testing.T) {
 		}
 	}
 }
+
+// TestVersionTail pins the parenthetical Cardmarket tells same-name products
+// apart with, which names its own version index and the rarity beside it and
+// says nothing a matcher can use. A parenthetical that is part of the card's
+// name stays.
+func TestVersionTail(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		{"Charubin the Fire Knight (V.3 - Rare)", "Charubin the Fire Knight"},
+		{"Dissolverock (V.1 - Common)", "Dissolverock"},
+		{"Eevee (V.2)", "Eevee"},
+		{"Sigil of Suffering (Yellow)", "Sigil of Suffering (Yellow)"},
+		{"Go Bananas (Rainbow Foil)", "Go Bananas (Rainbow Foil)"},
+	} {
+		if got := versionTail.ReplaceAllString(tt.in, ""); got != tt.want {
+			t.Errorf("strip(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
+// TestNumberTail pins the digits two catalogs numbering the same card agree
+// about: Cardmarket numbers the oldest Yu-Gi-Oh sets by their original Asian
+// print, the datastore by set.
+func TestNumberTail(t *testing.T) {
+	for _, tt := range []struct{ in, want string }{
+		{"A015", "015"},
+		{"LOB-015", "015"},
+		{"001", "001"},
+		{"155b", "155b"},
+		{"", ""},
+	} {
+		if got := numberTail.FindString(tt.in); got != tt.want {
+			t.Errorf("numberTail(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
