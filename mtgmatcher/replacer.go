@@ -71,7 +71,8 @@ var replacerStrings = []string{
 	"reverse the polarity", "reverse the polarity",
 	"glimpse, the unthinkable", "glimpse, the unthinkable",
 
-	// Accented characters
+	// Accented characters; see asciiReplacer, which folds the same set for
+	// callers that tokenize rather than normalize.
 	"â", "a",
 	"á", "a",
 	"à", "a",
@@ -112,6 +113,32 @@ var replacerStrings = []string{
 	"waste land", "waste land",
 	" ", "",
 }
+
+// asciiStrings folds the letters that carry a mark down to the plain ascii
+// they stand for, and nothing else, for the callers that split a name into
+// words themselves and must not have the rest of the normalizing rewrites
+// applied to it.
+var asciiStrings = []string{
+	"â", "a",
+	"á", "a",
+	"à", "a",
+	"ä", "a",
+	"ā", "a",
+	"é", "e",
+	"í", "i",
+	"ï", "i",
+	"ö", "o",
+	"ō", "o",
+	"ó", "o",
+	"ú", "u",
+	"û", "u",
+	"ü", "u",
+	"ñ", "n",
+	"æ", "ae",
+}
+
+// asciiReplacer folds a marked letter to the plain ascii it stands for.
+var asciiReplacer = strings.NewReplacer(asciiStrings...)
 
 var replacer = strings.NewReplacer(replacerStrings...)
 

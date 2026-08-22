@@ -35,6 +35,11 @@ var sealedFiller = map[string]bool{
 // is everyone else's "Booster Box", and a bare "Booster" is a pack.
 func sealedTokens(name string) []string {
 	set := map[string]bool{}
+	// The token pattern is plain ASCII, so an accented letter reads as a
+	// separator rather than a letter: "Pokémon" splits into "pok" and "mon"
+	// and matches nothing the catalog spells without the accent. Card names
+	// are folded the same way before they are looked up.
+	name = asciiReplacer.Replace(name)
 	for _, tok := range sealedTokenRe.FindAllString(strings.ToLower(name), -1) {
 		if sealedFiller[tok] {
 			continue
