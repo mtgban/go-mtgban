@@ -59,28 +59,28 @@ func FilterAndSortExpansions(expansions []MKMExpansion) []MKMExpansion {
 
 // The games Cardmarket carries, as their API numbers them.
 const (
-	GameIdMagic = iota + 1
-	GameIdWorldOfWarcraft
-	GameIdYugioh
+	GameMagic = iota + 1
+	GameWorldOfWarcraft
+	GameYugioh
 	_
-	GameIdTheSpoils
-	GameIdPokemon
-	GameIdForceOfWill
-	GameIdCardfightVanguard
-	GameIdFinalFantasy
-	GameIdWeissSchwarz
-	GameIdDragoborne
-	GameIdMyLittlePony
-	GameIdDragonBallSuper
+	GameTheSpoils
+	GamePokemon
+	GameForceOfWill
+	GameCardfightVanguard
+	GameFinalFantasy
+	GameWeissSchwarz
+	GameDragoborne
+	GameMyLittlePony
+	GameDragonBallSuper
 	_
-	GameIdStarWarsDestiny
-	GameIdFleshAndBlood
-	GameIdDigimon
-	GameIdOnePiece
-	GameIdLorcana
-	GameIdBattleSpiritsSaga
-	GameIdStarWarsUnlimited
-	GameIdRiftbound
+	GameStarWarsDestiny
+	GameFleshAndBlood
+	GameDigimon
+	GameOnePiece
+	GameLorcana
+	GameBattleSpiritsSaga
+	GameStarWarsUnlimited
+	GameRiftbound
 )
 
 const (
@@ -152,7 +152,7 @@ func fabFinish(expansion, name string) string {
 // games sell a foil beside a plain card; Pokemon sells a reverse holo, and
 // its guide says so.
 func (pg PriceGuide) SecondPrinting(gameID int) (low, trend float64) {
-	if gameID == GameIdPokemon {
+	if gameID == GamePokemon {
 		return pg.HoloLowPrice, pg.HoloTrendPrice
 	}
 	return pg.FoilLowPrice, pg.FoilTrendPrice
@@ -280,13 +280,13 @@ func SanitizeProductList(productList []ProductList) {
 // path, so every URL builder here goes through it, and both directions of the
 // lookup read this one table rather than keeping their own list.
 var gameNames = map[int]string{
-	GameIdMagic:         "Magic",
-	GameIdLorcana:       "Lorcana",
-	GameIdRiftbound:     "Riftbound",
-	GameIdOnePiece:      "OnePiece",
-	GameIdYugioh:        "YuGiOh",
-	GameIdFleshAndBlood: "FleshAndBlood",
-	GameIdPokemon:       "Pokemon",
+	GameMagic:         "Magic",
+	GameLorcana:       "Lorcana",
+	GameRiftbound:     "Riftbound",
+	GameOnePiece:      "OnePiece",
+	GameYugioh:        "YuGiOh",
+	GameFleshAndBlood: "FleshAndBlood",
+	GamePokemon:       "Pokemon",
 }
 
 // GameName returns the game as Cardmarket spells it, or "" for a game whose
@@ -295,14 +295,14 @@ func GameName(idGame int) string {
 	return gameNames[idGame]
 }
 
-// GameIdFromName is the inverse, matching case-insensitively so a caller can
+// GameFromName is the inverse, matching case-insensitively so a caller can
 // hand over the name it already knows a game by ("lorcana") instead of
 // translating to an id first; an unnamed game is Magic. Unknown games answer
 // 0, which the URL builders reject: a game Cardmarket does not carry yields no
 // link at all rather than one pointing at a path it does not serve.
-func GameIdFromName(name string) int {
+func GameFromName(name string) int {
 	if name == "" {
-		return GameIdMagic
+		return GameMagic
 	}
 	for idGame, gameName := range gameNames {
 		if strings.EqualFold(gameName, name) {

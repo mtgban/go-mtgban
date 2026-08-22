@@ -53,8 +53,8 @@ func (mkm *Sealed) printf(format string, a ...any) {
 // app token and secret.
 func NewScraperSealed(gameID int, appToken, appSecret string) (*Sealed, error) {
 	switch gameID {
-	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYugioh, GameIdFleshAndBlood,
-		GameIdPokemon:
+	case GameMagic, GameLorcana, GameRiftbound, GameOnePiece, GameYugioh, GameFleshAndBlood,
+		GamePokemon:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
@@ -146,7 +146,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 				continue
 			}
 
-			link := BuildURL(article.IdProduct, GameIdMagic, mkm.Affiliate, article.IsFoil)
+			link := BuildURL(article.IdProduct, GameMagic, mkm.Affiliate, article.IsFoil)
 			out := responseChan{
 				cardID: uuid,
 				entry: mtgban.InventoryEntry{
@@ -329,19 +329,19 @@ func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.InventoryTimestamp = &mkm.inventoryDate
 	info.SealedMode = true
 	switch mkm.gameID {
-	case GameIdMagic:
+	case GameMagic:
 		info.Game = mtgban.GameMagic
-	case GameIdLorcana:
+	case GameLorcana:
 		info.Game = mtgban.GameLorcana
-	case GameIdRiftbound:
+	case GameRiftbound:
 		info.Game = mtgban.GameRiftbound
-	case GameIdOnePiece:
+	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameIdYugioh:
+	case GameYugioh:
 		info.Game = mtgban.GameYuGiOh
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
-	case GameIdPokemon:
+	case GamePokemon:
 		info.Game = mtgban.GamePokemon
 	}
 	return

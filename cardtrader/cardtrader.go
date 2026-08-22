@@ -105,7 +105,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 	}
 
 	var theCard *mtgmatcher.InputCard
-	if ct.gameID == GameIdMagic {
+	if ct.gameID == GameMagic {
 		var err error
 		theCard, err = Preprocess(blueprint)
 		if err != nil {
@@ -144,7 +144,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// shared. Magic reuses the blueprint-derived theCard (applying the
 		// product language), Lorcana builds one from the product's number.
 		switch ct.gameID {
-		case GameIdMagic:
+		case GameMagic:
 			lang := product.Properties.MTGLanguage
 			if lang != "" {
 				lang, found = langMap[strings.ToLower(lang)]
@@ -155,8 +155,8 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				}
 				theCard.Language = lang
 			}
-		case GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYuGiOh, GameIdFleshAndBlood,
-			GameIdPokemon:
+		case GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh, GameFleshAndBlood,
+			GamePokemon:
 			if gameLanguage(ct.gameID, product) != "en" {
 				continue
 			}
@@ -190,7 +190,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// the edition alone leaves the base one. Magic keeps its own
 		// preprocessing, and a blueprint without an id falls through.
 		var cardID string
-		if ct.gameID != GameIdMagic && blueprint.TCGplayerId != 0 {
+		if ct.gameID != GameMagic && blueprint.TCGplayerId != 0 {
 			// A named finish reaches the sibling the flag cannot: the flag
 			// has one bit and lands on the product's foil default, where the
 			// name says which of its treatments the listing prices. A name
@@ -227,7 +227,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 
 		// Foil listings share the plain id; adopt the foil id when one exists
 		// (Magic only: Lorcana's finish is already carried on the input).
-		if ct.gameID == GameIdMagic && product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
+		if ct.gameID == GameMagic && product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
 			if cardIDFoil, e := mtgmatcher.MatchId(cardID, true); e == nil {
 				cardID = cardIDFoil
 			}
@@ -394,19 +394,19 @@ func (ct *Market) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.Family = "CT"
 	switch ct.gameID {
-	case GameIdMagic:
+	case GameMagic:
 		info.Game = mtgban.GameMagic
-	case GameIdLorcana:
+	case GameLorcana:
 		info.Game = mtgban.GameLorcana
-	case GameIdRiftbound:
+	case GameRiftbound:
 		info.Game = mtgban.GameRiftbound
-	case GameIdOnePiece:
+	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameIdYuGiOh:
+	case GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
-	case GameIdPokemon:
+	case GamePokemon:
 		info.Game = mtgban.GamePokemon
 	}
 	return

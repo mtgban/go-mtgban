@@ -32,20 +32,20 @@ const (
 
 // The games Card Trader carries, as their catalog numbers them.
 const (
-	GameIdMagic             = 1
-	GameIdYuGiOh            = 4
-	GameIdPokemon           = 5
-	GameIdFleshAndBlood     = 6
-	GameIdDigimon           = 8
-	GameIdDragonBallSuper   = 9
-	GameIdVanguard          = 10
-	GameIdMyHeroAcademia    = 14
-	GameIdOnePiece          = 15
-	GameIdLorcana           = 18
-	GameIdStarWarsUnlimited = 20
-	GameIdUnionArena        = 21
-	GameIdRiftbound         = 22
-	GameIdGundam            = 23
+	GameMagic             = 1
+	GameYuGiOh            = 4
+	GamePokemon           = 5
+	GameFleshAndBlood     = 6
+	GameDigimon           = 8
+	GameDragonBallSuper   = 9
+	GameVanguard          = 10
+	GameMyHeroAcademia    = 14
+	GameOnePiece          = 15
+	GameLorcana           = 18
+	GameStarWarsUnlimited = 20
+	GameUnionArena        = 21
+	GameRiftbound         = 22
+	GameGundam            = 23
 )
 
 // The catalog categories. Card Trader splits every game into product types of

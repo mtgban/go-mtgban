@@ -34,8 +34,8 @@ func NewScraperSealed(gameID int, token string) (*Sealed, error) {
 	// An unknown game would not error anywhere later: its listings would
 	// simply all fail the language read and the scraper would run empty.
 	switch gameID {
-	case GameIdMagic, GameIdLorcana, GameIdRiftbound, GameIdOnePiece, GameIdYuGiOh, GameIdFleshAndBlood,
-		GameIdPokemon:
+	case GameMagic, GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh, GameFleshAndBlood,
+		GamePokemon:
 	default:
 		return nil, fmt.Errorf("unsupported game %d", gameID)
 	}
@@ -257,7 +257,7 @@ func (ct *Sealed) Inventory() mtgban.InventoryRecord {
 func (ct *Sealed) MarketNames() []string {
 	// Riftbound has no sealed 1DR listings, and an always-empty seller
 	// reads as a broken scrape downstream, failing the run.
-	if ct.gameID == GameIdRiftbound {
+	if ct.gameID == GameRiftbound {
 		return availableMarketNames[:2]
 	}
 	return availableMarketNames
@@ -285,19 +285,19 @@ func (ct *Sealed) Info() (info mtgban.ScraperInfo) {
 	info.CountryFlag = "EU"
 	info.SealedMode = true
 	switch ct.gameID {
-	case GameIdMagic:
+	case GameMagic:
 		info.Game = mtgban.GameMagic
-	case GameIdLorcana:
+	case GameLorcana:
 		info.Game = mtgban.GameLorcana
-	case GameIdRiftbound:
+	case GameRiftbound:
 		info.Game = mtgban.GameRiftbound
-	case GameIdOnePiece:
+	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameIdYuGiOh:
+	case GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
-	case GameIdPokemon:
+	case GamePokemon:
 		info.Game = mtgban.GamePokemon
 	}
 	return

@@ -9,17 +9,17 @@ import (
 // Cardmarket has no game-agnostic product path, so a URL missing its game
 // segment 404s rather than degrading to a general search.
 func TestGameName(t *testing.T) {
-	if got := GameName(GameIdMagic); got != "Magic" {
+	if got := GameName(GameMagic); got != "Magic" {
 		t.Errorf("GameName(magic) = %q, want Magic", got)
 	}
-	if got := GameName(GameIdLorcana); got != "Lorcana" {
+	if got := GameName(GameLorcana); got != "Lorcana" {
 		t.Errorf("GameName(lorcana) = %q, want Lorcana", got)
 	}
-	if got := GameName(GameIdPokemon); got != "Pokemon" {
+	if got := GameName(GamePokemon); got != "Pokemon" {
 		t.Errorf("GameName(pokemon) = %q, want Pokemon", got)
 	}
 	// A game whose catalog is not covered has no spelling to use.
-	if got := GameName(GameIdForceOfWill); got != "" {
+	if got := GameName(GameForceOfWill); got != "" {
 		t.Errorf("GameName(forceofwill) = %q, want empty", got)
 	}
 	if got := GameName(0); got != "" {
@@ -28,7 +28,7 @@ func TestGameName(t *testing.T) {
 }
 
 func TestSearchURL(t *testing.T) {
-	raw := SearchURL("Ariel - Singing Mermaid", GameIdLorcana, "mtgban")
+	raw := SearchURL("Ariel - Singing Mermaid", GameLorcana, "mtgban")
 	u, err := parseChecked(t, raw)
 	if err != nil {
 		t.Fatal(err)
@@ -44,7 +44,7 @@ func TestSearchURL(t *testing.T) {
 	}
 
 	// No affiliate configured leaves the tracking parameters off entirely.
-	raw = SearchURL("Black Lotus", GameIdMagic, "")
+	raw = SearchURL("Black Lotus", GameMagic, "")
 	if strings.Contains(raw, "utm_") {
 		t.Errorf("unaffiliated url carries tracking: %s", raw)
 	}
@@ -53,7 +53,7 @@ func TestSearchURL(t *testing.T) {
 	}
 
 	// Same contract as BuildURL for a game that is not covered.
-	if got := SearchURL("Chaos", GameIdForceOfWill, "mtgban"); got != "" {
+	if got := SearchURL("Chaos", GameForceOfWill, "mtgban"); got != "" {
 		t.Errorf("uncovered game = %q, want empty", got)
 	}
 }
@@ -61,7 +61,7 @@ func TestSearchURL(t *testing.T) {
 // BuildURL keeps its behavior now that it shares the game and affiliate
 // helpers with SearchURL.
 func TestBuildURL(t *testing.T) {
-	raw := BuildURL(12345, GameIdMagic, "mtgban", true)
+	raw := BuildURL(12345, GameMagic, "mtgban", true)
 	u, err := parseChecked(t, raw)
 	if err != nil {
 		t.Fatal(err)
@@ -79,11 +79,11 @@ func TestBuildURL(t *testing.T) {
 
 	// A game the name table carries no entry for builds no link. Pokemon
 	// stood here until it gained one.
-	if got := BuildURL(1, GameIdForceOfWill, "", false); got != "" {
+	if got := BuildURL(1, GameForceOfWill, "", false); got != "" {
 		t.Errorf("uncovered game = %q, want empty", got)
 	}
 	// Non-foil omits the flag rather than sending a falsy value.
-	if strings.Contains(BuildURL(1, GameIdMagic, "", false), "isFoil") {
+	if strings.Contains(BuildURL(1, GameMagic, "", false), "isFoil") {
 		t.Error("non-foil url should not carry isFoil")
 	}
 }
@@ -96,26 +96,26 @@ func parseChecked(t *testing.T, raw string) (*url.URL, error) {
 	return url.Parse(raw)
 }
 
-// GameIdFromName lets a caller pass the name it already knows a game by, so
+// GameFromName lets a caller pass the name it already knows a game by, so
 // the two directions have to agree for every covered catalog - they read the
 // same table precisely so adding a game cannot extend one and not the other.
-func TestGameIdFromName(t *testing.T) {
+func TestGameFromName(t *testing.T) {
 	for idGame, name := range gameNames {
-		if got := GameIdFromName(name); got != idGame {
-			t.Errorf("GameIdFromName(%q) = %d, want %d", name, got, idGame)
+		if got := GameFromName(name); got != idGame {
+			t.Errorf("GameFromName(%q) = %d, want %d", name, got, idGame)
 		}
 		// Callers spell games in their own case ("lorcana", "Magic").
-		if got := GameIdFromName(strings.ToLower(name)); got != idGame {
-			t.Errorf("GameIdFromName(%q) = %d, want %d", strings.ToLower(name), got, idGame)
+		if got := GameFromName(strings.ToLower(name)); got != idGame {
+			t.Errorf("GameFromName(%q) = %d, want %d", strings.ToLower(name), got, idGame)
 		}
-		if got := GameIdFromName(strings.ToUpper(name)); got != idGame {
-			t.Errorf("GameIdFromName(%q) = %d, want %d", strings.ToUpper(name), got, idGame)
+		if got := GameFromName(strings.ToUpper(name)); got != idGame {
+			t.Errorf("GameFromName(%q) = %d, want %d", strings.ToUpper(name), got, idGame)
 		}
 	}
 
 	// An unnamed game is the default one rather than an unknown one.
-	if got := GameIdFromName(""); got != GameIdMagic {
-		t.Errorf("GameIdFromName(\"\") = %d, want Magic (%d)", got, GameIdMagic)
+	if got := GameFromName(""); got != GameMagic {
+		t.Errorf("GameFromName(\"\") = %d, want Magic (%d)", got, GameMagic)
 	}
 
 	// A game this package does not carry has no id, and the URL builders
@@ -123,14 +123,14 @@ func TestGameIdFromName(t *testing.T) {
 	// here and now carries an id of its own, so the example is a game the
 	// table still names nothing for.
 	for _, name := range []string{"digimon", "Magic: The Gathering"} {
-		if got := GameIdFromName(name); got != 0 {
-			t.Errorf("GameIdFromName(%q) = %d, want 0", name, got)
+		if got := GameFromName(name); got != 0 {
+			t.Errorf("GameFromName(%q) = %d, want 0", name, got)
 		}
 	}
-	if got := SearchURL("Agumon", GameIdFromName("digimon"), "mtgban"); got != "" {
+	if got := SearchURL("Agumon", GameFromName("digimon"), "mtgban"); got != "" {
 		t.Errorf("uncovered game produced %q, want no link", got)
 	}
-	if got := BuildURL(1, GameIdFromName("digimon"), "mtgban", false); got != "" {
+	if got := BuildURL(1, GameFromName("digimon"), "mtgban", false); got != "" {
 		t.Errorf("uncovered game produced %q, want no link", got)
 	}
 }
