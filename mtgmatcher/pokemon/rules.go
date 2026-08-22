@@ -146,6 +146,9 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !found || co.Sealed {
 			continue
 		}
+		if reprintedByYear(inCard.Name, co.Name) {
+			continue
+		}
 		if !numbersMatchCard(b, numbers, &co.Card) {
 			continue
 		}
@@ -157,6 +160,32 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if name != "" {
 		inCard.Name = name
 	}
+}
+
+// reprintYearRe matches what a World Championship reprint adds to the name
+// it reprints: a dash and the year the deck was played.
+var reprintYearRe = regexp.MustCompile(` - (?:19|20)\d{2}$`)
+
+// reprintedByYear reports whether a name is another name spelled with the
+// year it was played. The World Championship decks reprint 1,951 printings
+// that way and keep the original's collector number, so a prefix search for
+// a bare name nearly always turns one up - and since it carries the number
+// too, it ties with the spelling the storefront actually meant and the
+// ambiguity guard abandons the search.
+//
+// The dash is what makes this the World Championship spelling and not any
+// name that merely ends in a year: 29 other printings do - the Victory
+// Medals, the Code Cards, the Champion's Festivals - and every one of them
+// writes the year without it, inside a parenthetical or glued to the words
+// before. The head compares normalized, so punctuation variants of the name
+// being reprinted still answer.
+func reprintedByYear(name, candidate string) bool {
+	tail := reprintYearRe.FindString(candidate)
+	if tail == "" {
+		return false
+	}
+	head := strings.TrimSuffix(candidate, tail)
+	return mtgmatcher.Normalize(head) == mtgmatcher.Normalize(name)
 }
 
 // AdjustEdition trims the game-name prefix and "Singles" suffix storefronts
