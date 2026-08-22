@@ -58,13 +58,25 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// AdjustName provides a prefix fallback for truncated feeds, adopting the
-// one name among the prefix matches that carries the input's number. Names
-// compare normalized, so punctuation variants of one name are not read as
-// ambiguity.
+// AdjustName flips a token's name onto the word order the catalog files it
+// under, and otherwise provides a prefix fallback for truncated feeds,
+// adopting the one name among the prefix matches that carries the input's
+// number. Names compare normalized, so punctuation variants of one name are
+// not read as ambiguity.
 func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
+	}
+	// The catalog names a token with the word first ("Token: Sheep") where
+	// the storefronts write it last ("Sheep Token"). The flip only ever
+	// answers for a name the datastore does not already know, above, so the
+	// tokens a set does name the storefront's way keep their own printing.
+	if base, cut := strings.CutSuffix(inCard.Name, " Token"); cut {
+		flipped := "Token: " + base
+		if _, found := b.CanonicalNames[mtgmatcher.Normalize(flipped)]; found {
+			inCard.Name = flipped
+			return
+		}
 	}
 	uuids, err := b.SearchHasPrefix(inCard.Name)
 	if err != nil {
