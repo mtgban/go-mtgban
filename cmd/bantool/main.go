@@ -2021,7 +2021,6 @@ func run() int {
 		}
 	}
 
-	now := time.Now()
 	datastoreReader, err := simplecloud.InitReader(context.Background(), datastoreBucket, *datastoreOpt)
 	if err != nil {
 		log.Println(err)
@@ -2029,7 +2028,7 @@ func run() int {
 	}
 	defer datastoreReader.Close()
 
-	now = time.Now()
+	now := time.Now()
 	err = mtgmatcher.LoadDatastore(datastoreReader)
 	if err != nil {
 		log.Println(err)

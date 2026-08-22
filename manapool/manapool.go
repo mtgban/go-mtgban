@@ -129,6 +129,9 @@ func (mp *Manapool) Load(ctx context.Context) error {
 			URL:        link,
 		}
 		err = mp.inventory.AddUnique(cardID, out)
+		if err != nil {
+			mp.printf("%v", err)
+		}
 	}
 
 	mp.inventoryDate = time.Now()

@@ -88,6 +88,9 @@ func (mp *Sealed) Load(ctx context.Context) error {
 					URL:   u.String(),
 				}
 				err = mp.inventory.AddUnique(product.UUID, out)
+				if err != nil {
+					mp.printf("%v", err)
+				}
 			}
 		}
 	}

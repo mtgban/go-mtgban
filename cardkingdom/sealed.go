@@ -124,6 +124,9 @@ func (ck *Sealed) Load(ctx context.Context) error {
 						URL: link,
 					}
 					err = ck.inventory.AddUnique(product.UUID, out)
+					if err != nil {
+						ck.printf("%v", err)
+					}
 				}
 
 				if sealed.QtyBuying > 0 && sealed.PriceBuy > 0 {
