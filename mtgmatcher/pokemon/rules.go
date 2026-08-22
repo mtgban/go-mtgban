@@ -141,7 +141,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			known = err == nil
 		}
 		if !known {
-			if name := setNamedByTail(b, edition); name != "" {
+			name := setNamedByHead(b, edition)
+			if name == "" {
+				name = setNamedByTail(b, edition)
+			}
+			if name != "" {
 				edition = name
 			}
 		}
@@ -218,6 +222,28 @@ func editionSetCode(b *mtgmatcher.Backend, edition string) string {
 		return set.Code
 	}
 	return ""
+}
+
+// setNamedByHead answers the set a storefront decorates with a trailing
+// "Base Set", which is how three eras' first sets are headed: "Diamond and
+// Pearl Base Set", "Platinum Base Set", "Expedition Base Set". Dropping the
+// leading words instead lands every one of them on the set literally named
+// "Base Set", 1999's, and the row then either dies or is priced as a card it
+// is not.
+//
+// Only the trailing "Base Set" comes off, and only onto a name that is a set
+// outright. Dropping trailing words in general is what must not happen:
+// "Diamond and Pearl Stormfront" would resolve to "Diamond and Pearl", and
+// measured that way it cost 335 previously correct entries.
+func setNamedByHead(b *mtgmatcher.Backend, edition string) string {
+	head := strings.TrimSpace(strings.TrimSuffix(edition, "Base Set"))
+	if head == "" || head == edition {
+		return ""
+	}
+	if _, known := b.NormalizedSets[mtgmatcher.Normalize(head)]; !known {
+		return ""
+	}
+	return head
 }
 
 // setTails indexes each backend's sets by the name left after the catalog's
