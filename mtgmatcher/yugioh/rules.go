@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -324,18 +325,34 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 
 // allWordsIn reports whether the wording's words include every word of the
 // label. Words compare whole: the one-letter artwork labels ("A") would
-// otherwise hide inside almost any wording.
+// otherwise hide inside almost any wording. They compare without their
+// punctuation too, because the storefronts spell the game's premium tier
+// both ways ("Collectors Rare" against the catalog's "Collector's Rare"),
+// and a wording that names the rarity has to beat the number's suffix
+// rather than fall through it onto every printing of the number.
 func allWordsIn(words []string, label string) bool {
 	labelWords := strings.Fields(strings.ToLower(label))
 	if len(labelWords) == 0 {
 		return false
 	}
 	for _, word := range labelWords {
-		if !slices.Contains(words, word) {
+		if !slices.ContainsFunc(words, func(spoken string) bool {
+			return unpunctuated(spoken) == unpunctuated(word)
+		}) {
 			return false
 		}
 	}
 	return true
+}
+
+// unpunctuated drops the marks a word is written with or without.
+func unpunctuated(word string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			return r
+		}
+		return -1
+	}, word)
 }
 
 // wordSubset reports whether a's words are a strict subset of b's.

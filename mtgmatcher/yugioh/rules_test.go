@@ -71,3 +71,46 @@ func TestAdjustNameTokenOrder(t *testing.T) {
 		})
 	}
 }
+
+// TestTierByRarity pins the rarity the wording names against the one the
+// collector number's suffix encodes. The wording speaks first, and it speaks
+// even when the storefront drops the apostrophe the catalog spells the
+// rarity with: reading "Collectors Rare" as no rarity at all leaves the
+// plain "Rare" candidate standing, since "rare" is a word of that wording
+// too.
+func TestTierByRarity(t *testing.T) {
+	candidates := []mtgmatcher.Card{
+		{UUID: "common", Rarity: "Common"},
+		{UUID: "rare", Rarity: "Rare"},
+		{UUID: "collectors", Rarity: "Collector's Rare"},
+		{UUID: "quarter", Rarity: "Quarter Century Secret Rare"},
+		{UUID: "secret", Rarity: "Secret Rare"},
+	}
+
+	tests := []struct {
+		name      string
+		variation string
+		number    string
+		want      string
+	}{
+		{"the apostrophe the storefront drops", "042cr Collectors Rare", "042cr", "collectors"},
+		{"the apostrophe the catalog writes", "042cr Collector's Rare", "042cr", "collectors"},
+		{"a wording naming no rarity falls to the suffix", "042cr", "042cr", "collectors"},
+		{"a wording naming the rarity needs no suffix", "042 Collectors Rare", "042", "collectors"},
+		{"the most specific wording wins", "019qsec Quarter Century Secret Rare", "019qsec", "quarter"},
+		{"a plain rarity stays plain", "042 Rare", "042", "rare"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			inCard := &mtgmatcher.InputCard{Variation: test.variation}
+			var kept []string
+			for _, card := range tierByRarity(inCard, candidates, test.number) {
+				kept = append(kept, card.UUID)
+			}
+			if len(kept) != 1 || kept[0] != test.want {
+				t.Errorf("tierByRarity(%q) = %v, want [%s]", test.variation, kept, test.want)
+			}
+		})
+	}
+}
