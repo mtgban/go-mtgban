@@ -187,7 +187,7 @@ func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, ta
 		// The OCG expansions are whole separate Japanese catalogs (bach-jp
 		// beside bach) whose prices must not land on the TCG printings the
 		// datastore carries.
-		if gameID == GameIdYuGiOh && (strings.HasSuffix(exp.Code, "-jp") || strings.Contains(exp.Name, "OCG")) {
+		if gameID == GameYuGiOh && (strings.HasSuffix(exp.Code, "-jp") || strings.Contains(exp.Name, "OCG")) {
 			continue
 		}
 		if targetEdition != "" && exp.Name != targetEdition && exp.Code != strings.ToLower(targetEdition) {
@@ -210,19 +210,19 @@ func BlueprintsForGame(ctx context.Context, client *CTAuthClient, gameID int, ta
 // decoding empty for every other one.
 func gameLanguage(gameID int, product Product) string {
 	switch gameID {
-	case GameIdMagic:
+	case GameMagic:
 		return product.Properties.MTGLanguage
-	case GameIdLorcana:
+	case GameLorcana:
 		return product.Properties.LorcanaLanguage
-	case GameIdRiftbound:
+	case GameRiftbound:
 		return product.Properties.RiftboundLanguage
-	case GameIdOnePiece:
+	case GameOnePiece:
 		return product.Properties.OnePieceLanguage
-	case GameIdYuGiOh:
+	case GameYuGiOh:
 		return product.Properties.YuGiOhLanguage
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		return product.Properties.FabLanguage
-	case GameIdPokemon:
+	case GamePokemon:
 		return product.Properties.PokemonLanguage
 	}
 	return ""
@@ -249,14 +249,14 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		return number
 	}
 	switch gameID {
-	case GameIdOnePiece:
+	case GameOnePiece:
 		// One Piece numbers come in shapes the matcher cannot read - "P-L",
 		// "OP07-047P2", the alpha-suffixed pre-errata codes - and behind one
 		// of those the version's own digits answer in their place.
 		if !collectorNumberRe.MatchString(number) {
 			return number
 		}
-	case GameIdRiftbound:
+	case GameRiftbound:
 		// Riftbound numbers are bare ("202", "058c", "T05"), always readable.
 	default:
 		return number
@@ -266,15 +266,15 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 
 func gameFoil(gameID int, product Product) bool {
 	switch gameID {
-	case GameIdMagic:
+	case GameMagic:
 		return product.Properties.MTGFoil
-	case GameIdLorcana:
+	case GameLorcana:
 		return product.Properties.LorcanaFoil
-	case GameIdRiftbound:
+	case GameRiftbound:
 		return product.Properties.RiftboundFoil
-	case GameIdOnePiece:
+	case GameOnePiece:
 		return product.Properties.OnePieceFoil
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		// Every treatment the listing names is a foil, and the print run
 		// beside it is not one, so the treatment alone answers the flag.
 		// Yu-Gi-Oh deliberately has no arm: the rarity is its treatment,
@@ -284,7 +284,7 @@ func gameFoil(gameID int, product Product) bool {
 			return false
 		}
 		return true
-	case GameIdPokemon:
+	case GamePokemon:
 		// Only the reverse holo is a foil treatment the flag can stand for;
 		// a first-edition listing is whatever its rarity makes it, and the
 		// named finish above is what actually resolves either one. This
@@ -303,7 +303,7 @@ func gameFoil(gameID int, product Product) bool {
 // left to the flag; the stringly-false is what old listings carry.
 func gameFinish(gameID int, product Product) string {
 	switch gameID {
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		// The treatment and the print run cross, and the datastore gives
 		// each crossing its own printing, so a first-edition listing has
 		// to name both. Only the run is worth naming on its own: the
@@ -320,7 +320,7 @@ func gameFinish(gameID int, product Product) string {
 			return ""
 		}
 		return treatment
-	case GameIdYuGiOh:
+	case GameYuGiOh:
 		// The rarity is Yu-Gi-Oh's treatment and the print run is its
 		// finish, so the run is the whole of what a listing names. Only
 		// the first edition is worth naming: a product answers a lowered
@@ -328,7 +328,7 @@ func gameFinish(gameID int, product Product) string {
 		if product.Properties.FirstEdition {
 			return "1st Edition"
 		}
-	case GameIdPokemon:
+	case GamePokemon:
 		// Both flags name a printing the foilness cannot reach. The reverse
 		// holo sits beside a holo rare's own printing, which is foil too, so
 		// the flag lands on the wrong one of the pair; the first-edition run

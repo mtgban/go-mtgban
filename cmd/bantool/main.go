@@ -182,7 +182,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdMagic, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameMagic, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
@@ -203,7 +203,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdMagic, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameMagic, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
@@ -222,7 +222,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdMagic, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameMagic, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -241,7 +241,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdMagic, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameMagic, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -616,7 +616,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdLorcana, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameLorcana, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
@@ -635,7 +635,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdLorcana, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameLorcana, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -655,11 +655,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdLorcana, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameLorcana, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdLorcana)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameLorcana)
 			if err != nil {
 				return nil, err
 			}
@@ -678,7 +678,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdLorcana, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameLorcana, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -813,7 +813,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdRiftbound, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameRiftbound, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
@@ -833,7 +833,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdOnePiece, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameOnePiece, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
@@ -853,11 +853,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdYugioh, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameYugioh, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdYuGiOh)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameYuGiOh)
 			if err != nil {
 				return nil, err
 			}
@@ -877,11 +877,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdFleshAndBlood, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameFleshAndBlood, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdFleshAndBlood)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameFleshAndBlood)
 			if err != nil {
 				return nil, err
 			}
@@ -901,11 +901,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperIndex(cardmarket.GameIdPokemon, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperIndex(cardmarket.GamePokemon, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdPokemon)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GamePokemon)
 			if err != nil {
 				return nil, err
 			}
@@ -924,7 +924,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdRiftbound, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameRiftbound, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -943,7 +943,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdOnePiece, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameOnePiece, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -962,7 +962,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdYuGiOh, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameYuGiOh, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -981,7 +981,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdFleshAndBlood, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameFleshAndBlood, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -1000,7 +1000,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperMarket(cardtrader.GameIdPokemon, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperMarket(cardtrader.GamePokemon, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -1020,11 +1020,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdRiftbound, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameRiftbound, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdRiftbound)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameRiftbound)
 			if err != nil {
 				return nil, err
 			}
@@ -1044,11 +1044,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdOnePiece, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameOnePiece, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdOnePiece)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameOnePiece)
 			if err != nil {
 				return nil, err
 			}
@@ -1068,11 +1068,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdYugioh, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameYugioh, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdYuGiOh)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameYuGiOh)
 			if err != nil {
 				return nil, err
 			}
@@ -1092,11 +1092,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdFleshAndBlood, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameFleshAndBlood, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdFleshAndBlood)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameFleshAndBlood)
 			if err != nil {
 				return nil, err
 			}
@@ -1116,11 +1116,11 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
 			}
 
-			scraper, err := cardmarket.NewScraperSealed(cardmarket.GameIdPokemon, mkmAppToken, mkmAppSecret)
+			scraper, err := cardmarket.NewScraperSealed(cardmarket.GamePokemon, mkmAppToken, mkmAppSecret)
 			if err != nil {
 				return nil, err
 			}
-			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GameIdPokemon)
+			scraper.TCGBridge, err = cardtraderBridge(cardtrader.GamePokemon)
 			if err != nil {
 				return nil, err
 			}
@@ -1139,7 +1139,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdRiftbound, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameRiftbound, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -1158,7 +1158,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdOnePiece, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameOnePiece, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -1177,7 +1177,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdYuGiOh, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameYuGiOh, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -1196,7 +1196,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdFleshAndBlood, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameFleshAndBlood, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}
@@ -1215,7 +1215,7 @@ var options = map[string]*scraperOption{
 				return nil, errors.New("missing CARDTRADER_TOKEN_BEARER env var")
 			}
 
-			scraper, err := cardtrader.NewScraperSealed(cardtrader.GameIdPokemon, ctTokenBearer)
+			scraper, err := cardtrader.NewScraperSealed(cardtrader.GamePokemon, ctTokenBearer)
 			if err != nil {
 				return nil, err
 			}

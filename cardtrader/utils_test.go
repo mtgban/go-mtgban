@@ -38,15 +38,15 @@ func TestGameVariation(t *testing.T) {
 		number  string
 		want    string
 	}{
-		{"one piece appends the version", GameIdOnePiece, "OP16 Release Event", "P-135", "P-135 OP16 Release Event"},
-		{"a letter-tailed number takes it too", GameIdOnePiece, "Winner Pack 2026 Vol.3", "OP01-001a", "OP01-001a Winner Pack 2026 Vol.3"},
-		{"an unreadable number keeps the version out", GameIdOnePiece, "Winner Pack 2026 Vol.3", "OP07-047P2", "OP07-047P2"},
-		{"so does a number with no digits to read", GameIdOnePiece, "Premium Card Collection", "P-L", "P-L"},
-		{"an empty version leaves the number alone", GameIdOnePiece, "", "OP01-001", "OP01-001"},
-		{"lorcana keeps its own number", GameIdLorcana, "Enchanted", "OP01-001", "OP01-001"},
-		{"riftbound appends the version too", GameIdRiftbound, "Summoner Skirmish | Champion", "058c", "058c Summoner Skirmish | Champion"},
-		{"a numberless riftbound blueprint keeps the version out", GameIdRiftbound, "6 Card Set", "", ""},
-		{"magic keeps its own number", GameIdMagic, "Retro Frame", "OP01-001", "OP01-001"},
+		{"one piece appends the version", GameOnePiece, "OP16 Release Event", "P-135", "P-135 OP16 Release Event"},
+		{"a letter-tailed number takes it too", GameOnePiece, "Winner Pack 2026 Vol.3", "OP01-001a", "OP01-001a Winner Pack 2026 Vol.3"},
+		{"an unreadable number keeps the version out", GameOnePiece, "Winner Pack 2026 Vol.3", "OP07-047P2", "OP07-047P2"},
+		{"so does a number with no digits to read", GameOnePiece, "Premium Card Collection", "P-L", "P-L"},
+		{"an empty version leaves the number alone", GameOnePiece, "", "OP01-001", "OP01-001"},
+		{"lorcana keeps its own number", GameLorcana, "Enchanted", "OP01-001", "OP01-001"},
+		{"riftbound appends the version too", GameRiftbound, "Summoner Skirmish | Champion", "058c", "058c Summoner Skirmish | Champion"},
+		{"a numberless riftbound blueprint keeps the version out", GameRiftbound, "6 Card Set", "", ""},
+		{"magic keeps its own number", GameMagic, "Retro Frame", "OP01-001", "OP01-001"},
 	}
 
 	for _, test := range tests {

@@ -108,7 +108,7 @@ var numberTail = regexp.MustCompile(`\d+[A-Za-z]?$`)
 // productFinish names the printing a product is, for the catalogs that sell
 // each printing as its own product rather than as a column beside the card.
 func productFinish(gameID int, product *MKMProduct) string {
-	if gameID == GameIdFleshAndBlood {
+	if gameID == GameFleshAndBlood {
 		return fabFinish(product.ExpansionName, product.Name)
 	}
 	return ""
@@ -140,9 +140,9 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	// the id route lands on, so it is what the fallback asks for first.
 	finishes := []string{""}
 	switch mkm.gameID {
-	case GameIdYugioh:
+	case GameYugioh:
 		finishes = []string{"Unlimited", ""}
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		finishes = []string{productFinish(mkm.gameID, product), ""}
 	}
 
@@ -173,7 +173,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 	var err error
 
 	switch mkm.gameID {
-	case GameIdMagic:
+	case GameMagic:
 		// An exact mcmId match ties the product to its printings more
 		// reliably than name/number matching, which cannot tell apart
 		// products sharing a collector number (e.g. RVR 312 vs 312z,
@@ -218,7 +218,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 		}
 
 		cardIDFoil, _ = mtgmatcher.MatchId(cardID, true)
-	case GameIdLorcana, GameIdRiftbound, GameIdOnePiece:
+	case GameLorcana, GameRiftbound, GameOnePiece:
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
 		number := product.Number
@@ -268,7 +268,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			mkm.printf("%+v", product)
 			return err
 		}
-	case GameIdYugioh, GameIdFleshAndBlood, GameIdPokemon:
+	case GameYugioh, GameFleshAndBlood, GamePokemon:
 		// These catalogs carry no collector number and no version index,
 		// and same-name products abound, so a product resolves through the
 		// TCGplayer id the cardtrader bridge knows it by or not at all -
@@ -296,7 +296,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			return nil
 		}
 		cardIDFoil = cardID
-		if mkm.gameID == GameIdYugioh {
+		if mkm.gameID == GameYugioh {
 			// Yu-Gi-Oh's second column is the first edition's, which is a
 			// print run rather than a foil, so the flag cannot name it -
 			// both flags answer with the unlimited printing and the column
@@ -305,7 +305,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			// sold in no first edition, which the guard below drops.
 			cardIDFoil, _ = mtgmatcher.MatchIdFinish(cardID, "1st Edition")
 		}
-		if mkm.gameID == GameIdPokemon {
+		if mkm.gameID == GamePokemon {
 			// Pokemon's second column is the reverse holo's, which the flag
 			// cannot name either: a holo rare's own printing is already a
 			// foil one, so both flags answer it and the reverse beside it
@@ -337,7 +337,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 	// printing's whatever its foilness - there is no second column for
 	// them to be in. Every other catalog keeps the foil beside the plain
 	// card and splits the two across the columns.
-	perTreatment := mkm.gameID == GameIdFleshAndBlood
+	perTreatment := mkm.gameID == GameFleshAndBlood
 
 	// If card is not foil, add prices from the prices array, then check
 	// if there is a foil printing, and add prices from the foilprices array.
@@ -454,7 +454,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 	// The Japanese-program expansions are whole separate catalogs (OP01-JP
 	// beside OP01) whose prices must not land on the English printings the
 	// datastore carries.
-	if mkm.gameID == GameIdOnePiece {
+	if mkm.gameID == GameOnePiece {
 		kept := list[:0]
 		for _, exp := range list {
 			if strings.HasSuffix(exp.SetCode, "-JP") || strings.Contains(exp.Name, "(Japanese)") {
@@ -486,7 +486,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 	// than a second row no consumer can choose between.
 	add := mkm.inventory.AddStrict
 	switch mkm.gameID {
-	case GameIdYugioh, GameIdFleshAndBlood, GameIdPokemon:
+	case GameYugioh, GameFleshAndBlood, GamePokemon:
 		add = mkm.inventory.AddUnique
 	}
 
@@ -552,19 +552,19 @@ func (mkm *Index) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.Family = "MKM"
 	switch mkm.gameID {
-	case GameIdMagic:
+	case GameMagic:
 		info.Game = mtgban.GameMagic
-	case GameIdLorcana:
+	case GameLorcana:
 		info.Game = mtgban.GameLorcana
-	case GameIdRiftbound:
+	case GameRiftbound:
 		info.Game = mtgban.GameRiftbound
-	case GameIdOnePiece:
+	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
-	case GameIdYugioh:
+	case GameYugioh:
 		info.Game = mtgban.GameYuGiOh
-	case GameIdFleshAndBlood:
+	case GameFleshAndBlood:
 		info.Game = mtgban.GameFleshAndBlood
-	case GameIdPokemon:
+	case GamePokemon:
 		info.Game = mtgban.GamePokemon
 	}
 	return
