@@ -33,7 +33,7 @@ const (
 	GameMagic             = "mtg"
 	GameLorcana           = "lorcana"
 	GameRiftbound         = "riftbound"
-	GameYugioh            = "yugioh"
+	GameYuGiOh            = "yugioh"
 	GameDragonBallSuper   = "dbs"
 	GameOnePiece          = "optcg"
 	GameStarWarsUnlimited = "swu"
