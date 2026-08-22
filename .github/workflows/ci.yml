@@ -326,6 +326,33 @@ jobs:
           xz -dc ${{ needs.cache-datastore.outputs.filepath }} > datastore/allprintings5.json
           go test ./... -v
 
+  test-race:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install golang
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      # Every scraper fans out over its expansions and the matcher answers
+      # from a cache several goroutines share, so a race here is a wrong
+      # price rather than a crash - it reads as a scrape that merely
+      # disagreed with the last one.
+      #
+      # The suites that load a datastore are left out, and they are the whole
+      # cost: racing everything takes nine times the wall clock and dies on
+      # the runner's memory, almost all of it spent instrumenting a JSON parse
+      # rather than any concurrency. What is left runs in seconds and is where
+      # the goroutines are - the worker pool every scraper fans out through,
+      # and the records they all write into.
+      - name: Test with the race detector
+        run: |
+          go test -race $(go list ./... | grep -vE 'mtgmatcher|abugames|cardkingdom|starcitygames')
+
   test-lorcana:
     needs: cache-lorcana
     runs-on: ubuntu-latest
@@ -548,8 +575,8 @@ jobs:
   # wave a broken tree through.
 
   mtgban-ci:
-    needs: [style, test-magic, test-lorcana, test-riftbound, test-onepiece,
-            test-yugioh, test-fleshandblood, test-pokemon]
+    needs: [style, test-magic, test-race, test-lorcana, test-riftbound,
+            test-onepiece, test-yugioh, test-fleshandblood, test-pokemon]
     if: always()
     runs-on: ubuntu-latest
 
