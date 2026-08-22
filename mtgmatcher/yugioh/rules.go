@@ -35,6 +35,7 @@ var suffixRarities = map[string]string{
 	"cr":   "Collector's Rare",
 	"ul":   "Ultimate Rare",
 	"psec": "Platinum Secret Rare",
+	"sh":   "Shatterfoil Rare",
 }
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
