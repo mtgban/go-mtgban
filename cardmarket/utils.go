@@ -113,6 +113,30 @@ type PriceGuide struct {
 	FoilAvgDay30     float64 `json:"avg30-foil"`
 }
 
+// fabPrintRuns names the print run a Cardmarket Flesh and Blood expansion
+// spells into its own name, one expansion per run of the same set. Welcome
+// to Rathe's first run is the only one the catalog calls Alpha; the
+// datastore knows it as every other set's 1st Edition.
+var fabPrintRuns = []struct{ suffix, run string }{
+	{" - First", "1st Edition"},
+	{" - Alpha", "1st Edition"},
+	{" - Unlimited", "Unlimited Edition"},
+}
+
+// fabPrintRun splits a Flesh and Blood expansion name into the print run it
+// names and the set name left over. The datastore's sets carry no run - it
+// crosses the run with the treatment and gives each crossing its own
+// printing - so the suffix has to come off before the set can be looked up.
+func fabPrintRun(expansion string) (run, setName string) {
+	for _, printRun := range fabPrintRuns {
+		trimmed := strings.TrimSuffix(expansion, printRun.suffix)
+		if trimmed != expansion {
+			return printRun.run, trimmed
+		}
+	}
+	return "", expansion
+}
+
 // fabFinish names the printing a Cardmarket Flesh and Blood product is,
 // from the two places the catalog says so: the print run in the expansion
 // name ("Tales of Aria - First"), and the treatment in a parenthetical
@@ -120,13 +144,7 @@ type PriceGuide struct {
 // two and gives each crossing its own printing, so both have to be named to
 // reach one. A product naming neither is left to the id alone.
 func fabFinish(expansion, name string) string {
-	var run string
-	switch {
-	case strings.HasSuffix(expansion, " - First"):
-		run = "1st Edition"
-	case strings.HasSuffix(expansion, " - Unlimited"):
-		run = "Unlimited Edition"
-	}
+	run, _ := fabPrintRun(expansion)
 
 	treatment := ""
 	if open := strings.LastIndex(name, " ("); open >= 0 && strings.HasSuffix(name, ")") {
