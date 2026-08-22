@@ -419,3 +419,50 @@ func TestBaseSetEdition(t *testing.T) {
 		}
 	}
 }
+
+// TestSecondNumberInWording pins which collector number wins when a listing
+// carries two. Cool Stuff Inc's buylist prepends its own catalogue field,
+// which is empty, "0" or "001" for whole editions and occasionally names a
+// different card entirely, and the number the listing prints lands after it.
+// Reading only the first token is what put every Dark Explorers and Ancient
+// Origins row out of reach.
+func TestSecondNumberInWording(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"a padded field before the real number", mtgmatcher.InputCard{
+			Name: "Ampharos-EX - 27/98", Edition: "XY Ancient Origins", Variation: "001"}, "27-98_101448_holo"},
+		{"a field naming a number the set does not have", mtgmatcher.InputCard{
+			Name: "Drowzee - 74a/147", Edition: "Aquapolis", Variation: "74"}, "074a-147_84971"},
+		{"a field naming another set's card", mtgmatcher.InputCard{
+			Name: "Swablu - SH5", Edition: "Platinum Base Set", Variation: "132"}, "sh5_89659_reverse"},
+		// The order is the safety property, and these two pin it. The feed
+		// has swapped the two numbers of Plasma Blast's pair of Palkia EX
+		// printings between the name and the field, so this row's field
+		// names the other row's answer and reading it first prices it as
+		// the sibling.
+		{"the name wins over the field it was swapped with", mtgmatcher.InputCard{
+			Name: "Palkia-EX - 66/101", Edition: "BW Plasma Blast", Variation: "100/101"}, "66-101_87915_holo"},
+		// And where the edition names no set every printing of the name
+		// competes, so the field's bare "5" reaches a McDonald's promo
+		// numbered 005/012 as readily as the Nintendo promo numbered 005,
+		// while the name's "005" is one of them verbatim.
+		{"a field the promo sets all answer to", mtgmatcher.InputCard{
+			Name: "Mudkip - 005", Edition: "Nintendo Black Star Promos", Variation: "5"}, "005_87608_holo"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}

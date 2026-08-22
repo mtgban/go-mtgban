@@ -78,8 +78,8 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
-	number := extractNumber(inCard.Variation)
-	if number == "" {
+	numbers := extractNumbers(inCard.Variation)
+	if len(numbers) == 0 {
 		return
 	}
 	uuids, err := b.SearchHasPrefix(inCard.Name)
@@ -92,7 +92,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !found || co.Sealed {
 			continue
 		}
-		if !numberMatchesCard(b, number, &co.Card) {
+		if !numbersMatchCard(b, numbers, &co.Card) {
 			continue
 		}
 		if name != "" && mtgmatcher.Normalize(name) != mtgmatcher.Normalize(co.Name) {
@@ -168,8 +168,8 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 // the number mean the listing does not say which, so ambiguity is left for
 // the caller to report rather than guessed at.
 func widenQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	number := extractNumber(inCard.Variation)
-	if number == "" {
+	numbers := extractNumbers(inCard.Variation)
+	if len(numbers) == 0 {
 		return
 	}
 	code := editionSetCode(b, inCard.Edition)
@@ -181,7 +181,7 @@ func widenQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !found || co.Sealed || !inEdition(co) {
 			continue
 		}
-		if numberMatchesCard(b, number, &co.Card) {
+		if numbersMatchCard(b, numbers, &co.Card) {
 			return
 		}
 	}
@@ -195,7 +195,7 @@ func widenQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		if !found || co.Sealed || !inEdition(co) {
 			continue
 		}
-		if !numberMatchesCard(b, number, &co.Card) {
+		if !numbersMatchCard(b, numbers, &co.Card) {
 			continue
 		}
 		if name != "" && mtgmatcher.Normalize(name) != mtgmatcher.Normalize(co.Name) {
@@ -304,8 +304,49 @@ func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 // that order. A bare input facing several labels keeps them all and surfaces
 // as an aliasing error rather than a guess.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
-	number := extractNumber(inCard.Variation)
+	// A storefront can write more than one number into the wording: Cool
+	// Stuff Inc prepends its own catalogue field, which is empty, "0" or
+	// "001" for whole editions, and the number the listing prints is the
+	// one Prefilter appends after it. Read them from the back, so the
+	// number the card carries on it is asked first and the vendor's index
+	// only answers when nothing else does.
+	numbers := extractNumbers(inCard.Variation)
+	number := ""
+	candidates := filterByNumber(b, inCard, cardSet, "")
+	for i := len(numbers) - 1; i >= 0; i-- {
+		number = numbers[i]
+		candidates = filterByNumber(b, inCard, cardSet, number)
+		if len(candidates) > 0 {
+			break
+		}
+	}
+	if len(candidates) <= 1 {
+		return candidates
+	}
 
+	// A verbatim collector number beats a prefix-folded match.
+	if number != "" {
+		var exact []mtgmatcher.Card
+		for _, card := range candidates {
+			if strings.EqualFold(number, card.Number) {
+				exact = append(exact, card)
+			}
+		}
+		if len(exact) > 0 && len(exact) < len(candidates) {
+			candidates = exact
+		}
+		if len(candidates) <= 1 {
+			return candidates
+		}
+	}
+
+	return tierByLabel(inCard, candidates)
+}
+
+// filterByNumber collects the printings of the input's name that the edition
+// admits and that carry the given collector number, one per product. An
+// empty number asks for every printing the edition admits.
+func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card, number string) []mtgmatcher.Card {
 	var candidates []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
@@ -351,27 +392,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		}
 		candidates = append(candidates, card)
 	}
-	if len(candidates) <= 1 {
-		return candidates
-	}
-
-	// A verbatim collector number beats a prefix-folded match.
-	if number != "" {
-		var exact []mtgmatcher.Card
-		for _, card := range candidates {
-			if strings.EqualFold(number, card.Number) {
-				exact = append(exact, card)
-			}
-		}
-		if len(exact) > 0 && len(exact) < len(candidates) {
-			candidates = exact
-		}
-		if len(candidates) <= 1 {
-			return candidates
-		}
-	}
-
-	return tierByLabel(inCard, candidates)
+	return candidates
 }
 
 // tierByLabel splits the candidates into the ones whose label the input's
@@ -522,15 +543,18 @@ func canonicalFinish(name string) string {
 	return mtgmatcher.CanonicalFinish(normalized)
 }
 
-// extractNumber pulls the collector number out of a storefront's variation
-// wording, which mixes it with treatment words and set totals.
-func extractNumber(variation string) string {
+// extractNumbers pulls the collector numbers out of a storefront's variation
+// wording, which mixes them with treatment words and set totals. Every token
+// that looks like one is returned in the order it was written, because a
+// wording carrying two numbers does not say which of them is the card's.
+func extractNumbers(variation string) []string {
+	var numbers []string
 	for _, field := range strings.Fields(variation) {
 		if m := fullNumberRe.FindStringSubmatch(field); m != nil {
-			return m[1]
+			numbers = append(numbers, m[1])
 		}
 	}
-	return ""
+	return numbers
 }
 
 // numberMatches compares a storefront's collector number against the
@@ -541,6 +565,17 @@ func numberMatches(input, number string) bool {
 		return false
 	}
 	return foldNumber(input) == foldNumber(number)
+}
+
+// numbersMatchCard reports whether any of the collector numbers a wording
+// carries names the card's.
+func numbersMatchCard(b *mtgmatcher.Backend, numbers []string, card *mtgmatcher.Card) bool {
+	for _, number := range numbers {
+		if numberMatchesCard(b, number, card) {
+			return true
+		}
+	}
+	return false
 }
 
 // numberMatchesCard compares a storefront's collector number against one
