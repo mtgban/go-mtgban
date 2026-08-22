@@ -387,3 +387,35 @@ func TestSetCodePrefixedNumber(t *testing.T) {
 		})
 	}
 }
+
+// TestBaseSetEdition pins which "Base Set" an edition means. Three eras head
+// their first set that way, and dropping the leading words instead lands all
+// of them on 1999's set of that literal name, which prices a Platinum card
+// as a Base Set one.
+func TestBaseSetEdition(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct{ edition, want string }{
+		{"Diamond and Pearl Base Set", "Diamond and Pearl"},
+		{"Platinum Base Set", "Platinum"},
+		{"Expedition Base Set", "Expedition"},
+		// The head has to name a set by itself, so a print run written in
+		// front of the name still means 1999's set.
+		{"1st Edition Base Set", "Base Set"},
+		{"Base Set", "Base Set"},
+		// Only the trailing "Base Set" comes off: dropping trailing words
+		// in general would resolve this to "Diamond & Pearl".
+		{"Diamond and Pearl Stormfront", "Stormfront"},
+	} {
+		in := mtgmatcher.InputCard{Name: "Pikachu", Edition: tt.edition}
+		Rules{}.AdjustEdition(b, &in)
+		set, err := b.GetSetByName(in.Edition)
+		if err != nil {
+			t.Errorf("edition %q resolved to %q, which names no set", tt.edition, in.Edition)
+			continue
+		}
+		if set.Name != tt.want {
+			t.Errorf("edition %q -> %q, want %q", tt.edition, set.Name, tt.want)
+		}
+	}
+}
