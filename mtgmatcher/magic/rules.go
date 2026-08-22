@@ -187,7 +187,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	case inCard.Contains("Ravnica Weekend"):
 		edition, variation = ravnicaWeekend(inCard)
 	case inCard.Contains("Guild Kit"):
-		edition = inCard.RavnicaGuidKit()
+		edition = inCard.RavnicaGuildKit()
 	case strings.Contains(variation, "APAC Set") || strings.Contains(variation, "Euro Set"):
 		num := mtgmatcher.ExtractNumber(variation)
 		if num != "" {

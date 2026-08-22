@@ -792,9 +792,9 @@ func (c *InputCard) PossibleNumberSuffix() string {
 	return ""
 }
 
-// RavnicaGuidKit returns which Guild Kit the listing names, by set name or set
+// RavnicaGuildKit returns which Guild Kit the listing names, by set name or set
 // code, or an empty string if it names none.
-func (c *InputCard) RavnicaGuidKit() string {
+func (c *InputCard) RavnicaGuildKit() string {
 	if !c.Contains("Guild Kit") {
 		return ""
 	}
