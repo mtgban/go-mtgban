@@ -57,7 +57,7 @@ func (b *Backend) GetUUID(uuid string) (*CardObject, error) {
 
 	co, found := b.UUIDs[uuid]
 	if !found {
-		return nil, ErrCardUnknownId
+		return nil, ErrCardUnknownID
 	}
 
 	return co, nil
@@ -552,7 +552,7 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 			// Fixed means there is no randomness, just pick the cards as listed
 			for cardID, subcount := range sheet.Cards {
 				// Convert to custom IDs
-				uuid, err := MatchId(cardID, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
+				uuid, err := MatchID(cardID, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 				if err != nil {
 					return nil, err
 				}
@@ -614,7 +614,7 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 					item := cardChooser.Pick()
 
 					// Convert to custom IDs
-					uuid, err := MatchId(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
+					uuid, err := MatchID(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 					if err != nil {
 						return nil, err
 					}
@@ -664,7 +664,7 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 					}
 
 					// Convert to custom IDs
-					uuid, err = MatchId(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
+					uuid, err = MatchID(item, sheet.Foil, strings.Contains(strings.ToLower(sheetName), "etched"))
 					if err != nil {
 						return nil, err
 					}
@@ -713,7 +713,7 @@ func (b *Backend) GetPicksForDeck(setCode, deckName string) ([]string, error) {
 			deck.Tokens,
 		} {
 			for _, card := range board {
-				uuid, err := MatchId(card.UUID, card.IsFoil, card.IsEtched)
+				uuid, err := MatchID(card.UUID, card.IsFoil, card.IsEtched)
 				if err != nil {
 					// XXX: Tokens are not fully loaded so don't error out if one is missing
 					if i == 6 {
@@ -760,7 +760,7 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := MatchId(content.UUID, content.Foil)
+					uuid, err := MatchID(content.UUID, content.Foil)
 					if err != nil {
 						return nil, err
 					}
@@ -783,7 +783,7 @@ func (b *Backend) GetDecklist(setCode, sealedUUID string) ([]string, error) {
 						for i := 0; i < len(deckPicks)-1; i++ {
 							n := rand.Intn(10)
 							if n < 3 {
-								uuidFoil, err := MatchId(deckPicks[i], true)
+								uuidFoil, err := MatchID(deckPicks[i], true)
 								if err != nil {
 									continue
 								}
@@ -825,7 +825,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := MatchId(content.UUID, content.Foil)
+					uuid, err := MatchID(content.UUID, content.Foil)
 					if err != nil {
 						return nil, err
 					}
@@ -861,7 +861,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 						for i := 0; i < len(deckPicks)-1; i++ {
 							n := rand.Intn(10)
 							if n < 3 {
-								uuidFoil, err := MatchId(deckPicks[i], true)
+								uuidFoil, err := MatchID(deckPicks[i], true)
 								if err != nil {
 									continue
 								}
@@ -892,7 +892,7 @@ func (b *Backend) GetPicksForSealed(setCode, sealedUUID string) ([]string, error
 					config := variableChooser.Pick()
 
 					for _, card := range config["card"] {
-						uuid, err := MatchId(card.UUID, card.Foil)
+						uuid, err := MatchID(card.UUID, card.Foil)
 						if err != nil {
 							return nil, err
 						}
@@ -1125,7 +1125,7 @@ func (b *Backend) SealedSheetProbabilities(setCode, boosterType, sheetName strin
 	var probs []ProductProbabilities
 
 	for cardID, count := range sheet.Cards {
-		uuid, err := MatchId(cardID, sheet.Foil, isEtched)
+		uuid, err := MatchID(cardID, sheet.Foil, isEtched)
 		if err != nil {
 			return nil, err
 		}
@@ -1163,7 +1163,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := MatchId(content.UUID, content.Foil)
+					uuid, err := MatchID(content.UUID, content.Foil)
 					if err != nil {
 						return nil, err
 					}
@@ -1206,7 +1206,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 							}
 							probs = append(probs, probNF)
 
-							uuidFoil, err := MatchId(uuid, true)
+							uuidFoil, err := MatchID(uuid, true)
 							if err != nil {
 								continue
 							}
@@ -1236,7 +1236,7 @@ func (b *Backend) GetProbabilitiesForSealed(setCode, sealedUUID string) ([]Produ
 
 						var variableProbs []ProductProbabilities
 						for _, card := range config["card"] {
-							uuid, err := MatchId(card.UUID, card.Foil)
+							uuid, err := MatchID(card.UUID, card.Foil)
 							if err != nil {
 								return nil, err
 							}

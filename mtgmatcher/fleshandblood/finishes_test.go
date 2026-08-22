@@ -46,9 +46,9 @@ func TestPrintingUUIDs(t *testing.T) {
 					t.Errorf("%s: finish %q names uuid %s carrying finish %q",
 						card.UUID, key, target, co.Finish)
 				}
-				got, err := b.MatchIdFinish(card.UUID, key)
+				got, err := b.MatchIDFinish(card.UUID, key)
 				if err != nil || got != target {
-					t.Errorf("MatchIdFinish(%s, %q) = (%q, %v), want %q",
+					t.Errorf("MatchIDFinish(%s, %q) = (%q, %v), want %q",
 						card.UUID, key, got, err, target)
 				}
 				printings++

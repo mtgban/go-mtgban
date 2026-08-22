@@ -290,7 +290,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			}
 			// The product id names the product, not one of its finishes, so
 			// it points at the plain entry where that exists and at the foil
-			// one when the card is only sold foil. MatchId re-resolves the
+			// one when the card is only sold foil. MatchID re-resolves the
 			// finish from the caller's own flag either way.
 			b.ExternalIdentifiers[pid] = card.ID
 		}

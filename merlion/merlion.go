@@ -54,11 +54,11 @@ func (mg *Merlion) Load(ctx context.Context) error {
 	mg.printf("Found %d buylist entries", len(cards))
 
 	for _, card := range cards {
-		// The feed names a printing by its TCGplayer id, and MatchId takes
+		// The feed names a printing by its TCGplayer id, and MatchID takes
 		// one directly: it falls back to the datastore's external index when
 		// the id is not a uuid, and applies the finish itself. So neither the
 		// name nor the edition has to survive the round trip.
-		cardID, err := mtgmatcher.MatchId(card.TCGplayerID, card.Foil)
+		cardID, err := mtgmatcher.MatchID(card.TCGplayerID, card.Foil)
 		if err != nil {
 			mg.printf("%v: %s %s (%s)", err, card.TCGplayerID, card.Name, card.Edition)
 			continue

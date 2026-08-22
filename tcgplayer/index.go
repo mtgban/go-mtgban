@@ -91,7 +91,7 @@ func (tcg *Index) processEntry(ctx context.Context, channel chan<- responseChan,
 			}
 		}
 
-		cardID, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
+		cardID, err := mtgmatcher.MatchID(uuid, isFoil, isEtched)
 		if err != nil {
 			tcg.printf("(%d / %s) - %s", result.ProductID, uuid, err)
 			continue

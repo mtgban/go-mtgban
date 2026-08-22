@@ -145,7 +145,7 @@ func catalogHit(p CatalogProduct, foil bool) Hit {
 // the identifier index, skipping preprocess entirely. Etched is the only
 // alt-foil that changes the printing (and only for two sets); it shares the
 // plain foil's Scryfall id, so it is detected from the finish name and handed to
-// MatchId, which associates the foil id with its etched sibling. Every other
+// MatchID, which associates the foil id with its etched sibling. Every other
 // alt-foil (surge/rainbow/cold) resolves to the plain foil. When the id is
 // missing or unresolved, it falls back to the SKU-driven preprocess path.
 func resolveProduct(game int, p CatalogProduct) (string, error) {
@@ -217,7 +217,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	if game == GameMagic && p.Set == "Portal" && strings.HasSuffix(skuNumber(p.SKU), "b") {
 		number := strings.TrimSuffix(skuNumber(p.SKU), "b") + "d"
 		if out := mtgmatcher.MatchWithNumber(p.Name, "POR", number); len(out) == 1 {
-			return mtgmatcher.MatchId(out[0].UUID, foil, etched)
+			return mtgmatcher.MatchID(out[0].UUID, foil, etched)
 		}
 	}
 
@@ -227,13 +227,13 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	if game == GameMagic && p.Set == "Duel Decks: Anthology" {
 		number := strings.TrimLeft(p.CollectorNumber, "0")
 		if out := mtgmatcher.MatchWithNumber(p.Name, skuSetCode(p.SKU), number); len(out) == 1 {
-			return mtgmatcher.MatchId(out[0].UUID, foil, etched)
+			return mtgmatcher.MatchID(out[0].UUID, foil, etched)
 		}
 	}
 
 	// The authoritative identifiers resolve directly through the identifier
 	// index, regardless of game: Scryfall id first, then the TCGplayer id
-	// (MatchId resolves a bare product id through the external-id index and
+	// (MatchID resolves a bare product id through the external-id index and
 	// applies the finish exactly like the scryfall path). Etched is the only
 	// alt-foil that changes the printing; every other alt-foil shares the plain
 	// foil's id. (SCG sends null ids today, so in practice this fires only once
@@ -242,7 +242,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		if id == "" {
 			continue
 		}
-		if out, err := mtgmatcher.MatchId(id, foil, etched); err == nil {
+		if out, err := mtgmatcher.MatchID(id, foil, etched); err == nil {
 			return out, nil
 		}
 	}
@@ -255,7 +255,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		if strings.Contains(p.SKU, "-WAR2-") {
 			num := strings.TrimLeft(p.CollectorNumber, "0") + "★"
 			if out := mtgmatcher.MatchWithNumber(p.Name, "WAR", num); len(out) == 1 {
-				if id, err := mtgmatcher.MatchId(out[0].UUID, foil, false); err == nil {
+				if id, err := mtgmatcher.MatchID(out[0].UUID, foil, false); err == nil {
 					return id, nil
 				}
 			}
@@ -273,7 +273,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		// collapsed onto the English printing.
 		if card.Id != "" {
 			if co, e := mtgmatcher.GetUUID(card.Id); e == nil && co.Language != "" && co.Language != "English" {
-				return mtgmatcher.MatchId(card.Id, foil, etched)
+				return mtgmatcher.MatchID(card.Id, foil, etched)
 			}
 		}
 		return mtgmatcher.Match(card)

@@ -137,7 +137,7 @@ func TestSealedOutsideExternalIdentifiers(t *testing.T) {
 	b := loadSealedFixture(t)
 
 	// Sealed ids resolve through BuildSealedProductMap alone; the external
-	// index stays cards-only so MatchId cannot hand a sealed uuid to a
+	// index stays cards-only so MatchID cannot hand a sealed uuid to a
 	// singles scraper
 	if uuid, found := b.ExternalIdentifiers["600001"]; found {
 		t.Errorf("ExternalIdentifiers[600001] = %q, want absent", uuid)

@@ -30,7 +30,7 @@ func getListForDeck(setCode, deckName string) ([]string, error) {
 
 		for _, board := range [][]mtgmatcher.DeckCard{deck.Commander, deck.MainBoard, deck.SideBoard} {
 			for _, card := range board {
-				uuid, err := mtgmatcher.MatchId(card.UUID, card.IsFoil)
+				uuid, err := mtgmatcher.MatchID(card.UUID, card.IsFoil)
 				if err != nil {
 					continue
 				}
@@ -60,7 +60,7 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 			for _, content := range contents {
 				switch key {
 				case "card":
-					uuid, err := mtgmatcher.MatchId(content.UUID, content.Foil)
+					uuid, err := mtgmatcher.MatchID(content.UUID, content.Foil)
 					if err != nil {
 						return nil, err
 					}
@@ -90,7 +90,7 @@ func getListForSealed(setCode, sealedUUID string) ([]string, error) {
 				case "variable":
 					for _, config := range content.Configs {
 						for _, card := range config["card"] {
-							uuid, err := mtgmatcher.MatchId(card.UUID, card.Foil)
+							uuid, err := mtgmatcher.MatchID(card.UUID, card.Foil)
 							if err != nil {
 								return nil, err
 							}

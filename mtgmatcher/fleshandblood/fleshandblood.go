@@ -377,7 +377,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 
 		// The product id and the set-level card follow the nonfoil default
 		// where one exists, exactly as riftbound points a product at its
-		// plain printing; MatchId re-resolves the finish from the caller's
+		// plain printing; MatchID re-resolves the finish from the caller's
 		// own flag either way.
 		card := nonfoil
 		if card == nil {

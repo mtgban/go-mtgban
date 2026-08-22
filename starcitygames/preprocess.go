@@ -490,7 +490,7 @@ func ProcessSKU(cardName, SKU string) (*mtgmatcher.InputCard, error) {
 			strings.Contains(SKU, "-MH1-") || strings.Contains(SKU, "-MH12-") || strings.Contains(SKU, "-MH13-") {
 			isEtched := foil && (strings.Contains(SKU, "-STA2-") || strings.Contains(SKU, "-MH23-") || strings.Contains(SKU, "-MH13-"))
 
-			card.UUID, _ = mtgmatcher.MatchId(card.UUID, foil, isEtched)
+			card.UUID, _ = mtgmatcher.MatchID(card.UUID, foil, isEtched)
 
 			if isEtched {
 				variant = "etched"

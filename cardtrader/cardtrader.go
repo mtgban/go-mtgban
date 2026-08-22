@@ -197,10 +197,10 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			// the product is sold in no printing of falls back to the flag,
 			// which answers with the default rather than nothing.
 			if theCard.Finish != "" {
-				cardID, _ = mtgmatcher.MatchIdFinish(fmt.Sprint(blueprint.TCGplayerId), theCard.Finish)
+				cardID, _ = mtgmatcher.MatchIDFinish(fmt.Sprint(blueprint.TCGplayerId), theCard.Finish)
 			}
 			if cardID == "" {
-				cardID, _ = mtgmatcher.MatchId(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
+				cardID, _ = mtgmatcher.MatchID(fmt.Sprint(blueprint.TCGplayerId), theCard.Foil)
 			}
 		}
 
@@ -228,7 +228,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 		// Foil listings share the plain id; adopt the foil id when one exists
 		// (Magic only: Lorcana's finish is already carried on the input).
 		if ct.gameID == GameMagic && product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			if cardIDFoil, e := mtgmatcher.MatchId(cardID, true); e == nil {
+			if cardIDFoil, e := mtgmatcher.MatchID(cardID, true); e == nil {
 				cardID = cardIDFoil
 			}
 		}

@@ -238,9 +238,9 @@ type ListingData struct {
 	Foil            bool    `json:"foil"`
 }
 
-// GetDirectQtysForProductId returns the live listings for a product, optionally
+// GetDirectQtysForProductID returns the live listings for a product, optionally
 // only the Direct ones.
-func GetDirectQtysForProductId(ctx context.Context, productID int, onlyDirect bool) []ListingData {
+func GetDirectQtysForProductID(ctx context.Context, productID int, onlyDirect bool) []ListingData {
 	client := NewSellerClient()
 
 	var result []ListingData

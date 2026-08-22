@@ -50,13 +50,13 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 		{"633427", true, "100_f"},
 		{"631350", true, "200_f"},
 	} {
-		got, err := b.MatchId(tc.id, tc.foil)
+		got, err := b.MatchID(tc.id, tc.foil)
 		if err != nil {
-			t.Errorf("MatchId(%q, %v) = error %v", tc.id, tc.foil, err)
+			t.Errorf("MatchID(%q, %v) = error %v", tc.id, tc.foil, err)
 			continue
 		}
 		if got != tc.want {
-			t.Errorf("MatchId(%q, %v) = %q, want %q", tc.id, tc.foil, got, tc.want)
+			t.Errorf("MatchID(%q, %v) = %q, want %q", tc.id, tc.foil, got, tc.want)
 		}
 	}
 
@@ -70,7 +70,7 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 	}
 
 	// An id absent from both maps must still be unknown.
-	if _, err := b.MatchId("999999"); err == nil {
+	if _, err := b.MatchID("999999"); err == nil {
 		t.Error("an unknown product id resolved")
 	}
 }
@@ -87,7 +87,7 @@ func TestLorcanaExtraProductIdsAbsent(t *testing.T) {
 	if len(b.ExternalIdentifiers) != 2 {
 		t.Errorf("got %d external ids, want 2", len(b.ExternalIdentifiers))
 	}
-	if _, err := b.MatchId("633427", true); err != mtgmatcher.ErrCardUnknownId {
-		t.Errorf("MatchId on the split-foil product = %v, want %v", err, mtgmatcher.ErrCardUnknownId)
+	if _, err := b.MatchID("633427", true); err != mtgmatcher.ErrCardUnknownID {
+		t.Errorf("MatchID on the split-foil product = %v, want %v", err, mtgmatcher.ErrCardUnknownID)
 	}
 }

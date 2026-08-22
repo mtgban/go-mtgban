@@ -40,9 +40,9 @@ const (
 	MaxPagesGlobalScrapingValue = 200
 )
 
-// NewScraperForSellerIds returns a scraper over the given seller keys,
+// NewScraperForSellerIDs returns a scraper over the given seller keys,
 // optionally restricted to their Direct listings.
-func NewScraperForSellerIds(sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
+func NewScraperForSellerIDs(sellerKeys []string, onlyDirect bool) *TCGSellerInventory {
 	tcg := TCGSellerInventory{}
 	tcg.inventory = mtgban.InventoryRecord{}
 	tcg.sellerKeys = sellerKeys
@@ -145,7 +145,7 @@ func (tcg *TCGSellerInventory) processInventory(channel chan<- responseChan, res
 		for _, listing := range result.Listings {
 			isFoil := listing.Printing == "Foil"
 			isEtched := strings.Contains(result.ProductName, "Foil Etched")
-			cardID, err := mtgmatcher.MatchId(uuid, isFoil, isEtched)
+			cardID, err := mtgmatcher.MatchID(uuid, isFoil, isEtched)
 			if err != nil {
 				continue
 			}

@@ -213,7 +213,7 @@ func run() int {
 		}
 		w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 		for _, pick := range picks {
-			id, _ := mtgmatcher.MatchId(pick.CardId, pick.Finish == "foil", pick.Finish == "etched")
+			id, _ := mtgmatcher.MatchID(pick.CardId, pick.Finish == "foil", pick.Finish == "etched")
 			co, _ := mtgmatcher.GetUUID(id)
 			fmt.Fprintf(w, "%s\t%s|%s\n", pick.Sheet, co, co.Rarity)
 			if *CSVOutput {

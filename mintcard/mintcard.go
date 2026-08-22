@@ -182,7 +182,7 @@ func (mint *MTGMintCard) Load(ctx context.Context) error {
 			}
 
 			// Convert tcg sku ids into ban ids
-			id, err := mtgmatcher.MatchId(uuid, sku.Printing == "FOIL", sku.Finish == "ETCHED")
+			id, err := mtgmatcher.MatchID(uuid, sku.Printing == "FOIL", sku.Finish == "ETCHED")
 			if err != nil {
 				continue
 			}

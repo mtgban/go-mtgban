@@ -255,7 +255,7 @@ func SealedIsLanguageVariant(name string) bool {
 // AllSealedUUIDs and in its set's bucket, its name in the sealed name index,
 // and the product id as an identifier for BuildSealedProductMap rather than
 // in the external identifier index — which is how Magic keeps sealed out of
-// MatchId's reach.
+// MatchID's reach.
 //
 // A product whose set is unknown is dropped. A uuid a card already holds
 // keeps that card: the set still lists the product, because that listing is
