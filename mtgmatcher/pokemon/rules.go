@@ -147,6 +147,77 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 	}
 	inCard.Edition = edition
+
+	widenQualifiedName(b, inCard)
+}
+
+// widenQualifiedName adopts the qualified spelling of a name the catalog
+// bakes the disambiguator into. "Accelgor (Team Plasma)" is how the catalog
+// writes the 8/101 of Plasma Blast and "Professor's Research [Professor
+// Juniper]" the 085/086 of Black Bolt, while the storefront writes the bare
+// name and the collector number - so the name hash holds nothing in the set
+// the listing names and the row dies on the number instead.
+//
+// It runs once the edition is resolved, and only when no printing named
+// exactly as the input carries that number there: a name the catalog already
+// knows at that number is never rewritten. Two qualified spellings sharing
+// the number mean the listing does not say which, so ambiguity is left for
+// the caller to report rather than guessed at.
+func widenQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	number := extractNumber(inCard.Variation)
+	if number == "" {
+		return
+	}
+	code := editionSetCode(b, inCard.Edition)
+	inEdition := func(co *mtgmatcher.CardObject) bool {
+		return code == "" || co.SetCode == code
+	}
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || !inEdition(co) {
+			continue
+		}
+		if numberMatches(number, co.Number) {
+			return
+		}
+	}
+	uuids, err := b.SearchHasPrefix(inCard.Name)
+	if err != nil {
+		return
+	}
+	name := ""
+	for _, uuid := range uuids {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || !inEdition(co) {
+			continue
+		}
+		if !numberMatches(number, co.Number) {
+			continue
+		}
+		if name != "" && mtgmatcher.Normalize(name) != mtgmatcher.Normalize(co.Name) {
+			return
+		}
+		name = co.Name
+	}
+	if name != "" {
+		inCard.Name = name
+	}
+}
+
+// editionSetCode answers the code of the set an already-adjusted edition
+// names, and an empty string when it names none. The lookups are the direct
+// ones because GetSetByName would ask the rules to adjust the edition again.
+func editionSetCode(b *mtgmatcher.Backend, edition string) string {
+	if edition == "" {
+		return ""
+	}
+	if set, found := b.NormalizedSets[mtgmatcher.Normalize(edition)]; found {
+		return set.Code
+	}
+	if set, err := b.GetSet(edition); err == nil {
+		return set.Code
+	}
+	return ""
 }
 
 // setTails indexes each backend's sets by the name left after the catalog's
