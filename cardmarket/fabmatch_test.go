@@ -86,3 +86,62 @@ func TestMatchProductPrintRun(t *testing.T) {
 		}
 	}
 }
+
+// TestProcessProductByName pins which prices carry the mark that holds them
+// back. A product the bridge knows resolves through an id and is not a
+// guess; one the bridge has never heard of resolves through its name, and
+// every price it produces has to say so, or namedLast has nothing to sort by.
+func TestProcessProductByName(t *testing.T) {
+	loadFabDatastore(t)
+
+	// Cardmarket 602755, the first-edition Monarch printing of Prismatic
+	// Shield (Red), which the datastore keys by TCGplayer id 237847.
+	product := MKMProduct{
+		IDProduct:     602755,
+		Name:          "Prismatic Shield (Red) (Regular)",
+		Number:        "MON092",
+		ExpansionName: "Monarch - First",
+		CountArticles: 119,
+	}
+
+	for _, tt := range []struct {
+		name   string
+		bridge map[int]int
+		want   bool
+	}{
+		{"a product the bridge knows resolves through its id", map[int]int{602755: 237847}, false},
+		{"a product the bridge misses resolves through its name", nil, true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			mkm := &Index{
+				gameID:       GameFleshAndBlood,
+				exchangeRate: 1,
+				TCGBridge:    tt.bridge,
+				priceGuide: map[int]PriceGuide{
+					602755: {IDProduct: 602755, LowPrice: 9, TrendPrice: 10},
+				},
+			}
+
+			channel := make(chan responseChan, len(availableIndexNames))
+			err := mkm.processProduct(channel, &product)
+			if err != nil {
+				t.Fatal(err)
+			}
+			close(channel)
+
+			var count int
+			for result := range channel {
+				count++
+				if result.cardID != "mon092_237847_1e" {
+					t.Errorf("priced %q, want mon092_237847_1e", result.cardID)
+				}
+				if result.byName != tt.want {
+					t.Errorf("byName = %v, want %v", result.byName, tt.want)
+				}
+			}
+			if count != len(availableIndexNames) {
+				t.Errorf("got %d prices, want %d", count, len(availableIndexNames))
+			}
+		})
+	}
+}
