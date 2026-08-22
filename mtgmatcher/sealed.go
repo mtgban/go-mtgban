@@ -101,17 +101,68 @@ func tokensEqual(a, b []string) bool {
 	return true
 }
 
-func tokensSubset(sub, super []string) bool {
+// bracketRe matches the bracketed groups a catalog name decorates a product
+// with.
+var bracketRe = regexp.MustCompile(`\[([^\]]*)\]`)
+
+// sealedQualifierTokens returns the words a catalog name carries only inside
+// brackets. Those name what a product is decorated with rather than the
+// product: the deck the catalog files as `Theme Deck - "Storm Rider"
+// [Zapdos]` is the Storm Rider deck whatever Zapdos is doing on the box, and
+// a storefront naming it says nothing about Zapdos.
+//
+// A bracket naming a print run is not a decoration - two runs of one product
+// are two products and the bracket is the only thing telling them apart - so
+// it is left in. A word the name also carries outside its brackets is left
+// in too, since there it is doing the product's own work.
+func (b *Backend) sealedQualifierTokens(name string) map[string]bool {
+	groups := bracketRe.FindAllStringSubmatch(name, -1)
+	if len(groups) == 0 {
+		return nil
+	}
+
+	inside := map[string]bool{}
+	for _, group := range groups {
+		// Only a card of this game's own is decoration. Everything else a
+		// bracket holds is the product's identity - the print run, the
+		// number of copies, the placing a promo was handed out for - and
+		// forgiving those would merge products that differ by nothing else.
+		if _, found := b.CanonicalNames[Normalize(group[1])]; !found {
+			continue
+		}
+		for _, tok := range sealedTokens(group[1]) {
+			inside[tok] = true
+		}
+	}
+	if len(inside) == 0 {
+		return nil
+	}
+	for _, tok := range sealedTokens(bracketRe.ReplaceAllString(name, " ")) {
+		delete(inside, tok)
+	}
+	return inside
+}
+
+// tokensSubsetModulo reports whether every word of sub is one that super says
+// or one of the free words beside it, with something super said still left
+// over. The floor matters: a candidate forgiven down to nothing would answer
+// for every name in the game.
+func tokensSubsetModulo(sub, super []string, free map[string]bool) bool {
 	supSet := map[string]bool{}
 	for _, tok := range super {
 		supSet[tok] = true
 	}
+	var matched int
 	for _, tok := range sub {
-		if !supSet[tok] {
+		switch {
+		case supSet[tok]:
+			matched++
+		case free[tok]:
+		default:
 			return false
 		}
 	}
-	return true
+	return matched > 0
 }
 
 // ResolveSealed returns the uuid of the single sealed product the given
@@ -145,7 +196,7 @@ func (b *Backend) ResolveSealed(name string) (string, error) {
 			exact = append(exact, uuid)
 			continue
 		}
-		if tokensSubset(candidate, vendor) && sealedExtrasSafe(vendor, candidate, setTokens) {
+		if tokensSubsetModulo(candidate, vendor, b.sealedQualifierTokens(co.Name)) && sealedExtrasSafe(vendor, candidate, setTokens) {
 			contained = append(contained, uuid)
 			containedLen[uuid] = len(candidate)
 			unexplained[uuid] = unexplainedTokens(vendor, candidate, b.setNameTokens(co.SetCode))
