@@ -609,3 +609,65 @@ func TestSubsetOfEdition(t *testing.T) {
 		})
 	}
 }
+
+// TestYearReprintDoesNotTie pins the prefix fallback getting past the World
+// Championship reprints. They spell the name they reprint plus the year and
+// keep its collector number, so they answer every prefix search for a bare
+// name and tie with the spelling the storefront meant, which the ambiguity
+// guard reads as "the listing does not say".
+func TestYearReprintDoesNotTie(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"the qualified spelling wins the tie", mtgmatcher.InputCard{
+			Name: "Colress Machine - 119/135", Edition: "BW Plasma Storm"}, "119-135_84391"},
+		{"and again where the name is a phrase", mtgmatcher.InputCard{
+			Name: "Shadow Triad - 102/116", Edition: "BW Plasma Freeze"}, "102-116_89096"},
+		// The year has to be all the reprint adds. This name's qualifier
+		// opens with one and it is not a reprint of anything.
+		{"a qualifier that opens with a year is not one", mtgmatcher.InputCard{
+			Name: "Championship Arena - 028", Edition: "Nintendo Black Star Promos", Variation: "28"}, "028_84163"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}
+
+// TestReprintedByYear pins the predicate directly, because the pipeline
+// cannot reach every branch of it: Prefilter strips a parenthetical before
+// AdjustName runs, so of the datastore names that end in a year without the
+// dash, none arrives here still spelled that way. The dash requirement is a
+// guard against names the catalog does not hold today, and only a test of
+// the predicate itself can hold it to that.
+func TestReprintedByYear(t *testing.T) {
+	for _, tt := range []struct {
+		desc, name, candidate string
+		want                  bool
+	}{
+		{"the year the deck was played", "Colress Machine", "Colress Machine - 2013", true},
+		{"punctuation in the name still answers", "Farfetch'd", "Farfetchd - 2005", true},
+		{"a different name that happens to end in a year", "Colress", "Colress Machine - 2013", false},
+		{"a year glued to the words before it", "Victory Medal", "Victory Medal 2006", false},
+		{"a year inside a parenthetical", "Paradise Resort", "Paradise Resort (World Championships 2023)", false},
+		{"a year opening a qualifier rather than closing the name", "Championship Arena", "Championship Arena - 2000 Promo", false},
+		{"no year at all", "Colress Machine", "Colress Machine (Team Plasma)", false},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			if got := reprintedByYear(tt.name, tt.candidate); got != tt.want {
+				t.Errorf("reprintedByYear(%q, %q) = %v, want %v", tt.name, tt.candidate, got, tt.want)
+			}
+		})
+	}
+}
