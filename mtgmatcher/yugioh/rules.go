@@ -93,13 +93,15 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 }
 
 // AdjustEdition trims the game-name prefix and "Singles" suffix storefronts
-// decorate set names with. A handful of real set names carry the game name
-// themselves ("Yu-Gi-Oh! Championship Series 2025 Prize Cards"), so an
-// edition that already names a set is left alone.
+// decorate set names with, and rewrites the names editionAliases carries. A
+// handful of real set names carry the game name themselves ("Yu-Gi-Oh!
+// Championship Series 2025 Prize Cards"), so an edition that already names a
+// set is left alone - as it is asked, before the decorations come off and
+// again after, the alias table only ever answering for a name no set has.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
-	if _, found := b.NormalizedSets[mtgmatcher.Normalize(edition)]; found {
-		inCard.Edition = edition
+	if named, found := namedSet(b, edition); found {
+		inCard.Edition = named
 		return
 	}
 	for _, prefix := range []string{"Yu-Gi-Oh!", "Yu-Gi-Oh", "YuGiOh"} {
@@ -109,7 +111,21 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 	}
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
+	if named, found := namedSet(b, edition); found {
+		edition = named
+	}
 	inCard.Edition = edition
+}
+
+// namedSet answers the set an edition names: itself when the datastore
+// carries it under that name, else whatever the alias table maps it onto.
+func namedSet(b *mtgmatcher.Backend, edition string) (string, bool) {
+	normalized := mtgmatcher.Normalize(edition)
+	if _, found := b.NormalizedSets[normalized]; found {
+		return edition, true
+	}
+	set, found := normalizedEditionAliases()[normalized]
+	return set, found
 }
 
 // CanonicalFinish owns Yu-Gi-Oh's finish vocabulary, which is the print runs
