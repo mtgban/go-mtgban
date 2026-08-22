@@ -344,3 +344,46 @@ func TestQualifiedNameWidening(t *testing.T) {
 		})
 	}
 }
+
+// TestSetCodePrefixedNumber pins the set code a storefront glues onto a
+// collector number the catalog writes bare. The promo sets number their
+// cards "001".."282", so without this every "SVP016" listing compares a
+// number the catalog never writes and the whole edition goes unmatched.
+func TestSetCodePrefixedNumber(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"the promo set's own code", mtgmatcher.InputCard{
+			Name: "Ampharos ex", Edition: "SV Promos", Variation: "SVP016"}, "016_484397_holo"},
+		{"another era's promo set", mtgmatcher.InputCard{
+			Name: "Alakazam", Edition: "ME Promos", Variation: "MEP003"}, "003_654597_holo"},
+		{"the qualified name is reached through it too", mtgmatcher.InputCard{
+			Name: "Baxcalibur", Edition: "SV Promos", Variation: "SVP019"}, "019_501885_holo"},
+		// The prefix has to be the set's own code: stripping letters
+		// freely would read the promo set's SVP016 as the 016 of every
+		// Scarlet & Violet set there is.
+		{"another set's prefix does not open its numbering", mtgmatcher.InputCard{
+			Name: "Tarountula", Edition: "SV01: Scarlet & Violet Base Set", Variation: "SVP016"}, ""},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if tt.want == "" {
+				if err == nil {
+					t.Errorf("Match(%v) = %s (%v), want no match", tt.in, id, b.UUIDs[id])
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}
