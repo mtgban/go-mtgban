@@ -155,11 +155,6 @@ var evParameters = []evConfig{
 	},
 }
 
-type evOutputStash struct {
-	Total   float64
-	Dataset []float64
-}
-
 // NewScraper returns an EV scraper, signing its price lookups with sig.
 func NewScraper(sig string) *Scraper {
 	ss := Scraper{}
@@ -180,7 +175,6 @@ type result struct {
 	productID string
 	invEntry  *mtgban.InventoryEntry
 	buyEntry  *mtgban.BuylistEntry
-	err       error
 }
 
 // valueFromCache sums the pre-resolved unit prices for a list of picks. When

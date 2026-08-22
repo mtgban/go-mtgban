@@ -245,10 +245,6 @@ func (b *Backend) searchFunc(name string, slice []string, f func(string, string)
 	return hashes, nil
 }
 
-func searchFunc(name string, slice []string, f func(string, string) bool) ([]string, error) {
-	return defaultBackend.searchFunc(name, slice, f)
-}
-
 // SearchHasPrefix returns the uuids of every printing whose name starts with
 // the input, which is how a truncated listing is recovered.
 func (b *Backend) SearchHasPrefix(name string) ([]string, error) {

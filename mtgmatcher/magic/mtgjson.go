@@ -1311,25 +1311,6 @@ func filterInvalidPromoTypes(sets map[string]*Set, uuids map[string]*mtgmatcher.
 	}
 }
 
-// Match the name of the deck with the product UUID(s)
-func findDeck(sets map[string]*Set, setCode, deckName string) []string {
-	var list []string
-
-	set, found := sets[setCode]
-	if !found {
-		return nil
-	}
-
-	for _, deck := range set.Decks {
-		if deck.Name != deckName {
-			continue
-		}
-		list = append(list, deck.SealedProductUUIDs...)
-	}
-
-	return list
-}
-
 // Return a list of sealed products contained by the input product
 // Decks and Packs and Card cannot contain other sealed product, so they are ignored here
 func sealedWithinSealed(product SealedProduct) []string {

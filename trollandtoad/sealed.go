@@ -24,7 +24,6 @@ type Sealed struct {
 	Partner     string
 
 	inventoryDate  time.Time
-	buylistDate    time.Time
 	MaxConcurrency int
 
 	productMap map[string]string

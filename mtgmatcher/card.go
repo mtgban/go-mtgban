@@ -84,10 +84,6 @@ func (c *InputCard) String() string {
 	return fmt.Sprintf("%s [%s%s]%s", name, edition, finish, lang)
 }
 
-func output(card Card, flags ...bool) string {
-	return defaultBackend.output(card, flags...)
-}
-
 // AddToVariant appends a tag to the variation, keeping what is already there
 // and separating with a space.
 func (c *InputCard) AddToVariant(tag string) {
