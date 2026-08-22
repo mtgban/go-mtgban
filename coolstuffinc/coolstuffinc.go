@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -75,6 +76,37 @@ type Coolstuffinc struct {
 
 	client *http.Client
 	game   string
+}
+
+// buylistNumberWord matches the number-shaped words of a buylist note.
+var buylistNumberWord = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+)?[,.]?$`)
+
+var buylistReprintNote = regexp.MustCompile(`(?i)\breprints?\b`)
+
+// buylistVariation builds everything the buylist knows about a printing
+// beyond its name. The feed spends a free-text note on the qualifier that
+// the sell listing spends its variation on - "Love Ball Foil", "Detective
+// Pikachu Stamped" - and reading only the number field asked the two sides
+// of one product different questions.
+//
+// The note's own numbers stay behind. They name other products the buyer
+// might have meant ("Can be Pikachu 2, 19, 41, or 45"), while the collector
+// number arrives in its own field and again in the product name. A note
+// that says a printing reprints another stays behind whole, because every
+// word after the number is then the name of the set being reprinted rather
+// than of this one.
+func buylistVariation(product CSIPriceEntry) string {
+	if buylistReprintNote.MatchString(product.Notes) {
+		return product.Number
+	}
+	words := []string{product.Number}
+	for _, word := range strings.Fields(product.Notes) {
+		if buylistNumberWord.MatchString(word) {
+			continue
+		}
+		words = append(words, word)
+	}
+	return strings.TrimSpace(strings.Join(words, " "))
 }
 
 // NewScraper returns a singles scraper for one game.
@@ -452,7 +484,9 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				continue
 			}
 			theCard = c
-		case GameLorcana, GameRiftbound, GameOnePiece, GamePokemon:
+		case GamePokemon:
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
+		case GameLorcana, GameRiftbound, GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
 			return errors.New("unsupported game")
