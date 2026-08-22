@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -35,6 +36,7 @@ var suffixRarities = map[string]string{
 	"cr":   "Collector's Rare",
 	"ul":   "Ultimate Rare",
 	"psec": "Platinum Secret Rare",
+	"sh":   "Shatterfoil Rare",
 }
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -57,13 +59,25 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// AdjustName provides a prefix fallback for truncated feeds, adopting the
-// one name among the prefix matches that carries the input's number. Names
-// compare normalized, so punctuation variants of one name are not read as
-// ambiguity.
+// AdjustName flips a token's name onto the word order the catalog files it
+// under, and otherwise provides a prefix fallback for truncated feeds,
+// adopting the one name among the prefix matches that carries the input's
+// number. Names compare normalized, so punctuation variants of one name are
+// not read as ambiguity.
 func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
+	}
+	// The catalog names a token with the word first ("Token: Sheep") where
+	// the storefronts write it last ("Sheep Token"). The flip only ever
+	// answers for a name the datastore does not already know, above, so the
+	// tokens a set does name the storefront's way keep their own printing.
+	if base, cut := strings.CutSuffix(inCard.Name, " Token"); cut {
+		flipped := "Token: " + base
+		if _, found := b.CanonicalNames[mtgmatcher.Normalize(flipped)]; found {
+			inCard.Name = flipped
+			return
+		}
 	}
 	uuids, err := b.SearchHasPrefix(inCard.Name)
 	if err != nil {
@@ -92,13 +106,15 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 }
 
 // AdjustEdition trims the game-name prefix and "Singles" suffix storefronts
-// decorate set names with. A handful of real set names carry the game name
-// themselves ("Yu-Gi-Oh! Championship Series 2025 Prize Cards"), so an
-// edition that already names a set is left alone.
+// decorate set names with, and rewrites the names editionAliases carries. A
+// handful of real set names carry the game name themselves ("Yu-Gi-Oh!
+// Championship Series 2025 Prize Cards"), so an edition that already names a
+// set is left alone - as it is asked, before the decorations come off and
+// again after, the alias table only ever answering for a name no set has.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
-	if _, found := b.NormalizedSets[mtgmatcher.Normalize(edition)]; found {
-		inCard.Edition = edition
+	if named, found := namedSet(b, edition); found {
+		inCard.Edition = named
 		return
 	}
 	for _, prefix := range []string{"Yu-Gi-Oh!", "Yu-Gi-Oh", "YuGiOh"} {
@@ -108,7 +124,21 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		}
 	}
 	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
+	if named, found := namedSet(b, edition); found {
+		edition = named
+	}
 	inCard.Edition = edition
+}
+
+// namedSet answers the set an edition names: itself when the datastore
+// carries it under that name, else whatever the alias table maps it onto.
+func namedSet(b *mtgmatcher.Backend, edition string) (string, bool) {
+	normalized := mtgmatcher.Normalize(edition)
+	if _, found := b.NormalizedSets[normalized]; found {
+		return edition, true
+	}
+	set, found := normalizedEditionAliases()[normalized]
+	return set, found
 }
 
 // CanonicalFinish owns Yu-Gi-Oh's finish vocabulary, which is the print runs
@@ -295,18 +325,34 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 
 // allWordsIn reports whether the wording's words include every word of the
 // label. Words compare whole: the one-letter artwork labels ("A") would
-// otherwise hide inside almost any wording.
+// otherwise hide inside almost any wording. They compare without their
+// punctuation too, because the storefronts spell the game's premium tier
+// both ways ("Collectors Rare" against the catalog's "Collector's Rare"),
+// and a wording that names the rarity has to beat the number's suffix
+// rather than fall through it onto every printing of the number.
 func allWordsIn(words []string, label string) bool {
 	labelWords := strings.Fields(strings.ToLower(label))
 	if len(labelWords) == 0 {
 		return false
 	}
 	for _, word := range labelWords {
-		if !slices.Contains(words, word) {
+		if !slices.ContainsFunc(words, func(spoken string) bool {
+			return unpunctuated(spoken) == unpunctuated(word)
+		}) {
 			return false
 		}
 	}
 	return true
+}
+
+// unpunctuated drops the marks a word is written with or without.
+func unpunctuated(word string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			return r
+		}
+		return -1
+	}, word)
 }
 
 // wordSubset reports whether a's words are a strict subset of b's.

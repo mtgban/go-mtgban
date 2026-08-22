@@ -234,11 +234,11 @@ func gameLanguage(gameID int, product Product) string {
 // carries.
 var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
 
-// gameVariation spells the printing a blueprint names. One Piece and
-// Riftbound both file their event and parallel printings under the base
-// card's collector number, so the number alone aliases them; the blueprint's
-// Version carries the very wording the datastore labels them with ("OP16
-// Release Event", "Summoner Skirmish | Champion"), which is what tells them
+// gameVariation spells the printing a blueprint names. One Piece, Riftbound
+// and Yu-Gi-Oh all file several printings under one collector number, so the
+// number alone aliases them; the blueprint's Version carries the very wording
+// the datastore labels them with ("OP16 Release Event", "Summoner Skirmish |
+// Champion", and for Yu-Gi-Oh the rarity itself), which is what tells them
 // apart.
 //
 // The Version rides behind a number, and only then: its wording is full of
@@ -258,6 +258,15 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		}
 	case GameRiftbound:
 		// Riftbound numbers are bare ("202", "058c", "T05"), always readable.
+	case GameYuGiOh:
+		// Yu-Gi-Oh's Version is the rarity, which is the game's whole
+		// identity beside the number, and the matcher narrows on nothing
+		// else. The one wording to leave behind is the literal "Token": it
+		// names the game's token products, and the shared token guard reads
+		// that word out of the variation and refuses the listing outright.
+		if bp.Version == "Token" {
+			return number
+		}
 	default:
 		return number
 	}
