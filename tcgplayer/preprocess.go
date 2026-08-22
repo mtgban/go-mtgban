@@ -9,7 +9,7 @@ import (
 	"github.com/mtgban/go-tcgplayer"
 )
 
-var tokenIds = map[int]string{
+var tokenIDs = map[int]string{
 	78614:  "MPR",
 	78617:  "MPR",
 	78618:  "MPR",
@@ -32,7 +32,7 @@ var tokenIds = map[int]string{
 	108437: "L14",
 }
 
-var cardIds = map[int]string{
+var cardIDs = map[int]string{
 	// Serra Angel
 	284951: "P30A",
 	284923: "P30H",
@@ -600,7 +600,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 	}
 
 	// Override any complex cases
-	ed, found := cardIds[product.ProductID]
+	ed, found := cardIDs[product.ProductID]
 	if found {
 		edition = ed
 	}
@@ -616,7 +616,7 @@ func Preprocess(product *tcgplayer.Product, editions map[int]string) (*mtgmatche
 			variant = num
 		}
 		// Decouple
-		ed, found := tokenIds[product.ProductID]
+		ed, found := tokenIDs[product.ProductID]
 		if found {
 			edition = ed
 		}

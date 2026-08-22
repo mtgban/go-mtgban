@@ -7,11 +7,11 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// extraIdsData is a two-card cut of the datastore shape cmd/lorcanadatastore
+// extraIDsData is a two-card cut of the datastore shape cmd/lorcanadatastore
 // emits. Card 100 is sold by TCGplayer as two products, the nonfoil under the
 // id upstream publishes and the foil under its own; card 200 carries no extra
 // ids, as every card in the upstream file does.
-const extraIdsData = `{
+const extraIDsData = `{
   "metadata": {"formatVersion": "2.3.5", "language": "en"},
   "sets": {"1": {"name": "The First Chapter", "type": "expansion", "releaseDate": "2023-09-01"}},
   "cards": [
@@ -31,7 +31,7 @@ const extraIdsData = `{
 }`
 
 func TestLorcanaExtraProductIds(t *testing.T) {
-	b, err := Load(strings.NewReader(extraIdsData))
+	b, err := Load(strings.NewReader(extraIDsData))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 // upstream file has no tcgPlayerExtraIds at all, and must load exactly as it
 // does today.
 func TestLorcanaExtraProductIdsAbsent(t *testing.T) {
-	upstream := strings.Replace(extraIdsData, `, "tcgPlayerExtraIds": [633427]`, "", 1)
+	upstream := strings.Replace(extraIDsData, `, "tcgPlayerExtraIds": [633427]`, "", 1)
 	b, err := Load(strings.NewReader(upstream))
 	if err != nil {
 		t.Fatal(err)

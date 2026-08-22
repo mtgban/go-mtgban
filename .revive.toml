@@ -2,10 +2,6 @@
 # review time rather than found in a later sweep.
 #
 # Deliberately absent, each with a reason:
-#   var-naming   - 129 exported names still spell an initialism as Id, most of
-#                  them struct fields. Fixing them changes what consumers
-#                  compile against, so it waits for a version bump. The
-#                  unexported half is already done.
 #   unnecessary-stmt - its 22 findings are all one-case switches on a card
 #                  name. The preprocessors hold 73 of those switches, 54 with
 #                  more than one case and the largest with 39: a one-case
@@ -26,12 +22,7 @@ warningCode = 1
 [rule.error-naming]
 [rule.error-return]
 [rule.error-strings]
-# Every exported name carries a doc comment now, so the rule can hold that
-# line rather than let the next one through. Its stuttering check stays off:
-# 21 types still repeat their package name, and renaming those is a version
-# bump away.
 [rule.exported]
-  arguments = ["disableStutteringCheck"]
 [rule.errorf]
 [rule.increment-decrement]
 [rule.indent-error-flow]
@@ -57,3 +48,4 @@ warningCode = 1
   arguments = ["fmt.Fprint.*", "strings.Builder.*", "io.Writer.Write", "io.Closer.Close", "os.File.Close", "bufio.Reader.Discard", "encoding/csv.Writer.Write", "text/tabwriter.Writer.Flush", "os.Setenv"]
 [rule.unreachable-code]
 [rule.var-declaration]
+[rule.var-naming]

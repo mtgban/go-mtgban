@@ -1052,7 +1052,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	var names, fullNames, lowerNames []string
 	var sealed, fullSealed, lowerSealed []string
 	var promoTypes []string
-	externalIds := map[string]string{}
+	externalIDs := map[string]string{}
 	for _, uuid := range append(allUUIDs, allSealedUUIDs...) {
 		card := uuids[uuid]
 
@@ -1068,11 +1068,11 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				continue
 			}
 			// Skip if already loaded
-			_, found = externalIds[id]
+			_, found = externalIDs[id]
 			if found {
 				continue
 			}
-			externalIds[id] = card.UUID
+			externalIDs[id] = card.UUID
 		}
 
 		// Add to the ever growing list of promo types
@@ -1171,7 +1171,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	b.CanonicalNames = canonicalNames
 	b.Tokens = tokens
 	b.UUIDs = uuids
-	b.ExternalIdentifiers = externalIds
+	b.ExternalIdentifiers = externalIDs
 	b.AlternateProps = alternates
 	b.AllPromoTypes = promoTypes
 	// Declare only the types this datastore actually carries, so the list

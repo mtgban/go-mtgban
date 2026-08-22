@@ -118,7 +118,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 
 	productMap := map[int]tcgplayer.Product{}
 	skuMap := map[int]tcgplayer.SKU{}
-	var skuIds []int
+	var skuIDs []int
 	for _, product := range products {
 		productMap[product.ProductID] = product
 
@@ -138,19 +138,19 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 				continue
 			}
 
-			skuIds = append(skuIds, sku.SKUID)
+			skuIDs = append(skuIDs, sku.SKUID)
 			skuMap[sku.SKUID] = sku
 		}
 	}
 
-	for i := 0; i < len(skuIds); i += tcgplayer.MaxIDsInRequest {
+	for i := 0; i < len(skuIDs); i += tcgplayer.MaxIDsInRequest {
 		start := i
 		end := i + tcgplayer.MaxIDsInRequest
-		if end > len(skuIds) {
-			end = len(skuIds)
+		if end > len(skuIDs) {
+			end = len(skuIDs)
 		}
 
-		results, err := tcg.client.GetMarketPricesBySKUs(ctx, skuIds[start:end])
+		results, err := tcg.client.GetMarketPricesBySKUs(ctx, skuIDs[start:end])
 		if err != nil {
 			return err
 		}
