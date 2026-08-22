@@ -16,6 +16,10 @@ import (
 // single JSON array, authenticated with an x-api-key header.
 const scgCatalogURL = "https://api.starcitygames.com/hawksearch/catalog/download/json"
 
+// catalogAttempts bounds the replays of a broken export, matching the retry
+// budget the client gives an ordinary request.
+const catalogAttempts = 10
+
 // Product types the catalog reports. Everything SCG sells shares one
 // export, so this is what separates cards from boxes from playmats.
 const (
@@ -57,7 +61,7 @@ type CatalogVariant struct {
 // DownloadCatalog fetches the catalog export stream. The caller must close the
 // returned reader.
 func (scg *SCGClient) DownloadCatalog(ctx context.Context) (io.ReadCloser, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, scgCatalogURL, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, scg.catalogURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +77,43 @@ func (scg *SCGClient) DownloadCatalog(ctx context.Context) (io.ReadCloser, error
 		return nil, fmt.Errorf("catalog download failed: HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 	return resp.Body, nil
+}
+
+// StreamCatalog hands every product in the catalog export to fn, restarting
+// the download if the stream breaks partway through.
+//
+// The export is one long-lived response of a hundred-odd megabytes, and the
+// client's own retry can only replay a request that never returned a status.
+// A connection dropped after the header - "stream error: stream ID 1;
+// INTERNAL_ERROR" is the one seen in practice - lands past it, and used to end
+// the run with an empty catalog. Replaying from the top costs a second
+// download and is the only recovery available, since the export is not
+// resumable; reset undoes whatever the abandoned pass accumulated.
+func (scg *SCGClient) StreamCatalog(ctx context.Context, reset func(), fn func(CatalogProduct) error) error {
+	var err error
+	for attempt := 0; attempt < catalogAttempts; attempt++ {
+		if attempt > 0 {
+			reset()
+		}
+		err = scg.streamCatalogOnce(ctx, fn)
+		if err == nil {
+			return nil
+		}
+		// A cancelled context is the caller giving up, not a flaky peer.
+		if ctx.Err() != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func (scg *SCGClient) streamCatalogOnce(ctx context.Context, fn func(CatalogProduct) error) error {
+	body, err := scg.DownloadCatalog(ctx)
+	if err != nil {
+		return err
+	}
+	defer body.Close()
+	return decodeCatalog(body, fn)
 }
 
 // decodeCatalog streams the catalog array, invoking fn for each product without
