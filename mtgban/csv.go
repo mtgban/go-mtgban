@@ -447,7 +447,7 @@ func WriteArbitrageToCSV(arbitrage []ArbitEntry, w io.Writer) error {
 		bl := entry.BuylistEntry
 		inv := entry.InventoryEntry
 
-		record, err := cardID2record(entry.CardId)
+		record, err := cardID2record(entry.CardID)
 		if err != nil {
 			continue
 		}
@@ -506,7 +506,7 @@ func WriteMismatchToCSV(mismatch []ArbitEntry, w io.Writer) error {
 		inv := entry.InventoryEntry
 		ref := entry.ReferenceEntry
 
-		record, err := cardID2record(entry.CardId)
+		record, err := cardID2record(entry.CardID)
 		if err != nil {
 			continue
 		}
@@ -557,7 +557,7 @@ func WritePennyToCSV(penny []ArbitEntry, w io.Writer) error {
 	for _, entry := range penny {
 		inv := entry.InventoryEntry
 
-		record, err := cardID2record(entry.CardId)
+		record, err := cardID2record(entry.CardID)
 		if err != nil {
 			continue
 		}

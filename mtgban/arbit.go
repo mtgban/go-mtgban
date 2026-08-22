@@ -100,7 +100,7 @@ type ArbitOpts struct {
 // against InventoryEntry, Mismatch sets ReferenceEntry against InventoryEntry.
 type ArbitEntry struct {
 	// ID of the card
-	CardId string
+	CardID string
 
 	// The buylist used to determine Arbit
 	BuylistEntry BuylistEntry
@@ -135,7 +135,7 @@ type ArbitEntry struct {
 
 // ArbitEntry implements the Stringer interface
 func (ae ArbitEntry) String() string {
-	co, err := mtgmatcher.GetUUID(ae.CardId)
+	co, err := mtgmatcher.GetUUID(ae.CardID)
 	if err != nil {
 		return ""
 	}
@@ -400,7 +400,7 @@ func Arbit(opts *ArbitOpts, vendor Vendor, seller Seller) []ArbitEntry {
 			}
 
 			res := ArbitEntry{
-				CardId:             cardID,
+				CardID:             cardID,
 				BuylistEntry:       blEntry,
 				InventoryEntry:     invEntry,
 				Difference:         difference,
@@ -523,7 +523,7 @@ func Mismatch(opts *ArbitOpts, reference Seller, probe Seller) []ArbitEntry {
 				}
 
 				res := ArbitEntry{
-					CardId:         cardID,
+					CardID:         cardID,
 					InventoryEntry: invEntry,
 					ReferenceEntry: refEntry,
 					Difference:     difference,
@@ -601,7 +601,7 @@ func Pennystock(seller Seller, full bool, thresholds ...float64) []ArbitEntry {
 
 			if pennyMythic || pennyRare || pennyLand || pennyFoil || pennyPromo {
 				result = append(result, ArbitEntry{
-					CardId:         cardID,
+					CardID:         cardID,
 					InventoryEntry: entry,
 				})
 			}
