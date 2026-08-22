@@ -219,3 +219,21 @@ func TestSealedIsLanguageVariant(t *testing.T) {
 		}
 	}
 }
+
+// TestSealedTokensFoldAccents pins that an accented letter reads as a letter
+// rather than a word break. The token pattern is plain ASCII, so without the
+// fold "Pokémon" splits into "pok" and "mon" and matches nothing the catalog
+// spells without the accent - which is how every catalog but CardTrader's
+// and Cardmarket's spells it.
+func TestSealedTokensFoldAccents(t *testing.T) {
+	for _, tt := range []struct{ accented, plain string }{
+		{"Pokémon Center Elite Trainer Box", "Pokemon Center Elite Trainer Box"},
+		{"Mythical Pokémon Collection", "Mythical Pokemon Collection"},
+	} {
+		got := sealedTokens(tt.accented)
+		want := sealedTokens(tt.plain)
+		if !tokensEqual(got, want) {
+			t.Errorf("sealedTokens(%q) = %v, want the same as %q = %v", tt.accented, got, tt.plain, want)
+		}
+	}
+}
