@@ -506,3 +506,33 @@ func TestDecoratedNameSplit(t *testing.T) {
 		})
 	}
 }
+
+// TestSetTotalBreaksTheTie pins the set total deciding between reprints. The
+// number folds down to its digits to survive the padding storefronts vary,
+// which throws away the one part that tells "1/149" from "1/106"; without
+// the total these rows can only alias.
+func TestSetTotalBreaksTheTie(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"the edition names no set", mtgmatcher.InputCard{
+			Name: "Caterpie", Edition: "Sun & Moon", Variation: "1/149"}, "1-149_126872"},
+		{"and the reprint keeps its own total", mtgmatcher.InputCard{
+			Name: "Caterpie", Edition: "XY Flashfire", Variation: "1/106"}, "1-106_91134"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}

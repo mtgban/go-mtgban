@@ -378,11 +378,16 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return candidates
 	}
 
-	// A verbatim collector number beats a prefix-folded match.
+	// A verbatim collector number beats a prefix-folded match, and so does
+	// one whose set total agrees. The total is what separates a reprint
+	// from its original - Cascoon is 44/130 in Diamond & Pearl and 44/127
+	// in Platinum - and it is exactly the part the fold drops, which left
+	// this tier inert for the nine printings in ten the catalog writes a
+	// total on.
 	if number != "" {
 		var exact []mtgmatcher.Card
 		for _, card := range candidates {
-			if strings.EqualFold(number, card.Number) {
+			if strings.EqualFold(number, card.Number) || fullNumberMatches(inCard.Variation, card.Number) {
 				exact = append(exact, card)
 			}
 		}
@@ -619,6 +624,28 @@ func numberMatches(input, number string) bool {
 		return false
 	}
 	return foldNumber(input) == foldNumber(number)
+}
+
+// fullNumberMatches compares a storefront's collector number against the
+// catalog's with the set total kept, which is what the ordinary fold drops.
+// Both sides have to carry a total for the question to mean anything.
+func fullNumberMatches(variation, number string) bool {
+	numerator, total, found := strings.Cut(number, "/")
+	if !found {
+		return false
+	}
+	want := foldNumber(numerator) + "/" + strings.TrimLeft(total, "0")
+	for _, field := range strings.Fields(variation) {
+		numerator, total, found := strings.Cut(field, "/")
+		if !found {
+			continue
+		}
+		got := foldNumber(numerator) + "/" + strings.TrimLeft(strings.TrimRight(total, " ,."), "0")
+		if strings.EqualFold(got, want) {
+			return true
+		}
+	}
+	return false
 }
 
 // numbersMatchCard reports whether any of the collector numbers a wording
