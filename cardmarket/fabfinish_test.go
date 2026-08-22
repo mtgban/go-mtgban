@@ -12,6 +12,10 @@ func TestFabFinish(t *testing.T) {
 		{"Tales of Aria - First", "Deep Blue (Regular)", "1st Edition Normal"},
 		{"Tales of Aria - Unlimited", "Thump (Blue) (Rainbow Foil)", "Unlimited Edition Rainbow Foil"},
 		{"Tales of Aria - Unlimited", "Runaways (Regular)", "Unlimited Edition Normal"},
+		// Welcome to Rathe's first run is the one the catalog calls Alpha,
+		// and the datastore files under every other set's 1st Edition.
+		{"Welcome to Rathe - Alpha", "Last Ditch Effort (Regular)", "1st Edition Normal"},
+		{"Welcome to Rathe - Alpha", "Sink Below (Red) (Rainbow Foil)", "1st Edition Rainbow Foil"},
 		// No run named: the treatment alone still names a printing, unless
 		// it is the plain one the id already answers with.
 		{"LSS Promos", "Go Bananas (Rainbow Foil)", "Rainbow Foil"},
@@ -22,6 +26,35 @@ func TestFabFinish(t *testing.T) {
 	} {
 		if got := fabFinish(tt.expansion, tt.name); got != tt.want {
 			t.Errorf("fabFinish(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
+		}
+	}
+}
+
+// TestFabPrintRun pins the split matchProduct looks a set up through: the
+// datastore has one Monarch, Cardmarket has one expansion per print run of
+// it, and the suffix that says which run is not part of any set's name.
+// Only the run suffixes come off - Cardmarket spells plenty of other things
+// after a dash, and those expansions name sets of their own.
+func TestFabPrintRun(t *testing.T) {
+	for _, tt := range []struct{ expansion, run, set string }{
+		{"Monarch - First", "1st Edition", "Monarch"},
+		{"Monarch - Unlimited", "Unlimited Edition", "Monarch"},
+		{"Welcome to Rathe - Alpha", "1st Edition", "Welcome to Rathe"},
+		{"Everfest - First", "1st Edition", "Everfest"},
+		// The set sold in a single run says nothing, and neither does a
+		// suffix naming something other than a run.
+		{"Uprising", "", "Uprising"},
+		{"Monarch - Boltyn Blitz Deck", "", "Monarch - Boltyn Blitz Deck"},
+		{"History Pack 1 - Black Label", "", "History Pack 1 - Black Label"},
+		{"Silver Age Deck - Bravo", "", "Silver Age Deck - Bravo"},
+		// The suffix is the whole tail or it is not a run.
+		{"First", "", "First"},
+		{"Arcane Rising - Firstborn", "", "Arcane Rising - Firstborn"},
+	} {
+		run, set := fabPrintRun(tt.expansion)
+		if run != tt.run || set != tt.set {
+			t.Errorf("fabPrintRun(%q) = (%q, %q), want (%q, %q)",
+				tt.expansion, run, set, tt.run, tt.set)
 		}
 	}
 }
