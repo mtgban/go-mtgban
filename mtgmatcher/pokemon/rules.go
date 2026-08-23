@@ -309,6 +309,14 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			}
 		}
 	}
+	// The sequin holo printings are the General Mills cereal promos, which
+	// the catalog files in Miscellaneous Cards & Products under the promo
+	// set's own numbering. The promo set a sequin listing names carries
+	// only the plain printing, and landing there would file the sequin
+	// price under the plain product's uuid.
+	if mtgmatcher.SlugDescribes(inCard.Variation, "sequin") {
+		edition = "Miscellaneous Cards & Products"
+	}
 	inCard.Edition = edition
 
 	widenQualifiedName(b, inCard)
@@ -493,6 +501,77 @@ func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 // that order. A bare input facing several labels keeps them all and surfaces
 // as an aliasing error rather than a guess.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
+	candidates := filterCandidates(b, inCard, cardSet)
+
+	// A wording naming a stamp or a misprint prices a physical variant the
+	// plain printing is not: "Pokemon Center Stamped", "Professor Program
+	// Stamp", "Partial 1st Ed Stamp Misprint". When no surviving candidate
+	// wears a stamp label, whatever survived is the unstamped product, and
+	// pricing it would file the variant's price under the plain uuid - the
+	// wording can even describe a label the candidate does wear ("Cosmos
+	// Holo" beside the stamp) without the stamp being the one it wears.
+	// Candidates that do wear stamp labels are left to the ordinary
+	// tiering: the wording and the label can spell the same stamp
+	// differently.
+	if len(candidates) > 0 && demandsStamp(inCard.Variation) {
+		stamped := false
+		for _, card := range candidates {
+			for _, promoType := range card.PromoTypes {
+				if strings.Contains(promoType, "stamp") {
+					stamped = true
+				}
+			}
+		}
+		if !stamped {
+			return nil
+		}
+	}
+
+	// A wording naming the Cosmos Holo outright has to reach a printing
+	// that can be one: a candidate wearing the label, or at least selling
+	// a holo entry the finish resolution can land on. What survives
+	// otherwise is a plain printing that happens to share the number -
+	// the treated printing lives in a set the edition does not admit -
+	// and pricing it would file the holo's price under the plain uuid.
+	// A wording naming the plain treatment too is the ambiguity the
+	// tiering already surfaces, and is left alone.
+	if len(candidates) > 0 && !describesPlain(inCard.Variation) &&
+		mtgmatcher.SlugDescribes(inCard.Variation, "cosmosholo") {
+		var cosmos []mtgmatcher.Card
+		for _, card := range candidates {
+			if wearsCosmosOrHolo(&card) {
+				cosmos = append(cosmos, card)
+			}
+		}
+		candidates = cosmos
+	}
+	return candidates
+}
+
+// wearsCosmosOrHolo reports whether the printing can be the Cosmos Holo a
+// wording names: it wears a cosmos label, or it sells some holo entry.
+func wearsCosmosOrHolo(card *mtgmatcher.Card) bool {
+	for _, promoType := range card.PromoTypes {
+		if strings.Contains(promoType, "cosmos") {
+			return true
+		}
+	}
+	for key := range card.FoilUUIDs {
+		if strings.Contains(key, "holo") {
+			return true
+		}
+	}
+	return false
+}
+
+// demandsStamp reports whether the wording names a stamped or misprinted
+// variant.
+func demandsStamp(variation string) bool {
+	variation = strings.ToLower(variation)
+	return strings.Contains(variation, "stamp") || strings.Contains(variation, "misprint")
+}
+
+func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	// A pooled storefront name restricts the candidates to its pair of
 	// sets outright: the edition kept the name, so nothing upstream could
 	// narrow, and falling through past the pool would price a card the
@@ -534,13 +613,22 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// from its original - Cascoon is 44/130 in Diamond & Pearl and 44/127
 	// in Platinum - and it is exactly the part the fold drops, which left
 	// this tier inert for the nine printings in ten the catalog writes a
-	// total on.
+	// total on. An agreeing total also beats a verbatim bare number: the
+	// wording that spells "13/147" names the 147-card set's printing, not
+	// the promo the catalog numbers a bare "13".
 	if number != "" {
-		var exact []mtgmatcher.Card
+		var plain, full []mtgmatcher.Card
 		for _, card := range candidates {
-			if strings.EqualFold(number, card.Number) || fullNumberMatches(inCard.Variation, card.Number) {
-				exact = append(exact, card)
+			switch {
+			case fullNumberMatches(inCard.Variation, card.Number):
+				full = append(full, card)
+			case strings.EqualFold(number, card.Number):
+				plain = append(plain, card)
 			}
+		}
+		exact := full
+		if len(exact) == 0 {
+			exact = plain
 		}
 		if len(exact) > 0 && len(exact) < len(candidates) {
 			candidates = exact
@@ -586,6 +674,9 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		if number != "" && !numberMatchesCard(b, number, &card) {
 			continue
 		}
+		if totalDisagrees(inCard.Variation, card.Number) {
+			continue
+		}
 		// An input naming a treatment re-keys the copy's FoilUUIDs so the
 		// flag-driven resolution downstream lands on that printing. Both
 		// slots move together: the input named the printing outright, and
@@ -625,12 +716,27 @@ func tierByLabel(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []m
 		}
 	}
 	if len(described) > 0 {
+		// A wording can spell two treatments at once: CardTrader files the
+		// plain and the Cosmos Holo printing of a number under one
+		// blueprint and writes "Non-Holo / Cosmos Holo" for both. The
+		// listing does not say which it prices, so both stand and the
+		// ambiguity surfaces rather than every copy repricing the holo.
+		if len(base) > 0 && describesPlain(inCard.Variation) {
+			return append(base, described...)
+		}
 		return described
 	}
 	if len(base) > 0 {
 		return base
 	}
 	return labelled
+}
+
+// describesPlain reports whether the wording names the untreated printing:
+// the "Non-Holo" the storefronts write it with.
+func describesPlain(variation string) bool {
+	variation = strings.ToLower(variation)
+	return strings.Contains(variation, "non-holo") || strings.Contains(variation, "non holo")
 }
 
 // finishUUID resolves the entry an input's finish names, from the finish
@@ -798,6 +904,51 @@ func subsetOf(b *mtgmatcher.Backend, cardSet map[string][]mtgmatcher.Card, code 
 	}
 	set, subset := b.Sets[parent], b.Sets[code]
 	return set != nil && subset != nil && strings.HasPrefix(subset.Name, set.Name)
+}
+
+// totalDisagrees reports whether the wording spells the card's own
+// numerator with a set total that contradicts the card's. The total names
+// the set as surely as the number names the card - "Non-Holo | 053/167" is
+// the 167-card set's 53, and the fold that drops it is what let that
+// wording price the 53/094 of another collection. Only agreement between
+// two spelled-out totals can clear a contradiction, and a wording spelling
+// the numerator with no total at all vetoes nothing.
+func totalDisagrees(variation, number string) bool {
+	numerator, total, found := strings.Cut(number, "/")
+	if !found {
+		return false
+	}
+	want := foldTotal(total)
+	if want == "" {
+		return false
+	}
+	saw := false
+	for _, field := range strings.Fields(variation) {
+		fieldNumerator, fieldTotal, cut := strings.Cut(field, "/")
+		if !cut || foldNumber(fieldNumerator) != foldNumber(numerator) {
+			continue
+		}
+		got := foldTotal(fieldTotal)
+		if got == "" {
+			continue
+		}
+		if got == want {
+			return false
+		}
+		saw = true
+	}
+	return saw
+}
+
+// foldTotal reduces a set total to its digits, dropping the zero padding
+// and whatever trails the digit run ("017" and "17h" both fold to "17").
+// A total that does not open with a digit folds away entirely.
+func foldTotal(total string) string {
+	end := 0
+	for end < len(total) && total[end] >= '0' && total[end] <= '9' {
+		end++
+	}
+	return strings.TrimLeft(total[:end], "0")
 }
 
 // fullNumberMatches compares a storefront's collector number against the

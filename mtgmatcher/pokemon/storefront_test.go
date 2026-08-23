@@ -147,3 +147,82 @@ func TestStorefrontNameTails(t *testing.T) {
 		t.Errorf("Prefilter rewrote %q to %q", "Heatran LV.X", in.Name)
 	}
 }
+
+// TestVersionWording pins what the ride-along Version buys and what its
+// guards refuse: an agreeing set total outranks a bare verbatim number, a
+// contradicting total vetoes the candidate, a wording spelling both
+// treatments stays ambiguous, and the stamp, sequin and cosmos wordings
+// never land on a plain printing.
+func TestVersionWording(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"an agreeing total beats the bare promo number", mtgmatcher.InputCard{
+			Name: "Venusaur", Edition: "Supreme Victors Promos", Variation: "013/147 Non-Holo Theme Deck | 13/147"},
+			"013-147_125073"},
+		{"a wording spelling both treatments stays ambiguous", mtgmatcher.InputCard{
+			Name: "Counter Catcher", Edition: "Play! Pokémon Prize Pack Series", Variation: "160 Non-Holo / Cosmos Holo | PAR 160"},
+			""},
+		{"a stamp wording refuses the unstamped printing", mtgmatcher.InputCard{
+			Name: "Rapidash", Edition: "Wizards Black Star Promos", Variation: "051pc Pokemon Center Stamped | 51"},
+			""},
+		{"a stamp wording still reaches a stamped sibling", mtgmatcher.InputCard{
+			Name: "Buddy-Buddy Poffin", Edition: "League Promos", Variation: "144staff STAFF | Reverse Holo 144",
+			Finish: "Reverse Holofoil", Foil: true},
+			"144-162_638139_reverse"},
+		{"a sequin wording reaches the general mills printing", mtgmatcher.InputCard{
+			Name: "Jangmo-o", Edition: "SM Black Star Promos", Variation: "SM40sq Sequin Holo Promo | SM40"},
+			"sm40_161466_holo"},
+		{"a cosmos wording refuses a printing that cannot be one", mtgmatcher.InputCard{
+			Name: "Fezandipiti", Edition: "Theme Deck & Blisters Exclusives", Variation: "096 Cosmos Holo | 096/167"},
+			""},
+		{"a cosmos wording keeps a printing selling the holo", mtgmatcher.InputCard{
+			Name: "Eevee", Edition: "Wizards Black Star Promos", Variation: "011 Cosmos Holo 11"},
+			"11-53_85074_holo"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if tt.want == "" {
+				if err == nil {
+					t.Fatalf("Match(%v) = %s (%v), want an error", tt.in, id, b.UUIDs[id])
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+}
+
+// TestTotalDisagrees pins the veto's edges: only two spelled-out totals can
+// contradict, an agreeing field clears a decorated one, and a wording with
+// no total for the numerator vetoes nothing.
+func TestTotalDisagrees(t *testing.T) {
+	for _, tt := range []struct {
+		variation, number string
+		want              bool
+	}{
+		{"Non-Holo | 053/167", "053/094", true},
+		{"Holo Promo | 013/025", "013/025", false},
+		// The blueprint's own decorated field disagrees, the version's
+		// clean one agrees, and agreement wins.
+		{"02/17h Holo Promo | 2/17", "002/017", false},
+		// No slashed field for the numerator: nothing to compare.
+		{"144staff STAFF | Reverse Holo 144", "144/162", false},
+		// A card number with no total cannot be contradicted.
+		{"Non-Holo | 053/167", "053", false},
+	} {
+		if got := totalDisagrees(tt.variation, tt.number); got != tt.want {
+			t.Errorf("totalDisagrees(%q, %q) = %v, want %v", tt.variation, tt.number, got, tt.want)
+		}
+	}
+}
