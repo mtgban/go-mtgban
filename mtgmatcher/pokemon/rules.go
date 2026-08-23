@@ -1,6 +1,7 @@
 package pokemon
 
 import (
+	"maps"
 	"regexp"
 	"slices"
 	"strings"
@@ -505,9 +506,7 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		uuid := finishUUID(b, inCard, &card)
 		if uuid != "" {
 			foilUUIDs := make(map[string]string, len(card.FoilUUIDs))
-			for k, v := range card.FoilUUIDs {
-				foilUUIDs[k] = v
-			}
+			maps.Copy(foilUUIDs, card.FoilUUIDs)
 			foilUUIDs[mtgmatcher.FinishNonfoil] = uuid
 			foilUUIDs[mtgmatcher.FinishFoil] = uuid
 			card.FoilUUIDs = foilUUIDs
