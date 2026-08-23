@@ -128,7 +128,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"abugames_sealed": &scraperOption{
+	"abugames_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := abugames.NewScraperSealed()
 			scraper.LogCallback = GlobalLogCallback
@@ -326,7 +326,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"miniaturemarket_sealed_lorcana": &scraperOption{
+	"miniaturemarket_sealed_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameLorcana)
 			scraper.LogCallback = GlobalLogCallback
@@ -337,7 +337,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"miniaturemarket_sealed_riftbound": &scraperOption{
+	"miniaturemarket_sealed_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameRiftbound)
 			scraper.LogCallback = GlobalLogCallback
@@ -348,7 +348,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"miniaturemarket_sealed_onepiece": &scraperOption{
+	"miniaturemarket_sealed_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameOnePiece)
 			scraper.LogCallback = GlobalLogCallback
@@ -616,7 +616,7 @@ var options = map[string]*scraperOption{
 		},
 	},
 
-	"cardmarket_lorcana": &scraperOption{
+	"cardmarket_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -636,7 +636,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardtrader_lorcana": &scraperOption{
+	"cardtrader_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 			if ctTokenBearer == "" {
@@ -655,7 +655,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardmarket_sealed_lorcana": &scraperOption{
+	"cardmarket_sealed_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -679,7 +679,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardtrader_sealed_lorcana": &scraperOption{
+	"cardtrader_sealed_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 			if ctTokenBearer == "" {
@@ -698,7 +698,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_sealed_lorcana": &scraperOption{
+	"coolstuffinc_sealed_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameLorcana)
 			scraper.LogCallback = GlobalLogCallback
@@ -709,7 +709,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_lorcana": &scraperOption{
+	"coolstuffinc_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper(coolstuffinc.GameLorcana)
 			scraper.LogCallback = GlobalLogCallback
@@ -720,7 +720,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"starcitygames_sealed_lorcana": &scraperOption{
+	"starcitygames_sealed_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			scgAPIKey := os.Getenv("SCG_API_KEY")
 			if scgAPIKey == "" {
@@ -732,7 +732,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"starcitygames_lorcana": &scraperOption{
+	"starcitygames_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			scgAPIKey := os.Getenv("SCG_API_KEY")
 			if scgAPIKey == "" {
@@ -745,7 +745,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"strikezone_lorcana": &scraperOption{
+	"strikezone_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := strikezone.NewScraper(strikezone.GameLorcana)
 			scraper.LogCallback = GlobalLogCallback
@@ -755,7 +755,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_index_lorcana": &scraperOption{
+	"tcg_index_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -774,7 +774,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_market_lorcana": &scraperOption{
+	"tcg_market_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -793,7 +793,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_sealed_lorcana": &scraperOption{
+	"tcg_sealed_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -813,7 +813,7 @@ var options = map[string]*scraperOption{
 		},
 	},
 
-	"cardmarket_riftbound": &scraperOption{
+	"cardmarket_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -833,7 +833,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardmarket_onepiece": &scraperOption{
+	"cardmarket_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -925,7 +925,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardtrader_riftbound": &scraperOption{
+	"cardtrader_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 			if ctTokenBearer == "" {
@@ -944,7 +944,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardtrader_onepiece": &scraperOption{
+	"cardtrader_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 			if ctTokenBearer == "" {
@@ -1020,7 +1020,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardmarket_sealed_riftbound": &scraperOption{
+	"cardmarket_sealed_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -1044,7 +1044,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardmarket_sealed_onepiece": &scraperOption{
+	"cardmarket_sealed_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
 			mkmAppSecret := os.Getenv("MKM_APP_SECRET")
@@ -1140,7 +1140,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardtrader_sealed_riftbound": &scraperOption{
+	"cardtrader_sealed_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 			if ctTokenBearer == "" {
@@ -1159,7 +1159,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardtrader_sealed_onepiece": &scraperOption{
+	"cardtrader_sealed_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			ctTokenBearer := os.Getenv("CARDTRADER_TOKEN_BEARER")
 			if ctTokenBearer == "" {
@@ -1235,7 +1235,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_sealed_riftbound": &scraperOption{
+	"coolstuffinc_sealed_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameRiftbound)
 			scraper.LogCallback = GlobalLogCallback
@@ -1246,7 +1246,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_onepiece": &scraperOption{
+	"coolstuffinc_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper(coolstuffinc.GameOnePiece)
 			scraper.LogCallback = GlobalLogCallback
@@ -1257,7 +1257,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_pokemon": &scraperOption{
+	"coolstuffinc_pokemon": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper(coolstuffinc.GamePokemon)
 			scraper.LogCallback = GlobalLogCallback
@@ -1268,7 +1268,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_sealed_onepiece": &scraperOption{
+	"coolstuffinc_sealed_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameOnePiece)
 			scraper.LogCallback = GlobalLogCallback
@@ -1279,7 +1279,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_sealed_pokemon": &scraperOption{
+	"coolstuffinc_sealed_pokemon": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GamePokemon)
 			scraper.LogCallback = GlobalLogCallback
@@ -1290,7 +1290,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"coolstuffinc_riftbound": &scraperOption{
+	"coolstuffinc_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraper(coolstuffinc.GameRiftbound)
 			scraper.LogCallback = GlobalLogCallback
@@ -1301,14 +1301,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"merlion_riftbound": &scraperOption{
+	"merlion_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := merlion.NewScraper()
 			scraper.LogCallback = GlobalLogCallback
 			return scraper, nil
 		},
 	},
-	"starcitygames_sealed_riftbound": &scraperOption{
+	"starcitygames_sealed_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			scgAPIKey := os.Getenv("SCG_API_KEY")
 			if scgAPIKey == "" {
@@ -1320,7 +1320,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"starcitygames_riftbound": &scraperOption{
+	"starcitygames_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			scgAPIKey := os.Getenv("SCG_API_KEY")
 			if scgAPIKey == "" {
@@ -1358,7 +1358,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_index_riftbound": &scraperOption{
+	"tcg_index_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -1377,7 +1377,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_index_onepiece": &scraperOption{
+	"tcg_index_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -1453,7 +1453,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_market_riftbound": &scraperOption{
+	"tcg_market_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -1472,7 +1472,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_market_onepiece": &scraperOption{
+	"tcg_market_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -1548,7 +1548,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_sealed_riftbound": &scraperOption{
+	"tcg_sealed_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
@@ -1567,7 +1567,7 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"tcg_sealed_onepiece": &scraperOption{
+	"tcg_sealed_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
 			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
