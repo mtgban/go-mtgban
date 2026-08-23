@@ -314,7 +314,7 @@ type Product struct {
 	PriceCents    int     `json:"price_cents"`
 	PriceCurrency string  `json:"price_currency"`
 	Price         CTPrice `json:"price"`
-	BuyerPrice    CTPrice `json:"buyer_price,omitempty"`
+	BuyerPrice    CTPrice `json:"buyer_price"`
 }
 
 // BlueprintError is what the catalog answers with when a blueprint cannot be
@@ -528,7 +528,7 @@ type BulkProduct struct {
 		Foil      bool   `json:"mtg_foil,omitempty"`
 		Signed    bool   `json:"signed,omitempty"`
 		Altered   bool   `json:"altered,omitempty"`
-	} `json:"properties,omitempty"`
+	} `json:"properties"`
 }
 
 // ProductsExport returns your own listings.

@@ -54,7 +54,7 @@ type GalleryBlade struct {
 	// before this was recorded simply loads without sealed products.
 	Sealed struct {
 		Items []GallerySealed `json:"items"`
-	} `json:"sealed,omitempty"`
+	} `json:"sealed"`
 }
 
 // GallerySealed is a sealed product: a booster box, a display, a starter
