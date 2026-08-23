@@ -592,7 +592,7 @@ type sellerInventoryListingRequest struct {
 			} `json:"quantity"`
 			DirectInventory struct {
 				Gte int `json:"gte,omitempty"`
-			} `json:"directInventory,omitempty"`
+			} `json:"directInventory"`
 		} `json:"range"`
 		Exclude struct {
 			ChannelExclusion int `json:"channelExclusion"`
