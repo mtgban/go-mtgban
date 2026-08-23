@@ -263,10 +263,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 			cardName := product.ModelEn
 			edition := product.Category
 			price := product.MinAcquisto
-			qty := product.Quantity
-			if qty > 4 {
-				qty = 4
-			}
+			qty := min(product.Quantity, 4)
 
 			if price == 0 {
 				continue

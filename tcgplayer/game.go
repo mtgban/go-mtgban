@@ -145,10 +145,7 @@ func (tcg *TCGGame) processPage(ctx context.Context, channel chan<- genericChan,
 
 	for i := 0; i < len(skuIDs); i += tcgplayer.MaxIDsInRequest {
 		start := i
-		end := i + tcgplayer.MaxIDsInRequest
-		if end > len(skuIDs) {
-			end = len(skuIDs)
-		}
+		end := min(i+tcgplayer.MaxIDsInRequest, len(skuIDs))
 
 		results, err := tcg.client.GetMarketPricesBySKUs(ctx, skuIDs[start:end])
 		if err != nil {
