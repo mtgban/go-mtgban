@@ -779,8 +779,8 @@ func (c *InputCard) IsSerialized() bool {
 // PossibleNumberSuffix returns a lone letter from the variation, lowercased,
 // which is how storefronts often carry the suffix of a collector number.
 func (c *InputCard) PossibleNumberSuffix() string {
-	fields := strings.Fields(c.Variation)
-	for _, field := range fields {
+	fields := strings.FieldsSeq(c.Variation)
+	for field := range fields {
 		if len(field) == 1 && unicode.IsLetter(rune(field[0])) {
 			return strings.ToLower(field)
 		}

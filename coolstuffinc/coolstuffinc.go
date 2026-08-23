@@ -100,7 +100,7 @@ func buylistVariation(product CSIPriceEntry) string {
 		return product.Number
 	}
 	words := []string{product.Number}
-	for _, word := range strings.Fields(product.Notes) {
+	for word := range strings.FieldsSeq(product.Notes) {
 		if buylistNumberWord.MatchString(word) {
 			continue
 		}

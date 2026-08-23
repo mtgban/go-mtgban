@@ -374,7 +374,7 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // flag-driven default.
 func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
 	var edition, treatment string
-	for _, word := range strings.Fields(strings.ToLower(inCard.Variation)) {
+	for word := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
 		switch word {
 		case "1st", "first", "alpha":
 			// cardtrader's alpha print run sells as TCGplayer's 1st Edition

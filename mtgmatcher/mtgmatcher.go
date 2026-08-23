@@ -241,7 +241,7 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		if found {
 			inCard.Language = lang
 		} else {
-			for _, field := range strings.Fields(inCard.Language) {
+			for field := range strings.FieldsSeq(inCard.Language) {
 				field = Title(field)
 				if slices.Contains(allLanguageTags, field) {
 					inCard.Language = field

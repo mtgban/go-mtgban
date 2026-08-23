@@ -565,7 +565,7 @@ func wantsVariant(inCard *mtgmatcher.InputCard, number string) bool {
 	if number != "" && number[len(number)-1] >= 'a' {
 		return true
 	}
-	for _, field := range strings.Fields(strings.ToLower(inCard.Variation)) {
+	for field := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
 		if strings.HasPrefix(field, "v.") && field != "v.1" {
 			return true
 		}

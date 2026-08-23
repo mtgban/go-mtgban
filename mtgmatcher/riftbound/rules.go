@@ -112,7 +112,7 @@ func qualifiedPromoName(b *mtgmatcher.Backend, base, qualifier string) string {
 	// which folds a whole string into one token and would collapse
 	// "Champion Stamp" into a single word matching nothing.
 	said := map[string]bool{}
-	for _, word := range strings.Fields(strings.ToLower(qualifier)) {
+	for word := range strings.FieldsSeq(strings.ToLower(qualifier)) {
 		said[word] = true
 	}
 
@@ -127,7 +127,7 @@ func qualifiedPromoName(b *mtgmatcher.Backend, base, qualifier string) string {
 			continue
 		}
 		describes := true
-		for _, word := range strings.Fields(strings.ToLower(strings.Join(vars[1:], " "))) {
+		for word := range strings.FieldsSeq(strings.ToLower(strings.Join(vars[1:], " "))) {
 			if !said[word] {
 				describes = false
 				break
@@ -546,7 +546,7 @@ func leadingNumber(number string) int {
 // along with it.
 func qualifierWords(variation string) []string {
 	var out []string
-	for _, field := range strings.Fields(strings.ToLower(variation)) {
+	for field := range strings.FieldsSeq(strings.ToLower(variation)) {
 		if strings.ContainsAny(field, "0123456789") {
 			continue
 		}
@@ -584,7 +584,7 @@ func wordsDescribe(wording string, promoTypes []string) bool {
 // collide, since no published number ends in a letter other than a, b or c.
 func extractNumber(variation string) string {
 	number := ""
-	for _, field := range strings.Fields(variation) {
+	for field := range strings.FieldsSeq(variation) {
 		if strings.ContainsAny(field, "0123456789") {
 			number = field
 			break

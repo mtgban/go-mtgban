@@ -257,8 +257,8 @@ func ExtractNumberValue(str string) string {
 // of some special characters like parenthesis (ignored) and abbreviations
 // (so '06 becomes 2006).
 func ExtractYear(str string) string {
-	fields := strings.Fields(str)
-	for _, field := range fields {
+	fields := strings.FieldsSeq(str)
+	for field := range fields {
 		// Drop characters that could interfere with the numeric part
 		field = strings.Replace(field, "(", "", -1)
 		field = strings.Replace(field, ")", "", -1)

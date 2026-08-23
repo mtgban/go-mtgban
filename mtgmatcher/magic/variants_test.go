@@ -42,7 +42,7 @@ func TestMultiPromoVariants(t *testing.T) {
 	var allKeys []string
 	for _, table := range multiPromosVariants {
 		for key := range table {
-			for _, subkey := range strings.Fields(key) {
+			for subkey := range strings.FieldsSeq(key) {
 				// This is a trick just to deal with IXL and RIX aliasing
 				switch subkey {
 				case "prerelease", "phyrexian", "alternate":

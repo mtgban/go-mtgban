@@ -83,7 +83,7 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		cardName = fields[0]
 		variation = strings.Join(fields[1:], " ")
 	case strings.HasPrefix(cardName, "B.F.M.") && strings.Contains(cardName, "#"):
-		for _, field := range strings.Fields(cardName) {
+		for field := range strings.FieldsSeq(cardName) {
 			if strings.HasPrefix(field, "#") {
 				cardName = "B.F.M."
 				variation = field[1:]
