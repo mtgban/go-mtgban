@@ -159,6 +159,11 @@ func productFinish(gameID int, product *MKMProduct) string {
 // a number like theirs.
 func (mkm *Index) matchProduct(product *MKMProduct) string {
 	edition := product.ExpansionName
+	// A non-English catalog wearing an English set's name passes that gate,
+	// so it needs one of its own.
+	if mkm.gameID == GamePokemon && pokemonForeignDenied(edition, product.Number) {
+		return ""
+	}
 	var printRun string
 	if mkm.gameID == GameFleshAndBlood {
 		// Cardmarket sells each print run as its own expansion
@@ -339,10 +344,11 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			return err
 		}
 	case GameYuGiOh, GameFleshAndBlood, GamePokemon:
-		// These catalogs carry no collector number and no version index,
-		// and same-name products abound, so a product resolves through the
-		// TCGplayer id the cardtrader bridge knows it by or not at all -
-		// name matching has nothing to distinguish on.
+		// Same-name products abound in these catalogs - and Yu-Gi-Oh and
+		// Flesh and Blood carry no collector number to tell them apart,
+		// though Pokemon does - so a product resolves through the
+		// TCGplayer id the cardtrader bridge knows it by first, and only
+		// falls back on what the catalog says of it.
 		if tcgID, found := mkm.TCGBridge[product.IDProduct]; found {
 			cardID, _ = mtgmatcher.MatchID(fmt.Sprint(tcgID), false)
 			// The flag lands on the product's default printing, where the
