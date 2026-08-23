@@ -43,6 +43,10 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
+	stripStorefrontTails(b, inCard)
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
+		return
+	}
 	name, tags := splitDecorations(b, inCard.Name)
 	if name == inCard.Name {
 		return
@@ -51,6 +55,66 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	for _, tag := range tags {
 		if tag != "" {
 			inCard.AddToVariant(tag)
+		}
+	}
+}
+
+// levelTailRe matches the level a storefront glues onto a Diamond &
+// Pearl-era name ("Moltres Lv.33"). Digits only, on purpose: the catalog
+// carries real "LV.X" names, and those must never be taken apart.
+var levelTailRe = regexp.MustCompile(`(?i)\s+Lv\.\s*\d+$`)
+
+// letterTailRe matches the single bracketed letter cardtrader tells the
+// Unown apart with ("Unown [J]").
+var letterTailRe = regexp.MustCompile(`\s+\[([A-Za-z])\]$`)
+
+// deltaTail is the delta-species wording some storefronts spell into the
+// EX-era names ("Deoxys δ Delta Species") where the catalog writes the bare
+// name.
+const deltaTail = " δ Delta Species"
+
+// stripStorefrontTails takes off the decorations a storefront writes into
+// the name itself, each only when the undecorated spelling is a name the
+// catalog knows - a real name wearing the same shape is never touched. The
+// stripped words move into the variation, where they can still tier the
+// label.
+//
+// The dash subtitle is a respelling rather than a strip: the catalog
+// brackets the trainer a Supporter names ("Boss's Orders [Cyrus]") where
+// cardtrader writes a dash, and the bracketed spelling is tried before the
+// bare head - the subtitle is what separates two Supporters sharing a
+// number's shape, so it must not be thrown away when the catalog kept it.
+func stripStorefrontTails(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	known := func(name string) bool {
+		_, found := b.CanonicalNames[mtgmatcher.Normalize(name)]
+		return found
+	}
+
+	if idx := strings.LastIndex(inCard.Name, " - "); idx > 0 {
+		head, tail := inCard.Name[:idx], strings.TrimSpace(inCard.Name[idx+3:])
+		if bracketed := head + " [" + tail + "]"; known(bracketed) {
+			inCard.Name = bracketed
+			return
+		}
+	}
+
+	for {
+		name := inCard.Name
+		// The level stays out of the variation: its digits would read as
+		// one more collector number and be asked before the real one.
+		if tail := levelTailRe.FindString(name); tail != "" && known(strings.TrimSuffix(name, tail)) {
+			inCard.Name = strings.TrimSuffix(name, tail)
+		}
+		if strings.HasSuffix(name, deltaTail) && known(strings.TrimSuffix(name, deltaTail)) {
+			inCard.Name = strings.TrimSuffix(name, deltaTail)
+			inCard.AddToVariant("Delta Species")
+		}
+		if m := letterTailRe.FindStringSubmatch(name); m != nil && known(strings.TrimSuffix(name, m[0])) {
+			inCard.Name = strings.TrimSuffix(name, m[0])
+			inCard.AddToVariant(m[1])
+		}
+		if inCard.Name == name {
+			return
 		}
 	}
 }
