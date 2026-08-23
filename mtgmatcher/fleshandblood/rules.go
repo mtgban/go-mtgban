@@ -3,6 +3,7 @@ package fleshandblood
 import (
 	"maps"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -38,6 +39,7 @@ const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 // Below (Red)") are part of the name.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	adjustQualifier(b, inCard)
+	adjustFusedName(b, inCard)
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
@@ -172,6 +174,139 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 	if match != "" {
 		inCard.Name = match
+	}
+}
+
+// fusedNamedBy answers the fused names spelled from the given name's faces,
+// in any order, by asking the canonical-name index for every ordering of the
+// deduplicated faces. Deduplication is what folds the doubled spelling
+// cardtrader sells a pairing under ("Gold // Golden Cog // Gold // Golden
+// Cog") onto its two faces. No index of face sets is kept: the datastore's
+// fused cards carry two faces - the token strips at most four - so the
+// orderings to ask about are few, and the backend is copied by value when a
+// datastore is installed, which leaves nothing stable to key a cache on.
+func fusedNamedBy(b *mtgmatcher.Backend, name string) []string {
+	split := strings.Split(name, "//")
+	if len(split) < 2 {
+		return nil
+	}
+	// Faces dedupe on their normalized form, the way the doubled spelling
+	// folds whatever case it arrives in; the first spelling speaks for its
+	// face in the candidates, whose lookup normalizes the whole name anyway.
+	var faces, seen []string
+	for _, face := range split {
+		norm := mtgmatcher.Normalize(face)
+		if !slicesContains(seen, norm) {
+			seen = append(seen, norm)
+			faces = append(faces, strings.TrimSpace(face))
+		}
+	}
+	var names []string
+	permuteFaces(faces, 0, func(ordered []string) {
+		canonical, found := b.CanonicalNames[mtgmatcher.Normalize(strings.Join(ordered, " // "))]
+		if found && !slicesContains(names, canonical) {
+			names = append(names, canonical)
+		}
+	})
+	return names
+}
+
+// permuteFaces hands fn every ordering of faces, permuting in place from
+// position i on.
+func permuteFaces(faces []string, i int, fn func([]string)) {
+	if i == len(faces)-1 {
+		fn(faces)
+		return
+	}
+	for j := i; j < len(faces); j++ {
+		faces[i], faces[j] = faces[j], faces[i]
+		permuteFaces(faces, i+1, fn)
+		faces[i], faces[j] = faces[j], faces[i]
+	}
+}
+
+func slicesContains(names []string, name string) bool {
+	for _, n := range names {
+		if n == name {
+			return true
+		}
+	}
+	return false
+}
+
+// adjustFusedName adopts the datastore's spelling of a fused card whose two
+// faces the storefront wrote in the opposite order: cardtrader sells
+// "Spectral Shield // Soul Shackle" where the datastore files "Soul Shackle
+// // Spectral Shield", the same physical card. The faces identify the card
+// whichever way they are written, so the unordered face set is what is
+// looked up.
+//
+// The order cannot be flipped blindly, because both orders can be real
+// cards: "Quicken // Harmonized Kodachi" is a promo of its own beside the
+// Welcome to Rathe "Harmonized Kodachi // Quicken". So an input whose own
+// spelling has a printing at its pair number is left alone, and past that
+// the pair number picks among the spellings; only with no number to ask
+// does a unique spelling answer by the faces alone.
+//
+// The collector number sometimes needs more than the flip the unordered
+// compare in numberMatches already gives it: cardtrader's Monarch hero
+// numbers disagree with the datastore's outright (its "MON220//MON068" pair
+// is the datastore's MON088//MON002), so when the input's pair names no
+// printing of the adopted name, the number every printing agrees on
+// replaces it - the faces already identified the card, and a pair kept
+// wrong would gate the match right back out. A number the printings
+// disagree on is left alone for the edition to settle.
+func adjustFusedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	if !strings.Contains(inCard.Name, "//") {
+		return
+	}
+	pair := pairNumberRe.FindString(inCard.Variation)
+	if pair != "" && numberedAs(b, inCard.Name, pair) {
+		return
+	}
+	names := fusedNamedBy(b, inCard.Name)
+	name := ""
+	if pair != "" {
+		for _, candidate := range names {
+			if !numberedAs(b, candidate, pair) {
+				continue
+			}
+			if name != "" {
+				return
+			}
+			name = candidate
+		}
+	}
+	if name == "" {
+		// No spelling carries the number (or none was given): only a
+		// unique spelling can answer, and an input already canonical
+		// with no number saying otherwise stays as it is.
+		if len(names) != 1 {
+			return
+		}
+		if _, canonical := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; canonical && pair == "" {
+			return
+		}
+		name = names[0]
+	}
+	inCard.Name = name
+
+	if pair == "" || numberedAs(b, name, pair) {
+		return
+	}
+	number := ""
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed {
+			continue
+		}
+		if number != "" && !strings.EqualFold(canonicalNumber(number), canonicalNumber(co.Number)) {
+			return
+		}
+		number = co.Number
+	}
+	if number != "" {
+		inCard.Variation = strings.Replace(inCard.Variation, pair, number, 1)
 	}
 }
 
@@ -462,6 +597,14 @@ func numberMatches(input, full string) bool {
 	if foldNumber(ci) == foldNumber(cf) {
 		return true
 	}
+	// A fused card's pair is written in whichever order its faces were, so
+	// two pairs compare as sets: cardtrader's "MON104//MON186" is the
+	// catalog's "MON186//MON104". Two faces identify one card, so an
+	// unordered compare cannot cross products.
+	if strings.Contains(ci, "/") && strings.Contains(cf, "/") &&
+		sortedPair(ci) == sortedPair(cf) {
+		return true
+	}
 	trimmed := strings.TrimRight(ci, letters)
 	if trimmed != ci && strings.EqualFold(trimmed, cf) {
 		return true
@@ -473,6 +616,18 @@ func numberMatches(input, full string) bool {
 	inFront, _, _ := strings.Cut(ci, "/")
 	inFront = strings.TrimRight(inFront, letters)
 	return isAllDigits(inFront) && canonicalTail(inFront) == canonicalTail(digitTail(front))
+}
+
+// sortedPair folds a pair number's halves and sorts them, so the two orders
+// a fused card's number is written in compare equal whatever padding or case
+// either half arrived with. Numbers that are not pairs fold whole.
+func sortedPair(number string) string {
+	halves := strings.Split(number, "/")
+	for i, half := range halves {
+		halves[i] = foldNumber(half)
+	}
+	sort.Strings(halves)
+	return strings.Join(halves, "/")
 }
 
 func isAllDigits(number string) bool {
