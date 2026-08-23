@@ -191,7 +191,8 @@ func reprintedByYear(name, candidate string) bool {
 }
 
 // AdjustEdition trims the game-name prefix and "Singles" suffix storefronts
-// decorate set names with, and drops the headings that name no set of ours.
+// decorate set names with, rewrites the names editionAliases carries, and
+// drops the headings that name no set of ours.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
 	for _, prefix := range []string{"Pokemon TCG", "Pokemon", "Pokémon"} {
@@ -226,7 +227,10 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			known = err == nil
 		}
 		if !known {
-			name := promoSetNamed(b, edition)
+			name := normalizedEditionAliases()[mtgmatcher.Normalize(edition)]
+			if name == "" {
+				name = promoSetNamed(b, edition)
+			}
 			if name == "" {
 				name = setNamedByHead(b, edition)
 			}
