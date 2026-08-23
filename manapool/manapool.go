@@ -1,4 +1,4 @@
-// Package manapool scrapes Manapool, for singles and sealed product.
+// Package manapool scrapes Mana Pool, for singles and sealed product.
 package manapool
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// Manapool prices Mana Pool's singles, both what they sell and what they buy.
+// Manapool prices Mana Pool's catalog.
 type Manapool struct {
 	LogCallback mtgban.LogCallbackFunc
 	Partner     string
@@ -20,7 +20,7 @@ type Manapool struct {
 	inventory     mtgban.InventoryRecord
 }
 
-// NewScraper returns a singles scraper.
+// Manapool prices Mana Pool's singles, both what they sell and what they buy.
 func NewScraper() *Manapool {
 	mp := Manapool{}
 	mp.inventory = mtgban.InventoryRecord{}
@@ -146,7 +146,7 @@ func (mp *Manapool) Inventory() mtgban.InventoryRecord {
 
 // Info describes this scraper. See mtgban.Scraper.
 func (mp *Manapool) Info() (info mtgban.ScraperInfo) {
-	info.Name = "Manapool"
+	info.Name = "Mana Pool"
 	info.Shorthand = "MP"
 	info.InventoryTimestamp = &mp.inventoryDate
 	info.NoQuantityInventory = true
