@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"slices"
 	"sort"
 	"strconv"
@@ -956,9 +957,7 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 
 				// Clone the map and replace it, overriding the id
 				newIdentifiers := map[string]string{}
-				for k, v := range card.Identifiers {
-					newIdentifiers[k] = v
-				}
+				maps.Copy(newIdentifiers, card.Identifiers)
 
 				card.Identifiers = newIdentifiers
 				card.Identifiers["tcgplayerProductId"] = alternativeID
