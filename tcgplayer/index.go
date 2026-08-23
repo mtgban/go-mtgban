@@ -153,8 +153,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 	var wg sync.WaitGroup
 
 	for i := 0; i < tcg.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			dupes := map[string]struct{}{}
 			buffer := make([]indexChan, 0, tcgplayer.MaxIDsInRequest)
 
@@ -185,8 +184,7 @@ func (tcg *Index) Load(ctx context.Context) error {
 					tcg.printf("%s", err.Error())
 				}
 			}
-			wg.Done()
-		}()
+		})
 	}
 
 	go func() {

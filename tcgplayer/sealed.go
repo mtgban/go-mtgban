@@ -104,8 +104,7 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 	var wg sync.WaitGroup
 
 	for i := 0; i < tcg.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			idsFound := map[int]struct{}{}
 			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)
 
@@ -136,8 +135,7 @@ func (tcg *Sealed) Load(ctx context.Context) error {
 					tcg.printf("%s", err.Error())
 				}
 			}
-			wg.Done()
-		}()
+		})
 	}
 
 	go func() {

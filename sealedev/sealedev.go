@@ -279,10 +279,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 		locals := make([][][]float64, ss.MaxConcurrency)
 
 		for w := 0; w < ss.MaxConcurrency; w++ {
-			wg.Add(1)
-			go func(w int) {
-				defer wg.Done()
-
+			wg.Go(func() {
 				local := make([][]float64, len(evParameters))
 				for range repeatsChannel {
 					simPicks, err := mtgmatcher.GetPicksForSealed(setCode, productUUID)
@@ -303,7 +300,7 @@ func (ss *Scraper) runEV(ctx context.Context, uuid string) ([]result, []string) 
 					}
 				}
 				locals[w] = local
-			}(w)
+			})
 		}
 
 	feed:

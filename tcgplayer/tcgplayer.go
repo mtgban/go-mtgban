@@ -201,8 +201,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 	var wg sync.WaitGroup
 
 	for i := 0; i < tcg.MaxConcurrency; i++ {
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			buffer := make([]marketChan, 0, tcgplayer.MaxIDsInRequest)
 
 			for page := range pages {
@@ -225,8 +224,7 @@ func (tcg *Market) Load(ctx context.Context) error {
 					tcg.printf("%s", err.Error())
 				}
 			}
-			wg.Done()
-		}()
+		})
 	}
 
 	go func() {
