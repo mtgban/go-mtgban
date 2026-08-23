@@ -802,15 +802,11 @@ func (c *InputCard) RavnicaGuildKit() string {
 		return "RNA Guild Kit"
 	}
 
-	for _, guild := range GRNGuilds {
-		if c.Contains(guild) {
-			return "GRN Guild Kit"
-		}
+	if slices.ContainsFunc(GRNGuilds, c.Contains) {
+		return "GRN Guild Kit"
 	}
-	for _, guild := range ARNGuilds {
-		if c.Contains(guild) {
-			return "RNA Guild Kit"
-		}
+	if slices.ContainsFunc(ARNGuilds, c.Contains) {
+		return "RNA Guild Kit"
 	}
 
 	if c.isBasicLand() {

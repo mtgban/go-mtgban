@@ -1642,11 +1642,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 				if promoElement.TagFunc != nil {
 					tagPresent = promoElement.TagFunc(inCard)
 				} else {
-					for _, tag := range promoElement.Tags {
-						if inCard.Contains(tag) {
-							tagPresent = true
-							break
-						}
+					if slices.ContainsFunc(promoElement.Tags, inCard.Contains) {
+						tagPresent = true
 					}
 				}
 
