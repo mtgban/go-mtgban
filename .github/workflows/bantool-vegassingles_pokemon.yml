@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [vegassingles_pokemon]
   schedule:
-    - cron: "9 */12 * * *"
+    - cron: "9 20 * * *"
 
 permissions:
   contents: read
