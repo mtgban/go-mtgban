@@ -16,6 +16,20 @@ const (
 	baseURL  = "https://buylist.vegas.singles/saas/search"
 	storeID  = "d4lDsS3ZNf"
 	staticUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
+
+	// The two stable orderings one crawl pass runs under. Relevance reshuffles
+	// while the pages are being fetched, which loses whatever moves between
+	// two of them, so the crawl only ever asks for the alphabet.
+	sortForward  = "Alphabetical: A-Z"
+	sortBackward = "Alphabetical: Z-A"
+
+	// How many products a page carries; the storefront ignores per_page.
+	pageSize = 24
+
+	// A bound on how deep any one crawl walks, far past the ~417 pages the
+	// storefront serves today before its result window runs out, purely so
+	// a feed that never answers empty keeps the crawl finite.
+	maxPages = 5000
 )
 
 // VSResponse is what the storefront's product endpoint answers with.
@@ -41,10 +55,34 @@ type VSProduct struct {
 // VSProductData is the body of a product, apart from the envelope it arrives
 // in.
 type VSProductData struct {
-	Set                       string `json:"set"`
-	SetName                   string `json:"setName"`
-	Rarity                    string `json:"rarity"`
-	CollectorNumberNormalized int    `json:"collector_number_normalized"`
+	Set                       flexString `json:"set"`
+	SetName                   string     `json:"setName"`
+	Rarity                    string     `json:"rarity"`
+	CollectorNumberNormalized int        `json:"collector_number_normalized"`
+}
+
+// flexString reads a field the storefront types differently by game: set is a
+// plain code for most lines but a whole object for some Pokemon products, of
+// which only the id names the set. Anything else decodes to empty rather than
+// failing the page it arrived on.
+type flexString string
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (f *flexString) UnmarshalJSON(data []byte) error {
+	var plain string
+	if json.Unmarshal(data, &plain) == nil {
+		*f = flexString(plain)
+		return nil
+	}
+	var object struct {
+		ID string `json:"id"`
+	}
+	if json.Unmarshal(data, &object) == nil {
+		*f = flexString(object.ID)
+		return nil
+	}
+	*f = ""
+	return nil
 }
 
 // VSVariant is one sellable version of a product, a printing in a condition.
@@ -64,17 +102,20 @@ type VSRetailVariant struct {
 	InventoryQuantity int     `json:"inventory_quantity"`
 }
 
-// VSClient reads the Vegas Singles storefront.
+// VSClient reads the Vegas Singles storefront, one product line at a time.
 type VSClient struct {
-	client *http.Client
+	client      *http.Client
+	productLine string
 }
 
-// NewVSClient returns a client.
-func NewVSClient() *VSClient {
+// NewVSClient returns a client for one product line, in the storefront's own
+// spelling (the Game constants).
+func NewVSClient(productLine string) *VSClient {
 	vs := VSClient{}
 	client := retryablehttp.NewClient()
 	client.Logger = nil
 	vs.client = client.StandardClient()
+	vs.productLine = productLine
 	return &vs
 }
 
@@ -84,11 +125,11 @@ func (vs *VSClient) buildURL(params map[string]string) string {
 
 	// Required parameters
 	q.Set("store_id", storeID)
-	q.Set("product_line", "Magic: the Gathering")
+	q.Set("product_line", vs.productLine)
 	q.Set("mongo", "true")
 	q.Set("buylist_products", "true")
 	q.Set("ignore_is_hot_order", "true")
-	q.Set("sort", "Relevance")
+	q.Set("sort", sortForward)
 
 	// Empty filter parameters (required by API)
 	for _, param := range []string{
@@ -108,10 +149,11 @@ func (vs *VSClient) buildURL(params map[string]string) string {
 	return u.String()
 }
 
-func (vs *VSClient) getCount(ctx context.Context) (int, error) {
+func (vs *VSClient) getCount(ctx context.Context, rarity string) (int, error) {
 	reqURL := vs.buildURL(map[string]string{
 		"with_count": "true",
 		"no_track":   "true",
+		"rarity":     rarity,
 	})
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, http.NoBody)
@@ -144,9 +186,11 @@ func (vs *VSClient) getCount(ctx context.Context) (int, error) {
 	return response.Pages, nil
 }
 
-func (vs *VSClient) getPage(ctx context.Context, page int) ([]VSProduct, error) {
+func (vs *VSClient) getPage(ctx context.Context, page int, sort, rarity string) ([]VSProduct, error) {
 	reqURL := vs.buildURL(map[string]string{
-		"page": strconv.Itoa(page),
+		"page":   strconv.Itoa(page),
+		"sort":   sort,
+		"rarity": rarity,
 	})
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL, http.NoBody)

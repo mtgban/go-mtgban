@@ -607,7 +607,7 @@ var options = map[string]*scraperOption{
 	},
 	"vegassingles": {
 		Init: func() (mtgban.Scraper, error) {
-			scraper := vegassingles.NewScraper()
+			scraper := vegassingles.NewScraper(vegassingles.GameMagic)
 			scraper.LogCallback = GlobalLogCallback
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
@@ -1472,6 +1472,16 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"vegassingles_riftbound": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := vegassingles.NewScraper(vegassingles.GameRiftbound)
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"tcg_market_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
@@ -1485,6 +1495,16 @@ var options = map[string]*scraperOption{
 			}
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"vegassingles_onepiece": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := vegassingles.NewScraper(vegassingles.GameOnePiece)
+			scraper.LogCallback = GlobalLogCallback
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}
@@ -1542,6 +1562,16 @@ var options = map[string]*scraperOption{
 			}
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"vegassingles_pokemon": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := vegassingles.NewScraper(vegassingles.GamePokemon)
+			scraper.LogCallback = GlobalLogCallback
 			if MaxConcurrency != 0 {
 				scraper.MaxConcurrency = MaxConcurrency
 			}

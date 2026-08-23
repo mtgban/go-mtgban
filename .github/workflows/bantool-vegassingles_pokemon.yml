@@ -1,0 +1,21 @@
+name: vegassingles_pokemon
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [vegassingles_pokemon]
+  schedule:
+    - cron: "9 */12 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: ${{ github.workflow }}
+      game: "pokemon"
+      datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
+    secrets: inherit
