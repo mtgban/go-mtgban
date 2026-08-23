@@ -320,7 +320,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		// Look for it, and only keep the interesting parts
 		if strings.Contains(cardName, ")-") {
 			f := ""
-			for _, field := range strings.Fields(fullName) {
+			for field := range strings.FieldsSeq(fullName) {
 				if strings.Contains(field, ")-") {
 					f = field
 					break
@@ -497,7 +497,7 @@ func preprocess(fullName, edition string) (*mtgmatcher.InputCard, error) {
 		"Guilds of Ravnica":
 		variant = last
 	case "Duel Decks Anthology":
-		for _, code := range strings.Fields(variant) {
+		for code := range strings.FieldsSeq(variant) {
 			if len(code) == 3 {
 				edition = code
 				break

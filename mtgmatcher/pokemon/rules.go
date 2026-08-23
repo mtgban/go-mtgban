@@ -670,7 +670,7 @@ func canonicalFinish(name string) string {
 // wording carrying two numbers does not say which of them is the card's.
 func extractNumbers(variation string) []string {
 	var numbers []string
-	for _, field := range strings.Fields(variation) {
+	for field := range strings.FieldsSeq(variation) {
 		if m := fullNumberRe.FindStringSubmatch(field); m != nil {
 			numbers = append(numbers, m[1])
 		}
@@ -722,7 +722,7 @@ func fullNumberMatches(variation, number string) bool {
 		return false
 	}
 	want := foldNumber(numerator) + "/" + strings.TrimLeft(total, "0")
-	for _, field := range strings.Fields(variation) {
+	for field := range strings.FieldsSeq(variation) {
 		numerator, total, found := strings.Cut(field, "/")
 		if !found {
 			continue

@@ -9,8 +9,8 @@ import (
 // ExtractWCDNumber returns a World Championship collector number, which
 // carries the player's deck code and may mark a sideboard card.
 func ExtractWCDNumber(str, prefix string, sideboard bool) string {
-	fields := strings.Fields(str)
-	for _, field := range fields {
+	fields := strings.FieldsSeq(str)
+	for field := range fields {
 		field = strings.Replace(field, "(", "", -1)
 		field = strings.Replace(field, ")", "", -1)
 

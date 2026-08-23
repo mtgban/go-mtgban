@@ -265,7 +265,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 // 0-numbered promo stays reachable.
 func extractNumber(variation string) string {
 	number := ""
-	for _, field := range strings.Fields(variation) {
+	for field := range strings.FieldsSeq(variation) {
 		if field[0] >= '0' && field[0] <= '9' {
 			number = field
 			break

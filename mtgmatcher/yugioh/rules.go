@@ -387,7 +387,7 @@ func finishUUID(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, card *mtgma
 // in, keeps the flag-driven default.
 func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
 	var key string
-	for _, word := range strings.Fields(strings.ToLower(inCard.Variation)) {
+	for word := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
 		switch word {
 		case "1st", "first":
 			key = finish1stEdition

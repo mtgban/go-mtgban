@@ -2002,15 +2002,15 @@ func run() int {
 	}
 
 	// Enable Scrapers or Sellers/Vendors
-	scraps := strings.Split(*scrapersOpt, ",")
-	for _, name := range scraps {
+	scraps := strings.SplitSeq(*scrapersOpt, ",")
+	for name := range scraps {
 		if options[name] != nil {
 			options[name].Enabled = true
 		}
 	}
 	if *sellersOpt != "" {
-		sells := strings.Split(*sellersOpt, ",")
-		for _, name := range sells {
+		sells := strings.SplitSeq(*sellersOpt, ",")
+		for name := range sells {
 			if options[name] == nil {
 				log.Println("Seller", name, "not found")
 				return 1
@@ -2021,8 +2021,8 @@ func run() int {
 		}
 	}
 	if *vendorsOpt != "" {
-		vends := strings.Split(*vendorsOpt, ",")
-		for _, name := range vends {
+		vends := strings.SplitSeq(*vendorsOpt, ",")
+		for name := range vends {
 			if options[name] == nil {
 				log.Println("Vendor", name, "not found")
 				return 1

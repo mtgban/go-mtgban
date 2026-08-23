@@ -1184,8 +1184,8 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 					if !strings.Contains(strings.ToLower(location), "vs") {
 						continue
 					}
-					fields := strings.Fields(location)
-					for _, field := range fields {
+					fields := strings.FieldsSeq(location)
+					for field := range fields {
 						// Skip elements that are too short to be representative
 						if len(field) < 4 {
 							continue
