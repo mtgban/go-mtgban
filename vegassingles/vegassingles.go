@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,16 @@ import (
 
 const (
 	defaultConcurrency = 8
+)
+
+// The games this scraper covers, as the storefront names its product lines.
+// Lorcana, Flesh And Blood and YuGiOh are lines the store knows but holds no
+// buylist for today, so they are not wired up.
+const (
+	GameMagic     = "Magic: the Gathering"
+	GameRiftbound = "Riftbound"
+	GameOnePiece  = "One Piece"
+	GamePokemon   = "Pokemon"
 )
 
 var conditionMap = map[string]string{
@@ -39,12 +50,13 @@ func buildProductSlug(displayName string) string {
 	return slug
 }
 
-// Vegassingles prices Vegas Singles' stock.
+// Vegassingles prices Vegas Singles' stock of one game.
 type Vegassingles struct {
 	LogCallback    mtgban.LogCallbackFunc
 	MaxConcurrency int
 
 	client *VSClient
+	game   string
 
 	inventoryDate time.Time
 	buylistDate   time.Time
@@ -52,12 +64,13 @@ type Vegassingles struct {
 	buylist       mtgban.BuylistRecord
 }
 
-// NewScraper returns a scraper.
-func NewScraper() *Vegassingles {
+// NewScraper returns a scraper for one game.
+func NewScraper(game string) *Vegassingles {
 	vs := Vegassingles{}
 	vs.inventory = mtgban.InventoryRecord{}
 	vs.buylist = mtgban.BuylistRecord{}
-	vs.client = NewVSClient()
+	vs.client = NewVSClient(game)
+	vs.game = game
 	vs.MaxConcurrency = defaultConcurrency
 	return &vs
 }
@@ -69,7 +82,7 @@ func (vs *Vegassingles) printf(format string, a ...any) {
 }
 
 func (vs *Vegassingles) processProduct(product VSProduct) error {
-	theCard, err := preprocess(product)
+	theCard, err := preprocess(product, vs.game)
 	if err != nil {
 		return err
 	}
@@ -86,7 +99,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	// Build buylist URL
 	u, _ := url.Parse("https://buylist.vegas.singles/retailer/buylist")
 	q := u.Query()
-	q.Set("product_line", "Magic: the Gathering")
+	q.Set("product_line", vs.game)
 	q.Set("q", product.DisplayName)
 	q.Set("sort", "Relevance")
 	u.RawQuery = q.Encode()
@@ -153,44 +166,142 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 }
 
 func (vs *Vegassingles) scrape(ctx context.Context) error {
-	totalPages, err := vs.client.getCount(ctx)
+	totalPages, err := vs.client.getCount(ctx, "")
 	if err != nil {
 		return err
 	}
 	vs.printf("Total pages: %d", totalPages)
 
-	pageNums := make([]int, totalPages)
-	for i := range pageNums {
-		pageNums[i] = i + 1
+	// One ordering cannot see past the storefront's result window, so
+	// coverage widens as far as each line proves it needs: the alphabet
+	// forward, then backward, then rarity by rarity when the backward pass
+	// still found products the forward one could not reach, each slice
+	// walked backward too only when its own feed was cut off. Every
+	// decision reads what the crawl observed rather than where the window
+	// sat last measured, so the storefront resizing it resizes the crawl.
+	// The seen filter keeps the overlap from being processed twice, and
+	// the rarity vocabulary is whatever the wider passes came across, so a
+	// slice never has to be known ahead of time.
+	seen := map[string]bool{}
+	rarities := map[string]bool{}
+	_, err = vs.crawl(ctx, sortForward, "", totalPages, seen, rarities)
+	if err != nil {
+		return err
 	}
-
-	var productCount int
-	mtgban.WorkerPool(ctx, vs.MaxConcurrency, pageNums,
-		func(ctx context.Context, page int, results chan<- []VSProduct) error {
-			products, err := vs.client.getPage(ctx, page)
+	before := len(seen)
+	_, err = vs.crawl(ctx, sortBackward, "", totalPages, seen, rarities)
+	if err != nil {
+		return err
+	}
+	if len(seen) > before {
+		names := make([]string, 0, len(rarities))
+		for rarity := range rarities {
+			names = append(names, rarity)
+		}
+		sort.Strings(names)
+		for _, rarity := range names {
+			// The estimate is as capped for a slice as for the whole line,
+			// but it still fans the bulk of the fetch out; the tail-walk
+			// covers whatever it undersells.
+			hint, err := vs.client.getCount(ctx, rarity)
 			if err != nil {
-				return fmt.Errorf("page %d: %s", page, err.Error())
+				return err
 			}
-			results <- products
-			return nil
-		},
-		func(products []VSProduct) {
-			for _, product := range products {
-				err := vs.processProduct(product)
+			cut, err := vs.crawl(ctx, sortForward, rarity, hint, seen, rarities)
+			if err != nil {
+				return err
+			}
+			if cut {
+				cut, err = vs.crawl(ctx, sortBackward, rarity, hint, seen, rarities)
 				if err != nil {
-					vs.printf("process error: %s", err.Error())
+					return err
 				}
-				productCount++
+				if cut {
+					vs.printf("rarity %q exceeds both crawl windows, its middle is unreachable", rarity)
+				}
 			}
-		},
-		vs.printf,
-	)
+		}
+	}
+	vs.printf("Processed %d products", len(seen))
 
-	vs.printf("Processed %d products", productCount)
 	vs.inventoryDate = time.Now()
 	vs.buylistDate = time.Now()
 
 	return nil
+}
+
+// crawl fetches every page of one ordering, optionally narrowed to a rarity,
+// processing what it has not seen yet and noting the rarities it passes. It
+// reports whether the feed was cut off rather than finished: a catalog that
+// really ends leaves a ragged last page, so ending flush on a full one means
+// the storefront's result window ran out with products still unserved. That
+// reads the cut wherever the window happens to sit, at the cost of a false
+// positive when a catalog is an exact multiple of the page size, which only
+// spends a redundant pass.
+func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint int, seen, rarities map[string]bool) (bool, error) {
+	pageNums := make([]int, hint)
+	for i := range pageNums {
+		pageNums[i] = i + 1
+	}
+
+	lastPage := 0
+	lastPageLen := 0
+	sawEmpty := false
+	consume := func(result pageResult) {
+		if len(result.products) == 0 {
+			sawEmpty = true
+			return
+		}
+		if result.page > lastPage {
+			lastPage = result.page
+			lastPageLen = len(result.products)
+		}
+		for _, product := range result.products {
+			if seen[product.ID] {
+				continue
+			}
+			seen[product.ID] = true
+			if product.ProductData.Rarity != "" {
+				rarities[product.ProductData.Rarity] = true
+			}
+			err := vs.processProduct(product)
+			if err != nil {
+				vs.printf("process error: %s", err.Error())
+			}
+		}
+	}
+
+	mtgban.WorkerPool(ctx, vs.MaxConcurrency, pageNums,
+		func(ctx context.Context, page int, results chan<- pageResult) error {
+			products, err := vs.client.getPage(ctx, page, sortDir, rarity)
+			if err != nil {
+				return fmt.Errorf("page %d: %s", page, err.Error())
+			}
+			results <- pageResult{page: page, products: products}
+			return nil
+		},
+		consume,
+		vs.printf,
+	)
+
+	// The page count the storefront reports is a capped estimate, so the
+	// feed does not end until a page comes back empty: keep walking past
+	// the fanned-out range until one does. The bound is not a page the
+	// crawl expects to reach; it only keeps a misbehaving feed finite.
+	for page := hint + 1; !sawEmpty && page <= maxPages; page++ {
+		products, err := vs.client.getPage(ctx, page, sortDir, rarity)
+		if err != nil {
+			return false, fmt.Errorf("page %d: %s", page, err.Error())
+		}
+		consume(pageResult{page: page, products: products})
+	}
+
+	return lastPageLen == pageSize, nil
+}
+
+type pageResult struct {
+	page     int
+	products []VSProduct
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -214,6 +325,13 @@ func (vs *Vegassingles) Info() (info mtgban.ScraperInfo) {
 	info.Shorthand = "VS"
 	info.InventoryTimestamp = &vs.inventoryDate
 	info.BuylistTimestamp = &vs.buylistDate
-	info.Game = mtgban.GameMagic
+	switch vs.game {
+	case GameRiftbound:
+		info.Game = mtgban.GameRiftbound
+	case GameOnePiece:
+		info.Game = mtgban.GameOnePiece
+	case GamePokemon:
+		info.Game = mtgban.GamePokemon
+	}
 	return
 }
