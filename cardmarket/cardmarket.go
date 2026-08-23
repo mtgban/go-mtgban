@@ -171,7 +171,21 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	if err != nil {
 		return ""
 	}
-	name := versionTail.ReplaceAllString(product.Name, "")
+	names := []string{versionTail.ReplaceAllString(product.Name, "")}
+	if mkm.gameID == GameFleshAndBlood {
+		// The treatment parenthetical is the printing's, not the name's:
+		// fabFinish reads it off the untouched product name below, and a
+		// card whose own name ends in a parenthetical ("Sink Below (Red)")
+		// keeps it, so the exact name reaches the matcher whole. The raw
+		// name stays as the fallback: the sets spelling a pitch color the
+		// other one's way ("Rawhide Rumble" at ARR012, "Rawhide Rumble
+		// (Red)" at HVY023) file the stripped name under the wrong set,
+		// and only the decorated one still finds them.
+		_, stripped := fabTreatment(names[0])
+		if stripped != names[0] {
+			names = []string{stripped, names[0]}
+		}
+	}
 
 	numbers := []string{product.Number}
 	// The oldest Yu-Gi-Oh sets are numbered by their original Asian print
@@ -192,29 +206,31 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		finishes = []string{productFinish(mkm.gameID, product), ""}
 	}
 
-	for _, number := range numbers {
-		for _, finish := range finishes {
-			id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
-				Name:      name,
-				Edition:   edition,
-				Variation: number,
-				Finish:    finish,
-			})
-			if err != nil {
-				continue
+	for _, name := range names {
+		for _, number := range numbers {
+			for _, finish := range finishes {
+				id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
+					Name:      name,
+					Edition:   edition,
+					Variation: number,
+					Finish:    finish,
+				})
+				if err != nil {
+					continue
+				}
+				co, cerr := mtgmatcher.GetUUID(id)
+				if cerr != nil || !strings.EqualFold(co.SetCode, set.Code) {
+					continue
+				}
+				// The run has to hold too, for the same reason the set
+				// does: a card the datastore keeps in one run only is
+				// answered with that run whichever was asked for, and the
+				// other run's expansion sells the very same card.
+				if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
+					continue
+				}
+				return id
 			}
-			co, cerr := mtgmatcher.GetUUID(id)
-			if cerr != nil || !strings.EqualFold(co.SetCode, set.Code) {
-				continue
-			}
-			// The run has to hold too, for the same reason the set does:
-			// a card the datastore keeps in one run only is answered with
-			// that run whichever was asked for, and the other run's
-			// expansion sells the very same card.
-			if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
-				continue
-			}
-			return id
 		}
 	}
 	return ""

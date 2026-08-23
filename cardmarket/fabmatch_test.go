@@ -87,6 +87,68 @@ func TestMatchProductPrintRun(t *testing.T) {
 	}
 }
 
+// fabSpellingDatastore is the published datastore cut down to two cards
+// whose sets spell the qualifier both ways, every row copied verbatim from
+// it: Valiant Thrust, pitch-qualified in Monarch and bare in the Boltyn
+// blitz deck; Rawhide Rumble, bare in the Rhinar armory deck and qualified
+// in Heavy Hitters. Whichever spelling a name lookup lands on, the other
+// set's printing is only reachable if the treatment tail came off - or, in
+// the bare set, only if it did not.
+const fabSpellingDatastore = `{
+ "game": "fleshandblood",
+ "sets": {"MON": {"name": "Monarch", "releaseDate": "2021-04-30"}, "BOL": {"name": "Blitz Deck: Monarch - Boltyn", "releaseDate": "2021-05-14"}, "ADR": {"name": "Armory Deck: Rhinar", "releaseDate": "2025-11-14"}, "HVY": {"name": "Heavy Hitters", "releaseDate": "2024-02-02"}},
+ "cards": [
+  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "1st Edition Normal", "id": "mon039_237741_1e", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "1st Edition Rainbow Foil", "id": "mon039_237741_1erainbow", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "Unlimited Edition Normal", "id": "mon039_237741_unl", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"tcgPlayerId": 237741}, "fabId": "MON039", "finish": "Unlimited Edition Rainbow Foil", "id": "mon039_237741_unlrainbow", "name": "Valiant Thrust (Red)", "number": "MON039", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"tcgPlayerId": 237742}, "fabId": "MON040", "finish": "1st Edition Normal", "id": "mon040_237742_1e", "name": "Valiant Thrust (Yellow)", "number": "MON040", "rarity": "Rare", "setCode": "MON"},
+  {"externalLinks": {"tcgPlayerId": 238398}, "fabId": "BOL017", "finish": "Normal", "id": "bol017_238398", "name": "Valiant Thrust", "number": "BOL017", "rarity": "Rare", "setCode": "BOL"},
+  {"externalLinks": {"tcgPlayerId": 533460}, "fabId": "HVY023", "finish": "Normal", "id": "hvy023_533460", "name": "Rawhide Rumble (Red)", "number": "HVY023", "rarity": "Rare", "setCode": "HVY"},
+  {"externalLinks": {"tcgPlayerId": 533460}, "fabId": "HVY023", "finish": "Rainbow Foil", "id": "hvy023_533460_rainbow", "name": "Rawhide Rumble (Red)", "number": "HVY023", "rarity": "Rare", "setCode": "HVY"},
+  {"externalLinks": {"tcgPlayerId": 533461}, "fabId": "HVY024", "finish": "Normal", "id": "hvy024_533461", "name": "Rawhide Rumble (Yellow)", "number": "HVY024", "rarity": "Rare", "setCode": "HVY"},
+  {"externalLinks": {"tcgPlayerId": 663031}, "finish": "Normal", "id": "arr012_663031", "name": "Rawhide Rumble", "number": "ARR012", "rarity": "Rare", "setCode": "ADR"}
+ ]
+}`
+
+// TestMatchProductTreatmentTail pins how the name fallback sees through the
+// treatment parenthetical Cardmarket decorates every Flesh and Blood product
+// with. The tail has to come off for the sets that spell the card's pitch
+// qualifier: "Valiant Thrust (Red) (Regular)" names no card, and the name
+// left when the parenthetical is split away, "Valiant Thrust", is the Boltyn
+// deck's own card, unreachable from Monarch. And the raw name has to stay
+// the fallback for the sets that do not: Rhinar's deck files "Rawhide
+// Rumble" bare, so its product's stripped name is Heavy Hitters' card and
+// only the decorated one still splits down to the printing.
+func TestMatchProductTreatmentTail(t *testing.T) {
+	err := mtgmatcher.LoadDatastore(strings.NewReader(fabSpellingDatastore))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mkm := &Index{gameID: GameFleshAndBlood}
+	for _, tt := range []struct {
+		expansion, name, number, want string
+	}{
+		{"Monarch - First", "Valiant Thrust (Red) (Regular)", "MON039", "mon039_237741_1e"},
+		{"Monarch - First", "Valiant Thrust (Red) (Rainbow Foil)", "MON039", "mon039_237741_1erainbow"},
+		{"Monarch - Unlimited", "Valiant Thrust (Red) (Regular)", "MON039", "mon039_237741_unl"},
+		{"Heavy Hitters", "Rawhide Rumble (Red) (Regular)", "023", "hvy023_533460"},
+		{"Heavy Hitters", "Rawhide Rumble (Red) (Rainbow Foil)", "023", "hvy023_533460_rainbow"},
+		{"Armory Deck: Rhinar", "Rawhide Rumble (Red) (Regular)", "012", "arr012_663031"},
+	} {
+		product := MKMProduct{
+			Name:          tt.name,
+			Number:        tt.number,
+			ExpansionName: tt.expansion,
+		}
+		got := mkm.matchProduct(&product)
+		if got != tt.want {
+			t.Errorf("matchProduct(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
+		}
+	}
+}
+
 // TestProcessProductByName pins which prices carry the mark that holds them
 // back. A product the bridge knows resolves through an id and is not a
 // guess; one the bridge has never heard of resolves through its name, and

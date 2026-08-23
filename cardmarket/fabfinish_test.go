@@ -59,6 +59,25 @@ func TestFabPrintRun(t *testing.T) {
 	}
 }
 
+// TestFabTreatment pins which parenthetical comes off a product name as the
+// printing's treatment and which stays as part of the card's own name.
+func TestFabTreatment(t *testing.T) {
+	for _, tt := range []struct{ in, treatment, card string }{
+		{"Cracker Jax (Cold Foil)", "Cold Foil", "Cracker Jax"},
+		{"Deep Blue (Regular)", "Normal", "Deep Blue"},
+		{"Thump (Blue) (Rainbow Foil)", "Rainbow Foil", "Thump (Blue)"},
+		{"Sigil of Suffering (Yellow)", "", "Sigil of Suffering (Yellow)"},
+		{"Taylor", "", "Taylor"},
+		{"Twinning Blade (Extended Art Rainbow Foil)", "", "Twinning Blade (Extended Art Rainbow Foil)"},
+	} {
+		treatment, card := fabTreatment(tt.in)
+		if treatment != tt.treatment || card != tt.card {
+			t.Errorf("fabTreatment(%q) = (%q, %q), want (%q, %q)",
+				tt.in, treatment, card, tt.treatment, tt.card)
+		}
+	}
+}
+
 // TestVersionTail pins the parenthetical Cardmarket tells same-name products
 // apart with, which names its own version index and the rarity beside it and
 // says nothing a matcher can use. A parenthetical that is part of the card's
