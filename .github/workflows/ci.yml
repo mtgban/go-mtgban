@@ -27,7 +27,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          unformatted=$(gofmt -l .)
+          unformatted=$(gofmt -s -l .)
           if [ -n "$unformatted" ]; then
             echo "these files are not gofmt-ed:"
             echo "$unformatted"

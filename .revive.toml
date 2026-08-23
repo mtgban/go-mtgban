@@ -36,6 +36,7 @@ warningCode = 1
 [rule.unnecessary-format]
 [rule.unchecked-type-assertion]
 [rule.use-any]
+[rule.use-waitgroup-go]
 [rule.use-errors-new]
 # The families named here report nothing a caller could act on: a failed
 # write to stderr, a Builder and a hash that both document a nil error, a
