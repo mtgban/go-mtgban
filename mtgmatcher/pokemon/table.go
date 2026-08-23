@@ -85,3 +85,23 @@ var normalizedEditionAliases = sync.OnceValue(func() map[string]string {
 	}
 	return aliases
 })
+
+// pooledEditions maps the storefront names spanning two of the catalog's
+// sets onto the pair: "Theme Deck & Blisters Exclusives" files what the
+// catalog splits into Blister Exclusives and Deck Exclusives, and a listing
+// does not say which half it means. The name is left unrewritten - a
+// single-valued edition cannot carry the pair - and FilterCards restricts
+// the candidates to the pool, so the collector number picks within it and
+// nothing falls through to a global guess.
+var pooledEditions = map[string][]string{
+	"Theme Deck & Blisters Exclusives": {"Blister Exclusives", "Deck Exclusives"},
+}
+
+// normalizedPooledEditions indexes the pooled names the same way.
+var normalizedPooledEditions = sync.OnceValue(func() map[string][]string {
+	pools := make(map[string][]string, len(pooledEditions))
+	for name, sets := range pooledEditions {
+		pools[mtgmatcher.Normalize(name)] = sets
+	}
+	return pools
+})

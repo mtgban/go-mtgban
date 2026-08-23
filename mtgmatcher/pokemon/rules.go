@@ -226,7 +226,10 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 			_, err := b.GetSet(edition)
 			known = err == nil
 		}
-		if !known {
+		// A pooled name is left as it is: it spans two sets, so no single
+		// rewrite can carry it, and FilterCards restricts on the name
+		// itself instead.
+		if _, pooled := normalizedPooledEditions()[mtgmatcher.Normalize(edition)]; !known && !pooled {
 			name := normalizedEditionAliases()[mtgmatcher.Normalize(edition)]
 			if name == "" {
 				name = promoSetNamed(b, edition)
@@ -426,6 +429,22 @@ func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 // that order. A bare input facing several labels keeps them all and surfaces
 // as an aliasing error rather than a guess.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
+	// A pooled storefront name restricts the candidates to its pair of
+	// sets outright: the edition kept the name, so nothing upstream could
+	// narrow, and falling through past the pool would price a card the
+	// pool does not carry as some same-numbered printing elsewhere.
+	if pool, found := normalizedPooledEditions()[mtgmatcher.Normalize(inCard.Edition)]; found {
+		pooled := map[string][]mtgmatcher.Card{}
+		for _, name := range pool {
+			if set, ok := b.NormalizedSets[mtgmatcher.Normalize(name)]; ok {
+				if cards, carried := cardSet[set.Code]; carried {
+					pooled[set.Code] = cards
+				}
+			}
+		}
+		cardSet = pooled
+	}
+
 	// A storefront can write more than one number into the wording: Cool
 	// Stuff Inc prepends its own catalogue field, which is empty, "0" or
 	// "001" for whole editions, and the number the listing prints is the
