@@ -20,7 +20,8 @@ type Manapool struct {
 	inventory     mtgban.InventoryRecord
 }
 
-// Manapool prices Mana Pool's singles, both what they sell and what they buy.
+// NewScraper returns a scraper pricing Mana Pool's singles, both what they
+// sell and what they buy.
 func NewScraper() *Manapool {
 	mp := Manapool{}
 	mp.inventory = mtgban.InventoryRecord{}
