@@ -93,7 +93,7 @@ func (scg *SCGClient) DownloadCatalog(ctx context.Context) (io.ReadCloser, error
 // resumable; reset undoes whatever the abandoned pass accumulated.
 func (scg *SCGClient) StreamCatalog(ctx context.Context, reset func(), fn func(CatalogProduct) error) error {
 	var err error
-	for attempt := 0; attempt < catalogAttempts; attempt++ {
+	for attempt := range catalogAttempts {
 		if attempt > 0 {
 			reset()
 		}

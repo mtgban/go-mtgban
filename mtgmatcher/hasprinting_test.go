@@ -173,7 +173,7 @@ func TestHasPrintingEquivalence(t *testing.T) {
 
 	rng := rand.New(rand.NewSource(42))
 	var compared int
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		uuid := uuids[rng.Intn(len(uuids))]
 		co, err := GetUUID(uuid)
 		if err != nil {

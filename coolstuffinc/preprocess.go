@@ -112,7 +112,7 @@ func preprocess(cardName, edition, variant, imgURL string) (*mtgmatcher.InputCar
 	}
 
 	if len(imgName) > 4 {
-		for i := 0; i < 2; i++ {
+		for i := range 2 {
 			maybeSet := strings.ToUpper(imgName[:i+3])
 			maybeNum := strings.TrimLeft(imgName[i+3:], "_0")
 			if len(mtgmatcher.MatchInSetNumber(cardName, maybeSet, maybeNum)) == 1 {

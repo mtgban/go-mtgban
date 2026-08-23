@@ -552,7 +552,7 @@ func (b *Backend) BoosterGen(setCode, boosterType string) ([]string, error) {
 				if err != nil {
 					return nil, err
 				}
-				for j := 0; j < subcount; j++ {
+				for range subcount {
 					picks = append(picks, uuid)
 				}
 			}

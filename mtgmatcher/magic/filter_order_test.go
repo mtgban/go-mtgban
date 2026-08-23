@@ -21,7 +21,7 @@ func TestFilterCardsOrderIsStable(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s: %v", name, err)
 		}
-		for i := 0; i < 200; i++ {
+		for i := range 200 {
 			got, err := testBackend.Match(&mtgmatcher.InputCard{Name: name, Edition: "World Championship Decks"})
 			if err != nil {
 				t.Fatalf("%s: call %d: %v", name, i, err)
