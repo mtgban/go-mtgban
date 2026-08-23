@@ -2,6 +2,7 @@ package pokemon
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 
@@ -404,7 +405,7 @@ func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
 	}
 
 	fields := strings.Fields(edition)
-	for i := 0; i < len(fields); i++ {
+	for i := range fields {
 		names := index[mtgmatcher.Normalize(strings.Join(fields[i:], " "))]
 		if len(names) == 1 {
 			return names[0]
@@ -429,8 +430,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	numbers := extractNumbers(inCard.Variation)
 	number := ""
 	candidates := filterByNumber(b, inCard, cardSet, "")
-	for i := len(numbers) - 1; i >= 0; i-- {
-		number = numbers[i]
+	for _, number0 := range slices.Backward(numbers) {
+		number = number0
 		candidates = filterByNumber(b, inCard, cardSet, number)
 		if len(candidates) > 0 {
 			break

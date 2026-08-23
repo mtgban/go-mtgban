@@ -115,7 +115,7 @@ func run() int {
 			if sheet.Fixed {
 				// Fixed means there is no randomness, just pick the cards as listed
 				for cardID, frequency := range sheet.Cards {
-					for j := 0; j < frequency; j++ {
+					for range frequency {
 						picks = append(picks, Pick{
 							CardID: cardID,
 							Sheet:  sheetName,
