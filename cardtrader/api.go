@@ -578,10 +578,7 @@ func (ct *CTAuthClient) bulkOperation(ctx context.Context, link string, products
 	}
 
 	for i := 0; i < len(products); i += MaxBulkUploadItems {
-		end := i + MaxBulkUploadItems
-		if end > len(products) {
-			end = len(products)
-		}
+		end := min(i+MaxBulkUploadItems, len(products))
 
 		bulkUpload.Products = products[i:end]
 		bodyBytes, err := json.Marshal(&bulkUpload)
