@@ -267,6 +267,14 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		if bp.Version == "Token" {
 			return number
 		}
+	case GamePokemon:
+		// Pokemon's Version carries what the bare number cannot: the real
+		// collector number with its set total ("Holo Promo | 013/025" where
+		// the number field says "013h"), the treatment that picks between
+		// same-numbered printings ("Non-Holo", "Cosmos Holo", "Reverse
+		// Holo"), and the label the promo sets tell their reprints apart by.
+		// The matcher reads its numbers from the back, so the Version's
+		// full number is asked before the decorated blueprint field.
 	default:
 		return number
 	}
