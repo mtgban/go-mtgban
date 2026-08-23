@@ -103,51 +103,6 @@ func TestPooledBlisterDeckHeading(t *testing.T) {
 	}
 }
 
-// TestStorefrontNameTails pins the decorations cardtrader writes into the
-// name itself coming off - and the real catalog names wearing the same
-// shapes staying whole.
-func TestStorefrontNameTails(t *testing.T) {
-	b := loadBackend(t)
-
-	for _, tt := range []struct {
-		desc string
-		in   mtgmatcher.InputCard
-		want string
-	}{
-		{"a numeric level strips", mtgmatcher.InputCard{
-			Name: "Moltres Lv.33", Edition: "Wizards Black Star Promos", Variation: "021 21"},
-			"21-53_87557"},
-		{"the delta species tail strips", mtgmatcher.InputCard{
-			Name: "Deoxys δ Delta Species", Edition: "POP Series 4", Variation: "02/17h Holo Promo | 2/17"},
-			"002-017_84765_holo"},
-		{"a bracketed letter strips", mtgmatcher.InputCard{
-			Name: "Unown [J]", Edition: "Wizards Black Star Promos", Variation: "038 38"},
-			"38-53_90215"},
-		{"a dash subtitle respells as the bracketed supporter", mtgmatcher.InputCard{
-			Name: "Boss's Orders - Cyrus", Edition: "Play! Pokémon Prize Pack Series", Variation: "132 132/172"},
-			"132-172_515539"},
-	} {
-		t.Run(tt.desc, func(t *testing.T) {
-			in := tt.in
-			id, err := b.Match(&in)
-			if err != nil {
-				t.Fatalf("Match(%v) = %v", tt.in, err)
-			}
-			if id != tt.want {
-				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
-			}
-		})
-	}
-
-	// The catalog's own LV.X names wear the level shape with an X, and the
-	// strip must never take them apart.
-	in := mtgmatcher.InputCard{Name: "Heatran LV.X", Variation: "97"}
-	Rules{}.Prefilter(b, &in)
-	if in.Name != "Heatran LV.X" {
-		t.Errorf("Prefilter rewrote %q to %q", "Heatran LV.X", in.Name)
-	}
-}
-
 // TestVersionWording pins what the ride-along Version buys and what its
 // guards refuse: an agreeing set total outranks a bare verbatim number, a
 // contradicting total vetoes the candidate, a wording spelling both
@@ -224,5 +179,75 @@ func TestTotalDisagrees(t *testing.T) {
 		if got := totalDisagrees(tt.variation, tt.number); got != tt.want {
 			t.Errorf("totalDisagrees(%q, %q) = %v, want %v", tt.variation, tt.number, got, tt.want)
 		}
+	}
+}
+
+// TestStorefrontNameTails pins the decorations cardtrader writes into the
+// name itself coming off - and the real catalog names wearing the same
+// shapes staying whole.
+func TestStorefrontNameTails(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{"a numeric level strips", mtgmatcher.InputCard{
+			Name: "Moltres Lv.33", Edition: "Wizards Black Star Promos", Variation: "021 21"},
+			"21-53_87557"},
+		{"the delta species tail strips", mtgmatcher.InputCard{
+			Name: "Deoxys δ Delta Species", Edition: "POP Series 4", Variation: "02/17h Holo Promo | 2/17"},
+			"002-017_84765_holo"},
+		{"a bracketed letter strips", mtgmatcher.InputCard{
+			Name: "Unown [J]", Edition: "Wizards Black Star Promos", Variation: "038 38"},
+			"38-53_90215"},
+		{"a dash subtitle respells as the bracketed supporter", mtgmatcher.InputCard{
+			Name: "Boss's Orders - Cyrus", Edition: "Play! Pokémon Prize Pack Series", Variation: "132 132/172"},
+			"132-172_515539"},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", tt.in, err)
+			}
+			if id != tt.want {
+				t.Errorf("Match(%v) = %s (%v), want %s", tt.in, id, b.UUIDs[id], tt.want)
+			}
+		})
+	}
+
+	// The catalog's own LV.X names wear the level shape with an X, and the
+	// strip must never take them apart.
+	in := mtgmatcher.InputCard{Name: "Heatran LV.X", Variation: "97"}
+	Rules{}.Prefilter(b, &in)
+	if in.Name != "Heatran LV.X" {
+		t.Errorf("Prefilter rewrote %q to %q", "Heatran LV.X", in.Name)
+	}
+}
+
+// TestUnresolvedEditionDoesNotWiden pins the widening gate: a Japanese
+// catalog's set name resolves to nothing, and with no edition to gate on
+// the qualified-name widening must not walk the listing onto an English
+// printing that happens to carry the number.
+func TestUnresolvedEditionDoesNotWiden(t *testing.T) {
+	b := loadBackend(t)
+
+	in := mtgmatcher.InputCard{
+		Name: "Moltres ex", Edition: "Plasma Storm Promos", Variation: "014/135 Holo Promo | 14/135"}
+	if id, err := b.Match(&in); err == nil {
+		t.Fatalf("Match(%v) = %s (%v), want an error", in, id, b.UUIDs[id])
+	}
+
+	// A resolved edition still widens onto the qualified spelling.
+	in = mtgmatcher.InputCard{
+		Name: "Cherrim", Edition: "SWSH Black Star Promos", Variation: "088 Prerelease Promo | SWSH088"}
+	id, err := b.Match(&in)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", in, err)
+	}
+	if id != "swsh088_234276_holo" {
+		t.Errorf("Match(%v) = %s (%v), want swsh088_234276_holo", in, id, b.UUIDs[id])
 	}
 }

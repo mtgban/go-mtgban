@@ -340,8 +340,17 @@ func widenQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 	code := editionSetCode(b, inCard.Edition)
+	// An edition naming no set widens nothing. The storefronts carry whole
+	// Japanese catalogs under set names ours has never heard of ("Plasma
+	// Storm Promos", the JP "Scarlet & Violet Promos"), and widening there
+	// is how a Japanese listing walked onto an English printing: the JP
+	// promo's number is real, some qualified English name carries it, and
+	// with no edition to gate on the rename went through.
+	if code == "" {
+		return
+	}
 	inEdition := func(co *mtgmatcher.CardObject) bool {
-		return code == "" || co.SetCode == code
+		return co.SetCode == code
 	}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		co, found := b.UUIDs[uuid]
