@@ -137,6 +137,23 @@ func fabPrintRun(expansion string) (run, setName string) {
 	return "", expansion
 }
 
+// fabTreatment splits the treatment parenthetical off a Cardmarket Flesh
+// and Blood product name ("Go Bananas (Rainbow Foil)"), returning the
+// treatment as the datastore spells it and the card name left over. Only
+// the three tails the catalog uses come off; any other parenthetical is
+// part of the name ("Sink Below (Yellow)") and stays.
+func fabTreatment(name string) (treatment, card string) {
+	if open := strings.LastIndex(name, " ("); open >= 0 && strings.HasSuffix(name, ")") {
+		switch tail := name[open+2 : len(name)-1]; tail {
+		case "Regular":
+			return "Normal", name[:open]
+		case "Rainbow Foil", "Cold Foil":
+			return tail, name[:open]
+		}
+	}
+	return "", name
+}
+
 // fabFinish names the printing a Cardmarket Flesh and Blood product is,
 // from the two places the catalog says so: the print run in the expansion
 // name ("Tales of Aria - First"), and the treatment in a parenthetical
@@ -145,16 +162,7 @@ func fabPrintRun(expansion string) (run, setName string) {
 // reach one. A product naming neither is left to the id alone.
 func fabFinish(expansion, name string) string {
 	run, _ := fabPrintRun(expansion)
-
-	treatment := ""
-	if open := strings.LastIndex(name, " ("); open >= 0 && strings.HasSuffix(name, ")") {
-		switch tail := name[open+2 : len(name)-1]; tail {
-		case "Regular":
-			treatment = "Normal"
-		case "Rainbow Foil", "Cold Foil":
-			treatment = tail
-		}
-	}
+	treatment, _ := fabTreatment(name)
 
 	switch {
 	case run != "" && treatment != "":
