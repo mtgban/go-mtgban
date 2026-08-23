@@ -23,9 +23,12 @@ func aliasBackend(t *testing.T, names ...string) *mtgmatcher.Backend {
 // would move every printing under it onto another set.
 func TestAdjustEditionAliases(t *testing.T) {
 	b := aliasBackend(t,
+		"Duelist League Promo",
 		"Duelist Pack 11: Crow",
 		"Duelist Pack: Crow",
+		"Hidden Arsenal 5: Steelswarm Invasion",
 		"Legendary Collection Kaiba",
+		"Premium Gold: Return of the Bling",
 		"Speed Duel Decks: Ultimate Predators",
 		"Yu-Gi-Oh! Championship Series 2025 Prize Cards",
 	)
@@ -40,6 +43,9 @@ func TestAdjustEditionAliases(t *testing.T) {
 		{"the game-name prefix comes off first", "Yu-Gi-Oh! Legendary Collection Kaiba Mega Pack", "Legendary Collection Kaiba"},
 		{"and so does the singles suffix", "Legendary Collection Kaiba Mega Pack Singles", "Legendary Collection Kaiba"},
 		{"a set the datastore carries is never rewritten", "Duelist Pack: Crow", "Duelist Pack: Crow"},
+		{"a subtitle the storefronts drop", "Hidden Arsenal 5", "Hidden Arsenal 5: Steelswarm Invasion"},
+		{"a numbered name the catalog subtitles", "Premium Gold 2", "Premium Gold: Return of the Bling"},
+		{"a league series files under the shared set", "Duelist League Series 10", "Duelist League Promo"},
 		{"a set name carrying the game name is left whole", "Yu-Gi-Oh! Championship Series 2025 Prize Cards", "Yu-Gi-Oh! Championship Series 2025 Prize Cards"},
 		{"an edition naming nothing is left as it is", "Some Storefront Heading", "Some Storefront Heading"},
 	}
