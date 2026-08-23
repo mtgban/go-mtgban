@@ -52,6 +52,12 @@ func TestGameVariation(t *testing.T) {
 		{"a suffixed number takes it too", GameYuGiOh, "Ultimate Rare", "060ul", "060ul Ultimate Rare"},
 		{"a decorated rarity rides along whole", GameYuGiOh, "Ultra Rare | ©2020", "001", "001 Ultra Rare | ©2020"},
 		{"a token version is left behind", GameYuGiOh, "Token", "TKN", "TKN"},
+		// Pokemon's Version carries the real collector number with its set
+		// total where the number field is decorated ("013h"), plus the
+		// treatment and the promo label the matcher tiers on.
+		{"pokemon appends the version", GamePokemon, "Holo Promo | 013/025", "013h", "013h Holo Promo | 013/025"},
+		{"a numberless pokemon blueprint keeps the version out", GamePokemon, "Holo Promo", "", ""},
+		{"an empty pokemon version leaves the number alone", GamePokemon, "", "013h", "013h"},
 		{"magic keeps its own number", GameMagic, "Retro Frame", "OP01-001", "OP01-001"},
 	}
 
