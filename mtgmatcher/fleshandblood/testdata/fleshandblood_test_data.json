@@ -8,6 +8,15 @@
         "uuid": "wtr005_225015_1ecold"
     },
     {
+        "description": "a pair no printing wears adopts the number the printings agree on",
+        "input": {
+            "name": "Prism // Iris of Reality",
+            "variant": "MON220//MON068",
+            "edition": "Monarch - Unlimited"
+        },
+        "uuid": "mon088-mon002_238658_unl"
+    },
+    {
         "description": "a tag written behind another still names its printing",
         "input": {
             "name": "Tome of Quandaries",
@@ -39,6 +48,14 @@
             "variant": "WTR011"
         },
         "uuid": "wtr011_225027_unl"
+    },
+    {
+        "description": "canonical fused spelling keeps its own printing at its number",
+        "input": {
+            "name": "Quicken // Harmonized Kodachi",
+            "variant": "XXX009 // XXX008"
+        },
+        "uuid": "xxx009-xxx008_238449"
     },
     {
         "description": "canonical pitch name with the full collector number",
@@ -81,6 +98,15 @@
             "variant": "WTR215"
         },
         "uuid": "wtr215_225309_unl"
+    },
+    {
+        "description": "doubled fused spelling folds onto its pairing",
+        "input": {
+            "name": "Gold // Golden Cog // Gold // Golden Cog",
+            "variant": "SEA244//SEA042",
+            "edition": "High Seas"
+        },
+        "uuid": "sea042-sea244_638043"
     },
     {
         "description": "front half of a pair number still matches",
@@ -196,6 +222,24 @@
         "uuid": "wtr040-wtr039_225011_unl"
     },
     {
+        "description": "pair number matches in either face order",
+        "input": {
+            "name": "Soul Shackle // Spectral Shield",
+            "variant": "MON104//MON186",
+            "edition": "Monarch - Unlimited"
+        },
+        "uuid": "mon186-mon104_238659_unl"
+    },
+    {
+        "description": "pair number picks among the spellings sharing the faces",
+        "input": {
+            "name": "Quicken // Harmonized Kodachi",
+            "variant": "WTR225//WTR078 Unlimited",
+            "edition": "Welcome to Rathe"
+        },
+        "uuid": "wtr078-wtr225_225216_unl"
+    },
+    {
         "description": "pitch label survives when the number wears the color as a label",
         "input": {
             "name": "Staunch Response (Red)",
@@ -235,6 +279,15 @@
             "edition": "Flesh & Blood: Welcome to Rathe Singles"
         },
         "uuid": "wtr215_225309_unlrainbow"
+    },
+    {
+        "description": "reversed fused spelling adopts the datastore face order",
+        "input": {
+            "name": "Spectral Shield // Soul Shackle",
+            "variant": "MON104//MON186",
+            "edition": "Monarch - Unlimited"
+        },
+        "uuid": "mon186-mon104_238659_unl"
     },
     {
         "description": "storefront wording picks the variant it describes",

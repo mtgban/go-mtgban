@@ -164,6 +164,35 @@ var fleshandbloodSeeds = []matchTest{
 		Desc: "pitch label survives when the number wears the color as a label",
 		In:   mtgmatcher.InputCard{Name: "Staunch Response (Red)", Variation: "TNP019"},
 	},
+	// Cardtrader writes a fused card's faces in the opposite order from the
+	// datastore, and its Monarch hero numbers disagree outright; the
+	// unordered face set identifies the card, the pair number picks among
+	// the spellings sharing it, and a pair no printing wears is replaced by
+	// the one they agree on.
+	{
+		Desc: "reversed fused spelling adopts the datastore face order",
+		In:   mtgmatcher.InputCard{Name: "Spectral Shield // Soul Shackle", Variation: "MON104//MON186", Edition: "Monarch - Unlimited"},
+	},
+	{
+		Desc: "pair number matches in either face order",
+		In:   mtgmatcher.InputCard{Name: "Soul Shackle // Spectral Shield", Variation: "MON104//MON186", Edition: "Monarch - Unlimited"},
+	},
+	{
+		Desc: "pair number picks among the spellings sharing the faces",
+		In:   mtgmatcher.InputCard{Name: "Quicken // Harmonized Kodachi", Variation: "WTR225//WTR078 Unlimited", Edition: "Welcome to Rathe"},
+	},
+	{
+		Desc: "canonical fused spelling keeps its own printing at its number",
+		In:   mtgmatcher.InputCard{Name: "Quicken // Harmonized Kodachi", Variation: "XXX009 // XXX008"},
+	},
+	{
+		Desc: "a pair no printing wears adopts the number the printings agree on",
+		In:   mtgmatcher.InputCard{Name: "Prism // Iris of Reality", Variation: "MON220//MON068", Edition: "Monarch - Unlimited"},
+	},
+	{
+		Desc: "doubled fused spelling folds onto its pairing",
+		In:   mtgmatcher.InputCard{Name: "Gold // Golden Cog // Gold // Golden Cog", Variation: "SEA244//SEA042", Edition: "High Seas"},
+	},
 	{
 		Desc: "negative: a bare number never licenses a pitch respelling",
 		In:   mtgmatcher.InputCard{Name: "Hyper Driver (Red)", Variation: "036"},
