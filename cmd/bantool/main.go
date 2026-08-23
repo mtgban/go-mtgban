@@ -1624,6 +1624,38 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"tcg_lastsold_pokemon": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperSealedSales(mtgban.GamePokemon, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			return scraper, nil
+		},
+	},
+	"tcg_lastsold_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
+			tcgPrivateID := os.Getenv("TCGPLAYER_PRIVATE_KEY")
+			if tcgPublicID == "" || tcgPrivateID == "" {
+				return nil, errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+			}
+			scraper, err := tcgplayer.NewScraperSealedSales(mtgban.GameYuGiOh, tcgPublicID, tcgPrivateID)
+			if err != nil {
+				return nil, err
+			}
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("TCG_PARTNER")
+			return scraper, nil
+		},
+	},
 	"tcg_sealed_pokemon": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
