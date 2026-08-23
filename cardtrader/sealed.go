@@ -137,6 +137,79 @@ func (ct *Sealed) processEntry(ctx context.Context, channel chan<- resultChan, e
 	return nil
 }
 
+// buildProductMap links each sealed blueprint to the datastore product it
+// prices. The datastore's own cardtraderId index settles a blueprint for
+// good; one it does not answer is routed through the TCGplayer id both
+// sides carry. The leftovers resolve by name, the way the cardmarket
+// sealed scraper resolves the same leftovers - except for Magic, whose
+// sealed namespace is too collision-prone to trust a name alone.
+func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]string {
+	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
+	ct.printf("Loaded %d sealed products", len(productMap))
+
+	tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
+	var bridged int
+	for id, bp := range blueprints {
+		if _, found := productMap[id]; found {
+			continue
+		}
+		// An unlinked blueprint carries a zero id; the singles path
+		// skips those, and looking one up would funnel every such
+		// listing onto whatever product shares the missing link.
+		if bp.TCGplayerID == 0 {
+			continue
+		}
+		uuids, found := tcgMap[bp.TCGplayerID]
+		if !found {
+			continue
+		}
+		productMap[id] = uuids
+		bridged++
+	}
+	ct.printf("Mapped %d sealed products through the TCGplayer id", bridged)
+
+	if ct.gameID == GameMagic {
+		return productMap
+	}
+
+	// Cardtrader links only some of its sealed blueprints to a
+	// TCGplayer product, and the rest carry no id to route through -
+	// most of a set's boxes and kits among them. A sealed catalog is
+	// named things. The accessories sharing the sealed side - binders,
+	// dice, sleeves, empty boxes - name no product of ours and drop
+	// out here.
+	var resolved int
+	dropped := map[string]int{}
+	for id, bp := range blueprints {
+		if _, found := productMap[id]; found {
+			continue
+		}
+		if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
+			dropped["language variant"]++
+			continue
+		}
+		uuid, err := mtgmatcher.ResolveSealed(bp.Name)
+		// A name the resolver turns down is the whole reason this
+		// scraper prices a fraction of the catalog, so say which
+		// name and which refusal, the way the singles path does.
+		if err != nil {
+			ct.printf("%q (%d): %s", bp.Name, id, err)
+			dropped[err.Error()]++
+			continue
+		}
+		productMap[id] = []string{uuid}
+		resolved++
+	}
+	if resolved > 0 {
+		ct.printf("Resolved %d more sealed products by name", resolved)
+	}
+	for _, reason := range slices.Sorted(maps.Keys(dropped)) {
+		ct.printf("Dropped %d blueprints: %s", dropped[reason], reason)
+	}
+
+	return productMap
+}
+
 // Load fetches everything this scraper offers. See mtgban.Scraper.
 func (ct *Sealed) Load(ctx context.Context) error {
 	rates, err := mtgban.GetExchangeRates(ctx)
@@ -144,9 +217,6 @@ func (ct *Sealed) Load(ctx context.Context) error {
 		return err
 	}
 	ct.exchangeRates = rates
-
-	productMap := mtgmatcher.BuildSealedProductMap("cardtraderId")
-	ct.printf("Loaded %d sealed products", len(productMap))
 
 	if ct.TargetEdition != "" {
 		ct.printf("-> only targeting edition %s", ct.TargetEdition)
@@ -161,62 +231,7 @@ func (ct *Sealed) Load(ctx context.Context) error {
 	blueprints, expansions := FormatBlueprints(blueprintsRaw, expansionsRaw, true)
 	ct.printf("Parsing %d expansions", len(expansions))
 
-	// A datastore that does not catalog cardtrader's own ids (riftbound)
-	// still names every sealed product by its TCGplayer id; route the
-	// blueprints through that to the same blueprintId-to-uuids shape.
-	if len(productMap) == 0 {
-		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
-		for id, bp := range blueprints {
-			// An unlinked blueprint carries a zero id; the singles path
-			// skips those, and looking one up would funnel every such
-			// listing onto whatever product shares the missing link.
-			if bp.TCGplayerID == 0 {
-				continue
-			}
-			uuids, found := tcgMap[bp.TCGplayerID]
-			if !found {
-				continue
-			}
-			productMap[id] = uuids
-		}
-		ct.printf("Mapped %d sealed products through the TCGplayer id", len(productMap))
-
-		// Cardtrader links only some of its sealed blueprints to a
-		// TCGplayer product, and the rest carry no id to route through -
-		// most of a set's boxes and kits among them. A sealed catalog is
-		// named things, so resolve those by name, the way the cardmarket
-		// sealed scraper resolves the same leftovers. The accessories
-		// sharing the sealed side - binders, dice, sleeves, empty boxes -
-		// name no product of ours and drop out here.
-		var resolved int
-		dropped := map[string]int{}
-		for id, bp := range blueprints {
-			if _, found := productMap[id]; found {
-				continue
-			}
-			if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
-				dropped["language variant"]++
-				continue
-			}
-			uuid, err := mtgmatcher.ResolveSealed(bp.Name)
-			// A name the resolver turns down is the whole reason this
-			// scraper prices a fraction of the catalog, so say which
-			// name and which refusal, the way the singles path does.
-			if err != nil {
-				ct.printf("%q (%d): %s", bp.Name, id, err)
-				dropped[err.Error()]++
-				continue
-			}
-			productMap[id] = []string{uuid}
-			resolved++
-		}
-		if resolved > 0 {
-			ct.printf("Resolved %d more sealed products by name", resolved)
-		}
-		for _, reason := range slices.Sorted(maps.Keys(dropped)) {
-			ct.printf("Dropped %d blueprints: %s", dropped[reason], reason)
-		}
-	}
+	productMap := ct.buildProductMap(blueprints)
 
 	type expItem struct {
 		id   int
