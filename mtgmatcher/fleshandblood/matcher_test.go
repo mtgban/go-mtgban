@@ -218,7 +218,6 @@ func TestFleshandbloodMatch(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.Desc, func(t *testing.T) {
 			t.Parallel()
 			in := tt.In
