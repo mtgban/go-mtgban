@@ -44,6 +44,16 @@ var editionAliases = map[string]string{
 	"Duelist League 17":               "Duelist League Promo",
 	"Duelist League 18":               "Duelist League Promo",
 	"Duelist League Promos Upperdeck": "Duelist League Promo",
+	"Duelist League Series 1":         "Duelist League Promo",
+	"Duelist League Series 2":         "Duelist League Promo",
+	"Duelist League Series 3":         "Duelist League Promo",
+	"Duelist League Series 4":         "Duelist League Promo",
+	"Duelist League Series 5":         "Duelist League Promo",
+	"Duelist League Series 6":         "Duelist League Promo",
+	"Duelist League Series 7":         "Duelist League Promo",
+	"Duelist League Series 8":         "Duelist League Promo",
+	"Duelist League Series 9":         "Duelist League Promo",
+	"Duelist League Series 10":        "Duelist League Promo",
 
 	"Legendary Collection 2: Mega Pack":                   "Legendary Collection 2",
 	"Legendary Collection 2: The Duel Academy Years":      "Legendary Collection 2",
@@ -65,6 +75,28 @@ var editionAliases = map[string]string{
 	"GX Manga Promos":     "Yu-Gi-Oh! GX Manga Promotional Cards",
 	"R Comic Book Promos": "Yu-Gi-Oh! R Manga Promo",
 	"ZEXAL Manga Promos":  "Yu-Gi-Oh! ZEXAL Manga Promotional Cards",
+
+	// The subtitle or volume word the catalog spells out and the
+	// storefronts drop.
+	"Dark Revelation 1": "Dark Revelation Volume 1",
+	"Dark Revelation 2": "Dark Revelation Volume 2",
+	"Dark Revelation 3": "Dark Revelation Volume 3",
+	"Dark Revelation 4": "Dark Revelation Volume 4",
+	"Hidden Arsenal 5":  "Hidden Arsenal 5: Steelswarm Invasion",
+	"Hidden Arsenal 6":  "Hidden Arsenal 6: Omega Xyz",
+	"Hidden Arsenal 7":  "Hidden Arsenal 7: Knight of Stars",
+	"Premium Gold 2":    "Premium Gold: Return of the Bling",
+
+	"Duelist Pack Collection Tin 2010": "Duelist Pack Collection Tin",
+	"McDonald's Promo Pack 1":          "McDonald's Promo",
+	"World Championship 2006":          "World Championship 2006: Ultimate Masters",
+
+	// The video games the storefronts name by the game alone.
+	"Destiny Board Traveler":        "Destiny Board Traveler Promo",
+	"GX Duel Academy":               "GX Duel Academy GBA Promo",
+	"GX Next Generation":            "GX Next Generation Blister Pack Promo",
+	"GX Spirit Caller":              "GX Spirit Caller Promo",
+	"Yu-Gi-Oh! The Movie Ani-Manga": "Yu-Gi-Oh! The Movie Ani-Manga Promo",
 }
 
 // normalizedEditionAliases indexes the table the way an edition arrives, so
