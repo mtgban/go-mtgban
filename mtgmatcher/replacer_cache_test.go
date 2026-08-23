@@ -100,9 +100,7 @@ func TestNormalizeCacheConcurrent(t *testing.T) {
 
 	var wg sync.WaitGroup
 	for w := range 8 {
-		wg.Add(1)
-		go func(w int) {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := range 2000 {
 				name := fmt.Sprintf("_cache_test_ card %d %d", w, i)
 				if Normalize(name) == "" {
@@ -113,7 +111,7 @@ func TestNormalizeCacheConcurrent(t *testing.T) {
 					normalizeCacheSize.Store(normalizeCacheCap)
 				}
 			}
-		}(w)
+		})
 	}
 	wg.Wait()
 }

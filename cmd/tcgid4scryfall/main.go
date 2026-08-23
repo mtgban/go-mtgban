@@ -186,16 +186,14 @@ func run() int {
 	var wg sync.WaitGroup
 
 	for i := 0; i < *ConcurrencyOpt; i++ {
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			for page := range pages {
 				err := processCards(ctx, client, channel, page)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}
 			}
-			wg.Done()
-		}()
+		})
 	}
 
 	go func() {

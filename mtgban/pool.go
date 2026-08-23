@@ -31,16 +31,14 @@ func WorkerPool[T any, R any](
 	var wg sync.WaitGroup
 
 	for i := 0; i < concurrency; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for item := range work {
 				err := worker(ctx, item, results)
 				if err != nil && logErr != nil {
 					logErr("%v", err)
 				}
 			}
-		}()
+		})
 	}
 
 	go func() {
