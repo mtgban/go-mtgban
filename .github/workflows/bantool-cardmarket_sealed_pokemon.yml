@@ -1,0 +1,26 @@
+name: pokemon / cardmarket_sealed
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [cardmarket_sealed_pokemon]
+  schedule:
+    - cron: "11 5,17 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-cardmarket
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: cardmarket_sealed_pokemon
+      game: "pokemon"
+      datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
+    secrets: inherit
