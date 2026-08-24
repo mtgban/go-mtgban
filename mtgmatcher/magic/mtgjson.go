@@ -311,17 +311,11 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	return payload.newBackend(), nil
 }
 
-func tokensFiledInline(set *Set) bool {
-	return slices.Contains(setsWithInlineTokens, set.Code) ||
-		strings.Contains(set.Name, "Duel Deck")
-}
-
-// fileTokensUnderTokenSet moves each set's tokens into the set their
-// tokenSetCode names, creating it when missing. The sets tokensFiledInline
-// reports predate this filing and keep their tokens among their own cards,
-// because their own edition name is what existing inputs match against. A
-// set whose tokens already live under its own code has nowhere to move
-// them to.
+// fileTokensUnderTokenSet moves every set's tokens into the set their
+// tokenSetCode names, creating it when missing. A set whose tokens already
+// live under its own code has nowhere to move them to. Nothing is left
+// behind: the edition a storefront writes for a token reaches the sheet
+// either way, since FilterPrintings answers the parent set's name too.
 func fileTokensUnderTokenSet(sets map[string]*Set) {
 	codes := make([]string, 0, len(sets))
 	for code := range sets {
@@ -331,7 +325,7 @@ func fileTokensUnderTokenSet(sets map[string]*Set) {
 
 	for _, code := range codes {
 		set := sets[code]
-		if len(set.Tokens) == 0 || tokensFiledInline(set) {
+		if len(set.Tokens) == 0 {
 			continue
 		}
 		tokenCode := set.TokenSetCode
