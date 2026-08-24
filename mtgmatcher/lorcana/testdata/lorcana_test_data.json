@@ -5935,6 +5935,16 @@
         "error": "unknown card name"
     },
     {
+        "description": "negative: a pool the catalog does not know narrows nothing",
+        "input": {
+            "name": "Maleficent - Monstrous Dragon",
+            "variant": "5/P9, Made Up Pool",
+            "edition": "Promo",
+            "foil": true
+        },
+        "error": "aliasing detected"
+    },
+    {
         "description": "negative: edition excludes the printing carrying the number",
         "input": {
             "name": "Let It Go",
@@ -6121,6 +6131,26 @@
             "variant": "4c"
         },
         "uuid": "438"
+    },
+    {
+        "description": "the other pool of the same number answers its own listing",
+        "input": {
+            "name": "Stitch - Rock Star",
+            "variant": "2/P1",
+            "edition": "Promo",
+            "foil": true
+        },
+        "uuid": "660"
+    },
+    {
+        "description": "the pool behind a number tells two same-numbered promos apart",
+        "input": {
+            "name": "Stitch - Rock Star",
+            "variant": "3/DIS, Epcot Collection Quest Promo",
+            "edition": "Promo",
+            "foil": true
+        },
+        "uuid": "3245"
     },
     {
         "description": "the promotion behind the lot still names a real card",

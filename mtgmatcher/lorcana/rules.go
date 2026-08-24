@@ -3,6 +3,7 @@ package lorcana
 import (
 	"maps"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -307,6 +308,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	if bare == number {
 		bare = ""
 	}
+	pool := extractPool(inCard.Variation)
 
 	var out, wrongFinish, bareOut, bareWrongFinish []mtgmatcher.Card
 	seen := map[string]bool{}
@@ -381,10 +383,39 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// fallback only ever answers where the alternative was answering nothing.
 	for _, tier := range [][]mtgmatcher.Card{out, wrongFinish, bareOut, bareWrongFinish} {
 		if len(tier) > 0 {
-			return tier
+			return poolTiebreak(pool, tier)
 		}
 	}
 	return nil
+}
+
+// poolTiebreak narrows a tier to the printings numbered within the pool the
+// storefront wrote behind the number.
+//
+// The datastore numbers each promo pool from one, so a card promoted twice
+// carries the same number in both: "Maleficent - Monstrous Dragon" is card 5
+// of the P1 pool and card 5 of the P3 one, and the number alone cannot tell
+// the two apart. The pool can, and the storefront writes it where a set card
+// writes its set size.
+//
+// A pool no candidate carries keeps the whole tier. The storefront's spelling
+// of a pool is its own - it prints the one the card came from, which is not
+// always the one the datastore numbered it in - and refusing a printing over
+// it would price nothing where the number alone was answering.
+func poolTiebreak(pool string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if pool == "" || len(cards) <= 1 {
+		return cards
+	}
+	var pooled []mtgmatcher.Card
+	for _, card := range cards {
+		if slices.Contains(card.PromoTypes, pool) {
+			pooled = append(pooled, card)
+		}
+	}
+	if len(pooled) == 0 {
+		return cards
+	}
+	return pooled
 }
 
 // extractNumber pulls the collector number out of the scraper-supplied
@@ -413,6 +444,29 @@ func extractNumber(variation string) string {
 		trimmed = "0" + trimmed
 	}
 	return trimmed
+}
+
+// extractPool pulls the promo pool out of the number a storefront wrote.
+//
+// A Lorcana number is written over what it is one of: "87/204" for the
+// eighty-seventh of a set of two hundred and four, "5/P3" for the fifth card
+// of the third promo pool. Only a tail that is not itself a count names a
+// pool, and it is read as the token the pool's tag is stored under.
+func extractPool(variation string) string {
+	for field := range strings.FieldsSeq(variation) {
+		if field[0] < '0' || field[0] > '9' {
+			continue
+		}
+		_, tail, found := strings.Cut(strings.TrimRight(field, ","), "/")
+		if !found || tail == "" {
+			return ""
+		}
+		if _, err := strconv.Atoi(tail); err == nil {
+			return ""
+		}
+		return mtgmatcher.PromoTypeSlug(tail)
+	}
+	return ""
 }
 
 // selectFinish maps the foil a listing names onto the uuid of the printing
