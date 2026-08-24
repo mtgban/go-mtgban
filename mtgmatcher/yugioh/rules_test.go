@@ -84,6 +84,13 @@ func TestAdjustNameTokenOrder(t *testing.T) {
 // does, just enough for the edition lookups respellName leans on.
 func respellBackend() *mtgmatcher.Backend {
 	sets := map[string]*mtgmatcher.Set{
+		"MFC": {Name: "Magician's Force", Cards: []mtgmatcher.Card{
+			{Name: "Vampire Orchis", Number: "MFC-014"},
+		}},
+		"DASA": {Name: "Dark Saviors", Cards: []mtgmatcher.Card{
+			{Name: "Vampiric Orchis", Number: "DASA-EN047"},
+			{Name: "Vampiric Koala", Number: "DASA-EN048"},
+		}},
 		"OP08": {Name: "OTS Tournament Pack 8", Cards: []mtgmatcher.Card{
 			{Name: "Token: Sky Striker Ace", Number: "OP08-EN026"},
 		}},
@@ -117,9 +124,9 @@ func respellBackend() *mtgmatcher.Backend {
 	return b
 }
 
-// TestRespellName pins the edition-guarded respelling: a token name takes
-// the spelling its own set files it under, and every guard that keeps it
-// from taking anybody else's.
+// TestRespellName pins the edition-guarded respelling both ways round: a
+// name takes the spelling its own set files it under, and every guard that
+// keeps it from taking anybody else's.
 func TestRespellName(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -128,6 +135,12 @@ func TestRespellName(t *testing.T) {
 		variation string
 		want      string
 	}{
+		{"cardtrader's Vampiric respells to the set's Vampire",
+			"Vampiric Orchis", "Magician's Force", "014 Common", "Vampire Orchis"},
+		{"the real DASA Vampiric stays itself",
+			"Vampiric Orchis", "Dark Saviors", "047 Super Rare", "Vampiric Orchis"},
+		{"the pair reads in the other direction too",
+			"Vampire Orchis", "Dark Saviors", "047", "Vampiric Orchis"},
 		{"the token flip follows the set's word order",
 			"Sky Striker Ace Token", "OTS Tournament Pack 8", "026", "Token: Sky Striker Ace"},
 		{"a set naming the token the storefront's way keeps it",

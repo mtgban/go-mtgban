@@ -62,17 +62,20 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 
 // respellName adopts the spelling the input's own edition files the card
 // under, when the edition resolves to a set that does not carry the name as
-// written: the token word-order flip in either direction ("Sky Striker Ace
-// Token" against OTS Tournament Pack 8's "Token: Sky Striker Ace"). A token
-// name the flip cannot place is asked of the set's own token sheet by
-// collector number ("Yugi & Dark Magician Token" T01 is Legendary Decks
-// II's "Token: Yugi").
+// written: the storefront respellings nameRespellings pairs (cardtrader
+// writes Magician's Force's "Vampire Orchis" as "Vampiric Orchis", the name
+// of the real newer DASA card) and the token word-order flip in either
+// direction ("Sky Striker Ace Token" against OTS Tournament Pack 8's
+// "Token: Sky Striker Ace"). A token name the spellings cannot place is
+// asked of the set's own token sheet by collector number ("Yugi & Dark
+// Magician Token" T01 is Legendary Decks II's "Token: Yugi").
 //
 // The edition is the whole guard, three ways. A name the resolved set does
-// carry is never touched, so the sets naming a token the storefront's way
-// keep their own printing. A set carrying several token names on one number
-// (OTS Tournament Pack 9 prints three "Token: Mecha Phantom Beast" arts
-// under 026) decides nothing and the name stays as written. And an edition
+// carry is never touched, so the DASA "Vampiric Orchis" and the sets naming
+// a token the storefront's way keep their own printing. A set carrying
+// several distinct respellings, or several token names on one number (OTS
+// Tournament Pack 9 prints three "Token: Mecha Phantom Beast" arts under
+// 026), decides nothing and the name stays as written. And an edition
 // naming no set at all decides nothing either — AdjustName's fallbacks own
 // that input.
 func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
@@ -124,10 +127,20 @@ func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
-// alternateNames lists the other spellings a name might be filed under: the
-// token word-order flip, either way around.
+// alternateNames lists the other spellings a name might be filed under: its
+// nameRespellings sibling, read in both directions, and the token word-order
+// flip, either way around.
 func alternateNames(name string) []string {
 	var alternates []string
+	normalized := mtgmatcher.Normalize(name)
+	for _, pair := range nameRespellings {
+		if mtgmatcher.Normalize(pair[0]) == normalized {
+			alternates = append(alternates, pair[1])
+		}
+		if mtgmatcher.Normalize(pair[1]) == normalized {
+			alternates = append(alternates, pair[0])
+		}
+	}
 	if base, cut := strings.CutSuffix(name, " Token"); cut {
 		alternates = append(alternates, "Token: "+base)
 	}
