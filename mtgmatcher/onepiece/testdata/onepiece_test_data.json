@@ -1,5 +1,24 @@
 [
     {
+        "description": "a DON!! number field spelling the set code does not narrow",
+        "input": {
+            "name": "Don!! Card (33) (Buggy)",
+            "variant": "PRB-02",
+            "edition": "PRB02 - Premium Booster 2"
+        },
+        "uuid": "don_655130"
+    },
+    {
+        "description": "a Double Pack volume naming a word of one label takes it",
+        "input": {
+            "name": "DON!! (Double Pack Vol 10) (Map)",
+            "variant": "Alternate Art - Map",
+            "edition": "OP15 - Adventure On Kami's Island",
+            "foil": true
+        },
+        "uuid": "don_689811_foil"
+    },
+    {
         "description": "a code naming another set yields to a wording naming one",
         "input": {
             "name": "Kouzuki Oden",
@@ -27,6 +46,25 @@
         "uuid": "prb02-003_653261_foil"
     },
     {
+        "description": "a gold word in the art sentence is not the gold printing",
+        "input": {
+            "name": "Don!! Card (10) (Crocodile)",
+            "variant": "PRB-01 (Gold Hook)",
+            "edition": "PRB01 - Premium Booster"
+        },
+        "uuid": "don_593803"
+    },
+    {
+        "description": "a gold wording takes the treated half of a DON!! pair",
+        "input": {
+            "name": "Don!! Card (31) (Boa Hancock) (Hearts) (Gold Foil)",
+            "variant": "PRB-02",
+            "edition": "PRB02 - Premium Booster 2",
+            "foil": true
+        },
+        "uuid": "don_655116_foil"
+    },
+    {
         "description": "a letter dropped out of a name yields to the number beside it",
         "input": {
             "name": "Kujiyaku",
@@ -35,6 +73,24 @@
             "foil": true
         },
         "uuid": "eb03-041_672789_foil"
+    },
+    {
+        "description": "a positional V.1 keeps the plain half of a DON!! pair",
+        "input": {
+            "name": "DON!! (PRB02 - Boa Hancock)",
+            "variant": "V.1",
+            "edition": "The Best Vol.2"
+        },
+        "uuid": "don_655117"
+    },
+    {
+        "description": "a positional V.2 takes the treated half of a DON!! pair",
+        "input": {
+            "name": "DON!! (PRB02 - Boa Hancock)",
+            "variant": "V.2",
+            "edition": "The Best Vol.2"
+        },
+        "uuid": "don_655116_foil"
     },
     {
         "description": "a promo line spelled a word off still selects the event set",
@@ -88,6 +144,25 @@
             "edition": "500 Years into the Future"
         },
         "uuid": "op07-029_545812_foil"
+    },
+    {
+        "description": "a spelled-out number reaches the label the catalog ran together",
+        "input": {
+            "name": "Don!! Card (39) (Gear 5 Luffy)",
+            "variant": "PRB-02 (Silhouette Purple White)",
+            "edition": "PRB02 - Premium Booster 2"
+        },
+        "uuid": "don_655119"
+    },
+    {
+        "description": "a treatment marker beside the border word takes the gold half",
+        "input": {
+            "name": "DON!! (Boa Hancock) (GOLD)",
+            "variant": "Gold text/Border",
+            "edition": "EB03 - Heroines Edition",
+            "foil": true
+        },
+        "uuid": "don_677571_foil"
     },
     {
         "description": "a word appended behind the coded name keeps the coded set",
@@ -234,6 +309,34 @@
         "uuid": "op01-084_454615"
     },
     {
+        "description": "negative: a DON!! edition keeps another set's promo out",
+        "input": {
+            "name": "Don!! Card (04) (Edward Newgate) (Gold Foil)",
+            "variant": "PRB-01",
+            "edition": "PRB01 - Premium Booster",
+            "foil": true
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a DON!! wording filed under no set reads no label",
+        "input": {
+            "name": "DON!! (Kumamoto 2026 Chopper)",
+            "edition": "One Piece Products"
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a Double Pack volume naming no character stays ambiguous",
+        "input": {
+            "name": "DON!! Card (Sand Tornado) (Double Pack Set Vol. 9)",
+            "variant": "Alternate Art - Sand Tornado Red and Orange Background",
+            "edition": "OP14 - Azure Sea's Seven",
+            "foil": true
+        },
+        "error": "aliasing detected"
+    },
+    {
         "description": "negative: a bare tail a single name wears is still not a code",
         "input": {
             "name": "Sogekign",
@@ -273,6 +376,25 @@
         "error": "unknown variant"
     },
     {
+        "description": "negative: a positional index past the DON!! pair names neither half",
+        "input": {
+            "name": "DON!! (PRB02 - Boa Hancock)",
+            "variant": "V.3",
+            "edition": "The Best Vol.2"
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a set name's own words name no label of its cards",
+        "input": {
+            "name": "DON!! (Double Pack Vol 10) (Blue Energy Blast)",
+            "variant": "Alternate Art - Blue Energy Blast",
+            "edition": "OP15 - Adventure On Kami's Island",
+            "foil": true
+        },
+        "error": "aliasing detected"
+    },
+    {
         "description": "negative: a vendor bucket edition selects no set",
         "input": {
             "name": "Arlong (OP06-023)",
@@ -290,6 +412,16 @@
         },
         "uuid": "",
         "error": "unknown variant"
+    },
+    {
+        "description": "negative: one word of an art sentence does not name a label",
+        "input": {
+            "name": "Don!! Card (25) (Monkey.D.Luffy) (Gold Foil)",
+            "variant": "PRB-01 (Big Eye)",
+            "edition": "PRB01 - Premium Booster",
+            "foil": true
+        },
+        "error": "aliasing detected"
     },
     {
         "description": "negative: reprinted base printings stay ambiguous on a bare input",
@@ -401,6 +533,14 @@
             "edition": "Pillars of Strength"
         },
         "uuid": "op03-002_499880"
+    },
+    {
+        "description": "the shout alone names the card the datastore calls DON!! Card",
+        "input": {
+            "name": "DON!!",
+            "edition": "OP01 - Romance Dawn"
+        },
+        "uuid": "don_456059_foil"
     },
     {
         "description": "two letters swapped round yield to the number as well",
