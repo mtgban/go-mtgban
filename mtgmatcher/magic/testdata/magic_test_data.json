@@ -62,32 +62,32 @@
         }
     },
     {
-        "error": "unsupported",
-        "description": "error_tok_unsupported_alias",
+        "uuid": "54246804-4196-54aa-b8c2-5db7cc754529",
+        "description": "tok_parent_edition_alias",
         "input": {
             "name": "Earthshaker Khenra Token",
             "edition": "Hour of Devastation"
         }
     },
     {
-        "error": "unsupported",
-        "description": "error_tok_unsupported_bat",
+        "uuid": "f1a551ec-bdba-5acc-a5ac-60b5b5f283e8",
+        "description": "tok_parent_edition_bat",
         "input": {
             "name": "Bat Token",
             "edition": "Modern Masters"
         }
     },
     {
-        "error": "unsupported",
-        "description": "error_tok_unsupported_commander",
+        "uuid": "ec839858-a219-5655-9287-f662e425ea49",
+        "description": "tok_parent_edition_commander",
         "input": {
             "name": "Bat (002) // Vampire (004) Double-sided Token",
             "edition": "Commander 2017"
         }
     },
     {
-        "error": "unsupported",
-        "description": "error_tok_unsupported_morph",
+        "uuid": "335a7198-afd5-582a-a988-51b077a203f6",
+        "description": "tok_parent_edition_morph",
         "input": {
             "name": "Morph",
             "edition": "Dragons of Tarkir"
