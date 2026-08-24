@@ -147,6 +147,50 @@ func setCodeExists(code string) bool {
 	return err == nil
 }
 
+// resolveEmblem answers the datastore's spelling and number for an emblem row,
+// and empty strings for anything else or for a planeswalker the named set does
+// not pin to exactly one emblem.
+func resolveEmblem(edition, cardName, cardVariation string) (string, string) {
+	face := cardName
+	for _, separator := range []string{" // ", " - "} {
+		before, _, found := strings.Cut(face, separator)
+		if found {
+			face = before
+		}
+	}
+
+	hint := cardVariation
+	inner, found := strings.CutPrefix(face, "Emblem (")
+	if found {
+		hint = strings.TrimSuffix(inner, ")")
+	} else if face != "Emblem" {
+		return "", ""
+	}
+	if hint == "" {
+		return "", ""
+	}
+
+	set, err := mtgmatcher.GetSet(edition)
+	if err != nil {
+		return "", ""
+	}
+
+	var name, number string
+	var matches int
+	for _, token := range set.Tokens {
+		if !strings.HasSuffix(token.Name, " Emblem") ||
+			!strings.Contains(strings.ToLower(token.Name), strings.ToLower(hint)) {
+			continue
+		}
+		name, number = token.Name, token.Number
+		matches++
+	}
+	if matches != 1 {
+		return "", ""
+	}
+	return name, number
+}
+
 // Preprocess turns a feed entry into the card description the matcher takes,
 // reporting an error for the entries that are not cards.
 func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
@@ -268,6 +312,14 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		if strings.Contains(number, "IFIYW") {
 			variation = strings.Join(fields[1:], "-")
 		}
+	}
+
+	// CK writes an emblem as the bare word plus the planeswalker, either
+	// parenthesized in the name or left in the variation, while the
+	// datastore spells the whole planeswalker name into the token name
+	if name, number := resolveEmblem(edition, card.Name, card.Variation); name != "" {
+		card.Name = name
+		variation = number
 	}
 
 	// Preserve any remaining tag
