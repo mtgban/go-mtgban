@@ -1,4 +1,4 @@
-name: mintcard
+name: magic / mintcard
 
 on:
   workflow_dispatch: {}
@@ -31,7 +31,7 @@ jobs:
     needs: [cache-datastore, cache-skus]
     uses: ./.github/workflows/run-bantool.yml
     with:
-      target: ${{ github.workflow }}
+      target: mintcard
       game: "magic"
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}

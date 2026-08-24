@@ -1,4 +1,4 @@
-name: strikezone_lorcana
+name: lorcana / strikezone
 
 on:
   workflow_dispatch: {}
@@ -15,7 +15,7 @@ jobs:
     name: ${{ github.workflow }}
     uses: ./.github/workflows/run-bantool.yml
     with:
-      target: ${{ github.workflow }}
+      target: strikezone_lorcana
       game: "lorcana"
       datastore-filepath: b2://mtgban-datastore/lorcana/lorcana.json.xz
     secrets: inherit
