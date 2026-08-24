@@ -25,6 +25,12 @@ type responseChan struct {
 	// byName marks a price whose printing was named rather than looked
 	// up by id, which is a guess however well guarded; see namedLast.
 	byName bool
+	// tally carries an edition's walked and refused counts in place of a
+	// price, one record per edition, so the pool's single collector can
+	// count the run without the workers sharing anything.
+	tally   bool
+	walked  int
+	refused int
 }
 
 // namedLast holds back the prices whose printing was named until every
@@ -41,10 +47,20 @@ type responseChan struct {
 type namedLast struct {
 	add   func(responseChan)
 	named []responseChan
+	// The run's tally, summed from the editions' records; the collector
+	// runs on one goroutine, so plain counts are all this takes.
+	walked  int
+	refused int
 }
 
-// collect takes one result, adding it or holding it back.
+// collect takes one result, adding it, holding it back, or counting it
+// into the run's tally.
 func (n *namedLast) collect(result responseChan) {
+	if result.tally {
+		n.walked += result.walked
+		n.refused += result.refused
+		return
+	}
 	if result.byName {
 		n.named = append(n.named, result)
 		return
@@ -119,19 +135,51 @@ func NewScraperIndex(gameID int, appToken, appSecret string) (*Index, error) {
 	return &mkm, nil
 }
 
-func (mkm *Index) processEdition(ctx context.Context, channel chan<- responseChan, idExpansion int) error {
-	products, err := mkm.client.MKMProductsInExpansion(ctx, idExpansion)
+// errNoPrinting marks a product no route named a printing of ours for. It
+// is what the id-and-name route answers with instead of nothing at all, so a
+// refusal is counted and said out loud rather than passing for a success.
+var errNoPrinting = errors.New("named no printing of ours")
+
+func (mkm *Index) processEdition(ctx context.Context, channel chan<- responseChan, expansion MKMExpansion) error {
+	products, err := mkm.client.MKMProductsInExpansion(ctx, expansion.IDExpansion)
 	if err != nil {
 		return err
 	}
 
+	var refused []string
 	for _, product := range products {
 		err := mkm.processProduct(channel, &product)
-		if err != nil {
+		switch {
+		case errors.Is(err, errNoPrinting):
+			refused = append(refused, fmt.Sprintf("%d %q (%s) in %s",
+				product.IDProduct, product.Name, product.Number, product.ExpansionName))
+		case err != nil:
 			mkm.printf("product id %d returned %s", product.IDProduct, err)
 		}
 	}
+
+	mkm.reportRefused(expansion.Name, len(products), refused)
+	channel <- responseChan{tally: true, walked: len(products), refused: len(refused)}
 	return nil
+}
+
+// reportRefused says what an expansion refused and counts it into the run's
+// tally. Every refusal is named, one line each, except in an expansion
+// nothing resolved in: that is a catalog we do not carry at all - Cardmarket
+// sells whole Japanese programs the datastores have no set for - and the
+// count is the whole story, where naming each of its products would be tens
+// of thousands of lines saying it again.
+func (mkm *Index) reportRefused(expansion string, total int, refused []string) {
+	if len(refused) == 0 {
+		return
+	}
+	mkm.printf("%s: %d of %d products named no printing of ours", expansion, len(refused), total)
+	if len(refused) == total {
+		return
+	}
+	for _, product := range refused {
+		mkm.printf("no printing for %s", product)
+	}
 }
 
 // versionTail matches the parenthetical Cardmarket tells same-name products
@@ -402,7 +450,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			byName = cardID != ""
 		}
 		if cardID == "" {
-			return nil
+			return errNoPrinting
 		}
 		cardIDFoil = cardID
 		if mkm.gameID == GameYuGiOh {
@@ -590,16 +638,17 @@ func (mkm *Index) Load(ctx context.Context) error {
 		}
 	}
 
-	mkm.collectPrices(ctx, items,
+	walked, refused := mkm.collectPrices(ctx, items,
 		func(ctx context.Context, exp MKMExpansion, channel chan<- responseChan) error {
 			mkm.printf("Processing %s (%d)", exp.Name, exp.IDExpansion)
-			err := mkm.processEdition(ctx, channel, exp.IDExpansion)
+			err := mkm.processEdition(ctx, channel, exp)
 			if err != nil {
 				return fmt.Errorf("expansion %s (id %d) returned %s", exp.Name, exp.IDExpansion, err.Error())
 			}
 			return nil
 		})
 
+	mkm.printf("Walked %d products, %d of which named no printing of ours", walked, refused)
 	mkm.printf("Total number of requests: %d", mkm.client.RequestNo())
 	mkm.inventoryDate = time.Now()
 	return nil
@@ -610,7 +659,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 // wait namedLast describes is actually taken: the pool hands its results to
 // the collector rather than to the inventory, so a named price cannot win a
 // printing merely by being walked first.
-func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) {
+func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worker func(context.Context, MKMExpansion, chan<- responseChan) error) (walked, refused int) {
 	// The bridge is keyed by the Cardmarket id and valued by the TCGplayer
 	// one, and a cardtrader blueprint names every Cardmarket product it
 	// sells as, so nothing stops two products from resolving to one
@@ -646,6 +695,7 @@ func (mkm *Index) collectPrices(ctx context.Context, items []MKMExpansion, worke
 	mtgban.WorkerPool(ctx, mkm.MaxConcurrency, items, worker, collector.collect, mkm.printf)
 
 	mkm.printf("Adding %d prices whose printing was named", collector.flush())
+	return collector.walked, collector.refused
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.

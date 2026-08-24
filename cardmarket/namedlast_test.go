@@ -148,3 +148,26 @@ func TestCollectPricesDefersNamed(t *testing.T) {
 		}
 	}
 }
+
+// TestCollectTally pins the run's tally riding the results channel: one
+// record per edition, summed by the collector on its single goroutine, and
+// never mistaken for a price.
+func TestCollectTally(t *testing.T) {
+	var added int
+	collector := namedLast{add: func(responseChan) { added++ }}
+
+	collector.collect(responseChan{cardID: "a", entry: entry(1, 1)})
+	collector.collect(responseChan{tally: true, walked: 40, refused: 3})
+	collector.collect(responseChan{cardID: "b", entry: entry(2, 2), byName: true})
+	collector.collect(responseChan{tally: true, walked: 25, refused: 0})
+
+	if collector.walked != 65 || collector.refused != 3 {
+		t.Errorf("tally = %d/%d, want 65/3", collector.walked, collector.refused)
+	}
+	if added != 1 {
+		t.Errorf("prices added before flush = %d, want 1", added)
+	}
+	if got := collector.flush(); got != 1 {
+		t.Errorf("named prices flushed = %d, want 1", got)
+	}
+}
