@@ -151,6 +151,12 @@ func tokensEqual(a, b []string) bool {
 // with.
 var bracketRe = regexp.MustCompile(`\[([^\]]*)\]`)
 
+// sealedExclusiveRe matches the parenthetical a catalog marks a storefront's
+// own edition of a product with. It says who sold the product rather than
+// what it is, and only when it says nothing else: "(Retail Exclusive)" and
+// "(EU Exclusive)" name which storefront, and two of those are two products.
+var sealedExclusiveRe = regexp.MustCompile(`(?i)\(\s*exclusive\s*\)`)
+
 // sealedPrintRunWords are the words a bracket uses to name which run of a
 // product it is. They are the whole of what such a bracket says: strip them
 // and two runs of one product read as one product.
@@ -176,7 +182,8 @@ func sealedPrintRunBracket(inner string) bool {
 }
 
 // sealedQualifierTokens returns the words a catalog name carries only inside
-// brackets and that a storefront may leave unsaid. Those are of two kinds.
+// brackets, or in the one parenthetical that behaves like one, and that a
+// storefront may leave unsaid. Those are of three kinds.
 //
 // The first is decoration: what a product is pictured with rather than what it
 // is. The deck the catalog files as `Theme Deck - "Storm Rider" [Zapdos]` is
@@ -191,7 +198,14 @@ func sealedPrintRunBracket(inner string) bool {
 // Booster Box` reaches the single `[1st Edition]` row and still stalls on
 // `Pharaonic Guardian`, where both runs exist and neither is more likely.
 //
-// A word the name also carries outside its brackets is left in, since there it
+// The third is which storefront sold it. A catalog marks its own edition of a
+// product `(Exclusive)`, and a storefront that only ever sold its own does not
+// repeat it: the Pokemon Center's Elite Trainer Boxes are named for their set
+// everywhere but the catalog. Only the bare word counts - `(Retail
+// Exclusive)` and `(EU Exclusive)` say which storefront, and two of those are
+// two products.
+//
+// A word the name also carries outside these groups is left in, since there it
 // is doing the product's own work.
 //
 // The words come back one bracket at a time, because the ranking counts how
@@ -200,18 +214,8 @@ func sealedPrintRunBracket(inner string) bool {
 // and the other `[1st Edition]`, and counting words would hand the tie to
 // whichever the catalog spelled shorter.
 func (b *Backend) sealedQualifierGroups(name string) []map[string]bool {
-	matches := bracketRe.FindAllStringSubmatch(name, -1)
-	if len(matches) == 0 {
-		return nil
-	}
-
-	outside := map[string]bool{}
-	for _, tok := range sealedTokens(bracketRe.ReplaceAllString(name, " ")) {
-		outside[tok] = true
-	}
-
-	var groups []map[string]bool
-	for _, match := range matches {
+	var inners []string
+	for _, match := range bracketRe.FindAllStringSubmatch(name, -1) {
 		// Everything else a bracket holds is the product's identity - the
 		// number of copies, the placing a promo was handed out for - and
 		// forgiving those would merge products that differ by nothing else.
@@ -219,8 +223,25 @@ func (b *Backend) sealedQualifierGroups(name string) []map[string]bool {
 		if !isCard && !sealedPrintRunBracket(match[1]) {
 			continue
 		}
+		inners = append(inners, match[1])
+	}
+	for range sealedExclusiveRe.FindAllString(name, -1) {
+		inners = append(inners, "exclusive")
+	}
+	if len(inners) == 0 {
+		return nil
+	}
+
+	outside := map[string]bool{}
+	bare := sealedExclusiveRe.ReplaceAllString(bracketRe.ReplaceAllString(name, " "), " ")
+	for _, tok := range sealedTokens(bare) {
+		outside[tok] = true
+	}
+
+	var groups []map[string]bool
+	for _, inner := range inners {
 		inside := map[string]bool{}
-		for _, tok := range sealedTokens(match[1]) {
+		for _, tok := range sealedTokens(inner) {
 			if outside[tok] {
 				continue
 			}

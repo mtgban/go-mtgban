@@ -113,6 +113,12 @@ func sealedResolveBackend() *Backend {
 		// Two blisters that differ only by the creature on the pack.
 		"ble-blister-z": {"2-Pack Blister [Zapdos]", "BLE"},
 		"ble-blister-a": {"2-Pack Blister [Articuno]", "BLE"},
+		// A storefront's own edition of a product, which that storefront
+		// names for the set and nothing else. The two below say which
+		// storefront and are two products, so they stay unforgiven.
+		"ogn-etb-store":  {"Origins Trainer Box (Exclusive)", "OGN"},
+		"ogn-etb-retail": {"Origins Trainer Box (Retail Exclusive)", "OGN"},
+		"ogn-etb-eu":     {"Origins Trainer Box (EU Exclusive)", "OGN"},
 	} {
 		b.UUIDs[uuid] = &CardObject{
 			Card:   Card{UUID: uuid, Name: product.name, SetCode: product.setCode},
@@ -317,6 +323,11 @@ func TestSealedQualifierTokens(t *testing.T) {
 		// A count and a placing are the product's identity.
 		{"Origins Booster Pack [Set of 4]", nil},
 		{"Origins Promo [1st Place]", nil},
+		// The catalog's own edition is forgivable; a parenthetical saying
+		// which storefront is the product's identity.
+		{"Origins Trainer Box (Exclusive)", []string{"exclusive"}},
+		{"Origins Trainer Box (Retail Exclusive)", nil},
+		{"Origins Trainer Box (EU Exclusive)", nil},
 		// A word the name also carries outside the brackets is doing the
 		// product's own work there, so it is not forgiven.
 		{"Pikachu Collection [Pikachu]", nil},
@@ -369,6 +380,14 @@ func TestResolveSealedForgivesQualifier(t *testing.T) {
 			desc:   "the plain product outranks the run that reprints it",
 			vendor: "Origins Elite Box 6x",
 			want:   "ogn-elite",
+		},
+		{
+			// The catalog is the only one that calls it exclusive. Two
+			// siblings say which storefront and are two other products,
+			// and neither is reachable by a name saying no storefront.
+			desc:   "the catalog's own exclusive mark is not the product",
+			vendor: "Origins Trainer Box",
+			want:   "ogn-etb-store",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
