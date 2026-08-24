@@ -59,3 +59,26 @@ func TestFullNumberShapes(t *testing.T) {
 		}
 	}
 }
+
+// TestTreatmentSaid pins how the gold-bordered half of a DON!! pair is
+// asked for, against the art sentences a storefront publishes beside the
+// name. Both say the word; only one of them is a claim about the printing.
+func TestTreatmentSaid(t *testing.T) {
+	tests := map[string]bool{
+		"PRB-01 (Pink Glove) 02 Vinsmoke Reiju Gold Foil": true,
+		"Gold text/Border Boa Hancock GOLD":               true,
+		"(Gold Border)(We'll Have To Break Out Of This)":  true,
+		"Alternate Art - Luffy (Gold Ver.) Luffy Gold":    true,
+		"PRB-01 (Gold Hook) 10 Crocodile":                 false,
+		"PRB-02 (Gold Bell) 43 Kalgara":                   false,
+		"Alternate Art - I'm gonna ring that golden bell": false,
+		"Alternate Art - I'd Like To Meet This Fellow!!!": false,
+		"": false,
+	}
+
+	for wording, want := range tests {
+		if got := treatmentSaid(wording); got != want {
+			t.Errorf("treatmentSaid(%q) = %v, want %v", wording, got, want)
+		}
+	}
+}

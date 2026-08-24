@@ -2,6 +2,7 @@ package onepiece
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -82,6 +83,18 @@ func splitDashNumber(inCard *mtgmatcher.InputCard) bool {
 	return false
 }
 
+// nameAliases maps a storefront's spelling of a card onto the name the
+// datastore files it under, keyed by the normalized input name. Only
+// spellings no canonical name answers belong here - the table is consulted
+// after the canonical lookup has already failed.
+var nameAliases = map[string]string{
+	// The game's resource card is "DON!! Card" on the card and in the
+	// catalog the datastore is built from; several storefronts call it by
+	// the shout alone. The prefix fallback below cannot rescue it: every
+	// character named Don reads as a prefix match too.
+	"don": "DON!! Card",
+}
+
 // AdjustName provides a prefix fallback for truncated feeds, adopting the
 // one name among the prefix matches that carries the input's number. Names
 // compare normalized, so punctuation variants of one name are not read as
@@ -89,6 +102,12 @@ func splitDashNumber(inCard *mtgmatcher.InputCard) bool {
 func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
+	}
+	if alias, found := nameAliases[mtgmatcher.Normalize(inCard.Name)]; found {
+		if _, known := b.CanonicalNames[mtgmatcher.Normalize(alias)]; known {
+			inCard.Name = alias
+			return
+		}
 	}
 	number := extractNumber(inCard.Variation)
 	uuids, err := b.SearchHasPrefix(inCard.Name)
@@ -273,7 +292,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 // variant label of some printing of this card. Only the variation is read,
 // never the edition - the edition is what this decides whether to trust.
 func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	number := extractNumber(inCard.Variation)
+	number := inputNumber(b, inCard)
 	if wantsVariant(inCard, number) {
 		return true
 	}
@@ -314,7 +333,7 @@ func (Rules) CanonicalFinish(name string) string {
 // positional "(V.n)" wording keeps the base for V.1 and the variants
 // otherwise.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
-	number := extractNumber(inCard.Variation)
+	number := inputNumber(b, inCard)
 
 	var candidates []mtgmatcher.Card
 	seen := map[string]bool{}
@@ -348,6 +367,24 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return candidates
 	}
 
+	// A name whose printings wear no collector number has nothing but the
+	// set and the label telling them apart, and the labels are prose the
+	// catalog wrote rather than tags, so both are read here instead of by
+	// the tiering below. Every other name is left to the tiering on
+	// purpose: a variant shares its base card's number while being filed in
+	// another set, and storefronts name the base card's set for it. The
+	// DON!! cards are not reprinted that way - each set prints its own - so
+	// an edition naming one of them names the set the listing is in, and a
+	// wording that happens to describe another set's DON!! must not reach
+	// past it.
+	if !numbered(b, inCard.Name) {
+		candidates = editionTiebreak(b, inCard, candidates)
+		if len(candidates) <= 1 || !editionNamesSet(b, inCard.Edition) {
+			return candidates
+		}
+		return labelOverlap(b, inCard, candidates)
+	}
+
 	// The letter tail cardtrader appends to a number ("OP01-001a") means a
 	// variant printing without saying which; the V.n index says the same.
 	// Either demand drops the base printing from consideration.
@@ -365,6 +402,35 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return editionTiebreak(b, inCard, base)
 	}
 	return editionTiebreak(b, inCard, candidates)
+}
+
+// editionNamesSet reports whether a storefront's edition is a set of the
+// game rather than a shelf it files a whole game under.
+//
+// The labels tell apart the printings of one set, and the set has to have
+// been named for them to be read: cardmarket files half its promos under
+// "One Piece Products", where the pool is every DON!! the game ever printed
+// and one character name is spelled by half a dozen of them across as many
+// sets. A listing naming a card the catalog does not hold - a convention
+// DON!! nobody catalogued, an event set a year newer - would answer with a
+// booster's card of the same character.
+//
+// The question is asked the way Match asks it, on the name or a part of it,
+// with the promo line a storefront hangs a set name off read through.
+func editionNamesSet(b *mtgmatcher.Backend, edition string) bool {
+	if mtgmatcher.Normalize(edition) == "" {
+		return false
+	}
+	base := promoLineRe.ReplaceAllString(edition, "")
+	if mtgmatcher.Normalize(base) == "" {
+		base = edition
+	}
+	for _, set := range b.Sets {
+		if mtgmatcher.Contains(set.Name, edition) || mtgmatcher.Contains(set.Name, base) {
+			return true
+		}
+	}
+	return false
 }
 
 // editionTiebreak narrows a tier still holding several printings to the
@@ -652,6 +718,297 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 	return
 }
 
+// doublePackRe matches the product line a Double Pack Set's two DON!!
+// cards are filed under, in the storefront's spelling or the catalog's
+// ("Double Pack Set Vol. 4", "Double Pack Volume 2", "Double Pack Vol 7").
+var doublePackRe = regexp.MustCompile(`(?i)\bdouble\s*pack\b`)
+
+// labelOverlap picks, among printings told apart by nothing but a label,
+// the one whose label the storefront's wording names.
+//
+// The DON!! cards are the game's only such printings, and their labels are
+// prose the catalog wrote rather than tags: "Trafalgar Law, Eustass Kid and
+// Monkey.D.Luffy Double Pack Set Vol. 4" beside a plain "Alternate Art" in
+// the same set. A storefront never spells one of those in full - it writes
+// "(Law, Kid, Luffy) (Double Pack Set Vol. 4)" - so asking whether the
+// wording names a whole label answers "Alternate Art" for every one of them,
+// because every such listing also says the words "alternate art". Counting
+// the label's own words the wording says asks the question the other way
+// round and lets the fuller label win.
+//
+// The wording is not all identification, though. Beside the decorations a
+// storefront hangs off the name it publishes a sentence describing the art -
+// "Gold Hook", "Big Eye", "Sand Tornado" - and by the time a filter runs the
+// two have been folded into one variation with nothing to tell them apart.
+// Every guard below is there because that prose reached a label it had no
+// business naming.
+//
+// A label word counts as said only when the wording spells it as a run of
+// whole words, which is what lets a catalog's "GEAR5 Luffy" hear a
+// storefront's "Gear 5 Luffy" and refuse the "Gear 4 Luffy" filed beside it.
+// The winner must say more of its label than it leaves out, or an art
+// sentence saying "Big Eye" would answer with the set's "Big Mom". And a
+// winner that says no more words than the runner-up, only fewer wrong ones,
+// has to say a word no other label carries: without it a wording naming a
+// Double Pack volume and no character - "Sand Tornado", "Purple Smoke" -
+// answers with whichever of the volume's two cards has the shorter name,
+// and both of the volume's listings price as the same card.
+//
+// Only the variation is read. The edition is the same string for every
+// candidate here - the set is what narrowed to them - so it can say nothing
+// about which of their labels was meant, while the words of the set's own
+// name would count as label evidence: "OP15 - Adventure On Kami's Island"
+// hands the word "Island" to a "Sky Island Map" label no listing named.
+func labelOverlap(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	wording := inCard.Variation
+
+	// A Double Pack Set's DON!! cards are filed under a label naming the
+	// set, so a listing naming a volume is naming one of them and nothing
+	// else in the set answers. Where the catalog holds no such card - Vol.
+	// 1 is missing from it - the listing has no printing to price and must
+	// not settle for the set's plain alternate art.
+	if doublePackRe.MatchString(wording) {
+		var packs []mtgmatcher.Card
+		for _, card := range candidates {
+			if doublePackRe.MatchString(promoLabel(b, card)) {
+				packs = append(packs, card)
+			}
+		}
+		if len(packs) == 0 {
+			return nil
+		}
+		candidates = packs
+	}
+
+	groups, order := groupByIdentity(b, candidates)
+	// One identity is one card printed plain and gold, and nothing has to
+	// name it: the set was what narrowed to it, and the treatment is all
+	// that is left to decide.
+	if len(order) == 1 {
+		return groups[order[0]].pick(inCard, treatmentSaid(inCard.Variation))
+	}
+
+	// A word two labels share says nothing about which of them was meant.
+	carried := map[string]int{}
+	for _, key := range order {
+		for _, word := range uniqueWords(groups[key].words) {
+			carried[word]++
+		}
+	}
+
+	var best, runner *identityGroup
+	for _, key := range order {
+		group := groups[key]
+		for _, word := range group.words {
+			if mtgmatcher.SlugDescribes(wording, word) {
+				group.named++
+				if carried[word] == 1 {
+					group.only = true
+				}
+			}
+		}
+		if best == nil || group.beats(best) {
+			runner, best = best, group
+		} else if runner == nil || group.beats(runner) {
+			runner = group
+		}
+	}
+	if best == nil || best.named <= len(best.words)-best.named {
+		return candidates
+	}
+	if runner != nil && (!best.beats(runner) || (best.named == runner.named && !best.only)) {
+		return candidates
+	}
+	return best.pick(inCard, treatmentSaid(inCard.Variation))
+}
+
+// identityGroup collects the printings of one label, the gold-treated half
+// of a pair filed beside the plain one it is a treatment of, along with how
+// much of that shared identity a wording said.
+type identityGroup struct {
+	words []string
+	plain []mtgmatcher.Card
+	gold  []mtgmatcher.Card
+	named int
+	only  bool
+}
+
+// beats orders two identities by the words of theirs a wording said, the
+// label leaving fewest unsaid winning a tie. That tie-break is what keeps a
+// bare wording on the bare printing where the treatment is not what tells
+// the two apart: "Nami" says all of "Nami" and half of "Nami Manga".
+func (g *identityGroup) beats(other *identityGroup) bool {
+	if g.named != other.named {
+		return g.named > other.named
+	}
+	return len(g.words)-g.named < len(other.words)-other.named
+}
+
+// pick answers with the treated half of the identity when the storefront
+// asked for the treatment and the catalog holds one, and with the plain half
+// otherwise. An identity holding only the half that was not asked for hands
+// back what it has: the treatment is the storefront's claim, and refusing its
+// own printing over it would price nothing at all. Handing back both is how
+// this refuses to answer, leaving Match to report the aliasing.
+//
+// A storefront that indexes its products positionally has already said which
+// of an identity's halves it means, and its index outranks any wording: this
+// is cardmarket, which does not describe a DON!! beyond naming the character
+// and files the plain printing as V.1 with the treated one behind it, the
+// same reading the numbered cards get. An index past the pair names a product
+// the catalog does not hold as a half of anything, and pricing it as either
+// half would be a guess.
+func (g *identityGroup) pick(inCard *mtgmatcher.InputCard, treated bool) []mtgmatcher.Card {
+	both := append(append([]mtgmatcher.Card{}, g.plain...), g.gold...)
+	if len(both) == 1 {
+		return both
+	}
+	switch positionalIndex(inCard.Variation) {
+	case 0:
+	case 1:
+		treated = false
+	case 2:
+		treated = true
+	default:
+		return both
+	}
+	if treated && len(g.gold) > 0 {
+		return g.gold
+	}
+	if !treated && len(g.plain) > 0 {
+		return g.plain
+	}
+	return both
+}
+
+// positionalIndex reads the "(V.n)" index cardmarket synthesizes to tell the
+// products sharing a name apart, 0 where none was written.
+func positionalIndex(variation string) int {
+	for field := range strings.FieldsSeq(strings.ToLower(variation)) {
+		tail, found := strings.CutPrefix(field, "v.")
+		if !found {
+			continue
+		}
+		index, err := strconv.Atoi(tail)
+		if err != nil {
+			continue
+		}
+		return index
+	}
+	return 0
+}
+
+// goldTreatment is the word a DON!! label ends in when the printing is the
+// gold-bordered half of a pair: a third of the catalog's DON!! labels are
+// another label of the same set with this word appended.
+const goldTreatment = "gold"
+
+// groupByIdentity buckets the candidates by the label they wear with the
+// gold treatment taken off, so that the pair a set prints of one card is
+// scored once, on the identity both halves share. Returned with the order
+// the identities were first seen, so that nothing depends on map iteration.
+func groupByIdentity(b *mtgmatcher.Backend, candidates []mtgmatcher.Card) (map[string]*identityGroup, []string) {
+	groups := map[string]*identityGroup{}
+	var order []string
+	for _, card := range candidates {
+		words := labelWords(promoLabel(b, card))
+		// A label that is the treatment word alone is not a treated half of
+		// anything: those are the coloured DON!! promos, filed under the name
+		// of their colour.
+		treated := len(words) > 1 && words[len(words)-1] == goldTreatment
+		if treated {
+			words = words[:len(words)-1]
+		}
+		key := strings.Join(words, " ")
+		group, found := groups[key]
+		if !found {
+			group = &identityGroup{words: words}
+			groups[key] = group
+			order = append(order, key)
+		}
+		if treated {
+			group.gold = append(group.gold, card)
+		} else {
+			group.plain = append(group.plain, card)
+		}
+	}
+	return groups, order
+}
+
+// treatmentNeighbours are the words a storefront writes beside "gold" when
+// it means the gold-bordered printing: the finish, the border, the text the
+// border is drawn around, or the version of the card.
+var treatmentNeighbours = map[string]bool{
+	"foil": true, "border": true, "text": true, "ver": true, "version": true,
+}
+
+// treatmentSaid reports whether a wording claims the gold treatment rather
+// than merely saying the word.
+//
+// A storefront claims it beside one of the words a treatment is named with
+// ("Gold Foil", "Gold Border", "Gold text/Border", "Gold Ver."), or with the
+// word standing at the end of what it wrote, which is where the decorations
+// hung off a name end up. The art sentences say gold of something in the
+// picture instead - a hook, a bell, a logo - and reading those as the claim
+// priced a set's plain DON!! as its gold-bordered twin.
+//
+// Which word comes next is read off the punctuation as well as the spaces:
+// a storefront runs its decorations together ("Gold text/Border", "(Gold
+// Border)(We'll Have To...") and joining those into one word hid the
+// treatment behind it.
+func treatmentSaid(wording string) bool {
+	words := strings.FieldsFunc(strings.ToLower(wording), func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+	for i, word := range words {
+		if word != goldTreatment {
+			continue
+		}
+		if i == len(words)-1 || treatmentNeighbours[words[i+1]] {
+			return true
+		}
+	}
+	return false
+}
+
+// promoLabel returns the words a printing's single promo type was distilled
+// from. A printing wearing none is the set's plain one and has no label.
+func promoLabel(b *mtgmatcher.Backend, card mtgmatcher.Card) string {
+	if len(card.PromoTypes) != 1 {
+		return ""
+	}
+	return b.PromoTypeLabels[card.PromoTypes[0]]
+}
+
+// labelWords cuts a label or a wording into the words a comparison can be
+// made of, each stripped of the punctuation the slugging drops so that
+// "Law," and "Monkey.D.Luffy" read as they are written.
+func labelWords(text string) []string {
+	fields := strings.Fields(text)
+	words := make([]string, 0, len(fields))
+	for _, field := range fields {
+		if word := mtgmatcher.PromoTypeSlug(field); word != "" {
+			words = append(words, word)
+		}
+	}
+	return words
+}
+
+// uniqueWords drops the repeats out of a label's words, so that a word a
+// label spells twice is still one label carrying it.
+func uniqueWords(words []string) []string {
+	seen := map[string]bool{}
+	out := words[:0:0]
+	for _, word := range words {
+		if seen[word] {
+			continue
+		}
+		seen[word] = true
+		out = append(out, word)
+	}
+	return out
+}
+
 // wantsVariant reports whether the input demands some variant printing
 // without describing which: cardmarket's "(V.n)" with n past 1, or a letter
 // tail on the collector number ("OP01-001a").
@@ -661,6 +1018,40 @@ func wantsVariant(inCard *mtgmatcher.InputCard, number string) bool {
 	}
 	for field := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
 		if strings.HasPrefix(field, "v.") && field != "v.1" {
+			return true
+		}
+	}
+	return false
+}
+
+// inputNumber is extractNumber with the card being asked about in hand: the
+// number a storefront wrote only narrows when the printings of that name
+// wear collector numbers it could be one of.
+func inputNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
+	number := extractNumber(inCard.Variation)
+	if number == "" || numbered(b, inCard.Name) {
+		return number
+	}
+	return ""
+}
+
+// numbered reports whether any printing of a name wears a collector number
+// with a digit in it. The DON!! cards are the game's one exception: every
+// printing of them is filed under the literal code "DON" instead of a
+// number, so nothing a storefront writes in its number field is one of
+// theirs - coolstuffinc writes the set code there ("PRB-01"), cardmarket the
+// number of the card the DON!! was packed with - and comparing it deleted
+// every candidate the name had. A name with even one numbered printing is
+// not that case: "Monkey.D.Luffy" wears "LEADER" on a few event printings
+// and a real number everywhere else, and the number still has to tell those
+// apart.
+func numbered(b *mtgmatcher.Backend, name string) bool {
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed {
+			continue
+		}
+		if strings.ContainsFunc(co.Number, unicode.IsDigit) {
 			return true
 		}
 	}

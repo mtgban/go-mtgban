@@ -361,3 +361,25 @@ func TestOnepieceSealed(t *testing.T) {
 		t.Fatalf("wave-ambiguous booster box resolved to %s", uuid)
 	}
 }
+
+// TestOnepieceNumbered pins the datastore invariant the DON!! rules rest
+// on: the resource card is the one name in the game whose every printing is
+// filed under a code rather than a number, so a storefront's number field
+// can say nothing about which of them it means. A name with even one
+// numbered printing is not that case, and Monkey.D.Luffy is the proof: a
+// handful of his event printings wear "LEADER" while the rest wear real
+// numbers, and those still have to be told apart by number.
+func TestOnepieceNumbered(t *testing.T) {
+	b := loadBackend(t)
+
+	// CanonicalNames holds the card names alone; the qualified spellings
+	// naming one printing apiece are searchable but never canonical, and a
+	// qualified name reaching a "LEADER" printing has no number to compare
+	// either.
+	for _, name := range b.CanonicalNames {
+		want := !strings.HasPrefix(name, "DON!! Card")
+		if got := numbered(b, name); got != want {
+			t.Errorf("numbered(%q) = %v, want %v", name, got, want)
+		}
+	}
+}
