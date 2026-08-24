@@ -1799,13 +1799,24 @@ func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath,
 	return err
 }
 
-func dump(dataBucket simplecloud.Writer, scrapers []mtgban.Scraper, outputPath, format string, meta bool) []error {
-	log.Println("Writing results to", outputPath)
-
-	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
-	if len(sellers) == 0 && len(vendors) == 0 {
-		return []error{errors.New("no data retrieved")}
+// hasAnyData reports whether a single entry was scraped at all, on either
+// side of the book.
+func hasAnyData(sellers []mtgban.Seller, vendors []mtgban.Vendor) bool {
+	for _, seller := range sellers {
+		if len(seller.Inventory()) > 0 {
+			return true
+		}
 	}
+	for _, vendor := range vendors {
+		if len(vendor.Buylist()) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string, meta bool) []error {
+	log.Println("Writing results to", outputPath)
 
 	var sellerErrs []error
 	for _, seller := range sellers {
@@ -2129,9 +2140,15 @@ func run() int {
 
 	log.Println("loading scraper data took:", time.Since(now))
 
+	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
+	if !hasAnyData(sellers, vendors) {
+		log.Println("No retail or buylist data retrieved")
+		return 1
+	}
+
 	now = time.Now()
 	// Dump the results
-	dumpErrors := dump(dataBucket, scrapers, *outputPathOpt, *fileFormatOpt, *metaOpt)
+	dumpErrors := dump(dataBucket, sellers, vendors, *outputPathOpt, *fileFormatOpt, *metaOpt)
 	nonFatalErrors = append(nonFatalErrors, dumpErrors...)
 
 	log.Println("uploading data took:", time.Since(now))
