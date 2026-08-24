@@ -1309,6 +1309,10 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				if !strings.HasPrefix(set.Name, "Year of the ") {
 					continue
 				}
+				// Each year is a set of its own, so a stated year picks it
+				if maybeYear != "" && !strings.Contains(set.Name, maybeYear) {
+					continue
+				}
 			}
 
 		case inCard.IsThickDisplay():

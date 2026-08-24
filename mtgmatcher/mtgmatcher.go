@@ -374,7 +374,12 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	case (strings.Contains(strings.ToLower(inCard.Edition), "token") ||
 		strings.Contains(strings.ToLower(inCard.Variation), "token")) &&
 		!inCard.Contains("League"):
-		return "", ErrUnsupported
+		// An edition naming a token set the datastore carries is not a
+		// leak: its tokens are filed right there
+		set, err := b.GetSetByName(inCard.Edition)
+		if err != nil || !strings.Contains(strings.ToLower(set.Name), "token") {
+			return "", ErrUnsupported
+		}
 	// For any unsupported set that wasn't processed previously
 	case inCard.Contains("Oversize") &&
 		!(inCard.Contains("Commander") || inCard.Contains("Vanguard") ||
