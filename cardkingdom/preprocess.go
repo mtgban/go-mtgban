@@ -276,20 +276,30 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
-	// Drop one side of dfc tokens
+	// Drop one side of dfc tokens, without doubling the suffix when the
+	// kept face already carries it
 	if (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
 		(strings.Contains(card.Name, "Token") || strings.HasPrefix(setCode, "T") || strings.HasPrefix(setCode, "FT")) {
 		if strings.Contains(card.Name, " // ") {
-			card.Name = strings.Split(card.Name, " // ")[0] + " Token"
+			card.Name = strings.Split(card.Name, " // ")[0]
 		} else {
-			card.Name = strings.Split(card.Name, " - ")[0] + " Token"
+			card.Name = strings.Split(card.Name, " - ")[0]
+		}
+		if !strings.HasSuffix(card.Name, "Token") {
+			card.Name += " Token"
 		}
 	}
-	// Use number for tokens
-	if strings.Contains(card.Name, "Token") || strings.Contains(card.Name, "Bounty") {
-		// Quiet exit for duplicated tokens from this set
-		if len(mtgmatcher.MatchInSetNumber(card.Name, setCode, number)) == 0 {
-			return nil, mtgmatcher.ErrUnsupported
+	// Tokens are filed under their own set code when the datastore carries
+	// one, while a code it does not carry names the set the tokens are
+	// filed with once its treatment and token wrappings are stripped
+	if (strings.Contains(card.Name, "Token") || strings.Contains(card.Name, "Bounty")) &&
+		!setCodeExists(setCode) {
+		for _, prefix := range []string{"F", "T", "FT", "SF", "RF", "CF"} {
+			trimmed := strings.TrimPrefix(setCode, prefix)
+			if trimmed != setCode && setCodeExists(trimmed) {
+				edition = trimmed
+				break
+			}
 		}
 	}
 
