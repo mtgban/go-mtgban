@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -60,6 +61,43 @@ func NewScraperSealed(game string) *Miniaturemarket {
 
 const defaultConcurrency = 6
 
+// The decorations miniaturemarket writes into a One Piece product name: a
+// storefront prefix, availability and pack-count parentheticals, and the
+// set code in brackets where the canonical names spell no code at all.
+var (
+	onePieceDecorations = regexp.MustCompile(`\s*\((?:Preorder|\d+ Packs?)\)`)
+	onePieceSetCode     = regexp.MustCompile(`\s*\[([A-Z]+)-?(\d+)\]`)
+)
+
+// sealedName rewrites a storefront listing toward the shape its game's
+// canonical names use, where the two differ by more than the trailing
+// decoration the resolve retry already sees past.
+//
+// One Piece names arrive as "One Piece TCG: BLUE Kuzan [ST-33] - Starter
+// Deck (Preorder)" while the canon says "Starter Deck 33: BLUE Kuzan": the
+// prefix and parentheticals only decorate, and the bracket code either
+// carries the deck number the canon leads with, or restates a set the rest
+// of the name already spells.
+func sealedName(game, name string) string {
+	if game != GameOnePiece {
+		return name
+	}
+
+	name = strings.TrimPrefix(name, "One Piece TCG: ")
+	name = onePieceDecorations.ReplaceAllString(name, "")
+
+	match := onePieceSetCode.FindStringSubmatch(name)
+	if match != nil && match[1] == "ST" {
+		name = onePieceSetCode.ReplaceAllString(name, "")
+		name = strings.Replace(name, " - Starter Deck", "", 1)
+		name = "Starter Deck " + match[2] + ": " + strings.TrimSpace(name)
+	} else {
+		name = onePieceSetCode.ReplaceAllString(name, "")
+	}
+
+	return strings.TrimSpace(name)
+}
+
 func (mm *Miniaturemarket) mainURL() string {
 	return "https://www.miniaturemarket.com/widgets/cms/navigation/" + gameWidgets[mm.game] + "?filter-inStock=1&no-aggregations=1&order=name-asc&p=1"
 }
@@ -112,7 +150,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 			// unique or nothing. A failing name retries without its
 			// trailing decoration ("(New Arrival)"), which resolution
 			// rightly refuses to see past on its own.
-			name := strings.TrimSpace(s.Find(`a.product-name`).Text())
+			name := sealedName(mm.game, strings.TrimSpace(s.Find(`a.product-name`).Text()))
 			if name == "" || mtgmatcher.SealedIsLanguageVariant(name) {
 				return
 			}
