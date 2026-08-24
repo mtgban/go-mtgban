@@ -58,8 +58,9 @@ var skuFixupTable = map[string]string{
 	"FMUST-113C": "ULST-37",
 
 	// Wrong PLST codes
-	"MF19-001": "MPF19-1",
-	"MZNR-091": "MKHC-91",
+	"MF19-001":  "MPF19-1",
+	"MZNR-091":  "MKHC-91",
+	"MTAFR-001": "PLST-TAFR-1",
 
 	// Naya Sojourners
 	"PM10-028": "DCI-29",
