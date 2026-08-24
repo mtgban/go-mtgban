@@ -6,10 +6,11 @@ import (
 	"testing"
 )
 
-// The "servo" bucket holds two distinct cards, the WAR token and L16's
-// "Servo // Thopter" through its face name: lookups must resolve to the
-// card actually carrying the queried name, regardless of the bucket
-// order the load process produced.
+// The "servo" bucket holds two distinct cards, the War of the Spark token
+// - filed with its set's token sheet, as TWAR - and L16's "Servo // Thopter"
+// through its face name: lookups must resolve to the card actually carrying
+// the queried name, regardless of the bucket order the load process
+// produced.
 func TestPrintings4CardExactName(t *testing.T) {
 	if len(GetUUIDs()) == 0 {
 		t.Skip("datastore not loaded")
@@ -19,8 +20,8 @@ func TestPrintings4CardExactName(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Contains(printings, "WAR") {
-		t.Errorf("Servo printings = %v, expected to contain WAR", printings)
+	if !slices.Contains(printings, "TWAR") {
+		t.Errorf("Servo printings = %v, expected to contain TWAR", printings)
 	}
 	if slices.Contains(printings, "L16") {
 		t.Errorf("Servo printings = %v, L16 belongs to Servo // Thopter", printings)

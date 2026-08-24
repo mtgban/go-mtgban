@@ -710,6 +710,19 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	inCard.Variation = variation
 }
 
+// namesTokenSetParent reports whether an edition names the set a token sheet
+// was printed beside. The sheet is filed under its own set - "Hour of
+// Devastation Tokens" - but a storefront selling one of its tokens says
+// "Hour of Devastation", meaning the set the token came with rather than the
+// sheet nobody prints a name on. Both addresses reach the same printings.
+func namesTokenSetParent(b *mtgmatcher.Backend, set *mtgmatcher.Set, edition string) bool {
+	if set.Type != "token" || set.ParentCode == "" {
+		return false
+	}
+	parent, found := b.Sets[set.ParentCode]
+	return found && mtgmatcher.Equals(edition, parent.Name)
+}
+
 // FilterPrintings narrows the sets a card could have come from. See
 // mtgmatcher.GameRules.
 func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, editions []string) (printings []string) {
@@ -730,6 +743,11 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 		// If the edition matches, use it as is
 		// except for two "catch all" sometimes overlapping sets
 		case mtgmatcher.Equals(inCard.Edition, set.Name) && !inCard.IsMysteryList() && !inCard.IsSecretLair():
+			// pass-through
+
+		// The set a token sheet came with names it as surely as the sheet
+		// does, and only tokens are filed there, so nothing else answers
+		case namesTokenSetParent(b, set, inCard.Edition):
 			// pass-through
 
 		case inCard.IsPrerelease():
