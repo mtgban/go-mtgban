@@ -42,31 +42,120 @@ func TestSuffixRarity(t *testing.T) {
 
 // TestAdjustNameTokenOrder pins the token flip: the catalog writes the word
 // first and the storefronts write it last, and a name the datastore already
-// knows keeps its own spelling whichever order it is in.
+// knows keeps its own spelling whichever order it is in. An edition that
+// resolves to a set gates the flip: respellName has already asked that set,
+// so a flip it could not confirm is refused rather than adopted into the
+// wrong set.
 func TestAdjustNameTokenOrder(t *testing.T) {
-	b := &mtgmatcher.Backend{CanonicalNames: map[string]string{}}
+	b := respellBackend()
 	for _, name := range []string{"Token: Sheep", "Token: Synthetic Seraphim", "Sky Striker Ace Token"} {
 		b.CanonicalNames[mtgmatcher.Normalize(name)] = name
 	}
 
 	tests := []struct {
-		name string
-		in   string
-		want string
+		name    string
+		in      string
+		edition string
+		want    string
 	}{
-		{"the word moves to the front", "Sheep Token", "Token: Sheep"},
-		{"a longer name flips whole", "Synthetic Seraphim Token", "Token: Synthetic Seraphim"},
-		{"a name the catalog knows is left alone", "Sky Striker Ace Token", "Sky Striker Ace Token"},
-		{"a token the catalog has neither way stays put", "Laval Token", "Laval Token"},
-		{"a card that is not a token stays put", "Blue-Eyes White Dragon", "Blue-Eyes White Dragon"},
+		{"the word moves to the front", "Sheep Token", "", "Token: Sheep"},
+		{"a longer name flips whole", "Synthetic Seraphim Token", "", "Token: Synthetic Seraphim"},
+		{"a name the catalog knows is left alone", "Sky Striker Ace Token", "", "Sky Striker Ace Token"},
+		{"a token the catalog has neither way stays put", "Laval Token", "", "Laval Token"},
+		{"a card that is not a token stays put", "Blue-Eyes White Dragon", "", "Blue-Eyes White Dragon"},
+		{"a resolved edition that never confirmed the flip refuses it",
+			"Sheep Token", "OTS Tournament Pack 9", "Sheep Token"},
+		{"an edition naming no set leaves the flip to the catalog",
+			"Sheep Token", "Some Unheard-Of Storefront Bucket", "Token: Sheep"},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			inCard := &mtgmatcher.InputCard{Name: test.in}
+			inCard := &mtgmatcher.InputCard{Name: test.in, Edition: test.edition}
 			Rules{}.AdjustName(b, inCard)
 			if inCard.Name != test.want {
 				t.Errorf("AdjustName(%q) = %q, want %q", test.in, inCard.Name, test.want)
+			}
+		})
+	}
+}
+
+// respellBackend indexes a handful of real printings the way the loader
+// does, just enough for the edition lookups respellName leans on.
+func respellBackend() *mtgmatcher.Backend {
+	sets := map[string]*mtgmatcher.Set{
+		"OP08": {Name: "OTS Tournament Pack 8", Cards: []mtgmatcher.Card{
+			{Name: "Token: Sky Striker Ace", Number: "OP08-EN026"},
+		}},
+		"OP09": {Name: "OTS Tournament Pack 9", Cards: []mtgmatcher.Card{
+			{Name: `Token: Mecha Phantom Beast - "Dracossack"`, Number: "OP09-EN026"},
+			{Name: `Token: Mecha Phantom Beast - "Harrliard"`, Number: "OP09-EN026"},
+			{Name: `Token: Mecha Phantom Beast - "Megaraptor"`, Number: "OP09-EN026"},
+		}},
+		"OP19": {Name: "OTS Tournament Pack 19", Cards: []mtgmatcher.Card{
+			{Name: "Slime Token", Number: "OP19-EN028"},
+			{Name: "Mask Token", Number: "OP19-EN029"},
+		}},
+		"SDSA": {Name: "Structure Deck: Sacred Beasts", Cards: []mtgmatcher.Card{
+			{Name: "Token: Phantasmal Martyr", Number: "SDSA-EN047"},
+			{Name: "Token: Phantasm", Number: "SDSA-EN048"},
+		}},
+		"LDK2": {Name: "Legendary Decks II", Cards: []mtgmatcher.Card{
+			{Name: "Token: Yugi", Number: "LDK2-ENT01"},
+			{Name: "Token: Kaiba", Number: "LDK2-ENT02"},
+			{Name: "Token: Joey", Number: "LDK2-ENT03"},
+		}},
+		"UP01": {Name: "Ultimate Tournament Pack 1", Cards: []mtgmatcher.Card{
+			{Name: "Token", Number: "UP01-EN050"},
+		}},
+		"L26D": {Name: "Legendary Modern Decks 2026", Cards: []mtgmatcher.Card{
+			{Name: "Sky Striker Ace Token", Number: "L26D-ENS36"},
+		}},
+	}
+	b := &mtgmatcher.Backend{Sets: sets, CanonicalNames: map[string]string{}}
+	b.IndexSets()
+	return b
+}
+
+// TestRespellName pins the edition-guarded respelling: a token name takes
+// the spelling its own set files it under, and every guard that keeps it
+// from taking anybody else's.
+func TestRespellName(t *testing.T) {
+	tests := []struct {
+		name      string
+		in        string
+		edition   string
+		variation string
+		want      string
+	}{
+		{"the token flip follows the set's word order",
+			"Sky Striker Ace Token", "OTS Tournament Pack 8", "026", "Token: Sky Striker Ace"},
+		{"a set naming the token the storefront's way keeps it",
+			"Sky Striker Ace Token", "Legendary Modern Decks 2026", "S36", "Sky Striker Ace Token"},
+		{"the set's token sheet answers a name the flip cannot",
+			"Yugi & Dark Magician Token", "Legendary Decks II", "T01", "Token: Yugi"},
+		{"the sheet's bare Token answers by number alone",
+			"Laval Token", "Ultimate Tournament Pack 1", "050 Super Rare", "Token"},
+		{"several arts under one number decide nothing",
+			"Mecha Phantom Beast Token", "OTS Tournament Pack 9", "026", "Mecha Phantom Beast Token"},
+		{"a set printing the name outranks a lying number",
+			"Mask Token", "OTS Tournament Pack 19", "028", "Mask Token"},
+		{"a set printing the flip elsewhere outranks it too",
+			"Phantasm Token", "Structure Deck: Sacred Beasts", "047", "Phantasm Token"},
+		{"an edition naming no set decides nothing",
+			"Yugi & Dark Magician Token", "Somebody's Binder", "T01", "Yugi & Dark Magician Token"},
+	}
+
+	b := respellBackend()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			inCard := &mtgmatcher.InputCard{Name: test.in, Edition: test.edition, Variation: test.variation}
+			// Through Prefilter rather than respellName itself, so the
+			// pipeline hook owning the respelling stays pinned too.
+			Rules{}.Prefilter(b, inCard)
+			if inCard.Name != test.want {
+				t.Errorf("respellName(%q, %q, %q) = %q, want %q",
+					test.in, test.edition, test.variation, inCard.Name, test.want)
 			}
 		})
 	}
