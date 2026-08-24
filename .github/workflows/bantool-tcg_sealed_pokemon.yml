@@ -1,0 +1,26 @@
+name: pokemon / tcg_sealed
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [tcg_sealed_pokemon]
+  schedule:
+    - cron: "26 11,23 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-tcgplayer
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: tcg_sealed_pokemon
+      game: "pokemon"
+      datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
+    secrets: inherit
