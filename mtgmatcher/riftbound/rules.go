@@ -418,7 +418,118 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	case len(untyped) > 0:
 		tier = untyped
 	}
-	return preferBasePrinting(b, inCard, number, tier)
+	return preferBasePrinting(b, inCard, number, promoOrigin(b, inCard.Variation, tier))
+}
+
+// promoOrigin narrows a tier of promotional printings to the ones issued
+// where the storefront says its copy came from.
+//
+// A storefront files every promo under one heading, so the edition names no
+// set and the promotional sets are told apart by nothing: the judge printing
+// of Heimerdinger and the promotional one share a name and a number, and both
+// listings aliased. But the wording says where the card came from, and it can
+// be read two ways.
+//
+// A wording spelling a word one promotional set's name owns is naming that
+// set - "Judge Promo" against "Riftbound Judge Promotional Cards", where no
+// other promotional set says "judge". A wording naming a product instead -
+// "Arcane Box Set Promo" - names the set the catalog files that product in,
+// which is what makes the reading verifiable rather than a guess: the box is
+// a sealed product of its own, filed in the promotional set whose cards it
+// holds. Both are exact claims about a set, and neither answers unless one
+// set alone fits.
+func promoOrigin(b *mtgmatcher.Backend, wording string, tier []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(tier) <= 1 || wording == "" {
+		return tier
+	}
+	codes := map[string]bool{}
+	for _, card := range tier {
+		codes[card.SetCode] = true
+	}
+	if len(codes) < 2 {
+		return tier
+	}
+
+	// A word several of the tier's set names carry says nothing about which
+	// of them was meant.
+	owned := map[string]string{}
+	for code := range codes {
+		set, found := b.Sets[code]
+		if !found {
+			continue
+		}
+		for word := range strings.FieldsSeq(strings.ToLower(set.Name)) {
+			if seen, found := owned[word]; found && seen != code {
+				owned[word] = ""
+				continue
+			}
+			owned[word] = code
+		}
+	}
+	said := ""
+	for word := range strings.FieldsSeq(strings.ToLower(wording)) {
+		code := owned[word]
+		if code == "" {
+			continue
+		}
+		if said != "" && said != code {
+			return tier
+		}
+		said = code
+	}
+	if said == "" {
+		said = sealedSet(b, wording, codes)
+	}
+	if said == "" {
+		return tier
+	}
+	var issued []mtgmatcher.Card
+	for _, card := range tier {
+		if card.SetCode == said {
+			issued = append(issued, card)
+		}
+	}
+	if len(issued) == 0 {
+		return tier
+	}
+	return issued
+}
+
+// sealedSet returns the code of the one set among the given ones that holds a
+// sealed product the wording names, or "" where none or several do.
+//
+// The wording is the storefront's whole note, which says the promotion as
+// well as the product ("Arcane Box Set Promo"), so the product's name has to
+// contain it rather than the other way round, with the promotion word cut
+// off first. A note down to a single word is not read: every set has a
+// product whose name holds "box" or "set".
+func sealedSet(b *mtgmatcher.Backend, wording string, codes map[string]bool) string {
+	var words []string
+	for word := range strings.FieldsSeq(wording) {
+		if !mtgmatcher.IsPromoHeading(word) {
+			words = append(words, word)
+		}
+	}
+	if len(words) < 2 {
+		return ""
+	}
+	needle := strings.Join(words, " ")
+
+	found := ""
+	for code := range codes {
+		for _, uuid := range b.SetSealedUUIDs[code] {
+			co, err := b.GetUUID(uuid)
+			if err != nil || !mtgmatcher.Contains(co.Name, needle) {
+				continue
+			}
+			if found != "" && found != code {
+				return ""
+			}
+			found = code
+			break
+		}
+	}
+	return found
 }
 
 // stripNumberLetter drops the letters a collector number trails off its
