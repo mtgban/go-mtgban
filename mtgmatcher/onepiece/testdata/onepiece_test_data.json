@@ -27,6 +27,16 @@
         "uuid": "prb02-003_653261_foil"
     },
     {
+        "description": "a letter dropped out of a name yields to the number beside it",
+        "input": {
+            "name": "Kujiyaku",
+            "variant": "EB03-041",
+            "edition": "EB03 - Heroines Edition",
+            "foil": true
+        },
+        "uuid": "eb03-041_672789_foil"
+    },
+    {
         "description": "a promo line spelled a word off still selects the event set",
         "input": {
             "name": "Aladine (OP07-020)",
@@ -105,6 +115,15 @@
             "edition": "Animal Kingdom Pirates: Starter Deck 4"
         },
         "uuid": "st04-016_288298"
+    },
+    {
+        "description": "an acute accent typed for an apostrophe yields to the number",
+        "input": {
+            "name": "Who´s.Who (OP04-051)",
+            "variant": "051 V.1",
+            "edition": "Kingdoms of Intrigue"
+        },
+        "uuid": "op04-051_514030_foil"
     },
     {
         "description": "an edition naming neither set keeps the regular printing",
@@ -213,6 +232,25 @@
             "variant": "OP01-084"
         },
         "uuid": "op01-084_454615"
+    },
+    {
+        "description": "negative: a bare tail a single name wears is still not a code",
+        "input": {
+            "name": "Sogekign",
+            "variant": "122",
+            "edition": "Promo"
+        },
+        "error": "unknown card name"
+    },
+    {
+        "description": "negative: a bare tail beside a misspelling names no printing",
+        "input": {
+            "name": "Kujiyaku",
+            "variant": "041",
+            "edition": "EB03 - Heroines Edition",
+            "foil": true
+        },
+        "error": "unknown card name"
     },
     {
         "description": "negative: a family name without its volume stays ambiguous",
@@ -363,5 +401,14 @@
             "edition": "Pillars of Strength"
         },
         "uuid": "op03-002_499880"
+    },
+    {
+        "description": "two letters swapped round yield to the number as well",
+        "input": {
+            "name": "The Marco Gang",
+            "variant": "OP14-055",
+            "edition": "OP14 - Azure Sea's Seven"
+        },
+        "uuid": "op14-055_671393"
     }
 ]
