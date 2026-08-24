@@ -330,9 +330,11 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	}
 
 	// Drop one side of dfc tokens, without doubling the suffix when the
-	// kept face already carries it
+	// kept face already carries it, and leaving alone the split cards a
+	// T-prefixed set code sweeps in: the set carries those under both faces
 	if (strings.Contains(card.Name, " // ") || strings.Contains(card.Name, " - ")) &&
-		(strings.Contains(card.Name, "Token") || strings.HasPrefix(setCode, "T") || strings.HasPrefix(setCode, "FT")) {
+		(strings.Contains(card.Name, "Token") || strings.HasPrefix(setCode, "T") || strings.HasPrefix(setCode, "FT")) &&
+		len(mtgmatcher.MatchInSetNumber(card.Name, setCode, number)) == 0 {
 		if strings.Contains(card.Name, " // ") {
 			card.Name = strings.Split(card.Name, " // ")[0]
 		} else {
