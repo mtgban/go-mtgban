@@ -1937,9 +1937,9 @@
         "uuid": "27"
     },
     {
-        "description": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets #70",
+        "description": "Hamish, Hubert & Harris - Troublemaking Triplets #70",
         "input": {
-            "name": "Hamish, Hubert \u0026 Harris - Troublemaking Triplets",
+            "name": "Hamish, Hubert & Harris - Troublemaking Triplets",
             "variant": "70"
         },
         "uuid": "2785"
@@ -5404,9 +5404,9 @@
         "uuid": "2065"
     },
     {
-        "description": "Tweedledee \u0026 Tweedledum - Strange Storytellers #103",
+        "description": "Tweedledee & Tweedledum - Strange Storytellers #103",
         "input": {
-            "name": "Tweedledee \u0026 Tweedledum - Strange Storytellers",
+            "name": "Tweedledee & Tweedledum - Strange Storytellers",
             "variant": "103"
         },
         "uuid": "1536"
@@ -5780,6 +5780,24 @@
         "uuid": "2497"
     },
     {
+        "description": "a doubled letter yields to the number in its set",
+        "input": {
+            "name": "Alistair Krei - Ambitious Entreperneur",
+            "variant": "87/204",
+            "edition": "Azurite Sea"
+        },
+        "uuid": "1286"
+    },
+    {
+        "description": "a dropped letter yields to the number as well",
+        "input": {
+            "name": "Somone Will Lose His Head",
+            "variant": "162/204",
+            "edition": "Wilds Unknown"
+        },
+        "uuid": "2877"
+    },
+    {
         "description": "a finish name the game does not know falls through to the wording",
         "input": {
             "id": "647652",
@@ -5904,6 +5922,15 @@
         "description": "negative: a foil-only sibling does not settle an ambiguous prefix",
         "input": {
             "name": "Bolt"
+        },
+        "error": "unknown card name"
+    },
+    {
+        "description": "negative: a number in a set no close name wears names nothing",
+        "input": {
+            "name": "Rudy - Groove Machine",
+            "variant": "002",
+            "edition": "The First Chapter"
         },
         "error": "unknown card name"
     },
