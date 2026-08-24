@@ -37,12 +37,14 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
+	number := extractNumber(inCard.Variation)
+	// A name no printing opens with has no prefix matches to tier, and the
+	// number is all that is left to read it by.
 	uuids, err := b.SearchHasPrefix(inCard.Name)
 	if err != nil {
-		return
+		uuids = nil
 	}
 
-	number := extractNumber(inCard.Variation)
 	var fits, wrongFinish []string
 	for _, uuid := range uuids {
 		co, err := b.GetUUID(uuid)
@@ -87,6 +89,129 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		}
 		return
 	}
+
+	if name := nameAtNumber(b, inCard, number); name != "" {
+		inCard.Name = name
+	}
+}
+
+// nameAtNumber returns the datastore's spelling of the card a storefront
+// misspelled, read off the set and collector number it wrote beside the name.
+//
+// A storefront that cannot spell a name still files the listing in a set and
+// numbers it, and a number names one card of a set. Coolstuffinc doubles a
+// letter that is single and singles one that is double ("Metalic Leader",
+// "Gepetto"), drops one altogether ("Somone Will Lose His Head", "Valourous
+// General") or swaps two ("Ambitious Entreperneur"), and every one of those
+// listings was dropped with the number that says which card it is sitting in
+// the same record.
+//
+// Two things gate it. The edition has to name one set, since a number is only
+// an identifier within one. And exactly one of the cards wearing that number
+// there has to be close to the misspelling - a piece missing off one end, or
+// up to two letters wrong - because the number is the storefront's own claim
+// and is sometimes another card's, so without the closeness test a stray
+// number would rename a card into whatever it pointed at.
+//
+// A number is not an identifier on its own even inside a set: the promo pools
+// are filed under the set code of the set they were handed out alongside and
+// numbered from one within the pool, so the first set holds three cards
+// numbered 2. Closeness is what tells them apart, and demanding it pick one
+// is what keeps a stray number from reaching the other two.
+func nameAtNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number string) string {
+	if number == "" {
+		return ""
+	}
+	setCode := soleSet(b, inCard.Edition)
+	if setCode == "" {
+		return ""
+	}
+	got := mtgmatcher.Normalize(inCard.Name)
+	var match, matchNorm string
+	for _, uuid := range b.AllUUIDs {
+		co, err := b.GetUUID(uuid)
+		if err != nil || co.Sealed || co.SetCode != setCode || co.Number != number {
+			continue
+		}
+		norm := mtgmatcher.Normalize(co.Name)
+		if norm == matchNorm || !closeName(got, norm) {
+			continue
+		}
+		if match != "" {
+			return ""
+		}
+		match, matchNorm = co.Name, norm
+	}
+	return match
+}
+
+// soleSet returns the code of the one set an edition names, or "" where none
+// or several answer. The name is read the way Match reads it, whole or as a
+// part, with the decorations a storefront hangs off it trimmed first.
+func soleSet(b *mtgmatcher.Backend, edition string) string {
+	edition = trimEdition(edition)
+	if mtgmatcher.Normalize(edition) == "" {
+		return ""
+	}
+	var found string
+	for code, set := range b.Sets {
+		if !mtgmatcher.Contains(set.Name, edition) {
+			continue
+		}
+		if found != "" {
+			return ""
+		}
+		found = code
+	}
+	return found
+}
+
+// closeName reports whether a storefront's normalized name is the datastore's
+// own with a piece missing off one end or up to two letters wrong.
+func closeName(got, want string) bool {
+	if got == "" || want == "" {
+		return false
+	}
+	if strings.HasPrefix(want, got) || strings.HasSuffix(want, got) {
+		return true
+	}
+	return editDistance(got, want, 2) <= 2
+}
+
+// editDistance is the Levenshtein distance between two strings, giving up at
+// limit: the caller only cares whether the two are within a couple of edits,
+// and a name pair that is not stops being measured once the whole row of the
+// table is past the limit.
+func editDistance(a, b string, limit int) int {
+	ar, br := []rune(a), []rune(b)
+	if len(ar) > len(br) {
+		ar, br = br, ar
+	}
+	if len(br)-len(ar) > limit {
+		return limit + 1
+	}
+	prev := make([]int, len(ar)+1)
+	cur := make([]int, len(ar)+1)
+	for i := range prev {
+		prev[i] = i
+	}
+	for j := 1; j <= len(br); j++ {
+		cur[0] = j
+		best := cur[0]
+		for i := 1; i <= len(ar); i++ {
+			cost := 1
+			if ar[i-1] == br[j-1] {
+				cost = 0
+			}
+			cur[i] = min(prev[i]+1, cur[i-1]+1, prev[i-1]+cost)
+			best = min(best, cur[i])
+		}
+		if best > limit {
+			return limit + 1
+		}
+		prev, cur = cur, prev
+	}
+	return prev[len(ar)]
 }
 
 // AdjustEdition normalizes scraper edition strings toward LorcanaJSON set
@@ -95,18 +220,24 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // still matches no set name simply does not narrow the candidates (the Match
 // skeleton falls back to every printing), so trimming can only help.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	edition := strings.TrimSpace(inCard.Edition)
+	edition := trimEdition(inCard.Edition)
+	if mtgmatcher.IsPromoHeading(edition) {
+		edition = ""
+	}
+	inCard.Edition = edition
+}
+
+// trimEdition strips the game name a storefront prefixes a set with and the
+// catalog suffix it appends.
+func trimEdition(edition string) string {
+	edition = strings.TrimSpace(edition)
 	for _, prefix := range []string{"Disney Lorcana", "Lorcana"} {
 		if strings.HasPrefix(edition, prefix) {
 			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
 			break
 		}
 	}
-	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
-	if mtgmatcher.IsPromoHeading(edition) {
-		edition = ""
-	}
-	inCard.Edition = edition
+	return strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 }
 
 // IsUnsupported drops the non-card products TCGplayer files under its "Cards"
