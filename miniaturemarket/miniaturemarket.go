@@ -5,9 +5,11 @@ package miniaturemarket
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -98,6 +100,43 @@ func sealedName(game, name string) string {
 	return strings.TrimSpace(name)
 }
 
+// resolveListing names the sealed product a storefront listing prices, or
+// says why none was found. Every listing this scraper leaves behind leaves it
+// here, which is why the reason is returned rather than swallowed: a run that
+// resolved nothing at all used to look exactly like a run with nothing to
+// resolve.
+//
+// Magic routes through the id the datastore records; the other games' data
+// carries no miniaturemarket ids, so the product is resolved by its listed
+// name, English only, unique or nothing. A failing name retries without its
+// trailing decoration ("(New Arrival)"), which resolution rightly refuses to
+// see past on its own.
+func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
+	if uuid, found := mm.productMap[id]; found {
+		return uuid, ""
+	}
+	if mm.game == GameMagic {
+		return "", "no datastore id"
+	}
+	name := strings.TrimSpace(sealedName(mm.game, listed))
+	if name == "" {
+		return "", "unnamed listing"
+	}
+	if mtgmatcher.SealedIsLanguageVariant(name) {
+		return "", "language variant"
+	}
+	uuid, err := mtgmatcher.ResolveSealed(name)
+	if err != nil {
+		if idx := strings.LastIndexByte(name, '('); idx > 0 {
+			uuid, err = mtgmatcher.ResolveSealed(name[:idx])
+		}
+		if err != nil {
+			return "", err.Error()
+		}
+	}
+	return uuid, ""
+}
+
 func (mm *Miniaturemarket) mainURL() string {
 	return "https://www.miniaturemarket.com/widgets/cms/navigation/" + gameWidgets[mm.game] + "?filter-inStock=1&no-aggregations=1&order=name-asc&p=1"
 }
@@ -105,6 +144,13 @@ func (mm *Miniaturemarket) mainURL() string {
 type respChan struct {
 	cardID   string
 	invEntry *mtgban.InventoryEntry
+
+	// drop names why a listing was not priced and repeats the name it was
+	// listed under. A record carrying one prices nothing; it is there so
+	// the run can say what it left behind instead of dropping it in
+	// silence, which is what a run pricing none of a game looked like.
+	drop string
+	name string
 }
 
 func (mm *Miniaturemarket) printf(format string, a ...any) {
@@ -139,31 +185,12 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 	}
 
 	doc.Find(`div[class="product-info"]`).Each(func(i int, s *goquery.Selection) {
+		listed := strings.TrimSpace(s.Find(`a.product-name`).Text())
 		id, _ := s.Find(`input[name="product-id"]`).Attr("value")
-		uuid, found := mm.productMap[id]
-		if !found {
-			if mm.game == GameMagic {
-				return
-			}
-			// The other games' datastores carry no miniaturemarket ids:
-			// resolve the product by its listed name, English only,
-			// unique or nothing. A failing name retries without its
-			// trailing decoration ("(New Arrival)"), which resolution
-			// rightly refuses to see past on its own.
-			name := sealedName(mm.game, strings.TrimSpace(s.Find(`a.product-name`).Text()))
-			if name == "" || mtgmatcher.SealedIsLanguageVariant(name) {
-				return
-			}
-			resolved, err := mtgmatcher.ResolveSealed(name)
-			if err != nil {
-				if idx := strings.LastIndexByte(name, '('); idx > 0 {
-					resolved, err = mtgmatcher.ResolveSealed(name[:idx])
-				}
-				if err != nil {
-					return
-				}
-			}
-			uuid = resolved
+		uuid, drop := mm.resolveListing(id, listed)
+		if drop != "" {
+			channel <- respChan{drop: drop, name: listed}
+			return
 		}
 
 		link, _ := s.Find(`a.product-name`).Attr("href")
@@ -174,7 +201,7 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 		priceStr := s.Find(`.product-price`).Text()
 		price, err := mtgmatcher.ParsePrice(priceStr)
 		if err != nil {
-			mm.printf("uuid %s - %s", uuid, err.Error())
+			channel <- respChan{drop: "unparseable price", name: listed}
 			return
 		}
 
@@ -250,11 +277,28 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		pageNums[i] = i
 	}
 
+	// The consumer runs on one goroutine, so the tally needs no locking.
+	var listed, priced int
+	dropped := map[string]int{}
 	mtgban.WorkerPool(ctx, mm.MaxConcurrency, pageNums,
 		func(ctx context.Context, page int, results chan<- respChan) error {
 			return mm.processPage(ctx, results, page)
 		},
 		func(record respChan) {
+			listed++
+			if record.drop != "" {
+				dropped[record.drop]++
+				// The names a resolver turned down are the whole reason a
+				// run prices a fraction of a catalog, so say which name and
+				// which refusal, the way the other sealed scrapers do. The
+				// products carrying no id of ours are the ordinary case for
+				// Magic and are counted rather than listed.
+				if record.drop != "no datastore id" {
+					mm.printf("%q: %s", record.name, record.drop)
+				}
+				return
+			}
+			priced++
 			err := mm.inventory.AddRelaxed(record.cardID, record.invEntry)
 			if err != nil {
 				mm.printf("%v", err)
@@ -262,6 +306,10 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		},
 		mm.printf,
 	)
+	mm.printf("Priced %d of %d listings", priced, listed)
+	for _, reason := range slices.Sorted(maps.Keys(dropped)) {
+		mm.printf("Dropped %d listings: %s", dropped[reason], reason)
+	}
 
 	mm.inventoryDate = time.Now()
 
