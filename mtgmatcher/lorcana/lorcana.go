@@ -80,11 +80,14 @@ type AllCards struct {
 		// was handed out in.
 		PromoSourceCategory string `json:"promoSourceCategory,omitempty"`
 		VarnishType         string `json:"varnishType,omitempty"`
-		Variant             string `json:"variant,omitempty"`
-		VariantIDs          []int  `json:"variantIds,omitempty"`
-		MoveCost            int    `json:"moveCost,omitempty"`
-		NonPromoID          int    `json:"nonPromoId,omitempty"`
-		IsExternalReveal    bool   `json:"isExternalReveal,omitempty"`
+		// PromoGrouping is the pool a promotional printing was numbered
+		// within, which storefronts write behind its number.
+		PromoGrouping    string `json:"promoGrouping,omitempty"`
+		Variant          string `json:"variant,omitempty"`
+		VariantIDs       []int  `json:"variantIds,omitempty"`
+		MoveCost         int    `json:"moveCost,omitempty"`
+		NonPromoID       int    `json:"nonPromoId,omitempty"`
+		IsExternalReveal bool   `json:"isExternalReveal,omitempty"`
 
 		ExternalLinks struct {
 			TcgPlayerID int `json:"tcgPlayerId"`
@@ -181,13 +184,22 @@ func slugTags(tags []string) []string {
 // the same name. Lorcana writes none of this into the name - not one of its
 // card names carries a parenthesis - so the tags come from the fields the
 // datastore keeps them in.
-func promoTags(sourceCategory, varnishType string) []string {
+//
+// The pool is among them because it is the only thing that tells two promos
+// of one card apart when they also share a number: the datastore numbers each
+// pool from one, so "Maleficent - Monstrous Dragon" is card 5 of both the P1
+// pool and the P3 one. Storefronts print it where a set card writes its set
+// size - "5/P3" against "87/204" - and the tag is what lets that be read.
+func promoTags(sourceCategory, varnishType, grouping string) []string {
 	var tags []string
 	if sourceCategory != "" {
 		tags = append(tags, sourceCategory)
 	}
 	if varnishType != "" {
 		tags = append(tags, varnishType)
+	}
+	if grouping != "" {
+		tags = append(tags, grouping)
 	}
 	return tags
 }
@@ -255,7 +267,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.FullName
 		}
-		for _, tag := range promoTags(card.PromoSourceCategory, card.VarnishType) {
+		for _, tag := range promoTags(card.PromoSourceCategory, card.VarnishType, card.PromoGrouping) {
 			slug := mtgmatcher.PromoTypeSlug(tag)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
@@ -352,7 +364,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 			Printings:  printingsByName[mtgmatcher.Normalize(card.FullName)],
 			IsPromo:    card.NonPromoID != 0,
-			PromoTypes: slugTags(promoTags(card.PromoSourceCategory, card.VarnishType)),
+			PromoTypes: slugTags(promoTags(card.PromoSourceCategory, card.VarnishType, card.PromoGrouping)),
 
 			OriginalNumber: fmt.Sprintf("%d", card.Number),
 		}
