@@ -134,6 +134,54 @@ func (csi *Coolstuffinc) printf(format string, a ...any) {
 	}
 }
 
+// saleTail is what the price column writes in front of a discounted price.
+// The space is a non-breaking one, as the page spells it.
+const saleTail = "Was\u00a0"
+
+// offerCondition reads the condition out of one offer row's text. The row
+// spells the quantity, the condition, whatever promotions it is running and
+// the price, and only the condition is wanted.
+//
+// The promotions are tails on the condition, and a row may run several at
+// once: the bundle flag sits in the condition column and the sale's "Was" in
+// the price one, so cutting a single tail left the other row's flag glued to
+// the condition and the whole offer was dropped as unparseable. Cutting
+// until nothing more comes off reads them in whatever order the page lays
+// them out, and a row running none is unchanged by the first pass.
+func offerCondition(fullRow, qtyStr, bundleStr string) string {
+	conditions := strings.TrimLeft(fullRow, qtyStr+"+ ")
+	conditions = strings.Split(conditions, "$")[0]
+	for {
+		trimmed := strings.TrimSuffix(conditions, bundleStr)
+		trimmed = strings.TrimSuffix(trimmed, saleTail)
+		if trimmed == conditions {
+			return conditions
+		}
+		conditions = trimmed
+	}
+}
+
+// bundleRe matches the wording of the bundle promotion, whatever count it
+// gives away: "Buy 1 get 3 free!" sells four copies for the listed price.
+var bundleRe = regexp.MustCompile(`^Buy 1 get (\d+) free!$`)
+
+// bundledCopies reads how many copies the listed price buys: one, unless the
+// row runs the bundle promotion, whose price covers the bought copy and the
+// free ones together. The wording carries the count, so a promotion the
+// condition parser learned to cut is also the one the price is divided by,
+// rather than only the one spelling the exact count the flag used to name.
+func bundledCopies(bundleStr string) int {
+	match := bundleRe.FindStringSubmatch(bundleStr)
+	if match == nil {
+		return 1
+	}
+	free, err := strconv.Atoi(match[1])
+	if err != nil {
+		return 1
+	}
+	return 1 + free
+}
+
 func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- responseChan, itemName string) error {
 	skipOOS := !csi.IncludeOOS
 	switch itemName {
@@ -213,14 +261,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 				}
 
 				bundleStr := se.Find(`div[class="b1-gx-free"]`).Text()
-				bundle := bundleStr == "Buy 1 get 3 free!"
+				bundleCopies := bundledCopies(bundleStr)
 
-				// Derive the condition portion
-				conditions := strings.TrimLeft(fullRow, qtyStr+"+ ")
-				conditions = strings.Split(conditions, "$")[0]
-				conditions = strings.TrimSuffix(conditions, bundleStr)
-				// From the sale text, there is a weird space
-				conditions = strings.TrimSuffix(conditions, "Was ")
+				conditions := offerCondition(fullRow, qtyStr, bundleStr)
 
 				isFoil := strings.HasPrefix(conditions, "Foil")
 
@@ -256,8 +299,8 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					csi.printf("%v", err)
 					return
 				}
-				if bundle {
-					price /= 4
+				if bundleCopies > 1 {
+					price /= float64(bundleCopies)
 				}
 
 				if price == 0.0 || qty == 0 {
