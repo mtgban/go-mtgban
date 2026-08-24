@@ -142,6 +142,35 @@ var versionTail = regexp.MustCompile(` \(V\.\d+.*\)$`)
 // two catalogs numbering the same card agree about.
 var numberTail = regexp.MustCompile(`\d+[A-Za-z]?$`)
 
+// numberPrefix returns the letters a collector number opens on, the set code
+// aside: "EN005" yields "EN", "DCR-005" yields "", "SGX1-END19" yields "END".
+func numberPrefix(number string) string {
+	if _, tail, dashed := strings.Cut(number, "-"); dashed {
+		number = tail
+	}
+	return strings.ToUpper(number[:len(number)-len(strings.TrimLeft(number, letters))])
+}
+
+// letters spells the alphabet a collector number's prefix is drawn from.
+const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// otherPrintRun reports whether a product's collector number names a print
+// run other than the one the answer's number belongs to.
+//
+// Cardmarket sells the North American print of an old Yu-Gi-Oh set ("005"),
+// the European ("EN005") and the Asian ("A005") as three products of one
+// expansion, and files the special-edition promos beside them ("SP1"), where
+// the datastore carries the single row the set is numbered by ("DCR-005").
+// The matcher reads none of those prefixed numbers - its own numbering opens
+// on digits or on a set code - so it drops them and answers the name alone,
+// which puts every run on that one row. The prefix has to be the answer's
+// own, the region infix the datastore writes and Cardmarket omits aside
+// ("D19" is "SGX1-END19", "EN005" is not "DCR-005").
+func otherPrintRun(number, full string) bool {
+	prefix := numberPrefix(number)
+	return prefix != "" && !strings.HasSuffix(numberPrefix(full), prefix)
+}
+
 // productFinish names the printing a product is, for the catalogs that sell
 // each printing as its own product rather than as a column beside the card.
 func productFinish(gameID int, product *MKMProduct) string {
@@ -232,6 +261,9 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 				// answered with that run whichever was asked for, and the
 				// other run's expansion sells the very same card.
 				if printRun != "" && !strings.HasPrefix(co.Finish, mtgmatcher.NormalizeFinish(printRun)) {
+					continue
+				}
+				if mkm.gameID == GameYuGiOh && otherPrintRun(product.Number, co.Number) {
 					continue
 				}
 				return id
