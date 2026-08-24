@@ -701,6 +701,10 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 	// the catalogue passed thirty thousand names.
 	cardNames := map[string]bool{}
 	tokenNames := map[string]bool{}
+	// Every name the real cards answer to, so a token face repeating one
+	// never steals its lookup. Filled by the same pass as cardNames, which
+	// runs before any token is read.
+	cardOwnedNames := map[string]bool{}
 	var tokens []string
 	var allSets []string
 
@@ -714,6 +718,14 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		// Load all possible card names
 		for _, card := range set.Cards {
 			cardNames[card.Name] = true
+			for _, name := range []string{
+				card.Name, card.FaceName, card.FlavorName,
+				card.FaceFlavorName, card.PrintedName, card.FacePrintedName,
+			} {
+				if name != "" {
+					cardOwnedNames[name] = true
+				}
+			}
 		}
 
 		// Save the names of sealed products for later sorting, and index them
@@ -905,10 +917,10 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				// A token's face may repeat the name a real card or its
 				// reskin goes by (the Day // Night helper repeats the
 				// Apocalypse card's face), and registering it would steal
-				// the alternate lookup from the card. The sets whose
-				// tokens were always carried keep registering, as their
-				// entries already answer today.
-				if fromTokens && !tokensFiledInline(set) {
+				// the alternate lookup from the card. Ask the cards
+				// themselves rather than the set the token came from: the
+				// clash is between the two names, not between two sets.
+				if fromTokens && cardOwnedNames[name] {
 					continue
 				}
 				// Skip FaceName entries that could be aliased
