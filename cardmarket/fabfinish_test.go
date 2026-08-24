@@ -23,6 +23,11 @@ func TestFabFinish(t *testing.T) {
 		{"LSS Promos", "Ruu'di, Gem Keeper (Regular)", ""},
 		// A parenthetical that is part of the card's name, not a treatment.
 		{"LSS Promos", "Sigil of Suffering (Yellow)", ""},
+		// The art spelled ahead of the treatment says nothing about the
+		// finish, and the treatment behind it says all of it.
+		{"GEM Pack Promos", "Display Loyalty (Extended Art Rainbow Foil)", "Rainbow Foil"},
+		{"GEM Pack Promos", "Fast and Furious (Extended Art Regular)", ""},
+		{"Crucible of War - First", "Twinning Blade (Extended Art Rainbow Foil)", "1st Edition Rainbow Foil"},
 	} {
 		if got := fabFinish(tt.expansion, tt.name); got != tt.want {
 			t.Errorf("fabFinish(%q, %q) = %q, want %q", tt.expansion, tt.name, got, tt.want)
@@ -68,7 +73,17 @@ func TestFabTreatment(t *testing.T) {
 		{"Thump (Blue) (Rainbow Foil)", "Rainbow Foil", "Thump (Blue)"},
 		{"Sigil of Suffering (Yellow)", "", "Sigil of Suffering (Yellow)"},
 		{"Taylor", "", "Taylor"},
-		{"Twinning Blade (Extended Art Rainbow Foil)", "", "Twinning Blade (Extended Art Rainbow Foil)"},
+		// A set selling one card in several arts spells the art ahead of the
+		// treatment. Only the treatment comes off: the art belongs to the
+		// printing, which the datastore keeps a row of its own for.
+		{"Twinning Blade (Extended Art Rainbow Foil)", "Rainbow Foil", "Twinning Blade (Extended Art)"},
+		{"Twelve Petal Kasaya (Extended Art Cold Foil)", "Cold Foil", "Twelve Petal Kasaya (Extended Art)"},
+		{"Fast and Furious (Extended Art Regular)", "Normal", "Fast and Furious (Extended Art)"},
+		{"Channel Lake Frigid (Alternate Art Rainbow Foil)", "Rainbow Foil", "Channel Lake Frigid (Alternate Art)"},
+		{"Man Overboard (Red) (Extended Art Rainbow Foil)", "Rainbow Foil", "Man Overboard (Red) (Extended Art)"},
+		// The treatment is the tail the parenthetical ends on or it is not
+		// one: "Golden" is an art of its own and names no finish.
+		{"Sonata Arcanix (Cold Foil Golden)", "", "Sonata Arcanix (Cold Foil Golden)"},
 	} {
 		treatment, card := fabTreatment(tt.in)
 		if treatment != tt.treatment || card != tt.card {

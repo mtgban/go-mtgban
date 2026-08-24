@@ -137,18 +137,37 @@ func fabPrintRun(expansion string) (run, setName string) {
 	return "", expansion
 }
 
+// fabTreatments maps the treatment a Cardmarket Flesh and Blood
+// parenthetical ends on to the finish the datastore spells it as.
+var fabTreatments = []struct{ tail, finish string }{
+	{"Regular", "Normal"},
+	{"Rainbow Foil", "Rainbow Foil"},
+	{"Cold Foil", "Cold Foil"},
+}
+
 // fabTreatment splits the treatment parenthetical off a Cardmarket Flesh
 // and Blood product name ("Go Bananas (Rainbow Foil)"), returning the
-// treatment as the datastore spells it and the card name left over. Only
-// the three tails the catalog uses come off; any other parenthetical is
-// part of the name ("Sink Below (Yellow)") and stays.
+// treatment as the datastore spells it and the card name left over. Any
+// other parenthetical is part of the name ("Sink Below (Yellow)") and stays.
+//
+// A set selling one card in several arts spells the art into the
+// parenthetical ahead of the treatment ("Display Loyalty (Extended Art
+// Rainbow Foil)"), and the treatment is still the tail it ends on. Only the
+// treatment comes off: the datastore keeps the art in a printing of its own
+// and the treatment in the finish beside it, so the art has to stay on the
+// name for the printing to be reachable at all.
 func fabTreatment(name string) (treatment, card string) {
 	if open := strings.LastIndex(name, " ("); open >= 0 && strings.HasSuffix(name, ")") {
-		switch tail := name[open+2 : len(name)-1]; tail {
-		case "Regular":
-			return "Normal", name[:open]
-		case "Rainbow Foil", "Cold Foil":
-			return tail, name[:open]
+		tail := name[open+2 : len(name)-1]
+		for _, known := range fabTreatments {
+			if tail != known.tail && !strings.HasSuffix(tail, " "+known.tail) {
+				continue
+			}
+			card = name[:open]
+			if art := strings.TrimSuffix(tail, known.tail); strings.TrimSpace(art) != "" {
+				card += " (" + strings.TrimSpace(art) + ")"
+			}
+			return known.finish, card
 		}
 	}
 	return "", name
