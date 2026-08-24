@@ -243,3 +243,28 @@ func TestPreprocessEmblems(t *testing.T) {
 	}
 }
 
+// TestPreprocessSplitCard pins the split cards a T-prefixed set code used to
+// sweep into the double-faced token split, which renamed them after their
+// first face and lost the row.
+func TestPreprocessSplitCard(t *testing.T) {
+	theCard, err := Preprocess(cardkingdom.Product{
+		SKU:     "TSR-186",
+		Name:    "Rough // Tumble",
+		Edition: "Time Spiral Remastered",
+	})
+	if err != nil {
+		t.Fatalf("Preprocess: %v", err)
+	}
+	if theCard.Name != "Rough // Tumble" {
+		t.Errorf("Preprocess name = %q, want the whole split card", theCard.Name)
+	}
+	cardID, err := mtgmatcher.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	const want = "609b3e64-4e46-595c-a99d-bcbb04691d4f"
+	if cardID != want {
+		co, _ := mtgmatcher.GetUUID(cardID)
+		t.Errorf("Match(%v) = %s (%v), want the Time Spiral Remastered split card", theCard, cardID, co)
+	}
+}
