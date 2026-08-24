@@ -185,10 +185,16 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 			continue
 		}
 		if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
+			ct.printf("%q (%d): language variant", bp.Name, id)
 			dropped["language variant"]++
 			continue
 		}
-		uuid, err := mtgmatcher.ResolveSealed(bp.Name)
+		// The expansion is the other half of what CardTrader knows about
+		// a product: it shelves the two print runs of a Flesh and Blood
+		// set apart ("Crucible of War - Unlimited") while naming both
+		// blueprints the same, so a name that reaches both runs and
+		// refuses can still be settled by the shelf it sits on.
+		uuid, err := mtgmatcher.ResolveSealedWithHint(bp.Name, bp.Expansion.Name)
 		// A name the resolver turns down is the whole reason this
 		// scraper prices a fraction of the catalog, so say which
 		// name and which refusal, the way the singles path does.

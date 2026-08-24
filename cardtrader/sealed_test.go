@@ -1,8 +1,10 @@
 package cardtrader
 
 import (
+	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -111,5 +113,79 @@ func TestBuildProductMap(t *testing.T) {
 	productMap = ct.buildProductMap(blueprints)
 	if !reflect.DeepEqual(productMap[orphanID+1], []string{resolvedUUID}) {
 		t.Errorf("name pass did not fire: got %v, want %v", productMap[orphanID+1], []string{resolvedUUID})
+	}
+}
+
+// sealedRunsBackend is a set carrying one product in both of its print runs,
+// which is how a catalog names a Flesh and Blood or a YuGiOh set. CardTrader
+// names both blueprints the same and shelves them apart.
+func sealedRunsBackend() *mtgmatcher.Backend {
+	backend := &mtgmatcher.Backend{
+		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*mtgmatcher.Set{
+			"CRU": {Name: "Crucible of War", Code: "CRU"},
+		},
+	}
+	backend.AddSealed("cru-1e", "Crucible of War Booster Box [1st Edition]", "CRU", "", 0)
+	backend.AddSealed("cru-unl", "Crucible of War Booster Box [Unlimited Edition]", "CRU", "", 0)
+	backend.SortSealed()
+	backend.IndexSets()
+	return backend
+}
+
+// TestBuildProductMapReadsExpansion pins that the expansion a blueprint is
+// filed under reaches the resolver. It is the only thing CardTrader publishes
+// that says which print run a blueprint is - both runs carry the same product
+// name and no TCGplayer id - so throwing it away leaves the two of them
+// answering to one name and neither of them priced.
+func TestBuildProductMapReadsExpansion(t *testing.T) {
+	mtgmatcher.SetGlobalDatastore(sealedRunsBackend())
+
+	blueprint := &Blueprint{ID: 1, Name: "Crucible of War Booster Box"}
+	blueprints := map[int]*Blueprint{1: blueprint}
+	ct := &Sealed{gameID: GameFleshAndBlood}
+
+	if uuids, found := ct.buildProductMap(blueprints)[1]; found {
+		t.Errorf("a blueprint naming no run resolved to %v", uuids)
+	}
+
+	blueprint.Expansion.Name = "Crucible of War - Unlimited"
+	if got := ct.buildProductMap(blueprints)[1]; !reflect.DeepEqual(got, []string{"cru-unl"}) {
+		t.Errorf("shelved under the unlimited run: got %v, want [cru-unl]", got)
+	}
+
+	blueprint.Expansion.Name = "Crucible of War - First"
+	if got := ct.buildProductMap(blueprints)[1]; !reflect.DeepEqual(got, []string{"cru-1e"}) {
+		t.Errorf("shelved under the first run: got %v, want [cru-1e]", got)
+	}
+}
+
+// TestBuildProductMapNamesLanguageDrops pins that a blueprint dropped for
+// being a non-English printing says which one it was, the way every other
+// drop in this pass does. A count with no names behind it cannot be checked
+// against the catalog.
+func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
+	mtgmatcher.SetGlobalDatastore(sealedRunsBackend())
+
+	var logged []string
+	ct := &Sealed{gameID: GameFleshAndBlood}
+	ct.LogCallback = func(format string, a ...any) {
+		logged = append(logged, fmt.Sprintf(format, a...))
+	}
+	ct.buildProductMap(map[int]*Blueprint{
+		1: {ID: 1, Name: "Crucible of War Japanese Booster Box"},
+	})
+
+	var named bool
+	for _, line := range logged {
+		if strings.Contains(line, "Crucible of War Japanese Booster Box") &&
+			strings.Contains(line, "language variant") {
+			named = true
+		}
+	}
+	if !named {
+		t.Errorf("the language-variant drop named no product: %v", logged)
 	}
 }
