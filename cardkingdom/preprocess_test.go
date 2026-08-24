@@ -175,3 +175,71 @@ func TestPreprocessListAngelToken(t *testing.T) {
 		t.Errorf("Match(%v) = %s (%v), want the Forgotten Realms Angel", theCard, cardID, co)
 	}
 }
+
+// TestPreprocessEmblems pins the three shapes CK spells an emblem in, each
+// against the uuid the datastore files at the address the sku names: the
+// planeswalker left in the variation, the planeswalker abbreviated into a
+// parenthetical on a card shared with another token, and the Mythic Edition
+// numbering that diverges from mtgjson's so only the name can carry the row.
+func TestPreprocessEmblems(t *testing.T) {
+	for _, tt := range []struct {
+		desc    string
+		product cardkingdom.Product
+		name    string
+		uuid    string
+	}{
+		{
+			desc: "the planeswalker rides in the variation",
+			product: cardkingdom.Product{
+				SKU:       "TDKA-003",
+				Name:      "Emblem",
+				Edition:   "Dark Ascension",
+				Variation: "Sorin, Lord of Innistrad",
+			},
+			name: "Sorin, Lord of Innistrad Emblem",
+			uuid: "1d0792f5-6ed6-5385-9a96-87b472909d1c",
+		},
+		{
+			desc: "a parenthetical short name against the full one",
+			product: cardkingdom.Product{
+				SKU:     "TC14-035",
+				Name:    "Emblem (Nixilis) - Zombie (Black) Token",
+				Edition: "Commander 2014",
+			},
+			name: "Ob Nixilis of the Black Oath Emblem",
+			uuid: "5f895769-4c30-5d4e-a7ad-51ebb7cbf63e",
+		},
+		{
+			// CK numbers this G6 printing 006A, so the number cannot
+			// reach it and the respelled name has to.
+			desc: "a number the set does not carry",
+			product: cardkingdom.Product{
+				SKU:       "TMED-006A",
+				Name:      "Emblem",
+				Edition:   "Masterpiece Series: Mythic Edition",
+				Variation: "Ral",
+			},
+			name: "Ral, Izzet Viceroy Emblem",
+			uuid: "2bcf14e3-ff8f-58b7-acbd-9f96dd49ee6d",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			theCard, err := Preprocess(tt.product)
+			if err != nil {
+				t.Fatalf("Preprocess(%v) = %v", tt.product, err)
+			}
+			if theCard.Name != tt.name {
+				t.Errorf("Preprocess name = %q, want %q", theCard.Name, tt.name)
+			}
+			cardID, err := mtgmatcher.Match(theCard)
+			if err != nil {
+				t.Fatalf("Match(%v) = %v", theCard, err)
+			}
+			if cardID != tt.uuid {
+				co, _ := mtgmatcher.GetUUID(cardID)
+				t.Errorf("Match(%v) = %s (%v), want %s", theCard, cardID, co, tt.uuid)
+			}
+		})
+	}
+}
+
