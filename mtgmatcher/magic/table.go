@@ -142,6 +142,12 @@ var sldJPNLangDupes = []string{
 	"909",
 }
 
+// productsWithOnlyFoils names sealed products whose every card is foil and
+// whose name does not say so. A product belonging to a line that is foil
+// throughout needs no entry: sealedHoldsOnlyFoils names the line instead.
+//
+// Verified against the sealed decklists: every non-token card each of these
+// holds is foil.
 var productsWithOnlyFoils = []string{
 	"Secret Lair Drop Seeing Visions",
 	"Secret Lair Drop OMG KITTIES",
@@ -168,6 +174,28 @@ var productsWithOnlyFoils = []string{
 	"Secret Lair Drop Animar and Friends",
 	"Secret Lair Drop MagicCon The Gathering",
 	"Secret Lair Drop Calling All Hydra Heads",
+	"2017 Magic The Gathering Hascon Collection",
+	"Commanders Arsenal",
+	"Judge Promo Pack 2014 Full Art Land Set",
+	"Ponies The Galloping",
+	"Final Fantasy Box Set Camp Comrades",
+	"Final Fantasy Box Set Children of Fate",
+	"Final Fantasy Box Set Garland at the Chaos Shrine",
+	"Final Fantasy Box Set The Siege of Alexandria",
+	"Secret Lair Drop More Borderless Planeswalkers",
+	"Secret Lair Drop Secret Lair x MSCHF",
+	"Secret Lair Drop Showcase March of the Machine Vol 1",
+	"Secret Lair Drop Showcase March of the Machine Vol 2",
+	"Secret Lair Drop Showcase March of the Machine Vol 3",
+	"Secret Lair Drop Slay the Day",
+	"Secret Lair Drop So Salty",
+	"Secret Lair Drop The Walking Dead",
+	"Secret Lair Drop Viva Las Rakdos",
+	"Secret Lair Drop Wild in Bloom",
+	"Secret Lair Festival in a Box Minneapolis 2023 Bundle",
+	"Secret Lair Festival in a Box Philadelphia 2023 Bundle",
+	"Secret Lair Ultimate Edition 2 Box Black",
+	"Secret Lair Ultimate Edition 2 Box Grey",
 }
 
 var mtgColorNameMap = map[string]string{
