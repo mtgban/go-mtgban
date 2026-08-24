@@ -234,11 +234,12 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 			continue
 		}
 		if nameFallback {
-			// The English-only datastores never carry the language
-			// variants, whose prices must not land on the English
-			// product's uuid - and the bridge links them there, since a
-			// blueprint lists an English and a non-English id together.
-			if mtgmatcher.SealedIsLanguageVariant(product.Name) {
+			// The English-only datastores never carry the printings made
+			// for another market, whose prices must not land on the
+			// English product's uuid - and the bridge links them there,
+			// since a blueprint lists an English and a non-English id
+			// together.
+			if sealedIsForeignPrinting(product.Name) {
 				continue
 			}
 			// A product Cardmarket keeps in two print runs beats the
@@ -261,7 +262,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 		}
 		_, found := productMap[product.IDProduct]
 		if !found && nameFallback {
-			uuid, err := mtgmatcher.ResolveSealed(product.Name)
+			uuid, err := mkm.resolveSealedName(product.Name)
 			// A name the resolver turns down is the whole reason this
 			// scraper prices a fraction of the catalog, so say which
 			// name and which refusal, the way the singles path does.
@@ -357,6 +358,204 @@ func (mkm *Sealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GamePokemon
 	}
 	return
+}
+
+// resolveSealedName names the sealed product a Cardmarket name describes. The
+// name as written is asked for first and answers for most of the catalog; what
+// is left over is not a different product but the same one spelled the way the
+// marketplace spells it, so the two spellings it differs by are tried in turn.
+func (mkm *Sealed) resolveSealedName(name string) (string, error) {
+	uuid, err := mtgmatcher.ResolveSealed(name)
+	if err == nil {
+		return uuid, nil
+	}
+	if uuid, found := resolveSealedRun(name); found {
+		return uuid, nil
+	}
+	if renamed, found := sealedRenamed(mkm.gameID, name); found {
+		uuid, rerr := mtgmatcher.ResolveSealed(renamed)
+		if rerr == nil {
+			return uuid, nil
+		}
+	}
+	// The refusal reported is the one the name as written earned: that is
+	// the name the catalog holds and the one a reader has to go looking for.
+	return "", err
+}
+
+// asiaRegionMark is how Cardmarket says a product is the Asian market's
+// printing rather than the English one. The wording is matched short of the
+// word it usually ends on, which the catalog has misspelt ("Asia Region
+// Lega") often enough to matter.
+const asiaRegionMark = "asia region"
+
+// sealedIsForeignPrinting reports whether a storefront's product name marks a
+// printing an English-only datastore does not carry: one in another language,
+// or one made for another market.
+//
+// The market is worth saying separately from the language because Cardmarket
+// does: it files the Asian printings of One Piece under their English names
+// with a parenthetical, and a parenthetical is the kind of thing a resolver
+// is free to forgive. Naming them here is what keeps them off the English
+// row however much the spellings below loosen.
+func sealedIsForeignPrinting(name string) bool {
+	return mtgmatcher.SealedIsLanguageVariant(name) ||
+		strings.Contains(strings.ToLower(name), asiaRegionMark)
+}
+
+// sealedRename rewrites the name a marketplace sells a product under into the
+// one the datastore files it as.
+type sealedRename struct {
+	vendor  *regexp.Regexp
+	product string
+}
+
+// sealedRenames are the products a marketplace sells under a name of its own.
+// Cardmarket lists One Piece's Premium Booster sets as "The Best", the name
+// Bandai gives them in Japan, and follows it with the rest of the product's
+// wording unchanged - so the vendor's name for the set is all that has to
+// come off for the rest to be read as usual.
+//
+// A rename is keyed by game because a marketplace's word for one game's
+// product says nothing about another's.
+var sealedRenames = map[int][]sealedRename{
+	GameOnePiece: {
+		{regexp.MustCompile(`(?i)^the best\b`), "Premium Booster"},
+	},
+}
+
+// sealedRenamed returns the name with the marketplace's own word for the
+// product replaced by the datastore's, and whether any applied.
+func sealedRenamed(gameID int, name string) (string, bool) {
+	for _, rename := range sealedRenames[gameID] {
+		if rename.vendor.MatchString(name) {
+			return rename.vendor.ReplaceAllString(name, rename.product), true
+		}
+	}
+	return "", false
+}
+
+// editionRuns are the print runs a datastore splits a reprinted product into,
+// spelled the way it spells them inside the product's own name. Both rows
+// carry the bracket, so a marketplace name that says nothing about the run
+// reaches neither of them - it is missing a word both candidates have.
+var editionRuns = []string{"1st Edition", "Unlimited Edition"}
+
+// namedRunRe matches the run a Cardmarket name spells out for itself. Flesh
+// and Blood is the catalog that does: it files each run as its own expansion
+// ("Tales of Aria - First") and writes the expansion's tail into the name of
+// every product under it. Alpha is Welcome to Rathe's word for the run every
+// other set calls First, exactly as fabPrintRun reads it for the singles.
+var namedRunRe = regexp.MustCompile(`(?i)(?: - (First|Unlimited|Alpha)\b:?| (First|Unlimited|Alpha) Edition\b)`)
+
+// namedRunBrackets translate that word into the datastore's bracket.
+var namedRunBrackets = map[string]string{
+	"first":     "1st Edition",
+	"alpha":     "1st Edition",
+	"unlimited": "Unlimited Edition",
+}
+
+// editionRunSpellings returns the datastore spellings of a name the resolver
+// turned down. A name that says which run it is has exactly one: its own
+// wording with the marketplace's run word traded for the datastore's bracket.
+// A name that says nothing has one per run, and which of them is meant is
+// decided by whether they name the same product, below.
+func editionRunSpellings(name string) []string {
+	if match := namedRunRe.FindStringSubmatch(name); match != nil {
+		word := match[1]
+		if word == "" {
+			word = match[2]
+		}
+		plain := strings.Join(strings.Fields(namedRunRe.ReplaceAllString(name, " ")), " ")
+		return []string{plain + " [" + namedRunBrackets[strings.ToLower(word)] + "]"}
+	}
+	spellings := make([]string, 0, len(editionRuns))
+	for _, run := range editionRuns {
+		spellings = append(spellings, name+" ["+run+"]")
+	}
+	return spellings
+}
+
+// resolveSealedRun names the run a Cardmarket product is, for a name the
+// resolver reached nothing with. A spelling counts only when it lands on a
+// product saying the very words it does: the bracket is a word the vendor
+// never wrote, and a candidate reached by handing it one has to answer for
+// everything else the vendor did write. Two runs answering equally well is a
+// name that does not say which it is, and stays unresolved.
+func resolveSealedRun(name string) (string, bool) {
+	var found string
+	seen := map[string]bool{}
+	for _, spelling := range editionRunSpellings(name) {
+		uuid, err := mtgmatcher.ResolveSealed(spelling)
+		if err != nil {
+			continue
+		}
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		if !sealedSaysSameWords(spelling, co.Name) {
+			continue
+		}
+		if !seen[uuid] {
+			seen[uuid] = true
+			found = uuid
+		}
+	}
+	if len(seen) != 1 {
+		return "", false
+	}
+	return found, true
+}
+
+// sealedWordRe splits a name the way the sealed resolver does, and
+// sealedFillerWords drop the same words it drops.
+var sealedWordRe = regexp.MustCompile(`[a-z0-9]+`)
+
+var sealedFillerWords = map[string]bool{
+	"the": true, "a": true, "an": true, "of": true, "and": true,
+	"disney": true, "lorcana": true, "riftbound": true, "league": true,
+	"legends": true, "tcg": true, "trading": true, "game": true,
+	"card": true, "cards": true, "one": true, "piece": true,
+	"bandai": true,
+}
+
+// sealedWords reduces a name to the words that carry it, folding the
+// spellings a marketplace and a datastore differ on without meaning anything
+// by it - a box is a display, a booster is a pack.
+//
+// This is a copy of what the resolver does, on purpose and deliberately no
+// looser than it: every fold made here the resolver makes too, so a word this
+// one fails to fold costs a match rather than buying a wrong one. It is not
+// the resolver's job either way - the resolver is asked which product a name
+// describes, and this is asked whether two names describe it in the same
+// words, which is a question only a caller adding words of its own has.
+func sealedWords(name string) []string {
+	set := map[string]bool{}
+	for _, word := range sealedWordRe.FindAllString(strings.ToLower(name), -1) {
+		if sealedFillerWords[word] {
+			continue
+		}
+		switch word {
+		case "box", "boxes":
+			word = "display"
+		case "booster", "boosters", "packs":
+			word = "pack"
+		case "decks":
+			word = "deck"
+		case "versus":
+			word = "vs"
+		case "volume":
+			word = "vol"
+		}
+		set[word] = true
+	}
+	return slices.Sorted(maps.Keys(set))
+}
+
+// sealedSaysSameWords reports whether two names say the same words.
+func sealedSaysSameWords(a, b string) bool {
+	return slices.Equal(sealedWords(a), sealedWords(b))
 }
 
 // printRunRe matches the qualifier a datastore adds to a product it holds in
