@@ -90,30 +90,124 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
-	uuids, err := b.SearchHasPrefix(inCard.Name)
-	if err != nil {
-		return
-	}
-
 	number := extractNumber(inCard.Variation)
-	var match, matchNorm string
-	for _, uuid := range uuids {
-		co, err := b.GetUUID(uuid)
-		if err != nil || co.Sealed {
-			continue
+	uuids, err := b.SearchHasPrefix(inCard.Name)
+	if err == nil {
+		var match, matchNorm string
+		for _, uuid := range uuids {
+			co, err := b.GetUUID(uuid)
+			if err != nil || co.Sealed {
+				continue
+			}
+			if number != "" && !numberMatches(number, co.Number) {
+				continue
+			}
+			norm := mtgmatcher.Normalize(co.Name)
+			if match != "" && matchNorm != norm {
+				return
+			}
+			match, matchNorm = co.Name, norm
 		}
-		if number != "" && !numberMatches(number, co.Number) {
+		if match != "" {
+			inCard.Name = match
+			return
+		}
+	}
+	if name := nameAtNumber(b, inCard.Name, number); name != "" {
+		inCard.Name = name
+	}
+}
+
+// nameAtNumber returns the datastore's spelling of the card a storefront
+// misspelled, read off the collector number it wrote beside the name.
+//
+// A storefront that cannot spell a name still writes the number, and a full
+// code names one printing outright, so the code says which card the listing
+// is. Cardmarket types an acute accent where the card has an apostrophe
+// ("Who´s.Who"), drops a letter ("Artifical Devil Fruit SMILE"), swaps two
+// ("Crone Oli"), or names a character by the last part of their name alone
+// ("Garp" for "Monkey.D.Garp").
+//
+// Two things have to hold before the spelling is adopted. Every printing
+// wearing the code has to share one name: a code several names answer says
+// nothing about which was meant. And the misspelling has to be close to
+// that name - a prefix or a suffix of it, or within two edits, one typo or
+// a transposition. The number is the storefront's own claim and it is
+// sometimes another card's, so without the closeness test a stray number
+// would rename a card into whatever it pointed at.
+//
+// Only a full code is read. A bare tail ("051") is the same number in every
+// set of the game, and the edition that would say which set has not been
+// resolved yet when a name is being fixed up.
+func nameAtNumber(b *mtgmatcher.Backend, name, number string) string {
+	if number == "" || !fullNumberRe.MatchString(number) {
+		return ""
+	}
+	var match, matchNorm string
+	for _, uuid := range b.GetUUIDs() {
+		co, err := b.GetUUID(uuid)
+		if err != nil || co.Sealed || !numberMatches(number, co.Number) {
 			continue
 		}
 		norm := mtgmatcher.Normalize(co.Name)
 		if match != "" && matchNorm != norm {
-			return
+			return ""
 		}
 		match, matchNorm = co.Name, norm
 	}
-	if match != "" {
-		inCard.Name = match
+	if match == "" || !closeName(mtgmatcher.Normalize(name), matchNorm) {
+		return ""
 	}
+	return match
+}
+
+// closeName reports whether a storefront's normalized name is the
+// datastore's own with a piece missing off one end or up to two letters
+// wrong.
+func closeName(got, want string) bool {
+	if got == "" || want == "" {
+		return false
+	}
+	if strings.HasPrefix(want, got) || strings.HasSuffix(want, got) {
+		return true
+	}
+	return editDistance(got, want, 2) <= 2
+}
+
+// editDistance is the Levenshtein distance between two strings, giving up
+// at limit: the caller only cares whether the two are within a couple of
+// edits, and a name pair that is not stops being measured once the whole
+// row of the table is past the limit.
+func editDistance(a, b string, limit int) int {
+	ar, br := []rune(a), []rune(b)
+	if len(ar) > len(br) {
+		ar, br = br, ar
+	}
+	if len(br)-len(ar) > limit {
+		return limit + 1
+	}
+	prev := make([]int, len(ar)+1)
+	cur := make([]int, len(ar)+1)
+	for i := range prev {
+		prev[i] = i
+	}
+	for j := 1; j <= len(br); j++ {
+		cur[0] = j
+		best := cur[0]
+		for i := 1; i <= len(ar); i++ {
+			cost := 1
+			if ar[i-1] == br[j-1] {
+				cost = 0
+			}
+			cur[i] = min(prev[i]+1, cur[i-1]+1, prev[i-1]+cost)
+			best = min(best, cur[i])
+		}
+		if best > limit {
+			return limit + 1
+		}
+		prev, cur = cur, prev
+	}
+	return prev[len(ar)]
 }
 
 // setCodePrefixRe matches a set code worn as an edition prefix: cardtrader
