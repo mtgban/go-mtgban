@@ -1,7 +1,8 @@
 package magic
 
-// Editions with interesting tokens
-var setAllowedForTokens = []string{
+// Editions that carried their tokens among their own cards before every
+// token was carried, and keep that filing so their answers do not move
+var setsWithInlineTokens = []string{
 	// League Tokens
 	"L12",
 	"L13",

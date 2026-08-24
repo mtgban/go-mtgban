@@ -892,6 +892,15 @@ func (b *Backend) ParseCommanderEdition(edition, variant string) string {
 		return ""
 	}
 
+	// An edition already naming a carried token set is exact: parsing it
+	// down to the commander set it stems from would lose the tokens
+	if strings.Contains(strings.ToLower(edition), "token") {
+		_, found := b.NormalizedSets[Normalize(edition)]
+		if found {
+			return ""
+		}
+	}
+
 	// Append a custom display tag to avoid including the main set during filtering
 	if strings.Contains(edition, "Display") || strings.Contains(edition, "Thick") ||
 		strings.Contains(variant, "Display") || strings.Contains(variant, "Thick") {

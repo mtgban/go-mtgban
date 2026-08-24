@@ -311,9 +311,54 @@ func Load(r io.Reader) (*mtgmatcher.Backend, error) {
 	return payload.newBackend(), nil
 }
 
-func okForTokens(set *Set) bool {
-	return slices.Contains(setAllowedForTokens, set.Code) ||
+func tokensFiledInline(set *Set) bool {
+	return slices.Contains(setsWithInlineTokens, set.Code) ||
 		strings.Contains(set.Name, "Duel Deck")
+}
+
+// fileTokensUnderTokenSet moves each set's tokens into the set their
+// tokenSetCode names, creating it when missing. The sets tokensFiledInline
+// reports predate this filing and keep their tokens among their own cards,
+// because their own edition name is what existing inputs match against. A
+// set whose tokens already live under its own code has nowhere to move
+// them to.
+func fileTokensUnderTokenSet(sets map[string]*Set) {
+	codes := make([]string, 0, len(sets))
+	for code := range sets {
+		codes = append(codes, code)
+	}
+	sort.Strings(codes)
+
+	for _, code := range codes {
+		set := sets[code]
+		if len(set.Tokens) == 0 || tokensFiledInline(set) {
+			continue
+		}
+		tokenCode := set.TokenSetCode
+		if tokenCode == "" || tokenCode == set.Code {
+			continue
+		}
+
+		for i := range set.Tokens {
+			set.Tokens[i].SetCode = tokenCode
+		}
+
+		tokenSet, found := sets[tokenCode]
+		if !found {
+			tokenSet = &Set{
+				Code:         tokenCode,
+				Name:         set.Name + " Tokens",
+				ParentCode:   set.Code,
+				Type:         "token",
+				TokenSetCode: tokenCode,
+				KeyruneCode:  set.KeyruneCode,
+				ReleaseDate:  set.ReleaseDate,
+			}
+			sets[tokenCode] = tokenSet
+		}
+		tokenSet.Tokens = append(tokenSet.Tokens, set.Tokens...)
+		set.Tokens = nil
+	}
 }
 
 func skipSet(set *Set) bool {
@@ -326,9 +371,8 @@ func skipSet(set *Set) bool {
 		"OLGC", "OLEP", "OVNT", "O90P": // oversize
 		return true
 	}
-	// Skip online sets, and any token-based sets
+	// Skip online sets
 	if set.IsOnlineOnly ||
-		(set.Type == "token" && !okForTokens(set)) ||
 		strings.HasSuffix(set.Name, "Art Series") ||
 		strings.HasSuffix(set.Name, "Minigames") ||
 		strings.HasSuffix(set.Name, "Front Cards") ||
@@ -599,15 +643,13 @@ func generateImageURL(card Card, version string) string {
 func adjustTokens(sets map[string]*Set) {
 	printings := make(map[string][]string)
 
-	// Adjust input data, filtering out unneeded sets, and making sure layout is set
-	for code, set := range sets {
-		// Remove undesired tokens
-		if !okForTokens(set) {
-			sets[code].Tokens = nil
-			continue
-		}
-
+	// Adjust input data, making sure layout is set
+	for _, set := range sets {
 		for i := range set.Tokens {
+			// Art series are not carried, so keep their layout naming them
+			if set.Tokens[i].Layout == "art_series" {
+				continue
+			}
 			// Reset various token types to correct properties
 			if slices.Contains(set.Tokens[i].Types, "Card") ||
 				slices.Contains(set.Tokens[i].Types, "Dungeon") ||
@@ -684,6 +726,8 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		}
 	}
 
+	fileTokensUnderTokenSet(ap.Data)
+
 	// Load token names (that don't have the same name of a real card):
 	// this needs every card name loaded first, or the clash check would
 	// depend on the iteration order of the sets
@@ -710,13 +754,20 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 		allSets = append(allSets, code)
 
 		allCards := set.Cards
+		tokensStart := len(allCards)
 
-		// Append tokens to the list of considered cards
-		// if they are not named in the same way of a real card
+		// Append tokens to the list of considered cards. A token named the
+		// same way as a real card is carried as "<name> Token", the shape
+		// the hand-renamed clashes already used, so the plain name keeps
+		// answering with the card. Art series stay out, as their sets do.
 		for _, token := range set.Tokens {
-			if !cardNames[token.Name] {
-				allCards = append(allCards, token)
+			if token.Layout == "art_series" {
+				continue
 			}
+			if cardNames[token.Name] {
+				token.Name += " Token"
+			}
+			allCards = append(allCards, token)
 		}
 
 		switch set.Code {
@@ -725,7 +776,9 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			set.ParentCode = ""
 		}
 
-		for _, card := range allCards {
+		for cardIndex, card := range allCards {
+			fromTokens := cardIndex >= tokensStart
+
 			// Skip anything non-paper
 			if card.IsOnlineOnly {
 				continue
@@ -784,11 +837,6 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 				case "8001":
 					card.PromoTypes = append(card.PromoTypes, "tourney")
 					card.IsPromo = true
-
-				// The Shapeshift token with clashing name
-				// SDL is the only set enabled for this case
-				case "1906", "1907", "1908", "1909":
-					card.Name += " Token"
 
 				default:
 					num, _ := strconv.Atoi(card.Number)
@@ -853,6 +901,15 @@ func (ap *AllPrintings) newBackend() *mtgmatcher.Backend {
 			} {
 				// Skip empty entries
 				if name == "" {
+					continue
+				}
+				// A token's face may repeat the name a real card or its
+				// reskin goes by (the Day // Night helper repeats the
+				// Apocalypse card's face), and registering it would steal
+				// the alternate lookup from the card. The sets whose
+				// tokens were always carried keep registering, as their
+				// entries already answer today.
+				if fromTokens && !tokensFiledInline(set) {
 					continue
 				}
 				// Skip FaceName entries that could be aliased

@@ -35,7 +35,13 @@ func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.Inp
 	if (strings.Contains(strings.ToLower(inCard.Edition), "token") ||
 		strings.Contains(strings.ToLower(inCard.Variation), "token")) &&
 		!inCard.Contains("League") {
-		return true
+		// An edition naming a token set the datastore carries is not a
+		// leak: its tokens are filed right there, now that they are
+		// carried at all.
+		set, err := b.GetSetByName(inCard.Edition)
+		if err != nil || !strings.Contains(strings.ToLower(set.Name), "token") {
+			return true
+		}
 	}
 	return inCard.IsSpecificUnsupported()
 }
@@ -1321,6 +1327,10 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 			case "PLNY":
 			default:
 				if !strings.HasPrefix(set.Name, "Year of the ") {
+					continue
+				}
+				// Each year is a set of its own, so a stated year picks it
+				if maybeYear != "" && !strings.Contains(set.Name, maybeYear) {
 					continue
 				}
 			}
