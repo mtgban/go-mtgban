@@ -29,6 +29,20 @@ func sealedResolveBackend() *Backend {
 			"OP01":  {Name: "Romance Dawn", Code: "OP01"},
 			"OP02":  {Name: "Paramount War", Code: "OP02"},
 			"OP-PR": {Name: "One Piece Promotion Cards", Code: "OP-PR"},
+			// Pokemon really is filed under sets named "Blister
+			// Exclusives" and "EX Dragon", which donate those words to
+			// the pooled set vocabulary and so let a vendor say them
+			// about any product.
+			"BLE": {Name: "Blister Exclusives", Code: "BLE"},
+			"DR":  {Name: "EX Dragon", Code: "DR"},
+			// Yu-Gi-Oh! numbers its sequels, and every sequel's set name
+			// donates its number to the pooled set vocabulary the way
+			// "promotion" is donated above. A set whose whole name sits
+			// inside another's does the same with its own extra word.
+			"HA01": {Name: "Hidden Arsenal", Code: "HA01"},
+			"HA05": {Name: "Hidden Arsenal 5: Steelswarm Invasion", Code: "HA05"},
+			"SR14": {Name: "Structure Deck: Fire Kings", Code: "SR14"},
+			"SDOK": {Name: "Structure Deck: Onslaught of the Fire Kings", Code: "SDOK"},
 		},
 	}
 	for uuid, name := range map[string]string{
@@ -71,10 +85,34 @@ func sealedResolveBackend() *Backend {
 		// only by their own names.
 		"ogn-deck-storm": {`Origins Theme Deck - "Storm Rider" [Zapdos]`, "OGN"},
 		"ogn-deck-blast": {`Origins Theme Deck - "Aurora Blast" [Articuno]`, "OGN"},
-		// A run is not decoration: these two are different products, and
-		// nothing else answers to the name without one.
+		// Two runs of one product: a name saying neither reaches both
+		// and settles on neither.
 		"ven-elite-1e":  {"Vendetta Elite Box [1st Edition]", "VEN"},
 		"ven-elite-unl": {"Vendetta Elite Box [Unlimited Edition]", "VEN"},
+		// The same pair, spelled the way a catalog spells it when it is
+		// careless: one run gets the word "Edition" and the other does
+		// not. They are no less two runs for it.
+		"ven-duel-1e":  {"Vendetta Duel Box [1st Edition]", "VEN"},
+		"ven-duel-unl": {"Vendetta Duel Box [Unlimited]", "VEN"},
+		// One run only: nothing else answers to a name saying no run.
+		"sfd-elite-1e": {"Spiritforged Elite Box [1st Edition]", "SFD"},
+		// A run beside the plain product it reprints.
+		"ogn-elite":    {"Origins Elite Box", "OGN"},
+		"ogn-elite-1e": {"Origins Elite Box [1st Edition]", "OGN"},
+		// A first edition the catalog brackets a run onto, and the
+		// sequel that is a whole other product. The number is the only
+		// thing the vendor says that tells them apart, and the sequel's
+		// catalog name carries words no storefront repeats - so the
+		// sequel is out of a terse vendor's reach and the first edition
+		// must not answer in its place. The SDOK set above carries no
+		// product at all, which is the real shape of the third case:
+		// the vendor names a set the datastore has nothing sealed for.
+		"ha01-display": {"Hidden Arsenal - Booster Box [Unlimited Edition]", "HA01"},
+		"ha05-display": {"Hidden Arsenal 5: Steelswarm Invasion - Booster Box [1st Edition]", "HA05"},
+		"sr14-deck":    {"Fire Kings Structure Deck [1st Edition]", "SR14"},
+		// Two blisters that differ only by the creature on the pack.
+		"ble-blister-z": {"2-Pack Blister [Zapdos]", "BLE"},
+		"ble-blister-a": {"2-Pack Blister [Articuno]", "BLE"},
 	} {
 		b.UUIDs[uuid] = &CardObject{
 			Card:   Card{UUID: uuid, Name: product.name, SetCode: product.setCode},
@@ -254,12 +292,13 @@ func TestSealedTokensFoldAccents(t *testing.T) {
 	}
 }
 
-// TestSealedQualifierTokens pins which words a catalog name only decorates a
-// product with. A bracket holding a card of the game's own is the creature
-// printed beside a product, which no storefront repeats; a bracket holding
-// anything else is the product's identity - the print run, the number of
-// copies, the placing a promo was handed out for - and forgiving those would
-// merge products that differ by nothing else.
+// TestSealedQualifierTokens pins which words a storefront may leave unsaid. A
+// bracket holding a card of the game's own is the creature printed beside a
+// product, which no storefront repeats; a bracket holding nothing but a print
+// run is the run, which a terse storefront leaves to the shelf. A bracket
+// holding anything else is the product's identity - the number of copies, the
+// placing a promo was handed out for - and forgiving those would merge
+// products that differ by nothing else.
 func TestSealedQualifierTokens(t *testing.T) {
 	for _, tt := range []struct {
 		name string
@@ -268,18 +307,24 @@ func TestSealedQualifierTokens(t *testing.T) {
 		// The creature on the box says nothing about which deck it is.
 		{`Origins Theme Deck - "Storm Rider" [Zapdos]`, []string{"zapdos"}},
 		{`Origins Theme Deck - "Aurora Blast" [Articuno]`, []string{"articuno"}},
-		// Only a card of the game's own is decoration. A print run, a
-		// count and a placing are the product's identity.
-		{"Fossil Booster Pack [1st Edition]", nil},
+		// A print run is forgivable; two runs both being forgivable is
+		// what leaves a name saying neither unresolved.
+		{"Fossil Booster Pack [1st Edition]", []string{"1st", "edition"}},
+		{"Fossil Booster Pack [Unlimited Edition]", []string{"unlimited", "edition"}},
+		// A run named alongside anything else is not one of these: the
+		// rest of the bracket is identity we cannot read.
+		{"Fossil Booster Pack [1st Edition North American English]", nil},
+		// A count and a placing are the product's identity.
 		{"Origins Booster Pack [Set of 4]", nil},
 		{"Origins Promo [1st Place]", nil},
 		// A word the name also carries outside the brackets is doing the
 		// product's own work there, so it is not forgiven.
 		{"Pikachu Collection [Pikachu]", nil},
+		{"1st Edition Booster Pack [1st Edition]", nil},
 		// Nothing bracketed, nothing forgiven.
 		{"XY Phantom Forces Booster Pack", nil},
 	} {
-		got := sealedResolveBackend().sealedQualifierTokens(tt.name)
+		got := sealedQualifierTokens(sealedResolveBackend().sealedQualifierGroups(tt.name))
 		if len(got) != len(tt.want) {
 			t.Errorf("sealedQualifierTokens(%q) = %v, want %v", tt.name, got, tt.want)
 			continue
@@ -292,30 +337,244 @@ func TestSealedQualifierTokens(t *testing.T) {
 	}
 }
 
-// TestResolveSealedForgivesQualifier pins the resolution the forgiveness is
+// TestResolveSealedForgivesQualifier pins the resolutions the forgiveness is
 // for: a storefront names a theme deck by its set and its own name, where the
-// catalog also names the creature printed beside it. A print run is not
-// forgiven, so a name saying neither run stays ambiguous rather than
-// picking one.
+// catalog also names the creature printed beside it, and it names a product
+// without saying which run when the catalog carries only one.
 func TestResolveSealedForgivesQualifier(t *testing.T) {
 	b := sealedResolveBackend()
 
-	for _, tt := range []struct{ vendor, want string }{
-		{"Origins: Storm Rider Theme Deck", "ogn-deck-storm"},
-		{"Origins Aurora Blast Theme Deck", "ogn-deck-blast"},
+	for _, tt := range []struct{ desc, vendor, want string }{
+		{
+			desc:   "the creature beside a deck is not the deck",
+			vendor: "Origins: Storm Rider Theme Deck",
+			want:   "ogn-deck-storm",
+		},
+		{
+			desc:   "and the other deck is still the other deck",
+			vendor: "Origins Aurora Blast Theme Deck",
+			want:   "ogn-deck-blast",
+		},
+		{
+			// The whole of what a print-run bracket says is which run it
+			// is, and here there is only one to be.
+			desc:   "a name saying no run reaches the only run there is",
+			vendor: "Spiritforged Elite Box",
+			want:   "sfd-elite-1e",
+		},
+		{
+			// Both share every word the vendor said, so the run decides,
+			// and the vendor named none: the product that needed no
+			// forgiving is the one it described.
+			desc:   "the plain product outranks the run that reprints it",
+			vendor: "Origins Elite Box 6x",
+			want:   "ogn-elite",
+		},
 	} {
-		uuid, err := b.ResolveSealed(tt.vendor)
-		if err != nil {
-			t.Errorf("ResolveSealed(%q) = %v", tt.vendor, err)
-			continue
-		}
-		if uuid != tt.want {
-			t.Errorf("ResolveSealed(%q) = %q, want %q", tt.vendor, uuid, tt.want)
-		}
+		t.Run(tt.desc, func(t *testing.T) {
+			uuid, err := b.ResolveSealed(tt.vendor)
+			if err != nil {
+				t.Fatalf("ResolveSealed(%q) = %v, want %q", tt.vendor, err, tt.want)
+			}
+			if uuid != tt.want {
+				t.Errorf("ResolveSealed(%q) = %q, want %q", tt.vendor, uuid, tt.want)
+			}
+		})
 	}
 
-	// Both runs answer to a name saying neither, so it resolves to none.
-	if _, err := b.ResolveSealed("Vendetta Elite Box"); err == nil {
-		t.Error("a name naming no print run resolved to one of the two anyway")
+	for _, tt := range []struct{ desc, vendor string }{
+		{
+			desc:   "two runs, neither named",
+			vendor: "Vendetta Elite Box",
+		},
+		{
+			// The catalog spells one run in two words and the other in
+			// one. Counting the words unsaid rather than the brackets
+			// would hand the product to whichever it spelled shorter.
+			desc:   "two runs the catalog spells at different lengths",
+			vendor: "Vendetta Duel Box",
+		},
+		{
+			// The blisters share more of the vendor's wording than the
+			// plain booster pack does, and they tie with each other.
+			// Ranking by what went unsaid before what was said would
+			// hand a blister's price to the booster pack.
+			desc:   "a blister must not fall back on the plain pack",
+			vendor: "Origins Dragon 2-Pack Blister",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			uuid, err := b.ResolveSealed(tt.vendor)
+			if err == nil {
+				t.Fatalf("ResolveSealed(%q) = %q (%s), want no match", tt.vendor, uuid, b.UUIDs[uuid].Name)
+			}
+		})
+	}
+}
+
+// TestSealedQuantityTokens pins which numbers a name says as a count. A
+// storefront writing "Hidden Arsenal 5" is naming the fifth Hidden Arsenal,
+// not five of anything, and a number that leads a parenthetical a container
+// closes is the opposite.
+func TestSealedQuantityTokens(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		want []string
+	}{
+		// A number opening a parenthetical the counted thing closes.
+		{"Hidden Arsenal Booster Box (18 Booster)", []string{"18"}},
+		{"Structure Deck: Albaz Strike Display (8 Structure Decks)", []string{"8"}},
+		{"Crucible of War - Unlimited Case (4 Booster Boxes)", []string{"4"}},
+		// The multiplier says it is a count on its own.
+		{"Origins Case (6x Booster Box)", []string{"6x"}},
+		// A sequel number, in the body of the name where a count never is.
+		{"Hidden Arsenal 5 Booster Box", nil},
+		{"Duelist Pack: Yusei Fudo 2 Booster", nil},
+		{"151 Pokemon Center Elite Trainer Box", nil},
+		// The sequel is still no count for standing beside one.
+		{"Hidden Arsenal 5 Booster Box (18 Booster)", []string{"18"}},
+		// A parenthetical a container does not close counts nothing.
+		{"Legendary Collection (2024 Reprint)", nil},
+	} {
+		got := sealedQuantityTokens(tt.name)
+		if len(got) != len(tt.want) {
+			t.Errorf("sealedQuantityTokens(%q) = %v, want %v", tt.name, got, tt.want)
+			continue
+		}
+		for _, tok := range tt.want {
+			if !got[tok] {
+				t.Errorf("sealedQuantityTokens(%q) = %v, missing %q", tt.name, got, tok)
+			}
+		}
+	}
+}
+
+// TestResolveSealedForgivenessRunsOneWay pins the bound on the forgiveness: a
+// candidate reached only because its brackets were forgiven must account for
+// every word the vendor said, out of its own name, its own set, or a count the
+// name marks as one. Without the bound a sequel folds onto the product it is a
+// sequel to, because the pooled set vocabulary carries the sequel's number and
+// the sibling set's extra word.
+func TestResolveSealedForgivenessRunsOneWay(t *testing.T) {
+	b := sealedResolveBackend()
+
+	for _, tt := range []struct{ desc, vendor, want string }{
+		{
+			// The count the catalog spells out, on the product that
+			// needs its run forgiven: still reached.
+			desc:   "a quantity in parentheses is still a count",
+			vendor: "Hidden Arsenal Booster Box (18 Booster)",
+			want:   "ha01-display",
+		},
+		{
+			desc:   "and the sequel reaches the sequel",
+			vendor: "Hidden Arsenal 5: Steelswarm Invasion Booster Box",
+			want:   "ha05-display",
+		},
+		{
+			// Nothing here needs forgiving - the case carries no
+			// bracket - so the bare count stays a safe extra.
+			desc:   "a bare count still reaches a name said in full",
+			vendor: "The First Chapter 4 Booster Box Case",
+			want:   "tfc-case",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			uuid, err := b.ResolveSealed(tt.vendor)
+			if err != nil {
+				t.Fatalf("ResolveSealed(%q) = %v, want %q", tt.vendor, err, tt.want)
+			}
+			if uuid != tt.want {
+				t.Errorf("ResolveSealed(%q) = %q, want %q", tt.vendor, uuid, tt.want)
+			}
+		})
+	}
+
+	for _, tt := range []struct{ desc, vendor string }{
+		{
+			desc:   "a sequel must not fold onto the first edition",
+			vendor: "Hidden Arsenal 5 Booster Box",
+		},
+		{
+			desc:   "nor when the catalog spells a real count beside it",
+			vendor: "Hidden Arsenal 5 Booster Box (18 Booster)",
+		},
+		{
+			// "Onslaught" is a set word, but of the other set: the one
+			// this product is filed under does not say it.
+			desc:   "a sibling set's own word is not filing noise",
+			vendor: "Structure Deck: Onslaught of the Fire Kings",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			uuid, err := b.ResolveSealed(tt.vendor)
+			if err == nil {
+				t.Fatalf("ResolveSealed(%q) = %q (%s), want no match", tt.vendor, uuid, b.UUIDs[uuid].Name)
+			}
+		})
+	}
+}
+
+// TestResolveSealedWithHint pins what the storefront's own shelf is allowed to
+// settle. CardTrader names both runs of a Flesh and Blood set the same and
+// tells them apart by the expansion it files them under, so the shelf is the
+// only thing that says which run a blueprint is - and it says it only where
+// the product name alone had already given up.
+func TestResolveSealedWithHint(t *testing.T) {
+	b := sealedResolveBackend()
+
+	for _, tt := range []struct{ desc, vendor, hint, want string }{
+		{
+			desc:   "the shelf names the run the product name omits",
+			vendor: "Vendetta Elite Box",
+			hint:   "Vendetta - Unlimited",
+			want:   "ven-elite-unl",
+		},
+		{
+			// CardTrader spells the first run "First" where the catalog
+			// brackets it "1st".
+			desc:   "and the other run, under the storefront's spelling",
+			vendor: "Vendetta Elite Box",
+			hint:   "Vendetta - First",
+			want:   "ven-elite-1e",
+		},
+		{
+			desc:   "a shelf that names no run settles nothing",
+			vendor: "Vendetta Elite Box",
+			hint:   "Vendetta",
+			want:   "",
+		},
+		{
+			desc:   "no shelf at all is ResolveSealed",
+			vendor: "Vendetta Elite Box",
+			hint:   "",
+			want:   "",
+		},
+		{
+			// The name reached one answer on its own. A shelf naming the
+			// other run does not get to move it - it would be answering
+			// for a product the datastore does not carry.
+			desc:   "a shelf cannot move an answer the name already reached",
+			vendor: "Spiritforged Elite Box",
+			hint:   "Spiritforged - Unlimited",
+			want:   "sfd-elite-1e",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			uuid, err := b.ResolveSealedWithHint(tt.vendor, tt.hint)
+			if tt.want == "" {
+				if err == nil {
+					t.Fatalf("ResolveSealedWithHint(%q, %q) = %q (%s), want no match",
+						tt.vendor, tt.hint, uuid, b.UUIDs[uuid].Name)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ResolveSealedWithHint(%q, %q) = %v, want %q", tt.vendor, tt.hint, err, tt.want)
+			}
+			if uuid != tt.want {
+				t.Errorf("ResolveSealedWithHint(%q, %q) = %q, want %q", tt.vendor, tt.hint, uuid, tt.want)
+			}
+		})
 	}
 }
