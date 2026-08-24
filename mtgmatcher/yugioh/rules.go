@@ -46,18 +46,169 @@ const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 // canonical-name lookup: TCGplayer writes "Eldlich the Golden Lord (Quarter
 // Century Secret Rare)" and "Harpie Lady (Original Artwork)". A full name
 // that is itself canonical stays as it is — some catalog names carry their
-// qualifier parenthetical ("Dark Magician (A)").
+// qualifier parenthetical ("Dark Magician (A)"). The name then takes the
+// spelling its own edition files it under, when the two disagree.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
-	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
-		return
-	}
-	if strings.Contains(inCard.Name, "(") {
+	_, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]
+	if !found && strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
 		if len(vars) > 1 {
 			inCard.Name = vars[0]
 			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
+	respellName(b, inCard)
+}
+
+// respellName adopts the spelling the input's own edition files the card
+// under, when the edition resolves to a set that does not carry the name as
+// written: the token word-order flip in either direction ("Sky Striker Ace
+// Token" against OTS Tournament Pack 8's "Token: Sky Striker Ace"). A token
+// name the flip cannot place is asked of the set's own token sheet by
+// collector number ("Yugi & Dark Magician Token" T01 is Legendary Decks
+// II's "Token: Yugi").
+//
+// The edition is the whole guard, three ways. A name the resolved set does
+// carry is never touched, so the sets naming a token the storefront's way
+// keep their own printing. A set carrying several token names on one number
+// (OTS Tournament Pack 9 prints three "Token: Mecha Phantom Beast" arts
+// under 026) decides nothing and the name stays as written. And an edition
+// naming no set at all decides nothing either — AdjustName's fallbacks own
+// that input.
+func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	alternates := alternateNames(inCard.Name)
+	token := isTokenName(inCard.Name)
+	if len(alternates) == 0 && !token {
+		return
+	}
+	set := editionSet(b, inCard.Edition)
+	if set == nil {
+		return
+	}
+	number := extractNumber(inCard.Variation)
+	if number == "" && token {
+		number = letteredNumber(inCard.Variation)
+	}
+	// A set printing the name as written settles it whatever the number
+	// says: cardtrader numbers a few tokens one off ("Mask Token" 028 for
+	// OTS Tournament Pack 19's EN029), and following such a number across
+	// a respelling would price the neighbor.
+	if editionCarries(set, inCard.Name, "") {
+		return
+	}
+	var adopt string
+	for _, alternate := range alternates {
+		if !editionCarries(set, alternate, number) {
+			continue
+		}
+		if adopt != "" && mtgmatcher.Normalize(adopt) != mtgmatcher.Normalize(alternate) {
+			return
+		}
+		adopt = alternate
+	}
+	if adopt == "" {
+		// A spelling the set prints under some other number is the same
+		// name-against-number contradiction, so the number decides nothing
+		// here either.
+		for _, alternate := range alternates {
+			if editionCarries(set, alternate, "") {
+				return
+			}
+		}
+		if token && number != "" {
+			adopt = editionTokenAt(set, number)
+		}
+	}
+	if adopt != "" {
+		inCard.Name = adopt
+	}
+}
+
+// alternateNames lists the other spellings a name might be filed under: the
+// token word-order flip, either way around.
+func alternateNames(name string) []string {
+	var alternates []string
+	if base, cut := strings.CutSuffix(name, " Token"); cut {
+		alternates = append(alternates, "Token: "+base)
+	}
+	if base, cut := strings.CutPrefix(name, "Token: "); cut {
+		alternates = append(alternates, base+" Token")
+	}
+	return alternates
+}
+
+// isTokenName reports whether a name names a token outright, in any of the
+// word orders the catalog and the storefronts use — including the bare
+// "Token" the sheets that never name their art are filed under.
+func isTokenName(name string) bool {
+	return strings.HasPrefix(name, "Token: ") || strings.HasSuffix(name, " Token") ||
+		name == "Token"
+}
+
+// editionSet answers the set the input's edition names, through the same
+// aliasing and decoration-trimming AdjustEdition applies, without touching
+// the input.
+func editionSet(b *mtgmatcher.Backend, edition string) *mtgmatcher.Set {
+	edition = strings.TrimSpace(edition)
+	named, found := namedSet(b, edition)
+	if !found {
+		named, found = namedSet(b, trimEditionDecorations(edition))
+	}
+	if !found {
+		return nil
+	}
+	return b.NormalizedSets[mtgmatcher.Normalize(named)]
+}
+
+// editionCarries reports whether the set prints the name, under the given
+// collector number when one is known.
+func editionCarries(set *mtgmatcher.Set, name, number string) bool {
+	normalized := mtgmatcher.Normalize(name)
+	for i := range set.Cards {
+		if mtgmatcher.Normalize(set.Cards[i].Name) != normalized {
+			continue
+		}
+		if number == "" || numberMatches(number, set.Cards[i].Number) {
+			return true
+		}
+	}
+	return false
+}
+
+// editionTokenAt answers the one token the set prints under the number, or
+// nothing when the number names none — or several, which no storefront
+// wording tells apart.
+func editionTokenAt(set *mtgmatcher.Set, number string) string {
+	var name string
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if !isTokenName(card.Name) || !numberMatches(number, card.Number) {
+			continue
+		}
+		if name != "" && mtgmatcher.Normalize(name) != mtgmatcher.Normalize(card.Name) {
+			return ""
+		}
+		name = card.Name
+	}
+	return name
+}
+
+// letteredNumber reads the letter-led numbers the token sheets and deck
+// reprints use ("T01"), which extractNumber refuses everywhere else because
+// outside a token's variation a letter-led field is a label word rather
+// than a number.
+func letteredNumber(variation string) string {
+	for _, field := range strings.Fields(variation) {
+		if len(field) < 2 || len(field) > 4 || !unicode.IsLetter(rune(field[0])) {
+			continue
+		}
+		if !strings.ContainsFunc(field[1:], func(r rune) bool {
+			return r < '0' || r > '9'
+		}) {
+			return field
+		}
+	}
+	return ""
 }
 
 // AdjustName flips a token's name onto the word order the catalog files it
@@ -73,9 +224,14 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// the storefronts write it last ("Sheep Token"). The flip only ever
 	// answers for a name the datastore does not already know, above, so the
 	// tokens a set does name the storefront's way keep their own printing.
+	// It also only answers for an edition naming no set: respellName has
+	// already asked a resolved edition for every spelling it carries, so
+	// adopting the flip here anyway would hand the input another set's
+	// token and the printing filter a name its own edition never prints.
 	if base, cut := strings.CutSuffix(inCard.Name, " Token"); cut {
 		flipped := "Token: " + base
-		if _, found := b.CanonicalNames[mtgmatcher.Normalize(flipped)]; found {
+		if _, found := b.CanonicalNames[mtgmatcher.Normalize(flipped)]; found &&
+			editionSet(b, inCard.Edition) == nil {
 			inCard.Name = flipped
 			return
 		}
@@ -118,17 +274,23 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		inCard.Edition = named
 		return
 	}
+	edition = trimEditionDecorations(edition)
+	if named, found := namedSet(b, edition); found {
+		edition = named
+	}
+	inCard.Edition = edition
+}
+
+// trimEditionDecorations strips the game-name prefix and "Singles" suffix
+// off a storefront's edition wording.
+func trimEditionDecorations(edition string) string {
 	for _, prefix := range []string{"Yu-Gi-Oh!", "Yu-Gi-Oh", "YuGiOh"} {
 		if strings.HasPrefix(edition, prefix) {
 			edition = strings.TrimSpace(strings.TrimLeft(strings.TrimPrefix(edition, prefix), ":-"))
 			break
 		}
 	}
-	edition = strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
-	if named, found := namedSet(b, edition); found {
-		edition = named
-	}
-	inCard.Edition = edition
+	return strings.TrimSpace(strings.TrimSuffix(edition, "Singles"))
 }
 
 // namedSet answers the set an edition names: itself when the datastore
