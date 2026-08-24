@@ -1,4 +1,4 @@
-name: tcg_syplist
+name: magic / tcg_syplist
 
 on:
   workflow_dispatch: {}
@@ -31,7 +31,7 @@ jobs:
     needs: [cache-datastore, cache-skus]
     uses: ./.github/workflows/run-bantool.yml
     with:
-      target: ${{ github.workflow }}
+      target: tcg_syplist
       game: "magic"
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}

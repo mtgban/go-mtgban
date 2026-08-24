@@ -1,4 +1,4 @@
-name: tcg_sealed_yugioh
+name: yugioh / tcg_sealed
 
 on:
   workflow_dispatch: {}
@@ -20,7 +20,7 @@ jobs:
     name: ${{ github.workflow }}
     uses: ./.github/workflows/run-bantool.yml
     with:
-      target: ${{ github.workflow }}
+      target: tcg_sealed_yugioh
       game: "yugioh"
       datastore-filepath: b2://mtgban-datastore/yugioh/yugioh.json.xz
     secrets: inherit

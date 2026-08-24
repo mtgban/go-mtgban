@@ -1,4 +1,4 @@
-name: vegassingles_pokemon
+name: pokemon / vegassingles
 
 on:
   workflow_dispatch: {}
@@ -15,7 +15,7 @@ jobs:
     name: ${{ github.workflow }}
     uses: ./.github/workflows/run-bantool.yml
     with:
-      target: ${{ github.workflow }}
+      target: vegassingles_pokemon
       game: "pokemon"
       datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
     secrets: inherit

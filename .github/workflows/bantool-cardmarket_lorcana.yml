@@ -1,4 +1,4 @@
-name: cardmarket_lorcana
+name: lorcana / cardmarket
 
 on:
   workflow_dispatch: {}
@@ -20,7 +20,7 @@ jobs:
     name: ${{ github.workflow }}
     uses: ./.github/workflows/run-bantool.yml
     with:
-      target: ${{ github.workflow }}
+      target: cardmarket_lorcana
       game: "lorcana"
       datastore-filepath: b2://mtgban-datastore/lorcana/lorcana.json.xz
     secrets: inherit
