@@ -482,6 +482,16 @@
         "uuid": "op01-084_454615"
     },
     {
+        "description": "the finish tells apart the event printings a wording named at once",
+        "input": {
+            "name": "Boa Hancock - P-115 (OP15 Release Event - Winner)",
+            "variant": "P-115 Release Event Winner Stamp",
+            "edition": "Promo",
+            "foil": true
+        },
+        "uuid": "p-115_686458_foil"
+    },
+    {
         "description": "the ordinal a promo label opens with is not the number either",
         "input": {
             "name": "Sanji - 013 (English Version 1st Anniversary Set)",

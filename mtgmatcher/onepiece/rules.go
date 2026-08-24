@@ -390,7 +390,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// Either demand drops the base printing from consideration.
 	described, base, variants := tierByVariant(inCard, candidates)
 	if len(described) > 0 {
-		return editionTiebreak(b, inCard, described)
+		return finishTiebreak(inCard, editionTiebreak(b, inCard, described))
 	}
 	if wantsVariant(inCard, number) {
 		if len(variants) > 0 {
@@ -402,6 +402,41 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return editionTiebreak(b, inCard, base)
 	}
 	return editionTiebreak(b, inCard, candidates)
+}
+
+// finishTiebreak narrows a tier the wording described in full to the
+// printings sold in the finish the storefront priced.
+//
+// The event printings a promo number carries are one card issued several
+// times over, and a storefront names them all at once: "P-115 (OP15 Release
+// Event - Winner)" says both the set's release-event card and the winner's
+// copy of it, because the winner's label is the plain one with a word
+// appended. What separates them is the stamping - the participation card is
+// sold plain, the winner's foil - so the finish being priced is the last
+// thing left that says which one the listing is.
+//
+// Only a tier the wording named throughout is narrowed this way. A wording
+// naming none of them has not said the listing is one of these at all, and
+// answering it with whichever printing happens to carry the right stamping
+// would price a product the catalog does not hold as one it does.
+func finishTiebreak(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) <= 1 {
+		return cards
+	}
+	finish := mtgmatcher.FinishNonfoil
+	if inCard.Foil {
+		finish = mtgmatcher.FinishFoil
+	}
+	var stamped []mtgmatcher.Card
+	for _, card := range cards {
+		if card.HasFinish(finish) {
+			stamped = append(stamped, card)
+		}
+	}
+	if len(stamped) == 0 {
+		return cards
+	}
+	return stamped
 }
 
 // editionNamesSet reports whether a storefront's edition is a set of the
