@@ -523,16 +523,7 @@ func generateSealedUUIDs(product SealedProduct, uuids map[string]*mtgmatcher.Car
 	card.Images["crop"] = generateSealedImageURL(card, "normal")
 
 	isEtched := strings.Contains(product.Name, "Etched")
-	isFoil := !isEtched
-	switch {
-	case strings.Contains(product.Name, "Foil") && !strings.Contains(product.Name, "Non"):
-	case strings.Contains(product.Name, "Premium"):
-	case strings.Contains(product.Name, "VIP Edition"):
-	case strings.Contains(product.Name, "Commander Deck") && strings.Contains(product.Name, "Collector Edition"):
-	case slices.Contains(productsWithOnlyFoils, product.Name):
-	default:
-		isFoil = false
-	}
+	isFoil := isEtched || sealedHoldsOnlyFoils(product.Name)
 
 	uuids[product.UUID] = &mtgmatcher.CardObject{
 		Card:    toMtgCard(card),
@@ -541,6 +532,35 @@ func generateSealedUUIDs(product SealedProduct, uuids map[string]*mtgmatcher.Car
 		Foil:    isFoil,
 		Etched:  isEtched,
 	}
+}
+
+// sealedHoldsOnlyFoils reports whether every card a sealed product holds is
+// foil, which the product's own name usually says and sometimes does not.
+//
+// Where a whole product line is foil the line is named here rather than each
+// of its products: every From the Vault, every Scene Box, every SDCC
+// planeswalker set. The rest are named
+// one by one in productsWithOnlyFoils, because nothing about the name says it.
+func sealedHoldsOnlyFoils(name string) bool {
+	switch {
+	case strings.Contains(name, "Foil") && !strings.Contains(name, "Non"):
+		return true
+	case strings.Contains(name, "Premium"):
+		return true
+	case strings.Contains(name, "VIP Edition"):
+		return true
+	case strings.Contains(name, "Commander Deck") && strings.Contains(name, "Collector"):
+		return true
+	case strings.Contains(name, "From the Vault"):
+		return true
+	case strings.Contains(name, "Scene Box"):
+		return true
+	case strings.Contains(name, "SDCC") && strings.Contains(name, "Planeswalker"):
+		return true
+	case slices.Contains(productsWithOnlyFoils, name):
+		return true
+	}
+	return false
 }
 
 func sortPrintings(sets map[string]*Set, printings []string) {
