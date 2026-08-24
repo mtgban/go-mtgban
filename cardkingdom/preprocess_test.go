@@ -151,3 +151,27 @@ func TestPreprocessTokens(t *testing.T) {
 		})
 	}
 }
+
+// TestPreprocessListAngelToken pins the sku fixup for the one Angel token
+// The List carries twice. Its sku names the Forgotten Realms printing and
+// its bare number reaches the Guilds of Ravnica one, which is the wrong
+// card at the right number.
+func TestPreprocessListAngelToken(t *testing.T) {
+	theCard, err := Preprocess(cardkingdom.Product{
+		SKU:     "MTAFR-001",
+		Name:    "Angel Token // Spirit Token",
+		Edition: "Mystery Booster/The List",
+	})
+	if err != nil {
+		t.Fatalf("Preprocess: %v", err)
+	}
+	cardID, err := mtgmatcher.Match(theCard)
+	if err != nil {
+		t.Fatalf("Match(%v) = %v", theCard, err)
+	}
+	const want = "ba22fdaf-8d82-5f14-a5f0-3e5908f04d8c"
+	if cardID != want {
+		co, _ := mtgmatcher.GetUUID(cardID)
+		t.Errorf("Match(%v) = %s (%v), want the Forgotten Realms Angel", theCard, cardID, co)
+	}
+}
