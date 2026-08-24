@@ -38,6 +38,26 @@
         "uuid": "opp-662894_foil"
     },
     {
+        "description": "a wording naming a product takes the set the product is filed in",
+        "input": {
+            "name": "Heimerdinger - Inventor",
+            "variant": "Arcane Box Set Promo",
+            "edition": "Promo",
+            "foil": true
+        },
+        "uuid": "pr-678051_foil"
+    },
+    {
+        "description": "a wording naming a promotional set takes that set's printing",
+        "input": {
+            "name": "Heimerdinger - Inventor (Judge)",
+            "variant": "Judge Promo",
+            "edition": "Promo",
+            "foil": true
+        },
+        "uuid": "jdg-668439_foil"
+    },
+    {
         "description": "an alternate-art rune resolves to its own printing",
         "input": {
             "name": "Fury Rune",
@@ -46,6 +66,16 @@
             "foil": true
         },
         "uuid": "ven-709312_foil"
+    },
+    {
+        "description": "and the same product answers for another of its cards",
+        "input": {
+            "name": "Jinx - Rebel",
+            "variant": "Arcane Box Set Promo",
+            "edition": "Promo",
+            "foil": true
+        },
+        "uuid": "pr-678052_foil"
     },
     {
         "description": "base printing wins over its promos by default",
@@ -201,6 +231,26 @@
         "error": "unknown variant"
     },
     {
+        "description": "negative: a word every promotional set spells names none of them",
+        "input": {
+            "name": "Heimerdinger - Inventor",
+            "variant": "Riftbound Promotional Cards Promo",
+            "edition": "Promo",
+            "foil": true
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a wording naming neither a set nor a product stays ambiguous",
+        "input": {
+            "name": "Heimerdinger - Inventor",
+            "variant": "Some Other Promo",
+            "edition": "Promo",
+            "foil": true
+        },
+        "error": "aliasing detected"
+    },
+    {
         "description": "negative: an absent alternate art does not fall back on its base number",
         "input": {
             "name": "Fury Rune",
@@ -231,6 +281,16 @@
         "description": "negative: name printed in two sets stays ambiguous without a number",
         "input": {
             "name": "Recruit (NX)"
+        },
+        "error": "aliasing detected"
+    },
+    {
+        "description": "negative: one word of a product name names no set",
+        "input": {
+            "name": "Heimerdinger - Inventor",
+            "variant": "Box Promo",
+            "edition": "Promo",
+            "foil": true
         },
         "error": "aliasing detected"
     },
