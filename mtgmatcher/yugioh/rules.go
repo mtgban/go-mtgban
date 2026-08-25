@@ -75,7 +75,8 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// tokens a set does name the storefront's way keep their own printing.
 	if base, cut := strings.CutSuffix(inCard.Name, " Token"); cut {
 		flipped := "Token: " + base
-		if _, found := b.CanonicalNames[mtgmatcher.Normalize(flipped)]; found {
+		if _, found := b.CanonicalNames[mtgmatcher.Normalize(flipped)]; found &&
+			reachable(b, inCard.Edition, flipped) {
 			inCard.Name = flipped
 			return
 		}
@@ -104,6 +105,28 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if match != "" {
 		inCard.Name = match
 	}
+}
+
+// reachable reports whether a name the flip proposes has a printing the
+// listing's own edition could hold. The flip is a guess that the storefront
+// wrote the two words the other way round, and a guess landing in a set the
+// listing does not name was wrong about a different card: "Lamb Token" is
+// the catalog's "Token: Stray Lambs", but flipping it spells "Token: Lamb",
+// a real card in one other set - and a name with a single printing is
+// matched without the edition ever being consulted. An edition naming no
+// set constrains nothing and lets the guess stand.
+func reachable(b *mtgmatcher.Backend, edition, name string) bool {
+	set, found := namedSet(b, strings.TrimSpace(edition))
+	if !found {
+		return true
+	}
+	printings, err := b.Printings4Card(name)
+	if err != nil {
+		return false
+	}
+	return slices.ContainsFunc(printings, func(code string) bool {
+		return mtgmatcher.Equals(b.Sets[code].Name, set)
+	})
 }
 
 // AdjustEdition trims the game-name prefix and "Singles" suffix storefronts
@@ -140,6 +163,30 @@ func namedSet(b *mtgmatcher.Backend, edition string) (string, bool) {
 	}
 	set, found := normalizedEditionAliases()[normalized]
 	return set, found
+}
+
+// IsSpecificUnsupported refuses a listing that names a token and nothing
+// else. See mtgmatcher.GameRules.
+func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	return unidentifiedToken(b, inCard)
+}
+
+// bareToken is the whole name of five printings in three sets, the catalog's
+// spelling for a token whose face names no monster.
+const bareToken = "Token"
+
+// unidentifiedToken reports a listing spelled with the bare token name that
+// carries nothing saying which of the five printings it is. Four of them
+// wear a variant label and one does not, so the variant tiering answers
+// every such listing with that one - the same uuid for a dozen different
+// tokens. A number or a set name is enough to tell them apart, and the
+// listings carrying one keep matching.
+func unidentifiedToken(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	if inCard.Name != bareToken || extractNumber(inCard.Variation) != "" {
+		return false
+	}
+	_, found := namedSet(b, strings.TrimSpace(inCard.Edition))
+	return !found
 }
 
 // CanonicalFinish owns Yu-Gi-Oh's finish vocabulary, which is the print runs

@@ -114,3 +114,57 @@ func TestTierByRarity(t *testing.T) {
 		})
 	}
 }
+
+// TestTokenNameHeldToTheListing pins the two places a token name used to be
+// answered with more confidence than the listing earned. A name spelled
+// "Token" and nothing else is five printings in three sets, four of them
+// wearing a variant label; the variant tiering hands every such listing the
+// one printing that wears none, so a dozen different tokens priced the same
+// uuid. And the flip onto the catalog's word order is a guess that the
+// storefront wrote the two words the other way round, which lands on a
+// different card whenever the flipped spelling happens to name one in a set
+// the listing does not name.
+func TestTokenNameHeldToTheListing(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+		err  string
+	}{
+		{
+			desc: "the bare token name with nothing to identify it",
+			in:   mtgmatcher.InputCard{Name: "Token"},
+			err:  mtgmatcher.ErrUnsupported.Error(),
+		},
+		{
+			desc: "the bare token name with a number is identified",
+			in:   mtgmatcher.InputCard{Name: "Token", Variation: "STP3-EN032"},
+			want: "stp3-en032_267706_unl",
+		},
+		{
+			desc: "a flip landing outside the named set is not taken",
+			in:   mtgmatcher.InputCard{Name: "Zane Truesdale Token", Edition: "Legendary Duelists: Season 1"},
+			err:  mtgmatcher.ErrCardDoesNotExist.Error(),
+		},
+		{
+			desc: "a flip the listing names no set against still stands",
+			in:   mtgmatcher.InputCard{Name: "Sheep Token", Variation: "TKN1-EN001"},
+			want: "tkn1-en001_81303_unl",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			gotErr := ""
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if id != tt.want || gotErr != tt.err {
+				t.Errorf("Match(%q, %q, %q) = (%q, %q), want (%q, %q)",
+					tt.in.Name, tt.in.Edition, tt.in.Variation, id, gotErr, tt.want, tt.err)
+			}
+		})
+	}
+}
