@@ -303,6 +303,23 @@ func TestSealedIsLanguageVariant(t *testing.T) {
 		// The word alone is not the mark: this is the English product.
 		"English Booster Box":                   false,
 		"Romance Dawn Booster Box (Pre-Errata)": false,
+		// The marketplaces mark a Japanese printing with the short form
+		// as often as with the language, and nothing else in the name
+		// says so.
+		"Forbidden Light JP Booster Box": true,
+		"Black Bolt JP Deluxe Booster":   true,
+		// The letters have to be the whole word.
+		"JPN Booster Box":    false,
+		"Jump Start Booster": false,
+		// And they have to be in the run of the name. Two letters turn
+		// up saying something else, and where they do a storefront sets
+		// them aside: these name the shop an English edition was sold at
+		// and the deck a world champion played, not a printing.
+		`WCD 2025: Yuya Okita "JP Raging Bolt"`:                                        false,
+		`WCD 2025: Yuya Okita ""JP Raging Bolt""`:                                      false,
+		"Trainer Battle Deck - Brock of Pewter City Gym (JP Pokemon Center Exclusive)": false,
+		"Ash vs Team Rocket Deck Kit (JP Exclusive)":                                   false,
+		"World Championship Deck [JP Raging Bolt]":                                     false,
 	} {
 		if got := SealedIsLanguageVariant(name); got != want {
 			t.Errorf("SealedIsLanguageVariant(%q) = %t, want %t", name, got, want)
