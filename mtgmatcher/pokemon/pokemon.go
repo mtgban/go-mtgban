@@ -438,7 +438,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 	}
 	b.SortSealed()
 
-	b.SetRules(Rules{})
+	b.SetRules(NewRules(&b))
 
 	return &b
 }

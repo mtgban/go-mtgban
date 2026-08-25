@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"sync"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
@@ -20,7 +19,19 @@ import (
 // a storefront's foil flag has to reach the Holofoil printing. So the flag
 // resolves through the loader's FoilUUIDs, and only an input naming a
 // treatment outright re-keys onto the exact crossing it names.
-type Rules struct{ mtgmatcher.DefaultRules }
+type Rules struct {
+	mtgmatcher.DefaultRules
+
+	// The sets indexed by the name left after the catalog's era-and-number
+	// prefix, built once by Load because the sets do not change afterwards.
+	// A Rules built without it still answers, by indexing on the spot.
+	setsByTail map[string][]string
+}
+
+// NewRules returns the rules with whatever the backend lets them precompute.
+func NewRules(b *mtgmatcher.Backend) Rules {
+	return Rules{setsByTail: indexSetsByTail(b)}
+}
 
 // fullNumberRe matches the game's collector number shapes: "001/102",
 // "SWSH001", "TG01/TG30", "H1/H32", with the set total that follows a slash
@@ -257,7 +268,7 @@ func reprintedByYear(name, candidate string) bool {
 // AdjustEdition trims the game-name prefix and "Singles" suffix storefronts
 // decorate set names with, rewrites the names editionAliases carries, and
 // drops the headings that name no set of ours.
-func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+func (r Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
 	for _, prefix := range []string{"Pokemon TCG", "Pokemon", "Pokémon"} {
 		if strings.HasPrefix(edition, prefix) {
@@ -302,7 +313,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 				name = setNamedByHead(b, edition)
 			}
 			if name == "" {
-				name = setNamedByTail(b, edition)
+				name = r.setNamedByTail(b, edition)
 			}
 			if name != "" {
 				edition = name
@@ -452,11 +463,6 @@ func setNamedByHead(b *mtgmatcher.Backend, edition string) string {
 	return head
 }
 
-// setTails indexes each backend's sets by the name left after the catalog's
-// era-and-number prefix, built once per datastore since the sets do not
-// change after it is loaded.
-var setTails sync.Map
-
 // setTail drops the prefix the catalog decorates a set name with: both
 // "SWSH03: Darkness Ablaze" and "XY - Steam Siege" are an era, a separator,
 // and the name the set is actually known by.
@@ -478,19 +484,19 @@ func setTail(name string) string {
 // Encounters" spends three words on it, and Cardmarket spends none at all,
 // which is why the whole name is tried before any of it is dropped. A tail
 // two sets share names neither.
-func setNamedByTail(b *mtgmatcher.Backend, edition string) string {
-	cached, found := setTails.Load(b)
-	if !found {
-		built := map[string][]string{}
-		for _, set := range b.Sets {
-			tail := mtgmatcher.Normalize(setTail(set.Name))
-			built[tail] = append(built[tail], set.Name)
-		}
-		cached, _ = setTails.LoadOrStore(b, built)
+func indexSetsByTail(b *mtgmatcher.Backend) map[string][]string {
+	index := map[string][]string{}
+	for _, set := range b.Sets {
+		tail := mtgmatcher.Normalize(setTail(set.Name))
+		index[tail] = append(index[tail], set.Name)
 	}
-	index, ok := cached.(map[string][]string)
-	if !ok {
-		return ""
+	return index
+}
+
+func (r Rules) setNamedByTail(b *mtgmatcher.Backend, edition string) string {
+	index := r.setsByTail
+	if index == nil {
+		index = indexSetsByTail(b)
 	}
 
 	fields := strings.Fields(edition)
