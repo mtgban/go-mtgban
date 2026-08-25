@@ -489,6 +489,12 @@ func (csi *Sealed) processSealedSearch(ctx context.Context, channel chan<- respo
 		rows := doc.Find(`div[class="row product-search-row main-container"]`)
 		rows.Each(func(i int, s *goquery.Selection) {
 			productName := strings.TrimSpace(s.Find(`span[itemprop="name"]`).Text())
+			if csi.game == GameYuGiOh {
+				// The storefront leads its yugioh sealed listings with the
+				// game's own name, which the canonical names never carry.
+				productName = strings.TrimPrefix(productName, "Yu-Gi-Oh!")
+				productName = strings.TrimPrefix(strings.TrimSpace(productName), "- ")
+			}
 			if productName == "" || mtgmatcher.SealedIsLanguageVariant(productName) {
 				return
 			}
@@ -583,6 +589,8 @@ func (csi *Sealed) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameOnePiece
 	case GamePokemon:
 		info.Game = mtgban.GamePokemon
+	case GameYuGiOh:
+		info.Game = mtgban.GameYuGiOh
 	}
 	info.InventoryTimestamp = &csi.inventoryDate
 	info.BuylistTimestamp = &csi.buylistDate
