@@ -88,7 +88,7 @@ var sealedFiller = map[string]bool{
 	"disney": true, "lorcana": true, "riftbound": true, "league": true,
 	"legends": true, "tcg": true, "trading": true, "game": true,
 	"card": true, "cards": true, "one": true, "piece": true,
-	"bandai": true,
+	"bandai": true, "pokemon": true,
 }
 
 // sealedFold folds the marketplace vocabularies together - TCGplayer's
@@ -102,6 +102,8 @@ func sealedFold(tok string) string {
 		return "pack"
 	case "decks":
 		return "deck"
+	case "blisters":
+		return "blister"
 	case "versus":
 		return "vs"
 	case "volume":
@@ -134,6 +136,39 @@ func sealedTokens(name string) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// sealedOuterWords are the words a storefront names the box a set's packs come
+// in, on either side of the vocabulary the fold above runs together.
+var sealedOuterWords = map[string]string{
+	"box": "box", "boxes": "box",
+	"display": "display", "displays": "display",
+}
+
+// sealedOuterSaid reports which of those words a name says, before the fold
+// runs them together.
+func sealedOuterSaid(name string) (box, display bool) {
+	for _, tok := range sealedTokenRe.FindAllString(strings.ToLower(name), -1) {
+		switch sealedOuterWords[tok] {
+		case "box":
+			box = true
+		case "display":
+			display = true
+		}
+	}
+	return box, display
+}
+
+// sealedNamesDisplayOnly reports whether a name says Display and never Box.
+func sealedNamesDisplayOnly(name string) bool {
+	box, display := sealedOuterSaid(name)
+	return display && !box
+}
+
+// sealedNamesBoxOnly reports whether a name says Box and never Display.
+func sealedNamesBoxOnly(name string) bool {
+	box, display := sealedOuterSaid(name)
+	return box && !display
 }
 
 // sealedTokenCounts is sealedTokens without the deduplication: how many times
@@ -455,6 +490,7 @@ type sealedEntry struct {
 	listed   [][][]string
 	setWords map[string]bool
 	narrower map[string]bool
+	boxOnly  bool
 }
 
 // sealedIndex is the sealed namespace read the way the resolver reads it. It
@@ -494,6 +530,7 @@ func (b *Backend) buildSealedIndex() *sealedIndex {
 			account:  sealedTokenCounts(co.Name),
 			groups:   b.sealedQualifierGroups(co.Name),
 			setWords: setWords[co.SetCode],
+			boxOnly:  sealedNamesBoxOnly(co.Name),
 		}
 		for _, tok := range entry.tokens {
 			entry.said[tok] = true
@@ -549,6 +586,7 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 	counts := sealedQuantityTokens(name)
 	vendor := sealedTokens(name)
 	vendorCounts := sealedTokenCounts(name)
+	displayOnly := sealedNamesDisplayOnly(name)
 	said := map[string]bool{}
 	for _, tok := range vendor {
 		said[tok] = true
@@ -560,6 +598,9 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 	forgiven := map[string]bool{}
 	qualifiers := map[string]map[string]bool{}
 	for _, entry := range idx.entries {
+		if displayOnly && entry.boxOnly {
+			continue
+		}
 		if tokensEqual(entry.tokens, vendor) {
 			exact = append(exact, entry.uuid)
 			continue

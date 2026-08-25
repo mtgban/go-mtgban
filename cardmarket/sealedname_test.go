@@ -68,6 +68,10 @@ func TestSealedSaysSameWords(t *testing.T) {
 		{"Duelist Pack: Yusei Fudo Booster [1st Edition]", "Duelist Pack: Yusei Booster Pack [1st Edition]", false},
 		// How many the case holds is the vendor's own word too.
 		{"Millennium Pack Booster Box (18 Booster) [1st Edition]", "Millennium Pack - Booster Box [1st Edition]", false},
+		// A catalog pluralising the blister a storefront writes singular
+		// is one more spelling neither of them means anything by, and the
+		// resolver folds it too.
+		{"Stellar Crown 3 Pack Blister [Latias]", "Stellar Crown 3 Pack Blisters [Latias]", true},
 	} {
 		if got := sealedSaysSameWords(tt.a, tt.b); got != tt.want {
 			t.Errorf("sealedSaysSameWords(%q, %q) = %v, want %v", tt.a, tt.b, got, tt.want)

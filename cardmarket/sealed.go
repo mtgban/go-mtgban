@@ -517,7 +517,7 @@ var sealedFillerWords = map[string]bool{
 	"disney": true, "lorcana": true, "riftbound": true, "league": true,
 	"legends": true, "tcg": true, "trading": true, "game": true,
 	"card": true, "cards": true, "one": true, "piece": true,
-	"bandai": true,
+	"bandai": true, "pokemon": true,
 }
 
 // sealedWords reduces a name to the words that carry it, folding the
@@ -543,6 +543,8 @@ func sealedWords(name string) []string {
 			word = "pack"
 		case "decks":
 			word = "deck"
+		case "blisters":
+			word = "blister"
 		case "versus":
 			word = "vs"
 		case "volume":
