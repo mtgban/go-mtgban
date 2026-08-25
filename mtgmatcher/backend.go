@@ -321,6 +321,10 @@ type Backend struct {
 	// Slice with every possible sealed uuid
 	AllSealedUUIDs []string
 
+	// sealedIdx is the sealed namespace as ResolveSealed reads it, built by
+	// SortSealed once every product is filed.
+	sealedIdx *sealedIndex
+
 	// Non-sealed uuids bucketed by set code, each bucket sorted
 	SetUUIDs map[string][]string
 	// Sealed uuids bucketed by set code, each bucket sorted
@@ -389,6 +393,12 @@ func (b *Backend) IndexSets() {
 // and the rest resolve against. It copies the value, so later changes to b do
 // not reach the installed one.
 func SetGlobalDatastore(b *Backend) {
+	// The sealed index is read-only and built from the datastore alone, so a
+	// datastore whose loader never filed a sealed product through SortSealed
+	// gets one here rather than paying for one on every lookup.
+	if b.sealedIdx == nil {
+		b.sealedIdx = b.buildSealedIndex()
+	}
 	defaultBackend = *b
 }
 
