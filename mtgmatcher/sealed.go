@@ -47,7 +47,7 @@ var sealedContainerWords = map[string]bool{
 // Structure Decks)".
 func sealedQuantityTokens(name string) map[string]bool {
 	out := map[string]bool{}
-	lower := strings.ToLower(asciiReplacer.Replace(name))
+	lower := asciiReplacer.Replace(strings.ToLower(name))
 	for _, tok := range sealedTokenRe.FindAllString(lower, -1) {
 		if sealedMultiplierRe.MatchString(tok) {
 			out[tok] = true
@@ -84,9 +84,10 @@ func sealedTokens(name string) []string {
 	// The token pattern is plain ASCII, so an accented letter reads as a
 	// separator rather than a letter: "Pokémon" splits into "pok" and "mon"
 	// and matches nothing the catalog spells without the accent. Card names
-	// are folded the same way before they are looked up.
-	name = asciiReplacer.Replace(name)
-	for _, tok := range sealedTokenRe.FindAllString(strings.ToLower(name), -1) {
+	// are folded the same way before they are looked up. The fold knows only
+	// the lowercase letters, so it has to come after the lowercasing.
+	name = asciiReplacer.Replace(strings.ToLower(name))
+	for _, tok := range sealedTokenRe.FindAllString(name, -1) {
 		if sealedFiller[tok] {
 			continue
 		}
