@@ -229,6 +229,8 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	var resolved int
 	var productIDs []int
 	dropped := map[string]int{}
+	named := map[string][]int{}
+	names := map[int]string{}
 	for _, product := range productList {
 		if mkm.TargetProduct != "" && mkm.TargetProduct != product.Name {
 			continue
@@ -272,6 +274,7 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 				continue
 			}
 			productMap[product.IDProduct] = []string{uuid}
+			named[uuid] = append(named[uuid], product.IDProduct)
 			resolved++
 			found = true
 		}
@@ -280,7 +283,13 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 			dropped["unlinked id"]++
 			continue
 		}
+		names[product.IDProduct] = product.Name
 		productIDs = append(productIDs, product.IDProduct)
+	}
+	productIDs, subsumed := mkm.pruneSubsumed(names, productMap, named, productIDs)
+	if subsumed > 0 {
+		resolved -= subsumed
+		dropped["names a product built on another"] += subsumed
 	}
 	if resolved > 0 {
 		mkm.printf("Resolved %d more sealed products by name", resolved)
@@ -381,6 +390,51 @@ func (mkm *Sealed) resolveSealedName(name string) (string, error) {
 	// The refusal reported is the one the name as written earned: that is
 	// the name the catalog holds and the one a reader has to go looking for.
 	return "", err
+}
+
+// pruneSubsumed drops the products that reached a product another entry of the
+// catalog names in fewer words, and returns how many it dropped. Which names
+// those are is mtgmatcher.SealedNameSubsumed's question; this walks the
+// products that reached each one and asks it.
+//
+// A product the bridge or the print-run index answered for is asked about but
+// never dropped: an id is what the two catalogs agree on, and a name cannot
+// overrule it.
+func (mkm *Sealed) pruneSubsumed(names map[int]string, productMap map[int][]string, named map[string][]int, productIDs []int) ([]int, int) {
+	var pruned int
+	for uuid, ids := range named {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		var beside []string
+		for id, uuids := range productMap {
+			// A uuid the bridge answered for can be held by a product
+			// this pass never saw, and an unknown name says nothing
+			// about the ones it stands beside.
+			name, known := names[id]
+			if known && len(uuids) > 0 && uuids[0] == uuid {
+				beside = append(beside, name)
+			}
+		}
+		for _, id := range ids {
+			if !mtgmatcher.SealedNameSubsumed(names[id], beside, co.Edition) {
+				continue
+			}
+			mkm.printf("%q (%d): names a product built on %s", names[id], id, uuid)
+			delete(productMap, id)
+			pruned++
+		}
+	}
+	if pruned == 0 {
+		return productIDs, 0
+	}
+	// The worker pool walks the ids rather than the map, so a product
+	// dropped from one and left in the other would still be priced.
+	return slices.DeleteFunc(productIDs, func(id int) bool {
+		_, kept := productMap[id]
+		return !kept
+	}), pruned
 }
 
 // asiaRegionMark is how Cardmarket says a product is the Asian market's

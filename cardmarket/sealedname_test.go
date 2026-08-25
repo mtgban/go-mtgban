@@ -1,6 +1,7 @@
 package cardmarket
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -297,4 +298,76 @@ func TestResolveSealedNameRenamed(t *testing.T) {
 			t.Errorf("resolveSealedName(%q) = %q (%v), want %q", tt.name, got, err, tt.want)
 		}
 	}
+}
+
+// TestPruneSubsumed pins that two Cardmarket products do not price one
+// datastore product. The resolver answers one name at a time, so the catalog's
+// "(18 Boosters)" half box and its plain box both reach the plain box, and the
+// half box's price then lands on the whole one. The name that says the product
+// in the fewest words keeps it, which is what leaves the product priced.
+func TestPruneSubsumed(t *testing.T) {
+	mtgmatcher.SetGlobalDatastore(sealedPruneBackend())
+
+	for _, tt := range []struct {
+		desc  string
+		names map[int]string
+		want  []int
+	}{
+		{
+			"the longer of two names reaching one product loses it",
+			map[int]string{1: "Booster Box", 2: "Booster Box Bundle"},
+			[]int{1},
+		},
+		{
+			"a name alone is the product's only spelling and keeps it",
+			map[int]string{2: "Booster Box Bundle"},
+			[]int{2},
+		},
+		{
+			"two spellings of the same words are one product said twice",
+			map[int]string{1: "Booster Box", 3: "Booster Booster Box"},
+			[]int{1, 3},
+		},
+		{
+			"the set's own name is the shelf, not a word of its own",
+			map[int]string{1: "Booster Box", 4: "Origins Booster Box"},
+			[]int{1, 4},
+		},
+	} {
+		productMap := map[int][]string{}
+		named := map[string][]int{}
+		for id := range tt.names {
+			productMap[id] = []string{"ogn-box"}
+			named["ogn-box"] = append(named["ogn-box"], id)
+		}
+		mkm := &Sealed{}
+		productIDs, _ := mkm.pruneSubsumed(tt.names, productMap, named,
+			slices.Sorted(maps.Keys(tt.names)))
+		got := slices.Sorted(maps.Keys(productMap))
+		if !slices.Equal(got, tt.want) {
+			t.Errorf("%s: kept %v, want %v", tt.desc, got, tt.want)
+		}
+		// The worker pool walks the ids, so one left there and dropped
+		// from the map would be priced all the same.
+		if !slices.Equal(productIDs, tt.want) {
+			t.Errorf("%s: left %v to be priced, want %v", tt.desc, productIDs, tt.want)
+		}
+	}
+}
+
+// sealedPruneBackend is one product under a set whose name a storefront may
+// prepend to it.
+func sealedPruneBackend() *mtgmatcher.Backend {
+	backend := &mtgmatcher.Backend{
+		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*mtgmatcher.Set{
+			"OGN": {Name: "Origins", Code: "OGN"},
+		},
+	}
+	backend.AddSealed("ogn-box", "Booster Box", "OGN", "", 0)
+	backend.SortSealed()
+	backend.IndexSets()
+	return backend
 }
