@@ -73,6 +73,25 @@ func TestAdjustEditionAliases(t *testing.T) {
 	}
 }
 
+// TestEditionAliasesNameRealSets holds the table to the datastore it
+// rewrites onto: every target has to name a set, or the alias hands the
+// matcher an edition nothing is filed under and the input ends up worse
+// off than the spelling it arrived with. The keys are held to the mirror
+// image - a key naming a set of its own is never reached, since
+// AdjustEdition asks the backend before the table.
+func TestEditionAliasesNameRealSets(t *testing.T) {
+	b := loadBackend(t)
+
+	for name, set := range editionAliases {
+		if _, found := b.NormalizedSets[mtgmatcher.Normalize(set)]; !found {
+			t.Errorf("%q maps to %q, which names no set", name, set)
+		}
+		if _, found := b.NormalizedSets[mtgmatcher.Normalize(name)]; found {
+			t.Errorf("%q is a set of its own, so the alias never answers", name)
+		}
+	}
+}
+
 // TestEditionAliasesAreDistinct pins that no two spellings in the table
 // normalize to one key, which would leave whichever the map iterated last
 // silently deciding for both.
