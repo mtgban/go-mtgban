@@ -840,6 +840,70 @@ func TestResolveSealedOuterBox(t *testing.T) {
 	}
 }
 
+// TestSealedNameSubsumed pins the question a scraper asks of a catalog that
+// reached one product under several of its own names.
+func TestSealedNameSubsumed(t *testing.T) {
+	for _, tt := range []struct {
+		desc   string
+		name   string
+		beside []string
+		shelf  string
+		want   bool
+	}{
+		{
+			"the bundle of the boxes says the box and one word more",
+			"Marnie Premium Tournament Collection Box Bundle",
+			[]string{"Marnie Premium Tournament Collection Box"},
+			"Miscellaneous Products", true,
+		},
+		{
+			"the box itself says nothing more than any of them",
+			"Marnie Premium Tournament Collection Box",
+			[]string{"Marnie Premium Tournament Collection Box Bundle"},
+			"Miscellaneous Products", false,
+		},
+		{
+			"two names that merely differ say nothing about each other",
+			"Promotion Pack 2022 Vol.1",
+			[]string{"Promotion Pack 2022 Vol.2"},
+			"One Piece Promotion Cards", false,
+		},
+		{
+			"two spellings of the same words are one product said twice",
+			"Sun & Moon Booster Booster Box",
+			[]string{"Sun & Moon Booster Box"},
+			"Sun & Moon", false,
+		},
+		{
+			"the shelf a storefront prepends is not a word of its own",
+			"Black & White Victini Box",
+			[]string{"Victini Box"},
+			"Black & White", false,
+		},
+		{
+			"a name standing alone stands beside only itself",
+			"Marnie Premium Tournament Collection Box Bundle",
+			[]string{"Marnie Premium Tournament Collection Box Bundle"},
+			"Miscellaneous Products", false,
+		},
+		{
+			"a name left saying nothing says nothing about this one",
+			"Origins Booster Box", []string{"The"}, "Origins", false,
+		},
+		{
+			"a set whose name is the product's is still only the shelf",
+			"Structure Deck: Marik Card Pack",
+			[]string{"Structure Deck: Marik"},
+			"Structure Deck: Marik", true,
+		},
+	} {
+		if got := SealedNameSubsumed(tt.name, tt.beside, tt.shelf); got != tt.want {
+			t.Errorf("%s: SealedNameSubsumed(%q, %v, %q) = %v, want %v",
+				tt.desc, tt.name, tt.beside, tt.shelf, got, tt.want)
+		}
+	}
+}
+
 // TestSealedTokensDropGameName pins that a game's own name carries no product
 // identity, the way every other game's already does. Pokemon storefronts
 // prepend it to half the catalog - "Pokémon TCG: Battle Academy" is the
