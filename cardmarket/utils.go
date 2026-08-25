@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -127,6 +128,111 @@ var fabPrintRuns = []struct{ suffix, run string }{
 // names and the set name left over. The datastore's sets carry no run - it
 // crosses the run with the treatment and gives each crossing its own
 // printing - so the suffix has to come off before the set can be looked up.
+// fabPromoPrefixes maps the expansions Cardmarket files promos under onto the
+// prefix our one promo set numbers them by. Cardmarket sells the promos as
+// seven programmes and the datastore carries them as a single set, where the
+// programme survives as the collector number's prefix: "012" in FAB Promos is
+// FAB012 in ours. The name alone cannot say which, since the same card is
+// handed out by more than one programme.
+var fabPromoPrefixes = map[string]string{
+	"FAB Promos":      "FAB",
+	"Hero Promos":     "HER",
+	"Judge Promos":    "JDG",
+	"LGS Promos":      "LGS",
+	"LSS Promos":      "LSS",
+	"Tournament Pack": "TNP",
+	"XXX Promos":      "XXX",
+}
+
+// fabPromoSet is the one set the datastore files every promo programme in.
+const fabPromoSet = "Flesh and Blood: Promo Cards"
+
+// fabDeckRe matches the way Cardmarket names a deck product's expansion,
+// "<set> - <hero> Blitz Deck" and "<set> - <hero> Hero Deck", which is the
+// same information the datastore writes the other way round.
+var fabDeckRe = regexp.MustCompile(`^(.+?) - (.+?) (Blitz|Hero) Deck$`)
+
+// fabHistoryPackRe matches the History Pack decks, which Cardmarket numbers
+// the way the datastore does but names "History" where the datastore names
+// "Historic", and orders the other way round again.
+var fabHistoryPackRe = regexp.MustCompile(`^History Pack (\d+) - (.+?) Blitz Deck$`)
+
+// fabArchivePackRe matches the Archive packs, whose class is all the datastore
+// keeps of the name.
+var fabArchivePackRe = regexp.MustCompile(`^Archive Mastery Pack - (.+)$`)
+
+// fabArmoryRe matches the Armory decks, which Cardmarket files under the line
+// that issued them where the datastore names the hero alone - except for the
+// Legends line, which the datastore keeps in the name.
+var fabArmoryRe = regexp.MustCompile(`^Armory Deck (Origins|Legends): (.+?)(?:,.*)?$`)
+
+// fabWelcomeRe matches the welcome decks, named the other way round.
+var fabWelcomeRe = regexp.MustCompile(`^(.+) Welcome Deck$`)
+
+// fabNumberDigits splits a collector number into the letters it opens on and
+// the digits that follow, with the padding zeros dropped.
+var fabNumberDigits = regexp.MustCompile(`^([A-Za-z]*)0*(\d+)(.*)$`)
+
+// sameFabNumber reports whether two collector numbers name the same printing,
+// the padding aside. The datastore writes four digits where the catalog writes
+// three for the promos it renumbered late ("HER0160" against "160"), and the
+// two are the same card - where FAB299 and LGS313 are not, which is the reason
+// this compares at all rather than trusting the name.
+func sameFabNumber(a, b string) bool {
+	if strings.EqualFold(a, b) {
+		return true
+	}
+	ma := fabNumberDigits.FindStringSubmatch(a)
+	mb := fabNumberDigits.FindStringSubmatch(b)
+	if ma == nil || mb == nil {
+		return false
+	}
+	return strings.EqualFold(ma[1], mb[1]) && ma[2] == mb[2] && strings.EqualFold(ma[3], mb[3])
+}
+
+// fabEdition names the set of ours a Cardmarket expansion is, and the prefix
+// its collector numbers need to be read with.
+//
+// The two catalogs agree on what a product is and disagree on how to say it:
+// Cardmarket names a deck by its set and hero and the datastore by hero and
+// set, it splits the promos into programmes the datastore keeps as number
+// prefixes in one set, and it writes History where the datastore writes
+// Historic. None of that is the matcher's business - it is what this
+// marketplace calls things - so the translation lives here, and what reaches
+// the matcher is a set name it knows.
+func fabEdition(expansion string) (setName, numberPrefix string) {
+	if prefix, found := fabPromoPrefixes[expansion]; found {
+		return fabPromoSet, prefix
+	}
+	if m := fabHistoryPackRe.FindStringSubmatch(expansion); m != nil {
+		return "Historic Pack " + m[1] + " Blitz Deck: " + m[2], ""
+	}
+	if m := fabArchivePackRe.FindStringSubmatch(expansion); m != nil {
+		return "Mastery Pack " + m[1], ""
+	}
+	if m := fabArmoryRe.FindStringSubmatch(expansion); m != nil {
+		if m[1] == "Legends" {
+			return "Armory Deck: Legends " + m[2], ""
+		}
+		return "Armory Deck: " + m[2], ""
+	}
+	if m := fabWelcomeRe.FindStringSubmatch(expansion); m != nil {
+		return "Welcome Deck: " + m[1], ""
+	}
+	if m := fabDeckRe.FindStringSubmatch(expansion); m != nil {
+		// A hero deck is named for its hero alone, and Cardmarket writes
+		// the epithet the card carries beside it ("Bravo, Showstopper");
+		// a blitz deck keeps the set it was sold with.
+		if m[3] == "Hero" {
+			hero, _, _ := strings.Cut(m[2], ",")
+			hero, _, _ = strings.Cut(hero, " ")
+			return "Hero Deck: " + hero, ""
+		}
+		return "Blitz Deck: " + m[1] + " - " + m[2], ""
+	}
+	return expansion, ""
+}
+
 func fabPrintRun(expansion string) (run, setName string) {
 	for _, printRun := range fabPrintRuns {
 		trimmed := strings.TrimSuffix(expansion, printRun.suffix)
