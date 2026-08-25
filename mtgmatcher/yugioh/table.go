@@ -91,6 +91,15 @@ var editionAliases = map[string]string{
 	"McDonald's Promo Pack 1":          "McDonald's Promo",
 	"World Championship 2006":          "World Championship 2006: Ultimate Masters",
 
+	// The token series a storefront numbers by their own volume, which the
+	// catalog files under the set the numbering belongs to. Volume 5 has no
+	// entry: its TKN5 numbers are inserts spread across a dozen booster
+	// sets, so no one set name would answer for them.
+	"Token Promos 1": "Yu-Gi-Oh! Tokens",
+	"Token Promos 2": `Toys "R" Us Throwdown Promo`,
+	"Token Promos 3": "Yu-Gi-Oh! Tokens",
+	"Token Promos 4": "Yu-Gi-Oh! Tokens",
+
 	// The video games the storefronts name by the game alone.
 	"Destiny Board Traveler":        "Destiny Board Traveler Promo",
 	"GX Duel Academy":               "GX Duel Academy GBA Promo",

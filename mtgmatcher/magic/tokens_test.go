@@ -39,3 +39,29 @@ func TestIsToken(t *testing.T) {
 	}
 	var _ mtgmatcher.GameRules = Rules{}
 }
+
+// TestCustomTokenSetUnsupported pins the gate on a listing filed under a
+// token set of the storefront's own invention. It used to live in Match,
+// where it answered for every game, and Yu-Gi-Oh's own set really is named
+// "Yu-Gi-Oh! Tokens"; asking it here leaves that game to answer for itself
+// while Magic keeps refusing exactly what it refused before.
+func TestCustomTokenSetUnsupported(t *testing.T) {
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want bool
+	}{
+		{"a token edition", mtgmatcher.InputCard{Name: "Angel", Edition: "Dominaria United Tokens"}, true},
+		{"a token wording", mtgmatcher.InputCard{Name: "Angel", Edition: "Dominaria United", Variation: "Token"}, true},
+		{"the league tokens are a set Magic printed", mtgmatcher.InputCard{Name: "Angel", Edition: "League Tokens 2012"}, false},
+		{"an ordinary listing", mtgmatcher.InputCard{Name: "Lightning Bolt", Edition: "Limited Edition Beta"}, false},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			if got := (Rules{}).IsSpecificUnsupported(testBackend, &in); got != tt.want {
+				t.Errorf("IsSpecificUnsupported(%q, %q) = %v, want %v",
+					tt.in.Edition, tt.in.Variation, got, tt.want)
+			}
+		})
+	}
+}

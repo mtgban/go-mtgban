@@ -21,9 +21,22 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 }
 
 // IsSpecificUnsupported reports the named cards unsupported in one edition
-// rather than as a class. See mtgmatcher.GameRules.
+// rather than as a class, and the listings filed under a token set Magic has
+// no printing for. See mtgmatcher.GameRules.
 func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	return inCard.IsSpecificUnsupported()
+	return namesCustomTokenSet(inCard) || inCard.IsSpecificUnsupported()
+}
+
+// namesCustomTokenSet reports a listing whose edition or wording says token.
+// Magic files no printing under a set of that name - the storefronts invent
+// them - so the wording names nothing this datastore can honour. The League
+// tokens are the exception, being a set Magic really printed.
+//
+// Contains cannot ask this, because it drops "token" as a filler word.
+func namesCustomTokenSet(inCard *mtgmatcher.InputCard) bool {
+	return (strings.Contains(strings.ToLower(inCard.Edition), "token") ||
+		strings.Contains(strings.ToLower(inCard.Variation), "token")) &&
+		!inCard.Contains("League")
 }
 
 // ravnicaWeekend resolves a Ravnica Weekend printing to its edition and

@@ -262,8 +262,8 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		// Yu-Gi-Oh's Version is the rarity, which is the game's whole
 		// identity beside the number, and the matcher narrows on nothing
 		// else. The one wording to leave behind is the literal "Token": it
-		// names the game's token products, and the shared token guard reads
-		// that word out of the variation and refuses the listing outright.
+		// says the listing is a token rather than naming any rarity, so
+		// there is nothing in it for the matcher to narrow on.
 		if bp.Version == "Token" {
 			return number
 		}

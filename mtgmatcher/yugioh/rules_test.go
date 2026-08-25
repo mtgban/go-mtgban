@@ -168,3 +168,65 @@ func TestTokenNameHeldToTheListing(t *testing.T) {
 		})
 	}
 }
+
+// TestTokenSetCarries pins that the catalog's own token set is reachable at
+// last. The shared token gate read the word "token" out of an edition and
+// refused the listing, and this game's set is named "Yu-Gi-Oh! Tokens", so
+// every printing in it was unreachable by its own name. Pinned here are the
+// set under both word orders, the volume names the storefronts number the
+// series by, and that a volume's numbering is not answered by another set's
+// same number.
+func TestTokenSetCarries(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+		err  string
+	}{
+		{
+			desc: "the catalog's own word order, under the set's own name",
+			in:   mtgmatcher.InputCard{Name: "Token: Sheep", Edition: "Yu-Gi-Oh! Tokens", Variation: "TKN1-EN001"},
+			want: "tkn1-en001_81303_unl",
+		},
+		{
+			desc: "and the storefront's word order",
+			in:   mtgmatcher.InputCard{Name: "Sheep Token", Edition: "Yu-Gi-Oh! Tokens", Variation: "TKN1-EN001"},
+			want: "tkn1-en001_81303_unl",
+		},
+		{
+			desc: "a storefront volume name reaches the set it numbers",
+			in:   mtgmatcher.InputCard{Name: "Ojama Token", Edition: "Token Promos 4", Variation: "008"},
+			want: "tkn4-en008_81323_unl",
+		},
+		{
+			desc: "and so does the volume with no printing of its own",
+			in:   mtgmatcher.InputCard{Name: "Regenerating Rose Token", Edition: "Token Promos 3", Variation: "004"},
+			want: "tkn3-en004_81310_unl",
+		},
+		{
+			desc: "a volume's own numbering beats another set's same number",
+			in:   mtgmatcher.InputCard{Name: "Sheep Token", Edition: "Token Promos 1", Variation: "004"},
+			err:  mtgmatcher.ErrCardWrongVariant.Error(),
+		},
+		{
+			desc: "and a flip the volume's set does not hold is not taken",
+			in:   mtgmatcher.InputCard{Name: "Lamb Token", Edition: "Token Promos 3", Variation: "008"},
+			err:  mtgmatcher.ErrCardDoesNotExist.Error(),
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			gotErr := ""
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if id != tt.want || gotErr != tt.err {
+				t.Errorf("Match(%q, %q, %q) = (%q, %q), want (%q, %q)",
+					tt.in.Name, tt.in.Edition, tt.in.Variation, id, gotErr, tt.want, tt.err)
+			}
+		})
+	}
+}
