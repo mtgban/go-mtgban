@@ -26,6 +26,10 @@ type Starcitygames struct {
 	inventory mtgban.InventoryRecord
 	buylist   mtgban.BuylistRecord
 
+	// buckets holds the listings a second stock record has already been seen
+	// for, so the pair folds together in either stream order.
+	buckets map[string]struct{}
+
 	setIDs map[string]int
 	client *SCGClient
 	game   int
@@ -34,11 +38,19 @@ type Starcitygames struct {
 // NewScraper returns a singles scraper for one game, using the given API key.
 func NewScraper(game int, apiKey string) *Starcitygames {
 	scg := Starcitygames{}
-	scg.inventory = mtgban.InventoryRecord{}
-	scg.buylist = mtgban.BuylistRecord{}
+	scg.reset()
 	scg.client = NewSCGClient(apiKey)
 	scg.game = game
 	return &scg
+}
+
+// reset drops everything a run has collected, for a stream that broke and has
+// to be read again from the top. What a listing's records have already been
+// seen goes with the records themselves: they are all coming again.
+func (scg *Starcitygames) reset() {
+	scg.inventory = mtgban.InventoryRecord{}
+	scg.buylist = mtgban.BuylistRecord{}
+	scg.buckets = map[string]struct{}{}
 }
 
 func (scg *Starcitygames) printf(format string, a ...any) {
@@ -115,6 +127,22 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 
 	ignore := strings.Contains(p.Set, "World Championship") || strings.Contains(p.Name, "Token")
 
+	// A second stock bucket of a listing the catalog also carries plainly.
+	// Star City Games splits some Armory Deck singles across two product
+	// records - "SGL-FAB-AGB-014-ENN" beside "SGL-FAB-AGB-014_CC-ENN" - which
+	// agree on the card, the set, the number, the treatment and the price of
+	// every grade they share, and differ only in how many copies sit in each.
+	// They are one listing's stock written twice over, so the pair's copies
+	// are added together rather than reported as the duplicate they would
+	// otherwise look like, which discarded them.
+	//
+	// Which of the two comes down the stream first is not the catalog's to
+	// promise, and it does not hold: most Armory Deck: Pleiades listings lead
+	// with the marked record. So it is the one that arrives second that is
+	// folded in, whether or not it wears the marker - the first is the one
+	// there is nothing yet to fold it into.
+	second := scg.secondStock(p.SKU)
+
 	for _, v := range p.Variants {
 		condition, err := catalogCondition(v.Condition)
 		if err != nil {
@@ -138,7 +166,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 			if condition == "NM" {
 				entry.CustomFields = customFields
 			}
-			if err := scg.inventory.AddStrict(cardID, entry); err != nil && !ignore {
+			if err := scg.addInventoryStock(second, cardID, entry); err != nil && !ignore {
 				scg.printf("%s", err.Error())
 				scg.printf("-> %s", link)
 			}
@@ -164,7 +192,7 @@ func (scg *Starcitygames) processProduct(p CatalogProduct) {
 				InstanceID:   v.SKU,
 				CustomFields: blFields,
 			}
-			if err := scg.buylist.Add(cardID, entry); err != nil && !ignore {
+			if err := scg.addBuylistStock(second, cardID, entry); err != nil && !ignore {
 				scg.printf("%s", err.Error())
 			}
 		}
@@ -184,8 +212,7 @@ func (scg *Starcitygames) loadCatalog(ctx context.Context) error {
 	count := 0
 	err = scg.client.StreamCatalog(ctx, func() {
 		scg.printf("Catalog stream broke after %d products, downloading it again", count)
-		scg.inventory = mtgban.InventoryRecord{}
-		scg.buylist = mtgban.BuylistRecord{}
+		scg.reset()
 		count = 0
 	}, func(p CatalogProduct) error {
 		scg.processProduct(p)
@@ -212,6 +239,39 @@ func (scg *Starcitygames) Load(ctx context.Context) error {
 		return fmt.Errorf("catalog load failed: %w", err)
 	}
 	return nil
+}
+
+// secondStock reports whether this sku is the second stock bucket of a
+// listing already seen this run: by the marker it wears, or by its plain
+// twin arriving after the marked record registered the pair. Which of the
+// two the catalog streams first is not its to promise, and it does not
+// hold, so whichever arrives second is the one that folds.
+func (scg *Starcitygames) secondStock(sku string) bool {
+	key := bucketKey(sku)
+	if secondBucket(sku) {
+		scg.buckets[key] = struct{}{}
+		return true
+	}
+	_, paired := scg.buckets[key]
+	return paired
+}
+
+// addInventoryStock files a variant's retail record with the strictness the
+// bucket decision picked: a second bucket merges into the first rather than
+// reading as the duplicate it would otherwise be.
+func (scg *Starcitygames) addInventoryStock(second bool, cardID string, entry *mtgban.InventoryEntry) error {
+	if second {
+		return scg.inventory.Add(cardID, entry)
+	}
+	return scg.inventory.AddStrict(cardID, entry)
+}
+
+// addBuylistStock is addInventoryStock for the buylist side of the record.
+func (scg *Starcitygames) addBuylistStock(second bool, cardID string, entry *mtgban.BuylistEntry) error {
+	if second {
+		return scg.buylist.AddRelaxed(cardID, entry)
+	}
+	return scg.buylist.Add(cardID, entry)
 }
 
 // Inventory returns what Load collected. See mtgban.Seller.

@@ -461,6 +461,29 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	})
 }
 
+// secondBucketMarker is what Star City Games appends to a sku's number segment
+// to give a listing a second product record of its own.
+const secondBucketMarker = "_CC"
+
+// secondBucket reports whether a sku is the second record of a listing the
+// catalog also carries plainly.
+func secondBucket(sku string) bool {
+	return strings.HasSuffix(skuNumber(sku), secondBucketMarker)
+}
+
+// bucketKey names the listing a record belongs to: the sku with the marker
+// taken off its number segment, which both records of a pair answer with and
+// no other sku does. It is what lets the two be folded together whichever of
+// them the catalog streams first.
+func bucketKey(sku string) string {
+	fields := strings.Split(sku, "-")
+	if len(fields) < 4 {
+		return sku
+	}
+	fields[3] = strings.TrimSuffix(fields[3], secondBucketMarker)
+	return strings.Join(fields, "-")
+}
+
 // lorcanaNumber returns the collector number to match a Lorcana product by.
 //
 // The sku's number segment is the more specific of the two numbers a product
