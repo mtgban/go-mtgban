@@ -358,12 +358,38 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	// The treatment a token sku wraps its set code in promises a finish the
+	// sheet was never sold in, and stripping the wrapping to reach the sheet
+	// drops that promise: the row would land on the plain printing and be
+	// priced as it, right beside the plain row that belongs there
+	printing := tokenPrinting(edition, number)
+	if isFoil && printing != nil &&
+		!printing.HasFinish("foil") && !printing.HasFinish("etched") {
+		return nil, mtgmatcher.ErrUnsupported
+	}
+
 	return &mtgmatcher.InputCard{
 		Name:      card.Name,
 		Edition:   edition,
 		Variation: variation,
 		Foil:      isFoil,
 	}, nil
+}
+
+// tokenPrinting answers the printing a token sheet files at a number, asking
+// the sheet rather than the name because a token only carries the Token
+// suffix when a real card answers to the same name.
+func tokenPrinting(code, number string) *mtgmatcher.Card {
+	set, err := mtgmatcher.GetSet(code)
+	if err != nil || set.Type != "token" {
+		return nil
+	}
+	for i, printing := range set.Cards {
+		if printing.Number == number {
+			return &set.Cards[i]
+		}
+	}
+	return nil
 }
 
 func preprocessGraded(title string) (*mtgmatcher.InputCard, error) {
