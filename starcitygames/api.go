@@ -19,9 +19,12 @@ const (
 
 // SCGClient reads SCG's catalog API.
 type SCGClient struct {
-	client     *http.Client
-	apiKey     string
+	client *http.Client
+	apiKey string
+	// The two endpoints a run reads, held rather than referenced so a test
+	// can point the client at a server it controls instead of the live one.
 	catalogURL string
+	setsURL    string
 }
 
 // NewSCGClient returns a client using the given API key.
@@ -34,6 +37,7 @@ func NewSCGClient(apiKey string) *SCGClient {
 	scg.client = cli.StandardClient()
 	scg.apiKey = apiKey
 	scg.catalogURL = scgCatalogURL
+	scg.setsURL = scgSetsURL
 	return &scg
 }
 
