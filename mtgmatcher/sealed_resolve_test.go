@@ -560,6 +560,28 @@ func TestResolveSealedWithHint(t *testing.T) {
 			want:   "ven-elite-1e",
 		},
 		{
+			// Both runs are bracketed "Edition", so the word speaks for
+			// neither and only "1st" is left to choose.
+			desc:   "and under the catalog's own spelling, word for word",
+			vendor: "Vendetta Elite Box",
+			hint:   "Vendetta - 1st Edition",
+			want:   "ven-elite-1e",
+		},
+		{
+			desc:   "likewise the run the catalog spells out in full",
+			vendor: "Vendetta Elite Box",
+			hint:   "Vendetta - Unlimited Edition",
+			want:   "ven-elite-unl",
+		},
+		{
+			// "Edition" alone is every run's word, and a shelf saying only
+			// what both candidates carry has named neither.
+			desc:   "a shelf naming the word both runs share settles nothing",
+			vendor: "Vendetta Elite Box",
+			hint:   "Vendetta - Limited Edition",
+			want:   "",
+		},
+		{
 			desc:   "a shelf that names no run settles nothing",
 			vendor: "Vendetta Elite Box",
 			hint:   "Vendetta",
