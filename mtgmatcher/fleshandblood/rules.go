@@ -88,6 +88,29 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if numberedAs(b, inCard.Name, number) {
 		return
 	}
+	// A face of a fused card outranks a treatment label: the plain
+	// printing of a hero sold face-by-face IS the fused card, and the
+	// datastore keeps the label's own printing beside it at the same
+	// number. "Enigma" at MST026 is the Slither // Enigma hero; the
+	// standalone MST026 row is the cold-foil "Enigma (Marvel)", which
+	// stays reachable through the m the storefront writes on its number
+	// or the label spelled in the name. Two fused claimants cannot say
+	// which card is meant, so they refuse rather than guess.
+	// A number wearing a letter tail is not a plain face number: the
+	// storefront writes the tail to demand the labeled variant, and that
+	// demand must keep its say.
+	if qualifierWord(inCard.Name) == "" && !strings.ContainsAny(number[len(number)-1:], letters) {
+		fused, pairs := fusedFaceAt(b, inCard.Name, number)
+		if len(fused) > 1 {
+			return
+		}
+		if len(fused) == 1 {
+			inCard.Name = fused[0]
+			inCard.Variation = strings.Replace(inCard.Variation, number, pairs[0], 1)
+			return
+		}
+	}
+
 	base := qualifierRe.ReplaceAllString(inCard.Name, "")
 	var match string
 	for _, qualifier := range qualifiers {
@@ -172,9 +195,19 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		}
 		match, matchNorm = co.Name, norm
 	}
-	if match != "" {
-		inCard.Name = match
+	if match == "" {
+		return
 	}
+	// The same face-of-a-fused-card rule that gates the qualifier respell
+	// gates the prefix extension: a bare face name must not grow into the
+	// marvel label's own printing while fused cards claim the face at this
+	// number.
+	if strings.HasSuffix(match, "(Marvel)") && number != "" {
+		if names, _ := fusedFaceAt(b, inCard.Name, number); len(names) > 0 {
+			return
+		}
+	}
+	inCard.Name = match
 }
 
 // fusedNamedBy answers the fused names spelled from the given name's faces,
@@ -232,6 +265,38 @@ func slicesContains(names []string, name string) bool {
 		}
 	}
 	return false
+}
+
+// fusedFaceAt answers the fused cards one of whose faces is the given name
+// at the given collector number, by scanning the printings once: a face name
+// has no index of its own, and the fused pair cannot be reconstructed from
+// one face the way fusedNamedBy rebuilds it from both.
+func fusedFaceAt(b *mtgmatcher.Backend, name, number string) (names, numbers []string) {
+	norm := mtgmatcher.Normalize(name)
+	for _, co := range b.UUIDs {
+		if co.Sealed || !strings.Contains(co.Name, "//") || !strings.Contains(co.Number, "//") {
+			continue
+		}
+		faces := strings.Split(co.Name, "//")
+		pair := strings.Split(co.Number, "//")
+		if len(faces) != len(pair) {
+			continue
+		}
+		for i := range faces {
+			if mtgmatcher.Normalize(strings.TrimSpace(faces[i])) != norm {
+				continue
+			}
+			if !numberMatches(number, strings.TrimSpace(pair[i])) {
+				continue
+			}
+			if !slicesContains(names, co.Name) {
+				names = append(names, co.Name)
+				numbers = append(numbers, co.Number)
+			}
+			break
+		}
+	}
+	return names, numbers
 }
 
 // adjustFusedName adopts the datastore's spelling of a fused card whose two
