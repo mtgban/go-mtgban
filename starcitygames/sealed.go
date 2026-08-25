@@ -3,7 +3,9 @@ package starcitygames
 import (
 	"context"
 	"fmt"
+	"maps"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -24,8 +26,33 @@ type Sealed struct {
 
 	productMap map[string]string
 	setIDs     map[string]int
+	dropped    map[string]int
 	client     *SCGClient
 	game       int
+}
+
+// pricedProducts counts the products a run came away with a price for, on
+// either side of the counter. Star City Games quotes a buy price on plenty of
+// sealed product it holds no stock of, so counting the shelf alone would move
+// this number with stock rather than with coverage - the very reading the drop
+// tally beside it exists to prevent.
+func (scg *Sealed) pricedProducts() int {
+	priced := map[string]struct{}{}
+	for uuid := range scg.inventory {
+		priced[uuid] = struct{}{}
+	}
+	for uuid := range scg.buylist {
+		priced[uuid] = struct{}{}
+	}
+	return len(priced)
+}
+
+// drop records why a catalog product carried no price into the records.
+func (scg *Sealed) drop(reason string) {
+	if scg.dropped == nil {
+		scg.dropped = map[string]int{}
+	}
+	scg.dropped[reason]++
 }
 
 // NewScraperSealed returns a sealed scraper for one game, using the given API
@@ -119,16 +146,28 @@ func (scg *Sealed) processProduct(p CatalogProduct) {
 	uuid, found := scg.productMap[p.SKU]
 	if !found {
 		if scg.game == GameMagic {
+			scg.drop("sku the datastore does not carry")
 			return
 		}
 		if p.Language != "" && p.Language != "English" {
+			scg.drop("not sold in English")
 			return
 		}
 		if mtgmatcher.SealedIsLanguageVariant(p.Name) {
+			scg.drop("language variant")
 			return
 		}
-		resolved, err := mtgmatcher.ResolveSealed(sealedProductName(p))
+		// The name resolver is the whole reason this scraper prices a
+		// fraction of the sealed catalog for the games with no sku in the
+		// datastore, so say which name and which refusal, the way the
+		// singles path says which card it could not place. Magic is exempt:
+		// it is keyed by sku and never asks the resolver, so its whole
+		// unlisted catalog would be named here for nothing.
+		name := sealedProductName(p)
+		resolved, err := mtgmatcher.ResolveSealed(name)
 		if err != nil {
+			scg.printf("%q (sku=%s): %s", name, p.SKU, err)
+			scg.drop(err.Error())
 			return
 		}
 		uuid = resolved
@@ -196,6 +235,7 @@ func (scg *Sealed) Load(ctx context.Context) error {
 		scg.printf("Catalog stream broke after %d products, downloading it again", count)
 		scg.inventory = mtgban.InventoryRecord{}
 		scg.buylist = mtgban.BuylistRecord{}
+		scg.dropped = nil
 		count = 0
 	}, func(p CatalogProduct) error {
 		scg.processProduct(p)
@@ -209,6 +249,13 @@ func (scg *Sealed) Load(ctx context.Context) error {
 		return fmt.Errorf("catalog load failed: %w", err)
 	}
 	scg.printf("Processed %d products total", count)
+	// What a sealed run priced is only half of what it saw, and the half it
+	// turned down used to leave no trace at all: a game whose coverage falls
+	// looked exactly like a game with nothing more to sell.
+	for _, reason := range slices.Sorted(maps.Keys(scg.dropped)) {
+		scg.printf("Dropped %d products: %s", scg.dropped[reason], reason)
+	}
+	scg.printf("Priced %d sealed products", scg.pricedProducts())
 
 	now := time.Now()
 	scg.inventoryDate = now
