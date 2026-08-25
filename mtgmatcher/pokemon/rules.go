@@ -611,13 +611,19 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 	// only answers when nothing else does.
 	numbers := extractNumbers(inCard.Variation)
 	number := ""
-	candidates := filterByNumber(b, inCard, cardSet, "")
+	var candidates []mtgmatcher.Card
 	for _, number0 := range slices.Backward(numbers) {
 		number = number0
 		candidates = filterByNumber(b, inCard, cardSet, number)
 		if len(candidates) > 0 {
 			break
 		}
+	}
+	// The unnumbered pass answers only for a wording that wrote no number
+	// at all: any number the wording did write overwrites it on the loop's
+	// first turn, kept or not.
+	if len(numbers) == 0 {
+		candidates = filterByNumber(b, inCard, cardSet, "")
 	}
 	if len(candidates) <= 1 {
 		return candidates
