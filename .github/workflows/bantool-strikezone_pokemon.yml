@@ -1,11 +1,11 @@
-name: lorcana / strikezone
+name: pokemon / strikezone
 
 on:
   workflow_dispatch: {}
   repository_dispatch:
-    types: [strikezone_lorcana]
+    types: [strikezone_pokemon]
   schedule:
-    - cron: "10 */12 * * *"
+    - cron: "25 */12 * * *"
 
 permissions:
   contents: read
@@ -20,7 +20,7 @@ jobs:
     name: ${{ github.workflow }}
     uses: ./.github/workflows/run-bantool.yml
     with:
-      target: strikezone_lorcana
-      game: "lorcana"
-      datastore-filepath: b2://mtgban-datastore/lorcana/lorcana.json.xz
+      target: strikezone_pokemon
+      game: "pokemon"
+      datastore-filepath: b2://mtgban-datastore/pokemon/pokemon.json.xz
     secrets: inherit
