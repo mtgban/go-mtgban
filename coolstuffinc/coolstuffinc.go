@@ -232,6 +232,13 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 			notes := s.Find(`div[class="large-8 medium-12 small- 12 product-notes"]`).Text()
 			notes = strings.TrimPrefix(notes, "Notes: ")
 
+			// The storefront prints the rarity in the row under the
+			// breadcrumb, and for Yu-Gi-Oh it is the only thing that
+			// tells apart the printings a set files at one number: the
+			// Battle Packs sell the same card as Common and as Mosaic
+			// Rare, both numbered alike.
+			rarity := strings.TrimSpace(s.Find(`div[class="breadcrumb-trail"]`).Parent().Parent().Next().Text())
+
 			imgURL, _ := s.Find(`a[class="productLink"]`).Find("img").Attr("data-src")
 			if imgURL == "" {
 				imgURL, _ = s.Find(`a[class="productLink"]`).Find("img").Attr("src")
@@ -328,7 +335,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					// from one of the fields (cardName in particular)
 					c.Foil = c.Foil || isFoil
 					theCard = c
-				case GameLorcana, GameRiftbound, GameOnePiece, GamePokemon, GameYuGiOh:
+				case GameYuGiOh:
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
+				case GameLorcana, GameRiftbound, GameOnePiece, GamePokemon:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
 					csi.printf("unsupported game")
@@ -676,4 +685,24 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameYuGiOh
 	}
 	return
+}
+
+// csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
+// catalog does. Only the foil tiers disagree, and only in the two ways
+// below: the storefront drops the "Rare" the catalog keeps, and writes
+// Starfoil as two words. Everything else - Common, Rare, Mosaic Rare -
+// it already spells alike, so a name absent from this table passes
+// through as it stands.
+var csiRarities = map[string]string{
+	"Star Foil":   "Starfoil Rare",
+	"Shatterfoil": "Shatterfoil Rare",
+}
+
+// catalogRarity answers the catalog's name for a rarity the storefront
+// prints, so the rarity tier can read it.
+func catalogRarity(rarity string) string {
+	if spelled, found := csiRarities[rarity]; found {
+		return spelled
+	}
+	return rarity
 }
