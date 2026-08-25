@@ -187,13 +187,13 @@ func bundledCopies(bundleStr string) int {
 	return 1 + free
 }
 
-func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- responseChan, itemName string) error {
+func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- responseChan, itemName string, rarities []string) error {
 	skipOOS := !csi.IncludeOOS
 	switch itemName {
 	case "Alpha", "Beta", "Unlimited Edition":
 		skipOOS = false
 	}
-	result, err := Search(ctx, csi.game, itemName, skipOOS)
+	result, err := Search(ctx, csi.game, itemName, skipOOS, rarities)
 	if err != nil {
 		return err
 	}
@@ -434,28 +434,34 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	}
 
 	var itemNames []string
+	var rarities []string
 	doc.Find(`fieldset`).Each(func(i int, s *goquery.Selection) {
 		title := s.Find(`h2[class="mb10"] b`).Text()
-		if title != "Item Set" {
-			return
-		}
-		s.Find(`div[class="toggleTable"]`).Find("li").Each(func(j int, se *goquery.Selection) {
-			itemName, _ := se.Find(`input[type="checkbox"]`).Attr("value")
-			switch {
-			case strings.Contains(itemName, "Bulk"),
-				strings.Contains(itemName, "Random Lots"),
-				strings.Contains(itemName, "Relic Token"),
-				itemName == "Magic":
-				return
-			}
+		switch title {
+		case "Item Set":
+			s.Find(`div[class="toggleTable"]`).Find("li").Each(func(j int, se *goquery.Selection) {
+				itemName, _ := se.Find(`input[type="checkbox"]`).Attr("value")
+				switch {
+				case strings.Contains(itemName, "Bulk"),
+					strings.Contains(itemName, "Random Lots"),
+					strings.Contains(itemName, "Relic Token"),
+					itemName == "Magic":
+					return
+				}
 
-			itemNames = append(itemNames, itemName)
-		})
+				itemNames = append(itemNames, itemName)
+			})
+		case "Rarity":
+			// Reading the tiers off the page the editions already come
+			// from spares the search a list of its own, which is how
+			// every game but Magic came to be asked for Magic's tiers
+			rarities = singlesRarities(s)
+		}
 	})
 	// Sort for predictable results
 	sort.Strings(itemNames)
 
-	csi.printf("Found %d items", len(itemNames))
+	csi.printf("Found %d items over %d rarity tiers", len(itemNames), len(rarities))
 
 	start := time.Now()
 
@@ -472,7 +478,7 @@ func (csi *Coolstuffinc) scrape(ctx context.Context) error {
 	mtgban.WorkerPool(ctx, csi.MaxConcurrency, itemNames,
 		func(ctx context.Context, itemName string, results chan<- responseChan) error {
 			csi.printf("Processing %s", itemName)
-			return csi.processSearch(ctx, results, itemName)
+			return csi.processSearch(ctx, results, itemName, rarities)
 		},
 		func(record responseChan) {
 			var err error
@@ -685,6 +691,34 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameYuGiOh
 	}
 	return
+}
+
+// singlesRarities answers the rarity tiers a singles search should ask for,
+// read from the Rarity fieldset of the storefront's advanced search.
+func singlesRarities(fieldset *goquery.Selection) []string {
+	var rarities []string
+	fieldset.Find("li").Each(func(_ int, s *goquery.Selection) {
+		rarity, found := s.Find(`input[type="checkbox"]`).Attr("value")
+		if !found || rarity == "" {
+			return
+		}
+		if sealedTiers[strings.ToLower(strings.TrimSpace(s.Text()))] {
+			return
+		}
+
+		rarities = append(rarities, rarity)
+	})
+	return rarities
+}
+
+// sealedTiers names the rarity tiers the storefront files sealed products
+// under, spelled as the search page prints them. They are the tiers a
+// singles search leaves out; a tier missing from here only lets sealed
+// through to be refused later, where a card tier missing from the search
+// loses the card outright.
+var sealedTiers = map[string]bool{
+	"box":  true,
+	"pack": true,
 }
 
 // csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
