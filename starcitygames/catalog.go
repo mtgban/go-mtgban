@@ -3,6 +3,7 @@ package starcitygames
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -81,8 +82,20 @@ func (scg *SCGClient) DownloadCatalog(ctx context.Context) (io.ReadCloser, error
 	return resp.Body, nil
 }
 
+// productRefused marks an error that came out of the product callback rather
+// than out of the stream, which tells the replay apart from the one failure
+// re-reading the export cannot mend.
+type productRefused struct {
+	err error
+}
+
+func (p productRefused) Error() string { return p.err.Error() }
+
+func (p productRefused) Unwrap() error { return p.err }
+
 // StreamCatalog hands every product in the catalog export to fn, restarting
-// the download if the stream breaks partway through.
+// the download if the stream breaks partway through. An error fn returns ends
+// the stream and comes back as it is; only a broken one is read again.
 //
 // The export is one long-lived response of a hundred-odd megabytes, and the
 // client's own retry can only replay a request that never returned a status.
@@ -104,6 +117,13 @@ func (scg *SCGClient) StreamCatalog(ctx context.Context, reset func(), fn func(C
 		// A cancelled context is the caller giving up, not a flaky peer.
 		if ctx.Err() != nil {
 			return err
+		}
+		// Neither is a product the caller turned down. Downloading the
+		// export again would hand it the very same product to turn down
+		// again, at a hundred megabytes a go, so it comes straight back.
+		var refused productRefused
+		if errors.As(err, &refused) {
+			return refused.err
 		}
 	}
 	return err
@@ -133,7 +153,7 @@ func decodeCatalog(r io.Reader, fn func(CatalogProduct) error) error {
 			return err
 		}
 		if err := fn(p); err != nil {
-			return err
+			return productRefused{err}
 		}
 	}
 	// Closing ']'
