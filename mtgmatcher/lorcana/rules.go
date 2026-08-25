@@ -127,7 +127,6 @@ func nameAtNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number st
 	if setCode == "" {
 		return ""
 	}
-	got := mtgmatcher.Normalize(inCard.Name)
 	var match, matchNorm string
 	for _, uuid := range b.AllUUIDs {
 		co, err := b.GetUUID(uuid)
@@ -135,7 +134,7 @@ func nameAtNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number st
 			continue
 		}
 		norm := mtgmatcher.Normalize(co.Name)
-		if norm == matchNorm || !closeName(got, norm) {
+		if norm == matchNorm || !mtgmatcher.CloseName(inCard.Name, co.Name) {
 			continue
 		}
 		if match != "" {
@@ -165,54 +164,6 @@ func soleSet(b *mtgmatcher.Backend, edition string) string {
 		found = code
 	}
 	return found
-}
-
-// closeName reports whether a storefront's normalized name is the datastore's
-// own with a piece missing off one end or up to two letters wrong.
-func closeName(got, want string) bool {
-	if got == "" || want == "" {
-		return false
-	}
-	if strings.HasPrefix(want, got) || strings.HasSuffix(want, got) {
-		return true
-	}
-	return editDistance(got, want, 2) <= 2
-}
-
-// editDistance is the Levenshtein distance between two strings, giving up at
-// limit: the caller only cares whether the two are within a couple of edits,
-// and a name pair that is not stops being measured once the whole row of the
-// table is past the limit.
-func editDistance(a, b string, limit int) int {
-	ar, br := []rune(a), []rune(b)
-	if len(ar) > len(br) {
-		ar, br = br, ar
-	}
-	if len(br)-len(ar) > limit {
-		return limit + 1
-	}
-	prev := make([]int, len(ar)+1)
-	cur := make([]int, len(ar)+1)
-	for i := range prev {
-		prev[i] = i
-	}
-	for j := 1; j <= len(br); j++ {
-		cur[0] = j
-		best := cur[0]
-		for i := 1; i <= len(ar); i++ {
-			cost := 1
-			if ar[i-1] == br[j-1] {
-				cost = 0
-			}
-			cur[i] = min(prev[i]+1, cur[i-1]+1, prev[i-1]+cost)
-			best = min(best, cur[i])
-		}
-		if best > limit {
-			return limit + 1
-		}
-		prev, cur = cur, prev
-	}
-	return prev[len(ar)]
 }
 
 // AdjustEdition normalizes scraper edition strings toward LorcanaJSON set
