@@ -445,17 +445,34 @@ func sealedHintBreaksTie(hint string, contained []string, unexplained, shared, u
 		hintTokens[sealedPrintRunSynonym(tok)] = true
 	}
 
-	var winner string
-	var winners int
+	var tied []string
 	for _, uuid := range contained {
 		if unexplained[uuid] != unexplained[contained[0]] ||
 			shared[uuid] != shared[contained[0]] ||
 			unsaid[uuid] != unsaid[contained[0]] {
 			continue
 		}
+		tied = append(tied, uuid)
+	}
+
+	// Only a word one of the tied candidates alone carries can speak for it.
+	// A word they share tells them apart in neither direction: `[1st Edition]`
+	// and `[Unlimited Edition]` are both spoken for by a shelf that says
+	// `Edition`, which is how the datastore's own spelling of a print run
+	// loses a tie-break that `- First` and `- Unlimited` win.
+	carriers := map[string]int{}
+	for _, uuid := range tied {
+		for tok := range qualifiers[uuid] {
+			carriers[tok]++
+		}
+	}
+
+	var winner string
+	var winners int
+	for _, uuid := range tied {
 		var spoken bool
 		for tok := range qualifiers[uuid] {
-			if hintTokens[tok] {
+			if hintTokens[tok] && carriers[tok] == 1 {
 				spoken = true
 				break
 			}
