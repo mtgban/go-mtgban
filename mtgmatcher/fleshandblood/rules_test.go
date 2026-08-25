@@ -1,6 +1,10 @@
 package fleshandblood
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+)
 
 // TestPaddedNumberMatches pins the padding rule. The catalog writes three
 // numbers a digit wider than the printing wears them - "JDG0077" for JDG077 -
@@ -44,5 +48,51 @@ func TestPaddedNumberExtracted(t *testing.T) {
 		if got := extractNumber(tt.variation); got != tt.want {
 			t.Errorf("extractNumber(%q) = %q, want %q", tt.variation, got, tt.want)
 		}
+	}
+}
+
+// TestEventTokenEditionUnsupported pins the refusal of the storefront
+// expansion holding the organized-play tokens, which the shared token gate
+// used to refuse for the whole matcher. The catalog carries six of its
+// printings, every one reached by its TCGplayer id; the rest name printings
+// it does not carry, and the expansion names no set, so nothing would keep
+// them off whichever other set prints the same name.
+func TestEventTokenEditionUnsupported(t *testing.T) {
+	b := loadBackend(t)
+
+	for _, tt := range []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+		err  string
+	}{
+		{
+			desc: "a name the catalog carries only in another set",
+			in:   mtgmatcher.InputCard{Name: "Chane // Hatchet of Body", Edition: "OP Event Tokens"},
+			err:  mtgmatcher.ErrUnsupported.Error(),
+		},
+		{
+			desc: "and one it carries in several",
+			in:   mtgmatcher.InputCard{Name: "Rampart of the Ram's Head", Edition: "OP Event Tokens"},
+			err:  mtgmatcher.ErrUnsupported.Error(),
+		},
+		{
+			desc: "an ordinary set's token still resolves",
+			in:   mtgmatcher.InputCard{Name: "Cracked Bauble", Edition: "Welcome to Rathe", Variation: "WTR224"},
+			want: "wtr224_225302_unl",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			in := tt.in
+			id, err := b.Match(&in)
+			gotErr := ""
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if id != tt.want || gotErr != tt.err {
+				t.Errorf("Match(%q, %q) = (%q, %q), want (%q, %q)",
+					tt.in.Name, tt.in.Edition, id, gotErr, tt.want, tt.err)
+			}
+		})
 	}
 }

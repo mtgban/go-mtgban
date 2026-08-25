@@ -19,6 +19,21 @@ import (
 // "Cold Foil", the print-run edition suffixes).
 type Rules struct{ mtgmatcher.DefaultRules }
 
+// eventTokenEdition is the storefront expansion holding the tokens handed
+// out at organized-play events.
+const eventTokenEdition = "OP Event Tokens"
+
+// IsUnsupported refuses the event-token expansion. The catalog carries six
+// of its printings, filed in the promo set and numbered XXX001 through
+// XXX012, and every one of those is reached by its TCGplayer id before a
+// name is ever consulted; the rest name printings the catalog does not
+// carry at all. Since the expansion names no set, nothing narrows those
+// away from whichever other set happens to print the same name, so any
+// name-based answer here is some other printing. See mtgmatcher.GameRules.
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	return strings.EqualFold(strings.TrimSpace(inCard.Edition), eventTokenEdition)
+}
+
 // fullNumberRe matches the game's collector number shapes: "WTR215",
 // "1HP408", with an optional letter tail (cardtrader suffixes marvels
 // "MST238m"). The dashed numbers ("MST158-A") are left to the variant
