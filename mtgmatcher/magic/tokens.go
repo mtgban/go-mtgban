@@ -6,10 +6,14 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// IsToken reports the names Magic knows as tokens without their carrying a
-// token type of their own: the rules tips and checklists, the oversized
-// oddities, the storefront spellings that only ever name a token. The
-// datastore's own token list is checked before this is ever asked.
+// IsToken reports the token names the datastore cannot answer for itself.
+// Two kinds are left: the names whose whole set is dropped when the
+// datastore is built - art series, minigames, front cards, oversized
+// oddities, arena and online codes, rules tips, the World Championship
+// extras - and the storefront spellings that decorate a carried token with
+// a word of their own. The datastore's own token list is consulted before
+// this is ever asked, so every token filed under a surviving set is already
+// answered there and needs no clause here.
 func (Rules) IsToken(b *mtgmatcher.Backend, name string) bool {
 	switch name {
 	// Custom token names
@@ -27,32 +31,15 @@ func (Rules) IsToken(b *mtgmatcher.Backend, name string) bool {
 		return true
 	}
 	switch {
-	// Avoid confusion with Monarch and Emblem below
-	case mtgmatcher.HasPrefix(name, "Emblem of the Warmind"),
-		mtgmatcher.HasPrefix(name, "Kavu Monarch"),
-		mtgmatcher.HasPrefix(name, "Leering Emblem"),
-		// and with the `card` wildcard
-		mtgmatcher.HasPrefix(name, "Our Market Research"):
-		return false
 	// Anything token
-	case strings.Contains(name, " Card"),
-		strings.Contains(name, "Card "),
-		strings.HasPrefix(name, "Bounty"),
-		mtgmatcher.Contains(name, "Arena Code"),
+	case mtgmatcher.Contains(name, "Arena Code"),
 		mtgmatcher.Contains(name, "Art Series"),
 		mtgmatcher.Contains(name, "Charlie Brown"),
 		mtgmatcher.Contains(name, "Checklist"),
-		mtgmatcher.Contains(name, "Copy"),
-		mtgmatcher.Contains(name, "Decklist"),
 		mtgmatcher.Contains(name, "DFC Helper"),
-		mtgmatcher.Contains(name, "Dungeon of the Mad Mage"),
-		mtgmatcher.Contains(name, "Emblem"),
 		mtgmatcher.Contains(name, "Experience C"),
-		mtgmatcher.Contains(name, "Giant Teddy Bear"),
 		mtgmatcher.Contains(name, "Guild Symbol"),
 		mtgmatcher.Contains(name, "Magic Minigame"),
-		mtgmatcher.Contains(name, "The Monarch"),
-		strings.Contains(name, "The Initiative"),
 		mtgmatcher.Contains(name, "Morph Overlay"),
 		mtgmatcher.Contains(name, "On Your Turn"),
 		mtgmatcher.Contains(name, "Online Code"),
@@ -60,6 +47,15 @@ func (Rules) IsToken(b *mtgmatcher.Backend, name string) bool {
 		mtgmatcher.Contains(name, "Punch Out"),
 		mtgmatcher.Contains(name, "Token"),
 		mtgmatcher.Contains(name, "Rules Tip"):
+		return true
+	// Verbatim, because normalizing drops every s and would then read
+	// "Theme Deck Slither" as a decklist
+	case strings.Contains(name, "Decklist"),
+		strings.Contains(name, "The Initiative"):
+		return true
+	// The colon is what tells the bounty tokens from the dozen real cards
+	// whose name merely begins with the word
+	case strings.HasPrefix(name, "Bounty: "):
 		return true
 	// Alternative rules tip card names found on mkm
 	case strings.HasPrefix(name, "Build a Deck: "),
