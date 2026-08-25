@@ -504,14 +504,125 @@ func numberDigits(number string) string {
 	return strings.TrimLeft(number[:end], "0")
 }
 
+// lorcanaMarker returns the letters a Lorcana collector number ends in, which
+// name a printing beside the one the digits alone name.
+func lorcanaMarker(number string) string {
+	return strings.TrimLeft(number, "0123456789")
+}
+
 // resolveLorcana returns the mtgban card id for a Lorcana catalog product.
+//
+// A number ending in letters names a printing beside the base one, and the
+// datastore answers that in either of two ways. It numbers the sibling with
+// the same letter, the way Into the Inklands numbers the five Dalmatian
+// Puppies "4a" through "4e", and then the number resolves it outright. Or it
+// numbers both the same and tells them apart in the name instead - "Bucky -
+// Squirrel Squeak Tutor (Errata Version)" is its own printing at Rise of the
+// Floodborn 73 - and then the number falls back to the base card and the two
+// products land on one uuid, where a $12.99 errata printing prices a $0.39
+// common.
+//
+// So a marker the resolved printing does not wear is asked of the name: the
+// printing at that set and number whose name is the product's plus a suffix
+// is the sibling the marker names. A marker with no such printing behind it
+// is refused rather than folded onto the base card, which is a product Star
+// City Games sells and the datastore does not carry - a missing price, where
+// folding it in corrupts the price of a card that is carried.
 func resolveLorcana(p CatalogProduct, foil bool) (string, error) {
-	return mtgmatcher.Match(&mtgmatcher.InputCard{
+	number := lorcanaNumber(p)
+	id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 		Name:      p.Name,
 		Edition:   p.Set,
-		Variation: lorcanaNumber(p),
+		Variation: number,
 		Foil:      foil,
 	})
+	if err != nil {
+		return "", err
+	}
+	if lorcanaMarker(number) == "" {
+		return id, nil
+	}
+	co, cerr := mtgmatcher.GetUUID(id)
+	if cerr != nil || strings.EqualFold(co.Number, strings.TrimLeft(number, "0")) {
+		return id, nil
+	}
+	return lorcanaSibling(p, co, foil)
+}
+
+// otherFormats are what the Lorcana datastore adds to a card's name to file
+// something that is not that card: a jumbo print of it, and a lot of several
+// cards sold as one. Both sit at the base card's own set and number, so the
+// set and the number cannot tell them from the printing a marker asks for.
+var otherFormats = []string{"(Oversized)", "(Set of "}
+
+// namesAnotherFormat reports whether what a longer name adds to a base one
+// names a different physical product rather than another printing of the same
+// card. Star City Games sells a jumbo card as a listing of its own, never as a
+// marked variant of the card, so a marker must not be routed onto one.
+func namesAnotherFormat(extension string) bool {
+	for _, format := range otherFormats {
+		if strings.Contains(extension, format) {
+			return true
+		}
+	}
+	return false
+}
+
+// lorcanaSibling answers with the printing the datastore files at the same set
+// and number under a longer name, which is where it puts the errata reprint a
+// sku marks with a letter. Exactly one such name may answer: two would leave
+// the marker naming neither in particular.
+func lorcanaSibling(p CatalogProduct, base *mtgmatcher.CardObject, foil bool) (string, error) {
+	missing := fmt.Errorf("no printing beside %s %s for the sku marker", base.SetCode, base.Number)
+	uuids, err := mtgmatcher.SearchHasPrefix(p.Name)
+	if err != nil {
+		return "", missing
+	}
+	var candidates []*mtgmatcher.CardObject
+	for _, uuid := range uuids {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		if !siblingCandidate(base, co) {
+			continue
+		}
+		candidates = append(candidates, co)
+	}
+	found := soleSibling(candidates)
+	if found == nil {
+		return "", missing
+	}
+	return mtgmatcher.MatchID(found.UUID, foil, false)
+}
+
+// siblingCandidate reports whether a printing can be the one a sku marker
+// names beside its base: the same slot in the same set, spelled as the
+// base's name extended - and not extended into another physical format,
+// which is a different product wearing the same slot.
+func siblingCandidate(base, co *mtgmatcher.CardObject) bool {
+	if co.Sealed || co.Name == base.Name {
+		return false
+	}
+	if co.SetCode != base.SetCode || co.Number != base.Number {
+		return false
+	}
+	return !namesAnotherFormat(strings.TrimPrefix(co.Name, base.Name))
+}
+
+// soleSibling answers the printing a set of candidates agrees on, and nothing
+// where they name two cards, which would leave the marker naming neither in
+// particular. They are counted by name because one printing is spelled once
+// per treatment it is sold in, and those are the same card.
+func soleSibling(candidates []*mtgmatcher.CardObject) *mtgmatcher.CardObject {
+	var found *mtgmatcher.CardObject
+	for _, co := range candidates {
+		if found != nil && found.Name != co.Name {
+			return nil
+		}
+		found = co
+	}
+	return found
 }
 
 // fabPrintRun moves the print run out of a Flesh and Blood set name and into

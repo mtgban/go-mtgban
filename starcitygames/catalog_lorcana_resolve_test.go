@@ -51,6 +51,185 @@ func withLorcana(t *testing.T) {
 	withGameDatastore(t, "LORCANA_PATH", lorcana.Load)
 }
 
+// requireSibling skips a case whose premise the installed datastore does not
+// hold. The errata printings a sku marker reaches are recent rows, and the
+// Lorcana file a checkout carries may predate them; against such a copy the
+// marker has nothing to reach and the refusal is the rule working rather than
+// the rule broken, so there is nothing here to assert either way.
+func requireSibling(t *testing.T, name string) {
+	t.Helper()
+	uuids, err := mtgmatcher.SearchEquals(name)
+	if err != nil || len(uuids) == 0 {
+		t.Skipf("the installed Lorcana datastore does not carry %q", name)
+	}
+}
+
+// TestResolveLorcanaMarkedPrinting covers the printing markers Star City Games
+// hangs off a Lorcana sku's number. The datastore answers them two ways: it
+// numbers the sibling with the same letter, or it numbers both the same and
+// tells them apart in the name. Either way the marked sku must not land on the
+// base card, whose price it is not - the errata printings sell for twenty
+// times the common they were reprinting.
+func TestResolveLorcanaMarkedPrinting(t *testing.T) {
+	withLorcana(t)
+
+	for _, tt := range []struct {
+		name                                string
+		product                             CatalogProduct
+		needs                               string
+		wantSet, wantNum, wantName, wantErr string
+	}{
+		{
+			name: "the datastore's own variant letter resolves outright",
+			product: CatalogProduct{
+				SKU: "SGL-LOR-003-004c-ENN", Name: "Dalmatian Puppy - Tail Wagger",
+				Set: "Into the Inklands", CollectorNumber: "004c",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+			},
+			wantSet: "3", wantNum: "4c",
+		},
+		{
+			name: "a marker the datastore spells in the name reaches that printing",
+			product: CatalogProduct{
+				SKU: "SGL-LOR-002-073b-ENC", Name: "Bucky - Squirrel Squeak Tutor",
+				Set: "Rise of the Floodborn", CollectorNumber: "073b",
+				Finish: "Foil", FinishGroup: "Foil",
+			},
+			needs:    "Bucky - Squirrel Squeak Tutor (Errata Version)",
+			wantSet:  "2",
+			wantNum:  "73",
+			wantName: "Bucky - Squirrel Squeak Tutor (Errata Version)",
+		},
+		{
+			name: "a marker only the sku carries reaches it too",
+			product: CatalogProduct{
+				SKU: "SGL-LOR-002-039M-ENN", Name: "Elsa - Gloves Off",
+				Set: "Rise of the Floodborn", CollectorNumber: "039",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+			},
+			needs:    "Elsa - Gloves Off (Errata Version)",
+			wantSet:  "2",
+			wantNum:  "39",
+			wantName: "Elsa - Gloves Off (Errata Version)",
+		},
+		{
+			name: "a jumbo print of the card is not the printing a marker names",
+			product: CatalogProduct{
+				SKU: "SGL-LOR-001-005M-ENC", Name: "Hades - King of Olympus",
+				Set: "The First Chapter", CollectorNumber: "005",
+				Finish: "Foil", FinishGroup: "Foil",
+			},
+			needs:   "Hades - King of Olympus (Oversized)",
+			wantErr: "no printing beside 1 5 for the sku marker",
+		},
+		{
+			// The jumbo is sold in one foil and nothing else, so adopting it
+			// puts a non-foil listing's price on a foil printing as well.
+			name: "a jumbo print is refused for a non-foil listing too",
+			product: CatalogProduct{
+				SKU: "SGL-LOR-001-118M-ENN", Name: "Mulan - Imperial Soldier",
+				Set: "The First Chapter", CollectorNumber: "118",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+			},
+			needs:   "Mulan - Imperial Soldier (Oversized)",
+			wantErr: "no printing beside 1 118 for the sku marker",
+		},
+		{
+			name: "a marker no printing answers is refused, not folded onto the base",
+			product: CatalogProduct{
+				SKU: "SGL-LOR-001-143M-ENC", Name: "Chief Tui - Respected Leader",
+				Set: "The First Chapter", CollectorNumber: "143",
+				Finish: "Foil", FinishGroup: "Foil",
+			},
+			wantErr: "no printing beside 1 143 for the sku marker",
+		},
+		{
+			name: "an unmarked number keeps the base printing",
+			product: CatalogProduct{
+				SKU: "SGL-LOR-002-039-ENN", Name: "Elsa - Gloves Off",
+				Set: "Rise of the Floodborn", CollectorNumber: "039",
+				Finish: "Non-foil", FinishGroup: "Non-foil",
+			},
+			wantSet: "2", wantNum: "39",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.needs != "" {
+				requireSibling(t, tt.needs)
+			}
+			id, err := resolveProduct(GameLorcana, tt.product)
+			if tt.wantErr != "" {
+				if err == nil || err.Error() != tt.wantErr {
+					t.Fatalf("got id %q err %v, want error %q", id, err, tt.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("resolveProduct: %v", err)
+			}
+			co, cerr := mtgmatcher.GetUUID(id)
+			if cerr != nil {
+				t.Fatalf("GetUUID(%q): %v", id, cerr)
+			}
+			if co.SetCode != tt.wantSet || co.Number != tt.wantNum {
+				t.Errorf("got %s #%s (%s), want %s #%s", co.SetCode, co.Number, co.Name, tt.wantSet, tt.wantNum)
+			}
+			// The errata printing shares the base card's set and number and
+			// is told apart only by its name, so the number alone cannot say
+			// which of the two answered.
+			if tt.wantName != "" && co.Name != tt.wantName {
+				t.Errorf("got %q, want %q", co.Name, tt.wantName)
+			}
+		})
+	}
+
+	// The two Rise of the Floodborn errata printings the datastore does carry
+	// are printings of their own, so the marked sku and the plain one must not
+	// share a uuid.
+	for _, tt := range []struct {
+		needs         string
+		plain, marked CatalogProduct
+	}{
+		{
+			needs: "Bucky - Squirrel Squeak Tutor (Errata Version)",
+			plain: CatalogProduct{
+				SKU: "SGL-LOR-002-073-ENC", Name: "Bucky - Squirrel Squeak Tutor",
+				Set: "Rise of the Floodborn", CollectorNumber: "073", Finish: "Foil", FinishGroup: "Foil",
+			},
+			marked: CatalogProduct{
+				SKU: "SGL-LOR-002-073b-ENC", Name: "Bucky - Squirrel Squeak Tutor",
+				Set: "Rise of the Floodborn", CollectorNumber: "073b", Finish: "Foil", FinishGroup: "Foil",
+			},
+		},
+		{
+			needs: "Elsa - Gloves Off (Errata Version)",
+			plain: CatalogProduct{
+				SKU: "SGL-LOR-002-039-ENC", Name: "Elsa - Gloves Off",
+				Set: "Rise of the Floodborn", CollectorNumber: "039", Finish: "Foil", FinishGroup: "Foil",
+			},
+			marked: CatalogProduct{
+				SKU: "SGL-LOR-002-039M-ENC", Name: "Elsa - Gloves Off",
+				Set: "Rise of the Floodborn", CollectorNumber: "039", Finish: "Foil", FinishGroup: "Foil",
+			},
+		},
+	} {
+		t.Run("marked and plain stay apart: "+tt.marked.SKU, func(t *testing.T) {
+			requireSibling(t, tt.needs)
+			plainID, err := resolveProduct(GameLorcana, tt.plain)
+			if err != nil {
+				t.Fatalf("plain: %v", err)
+			}
+			markedID, err := resolveProduct(GameLorcana, tt.marked)
+			if err != nil {
+				t.Fatalf("marked: %v", err)
+			}
+			if plainID == markedID {
+				t.Errorf("both skus resolved to %s", plainID)
+			}
+		})
+	}
+}
+
 // TestResolveLorcanaPromoSeries covers the promo skus whose number segment
 // opens with the series that issued the card. The series is a heading rather
 // than part of the number, and reading it as one left the card with no number
