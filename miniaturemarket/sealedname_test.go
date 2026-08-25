@@ -6,6 +6,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
+	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 )
 
@@ -167,4 +168,118 @@ func TestResolveListing(t *testing.T) {
 		t.Errorf("resolveListing(%q) = (%q, %q), want a uuid", co.Name, uuid, drop)
 	}
 
+}
+
+// TestExtraWords pins what the fallback is allowed to forgive, which is the
+// half of the rule that needs no datastore: the candidate must account for
+// every word the storefront said, and what it adds beyond them is what gets
+// weighed.
+func TestExtraWords(t *testing.T) {
+	for _, tt := range []struct {
+		desc      string
+		candidate string
+		vendor    string
+		want      []string
+		wantOK    bool
+	}{
+		{
+			"a hero spelled out adds the rest of their name",
+			"Silver Age Chapter 3 Deck - Blaze Firemind (Wizard)",
+			"Silver Age Chapter 3 Deck - Blaze (Wizard)",
+			[]string{"firemind"}, true,
+		},
+		{
+			"the words may be reordered, since only the set of them counts",
+			"Silver Age: Usurp the Shadow Throne Deck - Viserai Between Worlds",
+			"Usurp the Shadow Throne: Silver Age Deck - Viserai",
+			[]string{"between", "worlds"}, true,
+		},
+		{
+			"a case says everything its box does, and one word more",
+			"High Seas Booster Box Case",
+			"High Seas Booster Box",
+			[]string{"case"}, true,
+		},
+		{
+			"a word the storefront said and the candidate lacks is a refusal",
+			"High Seas Booster Box",
+			"High Seas Booster Box Case",
+			nil, false,
+		},
+		{
+			"an exact spelling adds nothing",
+			"Super Slam Booster Pack",
+			"Super Slam Booster Pack",
+			nil, true,
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			got, ok := extraWords(sealedWords(tt.candidate), sealedWords(tt.vendor))
+			if ok != tt.wantOK {
+				t.Fatalf("extraWords ok = %v, want %v", ok, tt.wantOK)
+			}
+			if len(got) != len(tt.want) {
+				t.Fatalf("extraWords = %v, want %v", got, tt.want)
+			}
+			for i := range got {
+				if got[i] != tt.want[i] {
+					t.Errorf("extraWords = %v, want %v", got, tt.want)
+					break
+				}
+			}
+		})
+	}
+}
+
+// TestResolveByNamedCard exercises the half that needs the datastore: the
+// forgiveness is granted only where a card accounts for the added words, and
+// the case a box is not is what that rule exists to refuse.
+func TestResolveByNamedCard(t *testing.T) {
+	path := os.Getenv("FLESHANDBLOOD_PATH")
+	if path == "" {
+		t.Skip("FLESHANDBLOOD_PATH not set")
+	}
+	if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
+		t.Fatal(err)
+	}
+
+	// A hero the storefront names by their first word only.
+	uuid, err := resolveByNamedCard("Silver Age Chapter 3 Deck - Blaze (Wizard)")
+	if err != nil {
+		t.Fatalf("the hero's epithet was not forgiven: %v", err)
+	}
+	co, cerr := mtgmatcher.GetUUID(uuid)
+	if cerr != nil || co.Name != "Silver Age Chapter 3 Deck - Blaze Firemind (Wizard)" {
+		t.Errorf("resolved to %v, want the Blaze Firemind deck", co)
+	}
+
+	// A case adds a word to its box, and that word is no card: forgiving it
+	// would price a case as the box inside it.
+	if _, err := resolveByNamedCard("High Seas Booster Box"); err == nil {
+		t.Error("a box resolved onto something that says more than it does")
+	}
+}
+
+// TestResolveListingKeepsTheResolvedAnswer pins that a name the resolver
+// answers only once its decoration is trimmed keeps that answer. The fallback
+// runs after the resolver, and running it over an answer already found both
+// discarded the answer and left nothing to report the failure with.
+func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
+	path := os.Getenv("FLESHANDBLOOD_PATH")
+	if path == "" {
+		t.Skip("FLESHANDBLOOD_PATH not set")
+	}
+	if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
+		t.Fatal(err)
+	}
+
+	mm := NewScraperSealed(GameFleshAndBlood)
+	uuid, drop := mm.resolveListing("", "Flesh & Blood TCG: Usurp the Shadow Throne - Booster Pack (Preorder)")
+	if drop != "" || uuid == "" {
+		t.Fatalf("resolveListing = (%q, %q), want the booster pack", uuid, drop)
+	}
+	co, err := mtgmatcher.GetUUID(uuid)
+	if err != nil || co.Name != "Usurp the Shadow Throne Booster Pack" {
+		t.Errorf("resolved to %v, want the Usurp the Shadow Throne Booster Pack", co)
+	}
 }

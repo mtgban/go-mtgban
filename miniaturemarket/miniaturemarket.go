@@ -137,6 +137,125 @@ func sealedName(game, name string) string {
 	return strings.TrimSpace(name)
 }
 
+// sealedWords splits a product name the way a comparison of two spellings of
+// it needs: lower case, and the punctuation a storefront and the canon differ
+// over dropped rather than glued to a word.
+var sealedPunct = strings.NewReplacer(",", " ", ":", " ", "-", " ", "(", " ", ")", " ", "[", " ", "]", " ")
+
+func sealedWords(name string) []string {
+	return strings.Fields(strings.ToLower(sealedPunct.Replace(name)))
+}
+
+// resolveByNamedCard answers a listing whose canonical name says more than
+// the storefront did, when every word it adds belongs to a card.
+//
+// A deck is named for the hero it plays, and the canon spells that hero out
+// where a storefront prints the first word of the name: "Silver Age Chapter 3
+// Deck - Blaze" against "... - Blaze Firemind". Nothing about the product
+// differs, only how much of the hero got typed.
+//
+// What keeps this from reading a case as the box it holds - "Booster Box"
+// says everything "Booster Box Case" does - is that the words it forgives
+// must be a card the datastore carries. "Firemind" is one and "Case" is not,
+// which is the same line the matcher draws when it decides that a bracket
+// naming a card is a qualifier and one naming a count is identity.
+//
+// A tie says nothing: two products the storefront's words fit equally are two
+// products it did not choose between, and neither is the answer.
+func resolveByNamedCard(listed string) (string, error) {
+	vendor := sealedWords(listed)
+	if len(vendor) == 0 {
+		return "", mtgmatcher.ErrUnsupported
+	}
+
+	var found string
+	var foundName string
+	for _, uuid := range mtgmatcher.GetSealedUUIDs() {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		extras, ok := extraWords(sealedWords(co.Name), vendor)
+		if !ok || len(extras) == 0 || !extrasNameACard(extras, sealedWords(co.Name)) {
+			continue
+		}
+		if found != "" && foundName != co.Name {
+			return "", mtgmatcher.ErrAliasing
+		}
+		found, foundName = uuid, co.Name
+	}
+	if found == "" {
+		return "", mtgmatcher.ErrUnsupported
+	}
+	return found, nil
+}
+
+// extraWords returns the words a candidate holds beyond the ones the vendor
+// said, and whether the vendor said nothing the candidate does not.
+func extraWords(candidate, vendor []string) ([]string, bool) {
+	counts := map[string]int{}
+	for _, word := range candidate {
+		counts[word]++
+	}
+	for _, word := range vendor {
+		if counts[word] == 0 {
+			return nil, false
+		}
+		counts[word]--
+	}
+	var extras []string
+	for _, word := range candidate {
+		if counts[word] > 0 {
+			counts[word]--
+			extras = append(extras, word)
+		}
+	}
+	return extras, true
+}
+
+// extrasNameACard reports whether the words a candidate adds are part of a
+// card the candidate itself names - which is what tells a hero's epithet from
+// the word that makes a case a case.
+//
+// The card has to be spelled inside the candidate, every word of it, not
+// merely exist somewhere in the datastore. Searching by substring alone would
+// answer "case" with Staircase and forgive the word that distinguishes a case
+// from the box in it.
+func extrasNameACard(extras, candidate []string) bool {
+	uuids, err := mtgmatcher.SearchContains(strings.Join(extras, " "))
+	if err != nil {
+		return false
+	}
+	inCandidate := map[string]bool{}
+	for _, word := range candidate {
+		inCandidate[word] = true
+	}
+	for _, uuid := range uuids {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		card := sealedWords(co.Name)
+		if len(card) == 0 {
+			continue
+		}
+		spelled := true
+		for _, word := range card {
+			if !inCandidate[word] {
+				spelled = false
+				break
+			}
+		}
+		if !spelled {
+			continue
+		}
+		if _, covered := extraWords(card, extras); covered {
+			return true
+		}
+	}
+	return false
+}
+
 // resolveListing names the sealed product a storefront listing prices, or
 // says why none was found. Every listing this scraper leaves behind leaves it
 // here, which is why the reason is returned rather than swallowed: a run that
@@ -162,16 +281,39 @@ func (mm *Miniaturemarket) resolveListing(id, listed string) (string, string) {
 	if mtgmatcher.SealedIsLanguageVariant(name) {
 		return "", "language variant"
 	}
+	// A trailing parenthetical is the storefront's decoration on some
+	// products and the product's own on others - "(Preorder)" against
+	// "(Chaos Assassin)" - so a name that fails is asked both ways rather
+	// than guessed at, by the resolver and then by the fallback.
+	trimmed := name
+	if idx := strings.LastIndexByte(name, '('); idx > 0 {
+		trimmed = strings.TrimSpace(name[:idx])
+	}
+	spellings := []string{name}
+	if trimmed != name {
+		spellings = append(spellings, trimmed)
+	}
+
 	uuid, err := mtgmatcher.ResolveSealed(name)
-	if err != nil {
-		if idx := strings.LastIndexByte(name, '('); idx > 0 {
-			uuid, err = mtgmatcher.ResolveSealed(name[:idx])
-		}
-		if err != nil {
-			return "", err.Error()
+	if err == nil {
+		return uuid, ""
+	}
+	// The resolver's refusal on the name as listed is the one worth
+	// reporting: every attempt after this one is a guess at what else the
+	// listing might have meant, and saying that a guess failed tells a
+	// reader nothing about the name that did.
+	refusal := err
+	for _, spelling := range spellings[1:] {
+		if uuid, err = mtgmatcher.ResolveSealed(spelling); err == nil {
+			return uuid, ""
 		}
 	}
-	return uuid, ""
+	for _, spelling := range spellings {
+		if uuid, err = resolveByNamedCard(spelling); err == nil {
+			return uuid, ""
+		}
+	}
+	return "", refusal.Error()
 }
 
 func (mm *Miniaturemarket) mainURL() string {
