@@ -2,6 +2,7 @@ package cardkingdom
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -266,5 +267,51 @@ func TestPreprocessSplitCard(t *testing.T) {
 	if cardID != want {
 		co, _ := mtgmatcher.GetUUID(cardID)
 		t.Errorf("Match(%v) = %s (%v), want the Time Spiral Remastered split card", theCard, cardID, co)
+	}
+}
+
+func TestPreprocessTokenFoilRefused(t *testing.T) {
+	for _, tt := range []struct {
+		desc    string
+		product cardkingdom.Product
+	}{
+		{
+			// The sheet holds one nonfoil emblem, so the foil row would
+			// be served as the price of the plain one
+			desc: "a foil-wrapped code whose sheet was never sold foil",
+			product: cardkingdom.Product{
+				SKU:     "FTNEO-019",
+				Name:    "Tezzeret, Betrayer of Flesh Emblem",
+				Edition: "Kamigawa: Neon Dynasty",
+				IsFoil:  true,
+			},
+		},
+		{
+			desc: "the same for a surge-foil wrapping",
+			product: cardkingdom.Product{
+				SKU:     "SFT40K-011",
+				Name:    "Arco-Flagellant Token // Soldier Token",
+				Edition: "Warhammer 40,000",
+				IsFoil:  true,
+			},
+		},
+		{
+			// No real card is named Astartes Warrior, so the sheet files
+			// the token without the suffix the row spells it with
+			desc: "a token the datastore files without a Token suffix",
+			product: cardkingdom.Product{
+				SKU:     "SFT40K-012",
+				Name:    "Astartes Warrior Token // Spawn Token",
+				Edition: "Warhammer 40,000",
+				IsFoil:  true,
+			},
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			theCard, err := Preprocess(tt.product)
+			if !errors.Is(err, mtgmatcher.ErrUnsupported) {
+				t.Errorf("Preprocess(%v) = %v, %v, want ErrUnsupported", tt.product, theCard, err)
+			}
+		})
 	}
 }
