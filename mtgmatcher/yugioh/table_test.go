@@ -23,13 +23,19 @@ func aliasBackend(t *testing.T, names ...string) *mtgmatcher.Backend {
 // would move every printing under it onto another set.
 func TestAdjustEditionAliases(t *testing.T) {
 	b := aliasBackend(t,
+		"2-Player Starter Set",
+		"2025 Mega-Pack",
 		"Duelist League Promo",
 		"Duelist Pack 11: Crow",
 		"Duelist Pack: Crow",
+		"Gold Series 2008",
 		"Hidden Arsenal 5: Steelswarm Invasion",
 		"Legendary Collection Kaiba",
 		"Premium Gold: Return of the Bling",
+		"Speed Duel: Battle City Box",
 		"Speed Duel Decks: Ultimate Predators",
+		"Starter Deck 2006",
+		"Turbo Pack: Booster Seven",
 		"Yu-Gi-Oh! Championship Series 2025 Prize Cards",
 	)
 
@@ -48,6 +54,12 @@ func TestAdjustEditionAliases(t *testing.T) {
 		{"a league series files under the shared set", "Duelist League Series 10", "Duelist League Promo"},
 		{"a set name carrying the game name is left whole", "Yu-Gi-Oh! Championship Series 2025 Prize Cards", "Yu-Gi-Oh! Championship Series 2025 Prize Cards"},
 		{"an edition naming nothing is left as it is", "Some Storefront Heading", "Some Storefront Heading"},
+		{"a speed duel deck headed as a starter deck", "Starter Deck: Speed Duel - Battle City Box", "Speed Duel: Battle City Box"},
+		{"the box a set of decks is sold in", "2025 Mega-Pack Bundle", "2025 Mega-Pack"},
+		{"the digit the catalog writes as a word", "Two-Player Starter Set", "2-Player Starter Set"},
+		{"a booster the catalog numbers in words", "Turbo Pack 7", "Turbo Pack: Booster Seven"},
+		{"a series the catalog heads by its year", "Gold Series 1", "Gold Series 2008"},
+		{"a deck the catalog heads by its year", "Starter Deck Yu-Gi-Oh! GX", "Starter Deck 2006"},
 	}
 
 	for _, test := range tests {

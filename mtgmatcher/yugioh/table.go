@@ -18,6 +18,15 @@ import (
 // picks up, and the comic the manga promos came out of. Each was checked
 // against the printings in that expansion that resolve through their
 // TCGplayer id, which name the set outright.
+//
+// A storefront that publishes collector numbers proves its own spellings:
+// a Yu-Gi-Oh number's prefix is the set code ("DCR-EN021" is DCR), so the
+// products a storefront files under an edition name the set they belong to.
+// The entries below were graded that way against Cool Stuff Inc's buylist
+// feed, and an edition whose products spread over sibling sets one name
+// cannot pick - the print-run twins reissued under the same numbers - is
+// deliberately absent: only the copyright date printed on the card tells
+// those apart, which is the scraper's to read and not a name's to guess.
 var editionAliases = map[string]string{
 	"Duelist Pack: Jaden Yuki":      "Duelist Pack 1: Jaden Yuki",
 	"Duelist Pack: Chazz Princeton": "Duelist Pack 2: Chazz Princeton",
@@ -30,6 +39,8 @@ var editionAliases = map[string]string{
 	"Duelist Pack: Yusei Fudo 2":    "Duelist Pack 9: Yusei 2",
 	"Duelist Pack: Yusei Fudo 3":    "Duelist Pack 10: Yusei 3",
 	"Duelist Pack: Crow":            "Duelist Pack 11: Crow",
+	"Duelist Pack 9 Yusei Fudo 2":   "Duelist Pack 9: Yusei 2",
+	"Duelist Pack 10 Yusei Fudo 3":  "Duelist Pack 10: Yusei 3",
 
 	// Every Duelist League shares the one set code, so the league's own
 	// number lives in the collector number and the edition only has to
@@ -69,6 +80,11 @@ var editionAliases = map[string]string{
 	"Speed Duel Starter Decks: Match of the Millennium": "Speed Duel Decks: Match of the Millennium",
 	"Speed Duel Starter Decks: Twisted Nightmares":      "Speed Duel Decks: Twisted Nightmares",
 	"Starter Deck: Ultimate Predators":                  "Speed Duel Decks: Ultimate Predators",
+	// The same decks headed as a starter deck naming its speed duel.
+	"Starter Deck: Speed Duel - Battle City Box":         "Speed Duel: Battle City Box",
+	"Starter Deck: Speed Duel - Match of the Millennium": "Speed Duel Decks: Match of the Millennium",
+	"Starter Deck: Speed Duel - Twisted Nightmares":      "Speed Duel Decks: Twisted Nightmares",
+	"Starter Deck: Speed Duel - Ultimate Predators":      "Speed Duel Decks: Ultimate Predators",
 
 	"5D's Manga Promos":   "Yu-Gi-Oh! 5D's Manga Promotional Cards",
 	"ARC-V Manga Promos":  "Yu-Gi-Oh! ARC-V Promo Cards",
@@ -87,9 +103,39 @@ var editionAliases = map[string]string{
 	"Hidden Arsenal 7":  "Hidden Arsenal 7: Knight of Stars",
 	"Premium Gold 2":    "Premium Gold: Return of the Bling",
 
+	"Battle Pack 2: Round 2":           "Battle Pack 2: War of the Giants Round 2",
 	"Duelist Pack Collection Tin 2010": "Duelist Pack Collection Tin",
+	"Gold Series 1":                    "Gold Series 2008",
 	"McDonald's Promo Pack 1":          "McDonald's Promo",
 	"World Championship 2006":          "World Championship 2006: Ultimate Masters",
+
+	// The booster the catalog numbers in words.
+	"Turbo Pack 1": "Turbo Pack Booster One Pack",
+	"Turbo Pack 2": "Turbo Pack: Booster Two",
+	"Turbo Pack 3": "Turbo Pack: Booster Three",
+	"Turbo Pack 4": "Turbo Pack: Booster Four",
+	"Turbo Pack 5": "Turbo Pack: Booster Five",
+	"Turbo Pack 6": "Turbo Pack: Booster Six",
+	"Turbo Pack 7": "Turbo Pack: Booster Seven",
+	"Turbo Pack 8": "Turbo Pack: Booster Eight",
+
+	// The starter decks a storefront heads by their year or their series
+	// where the catalog heads them by their subtitle, and the other way
+	// around. "Two-Player Starter Set" is the digit the catalog writes.
+	"Starter Deck 2011 Dawn of the Xyz":       "Starter Deck: Dawn of the Xyz",
+	"Starter Deck 2012 XYZ Symphony":          "Starter Deck: Xyz Symphony",
+	"Starter Deck Yu-Gi-Oh! 5Ds":              "5D's 2008 Starter Deck",
+	"Starter Deck Yu-Gi-Oh! 5Ds 2009":         "5D's Starter Deck 2009",
+	"Starter Deck Yu-Gi-Oh! GX":               "Starter Deck 2006",
+	"Super-Starter 2013 V For Victory":        "Super Starter: V for Victory",
+	"Super-Starter 2014 Space-Time Showdown!": "Super Starter: Space-Time Showdown",
+	"Two-Player Starter Set":                  "2-Player Starter Set",
+
+	// The box the storefronts sell a set of decks in, which the catalog
+	// files the cards under the set's own name.
+	"2025 Mega-Pack Bundle":               "2025 Mega-Pack",
+	"Legendary 5D's Decks Box Set":        "Legendary 5D's Decks",
+	"Legendary Modern 2026 Decks Box Set": "Legendary Modern Decks 2026",
 
 	// The video games the storefronts name by the game alone.
 	"Destiny Board Traveler":        "Destiny Board Traveler Promo",
