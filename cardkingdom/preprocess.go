@@ -147,6 +147,28 @@ func setCodeExists(code string) bool {
 	return err == nil
 }
 
+// The wrappings a sku puts on the code of the set a token was filed with,
+// the treatment first and the token itself last
+var tokenSetPrefixes = []string{"F", "T", "FT", "SF", "RF", "CF"}
+
+// unindexedTokenSheet reports whether a sku names a sheet of tokens no set in
+// the datastore stands for, as the Jumpstart theme cards do: the set the
+// sheet came with is carried, the sheet itself never was, so no row of it can
+// match and none is worth reporting.
+func unindexedTokenSheet(sku string) bool {
+	fields := strings.Split(sku, "-")
+	if len(fields) < 2 || setCodeExists(fields[0]) {
+		return false
+	}
+	for _, prefix := range tokenSetPrefixes {
+		trimmed := strings.TrimPrefix(fields[0], prefix)
+		if trimmed != fields[0] && setCodeExists(trimmed) {
+			return true
+		}
+	}
+	return false
+}
+
 // resolveEmblem answers the datastore's spelling and number for an emblem row,
 // and empty strings for anything else or for a planeswalker the named set does
 // not pin to exactly one emblem.
@@ -349,7 +371,7 @@ func Preprocess(card cardkingdom.Product) (*mtgmatcher.InputCard, error) {
 	// filed with once its treatment and token wrappings are stripped
 	if (strings.Contains(card.Name, "Token") || strings.Contains(card.Name, "Bounty")) &&
 		!setCodeExists(setCode) {
-		for _, prefix := range []string{"F", "T", "FT", "SF", "RF", "CF"} {
+		for _, prefix := range tokenSetPrefixes {
 			trimmed := strings.TrimPrefix(setCode, prefix)
 			if trimmed != setCode && setCodeExists(trimmed) {
 				edition = trimmed

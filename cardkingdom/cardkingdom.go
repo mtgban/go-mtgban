@@ -88,7 +88,7 @@ func (ck *Cardkingdom) Load(ctx context.Context) error {
 			ogErr := err
 			cardID, err = mtgmatcher.MatchID(card.ScryfallID, theCard.Foil, strings.Contains(card.Variation, "Etched"))
 			if err != nil {
-				if skipErrors {
+				if skipErrors || unindexedTokenSheet(card.SKU) {
 					continue
 				}
 				ck.printf("%v", ogErr)
