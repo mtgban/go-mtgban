@@ -445,13 +445,71 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		return "", err
 	}
 
-	// The other games (Lorcana, Riftbound) identify a card by name +
-	// collector number + finish; the catalog set narrows
-	// same-name-and-number collisions across sets.
+	// Lorcana reads its number off the sku, which spells it more fully than
+	// the product's own number field does.
+	if game == GameLorcana {
+		return resolveLorcana(p, foil)
+	}
+
+	// Riftbound identifies a card by name + collector number + finish; the
+	// catalog set narrows same-name-and-number collisions across sets.
 	return mtgmatcher.Match(&mtgmatcher.InputCard{
 		Name:      p.Name,
 		Edition:   p.Set,
 		Variation: p.CollectorNumber,
+		Foil:      foil,
+	})
+}
+
+// lorcanaNumber returns the collector number to match a Lorcana product by.
+//
+// The sku's number segment is the more specific of the two numbers a product
+// carries. It keeps the printing marker the number field drops ("117M" beside
+// its "117"), and for a promotional printing it spells the number under the
+// promo series that issued it ("P3_031"), where the number field sometimes
+// carries the whole undivided segment and sometimes only the tail. The series
+// is a heading rather than part of the number - the datastore numbers that
+// card 31 in Winterspell - so only what follows the last underscore is the
+// number, and a segment whose tail names no number at all (the "T03" of a
+// token) leaves the product's own field to answer.
+//
+// More specific is not the same as more reliable, and the sku only speaks
+// where the product's own number does not contradict it: a stray digit
+// ("0142" on the 042 it prices) and a marker the datastore numbers as a card
+// of its own ("032B" for the 33 it files) each name a different card rather
+// than the same card more precisely.
+func lorcanaNumber(p CatalogProduct) string {
+	number := skuNumber(p.SKU)
+	idx := strings.LastIndexByte(number, '_')
+	if idx >= 0 {
+		number = number[idx+1:]
+	}
+	if number == "" || number[0] < '0' || number[0] > '9' {
+		return p.CollectorNumber
+	}
+	digits := numberDigits(p.CollectorNumber)
+	if digits != "" && digits != numberDigits(number) {
+		return p.CollectorNumber
+	}
+	return number
+}
+
+// numberDigits returns the number a collector number opens with, as the
+// datastore writes it: the leading run of digits without its padding.
+func numberDigits(number string) string {
+	end := 0
+	for end < len(number) && number[end] >= '0' && number[end] <= '9' {
+		end++
+	}
+	return strings.TrimLeft(number[:end], "0")
+}
+
+// resolveLorcana returns the mtgban card id for a Lorcana catalog product.
+func resolveLorcana(p CatalogProduct, foil bool) (string, error) {
+	return mtgmatcher.Match(&mtgmatcher.InputCard{
+		Name:      p.Name,
+		Edition:   p.Set,
+		Variation: lorcanaNumber(p),
 		Foil:      foil,
 	})
 }
