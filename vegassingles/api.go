@@ -23,9 +23,6 @@ const (
 	sortForward  = "Alphabetical: A-Z"
 	sortBackward = "Alphabetical: Z-A"
 
-	// How many products a page carries; the storefront ignores per_page.
-	pageSize = 24
-
 	// A bound on how deep any one crawl walks, far past the ~417 pages the
 	// storefront serves today before its result window runs out, purely so
 	// a feed that never answers empty keeps the crawl finite.
@@ -106,6 +103,9 @@ type VSRetailVariant struct {
 type VSClient struct {
 	client      *http.Client
 	productLine string
+	// The storefront's search endpoint, held rather than referenced so a
+	// test can point the client at a server it controls.
+	baseURL string
 }
 
 // NewVSClient returns a client for one product line, in the storefront's own
@@ -116,11 +116,12 @@ func NewVSClient(productLine string) *VSClient {
 	client.Logger = nil
 	vs.client = client.StandardClient()
 	vs.productLine = productLine
+	vs.baseURL = baseURL
 	return &vs
 }
 
 func (vs *VSClient) buildURL(params map[string]string) string {
-	u, _ := url.Parse(baseURL)
+	u, _ := url.Parse(vs.baseURL)
 	q := u.Query()
 
 	// Required parameters

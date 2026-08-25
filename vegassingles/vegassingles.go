@@ -184,15 +184,9 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 	// slice never has to be known ahead of time.
 	seen := map[string]bool{}
 	rarities := map[string]bool{}
-	_, err = vs.crawl(ctx, sortForward, "", totalPages, seen, rarities)
-	if err != nil {
-		return err
-	}
+	vs.crawl(ctx, sortForward, "", totalPages, seen, rarities)
 	before := len(seen)
-	_, err = vs.crawl(ctx, sortBackward, "", totalPages, seen, rarities)
-	if err != nil {
-		return err
-	}
+	vs.crawl(ctx, sortBackward, "", totalPages, seen, rarities)
 	if len(seen) > before {
 		names := make([]string, 0, len(rarities))
 		for rarity := range rarities {
@@ -207,15 +201,9 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-			cut, err := vs.crawl(ctx, sortForward, rarity, hint, seen, rarities)
-			if err != nil {
-				return err
-			}
+			cut := vs.crawl(ctx, sortForward, rarity, hint, seen, rarities)
 			if cut {
-				cut, err = vs.crawl(ctx, sortBackward, rarity, hint, seen, rarities)
-				if err != nil {
-					return err
-				}
+				cut = vs.crawl(ctx, sortBackward, rarity, hint, seen, rarities)
 				if cut {
 					vs.printf("rarity %q exceeds both crawl windows, its middle is unreachable", rarity)
 				}
@@ -238,7 +226,19 @@ func (vs *Vegassingles) scrape(ctx context.Context) error {
 // reads the cut wherever the window happens to sit, at the cost of a false
 // positive when a catalog is an exact multiple of the page size, which only
 // spends a redundant pass.
-func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint int, seen, rarities map[string]bool) (bool, error) {
+//
+// How full a full page is comes from the pages this crawl was served rather
+// than from a number written here: every page but the last carries the same
+// count, so the widest one seen is the size the storefront is serving. A
+// storefront that resizes its page is then read as it is, where a constant
+// would make every last page look ragged, report no cut ever, and quietly stop
+// the passes that widen the crawl.
+//
+// A page that will not load never fails the crawl: inside the fanned-out range
+// the pool logs it and carries on, and past it the walk stops and reads the
+// feed as unfinished. So a run's inventory is never thrown away over one page,
+// and there is nothing here for a caller to handle.
+func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint int, seen, rarities map[string]bool) bool {
 	pageNums := make([]int, hint)
 	for i := range pageNums {
 		pageNums[i] = i + 1
@@ -246,11 +246,17 @@ func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint 
 
 	lastPage := 0
 	lastPageLen := 0
+	fullPageLen := 0
+	pages := 0
 	sawEmpty := false
 	consume := func(result pageResult) {
 		if len(result.products) == 0 {
 			sawEmpty = true
 			return
+		}
+		pages++
+		if len(result.products) > fullPageLen {
+			fullPageLen = len(result.products)
 		}
 		if result.page > lastPage {
 			lastPage = result.page
@@ -291,12 +297,22 @@ func (vs *Vegassingles) crawl(ctx context.Context, sortDir, rarity string, hint 
 	for page := hint + 1; !sawEmpty && page <= maxPages; page++ {
 		products, err := vs.client.getPage(ctx, page, sortDir, rarity)
 		if err != nil {
-			return false, fmt.Errorf("page %d: %s", page, err.Error())
+			// The same failure inside the fanned-out range is logged and
+			// the page skipped, and this one used to throw away the whole
+			// run's inventory and buylist instead. It cannot be skipped
+			// and stay finite - only an empty page ends this walk - so the
+			// walk stops here and the feed is reported as unfinished,
+			// which is what a page nobody could read leaves it.
+			vs.printf("page %d: %s", page, err.Error())
+			return true
 		}
 		consume(pageResult{page: page, products: products})
 	}
 
-	return lastPageLen == pageSize, nil
+	// One page of its own says nothing: it is both the widest and the last,
+	// and a result window running out inside a single page is not what the
+	// storefront does.
+	return pages > 1 && lastPageLen == fullPageLen
 }
 
 type pageResult struct {
