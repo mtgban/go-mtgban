@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_index_onepiece]
   schedule:
-    - cron: "25 */12 * * *"
+    - cron: "59 0,12 * * *"
 
 permissions:
   contents: read

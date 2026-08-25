@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardmarket_riftbound]
   schedule:
-    - cron: "40 */12 * * *"
+    - cron: "53 8,20 * * *"
 
 permissions:
   contents: read

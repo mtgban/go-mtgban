@@ -5,10 +5,15 @@ on:
   repository_dispatch:
     types: [coolstuffinc_sealed]
   schedule:
-    - cron: "5 */4 * * *"
+    - cron: "9 10,22 * * *"
 
 permissions:
   contents: read
+
+concurrency:
+  group: bantool-coolstuffinc
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   cache-datastore:

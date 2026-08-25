@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardtrader_sealed_onepiece]
   schedule:
-    - cron: "15 */12 * * *"
+    - cron: "55 11,23 * * *"
 
 permissions:
   contents: read

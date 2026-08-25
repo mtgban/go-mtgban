@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardtrader_riftbound]
   schedule:
-    - cron: "45 */12 * * *"
+    - cron: "40 0,12 * * *"
 
 permissions:
   contents: read

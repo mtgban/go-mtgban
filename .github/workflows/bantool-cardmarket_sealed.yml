@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardmarket_sealed]
   schedule:
-    - cron: "33 19 * * *"
+    - cron: "35 19 * * *"
 
 permissions:
   contents: read

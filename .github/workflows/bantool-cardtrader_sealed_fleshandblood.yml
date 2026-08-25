@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardtrader_sealed_fleshandblood]
   schedule:
-    - cron: "15 */12 * * *"
+    - cron: "16 6,18 * * *"
 
 permissions:
   contents: read

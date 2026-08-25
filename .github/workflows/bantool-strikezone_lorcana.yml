@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [strikezone_lorcana]
   schedule:
-    - cron: "10 */12 * * *"
+    - cron: "17 3,15 * * *"
 
 permissions:
   contents: read

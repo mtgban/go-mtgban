@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_market_riftbound]
   schedule:
-    - cron: "30 */12 * * *"
+    - cron: "48 2,14 * * *"
 
 permissions:
   contents: read

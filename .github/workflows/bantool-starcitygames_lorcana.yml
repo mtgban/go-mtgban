@@ -5,10 +5,15 @@ on:
   repository_dispatch:
     types: [starcitygames_lorcana]
   schedule:
-    - cron: "50 1-23/12 * * *"
+    - cron: "32 2,14 * * *"
 
 permissions:
   contents: read
+
+concurrency:
+  group: bantool-starcitygames
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   deploy:

@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_sealed_lorcana]
   schedule:
-    - cron: "50 */12 * * *"
+    - cron: "40 1,13 * * *"
 
 permissions:
   contents: read

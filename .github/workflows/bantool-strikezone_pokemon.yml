@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [strikezone_pokemon]
   schedule:
-    - cron: "25 */12 * * *"
+    - cron: "8 10,22 * * *"
 
 permissions:
   contents: read

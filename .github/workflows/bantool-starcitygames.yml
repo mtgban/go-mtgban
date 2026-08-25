@@ -10,6 +10,11 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: bantool-starcitygames
+  cancel-in-progress: false
+  queue: max
+
 jobs:
   cache-datastore:
     uses: ./.github/workflows/cache-file.yml

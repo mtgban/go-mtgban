@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [hareruya_sealed]
   schedule:
-    - cron: "42 9 * * *"
+    - cron: "13 16 * * *"
 
 permissions:
   contents: read

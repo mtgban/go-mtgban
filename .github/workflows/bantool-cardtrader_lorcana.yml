@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardtrader_lorcana]
   schedule:
-    - cron: "55 */12 * * *"
+    - cron: "13 0,12 * * *"
 
 permissions:
   contents: read

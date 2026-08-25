@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [miniaturemarket_sealed_lorcana]
   schedule:
-    - cron: "10 */12 * * *"
+    - cron: "37 1,13 * * *"
 
 permissions:
   contents: read
