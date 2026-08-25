@@ -95,12 +95,23 @@ func buildProductMap() map[string]string {
 var runTag = regexp.MustCompile(`\s*\((1st Edition|Unlimited)\)\s*`)
 
 // sealedProductName spells a catalog product the way the datastore names the
-// same box. Star City Games prefixes every sealed name with the game it
-// belongs to, writes the print run in the middle rather than at the end, and
-// calls a case of boxes a "Booster Case" where the datastore calls it a
-// Booster Box Case. None of that is the product's identity, and the
-// name-resolution rule needs every word of the datastore's name accounted
-// for, so a word only one side writes loses the product.
+// same box. Star City Games opens a sealed name with the game it belongs to,
+// writes the print run in the middle rather than at the end, and calls a case
+// of boxes a "Booster Case" where the datastore calls it a Booster Box Case.
+// None of that is the product's identity, and the name-resolution rule needs
+// every word of the datastore's name accounted for, so a word only one side
+// writes loses the product.
+//
+// The game prefix only comes off where the catalog's game field is spelled the
+// way the name opens, which is Flesh and Blood alone: Riftbound names still
+// open "Riftbound: League of Legends TCG - " where the game field says only
+// "Riftbound", and Lorcana names open "Lorcana: " with no dash at all. Their
+// game words go to the resolver, which forgives words the vendor says over the
+// datastore's name - measured over the cached sealed catalogs, every Riftbound
+// and Lorcana product resolves to the same printing whether or not its true
+// prefix is taken off, while dropping this line loses the four Flesh and Blood
+// Hero Decks outright. So the trim earns its place for the one game that needs
+// it, and is left alone rather than taught spellings nothing rides on.
 func sealedProductName(p CatalogProduct) string {
 	name := strings.TrimPrefix(p.Name, p.Game+" - ")
 
