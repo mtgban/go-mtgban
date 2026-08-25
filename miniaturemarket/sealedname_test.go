@@ -47,6 +47,59 @@ func TestSealedNameOnePiece(t *testing.T) {
 	}
 }
 
+// TestSealedNameFleshAndBlood pins the rewrites against listings read off
+// the storefront, and the shapes they have to leave alone.
+func TestSealedNameFleshAndBlood(t *testing.T) {
+	for _, tt := range []struct {
+		in   string
+		want string
+	}{
+		// The canon runs the set name into what it is sold as, and spells
+		// no pack count.
+		{
+			"Flesh & Blood TCG: High Seas - Booster Box (24)",
+			"High Seas Booster Box",
+		},
+		{
+			"Flesh & Blood TCG: Super Slam - Booster Pack",
+			"Super Slam Booster Pack",
+		},
+		// An unlimited printing is a bracketed edition at the end.
+		{
+			"Flesh & Blood TCG: Monarch Unlimited Ed - Booster Box",
+			"Monarch Booster Box [Unlimited Edition]",
+		},
+		// An Armory deck takes a colon before its hero.
+		{
+			"Flesh & Blood TCG: Armory Deck - Azalea",
+			"Armory Deck: Azalea",
+		},
+		// A chapter's full set is named for what it is.
+		{
+			"Flesh & Blood TCG: Silver Age Chapter 2 Deck - Set of 5",
+			"Silver Age Chapter 2 Deck Display",
+		},
+		// The Silver Age decks keep both their dash and their
+		// parenthetical: the canon spells them the same way, so the
+		// rewrites above must not reach them.
+		{
+			"Flesh & Blood TCG: Silver Age Chapter 3 Deck - Briar (Elemental Runeblade)",
+			"Silver Age Chapter 3 Deck - Briar (Elemental Runeblade)",
+		},
+		// A trailing decoration is left for the resolve retry to drop, so
+		// that the parenthetical above survives this step.
+		{
+			"Flesh & Blood TCG: Usurp the Shadow Throne - Booster Pack (Preorder)",
+			"Usurp the Shadow Throne Booster Pack (Preorder)",
+		},
+	} {
+		got := sealedName(GameFleshAndBlood, tt.in)
+		if got != tt.want {
+			t.Errorf("%q:\n got  %q\n want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
 // The other games' names already read like their canon: nothing moves.
 func TestSealedNameOtherGamesUntouched(t *testing.T) {
 	name := "Riftbound: League of Legends TCG - Origins Booster Box (Preorder)"

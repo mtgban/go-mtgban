@@ -39,6 +39,8 @@ const (
 	GameLorcana   = "lorcana"
 	GameRiftbound = "riftbound"
 	GameOnePiece  = "onepiece"
+
+	GameFleshAndBlood = "fleshandblood"
 )
 
 // gameWidgets are the CMS navigation ids behind each game's storefront
@@ -49,6 +51,8 @@ var gameWidgets = map[string]string{
 	GameLorcana:   "4e0223a87610176ef0d24ef6d2dcde3a",
 	GameRiftbound: "019be122ca9779e5af00a663d064f775",
 	GameOnePiece:  "f7ac67a9aa8d255282de7d11391e1b69",
+
+	GameFleshAndBlood: "619205da514e83f869515c782a328d3c",
 }
 
 // NewScraperSealed returns a sealed scraper for one game.
@@ -71,6 +75,17 @@ var (
 	onePieceSetCode     = regexp.MustCompile(`\s*\[([A-Z]+)-?(\d+)\]`)
 )
 
+// The decorations miniaturemarket writes into a Flesh and Blood product
+// name: a storefront prefix, and a trailing pack count the canon does not
+// spell. "(Preorder)" and "(New Arrival)" are left for the resolve retry,
+// which already sees past a trailing parenthetical - and which the Silver
+// Age decks depend on keeping, since theirs names the hero's class.
+var fabPackCount = regexp.MustCompile(`\s*\(\d+\)`)
+
+// fabDeckSet matches the storefront's name for a chapter's full deck
+// display, which the canon calls a display rather than a set of its count.
+var fabDeckSet = regexp.MustCompile(`\s+Deck - Set of \d+`)
+
 // sealedName rewrites a storefront listing toward the shape its game's
 // canonical names use, where the two differ by more than the trailing
 // decoration the resolve retry already sees past.
@@ -81,6 +96,28 @@ var (
 // carries the deck number the canon leads with, or restates a set the rest
 // of the name already spells.
 func sealedName(game, name string) string {
+	if game == GameFleshAndBlood {
+		name = strings.TrimPrefix(name, "Flesh & Blood TCG: ")
+		name = fabPackCount.ReplaceAllString(name, "")
+		// The canon spells an unlimited printing as a bracketed edition at
+		// the end; the storefront abbreviates it in the middle of the name.
+		unlimited := strings.Contains(name, " Unlimited Ed ")
+		name = strings.Replace(name, " Unlimited Ed ", " ", 1)
+		// The canon runs a set name straight into what it is sold as, and
+		// separates an Armory deck from its hero with a colon; the
+		// storefront spells a dash for both. The Silver Age decks are the
+		// exception it cannot be applied to blindly - their dash is the
+		// canon's own.
+		name = strings.Replace(name, " - Booster ", " Booster ", 1)
+		name = strings.Replace(name, "Armory Deck - ", "Armory Deck: ", 1)
+		// A display of every deck in a chapter is sold as a set of its
+		// count, and named for what it is.
+		name = fabDeckSet.ReplaceAllString(name, " Deck Display")
+		if unlimited {
+			name += " [Unlimited Edition]"
+		}
+		return strings.TrimSpace(name)
+	}
 	if game != GameOnePiece {
 		return name
 	}
@@ -340,6 +377,8 @@ func (mm *Miniaturemarket) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameRiftbound
 	case GameOnePiece:
 		info.Game = mtgban.GameOnePiece
+	case GameFleshAndBlood:
+		info.Game = mtgban.GameFleshAndBlood
 	}
 	return
 }
