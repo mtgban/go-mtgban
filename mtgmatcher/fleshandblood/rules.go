@@ -210,52 +210,55 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	inCard.Name = match
 }
 
-// fusedNamedBy answers the fused names spelled from the given name's faces,
-// in any order, by asking the canonical-name index for every ordering of the
-// deduplicated faces. Deduplication is what folds the doubled spelling
-// cardtrader sells a pairing under ("Gold // Golden Cog // Gold // Golden
-// Cog") onto its two faces. No index of face sets is kept: the datastore's
-// fused cards carry two faces - the token strips at most four - so the
-// orderings to ask about are few, and the backend is copied by value when a
-// datastore is installed, which leaves nothing stable to key a cache on.
-func fusedNamedBy(b *mtgmatcher.Backend, name string) []string {
+// faceKey folds a fused name onto the set of its faces: the normalized face
+// names, deduplicated and sorted, so the orders a card's faces can be
+// written in share one key - and so does the doubled spelling cardtrader
+// sells a pairing under ("Gold // Golden Cog // Gold // Golden Cog"). A name
+// with no separator has no key.
+func faceKey(name string) string {
 	split := strings.Split(name, "//")
 	if len(split) < 2 {
-		return nil
+		return ""
 	}
-	// Faces dedupe on their normalized form, the way the doubled spelling
-	// folds whatever case it arrives in; the first spelling speaks for its
-	// face in the candidates, whose lookup normalizes the whole name anyway.
-	var faces, seen []string
+	var faces []string
 	for _, face := range split {
-		norm := mtgmatcher.Normalize(face)
-		if !slicesContains(seen, norm) {
-			seen = append(seen, norm)
-			faces = append(faces, strings.TrimSpace(face))
+		face = mtgmatcher.Normalize(face)
+		if !slicesContains(faces, face) {
+			faces = append(faces, face)
 		}
 	}
-	var names []string
-	permuteFaces(faces, 0, func(ordered []string) {
-		canonical, found := b.CanonicalNames[mtgmatcher.Normalize(strings.Join(ordered, " // "))]
-		if found && !slicesContains(names, canonical) {
-			names = append(names, canonical)
-		}
-	})
-	return names
+	sort.Strings(faces)
+	return strings.Join(faces, "//")
 }
 
-// permuteFaces hands fn every ordering of faces, permuting in place from
-// position i on.
-func permuteFaces(faces []string, i int, fn func([]string)) {
-	if i == len(faces)-1 {
-		fn(faces)
-		return
+// fusedNamedBy answers the fused cards spelled from the given name's faces,
+// in any order, by asking every fused printing whether its faces are the
+// same set.
+//
+// The faces are compared as a set rather than tried as orderings. A storefront
+// writes the name, so how many faces arrive is the storefront's to decide -
+// asking after each ordering costs a factorial of that, and a name of eleven
+// faces stalls the match for the better part of a minute. Which orderings
+// exist is not the question anyway: the question is which printings wear
+// these faces, and a key answers it in one pass whatever the count.
+func fusedNamedBy(b *mtgmatcher.Backend, name string) []string {
+	key := faceKey(name)
+	if key == "" {
+		return nil
 	}
-	for j := i; j < len(faces); j++ {
-		faces[i], faces[j] = faces[j], faces[i]
-		permuteFaces(faces, i+1, fn)
-		faces[i], faces[j] = faces[j], faces[i]
+	var names []string
+	for _, co := range b.UUIDs {
+		if co.Sealed || !strings.Contains(co.Name, "//") {
+			continue
+		}
+		if faceKey(co.Name) != key {
+			continue
+		}
+		if !slicesContains(names, co.Name) {
+			names = append(names, co.Name)
+		}
 	}
+	return names
 }
 
 func slicesContains(names []string, name string) bool {
