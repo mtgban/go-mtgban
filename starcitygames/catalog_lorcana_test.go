@@ -65,6 +65,28 @@ func TestLorcanaFinish(t *testing.T) {
 	}
 }
 
+// TestSecondBucket pins the marker that tells a listing's second stock record
+// from a listing of its own.
+func TestSecondBucket(t *testing.T) {
+	for _, tt := range []struct {
+		sku  string
+		want bool
+	}{
+		{"SGL-FAB-AGB-014_CC-ENN", true},
+		{"SGL-FAB-AGB-014-ENN", false},
+		{"SGL-FAB-AGB-019_CC-ENN", true},
+		{"SGL-FAB-PRM-HER_022-ENR", false},
+		{"SGL-LOR-002-117M-ENN", false},
+		{"SGL-FAB-AGB", false},
+	} {
+		t.Run(tt.sku, func(t *testing.T) {
+			if got := secondBucket(tt.sku); got != tt.want {
+				t.Errorf("secondBucket(%q) = %v, want %v", tt.sku, got, tt.want)
+			}
+		})
+	}
+}
+
 // TestSoleSibling pins the rule that decides which printing a sku marker
 // names. One printing is spelled once per treatment it is sold in, so the
 // candidates are counted by name; two names would leave the marker naming
