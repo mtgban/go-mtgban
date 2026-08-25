@@ -189,8 +189,8 @@ move in §3–4 is mechanical and individually testable.
       `magicRules.AdjustEdition` concern (see §4)
 - [ ] `variants.go` (123 KB) → `magic/`; the single `filter.go:785`
       `VariantsTable[...]` lookup becomes a `FilterCards` hook call
-- [ ] `table.go` Magic data (`setAllowedForTokens`, `sldJPNLangDupes`,
-      `productsWithOnlyFoils`, `missingP[AE]LPtags`) → `magic/`; keep the
+- [ ] `table.go` Magic data (`sldJPNLangDupes`, `productsWithOnlyFoils`,
+      `missingP[AE]LPtags`) → `magic/`; keep the
       game-neutral `LanguageCode2LanguageTag` family in core
 - [ ] `PromoType*`/`Finish*`/`FrameEffect*` consts → `magic/` (re-export the few
       genuinely shared ones, e.g. finish suffixes used by `output()`)

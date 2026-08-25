@@ -332,13 +332,14 @@ side.
 **What the Magic loader does** — data *repair*, not just indexing. This is the
 heavyweight path, and it now lives entirely in `mtgmatcher/magic/mtgjson.go`
 (`magic.Load`), with its companion tables in `mtgmatcher/magic/table.go`
-(`setAllowedForTokens`, the missing PALP/PELP tag lists, `sldJPNLangDupes`,
-`productsWithOnlyFoils`, the Magic color-name map). Core's `mtgmatcher/table.go`
+(the missing PALP/PELP tag lists, `sldJPNLangDupes`, `productsWithOnlyFoils`,
+the Magic color-name map). Core's `mtgmatcher/table.go`
 retains only the language maps (`LanguageCode2LanguageTag` and its inverse).
 
-- `skipSet()` drops online-only / art-series / token / empty sets; tokens
-  whose names do not collide with real cards are promoted into the card list
-  (colliding ones get a `" Token"` suffix).
+- `skipSet()` drops online-only / art-series / empty sets. Tokens are filed
+  under the set mtgjson names in `tokenSetCode`, called `"<set> Tokens"`, and
+  promoted into its card list; a token whose name a real card answers to gets
+  a `" Token"` suffix.
 - Per-set patch tables (a `switch set.Code` of FBB/4BB language overrides,
   STA/PLST frame strips, SLD per-number finish/tag/frame fixes, CMB1/CMB2
   playtest renames, PALP/PELP flavor tags, PMIC/PPC1 promo flags, DFT/SLC/
