@@ -174,59 +174,10 @@ func nameAtNumber(b *mtgmatcher.Backend, name, number string) string {
 		}
 		match, matchNorm = co.Name, norm
 	}
-	if match == "" || !closeName(mtgmatcher.Normalize(name), matchNorm) {
+	if match == "" || !mtgmatcher.CloseName(name, match) {
 		return ""
 	}
 	return match
-}
-
-// closeName reports whether a storefront's normalized name is the
-// datastore's own with a piece missing off one end or up to two letters
-// wrong.
-func closeName(got, want string) bool {
-	if got == "" || want == "" {
-		return false
-	}
-	if strings.HasPrefix(want, got) || strings.HasSuffix(want, got) {
-		return true
-	}
-	return editDistance(got, want, 2) <= 2
-}
-
-// editDistance is the Levenshtein distance between two strings, giving up
-// at limit: the caller only cares whether the two are within a couple of
-// edits, and a name pair that is not stops being measured once the whole
-// row of the table is past the limit.
-func editDistance(a, b string, limit int) int {
-	ar, br := []rune(a), []rune(b)
-	if len(ar) > len(br) {
-		ar, br = br, ar
-	}
-	if len(br)-len(ar) > limit {
-		return limit + 1
-	}
-	prev := make([]int, len(ar)+1)
-	cur := make([]int, len(ar)+1)
-	for i := range prev {
-		prev[i] = i
-	}
-	for j := 1; j <= len(br); j++ {
-		cur[0] = j
-		best := cur[0]
-		for i := 1; i <= len(ar); i++ {
-			cost := 1
-			if ar[i-1] == br[j-1] {
-				cost = 0
-			}
-			cur[i] = min(prev[i]+1, cur[i-1]+1, prev[i-1]+cost)
-			best = min(best, cur[i])
-		}
-		if best > limit {
-			return limit + 1
-		}
-		prev, cur = cur, prev
-	}
-	return prev[len(ar)]
 }
 
 // setCodePrefixRe matches a set code worn as an edition prefix: cardtrader

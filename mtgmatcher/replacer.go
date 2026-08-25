@@ -229,3 +229,57 @@ func HasPrefix(str1, str2 string) bool {
 func HasSuffix(str1, str2 string) bool {
 	return strings.HasSuffix(Normalize(str1), Normalize(str2))
 }
+
+// CloseName reports whether got is want with a piece missing off one end or
+// up to two letters wrong, both read Normalize-d. It is the misspelling test
+// a game's rules gate a rename on, once something else - a collector number,
+// an edition - has already picked the one printing the new name may come
+// from: the closeness is what stops that pick from renaming a card into an
+// unrelated one. Which evidence licenses the rename is each game's own
+// business; what counts as close is not.
+func CloseName(got, want string) bool {
+	got, want = Normalize(got), Normalize(want)
+	if got == "" || want == "" {
+		return false
+	}
+	if strings.HasPrefix(want, got) || strings.HasSuffix(want, got) {
+		return true
+	}
+	return editDistance(got, want, 2) <= 2
+}
+
+// editDistance is the Levenshtein distance between two strings, giving up at
+// limit: the caller only cares whether the two are within a couple of edits,
+// and a name pair that is not stops being measured once the whole row of the
+// table is past the limit.
+func editDistance(a, b string, limit int) int {
+	ar, br := []rune(a), []rune(b)
+	if len(ar) > len(br) {
+		ar, br = br, ar
+	}
+	if len(br)-len(ar) > limit {
+		return limit + 1
+	}
+	prev := make([]int, len(ar)+1)
+	cur := make([]int, len(ar)+1)
+	for i := range prev {
+		prev[i] = i
+	}
+	for j := 1; j <= len(br); j++ {
+		cur[0] = j
+		best := cur[0]
+		for i := 1; i <= len(ar); i++ {
+			cost := 1
+			if ar[i-1] == br[j-1] {
+				cost = 0
+			}
+			cur[i] = min(prev[i]+1, cur[i-1]+1, prev[i-1]+cost)
+			best = min(best, cur[i])
+		}
+		if best > limit {
+			return limit + 1
+		}
+		prev, cur = cur, prev
+	}
+	return prev[len(ar)]
+}
