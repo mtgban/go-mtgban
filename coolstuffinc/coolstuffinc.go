@@ -170,6 +170,11 @@ var bundleRe = regexp.MustCompile(`^Buy 1 get (\d+) free!$`)
 // free ones together. The wording carries the count, so a promotion the
 // condition parser learned to cut is also the one the price is divided by,
 // rather than only the one spelling the exact count the flag used to name.
+//
+// The price is the only thing the promotion changes. The count beside it is
+// the same card-qty column every row on the page carries, promotion or not,
+// capped at "20+" the way a stock figure is, so it goes out as the stock it
+// reads as rather than divided to match the price.
 func bundledCopies(bundleStr string) int {
 	match := bundleRe.FindStringSubmatch(bundleStr)
 	if match == nil {
