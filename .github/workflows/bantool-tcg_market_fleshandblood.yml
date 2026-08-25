@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_market_fleshandblood]
   schedule:
-    - cron: "30 */12 * * *"
+    - cron: "19 11,23 * * *"
 
 permissions:
   contents: read

@@ -5,10 +5,15 @@ on:
   repository_dispatch:
     types: [tcg_syplist]
   schedule:
-    - cron: "41 19 * * *"
+    - cron: "8 12 * * *"
 
 permissions:
   contents: read
+
+concurrency:
+  group: bantool-tcgplayer
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   cache-datastore:

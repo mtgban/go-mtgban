@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [coolstuffinc_yugioh]
   schedule:
-    - cron: "15 */12 * * *"
+    - cron: "30 2,14 * * *"
 
 permissions:
   contents: read

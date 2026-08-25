@@ -5,10 +5,15 @@ on:
   repository_dispatch:
     types: [coolstuffinc_lorcana]
   schedule:
-    - cron: "0 */12 * * *"
+    - cron: "2 1,13 * * *"
 
 permissions:
   contents: read
+
+concurrency:
+  group: bantool-coolstuffinc
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   deploy:

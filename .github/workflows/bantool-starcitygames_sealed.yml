@@ -5,10 +5,15 @@ on:
   repository_dispatch:
     types: [starcitygames_sealed]
   schedule:
-    - cron: "45 1-23/4 * * *"
+    - cron: "52 5,17 * * *"
 
 permissions:
   contents: read
+
+concurrency:
+  group: bantool-starcitygames
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   cache-datastore:

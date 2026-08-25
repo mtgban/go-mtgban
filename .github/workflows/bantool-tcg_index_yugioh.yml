@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_index_yugioh]
   schedule:
-    - cron: "25 */12 * * *"
+    - cron: "50 3,15 * * *"
 
 permissions:
   contents: read

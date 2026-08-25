@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [miniaturemarket_sealed_fleshandblood]
   schedule:
-    - cron: "20 */12 * * *"
+    - cron: "10 4,16 * * *"
 
 permissions:
   contents: read

@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [vegassingles_onepiece]
   schedule:
-    - cron: "8 20 * * *"
+    - cron: "34 4,16 * * *"
 
 permissions:
   contents: read

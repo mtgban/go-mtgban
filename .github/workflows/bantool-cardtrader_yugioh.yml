@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [cardtrader_yugioh]
   schedule:
-    - cron: "45 */12 * * *"
+    - cron: "3 10,22 * * *"
 
 permissions:
   contents: read

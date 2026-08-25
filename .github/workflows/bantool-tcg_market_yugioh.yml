@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [tcg_market_yugioh]
   schedule:
-    - cron: "30 */12 * * *"
+    - cron: "47 7,19 * * *"
 
 permissions:
   contents: read

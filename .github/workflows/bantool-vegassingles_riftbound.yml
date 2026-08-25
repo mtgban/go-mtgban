@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [vegassingles_riftbound]
   schedule:
-    - cron: "7 20 * * *"
+    - cron: "21 5,17 * * *"
 
 permissions:
   contents: read
