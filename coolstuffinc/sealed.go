@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/mtgban/go-mtgban/mtgban"
@@ -416,15 +415,14 @@ func searchSealed(ctx context.Context, game, query string) (*SearchResult, error
 	v.Set("resultsPerPage", "50")
 	v.Set("submit", "Search")
 
-	link := "https://www.coolstuffinc.com/sq/"
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, link, strings.NewReader(v.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, csiSearchURL, strings.NewReader(v.Encode()))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	req.Header.Set("User-Agent", "curl/8.6.0")
 
-	resp, err := cleanhttp.DefaultClient().Do(req)
+	resp, err := csiClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
