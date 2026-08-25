@@ -43,6 +43,28 @@ func TestLorcanaNumber(t *testing.T) {
 	}
 }
 
+// TestLorcanaFinish pins the one catalog treatment that has to be named for
+// the datastore. Every other alt foil is the only foil its printing is sold
+// in, so the foil flag reaches it and the marketing name says nothing the
+// datastore would recognize.
+func TestLorcanaFinish(t *testing.T) {
+	for _, tt := range []struct{ finish, want string }{
+		{"Rainbow Foil", "RainbowPillars"},
+		{"Foil", ""},
+		{"Non-foil", ""},
+		{"Inkwash Foil", ""},
+		{"Epic Foil", ""},
+		{"Whisper Foil", ""},
+		{"", ""},
+	} {
+		t.Run(tt.finish, func(t *testing.T) {
+			if got := lorcanaFinish(tt.finish); got != tt.want {
+				t.Errorf("lorcanaFinish(%q) = %q, want %q", tt.finish, got, tt.want)
+			}
+		})
+	}
+}
+
 // TestSoleSibling pins the rule that decides which printing a sku marker
 // names. One printing is spelled once per treatment it is sold in, so the
 // candidates are counted by name; two names would leave the marker naming

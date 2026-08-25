@@ -268,3 +268,62 @@ func TestResolveLorcanaPromoSeries(t *testing.T) {
 		})
 	}
 }
+
+// TestResolveLorcanaRainbowFoil covers the one treatment a Lorcana printing is
+// sold in beside its standard foil. The foil flag alone always picked the
+// standard, so the two skus landed on one uuid and one price overwrote the
+// other; the catalog's own name for it is what separates them.
+func TestResolveLorcanaRainbowFoil(t *testing.T) {
+	withLorcana(t)
+
+	for _, tt := range []struct {
+		name, sku, cardName, set, number, standard string
+	}{
+		{"a rainbow beside a silver", "SGL-LOR-009-015-ENA", "Ariel - Singing Mermaid", "Fabled", "015", "Foil"},
+		{"a rainbow beside a set's own foil", "SGL-LOR-010-020-ENA", "Simba - King in the Making", "Whispers in the Well", "020", "Whisper Foil"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			rainbow, err := resolveProduct(GameLorcana, CatalogProduct{
+				SKU: tt.sku, Name: tt.cardName, Set: tt.set, CollectorNumber: tt.number,
+				Finish: "Rainbow Foil", FinishGroup: "Alt Foil",
+			})
+			if err != nil {
+				t.Fatalf("rainbow: %v", err)
+			}
+			co, cerr := mtgmatcher.GetUUID(rainbow)
+			if cerr != nil {
+				t.Fatalf("GetUUID(%q): %v", rainbow, cerr)
+			}
+			if co.Finish != "rainbowpillars" {
+				t.Errorf("rainbow foil resolved to the %q printing, want rainbowpillars", co.Finish)
+			}
+
+			standard, err := resolveProduct(GameLorcana, CatalogProduct{
+				SKU: tt.sku, Name: tt.cardName, Set: tt.set, CollectorNumber: tt.number,
+				Finish: tt.standard, FinishGroup: "Foil",
+			})
+			if err != nil {
+				t.Fatalf("standard: %v", err)
+			}
+			if standard == rainbow {
+				t.Errorf("both treatments resolved to %s", rainbow)
+			}
+		})
+	}
+
+	// A printing sold in one foil only is untouched by the name: it has no
+	// rainbow sibling to reach, and the flag still answers with the foil it
+	// does have.
+	id, err := resolveProduct(GameLorcana, CatalogProduct{
+		SKU: "SGL-LOR-010b-242-ENA", Name: "Hades - Looking for a Deal",
+		Set: "Whispers in the Well", CollectorNumber: "242",
+		Finish: "Rainbow Foil", FinishGroup: "Alt Foil",
+	})
+	if err != nil {
+		t.Fatalf("foil-only printing: %v", err)
+	}
+	co, cerr := mtgmatcher.GetUUID(id)
+	if cerr != nil || co.Finish == "rainbowpillars" {
+		t.Errorf("foil-only printing resolved to %v (%v), want its own foil", co, cerr)
+	}
+}

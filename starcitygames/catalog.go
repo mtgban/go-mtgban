@@ -504,6 +504,30 @@ func numberDigits(number string) string {
 	return strings.TrimLeft(number[:end], "0")
 }
 
+// lorcanaFinish names a Lorcana treatment the way the datastore names it, and
+// answers "" for the ones that need no naming.
+//
+// Star City Games sells a Lorcana treatment under a marketing name of its own,
+// and the name is the set's rather than the treatment's: its "Inkwash Foil" is
+// the datastore's Lava in one set, Magma in another and VerticalWave in a
+// third. None of that has to be translated, because every printing behind
+// those names is sold in one foil and the foil flag already reaches it.
+//
+// One does. A printing sold in its standard foil and in a second one beside it
+// has two foils for the flag to choose between, and the flag always picks the
+// standard - so the second foil's sku and the standard's landed on one uuid,
+// and a $16.78 buylist competed with a $12.56 one on the same card. That
+// second foil is the datastore's RainbowPillars throughout, which the catalog
+// names Rainbow Foil, and naming it is what separates the two skus. A printing
+// not sold in it is unaffected: the name reaches no uuid and the flag decides
+// as before.
+func lorcanaFinish(finish string) string {
+	if finish == "Rainbow Foil" {
+		return "RainbowPillars"
+	}
+	return ""
+}
+
 // lorcanaMarker returns the letters a Lorcana collector number ends in, which
 // name a printing beside the one the digits alone name.
 func lorcanaMarker(number string) string {
@@ -535,6 +559,7 @@ func resolveLorcana(p CatalogProduct, foil bool) (string, error) {
 		Edition:   p.Set,
 		Variation: number,
 		Foil:      foil,
+		Finish:    lorcanaFinish(p.Finish),
 	})
 	if err != nil {
 		return "", err
