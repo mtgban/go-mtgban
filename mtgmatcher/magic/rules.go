@@ -715,12 +715,23 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 // Devastation Tokens" - but a storefront selling one of its tokens says
 // "Hour of Devastation", meaning the set the token came with rather than the
 // sheet nobody prints a name on. Both addresses reach the same printings.
-func namesTokenSetParent(b *mtgmatcher.Backend, set *mtgmatcher.Set, edition string) bool {
+//
+// A set may have printed more than one sheet - a promotional or a language
+// specific one beside the one it calls its own - and then its name alone no
+// longer tells them apart. It names one of them in tokenSetCode, so that one
+// answers, and the others answer only for the cards the named sheet lacks.
+func namesTokenSetParent(b *mtgmatcher.Backend, set *mtgmatcher.Set, edition string, editions []string) bool {
 	if set.Type != "token" || set.ParentCode == "" {
 		return false
 	}
 	parent, found := b.Sets[set.ParentCode]
-	return found && mtgmatcher.Equals(edition, parent.Name)
+	if !found || !mtgmatcher.Equals(edition, parent.Name) {
+		return false
+	}
+	if parent.TokenSetCode == set.Code {
+		return true
+	}
+	return !slices.Contains(editions, parent.TokenSetCode)
 }
 
 // FilterPrintings narrows the sets a card could have come from. See
@@ -747,7 +758,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 
 		// The set a token sheet came with names it as surely as the sheet
 		// does, and only tokens are filed there, so nothing else answers
-		case namesTokenSetParent(b, set, inCard.Edition):
+		case namesTokenSetParent(b, set, inCard.Edition, editions):
 			// pass-through
 
 		case inCard.IsPrerelease():

@@ -41,3 +41,43 @@ func TestParseCommanderEditionKeepsTokenSets(t *testing.T) {
 		}
 	}
 }
+
+// TestMatchTokenSetParentPicksNamedSheet pins how a parent set's name is
+// read when the set printed more than one token sheet: the sheet it names as
+// its own answers first, and a sheet it merely stems from answers only for
+// the tokens the named one never carried.
+func TestMatchTokenSetParentPicksNamedSheet(t *testing.T) {
+	for _, probe := range []struct {
+		name    string
+		edition string
+		setCode string
+	}{
+		// Dominaria United printed TDMU, PTDMU and WDMU, and all three
+		// carry an Angel
+		{"Angel", "Dominaria United", "TDMU"},
+		{"Soldier", "Dominaria United", "TDMU"},
+		{"Zombie", "Dominaria United", "TDMU"},
+		// TWOE has no Goblin and TMKM no Treasure, so the promo sheet is
+		// the only address left
+		{"Goblin", "Wilds of Eldraine", "WWOE"},
+		{"Treasure", "Murders at Karlov Manor", "WMKM"},
+	} {
+		in := mtgmatcher.InputCard{
+			Name:    probe.name,
+			Edition: probe.edition,
+		}
+		id, err := mtgmatcher.Match(&in)
+		if err != nil {
+			t.Errorf("Match(%v) = %v", in, err)
+			continue
+		}
+		co, err := mtgmatcher.GetUUID(id)
+		if err != nil {
+			t.Errorf("GetUUID(%s) = %v", id, err)
+			continue
+		}
+		if co.SetCode != probe.setCode || co.Card.Name != probe.name {
+			t.Errorf("Match(%v) = %s (%s %s), want the %s %s", in, id, co.SetCode, co.Card.Name, probe.setCode, probe.name)
+		}
+	}
+}
