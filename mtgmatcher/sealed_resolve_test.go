@@ -135,6 +135,12 @@ func sealedResolveBackend() *Backend {
 		"orc-pack":   {"Orchard - Booster Pack", "ORC"},
 		"orc-bundle": {"Orchard Booster Bundle (LGS)", "ORC"},
 		"mea-pack":   {"Meadow - Booster Pack", "MEA"},
+		// The catalog's own word for the box a set's packs come in, and
+		// a collection the catalog calls a box with no display beside it.
+		"mea-display":    {"Meadow - Booster Display", "MEA"},
+		"orc-collection": {"Orchard Collection Box", "ORC"},
+		// The catalog pluralises what a storefront writes singular.
+		"ogn-blisters": {"Origins 3 Pack Blisters [Zapdos]", "OGN"},
 		// One side of an adversarial set, the other side unstocked.
 		"tva-storm": {`Team Storm Theme Deck - "Team Storm" [Zapdos]`, "TVA"},
 		// A storefront's own edition of a product, which that storefront
@@ -757,5 +763,74 @@ func TestResolveSealedSetSaidTwice(t *testing.T) {
 		if err != nil || got != tt.want {
 			t.Errorf("%s: ResolveSealed(%q) = %q (%v), want %q", tt.desc, tt.vendor, got, err, tt.want)
 		}
+	}
+}
+
+// TestResolveSealedFoldsBlisterPlural pins the plural a catalog writes and a
+// storefront does not, which the other marketplace vocabularies were already
+// folded for.
+func TestResolveSealedFoldsBlisterPlural(t *testing.T) {
+	b := sealedResolveBackend()
+
+	uuid, err := b.ResolveSealed("Origins: Zapdos 3-Pack Blister")
+	if err != nil || uuid != "ogn-blisters" {
+		t.Errorf("ResolveSealed(blister singular) = %q (%v), want ogn-blisters", uuid, err)
+	}
+}
+
+// TestResolveSealedOuterBox pins which way the box-and-display fold runs. The
+// two words are one marketplace's spelling of another's - a storefront writing
+// "Booster Box" means the box of packs a catalog files as "Booster Display" -
+// but they are not interchangeable, because a display is also the thing a
+// shelf of boxes comes in. So a storefront's Box may reach a catalog's
+// Display, and a storefront's Display may not reach a catalog's Box: that one
+// is the display of them, and pricing it as one box is what the fold cost
+// before this ran one way.
+//
+// A storefront that says both is not naming an outer anything, it is spelling
+// one container twice, and it reaches the catalog's box as it always did.
+func TestResolveSealedOuterBox(t *testing.T) {
+	b := sealedResolveBackend()
+
+	for _, tt := range []struct{ desc, vendor, want string }{
+		{
+			"a storefront's box is the catalog's display",
+			"Meadow Booster Box", "mea-display",
+		},
+		{
+			"a storefront's display is not the catalog's box",
+			"Orchard Collection Display", "",
+		},
+		{
+			"the catalog's box answers to the word the catalog uses",
+			"Orchard Collection Box", "orc-collection",
+		},
+		{
+			"a storefront saying both words says one container twice",
+			"Orchard Collection Display Box", "orc-collection",
+		},
+	} {
+		got, err := b.ResolveSealed(tt.vendor)
+		if tt.want == "" {
+			if err == nil {
+				t.Errorf("%s: ResolveSealed(%q) = %q, want a refusal", tt.desc, tt.vendor, got)
+			}
+			continue
+		}
+		if err != nil || got != tt.want {
+			t.Errorf("%s: ResolveSealed(%q) = %q (%v), want %q", tt.desc, tt.vendor, got, err, tt.want)
+		}
+	}
+}
+
+// TestSealedTokensDropGameName pins that a game's own name carries no product
+// identity, the way every other game's already does. Pokemon storefronts
+// prepend it to half the catalog - "Pokémon TCG: Battle Academy" is the
+// Battle Academy - and read as identity it costs the match.
+func TestSealedTokensDropGameName(t *testing.T) {
+	got := sealedTokens("Pokémon TCG: Battle Academy")
+	want := sealedTokens("Battle Academy")
+	if !tokensEqual(got, want) {
+		t.Errorf("sealedTokens with the game name = %v, want %v", got, want)
 	}
 }
