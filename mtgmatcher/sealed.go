@@ -45,6 +45,15 @@ var sealedContainerWords = map[string]bool{
 // read as a count only where the name says so: with the multiplier's own "x",
 // or opening a parenthetical that a container closes, "(18 Booster)" and "(8
 // Structure Decks)".
+//
+// A count says how many of a thing the named product holds, so the rest of
+// the name has to name the product: "Millennium Pack Booster Box (18 Booster)"
+// is a booster box and holds eighteen boosters, and "Everfest Case (4 Booster
+// Boxes)" is a case and holds four boxes. Where the rest of the name says no
+// product at all - "Wild Survivors (12 Booster Boxes)" says nothing but the
+// set - the parenthetical is not the contents, it is the product: twelve
+// booster boxes are a case, and reading the twelve as a count lands the case's
+// price on a single booster box.
 func sealedQuantityTokens(name string) map[string]bool {
 	out := map[string]bool{}
 	lower := asciiReplacer.Replace(strings.ToLower(name))
@@ -53,12 +62,19 @@ func sealedQuantityTokens(name string) map[string]bool {
 			out[tok] = true
 		}
 	}
+	var named bool
+	for _, tok := range sealedTokenRe.FindAllString(sealedParenRe.ReplaceAllString(lower, " "), -1) {
+		if sealedContainerWords[tok] {
+			named = true
+			break
+		}
+	}
 	for _, match := range sealedParenRe.FindAllStringSubmatch(lower, -1) {
 		toks := sealedTokenRe.FindAllString(match[1], -1)
 		if len(toks) < 2 || !sealedNumberRe.MatchString(toks[0]) {
 			continue
 		}
-		if sealedContainerWords[toks[len(toks)-1]] {
+		if named && sealedContainerWords[toks[len(toks)-1]] {
 			out[toks[0]] = true
 		}
 	}
@@ -73,6 +89,25 @@ var sealedFiller = map[string]bool{
 	"legends": true, "tcg": true, "trading": true, "game": true,
 	"card": true, "cards": true, "one": true, "piece": true,
 	"bandai": true,
+}
+
+// sealedFold folds the marketplace vocabularies together - TCGplayer's
+// "Booster Display" is everyone else's "Booster Box", a bare "Booster" is a
+// pack - and the plurals onto their singulars.
+func sealedFold(tok string) string {
+	switch tok {
+	case "box", "boxes":
+		return "display"
+	case "booster", "boosters", "packs":
+		return "pack"
+	case "decks":
+		return "deck"
+	case "versus":
+		return "vs"
+	case "volume":
+		return "vol"
+	}
+	return tok
 }
 
 // sealedTokens reduces a product name to its canonical identity tokens:
@@ -91,19 +126,7 @@ func sealedTokens(name string) []string {
 		if sealedFiller[tok] {
 			continue
 		}
-		switch tok {
-		case "box", "boxes":
-			tok = "display"
-		case "booster", "boosters", "packs":
-			tok = "pack"
-		case "decks":
-			tok = "deck"
-		case "versus":
-			tok = "vs"
-		case "volume":
-			tok = "vol"
-		}
-		set[tok] = true
+		set[sealedFold(tok)] = true
 	}
 	out := make([]string, 0, len(set))
 	for tok := range set {
@@ -113,14 +136,66 @@ func sealedTokens(name string) []string {
 	return out
 }
 
+// sealedTokenCounts is sealedTokens without the deduplication: how many times
+// a name says each of its words.
+func sealedTokenCounts(name string) map[string]int {
+	out := map[string]int{}
+	for _, tok := range sealedTokenRe.FindAllString(strings.ToLower(asciiReplacer.Replace(name)), -1) {
+		if sealedFiller[tok] {
+			continue
+		}
+		out[sealedFold(tok)]++
+	}
+	return out
+}
+
+// sealedSaysTwice reports whether the vendor says a word of the candidate's
+// set name more times than the candidate's name and the set name can account
+// for between them.
+//
+// The set name is free against every product on its shelf, because storefronts
+// file products under the set they belong to - but they write it once, ahead of
+// the product's own name. A set that names two sides writes both of them onto
+// the shelf, and a storefront filing the deck as `EX Team Magma vs Team Aqua:
+// Team Aqua Theme Deck` said Aqua twice: once for the shelf, once for the deck.
+// The second one is the deck's own name and the Team Magma deck is not it -
+// which is the whole of what stops a Magma deck's uuid taking an Aqua deck's
+// price, the datastore holding no Aqua row to reach instead.
+//
+// Only the set's own words are counted this way. A storefront repeats plenty of
+// others for reasons of its own - `Hoenn Collection: Primal Groudon Collection`
+// is one collection - and the shelf is the only word whose second saying means
+// the storefront moved on to naming the product.
+func sealedSaysTwice(vendorCounts, account map[string]int, setWords map[string]bool) bool {
+	for tok, said := range vendorCounts {
+		if setWords[tok] && said > 1 && said > account[tok] {
+			return true
+		}
+	}
+	return false
+}
+
 // sealedExtrasSafe reports whether every vendor token missing from the
 // candidate is harmless: a count, a set-name word (storefronts file
 // products under the set they belong to), or noise. Anything else means
 // the vendor is naming a different product - "Prerelease Pack" and
 // "Participation Booster" must not resolve to the plain Booster Pack.
-func sealedExtrasSafe(vendor []string, candSet, setTokens map[string]bool) bool {
+//
+// The candidate's own set name is checked before anything else, because a
+// word the shelf itself is called cannot be the word telling its products
+// apart - every product on it may be spelled with the set's name. What the
+// rest of the game's set names free is checked after: a word that names
+// something more specific on this shelf is not harmless there, however
+// freely another set's name spells it.
+func sealedExtrasSafe(vendor []string, candSet, setTokens, ownSetTokens, narrower map[string]bool) bool {
 	for _, tok := range vendor {
-		if candSet[tok] || setTokens[tok] || sealedCountRe.MatchString(tok) {
+		if candSet[tok] || ownSetTokens[tok] || sealedCountRe.MatchString(tok) {
+			continue
+		}
+		if narrower[tok] {
+			return false
+		}
+		if setTokens[tok] {
 			continue
 		}
 		switch tok {
@@ -251,6 +326,48 @@ func (b *Backend) sealedQualifierGroups(name string) []map[string]bool {
 	return groups
 }
 
+// sealedListedRe splits what a bracket lists into the things it lists.
+var sealedListedRe = regexp.MustCompile(`\s*(?:,|&|/)\s*`)
+
+// sealedQualifierContradicts reports whether the vendor named part of what a
+// bracket lists and left the rest of the list out.
+//
+// Forgiving a bracket is forgiving the whole of it: a storefront that names
+// the deck without the Zapdos on its box said nothing about Zapdos, and that
+// silence is what makes the bracket decoration. A storefront that names one
+// of three Pokemon a blister pictures did not go silent - it said which
+// product it means, and it is not this one. Reading that as decoration is how
+// `2-Pack Blister: Raikou` lands on the blister picturing Raikou, Entei and
+// Suicune while the Raikou blisters sit unreached beside it.
+//
+// A list item counts as named on one word, because a storefront routinely
+// drops the card type a catalog spells: the Elite Trainer Box a storefront
+// files under `Iron Leaves` is the one the catalog brackets `[Iron Leaves
+// ex]`.
+func sealedQualifierContradicts(listed [][][]string, said map[string]bool) bool {
+	for _, items := range listed {
+		var named, silent int
+		for _, toks := range items {
+			var spoken bool
+			for _, tok := range toks {
+				if said[tok] {
+					spoken = true
+					break
+				}
+			}
+			if spoken {
+				named++
+			} else {
+				silent++
+			}
+		}
+		if named > 0 && silent > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // sealedQualifierTokens is sealedQualifierGroups with the brackets run
 // together, for the containment test that only asks whether a word is free.
 func sealedQualifierTokens(groups []map[string]bool) map[string]bool {
@@ -332,9 +449,12 @@ type sealedEntry struct {
 	uuid     string
 	tokens   []string
 	said     map[string]bool
+	account  map[string]int
 	groups   []map[string]bool
 	free     map[string]bool
+	listed   [][][]string
 	setWords map[string]bool
+	narrower map[string]bool
 }
 
 // sealedIndex is the sealed namespace read the way the resolver reads it. It
@@ -350,6 +470,7 @@ type sealedIndex struct {
 func (b *Backend) buildSealedIndex() *sealedIndex {
 	idx := &sealedIndex{pooled: map[string]bool{}}
 	setWords := map[string]map[string]bool{}
+	setCounts := map[string]map[string]int{}
 	for code, set := range b.Sets {
 		own := map[string]bool{}
 		for _, tok := range sealedTokens(set.Name) {
@@ -357,8 +478,10 @@ func (b *Backend) buildSealedIndex() *sealedIndex {
 			own[tok] = true
 		}
 		setWords[code] = own
+		setCounts[code] = sealedTokenCounts(set.Name)
 	}
 
+	shelves := map[string][]*sealedEntry{}
 	for _, uuid := range b.AllSealedUUIDs {
 		co, found := b.UUIDs[uuid]
 		if !found {
@@ -368,19 +491,43 @@ func (b *Backend) buildSealedIndex() *sealedIndex {
 			uuid:     uuid,
 			tokens:   sealedTokens(co.Name),
 			said:     map[string]bool{},
+			account:  sealedTokenCounts(co.Name),
 			groups:   b.sealedQualifierGroups(co.Name),
 			setWords: setWords[co.SetCode],
 		}
 		for _, tok := range entry.tokens {
 			entry.said[tok] = true
 		}
+		for tok, n := range setCounts[co.SetCode] {
+			entry.account[tok] += n
+		}
 		entry.free = sealedQualifierTokens(entry.groups)
+		for _, match := range bracketRe.FindAllStringSubmatch(co.Name, -1) {
+			if _, isCard := b.CanonicalNames[Normalize(match[1])]; !isCard {
+				continue
+			}
+			var items [][]string
+			for _, item := range sealedListedRe.Split(match[1], -1) {
+				if toks := sealedTokens(item); len(toks) > 0 {
+					items = append(items, toks)
+				}
+			}
+			if len(items) > 1 {
+				entry.listed = append(entry.listed, items)
+			}
+		}
 		if entry.setWords == nil {
 			entry.setWords = map[string]bool{}
 		}
 		idx.entries = append(idx.entries, entry)
+		shelves[co.SetCode] = append(shelves[co.SetCode], entry)
 	}
 
+	for _, shelf := range shelves {
+		for _, entry := range shelf {
+			entry.narrower = sealedNarrowerWords(shelf, entry)
+		}
+	}
 	return idx
 }
 
@@ -401,6 +548,11 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 
 	counts := sealedQuantityTokens(name)
 	vendor := sealedTokens(name)
+	vendorCounts := sealedTokenCounts(name)
+	said := map[string]bool{}
+	for _, tok := range vendor {
+		said[tok] = true
+	}
 	var exact, contained []string
 	shared := map[string]int{}
 	unsaid := map[string]int{}
@@ -412,8 +564,14 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 			exact = append(exact, entry.uuid)
 			continue
 		}
+		if sealedQualifierContradicts(entry.listed, said) {
+			continue
+		}
+		if sealedSaysTwice(vendorCounts, entry.account, entry.setWords) {
+			continue
+		}
 		subset, matched := tokensSubsetModulo(entry.tokens, vendor, entry.free)
-		if subset && sealedExtrasSafe(vendor, entry.said, idx.pooled) {
+		if subset && sealedExtrasSafe(vendor, entry.said, idx.pooled, entry.setWords, entry.narrower) {
 			uuid := entry.uuid
 			contained = append(contained, uuid)
 			// Specificity counts the words the vendor and the candidate
@@ -548,6 +706,44 @@ func sealedPrintRunSynonym(tok string) string {
 		return "1st"
 	}
 	return tok
+}
+
+// sealedNarrowerWords returns the words that would name a more specific
+// product than the given candidate on its own shelf: for every other sealed
+// product of the same set that says everything this candidate says, the words
+// it says on top.
+//
+// A word freed by the set vocabulary is free against every candidate in the
+// game, and a game's set names pooled cover most of the language a storefront
+// writes - some Pokemon set is called a Bundle, some a Blister, some names an
+// Aqua. Freed that way, "Surging Sparks Booster Bundle" reads as the Booster
+// Pack with a harmless extra word. But the set holds a Booster Bundle too, and
+// a vendor word that picks it out of the shelf is not decoration on the
+// product beside it: it says the vendor meant the other one, whether or not
+// that one is reachable.
+func sealedNarrowerWords(shelf []*sealedEntry, candidate *sealedEntry) map[string]bool {
+	out := map[string]bool{}
+	for _, sibling := range shelf {
+		if len(sibling.tokens) <= len(candidate.tokens) {
+			continue
+		}
+		covers := true
+		for tok := range candidate.said {
+			if !sibling.said[tok] {
+				covers = false
+				break
+			}
+		}
+		if !covers {
+			continue
+		}
+		for tok := range sibling.said {
+			if !candidate.said[tok] {
+				out[tok] = true
+			}
+		}
+	}
+	return out
 }
 
 // unexplainedTokens counts the vendor words that neither the candidate's

@@ -12,9 +12,10 @@ func sealedResolveBackend() *Backend {
 		// The cards a sealed name may be decorated with; a bracket only
 		// forgives what the game itself has a card for.
 		CanonicalNames: map[string]string{
-			Normalize("Zapdos"):   "Zapdos",
-			Normalize("Articuno"): "Articuno",
-			Normalize("Pikachu"):  "Pikachu",
+			Normalize("Zapdos"):                      "Zapdos",
+			Normalize("Articuno"):                    "Articuno",
+			Normalize("Pikachu"):                     "Pikachu",
+			Normalize("Zapdos, Articuno, & Pikachu"): "Zapdos, Articuno, & Pikachu",
 		},
 		Sets: map[string]*Set{
 			"OGN": {Name: "Origins", Code: "OGN"},
@@ -34,6 +35,16 @@ func sealedResolveBackend() *Backend {
 			// the pooled set vocabulary and so let a vendor say them
 			// about any product.
 			"BLE": {Name: "Blister Exclusives", Code: "BLE"},
+			// Pokemon is also filed under a set named for the bundles,
+			// which donates "bundle" to the pooled set vocabulary and so
+			// lets a vendor say it about any product of the game.
+			"BND": {Name: "Bundle Promos", Code: "BND"},
+			// Two shelves that differ by what else stands on them.
+			"ORC": {Name: "Orchard", Code: "ORC"},
+			"MEA": {Name: "Meadow", Code: "MEA"},
+			// A set named for two sides writes both of them onto every
+			// product filed under it.
+			"TVA": {Name: "Team Storm vs Team Aurora", Code: "TVA"},
 			"DR":  {Name: "EX Dragon", Code: "DR"},
 			// Yu-Gi-Oh! numbers its sequels, and every sequel's set name
 			// donates its number to the pooled set vocabulary the way
@@ -113,6 +124,19 @@ func sealedResolveBackend() *Backend {
 		// Two blisters that differ only by the creature on the pack.
 		"ble-blister-z": {"2-Pack Blister [Zapdos]", "BLE"},
 		"ble-blister-a": {"2-Pack Blister [Articuno]", "BLE"},
+		// A third blister whose bracket lists what it holds rather than
+		// what is printed beside it.
+		"ble-blister-trio": {"2-Pack Blister Pack [Zapdos, Articuno, & Pikachu]", "BLE"},
+		// A bundle beside the pack it is a bundle of: the catalog names
+		// the storefront that sold it, so no vendor can reach the bundle,
+		// and the vendor's word for it must not reach the pack either.
+		// The other shelf holds the pack alone, where the same vendor
+		// word names nothing and stays harmless.
+		"orc-pack":   {"Orchard - Booster Pack", "ORC"},
+		"orc-bundle": {"Orchard Booster Bundle (LGS)", "ORC"},
+		"mea-pack":   {"Meadow - Booster Pack", "MEA"},
+		// One side of an adversarial set, the other side unstocked.
+		"tva-storm": {`Team Storm Theme Deck - "Team Storm" [Zapdos]`, "TVA"},
 		// A storefront's own edition of a product, which that storefront
 		// names for the set and nothing else. The two below say which
 		// storefront and are two products, so they stay unforgiven.
@@ -456,6 +480,13 @@ func TestSealedQuantityTokens(t *testing.T) {
 		{"Hidden Arsenal 5 Booster Box (18 Booster)", []string{"18"}},
 		// A parenthetical a container does not close counts nothing.
 		{"Legendary Collection (2024 Reprint)", nil},
+		// A count says how many of a thing the named product holds, so
+		// the rest of the name has to name a product for the count to be
+		// counting its contents. A name that says nothing but the set is
+		// naming the lot itself - twelve booster boxes are a case - and
+		// reading the twelve as a count puts a case's price on one box.
+		{"Wild Survivors (12 Booster Boxes)", nil},
+		{"Origins (12 Booster Boxes)", nil},
 	} {
 		got := sealedQuantityTokens(tt.name)
 		if len(got) != len(tt.want) {
@@ -619,5 +650,112 @@ func TestResolveSealedWithHint(t *testing.T) {
 				t.Errorf("ResolveSealedWithHint(%q, %q) = %q, want %q", tt.vendor, tt.hint, uuid, tt.want)
 			}
 		})
+	}
+}
+
+// TestResolveSealedNarrowerSibling pins the bound the pooled set vocabulary
+// needs. A word some set of the game is named after is free against every
+// candidate in the game, and a game's set names between them cover most of
+// the language a storefront writes - which reads "Origins Booster Bundle" as
+// the Booster Pack with a harmless extra word. The set holds a Booster Bundle
+// too, and a vendor word that picks it out of the shelf says the vendor meant
+// that one, whether or not the catalog left it reachable.
+func TestResolveSealedNarrowerSibling(t *testing.T) {
+	b := sealedResolveBackend()
+
+	for _, tt := range []struct{ desc, vendor, want string }{
+		{
+			"the shelf's own bundle is what the word names, so the pack is not it",
+			"Orchard Booster Bundle", "",
+		},
+		{
+			"nothing on the shelf is narrower, so the vendor's extra stays harmless",
+			"Meadow Booster Bundle", "mea-pack",
+		},
+		{
+			"a word the candidate says itself is not a word naming something else",
+			"Orchard Booster Pack", "orc-pack",
+		},
+	} {
+		got, err := b.ResolveSealed(tt.vendor)
+		if tt.want == "" {
+			if err == nil {
+				t.Errorf("%s: ResolveSealed(%q) = %q, want a refusal", tt.desc, tt.vendor, got)
+			}
+			continue
+		}
+		if err != nil || got != tt.want {
+			t.Errorf("%s: ResolveSealed(%q) = %q (%v), want %q", tt.desc, tt.vendor, got, err, tt.want)
+		}
+	}
+}
+
+// TestResolveSealedListedBracket pins that forgiving a bracket is forgiving
+// the whole of it. A storefront that names the deck without the Zapdos on its
+// box said nothing about Zapdos, and that silence is what makes the bracket
+// decoration; a storefront that names one of three creatures a blister holds
+// did not go silent, it said which product it means.
+func TestResolveSealedListedBracket(t *testing.T) {
+	b := sealedResolveBackend()
+
+	for _, tt := range []struct{ desc, vendor, want string }{
+		{
+			"one of a listed three is the vendor naming a product this is not",
+			"2-Pack Blister: Pikachu", "",
+		},
+		{
+			"a list said in full is the product it lists",
+			"2-Pack Blister: Zapdos, Articuno & Pikachu", "ble-blister-trio",
+		},
+		{
+			"a bracket naming one creature is still decoration",
+			"Origins Theme Deck: Storm Rider", "ogn-deck-storm",
+		},
+	} {
+		got, err := b.ResolveSealed(tt.vendor)
+		if tt.want == "" {
+			if err == nil {
+				t.Errorf("%s: ResolveSealed(%q) = %q, want a refusal", tt.desc, tt.vendor, got)
+			}
+			continue
+		}
+		if err != nil || got != tt.want {
+			t.Errorf("%s: ResolveSealed(%q) = %q (%v), want %q", tt.desc, tt.vendor, got, err, tt.want)
+		}
+	}
+}
+
+// TestResolveSealedSetSaidTwice pins that the set name is free once. A
+// storefront writes the shelf ahead of the product's own name, and a set that
+// names two sides puts both of them on the shelf - so a storefront filing a
+// deck as "Team Storm vs Team Aurora: Team Aurora Theme Deck" said Aurora
+// twice, and the second one is the deck's own name.
+func TestResolveSealedSetSaidTwice(t *testing.T) {
+	b := sealedResolveBackend()
+
+	for _, tt := range []struct{ desc, vendor, want string }{
+		{
+			"the side the vendor names twice is the side it means",
+			"Team Storm vs Team Aurora: Team Aurora Theme Deck", "",
+		},
+		{
+			"the side this shelf does stock answers to its own name",
+			"Team Storm vs Team Aurora: Team Storm Theme Deck", "tva-storm",
+		},
+		{
+			"the shelf written once ahead of the product is the ordinary case",
+			"Team Storm vs Team Aurora Theme Deck", "tva-storm",
+		},
+	} {
+		got, err := b.ResolveSealed(tt.vendor)
+		if tt.want == "" {
+			if err == nil {
+				t.Errorf("%s: ResolveSealed(%q) = %q, want a refusal", tt.desc, tt.vendor, got)
+			}
+			continue
+		}
+		if err != nil || got != tt.want {
+			t.Errorf("%s: ResolveSealed(%q) = %q (%v), want %q", tt.desc, tt.vendor, got, err, tt.want)
+		}
 	}
 }
