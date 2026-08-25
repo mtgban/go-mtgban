@@ -46,7 +46,7 @@ type scgSet struct {
 // SetIDs returns the set name -> set_id map for a game, as used by the
 // sell-your-cards bookmark links.
 func (scg *SCGClient) SetIDs(ctx context.Context, game int) (map[string]int, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, scgSetsURL,
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, scg.setsURL,
 		strings.NewReader(`{"q":"","limit":2000}`))
 	if err != nil {
 		return nil, err
