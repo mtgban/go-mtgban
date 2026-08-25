@@ -819,6 +819,75 @@ func ResolveSealedWithHint(name, hint string) (string, error) {
 	return defaultBackend.ResolveSealedWithHint(name, hint)
 }
 
+// SealedNameSubsumed reports whether a storefront name says everything one of
+// the names beside it says and at least one word more, with the shelf they all
+// sit on discounted.
+//
+// Two entries of one catalog are two products, and the resolver cannot see
+// that: it is asked about one name at a time and answers for the product that
+// name describes best, so a catalog listing both "Marnie Premium Tournament
+// Collection Box" and "Marnie Premium Tournament Collection Box Bundle" gets
+// one answer twice. The longer name is the one that is wrong. Its extra word
+// is what it sells - a bundle of the boxes, not a box - and left on the box's
+// uuid it prices a case at a box's price. The caller passes the names that
+// reached one product, and the set that product is filed under, and drops the
+// ones this answers for.
+//
+// The shelf is discounted because a storefront prepends it freely, the same
+// reason the resolver forgives it: Cardmarket lists the one Victini Box twice,
+// once plainly and once as "Black & White Victini Box", and the set's own name
+// is the whole of the difference. A name that adds nothing else is filing the
+// product under its set, not naming something built on it.
+//
+// Only a strict superset counts. A catalog spells one product several ways -
+// "Sun & Moon Booster Box" beside "Sun & Moon Booster Booster Box" - and those
+// say the same words; two names that merely differ, "Promotion Pack 2022
+// Vol.1" and "Vol.2", say nothing about which of them is the product either,
+// and guessing between them is not this question.
+//
+// The names are split the way the resolver splits them, since a caller reading
+// them any other way reads a difference the resolver never saw.
+func SealedNameSubsumed(name string, beside []string, shelf string) bool {
+	shelved := map[string]bool{}
+	for _, word := range sealedTokens(shelf) {
+		shelved[word] = true
+	}
+	words := sealedTokens(name)
+	said := map[string]bool{}
+	for _, word := range words {
+		said[word] = true
+	}
+	for _, other := range beside {
+		shorter := sealedTokens(other)
+		// A name left saying nothing says nothing about this one either.
+		if len(shorter) == 0 || len(shorter) >= len(words) {
+			continue
+		}
+		if sealedNameSaysMore(said, words, shorter, shelved) {
+			return true
+		}
+	}
+	return false
+}
+
+// sealedNameSaysMore reports whether a name holds every word of a shorter one
+// and at least one word more that the shelf does not account for.
+func sealedNameSaysMore(said map[string]bool, words, shorter []string, shelved map[string]bool) bool {
+	spoken := map[string]bool{}
+	for _, word := range shorter {
+		if !said[word] {
+			return false
+		}
+		spoken[word] = true
+	}
+	for _, word := range words {
+		if !spoken[word] && !shelved[word] {
+			return true
+		}
+	}
+	return false
+}
+
 // sealedLanguageWords mark a storefront product as a non-English variant,
 // which the English-only datastores deliberately do not carry - and whose
 // prices must not land on the English product's uuid.
