@@ -249,3 +249,73 @@ func sealedAccessoryBackend() *mtgmatcher.Backend {
 	backend.IndexSets()
 	return backend
 }
+
+// TestBuildProductMapDropsSubsumed pins that two blueprints do not price one
+// product. The resolver is asked about one name at a time, so a catalog that
+// lists both the box and the bundle of boxes gets the box's uuid twice, and
+// the bundle's price then lands on a single box. The longer name is the one
+// that loses: its extra word is the thing it sells.
+func TestBuildProductMapDropsSubsumed(t *testing.T) {
+	mtgmatcher.SetGlobalDatastore(sealedSubsumedBackend())
+
+	ct := &Sealed{gameID: GameFleshAndBlood}
+	// The bundle alone is nothing but a spelling of the product, and
+	// dropping it there would cost the product its only price.
+	alone := ct.buildProductMap(map[int]*Blueprint{
+		2: {ID: 2, Name: "Crucible of War Booster Box Bundle"},
+	})
+	if got := alone[2]; !reflect.DeepEqual(got, []string{"cru-box"}) {
+		t.Fatalf("the only name reaching the product was dropped: got %v", got)
+	}
+
+	productMap := ct.buildProductMap(map[int]*Blueprint{
+		1: {ID: 1, Name: "Crucible of War Booster Box"},
+		2: {ID: 2, Name: "Crucible of War Booster Box Bundle"},
+	})
+	if got := productMap[1]; !reflect.DeepEqual(got, []string{"cru-box"}) {
+		t.Errorf("the name that says the product lost it: got %v, want [cru-box]", got)
+	}
+	if uuids, found := productMap[2]; found {
+		t.Errorf("the bundle kept the box's uuid: %v", uuids)
+	}
+
+	// Two spellings of the same words are one product said twice, and
+	// neither of them is the one built on the other.
+	spellings := ct.buildProductMap(map[int]*Blueprint{
+		1: {ID: 1, Name: "Crucible of War Booster Box"},
+		3: {ID: 3, Name: "Crucible of War Booster Booster Box"},
+	})
+	if len(spellings) != 2 {
+		t.Errorf("one of two spellings of a product was dropped: %v", spellings)
+	}
+
+	// The set a storefront files a product under is a word it prepends
+	// freely, so a name that adds nothing else is the same name again.
+	shelved := ct.buildProductMap(map[int]*Blueprint{
+		1: {ID: 1, Name: "Crucible of War Booster Box"},
+		4: {ID: 4, Name: "Booster Box"},
+	})
+	if len(shelved) != 2 {
+		t.Errorf("a product filed under its own set was dropped: %v", shelved)
+	}
+}
+
+// sealedSubsumedBackend is one product on a shelf, beside a set whose name
+// donates "bundle" to the pooled vocabulary - which is what lets a vendor say
+// it about any product of the game, and so what lets the bundle's name reach
+// the box at all.
+func sealedSubsumedBackend() *mtgmatcher.Backend {
+	backend := &mtgmatcher.Backend{
+		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*mtgmatcher.Set{
+			"CRU": {Name: "Crucible of War", Code: "CRU"},
+			"BND": {Name: "Bundle Promos", Code: "BND"},
+		},
+	}
+	backend.AddSealed("cru-box", "Booster Box", "CRU", "", 0)
+	backend.SortSealed()
+	backend.IndexSets()
+	return backend
+}

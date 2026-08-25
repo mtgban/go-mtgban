@@ -180,6 +180,7 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 	// out here.
 	var resolved int
 	dropped := map[string]int{}
+	named := map[string][]int{}
 	for id, bp := range blueprints {
 		if _, found := productMap[id]; found {
 			continue
@@ -204,7 +205,13 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 			continue
 		}
 		productMap[id] = []string{uuid}
+		named[uuid] = append(named[uuid], id)
 		resolved++
+	}
+	pruned := ct.pruneSubsumed(blueprints, productMap, named)
+	resolved -= pruned
+	if pruned > 0 {
+		dropped["names a product built on another"] += pruned
 	}
 	if resolved > 0 {
 		ct.printf("Resolved %d more sealed products by name", resolved)
@@ -266,6 +273,42 @@ func sealedNamePassSkips(bp *Blueprint) (bool, string) {
 		return true, "accessory"
 	}
 	return false, ""
+}
+
+// pruneSubsumed drops the blueprints that reached a product another blueprint
+// names in fewer words, and returns how many it dropped. Which names those are
+// is mtgmatcher.SealedNameSubsumed's question; this walks the blueprints that
+// reached each product and asks it.
+//
+// A blueprint the datastore's own ids answered for is asked about but never
+// dropped: an id is what the catalogs agree on, and a name cannot overrule it.
+func (ct *Sealed) pruneSubsumed(blueprints map[int]*Blueprint, productMap map[int][]string, named map[string][]int) int {
+	var pruned int
+	for uuid, ids := range named {
+		co, err := mtgmatcher.GetUUID(uuid)
+		if err != nil {
+			continue
+		}
+		var beside []string
+		for id, uuids := range productMap {
+			// A uuid the datastore's ids answered for can be held by a
+			// blueprint this pass never saw, and an unknown name says
+			// nothing about the ones it stands beside.
+			bp, known := blueprints[id]
+			if known && len(uuids) > 0 && uuids[0] == uuid {
+				beside = append(beside, bp.Name)
+			}
+		}
+		for _, id := range ids {
+			if !mtgmatcher.SealedNameSubsumed(blueprints[id].Name, beside, co.Edition) {
+				continue
+			}
+			ct.printf("%q (%d): names a product built on %s", blueprints[id].Name, id, uuid)
+			delete(productMap, id)
+			pruned++
+		}
+	}
+	return pruned
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
