@@ -18,8 +18,11 @@ import (
 
 // The games this scraper covers, as the storefront names them.
 const (
-	GameMagic   = "Magic_the_Gathering"
-	GameLorcana = "Lorcana"
+	GameMagic         = "Magic_the_Gathering"
+	GameLorcana       = "Lorcana"
+	GamePokemon       = "Pokemon_Tcg"
+	GameYuGiOh        = "Yu_Gi_Oh"
+	GameFleshAndBlood = "Flesh_and_Blood"
 )
 
 const (
@@ -31,6 +34,27 @@ const (
 	modeRetail  = "retail"
 	modeBuylist = "buylist"
 )
+
+// The pages the crawl must not enter: the re-sorted copies of every category,
+// which would double its rows, and each game's sealed hubs, whose products
+// are not singles. Gift_Sets and Collector_Tins hang off both the Pokemon
+// and the Yu-Gi-Oh tree under one name.
+var skipSuffixes = []string{
+	"_ByTable.html",
+	"_ByRarity.html",
+	"_ByNumber.html",
+	"Games.html",
+	"Magic_Booster_Boxes.html",
+	"Fat_Packs.html",
+	"Gift_Sets_and_Secret_Lairs.html",
+	"Preconstructed_Decks.html",
+	"Pokemon_Booster_Boxes.html",
+	"Pokemon_Booster_Packs.html",
+	"Yugioh_Booster_Boxes.html",
+	"Yu_Gi_Oh_Booster_Packs.html",
+	"Collector_Tins.html",
+	"Gift_Sets.html",
+}
 
 // Strikezone prices Strike Zone's singles, both what they sell and what they
 // buy.
@@ -112,6 +136,17 @@ func (sz *Strikezone) processRow(mode string, channel chan<- respChan, el *colly
 
 		foil := strings.Contains(strings.ToLower(cond), "foil")
 		theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: foil}
+	case GamePokemon, GameYuGiOh, GameFleshAndBlood:
+		number := el.ChildText("td:nth-child(2)")
+		cond = el.ChildText("td:nth-child(4)")
+		qty = el.ChildText("td:nth-child(5)")
+		price = el.ChildText("td:nth-child(6)")
+
+		c, err := preprocessDetails(sz.game, cardName, edition, number, cond)
+		if err != nil {
+			return nil
+		}
+		theCard = c
 	default:
 		return nil
 	}
@@ -238,16 +273,15 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 			basePath = "/BuyList/"
 		}
 
-		if strings.Contains(link, basePath) &&
-			!strings.HasSuffix(link, "_ByTable.html") &&
-			!strings.HasSuffix(link, "_ByRarity.html") &&
-			!strings.HasSuffix(link, "Games.html") &&
-			!strings.HasSuffix(link, "Magic_Booster_Boxes.html") &&
-			!strings.HasSuffix(link, "Fat_Packs.html") &&
-			!strings.HasSuffix(link, "Gift_Sets_and_Secret_Lairs.html") &&
-			!strings.HasSuffix(link, "Preconstructed_Decks.html") {
-			c.Visit(e.Request.AbsoluteURL(link))
+		if !strings.Contains(link, basePath) {
+			return
 		}
+		for _, suffix := range skipSuffixes {
+			if strings.HasSuffix(link, suffix) {
+				return
+			}
+		}
+		c.Visit(e.Request.AbsoluteURL(link))
 	})
 
 	// Callback for when a scraped page contains a form element
@@ -258,8 +292,10 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 
 		sz.printf("Parsing %s", edition)
 
+		// Only the Magic categories render the denser rtti table; every
+		// other game lists retail and buylist alike in the generic one.
 		tableRowName := "table.rtti tr"
-		if mode == modeBuylist || sz.game == GameLorcana {
+		if mode == modeBuylist || sz.game != GameMagic {
 			tableRowName = "table.ItemTable tr"
 		}
 
@@ -276,6 +312,11 @@ func (sz *Strikezone) scrape(ctx context.Context, mode string) error {
 	var link string
 	if mode == modeRetail {
 		link = fmt.Sprintf(szInventoryURL, sz.game)
+		// The storefront files the Flesh and Blood singles under a bare
+		// name no other game shares, instead of its own prefixed one.
+		if sz.game == GameFleshAndBlood {
+			link = "http://shop.strikezoneonline.com/Category/Singles.html"
+		}
 	} else if mode == modeBuylist {
 		link = fmt.Sprintf(szBuylistURL, sz.game)
 	}
@@ -360,6 +401,12 @@ func (sz *Strikezone) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameMagic
 	case GameLorcana:
 		info.Game = mtgban.GameLorcana
+	case GamePokemon:
+		info.Game = mtgban.GamePokemon
+	case GameYuGiOh:
+		info.Game = mtgban.GameYuGiOh
+	case GameFleshAndBlood:
+		info.Game = mtgban.GameFleshAndBlood
 	}
 	return
 }

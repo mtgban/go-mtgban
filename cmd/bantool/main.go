@@ -755,6 +755,26 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"strikezone_pokemon": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := strikezone.NewScraper(strikezone.GamePokemon)
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"strikezone_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := strikezone.NewScraper(strikezone.GameFleshAndBlood)
+			scraper.LogCallback = GlobalLogCallback
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"tcg_index_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
