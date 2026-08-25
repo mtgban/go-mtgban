@@ -501,11 +501,6 @@ jobs:
         run: |
           go test ./mtgmatcher/fleshandblood/... -v
 
-  # The one check master's branch protection requires, kept as a name rather
-  # than as work: it fans the per-game jobs back into a single verdict. It has
-  # to run even when a dependency failed and re-read the results by hand,
-  # because a required check that is merely skipped counts as passed and would
-  # wave a broken tree through.
   test-pokemon:
     needs: cache-pokemon
     runs-on: ubuntu-latest
@@ -546,7 +541,6 @@ jobs:
   # to run even when a dependency failed and re-read the results by hand,
   # because a required check that is merely skipped counts as passed and would
   # wave a broken tree through.
-
   mtgban-ci:
     needs: [style, test-magic, test-lorcana, test-riftbound, test-onepiece,
             test-yugioh, test-fleshandblood, test-pokemon]
