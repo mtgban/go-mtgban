@@ -827,9 +827,43 @@ var sealedLanguageWords = map[string]bool{
 	"german": true, "italian": true, "spanish": true, "portuguese": true,
 }
 
+// sealedAsideRe matches the phrases a storefront sets aside from the run of a
+// name: what it brackets, what it puts in parentheses, and what it quotes.
+// The quotes are matched greedily on either side because Cardmarket doubles
+// them, and a single pair read off the doubling would leave the phrase itself
+// outside.
+var sealedAsideRe = regexp.MustCompile(`\[[^\]]*\]|\([^)]*\)|"+[^"]*"+`)
+
+// sealedJapanMark is the short form a marketplace writes for a printing made
+// for the Japanese market rather than naming its language: Cardmarket spells a
+// whole run of Japanese boxes "<set> JP Booster Box" and nothing else about
+// them says so.
+const sealedJapanMark = "jp"
+
+// sealedMarksJapanPrinting reports whether a name carries that mark where it
+// speaks for the printing: in the run of the name itself, not inside a phrase
+// the storefront set aside.
+//
+// The distinction is the whole of what makes the mark safe. Two letters are
+// short enough to turn up saying something else, and where they do, they are
+// always set aside: the datastore's own English rows spell "(JP Pokemon Center
+// Exclusive)" and "(JP Raging Bolt)", one naming the storefront an edition was
+// sold at and the other the deck a world champion played. Both name something
+// beside the product; neither says the product is Japanese, and a storefront
+// writing one of those names an English printing.
+func sealedMarksJapanPrinting(name string) bool {
+	bare := sealedAsideRe.ReplaceAllString(strings.ToLower(name), " ")
+	for _, tok := range sealedTokenRe.FindAllString(bare, -1) {
+		if tok == sealedJapanMark {
+			return true
+		}
+	}
+	return false
+}
+
 // SealedIsLanguageVariant reports whether a storefront's product name marks
 // a non-English printing ("Origins Booster Box (Chinese, Slim)", "The First
-// Chapter Japanese Booster Box").
+// Chapter Japanese Booster Box", "Black Bolt JP Booster Box").
 func SealedIsLanguageVariant(name string) bool {
 	var sawNon bool
 	for _, tok := range sealedTokenRe.FindAllString(strings.ToLower(name), -1) {
@@ -844,7 +878,7 @@ func SealedIsLanguageVariant(name string) bool {
 		}
 		sawNon = tok == "non"
 	}
-	return false
+	return sealedMarksJapanPrinting(name)
 }
 
 // AddSealed files a sealed product in the sealed namespace: its uuid in
