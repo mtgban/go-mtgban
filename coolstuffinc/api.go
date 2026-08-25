@@ -212,8 +212,8 @@ type SearchResult struct {
 }
 
 // Search resolves an item name to its id and returns the first page of
-// results.
-func Search(ctx context.Context, game, itemName string, skipOOS bool) (*SearchResult, error) {
+// results, narrowed to the given rarity tiers.
+func Search(ctx context.Context, game, itemName string, skipOOS bool, rarities []string) (*SearchResult, error) {
 	v := url.Values{}
 	v.Set("name", "")
 	v.Set("f[Artist][]", "")
@@ -236,21 +236,13 @@ func Search(ctx context.Context, game, itemName string, skipOOS bool) (*SearchRe
 		// This excludes all cards that lack a NM copy
 		v.Set("options[instock]", "1")
 	}
-	// The rarity filter spells Magic's tiers, and the storefront answers a
-	// filter it does not recognise with nothing rather than everything: for
-	// Yu-Gi-Oh, whose premium tiers are lettered otherwise entirely (Mosaic
-	// Rare is MOR, not Magic's MR), it halves the catalog - Battle Pack 3
-	// answers 457 products unfiltered and 220 behind this list, the missing
-	// half being every Shatterfoil and Star Foil in the set. Only Magic is
-	// asked to narrow.
-	if game == GameMagic {
-		v.Add("f[Rarity][]", "C")
-		v.Add("f[Rarity][]", "MR")
-		v.Add("f[Rarity][]", "R")
-		v.Add("f[Rarity][]", "U")
-		v.Add("f[Rarity][]", "TC")
-		v.Add("f[Rarity][]", "F")
-		v.Add("f[Rarity][]", "PO")
+	// Naming every tier the game has but the sealed ones keeps sealed out
+	// of a singles search, since a rarity constraint of any kind excludes
+	// the rows that carry no rarity at all. An empty list asks for
+	// everything, which costs a sealed row the condition parser then
+	// refuses - never a card.
+	for _, rarity := range rarities {
+		v.Add("f[Rarity][]", rarity)
 	}
 	v.Set("f[ItemSet][]", itemName)
 	v.Set("s", game)
