@@ -359,6 +359,17 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"miniaturemarket_sealed_fleshandblood": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameFleshAndBlood)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Affiliate = os.Getenv("MM_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"miniaturemarket_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := miniaturemarket.NewScraperSealed(miniaturemarket.GameMagic)
