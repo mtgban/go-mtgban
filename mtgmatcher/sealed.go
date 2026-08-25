@@ -118,11 +118,7 @@ func sealedTokens(name string) []string {
 // products under the set they belong to), or noise. Anything else means
 // the vendor is naming a different product - "Prerelease Pack" and
 // "Participation Booster" must not resolve to the plain Booster Pack.
-func sealedExtrasSafe(vendor, candidate []string, setTokens map[string]bool) bool {
-	candSet := map[string]bool{}
-	for _, tok := range candidate {
-		candSet[tok] = true
-	}
+func sealedExtrasSafe(vendor []string, candSet, setTokens map[string]bool) bool {
 	for _, tok := range vendor {
 		if candSet[tok] || setTokens[tok] || sealedCountRe.MatchString(tok) {
 			continue
@@ -330,17 +326,78 @@ func (b *Backend) ResolveSealedWithHint(name, hint string) (string, error) {
 	return b.resolveSealed(name, hint)
 }
 
+// sealedEntry is everything the resolver reads off one sealed product that
+// does not depend on what a storefront called it.
+type sealedEntry struct {
+	uuid     string
+	tokens   []string
+	said     map[string]bool
+	groups   []map[string]bool
+	free     map[string]bool
+	setWords map[string]bool
+}
+
+// sealedIndex is the sealed namespace read the way the resolver reads it. It
+// depends on nothing but the datastore, and building it per lookup made every
+// resolution walk every product of every set again - a scraper asks for
+// thousands of names against tens of thousands of products.
+type sealedIndex struct {
+	pooled  map[string]bool
+	entries []*sealedEntry
+}
+
+// buildSealedIndex reads the sealed namespace once.
+func (b *Backend) buildSealedIndex() *sealedIndex {
+	idx := &sealedIndex{pooled: map[string]bool{}}
+	setWords := map[string]map[string]bool{}
+	for code, set := range b.Sets {
+		own := map[string]bool{}
+		for _, tok := range sealedTokens(set.Name) {
+			idx.pooled[tok] = true
+			own[tok] = true
+		}
+		setWords[code] = own
+	}
+
+	for _, uuid := range b.AllSealedUUIDs {
+		co, found := b.UUIDs[uuid]
+		if !found {
+			continue
+		}
+		entry := &sealedEntry{
+			uuid:     uuid,
+			tokens:   sealedTokens(co.Name),
+			said:     map[string]bool{},
+			groups:   b.sealedQualifierGroups(co.Name),
+			setWords: setWords[co.SetCode],
+		}
+		for _, tok := range entry.tokens {
+			entry.said[tok] = true
+		}
+		entry.free = sealedQualifierTokens(entry.groups)
+		if entry.setWords == nil {
+			entry.setWords = map[string]bool{}
+		}
+		idx.entries = append(idx.entries, entry)
+	}
+
+	return idx
+}
+
+// sealedLookup returns the index SortSealed built, or builds one for a
+// datastore that never filed a sealed product through it.
+func (b *Backend) sealedLookup() *sealedIndex {
+	if b.sealedIdx != nil {
+		return b.sealedIdx
+	}
+	return b.buildSealedIndex()
+}
+
 func (b *Backend) resolveSealed(name, hint string) (string, error) {
 	if b.UUIDs == nil {
 		return "", ErrDatastoreEmpty
 	}
-
-	setTokens := map[string]bool{}
-	for _, set := range b.Sets {
-		for _, tok := range sealedTokens(set.Name) {
-			setTokens[tok] = true
-		}
-	}
+	idx := b.sealedLookup()
 
 	counts := sealedQuantityTokens(name)
 	vendor := sealedTokens(name)
@@ -350,30 +407,24 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 	unexplained := map[string]int{}
 	forgiven := map[string]bool{}
 	qualifiers := map[string]map[string]bool{}
-	for _, uuid := range b.AllSealedUUIDs {
-		co, found := b.UUIDs[uuid]
-		if !found {
+	for _, entry := range idx.entries {
+		if tokensEqual(entry.tokens, vendor) {
+			exact = append(exact, entry.uuid)
 			continue
 		}
-		candidate := sealedTokens(co.Name)
-		if tokensEqual(candidate, vendor) {
-			exact = append(exact, uuid)
-			continue
-		}
-		groups := b.sealedQualifierGroups(co.Name)
-		free := sealedQualifierTokens(groups)
-		subset, matched := tokensSubsetModulo(candidate, vendor, free)
-		if subset && sealedExtrasSafe(vendor, candidate, setTokens) {
+		subset, matched := tokensSubsetModulo(entry.tokens, vendor, entry.free)
+		if subset && sealedExtrasSafe(vendor, entry.said, idx.pooled) {
+			uuid := entry.uuid
 			contained = append(contained, uuid)
 			// Specificity counts the words the vendor and the candidate
 			// actually share. A forgiven word is one the vendor never said,
 			// so letting it lengthen the candidate would rank a product by
 			// how much of it went unsaid.
 			shared[uuid] = matched
-			unsaid[uuid] = sealedUnsaidGroups(groups, vendor)
-			unexplained[uuid] = unexplainedTokens(vendor, candidate, b.setNameTokens(co.SetCode), counts)
-			forgiven[uuid] = matched < len(candidate)
-			qualifiers[uuid] = free
+			unsaid[uuid] = sealedUnsaidGroups(entry.groups, vendor)
+			unexplained[uuid] = unexplainedTokens(vendor, entry.said, entry.setWords, counts)
+			forgiven[uuid] = matched < len(entry.tokens)
+			qualifiers[uuid] = entry.free
 		}
 	}
 
@@ -499,29 +550,11 @@ func sealedPrintRunSynonym(tok string) string {
 	return tok
 }
 
-// setNameTokens returns the identity tokens of a set's name, which a
-// storefront may prepend to any product filed under it.
-func (b *Backend) setNameTokens(setCode string) map[string]bool {
-	out := map[string]bool{}
-	set, found := b.Sets[setCode]
-	if !found {
-		return out
-	}
-	for _, tok := range sealedTokens(set.Name) {
-		out[tok] = true
-	}
-	return out
-}
-
 // unexplainedTokens counts the vendor words that neither the candidate's
 // own name nor the set it is filed under accounts for. The counts the name
 // itself marks as counts, and the language noise sealedExtrasSafe tolerates,
 // are not identity, so they do not count against a candidate.
-func unexplainedTokens(vendor, candidate []string, setTokens, counts map[string]bool) int {
-	candSet := map[string]bool{}
-	for _, tok := range candidate {
-		candSet[tok] = true
-	}
+func unexplainedTokens(vendor []string, candSet, setTokens, counts map[string]bool) int {
 	var n int
 	for _, tok := range vendor {
 		if candSet[tok] || setTokens[tok] || counts[tok] {
@@ -669,4 +702,5 @@ func (b *Backend) SortSealed() {
 	sort.Strings(b.AllSealed)
 	sort.Strings(b.AllCanonicalSealed)
 	sort.Strings(b.AllLowerSealed)
+	b.sealedIdx = b.buildSealedIndex()
 }
