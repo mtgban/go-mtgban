@@ -189,3 +189,63 @@ func TestBuildProductMapNamesLanguageDrops(t *testing.T) {
 		t.Errorf("the language-variant drop named no product: %v", logged)
 	}
 }
+
+// TestBuildProductMapDropsAccessories pins the accessories out of the sealed
+// map. Every product a set holds shares its wording, so a deck box named for
+// the collection it was packed in resolves to that collection and prices a
+// ten-euro box at the collection's fifty. A blueprint CardTrader files as an
+// accessory and names as one is the case there is no doubt about - and the
+// category alone is not enough, because CardTrader files real sealed product
+// under its accessory categories often enough to matter.
+func TestBuildProductMapDropsAccessories(t *testing.T) {
+	mtgmatcher.SetGlobalDatastore(sealedAccessoryBackend())
+
+	ct := &Sealed{gameID: GameFleshAndBlood}
+	for _, tt := range []struct {
+		desc     string
+		category int
+		name     string
+		want     bool
+	}{
+		{
+			"a sleeve named as one is the accessory, not the box it names",
+			CategoryFleshAndBloodSleeves, "Crucible of War Booster Box Sleeves", false,
+		},
+		{
+			"a blueprint miscategorised as an accessory still names its product",
+			CategoryFleshAndBloodSleeves, "Crucible of War Booster Box", true,
+		},
+		{
+			"a category that sells sealed product is left alone",
+			CategoryFleshAndBloodBoosterBoxes, "Crucible of War Booster Box Sleeves", true,
+		},
+	} {
+		blueprints := map[int]*Blueprint{
+			1: {ID: 1, Name: tt.name, CategoryID: tt.category},
+		}
+		_, found := ct.buildProductMap(blueprints)[1]
+		if found != tt.want {
+			t.Errorf("%s: %q resolved=%v, want %v", tt.desc, tt.name, found, tt.want)
+		}
+	}
+}
+
+// sealedAccessoryBackend is one product on a shelf, beside a set whose name
+// donates "sleeves" to the pooled vocabulary - which is what makes the word
+// free against every product of the game, and so what lets a sleeve's name
+// reach the box it was printed for.
+func sealedAccessoryBackend() *mtgmatcher.Backend {
+	backend := &mtgmatcher.Backend{
+		UUIDs:          map[string]*mtgmatcher.CardObject{},
+		Hashes:         map[string][]string{},
+		SetSealedUUIDs: map[string][]string{},
+		Sets: map[string]*mtgmatcher.Set{
+			"CRU": {Name: "Crucible of War", Code: "CRU"},
+			"SLV": {Name: "Sleeves Promos", Code: "SLV"},
+		},
+	}
+	backend.AddSealed("cru-box", "Crucible of War Booster Box", "CRU", "", 0)
+	backend.SortSealed()
+	backend.IndexSets()
+	return backend
+}
