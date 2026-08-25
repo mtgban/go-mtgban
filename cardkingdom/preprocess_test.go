@@ -315,3 +315,28 @@ func TestPreprocessTokenFoilRefused(t *testing.T) {
 		})
 	}
 }
+
+func TestUnindexedTokenSheet(t *testing.T) {
+	for _, tt := range []struct {
+		sku  string
+		want bool
+	}{
+		// The Jumpstart sheets the datastore has no set for
+		{"TJMP-001", true},
+		{"TJ22-014", true},
+		// A sheet it does carry, so a failure there is worth hearing
+		{"TNCC-021", false},
+		{"THOU-004", false},
+		// Not a sheet at all
+		{"JMP-001", false},
+		{"PLST-TAFR-1", false},
+		{"CMB1-042", false},
+		{"nosku", false},
+	} {
+		t.Run(tt.sku, func(t *testing.T) {
+			if got := unindexedTokenSheet(tt.sku); got != tt.want {
+				t.Errorf("unindexedTokenSheet(%q) = %v, want %v", tt.sku, got, tt.want)
+			}
+		})
+	}
+}
