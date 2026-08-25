@@ -254,7 +254,7 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	if mkm.gameID == GamePokemon && pokemonForeignDenied(edition, product.Number) {
 		return ""
 	}
-	var printRun string
+	var printRun, numberPrefix string
 	if mkm.gameID == GameFleshAndBlood {
 		// Cardmarket sells each print run as its own expansion
 		// ("Monarch - First"), a name no set of ours carries: the run
@@ -263,6 +263,14 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		printRun, edition = fabPrintRun(edition)
 	}
 	set, err := mtgmatcher.GetSetByName(edition)
+	if err != nil && mkm.gameID == GameFleshAndBlood {
+		// What Cardmarket calls the expansion is not always what we call
+		// the set. Translating is the fallback rather than the first move,
+		// so an expansion whose name we already know keeps answering for
+		// itself and only the ones nothing answers for are rewritten.
+		edition, numberPrefix = fabEdition(edition)
+		set, err = mtgmatcher.GetSetByName(edition)
+	}
 	if err != nil {
 		return ""
 	}
@@ -283,6 +291,12 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 	}
 
 	numbers := []string{product.Number}
+	// A promo's programme is the prefix our numbering carries and the
+	// expansion Cardmarket sells it under, so the number is only whole once
+	// the two are put back together.
+	if numberPrefix != "" {
+		numbers = []string{numberPrefix + product.Number, product.Number}
+	}
 	// The oldest Yu-Gi-Oh sets are numbered by their original Asian print
 	// ("A015") where the datastore numbers them by set ("LOB-015"); the
 	// digits are what the two agree on.
@@ -325,6 +339,13 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 					continue
 				}
 				if mkm.gameID == GameYuGiOh && otherPrintRun(product.Number, co.Number) {
+					continue
+				}
+				// A promo's number is only whole with its programme, and a
+				// name is not enough on its own: the same card is handed
+				// out by several of them, so an answer that did not come
+				// back with the number asked for is another programme's.
+				if numberPrefix != "" && !sameFabNumber(co.Number, numberPrefix+product.Number) {
 					continue
 				}
 				return id
