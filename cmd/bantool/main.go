@@ -1821,20 +1821,17 @@ func dumpVendor(dataBucket simplecloud.Writer, vendor mtgban.Vendor, outputPath,
 	return err
 }
 
-// hasAnyData reports whether a single entry was scraped at all, on either
-// side of the book.
-func hasAnyData(sellers []mtgban.Seller, vendors []mtgban.Vendor) bool {
+// countResults sums the distinct cards each unfolded half holds, so a run
+// can say what it found before writing any of it.
+func countResults(sellers []mtgban.Seller, vendors []mtgban.Vendor) (int, int) {
+	var retail, buylist int
 	for _, seller := range sellers {
-		if len(seller.Inventory()) > 0 {
-			return true
-		}
+		retail += len(seller.Inventory())
 	}
 	for _, vendor := range vendors {
-		if len(vendor.Buylist()) > 0 {
-			return true
-		}
+		buylist += len(vendor.Buylist())
 	}
-	return false
+	return retail, buylist
 }
 
 func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string, meta bool) []error {
@@ -2163,7 +2160,9 @@ func run() int {
 	log.Println("loading scraper data took:", time.Since(now))
 
 	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
-	if !hasAnyData(sellers, vendors) {
+	retailResults, buylistResults := countResults(sellers, vendors)
+	log.Println("Found", retailResults, "retail results and", buylistResults, "buylist results")
+	if retailResults == 0 && buylistResults == 0 {
 		log.Println("No retail or buylist data retrieved")
 		return 1
 	}
