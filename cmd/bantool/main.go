@@ -1268,6 +1268,17 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"coolstuffinc_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraper(coolstuffinc.GameYuGiOh)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
 	"coolstuffinc_sealed_onepiece": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameOnePiece)
@@ -1282,6 +1293,17 @@ var options = map[string]*scraperOption{
 	"coolstuffinc_sealed_pokemon": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GamePokemon)
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CSI_PARTNER")
+			if MaxConcurrency != 0 {
+				scraper.MaxConcurrency = MaxConcurrency
+			}
+			return scraper, nil
+		},
+	},
+	"coolstuffinc_sealed_yugioh": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := coolstuffinc.NewScraperSealed(coolstuffinc.GameYuGiOh)
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Partner = os.Getenv("CSI_PARTNER")
 			if MaxConcurrency != 0 {

@@ -323,7 +323,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					// from one of the fields (cardName in particular)
 					c.Foil = c.Foil || isFoil
 					theCard = c
-				case GameLorcana, GameRiftbound, GameOnePiece, GamePokemon:
+				case GameLorcana, GameRiftbound, GameOnePiece, GamePokemon, GameYuGiOh:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
 					csi.printf("unsupported game")
@@ -529,7 +529,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 			theCard = c
 		case GamePokemon:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
-		case GameLorcana, GameRiftbound, GameOnePiece:
+		case GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
 			return errors.New("unsupported game")
@@ -667,6 +667,8 @@ func (csi *Coolstuffinc) Info() (info mtgban.ScraperInfo) {
 		info.Game = mtgban.GameOnePiece
 	case GamePokemon:
 		info.Game = mtgban.GamePokemon
+	case GameYuGiOh:
+		info.Game = mtgban.GameYuGiOh
 	}
 	return
 }
