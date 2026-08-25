@@ -184,9 +184,9 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 		if _, found := productMap[id]; found {
 			continue
 		}
-		if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
-			ct.printf("%q (%d): language variant", bp.Name, id)
-			dropped["language variant"]++
+		if skipped, why := sealedNamePassSkips(bp); skipped {
+			ct.printf("%q (%d): %s", bp.Name, id, why)
+			dropped[why]++
 			continue
 		}
 		// The expansion is the other half of what CardTrader knows about
@@ -214,6 +214,58 @@ func (ct *Sealed) buildProductMap(blueprints map[int]*Blueprint) map[int][]strin
 	}
 
 	return productMap
+}
+
+// accessoryWords name what CardTrader files in each of its accessory
+// categories. A category alone is not enough to turn a blueprint down:
+// CardTrader files real sealed product in them by mistake often enough to
+// matter - the Snorlax and Morpeko Pin Collections sit under Memorabilia, and
+// Legendary Collection's Gameboard Editions beside them - and a blueprint
+// resolving to the product it actually is should keep doing so.
+//
+// A blueprint that is filed as an accessory and named as one is the case
+// there is no doubt about. Every sealed product a set holds shares its
+// wording, so a deck box named for the collection it was packed in resolves
+// to that collection and prices a ten-euro box at the collection's fifty:
+// "Marnie Premium Tournament Collection Deck Box" is not the Marnie Premium
+// Tournament Collection Box, whatever the resolver forgives.
+var accessoryWords = map[int]string{
+	CategoryMagicDeckBoxes: "deck box", CategoryYuGiOhDeckBoxes: "deck box",
+	CategoryPokemonDeckBoxes: "deck box", CategoryLorcanaDeckBoxes: "deck box",
+	CategoryOnePieceDeckBoxes: "deck box", CategoryRiftboundDeckBoxes: "deck box",
+
+	CategoryMagicSleeves: "sleeve", CategoryYuGiOhSleeves: "sleeve",
+	CategoryPokemonSleeves: "sleeve", CategoryLorcanaSleeves: "sleeve",
+	CategoryOnePieceSleeves: "sleeve", CategoryRiftboundSleeves: "sleeve",
+	CategoryFleshAndBloodSleeves: "sleeve",
+
+	CategoryMagicPlaymats: "playmat", CategoryYuGiOhPlaymats: "playmat",
+	CategoryPokemonPlaymats: "playmat", CategoryLorcanaPlaymats: "playmat",
+	CategoryOnePiecePlaymats: "playmat", CategoryRiftboundPlaymats: "playmat",
+	CategoryFleshAndBloodPlaymats: "playmat",
+
+	CategoryMagicAlbums: "album", CategoryYuGiOhAlbums: "album",
+	CategoryPokemonAlbums: "album", CategoryLorcanaAlbums: "album",
+	CategoryOnePieceAlbums: "album", CategoryRiftboundAlbums: "album",
+
+	CategoryMagicDice: "dice", CategoryYuGiOhDice: "dice",
+	CategoryPokemonDice: "dice", CategoryFleshAndBloodDice: "dice",
+
+	CategoryMagicDividers: "divider", CategoryYuGiOhDividers: "divider",
+	CategoryPokemonDividers: "divider",
+}
+
+// sealedNamePassSkips reports whether a blueprint must not be asked of the
+// sealed-name resolver at all, and what to call the refusal in the tally.
+func sealedNamePassSkips(bp *Blueprint) (bool, string) {
+	if mtgmatcher.SealedIsLanguageVariant(bp.Name) {
+		return true, "language variant"
+	}
+	word, filed := accessoryWords[bp.CategoryID]
+	if filed && strings.Contains(strings.ToLower(bp.Name), word) {
+		return true, "accessory"
+	}
+	return false, ""
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
