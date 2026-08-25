@@ -3,6 +3,7 @@ package fleshandblood
 import (
 	"maps"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -223,7 +224,7 @@ func faceKey(name string) string {
 	var faces []string
 	for _, face := range split {
 		face = mtgmatcher.Normalize(face)
-		if !slicesContains(faces, face) {
+		if !slices.Contains(faces, face) {
 			faces = append(faces, face)
 		}
 	}
@@ -254,20 +255,11 @@ func fusedNamedBy(b *mtgmatcher.Backend, name string) []string {
 		if faceKey(co.Name) != key {
 			continue
 		}
-		if !slicesContains(names, co.Name) {
+		if !slices.Contains(names, co.Name) {
 			names = append(names, co.Name)
 		}
 	}
 	return names
-}
-
-func slicesContains(names []string, name string) bool {
-	for _, n := range names {
-		if n == name {
-			return true
-		}
-	}
-	return false
 }
 
 // fusedFaceAt answers the fused cards one of whose faces is the given name
@@ -292,7 +284,7 @@ func fusedFaceAt(b *mtgmatcher.Backend, name, number string) (names, numbers []s
 			if !numberMatches(number, strings.TrimSpace(pair[i])) {
 				continue
 			}
-			if !slicesContains(names, co.Name) {
+			if !slices.Contains(names, co.Name) {
 				names = append(names, co.Name)
 				numbers = append(numbers, co.Number)
 			}
