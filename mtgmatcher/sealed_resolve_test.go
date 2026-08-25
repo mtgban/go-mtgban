@@ -289,6 +289,8 @@ func TestSealedTokensFoldAccents(t *testing.T) {
 	for _, tt := range []struct{ accented, plain string }{
 		{"Pokémon Center Elite Trainer Box", "Pokemon Center Elite Trainer Box"},
 		{"Mythical Pokémon Collection", "Mythical Pokemon Collection"},
+		// A storefront that shouts its names carries the accent up with it.
+		{"POKÉMON GO ELITE TRAINER BOX", "Pokemon GO Elite Trainer Box"},
 	} {
 		got := sealedTokens(tt.accented)
 		want := sealedTokens(tt.plain)
