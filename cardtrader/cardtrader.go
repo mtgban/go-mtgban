@@ -150,7 +150,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 				lang, found = langMap[strings.ToLower(lang)]
 				if !found {
 					ct.printf("unsupported '%s' language", product.Properties.MTGLanguage)
-					ct.printf("%s '%q'", theCard, product)
+					ct.printf("%s %+v", theCard, product)
 					continue
 				}
 				theCard.Language = lang
@@ -212,7 +212,7 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			} else if err != nil {
 				ct.printf("%v", err)
 				ct.printf("%q", theCard)
-				ct.printf("%d %q", bpID, blueprint)
+				ct.printf("%d %+v", bpID, blueprint)
 
 				var alias *mtgmatcher.AliasingError
 				if errors.As(err, &alias) {
