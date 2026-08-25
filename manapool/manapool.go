@@ -36,26 +36,12 @@ func (mp *Manapool) printf(format string, a ...any) {
 
 // isUnindexed reports whether the backend was never meant to know this card,
 // so that failing to match its id is expected and not worth reporting. Whole
-// editions are dropped when the datastore is built (oversize, minigames,
-// front cards, playtest, token-only sets), and tokens are never indexed even
-// in the editions that are kept.
+// editions are dropped when the datastore is built - oversize, minigames,
+// front cards, playtest - and a sheet of tokens the datastore carries no set
+// for is dropped the same way, which is what the edition answers for.
 func isUnindexed(card Product) bool {
 	_, err := mtgmatcher.GetSet(card.SetCode)
-	if err != nil || mtgmatcher.IsToken(card.Name) {
-		return true
-	}
-
-	// Double-faced tokens are named after both of their faces
-	faces := strings.Split(card.Name, " // ")
-	if len(faces) < 2 {
-		return false
-	}
-	for _, face := range faces {
-		if !mtgmatcher.IsToken(face) {
-			return false
-		}
-	}
-	return true
+	return err != nil
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
