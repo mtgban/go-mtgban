@@ -217,9 +217,9 @@ func (mm *Miniaturemarket) processPage(ctx context.Context, channel chan<- respC
 	return nil
 }
 
-// NumberOfProducts returns how many products the widget holds, which is what
-// the page walk is sized against.
-func (mm *Miniaturemarket) NumberOfProducts(ctx context.Context) (int, error) {
+// NumberOfPages returns how many pages the widget paginates into, read off
+// the last link in its pagination.
+func (mm *Miniaturemarket) NumberOfPages(ctx context.Context) (int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mm.mainURL(), http.NoBody)
 	if err != nil {
 		return 0, err
@@ -266,15 +266,18 @@ func (mm *Miniaturemarket) Load(ctx context.Context) error {
 		mm.printf("Resolving %s products by name", mm.game)
 	}
 
-	totalProducts, err := mm.NumberOfProducts(ctx)
+	totalPages, err := mm.NumberOfPages(ctx)
 	if err != nil {
 		return err
 	}
-	mm.printf("Parsing %d items", totalProducts)
+	mm.printf("Parsing %d pages", totalPages)
 
-	pageNums := make([]int, totalProducts)
+	// Pages are numbered from one. Walking from zero fetched the first page
+	// twice - the widget answers p=0 with it - and stopped one short, so the
+	// last page of every multi-page catalog went unread.
+	pageNums := make([]int, totalPages)
 	for i := range pageNums {
-		pageNums[i] = i
+		pageNums[i] = i + 1
 	}
 
 	// The consumer runs on one goroutine, so the tally needs no locking.
