@@ -1621,6 +1621,23 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 
 	// Sort through the array of promo types
 	if len(outCards) > 1 {
+		// A promo type that every candidate carries, or that none of them
+		// does, cannot tell them apart, and letting it speak only empties the
+		// list: the fallback below then hands the untouched list back and the
+		// separation the discriminating elements had already made is lost
+		discriminates := make([]bool, len(promoTypeElements))
+		for i, promoElement := range promoTypeElements {
+			var withTag, withoutTag bool
+			for _, card := range outCards {
+				if card.HasPromoType(promoElement.PromoType) {
+					withTag = true
+				} else {
+					withoutTag = true
+				}
+			}
+			discriminates[i] = withTag && withoutTag
+		}
+
 		var filteredOutCards []mtgmatcher.Card
 		for _, card := range outCards {
 			set, found := b.Sets[card.SetCode]
@@ -1630,7 +1647,10 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			setDate := set.ReleaseDateTime
 
 			var shouldContinue bool
-			for _, promoElement := range promoTypeElements {
+			for i, promoElement := range promoTypeElements {
+				if !discriminates[i] {
+					continue
+				}
 				if setDate.Before(promoElement.ValidDate) {
 					continue
 				}
