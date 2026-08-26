@@ -113,6 +113,42 @@ func TestPreprocessMagicFinish(t *testing.T) {
 	}
 }
 
+// Etched is said only in the display name, in two spellings, and it rides in
+// the variation because that is the only place the matcher reads it from.
+func TestPreprocessMagicEtched(t *testing.T) {
+	for _, tt := range []struct {
+		display   string
+		set       string
+		setName   string
+		number    int
+		variation string
+	}{
+		{"Arid Mesa (MH2-436) - Modern Horizons 2 Etched Foil", "mh2", "Modern Horizons 2", 436, "436 Etched"},
+		{"Azorius Signet (Foil Etched) (SLD-286) - Secret Lair Drop Series Foil", "sld", "Secret Lair Drop Series", 0, "286 Etched"},
+		{"Talisman of Hierarchy (MH1-036) - Modern Horizons 1 Timeshifts Etched Foil", "mh1", "Modern Horizons 1 Timeshifts", 36, "36 Etched"},
+		// Three Timeshifts listings name the parent set rather than the
+		// Timeshifts one, and land where no etched printing stands. Asking
+		// for one there answers with the nonfoil printing, further from the
+		// listing than the foil one it has today, so the word is dropped.
+		{"Force of Negation (MH1-009) - Modern Horizons 1 Timeshifts Etched Foil", "mh1", "Modern Horizons", 9, "9"},
+	} {
+		card, err := preprocessMagic(VSProduct{
+			DisplayName: tt.display,
+			ProductData: VSProductData{
+				Set:                       flexString(tt.set),
+				SetName:                   tt.setName,
+				CollectorNumberNormalized: tt.number,
+			},
+		})
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if card.Variation != tt.variation {
+			t.Errorf("%s:\n got  %q\n want %q", tt.display, card.Variation, tt.variation)
+		}
+	}
+}
+
 func TestPreprocessRiftbound(t *testing.T) {
 	for _, tt := range []struct {
 		display   string
