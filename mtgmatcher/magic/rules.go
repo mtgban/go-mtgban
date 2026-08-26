@@ -1670,7 +1670,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 				if tagPresent && !card.HasPromoType(promoElement.PromoType) {
 					shouldContinue = true
 					break
-				} else if !tagPresent && card.HasPromoType(promoElement.PromoType) {
+				} else if !tagPresent && card.HasPromoType(promoElement.PromoType) && !promoElement.OnlyWhenNamed {
 					shouldContinue = true
 					break
 				}
