@@ -281,6 +281,9 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // Championship Series 2025 Prize Cards"), so an edition that already names a
 // set is left alone - as it is asked, before the decorations come off and
 // again after, the alias table only ever answering for a name no set has.
+//
+// An edition still naming no set is answered by the collector number, which
+// carries the set code the wording never spelled.
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
 	if named, found := namedSet(b, edition); found {
@@ -290,8 +293,83 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	edition = trimEditionDecorations(edition)
 	if named, found := namedSet(b, edition); found {
 		edition = named
+	} else if set := numberSet(b, inCard); set != nil {
+		edition = set.Name
 	}
 	inCard.Edition = edition
+}
+
+// numberSet answers the set the input's collector number is filed in, for an
+// edition that names none.
+//
+// A Yu-Gi-Oh number opens with its set's code - "UBP1-EN005" is UBP1 - so a
+// storefront filing a whole shelf of printings under one catch-all bucket
+// still says, number by number, which set each of them lives in. Without
+// that, Match has no set to search and falls through to every printing of the
+// name, where the rarity and variant tiering pick whichever one the wording
+// happens not to contradict: Cool Stuff Inc files three Exodias under
+// "Promo", and the $170 Secret Rare and the $9 Quarter Century Rare were both
+// answered with the $22 Ultra Rare.
+//
+// The code is read dashed or run together, because the feeds that need this
+// most are the ones that drop the dash. The set is only adopted when it
+// carries the card at that number: the number is the storefront's own claim,
+// and one naming a set the card was never printed in says nothing about where
+// the listing belongs.
+func numberSet(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) *mtgmatcher.Set {
+	for _, field := range strings.Fields(inCard.Variation) {
+		set := fieldSet(b, field)
+		if set != nil && editionCarries(set, inCard.Name, field) {
+			return set
+		}
+	}
+	return nil
+}
+
+// numberTailRe matches what a collector number holds behind its set code: the
+// language infix, the digits, and the letter tail a misprint reissue or a
+// storefront's rarity suffix adds.
+var numberTailRe = regexp.MustCompile(`^[A-Za-z]*[0-9]+[a-zA-Z]*$`)
+
+// fieldSet reads one field of the variation as a collector number and answers
+// the set its code names, or nothing when the field is not one. An undashed
+// code is taken as long as it can be, so "UBP1EN005" is UBP1 rather than a
+// shorter code that happens to open it. Longest wins is what keeps the answer
+// off the map's iteration order too: two codes of one length cannot both open
+// one field, so the longest fitting code is unique.
+func fieldSet(b *mtgmatcher.Backend, field string) *mtgmatcher.Set {
+	if prefix, tail, dashed := strings.Cut(field, "-"); dashed {
+		if !numberTailRe.MatchString(tail) {
+			return nil
+		}
+		return setByCode(b, prefix)
+	}
+	var best *mtgmatcher.Set
+	var bestCode string
+	for code, set := range b.Sets {
+		if code == "" || len(code) >= len(field) ||
+			!strings.EqualFold(field[:len(code)], code) ||
+			!numberTailRe.MatchString(field[len(code):]) {
+			continue
+		}
+		if best == nil || len(code) > len(bestCode) {
+			best, bestCode = set, code
+		}
+	}
+	return best
+}
+
+// setByCode answers the set filed under a code, however a storefront cased it.
+func setByCode(b *mtgmatcher.Backend, code string) *mtgmatcher.Set {
+	if set, found := b.Sets[code]; found {
+		return set
+	}
+	for stored, set := range b.Sets {
+		if strings.EqualFold(stored, code) {
+			return set
+		}
+	}
+	return nil
 }
 
 // trimEditionDecorations strips the game-name prefix and "Singles" suffix
