@@ -112,6 +112,10 @@ type Index struct {
 	// thousands of times, once per product in the catalog.
 	priceGuide map[int]PriceGuide
 
+	// shelved names, for each set of ours, the expansion of this run that
+	// sells it; see offShelf. Load fills it once the expansions are known.
+	shelved map[string]string
+
 	client *MKMClient
 	gameID int
 }
@@ -235,6 +239,50 @@ func onePieceNumber(name, number, expansion string) string {
 		return number
 	}
 	return fields[1]
+}
+
+// shelvedSets names, for each set of ours, the one expansion of this catalog
+// that sells it. A set no expansion names is absent, and so is an expansion
+// naming no set.
+func shelvedSets(list []MKMExpansion) map[string]string {
+	shelved := make(map[string]string, len(list))
+	for _, exp := range list {
+		set, err := mtgmatcher.GetSetByName(exp.Name)
+		if err != nil {
+			continue
+		}
+		shelved[set.Code] = exp.Name
+	}
+	return shelved
+}
+
+// offShelf reports whether a product answered with a printing that another
+// expansion of this catalog sells as a product of its own.
+//
+// Cardmarket files a card on every shelf that ever handed it out, and most
+// of those shelves are no set of ours - "Judge Promos", "Unnumbered Promos",
+// "Special Tournament Promos", a starter deck whose reprints the datastore
+// does not carry. With nothing holding the listing to an edition the matcher
+// reaches past it and lands on the ordinary printing of that number, which
+// is the very printing the shelf named after that set already prices as a
+// product of its own. Two products on one printing means one of them
+// publishes a price for a card it does not sell, and which one wins is
+// whichever expansion the pool happened to walk first.
+//
+// Only an unlabelled answer reads that way. The datastore labels every
+// printing that is not the ordinary one - the alternate arts, the event
+// copies, the deck reprints - and those are what the promo shelves really do
+// sell, so a labelled answer is this product's own card however far from its
+// shelf the datastore files it. The set has to be one this catalog sells
+// elsewhere, too: where no other expansion names it nothing else is pricing
+// it, and refusing would drop the only price there is.
+func (mkm *Index) offShelf(product *MKMProduct, cardID string) bool {
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil || len(co.PromoTypes) > 0 {
+		return false
+	}
+	shelf, found := mkm.shelved[co.SetCode]
+	return found && !strings.EqualFold(shelf, product.ExpansionName)
 }
 
 // numberPrefix returns the letters a collector number opens on, the set code
@@ -509,6 +557,12 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 			mkm.printf("%+v", product)
 			return err
 		}
+
+		// One Piece is the catalog that files one card onto shelf after
+		// shelf; see offShelf.
+		if mkm.gameID == GameOnePiece && mkm.offShelf(product, cardID) {
+			return errNoPrinting
+		}
 	case GameYuGiOh, GameFleshAndBlood, GamePokemon:
 		// Same-name products abound in these catalogs - and Yu-Gi-Oh and
 		// Flesh and Blood carry no collector number to tell them apart,
@@ -709,6 +763,7 @@ func (mkm *Index) Load(ctx context.Context) error {
 			kept = append(kept, exp)
 		}
 		list = kept
+		mkm.shelved = shelvedSets(list)
 	}
 
 	mkm.printf("Parsing %d expansion ids", len(list))
