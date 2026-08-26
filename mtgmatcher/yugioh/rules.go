@@ -58,6 +58,56 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		}
 	}
 	respellName(b, inCard)
+	adoptQualifiedName(b, inCard)
+}
+
+// qualifiedNameRe matches the trailing parenthetical the catalog keeps inside
+// some names instead of distilling it into a variant label: "Cyber Dragon
+// (Alternate Art)", "White Elephant's Gift (A)". 141 rows are spelled this
+// way while 1979 others have the same kind of qualifier taken out.
+var qualifiedNameRe = regexp.MustCompile(`\s*\([^()]*\)$`)
+
+// adoptQualifiedName adopts the catalog's decorated spelling of a name the
+// storefront wrote bare, and the collector number is what licenses it.
+//
+// A name filed with its qualifier inside it has no bare-name bucket, so the
+// listing looks up nothing at all: every candidate is deleted and the row
+// dies as "unknown variant" - all six of the cardtrader Yu-Gi-Oh failures of
+// this shape are cards the catalog spells "... (Alternate Art)" or "... (A)".
+// Adding the bare spelling as a second key would reach them, and would also
+// hand the deck-letter sets a coin flip: the number compare reads only the
+// trailing digit run, so ENA32 and ENB32 are one number to it.
+//
+// The number keeps that from happening, three ways. The set is the one the
+// edition names, so no printing outside it is reachable. A set printing the
+// bare name at that very number keeps it, since the storefront's spelling is
+// then a spelling the set has. And two decorated siblings on one number
+// decide nothing, so they refuse instead of picking.
+func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	number := extractNumber(inCard.Variation)
+	if number == "" {
+		return
+	}
+	set := editionSet(b, inCard.Edition)
+	if set == nil || editionCarries(set, inCard.Name, number) {
+		return
+	}
+	var adopt string
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		stem := qualifiedNameRe.FindStringIndex(card.Name)
+		if stem == nil || !mtgmatcher.Equals(card.Name[:stem[0]], inCard.Name) ||
+			!numberMatches(number, card.Number) {
+			continue
+		}
+		if adopt != "" && !mtgmatcher.Equals(adopt, card.Name) {
+			return
+		}
+		adopt = card.Name
+	}
+	if adopt != "" {
+		inCard.Name = adopt
+	}
 }
 
 // respellName adopts the spelling the input's own edition files the card
