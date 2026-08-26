@@ -207,6 +207,36 @@ var rarityTail = regexp.MustCompile(` \(V\.\d+ - ([^)]+)\)$`)
 // two catalogs numbering the same card agree about.
 var numberTail = regexp.MustCompile(`\d+[A-Za-z]?$`)
 
+// nameCode matches the collector number Cardmarket writes at the end of a One
+// Piece product name, beside the one it writes in the number field.
+var nameCode = regexp.MustCompile(`\(([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\)$`)
+
+// onePieceNumber picks the collector number a One Piece product is asked
+// with, out of the two Cardmarket writes for it.
+//
+// The number field is sometimes another card's ("Sanji (OP01-013)" filed
+// under ST13-016, "Corrida Coliseum (OP04-096)" under OP04-092) and
+// sometimes a typo of the name's own code with a digit doubled ("ST13-0151",
+// "P-0611"). The code inside the name is the card's, so it answers for the
+// product when the two disagree.
+//
+// Only on a shelf naming a set of ours, though. Cardmarket sells its promos
+// in buckets no set of ours answers for - "Judge Promos", "Winner Cards",
+// "Premium Bandai Products" - and with nothing to hold it to a set the
+// matcher reaches past the edition and lands on the ordinary booster
+// printing of that number, which is a mass-printed card wearing a promo's
+// price. A refusal says less but claims nothing.
+func onePieceNumber(name, number, expansion string) string {
+	fields := nameCode.FindStringSubmatch(name)
+	if fields == nil || strings.EqualFold(fields[1], number) {
+		return number
+	}
+	if _, err := mtgmatcher.GetSetByName(expansion); err != nil {
+		return number
+	}
+	return fields[1]
+}
+
 // numberPrefix returns the letters a collector number opens on, the set code
 // aside: "EN005" yields "EN", "DCR-005" yields "", "SGX1-END19" yields "END".
 func numberPrefix(number string) string {
@@ -430,6 +460,9 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
 		number := product.Number
+		if mkm.gameID == GameOnePiece {
+			number = onePieceNumber(cardName, product.Number, product.ExpansionName)
+		}
 		// The V-index cardmarket synthesizes for same-number siblings is
 		// how One Piece tells a base art from its variants (V.1 the base,
 		// the rest its alternates), and says nothing for the finish-driven
