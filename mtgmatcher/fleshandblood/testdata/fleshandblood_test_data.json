@@ -395,5 +395,13 @@
         },
         "uuid": "",
         "error": "unknown variant"
+    },
+    {
+        "description": "a pitch-qualified name grows the treatment label at its number",
+        "input": {
+            "name": "Wild Ride (Red)",
+            "variant": "TNP001"
+        },
+        "uuid": "tnp001_692575_rainbow"
     }
 ]

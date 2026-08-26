@@ -193,6 +193,12 @@ var fleshandbloodSeeds = []matchTest{
 		Desc: "doubled fused spelling folds onto its pairing",
 		In:   mtgmatcher.InputCard{Name: "Gold // Golden Cog // Gold // Golden Cog", Variation: "SEA244//SEA042", Edition: "High Seas"},
 	},
+	// The datastore spells the promo marvels with both parentheticals, and
+	// a name carrying only the pitch one has to be able to grow the label.
+	{
+		Desc: "a pitch-qualified name grows the treatment label at its number",
+		In:   mtgmatcher.InputCard{Name: "Wild Ride (Red)", Variation: "TNP001"},
+	},
 	// The treatment siblings of a number are one name, one number and two
 	// products, so the finish the caller names is the only thing that
 	// tells them apart - and a finish the product was never sold in names
