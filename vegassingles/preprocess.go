@@ -238,8 +238,16 @@ func preprocessOnePiece(product VSProduct) (*mtgmatcher.InputCard, error) {
 
 // pokemonNumber is the collector number Pokemon display names carry inline,
 // like "039/73", "042" or "SWSH197", set apart by spaces rather than
-// parentheses.
-var pokemonNumber = regexp.MustCompile(` ([A-Z]{0,5}\d+[a-zA-Z]?(?:/\d+)?) `)
+// parentheses. The denominator is lettered in the subsets a set prints
+// alongside itself - the Trainer Gallery numbers TG11/TG30, the Shiny Vault
+// SV81/SV94 - which is the shape the matcher's own numberTailRe accepts.
+//
+// Reading a narrower denominator does not fail where the number stands: the
+// search is unanchored, so it walks past a number it cannot read and matches
+// the era code sitting in the edition half instead, and the card is built
+// from there - "Altaria TG11/TG30  - Holofoil" for a name and "SWSH12" for a
+// number, which the matcher answers as an unknown card name.
+var pokemonNumber = regexp.MustCompile(` ([A-Z]{0,5}\d+[a-zA-Z]?(?:/[A-Z]{0,4}\d+)?) `)
 
 // A Pokemon display name reads
 //

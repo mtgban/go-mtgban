@@ -226,6 +226,12 @@ func TestPreprocessPokemon(t *testing.T) {
 		{"Zapdos 042  - Holofoil XY  Evolutions - Holo Rare", "Holofoil", "Zapdos", "042", "Holofoil"},
 		{"Glaceon VSTAR SWSH197  - Holofoil Prize Pack Series Cards - Promo", "Holofoil", "Glaceon VSTAR", "SWSH197", "Holofoil"},
 		{"Shellos West Sea (SDCC 2007) 107  Miscellaneous Cards & Products - Common", "Normal", "Shellos West Sea (SDCC 2007)", "107", ""},
+		// A subset a set prints alongside itself letters its denominator too.
+		// The number used to be unreadable there, and the search walked past
+		// it into the edition half and came back with the era code.
+		{"Altaria TG11/TG30  - Holofoil SWSH12 Silver Tempest Trainer Gallery - Ultra Rare", "Holofoil", "Altaria", "TG11/TG30", "Holofoil"},
+		{"Aether Foundation Employee SV81/SV94  - Holofoil Hidden Fates Shiny Vault - Shiny Holo Rare", "Holofoil", "Aether Foundation Employee", "SV81/SV94", "Holofoil"},
+		{"Absol GG16/GG70  - Holofoil Crown Zenith Galarian Gallery - Ultra Rare", "Holofoil", "Absol", "GG16/GG70", "Holofoil"},
 	} {
 		card, err := preprocessPokemon(VSProduct{
 			DisplayName:    tt.display,
