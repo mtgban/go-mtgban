@@ -65,6 +65,21 @@ func TestPreprocessMagic(t *testing.T) {
 		// A heading no set answers to keeps the code's reading rather than
 		// losing the row.
 		{"Vexing Arcanix (8th Edition) (OVER-319) - Oversize Cards", "over", "Oversize Cards", 319, "over", "319"},
+		// The prose is a heading that files a promo under a set it does not
+		// belong to, and the printing it reaches is not the one the listing
+		// numbers. The display name spells the right set out behind its last
+		// dash, qualifiers and all.
+		{"Snapcaster Mage (PTP-002) - Regional Championship Qualifiers 2023 (Borderless) Foil", "ptp", "Pro Tour Promos", 2, "Regional Championship Qualifiers 2023", "2"},
+		{"Slith Firewalker (JSS-001) - Junior Super Series", "jss", "Junior Series Promos", 10, "Junior Super Series", "10"},
+		{"The One Ring (UMP-451) - The Lord of the Rings: Tales of Middle-earth (Borderless) Foil", "ump", "Unique and Miscellaneous Promos", 451, "The Lord of the Rings: Tales of Middle-earth", "451"},
+		// The heading names no set at all, so the code's reading is all master
+		// had, and it aliases across the two sets numbering this card alike.
+		{"Interplanar Tunnel (OVER-002) - Planechase 2012 Planes", "over", "Oversize Cards", 2, "Planechase 2012 Planes", "2"},
+		{"Vampiric Tutor (JDG-002) - Judge Gift Cards 2018 Foil", "jdg", "Judge Promos", 2, "Judge Gift Cards 2018", "2"},
+		// The display name names no set of its own either, and the heading
+		// reaches a prerelease printing filed at a number the listing never
+		// says. The code's reading is the one that answers to the 2.
+		{"Spectacular Spider-Man (Borderless) (MEDIA-002) - Media Promos Foil", "media", "Media Promos", 0, "media", "002"},
 	} {
 		card, err := preprocessMagic(VSProduct{
 			DisplayName: tt.display,

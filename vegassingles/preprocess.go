@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // preprocess turns a storefront product into the matcher's input, in the
@@ -115,20 +116,36 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// The number has to be said the promo way too. A set files its promo pack
 	// printing at 268p while the storefront states the plain 268, so that
 	// suffix is offered behind the bare number.
+	//
+	// The prose is a heading before it is a set, though, and a heading files
+	// promos of every set together. Where it names one the listing's own card
+	// does not belong to, the matcher still has to answer, so it leaves the
+	// heading behind and reaches whatever printing it can - and that printing
+	// is not the one the listing numbers. So the prose is trusted first for
+	// the number it answers to, and only then for itself.
+	//
+	// Between the two stands the set the display name spells out behind its
+	// last dash, which is the storefront's own prose for this listing rather
+	// than for its whole bin: Snapcaster Mage at PTP-002 is filed under "Pro
+	// Tour Promos" and named "Regional Championship Qualifiers 2023", where
+	// the 2 the listing states stands.
 	named := product.ProductData.SetName
 	if named != "" && named != edition && !namesSet(edition, named) {
-		suffixes := []string{""}
-		if card.Variation != "" {
-			suffixes = append(suffixes, "p")
-		}
-		for _, suffix := range suffixes {
-			promo := card
-			promo.Edition = named
-			promo.Variation = card.Variation + suffix
-			if resolved(promo) != nil {
-				card = promo
-				break
-			}
+		prose, proseCo := readsAs(card, named)
+		spelled, spelledCo := readsAs(card, spelledSet(product.DisplayName))
+		switch {
+		case answersNumber(proseCo, card.Variation):
+			card = prose
+		case spelledCo != nil:
+			card = spelled
+		// A prerelease printing is a product of its own, filed under the
+		// storefront's own "Prerelease Cards" heading, and every listing that
+		// is one states the number it is filed at. So a heading reaching one
+		// at a number the listing never says is describing another card:
+		// Spectacular Spider-Man at MEDIA-002 is the Marvel Legends insert
+		// numbered 2, not the datestamped promo at 14s.
+		case proseCo != nil && (card.Variation == "" || !proseCo.HasPromoType(magic.PromoTypePrerelease)):
+			card = prose
 		}
 	}
 
@@ -164,6 +181,77 @@ func namesSet(code, edition string) bool {
 		return false
 	}
 	return strings.EqualFold(set.Name, edition)
+}
+
+// readsAs returns the card as an edition string reads it, and the printing
+// that reading lands on, or nil when it lands on none - an edition naming no
+// set included, which would otherwise be read as no edition at all.
+func readsAs(card mtgmatcher.InputCard, edition string) (mtgmatcher.InputCard, *mtgmatcher.CardObject) {
+	if edition == "" {
+		return card, nil
+	}
+	suffixes := []string{""}
+	if card.Variation != "" {
+		suffixes = append(suffixes, "p")
+	}
+	for _, suffix := range suffixes {
+		probe := card
+		probe.Edition = edition
+		probe.Variation = card.Variation + suffix
+		co := resolved(probe)
+		if co != nil {
+			return probe, co
+		}
+	}
+	return card, nil
+}
+
+// answersNumber reports whether a printing is the one a listing's number
+// names. A set spells a promo printing's number with a letter behind it, 268p
+// for the promo pack and 14s for the prerelease, and the storefront states
+// the bare number zero-padded or not, so the digits are what is compared. A
+// listing stating no number is answered by no printing.
+func answersNumber(co *mtgmatcher.CardObject, number string) bool {
+	if co == nil || number == "" {
+		return false
+	}
+	digits := strings.TrimRightFunc(co.Number, func(r rune) bool {
+		return r < '0' || r > '9'
+	})
+	return strings.TrimLeft(digits, "0") == strings.TrimLeft(number, "0")
+}
+
+// setQualifier is a parenthetical riding behind the set a display name spells
+// out, like the "(Borderless)" of "Regional Championship Qualifiers 2023
+// (Borderless)" or the "(enchantment)" of "Duskmourn: House of Horror Promos:
+// (enchantment)".
+var setQualifier = regexp.MustCompile(`\s*\([^()]*\)$`)
+
+// spelledSet returns the set a display name spells out behind its last dash,
+// and "" when what stands there names none. Only a name a set answers to
+// exactly is taken: GetSetByName settles for the nearest set it can reach,
+// and the storefront's own headings ("Media Promos", "MagicFest Cards") all
+// reach one that way.
+func spelledSet(displayName string) string {
+	idx := strings.LastIndex(displayName, " - ")
+	if idx == -1 {
+		return ""
+	}
+	tail := strings.TrimSuffix(displayName[idx+len(" - "):], " Foil")
+	tail = strings.TrimSuffix(tail, " Etched")
+	for {
+		trimmed := setQualifier.ReplaceAllString(tail, "")
+		if trimmed == tail {
+			break
+		}
+		tail = trimmed
+	}
+	tail = strings.TrimRight(strings.TrimSpace(tail), ":,-")
+	set, err := mtgmatcher.GetSetByName(tail)
+	if err != nil || !mtgmatcher.Equals(set.Name, tail) {
+		return ""
+	}
+	return tail
 }
 
 // riftboundNumber is the collector group riftbound display names carry, like
