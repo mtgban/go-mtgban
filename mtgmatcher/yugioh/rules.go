@@ -89,9 +89,6 @@ func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 	number := extractNumber(inCard.Variation)
-	if number == "" && token {
-		number = letteredNumber(inCard.Variation)
-	}
 	// A set printing the name as written settles it whatever the number
 	// says: cardtrader numbers a few tokens one off ("Mask Token" 028 for
 	// OTS Tournament Pack 19's EN029), and following such a number across
@@ -721,6 +718,15 @@ func selectFinish(inCard *mtgmatcher.InputCard, card *mtgmatcher.Card) string {
 // only believed when it fits the game's three-digit numbering and any tail
 // is a known rarity suffix, so the years variant labels start with ("2012
 // Pre-registration") are never read as numbers.
+//
+// A letter-led tail is read last of all. The deck reprints number their
+// cards by the deck the card came in - Legendary Decks II files
+// Polymerization at LDK2-ENJ26 beside LDK2-ENK22 - and cardtrader publishes
+// that tail bare, as "J26". Read after both other shapes, so a full number
+// and a plain digit run keep their precedence, and only where nothing else
+// answered: outside a number a letter-led field is a label word, and
+// letteredNumber's own shape - one letter, then digits, four bytes at most -
+// is what tells the two apart.
 func extractNumber(variation string) string {
 	fields := strings.Fields(variation)
 	for _, field := range fields {
@@ -743,7 +749,7 @@ func extractNumber(variation string) string {
 			return field
 		}
 	}
-	return ""
+	return letteredNumber(variation)
 }
 
 // numberSuffix returns the lowercase letter tail of a collector number.
