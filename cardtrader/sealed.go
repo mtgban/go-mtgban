@@ -383,9 +383,10 @@ func (ct *Sealed) Inventory() mtgban.InventoryRecord {
 // MarketNames names the sub-sellers this market splits into. See
 // mtgban.Market.
 func (ct *Sealed) MarketNames() []string {
-	// Riftbound has no sealed 1DR listings, and an always-empty seller
+	// These games have no sealed 1DR listings, and an always-empty seller
 	// reads as a broken scrape downstream, failing the run.
-	if ct.gameID == GameRiftbound {
+	switch ct.gameID {
+	case GameRiftbound, GameFleshAndBlood:
 		return availableMarketNames[:2]
 	}
 	return availableMarketNames
