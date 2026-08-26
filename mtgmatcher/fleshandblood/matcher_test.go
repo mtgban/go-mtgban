@@ -193,6 +193,22 @@ var fleshandbloodSeeds = []matchTest{
 		Desc: "doubled fused spelling folds onto its pairing",
 		In:   mtgmatcher.InputCard{Name: "Gold // Golden Cog // Gold // Golden Cog", Variation: "SEA244//SEA042", Edition: "High Seas"},
 	},
+	// The treatment siblings of a number are one name, one number and two
+	// products, so the finish the caller names is the only thing that
+	// tells them apart - and a finish the product was never sold in names
+	// no product at all.
+	{
+		Desc: "the named finish picks its treatment sibling at the number",
+		In:   mtgmatcher.InputCard{Name: "Will of Arcana", Edition: "Rosetta", Variation: "ROS000", Finish: "Cold Foil", Foil: true},
+	},
+	{
+		Desc: "the other treatment of the same number picks the other sibling",
+		In:   mtgmatcher.InputCard{Name: "Will of Arcana", Edition: "Rosetta", Variation: "ROS000", Finish: "Rainbow Foil", Foil: true},
+	},
+	{
+		Desc: "negative: the name path refuses a treatment the product never sold",
+		In:   mtgmatcher.InputCard{Name: "Fyendal's Spring Tunic", Variation: "FAB001", Finish: "Rainbow Foil", Foil: true},
+	},
 	{
 		Desc: "negative: a bare number never licenses a pitch respelling",
 		In:   mtgmatcher.InputCard{Name: "Hyper Driver (Red)", Variation: "036"},

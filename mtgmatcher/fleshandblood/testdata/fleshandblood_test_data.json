@@ -362,5 +362,38 @@
         },
         "uuid": "",
         "error": "unknown card name"
+    },
+    {
+        "description": "the named finish picks its treatment sibling at the number",
+        "input": {
+            "name": "Will of Arcana",
+            "variant": "ROS000",
+            "edition": "Rosetta",
+            "foil": true,
+            "finish": "Cold Foil"
+        },
+        "uuid": "ros000_577711_cold"
+    },
+    {
+        "description": "the other treatment of the same number picks the other sibling",
+        "input": {
+            "name": "Will of Arcana",
+            "variant": "ROS000",
+            "edition": "Rosetta",
+            "foil": true,
+            "finish": "Rainbow Foil"
+        },
+        "uuid": "ros000_578820_rainbow"
+    },
+    {
+        "description": "negative: the name path refuses a treatment the product never sold",
+        "input": {
+            "name": "Fyendal's Spring Tunic",
+            "variant": "FAB001",
+            "foil": true,
+            "finish": "Rainbow Foil"
+        },
+        "uuid": "",
+        "error": "unknown variant"
     }
 ]
