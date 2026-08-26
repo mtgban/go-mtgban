@@ -293,14 +293,21 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	edition = trimEditionDecorations(edition)
 	if named, found := namedSet(b, edition); found {
 		edition = named
-	} else if set := numberSet(b, inCard); set != nil {
+	} else if set := numberSet(b, inCard, edition); set != nil {
 		edition = set.Name
 	}
 	inCard.Edition = edition
 }
 
-// numberSet answers the set the input's collector number is filed in, for an
-// edition that names none.
+// numberSet answers the set the input's collector number is filed in, for a
+// bucket that names none.
+//
+// A bucket is an edition a storefront wrote and no set answers. An edition
+// holding nothing is not one: a listing naming no set at all has claimed
+// nothing to be wrong about, and the number alone must not stand in for the
+// claim - a full code names one printing per set and several sets reprint it
+// under exactly that code, so reading it as a set would hand back one of them
+// where the whole pool is the honest answer.
 //
 // A Yu-Gi-Oh number opens with its set's code - "UBP1-EN005" is UBP1 - so a
 // storefront filing a whole shelf of printings under one catch-all bucket
@@ -315,15 +322,65 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 // most are the ones that drop the dash. The set is only adopted when it
 // carries the card at that number: the number is the storefront's own claim,
 // and one naming a set the card was never printed in says nothing about where
-// the listing belongs.
-func numberSet(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) *mtgmatcher.Set {
+// the listing belongs. Nor when another set prints the card under that very
+// number - the print-run twins are reissued under their original's numbers,
+// and only the copyright date on the card tells those apart, which is the
+// scraper's to read and not a code's to guess.
+func numberSet(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, edition string) *mtgmatcher.Set {
+	// Punctuation is what the normalizing drops first, so a bucket spelled
+	// with nothing but it says as little as an absent one.
+	if mtgmatcher.Normalize(edition) == "" {
+		return nil
+	}
 	for _, field := range strings.Fields(inCard.Variation) {
 		set := fieldSet(b, field)
-		if set != nil && editionCarries(set, inCard.Name, field) {
-			return set
+		if set == nil {
+			continue
 		}
+		full := editionNumberAt(set, inCard.Name, field)
+		if full == "" || !onlySetAt(b, inCard.Name, full, set.Code) {
+			continue
+		}
+		return set
 	}
 	return nil
+}
+
+// editionNumberAt answers the set's own spelling of the collector number the
+// input fits, and nothing when the set prints the card at several numbers
+// that fit - which decides no more than none at all.
+func editionNumberAt(set *mtgmatcher.Set, name, number string) string {
+	normalized := mtgmatcher.Normalize(name)
+	var full string
+	for i := range set.Cards {
+		card := &set.Cards[i]
+		if mtgmatcher.Normalize(card.Name) != normalized ||
+			!numberMatches(number, card.Number) {
+			continue
+		}
+		if full != "" && !strings.EqualFold(full, card.Number) {
+			return ""
+		}
+		full = card.Number
+	}
+	return full
+}
+
+// onlySetAt reports whether the set is the only one printing the card under
+// this collector number. The comparison is against the number as its own set
+// spells it, never the storefront's: an input that dropped the dash compares
+// on its digits alone, and every set numbering a reprint -005 would answer it.
+func onlySetAt(b *mtgmatcher.Backend, name, full, code string) bool {
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || co.SetCode == code {
+			continue
+		}
+		if strings.EqualFold(co.Number, full) {
+			return false
+		}
+	}
+	return true
 }
 
 // numberTailRe matches what a collector number holds behind its set code: the
