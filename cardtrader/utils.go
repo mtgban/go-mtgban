@@ -267,6 +267,18 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		if bp.Version == "Token" {
 			return number
 		}
+	case GameFleshAndBlood:
+		// A blueprint's version crosses the treatment with the wording
+		// that picks between same-numbered printings, "Extended Art |
+		// Rainbow Foil". The treatment half is already spoken for: the
+		// listing states it as its own finish, off FabFoilNew, and saying
+		// it twice narrows nothing. Only what the finish cannot say is
+		// worth passing on.
+		version := fabWording(bp.Version, number)
+		if version == "" {
+			return number
+		}
+		return number + " " + version
 	case GamePokemon:
 		// Pokemon's Version carries what the bare number cannot: the real
 		// collector number with its set total ("Holo Promo | 013/025" where
@@ -279,6 +291,32 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		return number
 	}
 	return number + " " + bp.Version
+}
+
+// fabTreatments are the values a Flesh and Blood listing states as its own
+// finish. A version naming one of them adds nothing the finish has not
+// already said.
+var fabTreatments = map[string]bool{
+	"rainbow foil": true,
+	"cold foil":    true,
+	"gold foil":    true,
+	"regular":      true,
+	"normal":       true,
+}
+
+// fabWording keeps the half of a blueprint's version that names a printing
+// rather than a finish. A version restating the collector number - "DYN115"
+// against the number DYN115 - names nothing either, and would only stutter.
+func fabWording(version, number string) string {
+	var kept []string
+	for _, part := range strings.Split(version, "|") {
+		part = strings.TrimSpace(part)
+		if part == "" || fabTreatments[strings.ToLower(part)] || strings.EqualFold(part, number) {
+			continue
+		}
+		kept = append(kept, part)
+	}
+	return strings.Join(kept, " ")
 }
 
 // gameName spells the card a blueprint names, which is not always its Name
