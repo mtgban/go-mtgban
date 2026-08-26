@@ -4,6 +4,7 @@ import (
 	"errors"
 	"path"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -410,6 +411,25 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 					variation = "Promo Pack"
 				}
 			}
+		} else if strings.HasSuffix(edition, firstPlaceSuffix) {
+			// The store sells the box toppers as their own edition but
+			// says nothing about the treatment, and its index counts the
+			// flavours in collector-number order: the bordered one first,
+			// the borderless one second. Say the number instead, so the
+			// topper stops aliasing with the base printing.
+			base := strings.TrimSuffix(edition, firstPlaceSuffix)
+			numbers := firstPlaceNumbers(cardName, base)
+			switch {
+			case len(numbers) == 1:
+				variation = strconv.Itoa(numbers[0])
+			case len(numbers) == 2 && !mtgmatcher.IsBasicLand(cardName):
+				switch variation {
+				case "V.1":
+					variation = strconv.Itoa(numbers[0])
+				case "V.2":
+					variation = strconv.Itoa(numbers[1])
+				}
+			}
 		}
 	}
 
@@ -553,6 +573,34 @@ func imageNumber(extra string) string {
 		return ""
 	}
 	return number
+}
+
+// firstPlaceSuffix is how the store names the box topper edition that sits
+// beside a set.
+const firstPlaceSuffix = ": First-Place"
+
+// firstPlaceNumbers returns the collector numbers of the card's first-place
+// foil printings in the set the edition names, lowest first. It returns
+// nothing when any of them is numbered in a way the order cannot be read
+// from.
+func firstPlaceNumbers(cardName, edition string) []int {
+	set, err := mtgmatcher.GetSetByName(edition)
+	if err != nil {
+		return nil
+	}
+	var numbers []int
+	for _, card := range mtgmatcher.MatchInSet(cardName, set.Code) {
+		if !card.HasPromoType(magic.PromoTypeFirstPlaceFoil) {
+			continue
+		}
+		number, err := strconv.Atoi(card.Number)
+		if err != nil {
+			return nil
+		}
+		numbers = append(numbers, number)
+	}
+	slices.Sort(numbers)
+	return numbers
 }
 
 // namesTheArt reports whether the store's image name, rather than any wording
