@@ -47,11 +47,27 @@ func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
 	return preprocessMagic(product)
 }
 
+// cardTable spells the names the storefront types wrong. Each is a plain
+// misspelling with nothing else to read it by - the card it means has
+// printings and the name as written has none - so there is no rule to find
+// here, only the correction.
+var cardTable = map[string]string{
+	"Stripe Mine":          "Strip Mine",
+	"The Visioon":          "The Vision",
+	"Thousand-Year Elixer": "Thousand-Year Elixir",
+}
+
 // magicCode is the "(SETCODE-NUMBER)" group a magic display name carries just
 // ahead of the set name, like "(RVR-280)" or "(SLD-1800)". It is the last such
 // group in the name: a Secret Lair spells its number a second time, bare and
 // zero-padded, before the drop's own qualifiers.
-var magicCode = regexp.MustCompile(`\(([A-Z0-9]+)-(\d+[a-zA-Z]?\x{2605}?)\)`)
+//
+// The List states the set size behind the number, "(LIST-234/249)", and the
+// size is not part of it. Reading nothing at all there costs the listing more
+// than the number: with no number the prose reading of the edition aliases,
+// so the storefront's own code stands as the edition, and a code naming no
+// set leaves the matcher with the whole history of the name to choose from.
+var magicCode = regexp.MustCompile(`\(([A-Z0-9]+)-(\d+[a-zA-Z]?\x{2605}?)(?:/\d+)?\)`)
 
 // saysMore reports whether the number a display name spells carries what the
 // storefront's own field cannot. The field is an int, so a star and a letter
@@ -94,6 +110,9 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	}
 	fields := mtgmatcher.SplitVariants(head)
 	cardName := fields[0]
+	if fixed, found := cardTable[cardName]; found {
+		cardName = fixed
+	}
 
 	// What is left is the wording, less the code group: that is the number's
 	// own business and is read below.

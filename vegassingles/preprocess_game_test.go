@@ -388,3 +388,50 @@ func TestPreprocessMagicWording(t *testing.T) {
 		}
 	}
 }
+
+// TestPreprocessMagicSlashedNumber pins the set size The List states behind
+// its number. Reading nothing there costs the listing more than the number:
+// with none, the prose reading of the edition aliases and the storefront's
+// own code stands as the edition, which names no set at all.
+func TestPreprocessMagicSlashedNumber(t *testing.T) {
+	for _, tt := range []struct {
+		display   string
+		setName   string
+		variation string
+	}{
+		{"Swiftfoot Boots (A25) (LIST-234/249) - The List Reprints", "The List Reprints", "234"},
+		{"Bountiful Promenade (LIST-081/254) - The List Reprints", "The List Reprints", "081"},
+		// A number stating no size is read exactly as before.
+		{"Animate Dead (LIST-078) - The List", "The List", "078"},
+	} {
+		product := VSProduct{DisplayName: tt.display}
+		product.ProductData.SetName = tt.setName
+		card, err := preprocessMagic(product)
+		if err != nil {
+			t.Errorf("%s: %v", tt.display, err)
+			continue
+		}
+		if card.Variation != tt.variation {
+			t.Errorf("%s:\n got  %q\n want %q", tt.display, card.Variation, tt.variation)
+		}
+	}
+}
+
+// TestCardTable pins the names the storefront types wrong. Each is checked
+// both ways: the misspelling has no printing, the correction has many.
+func TestCardTable(t *testing.T) {
+	for written, meant := range cardTable {
+		if mtgmatcher.Normalize(written) == mtgmatcher.Normalize(meant) {
+			t.Errorf("%q corrects to itself", written)
+		}
+		product := VSProduct{DisplayName: written + " (EOS-040) - Edge of Eternities: Stellar Sights"}
+		card, err := preprocessMagic(product)
+		if err != nil {
+			t.Errorf("%s: %v", written, err)
+			continue
+		}
+		if card.Name != meant {
+			t.Errorf("%q read as %q, want %q", written, card.Name, meant)
+		}
+	}
+}
