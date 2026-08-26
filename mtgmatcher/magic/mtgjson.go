@@ -222,6 +222,7 @@ const (
 	PromoTypeDraftWeekend      = "draftweekend"
 	PromoTypeEmbossed          = "embossed"
 	PromoTypeFNM               = "fnm"
+	PromoTypeFirstPlaceFoil    = "firstplacefoil"
 	PromoTypeFractureFoil      = "fracturefoil"
 	PromoTypeGalaxyFoil        = "galaxyfoil"
 	PromoTypeGameDay           = "gameday"
