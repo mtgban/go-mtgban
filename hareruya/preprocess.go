@@ -276,19 +276,19 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	}
 
 	if strings.Contains(edition, "WC9") || strings.Contains(edition, "WC0") || edition == "PT96" {
+		// The player the deck belonged to closes the title, past the last
+		// Japanese field, and takes as many words as their name needs
 		fields := strings.Fields(title)
-		var i int
-		for i = len(fields) - 1; i == 0; i-- {
-			if reJapanese.MatchString(fields[i]) {
-				break
-			}
+		i := len(fields) - 1
+		for i >= 0 && !reJapanese.MatchString(fields[i]) {
+			i--
 		}
 
-		if i > 0 {
+		if i+1 < len(fields) {
 			if variant != "" {
 				variant += " "
 			}
-			variant += strings.Join(fields[i-1:], " ")
+			variant += strings.Join(fields[i+1:], " ")
 		}
 	} else if strings.Contains(variant, "P30H") {
 		edition = variant
