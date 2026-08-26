@@ -499,6 +499,13 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return finishTiebreak(inCard, editionTiebreak(b, inCard, described))
 	}
 	if wantsVariant(inCard, number) {
+		if len(variants) == 0 && wantsUnnamedVariant(inCard) {
+			// The listing said it is not the base printing, and the
+			// catalog holds no other at this number: answering with the
+			// base prices the card the listing went out of its way to
+			// say it is not.
+			return nil
+		}
 		if len(variants) > 0 {
 			// The edition decides first and the index only speaks for what
 			// it leaves: cardmarket's index counts one shelf's products, so
@@ -1216,8 +1223,34 @@ func wantsVariant(inCard *mtgmatcher.InputCard, number string) bool {
 	if number != "" && number[len(number)-1] >= 'a' {
 		return true
 	}
+	if wantsUnnamedVariant(inCard) {
+		return true
+	}
 	for field := range strings.FieldsSeq(strings.ToLower(inCard.Variation)) {
 		if strings.HasPrefix(field, "v.") && field != "v.1" {
+			return true
+		}
+	}
+	return false
+}
+
+// unnamedVariantWords are the ways a storefront says a printing is not the
+// base one without saying which it is. The catalog labels the same printing
+// several ways - 177 of them "Parallel", 515 "Alternate Art" - so a word here
+// names no label in particular, only that the listing is asking past the base.
+// A wording that does name a label is answered by that label before any of
+// this is reached.
+var unnamedVariantWords = []string{"parallel", "alternate art", "alt art"}
+
+// wantsUnnamedVariant reports whether the wording asks for a printing other
+// than the base without naming which. Cool Stuff Inc sells three Kouzuki
+// Hiyori at EB01-013 and calls the second one "(Parallel)" where the catalog
+// calls it "Alternate Art", so the word cannot be matched against a label -
+// what it says is that the base is the wrong answer.
+func wantsUnnamedVariant(inCard *mtgmatcher.InputCard) bool {
+	wording := strings.ToLower(inCard.Variation)
+	for _, word := range unnamedVariantWords {
+		if strings.Contains(wording, word) {
 			return true
 		}
 	}
