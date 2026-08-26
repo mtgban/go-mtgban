@@ -226,6 +226,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if canon != "" {
 		edition = prefix + canon
 	}
+	// A wording abbreviating an event's name is the storefront saying which
+	// set the listing is in, however plainly its edition says the other one.
+	if promo := promoSetBegun(b, inCard); promo != "" {
+		edition = promo
+	}
 	inCard.Edition = edition
 
 	// PromoWildcard is the flag Match already reads to skip edition
@@ -236,6 +241,89 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if variantPointedAt(b, inCard) {
 		inCard.PromoWildcard = true
 	}
+}
+
+// promoSetBegun answers the promotional set a listing's wording names by the
+// opening words of a printing's label, and "" when it names none.
+//
+// A storefront shortens the event a promo was handed out at - Cool Stuff Inc
+// writes "(Championship 25-26)" for the catalog's "Championship 25 26
+// Regionals Season 1" - and files the listing under the base card's set,
+// which is the one set that printing is not in. The abbreviation is too short
+// for the variant tiering to read as a label, so nothing at all says the
+// listing is a promo and the base common answers it, wearing the promo's
+// $1250 buy price. Nothing but the edition reaches the right card: the
+// printing shares its number with the base card, so the number cannot pick
+// it, and a tiering that never read the label cannot prefer it either.
+//
+// Four things hold the rule to that case. Only a full collector number is
+// read, since a bare tail is the same number in every set of the game. The
+// run has to open the label rather than sit anywhere in it, because a
+// storefront shortening a name keeps its front. It has to be two words long,
+// because one word is what a wording lands on by coincidence. And a wording
+// that spells some label out in full is left alone, along with a run opening
+// the labels of two different sets: the first is already the tiering's to
+// answer and the second names nothing.
+func promoSetBegun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
+	number := inputNumber(b, inCard)
+	if !fullNumberRe.MatchString(number) {
+		return ""
+	}
+	var name, code string
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || len(co.PromoTypes) == 0 ||
+			!numberMatches(number, co.Number) {
+			continue
+		}
+		if mtgmatcher.SlugDescribesAny(inCard.Variation, co.PromoTypes) {
+			return ""
+		}
+		if !slugsBegunBy(inCard.Variation, co.PromoTypes) {
+			continue
+		}
+		set, found := b.Sets[co.SetCode]
+		if !found {
+			continue
+		}
+		if code != "" && code != co.SetCode {
+			return ""
+		}
+		name, code = set.Name, co.SetCode
+	}
+	if !setIsPromotional(name) {
+		return ""
+	}
+	return name
+}
+
+// slugsBegunBy reports whether a wording opens any of the labels a printing
+// wears, as a run of at least two whole words and short of the whole label.
+// It is SlugDescribes stopped short of the end: the slug has lost its spaces,
+// so the wording's words are joined back up a run at a time and the label
+// asked whether it starts with them. A wording spelling a label out in full
+// opens it too, along every shorter run, so it is promoSetBegun that tells
+// the abbreviation from the full name.
+func slugsBegunBy(wording string, slugs []string) bool {
+	words := strings.Fields(strings.ToLower(wording))
+	for _, slug := range slugs {
+		if slug == "" {
+			continue
+		}
+		for i := range words {
+			var joined string
+			for j := i; j < len(words); j++ {
+				joined += mtgmatcher.PromoTypeSlug(words[j])
+				if len(joined) >= len(slug) || !strings.HasPrefix(slug, joined) {
+					break
+				}
+				if j > i {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // variantPointedAt reports whether the input's own wording asks for a
