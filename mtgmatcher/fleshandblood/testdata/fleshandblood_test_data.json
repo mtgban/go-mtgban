@@ -403,5 +403,46 @@
             "variant": "TNP001"
         },
         "uuid": "tnp001_692575_rainbow"
+    },
+    {
+        "description": "a treatment no fused pair wears reaches the label at the number",
+        "input": {
+            "name": "Cindra",
+            "variant": "HNT055",
+            "foil": true,
+            "finish": "Cold Foil"
+        },
+        "uuid": "hnt055_606729_cold"
+    },
+    {
+        "description": "the prefix fallback reaches it too",
+        "input": {
+            "name": "Kayo, Strong-arm",
+            "variant": "SUP064",
+            "foil": true,
+            "finish": "Cold Foil"
+        },
+        "uuid": "sup064_653952_cold"
+    },
+    {
+        "description": "negative: a treatment the label never wore refuses all the same",
+        "input": {
+            "name": "Cindra",
+            "variant": "HNT055",
+            "foil": true,
+            "finish": "Rainbow Foil"
+        },
+        "uuid": "",
+        "error": "unknown variant"
+    },
+    {
+        "description": "negative: a plain listing of a face still refuses two claimants",
+        "input": {
+            "name": "Iyslander",
+            "variant": "UPR103",
+            "finish": "Normal"
+        },
+        "uuid": "",
+        "error": "unknown variant"
     }
 ]

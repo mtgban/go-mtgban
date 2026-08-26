@@ -193,6 +193,24 @@ var fleshandbloodSeeds = []matchTest{
 		Desc: "doubled fused spelling folds onto its pairing",
 		In:   mtgmatcher.InputCard{Name: "Gold // Golden Cog // Gold // Golden Cog", Variation: "SEA244//SEA042", Edition: "High Seas"},
 	},
+	// Two fused claimants refuse a bare face name, but a listing naming a
+	// treatment no pair was sold in has said which printing it prices.
+	{
+		Desc: "a treatment no fused pair wears reaches the label at the number",
+		In:   mtgmatcher.InputCard{Name: "Cindra", Variation: "HNT055", Finish: "Cold Foil", Foil: true},
+	},
+	{
+		Desc: "the prefix fallback reaches it too",
+		In:   mtgmatcher.InputCard{Name: "Kayo, Strong-arm", Variation: "SUP064", Finish: "Cold Foil", Foil: true},
+	},
+	{
+		Desc: "negative: a treatment the label never wore refuses all the same",
+		In:   mtgmatcher.InputCard{Name: "Cindra", Variation: "HNT055", Finish: "Rainbow Foil", Foil: true},
+	},
+	{
+		Desc: "negative: a plain listing of a face still refuses two claimants",
+		In:   mtgmatcher.InputCard{Name: "Iyslander", Variation: "UPR103", Finish: "Normal"},
+	},
 	// The datastore spells the promo marvels with both parentheticals, and
 	// a name carrying only the pitch one has to be able to grow the label.
 	{
