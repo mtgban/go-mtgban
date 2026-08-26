@@ -229,6 +229,11 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 				edition = code
 			}
 		}
+		// The Secret Lair sets are only considered when the listing spells the
+		// drop out, and this category never does, so say it on its behalf
+		if edition == "SLP" {
+			variation = strings.TrimSpace(variation + " Play")
+		}
 	case "Promos: Media":
 		for _, code := range []string{
 			"PHPR", "PMEI", "PURL",
