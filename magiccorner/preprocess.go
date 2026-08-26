@@ -192,6 +192,21 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 		cardName = cn
 	}
 
+	// The English name field is sometimes still the Italian one, or the
+	// store's own misspelling. The image beside it is named after the card
+	// in English, so read the name from there - but only once the published
+	// one turns out to name no card at all. The store also serves the wrong
+	// image now and then, and a name that does exist is the better witness.
+	if !namesACard(cardName) {
+		slugName, slugVariation := imageName(extra, card.Edition)
+		if namesACard(slugName) {
+			cardName = slugName
+			if variation == "" {
+				variation = slugVariation
+			}
+		}
+	}
+
 	cardName, edition, variation = internalPreprocess(cardName, edition, variation, extra)
 
 	if isBlindAttraction(cardName, edition, variation) {
@@ -583,6 +598,58 @@ func imageNumber(extra string) string {
 		return ""
 	}
 	return number
+}
+
+// namesACard reports whether the datastore can place the name at all. The
+// printings index answers for nearly every card; the few known only by a
+// flavor name reach their printing through the matcher alone, so ask it
+// second rather than call those names unknown.
+func namesACard(cardName string) bool {
+	if cardName == "" {
+		return false
+	}
+	_, err := mtgmatcher.Printings4Card(cardName)
+	if err == nil {
+		return true
+	}
+	_, err = mtgmatcher.Match(&mtgmatcher.InputCard{Name: cardName})
+	return !errors.Is(err, mtgmatcher.ErrCardDoesNotExist)
+}
+
+var (
+	// imageIDRe matches the product id the store hangs off the end of an
+	// image name, in either the decimal or the hexadecimal shape it uses.
+	imageIDRe = regexp.MustCompile(`[-_][0-9a-f]{6,}$`)
+	// imageVersionRe matches the art index some image names carry.
+	imageVersionRe = regexp.MustCompile(`-v([0-9]+)$`)
+	// slugSeparatorRe matches everything a slug spells as a separator.
+	slugSeparatorRe = regexp.MustCompile(`[^a-z0-9]+`)
+)
+
+// imageName reads the card name an image is named after, along with the art
+// index the name carries when it has one. It returns an empty name when the
+// store named that image some other way.
+func imageName(extra, edition string) (string, string) {
+	slug := extra
+	id := imageIDRe.FindString(slug)
+	if id == "" || !strings.ContainsAny(id, "0123456789") {
+		return "", ""
+	}
+	slug = strings.TrimSuffix(slug, id)
+	slug = strings.TrimPrefix(slug, slugify(edition)+"-")
+
+	variation := ""
+	version := imageVersionRe.FindStringSubmatch(slug)
+	if version != nil {
+		variation = "V." + version[1]
+		slug = strings.TrimSuffix(slug, version[0])
+	}
+	return strings.ReplaceAll(slug, "-", " "), variation
+}
+
+// slugify spells a name the way the store spells it in an image name.
+func slugify(name string) string {
+	return strings.Trim(slugSeparatorRe.ReplaceAllString(strings.ToLower(name), "-"), "-")
 }
 
 // isBlindAttraction reports whether a listing names an Unfinity attraction
