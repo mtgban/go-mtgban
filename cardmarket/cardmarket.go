@@ -199,6 +199,10 @@ func (mkm *Index) reportRefused(expansion string, total int, refused []string) {
 // apart with, which names its own version index and the rarity beside it.
 var versionTail = regexp.MustCompile(` \(V\.\d+.*\)$`)
 
+// rarityTail captures the rarity out of that same parenthetical, which is
+// the only place Cardmarket writes it.
+var rarityTail = regexp.MustCompile(` \(V\.\d+ - ([^)]+)\)$`)
+
 // numberTail matches the digits a collector number ends on, which is the part
 // two catalogs numbering the same card agree about.
 var numberTail = regexp.MustCompile(`\d+[A-Za-z]?$`)
@@ -290,6 +294,20 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 		}
 	}
 
+	// A Yu-Gi-Oh card is named by name + number + rarity, and a set prints
+	// one number in several rarities ("Ultra Rare" beside "Ultimate Rare"):
+	// with the tail only deleted the two are indistinguishable and both go
+	// unpriced. The rarity does not belong in the name, so it rides beside
+	// the number instead, which is where the matcher reads it from. The
+	// other catalogs write their own vocabulary in that tail - Riftbound
+	// spells treatments there - so this stays the one game's.
+	var rarity string
+	if mkm.gameID == GameYuGiOh {
+		if fields := rarityTail.FindStringSubmatch(product.Name); fields != nil {
+			rarity = fields[1]
+		}
+	}
+
 	numbers := []string{product.Number}
 	// A promo's programme is the prefix our numbering carries and the
 	// expansion Cardmarket sells it under, so the number is only whole once
@@ -317,11 +335,12 @@ func (mkm *Index) matchProduct(product *MKMProduct) string {
 
 	for _, name := range names {
 		for _, number := range numbers {
+			variation := strings.TrimSpace(number + " " + rarity)
 			for _, finish := range finishes {
 				id, err := mtgmatcher.Match(&mtgmatcher.InputCard{
 					Name:      name,
 					Edition:   edition,
-					Variation: number,
+					Variation: variation,
 					Finish:    finish,
 				})
 				if err != nil {
