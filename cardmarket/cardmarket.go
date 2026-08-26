@@ -580,7 +580,7 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 	// printing's whatever its foilness - there is no second column for
 	// them to be in. Every other catalog keeps the foil beside the plain
 	// card and splits the two across the columns.
-	perTreatment := mkm.gameID == GameFleshAndBlood
+	perTreatment := mkm.gameID == GameFleshAndBlood || mkm.gameID == GameOnePiece
 
 	// If card is not foil, add prices from the prices array, then check
 	// if there is a foil printing, and add prices from the foilprices array.
