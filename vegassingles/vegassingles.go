@@ -84,7 +84,10 @@ func (vs *Vegassingles) printf(format string, a ...any) {
 func (vs *Vegassingles) processProduct(product VSProduct) error {
 	theCard, err := preprocess(product, vs.game)
 	if err != nil {
-		return err
+		// Name the product, the way the failure below already does. A
+		// reason alone says a listing was dropped without saying which,
+		// and a bucket nobody can read is a bucket nobody empties
+		return fmt.Errorf("%s %q: %w", product.ID, product.DisplayName, err)
 	}
 
 	cardID, err := mtgmatcher.Match(theCard)
