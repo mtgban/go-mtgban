@@ -454,7 +454,15 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 	if wantsVariant(inCard, number) {
 		if len(variants) > 0 {
-			return editionTiebreak(b, inCard, variants)
+			// The edition decides first and the index only speaks for what
+			// it leaves: cardmarket's index counts one shelf's products, so
+			// reading it across sets would answer a storefront naming a
+			// promo set with a booster set's parallel.
+			narrowed := editionTiebreak(b, inCard, variants)
+			if picked := variantAtIndex(inCard, editionTiebreak(b, inCard, base), narrowed); picked != nil {
+				return picked
+			}
+			return narrowed
 		}
 		return candidates
 	}
@@ -462,6 +470,42 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return editionTiebreak(b, inCard, base)
 	}
 	return editionTiebreak(b, inCard, candidates)
+}
+
+// variantAtIndex narrows the variants tier to the one printing cardmarket's
+// "(V.n)" index points at, when the datastore's own numbering says which that
+// is. Bandai numbers a card's alternate printings by appending "_p1", "_p2"
+// to its collector number, in the order cardmarket files them behind the base
+// printing, so V.2 is "_p1" and V.3 is "_p2".
+//
+// The index is a position in cardmarket's own shelf, not a name for anything,
+// so it only means this where the shelf is the plain one it describes: one
+// base printing for V.1 to have been, and exactly one variant wearing the
+// suffix asked for. Cardmarket files an un-indexed product beside indexed
+// ones on its promo shelves, where V.1 is already an alternate rather than
+// the base - and on those shelves every printing of ours carries a promo
+// label, so there is no base tier and the index is left unread rather than
+// spending V.2 on the printing V.1 stands for.
+func variantAtIndex(inCard *mtgmatcher.InputCard, base, variants []mtgmatcher.Card) []mtgmatcher.Card {
+	index := positionalIndex(inCard.Variation)
+	if index < 2 || len(base) != 1 || base[0].Identifiers == nil {
+		return nil
+	}
+	bandaiID := base[0].Identifiers["bandaiId"]
+	if bandaiID == "" {
+		return nil
+	}
+	want := bandaiID + "_p" + strconv.Itoa(index-1)
+	var picked []mtgmatcher.Card
+	for _, card := range variants {
+		if card.Identifiers["bandaiId"] == want {
+			picked = append(picked, card)
+		}
+	}
+	if len(picked) != 1 {
+		return nil
+	}
+	return picked
 }
 
 // finishTiebreak narrows a tier the wording described in full to the
