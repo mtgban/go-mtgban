@@ -23,6 +23,19 @@ func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
 	return preprocessMagic(product)
 }
 
+// magicCode is the "(SETCODE-NUMBER)" group a magic display name carries just
+// ahead of the set name, like "(RVR-280)" or "(SLD-1800)". It is the last such
+// group in the name: a Secret Lair spells its number a second time, bare and
+// zero-padded, before the drop's own qualifiers.
+var magicCode = regexp.MustCompile(`\(([A-Z0-9]+)-(\d+[a-zA-Z]?)\)`)
+
+// resolves reports whether a card names a printing the datastore holds. It
+// matches a copy, so the matcher's own edits to the input stay in the probe.
+func resolves(card mtgmatcher.InputCard) bool {
+	_, err := mtgmatcher.Match(&card)
+	return err == nil
+}
+
 func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// Display name format: "Hallowed Fountain (RVR-280) - Ravnica Remastered"
 	// Extract card name by finding the first " ("
@@ -43,12 +56,36 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 
 	foil := product.SelectedFinish == "foil"
 
-	return &mtgmatcher.InputCard{
+	card := mtgmatcher.InputCard{
 		Name:      cardName,
 		Edition:   edition,
 		Variation: variant,
 		Foil:      foil,
-	}, nil
+	}
+
+	// The collector number is stated twice, and the int field is null for
+	// whole sets: every Secret Lair drop, Edge of Eternities and its Stellar
+	// Sights, the Countdown Kit. The display name's own code group always
+	// spells it, so read it there when the field says nothing - a Secret Lair
+	// with no number resolves to whichever drop the name aliases onto.
+	//
+	// Only what the field left empty is read this way, and only when it names
+	// a printing: some codes are the storefront's own filing rather than a
+	// set's, and their number counts within it ("(UMP-002) - Unique and
+	// Miscellaneous Promos" is the second card the storefront filed there,
+	// not a collector number), which no set answers to.
+	if variant == "" {
+		groups := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
+		if len(groups) > 0 {
+			named := card
+			named.Variation = groups[len(groups)-1][2]
+			if resolves(named) {
+				card.Variation = named.Variation
+			}
+		}
+	}
+
+	return &card, nil
 }
 
 // riftboundNumber is the collector group riftbound display names carry, like

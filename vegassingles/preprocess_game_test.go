@@ -2,8 +2,74 @@ package vegassingles
 
 import (
 	"encoding/json"
+	"log"
+	"os"
 	"testing"
+
+	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
+
+// The magic preprocessor asks the datastore what a display name's own reading
+// of a product resolves to before preferring it, so its tests need the real
+// one. The other games' preprocessors read the display name alone.
+func TestMain(m *testing.M) {
+	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
+	if allprintingsPath == "" {
+		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
+	}
+
+	reader, err := os.Open(allprintingsPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer reader.Close()
+
+	ds, err := magic.Load(reader)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	mtgmatcher.SetGlobalDatastore(ds)
+
+	os.Exit(m.Run())
+}
+
+func TestPreprocessMagic(t *testing.T) {
+	for _, tt := range []struct {
+		display   string
+		set       string
+		number    int
+		variation string
+	}{
+		// The storefront's own field is authoritative wherever it is set.
+		{"Hallowed Fountain (RVR-280) - Ravnica Remastered", "rvr", 280, "280"},
+		// It is null for every Secret Lair drop, so the drop's number comes
+		// off the display name instead of the whole set aliasing onto one
+		// card.
+		{"Anguished Unmaking (1800) (Rainbow Foil) (SLD-1800) - Secret Lair Drop Series Foil", "sld", 0, "1800"},
+		{"Brain Freeze (Halo Foil) (SLC-029) - Secret Lair Countdown Kit Foil", "slc", 0, "029"},
+		{"Ancient Tomb (0136) (Borderless) (Galaxy Foil) (EOS-136) - Edge of Eternities: Stellar Sights Foil", "eos", 0, "136"},
+		// Some codes are the storefront's own filing rather than a set's, and
+		// the number counts within it. No set answers to it, so it is
+		// withdrawn rather than sent.
+		{"Sword of Forge and Frontier (Borderless) (UMP-002) - Unique and Miscellaneous Promos", "ump", 0, ""},
+		{"Get Lost (UMP-001) - Unique and Miscellaneous Promos", "ump", 0, ""},
+	} {
+		card, err := preprocessMagic(VSProduct{
+			DisplayName: tt.display,
+			ProductData: VSProductData{
+				Set:                       flexString(tt.set),
+				CollectorNumberNormalized: tt.number,
+			},
+		})
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if card.Variation != tt.variation {
+			t.Errorf("%s:\n got  %q\n want %q", tt.display, card.Variation, tt.variation)
+		}
+	}
+}
 
 func TestPreprocessRiftbound(t *testing.T) {
 	for _, tt := range []struct {
