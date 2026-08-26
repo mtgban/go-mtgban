@@ -37,6 +37,13 @@ var dashTailRe = regexp.MustCompile(`\s+-\s+([0-9]+[a-zA-Z]?)$`)
 // 2024)". A full name that is itself canonical stays as it is — the epithet
 // parentheticals ("Mr.2.Bon.Kurei (Bentham)") are part of the name.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	splitDecorations(b, inCard)
+	adoptNumberedName(b, inCard)
+}
+
+// splitDecorations moves the parenthetical qualifiers and the dash-hung
+// collector number out of the name, leaving the bare spelling behind.
+func splitDecorations(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
@@ -59,6 +66,45 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 	splitDashNumber(inCard)
+}
+
+// adoptNumberedName adopts the catalog's decorated spelling of a name the
+// storefront wrote plain, where the number says the plain spelling is not
+// the one meant.
+//
+// A handful of printings carry their occasion inside the name - both P-110
+// printings are "Monkey.D.Luffy (4th Anniversary)", and the pre-release
+// tournament cards read the same way - while the storefront writes the bare
+// "Monkey.D.Luffy". That bare name is perfectly canonical, and 270 other
+// printings answer to it, so the lookup succeeds and the number then deletes
+// every one of them: the listing dies as an unknown variant with nothing
+// having gone wrong with its variant. AdjustName's own reading of the number
+// never runs, because it is only asked once the canonical lookup has failed.
+//
+// nameAtNumber does the reading, and its guards are what make it safe here: a
+// code several names answer says nothing about which was meant, and the
+// spelling adopted has to be close to the one written. A name with a printing
+// at the number is already right, so it is never asked about.
+func adoptNumberedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; !found {
+		return
+	}
+	number := extractNumber(inCard.Variation)
+	if number == "" {
+		return
+	}
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed {
+			continue
+		}
+		if numberMatches(number, co.Number) {
+			return
+		}
+	}
+	if name := nameAtNumber(b, inCard.Name, number); name != "" {
+		inCard.Name = name
+	}
 }
 
 // splitDashNumber moves the collector number a storefront hangs off a name
