@@ -10,9 +10,28 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// uniqueCopy is the marker vegas.singles ends a display name with when the
+// listing is one particular card rather than the printing: the word Unique,
+// with or without parentheses, and then that copy's own id.
+//
+// The id is what makes the marker safe to read. Magic has a set named
+// "Unique and Miscellaneous Promos", so every product in it says the word;
+// none of them ends it with a number.
+var uniqueCopy = regexp.MustCompile(`(?i)\(?Unique\)?\s*\(?\d+\)?$`)
+
 // preprocess turns a storefront product into the matcher's input, in the
 // grammar its game's display names follow.
+//
+// A listing for one particular copy is refused before any of that. It is a
+// single card - signed, graded, or otherwise picked out - and it carries a
+// price of its own, while the id it would resolve to is the printing's, held
+// by the ordinary listing standing beside it. Publishing the copy's price
+// under the printing's id lets a one-off set what the card is worth.
 func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
+	if uniqueCopy.MatchString(strings.TrimSpace(product.DisplayName)) {
+		return nil, errors.New("listing is one particular copy, not the printing")
+	}
+
 	switch game {
 	case GameRiftbound:
 		return preprocessRiftbound(product)
