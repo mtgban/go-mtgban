@@ -162,6 +162,12 @@ func preprocess(card *MCCard, index int) (*mtgmatcher.InputCard, error) {
 		cardName = card.OrigName
 	}
 
+	// A name holding an apostrophe sometimes arrives quoted the way a
+	// database would quote it - wrapped in single quotes with the inner
+	// apostrophe doubled. The matcher recovers the card anyway, but every
+	// lookup the scraper itself runs on the name comes up empty.
+	cardName = unquote(cardName)
+
 	cn, found := cardTable[cardName]
 	if found {
 		cardName = cn
@@ -573,6 +579,15 @@ func imageNumber(extra string) string {
 		return ""
 	}
 	return number
+}
+
+// unquote returns the name a quoted field means, undoing the wrapping single
+// quotes and the doubled apostrophe inside them.
+func unquote(cardName string) string {
+	if !strings.HasPrefix(cardName, "'") || !strings.HasSuffix(cardName, "'") {
+		return cardName
+	}
+	return strings.ReplaceAll(strings.Trim(cardName, "'"), "''", "'")
 }
 
 // firstPlaceSuffix is how the store names the box topper edition that sits
