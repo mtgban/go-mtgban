@@ -419,14 +419,14 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 	// below - taking with it the image name those editions are keyed on in
 	// the variants table, the one thing that does say which. Drop the tag
 	// there and let the image name answer.
-	if genericVersionRe.MatchString(variation) && needsImageLookup(edition) {
+	if genericVersionRe.MatchString(variation) && namesTheArt(edition, extra) {
 		variation = ""
 	}
 
 	if variation == "" {
-		switch edition {
+		switch {
 		// Work around missing tags until (if) they add them
-		case "Promo":
+		case edition == "Promo":
 			if strings.HasPrefix(extra, "p2019ELD") {
 				internalNumber := strings.TrimLeft(extra[8:], "0")
 				num, err := strconv.Atoi(internalNumber)
@@ -451,21 +451,17 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 				}
 			}
 		// These editions contain numbers that can be used safely
-		case "Throne of Eldraine: Extras", "Theros Beyond Death: Extras",
-			"Guilds of Ravnica", "Ravnica Allegiance", "Unglued":
+		case hasNumberedImage(edition):
 			variation = extra
-			if len(extra) > 3 {
-				internalNumber := strings.TrimLeft(extra[3:], "0")
-				_, err := strconv.Atoi(internalNumber)
-				if err == nil {
-					variation = internalNumber
-				}
+			internalNumber := imageNumber(extra)
+			if internalNumber != "" {
+				variation = internalNumber
 			}
 		// Same for this one, except the specifier is elsewhere
-		case "Core 2020: Extras":
+		case edition == "Core 2020: Extras":
 			variation = "Promo Pack"
 		// Full-art Zendikar lands
-		case "Zendikar":
+		case edition == "Zendikar":
 			if mtgmatcher.IsBasicLand(cardName) {
 				s := strings.Fields(cardName)
 				if len(s) > 1 {
@@ -532,6 +528,40 @@ func needsImageLookup(edition string) bool {
 		return true
 	}
 	return false
+}
+
+// hasNumberedImage reports whether an edition names its images after the set
+// code and the collector number, the pair that tells its reprints apart.
+func hasNumberedImage(edition string) bool {
+	switch edition {
+	case "Throne of Eldraine: Extras", "Theros Beyond Death: Extras",
+		"Guilds of Ravnica", "Ravnica Allegiance", "Unglued":
+		return true
+	}
+	return false
+}
+
+// imageNumber returns the collector number an image name spells out, or the
+// empty string when the store named that image some other way.
+func imageNumber(extra string) string {
+	if len(extra) <= 3 {
+		return ""
+	}
+	number := strings.TrimLeft(extra[3:], "0")
+	_, err := strconv.Atoi(number)
+	if err != nil {
+		return ""
+	}
+	return number
+}
+
+// namesTheArt reports whether the store's image name, rather than any wording
+// it publishes, is what says which art a listing is selling.
+func namesTheArt(edition, extra string) bool {
+	if needsImageLookup(edition) {
+		return true
+	}
+	return hasNumberedImage(edition) && imageNumber(extra) != ""
 }
 
 func preprocessBL(cardName, edition, extra string) (*mtgmatcher.InputCard, error) {
