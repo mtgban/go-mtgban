@@ -31,6 +31,12 @@ var dashNumberRe = regexp.MustCompile(`\s+-\s+([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\
 // in one followed by a number.
 var dashTailRe = regexp.MustCompile(`\s+-\s+([0-9]+[a-zA-Z]?)$`)
 
+// trailingCodeRe matches the collector number a storefront writes behind a
+// name in parentheses of its own ("Gloriosa (Grandma Nyon) (OP07-041)"). It
+// only matches at the end, and only a full code: a parenthetical anywhere
+// else may be part of the name.
+var trailingCodeRe = regexp.MustCompile(`\s*\(([A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*)\)$`)
+
 // Prefilter splits the parenthetical decorations off the name before the
 // canonical-name lookup: storefronts write "Roronoa Zoro (OP01-001) (V.2)",
 // "Shanks (001) (Parallel)" and "Monkey.D.Luffy - P-043 (Convention Promo
@@ -48,6 +54,21 @@ func splitDecorations(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		return
 	}
 	split := splitDashNumber(inCard)
+	// A card whose own name ends in a parenthetical wears two of them once
+	// the storefront writes the number behind it, and the split below cannot
+	// tell which is which: it keeps the head and sweeps the rest into the
+	// variation, so the epithet goes with the number and what is left is
+	// another card's name ("Gloriosa" is OP17-046, not OP07-041). The number
+	// is the one parenthetical never part of a name, so peel that alone and
+	// ask again, and leave the name untouched unless the answer is yes.
+	if fields := trailingCodeRe.FindStringSubmatch(inCard.Name); fields != nil {
+		peeled := strings.TrimSuffix(inCard.Name, fields[0])
+		if _, found := b.CanonicalNames[mtgmatcher.Normalize(peeled)]; found {
+			inCard.Name = peeled
+			inCard.AddToVariant(fields[1])
+			return
+		}
+	}
 	if strings.Contains(inCard.Name, "(") {
 		vars := mtgmatcher.SplitVariants(inCard.Name)
 		if len(vars) > 1 {
