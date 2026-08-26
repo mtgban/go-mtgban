@@ -54,7 +54,13 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 		variant = strconv.Itoa(product.ProductData.CollectorNumberNormalized)
 	}
 
-	foil := product.SelectedFinish == "foil"
+	// The finish is the last word of the display name, and the storefront's
+	// own selectedFinish field disagrees with it for 1.6% of the catalog, in
+	// both directions: every Secret Lair Drop (Borderless) foil says nonfoil,
+	// and a handful of nonfoil listings say foil. Both spellings of one
+	// printing then land on one uuid, where the foil price is the one the
+	// sort keeps and the nonfoil printing is quoted at all.
+	foil := strings.HasSuffix(product.DisplayName, " Foil")
 
 	card := mtgmatcher.InputCard{
 		Name:      cardName,
