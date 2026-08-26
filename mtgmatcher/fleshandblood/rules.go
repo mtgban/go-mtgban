@@ -123,16 +123,33 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 
 	base := qualifierRe.ReplaceAllString(inCard.Name, "")
-	var match string
-	for _, qualifier := range qualifiers {
-		candidate := base + qualifier
-		if !numberedAs(b, candidate, number) {
-			continue
+	// A pitch color belongs to the name and a treatment label does not, so
+	// a name already wearing the one can still grow the other: the
+	// datastore spells the promo marvels "Wild Ride (Red) (Marvel)", and
+	// stripping the single parenthetical the input carries never reaches
+	// them. The whole name is a stem beside the stripped one, and the
+	// number still has to name the printing either way.
+	stems := []string{base}
+	if inCard.Name != base {
+		stems = append(stems, inCard.Name)
+	}
+	var match, stem string
+	var tried []string
+	for _, candidate := range stems {
+		for _, qualifier := range qualifiers {
+			spelling := candidate + qualifier
+			if slices.Contains(tried, spelling) {
+				continue
+			}
+			tried = append(tried, spelling)
+			if !numberedAs(b, spelling, number) {
+				continue
+			}
+			if match != "" {
+				return
+			}
+			match, stem = spelling, candidate
 		}
-		if match != "" {
-			return
-		}
-		match = candidate
 	}
 	if match == "" {
 		return
@@ -146,8 +163,12 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// of the two printings filed under it. Handing the dropped
 	// parenthetical to the wording keeps that printing reachable. Where no
 	// printing at the number wears the label the wording describes nothing
-	// and the tiering is the respelling's own.
-	dropped := qualifierWord(inCard.Name)
+	// and the tiering is the respelling's own. A label grown onto the whole
+	// name swapped nothing, so it drops nothing.
+	var dropped string
+	if stem == base {
+		dropped = qualifierWord(inCard.Name)
+	}
 	if dropped != "" && !strings.EqualFold(dropped, qualifierWord(match)) {
 		inCard.AddToVariant(dropped)
 	}
