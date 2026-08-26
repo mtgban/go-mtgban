@@ -310,3 +310,38 @@ func TestFlexibleSetField(t *testing.T) {
 		}
 	}
 }
+
+// TestPreprocessMagicSpelledNumber pins the numbers the storefront's int
+// field cannot hold. It is an int: the star on a War of the Spark alt-art
+// and the letter behind an Unstable variant both fall off it, and the two
+// printings then answer to one number.
+func TestPreprocessMagicSpelledNumber(t *testing.T) {
+	for _, tt := range []struct {
+		display   string
+		number    int
+		setName   string
+		variation string
+	}{
+		{"Ajani, the Greathearted (WAR-184★) - War of the Spark Foil", 184, "War of the Spark", "184★"},
+		{"Ugin, the Ineffable (WAR-02★) - War of the Spark Foil", 2, "War of the Spark", "02★"},
+		{"Brothers Yamazaki (CHK-160B) - Champions of Kamigawa Foil", 160, "Champions of Kamigawa", "160B"},
+		{"Everythingamajig (UST-147C) - Unstable Foil", 147, "Unstable", "147C"},
+		{"Ghalta, Primal Hunger (PPM20-130P) - Rivals of Ixalan Promos Foil", 130, "Rivals of Ixalan Promos", "130P"},
+		// A plain number is left exactly as the field states it.
+		{"Hallowed Fountain (RVR-280) - Ravnica Remastered", 280, "Ravnica Remastered", "280"},
+		// Padding is not more: the tidier spelling stands.
+		{"Archmage's Charm (MH1-007) - Modern Horizons 1 Timeshifts Foil", 7, "Modern Horizons 1 Timeshifts", "7"},
+	} {
+		product := VSProduct{DisplayName: tt.display, SelectedFinish: "Foil"}
+		product.ProductData.SetName = tt.setName
+		product.ProductData.CollectorNumberNormalized = tt.number
+		card, err := preprocessMagic(product)
+		if err != nil {
+			t.Errorf("%s: %v", tt.display, err)
+			continue
+		}
+		if card.Variation != tt.variation {
+			t.Errorf("%s:\n got  %q\n want %q", tt.display, card.Variation, tt.variation)
+		}
+	}
+}

@@ -51,7 +51,19 @@ func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
 // ahead of the set name, like "(RVR-280)" or "(SLD-1800)". It is the last such
 // group in the name: a Secret Lair spells its number a second time, bare and
 // zero-padded, before the drop's own qualifiers.
-var magicCode = regexp.MustCompile(`\(([A-Z0-9]+)-(\d+[a-zA-Z]?)\)`)
+var magicCode = regexp.MustCompile(`\(([A-Z0-9]+)-(\d+[a-zA-Z]?\x{2605}?)\)`)
+
+// saysMore reports whether the number a display name spells carries what the
+// storefront's own field cannot. The field is an int, so a star and a letter
+// both fall off it - WAR-184* and UST-147C arrive as 184 and 147, beside the
+// plain printings they belong next to.
+//
+// Padding is not more. The field states the number without it and the display
+// name with it, MH1-007 against a field saying 7, and where that is the whole
+// difference the tidier spelling stands.
+func saysMore(spelled, stated string) bool {
+	return strings.TrimLeft(spelled, "0") != stated
+}
 
 // resolved returns the printing a card names, and nil when it names none. It
 // matches a copy, so the matcher's own edits to the input stay in the probe.
@@ -111,14 +123,12 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// set's, and their number counts within it ("(UMP-002) - Unique and
 	// Miscellaneous Promos" is the second card the storefront filed there,
 	// not a collector number), which no set answers to.
-	if variant == "" {
-		groups := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
-		if len(groups) > 0 {
-			named := card
-			named.Variation = groups[len(groups)-1][2]
-			if resolved(named) != nil {
-				card.Variation = named.Variation
-			}
+	groups := magicCode.FindAllStringSubmatch(product.DisplayName, -1)
+	if len(groups) > 0 {
+		named := card
+		named.Variation = groups[len(groups)-1][2]
+		if saysMore(named.Variation, card.Variation) && resolved(named) != nil {
+			card.Variation = named.Variation
 		}
 	}
 
