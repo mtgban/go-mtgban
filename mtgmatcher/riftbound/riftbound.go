@@ -330,13 +330,15 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 			colors = append(colors, domain.ID)
 		}
 
+		number := numberFromPublicCode(card.PublicCode)
+
 		convertedCard := mtgmatcher.Card{
 			UUID: card.ID,
 
 			Name:     card.Name,
 			SetCode:  setCode,
 			Finishes: cardFinishes(card),
-			Number:   numberFromPublicCode(card.PublicCode),
+			Number:   number,
 			Images: map[string]string{
 				"full":      card.CardImage.URL,
 				"thumbnail": card.CardImage.URL,
@@ -363,7 +365,10 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			Printings: printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: fmt.Sprint(card.CollectorNumber),
+			// The star marks a variant printing rather than a different
+			// number, so the plain number reaches it here, the way Magic
+			// strips its own decorations.
+			OriginalNumber: strings.TrimRight(number, "*"),
 		}
 		// Register the uuid each finish resolves to, spelling the finish out
 		// in the uuid itself, so output()/Match resolve to them.
