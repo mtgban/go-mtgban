@@ -28,12 +28,15 @@ type promoTypeElement struct {
 	// Whether certain promos are not tagged, and are selected as wildcards
 	CanBeWild bool
 
-	// Whether the tag is only ever read as a claim and never as a denial.
-	// The treatments below are recent enough that storefronts spell them
-	// when they mean them but say nothing at all otherwise, so silence is
-	// no evidence that the printing lacks the treatment: such an element
-	// narrows to the treatment it is told about and stands aside when the
-	// listing does not mention it.
+	// Whether the tag is only ever read as a claim and never as a denial:
+	// such an element narrows to the treatment it is told about and stands
+	// aside when the listing says nothing.
+	//
+	// Set this only where a shop can be expected to stay silent about the
+	// treatment on a card that has it. Where a shop that stocks one sells
+	// the plain printing beside it and spells out which is which, silence
+	// is evidence, and forgiving it costs the spelled-out listing its own
+	// printing to the listing that named nothing.
 	OnlyWhenNamed bool
 }
 
@@ -179,19 +182,16 @@ var promoTypeElements = []promoTypeElement{
 		Tags:      []string{"Mana Foil"},
 	},
 	{
-		PromoType:     PromoTypeFirstPlaceFoil,
-		Tags:          []string{"First Place Foil"},
-		OnlyWhenNamed: true,
+		PromoType: PromoTypeFirstPlaceFoil,
+		Tags:      []string{"First Place Foil"},
 	},
 	{
-		PromoType:     PromoTypeDragonScaleFoil,
-		Tags:          []string{"Dragon Scale"},
-		OnlyWhenNamed: true,
+		PromoType: PromoTypeDragonScaleFoil,
+		Tags:      []string{"Dragon Scale"},
 	},
 	{
-		PromoType:     PromoTypeChocoboTrackFoil,
-		Tags:          []string{"Chocobo Track"},
-		OnlyWhenNamed: true,
+		PromoType: PromoTypeChocoboTrackFoil,
+		Tags:      []string{"Chocobo Track"},
 	},
 	{
 		// The four TMT headliners are the only ones a storefront spells

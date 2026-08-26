@@ -4961,8 +4961,8 @@
         }
     },
     {
-        "error": "aliasing detected",
-        "description": "foil_listing_still_aliases_the_treatments_it_could_be",
+        "uuid": "1acc5cf4-6e6f-5116-8e56-448f4e15ace8_f",
+        "description": "foil_listing_naming_no_treatment_is_the_untreated_printing",
         "input": {
             "name": "Valor's Flagship",
             "edition": "Aetherdrift",
