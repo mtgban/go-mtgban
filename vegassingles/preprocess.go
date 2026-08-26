@@ -257,7 +257,20 @@ func spelledSet(displayName string) string {
 // riftboundNumber is the collector group riftbound display names carry, like
 // "(301*/298)": the printing's own number, starred for the showcase variants,
 // over the set size the matcher does not need.
-var riftboundNumber = regexp.MustCompile(`\((\d+[a-z]?\*?)/\d+\)`)
+//
+// Two shapes lead with letters: the runes, numbered R1 through R6 with a
+// letter behind them for each reprint and no set size at all, and the
+// Vendetta signature promos, SP1 through SP6 over a set size of six. Both
+// are printings the datastore holds, so refusing to read the number is the
+// only thing keeping them off the shelf - and the storefront zero-pads
+// where the datastore does not, which the matcher already reads through.
+//
+// Only a letter-led code may leave the set size out, which is why the two
+// shapes are spelled as separate alternatives rather than one with the size
+// made optional. A group of bare digits standing alone is not a number: the
+// unique listings end their name with the copy's own id in parentheses, and
+// reading that as a collector number would answer a card nobody listed.
+var riftboundNumber = regexp.MustCompile(`\(([A-Z]+\d+[a-z]?\*?)(?:/\d+)?\)|\((\d+[a-z]?\*?)/\d+\)`)
 
 // riftboundTag is a parenthetical qualifier a riftbound display name carries
 // ahead of its collector number, like "(Signature)" or "(Champion)".
@@ -279,6 +292,12 @@ func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
 		return nil, errors.New("no collector number in display name")
 	}
 
+	// Whichever alternative matched left the other's group unset
+	start, end := loc[2], loc[3]
+	if start < 0 {
+		start, end = loc[4], loc[5]
+	}
+
 	head := product.DisplayName[:loc[0]]
 	cardName := head
 	idx := strings.Index(cardName, " (")
@@ -286,7 +305,7 @@ func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
 		cardName = cardName[:idx]
 	}
 
-	variation := product.DisplayName[loc[2]:loc[3]]
+	variation := product.DisplayName[start:end]
 	for _, tag := range riftboundTag.FindAllStringSubmatch(head, -1) {
 		variation += " " + tag[1]
 	}

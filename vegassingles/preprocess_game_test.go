@@ -184,6 +184,17 @@ func TestPreprocessRiftbound(t *testing.T) {
 		{"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil", "Foil", "Teemo - Swift Scout", "263a Alternate Art", true},
 		// A name with no tag keeps the bare number.
 		{"Ivern - Green Father (Overnumbered) (233/219) - Unleashed Foil", "Foil", "Ivern - Green Father", "233 Overnumbered", true},
+		// The runes state a number and no set size at all, and the signature
+		// promos lead theirs with letters. Both are printings the datastore
+		// holds, and reading neither is what kept them off the shelf.
+		{"Chaos Rune (R05) - Vendetta Foil", "Foil", "Chaos Rune", "R05", true},
+		{"Body Rune (R04a) (R04a) - Vendetta Foil", "Foil", "Body Rune", "R04a", true},
+		{"Calm Rune (Alternate Art) (R02a) - Spiritforged Foil", "Foil", "Calm Rune", "R02a Alternate Art", true},
+		{"Order Rune (R06c) (R06c) - Riftbound Organized Play Promotional Cards", "Normal", "Order Rune", "R06c", false},
+		{"Ahri - Inquisitive (SP3/006) - Vendetta Foil", "Foil", "Ahri - Inquisitive", "SP3", true},
+		// A trailing parenthetical that only carries digits is not the
+		// number: the first group in the name is, and it is read first.
+		{"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil (Unique) (699149)", "Foil", "Teemo - Swift Scout", "263a Alternate Art", true},
 	} {
 		card, err := preprocessRiftbound(VSProduct{
 			DisplayName:    tt.display,
@@ -196,6 +207,23 @@ func TestPreprocessRiftbound(t *testing.T) {
 		if card.Name != tt.name || card.Variation != tt.variation || card.Foil != tt.foil {
 			t.Errorf("%s:\n got  %q %q foil=%v\n want %q %q foil=%v",
 				tt.display, card.Name, card.Variation, card.Foil, tt.name, tt.variation, tt.foil)
+		}
+	}
+
+	// A name whose only digits are the unique copy's own id states no
+	// collector number, and answering one anyway would price a card the
+	// listing never named.
+	for _, display := range []string{
+		"Teemo - Swift Scout (Alternate Art) - Riftbound Promotional Cards Foil (Unique) (699149)",
+		"Ahri - Inquisitive - Vendetta Foil",
+	} {
+		card, err := preprocessRiftbound(VSProduct{
+			DisplayName:    display,
+			SelectedFinish: "Foil",
+			ProductData:    VSProductData{SetName: "Origins"},
+		})
+		if err == nil {
+			t.Errorf("%s: read a number and answered %q, want no number", display, card.Variation)
 		}
 	}
 }
