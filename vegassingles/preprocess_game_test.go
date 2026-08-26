@@ -84,6 +84,35 @@ func TestPreprocessMagic(t *testing.T) {
 	}
 }
 
+// The storefront states a magic finish twice and its selectedFinish field is
+// stale in both directions, so the display name's own last word is what the
+// finish is read from. The storefront lists the two printings of Aether
+// Channeler as two products that differ only by that word, both of them
+// saying selectedFinish=foil.
+func TestPreprocessMagicFinish(t *testing.T) {
+	for _, tt := range []struct {
+		display string
+		finish  string
+		foil    bool
+	}{
+		{"Acererak the Archlich (SLD-1784) - Secret Lair Drop (Borderless) Foil", "nonfoil", true},
+		{"Acererak the Archlich (SLD-1784) - Secret Lair Drop (Borderless)", "nonfoil", false},
+		{"Aether Channeler (GAME-011) - Store Championships Foil", "foil", true},
+		{"Aether Channeler (GAME-011) - Store Championships", "foil", false},
+	} {
+		card, err := preprocessMagic(VSProduct{
+			DisplayName:    tt.display,
+			SelectedFinish: tt.finish,
+		})
+		if err != nil {
+			t.Fatalf("%s: %v", tt.display, err)
+		}
+		if card.Foil != tt.foil {
+			t.Errorf("%s: got foil=%v, want %v", tt.display, card.Foil, tt.foil)
+		}
+	}
+}
+
 func TestPreprocessRiftbound(t *testing.T) {
 	for _, tt := range []struct {
 		display   string
