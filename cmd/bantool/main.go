@@ -1865,6 +1865,35 @@ func countResults(sellers []mtgban.Seller, vendors []mtgban.Vendor) (int, int) {
 	return retail, buylist
 }
 
+// reportSuspectPricings says which cards a scraper priced on both sides at
+// prices too close to be the same printing. A shop's buy price sits well under
+// what it asks, so a pairing that does not is usually two products meeting on
+// one id - and nothing in the run log says so otherwise, because both halves
+// resolved perfectly well on their own.
+func reportSuspectPricings(sellers []mtgban.Seller, vendors []mtgban.Vendor) {
+	for _, seller := range sellers {
+		for _, vendor := range vendors {
+			if seller.Info().Shorthand != vendor.Info().Shorthand {
+				continue
+			}
+
+			suspects := mtgban.SuspectPricings(seller.Inventory(), vendor.Buylist(), mtgban.SuspectRatioThreshold)
+			if len(suspects) == 0 {
+				continue
+			}
+
+			log.Printf("[%s] %d cards are bought at %.0f%% or more of their asking price",
+				seller.Info().Shorthand, len(suspects), mtgban.SuspectRatioThreshold)
+			for _, suspect := range suspects {
+				card, _ := mtgmatcher.GetUUID(suspect.CardID)
+				log.Printf("[%s] - %.0f%% buy $%.2f ask $%.2f %s %s",
+					seller.Info().Shorthand, suspect.Ratio, suspect.BuyPrice, suspect.Price,
+					suspect.Conditions, card)
+			}
+		}
+	}
+}
+
 func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string, meta bool) []error {
 	log.Println("Writing results to", outputPath)
 
@@ -2193,6 +2222,8 @@ func run() int {
 	sellers, vendors := mtgban.UnfoldScrapers(scrapers)
 	retailResults, buylistResults := countResults(sellers, vendors)
 	log.Println("Found", retailResults, "retail results and", buylistResults, "buylist results")
+
+	reportSuspectPricings(sellers, vendors)
 	if retailResults == 0 && buylistResults == 0 {
 		log.Println("No retail or buylist data retrieved")
 		return 1
