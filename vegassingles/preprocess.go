@@ -29,11 +29,18 @@ func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
 // zero-padded, before the drop's own qualifiers.
 var magicCode = regexp.MustCompile(`\(([A-Z0-9]+)-(\d+[a-zA-Z]?)\)`)
 
-// resolves reports whether a card names a printing the datastore holds. It
+// resolved returns the printing a card names, and nil when it names none. It
 // matches a copy, so the matcher's own edits to the input stay in the probe.
-func resolves(card mtgmatcher.InputCard) bool {
-	_, err := mtgmatcher.Match(&card)
-	return err == nil
+func resolved(card mtgmatcher.InputCard) *mtgmatcher.CardObject {
+	id, err := mtgmatcher.Match(&card)
+	if err != nil {
+		return nil
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil {
+		return nil
+	}
+	return co
 }
 
 func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
@@ -85,7 +92,7 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 		if len(groups) > 0 {
 			named := card
 			named.Variation = groups[len(groups)-1][2]
-			if resolves(named) {
+			if resolved(named) != nil {
 				card.Variation = named.Variation
 			}
 		}
@@ -106,8 +113,8 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	// code's reading is what those have.
 	//
 	// The number has to be said the promo way too. A set files its promo pack
-	// printing at 268p and its prerelease at 268s while the storefront states
-	// the plain 268, so the two suffixes are offered behind the bare number.
+	// printing at 268p while the storefront states the plain 268, so that
+	// suffix is offered behind the bare number.
 	named := product.ProductData.SetName
 	if named != "" && named != edition && !namesSet(edition, named) {
 		suffixes := []string{""}
@@ -118,10 +125,31 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 			promo := card
 			promo.Edition = named
 			promo.Variation = card.Variation + suffix
-			if resolves(promo) {
+			if resolved(promo) != nil {
 				card = promo
 				break
 			}
+		}
+	}
+
+	// A display name says etched two ways: as its own tail, "Modern Horizons 2
+	// Etched Foil", or as a qualifier standing with the card's other wording,
+	// "Panharmonicon (Foil Etched) (2X2-562) - Double Masters 2022 Foil".
+	// Neither reaches the matcher today - the finish field never says etched,
+	// and the name is cut at its first parenthesis - so an etched listing
+	// lands on its own plain foil printing, which is a different card at a
+	// different price.
+	//
+	// Etched rides in the variation. Asking for it where the printing has no
+	// etched sibling is worse than not asking: Backend.output clears both
+	// finish flags and answers with the nonfoil printing, a third wrong card
+	// rather than the second. So the reading is kept only when what answers
+	// to it is etched.
+	if strings.HasSuffix(product.DisplayName, " Etched Foil") || strings.Contains(product.DisplayName, "(Foil Etched)") {
+		etched := card
+		etched.Variation = strings.TrimSpace(card.Variation + " Etched")
+		if co := resolved(etched); co != nil && co.Etched {
+			card = etched
 		}
 	}
 
