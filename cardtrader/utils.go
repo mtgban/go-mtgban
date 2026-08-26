@@ -281,6 +281,22 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 	return number + " " + bp.Version
 }
 
+// gameName spells the card a blueprint names, which is not always its Name
+// field. Yu-Gi-Oh's token blueprints say "Token" in the Version and leave the
+// bare art in the name - "Dual Avatar Spirit", "Generaider" - while the
+// catalog files those printings as "Token: Dual Avatar Spirit". The word
+// cannot ride in the variation, where the shared token guard reads it and
+// refuses the listing outright, so it moves into the name instead. A name
+// already saying it is left alone: "Grinder Token" must not become
+// "Token: Grinder Token".
+func gameName(gameID int, bp *Blueprint) string {
+	if gameID == GameYuGiOh && bp.Version == "Token" &&
+		!mtgmatcher.Contains(bp.Name, "token") {
+		return "Token: " + bp.Name
+	}
+	return bp.Name
+}
+
 func gameFoil(gameID int, product Product) bool {
 	switch gameID {
 	case GameMagic:
