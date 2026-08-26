@@ -27,6 +27,14 @@ type promoTypeElement struct {
 
 	// Whether certain promos are not tagged, and are selected as wildcards
 	CanBeWild bool
+
+	// Whether the tag is only ever read as a claim and never as a denial.
+	// The treatments below are recent enough that storefronts spell them
+	// when they mean them but say nothing at all otherwise, so silence is
+	// no evidence that the printing lacks the treatment: such an element
+	// narrows to the treatment it is told about and stands aside when the
+	// listing does not mention it.
+	OnlyWhenNamed bool
 }
 
 var promoTypeElements = []promoTypeElement{
@@ -169,6 +177,53 @@ var promoTypeElements = []promoTypeElement{
 	{
 		PromoType: PromoTypeManaFoil,
 		Tags:      []string{"Mana Foil"},
+	},
+	{
+		PromoType:     PromoTypeFirstPlaceFoil,
+		Tags:          []string{"First Place Foil"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeDragonScaleFoil,
+		Tags:          []string{"Dragon Scale"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeChocoboTrackFoil,
+		Tags:          []string{"Chocobo Track"},
+		OnlyWhenNamed: true,
+	},
+	{
+		// The four TMT headliners are the only ones a storefront spells
+		// out, and it calls them by the signature printed on them
+		PromoType:     PromoTypeHeadliner,
+		Tags:          []string{"Headliner", "Gold Stamped"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeNeonInk,
+		Tags:          []string{"Neon Ink"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeNeonInkBlue,
+		Tags:          []string{"Neon Ink Blue"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeNeonInkGreen,
+		Tags:          []string{"Neon Ink Green"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeNeonInkPink,
+		Tags:          []string{"Neon Ink Pink"},
+		OnlyWhenNamed: true,
+	},
+	{
+		PromoType:     PromoTypeNeonInkYellow,
+		Tags:          []string{"Neon Ink Yellow"},
+		OnlyWhenNamed: true,
 	},
 }
 
