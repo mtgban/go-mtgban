@@ -112,7 +112,12 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	// demand must keep its say.
 	if qualifierWord(inCard.Name) == "" && !strings.ContainsAny(number[len(number)-1:], letters) {
 		fused, pairs := fusedFaceAt(b, inCard.Name, number)
-		if len(fused) > 1 {
+		// Refusing is the better answer only while the fused cards could
+		// be what is priced. A listing demanding a finish none of them was
+		// ever sold in - the pairs are plain printings, and the labelled
+		// one is the only foil the number carries - names the label as
+		// surely as spelling it would, and the refusal buys nothing.
+		if len(fused) > 1 && fusedAnswers(b, fused, inCard) {
 			return
 		}
 		if len(fused) == 1 {
@@ -179,6 +184,36 @@ func adjustQualifier(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // empty for a name carrying none.
 func qualifierWord(name string) string {
 	return strings.Trim(strings.TrimSpace(qualifierRe.FindString(name)), "()")
+}
+
+// fusedAnswers reports whether any printing of the named fused cards could
+// be the one the input prices. Only the finish is asked, and an input naming
+// none is answered by them all: a raised foil flag on its own is a
+// storefront's single bit for a game selling three treatments, while a named
+// finish, or a flag on a game whose fused pairs are plain printings, is the
+// listing saying outright that no pair is what it sells.
+func fusedAnswers(b *mtgmatcher.Backend, names []string, inCard *mtgmatcher.InputCard) bool {
+	if inCard.Finish == "" && !inCard.Foil {
+		return true
+	}
+	for _, name := range names {
+		for _, uuid := range b.Hashes[mtgmatcher.Normalize(name)] {
+			co, found := b.UUIDs[uuid]
+			if !found || co.Sealed {
+				continue
+			}
+			if inCard.Finish != "" {
+				if b.FinishUUID(&co.Card, inCard.Finish) != "" {
+					return true
+				}
+				continue
+			}
+			if co.FoilUUIDs[mtgmatcher.FinishFoil] != "" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // numberedAs reports whether any printing filed under the name carries the
