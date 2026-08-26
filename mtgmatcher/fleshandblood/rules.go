@@ -39,6 +39,7 @@ const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 // itself canonical stays as it is — the pitch-color parentheticals ("Sink
 // Below (Red)") are part of the name.
 func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	inCard.Name = dashQualifierRe.ReplaceAllString(inCard.Name, " ($1)")
 	adjustQualifier(b, inCard)
 	adjustFusedName(b, inCard)
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
@@ -57,6 +58,15 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 // with. There are only four in the game: the three pitch colors and the
 // marvel treatment.
 var qualifierRe = regexp.MustCompile(`\s*\((?i:Red|Yellow|Blue|Marvel)\)$`)
+
+// dashQualifierRe matches the same qualifier spelled with a dash, the way
+// cardtrader writes it ("Impenetrable Belief - Red"). Normalize folds the
+// dashed spelling onto the parenthesised one, so the canonical-name lookup
+// accepts the dash and nothing downstream ever sees a qualifier at all:
+// adjustQualifier cannot respell what it cannot read, and the listing dies
+// at the number filter instead. No card in the game carries " - " in its
+// name, so the rewrite reaches nothing but this.
+var dashQualifierRe = regexp.MustCompile(`\s+-\s+((?i:Red|Yellow|Blue|Marvel))$`)
 
 // qualifiers are the spellings a qualified name is tried in, the empty one
 // standing for the undecorated name.
