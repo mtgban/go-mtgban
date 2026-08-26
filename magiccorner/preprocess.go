@@ -330,7 +330,14 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		case "War of the Spark: Extras", "Version1", "Version 2", "V.2":
 			variation = "Prerelease"
 		case "Core 2020: Extras", "Version 1", "V.1":
-			variation = "Promo Pack"
+			// Promo packs only start with Core Set 2020. For everything
+			// older this tag means the plain set promo, and naming a
+			// promo pack there names a printing that does not exist,
+			// leaving the set promo and the prerelease to alias.
+			variation = ""
+			if hasPromoPack(cardName) {
+				variation = "Promo Pack"
+			}
 		case "Judge Gift Program", "Judge Promo":
 			switch cardName {
 			case "Demonic Tutor":
@@ -493,6 +500,27 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 // genericVersionRe matches the store's bare "Version N" tag, which names no
 // printing on its own.
 var genericVersionRe = regexp.MustCompile(`(?i)^version\s*[0-9]+$`)
+
+// hasPromoPack reports whether the card was ever printed in a promo pack. It
+// walks the card's own printings because the name-keyed lookup answers false
+// for a double-faced card the store names by its front face alone.
+func hasPromoPack(cardName string) bool {
+	if magic.HasPromoPackPrinting(cardName) {
+		return true
+	}
+	printings, err := mtgmatcher.Printings4Card(cardName)
+	if err != nil {
+		return false
+	}
+	for _, code := range printings {
+		for _, card := range mtgmatcher.MatchInSet(cardName, code) {
+			if card.HasPromoType(magic.PromoTypePromoPack) {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 // needsImageLookup reports whether an edition's reprints are told apart in
 // the variants table by the store's own image name rather than by any
