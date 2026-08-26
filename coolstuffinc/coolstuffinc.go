@@ -359,7 +359,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					theCard = c
 				case GameYuGiOh:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
-				case GameLorcana, GameRiftbound, GameOnePiece, GamePokemon:
+				case GamePokemon:
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
+				case GameLorcana, GameRiftbound, GameOnePiece:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
 					csi.printf("unsupported game")
@@ -572,7 +574,9 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// The note names the printing for these games - a Riftbound promo's
 		// finish and prize track, a Yu-Gi-Oh rarity - where One Piece spends
 		// it describing the artwork and Lorcana's changes no answer at all.
-		case GamePokemon, GameRiftbound, GameYuGiOh:
+		case GamePokemon:
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: catalogTreatment(buylistVariation(product)), Foil: product.IsFoil == 1}
+		case GameRiftbound, GameYuGiOh:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
 		case GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name)), Foil: product.IsFoil == 1}
@@ -746,6 +750,22 @@ func singlesRarities(fieldset *goquery.Selection) []string {
 var sealedTiers = map[string]bool{
 	"box":  true,
 	"pack": true,
+}
+
+// csiTreatments spells the patterned holos the catalog's way. Cool Stuff Inc
+// calls them foils - "Master Ball Foil" - where the catalog files the pattern
+// as what it is, and the difference is not cosmetic: "foil" is a finish the
+// matcher already reads, so asking for a Master Ball Alomomola by that name
+// answers with the set's reverse holo rather than missing.
+var csiTreatments = strings.NewReplacer(
+	"Master Ball Foil", "Master Ball Pattern",
+	"Poke Ball Foil", "Poke Ball Pattern",
+)
+
+// catalogTreatment answers the catalog's wording for a treatment the
+// storefront spells its own way, and leaves everything else as it stands.
+func catalogTreatment(variation string) string {
+	return csiTreatments.Replace(variation)
 }
 
 // csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
