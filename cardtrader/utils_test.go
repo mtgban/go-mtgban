@@ -73,6 +73,41 @@ func TestGameVariation(t *testing.T) {
 	}
 }
 
+// TestGameName pins where the token word goes. gameVariation leaves it behind
+// because the shared token guard refuses any listing whose wording says it, so
+// the name is the only place left that can carry what the blueprint said.
+func TestGameName(t *testing.T) {
+	tests := []struct {
+		desc    string
+		gameID  int
+		name    string
+		version string
+		want    string
+	}{
+		{"a yugioh token blueprint names its art alone", GameYuGiOh,
+			"Dual Avatar Spirit", "Token", "Token: Dual Avatar Spirit"},
+		{"a name already saying it keeps its own spelling", GameYuGiOh,
+			"Grinder Token", "Token", "Grinder Token"},
+		{"and so does the catalog's own word order", GameYuGiOh,
+			"Token: Generaider", "Token", "Token: Generaider"},
+		{"a rarity version says nothing about the name", GameYuGiOh,
+			"Dark Magician", "Secret Rare", "Dark Magician"},
+		{"no other game reads the word this way", GameOnePiece,
+			"Monkey.D.Luffy", "Token", "Monkey.D.Luffy"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			bp := Blueprint{Name: test.name, Version: test.version}
+			got := gameName(test.gameID, &bp)
+			if got != test.want {
+				t.Errorf("gameName(%d, %q/%q) = %q, want %q",
+					test.gameID, test.name, test.version, got, test.want)
+			}
+		})
+	}
+}
+
 func TestPriceToUSD(t *testing.T) {
 	// Keyed as the feed writes them, which is how the table arrives.
 	rates := map[string]float64{"eur": 1.10, "gbp": 1.25, "aud": 0.70, "chf": 1.25}
