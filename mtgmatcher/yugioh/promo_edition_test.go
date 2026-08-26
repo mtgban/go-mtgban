@@ -1,6 +1,7 @@
 package yugioh
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -25,14 +26,16 @@ const catchAllFixture = `{
 		"UBP1": {"name": "Ultimate Bonds Premium Pack", "releaseDate": "2018-05-04"},
 		"TN23": {"name": "2023 Tin Quarter Century Edition", "releaseDate": "2023-09-15"},
 		"DL09": {"name": "Duelist League Promo", "releaseDate": "2010-09-01", "type": "promo"},
-		"LOB":  {"name": "Legend of Blue Eyes White Dragon", "releaseDate": "2002-03-08"}
+		"LOB":  {"name": "Legend of Blue Eyes White Dragon", "releaseDate": "2002-03-08"},
+		"LOB2": {"name": "Legend of Blue Eyes White Dragon 25th Anniversary", "releaseDate": "2023-02-24"}
 	},
 	"cards": [
 		{"id": "lart-en004_158235_lim", "name": "Exodia the Forbidden One", "number": "LART-EN004", "setCode": "LART", "rarity": "Ultra Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 158235}},
 		{"id": "ubp1-en005_26541_lim", "name": "Exodia the Forbidden One", "number": "UBP1-EN005", "setCode": "UBP1", "rarity": "Secret Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 26541}},
 		{"id": "tn23-en002_514575_lim", "name": "Exodia the Forbidden One", "number": "TN23-EN002", "setCode": "TN23", "rarity": "Quarter Century Secret Rare", "finish": "Limited", "image": "x", "externalLinks": {"tcgPlayerId": 514575}},
 		{"id": "dl09-en001_1_unl", "name": "Exodia the Forbidden One", "number": "DL09-EN001", "setCode": "DL09", "rarity": "Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 1}},
-		{"id": "lob-001_21792_1e", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB", "rarity": "Ultra Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 21792}}
+		{"id": "lob-001_21792_1e", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB", "rarity": "Ultra Rare", "finish": "1st Edition", "image": "x", "externalLinks": {"tcgPlayerId": 21792}},
+		{"id": "lob-001_21793_unl", "name": "Blue-Eyes White Dragon", "number": "LOB-001", "setCode": "LOB2", "rarity": "Ultra Rare", "finish": "Unlimited", "image": "x", "externalLinks": {"tcgPlayerId": 21793}}
 	]
 }`
 
@@ -113,6 +116,57 @@ func TestNumberSetAnswersCatchAllEdition(t *testing.T) {
 			if uuid != test.want {
 				co, _ := b.GetUUID(uuid)
 				t.Errorf("Match = %q (%v), want %q", uuid, co, test.want)
+			}
+		})
+	}
+}
+
+// TestNumberSetNeedsABucket pins the other half of the contract, which the
+// golden corpus states twice: a listing naming no edition at all keeps
+// aliasing over every set the number reaches. A bucket is an edition a
+// storefront wrote and no set answers, and there is nothing to correct in a
+// listing that claimed nothing - Yu-Gi-Oh reprints one card under one exact
+// code across sibling sets, so a number read as a set would hand back one of
+// them where the whole pool is the honest answer.
+func TestNumberSetNeedsABucket(t *testing.T) {
+	b := catchAllBackend(t)
+
+	tests := []struct {
+		desc string
+		in   mtgmatcher.InputCard
+	}{
+		{
+			desc: "no edition at all keeps the whole pool",
+			in:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-001"},
+		},
+		{
+			desc: "and so does one spelled with nothing but punctuation",
+			in:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-001", Edition: " - "},
+		},
+		{
+			// The twins are reissued under their original's numbers, so the
+			// code the number opens with names a set without telling which of
+			// the two the listing is: a bucket that could have said did not.
+			desc: "a bucket cannot pick between print-run twins either",
+			in:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-001", Edition: "Promo"},
+		},
+		{
+			desc: "nor when the storefront drops the dash",
+			in:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB001", Edition: "Promo"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			in := test.in
+			uuid, err := b.Match(&in)
+			if err == nil {
+				co, _ := b.GetUUID(uuid)
+				t.Fatalf("Match = %q (%v), want an aliasing error", uuid, co)
+			}
+			var alias *mtgmatcher.AliasingError
+			if !errors.As(err, &alias) {
+				t.Fatalf("Match = %v, want an aliasing error", err)
 			}
 		})
 	}
