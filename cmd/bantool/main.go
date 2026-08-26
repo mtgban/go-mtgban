@@ -1342,6 +1342,7 @@ var options = map[string]*scraperOption{
 			}
 			return scraper, nil
 		},
+		OnlySeller: true,
 	},
 	"coolstuffinc_riftbound": {
 		Init: func() (mtgban.Scraper, error) {
