@@ -547,9 +547,12 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 				continue
 			}
 			theCard = c
-		case GamePokemon:
+		// The note names the printing for these games - a Riftbound promo's
+		// finish and prize track, a Yu-Gi-Oh rarity - where One Piece spends
+		// it describing the artwork and Lorcana's changes no answer at all.
+		case GamePokemon, GameRiftbound, GameYuGiOh:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
-		case GameLorcana, GameRiftbound, GameOnePiece, GameYuGiOh:
+		case GameLorcana, GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
 			return errors.New("unsupported game")
