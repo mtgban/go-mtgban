@@ -32,6 +32,10 @@ func preprocess(product VSProduct, game string) (*mtgmatcher.InputCard, error) {
 		return nil, errors.New("listing is one particular copy, not the printing")
 	}
 
+	if displaySet(product.DisplayName) == oversizeHeading {
+		return nil, errors.New("listing is an oversize display card, not a single")
+	}
+
 	switch game {
 	case GameRiftbound:
 		return preprocessRiftbound(product)
@@ -190,6 +194,33 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 	}
 
 	return &card, nil
+}
+
+// oversizeHeading is what a display name spells for the storefront's oversize
+// bin. The cards filed under it are the tournament-prize and display pieces,
+// printed at four times the size and sold as curios rather than singles, and
+// the matcher refuses them outright when it is told what they are.
+//
+// It is rarely told. The listing states the bin's code, "over", which names
+// no set, and the matcher takes no set from a code it cannot read - so it
+// answers with whichever ordinary printing the name and number reach, and an
+// oversize Ambition's Cost is published at the price of the 8th Edition card
+// anyone can play. Reading the heading here is what stops that.
+//
+// The bin holds real singles too: the storefront files the Planechase planes
+// under it, and their display names say so. Only what spells the heading
+// itself is refused.
+const oversizeHeading = "Oversize Cards"
+
+// displaySet is the set a display name spells out behind its last dash, as
+// the storefront wrote it. spelledSet answers only for a name the datastore
+// knows, which the storefront's own headings are not.
+func displaySet(displayName string) string {
+	idx := strings.LastIndex(displayName, " - ")
+	if idx == -1 {
+		return ""
+	}
+	return strings.TrimSpace(strings.TrimSuffix(displayName[idx+len(" - "):], " Foil"))
 }
 
 // namesSet reports whether a set code names the set an edition string spells
