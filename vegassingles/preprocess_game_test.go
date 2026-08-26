@@ -345,3 +345,46 @@ func TestPreprocessMagicSpelledNumber(t *testing.T) {
 		}
 	}
 }
+
+// TestPreprocessMagicWording pins the name a display name really states and
+// the wording standing beside it. Cutting at the first bracket loses both.
+func TestPreprocessMagicWording(t *testing.T) {
+	for _, tt := range []struct {
+		display   string
+		setName   string
+		number    int
+		name      string
+		variation string
+	}{
+		// A name carrying a parenthesis of its own survives, which is what
+		// SplitVariants is for - cutting at the first bracket asked for
+		// "Dwight, Assistant". The reskin behind the dash is read further
+		// down, where it reaches Baral.
+		{"Dwight, Assistant (to the) King - Baral, Chief of Compliance (SLD-2168) - Secret Lair Drop Series",
+			"Secret Lair Drop Series", 2168, "Dwight, Assistant (to the) King", "2168"},
+		// The wording rescues a listing nothing else answered: the bin's
+		// own code names no set and its number no printing, and the year
+		// is the whole of what says which promo this is.
+		{"Forest (Year of the Snake 2025) (SSP-006) - Standard Showdown Promos Foil",
+			"Standard Showdown Promos", 0, "Forest", "Year of the Snake 2025"},
+		// A wording naming a foil is left behind: the finish is the tail's
+		// to state, and this listing's tail does not say it.
+		{"Endless Sands (0060) (Borderless) (Galaxy Foil) (EOS-060) - Edge of Eternities: Stellar Sights",
+			"Edge of Eternities: Stellar Sights", 60, "Endless Sands", "60"},
+		// An ordinary listing is untouched.
+		{"Hallowed Fountain (RVR-280) - Ravnica Remastered",
+			"Ravnica Remastered", 280, "Hallowed Fountain", "280"},
+	} {
+		product := VSProduct{DisplayName: tt.display}
+		product.ProductData.SetName = tt.setName
+		product.ProductData.CollectorNumberNormalized = tt.number
+		card, err := preprocessMagic(product)
+		if err != nil {
+			t.Errorf("%s: %v", tt.display, err)
+			continue
+		}
+		if card.Name != tt.name || card.Variation != tt.variation {
+			t.Errorf("%s:\n got  %q %q\n want %q %q", tt.display, card.Name, card.Variation, tt.name, tt.variation)
+		}
+	}
+}
