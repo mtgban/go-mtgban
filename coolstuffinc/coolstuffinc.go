@@ -78,6 +78,28 @@ type Coolstuffinc struct {
 	game   string
 }
 
+// nameParenthetical matches a qualifier a buylist name carries in brackets,
+// like "(Parallel)" or "(Alternate Art)".
+var nameParenthetical = regexp.MustCompile(`\(([^)]+)\)`)
+
+// nameQualifiers answers the wording a One Piece buylist name carries behind
+// the card's own, which is where that feed spends the qualifier telling one
+// printing from another - the note beside it describes the artwork instead
+// ("Hand Blocking Sun", "Leg Gun"), and the matcher reads neither the name
+// nor a description. A number-shaped bracket is left behind: the feed repeats
+// the collector number there and it says nothing the number field has not.
+func nameQualifiers(name string) string {
+	var words []string
+	for _, match := range nameParenthetical.FindAllStringSubmatch(name, -1) {
+		qualifier := strings.TrimSpace(match[1])
+		if qualifier == "" || buylistNumberWord.MatchString(qualifier) {
+			continue
+		}
+		words = append(words, qualifier)
+	}
+	return strings.Join(words, " ")
+}
+
 // buylistNumberWord matches the number-shaped words of a buylist note.
 var buylistNumberWord = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,4}\d+)?[,.]?$`)
 
@@ -552,7 +574,9 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it describing the artwork and Lorcana's changes no answer at all.
 		case GamePokemon, GameRiftbound, GameYuGiOh:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
-		case GameLorcana, GameOnePiece:
+		case GameOnePiece:
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name)), Foil: product.IsFoil == 1}
+		case GameLorcana:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
 			return errors.New("unsupported game")
