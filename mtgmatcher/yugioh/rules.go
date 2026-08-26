@@ -480,6 +480,19 @@ func canonicalFinish(name string) string {
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
 	number := extractNumber(inCard.Variation)
 
+	// A storefront writing the deck or volume index alone where the catalog
+	// writes the whole set code - "5-001" for DL5-EN001, "05-001" for
+	// YR05-EN001 - is saying the same number in fewer letters, and the strict
+	// prefix compare throws it away. Reading the index as the code's own
+	// digits recovers it, but the digits are a weak key on their own: "1-E002"
+	// reads MC1-EN002 as readily as anything in DL. So the relaxation is
+	// spent only inside the set the listing names, and a listing whose
+	// edition names no set does not get it at all.
+	var looseSet *mtgmatcher.Set
+	if loosePrefixNumber(number) {
+		looseSet = editionSet(b, inCard.Edition)
+	}
+
 	var candidates []mtgmatcher.Card
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
@@ -506,7 +519,9 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
 		}
-		if number != "" && !numberMatches(number, card.Number) {
+		if number != "" && !numberMatches(number, card.Number) &&
+			!(looseSet != nil && strings.EqualFold(card.SetCode, looseSet.Code) &&
+				loosePrefixMatches(number, card.Number)) {
 			continue
 		}
 		// An input naming a print run re-keys the copy's FoilUUIDs so the
@@ -810,6 +825,34 @@ func numberMatches(input, full string) bool {
 		if !strings.EqualFold(inPrefix, fullPrefix) {
 			return false
 		}
+	}
+	inDigits := digitRun(inTail)
+	fullDigits := digitRun(fullTail)
+	return inDigits != "" && fullDigits != "" &&
+		canonicalTail(inDigits) == canonicalTail(fullDigits)
+}
+
+// loosePrefixNumber reports whether an input number is dashed with a prefix
+// made of digits alone, the shape a storefront writes a deck or volume index
+// in where the catalog writes the whole set code ("5-001" for DL5-EN001).
+func loosePrefixNumber(number string) bool {
+	prefix, _, dashed := strings.Cut(number, "-")
+	return dashed && prefix != "" && digitRun(prefix) == prefix
+}
+
+// loosePrefixMatches compares such a number against a printing's own, reading
+// the input's prefix as the digits of the printing's set code and the tails as
+// numberMatches reads them. The set code's letters are what it stops asking
+// for, which is why the caller only asks inside one set.
+func loosePrefixMatches(input, full string) bool {
+	inPrefix, inTail, _ := strings.Cut(input, "-")
+	fullPrefix, fullTail, dashed := strings.Cut(full, "-")
+	if !dashed {
+		return false
+	}
+	fullCode := digitRun(fullPrefix)
+	if fullCode == "" || canonicalTail(inPrefix) != canonicalTail(fullCode) {
+		return false
 	}
 	inDigits := digitRun(inTail)
 	fullDigits := digitRun(fullTail)
