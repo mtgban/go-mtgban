@@ -38,35 +38,48 @@ func TestPreprocessMagic(t *testing.T) {
 	for _, tt := range []struct {
 		display   string
 		set       string
+		setName   string
 		number    int
+		edition   string
 		variation string
 	}{
-		// The storefront's own field is authoritative wherever it is set.
-		{"Hallowed Fountain (RVR-280) - Ravnica Remastered", "rvr", 280, "280"},
-		// It is null for every Secret Lair drop, so the drop's number comes
-		// off the display name instead of the whole set aliasing onto one
-		// card.
-		{"Anguished Unmaking (1800) (Rainbow Foil) (SLD-1800) - Secret Lair Drop Series Foil", "sld", 0, "1800"},
-		{"Brain Freeze (Halo Foil) (SLC-029) - Secret Lair Countdown Kit Foil", "slc", 0, "029"},
-		{"Ancient Tomb (0136) (Borderless) (Galaxy Foil) (EOS-136) - Edge of Eternities: Stellar Sights Foil", "eos", 0, "136"},
+		// The code names the set the prose does, so nothing is second-guessed.
+		{"Hallowed Fountain (RVR-280) - Ravnica Remastered", "rvr", "Ravnica Remastered", 280, "rvr", "280"},
+		// The number field is null for every Secret Lair drop, so the drop's
+		// number comes off the display name instead of the whole set aliasing
+		// onto one card.
+		{"Anguished Unmaking (1800) (Rainbow Foil) (SLD-1800) - Secret Lair Drop Series Foil", "sld", "Secret Lair Drop Series", 0, "Secret Lair Drop Series", "1800"},
+		{"Brain Freeze (Halo Foil) (SLC-029) - Secret Lair Countdown Kit Foil", "slc", "Secret Lair Countdown Kit", 0, "Secret Lair Countdown Kit", "029"},
+		{"Ancient Tomb (0136) (Borderless) (Galaxy Foil) (EOS-136) - Edge of Eternities: Stellar Sights Foil", "eos", "Edge of Eternities: Stellar Sights", 0, "eos", "136"},
 		// Some codes are the storefront's own filing rather than a set's, and
 		// the number counts within it. No set answers to it, so it is
 		// withdrawn rather than sent.
-		{"Sword of Forge and Frontier (Borderless) (UMP-002) - Unique and Miscellaneous Promos", "ump", 0, ""},
-		{"Get Lost (UMP-001) - Unique and Miscellaneous Promos", "ump", 0, ""},
+		{"Sword of Forge and Frontier (Borderless) (UMP-002) - Unique and Miscellaneous Promos", "ump", "Unique and Miscellaneous Promos", 0, "Unique and Miscellaneous Promos", ""},
+		// The code names the parent set of a promo printing, the prose names
+		// the promo set itself, and the number needs the promo way of saying
+		// it.
+		{"Archangel of Tithes (PPOTJ-002) - Outlaws of Thunder Junction Promos", "ppotj", "Outlaws of Thunder Junction Promos", 2, "Outlaws of Thunder Junction Promos", "2p"},
+		{"Adeline, Resplendent Cathar (PPMID-001) - Innistrad: Midnight Hunt Promos Foil", "ppmid", "Innistrad: Midnight Hunt Promos", 1, "Innistrad: Midnight Hunt Promos", "1p"},
+		{"Archmage's Charm (MH1-007) - Modern Horizons 1 Timeshifts Foil", "mh1", "Modern Horizons 1 Timeshifts", 7, "Modern Horizons 1 Timeshifts", "7"},
+		{"Tannuk, Steadfast Second (PRE-162) - Prerelease Cards Foil", "pre", "Prerelease Cards", 162, "Prerelease Cards", "162"},
+		// A heading no set answers to keeps the code's reading rather than
+		// losing the row.
+		{"Vexing Arcanix (8th Edition) (OVER-319) - Oversize Cards", "over", "Oversize Cards", 319, "over", "319"},
 	} {
 		card, err := preprocessMagic(VSProduct{
 			DisplayName: tt.display,
 			ProductData: VSProductData{
 				Set:                       flexString(tt.set),
+				SetName:                   tt.setName,
 				CollectorNumberNormalized: tt.number,
 			},
 		})
 		if err != nil {
 			t.Fatalf("%s: %v", tt.display, err)
 		}
-		if card.Variation != tt.variation {
-			t.Errorf("%s:\n got  %q\n want %q", tt.display, card.Variation, tt.variation)
+		if card.Edition != tt.edition || card.Variation != tt.variation {
+			t.Errorf("%s:\n got  %q %q\n want %q %q",
+				tt.display, card.Edition, card.Variation, tt.edition, tt.variation)
 		}
 	}
 }

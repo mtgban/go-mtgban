@@ -85,7 +85,51 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	// The code is the storefront's filing and setName its prose, and for a
+	// promo printing the two name different sets: a promo pack card is filed
+	// under "ppotj" and named "Outlaws of Thunder Junction Promos", a
+	// prerelease under "pre", a Timeshifts card under "mh1". The code names
+	// the parent, so reading it writes the promo's buy price onto the
+	// main-set card - Archangel of Tithes at PPOTJ-002 lands on OTJ 2, beside
+	// the real OTJ 2 listing.
+	//
+	// So when the code names a set the prose does not, ask the prose. Only a
+	// reading a printing answers to is taken: several names are the
+	// storefront's own headings rather than a set's ("Oversize Cards",
+	// "Marvel Eternal-Legal", "Unique and Miscellaneous Promos"), and the
+	// code's reading is what those have.
+	//
+	// The number has to be said the promo way too. A set files its promo pack
+	// printing at 268p and its prerelease at 268s while the storefront states
+	// the plain 268, so the two suffixes are offered behind the bare number.
+	named := product.ProductData.SetName
+	if named != "" && named != edition && !namesSet(edition, named) {
+		suffixes := []string{""}
+		if card.Variation != "" {
+			suffixes = append(suffixes, "p")
+		}
+		for _, suffix := range suffixes {
+			promo := card
+			promo.Edition = named
+			promo.Variation = card.Variation + suffix
+			if resolves(promo) {
+				card = promo
+				break
+			}
+		}
+	}
+
 	return &card, nil
+}
+
+// namesSet reports whether a set code names the set an edition string spells
+// out. A code the datastore does not use names no set at all.
+func namesSet(code, edition string) bool {
+	set, err := mtgmatcher.GetSet(code)
+	if err != nil {
+		return false
+	}
+	return strings.EqualFold(set.Name, edition)
 }
 
 // riftboundNumber is the collector group riftbound display names carry, like
