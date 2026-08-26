@@ -474,6 +474,19 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		// exact foilness, so the vendor's foil flag must not pull the
 		// resolution off it.
 		uuid := finishUUID(b, inCard, &card)
+		// A caller that names its finish in the field has named the
+		// product it prices, and a product sold in no such printing is
+		// not that product. The printings sharing a name and a number
+		// differ in nothing else - ROS000 is the cold foil "Will of
+		// Arcana" beside the rainbow one - so a treatment the product
+		// does not wear is what tells them apart, and keeping the
+		// candidate files two sku prices under one uuid. The wording
+		// keeps its own say: only the field speaks here, and the print
+		// runs a product answers by a bare treatment name are aliased
+		// onto their own entry before this asks.
+		if uuid == "" && inCard.Finish != "" {
+			continue
+		}
 		if uuid != "" {
 			foilUUIDs := make(map[string]string, len(card.FoilUUIDs))
 			maps.Copy(foilUUIDs, card.FoilUUIDs)
