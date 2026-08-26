@@ -80,11 +80,37 @@ func resolved(card mtgmatcher.InputCard) *mtgmatcher.CardObject {
 }
 
 func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
-	// Display name format: "Hallowed Fountain (RVR-280) - Ravnica Remastered"
-	// Extract card name by finding the first " ("
-	cardName := product.DisplayName
-	if idx := strings.Index(cardName, " ("); idx != -1 {
-		cardName = cardName[:idx]
+	// Display name format: "Hallowed Fountain (RVR-280) - Ravnica Remastered",
+	// and with the printing's own wording standing between the two:
+	// "Acererak the Archlich (Rainbow Foil) (SLD-1784) - Secret Lair Drop".
+	//
+	// SplitVariants is what every other magic scraper reads that shape with,
+	// and it knows the names carrying a parenthesis of their own - "Dwight,
+	// Assistant (to the) King", the B.F.M. halves, the tokens - which cutting
+	// at the first bracket destroys.
+	head := product.DisplayName
+	if idx := strings.LastIndex(head, " - "); idx != -1 {
+		head = head[:idx]
+	}
+	fields := mtgmatcher.SplitVariants(head)
+	cardName := fields[0]
+
+	// What is left is the wording, less the code group: that is the number's
+	// own business and is read below.
+	var qualifiers []string
+	for _, field := range fields[1:] {
+		if magicCode.MatchString("(" + field + ")") {
+			continue
+		}
+		// A wording naming a foil says nothing the tail has not already
+		// said, and says it wrongly where the tail stayed silent: the
+		// nonfoil "Endless Sands (0060) (Borderless) (Galaxy Foil)" is
+		// sold beside its foil, and reading the treatment as a finish
+		// puts both on the foil printing.
+		if strings.Contains(strings.ToLower(field), "foil") {
+			continue
+		}
+		qualifiers = append(qualifiers, field)
 	}
 
 	edition := string(product.ProductData.Set)
@@ -179,6 +205,26 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 		// numbered 2, not the datestamped promo at 14s.
 		case proseCo != nil && (card.Variation == "" || !proseCo.HasPromoType(magic.PromoTypePrerelease)):
 			card = prose
+		}
+	}
+
+	// The wording the name carried is the printing's own - the treatment a
+	// Secret Lair drop is sold in, the frame a promo wears, the set a The
+	// List reprint came from. Two listings of one card differ by nothing
+	// else: "Acererak the Archlich (Rainbow Foil) (SLD-1784)" and "Acererak
+	// the Archlich (SLD-1784)" state the same number, and dropping the
+	// wording leaves them both asking for it.
+	//
+	// It is asked only where nothing else answered. A listing whose number
+	// already reached a printing is not improved by being told more: the
+	// extended-art Iroh is a media insert the number finds on its own, and
+	// adding the words "Extended Art" walks it onto the showcase printing
+	// of the same card instead.
+	if len(qualifiers) > 0 && resolved(card) == nil {
+		named := card
+		named.Variation = strings.TrimSpace(card.Variation + " " + strings.Join(qualifiers, " "))
+		if resolved(named) != nil {
+			card = named
 		}
 	}
 
