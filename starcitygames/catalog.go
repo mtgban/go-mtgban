@@ -311,6 +311,29 @@ func fabNumbers(sku string) []string {
 	return append(candidates, bare)
 }
 
+// fabSingleNumbered reports whether a sku's number segment names exactly one
+// collector number, the way "NUU-026" and "PRM-FAB_233" do and the pairs
+// ("OMN-048_047") do not.
+func fabSingleNumbered(sku string) bool {
+	parts := strings.Split(skuNumber(sku), "_")
+	if len(parts) > 1 && isAllLetters(parts[0]) {
+		parts = parts[1:]
+	}
+	var count int
+	for _, part := range parts {
+		if numberedPart(part) {
+			count++
+		}
+	}
+	return count == 1
+}
+
+// numberedPart reports whether a part of a sku's number segment is a
+// collector number rather than the wording the letter parts are.
+func numberedPart(part string) bool {
+	return part != "" && part[0] >= '0' && part[0] <= '9'
+}
+
 // prefixNumber glues the set code onto every numeric part of a sku's number
 // segment, pairing them the way the datastore does ("MST002//MST158") and
 // leaving the non-numeric parts as the wording they are.
@@ -320,7 +343,7 @@ func prefixNumber(code string, parts []string) string {
 	}
 	var numbers, words []string
 	for _, part := range parts {
-		if part != "" && part[0] >= '0' && part[0] <= '9' {
+		if numberedPart(part) {
 			numbers = append(numbers, code+part)
 			continue
 		}
@@ -448,18 +471,24 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// printing in one treatment, and only the name says which.
 	if game == GameFleshAndBlood {
 		edition, finish := fabPrintRun(p.Set, p.Finish)
-		var err error
-		for _, number := range fabNumbers(p.SKU) {
-			var id string
-			id, err = mtgmatcher.Match(&mtgmatcher.InputCard{
-				Name:      p.Name,
-				Edition:   edition,
-				Variation: number,
-				Finish:    finish,
-				Foil:      foil,
-			})
-			if err == nil {
-				return id, nil
+		numbers := fabNumbers(p.SKU)
+		id, err := fabMatch(p.Name, edition, finish, foil, numbers)
+		if err == nil {
+			return id, nil
+		}
+		// A product named by both its faces at a single collector number
+		// is one printing plus the token printed on its back, not a
+		// two-numbered double-sided card: the catalog writes "Pass Over //
+		// Inner Chi" for NUU026, which the datastore files under the front
+		// face alone. The number segment is what tells the two apart, and
+		// it has to hold exactly one number - the genuine double-sided
+		// cards carry a pair ("048_047") and a front-face retry would
+		// flatten them onto the ordinary single.
+		front, _, twoFaced := strings.Cut(p.Name, " // ")
+		if twoFaced && fabSingleNumbered(p.SKU) {
+			retry, rerr := fabMatch(front, edition, finish, foil, numbers)
+			if rerr == nil {
+				return retry, nil
 			}
 		}
 		return "", err
@@ -691,6 +720,26 @@ func soleSibling(candidates []*mtgmatcher.CardObject) *mtgmatcher.CardObject {
 		found = co
 	}
 	return found
+}
+
+// fabMatch answers the first printing one of the sku's collector numbers
+// names under the given name, the candidates running most specific first.
+func fabMatch(name, edition, finish string, foil bool, numbers []string) (string, error) {
+	var err error
+	for _, number := range numbers {
+		var id string
+		id, err = mtgmatcher.Match(&mtgmatcher.InputCard{
+			Name:      name,
+			Edition:   edition,
+			Variation: number,
+			Finish:    finish,
+			Foil:      foil,
+		})
+		if err == nil {
+			return id, nil
+		}
+	}
+	return "", err
 }
 
 // fabPrintRun moves the print run out of a Flesh and Blood set name and into
