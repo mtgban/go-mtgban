@@ -56,29 +56,42 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 // over the set size the matcher does not need.
 var riftboundNumber = regexp.MustCompile(`\((\d+[a-z]?\*?)/\d+\)`)
 
+// riftboundTag is a parenthetical qualifier a riftbound display name carries
+// ahead of its collector number, like "(Signature)" or "(Champion)".
+var riftboundTag = regexp.MustCompile(`\(([^)]+)\)`)
+
 // A riftbound display name reads
 //
 //	Jinx - Loose Cannon (Signature) (301*/298) - Origins Foil
 //
-// The name stops at the first parenthesis: a tag like (Signature) only
-// restates what the starred number already says, so it is dropped rather
-// than left for the matcher to see through.
+// The name stops at the first parenthesis, and the tags standing between it
+// and the number ride behind the number in the variation. A tag often only
+// restates what the starred number already says - (Signature) always travels
+// with a star - but the promotional printings share one plain number and the
+// tag is the whole difference: the organized play set files Rengar, Trophy
+// Hunter at 120 twice, once as the champion card and once not.
 func preprocessRiftbound(product VSProduct) (*mtgmatcher.InputCard, error) {
-	match := riftboundNumber.FindStringSubmatch(product.DisplayName)
-	if match == nil {
+	loc := riftboundNumber.FindStringSubmatchIndex(product.DisplayName)
+	if loc == nil {
 		return nil, errors.New("no collector number in display name")
 	}
 
-	cardName := product.DisplayName
+	head := product.DisplayName[:loc[0]]
+	cardName := head
 	idx := strings.Index(cardName, " (")
 	if idx != -1 {
 		cardName = cardName[:idx]
 	}
 
+	variation := product.DisplayName[loc[2]:loc[3]]
+	for _, tag := range riftboundTag.FindAllStringSubmatch(head, -1) {
+		variation += " " + tag[1]
+	}
+
 	return &mtgmatcher.InputCard{
-		Name:      cardName,
+		Name:      strings.TrimSpace(cardName),
 		Edition:   product.ProductData.SetName,
-		Variation: match[1],
+		Variation: strings.TrimSpace(variation),
 		Foil:      strings.EqualFold(product.SelectedFinish, "foil"),
 	}, nil
 }

@@ -14,8 +14,17 @@ func TestPreprocessRiftbound(t *testing.T) {
 		foil      bool
 	}{
 		{"Noxus Hopeful (012/298) - Origins Foil", "Foil", "Noxus Hopeful", "012", true},
-		{"Jinx - Loose Cannon (Signature) (301*/298) - Origins Foil", "Foil", "Jinx - Loose Cannon", "301*", true},
-		{"Pyke - Bloodharbor Ripper (Signature) (228*/219) - Unleashed Foil", "Foil", "Pyke - Bloodharbor Ripper", "228*", true},
+		// A tag rides behind the number rather than being dropped. For the
+		// starred printings it only restates the star, and the same card
+		// answers either way; for the promotional ones sharing a plain
+		// number it is the only thing between two cards.
+		{"Jinx - Loose Cannon (Signature) (301*/298) - Origins Foil", "Foil", "Jinx - Loose Cannon", "301* Signature", true},
+		{"Pyke - Bloodharbor Ripper (Signature) (228*/219) - Unleashed Foil", "Foil", "Pyke - Bloodharbor Ripper", "228* Signature", true},
+		{"Rengar - Trophy Hunter (Champion) (120/219) - Riftbound Organized Play Promotional Cards Foil", "Foil", "Rengar - Trophy Hunter", "120 Champion", true},
+		{"Guardian Angel (Top 8) (051/221) - Riftbound Organized Play Promotional Cards Foil", "Foil", "Guardian Angel", "051 Top 8", true},
+		{"Teemo - Swift Scout (Alternate Art) (263a/298) - Riftbound Promotional Cards Foil", "Foil", "Teemo - Swift Scout", "263a Alternate Art", true},
+		// A name with no tag keeps the bare number.
+		{"Ivern - Green Father (Overnumbered) (233/219) - Unleashed Foil", "Foil", "Ivern - Green Father", "233 Overnumbered", true},
 	} {
 		card, err := preprocessRiftbound(VSProduct{
 			DisplayName:    tt.display,
