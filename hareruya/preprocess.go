@@ -468,8 +468,8 @@ var promoMap = map[string]map[string]map[string]struct {
 		},
 		"Glorious Anthem": {
 			"U08": {
-				Edition: "PJSE",
-				Variant: "1E08",
+				Edition: "PJAS",
+				Variant: "1U08",
 			},
 		},
 		"Steward of Valeron": {
