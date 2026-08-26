@@ -16,6 +16,30 @@ var reJapanese = regexp.MustCompile(`[\p{Hiragana}\p{Katakana}\p{Han}]`)
 var reCardName = regexp.MustCompile(`《([^》]+)》`)
 var reThick = regexp.MustCompile(`【([^】]+)】`)
 
+// splitParens separates the parenthesised groups of a title into the collector
+// number, which comes before the card name, and the series, which comes after
+// it. A trailing group only counts as a series when it spells a set name
+// outright: the matcher's lookup also honors set codes and its own aliases,
+// and the storefront's promo qualifiers land on those by accident.
+func splitParens(title string) (number, series string) {
+	end := strings.Index(title, "》")
+	for _, loc := range reParens.FindAllStringSubmatchIndex(title, -1) {
+		group := title[loc[2]:loc[3]]
+		if end >= 0 && loc[0] > end {
+			set, err := mtgmatcher.GetSetByName(group)
+			if err == nil && mtgmatcher.Normalize(set.Name) == mtgmatcher.Normalize(group) {
+				series = group
+				continue
+			}
+		}
+		if number == "" {
+			number = strings.Split(group, "/")[0]
+			number = strings.TrimLeft(number, "0")
+		}
+	}
+	return number, series
+}
+
 // Preprocess turns a storefront product into the card description the matcher
 // takes, reporting an error for what is not a card.
 func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
@@ -40,7 +64,6 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	foil := product.FoilFlag == "1"
 	var edition string
 	var variant string
-	var number string
 
 	// Usually there is more information the JPN product line, but sometimes
 	// we need to look at the English version too
@@ -63,12 +86,10 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 		variant = match[1]
 	}
 
-	// The number is only found in the JPN line
-	match = reParens.FindStringSubmatch(product.ProductName)
-	if len(match) > 1 {
-		number = match[1]
-		number = strings.Split(number, "/")[0]
-		number = strings.TrimLeft(number, "0")
+	// The number is only found in the JPN line, which may name the series too
+	number, series := splitParens(product.ProductName)
+	if series != "" {
+		edition = series
 	}
 	if number != "" {
 		if variant != "" {
@@ -150,7 +171,6 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	var cardName string
 	var edition string
 	var variant string
-	var number string
 	var foil bool
 
 	title = strings.TrimPrefix(title, "【EN】")
@@ -189,12 +209,10 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		edition = strings.Split(edition, "-")[0]
 	}
 
-	// (168)
-	matches = reParens.FindStringSubmatch(title)
-	if len(matches) > 1 {
-		number = matches[1]
-		number = strings.Split(number, "/")[0]
-		number = strings.TrimLeft(number, "0")
+	// (168) and (Junior Super Series)
+	number, series := splitParens(title)
+	if series != "" {
+		edition = series
 	}
 
 	// ■プレリリース■
