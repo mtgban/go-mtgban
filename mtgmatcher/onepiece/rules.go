@@ -467,7 +467,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		if len(candidates) <= 1 || !editionNamesSet(b, inCard.Edition) {
 			return candidates
 		}
-		return labelOverlap(b, inCard, candidates)
+		return labelOverlap(b, inCard, candidates, false)
 	}
 
 	// The letter tail cardtrader appends to a number ("OP01-001a") means a
@@ -486,7 +486,19 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	if len(base) > 0 {
 		return editionTiebreak(b, inCard, base)
 	}
-	return editionTiebreak(b, inCard, candidates)
+	// Every candidate wears a label, the wording spelled none of them out,
+	// and the number has already said which card this is - so the label is
+	// the only thing left the listing can be asking about. The catalog
+	// prefixes an event label with the base set's code ("OP16 Release
+	// Event", "OP16 Release Event Winner") and the storefront never writes
+	// it, so the whole-label test the tiering above runs answers nothing and
+	// both printings come back aliased. Counting the label's own words the
+	// wording did say separates them, and refuses whatever it cannot.
+	candidates = editionTiebreak(b, inCard, candidates)
+	if len(candidates) <= 1 {
+		return candidates
+	}
+	return labelOverlap(b, inCard, candidates, true)
 }
 
 // finishTiebreak narrows a tier the wording described in full to the
@@ -879,7 +891,7 @@ var doublePackRe = regexp.MustCompile(`(?i)\bdouble\s*pack\b`)
 // about which of their labels was meant, while the words of the set's own
 // name would count as label evidence: "OP15 - Adventure On Kami's Island"
 // hands the word "Island" to a "Sky Island Map" label no listing named.
-func labelOverlap(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+func labelOverlap(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, mustName bool) []mtgmatcher.Card {
 	wording := inCard.Variation
 
 	// A Double Pack Set's DON!! cards are filed under a label naming the
@@ -903,8 +915,11 @@ func labelOverlap(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidate
 	groups, order := groupByIdentity(b, candidates)
 	// One identity is one card printed plain and gold, and nothing has to
 	// name it: the set was what narrowed to it, and the treatment is all
-	// that is left to decide.
-	if len(order) == 1 {
+	// that is left to decide. A caller that demands the wording name
+	// something is asking about the label rather than the treatment, so it
+	// goes on to the scoring below, where a wording naming nothing settles
+	// nothing.
+	if len(order) == 1 && !mustName {
 		return groups[order[0]].pick(inCard, treatmentSaid(inCard.Variation))
 	}
 
