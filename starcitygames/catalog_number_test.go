@@ -53,3 +53,31 @@ func TestFabNumbers(t *testing.T) {
 		})
 	}
 }
+
+// TestFabSingleNumbered pins what tells a product named by both its faces
+// apart from a genuine double-sided card: the sku's number segment. One
+// number is a printing plus the token on its back, a pair is two printings.
+func TestFabSingleNumbered(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		sku  string
+		want bool
+	}{
+		{"a plain number is one number", "SGL-FAB-NUU-026-ENN", true},
+		{"a number behind its own code is still one", "SGL-FAB-PRM-FAB_233-ENR", true},
+		{"the variant letter does not make a second", "SGL-FAB-MON1-155b-ENC", true},
+		{"a lettered part is wording, not a number", "SGL-FAB-AGB-019_CC-ENN", true},
+		{"a fused pair holds two", "SGL-FAB-OMN-048_047-ENN", false},
+		{"a lettered number beside a second one holds two", "SGL-FAB-MST-158c_047-ENN", false},
+		{"a coded pair holds two", "SGL-FAB-PRM-LGS_127_128-ENC", false},
+		{"an all-letters segment names no number", "SGL-FAB-AMX-H01-ENN", false},
+		{"a truncated sku names none either", "SGL-FAB-BVO", false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := fabSingleNumbered(tt.sku)
+			if got != tt.want {
+				t.Errorf("fabSingleNumbered(%q) = %v, want %v", tt.sku, got, tt.want)
+			}
+		})
+	}
+}
