@@ -266,14 +266,18 @@ func fusedNamedBy(b *mtgmatcher.Backend, name string) []string {
 // at the given collector number, by scanning the printings once: a face name
 // has no index of its own, and the fused pair cannot be reconstructed from
 // one face the way fusedNamedBy rebuilds it from both.
+//
+// The pair is read on one slash as well as two, the way numberMatches and
+// sortedPair already read it: eight printings write their pair with a single
+// slash, and demanding two here hid them from their own faces.
 func fusedFaceAt(b *mtgmatcher.Backend, name, number string) (names, numbers []string) {
 	norm := mtgmatcher.Normalize(name)
 	for _, co := range b.UUIDs {
-		if co.Sealed || !strings.Contains(co.Name, "//") || !strings.Contains(co.Number, "//") {
+		if co.Sealed || !strings.Contains(co.Name, "//") || !strings.Contains(co.Number, "/") {
 			continue
 		}
 		faces := strings.Split(co.Name, "//")
-		pair := strings.Split(co.Number, "//")
+		pair := strings.Split(strings.ReplaceAll(co.Number, "//", "/"), "/")
 		if len(faces) != len(pair) {
 			continue
 		}
