@@ -139,6 +139,14 @@ func sealedResolveBackend() *Backend {
 		// a collection the catalog calls a box with no display beside it.
 		"mea-display":    {"Meadow - Booster Display", "MEA"},
 		"orc-collection": {"Orchard Collection Box", "ORC"},
+		// A kit and the case of them, which is the shape the catalogs
+		// really hold both words for: Pokemon files a Build & Battle Box
+		// beside the Display of ten, Yu-Gi-Oh a Special Edition Box
+		// beside its Display, and Magic the Ninth Edition starter both
+		// ways. The fold runs the two words together, so either name
+		// reaches the pair and neither is exact alone.
+		"sfd-box":     {"Spiritforged Build & Battle Box", "SFD"},
+		"sfd-display": {"Spiritforged Build & Battle Display", "SFD"},
 		// The catalog pluralises what a storefront writes singular.
 		"ogn-blisters": {"Origins 3 Pack Blisters [Zapdos]", "OGN"},
 		// One side of an adversarial set, the other side unstocked.
@@ -825,6 +833,21 @@ func TestResolveSealedOuterBox(t *testing.T) {
 		{
 			"a storefront saying both words says one container twice",
 			"Orchard Collection Display Box", "orc-collection",
+		},
+		// Where the catalog spells both containers for one set, the fold
+		// makes each name reach the pair and neither is exact on its own.
+		// The word the storefront chose is the one that settles it.
+		{
+			"the catalog holding both is settled by the word the vendor said",
+			"Spiritforged Build & Battle Box", "sfd-box",
+		},
+		{
+			"and the other word reaches the other one",
+			"Spiritforged Build & Battle Display", "sfd-display",
+		},
+		{
+			"a vendor saying neither still has nothing to choose with",
+			"Spiritforged Build & Battle", "",
 		},
 	} {
 		got, err := b.ResolveSealed(tt.vendor)

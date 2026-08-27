@@ -159,6 +159,27 @@ func sealedOuterSaid(name string) (box, display bool) {
 	return box, display
 }
 
+// sealedOuterAgreement picks the one candidate among equally exact matches
+// that says the same outer container the vendor said. A vendor naming
+// neither, or both, has not chosen between them and gets no answer here.
+func sealedOuterAgreement(name string, entries []*sealedEntry) string {
+	box, display := sealedOuterSaid(name)
+	if box == display {
+		return ""
+	}
+	var chosen string
+	for _, entry := range entries {
+		if entry.boxOnly != box || entry.dispOnly != display {
+			continue
+		}
+		if chosen != "" {
+			return ""
+		}
+		chosen = entry.uuid
+	}
+	return chosen
+}
+
 // sealedNamesDisplayOnly reports whether a name says Display and never Box.
 func sealedNamesDisplayOnly(name string) bool {
 	box, display := sealedOuterSaid(name)
@@ -491,6 +512,7 @@ type sealedEntry struct {
 	setWords map[string]bool
 	narrower map[string]bool
 	boxOnly  bool
+	dispOnly bool
 }
 
 // sealedIndex is the sealed namespace read the way the resolver reads it. It
@@ -531,6 +553,7 @@ func (b *Backend) buildSealedIndex() *sealedIndex {
 			groups:   b.sealedQualifierGroups(co.Name),
 			setWords: setWords[co.SetCode],
 			boxOnly:  sealedNamesBoxOnly(co.Name),
+			dispOnly: sealedNamesDisplayOnly(co.Name),
 		}
 		for _, tok := range entry.tokens {
 			entry.said[tok] = true
@@ -592,6 +615,7 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 		said[tok] = true
 	}
 	var exact, contained []string
+	var exactEntries []*sealedEntry
 	shared := map[string]int{}
 	unsaid := map[string]int{}
 	unexplained := map[string]int{}
@@ -603,6 +627,7 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 		}
 		if tokensEqual(entry.tokens, vendor) {
 			exact = append(exact, entry.uuid)
+			exactEntries = append(exactEntries, entry)
 			continue
 		}
 		if sealedQualifierContradicts(entry.listed, said) {
@@ -631,6 +656,15 @@ func (b *Backend) resolveSealed(name, hint string) (string, error) {
 		return exact[0], nil
 	}
 	if len(exact) > 1 {
+		// The fold lets a vendor's Box reach a catalog's Display, so a
+		// catalog holding both under one set answers twice to the same
+		// name. The candidate spelling the outer container the way the
+		// vendor spelled it is the one being sold; without that the pair
+		// cancel out and a product the catalog names word for word goes
+		// unpriced.
+		if agreed := sealedOuterAgreement(name, exactEntries); agreed != "" {
+			return agreed, nil
+		}
 		return "", ErrCardDoesNotExist
 	}
 	if len(contained) > 0 {
