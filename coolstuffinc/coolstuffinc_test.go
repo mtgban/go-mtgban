@@ -1,6 +1,9 @@
 package coolstuffinc
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // TestBuylistVariation pins what the buylist tells the matcher about a
 // printing beyond its name. The qualifier lives in a free-text note the sell
@@ -84,5 +87,50 @@ func TestBundledCopies(t *testing.T) {
 		if got := bundledCopies(tt.bundleStr); got != tt.want {
 			t.Errorf("bundledCopies(%q) = %d, want %d", tt.bundleStr, got, tt.want)
 		}
+	}
+}
+
+// TestBuylistYuGiOhNamesTheRarity pins the rarity onto the buylist
+// variation. The tier is the only thing telling apart printings a set
+// files at one number, and the sell listing already says it, so a buy
+// listing whose note is empty must not ask a narrower question.
+func TestBuylistYuGiOhNamesTheRarity(t *testing.T) {
+	for _, tt := range []struct {
+		desc string
+		in   CSIPriceEntry
+		want string
+	}{
+		{
+			desc: "an empty note still names the tier",
+			in:   CSIPriceEntry{Number: "BP01-EN030", RarityName: "Rare"},
+			want: "BP01-EN030 Rare",
+		},
+		{
+			desc: "the storefront's spelling reaches the catalog's",
+			in:   CSIPriceEntry{Number: "ANGU-EN043", RarityName: "Collector Rare"},
+			want: "ANGU-EN043 Collector's Rare",
+		},
+		{
+			desc: "a note that says something keeps saying it",
+			in:   CSIPriceEntry{Number: "BP02-EN045", Notes: "Mosaic Rare", RarityName: "Mosaic Rare"},
+			want: "BP02-EN045 Mosaic Rare Mosaic Rare",
+		},
+		{
+			desc: "a reprint note drops to the number and still names the tier",
+			in:   CSIPriceEntry{Number: "SDK-001", Notes: "Reprints LOB-001", RarityName: "Ultra Rare"},
+			want: "SDK-001 Ultra Rare",
+		},
+		{
+			desc: "a row with no rarity at all says only what it did before",
+			in:   CSIPriceEntry{Number: "LOB-005"},
+			want: "LOB-005",
+		},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			got := strings.TrimSpace(buylistVariation(tt.in) + " " + catalogRarity(tt.in.RarityName))
+			if got != tt.want {
+				t.Errorf("buylist variation = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
