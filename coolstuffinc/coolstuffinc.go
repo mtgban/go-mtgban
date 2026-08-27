@@ -358,7 +358,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					c.Foil = c.Foil || isFoil
 					theCard = c
 				case GameYuGiOh:
-					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
 				case GamePokemon:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
 				case GameLorcana, GameRiftbound, GameOnePiece:
@@ -582,7 +582,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
 		case GameYuGiOh:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name)), Foil: product.IsFoil == 1}
 		case GameLorcana:
@@ -783,6 +783,46 @@ var csiRarities = map[string]string{
 	"Star Foil":      "Starfoil Rare",
 	"Shatterfoil":    "Shatterfoil Rare",
 	"Collector Rare": "Collector's Rare",
+}
+
+// csiPrintRuns names both runs a Yu-Gi-Oh edition was printed in, keyed by
+// the edition the storefront publishes. It sells both under that one name
+// and tells them apart the only way anybody can, by the copyright date
+// printed on the card, which it writes into the note. Nothing downstream can
+// pick between them - the later run reissues the original's numbers - which
+// is why mtgmatcher's Yu-Gi-Oh edition aliases leave these sets out on
+// purpose, and why naming only one of the two would file the other under it.
+//
+// The earlier run is spelled out even where the storefront's own name
+// already reaches it, so the table states the whole answer rather than
+// leaning on a name that happens to match. Two of them do not match: the
+// catalog keeps a "The" the storefront drops, and numbers Retro Pack without
+// the 1 it sells the pack as. Both were settled by the buylist's own
+// collector numbers, which write the earlier run plain ("LOB-001") and the
+// later one with the language ("LOB-EN015").
+var csiPrintRuns = map[string][2]string{
+	"Dark Crisis":                      {"Dark Crisis", "Dark Crisis (25th Anniversary Edition)"},
+	"Invasion of Chaos":                {"Invasion of Chaos", "Invasion of Chaos (25th Anniversary Edition)"},
+	"Legend of Blue Eyes White Dragon": {"The Legend of Blue Eyes White Dragon", "Legend of Blue Eyes White Dragon (25th Anniversary Edition)"},
+	"Light of Destruction":             {"Light of Destruction", "Light of Destruction (2020 Date Reprint)"},
+	"Metal Raiders":                    {"Metal Raiders", "Metal Raiders (25th Anniversary Edition)"},
+	"Pharaohs Servant":                 {"Pharaoh's Servant", "Pharaoh's Servant (25th Anniversary Edition)"},
+	"Retro Pack 1":                     {"Retro Pack", "Retro Pack (2020 Date Reprint)"},
+	"Retro Pack 2":                     {"Retro Pack 2", "Retro Pack 2 (2020 Date Reprint)"},
+	"Spell Ruler":                      {"Spell Ruler", "Spell Ruler (25th Anniversary Edition)"},
+}
+
+// printRunEdition answers the edition the note's copyright date names. An
+// edition sold in one run, or a note that says no date, is left as it is.
+func printRunEdition(edition, notes string) string {
+	runs, found := csiPrintRuns[edition]
+	if !found || !strings.Contains(notes, "Copyright") {
+		return edition
+	}
+	if strings.Contains(notes, "2020") {
+		return runs[1]
+	}
+	return runs[0]
 }
 
 // catalogRarity answers the catalog's name for a rarity the storefront
