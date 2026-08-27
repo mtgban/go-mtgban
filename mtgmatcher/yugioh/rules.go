@@ -748,23 +748,47 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 // allWordsIn reports whether the wording's words include every word of the
 // label. Words compare whole: the one-letter artwork labels ("A") would
 // otherwise hide inside almost any wording. They compare without their
-// punctuation too, because the storefronts spell the game's premium tier
-// both ways ("Collectors Rare" against the catalog's "Collector's Rare"),
-// and a wording that names the rarity has to beat the number's suffix
-// rather than fall through it onto every printing of the number.
+// punctuation too, and without the possessive itself, because the
+// storefronts spell the game's premium tier all three ways it can be
+// written ("Collector's Rare", "Collectors Rare", "Collector Rare"), and a
+// wording that names the rarity has to beat the number's suffix rather than
+// fall through it onto every printing of the number.
+//
+// Only the word heading the label may drop its possessive. There it is the
+// tier's own identity; further in it merely qualifies a base tier that is a
+// complete rival label of its own ("Ultra Pharaoh's Rare" beside "Ultra
+// Rare"), and relaxing it there lets any stray word promote the plain tier
+// to the dearer one - the game names a set "Pharaoh Tour Promos".
 func allWordsIn(words []string, label string) bool {
 	labelWords := strings.Fields(strings.ToLower(label))
 	if len(labelWords) == 0 {
 		return false
 	}
-	for _, word := range labelWords {
+	for i, word := range labelWords {
 		if !slices.ContainsFunc(words, func(spoken string) bool {
-			return unpunctuated(spoken) == unpunctuated(word)
+			return unpunctuated(spoken) == unpunctuated(word) ||
+				(i == 0 && unpossessed(spoken) == unpossessed(word))
 		}) {
 			return false
 		}
 	}
 	return true
+}
+
+// unpossessed drops the possessive a word may be written with, so a wording
+// that leaves it off names what the catalog spells with one. Only a word
+// actually written possessively loses its s; a plain plural keeps it.
+// Either apostrophe counts, straight or curly, because the catalog writes
+// both.
+func unpossessed(word string) string {
+	stem, found := strings.CutSuffix(word, "s")
+	if !found {
+		return unpunctuated(word)
+	}
+	if !strings.HasSuffix(stem, "'") && !strings.HasSuffix(stem, "\u2019") {
+		return unpunctuated(word)
+	}
+	return unpunctuated(stem)
 }
 
 // unpunctuated drops the marks a word is written with or without.
