@@ -520,7 +520,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return candidates
 	}
 	if len(base) > 0 {
-		return editionTiebreak(b, inCard, base)
+		return finishNamedTiebreak(inCard, editionTiebreak(b, inCard, base))
 	}
 	// Every candidate wears a label, the wording spelled none of them out,
 	// and the number has already said which card this is - so the label is
@@ -534,7 +534,55 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	if len(candidates) <= 1 {
 		return candidates
 	}
+	candidates = finishNamedTiebreak(inCard, candidates)
+	if len(candidates) <= 1 {
+		return candidates
+	}
 	return labelOverlap(b, inCard, candidates, true)
+}
+
+// namedFinish reads the finish a wording states outright, and whether it
+// stated one at all.
+//
+// Cardtrader sends no finish property for One Piece: a listing carries a
+// language and a rarity and nothing else, so the flag beside the wording is
+// the zero value for every listing of the game. The wording is the only
+// place a listing can say which of two printings at one number it is.
+//
+// Non-foil is asked first because the word for it contains the other.
+func namedFinish(inCard *mtgmatcher.InputCard) (string, bool) {
+	if mtgmatcher.Contains(inCard.Variation, "nonfoil") {
+		return mtgmatcher.FinishNonfoil, true
+	}
+	if mtgmatcher.Contains(inCard.Variation, "foil") {
+		return mtgmatcher.FinishFoil, true
+	}
+	return "", false
+}
+
+// finishNamedTiebreak narrows to the printing whose finish the wording named,
+// when exactly one candidate carries it. A wording naming none is left alone:
+// the flag it would fall back on reads nonfoil for every listing of the game,
+// so answering with it would hand every tie to the nonfoil printing on the
+// strength of a field cardtrader never sent.
+func finishNamedTiebreak(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if len(cards) <= 1 {
+		return cards
+	}
+	finish, named := namedFinish(inCard)
+	if !named {
+		return cards
+	}
+	var kept []mtgmatcher.Card
+	for _, card := range cards {
+		if card.HasFinish(finish) {
+			kept = append(kept, card)
+		}
+	}
+	if len(kept) != 1 {
+		return cards
+	}
+	return kept
 }
 
 // variantAtIndex narrows the variants tier to the one printing cardmarket's
