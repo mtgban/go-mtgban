@@ -323,6 +323,23 @@ func productFinish(gameID int, product *MKMProduct) string {
 	return ""
 }
 
+// foreignShelves are the tails Cardmarket appends to a set's name when it
+// shelves that set's non-English printings apart from the English ones. They
+// are separate catalogs of the same cards, and the datastore carries only the
+// English ones, so a price from one of these shelves would land on a printing
+// it is not.
+var foreignShelves = []string{"(Japanese)", "(Korean)", "(PMT)"}
+
+// foreignShelf reports whether an expansion name wears one of those tails.
+func foreignShelf(name string) bool {
+	for _, tail := range foreignShelves {
+		if strings.HasSuffix(name, tail) {
+			return true
+		}
+	}
+	return false
+}
+
 // matchProduct resolves a product the bridge does not know, from what the
 // catalog says of it. The edition has to name a set of ours and the answer
 // has to be in it: Cardmarket carries whole Japanese catalogs the datastores
@@ -751,19 +768,25 @@ func (mkm *Index) Load(ctx context.Context) error {
 	}
 	list = FilterAndSortExpansions(list)
 
-	// The Japanese-program expansions are whole separate catalogs (OP01-JP
-	// beside OP01) whose prices must not land on the English printings the
-	// datastore carries.
-	if mkm.gameID == GameOnePiece {
+	// The non-English programs are whole separate catalogs (OP01-JP beside
+	// OP01, "Metal Raiders (Korean)" beside Metal Raiders) whose prices must
+	// not land on the English printings the datastore carries. Yu-Gi-Oh
+	// shelves them the same way, and one more besides: the PMT tail marks
+	// the European multi-language print of a set, which is a catalog of its
+	// own for the same reason.
+	switch mkm.gameID {
+	case GameOnePiece, GameYuGiOh:
 		kept := list[:0]
 		for _, exp := range list {
-			if strings.HasSuffix(exp.SetCode, "-JP") || strings.Contains(exp.Name, "(Japanese)") {
+			if strings.HasSuffix(exp.SetCode, "-JP") || foreignShelf(exp.Name) {
 				continue
 			}
 			kept = append(kept, exp)
 		}
 		list = kept
-		mkm.shelved = shelvedSets(list)
+		if mkm.gameID == GameOnePiece {
+			mkm.shelved = shelvedSets(list)
+		}
 	}
 
 	mkm.printf("Parsing %d expansion ids", len(list))
