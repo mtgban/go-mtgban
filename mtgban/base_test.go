@@ -1,6 +1,7 @@
 package mtgban
 
 import (
+	"errors"
 	"math/rand"
 	"testing"
 )
@@ -312,4 +313,64 @@ func TestSort(t *testing.T) {
 	}
 
 	t.Log("PASS: Sort")
+}
+
+// TestDuplicateEntryIsRecognisable pins that a record refusing a duplicate
+// says so in a way a caller can test for. A storefront listing one card under
+// two products produces the refusal by the thousand, and a scraper that knows
+// its storefront does that has to tell it from a real failure.
+func TestDuplicateEntryIsRecognisable(t *testing.T) {
+	t.Run("buylist", func(t *testing.T) {
+		bl := BuylistRecord{}
+		entry := &BuylistEntry{Conditions: "NM", BuyPrice: 4.34}
+		if err := bl.Add("id", entry); err != nil {
+			t.Fatalf("first add: %v", err)
+		}
+		err := bl.Add("id", entry)
+		if !errors.Is(err, ErrDuplicateEntry) {
+			t.Errorf("second add: %v, want ErrDuplicateEntry", err)
+		}
+		if len(bl["id"]) != 1 {
+			t.Errorf("the record kept %d entries, want the first one alone", len(bl["id"]))
+		}
+	})
+
+	t.Run("a differing price is not a duplicate", func(t *testing.T) {
+		bl := BuylistRecord{}
+		if err := bl.Add("id", &BuylistEntry{Conditions: "NM", BuyPrice: 4.34}); err != nil {
+			t.Fatalf("first add: %v", err)
+		}
+		if err := bl.Add("id", &BuylistEntry{Conditions: "NM", BuyPrice: 9.99}); err != nil {
+			t.Errorf("a second price was refused: %v", err)
+		}
+		if len(bl["id"]) != 2 {
+			t.Errorf("the record kept %d entries, want both prices", len(bl["id"]))
+		}
+	})
+
+	t.Run("inventory", func(t *testing.T) {
+		inv := InventoryRecord{}
+		entry := &InventoryEntry{Conditions: "NM", Price: 4.34, Quantity: 3, URL: "u"}
+		if err := inv.Add("id", entry); err != nil {
+			t.Fatalf("first add: %v", err)
+		}
+		err := inv.Add("id", entry)
+		if !errors.Is(err, ErrDuplicateEntry) {
+			t.Errorf("second add: %v, want ErrDuplicateEntry", err)
+		}
+		if len(inv["id"]) != 1 || inv["id"][0].Quantity != 3 {
+			t.Errorf("the record holds %+v, want the first entry with its own quantity", inv["id"])
+		}
+	})
+
+	t.Run("a bad condition is still its own error", func(t *testing.T) {
+		bl := BuylistRecord{}
+		err := bl.Add("id", &BuylistEntry{Conditions: "XX"})
+		if errors.Is(err, ErrDuplicateEntry) {
+			t.Errorf("an invalid condition reported %v", err)
+		}
+		if !errors.Is(err, ErrInvalidCondition) {
+			t.Errorf("got %v, want ErrInvalidCondition", err)
+		}
+	})
 }
