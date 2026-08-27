@@ -361,7 +361,7 @@
             "variant": "SUP064"
         },
         "uuid": "",
-        "error": "unknown card name"
+        "error": "unknown variant"
     },
     {
         "description": "the named finish picks its treatment sibling at the number",

@@ -38,17 +38,12 @@ var editionAliases = map[string]string{
 	"DP Black Star Promos":   "Diamond and Pearl Promos",
 	"HGSS Black Star Promos": "HGSS Promos",
 
-	// The McDonald's series, which the storefronts name by campaign and
-	// the catalog by year.
+	// The McDonald's campaigns, which the storefronts name and the catalog
+	// files by year. The years the catalog has since started carrying under
+	// the storefront's own spelling are not here: they name sets of their
+	// own now, so the lookup above reaches them and an entry would only be
+	// a name this table promises not to hold.
 	"McDonald's Collection 25th Anniversary": "McDonald's 25th Anniversary Promos",
-	"McDonald's Collection 2011":             "McDonald's Promos 2011",
-	"McDonald's Collection 2012":             "McDonald's Promos 2012",
-	"McDonald's Collection 2014":             "McDonald's Promos 2014",
-	"McDonald's Collection 2015":             "McDonald's Promos 2015",
-	"McDonald's Collection 2016":             "McDonald's Promos 2016",
-	"McDonald's Collection 2017":             "McDonald's Promos 2017",
-	"McDonald's Collection 2018":             "McDonald's Promos 2018",
-	"McDonald's Collection 2019":             "McDonald's Promos 2019",
 	"McDonald's Match Battle 2022":           "McDonald's Promos 2022",
 	"McDonald's Match Battle 2023":           "McDonald's Promos 2023",
 	"McDonald's Dragon Discovery":            "McDonald's Promos 2024",
