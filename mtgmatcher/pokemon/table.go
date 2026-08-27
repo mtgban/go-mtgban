@@ -38,6 +38,26 @@ var editionAliases = map[string]string{
 	"DP Black Star Promos":   "Diamond and Pearl Promos",
 	"HGSS Black Star Promos": "HGSS Promos",
 
+	// The same promo runs written with the era behind the word rather than
+	// in front of it. Neither of the general readings reaches these: the
+	// tail reading asks what the wording and a set name end alike, and
+	// "Sword and Shield" ends no set's name, while "SM Promos" and "Sun and
+	// Moon" share no tail at all; the trailing-"Promos" reading only looks
+	// at the end of the wording, and these spell it at the front.
+	"Promos Sword and Shield": "SWSH: Sword & Shield Promo Cards",
+	"Promos Sun and Moon":     "SM Promos",
+
+	// The 1999 set under the print run a storefront heads it with. The run
+	// itself rides in the row's own details, so naming the set here does not
+	// spend it: an unlimited listing still reaches the unlimited printing.
+	"Base Set Unlimited": "Base Set",
+
+	// Mega Evolution's base set, which is not the 1999 one. Left alone it
+	// reaches "Base Set" by tail and prices a 2025 card as a 1999 one, which
+	// is a wrong answer rather than a refusal, so this entry is the only
+	// thing standing between the two.
+	"Mega Evolution Base Set": "ME01: Mega Evolution",
+
 	// The McDonald's campaigns, which the storefronts name and the catalog
 	// files by year. The years the catalog has since started carrying under
 	// the storefront's own spelling are not here: they name sets of their
