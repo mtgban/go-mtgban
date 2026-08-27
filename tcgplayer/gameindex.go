@@ -40,7 +40,7 @@ type TCGGameIndex struct {
 func (tcg *TCGGameIndex) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
+		if !slices.Equal(tcg.productTypes, tcgplayer.SinglesProductTypes(tcg.category)) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
@@ -67,7 +67,7 @@ func NewScraperGameIndex(game, publicID, privateID string) (*TCGGameIndex, error
 
 	tcg.category = category
 	tcg.game = game
-	tcg.productTypes = tcgplayer.ProductTypesSingles
+	tcg.productTypes = tcgplayer.SinglesProductTypes(category)
 
 	return &tcg, nil
 }
