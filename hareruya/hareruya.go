@@ -75,9 +75,13 @@ func (ha *Hareruya) printf(format string, a ...any) {
 
 func (ha *Hareruya) processBuylistSet(ctx context.Context, channel chan<- responseChan, cardSet string) error {
 	var i int
+	// The search orders by price with nothing to break a tie, so a listing
+	// priced the same as the ones around a page boundary is answered on both
+	// pages. Remember what the set has already given, and read each once.
+	seen := map[string]bool{}
 	for {
 		i++
-		results, canExit, err := ha.processBuylistPage(ctx, channel, cardSet, i)
+		results, canExit, err := ha.processBuylistPage(ctx, channel, cardSet, i, seen)
 		if err != nil {
 			return err
 		}
@@ -103,7 +107,7 @@ func (ha *Hareruya) processBuylistSet(ctx context.Context, channel chan<- respon
 	}
 }
 
-func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- responseChan, cardSet string, page int) ([]responseChan, bool, error) {
+func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- responseChan, cardSet string, page int, seen map[string]bool) ([]responseChan, bool, error) {
 	var canExit bool
 
 	v := url.Values{}
@@ -168,6 +172,13 @@ func (ha *Hareruya) processBuylistPage(ctx context.Context, channel chan<- respo
 			canExit = true
 			return false
 		}
+
+		// After the check above, never before it: a repeat that returned
+		// early would swallow the signal that ends the set.
+		if seen[id] {
+			return true
+		}
+		seen[id] = true
 
 		theCard, err := preprocess(title)
 		if err != nil {
@@ -284,40 +295,54 @@ func (ha *Hareruya) processSet(ctx context.Context, channel chan<- responseChan,
 				continue
 			}
 
-			// Look for the product in lazyData (they can be in different order)
-			for _, lazy := range lazyData {
-				if lazy.ProductID != product.Product {
-					continue
+			for _, row := range listingsFor(product, lazyData) {
+				cond := row.Condition
+				price := row.Price * ha.exchangeRate
+				qty := row.Quantity
+
+				link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
+				out := responseChan{
+					cardID: cardID,
+					invEntry: &mtgban.InventoryEntry{
+						Price:      price,
+						Conditions: cond,
+						Quantity:   qty,
+						URL:        link,
+						OriginalID: product.Product,
+						InstanceID: product.ProductClass,
+					},
 				}
 
-				for _, row := range lazy.Rows {
-					cond := row.Condition
-					price := row.Price * ha.exchangeRate
-					qty := row.Quantity
-
-					link := "https://www.hareruyamtg.com/en/products/detail/" + product.Product + "?lang=EN&class=" + product.ProductClass
-					out := responseChan{
-						cardID: cardID,
-						invEntry: &mtgban.InventoryEntry{
-							Price:      price,
-							Conditions: cond,
-							Quantity:   qty,
-							URL:        link,
-							OriginalID: product.Product,
-							InstanceID: product.ProductClass,
-						},
-					}
-
-					select {
-					case <-ctx.Done():
-						return ctx.Err()
-					case channel <- out:
-						// done
-					}
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case channel <- out:
+					// done
 				}
 			}
 		}
 	}
+}
+
+// listingsFor gathers the storefront's rows for one lot of a product. The
+// lazy endpoint answers a block per lot, and a product sold in several
+// conditions has several lots, so pairing on the product alone gives every
+// lot of it every other lot's rows.
+func listingsFor(product Product, lazyData []LazyResult) []Row {
+	var rows []Row
+	for _, lazy := range lazyData {
+		if lazy.ProductID != product.Product {
+			continue
+		}
+		// A block says which lot it is only where the product has more
+		// than one; asking for the class outright would drop every
+		// product that has just the one.
+		if lazy.ProductClass != "" && lazy.ProductClass != product.ProductClass {
+			continue
+		}
+		rows = append(rows, lazy.Rows...)
+	}
+	return rows
 }
 
 // Row is one line of the storefront's table, before it becomes a listing.
@@ -330,9 +355,13 @@ type Row struct {
 // LazyResult carries a page of rows and the error that ended the walk, so a
 // caller sees both what arrived and why it stopped.
 type LazyResult struct {
-	ProductID   string
-	ProductName string
-	Rows        []Row
+	ProductID string
+	// ProductClass names which lot of the product the block holds. The
+	// storefront spells it only where a product has more than one, so an
+	// empty one means the product's only lot.
+	ProductClass string
+	ProductName  string
+	Rows         []Row
 }
 
 func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int) ([]LazyResult, error) {
@@ -393,10 +422,12 @@ func (ha *Hareruya) getLazy(ctx context.Context, products []Product, attempt int
 	doc.Find(".itemList").Each(func(i int, s *goquery.Selection) {
 		name := strings.TrimSpace(s.Find(".itemDataWrapper .itemData a.itemName").Text())
 		link, _ := s.Find(".itemDataWrapper .itemData a.itemName").Attr("href")
-		id := strings.Split(path.Base(link), "?")[0]
+		id, query, _ := strings.Cut(path.Base(strings.TrimSpace(link)), "?")
+		values, _ := url.ParseQuery(query)
 
 		var result LazyResult
 		result.ProductID = id
+		result.ProductClass = values.Get("class")
 		result.ProductName = name
 
 		// A block with early exits rather than a loop: each guard below leaves
