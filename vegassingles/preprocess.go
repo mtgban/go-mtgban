@@ -247,6 +247,27 @@ func preprocessMagic(product VSProduct) (*mtgmatcher.InputCard, error) {
 		}
 	}
 
+	// A set's own subset is filed under the parent everywhere the listing
+	// carries a field: a Timeshifts card states the code "mh1" and the name
+	// "Modern Horizons", and neither says which of the two it is. Only the
+	// display name's own tail does - "Modern Horizons 1 Timeshifts".
+	//
+	// The tail is not simply believed. It names the parent as often as the
+	// subset, an Edge of Eternities land filed under Stellar Sights among
+	// them, and reading the parent is how a promo lands on the main-set
+	// card. What tells them apart is the number the listing states: a
+	// subset numbers its own cards, so the number answers there and not
+	// where the listing stands, while a parent answers both.
+	if spelled := spelledSet(product.DisplayName); spelled != "" && card.Variation != "" {
+		if !answersNumber(resolved(card), card.Variation) {
+			probe := card
+			probe.Edition = spelled
+			if co := resolved(probe); answersNumber(co, card.Variation) {
+				card = probe
+			}
+		}
+	}
+
 	// A display name says etched two ways: as its own tail, "Modern Horizons 2
 	// Etched Foil", or as a qualifier standing with the card's other wording,
 	// "Panharmonicon (Foil Etched) (2X2-562) - Double Masters 2022 Foil".

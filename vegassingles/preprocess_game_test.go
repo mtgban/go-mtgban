@@ -141,11 +141,11 @@ func TestPreprocessMagicEtched(t *testing.T) {
 		{"Arid Mesa (MH2-436) - Modern Horizons 2 Etched Foil", "mh2", "Modern Horizons 2", 436, "436 Etched"},
 		{"Azorius Signet (Foil Etched) (SLD-286) - Secret Lair Drop Series Foil", "sld", "Secret Lair Drop Series", 0, "286 Etched"},
 		{"Talisman of Hierarchy (MH1-036) - Modern Horizons 1 Timeshifts Etched Foil", "mh1", "Modern Horizons 1 Timeshifts", 36, "36 Etched"},
-		// Three Timeshifts listings name the parent set rather than the
-		// Timeshifts one, and land where no etched printing stands. Asking
-		// for one there answers with the nonfoil printing, further from the
-		// listing than the foil one it has today, so the word is dropped.
-		{"Force of Negation (MH1-009) - Modern Horizons 1 Timeshifts Etched Foil", "mh1", "Modern Horizons", 9, "9"},
+		// A Timeshifts listing naming the parent set in both its fields
+		// reads the same as one naming the subset, because the display
+		// name's own tail is read for it. The etched printing stands
+		// where the listing says it does, so the word survives.
+		{"Force of Negation (MH1-009) - Modern Horizons 1 Timeshifts Etched Foil", "mh1", "Modern Horizons", 9, "9 Etched"},
 	} {
 		card, err := preprocessMagic(VSProduct{
 			DisplayName: tt.display,
@@ -432,6 +432,47 @@ func TestCardTable(t *testing.T) {
 		}
 		if card.Name != meant {
 			t.Errorf("%q read as %q, want %q", written, card.Name, meant)
+		}
+	}
+}
+
+// TestPreprocessMagicSubset pins the sets a storefront files under a parent.
+// Neither field says which of the two a listing is - a Timeshifts card states
+// the code "mh1" and the name "Modern Horizons", both of which are the parent -
+// so the display name's own tail is the only thing that does.
+func TestPreprocessMagicSubset(t *testing.T) {
+	for _, tt := range []struct {
+		display string
+		set     string
+		setName string
+		number  int
+		edition string
+	}{
+		{"Force of Negation (MH1-009) - Modern Horizons 1 Timeshifts Foil",
+			"mh1", "Modern Horizons", 9, "Modern Horizons 1 Timeshifts"},
+		{"Talisman of Creativity (MH1-034) - Modern Horizons 1 Timeshifts Etched Foil",
+			"mh1", "Modern Horizons", 34, "Modern Horizons 1 Timeshifts"},
+		// The tail names the parent as often as the subset, and reading it
+		// there is how a promo lands on the main-set card. A land filed
+		// under Stellar Sights states a number Stellar Sights answers, so
+		// it stays where it stands.
+		{"Deserted Temple (0011) (Borderless) (EOE-011) - Edge of Eternities",
+			"eos", "Edge of Eternities: Stellar Sights", 11, "eos"},
+		// And an ordinary listing keeps the code it came with.
+		{"Hallowed Fountain (RVR-280) - Ravnica Remastered",
+			"rvr", "Ravnica Remastered", 280, "rvr"},
+	} {
+		product := VSProduct{DisplayName: tt.display}
+		product.ProductData.Set = flexString(tt.set)
+		product.ProductData.SetName = tt.setName
+		product.ProductData.CollectorNumberNormalized = tt.number
+		card, err := preprocessMagic(product)
+		if err != nil {
+			t.Errorf("%s: %v", tt.display, err)
+			continue
+		}
+		if card.Edition != tt.edition {
+			t.Errorf("%s:\n got  %q\n want %q", tt.display, card.Edition, tt.edition)
 		}
 	}
 }
