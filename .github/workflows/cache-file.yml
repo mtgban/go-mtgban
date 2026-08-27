@@ -78,17 +78,50 @@ jobs:
           b2 sync --skip-newer "${{ inputs.path }}" "b2://mtgban-datastore/${{ inputs.game }}"
           b2 account clear
 
-      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != ''
+      # A pull request must not tell the live site to reload: the reload is a
+      # production side effect, and answering it takes the site long enough
+      # that a proposed change would be failing on the server's health rather
+      # than on its own. Master still pings on the very same cache miss - a
+      # cache written on a pull request is scoped to that pull request, so the
+      # push and the nightly schedule both miss again and ping for real.
+      - if: steps.cache_file.outputs.cache-hit != 'true' && inputs.game != '' && github.event_name != 'pull_request'
         name: Ping server
         env:
           BAN_SECRET: "${{ secrets.BAN_SECRET }}"
+          GAME: "${{ inputs.game }}"
         run: |
-          ts=$(date -u +%s)
-          body=$(jq -n --arg ts "$ts" '{ts:($ts|tonumber)}')
-          sig=$(printf '%s' "$body" | openssl dgst -sha256 -hmac "$BAN_SECRET" -binary | base64)
-          curl -L -X POST \
-              -H 'Content-Type: application/json' \
-              -H "X-Signature: $sig" \
-              -H "X-Timestamp: $ts" \
-              --data-raw "$body" \
-              "https://${{ inputs.game }}.mtgban.com/api/load/datastore" 2> /dev/null | tee /dev/stderr | jq -e 'select(.status=="ok")'
+          # Each attempt signs a timestamp of its own. The signature covers
+          # the timestamp, so a retry that reused the first one would be
+          # refused as a replay rather than served.
+          for attempt in 1 2 3; do
+            rm -f ping-response
+            ts=$(date -u +%s)
+            body=$(jq -n --arg ts "$ts" '{ts:($ts|tonumber)}')
+            sig=$(printf '%s' "$body" | openssl dgst -sha256 -hmac "$BAN_SECRET" -binary | base64)
+
+            code=$(curl -sS -L -X POST \
+                -H 'Content-Type: application/json' \
+                -H "X-Signature: $sig" \
+                -H "X-Timestamp: $ts" \
+                --data-raw "$body" \
+                --connect-timeout 30 --max-time 900 \
+                -o ping-response -w '%{http_code}' \
+                "https://$GAME.mtgban.com/api/load/datastore") || code=000
+
+            echo "attempt $attempt: HTTP $code"
+            head -c 2000 ping-response 2>/dev/null || true; echo
+
+            if [ "$code" = "200" ] && jq -e 'select(.status=="ok")' ping-response > /dev/null 2>&1; then
+              exit 0
+            fi
+
+            if [ "$attempt" != "3" ]; then
+              sleep 60
+            fi
+          done
+
+          # Say what the server answered. Handing an HTML error page to jq
+          # reports a parse error, which reads like a broken build rather
+          # than the outage it is.
+          echo "::error::$GAME.mtgban.com did not reload the datastore after 3 attempts (last status ${code:-none}); the upload to B2 succeeded, so re-run this job once the site is answering"
+          exit 1
