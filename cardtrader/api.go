@@ -101,6 +101,8 @@ const (
 	CategoryLorcanaMemorabilia
 	CategoryLorcanaOversized
 	CategoryLorcanaCompleteSets
+
+	CategoryLorcanaTokens = 270
 )
 
 // The Riftbound categories.
@@ -154,6 +156,7 @@ const (
 	CategoryOnePieceDon             = 255
 	CategoryOnePieceTins            = 256
 	CategoryOnePieceMemorabilia     = 257
+	CategoryOnePieceOversized       = 299
 )
 
 // The Yu-Gi-Oh categories.

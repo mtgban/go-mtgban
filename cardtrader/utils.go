@@ -455,15 +455,18 @@ func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed b
 		// later lands on the sealed side rather than silently vanishing;
 		// accessories arrive with it and are dropped downstream by the
 		// product-map resolution, which only names real sealed products.
+		// A token and an oversized card are singles, whichever game
+		// prints them: the sealed side would otherwise be asked about a
+		// card by a name it shares with the set it came in.
 		singles := false
 		switch blueprints[i].CategoryID {
 		case CategoryMagicSingles, CategoryMagicTokens, CategoryMagicOversized,
-			CategoryLorcanaSingles, CategoryLorcanaOversized,
+			CategoryLorcanaSingles, CategoryLorcanaOversized, CategoryLorcanaTokens,
 			CategoryRiftboundSingles, CategoryRiftboundOversized,
-			CategoryOnePieceSingles,
-			CategoryYuGiOhSingles,
-			CategoryFleshAndBloodSingles,
-			CategoryPokemonSingles:
+			CategoryOnePieceSingles, CategoryOnePieceOversized, CategoryOnePieceDon,
+			CategoryYuGiOhSingles, CategoryYuGiOhOversized,
+			CategoryFleshAndBloodSingles, CategoryFleshAndBloodArtCardTokens,
+			CategoryPokemonSingles, CategoryPokemonOversized:
 			singles = true
 		}
 		if singles == sealed {
