@@ -221,3 +221,38 @@ func TestListingPrice(t *testing.T) {
 		})
 	}
 }
+
+// TestFormatBlueprintsSplitsSingles pins which side of the catalog each
+// category lands on. Sealed is chosen by exclusion, so a category of cards
+// that nobody lists here is handed to the sealed scraper, which then asks
+// its resolver about a card by the name of the set it came in.
+func TestFormatBlueprintsSplitsSingles(t *testing.T) {
+	for _, tt := range []struct {
+		desc     string
+		category int
+		singles  bool
+	}{
+		{"a token is a card", CategoryLorcanaTokens, true},
+		{"a DON!! is a card", CategoryOnePieceDon, true},
+		{"an art card token is a card", CategoryFleshAndBloodArtCardTokens, true},
+		{"an oversized card is a card", CategoryYuGiOhOversized, true},
+		{"and so is the Pokemon one", CategoryPokemonOversized, true},
+		{"and the One Piece one", CategoryOnePieceOversized, true},
+		{"a booster box is sealed product", CategoryYuGiOhBoosterBoxes, false},
+		{"so is a starter deck", CategoryLorcanaStarterDecks, false},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			blueprints := []Blueprint{{ID: 1, Name: "x", CategoryID: tt.category, ExpansionID: 9}}
+			expansions := []Expansion{{ID: 9, Name: "Shelf"}}
+
+			asSingles, _ := FormatBlueprints(blueprints, expansions, false)
+			asSealed, _ := FormatBlueprints(blueprints, expansions, true)
+
+			_, inSingles := asSingles[1]
+			_, inSealed := asSealed[1]
+			if inSingles != tt.singles || inSealed == tt.singles {
+				t.Errorf("category %d: singles=%v sealed=%v, want singles=%v", tt.category, inSingles, inSealed, tt.singles)
+			}
+		})
+	}
+}
