@@ -261,7 +261,8 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 	pool := extractPool(inCard.Variation)
 
-	var out, wrongFinish, bareOut, bareWrongFinish []mtgmatcher.Card
+	var out, wrongFinish, bareOut, bareWrongFinish, chaseOut, chaseWrongFinish []mtgmatcher.Card
+	chased := false
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
 		// Foil printings (the primary "_f" and every foil sub-type suffix) are
@@ -292,7 +293,14 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			continue
 		}
 		exact := number == "" || number == card.Number
-		if !exact && (bare == "" || bare != card.Number) {
+		bareFits := !exact && bare != "" && bare == card.Number
+		// A named chase tier is a claim about the printing, and it holds
+		// wherever the number does not: a storefront that writes one down
+		// has said which of two same-named printings the listing is even
+		// when the number beside it reaches neither.
+		chase := namesChaseRarity(inCard.Variation, card.Rarity)
+		chased = chased || chase
+		if !exact && !bareFits && !chase {
 			continue
 		}
 		// Set aside the candidates sold in no plain finish. A card with both
@@ -319,10 +327,14 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			out = append(out, card)
 		case exact:
 			wrongFinish = append(wrongFinish, card)
-		case finishFits:
+		case bareFits && finishFits:
 			bareOut = append(bareOut, card)
-		default:
+		case bareFits:
 			bareWrongFinish = append(bareWrongFinish, card)
+		case finishFits:
+			chaseOut = append(chaseOut, card)
+		default:
+			chaseWrongFinish = append(chaseWrongFinish, card)
 		}
 	}
 	// A feed that never says "foil" must not lose a foil-only card outright:
@@ -332,12 +344,76 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// falls back. The number as written and the plain finish both still
 	// decide whenever they have candidates to choose between, so each
 	// fallback only ever answers where the alternative was answering nothing.
-	for _, tier := range [][]mtgmatcher.Card{out, wrongFinish, bareOut, bareWrongFinish} {
+	tiers := [][]mtgmatcher.Card{out, wrongFinish, bareOut, bareWrongFinish, chaseOut, chaseWrongFinish}
+	// Once a tier is named by a printing that carries it, the printings that
+	// do not are contradicted rather than merely unmentioned, and go out of
+	// the tiers a number did not decide: the letter a storefront hangs off a
+	// chase card's number is the one thing standing between the stripped
+	// form and the plain card it numbers, and stripping it is a guess where
+	// the named tier is a statement.
+	//
+	// A number that was written and landed exactly is the more specific
+	// claim of the two and keeps its tiers, so a wording that names the tier
+	// beside a number naming the printing outright never overrules it. A
+	// number that was not written at all decided nothing, and there the
+	// wording is all the listing said.
+	first := 0
+	if number != "" {
+		first = 2
+	}
+	if chased {
+		for i := first; i < len(tiers); i++ {
+			tiers[i] = keepChaseRarity(inCard.Variation, tiers[i])
+		}
+	}
+	for _, tier := range tiers {
 		if len(tier) > 0 {
 			return poolTiebreak(pool, tier)
 		}
 	}
 	return nil
+}
+
+// chaseRarities are the tiers Lorcana keeps for the alternate art of a card
+// already printed in the set, as the datastore spells them. They are the only
+// rarities read: the rest of the ladder is never how a storefront tells two
+// printings of one name apart, and "Promo" is a word half the promo wordings
+// carry anyway.
+var chaseRarities = []string{"enchanted", "epic", "iconic"}
+
+// namesChaseRarity reports whether the variation claims the printing is the
+// chase tier given. "Alternate Art" is the nickname a storefront writes for
+// the same claim, and naming a tier no candidate carries reaches nothing, so
+// a nickname read onto the wrong one of the three costs no printing.
+func namesChaseRarity(variation, rarity string) bool {
+	if !slices.Contains(chaseRarities, rarity) {
+		return false
+	}
+	return spellsOut(variation, rarity) || spellsOut(variation, "alternate art")
+}
+
+// keepChaseRarity drops the printings whose tier the variation contradicts.
+func keepChaseRarity(variation string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	var kept []mtgmatcher.Card
+	for _, card := range cards {
+		if namesChaseRarity(variation, card.Rarity) {
+			kept = append(kept, card)
+		}
+	}
+	return kept
+}
+
+// spellsOut reports whether the text writes the phrase as consecutive whole
+// words, so a tier spelled inside a longer word is not read as the tier.
+func spellsOut(text, phrase string) bool {
+	words := strings.Fields(strings.ToLower(text))
+	wanted := strings.Fields(phrase)
+	for i := 0; i+len(wanted) <= len(words); i++ {
+		if slices.Equal(words[i:i+len(wanted)], wanted) {
+			return true
+		}
+	}
+	return false
 }
 
 // poolTiebreak narrows a tier to the printings numbered within the pool the
