@@ -1075,7 +1075,7 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				}
 			}
 
-		case inCard.Contains("Premier Play") || inCard.Contains("Regional Championship Qualifiers"):
+		case inCard.Contains("Premier Play") || inCard.Contains("Regional Championship"):
 			switch {
 			case set.Name == "Pro Tour Promos":
 				// Special case for a card that could be in PR23
@@ -1373,6 +1373,13 @@ func (Rules) FilterPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard
 				default:
 					continue
 				}
+			}
+
+		case inCard.Contains("Marvel Legends"):
+			switch set.Code {
+			case "LMAR":
+			default:
+				continue
 			}
 
 		case inCard.Contains("Eternal Weekend"):
