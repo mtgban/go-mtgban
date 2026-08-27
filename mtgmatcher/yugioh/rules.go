@@ -650,6 +650,16 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 		return out
 	}
 
+	if decorated, found := decoratedRarity(words, candidates); found {
+		var out []mtgmatcher.Card
+		for _, card := range candidates {
+			if strings.EqualFold(card.Rarity, decorated) {
+				out = append(out, card)
+			}
+		}
+		return out
+	}
+
 	rarity := suffixRarity(number)
 	if rarity == "" {
 		return candidates
@@ -661,6 +671,47 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 		}
 	}
 	return out
+}
+
+// decoratedRarity answers the candidate rarity whose tail the wording spells
+// out, for a tier a set prints only decorated: the Rarity Collections sell a
+// "Prismatic Collector's Rare" and no plain one, so a listing saying
+// "Collector's Rare" has still said which of the printings at its number it
+// means.
+//
+// Only a proper suffix of two words or more is read. Every tier this game has
+// ends in "Rare" and almost every wording says it, so a one-word tail would
+// name them all. A tail two candidates share - a number sold as both a
+// Platinum and a Prismatic Secret Rare, with no plain one - says nothing
+// about which was meant, and answers nothing rather than guess.
+//
+// This is reached only where no rarity was named in full, which is what keeps
+// it off the sets printing a tier both ways: 25LP sells an Ultra Rare beside
+// its Emblazoned Ultra Rare, and a plain wording names the plain one outright
+// before this is asked.
+func decoratedRarity(words []string, candidates []mtgmatcher.Card) (string, bool) {
+	longest := 0
+	var named string
+	shared := false
+	for _, card := range candidates {
+		labelWords := strings.Fields(strings.ToLower(card.Rarity))
+		for n := len(labelWords) - 1; n >= 2; n-- {
+			if !allWordsIn(words, strings.Join(labelWords[len(labelWords)-n:], " ")) {
+				continue
+			}
+			switch {
+			case n > longest:
+				longest, named, shared = n, card.Rarity, false
+			case n == longest && !strings.EqualFold(card.Rarity, named):
+				shared = true
+			}
+			break
+		}
+	}
+	if longest == 0 || shared {
+		return "", false
+	}
+	return named, true
 }
 
 // tierByVariant splits the candidates into the ones whose variant label the
