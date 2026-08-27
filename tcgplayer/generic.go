@@ -35,7 +35,7 @@ type Generic struct {
 func (tcg *Generic) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
+		if !slices.Equal(tcg.productTypes, tcgplayer.SinglesProductTypes(tcg.category)) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
@@ -57,7 +57,7 @@ func NewScraperGeneric(publicID, privateID string, category int, productTypes ..
 
 	tcg.productTypes = productTypes
 	if len(tcg.productTypes) == 0 {
-		tcg.productTypes = tcgplayer.ProductTypesSingles
+		tcg.productTypes = tcgplayer.SinglesProductTypes(category)
 	}
 
 	return &tcg, nil
@@ -191,7 +191,7 @@ func (tcg *Generic) Info() (info mtgban.ScraperInfo) {
 	info.MetadataOnly = true
 	info.NoQuantityInventory = true
 
-	if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
+	if !slices.Equal(tcg.productTypes, tcgplayer.SinglesProductTypes(tcg.category)) {
 		info.Name += " " + strings.Join(tcg.productTypes, ",")
 		info.Shorthand += "+" + strings.Join(tcg.productTypes, ",")
 	}

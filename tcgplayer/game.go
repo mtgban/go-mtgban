@@ -48,7 +48,7 @@ type TCGGame struct {
 func (tcg *TCGGame) printf(format string, a ...any) {
 	if tcg.LogCallback != nil {
 		tag := "[TCG](" + tcg.categoryName + ") "
-		if !slices.Contains(tcg.productTypes, tcgplayer.ProductTypesSingles[0]) {
+		if !slices.Equal(tcg.productTypes, tcgplayer.SinglesProductTypes(tcg.category)) {
 			tag += "{" + strings.Join(tcg.productTypes, ",") + "} "
 		}
 		tcg.LogCallback(tag+format, a...)
@@ -88,7 +88,7 @@ func NewScraperGame(game, publicID, privateID string) (*TCGGame, error) {
 
 	tcg.category = category
 	tcg.game = game
-	tcg.productTypes = tcgplayer.ProductTypesSingles
+	tcg.productTypes = tcgplayer.SinglesProductTypes(category)
 
 	tcg.printings = map[int]string{}
 
@@ -106,7 +106,7 @@ func NewScraperGameSealed(game, publicID, privateID string) (*TCGGame, error) {
 		return nil, err
 	}
 	tcg.sealed = true
-	tcg.productTypes = tcgplayer.ProductTypesSealed
+	tcg.productTypes = tcgplayer.SealedProductTypes(tcg.category)
 	return tcg, nil
 }
 

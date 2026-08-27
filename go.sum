@@ -265,6 +265,8 @@ github.com/mtgban/go-cardkingdom v0.1.0 h1:gpiZw0/TJiKp1tdcKRAuZzpIX5bh0LLLKR6+P
 github.com/mtgban/go-cardkingdom v0.1.0/go.mod h1:T3s8G/UMS8s858ydXPwKHoFALMqS2U9YM3cdeJX7fBg=
 github.com/mtgban/go-tcgplayer v0.1.0 h1:jHrqn8dA6O8Y0eDftsBdz7YrdHVLYgezwGF2JV+8MzQ=
 github.com/mtgban/go-tcgplayer v0.1.0/go.mod h1:KaXcyjC/Y1M9itmWcjGcZi0ao40RkHAGua1nLML+4xA=
+github.com/mtgban/go-tcgplayer v0.1.2 h1:IdDhb/J2/64SmgAHeThBXWFuLIbu1soWNqdS6zXI63k=
+github.com/mtgban/go-tcgplayer v0.1.2/go.mod h1:KaXcyjC/Y1M9itmWcjGcZi0ao40RkHAGua1nLML+4xA=
 github.com/mtgban/simplecloud v0.0.11 h1:KkMyHnLtWVuypnasJeE/eTm3LIx0lCvwHQUwghS+gHI=
 github.com/mtgban/simplecloud v0.0.11/go.mod h1:oSkZ6RP2WHry1yiwEA/k90muilgxI2/RP2N+k6XiooE=
 github.com/neelance/astrewrite v0.0.0-20160511093645-99348263ae86/go.mod h1:kHJEU3ofeGjhHklVoIGuVj85JJwZ6kWPaJwCIxgnFmo=
