@@ -274,7 +274,11 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		// listing states it as its own finish, off FabFoilNew, and saying
 		// it twice narrows nothing. Only what the finish cannot say is
 		// worth passing on.
-		version := fabWording(bp.Version, number)
+		number, classic := fabPlainNumber(number)
+		version := fabWording(fabVersions.Replace(bp.Version), number)
+		if classic && !mtgmatcher.Contains(version, fabCCTag) {
+			version = strings.TrimSpace(version + " " + fabCCTag)
+		}
 		if version == "" {
 			return number
 		}
@@ -291,6 +295,31 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 		return number
 	}
 	return number + " " + bp.Version
+}
+
+// fabCCTag is the catalog's word for the Classic Constructed printing, which
+// CardTrader spells "CC Label".
+const fabCCTag = "CC Tag"
+
+// fabVersions spells a Flesh and Blood version the way the catalog does.
+var fabVersions = strings.NewReplacer("CC Label", fabCCTag)
+
+// fabPlainNumber takes the Classic Constructed marker off a collector number
+// and says whether it was there. The catalog files that printing at the plain
+// number and tells it from its twin by the tag alone, so a number wearing the
+// marker names nothing, and the listing settles for whichever other set
+// prints the card.
+func fabPlainNumber(number string) (string, bool) {
+	trimmed, found := strings.CutSuffix(number, "cc")
+	if !found || trimmed == "" {
+		return number, false
+	}
+	// Only a number wears the marker; a name ending in those letters does not.
+	last := trimmed[len(trimmed)-1]
+	if last < '0' || last > '9' {
+		return number, false
+	}
+	return trimmed, true
 }
 
 // fabTreatments are the values a Flesh and Blood listing states as its own
