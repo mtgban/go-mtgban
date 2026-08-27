@@ -111,7 +111,12 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	// Build retail product URL
 	retailLink := "https://vegas.singles/products/" + buildProductSlug(product.DisplayName)
 
-	// Process buylist variants (from store_pass_variant_info)
+	// vegas.singles lists a card under more than one product - the same
+	// display name, the same prices, the same stock - so the second
+	// product's variants arrive as exact duplicates of the first's. The
+	// record keeps the one it has and drops the new one, which is the right
+	// answer; reporting each as an error only buried the run's real ones
+	// under a thousand lines of it.
 	for _, variant := range product.VariantInfo {
 		if variant.OfferPrice == 0 {
 			continue
@@ -136,7 +141,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 			OriginalID: strconv.FormatInt(product.ProductID, 10),
 			InstanceID: strconv.FormatInt(variant.ID, 10),
 		})
-		if err != nil {
+		if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
 			vs.printf("%d: %s", product.ProductID, err.Error())
 		}
 	}
@@ -160,7 +165,7 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 			OriginalID: strconv.FormatInt(product.ProductID, 10),
 			InstanceID: variant.SKU,
 		})
-		if err != nil {
+		if err != nil && !errors.Is(err, mtgban.ErrDuplicateEntry) {
 			vs.printf("%d: %s", product.ProductID, err.Error())
 		}
 	}
