@@ -576,8 +576,13 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// it describing the artwork and Lorcana's changes no answer at all.
 		case GamePokemon:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: catalogTreatment(buylistVariation(product)), Foil: product.IsFoil == 1}
-		case GameRiftbound, GameYuGiOh:
+		case GameRiftbound:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: buylistVariation(product), Foil: product.IsFoil == 1}
+		// The rarity arrives in a field of its own here, where the sell
+		// listing spends the note on it, so a row whose note says nothing
+		// still names the tier that tells its printing from its siblings.
+		case GameYuGiOh:
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name)), Foil: product.IsFoil == 1}
 		case GameLorcana:
@@ -769,14 +774,15 @@ func catalogTreatment(variation string) string {
 }
 
 // csiRarities spells the storefront's Yu-Gi-Oh rarity names the way the
-// catalog does. Only the foil tiers disagree, and only in the two ways
-// below: the storefront drops the "Rare" the catalog keeps, and writes
-// Starfoil as two words. Everything else - Common, Rare, Mosaic Rare -
-// it already spells alike, so a name absent from this table passes
+// catalog does. Only the foil tiers disagree: the storefront drops the
+// "Rare" the catalog keeps, writes Starfoil as two words, and drops the
+// possessive s from Collector's. Everything else - Common, Rare, Mosaic
+// Rare - it already spells alike, so a name absent from this table passes
 // through as it stands.
 var csiRarities = map[string]string{
-	"Star Foil":   "Starfoil Rare",
-	"Shatterfoil": "Shatterfoil Rare",
+	"Star Foil":      "Starfoil Rare",
+	"Shatterfoil":    "Shatterfoil Rare",
+	"Collector Rare": "Collector's Rare",
 }
 
 // catalogRarity answers the catalog's name for a rarity the storefront

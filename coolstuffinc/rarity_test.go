@@ -2,7 +2,7 @@ package coolstuffinc
 
 import "testing"
 
-// TestCatalogRarity pins the two spellings the storefront and the catalog
+// TestCatalogRarity pins the spellings the storefront and the catalog
 // disagree on. Everything else passes through, so a rarity the storefront
 // adds later reaches the matcher as written rather than being swallowed.
 func TestCatalogRarity(t *testing.T) {
@@ -13,6 +13,8 @@ func TestCatalogRarity(t *testing.T) {
 			"Star Foil", "Starfoil Rare"},
 		{"and drops the tier on shatterfoil too",
 			"Shatterfoil", "Shatterfoil Rare"},
+		{"and drops the possessive the catalog keeps on collector's",
+			"Collector Rare", "Collector's Rare"},
 		{"a rarity both spell alike passes through", "Mosaic Rare", "Mosaic Rare"},
 		{"so does the plainest one", "Common", "Common"},
 		{"and one neither has ever printed", "Quarter Century Secret Rare", "Quarter Century Secret Rare"},
