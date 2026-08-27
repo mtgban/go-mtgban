@@ -16,6 +16,23 @@ var reJapanese = regexp.MustCompile(`[\p{Hiragana}\p{Katakana}\p{Han}]`)
 var reCardName = regexp.MustCompile(`《([^》]+)》`)
 var reThick = regexp.MustCompile(`【([^】]+)】`)
 
+// dashSuffix reads the tag the storefront appends to a set code. "-RT" names
+// the timeshifted reprints, which are a set of their own and numbered as one.
+// Every other tag describes the frame or the booster a card came out of,
+// which the collector number in the title already pins down, so they are
+// dropped as they always were.
+//
+// The tempting generalisation is "-P" onto the set's promo set. It was tried
+// and measured: those listings carry the base set's collector number, and the
+// promo sets number differently, so it lost 51 rows and moved 151 more while
+// gaining none.
+func dashSuffix(base, suffix string) string {
+	if suffix == "RT" && base == "MH1" {
+		return "H1R"
+	}
+	return base
+}
+
 // splitParens separates the parenthesised groups of a title into the collector
 // number, which comes before the card name, and the series, which comes after
 // it. A trailing group only counts as a series when it spells a set name
@@ -77,7 +94,9 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 				edition = match[1]
 			}
 		}
-		edition = strings.Split(edition, "-")[0]
+		if base, suffix, found := strings.Cut(edition, "-"); found {
+			edition = dashSuffix(base, suffix)
+		}
 	}
 
 	// Variant is always found in the English line
@@ -104,6 +123,19 @@ func Preprocess(product Product) (*mtgmatcher.InputCard, error) {
 	}
 
 	switch edition {
+	case "4ED":
+		// Announced in the English name here, where the Japanese line
+		// announces it in the group the finish otherwise occupies.
+		if strings.Contains(product.ProductNameEN, "【Alternate】") {
+			edition = "4EDALT"
+		}
+	case "Ampersand PROMOS":
+		// The retail side never sees the Japanese marker: the English name
+		// overrides it before this runs.
+		if number != "" {
+			edition = "PAFR"
+			variant = number + "a"
+		}
 	case "Judge Foil":
 		if mtgmatcher.IsBasicLand(cardName) && strings.Contains(product.ProductNameEN, "Jacinto") {
 			edition = "P23"
@@ -206,7 +238,9 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	matches = reBrackets.FindStringSubmatch(title)
 	if len(matches) > 1 {
 		edition = matches[1]
-		edition = strings.Split(edition, "-")[0]
+		if base, suffix, found := strings.Cut(edition, "-"); found {
+			edition = dashSuffix(base, suffix)
+		}
 	}
 
 	// (168) and (Junior Super Series)
@@ -231,6 +265,15 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 				variant += " "
 			}
 			variant += "Etched Foil"
+		}
+		// The alternate printing is announced where the finish would be,
+		// and carries the same set tag and number as the printing it is an
+		// alternate of, so nothing else in the title tells them apart.
+		if matches[1] == "アルターネイト版" {
+			if variant != "" {
+				variant += " "
+			}
+			variant += "Alternate"
 		}
 	}
 
@@ -298,6 +341,15 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		variant += " Serialized"
 	} else if edition == "4ED" && variant == "Alternate" {
 		edition = "4EDALT"
+	} else if strings.Contains(title, "アンパサンド") && number != "" {
+		// The ampersand card reprints another at its own number, and the
+		// promo set is where the two are kept apart: every one of them is
+		// the base number with an "a" behind it, and they are the only
+		// numbers in that set spelled that way. Without a number there is
+		// nothing to suffix, and the promo set numbers the same card three
+		// ways, so a listing that gives none is left where it was.
+		edition = "PAFR"
+		variant = number + "a"
 	} else if variant == "Double Rainbow Foil" && cardName != "Sol Ring" {
 		variant += " Serialized"
 	}

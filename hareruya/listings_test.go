@@ -83,3 +83,21 @@ func TestListingsFor(t *testing.T) {
 		t.Errorf("the page totals %d, want %d", all, want)
 	}
 }
+
+// TestDashSuffix pins which appended tag names a set of its own. Only the
+// timeshifted reprints do; the rest describe a frame or a booster, which the
+// collector number in the title already says.
+func TestDashSuffix(t *testing.T) {
+	for _, tt := range []struct{ base, suffix, want string }{
+		{"MH1", "RT", "H1R"},
+		{"MH1", "BF", "MH1"},
+		{"MH2", "RT", "MH2"},
+		{"NPH", "P", "NPH"},
+		{"VOW", "GF", "VOW"},
+		{"MID", "SF", "MID"},
+	} {
+		if got := dashSuffix(tt.base, tt.suffix); got != tt.want {
+			t.Errorf("dashSuffix(%q, %q) = %q, want %q", tt.base, tt.suffix, got, tt.want)
+		}
+	}
+}
