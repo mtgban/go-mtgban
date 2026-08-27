@@ -111,9 +111,16 @@ jobs:
             echo "attempt $attempt: HTTP $code"
             head -c 2000 ping-response 2>/dev/null || true; echo
 
-            if [ "$code" = "200" ] && jq -e 'select(.status=="ok")' ping-response > /dev/null 2>&1; then
-              exit 0
-            fi
+            # Any 2xx is the request being taken. The reload runs on the
+            # server's own time and answers 202 the moment it starts, so
+            # waiting for a 200 here waits for something that never comes.
+            case "$code" in
+            2*)
+              if jq -e 'select(.status=="ok")' ping-response > /dev/null 2>&1; then
+                exit 0
+              fi
+              ;;
+            esac
 
             if [ "$attempt" != "3" ]; then
               sleep 60
@@ -123,5 +130,5 @@ jobs:
           # Say what the server answered. Handing an HTML error page to jq
           # reports a parse error, which reads like a broken build rather
           # than the outage it is.
-          echo "::error::$GAME.mtgban.com did not reload the datastore after 3 attempts (last status ${code:-none}); the upload to B2 succeeded, so re-run this job once the site is answering"
+          echo "::error::$GAME.mtgban.com did not take the reload request after 3 attempts (last status ${code:-none}); the upload to B2 succeeded, so re-run this job once the site is answering. Whether a reload the site accepted then finished is on its admin page, not here."
           exit 1
