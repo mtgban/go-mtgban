@@ -422,7 +422,7 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 		}
 	default:
 		// All the prerelease/promopack versions >= THB
-		if strings.HasSuffix(edition, ": Promos") {
+		if base, colon, promo := promoSetBase(edition); promo {
 			switch variation {
 			case "V.1":
 				variation = "Promo Pack"
@@ -430,9 +430,15 @@ func internalPreprocess(cardName, edition, variation, extra string) (string, str
 				variation = "Prerelease"
 			case "V.3":
 				variation = "Bundle"
-				edition = strings.TrimSuffix(edition, ": Promos")
+				edition = base
 			default:
-				if magic.HasPromoPackPrinting(cardName) {
+				// Where the store spelled the colon this has stamped over
+				// whatever the listing said for as long as it has existed.
+				// The spelling without one is new here, and only takes a
+				// listing that said nothing: the version tags the older
+				// sets carry are read from the image name further down, and
+				// a stamp would take them before they get there.
+				if (colon || variation == "") && magic.HasPromoPackPrinting(cardName) {
 					variation = "Promo Pack"
 				}
 			}
@@ -545,6 +551,37 @@ var genericVersionRe = regexp.MustCompile(`(?i)^version\s*[0-9]+$`)
 // hasPromoPack reports whether the card was ever printed in a promo pack. It
 // walks the card's own printings because the name-keyed lookup answers false
 // for a double-faced card the store names by its front face alone.
+// promoSetBase answers the set a promo edition decorates, and whether the
+// edition names one at all. The store spells the same thing both ways - with
+// the colon its own set list uses, and without it - so the colon cannot be
+// what decides.
+//
+// Without it, the words in front of "Promos" have to name an expansion the
+// promos could decorate. Two things they must not name. An edition that names
+// an event has no expansion behind it at all ("Game Day Promos", "Judge
+// Rewards Promos"), and the branch below would stamp a promo pack on every
+// card that has one anywhere. And an edition naming a promo set is already
+// where its cards live ("San Diego Comic-Con 2013 Promos"), so decorating it
+// again sends them somewhere else.
+//
+// The name is compared exactly rather than through Normalize, which drops a
+// standalone "s": "Store Championship" would otherwise reach the promo set
+// spelled "Store Championships" and take the Game Day cards with it.
+func promoSetBase(edition string) (base string, colon bool, ok bool) {
+	if base, found := strings.CutSuffix(edition, ": Promos"); found {
+		return base, true, true
+	}
+	base, found := strings.CutSuffix(edition, " Promos")
+	if !found {
+		return "", false, false
+	}
+	set, err := mtgmatcher.GetSetByName(base)
+	if err != nil || !strings.EqualFold(set.Name, base) || set.Type == "promo" {
+		return "", false, false
+	}
+	return base, false, true
+}
+
 func hasPromoPack(cardName string) bool {
 	if magic.HasPromoPackPrinting(cardName) {
 		return true
