@@ -365,6 +365,9 @@ func regenerateLorcanaTestData(t *testing.T, b *mtgmatcher.Backend, tests []matc
 	}
 	defer out.Close()
 	enc := json.NewEncoder(out)
+	// The committed file spells "&" as itself, so the ampersand in two
+	// card names does not churn into an escape on every regeneration.
+	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "    ")
 	if err := enc.Encode(tests); err != nil {
 		t.Fatal(err)
