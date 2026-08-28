@@ -392,11 +392,7 @@ var options = map[string]*scraperOption{
 			scraper.Partner = os.Getenv("MINT_PARTNER")
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-			if err != nil {
-				return nil, err
-			}
-			skuReader, err := simplecloud.InitReader(context.Background(), skuBucket, tcgSKUPath)
+			skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -516,11 +512,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-			if err != nil {
-				return nil, err
-			}
-			skuReader, err := simplecloud.InitReader(context.Background(), skuBucket, tcgSKUPath)
+			skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -556,11 +548,7 @@ var options = map[string]*scraperOption{
 			}
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-			if err != nil {
-				return nil, err
-			}
-			skuReader, err := simplecloud.InitReader(context.Background(), skuBucket, tcgSKUPath)
+			skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -587,11 +575,7 @@ var options = map[string]*scraperOption{
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 
 			start := time.Now()
-			skuBucket, err := initializeBucket(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-			if err != nil {
-				return nil, err
-			}
-			skuReader, err := simplecloud.InitReader(context.Background(), skuBucket, tcgSKUPath)
+			skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
 			if err != nil {
 				return nil, err
 			}
@@ -1976,6 +1960,30 @@ func (h *HTTPBucket) NewWriter(ctx context.Context, path string) (io.WriteCloser
 	return nil, errors.New("an http bucket cannot be written to")
 }
 
+// concurrentDownloads is how many ranged parts B2 is asked for at once.
+const concurrentDownloads = 20
+
+// openPath reads the object at path, resolving the scheme the same way
+// initializeBucket does and taking the same trailing environment values:
+// one names a GCS service account, two are a B2 key pair. Reading needs no
+// bucket of its own, so a path that is only ever read goes through here
+// rather than being built into one first.
+func openPath(path string, env ...string) (io.ReadCloser, error) {
+	opts := []simplecloud.OpenOption{
+		simplecloud.WithHTTPClient(cleanhttp.DefaultClient()),
+		simplecloud.WithConcurrentDownloads(concurrentDownloads),
+		simplecloud.WithS3Credentials(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY")),
+		simplecloud.WithS3Endpoint(os.Getenv("AWS_ENDPOINT")),
+	}
+	if len(env) > 0 {
+		opts = append(opts, simplecloud.WithGCSServiceAccount(env[0]))
+	}
+	if len(env) > 1 {
+		opts = append(opts, simplecloud.WithB2Credentials(env[0], env[1]))
+	}
+	return simplecloud.Open(context.Background(), path, opts...)
+}
+
 func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter, error) {
 	u, err := url.Parse(outputPath)
 	if err != nil {
@@ -2017,7 +2025,7 @@ func initializeBucket(outputPath string, env ...string) (simplecloud.ReadWriter,
 		if err != nil {
 			return nil, err
 		}
-		b2Bucket.ConcurrentDownloads = 20
+		b2Bucket.ConcurrentDownloads = concurrentDownloads
 		bucket = b2Bucket
 	case "s3":
 		accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
