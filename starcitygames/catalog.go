@@ -44,6 +44,7 @@ type CatalogProduct struct {
 	Finish          string           `json:"finish"`
 	FinishGroup     string           `json:"finish_group"`
 	Language        string           `json:"language"`
+	Rarity          string           `json:"rarity"`
 	CollectorNumber string           `json:"collector_number"`
 	Variants        []CatalogVariant `json:"variants"`
 }
@@ -472,7 +473,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 	if game == GameFleshAndBlood {
 		edition, finish := fabPrintRun(p.Set, p.Finish)
 		numbers := fabNumbers(p.SKU)
-		id, err := fabMatch(p.Name, edition, finish, foil, numbers)
+		id, err := fabMatch(p.Name, edition, finish, p.Rarity, foil, numbers)
 		if err == nil {
 			return id, nil
 		}
@@ -486,7 +487,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		// flatten them onto the ordinary single.
 		front, _, twoFaced := strings.Cut(p.Name, " // ")
 		if twoFaced && fabSingleNumbered(p.SKU) {
-			retry, rerr := fabMatch(front, edition, finish, foil, numbers)
+			retry, rerr := fabMatch(front, edition, finish, p.Rarity, foil, numbers)
 			if rerr == nil {
 				return retry, nil
 			}
@@ -724,9 +725,21 @@ func soleSibling(candidates []*mtgmatcher.CardObject) *mtgmatcher.CardObject {
 
 // fabMatch answers the first printing one of the sku's collector numbers
 // names under the given name, the candidates running most specific first.
-func fabMatch(name, edition, finish string, foil bool, numbers []string) (string, error) {
+// fabTiers are the rarities that name a printing rather than describe one.
+// A marvel is a separate product sharing its card's number and treatment, so
+// a listing that does not say which of the two it is has not been told apart:
+// the catalog sells the Dynasty marvel of Construct Nitro Mechanoid beside
+// the ordinary cold foil at DYN092, and only this word divides them.
+var fabTiers = map[string]bool{
+	"Marvel": true,
+}
+
+func fabMatch(name, edition, finish, rarity string, foil bool, numbers []string) (string, error) {
 	var err error
 	for _, number := range numbers {
+		if fabTiers[rarity] {
+			number = strings.TrimSpace(number + " " + rarity)
+		}
 		var id string
 		id, err = mtgmatcher.Match(&mtgmatcher.InputCard{
 			Name:      name,
