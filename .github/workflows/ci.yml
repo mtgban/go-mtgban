@@ -394,7 +394,7 @@ jobs:
         env:
           RIFTBOUND_PATH: "${{ github.workspace }}/${{ needs.cache-riftbound.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/riftbound/... -v
+          go test ./mtgmatcher/riftbound/... ./vegassingles/... -v
 
   test-onepiece:
     needs: cache-onepiece
@@ -429,7 +429,7 @@ jobs:
         env:
           ONEPIECE_PATH: "${{ github.workspace }}/${{ needs.cache-onepiece.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/onepiece/... -v
+          go test ./mtgmatcher/onepiece/... ./vegassingles/... -v
 
   test-yugioh:
     needs: cache-yugioh
@@ -534,7 +534,7 @@ jobs:
         env:
           POKEMON_PATH: "${{ github.workspace }}/${{ needs.cache-pokemon.outputs.filepath }}"
         run: |
-          go test ./mtgmatcher/pokemon/... -v
+          go test ./mtgmatcher/pokemon/... ./vegassingles/... -v
 
   # The one check master's branch protection requires, kept as a name rather
   # than as work: it fans the per-game jobs back into a single verdict. It has

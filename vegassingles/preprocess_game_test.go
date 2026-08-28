@@ -2,6 +2,7 @@ package vegassingles
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"testing"
@@ -15,27 +16,40 @@ import (
 // of a product resolves to before preferring it, so its tests need the real
 // one. The other games' preprocessors read the display name alone.
 func TestMain(m *testing.M) {
-	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
-	if allprintingsPath == "" {
-		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
+	// Install it where a run carries one and run the rest of the package
+	// where it does not: this scraper is scheduled for Riftbound, One Piece
+	// and Pokemon, each of which runs under a job holding its own datastore
+	// and not AllPrintings. Refusing the package for want of the Magic file
+	// left those three games with no run at all.
+	if err := installMagic(); err != nil {
+		log.Println("skipping the Magic tests:", err)
 	}
+	os.Exit(m.Run())
+}
 
-	reader, err := datastore.Open(allprintingsPath)
+func installMagic() error {
+	path := os.Getenv("ALLPRINTINGS5_PATH")
+	if path == "" {
+		return errors.New("ALLPRINTINGS5_PATH is not set")
+	}
+	reader, err := datastore.Open(path)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	defer reader.Close()
 
 	ds, err := magic.Load(reader)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	mtgmatcher.SetGlobalDatastore(ds)
-
-	os.Exit(m.Run())
+	magicInstalled = true
+	return nil
 }
 
 func TestPreprocessMagic(t *testing.T) {
+	withMagic(t)
+
 	for _, tt := range []struct {
 		display   string
 		set       string
@@ -132,6 +146,8 @@ func TestPreprocessMagicFinish(t *testing.T) {
 // Etched is said only in the display name, in two spellings, and it rides in
 // the variation because that is the only place the matcher reads it from.
 func TestPreprocessMagicEtched(t *testing.T) {
+	withMagic(t)
+
 	for _, tt := range []struct {
 		display   string
 		set       string
@@ -317,6 +333,8 @@ func TestFlexibleSetField(t *testing.T) {
 // and the letter behind an Unstable variant both fall off it, and the two
 // printings then answer to one number.
 func TestPreprocessMagicSpelledNumber(t *testing.T) {
+	withMagic(t)
+
 	for _, tt := range []struct {
 		display   string
 		number    int
@@ -350,6 +368,8 @@ func TestPreprocessMagicSpelledNumber(t *testing.T) {
 // TestPreprocessMagicWording pins the name a display name really states and
 // the wording standing beside it. Cutting at the first bracket loses both.
 func TestPreprocessMagicWording(t *testing.T) {
+	withMagic(t)
+
 	for _, tt := range []struct {
 		display   string
 		setName   string
@@ -395,6 +415,8 @@ func TestPreprocessMagicWording(t *testing.T) {
 // with none, the prose reading of the edition aliases and the storefront's
 // own code stands as the edition, which names no set at all.
 func TestPreprocessMagicSlashedNumber(t *testing.T) {
+	withMagic(t)
+
 	for _, tt := range []struct {
 		display   string
 		setName   string
@@ -442,6 +464,8 @@ func TestCardTable(t *testing.T) {
 // the code "mh1" and the name "Modern Horizons", both of which are the parent -
 // so the display name's own tail is the only thing that does.
 func TestPreprocessMagicSubset(t *testing.T) {
+	withMagic(t)
+
 	for _, tt := range []struct {
 		display string
 		set     string
