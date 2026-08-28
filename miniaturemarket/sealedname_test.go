@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/fleshandblood"
@@ -118,7 +119,7 @@ func TestResolveListing(t *testing.T) {
 	if path == "" {
 		t.Skip("LORCANA_PATH not set")
 	}
-	if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
+	if err := datastore.Load(path); err != nil {
 		t.Fatal(err)
 	}
 
@@ -239,7 +240,7 @@ func TestResolveByNamedCard(t *testing.T) {
 	if path == "" {
 		t.Skip("FLESHANDBLOOD_PATH not set")
 	}
-	if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
+	if err := datastore.Load(path); err != nil {
 		t.Fatal(err)
 	}
 
@@ -269,7 +270,7 @@ func TestResolveListingKeepsTheResolvedAnswer(t *testing.T) {
 	if path == "" {
 		t.Skip("FLESHANDBLOOD_PATH not set")
 	}
-	if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
+	if err := datastore.Load(path); err != nil {
 		t.Fatal(err)
 	}
 

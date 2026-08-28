@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -19,7 +20,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln("Need ALLPRINTINGS5_PATH variable set to run tests")
 	}
 
-	reader, err := os.Open(allprintingsPath)
+	reader, err := datastore.Open(allprintingsPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
