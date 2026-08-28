@@ -619,6 +619,26 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 			break
 		}
 	}
+	// A letter hung off the end of a number the catalog carries without one
+	// is the storefront's own marker for a printing it prices apart:
+	// Strikezone numbers the Master Ball patterns "074M" beside the plain
+	// "074", and the run-marked reprints "001A". The number as written is
+	// asked first and every time, so the stripped form only ever answers
+	// where the written one reached nothing, and the label tier below is
+	// what picks the marked printing out of the ones it reaches.
+	if len(candidates) == 0 {
+		for _, number0 := range slices.Backward(numbers) {
+			bare := strings.TrimRight(number0, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+			if bare == "" || bare == number0 {
+				continue
+			}
+			number = bare
+			candidates = filterByNumber(b, inCard, cardSet, bare)
+			if len(candidates) > 0 {
+				break
+			}
+		}
+	}
 	// The unnumbered pass answers only for a wording that wrote no number
 	// at all: any number the wording did write overwrites it on the loop's
 	// first turn, kept or not.
