@@ -148,7 +148,10 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 
 	// Process retail variants (from variant_info)
 	for _, variant := range product.RetailVariantInfo {
-		if variant.Price == 0 {
+		// A condition the store holds none of is not on sale whatever number
+		// hangs off it: Add() treats a zero quantity as unsaid and writes 1,
+		// so the row would be published as a copy in stock.
+		if variant.Price == 0 || variant.InventoryQuantity < 1 {
 			continue
 		}
 
