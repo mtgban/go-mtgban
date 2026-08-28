@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -16,7 +17,7 @@ import (
 // says so when it cannot.
 func TestMain(m *testing.M) {
 	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
-		if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
+		if err := datastore.Load(path); err != nil {
 			log.Fatalln(err)
 		}
 	}

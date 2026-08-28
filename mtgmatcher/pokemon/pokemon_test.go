@@ -5,6 +5,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -14,7 +15,7 @@ func loadBackend(t *testing.T) *mtgmatcher.Backend {
 	if path == "" {
 		t.Skip("POKEMON_PATH not set; skipping Pokemon suite")
 	}
-	f, err := os.Open(path)
+	f, err := datastore.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}

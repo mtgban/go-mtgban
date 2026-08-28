@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -14,7 +15,7 @@ import (
 // package's tests read no cards, so a checkout without it still runs them.
 func TestMain(m *testing.M) {
 	if path := os.Getenv("ALLPRINTINGS5_PATH"); path != "" {
-		if err := mtgmatcher.LoadDatastoreFile(path); err != nil {
+		if err := datastore.Load(path); err != nil {
 			log.Fatalln(err)
 		}
 	}

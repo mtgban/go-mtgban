@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -22,7 +23,7 @@ func TestBuildProductMap(t *testing.T) {
 	if datastorePath == "" {
 		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
 	}
-	reader, err := os.Open(datastorePath)
+	reader, err := datastore.Open(datastorePath)
 	if err != nil {
 		t.Fatal(err)
 	}
