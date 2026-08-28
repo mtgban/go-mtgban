@@ -616,17 +616,6 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"vegassingles": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := vegassingles.NewScraper(vegassingles.GameMagic)
-			scraper.LogCallback = GlobalLogCallback
-			if MaxConcurrency != 0 {
-				scraper.MaxConcurrency = MaxConcurrency
-			}
-			return scraper, nil
-		},
-	},
-
 	"cardmarket_lorcana": {
 		Init: func() (mtgban.Scraper, error) {
 			mkmAppToken := os.Getenv("MKM_APP_TOKEN")
