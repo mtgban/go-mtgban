@@ -34,6 +34,8 @@ func entombFoil() VSProduct {
 // is never published. Every variant here has no stock, which is the ordinary
 // case for this storefront: it is a buylist that keeps a priced catalog.
 func TestOutOfStockIsNotForSale(t *testing.T) {
+	withMagic(t)
+
 	vs := NewScraper(GameMagic)
 	if err := vs.processProduct(entombFoil()); err != nil {
 		t.Fatal(err)
@@ -64,6 +66,8 @@ func TestOutOfStockIsNotForSale(t *testing.T) {
 // game the scraper reads, not one Heavily Played or Damaged row has stock -
 // so they are unreachable rather than filtered.
 func TestStockedRowsSurvive(t *testing.T) {
+	withMagic(t)
+
 	product := entombFoil()
 	product.RetailVariantInfo[0].InventoryQuantity = 2 // Near Mint
 	product.RetailVariantInfo[3].InventoryQuantity = 1 // Heavily Played
@@ -98,6 +102,8 @@ func TestStockedRowsSurvive(t *testing.T) {
 // bid on both - 255 of 264 Heavily Played rows and 228 of 264 Damaged ones,
 // measured against the live feed - and only the ones bidding nothing drop out.
 func TestBuylistKeepsTheLowerConditions(t *testing.T) {
+	withMagic(t)
+
 	product := entombFoil()
 	product.VariantInfo[3].OfferPrice = 149.99 // Heavily Played, bid on
 	product.VariantInfo[4].OfferPrice = 99.99  // Damaged, bid on
@@ -121,5 +127,155 @@ func TestBuylistKeepsTheLowerConditions(t *testing.T) {
 		if got[cond] != price {
 			t.Errorf("%s bid is $%.2f, want $%.2f", cond, got[cond], price)
 		}
+	}
+}
+
+// ahriFoil is the Riftbound listing as the storefront answers for it, and the
+// shape the guard exists for: two grades on the shelf and one only priced.
+func ahriFoil() VSProduct {
+	return VSProduct{
+		ID:             "riftbound-ahri",
+		ProductID:      1,
+		DisplayName:    "Ahri - Alluring (Alternate Art) (066a/298) - Origins Foil",
+		SelectedFinish: "Foil",
+		ProductData:    VSProductData{SetName: "Origins"},
+		Price:          8,
+		OfferPrice:     4,
+		VariantInfo: []VSVariant{
+			{ID: 1, Title: "Near Mint", OfferPrice: 4},
+			{ID: 2, Title: "Lightly Played", OfferPrice: 3.4},
+			{ID: 3, Title: "Moderately Played", OfferPrice: 2.8},
+		},
+		RetailVariantInfo: []VSRetailVariant{
+			{ID: 1, Title: "Near Mint", Price: 8, SKU: "RB-1", InventoryQuantity: 1},
+			{ID: 2, Title: "Lightly Played", Price: 6.8, SKU: "RB-2", InventoryQuantity: 1},
+			{ID: 3, Title: "Moderately Played", Price: 5.6, SKU: "RB-3"},
+		},
+	}
+}
+
+// TestRiftboundStock runs the guard against a game this scraper is actually
+// scheduled for. The Magic cases above cover the same code, but Magic is no
+// longer a target, so a run that only had those was a run proving nothing
+// about what ships.
+func TestRiftboundStock(t *testing.T) {
+	withRiftbound(t)
+
+	vs := NewScraper(GameRiftbound)
+	if err := vs.processProduct(ahriFoil()); err != nil {
+		t.Fatal(err)
+	}
+
+	got := map[string]float64{}
+	for _, entries := range vs.Inventory() {
+		for _, entry := range entries {
+			got[entry.Conditions] = entry.Price
+		}
+	}
+	want := map[string]float64{"NM": 8, "SP": 6.8}
+	if len(got) != len(want) {
+		t.Fatalf("published %v, want the two grades on the shelf", got)
+	}
+	for cond, price := range want {
+		if got[cond] != price {
+			t.Errorf("%s published at $%.2f, want $%.2f", cond, got[cond], price)
+		}
+	}
+
+	// The bid on the grade with no stock is still worth reading: the store
+	// buys what it does not sell.
+	var bids int
+	for _, entries := range vs.Buylist() {
+		bids += len(entries)
+	}
+	if bids != 3 {
+		t.Errorf("buylist holds %d entries, want all three bids", bids)
+	}
+}
+
+// TestOnePieceStock and TestPokemonStock cover the other two scheduled games
+// off listings read from the storefront, so each game the scraper ships for
+// has a run that reaches the records rather than stopping at the name.
+func TestOnePieceStock(t *testing.T) {
+	withOnePiece(t)
+
+	product := VSProduct{
+		ID:             "onepiece-ace",
+		ProductID:      2,
+		DisplayName:    "Ace & Sabo & Luffy (Alternate Art) (OP13-007) - Carrying On His Will Foil",
+		SelectedFinish: "Foil",
+		Price:          28,
+		OfferPrice:     18.2,
+		VariantInfo: []VSVariant{
+			{ID: 1, Title: "Near Mint", OfferPrice: 18.2},
+			{ID: 2, Title: "Lightly Played", OfferPrice: 15.6},
+		},
+		RetailVariantInfo: []VSRetailVariant{
+			{ID: 1, Title: "Near Mint", Price: 28, SKU: "OP-1", InventoryQuantity: 3},
+			{ID: 2, Title: "Lightly Played", Price: 24, SKU: "OP-2"},
+		},
+	}
+
+	vs := NewScraper(GameOnePiece)
+	if err := vs.processProduct(product); err != nil {
+		t.Fatal(err)
+	}
+	assertOnlyStocked(t, vs, map[string]float64{"NM": 28}, 2)
+}
+
+func TestPokemonStock(t *testing.T) {
+	withPokemon(t)
+
+	product := VSProduct{
+		ID:          "pokemon-az",
+		ProductID:   3,
+		DisplayName: "AZ's Tranquility 120/086  - Holofoil ME04 Chaos Rising - Special Illustration Rare",
+		Price:       27,
+		OfferPrice:  16.2,
+		VariantInfo: []VSVariant{
+			{ID: 1, Title: "Near Mint", OfferPrice: 16.2},
+			{ID: 2, Title: "Lightly Played", OfferPrice: 15},
+			{ID: 3, Title: "Heavily Played", OfferPrice: 11.4},
+		},
+		RetailVariantInfo: []VSRetailVariant{
+			{ID: 1, Title: "Near Mint", Price: 27, SKU: "PK-1", InventoryQuantity: 13},
+			{ID: 2, Title: "Lightly Played", Price: 25, SKU: "PK-2"},
+			// Priced sanely against the Near Mint beside it, unlike the Magic
+			// placeholders, and still not on sale for want of stock.
+			{ID: 3, Title: "Heavily Played", Price: 19, SKU: "PK-3"},
+		},
+	}
+
+	vs := NewScraper(GamePokemon)
+	if err := vs.processProduct(product); err != nil {
+		t.Fatal(err)
+	}
+	assertOnlyStocked(t, vs, map[string]float64{"NM": 27}, 3)
+}
+
+// assertOnlyStocked checks that the inventory holds exactly the grades on the
+// shelf at the prices asked for them, and that the buylist is untouched.
+func assertOnlyStocked(t *testing.T, vs *Vegassingles, want map[string]float64, bids int) {
+	t.Helper()
+	got := map[string]float64{}
+	for _, entries := range vs.Inventory() {
+		for _, entry := range entries {
+			got[entry.Conditions] = entry.Price
+		}
+	}
+	if len(got) != len(want) {
+		t.Fatalf("published %v, want %v", got, want)
+	}
+	for cond, price := range want {
+		if got[cond] != price {
+			t.Errorf("%s published at $%.2f, want $%.2f", cond, got[cond], price)
+		}
+	}
+	var n int
+	for _, entries := range vs.Buylist() {
+		n += len(entries)
+	}
+	if n != bids {
+		t.Errorf("buylist holds %d entries, want %d", n, bids)
 	}
 }
