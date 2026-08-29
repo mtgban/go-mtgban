@@ -117,7 +117,7 @@ func LoadTCGSKUs(reader io.Reader) (SKUMap, error) {
 
 const (
 	// SYPCSVURL serves the Store Your Products list as a CSV
-	SYPCSVURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList?categoryid=1&setNameId=All&conditionId=All"
+	SYPCSVURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList"
 )
 
 // TCGSYP is one entry of the Store Your Products list.
@@ -128,8 +128,19 @@ type TCGSYP struct {
 }
 
 // LoadSYP downloads the Store Your Products list as a CSV.
-func LoadSYP(ctx context.Context, auth string) ([]TCGSYP, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, SYPCSVURL, http.NoBody)
+func LoadSYP(ctx context.Context, category int, auth string) ([]TCGSYP, error) {
+	u, err := url.Parse(SYPCSVURL)
+	if err != nil {
+		return nil, err
+	}
+
+	v := url.Values{}
+	v.Set("categoryid", fmt.Sprint(category))
+	v.Set("setNameId", "All")
+	v.Set("conditionId", "All")
+	u.RawQuery = v.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return nil, err
 	}

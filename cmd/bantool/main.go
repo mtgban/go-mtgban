@@ -570,7 +570,12 @@ var options = map[string]*scraperOption{
 			if tcgAuth == "" || tcgSKUPath == "" {
 				return nil, errors.New("missing TCGPLAYER_AUTH or MTGJSON_TCGSKU_PATH env var")
 			}
-			scraper := tcgplayer.NewScraperSYP(tcgAuth)
+
+			scraper, err := tcgplayer.NewScraperSYP(mtgban.GameMagic, tcgAuth)
+			if err != nil {
+				return nil, err
+			}
+
 			scraper.LogCallback = GlobalLogCallback
 			scraper.Affiliate = os.Getenv("TCG_PARTNER")
 

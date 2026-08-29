@@ -9,6 +9,7 @@ import (
 
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
+	"github.com/mtgban/go-tcgplayer"
 )
 
 // TCGSYPList reads TCGplayer's Store Your Products, the list of cards they
@@ -18,6 +19,8 @@ type TCGSYPList struct {
 	Affiliate   string
 	SKUsData    SKUMap
 
+	game        string
+	category    int
 	auth        string
 	buylistDate time.Time
 	buylist     mtgban.BuylistRecord
@@ -29,12 +32,23 @@ func (tcg *TCGSYPList) printf(format string, a ...any) {
 	}
 }
 
-// NewScraperSYP returns a SYP scraper using the given authorization token.
-func NewScraperSYP(auth string) *TCGSYPList {
+// NewScraperSYP returns a SYP scraper using the given authorization token for
+// any supported game.
+func NewScraperSYP(game, auth string) (*TCGSYPList, error) {
 	tcg := TCGSYPList{}
+
+	switch game {
+	case mtgban.GameMagic:
+		tcg.category = tcgplayer.CategoryMagic
+	default:
+		return nil, errors.New("unsupported SYP game")
+	}
+
 	tcg.buylist = mtgban.BuylistRecord{}
 	tcg.auth = auth
-	return &tcg
+	tcg.game = game
+
+	return &tcg, nil
 }
 
 // Load fetches everything this scraper offers. See mtgban.Scraper.
@@ -54,7 +68,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 		}
 	}
 
-	sypList, err := LoadSYP(ctx, tcg.auth)
+	sypList, err := LoadSYP(ctx, tcg.category, tcg.auth)
 	if err != nil {
 		return err
 	}
@@ -113,5 +127,6 @@ func (tcg *TCGSYPList) Info() (info mtgban.ScraperInfo) {
 	info.BuylistTimestamp = &tcg.buylistDate
 	info.MetadataOnly = true
 	info.QuantityPriority = true
+	info.Game = tcg.game
 	return
 }
