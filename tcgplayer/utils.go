@@ -116,18 +116,18 @@ func LoadTCGSKUs(reader io.Reader) (SKUMap, error) {
 }
 
 const (
-	// SYPCSVURL serves the Sell Your Playset list as a CSV
+	// SYPCSVURL serves the Store Your Products list as a CSV
 	SYPCSVURL = "https://store.tcgplayer.com/admin/direct/ExportSYPList?categoryid=1&setNameId=All&conditionId=All"
 )
 
-// TCGSYP is one entry of the Sell Your Playset list.
+// TCGSYP is one entry of the Store Your Products list.
 type TCGSYP struct {
 	SkuID       int
 	MarketPrice float64
 	MaxQty      int
 }
 
-// LoadSyp downloads the Sell Your Playset list as a CSV.
+// LoadSyp downloads the Store Your Products list as a CSV.
 func LoadSyp(ctx context.Context, auth string) ([]TCGSYP, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, SYPCSVURL, http.NoBody)
 	if err != nil {

@@ -11,8 +11,8 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TCGSYPList reads TCGplayer's Sell Your Playset buylist, the prices they
-// themselves pay rather than any third-party vendor's.
+// TCGSYPList reads TCGplayer's Store Your Products, the list of cards they
+// can host for you and sell on Direct.
 type TCGSYPList struct {
 	LogCallback mtgban.LogCallbackFunc
 	Affiliate   string
