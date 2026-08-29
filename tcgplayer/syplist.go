@@ -54,7 +54,7 @@ func (tcg *TCGSYPList) Load(ctx context.Context) error {
 		}
 	}
 
-	sypList, err := LoadSyp(ctx, tcg.auth)
+	sypList, err := LoadSYP(ctx, tcg.auth)
 	if err != nil {
 		return err
 	}

@@ -127,8 +127,8 @@ type TCGSYP struct {
 	MaxQty      int
 }
 
-// LoadSyp downloads the Store Your Products list as a CSV.
-func LoadSyp(ctx context.Context, auth string) ([]TCGSYP, error) {
+// LoadSYP downloads the Store Your Products list as a CSV.
+func LoadSYP(ctx context.Context, auth string) ([]TCGSYP, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, SYPCSVURL, http.NoBody)
 	if err != nil {
 		return nil, err
