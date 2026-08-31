@@ -568,6 +568,29 @@ func (mkm *Index) processProduct(channel chan<- responseChan, product *MKMProduc
 
 		cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
 	case GameLorcana, GameRiftbound, GameOnePiece:
+		// One Piece sells one card under several printings that share a
+		// collector number - the alternate arts a V-index stands in for,
+		// and the promo shelves that reprint a booster card at its own
+		// number - and the catalog says which only by an index whose
+		// order is its own. The bridge says it outright: cardtrader links
+		// the product to a TCGplayer id, and the id names one printing.
+		//
+		// It answers first, and what it does not know the catalog still
+		// names below. The bridge speaks through cardtrader's blueprints
+		// and so knows only part of the shelf.
+		if mkm.gameID == GameOnePiece {
+			if tcgID, found := mkm.TCGBridge[product.IDProduct]; found {
+				if id, idErr := mtgmatcher.MatchID(fmt.Sprint(tcgID), false); idErr == nil {
+					cardID = id
+					cardIDFoil, _ = mtgmatcher.MatchID(cardID, true)
+					if mkm.offShelf(product, cardID) {
+						return errNoPrinting
+					}
+					break
+				}
+			}
+		}
+
 		fields := strings.SplitN(product.Name, " (V.", 2)
 		cardName := fields[0]
 		number := product.Number

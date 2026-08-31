@@ -184,7 +184,7 @@ var options = map[string]*scraperOption{
 		Init: cardmarketIndexScraper(cardmarket.GameLorcana),
 	},
 	"cardmarket_onepiece": {
-		Init: cardmarketIndexScraper(cardmarket.GameOnePiece),
+		Init: cardmarketOptionallyBridgedIndexScraper(cardmarket.GameOnePiece, cardtrader.GameOnePiece),
 	},
 	"cardmarket_pokemon": {
 		Init: cardmarketBridgedIndexScraper(cardmarket.GamePokemon, cardtrader.GamePokemon),
