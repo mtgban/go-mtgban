@@ -344,7 +344,11 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		// ways, so a listing that gives none is left where it was.
 		edition = "PAFR"
 		variant = number + "a"
-	} else if variant == "Double Rainbow Foil" && cardName != "Sol Ring" {
+	} else if strings.Contains(variant, doubleRainbow) && cardName != "Sol Ring" {
+		// The marker travels with whatever else the title says about the
+		// printing - its number, and the frame it is printed in - so the
+		// variant is only ever equal to it on a title that says nothing
+		// else, which the serialized listings do not.
 		variant += " Serialized"
 	}
 
@@ -378,6 +382,11 @@ var cardTable = map[string]string{
 //
 // Every entry was read off the storefront's own buylist: each marker below
 // appears there, and each names a promo type the catalog carries.
+// doubleRainbow is the treatment every serialized printing is sold in: of
+// the 289 printings the catalog files under it, 288 are serialized, and the
+// one that is not is the Sol Ring excepted below.
+const doubleRainbow = "Double Rainbow Foil"
+
 var treatmentTable = map[string]string{
 	"S&C・Foil":       "Step-and-Compleat Foil",
 	"エッチング・Foil":     "Etched Foil",
@@ -385,7 +394,7 @@ var treatmentTable = map[string]string{
 	"ギャラクシー・Foil":    "Galaxy Foil",
 	"コンフェッティ・Foil":   "Confetti Foil",
 	"サージ・Foil":       "Surge Foil",
-	"ダブルレインボウ・Foil":  "Double Rainbow Foil",
+	"ダブルレインボウ・Foil":  doubleRainbow,
 	"テクスチャー・Foil":    "Textured Foil",
 	"ドラゴンスケイル・Foil":  "Dragonscale Foil",
 	"ネオンインク・Foil":    "Neon Ink",
@@ -439,7 +448,7 @@ var editionTable = map[string]string{
 	"ショーダウン":              "Showdown",
 	"ジャッジ褒賞":              "Judge Rewards",
 	"スポットライトシリーズプロモ":      "Spotlight Series Promo",
-	"ダブルレインボウ・Foil":       "Double Rainbow Foil",
+	"ダブルレインボウ・Foil":       doubleRainbow,
 	"テキストボックスレス ゲームデー":    "PCMP",
 	"テキストレス Magic Fest":   "Textless Magic Fest",
 	"テキストレス 褒賞プログラム":      "Textless Player Rewards",
