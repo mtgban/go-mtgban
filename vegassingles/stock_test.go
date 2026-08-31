@@ -172,6 +172,8 @@ func TestRiftboundStock(t *testing.T) {
 			got[entry.Conditions] = entry.Price
 		}
 	}
+	// The shelf holds every grade the store stocks, whatever the line is
+	// bought in: the grades are a buylist setting and reach nothing here.
 	want := map[string]float64{"NM": 8, "SP": 6.8}
 	if len(got) != len(want) {
 		t.Fatalf("published %v, want the two grades on the shelf", got)
@@ -182,14 +184,13 @@ func TestRiftboundStock(t *testing.T) {
 		}
 	}
 
-	// The bid on the grade with no stock is still worth reading: the store
-	// buys what it does not sell.
 	var bids int
 	for _, entries := range vs.Buylist() {
 		bids += len(entries)
 	}
-	if bids != 3 {
-		t.Errorf("buylist holds %d entries, want all three bids", bids)
+	// Riftbound is bought in Near Mint alone, so the two bids below it go.
+	if bids != 1 {
+		t.Errorf("buylist holds %d entries, want the one bid the line is bought in", bids)
 	}
 }
 
@@ -220,6 +221,9 @@ func TestOnePieceStock(t *testing.T) {
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)
 	}
+	// One Piece is the line bought in a second grade, and the bid on the
+	// one with no stock is still worth reading: the store buys what it does
+	// not sell, wherever the line is bought in the grade at all.
 	assertOnlyStocked(t, vs, map[string]float64{"NM": 28}, 2)
 }
 
@@ -250,7 +254,9 @@ func TestPokemonStock(t *testing.T) {
 	if err := vs.processProduct(product); err != nil {
 		t.Fatal(err)
 	}
-	assertOnlyStocked(t, vs, map[string]float64{"NM": 27}, 3)
+	// Pokemon is bought in Near Mint alone like Riftbound, so the two bids
+	// below it go; the shelf holds what it holds either way.
+	assertOnlyStocked(t, vs, map[string]float64{"NM": 27}, 1)
 }
 
 // assertOnlyStocked checks that the inventory holds exactly the grades on the
