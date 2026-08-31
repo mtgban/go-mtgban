@@ -269,7 +269,7 @@ func (mc *Magiccorner) parseBL(ctx context.Context, channel chan<- resultChan, e
 				continue
 			}
 
-			theCard, err := preprocessBL(cardName, edition, product.ID)
+			theCard, err := preprocessBL(cardName, edition, product.ID, product.SerialNumber)
 			if err != nil {
 				continue
 			}

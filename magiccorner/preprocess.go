@@ -756,7 +756,12 @@ func namesTheArt(edition, extra string) bool {
 	return hasNumberedImage(edition) && imageNumber(extra) != ""
 }
 
-func preprocessBL(cardName, edition, extra string) (*mtgmatcher.InputCard, error) {
+// preprocessBL builds the card a buylist listing prices. The number is the
+// one the listing states outright, which is the only thing telling the
+// treatments of one card apart: the store publishes the same name for the
+// plain printing and every borderless or showcase sibling beside it, and
+// prices them separately.
+func preprocessBL(cardName, edition, extra string, number int) (*mtgmatcher.InputCard, error) {
 	variant := ""
 	if strings.Contains(edition, "(") {
 		vars := mtgmatcher.SplitVariants(edition)
@@ -776,6 +781,13 @@ func preprocessBL(cardName, edition, extra string) (*mtgmatcher.InputCard, error
 	lutName, found := editionTable[edition]
 	if found {
 		edition = lutName
+	}
+
+	// The wording the store hangs off the edition still speaks first: it
+	// names the printing where the number is the store's own rather than
+	// the catalog's, and a number saying the same thing costs nothing.
+	if number > 0 {
+		variant = strings.TrimSpace(variant + " " + strconv.Itoa(number))
 	}
 
 	return &mtgmatcher.InputCard{
