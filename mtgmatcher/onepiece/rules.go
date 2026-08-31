@@ -298,6 +298,19 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if promo := promoSetBegun(b, inCard); promo != "" {
 		edition = promo
 	}
+	// The same, for the sets a base set's event printings are filed in. A
+	// storefront that stocks one writes the event on the card and the base
+	// set in the edition field, so neither field names the event set alone:
+	// Cool Stuff Inc sells "(Super Pre-Release)" against an edition saying
+	// "Starter Deck: Straw Hat Crew", where the catalog files the printing
+	// in "Super Pre-Release Starter Deck 1: Straw Hat Crew". Reading the two
+	// together is the only thing that reaches it - an event printing wears
+	// no label of its own, so nothing but the set name tells it from the
+	// card it reprints, and the edition alone names that card.
+	event := eventSetNamed(b, inCard, edition)
+	if event != "" {
+		edition = event
+	}
 	inCard.Edition = edition
 
 	// PromoWildcard is the flag Match already reads to skip edition
@@ -308,6 +321,43 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	if variantPointedAt(b, inCard) {
 		inCard.PromoWildcard = true
 	}
+}
+
+// eventSetNamed answers the event set a listing's wording names when its
+// edition names that set's base, and "" when it names none or more than one.
+//
+// The catalog builds an event set's name on its base set's - "Super
+// Pre-Release Starter Deck 1: Straw Hat Crew" against "Starter Deck 1: Straw
+// Hat Crew" - so what is left once the base name is taken out is the marker
+// naming the event. The variation has to spell that marker whole: the
+// printings this chooses between share a name, a number and an empty label,
+// so a listing merely mentioning a word of the marker has said nothing that
+// tells them apart.
+func eventSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, base string) string {
+	if inCard.Variation == "" || base == "" {
+		return ""
+	}
+	var name string
+	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
+		co, found := b.UUIDs[uuid]
+		if !found || co.Sealed || !isEventSet(co.SetCode) {
+			continue
+		}
+		set, found := b.Sets[co.SetCode]
+		if !found || !mtgmatcher.Contains(set.Name, base) {
+			continue
+		}
+		marker := strings.ReplaceAll(strings.ToLower(set.Name), strings.ToLower(base), " ")
+		slug := mtgmatcher.PromoTypeSlug(marker)
+		if slug == "" || !mtgmatcher.SlugDescribes(inCard.Variation, slug) {
+			continue
+		}
+		if name != "" && name != set.Name {
+			return ""
+		}
+		name = set.Name
+	}
+	return name
 }
 
 // promoSetBegun answers the promotional set a listing's wording names by the

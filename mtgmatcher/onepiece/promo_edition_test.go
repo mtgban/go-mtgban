@@ -245,3 +245,81 @@ func TestSlugsRunOfShortenings(t *testing.T) {
 		})
 	}
 }
+
+// eventSetFixture mirrors the shape a starter deck's pre-release printing
+// has: filed in a set of its own whose name is the base set's with the event
+// written in front of it, sharing the base card's name, number and empty
+// label so nothing but the set name tells the two apart.
+//
+// The collector numbers, product ids and set names are the catalog's.
+const eventSetFixture = `{
+	"game": "onepiece",
+	"sets": {
+		"ST-01":     {"name": "Starter Deck 1: Straw Hat Crew", "releaseDate": "2022-12-02"},
+		"ST-01-PRE": {"name": "Super Pre-Release Starter Deck 1: Straw Hat Crew", "releaseDate": "2022-10-28"}
+	},
+	"cards": [
+		{"id": "st01-001_288228_foil", "name": "Monkey.D.Luffy", "number": "ST01-001", "setCode": "ST-01", "rarity": "L", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 288228}},
+		{"id": "st01-001_412113_foil", "name": "Monkey.D.Luffy", "number": "ST01-001", "setCode": "ST-01-PRE", "rarity": "L", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 412113}}
+	]
+}`
+
+// TestEventSetNamedByWording pins the reading of an event set a storefront
+// names across two fields: the event on the card and the base set in the
+// edition. Neither names the set on its own, and the edition alone is a
+// perfect match for the base set, so the base card answered a listing that
+// had said which printing it was - a $840 buy price filed on the card the
+// pre-release printing reprints.
+func TestEventSetNamedByWording(t *testing.T) {
+	b, err := Load(strings.NewReader(eventSetFixture))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		desc string
+		in   mtgmatcher.InputCard
+		want string
+	}{
+		{
+			desc: "the event written on the card reaches the set it is filed in",
+			in: mtgmatcher.InputCard{
+				Name: "Monkey.D.Luffy", Variation: "ST01-001 Super Pre-Release",
+				Edition: "ST01 - Starter Deck: Straw Hat Crew", Foil: true,
+			},
+			want: "st01-001_412113_foil",
+		},
+		{
+			desc: "a listing naming no event is the base printing",
+			in: mtgmatcher.InputCard{
+				Name: "Monkey.D.Luffy", Variation: "ST01-001",
+				Edition: "ST01 - Starter Deck: Straw Hat Crew", Foil: true,
+			},
+			want: "st01-001_288228_foil",
+		},
+		{
+			// The two printings are told apart by nothing but the set name,
+			// so a wording short of the whole marker has said nothing.
+			desc: "and so is one spelling the marker only in part",
+			in: mtgmatcher.InputCard{
+				Name: "Monkey.D.Luffy", Variation: "ST01-001 Pre-Release",
+				Edition: "ST01 - Starter Deck: Straw Hat Crew", Foil: true,
+			},
+			want: "st01-001_288228_foil",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			in := test.in
+			uuid, err := b.Match(&in)
+			if err != nil {
+				t.Fatalf("Match = %v, want %q", err, test.want)
+			}
+			if uuid != test.want {
+				co, _ := b.GetUUID(uuid)
+				t.Errorf("Match = %q (%v), want %q", uuid, co, test.want)
+			}
+		})
+	}
+}
