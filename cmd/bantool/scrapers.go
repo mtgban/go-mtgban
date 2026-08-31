@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 	"os"
 
 	"github.com/mtgban/go-mtgban/cardmarket"
@@ -52,6 +53,38 @@ func starcitygamesKey() (string, error) {
 		return "", errors.New("missing SCG_API_KEY env var")
 	}
 	return key, nil
+}
+
+// cardmarketOptionallyBridgedIndexScraper is the bridged scraper for a game
+// the bridge only improves. Where Yu-Gi-Oh and Flesh and Blood cannot name
+// half their catalog without it, One Piece names most of its shelf from the
+// catalog alone and asks the bridge for the printings a collector number
+// cannot tell apart. So a cardtrader that will not answer costs those
+// printings and nothing else, and the run goes ahead saying so rather than
+// failing and pricing nothing.
+func cardmarketOptionallyBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		appToken, appSecret, err := cardmarketCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
+		if err != nil {
+			return nil, err
+		}
+		bridge, err := cardtraderBridge(bridgedGame)
+		if err != nil {
+			log.Printf("bridge unavailable, naming what the catalog can on its own: %v", err)
+		} else {
+			scraper.TCGBridge = bridge
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MKM_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
 }
 
 func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
