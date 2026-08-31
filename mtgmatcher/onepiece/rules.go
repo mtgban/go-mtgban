@@ -295,8 +295,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	}
 	// A wording abbreviating an event's name is the storefront saying which
 	// set the listing is in, however plainly its edition says the other one.
-	if promo := promoSetBegun(b, inCard); promo != "" {
+	named := false
+	promo := promoSetBegun(b, inCard)
+	if promo != "" {
 		edition = promo
+		named = true
 	}
 	// The same, for the sets a base set's event printings are filed in. A
 	// storefront that stocks one writes the event on the card and the base
@@ -310,6 +313,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	event := eventSetNamed(b, inCard, edition)
 	if event != "" {
 		edition = event
+		named = true
 	}
 	inCard.Edition = edition
 
@@ -318,7 +322,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	// storefront's "EB01 - Memorial Collection" does not equal the set's
 	// "Extra Booster: Memorial Collection" but is contained in it, and
 	// that alone was enough to delete the promo printing.
-	if variantPointedAt(b, inCard) {
+	if variantPointedAt(b, inCard, named) {
 		inCard.PromoWildcard = true
 	}
 }
@@ -457,7 +461,7 @@ func slugsRunOf(wording string, slugs []string) bool {
 // variant printing: a letter tail or "(V.n)" index, or words naming the
 // variant label of some printing of this card. Only the variation is read,
 // never the edition - the edition is what this decides whether to trust.
-func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named bool) bool {
 	number := inputNumber(b, inCard)
 	if wantsVariant(inCard, number) {
 		return true
@@ -476,7 +480,23 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool 
 		if number != "" && !numberMatches(number, co.Number) {
 			continue
 		}
+		// A run of a label points at the variant as plainly as the whole
+		// of one: the storefront that writes "Gold-Stamped Signature" for
+		// the catalog's "Alternate Art Gold-Stamped Signature" has said
+		// which printing it means, and pinning the edition to the set the
+		// card was first printed in deletes that printing outright.
 		if mtgmatcher.SlugDescribesAny(wording, co.PromoTypes) {
+			return true
+		}
+		// A run of a label points at the variant as plainly as the whole of
+		// one: the storefront writing "Gold-Stamped Signature" for the
+		// catalog's "Alternate Art Gold-Stamped Signature" has said which
+		// printing it means, and pinning the edition to the set the card
+		// was first printed in deletes that printing outright. Not where
+		// the same run already named the set the listing is filed in,
+		// though - that wording has said where to look, and unpinning the
+		// edition throws the answer away.
+		if !named && slugsRunOf(wording, co.PromoTypes) {
 			return true
 		}
 	}
@@ -580,6 +600,16 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			return narrowed
 		}
 		return candidates
+	}
+	// The wording spelled no label out, but a storefront shortens one the
+	// same way it shortens an event's name: it drops the treatment the
+	// signature is printed on and keeps the signature. Where a run of one
+	// candidate's label is all the wording says, and no other candidate's
+	// label it says any of, that candidate is the printing being named -
+	// and the base card standing beside it is the one thing it is not.
+	runNamed := runNamedVariants(inCard, variants)
+	if len(runNamed) == 1 {
+		return runNamed
 	}
 	if len(base) > 0 {
 		return finishNamedTiebreak(inCard, editionTiebreak(b, inCard, base))
@@ -1044,6 +1074,36 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		}
 	}
 	return
+}
+
+// runNamedVariants keeps the printings whose set the variation names and
+// whose label it spells a run of. It is the tiering's whole-label test
+// loosened the way promoSetBegun loosens its own, and it answers only where
+// it names one printing: two printings sharing a run are told apart by what
+// the wording did not say.
+//
+// The set has to be named because the run alone says too little. A card
+// reprinted in an ordinary set wears a label there that a storefront selling
+// the original may write as a note - "Sanji (Best Selection)" against a
+// Premium Booster reprint - and reading that as the reprint prices one card
+// as another. A wording naming the set has done more than note a label: Cool
+// Stuff Inc writes "(OP05 1st Anniversary Gold-Stamped Signature)" on a
+// starter deck card reprinted in OP05, and that is the printing it means.
+func runNamedVariants(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	wording := strings.ToLower(inCard.Variation)
+	var out []mtgmatcher.Card
+	for _, card := range cards {
+		if !slugsRunOf(wording, card.PromoTypes) {
+			continue
+		}
+		for field := range strings.FieldsSeq(wording) {
+			if strings.EqualFold(strings.Trim(field, ":-"), card.SetCode) {
+				out = append(out, card)
+				break
+			}
+		}
+	}
+	return out
 }
 
 // lastNamedTiebreak keeps the printings whose label the wording names last.
