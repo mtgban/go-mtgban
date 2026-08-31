@@ -107,17 +107,34 @@ func (inv InventoryRecord) AddUnique(cardID string, entry *InventoryEntry) error
 // AddRelaxed adds an entry to the buylist, folding a duplicate into the
 // quantity of the one already there rather than reporting it.
 func (bl BuylistRecord) AddRelaxed(cardID string, entry *BuylistEntry) error {
-	return bl.add(cardID, entry, false)
+	return bl.add(cardID, entry, 0)
 }
 
 // Add adds an entry to the buylist and reports a duplicate as an error. Two
 // entries count as duplicates when quantity, grade, price and vendor all
 // match, which is what a scraper reading the same listing twice produces.
 func (bl BuylistRecord) Add(cardID string, entry *BuylistEntry) error {
-	return bl.add(cardID, entry, true)
+	return bl.add(cardID, entry, 1)
 }
 
-func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict bool) error {
+// AddUnique adds an entry to the buylist and reports a second one for the
+// same card and grade, whatever it is priced at.
+//
+// A shop pays one price for one card at one grade, so a second is the feed
+// naming two of its products and the match folding them onto one id - the
+// textured foil bought at the plain card's id, the manga art at the base
+// common's. Add cannot see that: the two entries differ in price, which is
+// the whole symptom, so they are not duplicates by its reading and both are
+// kept, the higher one sorting to the front where it prices the wrong card.
+//
+// It is for the scrapers whose feed states one price per printing. Where a
+// shop publishes a quantity tier or folds a credit multiplier into the same
+// vendor name, the second entry is honest and Add is the one to call.
+func (bl BuylistRecord) AddUnique(cardID string, entry *BuylistEntry) error {
+	return bl.add(cardID, entry, 2)
+}
+
+func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict int) error {
 	if entry.Conditions == "" {
 		entry.Conditions = "NM"
 	}
@@ -129,8 +146,13 @@ func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict bool) err
 	entries, found := bl[cardID]
 	if found {
 		for i := range entries {
+			if strict > 1 && entry.Conditions == entries[i].Conditions && entry.VendorName == entries[i].VendorName {
+				card, _ := mtgmatcher.GetUUID(cardID)
+				return fmt.Errorf("%w: attempted to add a second buylist price at one grade:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, entries[i])
+			}
+
 			if entry.Quantity == entries[i].Quantity && entry.Conditions == entries[i].Conditions && entry.BuyPrice == entries[i].BuyPrice && entry.VendorName == entries[i].VendorName {
-				if strict {
+				if strict > 0 {
 					card, _ := mtgmatcher.GetUUID(cardID)
 					return fmt.Errorf("%w: attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, bl[cardID])
 				}
