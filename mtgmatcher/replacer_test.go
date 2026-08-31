@@ -10,11 +10,11 @@ type NormalizeTest struct {
 var NormalizeTests = []NormalizeTest{
 	{
 		In:  "Lotus Bloom",
-		Out: "lotubloom",
+		Out: "lotusbloom",
 	},
 	{
 		In:  "Lotus Blossom",
-		Out: "lotublossom",
+		Out: "lotusblossom",
 	},
 	{
 		In:  "Tangle Asp",
@@ -22,7 +22,7 @@ var NormalizeTests = []NormalizeTest{
 	},
 	{
 		In:  "Tanglesap",
-		Out: "tangleap",
+		Out: "tanglesap",
 	},
 	{
 		In:  "Ghazbán Ogre",
@@ -38,7 +38,7 @@ var NormalizeTests = []NormalizeTest{
 	},
 	{
 		In:  "Flame Lash",
-		Out: "flamelah",
+		Out: "flamelash",
 	},
 	{
 		In:  "Waste Land",
@@ -46,19 +46,19 @@ var NormalizeTests = []NormalizeTest{
 	},
 	{
 		In:  "Wasteland",
-		Out: "wateland",
+		Out: "wasteland",
 	},
 	{
 		In:  "  spaaaaaaace  ",
-		Out: "paaaaaaace",
+		Out: "spaaaaaaace",
 	},
 	{
 		In:  "Ætherflux reservoir",
-		Out: "aetherfluxreervoir",
+		Out: "aetherfluxreservoir",
 	},
 	{
 		In:  "forest b",
-		Out: "foretb",
+		Out: "forestb",
 	},
 	{
 		In:  "them the removed",
@@ -66,7 +66,7 @@ var NormalizeTests = []NormalizeTest{
 	},
 	{
 		In:  "Jakub Šlem",
-		Out: "jakublem",
+		Out: "jakubslem",
 	},
 	{
 		In:  "Fire // Ice",
@@ -86,7 +86,7 @@ var NormalizeTests = []NormalizeTest{
 	},
 	{
 		In:  "Will o' the Wisp",
-		Out: "willowip",
+		Out: "willowisp",
 	},
 	{
 		In:  "Reverse the Polarity",
@@ -102,11 +102,11 @@ var NormalizeTests = []NormalizeTest{
 	},
 	{
 		In:  "Jeong Jeong, the Deserter",
-		Out: "jeongjeongthedeerter",
+		Out: "jeongjeongthedeserter",
 	},
 	{
 		In:  "Jeong Jeong's Deserters",
-		Out: "jeongjeongdeerter",
+		Out: "jeongjeongsdeserters",
 	},
 	{
 		In:  "Sword of War and Peace",

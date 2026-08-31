@@ -14,13 +14,13 @@ func TestFaceKey(t *testing.T) {
 	for _, tt := range []struct {
 		desc, name, want string
 	}{
-		{"the faces sort", "Soul Shackle // Spectral Shield", "oulhackle//pectralhield"},
+		{"the faces sort", "Soul Shackle // Spectral Shield", "soulshackle//spectralshield"},
 		{"and sort the same written the other way",
-			"Spectral Shield // Soul Shackle", "oulhackle//pectralhield"},
+			"Spectral Shield // Soul Shackle", "soulshackle//spectralshield"},
 		{"a doubled pairing folds onto its faces",
 			"Gold // Golden Cog // Gold // Golden Cog", "gold//goldencog"},
 		{"case is the storefront's, not the card's",
-			"SOUL SHACKLE // Spectral Shield", "oulhackle//pectralhield"},
+			"SOUL SHACKLE // Spectral Shield", "soulshackle//spectralshield"},
 		{"a name with no separator has no key", "Spectral Shield", ""},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {

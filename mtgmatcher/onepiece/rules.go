@@ -777,6 +777,20 @@ func finishTiebreak(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtg
 	return stamped
 }
 
+// promoRemainderNamesSet reports whether what a promo line leaves behind
+// names a set. Pure punctuation names nothing ("Promos: -"), and so does the
+// possessive a storefront sometimes trails ("Promo: 's"), which is punctuation
+// wearing an s rather than a name. The matcher used to answer this by asking
+// whether the remainder normalized away, back when normalizing dropped every
+// s; it no longer does, so the possessive is named here.
+func promoRemainderNamesSet(base string) bool {
+	trimmed := strings.Trim(base, " '\u2019\u02bc-:.,")
+	if strings.EqualFold(trimmed, "s") {
+		return false
+	}
+	return mtgmatcher.Normalize(trimmed) != ""
+}
+
 // editionNamesSet reports whether a storefront's edition is a set of the
 // game rather than a shelf it files a whole game under.
 //
@@ -795,7 +809,7 @@ func editionNamesSet(b *mtgmatcher.Backend, edition string) bool {
 		return false
 	}
 	base := promoLineRe.ReplaceAllString(edition, "")
-	if mtgmatcher.Normalize(base) == "" {
+	if !promoRemainderNamesSet(base) {
 		base = edition
 	}
 	for _, set := range b.Sets {
@@ -834,11 +848,10 @@ func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards 
 	// set, and every set name contains the empty string: reading it as a
 	// selection would hand back the event printing of whatever card it
 	// decorated. Only a line naming a set selects one, and the emptiness to
-	// refuse is the one Contains sees: a remainder of pure punctuation
-	// ("Promos: -", "Promo: 's") normalizes away as thoroughly as an absent
-	// one, and reads as the same empty needle.
+	// refuse is the one Contains sees, so a remainder of pure punctuation
+	// ("Promos: -", "Promo: 's") reads as the same empty needle.
 	base := promoLineRe.ReplaceAllString(inCard.Edition, "")
-	if mtgmatcher.Normalize(base) != "" && base != inCard.Edition {
+	if promoRemainderNamesSet(base) && base != inCard.Edition {
 		var event []mtgmatcher.Card
 		for _, card := range cards {
 			set, found := b.Sets[card.SetCode]

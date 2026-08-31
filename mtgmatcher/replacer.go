@@ -103,22 +103,8 @@ var replacerStrings = []string{
 	// Ancient ligature
 	"æ", "ae",
 
-	// Also plurals, just preserve 'blossom' that aliases 'lotus bloom'
-	// and 'asp' for 'tangle asp'/'tanglesap', and ogress...
-	// 'vs' is a key for determining duel decks
-	// Any accented s need to be removed as well to behave like a normal s
-	"asp", "asp",
-	"lossom", "lossom",
-	"ogress", "ogress",
-	"slash", "slash",
-	"squash", "squash",
-	"sword", "sword",
-	"kess", "kess",
-	"kediss", "kediss",
-	"vs", "vs",
-	"pest", "pest",
-	"š", "",
-	"s", "",
+	// An accented s reads as the plain one it is written for
+	"š", "s",
 
 	// Spaces are overrated, except when not
 	"waste land", "waste land",

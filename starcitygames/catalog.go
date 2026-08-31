@@ -446,11 +446,24 @@ func isAllLetters(field string) bool {
 	return true
 }
 
+// catalogNames are the names Star City Games spells differently from the
+// datastore, one entry per misspelling. The matcher used to forgive a stray
+// s on any name, which is what carried these - at the price of reading Nest
+// Ball as Net Ball and Swoobat as Woobat. A storefront that misspells a name
+// says so here instead.
+var catalogNames = map[string]string{
+	"Bandana of the Blue Beyond": "Bandana of the Blue Beyonds",
+}
+
 func resolveProductID(game int, p CatalogProduct) (string, error) {
 	// Duel Masters crossover promos are catalogued under Magic but aren't Magic
 	// cards, so there's nothing to match; discard them.
 	if strings.Contains(p.Name, "(Duel Masters)") {
 		return "", mtgmatcher.ErrUnsupported
+	}
+
+	if spelled, found := catalogNames[p.Name]; found {
+		p.Name = spelled
 	}
 
 	foil := catalogFoil(p)

@@ -83,9 +83,15 @@ func editionIsPromo(b *mtgmatcher.Backend, edition string) bool {
 	}
 	// Storefronts also file promos under the set whose printing they
 	// reprint - Cardmarket's "Origins: Promos" holds organized-play
-	// cards - which names no set of ours but still says promo. The
-	// needle is normalized too: Normalize folds the plural away.
-	return strings.HasSuffix(mtgmatcher.Normalize(edition), mtgmatcher.Normalize("Promos"))
+	// cards - which names no set of ours but still says promo.
+	return endsInPromo(edition)
+}
+
+// endsInPromo reports whether an edition ends in the word a storefront hangs
+// a set name off. Both spellings count, since storefronts write either.
+func endsInPromo(edition string) bool {
+	norm := mtgmatcher.Normalize(edition)
+	return strings.HasSuffix(norm, "promos") || strings.HasSuffix(norm, "promo")
 }
 
 // qualifiedPromoName returns the promotional printing named "<base>
@@ -254,8 +260,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	// several promotional sets, and the promo tiers in FilterCards choose
 	// instead of whichever set name happens to contain the heading's
 	// words. Checked without GetSetByName, which runs this very hook.
-	if mtgmatcher.IsPromoHeading(edition) ||
-		strings.HasSuffix(mtgmatcher.Normalize(edition), mtgmatcher.Normalize("Promos")) {
+	if mtgmatcher.IsPromoHeading(edition) || endsInPromo(edition) {
 		edition = "Promos"
 	}
 	inCard.Edition = edition
@@ -586,10 +591,19 @@ func collectPrintings(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		if _, found := cardSet[card.SetCode]; !found {
 			continue
 		}
-		if !allowPromo {
-			if set, found := b.Sets[card.SetCode]; found && set.Type == "promo" {
-				continue
-			}
+		set, known := b.Sets[card.SetCode]
+		if known && !allowPromo && set.Type == "promo" {
+			continue
+		}
+		// A heading saying only "Promos" names every promo set and no main
+		// one, but it agrees with none of our set names - ours are spelled
+		// "Riftbound Organized Play Promotional Cards" - so core Match
+		// finds no edition to narrow on and hands over every printing of
+		// the name. The main-set sibling shares the organized-play card's
+		// collector number, and answering with it would file a promo's
+		// price under the plain printing's uuid.
+		if known && set.Type != "promo" && mtgmatcher.IsPromoHeading(inCard.Edition) {
+			continue
 		}
 		if number != "" && !strings.EqualFold(number, card.Number) {
 			continue
