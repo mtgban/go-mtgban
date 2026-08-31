@@ -2,6 +2,7 @@ package abugames
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -54,6 +55,26 @@ var promoTags = []string{
 	"SDCC",
 	"Store Championship",
 	"TopDeck Magazine",
+}
+
+// artworkLetterRe matches the letter a basic land's title opens its variation
+// with, and the words the storefront hangs off it.
+var artworkLetterRe = regexp.MustCompile(`^([A-F])\b`)
+
+// artworkLetter answers the letter a basic land listing names its artwork by,
+// and "" for everything else. Only a basic land is read this way: the letter
+// is what the catalog files those printings under, and on any other card a
+// bare letter is as likely to be the start of a word the wording spends on
+// something else.
+func artworkLetter(cardName, variation string) string {
+	if !mtgmatcher.IsBasicLand(cardName) {
+		return ""
+	}
+	match := artworkLetterRe.FindStringSubmatch(variation)
+	if match == nil {
+		return ""
+	}
+	return match[1]
 }
 
 func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
@@ -347,6 +368,18 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			variation += card.Number
 		}
 	}
+	// A basic land's artwork is the only thing telling one of its printings
+	// from another, and this storefront names it with a letter in the title
+	// - "Swamp (C)", "Island (A) - Waterfall". Its own collector number is
+	// the same for every one of them, so the number just read buries the
+	// letter under one that names the whole group, and the words beside the
+	// letter are the storefront's own name for the art, which the catalog
+	// spells its own way. The letter alone reaches every one of them.
+	letter := artworkLetter(cardName, variation)
+	if letter != "" {
+		variation = letter
+	}
+
 	// Restore canonical name for split cards
 	cardName = strings.ReplaceAll(cardName, " / ", " // ")
 	if strings.Contains(cardName, " // ") {
