@@ -346,7 +346,7 @@ func promoSetBegun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
 		if mtgmatcher.SlugDescribesAny(inCard.Variation, co.PromoTypes) {
 			return ""
 		}
-		if !slugsBegunBy(inCard.Variation, co.PromoTypes) {
+		if !slugsRunOf(inCard.Variation, co.PromoTypes) {
 			continue
 		}
 		set, found := b.Sets[co.SetCode]
@@ -364,14 +364,24 @@ func promoSetBegun(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) string {
 	return name
 }
 
-// slugsBegunBy reports whether a wording opens any of the labels a printing
-// wears, as a run of at least two whole words and short of the whole label.
-// It is SlugDescribes stopped short of the end: the slug has lost its spaces,
-// so the wording's words are joined back up a run at a time and the label
-// asked whether it starts with them. A wording spelling a label out in full
-// opens it too, along every shorter run, so it is promoSetBegun that tells
-// the abbreviation from the full name.
-func slugsBegunBy(wording string, slugs []string) bool {
+// slugsRunOf reports whether a wording spells a run of any of the labels a
+// printing wears, as a run of at least two whole words and short of the whole
+// label. It is SlugDescribes stopped short of the end: the slug has lost its
+// spaces, so the wording's words are joined back up a run at a time and the
+// label asked whether it holds them. A wording spelling a label out in full
+// holds every shorter run too, so it is promoSetBegun that tells the
+// abbreviation from the full name.
+//
+// The run is looked for anywhere in the label rather than at its front. A
+// storefront shortening a name keeps a run of it, but not always the first:
+// it drops the collection the promo was sold in ("Best Selection Vol. 5" for
+// "Premium Card Collection Best Selection Vol. 5"), the year it was handed
+// out in ("PSA Magazine promo" for "2025 PSA Magazine promo"), or the
+// treatment the signature is printed on. Two words is what keeps that
+// generous reading honest: one word is what a wording lands on by
+// coincidence, and the prose a storefront writes about the artwork - "Sword",
+// "Strings, Foil" - is exactly what would land there.
+func slugsRunOf(wording string, slugs []string) bool {
 	words := strings.Fields(strings.ToLower(wording))
 	for _, slug := range slugs {
 		if slug == "" {
@@ -381,7 +391,7 @@ func slugsBegunBy(wording string, slugs []string) bool {
 			var joined string
 			for j := i; j < len(words); j++ {
 				joined += mtgmatcher.PromoTypeSlug(words[j])
-				if len(joined) >= len(slug) || !strings.HasPrefix(slug, joined) {
+				if len(joined) >= len(slug) || !strings.Contains(slug, joined) {
 					break
 				}
 				if j > i {

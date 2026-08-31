@@ -11,9 +11,9 @@ import (
 // event printing filed in the promo set under the base card's collector
 // number, with the event's name shortened to a parenthetical on the product
 // name and the base card's set written in the edition field. The Zoro pair is
-// the same shape around a label whose front is a word the wording spends on
-// something else, and the Sanji pair is a label opened just as plainly by a
-// set that hands nothing out.
+// the same shape around a label whose front is a word the wording leaves
+// behind, and the Sanji pair is a label named just as plainly by a set that
+// hands nothing out.
 //
 // The collector numbers, product ids and event name are the catalog's.
 const promoEditionFixture = `{
@@ -45,9 +45,10 @@ func promoEditionBackend(t *testing.T) *mtgmatcher.Backend {
 	return b
 }
 
-// TestPromoSetBegunByWording pins the redirection: a wording opening a promo
-// printing's label names the set that printing is filed in, whatever set the
-// edition field names, and every guard that keeps a wording from naming one.
+// TestPromoSetBegunByWording pins the redirection: a wording spelling a run of
+// a promo printing's label names the set that printing is filed in, whatever
+// set the edition field names, and every guard that keeps a wording from
+// naming one.
 func TestPromoSetBegunByWording(t *testing.T) {
 	b := promoEditionBackend(t)
 
@@ -101,14 +102,15 @@ func TestPromoSetBegunByWording(t *testing.T) {
 			want: "op09-051_596982_foil",
 		},
 		{
-			// A storefront shortening a name keeps its front, so a run
-			// sitting anywhere else in the label is not one.
-			desc: "a run that does not open the label names no set",
+			// A storefront shortening a name keeps a run of it, not always
+			// the first: the event is what it names and the treatment the
+			// event's card is printed on is what it leaves behind.
+			desc: "a run the label spells further in reaches the promo set",
 			in: mtgmatcher.InputCard{
 				Name: "Roronoa Zoro (Winner Pack)", Variation: "OP09-051",
 				Edition: "OP09 - Emperors in the New World", Foil: true,
 			},
-			want: "op09-051_596982_foil",
+			want: "op09-051_619217_foil",
 		},
 		{
 			desc: "two words opening the label do reach the promo set",
@@ -164,9 +166,9 @@ func TestPromoSetBegunByWording(t *testing.T) {
 	}
 }
 
-// TestSlugsBegunBy pins the reading itself: a run of whole words opening a
-// label, never one word and never starting anywhere but the front.
-func TestSlugsBegunBy(t *testing.T) {
+// TestSlugsRunOf pins the reading itself: a run of whole words the label
+// spells somewhere, never one word and never words the label does not carry.
+func TestSlugsRunOf(t *testing.T) {
 	slug := mtgmatcher.PromoTypeSlug("Championship 25 26 Regionals Season 1")
 
 	tests := []struct {
@@ -176,17 +178,69 @@ func TestSlugsBegunBy(t *testing.T) {
 	}{
 		{"the storefront's abbreviation", "OP09-050 Championship 25-26", true},
 		{"a longer run of the same front", "Championship 25 26 Regionals", true},
-		{"a full spelling opens the label too", "Championship 25 26 Regionals Season 1", true},
+		{"a full spelling holds every run", "Championship 25 26 Regionals Season 1", true},
+		{"a run the label spells further in", "Regionals Season", true},
 		{"one word is not a run", "Championship", false},
-		{"neither is a run starting mid-label", "Regionals Season", false},
 		{"nor a run the label never spells", "Gold in Border", false},
 		{"nor an empty wording", "", false},
 	}
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			if got := slugsBegunBy(test.wording, []string{slug}); got != test.want {
-				t.Errorf("slugsBegunBy(%q) = %v, want %v", test.wording, got, test.want)
+			if got := slugsRunOf(test.wording, []string{slug}); got != test.want {
+				t.Errorf("slugsRunOf(%q) = %v, want %v", test.wording, got, test.want)
+			}
+		})
+	}
+}
+
+// TestSlugsRunOfShortenings pins the three shapes a storefront shortens a
+// label into, each drawn from a Cool Stuff Inc buylist listing that answered
+// with the base card before the run was looked for past the label's front.
+func TestSlugsRunOfShortenings(t *testing.T) {
+	tests := []struct {
+		desc    string
+		wording string
+		label   string
+		want    bool
+	}{
+		{
+			desc:    "the collection the promo was sold in is dropped",
+			wording: "116 Best Selection Vol. 5",
+			label:   "Premium Card Collection Best Selection Vol 5",
+			want:    true,
+		},
+		{
+			desc:    "so is the year it was handed out in",
+			wording: "038 PSA Magazine promo",
+			label:   "2025 PSA Magazine promo",
+			want:    true,
+		},
+		{
+			desc:    "and the treatment the signature is printed on",
+			wording: "012 OP05 1st Anniversary Gold-Stamped Signature",
+			label:   "Alternate Art Gold Stamped Signature",
+			want:    true,
+		},
+		{
+			desc:    "but prose about the artwork names no label",
+			wording: "060 Strings, Foil",
+			label:   "Parallel",
+			want:    false,
+		},
+		{
+			desc:    "and neither does a single word it happens to share",
+			wording: "035 Sword",
+			label:   "Sword Alternate Art",
+			want:    false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			slug := mtgmatcher.PromoTypeSlug(test.label)
+			if got := slugsRunOf(test.wording, []string{slug}); got != test.want {
+				t.Errorf("slugsRunOf(%q, %q) = %v, want %v", test.wording, slug, got, test.want)
 			}
 		})
 	}
