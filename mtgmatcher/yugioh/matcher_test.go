@@ -122,6 +122,12 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: known name with wrong collector number",
 		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-999"},
 	},
+	// The storefront brackets what it elsewhere parenthesizes, and the
+	// bracket says the same thing about the printing.
+	{
+		Desc: "a bracketed decoration reads as the parenthetical it is",
+		In:   mtgmatcher.InputCard{Name: "Knightmare Unicorn [Alt Art]", Edition: "25th Anniversary Rarity Collection", Variation: "RA01-EN043 Platinum Secret Rare"},
+	},
 	// DL18 files one number as four colours and tags each with the league
 	// it belongs to ("bluedl18"); a storefront writes the colour alone,
 	// because the number beside it already said which league.
