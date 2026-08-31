@@ -154,7 +154,7 @@ func (bl BuylistRecord) add(cardID string, entry *BuylistEntry, strict int) erro
 			if entry.Quantity == entries[i].Quantity && entry.Conditions == entries[i].Conditions && entry.BuyPrice == entries[i].BuyPrice && entry.VendorName == entries[i].VendorName {
 				if strict > 0 {
 					card, _ := mtgmatcher.GetUUID(cardID)
-					return fmt.Errorf("%w: attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, bl[cardID])
+					return fmt.Errorf("%w: attempted to add a duplicate buylist card:\n-key: %s %s\n-new: %v\n-old: %v", ErrDuplicateEntry, cardID, card, *entry, entries[i])
 				}
 				bl[cardID][i].Quantity += entry.Quantity
 				return nil
