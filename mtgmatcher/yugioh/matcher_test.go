@@ -122,6 +122,13 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: known name with wrong collector number",
 		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-999"},
 	},
+	// Konami numbers a printing by the language it was printed in, and this
+	// datastore is the English catalog: the German card is a different piece
+	// of card, not a spelling of the English one.
+	{
+		Desc: "negative: a printing numbered in another language is not ours",
+		In:   mtgmatcher.InputCard{Name: "Nitrokrieger", Edition: "Promo", Variation: "AC11-DE021 Ultra Rare"},
+	},
 	// The storefront brackets what it elsewhere parenthesizes, and the
 	// bracket says the same thing about the printing.
 	{
