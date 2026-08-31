@@ -382,6 +382,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					c.Foil = c.Foil || isFoil
 					theCard = c
 				case GameYuGiOh:
+					if unknownPrinting(cardName, edition) {
+						return
+					}
 					theCard = &mtgmatcher.InputCard{Name: catalogColor(cardName), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
 				case GamePokemon:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
@@ -608,6 +611,9 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
 		case GameYuGiOh:
+			if unknownPrinting(product.Name, product.ItemSet) {
+				continue
+			}
 			theCard = &mtgmatcher.InputCard{Name: catalogColor(product.Name), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
@@ -805,6 +811,36 @@ func catalogTreatment(variation string) string {
 // possessive s from Collector's. Everything else - Common, Rare, Mosaic
 // Rare - it already spells alike, so a name absent from this table passes
 // through as it stands.
+// csiUnknownPrintings names the listings this storefront sells under a
+// printing the catalog does not carry, keyed by the name and the shelf it
+// sits on.
+//
+// Both are a rarity the set prints and the card at that number is not.
+// Gladiator Beast Octavius exists in Gladiator's Assault as a Secret Rare
+// and nothing else, and the Exodia of Limited Pack World Championship 2025
+// is one of that set's two Emblazoned rarities and never the plain Secret
+// Rare - EN000 is the only one of its 21 numbers without the plain tiers,
+// which is what says the card is Emblazoned-only rather than half-published.
+// Each is priced at a quarter against the printing it lands on, $13.00 and
+// $500.00, which is the price of a card that is not that card.
+//
+// They are listed one at a time because no rule separates them from a
+// decorated rarity a storefront spells shorter: "Secret Rare" for the
+// catalog's "Prismatic Secret Rare" is the same shape and is correct.
+// Refusing a rarity the card does not carry drops 55 Yu-Gi-Oh listings to
+// catch these two, and around 35 of those are right.
+var csiUnknownPrintings = map[string]bool{
+	"Exodia the Forbidden One (Secret Rare)|Limited Pack World Championship 2025": true,
+	"Gladiator Beast Octavius (Super Rare)|Gladiators Assault":                    true,
+}
+
+// unknownPrinting reports a listing that names a printing the catalog does
+// not carry, which is a listing worth dropping rather than matching: the
+// nearest printing to it is a different card at a different price.
+func unknownPrinting(name, edition string) bool {
+	return csiUnknownPrintings[name+"|"+edition]
+}
+
 // csiColors spells a Duelist League colour the way the catalog files it, for
 // the ones this storefront names differently. A league prints one number in
 // several colours and nothing else tells them apart, so the word is the whole
