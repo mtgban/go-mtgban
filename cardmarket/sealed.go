@@ -450,6 +450,8 @@ func (mkm *Sealed) pruneSubsumed(names map[int]string, productMap map[int][]stri
 // printing rather than the English one. The wording is matched short of the
 // word it usually ends on, which the catalog has misspelt ("Asia Region
 // Lega") often enough to matter.
+const asiaRegionMark = "asia region"
+
 // sealedShelves are the catalog's own headings for the things it sells that no
 // datastore holds a product for: the collectible coins packed inside a Pokemon
 // box rather than sold as one, and the event tickets. Each game prefixes its
@@ -477,8 +479,6 @@ func sealedShelfHoldsNoProduct(category string) (string, bool) {
 	}
 	return "", false
 }
-
-const asiaRegionMark = "asia region"
 
 // sealedIsForeignPrinting reports whether a storefront's product name marks a
 // printing an English-only datastore does not carry: one in another language,
