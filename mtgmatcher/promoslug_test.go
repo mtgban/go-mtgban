@@ -161,3 +161,57 @@ func TestDescribedVariantsContainedLabel(t *testing.T) {
 		}
 	}
 }
+
+// TestDescribedVariantsUnrelatedLabels pins the boundary of that rule. Two
+// labels a wording names at once are only settled where one spells the other
+// out; labels that merely differ stay a tie, for the caller to break with
+// what it knows about its own catalog.
+//
+// Flesh and Blood writes the finish into the same wording as the variant, so
+// "UPR043 Cold Foil" on a card whose name says "(Marvel)" names a cold foil
+// label and a marvel one. Settling that by length hands it to the cold foil,
+// and the Flesh and Blood matcher never gets to ask again without the words
+// its finish already consumed - which is how it reaches the marvel.
+func TestDescribedVariantsUnrelatedLabels(t *testing.T) {
+	coldFoil := Card{UUID: "coldfoil", PromoTypes: []string{"coldfoil"}}
+	marvel := Card{UUID: "marvel", PromoTypes: []string{"marvel"}}
+	cards := []Card{coldFoil, marvel}
+
+	got := DescribedVariants("UPR043 Cold Foil Marvel", cards)
+	if len(got) != 2 {
+		var names []string
+		for _, card := range got {
+			names = append(names, card.UUID)
+		}
+		t.Errorf("DescribedVariants named %v, want both labels left to the caller", names)
+	}
+
+	// Each still answers a wording that names it alone.
+	for _, tt := range []struct {
+		wording string
+		want    string
+	}{
+		{"UPR043 Cold Foil", "coldfoil"},
+		{"UPR043 Marvel", "marvel"},
+	} {
+		got := DescribedVariants(tt.wording, cards)
+		if len(got) != 1 || got[0].UUID != tt.want {
+			t.Errorf("DescribedVariants(%q) = %v, want %s", tt.wording, got, tt.want)
+		}
+	}
+}
+
+// TestDescribedVariantsSameLabel pins the other half of that boundary: two
+// printings wearing the same label spell each other out, so containment says
+// nothing about which the wording meant. Answering with either would settle
+// by position what the labels do not settle at all - One Piece tells those
+// apart by the edition they sit in, further down.
+func TestDescribedVariantsSameLabel(t *testing.T) {
+	first := Card{UUID: "first", PromoTypes: []string{"parallel"}}
+	second := Card{UUID: "second", PromoTypes: []string{"parallel"}}
+
+	got := DescribedVariants("Parallel", []Card{first, second})
+	if len(got) != 2 {
+		t.Errorf("DescribedVariants named %d printings, want both left to the caller", len(got))
+	}
+}

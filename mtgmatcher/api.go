@@ -1395,6 +1395,78 @@ func SlugDescribes(wording, slug string) bool {
 // SlugDescribesAny reports whether a wording names any of the promo types a
 // printing wears. Every one is asked rather than the first alone: a printing
 // carrying two tags is named by either of them.
+// containingLabel settles a tie between printings whose labels a catalog
+// writes as one phrase rather than as separate tags, and leaves every other
+// tie alone.
+//
+// TCGplayer sells "Monkey.D.Luffy (Super Alternate Art)" beside
+// "Monkey.D.Luffy (Red Super Alternate Art)", one parenthetical each, so the
+// printings wear one tag apiece and one tag contains the other whole. Both
+// are named by a wording that spells the longer out, both name one tag and
+// have none left over, and the count cannot separate them - which aliases
+// away a wording that could not have been more specific. Containment is what
+// the two labels share and what settles it: the tag that spells the other
+// out is the one the wording was about.
+//
+// Nothing settles a tie between labels that are merely different. Flesh and
+// Blood writes the finish into the same wording as the variant, so "UPR043
+// Cold Foil" on a card whose name says "(Marvel)" describes a cold foil
+// label and a marvel one at once - neither containing the other, and the
+// longer of them not the answer. That tie is the caller's to break, by
+// asking again without the words its finish already consumed.
+func containingLabel(wording string, cards []Card) []Card {
+	if len(cards) < 2 {
+		return cards
+	}
+	named := make([][]string, len(cards))
+	for i, card := range cards {
+		for _, promoType := range card.PromoTypes {
+			if SlugDescribes(wording, promoType) {
+				named[i] = append(named[i], promoType)
+			}
+		}
+	}
+	for i := range cards {
+		var wider bool
+		beats := true
+		for j := range cards {
+			if i == j {
+				continue
+			}
+			// Containment has to run one way only. Two printings wearing
+			// the same label spell each other out, and answering with
+			// whichever came first would settle by position what the
+			// labels do not settle at all - the edition the printings sit
+			// in is what tells those apart, further down.
+			if !labelsContain(named[i], named[j]) || labelsContain(named[j], named[i]) {
+				beats = false
+				break
+			}
+			wider = true
+		}
+		if beats && wider {
+			return []Card{cards[i]}
+		}
+	}
+	return cards
+}
+
+// labelsContain reports whether every label in inner is spelled out by one of
+// the labels in outer, which is true of a label against itself.
+func labelsContain(outer, inner []string) bool {
+	for _, in := range inner {
+		if !slices.ContainsFunc(outer, func(out string) bool {
+			return strings.Contains(out, in)
+		}) {
+			return false
+		}
+	}
+	return true
+}
+
+// SlugDescribesAny reports whether a wording names any of the promo types a
+// printing wears. Every one is asked rather than the first alone: a printing
+// carrying two tags is named by either of them.
 func SlugDescribesAny(wording string, slugs []string) bool {
 	for _, slug := range slugs {
 		if SlugDescribes(wording, slug) {
@@ -1434,27 +1506,26 @@ func SlugDescribesAny(wording string, slugs []string) bool {
 // count having already answered.
 func DescribedVariants(wording string, cards []Card) []Card {
 	var best []Card
-	var most, unnamed, spelled int
+	var most, unnamed int
 	for _, card := range cards {
-		var named, length int
+		var named int
 		for _, promoType := range card.PromoTypes {
 			if SlugDescribes(wording, promoType) {
 				named++
-				length += len(promoType)
 			}
 		}
 		if named == 0 {
 			continue
 		}
 		rest := len(card.PromoTypes) - named
-		if named > most || (named == most && rest < unnamed) ||
-			(named == most && rest == unnamed && length > spelled) {
-			best, most, unnamed, spelled = nil, named, rest, length
+		if named > most || (named == most && rest < unnamed) {
+			best, most, unnamed = nil, named, rest
 		}
-		if named == most && rest == unnamed && length == spelled {
+		if named == most && rest == unnamed {
 			best = append(best, card)
 		}
 	}
+	best = containingLabel(wording, best)
 	return best
 }
 
