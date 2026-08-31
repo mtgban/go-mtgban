@@ -32,6 +32,7 @@ import (
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/coolstuffinc"
+	"github.com/mtgban/go-mtgban/gamenerdz"
 	"github.com/mtgban/go-mtgban/hareruya"
 	"github.com/mtgban/go-mtgban/magiccorner"
 	"github.com/mtgban/go-mtgban/manapool"
@@ -311,6 +312,21 @@ var options = map[string]*scraperOption{
 	},
 	"coolstuffinc_yugioh": {
 		Init: coolstuffincScraper(coolstuffinc.GameYuGiOh),
+	},
+	"gamenerdz": {
+		Init: gamenerdzScraper(gamenerdz.GameMagic),
+	},
+	"gamenerdz_fleshandblood": {
+		Init: gamenerdzScraper(gamenerdz.GameFleshAndBlood),
+	},
+	"gamenerdz_lorcana": {
+		Init: gamenerdzScraper(gamenerdz.GameLorcana),
+	},
+	"gamenerdz_onepiece": {
+		Init: gamenerdzScraper(gamenerdz.GameOnePiece),
+	},
+	"gamenerdz_pokemon": {
+		Init: gamenerdzScraper(gamenerdz.GamePokemon),
 	},
 	"hareruya": {
 		Init: func() (mtgban.Scraper, error) {
