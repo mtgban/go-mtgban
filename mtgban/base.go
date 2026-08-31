@@ -254,41 +254,61 @@ func CountScrapers(scrapers []Scraper) (int, int) {
 // UnfoldScrapers splits scrapers into their independent Seller and Vendor
 // parts, unpacking a Market or Trader into its enabled sub-scrapers. Call it
 // after Load, or the sub-scrapers come back empty.
+//
+// A side holding nothing is not one of the parts. What a scraper implements
+// says what it is able to do, not what this store does today: Cool Stuff Inc
+// sells sealed for every game it stocks and buys it only for two of them, so
+// four of its games came back as vendors with an empty buylist, which the
+// caller then had to refuse. Reading the records rather than the interface
+// keeps the answer true as a store's own answer changes, with nothing to
+// edit here on the day it starts buying something it did not.
+//
+// An empty record and a broken load are not the same thing and are not told
+// apart here: a load that fails says so by returning an error, and the caller
+// reports that.
 func UnfoldScrapers(scrapers []Scraper) ([]Seller, []Vendor) {
 	var sellers []Seller
 	var vendors []Vendor
 
 	for _, scraper := range scrapers {
 		market, isMarket := scraper.(Market)
-		if isMarket && scraper.Info().InventoryTimestamp != nil {
+		if isMarket {
 			for _, name := range market.MarketNames() {
 				inv := InventoryForSeller(market, name)
+				if len(inv) == 0 {
+					continue
+				}
 				seller := NewSellerFromInventory(inv, market.InfoForScraper(name))
 				sellers = append(sellers, seller)
 			}
 		}
 
 		trader, isTrader := scraper.(Trader)
-		if isTrader && scraper.Info().BuylistTimestamp != nil {
+		if isTrader {
 			for _, name := range trader.TraderNames() {
 				bl := BuylistForVendor(trader, name)
+				if len(bl) == 0 {
+					continue
+				}
 				vendor := NewVendorFromBuylist(bl, trader.InfoForScraper(name))
 				vendors = append(vendors, vendor)
 			}
 		}
 
 		seller, isSeller := scraper.(Seller)
-		if isSeller && !isMarket && scraper.Info().InventoryTimestamp != nil {
+		if isSeller && !isMarket {
 			inv := seller.Inventory()
-			seller := NewSellerFromInventory(inv, seller.Info())
-			sellers = append(sellers, seller)
+			if len(inv) > 0 {
+				sellers = append(sellers, NewSellerFromInventory(inv, seller.Info()))
+			}
 		}
 
 		vendor, isVendor := scraper.(Vendor)
-		if isVendor && !isTrader && scraper.Info().BuylistTimestamp != nil {
+		if isVendor && !isTrader {
 			bl := vendor.Buylist()
-			vendor := NewVendorFromBuylist(bl, vendor.Info())
-			vendors = append(vendors, vendor)
+			if len(bl) > 0 {
+				vendors = append(vendors, NewVendorFromBuylist(bl, vendor.Info()))
+			}
 		}
 	}
 
