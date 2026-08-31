@@ -105,6 +105,30 @@ var buylistNumberWord = regexp.MustCompile(`(?i)^[A-Z]{0,4}\d+[a-z]?(?:/[A-Z]{0,
 
 var buylistReprintNote = regexp.MustCompile(`(?i)\breprints?\b`)
 
+// onePieceEvents spells a One Piece event the way the catalog names it, for
+// the names this storefront gives it instead. They are its own: the catalog
+// sells the card in "BANDAI Card Games Fest 25-26" and it goes up here as
+// the Afro Luffy promo, after the art rather than the pack. A nickname
+// names one product and nothing else, which is why they are listed one at a
+// time rather than read for.
+var onePieceEvents = map[string]string{
+	"afro luffy promo":   "BANDAI Card Games Fest 25-26",
+	"l.a. dodgers promo": "Dodgers x One Piece",
+}
+
+// eventNamed adds the catalog's name for every event the wording gives its
+// own name to. The storefront's words stay: they are what the listing says
+// about the art, and the catalog's name is only what files it.
+func eventNamed(wording string) string {
+	lower := strings.ToLower(wording)
+	for nickname, event := range onePieceEvents {
+		if strings.Contains(lower, nickname) {
+			wording += " " + event
+		}
+	}
+	return wording
+}
+
 // buylistVariation builds everything the buylist knows about a printing
 // beyond its name. The feed spends a free-text note on the qualifier that
 // the sell listing spends its variation on - "Love Ball Foil", "Detective
@@ -361,7 +385,9 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
 				case GamePokemon:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
-				case GameLorcana, GameRiftbound, GameOnePiece:
+				case GameOnePiece:
+					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: eventNamed(notes), Foil: isFoil}
+				case GameLorcana, GameRiftbound:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: notes, Foil: isFoil}
 				default:
 					csi.printf("unsupported game")
@@ -584,7 +610,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		case GameYuGiOh:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name)), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
 		case GameLorcana:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: product.Number, Foil: product.IsFoil == 1}
 		default:
