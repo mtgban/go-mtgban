@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -29,6 +30,22 @@ const (
 	GameOnePiece  = "One Piece"
 	GamePokemon   = "Pokemon"
 )
+
+// listedConditions names the conditions the store buys, per product line.
+// The storefront's buylist lists a condition only where the store has
+// configured it for that line, but the search endpoint answers with an
+// offer for every condition whatever the line, so the rest arrive here as
+// bids the store will not honour. A line named nowhere below is bought in
+// every condition.
+//
+// It is a buylist setting and reaches nothing else: what the store sells
+// is whatever it has on the shelf, in whatever grade it graded it, and the
+// stock count beside each retail listing is what says so.
+var listedConditions = map[string][]string{
+	GameRiftbound: {"Near Mint"},
+	GamePokemon:   {"Near Mint"},
+	GameOnePiece:  {"Near Mint", "Lightly Played"},
+}
 
 var conditionMap = map[string]string{
 	"Near Mint":         "NM",
@@ -89,6 +106,13 @@ func (vs *Vegassingles) printf(format string, a ...any) {
 	}
 }
 
+// listed reports whether the store buys the condition in the product line
+// this scraper reads.
+func (vs *Vegassingles) listed(title string) bool {
+	conditions, found := listedConditions[vs.game]
+	return !found || slices.Contains(conditions, title)
+}
+
 func (vs *Vegassingles) processProduct(product VSProduct) error {
 	theCard, err := preprocess(product, vs.game)
 	if err != nil {
@@ -127,6 +151,10 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	// under a thousand lines of it.
 	for _, variant := range product.VariantInfo {
 		if variant.OfferPrice == 0 {
+			continue
+		}
+
+		if !vs.listed(variant.Title) {
 			continue
 		}
 

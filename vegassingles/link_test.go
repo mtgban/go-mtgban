@@ -66,3 +66,29 @@ func TestCrawlAsksForStock(t *testing.T) {
 		t.Errorf("in_stock = %q, want %q", asked, "true")
 	}
 }
+
+// TestListedConditions pins the conditions each product line deals in. The
+// storefront lists a condition only where the store has configured it for
+// that line, but the search endpoint answers with a price for every
+// condition whatever the line: it bids on three conditions of a Riftbound
+// card the store buys only Near Mint of.
+func TestListedConditions(t *testing.T) {
+	for _, tt := range []struct {
+		desc, game, title string
+		want              bool
+	}{
+		{"riftbound deals in near mint", GameRiftbound, "Near Mint", true},
+		{"and in nothing below it", GameRiftbound, "Lightly Played", false},
+		{"pokemon the same", GamePokemon, "Moderately Played", false},
+		{"one piece takes lightly played too", GameOnePiece, "Lightly Played", true},
+		{"but stops there", GameOnePiece, "Moderately Played", false},
+		{"a line configured nowhere deals in them all", GameMagic, "Damaged", true},
+	} {
+		t.Run(tt.desc, func(t *testing.T) {
+			vs := NewScraper(tt.game)
+			if got := vs.listed(tt.title); got != tt.want {
+				t.Errorf("%s listed(%q) = %v, want %v", tt.game, tt.title, got, tt.want)
+			}
+		})
+	}
+}
