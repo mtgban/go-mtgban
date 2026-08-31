@@ -11,6 +11,9 @@ import (
 	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// TestMain loads the datastore once for the whole package. A backend is
+// 2.9GB resident, and a test that loads its own holds a second one for as
+// long as the binary runs.
 func TestMain(m *testing.M) {
 	path := os.Getenv("ALLPRINTINGS5_PATH")
 	if path == "" {

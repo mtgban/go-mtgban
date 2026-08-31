@@ -1,12 +1,9 @@
 package cardtrader
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // TestFoilPrintingID pins which listings the foil flag may move. CardTrader
@@ -16,20 +13,9 @@ import (
 // printing. The ids are drawn from the datastore so the test holds across
 // its releases.
 func TestFoilPrintingID(t *testing.T) {
-	datastorePath := os.Getenv("ALLPRINTINGS5_PATH")
-	if datastorePath == "" {
-		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
+	if len(mtgmatcher.GetAllSets()) == 0 {
+		t.Skip("ALLPRINTINGS5_PATH not set; skipping the datastore-backed cases")
 	}
-	reader, err := datastore.Open(datastorePath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer reader.Close()
-	backend, err := magic.Load(reader)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtgmatcher.SetGlobalDatastore(backend)
 
 	// Strixhaven Mystical Archive sells one printing in all three finishes,
 	// which is what lets the flag cross between two of them.

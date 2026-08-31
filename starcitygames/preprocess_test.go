@@ -10,6 +10,11 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
+// magicDatastore is the datastore TestMain loaded, kept so a test that
+// installs another game's can put this one back without reading the file a
+// second time. A backend is 2.9GB resident and the reload held two.
+var magicDatastore *mtgmatcher.Backend
+
 func TestMain(m *testing.M) {
 	allprintingsPath := os.Getenv("ALLPRINTINGS5_PATH")
 	if allprintingsPath == "" {
@@ -26,6 +31,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	magicDatastore = ds
 	mtgmatcher.SetGlobalDatastore(ds)
 
 	mtgmatcher.SetGlobalLogger(log.New(os.Stderr, "", 0))
