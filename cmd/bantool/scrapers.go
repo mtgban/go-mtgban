@@ -8,6 +8,7 @@ import (
 	"github.com/mtgban/go-mtgban/cardmarket"
 	"github.com/mtgban/go-mtgban/cardtrader"
 	"github.com/mtgban/go-mtgban/coolstuffinc"
+	"github.com/mtgban/go-mtgban/gamenerdz"
 	"github.com/mtgban/go-mtgban/miniaturemarket"
 	"github.com/mtgban/go-mtgban/mtgban"
 	"github.com/mtgban/go-mtgban/starcitygames"
@@ -249,6 +250,17 @@ func coolstuffincSealedScraper(game string) func() (mtgban.Scraper, error) {
 		scraper := coolstuffinc.NewScraperSealed(game)
 		scraper.LogCallback = GlobalLogCallback
 		scraper.Partner = os.Getenv("CSI_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func gamenerdzScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		scraper := gamenerdz.NewScraper(game)
+		scraper.LogCallback = GlobalLogCallback
 		if MaxConcurrency != 0 {
 			scraper.MaxConcurrency = MaxConcurrency
 		}
