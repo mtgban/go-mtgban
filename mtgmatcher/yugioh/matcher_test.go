@@ -122,6 +122,26 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: known name with wrong collector number",
 		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-999"},
 	},
+	// A name nothing answers to, beside a number only one card carries, is
+	// still a card this reader can name: the number is the stronger key.
+	{
+		Desc: "an unshared number names the card its listing misspells",
+		In:   mtgmatcher.InputCard{Name: "Doube-Edged Sword Technique", Edition: "Structure Deck Samurai Warlords", Variation: "SDWA-EN035 Common"},
+	},
+	{
+		Desc: "a token the storefront names its own way answers to its number",
+		In:   mtgmatcher.InputCard{Name: "Yami Token", Edition: "Tokens", Variation: "TKN4-EN029 Super Rare"},
+	},
+	// The catalog numbers the cards that share a name; a listing spells that
+	// number without the mark.
+	{
+		Desc: "a numbered name reads the same with or without its mark",
+		In:   mtgmatcher.InputCard{Name: "Sasuke Samurai 2", Edition: "Dark Revelation 1", Variation: "DR1-EN221 Common"},
+	},
+	{
+		Desc: "negative: a character art card is the storefront's product, not a printing",
+		In:   mtgmatcher.InputCard{Name: "Mai Valentine Character Art Card", Edition: "Tokens", Variation: "Super Rare"},
+	},
 	// Konami numbers a printing by the language it was printed in, and this
 	// datastore is the English catalog: the German card is a different piece
 	// of card, not a spelling of the English one.

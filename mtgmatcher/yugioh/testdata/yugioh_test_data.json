@@ -45,6 +45,15 @@
         "uuid": "dl09-en001_77377_unl"
     },
     {
+        "description": "a numbered name reads the same with or without its mark",
+        "input": {
+            "name": "Sasuke Samurai 2",
+            "variant": "DR1-EN221 Common",
+            "edition": "Dark Revelation 1"
+        },
+        "uuid": "dr1-en221_24008_unl"
+    },
+    {
         "description": "a second colour of the same number names its own printing",
         "input": {
             "name": "Penguin Soldier",
@@ -62,6 +71,15 @@
         "uuid": "ys13-env03_69074_lim"
     },
     {
+        "description": "a token the storefront names its own way answers to its number",
+        "input": {
+            "name": "Yami Token",
+            "variant": "TKN4-EN029 Super Rare",
+            "edition": "Tokens"
+        },
+        "uuid": "tkn4-en029_152514_unl"
+    },
+    {
         "description": "a wording naming one tag keeps the printing wearing only it",
         "input": {
             "name": "Dark Magician Girl the Dragon Knight",
@@ -76,6 +94,15 @@
             "variant": "DLCS-EN006 Alternate Art Blue"
         },
         "uuid": "dlcs-en006_222248_1e"
+    },
+    {
+        "description": "an unshared number names the card its listing misspells",
+        "input": {
+            "name": "Doube-Edged Sword Technique",
+            "variant": "SDWA-EN035 Common",
+            "edition": "Structure Deck Samurai Warlords"
+        },
+        "uuid": "sdwa-en035_59877_1e"
     },
     {
         "description": "cardtrader alternate-art tail drops the base art",
@@ -136,6 +163,16 @@
             "variant": "HA01-EN001 Limited"
         },
         "uuid": "ha01-en001_33740_lim"
+    },
+    {
+        "description": "negative: a character art card is the storefront's product, not a printing",
+        "input": {
+            "name": "Mai Valentine Character Art Card",
+            "variant": "Super Rare",
+            "edition": "Tokens"
+        },
+        "uuid": "",
+        "error": "unsupported"
     },
     {
         "description": "negative: a league printing named by no colour stays ambiguous",
