@@ -232,7 +232,13 @@ func gameLanguage(gameID int, product Product) string {
 // reads out of a variation before it falls back to the first digit-leading
 // word. A number of this shape wins that read whatever else the variation
 // carries.
-var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
+//
+// The Greek letters belong in the tail because they are how this storefront
+// numbers the corrected runs ("OP01-002β"), and those are the numbers whose
+// Version cannot be dropped: several corrected printings share one base
+// number, and the Version is the only thing that says which of them a
+// listing is.
+var collectorNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z\x{03b1}\x{03b2}]*$`)
 
 // gameVariation spells the printing a blueprint names. One Piece, Riftbound
 // and Yu-Gi-Oh all file several printings under one collector number, so the
@@ -251,8 +257,8 @@ func gameVariation(gameID int, bp *Blueprint, number string) string {
 	switch gameID {
 	case GameOnePiece:
 		// One Piece numbers come in shapes the matcher cannot read - "P-L",
-		// "OP07-047P2", the alpha-suffixed pre-errata codes - and behind one
-		// of those the version's own digits answer in their place.
+		// "OP07-047P2" - and behind one of those the version's own digits
+		// answer in their place.
 		if !collectorNumberRe.MatchString(number) {
 			return number
 		}
