@@ -607,7 +607,7 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	// candidate's label is all the wording says, and no other candidate's
 	// label it says any of, that candidate is the printing being named -
 	// and the base card standing beside it is the one thing it is not.
-	runNamed := runNamedVariants(inCard, variants)
+	runNamed := runNamedVariants(b, inCard, number, variants)
 	if len(runNamed) == 1 {
 		return runNamed
 	}
@@ -1093,18 +1093,31 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 // it names one printing: two printings sharing a run are told apart by what
 // the wording did not say.
 //
-// The set has to be named because the run alone says too little. A card
-// reprinted in an ordinary set wears a label there that a storefront selling
-// the original may write as a note - "Sanji (Best Selection)" against a
-// Premium Booster reprint - and reading that as the reprint prices one card
-// as another. A wording naming the set has done more than note a label: Cool
-// Stuff Inc writes "(OP05 1st Anniversary Gold-Stamped Signature)" on a
-// starter deck card reprinted in OP05, and that is the printing it means.
-func runNamedVariants(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []mtgmatcher.Card {
+// Two things hold the run to the printings it can speak for, because the run
+// alone says too little. The number has to be a whole one: a bare tail is
+// the same number in every set of the game, so it cannot say which printing
+// a label belongs to. And the printing has to be one a storefront names the
+// base card's set for - a card handed out at an event, which is filed in the
+// promo set and sold under the set it was printed in - or else one whose set
+// the wording names outright. A card reprinted in an ordinary set wears a
+// label there that a storefront selling the original may write as a note,
+// "Sanji (Best Selection)" against a Premium Booster reprint, and reading
+// that as the reprint prices one card as another. Cool Stuff Inc's "(OP05
+// 1st Anniversary Gold-Stamped Signature)" on a starter deck card says the
+// set out loud, and its "(World Tour 23-24)" names an event printing.
+func runNamedVariants(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, number string, cards []mtgmatcher.Card) []mtgmatcher.Card {
+	if !fullNumberRe.MatchString(number) {
+		return nil
+	}
 	wording := strings.ToLower(inCard.Variation)
 	var out []mtgmatcher.Card
 	for _, card := range cards {
 		if !slugsRunOf(wording, card.PromoTypes) {
+			continue
+		}
+		set, found := b.Sets[card.SetCode]
+		if found && setIsPromotional(set.Name) {
+			out = append(out, card)
 			continue
 		}
 		for field := range strings.FieldsSeq(wording) {
