@@ -197,6 +197,54 @@ var onepieceSeeds = []matchTest{
 		Desc: "negative: reprinted base printings stay ambiguous on a bare input",
 		In:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016"},
 	},
+	{
+		Desc: "corrected run named by the letter on the number",
+		In: mtgmatcher.InputCard{Name: "Trafalgar Law",
+			Variation: `OP01-047α Alpha Pre-Errata Card | "1 Character to your hand: Play 1 Character card"`,
+			Edition:   "Pre-Errata Cards"},
+	},
+	{
+		Desc: "the art word picks the treated printing of that same run",
+		In: mtgmatcher.InputCard{Name: "Trafalgar Law",
+			Variation: `OP01-047αa Alternate Art | Alpha Pre-Errata Card | "1 Character to your hand: Play 1 Character card"`,
+			Edition:   "Pre-Errata Cards"},
+	},
+	{
+		Desc: "a corrected printing is not the base card at its number",
+		In: mtgmatcher.InputCard{Name: "Officer Agents",
+			Variation: `OP01-087α Alpha Pre-Errata Card | "Play 1 {Baroque Works} type card"`,
+			Edition:   "Pre-Errata Cards"},
+	},
+	{
+		Desc: "the letter tail does not say which art: the plain one carries it",
+		In: mtgmatcher.InputCard{Name: "Dracule Mihawk",
+			Variation: `OP01-070ae Pre-Errata Card | Missing Text "Up to"`,
+			Edition:   "Pre-Errata Cards"},
+	},
+	{
+		Desc: "and the alternate art at that number carries none",
+		In: mtgmatcher.InputCard{Name: "Dracule Mihawk",
+			Variation: `OP01-070e Alternate Art | Pre-Errata Card | Missing Text "Up to"`,
+			Edition:   "Pre-Errata Cards"},
+	},
+	{
+		Desc: "the alternate art the catalog files as a box topper",
+		In: mtgmatcher.InputCard{Name: "Alvida",
+			Variation: `OP01-064a Alternate Art | Pre-Errata Card | Missing text "Up to"`,
+			Edition:   "Pre-Errata Cards"},
+	},
+	{
+		Desc: "a treatment the wording spells out answers before the art word",
+		In: mtgmatcher.InputCard{Name: "Monkey.D.Luffy",
+			Variation: "OP01-003d Pre-Errata Card | Demo Deck Map Design",
+			Edition:   "Pre-Errata Cards"},
+	},
+	{
+		Desc: "the word's other sense keeps the base printing it names",
+		In: mtgmatcher.InputCard{Name: "Marshall.D.Teach",
+			Variation: `ST03-014 1st Print Errata Card | "Return 1 Character"`,
+			Edition:   "ST03 - The Seven Warlords of The Sea"},
+	},
 }
 
 func loadBackend(t *testing.T) *mtgmatcher.Backend {

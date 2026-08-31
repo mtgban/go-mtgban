@@ -37,6 +37,15 @@
         "uuid": "op14-012_671811"
     },
     {
+        "description": "a corrected printing is not the base card at its number",
+        "input": {
+            "name": "Officer Agents",
+            "variant": "OP01-087α Alpha Pre-Errata Card | \"Play 1 {Baroque Works} type card\"",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-087_ct277564"
+    },
+    {
         "description": "a family name cut short still resolves through its code",
         "input": {
             "name": "Lucky.Roux",
@@ -165,6 +174,15 @@
         "uuid": "don_677571_foil"
     },
     {
+        "description": "a treatment the wording spells out answers before the art word",
+        "input": {
+            "name": "Monkey.D.Luffy",
+            "variant": "OP01-003d Pre-Errata Card | Demo Deck Map Design",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-003_ct374952"
+    },
+    {
         "description": "a word appended behind the coded name keeps the coded set",
         "input": {
             "name": "Adio",
@@ -226,6 +244,15 @@
             "edition": "500 Years into the Future Pre-Release Cards"
         },
         "uuid": "op07-006_552056"
+    },
+    {
+        "description": "and the alternate art at that number carries none",
+        "input": {
+            "name": "Dracule Mihawk",
+            "variant": "OP01-070e Alternate Art | Pre-Errata Card | Missing Text \"Up to\"",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-070_ct244687_foil"
     },
     {
         "description": "bare number hung off the name after a dash",
@@ -291,6 +318,15 @@
             "edition": "OP03 - Pillars of Strength"
         },
         "uuid": "op03-089_500037_foil"
+    },
+    {
+        "description": "corrected run named by the letter on the number",
+        "input": {
+            "name": "Trafalgar Law",
+            "variant": "OP01-047α Alpha Pre-Errata Card | \"1 Character to your hand: Play 1 Character card\"",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-047_ct277454_foil"
     },
     {
         "description": "dash-number promo name resolves through its qualifier",
@@ -482,6 +518,24 @@
         "uuid": "op01-084_454615"
     },
     {
+        "description": "the alternate art the catalog files as a box topper",
+        "input": {
+            "name": "Alvida",
+            "variant": "OP01-064a Alternate Art | Pre-Errata Card | Missing text \"Up to\"",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-064_ct244685_foil"
+    },
+    {
+        "description": "the art word picks the treated printing of that same run",
+        "input": {
+            "name": "Trafalgar Law",
+            "variant": "OP01-047αa Alternate Art | Alpha Pre-Errata Card | \"1 Character to your hand: Play 1 Character card\"",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-047_ct277403_foil"
+    },
+    {
         "description": "the finish tells apart the event printings a wording named at once",
         "input": {
             "name": "Boa Hancock - P-115 (OP15 Release Event - Winner)",
@@ -490,6 +544,15 @@
             "foil": true
         },
         "uuid": "p-115_686458_foil"
+    },
+    {
+        "description": "the letter tail does not say which art: the plain one carries it",
+        "input": {
+            "name": "Dracule Mihawk",
+            "variant": "OP01-070ae Pre-Errata Card | Missing Text \"Up to\"",
+            "edition": "Pre-Errata Cards"
+        },
+        "uuid": "op01-070_ct244688_foil"
     },
     {
         "description": "the ordinal a promo label opens with is not the number either",
@@ -551,6 +614,15 @@
             "edition": "OP01 - Romance Dawn"
         },
         "uuid": "don_456059_foil"
+    },
+    {
+        "description": "the word's other sense keeps the base printing it names",
+        "input": {
+            "name": "Marshall.D.Teach",
+            "variant": "ST03-014 1st Print Errata Card | \"Return 1 Character\"",
+            "edition": "ST03 - The Seven Warlords of The Sea"
+        },
+        "uuid": "st03-014_288288"
     },
     {
         "description": "two letters swapped round yield to the number as well",
