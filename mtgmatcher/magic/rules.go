@@ -23,27 +23,41 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 // IsSpecificUnsupported reports the named cards unsupported in one edition
 // rather than as a class. See mtgmatcher.GameRules.
 func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
-	// A custom token set that leaked this far is Magic's own problem: the
-	// datastore carries its tokens apart from its cards, so a listing whose
-	// edition or variation says token has nothing here to match. It lived in
-	// the core switch and answered for every game, which is wrong for the
-	// ones whose tokens are cards like any other - Yu-Gi-Oh files "Token:
-	// Kuriboh" under a collector number and sells it by it.
+	// A word saying token in an edition or a variation used to name a custom
+	// set that had leaked this far, because no token was carried and nothing
+	// spelling one could match. It lived in the core switch and answered for
+	// every game, which is wrong for the ones whose tokens are cards like any
+	// other - Yu-Gi-Oh files "Token: Kuriboh" under a collector number and
+	// sells it by it.
+	//
+	// Magic's tokens are carried now, each filed under a set of its own named
+	// after the one it came with, so the word only names a leak when no such
+	// set answers to the edition.
 	//
 	// The word is looked for with strings rather than Contains, which
 	// filters "token" away before the comparison ever sees it.
 	if (strings.Contains(strings.ToLower(inCard.Edition), "token") ||
 		strings.Contains(strings.ToLower(inCard.Variation), "token")) &&
-		!inCard.Contains("League") {
-		// An edition naming a token set the datastore carries is not a
-		// leak: its tokens are filed right there, now that they are
-		// carried at all.
-		set, err := b.GetSetByName(inCard.Edition)
-		if err != nil || !strings.Contains(strings.ToLower(set.Name), "token") {
-			return true
-		}
+		!inCard.Contains("League") && !carriesTokens(b, inCard.Edition) {
+		return true
 	}
 	return inCard.IsSpecificUnsupported()
+}
+
+// carriesTokens reports whether an edition names a set whose tokens the
+// datastore holds, either a sheet of them or the set one was printed beside.
+// The word token is asked of the edition alone, so a storefront that names
+// the set plainly and says token in the variation is answered the same way.
+func carriesTokens(b *mtgmatcher.Backend, edition string) bool {
+	set, err := b.GetSetByName(edition)
+	if err != nil {
+		return false
+	}
+	if set.Type == "token" {
+		return true
+	}
+	_, found := b.Sets[set.TokenSetCode]
+	return found
 }
 
 // ravnicaWeekend resolves a Ravnica Weekend printing to its edition and

@@ -81,3 +81,39 @@ func TestMatchTokenSetParentPicksNamedSheet(t *testing.T) {
 		}
 	}
 }
+
+// TestMatchTokenSetVariation pins the word token reading the same wherever a
+// storefront writes it. The rule refusing it fires on the edition and on the
+// variation alike, so asking only the edition whether its tokens are carried
+// left every row that named the set plainly and said token beside it refused.
+func TestMatchTokenSetVariation(t *testing.T) {
+	for _, probe := range []struct {
+		name      string
+		edition   string
+		variation string
+		setCode   string
+	}{
+		{"Bat Token", "Bloomburrow", "Token", "TBLB"},
+		{"Angel", "Dominaria United", "Token", "TDMU"},
+		{"Wolf", "Innistrad: Midnight Hunt", "Token 13", "TMID"},
+	} {
+		in := mtgmatcher.InputCard{
+			Name:      probe.name,
+			Edition:   probe.edition,
+			Variation: probe.variation,
+		}
+		id, err := mtgmatcher.Match(&in)
+		if err != nil {
+			t.Errorf("Match(%v) = %v", in, err)
+			continue
+		}
+		co, err := mtgmatcher.GetUUID(id)
+		if err != nil {
+			t.Errorf("GetUUID(%s) = %v", id, err)
+			continue
+		}
+		if co.SetCode != probe.setCode {
+			t.Errorf("Match(%v) = %s (%s %s), want a printing in %s", in, id, co.SetCode, co.Card.Name, probe.setCode)
+		}
+	}
+}
