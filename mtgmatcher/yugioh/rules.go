@@ -83,13 +83,28 @@ var qualifiedNameRe = regexp.MustCompile(`\s*\([^()]*\)$`)
 // bare name at that very number keeps it, since the storefront's spelling is
 // then a spelling the set has. And two decorated siblings on one number
 // decide nothing, so they refuse instead of picking.
+//
+// A number the set spells exactly as the input wrote it speaks with that
+// exactness throughout. The loose compare reads only the trailing digit
+// run, which serves the storefronts writing shorthand, but the Speed Duel
+// sets file a card per deck letter under one run: ENA01 and ENG01 are one
+// number to it, so the bare name at ENG01 was answering for the qualified
+// printing at ENA01 and the qualified spelling was never adopted - the
+// listing then left with the sibling's printing rather than its own.
 func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	number := extractNumber(inCard.Variation)
 	if number == "" {
 		return
 	}
 	set := editionSet(b, inCard.Edition)
-	if set == nil || editionCarries(set, inCard.Name, number) {
+	if set == nil {
+		return
+	}
+	matches := numberMatches
+	if setSpellsNumber(set, number) {
+		matches = strings.EqualFold
+	}
+	if carries(set, inCard.Name, number, matches) {
 		return
 	}
 	var adopt string
@@ -97,7 +112,7 @@ func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 		card := &set.Cards[i]
 		stem := qualifiedNameRe.FindStringIndex(card.Name)
 		if stem == nil || !mtgmatcher.Equals(card.Name[:stem[0]], inCard.Name) ||
-			!numberMatches(number, card.Number) {
+			!matches(number, card.Number) {
 			continue
 		}
 		if adopt != "" && !mtgmatcher.Equals(adopt, card.Name) {
@@ -108,6 +123,31 @@ func adoptQualifiedName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if adopt != "" {
 		inCard.Name = adopt
 	}
+}
+
+// setSpellsNumber reports whether the set prints the number exactly as the
+// input wrote it.
+func setSpellsNumber(set *mtgmatcher.Set, number string) bool {
+	for i := range set.Cards {
+		if strings.EqualFold(number, set.Cards[i].Number) {
+			return true
+		}
+	}
+	return false
+}
+
+// carries is editionCarries under a caller-chosen number compare.
+func carries(set *mtgmatcher.Set, name, number string, matches func(string, string) bool) bool {
+	normalized := mtgmatcher.Normalize(name)
+	for i := range set.Cards {
+		if mtgmatcher.Normalize(set.Cards[i].Name) != normalized {
+			continue
+		}
+		if number == "" || matches(number, set.Cards[i].Number) {
+			return true
+		}
+	}
+	return false
 }
 
 // respellName adopts the spelling the input's own edition files the card
@@ -223,16 +263,7 @@ func editionSet(b *mtgmatcher.Backend, edition string) *mtgmatcher.Set {
 // editionCarries reports whether the set prints the name, under the given
 // collector number when one is known.
 func editionCarries(set *mtgmatcher.Set, name, number string) bool {
-	normalized := mtgmatcher.Normalize(name)
-	for i := range set.Cards {
-		if mtgmatcher.Normalize(set.Cards[i].Name) != normalized {
-			continue
-		}
-		if number == "" || numberMatches(number, set.Cards[i].Number) {
-			return true
-		}
-	}
-	return false
+	return carries(set, name, number, numberMatches)
 }
 
 // editionTokenAt answers the one token the set prints under the number, or
