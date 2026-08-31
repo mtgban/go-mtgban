@@ -1,0 +1,26 @@
+name: onepiece / gamenerdz
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [gamenerdz_onepiece]
+  schedule:
+    - cron: "36 22 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-gamenerdz
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: gamenerdz_onepiece
+      game: "onepiece"
+      datastore-filepath: b2://mtgban-datastore/onepiece/onepiece.json.xz
+    secrets: inherit

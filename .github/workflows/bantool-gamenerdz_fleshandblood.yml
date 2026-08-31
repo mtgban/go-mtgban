@@ -1,0 +1,26 @@
+name: fleshandblood / gamenerdz
+
+on:
+  workflow_dispatch: {}
+  repository_dispatch:
+    types: [gamenerdz_fleshandblood]
+  schedule:
+    - cron: "41 22 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bantool-gamenerdz
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  deploy:
+    name: ${{ github.workflow }}
+    uses: ./.github/workflows/run-bantool.yml
+    with:
+      target: gamenerdz_fleshandblood
+      game: "fleshandblood"
+      datastore-filepath: b2://mtgban-datastore/fleshandblood/fleshandblood.json.xz
+    secrets: inherit
