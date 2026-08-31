@@ -6,6 +6,25 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
+// neonInkColors are the Neon Ink treatments the catalog files under a colour.
+var neonInkColors = []string{"Red", "Green", "Blue", "Yellow", "Pink"}
+
+// neonInkWording spells a Neon Ink colour the way the catalog files it. The
+// buylist drops the word the treatment is named for and writes "Neon Red",
+// which names no treatment at all and reads as the plain printing standing
+// beside the four coloured ones.
+func neonInkWording(variation string) string {
+	if !strings.HasPrefix(variation, "Neon ") || strings.HasPrefix(variation, "Neon Ink") {
+		return variation
+	}
+	for _, color := range neonInkColors {
+		if strings.HasPrefix(variation, "Neon "+color) {
+			return "Neon Ink " + strings.TrimPrefix(variation, "Neon ")
+		}
+	}
+	return variation
+}
+
 func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) {
 	var variation string
 
@@ -105,6 +124,8 @@ func preprocess(cardName, edition, notes string) (*mtgmatcher.InputCard, error) 
 		}
 		variation = strings.Join(variants[1:], " ")
 	}
+
+	variation = neonInkWording(variation)
 
 	// Repeat to catch numbers
 	if mtgmatcher.IsBasicLand(cardName) {
