@@ -134,6 +134,8 @@ var editionAliases = map[string]string{
 	// The box the storefronts sell a set of decks in, which the catalog
 	// files the cards under the set's own name.
 	"2025 Mega-Pack Bundle":               "2025 Mega-Pack",
+	"Duel Devastator Box":                 "Duel Devastator",
+	"Duel Overload Box Set":               "Duel Overload",
 	"Legendary 5D's Decks Box Set":        "Legendary 5D's Decks",
 	"Legendary Modern 2026 Decks Box Set": "Legendary Modern Decks 2026",
 
