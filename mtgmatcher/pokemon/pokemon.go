@@ -80,6 +80,12 @@ type DatastoreCard struct {
 	Rarity  string `json:"rarity"`
 	Type    string `json:"type"`
 
+	// Total is the set size the card is printed with, the denominator of
+	// the "082/167" on the card face. Older datastores spell it into
+	// Number instead; either way the loader keeps the card's own part and
+	// the total apart.
+	Total string `json:"total,omitempty"`
+
 	// Finish is the TCGplayer printing this entry prices, one crossing of
 	// the print run and the foil treatment. Entries sharing everything but
 	// the finish are the same product sold several ways.
@@ -348,7 +354,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			// nonfoil query with its holo, and output() folds a
 			// storefront's unreliable flag onto the class it does sell.
 			Finishes: soldFinishes(group),
-			Number:   card.Number,
+			Number:   ownNumber(card),
 			Images: map[string]string{
 				"full":      card.Image,
 				"thumbnail": card.Image,
@@ -360,7 +366,7 @@ func (payload *Datastore) newBackend() *mtgmatcher.Backend {
 			IsPromo:    payload.Sets[card.SetCode].Type == setTypePromo,
 			Printings:  printingsByName[mtgmatcher.Normalize(card.Name)],
 
-			OriginalNumber: card.Number,
+			OriginalNumber: printedNumber(card),
 		}
 
 		// Register the uuid each printing prices under the name the game's
@@ -500,4 +506,24 @@ func trimFinishSuffix(id string) string {
 		}
 	}
 	return id
+}
+
+// ownNumber is the card's part of the collector number alone: the "082" of
+// the "082/167" printed on the card, the set total being the set's fact
+// rather than the card's. An older datastore writes the whole face into
+// Number, so the split happens here rather than trusting either shape.
+func ownNumber(card *DatastoreCard) string {
+	number, _, _ := strings.Cut(card.Number, "/")
+	return number
+}
+
+// printedNumber is the collector number as the card face prints it, total
+// and all, which is what tells a reprint from its original: Cascoon is
+// 44/130 in Diamond & Pearl and 44/127 in Platinum. A card without a total
+// answers with its bare number.
+func printedNumber(card *DatastoreCard) string {
+	if card.Total != "" && !strings.Contains(card.Number, "/") {
+		return card.Number + "/" + card.Total
+	}
+	return card.Number
 }
