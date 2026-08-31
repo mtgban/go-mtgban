@@ -225,12 +225,9 @@ func (ct *Market) processProducts(channel chan<- resultChan, bpID int, products 
 			}
 		}
 
-		// Foil listings share the plain id; adopt the foil id when one exists
-		// (Magic only: Lorcana's finish is already carried on the input).
-		if ct.gameID == GameMagic && product.Properties.MTGFoil && mtgmatcher.HasFoilPrinting(theCard.Name) {
-			if cardIDFoil, e := mtgmatcher.MatchID(cardID, true); e == nil {
-				cardID = cardIDFoil
-			}
+		// Magic only: the other games carry the finish on the input already.
+		if ct.gameID == GameMagic && product.Properties.MTGFoil {
+			cardID = foilPrintingID(cardID, theCard.Name)
 		}
 
 		qty := product.Quantity
