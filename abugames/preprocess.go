@@ -57,6 +57,35 @@ var promoTags = []string{
 	"TopDeck Magazine",
 }
 
+// boosterFun is the mark the catalog gives every frame a set prints beside
+// its plain one - borderless, showcase, extended art, retro. A drop marker
+// like sldbonus is not one of them: it says where a card came from, not what
+// frame it wears.
+const boosterFun = "boosterfun"
+
+// namesTreatment reports a variation that names the frame a card is printed
+// in, which is the wording this storefront's own collector number contradicts.
+func namesTreatment(variation string) bool {
+	probe := mtgmatcher.InputCard{Variation: variation}
+	return probe.IsBorderless() || probe.IsExtendedArt() || probe.IsShowcase() ||
+		probe.IsGenericExtendedArt() || probe.Contains("Retro Frame")
+}
+
+// resolved answers the printing a description names, and nil when it names
+// none. It matches a copy, so the matcher's own edits stay in the probe.
+func resolved(name, edition, variation string, foil bool) *mtgmatcher.CardObject {
+	probe := mtgmatcher.InputCard{Name: name, Edition: edition, Variation: variation, Foil: foil}
+	id, err := mtgmatcher.Match(&probe)
+	if err != nil {
+		return nil
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil {
+		return nil
+	}
+	return co
+}
+
 // artworkLetterRe matches the letter a basic land's title opens its variation
 // with, and the words the storefront hangs off it.
 var artworkLetterRe = regexp.MustCompile(`^([A-F])\b`)
@@ -358,6 +387,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	}
 
 	// Use collector number data when the variation carries has none, unless for a couple of editions
+	var numbered bool
 	if card.Number != "" && mtgmatcher.ExtractNumberAny(variation) == "" {
 		switch edition {
 		case "Unfinity", "Promo":
@@ -366,6 +396,7 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 				variation += " "
 			}
 			variation += card.Number
+			numbered = true
 		}
 	}
 	// A basic land's artwork is the only thing telling one of its printings
@@ -378,6 +409,27 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	letter := artworkLetter(cardName, variation)
 	if letter != "" {
 		variation = letter
+	}
+
+	// This storefront gives every frame of a card the base printing's own
+	// collector number - the extended art of Platoon Dispenser is filed
+	// under BRO 36 where the catalog has it at 310 - so a listing naming a
+	// frame answers with the plain card the number just read states. Ask
+	// again without that number, and keep the answer only where it reaches
+	// a frame the catalog marks.
+	//
+	// Only a number this scraper appended is dropped: a listing spelling
+	// its own is one where the wording and the number already agree.
+	if numbered && namesTreatment(variation) {
+		plain := resolved(cardName, edition, variation, isFoil)
+		if plain != nil && len(plain.PromoTypes) == 0 {
+			bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
+			marked := resolved(cardName, edition, bare, isFoil)
+			if marked != nil && marked.HasPromoType(boosterFun) &&
+				marked.Foil == plain.Foil && marked.Etched == plain.Etched {
+				variation = bare
+			}
+		}
 	}
 
 	// Restore canonical name for split cards
