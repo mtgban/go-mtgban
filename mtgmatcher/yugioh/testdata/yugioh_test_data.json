@@ -8,6 +8,15 @@
         "uuid": "lob-001_21792_1e"
     },
     {
+        "description": "a bare tail is spelled out by the set it names",
+        "input": {
+            "name": "Different Dimension Gate",
+            "variant": "ENF17 Common Common",
+            "edition": "Speed Duel GX: Duelists of Shadows"
+        },
+        "uuid": "sgx3-enf17_489489_1e"
+    },
+    {
         "description": "a bracketed decoration reads as the parenthetical it is",
         "input": {
             "name": "Knightmare Unicorn [Alt Art]",
@@ -96,6 +105,15 @@
             "finish": "Limited"
         },
         "uuid": "ys13-env03_69074_lim"
+    },
+    {
+        "description": "a set named without the box it is sold in",
+        "input": {
+            "name": "Polymerization",
+            "variant": "ENG11 Common",
+            "edition": "Speed Duel GX: Duel Academy"
+        },
+        "uuid": "sgx1-eng11_266197_1e"
     },
     {
         "description": "a tier named in part picks the one printing that says all of it",
@@ -379,6 +397,15 @@
             "finish": "1st Edition"
         },
         "uuid": "ys13-env03_69074_1e"
+    },
+    {
+        "description": "the sibling deck letter keeps its own printing",
+        "input": {
+            "name": "Different Dimension Gate",
+            "variant": "ENG14 Common Common",
+            "edition": "Speed Duel GX: Duelists of Shadows"
+        },
+        "uuid": "sgx3-eng14_489506_1e"
     },
     {
         "description": "unlimited wording is not read as limited",
