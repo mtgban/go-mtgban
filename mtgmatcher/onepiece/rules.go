@@ -2,6 +2,7 @@ package onepiece
 
 import (
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -497,6 +498,13 @@ func variantPointedAt(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named
 		// though - that wording has said where to look, and unpinning the
 		// edition throws the answer away.
 		if !named && slugsRunOf(wording, co.PromoTypes) {
+			return true
+		}
+		// A set's own word for a treatment points at it as plainly as the
+		// game's: the wording says manga and the printing is the one
+		// Premium Booster Vol. 2 files that art under, which the edition
+		// naming the set the card was first printed in would delete.
+		if setVocabularyNames(wording, co.SetCode, co.PromoTypes) {
 			return true
 		}
 	}
@@ -1128,6 +1136,37 @@ func runNamedVariants(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, numbe
 		}
 	}
 	return out
+}
+
+// setVocabulary spells a treatment the way one set files it, for the sets
+// whose word for it differs from the game's own.
+//
+// Premium Booster -The Best- Vol. 2 reprints cards in manga art and files
+// every one of them as an alternate art: the catalog carries 46 of those and
+// no manga at all, where Vol. 1 carries both as separate things. The art is
+// manga - line work, screentone and a panel's speech bubble - and every
+// storefront sells it by that name, so the two words are naming one printing
+// and only in this set.
+var setVocabulary = map[string]map[string]string{
+	"PRB-02": {"manga": "Alternate Art"},
+}
+
+// setVocabularyNames reports whether a set's own word for a treatment is what
+// the wording says, and this printing wears the label that word names.
+func setVocabularyNames(wording, setCode string, promoTypes []string) bool {
+	spellings, found := setVocabulary[setCode]
+	if !found {
+		return false
+	}
+	for storefront, catalog := range spellings {
+		if !mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(storefront)) {
+			continue
+		}
+		if slices.Contains(promoTypes, mtgmatcher.PromoTypeSlug(catalog)) {
+			return true
+		}
+	}
+	return false
 }
 
 // catalogVocabulary spells a treatment the way the catalog files it, for the
