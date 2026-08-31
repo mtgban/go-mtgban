@@ -661,9 +661,9 @@ func filterCandidates(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardS
 		var plain, full []mtgmatcher.Card
 		for _, card := range candidates {
 			switch {
-			case fullNumberMatches(inCard.Variation, card.Number):
+			case fullNumberMatches(inCard.Variation, card.OriginalNumber):
 				full = append(full, card)
-			case strings.EqualFold(number, card.Number):
+			case strings.EqualFold(number, card.OriginalNumber):
 				plain = append(plain, card)
 			}
 		}
@@ -715,7 +715,7 @@ func filterByNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet
 		if number != "" && !numberMatchesCard(b, number, &card) {
 			continue
 		}
-		if totalDisagrees(inCard.Variation, card.Number) {
+		if totalDisagrees(inCard.Variation, card.OriginalNumber) {
 			continue
 		}
 		// An input naming a treatment re-keys the copy's FoilUUIDs so the

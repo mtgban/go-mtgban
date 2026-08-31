@@ -26,27 +26,27 @@ func TestNumberMarker(t *testing.T) {
 		{
 			desc:    "the marked number reaches the pattern the wording names",
 			in:      mtgmatcher.InputCard{Name: "Umbreon", Edition: "SV: Prismatic Evolutions", Variation: "059M 1st Edition Master Ball Pattern"},
-			wantSet: "PRE", wantNum: "059/131", wantVar: "Master Ball Pattern",
+			wantSet: "PRE", wantNum: "059", wantVar: "Master Ball Pattern",
 		},
 		{
 			desc:    "the same number written plain still reaches the plain printing",
 			in:      mtgmatcher.InputCard{Name: "Umbreon", Edition: "SV: Prismatic Evolutions", Variation: "059 1st Edition"},
-			wantSet: "PRE", wantNum: "059/131", wantVar: "",
+			wantSet: "PRE", wantNum: "059", wantVar: "",
 		},
 		{
 			desc:    "and the pattern is reachable without the marker too",
 			in:      mtgmatcher.InputCard{Name: "Umbreon", Edition: "SV: Prismatic Evolutions", Variation: "059 Master Ball Pattern"},
-			wantSet: "PRE", wantNum: "059/131", wantVar: "Master Ball Pattern",
+			wantSet: "PRE", wantNum: "059", wantVar: "Master Ball Pattern",
 		},
 		{
 			desc:    "a marked number beside the run the printing was reprinted in",
 			in:      mtgmatcher.InputCard{Name: "Alakazam", Edition: "Base Set Shadowless", Variation: "001A Unlimited"},
-			wantSet: "BSS", wantNum: "001/102",
+			wantSet: "BSS", wantNum: "001",
 		},
 		{
 			desc:    "a marked number in a gallery, whose prefix the storefront rebuilds",
 			in:      mtgmatcher.InputCard{Name: "Abomasnow", Edition: "SWSH10: Astral Radiance Trainer Gallery", Variation: "TG001C 1st Edition"},
-			wantSet: "SWSH10-TG", wantNum: "TG01/TG30",
+			wantSet: "SWSH10-TG", wantNum: "TG01",
 		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
