@@ -156,6 +156,11 @@ var promoTypeElements = []promoTypeElement{
 		Tags:      []string{"Scroll", "Showcase Silver Foil"},
 	},
 	{
+		PromoType:     PromoTypeSilverScroll,
+		Tags:          []string{"Silver Scroll"},
+		OnlyWhenNamed: true,
+	},
+	{
 		PromoType: PromoTypePoster,
 		Tags:      []string{"Poster", "Hand Drawn"},
 	},
