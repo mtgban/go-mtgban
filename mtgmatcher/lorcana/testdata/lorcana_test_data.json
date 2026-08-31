@@ -5891,11 +5891,11 @@
     {
         "description": "foil-only promo listed without the flag",
         "input": {
-            "name": "A Whole New World",
-            "variant": "010B",
+            "name": "Maleficent - Exultant Spellcaster",
+            "variant": "004B",
             "edition": "Disney Lorcana Promo Cards"
         },
-        "uuid": "1199"
+        "uuid": "-705086_holofoil"
     },
     {
         "description": "name typeset with a hyphen character instead of a dash",
