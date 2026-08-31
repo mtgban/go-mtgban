@@ -50,15 +50,18 @@ func TestLabelOverlapOnNumberedCards(t *testing.T) {
 			want: "p-135_697484_foil",
 		},
 		{
-			// The winner's label is the plain one with a word appended, so a
-			// wording naming only the words they share has named nothing that
-			// tells them apart and the pair stays ambiguous. Splitting those
-			// by the stamping is finishTiebreak's job, and it only ever sees
-			// a tier the wording named in full.
-			desc: "a wording saying only what both labels say settles nothing",
+			// The winner's label is the plain one with a word appended, and
+			// the word it appends is the finishing place it was awarded for.
+			// A listing saying the event and not the place is the printing
+			// that was not awarded for one: the storefront writes the place
+			// on the listings that have it, so leaving it out says which of
+			// the pair this is. It is the plain copy that answers, never the
+			// winner's, because the winner's is the scarce half and a
+			// listing has to ask for it.
+			desc: "the place left unsaid is the place not awarded",
 			in: mtgmatcher.InputCard{Name: "Monkey.D.Luffy", Variation: "P-135 Release Event",
 				Edition: "Promos"},
-			err: true,
+			want: "p-135_697483",
 		},
 		{
 			desc: "a label said all but its treatment word wins its pair",

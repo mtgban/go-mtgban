@@ -600,6 +600,15 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	}
 	candidates = narrowed
 
+	// A tournament printing is handed out for a finishing place, and the
+	// catalog spells that place at the end of the label beside the event
+	// that awarded it. A listing naming no place is not asking for one.
+	narrowed = placeNarrow(b, inCard, candidates)
+	if len(narrowed) == 1 {
+		return narrowed
+	}
+	candidates = narrowed
+
 	// The letter tail cardtrader appends to a number ("OP01-001a") means a
 	// variant printing without saying which; the V.n index says the same.
 	// Either demand drops the base printing from consideration.
@@ -1251,6 +1260,63 @@ func errataNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidate
 		return picked
 	}
 	return sameRun
+}
+
+// promoPlaces are the finishing places a tournament printing is awarded for,
+// which the catalog writes as the last word of the label.
+var promoPlaces = []string{"winner", "finalist", "participant"}
+
+// placeAwarded reads the finishing place a label is awarded for, "" for a
+// label naming none. Only the last word is read: the catalog also sells a
+// "Winner Pack" and a "Finalist Card Set", products named after a place
+// rather than awarded for one, and those carry their own noun behind it.
+func placeAwarded(label string) string {
+	fields := strings.Fields(label)
+	if len(fields) == 0 {
+		return ""
+	}
+	last := mtgmatcher.PromoTypeSlug(fields[len(fields)-1])
+	if slices.Contains(promoPlaces, last) {
+		return last
+	}
+	return ""
+}
+
+// placeNarrow drops the printings awarded for a finishing place the wording
+// never mentions.
+//
+// The catalog files the places of one event as labels sharing a stem - "CS
+// 2023 Top Players Pack", and the same with "Winner" or "Finalist" behind it
+// - and the stem is no help in telling them apart, because this storefront
+// writes that event as "Championship 2023". So a listing of the plain
+// printing describes no label at all and every place ties with it.
+//
+// Only the absence of the word is read, never its presence. Where the word
+// is there, what it means is genuinely unclear - "Beginners Deck Party |
+// Winner Pack" is the printing awarded for winning, while "Winner Pack Vol.
+// 6" is a product named after one - and every rule tried on that wording
+// moved listings onto the wrong side. Where the word is absent the listing
+// has said nothing about a place, so the printings awarded for one are the
+// answers it cannot have, and refusing them is the half that matters: the
+// places are the scarce printings, and answering a plain listing with one
+// prices a common card as a rare.
+func placeNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
+	for _, place := range promoPlaces {
+		if strings.Contains(wording, place) {
+			return candidates
+		}
+	}
+	var kept []mtgmatcher.Card
+	for _, card := range candidates {
+		if placeAwarded(promoLabel(b, card)) == "" {
+			kept = append(kept, card)
+		}
+	}
+	if len(kept) == 0 {
+		return candidates
+	}
+	return kept
 }
 
 // runNamedVariants keeps the printings whose set the variation names and
