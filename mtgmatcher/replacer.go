@@ -45,6 +45,17 @@ var replacerStrings = []string{
 	"‐", "",
 	"–", "",
 	"’", "",
+	// Storefront exports carry invisible formatting marks: every Yu-Gi-Oh
+	// name coolstuffinc spells with one ends in U+200E. Left standing they
+	// are one more letter, and no datastore name is spelled with any of
+	// them.
+	"\u200b", "",
+	"\u200c", "",
+	"\u200d", "",
+	"\u200e", "",
+	"\u200f", "",
+	"\u00ad", "",
+	"\ufeff", "",
 	",", "",
 	"®", "",
 	":", "",
