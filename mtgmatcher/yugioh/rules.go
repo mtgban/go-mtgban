@@ -573,7 +573,13 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 				pooled[set.Code] = cards
 			}
 		}
-		cardSet = pooled
+		// Narrow to the pair only where the pair holds the card. A name
+		// neither set carries - a misfiled row, a product the datastore has
+		// yet to learn - would otherwise be narrowed to nothing at all, and
+		// answer with no candidates rather than with its real printing.
+		if len(pooled) > 0 {
+			cardSet = pooled
+		}
 	}
 
 	number := extractNumber(inCard.Variation)
