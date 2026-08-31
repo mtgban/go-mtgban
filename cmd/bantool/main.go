@@ -154,15 +154,6 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardkingdom_sealed": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := cardkingdom.NewScraperSealed()
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Partner = os.Getenv("CK_PARTNER")
-			scraper.PreserveOOS = true
-			return scraper, nil
-		},
-	},
 	"cardkingdom_graded": {
 		Init: func() (mtgban.Scraper, error) {
 			scraper, err := cardkingdom.NewScraperGraded()
@@ -174,8 +165,32 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardkingdom_sealed": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := cardkingdom.NewScraperSealed()
+			scraper.LogCallback = GlobalLogCallback
+			scraper.Partner = os.Getenv("CK_PARTNER")
+			scraper.PreserveOOS = true
+			return scraper, nil
+		},
+	},
 	"cardmarket": {
 		Init: cardmarketIndexScraper(cardmarket.GameMagic),
+	},
+	"cardmarket_fleshandblood": {
+		Init: cardmarketBridgedIndexScraper(cardmarket.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
+	},
+	"cardmarket_lorcana": {
+		Init: cardmarketIndexScraper(cardmarket.GameLorcana),
+	},
+	"cardmarket_onepiece": {
+		Init: cardmarketIndexScraper(cardmarket.GameOnePiece),
+	},
+	"cardmarket_pokemon": {
+		Init: cardmarketBridgedIndexScraper(cardmarket.GamePokemon, cardtrader.GamePokemon),
+	},
+	"cardmarket_riftbound": {
+		Init: cardmarketIndexScraper(cardmarket.GameRiftbound),
 	},
 	"cardmarket_sealed": {
 		Init: func() (mtgban.Scraper, error) {
@@ -197,17 +212,105 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"cardmarket_sealed_fleshandblood": {
+		Init: cardmarketSealedScraper(cardmarket.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
+	},
+	"cardmarket_sealed_lorcana": {
+		Init: cardmarketSealedScraper(cardmarket.GameLorcana, cardtrader.GameLorcana),
+	},
+	"cardmarket_sealed_onepiece": {
+		Init: cardmarketSealedScraper(cardmarket.GameOnePiece, cardtrader.GameOnePiece),
+	},
+	"cardmarket_sealed_pokemon": {
+		Init: cardmarketSealedScraper(cardmarket.GamePokemon, cardtrader.GamePokemon),
+	},
+	"cardmarket_sealed_riftbound": {
+		Init: cardmarketSealedScraper(cardmarket.GameRiftbound, cardtrader.GameRiftbound),
+	},
+	"cardmarket_sealed_yugioh": {
+		Init: cardmarketSealedScraper(cardmarket.GameYuGiOh, cardtrader.GameYuGiOh),
+	},
+	"cardmarket_yugioh": {
+		Init: cardmarketBridgedIndexScraper(cardmarket.GameYuGiOh, cardtrader.GameYuGiOh),
+	},
 	"cardtrader": {
 		Init: cardtraderMarketScraper(cardtrader.GameMagic),
+	},
+	"cardtrader_fleshandblood": {
+		Init: cardtraderMarketScraper(cardtrader.GameFleshAndBlood),
+	},
+	"cardtrader_lorcana": {
+		Init: cardtraderMarketScraper(cardtrader.GameLorcana),
+	},
+	"cardtrader_onepiece": {
+		Init: cardtraderMarketScraper(cardtrader.GameOnePiece),
+	},
+	"cardtrader_pokemon": {
+		Init: cardtraderMarketScraper(cardtrader.GamePokemon),
+	},
+	"cardtrader_riftbound": {
+		Init: cardtraderMarketScraper(cardtrader.GameRiftbound),
 	},
 	"cardtrader_sealed": {
 		Init: cardtraderSealedScraper(cardtrader.GameMagic),
 	},
+	"cardtrader_sealed_fleshandblood": {
+		Init: cardtraderSealedScraper(cardtrader.GameFleshAndBlood),
+	},
+	"cardtrader_sealed_lorcana": {
+		Init: cardtraderSealedScraper(cardtrader.GameLorcana),
+	},
+	"cardtrader_sealed_onepiece": {
+		Init: cardtraderSealedScraper(cardtrader.GameOnePiece),
+	},
+	"cardtrader_sealed_pokemon": {
+		Init: cardtraderSealedScraper(cardtrader.GamePokemon),
+	},
+	"cardtrader_sealed_riftbound": {
+		Init: cardtraderSealedScraper(cardtrader.GameRiftbound),
+	},
+	"cardtrader_sealed_yugioh": {
+		Init: cardtraderSealedScraper(cardtrader.GameYuGiOh),
+	},
+	"cardtrader_yugioh": {
+		Init: cardtraderMarketScraper(cardtrader.GameYuGiOh),
+	},
 	"coolstuffinc": {
 		Init: coolstuffincScraper(coolstuffinc.GameMagic),
 	},
+	"coolstuffinc_lorcana": {
+		Init: coolstuffincScraper(coolstuffinc.GameLorcana),
+	},
+	"coolstuffinc_onepiece": {
+		Init: coolstuffincScraper(coolstuffinc.GameOnePiece),
+	},
+	"coolstuffinc_pokemon": {
+		Init: coolstuffincScraper(coolstuffinc.GamePokemon),
+	},
+	"coolstuffinc_riftbound": {
+		Init: coolstuffincScraper(coolstuffinc.GameRiftbound),
+	},
 	"coolstuffinc_sealed": {
 		Init: coolstuffincSealedScraper(coolstuffinc.GameMagic),
+	},
+	"coolstuffinc_sealed_lorcana": {
+		Init: coolstuffincSealedScraper(coolstuffinc.GameLorcana),
+	},
+	"coolstuffinc_sealed_onepiece": {
+		Init: coolstuffincSealedScraper(coolstuffinc.GameOnePiece),
+	},
+	"coolstuffinc_sealed_pokemon": {
+		Init: coolstuffincSealedScraper(coolstuffinc.GamePokemon),
+	},
+	"coolstuffinc_sealed_riftbound": {
+		Init: coolstuffincSealedScraper(coolstuffinc.GameRiftbound),
+	},
+	"coolstuffinc_sealed_yugioh": {
+		Init:       coolstuffincSealedScraper(coolstuffinc.GameYuGiOh),
+		OnlySeller: true,
+	},
+	"coolstuffinc_yugioh": {
+		Init: coolstuffincScraper(coolstuffinc.GameYuGiOh),
 	},
 	"hareruya": {
 		Init: func() (mtgban.Scraper, error) {
@@ -260,17 +363,12 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"miniaturemarket_sealed_lorcana": {
-		Init: miniaturemarketSealedScraper(miniaturemarket.GameLorcana),
-	},
-	"miniaturemarket_sealed_riftbound": {
-		Init: miniaturemarketSealedScraper(miniaturemarket.GameRiftbound),
-	},
-	"miniaturemarket_sealed_onepiece": {
-		Init: miniaturemarketSealedScraper(miniaturemarket.GameOnePiece),
-	},
-	"miniaturemarket_sealed_fleshandblood": {
-		Init: miniaturemarketSealedScraper(miniaturemarket.GameFleshAndBlood),
+	"merlion_riftbound": {
+		Init: func() (mtgban.Scraper, error) {
+			scraper := merlion.NewScraper()
+			scraper.LogCallback = GlobalLogCallback
+			return scraper, nil
+		},
 	},
 	"miniaturemarket_sealed": {
 		Init: func() (mtgban.Scraper, error) {
@@ -281,6 +379,18 @@ var options = map[string]*scraperOption{
 			}
 			return scraper, nil
 		},
+	},
+	"miniaturemarket_sealed_fleshandblood": {
+		Init: miniaturemarketSealedScraper(miniaturemarket.GameFleshAndBlood),
+	},
+	"miniaturemarket_sealed_lorcana": {
+		Init: miniaturemarketSealedScraper(miniaturemarket.GameLorcana),
+	},
+	"miniaturemarket_sealed_onepiece": {
+		Init: miniaturemarketSealedScraper(miniaturemarket.GameOnePiece),
+	},
+	"miniaturemarket_sealed_riftbound": {
+		Init: miniaturemarketSealedScraper(miniaturemarket.GameRiftbound),
 	},
 	"mintcard": {
 		Init: func() (mtgban.Scraper, error) {
@@ -339,11 +449,38 @@ var options = map[string]*scraperOption{
 	"starcitygames": {
 		Init: starcitygamesScraper(starcitygames.GameMagic),
 	},
+	"starcitygames_fleshandblood": {
+		Init: starcitygamesScraper(starcitygames.GameFleshAndBlood),
+	},
+	"starcitygames_lorcana": {
+		Init: starcitygamesScraper(starcitygames.GameLorcana),
+	},
+	"starcitygames_riftbound": {
+		Init: starcitygamesScraper(starcitygames.GameRiftbound),
+	},
 	"starcitygames_sealed": {
 		Init: starcitygamesSealedScraper(starcitygames.GameMagic),
 	},
+	"starcitygames_sealed_fleshandblood": {
+		Init: starcitygamesSealedScraper(starcitygames.GameFleshAndBlood),
+	},
+	"starcitygames_sealed_lorcana": {
+		Init: starcitygamesSealedScraper(starcitygames.GameLorcana),
+	},
+	"starcitygames_sealed_riftbound": {
+		Init: starcitygamesSealedScraper(starcitygames.GameRiftbound),
+	},
 	"strikezone": {
 		Init: strikezoneScraper(strikezone.GameMagic),
+	},
+	"strikezone_fleshandblood": {
+		Init: strikezoneScraper(strikezone.GameFleshAndBlood),
+	},
+	"strikezone_lorcana": {
+		Init: strikezoneScraper(strikezone.GameLorcana),
+	},
+	"strikezone_pokemon": {
+		Init: strikezoneScraper(strikezone.GamePokemon),
 	},
 	"tcg_index": {
 		Init: func() (mtgban.Scraper, error) {
@@ -365,6 +502,24 @@ var options = map[string]*scraperOption{
 			}
 			return scraper, nil
 		},
+	},
+	"tcg_index_fleshandblood": {
+		Init: tcgIndexScraper(mtgban.GameFleshAndBlood),
+	},
+	"tcg_index_lorcana": {
+		Init: tcgIndexScraper(mtgban.GameLorcana),
+	},
+	"tcg_index_onepiece": {
+		Init: tcgIndexScraper(mtgban.GameOnePiece),
+	},
+	"tcg_index_pokemon": {
+		Init: tcgIndexScraper(mtgban.GamePokemon),
+	},
+	"tcg_index_riftbound": {
+		Init: tcgIndexScraper(mtgban.GameRiftbound),
+	},
+	"tcg_index_yugioh": {
+		Init: tcgIndexScraper(mtgban.GameYuGiOh),
 	},
 	"tcg_market": {
 		Init: func() (mtgban.Scraper, error) {
@@ -402,6 +557,24 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
+	"tcg_market_fleshandblood": {
+		Init: tcgMarketScraper(mtgban.GameFleshAndBlood),
+	},
+	"tcg_market_lorcana": {
+		Init: tcgMarketScraper(mtgban.GameLorcana),
+	},
+	"tcg_market_onepiece": {
+		Init: tcgMarketScraper(mtgban.GameOnePiece),
+	},
+	"tcg_market_pokemon": {
+		Init: tcgMarketScraper(mtgban.GamePokemon),
+	},
+	"tcg_market_riftbound": {
+		Init: tcgMarketScraper(mtgban.GameRiftbound),
+	},
+	"tcg_market_yugioh": {
+		Init: tcgMarketScraper(mtgban.GameYuGiOh),
+	},
 	"tcg_sealed": {
 		Init: func() (mtgban.Scraper, error) {
 			tcgPublicID := os.Getenv("TCGPLAYER_PUBLIC_KEY")
@@ -437,6 +610,24 @@ var options = map[string]*scraperOption{
 
 			return scraper, nil
 		},
+	},
+	"tcg_sealed_fleshandblood": {
+		Init: tcgSealedScraper(mtgban.GameFleshAndBlood),
+	},
+	"tcg_sealed_lorcana": {
+		Init: tcgSealedScraper(mtgban.GameLorcana),
+	},
+	"tcg_sealed_onepiece": {
+		Init: tcgSealedScraper(mtgban.GameOnePiece),
+	},
+	"tcg_sealed_pokemon": {
+		Init: tcgSealedScraper(mtgban.GamePokemon),
+	},
+	"tcg_sealed_riftbound": {
+		Init: tcgSealedScraper(mtgban.GameRiftbound),
+	},
+	"tcg_sealed_yugioh": {
+		Init: tcgSealedScraper(mtgban.GameYuGiOh),
 	},
 	"tcg_syplist": {
 		Init: func() (mtgban.Scraper, error) {
@@ -480,206 +671,14 @@ var options = map[string]*scraperOption{
 			return scraper, nil
 		},
 	},
-	"cardmarket_lorcana": {
-		Init: cardmarketIndexScraper(cardmarket.GameLorcana),
-	},
-	"cardtrader_lorcana": {
-		Init: cardtraderMarketScraper(cardtrader.GameLorcana),
-	},
-	"cardmarket_sealed_lorcana": {
-		Init: cardmarketSealedScraper(cardmarket.GameLorcana, cardtrader.GameLorcana),
-	},
-	"cardtrader_sealed_lorcana": {
-		Init: cardtraderSealedScraper(cardtrader.GameLorcana),
-	},
-	"coolstuffinc_sealed_lorcana": {
-		Init: coolstuffincSealedScraper(coolstuffinc.GameLorcana),
-	},
-	"coolstuffinc_lorcana": {
-		Init: coolstuffincScraper(coolstuffinc.GameLorcana),
-	},
-	"starcitygames_sealed_lorcana": {
-		Init: starcitygamesSealedScraper(starcitygames.GameLorcana),
-	},
-	"starcitygames_lorcana": {
-		Init: starcitygamesScraper(starcitygames.GameLorcana),
-	},
-	"strikezone_lorcana": {
-		Init: strikezoneScraper(strikezone.GameLorcana),
-	},
-	"strikezone_pokemon": {
-		Init: strikezoneScraper(strikezone.GamePokemon),
-	},
-	"strikezone_fleshandblood": {
-		Init: strikezoneScraper(strikezone.GameFleshAndBlood),
-	},
-	"tcg_index_lorcana": {
-		Init: tcgIndexScraper(mtgban.GameLorcana),
-	},
-	"tcg_market_lorcana": {
-		Init: tcgMarketScraper(mtgban.GameLorcana),
-	},
-	"tcg_sealed_lorcana": {
-		Init: tcgSealedScraper(mtgban.GameLorcana),
-	},
-
-	"cardmarket_riftbound": {
-		Init: cardmarketIndexScraper(cardmarket.GameRiftbound),
-	},
-	"cardmarket_onepiece": {
-		Init: cardmarketIndexScraper(cardmarket.GameOnePiece),
-	},
-	"cardmarket_yugioh": {
-		Init: cardmarketBridgedIndexScraper(cardmarket.GameYuGiOh, cardtrader.GameYuGiOh),
-	},
-	"cardmarket_fleshandblood": {
-		Init: cardmarketBridgedIndexScraper(cardmarket.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
-	},
-	"cardmarket_pokemon": {
-		Init: cardmarketBridgedIndexScraper(cardmarket.GamePokemon, cardtrader.GamePokemon),
-	},
-	"cardtrader_riftbound": {
-		Init: cardtraderMarketScraper(cardtrader.GameRiftbound),
-	},
-	"cardtrader_onepiece": {
-		Init: cardtraderMarketScraper(cardtrader.GameOnePiece),
-	},
-	"cardtrader_yugioh": {
-		Init: cardtraderMarketScraper(cardtrader.GameYuGiOh),
-	},
-	"cardtrader_fleshandblood": {
-		Init: cardtraderMarketScraper(cardtrader.GameFleshAndBlood),
-	},
-	"cardtrader_pokemon": {
-		Init: cardtraderMarketScraper(cardtrader.GamePokemon),
-	},
-	"cardmarket_sealed_riftbound": {
-		Init: cardmarketSealedScraper(cardmarket.GameRiftbound, cardtrader.GameRiftbound),
-	},
-	"cardmarket_sealed_onepiece": {
-		Init: cardmarketSealedScraper(cardmarket.GameOnePiece, cardtrader.GameOnePiece),
-	},
-	"cardmarket_sealed_yugioh": {
-		Init: cardmarketSealedScraper(cardmarket.GameYuGiOh, cardtrader.GameYuGiOh),
-	},
-	"cardmarket_sealed_fleshandblood": {
-		Init: cardmarketSealedScraper(cardmarket.GameFleshAndBlood, cardtrader.GameFleshAndBlood),
-	},
-	"cardmarket_sealed_pokemon": {
-		Init: cardmarketSealedScraper(cardmarket.GamePokemon, cardtrader.GamePokemon),
-	},
-	"cardtrader_sealed_riftbound": {
-		Init: cardtraderSealedScraper(cardtrader.GameRiftbound),
-	},
-	"cardtrader_sealed_onepiece": {
-		Init: cardtraderSealedScraper(cardtrader.GameOnePiece),
-	},
-	"cardtrader_sealed_yugioh": {
-		Init: cardtraderSealedScraper(cardtrader.GameYuGiOh),
-	},
-	"cardtrader_sealed_fleshandblood": {
-		Init: cardtraderSealedScraper(cardtrader.GameFleshAndBlood),
-	},
-	"cardtrader_sealed_pokemon": {
-		Init: cardtraderSealedScraper(cardtrader.GamePokemon),
-	},
-	"coolstuffinc_sealed_riftbound": {
-		Init: coolstuffincSealedScraper(coolstuffinc.GameRiftbound),
-	},
-	"coolstuffinc_onepiece": {
-		Init: coolstuffincScraper(coolstuffinc.GameOnePiece),
-	},
-	"coolstuffinc_pokemon": {
-		Init: coolstuffincScraper(coolstuffinc.GamePokemon),
-	},
-	"coolstuffinc_yugioh": {
-		Init: coolstuffincScraper(coolstuffinc.GameYuGiOh),
-	},
-	"coolstuffinc_sealed_onepiece": {
-		Init: coolstuffincSealedScraper(coolstuffinc.GameOnePiece),
-	},
-	"coolstuffinc_sealed_pokemon": {
-		Init: coolstuffincSealedScraper(coolstuffinc.GamePokemon),
-	},
-	"coolstuffinc_sealed_yugioh": {
-		Init:       coolstuffincSealedScraper(coolstuffinc.GameYuGiOh),
-		OnlySeller: true,
-	},
-	"coolstuffinc_riftbound": {
-		Init: coolstuffincScraper(coolstuffinc.GameRiftbound),
-	},
-	"merlion_riftbound": {
-		Init: func() (mtgban.Scraper, error) {
-			scraper := merlion.NewScraper()
-			scraper.LogCallback = GlobalLogCallback
-			return scraper, nil
-		},
-	},
-	"starcitygames_sealed_riftbound": {
-		Init: starcitygamesSealedScraper(starcitygames.GameRiftbound),
-	},
-	"starcitygames_riftbound": {
-		Init: starcitygamesScraper(starcitygames.GameRiftbound),
-	},
-	"starcitygames_sealed_fleshandblood": {
-		Init: starcitygamesSealedScraper(starcitygames.GameFleshAndBlood),
-	},
-	"starcitygames_fleshandblood": {
-		Init: starcitygamesScraper(starcitygames.GameFleshAndBlood),
-	},
-	"tcg_index_riftbound": {
-		Init: tcgIndexScraper(mtgban.GameRiftbound),
-	},
-	"tcg_index_onepiece": {
-		Init: tcgIndexScraper(mtgban.GameOnePiece),
-	},
-	"tcg_index_yugioh": {
-		Init: tcgIndexScraper(mtgban.GameYuGiOh),
-	},
-	"tcg_index_fleshandblood": {
-		Init: tcgIndexScraper(mtgban.GameFleshAndBlood),
-	},
-	"tcg_index_pokemon": {
-		Init: tcgIndexScraper(mtgban.GamePokemon),
-	},
-	"tcg_market_riftbound": {
-		Init: tcgMarketScraper(mtgban.GameRiftbound),
-	},
-	"vegassingles_riftbound": {
-		Init: vegassinglesScraper(vegassingles.GameRiftbound),
-	},
-	"tcg_market_onepiece": {
-		Init: tcgMarketScraper(mtgban.GameOnePiece),
-	},
 	"vegassingles_onepiece": {
 		Init: vegassinglesScraper(vegassingles.GameOnePiece),
-	},
-	"tcg_market_yugioh": {
-		Init: tcgMarketScraper(mtgban.GameYuGiOh),
-	},
-	"tcg_market_fleshandblood": {
-		Init: tcgMarketScraper(mtgban.GameFleshAndBlood),
-	},
-	"tcg_market_pokemon": {
-		Init: tcgMarketScraper(mtgban.GamePokemon),
 	},
 	"vegassingles_pokemon": {
 		Init: vegassinglesScraper(vegassingles.GamePokemon),
 	},
-	"tcg_sealed_riftbound": {
-		Init: tcgSealedScraper(mtgban.GameRiftbound),
-	},
-	"tcg_sealed_onepiece": {
-		Init: tcgSealedScraper(mtgban.GameOnePiece),
-	},
-	"tcg_sealed_yugioh": {
-		Init: tcgSealedScraper(mtgban.GameYuGiOh),
-	},
-	"tcg_sealed_fleshandblood": {
-		Init: tcgSealedScraper(mtgban.GameFleshAndBlood),
-	},
-	"tcg_sealed_pokemon": {
-		Init: tcgSealedScraper(mtgban.GamePokemon),
+	"vegassingles_riftbound": {
+		Init: vegassinglesScraper(vegassingles.GameRiftbound),
 	},
 }
 
