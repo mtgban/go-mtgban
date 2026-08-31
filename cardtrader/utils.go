@@ -444,6 +444,26 @@ func gameFinish(gameID int, product Product) string {
 	return ""
 }
 
+// foilPrintingID adopts the foil printing's id for a foil listing, which
+// CardTrader files under the plain printing's. A printing that already
+// carries a finish keeps its own id: an etched listing raises the same foil
+// flag, and the flag has one bit for a card sold in two premium finishes, so
+// answering it would walk the etched printing back onto the foil one.
+func foilPrintingID(cardID, name string) string {
+	co, err := mtgmatcher.GetUUID(cardID)
+	if err != nil || co.Foil || co.Etched {
+		return cardID
+	}
+	if !mtgmatcher.HasFoilPrinting(name) {
+		return cardID
+	}
+	foilID, err := mtgmatcher.MatchID(cardID, true)
+	if err != nil {
+		return cardID
+	}
+	return foilID
+}
+
 // FormatBlueprints indexes blueprints by id and expansions by name, keeping
 // either the sealed products or the singles.
 func FormatBlueprints(blueprints []Blueprint, inExpansions []Expansion, sealed bool) (map[int]*Blueprint, map[int]string) {
