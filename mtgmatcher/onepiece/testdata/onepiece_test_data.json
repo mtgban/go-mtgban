@@ -84,6 +84,15 @@
         "uuid": "eb03-041_672789_foil"
     },
     {
+        "description": "a letter tail no label answers falls to the edition",
+        "input": {
+            "name": "Four Thousand-Brick Fist",
+            "variant": "OP05-020s 1st Anniversary Stamp",
+            "edition": "OP-05: 1st Anniversary Tournament Cards"
+        },
+        "uuid": "op05-020_530899"
+    },
+    {
         "description": "a positional V.1 keeps the plain half of a DON!! pair",
         "input": {
             "name": "DON!! (PRB02 - Boa Hancock)",
@@ -579,6 +588,15 @@
             "edition": "OP03 - Pillars of Strength Pre-Release"
         },
         "uuid": "op03-002_501695"
+    },
+    {
+        "description": "the same, for a starter deck's pre-release printings",
+        "input": {
+            "name": "Edward Weevil",
+            "variant": "ST03-002p Super Pre-Release Stamp",
+            "edition": "ST-03: Starter Deck: The Seven Warlords of the Sea"
+        },
+        "uuid": "st03-002_422215"
     },
     {
         "description": "the set code outranks a wording naming the other volume",

@@ -198,6 +198,18 @@ var onepieceSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{Name: "Nami", Variation: "OP01-016"},
 	},
 	{
+		Desc: "a letter tail no label answers falls to the edition",
+		In: mtgmatcher.InputCard{Name: "Four Thousand-Brick Fist",
+			Variation: "OP05-020s 1st Anniversary Stamp",
+			Edition:   "OP-05: 1st Anniversary Tournament Cards"},
+	},
+	{
+		Desc: "the same, for a starter deck's pre-release printings",
+		In: mtgmatcher.InputCard{Name: "Edward Weevil",
+			Variation: "ST03-002p Super Pre-Release Stamp",
+			Edition:   "ST-03: Starter Deck: The Seven Warlords of the Sea"},
+	},
+	{
 		Desc: "corrected run named by the letter on the number",
 		In: mtgmatcher.InputCard{Name: "Trafalgar Law",
 			Variation: `OP01-047α Alpha Pre-Errata Card | "1 Character to your hand: Play 1 Character card"`,

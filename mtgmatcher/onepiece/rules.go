@@ -641,7 +641,13 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 			}
 			return narrowed
 		}
-		return candidates
+		// No printing at this number wears a label at all, so the demand
+		// is for something the catalog does not tell these apart by: an
+		// event's printings carry no label, and the set they are filed in
+		// is the whole of what separates them from the card they reprint.
+		// The letter tail is still the storefront saying this is not the
+		// plain printing, and the edition is what can say which it is, so
+		// the question falls to it rather than being given up on.
 	}
 	// The wording spelled no label out, but a storefront shortens one the
 	// same way it shortens an event's name: it drops the treatment the
