@@ -239,9 +239,23 @@ func respellName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	}
 }
 
+// numberedNameRe matches the mark the catalog numbers a repeated name with,
+// "Skull Knight #2", as the storefronts spell it instead. No catalog name
+// ends in the wording and 32 end in the mark, so the rewrite has one reading.
+var numberedNameRe = regexp.MustCompile(`\s+No\.?\s*([0-9]+)$`)
+
+// greekLetters spells the letters the catalog writes as words, "Falchion
+// Beta", and no catalog name carries the letter itself.
+var greekLetters = strings.NewReplacer(
+	"\u03b1", "Alpha", "\u0391", "Alpha",
+	"\u03b2", "Beta", "\u0392", "Beta",
+	"\u03b3", "Gamma", "\u0393", "Gamma",
+)
+
 // alternateNames lists the other spellings a name might be filed under: its
-// nameRespellings sibling, read in both directions, and the token word-order
-// flip, either way around.
+// nameRespellings sibling, read in both directions, the token word-order
+// flip, either way around, and the marks the catalog spells where a
+// storefront writes the words.
 func alternateNames(name string) []string {
 	var alternates []string
 	normalized := mtgmatcher.Normalize(name)
@@ -259,7 +273,42 @@ func alternateNames(name string) []string {
 	if base, cut := strings.CutPrefix(name, "Token: "); cut {
 		alternates = append(alternates, base+" Token")
 	}
+	// The field centers wear the same flip around a longer phrase, and the
+	// generic one would leave the words it names inside the base.
+	if base, cut := strings.CutSuffix(name, " Field Center Token"); cut {
+		alternates = append(alternates, "Field Center Token: "+base)
+	}
+	if numbered := numberedNameRe.ReplaceAllString(name, " #$1"); numbered != name {
+		alternates = append(alternates, numbered)
+	}
+	if spelled := greekLetters.Replace(name); spelled != name {
+		alternates = append(alternates, spelled)
+	}
 	return alternates
+}
+
+// solePrefixName answers the one name the given spellings are a prefix of,
+// reporting whether the prefixes reached exactly that name and no other.
+func solePrefixName(b *mtgmatcher.Backend, prefixes []string) (string, bool) {
+	var match, matchNorm string
+	for _, prefix := range prefixes {
+		uuids, err := b.SearchHasPrefix(prefix)
+		if err != nil {
+			continue
+		}
+		for _, uuid := range uuids {
+			co, err := b.GetUUID(uuid)
+			if err != nil || co.Sealed {
+				continue
+			}
+			norm := mtgmatcher.Normalize(co.Name)
+			if match != "" && matchNorm != norm {
+				return "", false
+			}
+			match, matchNorm = co.Name, norm
+		}
+	}
+	return match, match != ""
 }
 
 // isTokenName reports whether a name names a token outright, in any of the
@@ -336,19 +385,37 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; found {
 		return
 	}
-	// The catalog names a token with the word first ("Token: Sheep") where
-	// the storefronts write it last ("Sheep Token"). The flip only ever
+	// The catalog files a name a storefront spells another way: the token
+	// word order ("Token: Sheep" for "Sheep Token"), the mark numbering a
+	// repeated name, the letters it writes as words. A spelling only ever
 	// answers for a name the datastore does not already know, above, so the
 	// tokens a set does name the storefront's way keep their own printing.
 	// It also only answers for an edition naming no set: respellName has
 	// already asked a resolved edition for every spelling it carries, so
-	// adopting the flip here anyway would hand the input another set's
-	// token and the printing filter a name its own edition never prints.
-	if base, cut := strings.CutSuffix(inCard.Name, " Token"); cut {
-		flipped := "Token: " + base
-		if _, found := b.CanonicalNames[mtgmatcher.Normalize(flipped)]; found &&
-			editionSet(b, inCard.Edition) == nil {
-			inCard.Name = flipped
+	// adopting one here anyway would hand the input another set's token and
+	// the printing filter a name its own edition never prints. Two
+	// spellings the catalog both knows decide nothing.
+	if editionSet(b, inCard.Edition) == nil {
+		var adopt string
+		for _, alternate := range alternateNames(inCard.Name) {
+			if _, found := b.CanonicalNames[mtgmatcher.Normalize(alternate)]; !found {
+				continue
+			}
+			if adopt != "" && mtgmatcher.Normalize(adopt) != mtgmatcher.Normalize(alternate) {
+				adopt = ""
+				break
+			}
+			adopt = alternate
+		}
+		if adopt != "" {
+			inCard.Name = adopt
+			return
+		}
+		// A character's field center is filed with the monster it shares
+		// its art with, "Field Center Token: Seto Kaiba & Blue-Eyes White
+		// Dragon", which only the spelling's prefix reaches.
+		if name, found := solePrefixName(b, alternateNames(inCard.Name)); found {
+			inCard.Name = name
 			return
 		}
 	}

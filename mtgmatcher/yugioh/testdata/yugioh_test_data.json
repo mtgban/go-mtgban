@@ -17,6 +17,15 @@
         "uuid": "ra01-en043_524528_1e"
     },
     {
+        "description": "a character's field center is reached through its prefix",
+        "input": {
+            "name": "Seto Kaiba Field Center Token",
+            "variant": "Blue background w/ Blue-Eyes White Dragon Common",
+            "edition": "Tokens"
+        },
+        "uuid": "200573_unl"
+    },
+    {
         "description": "a colour names the league printing its number already placed",
         "input": {
             "name": "Penguin Soldier",
@@ -24,6 +33,15 @@
             "edition": "Duelist League Promo"
         },
         "uuid": "dl18-en002_94895_unl"
+    },
+    {
+        "description": "a field center flips onto the phrase order the catalog files",
+        "input": {
+            "name": "Ash Blossom \u0026 Joyous Spring Field Center Token",
+            "variant": "Cat ears and tail Common",
+            "edition": "Tokens"
+        },
+        "uuid": "200576_unl"
     },
     {
         "description": "a foil flag names no run, and the wording answers instead",
@@ -43,6 +61,15 @@
             "edition": "Duelist League 9"
         },
         "uuid": "dl09-en001_77377_unl"
+    },
+    {
+        "description": "a letter the catalog writes as a word",
+        "input": {
+            "name": "Falchionβ",
+            "variant": "Common",
+            "edition": "Starter Deck: Speed Duel - Battle City Box"
+        },
+        "uuid": "sbcb-en070_227965_1e"
     },
     {
         "description": "a numbered name reads the same with or without its mark",
@@ -193,6 +220,16 @@
         "error": "unsupported"
     },
     {
+        "description": "negative: a character the catalog pairs two ways decides nothing",
+        "input": {
+            "name": "Yugi Muto Field Center Token",
+            "variant": "Yellow background w/ Dark Magician Common",
+            "edition": "Tokens"
+        },
+        "uuid": "",
+        "error": "unknown card name"
+    },
+    {
         "description": "negative: a league printing named by no colour stays ambiguous",
         "input": {
             "name": "Crimson Ninja",
@@ -325,6 +362,15 @@
             "edition": "25th Anniversary Rarity Collection"
         },
         "uuid": "ra01-en019_525009_1e"
+    },
+    {
+        "description": "the mark numbering a repeated name is read from the wording",
+        "input": {
+            "name": "Skull Knight No 2",
+            "variant": "Common",
+            "edition": "Legacy of Darkness"
+        },
+        "uuid": "lod-006_22408_unl"
     },
     {
         "description": "the run named beside the id prices that run's entry",
