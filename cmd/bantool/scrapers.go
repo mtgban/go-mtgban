@@ -77,6 +77,45 @@ func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scr
 	}
 }
 
+// tcgSYPScraper reads Store Your Products, which is served per category and
+// resolved against the catalog rather than an exported sku file, so every
+// game the list covers reads the same way.
+func tcgSYPScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		auth := os.Getenv("TCGPLAYER_AUTH")
+		if auth == "" {
+			return nil, errors.New("missing TCGPLAYER_AUTH env var")
+		}
+		catalogPath := os.Getenv("TCGPLAYER_CATALOG_PATH")
+		if catalogPath == "" {
+			return nil, errors.New("missing TCGPLAYER_CATALOG_PATH env var")
+		}
+
+		scraper, err := tcgplayer.NewScraperSYP(game, auth)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("TCG_PARTNER")
+
+		// The list names skus and the datastore names products: the catalog
+		// dump published beside each game's datastore is the step between,
+		// and is the same file the datastore generators are built from.
+		reader, err := openPath(catalogPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
+		catalog, err := tcgplayer.LoadSYPCatalog(reader)
+		if err != nil {
+			return nil, err
+		}
+		scraper.Catalog = catalog
+
+		return scraper, nil
+	}
+}
+
 func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
 	return func() (mtgban.Scraper, error) {
 		appToken, appSecret, err := cardmarketCredentials()

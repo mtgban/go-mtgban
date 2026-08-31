@@ -78,6 +78,9 @@ jobs:
           MAX_CONCURRENCY: "${{ vars.MAX_CONCURRENCY }}"
 
           MTGJSON_TCGSKU_PATH: "${{ inputs.skus-filepath }}"
+          # The catalog dump is published beside every game's datastore, on
+          # the same schedule, and names the product each sku belongs to.
+          TCGPLAYER_CATALOG_PATH: "b2://mtgban-datastore/${{ inputs.game }}/tcgplayer-catalog.json.xz"
 
           B2_APP_KEY: "${{ secrets.B2_APP_KEY }}"
           B2_KEY_ID: "${{ secrets.B2_KEY_ID }}"

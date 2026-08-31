@@ -630,36 +630,10 @@ var options = map[string]*scraperOption{
 		Init: tcgSealedScraper(mtgban.GameYuGiOh),
 	},
 	"tcg_syplist": {
-		Init: func() (mtgban.Scraper, error) {
-			tcgAuth := os.Getenv("TCGPLAYER_AUTH")
-			tcgSKUPath := os.Getenv("MTGJSON_TCGSKU_PATH")
-			if tcgAuth == "" || tcgSKUPath == "" {
-				return nil, errors.New("missing TCGPLAYER_AUTH or MTGJSON_TCGSKU_PATH env var")
-			}
-
-			scraper, err := tcgplayer.NewScraperSYP(mtgban.GameMagic, tcgAuth)
-			if err != nil {
-				return nil, err
-			}
-
-			scraper.LogCallback = GlobalLogCallback
-			scraper.Affiliate = os.Getenv("TCG_PARTNER")
-
-			start := time.Now()
-			skuReader, err := openPath(tcgSKUPath, os.Getenv("B2_KEY_ID_DATASTORE"), os.Getenv("B2_APP_KEY_DATASTORE"))
-			if err != nil {
-				return nil, err
-			}
-			defer skuReader.Close()
-			skus, err := tcgplayer.LoadTCGSKUs(skuReader)
-			if err != nil {
-				return nil, err
-			}
-			scraper.SKUsData = skus
-			log.Println("loading skus took:", time.Since(start))
-
-			return scraper, nil
-		},
+		Init: tcgSYPScraper(mtgban.GameMagic),
+	},
+	"tcg_syplist_pokemon": {
+		Init: tcgSYPScraper(mtgban.GamePokemon),
 	},
 	"trollandtoad": {
 		Init: func() (mtgban.Scraper, error) {
