@@ -172,10 +172,10 @@ type Card struct {
 	// it to the uuid that carries it: every finish has a uuid of its own and
 	// no uuid answers for two. The three shared finishes are keyed by their
 	// constant, since output() resolves the caller's flags to one of them
-	// and pulls the uuid from here (the standard foil stays under FinishFoil,
-	// "_f", for compatibility); a finish past them - Lorcana's
-	// "rainbowpillars" - is keyed by the game's canonical name for it, the
-	// same name CardObject.Finish carries. Loaders populate it; a Card
+	// and pulls the uuid from here (the standard foil stays under
+	// FinishFoil whatever the printing calls it); a finish past them -
+	// Lorcana's "rainbowpillars" - is keyed by the game's canonical name
+	// for it, the same name CardObject.Finish carries. Loaders populate it; a Card
 	// without it falls back to the suffix rules.
 	FoilUUIDs map[string]string
 
