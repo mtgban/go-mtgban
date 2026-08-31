@@ -509,6 +509,124 @@ var pokemonNumber = regexp.MustCompile(` ([A-Z]{0,5}\d+[a-zA-Z]?(?:/[A-Z]{0,4}\d
 // The name is what stands before the number, promo parentheticals like
 // (SDCC 2007) included; the finish travels in its own field for this game,
 // where the matcher tells Holofoil from Reverse Holofoil by wording.
+// pokemonNumberFix keys a listing by the set and name it is filed under and
+// the collector number the storefront states for it.
+type pokemonNumberFix struct{ set, name, number string }
+
+// pokemonNumberFixes corrects the numbers the storefront states for the two
+// twin sets. Its numbering for both is its own: the names are right and the
+// numbers are a reordering of the set's, so a listing states a number the
+// card does not carry and the matcher, which reads the name first, finds no
+// printing of that name there and drops the row.
+//
+// Each entry was read off the storefront's catalog, paired with the printing
+// the datastore files under the same name and rank, and then checked against
+// TCGplayer's own number for that printing: all ninety-seven agree.
+//
+// The key states the wrong number as well as the name, so an entry answers
+// only the listing it was written for. A number the storefront corrects
+// stops matching any key and is read as it is written, which is what makes
+// the table safe to leave behind once the feed is fixed.
+var pokemonNumberFixes = map[pokemonNumberFix]string{
+	{"SV: Black Bolt", "Alomomola", "027/086"}:                      "024/086",
+	{"SV: Black Bolt", "Alomomola", "112/086"}:                      "108/086",
+	{"SV: Black Bolt", "Audino", "156/086"}:                         "151/086",
+	{"SV: Black Bolt", "Axew", "150/086"}:                           "145/086",
+	{"SV: Black Bolt", "Beartic", "029/086"}:                        "026/086",
+	{"SV: Black Bolt", "Beartic", "114/086"}:                        "110/086",
+	{"SV: Black Bolt", "Beheeyem", "127/086"}:                       "121/086",
+	{"SV: Black Bolt", "Bisharp", "067/086"}:                        "065/086",
+	{"SV: Black Bolt", "Bisharp", "147/086"}:                        "143/086",
+	{"SV: Black Bolt", "Carracosta", "111/086"}:                     "107/086",
+	{"SV: Black Bolt", "Cinccino", "078/086"}:                       "076/086",
+	{"SV: Black Bolt", "Cinccino", "158/086"}:                       "153/086",
+	{"SV: Black Bolt", "Cobalion", "149/086"}:                       "144/086",
+	{"SV: Black Bolt", "Conkeldurr", "052/086"}:                     "049/086",
+	{"SV: Black Bolt", "Conkeldurr", "133/086"}:                     "127/086",
+	{"SV: Black Bolt", "Crustle", "136/086"}:                        "130/086",
+	{"SV: Black Bolt", "Cryogonal", "115/086"}:                      "111/086",
+	{"SV: Black Bolt", "Darmanitan", "099/086"}:                     "098/086",
+	{"SV: Black Bolt", "Darumaka", "098/086"}:                       "097/086",
+	{"SV: Black Bolt", "Drilbur", "130/086"}:                        "124/086",
+	{"SV: Black Bolt", "Duosion", "124/086"}:                        "119/086",
+	{"SV: Black Bolt", "Dwebble", "135/086"}:                        "129/086",
+	{"SV: Black Bolt", "Eelektrik", "034/086"}:                      "031/086",
+	{"SV: Black Bolt", "Eelektrik", "118/086"}:                      "114/086",
+	{"SV: Black Bolt", "Eelektross", "119/086"}:                     "115/086",
+	{"SV: Black Bolt", "Elgyem", "126/086"}:                         "120/086",
+	{"SV: Black Bolt", "Emolga", "116/086"}:                         "112/086",
+	{"SV: Black Bolt", "Escavalier", "146/086"}:                     "138/086",
+	{"SV: Black Bolt", "Fraxure", "151/086"}:                        "146/086",
+	{"SV: Black Bolt", "Golett", "128/086"}:                         "122/086",
+	{"SV: Black Bolt", "Gurdurr", "132/086"}:                        "126/086",
+	{"SV: Black Bolt", "Haxorus", "152/086"}:                        "147/086",
+	{"SV: Black Bolt", "Krokorok", "061/086"}:                       "058/086",
+	{"SV: Black Bolt", "Krokorok", "142/086"}:                       "136/086",
+	{"SV: Black Bolt", "Krookodile", "062/086"}:                     "059/086",
+	{"SV: Black Bolt", "Krookodile", "143/086"}:                     "137/086",
+	{"SV: Black Bolt", "Larvesta", "103/086"}:                       "099/086",
+	{"SV: Black Bolt", "Munna", "121/086"}:                          "116/086",
+	{"SV: Black Bolt", "Musharna", "122/086"}:                       "117/086",
+	{"SV: Black Bolt", "Palpitoad", "108/086"}:                      "104/086",
+	{"SV: Black Bolt", "Panpour", "105/086"}:                        "101/086",
+	{"SV: Black Bolt", "Pidove", "153/086"}:                         "148/086",
+	{"SV: Black Bolt", "Scolipede", "140/086"}:                      "134/086",
+	{"SV: Black Bolt", "Seismitoad", "109/086"}:                     "105/086",
+	{"SV: Black Bolt", "Simipour", "106/086"}:                       "102/086",
+	{"SV: Black Bolt", "Solosis", "123/086"}:                        "118/086",
+	{"SV: Black Bolt", "Throh", "134/086"}:                          "128/086",
+	{"SV: Black Bolt", "Timburr", "131/086"}:                        "125/086",
+	{"SV: Black Bolt", "Tirtouga", "110/086"}:                       "106/086",
+	{"SV: Black Bolt", "Tympole", "107/086"}:                        "103/086",
+	{"SV: Black Bolt", "Tynamo", "117/086"}:                         "113/086",
+	{"SV: Black Bolt", "Unfezant", "155/086"}:                       "150/086",
+	{"SV: Black Bolt", "Venipede", "138/086"}:                       "132/086",
+	{"SV: Black Bolt", "Whirlipede", "139/086"}:                     "133/086",
+	{"SV: White Flare", "Archen", "129/086"}:                        "131/086",
+	{"SV: White Flare", "Archeops", "048/086"}:                      "051/086",
+	{"SV: White Flare", "Archeops", "130/086"}:                      "132/086",
+	{"SV: White Flare", "Basculin", "105/086"}:                      "108/086",
+	{"SV: White Flare", "Blitzle", "111/086"}:                       "114/086",
+	{"SV: White Flare", "Cofagrigus", "120/086"}:                    "123/086",
+	{"SV: White Flare", "Deino", "142/086"}:                         "146/086",
+	{"SV: White Flare", "Dewott", "103/086"}:                        "106/086",
+	{"SV: White Flare", "Druddigon", "150/086"}:                     "151/086",
+	{"SV: White Flare", "Ducklett", "106/086"}:                      "109/086",
+	{"SV: White Flare", "Durant", "149/086"}:                        "150/086",
+	{"SV: White Flare", "Ferroseed", "144/086"}:                     "148/086",
+	{"SV: White Flare", "Ferrothorn", "145/086"}:                    "149/086",
+	{"SV: White Flare", "Frillish", "124/086"}:                      "126/086",
+	{"SV: White Flare", "Galvantula", "114/086"}:                    "117/086",
+	{"SV: White Flare", "Garbodor", "139/086"}:                      "141/086",
+	{"SV: White Flare", "Gigalith", "127/086"}:                      "129/086",
+	{"SV: White Flare", "Gothita", "121/086"}:                       "124/086",
+	{"SV: White Flare", "Gothorita", "122/086"}:                     "125/086",
+	{"SV: White Flare", "Heatmor", "016/086"}:                       "019/086",
+	{"SV: White Flare", "Heatmor", "101/086"}:                       "104/086",
+	{"SV: White Flare", "Herdier", "073/086"}:                       "075/086",
+	{"SV: White Flare", "Herdier", "154/086"}:                       "155/086",
+	{"SV: White Flare", "Joltik", "113/086"}:                        "116/086",
+	{"SV: White Flare", "Mienfoo", "131/086"}:                       "133/086",
+	{"SV: White Flare", "Mienshao", "132/086"}:                      "134/086",
+	{"SV: White Flare", "Patrat", "151/086"}:                        "152/086",
+	{"SV: White Flare", "Purrloin", "134/086"}:                      "136/086",
+	{"SV: White Flare", "Roggenrola", "125/086"}:                    "127/086",
+	{"SV: White Flare", "Sawk", "128/086"}:                          "130/086",
+	{"SV: White Flare", "Scrafty", "137/086"}:                       "139/086",
+	{"SV: White Flare", "Scrafty (Master Ball Pattern)", "055/086"}: "058/086",
+	{"SV: White Flare", "Stunfisk", "115/086"}:                      "118/086",
+	{"SV: White Flare", "Swanna", "107/086"}:                        "110/086",
+	{"SV: White Flare", "Terrakion", "133/086"}:                     "135/086",
+	{"SV: White Flare", "Trubbish", "138/086"}:                      "140/086",
+	{"SV: White Flare", "Vanillish", "109/086"}:                     "112/086",
+	{"SV: White Flare", "Watchog", "152/086"}:                       "153/086",
+	{"SV: White Flare", "Woobat", "116/086"}:                        "119/086",
+	{"SV: White Flare", "Yamask", "119/086"}:                        "122/086",
+	{"SV: White Flare", "Zebstrika", "112/086"}:                     "115/086",
+	{"SV: White Flare", "Zoroark", "141/086"}:                       "143/086",
+	{"SV: White Flare", "Zweilous", "143/086"}:                      "147/086",
+}
+
 func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 	loc := pokemonNumber.FindStringSubmatchIndex(product.DisplayName)
 	if loc == nil {
@@ -520,10 +638,17 @@ func preprocessPokemon(product VSProduct) (*mtgmatcher.InputCard, error) {
 		finish = ""
 	}
 
+	name := strings.TrimSpace(product.DisplayName[:loc[0]])
+	edition := product.ProductData.SetName
+	number := product.DisplayName[loc[2]:loc[3]]
+	if fixed, found := pokemonNumberFixes[pokemonNumberFix{edition, name, number}]; found {
+		number = fixed
+	}
+
 	return &mtgmatcher.InputCard{
-		Name:      strings.TrimSpace(product.DisplayName[:loc[0]]),
-		Edition:   product.ProductData.SetName,
-		Variation: product.DisplayName[loc[2]:loc[3]],
+		Name:      name,
+		Edition:   edition,
+		Variation: number,
 		Finish:    finish,
 	}, nil
 }
