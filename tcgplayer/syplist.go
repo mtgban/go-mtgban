@@ -62,13 +62,14 @@ func LoadSYPCatalog(reader io.Reader) (SYPCatalog, error) {
 
 	catalog := SYPCatalog{}
 	for _, product := range dump.Products {
-		finish := ""
+		// Read off the name once per product rather than once per sku: the
+		// guard that meant to do that tested the result, which is empty for
+		// every product not sold etched - almost all of them - so it asked
+		// again for every sku of every one.
+		finish := productFinish(product.Name)
 		for _, sku := range product.Skus {
 			if sku.LanguageID != skuLanguageEnglish || SKUConditionMap[sku.ConditionID] != "NM" {
 				continue
-			}
-			if finish == "" {
-				finish = productFinish(product.Name)
 			}
 			name := printings[sku.PrintingID]
 			if finish != "" {
