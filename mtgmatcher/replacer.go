@@ -43,12 +43,8 @@ var replacerStrings = []string{
 	"꞉", "",
 	"：", "",
 	"~", "",
-	// A catalog numbers the cards that share a name, and the storefronts
-	// spell that number without the mark: Yu-Gi-Oh files "Sasuke Samurai
-	// #2" where a listing says "Sasuke Samurai 2". No Magic name carries
-	// one at all, and across every game exactly one pair of names is drawn
-	// together by dropping it - two spellings of Flying Kamakiri #1, which
-	// is one card either way.
+	// Yu-Gi-Oh numbers the cards sharing a name, "Sasuke Samurai #2", and
+	// the storefronts write it without the mark.
 	"#", "",
 	"(", "",
 	")", "",
