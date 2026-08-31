@@ -254,6 +254,7 @@ const (
 	PromoTypeRippleFoil        = "ripplefoil"
 	PromoTypeSChineseAltArt    = "schinesealtart"
 	PromoTypeScroll            = "scroll"
+	PromoTypeSilverScroll      = "silverscroll"
 	PromoTypeSerialized        = "serialized"
 	PromoTypeSilverFoil        = "silverfoil"
 	PromoTypeStarterDeck       = "starterdeck"

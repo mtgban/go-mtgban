@@ -30,6 +30,16 @@ func TestTreatmentDenial(t *testing.T) {
 			wantSet: "FIC", wantNum: "466", wantPromo: "chocobotrackfoil",
 		},
 		{
+			desc:    "a listing that names the Silver Scroll treatment is the printing wearing it",
+			in:      mtgmatcher.InputCard{Name: "Ad Nauseam", Edition: "Secrets of Strixhaven Mystical Archive", Variation: "JP Alternate Art Silver Scroll Foil", Foil: true},
+			wantSet: "SOA", wantNum: "155", wantPromo: "silverscroll",
+		},
+		{
+			desc:    "and the one that names no treatment is the plain printing beside it",
+			in:      mtgmatcher.InputCard{Name: "Ad Nauseam", Edition: "Secrets of Strixhaven Mystical Archive", Foil: true},
+			wantSet: "SOA", wantNum: "25", wantPromo: "",
+		},
+		{
 			desc:    "a foil that names no treatment at all is the untreated printing",
 			in:      mtgmatcher.InputCard{Name: "Valor's Flagship", Edition: "Aetherdrift", Foil: true},
 			wantSet: "DFT", wantNum: "35", wantPromo: "",
