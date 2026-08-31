@@ -1414,29 +1414,44 @@ func SlugDescribesAny(wording string, slugs []string) bool {
 // number wears those words behind a colour.
 //
 // Best is the most tags named, and among those the printing wearing the
-// fewest the wording said nothing about. The count is what lets a fuller
-// wording win - "Alternate Art Blue" names the printing wearing both over
-// the ones wearing either - and the tie-break is what keeps a narrow wording
-// narrow, so "Blue" still names the plain blue printing rather than the
-// alternate-art one that merely contains the word.
+// fewest the wording said nothing about, and among those the printing whose
+// named tags spell the most of the wording out. The count is what lets a
+// fuller wording win - "Alternate Art Blue" names the printing wearing both
+// over the ones wearing either - and the second tie-break is what keeps a
+// narrow wording narrow, so "Blue" still names the plain blue printing
+// rather than the alternate-art one that merely contains the word.
+//
+// The third is for the labels a catalog writes as one phrase rather than as
+// separate tags. TCGplayer sells "Monkey.D.Luffy (Super Alternate Art)"
+// beside "Monkey.D.Luffy (Red Super Alternate Art)", one parenthetical
+// each, so the printings wear one tag apiece and one tag contains the other
+// whole. Both are named by a wording that spells the longer out, both name
+// one tag and have none left over, and the first two rules call that a tie -
+// which aliases away a wording that could not have been more specific.
+// Length settles it the way specificity does: the tag that spells more of
+// the wording out is the one the wording was about. A game whose catalog
+// splits the same distinction into separate tags never reaches here, the
+// count having already answered.
 func DescribedVariants(wording string, cards []Card) []Card {
 	var best []Card
-	var most, unnamed int
+	var most, unnamed, spelled int
 	for _, card := range cards {
-		var named int
+		var named, length int
 		for _, promoType := range card.PromoTypes {
 			if SlugDescribes(wording, promoType) {
 				named++
+				length += len(promoType)
 			}
 		}
 		if named == 0 {
 			continue
 		}
 		rest := len(card.PromoTypes) - named
-		if named > most || (named == most && rest < unnamed) {
-			best, most, unnamed = nil, named, rest
+		if named > most || (named == most && rest < unnamed) ||
+			(named == most && rest == unnamed && length > spelled) {
+			best, most, unnamed, spelled = nil, named, rest, length
 		}
-		if named == most && rest == unnamed {
+		if named == most && rest == unnamed && length == spelled {
 			best = append(best, card)
 		}
 	}
