@@ -319,12 +319,22 @@ jobs:
           sha256sum ${{ needs.cache-datastore.outputs.filepath }}
           ls -l datastore/
 
+      # One test binary at a time. This is the one game job whose suite is
+      # the whole repo rather than a single matcher package, and eleven of
+      # the packages it runs read the Magic datastore - the matcher's own
+      # tests and every scraper that preprocesses against it. A binary that
+      # loads AllPrintings once is 2.9GB resident; the ones whose test files
+      # load it again peak higher still, abugames at 8.1GB and hareruya at
+      # 7.0GB. At the default of one package per core four of those run at
+      # once, which is more memory than the runner has: the job died with
+      # "the runner has received a shutdown signal" and exit 143 without
+      # printing a single test line, on eleven of fourteen master runs.
       - name: Test
         env:
           ALLPRINTINGS5_PATH: "${{ github.workspace }}/datastore/allprintings5.json"
         run: |
           xz -dc ${{ needs.cache-datastore.outputs.filepath }} > datastore/allprintings5.json
-          go test ./... -v
+          go test ./... -v -p 1
 
   test-lorcana:
     needs: cache-lorcana
