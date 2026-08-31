@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -37,17 +38,24 @@ var conditionMap = map[string]string{
 	"Damaged":           "PO",
 }
 
+// reSlugSeparator matches every run the storefront's product paths write as
+// a single dash.
+var reSlugSeparator = regexp.MustCompile(`[^a-z0-9]+`)
+
+// buildProductSlug spells a display name the way the storefront's product
+// path does: lowercase, an apostrophe dropped where it stands, and every
+// other run of punctuation written as one dash.
+//
+// The name carries the collector number, and a number written over its set
+// total carries a slash - "Yasuo, Windrider (Overnumbered 235/221)". A slash
+// left in place is not a character in the path but a step down it, so the
+// link led to a page the storefront does not serve, and so did every name
+// carrying a comma, a colon, an ampersand or a period.
 func buildProductSlug(displayName string) string {
 	slug := strings.ToLower(displayName)
-	slug = strings.ReplaceAll(slug, "(", "")
-	slug = strings.ReplaceAll(slug, ")", "")
 	slug = strings.ReplaceAll(slug, "'", "")
-	slug = strings.ReplaceAll(slug, " - ", "-")
-	slug = strings.ReplaceAll(slug, " ", "-")
-	for strings.Contains(slug, "--") {
-		slug = strings.ReplaceAll(slug, "--", "-")
-	}
-	return slug
+	slug = reSlugSeparator.ReplaceAllString(slug, "-")
+	return strings.Trim(slug, "-")
 }
 
 // Vegassingles prices Vegas Singles' stock of one game.
