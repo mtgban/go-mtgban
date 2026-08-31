@@ -522,6 +522,44 @@ func onlySetAt(b *mtgmatcher.Backend, name, full, code string) bool {
 	return true
 }
 
+// foreignInfixes are the language segments a collector number carries in
+// place of the English "EN". Konami numbers a printing by the language it was
+// printed in, so the segment is the one thing that says a listing is not the
+// card this datastore holds - the datastore is the English catalog, and a
+// German Nitro Warrior is a different piece of card from the English one, not
+// a spelling of it.
+//
+// The list is the languages Konami prints, and a segment outside it is left
+// alone rather than guessed at: an unknown infix is far likelier to be a set
+// code this reader has not seen than a language Konami has started using.
+var foreignInfixes = map[string]bool{
+	"DE": true, // German
+	"FR": true, // French
+	"IT": true, // Italian
+	"JP": true, // Japanese
+	"KR": true, // Korean
+	"PT": true, // Portuguese
+	"SP": true, // Spanish
+}
+
+// foreignNumberRe splits a collector number into the set code, the language
+// segment and the digits behind it: "AC14-DE021" is AC14, DE and 021.
+var foreignNumberRe = regexp.MustCompile(`^([A-Za-z0-9]+)-([A-Za-z]{2})[0-9]`)
+
+// IsUnsupported reports that a listing names a printing in a language this
+// datastore does not carry, which is a card it has no row for rather than a
+// card it failed to find. Saying so lets the caller skip it in silence, where
+// a refusal would be reported as a miss every run.
+func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	for _, field := range strings.Fields(inCard.Variation) {
+		match := foreignNumberRe.FindStringSubmatch(field)
+		if match != nil && foreignInfixes[strings.ToUpper(match[2])] {
+			return true
+		}
+	}
+	return false
+}
+
 // numberTailRe matches what a collector number holds behind its set code: the
 // language infix, the digits, and the letter tail a misprint reissue or a
 // storefront's rarity suffix adds.

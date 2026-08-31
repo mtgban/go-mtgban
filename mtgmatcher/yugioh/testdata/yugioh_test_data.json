@@ -148,6 +148,16 @@
         "error": "aliasing detected"
     },
     {
+        "description": "negative: a printing numbered in another language is not ours",
+        "input": {
+            "name": "Nitrokrieger",
+            "variant": "AC11-DE021 Ultra Rare",
+            "edition": "Promo"
+        },
+        "uuid": "",
+        "error": "unsupported"
+    },
+    {
         "description": "negative: a run the product was never priced in refuses the sibling",
         "input": {
             "id": "22708",
