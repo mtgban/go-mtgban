@@ -109,3 +109,115 @@ func lowestAsk(entries []InventoryEntry, condition string) (float64, string) {
 	}
 	return price, link
 }
+
+// CollapsedRatioThreshold is the ratio between the most and the least a
+// vendor pays for one card at one grade above which the pair is worth
+// reporting. A shop moves a price for honest reasons - a quantity tier, a
+// credit multiplier folded into the same vendor name - and those stay within
+// a factor of two. Past it the two prices are describing cards that are not
+// the same one.
+const CollapsedRatioThreshold = 2.0
+
+// CollapsedPricing is one card a vendor buys at more than one price at the
+// same grade.
+type CollapsedPricing struct {
+	CardID     string
+	Conditions string
+	VendorName string
+
+	// High and Low are the most and the least the vendor pays at this
+	// grade, and Ratio is the first over the second.
+	High  float64
+	Low   float64
+	Ratio float64
+
+	// HighURL and LowURL are the two listings. They are the point of the
+	// report: a storefront publishes the wording that tells the printings
+	// apart, and it is that wording the match dropped.
+	HighURL string
+	LowURL  string
+
+	// Count is how many prices the vendor holds for this card at this
+	// grade, which is how many of its products landed on one id.
+	Count int
+}
+
+// CollapsedPricings names the cards a vendor buys at several prices at one
+// grade, widest spread first.
+//
+// A shop pays one price for one card at one grade, so a second price is not
+// a better offer but a second product: the feed named two printings and the
+// match folded them onto one id. Unlike SuspectPricings this needs only the
+// one side, and it is certain where that one is a guess - a buy price above
+// what the same shop asks has honest explanations, two buy prices at one
+// grade have none.
+//
+// It reports rather than removes, for the same reason SuspectPricings does:
+// the entry that should go is whichever one the match got wrong, and which
+// that is cannot be read off the prices. What the list is for is the match
+// behind it. A scraper whose feed does state one price per printing can
+// refuse the second outright with BuylistRecord.AddUnique.
+func CollapsedPricings(bl BuylistRecord, threshold float64) []CollapsedPricing {
+	var out []CollapsedPricing
+
+	for cardID, entries := range bl {
+		// One vendor's prices at one grade, keyed the way a duplicate is:
+		// a record holds several vendors, and a shop quoting cash beside
+		// store credit publishes them under names of their own.
+		type key struct {
+			condition string
+			vendor    string
+		}
+		grouped := map[key][]BuylistEntry{}
+		for _, entry := range entries {
+			k := key{entry.Conditions, entry.VendorName}
+			grouped[k] = append(grouped[k], entry)
+		}
+
+		for k, group := range grouped {
+			if len(group) < 2 {
+				continue
+			}
+			high, low := group[0], group[0]
+			for _, entry := range group {
+				if entry.BuyPrice > high.BuyPrice {
+					high = entry
+				}
+				if entry.BuyPrice < low.BuyPrice {
+					low = entry
+				}
+			}
+			if low.BuyPrice <= 0 {
+				continue
+			}
+			ratio := high.BuyPrice / low.BuyPrice
+			if ratio < threshold {
+				continue
+			}
+
+			out = append(out, CollapsedPricing{
+				CardID:     cardID,
+				Conditions: k.condition,
+				VendorName: k.vendor,
+				High:       high.BuyPrice,
+				Low:        low.BuyPrice,
+				Ratio:      ratio,
+				HighURL:    high.URL,
+				LowURL:     low.URL,
+				Count:      len(group),
+			})
+		}
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Ratio == out[j].Ratio {
+			if out[i].CardID == out[j].CardID {
+				return out[i].Conditions < out[j].Conditions
+			}
+			return out[i].CardID < out[j].CardID
+		}
+		return out[i].Ratio > out[j].Ratio
+	})
+
+	return out
+}

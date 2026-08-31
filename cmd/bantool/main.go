@@ -822,6 +822,32 @@ func reportSuspectPricings(sellers []mtgban.Seller, vendors []mtgban.Vendor) {
 	}
 }
 
+// reportCollapsedPricings says which cards a vendor buys at more than one
+// price at one grade. A shop pays one price for one card, so a second is not
+// a better offer but a second product: the feed named two printings and the
+// match folded them onto one id. The run log says nothing about it either -
+// both listings resolved, to the same card - and the pair of listing links
+// is where the wording that tells them apart is published.
+func reportCollapsedPricings(vendors []mtgban.Vendor) {
+	for _, vendor := range vendors {
+		collapsed := mtgban.CollapsedPricings(vendor.Buylist(), mtgban.CollapsedRatioThreshold)
+		if len(collapsed) == 0 {
+			continue
+		}
+
+		log.Printf("[%s] %d cards are bought at several prices at one grade",
+			vendor.Info().Shorthand, len(collapsed))
+		for _, entry := range collapsed {
+			card, _ := mtgmatcher.GetUUID(entry.CardID)
+			log.Printf("[%s] - %.1fx %d prices, $%.2f against $%.2f %s %s",
+				vendor.Info().Shorthand, entry.Ratio, entry.Count,
+				entry.High, entry.Low, entry.Conditions, card)
+			log.Printf("[%s]   %s", vendor.Info().Shorthand, entry.HighURL)
+			log.Printf("[%s]   %s", vendor.Info().Shorthand, entry.LowURL)
+		}
+	}
+}
+
 func dump(dataBucket simplecloud.Writer, sellers []mtgban.Seller, vendors []mtgban.Vendor, outputPath, format string, meta bool) []error {
 	log.Println("Writing results to", outputPath)
 
@@ -1176,6 +1202,7 @@ func run() int {
 	log.Println("Found", retailResults, "retail results and", buylistResults, "buylist results")
 
 	reportSuspectPricings(sellers, vendors)
+	reportCollapsedPricings(vendors)
 	if retailResults == 0 && buylistResults == 0 {
 		log.Println("No retail or buylist data retrieved")
 		return 1
