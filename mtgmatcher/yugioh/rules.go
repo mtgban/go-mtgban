@@ -469,6 +469,7 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	edition := strings.TrimSpace(inCard.Edition)
 	if named, found := namedSet(b, edition); found {
 		inCard.Edition = siblingSetNamed(b, inCard, named)
+		spellNumber(b, inCard)
 		return
 	}
 	edition = trimEditionDecorations(edition)
@@ -478,6 +479,40 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = set.Name
 	}
 	inCard.Edition = edition
+	spellNumber(b, inCard)
+}
+
+// bareTailRe matches a collector number written without its set code, the
+// language infix and deck letter still on it: "ENF17".
+var bareTailRe = regexp.MustCompile(`^[A-Za-z]{1,4}[0-9]{1,3}$`)
+
+// spellNumber writes a bare tail out as the number its own set spells, so
+// that a Speed Duel listing saying "ENF17" is read as SGX3-ENF17.
+//
+// The sets that need it file a card once per deck letter under one run, and
+// nothing downstream reads a tail that carries neither set code nor dash:
+// the listing arrives with no number at all, and every deck's printing
+// survives the filter. The set is what supplies the missing half, and it
+// only ever answers where the wording gave no number of its own and the
+// set spells exactly one that fits - two of them decide nothing, as they
+// decide nothing anywhere else.
+func spellNumber(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
+	if extractNumber(inCard.Variation) != "" {
+		return
+	}
+	set := editionSet(b, inCard.Edition)
+	if set == nil {
+		return
+	}
+	for _, field := range strings.Fields(inCard.Variation) {
+		if !bareTailRe.MatchString(field) {
+			continue
+		}
+		if full := editionNumberAt(set, inCard.Name, field); full != "" {
+			inCard.Variation = strings.Replace(inCard.Variation, field, full, 1)
+			return
+		}
+	}
 }
 
 // sharesWord reports whether two names have a whole word in common, which is

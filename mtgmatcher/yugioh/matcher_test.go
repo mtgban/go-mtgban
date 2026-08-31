@@ -204,6 +204,21 @@ var yugiohSeeds = []matchTest{
 		Desc: "a wording naming one tag keeps the printing wearing only it",
 		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl the Dragon Knight", Variation: "DLCS-EN006 Blue"},
 	},
+	// The box the set is named for is what the storefront drops.
+	{
+		Desc: "a set named without the box it is sold in",
+		In:   mtgmatcher.InputCard{Name: "Polymerization", Variation: "ENG11 Common", Edition: "Speed Duel GX: Duel Academy"},
+	},
+	// The deck letter is what the two printings differ by, and it only
+	// decides once the set has spelled the tail out in full.
+	{
+		Desc: "a bare tail is spelled out by the set it names",
+		In:   mtgmatcher.InputCard{Name: "Different Dimension Gate", Variation: "ENF17 Common Common", Edition: "Speed Duel GX: Duelists of Shadows"},
+	},
+	{
+		Desc: "the sibling deck letter keeps its own printing",
+		In:   mtgmatcher.InputCard{Name: "Different Dimension Gate", Variation: "ENG14 Common Common", Edition: "Speed Duel GX: Duelists of Shadows"},
+	},
 	// The catalog spells a mark, a word and a phrase order the storefront
 	// writes another way; the last is reached only through its prefix, and
 	// a character the catalog never paired decides nothing.
