@@ -33,6 +33,10 @@ func dashSuffix(base, suffix string) string {
 	return base
 }
 
+// judgeRewards is the wording every judge tag translates into, spelled once
+// so the tables and the rule cannot drift apart.
+const judgeRewards = "Judge Reward"
+
 // powerToughness matches the pair a title states in place of a collector
 // number for the cards a set prints several times at several sizes.
 var powerToughness = regexp.MustCompile(`^\d+/\d+$`)
@@ -370,6 +374,22 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 		strings.Contains(title, "(CardZ") ||
 		strings.Contains(title, "SDCC") {
 		// Wipes "[6ED-P]" tags which confuse the matcher
+		edition = ""
+	}
+
+	// The same for a judge reward, which is a set of its own that the
+	// storefront files under the set the card was first printed in: the
+	// "-P" tag saying so is dropped with every other frame tag, so the base
+	// set stands and deletes the promo printing before the wording naming
+	// it is read. Gaea's Cradle answered with the $751 Urza's Saga land
+	// where the listing is the $2660 judge foil, and it reaches the judge
+	// set on its own once the edition stops contradicting it.
+	//
+	// The tag alone is not enough to go on - mapping "-P" onto a set's own
+	// promo set was measured and lost 51 rows - and this asks for the
+	// wording instead, which names the set rather than merely denying the
+	// one the tag came from.
+	if strings.Contains(variant, judgeRewards) {
 		edition = ""
 	}
 
