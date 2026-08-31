@@ -340,7 +340,7 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 		// Prepare the card and add it to the main array
 		// Since cards are already sorted (by number/id), the order here is preserved
 		convertedCard := mtgmatcher.Card{
-			UUID: fmt.Sprint(card.ID),
+			UUID: cardUUID(card.ID),
 
 			Name:     card.FullName,
 			SetCode:  card.SetCode,
@@ -618,4 +618,19 @@ var lorcanaColorNameMap = map[string]string{
 	"B": "black",
 	"R": "red",
 	"G": "green",
+}
+
+// cardUUID spells a card's id as the uuid everything downstream addresses
+// it by. The datastore mints a printing upstream does not carry under the
+// negated product id, which keeps this build's ids provably clear of
+// LorcanaJSON's own - it counts from one - but a uuid is not only compared,
+// it is put in a URL, a query string and a spreadsheet cell, and a leading
+// minus is escaped, dropped or read as a formula in turn. The minted ones
+// are therefore said as "m-512519", and the ids upstream publishes stay the
+// digits they always were.
+func cardUUID(id int) string {
+	if id < 0 {
+		return fmt.Sprintf("m-%d", -id)
+	}
+	return strconv.Itoa(id)
 }
