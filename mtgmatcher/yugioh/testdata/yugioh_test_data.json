@@ -8,6 +8,15 @@
         "uuid": "lob-001_21792_1e"
     },
     {
+        "description": "a colour names the league printing its number already placed",
+        "input": {
+            "name": "Penguin Soldier",
+            "variant": "DL18-EN002 Rare Blue",
+            "edition": "Duelist League Promo"
+        },
+        "uuid": "dl18-en002_94895_unl"
+    },
+    {
         "description": "a foil flag names no run, and the wording answers instead",
         "input": {
             "id": "22708",
@@ -16,6 +25,24 @@
             "finish": "Foil"
         },
         "uuid": "tp1-017_22708_unl"
+    },
+    {
+        "description": "a league written without its padding still names its set",
+        "input": {
+            "name": "Blue-Eyes White Dragon",
+            "variant": "DL09-EN001 Rare Blue",
+            "edition": "Duelist League 9"
+        },
+        "uuid": "dl09-en001_77377_unl"
+    },
+    {
+        "description": "a second colour of the same number names its own printing",
+        "input": {
+            "name": "Penguin Soldier",
+            "variant": "DL18-EN002 Rare Red",
+            "edition": "Duelist League Promo"
+        },
+        "uuid": "dl18-en002_94964_unl"
     },
     {
         "description": "a second run reaches its own sibling of the same product",
@@ -100,6 +127,16 @@
             "variant": "HA01-EN001 Limited"
         },
         "uuid": "ha01-en001_33740_lim"
+    },
+    {
+        "description": "negative: a league printing named by no colour stays ambiguous",
+        "input": {
+            "name": "Crimson Ninja",
+            "variant": "DL13-EN004 Rare",
+            "edition": "Duelist League 13"
+        },
+        "uuid": "",
+        "error": "aliasing detected"
     },
     {
         "description": "negative: a run the product was never priced in refuses the sibling",

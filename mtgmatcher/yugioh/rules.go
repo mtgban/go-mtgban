@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/mtgban/go-mtgban/mtgmatcher"
@@ -526,9 +527,34 @@ func namedSet(b *mtgmatcher.Backend, edition string) (string, bool) {
 	if _, found := b.NormalizedSets[normalized]; found {
 		return edition, true
 	}
-	set, found := normalizedEditionAliases()[normalized]
-	return set, found
+	if set, found := normalizedEditionAliases()[normalized]; found {
+		return set, true
+	}
+	if duelistLeagueRe().MatchString(normalized) {
+		return duelistLeagueSet, true
+	}
+	return "", false
 }
+
+// duelistLeagueRe matches a Duelist League named by its own number, however
+// the storefront writes it: the table spelled them out one by one and padded
+// the single digits, so "Duelist League 9" reached nothing where "Duelist
+// League 09" did, and the tenth league was never listed at all.
+//
+// Every league shares the one set code, so the number is all that varies and
+// none of it has to be enumerated. The league's own number stays in the
+// collector number, which is where the printing is told apart.
+// It is built from Normalize's own spelling rather than from the words: the
+// normalizer drops every "s", so the name it files this under is
+// "duelitleague", and writing that out by hand would rot the first time the
+// normalizer changed its mind. Built on first use, since Normalize memoizes
+// through a map this package's init sets up.
+var duelistLeagueRe = sync.OnceValue(func() *regexp.Regexp {
+	return regexp.MustCompile(`^` + regexp.QuoteMeta(mtgmatcher.Normalize("Duelist League")) + `[0-9]+$`)
+})
+
+// duelistLeagueSet is the set every Duelist League is collected in.
+const duelistLeagueSet = "Duelist League Promo"
 
 // CanonicalFinish owns Yu-Gi-Oh's finish vocabulary, which is the print runs
 // the catalog prices and nothing else. The runs are data rather than a fixed
@@ -772,6 +798,25 @@ func decoratedRarity(words []string, candidates []mtgmatcher.Card) (string, bool
 // input's variation describes, the base printings, and the variant
 // printings. Only the variation is consulted: set names carry the color
 // words the labels use ("Blue" against "Legend of Blue Eyes White Dragon").
+// numberSegmentRe matches the segment a collector number opens on, the part
+// naming the set: "DL18" of "DL18-EN002".
+var numberSegmentRe = regexp.MustCompile(`^([A-Za-z]+[0-9]*)-`)
+
+// numberedWording appends the collector number's set segment to the wording,
+// so a promo tag spelled with the set it belongs to is reachable by the
+// colour or label a storefront writes on its own.
+//
+// The segment is added rather than substituted: everything the wording
+// already said still reads, and a tag that never names a set is unaffected
+// by a word appended after it.
+func numberedWording(variation, number string) string {
+	match := numberSegmentRe.FindStringSubmatch(number)
+	if match == nil {
+		return variation
+	}
+	return variation + " " + match[1]
+}
+
 func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, number string) []mtgmatcher.Card {
 	var base, variants []mtgmatcher.Card
 	for _, card := range candidates {
@@ -782,8 +827,14 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, n
 		variants = append(variants, card)
 	}
 	// The tags are tokens now, so the wording's words are joined back up a
-	// run at a time to ask whether they name them.
-	described := mtgmatcher.DescribedVariants(inCard.Variation, variants)
+	// run at a time to ask whether they name them. The collector number's
+	// own set segment goes on the end of the wording first: a tag naming
+	// the set it belongs to ("bluedl18", the blue Duelist League 18
+	// printing) is spelled by a storefront as the colour alone, because the
+	// number beside it already said which league. Handing the segment back
+	// lets the run close, and it can only ever close a tag that names the
+	// set the number named.
+	described := mtgmatcher.DescribedVariants(numberedWording(inCard.Variation, number), variants)
 	if len(described) > 0 {
 		return described
 	}

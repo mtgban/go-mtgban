@@ -122,6 +122,27 @@ var yugiohSeeds = []matchTest{
 		Desc: "negative: known name with wrong collector number",
 		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Variation: "LOB-999"},
 	},
+	// DL18 files one number as four colours and tags each with the league
+	// it belongs to ("bluedl18"); a storefront writes the colour alone,
+	// because the number beside it already said which league.
+	{
+		Desc: "a colour names the league printing its number already placed",
+		In:   mtgmatcher.InputCard{Name: "Penguin Soldier", Edition: "Duelist League Promo", Variation: "DL18-EN002 Rare Blue"},
+	},
+	{
+		Desc: "a second colour of the same number names its own printing",
+		In:   mtgmatcher.InputCard{Name: "Penguin Soldier", Edition: "Duelist League Promo", Variation: "DL18-EN002 Rare Red"},
+	},
+	// The league's own number is written both padded and bare; the set is
+	// the same one either way, so neither spelling has to be enumerated.
+	{
+		Desc: "a league written without its padding still names its set",
+		In:   mtgmatcher.InputCard{Name: "Blue-Eyes White Dragon", Edition: "Duelist League 9", Variation: "DL09-EN001 Rare Blue"},
+	},
+	{
+		Desc: "negative: a league printing named by no colour stays ambiguous",
+		In:   mtgmatcher.InputCard{Name: "Crimson Ninja", Edition: "Duelist League 13", Variation: "DL13-EN004 Rare"},
+	},
 	{
 		Desc: "negative: multi-rarity number stays ambiguous without a rarity signal",
 		In:   mtgmatcher.InputCard{Name: "Diabellstar the Black Witch", Variation: "25LP-EN001"},
