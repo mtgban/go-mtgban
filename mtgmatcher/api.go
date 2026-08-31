@@ -1392,9 +1392,6 @@ func SlugDescribes(wording, slug string) bool {
 	return false
 }
 
-// SlugDescribesAny reports whether a wording names any of the promo types a
-// printing wears. Every one is asked rather than the first alone: a printing
-// carrying two tags is named by either of them.
 // containingLabel settles a tie between printings whose labels a catalog
 // writes as one phrase rather than as separate tags, and leaves every other
 // tie alone.
@@ -1486,12 +1483,11 @@ func SlugDescribesAny(wording string, slugs []string) bool {
 // number wears those words behind a colour.
 //
 // Best is the most tags named, and among those the printing wearing the
-// fewest the wording said nothing about, and among those the printing whose
-// named tags spell the most of the wording out. The count is what lets a
-// fuller wording win - "Alternate Art Blue" names the printing wearing both
-// over the ones wearing either - and the second tie-break is what keeps a
-// narrow wording narrow, so "Blue" still names the plain blue printing
-// rather than the alternate-art one that merely contains the word.
+// fewest the wording said nothing about. The count is what lets a fuller
+// wording win - "Alternate Art Blue" names the printing wearing both over the
+// ones wearing either - and the tie-break is what keeps a narrow wording
+// narrow, so "Blue" still names the plain blue printing rather than the
+// alternate-art one that merely contains the word.
 //
 // The third is for the labels a catalog writes as one phrase rather than as
 // separate tags. TCGplayer sells "Monkey.D.Luffy (Super Alternate Art)"
@@ -1500,10 +1496,12 @@ func SlugDescribesAny(wording string, slugs []string) bool {
 // whole. Both are named by a wording that spells the longer out, both name
 // one tag and have none left over, and the first two rules call that a tie -
 // which aliases away a wording that could not have been more specific.
-// Length settles it the way specificity does: the tag that spells more of
-// the wording out is the one the wording was about. A game whose catalog
-// splits the same distinction into separate tags never reaches here, the
-// count having already answered.
+// Containment settles it the way specificity does, and only where it runs
+// one way: the tag that spells the other out is the one the wording was
+// about, while two printings wearing the same label say nothing about which
+// was meant and are left as they are. See containingLabel. A game whose
+// catalog splits the same distinction into separate tags never reaches
+// there, the count having already answered.
 func DescribedVariants(wording string, cards []Card) []Card {
 	var best []Card
 	var most, unnamed int
