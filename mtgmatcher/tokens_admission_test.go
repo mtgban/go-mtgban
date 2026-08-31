@@ -117,3 +117,70 @@ func TestMatchTokenSetVariation(t *testing.T) {
 		}
 	}
 }
+
+// TestMatchTokenNameUnderTokenEdition pins which of two names sharing a
+// normalized form a token edition means. A token carrying no Token in its
+// name is filed under a key that says it, so the plain key is left to the
+// card that normalizes the same way - "Bat" reached the Unsanctioned "Bat-"
+// and "Rhino" the Unstable "Rhino-", whatever edition asked.
+func TestMatchTokenNameUnderTokenEdition(t *testing.T) {
+	for _, probe := range []struct {
+		name      string
+		edition   string
+		variation string
+		setCode   string
+	}{
+		// The token the edition names, not the card sharing its bucket
+		{"Bat", "Bloomburrow Tokens", "10", "TBLB"},
+		{"Rhino", "Return to Ravnica Tokens", "9", "TRTR"},
+		{"Cat Warrior", "Dominaria United Tokens", "17", "TDMU"},
+		// The cards those buckets hold stay reachable by their own names
+		{"Bat-", "Unsanctioned", "32", "UND"},
+		{"Rhino-", "Unstable", "18", "UST"},
+		{"Cat Warriors", "Legends", "", "LEG"},
+	} {
+		in := mtgmatcher.InputCard{
+			Name:      probe.name,
+			Edition:   probe.edition,
+			Variation: probe.variation,
+		}
+		id, err := mtgmatcher.Match(&in)
+		if err != nil {
+			t.Errorf("Match(%v) = %v", in, err)
+			continue
+		}
+		co, err := mtgmatcher.GetUUID(id)
+		if err != nil {
+			t.Errorf("GetUUID(%s) = %v", id, err)
+			continue
+		}
+		if co.SetCode != probe.setCode {
+			t.Errorf("Match(%v) = %s (%s %s), want a printing in %s", in, id, co.SetCode, co.Card.Name, probe.setCode)
+		}
+	}
+}
+
+// TestMatchTokenNameKeepsTheEditionFilter pins the other direction: answering
+// with the token key skips the name fixup, and it is that fixup's " Token"
+// suffix which asks for the edition filter further down. Without asking for
+// the filter here, a token carrying a single printing was served for whatever
+// token edition a listing named.
+func TestMatchTokenNameKeepsTheEditionFilter(t *testing.T) {
+	for _, probe := range []struct {
+		name    string
+		edition string
+	}{
+		{"Aetherborn", "Bloomburrow Tokens"},
+		{"Acorn Stash", "Bloomburrow Tokens"},
+		{"Alien Angel", "Bloomburrow Tokens"},
+		{"Bat", "Doctor Who Tokens"},
+		{"Rhino", "Dominaria United Tokens"},
+	} {
+		in := mtgmatcher.InputCard{Name: probe.name, Edition: probe.edition}
+		id, err := mtgmatcher.Match(&in)
+		if err == nil {
+			co, _ := mtgmatcher.GetUUID(id)
+			t.Errorf("Match(%v) = %s (%v), want an error: no such token is filed there", in, id, co)
+		}
+	}
+}

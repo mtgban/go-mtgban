@@ -338,6 +338,15 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 
 	// Get the card basic info to retrieve the Printings array
 	canonicalName, found := b.CanonicalNames[Normalize(inCard.Name)]
+	// A token carrying no Token in its name is filed under a key that says
+	// it, leaving the plain one to whatever card normalizes the same way -
+	// the Unsanctioned "Bat-" answers for "Bat". An edition that files
+	// tokens is asking for the token, so let its key answer first.
+	var viaTokenKey bool
+	if tokenName, ok := b.CanonicalNames[Normalize(inCard.Name)+"token"]; ok &&
+		b.editionFilesTokens(inCard.Edition) {
+		canonicalName, found, viaTokenKey = tokenName, true, true
+	}
 	if !found {
 		ogName := inCard.Name
 		// Fixup up the name and try again
@@ -392,7 +401,11 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 	// Given that many tokens are not supported, make sure to filter
 	// out unrelated editions.
 	Logger.Println("Processing", inCard, printings)
-	if len(printings) > 1 || strings.HasSuffix(ogName, "Token") {
+	// A name answered by the token key never passed through AdjustName, which
+	// is what would have suffixed it and asked for the filter below. Ask for
+	// it here instead, or a token carrying a single printing would be served
+	// for whatever edition the listing named.
+	if len(printings) > 1 || viaTokenKey || strings.HasSuffix(ogName, "Token") {
 		printings = rules.FilterPrintings(b, inCard, printings)
 		Logger.Println("Filtered printings:", printings)
 

@@ -1074,3 +1074,26 @@ func (b *Backend) hasOversizedPrinting(name string) bool {
 	}
 	return false
 }
+
+// editionFilesTokens reports whether an edition names a set of tokens. It is
+// asked before a name is resolved, to tell which of two names sharing a
+// normalized form the edition means.
+//
+// The set is looked up directly rather than through GetSetByName, whose last
+// resort is to run the whole edition fixup: a sheet of tokens answers to its
+// own name or its own code, and paying for the fixup to learn otherwise would
+// charge every card that happens to share a name with a token.
+func (b *Backend) editionFilesTokens(edition string) bool {
+	if edition == "" {
+		return false
+	}
+	set, found := b.NormalizedSets[Normalize(edition)]
+	if !found {
+		var err error
+		set, err = b.GetSet(edition)
+		if err != nil {
+			return false
+		}
+	}
+	return set.Type == "token"
+}
