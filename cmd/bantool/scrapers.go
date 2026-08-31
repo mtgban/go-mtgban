@@ -1,0 +1,302 @@
+package main
+
+import (
+	"errors"
+	"os"
+
+	"github.com/mtgban/go-mtgban/cardmarket"
+	"github.com/mtgban/go-mtgban/cardtrader"
+	"github.com/mtgban/go-mtgban/coolstuffinc"
+	"github.com/mtgban/go-mtgban/miniaturemarket"
+	"github.com/mtgban/go-mtgban/mtgban"
+	"github.com/mtgban/go-mtgban/starcitygames"
+	"github.com/mtgban/go-mtgban/strikezone"
+	"github.com/mtgban/go-mtgban/tcgplayer"
+	"github.com/mtgban/go-mtgban/vegassingles"
+)
+
+// The scrapers below price one game each, and a vendor's games differ only in
+// the constant naming them. Each family is written once and instanced per
+// game at its entry in ScraperOptions, so a change to how a vendor is built
+// is made in one place rather than in the six or seven copies a family had.
+
+func tcgplayerCredentials() (publicID, privateID string, err error) {
+	publicID = os.Getenv("TCGPLAYER_PUBLIC_KEY")
+	privateID = os.Getenv("TCGPLAYER_PRIVATE_KEY")
+	if publicID == "" || privateID == "" {
+		return "", "", errors.New("missing TCGPLAYER_PUBLIC_KEY or TCGPLAYER_PRIVATE_KEY env vars")
+	}
+	return publicID, privateID, nil
+}
+
+func cardmarketCredentials() (appToken, appSecret string, err error) {
+	appToken = os.Getenv("MKM_APP_TOKEN")
+	appSecret = os.Getenv("MKM_APP_SECRET")
+	if appToken == "" || appSecret == "" {
+		return "", "", errors.New("missing MKM_APP_TOKEN or MKM_APP_SECRET env vars")
+	}
+	return appToken, appSecret, nil
+}
+
+func cardtraderToken() (string, error) {
+	token := os.Getenv("CARDTRADER_TOKEN_BEARER")
+	if token == "" {
+		return "", errors.New("missing CARDTRADER_TOKEN_BEARER env var")
+	}
+	return token, nil
+}
+
+func starcitygamesKey() (string, error) {
+	key := os.Getenv("SCG_API_KEY")
+	if key == "" {
+		return "", errors.New("missing SCG_API_KEY env var")
+	}
+	return key, nil
+}
+
+func cardmarketBridgedIndexScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		appToken, appSecret, err := cardmarketCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
+		if err != nil {
+			return nil, err
+		}
+		scraper.TCGBridge, err = cardtraderBridge(bridgedGame)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MKM_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func cardmarketIndexScraper(game int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		appToken, appSecret, err := cardmarketCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardmarket.NewScraperIndex(game, appToken, appSecret)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MKM_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+// bridgedGame is the CardTrader game whose catalog stands in for a Cardmarket
+// one, for the games where Cardmarket publishes no ids of its own.
+
+func cardmarketSealedScraper(game int, bridgedGame int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		appToken, appSecret, err := cardmarketCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardmarket.NewScraperSealed(game, appToken, appSecret)
+		if err != nil {
+			return nil, err
+		}
+		scraper.TCGBridge, err = cardtraderBridge(bridgedGame)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MKM_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func cardtraderMarketScraper(game int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		token, err := cardtraderToken()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardtrader.NewScraperMarket(game, token)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.ShareCode = os.Getenv("CT_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func cardtraderSealedScraper(game int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		token, err := cardtraderToken()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := cardtrader.NewScraperSealed(game, token)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.ShareCode = os.Getenv("CT_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func coolstuffincScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		scraper := coolstuffinc.NewScraper(game)
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Partner = os.Getenv("CSI_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func coolstuffincSealedScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		scraper := coolstuffinc.NewScraperSealed(game)
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Partner = os.Getenv("CSI_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func miniaturemarketSealedScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		scraper := miniaturemarket.NewScraperSealed(game)
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("MM_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func starcitygamesScraper(game int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		apiKey, err := starcitygamesKey()
+		if err != nil {
+			return nil, err
+		}
+		scraper := starcitygames.NewScraper(game, apiKey)
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("SCG_PARTNER")
+		return scraper, nil
+	}
+}
+
+func starcitygamesSealedScraper(game int) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		apiKey, err := starcitygamesKey()
+		if err != nil {
+			return nil, err
+		}
+		scraper := starcitygames.NewScraperSealed(game, apiKey)
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("SCG_PARTNER")
+		return scraper, nil
+	}
+}
+
+func strikezoneScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		scraper := strikezone.NewScraper(game)
+		scraper.LogCallback = GlobalLogCallback
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func tcgIndexScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		publicID, privateID, err := tcgplayerCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := tcgplayer.NewScraperGameIndex(game, publicID, privateID)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("TCG_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func tcgMarketScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		publicID, privateID, err := tcgplayerCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := tcgplayer.NewScraperGame(game, publicID, privateID)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("TCG_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func tcgSealedScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		publicID, privateID, err := tcgplayerCredentials()
+		if err != nil {
+			return nil, err
+		}
+		scraper, err := tcgplayer.NewScraperGameSealed(game, publicID, privateID)
+		if err != nil {
+			return nil, err
+		}
+		scraper.LogCallback = GlobalLogCallback
+		scraper.Affiliate = os.Getenv("TCG_PARTNER")
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
+
+func vegassinglesScraper(game string) func() (mtgban.Scraper, error) {
+	return func() (mtgban.Scraper, error) {
+		scraper := vegassingles.NewScraper(game)
+		scraper.LogCallback = GlobalLogCallback
+		if MaxConcurrency != 0 {
+			scraper.MaxConcurrency = MaxConcurrency
+		}
+		return scraper, nil
+	}
+}
