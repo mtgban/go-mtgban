@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/internal/datastoretest"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -32,7 +32,7 @@ func installMagic() error {
 	if path == "" {
 		return errors.New("ALLPRINTINGS5_PATH is not set")
 	}
-	reader, err := datastore.Open(path)
+	reader, err := datastoretest.Open(path)
 	if err != nil {
 		return err
 	}

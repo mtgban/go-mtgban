@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/internal/datastoretest"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
@@ -19,7 +19,7 @@ func TestNeonInkWording(t *testing.T) {
 	if datastorePath == "" {
 		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
 	}
-	reader, err := datastore.Open(datastorePath)
+	reader, err := datastoretest.Open(datastorePath)
 	if err != nil {
 		t.Fatal(err)
 	}

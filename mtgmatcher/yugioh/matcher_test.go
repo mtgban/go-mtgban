@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/internal/datastoretest"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
@@ -145,7 +145,7 @@ func loadBackend(t *testing.T) *mtgmatcher.Backend {
 	if path == "" {
 		t.Skip("YUGIOH_PATH not set; skipping Yu-Gi-Oh matcher suite")
 	}
-	f, err := datastore.Open(path)
+	f, err := datastoretest.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}

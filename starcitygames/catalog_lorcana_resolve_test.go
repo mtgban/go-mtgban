@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
+	"github.com/mtgban/go-mtgban/internal/datastoretest"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
 	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
@@ -22,7 +22,7 @@ func withGameDatastore(t *testing.T, env string, load func(io.Reader) (*mtgmatch
 	if path == "" {
 		t.Skipf("Need %s set to run this test", env)
 	}
-	reader, err := datastore.Open(path)
+	reader, err := datastoretest.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func withGameDatastore(t *testing.T, env string, load func(io.Reader) (*mtgmatch
 	mtgmatcher.SetGlobalDatastore(ds)
 
 	t.Cleanup(func() {
-		allPrintings, err := datastore.Open(os.Getenv("ALLPRINTINGS5_PATH"))
+		allPrintings, err := datastoretest.Open(os.Getenv("ALLPRINTINGS5_PATH"))
 		if err != nil {
 			t.Fatal(err)
 		}
