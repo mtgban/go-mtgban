@@ -6,10 +6,10 @@ import (
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 )
 
-// TestFrameNumber pins the printing a listing reaches when it names a frame
-// this storefront files under the plain card's own collector number. The
-// number is appended last, so it buried the frame the wording named and every
-// treatment of a card answered with the plain one.
+// TestFrameNumber pins the printing a listing reaches when this storefront's
+// own collector number and the frame its wording names disagree. The number is
+// appended last, so it buried the frame a listing named - and it is wrong the
+// other way round too, naming a frame on a listing that names none.
 func TestFrameNumber(t *testing.T) {
 	for _, test := range []struct {
 		desc    string
@@ -26,6 +26,13 @@ func TestFrameNumber(t *testing.T) {
 		{"a set numbering its frames below the plain card", "Polygoyf (Extended Art)", "Modern Horizons 3 Commander", "117", "M3C", "65"},
 		{"a frame the storefront numbers correctly stays put", "Kona, Rescue Beastie (Showcase) - FOIL", "Duskmourn: House of Horror", "358", "DSK", "358"},
 		{"a listing spelling its own number stays put", "Salvation Engine (Borderless First-Place 517) - FOIL", "Aetherdrift", "517", "DFT", "517"},
+		{"a plain listing carrying the frame's own number", "Nimble Trapfinder", "Zendikar Rising", "332", "ZNR", "72"},
+		{"and its sibling, swapped the same way", "Master of Winds", "Zendikar Rising", "331", "ZNR", "68"},
+		{"a commander deck numbering its frames first", "Wave Goodbye", "The Lost Caverns of Ixalan Commander", "47", "LCC", "79"},
+		{"a borderless land's number on the plain land", "Underground River - FOIL", "The Brothers' War", "300", "BRO", "267"},
+		{"a set marking every printing keeps its number", "Nexus of Fate", "Special Guests", "122", "SPG", "122"},
+		{"a surge foil spelling its own number", "The Sea Devils (Surge 713) - FOIL", "Doctor Who", "713", "WHO", "713"},
+		{"the storefront's own misspelling still names a frame", "Discontinuity (Extented Art) - FOIL", "Core Set 2021 / M21", "349", "M21", "349"},
 		{"a Secret Lair keeps the number naming its drop", "Ashiok, Dream Render (Borderless) - FOIL", "Secret Lair Drop", "399", "SLD", "399"},
 		{"and another, where the drop is the whole identity", "Boros Charm (Borderless) - FOIL", "Secret Lair Drop", "217", "SLD", "217"},
 	} {

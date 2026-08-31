@@ -384,6 +384,8 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 		variation = strings.Replace(variation, "Scandanavia", "Scandinavia", 1)
 	} else if strings.Contains(variation, "Phillippines") {
 		variation = strings.Replace(variation, "Phillippines", "Philippines", 1)
+	} else if strings.Contains(variation, "Extented") {
+		variation = strings.Replace(variation, "Extented", "Extended", 1)
 	}
 
 	// Use collector number data when the variation carries has none, unless for a couple of editions
@@ -427,6 +429,24 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 			marked := resolved(cardName, edition, bare, isFoil)
 			if marked != nil && marked.HasPromoType(boosterFun) &&
 				marked.Foil == plain.Foil && marked.Etched == plain.Etched {
+				variation = bare
+			}
+		}
+	}
+
+	// The same number is wrong the other way round too: a listing naming no
+	// frame at all can carry the number of one, and then the plain card
+	// answers with its own showcase. Ask again without the number, and keep
+	// the answer only where it reaches a printing the catalog leaves
+	// unmarked - a set whose every printing is marked, like Special Guests,
+	// has no plain card to reach and keeps the number it came with.
+	if numbered && !namesTreatment(variation) {
+		framed := resolved(cardName, edition, variation, isFoil)
+		if framed != nil && framed.HasPromoType(boosterFun) {
+			bare := strings.TrimSpace(strings.TrimSuffix(variation, card.Number))
+			plain := resolved(cardName, edition, bare, isFoil)
+			if plain != nil && len(plain.PromoTypes) == 0 && plain.SetCode == framed.SetCode &&
+				plain.Foil == framed.Foil && plain.Etched == framed.Etched {
 				variation = bare
 			}
 		}
