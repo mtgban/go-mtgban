@@ -914,6 +914,16 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 		return out
 	}
 
+	if narrowed, found := narrowedRarity(words, candidates); found {
+		var out []mtgmatcher.Card
+		for _, card := range candidates {
+			if strings.EqualFold(card.Rarity, narrowed) {
+				out = append(out, card)
+			}
+		}
+		return out
+	}
+
 	rarity := suffixRarity(number)
 	if rarity == "" {
 		return candidates
@@ -925,6 +935,62 @@ func tierByRarity(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card, nu
 		}
 	}
 	return out
+}
+
+// narrowedRarity names the one tier among the candidates that says everything
+// the wording said about rarity, where the wording did not say all of it.
+//
+// A set decorates its tiers with a word of its own - King's Court sells one
+// number as "Secret Pharaoh's Rare" and "Ultra Pharaoh's Rare" - and a
+// storefront writes the tier it knows, "Ultra Rare". Asking whether the
+// wording spells the whole tier answers no for both, and the decoration is in
+// the middle rather than at the front, so reading a tail off it (the rule
+// above) does not reach it either. What the wording did name is the word that
+// tells the two apart.
+//
+// So the question is turned around: of the words the candidates use for
+// rarity, which did the wording say, and does exactly one tier say all of
+// them. Only the candidates' own vocabulary counts, so the set code and the
+// rest of the wording say nothing here; and one tier has to answer alone,
+// since a wording naming what several tiers share has not chosen between them.
+func narrowedRarity(words []string, candidates []mtgmatcher.Card) (string, bool) {
+	vocabulary := map[string]bool{}
+	for _, card := range candidates {
+		for _, word := range strings.Fields(strings.ToLower(card.Rarity)) {
+			vocabulary[word] = true
+		}
+	}
+	named := map[string]bool{}
+	for _, word := range words {
+		if vocabulary[word] {
+			named[word] = true
+		}
+	}
+	if len(named) == 0 {
+		return "", false
+	}
+	var narrowed string
+	for _, card := range candidates {
+		has := map[string]bool{}
+		for _, word := range strings.Fields(strings.ToLower(card.Rarity)) {
+			has[word] = true
+		}
+		saysAll := true
+		for word := range named {
+			if !has[word] {
+				saysAll = false
+				break
+			}
+		}
+		if !saysAll {
+			continue
+		}
+		if narrowed != "" && !strings.EqualFold(narrowed, card.Rarity) {
+			return "", false
+		}
+		narrowed = card.Rarity
+	}
+	return narrowed, narrowed != ""
 }
 
 // decoratedRarity answers the candidate rarity whose tail the wording spells

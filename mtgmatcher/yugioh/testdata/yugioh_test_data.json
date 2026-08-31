@@ -71,6 +71,15 @@
         "uuid": "ys13-env03_69074_lim"
     },
     {
+        "description": "a tier named in part picks the one printing that says all of it",
+        "input": {
+            "name": "Slifer the Sky Dragon",
+            "variant": "KICO-EN063 Ultra Rare",
+            "edition": "King's Court"
+        },
+        "uuid": "kico-en063_243517_1e"
+    },
+    {
         "description": "a token the storefront names its own way answers to its number",
         "input": {
             "name": "Yami Token",
@@ -183,6 +192,16 @@
         },
         "uuid": "",
         "error": "aliasing detected"
+    },
+    {
+        "description": "negative: a number two sets share names neither of them",
+        "input": {
+            "name": "Dark Magician",
+            "variant": "BPT001 BPT-001 Secret Rare",
+            "edition": "Promo"
+        },
+        "uuid": "",
+        "error": "unknown variant"
     },
     {
         "description": "negative: a printing numbered in another language is not ours",
