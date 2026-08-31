@@ -1059,6 +1059,17 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		variants = append(variants, card)
 	}
 	described = mtgmatcher.DescribedVariants(wording, variants)
+	// A storefront that named no label at all may have named one in its own
+	// words. Asking again in the catalog's is a fallback and never more: a
+	// wording that already named a label has said which printing it means,
+	// and the one number filing a manga printing beside a super alternate
+	// art one is told apart by exactly that.
+	if len(described) == 0 {
+		aliased := catalogWording(wording)
+		if aliased != wording {
+			described = mtgmatcher.DescribedVariants(aliased, variants)
+		}
+	}
 	// The edition is in the wording because a storefront files a promo
 	// under its base set and spells the event in the shelf name, but it
 	// describes the shelf and the variation describes the card. Where the
@@ -1104,6 +1115,28 @@ func runNamedVariants(inCard *mtgmatcher.InputCard, cards []mtgmatcher.Card) []m
 		}
 	}
 	return out
+}
+
+// catalogVocabulary spells a treatment the way the catalog files it, for the
+// words the storefronts use instead. Both sides are the names of one thing:
+// the catalog calls the manga-art printings "Super Alternate Art" where every
+// storefront calls them manga, and files the treasure rares under the two
+// letters their rarity is printed as.
+var catalogVocabulary = map[string]string{
+	"manga":         "Super Alternate Art",
+	"treasure rare": "TR",
+}
+
+// catalogWording adds the catalog's spelling for every storefront word the
+// wording says, and returns it unchanged when it says none. The storefront's
+// own words stay: a wording naming two treatments still names both.
+func catalogWording(wording string) string {
+	for storefront, catalog := range catalogVocabulary {
+		if mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(storefront)) {
+			wording += " " + catalog
+		}
+	}
+	return wording
 }
 
 // lastNamedTiebreak keeps the printings whose label the wording names last.
