@@ -7,7 +7,6 @@ import (
 
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 	"github.com/mtgban/go-mtgban/mtgmatcher/onepiece"
 	"github.com/mtgban/go-mtgban/mtgmatcher/pokemon"
 	"github.com/mtgban/go-mtgban/mtgmatcher/riftbound"
@@ -18,6 +17,11 @@ import (
 // for are the other three, and their CI jobs carry their own datastore and
 // not this one.
 var magicInstalled bool
+
+// magicDatastore is the datastore installMagic loaded, kept so a test that
+// installs another game's can put this one back without reading the file a
+// second time. A backend is 2.9GB resident and the reload held two.
+var magicDatastore *mtgmatcher.Backend
 
 // withMagic skips a test that reads the Magic datastore where none is
 // installed.
@@ -54,16 +58,7 @@ func withGameDatastore(t *testing.T, env string, load func(io.Reader) (*mtgmatch
 		if !magicInstalled {
 			return
 		}
-		allPrintings, err := datastore.Open(os.Getenv("ALLPRINTINGS5_PATH"))
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer allPrintings.Close()
-		back, err := magic.Load(allPrintings)
-		if err != nil {
-			t.Fatal(err)
-		}
-		mtgmatcher.SetGlobalDatastore(back)
+		mtgmatcher.SetGlobalDatastore(magicDatastore)
 	})
 }
 

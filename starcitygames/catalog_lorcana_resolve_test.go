@@ -8,7 +8,6 @@ import (
 	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
 	"github.com/mtgban/go-mtgban/mtgmatcher/lorcana"
-	"github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // withGameDatastore installs another game's datastore for the duration of a
@@ -34,16 +33,7 @@ func withGameDatastore(t *testing.T, env string, load func(io.Reader) (*mtgmatch
 	mtgmatcher.SetGlobalDatastore(ds)
 
 	t.Cleanup(func() {
-		allPrintings, err := datastore.Open(os.Getenv("ALLPRINTINGS5_PATH"))
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer allPrintings.Close()
-		back, err := magic.Load(allPrintings)
-		if err != nil {
-			t.Fatal(err)
-		}
-		mtgmatcher.SetGlobalDatastore(back)
+		mtgmatcher.SetGlobalDatastore(magicDatastore)
 	})
 }
 

@@ -1,13 +1,9 @@
 package hareruya
 
 import (
-	"os"
 	"testing"
 
-	"github.com/mtgban/go-mtgban/internal/datastore"
 	"github.com/mtgban/go-mtgban/mtgmatcher"
-
-	_ "github.com/mtgban/go-mtgban/mtgmatcher/magic"
 )
 
 // TestJudgeReward pins the set a judge reward is filed in against the set the
@@ -17,12 +13,8 @@ import (
 // printing the wording was naming. Each pair below is one card sold twice,
 // the reward and the original, at prices that are not each other's.
 func TestJudgeReward(t *testing.T) {
-	path := os.Getenv("ALLPRINTINGS5_PATH")
-	if path == "" {
-		t.Skip("Need ALLPRINTINGS5_PATH variable set to run this test")
-	}
-	if err := datastore.Load(path); err != nil {
-		t.Fatal(err)
+	if len(mtgmatcher.GetAllSets()) == 0 {
+		t.Skip("ALLPRINTINGS5_PATH not set; skipping the judge reward suite")
 	}
 
 	for _, test := range []struct {
