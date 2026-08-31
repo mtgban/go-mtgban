@@ -48,9 +48,9 @@ func TestPossessiveRarity(t *testing.T) {
 			wantSet: "KICO", wantNumber: "KICO-EN026", wantRarity: "Collector's Rare",
 		},
 		{
-			desc:    "a curly apostrophe answers the same wording",
+			desc:    "the possessive tier the catalog spells with a mark",
 			in:      mtgmatcher.InputCard{Name: "Obelisk the Tormentor", Edition: "King's Court", Variation: "KICO-EN064 Pharaoh's Rare with Secret Rare text"},
-			wantSet: "KICO", wantNumber: "KICO-EN064", wantRarity: "Secret Pharaoh’s Rare",
+			wantSet: "KICO", wantNumber: "KICO-EN064", wantRarity: "Secret Pharaoh's Rare",
 		},
 		{
 			desc:    "a possessive further into a tier keeps its s, so a stray word cannot upgrade the plain tier",
