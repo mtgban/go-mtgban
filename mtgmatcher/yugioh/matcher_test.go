@@ -204,6 +204,11 @@ var yugiohSeeds = []matchTest{
 		Desc: "a wording naming one tag keeps the printing wearing only it",
 		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl the Dragon Knight", Variation: "DLCS-EN006 Blue"},
 	},
+	// The mark is invisible, so the name it decorates reads as spelled.
+	{
+		Desc: "an invisible formatting mark is not part of the name",
+		In:   mtgmatcher.InputCard{Name: "Pendulum Encore\u200e", Variation: "Common", Edition: "Blazing Vortex"},
+	},
 }
 
 func loadBackend(t *testing.T) *mtgmatcher.Backend {

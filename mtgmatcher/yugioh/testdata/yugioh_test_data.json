@@ -105,6 +105,15 @@
         "uuid": "dlcs-en006_222248_1e"
     },
     {
+        "description": "an invisible formatting mark is not part of the name",
+        "input": {
+            "name": "Pendulum Encore‎",
+            "variant": "Common",
+            "edition": "Blazing Vortex"
+        },
+        "uuid": "blvo-en091_231404_1e"
+    },
+    {
         "description": "an unshared number names the card its listing misspells",
         "input": {
             "name": "Doube-Edged Sword Technique",
