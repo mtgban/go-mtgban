@@ -23,6 +23,14 @@ var replacerStrings = []string{
 	"&quot;", "",
 
 	// Quotes and commas and whatnot
+	// Brackets are dropped the way parentheses already are: the catalog
+	// spells one card's subtitle both ways - "Boss's Orders [Cyrus]" in
+	// one set and "Boss's Orders (Cyrus)" in another - and a name that
+	// depends on which bracket the catalog reached for is two names for
+	// one card.
+	"[", "",
+	"]", "",
+
 	"''", "",
 	"“", "",
 	"”", "",
