@@ -114,3 +114,50 @@ func TestDescribedVariants(t *testing.T) {
 		}
 	}
 }
+
+// TestDescribedVariantsContainedLabel pins the third rule on the shape that
+// forced it: a catalog writing the whole distinction as one label, so the
+// printings wear one tag apiece and one tag contains the other whole. One
+// Piece sells "Monkey.D.Luffy (Super Alternate Art)" beside the same card
+// "(Red Super Alternate Art)"; both are named by a wording spelling the
+// longer out, and counting tags cannot tell them apart.
+func TestDescribedVariantsContainedLabel(t *testing.T) {
+	superArt := Card{UUID: "superart", PromoTypes: []string{"superalternateart"}}
+	redSuperArt := Card{UUID: "redsuperart", PromoTypes: []string{"redsuperalternateart"}}
+	parallel := Card{UUID: "parallel", PromoTypes: []string{"parallel"}}
+	pack := Card{UUID: "pack", PromoTypes: []string{"cs2023eventpack"}}
+	finalist := Card{UUID: "finalist", PromoTypes: []string{"cs2023eventpackfinalistver"}}
+	cards := []Card{superArt, redSuperArt, parallel, pack, finalist}
+
+	for _, tt := range []struct {
+		wording string
+		want    []string
+	}{
+		// The longer label spells more of the wording out, so it answers a
+		// wording that spelled it out rather than aliasing with the label
+		// it contains.
+		{"Red Super Alternate Art", []string{"redsuperart"}},
+		{"CS 2023 Event Pack Finalist Ver.", []string{"finalist"}},
+		// The shorter label still answers its own wording: the longer one
+		// is not named by a wording that never spelled its extra words.
+		{"Super Alternate Art", []string{"superart"}},
+		{"CS 2023 Event Pack", []string{"pack"}},
+		// A label sharing nothing with the wording is untouched by any of it.
+		{"Parallel", []string{"parallel"}},
+	} {
+		var got []string
+		for _, card := range DescribedVariants(tt.wording, cards) {
+			got = append(got, card.UUID)
+		}
+		if len(got) != len(tt.want) {
+			t.Errorf("DescribedVariants(%q) = %v, want %v", tt.wording, got, tt.want)
+			continue
+		}
+		for i := range got {
+			if got[i] != tt.want[i] {
+				t.Errorf("DescribedVariants(%q) = %v, want %v", tt.wording, got, tt.want)
+				break
+			}
+		}
+	}
+}
