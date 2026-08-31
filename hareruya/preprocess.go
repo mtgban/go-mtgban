@@ -33,6 +33,10 @@ func dashSuffix(base, suffix string) string {
 	return base
 }
 
+// powerToughness matches the pair a title states in place of a collector
+// number for the cards a set prints several times at several sizes.
+var powerToughness = regexp.MustCompile(`^\d+/\d+$`)
+
 // splitParens separates the parenthesised groups of a title into the collector
 // number, which comes before the card name, and the series, which comes after
 // it. A trailing group only counts as a series when it spells a set name
@@ -50,7 +54,15 @@ func splitParens(title string) (number, series string) {
 			}
 		}
 		if number == "" {
-			number = strings.Split(group, "/")[0]
+			// A slash separates two spellings of one promo code, and the
+			// first is the one the catalog files - except where both sides
+			// are numbers, which is a power and toughness rather than a
+			// code, and the only thing telling one variant of an Unstable
+			// card from another.
+			number = group
+			if !powerToughness.MatchString(group) {
+				number = strings.Split(group, "/")[0]
+			}
 			number = strings.TrimLeft(number, "0")
 		}
 	}

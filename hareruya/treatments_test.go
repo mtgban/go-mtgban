@@ -59,6 +59,19 @@ func TestTitleTreatments(t *testing.T) {
 			title:   "買取：【Foil】(381)■ボーダーレス■《再誕世界、エムラクール/Emrakul, the World Anew》[MH3-BF] 無R",
 			wantSet: "MH3", wantNumber: "381",
 		},
+		{
+			// The catalog files the six sizes of this card as 82a to 82f
+			// and names them by the pair the title states, so keeping only
+			// the half in front of the slash answered all three with one.
+			desc:    "the power and toughness names the variant it belongs to",
+			title:   "買取：【Foil】《Garbage Elemental》(3/1)[UST] 赤U",
+			wantSet: "UST", wantNumber: "82b",
+		},
+		{
+			desc:    "and the one bought beside it is its own printing",
+			title:   "買取：【Foil】《Garbage Elemental》(3/3)[UST] 赤U",
+			wantSet: "UST", wantNumber: "82d",
+		},
 	} {
 		t.Run(tt.desc, func(t *testing.T) {
 			in, err := preprocess(tt.title)
