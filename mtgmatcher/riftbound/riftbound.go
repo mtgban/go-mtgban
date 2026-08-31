@@ -199,6 +199,28 @@ func slugPromoTypes(promoTypes []string) []string {
 	return out
 }
 
+// signaturePromoType is the qualifier a starred collector number stands for.
+// The gallery marks the signed showcase printings with a star on the public
+// code ("SFD-235*/221") and says nothing else about them: they carry no
+// qualifier of their own, and the star is the whole of what separates them
+// from the printing they share a name and a number with.
+const signaturePromoType = "signature"
+
+// signedPromoTypes is a card's own qualifiers plus the one its number
+// implies, so the star reads as a tag rather than only as a number the
+// storefronts have to spell exactly.
+func signedPromoTypes(promoTypes []string, number string) []string {
+	if !strings.HasSuffix(number, "*") {
+		return promoTypes
+	}
+	for _, promoType := range promoTypes {
+		if mtgmatcher.PromoTypeSlug(promoType) == signaturePromoType {
+			return promoTypes
+		}
+	}
+	return append(slices.Clone(promoTypes), signaturePromoType)
+}
+
 // describingPromoTypes drops the qualifiers that only repeat the collector
 // number - the catalog names a rune variant "Fury Rune (R01c)", and the
 // number field already says R01c, so as a tag it describes nothing and would
@@ -288,7 +310,8 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 		if b.CanonicalNames[n] == "" {
 			b.CanonicalNames[n] = card.Name
 		}
-		for _, promoType := range describingPromoTypes(card.PromoTypes, numberFromPublicCode(card.PublicCode)) {
+		number := numberFromPublicCode(card.PublicCode)
+		for _, promoType := range describingPromoTypes(signedPromoTypes(card.PromoTypes, number), number) {
 			slug := mtgmatcher.PromoTypeSlug(promoType)
 			if !slices.Contains(b.AllPromoTypes, slug) {
 				b.AllPromoTypes = append(b.AllPromoTypes, slug)
@@ -361,7 +384,7 @@ func (gallery *GalleryBlade) newBackend() *mtgmatcher.Backend {
 
 			Types:      types,
 			Subtypes:   card.Tags.Tags,
-			PromoTypes: slugPromoTypes(card.PromoTypes),
+			PromoTypes: slugPromoTypes(signedPromoTypes(card.PromoTypes, number)),
 
 			Printings: printingsByName[mtgmatcher.Normalize(card.Name)],
 
