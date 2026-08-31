@@ -131,7 +131,6 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 		return nil
 	}
 
-	// Build buylist URL
 	u, _ := url.Parse("https://buylist.vegas.singles/retailer/buylist")
 	q := u.Query()
 	q.Set("product_line", vs.game)
@@ -140,7 +139,6 @@ func (vs *Vegassingles) processProduct(product VSProduct) error {
 	u.RawQuery = q.Encode()
 	buylistLink := u.String()
 
-	// Build retail product URL
 	retailLink := "https://vegas.singles/products/" + buildProductSlug(product.DisplayName)
 
 	// vegas.singles lists a card under more than one product - the same

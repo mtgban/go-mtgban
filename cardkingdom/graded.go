@@ -115,7 +115,6 @@ func (ck *Graded) scrapePage(session string, page int) error {
 			return
 		}
 
-		// Title
 		title := strings.TrimSpace(s.Find(".productTitle a").Text())
 
 		theCard, err := preprocessGraded(title)

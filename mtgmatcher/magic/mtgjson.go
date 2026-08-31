@@ -440,7 +440,6 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 
 		// Etched + Nonfoil [+ Foil]
 		if card.HasFinish(mtgmatcher.FinishNonfoil) {
-			// Save the card object
 			save(uuid, co)
 		}
 
@@ -454,7 +453,6 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 				uuid = card.UUID + suffixFoil
 				co.UUID = uuid
 			}
-			// Save the card object
 			save(uuid, co)
 		}
 
@@ -468,14 +466,12 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 			uuid = card.UUID + suffixEtched
 			co.UUID = uuid
 		}
-		// Save the card object
 		save(uuid, co)
 	} else if card.HasFinish(mtgmatcher.FinishFoil) {
 		uuid := card.UUID
 
 		// Foil [+ Nonfoil]
 		if card.HasFinish(mtgmatcher.FinishNonfoil) {
-			// Save the card object
 			save(uuid, co)
 
 			// Update the uuid for the *next* finish type
@@ -483,10 +479,8 @@ func generateCardUUIDs(card Card, uuids map[string]*mtgmatcher.CardObject, editi
 			co.UUID = uuid
 		}
 
-		// Foil
 		co.Foil = true
 		co.Finish = mtgmatcher.FinishFoil
-		// Save the card object
 		save(uuid, co)
 	} else {
 		// Single printing, use as-is
