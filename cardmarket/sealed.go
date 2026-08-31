@@ -147,7 +147,7 @@ func (mkm *Sealed) processProduct(ctx context.Context, channel chan<- responseCh
 				continue
 			}
 
-			link := BuildURL(article.IDProduct, GameMagic, mkm.Affiliate, article.IsFoil)
+			link := BuildURL(article.IDProduct, mkm.gameID, mkm.Affiliate, article.IsFoil)
 			out := responseChan{
 				cardID: uuid,
 				entry: mtgban.InventoryEntry{
@@ -189,12 +189,17 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 	productMap := mtgmatcher.BuildSealedProductMap("mcmId")
 	mkm.printf("Loaded %d sealed products", len(productMap))
 
-	// A datastore that does not catalog cardmarket's own ids resolves over
-	// the TCGplayer bridge instead, with the sealed-name resolver catching
-	// what the bridge does not link yet.
-	nameFallback := false
-	if len(productMap) == 0 && len(mkm.TCGBridge) > 0 {
-		nameFallback = true
+	// A datastore that does not catalog cardmarket's own ids resolves by
+	// name instead. The TCGplayer bridge settles what an id can settle and
+	// the resolver catches the rest, but the bridge is an improvement on the
+	// name pass rather than a precondition for it: requiring one left every
+	// game whose datastore carries no mcmId priced at nothing at all unless
+	// CardTrader credentials happened to be configured beside them.
+	// Magic is not among them whatever its map looks like: its sealed names
+	// collide too readily to be trusted on their own, which is the same
+	// reason the CardTrader sealed scraper stops its name pass there.
+	nameFallback := len(productMap) == 0 && mkm.gameID != GameMagic
+	if nameFallback && len(mkm.TCGBridge) > 0 {
 		tcgMap := mtgmatcher.BuildSealedProductMap("tcgplayerProductId")
 		for mkmID, tcgID := range mkm.TCGBridge {
 			uuids, found := tcgMap[tcgID]
@@ -236,6 +241,10 @@ func (mkm *Sealed) Load(ctx context.Context) error {
 			continue
 		}
 		if nameFallback {
+			if shelf, holds := sealedShelfHoldsNoProduct(product.CategoryName); holds {
+				dropped[shelf]++
+				continue
+			}
 			// The English-only datastores never carry the printings made
 			// for another market, whose prices must not land on the
 			// English product's uuid - and the bridge links them there,
@@ -441,6 +450,34 @@ func (mkm *Sealed) pruneSubsumed(names map[int]string, productMap map[int][]stri
 // printing rather than the English one. The wording is matched short of the
 // word it usually ends on, which the catalog has misspelt ("Asia Region
 // Lega") often enough to matter.
+// sealedShelves are the catalog's own headings for the things it sells that no
+// datastore holds a product for: the collectible coins packed inside a Pokemon
+// box rather than sold as one, and the event tickets. Each game prefixes its
+// own name onto the heading, so the tail is what names the shelf.
+//
+// A heading earns its place here only by resolving nothing at all - 689 rows
+// across the games, every one of them otherwise reported as a name nobody
+// could place. The lots very nearly joined them, on 2 of some 200 resolving,
+// until those two turned out to be real: Cardmarket files the Basic Energy Box
+// and the Charizard Ultra-Premium Collection under Lot, and shelving the
+// heading would have stopped pricing two products to quiet a log. What the
+// datastore is merely missing stays off this list and keeps saying so.
+var sealedShelves = map[string]string{
+	"Coins":         "coins, which are not a sealed product",
+	"Event Tickets": "an event ticket rather than a product",
+}
+
+// sealedShelfHoldsNoProduct reports whether a catalog heading is one of them,
+// and what to say about it.
+func sealedShelfHoldsNoProduct(category string) (string, bool) {
+	for shelf, reason := range sealedShelves {
+		if strings.HasSuffix(category, " "+shelf) {
+			return reason, true
+		}
+	}
+	return "", false
+}
+
 const asiaRegionMark = "asia region"
 
 // sealedIsForeignPrinting reports whether a storefront's product name marks a
