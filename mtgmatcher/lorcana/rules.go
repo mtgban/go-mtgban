@@ -265,19 +265,26 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 	chased := false
 	seen := map[string]bool{}
 	for _, uuid := range b.Hashes[mtgmatcher.Normalize(inCard.Name)] {
-		// Foil printings (the primary "_f" and every foil sub-type suffix) are
-		// stored under a suffixed uuid; fold them back onto the base card so
-		// each candidate appears exactly once. Base uuids are numeric, so the
-		// first underscore marks the start of any finish suffix.
+		// Every finish of a printing is stored under a uuid of its own,
+		// suffixed with the finish it carries; fold them back onto the
+		// printing so each candidate appears exactly once. Base uuids are
+		// numeric, so the first underscore marks the start of the suffix.
+		base := uuid
 		if idx := strings.IndexByte(uuid, '_'); idx >= 0 {
-			uuid = uuid[:idx]
+			base = uuid[:idx]
 		}
-		if seen[uuid] {
+		if seen[base] {
 			continue
 		}
-		seen[uuid] = true
+		seen[base] = true
 
-		co, found := b.UUIDs[uuid]
+		// A printing sold in no nonfoil has nothing under the bare uuid -
+		// every finish it has is suffixed - so the entry that folded here
+		// stands for it.
+		co, found := b.UUIDs[base]
+		if !found {
+			co, found = b.UUIDs[uuid]
+		}
 		if !found {
 			continue
 		}

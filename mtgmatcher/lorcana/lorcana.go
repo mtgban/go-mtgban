@@ -368,12 +368,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 
 			OriginalNumber: fmt.Sprintf("%d", card.Number),
 		}
-		// Register the uuid each finish resolves to. Nonfoil keeps the base
-		// uuid and the primary foil keeps "_f", so output()/Match resolve to
-		// them; Lorcana's extra foil sub-types (RainbowPillars, …) each get
-		// their own uuid keyed by sub-type name so none are dropped. The uuid
-		// derives from the sub-type name, not its position, so it is stable
-		// across data updates that reorder or add foil types.
+		// Register the uuid each finish resolves to. Nonfoil keeps the bare
+		// uuid and every foil is suffixed with the finish it carries, the
+		// way the other games spell theirs: a uuid says which printing it
+		// prices rather than only that it is "a foil". The suffix derives
+		// from the finish name, not its position, so it is stable across
+		// data updates that reorder or add foil types.
 		finishUUIDs := map[string]string{}
 		finishAliases := map[string]string{}
 		type perFinish struct {
@@ -382,16 +382,12 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			name string
 		}
 		var stored []perFinish
-		// A foil-only printing has no nonfoil to hold the base uuid, so its
-		// primary foil takes it. Read that off the finishes rather than
-		// their order: a printing that lists a foil first would otherwise
-		// hand both of its finishes the one uuid.
-		hasNonfoil := slices.Contains(finishes, mtgmatcher.FinishNonfoil)
+		baseUUID := convertedCard.UUID
 		foilSeen := false
 		for i, finish := range finishes {
 			if finish != mtgmatcher.FinishFoil {
-				finishUUIDs[mtgmatcher.FinishNonfoil] = convertedCard.UUID
-				stored = append(stored, perFinish{convertedCard.UUID, false, mtgmatcher.FinishNonfoil})
+				finishUUIDs[mtgmatcher.FinishNonfoil] = baseUUID
+				stored = append(stored, perFinish{baseUUID, false, mtgmatcher.FinishNonfoil})
 				continue
 			}
 
@@ -400,21 +396,15 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			// constant instead of the export's "None" placeholder.
 			finishName := canonicalFinish(card.FoilTypes[i])
 
-			uuid := convertedCard.UUID
+			uuid := baseUUID + "_" + finishName
+			// The printing's first foil answers the plain foil flag; the
+			// sub-types past it are keyed by their own name, which is what
+			// keeps a flag from reaching a treatment nobody asked for.
 			key := mtgmatcher.FinishFoil
-			if !foilSeen {
-				// Primary foil: "_f", or the base uuid on a foil-only
-				// printing.
-				foilSeen = true
-				if hasNonfoil {
-					uuid += suffixFoil
-				}
-			} else {
-				// Additional sub-types get a name-derived uuid, keyed by their
-				// sub-type name in the map.
+			if foilSeen {
 				key = finishName
-				uuid += "_" + key
 			}
+			foilSeen = true
 			finishUUIDs[key] = uuid
 			stored = append(stored, perFinish{uuid, true, finishName})
 
@@ -435,6 +425,19 @@ func (ac *AllCards) newBackend() *mtgmatcher.Backend {
 			}
 		}
 		convertedCard.FoilUUIDs = finishUUIDs
+		// The printing is identified by the entry a bare flag resolves to,
+		// which is its nonfoil where it has one and its first foil where it
+		// does not. A foil-only printing no longer holds the bare uuid, so
+		// naming it here is what keeps the set listing and the identifier
+		// index pointing at a card that exists.
+		// Read it off the map rather than the order the finishes were
+		// listed in: a printing that lists a foil first would otherwise be
+		// identified by that foil while carrying a nonfoil.
+		if uuid, found := finishUUIDs[mtgmatcher.FinishNonfoil]; found {
+			convertedCard.UUID = uuid
+		} else if uuid, found := finishUUIDs[mtgmatcher.FinishFoil]; found {
+			convertedCard.UUID = uuid
+		}
 		// A printing foiled one way only answers Holofoil with that foil
 		// whatever LorcanaJSON calls it: 418 products in the catalog carry a
 		// single sku TCGplayer names Holofoil, and 15 of them are foiled in
@@ -600,8 +603,6 @@ var lorcanaRarityMap = map[string]int{
 	"iconic":    8,
 	"special":   9,
 }
-
-const suffixFoil = "_f"
 
 // standardFoil is LorcanaJSON's name for the cold foil almost every Lorcana
 // card is foiled in (2717 of the 3242 printings in the datastore at the time

@@ -45,10 +45,10 @@ func TestLorcanaExtraProductIds(t *testing.T) {
 		want string
 	}{
 		{"631349", false, "100"},
-		{"631349", true, "100_f"},
+		{"631349", true, "100_silver"},
 		{"633427", false, "100"},
-		{"633427", true, "100_f"},
-		{"631350", true, "200_f"},
+		{"633427", true, "100_silver"},
+		{"631350", true, "200_silver"},
 	} {
 		got, err := b.MatchID(tc.id, tc.foil)
 		if err != nil {
