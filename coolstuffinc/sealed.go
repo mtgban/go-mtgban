@@ -590,8 +590,19 @@ func (csi *Sealed) Info() (info mtgban.ScraperInfo) {
 	case GameYuGiOh:
 		info.Game = mtgban.GameYuGiOh
 	}
-	info.InventoryTimestamp = &csi.inventoryDate
-	info.BuylistTimestamp = &csi.buylistDate
+	// A side that was never loaded is a side this scraper does not have,
+	// and UnfoldScrapers reads the timestamps to decide which it is. Cool
+	// Stuff Inc sells sealed for every game it stocks and buys it only for
+	// Magic and One Piece, so handing back a stamped-but-empty buylist made
+	// a vendor of the four games it buys none in: the dump then refused it
+	// for holding no data, and the run reported a non-fatal error and left
+	// the file the website reloads absent.
+	if !csi.inventoryDate.IsZero() {
+		info.InventoryTimestamp = &csi.inventoryDate
+	}
+	if !csi.buylistDate.IsZero() {
+		info.BuylistTimestamp = &csi.buylistDate
+	}
 	info.SealedMode = true
 	info.CreditMultiplier = 1.25
 	return

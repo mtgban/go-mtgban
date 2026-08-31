@@ -294,16 +294,19 @@ var options = map[string]*scraperOption{
 		Init: coolstuffincSealedScraper(coolstuffinc.GameMagic),
 	},
 	"coolstuffinc_sealed_lorcana": {
-		Init: coolstuffincSealedScraper(coolstuffinc.GameLorcana),
+		Init:       coolstuffincSealedScraper(coolstuffinc.GameLorcana),
+		OnlySeller: true,
 	},
 	"coolstuffinc_sealed_onepiece": {
 		Init: coolstuffincSealedScraper(coolstuffinc.GameOnePiece),
 	},
 	"coolstuffinc_sealed_pokemon": {
-		Init: coolstuffincSealedScraper(coolstuffinc.GamePokemon),
+		Init:       coolstuffincSealedScraper(coolstuffinc.GamePokemon),
+		OnlySeller: true,
 	},
 	"coolstuffinc_sealed_riftbound": {
-		Init: coolstuffincSealedScraper(coolstuffinc.GameRiftbound),
+		Init:       coolstuffincSealedScraper(coolstuffinc.GameRiftbound),
+		OnlySeller: true,
 	},
 	"coolstuffinc_sealed_yugioh": {
 		Init:       coolstuffincSealedScraper(coolstuffinc.GameYuGiOh),
