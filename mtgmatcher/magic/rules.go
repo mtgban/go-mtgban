@@ -23,6 +23,20 @@ func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 // IsSpecificUnsupported reports the named cards unsupported in one edition
 // rather than as a class. See mtgmatcher.GameRules.
 func (Rules) IsSpecificUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	// A custom token set that leaked this far is Magic's own problem: the
+	// datastore carries its tokens apart from its cards, so a listing whose
+	// edition or variation says token has nothing here to match. It lived in
+	// the core switch and answered for every game, which is wrong for the
+	// ones whose tokens are cards like any other - Yu-Gi-Oh files "Token:
+	// Kuriboh" under a collector number and sells it by it.
+	//
+	// The word is looked for with strings rather than Contains, which
+	// filters "token" away before the comparison ever sees it.
+	if (strings.Contains(strings.ToLower(inCard.Edition), "token") ||
+		strings.Contains(strings.ToLower(inCard.Variation), "token")) &&
+		!inCard.Contains("League") {
+		return true
+	}
 	return inCard.IsSpecificUnsupported()
 }
 
