@@ -382,7 +382,7 @@ func (csi *Coolstuffinc) processSearch(ctx context.Context, results chan<- respo
 					c.Foil = c.Foil || isFoil
 					theCard = c
 				case GameYuGiOh:
-					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
+					theCard = &mtgmatcher.InputCard{Name: catalogColor(cardName), Edition: printRunEdition(edition, notes), Variation: strings.TrimSpace(notes + " " + catalogRarity(rarity)), Foil: isFoil}
 				case GamePokemon:
 					theCard = &mtgmatcher.InputCard{Name: cardName, Edition: edition, Variation: catalogTreatment(notes), Foil: isFoil}
 				case GameOnePiece:
@@ -608,7 +608,7 @@ func (csi *Coolstuffinc) parseBL(ctx context.Context) error {
 		// listing spends the note on it, so a row whose note says nothing
 		// still names the tier that tells its printing from its siblings.
 		case GameYuGiOh:
-			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
+			theCard = &mtgmatcher.InputCard{Name: catalogColor(product.Name), Edition: printRunEdition(product.ItemSet, product.Notes), Variation: strings.TrimSpace(buylistVariation(product) + " " + catalogRarity(product.RarityName)), Foil: product.IsFoil == 1}
 		case GameOnePiece:
 			theCard = &mtgmatcher.InputCard{Name: product.Name, Edition: product.ItemSet, Variation: eventNamed(strings.TrimSpace(product.Number + " " + nameQualifiers(product.Name))), Foil: product.IsFoil == 1}
 		case GameLorcana:
@@ -805,6 +805,23 @@ func catalogTreatment(variation string) string {
 // possessive s from Collector's. Everything else - Common, Rare, Mosaic
 // Rare - it already spells alike, so a name absent from this table passes
 // through as it stands.
+// csiColors spells a Duelist League colour the way the catalog files it, for
+// the ones this storefront names differently. A league prints one number in
+// several colours and nothing else tells them apart, so the word is the whole
+// identification.
+//
+// The spelling has to be swapped rather than added to. "Light Blue" says the
+// word blue, which names the blue printing outright, so a listing carrying
+// both words names two printings and ties where it used to answer one - and
+// the storefront's own word says nothing else worth keeping.
+var csiColors = strings.NewReplacer("(Light Blue)", "(Silver)")
+
+// catalogColor spells the colour a Yu-Gi-Oh listing names the way the catalog
+// files it.
+func catalogColor(name string) string {
+	return csiColors.Replace(name)
+}
+
 var csiRarities = map[string]string{
 	"Star Foil":      "Starfoil Rare",
 	"Shatterfoil":    "Shatterfoil Rare",
