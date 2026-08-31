@@ -260,20 +260,14 @@ func preprocess(title string) (*mtgmatcher.InputCard, error) {
 	matches = reThick.FindStringSubmatch(title)
 	if len(matches) > 1 {
 		foil = strings.Contains(matches[1], "Foil")
-		if matches[1] == "エッチング・Foil" {
+		// The treatment is announced where the plain finish would be, and
+		// carries the same set tag and number as the printing it is a
+		// treatment of, so nothing else in the title tells them apart.
+		if treatment, found := treatmentTable[matches[1]]; found {
 			if variant != "" {
 				variant += " "
 			}
-			variant += "Etched Foil"
-		}
-		// The alternate printing is announced where the finish would be,
-		// and carries the same set tag and number as the printing it is an
-		// alternate of, so nothing else in the title tells them apart.
-		if matches[1] == "アルターネイト版" {
-			if variant != "" {
-				variant += " "
-			}
-			variant += "Alternate"
+			variant += treatment
 		}
 	}
 
@@ -373,6 +367,37 @@ var cardTable = map[string]string{
 	"Chicken ? la King":                  "Chicken à la King",
 	"Adorable | KittenAdorable | Kitten": "Adorable Kitten",
 	"Tyrannosaurs Rex":                   "Tyrannosaurus Rex",
+}
+
+// treatmentTable names the treatments the storefront announces in the group
+// the plain finish otherwise occupies, in the words the catalog labels them
+// with. Only the marker says which printing a listing is: the treated
+// printing shares its set tag and collector number with the plain one, so a
+// marker read as a bare "Foil" prices the treatment as the plain card - and
+// these are the printings a shop pays the most for.
+//
+// Every entry was read off the storefront's own buylist: each marker below
+// appears there, and each names a promo type the catalog carries.
+var treatmentTable = map[string]string{
+	"S&C・Foil":       "Step-and-Compleat Foil",
+	"エッチング・Foil":     "Etched Foil",
+	"オイルスリック・Foil":   "Oil Slick",
+	"ギャラクシー・Foil":    "Galaxy Foil",
+	"コンフェッティ・Foil":   "Confetti Foil",
+	"サージ・Foil":       "Surge Foil",
+	"ダブルレインボウ・Foil":  "Double Rainbow Foil",
+	"テクスチャー・Foil":    "Textured Foil",
+	"ドラゴンスケイル・Foil":  "Dragonscale Foil",
+	"ネオンインク・Foil":    "Neon Ink",
+	"ハロー・Foil":       "Halo Foil",
+	"ファーストプレイス・Foil": "First Place Foil",
+	"リップル・Foil":      "Ripple Foil",
+	"レイズド・Foil":      "Raised Foil",
+	"不可視インク":         "Invisible Ink",
+	"銀幕・Foil":        "Silver Foil",
+
+	// Not a finish: the alternate printing is announced in the same group.
+	"アルターネイト版": "Alternate",
 }
 
 var editionTable = map[string]string{
