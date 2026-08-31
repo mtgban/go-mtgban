@@ -17,7 +17,9 @@ const vocabularyFixture = `{
 	"sets": {
 		"OP13": {"name": "Carrying On His Will", "releaseDate": "2025-11-21"},
 		"OP16": {"name": "The Time of Battle", "releaseDate": "2026-05-22"},
-		"OP17": {"name": "The World's Strongest Warriors", "releaseDate": "2026-08-14"}
+		"OP17": {"name": "The World's Strongest Warriors", "releaseDate": "2026-08-14"},
+		"OP09": {"name": "Emperors in the New World", "releaseDate": "2024-12-27"},
+		"PRB-02": {"name": "Premium Booster -The Best- Vol. 2", "releaseDate": "2025-08-01"}
 	},
 	"cards": [
 		{"id": "op13-118_657400_foil", "name": "Monkey.D.Luffy", "number": "OP13-118", "setCode": "OP13", "rarity": "SEC", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 657400}},
@@ -26,7 +28,9 @@ const vocabularyFixture = `{
 		{"id": "op16-011_695995_foil", "name": "Vista", "number": "OP16-011", "setCode": "OP16", "rarity": "SR", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 695995}},
 		{"id": "op16-011_695996_foil", "name": "Vista", "number": "OP16-011", "setCode": "OP16", "rarity": "SR", "finish": "Foil", "variant": "TR", "image": "x", "externalLinks": {"tcgPlayerId": 695996}},
 		{"id": "op17-062_700001_foil", "name": "Kaido", "number": "OP17-062", "setCode": "OP17", "rarity": "SR", "finish": "Foil", "variant": "Manga", "image": "x", "externalLinks": {"tcgPlayerId": 700001}},
-		{"id": "op17-062_700002_foil", "name": "Kaido", "number": "OP17-062", "setCode": "OP17", "rarity": "SR", "finish": "Foil", "variant": "Super Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 700002}}
+		{"id": "op17-062_700002_foil", "name": "Kaido", "number": "OP17-062", "setCode": "OP17", "rarity": "SR", "finish": "Foil", "variant": "Super Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 700002}},
+		{"id": "op09-078_597018_foil", "name": "Gum-Gum Giant", "number": "OP09-078", "setCode": "OP09", "rarity": "R", "finish": "Foil", "image": "x", "externalLinks": {"tcgPlayerId": 597018}},
+		{"id": "op09-078_653835_foil", "name": "Gum-Gum Giant", "number": "OP09-078", "setCode": "PRB-02", "rarity": "R", "finish": "Foil", "variant": "Alternate Art", "image": "x", "externalLinks": {"tcgPlayerId": 653835}}
 	]
 }`
 
@@ -89,6 +93,25 @@ func TestCatalogVocabulary(t *testing.T) {
 				Edition: "OP17 - The World's Strongest Warriors", Foil: true,
 			},
 			want: "op17-062_700001_foil",
+		},
+		{
+			// Premium Booster Vol. 2 reprints in manga art and files every
+			// one as an alternate art. The edition names the set the card
+			// was first printed in, which is the printing it is not.
+			desc: "a set's own word for the treatment reaches its printing",
+			in: mtgmatcher.InputCard{
+				Name: "Gum-Gum Giant", Variation: "Manga",
+				Edition: "OP09 - Emperors in the New World", Foil: true,
+			},
+			want: "op09-078_653835_foil",
+		},
+		{
+			desc: "and a listing naming no treatment stays where the edition says",
+			in: mtgmatcher.InputCard{
+				Name: "Gum-Gum Giant", Variation: "OP09-078",
+				Edition: "OP09 - Emperors in the New World", Foil: true,
+			},
+			want: "op09-078_597018_foil",
 		},
 	}
 
