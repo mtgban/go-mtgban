@@ -71,6 +71,7 @@ var editionAliases = map[string]string{
 	"Speed Duel Starter Decks: Match of the Millennium": "Speed Duel Decks: Match of the Millennium",
 	"Speed Duel Starter Decks: Twisted Nightmares":      "Speed Duel Decks: Twisted Nightmares",
 	"Starter Deck: Ultimate Predators":                  "Speed Duel Decks: Ultimate Predators",
+	"Speed Duel GX: Duel Academy":                       "Speed Duel GX: Duel Academy Box",
 	// The same decks headed as a starter deck naming its speed duel.
 	"Starter Deck: Speed Duel - Battle City Box":         "Speed Duel: Battle City Box",
 	"Starter Deck: Speed Duel - Match of the Millennium": "Speed Duel Decks: Match of the Millennium",
