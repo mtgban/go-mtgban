@@ -204,6 +204,29 @@ var yugiohSeeds = []matchTest{
 		Desc: "a wording naming one tag keeps the printing wearing only it",
 		In:   mtgmatcher.InputCard{Name: "Dark Magician Girl the Dragon Knight", Variation: "DLCS-EN006 Blue"},
 	},
+	// The catalog spells a mark, a word and a phrase order the storefront
+	// writes another way; the last is reached only through its prefix, and
+	// a character the catalog never paired decides nothing.
+	{
+		Desc: "the mark numbering a repeated name is read from the wording",
+		In:   mtgmatcher.InputCard{Name: "Skull Knight No 2", Variation: "Common", Edition: "Legacy of Darkness"},
+	},
+	{
+		Desc: "a letter the catalog writes as a word",
+		In:   mtgmatcher.InputCard{Name: "Falchion\u03b2", Variation: "Common", Edition: "Starter Deck: Speed Duel - Battle City Box"},
+	},
+	{
+		Desc: "a field center flips onto the phrase order the catalog files",
+		In:   mtgmatcher.InputCard{Name: "Ash Blossom & Joyous Spring Field Center Token", Variation: "Cat ears and tail Common", Edition: "Tokens"},
+	},
+	{
+		Desc: "a character's field center is reached through its prefix",
+		In:   mtgmatcher.InputCard{Name: "Seto Kaiba Field Center Token", Variation: "Blue background w/ Blue-Eyes White Dragon Common", Edition: "Tokens"},
+	},
+	{
+		Desc: "negative: a character the catalog pairs two ways decides nothing",
+		In:   mtgmatcher.InputCard{Name: "Yugi Muto Field Center Token", Variation: "Yellow background w/ Dark Magician Common", Edition: "Tokens"},
+	},
 	// The mark is invisible, so the name it decorates reads as spelled.
 	{
 		Desc: "an invisible formatting mark is not part of the name",
