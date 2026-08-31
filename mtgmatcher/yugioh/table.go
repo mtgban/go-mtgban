@@ -45,15 +45,6 @@ var editionAliases = map[string]string{
 	// Every Duelist League shares the one set code, so the league's own
 	// number lives in the collector number and the edition only has to
 	// reach the set the leagues are collected in.
-	"Duelist League 09":               "Duelist League Promo",
-	"Duelist League 11":               "Duelist League Promo",
-	"Duelist League 12":               "Duelist League Promo",
-	"Duelist League 13":               "Duelist League Promo",
-	"Duelist League 14":               "Duelist League Promo",
-	"Duelist League 15":               "Duelist League Promo",
-	"Duelist League 16":               "Duelist League Promo",
-	"Duelist League 17":               "Duelist League Promo",
-	"Duelist League 18":               "Duelist League Promo",
 	"Duelist League Promos Upperdeck": "Duelist League Promo",
 	"Duelist League Series 1":         "Duelist League Promo",
 	"Duelist League Series 2":         "Duelist League Promo",
