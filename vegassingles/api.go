@@ -132,6 +132,14 @@ func (vs *VSClient) buildURL(params map[string]string) string {
 	q.Set("ignore_is_hot_order", "true")
 	q.Set("sort", sortForward)
 
+	// Ask only for what the store holds. Nearly three products in four the
+	// endpoint answers with are stocked in no condition at all, and none of
+	// them is priced either way: the retail side skips a condition the
+	// store has none of, and a bid on a card it does not carry is not a
+	// bid it will honour. Asking the endpoint is what keeps the crawl off
+	// those pages rather than walking them to drop them.
+	q.Set("in_stock", "true")
+
 	// Empty filter parameters (required by API)
 	for _, param := range []string{
 		"set_name", "rarity", "import_list_text", "name", "is_hot",
