@@ -366,7 +366,7 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 	edition := strings.TrimSpace(inCard.Edition)
 	if named, found := namedSet(b, edition); found {
-		inCard.Edition = named
+		inCard.Edition = siblingSetNamed(b, inCard, named)
 		return
 	}
 	edition = trimEditionDecorations(edition)
@@ -376,6 +376,42 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = set.Name
 	}
 	inCard.Edition = edition
+}
+
+// siblingSetNamed answers the edition a listing's collector number names,
+// where that set is a sibling of the one the edition names, and the edition
+// unchanged otherwise.
+//
+// A set family shares one name and splits into editions filed as sets of
+// their own - the Movie Pack prints a Gold Edition and a Secret Edition - and
+// a storefront sells all of them under the family's name, saying which is
+// which in the number alone. Cool Stuff Inc lists Dark Magician at
+// MVP1-EN054, MVP1-ENG54, MVP1-ENGV3, MVP1-ENS54 and MVP1-ENSV3: five
+// products, one name, one shelf. The edition pins the first of them, so the
+// other four answered with it and one printing carried five prices.
+//
+// Only a sibling is read this way. A number naming an unrelated set is a
+// storefront filing a reprint under the set it was first printed in, which
+// the edition is already answering correctly, and numberSet's own guards
+// still apply: the number has to hold this card in that set and hold it
+// nowhere else.
+func siblingSetNamed(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, named string) string {
+	current := b.NormalizedSets[mtgmatcher.Normalize(named)]
+	if current == nil {
+		return named
+	}
+	set := numberSet(b, inCard, named)
+	if set == nil || set.Code == current.Code || setFamily(set.Code) != setFamily(current.Code) {
+		return named
+	}
+	return set.Name
+}
+
+// setFamily is the code a set's editions share, which is everything a dash
+// leaves in front: MVP1-ENG and MVP1-ENS are both MVP1.
+func setFamily(code string) string {
+	base, _, _ := strings.Cut(code, "-")
+	return base
 }
 
 // numberSet answers the set the input's collector number is filed in, for a
@@ -474,12 +510,11 @@ var numberTailRe = regexp.MustCompile(`^[A-Za-z]*[0-9]+[a-zA-Z]*$`)
 // off the map's iteration order too: two codes of one length cannot both open
 // one field, so the longest fitting code is unique.
 func fieldSet(b *mtgmatcher.Backend, field string) *mtgmatcher.Set {
-	if prefix, tail, dashed := strings.Cut(field, "-"); dashed {
-		if !numberTailRe.MatchString(tail) {
-			return nil
-		}
-		return setByCode(b, prefix)
-	}
+	// The longest code a number opens with is the set it names, whether or
+	// not the code carries a dash of its own. A family's editions are sets
+	// whose codes extend the family's - MVP1-ENG beside MVP1 - so cutting
+	// at the first dash reads "MVP1-ENG54" as the family and hands back a
+	// printing the number was not naming.
 	var best *mtgmatcher.Set
 	var bestCode string
 	for code, set := range b.Sets {
@@ -492,7 +527,16 @@ func fieldSet(b *mtgmatcher.Backend, field string) *mtgmatcher.Set {
 			best, bestCode = set, code
 		}
 	}
-	return best
+	if best != nil {
+		return best
+	}
+	if prefix, tail, dashed := strings.Cut(field, "-"); dashed {
+		if !numberTailRe.MatchString(tail) {
+			return nil
+		}
+		return setByCode(b, prefix)
+	}
+	return nil
 }
 
 // setByCode answers the set filed under a code, however a storefront cased it.
