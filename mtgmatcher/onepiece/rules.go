@@ -297,7 +297,11 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 	// describes it better than every other, keeping any promo line in
 	// front so the event printings are still the ones being named.
 	prefix := promoLineRe.FindString(edition)
-	canon := canonicalEdition(b, edition[len(prefix):], code)
+	base := edition[len(prefix):]
+	if prefix == "" {
+		base = shelfLineRe.ReplaceAllString(base, "")
+	}
+	canon := canonicalEdition(b, base, code)
 	if canon != "" {
 		edition = prefix + canon
 	}
@@ -904,6 +908,20 @@ func editionTiebreak(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cards 
 // promoLineRe matches the promo-line prefix a storefront hangs a set name
 // off to name that set's event printings.
 var promoLineRe = regexp.MustCompile(`(?i)^promos?\s*[:-]\s*`)
+
+// shelfLineRe matches the shelf a storefront files a set under, written in
+// front of the set's own name ("Reprints - Revision Pack" for the set the
+// catalog calls "Revision Pack Cards").
+//
+// It is the promo line's sibling and is kept apart from it because that one
+// carries a second meaning: a wording behind a promo line is naming an
+// event's printing, and the tiering reads it that way. A shelf says only
+// where the storefront filed the set, so it is dropped rather than kept -
+// and dropped only where the name is snapped to a set, which is the one
+// place the extra word is what stops the set being found. "Revision Pack"
+// leaves nothing of "Revision Pack Cards" unaccounted for, where "Reprints
+// - Revision Pack" leaves a word over and is refused for it.
+var shelfLineRe = regexp.MustCompile(`(?i)^reprints?\s*[:-]\s*`)
 
 // canonicalEdition returns the name of the one set an edition describes
 // better than every other, or "" when the wording picks no clear winner.
