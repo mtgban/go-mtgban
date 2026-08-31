@@ -352,6 +352,17 @@ func (Rules) AdjustName(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			return
 		}
 	}
+	// A name nothing answers to, beside a number only one card carries, is
+	// a card this reader can still name: the number is the stronger key of
+	// the two, and a storefront naming a token its own way ("Orange Kuriboh
+	// Token" for "Token: Kuriboh") has spelled the one thing it could get
+	// wrong. Uniqueness across the whole datastore is the guard - a number
+	// two cards share names neither of them.
+	if name := soleNameAt(b, extractNumber(inCard.Variation)); sharesWord(inCard.Name, name) {
+		inCard.Name = name
+		return
+	}
+
 	uuids, err := b.SearchHasPrefix(inCard.Name)
 	if err != nil {
 		return
@@ -400,6 +411,57 @@ func (Rules) AdjustEdition(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) 
 		edition = set.Name
 	}
 	inCard.Edition = edition
+}
+
+// sharesWord reports whether two names have a whole word in common, which is
+// what says a listing is talking about the card its number points at rather
+// than about nothing at all.
+//
+// The number is the stronger key, but it is not the only one: on its own it
+// would let any name whatsoever be replaced by whatever the number happens to
+// hold, and a listing naming no card we know would come back as the card at
+// that number instead of as the miss it is. A word in common is the cheapest
+// thing that tells "Orange Kuriboh Token" for "Token: Kuriboh" apart from a
+// name that means nothing here.
+func sharesWord(listed, named string) bool {
+	if named == "" {
+		return false
+	}
+	words := map[string]bool{}
+	for _, word := range strings.Fields(strings.ToLower(named)) {
+		if word := mtgmatcher.Normalize(word); word != "" {
+			words[word] = true
+		}
+	}
+	for _, word := range strings.Fields(strings.ToLower(listed)) {
+		if word := mtgmatcher.Normalize(word); word != "" && words[word] {
+			return true
+		}
+	}
+	return false
+}
+
+// soleNameAt names the one card a collector number belongs to, or nothing
+// where the number is absent, unknown, or shared by cards of more than one
+// name. Printings of one card under one number are not a share: they are the
+// same name however many rarities carry it.
+func soleNameAt(b *mtgmatcher.Backend, number string) string {
+	if number == "" {
+		return ""
+	}
+	var name string
+	for _, code := range b.AllSets {
+		for _, card := range b.Sets[code].Cards {
+			if !strings.EqualFold(card.Number, number) {
+				continue
+			}
+			if name != "" && mtgmatcher.Normalize(name) != mtgmatcher.Normalize(card.Name) {
+				return ""
+			}
+			name = card.Name
+		}
+	}
+	return name
 }
 
 // siblingSetNamed answers the edition a listing's collector number names,
@@ -551,6 +613,12 @@ var foreignNumberRe = regexp.MustCompile(`^([A-Za-z0-9]+)-([A-Za-z]{2})[0-9]`)
 // card it failed to find. Saying so lets the caller skip it in silence, where
 // a refusal would be reported as a miss every run.
 func (Rules) IsUnsupported(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) bool {
+	// The character art cards are the storefront's own product rather than
+	// a printing: they carry no collector number and the catalog has no row
+	// for them, so they are skipped rather than reported missing every run.
+	if strings.HasSuffix(inCard.Name, "Character Art Card") {
+		return true
+	}
 	for _, field := range strings.Fields(inCard.Variation) {
 		match := foreignNumberRe.FindStringSubmatch(field)
 		if match != nil && foreignInfixes[strings.ToUpper(match[2])] {
