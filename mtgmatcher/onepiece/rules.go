@@ -20,7 +20,14 @@ type Rules struct{ mtgmatcher.DefaultRules }
 // fullNumberRe matches the game's collector number shapes: "OP01-001",
 // "ST01-001", "EB01-023", "P-001", with an optional letter tail
 // (cardtrader suffixes alternate arts "OP01-001a").
-var fullNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z]*$`)
+//
+// The tail takes the Greek letters as well, which cardtrader numbers the
+// corrected runs with ("OP01-002β", "OP01-016βa"). Leaving them out does not
+// leave the number unread - it leaves it read as something else, because a
+// number this fails on falls through to the first digit-leading word, and
+// behind one of these numbers that is a digit quoted out of the card's own
+// rules text.
+var fullNumberRe = regexp.MustCompile(`^[A-Za-z]+[0-9]*-[0-9]+[a-zA-Z\x{03b1}\x{03b2}]*$`)
 
 // dashNumberRe matches the collector number hung inside a name after a
 // dash ("Monkey.D.Luffy - P-043").
@@ -579,6 +586,20 @@ func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, ca
 		return labelOverlap(b, inCard, candidates, false)
 	}
 
+	// A corrected printing is filed on the base card's number with the
+	// correction in its label, so every printing of that number answers a
+	// listing selling one - the base card first among them, which is the
+	// one thing the listing said it is not. The tiering below cannot settle
+	// it either: the storefront writes "Alternate Art" where the catalog
+	// writes "Parallel", so the plainer label is the one a wording naming
+	// both the run and the art describes, and the bare printing wins a
+	// listing that is not it.
+	narrowed := errataNarrow(b, inCard, candidates)
+	if len(narrowed) == 1 {
+		return narrowed
+	}
+	candidates = narrowed
+
 	// The letter tail cardtrader appends to a number ("OP01-001a") means a
 	// variant printing without saying which; the V.n index says the same.
 	// Either demand drops the base printing from consideration.
@@ -1093,6 +1114,143 @@ func tierByVariant(inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) (
 		}
 	}
 	return
+}
+
+// errataWord is what both sides call the printings a game corrected: an early
+// run whose text was wrong, which the catalog files under the base card's
+// number and the storefronts sell as a printing of its own.
+const errataWord = "errata"
+
+// errataRuns are the two corrected runs a card can have been printed in,
+// each in the two spellings a wording carries it in: cardtrader letters the
+// collector number with the Greek letter and writes the word out in the
+// version text beside it. The order is fixed so a wording somehow naming
+// both still reads the same way twice.
+var errataRuns = []struct{ letter, run string }{
+	{"α", "alpha"},
+	{"β", "beta"},
+}
+
+// errataRun reads which corrected run a text names, "" for one naming
+// neither. Only the corrected printings are labelled with these words, so
+// reading them off a wording asks nothing of any other printing.
+func errataRun(text string) string {
+	lower := strings.ToLower(text)
+	for _, gen := range errataRuns {
+		if strings.Contains(lower, gen.letter) || mtgmatcher.SlugDescribes(lower, gen.run) {
+			return gen.run
+		}
+	}
+	return ""
+}
+
+// errataSkipped are the words every corrected printing's label shares - the
+// correction itself and the run it names - which say nothing about which of
+// them a listing means.
+var errataSkipped = map[string]bool{
+	"pre": true, "errata": true, "preerrata": true, "alpha": true, "beta": true,
+}
+
+// errataTreatment is what a corrected printing's label says beyond the
+// correction and the run: the treatment that printing wears. The catalog
+// spells it several ways - "Parallel", "Box Topper", "Demo Deck" - so the
+// words are read off the label rather than looked for, and a label saying
+// nothing else is the plain corrected printing.
+func errataTreatment(label string) string {
+	var kept []string
+	for _, field := range strings.Fields(label) {
+		if errataSkipped[mtgmatcher.PromoTypeSlug(field)] {
+			continue
+		}
+		kept = append(kept, field)
+	}
+	return strings.Join(kept, " ")
+}
+
+// errataNarrow keeps the corrected printings a wording naming one can mean,
+// and answers with the single printing where the two axes the shelf tells
+// them apart by leave one.
+//
+// The axes are the run and the treatment, and only the first of them can be
+// read off the collector number. Cardtrader letters the number for the art
+// as well, but not in one direction: OP01-051ae is the alternate art where
+// OP01-070ae is the plain printing and OP01-070e the alternate one, and
+// OP01-025a is plain despite its letter. The version text says which every
+// time, so it is what gets read - and the treatment is compared as the
+// catalog's own words, never built out of them, because the catalog files
+// one number's alternate art as a Box Topper and another's as a Demo Deck.
+//
+// Nothing here fires unless the wording says the correction and some
+// printing of the number wears it, and the second half of that is what
+// holds it. The storefront calls the corrected run "Pre-Errata Card" on one
+// card and "Alpha Errata Card" on another, so the bare word has to be what
+// is read - and it also writes "1st Print Errata Card" on twelve cards the
+// catalog files no corrected printing of, which is the same printing said
+// another way. Asking the catalog rather than the wording is what leaves
+// those alone: a number holding no corrected printing has nothing here to
+// answer with, whatever the listing called itself.
+func errataNarrow(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, candidates []mtgmatcher.Card) []mtgmatcher.Card {
+	wording := strings.ToLower(inCard.Variation + " " + inCard.Edition)
+	if !strings.Contains(wording, errataWord) {
+		return candidates
+	}
+	var errata []mtgmatcher.Card
+	for _, card := range candidates {
+		if strings.Contains(strings.ToLower(promoLabel(b, card)), errataWord) {
+			errata = append(errata, card)
+		}
+	}
+	if len(errata) == 0 {
+		return candidates
+	}
+
+	// The run the listing names is the one the printing has to have been
+	// in, and a listing naming none is asking for the printing that names
+	// none either.
+	run := errataRun(wording)
+	var sameRun []mtgmatcher.Card
+	for _, card := range errata {
+		if errataRun(promoLabel(b, card)) == run {
+			sameRun = append(sameRun, card)
+		}
+	}
+	if len(sameRun) == 0 {
+		return errata
+	}
+	if len(sameRun) == 1 {
+		return sameRun
+	}
+
+	// A wording spelling a treatment out has named the printing outright,
+	// which answers before anything inferred from the art word does.
+	var named []mtgmatcher.Card
+	for _, card := range sameRun {
+		treatment := errataTreatment(promoLabel(b, card))
+		if treatment == "" {
+			continue
+		}
+		if mtgmatcher.SlugDescribes(wording, mtgmatcher.PromoTypeSlug(treatment)) {
+			named = append(named, card)
+		}
+	}
+	if len(named) == 1 {
+		return named
+	}
+
+	// Otherwise the listing has only said whether it is the base art or not,
+	// and one printing of the run wears a treatment while the other does
+	// not, so that is enough to tell them apart.
+	treated := wantsUnnamedVariant(inCard)
+	var picked []mtgmatcher.Card
+	for _, card := range sameRun {
+		if (errataTreatment(promoLabel(b, card)) != "") == treated {
+			picked = append(picked, card)
+		}
+	}
+	if len(picked) == 1 {
+		return picked
+	}
+	return sameRun
 }
 
 // runNamedVariants keeps the printings whose set the variation names and
@@ -1639,12 +1797,13 @@ func extractNumber(variation string) string {
 // numberMatches compares an input number against a printing's full
 // collector number: equal full codes, or a bare input matching the code's
 // numeric tail. Leading zeros never decide ("1" matches "OP01-001"), and a
-// letter tail on the input ("OP01-001a") matches its base number.
+// letter tail on the input ("OP01-001a", "OP01-002β") matches its base
+// number - the catalog files a corrected run on the base number too.
 func numberMatches(input, full string) bool {
 	if strings.EqualFold(input, full) {
 		return true
 	}
-	input = strings.TrimRight(input, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	input = strings.TrimRight(input, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZαβ")
 	if strings.EqualFold(input, full) {
 		return true
 	}
