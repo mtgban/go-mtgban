@@ -8,6 +8,15 @@
         "uuid": "lob-001_21792_1e"
     },
     {
+        "description": "a bracketed decoration reads as the parenthetical it is",
+        "input": {
+            "name": "Knightmare Unicorn [Alt Art]",
+            "variant": "RA01-EN043 Platinum Secret Rare",
+            "edition": "25th Anniversary Rarity Collection"
+        },
+        "uuid": "ra01-en043_524528_1e"
+    },
+    {
         "description": "a colour names the league printing its number already placed",
         "input": {
             "name": "Penguin Soldier",

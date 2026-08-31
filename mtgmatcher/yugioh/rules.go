@@ -58,8 +58,32 @@ func (Rules) Prefilter(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard) {
 			inCard.AddToVariant(strings.Join(vars[1:], " "))
 		}
 	}
+	// A storefront brackets the same thing it elsewhere parenthesizes -
+	// "Knightmare Unicorn [Alt Art]" - and the bracket says as much about
+	// the printing as the parenthesis does, so it is read the same way
+	// rather than being carried into a name no card answers to.
+	if _, found := b.CanonicalNames[mtgmatcher.Normalize(inCard.Name)]; !found {
+		if name, bracketed, ok := splitBracket(inCard.Name); ok {
+			inCard.Name = name
+			inCard.AddToVariant(bracketed)
+		}
+	}
 	respellName(b, inCard)
 	adoptQualifiedName(b, inCard)
+}
+
+// bracketRe matches the decoration a storefront brackets onto a name, which
+// says what a parenthetical says: "Knightmare Unicorn [Alt Art]".
+var bracketRe = regexp.MustCompile(`^(.*?)\s*\[([^\]]+)\]\s*$`)
+
+// splitBracket separates a bracketed decoration from the name it decorates,
+// reporting whether there was one to take.
+func splitBracket(name string) (string, string, bool) {
+	match := bracketRe.FindStringSubmatch(name)
+	if match == nil {
+		return name, "", false
+	}
+	return strings.TrimSpace(match[1]), strings.TrimSpace(match[2]), true
 }
 
 // qualifiedNameRe matches the trailing parenthetical the catalog keeps inside
