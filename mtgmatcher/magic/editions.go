@@ -84,7 +84,6 @@ var EditionTable = map[string]string{
 	// PL22
 	"Love Your LGS 2021": "Love Your LGS 2021",
 
-	// Double Feature
 	"Innistrad: Double Feature - Crimson Vow":   "Innistrad: Double Feature",
 	"Innistrad: Double Feature - Midnight Hunt": "Innistrad: Double Feature",
 
@@ -130,7 +129,6 @@ var EditionTable = map[string]string{
 	"Mark Poole Art Promo": "2017 Gift Pack",
 	"Poole 2017 Gift Pack": "2017 Gift Pack",
 
-	// Treasure Chest
 	"Ixalan Treasure Chest": "XLN Treasure Chest",
 	"Treasure Chest Promo":  "XLN Treasure Chest",
 
@@ -173,7 +171,6 @@ var EditionTable = map[string]string{
 	"Secret Lair Drop Series": "Secret Lair Drop",
 	"Secret Lair RCQ Promo":   "Secret Lair Showdown",
 
-	// Ponies
 	"Ponies: The Galloping": "Ponies: The Galloping",
 
 	"Ravnica: Cluedo Edition": "Ravnica: Clue Edition",
@@ -303,7 +300,6 @@ var EditionTable = map[string]string{
 	"MvG/DDT": "Duel Decks: Merfolk vs. Goblins",
 	"EvI/DDU": "Duel Decks: Elves vs. Inventors",
 
-	// Global Series
 	"Global Series - Planeswalker Decks - Jiang Yanggu & Mu Yanling": "Global Series Jiang Yanggu & Mu Yanling",
 
 	"Global Series Jiang Yanggu And Mu Yanling":  "Global Series Jiang Yanggu & Mu Yanling",
@@ -400,7 +396,6 @@ var EditionTable = map[string]string{
 	"FOIL 2020 MF MagicFest GP Promo":    "MagicFest 2020",
 	"NONFOIL 2020 MF MagicFest GP Promo": "MagicFest 2020",
 
-	// Nationals
 	"2018 Nationals Promo": "Nationals Promos",
 	"Nationals":            "Nationals Promos",
 

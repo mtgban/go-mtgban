@@ -490,7 +490,6 @@ func (b *Backend) Match(inCard *InputCard) (cardID string, err error) {
 		}
 	}
 
-	// Log the candidate matches
 	Logger.Println("Found these possible matches")
 	for _, dupCards := range cardSet {
 		for _, card := range dupCards {

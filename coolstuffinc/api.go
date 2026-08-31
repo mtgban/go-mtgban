@@ -105,22 +105,12 @@ func (csi *CSIClient) GetPriceList(ctx context.Context) ([]CSICard, error) {
 
 // CSIPriceEntry is one card in the buylist feed.
 type CSIPriceEntry struct {
-	PID string `json:"PID"`
-	// Ppqid         string `json:"PPQID"`
-	Name string `json:"Name"`
-	// Rarity        string `json:"Rarity"`
-	ItemSet string `json:"ItemSet"`
-	// Image   string `json:"Image"`
-	Notes string `json:"Notes"`
-	// SName         string `json:"sName"`
-	// SAbbreviation string `json:"sAbbreviation"`
-	Price string `json:"Price"`
-	// TName         string `json:"tName"`
-	// Color         string `json:"Color"`
-	Number string `json:"Number"`
-	// Code   string `json:"Code"`
-	// BuyListNotes  string `json:"BuyListNotes"`
-	// FullImage     struct {} `json:"FullImage"`
+	PID         string `json:"PID"`
+	Name        string `json:"Name"`
+	ItemSet     string `json:"ItemSet"`
+	Notes       string `json:"Notes"`
+	Price       string `json:"Price"`
+	Number      string `json:"Number"`
 	RarityName  string `json:"RarityName"`
 	IsFoil      int    `json:"isFoil"`
 	CreditPrice string `json:"CreditPrice"`
