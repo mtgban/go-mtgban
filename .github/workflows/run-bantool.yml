@@ -21,6 +21,15 @@ on:
         type: string
       skus-cache-key:
         type: string
+      # A scraper that hangs holds its whole concurrency group until GitHub's
+      # own limit expires, which is six hours: one stuck run cost the
+      # cardmarket family four and a half. The longest honest run is
+      # sealed_ev at just under three hours, and it says so below; everything
+      # else finishes inside forty-five minutes.
+      timeout-minutes:
+        required: false
+        type: number
+        default: 90
 
 permissions:
   contents: read
@@ -28,6 +37,7 @@ permissions:
 jobs:
   run-bantool:
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
 
     steps:
       - name: Checkout repository

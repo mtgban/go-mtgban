@@ -28,4 +28,7 @@ jobs:
       game: "magic"
       datastore-filepath: ${{ needs.cache-datastore.outputs.filepath }}
       datastore-cache-key: ${{ needs.cache-datastore.outputs.key }}
+      # Every run of this one lands between two and three hours: it prices
+      # each sealed product from the singles inside it.
+      timeout-minutes: 240
     secrets: inherit
