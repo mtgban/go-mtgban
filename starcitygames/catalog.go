@@ -371,6 +371,69 @@ func trimPrintRun(code string) string {
 	return code
 }
 
+// fabVariantMarker is the digit Star City Games glues onto a Flesh and Blood
+// set code to give the second printing of a collector number a sku of its own:
+// EVO056 is War Machine and "SGL-FAB-EVO2-056-ENR" is the Extended Art beside
+// it. Nothing else in the catalog divides the two - same set, same number,
+// same finish, same rarity - so the marker is the whole of what says a listing
+// is not the plain printing.
+const fabVariantMarker = "2"
+
+// fabVariantMarked reports whether a sku carries the marker. A code is only
+// read as marked where taking the marker off still leaves a code, so that a
+// genuine code ending in the digit would be left alone.
+func fabVariantMarked(sku string) bool {
+	code := skuSetCode(sku)
+	if !strings.HasSuffix(code, fabVariantMarker) {
+		return false
+	}
+	return trimPrintRun(code) != code
+}
+
+// fabMarkedSibling returns the printing a marked sku names, given the plain
+// one the match landed on. The marker says that a second printing of this
+// number exists and not which it is, so the datastore is what names it: where
+// exactly one sibling carries a treatment the plain printing does not, that is
+// what is being sold. Where several do - a number with a Marvel and an
+// Extended Art both - the marker cannot choose between them, and the treatment
+// the catalog does spell (through the rarity, see fabTiers) has already had
+// its say, so the answer already reached stands.
+func fabMarkedSibling(id string, p CatalogProduct) string {
+	if !fabVariantMarked(p.SKU) {
+		return id
+	}
+	co, err := mtgmatcher.GetUUID(id)
+	if err != nil || len(co.PromoTypes) > 0 {
+		return id
+	}
+
+	var found string
+	for _, card := range mtgmatcher.MatchWithNumber(co.Name, co.SetCode, co.Number) {
+		if len(card.PromoTypes) == 0 {
+			continue
+		}
+		// A treatment the catalog has a field for is that field's to name.
+		// The marker is on the sku of a marvel too, and letting it choose
+		// one would price a listing as a marvel on the strength of a digit
+		// where the rarity beside it says the ordinary card.
+		if fabTiers[card.Rarity] {
+			continue
+		}
+		sibling, serr := mtgmatcher.MatchIDFinish(card.UUID, p.Finish)
+		if serr != nil || sibling == id {
+			continue
+		}
+		if found != "" && found != sibling {
+			return id
+		}
+		found = sibling
+	}
+	if found == "" {
+		return id
+	}
+	return found
+}
+
 func isAllLetters(field string) bool {
 	if field == "" {
 		return false
@@ -475,7 +538,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		numbers := fabNumbers(p.SKU)
 		id, err := fabMatch(p.Name, edition, finish, p.Rarity, foil, numbers)
 		if err == nil {
-			return id, nil
+			return fabMarkedSibling(id, p), nil
 		}
 		// A product named by both its faces at a single collector number
 		// is one printing plus the token printed on its back, not a
@@ -489,7 +552,7 @@ func resolveProductID(game int, p CatalogProduct) (string, error) {
 		if twoFaced && fabSingleNumbered(p.SKU) {
 			retry, rerr := fabMatch(front, edition, finish, p.Rarity, foil, numbers)
 			if rerr == nil {
-				return retry, nil
+				return fabMarkedSibling(retry, p), nil
 			}
 		}
 		return "", err
