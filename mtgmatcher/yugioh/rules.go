@@ -559,6 +559,23 @@ func canonicalFinish(name string) string {
 // tiering mirrors One Piece: a described label wins, a demanded-but-unnamed
 // variant (the "a" tail) drops the base art, and a plain input keeps it.
 func (Rules) FilterCards(b *mtgmatcher.Backend, inCard *mtgmatcher.InputCard, cardSet map[string][]mtgmatcher.Card) []mtgmatcher.Card {
+	// A pooled storefront name restricts the candidates to its pair of sets
+	// outright: the edition kept the name, so nothing upstream could narrow,
+	// and every printing the card ever had was answering instead.
+	if pool, found := normalizedPooledEditions()[mtgmatcher.Normalize(inCard.Edition)]; found {
+		pooled := map[string][]mtgmatcher.Card{}
+		for _, name := range pool {
+			set, ok := b.NormalizedSets[mtgmatcher.Normalize(name)]
+			if !ok {
+				continue
+			}
+			if cards, carried := cardSet[set.Code]; carried {
+				pooled[set.Code] = cards
+			}
+		}
+		cardSet = pooled
+	}
+
 	number := extractNumber(inCard.Variation)
 
 	// A storefront writing the deck or volume index alone where the catalog

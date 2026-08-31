@@ -157,6 +157,33 @@ var nameRespellings = [][2]string{
 	{"Vampire Koala", "Vampiric Koala"},
 }
 
+// pooledEditions maps a storefront name spanning two of the catalog's sets
+// onto the pair. Cool Stuff Inc files both Speed Duel starter decks under
+// one "Starter Deck: Speed Dueling", and a listing does not say which of
+// the two it means - the deck's own name is what the catalog files it
+// under, and the storefront drops it.
+//
+// The name is left unrewritten, since a single-valued alias cannot carry a
+// pair, and FilterCards restricts the candidates to the pool instead. The
+// two decks share no card: every one of the eighty-three names the feed
+// files here is printed in one of them and not the other, so narrowing to
+// the pool is all it takes for the name to pick a set.
+var pooledEditions = map[string][]string{
+	"Starter Deck: Speed Dueling": {
+		"Speed Duel Decks: Destiny Masters",
+		"Speed Duel Decks: Duelists of Tomorrow",
+	},
+}
+
+// normalizedPooledEditions indexes the pooled names the same way.
+var normalizedPooledEditions = sync.OnceValue(func() map[string][]string {
+	pools := make(map[string][]string, len(pooledEditions))
+	for name, sets := range pooledEditions {
+		pools[mtgmatcher.Normalize(name)] = sets
+	}
+	return pools
+})
+
 // normalizedEditionAliases indexes the table the way an edition arrives, so
 // the punctuation and casing a storefront writes never decide. It is built
 // once: the table is a constant.
