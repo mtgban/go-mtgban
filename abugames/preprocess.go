@@ -86,6 +86,22 @@ func resolved(name, edition, variation string, foil bool) *mtgmatcher.CardObject
 	return co
 }
 
+// variantLetterRe matches the letter this storefront opens a variation with
+// when a set prints one card several times over - "(a Dark)", "(b Spring)",
+// "(a - Green Bottle)" - and the words it hangs off it.
+var variantLetterRe = regexp.MustCompile(`^([a-f])(?: -)? [A-Z(]`)
+
+// variantLetter reads that letter. The storefront spells a basic land's
+// artwork in capitals and everything else in lower case, so the two never
+// answer for each other.
+func variantLetter(variation string) string {
+	match := variantLetterRe.FindStringSubmatch(variation)
+	if match == nil {
+		return ""
+	}
+	return match[1]
+}
+
 // artworkLetterRe matches the letter a basic land's title opens its variation
 // with, and the words the storefront hangs off it.
 var artworkLetterRe = regexp.MustCompile(`^([A-F])\b`)
@@ -411,6 +427,18 @@ func preprocess(card *ABUCard) (*mtgmatcher.InputCard, error) {
 	letter := artworkLetter(cardName, variation)
 	if letter != "" {
 		variation = letter
+	}
+
+	// Older sets name their several printings of one card by what is drawn
+	// on them - "Urza's Mine (d Tower)" - and there the words are the whole
+	// identity and the letter counts for nothing. Newer ones number the
+	// printings and leave the words as flavour, so take the letter alone
+	// only where it reaches a printing on its own.
+	if letter == "" {
+		variant := variantLetter(variation)
+		if variant != "" && resolved(cardName, edition, variant, isFoil) != nil {
+			variation = variant
+		}
 	}
 
 	// This storefront gives every frame of a card the base printing's own
