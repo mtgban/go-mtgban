@@ -93,8 +93,13 @@ var lorcanaSeeds = []matchTest{
 		In:   mtgmatcher.InputCard{ID: "544501", Name: "Let It Go (Disney Lorcana Challenge Top 128)", Edition: "Disney Lorcana Promo Cards", Variation: "2 Holofoil", Foil: true},
 	},
 	{
+		// A card sold in one finish is reached by a listing that names no
+		// finish at all, because requiring a plain printing would delete the
+		// only candidate there is. "A Whole New World" stood here until the
+		// data gave it a plain printing too, at which point it stopped
+		// saying anything: 16 promos are still sold foil alone.
 		Desc: "foil-only promo listed without the flag",
-		In:   mtgmatcher.InputCard{Name: "A Whole New World", Variation: "010B", Edition: "Disney Lorcana Promo Cards"},
+		In:   mtgmatcher.InputCard{Name: "Maleficent - Exultant Spellcaster", Variation: "004B", Edition: "Disney Lorcana Promo Cards"},
 	},
 	{
 		Desc: "the letter the data gives a sibling still selects it",
