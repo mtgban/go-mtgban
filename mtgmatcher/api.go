@@ -315,10 +315,14 @@ func SearchSealedContains(name string) ([]string, error) {
 //
 // Lookups pick between them in this order: the card whose name matches
 // verbatim, then any whose name normalizes the same, then the first entry
-// in the bucket. That last case covers buckets reached only by an alias,
-// such as a flavor name. The middle case exists because normalization
-// folds plurals, leaving "Cat Warrior" and "Cat Warriors" as distinct
-// cards that share a bucket.
+// in the bucket.
+//
+// The first case is what tells apart the cards that share a bucket outright:
+// normalization folds case and punctuation, so "Mr. 1 (Daz.Bonez)" and
+// "Mr.1 (Daz.Bonez)" are two cards under one key. The second prefers an
+// entry that owns the name over one the bucket holds only as an alias, for
+// a query spelled unlike any of them. The last covers buckets reached only
+// by an alias, such as a flavor name.
 func (b *Backend) entry4Name(name string) (*CardObject, bool) {
 	norm := Normalize(name)
 	uuids, found := b.Hashes[norm]
